@@ -252,6 +252,20 @@ export const SYNTHETIC: Situations = {
       chosen: 'player_1',
       sent: true,
       acted: 3,
+    }, // chosen, for the rooms the list above only shows at rest and sealed
+    {
+      label: 'investigator, night 1, seat 2 chosen',
+      me: 'player_4',
+      day: 1,
+      actionKind: 'investigator_target',
+      chosen: 'player_2',
+    },
+    {
+      label: 'serial killer, night 3, seat 7 chosen',
+      me: 'player_2',
+      day: 3,
+      actionKind: 'serial_killer_target',
+      chosen: 'player_7',
     },
   ],
   pack: [

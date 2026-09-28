@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * One wolf's vote, as a tooth on the doll it chose. The pack's night ends when the second
- * tooth lands; a lone wolf's has one. The packmate's tooth sits on the left of the neck and
- * yours on the right, so two votes on one doll read as a bite, and two on different dolls
+ * One wolf's vote, as a tooth on the photo it chose. The pack's night ends when the second
+ * tooth lands; a lone wolf's has one. The packmate's tooth sits on the left of the chin and
+ * yours on the right, so two votes on one photo read as a bite, and two on different photos
  * read as a split.
  *
- * `land` plays the tooth dropping onto the doll as the vote arrives; without it the tooth is
- * simply there. A tooth is a mark arriving, not the doll moving: the doll stays still.
+ * `land` plays the tooth dropping onto the photo as the vote arrives; without it the tooth is
+ * simply there. A tooth is a mark arriving, not the photo moving: the photo stays still.
  */
 import { motion } from 'motion/react';
 import { useMotionScale } from '../motion';

@@ -87,12 +87,12 @@ The stage is a `16 / 9` box. Every position, size, radius and path in every scen
 
 **Layers** inside the box, bottom to top (each a positioned `div` filling the box):
 
-1. `paint` — the backdrop (dining car / shelf room / station; the phase paint; the window)
+1. `paint` — the backdrop (dining car / the night rooms' paintings / station; the phase paint; the window)
 2. `haze` — the atmosphere's back half: the key light on the wall, the wall pieces' shadows, the veil
 3. `floor` — apron, trap, lift
-4. `figures` — puppets, plush, chips on strings, cards on strings
+4. `figures` — puppets, the night rooms' photos on their line, chips on strings, cards on strings
 5. `stand` — the stand, plaque, footlights
-6. `instruments` — table, jar, plates, verdict board, act marks, the shelf's objects
+6. `instruments` — table, jar, plates, verdict board, act marks, the night room's card
 7. `light` — the pool, specials, glows, the "chosen" lighting
 8. `grade` — the atmosphere's front half: the key light's falloff, the vignette, the grain
 9. `hud` — top strip, wing, side slot (drawer or film), the dock
@@ -112,14 +112,15 @@ platform has none), fills two layers:
   pelmet throw down-right onto the wall (masked by the window, so it never lies on it; the clock
   and the lamp throw their own, below), then a warm dark veil over the whole back (0.15 at the ceiling to 0.07 at
   the floor) that sets the wall, window, clock and lamp back behind the stand, the table and the
-  figures, left open round a lit lamp; in the shelf room a lighter plain veil and no key light
-  (its candle leads: `shelfLight`, beat sheet §6, 2026-09-27).
+  figures, left open round a lit lamp; in the night rooms (`compartment`) a lighter plain veil
+  and no key light (the painted candle leads: `roomLight`, beat sheet §6).
 - `grade` (over the light, under the HUD, outside the camera): the key light's falloff (0 to
   0.14 towards the lower right), a vignette on the puppet's room (0 to 0.18 at the corners) and a
   still film grain (`SPRITES.grain`, a 160 px noise tile at 1.5 units a grain, 0.16).
-- Contact and cast shadows, all down-right: each puppet and doll throws a baked silhouette on the
-  wall (`cast/CastShadow.tsx`; `SPRITES.shadow`, 57 WebPs, ~95 KB; a puppet's falls 0.09 × 0.05
-  of its height at 0.5, a doll's 0.05 × 0.035 at 0.38), a chip on its string a soft disc, the
+- Contact and cast shadows, all down-right: each puppet throws a baked silhouette on the
+  wall (`cast/CastShadow.tsx`; `SPRITES.shadow`, 46 WebPs; a puppet's falls 0.09 × 0.05 of its
+  height at 0.5; the night rooms' photos a soft box shadow, since the plush dolls' went with them
+  on 2026-09-28), a chip on its string a soft disc, the
   lynch's card a soft box, the wall clock (swaying with it) and the wall lamp their baked
   silhouettes (`SPRITES.shadow.wall`, 18×15 at 0.46 and 26×22 at 0.5). No shadow lies on the window's glass (a view through glass
   takes none): where the shutter is open behind them, the puppets' and the chips' shadows move in
@@ -148,7 +149,6 @@ anything that shows state is drawn over the sprite in vector, never baked in.
 - Location and names, mirroring the bundle:
   ```
   src/assets/sprites/day/<character>/{base,talking,thinking,out,head}.webp
-  src/assets/sprites/plush/<character>.webp
   src/assets/sprites/kits/{healer,investigator,vigilante,serial_killer,wolf,villager,clock,lamp}.webp
   src/assets/sprites/wood/walnut.webp               (the station's beam and ledge only)
   src/assets/sprites/textures/{walnut,boards,velvet}.webp
@@ -156,15 +156,15 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   src/assets/sprites/window/{day,dusk,night,dawn}-{far,near}.webp
   src/assets/sprites/props/{jar-glass,jar-lid,stand-front,vote-table}.webp
   src/assets/sprites/props/{wall-clock,wall-lamp-unlit,wall-lamp-lit}.webp
+  src/assets/sprites/rooms/{healer,investigator,vigilante,serial_killer,wolf}.webp
   src/assets/sprites/shadow/day/<character>/{base,talking,thinking,out}.webp
-  src/assets/sprites/shadow/plush/<character>.webp
   src/assets/sprites/shadow/{wall-clock,wall-lamp}.webp
   src/assets/sprites/atmosphere/grain.webp
   ```
   Characters: `cat hare owl badger cyclops threeEyes dragon onion whale polarBear shade`.
 - Imported only from [src/assets/manifest.ts](../src/assets/manifest.ts) (the existing ruling:
   static imports through `next/image`, content-hashed URLs, inferred dimensions). The manifest
-  exports typed handles — `SPRITES.day[character][state]`, `SPRITES.plush[character]`,
+  exports typed handles — `SPRITES.day[character][state]`, `SPRITES.rooms[room]`,
   `SPRITES.kits[name]`, `SPRITES.wood`, `SPRITES.textures[name]` — and `BODY: Record<Character, { top: number; body:
   number }>`, the head-to-toe measure the cast module scales from, and `HEAD_FRAME`, how each head
   portrait sits in a round window (both measured from the cast, "The cast" below; no JSON at runtime).
@@ -172,8 +172,9 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   unchanged: `Character[]`, index 0 = `player_1`. It hashes the **full uuid** (the benches pass
   `9369a5c1-3c28-42ce-86a1-9d594dfa4804`; the 8-char prefix gives a different cast), and
   `CHARACTERS` keeps the kit's order because the shuffle depends on it.
-- The bundle manifest's `plush_scale` per character is not yet in `manifest.ts`; add it when the
-  shelf room is built (step 5).
+- The plush dolls (and their shadows and `PLUSH_SCALE`) are gone since 2026-09-28: the night
+  rooms hang photographs instead ("The night rooms", below); `convert-sprites.mjs` skips their
+  masters. Of the kits only the wolves' is still drawn (the replay night's rail, `RailInstrument`).
 - The station (the waiting room's platform, review 2026-09-26 §A5) has no masters in the bundle:
   its pictures exist only inlined in `claude_artifacts/design/pages/waiting-room.html`.
   `scripts/extract-station-sprites.mjs` pulls each out once, by the CSS rule that uses it, into
@@ -274,8 +275,9 @@ anything that shows state is drawn over the sprite in vector, never baked in.
     `#3a2212`), the shelf room's panels (veiled to `#3a2212`), cornice and the shelf's face
     (grain along the board: the new walnut replaced the old `wood/walnut.webp` tile there), the
     shutter's stiles, louvres (veiled), slats (the walnut under their highlight at 0.6) and
-    pelmet, and the bleed's strips of the car and the shelf room. The panel lines, dado, brass
-    rail and mouldings stay vector on top.
+    pelmet, and the bleed's strips of the car and the shelf room (the shelf room was replaced by
+    the painted night rooms on 2026-09-28). The panel lines, dado, brass rail and mouldings stay
+    vector on top.
   - **Boards** (`boards.webp`, 512², 64 KB): the master's eight planks were first rolled so a seam
     sits on row 0 (`-roll +0-91`) and evened out to 157 px each (each plank cropped between its
     seams, rows 0 158 318 478 641 796 959 1125 1254, resized to 0 157 314 470 627 784 941 1097
@@ -307,7 +309,7 @@ anything that shows state is drawn over the sprite in vector, never baked in.
     documented swaps (the pattern defs after the kit's first defs; the wall, dado, floor strip and
     trap fills; the dado's veil), as it does the window, clock and lantern.
 - The atmosphere's pictures (2026-09-27, §3 "Atmosphere"), made from the shipped WebPs, not
-  masters. Shadows, per day figure and state, per plush doll, and for the wall clock and the
+  masters. Shadows, per day figure and state, and for the wall clock and the
   (unlit) lamp: `convert <sprite> -alpha extract
   -resize x128 -bordercolor black -border 12 -blur 0x3 -background '#0c0704' -alpha shape
   -quality 80 -define webp:alpha-quality=70 -define webp:method=6` (`CastShadow` reads the 128
@@ -356,6 +358,65 @@ anything that shows state is drawn over the sprite in vector, never baked in.
     the circle. The hare is tighter and lower (its upright ear runs off), the polar bear smaller
     (its ears stay in), the onion's curl and the three-eyes' antenna run off the top.
   - `scripts/convert-sprites.mjs` skips the old `day` masters so it can never overwrite the cast.
+- **The night rooms** (2026-09-28, owner-approved): the acting seat's room and the pack's are the
+  owner's paintings of a walnut-and-brass sleeping compartment, the role's props painted in,
+  replacing the vector shelf room, the kits on its shelf and the plush dolls. Masters:
+  `claude_artifacts/design/rasters/rooms/{healer,invest,vigilante,serial_killer,wolf}.png`
+  (1536×1024, all to one plan: `refs/compartment-night.png`). `SPRITES.rooms[room]`, by the acting
+  seat's role (the request's kind when the role is unknown); the wolves' room is the pack's.
+  Plan and light: `paint/compartment.ts` (`ROOMS` holds every measure below, in master px).
+  - **Glass.** The vigilante's master has real alpha in its glass, kept. The other four have a
+    grey/white checkerboard painted in; converted with Pillow + scipy (a one-off script, not in the
+    repo): the glass's rounded rectangle is fitted to the checker (pale and neutral: min ≥ 180,
+    spread ≤ 10), grown 1.5 px into the brass's dark rim and feathered over 1.5 px; the objects
+    painted over it (the window's latch, the candles' flames, the healer's flowers, the
+    investigator's lamp shade, the wolves' red chimney) are what is not checker inside it
+    (opened, pieces over 60 px), carried out to the rim, plus anything they cut off from the
+    glass's open middle (a flame's pale core); their edge pulled in 1 px (2 on the chimney) and
+    softened; the checker's last pale pixels in the rim cleared too. The chimney's glass showed
+    the checker through it: smoothed away (a normalised Gaussian, σ 4, the flame kept). Glass
+    rects (x0–x1 × y0–y1, corner r, master px): healer 893–1340 × 253–529 r44; investigator
+    892–1339 × 251–528 r48; vigilante 875–1306 × 240–511 r46; serial killer 881–1331 × 241–514 r49;
+    wolves 891–1340 × 249–528 r49.
+  - **Crop.** Each 3:2 master is cut to the band 1536×915 from y 40 (the rack's rails to the
+    floor's gold border and past it) and shipped whole across: WebP quality 82, alpha 100,
+    method 6, 88–140 KB each (570 KB the five). On the stage the picture is 1512 units wide (the
+    room right of the live wing, 0.984 units a pixel), right-aligned to the world, so its 915 px
+    are 900.7 units and fill the height. With the side slot open it slides left, same scale,
+    until its glass ends at x 985 (the slot opens at 978): the window stays in view (its frame's
+    right edge under the slot), the photo line shortens to the part clear of the wing, the card
+    stays on the table left of the slot; on desktop the room's band below the rail runs on
+    under the drawer into the dark.
+  - **The bleed.** A painting cannot carry on past its edges: its last 300 units are mirrored past
+    each edge, under a darkening from 0.45 at the seam to the house's dark (`#0c0a07`) 170 units
+    out, then the house's dark to the bleed's end (and past the picture's right end when it has
+    slid left). A phone held sideways shows ~170 units of it a side, so the mirrored stretch
+    reads as the room's edge sinking into the theatre's dark, not as more room. On the left the
+    wing's own ground covers it (live and replay).
+  - **Behind the glass**: `FeltWindow` with the glass rect (grown 3 units under the frame), the
+    night's far and near felt (the near row looping, the snow; transform-only, still for reduced
+    motion), no blind's pull; the wolves' glass takes a red tint (`rgba(150,24,16,.28)`) so the
+    night outside sits in their lamp's light.
+  - **The candle and the card** (master px): candle flame healer 1248,522 · investigator
+    1233,518 · vigilante 1220,512 · serial killer 1369,468 (violet) · wolves 1265,522 (the red
+    lamp); the card's centre and foot on the table's clear spot left of it: 1075,628 · 1005,622 ·
+    1000,604 · 1010,625 · 1040,630. The card is 200 units tall (its type scaled from bench 70's
+    279), a contact shadow under it. The light's colour: amber, the killer's violet
+    (`226,170,255`), the wolves' red (`255,76,52`).
+  - **The photo line**, one for all five rooms (they agree): twine tied to the rack's lowest rail
+    at master x 280 and 835, y 128 (units 364–910 at y 87; its left end runs a little over the
+    hangings on the left walls), sagging 34 units. The photos keep to the part in view (clear of
+    the wing by 16, 10 in from each tie). Up to four: one row, each in its own stretch, up to 140
+    units wide (3 candidates: 140; 4: 118), while that keeps them at least 104. Otherwise k
+    heights (2, or 3 when 2 would fall under 104 with six or more): neighbours overlap across
+    the heights, prints at one height k pitches apart with 8 units between, each height a print
+    and 24 units below the last, up to 130 wide (5–6: 130, 7: 126, 8: 111, ~48 css px on an
+    iPhone 14, the lowest foot at y ~430). With the side slot open the line keeps x 104–478:
+    3: 112, 4–5: 130/119 at two heights, 6–8 at three (8: 107, ~46 css px). A print is 1.26 × its width: the portrait square (0.85 of the width,
+    `ChipSprite` so `HEAD_FRAME` frames it as in a circle) on a faded studio ground, toned warm
+    with an inner vignette, on a cream border yellowed at its edges; the numeral in IM Fell on
+    its foot; a wooden peg on its top edge; a box shadow down-right on the wall; tilted by a
+    fixed table per seat (±3.1°) about where it hangs.
 - **Never upscale.** No sprite atlases: HTTP/2 makes many small files cheap and an atlas adds
   tooling.
 - Preload the game's nine characters (four states + head) at the deal; `next/image` `priority`
@@ -365,7 +426,7 @@ anything that shows state is drawn over the sprite in vector, never baked in.
 
 Two kinds, by whether they carry state:
 
-- **Paint** — the dining car's panels, window frame, the shelf and brackets, the drape, the
+- **Paint** — the dining car's panels, window frame, the night rooms' photo line, the drape, the
   shutter's geometry, the station cloth. Pure functions of `(phase, units)`, no state, no
   children, no event handlers. **Ported as string generators** (the kits' style, typed) under
   `src/stage/paint/`, rendered by one memoised `<Paint html={…} />` per layer via
@@ -466,26 +527,31 @@ src/stage/
 ├── Atmosphere.tsx           # the key light, haze, shadows, vignette and grain (§3 "Atmosphere")
 ├── countdown.ts             # a prompt's `m:ss` and the share left (the dock, the ballot, the plate)
 ├── textures.ts              # the room's surface pictures by URL (WOOD, VELVET), for the paints
-├── paint/                   # string generators: diningCar, shelfRoom, station, window,
+├── paint/                   # string generators: diningCar, station, window,
 │                            #   shutter, drape, light — (phase, units) → svg string;
 │                            #   texture.ts: the surfaces' SVG patterns (veneer, boards, velvet);
 │                            #   bleed.ts: the room's two strips past the world's sides (§3);
 │                            #   station.ts: the platform (stationBack/Front, stationPlan);
 │                            #   atmosphere.ts: the key light by hour, the car's haze;
-│                            #   shelf-room.ts: the seat's room, its candle light (shelfLight)
-│                            #   and a choice's darkness (shelfChoice), gradients only
+│                            #   compartment.ts: the night rooms' plan (roomPlan: the painting,
+│                            #   its glass, candle, card and photo line, ROOMS), the twine
+│                            #   (photoTwine), the candle light (roomLight) and a choice's
+│                            #   darkness (roomChoice), gradients only
 ├── instruments/             # JSX: Stand, Plaque, Trap, Lift, Clock, WallClock, WallLamp, Shutter,
 │                            #   Bleed (the bleed's paint, under a room's own),
-│                            #   FeltWindow (the felt country behind the car's glass),
+│                            #   FeltWindow (the felt country behind the car's glass, and
+│                            #   behind the night rooms' cleared glass), Compartment (a night
+│                            #   room's painting, its window and its mirrored edges), Photo
+│                            #   (a seat's print on the line),
 │                            #   RoleCard, CardBack, SmallCard, Chip, String, WingTile, Wing,
 │                            #   VerdictBoard, ActMark, Sigil, Jar, VoteTable, Plate,
 │                            #   ActPlate (the night room's plate, with its countdown: the room
 │                            #   has no clock since 2026-09-27; CarriageClock is gone), Pin (the
-│                            #   pin in the chosen doll), ...
+│                            #   pin through the chosen photo), ...
 │                            #   (the jar's glass and lid, the stand's front, the table, the
 │                            #   wall clock and the wall lamp are painted rasters,
 │                            #   SPRITES.props: §4)
-├── cast/                    # Puppet, Plush, Kit (sprite + numeral overlay), castForGame,
+├── cast/                    # Puppet (sprite + numeral overlay), castForGame,
 │                            #   CastShadow (a figure's baked shadow on the wall),
 │                            #   ChipSprite + headRect (the head portrait, framed by HEAD_FRAME)
 ├── film/                    # Film (side slot), Note, Lessons, ReadCard, Brief, Ledger (epilogue)

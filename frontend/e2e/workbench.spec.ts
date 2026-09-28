@@ -101,22 +101,63 @@ test('the control strip writes the URL', async ({ page }) => {
  * The night rooms, drawn from the workbench's synthetic situations (`?beat=N` indexes the
  * scene's situation list in registry.ts): the healer on night 2 at rest, with seat 1 chosen,
  * and with the card open; the pack's vote on night 2 with the packmate's tooth on seat 4.
+ * Ready when every photo on the line has its portrait.
  */
-const NIGHT_SHOTS: [name: string, path: string, dolls: number][] = [
+const NIGHT_SHOTS: [name: string, path: string, photos: number][] = [
   ['room-healer-rest', 'room?beat=0', 8],
   ['room-healer-chosen', 'room?beat=1', 8],
   ['room-healer-card', 'room?beat=2', 8],
   ['pack-vote-mate-tooth', 'pack?beat=3', 7],
 ];
 
-for (const [name, path, dolls] of NIGHT_SHOTS) {
+for (const [name, path, photos] of NIGHT_SHOTS) {
   test(`night: ${name}`, async ({ page }) => {
     await page.goto(`/workbench/${path}&animate=0&strip=0`, { waitUntil: 'networkidle' });
-    await expect(page.locator('[data-layer="figures"] [data-seat] img')).toHaveCount(dolls);
+    await expect(page.locator('[data-layer="figures"] [data-seat] img')).toHaveCount(
+      photos,
+    );
     await settle(page);
     await expect(page).toHaveScreenshot(`${name}.png`);
   });
 }
+
+/**
+ * A tap on the empty room resets it (beat sheet §6, ruled 2026-09-28): it draws the pin out of
+ * an unsent choice and closes the card; a tap past the open card does the same; once the act
+ * is in, a tap only closes the card.
+ */
+test('night: a tap on the empty room clears an unsent choice and closes the card', async ({
+  page,
+}) => {
+  const pressed = page.locator('[data-seat][aria-pressed="true"]');
+  const card = page.locator('[data-overlay="card"]');
+  await page.goto('/workbench/room?beat=1&animate=0&strip=0', { waitUntil: 'networkidle' });
+  await expect(pressed).toHaveCount(1);
+  await page.mouse.click(300, 650);
+  await expect(pressed).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Choose a seat to protect' })).toBeVisible();
+
+  await page.goto('/workbench/room?beat=1&animate=0&strip=0', { waitUntil: 'networkidle' });
+  await page.locator('button[data-card]').click();
+  await page.getByRole('dialog').click(); // on the card: closes it, the choice stays
+  await expect(card).toHaveCount(0);
+  await expect(pressed).toHaveCount(1);
+  await page.locator('button[data-card]').click();
+  await page.mouse.click(1400, 450); // past the card
+  await expect(card).toHaveCount(0);
+  await expect(pressed).toHaveCount(0);
+
+  await page.goto('/workbench/room?beat=8&animate=0&strip=0', { waitUntil: 'networkidle' });
+  await page.locator('button[data-card]').click();
+  await page.mouse.click(1400, 450);
+  await expect(card).toHaveCount(0);
+  await expect(page.getByText('Seat 1 is protected tonight')).toBeVisible();
+
+  await page.goto('/workbench/pack?beat=4&animate=0&strip=0', { waitUntil: 'networkidle' });
+  await expect(pressed).toHaveCount(1);
+  await page.mouse.click(1000, 650);
+  await expect(pressed).toHaveCount(0);
+});
 
 /**
  * The trap scenes at rest: voting opens on day 3 (the table up, the jar empty, the lid lifted),

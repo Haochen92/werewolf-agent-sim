@@ -2,21 +2,21 @@
 
 /**
  * The backdrop bench: the paint generators on their own, with no scene over them. The dining
- * car at each hour, the shelf room, the shutter open or closed, the replay's drape, under
- * each HUD mode, and guide lines for the frozen HUD geometry, to check the numbers against a
- * bench by eye. Every option is in the URL:
+ * car at each hour, the healer's night compartment and its candle light, the shutter open or
+ * closed, the replay's drape, under each HUD mode, and guide lines for the frozen HUD geometry,
+ * to check the numbers against a bench by eye. Every option is in the URL:
  *
- *   /workbench/paint?phase=day|dusk|night|dawn&room=car|shelf&shutter=open|closed
+ *   /workbench/paint?phase=day|dusk|night|dawn&room=car|compartment&shutter=open|closed
  *                   &drape=0|1&hud=none|live|replay&guides=0|1&chosen=0..7&strip=0
  */
 import { Layer, Paint } from '@/stage/Stage';
+import { Compartment } from '@/stage/instruments/Compartment';
 import { FeltWindow } from '@/stage/instruments/FeltWindow';
 import { diningCar, diningCarPlan } from '@/stage/paint/dining-car';
 import { drape } from '@/stage/paint/drape';
 import { light } from '@/stage/paint/light';
 import { PHASES_IN_ORDER, type Phase } from '@/stage/paint/materials';
-import { DOLL_BODY_PER_WIDTH } from '@/stage/instruments/Plush';
-import { shelfChoice, shelfLight, shelfPlan, shelfRoom } from '@/stage/paint/shelf-room';
+import { roomChoice, roomLight } from '@/stage/paint/compartment';
 import { shutter, type ShutterState } from '@/stage/paint/window';
 import { geometry, HUD_CHROME, sideSlot, STAGE_W, type Hud } from '@/stage/units';
 import { Seg } from '@/stage/workbench/ControlStrip';
@@ -29,7 +29,7 @@ function readPaint(params: URLSearchParams) {
   const chosenRaw = params.get('chosen');
   return {
     phase: pick<Phase>(params.get('phase'), PHASES_IN_ORDER, 'day'),
-    room: pick(params.get('room'), ['car', 'shelf'] as const, 'car'),
+    room: pick(params.get('room'), ['car', 'compartment'] as const, 'car'),
     shutter: pick<ShutterState>(params.get('shutter'), ['open', 'closed'], 'open'),
     hud: pick<Hud>(params.get('hud'), ['none', 'live', 'replay'], 'live'),
     drape: params.get('drape') === '1',
@@ -85,7 +85,7 @@ export function PaintBench({ params }: { params: URLSearchParams }) {
             />
           </>
         ) : (
-          <Paint of={shelfRoom} opts={{ hud: o.hud, wood: WOOD }} />
+          <Compartment room="healer" hud={o.hud} />
         )}
       </Layer>
       <Layer name="light">
@@ -99,7 +99,7 @@ export function PaintBench({ params }: { params: URLSearchParams }) {
             }}
           />
         ) : (
-          <ShelfLight hud={o.hud} chosen={o.chosen} />
+          <RoomLight hud={o.hud} chosen={o.chosen} />
         )}
       </Layer>
       <Layer name="hud">
@@ -110,16 +110,15 @@ export function PaintBench({ params }: { params: URLSearchParams }) {
   );
 }
 
-/** The shelf room's candle light, and a chosen doll's over it (the dolls' default eight). */
-function ShelfLight({ hud, chosen }: { hud: Hud; chosen?: number }) {
-  const body = shelfPlan({ hud }).dollW * DOLL_BODY_PER_WIDTH;
+/** The compartment's candle light, and a chosen photo's over it (a full line of eight). */
+function RoomLight({ hud, chosen }: { hud: Hud; chosen?: number }) {
   return (
     <>
-      <Paint of={shelfLight} opts={{ hud, body }} />
+      <Paint of={roomLight} opts={{ room: 'healer', hud }} />
       {chosen == null ? null : (
         <div
           style={{ position: 'absolute', inset: 0 }}
-          dangerouslySetInnerHTML={{ __html: shelfChoice({ hud, body, chosen }) }}
+          dangerouslySetInnerHTML={{ __html: roomChoice({ room: 'healer', hud, chosen }) }}
         />
       )}
     </>
@@ -144,7 +143,7 @@ export function PaintControls({
       />
       <Seg
         label="room"
-        options={['car', 'shelf'] as const}
+        options={['car', 'compartment'] as const}
         value={o.room}
         onChange={(v) => set('room', v)}
       />

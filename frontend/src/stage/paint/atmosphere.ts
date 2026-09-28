@@ -10,7 +10,7 @@
  *
  * The car already draws a short cut-out shadow under the window (draw.ts `cutout`); this is the
  * longer, softer one the key light throws, masked by the window itself, so it only ever lies
- * on the wall. The shelf room has no such pieces and no lamp; its veil is a plain gradient.
+ * on the wall. The night compartments have no such pieces; their veil is a plain gradient.
  */
 import { BLEED, geometry, STAGE_H, STAGE_W, type Hud } from '../units';
 import { diningCarPlan } from './dining-car';

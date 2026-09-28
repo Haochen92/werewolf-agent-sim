@@ -18,7 +18,7 @@
  *
  * Ported from the waiting-room mockup (`claude_artifacts/design/pages/waiting-room.html`),
  * whose geometry is in container units of a 16:9 box: 1cqw = 16 units, 1cqh = 9 units here.
- * The pictures are passed in as URLs (`SPRITES.station.*`), as the shelf room takes its wood.
+ * The pictures are passed in as URLs (`SPRITES.station.*`), as the car takes its wood.
  */
 import { STAGE_H, STAGE_W, geometry, type Hud } from '../units';
 import { STATION } from './materials';

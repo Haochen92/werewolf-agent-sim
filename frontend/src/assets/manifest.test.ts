@@ -30,12 +30,18 @@ describe('sprite manifest', () => {
     }
   });
 
-  it('has a plush for every character, all eight kits and the wood', () => {
-    expect(Object.keys(SPRITES.plush).sort()).toEqual([...CHARACTERS].sort());
-    for (const character of CHARACTERS) hasSize(SPRITES.plush[character]);
+  it('has all eight kits and the wood', () => {
     expect(Object.keys(SPRITES.kits).sort()).toEqual([...KITS].sort());
     for (const kit of KITS) hasSize(SPRITES.kits[kit]);
     hasSize(SPRITES.wood);
+  });
+
+  it('has a night room for each acting role and the pack, cropped to the stage’s band', () => {
+    expect(Object.keys(SPRITES.rooms).sort()).toEqual(
+      ['healer', 'investigator', 'serial_killer', 'vigilante', 'wolf'].sort(),
+    );
+    for (const img of Object.values(SPRITES.rooms))
+      expect([img.width, img.height]).toEqual([1536, 915]);
   });
 
   it('has the room’s surface textures', () => {

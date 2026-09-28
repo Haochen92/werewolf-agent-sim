@@ -1,6 +1,6 @@
 /**
  * The brass plate at the foot of the night room: it names the act ("Protect seat 1", "Check
- * seat 4", "Shoot seat 2", "Kill seat 5") once a doll is chosen, and pressing it confirms.
+ * seat 4", "Shoot seat 2", "Kill seat 5") once a photo is chosen, and pressing it confirms.
  * Before a choice it asks ("Choose a seat to protect") and cannot be pressed. The vigilante's
  * plate has a second button, "Hold fire", because not shooting is an act too.
  *
@@ -12,7 +12,7 @@
  * the last ten seconds. The bar eases between the container's ticks; arrived at, it is still.
  *
  * Pressing it is the commit: the server takes one answer per seat and refuses a second. So
- * once a doll is chosen a quiet line over it says the choice can still change, and once the
+ * once a photo is chosen a quiet line over it says the choice can still change, and once the
  * act is in the plate is `sealed`: a label saying what was done, with nothing left to press.
  * A send that failed says why in that line, and the plate can be pressed again.
  */
@@ -35,7 +35,7 @@ export interface ActPlateProps {
   clock?: { remainingMs: number; totalMs: number } | null;
   /** Placed by its parent's layout instead (the waiting room's ledge). */
   inline?: boolean;
-  /** A quiet line over the plate ("tap another doll to change"). */
+  /** A quiet line over the plate ("tap another photo to change"). */
   note?: string;
   /** What went wrong with the last press, over the plate in place of the note. */
   error?: string | null;

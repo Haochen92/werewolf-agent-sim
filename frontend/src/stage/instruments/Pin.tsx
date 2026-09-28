@@ -1,15 +1,15 @@
 'use client';
 
 /**
- * The pin in the chosen doll: the night room's one mark of choosing, a dressmaker's pin pushed
- * in at an angle, its round head in the colour of the acting side (the card's colour: amber for
- * the town's roles, red for the pack, violet for the killer). Vector, over the doll's picture,
- * so the doll itself stays exactly as drawn.
+ * The pin in the chosen photo: the night room's one mark of choosing, a dressmaker's pin pushed
+ * through it at an angle, its round head in the colour of the acting side (the card's colour:
+ * amber for the town's roles, red for the pack, violet for the killer). Vector, over the photo,
+ * so the print itself stays exactly as it is.
  *
  * A tapped choice pushes it in along its own line; a choice the room arrives at is simply
  * there. Un-choosing draws it back out. Once the act is sent it goes fully `home`, a short
  * last push. Its parent (NightRoom) keeps it in an AnimatePresence that starts still, so only
- * a change made in the room plays. Past where it enters, the shaft is hidden: it is in the felt.
+ * a change made in the room plays. Past where it enters, the shaft is hidden: it is in the wall.
  */
 import { useId } from 'react';
 import { motion } from 'motion/react';
@@ -36,13 +36,15 @@ export function pinColour(role: string): string {
 export interface PinProps {
   /** The acting role: the head's colour. */
   role: string;
-  /** The doll's width in units: the pin is sized to it. */
+  /** The photo's width in units: the pin is sized to it. */
   w: number;
+  /** Where it goes in, as percentages across and down the photo. */
+  at?: readonly [number, number];
   /** The act is sent: pushed fully home. */
   home?: boolean;
 }
 
-export function Pin({ role, w, home = false }: PinProps) {
+export function Pin({ role, w, at = [62, 40], home = false }: PinProps) {
   const k = useMotionScale();
   const clip = 'pin' + useId().replace(/[^A-Za-z0-9_-]/g, '');
   const a = (ANGLE * Math.PI) / 180,
@@ -57,7 +59,11 @@ export function Pin({ role, w, home = false }: PinProps) {
   const head = pinColour(role);
   const box = L + r * 2;
   return (
-    <span className={styles.pin} data-pin={role}>
+    <span
+      className={styles.pin}
+      data-pin={role}
+      style={{ left: `${at[0]}%`, top: `${at[1]}%` }}
+    >
       <svg
         aria-hidden="true"
         viewBox={`${-box} ${-box} ${2 * box} ${2 * box}`}
@@ -71,7 +77,7 @@ export function Pin({ role, w, home = false }: PinProps) {
         }}
       >
         <defs>
-          {/* the side of the entry the pin shows on; past it the shaft is inside the doll */}
+          {/* the side of the entry the pin shows on; past it the shaft is in the wall */}
           <clipPath id={clip}>
             <rect
               x={0}
@@ -82,7 +88,7 @@ export function Pin({ role, w, home = false }: PinProps) {
             />
           </clipPath>
         </defs>
-        {/* where it went in: a small dent in the felt */}
+        {/* where it went in: a small dent in the print */}
         <ellipse cx={0} cy={0} rx={r * 0.5} ry={r * 0.32} fill="#1a100a" opacity={0.45} />
         <g clipPath={`url(#${clip})`}>
           <motion.g

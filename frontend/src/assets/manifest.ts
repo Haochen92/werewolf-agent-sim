@@ -79,17 +79,6 @@ import shadeTalking from './sprites/day/shade/talking.webp';
 import shadeThinking from './sprites/day/shade/thinking.webp';
 import shadeOut from './sprites/day/shade/out.webp';
 import shadeHead from './sprites/day/shade/head.webp';
-import owlPlush from './sprites/plush/owl.webp';
-import harePlush from './sprites/plush/hare.webp';
-import catPlush from './sprites/plush/cat.webp';
-import badgerPlush from './sprites/plush/badger.webp';
-import cyclopsPlush from './sprites/plush/cyclops.webp';
-import threeEyesPlush from './sprites/plush/threeEyes.webp';
-import dragonPlush from './sprites/plush/dragon.webp';
-import onionPlush from './sprites/plush/onion.webp';
-import whalePlush from './sprites/plush/whale.webp';
-import polarBearPlush from './sprites/plush/polarBear.webp';
-import shadePlush from './sprites/plush/shade.webp';
 import healerKit from './sprites/kits/healer.webp';
 import investigatorKit from './sprites/kits/investigator.webp';
 import vigilanteKit from './sprites/kits/vigilante.webp';
@@ -120,6 +109,11 @@ import propVoteTable from './sprites/props/vote-table.webp';
 import propWallClock from './sprites/props/wall-clock.webp';
 import propWallLampUnlit from './sprites/props/wall-lamp-unlit.webp';
 import propWallLampLit from './sprites/props/wall-lamp-lit.webp';
+import roomHealer from './sprites/rooms/healer.webp';
+import roomInvestigator from './sprites/rooms/investigator.webp';
+import roomVigilante from './sprites/rooms/vigilante.webp';
+import roomSerialKiller from './sprites/rooms/serial_killer.webp';
+import roomWolf from './sprites/rooms/wolf.webp';
 import wallClockShadow from './sprites/shadow/wall-clock.webp';
 import wallLampShadow from './sprites/shadow/wall-lamp.webp';
 import owlBaseShadow from './sprites/shadow/day/owl/base.webp';
@@ -166,17 +160,6 @@ import shadeBaseShadow from './sprites/shadow/day/shade/base.webp';
 import shadeTalkingShadow from './sprites/shadow/day/shade/talking.webp';
 import shadeThinkingShadow from './sprites/shadow/day/shade/thinking.webp';
 import shadeOutShadow from './sprites/shadow/day/shade/out.webp';
-import owlPlushShadow from './sprites/shadow/plush/owl.webp';
-import harePlushShadow from './sprites/shadow/plush/hare.webp';
-import catPlushShadow from './sprites/shadow/plush/cat.webp';
-import badgerPlushShadow from './sprites/shadow/plush/badger.webp';
-import cyclopsPlushShadow from './sprites/shadow/plush/cyclops.webp';
-import threeEyesPlushShadow from './sprites/shadow/plush/threeEyes.webp';
-import dragonPlushShadow from './sprites/shadow/plush/dragon.webp';
-import onionPlushShadow from './sprites/shadow/plush/onion.webp';
-import whalePlushShadow from './sprites/shadow/plush/whale.webp';
-import polarBearPlushShadow from './sprites/shadow/plush/polarBear.webp';
-import shadePlushShadow from './sprites/shadow/plush/shade.webp';
 import grain from './sprites/atmosphere/grain.webp';
 import textureWalnut from './sprites/textures/walnut.webp';
 import textureBoards from './sprites/textures/boards.webp';
@@ -291,10 +274,17 @@ export type PropPicture =
   | 'wallLampUnlit'
   | 'wallLampLit';
 
+/**
+ * The night rooms (opaque but for the window's glass): the acting seat's sleeping compartment by
+ * role, and the pack's. Cropped to the stage's band, the glass cleared. Recipe: stage_architecture §4.
+ */
+export type RoomPicture =
+  'healer' | 'investigator' | 'vigilante' | 'serial_killer' | 'wolf';
+
 /*
- * The atmosphere's pictures (stage_architecture §4 "Atmosphere"): each day figure's and plush
- * doll's cast shadow, its silhouette baked small and soft (a 12 px margin round 128 px tall),
- * and the film grain, a 160 px tile of noise.
+ * The atmosphere's pictures (stage_architecture §4 "Atmosphere"): each day figure's cast
+ * shadow, its silhouette baked small and soft (a 12 px margin round 128 px tall), and the film
+ * grain, a 160 px tile of noise.
  */
 
 /**
@@ -305,15 +295,14 @@ export type TexturePicture = 'walnut' | 'boards' | 'velvet';
 
 export const SPRITES: {
   day: Record<Character, Record<DayState | 'head', StaticImageData>>;
-  plush: Record<Character, StaticImageData>;
   kits: Record<KitName, StaticImageData>;
   wood: StaticImageData;
   station: Record<StationPicture, StaticImageData>;
   window: Record<WindowHour, Record<WindowPicture, StaticImageData>>;
   props: Record<PropPicture, StaticImageData>;
+  rooms: Record<RoomPicture, StaticImageData>;
   shadow: {
     day: Record<Character, Record<DayState, StaticImageData>>;
-    plush: Record<Character, StaticImageData>;
     wall: { clock: StaticImageData; lamp: StaticImageData };
   };
   grain: StaticImageData;
@@ -398,19 +387,6 @@ export const SPRITES: {
       head: shadeHead,
     },
   },
-  plush: {
-    owl: owlPlush,
-    hare: harePlush,
-    cat: catPlush,
-    badger: badgerPlush,
-    cyclops: cyclopsPlush,
-    threeEyes: threeEyesPlush,
-    dragon: dragonPlush,
-    onion: onionPlush,
-    whale: whalePlush,
-    polarBear: polarBearPlush,
-    shade: shadePlush,
-  },
   kits: {
     healer: healerKit,
     investigator: investigatorKit,
@@ -444,6 +420,13 @@ export const SPRITES: {
     wallClock: propWallClock,
     wallLampUnlit: propWallLampUnlit,
     wallLampLit: propWallLampLit,
+  },
+  rooms: {
+    healer: roomHealer,
+    investigator: roomInvestigator,
+    vigilante: roomVigilante,
+    serial_killer: roomSerialKiller,
+    wolf: roomWolf,
   },
   shadow: {
     day: {
@@ -514,19 +497,6 @@ export const SPRITES: {
         out: shadeOutShadow,
       },
     },
-    plush: {
-      owl: owlPlushShadow,
-      hare: harePlushShadow,
-      cat: catPlushShadow,
-      badger: badgerPlushShadow,
-      cyclops: cyclopsPlushShadow,
-      threeEyes: threeEyesPlushShadow,
-      dragon: dragonPlushShadow,
-      onion: onionPlushShadow,
-      whale: whalePlushShadow,
-      polarBear: polarBearPlushShadow,
-      shade: shadePlushShadow,
-    },
     wall: { clock: wallClockShadow, lamp: wallLampShadow },
   },
   grain,
@@ -592,25 +562,4 @@ export const HEAD_FRAME: Record<Character, { s: number; x: number; y: number }> 
   // drawn smaller so the ears stay in
   polarBear: { s: 1.0, x: 0, y: 0 },
   shade: { s: 1.35, x: -0.01, y: -0.16 },
-};
-
-/**
- * How much larger or smaller to draw each plush doll so every doll has the same head-to-toe
- * height on its hook (ears, hats and antennae rise above; three-eyes' antennae are the reason
- * its number is the largest). The sprites are all cut to one image height, so without this a
- * doll with tall ears would hang with a smaller body. Copied from the bundle's
- * sprites-manifest.json (`plush_scale`); re-copy it if the plush masters are re-exported.
- */
-export const PLUSH_SCALE: Record<Character, number> = {
-  owl: 1.011,
-  hare: 1.043,
-  cat: 0.98,
-  badger: 1.014,
-  cyclops: 0.974,
-  threeEyes: 1.163,
-  dragon: 0.946,
-  onion: 1.027,
-  whale: 1.0,
-  polarBear: 0.964,
-  shade: 0.994,
 };

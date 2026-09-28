@@ -1,41 +1,161 @@
-/* The night room's objects, as the shelf bench (rev 70) and the pack bench (rev 71) draw them.
-   Every size is in units (1cqw on the benches = 16 units here). */
+/* The night room's objects: the photos on their line, the card on the table, the plate, as the
+   shelf bench (rev 70) and the pack bench (rev 71) drew them, moved into the painted rooms
+   (2026-09-28). Every size is in units (1cqw on the benches = 16 units here). */
 
-/* ---- the plush dolls on their hooks ---- */
-.plush {
+/* ---- the painted room (Compartment.tsx) ---- */
+.room,
+.mirror,
+.house {
+  position: absolute;
+  top: 0;
+  pointer-events: none;
+}
+.room img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+/* the empty room under everything you can tap (NightRoom's `onEmpty`): a tap on it resets the
+   room; it covers the bleed past the sides too */
+.emptyTap {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(-1 * var(--bleed));
+  right: calc(-1 * var(--bleed));
+}
+/* the painting's last stretch, mirrored past its edge, sinking into the house's dark */
+.mirror {
+  overflow: hidden;
+}
+.mirror img {
+  position: absolute;
+  top: 0;
+  max-width: none;
+  transform: scaleX(-1);
+}
+.mirror i,
+.house {
+  position: absolute;
+  inset: 0;
+}
+.house {
+  background: #0c0a07;
+}
+
+/* ---- the photos on their line ---- */
+.photo {
   position: absolute;
   padding: 0;
   border: 0;
   background: none;
   cursor: default;
-  filter: drop-shadow(0 6.4px 9.6px rgba(0, 0, 0, 0.5));
+  overflow: visible;
 }
-button.plush {
+button.photo {
   cursor: pointer;
 }
-button.plush:focus-visible {
+button.photo:focus-visible {
   outline: 2px solid var(--amber);
-  outline-offset: 4px;
-  border-radius: 12px;
+  outline-offset: 6px;
+  border-radius: 4px;
 }
-.plush img {
+.hang {
+  position: absolute;
+  inset: 0;
   display: block;
-  /* over the cast shadow (Plush.tsx), which is positioned */
-  position: relative;
-  width: 100%;
-  height: 100%;
+}
+/* the print: a cream border yellowed at its edges, its shadow on the wall down and to the right */
+.print {
+  position: absolute;
+  inset: 0;
+  display: block;
+  border-radius: 1.6px;
+  background:
+    radial-gradient(
+      ellipse at 50% 45%,
+      rgba(255, 250, 238, 0) 55%,
+      rgba(150, 110, 60, 0.28) 100%
+    ),
+    #ece2c8;
+  box-shadow:
+    inset 0 0 0 0.8px rgba(90, 60, 30, 0.35),
+    3px 5px 7px rgba(8, 5, 3, 0.55);
+}
+/* the picture: square, inset in the border, on a faded studio ground, toned a little with age */
+.picture {
+  position: absolute;
+  left: 7.5%;
+  right: 7.5%;
+  top: 6%;
+  aspect-ratio: 1;
+  display: block;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 40%, #8a8378, #4d463d);
+}
+.picture::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(150, 100, 40, 0.14);
+  box-shadow: inset 0 0 6px rgba(40, 25, 10, 0.55);
   pointer-events: none;
 }
-.numeral {
+/* the seat written on the border's foot, in ink */
+.photoNumeral {
+  position: absolute;
+  left: 10%;
+  width: 80%;
+  bottom: 2%;
+  height: 22%;
+  overflow: visible;
+  pointer-events: none;
+}
+.photoNumeral text {
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+}
+.glow {
+  position: absolute;
+  inset: 0;
+  display: block;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse at 40% 35%,
+    rgba(255, 222, 170, 0.26),
+    rgba(255, 200, 130, 0.1) 70%
+  );
+  box-shadow: 0 0 18px 4px rgba(255, 190, 110, 0.28);
+  pointer-events: none;
+}
+.dim {
+  position: absolute;
+  inset: 0;
+  display: block;
+  border-radius: inherit;
+  background: #0a0604;
+  pointer-events: none;
+}
+.peg,
+.string {
   position: absolute;
   overflow: visible;
   pointer-events: none;
 }
-.numeral text {
-  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+.string {
+  left: calc(50% - 2px);
+  width: 4px;
+}
+/* the marks over a photo (the teeth): half as large again as on a doll, on the picture's lower half */
+.bite {
+  position: absolute;
+  left: -25%;
+  top: 12%;
+  width: 150%;
+  height: 150%;
+  pointer-events: none;
 }
 
-/* ---- the tooth: one pack vote landing on a doll ---- */
+/* ---- the tooth: one pack vote landing on a photo ---- */
 .tooth {
   position: absolute;
   left: 0;
@@ -46,14 +166,7 @@ button.plush:focus-visible {
   overflow: visible;
 }
 
-/* ---- the kit on the shelf ---- */
-.kit {
-  position: absolute;
-  /* its shadow on the wall behind, down and to the right as the room's others fall (still, small) */
-  filter: drop-shadow(6px 5px 7px rgba(12, 7, 4, 0.5));
-  pointer-events: none;
-}
-/* where the card and the kit meet the shelf's top: a soft dark ellipse, a touch right */
+/* where the card meets the table: a soft dark ellipse, a touch right */
 .contact {
   position: absolute;
   pointer-events: none;
@@ -64,32 +177,16 @@ button.plush:focus-visible {
     rgba(12, 7, 4, 0)
   );
 }
-.kit img {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-/* under the kit, on the shelf's edge: the vigilante's caps left (centred on the kit) */
-.kitNote {
-  position: absolute;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  pointer-events: none;
-}
-
-/* the pin in the chosen doll: a zero box at its chest, under the collar, right of the numeral */
+/* the pin in the chosen photo: a zero box on the picture, placed by Pin's `at` */
 .pin {
   position: absolute;
-  left: 74%;
-  top: 60%;
   width: 0;
   height: 0;
   overflow: visible;
   pointer-events: none;
 }
 
-/* ---- the framed card at the shelf's left end ---- */
+/* ---- the framed card on the table ---- */
 .framed {
   position: absolute;
   padding: 0;
@@ -173,6 +270,15 @@ button.plush:focus-visible {
   line-height: 1.3;
   margin: calc(4 * var(--u)) 0 calc(10 * var(--u));
   color: #3a2a1a;
+}
+/* the vigilante's caps left, under the night line */
+.framedCount {
+  font-family: var(--font-stage-sans, Outfit), system-ui, sans-serif;
+  font-size: calc(13.5 * var(--u));
+  font-weight: 600;
+  line-height: 1.2;
+  margin: calc(-6 * var(--u)) 0 calc(10 * var(--u));
+  color: var(--ink);
 }
 .framed em {
   position: absolute;
@@ -264,13 +370,6 @@ button.plush:focus-visible {
   width: 72%;
   min-height: 34%;
 }
-.cardLine {
-  font-size: calc(19 * var(--u));
-  font-style: italic;
-  line-height: 1.25;
-  margin: calc(8 * var(--u)) 0 calc(4 * var(--u));
-  white-space: pre-line;
-}
 .cardNight {
   font-family: var(--font-stage-sans, Outfit), system-ui, sans-serif;
   font-size: calc(15 * var(--u));
@@ -280,6 +379,15 @@ button.plush:focus-visible {
 }
 .cardNight b {
   font-weight: 600;
+  color: var(--ink);
+}
+/* the vigilante's caps left, under the night text */
+.cardCount {
+  font-family: var(--font-stage-sans, Outfit), system-ui, sans-serif;
+  font-size: calc(15 * var(--u));
+  font-weight: 600;
+  line-height: 1.35;
+  margin: calc(6 * var(--u)) 0 0;
   color: var(--ink);
 }
 .cardFoot {

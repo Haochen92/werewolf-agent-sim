@@ -7,36 +7,35 @@
  *
  * Each strip starts as dark as the room is at its own edge, so the seam never shows: the
  * dining car fades its wall and apron into the dark at both ends (the kit's `qfade`, the
- * Apron's fade), so its strips start there and are near-black; the shelf room runs its
- * panelling at full strength to the edge, so its strips start at full strength; the station
- * darkens its own sides (station.ts, `stationFront`), so its strips start near that dark.
+ * Apron's fade), so its strips start there and are near-black; the station darkens its own
+ * sides (station.ts, `stationFront`), so its strips start near that dark. The night rooms are
+ * paintings and carry their own edges (instruments/Compartment.tsx).
  *
  * The car's back flat is re-drawn here from its materials, not by calling the car: the car is
  * held byte-for-byte to the design kit (paint.test.ts), so it cannot be split into parts.
- * Given `wood`, the strips take the rooms' textures, laid on the same world grid as the rooms'
- * own (paint/texture.ts), so the grain runs on across the seam.
+ * Given `wood`, the car's strips take its textures, laid on the same world grid as its own
+ * (paint/texture.ts), so the grain runs on across the seam.
  */
 import { BLEED, BLEED_DARK, STAGE_H, STAGE_W, geometry, type Hud } from '../units';
 import { K2 } from './draw';
 import { BOARD, BOARD2, CAR, ROOMLIGHT, STATION, type Phase } from './materials';
-import { panelling, shelfTextures } from './shelf-room';
 import { boards, DARKER, veneer, walnutAcross, walnutImage, type Wood } from './texture';
 import { carLines } from './window';
 
 export interface BleedOpts {
   /** Prefix for every id this drawing makes, so two stages can share a page. */
   id: string;
-  /** Which room carries on: the dining car, the night's shelf room, or the waiting room's platform. */
-  room: 'car' | 'shelf' | 'station';
+  /** Which room carries on: the dining car or the waiting room's platform. */
+  room: 'car' | 'station';
   /** The car's hour: its tint falls on the strips as it falls on the walls. */
   phase?: Phase;
   hud?: Hud;
-  /** The rooms' walnut and boards (the car and the shelf room); without them, flat. */
+  /** The car's walnut and boards; without them, flat. */
   wood?: Wood;
 }
 
 /** How dark each room already is at the world's edge, where its strips start. */
-const EDGE: Record<BleedOpts['room'], number> = { car: 0.95, shelf: 0, station: 0.85 };
+const EDGE: Record<BleedOpts['room'], number> = { car: 0.95, station: 0.85 };
 
 /* the car's textures, as the car (dining-car.ts) and the Floor instrument lay them */
 function carTextures(P: string, wood: Wood, hud: Hud): string {
@@ -100,16 +99,7 @@ export function bleed(o: BleedOpts): string {
     const T = o.wood ? P : null;
     if (o.wood) d += carTextures(P, o.wood, hud);
     d += car(-b, 0, o.phase ?? 'day', hud, T) + car(W, W + b, o.phase ?? 'day', hud, T);
-  } else if (o.room === 'station') d = station(-b, 0) + station(W, W + b);
-  else {
-    // the shelf room's panels, in step with the room's seven between the wing and the edge
-    const x0 = geometry(hud).wingN,
-      pw = (W - x0) / 7,
-      n = Math.ceil(b / pw),
-      T = o.wood ? P : undefined;
-    if (o.wood) d += shelfTextures(P, o.wood, x0, pw);
-    d += panelling(x0 - n * pw, x0, n, pw, T) + panelling(W, W + n * pw, n, pw, T);
-  }
+  } else d = station(-b, 0) + station(W, W + b);
   // the darkening: from the room's own edge value at the seam to the house's dark
   const at = (x: number) => ((x + b) / (W + 2 * b)).toFixed(4);
   const stop = (x: number, a: number) =>

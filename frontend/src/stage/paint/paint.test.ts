@@ -7,12 +7,13 @@ import { diningCar, diningCarPlan } from './dining-car';
 import { drape } from './drape';
 import { light } from './light';
 import { PHASES_IN_ORDER } from './materials';
-import { shelfChoice, shelfLight, shelfPlan, shelfRoom } from './shelf-room';
+import { photoTwine, roomChoice, roomLight, roomPlan, ROOMS } from './compartment';
 import { stationBack, stationFront, stationPlan } from './station';
 import { boards, DARKER, veneer, walnutAcross, walnutImage } from './texture';
 import { carLines, shutter } from './window';
 
 const HUDS: Hud[] = ['none', 'live', 'replay'];
+const ROOM_NAMES = Object.keys(ROOMS) as (keyof typeof ROOMS)[];
 const WOOD = { walnut: '/walnut.webp', boards: '/boards.webp' };
 
 const idsOf = (html: string) => [...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
@@ -54,24 +55,18 @@ const CASES: [string, (id: string) => string][] = [
         (id: string) => shutter({ id, state, walnut: '/walnut.webp' }),
       ] as [string, (id: string) => string],
   ),
-  ...HUDS.flatMap((hud) => [
-    [`shelfRoom ${hud}`, (id: string) => shelfRoom({ id, hud })] as [
-      string,
-      (id: string) => string,
-    ],
-    [`shelfRoom ${hud} wood`, (id: string) => shelfRoom({ id, hud, wood: WOOD })] as [
-      string,
-      (id: string) => string,
-    ],
-    [`shelfLight ${hud}`, (id: string) => shelfLight({ id, hud, body: 150 })] as [
-      string,
-      (id: string) => string,
-    ],
-    [
-      `shelfLight ${hud} flame`,
-      (id: string) => shelfLight({ id, hud, body: 150, flame: { x: 1300, y: 250 } }),
-    ] as [string, (id: string) => string],
-  ]),
+  ...ROOM_NAMES.flatMap((room) =>
+    HUDS.flatMap((hud) =>
+      [false, true].map(
+        (side) =>
+          [
+            `roomLight ${room} ${hud}${side ? ' side' : ''}`,
+            (id: string) => roomLight({ id, room, hud, side, n: 8 }),
+          ] as [string, (id: string) => string],
+      ),
+    ),
+  ),
+  ['photoTwine', (id: string) => photoTwine({ id, room: 'healer' })],
   ...PHASES_IN_ORDER.flatMap((phase) =>
     (['over', 'stand'] as const).map(
       (from) =>
@@ -104,20 +99,10 @@ const CASES: [string, (id: string) => string][] = [
         ] as [string, (id: string) => string],
     ),
   ),
-  ...HUDS.map(
-    (hud) =>
-      [`bleed shelf ${hud}`, (id: string) => bleed({ id, room: 'shelf', hud })] as [
-        string,
-        (id: string) => string,
-      ],
-  ),
-  ...(['car', 'shelf'] as const).map(
-    (room) =>
-      [
-        `bleed ${room} wood`,
-        (id: string) => bleed({ id, room, phase: 'dusk', wood: WOOD }),
-      ] as [string, (id: string) => string],
-  ),
+  [
+    'bleed car wood',
+    (id: string) => bleed({ id, room: 'car', phase: 'dusk', wood: WOOD }),
+  ] as [string, (id: string) => string],
   ...HUDS.flatMap((hud) => [
     [`bleed station ${hud}`, (id: string) => bleed({ id, room: 'station', hud })] as [
       string,
@@ -145,7 +130,7 @@ const CASES: [string, (id: string) => string][] = [
     ],
   ]),
   ['light bleed', (id: string) => light({ id, bleed: BLEED })],
-  ['shelfLight bleed', (id: string) => shelfLight({ id, body: 150, bleed: BLEED })],
+  ['roomLight bleed', (id: string) => roomLight({ id, room: 'wolf', bleed: BLEED })],
 ];
 
 describe.each(CASES)('%s', (_label, draw) => {
@@ -280,26 +265,26 @@ describe('fidelity to kits/stage-kit.js', () => {
 /* The bleed: two strips past the world's sides, darkening outwards to the house's dark. */
 describe('bleed', () => {
   const car = bleed({ id: 'stA', room: 'car', phase: 'night', hud: 'live' });
-  const shelf = bleed({ id: 'stA', room: 'shelf', hud: 'live' });
+  const station = bleed({ id: 'stA', room: 'station', hud: 'live' });
 
   it('draws both strips, outside the world and nowhere in it', () => {
-    for (const html of [car, shelf]) {
+    for (const html of [car, station]) {
       expect(html).toContain(`<rect x="${-BLEED}" y="0" width="${BLEED}"`);
       expect(html).toContain(`<rect x="${STAGE_W}" y="0" width="${BLEED}"`);
     }
   });
 
   it('darkens to the house’s dark, from the room’s own edge value', () => {
-    for (const html of [car, shelf]) {
+    for (const html of [car, station]) {
       expect(html).toMatch(
         /<linearGradient id="stA-bdark"[^>]*gradientUnits="userSpaceOnUse"/,
       );
       expect(html).toContain('stop-color="#0c0a07" stop-opacity="1"');
       expect(html).toContain('fill="url(#stA-bdark)"');
     }
-    // the car fades its own ends to near-black, so its strips start there; the shelf does not
+    // each starts from how dark the room already is at its edge
     expect(car).toContain('stop-opacity="0.95"');
-    expect(shelf).toContain('stop-opacity="0"');
+    expect(station).toContain('stop-opacity="0.85"');
   });
 
   it('takes the hour’s tint on the car, none by day', () => {
@@ -310,43 +295,67 @@ describe('bleed', () => {
   it('leaves the light and the drape as they were without it', () => {
     expect(light({ id: 'k', bleed: 0 })).toBe(light({ id: 'k' }));
     expect(drape({ id: 'k' })).toBe(drape());
-    expect(shelfLight({ id: 'k', body: 150, bleed: 0 })).toBe(
-      shelfLight({ id: 'k', body: 150 }),
+    expect(roomLight({ id: 'k', room: 'healer', bleed: 0 })).toBe(
+      roomLight({ id: 'k', room: 'healer' }),
     );
-    expect(shelfChoice({ body: 150, chosen: 2, bleed: 0 })).toBe(
-      shelfChoice({ body: 150, chosen: 2 }),
+    expect(roomChoice({ room: 'healer', chosen: 2, bleed: 0 })).toBe(
+      roomChoice({ room: 'healer', chosen: 2 }),
     );
   });
 });
 
-/* The seat's own room at night: two things on the shelf, dolls on twine, a candle's light. */
-describe('the shelf room', () => {
-  it('stands the card and the kit on the shelf’s top face, a quarter in from each end', () => {
-    for (const hud of HUDS)
+/* The seat's own room at night: a painted compartment, photos on a line, the card on the table. */
+describe('the night rooms', () => {
+  it('lays the painting across the room right of the wing, and slides it left for the slot', () => {
+    for (const room of ROOM_NAMES) {
+      const full = roomPlan({ room });
+      expect(full.picture.x + full.picture.w).toBeCloseTo(STAGE_W, 6);
+      expect(full.picture.h).toBeGreaterThanOrEqual(900);
+      // the slot opens at x 978: the window's glass ends at its edge, the wall stays in view
+      const side = roomPlan({ room, side: true });
+      expect(side.glass.x + side.glass.w).toBeLessThan(992);
+      expect(side.glass.x).toBeGreaterThan(geometry('live').wingN);
+    }
+  });
+
+  it('hangs every photo on the wall in view, clear of the wing and left of the window', () => {
+    for (const room of ROOM_NAMES)
+      for (const side of [false, true])
+        for (const n of [3, 5, 8]) {
+          const R = roomPlan({ room, side, n });
+          expect(R.photos).toHaveLength(n);
+          for (const p of R.photos) {
+            expect(p.x - R.photo.w / 2).toBeGreaterThan(geometry('live').wingN);
+            expect(p.x + R.photo.w / 2).toBeLessThan(R.glass.x);
+            expect(p.drop).toBeGreaterThan(0);
+          }
+          // two heights (three with the slot open) for a full line, one row for a short one
+          expect(new Set(R.photos.map((p) => p.row)).size).toBe(
+            n <= 4 ? 1 : side && n === 8 ? 3 : 2,
+          );
+        }
+  });
+
+  it('stands the card on the table below the glass, left of the candle', () => {
+    for (const room of ROOM_NAMES)
       for (const side of [false, true]) {
-        const S = shelfPlan({ hud, side });
-        expect(S.foot).toBeGreaterThan(S.top - S.depth);
-        expect(S.foot).toBeLessThan(S.top);
-        expect(S.cardX - S.x0).toBeCloseTo(S.x1 - S.kitX, 6);
+        const R = roomPlan({ room, side });
+        expect(R.card.foot).toBeGreaterThan(R.glass.y + R.glass.h);
+        expect(R.card.x + R.card.w / 2).toBeLessThan(R.candle.x);
       }
   });
 
-  it('hangs the dolls on dark twine from plain nails: nothing brass or pale under the shelf', () => {
-    const html = shelfRoom({ id: 'k', hooks: 8 });
-    expect(html).not.toContain('#d9c9a0');
-    expect(html.match(/<circle [^>]*fill="#120b07"/g)).toHaveLength(8);
-  });
-
   it('lights with gradients alone: no filter and no blend mode', () => {
-    const lit = shelfLight({ id: 'k', body: 150 }) + shelfChoice({ body: 150, chosen: 2 });
-    expect(lit).not.toContain('filter');
-    expect(lit).not.toContain('mix-blend-mode');
+    for (const room of ROOM_NAMES) {
+      const lit = roomLight({ id: 'k', room }) + roomChoice({ room, chosen: 2 });
+      expect(lit).not.toContain('filter');
+      expect(lit).not.toContain('mix-blend-mode');
+    }
   });
 
-  it('darkens only below the shelf for a choice, and nothing for a nail that is not there', () => {
-    const S = shelfPlan();
-    expect(shelfChoice({ body: 150, chosen: 2 })).toContain(`top:${S.cut.toFixed(0)}px`);
-    expect(shelfChoice({ body: 150, chosen: 99 })).toBe('');
+  it('leaves the table lit on a choice, and draws nothing for a photo that is not there', () => {
+    expect(roomChoice({ room: 'healer', chosen: 2 })).toContain('mask-image');
+    expect(roomChoice({ room: 'healer', chosen: 99 })).toBe('');
   });
 });
 

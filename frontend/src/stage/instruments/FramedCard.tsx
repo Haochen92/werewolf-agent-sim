@@ -1,11 +1,13 @@
 'use client';
 
 /**
- * Your role card, standing in a brass-edged frame at the left end of the shelf, and the same
+ * Your role card, standing in a brass-edged frame on the table by the candle, and the same
  * card opened full size over the room when you tap it. At night the card is the one reminder
  * of who you are and what your act does, so it stands where your eye starts: name, sigil,
  * the role's felt figure and the night line. Tapped open it reads in full (name, sigil, the
- * figure, the front line, what you do at night), and a tap anywhere closes it.
+ * figure, what you do at night); the front line is left to the deal and the lobby, since at night
+ * the card is there for the act. A tap on the card closes it; a tap past it (`onOutside`) also
+ * lets the room clear an unsent choice. The vigilante's caps left sit under the night line.
  *
  * The faction's colour is on the card because the card is face up: it is your own.
  */
@@ -21,24 +23,35 @@ const FRAME_RING = 9.6;
 
 export interface FramedCardProps {
   role: string;
-  /** The frame's centre x and the shelf's top face it stands on, in units. */
+  /** The frame's centre x and the table's top it stands on, in units. */
   x: number;
   foot: number;
-  /** The frame's height in units (bench 70: 0.31 of the stage's height). */
+  /** The frame's height in units (on the night room's table, 200; bench 70's shelf had 0.31 of the stage). */
   height: number;
   /** One card unit, in stage units: the frame's type scales with it. */
   u: number;
   /** A lone wolf reads "You hunt alone now". */
   alone?: boolean;
+  /** A quiet line under the night line (the vigilante's caps left). */
+  note?: string;
   onOpen?: () => void;
 }
 
-export function FramedCard({ role, x, foot, height, u, alone, onOpen }: FramedCardProps) {
+export function FramedCard({
+  role,
+  x,
+  foot,
+  height,
+  u,
+  alone,
+  note,
+  onOpen,
+}: FramedCardProps) {
   const text = CARD_TEXT[role];
   if (!text) return null;
   const w = height * 0.72;
   const faction = factionOf(role) ?? 'villagers';
-  // the frame's outer ring (9.6 units past the box) is what stands on the shelf
+  // the frame's outer ring (9.6 units past the box) is what stands on the table
   const top = foot - FRAME_RING - height;
   return (
     <>
@@ -74,6 +87,7 @@ export function FramedCard({ role, x, foot, height, u, alone, onOpen }: FramedCa
           <span className={styles.framedLine}>
             {alone && text.nightAlone ? text.nightAlone : text.night}
           </span>
+          {note ? <span className={styles.framedCount}>{note}</span> : null}
         </span>
         <em>tap to read</em>
       </button>
@@ -88,10 +102,23 @@ export interface CardOverlayProps {
   /** One card unit, in stage units (bench 70: 1.6 puppet units). */
   u: number;
   alone?: boolean;
+  /** A quiet line under the night text (the vigilante's caps left). */
+  note?: string;
+  /** Any tap closes the card. */
   onClose?: () => void;
+  /** A tap past the card, on the room behind it (before `onClose`). */
+  onOutside?: () => void;
 }
 
-export function CardOverlay({ role, seat, u, alone, onClose }: CardOverlayProps) {
+export function CardOverlay({
+  role,
+  seat,
+  u,
+  alone,
+  note,
+  onClose,
+  onOutside,
+}: CardOverlayProps) {
   const text = CARD_TEXT[role];
   if (!text) return null;
   const faction = factionOf(role) ?? 'villagers';
@@ -100,7 +127,10 @@ export function CardOverlay({ role, seat, u, alone, onClose }: CardOverlayProps)
       type="button"
       className={styles.veil}
       aria-label="Close your card"
-      onClick={onClose}
+      onClick={(e) => {
+        if (!(e.target as Element).closest('[role="dialog"]')) onOutside?.();
+        onClose?.();
+      }}
       data-overlay="card"
     >
       <span
@@ -118,10 +148,10 @@ export function CardOverlay({ role, seat, u, alone, onClose }: CardOverlayProps)
             className={styles.cardFig}
             dangerouslySetInnerHTML={{ __html: roleFigure(role) }}
           />
-          <span className={styles.cardLine}>{text.line}</span>
           <span className={styles.cardNight}>
             <b>At night</b> {alone && text.nightAlone ? text.nightAlone : text.night}
           </span>
+          {note ? <span className={styles.cardCount}>{note}</span> : null}
           <span className={styles.cardFoot}>Seat {seat} · tap anywhere to close</span>
         </span>
       </span>

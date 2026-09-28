@@ -2,68 +2,82 @@
 
 /**
  * The acting seat's room at night, as both night rooms share it (handoff §2, beat sheet §6
- * and §7): bare walnut panelling, the shelf across the upper half with your framed card at
- * the left and your role's kit at the right, and below it one plush doll per seat you may
- * choose, each hung on dark twine from a nail. There is no avatar of you: you are the one
- * sitting in the chair. The turn's countdown is on the plate, not in the room.
+ * and §7): the role's painted sleeping compartment (paint/compartment.ts), the night going by
+ * behind its window, a line of photographs under the brass rack, one per seat you may choose,
+ * and your framed card standing on the table by the candle. There is no avatar of you: you are
+ * the one sitting in the chair. The turn's countdown is on the plate, not in the room.
  *
- * It is dark but for a candle (the kit's own, or one at the shelf's end): its warm pool falls
- * on the dolls. Choosing is light and a pin. Once a doll is chosen the room below the shelf
- * goes darker, one light finds that doll, and a pin in the acting side's colour goes into it.
- * The shelf room and the pack's room differ only in what sits over this (the plate, the chat,
- * the teeth), so they pass that in.
+ * It is dark but for the painted candle: its warm pool falls on the photos and the card.
+ * Choosing is light and a pin. Once a photo is chosen the wall goes darker, one light finds
+ * that photo, and a pin in the acting side's colour goes through it. The acting seat's room and
+ * the pack's differ only in what sits over this (the plate, the chat, the teeth), so they pass
+ * that in.
+ *
+ * A tap on the empty room (not a photo, the card, the plate or the HUD) resets it: `onEmpty`,
+ * which closes the card and clears a choice not yet sent. With the card open, a tap past the
+ * card does the same.
  */
 import { AnimatePresence, motion } from 'motion/react';
 import type { ReactNode } from 'react';
+import type { RoomPicture } from '@/assets/manifest';
 import { Atmosphere } from '../Atmosphere';
 import { Layer, Paint } from '../Stage';
-import { Bleed } from '../instruments/Bleed';
+import { Compartment } from '../instruments/Compartment';
 import { CardOverlay, FramedCard } from '../instruments/FramedCard';
-import { Kit, kitFlame } from '../instruments/Kit';
+import { Photo } from '../instruments/Photo';
 import { Pin } from '../instruments/Pin';
-import { DOLL_BODY_PER_WIDTH, Plush } from '../instruments/Plush';
 import { TopStrip } from '../instruments/TopStrip';
 import { Wing, WingTile } from '../instruments/Wing';
 import { useMotionScale } from '../motion';
-import { shelfChoice, shelfLight, shelfPlan, shelfRoom } from '../paint/shelf-room';
+import { photoTwine, roomChoice, roomLight, roomPlan } from '../paint/compartment';
 import { seatNumber } from '../roles';
 import { sideOpen, stripButtons } from '../slot';
-import { WOOD } from '../textures';
 import { BLEED, geometry } from '../units';
 import type { SceneProps } from './types';
 import styles from '../instruments/NightRoom.module.css';
 
-/** The light finding a chosen doll, and the room dimming around it (seconds). */
+/** The light finding a chosen photo, and the room dimming around it (seconds). */
 const LIGHT_FADE = 0.6;
-/** Arriving in the room: each doll fades in a beat after the one before it (seconds). */
-const DOLL_STAGGER = 0.08;
+/** Arriving in the room: each photo fades in a beat after the one before it (seconds). */
+const PHOTO_STAGGER = 0.08;
+
+/** Each role's painted room; a role with none of its own (a villager, in the workbench) gets the healer's. */
+const ROOM_OF: Record<string, RoomPicture> = {
+  healer: 'healer',
+  investigator: 'investigator',
+  vigilante: 'vigilante',
+  serial_killer: 'serial_killer',
+  wolf: 'wolf',
+};
 
 export interface NightRoomProps extends Pick<
   SceneProps,
   'view' | 'beat' | 'me' | 'presentation' | 'slot'
 > {
-  /** Your role: its card in the frame, its kit on the shelf. */
+  /** Your role: its card in the frame, its painted room. */
   role: string;
   /** A lone wolf's card reads "You hunt alone now". */
   alone?: boolean;
-  /** The seats hung on the hooks, in seat order. */
-  dolls: readonly string[];
-  /** The doll the light finds; null = only the candle's pool. */
+  /** The seats whose photos hang on the line, in seat order. */
+  photos: readonly string[];
+  /** The photo the light finds; null = only the candle's pool. */
   lit: string | null;
-  /** The doll with the pin in it (the choice); null = none. */
+  /** The photo with the pin through it (the choice); null = none. */
   pin?: string | null;
   /** The act is sent: the pin goes fully home. */
   pinHome?: boolean;
-  /** Tapping a doll; without it the dolls are only shown. */
+  /** Tapping a photo; without it the photos are only shown. */
   onChoose?: (seat: string) => void;
-  /** Marks drawn over a doll (the teeth), by seat. */
+  /** Marks drawn over a photo (the teeth), by seat. */
   marks?: Partial<Record<string, ReactNode>>;
   /** Seats the wing marks as the pack's (red edge). */
   pack?: readonly string[];
-  /** Under the kit on the shelf's edge: the vigilante's caps left. */
-  kitNote?: ReactNode;
   cardOpen: boolean;
   onCard: (open: boolean) => void;
+  /** A quiet line on the card under the night text (the vigilante's caps left). */
+  cardNote?: string;
+  /** A tap on the empty room, or past the open card: back to the room at rest. */
+  onEmpty?: () => void;
   /** The plate, the chat: whatever the room adds at its foot. */
   children?: ReactNode;
 }
@@ -76,65 +90,76 @@ export function NightRoom({
   slot: slotInput,
   role,
   alone,
-  dolls,
+  photos,
   lit,
   pin = null,
   pinHome = false,
   onChoose,
   marks,
   pack = [],
-  kitNote,
   cardOpen,
   onCard,
+  cardNote,
+  onEmpty,
   children,
 }: NightRoomProps) {
   const { hud, xray, animate, cast } = presentation;
   const k = useMotionScale();
-  // the side slot open: the shelf and its nails keep to the room left of it
+  // the side slot open: the painting slides left, so its window and its wall stay in view
   const side = sideOpen(presentation);
   const g = geometry(hud, side);
-  const n = Math.max(1, dolls.length);
-  const plan = shelfPlan({ hud, hooks: n, side });
-  const body = plan.dollW * DOLL_BODY_PER_WIDTH;
-  const chosenIndex = lit ? dolls.indexOf(lit) : -1;
+  const room = ROOM_OF[role] ?? 'healer';
+  const n = Math.max(1, photos.length);
+  const plan = roomPlan({ room, hud, side, n });
+  const chosenIndex = lit ? photos.indexOf(lit) : -1;
   const deadBySeat = new Map(view.dead.map((d) => [d.player, d]));
   const myRole = view.me.role?.role ?? role;
-  const flame = kitFlame(role, plan.kitX, plan.foot, plan.kitH);
 
   return (
     <>
-      <Atmosphere room="shelf" phase="night" hud={hud} side={side} />
+      <Atmosphere room="compartment" phase="night" hud={hud} side={side} />
       <Layer name="paint">
-        <Bleed room="shelf" hud={hud} />
-        <Paint of={shelfRoom} opts={{ hud, hooks: n, side, wood: WOOD }} />
+        <Compartment room={room} hud={hud} side={side} />
       </Layer>
 
+      {onEmpty ? (
+        <Layer name="floor">
+          <div className={styles.emptyTap} data-empty="room" aria-hidden onClick={onEmpty} />
+        </Layer>
+      ) : null}
+
       <Layer name="figures">
-        {dolls.map((seat, i) => {
+        {/* the line is paint: a tap through it lands on the empty room */}
+        <div style={{ pointerEvents: 'none' }}>
+          <Paint of={photoTwine} opts={{ room, hud, side, n }} />
+        </div>
+        {photos.map((seat, i) => {
           const s = seatNumber(seat);
           const character = cast[s - 1];
-          const hook = plan.hooks[i];
-          if (!character || !hook) return null;
+          const at = plan.photos[i];
+          if (!character || !at) return null;
           return (
-            <Plush
+            <Photo
               key={seat}
               character={character}
               seat={s}
-              x={hook.x}
-              hangY={hook.end + 2}
-              body={body}
+              x={at.x}
+              top={at.top}
+              w={plan.photo.w}
+              h={plan.photo.h}
+              drop={at.drop}
               light={chosenIndex < 0 ? undefined : i === chosenIndex ? 'lit' : 'dim'}
               onChoose={onChoose ? () => onChoose(seat) : undefined}
-              arrive={animate ? 0.1 + i * DOLL_STAGGER : false}
+              arrive={animate ? 0.1 + i * PHOTO_STAGGER : false}
             >
-              {marks?.[seat]}
+              <span className={styles.bite}>{marks?.[seat]}</span>
               {/* starts still: only a pin put in or drawn out in the room plays */}
               <AnimatePresence initial={false}>
                 {pin === seat ? (
-                  <Pin key="pin" role={role} w={plan.dollW} home={pinHome} />
+                  <Pin key="pin" role={role} w={plan.photo.w * 1.3} home={pinHome} />
                 ) : null}
               </AnimatePresence>
-            </Plush>
+            </Photo>
           );
         })}
       </Layer>
@@ -142,24 +167,19 @@ export function NightRoom({
       <Layer name="instruments">
         <FramedCard
           role={role}
-          x={plan.cardX}
-          foot={plan.foot}
-          height={plan.cardH}
-          u={g.u * 0.95}
+          x={plan.card.x}
+          foot={plan.card.foot}
+          height={plan.card.h}
+          u={g.u * 0.95 * (plan.card.h / 279)}
           alone={alone}
+          note={cardNote}
           onOpen={() => onCard(true)}
         />
-        <Kit role={role} x={plan.kitX} foot={plan.foot} height={plan.kitH} />
-        {kitNote ? (
-          <div className={styles.kitNote} style={{ left: plan.kitX, top: plan.top + 6 }}>
-            {kitNote}
-          </div>
-        ) : null}
       </Layer>
 
       <Layer name="light">
         {/* the candle's room stays still; only the choice's darkness fades in and out over it */}
-        <Paint of={shelfLight} opts={{ hud, hooks: n, side, body, flame, bleed: BLEED }} />
+        <Paint of={roomLight} opts={{ room, hud, side, n, bleed: BLEED }} />
         <AnimatePresence initial={false}>
           {chosenIndex < 0 ? null : (
             <motion.div
@@ -170,11 +190,11 @@ export function NightRoom({
               exit={{ opacity: 0 }}
               transition={{ duration: LIGHT_FADE * k }}
               dangerouslySetInnerHTML={{
-                __html: shelfChoice({
+                __html: roomChoice({
+                  room,
                   hud,
-                  hooks: n,
                   side,
-                  body,
+                  n,
                   chosen: chosenIndex,
                   bleed: BLEED,
                 }),
@@ -221,7 +241,9 @@ export function NightRoom({
             seat={seatNumber(me)}
             u={g.u * 1.6}
             alone={alone}
+            note={cardNote}
             onClose={() => onCard(false)}
+            onOutside={onEmpty}
           />
         ) : null}
       </Layer>

@@ -60,7 +60,7 @@ export const velvet = (id: string, href: string): string =>
 
 /**
  * The black veil's opacity that brings the walnut tile (averaging `#4a2c18`) down to a darker
- * flat of the same wood: `#3a2212` (the car's dado, the shelf room's wall, the shutter's stiles)
+ * flat of the same wood: `#3a2212` (the car's dado, the shutter's stiles)
  * or `#2c1a0e` (the shutter's louvres).
  */
 export const DARKER = { '#3a2212': 0.22, '#2c1a0e': 0.41 } as const;

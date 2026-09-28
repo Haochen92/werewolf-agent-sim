@@ -21,7 +21,7 @@
   );
 }
 
-/* the shelf room's veil: the seat's own small room, its wall near, so set back less than the car */
+/* the compartment's veil: the seat's own small room, its wall near, so set back less than the car */
 .veil {
   background: linear-gradient(180deg, rgba(30, 19, 11, 0.14), rgba(30, 19, 11, 0.07));
 }

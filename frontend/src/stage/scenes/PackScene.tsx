@@ -1,16 +1,17 @@
 'use client';
 
 /**
- * Night, the pack (handoff §4.7, beat sheet §7): the same room as the acting seat's, with the
- * wolves' kit on the shelf. Your packmate is in the chat, not on the shelf; the dolls are the
- * seats the pack may choose, which never include a wolf.
+ * Night, the pack (handoff §4.7, beat sheet §7): the same room as the acting seat's, painted as
+ * the wolves' red-lit compartment. Your packmate is in the chat, not on the line; the photos
+ * are the seats the pack may choose, which never include a wolf.
  *
  * - `pack.your-line`: your round to talk: a line and "Say it" at the foot of the room.
  * - `pack.line`: a line arrives in the chat, in the order it was said.
- * - `pack.vote`: the plate is live at once; your packmate's tooth is on their doll if their
+ * - `pack.vote`: the plate is live at once; your packmate's tooth is on their photo if their
  *   vote has arrived; yours lands when you confirm.
- * - `pack.decided`: the second tooth lands and the kill is named; the chosen doll is lit.
+ * - `pack.decided`: the second tooth lands and the kill is named; the chosen photo is lit.
  * - A lone wolf: no talk, one tooth.
+ * - A tap on the empty room closes the card and clears a vote not yet sent.
  *
  * Arrived at, it is all simply there; played forward, the newest line fades in and the teeth
  * that arrived with the beat land.
@@ -90,14 +91,14 @@ function Pack(props: SceneProps) {
   const voting = beat.id === 'pack.vote' && pending?.actionKind === 'wolf_vote';
   const talking = beat.id === 'pack.your-line';
 
-  // the dolls: the server's list while it asks for the vote; otherwise the seats it would offer
-  const dolls =
+  // the photos: the server's list while it asks for the vote; otherwise the seats it would offer
+  const photos =
     pending?.actionKind === 'wolf_vote'
       ? pending.candidates
       : view.alive.filter((s) => s !== me && !pack.includes(s));
 
   const [chosen, setChosen] = useState<string | null>(
-    voting && turn?.chosen && dolls.includes(turn.chosen) ? turn.chosen : null,
+    voting && turn?.chosen && photos.includes(turn.chosen) ? turn.chosen : null,
   );
   // my vote as sent from here (the server takes one: a sent vote cannot be changed)
   const [sentVote, setSentVote] = useState<string | null>(
@@ -147,7 +148,7 @@ function Pack(props: SceneProps) {
       {...props}
       role="wolf"
       alone={alone}
-      dolls={dolls}
+      photos={photos}
       lit={lit}
       pin={lit}
       pinHome={!!mine || !!decided}
@@ -160,6 +161,10 @@ function Pack(props: SceneProps) {
       pack={pack}
       cardOpen={cardOpen}
       onCard={setCardOpen}
+      onEmpty={() => {
+        setCardOpen(false);
+        if (!mine && !elsewhere) setChosen(null);
+      }}
     >
       {me ? (
         <PackChat

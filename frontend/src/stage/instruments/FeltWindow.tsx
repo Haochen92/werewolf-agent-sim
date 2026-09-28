@@ -10,6 +10,9 @@
  * as it gathers up. At an hour change it crossfades with the car (`fade`, the same transition),
  * as pictures, never live SVG (stage_architecture.md §6). The car's paint fills the glass
  * with the hour's sky until the pictures load; the snow and the blind's pull are drawn on top.
+ *
+ * The night rooms reuse it behind their paintings' cleared glass (`rect`, `radius`): the same
+ * night, no blind to pull, and in the wolves' red-lit room a `tint` of their light on the glass.
  */
 import Image from 'next/image';
 import { motion, type Transition } from 'motion/react';
@@ -33,6 +36,9 @@ export function FeltWindow({
   fade,
   hud,
   side = false,
+  rect,
+  radius,
+  tint,
 }: {
   phase: Phase;
   /** Played: the hour the car was at before this beat; its pictures fade off over the new. */
@@ -42,10 +48,16 @@ export function FeltWindow({
   hud: Hud;
   /** The side slot is open: the window is further left (as for `CarPaint`). */
   side?: boolean;
+  /** The glass as [x, y, w, h] in units, when it is not the car's window (a night room's). */
+  rect?: readonly [number, number, number, number];
+  /** Its corner radius in units, with `rect`. */
+  radius?: number;
+  /** A colour laid over the glass, the room's own light on it (a CSS colour with alpha). */
+  tint?: string;
 }) {
-  const [x, y, w, h] = windowRect(geometry(hud, side));
+  const [x, y, w, h] = rect ?? windowRect(geometry(hud, side));
   // the paint's corner radius (window.ts `windowFrame`), so the frame's brass meets the felt
-  const r = 0.04 * STAGE_H;
+  const r = radius ?? 0.04 * STAGE_H;
   const pull =
     `<path d="M${w / 2},-8 v16" stroke="#2a180c" stroke-width="2"/>` +
     `<circle cx="${w / 2}" cy="12" r="5" fill="none" stroke="${CAR.brass}" stroke-width="2"/>`;
@@ -72,12 +84,16 @@ export function FeltWindow({
         suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: snowfall(0, 0, w, h, 1) }}
       />
+      {tint ? <div className={styles.fill} style={{ background: tint }} /> : null}
       <div className={styles.pane} />
-      <svg
-        className={styles.fill}
-        viewBox={`0 0 ${w} ${h}`}
-        dangerouslySetInnerHTML={{ __html: pull }}
-      />
+      {/* a room's painted window has no blind */}
+      {rect ? null : (
+        <svg
+          className={styles.fill}
+          viewBox={`0 0 ${w} ${h}`}
+          dangerouslySetInnerHTML={{ __html: pull }}
+        />
+      )}
     </div>
   );
 }

@@ -46,6 +46,8 @@ for (const src of await listMasters(SRC)) {
   // the cast is no longer made here: its masters are rasters/cast (stage_architecture §4 "The
   // cast"), and these old day masters would overwrite it
   if (rel.split(path.sep)[0] === 'day') continue;
+  // the plush dolls left the night rooms (2026-09-28, the photo line): nothing ships them
+  if (rel.split(path.sep)[0] === 'plush') continue;
   if (only && rel.split(path.sep)[0] !== only) continue;
   const dest = path.join(OUT, rel.replace(/\.(png|jpe?g)$/i, '.webp'));
   await mkdir(path.dirname(dest), { recursive: true });

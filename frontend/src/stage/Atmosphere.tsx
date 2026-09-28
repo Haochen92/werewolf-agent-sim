@@ -31,8 +31,8 @@ export function Atmosphere({
   hud,
   side = false,
 }: {
-  /** The dining car (its wall pieces cast shadows) or a seat's shelf room at night. */
-  room: 'car' | 'shelf';
+  /** The dining car (its wall pieces cast shadows) or a seat's compartment at night. */
+  room: 'car' | 'compartment';
   /** The room's hour: the key light is strongest by day and all but out at night. */
   phase: Phase;
   hud: Hud;
@@ -44,7 +44,7 @@ export function Atmosphere({
   return (
     <>
       <Layer name="haze">
-        {/* the seat's room at night is lit by its candle alone (shelfLight), not the key */}
+        {/* the seat's room at night is lit by its candle alone (roomLight), not the key */}
         {room === 'car' ? (
           <div className={styles.key} style={{ opacity: KEY[phase] }} />
         ) : null}

@@ -2,22 +2,26 @@
 
 /**
  * Night, the acting seat (handoff §4.6, beat sheet §6): the healer, the investigator, the
- * vigilante or the serial killer, alone in their own room with the other seats hung as
- * plush dolls. Only the seats the server offered hang there (`pending.candidates` is the
- * only source of legal targets; the room never works out who may be chosen).
+ * vigilante or the serial killer, alone in their own painted compartment with the other seats
+ * hung as photographs on a line. Only the seats the server offered hang there
+ * (`pending.candidates` is the only source of legal targets; the room never works out who may
+ * be chosen).
  *
- * - `room.opens`: the room dark but for the candle's pool on the dolls; the plate asks, and
+ * - `room.opens`: the room dark but for the candle's pool on the photos; the plate asks, and
  *   carries the countdown on the request's time.
- * - choosing (tap a doll): the room below the shelf goes darker, one light finds the doll, a
- *   pin goes into it and the plate names the act ("Protect seat 1"). Tapping it again draws
- *   the pin out. The vigilante's plate also has "Hold fire"; the caps left sit under the popgun.
- *   Until the plate is pressed a line over it says another doll can still be tapped.
+ * - choosing (tap a photo): the wall goes darker, one light finds the photo, a pin goes
+ *   through it and the plate names the act ("Protect seat 1"). Tapping it again draws the pin
+ *   out. The vigilante's plate also has "Hold fire"; the caps left are on the card, under
+ *   its night line. Until the plate is pressed a line over it says another photo can still be
+ *   tapped. A tap on the empty room draws the pin out too, and closes the card.
  * - confirming (tap the plate): the act goes out through `onAct`. The server takes one answer
  *   per seat, so the pin goes fully home and the plate seals ("Seat 1 is protected tonight");
  *   the room stays so until the stage moves on. A failed send reopens the plate with its words.
- * - the card (tap the frame): the full card over the room; a tap closes it.
+ * - the card (tap the frame): the full card over the room; a tap closes it (past the card, it
+ *   also clears the choice, as a tap on the empty room does; once the act is in, it only
+ *   closes).
  *
- * Arrived at, it is all simply there; played forward, the dolls fade in along the hooks.
+ * Arrived at, it is all simply there; played forward, the photos fade in along the line.
  */
 import { useState } from 'react';
 import type { ActionKind } from '@/types/contracts';
@@ -25,7 +29,6 @@ import { SideSlot } from '../SideSlot';
 import { ActPlate } from '../instruments/ActPlate';
 import { CountPill } from '../instruments/CountPill';
 import { pinColour } from '../instruments/Pin';
-import { Caps } from '../instruments/Notice';
 import { StageMotion } from '../motion';
 import { seatNumber } from '../roles';
 import { sideOpen } from '../slot';
@@ -73,7 +76,13 @@ export function sealedLabel(
 }
 
 /** Under-the-plate words while a choice can still change. */
-export const CHANGE_NOTE = 'tap another doll to change';
+export const CHANGE_NOTE = 'tap another photo to change';
+
+/** The vigilante's caps left, on the card under its night line (no caps, no line: no request comes). */
+export function capsNote(bullets: number | null): string | undefined {
+  if (bullets === null || bullets < 1) return undefined;
+  return bullets === 1 ? 'your last cap' : `${bullets} caps left`;
+}
 
 /** The sealed plate when the seat's agent answered, or the server already had an answer. */
 export const AGENT_SEALED = 'Your seat’s agent acted for you';
@@ -105,9 +114,9 @@ function ShelfRoom(props: SceneProps) {
   const pending = view.me.pending;
   const kind = pending?.actionKind;
   const role = view.me.role?.role ?? (kind && ROLE_OF_KIND[kind]) ?? 'villager';
-  const dolls = pending?.candidates ?? [];
+  const photos = pending?.candidates ?? [];
   const [chosen, setChosen] = useState<string | null>(
-    turn?.chosen && dolls.includes(turn.chosen) ? turn.chosen : null,
+    turn?.chosen && photos.includes(turn.chosen) ? turn.chosen : null,
   );
   const [cardOpen, setCardOpen] = useState(!!turn?.cardOpen);
   // what this room sent: a seat, or null (hold fire); undefined = nothing yet, or not known
@@ -132,14 +141,18 @@ function ShelfRoom(props: SceneProps) {
     <NightRoom
       {...props}
       role={role}
-      dolls={dolls}
+      photos={photos}
       lit={target ?? null}
       pin={target ?? null}
       pinHome={isIn}
       onChoose={isIn ? undefined : (seat) => setChosen((c) => (c === seat ? null : seat))}
-      kitNote={bullets !== null ? <Caps n={bullets} /> : undefined}
       cardOpen={cardOpen}
       onCard={setCardOpen}
+      cardNote={capsNote(bullets)}
+      onEmpty={() => {
+        setCardOpen(false);
+        if (!isIn) setChosen(null);
+      }}
     >
       {/* once the act is in, the lobby's count: the others acting, until the morning */}
       {isIn ? <NightCount {...props} /> : null}
