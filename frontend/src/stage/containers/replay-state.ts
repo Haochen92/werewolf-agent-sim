@@ -9,7 +9,8 @@
  * is made for a game's two beat lists and carries the cursor from one to the other.
  *
  * A preview (the landing's mini replay) is the same reducer with a `loop` window: the play runs
- * round the window instead of stopping, so there is no second player to keep in step.
+ * round the window instead of stopping, so there is no second player to keep in step. Its
+ * buttons stay inside the window, and the X-ray carries the window across with the cursor.
  */
 import type { SceneBeat } from '@/stage/beats/types';
 import type { MotionSpeed, Presentation } from '@/stage/scenes/types';
@@ -89,6 +90,15 @@ export function initialLoopState(
   };
 }
 
+/** A cursor a press moved outside the loop window lands on the window's nearer end, still. */
+function inWindow(state: ReplayState): ReplayState {
+  if (!state.loop) return state;
+  const { from, to } = state.loop;
+  const i = state.cursor.index;
+  if (i >= from && i <= to) return state;
+  return { ...state, cursor: still(i < from ? from : to) };
+}
+
 /**
  * Inside a loop window: past `to` the cursor goes back to `from`, still, and a beat that would
  * wait for the viewer is stepped past, so the loop never stops by itself. The guard stops the
@@ -124,11 +134,11 @@ export function replayReducer(all: ReplayBeats) {
       case 'step':
         return action.dir === 1
           ? landed({ ...state, cursor: stepForward(state.cursor, beats) }, beats)
-          : { ...state, cursor: stepBack(state.cursor) };
+          : inWindow({ ...state, cursor: stepBack(state.cursor) });
       case 'seek':
-        return { ...state, cursor: seekTo(action.index, beats) };
+        return inWindow({ ...state, cursor: seekTo(action.index, beats) });
       case 'chapter':
-        return { ...state, cursor: jumpChapter(state.cursor, beats, action.dir) };
+        return inWindow({ ...state, cursor: jumpChapter(state.cursor, beats, action.dir) });
       case 'tick':
         if (!state.playing) return state;
         // a loop's last beat has held: round to the window's first, which arrives still
@@ -160,8 +170,14 @@ export function replayReducer(all: ReplayBeats) {
       case 'xray': {
         const next = pressXray(state);
         if (next.xray === state.xray) return { ...state, ...next };
-        const cursor = carryAcross(state.cursor, of(state.xray), of(next.xray));
-        return { ...state, ...next, cursor };
+        const [was, now] = [of(state.xray), of(next.xray)];
+        const cursor = carryAcross(state.cursor, was, now);
+        // a preview's window is carried by its two ends, which both lists hold
+        const loop = state.loop && {
+          from: carryAcross(still(state.loop.from), was, now).index,
+          to: carryAcross(still(state.loop.to), was, now).index,
+        };
+        return { ...state, ...next, cursor, loop };
       }
     }
   };

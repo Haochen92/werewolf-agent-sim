@@ -205,6 +205,30 @@ describe('the loop window (a preview)', () => {
     expect(outside.cursor).toEqual(still(opens));
   });
 
+  it('its buttons stay inside the window', () => {
+    expect(reduce(loop(opens), { type: 'step', dir: -1 }).cursor).toEqual(still(opens));
+    expect(reduce(loop(opens + 2), { type: 'seek', index: 0 }).cursor).toEqual(
+      still(opens),
+    );
+    expect(reduce(loop(opens + 2), { type: 'seek', index: 9999 }).cursor).toEqual(
+      still(wing),
+    );
+    const next = reduce(loop(opens + 2), { type: 'chapter', dir: 1 }).cursor.index;
+    expect(next).toBeGreaterThan(opens + 2);
+    expect(next).toBeLessThanOrEqual(wing);
+  });
+
+  it('the X-ray carries the window to the X-ray’s list, and back', () => {
+    const on = reduce(loop(opens, { playing: false }), { type: 'xray' });
+    expect(on.xray).toBe(true);
+    const x = beats.xray;
+    expect(x[on.loop!.from]).toMatchObject({ id: 'vote.opens', day: 3 });
+    expect(x[on.loop!.to]).toMatchObject({ id: 'lynch.card-to-wing', day: 3 });
+    expect(on.cursor).toEqual(still(on.loop!.from));
+    const off = reduce(on, { type: 'xray' });
+    expect([off.xray, off.loop]).toEqual([false, { from: opens, to: wing }]);
+  });
+
   it('the whole-log replay never loops: its state has no window', () => {
     expect(initialReplayState().loop).toBeNull();
     const last = beats.public.length - 1;
