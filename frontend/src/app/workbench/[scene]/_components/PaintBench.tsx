@@ -20,7 +20,7 @@ import { roomChoice, roomLight } from '@/stage/paint/compartment';
 import { shutter, type ShutterState } from '@/stage/paint/window';
 import { geometry, HUD_CHROME, sideSlot, STAGE_W, type Hud } from '@/stage/units';
 import { Seg } from '@/stage/workbench/ControlStrip';
-import { VELVET, WOOD } from '@/stage/textures';
+import { WOOD } from '@/stage/textures';
 
 const pick = <T extends string>(v: string | null, all: readonly T[], dflt: T): T =>
   all.includes(v as T) ? (v as T) : dflt;
@@ -102,7 +102,7 @@ export function PaintBench({ params }: { params: URLSearchParams }) {
         )}
       </Layer>
       <Layer name="hud">
-        {o.drape ? <Paint of={drape} opts={{ velvet: VELVET }} /> : null}
+        {o.drape ? <Paint of={drape} opts={{}} /> : null}
         {o.guides ? <Guides hud={o.hud} /> : null}
       </Layer>
     </>

@@ -25,7 +25,6 @@ import { drape } from '../paint/drape';
 import { light, type Pool } from '../paint/light';
 import type { Phase } from '../paint/materials';
 import { ROLE_NAME, factionOf, seatNumber } from '../roles';
-import { VELVET } from '../textures';
 import { BLEED, STAGE_H, STAGE_W, type Hud, type StageGeometry } from '../units';
 
 /**
@@ -156,9 +155,7 @@ export function TableWing({
   const deadBySeat = new Map(view.dead.map((d) => [d.player, d]));
   return (
     <>
-      {hud === 'replay' ? (
-        <Paint of={drape} opts={{ bleed: BLEED, velvet: VELVET }} />
-      ) : null}
+      {hud === 'replay' ? <Paint of={drape} opts={{ bleed: BLEED }} /> : null}
       <Wing
         width={width}
         notes={notes}

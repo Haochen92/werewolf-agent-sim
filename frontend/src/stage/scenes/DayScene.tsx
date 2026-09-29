@@ -43,7 +43,7 @@ import { light } from '../paint/light';
 import { shutter } from '../paint/window';
 import { ROLE_NAME, factionOf, seatNumber } from '../roles';
 import { bandNarrows, sideOpen, stripButtons } from '../slot';
-import { VELVET, WOOD } from '../textures';
+import { WOOD } from '../textures';
 import { BLEED, geometry } from '../units';
 import { CarPaint } from './DiningCarParts';
 import { notebookGame } from '../notebook';
@@ -182,9 +182,7 @@ function DayTurn({
       </Layer>
 
       <Layer name="hud">
-        {hud === 'replay' ? (
-          <Paint of={drape} opts={{ bleed: BLEED, velvet: VELVET }} />
-        ) : null}
+        {hud === 'replay' ? <Paint of={drape} opts={{ bleed: BLEED }} /> : null}
         <Wing
           width={g.wingN}
           notes={notebookGame(presentation, me)}

@@ -63,13 +63,8 @@ const CASES: [string, (id: string) => string][] = [
         ] as [string, (id: string) => string],
     ),
   ),
-  ['drape', () => drape()],
+  ['drape', (id: string) => drape({ id })],
   ['drape bleed', (id: string) => drape({ id, bleed: BLEED })],
-  ['drape velvet', (id: string) => drape({ id, velvet: '/velvet.webp' })],
-  [
-    'drape bleed velvet',
-    (id: string) => drape({ id, bleed: BLEED, velvet: '/velvet.webp' }),
-  ],
   ['bleed station', (id: string) => bleed({ id, room: 'station' })],
   ...HUDS.flatMap((hud) => [
     [`stationBack ${hud}`, (id: string) => stationBack({ id, hud, sky: '/sky.webp' })] as [
@@ -261,7 +256,7 @@ describe('bleed', () => {
 
   it('leaves the light and the drape as they were without it', () => {
     expect(light({ id: 'k', bleed: 0 })).toBe(light({ id: 'k' }));
-    expect(drape({ id: 'k' })).toBe(drape());
+    expect(drape({ id: 'k', bleed: 0 })).toBe(drape({ id: 'k' }));
     expect(roomLight({ id: 'k', room: 'healer', bleed: 0 })).toBe(
       roomLight({ id: 'k', room: 'healer' }),
     );
