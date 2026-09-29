@@ -19,7 +19,7 @@
   white-space: nowrap;
 }
 
-/* the mark, with its X-ray laid over it and shown while the brand is pointed at */
+/* the mark, with its lamp-lit state laid over it and shown while the brand is pointed at */
 .mark {
   display: grid;
   flex: none;
@@ -29,16 +29,16 @@
 .mark > img {
   grid-area: 1 / 1;
 }
-.mark > .xray {
+.mark > .lamp {
   opacity: 0;
   transition: opacity 0.2s ease;
 }
-.brand:hover .xray,
-.brand:focus-visible .xray {
+.brand:hover .lamp,
+.brand:focus-visible .lamp {
   opacity: 1;
 }
 @media (prefers-reduced-motion: reduce) {
-  .mark > .xray {
+  .mark > .lamp {
     transition: none;
   }
 }

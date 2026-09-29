@@ -10,7 +10,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import mark from '@/assets/brand/mark-md.svg';
-import markXray from '@/assets/brand/mark-xray-md.svg';
+import markLamp from '@/assets/brand/mark-lamp-md.svg';
 import { SITE } from '@/lib/site';
 import classes from './TopNav.module.css';
 
@@ -21,7 +21,7 @@ export function TopNav() {
       <Link href="/" className={classes.brand}>
         <span className={classes.mark} aria-hidden="true">
           <Image src={mark} alt="" width={28} height={28} priority />
-          <Image src={markXray} alt="" width={28} height={28} className={classes.xray} />
+          <Image src={markLamp} alt="" width={28} height={28} className={classes.lamp} />
         </span>
         {SITE.name}
       </Link>
