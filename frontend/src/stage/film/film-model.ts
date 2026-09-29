@@ -193,6 +193,26 @@ export function turnReads(
   );
 }
 
+/**
+ * The seats a turn's reads say something new about: a read the speaker's previous
+ * `player_reads` (any phase) did not hold, or held with another guess or another certainty.
+ * The wing flashes these once. On a seat's first reads, every one is new.
+ */
+export function freshReads(view: GameView, reads: PlayerReads | null): Set<string> {
+  if (!reads) return new Set();
+  const all = view.xray.agents[reads.player]?.reads ?? [];
+  const before = all.filter((r) => r.seq < reads.seq).at(-1);
+  const was = new Map(before?.reads.map((r) => [r.player, r]) ?? []);
+  return new Set(
+    reads.reads
+      .filter((r) => {
+        const w = was.get(r.player);
+        return !w || w.suspected_role !== r.suspected_role || w.confidence !== r.confidence;
+      })
+      .map((r) => r.player),
+  );
+}
+
 /** The note a turn wrote: after the line, before the next slot of the day. */
 function noteAfter(
   view: GameView,

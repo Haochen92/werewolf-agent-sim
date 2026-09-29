@@ -28,7 +28,7 @@ import { Layer, Paint } from '../Stage';
 import { SideSlot } from '../SideSlot';
 import { Puppet } from '../cast/Puppet';
 import { ReadCard } from '../film/ReadCard';
-import { turnReads } from '../film/film-model';
+import { freshReads, turnReads } from '../film/film-model';
 import { countText } from '../countdown';
 import { CardButton, NoticeZone } from '../instruments/Notice';
 import { SpeechBox } from '../instruments/SpeechBox';
@@ -125,6 +125,8 @@ function DayTurn({
   // the X-ray's reads on the wing: the speaker's reads of the table when it spoke; a tap on a
   // seat opens its card, level with the tile
   const reads = xray ? turnReads(view, beat) : null;
+  // the reads new or changed since the speaker's previous ones flash once on their tiles
+  const fresh = freshReads(view, reads);
   const [card, setCard] = useState<{ seat: string; top: number } | null>(null);
   const readOf = (seat: string) => reads?.reads.find((r) => r.player === seat);
   const opened = card ? readOf(card.seat) : undefined;
@@ -200,6 +202,7 @@ function DayTurn({
                 ? {
                     sure: rd.confidence === 'high',
                     open: card?.seat === seat,
+                    fresh: fresh.has(seat) ? `${reads?.seq}` : null,
                     onRead: (tile: HTMLElement) =>
                       setCard((c) =>
                         c?.seat === seat ? null : { seat, top: tile.offsetTop },
@@ -219,6 +222,8 @@ function DayTurn({
           <ReadCard
             seat={card.seat}
             character={cast[seatNumber(card.seat) - 1]}
+            speaker={reads?.player ?? speaker ?? card.seat}
+            speakerCharacter={character ?? undefined}
             read={opened}
             truth={view.xray.roles[card.seat] ?? null}
             left={g.wingN + 9.6}

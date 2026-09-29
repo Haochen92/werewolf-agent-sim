@@ -3,7 +3,7 @@ import { foldEvents } from '@/game/foldEvents';
 import { beatsFor } from '../beats/beatsFor';
 import type { SceneBeat } from '../beats/types';
 import { FIXTURE_EVENTS } from '../workbench/fixture';
-import { filmFor, lessonsOf, turnReads, type FilmModel } from './film-model';
+import { filmFor, freshReads, lessonsOf, turnReads, type FilmModel } from './film-model';
 
 const beats = beatsFor(FIXTURE_EVENTS, { xray: true });
 const whole = foldEvents(FIXTURE_EVENTS);
@@ -69,6 +69,17 @@ describe('the film at a turn', () => {
       suspected_role: 'villager',
       confidence: 'high',
     });
+  });
+
+  it('marks the reads that are new or changed since the speaker’s previous ones', () => {
+    const beat = beats.find((b) => b.id === 'day.speech' && b.seq === 200)!;
+    const view = foldEvents(FIXTURE_EVENTS.slice(0, beat.end));
+    // seat 8 at seq 175 against its day-2 vote reads (seq 101): seat 1 grew sure, seat 2 went
+    // from unclear to villager; the rest held
+    expect(freshReads(view, turnReads(view, beat))).toEqual(
+      new Set(['player_1', 'player_2']),
+    );
+    expect(freshReads(view, null)).toEqual(new Set());
   });
 });
 

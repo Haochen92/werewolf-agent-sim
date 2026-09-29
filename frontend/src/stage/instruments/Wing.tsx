@@ -13,9 +13,11 @@
  *
  * One card stock for every state. The seat on the stand is edged in brass; a dead seat is the
  * same photo gone grey with its role on an ink band (deaths reveal the role on the wire, so
- * everyone may see it); your own seat wears an amber "You" band; with the X-ray on, a living
+ * everyone may see it) and a black mourning ribbon across the photo's corner; your own seat wears an amber "You" band; with the X-ray on, a living
  * seat wears its faction's band and a sigil badge, the truth only the observer tier holds.
- * Lit and dimmed are light only, never a move or a resize.
+ * Lit and dimmed are light only, never a move or a resize. A card that opens the speaker's read
+ * breathes a slow glow while it can be tapped, and flashes once when that read is new or changed
+ * since the speaker's previous reads (opacity only, still for reduced motion).
  *
  * The notebook: a seated player (live) can tap any other seat's card to write a note on it and
  * mark one seat as the suspect (a wax seal on its card, its head in the suspect slot). The
@@ -64,9 +66,16 @@ export interface WingTileProps {
   /**
    * The X-ray's read on this seat by the seat at the stand: a blue edge, brighter for a sure
    * read. `onRead` makes the card a button that opens the read card (handing over the card, so
-   * the read can sit level with it); `open` while its card is out.
+   * the read can sit level with it); `open` while its card is out. `fresh`: the read is new or
+   * changed since the speaker's previous reads, and the card flashes once (a new key, a new
+   * flash).
    */
-  read?: { sure: boolean; open?: boolean; onRead?: (tile: HTMLElement) => void };
+  read?: {
+    sure: boolean;
+    open?: boolean;
+    onRead?: (tile: HTMLElement) => void;
+    fresh?: string | null;
+  };
 }
 
 export function Wing({
@@ -213,6 +222,7 @@ function WingTile({
           </span>
         ) : null}
         {lamp ? <span className={styles.lamp} /> : null}
+        {dead ? <span className={styles.ribbon} aria-hidden="true" /> : null}
       </span>
       <b className={styles.num}>{seat}</b>
       <span
@@ -229,6 +239,10 @@ function WingTile({
       </span>
       {band ? (
         <span className={`${styles.band} ${you ? styles.youBand : ''}`}>{band}</span>
+      ) : null}
+      {read?.onRead ? <span className={styles.breathe} aria-hidden="true" /> : null}
+      {read?.onRead && read.fresh ? (
+        <span key={read.fresh} className={styles.flash} aria-hidden="true" />
       ) : null}
       {suspect ? <span className={styles.seal} aria-hidden="true" /> : null}
       {character ? <span className={styles.tack} aria-hidden="true" /> : null}

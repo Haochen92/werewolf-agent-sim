@@ -19,19 +19,28 @@
 }
 .card header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 4.8px 6.4px;
   padding-bottom: 6.4px;
   border-bottom: 1px solid var(--film-line);
 }
 .card header strong {
   color: var(--film-main);
   font-weight: 500;
+  white-space: nowrap;
 }
-.card header span:last-child {
+/* two faces and two names in one line: the heads a little smaller than a lone one */
+.card header .chip {
+  width: calc(var(--chip) * 0.5);
+}
+/* "Seat 2's read on" in the film's ink between the two faces; the one read on, bright */
+.card header > span:not(.chip) {
   color: var(--film-ink);
+  white-space: nowrap;
 }
 .chip {
+  flex: 0 0 auto;
   display: inline-block;
   width: calc(var(--chip) * 0.6);
   aspect-ratio: 1;

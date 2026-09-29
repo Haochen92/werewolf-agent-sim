@@ -7,7 +7,9 @@
  * the guess, how sure, why, and, since the X-ray holds the truth, how near it came:
  * ● the role itself, ◐ the right side, ○ no read or wrong.
  *
- * It sits beside its seat, docked at the wing's edge. Tapping the seat again closes it.
+ * It sits beside its seat, docked at the wing's edge. Tapping the seat again closes it. Its head
+ * says whose read on whom, face by face: "[speaker] Seat 2's read on [target] Seat 5" (owner,
+ * 2026-09-29: "Seat 5 the speaker's read" read both ways).
  */
 import type { CSSProperties } from 'react';
 import type { Character } from '@/assets/manifest';
@@ -20,13 +22,19 @@ import styles from './ReadCard.module.css';
 export function ReadCard({
   seat,
   character,
+  speaker,
+  speakerCharacter,
   read,
   truth,
   left,
   top,
 }: {
+  /** The seat the read is on (the tapped tile), and who plays it. */
   seat: string;
   character: Character | undefined;
+  /** The seat at the stand, whose read it is. */
+  speaker: string;
+  speakerCharacter: Character | undefined;
   read: SeatRead;
   /** The seat's real role, which the X-ray holds; null if this viewer does not. */
   truth: string | null;
@@ -46,14 +54,17 @@ export function ReadCard({
       style={{ left, '--top': `${top}px` } as CSSProperties}
       data-read-card={seat}
       role="dialog"
-      aria-label={`The speaker's read of seat ${seatNumber(seat)}`}
+      aria-label={`Seat ${seatNumber(speaker)}'s read on seat ${seatNumber(seat)}`}
     >
       <header>
+        <span className={styles.chip}>
+          {speakerCharacter ? <ChipSprite character={speakerCharacter} /> : null}
+        </span>
+        <span>Seat {seatNumber(speaker)}’s read on</span>
         <span className={styles.chip}>
           {character ? <ChipSprite character={character} /> : null}
         </span>
         <strong>Seat {seatNumber(seat)}</strong>
-        <span>the speaker’s read</span>
       </header>
       <div className={styles.guess}>
         <b className={sure ? styles.sure : undefined}>
