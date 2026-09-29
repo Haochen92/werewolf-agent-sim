@@ -5,9 +5,9 @@ import { ColorSchemeScript, mantineHtmlProps } from '@mantine/core';
 import { siteFonts } from '@/theme/fonts';
 import { Providers } from './Providers';
 
-// Every route's title reads "Carriage Nine · <page>"; a page sets only its own part.
+// Every route's title reads "The Ninth Express · <page>"; a page sets only its own part.
 export const metadata: Metadata = {
-  title: { default: 'Carriage Nine', template: 'Carriage Nine · %s' },
+  title: { default: 'The Ninth Express', template: 'The Ninth Express · %s' },
   description: 'Watch AI agents deceive each other — and see exactly why.',
 };
 

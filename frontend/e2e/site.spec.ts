@@ -12,10 +12,10 @@ const GITHUB = 'https://github.com/Haochen92/werewolf-agent-sim';
 for (const path of ['/', '/replays', '/rooms', '/play', '/rooms/new']) {
   test(`site shell: ${path}`, async ({ page }) => {
     await page.goto(path);
-    await expect(page).toHaveTitle(/^Carriage Nine/);
+    await expect(page).toHaveTitle(/^The Ninth Express/);
 
     const nav = page.getByRole('navigation', { name: 'Site' });
-    await expect(nav.getByRole('link', { name: 'Carriage Nine' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'The Ninth Express' })).toBeVisible();
     for (const door of ['Play', 'Rooms', 'Replays']) {
       await expect(nav.getByRole('link', { name: door, exact: true })).toBeVisible();
     }
@@ -34,7 +34,7 @@ test('the theatre wears no site chrome: /workbench/day', async ({ page }) => {
   // the stage rendered (the speaker's figure is up), and around it there is no nav or footer
   await expect(page.locator('[data-layer="figures"] img')).toHaveCount(1);
   await expect(page.getByRole('navigation', { name: 'Site' })).toHaveCount(0);
-  await expect(page.getByText('Carriage Nine', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('The Ninth Express', { exact: true })).toHaveCount(0);
   await expect(page.locator(`a[href="${GITHUB}"]`)).toHaveCount(0);
 });
 
@@ -43,7 +43,7 @@ test('a URL with no page answers 404 inside the site shell, with the way home', 
 }) => {
   const res = await page.goto('/no-such-page');
   expect(res?.status()).toBe(404);
-  await expect(page).toHaveTitle('Carriage Nine · Not found');
+  await expect(page).toHaveTitle('The Ninth Express · Not found');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'This page isn’t on the train',
   );

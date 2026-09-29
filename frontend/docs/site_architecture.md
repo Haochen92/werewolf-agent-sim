@@ -15,8 +15,8 @@ paths. Its `layout.tsx` wraps every site page in the shell: `IconSprite`, `TopNa
 inside the group) and `/replays/[id]` (the theatre, outside it) share a URL segment but not a layout,
 which Next allows because the two resolve to different paths.
 
-Titles: the root layout's `metadata.title.template` is `Carriage Nine · %s`, so a page sets only its
-own part (`'Rooms'`). `/` gets the default, `Carriage Nine`.
+Titles: the root layout's `metadata.title.template` is `The Ninth Express · %s`, so a page sets only its
+own part (`'Rooms'`). `/` gets the default, `The Ninth Express`.
 
 ## Tokens: one table, the theatre wins
 
@@ -67,6 +67,6 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
 ## Tests
 
 - `src/theme/tokens.test.ts` (vitest) checks the token bridge.
-- `e2e/site.spec.ts` (Playwright) checks that each site page has the nav with "Carriage Nine" and
+- `e2e/site.spec.ts` (Playwright) checks that each site page has the nav with "The Ninth Express" and
   the footer with the GitHub link, and that `/workbench/day` has neither. The theatre's goldens
   must stay identical.

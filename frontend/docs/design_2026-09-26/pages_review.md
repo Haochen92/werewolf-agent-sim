@@ -257,6 +257,13 @@ Server track (parallel, main loop): `ReplayBase.ended_phase` + a total; `RoomSum
    of the rim ring, and, at 48px and up only, a bevelled edge on the cut (smaller, it read as a
    smudge). The hover is no longer the X-ray (its cyan fought the brass): a lamp comes on in
    the carriage and the keyhole glows amber (`mark-lamp*.svg`).
+   *Amended again 2026-09-29 (owner):* **the name is now The Ninth Express** (no tagline; "the
+   ninth passenger" was dropped). The mark is the train's headlamp, from the owner's bench
+   (`claude_artifacts/design/logo/ninth-express-marks.html`, chosen over the coin and the
+   number plate): an iron housing and a brass bezel round a lit lens, the keyhole 9 dark in
+   the glass (the round bowl and round-ended tail) with the moon as its light. The number plate
+   and its seat badges are left to the HUD (the stage's work). Hover turns the lamp up: the
+   lens burns whiter, the moon's glow spreads, the housing warms.
 3. **Mantine stays** and is the site chrome's component library (the owner's stack across projects):
    the site pages use Mantine components themed from the landing's tokens; the theatre stays CSS
    modules and never imports Mantine. The Silkscreen pixel face goes (the August art ruling is

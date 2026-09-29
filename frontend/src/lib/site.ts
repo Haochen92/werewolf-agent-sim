@@ -5,8 +5,9 @@
  */
 
 export const SITE = {
-  // the mark (a keyhole 9, `scripts/brand-mark.mjs`) is drawn for this name
-  name: 'Carriage Nine',
+  // the mark (the train's headlamp, a keyhole 9 in its glass, `scripts/brand-mark.mjs`) is
+  // drawn for this name
+  name: 'The Ninth Express',
   author: 'Liu Haochen',
   github: 'https://github.com/Haochen92/werewolf-agent-sim',
 
