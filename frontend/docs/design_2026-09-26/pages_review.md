@@ -251,6 +251,12 @@ Server track (parallel, main loop): `ReplayBase.ended_phase` + a total; `RoomSum
    levels of detail (≥48px, the nav's 24–40px, the favicon's 16–20px) and an X-ray state (the
    keyhole cut through to the film's cyan grid) that the nav shows while the brand is pointed
    at. It replaces the wolf's crescent on a paper disc.
+   *Amended 2026-09-29 (owner):* the 9 is redrawn as a heavy geometric one (the family of the
+   site's headings), and the moon sits where its counter would be. The mark is lit from the
+   upper left: polished brass against a true night blue, a raised bevel with a seam in place
+   of the rim ring, and, at 48px and up only, a bevelled edge on the cut (smaller, it read as a
+   smudge). The hover is no longer the X-ray (its cyan fought the brass): a lamp comes on in
+   the carriage and the keyhole glows amber (`mark-lamp*.svg`).
 3. **Mantine stays** and is the site chrome's component library (the owner's stack across projects):
    the site pages use Mantine components themed from the landing's tokens; the theatre stays CSS
    modules and never imports Mantine. The Silkscreen pixel face goes (the August art ruling is
