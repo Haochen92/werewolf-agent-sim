@@ -21,7 +21,7 @@ import { Camera, Layer } from '../Stage';
 import { SideSlot } from '../SideSlot';
 import { Puppet } from '../cast/Puppet';
 import { RoleCard } from '../instruments/Card';
-import { Apron, Trap, trapGeometry } from '../instruments/Floor';
+import { Trap, trapGeometry } from '../instruments/Floor';
 import { Lift } from '../instruments/Lift';
 import { CardButton, Notice, NoticeZone } from '../instruments/Notice';
 import { Shutter } from '../instruments/Shutter';
@@ -130,7 +130,7 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput }: SceneProps
   const pool = night
     ? { x: g.cx, y: g.railY - g.pwid * 0.6, rx: g.pwid * 0.45, ry: g.pwid * 0.6 }
     : { x: g.cx, y: g.railY - g.pwid * 0.9, rx: g.pwid * 0.5, ry: g.pwid * 0.9 };
-  const dark = night ? 74 : id === 'lynch.named' || id === 'lynch.drop' ? 72 : 58;
+  const dark = night ? 54 : id === 'lynch.named' || id === 'lynch.drop' ? 52 : 36;
 
   const myCard = me ? (view.me.role?.role ?? null) : null;
   const article = role ? (ROLE_ARTICLE[role] ?? role) : 'unknown';
@@ -164,8 +164,12 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput }: SceneProps
       </Layer>
 
       <Layer name="floor">
-        <Apron g={g} />
-        <Trap g={g} state={night ? 'closed' : 'open'} animate={night && animate} />
+        <Trap
+          g={g}
+          phase={night ? 'night' : 'dusk'}
+          state={night ? 'closed' : 'open'}
+          animate={night && animate}
+        />
       </Layer>
 
       <Layer name="figures">

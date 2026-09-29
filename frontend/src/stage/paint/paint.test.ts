@@ -3,42 +3,22 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { BLEED, geometry, STAGE_W, type Hud } from '../units';
 import { bleed } from './bleed';
-import { diningCar, diningCarPlan } from './dining-car';
+import { CAR_PICTURE, diningCarPlan } from './dining-car';
 import { drape } from './drape';
 import { light } from './light';
 import { PHASES_IN_ORDER } from './materials';
 import { photoTwine, roomChoice, roomLight, roomPlan, ROOMS } from './compartment';
 import { stationBack, stationFront, stationPlan } from './station';
-import { boards, DARKER, veneer, walnutAcross, walnutImage } from './texture';
-import { carLines, shutter } from './window';
+import { shutter } from './window';
 
 const HUDS: Hud[] = ['none', 'live', 'replay'];
 const ROOM_NAMES = Object.keys(ROOMS) as (keyof typeof ROOMS)[];
-const WOOD = { walnut: '/walnut.webp', boards: '/boards.webp' };
 
 const idsOf = (html: string) => [...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
 const refsOf = (html: string) => [...html.matchAll(/url\(#([^)]+)\)/g)].map((m) => m[1]);
 
 /** Every generator, at every option it takes, as (label, prefix → markup). */
 const CASES: [string, (id: string) => string][] = [
-  ...PHASES_IN_ORDER.flatMap((phase) =>
-    HUDS.flatMap((hud) =>
-      [false, true].map(
-        (side) =>
-          [
-            `diningCar ${phase} ${hud}${side ? ' side' : ''}`,
-            (id: string) => diningCar({ id, phase, hud, side }),
-          ] as [string, (id: string) => string],
-      ),
-    ),
-  ),
-  ...HUDS.map(
-    (hud) =>
-      [
-        `diningCar night ${hud} wood`,
-        (id: string) => diningCar({ id, phase: 'night', hud, wood: WOOD }),
-      ] as [string, (id: string) => string],
-  ),
   ...HUDS.flatMap((hud) =>
     (['open', 'closed'] as const).map(
       (state) =>
@@ -90,24 +70,8 @@ const CASES: [string, (id: string) => string][] = [
     'drape bleed velvet',
     (id: string) => drape({ id, bleed: BLEED, velvet: '/velvet.webp' }),
   ],
-  ...PHASES_IN_ORDER.flatMap((phase) =>
-    HUDS.map(
-      (hud) =>
-        [
-          `bleed car ${phase} ${hud}`,
-          (id: string) => bleed({ id, room: 'car', phase, hud }),
-        ] as [string, (id: string) => string],
-    ),
-  ),
-  [
-    'bleed car wood',
-    (id: string) => bleed({ id, room: 'car', phase: 'dusk', wood: WOOD }),
-  ] as [string, (id: string) => string],
+  ['bleed station', (id: string) => bleed({ id, room: 'station' })],
   ...HUDS.flatMap((hud) => [
-    [`bleed station ${hud}`, (id: string) => bleed({ id, room: 'station', hud })] as [
-      string,
-      (id: string) => string,
-    ],
     [`stationBack ${hud}`, (id: string) => stationBack({ id, hud, sky: '/sky.webp' })] as [
       string,
       (id: string) => string,
@@ -130,6 +94,11 @@ const CASES: [string, (id: string) => string][] = [
     ],
   ]),
   ['light bleed', (id: string) => light({ id, bleed: BLEED })],
+  [
+    'light lamps',
+    (id: string) =>
+      light({ id, lamps: diningCarPlan({ phase: 'day' }).lamps, bleed: BLEED }),
+  ],
   ['roomLight bleed', (id: string) => roomLight({ id, room: 'wolf', bleed: BLEED })],
 ];
 
@@ -164,47 +133,51 @@ describe('fidelity to kits/stage-kit.js', () => {
     ),
     'utf8',
   );
-  // The window's departure: the kit's vector country behind the glass is gone (the felt pictures
-  // lie over it), so its glass becomes a plain fill of the hour's top sky colour.
-  const country =
-    'winSky(ctx, c, wx, wy, ww, wh, s, { orb: true, r: rr }) + `<g clip-path="url(#${ctx.P}ws${Math.round(wx)}c)">${snowfall(wx, wy, ww, wh, s)}</g>`';
-  const glass =
-    '`<rect x="${wx}" y="${wy}" width="${ww}" height="${wh}" rx="${rr}" fill="${c.skyTop}"/>`';
-  // The wall clock and the lantern's departure (2026-09-27): both are painted pictures now
-  // (WallClock, WallLamp), so the kit's vector pieces draw nothing; their specials, the lantern's
-  // halo and pool and the room's glows stay the car's. Only the lit lantern's flame goes too.
+  // The painting's departure (2026-09-29): the car is a painting (SPRITES.car), so nothing of the
+  // kit's drawing is compared, only where things are. Its wall clock is gone (the owner ruled it
+  // out), and the lantern's special and glow sit on the painted lantern rather than in the slot
+  // right of the window; the painting's two table lamps glow as the lantern does. The painting's
+  // lamps are measured in its own pixels at the layout it was fitted to (CAR_PICTURE.fit), so the
+  // kit places them from its own centre line and rail.
+  const at = (p: readonly [number, number]) =>
+    `${p[0] - CAR_PICTURE.fit.cx} + sh.cx, ${p[1] - CAR_PICTURE.fit.railY} + sh.B`;
+  const tableGlows = CAR_PICTURE.tableLamps
+    .map((p) => `[${at(p)}, c.lit ? 0.3 * H : 0.06 * H, "#ffb35c"]`)
+    .join(', ');
   const pieces: [string, string][] = [
+    ['    if (slotL[1] - slotL[0] > 0.06 * W) parts.push(wallClock(ctx, sh, c, slotL));\n', ''],
     [
-      'return { d: cutout(ctx.P, s, d, 1), emit, glows, wins: [] };',
-      'return { d: "", emit, glows, wins: [] };',
+      'x = (slot[0] + slot[1]) / 2, y = 0.3 * H, iron = "#1c1a18"',
+      `[x, y] = [${at(CAR_PICTURE.lantern)}], iron = "#1c1a18"`,
     ],
-    [' + flameAt(x, y + 0.005 * H, 1.2 * s);', ';'],
     [
-      'return { d: `<g class="sk-hang">${cutout(ctx.P, s, d, 1)}</g>`, emit: "", glows: [], wins: [] };',
-      'return { d: "", emit: "", glows: [], wins: [] };',
+      'parts.push(lantern(ctx, sh, c, slotR));',
+      `parts.push(lantern(ctx, sh, c, slotR));\n    parts.push({ d: "", emit: "", glows: [${tableGlows}], wins: [] });`,
     ],
   ];
-  it('finds the kit’s country to swap for the glass, and its clock and lantern', () => {
-    expect(src.split(country)).toHaveLength(2);
+  it('finds the kit’s clock and lantern to swap for the painting’s lamps', () => {
     for (const [from] of pieces) expect(src.split(from)).toHaveLength(2);
   });
   // The kit is a plain script that declares one global; evaluate it and take that global.
-  const swapped = pieces.reduce(
-    (s, [from, to]) => s.replace(from, to),
-    src.replace(country, glass),
-  );
+  const swapped = pieces.reduce((s, [from, to]) => s.replace(from, to), src);
   const Kit = new Function(`${swapped}; return StageKit;`)();
+  // the lamps are placed by sums the kit does in another order: equal to well under a unit
+  const round = (v: unknown) => JSON.parse(JSON.stringify(v), (_k, n) =>
+    typeof n === 'number' ? Math.round(n * 1e6) / 1e6 : n,
+  );
 
   for (const hud of HUDS)
     for (const side of [false, true])
       for (const phase of PHASES_IN_ORDER)
-        it(`diningCar and light match scene() and light() at ${phase}, hud ${hud}${side ? ', side' : ''}`, () => {
+        it(`the car's plan and light match scene() and light() at ${phase}, hud ${hud}${side ? ', side' : ''}`, () => {
           const g = Kit.geometry(1600, 900, { hud, side });
           const sc = Kit.scene(g, phase, { id: 'k' });
-          expect(diningCar({ id: 'k', phase, hud, side })).toBe(sc.html);
           const plan = diningCarPlan({ phase, hud, side });
           expect(plan.window).toEqual(sc.window);
           expect(plan.floor).toEqual(sc.floor);
+          expect(plan.slots).toEqual(sc.slots);
+          expect(round(plan.glows)).toEqual(round(sc.glows));
+          expect(round(plan.specials)).toEqual(round(sc.specials));
           expect(light({ id: 'k', hud, side, from: 'over', scene: plan })).toBe(
             Kit.light(g, sc, { id: 'k', from: 'over' }),
           );
@@ -212,84 +185,73 @@ describe('fidelity to kits/stage-kit.js', () => {
             Kit.light(g, sc, { id: 'k', dark: 70 }),
           );
         });
+});
 
-  // The textures' departure (2026-09-27): given `wood`, the kit's flat walnut, dado and boards
-  // are filled with the texture patterns instead (defined after the kit's first defs), the dado
-  // under a black veil to its darker value. Nothing else changes.
-  const textured = (html: string, hud: Hud) => {
-    const { floorY, floorH, dado } = carLines(geometry(hud));
-    const P = 'k-';
-    const one = (h: string, from: string, to: string) => {
-      expect(h.split(from)).toHaveLength(2);
-      return h.replace(from, to);
-    };
-    const defs = `<defs>${walnutImage(P + 'wimg', WOOD.walnut)}${veneer(P + 'wal', P + 'wimg', 0, 128)}${walnutAcross(P + 'wald', P + 'wimg')}${boards(P + 'brd', WOOD.boards, floorY, floorH / 2)}</defs>`;
-    let h = one(
-      html,
-      '</defs><rect width="1600" height="900" fill="#0c0a07"/>',
-      `</defs>${defs}<rect width="1600" height="900" fill="#0c0a07"/>`,
-    );
-    h = one(
-      h,
-      `height="${floorY}" fill="#4a2c18"/>`,
-      `height="${floorY}" fill="url(#${P}wal)"/>`,
-    );
-    const dadoRect = `<rect x="0" y="${dado}" width="1600" height="${floorY - dado}"`;
-    h = one(
-      h,
-      `${dadoRect} fill="#3a2212"/>`,
-      `${dadoRect} fill="url(#${P}wald)"/>${dadoRect} fill="#000" opacity="${DARKER['#3a2212']}"/>`,
-    );
-    h = one(
-      h,
-      `height="${floorH}" fill="#5a3f26"/>`,
-      `height="${floorH}" fill="url(#${P}brd)"/>`,
-    );
-    return one(
-      h,
-      `fill="#5a3f26" stroke="#2a1a0c"`,
-      `fill="url(#${P}brd)" stroke="#2a1a0c"`,
-    );
-  };
-  for (const hud of HUDS)
-    for (const side of [false, true])
-      for (const phase of PHASES_IN_ORDER)
-        it(`diningCar with wood is scene() with its textures at ${phase}, hud ${hud}${side ? ', side' : ''}`, () => {
-          const sc = Kit.scene(Kit.geometry(1600, 900, { hud, side }), phase, { id: 'k' });
-          expect(diningCar({ id: 'k', phase, hud, side, wood: WOOD })).toBe(
-            textured(sc.html, hud),
+/* The painted car: where its picture and glass sit for each layout. */
+describe('the dining car’s painting', () => {
+  it('centres its glass on the puppet and lays its floor on the rail, in every layout', () => {
+    for (const hud of HUDS)
+      for (const side of [false, true]) {
+        const g = geometry(hud, side),
+          P = diningCarPlan({ phase: 'day', hud, side });
+        expect(P.glass.x + P.glass.w / 2).toBeCloseTo(g.cx, 6);
+        expect(P.picture.y + CAR_PICTURE.fit.railY).toBe(g.railY);
+        // the glass sits inside the kit's window, which the shutter covers
+        const [wx, wy, ww, wh] = P.window;
+        expect(P.glass.x).toBeGreaterThanOrEqual(wx);
+        expect(P.glass.x + P.glass.w).toBeLessThanOrEqual(wx + ww);
+        expect(P.glass.y + P.glass.h).toBeLessThanOrEqual(wy + wh + 1);
+      }
+  });
+
+  it('has no wall clock, and lights the painted lantern and table lamps', () => {
+    const P = diningCarPlan({ phase: 'night', hud: 'none' });
+    expect(P).not.toHaveProperty('clock');
+    const lamps = [CAR_PICTURE.lantern, ...CAR_PICTURE.tableLamps];
+    expect(P.glows.map(([x, y]) => [x, y])).toEqual(lamps.map(([x, y]) => [x, y]));
+  });
+
+  it('cuts each painted lamp a clean hole in the dark, on the lamp, in every layout and hour', () => {
+    const lamps = [CAR_PICTURE.lantern, ...CAR_PICTURE.tableLamps];
+    for (const hud of HUDS)
+      for (const side of [false, true])
+        for (const phase of PHASES_IN_ORDER) {
+          const P = diningCarPlan({ phase, hud, side });
+          expect(P.lamps.map(([x, y]) => [x - P.picture.x, y - P.picture.y])).toEqual(
+            lamps.map(([x, y]) => [x, y]),
           );
-        });
+          expect(P.lamps.every(([, , , a]) => a === 1)).toBe(true);
+          const html = light({
+            id: 'k',
+            hud,
+            side,
+            scene: P,
+            lamps: P.lamps,
+            bleed: BLEED,
+          });
+          // unblurred, full at the flame: a gradient hole each, and each warmed
+          expect(html.match(/fill="url\(#k-lamp\)"/g)).toHaveLength(3);
+          expect(html).not.toMatch(/url\(#k-lamp\)"[^>]*filter=/);
+          expect(html.match(/radial-gradient\(circle/g)).toHaveLength(3);
+        }
+  });
 });
 
 /* The bleed: two strips past the world's sides, darkening outwards to the house's dark. */
 describe('bleed', () => {
-  const car = bleed({ id: 'stA', room: 'car', phase: 'night', hud: 'live' });
-  const station = bleed({ id: 'stA', room: 'station', hud: 'live' });
+  const station = bleed({ id: 'stA', room: 'station' });
 
   it('draws both strips, outside the world and nowhere in it', () => {
-    for (const html of [car, station]) {
-      expect(html).toContain(`<rect x="${-BLEED}" y="0" width="${BLEED}"`);
-      expect(html).toContain(`<rect x="${STAGE_W}" y="0" width="${BLEED}"`);
-    }
+    expect(station).toContain(`<rect x="${-BLEED}" y="0" width="${BLEED}"`);
+    expect(station).toContain(`<rect x="${STAGE_W}" y="0" width="${BLEED}"`);
   });
 
   it('darkens to the house’s dark, from the room’s own edge value', () => {
-    for (const html of [car, station]) {
-      expect(html).toMatch(
-        /<linearGradient id="stA-bdark"[^>]*gradientUnits="userSpaceOnUse"/,
-      );
-      expect(html).toContain('stop-color="#0c0a07" stop-opacity="1"');
-      expect(html).toContain('fill="url(#stA-bdark)"');
-    }
-    // each starts from how dark the room already is at its edge
-    expect(car).toContain('stop-opacity="0.95"');
+    expect(station).toMatch(/<linearGradient id="stA-bdark"[^>]*gradientUnits="userSpaceOnUse"/);
+    expect(station).toContain('stop-color="#0c0a07" stop-opacity="1"');
+    expect(station).toContain('fill="url(#stA-bdark)"');
+    // it starts from how dark the platform already is at its edge
     expect(station).toContain('stop-opacity="0.85"');
-  });
-
-  it('takes the hour’s tint on the car, none by day', () => {
-    expect(car).toContain('mix-blend-mode:multiply');
-    expect(bleed({ id: 'stA', room: 'car', phase: 'day' })).not.toContain('mix-blend-mode');
   });
 
   it('leaves the light and the drape as they were without it', () => {

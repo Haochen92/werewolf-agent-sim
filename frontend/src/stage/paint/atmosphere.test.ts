@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { carHaze } from './atmosphere';
-import { diningCarPlan } from './dining-car';
 
 describe('carHaze', () => {
   it('prefixes every id it makes, so two stages can share a page', () => {
@@ -11,20 +10,15 @@ describe('carHaze', () => {
     for (const ref of html.matchAll(/url\(#([^)]+)\)/g)) expect(ids).toContain(ref[1]);
   });
 
-  it('leaves the veil open round the lantern only when it is lit', () => {
+  it('leaves the veil open round the painted lamps only when they are lit', () => {
     const holes = (phase: 'day' | 'night') =>
       (carHaze({ id: 'h', phase, hud: 'live' }).match(/fill="url\(#h-h\)"/g) ?? []).length;
-    expect(holes('night')).toBe(1);
+    expect(holes('night')).toBe(3);
     expect(holes('day')).toBe(0);
   });
 
-  it('casts the window’s shadow, and leaves the clock and the lamp to their pictures', () => {
-    const plan = diningCarPlan({ phase: 'day', hud: 'live' });
-    expect(plan.clock).not.toBeNull();
-    expect(plan.lamp).not.toBeNull();
+  it('casts the shutter’s pelmet’s shadow, and leaves the painted frame to its painting', () => {
     const html = carHaze({ id: 'c', phase: 'day', hud: 'live' });
     expect(html).toContain('url(#c-bframe)');
-    expect(html).not.toContain('c-bclock');
-    expect(html).not.toContain('c-blamp');
   });
 });

@@ -20,7 +20,7 @@ export interface ChipRow {
 
 /**
  * The two rows the benches hang. `low`: with nothing at the stand, across the whole room over
- * the dado (the night lobby). `high`: at the window's height, between the clock and the lantern
+ * the dado (the night lobby). `high`: at the window's height, across the wall either side of it
  * (the deal, where the cards hang below it).
  */
 export function chipRow(

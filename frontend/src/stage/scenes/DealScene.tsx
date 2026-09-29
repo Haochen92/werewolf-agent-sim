@@ -43,7 +43,7 @@ import { ROLE_ARTICLE } from '../paint/role-kit';
 import { seatNumber } from '../roles';
 import { bandNarrows, sideOpen, stripButtons } from '../slot';
 import { STAGE_H, geometry } from '../units';
-import { CarFloor, CarPaint, HouseLights, StandReturns, TableWing } from './DiningCarParts';
+import { CarPaint, HouseLights, StandReturns, TableWing } from './DiningCarParts';
 import type { SceneProps } from './types';
 
 const ORDER: SceneBeat['id'][] = [
@@ -130,7 +130,6 @@ function DealBeat({ view, beat, me, presentation, slot: slotInput }: SceneProps)
         />
         <Shutter g={g} state="open" />
       </Layer>
-      <CarFloor g={g} />
 
       <Layer name="figures">
         {chipsShown
@@ -243,7 +242,7 @@ function DealBeat({ view, beat, me, presentation, slot: slotInput }: SceneProps)
           hud={hud}
           pool={pool}
           specials={specials}
-          dark={day ? 30 : yours ? 58 : 40}
+          dark={day ? 14 : yours ? 40 : 26}
           side={side}
         />
       </Layer>

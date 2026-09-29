@@ -30,13 +30,11 @@ import { animate, useMotionValue, motion } from 'motion/react';
 import {
   createContext,
   useContext,
-  useEffect,
   useId,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
   type ReactNode,
 } from 'react';
 import { createPortal } from 'react-dom';
@@ -260,113 +258,5 @@ export function Paint<O extends { id: string }>({
       suppressHydrationWarning
       dangerouslySetInnerHTML={{ __html: html }}
     />
-  );
-}
-
-/*
- * The pictures a paint refers to (its textures), kept as data URIs: an SVG drawn as an image
- * cannot load files, so PaintPicture writes them into its SVG. Fetched once per URL, from the
- * browser's cache when the live paint has already shown them.
- */
-const inlined = new Map<string, string>();
-const loading = new Set<string>();
-const listeners = new Set<() => void>();
-const subscribe = (f: () => void) => {
-  listeners.add(f);
-  return () => listeners.delete(f);
-};
-
-/** Start turning these pictures into data URIs, so a later PaintPicture has them at once. */
-export function preloadPictures(urls: readonly string[]) {
-  for (const url of urls) {
-    if (inlined.has(url) || loading.has(url)) continue;
-    loading.add(url);
-    fetch(url)
-      .then((r) => r.blob())
-      .then(
-        (b) =>
-          new Promise<string>((ok, fail) => {
-            const fr = new FileReader();
-            fr.onload = () => ok(fr.result as string);
-            fr.onerror = fail;
-            fr.readAsDataURL(b);
-          }),
-      )
-      .then((data) => {
-        inlined.set(url, data);
-        listeners.forEach((f) => f());
-      })
-      .catch(() => {})
-      .finally(() => loading.delete(url));
-  }
-}
-
-/** Every picture a paint's markup points at by URL (not its own `#id`s, not data URIs). */
-const hrefsOf = (svg: string) => [
-  ...new Set(
-    [...svg.matchAll(/\shref="([^"#][^"]*)"/g)]
-      .map((m) => m[1])
-      .filter((u) => !u.startsWith('data:')),
-  ),
-];
-
-/**
- * The same paint as a picture, for a backdrop that fades out. A live filtered SVG fading on a
- * GPU drops a black frame as Chrome gives it its own layer (seen on the vote's dusk-to-night,
- * 2026-09-25; pinning the layer did not help), while an image made from the same SVG is
- * rasterised once and fades as a bitmap. The generator's markup is the SVG followed by the dim
- * overlay; the overlay stays live, the SVG becomes the image.
- *
- * The SVG's own pictures (the walls' and the floor's textures) go into the image as data URIs,
- * the same bytes the live paint shows, so the picture matches it. Until they are ready (a fade
- * on the page's very first frame) the fading copy is the live SVG instead.
- */
-export function PaintPicture<O extends { id: string }>({
-  of,
-  opts,
-}: {
-  of: (o: O) => string;
-  opts: Omit<O, 'id'>;
-}) {
-  const key = JSON.stringify(opts);
-  const { svg, rest, hrefs } = useMemo(() => {
-    // Ids inside an SVG image are its own document's, so a fixed one cannot collide.
-    const html = of({ ...JSON.parse(key), id: 'picture' } as O);
-    // the last closing tag: the walls' veneer patterns hold small svg elements of their own
-    const end = html.lastIndexOf('</svg>') + '</svg>'.length;
-    const svg = html.slice(0, end);
-    return { svg, rest: html.slice(end), hrefs: hrefsOf(svg) };
-  }, [of, key]);
-  useEffect(() => preloadPictures(hrefs), [hrefs]);
-  const ready = useSyncExternalStore(
-    subscribe,
-    () => hrefs.every((u) => inlined.has(u)),
-    () => hrefs.length === 0,
-  );
-  const src = useMemo(() => {
-    if (!ready) return null;
-    let s = svg;
-    for (const u of hrefs) s = s.split(`href="${u}"`).join(`href="${inlined.get(u)}"`);
-    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s);
-  }, [ready, svg, hrefs]);
-  return (
-    <div className="stage-paint">
-      {src ? (
-        // eslint-disable-next-line @next/next/no-img-element -- a data URL, never optimised
-        <img
-          src={src}
-          alt=""
-          draggable={false}
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
-        />
-      ) : (
-        <div
-          className="stage-paint"
-          suppressHydrationWarning
-          dangerouslySetInnerHTML={{ __html: svg }}
-        />
-      )}
-      <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: rest }} />
-    </div>
   );
 }

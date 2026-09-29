@@ -105,7 +105,7 @@ read card (guess, how sure, why, the truth with ● ◐ ○).
 | 1 | `day.turn-thinking` | `turn_started` (first: 13) | P | the seat's puppet takes the stand in the thinking state, no clock; the speech box shows a "…" so the state reads as thinking, not idle (ruled 2026-09-25) | D: nothing yet | live: until the turn resolves · replay: folded into the resolving beat: the puppet rises thinking, holds **0.6 s**, then plays it (accepted 2026-09-25) |
 | 2 | `day.speech` | `speech` | P | talking state, the line in the speech box; X: the box carries the aqua tags (who it answers, stance) and the plaque tags the role; the wing's blue edges from the turn's `player_reads` | D: the line, lit and scrolled to · F(X): note + lessons weighed | speech |
 | 3 | `day.pass` | public: a `turn_started` resolved by no speech (the next `turn_started` or the phase change), live and replay alike, since `turn_started` is public · X-ray: `pass_marker` instead (12 in the fixture), which carries the reason and the draft (ruled 2026-09-25: day 1 of the public replay is three passes, not an empty stand) | P · X | idle state, the box says "passes"; X adds the reason and the held-back draft. Reason wording (accepted 2026-09-25): `voluntary` "chose to pass" · `novelty_gated` "held back: nothing new to say" · `generation_failed` "no line came" | D(X): the pass with its reason and draft | 4.0 |
-| 4 | `day.your-turn` | `input_request` `discuss` for me | S | my puppet at the stand, thinking; the wall clock carries the two minutes (`deadline`; null = no ring); the box is a textarea with **Say it**, **Pass**, **Draft from notes** (three per turn, the returned `deadline` is the new countdown); the drawer stops at the rail so the prompt keeps the full width | D: stops at the rail | until answered / deadline |
+| 4 | `day.your-turn` | `input_request` `discuss` for me | S | my puppet at the stand, thinking; the dock carries the two minutes (`deadline`; null = no countdown; the car's wall clock is gone, ruled 2026-09-29); the box is a textarea with **Say it**, **Pass**, **Draft from notes** (three per turn, the returned `deadline` is the new countdown); the drawer stops at the rail so the prompt keeps the full width | D: stops at the rail | until answered / deadline |
 | 5 | `day.your-line` | my `speech` after 4 | S (P sees a normal turn) | the puppet talks my line as any turn plays; a pass leaves it idle | D: my line | speech |
 | 6 | `day.agent-spoke-for-you` | my `speech` arriving with my request unanswered at its deadline (client-known) | S only | the puppet talks the agent's line; the plaque's tag and the box say "your seat's agent spoke for you" | D: the line with the tag | speech |
 | — | `day.summary` | `day_summary` (28, 79, 218, 360) | — | **no beat here.** Public on the wire but the live stage has no beat for it; the replay plays it in the Morning of the same day number (§8 row 8) | — | — |
@@ -119,9 +119,8 @@ for you", counted client-side from unanswered requests). Agents have no client-s
 As built 2026-09-25 (no bench gives them; change here first): the public pass has no reason line
 (the box reads "passes." under the seat's chip). Live, a line or a pass that follows its own
 seat's thinking beat does not rise again: the puppet already at the stand goes on talking (or to
-idle). On my turn beside the drawer (which stops at the rail) the side room's paint has no wall
-for its clock, so the WallClock instrument, ring and all, hangs in the gap between the wing and
-the puppet (centred there, 0.3 of the height down, radius 0.4 of the gap, at most the paint's).
+idle). The car has no wall clock since 2026-09-29 (the car is a painting); my turn's time is on
+the dock alone.
 ## 3. The vote — H§4.3 · bench 64
 
 `vote_cast` is a batch released at the tally, so the vote is blind and parallel and the replay
@@ -160,8 +159,8 @@ until the lynch's card clears the rail. The table's top is the walnut tile in pe
 bench's cloth hanging from its front edge. The ballot: the chosen chip is lit (amber ring, glow),
 the rest dim (the bench raised it); the plate reads "Choose a seat" / "Vote seat 6" / "Abstain";
 "Your vote · Tap a chip, or the empty plate to abstain." with "your seat's agent votes for you in
-1:14"; sent, "Your ballot is in · no one sees it until voting closes" and the wall clock's ring
-goes. Not yet built: the live drop (row 2; the pill reads `turn.progress` once the container feeds
+1:14"; sent, "Your ballot is in · no one sees it until voting closes" (the time is on the plate; the
+car's wall clock is gone since 2026-09-29). Not yet built: the live drop (row 2; the pill reads `turn.progress` once the container feeds
 it from `phase_progress`), the count's X-ray film (row 6).
 
 ## 4. The lynch — H§4.4 · bench 65
@@ -199,8 +198,8 @@ by the staging.
 
 | # | Beat | Anchor | Sees | Stage | Slot | Hold |
 |---|---|---|---|---|---|---|
-| 1 | `night.hub` | `phase_change: night` (32, 120, 253, 387). **Chapter mark: Night N** | P | the dining car, the shutter up on the night window, the living seats hung as chips in a row (the table asleep), the pill "Acted n of N" (padded; the pack counts as one), the wall clock at midnight | D: the GM's "night falls" line | 3.0 |
-| 2 | `night.act-in` | live only: each `phase_progress` (stage `night`) | P | the pill increments; the clock advances toward dawn | — | real time |
+| 1 | `night.hub` | `phase_change: night` (32, 120, 253, 387). **Chapter mark: Night N** | P | the dining car, the shutter up on the night window, the living seats hung as chips in a row (the table asleep), the pill "Acted n of N" (padded; the pack counts as one) | D: the GM's "night falls" line | 3.0 |
+| 2 | `night.act-in` | live only: each `phase_progress` (stage `night`) | P | the pill increments | — | real time |
 | 3 | `night.your-act-in` | my POST confirmed (my room closes) | S | back in the lobby with "Your act is in"; my own mark the only one I see | D: dashed "Only you" line naming my act | 2.0 |
 
 X-ray on (replay): the hub also lights the wing's lamps on every seat that acts tonight (§9).
@@ -385,8 +384,7 @@ the stand ×1.36 (the winners' grammar of §10; bench 67 put them ±0.46 on the 
 seat 2." (protects · checks · shoots · marks, bench 67's verbs). The pack's chat is headed "The
 pack · seats 3 and 8" / "Seat 8 hunts alone"; a line step shows the lines so far, the mark step
 adds the votes and "The pack chooses seat 4 · both teeth", and one bite lands. "Acted n of N"
-counts the spokes whose mark has landed (N of N at the whole); the wall clock stands at 6·n/N hours
-past midnight and sweeps on as a mark lands. The lamps: lit on this actor and those still to come;
+counts the spokes whose mark has landed (N of N at the whole). The lamps: lit on this actor and those still to come;
 this one's goes out at 1.6 s of its mark step (at rest, already out); a seat with no spoke (a
 vigilante holding fire) loses its lamp after the hub. Played: a new actor rises at 0.2 s (+0.22 s
 for the second wolf), its instrument fades in 0.5 s after 0.6 s, the mark pops at 0.9 s, the box
@@ -624,12 +622,12 @@ Ctrl/⌘+Enter says it; one row under it: **Say it** (gold; "Saying…"), **Pass
 server's words under the row in red. Draft errors: 409 → its words and no drafts left, 422 → its
 words, anything else → "Could not draft the line; type it instead." (the notes kept). Send
 errors: 409 → "That turn was already answered." and the request is let go; 422 → its words. My
-puppet stands thinking; the paint's wall clock is swapped for the instrument at 2:12 with the red
-ring (beside the drawer, which stops at the rail, it hangs between the wing and the puppet; §2). A prompt that
+puppet stands thinking; the time left is on the dock (the car's wall clock is gone since
+2026-09-29). A prompt that
 is not the day's (the ballot, a night act, the pack) gets a pill under the top strip, "Let my agent
 play this turn", its error beneath. **Counts:** `phase_progress` feeds the vote's jar and pill
-at the opening ("Ballots in, n of N") and the night hub's "Acted n of N" (clamped to the census)
-with the wall clock at 6·n/N hours. **The curtain:** "Watch the replay" → `/replays/{id}`, "Back
+at the opening ("Ballots in, n of N") and the night hub's "Acted n of N" (clamped to the census).
+**The curtain:** "Watch the replay" → `/replays/{id}`, "Back
 to the lobby" → `/rooms` (links). The drawer opens by default as the replay's. "Reconnecting…"
 under the strip while the stream reconnects. **The deal on first connection:** a new game's
 deal is over before the page connects, so while the history holds no `turn_started` it plays from
@@ -649,8 +647,8 @@ reload during a vote already cast reopens the ballot (a second send gets the 409
 
 | Viewer | Day | Vote | Lynch | Night | Morning | Game over |
 |---|---|---|---|---|---|---|
-| Spectator (P), and the replay with X-ray off | the theatre | the jar, the count | all of it | the lobby: chips, count, clock | the report, chip by chip | the verdict, the winners, the truth, the epilogue |
-| Seated human (S) | + my turn: my puppet, the box, the clock, the draft | + my chip row and face-up chip | + "you are voted out", my card | my room on my turn; the lobby after | + what only I learn | + "you won" / "you lost" |
+| Spectator (P), and the replay with X-ray off | the theatre | the jar, the count | all of it | the lobby: chips, count | the report, chip by chip | the verdict, the winners, the truth, the epilogue |
+| Seated human (S) | + my turn: my puppet, the box, the countdown, the draft | + my chip row and face-up chip | + "you are voted out", my card | my room on my turn; the lobby after | + what only I learn | + "you won" / "you lost" |
 | Wolf (F) | as S | as S | as S | the pack's room, the chat, both teeth as they land | + the pack's note | as S |
 | Replay, X-ray on (X) | + notes, reads | + the voters' consults; the ballots named at the drop | + who had them right | hub, spokes, whole; every act, consult, note | + all private results; the carried summary | + the deal and how it went |
 

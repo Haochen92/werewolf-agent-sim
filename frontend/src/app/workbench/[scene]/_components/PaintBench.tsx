@@ -11,8 +11,8 @@
  */
 import { Layer, Paint } from '@/stage/Stage';
 import { Compartment } from '@/stage/instruments/Compartment';
-import { FeltWindow } from '@/stage/instruments/FeltWindow';
-import { diningCar, diningCarPlan } from '@/stage/paint/dining-car';
+import { CarPaint } from '@/stage/scenes/DiningCarParts';
+import { diningCarPlan } from '@/stage/paint/dining-car';
 import { drape } from '@/stage/paint/drape';
 import { light } from '@/stage/paint/light';
 import { PHASES_IN_ORDER, type Phase } from '@/stage/paint/materials';
@@ -77,8 +77,7 @@ export function PaintBench({ params }: { params: URLSearchParams }) {
       <Layer name="paint">
         {o.room === 'car' ? (
           <>
-            <Paint of={diningCar} opts={{ phase: o.phase, hud: o.hud, wood: WOOD }} />
-            <FeltWindow phase={o.phase} hud={o.hud} />
+            <CarPaint phase={o.phase} hud={o.hud} />
             <Paint
               of={shutter}
               opts={{ hud: o.hud, state: o.shutter, walnut: WOOD.walnut }}

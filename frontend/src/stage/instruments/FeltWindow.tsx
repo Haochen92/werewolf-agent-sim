@@ -5,22 +5,23 @@
  * hills stand still; the near row of pines, fence and pole scrolls left, one picture's width and
  * round again, so the train seems to roll on.
  *
- * It sits over the car's paint, exactly in the glass, so the brass frame still surrounds it, and
- * under everything after it in the paint layer: the shutter covers it when down and uncovers it
- * as it gathers up. At an hour change it crossfades with the car (`fade`, the same transition),
- * as pictures, never live SVG (stage_architecture.md §6). The car's paint fills the glass
- * with the hour's sky until the pictures load; the snow and the blind's pull are drawn on top.
+ * It sits in the car painting's cleared glass (`diningCarPlan().glass`), so the painted brass
+ * frame surrounds it, and under everything after it in the paint layer: the shutter covers it
+ * when down and uncovers it as it gathers up. At an hour change it crossfades with the car
+ * (`fade`, the same transition), as pictures, never live SVG (stage_architecture.md §6). The
+ * glass holds the hour's sky until the pictures load; the snow is drawn on top.
  *
  * The night rooms reuse it behind their paintings' cleared glass (`rect`, `radius`): the same
- * night, no blind to pull, and in the wolves' red-lit room a `tint` of their light on the glass.
+ * night, and in the wolves' red-lit room a `tint` of their light on the glass.
  */
 import Image from 'next/image';
 import { motion, type Transition } from 'motion/react';
 import { useLayoutEffect, useRef, type CSSProperties } from 'react';
 import { SPRITES } from '@/assets/manifest';
-import { CAR, type Phase } from '../paint/materials';
-import { snowfall, windowRect } from '../paint/window';
-import { geometry, STAGE_H, type Hud } from '../units';
+import { diningCarPlan } from '../paint/dining-car';
+import { PHASES, type Phase } from '../paint/materials';
+import { snowfall } from '../paint/window';
+import type { Hud } from '../units';
 import styles from './FeltWindow.module.css';
 
 /** How much of the glass's height the near row fills: tree tops just above the middle. */
@@ -46,7 +47,7 @@ export function FeltWindow({
   /** The car's own crossfade, so the glass and the wall change hour together. */
   fade?: Transition;
   hud: Hud;
-  /** The side slot is open: the window is further left (as for `CarPaint`). */
+  /** The side slot is open: the car's window is further left (as for `CarPaint`). */
   side?: boolean;
   /** The glass as [x, y, w, h] in units, when it is not the car's window (a night room's). */
   rect?: readonly [number, number, number, number];
@@ -55,16 +56,21 @@ export function FeltWindow({
   /** A colour laid over the glass, the room's own light on it (a CSS colour with alpha). */
   tint?: string;
 }) {
-  const [x, y, w, h] = rect ?? windowRect(geometry(hud, side));
-  // the paint's corner radius (window.ts `windowFrame`), so the frame's brass meets the felt
-  const r = radius ?? 0.04 * STAGE_H;
-  const pull =
-    `<path d="M${w / 2},-8 v16" stroke="#2a180c" stroke-width="2"/>` +
-    `<circle cx="${w / 2}" cy="12" r="5" fill="none" stroke="${CAR.brass}" stroke-width="2"/>`;
+  // the car's painted glass, unless a room gives its own
+  const car = rect ? null : diningCarPlan({ phase, hud, side }).glass;
+  const [x, y, w, h] = rect ?? [car!.x, car!.y, car!.w, car!.h];
+  const r = radius ?? car!.r;
   return (
     <div
       className={styles.glass}
-      style={{ left: x, top: y, width: w, height: h, borderRadius: r }}
+      style={{
+        left: x,
+        top: y,
+        width: w,
+        height: h,
+        borderRadius: r,
+        background: PHASES[phase].skyTop,
+      }}
       data-felt-window={phase}
     >
       <Country hour={phase} w={w} h={h} />
@@ -86,14 +92,6 @@ export function FeltWindow({
       />
       {tint ? <div className={styles.fill} style={{ background: tint }} /> : null}
       <div className={styles.pane} />
-      {/* a room's painted window has no blind */}
-      {rect ? null : (
-        <svg
-          className={styles.fill}
-          viewBox={`0 0 ${w} ${h}`}
-          dangerouslySetInnerHTML={{ __html: pull }}
-        />
-      )}
     </div>
   );
 }

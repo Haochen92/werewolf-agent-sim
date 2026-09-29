@@ -44,6 +44,12 @@ describe('sprite manifest', () => {
       expect([img.width, img.height]).toEqual([1536, 915]);
   });
 
+  it('has the dining car by day and by night, fitted to the stage', () => {
+    expect(Object.keys(SPRITES.car).sort()).toEqual(['day', 'night']);
+    for (const img of Object.values(SPRITES.car))
+      expect([img.width, img.height]).toEqual([1600, 900]);
+  });
+
   it('has the room’s surface textures', () => {
     expect(Object.keys(SPRITES.textures).sort()).toEqual(['boards', 'velvet', 'walnut']);
     for (const img of Object.values(SPRITES.textures)) hasSize(img);

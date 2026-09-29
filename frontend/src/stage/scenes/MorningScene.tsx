@@ -41,7 +41,7 @@ import { ROLE_ARTICLE } from '../paint/role-kit';
 import { seatNumber } from '../roles';
 import { bandNarrows, sideOpen, stripButtons } from '../slot';
 import { STAGE_H, geometry } from '../units';
-import { CarFloor, CarPaint, HouseLights, StandReturns, TableWing } from './DiningCarParts';
+import { CarPaint, HouseLights, StandReturns, TableWing } from './DiningCarParts';
 import type { SceneProps } from './types';
 
 /** One line of the report: a death, or the save. */
@@ -364,7 +364,6 @@ function MorningBeat({ view, beat, me, presentation, slot: slotInput }: ScenePro
           delay={dayBegins ? 1.4 : 0.35}
         />
       </Layer>
-      <CarFloor g={g} />
 
       <Layer name="figures">{figures}</Layer>
       <Layer name="instruments">{marks}</Layer>
@@ -390,7 +389,7 @@ function MorningBeat({ view, beat, me, presentation, slot: slotInput }: ScenePro
           hud={hud}
           pool={pool}
           specials={specials}
-          dark={dayBegins ? 30 : 58}
+          dark={dayBegins ? 14 : 38}
           side={side}
         />
       </Layer>

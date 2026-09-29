@@ -31,7 +31,7 @@ import { SideSlot } from '../SideSlot';
 import { ChipSprite } from '../cast/ChipSprite';
 import { Puppet } from '../cast/Puppet';
 import { RoleCard } from '../instruments/Card';
-import { Apron, Trap } from '../instruments/Floor';
+import { Trap } from '../instruments/Floor';
 import { Ledger } from '../instruments/Ledger';
 import { CardButton, Notice, NoticeZone } from '../instruments/Notice';
 import { Shutter } from '../instruments/Shutter';
@@ -141,7 +141,7 @@ function OverBeat({ view, beat, me, presentation, slot: slotInput, wayOut }: Sce
             rx: g.pwid * (winners.length <= 1 ? 0.6 : winners.length === 2 ? 0.95 : 1.15),
             ry: g.pwid * 0.95,
           };
-  const dark = step === 0 ? 62 : step === 1 ? 40 : step === 2 ? 55 : 34;
+  const dark = step === 0 ? 44 : step === 1 ? 24 : step === 2 ? 38 : 18;
 
   const roleOf = (s: string) => knownRole(view, s);
   const myRole = me ? (view.me.role?.role ?? null) : null;
@@ -170,9 +170,9 @@ function OverBeat({ view, beat, me, presentation, slot: slotInput, wayOut }: Sce
       </Layer>
 
       <Layer name="floor">
-        <Apron g={g} />
         <Trap
           g={g}
+          phase={phase}
           state={ended === 'lynch' && step === 0 ? 'open' : 'closed'}
           animate={animate && step === 1 && ended === 'lynch'}
         />

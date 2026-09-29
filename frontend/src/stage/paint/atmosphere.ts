@@ -1,16 +1,15 @@
 /**
- * The atmosphere's paint: the one key light's strength at each hour, the shadow the car's
- * window (its frame and pelmet) casts down and to the right of it, and the veil that sets the
- * car's back wall back, left open where a lamp is lit. The wall clock and the lamp are painted
- * pictures that throw their own baked shadows (WallClock, WallLamp).
+ * The atmosphere's paint: the one key light's strength at each hour, the shadow the shutter's
+ * pelmet casts down and to the right of it, and the veil that sets the car's back wall back,
+ * left open where a lamp is lit. The car is a painting whose frame and lamps carry their own
+ * painted shadows, so only the pelmet drawn over it casts one here.
  *
  * The key light comes from the upper left, as the puppets' own pictures are lit. By day and
  * at the hour changes it warms the upper-left of the room a touch; at night the lamp leads, so
- * it all but goes out and leaves the room to the lantern's pool and the specials.
+ * it all but goes out and leaves the room to the lamps' pools and the specials.
  *
- * The car already draws a short cut-out shadow under the window (draw.ts `cutout`); this is the
- * longer, softer one the key light throws, masked by the window itself, so it only ever lies
- * on the wall. The night compartments have no such pieces; their veil is a plain gradient.
+ * The shadow is the long, soft one the key light throws, masked by the pelmet itself, so it only
+ * ever lies on the wall. The night compartments have no such pieces; their veil is a plain gradient.
  */
 import { BLEED, geometry, STAGE_H, STAGE_W, type Hud } from '../units';
 import { diningCarPlan } from './dining-car';
@@ -55,17 +54,11 @@ export function carHaze(o: {
   // each piece's shape, in the colour given (the shadow's ink, or the mask's black)
   const pieces: { kind: keyof typeof CAST; shape: (ink: string) => string }[] = [];
 
-  // the window: its frame, the blind's roll, the sill and the shutter's pelmet above it
-  const [wx, wy, ww, wh] = plan.window,
-    rr = 0.04 * H,
-    { pel } = shutterGeometry(geometry(hud, side));
+  // the shutter's pelmet over the window (the painted frame below it has its own shadow)
+  const { pel } = shutterGeometry(geometry(hud, side));
   pieces.push({
     kind: 'frame',
-    shape: () =>
-      `<rect x="${wx - 10}" y="${wy - 10}" width="${ww + 20}" height="${wh + 20}" rx="${rr + 8}"/>` +
-      `<rect x="${wx - 4}" y="${wy - 22}" width="${ww + 8}" height="14" rx="7"/>` +
-      `<rect x="${wx - 12}" y="${wy + wh + 14}" width="${ww + 24}" height="8" rx="4"/>` +
-      `<rect x="${pel.x}" y="${pel.y}" width="${pel.w}" height="${pel.h + 5}"/>`,
+    shape: () => `<rect x="${pel.x}" y="${pel.y}" width="${pel.w}" height="${pel.h + 5}"/>`,
   });
 
   // the holes: each piece's own shape

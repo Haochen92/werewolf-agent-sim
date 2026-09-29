@@ -25,14 +25,13 @@ import { Puppet, puppetBox } from '../cast/Puppet';
 import { BallotLine, BallotRow } from '../instruments/BallotRow';
 import { countText } from '../countdown';
 import { CountPill } from '../instruments/CountPill';
-import { Apron, Trap } from '../instruments/Floor';
+import { Trap } from '../instruments/Floor';
 import { Lift } from '../instruments/Lift';
 import { CardButton, Notice, NoticeZone } from '../instruments/Notice';
 import { Shutter } from '../instruments/Shutter';
 import { Plaque, Stand } from '../instruments/Stand';
 import { TopStrip } from '../instruments/TopStrip';
 import { VoteTable } from '../instruments/VoteTable';
-import { WallClock } from '../instruments/WallClock';
 import {
   countShot,
   jarGeometry,
@@ -42,7 +41,6 @@ import {
 import type { LidState } from '../instruments/Jar';
 import { motion } from 'motion/react';
 import { StageMotion, useMotionScale } from '../motion';
-import { diningCarPlan } from '../paint/dining-car';
 import type { Special } from '../paint/draw';
 import { seatNumber, seatify } from '../roles';
 import { bandNarrows, sideOpen, stripButtons } from '../slot';
@@ -199,10 +197,6 @@ function VoteBeat({
   const ln = leaving ? seatNumber(leaving) : 0;
   const leavingChar = ln ? cast[ln - 1] : null;
 
-  const clock = diningCarPlan({ phase: 'dusk', hud, side }).clock;
-  // the clock runs for the prompt only: once the ballot is in, this seat watches like the rest
-  const ring =
-    prompt && !sent && turn?.clock ? turn.clock.remainingMs / turn.clock.totalMs : null;
   const myCard = me ? (view.me.role?.role ?? null) : null;
   const words =
     resolved && vote
@@ -218,20 +212,9 @@ function VoteBeat({
           phase={nightFalls ? 'night' : 'dusk'}
           from={animate ? (id === 'vote.opens' ? 'day' : nightFalls ? 'dusk' : null) : null}
           hud={hud}
-          wallClock={!prompt}
           fadeDelay={nightFalls ? 2.4 : 0.15}
           side={side}
         />
-        {prompt && clock ? (
-          <WallClock
-            x={clock.x}
-            y={clock.y}
-            r={clock.r}
-            time={6}
-            ring={ring}
-            phase="dusk"
-          />
-        ) : null}
         <Shutter
           g={g}
           state={nightFalls ? 'open' : 'closed'}
@@ -241,9 +224,9 @@ function VoteBeat({
       </Layer>
 
       <Layer name="floor">
-        <Apron g={g} />
         <Trap
           g={g}
+          phase={nightFalls ? 'night' : 'dusk'}
           state={nightFalls ? 'closed' : 'open'}
           animate={animate && (id === 'vote.opens' || nightFalls)}
         />
@@ -327,7 +310,7 @@ function VoteBeat({
           hud={hud}
           pool={pool}
           specials={specials}
-          dark={50}
+          dark={30}
           side={side}
         />
       </Layer>

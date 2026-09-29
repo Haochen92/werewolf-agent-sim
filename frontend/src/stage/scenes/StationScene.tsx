@@ -120,7 +120,7 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
   return (
     <>
       <Layer name="paint">
-        <Bleed room="station" hud={hud} />
+        <Bleed room="station" />
         <Paint of={stationBack} opts={{ hud, sky: SPRITES.station.sky.src }} />
         {/* the train stays inside the world: past its sides the bleed's dark takes over */}
         <div className={styles.world}>

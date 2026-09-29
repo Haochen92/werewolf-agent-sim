@@ -35,7 +35,6 @@ import { RailInstrument } from '../instruments/RailInstrument';
 import { Shutter } from '../instruments/Shutter';
 import { Plaque, Stand } from '../instruments/Stand';
 import { TopStrip } from '../instruments/TopStrip';
-import { WallClock } from '../instruments/WallClock';
 import { chipRow, rowX } from '../instruments/flies';
 import { StageMotion, useMotionScale } from '../motion';
 import { diningCarPlan } from '../paint/dining-car';
@@ -43,7 +42,7 @@ import type { Special } from '../paint/draw';
 import { ROLE_NAME, factionOf, seatNumber } from '../roles';
 import { bandNarrows, sideOpen, stripButtons } from '../slot';
 import { HUD_CHROME, STAGE_H, STAGE_W, geometry, standBox } from '../units';
-import { CarFloor, CarPaint, HouseLights, TableWing } from './DiningCarParts';
+import { CarPaint, HouseLights, TableWing } from './DiningCarParts';
 import { NightLobbyScene, nightUnits } from './NightLobbyScene';
 import { packEntries } from './PackScene';
 import { standSet } from './game-over';
@@ -181,20 +180,9 @@ function NightSpoke({ view, beat, me, presentation, slot: slotInput }: SceneProp
     <>
       <Atmosphere room="car" phase="night" hud={hud} side={side} />
       <Layer name="paint">
-        <CarPaint phase="night" hud={hud} wallClock={false} side={side} />
-        {plan.clock ? (
-          <WallClock
-            x={plan.clock.x}
-            y={plan.clock.y}
-            r={plan.clock.r}
-            time={(6 * acted) / Math.max(1, total)}
-            from={animate && markStep ? (6 * (acted - 1)) / Math.max(1, total) : null}
-            phase="night"
-          />
-        ) : null}
+        <CarPaint phase="night" hud={hud} side={side} />
         <Shutter g={g} state="open" />
       </Layer>
-      <CarFloor g={g} />
 
       <Layer name="figures">
         {seats.map((seat, i) => {
@@ -279,7 +267,7 @@ function NightSpoke({ view, beat, me, presentation, slot: slotInput }: SceneProp
           pool={pool}
           specials={specials}
           quiet={toolLight}
-          dark={whole ? 66 : 62}
+          dark={whole ? 46 : 42}
           side={side}
         />
       </Layer>

@@ -1,25 +1,23 @@
 'use client';
 
 /**
- * The stage floor in front of the back wall: the apron (the boards running on to the frame's
- * edge below the rail) and the trap, the two-leaf door in it that the vote's table rises
- * through and the voted-out puppet drops through. By day both sit under the stand, the trap
- * shut; they are drawn anyway so that the stand can go and the floor is already there.
+ * The trap in the stage floor: the two-leaf door the vote's table rises through and the
+ * voted-out puppet drops through. The floor itself is the car's painting (CarBackdrop), so a
+ * shut trap at rest draws nothing: the painted floor is its leaves.
  *
  * Played (`animate`), the trap opens (the leaves fold down flat into the floor's edge, then
  * stand up either side of the hole) or shuts (the standing leaves fold down, then the flat
  * ones lay back over the hole), at the vote bench's timings (rev 64 `.leaf-*`). The numbers
- * are the deal bench's (rev 75, `VG`, `apronSVG`, `trapSVG`).
- *
- * The boards are the floor's texture (paint/texture.ts), its seams laid on the drawn ones: the
- * apron's every 0.05 of the stage's height, each leaf's two planks either side of its seam.
+ * are the deal bench's (rev 75, `VG`, `trapSVG`). The flat leaves are cut from the painting
+ * itself at the car's hour, so they are the floor they fold out of and lie back into.
  */
 import { useId, type ReactNode } from 'react';
+import { SPRITES } from '@/assets/manifest';
 import { Tween, about } from './Tween';
-import { BOARD2, K2 } from '../paint/materials';
-import { boards } from '../paint/texture';
+import { CAR_TINT } from './CarBackdrop';
+import { diningCarPlan } from '../paint/dining-car';
+import { K2, type Phase } from '../paint/materials';
 import { carLines } from '../paint/window';
-import { WOOD } from '../textures';
 import { STAGE_H, STAGE_W, type StageGeometry } from '../units';
 
 /** The trap's geometry, in units: a tenth wider than the vote's table, centred on the stand. */
@@ -55,46 +53,6 @@ const svgProps = {
   },
 } as const;
 
-/** The boards from the rail to the frame's foot, faded into the dark at both ends. */
-export function Apron({ g }: { g: StageGeometry }) {
-  const fade = 'ap' + useId().replace(/[^A-Za-z0-9_-]/g, '');
-  const B = g.railY,
-    H = STAGE_H,
-    W = STAGE_W;
-  const seams: number[] = [];
-  for (let y = B + 0.045 * H; y < H; y += 0.05 * H) seams.push(y);
-  const rect = { x: 0, y: B - 2, width: W, height: H - B + 2 };
-  return (
-    <svg {...svgProps} aria-hidden="true">
-      <defs
-        dangerouslySetInnerHTML={{
-          __html: boards(fade + 'b', WOOD.boards, B + 0.045 * H, 0.05 * H),
-        }}
-      />
-      <defs>
-        <linearGradient id={fade} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#0c0a07" stopOpacity=".95" />
-          <stop offset=".12" stopColor="#0c0a07" stopOpacity="0" />
-          <stop offset=".88" stopColor="#0c0a07" stopOpacity="0" />
-          <stop offset="1" stopColor="#0c0a07" stopOpacity=".95" />
-        </linearGradient>
-      </defs>
-      <rect {...rect} fill={`url(#${fade}b)`} />
-      {seams.map((y) => (
-        <path
-          key={y}
-          d={`M0,${y.toFixed(0)} H${W}`}
-          stroke={BOARD2}
-          strokeWidth={1.6}
-          opacity={0.7}
-        />
-      ))}
-      <rect {...rect} fill={`url(#${fade})`} />
-      <rect {...rect} fill="#0c0a07" opacity={0.18} />
-    </svg>
-  );
-}
-
 export type TrapState = 'closed' | 'open';
 
 /**
@@ -105,19 +63,38 @@ export function Trap({
   g,
   state,
   animate = false,
+  phase = 'dusk',
 }: {
   g: StageGeometry;
   state: TrapState;
   animate?: boolean;
+  /** The car's hour, whose painted floor the flat leaves are cut from. */
+  phase?: Phase;
 }) {
   const t = trapGeometry(g),
     h = t.holeBot - t.holeTop;
-  // the leaves' boards: two planks each, meeting on the drawn seam
+  // the leaves' face: the car's painted floor where they lie, at the car's hour
   const tex = 'tr' + useId().replace(/[^A-Za-z0-9_-]/g, '');
+  const at = diningCarPlan({ phase, hud: g.hud, side: g.side }).picture,
+    tint = CAR_TINT[phase];
   const defs = (
-    <defs
-      dangerouslySetInnerHTML={{ __html: boards(tex, WOOD.boards, t.holeTop, h / 2) }}
-    />
+    <defs>
+      <pattern
+        id={tex}
+        patternUnits="userSpaceOnUse"
+        x={at.x}
+        y={at.y}
+        width={STAGE_W}
+        height={STAGE_H}
+      >
+        <image
+          href={SPRITES.car[phase === 'night' ? 'night' : 'day'].src}
+          width={STAGE_W}
+          height={STAGE_H}
+        />
+        {tint ? <rect width={STAGE_W} height={STAGE_H} fill={tint} /> : null}
+      </pattern>
+    </defs>
   );
   const ink = { stroke: K2, strokeLinejoin: 'round', strokeLinecap: 'round' } as const;
   // a flat leaf folds about the trap's outer edge; a standing leaf rises from the hole's foot
@@ -168,35 +145,17 @@ export function Trap({
     const w = t.trapW / 2;
     return flatMove(
       x,
-      <g key={x}>
-        <path
-          d={`M${x},${t.holeTop} h${w} v${h} h${-w}Z`}
-          fill={`url(#${tex})`}
-          strokeWidth={2}
-          {...ink}
-        />
-        <path
-          d={`M${x + 6},${t.holeTop + h * 0.5} H${x + w - 6}`}
-          stroke={BOARD2}
-          strokeWidth={1.4}
-          opacity={0.7}
-        />
-        <path
-          d={`M${x + 8},${t.holeTop + 7} H${x + w - 8}`}
-          stroke="#2a1a0c"
-          strokeWidth={2}
-        />
-      </g>,
+      <path
+        key={x}
+        d={`M${x},${t.holeTop} h${w} v${h} h${-w}Z`}
+        fill={`url(#${tex})`}
+        strokeWidth={1.6}
+        {...ink}
+      />,
     );
   });
-  if (state === 'closed' && !animate) {
-    return (
-      <svg {...svgProps} aria-hidden="true">
-        {defs}
-        {flat}
-      </svg>
-    );
-  }
+  // shut and still: the painted floor is the trap
+  if (state === 'closed' && !animate) return null;
   return (
     <svg {...svgProps} aria-hidden="true">
       {defs}

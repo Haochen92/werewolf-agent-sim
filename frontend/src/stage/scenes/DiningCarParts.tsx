@@ -8,43 +8,36 @@
  */
 import { motion } from 'motion/react';
 import { useEffect } from 'react';
-import type { Character, DayState } from '@/assets/manifest';
+import { SPRITES, type Character, type DayState } from '@/assets/manifest';
 import type { GameView, SpeechSlot, PassSlot } from '@/game/types';
-import { Layer, Paint, PaintPicture, preloadPictures } from '../Stage';
+import { Layer, Paint } from '../Stage';
 import { Puppet } from '../cast/Puppet';
-import { Bleed } from '../instruments/Bleed';
+import { PaintedBleed } from '../instruments/Bleed';
+import { CarBackdrop } from '../instruments/CarBackdrop';
 import { FeltWindow } from '../instruments/FeltWindow';
-import { WallClock } from '../instruments/WallClock';
-import { WallLamp } from '../instruments/WallLamp';
-import { Apron, Trap } from '../instruments/Floor';
 import { SpeechBox } from '../instruments/SpeechBox';
 import { Plaque, Stand } from '../instruments/Stand';
 import { Wing, WingTile } from '../instruments/Wing';
 import { useMotionScale } from '../motion';
 import { beam, type Special } from '../paint/draw';
-import { diningCar, diningCarPlan } from '../paint/dining-car';
+import { diningCarPlan } from '../paint/dining-car';
 import { drape } from '../paint/drape';
 import { light, type Pool } from '../paint/light';
-import { CLOCK, type Phase } from '../paint/materials';
+import type { Phase } from '../paint/materials';
 import { ROLE_NAME, factionOf, seatNumber } from '../roles';
-import { VELVET, WOOD } from '../textures';
+import { VELVET } from '../textures';
 import { BLEED, STAGE_H, STAGE_W, type Hud, type StageGeometry } from '../units';
 
-/** The time the wall clock keeps at an hour, in hours past midnight (materials.ts `CLOCK`). */
-const hourOf = (p: Phase) => CLOCK[p][0] + CLOCK[p][1] / 60;
-
 /**
- * The car at an hour; played from another hour, the old paint fades off over the new. Under
- * both, the bleed past the stage's sides, on the new hour at once. Over them, the painted wall
- * clock (its hands on the hour's time, sweeping on from the last) and the wall lamp, lit or not.
- * The walls and floor wear their textures; the fading picture carries them inside it
- * (PaintPicture), so they are made ready for it as soon as the car is up.
+ * The car at an hour; played from another hour, the old hour's picture fades off over the new
+ * (the night picture comes in over the day's). Its sides sink into the house's dark past the
+ * painting's edges, for a screen wider than 16:9. Over it, the felt country in its glass,
+ * changing hour with it.
  */
 export function CarPaint({
   phase,
   from,
   hud,
-  wallClock = true,
   fadeDelay = 1.2,
   side,
 }: {
@@ -52,22 +45,20 @@ export function CarPaint({
   /** Played: the hour the car was at before this beat. */
   from?: Phase | null;
   hud: Hud;
-  wallClock?: boolean;
   fadeDelay?: number;
-  /** The side slot is open: the room is drawn narrower, moved left (the X-ray's film is up). */
+  /** The side slot is open: the room is moved left (the X-ray's film is up). */
   side?: boolean;
 }) {
   const k = useMotionScale();
   const fade = { duration: 1.2 * k, delay: fadeDelay * k, ease: 'easeInOut' } as const;
   const plan = diningCarPlan({ phase, hud, side });
-  const was = from && from !== phase ? from : null;
-  // the hands only ever go forward: from an hour later on the dial, round past twelve
-  const wasTime = was ? hourOf(was) - (hourOf(was) > hourOf(phase) ? 12 : 0) : null;
-  useEffect(() => preloadPictures([WOOD.walnut, WOOD.boards]), []);
+  // both pictures ready before an hour's change needs the other one
+  useEffect(() => {
+    for (const p of Object.values(SPRITES.car)) new window.Image().src = p.src;
+  }, []);
   return (
     <>
-      <Bleed room="car" phase={phase} hud={hud} />
-      <Paint of={diningCar} opts={{ phase, hud, side, wood: WOOD }} />
+      <CarBackdrop phase={phase} hud={hud} side={side} />
       {from && from !== phase ? (
         <motion.div
           style={{ position: 'absolute', inset: 0 }}
@@ -75,23 +66,11 @@ export function CarPaint({
           animate={{ opacity: 0 }}
           transition={fade}
         >
-          <PaintPicture of={diningCar} opts={{ phase: from, hud, side, wood: WOOD }} />
+          <CarBackdrop phase={from} hud={hud} side={side} />
         </motion.div>
       ) : null}
+      <PaintedBleed x={plan.picture.x} w={STAGE_W} outside />
       <FeltWindow phase={phase} from={from} fade={fade} hud={hud} side={side} />
-      {wallClock && plan.clock ? (
-        <WallClock
-          {...plan.clock}
-          time={hourOf(phase)}
-          from={wasTime}
-          phase={phase}
-          tintFrom={was}
-          fade={fade}
-        />
-      ) : null}
-      {plan.lamp ? (
-        <WallLamp x={plan.lamp.x} y={plan.lamp.y} phase={phase} from={was} fade={fade} />
-      ) : null}
     </>
   );
 }
@@ -129,6 +108,7 @@ export function HouseLights({
           dark,
           specials: [...specials, ...quiet],
           scene: { glows: plan.glows, specials: plan.specials },
+          lamps: plan.lamps,
           bleed: BLEED,
         }}
       />
@@ -196,16 +176,6 @@ export function TableWing({
         })}
       </Wing>
     </>
-  );
-}
-
-/** The floor in front of the wall: the boards, the trap shut. */
-export function CarFloor({ g }: { g: StageGeometry }) {
-  return (
-    <Layer name="floor">
-      <Apron g={g} />
-      <Trap g={g} state="closed" />
-    </Layer>
   );
 }
 

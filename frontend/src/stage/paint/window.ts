@@ -1,21 +1,18 @@
 /**
- * The dining car's window: the brass frame around the glass, and the louvred shutter that
- * covers it. The country behind the glass is not drawn here: it is felt pictures, one set per
- * hour, laid over the glass by the FeltWindow instrument.
+ * The dining car's window: its place in the layout, and the louvred shutter that covers it.
+ * The frame and the glass are the car's painting (CarBackdrop); the country behind the glass
+ * is felt pictures, one set per hour, laid over it by the FeltWindow instrument.
  *
- * The window is its own module because two things draw it. The dining car paints the frame
- * and the glass as part of the wall. The shutter is painted separately, on top of the
- * car, because it sits in front of the room's own tint (in the benches it is a prop over
- * the backdrop, so the night's blue wash never falls on it) and because it is the one part
- * of the window that later moves: the shutter's motion will be an instrument that reuses
- * the geometry here. At rest it is either gathered up under its pelmet or down over the glass.
+ * The shutter is drawn over the painting, because it is the one part of the window that moves
+ * (the Shutter instrument reuses the geometry here). At rest it is either gathered up under its
+ * pelmet, which sits on the painted blind's housing, or down over the glass and its frame.
  *
- * Sources: the frame from the design kit (kits/stage-kit.js); the shutter
- * from the cover bench (revision 66), as the game-over bench (revision 73) draws it.
+ * Sources: the window's place from the design kit (kits/stage-kit.js); the shutter from the
+ * cover bench (revision 66), as the game-over bench (revision 73) draws it.
  */
 import { geometry, STAGE_H, STAGE_W, type Hud, type StageGeometry } from '../units';
 import { brass, inkP, K2, rnd, type Rect } from './draw';
-import { CAR, type PhasePaint } from './materials';
+import { CAR } from './materials';
 import { DARKER, walnutAcross, walnutImage } from './texture';
 
 /** The dining car's horizontal lines, shared by the car and its window. */
@@ -49,27 +46,6 @@ export const snowfall = (x: number, y: number, w: number, h: number, s: number):
     f += `<circle cx="${(x + rnd(i, 241) * w).toFixed(0)}" cy="${(y + rnd(i, 242) * h).toFixed(0)}" r="${((0.9 + rnd(i, 243) * 1.4) * s).toFixed(1)}" fill="#fff" fill-opacity=".8"/>`;
   return `<g class="sk-snw" style="--sh:${h.toFixed(0)}px">${f}<g transform="translate(0,${-Number(h.toFixed(0))})">${f}</g></g>`;
 };
-
-/* the window behind the puppet: brass, rounded corners, the blind rolled at the top, frost on the glass */
-export function windowFrame(c: PhasePaint, rect: Rect, s: number): string {
-  const [wx, wy, ww, wh] = rect,
-    rr = 0.04 * STAGE_H;
-  let d =
-    `<rect x="${wx - 10 * s}" y="${wy - 10 * s}" width="${ww + 20 * s}" height="${wh + 20 * s}" rx="${rr + 8 * s}" fill="${CAR.brass}" stroke="${K2}" stroke-width="${2.2 * s}"/>` +
-    // the glass: the felt country (FeltWindow) lies over it; the hour's sky shows until it loads
-    `<rect x="${wx}" y="${wy}" width="${ww}" height="${wh}" rx="${rr}" fill="${c.skyTop}"/>`;
-  d += `<rect x="${wx}" y="${wy}" width="${ww}" height="${wh}" rx="${rr}" fill="none" stroke="#2a180c" stroke-width="${3 * s}"/>`;
-  for (const [kx, ky, dx, dy] of [
-    [wx, wy, 1, 1],
-    [wx + ww, wy, -1, 1],
-    [wx, wy + wh, 1, -1],
-    [wx + ww, wy + wh, -1, -1],
-  ])
-    d += `<path d="M${kx},${ky + dy * wh * 0.28} Q${kx + dx * ww * 0.06},${ky + dy * wh * 0.1} ${kx + dx * ww * 0.16},${ky}" fill="#fff" fill-opacity=".38"/>`;
-  d += `<rect x="${wx - 4 * s}" y="${wy - 22 * s}" width="${ww + 8 * s}" height="${14 * s}" rx="${7 * s}" fill="#efe4cb" stroke="${K2}" stroke-width="${2 * s}"/><path d="M${wx + ww / 2},${wy - 8 * s} v${16 * s}" stroke="#2a180c" stroke-width="${2 * s}"/><circle cx="${wx + ww / 2}" cy="${wy + 12 * s}" r="${5 * s}" fill="none" stroke="${CAR.brass}" stroke-width="${2 * s}"/>`;
-  d += `<rect x="${wx - 12 * s}" y="${wy + wh + 14 * s}" width="${ww + 24 * s}" height="${8 * s}" rx="${4 * s}" fill="${CAR.brass}" stroke="${K2}" stroke-width="${1.6 * s}"/>`;
-  return d;
-}
 
 /* ---------- the shutter ---------- */
 const WAL = '#3a2212',

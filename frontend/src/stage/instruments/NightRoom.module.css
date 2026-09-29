@@ -3,9 +3,7 @@
    (2026-09-28). Every size is in units (1cqw on the benches = 16 units here). */
 
 /* ---- the painted room (Compartment.tsx) ---- */
-.room,
-.mirror,
-.house {
+.room {
   position: absolute;
   top: 0;
   pointer-events: none;
@@ -23,24 +21,6 @@
   bottom: 0;
   left: calc(-1 * var(--bleed));
   right: calc(-1 * var(--bleed));
-}
-/* the painting's last stretch, mirrored past its edge, sinking into the house's dark */
-.mirror {
-  overflow: hidden;
-}
-.mirror img {
-  position: absolute;
-  top: 0;
-  max-width: none;
-  transform: scaleX(-1);
-}
-.mirror i,
-.house {
-  position: absolute;
-  inset: 0;
-}
-.house {
-  background: #0c0a07;
 }
 
 /* ---- the photos on their line ---- */

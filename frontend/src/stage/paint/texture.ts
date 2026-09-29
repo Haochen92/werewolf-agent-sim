@@ -25,23 +25,6 @@ export const VELVET = 400;
 export const walnutImage = (id: string, href: string): string =>
   `<image id="${id}" href="${href}" width="${WALNUT}" height="${WALNUT}" preserveAspectRatio="none"/>`;
 
-// where each panel's window starts on the tile, as a share of the room it has to move in
-const WINDOWS = [0, 0.62, 0.23, 0.85, 0.41];
-
-/**
- * Veneered panels: a pattern five panels wide, each panel a different window on the walnut
- * tile, so neighbours never share their grain and the repeat is five panels long. `x0` is a
- * panel's left edge; `img` the id of `walnutImage`. Grain runs up and down.
- */
-export function veneer(id: string, img: string, x0: number, panel: number): string {
-  const slack = WALNUT - panel;
-  let q = `<pattern id="${id}" patternUnits="userSpaceOnUse" x="${x0}" y="0" width="${panel * WINDOWS.length}" height="${WALNUT}">`;
-  WINDOWS.forEach((f, i) => {
-    q += `<svg x="${i * panel}" y="0" width="${panel}" height="${WALNUT}"><use href="#${img}" x="${(-f * slack).toFixed(1)}"/></svg>`;
-  });
-  return q + '</pattern>';
-}
-
 /** Walnut with its grain running across: a rail, a board, a pelmet. */
 export const walnutAcross = (id: string, img: string): string =>
   `<pattern id="${id}" patternUnits="userSpaceOnUse" width="${WALNUT}" height="${WALNUT}" patternTransform="rotate(90)"><use href="#${img}"/></pattern>`;

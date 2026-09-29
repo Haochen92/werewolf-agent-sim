@@ -129,7 +129,7 @@ export function marksAt(branches: readonly NightBranch[], spoke: Spoke | null): 
 }
 
 /**
- * How many of the night's units are in at a spoke (the pill, the clock): the branches told
+ * How many of the night's units are in at a spoke (the pill): the branches told
  * so far, counting this one once its mark has landed. The night whole is all of them.
  */
 export function actedAt(

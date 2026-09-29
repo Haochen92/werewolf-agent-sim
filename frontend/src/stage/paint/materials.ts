@@ -112,14 +112,6 @@ export const ROOMLIGHT: Record<Phase, { tint: string | null; a: number; glow: nu
   dawn: { tint: '#6d7c86', a: 0.26, glow: 0.3 },
 };
 
-// the wall clock keeps the phase: [hour, minute]
-export const CLOCK: Record<Phase, [number, number]> = {
-  day: [2, 12],
-  dusk: [6, 12],
-  night: [12, 12],
-  dawn: [6, 6],
-};
-
 /** The dining car's woods and its brass. */
 export const CAR = {
   dadoH: 0.15,

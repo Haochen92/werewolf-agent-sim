@@ -106,16 +106,13 @@ import propJarGlass from './sprites/props/jar-glass.webp';
 import propJarLid from './sprites/props/jar-lid.webp';
 import propStand from './sprites/props/stand-front.webp';
 import propVoteTable from './sprites/props/vote-table.webp';
-import propWallClock from './sprites/props/wall-clock.webp';
-import propWallLampUnlit from './sprites/props/wall-lamp-unlit.webp';
-import propWallLampLit from './sprites/props/wall-lamp-lit.webp';
+import carDay from './sprites/car/day.webp';
+import carNight from './sprites/car/night.webp';
 import roomHealer from './sprites/rooms/healer.webp';
 import roomInvestigator from './sprites/rooms/investigator.webp';
 import roomVigilante from './sprites/rooms/vigilante.webp';
 import roomSerialKiller from './sprites/rooms/serial_killer.webp';
 import roomWolf from './sprites/rooms/wolf.webp';
-import wallClockShadow from './sprites/shadow/wall-clock.webp';
-import wallLampShadow from './sprites/shadow/wall-lamp.webp';
 import owlBaseShadow from './sprites/shadow/day/owl/base.webp';
 import owlTalkingShadow from './sprites/shadow/day/owl/talking.webp';
 import owlThinkingShadow from './sprites/shadow/day/owl/thinking.webp';
@@ -262,17 +259,16 @@ export type WindowPicture = 'far' | 'near';
 
 /**
  * The painted props (alpha): the ballot jar's glass and its lid, the stand's front (drawn as a
- * 9-slice), the vote's table with its cloth, the car's wall clock (no hands) and its wall lamp,
- * unlit and lit. Recipe: stage_architecture §4.
+ * 9-slice), the vote's table with its cloth. Recipe: stage_architecture §4.
  */
-export type PropPicture =
-  | 'jarGlass'
-  | 'jarLid'
-  | 'stand'
-  | 'voteTable'
-  | 'wallClock'
-  | 'wallLampUnlit'
-  | 'wallLampLit';
+export type PropPicture = 'jarGlass' | 'jarLid' | 'stand' | 'voteTable';
+
+/**
+ * The dining car (opaque but for the window's glass): its walls, window frame, lamps and floor,
+ * painted once by day and relit for the night, both fitted to the stage. Recipe:
+ * stage_architecture §4 "The dining car".
+ */
+export type CarPicture = 'day' | 'night';
 
 /**
  * The night rooms (opaque but for the window's glass): the acting seat's sleeping compartment by
@@ -300,10 +296,10 @@ export const SPRITES: {
   station: Record<StationPicture, StaticImageData>;
   window: Record<WindowHour, Record<WindowPicture, StaticImageData>>;
   props: Record<PropPicture, StaticImageData>;
+  car: Record<CarPicture, StaticImageData>;
   rooms: Record<RoomPicture, StaticImageData>;
   shadow: {
     day: Record<Character, Record<DayState, StaticImageData>>;
-    wall: { clock: StaticImageData; lamp: StaticImageData };
   };
   grain: StaticImageData;
   textures: Record<TexturePicture, StaticImageData>;
@@ -417,10 +413,8 @@ export const SPRITES: {
     jarLid: propJarLid,
     stand: propStand,
     voteTable: propVoteTable,
-    wallClock: propWallClock,
-    wallLampUnlit: propWallLampUnlit,
-    wallLampLit: propWallLampLit,
   },
+  car: { day: carDay, night: carNight },
   rooms: {
     healer: roomHealer,
     investigator: roomInvestigator,
@@ -497,7 +491,6 @@ export const SPRITES: {
         out: shadeOutShadow,
       },
     },
-    wall: { clock: wallClockShadow, lamp: wallLampShadow },
   },
   grain,
   textures: { walnut: textureWalnut, boards: textureBoards, velvet: textureVelvet },

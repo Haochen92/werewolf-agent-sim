@@ -12,8 +12,8 @@
  * - `day.turn-thinking` (live only): the seat has the stand and has not spoken yet, so the
  *   puppet stands thinking and the box holds a "…" until its line (or its pass) arrives.
  * - `day.your-turn` (live, the seated human's own turn): their puppet at the stand thinking,
- *   the wall clock carrying the time left as a red ring, and in the box's place the dock to
- *   write the line in (Say it, Pass, Draft from notes).
+ *   and in the box's place the dock to write the line in (Say it, Pass, Draft from notes), its
+ *   countdown on it.
  * - A line the seat's agent said for this seat, because its turn ran out: on this seat's own
  *   screen the plaque and the box say "your seat's agent spoke for you".
  *
@@ -24,39 +24,32 @@ import { useEffect, useState } from 'react';
 import type { DayState } from '@/assets/manifest';
 import type { PassSlot, SpeechSlot } from '@/game/types';
 import { Atmosphere } from '../Atmosphere';
-import { Layer, Paint, preloadPictures } from '../Stage';
+import { Layer, Paint } from '../Stage';
 import { SideSlot } from '../SideSlot';
 import { Puppet } from '../cast/Puppet';
 import { ReadCard } from '../film/ReadCard';
 import { turnReads } from '../film/film-model';
-import { Bleed } from '../instruments/Bleed';
 import { countText } from '../countdown';
-import { FeltWindow } from '../instruments/FeltWindow';
-import { Apron, Trap } from '../instruments/Floor';
 import { CardButton, NoticeZone } from '../instruments/Notice';
 import { SpeechBox } from '../instruments/SpeechBox';
 import { Plaque, Stand } from '../instruments/Stand';
 import { TopStrip } from '../instruments/TopStrip';
 import { TurnDock } from '../instruments/TurnDock';
-import { WallClock } from '../instruments/WallClock';
-import { WallLamp } from '../instruments/WallLamp';
 import { Wing, WingTile } from '../instruments/Wing';
 import { StageMotion, useMotionScale } from '../motion';
-import { diningCar, diningCarPlan } from '../paint/dining-car';
+import { diningCarPlan } from '../paint/dining-car';
 import { drape } from '../paint/drape';
 import { light } from '../paint/light';
 import { shutter } from '../paint/window';
 import { ROLE_NAME, factionOf, seatNumber } from '../roles';
 import { bandNarrows, sideOpen, stripButtons } from '../slot';
 import { VELVET, WOOD } from '../textures';
-import { BLEED, STAGE_H, geometry } from '../units';
+import { BLEED, geometry } from '../units';
+import { CarPaint } from './DiningCarParts';
 import type { SceneProps } from './types';
 
 /** How long the arriving puppet stands thinking before it speaks, after the rise (seconds). */
 const THINK = 0.6;
-
-/** The day's hour on the wall clock (2:12, the paint's own), when the clock is the instrument. */
-const DAY_HOUR = 2 + 12 / 60;
 
 /** A turn's key: a new beat is a new turn, except a line (or a pass) after its own thinking. */
 const turnKey = (b: SceneProps['beat']) => `${b.id}:${b.seq}`;
@@ -98,24 +91,9 @@ function DayTurn({
   const side = sideOpen(presentation);
   const g = geometry(hud, side);
   const plan = diningCarPlan({ phase: 'day', hud, side });
-  // the vote's dusk fades the day off as a picture, which carries the textures inside it
-  useEffect(() => preloadPictures([WOOD.walnut, WOOD.boards]), []);
-  // beside the side slot the paint has no wall for its clock (the window runs to the wing), so
-  // on my turn the clock and its ring hang in the gap between the wing and the puppet
-  const clock =
-    plan.clock ??
-    (side
-      ? {
-          x: (g.wingN + g.left) / 2,
-          y: 0.3 * STAGE_H,
-          r: Math.min(0.085 * STAGE_H, (g.left - g.wingN) * 0.4),
-        }
-      : null);
 
   // my own turn: the beat is mine (`seat`), with no line yet
   const mine = beat.id === 'day.your-turn';
-  // the clock hangs where the car's plan says, or on my turn beside the side slot too
-  const hung = mine ? clock : plan.clock;
   const speaker = beat.subject ?? (mine ? (beat.seat ?? null) : null);
   const slot = (view.days[beat.day]?.slots ?? []).find((s) => s.seq === beat.seq) as
     SpeechSlot | PassSlot | undefined;
@@ -153,24 +131,8 @@ function DayTurn({
     <>
       <Atmosphere room="car" phase="day" hud={hud} side={side} />
       <Layer name="paint">
-        <Bleed room="car" phase="day" hud={hud} />
-        <Paint of={diningCar} opts={{ phase: 'day', hud, side, wood: WOOD }} />
-        <FeltWindow phase="day" hud={hud} side={side} />
-        {hung ? (
-          <WallClock
-            {...hung}
-            time={DAY_HOUR}
-            ring={mine && turn?.clock ? turn.clock.remainingMs / turn.clock.totalMs : null}
-            phase="day"
-          />
-        ) : null}
-        {plan.lamp ? <WallLamp x={plan.lamp.x} y={plan.lamp.y} phase="day" /> : null}
+        <CarPaint phase="day" hud={hud} side={side} />
         <Paint of={shutter} opts={{ hud, side, state: 'open', walnut: WOOD.walnut }} />
-      </Layer>
-
-      <Layer name="floor">
-        <Apron g={g} />
-        <Trap g={g} state="closed" />
       </Layer>
 
       <Layer name="figures">
@@ -209,6 +171,9 @@ function DayTurn({
             hud,
             side,
             scene: { glows: plan.glows, specials: plan.specials },
+            lamps: plan.lamps,
+            // the painted room reads as lit: the speaker's pool says "this one", the room stays warm
+            dark: 24,
             bleed: BLEED,
           }}
         />

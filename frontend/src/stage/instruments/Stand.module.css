@@ -1,7 +1,8 @@
 /* The stand, as the stage kit draws it (kits/stage-kit.js `stand()` and its CSS). Every size
    is in puppet units (--u), so the stand grows and shrinks with the puppet box. */
 
-/* the dark below the rail, the whole width of the stage */
+/* the dark below the rail, the whole width of the stage: it gathers from nothing at the rail,
+   so the car's painted floor and tables run on under it without a seam */
 .pit {
   position: absolute;
   left: 0;
@@ -10,9 +11,9 @@
   overflow: visible;
   background: linear-gradient(
     180deg,
-    rgba(12, 10, 7, 0.3),
-    rgba(12, 10, 7, 0.62) 40%,
-    rgba(12, 10, 7, 0.82)
+    rgba(12, 10, 7, 0),
+    rgba(12, 10, 7, 0.5) 40%,
+    rgba(12, 10, 7, 0.78)
   );
 }
 

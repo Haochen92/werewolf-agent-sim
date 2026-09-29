@@ -4,7 +4,7 @@
  * Night, the lobby (handoff §4.5, beat sheet §5, bench 67): where everyone who is not acting
  * spends the night, and the villager's whole night. The dining car in the dark, the shutter
  * up on the night window, the living seats hung from the flies as chips in a row (the table
- * asleep), the count pill ("Acted 0 of 5") and the wall clock at midnight.
+ * asleep) and the count pill ("Acted 0 of 5").
  *
  * Nothing here says who is awake: the pill counts the night's units (the special roles the
  * public census says are alive, the pack as one), never names them. The X-ray's hub is the
@@ -26,7 +26,6 @@ import { CountPill } from '../instruments/CountPill';
 import { CardButton, Notice, NoticeZone } from '../instruments/Notice';
 import { Shutter } from '../instruments/Shutter';
 import { TopStrip } from '../instruments/TopStrip';
-import { WallClock } from '../instruments/WallClock';
 import { chipRow, rowX } from '../instruments/flies';
 import { StageMotion } from '../motion';
 import { CARD_TEXT } from '../card-text';
@@ -34,7 +33,7 @@ import { diningCarPlan } from '../paint/dining-car';
 import { seatNumber } from '../roles';
 import { bandNarrows, sideOpen, stripButtons } from '../slot';
 import { STAGE_H, geometry } from '../units';
-import { CarFloor, CarPaint, HouseLights, TableWing } from './DiningCarParts';
+import { CarPaint, HouseLights, TableWing } from './DiningCarParts';
 import type { SceneProps } from './types';
 
 /** The roles with a night of their own; the pack is one more unit. */
@@ -92,11 +91,10 @@ function LobbyBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
   const alive = view.seats.filter((s) => view.alive.includes(s));
   const phases = view.days[beat.day]?.phases ?? [];
   const voted = phases.includes('voting');
-  const clock = plan.clock;
   const actors = xray ? actorsTonight(view, beat.day) : null;
   const myRole = me ? (view.me.role?.role ?? null) : null;
   const H = STAGE_H;
-  // live, the acts come in as the night runs (`phase_progress`): the count, and the clock toward dawn
+  // live, the acts come in as the night runs (`phase_progress`): the count
   const units = nightUnits(view);
   const acted = Math.min(turn?.progress?.n ?? 0, units);
 
@@ -108,23 +106,12 @@ function LobbyBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
           phase="night"
           from={animate && !voted ? 'day' : null}
           hud={hud}
-          wallClock={false}
           fadeDelay={0.1}
           side={side}
         />
-        {clock ? (
-          <WallClock
-            x={clock.x}
-            y={clock.y}
-            r={clock.r}
-            time={units ? (6 * acted) / units : 0}
-            phase="night"
-          />
-        ) : null}
         {/* up: the day never brought it down, and a vote's or a lynch's night gathered it already */}
         <Shutter g={g} state="open" />
       </Layer>
-      <CarFloor g={g} />
 
       <Layer name="figures">
         {alive.map((seat, i) => {
@@ -156,7 +143,7 @@ function LobbyBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
             rx: row.span * 0.56,
             ry: 0.3 * H,
           }}
-          dark={66}
+          dark={46}
           side={side}
         />
       </Layer>
