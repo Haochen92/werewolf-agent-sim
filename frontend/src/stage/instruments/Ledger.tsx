@@ -8,6 +8,7 @@
  * - Down the left, one tab per role (the wire files observations by role, not seat): its
  *   sigil, the chips of the seats that held it, "won" on the winning side, and a pip per
  *   verdict as a tally.
+ * - Each row carries its verdict as a mark (✓ ✗ ± ?), so it never rests on colour alone.
  * - On the right, that role's rows under the phase they came from (the discussion, the vote,
  *   the night). Each row shows only its scenario, clamped to two lines, with a chevron and
  *   "open"; opened, it adds what the agent did and how it went, with the verdict's stitched
@@ -28,10 +29,13 @@ import { ROLE_NAME, factionOf, seatNumber, seatify, type Faction } from '../role
 import { HUD_CHROME, geometry, type Hud } from '../units';
 import { PHASE_NAME, byPhase, ledgerTabs, stripVerdict, type ActionPhase } from './ledger';
 import { Sigil } from './Sigil';
+import { VerdictMark } from './VerdictMark';
 import { VerdictPatch } from './VerdictPatch';
 import styles from './Ledger.module.css';
 
-const PHASE_ICON: Record<ActionPhase, React.ReactNode> = {
+/** Each phase's small line icon (16×16), for the headers the rows are grouped under; the case
+ * file's Findings index uses the same. */
+export const PHASE_ICON: Record<ActionPhase, React.ReactNode> = {
   day_discussion: <path d="M2 3h12v8H7l-3 3v-3H2z" />,
   day_vote: (
     <>
@@ -222,6 +226,11 @@ export function Ledger({
                               <path d="M6 3l5 5-5 5" />
                             </svg>
                           </span>
+                          {/* the verdict as a mark, not colour alone (colour-blind safe) */}
+                          <VerdictMark
+                            kind={r.verdict}
+                            className={`${styles.vmark} ${styles[`m-${r.verdict}`] ?? ''}`}
+                          />
                           <span className={styles.label}>Scenario</span>
                           <div className={styles.situation}>{seatify(r.obs.situation)}</div>
                           <span className={styles.more}>{isOpen ? 'close' : 'open'}</span>

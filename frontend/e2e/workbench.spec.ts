@@ -135,7 +135,9 @@ test('night: a tap on the empty room clears an unsent choice and closes the card
   await expect(pressed).toHaveCount(1);
   await page.mouse.click(300, 650);
   await expect(pressed).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Choose a seat to protect' })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Choose a seat to protect' }),
+  ).toBeVisible();
 
   await page.goto('/workbench/room?beat=1&animate=0&strip=0', { waitUntil: 'networkidle' });
   await page.locator('button[data-card]').click();
@@ -217,9 +219,10 @@ for (const [name, path, ready] of ENDING) {
 /**
  * The side slot open (beat sheet §12): the drawer at full height on a speech (bench 74's
  * moment, seat 8 on day 3, in the replay's frame), the drawer on the count with the day's vote
- * as one line of chips, the drawer stopped at the rail on the seated human's ballot; the film
- * on a turn (the note and the lessons weighed), with a read card opened from the wing, at the
- * lynch's card ("who had them right") and at the morning's carried brief.
+ * as one line of chips, the drawer stopped at the rail on the seated human's ballot; the case
+ * file on a turn (the speaker's notes; its precedents, opened; the same turn in a memory-off
+ * game), with a read card opened from the wing, and the docket at the lynch's card ("who had them
+ * right") and at the morning's carried brief.
  */
 const SLOT: [name: string, path: string, ready: string, click?: string][] = [
   ['slot-day-speech-drawer', 'day?beat=16&hud=replay&slot=drawer', '[data-line="say-200"]'],
@@ -228,7 +231,18 @@ const SLOT: [name: string, path: string, ready: string, click?: string][] = [
   [
     'slot-day-speech-film',
     'day?beat=16&viewer=xray&hud=replay&slot=film',
-    '[data-film="inside"]',
+    '[data-film="file"]',
+  ],
+  [
+    'slot-day-file-precedents',
+    'day?beat=16&viewer=xray&hud=replay&slot=film',
+    '[data-sheet="precedents"]',
+    '[role="tab"]:has-text("Precedents")',
+  ],
+  [
+    'slot-day-file-memory-off',
+    'day?beat=16&viewer=xray&hud=replay&slot=film&memory=off',
+    '[data-film="file"]',
   ],
   [
     'slot-day-read-card',
@@ -255,6 +269,39 @@ for (const [name, path, ready, click] of SLOT) {
   });
 }
 
+/**
+ * The closed case at the curtain: a seat opened from the docket's rows, and its Findings, what
+ * the game taught its role (the serial killer's nine observations, the first opened).
+ */
+test('slot: the case file’s findings at game over', async ({ page }) => {
+  await page.goto(
+    '/workbench/over?beat=6&viewer=xray&hud=replay&slot=film&animate=0&strip=0',
+    {
+      waitUntil: 'networkidle',
+    },
+  );
+  await page.locator('[data-film="deal"] button[title^="Open seat 2"]').click();
+  await page.getByRole('tab', { name: /^Findings/ }).click();
+  await expect(page.locator('[data-sheet="findings"]')).toBeVisible();
+  await settle(page);
+  await expect(page).toHaveScreenshot('slot-over-file-findings.png');
+});
+
+/** The same findings on a phone: the index's numbers grouped by phase, wrapping. */
+test('bleed: frame-iphone14-findings', async ({ page }) => {
+  await page.goto(
+    '/workbench/over?beat=6&viewer=xray&hud=replay&slot=film&frame=iphone14&animate=0&strip=0',
+    { waitUntil: 'networkidle' },
+  );
+  await page.locator('[data-film="deal"] button[title^="Open seat 3"]').click();
+  await page.getByRole('tab', { name: /^Findings/ }).click();
+  await expect(page.locator('[data-sheet="findings"]')).toBeVisible();
+  await settle(page);
+  await expect(page.locator('[data-frame]')).toHaveScreenshot(
+    'frame-iphone14-findings.png',
+  );
+});
+
 test('the stage’s File and Transcript tabs write the slot into the URL', async ({
   page,
 }) => {
@@ -270,7 +317,7 @@ test('the stage’s File and Transcript tabs write the slot into the URL', async
   });
   await file.click();
   await expect(page).toHaveURL(/beat=16&viewer=xray&motion=normal&slot=film/);
-  await expect(page.locator('[data-film="inside"]')).toBeVisible();
+  await expect(page.locator('[data-film="file"]')).toBeVisible();
   // Transcript swaps the drawer in; the X-ray stays on
   await page.getByRole('button', { name: 'Transcript' }).click();
   await expect(page).toHaveURL(/viewer=xray&motion=normal&slot=drawer/);
@@ -354,6 +401,8 @@ test('the seat rail: notes and a suspect for a seated player, none in a replay',
 const FRAMES: [name: string, path: string][] = [
   ['frame-iphone14-vote', 'vote?beat=32&viewer=seat:player_7&frame=iphone14'],
   ['frame-iphone14-night', 'night?beat=0&viewer=seat:player_7&frame=iphone14'],
+  // the case file on a phone: its cover and tabs in one row over the sheet
+  ['frame-iphone14-file', 'day?beat=16&viewer=xray&hud=replay&slot=film&frame=iphone14'],
 ];
 
 for (const [name, path] of FRAMES) {

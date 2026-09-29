@@ -10,7 +10,7 @@
  * rail. The truth is held; then the card flies up and away, the stand goes, the shutter
  * gathers up on the night, and the leaves fold.
  *
- * With the X-ray on, the film in the side slot holds "Who had them right": each voter's last
+ * With the X-ray on, the case file's docket holds "Who had them right": each voter's last
  * read of this seat before the vote, against the truth, and the seat's own last note
  * (film/film-model.ts).
  */

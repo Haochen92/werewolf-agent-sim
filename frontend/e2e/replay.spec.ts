@@ -116,7 +116,7 @@ test('replay: the X-ray on a day-3 speech, the file in the slot', async ({ page 
   // the switch leaves the pane as it was (the transcript), now with the X-ray's lines
   await expect(page.locator('[data-drawer="full"]')).toBeVisible();
   await file.click();
-  await expect(page.locator('[data-film="inside"]')).toBeVisible();
+  await expect(page.locator('[data-film="file"]')).toBeVisible();
   // the X-ray re-cut the beats; the cursor stayed on the same speech
   await expect(theatre(page)).toHaveAttribute('data-beat', 'day.speech');
   await expect(band(page).getByText('X-ray on')).toBeVisible();
@@ -131,7 +131,7 @@ test('replay: played fast, the cursor runs on at twice the pace', async ({ page 
   // one toggle: it says the speed it plays at
   await band(page).getByRole('button', { name: 'Normal' }).click();
   await expect(band(page).getByRole('button', { name: 'Fast' })).toBeVisible();
-  await page.getByRole('button', { name: 'Play' }).click();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
   await expect(theatre(page)).toHaveAttribute('data-playing', 'true');
   // 16 s at fast reaches the night (beat 6, 10.5 s of holds, each new hold set at the end of a
   // step); at normal it would still be on day 1's passes (17 s of holds to beat 5)
@@ -180,7 +180,7 @@ test('replay: a speech holds while the pointer rests on it', async ({ page }) =>
   await page.clock.install();
   await open(page);
   await seek(page, 38); // day 3's first speech, seat 2: its first page, a 7.3 s hold
-  await page.getByRole('button', { name: 'Play' }).click();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
   await page.locator('[data-speech]').hover();
   for (let t = 0; t < 20; t++) await page.clock.runFor(1000);
   await expect(theatre(page)).toHaveAttribute('data-beat-index', '38');
@@ -202,7 +202,7 @@ test('replay: the keys step, jump chapters and play', async ({ page }) => {
   await page.keyboard.press(' ');
   await expect(theatre(page)).toHaveAttribute('data-playing', 'false');
   // with the play button focused, the space still toggles once, not twice
-  await page.getByRole('button', { name: 'Play' }).click();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
   await expect(theatre(page)).toHaveAttribute('data-playing', 'true');
   await page.keyboard.press(' ');
   await expect(theatre(page)).toHaveAttribute('data-playing', 'false');

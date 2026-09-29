@@ -9,17 +9,18 @@ import type { GameView } from '@/game/types';
 import type { SceneBeat } from '@/stage/beats/types';
 import type { DrawerFilters } from '@/stage/drawer/drawer-lines';
 import type { DrawerScroll } from '@/stage/drawer/use-drawer-filters';
+import type { FileChoice } from '@/stage/film/case-file';
 
 export type MotionSpeed = 'normal' | 'fast';
 
 export interface Presentation {
-  /** Observer tier on: the film's material exists and the wing wears the truth. */
+  /** Observer tier on: the case file exists and the wing wears the truth. */
   xray: boolean;
   /**
-   * What the right side holds, one thing at a time: the transcript drawer, the X-ray film, or
-   * nothing (null, the slot closed). While it holds something every scene lays its room out
-   * narrower (`geometry(hud, true)`); the film exists only with the X-ray on, so `film` with
-   * `xray` off reads as closed (see `slotOf` in slot.ts).
+   * What the right side holds, one thing at a time: the transcript drawer, the X-ray's case
+   * file (`film`, its old name), or nothing (null, the slot closed). While it holds something
+   * every scene lays its room out narrower (`geometry(hud, true)`); the file exists only with
+   * the X-ray on, so `film` with `xray` off reads as closed (see `slotOf` in slot.ts).
    */
   slot: 'drawer' | 'film' | null;
   motion: MotionSpeed;
@@ -80,29 +81,38 @@ export interface SceneProps {
 
 /**
  * The side slot's state that must outlive a beat, held by whoever mounts the scene (the
- * workbench, the replay, the live game): the drawer's filters and the film's open tab (both
- * kept as the viewer steps through turns), and what the File and Transcript tabs do. A
- * scene only passes these on; without them the slot still draws, with default filters.
+ * workbench, the replay, the live game): the drawer's filters, the case file's open tab and
+ * the seat picked in its chooser (kept as the viewer steps through turns), and what the File
+ * and Transcript tabs do. A scene only passes these on; without them the slot still draws,
+ * with default filters.
  */
 export interface SlotInput {
   filters?: DrawerFilters;
   onFilters?: (next: DrawerFilters) => void;
-  /** The film's open tab: `note`, or a lesson `L1`–`L3`. */
+  /** The case file's open tab: `notes`, `reads`, `precedents` or `findings`. */
   filmTab?: string;
   onFilmTab?: (tab: string) => void;
+  /** The seat picked in the case file's chooser (null: none, the beat's own). */
+  fileSeat?: FileChoice | null;
+  onFileSeat?: (choice: FileChoice | null) => void;
   /** Transcript: brings the drawer to the slot, or closes it. */
   onTranscript?: () => void;
   /** File: brings the film to the slot (only with the X-ray on), or closes it. */
   onFile?: () => void;
   /** Where the drawer was scrolled, and whether it follows the beat, kept across scenes. */
   drawerScroll?: DrawerScroll;
+  /**
+   * Live only: the finished game's replay, which the closed case file points to after the
+   * game ("watch the replay →"). The replay has none: it is the replay.
+   */
+  replayHref?: string;
   /** The replay's way out (to its list, or wherever the viewer came from), at the strip's
    *  left; live has none. */
   back?: { href: string; label: string };
   /**
    * The log folded a little past this beat (the replay: to the next beat, or the whole log).
-   * A turn's note is written just after the turn, so the beat's own view never holds it; the
-   * film reads it from here. Live has nothing ahead: the note shows once it has arrived.
+   * The case file reads from it whether the game was played with memory (before the first
+   * consult) and, at the end, what the game taught. Live has nothing more than the log so far.
    */
   ahead?: GameView | null;
 }

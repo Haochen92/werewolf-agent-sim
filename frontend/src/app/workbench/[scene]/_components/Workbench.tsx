@@ -11,6 +11,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Layer, Stage } from '@/stage/Stage';
 import type { SceneId } from '@/stage/beats/types';
 import { useDrawerFilters } from '@/stage/drawer/use-drawer-filters';
+import type { FileChoice } from '@/stage/film/case-file';
 import type { SlotInput } from '@/stage/scenes/types';
 import { pressFile, pressTranscript } from '@/stage/slot';
 import {
@@ -21,6 +22,7 @@ import {
   UrlReadout,
 } from '@/stage/workbench/ControlStrip';
 import { anchorLine, workbenchFrame } from '@/stage/workbench/frame';
+import { FIXTURE_GAME_ID } from '@/stage/workbench/fixture';
 import { SCENE_IDS, SCENES, isSceneId } from '@/stage/workbench/registry';
 import {
   parseFrame,
@@ -119,7 +121,8 @@ export function Workbench({ scene }: { scene: string }) {
   // The side slot's state that outlives a beat: the drawer's filters and the film's tab. The
   // strip's two tabs on the stage write the URL, as the replay's container holds them.
   const drawer = useDrawerFilters();
-  const [filmTab, setFilmTab] = useState('note');
+  const [filmTab, setFilmTab] = useState('notes');
+  const [fileSeat, setFileSeat] = useState<FileChoice | null>(null);
   const slotInput = useMemo((): SlotInput | undefined => {
     if (!frame) return undefined;
     const now = frame.presentation;
@@ -129,12 +132,16 @@ export function Workbench({ scene }: { scene: string }) {
       drawerScroll: drawer.scroll,
       filmTab,
       onFilmTab: setFilmTab,
+      fileSeat,
+      onFileSeat: setFileSeat,
+      // a live cut draws the closed file's link to the replay, as a live game would
+      replayHref: q.live ? `/replays/${FIXTURE_GAME_ID}` : undefined,
       ahead: frame.ahead,
       onTranscript: () => go({ slot: pressTranscript(now).slot ?? 'none' }),
       // the X-ray itself is the viewer control above (the replay's is its band's switch)
       onFile: () => go({ slot: pressFile(now).slot ?? 'none' }),
     };
-  }, [frame, drawer, filmTab, go]);
+  }, [frame, drawer, filmTab, fileSeat, go, q.live]);
 
   // the arrow keys step beats, unless a control has the focus
   useEffect(() => {
@@ -223,6 +230,12 @@ export function Workbench({ scene }: { scene: string }) {
           options={['none', 'drawer', 'film'] as const}
           value={q.slot}
           onChange={(slot) => go({ slot })}
+        />
+        <Seg
+          label="memory"
+          options={['on', 'off'] as const}
+          value={q.memoryOff ? 'off' : 'on'}
+          onChange={(m) => go({ memoryOff: m === 'off' || undefined })}
         />
         <Seg
           label="hud"

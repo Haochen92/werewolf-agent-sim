@@ -1,429 +1,1124 @@
-/* The X-ray film in the side slot, as the transcript bench draws it (rev 74 `.slot`, the locked
-   material of rev 52): the blue-black sheet with its grid, the cyan ink, the note on a paper
-   slip. Container units turned into stage units (1cqw = 16 units). The epilogue's ledger is the
-   same sheet at full stage (Ledger.module.css), with the same grid and border. */
-.film {
+/* The case file in the side slot (owner, 2026-09-29, the case-file bench adapted to the stage's
+   units and type): a manila folder, a cover row with the seat's face, name and role stamp, the
+   divider tabs, and a sheet of typed paper that scrolls in place. Upright: only the stamps and
+   the ticks sit crooked. Long text in Literata (--font-body), labels, tabs and stamps in the
+   typewriter (Courier Prime), titles in IM Fell, the margin's pencil in Patrick Hand. No filters:
+   the stamps' worn ink is a still mask tile (scripts/make-stamp-ink.mjs). On a phone (the stage's
+   `data-small`) the cover and the tabs share one row. */
+.folder {
   position: absolute;
   z-index: 3;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 7.2px;
-  padding: 14.4px 17.6px;
-  /* at full size the lists and the note shrink to fit and scroll in place; on a phone
-     (--legible > 1) nothing shrinks and the film scrolls as one column instead */
-  overflow: hidden auto;
-  scrollbar-width: thin;
-  --shrink: calc(1 - var(--grown));
-  border-radius: 4px;
-  background:
-    repeating-linear-gradient(
-      0deg,
-      rgba(127, 220, 242, 0.055) 0 1px,
-      transparent 1px 27.2px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      rgba(127, 220, 242, 0.055) 0 1px,
-      transparent 1px 27.2px
-    ),
-    var(--film);
-  border: 5.12px solid var(--film-border);
-  box-shadow:
-    6.4px 8px 0 rgba(5, 12, 16, 0.5),
-    0 0 32px rgba(127, 220, 242, 0.12);
-  color: var(--film-text);
-  rotate: -1.2deg;
+  color: var(--type);
+  --f-type: var(--font-stage-type, 'Courier Prime'), 'Courier New', monospace;
+  --f-hand: var(--font-stage-hand, 'Patrick Hand'), cursive;
+  --f-title: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  --rule: rgba(90, 70, 40, 0.22);
+  /* the labels on the paper grow on a phone like the words they sit by (the chrome, --meta, less) */
+  --label: calc(13.6px * var(--legible));
 }
-
-.head {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: var(--meta);
-  color: var(--film-ink);
-  padding-bottom: 8.8px;
-  border-bottom: 1px solid var(--film-line);
-}
-.head strong {
-  font-weight: 500;
-  color: var(--film-ink);
-  font-size: calc(var(--meta) * 1.15);
-  text-shadow: 0 0 8px rgba(127, 220, 242, 0.5);
-}
-
-/* the tabs: Note first in the slip's paper, then one per lesson in aqua */
-.tabs {
-  margin-left: auto;
-  display: flex;
-  gap: 7.2px;
-}
-.tab {
-  position: relative;
-  font: inherit;
-  font-size: var(--meta);
-  line-height: 1.35;
-  border: 1.92px solid;
-  border-radius: 8px;
-  padding: calc(1.6px * var(--legible-ui)) calc(10.4px * var(--legible-ui));
-  cursor: pointer;
-  background: transparent;
-  opacity: 0.62;
-  font-weight: 500;
-  color: var(--film-ink);
-  border-color: var(--film-ink);
-}
-.tab.note {
-  color: var(--slip);
-  border-color: var(--slip);
-}
-/* an override: the agent's own word, in the slip's paper */
-.tab.override {
-  color: var(--slip);
-  border-color: var(--film-ink);
-}
-.tab[aria-selected='true'] {
-  opacity: 1;
-  font-weight: 700;
-  translate: 0 -3.2px;
-  box-shadow: 0 4.8px 11.2px rgba(0, 0, 0, 0.4);
-  background: var(--film-ink);
-  color: var(--film);
-}
-.tab.note[aria-selected='true'] {
-  background: var(--slip);
-  color: var(--slip-ink);
-}
-.dot {
-  position: absolute;
-  right: -4.8px;
-  top: -4.8px;
-  width: 9.6px;
-  height: 9.6px;
-  border-radius: 50%;
-  background: var(--slip);
-}
-
-/* the note: a lined notebook slip taped onto the film, in a handwriting face */
-.slipwrap {
-  flex: 0 var(--shrink) auto;
-  min-height: 0;
-  display: flex;
-  padding: 14.4px 9.6px 8px;
-}
-.slip {
+/* the folder's own tab, standing up off its top edge */
+/* the folder itself, under its tabs */
+.fold {
   position: relative;
   flex: 1 1 auto;
   min-height: 0;
-  overflow: auto;
-  font-family: var(--font-stage-hand, 'Patrick Hand'), 'Caveat', cursive;
-  font-size: calc(var(--note) * 1.32);
-  color: var(--slip-ink);
-  line-height: calc(34.4px * var(--legible));
-  padding: 17.6px 20.8px 17.6px 41.6px;
-  background:
-    repeating-linear-gradient(
-      transparent 0 calc(32.48px * var(--legible)),
-      var(--slip-rule) calc(32.48px * var(--legible)) calc(34.4px * var(--legible))
-    ),
-    var(--slip);
-  background-position: 0 17.6px;
-  rotate: 2.4deg;
-  box-shadow: 0 6.4px 14.4px rgba(0, 0, 0, 0.6);
-}
-.slip::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 27.2px;
-  width: 1.92px;
-  background: rgba(80, 120, 190, 0.45);
-}
-.tape {
-  position: absolute;
-  top: -12px;
-  left: 50%;
-  width: 80px;
-  height: 22.4px;
-  translate: -50% 0;
-  rotate: -3deg;
-  background: rgba(222, 210, 172, 0.9);
-}
-/* a small slip in a list (the pack's two notes, a seat's last note) */
-.slip.small {
-  font-size: calc(var(--note) * 1.1);
-  line-height: calc(28.8px * var(--legible));
-  padding: 8px 14.4px 8px 30.4px;
-  background:
-    repeating-linear-gradient(
-      transparent 0 calc(27.2px * var(--legible)),
-      var(--slip-rule) calc(27.2px * var(--legible)) calc(28.8px * var(--legible))
-    ),
-    var(--slip);
-  background-position: 0 8px;
-  rotate: 1.2deg;
-}
-.slip.small::before {
-  left: 19.2px;
-}
-
-.why {
-  flex: 0 0 auto;
-  font-size: var(--meta);
-  line-height: 1.45;
-  color: var(--film-mut);
-}
-.why b {
-  color: var(--film-text);
-  font-weight: 500;
-}
-
-/* a lesson tab: the lesson, a rule, the verdict with the agent's reason, when it applies */
-.lesson {
-  flex: 0 var(--shrink) auto;
-  min-height: 0;
-  overflow: auto;
-  font-size: var(--note);
-  line-height: 1.45;
-  color: var(--film-main);
-  text-shadow: 0 0 9.6px rgba(127, 220, 242, 0.22);
-}
-.verdict {
-  display: flex;
-  align-items: center;
-  gap: 11.2px;
-  margin-top: 9.6px;
-  padding-top: 8px;
-  border-top: 1px solid #1e3a44;
-  font-size: var(--meta);
-  color: var(--film-mut);
-  text-shadow: none;
-}
-.applies {
-  margin-top: 9.6px;
-  font-size: var(--meta);
-  color: var(--film-mut);
-  text-shadow: none;
-}
-.applies b {
-  display: block;
-  font-weight: 500;
-  color: var(--film-ink);
-}
-.stamp {
-  font-size: var(--meta);
-  line-height: 1.35;
-  border-radius: 16px;
-  padding: 0.32px 9.6px;
-  border: 1px solid currentColor;
-  white-space: nowrap;
-  color: var(--film-mut);
-}
-.v-follow {
-  background: var(--film-ink);
-  border-color: var(--film-ink);
-  color: var(--film);
-}
-.v-override {
-  background: var(--slip);
-  border-color: var(--slip);
-  color: var(--slip-ink);
-  font-family: var(--font-stage-hand, 'Patrick Hand'), 'Caveat', cursive;
-  font-size: calc(var(--meta) * 1.2);
-}
-
-/* lists: the voters, who had them right, the deal, the night's acts (rev 74 `.xrow`) */
-.list {
-  flex: 0 var(--shrink) auto;
-  min-height: 0;
-  overflow: auto;
   display: flex;
   flex-direction: column;
-  gap: 3.2px;
-  font-size: var(--meta);
+  padding: calc(10px * var(--legible-ui)) calc(11.2px * var(--legible-ui))
+    calc(11.2px * var(--legible-ui));
+  border-radius: 4px 12px 12px 12px;
+  background: var(--manila);
+  box-shadow:
+    0 16px 32px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px var(--manila-edge),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
-.row {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+/* on a phone the folder keeps one plain tab of its own (no width for a tab per seat) */
+.folder:not([data-wide]) .fold::before {
+  content: '';
+  position: absolute;
+  left: 16px;
+  top: -12.8px;
+  width: 160px;
+  height: 14.4px;
+  border-radius: 9.6px 9.6px 0 0;
+  background: var(--manila);
+  box-shadow:
+    inset 1px 1px 0 var(--manila-edge),
+    inset -1px 0 0 var(--manila-edge);
+}
+
+/* where the slot is wide: a tab per seat standing up off the folder's top edge, like a filing
+   drawer's; the open file's raised and joined to the folder, the dead greyed, the docket first */
+.drawer {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-end;
+  gap: 3.2px;
+  height: 36.8px;
+  padding: 0 12.8px;
+  margin-bottom: -1px;
+  position: relative;
+  z-index: 1;
+}
+.stab {
+  flex: 0 1 auto;
+  min-width: 0;
+  height: 28.8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 7.2px 0 4px;
+  font: inherit;
+  font-family: var(--f-type);
+  font-size: calc(var(--meta) * 0.85);
+  color: #4a3a1c;
+  background: var(--manila-dk);
+  border: 0;
+  border-radius: 8px 8px 0 0;
+  box-shadow:
+    inset 1px 1px 0 var(--manila-edge),
+    inset -1px 0 0 var(--manila-edge);
+  cursor: pointer;
+}
+.stab:hover {
+  background: #c6a768;
+}
+.stab[aria-selected='true'] {
+  height: 36.8px;
+  background: var(--manila);
+  font-weight: 700;
+  color: var(--type);
+  box-shadow:
+    inset 1px 1px 0 var(--manila-edge),
+    inset -1px 0 0 var(--manila-edge),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.tface {
+  flex: none;
+  width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  overflow: hidden;
+  line-height: 0;
+  background: #ecdfc3;
+  box-shadow: 0 0 0 1px var(--manila-edge);
+}
+/* a seat that is out: greyed, still openable */
+.stab.dead .tface,
+.stab.dead b {
+  opacity: 0.45;
+}
+.stab.dead .tface {
+  box-shadow: 0 0 0 1px #6f6250;
+}
+.dtab {
+  padding: 0 8px;
+}
+.dtab svg {
+  width: 19.2px;
+  height: 19.2px;
+}
+
+/* ---- the cover and the tabs ---- */
+.head {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  column-gap: 9.6px;
+}
+.cover {
+  flex: 1 0 100%;
+  min-width: 0;
+  display: flex;
   align-items: center;
   gap: 9.6px;
-  padding: 4px 0;
-  border-bottom: 1px solid var(--film-line);
+  padding: 0 3.2px 8px;
 }
-.row.rd {
-  grid-template-columns: auto 1fr auto auto;
+:global([data-small]) .cover {
+  flex: 0 1 auto;
+  padding-bottom: 4.8px;
 }
-.chip {
+.face {
+  flex: none;
   display: inline-block;
-  width: calc(var(--chip) * 0.5);
+  width: calc(var(--chip) * 0.72);
   aspect-ratio: 1;
   border-radius: 50%;
   overflow: hidden;
   line-height: 0;
   vertical-align: middle;
-  flex: 0 0 auto;
+  background: #ecdfc3;
+  box-shadow: 0 0 0 1.5px var(--manila-edge);
 }
-.chip.sm {
-  width: calc(var(--chip) * 0.4);
+:global([data-small]) .cover > .face {
+  width: calc(var(--chip) * 0.62);
 }
-.ring {
+.face.sm {
+  width: calc(var(--chip) * 0.5);
+}
+.docketFace {
+  display: grid;
+  place-items: center;
+  color: #4a3a1c;
+}
+.docketFace svg {
+  width: 62%;
+  height: 62%;
+}
+.who {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3.2px;
+}
+.nameRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.choose {
+  position: relative;
+  display: inline-flex;
+}
+/* the cover's name: also the chooser, "Seat 2 ▾" */
+.nameText {
+  font-family: var(--f-title);
+  font-size: calc(var(--meta) * 1.6);
+  line-height: 1;
+  color: #2b2112;
+  white-space: nowrap;
+}
+/* on a phone: a bordered button that says it changes the file, "Seat 5 · change ▾" */
+.name {
+  font: inherit;
+  font-family: var(--f-title);
+  font-size: calc(var(--meta) * 1.6);
+  line-height: 1;
+  color: #2b2112;
+  background: rgba(255, 250, 235, 0.35);
+  border: 1.5px solid rgba(74, 58, 28, 0.55);
+  border-radius: 6.4px;
+  padding: 3.2px 8px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6.4px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.name small {
+  font-family: var(--f-type);
+  font-size: 0.6em;
+  color: var(--type-label);
+}
+.name i {
+  font-style: normal;
+  font-family: var(--f-type);
+  font-size: 0.7em;
+  color: var(--type-label);
+}
+.name:hover,
+.name[aria-expanded='true'] {
+  background: rgba(255, 250, 235, 0.3);
+}
+.flip {
+  font: inherit;
+  font-family: var(--f-type);
+  font-size: calc(var(--meta) * 0.85);
+  color: var(--type-label);
+  background: rgba(255, 250, 235, 0.25);
+  border: 1px solid rgba(90, 70, 40, 0.4);
+  border-radius: 999px;
+  padding: 1.6px 8px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.when {
+  font-family: var(--f-type);
+  font-size: calc(var(--meta) * 0.85);
+  color: var(--type-label);
+  white-space: nowrap;
+}
+/* on a phone the cover keeps the face, the name and the stamp; the playhead is on the strip */
+:global([data-small]) .when {
+  display: none;
+}
+/* on a phone the chooser is a finger's height, its name the size of the words */
+:global([data-small]) .name {
+  font-size: calc(var(--label) * 1.45);
+  min-height: calc(30px * var(--legible));
+  align-items: center;
+}
+:global([data-small]) .flip {
+  font-size: var(--label);
+  min-height: calc(26px * var(--legible));
+}
+
+/* the chooser: a small card of every seat's face, and the docket */
+.chooser {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 6.4px);
+  left: -4.8px;
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: 3.2px;
+  padding: 6.4px;
+  border-radius: 6.4px;
+  background: var(--card);
+  box-shadow:
+    0 9.6px 24px rgba(0, 0, 0, 0.35),
+    0 0 0 1px var(--manila-edge);
+}
+.pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 6.4px;
+  font: inherit;
+  font-family: var(--f-type);
+  font-size: max(var(--meta), var(--label));
+  min-height: max(calc(32px * var(--legible-ui)), calc(26px * var(--legible)));
+  color: var(--type);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4.8px;
+  padding: 3.2px 9.6px 3.2px 3.2px;
+  cursor: pointer;
+}
+.pick .face {
+  width: calc(var(--chip) * 0.46);
+}
+:global([data-small]) .pick .face {
+  width: calc(var(--chip) * 0.4 * var(--legible-ui));
+}
+.pick:hover {
+  background: var(--sheet2);
+}
+.pick[aria-pressed='true'] {
+  border-color: var(--type);
+  background: var(--sheet2);
+  font-weight: 700;
+}
+.pickDocket {
+  grid-column: 1 / -1;
+  justify-content: center;
+  padding: 4.8px 9.6px;
+}
+
+/* the stamps: capitals in a ruled box, the ink worn by a still mask tile */
+.stamp {
   display: inline-block;
-  width: calc(var(--chip) * 0.4);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  border: 1px dashed var(--film-mut);
-  vertical-align: middle;
+  font-family: var(--f-type);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.15;
+  white-space: nowrap;
+  border: 2.4px solid currentColor;
+  border-radius: 4.8px;
+  padding: 2.4px 8px 1.6px;
+  opacity: 0.9;
+  mask-image: var(--ink-tex);
+  mask-size: 64px 64px;
+  mask-repeat: repeat;
+  -webkit-mask-image: var(--ink-tex);
+  -webkit-mask-size: 64px 64px;
 }
-.nm {
-  color: var(--film-main);
+.coverStamp {
+  margin-left: auto;
+  font-size: calc(var(--meta) * 1.05);
+  rotate: -4deg;
+}
+:global([data-small]) .coverStamp {
+  margin-left: 4.8px;
+  font-size: calc(var(--label) * 0.72);
+  border-width: 1.6px;
+}
+.s-villagers {
+  color: var(--ink-town);
+}
+.s-wolves {
+  color: var(--ink-wolf);
+}
+.s-serial_killer {
+  color: var(--ink-sk);
+}
+
+/* the divider tabs */
+.dividers {
+  display: flex;
+  gap: 3.2px;
+  padding-left: 3.2px;
+  align-self: flex-end;
+}
+:global([data-small]) .head {
+  justify-content: space-between;
+}
+:global([data-small]) .dividers {
+  padding-left: 0;
+}
+.tab {
+  font: inherit;
+  font-family: var(--f-type);
+  font-size: max(var(--meta), var(--label));
+  color: #4a3a1c;
+  background: var(--sheet2);
+  border: 0;
+  border-radius: 8px 8px 0 0;
+  padding: 0 calc(11.2px * var(--legible-ui));
+  min-height: max(calc(33.6px * var(--legible-ui)), calc(30px * var(--legible)));
+  display: inline-flex;
+  align-items: center;
+  gap: 6.4px;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 -1px 0 rgba(0, 0, 0, 0.08);
+}
+.tab small {
+  font-size: 0.82em;
+  color: var(--type-mut);
+}
+.tab[aria-selected='true'] {
+  background: var(--sheet);
+  color: var(--type);
+  font-weight: 700;
+}
+.tab:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+:global([data-small]) .tab {
+  padding: 0 calc(8px * var(--legible-ui));
+}
+:global([data-small]) .tab small {
+  display: none;
+}
+
+/* ---- the sheet: typed paper on a stack, scrolled in place ---- */
+.sheet {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden auto;
+  overscroll-behavior: contain;
+  border-radius: 0 8px 6.4px 6.4px;
+  background: var(--sheet);
+  box-shadow:
+    0 2px 0 var(--sheet2),
+    0 4px 0 #ddcca6,
+    0 8px 14px rgba(0, 0, 0, 0.25);
+  padding: calc(14.4px * var(--legible-ui)) calc(19.2px * var(--legible-ui))
+    calc(17.6px * var(--legible-ui));
+  color: var(--type);
+  scrollbar-width: thin;
+  scrollbar-color: var(--manila-dk) transparent;
+}
+.sheet.docket {
+  border-radius: 6.4px;
+}
+.sheet p {
+  margin: 0;
+}
+.shHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 3.2px 12.8px;
+  padding-bottom: 6.4px;
+  margin-bottom: 6.4px;
+  border-bottom: 1.5px solid rgba(90, 70, 40, 0.45);
+}
+.title {
+  font-family: var(--f-title);
+  font-size: calc(var(--meta) * 1.45);
+  line-height: 1.1;
+}
+.typed,
+.cap,
+.legend {
+  font-family: var(--f-type);
+  font-size: var(--label);
+  color: var(--type-mut);
+}
+.sheet .cap {
+  margin: 0 0 3.2px;
+}
+.sheet .legend {
+  margin-top: 9.6px;
+  line-height: 1.4;
+}
+.body {
+  font-family: var(--font-body);
+  font-size: var(--note);
+  line-height: 1.55;
+}
+.sheet .body {
+  margin-top: 11.2px;
+}
+/* the margin's pencil line: how this page came from the one before */
+.sheet .margin {
+  margin-top: 11.2px;
+  font-family: var(--f-hand);
+  font-size: calc(var(--note) * 1.05);
+  line-height: 1.3;
+  color: #b3402f;
+}
+.empty {
+  font-family: var(--font-body);
+  font-size: var(--note);
+  line-height: 1.5;
+  color: var(--type-mut);
+}
+.sheet .empty {
+  margin-top: 9.6px;
+}
+
+/* notes: the pager, a page glyph per note */
+.pager {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 9.6px;
+  border-top: 1px solid var(--rule);
+}
+.pbtn {
+  font: inherit;
+  font-family: var(--f-type);
+  font-size: var(--label);
+  color: var(--type);
+  background: none;
+  border: 1px solid rgba(90, 70, 40, 0.4);
+  border-radius: 999px;
+  padding: 0 11.2px;
+  min-height: max(calc(32px * var(--legible-ui)), calc(24px * var(--legible)));
+  white-space: nowrap;
+  cursor: pointer;
+}
+.pbtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 1.6px;
   min-width: 0;
 }
-.nm i,
-.aqua {
-  font-style: normal;
-  color: var(--film-ink);
+.dots button {
+  width: calc(16px * var(--legible-ui));
+  height: max(calc(24px * var(--legible-ui)), calc(22px * var(--legible)));
+  border: 0;
+  background: none;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
 }
-.nm small {
+.dots i {
   display: block;
-  color: var(--film-mut);
-  font-size: calc(var(--meta) * 0.85);
-  line-height: 1.25;
+  width: 55%;
+  height: 58%;
+  border: 1px solid rgba(90, 70, 40, 0.5);
+  border-radius: 1px;
+  background: var(--sheet2);
 }
-.sus {
-  text-align: right;
-  color: var(--film-main);
+.dots [aria-current='page'] i {
+  background: var(--type);
+  border-color: var(--type);
 }
-.sus small {
-  display: block;
-  color: var(--film-mut);
-  font-size: calc(var(--meta) * 0.85);
+
+/* reads (and the lynch's "who had them right"): a row per seat read */
+.rows {
+  display: flex;
+  flex-direction: column;
+}
+.read {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 3.2px 9.6px;
+  padding: 8px 0;
+  border-top: 1px solid var(--rule);
+}
+.read:first-child,
+.row:first-child {
+  border-top: 0;
+}
+.guess {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 1.6px 9.6px;
+  min-width: 0;
+}
+.guess small {
+  font-family: var(--f-type);
+  font-size: var(--label);
+  color: var(--type-mut);
+}
+.guess b {
+  font-family: var(--font-body);
+  font-size: var(--note);
+  font-weight: 600;
+  color: var(--type);
+}
+.why {
+  grid-column: 2 / -1;
+  font-family: var(--font-body);
+  font-size: calc(var(--note) * 0.88);
+  line-height: 1.45;
 }
 .mk {
   width: calc(25.6px * var(--legible-ui));
   text-align: center;
-  font-size: calc(var(--meta) * 1.3);
-  color: var(--film-mut);
+  font-size: calc(var(--label) * 1.5);
+  color: var(--type-mut);
 }
-.mk.m-role {
-  color: var(--film-ink);
+.m-role {
+  color: var(--ink-follow);
 }
-.mk.m-side {
-  color: var(--slip);
+.m-side {
+  color: var(--ink-town);
 }
-/* the verdicts as pips (rev 74 `.xrow .vd`) */
-.vd {
+.m-none {
+  color: rgba(90, 70, 40, 0.45);
+}
+
+/* precedents: the index, the reasoning on a clipped card, the precedent, the form */
+.pidx {
   display: flex;
-  gap: 4px;
+  flex-wrap: wrap;
+  gap: 4.8px;
+  margin: 8px 0 20.8px;
 }
-.vd span {
-  width: calc(24px * var(--legible-ui));
-  text-align: center;
+.pidx button {
+  font: inherit;
+  font-family: var(--f-type);
+  font-size: var(--label);
+  color: var(--type);
+  background: transparent;
+  border: 1px solid rgba(90, 70, 40, 0.35);
   border-radius: 4.8px;
-  border: 1px solid var(--film-line);
-  color: var(--film-mut);
-  font-size: calc(var(--meta) * 0.8);
+  padding: 0 9.6px;
+  min-height: max(calc(30.4px * var(--legible-ui)), calc(24px * var(--legible)));
+  display: inline-flex;
+  align-items: center;
+  gap: 6.4px;
+  white-space: nowrap;
+  cursor: pointer;
 }
-.vd .follow {
-  background: var(--film-ink);
-  color: var(--film);
-  border-color: var(--film-ink);
+.pidx button i {
+  flex: none;
+  width: 8.8px;
+  height: 8.8px;
+  border-radius: 50%;
 }
-.vd .override {
-  background: var(--slip);
-  color: var(--slip-ink);
-  border-color: var(--slip);
+.pidx button[aria-selected='true'] {
+  background: var(--type);
+  border-color: var(--type);
+  color: var(--sheet);
+}
+/* the findings' index: its numbers under the phase they came from (the ledger's icons), each
+   with its verdict's mark; one row that wraps */
+.fidx {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6.4px 14.4px;
+  margin: 8px 0 12.8px;
+}
+.fgroup {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3.2px;
+}
+.fhead {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 3.2px;
+  font-family: var(--f-type);
+  font-size: var(--label);
+  color: var(--type-label);
+}
+.fhead svg {
+  width: calc(15px * var(--legible-ui));
+  height: calc(15px * var(--legible-ui));
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+.fidx button {
+  font: inherit;
+  font-family: var(--f-type);
+  font-size: var(--label);
+  color: var(--type);
+  background: transparent;
+  border: 1px solid rgba(90, 70, 40, 0.35);
+  border-radius: 4.8px;
+  padding: 0 6.4px 0 4px;
+  min-height: max(calc(30.4px * var(--legible-ui)), calc(24px * var(--legible)));
+  display: inline-flex;
+  align-items: center;
+  gap: 3.2px;
+  cursor: pointer;
+}
+.fidx button[aria-selected='true'] {
+  background: var(--type);
+  border-color: var(--type);
+  color: var(--sheet);
+}
+.fidx button[aria-selected='true'] .fmark {
+  color: var(--sheet);
+}
+.fmark {
+  width: calc(14px * var(--legible));
+  height: calc(14px * var(--legible));
+}
+.smark {
+  width: 0.95em;
+  height: 0.95em;
+  margin-right: 4.8px;
+  vertical-align: -0.1em;
+}
+.pidx button[aria-selected='true'] i {
+  box-shadow: 0 0 0 1.5px var(--sheet);
+}
+.bg-follow {
+  background: var(--ink-follow);
+}
+.bg-override {
+  background: var(--ink-over);
+}
+.bg-not_relevant {
+  background: var(--ink-na);
+}
+.n-worked {
+  background: var(--ink-good);
+}
+.n-cost {
+  background: var(--ink-bad);
+}
+.n-mixed {
+  background: var(--ink-mixed);
+}
+.n-unclear {
+  background: var(--ink-na);
+}
+.t-worked {
+  color: var(--ink-good);
+}
+.t-cost {
+  color: var(--ink-bad);
+}
+.t-mixed {
+  color: var(--ink-mixed);
+}
+.t-unclear {
+  color: var(--ink-na);
+}
+.sheet .gap {
+  margin-top: 11.2px;
+}
+.reason {
+  position: relative;
+  margin: 8px 0 20.8px;
+  padding: 24px 16px 14.4px;
+  border-radius: 3.2px;
+  background: var(--card);
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.05),
+    0 6.4px 14.4px rgba(60, 40, 10, 0.18);
+}
+.clip {
+  position: absolute;
+  top: -11.2px;
+  left: 19.2px;
+  width: 14.4px;
+  height: 32px;
+}
+.vstamp {
+  position: absolute;
+  top: -14.4px;
+  right: 12.8px;
+  font-size: calc(var(--label) * 1.3);
+  rotate: -5deg;
+  background: rgba(251, 246, 232, 0.4);
+}
+.v-follow {
+  color: var(--ink-follow);
+}
+.v-override {
+  color: var(--ink-over);
+}
+.v-not_relevant {
+  color: var(--ink-na);
+}
+.said {
+  font-family: var(--font-body);
+  font-size: calc(var(--note) * 1.12);
+  line-height: 1.4;
+}
+.prec {
+  position: relative;
+  padding-left: 24px;
+  margin: 0 0 16px;
+}
+.prec::before {
+  content: '\201C';
+  position: absolute;
+  left: -1.6px;
+  top: -11.2px;
+  font-family: var(--f-title);
+  font-size: 48px;
+  line-height: 1;
+  color: rgba(90, 70, 40, 0.45);
+}
+.prec p:not(.cap),
+.fbody {
+  font-family: var(--font-body);
+  font-size: var(--note);
+  line-height: 1.5;
+}
+.dim p:not(.cap) {
+  color: #6c604c;
+}
+.for {
+  font-family: var(--font-body);
+  font-size: calc(var(--note) * 0.92);
+  line-height: 1.5;
+}
+.sheet .for {
+  margin-bottom: 16px;
+}
+.form {
+  border: 1.5px solid rgba(90, 70, 40, 0.5);
+  border-radius: 3.2px;
+  padding: 3.2px 12px;
+  margin: 0 0 16px;
+}
+.formT {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font: inherit;
+  font-family: var(--f-type);
+  font-weight: 700;
+  font-size: var(--label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--type-label);
+  background: none;
+  border: 0;
+  padding: 4.8px 0;
+  min-height: max(calc(28.8px * var(--legible-ui)), calc(24px * var(--legible)));
+  cursor: pointer;
+}
+.formT i {
+  font-style: normal;
+}
+.frow {
+  display: grid;
+  grid-template-columns: calc(96px * var(--legible-ui)) 1fr;
+  gap: 3.2px 8px;
+  align-items: baseline;
+  padding: 8px 0;
+  border-top: 1px solid var(--rule);
+}
+.fl,
+.fields dt {
+  font-family: var(--f-type);
+  font-size: var(--label);
+  color: var(--type-label);
+}
+.boxes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4.8px 12.8px;
+}
+.bx {
+  display: inline-flex;
+  align-items: center;
+  gap: 5.6px;
+  font-family: var(--f-type);
+  font-size: var(--label);
+  color: #6f6250;
+}
+.bx.on {
+  color: var(--type);
+  font-weight: 700;
+}
+.b {
+  position: relative;
+  flex: none;
+  width: calc(13.6px * var(--legible-ui));
+  height: calc(13.6px * var(--legible-ui));
+  border: 1.5px solid #6f5c3a;
+  border-radius: 1px;
+}
+/* the pencil's tick, a little crooked, over its box */
+.b svg {
+  position: absolute;
+  left: -20%;
+  top: -45%;
+  width: 150%;
+  height: 135%;
+  color: #3f3c38;
+  rotate: -6deg;
+}
+.pword {
+  font-family: var(--f-hand);
+  font-size: calc(var(--note) * 0.95);
+  line-height: 1.2;
+  color: var(--pencil);
+}
+.fullv {
+  grid-column: 2;
+  font-family: var(--font-body);
+  font-size: calc(var(--note) * 0.85);
+  line-height: 1.45;
+  color: var(--type-mut);
+}
+.fields {
+  margin: 0;
+}
+.fields > div {
+  display: grid;
+  grid-template-columns: calc(96px * var(--legible-ui)) 1fr;
+  gap: 8px;
+  padding: 8px 0;
+  border-top: 1px solid var(--rule);
+}
+.fields > div:first-child {
+  border-top: 0;
+}
+.fields dd {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: calc(var(--note) * 0.9);
+  line-height: 1.45;
+}
+.more {
+  font: inherit;
+  font-family: var(--f-type);
+  font-size: var(--label);
+  color: var(--type);
+  background: none;
+  border: 0;
+  padding: 6.4px 0;
+  min-height: max(calc(30.4px * var(--legible-ui)), calc(24px * var(--legible)));
+  margin-top: 6.4px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* findings: the role's lessons, one after another */
+.finding {
+  padding: 9.6px 0;
+  border-top: 1px solid var(--rule);
+}
+.finding .for {
+  margin: 6.4px 0 0;
+}
+.sheet > .cap + .finding {
+  margin-top: 6.4px;
+}
+
+/* the docket's rows: the count, the night, the deal */
+.row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 9.6px;
+  padding: 5.6px 0;
+  border-top: 1px solid var(--rule);
+  font-family: var(--f-type);
+  font-size: var(--label);
+  color: var(--type);
+  text-align: left;
+}
+button.row {
+  width: 100%;
+  font: inherit;
+  font-family: var(--f-type);
+  font-size: var(--label);
+  background: none;
+  border-left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  cursor: pointer;
+}
+button.row:hover {
+  background: rgba(233, 220, 189, 0.6);
+}
+.nm {
+  min-width: 0;
+}
+/* on a phone a row's right column (a fate, an act) goes under the name, so neither is crushed */
+:global([data-small]) .row {
+  grid-template-columns: auto 1fr;
+  row-gap: 1.6px;
+}
+:global([data-small]) .row > .pair,
+:global([data-small]) .row > .vd {
+  grid-column: 2;
+}
+.nm small {
+  display: block;
+  font-size: 0.85em;
+  color: var(--type-mut);
+}
+.role {
+  font-family: var(--font-body);
+  font-style: normal;
+  color: var(--type-mut);
+}
+.faces {
+  display: inline-flex;
+  gap: 3.2px;
 }
 .pair {
   display: inline-flex;
   align-items: center;
   gap: 4.8px;
-  color: var(--film-mut);
+  color: var(--type-mut);
+  font-size: var(--label);
 }
 .sigil {
   display: inline-block;
-  width: calc(20.8px * var(--legible-ui));
-  height: calc(20.8px * var(--legible-ui));
-  vertical-align: calc(-4.8px * var(--legible-ui));
-  color: var(--c);
+  width: calc(18px * var(--legible-ui));
+  height: calc(18px * var(--legible-ui));
+  vertical-align: calc(-3.2px * var(--legible-ui));
 }
 .sigil svg {
   width: 100%;
   height: 100%;
   stroke-width: 3;
 }
-.c-villagers {
-  --c: var(--town);
+.s-villagers .role,
+.s-wolves .role,
+.s-serial_killer .role {
+  color: inherit;
 }
-.c-wolves {
-  --c: var(--wolf);
+.vd {
+  display: flex;
+  gap: 3.2px;
 }
-.c-serial_killer {
-  --c: var(--sk);
+.vd span {
+  width: calc(21px * var(--legible-ui));
+  text-align: center;
+  border-radius: 4px;
+  font-size: calc(var(--label) * 0.92);
+  line-height: 1.5;
+  color: var(--type-mut);
+  border: 1px solid var(--rule);
+}
+.vd span[class] {
+  color: var(--sheet);
+  border-color: transparent;
+}
+.vd small {
+  color: var(--type-mut);
+  font-size: 0.85em;
+}
+.lastNote {
+  margin-top: 14.4px;
+  padding: 11.2px 14.4px;
+  border-radius: 3.2px;
+  background: var(--card);
+  box-shadow: 0 3.2px 9.6px rgba(60, 40, 10, 0.14);
+}
+.lastNote p:not(.cap) {
+  font-family: var(--font-body);
+  font-size: calc(var(--note) * 0.92);
+  line-height: 1.5;
 }
 
 /* the brief: headed sections of rows */
-.sect {
-  margin-top: 4.8px;
-  font-size: calc(var(--meta) * 0.85);
-  text-transform: uppercase;
+.sheet .sect {
+  margin: 11.2px 0 3.2px;
+  font-family: var(--f-type);
+  font-weight: 700;
+  font-size: var(--label);
   letter-spacing: 0.06em;
-  color: var(--film-ink);
+  text-transform: uppercase;
+  color: var(--type-label);
 }
 .acc {
   display: flex;
   flex-direction: column;
   gap: 3.2px;
   padding: 6.4px 0;
-  border-bottom: 1px solid var(--film-line);
-  color: var(--film-text);
-  line-height: 1.35;
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--font-body);
+  font-size: calc(var(--note) * 0.88);
+  line-height: 1.4;
 }
 .acc header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6.4px;
-  color: var(--film-main);
-}
-.acc p {
-  margin: 0;
+  gap: 4.8px 6.4px;
+  font-family: var(--f-type);
+  font-size: var(--label);
 }
 .acc .def {
-  color: var(--film-mut);
+  color: var(--type-mut);
 }
 .acc .def b {
-  font-weight: 500;
-  color: var(--film-text);
+  font-weight: 600;
+  color: var(--type);
+}
+.tag {
+  font-family: var(--f-type);
+  font-size: calc(var(--label) * 0.92);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid rgba(90, 70, 40, 0.5);
+  border-radius: 3.2px;
+  padding: 0 6.4px;
+  color: var(--type-label);
 }
 .none {
-  color: var(--film-mut);
-  font-style: italic;
+  font-family: var(--font-body);
+  font-size: calc(var(--note) * 0.88);
+  color: var(--type-mut);
   padding: 3.2px 0;
 }
-.slips {
-  display: flex;
-  flex-direction: column;
-  gap: 14.4px;
-  padding: 8px 9.6px 4.8px;
+
+/* live, after the game: the closed file says how it ended, and where the thinking is */
+.sheet .nudge {
+  margin: 0 0 12.8px;
+  padding: 8px 11.2px;
+  border: 1.5px dashed rgba(90, 70, 40, 0.5);
+  border-radius: 4px;
+  background: rgba(233, 220, 189, 0.55);
+  font-family: var(--font-body);
+  font-size: calc(var(--note) * 0.88);
+  line-height: 1.45;
 }
-.slips header {
-  font-size: var(--meta);
-  color: var(--film-main);
-  margin-bottom: 4.8px;
-}
-.slips header i {
-  font-style: normal;
-  color: var(--film-ink);
-}
-.empty {
-  flex: 1 1 auto;
-  display: grid;
-  place-items: center;
-  text-align: center;
-  padding: 0 32px;
-  font-size: var(--note);
-  line-height: 1.5;
-  color: var(--film-mut);
+.nudge a {
+  color: var(--type);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
 }

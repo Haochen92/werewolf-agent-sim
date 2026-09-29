@@ -12,6 +12,8 @@
  * stage write `slot` and `viewer=xray` here, as the replay's own container would hold them.
  * `live=1`, written only when on, cuts the beats as a game in play would (the thinking seat
  * at the stand between turns), for any viewer; without it the beats are the replay's.
+ * `memory=off`, written only when set, draws the fixture as a memory-off game (its
+ * `memory_consulted` and `memory_extracted` taken out), for the case file without precedents.
  * `frame=iphone14|iphone15max|pixel8|WxH`, written only when set (`fill`, the default, fills
  * the window), draws the stage in a box of a landscape phone's size in CSS px, to judge the
  * stage at phone scale on a desktop screen. A preset carries the device's name; `WxH`
@@ -31,6 +33,8 @@ export interface WorkbenchQuery {
   animate: boolean;
   /** Cut the beats as a live game would; absent = the replay's cut. */
   live?: boolean;
+  /** The fixture without its memory events; absent = as played (memory on). */
+  memoryOff?: boolean;
   /** Draw the stage in a phone-sized box; absent = fill the window. */
   frame?: DeviceFrame;
 }
@@ -71,6 +75,7 @@ export const QUERY_KEYS = [
   'hud',
   'animate',
   'live',
+  'memory',
   'frame',
 ] as const;
 
@@ -117,12 +122,13 @@ export function parseQuery(params: URLSearchParams): WorkbenchQuery {
     hud: pick<Hud>(params.get('hud'), ['live', 'replay', 'none'], DEFAULT_QUERY.hud),
     animate: params.get('animate') === '1',
     ...(params.get('live') === '1' ? { live: true } : {}),
+    ...(params.get('memory') === 'off' ? { memoryOff: true } : {}),
     ...(frame ? { frame } : {}),
   };
 }
 
 /**
- * The query string for `q`: the six keys in canonical form (then `live` and `frame`, when
+ * The query string for `q`: the six keys in canonical form (then `live`, `memory` and `frame`, when
  * set), then any other keys `rest` carries (the paint bench's options, `strip=0`), untouched
  * and in their own order.
  */
@@ -135,6 +141,7 @@ export function writeQuery(q: WorkbenchQuery, rest?: URLSearchParams): string {
   out.set('hud', q.hud);
   out.set('animate', q.animate ? '1' : '0');
   if (q.live) out.set('live', '1');
+  if (q.memoryOff) out.set('memory', 'off');
   if (q.frame) out.set('frame', q.frame.id);
   rest?.forEach((v, k) => {
     if (!(QUERY_KEYS as readonly string[]).includes(k)) out.append(k, v);

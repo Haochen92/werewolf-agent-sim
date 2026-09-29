@@ -56,6 +56,7 @@ import {
 } from './replay-state';
 import { holdFor, transportLabel } from './transport';
 import { TransportBand } from './TransportBand';
+import type { FileChoice } from '../film/case-file';
 import styles from './ReplayTheatre.module.css';
 
 export interface ReplayTheatreProps {
@@ -82,7 +83,7 @@ export interface ReplayTheatreProps {
 export interface MiniUnder {
   view: GameView;
   beat: SceneBeat;
-  /** The view a little past the beat (the note a turn writes just after it), for the film. */
+  /** The view past the beat (the whole log), for the case file: see `SlotInput.ahead`. */
   ahead: GameView | null;
   cast: readonly Character[];
   /** The window's beats, and the cursor's place among them. */
@@ -181,7 +182,8 @@ export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps
 
   // the side slot's state that outlives a beat
   const drawer = useDrawerFilters();
-  const [filmTab, setFilmTab] = useState('note');
+  const [filmTab, setFilmTab] = useState('notes');
+  const [fileSeat, setFileSeat] = useState<FileChoice | null>(null);
   const onXray = useCallback(() => dispatch({ type: 'xray' }), []);
   // the landing's two buttons under a preview are the older pair, Transcript and X-ray: its
   // X-ray turns the X-ray on and brings the film, or, with the film up, turns it off
@@ -197,13 +199,24 @@ export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps
       drawerScroll: drawer.scroll,
       filmTab,
       onFilmTab: setFilmTab,
+      fileSeat,
+      onFileSeat: setFileSeat,
       ahead,
       onTranscript: () => dispatch({ type: 'transcript' }),
       onFile: () => dispatch({ type: 'file' }),
       // a preview's way to the whole game is the caller's
       back: isMini ? undefined : back,
     }),
-    [drawer.filters, drawer.setFilters, drawer.scroll, filmTab, ahead, isMini, back],
+    [
+      drawer.filters,
+      drawer.setFilters,
+      drawer.scroll,
+      filmTab,
+      fileSeat,
+      ahead,
+      isMini,
+      back,
+    ],
   );
 
   // playing: the beat's hold, paused while the speech is held

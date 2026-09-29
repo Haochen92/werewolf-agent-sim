@@ -1,19 +1,18 @@
 /**
- * What the X-ray film holds at a beat: *this beat, inside* (handoff §2 "The film"; beat sheet
- * §2, §3 row 6, §4, §8 row 8, §9, §10). Worked out from the folded view alone, so the film
- * can be drawn at any beat, seeking or playing, like the rest of the stage.
+ * The case file's docket: what the X-ray's pane holds at a beat with no seat in focus (the
+ * file's own pages, per seat, are case-file.ts). Worked out from the folded view alone, so the
+ * docket can be drawn at any beat, seeking or playing, like the rest of the stage.
  *
- * - a turn: the speaker's note (written just after the turn, so it is read from the view a
- *   little ahead), and the lessons it weighed before speaking with its verdict on each;
  * - the count: what each voter weighed before its ballot;
  * - the lynch's card: "Who had them right", each voter's read of the voted-out seat against
  *   the truth, and the seat's own last note;
  * - a morning: the brief the agents carry into the next day, in its typed form;
- * - a night spoke: the actor's lessons and note (the pack's two notes); the night whole;
- * - the deal face up, the truth at the end ("the deal, and how it went"), the winners' notes.
+ * - the night whole: what each actor did;
+ * - the deal face up; at the end the case closed ("the deal, and how each seat went"), and
+ *   the winners' last notes at their stand.
  *
- * The epilogue has no slot film: the ledger comes down over the whole stage instead.
- * Reads are not in the film; they are on the wing (`turnReads`).
+ * The epilogue has no docket: the ledger comes down over the whole stage instead. The reads a
+ * turn was made from are also on the wing (`turnReads`), where a tap opens the read card.
  */
 import type { CarriedSummary, GameView } from '@/game/types';
 import type { MemoryConsulted, PlayerReads } from '@/types/contracts';
@@ -25,7 +24,7 @@ import { factionOf } from '../roles';
 export type Verdict = 'follow' | 'override' | 'not_relevant';
 
 export interface FilmLesson {
-  /** L1–L3, in the order the agent was handed them. */
+  /** No. 1–3, in the order the agent was handed them. */
   n: number;
   situation: string;
   action: string;
@@ -53,26 +52,7 @@ export interface HadThemRight {
   mark: ReadMark;
 }
 
-export type FilmModel =
-  | {
-      kind: 'inside';
-      /** At a day turn, or an actor's act at night. */
-      when: 'turn' | 'night';
-      seat: string;
-      role: string | null;
-      note: FilmNote | null;
-      lessons: FilmLesson[];
-      consultSeq: number | null;
-      readsSeq: number | null;
-      /** The lessons were weighed at the seat's first turn that day and carried over. */
-      carried: boolean;
-    }
-  | {
-      kind: 'pack';
-      seats: string[];
-      notes: { seat: string; note: FilmNote | null }[];
-      lines: number;
-    }
+export type DocketModel =
   | {
       kind: 'night';
       day: number;
@@ -176,7 +156,7 @@ function lastBefore<T extends MemoryConsulted | PlayerReads>(
 
 /**
  * The reads a speaker's turn was made from: its last `player_reads` that day before the line.
- * The wing wears them as blue edges; a tap opens the read card.
+ * The wing wears them as verdigris edges; a tap opens the read card.
  */
 export function turnReads(
   view: GameView,
@@ -213,23 +193,6 @@ export function freshReads(view: GameView, reads: PlayerReads | null): Set<strin
   );
 }
 
-/** The note a turn wrote: after the line, before the next slot of the day. */
-function noteAfter(
-  view: GameView,
-  seat: string,
-  day: number,
-  seq: number,
-): FilmNote | null {
-  const next =
-    view.days[day]?.slots.find((s) => s.seq > seq)?.seq ??
-    view.timeline.find((t) => t.seq > seq)?.seq ??
-    Infinity;
-  const n = (view.xray.agents[seat]?.strategy ?? []).find(
-    (s) => s.day === day && s.seq > seq && s.seq < next,
-  );
-  return n ? { seq: n.seq, text: n.text } : null;
-}
-
 /** The last note a seat wrote in a window of the log. */
 function lastNote(view: GameView, seat: string, from: number, to: number): FilmNote | null {
   const n = (view.xray.agents[seat]?.strategy ?? [])
@@ -238,7 +201,7 @@ function lastNote(view: GameView, seat: string, from: number, to: number): FilmN
   return n ? { seq: n.seq, text: n.text } : null;
 }
 
-const VOTE_FILM: readonly SceneBeat['id'][] = [
+const VOTE_DOCKET: readonly SceneBeat['id'][] = [
   'vote.ballots-drop',
   'vote.closes',
   'vote.count-begins',
@@ -251,45 +214,15 @@ const VOTE_FILM: readonly SceneBeat['id'][] = [
 ];
 
 /**
- * The film for a beat. `ahead` is the view a little past the beat (see `SlotInput.ahead`);
- * without it the note written after a turn is simply not there yet. Null at the epilogue.
+ * The docket for a beat with no seat in focus (a turn and a night spoke open a seat's file
+ * instead, case-file.ts `fileFocus`). Null at the epilogue.
  */
-export function filmFor(
-  view: GameView,
-  beat: SceneBeat,
-  ahead?: GameView | null,
-): FilmModel | null {
+export function docketFor(view: GameView, beat: SceneBeat): DocketModel | null {
   const day = beat.day;
-  const later = ahead ?? view;
   const phaseAt = (d: number, p: string) =>
     view.timeline.find((t) => t.day === d && t.phase === p)?.seq ?? null;
 
-  if ((beat.id === 'day.speech' || beat.id === 'day.pass') && beat.subject) {
-    const seat = beat.subject;
-    const agent = view.xray.agents[seat];
-    const consult = lastBefore(agent?.consulted, day, 'day_discussion', beat.seq);
-    const reads = lastBefore(agent?.reads, day, 'day_discussion', beat.seq);
-    // an earlier turn of this seat since the consult: the lessons were carried over from it
-    const carried =
-      !!consult &&
-      (view.days[day]?.slots ?? []).some(
-        (s) =>
-          s.kind !== 'gm' && s.player === seat && s.seq > consult.seq && s.seq < beat.seq,
-      );
-    return {
-      kind: 'inside',
-      when: 'turn',
-      seat,
-      role: view.xray.roles[seat] ?? null,
-      note: noteAfter(later, seat, day, beat.seq),
-      lessons: lessonsOf(consult),
-      consultSeq: consult?.seq ?? null,
-      readsSeq: reads?.seq ?? null,
-      carried,
-    };
-  }
-
-  if (VOTE_FILM.includes(beat.id)) {
+  if (VOTE_DOCKET.includes(beat.id)) {
     const ballots = view.days[day]?.vote.ballots ?? [];
     if (!ballots.length) return { kind: 'empty', label: beat.label };
     const opened = phaseAt(day, 'voting') ?? -Infinity;
@@ -334,57 +267,25 @@ export function filmFor(
   if (beat.id === 'morning.carried-summary')
     return { kind: 'brief', day, summary: view.days[day]?.summaryStructured ?? null };
 
-  if (beat.id === 'rnight.spoke' || beat.id === 'rnight.whole') {
-    const branches = nightBranchesOf(view, day);
-    const start = phaseAt(day, 'night') ?? -Infinity;
-    // the night ends where the next day begins, which only the view ahead may hold yet
-    const end =
-      later.timeline.find((t) => t.day === day + 1 && t.phase === 'day')?.seq ??
-      later.winnerSeq ??
-      Infinity;
-    const cur = beat.spoke ? branches[beat.spoke.rank] : undefined;
-    if (beat.id === 'rnight.whole' || !cur)
-      return {
-        kind: 'night',
-        day,
-        rows: branches.map((b) => ({
-          actor: b.actor,
-          seats: b.seats,
-          role: b.role,
-          target: b.target,
-        })),
-      };
-    if (cur.actor === 'pack')
-      return {
-        kind: 'pack',
-        seats: cur.seats,
-        notes: cur.seats.map((s) => ({ seat: s, note: lastNote(later, s, start, end) })),
-        lines: cur.lines,
-      };
-    const consult = lastBefore(
-      view.xray.agents[cur.actor]?.consulted,
-      day,
-      'night_action',
-      Infinity,
-      start,
-    );
+  if (beat.id === 'rnight.whole')
     return {
-      kind: 'inside',
-      when: 'night',
-      seat: cur.actor,
-      role: cur.role,
-      note: lastNote(later, cur.actor, start, end),
-      lessons: lessonsOf(consult),
-      consultSeq: consult?.seq ?? null,
-      readsSeq:
-        lastBefore(view.xray.agents[cur.actor]?.reads, day, 'night_action', Infinity, start)
-          ?.seq ?? null,
-      carried: false,
+      kind: 'night',
+      day,
+      rows: nightBranchesOf(view, day).map((b) => ({
+        actor: b.actor,
+        seats: b.seats,
+        role: b.role,
+        target: b.target,
+      })),
     };
-  }
 
-  if (beat.id === 'deal.face-up' || beat.id === 'over.truth') {
-    const truth = beat.id === 'over.truth';
+  if (
+    beat.id === 'deal.face-up' ||
+    beat.id === 'over.truth' ||
+    // the curtain is where a live game rests: the case, closed
+    beat.id === 'over.curtain'
+  ) {
+    const truth = beat.id !== 'deal.face-up';
     return {
       kind: 'deal',
       truth,
@@ -396,7 +297,7 @@ export function filmFor(
     };
   }
 
-  if (beat.id === 'over.winners-stand' || beat.id === 'over.curtain')
+  if (beat.id === 'over.winners-stand')
     return {
       kind: 'notes',
       rows: winnersOf(view).map((s) => ({

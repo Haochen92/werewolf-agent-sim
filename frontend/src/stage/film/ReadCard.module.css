@@ -1,5 +1,6 @@
-/* The read card beside its seat on the wing (bench 74 `.readcard`, the locked card of rev 52):
-   a small film print with the speaker's guess, how sure, why, and the truth. */
+/* The read card beside its seat on the wing: a small paper index card, a leaf of the speaker's
+   case file (Film.module.css): cream stock with a red rule under its head, the labels typed,
+   the guess and the why in Literata, the truth in its faction's stamp ink. Upright. */
 .card {
   position: absolute;
   z-index: 7;
@@ -8,14 +9,16 @@
   /* the seat's level, held on the stage at the card's height as drawn: near enough 250 units at
      full size, grown with the type on a phone */
   top: max(8px, min(var(--top), calc(900px - 250px * var(--legible-ui))));
-  padding: 12.8px 16px;
-  border-radius: 4.8px;
-  background: var(--film);
-  border: 4px solid var(--film-border);
-  box-shadow: 6.4px 8px 0 rgba(5, 12, 16, 0.5);
-  color: var(--film-text);
+  padding: 11.2px 16px 12.8px;
+  border-radius: 3.2px;
+  background: var(--card);
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.06),
+    0 9.6px 22.4px rgba(0, 0, 0, 0.45);
+  color: var(--type);
+  font-family: var(--font-body);
   font-size: var(--meta);
-  rotate: -0.8deg;
+  --f-type: var(--font-stage-type, 'Courier Prime'), 'Courier New', monospace;
 }
 .card header {
   display: flex;
@@ -23,20 +26,23 @@
   align-items: center;
   gap: 4.8px 6.4px;
   padding-bottom: 6.4px;
-  border-bottom: 1px solid var(--film-line);
+  /* the index card's red rule */
+  border-bottom: 1.6px solid rgba(179, 64, 47, 0.55);
 }
 .card header strong {
-  color: var(--film-main);
-  font-weight: 500;
+  font-family: var(--f-type);
+  font-weight: 700;
+  color: var(--type);
   white-space: nowrap;
 }
 /* two faces and two names in one line: the heads a little smaller than a lone one */
 .card header .chip {
   width: calc(var(--chip) * 0.5);
 }
-/* "Seat 2's read on" in the film's ink between the two faces; the one read on, bright */
+/* "Seat 2's read on" typed between the two faces */
 .card header > span:not(.chip) {
-  color: var(--film-ink);
+  font-family: var(--f-type);
+  color: var(--type-label);
   white-space: nowrap;
 }
 .chip {
@@ -47,6 +53,8 @@
   border-radius: 50%;
   overflow: hidden;
   line-height: 0;
+  background: #ecdfc3;
+  box-shadow: 0 0 0 1.5px var(--manila-edge);
 }
 .guess {
   display: flex;
@@ -56,34 +64,36 @@
   font-size: calc(22.4px * 1.1 * var(--legible-ui));
 }
 .guess b {
-  font-weight: 500;
-  color: var(--film-main);
+  font-weight: 600;
+  color: var(--type);
 }
 .guess b.sure {
-  color: var(--sure);
-  text-shadow: 0 0 8px rgba(127, 220, 242, 0.5);
+  font-weight: 700;
 }
 .guess span {
-  color: var(--film-mut);
+  font-family: var(--f-type);
+  color: var(--type-mut);
   font-size: var(--meta);
 }
 .card p {
   margin: 0 0 8px;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 .card footer {
   display: flex;
   align-items: center;
   gap: 6.4px;
   padding-top: 6.4px;
-  border-top: 1px solid var(--film-line);
-  color: var(--film-mut);
+  border-top: 1px solid rgba(90, 70, 40, 0.22);
+  font-family: var(--f-type);
+  color: var(--type-mut);
 }
 .truth {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   color: var(--c);
+  font-weight: 700;
 }
 .truth svg {
   width: calc(20.8px * var(--legible-ui));
@@ -93,21 +103,21 @@
 .mk {
   margin-left: auto;
   font-size: calc(22.4px * 1.1 * var(--legible-ui));
-  color: var(--film-mut);
+  color: rgba(90, 70, 40, 0.45);
 }
-/* the role itself in the film's ink, the side in the slip's paper (as in "who had them right") */
+/* the role itself in green ink, the side in the town's amber ink (as in the file's Reads) */
 .m-role {
-  color: var(--film-ink);
+  color: var(--ink-follow);
 }
 .m-side {
-  color: var(--slip);
+  color: var(--ink-town);
 }
 .c-villagers {
-  --c: var(--town);
+  --c: var(--ink-town);
 }
 .c-wolves {
-  --c: var(--wolf);
+  --c: var(--ink-wolf);
 }
 .c-serial_killer {
-  --c: var(--sk);
+  --c: var(--ink-sk);
 }

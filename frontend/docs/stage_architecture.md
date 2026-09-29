@@ -36,7 +36,7 @@ Five independent inputs; the scene is a pure function of them. No scene reads th
 | Tier held | public · seat · faction · observer | the server (live); the X-ray toggle (replay: off = public, on = observer) |
 | Me | none (spectator) · a seat (+ pack if wolf) | `GameStatus.you` + my `role_assigned`; never inferred |
 | Cursor | a beat index (replay) · the tail behind a catch-up queue (live) | the transport / the stream |
-| Presentation | slot (drawer · film, the tabs Transcript · File) · motion (normal · fast) · X-ray on/off | the user |
+| Presentation | slot (drawer · film, the tabs Transcript · File; the file's tab and chosen seat) · motion (normal · fast) · X-ray on/off | the user |
 
 ```
 Scene({ view: fold(events ≤ cursor), beat, me, presentation })
@@ -156,7 +156,8 @@ the HUD's brass edge, the chapters as Young Serif headings (the day large; the n
 pale blue-grey, `--night-ink`, never the serial killer's lavender), speeches as a small head, a
 brass-cream name and Literata words, the game master's reports as short sentences with the dead in
 terracotta (`--dead`), a run of passes as one italic line, and the vote as a tally of the voters'
-faces per seat voted for. X-ray lines keep the film's aqua. `drawer-lines.ts` still decides what a
+faces per seat voted for. X-ray lines are in the X-ray's verdigris (`--xray`, 2026-09-29; the film's
+aqua before). `drawer-lines.ts` still decides what a
 viewer holds; the telling is its pure helpers (`groupPasses`, `voteTally`, `voteSentence`,
 `reportParts`), unit-tested beside it. The seat filter, Show and the day tabs are the strip's
 plaque tabs (walnut, brass edge, the pressed well). One column at every width. Static: no filter,
@@ -210,7 +211,8 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   src/assets/sprites/day/<character>/{base,talking,thinking,out,head}.webp
   src/assets/sprites/kits/{healer,investigator,vigilante,serial_killer,wolf,villager,clock,lamp}.webp
   src/assets/sprites/wood/walnut.webp               (the station's beam and ledge only)
-  src/assets/sprites/textures/{walnut,boards,velvet,cork}.webp  (cork: scripts/make-cork.mjs)
+  src/assets/sprites/textures/{walnut,boards,velvet,cork,ink}.webp  (cork: scripts/make-cork.mjs;
+    ink, the case file's stamp mask, a white tile whose alpha is the ink: scripts/make-stamp-ink.mjs)
   src/assets/sprites/station/{sky,floor,post,lamp,train,blind}.webp
   src/assets/sprites/window/{day,dusk,night,dawn}-{far,near}.webp
   src/assets/sprites/props/{jar-glass,jar-lid,stand-front,vote-table}.webp
@@ -524,8 +526,13 @@ CSS custom properties on the stage box, alongside the existing [tokens.css](../s
 Fonts via `next/font` (`src/stage/fonts.ts`): the HUD's two voices (ruled 2026-09-29) are
 `Young Serif` (`--font-display`: the day plaque, nameplates, tabs, seat numerals on brass and on
 the wing) and `Literata` (`--font-body`, the stage's default face: speeches, the transcript, the
-dock), no extra letter-spacing on body text; `IM Fell English` stays on paper, `Patrick Hand` on
-the film's note slips, and the sans (Outfit) only where a plate still names it.
+dock), no extra letter-spacing on body text; `IM Fell English` stays on paper (and the case
+file's titles), `Patrick Hand` for pencil (the case file's margin line and pencilled facets),
+`Courier Prime` (`--font-stage-type`, 2026-09-29) the case file's typewriter for its labels, tabs
+and stamps only, and the sans (Outfit) only where a plate still names it. The case file's paper
+(manila, sheet, card, type, the stamp inks) and the X-ray's verdigris (`--xray*`, the private
+accent outside the file) are materials in `paint/materials.ts` (2026-09-29); the old film tokens
+(`--film*`, `--slip*`) remain only for the epilogue's ledger and the site.
 The stage does not use Mantine components; Mantine stays for the rooms, the landing and forms.
 The site around the stage (Mantine chrome, the token bridge where the theatre's values win, the site's fonts, the `(site)` route group) is in [site_architecture.md](site_architecture.md).
 
@@ -575,11 +582,13 @@ cases; `PaintPicture`'s docstring (in git history, `Stage.tsx` before 2026-09-29
 file), picks the beat, and renders the scene through exactly the component the real pages use.
 
 ```
-/workbench/vote?beat=5&viewer=spect|seat:player_7|xray&motion=normal|fast&slot=none|drawer|film&hud=live|replay|none&animate=0|1[&live=1][&frame=iphone14|iphone15max|pixel8|WxH]
+/workbench/vote?beat=5&viewer=spect|seat:player_7|xray&motion=normal|fast&slot=none|drawer|film&hud=live|replay|none&animate=0|1[&live=1][&memory=off][&frame=iphone14|iphone15max|pixel8|WxH]
 ```
 
 `live=1` (written only when on) cuts the beats as a game in play would, for any viewer: the day's
-`day.turn-thinking` beats appear between the turns.
+`day.turn-thinking` beats appear between the turns. `memory=off` (written only when set) takes
+the fixture's `memory_consulted` and `memory_extracted` out, so the case file can be seen as a
+memory-off game draws it (no Precedents, no Findings).
 
 `frame=iphone14|iphone15max|pixel8|WxH` (written only when set; `fill`, the default, fills the
 window) draws the stage in a box of that phone's landscape size in CSS px (844×390, 932×430,
@@ -636,7 +645,8 @@ src/stage/
 ├── cast/                    # Puppet (sprite + numeral overlay), castForGame,
 │                            #   CastShadow (a figure's baked shadow on the wall),
 │                            #   ChipSprite + headRect (the head portrait, framed by HEAD_FRAME)
-├── film/                    # Film (side slot), Note, Lessons, ReadCard, Brief, Ledger (epilogue)
+├── film/                    # Film: the case file in the side slot (case-file.ts a seat's file,
+│                            #   film-model.ts the docket), ReadCard (the wing's read, a paper card)
 ├── drawer/                  # Transcript drawer: lines by kind, day tabs, seat chips, Show toggles
 ├── scenes/                  # StationScene (the waiting room; station.ts its rules) DealScene
 │                            #   DayScene VoteScene LynchScene NightLobbyScene ShelfRoomScene
@@ -683,7 +693,7 @@ Verified against the server before ruling; the handoff's bundled schema is byte-
 | landing's miniature replay: same component reduced, or a cut-down build? | decided with the landing, after the theatre | the stage box scales; the question is what beats it plays, not what it is |
 | mobile: "phone proportions left to the build" | there are none: landscape only, one scale | ruling 3 |
 
-Deferred by decision, unchanged: `firing_reason` and `addressed_targets` in the film or drawer;
+Deferred by decision, unchanged: `firing_reason` and `addressed_targets` in the case file or drawer;
 motion for the night rooms beyond the timings in the sheet; whether a seat can be reclaimed
 (server's call).
 

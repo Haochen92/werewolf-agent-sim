@@ -208,7 +208,7 @@
 }
 .rowHead {
   display: grid;
-  grid-template-columns: auto auto 1fr auto;
+  grid-template-columns: auto auto auto 1fr auto;
   gap: 9.6px;
   align-items: start;
 }
@@ -230,6 +230,24 @@
 }
 .open .chev {
   transform: rotate(90deg);
+}
+/* the row's verdict as a mark (VerdictMark): muted inks, the mark carries the meaning */
+.vmark {
+  width: calc(18px * var(--legible-ui));
+  height: calc(18px * var(--legible-ui));
+  margin-top: 3.2px;
+}
+.m-worked {
+  color: #8fc4a3;
+}
+.m-cost {
+  color: #d98b7c;
+}
+.m-mixed {
+  color: #e0b25a;
+}
+.m-unclear {
+  color: var(--film-mut);
 }
 .label {
   font-size: calc(var(--meta) * 0.85);

@@ -2,10 +2,11 @@
 
 /**
  * The read card: what the seat at the stand made of one other seat when it spoke, opened by
- * tapping that seat's tile on the wing (handoff §2 "The film"). Reads are not in the film;
- * they sit on the wing as blue edges, and this card is the one close look at one of them:
- * the guess, how sure, why, and, since the X-ray holds the truth, how near it came:
- * ● the role itself, ◐ the right side, ○ no read or wrong.
+ * tapping that seat's tile on the wing (handoff §2 "The film"). The reads sit on the wing as
+ * verdigris edges, and this card is the one close look at one of them: the guess, how sure,
+ * why, and, since the X-ray holds the truth, how near it came: ● the role itself, ◐ the right
+ * side, ○ no read or wrong. A small paper index card in the case file's style (owner,
+ * 2026-09-29): it is a leaf of the speaker's file (its Reads), upright.
  *
  * It sits beside its seat, docked at the wing's edge. Tapping the seat again closes it. Its head
  * says whose read on whom, face by face: "[speaker] Seat 2's read on [target] Seat 5" (owner,

@@ -12,8 +12,9 @@ regenerate the golden, in that order. The narrative behind each row is the hando
 **Columns.** *Anchor*: the wire event (or client condition) the beat is keyed on; a replay
 beat exists iff its anchor is in the log. *Sees*: who has the beat — **P** everyone (public),
 **S** the seated human it concerns, **F** the wolf pack, **X** X-ray on (observer tier; in live,
-everyone after `game_over`). A beat marked S or F is also in the X-ray replay, shown in aqua as
-"Only seat n". *Stage*: what changes on the stage. *Slot*: what the drawer (D) or film (F) does;
+everyone after `game_over`). A beat marked S or F is also in the X-ray replay, shown in the
+X-ray's verdigris (aqua until 2026-09-29) as "Only seat n". *Stage*: what changes on the stage.
+*Slot*: what the drawer (D) or the case file (F, the X-ray's pane; the film until 2026-09-29) does;
 "—" = nothing new. *Hold*: the replay's wait at normal speed. *Bench*: the revision that drew it.
 
 **Holds** (H§5): shutter 3.0 s · a chip 2.0 s · a card read 2.6 s · your own card at the deal
@@ -30,9 +31,9 @@ floor 4 s, cap 15 s. Live has no holds: beats animate as events arrive (§12).
 
 **Live vs replay.** Live plays every beat its tier receives, in arrival order, with the queue
 rule of §12. The replay plays the P beats with X-ray off and P+X (plus every S and F beat, in
-aqua) with X-ray on; toggling X-ray re-cuts the beat list, so the seek bar re-marks.
+verdigris) with X-ray on; toggling X-ray re-cuts the beat list, so the seek bar re-marks.
 
-**The right slot** holds one thing at a time, the drawer or the film; the two buttons switch;
+**The right slot** holds one thing at a time, the drawer or the case file; the two buttons switch;
 the X-ray state stays either way. Turning X-ray on resets the drawer's Show › X-ray filter to on.
 
 **Seats** are `player_1..player_9`, shown as the numeral 1–9. The cast (character per seat) is
@@ -124,16 +125,16 @@ removing a passenger, the Ticket's model, memory and "who pays" lines, "Change t
 
 ## 2. Day discussion — H§4.1 · benches 62, 72
 
-Turns run in the log's order. The film for a turn is *this beat, inside*: the speaker's note
-(`strategy_update`, written after the turn), the lessons it weighed (`memory_consulted`, before it;
-memory-on games from day 2). Reads (`player_reads`, before the decision) are not in the film: they
-are a blue edge on every seat the speaker has a read on, brighter for a sure read; a tap opens the
-read card (guess, how sure, why, the truth with ● ◐ ○).
+Turns run in the log's order. The case file at a turn opens the speaker's file (§12): its notes
+(`strategy_update`) written by the beat, its latest reads (`player_reads`), the precedents it
+weighed (`memory_consulted`, before the turn; memory-on games from day 2). The reads are also a
+verdigris edge on every seat the speaker has a read on, brighter for a sure read; a tap opens the
+read card (guess, how sure, why, the truth with ● ◐ ○), a paper index card from the file.
 
 | # | Beat | Anchor | Sees | Stage | Slot | Hold |
 |---|---|---|---|---|---|---|
 | 1 | `day.turn-thinking` | `turn_started` (first: 13) | P | the seat's puppet takes the stand in the thinking state, no clock; the speech box shows a "…" so the state reads as thinking, not idle (ruled 2026-09-25) | D: nothing yet | live: until the turn resolves · replay: folded into the resolving beat: the puppet rises thinking, holds **0.6 s**, then plays it (accepted 2026-09-25) |
-| 2 | `day.speech` (one per page, §0) | `speech` | P | talking state, the line in the speech box a page at a time, "1 / 2 ▼" at its foot while more follows; X: the box carries the aqua tags (who it answers, stance) and the plaque tags the role; the wing's blue edges from the turn's `player_reads` | D: the line, lit and scrolled to · F(X): note + lessons weighed | speech |
+| 2 | `day.speech` (one per page, §0) | `speech` | P | talking state, the line in the speech box a page at a time, "1 / 2 ▼" at its foot while more follows; X: the box carries the aqua tags (who it answers, stance) and the plaque tags the role; the wing's verdigris edges from the turn's `player_reads` | D: the line, lit and scrolled to · F(X): the speaker's file | speech |
 | 3 | `day.pass` | public: a `turn_started` resolved by no speech (the next `turn_started` or the phase change), live and replay alike, since `turn_started` is public · X-ray: `pass_marker` instead (12 in the fixture), which carries the reason and the draft (ruled 2026-09-25: day 1 of the public replay is three passes, not an empty stand) | P · X | idle state, the box says "passes"; X adds the reason and the held-back draft. Reason wording (accepted 2026-09-25): `voluntary` "chose to pass" · `novelty_gated` "held back: nothing new to say" · `generation_failed` "no line came" | D(X): the pass with its reason and draft | 4.0 |
 | 4 | `day.your-turn` | `input_request` `discuss` for me | S | my puppet at the stand, thinking; the dock carries the two minutes (`deadline`; null = no countdown; the car's wall clock is gone, ruled 2026-09-29); one flow: an optional steer for your agent + **Draft** / **Redraft** (the seat's own agent's line, as it would say it, steered and revising the box's line when the field holds something; "Use my seat notes" sends the notebook along when ticked; three per turn, the returned `deadline` is the new countdown), then the textarea the draft lands in, editable, with **Send** and **Pass** (no hand-over on this turn: the agent speaks only when the clock runs out; HUD pass 3b, 2026-09-29); the drawer stops at the rail so the prompt keeps the full width | D: stops at the rail | until answered / deadline |
 | 5 | `day.your-line` | my `speech` after 4 | S (P sees a normal turn) | the puppet talks my line as any turn plays; a pass leaves it idle | D: my line | speech |
@@ -203,7 +204,7 @@ seat 2 serial killer).
 | 1 | `lynch.stand-returns` | `lynch_result` | P | the shot pulls back; the stand comes up from below the rail with the voted-out puppet rising into it from behind the playboard; the leaves stand either side; the light collapses to one special | — | 3.0 |
 | 2 | `lynch.named` | 〃 | P | held; the plaque's tag "voted out". S (if me): the box "You are voted out" | — | 2.0 |
 | 3 | `lynch.drop` | 〃 | P | straight down through the trap, no fade; the plaque stays lit over the empty box | — | 2.0 |
-| 4 | `lynch.card-up` | `lynch_result.role` | P | the lift raises the role card (name, sigil, figure, front line, faction colour); the wing's card holds the live photo until the card clears the rail, then turns grey with the role's band | F(X): "Who had them right": each voter's `player_reads` on this seat vs the truth (● role ◐ side ○ none/wrong); the seat's last note | 2.6 |
+| 4 | `lynch.card-up` | `lynch_result.role` | P | the lift raises the role card (name, sigil, figure, front line, faction colour); the wing's card holds the live photo until the card clears the rail, then turns grey with the role's band | F(X), the docket: "Who had them right": each voter's `player_reads` on this seat vs the truth (● role ◐ side ○ none/wrong); the seat's last note | 2.6 |
 | 5 | `lynch.truth` | 〃 | P | held. S (if me): "You were a villager" → "You stay at the table as a spectator"; the card button reads "on the wing" | — | 2.6 |
 | 6 | `lynch.card-to-wing` | 〃 | P | the card flies up; the stand goes; the shutter gathers up on the night window; the leaves fold → §5. If this lynch ends the game → §10 | — | 3.0 |
 
@@ -215,7 +216,7 @@ after 0.3 s and the wing's tile turns at 1.45 s; the card flies 0.8 s after 0.3 
 2.4 s. The box: "Seat 2 · Voted out, 3 to 2." → "Seat 2 was the serial killer · Voted out, 3 to
 2." → "· Night falls." at the card to the wing; S: "You are voted out · 3 to 2. Your role is shown
 to the table next." → "You were a villager · The table sees your card now." → "· You stay at the
-table as a spectator." The film ("Who had them right") shows at the card and the truth: each
+table as a spectator." The docket ("Who had them right") shows at the card and the truth: each
 voter's last `player_reads` that day before the first ballot; ◐ is town against not town (bench
 65: a wolf read on the killer had the side). Not yet: a lynch that ends the game still plays the
 night ending in `lynch.card-to-wing` (nothing in the view at that beat says the game is over).
@@ -368,7 +369,7 @@ arrive together; private results follow them (59, 271→272, 402), never precede
 | 5 | `morning.chip-saved` | the `save` entry (58: seat 1, wolves + serial killer) | P | the wounds small and the plaster large beneath it, the ribbon on the string; the chip goes back up whole | — | 2.6 |
 | 6 | `morning.quiet` | `night_result` with no deaths and no save | P | the line alone | — | 3.0 |
 | 7 | `morning.only-you` | `investigation_result` (59) · `vigilante_confirmation` · the pack's failed kill: `wolf_message` from `game_master` (271, arrives after `night_result`) | S · F | one beat after the report, on my screen only. Investigator: the target's chip comes down and turns to its sigil, the lens beneath (the one private result that names a role). Wolf: the target's chip down whole, "Your kill on seat 2 failed. Seat 2 survived", no sigil (the GM's verbatim note names the role; that wording is X-ray's). Vigilante: the same shape, "You shot seat 2. Seat 2 survived", no sigil; the caps count (`bullets_remaining`, 402, is a view update, not a beat). The healer has nothing private. A kill the healer stopped is public (the save names its attackers) and has no private beat | D: dashed "Only you" line · X: in aqua, "Only seat n" / "Only the pack" | 2.6 |
-| 8 | `morning.carried-summary` | `day_summary_structured` of day N (the summary of the day just ended) | X | none on stage | F: the typed brief: accusations as rows (accuser → accused, evidence type, defence), then claims, blocs, mood. The summary of a day on which the game ended at the lynch is dropped (never consumed) | reading time |
+| 8 | `morning.carried-summary` | `day_summary_structured` of day N (the summary of the day just ended) | X | none on stage | F, the docket: the typed brief: accusations as rows (accuser → accused, evidence type, defence), then claims, blocs, mood. The summary of a day on which the game ended at the lynch is dropped (never consumed) | reading time |
 | 9 | `morning.day-begins` | `phase_change: day` (60, 159, 274). **Chapter mark: Day N+1** | P | the shutter rises on the day's paint; the stand returns with the first speaker. If this morning ends the game → §10 instead | — | 3.0 |
 
 As built 2026-09-25: top strip "Morning N · The report · <label>"; the attacked chip is 1.9× the
@@ -393,15 +394,15 @@ lands on the hub.
 | # | Beat | Anchor | Stage | Slot | Hold |
 |---|---|---|---|---|---|
 | 1 | `rnight.hub` | `phase_change: night` | the hub with the wing's lamps lit on every seat that acts tonight | D: the night's lines | 3.0 |
-| 2 | `rnight.spoke` (one per actor's branch, branches ordered by their **last** event; a step per pack line and one for the mark. The pack closes nights 1–2 of the fixture; on nights 3–4 the lone wolf votes before the killer and the vigilante act, so the rule is the order, not the pack) | the branch's events: `memory_consulted` · `player_reads` · `night_action`, or for the pack `wolf_message`… `wolf_vote` · `wolf_kill_decided` | a third-person view in the dining car: the actor's figure at the stand, the instrument on the rail, the mark landing on the row; the pack as two figures side by side (one for the lone wolf), its talk in the chat, both teeth landing together; the lamp goes dark as the spoke ends | F: the actor's consult and note | per event: a mark 2.0, a message speech |
+| 2 | `rnight.spoke` (one per actor's branch, branches ordered by their **last** event; a step per pack line and one for the mark. The pack closes nights 1–2 of the fixture; on nights 3–4 the lone wolf votes before the killer and the vigilante act, so the rule is the order, not the pack) | the branch's events: `memory_consulted` · `player_reads` · `night_action`, or for the pack `wolf_message`… `wolf_vote` · `wolf_kill_decided` | a third-person view in the dining car: the actor's figure at the stand, the instrument on the rail, the mark landing on the row; the pack as two figures side by side (one for the lone wolf), its talk in the chat, both teeth landing together; the lamp goes dark as the spoke ends | F: the actor's file (the pack's spoke: either wolf's, flipped from the cover) | per event: a mark 2.0, a message speech |
 | 3 | `rnight.whole` | after the last spoke | every mark on the row at once: the picture the parallel night never shows anyone live | — | 3.0 |
 
 Then §8.
 
 As built 2026-09-25 (bench 67 where it gives them; the rest no bench gives, change here first):
 top strip "Night N · In the night · Seat 4" ("· The pack", "· Seat 8" for the lone wolf) and "Night
-N · The night, whole". The film is up beside every spoke, so these beats lay the room out for the
-open side slot (bench 67's `side`); the scenes before this overlay the film on the full room
+N · The night, whole". The file is up beside every spoke, so these beats lay the room out for the
+open side slot (bench 67's `side`); the scenes before this overlay the file on the full room
 instead (**to reconcile** in the container). The spokes hang the living at the window's height
 (bench 67's high row), the whole across the room (the lobby's row). A mark is the act's `ActMark`
 beneath the target's chip (bite · knife · bullet · plaster · lens), two to a row in spoke order;
@@ -418,12 +419,10 @@ counts the spokes whose mark has landed (N of N at the whole). The lamps: lit on
 this one's goes out at 1.6 s of its mark step (at rest, already out); a seat with no spoke (a
 vigilante holding fire) loses its lamp after the hub. Played: a new actor rises at 0.2 s (+0.22 s
 for the second wolf), its instrument fades in 0.5 s after 0.6 s, the mark pops at 0.9 s, the box
-fades in after 0.7 s, the newest chat line 0.5 s. The film's stand-in: "Inside seat 4 ·
-investigator", the lessons weighed as L1–L3 with "followed · overrode · not relevant" and the why,
-the note as "Note: “…”" (the actor's last note that night); empty: "No lessons consulted tonight.",
-"No note tonight."; the pack: "Inside the pack · the wolves' notes", "4 lines of talk, then the
-vote." / "A pack of one: no talk, one tooth."; the whole: "The night, inside · what each did", "In
-the order the log finished them. Live, nobody sees any of this." Not built: the vigilante holding
+fades in after 0.7 s, the newest chat line 0.5 s. The case file (2026-09-29, replacing the film's
+"Inside seat 4" panels): at a spoke, the actor's file; at the pack's, the first wolf's, with "⇄ Seat
+8" on the cover to flip to the other; the whole, on the docket: "The night, inside · Night N · what
+each did", "In the order the log finished them. Live, nobody sees any of this." Not built: the vigilante holding
 fire as a spoke (bench 67 had one; the cutter drops a branch with no act).
 
 ## 10. Game over and the epilogue — H§4.10 · bench 73
@@ -438,7 +437,7 @@ leading. A seated human's "you won / you lost" is client-known from `role_assign
 | 2 | `over.winners-hour` | `winner` | P | the shutter rises: full day for the village, night for the wolves, dusk for the serial killer; the leaves fold if open | — | 3.0 |
 | 3 | `over.verdict` | 〃 | P | a walnut board comes down on two strings, large and centred: the faction's colour at its edges, its sigil on a paper plate, "The wolves have won" in the card's serif, "Day 4 · at the morning" beneath; drawn up as the next beat begins | — | 3.2 |
 | 4 | `over.winners-stand` | 〃 + the roster | P | the stand comes up and the winning faction's **survivors** rise into it, base state: one at full size, two at 0.78, three at 0.6 with the box widened (×1.36, ×1.6); one special each; the plaque names the seats (and roles once the truth is out); the winners' wing tiles lit, the rest dimmed; the fallen stay on the wing as grey cards with their roles' bands. The box: "The wolves have won", the survivors' chips, "Seat 8 is the last of them standing". S: "You won" / "You lost. You were the vigilante" | — | 3.0 |
-| 5 | `over.truth` | `roles_assigned` from the backlog (live) · already in the log (replay) | everyone | every living tile takes its faction strip and sigil badge; live: the File tab reads "File · unlocked" (the X-ray button's "unlocked" until 2026-09-29) | F: the deal, and how each seat went | 2.6 |
+| 5 | `over.truth` | `roles_assigned` from the backlog (live) · already in the log (replay) | everyone | every living tile takes its faction strip and sigil badge; live: the File tab reads "File · unlocked" (the X-ray button's "unlocked" until 2026-09-29) | F, the docket: the case, closed (the deal, and how each seat went) | 2.6 |
 | 6 | `over.epilogue` | `memory_extracted` (407; memory-on games) | everyone | the film comes down over the whole stage, one sheet. Left: one tab per **role** (observations are keyed by role), the chips of the seats that held it, a tally of verdicts as pips. Right: rows grouped by phase (discussion · vote · night), each collapsed to its scenario (chevron, "Scenario", the situation clamped to two lines, "open"); opened: "What it did", "How it went" with the verdict's stitched patch (worked · cost · mixed · unclear). Bottom: the lessons kept (`strategy_points`) as slips, situation → action; empty says "None from this game" | F (full stage) | until dismissed |
 | 7 | `over.curtain` | — | P | the winners at the stand in the winner's hour; the result in the box with the way out (live: the replay, the lobby; replay: the transport at its end) | — | hold |
 
@@ -456,15 +455,17 @@ after 0.4 s, open leaves fold. The verdict: 1.5 puppet widths wide (at most 0.52
 0.17 tall, centred at 0.36; its second line in capitals, "DAY 4 · AT THE MORNING" / "AT THE VOTE";
 down 1.1 s after 0.4 s, up 0.8 s after 0.1 s. The stand fades in 0.5 s after 0.6 s; the winners
 rise at 1.1 s, 0.22 s apart, out of sight until then; the box after 1.6 s. With the X-ray on, the
-film is up and the room is laid out beside it, the winners' set at 0.84 (bench 73's `kk`). The
+case file is up and the room is laid out beside it, the winners' set at 0.84 (bench 73's `kk`). The
 plaque names the seats ("Seats 3 and 8") and, from the truth on or with the X-ray, the roles in the
 winners' colour. S: "You won. You were a wolf." / "You lost. You were the vigilante." (+ "; you
 were watching from the wing" when dead). The truth adds "Every card is face up: the wing carries
-the whole deal, and the film opens for everyone." (bench 73); "File · unlocked" on the live HUD (it was "X-ray · unlocked" until 2026-09-29)
-only. The film, with the X-ray on as bench 73 has it: at the stand and the curtain "The winners'
-last notes · the last note each wrote"; at the truth "The deal, and how it went · every seat, face
-up", each seat's role and fate ("night 2, the serial killer", "day 3, voted out", "survived"),
-"Withheld all game; every viewer holds it once the game is over." The epilogue: "What the game
+the whole deal, and the case file opens for everyone." (bench 73; "the film" until 2026-09-29); "File · unlocked" on the live HUD (it was "X-ray · unlocked" until 2026-09-29)
+only. The case file's docket, with the X-ray on: at the stand "The winners' last notes · the last
+note each wrote"; at the truth and the curtain (where a live game rests) "The case, closed · the
+deal, and how each seat went", each seat's role and fate ("night 2, the serial killer", "day 3,
+voted out", "survived"), a row a tap that opens the seat's final file (its last note page, last
+reads, precedents and findings), "Withheld all game; every viewer holds it once the game is
+over." (2026-09-29: the curtain showed the winners' notes.) The epilogue: "What the game
 taught · each role's own account of its play, before any of it is kept · 51 observations · no
 lessons kept"; the winning side's tab open first; the pips grouped as a tally (worked, mixed, cost,
 unclear; bench 73 kept the extraction's order); `net_verdict` positive → worked, negative → cost;
@@ -498,11 +499,12 @@ renders the beat at rest; playing forward animates.
 of the lynch/night atoms lent to them; the votes as one line per day, landing with the result
 (held back through the count, since `vote_cast` is a batch and the stage reveals it a chip at a
 time; ruled 2026-09-26); the game master's vote line, which names the lynched seat's role, held
-back on a lynch day until `lynch.truth` for the same reason; the ending); a
+back on a lynch day until `lynch.truth` for the same reason; the day's brief in its Morning
+(clamped, opens on a tap; public, so everyone's since 2026-09-29, when it was X-ray only); the ending); a
 seated human's private results as dashed "Only you" lines; a wolf's pack chat with the red edge;
-X-ray on adds, in aqua: roles after names, passes with reason and draft, the night acts, the pack's
-talk, everyone's private lines as "Only seat 4", the day's brief in its Morning (clamped, opens on
-a tap). Chapters run down the drawer as rules; rules with nothing under them disappear. Filters:
+X-ray on adds, in the X-ray's verdigris (aqua until 2026-09-29): roles after names, passes with
+reason and draft, the night acts, the pack's talk, everyone's private lines as "Only seat 4".
+Chapters run down the drawer as rules; rules with nothing under them disappear. Filters:
 days as tabs at the foot; seat chips at the head (dead dimmed, still selectable); Show › Public /
 Private (ruled 2026-09-29: no X-ray toggle; the X-ray's lines follow the X-ray's one switch).
 In the replay the drawer stops at the current beat.
@@ -512,7 +514,7 @@ first). **The slot:** `Presentation.slot` is `'drawer' | 'film' | null` (null = 
 exists only with the X-ray on, so `film` without it reads as closed); `src/stage/slot.ts` holds
 the rules. **Ruled 2026-09-29, replacing bench 74's X-ray tab:** the strip's two tabs are
 **File | Transcript** and only choose the pane: each brings its pane, or closes it if it is there;
-File (the film's new name; its contents are redesigned later) is greyed without the X-ray. The
+File (the case file, below; the film until 2026-09-29) is greyed without the X-ray. The
 X-ray is one switch, the band's "X-ray on/off" button: it re-cuts the beats, adds the drawer's
 X-ray lines and enables File; off with the file up, the pane falls back to the transcript. Each tab
 reads pressed while its pane is open. Live: the game's end is the switch, and File reads "File ·
@@ -520,8 +522,8 @@ unlocked" until opened. The workbench writes the slot to its URL (`slot=drawer|f
 landing on the same moment of the log in the re-cut beat list). While either is open every scene
 lays its room out with `geometry(hud, true)`; the night rooms slide their painting left so its
 window and its photo line stay in the narrower room. The replay's night and the ending now follow the slot, not the X-ray (this settles
-§9's "to reconcile"), and the film below replaces the stand-in panels §8 and §9 describe.
-Nothing sits beside the epilogue: the ledger is the film at full stage.
+§9's "to reconcile"), and the case file below replaces the stand-in panels §8 and §9 describe.
+Nothing sits beside the epilogue: the ledger (still the old film's sheet) comes down over it all.
 **The drawer:** 635 units wide (`slotW`), the whole height (its head 73.6 below the top, the top
 strip's buttons over it), z under the strip's buttons and the epilogue's veil. It stops at the
 rail on the prompts (`day.your-turn`, `vote.your-ballot`) and for the whole of the night rooms
@@ -553,7 +555,7 @@ it; "Vote", "Morning 2", "Game over" and the night (a crescent before "Night 2",
 blue-grey, never lavender: that is the serial killer's) smaller, each under a hairline. A speech:
 a small head, "Seat 2" in brass-cream Young Serif, the words in Literata. A run of passes one after
 another is one quiet italic line ("Seat 7 passed. Seat 9 held back."; `groupPasses`), each
-held-back draft under it with "Seat 9 held back"; still X-ray only, in aqua. The vote: a row per
+held-back draft under it with "Seat 9 held back"; still X-ray only, in verdigris. The vote: a row per
 seat voted for, most votes first and abstentions last ("Seat 6", the voters' faces as its marks,
 about 24 css px on an iPhone 14, the count at the right; `voteTally`), then "Seats 1, 2, 5, 7, 8
 and 9 voted for seat 6. Seat 6 voted for seat 7." (`voteSentence`). The game master's lines keep
@@ -561,7 +563,7 @@ their words but are set as short sentences, one per seat they name, each with th
 role it tells ("Seat 3 was stabbed by the serial killer last night. They were a wolf."), the dead
 in terracotta; the heading the drawer already draws goes ("Night of day 2:", "Here's the vote
 result for day 3:"), and so do the ballots when the day's votes line tells them (`reportParts`).
-"Only you" lines and the pack keep an amber or red edge; X-ray lines their aqua. The lit line: a
+"Only you" lines and the pack keep an amber or red edge; X-ray lines their verdigris. The lit line: a
 brass edge on a lamp's warmth. One column at every width (at the desktop's 530-odd css px two
 columns would not hold a speech). The controls are the strip's plaque tabs: the seat filter's
 "All" and Show in walnut with a thin brass edge, a pressed seat's head ringed in brass, the day
@@ -576,28 +578,83 @@ whole line. **Beside the drawer** it narrows to the room with the same pages: at
 room holds the measure; on a phone the board keeps its height and sets the page in four lines of
 22 ems, the words a step smaller (about 15 css px on an iPhone 14; replaces the 2026-09-28
 "3 whole lines + ellipsis"). Under the film the box keeps the whole band (bench 74; benches 67
-and 73 had narrowed it): a three-line board no longer rises past the rail on a phone. **The film:** the `sideSlot` rectangle, turned −1.2°.
-A turn: tabs Note, L1–L3 (an override's tab in the slip's paper with the dot); the Note tab's
-foot "Note, seq 203, written after the turn; 3 lessons weighed at seq 174, carried over from its
-first turn that day; reads seq 175."; a lesson tab: the lesson, the stamp (follows · overrides ·
-not relevant) with the agent's why, then "When it applies" and the situation. The open tab is the
-container's, so it holds as turns step. The note is the one written between the turn and the next
-slot, read from the view ahead (`SlotInput.ahead`). The count (from the ballots' drop to the
-lynch's drop): "Inside the vote · what each voter weighed", a pip per lesson (F · O · –). From the
-lynch's card to the card leaving: "Who had them right" and the seat's last note before the vote as
-a small slip. The morning's brief: "What day N taught · the brief the agents carry into day N+1",
-Accusations (accusers → accused, the evidence type as a stamp, the reasoning, "Defence: …"),
-Claims, Blocs, Mood ("None." when empty). The deal face up and the truth reuse one list ("Face up
-in the X-ray; the table knows only the cast." / "Withheld all game; …"). A beat with nothing
-inside: "Inside · <beat> · Nothing inside this beat. The film fills at a turn, the count, the
-lynch's card, a morning's brief and the night's acts." The note's face is Patrick Hand (next/font).
+and 73 had narrowed it): a three-line board no longer rises past the rail on a phone. **The case file (ruled 2026-09-29, from the owner's case-file bench; replaces the X-ray film,
+bench 74's blue-black sheet with its aqua ink and paper slips):** the `sideSlot` rectangle,
+upright, a manila folder (`Film.tsx`; the data in `film/case-file.ts` and, for the docket,
+`film/film-model.ts`). A seat's file: the cover (the seat's face, "Seat 2 ▾", "As of Day 3 ·
+discussion", its role stamped on in the faction's ink) over divider tabs **Notes · Reads ·
+Precedents · Findings**. Notes: a typed page per `strategy_update` the seat wrote by the beat (the
+view is folded at the beat, so the file holds only what exists there; a turn's own note lands at
+the next beat), newest first opened, "Page 3 of 8", "Written Day 2 · vote", a pager with a page
+glyph per note, and one pencil line in the margin: "first page", "rewritten from scratch" (under
+half the previous page's words kept), `edited from p. 2, added: "…"` (the longest run added, at
+most nine words), "edited from p. 2" (only cuts), "unchanged from p. 2". Reads: the seat's latest
+`player_reads`, a row per seat read (face, seat, the guess or "unclear", sure / not sure, the why,
+● ◐ ○ against the truth). Precedents (memory-on games; greyed until the seat's first consult):
+its latest `memory_consulted`, "Consulted Day 3 · discussion", an index "No. 1 · Followed" with a
+verdict dot; the chosen one: the agent's why, large, on a clipped card with the verdict stamped on
+it (Followed · Overruled · Not applicable); "The precedent, from a past game" (dimmed when not
+applicable); "Written for" (the situation's lead); a **Situation on file** form (Heat None · Low ·
+Moderate · High · Max; Position Driving · With majority · Holding out; Information Starved ·
+Rich), folded by default on a phone; the other facets one sentence each, "Show the full wording".
+The situation is split at `compose_situation_embed`'s labels (and the older stores' Game phase,
+Consensus texture, Agent exposure); none, it is shown whole. **A box is ticked only when the
+facet's value, lower-cased with `_` as a space, starts with the box's word as a whole word and
+names no other box of its row** (a range, "Moderate to high", is neither); otherwise the value's
+short form (to its first `;` or `.`) is written in pencil and nothing is ticked (owner: a wrong
+tick misstates what the agent believed). Findings (memory-on games, after `game_over`): the
+`memory_extracted` observations for the seat's role (served games extract observations only),
+then any strategy points, "What this game taught serial killers: filed by role, not seat, so
+from every serial killer seat"; an index of numbers grouped under the phase they came from, with
+the ledger's phase icons ("Discussion 1 2 3 · Vote 4 5 · Night 6 7 8 9"; one row that wraps, no
+third row of tabs), each number with its verdict's mark, ✓ positive · ✗ negative · ± mixed ·
+? unclear (never colour alone; the epilogue ledger's rows carry the same marks), the chosen one
+opened, "No. 6 · The night": its
+situation (the lead under "The situation", the form folded), then on a card "What was done" (the
+approach) and "How it turned out" (the outcome, its leading verdict word dropped) with
+`net_verdict` stamped on it with its mark, Positive · Negative · Mixed · Unclear in calm inks
+(`--ink-good` #3d6653, `--ink-bad` #8c3a2b, `--ink-mixed` #94650f amber, unclear grey); greyed
+when there is none. Precedents keep their words (Followed · Overruled · Not applicable). A tab a file lacks (memory off: no Precedents, no Findings) is not drawn; the open tab is the
+container's, and a file without it opens Notes. **Whose file:** at a day turn the speaker's, at a
+night spoke the actor's (the pack's: the first wolf's, "⇄ Seat 8" on the cover flips to the
+other). **Choosing a file (2026-09-29, "Seat 5 ▾" read as a title):** where the slot is drawn at
+least 424 css px wide (three-quarters of its full size), a tab per seat stands up off the
+folder's top edge, its face and number, like a filing drawer's: the open file's raised, the dead
+greyed but openable, the docket's own tab first at a beat that has one; narrower (a phone), the
+cover's name is a bordered button, "Seat 5 · change ▾", opening a small card of every seat's face
+(and "The docket"). Either opens that file at the playhead; **the pick holds until a beat brings a
+different seat into focus** (another turn, another spoke), through the docket beats between
+(`shownSeat`). **The docket:** the beats with no seat in focus, one sheet in the same paper: the
+count (from the ballots' drop to the lynch's drop) "Inside the vote · Day N · what each voter
+weighed", a dot per precedent (F · O · –); from the lynch's card to the card leaving "Who had them
+right" and the seat's last note before the vote; the morning's brief "What day N taught · the
+brief carried into day N+1" (Accusations, Claims, Blocs, Mood); the night whole; the deal face up
+("The deal · every seat, face up"); at the truth and the curtain "The case, closed · the deal,
+and how each seat went", its rows opening each seat's final file (live, after the game: "File ·
+unlocked"; there the closed file, docket and each seat's, opens with "This is how each file
+ended. To see what each seat was thinking turn by turn, watch the replay →", the curtain's
+replay link; not in the replay); the winners' stand "The winners' last notes"; any other beat "Nothing on the docket
+at this beat." The type: Literata for everything read (upright, never rotated), IM Fell English
+for the titles and the cover's name, Courier Prime (the typewriter) for labels, tabs and stamps,
+Patrick Hand for pencil. Only the stamps and the ticks sit crooked; the stamps' worn ink is a
+still mask tile (`scripts/make-stamp-ink.mjs`), no live filter. On a phone the cover and the tabs
+share one row when they fit, else the tabs wrap under the cover (the "As of" line and the tabs'
+counts drop; the strip says where the playhead is; the role stamp shrinks); the tabs, the name's
+chooser and the pager are set at the paper's label size (`--legible`) with a finger's height, and
+the sheet scrolls in place.
 **The reads on the wing:** every seat in the speaker's last `player_reads` before the line takes
-the blue edge (unclear reads too, as bench 74), a sure read the brighter ring, and breathes a slow
+the verdigris edge (blue until 2026-09-29; unclear reads too, as bench 74), a sure read the brighter ring, and breathes a slow
 glow (opacity only, 2.4 s; still for reduced motion) while it can be tapped; a read new or changed
 since the speaker's previous `player_reads` flashes once, brighter (`freshReads`). The card's head
 says whose read on whom, face by face: "[chip] Seat 8's read on [chip] Seat 1" (ruled
 2026-09-29); a tap opens the card, 304 wide, docked at the wing's edge level with the tile, kept on the stage; a second tap or
 the next beat closes it. The truth is marked ● role · ◐ side · ○ none/wrong (bench 74 drew ✓ ◐ ✗).
+The card is a small paper index card, a leaf of the speaker's case file (cream stock, a red rule
+under its head, the labels typed, the truth in its faction's stamp ink; 2026-09-29, it was a film
+print). **The X-ray's colour outside the file** (2026-09-29): a muted verdigris, old brass gone
+green, in place of the film's aqua: `--xray` #86b0a0 (7.3:1 on the walnut), `--xray-hi` #b9d6c8
+for a sure read's ring and the flash, `--xray-text` #cbdcd2, `--xray-mut` #6f978a, `--xray-line`
+#34544a (materials.ts); the file itself is manila, never verdigris.
 
 As built 2026-09-25, the container (step 6a; bench 73 draws only the five buttons and the seek
 bar, the rest no bench gives, change here first). `src/stage/containers/ReplayTheatre.tsx` holds
@@ -611,7 +668,7 @@ went 2026-09-29); the bar is bench 73's (6.4 tall, cloak, amber to the beat) wit
 bone3, bone once passed, its name on hover), beat i at i/(n−1) of the width; a click seeks to the
 nearest beat, still. Speed: one toggle that says what it plays at, "Normal", or "Fast" in bone
 (2026-09-29; it was "Normal · Fast · Skip"). The X-ray: the one switch, a button, "X-ray on" in
-the film's ink or "X-ray off" (2026-09-29; it used to only say it). Beside a full-height drawer the band ends 12.8
+the X-ray's verdigris (the film's aqua until 2026-09-29) or "X-ray off" (2026-09-29; it used to only say it). Beside a full-height drawer the band ends 12.8
 short of it; otherwise (the film, a prompt, the epilogue) 22.4 from the right edge. **Playing:** a
 timer on `holdFor`; a beat that waits (the epilogue, the curtain) and the last beat stop the play;
 play at the end starts from the first beat, play on a waiting beat steps on at once; stepping or

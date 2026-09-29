@@ -14,8 +14,8 @@
  * - `over.verdict`: the walnut board comes down on its two strings.
  * - `over.winners-stand`: the board goes up; the stand comes up widened for the winning
  *   side's survivors, who rise into it; their tiles in the wing are lit, the rest dimmed.
- * - `over.truth`: every living tile takes its faction strip and sigil; the film lists the deal
- *   and how each seat went.
+ * - `over.truth`: every living tile takes its faction strip and sigil; the case file's docket
+ *   lists the deal and how each seat went.
  * - `over.epilogue`: the ledger over the whole stage.
  * - `over.curtain`: the winners at the stand, the result in the box, and (live) the way out.
  *
@@ -425,8 +425,8 @@ function EndBox({
       </div>
       {truth ? (
         <div className={styles.sub}>
-          Every card is face up: the wing carries the whole deal, and the film opens for
-          everyone.
+          Every card is face up: the wing carries the whole deal, and the case file opens
+          for everyone.
         </div>
       ) : null}
     </Notice>

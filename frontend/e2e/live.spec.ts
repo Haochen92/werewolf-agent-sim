@@ -286,7 +286,7 @@ test('live: seat 7’s turn to speak, the dock at the foot', async ({ page }) =>
   await expect(page.locator('[data-dock="discuss"]')).toBeVisible();
   // the drawer stops at the rail so the dock keeps the whole band; closed, the room is bench 72's
   await expect(page.locator('[data-drawer]')).toHaveAttribute('data-drawer', 'rail');
-  await page.getByRole('button', { name: 'Transcript' }).click();
+  await page.getByRole('button', { name: 'Transcript', exact: true }).click();
   await expect(page.locator('[data-drawer]')).toHaveCount(0);
   // stop the clock a few seconds in, then let the puppet’s rise and the dock’s fade-in finish
   // (the count reads off the page’s load time: 1:4x or 1:5x; the golden’s tolerance takes it)

@@ -3,64 +3,26 @@ import { foldEvents } from '@/game/foldEvents';
 import { beatsFor } from '../beats/beatsFor';
 import type { SceneBeat } from '../beats/types';
 import { FIXTURE_EVENTS } from '../workbench/fixture';
-import { filmFor, freshReads, lessonsOf, turnReads, type FilmModel } from './film-model';
+import {
+  docketFor,
+  freshReads,
+  lessonsOf,
+  turnReads,
+  type DocketModel,
+} from './film-model';
 
 const beats = beatsFor(FIXTURE_EVENTS, { xray: true });
-const whole = foldEvents(FIXTURE_EVENTS);
 
-function film(id: SceneBeat['id'], pick: (b: SceneBeat) => boolean, ahead = true) {
+function film(id: SceneBeat['id'], pick: (b: SceneBeat) => boolean) {
   const beat = beats.find((b) => b.id === id && pick(b))!;
-  const view = foldEvents(FIXTURE_EVENTS.slice(0, beat.end));
-  return filmFor(view, beat, ahead ? whole : null);
+  return docketFor(foldEvents(FIXTURE_EVENTS.slice(0, beat.end)), beat);
 }
-function as<K extends NonNullable<FilmModel>['kind']>(m: FilmModel | null, kind: K) {
+function as<K extends NonNullable<DocketModel>['kind']>(m: DocketModel | null, kind: K) {
   expect(m?.kind).toBe(kind);
-  return m as Extract<FilmModel, { kind: K }>;
+  return m as Extract<DocketModel, { kind: K }>;
 }
 
-describe('the film at a turn', () => {
-  it('holds the note written after the turn and the lessons weighed before it', () => {
-    const m = as(
-      film('day.speech', (b) => b.seq === 200),
-      'inside',
-    );
-    expect(m).toMatchObject({ seat: 'player_8', role: 'wolf', when: 'turn' });
-    expect(m.note?.seq).toBe(203);
-    expect(m.consultSeq).toBe(174);
-    expect(m.readsSeq).toBe(175);
-    // seat 8 spoke at 176 after that consult: the lessons were carried over to this turn
-    expect(m.carried).toBe(true);
-    expect(m.lessons.map((l) => [l.n, l.verdict])).toEqual([
-      [1, 'follow'],
-      [2, 'follow'],
-      [3, 'not_relevant'],
-    ]);
-  });
-
-  it('has no note yet without the view ahead: the note lands after the turn’s beat', () => {
-    expect(
-      as(
-        film('day.speech', (b) => b.seq === 200, false),
-        'inside',
-      ).note,
-    ).toBeNull();
-  });
-
-  it('holds a pass’s note and lessons too, and none on day 1 (no memory yet)', () => {
-    expect(
-      as(
-        film('day.pass', (b) => b.seq === 183),
-        'inside',
-      ).note?.seq,
-    ).toBe(185);
-    const d1 = as(
-      film('day.pass', (b) => b.seq === 15),
-      'inside',
-    );
-    expect(d1.lessons).toEqual([]);
-    expect(d1.consultSeq).toBeNull();
-  });
-
+describe('the reads a turn was made from', () => {
   it('puts the speaker’s reads on the wing, not in the film', () => {
     const beat = beats.find((b) => b.id === 'day.speech' && b.seq === 200)!;
     const reads = turnReads(foldEvents(FIXTURE_EVENTS.slice(0, beat.end)), beat);
@@ -83,7 +45,7 @@ describe('the film at a turn', () => {
   });
 });
 
-describe('the film elsewhere', () => {
+describe('the docket', () => {
   it('lists what each voter weighed at the count, an override among them', () => {
     const m = as(
       film('vote.chip-counted', (b) => b.day === 3),
@@ -127,21 +89,7 @@ describe('the film elsewhere', () => {
     expect(m.summary?.dynamics.landscape).toMatch(/information-starved/);
   });
 
-  it('holds an actor’s consult and note at its spoke, the pack’s two notes at the pack’s', () => {
-    const spoke = as(
-      film('rnight.spoke', (b) => b.day === 2 && b.seq === 126),
-      'inside',
-    );
-    expect(spoke).toMatchObject({ seat: 'player_4', role: 'investigator', when: 'night' });
-    expect(spoke.lessons).toHaveLength(3);
-    const pack = as(
-      film('rnight.spoke', (b) => b.day === 2 && b.seq === 140),
-      'pack',
-    );
-    expect(pack.seats).toEqual(['player_3', 'player_8']);
-    // the note that night, never a later one
-    expect(pack.notes.every((n) => n.note === null || n.note.seq < 159)).toBe(true);
-    expect(pack.lines).toBe(4);
+  it('lists what each actor did at the night whole', () => {
     const all = as(
       film('rnight.whole', (b) => b.day === 2),
       'night',
@@ -177,9 +125,17 @@ describe('the film elsewhere', () => {
     );
     expect(truth.rows[7].fate).toBe('survived');
     expect(truth.rows[1].fate).toBe('day 4, voted out');
+    // the curtain, where a live game rests: the case, closed
+    expect(
+      as(
+        film('over.curtain', () => true),
+        'deal',
+      ).truth,
+    ).toBe(true);
+    expect(film('over.winners-stand', () => true)?.kind).toBe('notes');
   });
 
-  it('gives the epilogue to the ledger, and says so when a beat has nothing inside', () => {
+  it('gives the epilogue to the ledger, and says so when a beat has nothing on the docket', () => {
     expect(film('over.epilogue', () => true)).toBeNull();
     expect(film('rnight.hub', () => true)?.kind).toBe('empty');
   });

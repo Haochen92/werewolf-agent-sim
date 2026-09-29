@@ -15,6 +15,8 @@ import { SYNTHETIC, SYNTHETIC_AFTER, sceneBeats } from './registry';
 import { synthesiseAll, type AnySituation } from './synthetic';
 import type { WorkbenchQuery } from './url';
 
+const MEMORY_EVENTS = new Set(['memory_consulted', 'memory_extracted']);
+
 /** The workbench's one game, for the notebook a seated viewer keeps (notebook.ts). */
 export const WORKBENCH_GAME = 'workbench';
 
@@ -32,7 +34,7 @@ export interface WorkbenchFrame {
   /** The platform's waiting room. */
   room?: RoomInput;
   /**
-   * The whole log folded, for the film: a turn's note lands just after the turn's own beat
+   * The whole log folded, for the case file: whether memory was on, and what the game taught
    * (see `SlotInput.ahead`). A replay has the whole log, so the workbench hands it all over.
    */
   ahead?: GameView | null;
@@ -44,6 +46,8 @@ export function workbenchFrame(
   events: readonly DurableGameEvent[] = FIXTURE_EVENTS,
   cast: readonly Character[] = FIXTURE_CAST,
 ): WorkbenchFrame {
+  // a memory-off game: the same log without what memory adds
+  if (q.memoryOff) events = events.filter((e) => !MEMORY_EVENTS.has(e.type));
   const situations = SYNTHETIC[scene];
   if (situations && !SYNTHETIC_AFTER.has(scene))
     return syntheticFrame(situations, q, events, cast);

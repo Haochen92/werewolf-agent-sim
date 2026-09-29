@@ -79,6 +79,7 @@ import {
   type LiveCtx,
 } from './live-state';
 import { holdFor } from './transport';
+import type { FileChoice } from '../film/case-file';
 import styles from './LiveTheatre.module.css';
 
 export interface LiveTheatreProps {
@@ -364,7 +365,8 @@ export function LiveTheatre({
 
   // the side slot's state that outlives a beat; the game's end is the X-ray's switch here
   const drawer = useDrawerFilters();
-  const [filmTab, setFilmTab] = useState('note');
+  const [filmTab, setFilmTab] = useState('notes');
+  const [fileSeat, setFileSeat] = useState<FileChoice | null>(null);
   const ahead = useMemo(
     () => (xray ? folds.at(events.length) : null),
     [xray, folds, events.length],
@@ -376,11 +378,24 @@ export function LiveTheatre({
       drawerScroll: drawer.scroll,
       filmTab,
       onFilmTab: setFilmTab,
+      fileSeat,
+      onFileSeat: setFileSeat,
+      // the closed file's way to the thinking turn by turn (the curtain's "Watch the replay")
+      replayHref: `/replays/${gameId}`,
       ahead,
       onTranscript: () => dispatch({ type: 'transcript' }),
       onFile: () => dispatch({ type: 'file', xray }),
     }),
-    [drawer.filters, drawer.setFilters, drawer.scroll, filmTab, ahead, xray],
+    [
+      drawer.filters,
+      drawer.setFilters,
+      drawer.scroll,
+      filmTab,
+      fileSeat,
+      ahead,
+      xray,
+      gameId,
+    ],
   );
 
   const presentation = useMemo(
