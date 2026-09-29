@@ -126,12 +126,26 @@ export interface paths {
     get?: never;
     put?: never;
     /**
-     * Draft the seat's line, from rough notes or freely
-     * @description The seat's agent writes one line in the player's voice for the discussion turn the
-     *     seat owes: from the player's notes when there are some, or a line of its own choosing
-     *     when the notes are empty. Nothing enters the game: the player sends the line with
-     *     POST /turns, edited or not, or types their own. 409 when the seat owes no discussion
-     *     turn or has used this turn's drafts; 503 when the model could not answer.
+     * Draft the seat's line with its own agent
+     * @description Ask the seat's own agent what it would say on the discussion turn the seat owes.
+     *
+     *     The agent is the one that would speak if the player handed the turn over or let the
+     *     clock run out: the same instructions, and everything it knows about this game. It
+     *     writes its line, and nothing more happens: the line is not said, the game does not
+     *     move, and whatever the agent noted for itself along the way is thrown away. The player
+     *     sends the line with POST /turns, edited or not, or types their own.
+     *
+     *     Sent with nothing, the agent writes its own line. With `notes`, the player's words on
+     *     what the line should do are added to the agent's instructions for this draft only;
+     *     with `current` as well, the line in the player's box, which the agent then revises.
+     *     `seat_notes` and `suspect` share the player's notebook the same way. None of it is
+     *     stored; it travels in this one model call, which is traced like any other. An empty
+     *     `draft` means the agent would pass. On the wolves' night talk the notes are turned
+     *     into a line to the pack instead.
+     *
+     *     Three drafts a turn, and the wait for each is given back to the seat's clock. 409 when
+     *     the seat owes no discussion turn or has used its drafts; 422 when the notebook names a
+     *     seat not at the table; 503 when the model could not answer.
      */
     post: operations['draft_turn_games__game_id__draft_post'];
     delete?: never;
@@ -446,7 +460,8 @@ export interface components {
     };
     /**
      * DraftRequest
-     * @description POST /games/{id}/draft body: what the player wants the seat's line to say, if anything.
+     * @description POST /games/{id}/draft body: what the player wants from their agent's line, if
+     *     anything. All of it is optional; with none of it the agent writes its own line.
      */
     DraftRequest: {
       /**
@@ -454,6 +469,20 @@ export interface components {
        * @default
        */
       notes: string;
+      /**
+       * Current
+       * @default
+       */
+      current: string;
+      /** Seat Notes */
+      seat_notes?: {
+        [key: string]: string;
+      };
+      /**
+       * Suspect
+       * @default
+       */
+      suspect: string;
     };
     /**
      * DraftResponse

@@ -1,13 +1,15 @@
-"""Drafting a human seat's line from rough notes — the composing an LLM seat does for itself,
-offered to the human.
+"""Helping a human seat with its line, without saying anything for it.
 
-An LLM seat writes its own message. A human on a phone, against a clock, often has only
-fragments: "4 dodging, why abstain, agree with 8". This helper rewrites those into one plain
-line in the player's own voice, saying only what the notes say. With no notes at all, the
-player has left the line to it: it writes one of its own from the discussion so far, for the
-player to read, edit or drop. It runs outside the engine (a server request, not a turn),
-returns text only, and the player still has to send the line themselves. Failing here costs
-nothing: the player can always type the line out.
+Two helpers, both outside the engine (a server request, not a turn), returning text only;
+the player still sends the line themselves, and failing costs nothing (they can type it).
+
+- The day's speech is drafted by the seat's own agent: a preview of the turn it would take
+  (``Agents.nodes.day.actors.preview_discuss``). ``player_direction`` writes the one block
+  that preview may add after the agent's prompt: what the player asked for, their draft so
+  far, their notes on the table. With none of that, nothing is added.
+- The wolves' night talk still uses the note-rewriter here (``draft_from_notes``): rough
+  notes ("4 dodging, agree with 8") become one plain line to the pack, saying only what the
+  notes say; with no notes it writes a line of its own from the pack's talk.
 """
 
 from logging import getLogger
@@ -20,7 +22,7 @@ from Agents.schemas.human_player import HumanTurnRequest
 logger = getLogger(__name__)
 
 
-# The table the line is said to, shared by both prompts. {ask} is the notes, or the word that
+# The pack the line is said to, shared by both prompts. {ask} is the notes, or the word that
 # there are none.
 _TABLE = """You are {player_id}, speaking to {audience}. Living players: {roster}
 
@@ -68,15 +70,53 @@ Output the line only: no quotes, no preamble.""",
 )
 
 
+def player_direction(
+    notes: str,
+    current: str = "",
+    seat_notes: dict[str, str] | None = None,
+    suspect: str = "",
+) -> str:
+    """The block a human player's steer adds after their agent's day-speech prompt, or ""
+    when they gave none (the agent then gets exactly the prompt of the real turn).
+
+    ``notes`` is what they want the line to do; ``current`` the line in their reply box,
+    shown only alongside notes (it is what the notes revise); ``seat_notes`` and ``suspect``
+    come from the player's own notebook on the table, by player id.
+    """
+    notes, current, suspect = notes.strip(), current.strip(), suspect.strip()
+    table = "; ".join(f"{seat}: {' '.join(text.split())}"
+                      for seat, text in (seat_notes or {}).items() if text.strip())
+    lines = []
+    if notes:
+        lines.append(
+            f"The human playing your seat gives you this direction for your message: {notes}")
+        if current:
+            lines.append(f"Their current draft of it: {current}")
+    if table:
+        lines.append(f"{'Their' if lines else 'The human playing your seat keeps these'} "
+                     f"notes on the table: {table}")
+    if suspect:
+        lines.append(f"They suspect {suspect}.")
+    if not lines:
+        return ""
+    if notes and current:
+        ask = "Revise the draft as they ask"
+    elif notes:
+        ask = "Build your message around their direction"
+    else:
+        ask = "Weigh their notes as their reads, not as facts"
+    lines.append(f"{ask}; everything above still applies. Speak this turn (pass_turn=false).")
+    return "\n".join(lines)
+
+
 def draft_from_notes(request: HumanTurnRequest, notes: str) -> str:
-    """One line saying what ``notes`` say, in the player's voice, for the discussion turn
-    ``request`` asks about (the day table, or the pack at night). Blank ``notes`` leave the
-    line to the model: one of its own, grounded in the discussion so far.
+    """One line saying what ``notes`` say, in the player's voice, for the wolves' night talk
+    turn ``request`` asks about. Blank ``notes`` leave the line to the model: one of its
+    own, grounded in the talk so far.
 
     Raises RuntimeError, with the cause, when the model call fails or returns nothing; the
     caller tells the player to type the line instead. Never returns an empty string.
     """
-    to_pack = request.phase == "wolf_channel"
     roster = [p for p in request.surviving_players if p != request.player_id]
     notes = notes.strip()
     prompt = DRAFTING_PROMPT if notes else FREE_DRAFTING_PROMPT
@@ -84,10 +124,10 @@ def draft_from_notes(request: HumanTurnRequest, notes: str) -> str:
         reply = (prompt | get_llm()).invoke(
             {
                 "player_id": request.player_id,
-                "audience": "your fellow wolves, in private" if to_pack else "the whole table",
+                "audience": "your fellow wolves, in private",
                 "roster": ", ".join(roster),
                 "dialogue": request.dialogue or "Nothing has been said yet today.",
-                "pack_talk": f"\nYour pack's talk tonight:\n{request.wolf_channel}\n" if to_pack else "",
+                "pack_talk": f"\nYour pack's talk tonight:\n{request.wolf_channel}\n",
                 "ask": f"Notes:\n{notes}" if notes else "No notes: the line is yours to write.",
             },
             config={"run_name": f"draft_line_{request.player_id}"},

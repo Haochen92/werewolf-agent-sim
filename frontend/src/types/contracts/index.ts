@@ -102,6 +102,8 @@ export type NewRoom = S['NewRoom'];
 export type JoinGame = S['JoinGame'];
 export type RejoinGame = S['RejoinGame'];
 export type TurnAccepted = S['TurnAccepted'];
+/** Every field has a server default: send only what the draft needs. */
+export type DraftRequest = Partial<S['DraftRequest']>;
 export type DraftResponse = S['DraftResponse'];
 export type ModelsMenu = S['ModelsMenu'];
 export type ModelRow = S['ModelRow'];

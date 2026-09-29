@@ -5,6 +5,7 @@ from Agents.tracing import GraphContext
 
 # Day actor nodes (thin wrappers over the shared runtime engine).
 from Agents.turn import run_memory_informed_action
+from Agents.turn.pipeline import preview_agent_action
 from Agents.prompts import (
     HEALER_DAY_DISCUSS,
     HEALER_DAY_VOTE,
@@ -22,6 +23,7 @@ from Agents.prompts import (
 from typing import TypedDict
 
 from Agents.schemas import DayChannel, DayDiscussOutput, DayVote, DayVoteOutput
+from Agents.schemas.game_events import DiscussionPassReason
 from Agents.schemas.turn import ResolvedDayDiscussion, ResolvedDayVote
 from Agents.state import HealerDayState, InvestigatorDayState, VillagerDayState, WolfDayState
 
@@ -101,6 +103,35 @@ def discuss(
             payload["player_id"]: turn.effects.strategy,
         }
     return updates or None
+
+
+def preview_discuss(
+    payload: DayActorPayload,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+    direction: str = "",
+) -> str:
+    """What this seat's agent would say on the discussion turn in ``payload``, said nowhere.
+
+    The same agent, prompt and context as ``discuss`` when the seat's human hands the turn
+    over (see ``preview_agent_action``), but nothing is committed: no line, no strategy note.
+    ``direction`` is the human's steer, sent after the prompt; empty = the prompt as is.
+    Returns the line, or "" when the agent would pass. RuntimeError when every attempt failed.
+    """
+    turn = preview_agent_action(
+        payload,
+        config,
+        runtime,
+        "day_discussion",
+        DISCUSS_PROMPTS[payload["player_role"]],
+        DayDiscussOutput,
+        "day_channel",
+        direction,
+    )
+    entry = turn.entry if isinstance(turn, ResolvedDayDiscussion) else None
+    if entry is not None and entry.pass_reason == DiscussionPassReason.GENERATION_FAILED:
+        raise RuntimeError("the agent produced no line")
+    return entry.message if entry is not None else ""
 
 
 def vote(

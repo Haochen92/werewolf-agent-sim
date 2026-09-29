@@ -15,6 +15,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from Agents.schemas.human_player import HumanTurnRequest
 from Agents.turn.human_turn import HumanTurnContractError
 from server.game import game_session as rt
 from server.routes.games import _sse, event_stream
@@ -421,6 +422,83 @@ async def test_afk_timeout_delegates_the_parked_turn(quiet_session, monkeypatch)
     assert session.turn_deadlines == {}
 
 
+def _day_graph_with_a_checkpoint():
+    """The real day subgraph, run the way the parent graph runs it (imperatively, from a
+    node), under an in-memory checkpointer: the geometry the draft has to read back."""
+    from langgraph.checkpoint.memory import InMemorySaver
+    from langgraph.graph import END, START, StateGraph
+
+    from Agents.graphs.day import day_graph_compiled
+    from Agents.state import DayGraphState
+
+    def day_phase(state, config):
+        day_graph_compiled.invoke(dict(state), config=config)
+        return {}
+
+    parent = StateGraph(DayGraphState)
+    parent.add_node("DAY_PHASE", day_phase)
+    parent.add_edge(START, "DAY_PHASE")
+    parent.add_edge("DAY_PHASE", END)
+    return parent.compile(checkpointer=InMemorySaver())
+
+
+async def test_a_draft_previews_the_seats_real_turn_and_changes_nothing(quiet_session,
+                                                                       monkeypatch):
+    """The draft reads the paused turn's own input back from the checkpoint and runs the
+    seat's agent on it: with no notes, the model gets exactly the prompt the real turn
+    would send; notes add one message after it. The game is left as it was."""
+    from Agents.nodes.day.actors import discuss
+    from Agents.turn import agent_player
+    from tests.fixtures.day_discuss_prompt_golden import board, capturing_llm, runtime
+
+    graph = _day_graph_with_a_checkpoint()
+    session = quiet_session(graph)
+    state = board()
+    state["human_players"] = state["surviving_villagers"] + state["surviving_wolves"]
+    await graph.ainvoke(state, session.config)
+    snapshot = await graph.aget_state(session.config, subgraphs=True)
+    (interrupt,) = snapshot.tasks[0].interrupts
+    request = HumanTurnRequest.model_validate(interrupt.value)
+    seat = request.player_id
+    session.park(request, interrupt.id)
+    before = await graph.aget_state(session.config, subgraphs=True)
+
+    sent: list = []
+    monkeypatch.setattr(agent_player, "get_llm", lambda: capturing_llm(sent))
+    payload = await session._turn_payload(seat)
+    assert payload["player_id"] == seat and payload["human_player"] is True
+
+    line, left = await session.draft_line(seat, "")
+    assert (line, left) == ("player_2, answer the question.", 2)
+    discuss({**payload, "human_player": False}, session.config, runtime())  # the AI turn
+    assert sent[0] == sent[1]
+
+    await session.draft_line(seat, "push on player_2", current="player_2?",
+                             seat_notes={"player_5": "quiet"}, suspect="player_2")
+    assert sent[2][:-1] == sent[1]
+    kind, block = sent[2][-1]
+    assert kind == "human" and "push on player_2" in block and "player_2?" in block
+    assert "player_5: quiet" in block and "They suspect player_2." in block
+
+    after = await graph.aget_state(session.config, subgraphs=True)
+    assert after.tasks[0].state.values == before.tasks[0].state.values
+    assert after.tasks[0].state.config == before.tasks[0].state.config  # no new checkpoint
+    assert list(session.pending_requests) == [seat]  # still owed; nothing was sent
+
+
+async def test_a_draft_refuses_a_notebook_naming_a_stranger(quiet_session, monkeypatch):
+    session = quiet_session(FakeGraph([]))
+    session.log.append(ev.GameStarted(seq=0, day=1, seats=["player_3", "player_5"],
+                                      cast_role_counts={"villager": 2}))
+    session.pending_requests["player_3"] = human_turn_request(
+        player_id="player_3", phase="day_channel", valid_targets=[])
+    with pytest.raises(ValueError, match="player_9"):
+        await session.draft_line("player_3", "", seat_notes={"player_9": "who?"})
+    with pytest.raises(ValueError, match="player_7"):
+        await session.draft_line("player_3", "", suspect="player_7")
+    assert session._drafts_used == {}  # a refused draft is not charged
+
+
 async def test_drafting_credits_the_wait_and_caps_the_turn(quiet_session, monkeypatch):
     """A draft costs the player no thinking time (the wait is credited back to the clock),
     and a turn allows only so many, so an unhappy drafter cannot stretch the table's wait."""
@@ -429,13 +507,17 @@ async def test_drafting_credits_the_wait_and_caps_the_turn(quiet_session, monkey
 
     monkeypatch.setattr("server.game.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
 
-    def slow_draft(request, notes):
+    def slow_preview(payload, config, runtime, direction):
         time.sleep(0.05)
-        return f"{notes}, tidied"
+        return f"{direction}, tidied"
 
-    monkeypatch.setattr(rt, "draft_from_notes", slow_draft)
+    async def turn_payload(seat):
+        return {"player_id": seat}
+
+    monkeypatch.setattr(rt, "preview_discuss", slow_preview)
     session = quiet_session(FakeGraph([_interrupt_chunk()], []), seat_tokens=["t1", "t2"],
                             human_players=["player_3", "player_5"])
+    monkeypatch.setattr(session, "_turn_payload", turn_payload)
     session.subscribe("t1")
     session.start()
     while not session.pending_requests:
@@ -443,7 +525,9 @@ async def test_drafting_credits_the_wait_and_caps_the_turn(quiet_session, monkey
     before = datetime.fromisoformat(session.turn_deadlines["player_3"])
 
     line, left = await session.draft_line("player_3", "4 dodging")
-    assert (line, left) == ("4 dodging, tidied", 2)
+    assert left == 2 and line.endswith("4 dodging\nBuild your message around their direction;"
+                                       " everything above still applies. Speak this turn"
+                                       " (pass_turn=false)., tidied")
     after = datetime.fromisoformat(session.turn_deadlines["player_3"])
     assert after - before >= timedelta(seconds=0.05)  # the wait, credited back
     assert sorted(session.pending_requests) == ["player_3"]  # nothing was sent

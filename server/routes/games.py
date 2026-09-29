@@ -163,19 +163,36 @@ async def submit_turn(session: Game, body: dict, token: SeatToken) -> TurnAccept
 @router.post(
     "/games/{game_id}/draft",
     response_model=DraftResponse,
-    summary="Draft the seat's line, from rough notes or freely",
+    summary="Draft the seat's line with its own agent",
 )
 async def draft_turn(session: Game, body: DraftRequest, token: SeatToken) -> DraftResponse:
-    """The seat's agent writes one line in the player's voice for the discussion turn the
-    seat owes: from the player's notes when there are some, or a line of its own choosing
-    when the notes are empty. Nothing enters the game: the player sends the line with
-    POST /turns, edited or not, or types their own. 409 when the seat owes no discussion
-    turn or has used this turn's drafts; 503 when the model could not answer."""
+    """Ask the seat's own agent what it would say on the discussion turn the seat owes.
+
+    The agent is the one that would speak if the player handed the turn over or let the
+    clock run out: the same instructions, and everything it knows about this game. It
+    writes its line, and nothing more happens: the line is not said, the game does not
+    move, and whatever the agent noted for itself along the way is thrown away. The player
+    sends the line with POST /turns, edited or not, or types their own.
+
+    Sent with nothing, the agent writes its own line. With `notes`, the player's words on
+    what the line should do are added to the agent's instructions for this draft only;
+    with `current` as well, the line in the player's box, which the agent then revises.
+    `seat_notes` and `suspect` share the player's notebook the same way. None of it is
+    stored; it travels in this one model call, which is traced like any other. An empty
+    `draft` means the agent would pass. On the wolves' night talk the notes are turned
+    into a line to the pack instead.
+
+    Three drafts a turn, and the wait for each is given back to the seat's clock. 409 when
+    the seat owes no discussion turn or has used its drafts; 422 when the notebook names a
+    seat not at the table; 503 when the model could not answer."""
     seat = _proven_seat(session, token)
     try:
-        draft, drafts_left = await session.draft_line(seat, body.notes)
+        draft, drafts_left = await session.draft_line(
+            seat, body.notes, body.current, body.seat_notes, body.suspect)
     except LookupError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     except RuntimeError as exc:
         raise HTTPException(
             status_code=503, detail="could not draft the line; type it instead") from exc

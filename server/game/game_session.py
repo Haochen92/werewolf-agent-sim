@@ -39,20 +39,24 @@ import time
 from datetime import datetime, timezone
 from typing import Any, Callable, Sequence
 
-from langgraph.types import Command
+from langchain_core.runnables.config import set_config_context
+from langgraph.constants import TASKS
+from langgraph.runtime import Runtime
+from langgraph.types import Command, StateSnapshot
 from pydantic_core import to_jsonable_python
 
 from Agents.config import RunConfig, build_runnable_config, normalize_run_config
 from Agents.llm_factory import GAME_LLM, GameLLM
 from Agents.memory import store
 from Agents.memory.persistence import seed_memory_from_config
+from Agents.nodes.day.actors import preview_discuss
 from Agents.observability import EvalCaseSink
 from Agents.graphs.parent import parent_graph_compiled
 from Agents.rules.board_clocks import alive_role_counts
 from Agents.schemas.human_player import HumanTurnRequest
 from Agents.state import fresh_game_state
 from Agents.tracing import Metrics, create_langfuse_handler, flush, langfuse
-from Agents.turn.drafting_agent import draft_from_notes
+from Agents.turn.drafting_agent import draft_from_notes, player_direction
 from Agents.turn.human_turn import validate_human_response
 
 from server.storage.game_repository import GameRepository
@@ -68,6 +72,22 @@ logger = logging.getLogger(__name__)
 # credited back to the seat's clock, so without a cap an unhappy drafter could keep the
 # table waiting for as long as they liked.
 DRAFTS_PER_TURN = 3
+
+
+def _paused_task(snapshot: StateSnapshot, interrupt_id: str, seat: str):
+    """The node run paused on this seat's question, and the snapshot of the graph it runs
+    in, as (snapshot, task); None when there is none. The day's talk runs in a subgraph, so
+    the search walks down into each subgraph the snapshot shows."""
+    for task in snapshot.tasks:
+        if isinstance(task.state, StateSnapshot):
+            found = _paused_task(task.state, interrupt_id, seat)
+            if found is not None:
+                return found
+        elif any(i.id == interrupt_id or (isinstance(i.value, dict)
+                                          and i.value.get("player_id") == seat)
+                 for i in task.interrupts):
+            return snapshot, task
+    return None
 
 
 class GameSession:
@@ -475,27 +495,86 @@ class GameSession:
         logger.info("game %s: turn accepted for %s (%d seat(s) still owe input)",
                     self.game_id, seat, len(self.pending_requests))
 
-    async def draft_line(self, seat: str, notes: str) -> tuple[str, int]:
-        """Turn a seat's rough notes into a line it could send for the discussion turn it
-        owes (or, with no notes, let its agent write one freely), without sending anything.
-        Returns the line and how many drafts the turn still
-        allows. The time the seat spent waiting on the model is credited back to its clock,
-        so drafting costs the player no thinking time, and the cap keeps a turn from
-        stretching. LookupError when the seat owes no discussion turn or has used its
-        drafts; RuntimeError when the model failed (the player can still type)."""
+    async def draft_line(self, seat: str, notes: str, current: str = "",
+                         seat_notes: dict[str, str] | None = None,
+                         suspect: str = "") -> tuple[str, int]:
+        """Draft a line for the discussion turn a seat owes, without sending anything.
+        Returns the line and how many drafts the turn still allows.
+
+        On a day speech turn the seat's own agent writes it: the turn it would take if the
+        player handed it over, with the same prompt and everything it knows, but nothing it
+        does is kept. Given nothing else, that is its own line. The player's ``notes`` (with
+        ``current``, the line in their box, to revise) and their notebook (``seat_notes``,
+        ``suspect``) are added to that prompt only here. On the wolves' night talk the
+        older helper rewrites the notes into a line to the pack.
+
+        An empty line means the agent would pass. The time the seat spent waiting on the
+        model is credited back to its clock, so drafting costs the player no thinking time,
+        and the cap keeps a turn from stretching. LookupError when the seat owes no
+        discussion turn or has used its drafts; ValueError when the notebook names a seat
+        not at this table; RuntimeError when the model failed (the player can still type)."""
         request = self.pending_requests.get(seat)
         if request is None:
             raise LookupError(f"no pending input_request for seat {seat!r}")
         if request.phase not in ("day_channel", "wolf_channel"):
             raise LookupError("only a discussion turn can be drafted")
+        seat_notes = seat_notes or {}
+        table = self._seats or set(request.surviving_players)
+        strangers = sorted({*seat_notes, *([suspect] if suspect else [])} - table)
+        if strangers:
+            raise ValueError(f"not a seat at this table: {', '.join(strangers)}")
         used = self._drafts_used.get(seat, 0)
         if used >= DRAFTS_PER_TURN:
             raise LookupError("no drafts left this turn: send what you have")
         started = time.monotonic()
-        line = await asyncio.to_thread(self._draft, request, notes)
+        if request.phase == "day_channel":
+            payload = await self._turn_payload(seat)
+            direction = player_direction(notes, current, seat_notes, suspect)
+            line = await asyncio.to_thread(self._preview_line, seat, payload, direction)
+        else:
+            line = await asyncio.to_thread(self._draft, request, notes)
         self.clocks.extend(seat, time.monotonic() - started)
         self._drafts_used[seat] = used + 1  # a failed draft is not charged
         return line, DRAFTS_PER_TURN - used - 1
+
+    @property
+    def _seats(self) -> set[str]:
+        """Every seat at the table, living or dead, from the game's opening event."""
+        started = next((e for e in self.log if e.type == "game_started"), None)
+        return set(started.seats) if started is not None else set()
+
+    async def _turn_payload(self, seat: str) -> dict[str, Any]:
+        """What the engine handed the seat's waiting turn: the Send its paused node was
+        started with, read back from the checkpoint. It is the very input the node runs on
+        when the answer arrives, so a preview built from it sees what the real turn sees.
+        RuntimeError when the checkpoint holds no such turn."""
+        try:
+            state = await self._graph.aget_state(self.config, subgraphs=True)
+            found = _paused_task(state, self._pending_ids.get(seat, ""), seat)
+            if found is not None:
+                owner, task = found
+                saved = await self._graph.checkpointer.aget_tuple(owner.config)
+                for send in saved.checkpoint["channel_values"].get(TASKS) or ():
+                    if send.node == task.name and send.arg.get("player_id") == seat:
+                        return send.arg
+        except Exception as exc:
+            raise RuntimeError(f"could not read the seat's turn: {exc!r}") from exc
+        raise RuntimeError(f"no paused turn for {seat} in the checkpoint")
+
+    def _preview_line(self, seat: str, payload: dict[str, Any], direction: str) -> str:
+        # Runs in a worker thread, so the game's model and key are set here, as in _draft.
+        # Traced as its own trace in the game's session, with the model calls under it.
+        if self._llm_selection is not None:
+            GAME_LLM.set(self._llm_selection)
+        runtime = Runtime(context=self._context, store=getattr(self._graph, "store", None))
+        with langfuse.start_as_current_observation(
+            as_type="span", name=f"draft_preview_{seat}", input={"direction": direction},
+        ) as span:
+            span.update_trace(name="draft_preview", session_id=self._session_id)
+            with set_config_context({"callbacks": [create_langfuse_handler()]}) as ctx:
+                line = ctx.run(preview_discuss, payload, self.config, runtime, direction)
+            span.update(output={"line": line})
+        return line
 
     def _draft(self, request: HumanTurnRequest, notes: str) -> str:
         # Runs in a worker thread. The game's model and key travel on the same context

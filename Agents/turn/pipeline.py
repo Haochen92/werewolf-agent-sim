@@ -3,10 +3,12 @@
 ``run_memory_informed_action`` and ``run_memory_informed_night_action`` are the two entry points:
 each enriches the payload with retrieved memory, routes the decision through the LLM runner, and
 records the result (EvalCase snapshot + strategy-adoption write-back). enrich → decide → record.
+``preview_agent_action`` is enrich → decide alone: the turn a seat's agent would take, for show.
 """
 from logging import getLogger
 from typing import Any
 
+from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableConfig
 from langgraph.config import get_stream_writer
@@ -292,6 +294,33 @@ def run_memory_informed_action(
                         action_phase=action_phase, effects=effects)
 
     return result
+
+
+def preview_agent_action(
+    payload: dict[str, Any],
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+    action_phase: str,
+    prompt_template: ChatPromptTemplate,
+    output_schema: type[BaseModel],
+    output_key: str,
+    direction: str = "",
+) -> ResolvedTurn | None:
+    """The turn this seat's agent would take on ``payload``, taken for show only.
+
+    It is the agent path of ``run_memory_informed_action`` (what a human seat that hands its
+    turn over runs): the same memory retrieval, prompt, model, retries and resolution. What it
+    leaves out is everything that records a turn: no eval span or EvalCase, no strategy-adoption
+    write-back to the memory store, no X-ray events. The caller commits nothing, so the turn's
+    updated strategy note and reads are dropped with the result.
+
+    ``direction`` is one extra message after the prompt (a human player's steer for the line);
+    empty, the model is sent exactly what the real turn would send.
+    """
+    enriched_payload, _ = enrich_payload_with_memory(dict(payload), config, runtime, action_phase)
+    if direction:
+        prompt_template = prompt_template + HumanMessage(content=direction)
+    return run_agent(enriched_payload, prompt_template, output_schema, output_key)
 
 
 def run_memory_informed_night_action(

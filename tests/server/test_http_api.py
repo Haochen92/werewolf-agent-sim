@@ -308,16 +308,28 @@ def test_turns_demand_a_proven_seat(api_client, seated_session):
     assert r.status_code == 403 and "unknown seat token" in r.json()["detail"]
 
 
-def test_draft_phrases_the_seats_notes_for_its_discussion_turn(api_client, seated_session,
-                                                                monkeypatch):
-    """The draft route needs a proven seat that owes a discussion turn; it returns a line
-    without entering the game, and counts the drafts a turn allows."""
+def test_draft_previews_the_seats_own_turn(api_client, seated_session, monkeypatch):
+    """The draft route needs a proven seat that owes a discussion turn; it returns the line
+    the seat's agent would say without entering the game, and counts the drafts a turn
+    allows. The player's notes, draft and notebook reach the agent as one direction block."""
     from server.game import game_session as rt
+    from server.schemas import events as ev
     from tests.factories.builders import human_turn_request
 
     session, _ = seated_session
-    monkeypatch.setattr(rt, "draft_from_notes",
-                        lambda request, notes: f"{request.player_id} says: {notes}")
+    session.log.append(ev.GameStarted(seq=0, day=1, seats=["player_3", "player_5"],
+                                      cast_role_counts={"villager": 2}))
+    seen = []
+
+    def preview(payload, config, runtime, direction):
+        seen.append(direction)
+        return f"{payload['player_id']} says it"
+
+    async def turn_payload(seat):
+        return {"player_id": seat}
+
+    monkeypatch.setattr(rt, "preview_discuss", preview)
+    monkeypatch.setattr(session, "_turn_payload", turn_payload)
     url = f"/games/{session.game_id}/draft"
 
     r = api_client.post(url, json={"notes": "4 dodging"})
@@ -329,18 +341,45 @@ def test_draft_phrases_the_seats_notes_for_its_discussion_turn(api_client, seate
 
     session.pending_requests["player_3"] = human_turn_request(
         player_id="player_3", phase="day_channel", valid_targets=[])
-    r = api_client.post(url, json={"notes": "4 dodging"})
-    assert r.json() == {"draft": "player_3 says: 4 dodging", "drafts_left": 2,
+    r = api_client.post(url, json={})  # nothing: the agent's own line, prompt as is
+    assert r.json() == {"draft": "player_3 says it", "drafts_left": 2,
                         "deadline": None}  # solo: no clock, no countdown
+    assert seen == [""]
     assert session.pending_requests["player_3"].phase == "day_channel"  # still owed
-    # no notes: the seat's agent writes a line of its own
-    r = api_client.post(url, json={"notes": ""})
-    assert r.json() == {"draft": "player_3 says: ", "drafts_left": 1, "deadline": None}
-    assert api_client.post(url, json={}).json()["drafts_left"] == 0
+    r = api_client.post(url, json={"notes": "softer", "current": "5 is a wolf",
+                                   "seat_notes": {"player_5": "quiet"}, "suspect": "player_5"})
+    assert r.json()["drafts_left"] == 1
+    assert "softer" in seen[1] and "5 is a wolf" in seen[1]
+    assert "player_5: quiet" in seen[1] and "They suspect player_5." in seen[1]
+
+    # refused before the model is asked, and not charged
     assert api_client.post(url, json={"notes": "x" * 501}).status_code == 422
+    assert api_client.post(url, json={"current": "x" * 1001}).status_code == 422
+    assert api_client.post(url, json={"seat_notes": {"player_5": "x" * 301}}).status_code == 422
+    too_many = {f"player_{i}": "n" for i in range(17)}
+    assert api_client.post(url, json={"seat_notes": too_many}).status_code == 422
+    r = api_client.post(url, json={"suspect": "player_9"})
+    assert r.status_code == 422 and "player_9" in r.json()["detail"]
+    r = api_client.post(url, json={"seat_notes": {"player_8": "hm"}})
+    assert r.status_code == 422 and "player_8" in r.json()["detail"]
+    assert api_client.post(url, json={}).json()["drafts_left"] == 0
 
     api_client.cookies.clear()
     assert api_client.post(url, json={"notes": "4 dodging"}).status_code == 403
+
+
+def test_draft_on_the_pack_talk_still_rewrites_the_notes(api_client, seated_session,
+                                                          monkeypatch):
+    from server.game import game_session as rt
+    from tests.factories.builders import human_turn_request
+
+    session, _ = seated_session
+    monkeypatch.setattr(rt, "draft_from_notes",
+                        lambda request, notes: f"{request.player_id} to the pack: {notes}")
+    session.pending_requests["player_3"] = human_turn_request(
+        player_id="player_3", phase="wolf_channel", valid_targets=[])
+    r = api_client.post(f"/games/{session.game_id}/draft", json={"notes": "go for 5"})
+    assert r.json()["draft"] == "player_3 to the pack: go for 5"
 
 
 def test_draft_failure_tells_the_player_to_type(api_client, seated_session, monkeypatch):
@@ -349,14 +388,22 @@ def test_draft_failure_tells_the_player_to_type(api_client, seated_session, monk
 
     session, _ = seated_session
 
-    def broken(request, notes):
-        raise RuntimeError("drafting failed: provider down")
+    def broken(payload, config, runtime, direction):
+        raise RuntimeError("the agent produced no line")
 
-    monkeypatch.setattr(rt, "draft_from_notes", broken)
+    async def turn_payload(seat):
+        return {"player_id": seat}
+
+    monkeypatch.setattr(rt, "preview_discuss", broken)
+    monkeypatch.setattr(session, "_turn_payload", turn_payload)
     session.pending_requests["player_3"] = human_turn_request(
         player_id="player_3", phase="day_channel", valid_targets=[])
     r = api_client.post(f"/games/{session.game_id}/draft", json={"notes": "4 dodging"})
     assert r.status_code == 503 and "type it instead" in r.json()["detail"]
+    # a turn the checkpoint cannot show (a fake graph has none) fails the same way
+    monkeypatch.setattr(session, "_turn_payload", rt.GameSession._turn_payload.__get__(session))
+    r = api_client.post(f"/games/{session.game_id}/draft", json={})
+    assert r.status_code == 503
 
 
 def test_events_and_status_reject_a_forged_cookie(api_client, seated_session):

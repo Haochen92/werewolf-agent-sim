@@ -8,7 +8,7 @@ the API. New request/response DTOs belong here, never in the contract module.
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Annotated, Literal
 
 import unicodedata
 
@@ -291,11 +291,21 @@ class TurnAccepted(BaseModel):
 
 
 class DraftRequest(BaseModel):
-    """POST /games/{id}/draft body: what the player wants the seat's line to say, if anything."""
+    """POST /games/{id}/draft body: what the player wants from their agent's line, if
+    anything. All of it is optional; with none of it the agent writes its own line."""
 
     notes: str = Field(default="", max_length=500)
-    """Fragments in the player's own words — who, and what about. "@player_4" or "@4"
-    names a seat. Empty (or left out) asks the seat's agent to write a line of its own."""
+    """What the line should do, in the player's own words: "push on player_5", "softer,
+    ask player_4 instead". Empty (or left out) asks the agent for its own line."""
+    current: str = Field(default="", max_length=1000)
+    """The line now in the player's reply box. Read only with notes: it is the draft the
+    notes revise."""
+    seat_notes: dict[str, Annotated[str, Field(max_length=300)]] = Field(
+        default_factory=dict, max_length=16)
+    """The player's notebook: a note per seat, by player id ("player_5"). Sent only when
+    the player chose to share it with their agent; never stored."""
+    suspect: str = Field(default="", max_length=32)
+    """The seat the player marked as their suspect, by player id; empty for none."""
 
 
 
@@ -304,6 +314,7 @@ class DraftResponse(BaseModel):
     Nothing has entered the game; POST /turns still says it."""
 
     draft: str
+    """The line. Empty when the agent, left to itself, would pass this turn."""
     drafts_left: int
     """How many more drafts this turn allows. The wait for each is credited back to the
     seat's clock, so the cap is what keeps a turn from stretching."""
