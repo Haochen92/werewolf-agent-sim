@@ -24,6 +24,8 @@ export const MATERIALS = {
   paperInk: '#24180c',
   glassTop: 'rgba(33,27,20,.96)',
   glassBot: 'rgba(14,9,6,.96)',
+  // the old X-ray film (blue-black, aqua ink, paper slips): now only the epilogue's ledger is
+  // drawn in it, and the site reads `--film`/`--sure`; the stage's X-ray accent is `xray` below
   film: '#0b191f',
   filmInk: '#7fdcf2',
   filmText: '#c6e2ea',
@@ -55,6 +57,35 @@ export const MATERIALS = {
   brass: '#c9a45c',
   brassHi: '#ecd08e',
   brassLo: '#7a5a2b',
+  // the X-ray's private accent outside the file (owner, 2026-09-29): a muted verdigris, old
+  // brass gone green, in place of the film's bright aqua; readable on walnut (7.3:1 for the ink)
+  xray: '#86b0a0',
+  xrayHi: '#b9d6c8',
+  xrayText: '#cbdcd2',
+  xrayMut: '#6f978a',
+  xrayLine: '#34544a',
+  // the case file (the X-ray's pane, owner 2026-09-29): a manila folder of typed pages, the
+  // agents' words on cream paper, the verdicts and roles in stamp inks dark enough for paper
+  manila: '#d4b67c',
+  manilaDk: '#b99857',
+  manilaEdge: '#9c7c43',
+  sheet: '#f4ead3',
+  sheet2: '#e9dcbd',
+  card: '#fbf6e8',
+  type: '#2b2419',
+  typeMut: '#6f604a',
+  typeLabel: '#5d4a26',
+  pencil: '#4d4a45',
+  inkFollow: '#1f6b62',
+  inkOver: '#b4481f',
+  inkNa: '#6b675d',
+  // a finding's verdict (net_verdict): calm inks, never traffic lights
+  inkGood: '#3d6653',
+  inkBad: '#8c3a2b',
+  inkMixed: '#94650f',
+  inkTown: '#8a5a12',
+  inkWolf: '#a3281c',
+  inkSk: '#4b3294',
 } as const;
 
 export interface PhasePaint {
@@ -204,5 +235,29 @@ export function vars(): Record<CssVar, string> {
     '--hud-brass': m.brass,
     '--hud-brass-hi': m.brassHi,
     '--hud-brass-lo': m.brassLo,
+    '--xray': m.xray,
+    '--xray-hi': m.xrayHi,
+    '--xray-text': m.xrayText,
+    '--xray-mut': m.xrayMut,
+    '--xray-line': m.xrayLine,
+    '--manila': m.manila,
+    '--manila-dk': m.manilaDk,
+    '--manila-edge': m.manilaEdge,
+    '--sheet': m.sheet,
+    '--sheet2': m.sheet2,
+    '--card': m.card,
+    '--type': m.type,
+    '--type-mut': m.typeMut,
+    '--type-label': m.typeLabel,
+    '--pencil': m.pencil,
+    '--ink-follow': m.inkFollow,
+    '--ink-over': m.inkOver,
+    '--ink-na': m.inkNa,
+    '--ink-good': m.inkGood,
+    '--ink-bad': m.inkBad,
+    '--ink-mixed': m.inkMixed,
+    '--ink-town': m.inkTown,
+    '--ink-wolf': m.inkWolf,
+    '--ink-sk': m.inkSk,
   };
 }

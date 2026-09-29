@@ -51,7 +51,13 @@ describe('sprite manifest', () => {
   });
 
   it('has the room’s surface textures', () => {
-    expect(Object.keys(SPRITES.textures).sort()).toEqual(['boards', 'cork', 'velvet', 'walnut']);
+    expect(Object.keys(SPRITES.textures).sort()).toEqual([
+      'boards',
+      'cork',
+      'ink',
+      'velvet',
+      'walnut',
+    ]);
     for (const img of Object.values(SPRITES.textures)) hasSize(img);
   });
 

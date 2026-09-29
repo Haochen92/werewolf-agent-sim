@@ -162,6 +162,7 @@ import textureWalnut from './sprites/textures/walnut.webp';
 import textureBoards from './sprites/textures/boards.webp';
 import textureVelvet from './sprites/textures/velvet.webp';
 import textureCork from './sprites/textures/cork.webp';
+import textureInk from './sprites/textures/ink.webp';
 
 export const PORTRAITS: StaticImageData[] = [
   p01,
@@ -287,8 +288,10 @@ export type RoomPicture =
 /**
  * The room's surfaces (seamless tiles, opaque): the walls' walnut veneer, the floor's boards and
  * the replay valance's velvet, each tinted to the flat colour it fills. Recipe: stage_architecture §4.
+ * Also the case file's stamp ink (`ink`, scripts/make-stamp-ink.mjs): a white tile whose alpha is
+ * the ink's coverage, a mask for the stamps.
  */
-export type TexturePicture = 'walnut' | 'boards' | 'velvet' | 'cork';
+export type TexturePicture = 'walnut' | 'boards' | 'velvet' | 'cork' | 'ink';
 
 export const SPRITES: {
   day: Record<Character, Record<DayState | 'head', StaticImageData>>;
@@ -499,6 +502,7 @@ export const SPRITES: {
     boards: textureBoards,
     velvet: textureVelvet,
     cork: textureCork,
+    ink: textureInk,
   },
 };
 
