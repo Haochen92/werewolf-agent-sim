@@ -38,6 +38,23 @@ test('the theatre wears no site chrome: /workbench/day', async ({ page }) => {
   await expect(page.locator(`a[href="${GITHUB}"]`)).toHaveCount(0);
 });
 
+test('a URL with no page answers 404 inside the site shell, with the way home', async ({
+  page,
+}) => {
+  const res = await page.goto('/no-such-page');
+  expect(res?.status()).toBe(404);
+  await expect(page).toHaveTitle('Carriage Nine · Not found');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'This page isn’t on the train',
+  );
+  await expect(page.getByRole('navigation', { name: 'Site' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Back to the platform' })).toHaveAttribute(
+    'href',
+    '/',
+  );
+  await expect(page.getByRole('contentinfo')).toContainText('Liu Haochen');
+});
+
 /**
  * The archive (`/replays`) over a mocked `GET /replays`: the bundled fixture game's summary plus
  * three invented rows, and a `GET /models` menu for the display names. One of the invented games
