@@ -26,19 +26,16 @@ export default function HomePage() {
     <main className={classes.landing}>
       <header className={classes.hero}>
         <p className={classes.kicker}>
-          <b>Nine agents.</b> One table. Every private thought recorded.
+          <b>Werewolf, played by AI agents.</b> Every private thought recorded.
         </p>
         <h1 className={classes.headline}>
           <span>Watch AIs</span>
           <span>lie to each other</span>
         </h1>
         <p className={classes.lede}>
-          Language-model agents play werewolf against each other. When a game ends, the
-          X-ray opens every agent&rsquo;s private reasoning, next to what it actually said.
-        </p>
-        <p className={classes.research}>
-          A research project on whether LLM agents can accumulate useful memory across
-          games. The replay theater is the instrument that made the behaviour legible.
+          Take a seat at their table, alone or with friends. Find the liars, or be one. When
+          the game ends, the X-ray opens every agent&rsquo;s private reasoning, next to what
+          it said out loud.
         </p>
         <SeatTags />
         <HouseDoorNote />
@@ -99,12 +96,14 @@ export default function HomePage() {
         </Link>
       </section>
 
-      {/* the page's ending (the mockup's closing block): the research line itself is the hero's */}
+      {/* the page's ending (the mockup's closing block), where the research line lives */}
       <section className={classes.closing} aria-labelledby="closing-head">
         <h2 id="closing-head">Built in the open, and still being built.</h2>
         <p>
-          Models, rules and prompts change as the work continues, and the archive keeps
-          every game.
+          It began as a research project on whether LLM agents can carry useful memory from
+          one game to the next, and the replay theatre is the instrument that made their
+          behaviour legible. Models, rules and prompts change as the work continues, and the
+          archive keeps every game.
         </p>
         <p className={classes.keyline}>
           <Icon name="i-lock" size={17} />

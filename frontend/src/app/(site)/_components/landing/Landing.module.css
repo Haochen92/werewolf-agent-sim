@@ -62,15 +62,6 @@
   font-size: 19px;
   line-height: 1.5;
 }
-.research {
-  max-width: 60ch;
-  margin: 14px auto 0;
-  color: var(--muted);
-  font-size: 14.5px;
-  line-height: 1.5;
-  opacity: 0.85;
-}
-
 /* the doors, hung from a rail on a wide screen, flat and stacked on a phone */
 .seatRail {
   position: relative;
