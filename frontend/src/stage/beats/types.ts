@@ -124,6 +124,11 @@ export interface SceneBeat {
   /** The nth of a run: the nth chip counted. */
   ordinal?: number;
   spoke?: Spoke;
+  /**
+   * A speech too long for the box's three lines is told a page at a time, each page a beat
+   * (`pages.ts`): the nth page (from 0) of `count`. Absent on a speech that fits on one.
+   */
+  page?: { index: number; count: number };
   /** At normal speed; 0 = hold until the viewer moves on (a turn, the epilogue, the curtain). */
   holdMs: number;
   chapter?: Chapter;

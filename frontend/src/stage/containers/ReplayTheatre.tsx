@@ -292,6 +292,10 @@ export function ReplayTheatre({ game, mini }: ReplayTheatreProps) {
               me={ME}
               presentation={presentation}
               slot={slotInput}
+              // a tap on the speech box turns the page (a preview's box is only read)
+              onNext={
+                controls === 'stage' ? () => dispatch({ type: 'step', dir: 1 }) : undefined
+              }
             />
           </StageMotion>
         ) : null}

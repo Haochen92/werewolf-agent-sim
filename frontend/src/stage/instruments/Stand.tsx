@@ -1,7 +1,7 @@
 /**
  * The stand: the puppet booth's front, below the rail, that the speaking puppet stands in.
  * A painted walnut sideboard front (a brass gallery on its rounded rail, marquetry corners, a
- * flame-figured panel), two footlights, the plaque on its rail naming the seat. It is drawn over the puppet's feet (the stand layer
+ * flame-figured panel), two footlights, the brass plate on its rail naming the seat. It is drawn over the puppet's feet (the stand layer
  * is above the figures), which is what makes a glove puppet read as standing in a booth.
  *
  * The box is 605 puppet units wide, centred on the puppet (units.ts `standBox`); the picture
@@ -10,7 +10,7 @@
  */
 import type { CSSProperties, ReactNode } from 'react';
 import { SPRITES } from '@/assets/manifest';
-import { standBox, type StageGeometry } from '../units';
+import { HUD_CHROME, STAGE_H, standBox, type StageGeometry } from '../units';
 import type { Faction } from '../roles';
 import styles from './Stand.module.css';
 
@@ -22,21 +22,30 @@ export interface StandProps {
   widen?: number;
   /** The plaque (or nothing, for an empty stand). */
   children?: ReactNode;
+  /**
+   * The speech box is at the foot, over the stand's front. On a phone, where its words grow and
+   * it rises past the rail, the plate rises with it, to sit just above the box's nameplate.
+   */
+  speech?: boolean;
 }
 
-export function Stand({ g, lit = true, widen = 1, children }: StandProps) {
+export function Stand({ g, lit = true, widen = 1, children, speech = false }: StandProps) {
   const box = standBox(g);
   const w = box.w * widen;
+  // the room between the rail and the box's foot (SpeechBox's `bottom`), less a small gap
+  const clear = STAGE_H - g.railY - HUD_CHROME.band[g.hud] - 19.2 - 8;
   return (
     <div className={styles.pit} style={{ top: g.railY }}>
       <div
         className={styles.box}
+        data-speech-below={speech || undefined}
         style={
           {
             left: g.cx - w / 2,
             width: w,
             '--u': `${g.u}px`,
             '--front': `url(${SPRITES.props.stand.src})`,
+            '--clear': `${clear}px`,
           } as CSSProperties
         }
       >
@@ -68,10 +77,11 @@ export interface PlaqueProps {
 
 export function Plaque({ seat, tag, tone }: PlaqueProps) {
   const seats = typeof seat === 'number' ? [seat] : seat;
+  // engraved on brass, as a railway carriage numbers its seats
   const names =
     seats.length > 1
-      ? `Seats ${seats.slice(0, -1).join(', ')} and ${seats[seats.length - 1]}`
-      : `Seat ${seats[0]}`;
+      ? `Nos. ${seats.slice(0, -1).join(', ')} and ${seats[seats.length - 1]}`
+      : `No. ${seats[0]}`;
   return (
     <div className={styles.plaque}>
       {names}

@@ -87,25 +87,53 @@
   z-index: 3;
   transform: translateX(-50%);
   display: flex;
-  gap: 8px;
+  gap: 0.45em;
   align-items: center;
-  background: var(--bone2);
-  color: var(--ink);
   white-space: nowrap;
-  font-weight: 600;
-  min-height: calc(34 * var(--u));
-  box-sizing: border-box;
-  border: calc(2.5 * var(--u)) solid var(--ink);
-  border-radius: calc(5 * var(--u));
   font-size: max(var(--meta), calc(17 * var(--u)));
-  padding: 0 calc(10 * var(--u));
-  box-shadow: 0 calc(3 * var(--u)) calc(6 * var(--u)) rgba(0, 0, 0, 0.4);
+  height: 1.9em;
+  box-sizing: border-box;
+  padding: 0 0.7em;
+  /* a small brass plate: a brushed gradient, a dark bevel under a bright top edge, and the
+     numeral cut into it (dark, with the light catching the cut's lower lip) */
+  font-family: var(--font-display);
+  font-weight: 400;
+  color: #3a2610;
+  text-shadow: 0 1px 0 rgba(255, 236, 190, 0.55);
+  background: linear-gradient(
+    180deg,
+    var(--hud-brass-hi) 0%,
+    var(--hud-brass) 45%,
+    #a9823f 70%,
+    var(--hud-brass) 100%
+  );
+  border: 1px solid #4a3317;
+  border-radius: calc(4 * var(--u));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 244, 214, 0.7),
+    inset 0 -1px 0 rgba(74, 51, 23, 0.6),
+    0 calc(3 * var(--u)) calc(6 * var(--u)) rgba(0, 0, 0, 0.45);
+}
+/* the speech box over the stand's front: on a phone, where the box rises past the rail, the
+   plate rises to sit just above its nameplate (the box is 6.3 of its ems tall with the tab;
+   its ems are max(25.6px, --said), SpeechBox.module.css). At full size the plate stays put. */
+.box[data-speech-below] .plaque {
+  top: min(
+    calc(3 * var(--u)),
+    calc(
+      var(--clear) - 6.3 * max(25.6px, var(--said)) - 1.9 *
+        max(var(--meta), calc(17 * var(--u)))
+    )
+  );
 }
 .tag {
+  font-family: var(--font-body);
+  font-size: 0.8em;
   font-weight: 500;
-  padding: 0 8px;
+  padding: 0 0.5em;
   border-radius: 3.2px;
-  color: #fff;
+  color: var(--cream);
+  text-shadow: none;
 }
 .t-villagers {
   background: var(--town);

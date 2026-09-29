@@ -194,7 +194,6 @@ export function StandReturns({
   animate,
   delay,
   narrow = false,
-  aside = false,
 }: {
   g: StageGeometry;
   view: GameView;
@@ -206,8 +205,6 @@ export function StandReturns({
   delay: number;
   /** The drawer is open at full height: the box narrows under the puppet. */
   narrow?: boolean;
-  /** The side slot is open: on a phone the box stops short of it (SpeechBox's `aside`). */
-  aside?: boolean;
 }) {
   const k = useMotionScale();
   const slot = view.days[day]?.slots.find((s) => s.kind !== 'gm') as
@@ -238,7 +235,7 @@ export function StandReturns({
       </Layer>
       <Layer name="stand">
         <motion.div style={{ position: 'absolute', inset: 0 }} {...fade}>
-          <Stand g={g}>
+          <Stand g={g} speech={!!(character && slot)}>
             {n ? (
               <Plaque
                 seat={n}
@@ -258,7 +255,6 @@ export function StandReturns({
             line={slot.kind === 'speech' ? slot.message : null}
             arrive={animate}
             side={narrow}
-            aside={aside}
           />
         </Layer>
       ) : null}

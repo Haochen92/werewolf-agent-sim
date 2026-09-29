@@ -478,6 +478,10 @@ export function LiveTheatre({
               turn={turnInput}
               onAct={onAct}
               onSay={onSay}
+              // a tap on the speech box: this page is read, end its hold
+              onNext={() =>
+                dispatch({ type: 'held', step: state.step, ctx: ctxRef.current })
+              }
               wayOut={{ replay: `/replays/${gameId}`, lobby: '/rooms' }}
             />
           </StageMotion>

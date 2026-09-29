@@ -1,53 +1,124 @@
-/* The top strip, as the benches draw it: the phase at the left, past the wing; the mode
-   buttons pinned at the right (Transcript always the far right). */
+/* The top strip: the day plaque at the left, past the wing; the mode tabs pinned at the right
+   (Transcript always the far right). Both are the speech box's material: deep walnut, a thin
+   brass edge with a dark reveal, the words in lamp-glow cream (owner, 2026-09-29). */
+.phase,
+.modes {
+  background: linear-gradient(180deg, var(--walnut-top), var(--walnut-bot));
+  border: 1.5px solid var(--hud-brass);
+  box-shadow:
+    inset 0 0 0 2.5px rgba(22, 13, 7, 0.9),
+    inset 0 0 0 3.5px rgba(201, 164, 92, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* the day plaque: a brass disc, "Day 3" engraved large, the phase beneath. A heading
+   (--legible-ui), so on a phone it grows less than the words people read. */
 .phase {
   position: absolute;
-  top: 19.2px;
-  /* a heading (--legible-ui), on tighter lines on a phone, so it stays clear of the room's
-     objects below */
-  font-size: calc(22.4px * var(--legible-ui));
-  font-weight: 500;
-  line-height: calc(1.5 - (var(--legible) - 1) * 0.45);
-  color: var(--bone);
-  text-shadow: 0 1px 3px #000;
+  top: 14.4px;
+  display: flex;
+  align-items: center;
+  gap: calc(11.2px * var(--legible-ui));
+  padding: calc(6.4px * var(--legible-ui)) calc(16px * var(--legible-ui))
+    calc(6.4px * var(--legible-ui)) calc(8.8px * var(--legible-ui));
+  border-radius: 8px;
+  color: var(--cream);
 }
-.phase small {
-  display: block;
-  font-size: var(--meta);
+.where {
+  display: flex;
+  flex-direction: column;
+}
+.where b {
+  font-family: var(--font-display);
   font-weight: 400;
-  color: var(--bone2);
+  font-size: calc(28.8px * var(--legible-ui));
+  line-height: 1.05;
 }
+.where small {
+  font-size: var(--meta);
+  line-height: 1.25;
+  color: var(--cream2);
+}
+.disc {
+  flex: 0 0 auto;
+  width: calc(40px * var(--legible-ui));
+  aspect-ratio: 1;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--hud-brass-hi);
+  border: 1.5px solid var(--hud-brass);
+  box-shadow: inset 0 0 0 2px rgba(22, 13, 7, 0.9);
+  background: radial-gradient(
+    circle at 50% 40%,
+    rgba(236, 208, 142, 0.14),
+    rgba(0, 0, 0, 0) 70%
+  );
+}
+.disc svg {
+  width: 66%;
+  height: 66%;
+}
+.disc[data-disc='moon'] {
+  color: #d9dcef;
+}
+
+/* the mode tabs: one plaque, two tabs split by a brass rule */
 .modes {
   position: absolute;
   /* over the side slot's head (the drawer runs up under the strip), under the epilogue's sheet */
   z-index: 4;
   right: 12.8px;
-  top: 16px;
+  top: 14.4px;
   display: flex;
-  gap: 8px;
+  padding: calc(3.2px * var(--legible-ui));
+  border-radius: 8px;
 }
 .btn {
+  position: relative;
   font: inherit;
-  font-size: var(--meta);
-  line-height: 1.5;
-  color: var(--bone);
-  background: rgba(14, 9, 6, 0.85);
-  border: 1px solid var(--cloak2);
-  border-radius: 9.6px;
-  /* grows with the labels, so the tap target does too (--legible-ui, Stage.module.css) */
-  padding: calc(7.2px * var(--legible-ui)) calc(14.4px * var(--legible-ui));
+  font-family: var(--font-display);
+  font-size: calc(var(--meta) * 1.08);
+  line-height: 1.4;
+  /* unpressed: the words in a muted brass, as on the reference plaque */
+  color: var(--cream2);
+  background: none;
+  border: 0;
+  border-radius: 5px;
+  /* grows with the labels, so the tap target does too (--legible-ui, Stage.module.css): 22 css
+     px tall on an iPhone 14 */
+  padding: calc(8px * var(--legible-ui)) calc(14.4px * var(--legible-ui));
   cursor: pointer;
 }
-.xr[aria-pressed='true'] {
-  background: var(--film-ink);
-  border-color: var(--film-ink);
-  color: var(--film);
-  box-shadow: 0 0 11.2px rgba(127, 220, 242, 0.5);
+/* the thin brass rule between the tabs, inset top and bottom */
+.btn + .btn::before {
+  content: '';
+  position: absolute;
+  left: -0.5px;
+  top: 22%;
+  bottom: 22%;
+  /* one screen pixel at least, so the rule survives a phone's scale */
+  width: max(1px, calc(1px / max(var(--stage-scale, 1), 0.01)));
+  background: rgba(201, 164, 92, 0.6);
 }
-.tr[aria-pressed='true'] {
-  background: var(--bone);
-  color: var(--ink);
-  border-color: var(--bone);
+/* pressed, quietly (owner, 2026-09-29): an engraved walnut well, the word in bright cream with a
+   short brass underline; X-ray and Transcript press alike */
+.btn[aria-pressed='true'] {
+  color: var(--cream);
+  background: rgba(14, 8, 4, 0.55);
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.7),
+    inset 0 -1px 0 rgba(201, 164, 92, 0.18);
+}
+.btn[aria-pressed='true']::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: calc(4px * var(--legible-ui));
+  width: 1.4em;
+  height: max(1px, calc(1px / max(var(--stage-scale, 1), 0.01)));
+  transform: translateX(-50%);
+  background: var(--hud-brass);
 }
 
 /* the replay's way back to its list: over the wing, level with the mode buttons */
@@ -58,11 +129,11 @@
   top: 16px;
   font-size: var(--meta);
   line-height: 1.5;
-  color: var(--bone2);
+  color: var(--cream2);
   text-decoration: none;
-  background: rgba(14, 9, 6, 0.85);
-  border: 1px solid var(--cloak2);
-  border-radius: 9.6px;
+  background: linear-gradient(180deg, var(--walnut-top), var(--walnut-bot));
+  border: 1.5px solid var(--hud-brass-lo);
+  border-radius: 8px;
   padding: calc(7.2px * var(--legible-ui)) calc(9.6px * var(--legible-ui));
 }
 /* the back link outgrows the wing on a phone: the title steps right by as much */

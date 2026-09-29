@@ -19,8 +19,14 @@ everyone after `game_over`). A beat marked S or F is also in the X-ray replay, s
 **Holds** (H§5): shutter 3.0 s · a chip 2.0 s · a card read 2.6 s · your own card at the deal
 6.0 s · your pack at the deal 4.0 s (ruled 2026-09-28) · the verdict 3.2 s · the vote's opening
 move 2.8 s · a plain held beat 2.0 s · **speech** = words ÷ 3 per second (ruled 2026-09-28, was
-4), floor 4 s, cap 15 s, held while the pointer or a touch is on the speech; wolf messages the same. Live has no
-holds: beats animate as events arrive (§12).
+4), held while the pointer or a touch is on the speech. **A day speech is told in pages (ruled
+2026-09-29):** the speech box is a fixed three lines, so a line longer than a page
+(`PAGE_CHARS` = 150 characters, `beats/pages.ts`) is cut into pages, each its own `day.speech`
+beat marked `page` n of m, all sharing the speech's anchor; a page ends at the last sentence end
+that fits, else the last clause break (, ; : —), else the last whole word, never mid-word. Each
+page holds for its own words at 3 per second, floor 2.5 s, cap 9 s; a tap on the box moves on to
+the next page. Wolf messages and the X-ray night's spokes are read in a chat, whole: words ÷ 3,
+floor 4 s, cap 15 s. Live has no holds: beats animate as events arrive (§12).
 
 **Live vs replay.** Live plays every beat its tier receives, in arrival order, with the queue
 rule of §12. The replay plays the P beats with X-ray off and P+X (plus every S and F beat, in
@@ -103,7 +109,7 @@ read card (guess, how sure, why, the truth with ● ◐ ○).
 | # | Beat | Anchor | Sees | Stage | Slot | Hold |
 |---|---|---|---|---|---|---|
 | 1 | `day.turn-thinking` | `turn_started` (first: 13) | P | the seat's puppet takes the stand in the thinking state, no clock; the speech box shows a "…" so the state reads as thinking, not idle (ruled 2026-09-25) | D: nothing yet | live: until the turn resolves · replay: folded into the resolving beat: the puppet rises thinking, holds **0.6 s**, then plays it (accepted 2026-09-25) |
-| 2 | `day.speech` | `speech` | P | talking state, the line in the speech box; X: the box carries the aqua tags (who it answers, stance) and the plaque tags the role; the wing's blue edges from the turn's `player_reads` | D: the line, lit and scrolled to · F(X): note + lessons weighed | speech |
+| 2 | `day.speech` (one per page, §0) | `speech` | P | talking state, the line in the speech box a page at a time, "1 / 2 ▼" at its foot while more follows; X: the box carries the aqua tags (who it answers, stance) and the plaque tags the role; the wing's blue edges from the turn's `player_reads` | D: the line, lit and scrolled to · F(X): note + lessons weighed | speech |
 | 3 | `day.pass` | public: a `turn_started` resolved by no speech (the next `turn_started` or the phase change), live and replay alike, since `turn_started` is public · X-ray: `pass_marker` instead (12 in the fixture), which carries the reason and the draft (ruled 2026-09-25: day 1 of the public replay is three passes, not an empty stand) | P · X | idle state, the box says "passes"; X adds the reason and the held-back draft. Reason wording (accepted 2026-09-25): `voluntary` "chose to pass" · `novelty_gated` "held back: nothing new to say" · `generation_failed` "no line came" | D(X): the pass with its reason and draft | 4.0 |
 | 4 | `day.your-turn` | `input_request` `discuss` for me | S | my puppet at the stand, thinking; the dock carries the two minutes (`deadline`; null = no countdown; the car's wall clock is gone, ruled 2026-09-29); the box is a textarea with **Say it**, **Pass**, **Draft from notes** (three per turn, the returned `deadline` is the new countdown); the drawer stops at the rail so the prompt keeps the full width | D: stops at the rail | until answered / deadline |
 | 5 | `day.your-line` | my `speech` after 4 | S (P sees a normal turn) | the puppet talks my line as any turn plays; a pass leaves it idle | D: my line | speech |
@@ -507,10 +513,17 @@ brief sits after the morning's private results and shows from its own carried-su
 (bench 74 put it straight after the dawn line; that would show it before its beat). The closing
 game-master line stands for `game_over` (the Game over rule goes before it); a separate "The
 wolves have won." line only when no such line exists. The seat filter is one seat at a time (a
-second tap clears it), as bench 74. **The box beside the drawer:** narrows to the room, holds at
-most 3 whole lines, the last ending in an ellipsis, every line at full contrast (ruled
-2026-09-28: the fade from the second line dimmed the words), header "full line in the transcript". Under the film the box keeps the whole band (bench
-74; benches 67 and 73 had narrowed it). **The film:** the `sideSlot` rectangle, turned −1.2°.
+second tap clears it), as bench 74. **The speech box (ruled 2026-09-29, the HUD's look):** a
+walnut board with a thin brass edge and a still grain, the seat's nameplate (chip and "Seat n" in
+Young Serif) on a brass-edged tab at its top-left corner, the words in Literata, lamp-glow cream.
+A fixed size: three lines of a 30-em measure, the same count on every screen; paging replaces
+overflow and ellipsis (§0), "1 / 2 ▼" at its foot while more follows, and a tap on the board
+turns the page (the replay steps, live ends the page's hold). The transcript still holds the
+whole line. **Beside the drawer** it narrows to the room with the same pages: at full size the
+room holds the measure; on a phone the board keeps its height and sets the page in four lines of
+22 ems, the words a step smaller (about 15 css px on an iPhone 14; replaces the 2026-09-28
+"3 whole lines + ellipsis"). Under the film the box keeps the whole band (bench 74; benches 67
+and 73 had narrowed it): a three-line board no longer rises past the rail on a phone. **The film:** the `sideSlot` rectangle, turned −1.2°.
 A turn: tabs Note, L1–L3 (an override's tab in the slip's paper with the dot); the Note tab's
 foot "Note, seq 203, written after the turn; 3 lessons weighed at seq 174, carried over from its
 first turn that day; reads seq 175."; a lesson tab: the lesson, the stamp (follows · overrides ·
@@ -574,7 +587,9 @@ Live has no transport. Beats animate as events arrive.
   stage and the request drain at fast speed so the stage catches up to the turn beat.
 - A backlog of three or more beats behind the stream drains at fast speed; one or two queued
   beats play at normal speed (ruled 2026-09-28, was "more than one"; the count and the morning can
-  fall behind; the live ballot drop cannot, it is paced by `phase_progress`).
+  fall behind; the live ballot drop cannot, it is paced by `phase_progress`). A speech told in
+  pages counts as one item (ruled 2026-09-29): its later pages are never a backlog, so a long line
+  alone plays at normal speed. A tap on the speech box ends the page's hold.
 - **The deal always plays at normal speed (ruled 2026-09-28).** The game start lands as one burst
   (`game_started`, `role_assigned`, the day's `phase_change`), so every `deal.` beat keeps normal
   speed however much is queued behind it, and even with my prompt waiting (the dock still opens

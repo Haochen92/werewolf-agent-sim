@@ -8,7 +8,7 @@
  * - The dock never waits for the stage. If a prompt for the seated human is in the queue, the
  *   beats before it drain at fast speed so the stage catches up to the turn.
  * - A backlog of three or more beats drains at fast speed; one or two queued beats play at
- *   normal speed.
+ *   normal speed. A speech told in pages counts once: its later pages are not a backlog.
  * - The winners' stand needs the roles, which arrive in the backlog after `game_over`, so that
  *   beat waits until they have landed. The verdict covers the wait.
  * - A catch-up (refresh, reconnect) shows the latest beat still and plays nothing.
@@ -47,7 +47,9 @@ export function nextLiveStep(
   const prompt = beats.findIndex(
     (b, i) => i > shown && b.liveOnly === true && b.seat === ctx.me,
   );
-  const behind = beats.length - 1 - shown;
+  // what is queued, a paged speech counted once (by its first page)
+  let behind = 0;
+  for (let i = next; i < beats.length; i++) if (!beats[i].page?.index) behind++;
   const fast =
     !beat.id.startsWith('deal.') &&
     ((prompt !== -1 && prompt > next) || behind >= FAST_BACKLOG);

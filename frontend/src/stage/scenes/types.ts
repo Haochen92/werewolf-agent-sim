@@ -52,6 +52,12 @@ export interface SceneProps {
   onAct?: (target: string | null) => void;
   /** The seated human's line (the pack's chat): reported the same way as `onAct`. */
   onSay?: (text: string) => void;
+  /**
+   * A tap on the speech box: the viewer has read this page, move on (the replay steps forward,
+   * a live game ends the beat's hold, the workbench steps its beat). Without it the box is
+   * only read.
+   */
+  onNext?: () => void;
   /** What the container knows about the open prompt that the log does not; see `TurnInput`. */
   turn?: TurnInput;
   /** What the container holds for the side slot and its two buttons; see `SlotInput`. */

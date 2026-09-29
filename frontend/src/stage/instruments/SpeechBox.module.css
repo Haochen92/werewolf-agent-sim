@@ -1,10 +1,13 @@
-/* The speech box, as the benches draw it (rev 72 `.zone` and `.box.glass`). */
+/* The speech box: the band from the benches (rev 72 `.zone`), the board from the HUD pass
+   (owner, 2026-09-29, the "Young Serif + Literata" board). Sizes in the board are ems, so the
+   whole board scales with its words. */
 
 /* the band along the foot of the stage the box is centred in, clear of the wing */
 .zone {
   position: absolute;
-  /* --aside on a phone only (SpeechBox's `aside`) */
-  right: calc(var(--right) + (var(--aside, var(--right)) - var(--right)) * var(--grown));
+  right: var(--right);
+  /* the width the board may take (the world is 1600 units wide) */
+  --avail: calc(1600px - var(--left) - var(--right));
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -12,82 +15,138 @@
 }
 
 .box {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  border-radius: 14.4px;
-  padding: 11.2px 19.2px;
-  overflow: hidden;
-  max-width: 1024px;
-  flex: 0 1 auto;
+  /* the measure: ems of text a line holds. PAGE_CHARS (beats/pages.ts) fits in three of them,
+     and because it is in ems the count is the same on every screen */
+  --measure: 30;
+  --lines: 3;
+  /* the board's size is the words' size: a speech at full size a little over the phone's
+     growth (the board reads at the room's scale), stepped down only where the room is too
+     narrow for the measure (the box beside the drawer, on a phone) */
+  font-size: min(max(25.6px, var(--said)), calc(var(--avail) / (var(--measure) + 2)));
+  position: relative;
+  width: calc((var(--measure) + 2) * 1em);
+  flex: 0 0 auto;
   box-sizing: border-box;
-  background: linear-gradient(180deg, var(--glass-top), var(--glass-bot));
-  border: 1px solid var(--cloak2);
+  padding: 0.78em 1em 0.72em;
+  border-radius: 0.42em;
+  color: var(--cream);
+  /* deep walnut, its grain a still whisper under the stain; a thin brass edge with a dark
+     reveal and a fainter inner line, as on the room's picture frames */
+  background:
+    linear-gradient(180deg, rgba(50, 32, 19, 0.9), rgba(27, 17, 10, 0.95)),
+    var(--board) 0 0 / 320px 320px repeat,
+    var(--walnut-bot);
+  border: 1.5px solid var(--hud-brass);
+  box-shadow:
+    inset 0 0 0 3px rgba(22, 13, 7, 0.9),
+    inset 0 0 0 4px rgba(201, 164, 92, 0.32),
+    0 6px 18px rgba(0, 0, 0, 0.55);
+}
+/* beside the drawer: at full size the room holds the measure, and nothing changes; on a phone
+   (--grown) it does not, so the page is set on a shorter measure in four lines, the words a
+   step smaller (about 15 css px on an iPhone 14) and the board about as tall as it is in the
+   band. PAGE_CHARS fits four lines of 22 ems as it fits three of 30. */
+.side {
+  --measure: calc(30 - 8 * var(--grown));
+  --lines: calc(3 + var(--grown));
+}
+/* a line in pages: a tap on the board turns the page */
+.tap {
+  cursor: pointer;
 }
 
+/* the nameplate: a brass-edged tab on the board's top-left corner */
 .head {
+  position: absolute;
+  left: 0.9em;
+  top: 0;
+  transform: translateY(-58%);
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 4.8px 11.2px;
-  font-size: var(--meta);
-  color: var(--bone2);
-  margin-bottom: 4.8px;
+  gap: 0.35em;
+  max-width: calc(100% - 1.8em);
+  white-space: nowrap;
+  font-size: 0.78em;
+  line-height: 1.2;
+  padding: 0.16em 0.55em 0.16em 0.2em;
+  border-radius: 0.3em;
+  color: var(--cream2);
+  background: linear-gradient(180deg, var(--walnut-top), var(--walnut-bot));
+  border: 1.5px solid var(--hud-brass);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
 }
 .head strong {
-  font-weight: 500;
-  color: var(--bone);
-  font-size: calc(var(--meta) * 1.15);
+  font-family: var(--font-display);
+  font-weight: 400;
+  color: var(--cream);
+  font-size: 1.05em;
 }
 .chip {
-  width: calc(var(--chip) * 0.62);
+  width: 1.45em;
   aspect-ratio: 1;
   flex: 0 0 auto;
-  border-radius: 50%;
+  border-radius: 0.2em;
+  border: 1px solid var(--hud-brass-lo);
   overflow: hidden;
   line-height: 0;
   display: inline-block;
 }
 .tag {
+  font-size: 0.72em;
   border: 1px solid currentColor;
-  border-radius: 16px;
-  padding: 0 9.6px;
+  border-radius: 1em;
+  padding: 0 0.6em;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .agent {
   color: var(--amber);
 }
 
+/* three lines, always: the board never grows with the words (the pages keep them to three) */
 .body {
-  font-size: var(--said);
-  line-height: 1.4;
-  color: var(--bone);
+  font-family: var(--font-body);
+  line-height: 1.35;
+  height: calc(var(--lines) * 1.35em);
+  overflow: hidden;
+  overflow-wrap: break-word;
+}
+.body > span {
+  display: block;
 }
 /* the X-ray's words in the box: aqua */
 .xr {
   color: var(--film-ink);
 }
+/* what the agent held back, under "passes.": the board's two other lines */
 .draft {
-  margin-top: 4.8px;
-  font-size: var(--note);
-  line-height: 1.4;
+  margin-top: calc(-2 * 1.35em);
+  font-size: 0.82em;
+  line-height: 1.35;
   color: var(--film-ink);
   font-style: italic;
-}
-
-/* the drawer open at full height: the box narrows under the puppet and a long line stops at
-   three whole rows with an ellipsis, the full line being the drawer's newest entry (bench 74
-   `.box.faded`). No fade: a mask dimmed the last row and showed a sliver of the next one, so
-   every row shown reads at full contrast (ruled 2026-09-28). */
-.faded .body {
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   overflow: hidden;
 }
-.faded .head::after {
-  content: 'full line in the transcript';
-  margin-left: auto;
-  font-size: calc(var(--meta) * 0.8);
-  color: var(--bone3);
+
+/* "1 / 2 ▼": more of the line follows; at the board's foot, right, in the plate's voice */
+.pager {
+  position: absolute;
+  right: 1em;
+  bottom: 0.12em;
+  font-family: var(--font-display);
+  font-size: 0.64em;
+  line-height: 1;
+  color: var(--cream2);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+}
+.pager i {
+  font-style: normal;
+  color: var(--hud-brass);
+  font-size: 0.85em;
 }

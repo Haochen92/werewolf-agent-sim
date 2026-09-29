@@ -146,7 +146,8 @@ function sameBeat(a: SceneBeat | undefined, b: SceneBeat | undefined): boolean {
     a.ordinal === b.ordinal &&
     a.subject === b.subject &&
     a.spoke?.actor === b.spoke?.actor &&
-    a.spoke?.step === b.spoke?.step
+    a.spoke?.step === b.spoke?.step &&
+    a.page?.index === b.page?.index
   );
 }
 

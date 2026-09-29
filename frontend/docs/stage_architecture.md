@@ -75,7 +75,8 @@ The stage is a `16 / 9` box. Every position, size, radius and path in every scen
   4:3 tablet stay for now.
 - **Legibility (ruled 2026-09-25, two tiers 09-26).** Phones are the main screen (scale ~0.43).
   `--legible` (`Stage.module.css`: 0.75 / scale, clamped 1–1.8) grows the words people read
-  (`--said`, `--note`: ~17 css px); `--legible-ui` (the same, capped 1.3) grows `--meta`, headings
+  (`--said`, `--note`: ~17 css px; `--said` is 23.5 units × `--legible`, 17.6 css px on an
+  iPhone 14, ruled 2026-09-29); `--legible-ui` (the same, capped 1.3) grows `--meta`, headings
   and buttons (~9–10 px, ~22 px tall). Both are 1 at full size (pixel-identical there); neither
   touches the geometry, `--chip`, `--gap` or the painted props. Below scale 0.75 (the same point
   the type starts growing) the box has `data-small`: the drawer's head loses its title (seats and
@@ -101,7 +102,19 @@ The stage is a `16 / 9` box. Every position, size, radius and path in every scen
 9. `hud` — top strip, wing, side slot (drawer or film), the dock
 
 The HUD is inside the box (it is part of the 1600×900 geometry), so the drawer's width and the
-wing's tiles scale with everything else. A modal overlay (the full card, the epilogue's sheet, the
+wing's tiles scale with everything else.
+
+**The HUD's look (ruled 2026-09-29, pass 1 of 3).** The HUD is furniture of the painted car, not
+a glass overlay: deep walnut boards (`--walnut-top`/`--walnut-bot`, the walnut texture as a still
+grain under the stain) with a thin brass edge (`--hud-brass`, a dark reveal and a fainter inner
+line), the words in lamp-glow cream (`--cream`, `--cream2`), brass the accent for "speaking" (the wing's lit tile). Two voices (§5): Young Serif for what is engraved
+or announced, Literata for what is said and read. The pieces: the **day plaque** (a sun or moon
+disc, "Day 3" large, the phase beneath; `TopStrip`), the **mode tabs** (X-ray and Transcript as
+two tabs of one plaque split by a thin brass rule, the labels muted brass; the pressed tab, X-ray
+or Transcript alike, sits in a darker engraved walnut well, its label bright cream over a short
+brass underline), the **speech box** (a fixed board of three lines with a nameplate tab, paged; beat
+sheet §0, §11), and the **stand plate** (the seat engraved on brass, "No. 2", on the stand's
+rail; on a phone, where the box rises past the rail, it rises to sit just above the box). A modal overlay (the full card, the epilogue's sheet, the
 portrait interstitial) sits above the box in normal page flow. `grade` and `hud` sit outside the
 camera's box: a push-in moves the room under the grade, as under a lens.
 
@@ -462,7 +475,11 @@ Faction colour appears on a card only once it is face up (the handoff's card-bac
 
 The design's materials (`StageKit.vars()`: walnut, brass, felt, paper, the faction inks) become
 CSS custom properties on the stage box, alongside the existing [tokens.css](../src/styles/tokens.css).
-Fonts as the benches use them (`IM Fell English` on paper, the sans on dark), via `next/font`.
+Fonts via `next/font` (`src/stage/fonts.ts`): the HUD's two voices (ruled 2026-09-29) are
+`Young Serif` (`--font-display`: the day plaque, nameplates, tabs, seat numerals on brass and on
+the wing) and `Literata` (`--font-body`, the stage's default face: speeches, the transcript, the
+dock), no extra letter-spacing on body text; `IM Fell English` stays on paper, `Patrick Hand` on
+the film's note slips, and the sans (Outfit) only where a plate still names it.
 The stage does not use Mantine components; Mantine stays for the rooms, the landing and forms.
 The site around the stage (Mantine chrome, the token bridge where the theatre's values win, the site's fonts, the `(site)` route group) is in [site_architecture.md](site_architecture.md).
 

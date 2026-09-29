@@ -379,7 +379,6 @@ function MorningBeat({ view, beat, me, presentation, slot: slotInput }: ScenePro
           animate={animate}
           delay={2.6}
           narrow={bandNarrows(presentation, beat)}
-          aside={side}
         />
       ) : null}
 

@@ -9,6 +9,7 @@
  * beats exist only with `xray` on. What the log holds is the server's decision.
  */
 import type { DurableGameEvent, EventOf } from '@/types/contracts';
+import { pageHold, speechPages } from './pages';
 import {
   BEAT_LABELS,
   type BeatId,
@@ -33,6 +34,9 @@ const HOLD = {
 const WORDS_PER_SECOND = 3;
 const SPEECH_FLOOR_MS = 4000;
 const SPEECH_CAP_MS = 15000;
+
+// A pack line or a night spoke is read in a chat, whole: it holds for all its words. A day
+// speech is told in the box a page at a time (`pages.ts`), each page holding for its own.
 
 function speechHold(text: string): number {
   const words = text.trim().split(/\s+/).filter(Boolean).length;
@@ -244,10 +248,17 @@ export function beatsFor(
         summaries.set(e.day, e);
         break;
 
-      case 'speech':
+      case 'speech': {
         if (thinking?.player === e.player) thinking = null;
-        pub('day.speech', e, next, speechHold(e.message), { subject: e.player });
+        const pages = speechPages(e.message);
+        pages.forEach((page, index) =>
+          pub('day.speech', e, next, pageHold(page), {
+            subject: e.player,
+            ...(pages.length > 1 ? { page: { index, count: pages.length } } : {}),
+          }),
+        );
         break;
+      }
 
       case 'pass_marker':
         push({

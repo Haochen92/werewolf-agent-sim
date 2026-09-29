@@ -136,10 +136,16 @@ export function Workbench({ scene }: { scene: string }) {
         const viewer = next.xray
           ? ({ kind: 'xray' } as const)
           : ({ kind: 'spect' } as const);
-        // the X-ray re-cuts the beats: land on the same moment of the log in the new list
-        const seq = frame.beat?.seq ?? 0;
+        // the X-ray re-cuts the beats: land on the same moment of the log in the new list (the
+        // same page of a paged speech, else the last beat at or before its seq)
+        const was = frame.beat;
+        const seq = was?.seq ?? 0;
         const beats = workbenchFrame(scene as SceneId, { ...q, viewer, beat: 0 }).beats;
-        const at = beats.reduce((best, b, i) => (b.seq <= seq ? i : best), 0);
+        const same = beats.findIndex(
+          (b) => b.id === was?.id && b.seq === seq && b.page?.index === was?.page?.index,
+        );
+        const at =
+          same !== -1 ? same : beats.reduce((best, b, i) => (b.seq <= seq ? i : best), 0);
         go({ viewer, beat: at, slot: next.slot ?? 'none' });
       },
     };
@@ -199,6 +205,11 @@ export function Workbench({ scene }: { scene: string }) {
         slot={slotInput}
         onAct={logAct}
         onSay={logSay}
+        onNext={
+          frame.index < frame.beats.length - 1
+            ? () => go({ beat: frame.index + 1 })
+            : undefined
+        }
       />
     );
     controls = (

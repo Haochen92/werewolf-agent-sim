@@ -309,28 +309,34 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
-/* the vote: one line per day, the pairs as chips, abstain as the empty ring */
+/* the vote: one line per day, the pairs as chips, abstain as the empty ring. The heads grow
+   with the words people read (--legible), about 24 css px on an iPhone 14 (owner, 2026-09-29);
+   the pairs wrap to more rows rather than run past the drawer */
 .pairs {
+  --vh: calc(32px * var(--legible));
   display: flex;
   flex-wrap: wrap;
-  gap: 5.6px 11.2px;
-  margin-top: 2.4px;
+  gap: calc(var(--vh) * 0.22) calc(var(--vh) * 0.42);
+  margin-top: calc(var(--vh) * 0.15);
   font-style: normal;
 }
 .pair {
   display: inline-flex;
   align-items: center;
-  gap: 3.2px;
-  font-size: var(--meta);
+  gap: calc(var(--vh) * 0.12);
+  font-size: calc(var(--vh) * 0.62);
+  line-height: 1;
   color: var(--bone2);
 }
 .pair .hchip {
-  width: calc(var(--chip) * 0.45);
+  flex: 0 0 auto;
+  width: var(--vh);
   margin: 0;
 }
 .ab {
-  width: calc(var(--chip) * 0.45);
-  height: calc(var(--chip) * 0.45);
+  flex: 0 0 auto;
+  width: var(--vh);
+  height: var(--vh);
   box-sizing: border-box;
   border-radius: 50%;
   border: 1px dashed var(--bone3);

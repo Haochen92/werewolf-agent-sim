@@ -90,8 +90,8 @@ test('replay: two chapters on', async ({ page }) => {
 
 test('replay: the transport band beside the open drawer', async ({ page }) => {
   await open(page);
-  // the fifth speech of day 3 (seat 8, seq 200), seeked to, so it lands still
-  await seek(page, 44);
+  // the fifth speech of day 3 (seat 8, seq 200), its first page, seeked to, so it lands still
+  await seek(page, 48);
   await expect(page.locator('[data-drawer="full"]')).toBeVisible();
   await expect(page.locator('[data-line="say-200"]')).toBeVisible();
   await settle(page);
@@ -102,7 +102,7 @@ test('replay: the transport band beside the open drawer', async ({ page }) => {
 
 test('replay: the X-ray on a day-3 speech, the film in the slot', async ({ page }) => {
   await open(page);
-  await seek(page, 44);
+  await seek(page, 48); // seat 8's speech (seq 200), its first page
   await page.getByRole('button', { name: 'X-ray', exact: true }).click();
   await expect(page.locator('[data-film="inside"]')).toBeVisible();
   // the X-ray re-cut the beats; the cursor stayed on the same speech
@@ -126,7 +126,7 @@ test('replay: played at skip, the cursor runs on', async ({ page }) => {
 test('replay: a speech holds while the pointer rests on it', async ({ page }) => {
   await page.clock.install();
   await open(page);
-  await seek(page, 38); // day 3's first speech, seat 2: an 11.25 s hold
+  await seek(page, 38); // day 3's first speech, seat 2: its first page, a 7.3 s hold
   await page.getByRole('button', { name: 'Play' }).click();
   await page.locator('[data-speech]').hover();
   for (let t = 0; t < 20; t++) await page.clock.runFor(1000);

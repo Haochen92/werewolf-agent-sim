@@ -18,8 +18,9 @@ function line(b: SceneBeat, i: number): string {
   const spoke = b.spoke
     ? ` spoke ${b.spoke.actor} r${b.spoke.rank} ${b.spoke.step + 1}/${b.spoke.steps}`
     : '';
+  const page = b.page ? ` p${b.page.index + 1}/${b.page.count}` : '';
   const chapter = b.chapter ? `  [${b.chapter.kind} ${b.chapter.n}]` : '';
-  return `${String(i).padStart(3)}  ${b.id.padEnd(24)} d${b.day} seq${String(b.seq).padStart(3)} end${String(b.end).padStart(3)}  ${b.sees}${who}${about}${nth}${spoke}  ${b.holdMs}ms${chapter}`;
+  return `${String(i).padStart(3)}  ${b.id.padEnd(24)} d${b.day} seq${String(b.seq).padStart(3)} end${String(b.end).padStart(3)}  ${b.sees}${who}${about}${nth}${spoke}${page}  ${b.holdMs}ms${chapter}`;
 }
 
 const dump = (beats: SceneBeat[]) => beats.map(line).join('\n') + '\n';
@@ -74,10 +75,13 @@ describe('beatsFor on the fixture (9369a5c1, memory on)', () => {
   it('live, the puppet thinks on the stand until the turn resolves', () => {
     const live = beatsFor(events, { xray: false, live: true });
     const day3 = live.filter((b) => b.scene === 'day' && b.day === 3).map((b) => b.id);
-    expect(day3.slice(0, 4)).toEqual([
+    // day 3's first two speeches are two pages each (pages.ts): a beat per page
+    expect(day3.slice(0, 6)).toEqual([
       'day.turn-thinking',
       'day.speech',
+      'day.speech',
       'day.turn-thinking',
+      'day.speech',
       'day.speech',
     ]);
     expect(pub.some((b) => b.id === 'day.turn-thinking')).toBe(false);
@@ -158,6 +162,23 @@ describe('beatsFor on the fixture (9369a5c1, memory on)', () => {
     expect(wolf.filter((b) => b.id === 'morning.only-you').map((b) => b.seq)).toEqual([
       271,
     ]);
+  });
+
+  it('tells a long speech a page at a time, each page held for its own words', () => {
+    const first = pub.filter((b) => b.id === 'day.speech' && b.seq === 163);
+    expect(first.map((b) => b.page)).toEqual([
+      { index: 0, count: 2 },
+      { index: 1, count: 2 },
+    ]);
+    // the pages share the speech's anchor, so they show the same log
+    expect(new Set(first.map((b) => b.end)).size).toBe(1);
+    for (const b of first) {
+      expect(b.holdMs).toBeGreaterThanOrEqual(2500);
+      expect(b.holdMs).toBeLessThanOrEqual(9000);
+    }
+    // a speech that fits the box is one beat, with no page mark
+    const one = pub.filter((b) => b.id === 'day.speech' && !b.page);
+    expect(one.length).toBeGreaterThan(0);
   });
 
   it('marks a lynch that ends the game, so no night is played after it', () => {

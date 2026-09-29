@@ -36,10 +36,11 @@
     background-color 0.3s,
     border-color 0.3s;
 }
-/* lit: the seat on the stand now. Light, never movement. */
+/* lit: the seat on the stand now, edged in the HUD's brass. Light, never movement. */
 .lit {
-  border-color: var(--bone);
+  border-color: var(--hud-brass);
   background: var(--cloak1);
+  box-shadow: 0 0 0 1px rgba(201, 164, 92, 0.35);
 }
 .dim {
   opacity: 0.45;
@@ -64,9 +65,10 @@
   left: 4px;
   top: 3.2px;
   line-height: 1;
+  font-family: var(--font-display);
   font-size: calc(var(--meta) * 0.9);
-  font-weight: 600;
-  color: var(--bone);
+  font-weight: 400;
+  color: var(--cream);
   text-shadow:
     0 0 2px #000,
     0 0 2px #000;

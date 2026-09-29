@@ -332,6 +332,7 @@ function VoteBeat({
           hud={hud}
           title={`Day ${day}`}
           sub={`${nightFalls ? 'Night falls' : 'The vote'} · ${beat.label}`}
+          disc={nightFalls ? 'moon' : 'sun'}
           {...stripButtons(presentation, slotInput)}
         />
         {opening || id === 'vote.ballots-drop' || id === 'vote.closes' ? (

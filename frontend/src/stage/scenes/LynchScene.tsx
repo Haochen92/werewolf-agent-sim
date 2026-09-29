@@ -291,6 +291,7 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput }: SceneProps
           hud={hud}
           title={`Day ${day}`}
           sub={`${night ? 'Night falls' : 'The lynch'} · ${beat.label}`}
+          disc={night ? 'moon' : 'sun'}
           {...stripButtons(presentation, slotInput)}
         />
         <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>

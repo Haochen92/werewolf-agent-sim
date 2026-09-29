@@ -91,7 +91,8 @@ export function carryAcross(
       b.ordinal === was.ordinal &&
       b.subject === was.subject &&
       b.spoke?.actor === was.spoke?.actor &&
-      b.spoke?.step === was.spoke?.step,
+      b.spoke?.step === was.spoke?.step &&
+      b.page?.index === was.page?.index,
   );
   if (same !== -1) return still(same);
   const after = to.findIndex((b) => b.seq >= was.seq && b.end >= was.end);

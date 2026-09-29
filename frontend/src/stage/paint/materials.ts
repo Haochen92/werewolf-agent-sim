@@ -46,6 +46,15 @@ export const MATERIALS = {
   border: '#1b120b',
   frameLine: '#8d7a55',
   floor: '#0c0a07',
+  // the HUD as furniture (owner, 2026-09-29): deep walnut boards edged in thin brass, and the
+  // lamp-glow cream the words are set in; brass is also the accent for "speaking" and "pressed"
+  cream: '#f3e4c2',
+  cream2: '#cdb88f',
+  walnutTop: 'rgba(52,34,21,.97)',
+  walnutBot: 'rgba(30,19,11,.97)',
+  brass: '#c9a45c',
+  brassHi: '#ecd08e',
+  brassLo: '#7a5a2b',
 } as const;
 
 export interface PhasePaint {
@@ -188,5 +197,12 @@ export function vars(): Record<CssVar, string> {
     '--town-ink': m.townInk,
     '--wolf-ink': m.wolfInk,
     '--sk-ink': m.skInk,
+    '--cream': m.cream,
+    '--cream2': m.cream2,
+    '--walnut-top': m.walnutTop,
+    '--walnut-bot': m.walnutBot,
+    '--hud-brass': m.brass,
+    '--hud-brass-hi': m.brassHi,
+    '--hud-brass-lo': m.brassLo,
   };
 }

@@ -28,6 +28,7 @@ import {
   type LiveState,
   type TurnState,
 } from './live-state';
+import { nextLiveStep } from './live-queue';
 
 const ALL = fixture.events as unknown as DurableGameEvent[];
 const ME = 'player_7';
@@ -339,6 +340,44 @@ describe('the live stage: the seated human’s prompt', () => {
     expect(s.state.step).toBe(step);
     while (s.beat.id !== 'day.your-turn') s.held();
     expect(s.beat.seq).toBe(201);
+  });
+});
+
+describe('the live stage: a speech told in pages', () => {
+  const page = (seq: number, index: number, count: number): SceneBeat => ({
+    id: 'day.speech',
+    scene: 'day',
+    label: 'Speaks',
+    day: 3,
+    seq,
+    end: seq + 1,
+    sees: 'public',
+    subject: 'player_2',
+    holdMs: 3000,
+    ...(count > 1 ? { page: { index, count } } : {}),
+  });
+  const quiet = { me: null, rolesLanded: false };
+
+  it('counts a paged speech once toward the backlog', () => {
+    // on the stage: a speech's first page; queued: its two more pages and one more speech
+    const beats = [page(163, 0, 3), page(163, 1, 3), page(163, 2, 3), page(169, 0, 1)];
+    expect(nextLiveStep(beats, 0, quiet)).toEqual({ index: 1, speed: 'normal' });
+    // a third speech queued makes three items behind: fast
+    const more = [...beats, page(176, 0, 2), page(176, 1, 2), page(180, 0, 1)];
+    expect(nextLiveStep(more, 0, quiet)?.speed).toBe('fast');
+  });
+
+  it('still drains fast when my prompt is waiting, pages and all', () => {
+    const prompt: SceneBeat = {
+      ...page(201, 0, 1),
+      id: 'day.your-turn',
+      seat: ME,
+      sees: 'seat',
+      liveOnly: true,
+      holdMs: 0,
+    };
+    const beats = [page(163, 0, 2), page(163, 1, 2), prompt];
+    expect(nextLiveStep(beats, 0, { me: ME, rolesLanded: false })?.speed).toBe('fast');
   });
 });
 

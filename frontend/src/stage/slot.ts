@@ -7,7 +7,7 @@
  * and the lights follow) and the wing stays where it is. The two differ below the rail:
  *
  * - the drawer is a long scroll, full height, so the box at the foot moves in under the
- *   puppet and narrows, a long line fading at its foot (the full line is in the drawer);
+ *   puppet and narrows, keeping its pages (the full line is in the drawer);
  * - the film stops at the rail (nothing in it repeats the speech), so the box keeps the band;
  * - on the seated human's own turn (a prompt), the drawer stops at the rail too, so the
  *   prompt keeps the whole width.

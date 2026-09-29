@@ -576,13 +576,13 @@ test('landing: the carriage plays day 3 of the featured game, with the replay’
   // no way back to the replay list from inside the landing: the marquee links the game
   await expect(carriage(page).getByRole('link', { name: 'Replays' })).toHaveCount(0);
 
-  // it starts on day 3's vote and plays (the window is 48..66 of the public cut)
+  // it starts on day 3's vote and plays (the window is 53..71 of the public cut)
   await carriage(page).scrollIntoViewIfNeeded();
   await expect(mini(page)).toHaveAttribute('data-playing', 'true');
-  await expect(mini(page)).not.toHaveAttribute('data-beat-index', '48', { timeout: 6000 });
+  await expect(mini(page)).not.toHaveAttribute('data-beat-index', '53', { timeout: 6000 });
   const at = Number(await mini(page).getAttribute('data-beat-index'));
-  expect(at).toBeGreaterThan(48);
-  expect(at).toBeLessThanOrEqual(66);
+  expect(at).toBeGreaterThan(53);
+  expect(at).toBeLessThanOrEqual(71);
 
   // the band sees the window only, and its buttons stay in it
   const band = carriage(page).locator('[data-transport]');
@@ -593,9 +593,9 @@ test('landing: the carriage plays day 3 of the featured game, with the replay’
     '19',
   );
   await band.getByRole('slider', { name: 'Seek' }).click({ position: { x: 1, y: 4 } });
-  await expect(mini(page)).toHaveAttribute('data-beat-index', '48');
+  await expect(mini(page)).toHaveAttribute('data-beat-index', '53');
   await band.getByRole('button', { name: 'Back a beat' }).click();
-  await expect(mini(page)).toHaveAttribute('data-beat-index', '48');
+  await expect(mini(page)).toHaveAttribute('data-beat-index', '53');
 
   // the X-ray brings its film beside the stage, the drawer the transcript
   await carriage(page).getByRole('button', { name: 'X-ray', exact: true }).click();
@@ -642,7 +642,7 @@ test('landing: on an upright phone the controls sit under the stage, at reading 
   const pips = carriage(page).getByRole('group', { name: 'Beats' }).getByRole('button');
   await expect(pips).toHaveCount(19);
   await pips.nth(0).click();
-  await expect(mini(page)).toHaveAttribute('data-beat-index', '48');
+  await expect(mini(page)).toHaveAttribute('data-beat-index', '53');
 
   // the transcript is the drawer's own lines: the day's talk, the vote's line not yet
   const lines = carriage(page).getByLabel('Transcript', { exact: true });
@@ -674,7 +674,7 @@ for (const [name, viewport] of [
     // at rest on the window's first beat: reduced motion stops the play, and so does ?still=1
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await openLanding(page, '?still=1');
-    await expect(mini(page)).toHaveAttribute('data-beat-index', '48');
+    await expect(mini(page)).toHaveAttribute('data-beat-index', '53');
     await expect(page.locator('[data-game]')).toHaveCount(3);
     await expect(page.getByRole('contentinfo')).toContainText('212 games archived');
     await settle(page);

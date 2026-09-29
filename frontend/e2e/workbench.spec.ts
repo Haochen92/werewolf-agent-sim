@@ -3,18 +3,18 @@
  * 163), the bench's own line (seat 7, day 4, seq 356, seated at 7 as bench 72 is), an X-ray
  * pass, the replay's frame, a public pass (day 1's first turn, which ended with no line), and
  * a live game's thinking seat (seat 7 at the stand before that line, `live=1`). The public
- * indices count day 1 and 2's passes. `strip=0` leaves the stage alone in a 1600×900
+ * indices count day 1 and 2's passes, and a page per beat for a speech told in pages. `strip=0` leaves the stage alone in a 1600×900
  * viewport, one unit a pixel.
  */
 import { expect, test, type Page } from '@playwright/test';
 
 const SHOTS: [name: string, query: string][] = [
   ['day-speech-first', 'beat=6'],
-  ['day-speech-seat7-bench72', 'beat=31&viewer=seat:player_7'],
+  ['day-speech-seat7-bench72', 'beat=55&viewer=seat:player_7'],
   ['day-pass-xray', 'beat=0&viewer=xray'],
-  ['day-speech-replay', 'beat=31&hud=replay'],
+  ['day-speech-replay', 'beat=55&hud=replay'],
   ['day-pass-public', 'beat=0'],
-  ['day-thinking-live-seat7', 'beat=62&viewer=seat:player_7&live=1'],
+  ['day-thinking-live-seat7', 'beat=86&viewer=seat:player_7&live=1'],
 ];
 
 /** Wait until the frame is still: sprites decoded, fonts in, and Next's dev badge hidden. */
@@ -222,17 +222,17 @@ for (const [name, path, ready] of ENDING) {
  * lynch's card ("who had them right") and at the morning's carried brief.
  */
 const SLOT: [name: string, path: string, ready: string, click?: string][] = [
-  ['slot-day-speech-drawer', 'day?beat=12&hud=replay&slot=drawer', '[data-line="say-200"]'],
+  ['slot-day-speech-drawer', 'day?beat=16&hud=replay&slot=drawer', '[data-line="say-200"]'],
   ['slot-vote-line-drawer', 'vote?beat=26&slot=drawer', '[data-line="votes-3"]'],
   ['slot-ballot-drawer-rail', 'vote?beat=40&slot=drawer', '[data-drawer="rail"]'],
   [
     'slot-day-speech-film',
-    'day?beat=12&viewer=xray&hud=replay&slot=film',
+    'day?beat=16&viewer=xray&hud=replay&slot=film',
     '[data-film="inside"]',
   ],
   [
     'slot-day-read-card',
-    'day?beat=12&viewer=xray&hud=replay&slot=film',
+    'day?beat=16&viewer=xray&hud=replay&slot=film',
     '[data-read-card="player_1"]',
     '[data-layer="hud"] [data-seat="1"]',
   ],
@@ -258,7 +258,7 @@ for (const [name, path, ready, click] of SLOT) {
 test('the stage’s Transcript and X-ray buttons write the slot into the URL', async ({
   page,
 }) => {
-  await page.goto('/workbench/day?beat=12&strip=0', { waitUntil: 'networkidle' });
+  await page.goto('/workbench/day?beat=16&strip=0', { waitUntil: 'networkidle' });
   // the strip's X-ray, not the drawer's Show › X-ray toggle
   const xray = page.getByRole('button', { name: 'X-ray', exact: true });
   await page.getByRole('button', { name: 'Transcript' }).click();
@@ -266,7 +266,7 @@ test('the stage’s Transcript and X-ray buttons write the slot into the URL', a
   await expect(page.locator('[data-drawer="full"]')).toBeVisible();
   // X-ray on: the film comes to the slot, on the same speech in the X-ray's beat list
   await xray.click();
-  await expect(page).toHaveURL(/beat=12&viewer=xray&motion=normal&slot=film/);
+  await expect(page).toHaveURL(/beat=16&viewer=xray&motion=normal&slot=film/);
   await expect(page.locator('[data-film="inside"]')).toBeVisible();
   // Transcript swaps the drawer in; the X-ray stays on
   await page.getByRole('button', { name: 'Transcript' }).click();
@@ -340,7 +340,7 @@ test('the phone frame: the top strip’s buttons are drawn large enough to read 
 });
 
 test('the phone frame: a speech is drawn at a phone’s body size', async ({ page }) => {
-  await page.goto('/workbench/day?beat=31&viewer=seat:player_7&frame=iphone14&strip=0', {
+  await page.goto('/workbench/day?beat=55&viewer=seat:player_7&frame=iphone14&strip=0', {
     waitUntil: 'networkidle',
   });
   // the speech box's line: the div after its head

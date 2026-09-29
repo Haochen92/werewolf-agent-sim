@@ -6,7 +6,7 @@
  * foot, the wing down the left with the speaker lit. Turns run in the log's order; this scene
  * draws one of them, the one the beat is on.
  *
- * - `day.speech`: the speaker talking, the line in the box.
+ * - `day.speech`: the speaker talking, the line in the box, a page at a time (a beat per page).
  * - `day.pass`: the speaker idle, the box saying "passes.". Everyone sees a turn that ended
  *   with no line; with the X-ray on, the box also says why, and what was held back.
  * - `day.turn-thinking` (live only): the seat has the stand and has not spoken yet, so the
@@ -85,6 +85,7 @@ function DayTurn({
   turn,
   onSay,
   onAct,
+  onNext,
 }: SceneProps) {
   const { hud, xray, animate, cast } = presentation;
   const k = useMotionScale();
@@ -151,7 +152,7 @@ function DayTurn({
       </Layer>
 
       <Layer name="stand">
-        <Stand g={g}>
+        <Stand g={g} speech={!dock}>
           {n ? (
             <Plaque
               seat={n}
@@ -245,6 +246,8 @@ function DayTurn({
             seat={n}
             character={character}
             line={isPass ? null : slot?.kind === 'speech' ? slot.message : ''}
+            page={beat.page?.index}
+            onNext={beat.id === 'day.speech' && settled ? onNext : undefined}
             tag={
               agent
                 ? { text: 'your seat’s agent spoke for you', tone: 'agent' }
@@ -260,7 +263,6 @@ function DayTurn({
             arrive={animate}
             thinking={mine || waiting || !settled}
             side={bandNarrows(presentation, beat)}
-            aside={side}
           />
         ) : null}
       </Layer>

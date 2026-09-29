@@ -58,7 +58,8 @@
   /* 0 at full size, 1 once the type has grown: what a box does only on a phone */
   --grown: clamp(0, calc((var(--legible) - 1) * 1000), 1);
   /* the HUD's type and chip sizes, the benches' container units (1cqw = 16 units) */
-  --said: calc(22.4px * var(--legible));
+  /* the words people read land at 17–18 css px on a phone (0.75 × 23.5; owner, 2026-09-29) */
+  --said: calc(23.5px * var(--legible));
   --note: calc(18.4px * var(--legible));
   --meta: calc(16px * var(--legible-ui));
   --chip: 60.8px;
@@ -67,7 +68,11 @@
      BLEED and BLEED_DARK (the paint strips read those; the wing and drawer read these) */
   --bleed: 300px;
   --bleed-dark: 250px;
-  font-family: var(--font-stage-sans, Outfit), system-ui, sans-serif;
+  /* the HUD's two voices (fonts.ts): the body for what is said and read, the display for what
+     is engraved or announced */
+  --font-body: var(--font-stage-body, Literata), Georgia, serif;
+  --font-display: var(--font-stage-display, 'Young Serif'), Georgia, serif;
+  font-family: var(--font-body);
 }
 
 /* The camera: every layer but the HUD, scaled together about the world's top-left (the
