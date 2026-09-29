@@ -225,7 +225,28 @@ discussion so far (same cap, same clock give-back, still nothing enters the game
 lands in the reply box, editable; **Send** sends it or whatever the player typed. The
 "Let my agent speak" hand-over is gone from the speaking turn (the clock running out still has
 the agent speak); the other prompts (ballot, night acts, the pack) keep "Let my agent play
-this turn".
+this turn". *Reworked again (owner ruling 2026-09-29: one endpoint, one button, one prompt
+path — the seat's real agent):* on the day's speaking turn the draft is now a **preview of the
+seat's own agent's turn** — the agent that would speak on a hand-over or a run-out clock, with
+the same prompt and everything it knows (role, rules, day summaries, dead roster, alive-roles
+census, the firing brief, its private results and strategy note, memory when the game has it
+on); the line comes back and nothing else is kept (no state write, no turn submitted, its
+strategy note and any memory write-back dropped). The body is all optional: `{notes (≤500),
+current (≤1000), seat_notes, suspect}`. Empty → the agent's own line, prompt exactly as the
+real turn. The field is an optional steer ("Your agent", "Optional — steer or revise, e.g.
+push on seat 5 / softer, ask seat 4 instead"); the button reads **Draft** with an empty reply
+box and **Redraft** once it holds a line, and sends `notes` plus `current` (the box's text,
+which the notes then revise). A steer arrives as one block after the agent's prompt, in this
+preview only. An empty `draft` means the agent would pass: the box keeps its line and says
+"Your agent would pass here. Pass, or tell it what to say." **The seat notebook** (the rail's
+notes and suspect) reaches the server **only on a Draft/Redraft with "Use my seat
+notes" ticked** — a small box beside the count, shown only when the notebook holds a note or
+a suspect, ticked to start (each new turn). Ticked, the notes go by the agents' seat ids
+(`seat_notes: {"player_5": "…"}`, each cut to 300 chars; `suspect: "player_5"`, a dead seat's
+mark dropped) into the same block; unticked, nothing from the notebook is sent. The server
+checks they name seats at this table (422 otherwise), never stores them, and they travel in
+that one model call, so they **appear in the model-call traces** (Langfuse, "draft_preview",
+in the game's session). The pack's night talk keeps the older notes-rewriter.
 
 **D19 · Night, by viewer.** On `phase_change: night` the page shifts blue-black (token
 ruling) and the transcript starts a night section:

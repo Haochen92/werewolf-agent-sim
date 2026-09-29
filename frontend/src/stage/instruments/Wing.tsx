@@ -19,8 +19,8 @@
  *
  * The notebook: a seated player (live) can tap any other seat's card to write a note on it and
  * mark one seat as the suspect (a wax seal on its card, its head in the suspect slot). The
- * notes stay on this device (notebook.ts); nothing goes to the server, and the suspect never
- * preselects a ballot. In a replay, and for an observer, the cards are only shown.
+ * notes stay on this device (notebook.ts), reaching the server only with a speech draft sent
+ * with "Use my seat notes" ticked; the suspect never preselects a ballot. In a replay, and for an observer, the cards are only shown.
  *
  * Its width: `width` inside the world, and on a screen wider than 16:9 it grows out into the
  * bleed (the stage's `--spare`) up to the layout's `reach`, so a phone's letterbox holds most of

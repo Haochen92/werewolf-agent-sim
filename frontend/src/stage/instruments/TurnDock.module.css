@@ -99,6 +99,24 @@
   color: var(--cream2);
   white-space: nowrap;
 }
+/* "Use my seat notes": a small tick beside the count, in the count's plain type */
+.agent .share {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(4px * var(--legible-ui));
+  font-family: var(--font-body);
+  font-size: calc(var(--meta) * 0.85);
+  color: var(--cream2);
+  cursor: pointer;
+}
+.agent .share input {
+  flex: none;
+  margin: 0;
+  padding: 0;
+  width: auto;
+  box-shadow: none;
+  accent-color: var(--hud-brass-hi);
+}
 
 /* 2. the reply box, and Send over Pass beside it */
 .reply {

@@ -48,6 +48,8 @@ import { beatsFor } from '../beats/beatsFor';
 import type { SceneBeat } from '../beats/types';
 import { useDrawerFilters } from '../drawer/use-drawer-filters';
 import { StageMotion } from '../motion';
+import { notebookForAgent, useNotebook } from '../notebook';
+import { draftRequest } from '../instruments/turn-dock';
 import { SCENES } from '../scenes';
 import { StationScene } from '../scenes/StationScene';
 import { CURTAIN, DEPART, stationBeat, stationBeatId } from '../scenes/station';
@@ -295,14 +297,22 @@ export function LiveTheatre({
   const onAct = useCallback((target: string | null) => answer({ act: target }), [answer]);
   const onDelegate = useCallback(() => answer({ delegate: true }), [answer]);
 
+  // The seat notebook goes with a draft only while "Use my seat notes" is ticked; a dead
+  // seat's suspect mark is dropped, as the rail drops it.
+  const book = useNotebook(me ? gameId : null);
+  const notebook = useMemo(
+    () => notebookForAgent(book, (n) => !view.alive.includes(`player_${n}`)),
+    [book, view.alive],
+  );
   const onDraft = useCallback(
-    // empty notes are a draft too: the seat's agent writes a line of its own
-    async (notes: string) => {
+    // the seat's own agent writes its line; the notes steer it and revise the line in the box
+    async (notes: string, current: string) => {
       if (pendingSeq === null) return;
       const seq = pendingSeq;
       turnDispatch({ type: 'drafting', seq });
+      const body = draftRequest(notes, current, notebook, turn.shareNotebook);
       try {
-        const r = await asSeat(gameId, () => draftLine(gameId, notes.trim()));
+        const r = await asSeat(gameId, () => draftLine(gameId, body));
         turnDispatch({
           type: 'drafted',
           seq,
@@ -316,7 +326,7 @@ export function LiveTheatre({
         if (f.status === 409) refresh();
       }
     },
-    [gameId, pendingSeq, refresh],
+    [gameId, pendingSeq, refresh, turn.shareNotebook, notebook],
   );
 
   // --- the stage -----------------------------------------------------------------
@@ -399,6 +409,12 @@ export function LiveTheatre({
           notes: turn.notes,
           onNotes: (notes) => turnDispatch({ type: 'notes', notes }),
           onDraft,
+          notebook: notebook
+            ? {
+                shared: turn.shareNotebook,
+                onShared: (share) => turnDispatch({ type: 'share-notebook', share }),
+              }
+            : undefined,
           draftsLeft: turn.draftsLeft,
           drafting: turn.drafting,
           sending: turn.sending,

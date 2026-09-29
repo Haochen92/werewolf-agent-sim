@@ -278,8 +278,10 @@ export interface TurnState {
   seq: number | null;
   /** The line in the box. */
   text: string;
-  /** The instructions a draft is written from; empty = the agent writes its own line. */
+  /** The steer a draft is written with; empty = the agent writes its own line. */
   notes: string;
+  /** Whether a draft takes the seat notebook along ("Use my seat notes"; ticked to start). */
+  shareNotebook: boolean;
   draftsLeft: number;
   /** The deadline a draft came back with (the wait credited back); undefined = none yet. */
   deadline?: string | null;
@@ -297,6 +299,7 @@ export type TurnAction =
   | { type: 'open'; seq: number }
   | { type: 'text'; text: string }
   | { type: 'notes'; notes: string }
+  | { type: 'share-notebook'; share: boolean }
   | { type: 'drafting'; seq: number }
   | {
       type: 'drafted';
@@ -316,6 +319,7 @@ export const initialTurnState: TurnState = {
   seq: null,
   text: '',
   notes: '',
+  shareNotebook: true,
   draftsLeft: DRAFTS_PER_TURN,
   drafting: false,
   sending: false,
@@ -326,6 +330,7 @@ export const initialTurnState: TurnState = {
 
 export const ALREADY_ANSWERED = 'That turn was already answered.';
 export const DRAFT_FAILED = 'Could not draft the line; type it instead.';
+export const AGENT_WOULD_PASS = 'Your agent would pass here. Pass, or tell it what to say.';
 
 export function turnReducer(state: TurnState, action: TurnAction): TurnState {
   if (action.type === 'open') {
@@ -334,18 +339,21 @@ export function turnReducer(state: TurnState, action: TurnAction): TurnState {
   }
   if (action.type === 'text') return { ...state, text: action.text };
   if (action.type === 'notes') return { ...state, notes: action.notes };
+  if (action.type === 'share-notebook') return { ...state, shareNotebook: action.share };
   // everything below answers a request: an answer to an older one is dropped
   if (action.seq !== state.seq) return state;
   switch (action.type) {
     case 'drafting':
       return { ...state, drafting: true, error: null };
     case 'drafted':
+      // an empty draft: the agent would pass, and the box keeps what it had
       return {
         ...state,
         drafting: false,
-        text: action.draft,
+        text: action.draft || state.text,
         draftsLeft: action.draftsLeft,
         deadline: action.deadline,
+        error: action.draft ? null : AGENT_WOULD_PASS,
       };
     case 'draft-failed':
       // 409: the turn is gone or its drafts are used up; 422: the notes refused (too long).

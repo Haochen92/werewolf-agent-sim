@@ -7,8 +7,9 @@
  * It lives on this device only (localStorage, `notes_{gameId}`), and every scene that draws
  * the seat rail reads the same copy, so a note written in the day is on the card at night.
  * Storage may be missing or refuse a write (a private window): the notebook then lasts as
- * long as the page, and nothing breaks. Nothing here goes to the server, and the suspect is
- * the player's own mark, never a preselected ballot.
+ * long as the page, and nothing breaks. It reaches the server only when the player asks their
+ * agent for a draft with "Use my seat notes" ticked (`notebookForAgent`), for that one draft;
+ * the suspect is the player's own mark, never a preselected ballot.
  */
 import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import { seatNotes } from '@/lib/storage';
@@ -102,6 +103,31 @@ export function useNotebook(gameId: string | null): Notebook | null {
         updateNotebook(gameId, (b) => (b.hinted ? b : { ...b, hinted: true })),
     };
   }, [gameId, state]);
+}
+
+/** The server's cap on one shared note (DraftRequest.seat_notes). */
+const SHARED_NOTE_MAX = 300;
+
+/**
+ * What the notebook gives the seat's agent with a draft, by the seat ids the agents use
+ * (`player_5`), or null when it holds nothing to give. `dead` drops the suspect mark of a seat
+ * that has died, as the rail does.
+ */
+export function notebookForAgent(
+  book: Pick<NotebookState, 'notes' | 'suspect'> | null,
+  dead: (seat: number) => boolean = () => false,
+): { seat_notes: Record<string, string>; suspect: string } | null {
+  if (!book) return null;
+  const seatNotes: Record<string, string> = {};
+  for (const [seat, text] of Object.entries(book.notes)) {
+    const note = text.trim().slice(0, SHARED_NOTE_MAX);
+    if (note) seatNotes[`player_${seat}`] = note;
+  }
+  const suspect =
+    book.suspect !== null && !dead(book.suspect) ? `player_${book.suspect}` : '';
+  return Object.keys(seatNotes).length || suspect
+    ? { seat_notes: seatNotes, suspect }
+    : null;
 }
 
 /** The game whose notebook this viewer keeps: a seated human in a live game, else none. */

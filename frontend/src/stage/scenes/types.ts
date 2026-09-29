@@ -151,14 +151,19 @@ export interface DockInput {
   /** The line in the box. */
   text: string;
   onText?: (text: string) => void;
-  /** The player's instructions to the seat's agent for the line (rough notes). */
+  /** The player's optional steer for the seat's agent ("push on seat 5", "softer"). */
   notes?: string;
   onNotes?: (notes: string) => void;
   /**
-   * Ask for a draft: from the notes, or, with them empty, a line of the agent's own. Without
-   * it there is no draft helper.
+   * Ask the seat's agent for a draft: its own line, steered by the notes if any; `current` is
+   * the line in the box, which the notes revise. Without it there is no draft helper.
    */
-  onDraft?: (notes: string) => void;
+  onDraft?: (notes: string, current: string) => void;
+  /**
+   * "Use my seat notes": whether a draft takes the seat notebook along. Handed in only when
+   * the notebook holds a note or a suspect; absent, there is no box to tick.
+   */
+  notebook?: { shared: boolean; onShared: (shared: boolean) => void };
   /** Drafts left this turn (three per turn). */
   draftsLeft?: number;
   drafting?: boolean;

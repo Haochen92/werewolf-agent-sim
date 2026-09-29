@@ -59,8 +59,8 @@ faint ruled lines on its foot, the note's first words on them in Literata, never
 px; where they would be smaller (a phone) the card shows two short pencil strokes instead, and a
 tap reads the note. One suspect at a time: a wax seal on its card and its
 head in the suspect slot (a suspect who dies leaves the slot empty). All of it stays on the
-device (`notes_{gameId}`); nothing goes to the server, and the suspect never preselects a
-ballot. In a replay and for an observer the cards are only shown: no editor, hint or pencil lines.
+device (`notes_{gameId}`); it reaches the server only with a speech draft the player sends it
+along with ("Use my seat notes", ticked; D25), and the suspect never preselects a ballot. In a replay and for an observer the cards are only shown: no editor, hint or pencil lines.
 
 ## 1. The deal — H§4.0 · bench 75
 
@@ -135,7 +135,7 @@ read card (guess, how sure, why, the truth with ● ◐ ○).
 | 1 | `day.turn-thinking` | `turn_started` (first: 13) | P | the seat's puppet takes the stand in the thinking state, no clock; the speech box shows a "…" so the state reads as thinking, not idle (ruled 2026-09-25) | D: nothing yet | live: until the turn resolves · replay: folded into the resolving beat: the puppet rises thinking, holds **0.6 s**, then plays it (accepted 2026-09-25) |
 | 2 | `day.speech` (one per page, §0) | `speech` | P | talking state, the line in the speech box a page at a time, "1 / 2 ▼" at its foot while more follows; X: the box carries the aqua tags (who it answers, stance) and the plaque tags the role; the wing's blue edges from the turn's `player_reads` | D: the line, lit and scrolled to · F(X): note + lessons weighed | speech |
 | 3 | `day.pass` | public: a `turn_started` resolved by no speech (the next `turn_started` or the phase change), live and replay alike, since `turn_started` is public · X-ray: `pass_marker` instead (12 in the fixture), which carries the reason and the draft (ruled 2026-09-25: day 1 of the public replay is three passes, not an empty stand) | P · X | idle state, the box says "passes"; X adds the reason and the held-back draft. Reason wording (accepted 2026-09-25): `voluntary` "chose to pass" · `novelty_gated` "held back: nothing new to say" · `generation_failed` "no line came" | D(X): the pass with its reason and draft | 4.0 |
-| 4 | `day.your-turn` | `input_request` `discuss` for me | S | my puppet at the stand, thinking; the dock carries the two minutes (`deadline`; null = no countdown; the car's wall clock is gone, ruled 2026-09-29); one flow: a field of instructions to your agent + **Draft** (from the instructions, or the agent's own line when the field is empty; three per turn, the returned `deadline` is the new countdown), then the textarea the draft lands in, editable, with **Send** and **Pass** (no hand-over on this turn: the agent speaks only when the clock runs out; HUD pass 3b, 2026-09-29); the drawer stops at the rail so the prompt keeps the full width | D: stops at the rail | until answered / deadline |
+| 4 | `day.your-turn` | `input_request` `discuss` for me | S | my puppet at the stand, thinking; the dock carries the two minutes (`deadline`; null = no countdown; the car's wall clock is gone, ruled 2026-09-29); one flow: an optional steer for your agent + **Draft** / **Redraft** (the seat's own agent's line, as it would say it, steered and revising the box's line when the field holds something; "Use my seat notes" sends the notebook along when ticked; three per turn, the returned `deadline` is the new countdown), then the textarea the draft lands in, editable, with **Send** and **Pass** (no hand-over on this turn: the agent speaks only when the clock runs out; HUD pass 3b, 2026-09-29); the drawer stops at the rail so the prompt keeps the full width | D: stops at the rail | until answered / deadline |
 | 5 | `day.your-line` | my `speech` after 4 | S (P sees a normal turn) | the puppet talks my line as any turn plays; a pass leaves it idle | D: my line | speech |
 | 6 | `day.agent-spoke-for-you` | my `speech` arriving with my request unanswered at its deadline (client-known) | S only | the puppet talks the agent's line; the plaque's tag and the box say "your seat's agent spoke for you" | D: the line with the tag | speech |
 | — | `day.summary` | `day_summary` (28, 79, 218, 360) | — | **no beat here.** Public on the wire but the live stage has no beat for it; the replay plays it in the Morning of the same day number (§8 row 8) | — | — |
@@ -682,14 +682,19 @@ one flow): in the notice zone beside my card, full band (the drawer stops at the
 speech box's walnut board with its brass edge. Head "Your turn to speak" (Young Serif) · "Nothing
 is said until you send it." (+ " If the clock runs out, your agent speaks for you." with a
 deadline) and the count in red `m:ss` (none in solo). Then, top to foot: **1.** "Your agent"
-(brass) and a Literata field, "Tell your agent what to say — e.g. push on seat 5, they voted
-fast" (500 chars, Enter drafts when it holds something), **Draft** ("Drafting…"; with the field
-empty the agent drafts a line of its own, `{notes: ""}`), "n drafts left"; **2.** the reply
+(brass) and a Literata field, "Optional — steer or revise, e.g. push on seat 5 / softer, ask
+seat 4 instead" (500 chars, Enter drafts when it holds something), **Draft** with the reply box
+empty, **Redraft** once it holds a line ("Drafting…"; the seat's own agent writes the line it
+would say, `{notes, current}`, the steer revising the box's line), "n drafts left", and, when
+the seat notebook holds a note or a suspect, a small "Use my seat notes" tick (ticked to start;
+ticked, the notebook goes with the draft, D25); **2.** the reply
 textarea (64 units tall, "Type your line, or draft one above…", Ctrl/⌘+Enter sends) the draft
 lands in, editable, and beside it **Send** (brass; "Sending…") over **Pass** (quiet walnut
 plaques). No "Let my agent speak" on this turn (owner playtest: it sent the agent's line unseen);
 the clock running out still has the agent speak. The server's words under the box in red. Draft errors: 409 → its words and no drafts left, 422 → its
-words, anything else → "Could not draft the line; type it instead." (the notes kept). Send
+words, anything else → "Could not draft the line; type it instead." (the notes kept); an empty
+draft (the agent would pass) keeps the box's line: "Your agent would pass here. Pass, or tell it
+what to say." Send
 errors: 409 → "That turn was already answered." and the request is let go; 422 → its words. My
 puppet stands thinking; the time left is on the dock (the car's wall clock is gone since
 2026-09-29). A prompt that

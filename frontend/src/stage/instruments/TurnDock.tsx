@@ -5,10 +5,12 @@
  * §2 row 4). Where the speech box would hold a seat's line, it holds a place to write one, on
  * the speech box's walnut board: the countdown in red at its head, then one flow, top to foot.
  *
- * 1. A field of instructions to the seat's own agent ("push on seat 5, they voted fast") and
- *    one **Draft** button (ux_journeys D25): the agent drafts from the instructions, or, with
- *    the field left empty, a line of its own. Three drafts a turn; the time spent waiting on
- *    one is given back to the clock.
+ * 1. One button (ux_journeys D25) asks the seat's own agent for the line it would say:
+ *    **Draft** while the reply box is empty, **Redraft** once it holds a line. An optional
+ *    steer in the field beside it ("push on seat 5", "softer, ask seat 4 instead") goes along,
+ *    and revises the line in the box. When the seat notebook holds anything, a "Use my seat
+ *    notes" box (ticked to start) sends it along too. Three drafts a turn; the time spent
+ *    waiting on one is given back to the clock.
  * 2. The reply box, where the draft lands to be read and edited, or where the player types
  *    their own line. **Send** says what is in it; **Pass** says nothing.
  *
@@ -43,7 +45,7 @@ export function TurnDock({ dock, left, onSay, onPass, arrive = false }: TurnDock
     if (c.canSend) onSay?.(c.line);
   };
   const draft = () => {
-    if (c.canDraft) dock.onDraft?.(c.notes);
+    if (c.canDraft) dock.onDraft?.(c.notes, c.line);
   };
   // Ctrl/Cmd + Enter sends, as in any chat box; a plain Enter is a new line
   const onKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -74,8 +76,8 @@ export function TurnDock({ dock, left, onSay, onPass, arrive = false }: TurnDock
           <label htmlFor="dock-notes">Your agent</label>
           <input
             id="dock-notes"
-            aria-label="Tell your agent what to say"
-            placeholder="Tell your agent what to say — e.g. push on seat 5, they voted fast"
+            aria-label="Steer your agent"
+            placeholder="Optional — steer or revise, e.g. push on seat 5 / softer, ask seat 4 instead"
             maxLength={500}
             value={dock.notes ?? ''}
             onChange={(e) => dock.onNotes?.(e.target.value)}
@@ -89,6 +91,17 @@ export function TurnDock({ dock, left, onSay, onPass, arrive = false }: TurnDock
             {c.draftLabel}
           </button>
           <span className={styles.left}>{draftsLeftText(c.draftsLeft)}</span>
+          {c.hasNotebook && dock.notebook ? (
+            <label className={styles.share}>
+              <input
+                type="checkbox"
+                checked={dock.notebook.shared}
+                onChange={(e) => dock.notebook?.onShared(e.target.checked)}
+                disabled={c.busy || !!dock.drafting}
+              />
+              Use my seat notes
+            </label>
+          ) : null}
         </div>
       ) : null}
       <div className={styles.reply}>

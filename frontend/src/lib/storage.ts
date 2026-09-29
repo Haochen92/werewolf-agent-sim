@@ -100,7 +100,8 @@ export const ghostGuesses = {
 
 /**
  * The seated player's notes on the other seats, and the one they suspect (the seat rail's
- * note editor). Kept as the player wrote them; the server never sees them.
+ * note editor). Kept as the player wrote them; the server sees them only with a draft the
+ * player chose to share them with.
  */
 export const seatNotes = {
   get: (gameId: string): unknown => {
