@@ -101,12 +101,13 @@ export function parseFrame(v: string | null): DeviceFrame | undefined {
 export function parseQuery(params: URLSearchParams): WorkbenchQuery {
   const beat = Number(params.get('beat'));
   const motionRaw = params.get('motion');
+  // `0` and `skip` (the speed that was removed, 2026-09-29) read as fast
   const motion =
     motionRaw === '1'
       ? 'normal'
-      : motionRaw === '0'
-        ? 'skip'
-        : pick<MotionSpeed>(motionRaw, ['normal', 'fast', 'skip'], DEFAULT_QUERY.motion);
+      : motionRaw === '0' || motionRaw === 'skip'
+        ? 'fast'
+        : pick<MotionSpeed>(motionRaw, ['normal', 'fast'], DEFAULT_QUERY.motion);
   const frame = parseFrame(params.get('frame'));
   return {
     beat: Number.isInteger(beat) && beat >= 0 ? beat : DEFAULT_QUERY.beat,

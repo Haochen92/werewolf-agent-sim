@@ -6,6 +6,10 @@
  * line the viewer holds up to the beat on stage, the beat's own line lit and scrolled to.
  * What the lines are, and who has which, is drawer-lines.ts; this draws them.
  *
+ * It follows the beat only while the reader is at it: scrolled away to read back, the lines
+ * stay put as new ones arrive, and a "Back to now" pill at the foot returns (owner,
+ * 2026-09-29). Where they were, and whether they follow, outlives the scene (`scroll`).
+ *
  * Full height under the top strip, because it is a long scroll; the room lays itself out
  * beside it and the box at the foot moves in under the puppet. On the seated human's own
  * turn it stops at the rail, so the prompt keeps the whole width.
@@ -22,6 +26,7 @@
  * X-ray shows keeps the film's aqua, so hidden information never reads as public talk.
  */
 import {
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -38,6 +43,7 @@ import { factionOf, seatNumber, seatify, ROLE_NAME } from '../roles';
 import { STAGE_H, STAGE_W, geometry, type Hud } from '../units';
 import {
   ACT_VERB,
+  briefRows,
   drawerDays,
   drawerLines,
   filterLines,
@@ -56,6 +62,7 @@ import {
   type LineTier,
   type ShownLine,
 } from './drawer-lines';
+import type { DrawerScroll } from './use-drawer-filters';
 import styles from './Drawer.module.css';
 
 const TIER_NAME: Record<LineTier, string> = {
@@ -79,6 +86,8 @@ export interface DrawerProps {
   railHolds?: boolean;
   /** Played forward: scroll to the new line smoothly; at rest it is simply there. */
   animate?: boolean;
+  /** Where the reader was and whether they follow the beat, kept across scenes by the container. */
+  scroll?: DrawerScroll;
 }
 
 export function Drawer({
@@ -93,6 +102,7 @@ export function Drawer({
   rail = false,
   railHolds = false,
   animate = false,
+  scroll: kept,
 }: DrawerProps) {
   const g = geometry(hud, true);
   const lines = useMemo(
@@ -111,15 +121,75 @@ export function Drawer({
   const dead = new Set(view.dead.map((d) => d.player));
   const [open, setOpen] = useState<ReadonlySet<string>>(new Set());
 
-  // the beat's line scrolled into view, a little above the middle (bench 74); none: the end
+  // Following, the beat's line is scrolled into view, a little below the middle (bench 74);
+  // none: the end. Scrolled away by the reader, it stays where they left it.
   const scroller = useRef<HTMLDivElement>(null);
-  useLayoutEffect(() => {
+  const [own] = useState<DrawerScroll>(() => ({ following: true, top: 0 }));
+  const memo = kept ?? own;
+  const [following, setFollowing] = useState(memo.following);
+  // our own scrolling (a smooth scroll fires many scroll events) is not the reader's
+  const ours = useRef(false);
+  const settle = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const goTo = (behavior: ScrollBehavior) => {
     const el = scroller.current;
     if (!el) return;
     const now = lit ? el.querySelector<HTMLElement>(`[data-line="${lit}"]`) : null;
     const top = now ? Math.max(0, now.offsetTop - el.clientHeight * 0.6) : el.scrollHeight;
-    el.scrollTo({ top, behavior: animate ? 'smooth' : 'auto' });
+    if (Math.abs(el.scrollTop - Math.min(top, el.scrollHeight - el.clientHeight)) < 1)
+      return;
+    ours.current = true;
+    el.scrollTo({ top, behavior });
+  };
+  // at now: the beat's line in view, or the foot when there is none
+  const atNow = () => {
+    const el = scroller.current;
+    if (!el) return true;
+    const now = lit ? el.querySelector<HTMLElement>(`[data-line="${lit}"]`) : null;
+    if (!now) return el.scrollHeight - el.scrollTop - el.clientHeight < 32;
+    const y = now.offsetTop - el.scrollTop;
+    return y + now.offsetHeight > 0 && y < el.clientHeight;
+  };
+  const follow = (on: boolean) => {
+    memo.following = on;
+    setFollowing(on);
+  };
+  useLayoutEffect(() => {
+    const el = scroller.current;
+    if (!el) return;
+    if (memo.following) goTo(animate ? 'smooth' : 'auto');
+    // a new drawer (another scene) opens where the reader left the last one
+    else if (Math.abs(el.scrollTop - memo.top) > 1) {
+      ours.current = true;
+      el.scrollTop = memo.top;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lit, shown, animate]);
+  useEffect(() => () => clearTimeout(settle.current), []);
+  const onScroll = () => {
+    const el = scroller.current;
+    if (!el) return;
+    memo.top = el.scrollTop;
+    clearTimeout(settle.current);
+    // ours: wait for it to come to rest, then read where it stopped
+    if (ours.current) {
+      settle.current = setTimeout(() => {
+        ours.current = false;
+        const at = atNow();
+        if (at !== memo.following) follow(at);
+      }, 160);
+      return;
+    }
+    const at = atNow();
+    if (at !== memo.following) follow(at);
+  };
+  // a wheel, a finger or a key on the lines is the reader taking over from our scroll
+  const reader = () => {
+    ours.current = false;
+  };
+  const backToNow = () => {
+    follow(true);
+    goTo('smooth');
+  };
 
   const set = (next: Partial<DrawerFilters>) => onFilters?.({ ...filters, ...next });
   const chip = (seat: string, cls = '') => {
@@ -214,35 +284,51 @@ export function Drawer({
         </div>
       </header>
 
-      <div className={styles.lines} ref={scroller}>
-        {shown.length ? (
-          shown.map((l) => (
-            <Line
-              key={l.key}
-              line={l}
-              lit={lit}
-              ballotsTold={told.has(l.day)}
-              open={open.has(l.key)}
-              onToggle={() =>
-                setOpen((o) => {
-                  const n = new Set(o);
-                  if (n.has(l.key)) n.delete(l.key);
-                  else n.add(l.key);
-                  return n;
-                })
-              }
-              chip={chip}
-              roleTag={roleTag}
-              you={you}
-            />
-          ))
-        ) : (
-          <div className={styles.empty}>
-            {/* before the first line (the deal) there is nothing to filter yet */}
-            {lines.some((l) => l.kind !== 'rule')
-              ? 'Nothing here under these filters.'
-              : 'Nothing said yet.'}
-          </div>
+      <div className={styles.page}>
+        <div
+          className={styles.lines}
+          ref={scroller}
+          onScroll={onScroll}
+          onWheel={reader}
+          onTouchStart={reader}
+          onPointerDown={reader}
+          onKeyDown={reader}
+        >
+          {shown.length ? (
+            shown.map((l) => (
+              <Line
+                key={l.key}
+                line={l}
+                lit={lit}
+                ballotsTold={told.has(l.day)}
+                open={open.has(l.key)}
+                onToggle={() =>
+                  setOpen((o) => {
+                    const n = new Set(o);
+                    if (n.has(l.key)) n.delete(l.key);
+                    else n.add(l.key);
+                    return n;
+                  })
+                }
+                chip={chip}
+                roleTag={roleTag}
+                you={you}
+              />
+            ))
+          ) : (
+            <div className={styles.empty}>
+              {/* before the first line (the deal) there is nothing to filter yet */}
+              {lines.some((l) => l.kind !== 'rule')
+                ? 'Nothing here under these filters.'
+                : 'Nothing said yet.'}
+            </div>
+          )}
+        </div>
+
+        {following ? null : (
+          <button type="button" className={styles.backnow} onClick={backToNow}>
+            <span aria-hidden="true">↓</span> Back to now
+          </button>
         )}
       </div>
 
@@ -479,7 +565,7 @@ function Line({
             The day’s brief, day {l.day} <i>what the agents carry from here</i>
             <span className={styles['open-tag']}>{open ? 'close' : 'open'}</span>
           </div>
-          <div className={styles.txt}>{seatify(l.text)}</div>
+          <Brief text={l.text} />
         </div>
       );
     case 'over':
@@ -489,6 +575,33 @@ function Line({
         </div>
       );
   }
+}
+
+/**
+ * The day's brief: a labelled row per section (the label a small heading over its words), the
+ * sections with nothing in them one quiet line; as it came when it does not split.
+ */
+function Brief({ text }: { text: string }) {
+  const rows = briefRows(text);
+  if (!rows) return <div className={styles.txt}>{seatify(text)}</div>;
+  return (
+    <div className={`${styles.txt} ${styles.rows}`}>
+      {rows.map((r, i) =>
+        r.kind === 'none' ? (
+          <p key={i} className={styles.bnone}>
+            {r.text}
+          </p>
+        ) : (
+          <section key={i} className={styles.brow}>
+            <h5>{r.label}</h5>
+            {r.items.map((t, j) => (
+              <p key={j}>{seatify(t)}</p>
+            ))}
+          </section>
+        ),
+      )}
+    </div>
+  );
 }
 
 /** The night heading's crescent, the day plaque's moon in line (TopStrip's Disc). */

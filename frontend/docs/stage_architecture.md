@@ -36,7 +36,7 @@ Five independent inputs; the scene is a pure function of them. No scene reads th
 | Tier held | public · seat · faction · observer | the server (live); the X-ray toggle (replay: off = public, on = observer) |
 | Me | none (spectator) · a seat (+ pack if wolf) | `GameStatus.you` + my `role_assigned`; never inferred |
 | Cursor | a beat index (replay) · the tail behind a catch-up queue (live) | the transport / the stream |
-| Presentation | slot (drawer · film) · motion (normal · fast · skip) · X-ray on/off | the user |
+| Presentation | slot (drawer · film, the tabs Transcript · File) · motion (normal · fast) · X-ray on/off | the user |
 
 ```
 Scene({ view: fold(events ≤ cursor), beat, me, presentation })
@@ -111,9 +111,10 @@ a glass overlay: deep walnut boards (`--walnut-top`/`--walnut-bot`, the walnut t
 grain under the stain) with a thin brass edge (`--hud-brass`, a dark reveal and a fainter inner
 line), the words in lamp-glow cream (`--cream`, `--cream2`), brass the accent for "speaking" (the wing's lit tile). Two voices (§5): Young Serif for what is engraved
 or announced, Literata for what is said and read. The pieces: the **day plaque** (a sun or moon
-disc, "Day 3" large, the phase beneath; `TopStrip`), the **mode tabs** (X-ray and Transcript as
-two tabs of one plaque split by a thin brass rule, the labels muted brass; the pressed tab, X-ray
-or Transcript alike, sits in a darker engraved walnut well, its label bright cream over a short
+disc, "Day 3" large, the phase beneath; `TopStrip`), the **pane tabs** (File and Transcript as
+two tabs of one plaque split by a thin brass rule, the labels muted brass, File greyed without the
+X-ray; since 2026-09-29 they only choose the pane, the X-ray being the replay band's one switch;
+the pressed tab, File or Transcript alike, sits in a darker engraved walnut well, its label bright cream over a short
 brass underline), the **speech box** (a fixed board of three lines with a nameplate tab, paged; beat
 sheet §0, §11), and the **stand plate** (the seat engraved on brass, "No. 2", on the stand's
 rail; on a phone, where the box rises past the rail, it rises to sit just above the box). In the
@@ -372,8 +373,10 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   - **Velvet** (`velvet.webp`, 512², 12 KB, 400 units a repeat): the master's red channel only,
     as light and shade, times the valance's `#4a1418` (`-channel R -separate -evaluate multiply
     1.1102`, then `-compose multiply` with `rgb(148,40,48)`), so it has the valance's colour
-    exactly and its folds and pile. The replay's valance and its bleed; the gold hem, the border
-    and its scallops stay vector.
+    exactly and its folds and pile. It was the replay's valance and its bleed; since 2026-09-29
+    nothing uses it: the valance is one walnut board with a brass hem, vector only (`drape.ts`,
+    the owner's ruling that the velvet and the dark scalloped border in front read as two
+    layers).
   - **The method: the pattern is inside the paint's SVG**, not a DOM layer under it, so the
     paint's own tints and glows reach it. The paints take the textures' URLs (`walnut`, `velvet`
     options; without them they draw the kit's flat colours). The fading car's SVG was once made
@@ -536,7 +539,7 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
 - Enter/exit (a chip dropping through the trap, a card drawn up out of frame) is
   `AnimatePresence`; sequencing within a beat is variants with `delay`.
 - Durations come from the beat sheet's `hold`, not from the component. A `MotionScale` context
-  multiplies them: normal ×1, fast ×0.5, skip → `MotionConfig transition={{ duration: 0 }}`.
+  multiplies them: normal ×1, fast ×0.5 (skip, no motion at all, was removed 2026-09-29).
 - "Nothing moves to say chosen": selection is opacity/brightness, never transform.
 
 **GPU rules (ruled 2026-09-25, from an A/B on the owner's Chrome; headless never shows these):**
@@ -572,7 +575,7 @@ cases; `PaintPicture`'s docstring (in git history, `Stage.tsx` before 2026-09-29
 file), picks the beat, and renders the scene through exactly the component the real pages use.
 
 ```
-/workbench/vote?beat=5&viewer=spect|seat:player_7|xray&motion=normal|fast|skip&slot=none|drawer|film&hud=live|replay|none&animate=0|1[&live=1][&frame=iphone14|iphone15max|pixel8|WxH]
+/workbench/vote?beat=5&viewer=spect|seat:player_7|xray&motion=normal|fast&slot=none|drawer|film&hud=live|replay|none&animate=0|1[&live=1][&frame=iphone14|iphone15max|pixel8|WxH]
 ```
 
 `live=1` (written only when on) cuts the beats as a game in play would, for any viewer: the day's

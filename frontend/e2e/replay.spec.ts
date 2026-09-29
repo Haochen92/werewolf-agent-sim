@@ -1,8 +1,9 @@
 /**
  * The replay page on the new stage, against the bundled fixture game served as if the API
  * sent it (the API is not running for these): the first beat, two chapter jumps, the transport
- * band beside the open drawer, and the X-ray's film on a day-3 speech. Then one test that is
- * not a picture: played at "skip", the cursor runs well into the game within a few seconds.
+ * band beside the open drawer, and the X-ray's file on a day-3 speech. Then tests that are not
+ * pictures: played fast, the cursor runs on at twice the pace; the drawer stays where a reader
+ * scrolled it; the band fits a small phone on its side.
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -104,10 +105,17 @@ test('replay: the transport band beside the open drawer', async ({ page }) => {
   });
 });
 
-test('replay: the X-ray on a day-3 speech, the film in the slot', async ({ page }) => {
+test('replay: the X-ray on a day-3 speech, the file in the slot', async ({ page }) => {
   await open(page);
   await seek(page, 48); // seat 8's speech (seq 200), its first page
-  await page.getByRole('button', { name: 'X-ray', exact: true }).click();
+  // the File tab is the X-ray's pane: greyed until the band's switch turns the X-ray on
+  const file = page.getByRole('button', { name: 'File', exact: true });
+  await expect(file).toBeDisabled();
+  await band(page).getByRole('button', { name: 'X-ray', exact: true }).click();
+  await expect(file).toBeEnabled();
+  // the switch leaves the pane as it was (the transcript), now with the X-ray's lines
+  await expect(page.locator('[data-drawer="full"]')).toBeVisible();
+  await file.click();
   await expect(page.locator('[data-film="inside"]')).toBeVisible();
   // the X-ray re-cut the beats; the cursor stayed on the same speech
   await expect(theatre(page)).toHaveAttribute('data-beat', 'day.speech');
@@ -116,15 +124,56 @@ test('replay: the X-ray on a day-3 speech, the film in the slot', async ({ page 
   await expect(page).toHaveScreenshot('replay-xray-film-d3.png');
 });
 
-test('replay: played at skip, the cursor runs on', async ({ page }) => {
+test('replay: played fast, the cursor runs on at twice the pace', async ({ page }) => {
+  test.setTimeout(60_000);
   await page.clock.install();
   await open(page);
-  await page.getByRole('button', { name: 'Skip' }).click();
+  // one toggle: it says the speed it plays at
+  await band(page).getByRole('button', { name: 'Normal' }).click();
+  await expect(band(page).getByRole('button', { name: 'Fast' })).toBeVisible();
   await page.getByRole('button', { name: 'Play' }).click();
   await expect(theatre(page)).toHaveAttribute('data-playing', 'true');
-  // each beat holds 250 ms at skip; step the clock a beat at a time so each new hold is set
-  for (let t = 0; t < 16; t++) await page.clock.runFor(250);
-  expect(Number(await theatre(page).getAttribute('data-beat-index'))).toBeGreaterThan(10);
+  // 16 s at fast reaches the night (beat 6, 10.5 s of holds, each new hold set at the end of a
+  // step); at normal it would still be on day 1's passes (17 s of holds to beat 5)
+  for (let t = 0; t < 32; t++) await page.clock.runFor(500);
+  expect(Number(await theatre(page).getAttribute('data-beat-index'))).toBeGreaterThan(5);
+});
+
+test('replay: the transcript follows only while the reader is at now', async ({ page }) => {
+  await open(page);
+  await seek(page, 48);
+  const lines = page.locator('[data-drawer] [data-line]').first().locator('xpath=..');
+  const back = page.getByRole('button', { name: /Back to now/ });
+  await expect(back).toHaveCount(0);
+  // the reader scrolls up to read back: the next beat leaves them there, with the pill
+  await lines.evaluate((el) => el.scrollTo({ top: 0 }));
+  await expect(back).toBeVisible();
+  await page.keyboard.press('ArrowRight');
+  await expect(theatre(page)).toHaveAttribute('data-beat-index', '49');
+  expect(await lines.evaluate((el) => el.scrollTop)).toBe(0);
+  // the pill takes them back to the beat's line, and the drawer follows again
+  await back.click();
+  await expect(back).toHaveCount(0);
+  await expect(page.locator('[data-drawer] [data-line="say-200"]')).toBeInViewport();
+});
+
+test('replay: the band fits a small phone on its side', async ({ page }) => {
+  await page.setViewportSize({ width: 667, height: 375 });
+  await open(page);
+  const vw = 667;
+  const boxes = await band(page)
+    .locator(':scope > *')
+    .evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON()));
+  // four pieces (the buttons, where we are, the speed, the X-ray), in a row, none past the edge
+  expect(boxes).toHaveLength(4);
+  for (const b of boxes) {
+    expect(b.left).toBeGreaterThanOrEqual(0);
+    expect(b.right).toBeLessThanOrEqual(vw);
+  }
+  for (let i = 1; i < boxes.length; i++)
+    expect(boxes[i].left).toBeGreaterThanOrEqual(boxes[i - 1].right - 0.5);
+  // the words where we are are not squeezed to nothing
+  expect(boxes[1].width).toBeGreaterThan(60);
 });
 
 test('replay: a speech holds while the pointer rests on it', async ({ page }) => {

@@ -3,7 +3,7 @@
  * (beat sheet §12, "The slot"; handoff §2, "The transcript").
  *
  * The right side of the stage holds one thing at a time: the transcript drawer or the X-ray
- * film. While it holds either, the room is drawn narrower (the puppet slides left, the paint
+ * film (the File tab). While it holds either, the room is drawn narrower (the puppet slides left, the paint
  * and the lights follow) and the wing stays where it is. The two differ below the rail:
  *
  * - the drawer is a long scroll, full height, so the box at the foot moves in under the
@@ -63,23 +63,25 @@ export function bandNarrows(
   return slotOf(p) === 'drawer' && !atRail(beat);
 }
 
-/** The top strip's two buttons for a scene: pressed states from the presentation, presses to the container (and the replay's way back). */
+/** The top strip's two tabs for a scene: pressed states from the presentation, presses to the container (and the replay's way back). */
 export function stripButtons(p: Pick<Presentation, 'slot' | 'xray'>, slot?: SlotInput) {
   return {
     xray: p.xray,
+    file: slotOf(p) === 'film',
     transcript: slotOf(p) === 'drawer',
-    onXray: slot?.onXray,
+    onFile: slot?.onFile,
     onTranscript: slot?.onTranscript,
     back: slot?.back,
   };
 }
 
 /**
- * What the two buttons do to the presentation (the containers call this; the workbench writes
- * the result to its URL). Transcript brings the drawer, or closes it if it is there. X-ray
- * turns the X-ray on and brings the film; pressed while the drawer has the slot it brings the
- * film back rather than turning the X-ray off (bench 74, revision 41); pressed while the film
- * is up it turns the X-ray off, and the film goes with it.
+ * What the presses do to the presentation (the containers call these; the workbench writes the
+ * result to its URL). The strip's two tabs, File and Transcript, only choose what the slot
+ * shows: each brings its pane, or closes it if it is there. File needs the X-ray (the film is
+ * the X-ray's), so without it the tab is greyed and does nothing. The X-ray itself is one switch
+ * (the replay's band): off takes the film with it, and the slot falls back to the transcript
+ * (owner, 2026-09-29, replacing bench 74's X-ray tab that also brought the film).
  */
 export function pressTranscript(
   p: Pick<Presentation, 'slot' | 'xray'>,
@@ -87,10 +89,16 @@ export function pressTranscript(
   return { xray: p.xray, slot: slotOf(p) === 'drawer' ? null : 'drawer' };
 }
 
+export function pressFile(
+  p: Pick<Presentation, 'slot' | 'xray'>,
+): Pick<Presentation, 'slot' | 'xray'> {
+  if (!p.xray) return { xray: p.xray, slot: p.slot };
+  return { xray: true, slot: slotOf(p) === 'film' ? null : 'film' };
+}
+
 export function pressXray(
   p: Pick<Presentation, 'slot' | 'xray'>,
 ): Pick<Presentation, 'slot' | 'xray'> {
-  if (!p.xray) return { xray: true, slot: 'film' };
-  if (slotOf(p) !== 'film') return { xray: true, slot: 'film' };
-  return { xray: false, slot: null };
+  if (!p.xray) return { xray: true, slot: p.slot };
+  return { xray: false, slot: p.slot === 'film' ? 'drawer' : p.slot };
 }

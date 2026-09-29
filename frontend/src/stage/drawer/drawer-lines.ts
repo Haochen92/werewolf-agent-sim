@@ -218,7 +218,12 @@ export function drawerLines(view: GameView, o: LineOptions): DrawerLine[] {
       } else {
         const about =
           s === overGm ? 'over' : s === dawn ? 'dawn' : s === vote ? 'vote' : null;
-        if (about === 'vote' && lynch && o.beat?.day === d.day && UNTIL_TRUTH.has(o.beat.id))
+        if (
+          about === 'vote' &&
+          lynch &&
+          o.beat?.day === d.day &&
+          UNTIL_TRUTH.has(o.beat.id)
+        )
           continue;
         const roles =
           about === 'vote'
@@ -631,10 +636,13 @@ export function drawerDays(lines: readonly DrawerLine[]): number[] {
   return [...new Set(lines.map((l) => l.day))].filter((d) => d > 0).sort((a, b) => a - b);
 }
 
-/** The Show toggles this viewer has: none for a spectator; Private for a seat; all three with the X-ray. */
+/**
+ * The Show toggles this viewer has: none for a spectator; Public and Private for a seat, or with
+ * the X-ray (everyone's private lines). The X-ray's own lines have no toggle: they follow the
+ * X-ray's one switch (owner, 2026-09-29).
+ */
 export function showRow(me: string | null, xray: boolean): LineTier[] {
-  if (xray) return ['public', 'private', 'xray'];
-  return me ? ['public', 'private'] : [];
+  return me || xray ? ['public', 'private'] : [];
 }
 
 /*
@@ -792,5 +800,62 @@ export function reportParts(
   // a role the words never reached still lends its sigil, at the end
   const left = l.roles.filter((_, i) => !used.has(i));
   if (left.length && out.length && !out.at(-1)!.role) out[out.length - 1].role = left[0];
+  return out;
+}
+
+/** The day's brief, as the drawer sets it: a labelled row per section, or one quiet line. */
+export type BriefRow =
+  { kind: 'row'; label: string; items: string[] } | { kind: 'none'; text: string };
+
+/** The four headings `day_summary` always opens its lines with, in order, and how each reads. */
+const BRIEF_HEADINGS = [
+  {
+    head: 'Key accusations and defenses:',
+    label: 'Accusations and defences',
+    none: 'accusations',
+  },
+  { head: 'Role claims:', label: 'Role claims', none: 'claims' },
+  { head: 'Alliances and blocs:', label: 'Alliances and blocs', none: 'alliances' },
+  { head: 'Village dynamics:', label: 'Village dynamics', none: 'village dynamics' },
+] as const;
+
+const NONE = /^none\.?$/i;
+
+/** "a", "a or b", "a, b or c". */
+const orList = (xs: readonly string[]) =>
+  xs.length < 2 ? (xs[0] ?? '') : `${xs.slice(0, -1).join(', ')} or ${xs.at(-1)}`;
+
+/**
+ * The brief split at its four headings: a row per section with something in it (the accusations
+ * one item each, the summary joins them with " | "), and the sections that say only "None."
+ * folded into one quiet line where the first of them stood ("No accusations, claims or
+ * alliances yet"). Null when the text does not open its lines with the four headings, in order:
+ * the drawer then sets it as it came.
+ */
+export function briefRows(text: string): BriefRow[] | null {
+  const bodies: string[] = [];
+  for (const line of text
+    .split('\n')
+    .map((s) => s.trim())
+    .filter(Boolean)) {
+    const next = BRIEF_HEADINGS[bodies.length];
+    if (next && line.startsWith(next.head))
+      bodies.push(line.slice(next.head.length).trim());
+    else if (bodies.length) bodies[bodies.length - 1] += ` ${line}`;
+    else return null;
+  }
+  if (bodies.length !== BRIEF_HEADINGS.length) return null;
+  const empty = BRIEF_HEADINGS.filter((_, i) => NONE.test(bodies[i]));
+  const out: BriefRow[] = [];
+  BRIEF_HEADINGS.forEach((h, i) => {
+    const body = bodies[i];
+    if (NONE.test(body)) {
+      if (h === empty[0])
+        out.push({ kind: 'none', text: `No ${orList(empty.map((e) => e.none))} yet` });
+      return;
+    }
+    const items = i === 0 ? body.split(/\s+\|\s+/) : [body];
+    out.push({ kind: 'row', label: h.label, items: items.filter(Boolean) });
+  });
   return out;
 }

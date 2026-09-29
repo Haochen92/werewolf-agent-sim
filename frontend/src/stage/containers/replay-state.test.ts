@@ -50,30 +50,37 @@ describe('the replay reducer', () => {
     ...rest,
   });
 
-  it('the X-ray keeps the cursor on the same beat', () => {
+  it('the X-ray keeps the cursor on the same beat, and the pane where it was', () => {
     const speech = beats.public.findIndex((b) => b.id === 'day.speech' && b.seq === 200);
-    const on = reduce(at(speech), { type: 'xray' });
+    const on = reduce(at(speech, { slot: 'drawer' }), { type: 'xray' });
     expect(on.xray).toBe(true);
-    expect(on.slot).toBe('film');
+    expect(on.slot).toBe('drawer');
     const b = beats.xray[on.cursor.index];
     expect([b.id, b.seq]).toEqual(['day.speech', 200]);
     expect(on.cursor.animate).toBe(false);
-    // the film up, X-ray again turns it off: back to the same speech in the public list
+    // off again: back to the same speech in the public list
     const off = reduce(on, { type: 'xray' });
     expect(off.xray).toBe(false);
-    expect(off.slot).toBe(null);
+    expect(off.slot).toBe('drawer');
     expect(off.cursor.index).toBe(speech);
   });
 
-  it('the X-ray with the drawer up brings the film and keeps the beat', () => {
-    const s = reduce(reduce(at(40), { type: 'xray' }), { type: 'transcript' });
-    expect([s.xray, s.slot]).toEqual([true, 'drawer']);
-    const film = reduce(s, { type: 'xray' });
-    expect([film.xray, film.slot, film.cursor.index]).toEqual([
+  it('File and Transcript only choose the pane; File needs the X-ray', () => {
+    // no X-ray: File does nothing
+    expect(reduce(at(40, { slot: 'drawer' }), { type: 'file' }).slot).toBe('drawer');
+    const on = reduce(at(40, { slot: 'drawer' }), { type: 'xray' });
+    const file = reduce(on, { type: 'file' });
+    expect([file.xray, file.slot, file.cursor.index]).toEqual([
       true,
       'film',
-      s.cursor.index,
+      on.cursor.index,
     ]);
+    expect(reduce(file, { type: 'transcript' }).slot).toBe('drawer');
+    // pressed again, the pane closes
+    expect(reduce(file, { type: 'file' }).slot).toBe(null);
+    // the X-ray off with the file up: the pane falls back to the transcript
+    const off = reduce(file, { type: 'xray' });
+    expect([off.xray, off.slot]).toEqual([false, 'drawer']);
   });
 
   it('plays forward moving, and stops at the end', () => {

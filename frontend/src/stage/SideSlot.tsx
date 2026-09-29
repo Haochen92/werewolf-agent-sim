@@ -39,6 +39,7 @@ export function SideSlot({ view, beat, me, presentation, slot }: SceneProps) {
           rail={atRail(beat)}
           railHolds={railHolds(beat)}
           animate={animate}
+          scroll={slot?.drawerScroll ?? own.scroll}
         />
       ) : (
         <Film

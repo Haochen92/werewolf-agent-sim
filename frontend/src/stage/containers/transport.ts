@@ -18,9 +18,6 @@ export interface Cursor {
   animate: boolean;
 }
 
-/** The smallest wait at "skip": enough for the eye to register a change, no more. */
-const SKIP_HOLD_MS = 250;
-
 export const still = (index: number): Cursor => ({ index, animate: false });
 
 export function stepForward(cursor: Cursor, beats: readonly SceneBeat[]): Cursor {
@@ -62,14 +59,8 @@ export function jumpChapter(
  */
 export function holdFor(beat: SceneBeat, speed: MotionSpeed): number | null {
   if (beat.holdMs <= 0) return null;
-  switch (speed) {
-    case 'normal':
-      return beat.holdMs;
-    case 'fast':
-      return beat.holdMs / 2;
-    case 'skip':
-      return Math.min(beat.holdMs, SKIP_HOLD_MS);
-  }
+  // fast halves the hold; anything else (an old 'skip' kept somewhere) plays at normal
+  return speed === 'fast' ? beat.holdMs / 2 : beat.holdMs;
 }
 
 /**

@@ -2,7 +2,8 @@
  * The replay's transport, along the foot of the stage (bench 73's band, beat sheet §11): the
  * five buttons (previous chapter, back a beat, play or pause, forward a beat, next chapter),
  * the seek bar with a mark per chapter, where we are in words ("Vote 3 · A chip is counted"),
- * the speed, and whether the X-ray is on.
+ * the speed as one toggle (Normal or Fast), and the X-ray's one switch (owner, 2026-09-29: three
+ * speeds and a count did not fit a small phone on its side).
  *
  * It only draws and reports presses; the replay theatre holds the state. It sits in the HUD,
  * in stage units, so it shrinks with the picture on a small screen like everything else. When
@@ -32,6 +33,8 @@ export interface TransportBandProps {
   onTogglePlay: () => void;
   onSeek: (index: number) => void;
   onSpeed: (speed: MotionSpeed) => void;
+  /** The X-ray's one switch: the stage's beats, the transcript's private lines, the File tab. */
+  onXray: () => void;
 }
 
 // bench 73's glyphs, drawn in a 16×16 box; pause is ours (the bench only drew play)
@@ -43,12 +46,6 @@ const ICON = {
   forward: 'M5 3l8 5-8 5z',
   nextChapter: 'M10 3h2v10h-2zM1 3l8 5-8 5z',
 };
-
-const SPEEDS: { value: MotionSpeed; label: string }[] = [
-  { value: 'normal', label: 'Normal' },
-  { value: 'fast', label: 'Fast' },
-  { value: 'skip', label: 'Skip' },
-];
 
 function Glyph({ d }: { d: string }) {
   return (
@@ -80,7 +77,9 @@ export function TransportBand({
   onTogglePlay,
   onSeek,
   onSpeed,
+  onXray,
 }: TransportBandProps) {
+  const fast = speed === 'fast';
   const g = geometry(hud, besideDrawer);
   const last = Math.max(1, beats.length - 1);
   const at = (i: number) => `${(i / last) * 100}%`;
@@ -129,9 +128,6 @@ export function TransportBand({
         <div className={styles.where}>
           <div className={styles.caption}>
             <span className={styles.label}>{label}</span>
-            <span className={styles.count}>
-              {index + 1} / {beats.length}
-            </span>
           </div>
           <div
             className={styles.seek}
@@ -157,25 +153,27 @@ export function TransportBand({
           </div>
         </div>
 
-        <div className={styles.speed} role="group" aria-label="Speed">
-          {SPEEDS.map((s) => (
-            <button
-              key={s.value}
-              type="button"
-              aria-pressed={speed === s.value}
-              onClick={() => onSpeed(s.value)}
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
+        {/* one toggle: it says the speed it plays at, and a press switches to the other */}
+        <button
+          type="button"
+          className={styles.speed}
+          data-speed={speed}
+          title={fast ? 'Playing fast: tap for normal speed' : 'Tap to play fast'}
+          onClick={() => onSpeed(fast ? 'normal' : 'fast')}
+        >
+          {fast ? 'Fast' : 'Normal'}
+        </button>
 
-        <span
+        <button
+          type="button"
           className={xray ? `${styles.xray} ${styles.on}` : styles.xray}
           data-xray={xray}
+          aria-label="X-ray"
+          aria-pressed={xray}
+          onClick={onXray}
         >
           {xray ? 'X-ray on' : 'X-ray off'}
-        </span>
+        </button>
       </div>
     </Layer>
   );

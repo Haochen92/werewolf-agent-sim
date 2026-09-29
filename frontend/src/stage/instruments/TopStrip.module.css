@@ -119,8 +119,14 @@
   width: max(1px, calc(1px / max(var(--stage-scale, 1), 0.01)));
   background: rgba(201, 164, 92, 0.6);
 }
+/* File without the X-ray: greyed, and nothing to press */
+.btn:disabled {
+  color: var(--bone3);
+  opacity: 0.55;
+  cursor: default;
+}
 /* pressed, quietly (owner, 2026-09-29): an engraved walnut well, the word in bright cream with a
-   short brass underline; X-ray and Transcript press alike */
+   short brass underline; File and Transcript press alike */
 .btn[aria-pressed='true'] {
   color: var(--cream);
   background: rgba(14, 8, 4, 0.55);

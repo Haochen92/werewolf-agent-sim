@@ -4,6 +4,7 @@ import { beatsFor } from '../beats/beatsFor';
 import type { SceneBeat } from '../beats/types';
 import { FIXTURE_EVENTS } from '../workbench/fixture';
 import {
+  briefRows,
   DEFAULT_FILTERS,
   drawerDays,
   drawerLines,
@@ -237,7 +238,8 @@ describe('the drawer: the filters', () => {
     expect(drawerDays(lines)).toEqual([1, 2, 3, 4]);
     expect(showRow(null, false)).toEqual([]);
     expect(showRow('player_4', false)).toEqual(['public', 'private']);
-    expect(showRow(null, true)).toEqual(['public', 'private', 'xray']);
+    // the X-ray's lines have no toggle of their own: they follow the X-ray's switch
+    expect(showRow(null, true)).toEqual(['public', 'private']);
   });
 });
 
@@ -276,7 +278,11 @@ describe('the drawer at an X-ray night’s spoke', () => {
 describe('the drawer: the votes line waits for the count', () => {
   it('holds the pairs back while the chips are being counted', () => {
     const counting = at('vote.count-begins', (b) => b.day === 3);
-    const lines = drawerLines(counting.view, { me: null, xray: false, beat: counting.beat });
+    const lines = drawerLines(counting.view, {
+      me: null,
+      xray: false,
+      beat: counting.beat,
+    });
     expect(byKey(lines, 'votes-3')).toBeUndefined();
     expect(litKey(lines, counting.beat)).toBeNull();
     const chip = at('vote.chip-counted', (b) => b.day === 3 && b.ordinal === 3);
@@ -291,7 +297,10 @@ describe('the drawer: the votes line waits for the count', () => {
     expect(byKey(lines, 'votes-3')).toBeDefined();
     const later = at('vote.count-begins', (b) => b.day === 4);
     expect(
-      byKey(drawerLines(later.view, { me: null, xray: false, beat: later.beat }), 'votes-3'),
+      byKey(
+        drawerLines(later.view, { me: null, xray: false, beat: later.beat }),
+        'votes-3',
+      ),
     ).toBeDefined();
   });
 });
@@ -308,7 +317,11 @@ describe('the drawer: the game master’s vote line waits for the card', () => {
     expect(byKey(told, 'gm-249')).toBeDefined();
     expect(litKey(told, truth.beat)).toBe('gm-249');
     const abstained = at('vote.result', (b) => b.day === 2);
-    const lines = drawerLines(abstained.view, { me: null, xray: false, beat: abstained.beat });
+    const lines = drawerLines(abstained.view, {
+      me: null,
+      xray: false,
+      beat: abstained.beat,
+    });
     expect(byKey(lines, 'gm-118')).toBeDefined();
   });
 });
@@ -433,5 +446,57 @@ describe('the drawer: how it tells what it holds', () => {
     expect(new Set(rules.map((l) => l.kind === 'rule' && l.chapter))).toEqual(
       new Set(['day', 'vote', 'night', 'morning', 'over']),
     );
+  });
+});
+
+describe('the day’s brief as rows', () => {
+  const day1 =
+    'Key accusations and defenses: None.\nRole claims: None.\nAlliances and blocs: None.\n' +
+    'Village dynamics: The village is information-starved.';
+
+  it('folds the sections that say "None." into one quiet line where the first stood', () => {
+    expect(briefRows(day1)).toEqual([
+      { kind: 'none', text: 'No accusations, claims or alliances yet' },
+      {
+        kind: 'row',
+        label: 'Village dynamics',
+        items: ['The village is information-starved.'],
+      },
+    ]);
+  });
+
+  it('splits the accusations one per item and keeps the order of the headings', () => {
+    const rows = briefRows(
+      'Key accusations and defenses: player_7 → player_6: pushed. | player_8 → player_2: hid.\n' +
+        'Role claims: None.\nAlliances and blocs: player_1 and player_2.\n' +
+        'Village dynamics: Split.\nStill split.',
+    );
+    expect(rows).toEqual([
+      {
+        kind: 'row',
+        label: 'Accusations and defences',
+        items: ['player_7 → player_6: pushed.', 'player_8 → player_2: hid.'],
+      },
+      { kind: 'none', text: 'No claims yet' },
+      { kind: 'row', label: 'Alliances and blocs', items: ['player_1 and player_2.'] },
+      // a line with no heading carries on the section above it
+      { kind: 'row', label: 'Village dynamics', items: ['Split. Still split.'] },
+    ]);
+  });
+
+  it('says nothing is there when every section is "None."', () => {
+    expect(
+      briefRows(
+        'Key accusations and defenses: None.\nRole claims: None.\nAlliances and blocs: None.\nVillage dynamics: None.',
+      ),
+    ).toEqual([
+      { kind: 'none', text: 'No accusations, claims, alliances or village dynamics yet' },
+    ]);
+  });
+
+  it('gives up on a text that does not open with the four headings, in order', () => {
+    expect(briefRows('The village argued all day.')).toBeNull();
+    expect(briefRows('Role claims: None.\nKey accusations and defenses: None.')).toBeNull();
+    expect(briefRows('Key accusations and defenses: None.\nRole claims: None.')).toBeNull();
   });
 });

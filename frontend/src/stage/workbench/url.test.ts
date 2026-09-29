@@ -14,7 +14,7 @@ describe('the workbench URL', () => {
       hud: 'replay',
       animate: true,
     },
-    { ...DEFAULT_QUERY, beat: 3, viewer: { kind: 'xray' }, motion: 'skip', hud: 'none' },
+    { ...DEFAULT_QUERY, beat: 3, viewer: { kind: 'xray' }, motion: 'fast', hud: 'none' },
   ];
 
   it('round-trips every state through the query string', () => {
@@ -35,7 +35,8 @@ describe('the workbench URL', () => {
       kind: 'seat',
       seat: 'player_7',
     });
-    expect(parse('motion=0').motion).toBe('skip');
+    expect(parse('motion=0').motion).toBe('fast');
+    expect(parse('motion=skip').motion).toBe('fast');
     expect(parse('motion=1').motion).toBe('normal');
     expect(parse('beat=-2&hud=wide&slot=x&viewer=wolf')).toEqual(DEFAULT_QUERY);
   });

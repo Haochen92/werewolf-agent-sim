@@ -221,6 +221,42 @@
   background: rgba(201, 164, 92, 0.5);
 }
 
+/* the lines and the "Back to now" pill over their foot */
+.page {
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+/* scrolled away from the beat: a small brass-edged pill at the foot takes the reader back */
+.backnow {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  bottom: calc(12.8px * var(--legible-ui));
+  transform: translateX(-50%);
+  font: inherit;
+  font-family: var(--font-display);
+  font-size: calc(var(--meta) * 1.05);
+  line-height: 1.3;
+  white-space: nowrap;
+  color: var(--cream);
+  background: linear-gradient(180deg, var(--walnut-top), var(--walnut-bot));
+  border: 1px solid var(--hud-brass);
+  border-radius: 999px;
+  padding: calc(5.6px * var(--legible-ui)) calc(16px * var(--legible-ui));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.55);
+  cursor: pointer;
+}
+.backnow span {
+  color: var(--hud-brass-hi);
+}
+.backnow:focus-visible {
+  outline: 2px solid var(--film-ink);
+  outline-offset: 2px;
+}
+
 /* the lines: no card per entry, a page set by spacing and type (HUD pass 3a) */
 .lines {
   flex: 1 1 auto;
@@ -503,6 +539,46 @@
 }
 .brief.open .txt {
   display: block;
+}
+/* the brief split at its headings: a small label over each section's words, and the empty
+   sections as one quiet line; closed, each section shows its first item's first two lines */
+.brief .rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6.4px;
+  white-space: normal;
+}
+.brief.open .rows {
+  display: flex;
+}
+.rows p {
+  margin: 0;
+}
+.brief:not(.open) .brow p {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.brief:not(.open) .brow p + p {
+  display: none;
+}
+.brow h5 {
+  margin: 0 0 1.6px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: calc(var(--meta) * 0.86);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--film-ink);
+}
+.brow p + p {
+  margin-top: 3.2px;
+}
+.bnone {
+  font-style: italic;
+  font-size: calc(var(--said) * 0.8);
+  color: var(--film-mut);
 }
 .open-tag {
   margin-left: auto;

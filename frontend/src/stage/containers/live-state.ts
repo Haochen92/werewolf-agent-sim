@@ -30,7 +30,7 @@ import { isTextTurn, type TurnPayload } from '@/lib/api';
 import type { MeView } from '@/game/types';
 import type { SceneBeat } from '@/stage/beats/types';
 import type { Presentation } from '@/stage/scenes/types';
-import { pressTranscript, slotOf } from '@/stage/slot';
+import { pressFile, pressTranscript } from '@/stage/slot';
 import type { DurableGameEvent, GameStatus } from '@/types/contracts';
 import { nextLiveStep, type LiveContext } from './live-queue';
 import { carryAcross, holdFor, still, type Cursor } from './transport';
@@ -82,8 +82,9 @@ export type LiveAction =
   /** The viewer closed the epilogue's sheet. */
   | { type: 'dismiss'; ctx: LiveCtx }
   | { type: 'transcript' }
-  /** The strip's X-ray button. Live, the X-ray is everyone's after game over and only the film comes and goes. */
-  | { type: 'xray'; xray: boolean };
+  /** The strip's File tab. Live, the X-ray is everyone's after game over (the game's end is its
+   *  switch), so only the film comes and goes, and only then. */
+  | { type: 'file'; xray: boolean };
 
 export function initialLiveState(slot: Presentation['slot'] = null): LiveState {
   return {
@@ -259,12 +260,8 @@ export function liveReducer(state: LiveState, action: LiveAction): LiveState {
     case 'transcript':
       // the film only exists with the X-ray, so read the slot as the X-ray would
       return { ...state, slot: pressTranscript({ slot: state.slot, xray: true }).slot };
-    case 'xray':
-      if (!action.xray) return state;
-      return {
-        ...state,
-        slot: slotOf({ slot: state.slot, xray: true }) === 'film' ? null : 'film',
-      };
+    case 'file':
+      return { ...state, slot: pressFile({ slot: state.slot, xray: action.xray }).slot };
   }
 }
 

@@ -49,7 +49,7 @@ rail is 192 units inside the world, 12% of it (the room is laid out right of it;
 desk's cards too thin), and on a screen wider than 16:9 it grows out into the bleed: 310 units in
 all for two columns, about 134 css px on an iPhone 14, 51 of them in the letterbox. One card stock for every state: the speaker's
 card is edged in brass; a dead seat is the same photo gone grey with its role on its faction's
-ink band; your own seat an amber "You" band; with the X-ray on, a living seat its faction's band
+ink band and a black crepe mourning ribbon across the photo's top corner (2026-09-29); your own seat an amber "You" band; with the X-ray on, a living seat its faction's band
 and the sigil badge; the game's losers dimmed. Lit and dimmed are light only.
 **Notes (live, seated only).** Tapping another seat's card opens its note editor (the seat's
 head, number, alive or dead; a ruled writing area; "Mark as suspect", not for the dead; Done;
@@ -114,7 +114,7 @@ mockup's ease-in, clipped at the world's edges). A viewer who asked for reduced 
 0.6 s departure. The hand-off (`LiveTheatre`): the game's events are held back from the stage until
 the curtain is down, then the deal plays from its first beat at normal speed whether it arrived as
 history or as news (`live-state.ts`, `dealEnd`), and the curtain lifts off it; one `<Stage>`
-throughout. The snow falls for as long as the room waits (still at `skip` and for reduced motion).
+throughout. The snow falls for as long as the room waits (still for reduced motion).
 Depart needs one person aboard ("Nobody is aboard yet: Depart needs one person on the platform.");
 the server sets no minimum, this is the client's rule from the old lobby card. A newcomer to an open
 room with a place left gets the boarding pass first (a page, upright allowed: name, "Step onto the
@@ -438,7 +438,7 @@ leading. A seated human's "you won / you lost" is client-known from `role_assign
 | 2 | `over.winners-hour` | `winner` | P | the shutter rises: full day for the village, night for the wolves, dusk for the serial killer; the leaves fold if open | — | 3.0 |
 | 3 | `over.verdict` | 〃 | P | a walnut board comes down on two strings, large and centred: the faction's colour at its edges, its sigil on a paper plate, "The wolves have won" in the card's serif, "Day 4 · at the morning" beneath; drawn up as the next beat begins | — | 3.2 |
 | 4 | `over.winners-stand` | 〃 + the roster | P | the stand comes up and the winning faction's **survivors** rise into it, base state: one at full size, two at 0.78, three at 0.6 with the box widened (×1.36, ×1.6); one special each; the plaque names the seats (and roles once the truth is out); the winners' wing tiles lit, the rest dimmed; the fallen stay on the wing as grey cards with their roles' bands. The box: "The wolves have won", the survivors' chips, "Seat 8 is the last of them standing". S: "You won" / "You lost. You were the vigilante" | — | 3.0 |
-| 5 | `over.truth` | `roles_assigned` from the backlog (live) · already in the log (replay) | everyone | every living tile takes its faction strip and sigil badge; live: the X-ray button reads "unlocked" | F: the deal, and how each seat went | 2.6 |
+| 5 | `over.truth` | `roles_assigned` from the backlog (live) · already in the log (replay) | everyone | every living tile takes its faction strip and sigil badge; live: the File tab reads "File · unlocked" (the X-ray button's "unlocked" until 2026-09-29) | F: the deal, and how each seat went | 2.6 |
 | 6 | `over.epilogue` | `memory_extracted` (407; memory-on games) | everyone | the film comes down over the whole stage, one sheet. Left: one tab per **role** (observations are keyed by role), the chips of the seats that held it, a tally of verdicts as pips. Right: rows grouped by phase (discussion · vote · night), each collapsed to its scenario (chevron, "Scenario", the situation clamped to two lines, "open"); opened: "What it did", "How it went" with the verdict's stitched patch (worked · cost · mixed · unclear). Bottom: the lessons kept (`strategy_points`) as slips, situation → action; empty says "None from this game" | F (full stage) | until dismissed |
 | 7 | `over.curtain` | — | P | the winners at the stand in the winner's hour; the result in the box with the way out (live: the replay, the lobby; replay: the transport at its end) | — | hold |
 
@@ -460,7 +460,7 @@ film is up and the room is laid out beside it, the winners' set at 0.84 (bench 7
 plaque names the seats ("Seats 3 and 8") and, from the truth on or with the X-ray, the roles in the
 winners' colour. S: "You won. You were a wolf." / "You lost. You were the vigilante." (+ "; you
 were watching from the wing" when dead). The truth adds "Every card is face up: the wing carries
-the whole deal, and the film opens for everyone." (bench 73); "X-ray · unlocked" on the live HUD
+the whole deal, and the film opens for everyone." (bench 73); "File · unlocked" on the live HUD (it was "X-ray · unlocked" until 2026-09-29)
 only. The film, with the X-ray on as bench 73 has it: at the stand and the curtain "The winners'
 last notes · the last note each wrote"; at the truth "The deal, and how it went · every seat, face
 up", each seat's role and fate ("night 2, the serial killer", "day 3, voted out", "survived"),
@@ -488,11 +488,10 @@ role, a wolf its pack) and the live queue should hold the stand for the backlog.
 | Morning N | `night_result` | `morning.shutter-down` |
 | Game over | `game_over` | `over.where-it-ended` |
 
-**The transport:** previous chapter · back a beat · play/pause · forward a beat · next chapter.
-Chapter jumps land on the chapter's first beat, still. Arrow keys step beats. The beat's name sits
+**The transport:** previous chapter · back a beat · play/pause · forward a beat · next chapter. Chapter jumps land on the chapter's first beat, still. Arrow keys step beats. The beat's name sits
 next to the phase label ("Vote 3 · A chip is counted"). The seek bar is the whole log with the
-chapter marks. **Speeds:** normal · fast (holds halved, motion kept) · skip (no motion, minimal
-holds). No scrubbing over seconds; `seq` is the only clock. **Arrive still, play moving:** seeking
+chapter marks. **Speed:** one toggle, normal · fast (holds halved, motion kept); skip was removed
+2026-09-29 (an old `skip` reads as normal, the workbench's `motion=skip|0` as fast). No scrubbing over seconds; `seq` is the only clock. **Arrive still, play moving:** seeking
 renders the beat at rest; playing forward animates.
 
 **The drawer** (H§2): the public record for everyone (speeches; GM lines verbatim with the sigils
@@ -505,16 +504,19 @@ X-ray on adds, in aqua: roles after names, passes with reason and draft, the nig
 talk, everyone's private lines as "Only seat 4", the day's brief in its Morning (clamped, opens on
 a tap). Chapters run down the drawer as rules; rules with nothing under them disappear. Filters:
 days as tabs at the foot; seat chips at the head (dead dimmed, still selectable); Show › Public /
-Private / X-ray, all on. In the replay the drawer stops at the current beat.
+Private (ruled 2026-09-29: no X-ray toggle; the X-ray's lines follow the X-ray's one switch).
+In the replay the drawer stops at the current beat.
 
 As built 2026-09-25 (benches 74 and 52 where they give it; the rest no bench gives, change here
 first). **The slot:** `Presentation.slot` is `'drawer' | 'film' | null` (null = closed; the film
 exists only with the X-ray on, so `film` without it reads as closed); `src/stage/slot.ts` holds
-the rules. Transcript brings the drawer, or closes it if it is there. X-ray off → on and the film;
-X-ray on with the drawer (or nothing) in the slot → the film (bench 74's revision 41); X-ray on
-with the film → off, and the slot closes. The X-ray button reads pressed while the X-ray is on
-(bench 74 pressed it only with the film up); Transcript reads pressed while the drawer is open.
-The workbench writes both to its URL (`slot=drawer|film|none`, default none; `viewer=xray`,
+the rules. **Ruled 2026-09-29, replacing bench 74's X-ray tab:** the strip's two tabs are
+**File | Transcript** and only choose the pane: each brings its pane, or closes it if it is there;
+File (the film's new name; its contents are redesigned later) is greyed without the X-ray. The
+X-ray is one switch, the band's "X-ray on/off" button: it re-cuts the beats, adds the drawer's
+X-ray lines and enables File; off with the file up, the pane falls back to the transcript. Each tab
+reads pressed while its pane is open. Live: the game's end is the switch, and File reads "File ·
+unlocked" until opened. The workbench writes the slot to its URL (`slot=drawer|film|none`, default none; `viewer=xray`,
 landing on the same moment of the log in the re-cut beat list). While either is open every scene
 lays its room out with `geometry(hud, true)`; the night rooms slide their painting left so its
 window and its photo line stay in the narrower room. The replay's night and the ending now follow the slot, not the X-ray (this settles
@@ -526,7 +528,13 @@ rail on the prompts (`day.your-turn`, `vote.your-ballot`) and for the whole of t
 (`room`, `pack`), whose chat and plate keep the band. On a phone (`data-small`) it runs full
 height beside the car's prompts and the own room's plate, which stop short of it; only the
 pack's chat, which spans the band's right, keeps it at the rail (`railHolds`, 2026-09-27). The lit line scrolls to 0.6 of the list's
-height (bench 74); with no line of its own the drawer shows its end. Wording: a pass reads the
+height (bench 74); with no line of its own the drawer shows its end. It follows only while the
+reader is at now (the lit line in view, or the end): scrolled away, new lines arrive without
+moving it and a "↓ Back to now" pill sits at its foot until tapped or scrolled back (ruled
+2026-09-29; the place and the follow outlive the scene, `useDrawerFilters().scroll`). The day's
+brief is set as a labelled row per heading of `day_summary` (a small label over its words, the
+accusations one per item); the headings that say only "None." fold into one quiet line ("No
+accusations, claims or alliances yet"); a text without the four headings is set as it came. Wording: a pass reads the
 box's accepted reasons ("held back: nothing new to say"; bench 74 wrote "held back by the novelty
 gate"); the vote "The table votes, 7 ballots at the count"; acts "Seat 4 checks seat 1" (the
 bench's verbs); the kill "The pack chooses seat 1"; theirs-only lines "Only seat 4 · the
@@ -584,8 +592,11 @@ in the X-ray; the table knows only the cast." / "Withheld all game; …"). A bea
 inside: "Inside · <beat> · Nothing inside this beat. The film fills at a turn, the count, the
 lynch's card, a morning's brief and the night's acts." The note's face is Patrick Hand (next/font).
 **The reads on the wing:** every seat in the speaker's last `player_reads` before the line takes
-the blue edge (unclear reads too, as bench 74), a sure read the brighter ring; a tap opens the
-card, 304 wide, docked at the wing's edge level with the tile, kept on the stage; a second tap or
+the blue edge (unclear reads too, as bench 74), a sure read the brighter ring, and breathes a slow
+glow (opacity only, 2.4 s; still for reduced motion) while it can be tapped; a read new or changed
+since the speaker's previous `player_reads` flashes once, brighter (`freshReads`). The card's head
+says whose read on whom, face by face: "[chip] Seat 8's read on [chip] Seat 1" (ruled
+2026-09-29); a tap opens the card, 304 wide, docked at the wing's edge level with the tile, kept on the stage; a second tap or
 the next beat closes it. The truth is marked ● role · ◐ side · ○ none/wrong (bench 74 drew ✓ ◐ ✗).
 
 As built 2026-09-25, the container (step 6a; bench 73 draws only the five buttons and the seek
@@ -595,12 +606,12 @@ are one reducer (`replay-state.ts`) over `transport.ts` and `slot.ts`; each beat
 its `end` (`fold-cache.ts`), so a step forward folds only the new events. **The band:** bench 73's
 buttons, 46.4 × 40 units, radius 11.2, 6.4 apart, 9.6 off the foot, from the wing's edge + 22.4;
 its glyphs, and a pause of two bars (ours); play reads pressed, in amber, while playing. Then the
-beat's label from `transportLabel` ("Day 3 · Speaks") over the seek bar, "37 / 109" at its right;
-the bar is bench 73's (6.4 tall, cloak, amber to the beat) with a tick per chapter (3.2 × 12.8,
+beat's label from `transportLabel` ("Day 3 · Speaks") over the seek bar (the "37 / 109" count
+went 2026-09-29); the bar is bench 73's (6.4 tall, cloak, amber to the beat) with a tick per chapter (3.2 × 12.8,
 bone3, bone once passed, its name on hover), beat i at i/(n−1) of the width; a click seeks to the
-nearest beat, still. Speed: one segmented control, "Normal · Fast · Skip", the pressed one in bone
-(as Transcript). The X-ray: a pill, "X-ray on" in the film's ink or "X-ray off" in bone3, which
-only says it (the strip's button switches it). Beside a full-height drawer the band ends 12.8
+nearest beat, still. Speed: one toggle that says what it plays at, "Normal", or "Fast" in bone
+(2026-09-29; it was "Normal · Fast · Skip"). The X-ray: the one switch, a button, "X-ray on" in
+the film's ink or "X-ray off" (2026-09-29; it used to only say it). Beside a full-height drawer the band ends 12.8
 short of it; otherwise (the film, a prompt, the epilogue) 22.4 from the right edge. **Playing:** a
 timer on `holdFor`; a beat that waits (the epilogue, the curtain) and the last beat stop the play;
 play at the end starts from the first beat, play on a waiting beat steps on at once; stepping or

@@ -2,8 +2,8 @@
  * What the replay's viewer controls, as one reducer: where the cursor is, whether it is
  * playing and how fast, the X-ray, and what the right side of the stage holds. Kept pure (no
  * timers, no DOM) so a test can press the buttons; the theatre component holds the state and
- * runs the timer. The cursor moves only through transport.ts, and the slot's two buttons only
- * through slot.ts, so this file decides nothing those two already decide.
+ * runs the timer. The cursor moves only through transport.ts, and the slot's tabs and the X-ray
+ * only through slot.ts, so this file decides nothing those two already decide.
  *
  * The X-ray is the one control that changes which beats exist (beat sheet §11), so the reducer
  * is made for a game's two beat lists and carries the cursor from one to the other.
@@ -14,7 +14,7 @@
  */
 import type { SceneBeat } from '@/stage/beats/types';
 import type { MotionSpeed, Presentation } from '@/stage/scenes/types';
-import { pressTranscript, pressXray } from '@/stage/slot';
+import { pressFile, pressTranscript, pressXray } from '@/stage/slot';
 import {
   carryAcross,
   holdFor,
@@ -50,7 +50,8 @@ export type ReplayAction =
   | { type: 'tick' }
   | { type: 'speed'; speed: MotionSpeed }
   | { type: 'xray' }
-  | { type: 'transcript' };
+  | { type: 'transcript' }
+  | { type: 'file' };
 
 export interface ReplayBeats {
   public: readonly SceneBeat[];
@@ -167,6 +168,8 @@ export function replayReducer(all: ReplayBeats) {
         return { ...state, speed: action.speed };
       case 'transcript':
         return { ...state, ...pressTranscript(state) };
+      case 'file':
+        return { ...state, ...pressFile(state) };
       case 'xray': {
         const next = pressXray(state);
         if (next.xray === state.xray) return { ...state, ...next };

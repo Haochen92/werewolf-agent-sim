@@ -12,7 +12,7 @@ import { Layer, Stage } from '@/stage/Stage';
 import type { SceneId } from '@/stage/beats/types';
 import { useDrawerFilters } from '@/stage/drawer/use-drawer-filters';
 import type { SlotInput } from '@/stage/scenes/types';
-import { pressTranscript, pressXray } from '@/stage/slot';
+import { pressFile, pressTranscript } from '@/stage/slot';
 import {
   BeatStepper,
   ControlStrip,
@@ -117,7 +117,7 @@ export function Workbench({ scene }: { scene: string }) {
   );
 
   // The side slot's state that outlives a beat: the drawer's filters and the film's tab. The
-  // two buttons on the stage write the URL, as the replay's container will hold them.
+  // strip's two tabs on the stage write the URL, as the replay's container holds them.
   const drawer = useDrawerFilters();
   const [filmTab, setFilmTab] = useState('note');
   const slotInput = useMemo((): SlotInput | undefined => {
@@ -126,30 +126,15 @@ export function Workbench({ scene }: { scene: string }) {
     return {
       filters: drawer.filters,
       onFilters: drawer.setFilters,
+      drawerScroll: drawer.scroll,
       filmTab,
       onFilmTab: setFilmTab,
       ahead: frame.ahead,
       onTranscript: () => go({ slot: pressTranscript(now).slot ?? 'none' }),
-      onXray: () => {
-        const next = pressXray(now);
-        if (next.xray && !now.xray) drawer.xrayOn();
-        const viewer = next.xray
-          ? ({ kind: 'xray' } as const)
-          : ({ kind: 'spect' } as const);
-        // the X-ray re-cuts the beats: land on the same moment of the log in the new list (the
-        // same page of a paged speech, else the last beat at or before its seq)
-        const was = frame.beat;
-        const seq = was?.seq ?? 0;
-        const beats = workbenchFrame(scene as SceneId, { ...q, viewer, beat: 0 }).beats;
-        const same = beats.findIndex(
-          (b) => b.id === was?.id && b.seq === seq && b.page?.index === was?.page?.index,
-        );
-        const at =
-          same !== -1 ? same : beats.reduce((best, b, i) => (b.seq <= seq ? i : best), 0);
-        go({ viewer, beat: at, slot: next.slot ?? 'none' });
-      },
+      // the X-ray itself is the viewer control above (the replay's is its band's switch)
+      onFile: () => go({ slot: pressFile(now).slot ?? 'none' }),
     };
-  }, [frame, drawer, filmTab, go, scene, q]);
+  }, [frame, drawer, filmTab, go]);
 
   // the arrow keys step beats, unless a control has the focus
   useEffect(() => {
@@ -229,7 +214,7 @@ export function Workbench({ scene }: { scene: string }) {
         />
         <Seg
           label="motion"
-          options={['normal', 'fast', 'skip'] as const}
+          options={['normal', 'fast'] as const}
           value={q.motion}
           onChange={(motion) => go({ motion })}
         />

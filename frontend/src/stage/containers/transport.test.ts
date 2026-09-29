@@ -44,7 +44,8 @@ describe('the transport', () => {
     const chip = pub.find((b) => b.id === 'vote.chip-counted')!;
     expect(holdFor(chip, 'normal')).toBe(2000);
     expect(holdFor(chip, 'fast')).toBe(1000);
-    expect(holdFor(chip, 'skip')).toBe(250);
+    // the old 'skip' speed is gone: a value kept from before it plays at normal
+    expect(holdFor(chip, 'skip' as never)).toBe(2000);
     const curtain = pub.find((b) => b.id === 'over.curtain')!;
     expect(holdFor(curtain, 'normal')).toBeNull();
   });

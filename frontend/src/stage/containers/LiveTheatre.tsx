@@ -362,13 +362,9 @@ export function LiveTheatre({
     return () => clearTimeout(t);
   }, [state.step, holdMs]);
 
-  // the side slot's state that outlives a beat; the game's end turns the drawer's X-ray lines on
+  // the side slot's state that outlives a beat; the game's end is the X-ray's switch here
   const drawer = useDrawerFilters();
   const [filmTab, setFilmTab] = useState('note');
-  const { xrayOn } = drawer;
-  useEffect(() => {
-    if (xray) xrayOn();
-  }, [xray, xrayOn]);
   const ahead = useMemo(
     () => (xray ? folds.at(events.length) : null),
     [xray, folds, events.length],
@@ -377,13 +373,14 @@ export function LiveTheatre({
     (): SlotInput => ({
       filters: drawer.filters,
       onFilters: drawer.setFilters,
+      drawerScroll: drawer.scroll,
       filmTab,
       onFilmTab: setFilmTab,
       ahead,
       onTranscript: () => dispatch({ type: 'transcript' }),
-      onXray: () => dispatch({ type: 'xray', xray }),
+      onFile: () => dispatch({ type: 'file', xray }),
     }),
-    [drawer.filters, drawer.setFilters, filmTab, ahead, xray],
+    [drawer.filters, drawer.setFilters, drawer.scroll, filmTab, ahead, xray],
   );
 
   const presentation = useMemo(

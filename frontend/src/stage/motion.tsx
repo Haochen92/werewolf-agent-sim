@@ -2,15 +2,15 @@
 
 /**
  * How fast the stage moves. Beats set how long things take; the viewer's speed control
- * scales all of it at once: normal as authored, fast at half the time, skip with no motion
- * at all (stage_architecture.md §6). A component asks `useMotionScale()` for the factor and
- * multiplies its durations and delays by it, so no component carries its own speed logic.
+ * scales all of it at once: normal as authored, fast at half the time (stage_architecture.md
+ * §6). A component asks `useMotionScale()` for the factor and multiplies its durations and
+ * delays by it, so no component carries its own speed logic.
  */
 import { MotionConfig } from 'motion/react';
 import { createContext, useContext, type ReactNode } from 'react';
 import type { MotionSpeed } from './scenes/types';
 
-const SCALE: Record<MotionSpeed, number> = { normal: 1, fast: 0.5, skip: 0 };
+const SCALE: Record<MotionSpeed, number> = { normal: 1, fast: 0.5 };
 const MotionScale = createContext(1);
 
 export function StageMotion({
@@ -20,17 +20,16 @@ export function StageMotion({
   speed: MotionSpeed;
   children: ReactNode;
 }) {
-  const k = SCALE[speed];
+  // an unknown speed (an old 'skip' kept somewhere) moves at normal
+  const k = SCALE[speed] ?? 1;
   return (
     <MotionScale.Provider value={k}>
-      <MotionConfig reducedMotion="user" transition={k === 0 ? { duration: 0 } : undefined}>
-        {children}
-      </MotionConfig>
+      <MotionConfig reducedMotion="user">{children}</MotionConfig>
     </MotionScale.Provider>
   );
 }
 
-/** The factor every duration and delay is multiplied by: 1, 0.5, or 0. */
+/** The factor every duration and delay is multiplied by: 1 or 0.5. */
 export function useMotionScale(): number {
   return useContext(MotionScale);
 }

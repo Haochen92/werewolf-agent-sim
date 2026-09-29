@@ -431,15 +431,15 @@ describe('the live stage: game over', () => {
 });
 
 describe('the live stage: the side slot', () => {
-  it('Transcript brings the drawer or closes it; X-ray brings the film only once the game is over', () => {
+  it('Transcript brings the drawer or closes it; File brings the film only once the game is over', () => {
     let st = initialLiveState(null);
     st = liveReducer(st, { type: 'transcript' });
     expect(st.slot).toBe('drawer');
-    expect(liveReducer(st, { type: 'xray', xray: false }).slot).toBe('drawer');
-    st = liveReducer(st, { type: 'xray', xray: true });
+    expect(liveReducer(st, { type: 'file', xray: false }).slot).toBe('drawer');
+    st = liveReducer(st, { type: 'file', xray: true });
     expect(st.slot).toBe('film');
     expect(liveReducer(st, { type: 'transcript' }).slot).toBe('drawer');
-    expect(liveReducer(st, { type: 'xray', xray: true }).slot).toBe(null);
+    expect(liveReducer(st, { type: 'file', xray: true }).slot).toBe(null);
   });
 });
 

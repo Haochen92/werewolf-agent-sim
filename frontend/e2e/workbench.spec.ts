@@ -255,27 +255,30 @@ for (const [name, path, ready, click] of SLOT) {
   });
 }
 
-test('the stage’s Transcript and X-ray buttons write the slot into the URL', async ({
+test('the stage’s File and Transcript tabs write the slot into the URL', async ({
   page,
 }) => {
   await page.goto('/workbench/day?beat=16&strip=0', { waitUntil: 'networkidle' });
-  // the strip's X-ray, not the drawer's Show › X-ray toggle
-  const xray = page.getByRole('button', { name: 'X-ray', exact: true });
+  const file = page.getByRole('button', { name: 'File', exact: true });
   await page.getByRole('button', { name: 'Transcript' }).click();
   await expect(page).toHaveURL(/viewer=spect&motion=normal&slot=drawer/);
   await expect(page.locator('[data-drawer="full"]')).toBeVisible();
-  // X-ray on: the film comes to the slot, on the same speech in the X-ray's beat list
-  await xray.click();
+  // the file is the X-ray's pane: greyed without it (the X-ray is the viewer control here)
+  await expect(file).toBeDisabled();
+  await page.goto('/workbench/day?beat=16&viewer=xray&slot=drawer&strip=0', {
+    waitUntil: 'networkidle',
+  });
+  await file.click();
   await expect(page).toHaveURL(/beat=16&viewer=xray&motion=normal&slot=film/);
   await expect(page.locator('[data-film="inside"]')).toBeVisible();
   // Transcript swaps the drawer in; the X-ray stays on
   await page.getByRole('button', { name: 'Transcript' }).click();
   await expect(page).toHaveURL(/viewer=xray&motion=normal&slot=drawer/);
-  // X-ray while the drawer has the slot brings the film back; again, and the X-ray is off
-  await xray.click();
+  // File brings the film back; again, and the slot closes
+  await file.click();
   await expect(page).toHaveURL(/viewer=xray&motion=normal&slot=film/);
-  await xray.click();
-  await expect(page).toHaveURL(/viewer=spect&motion=normal&slot=none/);
+  await file.click();
+  await expect(page).toHaveURL(/viewer=xray&motion=normal&slot=none/);
 });
 
 /**

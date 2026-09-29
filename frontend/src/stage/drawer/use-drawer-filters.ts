@@ -5,17 +5,21 @@
  * live game). They live above the scenes because a scene is redrawn at every beat, and a
  * viewer who picked "Day 3" or one seat expects that to hold while the game plays on.
  *
- * `xrayOn` is what the container calls when the X-ray is switched on: the drawer's X-ray
- * lines come back on even if they were hidden before (handoff §2).
+ * `scroll` is the same idea for the reading place: a new scene mounts a new drawer, and a
+ * viewer who scrolled up to read back should still be there, not pulled to the beat's line.
+ * It is a plain object the drawer writes as it scrolls (nothing redraws for it).
  */
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { DEFAULT_FILTERS, type DrawerFilters } from './drawer-lines';
+
+/** Where the drawer's lines are scrolled, and whether they follow the beat on stage. */
+export interface DrawerScroll {
+  following: boolean;
+  top: number;
+}
 
 export function useDrawerFilters(initial: DrawerFilters = DEFAULT_FILTERS) {
   const [filters, setFilters] = useState<DrawerFilters>(initial);
-  const xrayOn = useCallback(
-    () => setFilters((f) => ({ ...f, show: { ...f.show, xray: true } })),
-    [],
-  );
-  return { filters, setFilters, xrayOn };
+  const [scroll] = useState<DrawerScroll>(() => ({ following: true, top: 0 }));
+  return { filters, setFilters, scroll };
 }

@@ -18,9 +18,10 @@
  * `mini` makes it a preview (the landing's carriage): the same stage and the same reducer,
  * playing one window of the cut round and round (`loop` in replay-state.ts), with no keys (the
  * page around it keeps its arrows and space). Its controls are the caller's choice: none; the
- * replay's own on the stage (the strip's X-ray and Transcript, the side slot, the band over the
- * window); or, where the stage is too small to read (an upright phone), none on the stage and
- * the state handed to `under`, which the caller draws below it. The frame is the caller's.
+ * replay's own on the stage (the strip's File and Transcript, the side slot, the band over the
+ * window with the X-ray's switch); or, where the stage is too small to read (an upright
+ * phone), none on the stage and the state handed to `under`, which the caller draws below it.
+ * The frame is the caller's.
  */
 import {
   useCallback,
@@ -181,25 +182,28 @@ export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps
   // the side slot's state that outlives a beat
   const drawer = useDrawerFilters();
   const [filmTab, setFilmTab] = useState('note');
-  const { xrayOn } = drawer;
-  const onXray = useCallback(() => {
-    // turning the X-ray on brings the drawer's X-ray lines back on (handoff §2)
-    if (!state.xray) xrayOn();
-    dispatch({ type: 'xray' });
-  }, [state.xray, xrayOn]);
+  const onXray = useCallback(() => dispatch({ type: 'xray' }), []);
+  // the landing's two buttons under a preview are the older pair, Transcript and X-ray: its
+  // X-ray turns the X-ray on and brings the film, or, with the film up, turns it off
+  const underXray = useCallback(() => {
+    const film = slotOf(state) === 'film';
+    if (!state.xray || film) dispatch({ type: 'xray' });
+    if (!film) dispatch({ type: 'file' });
+  }, [state]);
   const slotInput = useMemo(
     (): SlotInput => ({
       filters: drawer.filters,
       onFilters: drawer.setFilters,
+      drawerScroll: drawer.scroll,
       filmTab,
       onFilmTab: setFilmTab,
       ahead,
       onTranscript: () => dispatch({ type: 'transcript' }),
-      onXray,
+      onFile: () => dispatch({ type: 'file' }),
       // a preview's way to the whole game is the caller's
       back: isMini ? undefined : back,
     }),
-    [drawer.filters, drawer.setFilters, filmTab, ahead, onXray, isMini, back],
+    [drawer.filters, drawer.setFilters, drawer.scroll, filmTab, ahead, isMini, back],
   );
 
   // playing: the beat's hold, paused while the speech is held
@@ -319,6 +323,7 @@ export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps
             onTogglePlay={togglePlay}
             onSeek={(i) => dispatch({ type: 'seek', index: from + i })}
             onSpeed={(speed) => dispatch({ type: 'speed', speed })}
+            onXray={onXray}
           />
         ) : null}
       </Stage>
@@ -340,7 +345,7 @@ export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps
               onTogglePlay: togglePlay,
               onSeek: (i) => dispatch({ type: 'seek', index: from + i }),
               onTranscript: () => dispatch({ type: 'transcript' }),
-              onXray,
+              onXray: underXray,
             }),
             mini.underEl,
           )

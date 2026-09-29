@@ -8,8 +8,9 @@ import type { Character } from '@/assets/manifest';
 import type { GameView } from '@/game/types';
 import type { SceneBeat } from '@/stage/beats/types';
 import type { DrawerFilters } from '@/stage/drawer/drawer-lines';
+import type { DrawerScroll } from '@/stage/drawer/use-drawer-filters';
 
-export type MotionSpeed = 'normal' | 'fast' | 'skip';
+export type MotionSpeed = 'normal' | 'fast';
 
 export interface Presentation {
   /** Observer tier on: the film's material exists and the wing wears the truth. */
@@ -80,7 +81,7 @@ export interface SceneProps {
 /**
  * The side slot's state that must outlive a beat, held by whoever mounts the scene (the
  * workbench, the replay, the live game): the drawer's filters and the film's open tab (both
- * kept as the viewer steps through turns), and what the Transcript and X-ray buttons do. A
+ * kept as the viewer steps through turns), and what the File and Transcript tabs do. A
  * scene only passes these on; without them the slot still draws, with default filters.
  */
 export interface SlotInput {
@@ -91,8 +92,10 @@ export interface SlotInput {
   onFilmTab?: (tab: string) => void;
   /** Transcript: brings the drawer to the slot, or closes it. */
   onTranscript?: () => void;
-  /** X-ray: turns the X-ray on and brings the film, or turns it off. */
-  onXray?: () => void;
+  /** File: brings the film to the slot (only with the X-ray on), or closes it. */
+  onFile?: () => void;
+  /** Where the drawer was scrolled, and whether it follows the beat, kept across scenes. */
+  drawerScroll?: DrawerScroll;
   /** The replay's way out (to its list, or wherever the viewer came from), at the strip's
    *  left; live has none. */
   back?: { href: string; label: string };

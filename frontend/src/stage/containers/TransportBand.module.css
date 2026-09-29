@@ -1,7 +1,7 @@
 /* The replay's transport band, as bench 73 draws it (`.transport`, `.seek`), in stage units:
    the buttons 46.4 × 40 (2.9cqw × 2.5cqw), 9.6 off the foot, the seek bar 6.4 tall on the
-   cloak with the amber fill. The caption, the chapter marks, the speed and the X-ray pill are
-   ours (beat sheet §11, "As built"). */
+   cloak with the amber fill. The caption, the chapter marks, the speed toggle and the X-ray
+   switch are ours (beat sheet §11, "As built"). */
 .band {
   position: absolute;
   bottom: 0;
@@ -33,7 +33,8 @@
   align-self: flex-end;
 }
 .buttons button,
-.speed button {
+.speed,
+.xray {
   appearance: none;
   font: inherit;
   color: var(--bone);
@@ -59,7 +60,8 @@
   border-color: var(--amber);
 }
 .buttons button:hover,
-.speed button:hover {
+.speed:hover,
+.xray:hover {
   border-color: var(--bone3);
 }
 .band button:focus-visible {
@@ -67,7 +69,7 @@
   outline-offset: 2px;
 }
 
-/* where we are: the beat's name over the bar, the count at its right */
+/* where we are: the beat's name over the bar */
 .where {
   flex: 1 1 auto;
   min-width: 0;
@@ -87,11 +89,6 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-}
-.count {
-  flex: 0 0 auto;
-  color: var(--bone2);
-  font-variant-numeric: tabular-nums;
 }
 
 /* the click target is taller than the bar it draws */
@@ -131,33 +128,25 @@
   background: var(--bone);
 }
 
+/* the speed: one toggle that says what it plays at; Fast in bone, as a pressed tab */
 .speed {
-  display: flex;
   flex: 0 0 auto;
   align-self: flex-end;
-}
-.speed button {
   height: calc(40px * var(--k));
+  /* wide enough for either word, so the band does not shift when it flips */
+  min-width: calc(5.4em + 22.4px * var(--k));
   padding: 0 calc(11.2px * var(--k));
-  border-radius: 0;
-  margin-left: -1px;
+  border-radius: 11.2px;
   color: var(--bone2);
+  white-space: nowrap;
 }
-.speed button:first-child {
-  border-radius: 11.2px 0 0 11.2px;
-  margin-left: 0;
-}
-.speed button:last-child {
-  border-radius: 0 11.2px 11.2px 0;
-}
-.speed button[aria-pressed='true'] {
+.speed[data-speed='fast'] {
   background: var(--bone);
   border-color: var(--bone);
   color: var(--ink);
-  position: relative;
 }
 
-/* the X-ray's state (the strip's button switches it; this only says it) */
+/* the X-ray's one switch: the stage's beats, the transcript's lines and the File tab follow it */
 .xray {
   flex: 0 0 auto;
   align-self: flex-end;
@@ -169,7 +158,7 @@
   border-radius: 11.2px;
   border: 1px solid var(--cloak2);
   background: rgba(14, 9, 6, 0.92);
-  color: var(--bone3);
+  color: var(--bone2);
   white-space: nowrap;
 }
 .xray.on {
