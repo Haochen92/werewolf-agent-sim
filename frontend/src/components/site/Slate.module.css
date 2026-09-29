@@ -256,7 +256,7 @@
   opacity: 0.85;
 }
 
-/* the nine puppets, seat 1 first: the heads from the kit, on a bone ring */
+/* the puppets, seat 1 first: the heads from the kit, on a bone ring */
 .cast {
   display: flex;
   flex-wrap: wrap;

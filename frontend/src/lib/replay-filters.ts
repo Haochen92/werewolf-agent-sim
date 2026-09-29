@@ -15,7 +15,7 @@ export interface ReplayFilters {
   /** Won by any of these; empty = any winner. */
   winners: Winner[];
   memory: 'any' | 'on' | 'off';
-  /** `people`: at least one human seat; `agents`: nine agents. */
+  /** `people`: at least one human seat; `agents`: agents in every seat. */
   table: 'any' | 'people' | 'agents';
   ended: 'any' | EndedPhase;
   /** A model id; `''` = games whose model was not recorded; null = any model. */

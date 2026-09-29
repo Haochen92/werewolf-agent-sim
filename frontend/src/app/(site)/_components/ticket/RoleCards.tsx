@@ -86,7 +86,7 @@ export function RoleCards({
           </>
         ) : (
           <>
-            <b>Dealt at random</b>, like everyone else&rsquo;s, from the usual cast of nine.
+            <b>Dealt at random</b>, like everyone else&rsquo;s, from the table&rsquo;s cast.
           </>
         )}
       </p>

@@ -62,7 +62,7 @@ export default function HomePage() {
         <div className={classes.secHead}>
           <h2 id="table-head">Who&rsquo;s at the table</h2>
           <p>
-            Nine seats, three sides. Every seat is dealt a secret role; its card is the
+            Three sides, one table. Every seat is dealt a secret role; its card is the
             briefing its agent is given, down to how its side wins.
           </p>
         </div>
@@ -72,7 +72,7 @@ export default function HomePage() {
         </div>
         <div className={classes.again}>
           <h3>Take a seat</h3>
-          <p>Play one seat against eight agents, or fill a room with friends.</p>
+          <p>Play one seat against the agents, or fill a room with friends.</p>
           <SeatTags stubs />
         </div>
       </section>

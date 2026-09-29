@@ -3,7 +3,7 @@
  * The ticket office (ticket-office mockup, review §A4): the form that starts a game, as a paper
  * ticket with a stub. It has two kinds, each on its own page (review §F4):
  *
- * - `solo` (`/play`): one seat against eight agents, started on the spot. The player may choose
+ * - `solo` (`/play`): one seat against the agents, started on the spot. The player may choose
  *   their role. Punching the ticket calls `POST /games`, keeps the seat token that comes back
  *   (it is returned once, and a lost cookie has nothing else to rejoin with) and goes straight to
  *   `/games/[id]`, which opens on the deal.
@@ -41,7 +41,7 @@ export type TicketKind = 'solo' | 'room';
 const COPY = {
   solo: {
     kicker: 'Admit one',
-    heading: 'One seat, eight agents',
+    heading: 'One seat, the rest agents',
     lede: 'No waiting: the cards are dealt as soon as you punch the ticket.',
     submit: 'Start the game',
     fine: 'Straight to the deal.',
@@ -56,6 +56,10 @@ const COPY = {
     failed: 'The room could not be opened',
   },
 } as const;
+
+// the places drawn on the room ticket: the table as the server deals it today (its
+// MAX_HUMAN_SEATS). No room exists yet to ask; the room's own page shows the server's count.
+const TABLE_PLACES = 9;
 
 const KEY_NEEDED = 'Paste an API key: the house is not paying for this model right now.';
 
@@ -146,7 +150,7 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
             title="Play solo"
             className={kind === 'solo' ? undefined : classes.otherDoor}
           >
-            One seat at a table of eight agents.
+            One seat at a table of agents.
           </HangTag>
           <HangTag
             href="/rooms/new"
@@ -209,13 +213,13 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
                 <div className={classes.lab}>At the table</div>
                 <div className={classes.ctl}>
                   <div className={classes.seats} aria-hidden="true">
-                    {Array.from({ length: 9 }, (_, i) => (
+                    {Array.from({ length: TABLE_PLACES }, (_, i) => (
                       <i key={i} data-first={i === 0 || undefined} />
                     ))}
                   </div>
                   <p className={classes.note}>
-                    Nine places. Anyone can board until you start the game, up to nine
-                    people; agents take every place still empty when it starts.
+                    Anyone can board until you start the game; agents take every place still
+                    empty when it starts.
                   </p>
                 </div>
               </div>

@@ -25,7 +25,7 @@ export default function RoomsPage() {
             Choose the model, then wait in the room for whoever boards.
           </HangTag>
           <HangTag href="/play" kicker="Admit one" title="Play solo">
-            One seat at a table of eight agents.
+            One seat at a table of agents.
           </HangTag>
         </nav>
       </header>

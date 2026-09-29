@@ -63,7 +63,7 @@ export function SeatTags({ stubs = false }: { stubs?: boolean }) {
         title="Play solo"
         foot={['Start a game', '→']}
       >
-        One seat at a table of eight agents.
+        One seat at a table of agents.
       </HangTag>
       <HangTag
         href="/rooms"

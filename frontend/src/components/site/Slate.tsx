@@ -2,7 +2,7 @@
  * One finished game as a clapperboard slate (the landing and replays mockups' `.game/.slate`),
  * linking into the theatre at `/replays/[id]`. The winning side colours the frame and inks the
  * paper; the header says who won, with stamps for human seats, memory and "you played"; the
- * nine puppets are the game's own cast (the same hash the theatre uses); the fields are the
+ * puppets are the game's own cast, one per seat (the same hash the theatre uses); the fields are the
  * record id, the days, the phase it ended in, and the model.
  *
  * Pure: the page passes the model's display name (from `GET /models`) and whether this browser
@@ -15,6 +15,10 @@ import { ChipSprite } from '@/stage/cast/ChipSprite';
 import { Sigil } from '@/stage/instruments/Sigil';
 import { endedLabel, formatDate } from '@/lib/format';
 import classes from './Slate.module.css';
+
+/** Seats at the table: the public casting's total (every archived game so far dealt nine). */
+const seatCount = (r: ReplaySummary) =>
+  Object.values(r.cast_role_counts).reduce((a, b) => a + b, 0) || undefined;
 
 const FACTION: Record<
   Winner,
@@ -107,7 +111,7 @@ export function Slate({ replay, modelLabel, mine = false }: SlateProps) {
             </div>
           </div>
           <div className={classes.cast} aria-hidden="true">
-            {castForGame(replay.game_id).map((character, seat) => (
+            {castForGame(replay.game_id, seatCount(replay)).map((character, seat) => (
               <span key={seat} className={classes.chip}>
                 <ChipSprite character={character} />
               </span>
