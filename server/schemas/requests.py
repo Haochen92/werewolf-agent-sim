@@ -291,11 +291,11 @@ class TurnAccepted(BaseModel):
 
 
 class DraftRequest(BaseModel):
-    """POST /games/{id}/draft body: rough notes for the line the seat is about to say."""
+    """POST /games/{id}/draft body: what the player wants the seat's line to say, if anything."""
 
-    notes: str = Field(min_length=1, max_length=500)
+    notes: str = Field(default="", max_length=500)
     """Fragments in the player's own words — who, and what about. "@player_4" or "@4"
-    names a seat."""
+    names a seat. Empty (or left out) asks the seat's agent to write a line of its own."""
 
 
 

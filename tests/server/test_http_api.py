@@ -333,7 +333,11 @@ def test_draft_phrases_the_seats_notes_for_its_discussion_turn(api_client, seate
     assert r.json() == {"draft": "player_3 says: 4 dodging", "drafts_left": 2,
                         "deadline": None}  # solo: no clock, no countdown
     assert session.pending_requests["player_3"].phase == "day_channel"  # still owed
-    assert api_client.post(url, json={"notes": ""}).status_code == 422
+    # no notes: the seat's agent writes a line of its own
+    r = api_client.post(url, json={"notes": ""})
+    assert r.json() == {"draft": "player_3 says: ", "drafts_left": 1, "deadline": None}
+    assert api_client.post(url, json={}).json()["drafts_left"] == 0
+    assert api_client.post(url, json={"notes": "x" * 501}).status_code == 422
 
     api_client.cookies.clear()
     assert api_client.post(url, json={"notes": "4 dodging"}).status_code == 403

@@ -64,7 +64,7 @@ from server.game.translate import Translator, get_source_graph, is_cached
 
 logger = logging.getLogger(__name__)
 
-# How many times one question may be drafted from notes. The wait for each draft is
+# How many times one question may be drafted. The wait for each draft is
 # credited back to the seat's clock, so without a cap an unhappy drafter could keep the
 # table waiting for as long as they liked.
 DRAFTS_PER_TURN = 3
@@ -477,7 +477,8 @@ class GameSession:
 
     async def draft_line(self, seat: str, notes: str) -> tuple[str, int]:
         """Turn a seat's rough notes into a line it could send for the discussion turn it
-        owes, without sending anything. Returns the line and how many drafts the turn still
+        owes (or, with no notes, let its agent write one freely), without sending anything.
+        Returns the line and how many drafts the turn still
         allows. The time the seat spent waiting on the model is credited back to its clock,
         so drafting costs the player no thinking time, and the cap keeps a turn from
         stretching. LookupError when the seat owes no discussion turn or has used its

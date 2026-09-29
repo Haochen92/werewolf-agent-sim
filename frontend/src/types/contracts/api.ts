@@ -126,11 +126,12 @@ export interface paths {
     get?: never;
     put?: never;
     /**
-     * Draft the seat's line from rough notes
-     * @description The seat's agent phrases the notes into one line in the player's voice, for the
-     *     discussion turn the seat owes. Nothing enters the game: the player sends the line
-     *     with POST /turns, edited or not, or types their own. 409 when the seat owes no
-     *     discussion turn or has used this turn's drafts; 503 when the model could not answer.
+     * Draft the seat's line, from rough notes or freely
+     * @description The seat's agent writes one line in the player's voice for the discussion turn the
+     *     seat owes: from the player's notes when there are some, or a line of its own choosing
+     *     when the notes are empty. Nothing enters the game: the player sends the line with
+     *     POST /turns, edited or not, or types their own. 409 when the seat owes no discussion
+     *     turn or has used this turn's drafts; 503 when the model could not answer.
      */
     post: operations['draft_turn_games__game_id__draft_post'];
     delete?: never;
@@ -445,10 +446,13 @@ export interface components {
     };
     /**
      * DraftRequest
-     * @description POST /games/{id}/draft body: rough notes for the line the seat is about to say.
+     * @description POST /games/{id}/draft body: what the player wants the seat's line to say, if anything.
      */
     DraftRequest: {
-      /** Notes */
+      /**
+       * Notes
+       * @default
+       */
       notes: string;
     };
     /**

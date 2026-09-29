@@ -449,7 +449,7 @@ async def test_drafting_credits_the_wait_and_caps_the_turn(quiet_session, monkey
     assert sorted(session.pending_requests) == ["player_3"]  # nothing was sent
 
     await session.draft_line("player_3", "again")
-    await session.draft_line("player_3", "and again")
+    await session.draft_line("player_3", "")  # no notes: a free draft counts the same
     with pytest.raises(LookupError, match="no drafts left"):
         await session.draft_line("player_3", "one more")
 

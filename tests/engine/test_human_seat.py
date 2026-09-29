@@ -278,3 +278,26 @@ def test_wolf_vote_fanout_routes_human_wolves_to_the_uncached_twin():
     sends = wolf_fan_out_vote(state)
     assert {(s.node, s.arg["player_id"]) for s in sends} == {
         ("WOLF_NIGHT_VOTE", "p3"), ("WOLF_NIGHT_VOTE_HUMAN", "p4")}
+
+
+@pytest.mark.parametrize("notes, free", [("4 dodging", False), ("  ", True), ("", True)])
+def test_drafting_phrases_notes_or_writes_freely_without_them(monkeypatch, notes, free):
+    """With notes the helper only phrases them; blank notes leave the line to it."""
+    from langchain_core.messages import AIMessage
+    from langchain_core.runnables import RunnableLambda
+
+    from Agents.turn import drafting_agent as da
+
+    seen = []
+
+    def fake_model(prompt):
+        seen.append(prompt.to_messages())
+        return AIMessage(content='"why did 4 abstain?"')
+
+    monkeypatch.setattr(da, "get_llm", lambda: RunnableLambda(fake_model))
+    line = da.draft_from_notes(_request(player_id="p1", phase="day_channel", valid_targets=[]), notes)
+    assert line == "why did 4 abstain?"
+    system, human = seen[0]
+    assert ("left it to you" in system.content) is free
+    assert ("No notes" in human.content) is free
+    assert ("Notes:\n4 dodging" in human.content) is not free
