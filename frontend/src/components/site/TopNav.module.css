@@ -26,7 +26,7 @@
   color: var(--bone);
 }
 
-/* the mark, with its lamp-lit state laid over it and shown while the brand is pointed at */
+/* the mark, with its lamp turned up laid over it and shown while the brand is pointed at */
 .mark {
   display: grid;
   flex: none;
