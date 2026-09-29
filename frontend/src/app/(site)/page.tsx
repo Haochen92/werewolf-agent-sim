@@ -5,7 +5,7 @@ import { ReplayListClient } from './replays/_components/ReplayListClient';
 import { HouseDoorNote } from './_components/HouseDoorNote';
 import { SeatTags } from './_components/landing/SeatTags';
 import { FeaturedReplay } from './_components/landing/FeaturedReplay';
-import { UnderTable } from './_components/landing/UnderTable';
+import { Features } from './_components/landing/Features';
 import { RoleHand } from './_components/landing/RoleHand';
 import { GameLoop } from './_components/landing/GameLoop';
 import classes from './_components/landing/Landing.module.css';
@@ -13,7 +13,7 @@ import pageClasses from './page.module.css';
 
 /**
  * The landing (landing mockup, review §A1, rulings §F7): the hero with its two hung tags, a
- * game from the archive playing in the carriage, what the agents do under the table, the roles
+ * game from the archive playing in the carriage, what makes it different, the roles
  * and how a game goes, the latest games, and a closing word on the project and the visitor's
  * API key. A recruiter with no context sees the product
  * working before reading a word, and reaches a whole replay in one click from the carriage.
@@ -47,15 +47,15 @@ export default function HomePage() {
         </Suspense>
       </section>
 
-      <section className={classes.section} aria-labelledby="under-head">
+      <section className={classes.section} aria-labelledby="features-head">
         <div className={classes.secHead}>
-          <h2 id="under-head">What&rsquo;s under the table</h2>
+          <h2 id="features-head">What makes it different</h2>
           <p>
-            Three things every agent does that the table never sees, all from game 9369A5C,
-            the one playing above.
+            You can read the agents&rsquo; minds, borrow one when you&rsquo;re stuck, and
+            bring friends to beat them.
           </p>
         </div>
-        <UnderTable />
+        <Features />
       </section>
 
       <section className={classes.section} aria-labelledby="table-head">

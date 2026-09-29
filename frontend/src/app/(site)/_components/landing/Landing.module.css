@@ -1,6 +1,6 @@
 /* The landing (landing mockup): the hero and its hung tags, the sections' rhythm, the roles'
    grid and "How a game goes", the latest games' way into the archive. The carriage is
-   Carriage.module.css; "What's under the table" is UnderTable.module.css. */
+   Carriage.module.css; the three features are Features.module.css. */
 
 .landing {
   /* the carriage's rails and the hero's glow reach past the column; nothing scrolls sideways */

@@ -45,7 +45,7 @@
   --wood: none;
   border-radius: 16px;
   padding: 14px;
-  /* the landing's "under the table" wood (UnderTable.module.css): darkened and desaturated
+  /* the landing's features bench wood (Features.module.css): darkened and desaturated
      toward the page, the grain only near the centre */
   background:
     radial-gradient(

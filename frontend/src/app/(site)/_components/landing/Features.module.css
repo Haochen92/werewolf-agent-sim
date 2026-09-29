@@ -1,0 +1,556 @@
+/* "What makes it different": the workshop (landing mockup, bench 77, chosen), with the three
+   features on it. The car's walnut in less light, paper cards screwed under brass plates;
+   below 640px of bench, the plates are the tabs. Paper and ink colours are the mockup's own,
+   inside the fiction. */
+
+.shop {
+  container-type: inline-size;
+  position: relative;
+  padding: 40px 34px 30px;
+  border-radius: 14px;
+  color: var(--bone);
+  font-family: var(--font-sans);
+  /* the car's wood, darkened and desaturated toward the page's panels, the grain only near the centre */
+  background:
+    radial-gradient(
+      ellipse 75% 70% at 50% 42%,
+      transparent 0,
+      rgba(10, 7, 4, 0.55) 65%,
+      rgba(8, 5, 3, 0.92) 100%
+    ),
+    linear-gradient(rgba(26, 20, 15, 0.58), rgba(26, 20, 15, 0.58)),
+    linear-gradient(rgba(70, 60, 52, 0.35), rgba(70, 60, 52, 0.35)),
+    var(--wood, none) 0 0 / 560px auto,
+    #2a1a0e;
+  background-blend-mode: normal, normal, saturation, normal, normal;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 220, 170, 0.1),
+    inset 0 -10px 24px rgba(0, 0, 0, 0.5),
+    0 24px 50px -20px rgba(0, 0, 0, 0.9);
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    'mind mind'
+    'draft room';
+  gap: 46px 28px;
+  margin-top: 10px;
+  align-items: stretch;
+}
+.bMind {
+  grid-area: mind;
+  --r: -0.4deg;
+}
+.bDraft {
+  grid-area: draft;
+  --r: 0.6deg;
+}
+.bRoom {
+  grid-area: room;
+  --r: -0.7deg;
+}
+
+.blk {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 44px 20px 22px;
+  border-radius: 3px;
+  background: #efe2c2;
+  background-image:
+    radial-gradient(ellipse at 30% 20%, rgba(255, 250, 235, 0.6), transparent 60%),
+    repeating-linear-gradient(115deg, rgba(120, 90, 50, 0.03) 0 2px, transparent 2px 7px);
+  color: #3a2a18;
+  box-shadow:
+    0 12px 20px -8px rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(0, 0, 0, 0.25);
+  transform: rotate(var(--r, 0deg));
+}
+.blk h3 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 1.15;
+  color: var(--ink);
+}
+.blk p {
+  margin: 0;
+  max-width: 56ch;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #4a3a24;
+}
+
+/* the brass plate: the kit's brass, screwed to the card's top edge */
+.brass {
+  background: linear-gradient(180deg, #e6c98e, #b08a4a 55%, #7d5f2e);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 245, 210, 0.8),
+    inset 0 -1px 0 rgba(60, 35, 5, 0.6),
+    0 3px 6px rgba(0, 0, 0, 0.5);
+  color: #2e1c06;
+  border-radius: 4px;
+}
+.plate {
+  position: absolute;
+  left: 50%;
+  top: -15px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 7px 18px;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+.plate::before,
+.plate::after,
+.ptab::before,
+.ptab::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff3cf, #7d5f2e 70%);
+}
+.plate::before,
+.ptab::before {
+  left: 5px;
+}
+.plate::after,
+.ptab::after {
+  right: 5px;
+}
+.num {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  line-height: 1;
+  text-shadow: 0 1px 0 rgba(255, 240, 200, 0.5);
+}
+.cap {
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 0 rgba(255, 240, 200, 0.4);
+}
+
+.chip {
+  display: inline-block;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+/* card 1: the lesson it recalled, and what the game taught, as two typed slips */
+.pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr);
+  align-items: stretch;
+  gap: 0 6px;
+}
+.slip {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px 16px;
+  border-radius: 1px;
+  background: #fffaf0;
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.25);
+}
+.who {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 84px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6a5a3a;
+}
+.blk .typed {
+  margin: 0;
+  font-family: ui-monospace, 'Courier New', monospace;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #3a2a18;
+}
+.blk .why {
+  margin: 0;
+  font-family: var(--font-stage-hand, 'Patrick Hand'), cursive;
+  font-size: 17px;
+  line-height: 1.3;
+  color: #8a3a2a;
+}
+.stamp {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  padding: 2px 7px;
+  border: 1.5px solid #b0402f;
+  border-radius: 4px;
+  background: rgba(255, 250, 240, 0.7);
+  color: #b0402f;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transform: rotate(4deg);
+}
+/* a pencilled arrow from the recall to the verdict after the game */
+.arrow {
+  align-self: center;
+  justify-self: center;
+  width: 22px;
+  height: 2px;
+  background: #8a3a2a;
+  position: relative;
+  opacity: 0.8;
+}
+.arrow::after {
+  content: '';
+  position: absolute;
+  right: -1px;
+  top: -4px;
+  border: 5px solid transparent;
+  border-left: 7px solid #8a3a2a;
+  border-right: 0;
+}
+
+/* the loop the lessons go round: four numbered steps */
+.loop {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+.loop li {
+  counter-increment: step;
+  padding: 10px 12px;
+  border-top: 2px solid rgba(138, 58, 42, 0.5);
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: #4a3a24;
+}
+.loop b {
+  display: block;
+  margin-bottom: 2px;
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--ink);
+}
+.loop b::before {
+  content: counter(step) ' ';
+  color: #8a3a2a;
+}
+
+/* the mechanism, in a line of its own under the feature */
+.blk p.how {
+  padding-top: 10px;
+  border-top: 1px dashed rgba(58, 42, 24, 0.3);
+  font-size: 14px;
+  color: #5a4a34;
+}
+.how b {
+  color: var(--ink);
+}
+
+/* card 2: the turn dock on paper, notes to a drafted line */
+.dock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.jot {
+  align-self: stretch;
+  padding: 10px 14px 12px;
+  border-radius: 2px;
+  background: #fffaf0;
+  background-image: repeating-linear-gradient(
+    180deg,
+    transparent 0 21px,
+    rgba(90, 120, 170, 0.22) 21px 22px
+  );
+  background-position: 0 32px;
+  color: #2a2418;
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.25);
+  transform: rotate(-0.6deg);
+  font-family: var(--font-stage-hand, 'Patrick Hand'), cursive;
+  font-size: 17px;
+  line-height: 22px;
+}
+.d {
+  height: 22px;
+  margin-bottom: 4px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a3a2a;
+}
+.draftBtn {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #e6c98e, #b08a4a 55%, #7d5f2e);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 245, 210, 0.8),
+    0 2px 4px rgba(0, 0, 0, 0.35);
+  color: #2e1c06;
+  font-size: 13px;
+  font-weight: 600;
+}
+.line {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  align-self: stretch;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fffdf6;
+  box-shadow:
+    0 0 0 1px rgba(58, 42, 24, 0.18),
+    0 2px 3px rgba(0, 0, 0, 0.2);
+  font-size: 15px;
+  line-height: 1.45;
+  color: #2a2418;
+}
+.blk p.caption {
+  font-size: 12.5px;
+  font-style: italic;
+  color: #6a5a3a;
+}
+.wall {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  font-size: 13.5px;
+  color: #4a3a24;
+}
+.wall b {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #2f5a4a;
+}
+.wall div:last-child b {
+  color: #b0402f;
+}
+.wall ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  line-height: 1.5;
+}
+.never li::marker {
+  content: '✕  ';
+  color: #b0402f;
+}
+
+/* card 3: a room's roster, people's paper chips among the agents' puppets */
+.roster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 8px;
+}
+/* the station's Invite tag, as a paper strip */
+.invite {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 2px;
+  background: #fffaf0;
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.25);
+  transform: rotate(0.5deg);
+  font-size: 13.5px;
+  color: #6a5a3a;
+}
+.invite b {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--ink);
+}
+.invite span {
+  flex: 1;
+  min-width: 0;
+}
+.invite i {
+  padding: 3px 10px;
+  border: 1.5px solid #8a3a2a;
+  border-radius: 999px;
+  color: #8a3a2a;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+}
+.person {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 40px;
+  font-size: 12px;
+  color: #6a5a3a;
+}
+.person i {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #fffaf0;
+  box-shadow:
+    0 0 0 1.5px #8a3a2a,
+    0 2px 3px rgba(0, 0, 0, 0.3);
+  color: #8a3a2a;
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-style: normal;
+}
+.person:nth-child(-n + 3) {
+  color: #8a3a2a;
+  font-weight: 600;
+}
+.agent {
+  display: block;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  opacity: 0.85;
+}
+.open {
+  align-self: flex-start;
+  margin-top: auto;
+  padding: 8px 16px;
+  border: 1.5px solid #8a3a2a;
+  border-radius: 6px;
+  color: #8a3a2a;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.16s ease;
+}
+.open:hover {
+  background: rgba(138, 58, 42, 0.08);
+}
+.open:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+}
+
+/* the plates as tabs: narrow only */
+.ptabs {
+  display: none;
+}
+
+@container (max-width: 640px) {
+  .ptabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin: 6px 0 22px;
+  }
+  .ptab {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 8px 12px 7px;
+    border: 0;
+    font: inherit;
+    cursor: pointer;
+    filter: saturate(0.6) brightness(0.9);
+    opacity: 0.92;
+    transition:
+      filter 0.2s,
+      transform 0.2s;
+  }
+  .ptab .num {
+    font-size: 22px;
+  }
+  .ptab .cap {
+    font-size: 11.5px;
+    line-height: 1.2;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .ptab[aria-selected='true'] {
+    filter: none;
+    transform: translateY(-2px);
+  }
+  .ptab:focus-visible {
+    outline: 2px solid var(--amber);
+    outline-offset: 3px;
+  }
+  .body {
+    grid-template-columns: 1fr;
+    grid-template-areas: 'card';
+    gap: 0;
+    margin-top: 0;
+    align-items: stretch;
+  }
+  /* one card at a time, each at its own height: the lessons card is far the longest, and
+     holding the others to it left them mostly blank paper */
+  .blk {
+    grid-area: card;
+    display: none;
+    padding: 22px 16px 20px;
+  }
+  .blk.sel {
+    display: flex;
+  }
+  .blk .plate {
+    display: none;
+  }
+  .pair {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .arrow {
+    width: 2px;
+    height: 16px;
+  }
+  .arrow::after {
+    right: -4px;
+    top: auto;
+    bottom: -1px;
+    border: 5px solid transparent;
+    border-top: 7px solid #8a3a2a;
+    border-bottom: 0;
+  }
+  .loop {
+    grid-template-columns: 1fr 1fr;
+  }
+  .wall {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .shop {
+    padding: 22px 12px 20px;
+    border-radius: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ptab {
+    transition: none;
+  }
+}
