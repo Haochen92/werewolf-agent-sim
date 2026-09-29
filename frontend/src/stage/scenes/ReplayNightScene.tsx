@@ -54,6 +54,7 @@ import {
   type NightBranch,
   type RowMark,
 } from './replay-night';
+import { notebookGame } from '../notebook';
 import type { SceneProps } from './types';
 import styles from './ReplayNight.module.css';
 
@@ -279,6 +280,7 @@ function NightSpoke({ view, beat, me, presentation, slot: slotInput }: SceneProp
           me={me}
           hud={hud}
           width={g.wingN}
+          notes={notebookGame(presentation, me)}
           opts={{
             truth: (s) => (xray ? (view.xray.roles[s] ?? null) : null),
             lit: (s) => seats.includes(s),

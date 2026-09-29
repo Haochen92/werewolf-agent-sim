@@ -17,7 +17,7 @@ import { CarBackdrop } from '../instruments/CarBackdrop';
 import { FeltWindow } from '../instruments/FeltWindow';
 import { SpeechBox } from '../instruments/SpeechBox';
 import { Plaque, Stand } from '../instruments/Stand';
-import { Wing, WingTile } from '../instruments/Wing';
+import { Wing } from '../instruments/Wing';
 import { useMotionScale } from '../motion';
 import { beam, type Special } from '../paint/draw';
 import { diningCarPlan } from '../paint/dining-car';
@@ -141,6 +141,7 @@ export function TableWing({
   me,
   hud,
   width,
+  notes = null,
   opts = {},
 }: {
   view: GameView;
@@ -148,6 +149,8 @@ export function TableWing({
   me: string | null;
   hud: Hud;
   width: number;
+  /** The game whose notebook the seated player keeps (`notebookGame`); null: none. */
+  notes?: string | null;
   opts?: WingSeatOptions;
 }) {
   const deadBySeat = new Map(view.dead.map((d) => [d.player, d]));
@@ -156,25 +159,24 @@ export function TableWing({
       {hud === 'replay' ? (
         <Paint of={drape} opts={{ bleed: BLEED, velvet: VELVET }} />
       ) : null}
-      <Wing width={width}>
-        {view.seats.map((seat, i) => {
+      <Wing
+        width={width}
+        notes={notes}
+        tiles={view.seats.map((seat, i) => {
           const d = opts.untold?.has(seat) ? undefined : deadBySeat.get(seat);
-          return (
-            <WingTile
-              key={seat}
-              seat={seatNumber(seat)}
-              character={cast[i]}
-              dead={d ? { role: d.role } : undefined}
-              truth={opts.truth?.(seat) ?? null}
-              lit={opts.lit?.(seat)}
-              dim={opts.dim?.(seat)}
-              lamp={opts.lamp?.(seat)}
-              pack={opts.pack?.(seat)}
-              you={seat === me}
-            />
-          );
+          return {
+            seat: seatNumber(seat),
+            character: cast[i],
+            dead: d ? { role: d.role } : undefined,
+            truth: opts.truth?.(seat) ?? null,
+            lit: opts.lit?.(seat),
+            dim: opts.dim?.(seat),
+            lamp: opts.lamp?.(seat),
+            pack: opts.pack?.(seat),
+            you: seat === me,
+          };
         })}
-      </Wing>
+      />
     </>
   );
 }

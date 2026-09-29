@@ -383,8 +383,9 @@ export function LiveTheatre({
       hud: 'live',
       cast,
       animate: state.cursor.animate,
+      game: gameId,
     }),
-    [xray, state.slot, state.speed, cast, state.cursor.animate],
+    [xray, state.slot, state.speed, cast, state.cursor.animate, gameId],
   );
 
   const sceneView = useMemo(() => (beat ? folds.at(beat.end) : null), [folds, beat]);

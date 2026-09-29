@@ -38,6 +38,30 @@ the X-ray state stays either way. Turning X-ray on resets the drawer's Show › 
 **Seats** are `player_1..player_9`, shown as the numeral 1–9. The cast (character per seat) is
 `castForGame(gameId)`.
 
+**The seat rail (the wing; HUD pass 2, ruled 2026-09-29, "B on photo stock").** Every seat is a
+card down the stage's left edge, printed as the same head-portrait photo the night rooms pin up
+(cream print stock, the numeral in Young Serif on its corner), each tacked with a brass tack to
+a cork board in a walnut frame with a brass edge, a soft contact shadow under it (v2, owner
+2026-09-29: the cards read as hung in the air on the plain walnut). The layout comes from the seat count, never from nine (`rail-layout.ts`): two
+columns, the cards as tall as the rail allows; the suspect slot takes the spare cell (odd
+count) or a strip across the foot (even count); more than six rows takes a third column. The
+rail is 192 units inside the world, 12% of it (the room is laid out right of it; 144 drew the
+desk's cards too thin), and on a screen wider than 16:9 it grows out into the bleed: 310 units in
+all for two columns, about 134 css px on an iPhone 14, 51 of them in the letterbox. One card stock for every state: the speaker's
+card is edged in brass; a dead seat is the same photo gone grey with its role on its faction's
+ink band; your own seat an amber "You" band; with the X-ray on, a living seat its faction's band
+and the sigil badge; the game's losers dimmed. Lit and dimmed are light only.
+**Notes (live, seated only).** Tapping another seat's card opens its note editor (the seat's
+head, number, alive or dead; a ruled writing area; "Mark as suspect", not for the dead; Done;
+Escape or a tap outside closes). The first time in a game a paper slip beside the rail says "Tap a
+card to write notes" until the first tap. A card the player may write on has two or three
+faint ruled lines on its foot, the note's first words on them in Literata, never under 11 css
+px; where they would be smaller (a phone) the card shows two short pencil strokes instead, and a
+tap reads the note. One suspect at a time: a wax seal on its card and its
+head in the suspect slot (a suspect who dies leaves the slot empty). All of it stays on the
+device (`notes_{gameId}`); nothing goes to the server, and the suspect never preselects a
+ballot. In a replay and for an observer the cards are only shown: no editor, hint or pencil lines.
+
 ## 1. The deal — H§4.0 · bench 75
 
 The first scene of a match. Nothing on the wire narrates it; every line is the client's.
@@ -48,7 +72,7 @@ The first scene of a match. Nothing on the wire narrates it; every line is the c
 | 2 | `deal.cards-dealt` | `game_started.cast_role_counts` | P | nine face-down cards come down on the same strings, one under each chip; the plate reads the cast counts | — | 3.0 |
 | 3 | `deal.your-card` | my `role_assigned` (seq 2–10) | S | my card comes down large, centred, on its own string, and turns face up; the box: who I am, my night action; the vigilante counts two caps; the card button appears | D: dashed "Only you" line | 6.0 |
 | 4 | `deal.your-pack` | my `role_assigned.pack` | F | the packmate's chip takes the red edge, its small card turns to the wolf; the pack chat opens with the client's game-master line and stays open for the night | D: the pack chat's opening line | 4.0 |
-| 5 | `deal.face-up` | `roles_assigned` (seq 11) | X | all nine small cards turn at once; the wing takes its strips and badges | F: the deal listed | 2.6 |
+| 5 | `deal.face-up` | `roles_assigned` (seq 11) | X | all nine small cards turn at once; the wing's cards take their bands and badges | F: the deal listed | 2.6 |
 | 6 | `deal.day-begins` | `phase_change: day` (seq 12) | P | cards and chips go up, the paint goes to day, the stand returns with the first speaker. **Chapter mark: Day 1** | — | 3.0 |
 
 Without X-ray the replay sees the backs. The boarding variant (the train at a station) is not a
@@ -179,7 +203,7 @@ seat 2 serial killer).
 | 1 | `lynch.stand-returns` | `lynch_result` | P | the shot pulls back; the stand comes up from below the rail with the voted-out puppet rising into it from behind the playboard; the leaves stand either side; the light collapses to one special | — | 3.0 |
 | 2 | `lynch.named` | 〃 | P | held; the plaque's tag "voted out". S (if me): the box "You are voted out" | — | 2.0 |
 | 3 | `lynch.drop` | 〃 | P | straight down through the trap, no fade; the plaque stays lit over the empty box | — | 2.0 |
-| 4 | `lynch.card-up` | `lynch_result.role` | P | the lift raises the role card (name, sigil, figure, front line, faction colour); the wing's tile holds the live face until the card clears the rail, then flips to the sigil | F(X): "Who had them right": each voter's `player_reads` on this seat vs the truth (● role ◐ side ○ none/wrong); the seat's last note | 2.6 |
+| 4 | `lynch.card-up` | `lynch_result.role` | P | the lift raises the role card (name, sigil, figure, front line, faction colour); the wing's card holds the live photo until the card clears the rail, then turns grey with the role's band | F(X): "Who had them right": each voter's `player_reads` on this seat vs the truth (● role ◐ side ○ none/wrong); the seat's last note | 2.6 |
 | 5 | `lynch.truth` | 〃 | P | held. S (if me): "You were a villager" → "You stay at the table as a spectator"; the card button reads "on the wing" | — | 2.6 |
 | 6 | `lynch.card-to-wing` | 〃 | P | the card flies up; the stand goes; the shutter gathers up on the night window; the leaves fold → §5. If this lynch ends the game → §10 | — | 3.0 |
 
@@ -413,7 +437,7 @@ leading. A seated human's "you won / you lost" is client-known from `role_assign
 | 1 | `over.where-it-ended` | `game_over`. **Chapter mark: Game over** | P | the last scene's frame, held. After a morning: the night's paint behind the shutter, the room empty, the last card drawn up. After a lynch: dusk, the shutter down, the leaves standing open, the card gone | D: the ending line | 2.0 |
 | 2 | `over.winners-hour` | `winner` | P | the shutter rises: full day for the village, night for the wolves, dusk for the serial killer; the leaves fold if open | — | 3.0 |
 | 3 | `over.verdict` | 〃 | P | a walnut board comes down on two strings, large and centred: the faction's colour at its edges, its sigil on a paper plate, "The wolves have won" in the card's serif, "Day 4 · at the morning" beneath; drawn up as the next beat begins | — | 3.2 |
-| 4 | `over.winners-stand` | 〃 + the roster | P | the stand comes up and the winning faction's **survivors** rise into it, base state: one at full size, two at 0.78, three at 0.6 with the box widened (×1.36, ×1.6); one special each; the plaque names the seats (and roles once the truth is out); the winners' wing tiles lit, the rest dimmed; the fallen stay on the wing as sigils. The box: "The wolves have won", the survivors' chips, "Seat 8 is the last of them standing". S: "You won" / "You lost. You were the vigilante" | — | 3.0 |
+| 4 | `over.winners-stand` | 〃 + the roster | P | the stand comes up and the winning faction's **survivors** rise into it, base state: one at full size, two at 0.78, three at 0.6 with the box widened (×1.36, ×1.6); one special each; the plaque names the seats (and roles once the truth is out); the winners' wing tiles lit, the rest dimmed; the fallen stay on the wing as grey cards with their roles' bands. The box: "The wolves have won", the survivors' chips, "Seat 8 is the last of them standing". S: "You won" / "You lost. You were the vigilante" | — | 3.0 |
 | 5 | `over.truth` | `roles_assigned` from the backlog (live) · already in the log (replay) | everyone | every living tile takes its faction strip and sigil badge; live: the X-ray button reads "unlocked" | F: the deal, and how each seat went | 2.6 |
 | 6 | `over.epilogue` | `memory_extracted` (407; memory-on games) | everyone | the film comes down over the whole stage, one sheet. Left: one tab per **role** (observations are keyed by role), the chips of the seats that held it, a tally of verdicts as pips. Right: rows grouped by phase (discussion · vote · night), each collapsed to its scenario (chevron, "Scenario", the situation clamped to two lines, "open"); opened: "What it did", "How it went" with the verdict's stitched patch (worked · cost · mixed · unclear). Bottom: the lessons kept (`strategy_points`) as slips, situation → action; empty says "None from this game" | F (full stage) | until dismissed |
 | 7 | `over.curtain` | — | P | the winners at the stand in the winner's hour; the result in the box with the way out (live: the replay, the lobby; replay: the transport at its end) | — | hold |

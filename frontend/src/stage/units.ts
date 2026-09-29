@@ -8,8 +8,8 @@
  * every screen, and it means a number here can be checked against a bench by eye.
  *
  * The HUD geometry below was computed by the design kit at run time on every resize. It
- * depends only on the box size, and the box size no longer changes, so it is frozen here
- * as plain numbers: nothing on the stage recomputes it.
+ * depends only on the box size, and the box size no longer changes, so it is evaluated once
+ * here, at load, from the kit's formula: nothing on the stage recomputes it.
  */
 import type { CSSProperties } from 'react';
 
@@ -57,129 +57,62 @@ export interface StageGeometry {
   headC: number;
 }
 
-// Evaluated from StageKit.geometry(1600, 900, { hud, side }) in docs/design_2026-09-25/kits/
-// stage-kit.js (VERSION 2026-09-23), with phone = false, in node on 2026-09-25.
+/**
+ * The seat rail's width inside the world (HUD pass 2, owner 2026-09-29): two columns of seat
+ * cards, 12% of the width (owner, 2026-09-29: 9% drew the desk's cards too thin). The kit's
+ * wing was 5.5% (88 units), one column of small tiles. On a screen wider than 16:9 the rail
+ * carries on out into the bleed (`railLayout`'s `reach`), so a phone's letterbox holds part of
+ * it and the room keeps more of its width.
+ */
+export const WING_N = 192;
+
+/**
+ * StageKit.geometry(1600, 900, { hud, side }) in docs/design_2026-09-25/kits/stage-kit.js
+ * (VERSION 2026-09-23), phone = false, with the wing at `WING_N` in place of the kit's 5.5%.
+ * A pure function of fixed numbers, evaluated once below: nothing on the stage recomputes it.
+ */
+function kitGeometry(hud: Hud, side: boolean): StageGeometry {
+  const W = STAGE_W,
+    H = STAGE_H;
+  const wingN = hud === 'none' ? 0 : WING_N,
+    area = W - wingN,
+    slotW = area * 0.42;
+  const rail = hud === 'replay' ? 68 : 71;
+  const railY = (rail / 100) * H,
+    room = side ? area - slotW : area;
+  let ph = (railY - 0.05 * H) / 0.925,
+    pwid = (ph * 210) / 240;
+  if (pwid > room * 0.96) {
+    pwid = room * 0.96;
+    ph = (pwid * 240) / 210;
+  }
+  const top = railY - 0.925 * ph,
+    left = wingN + (room - pwid) / 2;
+  return {
+    hud,
+    side,
+    wingN,
+    area,
+    slotW,
+    rail,
+    railY,
+    room,
+    ph,
+    pwid,
+    top,
+    left,
+    cx: left + pwid / 2,
+    u: pwid / 525,
+    headTop: top + (49 / 240) * ph,
+    headBot: top + (159 / 240) * ph,
+    headC: top + (104 / 240) * ph,
+  };
+}
+
 export const GEOMETRY: Record<Hud, { full: StageGeometry; side: StageGeometry }> = {
-  none: {
-    full: {
-      hud: 'none',
-      side: false,
-      wingN: 0,
-      area: 1600,
-      slotW: 672,
-      rail: 71,
-      railY: 639,
-      room: 1600,
-      ph: 642.1621621621621,
-      pwid: 561.8918918918918,
-      top: 45,
-      left: 519.0540540540542,
-      cx: 800,
-      u: 1.07027027027027,
-      headTop: 176.1081081081081,
-      headBot: 470.43243243243234,
-      headC: 323.27027027027026,
-    },
-    side: {
-      hud: 'none',
-      side: true,
-      wingN: 0,
-      area: 1600,
-      slotW: 672,
-      rail: 71,
-      railY: 639,
-      room: 928,
-      ph: 642.1621621621621,
-      pwid: 561.8918918918918,
-      top: 45,
-      left: 183.05405405405412,
-      cx: 464,
-      u: 1.07027027027027,
-      headTop: 176.1081081081081,
-      headBot: 470.43243243243234,
-      headC: 323.27027027027026,
-    },
-  },
-  live: {
-    full: {
-      hud: 'live',
-      side: false,
-      wingN: 88,
-      area: 1512,
-      slotW: 635.04,
-      rail: 71,
-      railY: 639,
-      room: 1512,
-      ph: 642.1621621621621,
-      pwid: 561.8918918918918,
-      top: 45,
-      left: 563.0540540540542,
-      cx: 844,
-      u: 1.07027027027027,
-      headTop: 176.1081081081081,
-      headBot: 470.43243243243234,
-      headC: 323.27027027027026,
-    },
-    side: {
-      hud: 'live',
-      side: true,
-      wingN: 88,
-      area: 1512,
-      slotW: 635.04,
-      rail: 71,
-      railY: 639,
-      room: 876.96,
-      ph: 642.1621621621621,
-      pwid: 561.8918918918918,
-      top: 45,
-      left: 245.53405405405414,
-      cx: 526.48,
-      u: 1.07027027027027,
-      headTop: 176.1081081081081,
-      headBot: 470.43243243243234,
-      headC: 323.27027027027026,
-    },
-  },
-  replay: {
-    full: {
-      hud: 'replay',
-      side: false,
-      wingN: 88,
-      area: 1512,
-      slotW: 635.04,
-      rail: 68,
-      railY: 612,
-      room: 1512,
-      ph: 612.9729729729729,
-      pwid: 536.3513513513512,
-      top: 45,
-      left: 575.8243243243244,
-      cx: 844,
-      u: 1.0216216216216214,
-      headTop: 170.14864864864865,
-      headBot: 451.0945945945945,
-      headC: 310.6216216216216,
-    },
-    side: {
-      hud: 'replay',
-      side: true,
-      wingN: 88,
-      area: 1512,
-      slotW: 635.04,
-      rail: 68,
-      railY: 612,
-      room: 876.96,
-      ph: 612.9729729729729,
-      pwid: 536.3513513513512,
-      top: 45,
-      left: 258.3043243243244,
-      cx: 526.48,
-      u: 1.0216216216216214,
-      headTop: 170.14864864864865,
-      headBot: 451.0945945945945,
-      headC: 310.6216216216216,
-    },
-  },
+  none: { full: kitGeometry('none', false), side: kitGeometry('none', true) },
+  live: { full: kitGeometry('live', false), side: kitGeometry('live', true) },
+  replay: { full: kitGeometry('replay', false), side: kitGeometry('replay', true) },
 };
 
 /** The frozen geometry for a HUD mode, with or without the side slot open. */

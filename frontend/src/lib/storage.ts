@@ -12,6 +12,7 @@ const KEYS = {
   host: (gameId: string) => `host_${gameId}`,
   byok: 'byok_key',
   ghost: (gameId: string) => `ghost_${gameId}`,
+  notes: (gameId: string) => `notes_${gameId}`,
 } as const;
 
 function read(key: string): string | null {
@@ -95,4 +96,21 @@ export const ghostGuesses = {
   },
   set: (gameId: string, guesses: Record<string, string>) =>
     write(KEYS.ghost(gameId), JSON.stringify(guesses)),
+};
+
+/**
+ * The seated player's notes on the other seats, and the one they suspect (the seat rail's
+ * note editor). Kept as the player wrote them; the server never sees them.
+ */
+export const seatNotes = {
+  get: (gameId: string): unknown => {
+    const raw = read(KEYS.notes(gameId));
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw) as unknown;
+    } catch {
+      return null;
+    }
+  },
+  set: (gameId: string, notes: unknown) => write(KEYS.notes(gameId), JSON.stringify(notes)),
 };

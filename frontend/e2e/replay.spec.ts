@@ -60,6 +60,10 @@ async function seek(page: Page, i: number) {
   const n = Number(await bar.getAttribute('aria-valuemax'));
   const box = (await bar.boundingBox())!;
   await page.mouse.click(box.x + (i / (n - 1)) * box.width, box.y + box.height / 2);
+  // a beat is under 2 px of the bar: a click can land a beat off, so the keys finish the step
+  const at = Number(await theatre(page).getAttribute('data-beat-index'));
+  for (let k = at; k < i; k++) await page.keyboard.press('ArrowRight');
+  for (let k = at; k > i; k--) await page.keyboard.press('ArrowLeft');
   await expect(theatre(page)).toHaveAttribute('data-beat-index', String(i));
 }
 

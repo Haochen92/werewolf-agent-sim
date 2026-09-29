@@ -35,7 +35,7 @@ import { SpeechBox } from '../instruments/SpeechBox';
 import { Plaque, Stand } from '../instruments/Stand';
 import { TopStrip } from '../instruments/TopStrip';
 import { TurnDock } from '../instruments/TurnDock';
-import { Wing, WingTile } from '../instruments/Wing';
+import { Wing } from '../instruments/Wing';
 import { StageMotion, useMotionScale } from '../motion';
 import { diningCarPlan } from '../paint/dining-car';
 import { drape } from '../paint/drape';
@@ -46,6 +46,7 @@ import { bandNarrows, sideOpen, stripButtons } from '../slot';
 import { VELVET, WOOD } from '../textures';
 import { BLEED, geometry } from '../units';
 import { CarPaint } from './DiningCarParts';
+import { notebookGame } from '../notebook';
 import type { SceneProps } from './types';
 
 /** How long the arriving puppet stands thinking before it speaks, after the rise (seconds). */
@@ -184,35 +185,32 @@ function DayTurn({
         {hud === 'replay' ? (
           <Paint of={drape} opts={{ bleed: BLEED, velvet: VELVET }} />
         ) : null}
-        <Wing width={g.wingN}>
-          {view.seats.map((seat, i) => {
+        <Wing
+          width={g.wingN}
+          notes={notebookGame(presentation, me)}
+          tiles={view.seats.map((seat, i) => {
             const d = deadBySeat.get(seat);
             const rd = readOf(seat);
-            return (
-              <WingTile
-                key={seat}
-                seat={seatNumber(seat)}
-                character={cast[i]}
-                dead={d ? { role: d.role } : undefined}
-                truth={xray ? (view.xray.roles[seat] ?? null) : null}
-                lit={seat === speaker}
-                you={seat === me}
-                read={
-                  rd
-                    ? {
-                        sure: rd.confidence === 'high',
-                        open: card?.seat === seat,
-                        onRead: (tile) =>
-                          setCard((c) =>
-                            c?.seat === seat ? null : { seat, top: tile.offsetTop },
-                          ),
-                      }
-                    : undefined
-                }
-              />
-            );
+            return {
+              seat: seatNumber(seat),
+              character: cast[i],
+              dead: d ? { role: d.role } : undefined,
+              truth: xray ? (view.xray.roles[seat] ?? null) : null,
+              lit: seat === speaker,
+              you: seat === me,
+              read: rd
+                ? {
+                    sure: rd.confidence === 'high',
+                    open: card?.seat === seat,
+                    onRead: (tile: HTMLElement) =>
+                      setCard((c) =>
+                        c?.seat === seat ? null : { seat, top: tile.offsetTop },
+                      ),
+                  }
+                : undefined,
+            };
           })}
-        </Wing>
+        />
         <TopStrip
           hud={hud}
           title={`Day ${beat.day}`}

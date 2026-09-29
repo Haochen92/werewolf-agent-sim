@@ -127,17 +127,32 @@ export function Stage({
   useLayoutEffect(() => {
     const el = boxRef.current;
     if (!el) return;
-    const set = (w: number) => {
+    // the house around a `contain` box: how much of the bleed shows left of the world
+    const house = fit === 'contain' ? el.parentElement : null;
+    const set = () => {
+      const w = el.getBoundingClientRect().width;
       el.style.setProperty('--stage-scale', String(w / STAGE_W));
       // a phone: the HUD's boxes that have to fold (the drawer's head, the ballot's row) do.
       // The same 0.75 as `--legible` in Stage.module.css: once the type has grown, they fold.
       el.toggleAttribute('data-small', w / STAGE_W < 0.75);
+      // the bleed a screen wider than 16:9 shows beside the world, in units: the seat rail
+      // grows out into it (Wing.tsx), so on a phone the letterbox holds the rail, not the room
+      const spare =
+        house && w > 0
+          ? Math.max(
+              0,
+              el.getBoundingClientRect().left - house.getBoundingClientRect().left,
+            ) /
+            (w / STAGE_W)
+          : 0;
+      el.style.setProperty('--spare', `${spare.toFixed(1)}px`);
     };
-    set(el.getBoundingClientRect().width);
-    const ro = new ResizeObserver(([entry]) => set(entry.contentRect.width));
+    set();
+    const ro = new ResizeObserver(set);
     ro.observe(el);
+    if (house) ro.observe(house);
     return () => ro.disconnect();
-  }, []);
+  }, [fit]);
 
   // The camera: a scene's shot wins over the container's resting camera. Scaling by k about
   // (x, y) is a translate of (x, y)·(1 − k) plus the scale, so all three move in step.

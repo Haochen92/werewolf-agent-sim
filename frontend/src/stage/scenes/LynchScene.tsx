@@ -35,6 +35,7 @@ import { ROLE_NAME, factionOf, seatNumber } from '../roles';
 import { bandNarrows, sideOpen, stripButtons } from '../slot';
 import { STAGE_W, geometry, type StageGeometry } from '../units';
 import { CarPaint, HouseLights, TableWing } from './DiningCarParts';
+import { notebookGame } from '../notebook';
 import type { SceneProps } from './types';
 import { score, tally } from './vote-count';
 
@@ -281,6 +282,7 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput }: SceneProps
           me={me}
           hud={hud}
           width={g.wingN}
+          notes={notebookGame(presentation, me)}
           opts={{
             untold,
             lit: (s) => s === seat,

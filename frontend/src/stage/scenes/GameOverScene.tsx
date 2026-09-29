@@ -59,6 +59,7 @@ import {
   winnersOf,
   type EndedAt,
 } from './game-over';
+import { notebookGame } from '../notebook';
 import type { SceneProps } from './types';
 import { score, tally } from './vote-count';
 import styles from './GameOver.module.css';
@@ -271,6 +272,7 @@ function OverBeat({ view, beat, me, presentation, slot: slotInput, wayOut }: Sce
           me={me}
           hud={hud}
           width={g.wingN}
+          notes={notebookGame(presentation, me)}
           opts={{
             truth: (s) => (xray || truthOut ? roleOf(s) : null),
             lit: (s) => onStand && winners.includes(s),

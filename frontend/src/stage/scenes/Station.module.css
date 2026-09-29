@@ -272,12 +272,6 @@
   }
 }
 
-/* ---- the wing: an open place's tile ---- */
-.openFace {
-  background: rgba(224, 166, 58, 0.06);
-  border: 1.6px dashed rgba(224, 166, 58, 0.55);
-}
-
 /* ---- the hang tags: paper tags on strings from the canopy, Invite and Ticket ---- */
 .hang {
   position: absolute;

@@ -240,6 +240,7 @@ never reads any of it; one `lib/storage.ts` module owns the key names):
 | `host_{gameId}` | room creator's host_key | `POST /rooms` | after `/start` succeeds (its only use) |
 | `byok_key` | remembered API key — **opt-in only** | "remember on this device" checked | the "clear saved key" button; also never written unless opted in |
 | `ghost_{gameId}` | ghost-mode guesses keyed by phase | guess widget (ruling 7) | never (it's the user's history) |
+| `notes_{gameId}` | the seated player's notes per seat, the one suspect, whether the rail's hint was seen | the seat rail's note editor (HUD pass 2, 2026-09-29) | never (it's the user's own record) |
 
 BYOK-remember explicitly needs ZERO additional server support: the key's only wire appearance
 is the create-request body; the server retains it only in the live game object's memory, while

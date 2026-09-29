@@ -8,6 +8,8 @@
   color: var(--bone);
   /* 0 until the box has been measured: nothing shows at the wrong size, even for a frame */
   --stage-scale: 0;
+  /* how much of the bleed shows left of the world, in units (Stage.tsx): the seat rail's room */
+  --spare: 0px;
 }
 
 /* fit: 'contain' — the box sits in a wrapper that fills the parent and takes whichever of

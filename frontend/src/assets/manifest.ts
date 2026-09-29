@@ -161,6 +161,7 @@ import grain from './sprites/atmosphere/grain.webp';
 import textureWalnut from './sprites/textures/walnut.webp';
 import textureBoards from './sprites/textures/boards.webp';
 import textureVelvet from './sprites/textures/velvet.webp';
+import textureCork from './sprites/textures/cork.webp';
 
 export const PORTRAITS: StaticImageData[] = [
   p01,
@@ -287,7 +288,7 @@ export type RoomPicture =
  * The room's surfaces (seamless tiles, opaque): the walls' walnut veneer, the floor's boards and
  * the replay valance's velvet, each tinted to the flat colour it fills. Recipe: stage_architecture §4.
  */
-export type TexturePicture = 'walnut' | 'boards' | 'velvet';
+export type TexturePicture = 'walnut' | 'boards' | 'velvet' | 'cork';
 
 export const SPRITES: {
   day: Record<Character, Record<DayState | 'head', StaticImageData>>;
@@ -493,7 +494,12 @@ export const SPRITES: {
     },
   },
   grain,
-  textures: { walnut: textureWalnut, boards: textureBoards, velvet: textureVelvet },
+  textures: {
+    walnut: textureWalnut,
+    boards: textureBoards,
+    velvet: textureVelvet,
+    cork: textureCork,
+  },
 };
 
 /**

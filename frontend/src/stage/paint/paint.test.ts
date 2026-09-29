@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { BLEED, geometry, STAGE_W, type Hud } from '../units';
+import { BLEED, geometry, STAGE_W, WING_N, type Hud } from '../units';
 import { bleed } from './bleed';
 import { CAR_PICTURE, diningCarPlan } from './dining-car';
 import { drape } from './drape';
@@ -145,6 +145,11 @@ describe('fidelity to kits/stage-kit.js', () => {
     .map((p) => `[${at(p)}, c.lit ? 0.3 * H : 0.06 * H, "#ffb35c"]`)
     .join(', ');
   const pieces: [string, string][] = [
+    // the seat rail (HUD pass 2, 2026-09-29): the wing is WING_N wide, not the kit's 5.5%
+    [
+      'const wingN = on ? W * (phone ? 0.049 : 0.055) : 0',
+      `const wingN = on ? (phone ? W * 0.049 : ${WING_N}) : 0`,
+    ],
     ['    if (slotL[1] - slotL[0] > 0.06 * W) parts.push(wallClock(ctx, sh, c, slotL));\n', ''],
     [
       'x = (slot[0] + slot[1]) / 2, y = 0.3 * H, iron = "#1c1a18"',
@@ -291,10 +296,11 @@ describe('the night rooms', () => {
             expect(p.x + R.photo.w / 2).toBeLessThan(R.glass.x);
             expect(p.drop).toBeGreaterThan(0);
           }
-          // two heights (three with the slot open) for a full line, one row for a short one
-          expect(new Set(R.photos.map((p) => p.row)).size).toBe(
-            n <= 4 ? 1 : side && n === 8 ? 3 : 2,
-          );
+          // two heights (three with the slot open) for a full line, one row for a short one;
+          // beside the slot, right of the seat rail, a short line may already need two
+          const rows = new Set(R.photos.map((p) => p.row)).size;
+          if (!side) expect(rows).toBe(n <= 4 ? 1 : 2);
+          else expect(rows).toBe(n === 8 ? 3 : n <= 3 ? Math.min(rows, 2) : 2);
         }
   });
 
@@ -332,7 +338,7 @@ describe('station', () => {
       expect(S.places[8] + S.pitch / 2).toBeCloseTo(S.glass.x + S.glass.w, 6);
     }
     expect(stationPlan('none').cx).toBe(800);
-    expect(stationPlan('live').cx).toBe(844);
+    expect(stationPlan('live').cx).toBe(WING_N + (STAGE_W - WING_N) / 2);
   });
 
   it('pulls the whole train out past the world’s right edge', () => {

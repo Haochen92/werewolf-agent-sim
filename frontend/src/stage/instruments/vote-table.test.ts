@@ -44,7 +44,8 @@ describe('the vote’s geometry', () => {
 
   it('sizes the table a tenth narrower than the trap, as the bench does', () => {
     expect(v.trapW / v.tw).toBeCloseTo(1.1, 9);
-    expect(v.tw).toBeCloseTo(907.2, 1);
+    // the trap is 0.66 of the room right of the wing (907.2 with the kit's 88-unit wing)
+    expect(v.tw).toBeCloseTo(0.6 * geometry('live').room, 6);
   });
 
   it('caps a tower at four chips and starts a second one beside it', () => {

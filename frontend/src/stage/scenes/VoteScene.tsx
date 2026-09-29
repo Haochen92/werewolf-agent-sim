@@ -46,6 +46,7 @@ import { seatNumber, seatify } from '../roles';
 import { bandNarrows, sideOpen, stripButtons } from '../slot';
 import { STAGE_H, STAGE_W, geometry } from '../units';
 import { CarPaint, HouseLights, TableWing } from './DiningCarParts';
+import { notebookGame } from '../notebook';
 import type { SceneProps } from './types';
 import {
   candidatesOf,
@@ -322,6 +323,7 @@ function VoteBeat({
           me={me}
           hud={hud}
           width={g.wingN}
+          notes={notebookGame(presentation, me)}
           opts={{
             untold,
             lit: (seat) => seat === litSeat,

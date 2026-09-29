@@ -295,6 +295,55 @@ test('the phone frame draws the stage at the phone’s size', async ({ page }) =
 });
 
 /**
+ * The seat rail's notebook (beat sheet §0, HUD pass 2): a seated player (a live cut) taps another
+ * seat's card to write a note and mark a suspect; the note shows on the card, the suspect's head
+ * in the slot, and both come back after a reload (this device only). A dead seat has no suspect
+ * toggle. The replay's cut shows the cards only.
+ */
+test('the seat rail: notes and a suspect for a seated player, none in a replay', async ({
+  page,
+}) => {
+  const live = '/workbench/day?live=1&viewer=seat:player_7&animate=0&strip=0';
+  await page.goto(`${live}&beat=6`, { waitUntil: 'networkidle' });
+  const hint = page.getByText('Tap a card to write notes');
+  await expect(hint).toBeVisible();
+  // your own card is not a notebook page
+  await expect(page.getByRole('button', { name: 'Seat 7, notes' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Seat 5, notes' }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toContainText('Seat 5');
+  await expect(dialog).toContainText('Alive');
+  await expect(hint).toHaveCount(0);
+  await page.keyboard.type('Jumped on the slip');
+  await dialog.getByRole('button', { name: 'Mark as suspect' }).click();
+  await dialog.getByRole('button', { name: 'Done' }).click();
+  await expect(dialog).toHaveCount(0);
+  const card = page.locator('[data-layer="hud"] [data-seat="5"]');
+  await expect(card).toContainText('Jumped on the slip');
+  await expect(page.getByRole('button', { name: 'Suspect: seat 5, notes' })).toBeVisible();
+
+  // kept on the device: a later beat still has it, and the hint stays dismissed
+  await page.goto(`${live}&beat=14`, { waitUntil: 'networkidle' });
+  await expect(card).toContainText('Jumped on the slip');
+  await expect(hint).toHaveCount(0);
+  // a dead seat: its note may be written, it cannot be marked; Escape closes
+  await page.getByRole('button', { name: 'Seat 3, notes' }).click();
+  await expect(dialog).toContainText('Dead · Wolf');
+  await expect(dialog.getByRole('button', { name: /suspect/ })).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Seat 3, notes' })).toBeFocused();
+
+  // the replay's cut: the same seat, nothing to write on
+  await page.goto('/workbench/day?beat=6&viewer=seat:player_7&animate=0&strip=0', {
+    waitUntil: 'networkidle',
+  });
+  await expect(page.locator('[data-layer="hud"] [data-seat]')).toHaveCount(9);
+  await expect(page.getByRole('button', { name: /^Seat \d, notes$/ })).toHaveCount(0);
+  await expect(hint).toHaveCount(0);
+});
+
+/**
  * The bleed (stage_architecture.md §3): on a phone held sideways (19.5:9) the picture carries
  * on past the 16:9 world's sides instead of leaving bars. The count's push-in in the car, with
  * the lantern's wall continuing on the right; the night lobby with the wing on the left.

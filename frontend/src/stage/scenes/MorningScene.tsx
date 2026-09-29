@@ -42,6 +42,7 @@ import { seatNumber } from '../roles';
 import { bandNarrows, sideOpen, stripButtons } from '../slot';
 import { STAGE_H, geometry } from '../units';
 import { CarPaint, HouseLights, StandReturns, TableWing } from './DiningCarParts';
+import { notebookGame } from '../notebook';
 import type { SceneProps } from './types';
 
 /** One line of the report: a death, or the save. */
@@ -400,6 +401,7 @@ function MorningBeat({ view, beat, me, presentation, slot: slotInput }: ScenePro
           me={me}
           hud={hud}
           width={g.wingN}
+          notes={notebookGame(presentation, me)}
           opts={{
             untold,
             truth: (seat) => (xray ? (view.xray.roles[seat] ?? null) : null),

@@ -38,7 +38,6 @@ import { ChipSprite } from '../cast/ChipSprite';
 import { Puppet } from '../cast/Puppet';
 import { Bleed } from '../instruments/Bleed';
 import { Wing } from '../instruments/Wing';
-import wingStyles from '../instruments/Wing.module.css';
 import { StageMotion, useMotionScale } from '../motion';
 import { stationBack, stationFront, stationPlan } from '../paint/station';
 import { STAGE_H, geometry, type StageGeometry } from '../units';
@@ -286,25 +285,14 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
       </Layer>
 
       <Layer name="hud">
-        <Wing width={g.wingN}>
-          {S.places.map((_, i) =>
-            i < n ? (
-              <div key={i} className={wingStyles.tile} data-place={i}>
-                <span
-                  className={
-                    i === you ? `${wingStyles.face} ${wingStyles.you}` : wingStyles.face
-                  }
-                >
-                  <ChipSprite character={cast[i]} />
-                </span>
-              </div>
-            ) : (
-              <div key={i} className={wingStyles.tile} data-place={i}>
-                <span className={`${wingStyles.face} ${styles.openFace}`} />
-              </div>
-            ),
-          )}
-        </Wing>
+        <Wing
+          width={g.wingN}
+          tiles={S.places.map((_, i) => ({
+            seat: i + 1,
+            character: i < n ? cast[i] : undefined,
+            you: i < n && i === you,
+          }))}
+        />
         <HangTags
           room={room}
           left={g.wingN + 112}

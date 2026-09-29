@@ -1,125 +1,283 @@
-/* The seat wing down the left edge, as the benches draw it (rev 72, rev 75). */
+/* The seat rail (HUD pass 2, owner 2026-09-29, "B on photo stock"): a cork board in a walnut
+   frame with a brass edge down the left of the stage, the seats tacked to it as photo cards in a
+   grid whose rows and columns come from the seat count (rail-layout.ts, set inline). Sizes are
+   units. */
+
+/* how far the rail grows past the world's left edge: as much of the bleed as the screen shows
+   (--spare, written by the stage), up to what the layout wants (--reach-max) */
+.wing,
+.bleed,
+.hint,
+.editor {
+  --reach: min(var(--spare, 0px), var(--reach-max, 0px));
+}
+
 .wing {
   position: absolute;
-  left: 0;
   top: 0;
   bottom: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 6.4px;
-  padding: 9.6px;
+  left: calc(-1 * var(--reach));
+  width: calc(var(--wing) + var(--reach));
   box-sizing: border-box;
-  background: var(--cloak0);
-  border-right: 1px solid var(--cloak2);
-  overflow: hidden;
+  display: grid;
+  gap: var(--rail-gap);
+  padding: var(--rail-pad);
+  padding-right: calc(var(--rail-pad) + 3px);
+  /* the frame: the speech box's walnut, darker, its brass edge on the room's side only */
+  background:
+    linear-gradient(90deg, rgba(36, 23, 13, 0.9), rgba(28, 18, 10, 0.93)),
+    var(--board) 0 0 / 320px 320px repeat,
+    var(--walnut-bot);
+  border-right: 1.5px solid var(--hud-brass);
+  box-shadow:
+    inset -3px 0 0 rgba(22, 13, 7, 0.9),
+    inset -4px 0 0 rgba(201, 164, 92, 0.3),
+    6px 0 16px rgba(0, 0, 0, 0.5);
 }
-/* the wing's ground carried on past the stage's left edge, into the house's dark (the bleed) */
+/* the cork inside the frame: a still tile (scripts/make-cork.mjs), dimmed to the car's light
+   and darker towards the frame, a fine brass line where it meets the wood */
+.wing::before {
+  content: '';
+  position: absolute;
+  inset: 7px 10px 7px 7px;
+  border-radius: 2.4px;
+  background:
+    linear-gradient(rgba(34, 20, 9, 0.24), rgba(34, 20, 9, 0.24)),
+    var(--cork) 0 0 / 288px 288px repeat,
+    #9c6b3e;
+  box-shadow:
+    inset 0 0 0 1.2px rgba(122, 90, 43, 0.9),
+    inset 0 0 0 2.4px rgba(22, 13, 7, 0.55),
+    inset 0 0 22px 4px rgba(30, 16, 6, 0.55);
+  pointer-events: none;
+}
+.wing > * {
+  z-index: 1;
+}
+/* past the rail's outer edge, what is left of the bleed, into the house's dark */
 .bleed {
   position: absolute;
   top: 0;
   bottom: 0;
   left: calc(-1 * var(--bleed));
-  width: var(--bleed);
-  background: linear-gradient(to left, var(--cloak0), #0c0a07 var(--bleed-dark));
+  width: calc(var(--bleed) - var(--reach));
+  background: linear-gradient(
+    to left,
+    #1c120a,
+    #0c0a07 calc(var(--bleed-dark) - var(--reach))
+  );
   pointer-events: none !important;
 }
 
+/* ---- a card: the night room's print (NightRoom.module.css `.print`), stood on the rail ---- */
 .tile {
+  --band-h: 0px;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
   display: flex;
-  align-items: center;
-  border-radius: 8px;
-  padding: 1.6px;
-  border: 1px solid transparent;
-  transition:
-    opacity 0.3s,
-    background-color 0.3s,
-    border-color 0.3s;
+  flex-direction: column;
+  container-type: size;
+  box-sizing: border-box;
+  margin: 0;
+  border: 0;
+  padding: 4.8px 4.8px 0;
+  border-radius: 3.2px;
+  font: inherit;
+  text-align: left;
+  color: #2a1d10;
+  background:
+    radial-gradient(
+      ellipse at 50% 45%,
+      rgba(255, 250, 238, 0) 55%,
+      rgba(150, 110, 60, 0.28) 100%
+    ),
+    #ece2c8;
+  /* it lies on the cork: a soft contact shadow down and to the right */
+  box-shadow:
+    inset 0 0 0 0.8px rgba(90, 60, 30, 0.35),
+    1px 1.6px 1.6px rgba(30, 15, 5, 0.5),
+    3.2px 5.6px 7px rgba(30, 15, 5, 0.45);
+  transition: opacity 0.3s;
 }
-/* lit: the seat on the stand now, edged in the HUD's brass. Light, never movement. */
-.lit {
-  border-color: var(--hud-brass);
-  background: var(--cloak1);
-  box-shadow: 0 0 0 1px rgba(201, 164, 92, 0.35);
+/* the brass tack at the top of each card, pinning it to the cork */
+.tack {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: calc(-3.2px * var(--legible-ui));
+  width: calc(10px * var(--legible-ui));
+  aspect-ratio: 1;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 36% 32%,
+    #fff3c8 0,
+    var(--hud-brass-hi) 20%,
+    var(--hud-brass) 48%,
+    var(--hud-brass-lo) 100%
+  );
+  box-shadow:
+    inset 0 0 0 0.8px rgba(60, 40, 15, 0.6),
+    1.6px 2.4px 2.4px rgba(20, 10, 3, 0.6);
+}
+.banded {
+  --band-h: calc(var(--meta) * 1.2);
+}
+.tap {
+  cursor: pointer;
+}
+.tap:focus-visible {
+  outline: 2.4px solid var(--amber);
+  outline-offset: 3.2px;
 }
 .dim {
   opacity: 0.45;
 }
 
-/* a card's proportion alive or dead, so the column never reshuffles when a seat dies and the
-   wing's height is used (owner, 2026-09-25; the benches drew the live face square) */
-.face {
+/* the photograph: as wide as the card, and at most 60% of its height (a card on a phone is
+   wide, its head framed by the height; on a desk it is tall, and the photo a short portrait that
+   leaves the foot three ruled lines) */
+.picture {
   position: relative;
   flex: 0 0 auto;
-  width: var(--chip);
-  aspect-ratio: 28 / 36;
-  border-radius: 6.4px;
+  height: min(120cqw, 60cqh);
+  display: block;
   overflow: hidden;
-  border: 1px solid var(--cloak2);
-  background: #17130e;
+  border-radius: 1.6px;
   line-height: 0;
+  background: radial-gradient(circle at 50% 40%, #8a8378, #4d463d);
 }
+.picture::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(150, 100, 40, 0.14);
+  box-shadow: inset 0 0 6px rgba(40, 25, 10, 0.55);
+  pointer-events: none;
+}
+/* the seat's numeral, printed on the card's corner */
 .num {
   position: absolute;
   z-index: 1;
-  left: 4px;
-  top: 3.2px;
-  line-height: 1;
+  left: 4.8px;
+  top: 4.8px;
+  padding: 1.6px 4.8px 2.4px 3.2px;
+  border-bottom-right-radius: 4.8px;
+  background: #ece2c8;
   font-family: var(--font-display);
-  font-size: calc(var(--meta) * 0.9);
   font-weight: 400;
-  color: var(--cream);
-  text-shadow:
-    0 0 2px #000,
-    0 0 2px #000;
-}
-.you::after {
-  content: 'you';
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  line-height: 1.3;
-  background: var(--bone);
-  color: var(--ink);
-  font-size: calc(var(--meta) * 0.75);
-  padding: 0 4.8px;
-  border-top-left-radius: 4.8px;
+  font-size: calc(var(--meta) * 1.05);
+  line-height: 1;
+  color: #2a1d10;
 }
 
-/* a dead seat is its role's sigil on paper, in the faction's ink */
-.dead .face {
-  background: var(--paper);
-  border-color: var(--bone3);
-  display: grid;
-  place-items: center;
+/* the foot: faint ruled lines where the player may write (the "write here"), their note's first
+   words on the rules. The words are never smaller than 11 css px: where they would be (a phone,
+   the stage's `data-small`), the card shows a pencil scribble instead, and a tap reads the note */
+.foot {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+  display: block;
+  box-sizing: border-box;
+  padding: 3.2px 2.4px var(--band-h);
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: max(calc(var(--meta) * 0.9), calc(11px / max(var(--stage-scale, 1), 0.01)));
+  line-height: 1.35;
 }
-.dead .num {
-  color: var(--ink);
-  text-shadow: none;
+:global([data-small]) .foot {
+  font-size: calc(var(--meta) * 0.82);
 }
-.sigil {
-  width: 60%;
-  height: 60%;
-  color: var(--c, var(--ink));
-  stroke-width: 3.2;
+.ruled {
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(1lh - 1px),
+    rgba(95, 120, 160, 0.32) calc(1lh - 1px),
+    rgba(95, 120, 160, 0.32) 1lh
+  );
+  background-origin: content-box;
+  background-clip: content-box;
+}
+.note {
+  display: block;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  /* whole lines only */
+  max-height: round(down, 100%, 1lh);
+  color: #3a2814;
+}
+.scribble {
+  display: none;
+  width: min(42cqw, 48px);
+  height: auto;
+  margin: 0.15lh 0 0 4%;
+  overflow: visible;
+}
+.scribble path {
+  fill: none;
+  stroke: #4a4540;
+  stroke-opacity: 0.8;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+:global([data-small]) .note {
+  display: none;
+}
+:global([data-small]) .scribble {
+  display: block;
 }
 
-/* the X-ray's truth on a living seat: a faction strip along the foot and a sigil badge */
-.strip {
+/* the band across the card's foot: a death's role on its faction's ink, the X-ray's truth, or
+   "You" in amber */
+.band {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 5.6px;
-  background: var(--c);
+  height: var(--band-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 2px;
+  overflow: hidden;
+  white-space: nowrap;
+  border-radius: 0 0 3.2px 3.2px;
+  font-family: var(--font-display);
+  font-size: min(calc(var(--meta) * 0.78), 19cqw);
+  letter-spacing: -0.01em;
+  line-height: 1;
+  color: var(--cream);
+  background: var(--ci, #2a1d10);
 }
+/* a living seat's truth (the X-ray, a packmate) keeps the faction's own colour on its edge */
+.tile:not(.dead) .band {
+  box-shadow: inset 0 2px 0 var(--c);
+}
+.tile .youBand {
+  background: var(--amber);
+  color: var(--ink);
+  box-shadow: none;
+}
+
+/* dead: the same photo, gone grey */
+.dead .picture :global(img) {
+  filter: grayscale(1);
+}
+.dead .picture::after {
+  background: rgba(40, 28, 16, 0.3);
+}
+
+/* the X-ray's sigil badge on a living seat's photo */
 .badge {
   position: absolute;
   z-index: 1;
-  right: 1.9px;
-  top: 1.9px;
-  width: calc(var(--chip) * 0.36);
-  height: calc(var(--chip) * 0.36);
+  right: 2.4px;
+  top: 2.4px;
+  width: min(34cqw, 25.6px);
+  aspect-ratio: 1;
   border-radius: 4px;
   background: var(--paper);
   color: var(--c);
@@ -136,50 +294,391 @@
 
 .c-villagers {
   --c: var(--town);
+  --ci: var(--town-ink);
 }
 .c-wolves {
   --c: var(--wolf);
+  --ci: var(--wolf-ink);
 }
 .c-serial_killer {
   --c: var(--sk);
+  --ci: var(--sk-ink);
 }
 
-/* a packmate, as a wolf sees it (bench rev 75 `.seat.pack`) */
-.pack .face {
-  border-color: var(--wolf);
+/* the suspect's wax seal, pressed over the photo's lower corner */
+.seal {
+  position: absolute;
+  z-index: 2;
+  right: 2.4px;
+  top: calc(4.8px + min(120cqw, 60cqh) - min(26cqw, 25.6px) * 0.7);
+  width: min(26cqw, 25.6px);
+  aspect-ratio: 1;
+  border-radius: 46% 54% 50% 48%;
+  background: radial-gradient(circle at 38% 34%, #d9594c, #a32219 48%, #6b120c 100%);
   box-shadow:
-    0 0 0 1px var(--wolf),
-    0 0 9.6px rgba(227, 80, 63, 0.5);
+    0 1.6px 3px rgba(0, 0, 0, 0.6),
+    inset 0 0 0 1.6px rgba(80, 10, 6, 0.45);
 }
+.seal::after {
+  content: '';
+  position: absolute;
+  inset: 24%;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 190, 170, 0.4);
+}
+
+/* lit, a packmate, a read: a ring round the card, light only (its opacity fades, nothing moves) */
+.tile::before,
+.tile::after {
+  content: '';
+  position: absolute;
+  inset: -3.2px;
+  border-radius: 5.6px;
+  pointer-events: none;
+}
+.tile::before {
+  inset: -4.8px;
+  border-radius: 7.2px;
+  border: 3.2px solid var(--hud-brass-hi);
+  box-shadow:
+    0 0 0 1.6px var(--hud-brass-lo),
+    0 0 16px 3.2px rgba(236, 208, 142, 0.55);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.lit::before {
+  opacity: 1;
+}
+/* a packmate, as a wolf sees it (bench rev 75 `.seat.pack`) */
+.pack::after {
+  border: 2.4px solid var(--wolf);
+  box-shadow: 0 0 9.6px rgba(227, 80, 63, 0.5);
+}
+/* the X-ray's reads: a blue edge on each seat the speaker has a read on, brighter when sure;
+   tapping one opens the read card beside it (bench 74 `.seat.read`) */
+.read::after {
+  border: 1.6px solid var(--film-ink);
+  box-shadow: 0 0 9.6px rgba(127, 220, 242, 0.45);
+}
+.read.sure::after {
+  border-width: 3.2px;
+  box-shadow: 0 0 12.8px rgba(127, 220, 242, 0.6);
+}
+.read.open::after {
+  inset: -5.6px;
+  border-width: 3.2px;
+}
+
 /* the X-ray night's lamp on a seat that acts tonight (bench rev 67 `.seat .lamp`) */
 .lamp {
   position: absolute;
   z-index: 1;
-  right: 2.4px;
-  bottom: 2.4px;
+  right: 3.2px;
+  bottom: 3.2px;
   width: 11.2px;
   height: 11.2px;
   border-radius: 50%;
   background: var(--warm, #ffb35c);
   box-shadow: 0 0 9.6px var(--warm, #ffb35c);
 }
-/* the X-ray's reads: a blue edge on each seat the speaker has a read on, brighter when sure;
-   tapping one opens the read card beside it (bench 74 `.seat.read`) */
-.read {
+
+/* a place nobody has taken yet (the platform): a dashed slot on the rail, no card */
+.empty {
+  background: rgba(224, 166, 58, 0.06);
+  box-shadow: none;
+  outline: 1.6px dashed rgba(224, 166, 58, 0.55);
+  outline-offset: -1.6px;
+}
+.empty .picture,
+.empty .num {
+  visibility: hidden;
+}
+
+/* ---- the suspect slot: an empty space pencilled on the cork (the grid's spare cell, or a
+   strip across the rail's foot), filled by the suspect's card tacked into it ---- */
+.suspect {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 4.8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  container-type: size;
+  border: 1.6px dashed rgba(46, 28, 12, 0.6);
+  border-radius: 4px;
+  background: none;
+  font: inherit;
+  color: #2e1c0c;
+  text-align: center;
+}
+button.suspect {
   cursor: pointer;
 }
-.read .face {
-  border-color: var(--film-ink);
-  box-shadow:
-    0 0 0 1px var(--film-ink),
-    0 0 9.6px rgba(127, 220, 242, 0.45);
+button.suspect:focus-visible {
+  outline: 2.4px solid var(--amber);
+  outline-offset: 3.2px;
 }
-.read.sure .face {
-  box-shadow:
-    0 0 0 2.88px var(--film-ink),
-    0 0 12.8px rgba(127, 220, 242, 0.6);
+.strip {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  gap: 9.6px;
 }
-.read.open {
-  background: var(--cloak1);
-  border-color: var(--film-ink);
+.suspectLabel {
+  font-family: var(--font-display);
+  font-size: min(calc(var(--meta) * 0.85), 22cqw);
+  line-height: 1.1;
+  text-shadow: 0 0 3px rgba(236, 200, 150, 0.5);
+}
+.suspectNone {
+  font-style: italic;
+  font-size: min(calc(var(--meta) * 0.72), 18cqw);
+  line-height: 1.15;
+  opacity: 0.75;
+}
+/* the suspect's card, tacked into the space: the same stock, the head and the seat */
+.suspectCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.4px;
+  padding: 4px 4px 3.2px;
+  border-radius: 2.4px;
+  background: #ece2c8;
+  box-shadow:
+    1px 1.6px 1.6px rgba(30, 15, 5, 0.5),
+    3.2px 5.6px 7px rgba(30, 15, 5, 0.45);
+}
+.strip .suspectCard {
+  flex-direction: row;
+  gap: 6.4px;
+  padding: 3.2px 8px 3.2px 4px;
+}
+.suspectHead {
+  display: block;
+  width: min(72cqw, 50cqh);
+  aspect-ratio: 1;
+  border-radius: 1.6px;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 40%, #8a8378, #4d463d);
+}
+.strip .suspectHead {
+  width: auto;
+  height: 62cqh;
+}
+.suspectSeat {
+  font-family: var(--font-display);
+  font-size: min(calc(var(--meta) * 0.85), 20cqw);
+  line-height: 1.1;
+  color: #2a1d10;
+}
+.suspectCard .seal {
+  top: auto;
+  bottom: 22%;
+  right: -4px;
+}
+
+/* ---- the first-time hint, a paper slip beside the rail ---- */
+.hint {
+  position: absolute;
+  z-index: 5;
+  left: calc(var(--wing) + 16px);
+  top: 480px;
+  margin: 0;
+  padding: calc(6.4px * var(--legible-ui)) calc(12.8px * var(--legible-ui));
+  max-width: calc(240px * var(--legible-ui));
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: var(--meta);
+  line-height: 1.25;
+  color: #2a1d10;
+  background: #f3ead3;
+  border-radius: 2.4px;
+  box-shadow: 2px 4px 9.6px rgba(0, 0, 0, 0.5);
+  rotate: -1.5deg;
+  pointer-events: none !important;
+}
+/* its point, at the rail */
+.hint::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  margin-top: -8px;
+  border: 8px solid transparent;
+  border-left: 0;
+  border-right-color: #f3ead3;
+}
+
+/* ---- the note editor: a walnut board with a ruled paper slip in it ---- */
+.scrim {
+  position: absolute;
+  z-index: 40;
+  top: 0;
+  bottom: 0;
+  left: calc(-1 * var(--bleed));
+  right: calc(-1 * var(--bleed));
+  background: rgba(8, 5, 3, 0.4);
+}
+.editor {
+  position: absolute;
+  z-index: 41;
+  left: calc(var(--wing) + 16px);
+  top: 50%;
+  translate: 0 -50%;
+  width: calc(400px * var(--legible-ui));
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: calc(9.6px * var(--legible-ui));
+  padding: calc(12.8px * var(--legible-ui)) calc(14.4px * var(--legible-ui));
+  border-radius: 8px;
+  color: var(--cream);
+  background:
+    linear-gradient(180deg, rgba(50, 32, 19, 0.92), rgba(27, 17, 10, 0.96)),
+    var(--board) 0 0 / 320px 320px repeat,
+    var(--walnut-bot);
+  border: 1.5px solid var(--hud-brass);
+  box-shadow:
+    inset 0 0 0 3px rgba(22, 13, 7, 0.9),
+    inset 0 0 0 4px rgba(201, 164, 92, 0.32),
+    0 8px 24px rgba(0, 0, 0, 0.6);
+}
+.editorHead {
+  display: flex;
+  align-items: center;
+  gap: calc(11.2px * var(--legible-ui));
+}
+.editorFace {
+  flex: 0 0 auto;
+  width: calc(52px * var(--legible-ui));
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 40%, #8a8378, #4d463d);
+  box-shadow:
+    0 0 0 1.5px var(--hud-brass),
+    0 0 0 3px rgba(22, 13, 7, 0.9);
+}
+.editorFace.dead :global(img) {
+  filter: grayscale(1);
+}
+.editorWho {
+  display: flex;
+  flex-direction: column;
+}
+.editorWho strong {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: calc(26px * var(--legible-ui));
+  line-height: 1.1;
+}
+.editorWho small {
+  font-size: var(--meta);
+  line-height: 1.3;
+  color: var(--cream2);
+}
+/* the writing area: paper ruled in faint blue, the words on the rules */
+.paper {
+  display: block;
+  box-sizing: content-box;
+  width: calc(100% - 1em);
+  height: 6em;
+  margin: 0;
+  padding: 0.1em 0.5em 0;
+  border: 0;
+  border-radius: 3.2px;
+  resize: none;
+  font-family: var(--font-body);
+  font-size: var(--note);
+  line-height: 1.5em;
+  color: #2a1d10;
+  background:
+    repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent calc(1.5em - 1px),
+        rgba(95, 120, 160, 0.4) calc(1.5em - 1px),
+        rgba(95, 120, 160, 0.4) 1.5em
+      )
+      0 0.1em / 100% 1.5em local,
+    #f3ead3;
+  box-shadow: inset 0 0 0 1px rgba(90, 60, 30, 0.35);
+}
+.paper::placeholder {
+  color: rgba(42, 29, 16, 0.4);
+  font-style: italic;
+}
+.paper:focus-visible {
+  outline: 2.4px solid var(--amber);
+  outline-offset: 2.4px;
+}
+.editorFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9.6px;
+}
+/* the two presses: slim on the board, their tap area a phone's 44 css px (--grown) */
+.mark,
+.done {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  min-height: calc(36px * var(--legible-ui));
+  padding: 0 0.9em;
+  border-radius: 5.6px;
+  font: inherit;
+  font-size: var(--meta);
+  cursor: pointer;
+}
+.mark::after,
+.done::after {
+  content: '';
+  position: absolute;
+  inset: calc(-28px * var(--grown)) calc(-4px * var(--grown));
+}
+.mark {
+  color: var(--cream);
+  background: rgba(10, 6, 3, 0.4);
+  border: 1.5px solid rgba(201, 164, 92, 0.6);
+}
+.mark[aria-pressed='true'] {
+  background: rgba(142, 27, 18, 0.45);
+  border-color: #c0392b;
+}
+.markSeal {
+  width: 0.95em;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(236, 208, 142, 0.6);
+}
+.mark[aria-pressed='true'] .markSeal {
+  border: 0;
+  background: radial-gradient(circle at 38% 34%, #d9594c, #a32219 48%, #6b120c 100%);
+}
+.done {
+  font-family: var(--font-display);
+  color: #24180c;
+  background: linear-gradient(180deg, var(--hud-brass-hi), var(--hud-brass));
+  border: 1.5px solid var(--hud-brass-lo);
+}
+.mark:focus-visible,
+.done:focus-visible {
+  outline: 2.4px solid var(--amber);
+  outline-offset: 2.4px;
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

@@ -84,6 +84,8 @@ The stage is a `16 / 9` box. Every position, size, radius and path in every scen
 - The HUD geometry the benches compute with `StageKit.geometry(W, H, …)` is **frozen once** into
   constants (`src/stage/units.ts`: rail, puppet box, wing, side slot, top strip, for `hud: live |
   replay | none`). The port's first job is to evaluate it at 1600×900 and commit the numbers.
+  Since HUD pass 2 (2026-09-29) `units.ts` evaluates the kit's formula once at load with the
+  wing at `WING_N` = 192 units (the seat rail's two columns, 12%) in place of the kit's 5.5% (88).
 - Sprites are placed in units too; their source pixel size only affects sharpness (§4).
 - Orientation: request fullscreen and `screen.orientation.lock("landscape")` where allowed
   (Android Chrome); where not (iOS Safari), a portrait interstitial ("turn your phone"). There is
@@ -117,6 +119,33 @@ sheet §0, §11), and the **stand plate** (the seat engraved on brass, "No. 2", 
 rail; on a phone, where the box rises past the rail, it rises to sit just above the box). A modal overlay (the full card, the epilogue's sheet, the
 portrait interstitial) sits above the box in normal page flow. `grade` and `hud` sit outside the
 camera's box: a push-in moves the room under the grade, as under a lens.
+
+**The seat rail (ruled 2026-09-29, pass 2 of 3; beat sheet §0).** The wing is a cork board (a
+still 192 px tile, `scripts/make-cork.mjs`, dimmed and darker towards the frame) in a walnut frame
+with a brass edge on the room's side, the seats tacked to it (a brass tack, a contact shadow) as
+photo cards (the night room's print stock:
+`Photo.tsx`'s cream border and grey ground, the head through `ChipSprite`), laid out by
+`railLayout(n)` (`instruments/rail-layout.ts`, unit-tested for 5–14 seats): two columns (three
+past six rows), rows filling the height, the suspect slot in the spare cell or a strip. Width:
+`WING_N` (192) inside the world on every screen, so the geometry stays frozen; the stage writes
+`--spare` (how much bleed a `contain` box shows left of the world, in units, from its
+`ResizeObserver`), and the rail reaches `min(--spare, target − 144)` past the world's left edge,
+where `target` is 310 for two columns (456 for three). On an iPhone 14 (scale 0.433, spare ~174
+units) the rail is 310 units, ~134 css px, 51 of them in the letterbox; on a 16:9 desk it is the
+192 (12% of the width; the kit's wing was 5.5%). What is left of the bleed past the rail darkens to
+the house's dark. A card is flex and a size container: the photo fills its width, up to 1.2× as tall and at most
+60% of the card (`min(120cqw, 60cqh)`), the numeral on its corner. The foot holds faint ruled
+lines where the seated player may write and their note on them (whole lines,
+`round(down, 100%, 1lh)`, at `max(0.9 × --meta, 11px / --stage-scale)`, so never under 11 css
+px); under the stage's `data-small` (a phone) the words give way to a pencil scribble. Then a band (the
+role's ink, the X-ray's faction, "You" in amber) and the suspect's wax seal. The note editor is a
+dialog over a scrim (`z-index` 40–41 in the HUD layer), a walnut board with a ruled paper area;
+its presses keep a phone's 44 css px tap area (`--grown`). The notebook is `notebook.ts`: one
+store per game id over `localStorage` (`lib/storage.ts` `seatNotes`, every access guarded), read
+by every rail through `useSyncExternalStore`; `Presentation.game` is set only by the live
+container (and the workbench's live cuts), so a replay's cards are never editable. GPU: the lit
+ring is a pseudo-element whose opacity fades; the dead photo's `grayscale` is a static filter on
+a small image; nothing moves.
 
 **Atmosphere (2026-09-27, the polish pass's first step).** One warm key light from the upper left
 (the puppets' own), carried over the whole room so the painted props and the flat vector pieces
@@ -166,7 +195,7 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   src/assets/sprites/day/<character>/{base,talking,thinking,out,head}.webp
   src/assets/sprites/kits/{healer,investigator,vigilante,serial_killer,wolf,villager,clock,lamp}.webp
   src/assets/sprites/wood/walnut.webp               (the station's beam and ledge only)
-  src/assets/sprites/textures/{walnut,boards,velvet}.webp
+  src/assets/sprites/textures/{walnut,boards,velvet,cork}.webp  (cork: scripts/make-cork.mjs)
   src/assets/sprites/station/{sky,floor,post,lamp,train,blind}.webp
   src/assets/sprites/window/{day,dusk,night,dawn}-{far,near}.webp
   src/assets/sprites/props/{jar-glass,jar-lid,stand-front,vote-table}.webp
@@ -579,7 +608,8 @@ src/stage/
 │                            #   behind the night rooms' cleared glass), Compartment (a night
 │                            #   room's painting, its window and its sinking edges), Photo
 │                            #   (a seat's print on the line),
-│                            #   RoleCard, CardBack, SmallCard, Chip, String, WingTile, Wing,
+│                            #   RoleCard, CardBack, SmallCard, Chip, String, Wing (the seat
+│                            #   rail: cards, suspect slot, note editor; rail-layout.ts),
 │                            #   VerdictBoard, ActMark, Sigil, Jar, VoteTable, Plate,
 │                            #   ActPlate (the night room's plate, with its countdown: the room
 │                            #   has no clock since 2026-09-27; CarriageClock is gone), Pin (the

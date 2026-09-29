@@ -34,6 +34,7 @@ import { seatNumber } from '../roles';
 import { bandNarrows, sideOpen, stripButtons } from '../slot';
 import { STAGE_H, geometry } from '../units';
 import { CarPaint, HouseLights, TableWing } from './DiningCarParts';
+import { notebookGame } from '../notebook';
 import type { SceneProps } from './types';
 
 /** The roles with a night of their own; the pack is one more unit. */
@@ -155,6 +156,7 @@ function LobbyBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
           me={me}
           hud={hud}
           width={g.wingN}
+          notes={notebookGame(presentation, me)}
           opts={{
             truth: (seat) => (xray ? (view.xray.roles[seat] ?? null) : null),
             lamp: (seat) => !!actors?.has(seat),

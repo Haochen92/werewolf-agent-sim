@@ -44,6 +44,7 @@ import { seatNumber } from '../roles';
 import { bandNarrows, sideOpen, stripButtons } from '../slot';
 import { STAGE_H, geometry } from '../units';
 import { CarPaint, HouseLights, StandReturns, TableWing } from './DiningCarParts';
+import { notebookGame } from '../notebook';
 import type { SceneProps } from './types';
 
 const ORDER: SceneBeat['id'][] = [
@@ -253,6 +254,7 @@ function DealBeat({ view, beat, me, presentation, slot: slotInput }: SceneProps)
           me={me}
           hud={hud}
           width={g.wingN}
+          notes={notebookGame(presentation, me)}
           opts={{
             truth: (seat) => (xray ? known(seat) : null),
             pack: (seat) => packShown && seat === mate,

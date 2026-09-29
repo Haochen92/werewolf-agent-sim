@@ -34,6 +34,12 @@ export interface Presentation {
    * when the viewer arrived here (a seek, a refresh, a reconnect) and the beat renders at rest.
    */
   animate: boolean;
+  /**
+   * The game being played, handed down only by a live game's container: the seated player's
+   * notebook (the seat rail's notes and suspect) is kept on this device under it. A replay has
+   * none, so its cards are only shown.
+   */
+  game?: string;
 }
 
 export interface SceneProps {

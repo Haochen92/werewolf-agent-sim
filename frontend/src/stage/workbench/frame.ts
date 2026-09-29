@@ -15,6 +15,9 @@ import { SYNTHETIC, SYNTHETIC_AFTER, sceneBeats } from './registry';
 import { synthesiseAll, type AnySituation } from './synthetic';
 import type { WorkbenchQuery } from './url';
 
+/** The workbench's one game, for the notebook a seated viewer keeps (notebook.ts). */
+export const WORKBENCH_GAME = 'workbench';
+
 export interface WorkbenchFrame {
   beats: SceneBeat[];
   /** The URL's beat, clamped into the scene's range. */
@@ -76,6 +79,8 @@ export function workbenchFrame(
       hud: q.hud,
       animate: q.animate,
       cast,
+      // a live cut keeps a seated viewer's notebook, as a live game would
+      game: q.live ? WORKBENCH_GAME : undefined,
     },
   };
 }
@@ -116,6 +121,8 @@ function syntheticFrame(
       hud: q.hud,
       animate: q.animate,
       cast,
+      // a live-only prompt is a seated player's: their notebook is kept
+      game: WORKBENCH_GAME,
     },
     situation: situations[index],
     turn: f?.turn,

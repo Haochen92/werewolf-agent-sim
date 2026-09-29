@@ -27,8 +27,9 @@ import { CardOverlay, FramedCard } from '../instruments/FramedCard';
 import { Photo } from '../instruments/Photo';
 import { Pin } from '../instruments/Pin';
 import { TopStrip } from '../instruments/TopStrip';
-import { Wing, WingTile } from '../instruments/Wing';
+import { Wing } from '../instruments/Wing';
 import { useMotionScale } from '../motion';
+import { notebookGame } from '../notebook';
 import { photoTwine, roomChoice, roomLight, roomPlan } from '../paint/compartment';
 import { seatNumber } from '../roles';
 import { sideOpen, stripButtons } from '../slot';
@@ -205,8 +206,10 @@ export function NightRoom({
       </Layer>
 
       <Layer name="hud">
-        <Wing width={g.wingN}>
-          {view.seats.map((seat, i) => {
+        <Wing
+          width={g.wingN}
+          notes={notebookGame(presentation, me)}
+          tiles={view.seats.map((seat, i) => {
             const d = deadBySeat.get(seat);
             const truth = xray
               ? (view.xray.roles[seat] ?? null)
@@ -215,19 +218,16 @@ export function NightRoom({
                 : pack.includes(seat)
                   ? 'wolf'
                   : null;
-            return (
-              <WingTile
-                key={seat}
-                seat={seatNumber(seat)}
-                character={cast[i]}
-                dead={d ? { role: d.role } : undefined}
-                truth={truth}
-                you={seat === me}
-                pack={seat !== me && pack.includes(seat)}
-              />
-            );
+            return {
+              seat: seatNumber(seat),
+              character: cast[i],
+              dead: d ? { role: d.role } : undefined,
+              truth,
+              you: seat === me,
+              pack: seat !== me && pack.includes(seat),
+            };
           })}
-        </Wing>
+        />
         <TopStrip
           hud={hud}
           title={`Night ${beat.day}`}
