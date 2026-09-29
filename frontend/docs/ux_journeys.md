@@ -201,8 +201,8 @@ thin strip under the roster strip (mobile) / an inspector block (desktop): night
 village stirs… m of n"; day_vote — "votes are in: m of n". Monotonic-max applied in the
 store; the strip never moves backwards.
 
-**D25 · Notes → line: the draft helper (server built 2026-09-17; no UI yet — this is
-the spec for it).** The free-text dock (D17) grows a second way in: rough notes ("4 dodging,
+**D25 · Notes → line: the draft helper (server built 2026-09-17; built in the theatre's
+dock, and reworked 2026-09-29 into one flow — see "As built" at the end of this entry).** The free-text dock (D17) grows a second way in: rough notes ("4 dodging,
 why abstain, agree with 8") that the seat's own agent phrases into one line in the player's
 voice. `POST /games/{gameId}/draft` `{notes}` (1–500 chars) → `{draft, drafts_left,
 deadline}`. Nothing enters the game: the draft lands in the message textarea, the player
@@ -215,7 +215,17 @@ deadline (D18) with the response `deadline` (`null` in solo = no ring, as before
 **409** = the turn is gone or no drafts left (detail text renders inline; re-sync via status);
 **503** "could not draft the line; type it instead" = model failure, keep the notes in the
 field. The player's role never reaches the prompt; the server builds it from the same
-`input_request` view the seat already has.
+`input_request` view the seat already has. *As built (HUD pass 3b, owner-approved
+2026-09-29, after playtest: "Draft for me isn't very clear that you need to tell it what to
+say"; "Let agent speak doesn't allow you to vet or edit it"):* one flow on the speaking turn —
+a field clearly labelled as instructions to your agent ("Tell your agent what to say — e.g.
+push on seat 5, they voted fast") and one **Draft** button with "n drafts left"; `notes` may
+now be **empty** (0–500 chars), and then the seat's agent drafts a line of its own from the
+discussion so far (same cap, same clock give-back, still nothing enters the game). The draft
+lands in the reply box, editable; **Send** sends it or whatever the player typed. The
+"Let my agent speak" hand-over is gone from the speaking turn (the clock running out still has
+the agent speak); the other prompts (ballot, night acts, the pack) keep "Let my agent play
+this turn".
 
 **D19 · Night, by viewer.** On `phase_change: night` the page shifts blue-black (token
 ruling) and the transcript starts a night section:
@@ -316,7 +326,7 @@ timing = a later slice). Spectator link is offered at the lobby (D6) and on room
 
 `action_kind` coverage: all 8 in D17 (two shapes). `GameStatus.state` coverage: waiting =
 D6/D7 · running = §4–§7 · finished = D22. Orthogonal `error` = D23. Non-event endpoints the
-dock calls: `POST /turns` (D17) · `POST /draft` (D25, UI not built).
+dock calls: `POST /turns` (D17) · `POST /draft` (D25, built in the day dock).
 
 ## 9. Component-inventory delta (extends ux_baseline §5 once ruled)
 

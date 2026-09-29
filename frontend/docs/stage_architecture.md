@@ -674,7 +674,7 @@ Verified against the server before ruling; the handoff's bundled schema is byte-
 |---|---|---|
 | "names or seat numbers: open" | seat numbers | the wire's seats are `player_1..player_9`; there are no names |
 | the translator should buffer `wolf_vote` | nothing | it already does (`server/game/translate.py`, `_buffer_wolf_votes`) |
-| "your turn": Say it, Pass | + **Draft from notes** (three per turn, the wait credited back) | `POST /games/{id}/draft` landed 2026-09-17 (ux_journeys D25) |
+| "your turn": Say it, Pass | + **Draft** from instructions to your agent, or its own line with none (three per turn, the wait credited back); **Send**, **Pass**; no hand-over on this turn (HUD pass 3b) | `POST /games/{id}/draft` landed 2026-09-17 (ux_journeys D25) |
 | `day_summary` "hidden from the live client until X-ray unlocks" | the live stage has no beat for it | it is public tier; the client never gates. Same picture, right words |
 | the sprite canvas size: open | 1600×900 units, sprites placed in units | §3 |
 | landing's miniature replay: same component reduced, or a cut-down build? | decided with the landing, after the theatre | the stage box scales; the question is what beats it plays, not what it is |

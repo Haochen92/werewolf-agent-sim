@@ -1,6 +1,8 @@
-/* The speaking turn's box, as bench 72 draws it (`.say2`: the amber-edged dark box, the red
-   count, the textarea, Say it in gold and Pass in walnut), in stage units (1cqw = 16). The
-   notes row, the drafts left and "Let my agent speak" are ours (beat sheet §12, "As built"). */
+/* The speaking turn's box, as bench 72 places it (in the speech box's stead, the red count at
+   its head), in the HUD pass's material (owner, 2026-09-29): the speech box's walnut board and
+   thin brass edge, Young Serif for the heading and the buttons, Literata in the fields. One flow
+   top to foot (HUD pass 3b): instructions to your agent + Draft, then the reply box + Send and
+   Pass. In stage units (1cqw = 16). */
 .dock {
   flex: 1 1 auto;
   min-width: 0;
@@ -8,117 +10,156 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 11.2px 14.4px;
-  border-radius: 12.8px;
-  background: rgba(20, 14, 8, 0.86);
-  border: 1px solid rgba(255, 179, 92, 0.3);
-  color: var(--paper);
+  gap: calc(7.2px * var(--legible-ui));
+  padding: 11.2px 14.4px 12.8px;
+  border-radius: 10px;
+  color: var(--cream);
+  /* the speech box's board (SpeechBox.module.css `.box`): deep walnut over the grain, a brass
+     edge with a dark reveal and a fainter inner line */
+  background:
+    linear-gradient(180deg, rgba(50, 32, 19, 0.9), rgba(27, 17, 10, 0.95)),
+    var(--board) 0 0 / 320px 320px repeat,
+    var(--walnut-bot);
+  border: 1.5px solid var(--hud-brass);
+  box-shadow:
+    inset 0 0 0 3px rgba(22, 13, 7, 0.9),
+    inset 0 0 0 4px rgba(201, 164, 92, 0.32),
+    0 6px 18px rgba(0, 0, 0, 0.55);
 }
 
 .head {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 4.8px 11.2px;
+  gap: 3.2px 11.2px;
 }
 .head strong {
-  font-weight: 500;
+  font-family: var(--font-display);
+  font-weight: 400;
   font-size: calc(22.4px * 1.05 * var(--legible-ui));
+  color: var(--cream);
 }
 .head span {
-  font-size: calc(var(--meta) * 1.05);
-  color: #c9b79a;
+  font-size: var(--meta);
+  color: var(--cream2);
 }
 .head .count {
   margin-left: auto;
+  font-family: var(--font-display);
+  font-size: calc(var(--meta) * 1.15);
   color: #e3503f;
-  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
+/* the fields: engraved wells in the board, Literata, a brass-lo rim that brightens on focus */
+.agent input,
 .line {
   font: inherit;
-  font-size: calc(var(--said) * 1.02);
+  font-family: var(--font-body);
+  color: var(--cream);
+  border-radius: 6px;
+  border: 1px solid var(--hud-brass-lo);
+  background: rgba(14, 8, 4, 0.6);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.7);
+}
+.agent input:focus-visible,
+.line:focus-visible {
+  outline: none;
+  border-color: var(--hud-brass-hi);
+}
+.agent input::placeholder,
+.line::placeholder {
+  color: rgba(233, 220, 196, 0.45);
+  font-style: italic;
+}
+
+/* 1. the instructions to your agent: a brass label, the field, Draft, how many are left */
+.agent {
+  display: flex;
+  align-items: center;
+  gap: calc(8px * var(--legible-ui));
+  min-width: 0;
+}
+.agent label {
+  flex: 0 0 auto;
+  font-family: var(--font-display);
+  font-size: var(--meta);
+  color: var(--hud-brass-hi);
+  white-space: nowrap;
+}
+.agent input {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--meta);
+  padding: calc(5.6px * var(--legible-ui)) calc(10px * var(--legible-ui));
+}
+.left {
+  flex: 0 0 auto;
+  font-size: calc(var(--meta) * 0.85);
+  color: var(--cream2);
+  white-space: nowrap;
+}
+
+/* 2. the reply box, and Send over Pass beside it */
+.reply {
+  display: flex;
+  align-items: stretch;
+  gap: calc(8px * var(--legible-ui));
+}
+.line {
+  flex: 1 1 auto;
+  min-width: 0;
+  /* a step smaller on a phone (--grown), so a two-line draft shows whole in the box */
+  font-size: calc(var(--said) * (1.02 - 0.2 * var(--grown)));
   line-height: 1.35;
   min-height: calc(64px * var(--legible));
   height: calc(64px * var(--legible));
   resize: none;
-  padding: 8px 11.2px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 179, 92, 0.35);
-  background: rgba(10, 7, 4, 0.7);
-  color: var(--paper);
+  padding: 6.4px 11.2px;
 }
-.line::placeholder,
-.notes input::placeholder {
-  color: #8d7c62;
+.sends {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: calc(5.6px * var(--legible-ui));
 }
 
-/* one row under the box: Say it, Pass, then the draft helper (the notes, the button, how many
-   drafts are left) and the hand-over at the far right */
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 9.6px;
-}
-.row button {
+/* the buttons: quiet brass-edged walnut plaques in Young Serif; Send is the one in brass */
+.dock button {
   font: inherit;
-  font-size: calc(22.4px * 1.05 * var(--legible-ui));
-  font-weight: 600;
-  padding: calc(5.6px * var(--legible-ui)) calc(20.8px * var(--legible-ui));
-  border-radius: 8px;
-  border: 2.6px solid #24180c;
-  background: linear-gradient(#5a4632, #3a2a1a);
-  color: var(--paper);
+  font-family: var(--font-display);
+  font-size: calc(var(--meta) * 1.08);
+  line-height: 1.3;
+  padding: calc(4.8px * var(--legible-ui)) calc(14.4px * var(--legible-ui));
+  border-radius: 6px;
+  border: 1px solid var(--hud-brass-lo);
+  background: linear-gradient(180deg, var(--walnut-top), var(--walnut-bot));
+  color: var(--cream2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
   cursor: pointer;
   white-space: nowrap;
 }
-.row .pri {
-  background: linear-gradient(#e9c27a, #b8862f);
-  color: #2a1a08;
+.dock button:hover:not(:disabled) {
+  color: var(--cream);
+  border-color: var(--hud-brass);
 }
-.row button:disabled {
+.dock button:focus-visible {
+  outline: 2px solid var(--hud-brass-hi);
+  outline-offset: 2px;
+}
+.dock .pri {
+  flex: 1 1 auto;
+  color: #2a1a08;
+  background: linear-gradient(180deg, var(--hud-brass-hi), var(--hud-brass));
+  border-color: var(--hud-brass-lo);
+}
+.dock .pri:hover:not(:disabled) {
+  color: #1a0f04;
+}
+.dock button:disabled {
   opacity: 0.45;
   cursor: default;
-}
-.notes {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: 9.6px;
-}
-.notes input {
-  flex: 1 1 auto;
-  min-width: 0;
-  font: inherit;
-  font-size: var(--meta);
-  padding: calc(6.4px * var(--legible-ui)) calc(11.2px * var(--legible-ui));
-  border-radius: 8px;
-  border: 1px solid var(--cloak2);
-  background: rgba(10, 7, 4, 0.55);
-  color: var(--paper);
-}
-.notes button {
-  font-size: var(--meta);
-  padding: calc(5.6px * var(--legible-ui)) calc(12.8px * var(--legible-ui));
-  border-width: 1.6px;
-}
-.left {
-  font-size: calc(var(--meta) * 0.85);
-  color: #c9b79a;
-  white-space: nowrap;
-}
-.row .agent {
-  font-size: var(--meta);
-  font-weight: 500;
-  padding: calc(5.6px * var(--legible-ui)) calc(12.8px * var(--legible-ui));
-  background: transparent;
-  border: 1px solid var(--cloak2);
-  color: var(--bone2);
 }
 
 .error {

@@ -159,9 +159,10 @@ export function submitTurn(gameId: string, payload: TurnPayload): Promise<TurnAc
 }
 
 /**
- * The seat's agent phrases rough notes (1–500 chars) into one line for the discussion turn it
- * owes (D25). Nothing enters the game: the line goes back into the box and is sent with
- * `submitTurn` like any typed line. 409 = no turn or no drafts left; 503 = the model failed.
+ * The seat's agent writes one line for the discussion turn it owes (D25): from rough notes
+ * (up to 500 chars), or, with the notes empty, a line of its own. Nothing enters the game: the
+ * line goes back into the box and is sent with `submitTurn` like any typed line. 409 = no turn
+ * or no drafts left; 503 = the model failed.
  */
 export function draftLine(gameId: string, notes: string): Promise<DraftResponse> {
   return request<DraftResponse>(`/games/${encodeURIComponent(gameId)}/draft`, {

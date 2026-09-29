@@ -2,22 +2,29 @@
 
 /**
  * The seated human's speaking turn, in the box at the foot of the stage (bench 72, beat sheet
- * §2 row 4). Where the speech box would hold a seat's line, it holds a place to write one: the
- * countdown in red at its head, the box for the line, **Say it** and **Pass**.
+ * §2 row 4). Where the speech box would hold a seat's line, it holds a place to write one, on
+ * the speech box's walnut board: the countdown in red at its head, then one flow, top to foot.
  *
- * Beside them, the draft helper (ux_journeys D25): jot rough notes and the seat's own agent
- * phrases them into one line, which lands in the box to be sent, edited or dropped. Three
- * drafts a turn; the time spent waiting on one is given back to the clock. Nothing is sent
- * until Say it.
+ * 1. A field of instructions to the seat's own agent ("push on seat 5, they voted fast") and
+ *    one **Draft** button (ux_journeys D25): the agent drafts from the instructions, or, with
+ *    the field left empty, a line of its own. Three drafts a turn; the time spent waiting on
+ *    one is given back to the clock.
+ * 2. The reply box, where the draft lands to be read and edited, or where the player types
+ *    their own line. **Send** says what is in it; **Pass** says nothing.
+ *
+ * Nothing is said until Send. If the clock runs out first, the seat's agent speaks on its own
+ * (the live theatre sees to that; there is no hand-over button on this turn).
  *
  * It only draws what it is handed and reports the presses; the live theatre holds the words
  * and talks to the server. A line refused by the server says why, in the server's words.
  */
 import { motion } from 'motion/react';
-import type { KeyboardEvent } from 'react';
+import type { CSSProperties, KeyboardEvent } from 'react';
+import { SPRITES } from '@/assets/manifest';
 import { useMotionScale } from '../motion';
 import type { DockInput } from '../scenes/types';
 import styles from './TurnDock.module.css';
+import { dockControls, draftsLeftText } from './turn-dock';
 
 export interface TurnDockProps {
   dock: DockInput;
@@ -29,18 +36,16 @@ export interface TurnDockProps {
   arrive?: boolean;
 }
 
-const drafts = (n: number) => (n === 1 ? '1 draft left' : `${n} drafts left`);
-
 export function TurnDock({ dock, left, onSay, onPass, arrive = false }: TurnDockProps) {
   const k = useMotionScale();
-  const busy = !!dock.sending || !!dock.closed;
-  const line = dock.text.trim();
-  const notes = dock.notes ?? '';
-  const draftsLeft = dock.draftsLeft ?? 3;
+  const c = dockControls(dock);
   const say = () => {
-    if (line && !busy) onSay?.(line);
+    if (c.canSend) onSay?.(c.line);
   };
-  // Ctrl/Cmd + Enter says it, as in any chat box; a plain Enter is a new line
+  const draft = () => {
+    if (c.canDraft) dock.onDraft?.(c.notes);
+  };
+  // Ctrl/Cmd + Enter sends, as in any chat box; a plain Enter is a new line
   const onKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
@@ -51,6 +56,7 @@ export function TurnDock({ dock, left, onSay, onPass, arrive = false }: TurnDock
     <motion.div
       className={styles.dock}
       data-dock="discuss"
+      style={{ '--board': `url(${SPRITES.textures.walnut.src})` } as CSSProperties}
       initial={arrive ? { opacity: 0 } : false}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 * k, delay: 0.3 * k }}
@@ -58,64 +64,55 @@ export function TurnDock({ dock, left, onSay, onPass, arrive = false }: TurnDock
       <header className={styles.head}>
         <strong>Your turn to speak</strong>
         <span>
-          Say something to the table, or pass.
-          {left ? ' If the clock runs out, your seat’s agent speaks for you.' : ''}
+          Nothing is said until you send it.
+          {left ? ' If the clock runs out, your agent speaks for you.' : ''}
         </span>
         {left ? <span className={styles.count}>{left}</span> : null}
       </header>
-      <textarea
-        className={styles.line}
-        aria-label="Your line"
-        placeholder="Say something…"
-        value={dock.text}
-        onChange={(e) => dock.onText?.(e.target.value)}
-        onKeyDown={onKey}
-        readOnly={!dock.onText}
-        disabled={busy}
-        autoFocus
-      />
-      <div className={styles.row}>
-        <button type="button" className={styles.pri} onClick={say} disabled={!line || busy}>
-          {dock.sending ? 'Saying…' : 'Say it'}
-        </button>
-        <button type="button" onClick={onPass} disabled={busy}>
-          Pass
-        </button>
-        {dock.onDraft ? (
-          <span className={styles.notes}>
-            <input
-              aria-label="Notes for your agent"
-              placeholder="Or jot notes (“8 dodging, why abstain?”)"
-              maxLength={500}
-              value={notes}
-              onChange={(e) => dock.onNotes?.(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && notes.trim() && draftsLeft > 0 && !dock.drafting)
-                  dock.onDraft?.(notes.trim());
-              }}
-              disabled={busy || !!dock.drafting}
-            />
-            <button
-              type="button"
-              onClick={() => dock.onDraft?.(notes.trim())}
-              disabled={busy || !!dock.drafting || draftsLeft <= 0 || !notes.trim()}
-              title="Your seat’s agent writes a line from your notes; you send it, edited or not"
-            >
-              {dock.drafting ? 'Drafting…' : 'Draft from notes'}
-            </button>
-            <span className={styles.left}>{drafts(draftsLeft)}</span>
-          </span>
-        ) : null}
-        {dock.onDelegate ? (
-          <button
-            type="button"
-            className={styles.agent}
-            onClick={dock.onDelegate}
-            disabled={busy}
-          >
-            Let my agent speak
+      {c.hasDraft ? (
+        <div className={styles.agent}>
+          <label htmlFor="dock-notes">Your agent</label>
+          <input
+            id="dock-notes"
+            aria-label="Tell your agent what to say"
+            placeholder="Tell your agent what to say — e.g. push on seat 5, they voted fast"
+            maxLength={500}
+            value={dock.notes ?? ''}
+            onChange={(e) => dock.onNotes?.(e.target.value)}
+            // Enter drafts from what is written; an empty field drafts only from the button
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && c.notes) draft();
+            }}
+            disabled={c.busy || !!dock.drafting}
+          />
+          <button type="button" onClick={draft} disabled={!c.canDraft} title={c.draftHint}>
+            {c.draftLabel}
           </button>
-        ) : null}
+          <span className={styles.left}>{draftsLeftText(c.draftsLeft)}</span>
+        </div>
+      ) : null}
+      <div className={styles.reply}>
+        <textarea
+          className={styles.line}
+          aria-label="Your line"
+          placeholder={
+            c.hasDraft ? 'Type your line, or draft one above…' : 'Type your line…'
+          }
+          value={dock.text}
+          onChange={(e) => dock.onText?.(e.target.value)}
+          onKeyDown={onKey}
+          readOnly={!dock.onText}
+          disabled={c.busy}
+          autoFocus
+        />
+        <div className={styles.sends}>
+          <button type="button" className={styles.pri} onClick={say} disabled={!c.canSend}>
+            {dock.sending ? 'Sending…' : 'Send'}
+          </button>
+          <button type="button" onClick={onPass} disabled={c.busy}>
+            Pass
+          </button>
+        </div>
       </div>
       {dock.error ? (
         <p className={styles.error} role="alert">

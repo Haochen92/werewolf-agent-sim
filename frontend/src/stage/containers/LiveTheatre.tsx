@@ -296,8 +296,9 @@ export function LiveTheatre({
   const onDelegate = useCallback(() => answer({ delegate: true }), [answer]);
 
   const onDraft = useCallback(
+    // empty notes are a draft too: the seat's agent writes a line of its own
     async (notes: string) => {
-      if (pendingSeq === null || !notes.trim()) return;
+      if (pendingSeq === null) return;
       const seq = pendingSeq;
       turnDispatch({ type: 'drafting', seq });
       try {
@@ -402,7 +403,6 @@ export function LiveTheatre({
           drafting: turn.drafting,
           sending: turn.sending,
           error: turn.error,
-          onDelegate,
           closed: !(open && beat.seq === pendingSeq),
         }
       : undefined;

@@ -142,18 +142,22 @@ export interface TurnInput {
 }
 
 /**
- * The speaking turn's dock, live. The container keeps the words (so a draft from notes can
- * land in the box) and talks to the server; the dock only draws them and reports the presses.
- * "Say it" and "Pass" go out through `SceneProps.onSay` and `onAct(null)`.
+ * The speaking turn's dock, live. The container keeps the words (so a draft can land in the
+ * box) and talks to the server; the dock only draws them and reports the presses. "Send" and
+ * "Pass" go out through `SceneProps.onSay` and `onAct(null)`. There is no hand-over on this
+ * turn: the seat's agent speaks only when the clock runs out.
  */
 export interface DockInput {
   /** The line in the box. */
   text: string;
   onText?: (text: string) => void;
-  /** The rough notes the seat's agent phrases into a line. */
+  /** The player's instructions to the seat's agent for the line (rough notes). */
   notes?: string;
   onNotes?: (notes: string) => void;
-  /** Ask for a draft from the notes; without it there is no draft helper. */
+  /**
+   * Ask for a draft: from the notes, or, with them empty, a line of the agent's own. Without
+   * it there is no draft helper.
+   */
   onDraft?: (notes: string) => void;
   /** Drafts left this turn (three per turn). */
   draftsLeft?: number;
@@ -162,8 +166,6 @@ export interface DockInput {
   sending?: boolean;
   /** What went wrong, in the words to show: the server's own for a refused line. */
   error?: string | null;
-  /** Hand the turn to the seat's agent. */
-  onDelegate?: () => void;
   /** The turn is no longer this seat's to answer: sent, or run out. */
   closed?: boolean;
 }

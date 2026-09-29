@@ -12,8 +12,8 @@
  * - `day.turn-thinking` (live only): the seat has the stand and has not spoken yet, so the
  *   puppet stands thinking and the box holds a "…" until its line (or its pass) arrives.
  * - `day.your-turn` (live, the seated human's own turn): their puppet at the stand thinking,
- *   and in the box's place the dock to write the line in (Say it, Pass, Draft from notes), its
- *   countdown on it.
+ *   and in the box's place the dock to write the line in (instructions to your agent and
+ *   Draft, then the line, Send and Pass), its countdown on it.
  * - A line the seat's agent said for this seat, because its turn ran out: on this seat's own
  *   screen the plaque and the box say "your seat's agent spoke for you".
  *

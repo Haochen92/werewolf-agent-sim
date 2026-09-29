@@ -278,7 +278,7 @@ export interface TurnState {
   seq: number | null;
   /** The line in the box. */
   text: string;
-  /** The rough notes a draft is phrased from. */
+  /** The instructions a draft is written from; empty = the agent writes its own line. */
   notes: string;
   draftsLeft: number;
   /** The deadline a draft came back with (the wait credited back); undefined = none yet. */

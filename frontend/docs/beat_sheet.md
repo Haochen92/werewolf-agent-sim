@@ -135,7 +135,7 @@ read card (guess, how sure, why, the truth with ● ◐ ○).
 | 1 | `day.turn-thinking` | `turn_started` (first: 13) | P | the seat's puppet takes the stand in the thinking state, no clock; the speech box shows a "…" so the state reads as thinking, not idle (ruled 2026-09-25) | D: nothing yet | live: until the turn resolves · replay: folded into the resolving beat: the puppet rises thinking, holds **0.6 s**, then plays it (accepted 2026-09-25) |
 | 2 | `day.speech` (one per page, §0) | `speech` | P | talking state, the line in the speech box a page at a time, "1 / 2 ▼" at its foot while more follows; X: the box carries the aqua tags (who it answers, stance) and the plaque tags the role; the wing's blue edges from the turn's `player_reads` | D: the line, lit and scrolled to · F(X): note + lessons weighed | speech |
 | 3 | `day.pass` | public: a `turn_started` resolved by no speech (the next `turn_started` or the phase change), live and replay alike, since `turn_started` is public · X-ray: `pass_marker` instead (12 in the fixture), which carries the reason and the draft (ruled 2026-09-25: day 1 of the public replay is three passes, not an empty stand) | P · X | idle state, the box says "passes"; X adds the reason and the held-back draft. Reason wording (accepted 2026-09-25): `voluntary` "chose to pass" · `novelty_gated` "held back: nothing new to say" · `generation_failed` "no line came" | D(X): the pass with its reason and draft | 4.0 |
-| 4 | `day.your-turn` | `input_request` `discuss` for me | S | my puppet at the stand, thinking; the dock carries the two minutes (`deadline`; null = no countdown; the car's wall clock is gone, ruled 2026-09-29); the box is a textarea with **Say it**, **Pass**, **Draft from notes** (three per turn, the returned `deadline` is the new countdown); the drawer stops at the rail so the prompt keeps the full width | D: stops at the rail | until answered / deadline |
+| 4 | `day.your-turn` | `input_request` `discuss` for me | S | my puppet at the stand, thinking; the dock carries the two minutes (`deadline`; null = no countdown; the car's wall clock is gone, ruled 2026-09-29); one flow: a field of instructions to your agent + **Draft** (from the instructions, or the agent's own line when the field is empty; three per turn, the returned `deadline` is the new countdown), then the textarea the draft lands in, editable, with **Send** and **Pass** (no hand-over on this turn: the agent speaks only when the clock runs out; HUD pass 3b, 2026-09-29); the drawer stops at the rail so the prompt keeps the full width | D: stops at the rail | until answered / deadline |
 | 5 | `day.your-line` | my `speech` after 4 | S (P sees a normal turn) | the puppet talks my line as any turn plays; a pass leaves it idle | D: my line | speech |
 | 6 | `day.agent-spoke-for-you` | my `speech` arriving with my request unanswered at its deadline (client-known) | S only | the puppet talks the agent's line; the plaque's tag and the box say "your seat's agent spoke for you" | D: the line with the tag | speech |
 | — | `day.summary` | `day_summary` (28, 79, 218, 360) | — | **no beat here.** Public on the wire but the live stage has no beat for it; the replay plays it in the Morning of the same day number (§8 row 8) | — | — |
@@ -677,14 +677,18 @@ drain fast (live-queue's rule). The clock runs on the request's `deadline` in se
 draft's returned `deadline` replaces it. A request that runs out unanswered from here, or is
 handed over, is the agent's: my `speech` answering it carries, on my screen only, the plaque's
 tag "your seat's agent" (the agent red) and the box's "your seat's agent spoke for you" (amber).
-**The dock** (`instruments/TurnDock.tsx`, bench 72's `.say2`): in the notice zone beside my card,
-full band (the drawer stops at the rail); head "Your turn to speak" · "Say something to the
-table, or pass." (+ " If the clock runs out, your seat's agent speaks for you." with a deadline)
-and the count in red `m:ss` (none in solo); the textarea 64 units tall, "Say something…",
-Ctrl/⌘+Enter says it; one row under it: **Say it** (gold; "Saying…"), **Pass**, the notes field
-("Or jot notes (“8 dodging, why abstain?”)", 500 chars, Enter drafts), **Draft from notes**
-("Drafting…"), "n drafts left", and at the right "Let my agent speak" (`{delegate: true}`); the
-server's words under the row in red. Draft errors: 409 → its words and no drafts left, 422 → its
+**The dock** (`instruments/TurnDock.tsx`, bench 72's `.say2` placement; HUD pass 3b, 2026-09-29,
+one flow): in the notice zone beside my card, full band (the drawer stops at the rail), on the
+speech box's walnut board with its brass edge. Head "Your turn to speak" (Young Serif) · "Nothing
+is said until you send it." (+ " If the clock runs out, your agent speaks for you." with a
+deadline) and the count in red `m:ss` (none in solo). Then, top to foot: **1.** "Your agent"
+(brass) and a Literata field, "Tell your agent what to say — e.g. push on seat 5, they voted
+fast" (500 chars, Enter drafts when it holds something), **Draft** ("Drafting…"; with the field
+empty the agent drafts a line of its own, `{notes: ""}`), "n drafts left"; **2.** the reply
+textarea (64 units tall, "Type your line, or draft one above…", Ctrl/⌘+Enter sends) the draft
+lands in, editable, and beside it **Send** (brass; "Sending…") over **Pass** (quiet walnut
+plaques). No "Let my agent speak" on this turn (owner playtest: it sent the agent's line unseen);
+the clock running out still has the agent speak. The server's words under the box in red. Draft errors: 409 → its words and no drafts left, 422 → its
 words, anything else → "Could not draft the line; type it instead." (the notes kept). Send
 errors: 409 → "That turn was already answered." and the request is let go; 422 → its words. My
 puppet stands thinking; the time left is on the dock (the car's wall clock is gone since
@@ -705,7 +709,8 @@ that status's `last_seq` (`hooks/catch-up-boundary.ts`); the store keeps the new
 that extended the log (`caughtUpTo`, not a late insert like the backlog after game over), and the
 history runs to it, so the missed events land still. **Not built / to reconcile:** the live
 ballot drop (§3 row 2) moves the count, not chips; "your seat's agent played 3 turns for you"
-after a return (the client forgets across a reload); Draft from notes in the pack's chat; a
+after a return (the client forgets across a reload); the draft helper in the pack's chat (the
+pack's turn still has the "Let my agent play this turn" pill); a
 reload during a vote already cast reopens the ballot (a second send gets the 409 line).
 
 ## 13. Viewers and tiers — H§7

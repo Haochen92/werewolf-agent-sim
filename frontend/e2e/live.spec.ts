@@ -6,8 +6,9 @@
  * the status's `last_seq` (at or below it is history, above it is news).
  *
  * Three pictures (mid-day catch-up at rest; seat 7's speaking turn with the dock; the curtain
- * after game over), and two tests that are not pictures: a new game's deal plays from its first
- * beat, and a draft from notes lands in the box and Say it sends it.
+ * after game over), and tests that are not pictures: a new game's deal plays from its first
+ * beat; on the speaking turn a draft (from instructions, or the agent's own with none) lands
+ * in the box to be edited and Send sends it, and a line typed by hand sends as it is.
  *
  * The mocked stream ends when its body does, so the browser reads it as a dropped connection;
  * the theatre's "Reconnecting…" note is hidden in the pictures for that reason.
@@ -299,7 +300,7 @@ test('live: seat 7’s turn to speak, the dock at the foot', async ({ page }) =>
   await expect(page).toHaveScreenshot('live-your-turn-d3.png');
 });
 
-test('live: a draft from notes lands in the box; Say it sends the line', async ({
+test('live: a draft from instructions lands in the box; Send sends the line', async ({
   page,
 }) => {
   const posted: Mock['posted'] = [];
@@ -312,20 +313,69 @@ test('live: a draft from notes lands in the box; Say it sends the line', async (
   await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
   const dock = page.locator('[data-dock="discuss"]');
   await expect(dock).toBeVisible();
-  await dock.getByLabel('Notes for your agent').fill('8 dodging');
-  await dock.getByRole('button', { name: 'Draft from notes' }).click();
+  // one flow: no hand-over on the speaking turn (the agent speaks only when the clock runs out)
+  await expect(dock.getByRole('button', { name: /agent/i })).toHaveCount(0);
+  await expect(dock.getByText('3 drafts left')).toBeVisible();
+  await dock.getByLabel('Tell your agent what to say').fill('8 dodging');
+  await dock.getByRole('button', { name: 'Draft', exact: true }).click();
   await expect(dock.getByLabel('Your line')).toHaveValue(
     'Seat 8 keeps dodging the question.',
   );
   await expect(dock.getByText('2 drafts left')).toBeVisible();
   // the draft came back with no deadline (a solo game's): no count
   await expect(dock.getByText(/\d:\d\d/)).toHaveCount(0);
-  await dock.getByRole('button', { name: 'Say it' }).click();
+  await dock.getByRole('button', { name: 'Send' }).click();
   await expect(dock).toBeHidden();
   expect(posted).toEqual([
     { path: 'draft', body: { notes: '8 dodging' } },
     { path: 'turns', body: { message: 'Seat 8 keeps dodging the question.' } },
   ]);
+});
+
+test('live: with no instructions the agent drafts its own line, which is edited before Send', async ({
+  page,
+}) => {
+  const posted: Mock['posted'] = [];
+  await mockApi(page, {
+    status: status(200, { pending_seats: [ME], pending_input: true }),
+    stream: [...upTo(200), yourTurn(201)],
+    posted,
+    draft: {
+      draft: 'Why did seat 5 vote before anyone spoke?',
+      drafts_left: 2,
+      deadline: null,
+    },
+  });
+  await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  const dock = page.locator('[data-dock="discuss"]');
+  const line = dock.getByLabel('Your line');
+  await expect(dock).toBeVisible();
+  await expect(dock.getByRole('button', { name: 'Send' })).toBeDisabled();
+  await dock.getByRole('button', { name: 'Draft', exact: true }).click();
+  await expect(line).toHaveValue('Why did seat 5 vote before anyone spoke?');
+  await line.fill('Why did seat 5 vote so fast?');
+  await dock.getByRole('button', { name: 'Send' }).click();
+  await expect(dock).toBeHidden();
+  expect(posted).toEqual([
+    { path: 'draft', body: { notes: '' } },
+    { path: 'turns', body: { message: 'Why did seat 5 vote so fast?' } },
+  ]);
+});
+
+test('live: a line typed by hand sends as it is, no draft asked for', async ({ page }) => {
+  const posted: Mock['posted'] = [];
+  await mockApi(page, {
+    status: status(200, { pending_seats: [ME], pending_input: true }),
+    stream: [...upTo(200), yourTurn(201)],
+    posted,
+  });
+  await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  const dock = page.locator('[data-dock="discuss"]');
+  await expect(dock).toBeVisible();
+  await dock.getByLabel('Your line').fill('I trust seat 4 today.');
+  await dock.getByLabel('Your line').press('Control+Enter');
+  await expect(dock).toBeHidden();
+  expect(posted).toEqual([{ path: 'turns', body: { message: 'I trust seat 4 today.' } }]);
 });
 
 test('live: after game over the ending plays to its curtain', async ({ page }) => {
