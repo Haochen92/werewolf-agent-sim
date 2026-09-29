@@ -114,16 +114,16 @@
 .body > span {
   display: block;
 }
-/* the X-ray's words in the box: aqua */
+/* the X-ray's words in the box: verdigris */
 .xr {
-  color: var(--film-ink);
+  color: var(--xray);
 }
 /* what the agent held back, under "passes.": the board's two other lines */
 .draft {
   margin-top: calc(-2 * 1.35em);
   font-size: 0.82em;
   line-height: 1.35;
-  color: var(--film-ink);
+  color: var(--xray);
   font-style: italic;
   display: -webkit-box;
   -webkit-box-orient: vertical;

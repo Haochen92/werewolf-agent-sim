@@ -64,7 +64,7 @@ export interface WingTileProps {
   /** The X-ray night's lamp: this seat acts tonight. */
   lamp?: boolean;
   /**
-   * The X-ray's read on this seat by the seat at the stand: a blue edge, brighter for a sure
+   * The X-ray's read on this seat by the seat at the stand: a verdigris edge, brighter for a sure
    * read. `onRead` makes the card a button that opens the read card (handing over the card, so
    * the read can sit level with it); `open` while its card is out. `fresh`: the read is new or
    * changed since the speaker's previous reads, and the card flashes once (a new key, a new

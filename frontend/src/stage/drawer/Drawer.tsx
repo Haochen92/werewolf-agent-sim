@@ -23,7 +23,7 @@
  * a name over the words, a run of passes as one quiet line, the vote as a tally of faces per
  * seat voted for with the sentence under it, the game master's reports as short sentences with
  * the dead in terracotta. One column, the phone's width and the desktop's alike. What only the
- * X-ray shows keeps the film's aqua, so hidden information never reads as public talk.
+ * X-ray shows is in its verdigris, so hidden information never reads as public talk.
  */
 import {
   useEffect,
@@ -552,7 +552,7 @@ function Line({
     case 'brief':
       return (
         <div
-          className={cls('xr', 'brief', ...(open ? ['open'] : []))}
+          className={cls('brief', ...(open ? ['open'] : []))}
           {...at}
           role="button"
           tabIndex={0}

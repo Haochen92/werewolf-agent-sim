@@ -60,16 +60,16 @@
   color: var(--c, var(--bone));
   stroke-width: 3;
 }
-/* the X-ray's words: "Only seat 4", in the film's aqua */
+/* the X-ray's words: "Only seat 4", in the X-ray's verdigris */
 .aqua {
-  color: var(--film-ink);
+  color: var(--xray);
   border: 1px solid currentColor;
   border-radius: 16px;
   padding: 0 9.6px;
 }
 .xr {
-  border-color: #2d5563;
-  box-shadow: inset 0 0 0 1px rgba(127, 220, 242, 0.15);
+  border-color: var(--xray-line);
+  box-shadow: inset 0 0 0 1px rgba(134, 176, 160, 0.15);
 }
 
 .c-villagers {

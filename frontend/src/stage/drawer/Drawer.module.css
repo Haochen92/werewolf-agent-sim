@@ -157,9 +157,9 @@
   border-color: var(--amber);
 }
 .show.xray[aria-pressed='true'] i {
-  background: var(--film-ink);
-  border-color: var(--film-ink);
-  color: var(--film);
+  background: var(--xray);
+  border-color: var(--xray);
+  color: var(--ink);
 }
 .show[aria-pressed='false'] {
   color: var(--bone3);
@@ -356,7 +356,7 @@
   color: var(--cream2);
 }
 .xr .who i {
-  color: var(--film-ink);
+  color: var(--xray);
 }
 /* a seat's name: the display face in brass-cream; in a report, the dead in terracotta */
 .nm,
@@ -374,7 +374,7 @@
   font-size: calc(var(--said) * 0.92);
 }
 .rt {
-  color: var(--film-ink);
+  color: var(--xray);
 }
 .c-villagers {
   --c: var(--town);
@@ -473,12 +473,12 @@
   padding: 0 7.2px;
 }
 .only.theirs {
-  background: rgba(127, 220, 242, 0.04);
-  box-shadow: inset 2.4px 0 0 #2d5563;
+  background: rgba(134, 176, 160, 0.05);
+  box-shadow: inset 2.4px 0 0 var(--xray-line);
 }
 .only.theirs .oy {
-  color: var(--film-ink);
-  border-color: var(--film-ink);
+  color: var(--xray);
+  border-color: var(--xray);
 }
 /* the pack's chat, faction tier: the red edge */
 .pack {
@@ -491,23 +491,23 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
-/* what the X-ray adds: aqua, the film's ink on the drawer's ground */
+/* what the X-ray adds: in verdigris on the drawer's ground (the X-ray's private accent) */
 .xr {
-  color: var(--film-text);
+  color: var(--xray-text);
 }
 .xr .who,
 .xr .nm {
-  color: var(--film-mut);
+  color: var(--xray-mut);
 }
 /* a run of passes: one quiet italic line in muted cream (what the table saw); why a seat held
-   back, and the draft it held, are the X-ray's, in aqua */
+   back, and the draft it held, are the X-ray's, in verdigris */
 .passes {
   grid-template-columns: 1fr;
   font-size: calc(var(--said) * 0.8);
   color: var(--cream2);
 }
 .why {
-  color: var(--film-mut);
+  color: var(--xray-mut);
 }
 .ps {
   margin: 0;
@@ -516,8 +516,8 @@
 .draft {
   margin-top: 3.2px;
   padding-left: 9.6px;
-  border-left: 2px solid #2d5563;
-  color: var(--film-mut);
+  border-left: 2px solid var(--xray-line);
+  color: var(--xray-mut);
   font-style: italic;
 }
 .draft small {
@@ -570,7 +570,7 @@
   font-size: calc(var(--meta) * 0.86);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--film-ink);
+  color: var(--cream2);
 }
 .brow p + p {
   margin-top: 3.2px;
@@ -578,15 +578,15 @@
 .bnone {
   font-style: italic;
   font-size: calc(var(--said) * 0.8);
-  color: var(--film-mut);
+  color: var(--cream2);
 }
 .open-tag {
   margin-left: auto;
   font-size: calc(var(--meta) * 0.8);
-  border: 1px solid #2d5563;
+  border: 1px solid var(--hud-brass-lo);
   border-radius: 16px;
   padding: 0 7.2px;
-  color: var(--film-mut);
+  color: var(--cream2);
 }
 /* the beat on stage: lit, a brass edge and a lamp's warmth (last, so it wins over a tier's edge) */
 .now {

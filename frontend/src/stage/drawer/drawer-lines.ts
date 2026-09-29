@@ -8,12 +8,13 @@
  * - public, for everyone: the speeches; the game master's lines verbatim (they are the record,
  *   so the lynch and the night that follow one only lend it their sigils, and nothing is said
  *   twice); the votes as one line per day at the count, voter → votee pairs, because the vote
- *   is blind and the ballots arrive as one batch; the ending;
+ *   is blind and the ballots arrive as one batch; the day's brief in its morning (the summary
+ *   is public, owner 2026-09-29); the ending;
  * - private: a seated human's own results as "Only you" lines (what happened to their act and
  *   when; only the investigator's reading names a role); a wolf's pack chat and the kill; with
  *   the X-ray, everyone's private results as "Only seat 4";
- * - X-ray, in aqua: the passes with their reason and held-back draft, the night acts, the
- *   pack's talk, and the day's brief in its morning.
+ * - X-ray, in verdigris: the passes with their reason and held-back draft, the night acts,
+ *   and the pack's talk.
  *
  * The chapters (Day N · discussion, the vote, Night N, Morning N, Game over) run down it as
  * rules, the seek bar's marks read downwards; a rule with nothing under it after the filters
@@ -84,7 +85,7 @@ export type DrawerLine =
   | (LineBase & { kind: 'kill'; target: string; mine: boolean })
   | (LineBase & {
       kind: 'only';
-      /** The seat's own line (dashed, amber) rather than someone else's (aqua). */
+      /** The seat's own line (dashed, amber) rather than someone else's (the X-ray's verdigris). */
       mine: boolean;
       /** "Only you", "Only seat 4", "Only the pack". */
       who: string;
@@ -381,17 +382,17 @@ export function drawerLines(view: GameView, o: LineOptions): DrawerLine[] {
     }
 
     // The day's brief plays in its morning, once the agents have read it (§4.2): when the
-    // next day begins, or at the carried summary's own beat. A day that ended the game has
-    // no morning after it, and its brief is dropped.
+    // next day begins, or at the carried summary's own beat (the X-ray's). A day that ended
+    // the game has no morning after it, and its brief is dropped. It is public: everyone's.
     const next = phaseSeq(d.day + 1, 'day');
     const carried = o.beat?.id === 'morning.carried-summary' && o.beat.day === d.day;
-    if (xray && d.summary && (next !== null || carried))
+    if (d.summary && (next !== null || carried))
       push(next !== null ? next - 0.5 : view.lastSeq + 0.5, {
         kind: 'brief',
         key: `brief-${d.day}`,
         seq: next ?? view.lastSeq,
         day: d.day,
-        tier: 'xray',
+        tier: 'public',
         seats: [],
         text: d.summary,
       });
@@ -694,7 +695,7 @@ export function passSentence(p: Pick<PassLine, 'player'>): string {
   return `Seat ${seatNumber(p.player)} passed`;
 }
 
-/** Why the seat passed, when it was not by choice: the X-ray's part of the run (aqua). */
+/** Why the seat passed, when it was not by choice: the X-ray's part of the run (verdigris). */
 export function passWhy(p: Pick<PassLine, 'reason'>): string | null {
   if (p.reason === 'novelty_gated') return 'held back: nothing new to say';
   if (p.reason === 'generation_failed') return 'no line came';

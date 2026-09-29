@@ -40,20 +40,21 @@ function at(
 }
 
 describe('the drawer: which lines a viewer holds', () => {
-  it('gives a spectator the public record only', () => {
+  it('gives a spectator the public record only, the day’s briefs among it', () => {
     const lines = drawerLines(whole, { me: null, xray: false });
-    expect([...kinds(lines)].sort()).toEqual(['gm', 'rule', 'speech', 'votes']);
+    expect([...kinds(lines)].sort()).toEqual(['brief', 'gm', 'rule', 'speech', 'votes']);
     expect(count(lines, 'speech')).toBe(20);
     expect(lines.every((l) => l.tier === 'public')).toBe(true);
+    // day 4 ended the game at its morning: its brief was never read, so it is dropped
+    expect(lines.filter((l) => l.kind === 'brief').map((l) => l.day)).toEqual([1, 2, 3]);
   });
 
-  it('adds, with the X-ray, the passes, the acts, the pack, the briefs and everyone’s private lines', () => {
+  it('adds, with the X-ray, the passes, the acts, the pack and everyone’s private lines', () => {
     const lines = drawerLines(whole, { me: null, xray: true });
     expect(count(lines, 'pass')).toBe(12);
     expect(count(lines, 'act')).toBe(10);
     expect(count(lines, 'pack')).toBe(8);
     expect(count(lines, 'kill')).toBe(4);
-    // day 4 ended the game at its morning: its brief was never read, so it is dropped
     expect(lines.filter((l) => l.kind === 'brief').map((l) => l.day)).toEqual([1, 2, 3]);
     const only = lines.filter((l) => l.kind === 'only');
     expect(only.map((l) => [l.seq, l.kind === 'only' && l.who])).toEqual([
@@ -225,7 +226,9 @@ describe('the drawer: the filters', () => {
       ...DEFAULT_FILTERS,
       show: { public: true, private: true, xray: false },
     });
-    expect(count(noXray, 'pass') + count(noXray, 'act') + count(noXray, 'brief')).toBe(0);
+    expect(count(noXray, 'pass') + count(noXray, 'act')).toBe(0);
+    // the brief is public: it stays
+    expect(count(noXray, 'brief')).toBe(3);
     expect(count(noXray, 'only')).toBe(3);
     const nothing = filterLines(lines, {
       ...DEFAULT_FILTERS,

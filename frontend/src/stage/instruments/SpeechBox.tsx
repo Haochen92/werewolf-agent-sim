@@ -4,7 +4,7 @@
  * The speech box: what the seat at the stand says, on a walnut board edged in brass at the
  * foot of the stage, with a brass nameplate on its top-left corner (the seat's chip and
  * "Seat n"). A pass is the same board saying "passes."; with the X-ray on, a pass also says
- * why, and what the agent held back, in the film's aqua.
+ * why, and what the agent held back, in the X-ray's verdigris.
  *
  * The board is a fixed size: three lines (owner, 2026-09-29). A longer line is told a page at
  * a time, each page a beat of its own (beats/pages.ts); the board shows the beat's page and,

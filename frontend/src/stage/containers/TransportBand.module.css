@@ -162,7 +162,7 @@
   white-space: nowrap;
 }
 .xray.on {
-  border-color: var(--film-ink);
-  color: var(--film-ink);
-  box-shadow: 0 0 11.2px rgba(127, 220, 242, 0.35);
+  border-color: var(--xray);
+  color: var(--xray);
+  box-shadow: 0 0 11.2px rgba(134, 176, 160, 0.35);
 }

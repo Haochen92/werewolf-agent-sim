@@ -376,15 +376,16 @@
   border: 2.4px solid var(--wolf);
   box-shadow: 0 0 9.6px rgba(227, 80, 63, 0.5);
 }
-/* the X-ray's reads: a blue edge on each seat the speaker has a read on, brighter when sure;
+/* the X-ray's reads: a verdigris edge on each seat the speaker has a read on, brighter when sure;
    tapping one opens the read card beside it (bench 74 `.seat.read`) */
 .read::after {
-  border: 1.6px solid var(--film-ink);
-  box-shadow: 0 0 9.6px rgba(127, 220, 242, 0.45);
+  border: 1.6px solid var(--xray);
+  box-shadow: 0 0 9.6px rgba(134, 176, 160, 0.45);
 }
 .read.sure::after {
   border-width: 3.2px;
-  box-shadow: 0 0 12.8px rgba(127, 220, 242, 0.6);
+  border-color: var(--xray-hi);
+  box-shadow: 0 0 12.8px rgba(134, 176, 160, 0.6);
 }
 .read.open::after {
   inset: -5.6px;
@@ -401,14 +402,14 @@
   pointer-events: none;
 }
 .breathe {
-  box-shadow: 0 0 14.4px 3.2px rgba(127, 220, 242, 0.55);
+  box-shadow: 0 0 14.4px 3.2px rgba(134, 176, 160, 0.55);
   opacity: 0.5;
   animation: breathe 2.4s ease-in-out infinite;
 }
 .flash {
   inset: -7.2px;
-  border: 2.4px solid #e6fbff;
-  box-shadow: 0 0 24px 6.4px rgba(127, 220, 242, 0.9);
+  border: 2.4px solid var(--xray-hi);
+  box-shadow: 0 0 24px 6.4px rgba(134, 176, 160, 0.9);
   opacity: 0;
   animation: flash 1.3s ease-out 0.15s 1 both;
 }

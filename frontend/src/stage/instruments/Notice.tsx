@@ -67,7 +67,7 @@ export interface NoticeProps {
   title: ReactNode;
   /** Small words after the title. */
   aside?: ReactNode;
-  /** An aqua tag: the X-ray's "Only seat 4". */
+  /** The X-ray's tag, in its verdigris (the prop keeps the film's old name): "Only seat 4". */
   aqua?: string | null;
   children?: ReactNode;
   wide?: boolean;
