@@ -158,7 +158,8 @@ export function FeaturedReplay() {
 
   const id = game?.game_id ?? null;
   const record = id ? id.slice(0, 7).toUpperCase() : '';
-  const href = id ? `/replays/${id}` : '/replays';
+  // the theatre's way out comes back here (`from=home`, TheaterClient)
+  const href = id ? `/replays/${id}?from=home` : '/replays';
   const what = cut?.day != null ? `Day ${cut.day}` : 'The opening';
 
   return (

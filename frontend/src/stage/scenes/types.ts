@@ -93,8 +93,9 @@ export interface SlotInput {
   onTranscript?: () => void;
   /** X-ray: turns the X-ray on and brings the film, or turns it off. */
   onXray?: () => void;
-  /** The replay's way back to its list, a link at the strip's left; live has none. */
-  back?: string;
+  /** The replay's way out (to its list, or wherever the viewer came from), at the strip's
+   *  left; live has none. */
+  back?: { href: string; label: string };
   /**
    * The log folded a little past this beat (the replay: to the next beat, or the whole log).
    * A turn's note is written just after the turn, so the beat's own view never holds it; the

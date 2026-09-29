@@ -10,10 +10,19 @@
   display: flex;
   flex-direction: column;
   padding-top: 73.6px;
-  background: linear-gradient(180deg, rgba(18, 13, 7, 0.97), rgba(12, 9, 6, 0.985));
-  border-left: 1px solid var(--cloak2);
-  box-shadow: -9.6px 0 25.6px rgba(0, 0, 0, 0.5);
-  color: var(--bone);
+  /* a warm dark ground, the page the record is set on (HUD pass 3a, owner 2026-09-29); its edge
+     the HUD's thin brass with the dark reveal */
+  --ground-top: rgba(33, 24, 18, 0.985);
+  --ground-bot: rgba(25, 18, 13, 0.99);
+  /* the dead in the reports; the night's heading, never lavender (that is the serial killer) */
+  --dead: #da8260;
+  --night-ink: #c3cdd6;
+  background: linear-gradient(180deg, var(--ground-top), var(--ground-bot));
+  border-left: 1.5px solid var(--hud-brass-lo);
+  box-shadow:
+    inset 2.5px 0 0 rgba(14, 8, 4, 0.9),
+    -9.6px 0 25.6px rgba(0, 0, 0, 0.5);
+  color: var(--cream);
 }
 /* the drawer's ground carried on past the stage's right edge, into the house's dark (the bleed) */
 .drawer::after {
@@ -25,13 +34,13 @@
   width: var(--bleed);
   background:
     linear-gradient(90deg, transparent, #0c0a07 var(--bleed-dark)),
-    linear-gradient(180deg, rgba(18, 13, 7, 0.97), rgba(12, 9, 6, 0.985));
+    linear-gradient(180deg, var(--ground-top), var(--ground-bot));
   pointer-events: none;
 }
 .drawer > header {
   flex: 0 0 auto;
   padding: 9.6px 19.2px 11.2px;
-  border-bottom: 1px solid var(--cloak2);
+  border-bottom: 1px solid rgba(201, 164, 92, 0.28);
   display: flex;
   flex-direction: column;
   gap: 8.8px;
@@ -41,11 +50,13 @@
   align-items: baseline;
   gap: 9.6px;
   /* a heading: the second tier (--legible-ui), not the words' */
+  font-family: var(--font-display);
   font-size: calc(22.4px * 1.15 * var(--legible-ui));
-  font-weight: 500;
+  font-weight: 400;
 }
 .ttl small {
-  color: var(--bone2);
+  font-family: var(--font-body);
+  color: var(--cream2);
   font-size: var(--meta);
   font-weight: 400;
 }
@@ -64,29 +75,47 @@
 }
 .fg > span {
   font-size: calc(var(--meta) * 0.95);
-  color: var(--bone2);
+  color: var(--cream2);
   margin-right: 4.8px;
 }
+/* the filters as the strip's plaque tabs (TopStrip .btn): walnut, a thin brass edge; pressed is
+   an engraved well, the word in bright cream over a short brass underline */
 .pill {
+  position: relative;
   font: inherit;
-  font-size: calc(var(--meta) * 1.1);
+  font-family: var(--font-display);
+  font-size: calc(var(--meta) * 1.05);
   line-height: 1.4;
   min-height: calc(36.8px * var(--legible-ui));
   box-sizing: border-box;
-  color: var(--bone);
-  background: rgba(14, 9, 6, 0.6);
-  border: 1px solid var(--cloak2);
-  border-radius: 19.2px;
+  color: var(--cream2);
+  background: linear-gradient(180deg, var(--walnut-top), var(--walnut-bot));
+  border: 1px solid var(--hud-brass-lo);
+  border-radius: 6.4px;
   padding: calc(2.4px * var(--legible-ui)) calc(14.4px * var(--legible-ui));
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6.4px;
 }
-.pill[aria-pressed='true'] {
-  background: var(--bone);
-  color: var(--ink);
-  border-color: var(--bone);
+.pill[aria-pressed='true'],
+.daytabs button[aria-pressed='true'] {
+  color: var(--cream);
+  background: rgba(14, 8, 4, 0.55);
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.7),
+    inset 0 -1px 0 rgba(201, 164, 92, 0.18);
+}
+.pill:not(.seatp)[aria-pressed='true']::after,
+.daytabs button[aria-pressed='true']::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: calc(3.2px * var(--legible-ui));
+  width: 1.4em;
+  height: max(1px, calc(1px / max(var(--stage-scale, 1), 0.01)));
+  transform: translateX(-50%);
+  background: var(--hud-brass);
 }
 .seatp {
   padding: 1.6px;
@@ -98,7 +127,7 @@
   overflow: hidden;
 }
 .seatp[aria-pressed='true'] {
-  box-shadow: 0 0 0 2.88px var(--bone);
+  box-shadow: 0 0 0 2.88px var(--hud-brass-hi);
 }
 .seatp.dead {
   opacity: 0.45;
@@ -111,21 +140,16 @@
   height: calc(17.6px * var(--legible-ui));
   box-sizing: border-box;
   border-radius: 4px;
-  border: 1px solid var(--bone3);
+  border: 1px solid var(--hud-brass-lo);
   display: inline-grid;
   place-items: center;
   font-style: normal;
   font-size: calc(var(--meta) * 0.9);
   line-height: 1;
 }
-.show[aria-pressed='true'] {
-  background: rgba(239, 228, 203, 0.1);
-  border-color: var(--bone2);
-  color: var(--bone);
-}
 .show[aria-pressed='true'] i {
-  background: var(--bone);
-  border-color: var(--bone);
+  background: var(--cream);
+  border-color: var(--cream);
   color: var(--ink);
 }
 .show.private[aria-pressed='true'] i {
@@ -139,6 +163,10 @@
 }
 .show[aria-pressed='false'] {
   color: var(--bone3);
+}
+/* the underline is the check's to say here */
+.show[aria-pressed='true']::after {
+  display: none;
 }
 /* on a phone (Stage.tsx `data-small`) the head loses its title, so the lines keep the height;
    the seats and Show still wrap into two short rows (a sideways-scrolling row hid the Show
@@ -156,79 +184,120 @@
 .daytabs {
   flex: 0 0 auto;
   display: flex;
+  gap: calc(3.2px * var(--legible-ui));
   /* on a phone the tabs' type is larger: many days scroll sideways, a tab never breaks */
   overflow-x: auto;
   scrollbar-width: none;
-  border-top: 1px solid var(--cloak2);
-  background: rgba(12, 9, 6, 0.95);
+  padding: calc(4.8px * var(--legible-ui)) calc(6.4px * var(--legible-ui));
+  /* the strip's plaque along the foot: walnut under a brass edge with the dark reveal */
+  background: linear-gradient(180deg, var(--walnut-top), var(--walnut-bot));
+  border-top: 1.5px solid var(--hud-brass);
+  box-shadow:
+    inset 0 2.5px 0 rgba(22, 13, 7, 0.9),
+    inset 0 3.5px 0 rgba(201, 164, 92, 0.3);
 }
 .daytabs button {
+  position: relative;
   flex: 1;
   font: inherit;
-  font-size: calc(22.4px * 0.95 * var(--legible-ui));
-  color: var(--bone2);
+  font-family: var(--font-display);
+  font-size: calc(22.4px * 0.9 * var(--legible-ui));
+  color: var(--cream2);
   background: transparent;
   border: 0;
-  border-right: 1px solid var(--cloak2);
-  padding: calc(8.8px * var(--legible-ui)) 0;
+  border-radius: 5px;
+  padding: calc(7.2px * var(--legible-ui)) calc(8px * var(--legible-ui));
   white-space: nowrap;
   cursor: pointer;
 }
-.daytabs button:last-child {
-  border-right: 0;
-}
-.daytabs button[aria-pressed='true'] {
-  color: var(--ink);
-  background: var(--bone);
-  font-weight: 600;
+/* the thin brass rule between the tabs, inset top and bottom */
+.daytabs button + button::before {
+  content: '';
+  position: absolute;
+  left: calc(-1.6px * var(--legible-ui));
+  top: 24%;
+  bottom: 24%;
+  width: max(1px, calc(1px / max(var(--stage-scale, 1), 0.01)));
+  background: rgba(201, 164, 92, 0.5);
 }
 
-/* the lines */
+/* the lines: no card per entry, a page set by spacing and type (HUD pass 3a) */
 .lines {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
   position: relative;
-  padding: 6.4px 17.6px 16px;
+  padding: 8px 19.2px 19.2px;
   display: flex;
   flex-direction: column;
-  gap: 1.6px;
+  gap: 6.4px;
 }
-.rule {
+/* the day: the chapter heading, in the display face, its small muted label beside it */
+.day {
+  display: flex;
+  align-items: baseline;
+  gap: 12.8px;
+  margin: 19.2px 0 1.6px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: calc(var(--said) * 1.45);
+  line-height: 1.1;
+  color: var(--cream);
+}
+.day small {
+  font-family: var(--font-body);
+  font-size: var(--meta);
+  color: var(--cream2);
+}
+/* the day's sections (the vote, the night, the morning, the end), each under a hairline */
+.sect {
   display: flex;
   align-items: center;
-  gap: 9.6px;
-  margin: 12.8px 0 4.8px;
-  font-size: var(--meta);
-  color: var(--bone3);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  white-space: nowrap;
+  gap: 8px;
+  margin: 12.8px 0 0;
+  padding-top: 12.8px;
+  border-top: 1px solid rgba(201, 164, 92, 0.2);
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: calc(var(--said) * 1.1);
+  line-height: 1.15;
+  color: var(--cream);
 }
-.rule i {
-  flex: 1;
-  height: 1px;
-  background: var(--cloak2);
+.lines > .day:first-child,
+.lines > .sect:first-child {
+  margin-top: 0;
+  border-top: 0;
+  padding-top: 0;
+}
+.s-night {
+  color: var(--night-ink);
+}
+.moon {
+  width: 0.8em;
+  height: 0.8em;
+  flex: 0 0 auto;
 }
 .tl {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 4px 11.2px;
+  gap: 1.6px 11.2px;
   align-items: start;
-  padding: 8px 7.2px;
-  border-radius: 8px;
+  padding: 4.8px 6.4px;
+  margin: 0 -6.4px;
+  border-radius: 6.4px;
   font-size: calc(var(--said) * 0.95);
-  line-height: 1.42;
-  color: var(--bone);
+  line-height: 1.45;
+  color: var(--cream);
 }
 .hchip {
   display: inline-block;
-  width: calc(var(--chip) * 0.72);
+  width: calc(var(--chip) * 0.62);
   aspect-ratio: 1;
-  margin-top: 1.6px;
+  margin-top: 3.2px;
   border-radius: 50%;
   overflow: hidden;
   line-height: 0;
+  box-shadow: 0 0 0 1px rgba(201, 164, 92, 0.45);
 }
 .hchip.blank {
   visibility: hidden;
@@ -239,9 +308,8 @@
   margin: 0 1.6px;
 }
 .who {
-  font-size: calc(var(--meta) * 1.1);
-  color: var(--bone2);
-  font-weight: 500;
+  font-size: calc(var(--said) * 0.82);
+  color: var(--cream2);
   display: flex;
   gap: 6.4px;
   align-items: baseline;
@@ -249,12 +317,28 @@
 }
 .who i {
   font-style: normal;
+  color: var(--cream2);
+}
+.xr .who i {
   color: var(--film-ink);
+}
+/* a seat's name: the display face in brass-cream; in a report, the dead in terracotta */
+.nm,
+.dead {
+  font-family: var(--font-display);
   font-weight: 400;
+}
+.nm {
+  color: var(--hud-brass-hi);
+}
+.dead {
+  color: var(--dead);
+}
+.who .nm {
+  font-size: calc(var(--said) * 0.92);
 }
 .rt {
   color: var(--film-ink);
-  font-weight: 400;
 }
 .c-villagers {
   --c: var(--town);
@@ -273,26 +357,22 @@
 .txt {
   grid-column: 2;
 }
-/* the beat on stage: lit with the amber edge */
-.now {
-  background: rgba(224, 166, 58, 0.12);
-  box-shadow: inset 4px 0 0 var(--amber);
-}
-/* the game master and the table: no seat, italic */
-.sys {
+/* the game master's reports, and the ending: short sentences, one per seat they name */
+.report {
   grid-template-columns: 1fr;
-  color: var(--bone2);
 }
-.sys .txt {
-  grid-column: 1;
-  font-style: italic;
+.report p {
+  margin: 0;
+}
+.report p + p {
+  margin-top: 3.2px;
 }
 .sg {
   display: inline-block;
   width: calc(22.4px * var(--legible));
   height: calc(22.4px * var(--legible));
   vertical-align: calc(-4.8px * var(--legible));
-  margin: 0 2.4px;
+  margin: 0 3.2px;
   color: var(--c);
 }
 .sg svg {
@@ -300,53 +380,52 @@
   height: 100%;
   stroke-width: 3;
 }
-.gm .txt::before {
-  content: 'Game master';
-  display: block;
-  font-style: normal;
-  font-size: calc(var(--meta) * 0.8);
-  color: var(--bone3);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-/* the vote: one line per day, the pairs as chips, abstain as the empty ring. The heads grow
-   with the words people read (--legible), about 24 css px on an iPhone 14 (owner, 2026-09-29);
-   the pairs wrap to more rows rather than run past the drawer */
-.pairs {
+/* the vote: a tally per seat voted for, the voters' faces its marks. The heads grow with the
+   words people read (--legible), about 24 css px on an iPhone 14 (owner, 2026-09-29), and a
+   long row wraps rather than run past the drawer */
+.votes {
   --vh: calc(32px * var(--legible));
+  grid-template-columns: 1fr;
+  gap: calc(var(--vh) * 0.16);
+}
+.trow {
+  display: grid;
+  grid-template-columns: minmax(3.3em, max-content) 1fr max-content;
+  align-items: center;
+  gap: 8px;
+}
+.tn {
+  font-family: var(--font-display);
+  color: var(--cream);
+  white-space: nowrap;
+}
+.marks {
   display: flex;
   flex-wrap: wrap;
-  gap: calc(var(--vh) * 0.22) calc(var(--vh) * 0.42);
-  margin-top: calc(var(--vh) * 0.15);
-  font-style: normal;
+  gap: calc(var(--vh) * 0.1);
 }
-.pair {
-  display: inline-flex;
-  align-items: center;
-  gap: calc(var(--vh) * 0.12);
-  font-size: calc(var(--vh) * 0.62);
-  line-height: 1;
-  color: var(--bone2);
+.marks > span {
+  line-height: 0;
 }
-.pair .hchip {
-  flex: 0 0 auto;
+.marks .hchip {
   width: var(--vh);
   margin: 0;
 }
-.ab {
-  flex: 0 0 auto;
-  width: var(--vh);
-  height: var(--vh);
-  box-sizing: border-box;
-  border-radius: 50%;
-  border: 1px dashed var(--bone3);
-  display: inline-block;
+.tc {
+  font-family: var(--font-display);
+  color: var(--cream2);
+  font-variant-numeric: tabular-nums;
 }
-/* only you: a dashed line in your own transcript, never a role */
+.vs {
+  margin: 3.2px 0 0;
+  font-size: calc(var(--said) * 0.74);
+  line-height: 1.45;
+  color: var(--cream2);
+}
+/* only you: your own line, amber at its edge, never a role */
 .only {
-  border: 1px dashed var(--amber);
-  background: rgba(224, 166, 58, 0.05);
-  margin: 4px 0;
+  background: rgba(224, 166, 58, 0.06);
+  box-shadow: inset 2.4px 0 0 var(--amber);
 }
 .oy {
   font-size: calc(var(--meta) * 0.8);
@@ -358,8 +437,8 @@
   padding: 0 7.2px;
 }
 .only.theirs {
-  border-color: #2d5563;
   background: rgba(127, 220, 242, 0.04);
+  box-shadow: inset 2.4px 0 0 #2d5563;
 }
 .only.theirs .oy {
   color: var(--film-ink);
@@ -367,7 +446,7 @@
 }
 /* the pack's chat, faction tier: the red edge */
 .pack {
-  box-shadow: inset 4px 0 0 var(--wolf);
+  box-shadow: inset 2.4px 0 0 var(--wolf);
   background: rgba(227, 80, 63, 0.05);
 }
 .pk {
@@ -376,20 +455,41 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
-/* what the X-ray adds: aqua, the film's ink on the drawer's glass */
+/* what the X-ray adds: aqua, the film's ink on the drawer's ground */
 .xr {
   color: var(--film-text);
 }
-.xr .who {
+.xr .who,
+.xr .nm {
   color: var(--film-mut);
 }
+/* a run of passes: one quiet italic line in muted cream (what the table saw); why a seat held
+   back, and the draft it held, are the X-ray's, in aqua */
+.passes {
+  grid-template-columns: 1fr;
+  font-size: calc(var(--said) * 0.8);
+  color: var(--cream2);
+}
+.why {
+  color: var(--film-mut);
+}
+.ps {
+  margin: 0;
+  font-style: italic;
+}
 .draft {
-  display: block;
   margin-top: 3.2px;
   padding-left: 9.6px;
   border-left: 2px solid #2d5563;
   color: var(--film-mut);
   font-style: italic;
+}
+.draft small {
+  display: block;
+  font-style: normal;
+  font-size: calc(var(--meta) * 0.85);
+  letter-spacing: 0.03em;
+  opacity: 0.85;
 }
 .brief {
   cursor: pointer;
@@ -412,9 +512,14 @@
   padding: 0 7.2px;
   color: var(--film-mut);
 }
+/* the beat on stage: lit, a brass edge and a lamp's warmth (last, so it wins over a tier's edge) */
+.now {
+  background: rgba(201, 164, 92, 0.11);
+  box-shadow: inset 3.2px 0 0 var(--hud-brass);
+}
 .empty {
   padding: 19.2px 8px;
-  color: var(--bone3);
+  color: var(--cream2);
   font-size: var(--meta);
   text-align: center;
 }

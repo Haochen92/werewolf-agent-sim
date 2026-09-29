@@ -336,19 +336,26 @@ function VoteBeat({
           sub={`${nightFalls ? 'Night falls' : 'The vote'} · ${beat.label}`}
           disc={nightFalls ? 'moon' : 'sun'}
           {...stripButtons(presentation, slotInput)}
+          side={side}
+          count={
+            opening || id === 'vote.ballots-drop' || id === 'vote.closes' ? (
+              <CountPill
+                hud={hud}
+                label={id === 'vote.closes' ? 'All in' : 'Ballots in'}
+                n={opening ? ballotsIn : ballots.length}
+                total={
+                  prompt
+                    ? (turn?.progress?.total ?? living)
+                    : opening
+                      ? living
+                      : ballots.length
+                }
+                mine={myIndex != null && myIndex >= 0 && ballotsIn > 0 ? myIndex : null}
+                side={side}
+              />
+            ) : null
+          }
         />
-        {opening || id === 'vote.ballots-drop' || id === 'vote.closes' ? (
-          <CountPill
-            hud={hud}
-            label={id === 'vote.closes' ? 'All in' : 'Ballots in'}
-            n={opening ? ballotsIn : ballots.length}
-            total={
-              prompt ? (turn?.progress?.total ?? living) : opening ? living : ballots.length
-            }
-            mine={myIndex != null && myIndex >= 0 && ballotsIn > 0 ? myIndex : null}
-            side={side}
-          />
-        ) : null}
         <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
           {myCard ? (
             <CardButton

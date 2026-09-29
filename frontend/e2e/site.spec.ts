@@ -609,7 +609,7 @@ test('landing: the carriage plays day 3 of the featured game, with the replay’
   await expect(carriage(page)).toContainText('Day 3 of game 9369A5C');
   await expect(
     carriage(page).getByRole('link', { name: 'Watch the whole game' }),
-  ).toHaveAttribute('href', `/replays/${GAME}`);
+  ).toHaveAttribute('href', `/replays/${GAME}?from=home`);
   await expect(carriage(page)).toContainText('Gemini 3.5 Flash-Lite');
   await expect(carriage(page)).toContainText('Wolves won');
 
@@ -659,7 +659,7 @@ test('landing: on an upright phone the controls sit under the stage, at reading 
   ).toBeVisible();
   await expect(carriage(page).getByRole('link', { name: 'Whole game' })).toHaveAttribute(
     'href',
-    `/replays/${GAME}`,
+    `/replays/${GAME}?from=home`,
   );
   // nothing reaches past the phone's edge
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);

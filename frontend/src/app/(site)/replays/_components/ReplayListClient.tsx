@@ -56,6 +56,7 @@ export function ReplayListClient({ limit }: { limit?: number }) {
           replay={r}
           modelLabel={r.model ? modelName(r.model) : undefined}
           mine={mine.has(r.game_id)}
+          from="home"
         />
       ))}
     </SlateGrid>

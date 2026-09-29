@@ -13,6 +13,13 @@
  * The filters are the container's (they have to outlive a beat): the days as tabs along the
  * foot; the seats as their chips at the head (the dead dimmed, still selectable, since their
  * lines are history); and Show, one toggle per tier this viewer has.
+ *
+ * Set like a page of a book rather than a list of cards (HUD pass 3a, owner 2026-09-29): the
+ * chapters as headings (the day large, in the display face), the speeches as a small head and
+ * a name over the words, a run of passes as one quiet line, the vote as a tally of faces per
+ * seat voted for with the sentence under it, the game master's reports as short sentences with
+ * the dead in terracotta. One column, the phone's width and the desktop's alike. What only the
+ * X-ray shows keeps the film's aqua, so hidden information never reads as public talk.
  */
 import {
   useLayoutEffect,
@@ -34,20 +41,23 @@ import {
   drawerDays,
   drawerLines,
   filterLines,
+  groupPasses,
   litKey,
+  passSentence,
+  passWhy,
+  reportParts,
+  shownKeys,
   showRow,
+  voteSentence,
+  voteTally,
   WINNER_TEXT,
   type DrawerFilters,
   type DrawerLine,
   type LineTier,
+  type ShownLine,
 } from './drawer-lines';
 import styles from './Drawer.module.css';
 
-const PASS_REASON: Record<string, string> = {
-  voluntary: 'chose to pass',
-  novelty_gated: 'held back: nothing new to say',
-  generation_failed: 'no line came',
-};
 const TIER_NAME: Record<LineTier, string> = {
   public: 'Public',
   private: 'Private',
@@ -89,7 +99,12 @@ export function Drawer({
     () => drawerLines(view, { me, xray, beat }),
     [view, me, xray, beat],
   );
-  const shown = useMemo(() => filterLines(lines, filters), [lines, filters]);
+  const shown = useMemo(() => groupPasses(filterLines(lines, filters)), [lines, filters]);
+  // the days whose votes line tells the ballots, so the game master's line need not
+  const told = useMemo(
+    () => new Set(lines.flatMap((l) => (l.kind === 'votes' ? [l.day] : []))),
+    [lines],
+  );
   const lit = litKey(lines, beat);
   const days = drawerDays(lines);
   const tiers = showRow(me, xray);
@@ -205,7 +220,8 @@ export function Drawer({
             <Line
               key={l.key}
               line={l}
-              lit={l.key === lit}
+              lit={lit}
+              ballotsTold={told.has(l.day)}
               open={open.has(l.key)}
               onToggle={() =>
                 setOpen((o) => {
@@ -255,33 +271,47 @@ export function Drawer({
 
 function Line({
   line: l,
-  lit,
+  lit: litKey,
+  ballotsTold,
   open,
   onToggle,
   chip,
   roleTag,
   you,
 }: {
-  line: DrawerLine;
-  lit: boolean;
+  line: ShownLine;
+  /** The beat's line: this one, or one of a run's passes. */
+  lit: string | null;
+  ballotsTold: boolean;
   open: boolean;
   onToggle: () => void;
   chip: (seat: string, cls?: string) => ReactNode;
   roleTag: (seat: string) => ReactNode;
   you: (seat: string) => string;
 }) {
+  const lit = litKey !== null && shownKeys(l).includes(litKey);
   const cls = (...k: string[]) =>
     [styles.tl, ...k.map((x) => styles[x]), lit ? styles.now : '']
       .filter(Boolean)
       .join(' ');
   const blank = chip('', styles.blank);
   const at = { 'data-line': l.key, 'data-kind': l.kind };
-  const sigils = (roles: string[]) =>
-    roles.map((r, i) => {
-      const f = factionOf(r);
+  const sigil = (r: string) => {
+    const f = factionOf(r);
+    return (
+      <span className={`${styles.sg} ${f ? styles[`c-${f}`] : ''}`} title={r}>
+        <Sigil role={r} />
+      </span>
+    );
+  };
+  // a report's seat names in the display face: the dead in terracotta, the living in brass
+  const named = (text: string, dead: ReadonlySet<string>) =>
+    text.split(/(\b[Ss]eat \d+)/).map((t, i) => {
+      const m = /^[Ss]eat (\d+)$/.exec(t);
+      if (!m) return t;
       return (
-        <span key={i} className={`${styles.sg} ${f ? styles[`c-${f}`] : ''}`} title={r}>
-          <Sigil role={r} />
+        <span key={i} className={dead.has(`player_${m[1]}`) ? styles.dead : styles.nm}>
+          {t}
         </span>
       );
     });
@@ -298,18 +328,25 @@ function Line({
 
   switch (l.kind) {
     case 'rule':
-      return (
-        <div className={styles.rule} {...at}>
-          {l.text}
-          <i />
-        </div>
+      // the day is the chapter heading; the vote, the night, the morning and the end are its
+      // sections, each under a hairline
+      return l.chapter === 'day' ? (
+        <h3 className={styles.day} {...at}>
+          Day {l.day}
+          <small>Discussion</small>
+        </h3>
+      ) : (
+        <h4 className={`${styles.sect} ${styles[`s-${l.chapter}`]}`} {...at}>
+          {l.chapter === 'night' ? <Moon /> : null}
+          {l.chapter === 'vote' ? 'Vote' : l.text}
+        </h4>
       );
     case 'speech':
       return (
         <div className={cls('say')} {...at}>
           {chip(l.player)}
           <div className={styles.who}>
-            Seat {seatNumber(l.player)}
+            <span className={styles.nm}>Seat {seatNumber(l.player)}</span>
             {you(l.player)}
             {roleTag(l.player)}
           </div>
@@ -317,57 +354,71 @@ function Line({
         </div>
       );
     case 'pass':
+      // folded into a run by groupPasses; a lone one is drawn as a run of one
+      return null;
+    case 'passes':
       return (
-        <div className={cls('xr')} {...at}>
-          {chip(l.player)}
-          <div className={styles.who}>
-            Seat {seatNumber(l.player)}
-            {you(l.player)} passes
-            {roleTag(l.player)}
-            <i>{l.reason ? (PASS_REASON[l.reason] ?? l.reason) : 'chose to pass'}</i>
-          </div>
-          {l.draft ? (
-            <div className={styles.txt}>
-              <span className={styles.draft}>{seatify(l.draft)}</span>
-            </div>
-          ) : null}
-        </div>
-      );
-    case 'gm':
-      return (
-        <div className={cls('sys', 'gm')} {...at}>
-          <div className={styles.txt}>
-            {seatify(l.text)}
-            {sigils(l.roles)}
-          </div>
-        </div>
-      );
-    case 'votes':
-      return (
-        <div className={cls('sys')} {...at}>
-          <div className={styles.txt}>
-            The table votes, {l.pairs.length} ballot{l.pairs.length === 1 ? '' : 's'} at the
-            count
-            <div className={styles.pairs}>
-              {l.pairs.map((p) => (
-                <span
-                  key={p.voter}
-                  className={styles.pair}
-                  title={`Seat ${seatNumber(p.voter)}`}
-                >
-                  {chip(p.voter)}
-                  <span>→</span>
-                  {p.votee === 'abstain' ? (
-                    <span className={styles.ab} title="abstains" />
-                  ) : (
-                    chip(p.votee)
-                  )}
+        <div className={cls('passes')} {...at}>
+          <p className={styles.ps}>
+            {l.passes.map((p, i) => {
+              const why = passWhy(p);
+              return (
+                <span key={p.key} data-line={p.key}>
+                  {i ? ' ' : ''}
+                  {passSentence(p)}
+                  {why ? <span className={styles.why}>, {why}</span> : null}.
                 </span>
-              ))}
-            </div>
-          </div>
+              );
+            })}
+          </p>
+          {l.passes.map((p) =>
+            p.draft ? (
+              <div key={p.key} className={styles.draft}>
+                <small>Seat {seatNumber(p.player)} held back</small>
+                {seatify(p.draft)}
+              </div>
+            ) : null,
+          )}
         </div>
       );
+    case 'gm': {
+      const dead = new Set(l.seats.slice(0, l.roles.length));
+      return (
+        <div className={cls('report')} {...at}>
+          {reportParts(l, ballotsTold).map((p, i) => (
+            <p key={i}>
+              {named(p.text, dead)}
+              {p.role ? sigil(p.role) : null}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    case 'votes': {
+      // a tally per seat voted for: the voters' faces are its marks (big enough to tell apart
+      // on a phone, about 24 css px), the count at the right, the sentence under it
+      const rows = voteTally(l.pairs);
+      return (
+        <div className={cls('votes')} {...at}>
+          {rows.map((r) => (
+            <div key={r.votee} className={styles.trow}>
+              <span className={styles.tn}>
+                {r.votee === 'abstain' ? 'Abstain' : `Seat ${seatNumber(r.votee)}`}
+              </span>
+              <span className={styles.marks}>
+                {r.voters.map((v) => (
+                  <span key={v} title={`Seat ${seatNumber(v)}`}>
+                    {chip(v)}
+                  </span>
+                ))}
+              </span>
+              <span className={styles.tc}>{r.voters.length}</span>
+            </div>
+          ))}
+          <p className={styles.vs}>{voteSentence(rows)}</p>
+        </div>
+      );
+    }
     case 'act':
       return (
         <div className={cls('xr')} {...at}>
@@ -433,9 +484,25 @@ function Line({
       );
     case 'over':
       return (
-        <div className={cls('sys')} {...at}>
-          <div className={styles.txt}>{WINNER_TEXT[l.winner] ?? l.winner}</div>
+        <div className={cls('report')} {...at}>
+          <p>{WINNER_TEXT[l.winner] ?? l.winner}</p>
         </div>
       );
   }
+}
+
+/** The night heading's crescent, the day plaque's moon in line (TopStrip's Disc). */
+function Moon() {
+  return (
+    <svg
+      className={styles.moon}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      aria-hidden="true"
+    >
+      <path d="M15.6 5.2a7 7 0 1 0 3.2 11.7A6 6 0 0 1 15.6 5.2Z" strokeLinejoin="round" />
+    </svg>
+  );
 }

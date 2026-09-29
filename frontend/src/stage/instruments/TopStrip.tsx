@@ -6,10 +6,12 @@
  * the far right, live and replay alike.
  *
  * The buttons only report what they are pressed to; the container decides what a press does.
- * The replay also has a way back to its list, a small link above the wing at the left (a
- * phone on its side has no browser bar to go back with); a live game has none.
+ * The replay also has a way out, "← Replays" (or "← Home", whichever the viewer came from), on
+ * its own small plaque just before the day's, there from the first frame: a phone on its side
+ * has no browser bar to go back with (owner, 2026-09-29). A live game has none.
  */
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 import { geometry, type Hud } from '../units';
 import styles from './TopStrip.module.css';
 
@@ -28,8 +30,16 @@ export interface TopStripProps {
   unlocked?: boolean;
   onXray?: () => void;
   onTranscript?: () => void;
-  /** The replay's list: where "Replays" goes. Drawn in the replay's frame only. */
-  back?: string;
+  /** The replay's way out: where it goes and what it says. Drawn in the replay's frame only. */
+  back?: { href: string; label: string };
+  /**
+   * The count pill ("Acted 2 of 5"), when the scene has one. It sits at the room's top centre;
+   * in the replay, where the way out widens the plaques, it follows them in their row instead,
+   * and wraps under them when the room is too narrow for all three.
+   */
+  count?: ReactNode;
+  /** The side slot is open, so the room (and the replay's row) is narrower. */
+  side?: boolean;
 }
 
 export function TopStrip({
@@ -43,23 +53,42 @@ export function TopStrip({
   onXray,
   onTranscript,
   back,
+  count,
+  side = false,
 }: TopStripProps) {
   // no HUD (a preview, like the landing's): no strip, and no buttons that would go nowhere
   if (hud === 'none') return null;
-  const g = geometry(hud);
+  const g = geometry(hud, side);
+  const out = !!back && hud === 'replay';
   return (
     <>
-      {back && hud === 'replay' ? (
-        <Link href={back} className={styles.back}>
-          Replays
-        </Link>
-      ) : null}
-      <div className={styles.phase} style={{ left: g.wingN + 22.4 }}>
-        <Disc kind={disc ?? (/^Night/.test(title) ? 'moon' : 'sun')} />
-        <span className={styles.where}>
-          <b>{title}</b>
-          {sub ? <small>{sub}</small> : null}
-        </span>
+      <div
+        className={styles.left}
+        style={{ left: g.wingN + 22.4, maxWidth: g.room - 2 * 22.4 }}
+      >
+        {out ? (
+          <Link href={back.href} className={styles.back}>
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path
+                d="M13 8H3.5M7.5 3.5 3 8l4.5 4.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.6}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            {back.label}
+          </Link>
+        ) : null}
+        <div className={styles.phase}>
+          <Disc kind={disc ?? (/^Night/.test(title) ? 'moon' : 'sun')} />
+          <span className={styles.where}>
+            <b>{title}</b>
+            {sub ? <small>{sub}</small> : null}
+          </span>
+        </div>
+        {out && count ? <div className={styles.count}>{count}</div> : null}
       </div>
       <div className={styles.modes}>
         <button
@@ -79,6 +108,7 @@ export function TopStrip({
           Transcript
         </button>
       </div>
+      {out ? null : count}
     </>
   );
 }

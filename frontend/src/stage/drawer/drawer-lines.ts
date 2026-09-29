@@ -22,7 +22,7 @@
 import type { GameView, GmSlot, PassSlot, PrivateResult } from '@/game/types';
 import type { PassReason } from '@/types/contracts';
 import type { SceneBeat } from '../beats/types';
-import { seatNumber } from '../roles';
+import { seatNumber, seatify } from '../roles';
 
 export type LineTier = 'public' | 'private' | 'xray';
 
@@ -59,8 +59,11 @@ export interface OnlyText {
   rest: string;
 }
 
+/** Which chapter a rule opens: the drawer draws each as its own kind of heading. */
+export type Chapter = 'day' | 'vote' | 'night' | 'morning' | 'over';
+
 export type DrawerLine =
-  | (LineBase & { kind: 'rule'; text: string })
+  | (LineBase & { kind: 'rule'; text: string; chapter: Chapter })
   | (LineBase & { kind: 'speech'; player: string; text: string })
   | (LineBase & {
       kind: 'pass';
@@ -179,6 +182,7 @@ export function drawerLines(view: GameView, o: LineOptions): DrawerLine[] {
         tier: 'public',
         seats: [],
         text,
+        chapter: t.phase === 'day' ? 'day' : t.phase === 'voting' ? 'vote' : 'night',
       });
   }
 
@@ -254,6 +258,7 @@ export function drawerLines(view: GameView, o: LineOptions): DrawerLine[] {
             tier: 'public',
             seats: [],
             text: `Morning ${d.day}`,
+            chapter: 'morning',
           });
         if (about === 'over') pushOverRule(push, s.seq - 0.5, d.day);
         push(s.seq, {
@@ -469,6 +474,7 @@ function pushOverRule(
     tier: 'public',
     seats: [],
     text: 'Game over',
+    chapter: 'over',
   });
 }
 
@@ -629,4 +635,162 @@ export function drawerDays(lines: readonly DrawerLine[]): number[] {
 export function showRow(me: string | null, xray: boolean): LineTier[] {
   if (xray) return ['public', 'private', 'xray'];
   return me ? ['public', 'private'] : [];
+}
+
+/*
+ * How the drawer tells what it holds (HUD pass 3a, owner 2026-09-29): the lines are the same,
+ * but a run of passes reads as one quiet line, the vote as a tally per seat voted for, and the
+ * game master's reports as short sentences, one per seat they name.
+ */
+
+type PassLine = DrawerLine & { kind: 'pass' };
+
+/** A run of passes one after another, told as one line ("Seat 7 passed. Seat 9 passed."). */
+export interface PassRun {
+  kind: 'passes';
+  /** The first pass's key, so the run keeps its place while more passes join it. */
+  key: string;
+  day: number;
+  tier: 'xray';
+  passes: PassLine[];
+}
+
+export type ShownLine = DrawerLine | PassRun;
+
+/** The lines as the drawer draws them: every run of consecutive passes folded into one. */
+export function groupPasses(lines: readonly DrawerLine[]): ShownLine[] {
+  const out: ShownLine[] = [];
+  for (const l of lines) {
+    const prev = out.at(-1);
+    if (l.kind !== 'pass') out.push(l);
+    else if (prev?.kind === 'passes' && prev.day === l.day) prev.passes.push(l);
+    else
+      out.push({
+        kind: 'passes',
+        key: `passes-${l.key}`,
+        day: l.day,
+        tier: 'xray',
+        passes: [l],
+      });
+  }
+  return out;
+}
+
+/** A shown line's own keys: a run answers to each of its passes (the lit line, the scroll). */
+export function shownKeys(l: ShownLine): string[] {
+  return l.kind === 'passes' ? l.passes.map((p) => p.key) : [l.key];
+}
+
+/** One seat's pass, as the run says it: the public part, what the table saw. */
+export function passSentence(p: Pick<PassLine, 'player'>): string {
+  return `Seat ${seatNumber(p.player)} passed`;
+}
+
+/** Why the seat passed, when it was not by choice: the X-ray's part of the run (aqua). */
+export function passWhy(p: Pick<PassLine, 'reason'>): string | null {
+  if (p.reason === 'novelty_gated') return 'held back: nothing new to say';
+  if (p.reason === 'generation_failed') return 'no line came';
+  return null;
+}
+
+/** One seat voted for (or the abstentions), and who voted for it, in seat order. */
+export interface TallyRow {
+  votee: string;
+  voters: string[];
+}
+
+/** The day's ballots as a tally: the most votes first, abstentions last, ties in seat order. */
+export function voteTally(pairs: readonly { voter: string; votee: string }[]): TallyRow[] {
+  const rows = new Map<string, string[]>();
+  for (const p of pairs) rows.set(p.votee, [...(rows.get(p.votee) ?? []), p.voter]);
+  const bySeat = (a: string, b: string) => seatNumber(a) - seatNumber(b);
+  return [...rows.entries()]
+    .map(([votee, voters]) => ({ votee, voters: voters.sort(bySeat) }))
+    .sort(
+      (a, b) =>
+        Number(a.votee === 'abstain') - Number(b.votee === 'abstain') ||
+        b.voters.length - a.voters.length ||
+        bySeat(a.votee, b.votee),
+    );
+}
+
+/** "Seats 1, 2 and 5 voted for seat 6. Seat 6 voted for seat 7.", in the tally's order. */
+export function voteSentence(rows: readonly TallyRow[]): string {
+  return rows
+    .map((r) => {
+      const ns = r.voters.map(seatNumber);
+      const who =
+        ns.length === 1
+          ? `Seat ${ns[0]}`
+          : `Seats ${ns.slice(0, -1).join(', ')} and ${ns.at(-1)}`;
+      return r.votee === 'abstain'
+        ? `${who} abstained.`
+        : `${who} voted for seat ${seatNumber(r.votee)}.`;
+    })
+    .join(' ');
+}
+
+/** One sentence of a game master's report: the seat it is about, and the role it told. */
+export interface ReportPart {
+  text: string;
+  /** The first seat the sentence names, if it names one. */
+  seat: string | null;
+  /** That seat's role, when the line tells it (a death at dawn, the lynch): its sigil. */
+  role: string | null;
+}
+
+const SEAT_AT_START = /^seat (\d+)/i;
+const BALLOT = /\bvoted for\b/i;
+const VOTE_HEAD = /^here's the vote result/i;
+const NIGHT_HEAD = /^night of day \d+:\s*/i;
+
+/**
+ * The game master's line as the drawer sets it: its words, split into one sentence per seat it
+ * names ("Seat 3 was stabbed by the serial killer last night. They were a wolf."). The heading
+ * the drawer already draws goes ("Here's the vote result for day 3:", "Night of day 2:"), and so
+ * do the ballots when the day's votes line tells them (`ballotsTold`); nothing else changes.
+ */
+export function reportParts(
+  l: Pick<DrawerLine & { kind: 'gm' }, 'text' | 'about' | 'seats' | 'roles'>,
+  ballotsTold: boolean,
+): ReportPart[] {
+  const vote = l.about === 'vote';
+  let kept = seatify(l.text)
+    .replace(/\bPlayer seat (\d+)/g, 'Seat $1')
+    .replace(/\bserial_killer\b/g, 'serial killer')
+    // the game master writes "a" before every role; the drawer reads "an investigator"
+    .replace(/\b([Aa]) (?=[aeiou])/g, '$1n ')
+    .split('\n')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .filter((s) => !vote || !(VOTE_HEAD.test(s) || (ballotsTold && BALLOT.test(s))))
+    .join(vote && !ballotsTold ? '\n' : ' ');
+  if (l.about === 'dawn') kept = kept.replace(NIGHT_HEAD, '');
+  // a new part where a sentence opens on a seat; the ballots keep their own lines
+  const parts: string[] = [];
+  for (const line of kept.split('\n'))
+    for (const s of line.split(/(?<=[.!?])\s+/)) {
+      if (!s) continue;
+      if (!parts.length || SEAT_AT_START.test(s) || BALLOT.test(s)) parts.push(s);
+      else parts[parts.length - 1] += ` ${s}`;
+    }
+  // the dead are the first seats, in the order their roles are told (drawerLines)
+  const dead = l.seats.slice(0, l.roles.length);
+  const used = new Set<number>();
+  const out = parts.map((p) => {
+    const m = /\bseat (\d+)/i.exec(p);
+    const seat = m ? `player_${m[1]}` : null;
+    const i = seat ? dead.indexOf(seat) : -1;
+    const told = i >= 0 && !used.has(i) && !BALLOT.test(p);
+    if (told) used.add(i);
+    return {
+      text: p.charAt(0).toUpperCase() + p.slice(1),
+      seat,
+      role: told ? l.roles[i] : null,
+    };
+  });
+  // a role the words never reached still lends its sigil, at the end
+  const left = l.roles.filter((_, i) => !used.has(i));
+  if (left.length && out.length && !out.at(-1)!.role) out[out.length - 1].role = left[0];
+  return out;
 }

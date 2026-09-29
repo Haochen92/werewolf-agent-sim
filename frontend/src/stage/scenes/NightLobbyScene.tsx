@@ -167,8 +167,9 @@ function LobbyBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
           title={`Night ${beat.day}`}
           sub={`Night · ${beat.label}`}
           {...stripButtons(presentation, slotInput)}
+          side={side}
+          count={<CountPill hud={hud} label="Acted" n={acted} total={units} side={side} />}
         />
-        <CountPill hud={hud} label="Acted" n={acted} total={units} side={side} />
         {myRole ? (
           <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
             <CardButton role={myRole} />

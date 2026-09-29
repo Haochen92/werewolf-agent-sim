@@ -10,8 +10,12 @@
  *
  * The page is landscape only (stage_architecture.md, ruling 3): upright, a card asks the
  * viewer to turn the phone.
+ *
+ * The theatre's way out goes back where the viewer came from: the landing's links say so with
+ * `?from=home`; anything else (the archive, a live game's end, a shared link) goes to the list.
  */
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { getReplay } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
@@ -20,7 +24,10 @@ import { OrientationGuard } from '@/stage/OrientationGuard';
 import { ReplayTheatre } from '@/stage/containers/ReplayTheatre';
 import classes from './TheaterClient.module.css';
 
+const HOME = { href: '/', label: 'Home' };
+
 export function TheaterClient({ gameId }: { gameId: string }) {
+  const fromHome = useSearchParams().get('from') === 'home';
   const { data, isPending, error } = useQuery({
     queryKey: queryKeys.replays.detail(gameId),
     queryFn: () => getReplay(gameId),
@@ -42,7 +49,7 @@ export function TheaterClient({ gameId }: { gameId: string }) {
   return (
     <OrientationGuard>
       <main className={classes.page}>
-        <ReplayTheatre game={data} />
+        <ReplayTheatre game={data} back={fromHome ? HOME : undefined} />
       </main>
     </OrientationGuard>
   );

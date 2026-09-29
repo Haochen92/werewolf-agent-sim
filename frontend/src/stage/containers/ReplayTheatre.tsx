@@ -59,6 +59,9 @@ import styles from './ReplayTheatre.module.css';
 
 export interface ReplayTheatreProps {
   game: Pick<ReplayGame, 'game_id' | 'events'>;
+  /** The way out, at the strip's left: where the viewer came from. Absent: the replays list.
+   *  A preview has none (its way to the whole game is the caller's). */
+  back?: { href: string; label: string };
   /** A preview: plays `from`..`to` (indices into the public cut) on a loop when `autoplay`,
    *  else rests on `from`. The frame is the caller's. */
   mini?: {
@@ -131,7 +134,9 @@ function useHold(key: string, ms: number | null, running: boolean, done: () => v
 const isSpeech = (el: EventTarget | null) =>
   el instanceof Element && el.closest('[data-speech]') !== null;
 
-export function ReplayTheatre({ game, mini }: ReplayTheatreProps) {
+const TO_LIST = { href: '/replays', label: 'Replays' };
+
+export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps) {
   const events = game.events as readonly DurableGameEvent[];
   const cast = useMemo(() => castForGame(game.game_id), [game.game_id]);
   const all = useMemo(
@@ -192,9 +197,9 @@ export function ReplayTheatre({ game, mini }: ReplayTheatreProps) {
       onTranscript: () => dispatch({ type: 'transcript' }),
       onXray,
       // a preview's way to the whole game is the caller's
-      back: isMini ? undefined : '/replays',
+      back: isMini ? undefined : back,
     }),
-    [drawer.filters, drawer.setFilters, filmTab, ahead, onXray, isMini],
+    [drawer.filters, drawer.setFilters, filmTab, ahead, onXray, isMini, back],
   );
 
   // playing: the beat's hold, paused while the speech is held

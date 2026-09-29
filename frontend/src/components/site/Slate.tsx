@@ -40,9 +40,11 @@ export interface SlateProps {
   modelLabel?: string;
   /** This browser holds a seat token for the game. */
   mine?: boolean;
+  /** Where the slate sits, so the theatre's way out comes back to it (`?from=`, TheaterClient). */
+  from?: 'home';
 }
 
-export function Slate({ replay, modelLabel, mine = false }: SlateProps) {
+export function Slate({ replay, modelLabel, mine = false, from }: SlateProps) {
   const faction = FACTION[replay.winner];
   const ended = endedLabel(replay.ended_phase, replay.days);
   const date = formatDate(replay.finished_at);
@@ -61,7 +63,7 @@ export function Slate({ replay, modelLabel, mine = false }: SlateProps) {
 
   return (
     <Link
-      href={`/replays/${replay.game_id}`}
+      href={`/replays/${replay.game_id}${from ? `?from=${from}` : ''}`}
       className={`${classes.game} ${faction.className}`}
       aria-label={aria}
       data-game={replay.game_id}

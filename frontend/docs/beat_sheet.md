@@ -165,7 +165,7 @@ ephemeral: it paces the live drop and is not in the log.
 | 4 | `vote.ballots-drop` | replay only: the `vote_cast` batch (first: 109, 242, 378) | P | all the chips cascade together into the jar | — | 2.0 |
 | 5 | `vote.closes` | live: the pill full · replay: same beat as 4 | P | the lid comes down | — | 1.5 |
 | 6 | `vote.count-begins` | the `vote_cast` batch | P | the lid flies out; the shot pushes in; the jar tips to the back rail; plates along the front edge, one per seat with votes, abstain as an upturned saucer at the right; place cards with head, seat, running number | F(X): the voters' consults and reads | 2.0 |
-| 7 | `vote.chip-counted` | each `vote_cast` | P (X: the ballot named at the drop) | one chip rolls from the jar's mouth, flips face up, lands on its plate; the card's number ticks; towers cap at four; the chip that settles the winner lands last | D: (the votes are one drawer line per day at the count, pairs as chips, abstain as the empty ring) | 2.0 each |
+| 7 | `vote.chip-counted` | each `vote_cast` | P (X: the ballot named at the drop) | one chip rolls from the jar's mouth, flips face up, lands on its plate; the card's number ticks; towers cap at four; the chip that settles the winner lands last | D: (the votes are one drawer line per day at the count: a tally per seat voted for, the voters' faces its marks, and the who-voted-whom sentence) | 2.0 each |
 | 8 | `vote.result` | `lynch_result` (119, 250, 384) | P | the winner's plate and card lit; "Voted out, 3 to 2" · `abstain`: "The table abstains" · `tie`: the tied plates lit equally, the GM's line, one held beat, then the abstain ending | D: the GM line with the lynch sigil lent to it | 3.2 |
 | 9 | `vote.table-down` | `lynch_result` | P | the lift lowers the table with the count on it. `lynched`: the leaves stay open → §4. `abstain`/`tie`: the leaves fold, the shot pulls back, the shutter gathers up on the night window → §5 | — | 3.0 |
 | — | `vote.skipped` | `lynch_result: no_vote` (31, day 1) | — | **no vote scene**: the day goes straight to night falls (§5 row 1 takes the shutter move) | D: the GM line | — |
@@ -537,7 +537,28 @@ brief sits after the morning's private results and shows from its own carried-su
 (bench 74 put it straight after the dawn line; that would show it before its beat). The closing
 game-master line stands for `game_over` (the Game over rule goes before it); a separate "The
 wolves have won." line only when no such line exists. The seat filter is one seat at a time (a
-second tap clears it), as bench 74. **The speech box (ruled 2026-09-29, the HUD's look):** a
+second tap clears it), as bench 74. **The drawer's look (HUD pass 3a, ruled 2026-09-29, from the
+owner's transcript mock; replaces bench 74's cards and the wording above where they differ):** a
+warm dark ground under the HUD's brass edge; no card per entry, the entries set apart by space and
+type. The chapters as headings: "Day 3" in Young Serif, large, "Discussion" small and muted beside
+it; "Vote", "Morning 2", "Game over" and the night (a crescent before "Night 2", in a cool pale
+blue-grey, never lavender: that is the serial killer's) smaller, each under a hairline. A speech:
+a small head, "Seat 2" in brass-cream Young Serif, the words in Literata. A run of passes one after
+another is one quiet italic line ("Seat 7 passed. Seat 9 held back."; `groupPasses`), each
+held-back draft under it with "Seat 9 held back"; still X-ray only, in aqua. The vote: a row per
+seat voted for, most votes first and abstentions last ("Seat 6", the voters' faces as its marks,
+about 24 css px on an iPhone 14, the count at the right; `voteTally`), then "Seats 1, 2, 5, 7, 8
+and 9 voted for seat 6. Seat 6 voted for seat 7." (`voteSentence`). The game master's lines keep
+their words but are set as short sentences, one per seat they name, each with the sigil of the
+role it tells ("Seat 3 was stabbed by the serial killer last night. They were a wolf."), the dead
+in terracotta; the heading the drawer already draws goes ("Night of day 2:", "Here's the vote
+result for day 3:"), and so do the ballots when the day's votes line tells them (`reportParts`).
+"Only you" lines and the pack keep an amber or red edge; X-ray lines their aqua. The lit line: a
+brass edge on a lamp's warmth. One column at every width (at the desktop's 530-odd css px two
+columns would not hold a speech). The controls are the strip's plaque tabs: the seat filter's
+"All" and Show in walnut with a thin brass edge, a pressed seat's head ringed in brass, the day
+tabs a walnut plaque along the foot split by brass rules; pressed is the dark inset well, the
+label in cream over a short brass underline. **The speech box (ruled 2026-09-29, the HUD's look):** a
 walnut board with a thin brass edge and a still grain, the seat's nameplate (chip and "Seat n" in
 Young Serif) on a brass-edged tab at its top-left corner, the words in Literata, lamp-glow cream.
 A fixed size: three lines of a 30-em measure, the same count on every screen; paging replaces
@@ -598,9 +619,14 @@ under these filters." once it does. **At an X-ray night's spoke** the drawer sho
 branches (a seat's act; the pack's talk and kill) as far as the spokes have got: the branches
 before this one whole, this one up to the beat's `seq`, none after it, a branch ordered by its
 last line as the spokes are (`spokeCut` in `drawer-lines.ts`; the beats keep the whole night's
-`end`). **The way back:** a "Replays" link to `/replays` at the top strip's left, over the wing,
-level with the mode buttons (`SlotInput.back`, handed down by the replay's container only; live
-and the workbench have none).
+`end`). **The way out (ruled 2026-09-29, replaces the small "Replays" link over the wing):** a
+plaque of the day plaque's material and height just before it, "← Replays" to `/replays`, or
+"← Home" to `/` when the viewer came from the landing (its links carry `?from=home`), there from
+the first frame on the desktop and the phone (`SlotInput.back`, handed down by the replay's
+container only; live, the workbench and the landing's carriage have none). It widens the strip's
+row, so in the replay the count pill follows the plaques in their row instead of the room's
+centre, and wraps under them where the room is too narrow (a phone with the slot open). A live
+game's way out is the curtain's "Watch the replay" and "Back to the lobby" (§12).
 
 ## 12. Live pacing — H§6
 

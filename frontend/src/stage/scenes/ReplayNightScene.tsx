@@ -292,8 +292,9 @@ function NightSpoke({ view, beat, me, presentation, slot: slotInput }: SceneProp
           title={`Night ${day}`}
           sub={whole ? beat.label : `${beat.label} · ${actorWord}`}
           {...stripButtons(presentation, slotInput)}
+          side={side}
+          count={<CountPill hud={hud} label="Acted" n={acted} total={total} side={side} />}
         />
-        <CountPill hud={hud} label="Acted" n={acted} total={total} side={side} />
         {cur && cur.actor !== 'pack' ? (
           <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
             <Notice

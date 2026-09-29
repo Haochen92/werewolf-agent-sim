@@ -116,7 +116,9 @@ two tabs of one plaque split by a thin brass rule, the labels muted brass; the p
 or Transcript alike, sits in a darker engraved walnut well, its label bright cream over a short
 brass underline), the **speech box** (a fixed board of three lines with a nameplate tab, paged; beat
 sheet §0, §11), and the **stand plate** (the seat engraved on brass, "No. 2", on the stand's
-rail; on a phone, where the box rises past the rail, it rises to sit just above the box). A modal overlay (the full card, the epilogue's sheet, the
+rail; on a phone, where the box rises past the rail, it rises to sit just above the box). In the
+replay a **way-out plaque** ("← Replays", or "← Home" from the landing) stands before the day
+plaque in the same material, and the count pill joins their row (beat sheet §11). A modal overlay (the full card, the epilogue's sheet, the
 portrait interstitial) sits above the box in normal page flow. `grade` and `hud` sit outside the
 camera's box: a push-in moves the room under the grade, as under a lens.
 
@@ -146,6 +148,18 @@ by every rail through `useSyncExternalStore`; `Presentation.game` is set only by
 container (and the workbench's live cuts), so a replay's cards are never editable. GPU: the lit
 ring is a pseudo-element whose opacity fades; the dead photo's `grayscale` is a static filter on
 a small image; nothing moves.
+
+**The transcript (ruled 2026-09-29, pass 3a; beat sheet §11 "The drawer's look").** The drawer is
+a page, not a list of cards: a warm dark ground (`--ground-top`/`--ground-bot` on `.drawer`) with
+the HUD's brass edge, the chapters as Young Serif headings (the day large; the night in a cool
+pale blue-grey, `--night-ink`, never the serial killer's lavender), speeches as a small head, a
+brass-cream name and Literata words, the game master's reports as short sentences with the dead in
+terracotta (`--dead`), a run of passes as one italic line, and the vote as a tally of the voters'
+faces per seat voted for. X-ray lines keep the film's aqua. `drawer-lines.ts` still decides what a
+viewer holds; the telling is its pure helpers (`groupPasses`, `voteTally`, `voteSentence`,
+`reportParts`), unit-tested beside it. The seat filter, Show and the day tabs are the strip's
+plaque tabs (walnut, brass edge, the pressed well). One column at every width. Static: no filter,
+no blur, nothing animates but the scroll.
 
 **Atmosphere (2026-09-27, the polish pass's first step).** One warm key light from the upper left
 (the puppets' own), carried over the whole room so the painted props and the flat vector pieces

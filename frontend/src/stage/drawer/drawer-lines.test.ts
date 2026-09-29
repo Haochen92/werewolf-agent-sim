@@ -8,8 +8,15 @@ import {
   drawerDays,
   drawerLines,
   filterLines,
+  groupPasses,
   litKey,
+  passSentence,
+  passWhy,
+  reportParts,
+  shownKeys,
   showRow,
+  voteSentence,
+  voteTally,
   type DrawerLine,
 } from './drawer-lines';
 
@@ -303,5 +310,128 @@ describe('the drawer: the game master’s vote line waits for the card', () => {
     const abstained = at('vote.result', (b) => b.day === 2);
     const lines = drawerLines(abstained.view, { me: null, xray: false, beat: abstained.beat });
     expect(byKey(lines, 'gm-118')).toBeDefined();
+  });
+});
+
+describe('the drawer: how it tells what it holds', () => {
+  const xray = drawerLines(whole, { me: null, xray: true });
+  const gm = (key: string) => byKey(xray, key) as DrawerLine & { kind: 'gm' };
+
+  it('folds a run of passes into one line, and a pass between speeches stays alone', () => {
+    const runs = groupPasses(xray).filter((l) => l.kind === 'passes');
+    expect(runs.map((r) => r.kind === 'passes' && r.passes.map((p) => p.player))).toEqual([
+      ['player_1', 'player_5', 'player_4'],
+      ['player_2', 'player_7', 'player_9'],
+      ['player_7', 'player_9'],
+      ['player_6', 'player_2', 'player_1'],
+      ['player_1'],
+    ]);
+    // nothing else is touched, and every pass is still in a run
+    expect(groupPasses(xray).filter((l) => l.kind !== 'passes')).toEqual(
+      xray.filter((l) => l.kind !== 'pass'),
+    );
+    expect(runs.flatMap(shownKeys)).toEqual(
+      xray.filter((l) => l.kind === 'pass').map((l) => l.key),
+    );
+    // the key is the run's first pass, so it holds while later passes join
+    expect(runs[2].key).toBe('passes-pass-183');
+  });
+
+  it('runs the passes under the filters: one seat’s passes are its own', () => {
+    const seat7 = groupPasses(filterLines(xray, { ...DEFAULT_FILTERS, seat: 'player_7' }));
+    const runs = seat7.filter((l) => l.kind === 'passes');
+    expect(runs.map((r) => r.kind === 'passes' && r.passes.length)).toEqual([1, 1]);
+  });
+
+  it('says each pass as the table saw it, and why only where the X-ray knows', () => {
+    expect(passSentence({ player: 'player_7' })).toBe('Seat 7 passed');
+    expect(passWhy({ reason: 'voluntary' })).toBeNull();
+    expect(passWhy({ reason: null })).toBeNull();
+    expect(passWhy({ reason: 'novelty_gated' })).toBe('held back: nothing new to say');
+    expect(passWhy({ reason: 'generation_failed' })).toBe('no line came');
+  });
+
+  it('reads "an" before a role that opens on a vowel, and leaves the rest', () => {
+    const texts = reportParts(gm('gm-155'), true).map((p) => p.text);
+    expect(texts[1]).toBe(
+      'Seat 4 was killed by the wolves last night. They were an investigator.',
+    );
+    expect(texts[0]).toMatch(/They were a wolf\.$/);
+  });
+
+  it('tallies the vote: most votes first, voters in seat order, abstentions last', () => {
+    const votes = (day: number) =>
+      (byKey(xray, `votes-${day}`) as DrawerLine & { kind: 'votes' }).pairs;
+    expect(voteTally(votes(3))).toEqual([
+      {
+        votee: 'player_6',
+        voters: ['player_1', 'player_2', 'player_5', 'player_7', 'player_8', 'player_9'],
+      },
+      { votee: 'player_7', voters: ['player_6'] },
+    ]);
+    expect(voteSentence(voteTally(votes(3)))).toBe(
+      'Seats 1, 2, 5, 7, 8 and 9 voted for seat 6. Seat 6 voted for seat 7.',
+    );
+    expect(voteSentence(voteTally(votes(4)))).toBe(
+      'Seats 1, 7 and 8 voted for seat 2. Seats 2 and 9 voted for seat 7.',
+    );
+    const mixed = voteTally([
+      { voter: 'player_3', votee: 'abstain' },
+      { voter: 'player_2', votee: 'player_5' },
+    ]);
+    expect(mixed.map((r) => r.votee)).toEqual(['player_5', 'abstain']);
+    expect(voteSentence(mixed)).toBe('Seat 2 voted for seat 5. Seat 3 abstained.');
+  });
+
+  it('sets the morning report as one sentence per seat, each with the role it tells', () => {
+    expect(reportParts(gm('gm-155'), true)).toEqual([
+      {
+        text: 'Seat 3 was stabbed by the serial killer last night. They were a wolf.',
+        seat: 'player_3',
+        role: 'wolf',
+      },
+      {
+        text: 'Seat 4 was killed by the wolves last night. They were an investigator.',
+        seat: 'player_4',
+        role: 'investigator',
+      },
+    ]);
+    // a save names a seat that did not die: no role
+    expect(reportParts(gm('gm-57'), true)).toEqual([
+      {
+        text: 'Seat 1 was attacked by the wolves and the serial killer but was saved by the healer!',
+        seat: 'player_1',
+        role: null,
+      },
+    ]);
+  });
+
+  it('drops the vote line’s heading and the ballots the votes line already told', () => {
+    expect(reportParts(gm('gm-249'), true)).toEqual([
+      {
+        text: 'Seat 6 has been voted out and was a villager.',
+        seat: 'player_6',
+        role: 'villager',
+      },
+    ]);
+    expect(reportParts(gm('gm-383'), true).map((p) => p.text)).toEqual([
+      'Seat 2 has been voted out and was a serial killer.',
+    ]);
+    // with no votes line to tell them, the ballots stay, one to a line
+    expect(
+      reportParts(gm('gm-249'), false)
+        .map((p) => p.text)
+        .slice(0, 2),
+    ).toEqual(['Seat 1 voted for seat 6', 'Seat 2 voted for seat 6']);
+    expect(reportParts(gm('gm-30'), false).map((p) => p.text)).toEqual([
+      'No vote was held today; no one is eliminated.',
+    ]);
+  });
+
+  it('marks each rule with its chapter', () => {
+    const rules = xray.filter((l) => l.kind === 'rule');
+    expect(new Set(rules.map((l) => l.kind === 'rule' && l.chapter))).toEqual(
+      new Set(['day', 'vote', 'night', 'morning', 'over']),
+    );
   });
 });

@@ -2,7 +2,8 @@
    (Transcript always the far right). Both are the speech box's material: deep walnut, a thin
    brass edge with a dark reveal, the words in lamp-glow cream (owner, 2026-09-29). */
 .phase,
-.modes {
+.modes,
+.back {
   background: linear-gradient(180deg, var(--walnut-top), var(--walnut-bot));
   border: 1.5px solid var(--hud-brass);
   box-shadow:
@@ -11,11 +12,28 @@
     0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
+/* the strip's left: the replay's way out, then the day plaque */
+.left {
+  position: absolute;
+  top: 14.4px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: calc(9.6px * var(--legible-ui));
+}
+/* the count pill in the replay's row: in the flow after the plaques, not at the room's centre */
+.count {
+  display: flex;
+  align-items: center;
+}
+.count > * {
+  position: static !important;
+  transform: none !important;
+}
+
 /* the day plaque: a brass disc, "Day 3" engraved large, the phase beneath. A heading
    (--legible-ui), so on a phone it grows less than the words people read. */
 .phase {
-  position: absolute;
-  top: 14.4px;
   display: flex;
   align-items: center;
   gap: calc(11.2px * var(--legible-ui));
@@ -121,25 +139,30 @@
   background: var(--hud-brass);
 }
 
-/* the replay's way back to its list: over the wing, level with the mode buttons */
+/* the replay's way out: a plaque of the day plaque's material and height, before it, so it is
+   the first thing at the top left from the first frame (owner, 2026-09-29) */
 .back {
-  position: absolute;
-  z-index: 4;
-  left: 9.6px;
-  top: 16px;
-  font-size: var(--meta);
-  line-height: 1.5;
-  color: var(--cream2);
-  text-decoration: none;
-  background: linear-gradient(180deg, var(--walnut-top), var(--walnut-bot));
-  border: 1.5px solid var(--hud-brass-lo);
+  display: flex;
+  align-items: center;
+  gap: calc(7.2px * var(--legible-ui));
+  padding: 0 calc(16px * var(--legible-ui)) 0 calc(12.8px * var(--legible-ui));
   border-radius: 8px;
-  padding: calc(7.2px * var(--legible-ui)) calc(9.6px * var(--legible-ui));
+  font-family: var(--font-display);
+  font-size: calc(var(--meta) * 1.15);
+  line-height: 1.2;
+  color: var(--cream);
+  text-decoration: none;
+  white-space: nowrap;
 }
-/* the back link outgrows the wing on a phone: the title steps right by as much */
-.back + .phase {
-  margin-left: calc((var(--legible-ui) - 1) * 75.2px);
+.back svg {
+  width: 1em;
+  height: 1em;
+  color: var(--hud-brass-hi);
 }
 .back:hover {
-  color: var(--bone);
+  color: var(--hud-brass-hi);
+}
+.back:focus-visible {
+  outline: 2px solid var(--hud-brass-hi);
+  outline-offset: 2px;
 }
