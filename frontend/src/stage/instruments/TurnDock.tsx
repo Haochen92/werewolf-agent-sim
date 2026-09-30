@@ -20,13 +20,19 @@
  * It only draws what it is handed and reports the presses; the live theatre holds the words
  * and talks to the server. A line refused by the server says why, in the server's words.
  */
-import { motion } from 'motion/react';
-import type { CSSProperties, KeyboardEvent } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
+import { useEffect, useState, type CSSProperties, type KeyboardEvent } from 'react';
 import { SPRITES } from '@/assets/manifest';
 import { useMotionScale } from '../motion';
 import type { DockInput } from '../scenes/types';
 import styles from './TurnDock.module.css';
-import { dockControls, draftsLeftText } from './turn-dock';
+import {
+  DRAFT_WORDS,
+  LINE_MAX,
+  cycleDraftWords,
+  dockControls,
+  draftsLeftText,
+} from './turn-dock';
 
 export interface TurnDockProps {
   dock: DockInput;
@@ -88,7 +94,7 @@ export function TurnDock({ dock, left, onSay, onPass, arrive = false }: TurnDock
             disabled={c.busy || !!dock.drafting}
           />
           <button type="button" onClick={draft} disabled={!c.canDraft} title={c.draftHint}>
-            {c.draftLabel}
+            {dock.drafting ? <DraftWords /> : c.draftLabel}
           </button>
           <span className={styles.left}>{draftsLeftText(c.draftsLeft)}</span>
           {c.hasNotebook && dock.notebook ? (
@@ -105,19 +111,31 @@ export function TurnDock({ dock, left, onSay, onPass, arrive = false }: TurnDock
         </div>
       ) : null}
       <div className={styles.reply}>
-        <textarea
-          className={styles.line}
-          aria-label="Your line"
-          placeholder={
-            c.hasDraft ? 'Type your line, or draft one above…' : 'Type your line…'
-          }
-          value={dock.text}
-          onChange={(e) => dock.onText?.(e.target.value)}
-          onKeyDown={onKey}
-          readOnly={!dock.onText}
-          disabled={c.busy}
-          autoFocus
-        />
+        <div className={styles.lineBox}>
+          <textarea
+            className={styles.line}
+            aria-label="Your line"
+            placeholder={
+              c.hasDraft ? 'Type your line, or draft one above…' : 'Type your line…'
+            }
+            value={dock.text}
+            onChange={(e) => dock.onText?.(e.target.value)}
+            onKeyDown={onKey}
+            readOnly={!dock.onText}
+            disabled={c.busy}
+            maxLength={LINE_MAX}
+            autoFocus
+          />
+          {c.count ? (
+            <span
+              className={`${styles.lineCount} ${c.over ? styles.overCap : ''}`}
+              data-line-count
+              aria-live="polite"
+            >
+              {c.count}
+            </span>
+          ) : null}
+        </div>
         <div className={styles.sends}>
           <button type="button" className={styles.pri} onClick={say} disabled={!c.canSend}>
             {dock.sending ? 'Sending…' : 'Send'}
@@ -133,5 +151,40 @@ export function TurnDock({ dock, left, onSay, onPass, arrive = false }: TurnDock
         </p>
       ) : null}
     </motion.div>
+  );
+}
+
+/**
+ * The Draft button's words while a draft is on its way: "Drafting…", then every 1.6 s the next
+ * of `DRAFT_WORDS`, each crossfading into the next (opacity only). The button keeps the width of
+ * the longest, so nothing beside it moves; its name stays "Drafting…".
+ */
+function DraftWords() {
+  const k = useMotionScale();
+  const [i, setI] = useState(0);
+  useEffect(() => cycleDraftWords(setI), []);
+  return (
+    <span className={styles.words}>
+      <span className={styles.srOnly}>{DRAFT_WORDS[0]}</span>
+      {DRAFT_WORDS.map((w) => (
+        <span key={w} className={styles.sizer} aria-hidden="true">
+          {w}
+        </span>
+      ))}
+      <AnimatePresence initial={false}>
+        <motion.span
+          key={i}
+          className={styles.word}
+          aria-hidden="true"
+          data-draft-word={i}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.45 * k }}
+        >
+          {DRAFT_WORDS[i]}
+        </motion.span>
+      </AnimatePresence>
+    </span>
   );
 }

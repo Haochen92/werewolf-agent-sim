@@ -498,6 +498,40 @@ test('live: a line typed by hand sends as it is, no draft asked for', async ({ p
   expect(posted).toEqual([{ path: 'turns', body: { message: 'I trust seat 4 today.' } }]);
 });
 
+test('live: a long line counts near the cap and stops at 700; a pending draft says it is working', async ({
+  page,
+}) => {
+  await mockApi(page, {
+    status: status(200, { pending_seats: [ME], pending_input: true }),
+    stream: [...upTo(200), yourTurn(201)],
+  });
+  // a draft that never comes back, so the button stays on its words
+  await page.unroute(`**/games/${GAME}/draft`);
+  await page.route(`**/games/${GAME}/draft`, async (route) => {
+    const req = route.request();
+    if (req.method() === 'OPTIONS')
+      return route.fulfill({ status: 204, headers: cors(req) });
+  });
+  await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  const dock = page.locator('[data-dock="discuss"]');
+  const box = dock.getByLabel('Your line');
+  const count = dock.locator('[data-line-count]');
+  await box.fill('a'.repeat(599));
+  await expect(count).toHaveCount(0);
+  await box.press('b');
+  await expect(count).toHaveText('600 / 700');
+  // typing stops at the cap
+  await page.keyboard.insertText('c'.repeat(110));
+  await expect(box).toHaveValue(/^a{599}bc{100}$/);
+  await expect(count).toHaveText('700 / 700');
+  await dock.getByRole('button', { name: 'Redraft', exact: true }).click();
+  // the newest word (the one fading out stays in the page while it goes)
+  const words = dock.locator('[data-draft-word]').last();
+  await expect(words).toHaveText('Drafting…');
+  await expect(words).toHaveText('Weighing the table…', { timeout: 4000 });
+  await expect(words).toHaveText('Finding the words…', { timeout: 4000 });
+});
+
 test('live: after game over the ending plays to its curtain', async ({ page }) => {
   test.setTimeout(90_000); // the whole ending plays, a beat at a time
   await page.clock.install({ time: T0 });

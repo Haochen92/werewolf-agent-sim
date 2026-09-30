@@ -1,8 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AGENT_WOULD_PASS, initialTurnState, turnReducer } from '../containers/live-state';
 import { guessChoices, notebookForAgent, parseNotebook } from '../notebook';
 import type { DockInput } from '../scenes/types';
-import { dockControls, draftRequest, draftsLeftText } from './turn-dock';
+import {
+  DRAFT_WORDS,
+  LINE_MAX,
+  cycleDraftWords,
+  dockControls,
+  draftRequest,
+  draftsLeftText,
+} from './turn-dock';
 
 const dock = (over: Partial<DockInput> = {}): DockInput => ({
   text: '',
@@ -215,5 +222,46 @@ describe('the notebook’s role guess (2026-09-30)', () => {
       },
       suspect: 'player_3',
     });
+  });
+});
+
+describe('the Draft button’s words while a draft is on its way', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('steps through its four words every 1.6 s, round and round, until stopped', () => {
+    vi.useFakeTimers();
+    const shown: string[] = [DRAFT_WORDS[0]];
+    const stop = cycleDraftWords((i) => shown.push(DRAFT_WORDS[i]));
+    vi.advanceTimersByTime(1599);
+    expect(shown).toEqual(['Drafting…']);
+    vi.advanceTimersByTime(1);
+    expect(shown).toEqual(['Drafting…', 'Weighing the table…']);
+    vi.advanceTimersByTime(1600 * 4);
+    expect(shown).toEqual([
+      'Drafting…',
+      'Weighing the table…',
+      'Finding the words…',
+      'Reading the room…',
+      'Drafting…',
+      'Weighing the table…',
+    ]);
+    stop();
+    vi.advanceTimersByTime(1600 * 3);
+    expect(shown).toHaveLength(6);
+  });
+});
+
+describe('the line’s length', () => {
+  it('caps at 700, and counts once the line is within 100 of it', () => {
+    expect(LINE_MAX).toBe(700);
+    const at = (n: number) => dockControls(dock({ text: 'a'.repeat(n) }));
+    expect(at(599)).toMatchObject({ count: null, canSend: true });
+    expect(at(600)).toMatchObject({ count: '600 / 700', canSend: true });
+    expect(at(612).count).toBe('612 / 700');
+    expect(at(700)).toMatchObject({ count: '700 / 700', over: false, canSend: true });
+    // a draft set from outside may run past what the box lets a hand type: Send waits
+    expect(at(742)).toMatchObject({ count: '742 / 700', over: true, canSend: false });
   });
 });

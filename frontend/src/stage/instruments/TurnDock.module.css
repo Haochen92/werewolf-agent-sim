@@ -180,6 +180,58 @@
   cursor: default;
 }
 
+/* the box's count near the cap, "612 / 700": small, in the stage's typewriter, a tag pinned
+   across the box's lower right edge, so it takes no room from the words and nothing moves when
+   it comes; past the cap (a long draft) in the countdown's red */
+.lineBox {
+  position: relative;
+  flex: 1 1 auto;
+  align-self: flex-start;
+  min-width: 0;
+  display: flex;
+}
+.lineCount {
+  position: absolute;
+  right: calc(10px * var(--legible-ui));
+  bottom: 0;
+  translate: 0 50%;
+  padding: 0 0.4em;
+  border-radius: 3px;
+  border: 1px solid var(--hud-brass-lo);
+  font-family: var(--font-stage-type, 'Courier Prime'), 'Courier New', monospace;
+  font-size: calc(var(--meta) * 0.8);
+  line-height: 1.3;
+  color: var(--cream2);
+  background: #1b120a;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.lineCount.overCap {
+  color: #e3503f;
+}
+
+/* the draft words while a draft is on its way: stacked in one cell, the widest holding the width,
+   the one showing crossfading into the next */
+.words {
+  display: inline-grid;
+  justify-items: start;
+}
+.sizer,
+.word {
+  grid-area: 1 / 1;
+}
+.sizer {
+  visibility: hidden;
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .error {
   margin: 0;
   font-size: var(--meta);

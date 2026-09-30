@@ -11,8 +11,47 @@ import type { DockInput } from '../scenes/types';
 /** The server's cap on drafts per turn (ux_journeys D25), when the dock is not told. */
 const DRAFTS_PER_TURN = 3;
 
+/**
+ * The longest line the box takes, the server's cap too (owner, 2026-09-30: the agents are asked
+ * to keep under about 120 words, and a player's line may run a little longer).
+ */
+export const LINE_MAX = 700;
+
+/** The box's count, "612 / 700", once the line is within 100 of the cap; null before then. */
+export function lineCount(text: string): string | null {
+  return text.length >= LINE_MAX - 100 ? `${text.length} / ${LINE_MAX}` : null;
+}
+
 export const draftsLeftText = (n: number) =>
   n === 1 ? '1 draft left' : `${n} drafts left`;
+
+/**
+ * What the Draft button says while a draft is on its way, one after another, round and round
+ * (owner, 2026-09-30), so a wait of several seconds reads as work being done.
+ */
+export const DRAFT_WORDS = [
+  'Drafting…',
+  'Weighing the table…',
+  'Finding the words…',
+  'Reading the room…',
+] as const;
+export const DRAFT_WORD_MS = 1600;
+
+/**
+ * Steps through `DRAFT_WORDS` from the first (shown at the start, so not called for), handing
+ * `on` the next one's index every `every` ms; returns the stop.
+ */
+export function cycleDraftWords(
+  on: (i: number) => void,
+  every = DRAFT_WORD_MS,
+): () => void {
+  let i = 0;
+  const t = setInterval(() => {
+    i = (i + 1) % DRAFT_WORDS.length;
+    on(i);
+  }, every);
+  return () => clearInterval(t);
+}
 
 export interface DockControls {
   /** The line is on its way, or the turn is over: nothing can be pressed. */
@@ -32,6 +71,9 @@ export interface DockControls {
   draftHint: string;
   /** "Use my seat notes" is shown: the notebook has something to give. */
   hasNotebook: boolean;
+  /** The box's count near the cap ("612 / 700"), or null; `over`: past it, and Send waits. */
+  count: string | null;
+  over: boolean;
 }
 
 export function dockControls(dock: DockInput): DockControls {
@@ -40,11 +82,13 @@ export function dockControls(dock: DockInput): DockControls {
   const notes = (dock.notes ?? '').trim();
   const draftsLeft = dock.draftsLeft ?? DRAFTS_PER_TURN;
   const hasDraft = !!dock.onDraft;
+  // the box stops typing at the cap, but a draft or a paste set from outside may still run past it
+  const over = dock.text.length > LINE_MAX;
   return {
     busy,
     line,
     notes,
-    canSend: !!line && !busy,
+    canSend: !!line && !busy && !over,
     hasDraft,
     canDraft: hasDraft && !busy && !dock.drafting && draftsLeft > 0,
     draftsLeft,
@@ -57,6 +101,8 @@ export function dockControls(dock: DockInput): DockControls {
           : 'Your agent writes the line it would say.') +
       ' It lands in the box: edit it, then Send.',
     hasNotebook: hasDraft && !!dock.notebook,
+    count: lineCount(dock.text),
+    over,
   };
 }
 
