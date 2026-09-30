@@ -78,14 +78,18 @@ def _announce_memory_consulted(
     translator sends it once."""
     if not retrieval_meta["memory_enabled"] or effects is None:
         return
+    # dimensions: the record's structured situation fields, verbatim from the store (None on
+    # legacy records, whose dict is empty) — for the replay only, never the prompt.
     lessons = [
         {"index": i, "key": sp.key, "situation": sp.strategy_point.situation,
-         "action": sp.strategy_point.action}
+         "action": sp.strategy_point.action,
+         "dimensions": sp.strategy_point.dimensions or None}
         for i, sp in enumerate(enriched_payload.get("strategy_points") or [], 1)
     ]
     observations = [
         {"index": i, "key": ob.key, "situation": ob.observation.situation,
-         "outcome": ob.observation.outcome}
+         "outcome": ob.observation.outcome,
+         "dimensions": ob.observation.dimensions or None}
         for i, ob in enumerate(enriched_payload.get("retrieved_observations") or [], 1)
     ]
     try:

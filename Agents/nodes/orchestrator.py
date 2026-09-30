@@ -35,6 +35,7 @@ from Agents.memory.extraction import (
 
 from Agents.observability import extraction_span_name, freeze_case
 from Agents.schemas.evaluation import ExtractionCase
+from Agents.schemas.memory import BaseSituation
 from Agents.memory.deduplication import (
     run_downstream_strategy_dedup,
     run_downstream_observation_dedup,
@@ -435,6 +436,13 @@ def check_game_end_night(
 
 # --- Post-game memory pipeline -----------------------------------------------
 
+def _extracted_dimensions(item) -> dict | None:
+    """The structured fields of one extracted v6 cell record, dumped the way the store write keeps
+    them (store_ops: ``dimensions=model_dump``). None for a legacy Observation / StrategyPoint,
+    which has no structured situation."""
+    return item.model_dump(mode="json") if isinstance(item, BaseSituation) else None
+
+
 def _announce_memory_extracted(output, *, day: int) -> None:
     """Stream what the finished game taught, for the replay's X-ray: the raw extraction,
     before any dedup against the store (a served game never writes the store, so there is
@@ -442,12 +450,12 @@ def _announce_memory_extracted(output, *, day: int) -> None:
     observations = [
         {"perspective": o.perspective, "action_phase": o.action_phase, "situation": o.situation,
          "approach": getattr(o, "approach", ""), "outcome": getattr(o, "outcome", ""),
-         "net_verdict": getattr(o, "net_verdict", "")}
+         "net_verdict": getattr(o, "net_verdict", ""), "dimensions": _extracted_dimensions(o)}
         for o in output.observations
     ]
     strategy_points = [
         {"perspective": s.perspective, "action_phase": s.action_phase, "situation": s.situation,
-         "action": s.action}
+         "action": s.action, "dimensions": _extracted_dimensions(s)}
         for s in output.strategy_points
     ]
     try:

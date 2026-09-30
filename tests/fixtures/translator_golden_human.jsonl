@@ -45,7 +45,7 @@
 {"action_kind": "wolf_vote", "candidates": ["player_6"], "day": 1, "deadline": "2026-01-01T00:01:00Z", "player": "player_9", "seq": 45, "type": "input_request"}
 {"day": 1, "seq": 46, "type": "wolf_vote", "votee": "player_6", "wolf": "player_9"}
 {"day": 1, "seq": 47, "target": "player_6", "type": "wolf_kill_decided"}
-{"action_phase": "night_action", "applicability": [], "day": 1, "lessons": [{"action": "Protect the claimant, not the accuser.", "index": 1, "key": "sp-1", "situation": "When a claimed investigator is loud"}], "observations": [], "player": "player_5", "role": "healer", "round": 0, "seq": 48, "type": "memory_consulted", "verdicts": [{"strategy_index": 1, "verdict": "follow", "why": "player_3 claimed today"}]}
+{"action_phase": "night_action", "applicability": [], "day": 1, "lessons": [{"action": "Protect the claimant, not the accuser.", "dimensions": null, "index": 1, "key": "sp-1", "situation": "When a claimed investigator is loud"}], "observations": [], "player": "player_5", "role": "healer", "round": 0, "seq": 48, "type": "memory_consulted", "verdicts": [{"strategy_index": 1, "verdict": "follow", "why": "player_3 claimed today"}]}
 {"actor": "player_5", "day": 1, "role": "healer", "seq": 49, "target": "player_6", "type": "night_action"}
 {"day": 1, "player": "player_5", "seq": 50, "strategy": "guard the loud", "type": "strategy_update"}
 {"actor": "player_3", "day": 1, "role": "investigator", "seq": 51, "target": "player_9", "type": "night_action"}
@@ -65,4 +65,4 @@
 {"channel_seq": 0, "day": 2, "message": "player_9 is a wolf.", "player": "player_3", "seq": 65, "type": "speech"}
 {"channel_seq": 1, "day": 2, "seq": 66, "text": "Game over! The villagers have won!", "type": "gm_message"}
 {"day": 2, "seq": 67, "type": "game_over", "winner": "villagers"}
-{"day": 2, "observations": [{"action_phase": "day_discussion", "approach": "The wolves stayed silent instead of counter-claiming.", "net_verdict": "negative", "outcome": "The claim went unchallenged and the wolf was lynched.", "perspective": "wolf", "situation": "The investigator claimed on day 1 with a wolf result."}], "seq": 68, "strategy_points": [{"action": "Counter-claim at once; silence reads as guilt.", "action_phase": "day_discussion", "perspective": "wolf", "situation": "When an investigator claims a wolf result on you"}], "type": "memory_extracted"}
+{"day": 2, "observations": [{"action_phase": "day_discussion", "approach": "The wolves stayed silent instead of counter-claiming.", "dimensions": null, "net_verdict": "negative", "outcome": "The claim went unchallenged and the wolf was lynched.", "perspective": "wolf", "situation": "The investigator claimed on day 1 with a wolf result."}], "seq": 68, "strategy_points": [{"action": "Counter-claim at once; silence reads as guilt.", "action_phase": "day_discussion", "dimensions": null, "perspective": "wolf", "situation": "When an investigator claims a wolf result on you"}], "type": "memory_extracted"}

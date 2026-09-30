@@ -1518,6 +1518,10 @@ export interface components {
       situation: string;
       /** Action */
       action: string;
+      /** Dimensions */
+      dimensions?: {
+        [key: string]: unknown;
+      } | null;
     };
     /** WireExtractedObservation */
     WireExtractedObservation: {
@@ -1540,6 +1544,10 @@ export interface components {
       outcome: string;
       /** Net Verdict */
       net_verdict: string;
+      /** Dimensions */
+      dimensions?: {
+        [key: string]: unknown;
+      } | null;
     };
     /** WireLesson */
     WireLesson: {
@@ -1551,6 +1559,10 @@ export interface components {
       situation: string;
       /** Action */
       action: string;
+      /** Dimensions */
+      dimensions?: {
+        [key: string]: unknown;
+      } | null;
     };
     /** WireLessonVerdict */
     WireLessonVerdict: {
@@ -1574,6 +1586,10 @@ export interface components {
       situation: string;
       /** Outcome */
       outcome: string;
+      /** Dimensions */
+      dimensions?: {
+        [key: string]: unknown;
+      } | null;
     };
     /** WireObservationVerdict */
     WireObservationVerdict: {

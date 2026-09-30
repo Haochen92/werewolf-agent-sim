@@ -3291,6 +3291,18 @@
           "action": {
             "type": "string",
             "title": "Action"
+          },
+          "dimensions": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dimensions"
           }
         },
         "type": "object",
@@ -3340,6 +3352,18 @@
           "net_verdict": {
             "type": "string",
             "title": "Net Verdict"
+          },
+          "dimensions": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dimensions"
           }
         },
         "type": "object",
@@ -3370,6 +3394,18 @@
           "action": {
             "type": "string",
             "title": "Action"
+          },
+          "dimensions": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dimensions"
           }
         },
         "type": "object",
@@ -3426,6 +3462,18 @@
           "outcome": {
             "type": "string",
             "title": "Outcome"
+          },
+          "dimensions": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dimensions"
           }
         },
         "type": "object",

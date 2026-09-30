@@ -18,7 +18,7 @@ deliberately duplicated).
 """
 
 from enum import Enum
-from typing import Annotated, Literal, Union, get_args
+from typing import Annotated, Any, Literal, Union, get_args
 
 from pydantic import BaseModel, Field
 
@@ -177,6 +177,11 @@ class WireLesson(BaseModel, frozen=True):
     """The store record's key: the same lesson keeps its key across games."""
     situation: str
     action: str
+    dimensions: dict[str, Any] | None = None
+    """The lesson's situation broken into its labelled parts (the separate descriptions, the
+    counts, and the fixed categories such as info_rich / info_starved or safe / exposed),
+    copied as the store keeps them. `situation` is these parts joined into one sentence. Absent
+    for lessons stored before the parts were kept."""
 
 
 class WireLessonVerdict(BaseModel, frozen=True):
@@ -190,6 +195,9 @@ class WireObservation(BaseModel, frozen=True):
     key: str
     situation: str
     outcome: str
+    dimensions: dict[str, Any] | None = None
+    """The observation's situation broken into its labelled parts, copied as the store keeps
+    them. Absent for observations stored before the parts were kept."""
 
 
 class WireObservationVerdict(BaseModel, frozen=True):
@@ -246,6 +254,9 @@ class WireExtractedObservation(BaseModel, frozen=True):
     approach: str
     outcome: str
     net_verdict: str
+    dimensions: dict[str, Any] | None = None
+    """Every labelled part the extraction filled in for this observation (the same parts the
+    store keeps). Absent when the extraction wrote only the plain sentences."""
 
 
 class WireExtractedLesson(BaseModel, frozen=True):
@@ -253,6 +264,9 @@ class WireExtractedLesson(BaseModel, frozen=True):
     action_phase: Literal["day_discussion", "day_vote", "night_action"]
     situation: str
     action: str
+    dimensions: dict[str, Any] | None = None
+    """Every labelled part the extraction filled in for this lesson (the same parts the store
+    keeps). Absent when the extraction wrote only the plain sentences."""
 
 
 class MemoryExtracted(DurableEvent, frozen=True):
