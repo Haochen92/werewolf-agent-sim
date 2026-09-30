@@ -380,11 +380,11 @@ arrive together; private results follow them (59, 271→272, 402), never precede
 
 | # | Beat | Anchor | Sees | Stage | Slot | Hold |
 |---|---|---|---|---|---|---|
-| 1 | `morning.shutter-down` | `night_result` (58, 156, 270, 401). **Chapter mark: Morning N** (not a phase change: 156 comes before `phase_change: day` at 159) | P | the shutter comes down; the chips go up; the report plays in the night's paint | D: the GM's dawn line, with the night atoms' sigils lent to it | 3.0 |
+| 1 | `morning.shutter-down` | `night_result` (58, 156, 270, 401). **Chapter mark: Morning N** (not a phase change: 156 comes before `phase_change: day` at 159) | P | the shutter comes down; the chips go up; the report plays in the night's paint. The notice is **the morning roll** (2026-09-30), on the walnut board: a row per death (the chip, "Seat 1 · Villager", the attacker's felt sigil and the game's words: "killed by the wolves" · "stabbed by the serial killer" · "shot by the vigilante"; two attackers "attacked by X and Y, and fell"), a row for a seat saved ("attacked by X, saved by the healer", no role), a quiet night "No one died in the night."; the rows fade in 0.6 s apart. A game that ends at this morning shows the same roll at `over.where-it-ended` (§10), at the same hold | D: the GM's dawn line, with the night atoms' sigils lent to it | 3.5 + 1.5 a row |
 | 2 | `morning.chip-attacked` | each entry of `deaths` and `save`, in order | P | the chip comes down alone, at the centre, large: "Seat 3 was attacked in the night" | — | 2.0 |
-| 3 | `morning.chip-fell` | a `deaths` entry | P | the act mark appears beneath it (bite · knife · bullet, from `attacker_types`); the string gives way; the chip drops | — | 2.0 |
+| 3 | `morning.chip-fell` | a `deaths` entry | P | the act mark appears beneath it (from `attacker_types`: the attacker's felt sigil tacked on, 2026-09-30: wolf's head · scythe · bullet); the string gives way; the chip drops | — | 2.0 |
 | 4 | `morning.card-down` | 〃 (`role`) | P | once the chip has fully dropped, the role card comes down large and centred; the wing's tile flips; the card is drawn up out of frame as the next beat begins | — | 2.6 |
-| 5 | `morning.chip-saved` | the `save` entry (58: seat 1, wolves + serial killer) | P | the wounds small and the plaster large beneath it, the ribbon on the string; the chip goes back up whole | — | 2.6 |
+| 5 | `morning.chip-saved` | the `save` entry (58: seat 1, wolves + serial killer) | P | the attackers' marks small and the healer's cross large beneath it, the ribbon on the string; the chip goes back up whole | — | 2.6 |
 | 6 | `morning.quiet` | `night_result` with no deaths and no save | P | the line alone | — | 3.0 |
 | 7 | `morning.only-you` | `investigation_result` (59) · `vigilante_confirmation` · the pack's failed kill: `wolf_message` from `game_master` (271, arrives after `night_result`) | S · F | one beat after the report, on my screen only. Investigator: the target's chip comes down and turns to its sigil, the lens beneath (the one private result that names a role). Wolf: the target's chip down whole, "Your kill on seat 2 failed. Seat 2 survived", no sigil (the GM's verbatim note names the role; that wording is X-ray's). Vigilante: the same shape, "You shot seat 2. Seat 2 survived", no sigil; the caps count (`bullets_remaining`, 402, is a view update, not a beat). The healer has nothing private. A kill the healer stopped is public (the save names its attackers) and has no private beat | D: dashed "Only you" line · X: in aqua, "Only seat n" / "Only the pack" | 2.6 |
 | 8 | `morning.carried-summary` | `day_summary_structured` of day N (the summary of the day just ended) | X | none on stage | F, the docket: the typed brief: accusations as rows (accuser → accused, evidence type, defence), then claims, blocs, mood. The summary of a day on which the game ended at the lynch is dropped (never consumed) | reading time |
@@ -456,7 +456,7 @@ spoke's one step the light finds the target's photo and the pin goes through it 
 1.") at the foot as before. The pack's line steps are the same room at rest, only the newest line
 arriving; its mark step lands each wolf's tooth on the photo it voted for and the pin in the kill,
 at 0.9 s; the chat keeps to the room (from past the wing to the slot's edge). The card on the table
-is the actor's, not the viewer's, so it has no "tap to read". Arrived at, all of it is simply there.
+is the actor's, not the viewer's; since 2026-09-30 it opens all the same ("tap to read"; the card over the room, "Seat 4 · tap anywhere to close", closed by any tap as live), the play going on under it untouched; it closes when the play moves to another actor's room. Arrived at, all of it is simply there.
 The wing lights the actor and keeps the lamps; the strip and the pill are as below.
 
 As built 2026-09-25 (bench 67 where it gives them; the rest no bench gives, change here first):
@@ -465,7 +465,7 @@ N · The night, whole". The file is up beside every spoke, so these beats lay th
 open side slot (bench 67's `side`); the scenes before this overlay the file on the full room
 instead (**to reconcile** in the container). The spokes hang the living at the window's height
 (bench 67's high row), the whole across the room (the lobby's row). A mark is the act's `ActMark`
-beneath the target's chip (bite · knife · bullet · plaster · lens), two to a row in spoke order;
+beneath the target's chip (bite · knife · bullet · plaster · lens, drawn since 2026-09-30 as the acting role's felt sigil with a brass tack through it: wolf's head · scythe · bullet · cross · magnifier), two to a row in spoke order;
 bench 67 drew them on the chip (teeth, ribbon, hole, nick, lens). The instrument on the rail is
 bench 67's `instrument()` (the vigilante's caps are the shots left, two until
 `bullets_remaining`), the wolves' kit sprite for the pack, right of the figure at 0.72 of the
@@ -493,7 +493,7 @@ leading. A seated human's "you won / you lost" is client-known from `role_assign
 
 | # | Beat | Anchor | Sees | Stage | Slot | Hold |
 |---|---|---|---|---|---|---|
-| 1 | `over.where-it-ended` | `game_over`. **Chapter mark: Game over** | P | the last scene's frame, held. After a morning: the night's paint behind the shutter, the room empty, the last card drawn up. After a lynch: dusk, the shutter down, the leaves standing open, the card gone | D: the ending line | 2.0 |
+| 1 | `over.where-it-ended` | `game_over`. **Chapter mark: Game over** | P | the last scene's frame, held. After a morning: the night's paint behind the shutter, the room empty, the last card drawn up. After a lynch: dusk, the shutter down, the leaves standing open, the card gone. The notice: after a lynch the vote's end line; after a morning that morning's roll (§8) | D: the ending line | 2.0; after a morning the roll's 3.5 + 1.5 a row |
 | 2 | `over.winners-hour` | `winner` | P | the shutter rises: full day for the village, night for the wolves, dusk for the serial killer; the leaves fold if open | — | 3.0 |
 | 3 | `over.verdict` | 〃 | P | a walnut board comes down on two strings, large and centred: the faction's colour at its edges, its sigil on a paper plate, "The wolves have won" in the card's serif, "Day 4 · at the morning" beneath; drawn up as the next beat begins | — | 3.2 |
 | 4 | `over.winners-stand` | 〃 + the roster | P | the stand comes up and the winning faction's **survivors** rise into it, base state: one at full size, two at 0.78, three at 0.6 with the box widened (×1.36, ×1.6); one special each; the plaque names the seats (and roles once the truth is out); the winners' wing tiles lit, the rest dimmed; the fallen stay on the wing as grey cards with their roles' bands. The box: "The wolves have won", the survivors' chips, "Seat 8 is the last of them standing". S: "You won" / "You lost. You were the vigilante" | — | 3.0 |

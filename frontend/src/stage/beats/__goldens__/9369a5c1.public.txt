@@ -5,7 +5,7 @@
   4  day.pass                 d1 seq 18 end 22  public →player_5  4000ms
   5  day.pass                 d1 seq 23 end 31  public →player_4  4000ms
   6  night.hub                d1 seq 32 end 32  public  3500ms  [night 1]
-  7  morning.shutter-down     d1 seq 58 end 58  public  3500ms  [morning 1]
+  7  morning.shutter-down     d1 seq 58 end 58  public  5000ms  [morning 1]
   8  morning.chip-attacked    d1 seq 58 end 58  public →player_1  2000ms
   9  morning.chip-saved       d1 seq 58 end 58  public →player_1  3200ms
  10  morning.day-begins       d2 seq 60 end 60  public  3500ms  [day 2]
@@ -28,7 +28,7 @@
  27  vote.result              d2 seq119 end119  public  3200ms
  28  vote.table-down          d2 seq119 end119  public  3500ms
  29  night.hub                d2 seq120 end120  public  3500ms  [night 2]
- 30  morning.shutter-down     d2 seq156 end156  public  3500ms  [morning 2]
+ 30  morning.shutter-down     d2 seq156 end156  public  6500ms  [morning 2]
  31  morning.chip-attacked    d2 seq156 end156  public →player_3  2000ms
  32  morning.chip-fell        d2 seq156 end156  public →player_3  2000ms
  33  morning.card-down        d2 seq156 end156  public →player_3  3200ms
@@ -71,7 +71,7 @@
  70  lynch.truth              d3 seq250 end250  public →player_6  3200ms
  71  lynch.card-to-wing       d3 seq250 end250  public →player_6  3500ms
  72  night.hub                d3 seq253 end253  public  3500ms  [night 3]
- 73  morning.shutter-down     d3 seq270 end270  public  3500ms  [morning 3]
+ 73  morning.shutter-down     d3 seq270 end270  public  5000ms  [morning 3]
  74  morning.chip-attacked    d3 seq270 end270  public →player_5  2000ms
  75  morning.chip-fell        d3 seq270 end270  public →player_5  2000ms
  76  morning.card-down        d3 seq270 end270  public →player_5  3200ms
@@ -131,14 +131,14 @@
 130  lynch.truth              d4 seq384 end384  public →player_2  3200ms
 131  lynch.card-to-wing       d4 seq384 end384  public →player_2  3500ms
 132  night.hub                d4 seq387 end387  public  3500ms  [night 4]
-133  morning.shutter-down     d4 seq401 end401  public  3500ms  [morning 4]
+133  morning.shutter-down     d4 seq401 end401  public  6500ms  [morning 4]
 134  morning.chip-attacked    d4 seq401 end401  public →player_1  2000ms
 135  morning.chip-fell        d4 seq401 end401  public →player_1  2000ms
 136  morning.card-down        d4 seq401 end401  public →player_1  3200ms
 137  morning.chip-attacked    d4 seq401 end401  public →player_9  2000ms
 138  morning.chip-fell        d4 seq401 end401  public →player_9  2000ms
 139  morning.card-down        d4 seq401 end401  public →player_9  3200ms
-140  over.where-it-ended      d4 seq406 end406  public  2000ms  [over 0]
+140  over.where-it-ended      d4 seq406 end406  public  6500ms  [over 0]
 141  over.winners-hour        d4 seq406 end406  public  3500ms
 142  over.verdict             d4 seq406 end406  public  3200ms
 143  over.winners-stand       d4 seq406 end406  public  3500ms

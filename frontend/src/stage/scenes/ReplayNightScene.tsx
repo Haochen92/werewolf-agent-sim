@@ -77,6 +77,14 @@ const STAMP_AT = 1.4;
 const LAMP_OUT = 1.6;
 
 export function ReplayNightScene(props: SceneProps) {
+  // the actor whose card is open on the table (night and actor, so it outlives the room's
+  // steps but not the room): the play goes on under it, untouched
+  const [cardOf, setCardOf] = useState<string | null>(null);
+  const actor =
+    props.beat.id === 'rnight.spoke' && props.beat.spoke
+      ? `${props.beat.day}:${props.beat.spoke.actor}`
+      : null;
+  if (cardOf !== null && cardOf !== actor) setCardOf(null);
   if (props.beat.id === 'rnight.hub') return <NightLobbyScene {...props} />;
   return (
     <StageMotion speed={props.presentation.motion}>
@@ -86,6 +94,8 @@ export function ReplayNightScene(props: SceneProps) {
         <SpokeRoom
           key={`${props.beat.id}:${props.beat.seq}:${props.beat.spoke?.step ?? ''}`}
           {...props}
+          cardOpen={actor !== null && cardOf === actor}
+          onCard={(open) => setCardOf(open ? actor : null)}
         />
       )}
       <SideSlot {...props} />
@@ -118,7 +128,11 @@ function useAfter(at: number, animate: boolean): boolean {
  * mark (the pack's: both teeth). The pack's line steps are the same room at rest with the next
  * line arriving in the chat.
  */
-function SpokeRoom(props: SceneProps) {
+function SpokeRoom({
+  cardOpen,
+  onCard,
+  ...props
+}: SceneProps & { cardOpen: boolean; onCard: (open: boolean) => void }) {
   const { view, beat, presentation, stop, slot: slotInput, onSeek } = props;
   const { hud, animate, cast } = presentation;
   const side = sideOpen(presentation);
@@ -220,8 +234,14 @@ function SpokeRoom(props: SceneProps) {
       pinHome
       marks={marks}
       pack={pack ? seats : []}
-      cardOpen={false}
-      onCard={() => {}}
+      // the actor's card opens as a seated player's does, the play going on under it
+      cardOpen={cardOpen}
+      onCard={onCard}
+      cardOwner={
+        pack && seats.length > 1
+          ? `Seats ${seats.map(seatNumber).join(' and ')}`
+          : `Seat ${seatNumber(seats[0] ?? cur?.actor ?? '')}`
+      }
       sub={`${beat.label} · ${actorWord(cur)}`}
       count={<CountPill hud={hud} label="Acted" n={acted} total={total} side={side} />}
       wing={{

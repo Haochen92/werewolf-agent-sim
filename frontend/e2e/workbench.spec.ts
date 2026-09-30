@@ -53,6 +53,8 @@ const FLIES: [name: string, path: string][] = [
   ['deal-face-up-figures', 'deal?beat=2&viewer=xray&hud=replay'],
   ['morning-chip-fell', 'morning?beat=6'],
   ['morning-chip-saved', 'morning?beat=2'],
+  // the report beat's morning roll: morning 2's two deaths, a row each
+  ['morning-roll-two-deaths', 'morning?beat=4'],
   ['night-hub', 'night?beat=0'],
 ];
 
@@ -209,6 +211,12 @@ const ENDING: [name: string, path: string, ready: string][] = [
     'rnight-whole-d2',
     'rnight?beat=21&viewer=xray&hud=replay&slot=film',
     '[role="img"][aria-label="bite"]',
+  ],
+  // the photo wall at full width: the serial killer's scythe tacked on seat 1's print
+  [
+    'rnight-spoke-knife-d1',
+    'rnight?beat=2&viewer=xray&hud=replay',
+    '[role="img"][aria-label="knife"]',
   ],
   // the vigilante holding its fire on night 1: a room of its own, no mark; the other actors'
   // cards say "Visit ▸"
@@ -453,6 +461,8 @@ const FRAMES: [name: string, path: string][] = [
   ['frame-iphone14-drawer', 'day?beat=16&hud=replay&slot=drawer&frame=iphone14'],
   // the epilogue's closing spread on a phone: the rows scroll in place
   ['frame-iphone14-epilogue', 'over?beat=5&frame=iphone14'],
+  // the morning roll on a small phone: a cause too long for its row goes under the name
+  ['frame-667-morning-roll', 'morning?beat=4&frame=667x375'],
 ];
 
 for (const [name, path] of FRAMES) {

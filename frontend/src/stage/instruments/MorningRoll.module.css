@@ -1,0 +1,64 @@
+/* The morning roll on the walnut notice: a row per seat, the chip, who, and how it went. On a
+   phone a cause too long for the row goes under the name, and wraps there; nothing is clipped. */
+.roll {
+  list-style: none;
+  margin: calc(4.8px * var(--legible-ui)) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: calc(6.4px * var(--legible-ui));
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: calc(12.8px * var(--legible-ui));
+  padding-top: calc(6.4px * var(--legible-ui));
+  border-top: 1px solid rgba(201, 164, 92, 0.22);
+}
+.row:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+.chip {
+  flex: 0 0 auto;
+  width: calc(var(--said) * 1.55);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  line-height: 0;
+  box-shadow: 0 0 0 1.5px var(--hud-brass);
+}
+/* who, then how: side by side, or the how on a line of its own when they don't fit */
+.what {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 calc(12.8px * var(--legible-ui));
+}
+.who {
+  font-family: var(--font-display);
+  color: var(--cream);
+  white-space: nowrap;
+}
+.cause {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: calc(6.4px * var(--legible-ui));
+  color: var(--cream2);
+}
+.cause > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.sigil {
+  flex: 0 0 auto;
+  width: calc(var(--said) * 1.4);
+  height: calc(var(--said) * 1.4);
+}
+.quiet {
+  margin: 0;
+}

@@ -16,7 +16,7 @@
  15  rnight.spoke             d1 seq 50 end 57  xray →pack spoke pack r4 4/5  8750ms
  16  rnight.spoke             d1 seq 56 end 57  xray →player_1 spoke pack r4 5/5  2500ms
  17  rnight.whole             d1 seq 58 end 57  xray  3500ms
- 18  morning.shutter-down     d1 seq 58 end 58  public  3500ms  [morning 1]
+ 18  morning.shutter-down     d1 seq 58 end 58  public  5000ms  [morning 1]
  19  morning.chip-attacked    d1 seq 58 end 58  public →player_1  2000ms
  20  morning.chip-saved       d1 seq 58 end 58  public →player_1  3200ms
  21  morning.only-you         d1 seq 59 end 59  seat@player_4 →player_1  3200ms
@@ -51,7 +51,7 @@
  50  rnight.spoke             d2 seq146 end155  xray →pack spoke pack r4 4/5  8333ms
  51  rnight.spoke             d2 seq154 end155  xray →player_4 spoke pack r4 5/5  2500ms
  52  rnight.whole             d2 seq156 end155  xray  3500ms
- 53  morning.shutter-down     d2 seq156 end156  public  3500ms  [morning 2]
+ 53  morning.shutter-down     d2 seq156 end156  public  6500ms  [morning 2]
  54  morning.chip-attacked    d2 seq156 end156  public →player_3  2000ms
  55  morning.chip-fell        d2 seq156 end156  public →player_3  2000ms
  56  morning.card-down        d2 seq156 end156  public →player_3  3200ms
@@ -100,7 +100,7 @@
  99  rnight.spoke             d3 seq264 end269  xray →player_2 spoke pack r2 1/1  2500ms
 100  rnight.spoke             d3 seq267 end269  xray →player_5 spoke player_2 r3 1/1  2500ms
 101  rnight.whole             d3 seq270 end269  xray  3500ms
-102  morning.shutter-down     d3 seq270 end270  public  3500ms  [morning 3]
+102  morning.shutter-down     d3 seq270 end270  public  5000ms  [morning 3]
 103  morning.chip-attacked    d3 seq270 end270  public →player_5  2000ms
 104  morning.chip-fell        d3 seq270 end270  public →player_5  2000ms
 105  morning.card-down        d3 seq270 end270  public →player_5  3200ms
@@ -166,14 +166,14 @@
 165  rnight.spoke             d4 seq395 end400  xray →player_1 spoke pack r1 1/1  2500ms
 166  rnight.spoke             d4 seq398 end400  xray →player_9 spoke player_7 r2 1/1  2500ms
 167  rnight.whole             d4 seq401 end400  xray  3500ms
-168  morning.shutter-down     d4 seq401 end401  public  3500ms  [morning 4]
+168  morning.shutter-down     d4 seq401 end401  public  6500ms  [morning 4]
 169  morning.chip-attacked    d4 seq401 end401  public →player_1  2000ms
 170  morning.chip-fell        d4 seq401 end401  public →player_1  2000ms
 171  morning.card-down        d4 seq401 end401  public →player_1  3200ms
 172  morning.chip-attacked    d4 seq401 end401  public →player_9  2000ms
 173  morning.chip-fell        d4 seq401 end401  public →player_9  2000ms
 174  morning.card-down        d4 seq401 end401  public →player_9  3200ms
-175  over.where-it-ended      d4 seq406 end406  public  2000ms  [over 0]
+175  over.where-it-ended      d4 seq406 end406  public  6500ms  [over 0]
 176  over.winners-hour        d4 seq406 end406  public  3500ms
 177  over.verdict             d4 seq406 end406  public  3200ms
 178  over.winners-stand       d4 seq406 end406  public  3500ms

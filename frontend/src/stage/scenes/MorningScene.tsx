@@ -3,16 +3,17 @@
 /**
  * The morning (handoff §4.8, beat sheet §8, bench 67): the night's report, told one chip at
  * a time in an empty room. The shutter comes down over the window and the lobby's row of
- * chips goes up; the report plays behind the shutter, still in the night's paint. Then, for
- * each seat that had something done to it, in the log's order:
+ * chips goes up, the morning roll on the notice (a row per seat the night touched); the report
+ * plays behind the shutter, still in the night's paint. Then, for each seat that had something
+ * done to it, in the log's order:
  *
  * - attacked: its chip comes down alone, at the centre, large;
- * - fell: the act mark appears beneath it (a bite, a knife, a bullet: what was done, never by
- *   whom), the string gives way, the chip drops;
+ * - fell: the act mark appears beneath it (the attacker's felt sigil tacked on: what was done,
+ *   never by whom), the string gives way, the chip drops;
  * - the card: once the chip is gone, its role card comes down large and centred and the
  *   wing's tile turns to the sigil; the card is drawn up as the next beat begins;
- * - saved: the wounds small and the plaster large beneath it, the ribbon on its string; it
- *   goes back up whole as the next beat begins.
+ * - saved: the attackers' marks small and the healer's cross large beneath it, the ribbon on
+ *   its string; it goes back up whole as the next beat begins.
  *
  * A quiet night is the line alone. After the report, what only one seat learns plays on that
  * seat's screen (and, in aqua, in the X-ray): the investigator's target turns to its sigil
@@ -20,7 +21,6 @@
  * then has the carried summary in the film (film/film-model.ts), and the day begins: the shutter rises on the
  * day's paint and the stand comes back up.
  */
-import type { AttackerType } from '@/types/contracts';
 import type { GameView, NightView } from '@/game/types';
 import { Atmosphere } from '../Atmosphere';
 import type { SceneBeat } from '../beats/types';
@@ -29,6 +29,7 @@ import { SideSlot } from '../SideSlot';
 import { ATTACK_MARK, ActMark } from '../instruments/ActMark';
 import { RoleCard } from '../instruments/Card';
 import { Chip } from '../instruments/Chip';
+import { BY, DIED, MorningRoll, type RollRow } from '../instruments/MorningRoll';
 import { CardButton, Caps, Notice, NoticeZone } from '../instruments/Notice';
 import { Shutter } from '../instruments/Shutter';
 import { StringDrop } from '../instruments/StringDrop';
@@ -45,10 +46,8 @@ import { CarPaint, HouseLights, StandReturns, TableWing } from './DiningCarParts
 import { notebookGame } from '../notebook';
 import type { SceneProps } from './types';
 
-/** One line of the report: a death, or the save. */
-type Told =
-  | { kind: 'death'; player: string; role: string; types: AttackerType[] }
-  | { kind: 'save'; player: string; types: AttackerType[] };
+/** One line of the report: a death, or the save (a row of the morning roll). */
+type Told = RollRow;
 
 /** What one seat alone learns this morning. */
 type Private =
@@ -56,18 +55,7 @@ type Private =
   | { kind: 'vigilante'; seat: string; target: string }
   | { kind: 'pack'; target: string };
 
-export const BY: Record<AttackerType, string> = {
-  wolves: 'the wolves',
-  serial_killer: 'the serial killer',
-  vigilante: 'the vigilante',
-};
-export const FELL: Record<AttackerType, string> = {
-  wolves: 'was killed by the wolves',
-  serial_killer: 'was stabbed by the serial killer',
-  vigilante: 'was shot by the vigilante',
-};
-
-function reportOf(night: NightView | null): Told[] {
+export function reportOf(night: NightView | null): Told[] {
   if (!night) return [];
   const told: Told[] = night.deaths.map((d) => ({
     kind: 'death',
@@ -420,6 +408,7 @@ function MorningBeat({ view, beat, me, presentation, slot: slotInput }: ScenePro
             {myCard ? <CardButton role={myCard} /> : null}
             <MorningWords
               id={id}
+              report={report}
               told={told}
               mine={mine}
               me={me}
@@ -437,6 +426,7 @@ function MorningBeat({ view, beat, me, presentation, slot: slotInput }: ScenePro
 /** The box at the foot for each beat of the morning. */
 function MorningWords({
   id,
+  report,
   told,
   mine,
   me,
@@ -445,6 +435,7 @@ function MorningWords({
   arrive,
 }: {
   id: SceneBeat['id'];
+  report: Told[];
   told: Told | null;
   mine: Private | null;
   me: string | null;
@@ -458,9 +449,10 @@ function MorningWords({
     `Seat ${seatNumber(seat)}${seat === me ? ' (you)' : ''}`;
   switch (id) {
     case 'morning.shutter-down':
+      // the roll: the whole night at a glance, before it is told a chip at a time
       return (
-        <Notice title="The night is over" {...t}>
-          The report.
+        <Notice title="The morning roll" walnut {...t}>
+          <MorningRoll rows={report} cast={cast} me={me} arrive={arrive} />
         </Notice>
       );
     case 'morning.chip-attacked':
@@ -474,7 +466,7 @@ function MorningWords({
       if (!told) return null;
       const how =
         told.types.length === 1
-          ? FELL[told.types[0]]
+          ? `was ${DIED[told.types[0]]}`
           : `was attacked by ${told.types.map((x) => BY[x]).join(' and ')}, and fell`;
       return (
         <Notice

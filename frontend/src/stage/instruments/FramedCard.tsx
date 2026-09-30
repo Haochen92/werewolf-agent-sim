@@ -8,6 +8,7 @@
  * figure, what you do at night); the front line is left to the deal and the lobby, since at night
  * the card is there for the act. A tap on the card closes it; a tap past it (`onOutside`) also
  * lets the room clear an unsent choice. The vigilante's caps left sit under the night line.
+ * The replay's rooms stand the actor's card there and open it the same way (`owner`).
  *
  * The faction's colour is on the card because the card is face up: it is your own.
  */
@@ -34,6 +35,8 @@ export interface FramedCardProps {
   alone?: boolean;
   /** A quiet line under the night line (the vigilante's caps left). */
   note?: string;
+  /** Not yours: whose card it is ("Seat 4", "The pack"), for its label. */
+  owner?: string;
   onOpen?: () => void;
 }
 
@@ -45,6 +48,7 @@ export function FramedCard({
   u,
   alone,
   note,
+  owner,
   onOpen,
 }: FramedCardProps) {
   const text = CARD_TEXT[role];
@@ -63,8 +67,13 @@ export function FramedCard({
         type="button"
         className={`${styles.framed} ${styles[faction]}`}
         data-card={role}
-        aria-label={onOpen ? `Your card: ${text.name}. Tap to read` : `${text.name}’s card`}
-        // the replay's night shows the actor's card, not yours: nothing to open
+        aria-label={
+          !onOpen
+            ? `${text.name}’s card`
+            : owner
+              ? `${owner}’s card: ${text.name}. Tap to read`
+              : `Your card: ${text.name}. Tap to read`
+        }
         tabIndex={onOpen ? undefined : -1}
         onClick={onOpen}
         style={
@@ -100,7 +109,9 @@ export function FramedCard({
 export interface CardOverlayProps {
   role: string;
   /** Your seat, for the card's foot. */
-  seat: number;
+  seat?: number;
+  /** Not yours: whose card it is ("Seat 4", "Seats 3 and 8"), in the foot in place of your seat. */
+  owner?: string;
   /** One card unit, in stage units (bench 70: 1.6 puppet units). */
   u: number;
   alone?: boolean;
@@ -115,6 +126,7 @@ export interface CardOverlayProps {
 export function CardOverlay({
   role,
   seat,
+  owner,
   u,
   alone,
   note,
@@ -128,7 +140,7 @@ export function CardOverlay({
     <button
       type="button"
       className={styles.veil}
-      aria-label="Close your card"
+      aria-label={owner ? 'Close the card' : 'Close your card'}
       onClick={(e) => {
         if (!(e.target as Element).closest('[role="dialog"]')) onOutside?.();
         onClose?.();
@@ -154,7 +166,9 @@ export function CardOverlay({
             <b>At night</b> {alone && text.nightAlone ? text.nightAlone : text.night}
           </span>
           {note ? <span className={styles.cardCount}>{note}</span> : null}
-          <span className={styles.cardFoot}>Seat {seat} · tap anywhere to close</span>
+          <span className={styles.cardFoot}>
+            {owner ?? `Seat ${seat}`} · tap anywhere to close
+          </span>
         </span>
       </span>
     </button>

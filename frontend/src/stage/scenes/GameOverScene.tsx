@@ -33,6 +33,7 @@ import { Puppet } from '../cast/Puppet';
 import { RoleCard } from '../instruments/Card';
 import { Trap } from '../instruments/Floor';
 import { Ledger } from '../instruments/Ledger';
+import { MorningRoll } from '../instruments/MorningRoll';
 import { CardButton, Notice, NoticeZone } from '../instruments/Notice';
 import { Shutter } from '../instruments/Shutter';
 import { StringDrop } from '../instruments/StringDrop';
@@ -48,7 +49,7 @@ import { ROLE_NAME, factionOf, seatNumber, type Faction } from '../roles';
 import { bandNarrows, sideOpen, stripButtons } from '../slot';
 import { STAGE_H, geometry } from '../units';
 import { CarPaint, HouseLights, TableWing } from './DiningCarParts';
-import { BY, FELL } from './MorningScene';
+import { reportOf } from './MorningScene';
 import {
   WINNERS_HOUR,
   WINNER_LINE,
@@ -57,7 +58,6 @@ import {
   lastStanding,
   standSet,
   winnersOf,
-  type EndedAt,
 } from './game-over';
 import { notebookGame } from '../notebook';
 import type { SceneProps } from './types';
@@ -297,13 +297,19 @@ function OverBeat({ view, beat, me, presentation, slot: slotInput, wayOut }: Sce
         {step !== 5 ? (
           <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
             {myRole ? <CardButton role={myRole} gone={myDead} /> : null}
-            {step === 0 ? (
-              <Notice
-                title={ended === 'lynch' ? 'The vote’s end' : 'The report'}
-                arrive={animate}
-                delay={0.7}
-              >
-                {endingLine(view, ended)}
+            {step === 0 && ended === 'lynch' ? (
+              <Notice title="The vote’s end" arrive={animate} delay={0.7}>
+                {endingLine(view)}
+              </Notice>
+            ) : step === 0 ? (
+              // a morning's end: the morning's own roll, as its report beat showed it
+              <Notice title="The morning roll" walnut arrive={animate} delay={0.7}>
+                <MorningRoll
+                  rows={reportOf(view.days[view.day]?.night ?? null)}
+                  cast={cast}
+                  me={me}
+                  arrive={animate}
+                />
               </Notice>
             ) : onStand ? (
               <EndBox
@@ -335,29 +341,16 @@ function OverBeat({ view, beat, me, presentation, slot: slotInput, wayOut }: Sce
   );
 }
 
-/** What the held frame's box says: the morning's deaths, or the vote that ended it. */
-function endingLine(view: GameView, ended: EndedAt): string {
-  if (ended === 'lynch') {
-    const vote = view.days[view.day]?.vote;
-    const seat = vote?.lynched;
-    if (!vote || !seat) return 'The vote is over.';
-    const counts = Object.keys(vote.voteCounts).length
-      ? vote.voteCounts
-      : tally(vote.ballots);
-    const role = vote.lynchedRole;
-    return `Seat ${seatNumber(seat)} is voted out, ${score(counts)}${role ? `: ${ROLE_ARTICLE[role] ?? role}` : ''}.`;
-  }
-  const deaths = view.days[view.day]?.night?.deaths ?? [];
-  if (!deaths.length) return 'The night is over.';
-  return deaths
-    .map((d) => {
-      const how =
-        d.attacker_types.length === 1
-          ? FELL[d.attacker_types[0]]
-          : `was attacked by ${d.attacker_types.map((x) => BY[x]).join(' and ')}, and fell`;
-      return `Seat ${seatNumber(d.player)} ${how}: ${ROLE_ARTICLE[d.role] ?? d.role}.`;
-    })
-    .join(' ');
+/** What the held frame's box says after a lynch: the vote that ended it (a morning has its roll). */
+function endingLine(view: GameView): string {
+  const vote = view.days[view.day]?.vote;
+  const seat = vote?.lynched;
+  if (!vote || !seat) return 'The vote is over.';
+  const counts = Object.keys(vote.voteCounts).length
+    ? vote.voteCounts
+    : tally(vote.ballots);
+  const role = vote.lynchedRole;
+  return `Seat ${seatNumber(seat)} is voted out, ${score(counts)}${role ? `: ${ROLE_ARTICLE[role] ?? role}` : ''}.`;
 }
 
 /** The result in the box: who won, their survivors, and for a seated human, how they did. */

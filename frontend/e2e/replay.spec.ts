@@ -201,6 +201,48 @@ test('replay: the night stops at its hub; a lit card plays that actor’s room a
   await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.hub');
 });
 
+test('replay: in an actor’s room the card on the table opens, and the play goes on under it', async ({
+  page,
+}) => {
+  await page.clock.install();
+  await open(page);
+  await reveal(page).click();
+  const next = page.getByRole('button', { name: 'Next chapter' });
+  await next.click();
+  await next.click();
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.hub');
+  await card(page, 4).click();
+  await expect(theatre(page)).toHaveAttribute('data-playing', 'true');
+  const at = await theatre(page).getAttribute('data-beat-index');
+  // opened while playing: nothing seeks, nothing pauses
+  const table = page.getByRole('button', {
+    name: 'Seat 4’s card: Investigator. Tap to read',
+  });
+  await table.click();
+  const overlay = page.locator('[data-overlay="card"]');
+  await expect(overlay).toBeVisible();
+  await expect(overlay.getByText('Seat 4 · tap anywhere to close')).toBeVisible();
+  await expect(theatre(page)).toHaveAttribute('data-beat-index', at!);
+  await expect(theatre(page)).toHaveAttribute('data-playing', 'true');
+  // the room plays out and rests on its last step, the card still open over it
+  await page.clock.runFor(4000);
+  await expect(theatre(page)).toHaveAttribute('data-playing', 'false');
+  await expect(overlay).toBeVisible();
+  await settle(page);
+  await expect(page).toHaveScreenshot('replay-room-card.png');
+  // a tap closes it, as live; the room stays where it is
+  await overlay.click();
+  await expect(overlay).toHaveCount(0);
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.spoke');
+  await expect(page.getByText('In the night · Seat 4')).toBeVisible();
+  // stepped on to the next actor's room, open or not, the card is that room's and shut
+  await table.click();
+  await expect(overlay).toBeVisible();
+  await page.keyboard.press('ArrowRight');
+  await expect(page.getByText('In the night · Seat 2')).toBeVisible();
+  await expect(overlay).toHaveCount(0);
+});
+
 test('replay: at the count, a voter’s card opens what it voted on', async ({ page }) => {
   test.setTimeout(90_000);
   await open(page);

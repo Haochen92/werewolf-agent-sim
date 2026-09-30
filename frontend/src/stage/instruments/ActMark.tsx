@@ -1,18 +1,22 @@
 'use client';
 
 /**
- * The marks a night's acts leave, drawn large beneath a chip at the morning: a bite (the
- * wolves), a knife (the serial killer), a bullet (the vigilante), the plaster (the healer's
- * save) and the lens (the investigator's reading, on that seat's screen only). Flat, inked,
- * in the sigils' line: symbols of an act, not objects. The wire names the attacker's type,
- * never the attacker, so a mark says what was done and never by whom.
+ * The marks a night's acts leave, pinned beneath a chip at the morning and on the print in the
+ * replay's rooms: the acting role's felt sigil tacked on like a patch (owner, 2026-09-30,
+ * replacing bench 67's line drawings). A bite is the wolf's head, a knife the serial killer's
+ * scythe, a bullet the vigilante's, the plaster (the healer's save) the cross, the lens (the
+ * investigator's reading, on that seat's screen only) the magnifier. The wire names the
+ * attacker's type, never the attacker, and a type is a role: a mark still says what was done,
+ * never by whom.
  *
- * `k` is the mark's half-size in units. Played, a mark pops in (bench rev 67 `markIn`).
- * Ported from bench 67's `actIcon`, drawn here at k = 50 and scaled.
+ * `k` is the mark's half-size in units (the sigil's 48 grid spans 2k). Played, a mark pops in
+ * (bench rev 67 `markIn`).
  */
 import { motion } from 'motion/react';
 import type { AttackerType } from '@/types/contracts';
 import { useMotionScale } from '../motion';
+import { MATERIALS as M } from '../paint/materials';
+import { Sigil } from './Sigil';
 
 export type ActKind = 'bite' | 'knife' | 'bullet' | 'plaster' | 'lens';
 
@@ -23,165 +27,26 @@ export const ATTACK_MARK: Record<AttackerType, ActKind> = {
   vigilante: 'bullet',
 };
 
-const INK = '#24180c',
-  K = 50,
-  W = K * 0.16;
-
-function Plaster() {
-  const strip = (a: number) => (
-    <rect
-      transform={`rotate(${a})`}
-      x={-K}
-      y={-K * 0.28}
-      width={2 * K}
-      height={K * 0.56}
-      rx={K * 0.28}
-      fill={a < 0 ? '#8fd1d6' : '#e8c39a'}
-      stroke={INK}
-      strokeWidth={W}
-    />
-  );
-  const holes = [
-    [-0.18, -0.14],
-    [0, -0.14],
-    [0.18, -0.14],
-    [-0.18, 0.14],
-    [0, 0.14],
-    [0.18, 0.14],
-  ];
-  return (
-    <>
-      {strip(45)}
-      {strip(-45)}
-      <rect
-        x={-K * 0.34}
-        y={-K * 0.34}
-        width={K * 0.68}
-        height={K * 0.68}
-        rx={K * 0.1}
-        fill="#e8c39a"
-        stroke={INK}
-        strokeWidth={W}
-      />
-      {holes.map(([dx, dy]) => (
-        <circle key={`${dx},${dy}`} cx={dx * K} cy={dy * K} r={K * 0.045} fill={INK} />
-      ))}
-    </>
-  );
-}
-
-function Bite() {
-  const tooth = {
-    fill: '#f6f1e4',
-    stroke: INK,
-    strokeWidth: W * 0.8,
-    strokeLinejoin: 'round',
-  } as const;
-  const jaw = {
-    fill: 'none',
-    stroke: INK,
-    strokeWidth: W * 1.4,
-    strokeLinecap: 'round',
-  } as const;
-  return (
-    <>
-      <path d={`M${-K * 0.9},${-K * 0.2} q${K * 0.9},${-K * 0.9} ${K * 1.8},0`} {...jaw} />
-      <path
-        d={`M${-K * 0.6},${-K * 0.42} l${K * 0.2},${K * 0.7} l${K * 0.2},${-K * 0.55}Z M${K * 0.2},${-K * 0.55} l${K * 0.2},${K * 0.7} l${K * 0.2},${-K * 0.55}Z`}
-        {...tooth}
-      />
-      <path d={`M${-K * 0.9},${K * 0.35} q${K * 0.9},${K * 0.9} ${K * 1.8},0`} {...jaw} />
-      <path
-        d={`M${-K * 0.5},${K * 0.62} l${K * 0.16},${-K * 0.5} l${K * 0.16},${K * 0.4}Z M${K * 0.2},${K * 0.66} l${K * 0.16},${-K * 0.5} l${K * 0.16},${K * 0.4}Z`}
-        {...tooth}
-      />
-    </>
-  );
-}
-
-function Bullet() {
-  return (
-    <g transform="rotate(-30)">
-      <rect
-        x={-K * 0.9}
-        y={-K * 0.3}
-        width={K * 1.2}
-        height={K * 0.6}
-        rx={K * 0.08}
-        fill="#c9a25e"
-        stroke={INK}
-        strokeWidth={W}
-      />
-      <path
-        d={`M${K * 0.3},${-K * 0.3} h${K * 0.25} q${K * 0.45},0 ${K * 0.55},${K * 0.3} q${-K * 0.1},${K * 0.3} ${-K * 0.55},${K * 0.3} h${-K * 0.25}Z`}
-        fill="#e3503f"
-        stroke={INK}
-        strokeWidth={W}
-      />
-      <path d={`M${-K * 0.9},${-K * 0.3} v${K * 0.6}`} stroke={INK} strokeWidth={W * 1.6} />
-      <path
-        d={`M${-K * 0.6},${-K * 0.12} h${K * 0.7}`}
-        stroke="#fff"
-        strokeOpacity={0.5}
-        strokeWidth={W * 0.7}
-      />
-    </g>
-  );
-}
-
-function Knife() {
-  return (
-    <g transform="rotate(-40)">
-      <path
-        d={`M${-K * 0.95},0 h${K * 1.1} q${K * 0.6},0 ${K * 0.8},${-K * 0.32} q${-K * 0.4},${-K * 0.05} ${-K * 0.8},${K * 0.02} h${-K * 1.1}Z`}
-        fill="#cfd3d6"
-        stroke={INK}
-        strokeWidth={W}
-      />
-      <rect
-        x={-K * 0.95}
-        y={-K * 0.22}
-        width={K * 0.65}
-        height={K * 0.44}
-        rx={K * 0.1}
-        fill="#5a3418"
-        stroke={INK}
-        strokeWidth={W}
-      />
-      <circle cx={-K * 0.65} cy={0} r={K * 0.06} fill="#c9a25e" />
-    </g>
-  );
-}
-
-function Lens() {
-  const c = -K * 0.15,
-    r = K * 0.55,
-    handle = `M${K * 0.25},${K * 0.25} l${K * 0.55},${K * 0.55}`;
-  return (
-    <>
-      <circle
-        cx={c}
-        cy={c}
-        r={r}
-        fill="#d6ecec"
-        fillOpacity={0.35}
-        stroke="#c9a25e"
-        strokeWidth={W * 1.6}
-      />
-      <circle cx={c} cy={c} r={r + W} fill="none" stroke={INK} strokeWidth={W * 0.6} />
-      <path d={handle} stroke={INK} strokeWidth={W * 2.6} strokeLinecap="round" />
-      <path d={handle} stroke="#5a3418" strokeWidth={W * 1.8} strokeLinecap="round" />
-    </>
-  );
-}
-
-const DRAW: Record<ActKind, () => React.ReactNode> = {
-  plaster: Plaster,
-  bite: Bite,
-  bullet: Bullet,
-  knife: Knife,
-  lens: Lens,
+/** The role whose sigil stands for each act. */
+export const MARK_ROLE: Record<ActKind, string> = {
+  bite: 'wolf',
+  knife: 'serial_killer',
+  bullet: 'vigilante',
+  plaster: 'healer',
+  lens: 'investigator',
 };
+
+/** Where the tack goes through each patch, on the sigil's 48 grid (on its felt, after its turn). */
+const TACK: Record<ActKind, readonly [number, number]> = {
+  bite: [24, 17],
+  knife: [23, 9.5],
+  bullet: [20, 30.5],
+  plaster: [24, 14],
+  lens: [19, 9.5],
+};
+
+/** Under this half-size (units) the patch drops its stitching, as a small sigil does. */
+const SMALL_K = 30;
 
 export interface ActMarkProps {
   kind: ActKind;
@@ -195,11 +60,15 @@ export interface ActMarkProps {
 
 export function ActMark({ kind, x, y, k, arrive = false }: ActMarkProps) {
   const m = useMotionScale();
-  const Draw = DRAW[kind];
+  const role = MARK_ROLE[kind];
+  const [tx, ty] = TACK[kind];
   const half = k * 1.3;
+  const small = k < SMALL_K;
+  // the grid's 0..48 sits at -24..24: the sigil's own box (-2..50) nests at -26
+  const at = { x: -26, y: -26, width: 52, height: 52 } as const;
   return (
     <motion.svg
-      viewBox={`${-K * 1.3} ${-K * 1.3} ${K * 2.6} ${K * 2.6}`}
+      viewBox={`${-24 * 1.3} ${-24 * 1.3} ${48 * 1.3} ${48 * 1.3}`}
       style={{
         position: 'absolute',
         left: x - half,
@@ -210,6 +79,7 @@ export function ActMark({ kind, x, y, k, arrive = false }: ActMarkProps) {
       }}
       aria-label={kind}
       role="img"
+      data-mark={role}
       initial={arrive === false ? false : { scale: 0.2, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{
@@ -218,7 +88,18 @@ export function ActMark({ kind, x, y, k, arrive = false }: ActMarkProps) {
         ease: [0.3, 1.5, 0.5, 1],
       }}
     >
-      <Draw />
+      {/* the patch's shadow on the print: its own silhouette, flat and offset (no live filter) */}
+      <g opacity={0.38} style={{ color: '#0c0703' }}>
+        <Sigil role={role} small {...at} x={at.x + 1.6} y={at.y + 2.4} />
+      </g>
+      <Sigil role={role} variant="felt" small={small} {...at} />
+      {/* the tack through it: a brass head, its rim and a glint */}
+      <g transform={`translate(${tx - 24} ${ty - 24})`}>
+        <ellipse cx={0.9} cy={1.5} rx={4.4} ry={3.6} fill="#0c0703" opacity={0.4} />
+        <circle r={4.2} fill={M.brassLo} />
+        <circle r={3.3} fill={M.brass} />
+        <circle cx={-1.1} cy={-1.1} r={1.3} fill={M.brassHi} />
+      </g>
     </motion.svg>
   );
 }

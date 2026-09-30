@@ -78,6 +78,11 @@ export interface NightRoomProps extends Pick<
   onCard: (open: boolean) => void;
   /** A quiet line on the card under the night text (the vigilante's caps left). */
   cardNote?: string;
+  /**
+   * The replay's rooms: the card is the actor's, not yours ("Seat 4", "Seats 3 and 8"); it
+   * opens all the same, with no seat of yours needed.
+   */
+  cardOwner?: string;
   /** A tap on the empty room, or past the open card: back to the room at rest. */
   onEmpty?: () => void;
   /** The plate, the chat: whatever the room adds at its foot. */
@@ -118,6 +123,7 @@ export function NightRoom({
   cardOpen,
   onCard,
   cardNote,
+  cardOwner,
   onEmpty,
   children,
   sub,
@@ -199,7 +205,8 @@ export function NightRoom({
           u={g.u * 0.95 * (plan.card.h / 279)}
           alone={alone}
           note={cardNote}
-          onOpen={me ? () => onCard(true) : undefined}
+          owner={cardOwner}
+          onOpen={me || cardOwner ? () => onCard(true) : undefined}
         />
       </Layer>
 
@@ -272,10 +279,11 @@ export function NightRoom({
           count={count}
         />
         {children}
-        {cardOpen && me ? (
+        {cardOpen && (me || cardOwner) ? (
           <CardOverlay
             role={role}
-            seat={seatNumber(me)}
+            seat={me ? seatNumber(me) : undefined}
+            owner={cardOwner}
             u={g.u * 1.6}
             alone={alone}
             note={cardNote}

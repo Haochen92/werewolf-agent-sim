@@ -34,7 +34,15 @@ const HOLD = {
   pass: 4000,
   /** A room's last step in the X-ray night: the mark landing, or the hold. */
   mark: 2500,
+  /** The morning roll (2026-09-30): the shutter's hold, and this much more per row read. */
+  report: 3500,
+  reportRow: 1500,
 } as const;
+
+/** The morning roll's hold: a row per death, and one for a seat saved; a quiet night the base. */
+function reportHold(e: EventOf<'night_result'>): number {
+  return HOLD.report + HOLD.reportRow * (e.deaths.length + (e.save ? 1 : 0));
+}
 const WORDS_PER_SECOND = 2.4;
 const SPEECH_FLOOR_MS = 5000;
 const SPEECH_CAP_MS = 15000;
@@ -149,6 +157,8 @@ export function beatsFor(
 
   // The structured summary of day N plays in Morning N, so it is held until then.
   const summaries = new Map<number, EventOf<'day_summary_structured'>>();
+  // Each day's night result: a game that ends at a morning shows that morning's roll again.
+  const reports = new Map<number, EventOf<'night_result'>>();
   let nightStart = -1;
   let over = false;
 
@@ -419,7 +429,8 @@ export function beatsFor(
           });
         }
         nightStart = -1;
-        pub('morning.shutter-down', e, next, HOLD.shutter, {
+        reports.set(e.day, e);
+        pub('morning.shutter-down', e, next, reportHold(e), {
           chapter: { kind: 'morning', n: e.day },
         });
         for (const d of e.deaths) {
@@ -453,7 +464,10 @@ export function beatsFor(
 
       case 'game_over': {
         over = true;
-        pub('over.where-it-ended', e, next, HOLD.held, { chapter: { kind: 'over', n: 0 } });
+        const report = reports.get(e.day);
+        pub('over.where-it-ended', e, next, report ? reportHold(report) : HOLD.held, {
+          chapter: { kind: 'over', n: 0 },
+        });
         pub('over.winners-hour', e, next, HOLD.shutter);
         pub('over.verdict', e, next, HOLD.verdict);
         pub('over.winners-stand', e, next, HOLD.shutter);
