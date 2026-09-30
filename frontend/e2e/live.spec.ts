@@ -295,9 +295,11 @@ test('live: seat 7’s turn to speak, the dock at the foot', async ({ page }) =>
   await expect(page.locator('[data-drawer]')).toHaveCount(0);
   // stop the clock a few seconds in, then let the puppet’s rise and the dock’s fade-in finish
   // (the count reads off the page’s load time: 1:4x or 1:5x; the golden’s tolerance takes it)
-  // (a slow first compile can take the page past ten seconds: then pause where it is)
+  // (a slow first compile can take the page past ten seconds: then pause where it is; the
+  // clock keeps running between the read and the pause, so leave it a wide margin — under a
+  // parallel run 100 ms was not enough and the pause landed in the past)
   const now = await page.evaluate(() => Date.now());
-  await page.clock.pauseAt(Math.max(T0 + 10_000, now + 100));
+  await page.clock.pauseAt(Math.max(T0 + 10_000, now + 1500));
   await page.clock.runFor(3000);
   await expect(
     page.locator('[data-dock="discuss"]').getByText(/^1:[3-5]\d$/),
