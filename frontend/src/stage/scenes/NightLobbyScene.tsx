@@ -9,7 +9,9 @@
  * Nothing here says who is awake: the pill counts the night's units (the special roles the
  * public census says are alive, the pack as one), never names them. The X-ray's hub is the
  * same room with a lamp lit in the wing on every seat that acts tonight; that is the
- * observer's knowledge, drawn from the roles it holds.
+ * observer's knowledge, drawn from the roles it holds. There a lit card is a way in: a tap jumps
+ * to that actor's night (its first spoke; a wolf's, the pack's), and any other card opens that
+ * seat's case file (owner, 2026-09-29). The play still runs the spokes in the log's order.
  *
  * Played forward, the chips come down one after another. After a day with no vote the window
  * goes from day to night first (the shutter stayed up all day, so it stays up). After a vote
@@ -18,6 +20,7 @@
  * again.
  */
 import type { GameView } from '@/game/types';
+import type { SceneBeat } from '../beats/types';
 import { Atmosphere } from '../Atmosphere';
 import { Layer } from '../Stage';
 import { SideSlot } from '../SideSlot';
@@ -31,7 +34,7 @@ import { StageMotion } from '../motion';
 import { CARD_TEXT } from '../card-text';
 import { diningCarPlan } from '../paint/dining-car';
 import { seatNumber } from '../roles';
-import { bandNarrows, sideOpen, stripButtons } from '../slot';
+import { bandNarrows, fileTap, sideOpen, stripButtons } from '../slot';
 import { STAGE_H, geometry } from '../units';
 import { CarPaint, HouseLights, TableWing } from './DiningCarParts';
 import { notebookGame } from '../notebook';
@@ -74,6 +77,16 @@ export function actorsTonight(view: GameView, day: number): Set<string> {
   return out;
 }
 
+/**
+ * The X-ray hub's way into a seat's night: its first spoke that night (a wolf's is the pack's).
+ * A seat whose night left nothing to tell (a vigilante holding fire) has none.
+ */
+export function spokeOf(view: GameView, day: number, seat: string) {
+  const actor = view.xray.roles[seat] === 'wolf' ? 'pack' : seat;
+  return (b: SceneBeat) =>
+    b.id === 'rnight.spoke' && b.day === day && b.spoke?.actor === actor;
+}
+
 export function NightLobbyScene(props: SceneProps) {
   return (
     <StageMotion speed={props.presentation.motion}>
@@ -83,7 +96,15 @@ export function NightLobbyScene(props: SceneProps) {
   );
 }
 
-function LobbyBeat({ view, beat, me, presentation, slot: slotInput, turn }: SceneProps) {
+function LobbyBeat({
+  view,
+  beat,
+  me,
+  presentation,
+  slot: slotInput,
+  turn,
+  onSeek,
+}: SceneProps) {
   const { hud, xray, animate, cast } = presentation;
   const side = sideOpen(presentation);
   const g = geometry(hud, side);
@@ -98,6 +119,13 @@ function LobbyBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
   // live, the acts come in as the night runs (`phase_progress`): the count
   const units = nightUnits(view);
   const acted = Math.min(turn?.progress?.n ?? 0, units);
+  // the hub's cards: an actor's jumps to its night, anyone else's opens its file
+  const open = fileTap(presentation, slotInput, true);
+  const toNight = (seat: string) => {
+    // a seat whose night left nothing to tell (a vigilante holding fire): its file
+    if (!onSeek?.(spokeOf(view, beat.day, seat))) open?.(seat);
+  };
+  const hub = beat.id === 'rnight.hub';
 
   return (
     <>
@@ -160,6 +188,11 @@ function LobbyBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
           opts={{
             truth: (seat) => (xray ? (view.xray.roles[seat] ?? null) : null),
             lamp: (seat) => !!actors?.has(seat),
+            file: open && hub ? (seat) => (actors?.has(seat) ? toNight : open)(seat) : open,
+            fileLabel: (seat) =>
+              hub && actors?.has(seat)
+                ? `Seat ${seatNumber(seat)}’s night`
+                : `Open seat ${seatNumber(seat)}’s file`,
           }}
         />
         <TopStrip

@@ -391,6 +391,18 @@
   inset: -5.6px;
   border-width: 3.2px;
 }
+/* a card that opens its seat's case file (the X-ray, where nobody speaks): a thin steady
+   verdigris edge, brighter under the pointer or the finger */
+.file::after {
+  border: 1.6px solid var(--xray-mut);
+}
+.file:hover::after,
+.file:active::after,
+.file:focus-visible::after {
+  border-color: var(--xray-hi);
+  box-shadow: 0 0 9.6px rgba(134, 176, 160, 0.45);
+  opacity: 1;
+}
 
 /* a read the viewer can open breathes: a glow drawn once, only its opacity moving (GPU rule),
    a slow 2.4 s breath; a read new or changed since the speaker's last flashes once, brighter */

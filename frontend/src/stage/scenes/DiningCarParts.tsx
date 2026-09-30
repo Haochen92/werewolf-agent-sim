@@ -131,6 +131,13 @@ export interface WingSeatOptions {
   dim?: (seat: string) => boolean;
   lamp?: (seat: string) => boolean;
   pack?: (seat: string) => boolean;
+  /**
+   * A tap on a seat's card opens its case file (`fileTap` in slot.ts), or, at the night hub,
+   * whatever the hub makes of it; null or absent: the cards are only shown.
+   */
+  file?: ((seat: string) => void) | null;
+  /** What a card's tap says, when it is not "Open seat N's file". */
+  fileLabel?: (seat: string) => string;
 }
 
 /** The wing, with the replay's drape above it when the HUD is the replay's. */
@@ -171,6 +178,12 @@ export function TableWing({
             lamp: opts.lamp?.(seat),
             pack: opts.pack?.(seat),
             you: seat === me,
+            file: opts.file
+              ? {
+                  onTap: () => opts.file!(seat),
+                  label: opts.fileLabel?.(seat) ?? `Open seat ${seatNumber(seat)}’s file`,
+                }
+              : undefined,
           };
         })}
       />

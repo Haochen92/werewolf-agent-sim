@@ -2,8 +2,8 @@
  * The replay's transport, along the foot of the stage (bench 73's band, beat sheet §11): the
  * five buttons (previous chapter, back a beat, play or pause, forward a beat, next chapter),
  * the seek bar with a mark per chapter, where we are in words ("Vote 3 · A chip is counted"),
- * the speed as one toggle (Normal or Fast), and the X-ray's one switch (owner, 2026-09-29: three
- * speeds and a count did not fit a small phone on its side).
+ * and the speed as one toggle (Normal or Fast) (owner, 2026-09-29: three speeds and a count did
+ * not fit a small phone on its side). The X-ray's switch, Reveal, is the top strip's now.
  *
  * It only draws and reports presses; the replay theatre holds the state. It sits in the HUD,
  * in stage units, so it shrinks with the picture on a small screen like everything else. When
@@ -23,7 +23,6 @@ export interface TransportBandProps {
   index: number;
   playing: boolean;
   speed: MotionSpeed;
-  xray: boolean;
   /** "Vote 3 · A chip is counted" (transportLabel). */
   label: string;
   /** The drawer is open at full height: the band ends at its edge. */
@@ -33,8 +32,6 @@ export interface TransportBandProps {
   onTogglePlay: () => void;
   onSeek: (index: number) => void;
   onSpeed: (speed: MotionSpeed) => void;
-  /** The X-ray's one switch: the stage's beats, the transcript's private lines, the File tab. */
-  onXray: () => void;
 }
 
 // bench 73's glyphs, drawn in a 16×16 box; pause is ours (the bench only drew play)
@@ -69,7 +66,6 @@ export function TransportBand({
   index,
   playing,
   speed,
-  xray,
   label,
   besideDrawer,
   onChapter,
@@ -77,7 +73,6 @@ export function TransportBand({
   onTogglePlay,
   onSeek,
   onSpeed,
-  onXray,
 }: TransportBandProps) {
   const fast = speed === 'fast';
   const g = geometry(hud, besideDrawer);
@@ -162,17 +157,6 @@ export function TransportBand({
           onClick={() => onSpeed(fast ? 'normal' : 'fast')}
         >
           {fast ? 'Fast' : 'Normal'}
-        </button>
-
-        <button
-          type="button"
-          className={xray ? `${styles.xray} ${styles.on}` : styles.xray}
-          data-xray={xray}
-          aria-label="X-ray"
-          aria-pressed={xray}
-          onClick={onXray}
-        >
-          {xray ? 'X-ray on' : 'X-ray off'}
         </button>
       </div>
     </Layer>

@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { workbenchFrame } from '../workbench/frame';
 import { DEFAULT_QUERY } from '../workbench/url';
-import { actorsTonight, nightUnits } from './NightLobbyScene';
+import { beatsFor } from '../beats/beatsFor';
+import { FIXTURE_EVENTS } from '../workbench/fixture';
+import { actorsTonight, nightUnits, spokeOf } from './NightLobbyScene';
 
 const hubs = (xray: boolean) =>
   workbenchFrame(xray ? 'rnight' : 'night', {
@@ -26,5 +28,16 @@ describe('the night lobby on the fixture', () => {
     expect([...first].sort()).toEqual(
       ['player_2', 'player_3', 'player_4', 'player_7', 'player_8', 'player_9'].sort(),
     );
+  });
+
+  it('takes a lit card at the hub to that actor’s first spoke; a wolf’s to the pack’s', () => {
+    const f = hubs(true);
+    const beats = beatsFor(FIXTURE_EVENTS, { xray: true });
+    const first = (seat: string) => beats.find(spokeOf(f.view!, 1, seat));
+    expect(first('player_4')?.spoke).toMatchObject({ actor: 'player_4', step: 0 });
+    expect(first('player_3')?.spoke).toMatchObject({ actor: 'pack', step: 0 });
+    expect(first('player_8')).toBe(first('player_3'));
+    // the vigilante held fire on night 1: no spoke, so the hub opens its file instead
+    expect(first('player_7')).toBeUndefined();
   });
 });

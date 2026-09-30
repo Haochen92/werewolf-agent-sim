@@ -186,6 +186,11 @@ test('live: a refresh mid-day lands still on the latest beat', async ({ page }) 
   await expect(theatre(page)).toHaveAttribute('data-beat', 'day.speech');
   await expect(page.locator('[data-line="say-200"]')).toBeVisible();
   await expect(theatre(page)).toHaveAttribute('data-holding', 'false');
+  // Reveal is locked until the game ends
+  const reveal = page.getByRole('button', { name: 'Reveal', exact: true });
+  await expect(reveal).toBeDisabled();
+  await expect(reveal).toHaveAttribute('aria-pressed', 'false');
+  await expect(reveal).toHaveAttribute('title', 'Revealed after the game');
   await settle(page);
   await expect(page).toHaveScreenshot('live-catch-up-d3.png');
 });
@@ -467,6 +472,10 @@ test('live: after game over the ending plays to its curtain', async ({ page }) =
     'href',
     '/rooms',
   );
+  // the game's end is the switch: Reveal is on, with nothing to press
+  const reveal = page.getByRole('button', { name: 'Reveal', exact: true });
+  await expect(reveal).toHaveAttribute('aria-pressed', 'true');
+  await expect(reveal).toHaveText('Revealed');
   await page.clock.runFor(5000);
   await settle(page);
   await expect(page).toHaveScreenshot('live-curtain.png');

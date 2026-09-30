@@ -364,14 +364,34 @@ export function memoryOn(view: GameView): boolean {
   );
 }
 
-/** One seat's file at the view's end; `ahead` (the log past the beat) only says whether memory was on and brings the game's lessons once it is over. */
-export function seatFile(view: GameView, seat: string, ahead?: GameView | null): SeatFile {
+/**
+ * At a vote or the lynch after it, where the ballots are in: the day's first ballot. A voter's
+ * file there is what it voted on, its reads and its consult as they stood when the ballots were
+ * released (owner, 2026-09-29). Null elsewhere: the file reads to the playhead.
+ */
+export function ballotCut(
+  view: GameView,
+  beat: Pick<SceneBeat, 'scene' | 'day'>,
+): number | null {
+  if (beat.scene !== 'vote' && beat.scene !== 'lynch') return null;
+  return view.days[beat.day]?.vote.ballots[0]?.seq ?? null;
+}
+
+/** One seat's file at the view's end (its reads and consult before `cut`, when given: `ballotCut`); `ahead` (the log past the beat) only says whether memory was on and brings the game's lessons once it is over. */
+export function seatFile(
+  view: GameView,
+  seat: string,
+  ahead?: GameView | null,
+  cut: number | null = null,
+): SeatFile {
   const agent = view.xray.agents[seat];
   const role = view.xray.roles[seat] ?? null;
   const later = ahead ?? view;
   const memory = memoryOn(later) || memoryOn(view);
-  const r = agent?.reads.at(-1);
-  const c = agent?.consulted.at(-1);
+  const before = <T extends { seq: number }>(list: readonly T[] | undefined) =>
+    (list ?? []).filter((e) => cut === null || e.seq < cut).at(-1);
+  const r = before(agent?.reads);
+  const c = before(agent?.consulted);
   const extracted = view.winner ? (later.xray.extracted ?? view.xray.extracted) : null;
   return {
     seat,

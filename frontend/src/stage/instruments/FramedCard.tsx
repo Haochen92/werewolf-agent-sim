@@ -63,7 +63,9 @@ export function FramedCard({
         type="button"
         className={`${styles.framed} ${styles[faction]}`}
         data-card={role}
-        aria-label={`Your card: ${text.name}. Tap to read`}
+        aria-label={onOpen ? `Your card: ${text.name}. Tap to read` : `${text.name}’s card`}
+        // the replay's night shows the actor's card, not yours: nothing to open
+        tabIndex={onOpen ? undefined : -1}
         onClick={onOpen}
         style={
           {
@@ -89,7 +91,7 @@ export function FramedCard({
           </span>
           {note ? <span className={styles.framedCount}>{note}</span> : null}
         </span>
-        <em>tap to read</em>
+        {onOpen ? <em>tap to read</em> : null}
       </button>
     </>
   );

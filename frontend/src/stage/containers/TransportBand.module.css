@@ -1,7 +1,7 @@
 /* The replay's transport band, as bench 73 draws it (`.transport`, `.seek`), in stage units:
    the buttons 46.4 × 40 (2.9cqw × 2.5cqw), 9.6 off the foot, the seek bar 6.4 tall on the
-   cloak with the amber fill. The caption, the chapter marks, the speed toggle and the X-ray
-   switch are ours (beat sheet §11, "As built"). */
+   cloak with the amber fill. The caption, the chapter marks and the speed toggle are ours
+   (beat sheet §11, "As built"); the X-ray's switch is the top strip's Reveal. */
 .band {
   position: absolute;
   bottom: 0;
@@ -33,8 +33,7 @@
   align-self: flex-end;
 }
 .buttons button,
-.speed,
-.xray {
+.speed {
   appearance: none;
   font: inherit;
   color: var(--bone);
@@ -60,8 +59,7 @@
   border-color: var(--amber);
 }
 .buttons button:hover,
-.speed:hover,
-.xray:hover {
+.speed:hover {
   border-color: var(--bone3);
 }
 .band button:focus-visible {
@@ -144,25 +142,4 @@
   background: var(--bone);
   border-color: var(--bone);
   color: var(--ink);
-}
-
-/* the X-ray's one switch: the stage's beats, the transcript's lines and the File tab follow it */
-.xray {
-  flex: 0 0 auto;
-  align-self: flex-end;
-  height: calc(40px * var(--k));
-  box-sizing: border-box;
-  display: grid;
-  place-items: center;
-  padding: 0 calc(12.8px * var(--k));
-  border-radius: 11.2px;
-  border: 1px solid var(--cloak2);
-  background: rgba(14, 9, 6, 0.92);
-  color: var(--bone2);
-  white-space: nowrap;
-}
-.xray.on {
-  border-color: var(--xray);
-  color: var(--xray);
-  box-shadow: 0 0 11.2px rgba(134, 176, 160, 0.35);
 }

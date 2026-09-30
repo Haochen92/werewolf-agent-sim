@@ -52,6 +52,7 @@ import {
   FORM,
   ROLE_PLURAL,
   asOf,
+  ballotCut,
   fileFocus,
   fileTabs,
   firstSentence,
@@ -139,7 +140,7 @@ export function Film({
     shown && focus && focus.seats.length > 1 && focus.seats.includes(shown)
       ? focus.seats.find((s) => s !== shown)!
       : null;
-  const file = shown ? seatFile(view, shown, ahead) : null;
+  const file = shown ? seatFile(view, shown, ahead, ballotCut(view, beat)) : null;
   const nudge =
     replay && view.winner ? (
       <p className={styles.nudge} data-nudge>
@@ -971,8 +972,15 @@ function Docket({
         <>
           {head('The night, inside', `Night ${model.day} · what each did`)}
           <div className={styles.rows}>
+            {/* an actor's row opens its file (the pack's, the first wolf's) */}
             {model.rows.map((b) => (
-              <div key={b.actor} className={styles.row}>
+              <button
+                key={b.actor}
+                type="button"
+                className={styles.row}
+                onClick={() => onSeat(b.seats[0] ?? b.actor)}
+                title={`Open seat ${seatNumber(b.seats[0] ?? b.actor)}’s file`}
+              >
                 <span className={styles.faces}>
                   {b.seats.map((s) => (
                     <span key={s}>{chip(s, sm)}</span>
@@ -1001,7 +1009,7 @@ function Docket({
                     'holds'
                   )}
                 </span>
-              </div>
+              </button>
             ))}
           </div>
           <p className={styles.legend}>
@@ -1015,8 +1023,15 @@ function Docket({
         <>
           {head('Inside the vote', `Day ${model.day} · what each voter weighed`)}
           <div className={styles.rows}>
+            {/* a voter's row opens its file: the reads and the precedents it voted on */}
             {model.rows.map((v) => (
-              <div key={v.voter} className={styles.row}>
+              <button
+                key={v.voter}
+                type="button"
+                className={styles.row}
+                onClick={() => onSeat(v.voter)}
+                title={`Open seat ${seatNumber(v.voter)}’s file`}
+              >
                 {chip(v.voter, sm)}
                 <span className={styles.nm}>
                   Seat {seatNumber(v.voter)} {role(v.role)}
@@ -1041,12 +1056,12 @@ function Docket({
                     <small>none</small>
                   )}
                 </span>
-              </div>
+              </button>
             ))}
           </div>
           <p className={styles.legend}>
             The precedents each voter weighed before its ballot, No. 1 to 3: F followed, O
-            overruled, – not applicable.
+            overruled, – not applicable. Tap a voter for its file.
           </p>
         </>
       );
@@ -1139,7 +1154,7 @@ function Docket({
           <p className={styles.legend}>
             {model.truth
               ? 'Withheld all game; every viewer holds it once the game is over. Tap a seat for its whole file.'
-              : 'Face up in the X-ray; the table knows only the cast. Tap a seat for its file.'}
+              : 'Face up once revealed; the table knows only the cast. Tap a seat for its file.'}
           </p>
         </>
       );

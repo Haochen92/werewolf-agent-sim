@@ -3,9 +3,13 @@
  * sun or a moon, "Day 3" engraved large, and under it the phase and the beat's name, so a
  * viewer arriving cold knows what they are looking at), and the side pane's two tabs, File and
  * Transcript, on one brass-edged plaque pinned at the right. Transcript is always the far right,
- * live and replay alike. The tabs only choose what the pane shows; the X-ray is switched
- * elsewhere (the replay's band; live, by the game's end), and File, the X-ray's own pane, is
- * greyed while the X-ray is off (owner, 2026-09-29).
+ * live and replay alike. The tabs only choose what the pane shows; File, the X-ray's own pane,
+ * is greyed while the X-ray is off (owner, 2026-09-29).
+ *
+ * Just left of the tabs, on its own small plaque, the X-ray's one switch, which the viewer
+ * knows as Reveal (owner, 2026-09-29; it was the band's "X-ray on/off"): a brass keyhole
+ * that slides along a slot, "Reveal" off, "Revealed" on with the keyhole lit in verdigris. Live
+ * it is locked until the game ends (the game's end is the switch), then shown on.
  *
  * The tabs only report what they are pressed to; the container decides what a press does.
  * The replay also has a way out, "← Replays" (or "← Home", whichever the viewer came from), on
@@ -45,6 +49,11 @@ export interface TopStripProps {
   count?: ReactNode;
   /** The side slot is open, so the room (and the replay's row) is narrower. */
   side?: boolean;
+  /**
+   * The Reveal switch: `on` is the X-ray; `onPress` flips it (the replay); `locked` draws it
+   * disabled and unlit (live, before the game ends). Absent: no switch.
+   */
+  reveal?: { on: boolean; onPress?: () => void; locked?: boolean };
 }
 
 export function TopStrip({
@@ -61,16 +70,23 @@ export function TopStrip({
   back,
   count,
   side = false,
+  reveal,
 }: TopStripProps) {
   // no HUD (a preview, like the landing's): no strip, and no buttons that would go nowhere
   if (hud === 'none') return null;
   const g = geometry(hud, side);
   const out = !!back && hud === 'replay';
+  // with the slot closed the room runs under the right's plaques: the row stops short of them
+  // (they grow with the labels), and a count that does not fit wraps under the plaques
+  const reserve = side ? 0 : reveal ? 380 : 220;
   return (
     <>
       <div
         className={styles.left}
-        style={{ left: g.wingN + 22.4, maxWidth: g.room - 2 * 22.4 }}
+        style={{
+          left: g.wingN + 22.4,
+          maxWidth: `calc(${g.room - 2 * 22.4}px - ${reserve}px * var(--legible-ui))`,
+        }}
       >
         {out ? (
           <Link href={back.href} className={styles.back}>
@@ -96,28 +112,77 @@ export function TopStrip({
         </div>
         {out && count ? <div className={styles.count}>{count}</div> : null}
       </div>
-      <div className={styles.modes}>
-        <button
-          type="button"
-          className={`${styles.btn} ${styles.xr}`}
-          aria-pressed={file}
-          disabled={!xray}
-          title={xray ? undefined : 'The file opens with the X-ray on'}
-          onClick={onFile}
-        >
-          {unlocked && !file ? 'File · unlocked' : 'File'}
-        </button>
-        <button
-          type="button"
-          className={`${styles.btn} ${styles.tr}`}
-          aria-pressed={transcript}
-          onClick={onTranscript}
-        >
-          Transcript
-        </button>
+      <div className={styles.dock}>
+        {reveal ? <Reveal {...reveal} /> : null}
+        <div className={styles.modes}>
+          <button
+            type="button"
+            className={`${styles.btn} ${styles.xr}`}
+            aria-pressed={file}
+            disabled={!xray}
+            title={xray ? undefined : 'The file opens with Reveal on'}
+            onClick={onFile}
+          >
+            {unlocked && !file ? 'File · unlocked' : 'File'}
+          </button>
+          <button
+            type="button"
+            className={`${styles.btn} ${styles.tr}`}
+            aria-pressed={transcript}
+            onClick={onTranscript}
+          >
+            Transcript
+          </button>
+        </div>
       </div>
       {out ? null : count}
     </>
+  );
+}
+
+/**
+ * The Reveal switch: a brass escutcheon with a keyhole cut through it, riding a dark slot, and
+ * the word. Off, it sits at the slot's left, the keyhole dark; on, it has slid right and the
+ * keyhole glows verdigris. A switch, not a third tab: its own plaque, and it never reads as a
+ * pane. Without `onPress` it cannot be pressed: locked (live, until the game ends), or on.
+ */
+function Reveal({ on, onPress, locked = false }: NonNullable<TopStripProps['reveal']>) {
+  return (
+    <button
+      type="button"
+      className={styles.reveal}
+      aria-pressed={on}
+      aria-label="Reveal"
+      data-reveal={locked ? 'locked' : on ? 'on' : 'off'}
+      disabled={!onPress}
+      title={
+        locked
+          ? 'Revealed after the game'
+          : !onPress
+            ? 'Revealed: the game is over'
+            : on
+              ? 'Hide the roles and the thinking'
+              : 'Reveal the roles and the thinking'
+      }
+      onClick={onPress}
+    >
+      <span className={styles.slot} aria-hidden="true">
+        <span className={styles.knob}>
+          <svg viewBox="0 0 16 16">
+            <path
+              className={styles.hole}
+              d="M8 3.6a2.3 2.3 0 0 0-1.2 4.3L6 12.4h4l-.8-4.5A2.3 2.3 0 0 0 8 3.6Z"
+            />
+            {/* the light behind the keyhole: faded in, never a colour change */}
+            <path
+              className={styles.lit}
+              d="M8 3.6a2.3 2.3 0 0 0-1.2 4.3L6 12.4h4l-.8-4.5A2.3 2.3 0 0 0 8 3.6Z"
+            />
+          </svg>
+        </span>
+      </span>
+      <span className={styles.word}>{on && !locked ? 'Revealed' : 'Reveal'}</span>
+    </button>
   );
 }
 

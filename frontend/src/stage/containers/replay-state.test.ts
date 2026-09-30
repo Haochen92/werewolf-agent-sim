@@ -83,6 +83,15 @@ describe('the replay reducer', () => {
     expect([off.xray, off.slot]).toEqual([false, 'drawer']);
   });
 
+  it('a seat tapped on the stage brings its file, only with the X-ray', () => {
+    expect(reduce(at(40, { slot: null }), { type: 'show-file' }).slot).toBe(null);
+    const on = reduce(at(40, { slot: 'drawer' }), { type: 'xray' });
+    const shown = reduce(on, { type: 'show-file' });
+    expect([shown.slot, shown.cursor.index]).toEqual(['film', on.cursor.index]);
+    // already up, it stays up (unlike the File tab, which closes it)
+    expect(reduce(shown, { type: 'show-file' }).slot).toBe('film');
+  });
+
   it('plays forward moving, and stops at the end', () => {
     const s = reduce(at(3), { type: 'play' });
     expect(s.playing).toBe(true);

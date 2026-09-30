@@ -8,6 +8,7 @@ import { FIXTURE_EVENTS } from '../workbench/fixture';
 import OLD from './__fixtures__/old-situations.json';
 import {
   asOf,
+  ballotCut,
   fileFocus,
   fileTabs,
   firstSentence,
@@ -19,6 +20,7 @@ import {
   shortForm,
   shownSeat,
   tickOf,
+  when,
   wordDiff,
   type ExtractedLesson,
 } from './case-file';
@@ -285,6 +287,24 @@ describe('one seat’s file', () => {
     ]);
   });
 
+  it('at a vote, holds what the voter voted on: its reads and its consult before the ballots', () => {
+    const { beat, view } = at('vote.chip-counted', (b) => b.day === 2);
+    const cut = ballotCut(view, beat);
+    expect(cut).toBe(view.days[2].vote.ballots[0].seq);
+    const f = seatFile(view, 'player_5', whole, cut);
+    expect(f.reads).toMatchObject({ day: 2, phase: 'day_vote' });
+    expect(f.consult).toMatchObject({ day: 2, phase: 'day_vote' });
+    expect(when(f.consult!.day, f.consult!.phase)).toBe('Day 2 · vote');
+    // the cut holds even when the log runs on past the night's reads and consults
+    const later = at('morning.shutter-down', (b) => b.day === 2).view;
+    const g = seatFile(later, 'player_4', whole, ballotCut(later, beat));
+    expect(g.reads).toMatchObject({ day: 2, phase: 'day_vote' });
+    expect(g.consult).toMatchObject({ day: 2, phase: 'day_vote' });
+    expect(seatFile(later, 'player_4', whole).reads?.phase).toBe('night_action');
+    // no cut away from the vote and the lynch
+    expect(ballotCut(view, { scene: 'day', day: 2 })).toBeNull();
+  });
+
   it('knows on day 1 that memory is on, from the log ahead, and greys Precedents until a consult', () => {
     const { view } = at('day.pass', (b) => b.seq === 15);
     const f = seatFile(view, 'player_1', whole);
@@ -299,7 +319,9 @@ describe('one seat’s file', () => {
     const f = seatFile(view, 'player_2', whole);
     expect(f.findings?.role).toBe('serial_killer');
     expect(f.findings?.observations).toHaveLength(9);
-    expect(f.findings?.observations.every((o) => o.perspective === 'serial_killer')).toBe(true);
+    expect(f.findings?.observations.every((o) => o.perspective === 'serial_killer')).toBe(
+      true,
+    );
     // served games extract no strategy points
     expect(f.findings?.lessons).toEqual([]);
     expect(fileTabs(f).at(-1)).toMatchObject({ id: 'findings', count: 9, enabled: true });

@@ -1,9 +1,11 @@
 /**
  * The replay page on the new stage, against the bundled fixture game served as if the API
  * sent it (the API is not running for these): the first beat, two chapter jumps, the transport
- * band beside the open drawer, and the X-ray's file on a day-3 speech. Then tests that are not
- * pictures: played fast, the cursor runs on at twice the pace; the drawer stays where a reader
- * scrolled it; the band fits a small phone on its side.
+ * band beside the open drawer, the X-ray's file on a day-3 speech (turned on by the strip's
+ * Reveal), the X-ray's night hub and a lit card taking it to that actor's night, a voter's file
+ * opened from the wing at the count, and the strip with Reveal on a small phone. Then tests
+ * that are not pictures: played fast, the cursor runs on at twice the pace; the drawer stays
+ * where a reader scrolled it; the band fits a small phone on its side.
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -54,6 +56,10 @@ async function open(page: Page) {
 
 const theatre = (page: Page) => page.locator('[data-beat-index]');
 const band = (page: Page) => page.locator('[data-transport]');
+const reveal = (page: Page) => page.getByRole('button', { name: 'Reveal', exact: true });
+/** A seat's card on the wing. */
+const card = (page: Page, n: number) =>
+  page.locator(`[data-layer="hud"] button[data-seat="${n}"]`);
 
 /** Click the seek bar where beat `i` sits (the bar is the whole list, one step per beat). */
 async function seek(page: Page, i: number) {
@@ -108,10 +114,12 @@ test('replay: the transport band beside the open drawer', async ({ page }) => {
 test('replay: the X-ray on a day-3 speech, the file in the slot', async ({ page }) => {
   await open(page);
   await seek(page, 48); // seat 8's speech (seq 200), its first page
-  // the File tab is the X-ray's pane: greyed until the band's switch turns the X-ray on
+  // the File tab is the X-ray's pane: greyed until the strip's Reveal turns the X-ray on
   const file = page.getByRole('button', { name: 'File', exact: true });
   await expect(file).toBeDisabled();
-  await band(page).getByRole('button', { name: 'X-ray', exact: true }).click();
+  await expect(reveal(page)).toHaveAttribute('aria-pressed', 'false');
+  await expect(reveal(page)).toHaveText('Reveal');
+  await reveal(page).click();
   await expect(file).toBeEnabled();
   // the switch leaves the pane as it was (the transcript), now with the X-ray's lines
   await expect(page.locator('[data-drawer="full"]')).toBeVisible();
@@ -119,9 +127,114 @@ test('replay: the X-ray on a day-3 speech, the file in the slot', async ({ page 
   await expect(page.locator('[data-film="file"]')).toBeVisible();
   // the X-ray re-cut the beats; the cursor stayed on the same speech
   await expect(theatre(page)).toHaveAttribute('data-beat', 'day.speech');
-  await expect(band(page).getByText('X-ray on')).toBeVisible();
+  await expect(reveal(page)).toHaveAttribute('aria-pressed', 'true');
+  await expect(reveal(page)).toHaveText('Revealed');
+  // the band keeps the transport only: the switch is the strip's
+  await expect(band(page).getByRole('button', { name: /X-ray|Reveal/ })).toHaveCount(0);
   await settle(page);
   await expect(page).toHaveScreenshot('replay-xray-film-d3.png');
+});
+
+test('replay: the night hub, and a lit card goes to that actor’s night', async ({
+  page,
+}) => {
+  await open(page);
+  await reveal(page).click();
+  const next = page.getByRole('button', { name: 'Next chapter' });
+  await next.click();
+  await next.click();
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.hub');
+  await settle(page);
+  await expect(page).toHaveScreenshot('replay-night-hub-reveal.png');
+  // the investigator's card (lit): its first spoke, in its room, its file beside it
+  await expect(card(page, 4)).toHaveAttribute('aria-label', 'Seat 4’s night');
+  await card(page, 4).click();
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.spoke');
+  await expect(page.getByText('In the night · Seat 4')).toBeVisible();
+  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await expect(page.locator('[data-film="file"]')).toHaveAttribute(
+    'data-file-seat',
+    'player_4',
+  );
+  // back at the hub, a seat that does not act opens its own file
+  await page.keyboard.press('[');
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.hub');
+  await card(page, 5).click();
+  await expect(page.locator('[data-film="file"]')).toHaveAttribute(
+    'data-file-seat',
+    'player_5',
+  );
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.hub');
+});
+
+test('replay: at the count, a voter’s card opens what it voted on', async ({ page }) => {
+  test.setTimeout(90_000);
+  await open(page);
+  await reveal(page).click();
+  // on to day 3's vote, then its first chip
+  for (let i = 0; i < 12; i++) {
+    if ((await band(page).textContent())?.includes('Vote 3')) break;
+    await page.keyboard.press(']');
+  }
+  for (let i = 0; i < 12; i++) {
+    if ((await band(page).textContent())?.includes('A chip is counted')) break;
+    await page.keyboard.press('ArrowRight');
+  }
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'vote.chip-counted');
+  // the pane is the transcript (or closed); a tap on seat 8 brings its file
+  await card(page, 8).click();
+  const film = page.locator('[data-film="file"]');
+  await expect(film).toHaveAttribute('data-file-seat', 'player_8');
+  await page.getByRole('tab', { name: /Precedents/ }).click();
+  await expect(film.getByText('Consulted Day 3 · vote')).toBeVisible();
+  await settle(page);
+  await expect(page).toHaveScreenshot('replay-vote-voter-file.png');
+  // the docket's rows open a voter's file too
+  await page.getByRole('tab', { name: 'The docket' }).click();
+  await page.locator('[data-film="vote"] button', { hasText: 'Seat 5' }).click();
+  await expect(film).toHaveAttribute('data-file-seat', 'player_5');
+});
+
+test('replay: the strip fits a small phone with Reveal on', async ({ page }) => {
+  test.setTimeout(90_000);
+  for (const [w, h] of [
+    [667, 375],
+    [568, 320],
+  ]) {
+    await page.setViewportSize({ width: w, height: h });
+    await open(page);
+    await reveal(page).click();
+    // Day 1's vote-less night, then day 2's vote: the ballots drop, with the pill in the row
+    for (let i = 0; i < 12; i++) {
+      if ((await band(page).textContent())?.includes('Vote 2')) break;
+      await page.keyboard.press(']');
+    }
+    await page.keyboard.press('ArrowRight');
+    await expect(theatre(page)).toHaveAttribute('data-beat', 'vote.ballots-drop');
+    for (const file of [false, true]) {
+      if (file) await page.getByRole('button', { name: 'File', exact: true }).click();
+      const dock = (await reveal(page).locator('xpath=..').boundingBox())!;
+      expect(dock.x + dock.width).toBeLessThanOrEqual(w);
+      // the left row's pieces that share the dock's line end before it
+      const left = await page
+        .locator('a[href="/replays"]')
+        .locator('xpath=..')
+        .locator(':scope > *')
+        .evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON()));
+      for (const b of left)
+        if (b.top < dock.y + dock.height && b.bottom > dock.y)
+          expect(b.right).toBeLessThanOrEqual(dock.x);
+      // nothing in the dock is cut short
+      for (const b of await reveal(page).locator('xpath=..').locator('button').all())
+        expect(await b.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+    }
+    if (w === 568) {
+      await settle(page);
+      await expect(page).toHaveScreenshot('replay-strip-reveal-568.png', {
+        clip: { x: 0, y: 0, width: w, height: 60 },
+      });
+    }
+  }
 });
 
 test('replay: played fast, the cursor runs on at twice the pace', async ({ page }) => {
@@ -164,8 +277,8 @@ test('replay: the band fits a small phone on its side', async ({ page }) => {
   const boxes = await band(page)
     .locator(':scope > *')
     .evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON()));
-  // four pieces (the buttons, where we are, the speed, the X-ray), in a row, none past the edge
-  expect(boxes).toHaveLength(4);
+  // three pieces (the buttons, where we are, the speed), in a row, none past the edge
+  expect(boxes).toHaveLength(3);
   for (const b of boxes) {
     expect(b.left).toBeGreaterThanOrEqual(0);
     expect(b.right).toBeLessThanOrEqual(vw);

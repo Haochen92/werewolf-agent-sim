@@ -6,47 +6,47 @@
  * at a time, then all at once.
  *
  * - `rnight.hub`: the lobby, with the wing's lamp lit on every seat that acts tonight. It is
- *   the lobby itself (NightLobbyScene) that draws it.
- * - `rnight.spoke`: one actor's night seen from the house. Its puppet stands at the stand (the
- *   pack as its two wolves side by side, or the lone wolf), its instrument lies on the rail,
- *   and the living hang as chips in a row at the window's height. The marks the earlier
- *   spokes left are already on the row; this spoke's mark lands on its target. The pack's
- *   spoke is told a line at a time in its chat, then the kill decided and the bite landing.
- *   The actor's lamp in the wing goes dark as its spoke ends. The film, when it has the side
- *   slot, holds what the actor weighed from past games and the note it wrote.
- * - `rnight.whole`: nobody at the stand, the row across the room, and every mark on it at
- *   once: the picture the parallel night never shows anyone live.
+ *   the lobby itself (NightLobbyScene) that draws it; a lit card there jumps to that night.
+ * - `rnight.spoke`: one actor's night, told in its own painted room, the one a seated player
+ *   of that role sits in live (NightRoom; owner, 2026-09-29, replacing the actor at the day's
+ *   stand): its card on the table, the seats it may choose hanging on the line as photographs,
+ *   and its choice landing as the live room shows one, the light finding the photo and the pin
+ *   going through it, then the act's mark on the print. The pack's spoke is the wolves' room:
+ *   its chat a line at a time, then the votes and the kill decided, both teeth landing on the
+ *   photo with the pin. The actor's lamp in the wing goes dark as its spoke ends. The case file
+ *   beside it holds the actor's file.
+ * - `rnight.whole`: back in the car, nobody at the stand, the living hung across the room and
+ *   every mark on them at once: the picture the parallel night never shows anyone live.
  *
- * Arrived at, everything is where it ends up. Played, a new actor rises into the stand with
- * its instrument, the pack's newest line fades into the chat, and the mark pops in on its
- * chip while the lamp goes out.
+ * Arrived at, everything is where it ends up. Played, a new actor's room fades in, its photos
+ * one after another, the choice lands and the mark pops in while the lamp goes out; the pack's
+ * newest line fades into the chat, the room around it at rest.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Atmosphere } from '../Atmosphere';
 import { Layer } from '../Stage';
 import { SideSlot } from '../SideSlot';
-import { Puppet } from '../cast/Puppet';
 import { ActMark } from '../instruments/ActMark';
 import { Chip } from '../instruments/Chip';
 import { CountPill } from '../instruments/CountPill';
 import { Notice, NoticeZone } from '../instruments/Notice';
 import { PackChat, type PackEntry } from '../instruments/PackChat';
-import { RailInstrument } from '../instruments/RailInstrument';
 import { Shutter } from '../instruments/Shutter';
-import { Plaque, Stand } from '../instruments/Stand';
+import { Tooth } from '../instruments/Tooth';
 import { TopStrip } from '../instruments/TopStrip';
 import { chipRow, rowX } from '../instruments/flies';
 import { StageMotion, useMotionScale } from '../motion';
+import { roomPlan } from '../paint/compartment';
 import { diningCarPlan } from '../paint/dining-car';
-import type { Special } from '../paint/draw';
-import { ROLE_NAME, factionOf, seatNumber } from '../roles';
-import { bandNarrows, sideOpen, stripButtons } from '../slot';
-import { HUD_CHROME, STAGE_H, STAGE_W, geometry, standBox } from '../units';
+import { ROLE_NAME, seatNumber } from '../roles';
+import { bandNarrows, fileTap, sideOpen, stripButtons } from '../slot';
+import { HUD_CHROME, STAGE_H, STAGE_W, geometry } from '../units';
 import { CarPaint, HouseLights, TableWing } from './DiningCarParts';
 import { NightLobbyScene, nightUnits } from './NightLobbyScene';
+import { NightRoom, ROOM_OF } from './NightRoom';
 import { packEntries } from './PackScene';
-import { standSet } from './game-over';
 import {
+  ACT_MARK,
   actedAt,
   isMarkStep,
   marksAt,
@@ -66,116 +66,211 @@ const VERB: Record<string, string> = {
   serial_killer: 'marks',
   wolf: 'chooses',
 };
-/** When, after the beat starts, the mark lands and the actor's lamp goes out (seconds). */
+/** When, after the beat starts, the choice lands, its mark follows, and the actor's lamp goes out (seconds). */
 const MARK_AT = 0.9;
+const STAMP_AT = 1.4;
 const LAMP_OUT = 1.6;
 
 export function ReplayNightScene(props: SceneProps) {
   if (props.beat.id === 'rnight.hub') return <NightLobbyScene {...props} />;
   return (
     <StageMotion speed={props.presentation.motion}>
-      <NightSpoke
-        key={`${props.beat.id}:${props.beat.seq}:${props.beat.spoke?.step ?? ''}`}
-        {...props}
-      />
+      {props.beat.id === 'rnight.whole' ? (
+        <NightWhole key={`${props.beat.id}:${props.beat.seq}`} {...props} />
+      ) : (
+        <SpokeRoom
+          key={`${props.beat.id}:${props.beat.seq}:${props.beat.spoke?.step ?? ''}`}
+          {...props}
+        />
+      )}
       <SideSlot {...props} />
     </StageMotion>
   );
 }
 
-function NightSpoke({ view, beat, me, presentation, slot: slotInput }: SceneProps) {
-  const { hud, xray, animate, cast } = presentation;
+/** "Seat 4", "The pack", or the lone wolf's "Seat 8": who the spoke is about. */
+function actorWord(cur: NightBranch | undefined): string {
+  if (cur?.actor !== 'pack') return `Seat ${seatNumber(cur?.actor ?? '')}`;
+  return cur.seats.length > 1 ? 'The pack' : `Seat ${seatNumber(cur.seats[0] ?? '')}`;
+}
+
+/** Plays a moment `at` seconds into a beat played forward; already there when arrived at. */
+function useAfter(at: number, animate: boolean): boolean {
   const k = useMotionScale();
+  const [done, setDone] = useState(!animate);
+  useEffect(() => {
+    if (done) return;
+    const t = setTimeout(() => setDone(true), at * k * 1000);
+    return () => clearTimeout(t);
+  }, [done, at, k]);
+  return done;
+}
+
+/**
+ * One actor's spoke, in its own room (NightRoom): the seats it could choose on the line (the
+ * living but itself; for the pack, the living who are not wolves), its card on the table, and
+ * at the mark step the choice: the light and the pin on the target's photo, then the act's
+ * mark (the pack's: both teeth). The pack's line steps are the same room at rest with the next
+ * line arriving in the chat.
+ */
+function SpokeRoom(props: SceneProps) {
+  const { view, beat, presentation } = props;
+  const { hud, animate, cast } = presentation;
+  const side = sideOpen(presentation);
+  const g = geometry(hud, side);
+  const day = beat.day;
+  const night = view.days[day]?.night ?? null;
+  const branches = nightBranchesOf(view, day);
+  const spoke = beat.spoke ?? null;
+  const cur: NightBranch | undefined = spoke ? branches[spoke.rank] : undefined;
+  const markStep = !!spoke && isMarkStep(spoke, cur);
+  const total = nightUnits(view);
+  const acted = actedAt(branches, spoke, total);
+  const pack = cur?.actor === 'pack';
+  const role = cur?.role ?? 'villager';
+  const seats = cur?.seats ?? [];
+  const alive = view.seats.filter((s) => view.alive.includes(s));
+  const wolves = new Set(alive.filter((s) => view.xray.roles[s] === 'wolf'));
+  const photos = pack
+    ? alive.filter((s) => !wolves.has(s))
+    : alive.filter((s) => s !== cur?.actor || s === cur?.target);
+  const target = markStep ? (cur?.target ?? null) : null;
+
+  // played: the room arrives on the spoke's first step only; the choice lands, then its mark
+  const landed = useAfter(MARK_AT, animate);
+  const stamped = useAfter(STAMP_AT, animate);
+  const lampOut = useAfter(LAMP_OUT, animate);
+  const lampOn = (seat: string) =>
+    branches.some(
+      (b, rank) =>
+        b.seats.includes(seat) &&
+        (rank > (spoke?.rank ?? Infinity) ||
+          (rank === spoke?.rank && !(markStep && lampOut))),
+    );
+
+  const plan = roomPlan({ room: ROOM_OF[role] ?? 'healer', hud, side, n: photos.length });
+  const marks: Partial<Record<string, ReactNode>> = {};
+  if (target && pack) {
+    // each wolf's vote a tooth on the photo it chose, the first wolf's on the left, as the live
+    // pack room draws them: two on one photo read as the bite, apart as a split
+    for (const v of night?.wolfVotes ?? []) {
+      const i = seats.indexOf(v.wolf);
+      if (i < 0) continue;
+      marks[v.votee] = (
+        <>
+          {marks[v.votee]}
+          <Tooth
+            key={v.wolf}
+            side={seats.length > 1 && i === 0 ? 'left' : 'right'}
+            land={animate ? MARK_AT : false}
+          />
+        </>
+      );
+    }
+  } else if (target && stamped && ACT_MARK[role]) {
+    // the act's mark on the print, low on its left, clear of the pin (in the photo's mark box)
+    marks[target] = (
+      <span className={styles.stamp}>
+        <ActMark
+          kind={ACT_MARK[role]}
+          x={0}
+          y={0}
+          k={plan.photo.w * 0.3}
+          arrive={animate ? 0 : false}
+        />
+      </span>
+    );
+  }
+  const lit = target && landed ? target : null;
+
+  return (
+    <NightRoom
+      {...props}
+      // the pack's line steps keep the room still: only the chat moves
+      presentation={{ ...presentation, animate: animate && (spoke?.step ?? 0) === 0 }}
+      role={role}
+      alone={pack && seats.length < 2}
+      photos={photos}
+      lit={lit}
+      pin={lit}
+      pinHome
+      marks={marks}
+      pack={pack ? seats : []}
+      cardOpen={false}
+      onCard={() => {}}
+      sub={`${beat.label} · ${actorWord(cur)}`}
+      count={<CountPill hud={hud} label="Acted" n={acted} total={total} side={side} />}
+      wing={{ lit: (s) => seats.includes(s), lamp: lampOn }}
+    >
+      {cur && !pack ? (
+        <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
+          <Notice
+            chip={cast[seatNumber(cur.actor) - 1]}
+            title={actorWord(cur)}
+            aqua={(ROLE_NAME[cur.role] ?? cur.role).toLowerCase()}
+            arrive={animate}
+            delay={0.7}
+          >
+            {VERB[cur.role] ?? 'acts on'} seat {seatNumber(cur.target ?? '')}.
+          </Notice>
+        </NoticeZone>
+      ) : null}
+      {pack && spoke ? (
+        <div
+          className={styles.chatBand}
+          style={{
+            left: g.wingN,
+            bottom: HUD_CHROME.band[hud],
+            right: STAGE_W - g.wingN - g.room,
+          }}
+        >
+          <PackChat
+            entries={chatAt(packEntries(night), spoke.step, markStep)}
+            you=""
+            mate={seats.length > 1 ? seats[1] : null}
+            cast={cast}
+            heading={
+              seats.length > 1
+                ? `The pack · seats ${seats.map(seatNumber).join(' and ')}`
+                : `Seat ${seatNumber(seats[0] ?? '')} hunts alone`
+            }
+            arriving={markStep ? decidedSeq(night) : beat.seq}
+            arrive={animate}
+          />
+        </div>
+      ) : null}
+    </NightRoom>
+  );
+}
+
+/**
+ * The night whole, in the car: nobody at the stand, the living hung across the room, and every
+ * spoke's mark beneath its target at once. With the X-ray on a card opens its seat's file.
+ */
+function NightWhole({ view, beat, me, presentation, slot: slotInput }: SceneProps) {
+  const { hud, xray, cast } = presentation;
   // the room is laid out beside the side slot when it is open (bench 67 drew the film up)
   const side = sideOpen(presentation);
   const g = geometry(hud, side);
   const plan = diningCarPlan({ phase: 'night', hud, side });
-  const whole = beat.id === 'rnight.whole';
-  const row = chipRow(g, plan, whole ? 'low' : 'high');
+  const row = chipRow(g, plan, 'low');
   const day = beat.day;
-  const night = view.days[day]?.night ?? null;
   const branches = nightBranchesOf(view, day);
-  const spoke = whole ? null : (beat.spoke ?? null);
-  const cur: NightBranch | undefined = spoke ? branches[spoke.rank] : undefined;
-  const markStep = !!spoke && isMarkStep(spoke, cur);
-  const marks = marksAt(branches, spoke);
+  const marks = marksAt(branches, null);
   const alive = view.seats.filter((s) => view.alive.includes(s));
   const total = nightUnits(view);
-  const acted = actedAt(branches, spoke, total);
-
-  // the actor's lamp stays lit through its spoke and goes out as the mark lands
-  const [out, setOut] = useState(!animate);
-  useEffect(() => {
-    if (out) return;
-    const t = setTimeout(() => setOut(true), LAMP_OUT * k * 1000);
-    return () => clearTimeout(t);
-  }, [out, k]);
-  const lampOn = (seat: string) =>
-    !whole &&
-    branches.some(
-      (b, rank) =>
-        b.seats.includes(seat) &&
-        (rank > (spoke?.rank ?? Infinity) || (rank === spoke?.rank && !(markStep && out))),
-    );
-
-  // the figures at the stand, and the stand widened for two
-  const seats = cur?.seats ?? [];
-  const instrumentK = 0.14 * g.pwid;
-  // two at the stand (the pack) keep the wolf kit its own place on the rail, clear of both
-  const set = standSet(
-    seats.map((s) => cast[seatNumber(s) - 1]),
-    g,
-    false,
-    instrumentK * 2.6,
-  );
-  const stand = standBox(g);
-  const rising = animate && spoke?.step === 0;
 
   const byChip = new Map<string, RowMark[]>();
   for (const m of marks) byChip.set(m.seat, [...(byChip.get(m.seat) ?? []), m]);
   const chipAt = (seat: string) => rowX(row, alive.indexOf(seat), alive.length);
-  const mk = row.cr * (whole ? 0.6 : 0.55);
-
-  const target = markStep ? (cur?.target ?? null) : null;
-  // the instrument on the rail, with a patch of light on it so it reads in the dark
-  const tool = {
-    x:
-      set.beside === undefined
-        ? g.cx + (stand.w / 2) * set.widen * 0.72
-        : g.cx + set.beside * g.pwid,
-    y: g.railY - instrumentK * 0.5,
-  };
-  const toolLight: Special[] = cur
-    ? [[tool.x, tool.y - instrumentK * 1.4, g.railY, instrumentK * 1.5, 0.8]]
-    : [];
-  const specials: Special[] =
-    target && alive.includes(target)
-      ? [[chipAt(target), 0, row.rowY + row.cr, row.cr * 1.6, 0.9]]
-      : [];
+  const mk = row.cr * 0.6;
   const H = STAGE_H;
-  const pool = whole
-    ? { x: row.x0 + row.span / 2, y: row.rowY - 0.06 * H, rx: row.span * 0.56, ry: 0.3 * H }
-    : {
-        x: g.cx,
-        y: g.railY - g.pwid * 0.9,
-        rx: g.pwid * 0.55 * set.widen,
-        ry: g.pwid * 0.95,
-      };
-
-  const actorWord =
-    cur?.actor === 'pack'
-      ? seats.length > 1
-        ? 'The pack'
-        : `Seat ${seatNumber(seats[0] ?? '')}`
-      : `Seat ${seatNumber(cur?.actor ?? '')}`;
-  const bullets =
-    cur?.role === 'vigilante'
-      ? ((
-          (view.xray.privateResults[cur.actor] ?? [])
-            .filter((p) => p.kind === 'bullets')
-            .at(-1) as { count: number } | undefined
-        )?.count ?? 2)
-      : 0;
+  const pool = {
+    x: row.x0 + row.span / 2,
+    y: row.rowY - 0.06 * H,
+    rx: row.span * 0.56,
+    ry: 0.3 * H,
+  };
 
   return (
     <>
@@ -186,23 +281,6 @@ function NightSpoke({ view, beat, me, presentation, slot: slotInput }: SceneProp
       </Layer>
 
       <Layer name="figures">
-        {seats.map((seat, i) => {
-          const n = seatNumber(seat);
-          return (
-            <Puppet
-              key={seat}
-              g={g}
-              shadow
-              glass
-              character={cast[n - 1]}
-              seat={n}
-              state="base"
-              dx={set.offsets[i] * g.pwid}
-              scale={set.scale}
-              arrive={rising ? 0.2 + i * 0.22 : false}
-            />
-          );
-        })}
         {alive.map((seat, i) => {
           const n = seatNumber(seat);
           return (
@@ -215,35 +293,12 @@ function NightSpoke({ view, beat, me, presentation, slot: slotInput }: SceneProp
               seat={n}
               character={cast[n - 1]}
               you={seat === me}
-              edge={seat === target ? 'lit' : null}
             />
           );
         })}
       </Layer>
 
-      {seats.length ? (
-        <Layer name="stand">
-          <Stand g={g} widen={set.widen}>
-            <Plaque
-              seat={seats.map(seatNumber)}
-              tag={cur?.actor === 'pack' ? 'Wolves' : ROLE_NAME[cur?.role ?? '']}
-              tone={factionOf(cur?.role) ?? undefined}
-            />
-          </Stand>
-        </Layer>
-      ) : null}
-
       <Layer name="instruments">
-        {cur ? (
-          <RailInstrument
-            role={cur.role}
-            x={tool.x}
-            y={tool.y}
-            k={instrumentK}
-            bullets={bullets}
-            arrive={rising ? 0.6 : false}
-          />
-        ) : null}
         {[...byChip].flatMap(([seat, list]) => {
           const x = chipAt(seat);
           if (!alive.includes(seat)) return [];
@@ -255,22 +310,13 @@ function NightSpoke({ view, beat, me, presentation, slot: slotInput }: SceneProp
               x={x + ((i % 2) - (cols - 1) / 2) * mk * 2.3}
               y={row.rowY + row.cr + mk * 1.2 + Math.floor(i / 2) * mk * 2.4}
               k={mk}
-              arrive={m.landing && animate ? MARK_AT : false}
             />
           ));
         })}
       </Layer>
 
       <Layer name="light">
-        <HouseLights
-          phase="night"
-          hud={hud}
-          pool={pool}
-          specials={specials}
-          quiet={toolLight}
-          dark={whole ? 46 : 42}
-          side={side}
-        />
+        <HouseLights phase="night" hud={hud} pool={pool} dark={46} side={side} />
       </Layer>
 
       <Layer name="hud">
@@ -283,51 +329,18 @@ function NightSpoke({ view, beat, me, presentation, slot: slotInput }: SceneProp
           notes={notebookGame(presentation, me)}
           opts={{
             truth: (s) => (xray ? (view.xray.roles[s] ?? null) : null),
-            lit: (s) => seats.includes(s),
-            lamp: lampOn,
+            // nobody speaks here: a card opens its seat's file
+            file: fileTap(presentation, slotInput, true),
           }}
         />
         <TopStrip
           hud={hud}
           title={`Night ${day}`}
-          sub={whole ? beat.label : `${beat.label} · ${actorWord}`}
+          sub={beat.label}
           {...stripButtons(presentation, slotInput)}
           side={side}
-          count={<CountPill hud={hud} label="Acted" n={acted} total={total} side={side} />}
+          count={<CountPill hud={hud} label="Acted" n={total} total={total} side={side} />}
         />
-        {cur && cur.actor !== 'pack' ? (
-          <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
-            <Notice
-              chip={cast[seatNumber(cur.actor) - 1]}
-              title={actorWord}
-              aqua={(ROLE_NAME[cur.role] ?? cur.role).toLowerCase()}
-              arrive={animate}
-              delay={0.7}
-            >
-              {VERB[cur.role] ?? 'acts on'} seat {seatNumber(cur.target ?? '')}.
-            </Notice>
-          </NoticeZone>
-        ) : null}
-        {cur?.actor === 'pack' && spoke ? (
-          <div
-            className={styles.chatBand}
-            style={{ bottom: HUD_CHROME.band[hud], right: STAGE_W - g.wingN - g.room }}
-          >
-            <PackChat
-              entries={chatAt(packEntries(night), spoke.step, markStep)}
-              you=""
-              mate={seats.length > 1 ? seats[1] : null}
-              cast={cast}
-              heading={
-                seats.length > 1
-                  ? `The pack · seats ${seats.map(seatNumber).join(' and ')}`
-                  : `Seat ${seatNumber(seats[0] ?? '')} hunts alone`
-              }
-              arriving={markStep ? decidedSeq(night) : beat.seq}
-              arrive={animate}
-            />
-          </div>
-        ) : null}
       </Layer>
     </>
   );

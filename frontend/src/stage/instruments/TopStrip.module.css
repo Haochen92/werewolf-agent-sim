@@ -3,7 +3,8 @@
    brass edge with a dark reveal, the words in lamp-glow cream (owner, 2026-09-29). */
 .phase,
 .modes,
-.back {
+.back,
+.reveal {
   background: linear-gradient(180deg, var(--walnut-top), var(--walnut-bot));
   border: 1.5px solid var(--hud-brass);
   box-shadow:
@@ -81,13 +82,20 @@
   color: #d9dcef;
 }
 
-/* the mode tabs: one plaque, two tabs split by a brass rule */
-.modes {
+/* the strip's right: the Reveal switch, then the tabs (Transcript the far right) */
+.dock {
   position: absolute;
   /* over the side slot's head (the drawer runs up under the strip), under the epilogue's sheet */
   z-index: 4;
   right: 12.8px;
   top: 14.4px;
+  display: flex;
+  align-items: stretch;
+  gap: calc(8px * var(--legible-ui));
+}
+
+/* the mode tabs: one plaque, two tabs split by a brass rule */
+.modes {
   display: flex;
   padding: calc(3.2px * var(--legible-ui));
   border-radius: 8px;
@@ -171,4 +179,113 @@
 .back:focus-visible {
   outline: 2px solid var(--hud-brass-hi);
   outline-offset: 2px;
+}
+
+/* The Reveal switch (owner, 2026-09-29): its own plaque, a brass keyhole riding a dark slot.
+   Only the knob's transform and the keyhole's light (opacity) move. */
+.reveal {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: calc(8px * var(--legible-ui));
+  padding: 0 calc(12.8px * var(--legible-ui)) 0 calc(8px * var(--legible-ui));
+  border-radius: 8px;
+  font: inherit;
+  font-family: var(--font-display);
+  font-size: calc(var(--meta) * 1.08);
+  line-height: 1.4;
+  color: var(--cream2);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.slot {
+  position: relative;
+  flex: 0 0 auto;
+  width: calc(40px * var(--legible-ui));
+  height: calc(22px * var(--legible-ui));
+  border-radius: 999px;
+  background: rgba(10, 6, 3, 0.85);
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.8),
+    0 0 0 1px rgba(201, 164, 92, 0.35);
+}
+/* the escutcheon: a brass disc with the keyhole cut through it */
+.knob {
+  position: absolute;
+  left: 1px;
+  top: 50%;
+  width: calc(22px * var(--legible-ui) - 2px);
+  aspect-ratio: 1;
+  margin-top: calc(-11px * var(--legible-ui) + 1px);
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #f0d796, var(--hud-brass) 55%, #7c5a26);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.6),
+    inset 0 0 0 1px rgba(60, 38, 12, 0.6);
+  transition: transform 0.25s ease;
+}
+/* the keyhole's glow, faded in with the light */
+.knob::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  box-shadow: 0 0 8px 2px rgba(134, 176, 160, 0.5);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.reveal[aria-pressed='true'] .knob::after {
+  opacity: 1;
+}
+.knob svg {
+  position: absolute;
+  inset: 12%;
+  width: 76%;
+  height: 76%;
+}
+.hole {
+  fill: #1b120a;
+}
+.lit {
+  fill: var(--xray-hi);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+/* on: the knob at the slot's right, the keyhole lit, the word in the X-ray's verdigris */
+.reveal[aria-pressed='true'] {
+  color: var(--xray-text);
+}
+.reveal[aria-pressed='true'] .knob {
+  transform: translateX(calc(18px * var(--legible-ui)));
+}
+.reveal[aria-pressed='true'] .lit {
+  opacity: 1;
+}
+.reveal[aria-pressed='true'] .slot {
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.8),
+    0 0 0 1px var(--xray);
+}
+.reveal:not(:disabled):hover {
+  color: var(--cream);
+}
+.reveal[aria-pressed='true']:not(:disabled):hover {
+  color: var(--xray-hi);
+}
+.reveal:focus-visible {
+  outline: 2px solid var(--hud-brass-hi);
+  outline-offset: 2px;
+}
+/* live, before the game ends: locked, the keyhole dark, the word faded */
+.reveal[data-reveal='locked'] {
+  cursor: default;
+  color: var(--bone3);
+}
+.reveal[data-reveal='locked'] .slot,
+.reveal[data-reveal='locked'] .knob {
+  opacity: 0.55;
+}
+/* live, after it: on for good, nothing to press */
+.reveal:disabled:not([data-reveal='locked']) {
+  cursor: default;
 }

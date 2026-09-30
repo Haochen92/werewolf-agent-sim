@@ -34,7 +34,8 @@ rule of §12. The replay plays the P beats with X-ray off and P+X (plus every S 
 verdigris) with X-ray on; toggling X-ray re-cuts the beat list, so the seek bar re-marks.
 
 **The right slot** holds one thing at a time, the drawer or the case file; the two buttons switch;
-the X-ray state stays either way. Turning X-ray on resets the drawer's Show › X-ray filter to on.
+the X-ray state stays either way. The viewer knows the X-ray as **Reveal** (owner, 2026-09-29): the
+strip's switch, "Reveal" / "Revealed"; the code and these notes keep "X-ray". Turning X-ray on resets the drawer's Show › X-ray filter to on.
 
 **Seats** are `player_1..player_9`, shown as the numeral 1–9. The cast (character per seat) is
 `castForGame(gameId)`.
@@ -233,7 +234,9 @@ by the staging.
 | 2 | `night.act-in` | live only: each `phase_progress` (stage `night`) | P | the pill increments | — | real time |
 | 3 | `night.your-act-in` | my POST confirmed (my room closes) | S | back in the lobby with "Your act is in"; my own mark the only one I see | D: dashed "Only you" line naming my act | 2.0 |
 
-X-ray on (replay): the hub also lights the wing's lamps on every seat that acts tonight (§9).
+X-ray on (replay): the hub also lights the wing's lamps on every seat that acts tonight (§9), and a
+tap on a lit card seeks to that actor's first spoke (a wolf's: the pack's); any other card opens
+that seat's file. The play still runs the spokes in order.
 
 As built 2026-09-25: N in "Acted n of N" = living seats with a night role by the public census
 plus one for the pack (5, 5, 4, 3 in the fixture); a vigilante out of caps is not counted. A seated
@@ -393,11 +396,23 @@ lands on the hub.
 
 | # | Beat | Anchor | Stage | Slot | Hold |
 |---|---|---|---|---|---|
-| 1 | `rnight.hub` | `phase_change: night` | the hub with the wing's lamps lit on every seat that acts tonight | D: the night's lines | 3.0 |
-| 2 | `rnight.spoke` (one per actor's branch, branches ordered by their **last** event; a step per pack line and one for the mark. The pack closes nights 1–2 of the fixture; on nights 3–4 the lone wolf votes before the killer and the vigilante act, so the rule is the order, not the pack) | the branch's events: `memory_consulted` · `player_reads` · `night_action`, or for the pack `wolf_message`… `wolf_vote` · `wolf_kill_decided` | a third-person view in the dining car: the actor's figure at the stand, the instrument on the rail, the mark landing on the row; the pack as two figures side by side (one for the lone wolf), its talk in the chat, both teeth landing together; the lamp goes dark as the spoke ends | F: the actor's file (the pack's spoke: either wolf's, flipped from the cover) | per event: a mark 2.0, a message speech |
+| 1 | `rnight.hub` | `phase_change: night` | the hub with the wing's lamps lit on every seat that acts tonight; a lit card seeks to that actor's first spoke, any other opens its file | D: the night's lines | 3.0 |
+| 2 | `rnight.spoke` (one per actor's branch, branches ordered by their **last** event; a step per pack line and one for the mark. The pack closes nights 1–2 of the fixture; on nights 3–4 the lone wolf votes before the killer and the vigilante act, so the rule is the order, not the pack) | the branch's events: `memory_consulted` · `player_reads` · `night_action`, or for the pack `wolf_message`… `wolf_vote` · `wolf_kill_decided` | the actor's own painted night room (the one live play seats that role in): its card on the table, the seats it could choose as photographs on the line, the choice landing as live shows one (the light and the pin on the target's photo), then the act's mark on the print; the pack's room for the pack, its talk in the chat a line at a time, then the votes and the kill decided, both teeth landing with the pin; the lamp goes dark as the spoke ends | F: the actor's file (the pack's spoke: either wolf's, flipped from the cover) | per event: a mark 2.0, a message speech |
 | 3 | `rnight.whole` | after the last spoke | every mark on the row at once: the picture the parallel night never shows anyone live | — | 3.0 |
 
 Then §8.
+
+**Ruled 2026-09-29: the spokes are told in the actor's room** (`ReplayNightScene` mounts `NightRoom`
+with the actor's role; it replaces the car-and-stand spoke described below, whose stand, figures,
+rail instrument and window-height row are gone; the hub and the whole stay in the car). The photos:
+the living but the actor (the pack: the living who are not wolves), in seat order. At a solo
+spoke's one step the light finds the target's photo and the pin goes through it at 0.9 s, the act's
+`ActMark` pops on the print's lower left at 1.4 s, the box ("Seat 4 · investigator · checks seat
+1.") at the foot as before. The pack's line steps are the same room at rest, only the newest line
+arriving; its mark step lands each wolf's tooth on the photo it voted for and the pin in the kill,
+at 0.9 s; the chat keeps to the room (from past the wing to the slot's edge). The card on the table
+is the actor's, not the viewer's, so it has no "tap to read". Arrived at, all of it is simply there.
+The wing lights the actor and keeps the lamps; the strip and the pill are as below.
 
 As built 2026-09-25 (bench 67 where it gives them; the rest no bench gives, change here first):
 top strip "Night N · In the night · Seat 4" ("· The pack", "· Seat 8" for the lone wolf) and "Night
@@ -515,10 +530,23 @@ exists only with the X-ray on, so `film` without it reads as closed); `src/stage
 the rules. **Ruled 2026-09-29, replacing bench 74's X-ray tab:** the strip's two tabs are
 **File | Transcript** and only choose the pane: each brings its pane, or closes it if it is there;
 File (the case file, below; the film until 2026-09-29) is greyed without the X-ray. The
-X-ray is one switch, the band's "X-ray on/off" button: it re-cuts the beats, adds the drawer's
-X-ray lines and enables File; off with the file up, the pane falls back to the transcript. Each tab
-reads pressed while its pane is open. Live: the game's end is the switch, and File reads "File ·
-unlocked" until opened. The workbench writes the slot to its URL (`slot=drawer|film|none`, default none; `viewer=xray`,
+X-ray is one switch, **Reveal**, on the strip just left of the tabs (ruled 2026-09-29; it was the
+band's "X-ray on/off" button): its own small walnut plaque, a brass escutcheon with a keyhole riding
+a dark slot, "Reveal" at the slot's left, "Revealed" slid right with the keyhole lit in verdigris
+(`aria-pressed`, named "Reveal"; only the knob's transform and the light's opacity move). It re-cuts
+the beats, adds the drawer's revealed lines and enables File; off with the file up, the pane falls
+back to the transcript. Each tab reads pressed while its pane is open. Live: the switch is drawn
+locked (disabled, keyhole dark, "Revealed after the game") until `game_over`, then on for good
+(the game's end is the switch), and File reads "File · unlocked" until opened. With the slot
+closed the strip's left row stops short of the switch and the tabs, so a count pill wraps under
+the plaques rather than run under them (checked at 667×375 and 568×320). **A seat tapped for its
+file (2026-09-29):** with the X-ray on, at a beat with no speaker (the vote and the count, the
+lynch, the morning, the night hub and whole), every wing card is a button, a thin steady verdigris
+edge brighter under the pointer, that opens that seat's file in the pane at the playhead (the pane
+switches to File from the transcript or closed); the pick holds like the chooser's. At a vote or
+the lynch the file is what the voter voted on: its reads and its consult as they stood at the day's
+first ballot (`ballotCut`), so Precedents reads "Consulted Day N · vote". The docket's vote rows and
+night rows open a file too. A turn's wing keeps its read cards. The workbench writes the slot to its URL (`slot=drawer|film|none`, default none; `viewer=xray`,
 landing on the same moment of the log in the re-cut beat list). While either is open every scene
 lays its room out with `geometry(hud, true)`; the night rooms slide their painting left so its
 window and its photo line stay in the narrower room. The replay's night and the ending now follow the slot, not the X-ray (this settles
@@ -667,8 +695,8 @@ beat's label from `transportLabel` ("Day 3 · Speaks") over the seek bar (the "3
 went 2026-09-29); the bar is bench 73's (6.4 tall, cloak, amber to the beat) with a tick per chapter (3.2 × 12.8,
 bone3, bone once passed, its name on hover), beat i at i/(n−1) of the width; a click seeks to the
 nearest beat, still. Speed: one toggle that says what it plays at, "Normal", or "Fast" in bone
-(2026-09-29; it was "Normal · Fast · Skip"). The X-ray: the one switch, a button, "X-ray on" in
-the X-ray's verdigris (the film's aqua until 2026-09-29) or "X-ray off" (2026-09-29; it used to only say it). Beside a full-height drawer the band ends 12.8
+(2026-09-29; it was "Normal · Fast · Skip"). The X-ray's switch left the band for the strip on
+2026-09-29 (Reveal, above); the band keeps the transport only. Beside a full-height drawer the band ends 12.8
 short of it; otherwise (the film, a prompt, the epilogue) 22.4 from the right edge. **Playing:** a
 timer on `holdFor`; a beat that waits (the epilogue, the curtain) and the last beat stop the play;
 play at the end starts from the first beat, play on a waiting beat steps on at once; stepping or

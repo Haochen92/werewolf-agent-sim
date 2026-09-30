@@ -138,10 +138,23 @@ export function Workbench({ scene }: { scene: string }) {
       replayHref: q.live ? `/replays/${FIXTURE_GAME_ID}` : undefined,
       ahead: frame.ahead,
       onTranscript: () => go({ slot: pressTranscript(now).slot ?? 'none' }),
-      // the X-ray itself is the viewer control above (the replay's is its band's switch)
       onFile: () => go({ slot: pressFile(now).slot ?? 'none' }),
+      onOpenFile: (seat) => {
+        setFileSeat({ seat, key: null });
+        go({ slot: 'film' });
+      },
+      // the strip's Reveal as its containers draw it: the replay's switch writes the viewer
+      // (as the viewer control above does); a live cut's is locked until the game is over
+      ...(q.live
+        ? { revealLocked: !now.xray }
+        : q.hud === 'replay'
+          ? {
+              onReveal: () =>
+                go({ viewer: now.xray ? { kind: 'spect' } : { kind: 'xray' }, beat: 0 }),
+            }
+          : {}),
     };
-  }, [frame, drawer, filmTab, fileSeat, go, q.live]);
+  }, [frame, drawer, filmTab, fileSeat, go, q.live, q.hud]);
 
   // the arrow keys step beats, unless a control has the focus
   useEffect(() => {
@@ -195,6 +208,11 @@ export function Workbench({ scene }: { scene: string }) {
         turn={frame.turn}
         room={frame.room}
         slot={slotInput}
+        onSeek={(find) => {
+          const i = frame.beats.findIndex(find);
+          if (i >= 0) go({ beat: i });
+          return i >= 0;
+        }}
         onAct={logAct}
         onSay={logSay}
         onNext={

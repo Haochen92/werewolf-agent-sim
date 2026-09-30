@@ -15,6 +15,8 @@
  * same photo gone grey with its role on an ink band (deaths reveal the role on the wire, so
  * everyone may see it) and a black mourning ribbon across the photo's corner; your own seat wears an amber "You" band; with the X-ray on, a living
  * seat wears its faction's band and a sigil badge, the truth only the observer tier holds.
+ * With the X-ray on at a beat where nobody speaks, a card opens that seat's case file, and says
+ * so with a thin steady verdigris edge (no breathing: nine cards pulsing would be noise).
  * Lit and dimmed are light only, never a move or a resize. A card that opens the speaker's read
  * breathes a slow glow while it can be tapped, and flashes once when that read is new or changed
  * since the speaker's previous reads (opacity only, still for reduced motion).
@@ -76,6 +78,12 @@ export interface WingTileProps {
     onRead?: (tile: HTMLElement) => void;
     fresh?: string | null;
   };
+  /**
+   * With the X-ray on, at a beat with no speaker: a tap opens this seat's case file (at the
+   * night hub, an actor's card jumps to its night instead). A thin steady verdigris edge says
+   * so; `label` names what the tap does.
+   */
+  file?: { onTap: () => void; label: string };
 }
 
 export function Wing({
@@ -107,7 +115,8 @@ export function Wing({
   const bySeat = new Map(tiles.map((t) => [t.seat, t]));
   // the suspect is a living seat's mark: once that seat dies, the slot is empty again
   const suspect = book?.suspect && !bySeat.get(book.suspect)?.dead ? book.suspect : null;
-  const editable = (t: WingTileProps) => !!book && !!t.character && !t.you && !t.read;
+  const editable = (t: WingTileProps) =>
+    !!book && !!t.character && !t.you && !t.read && !t.file;
   const open = (seat: number, el: HTMLElement) => {
     opener.current = el;
     book?.dismissHint();
@@ -188,6 +197,7 @@ function WingTile({
   pack,
   lamp,
   read,
+  file,
   note,
   suspect,
   onOpen,
@@ -207,11 +217,16 @@ function WingTile({
     read ? styles.read : '',
     read?.sure ? styles.sure : '',
     read?.open ? styles.open : '',
+    file && !read ? styles.file : '',
   ]
     .filter(Boolean)
     .join(' ');
-  const tap = read?.onRead ?? onOpen;
-  const label = read?.onRead ? `The speaker's read of seat ${seat}` : `Seat ${seat}, notes`;
+  const tap = read?.onRead ?? (file ? () => file.onTap() : onOpen);
+  const label = read?.onRead
+    ? `The speaker's read of seat ${seat}`
+    : file
+      ? file.label
+      : `Seat ${seat}, notes`;
   const face = (
     <>
       <span className={styles.picture}>
@@ -261,7 +276,7 @@ function WingTile({
       data-seat={seat}
       aria-label={label}
       aria-expanded={read?.onRead ? !!read.open : undefined}
-      aria-haspopup={read?.onRead ? undefined : 'dialog'}
+      aria-haspopup={read?.onRead || file ? undefined : 'dialog'}
       onClick={(e) => tap(e.currentTarget)}
     >
       {face}

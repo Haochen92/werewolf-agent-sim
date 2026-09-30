@@ -32,7 +32,7 @@ import { StageMotion, useMotionScale } from '../motion';
 import type { Special } from '../paint/draw';
 import { ROLE_ARTICLE } from '../paint/role-kit';
 import { ROLE_NAME, factionOf, seatNumber } from '../roles';
-import { bandNarrows, sideOpen, stripButtons } from '../slot';
+import { bandNarrows, fileTap, sideOpen, stripButtons } from '../slot';
 import { STAGE_W, geometry, type StageGeometry } from '../units';
 import { CarPaint, HouseLights, TableWing } from './DiningCarParts';
 import { notebookGame } from '../notebook';
@@ -287,6 +287,8 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput }: SceneProps
             untold,
             lit: (s) => s === seat,
             truth: (s) => (xray ? (view.xray.roles[s] ?? null) : null),
+            // nobody speaks here: a card opens its seat's file
+            file: fileTap(presentation, slotInput, true),
           }}
         />
         <TopStrip

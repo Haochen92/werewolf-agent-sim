@@ -68,7 +68,7 @@ import styles from './Drawer.module.css';
 const TIER_NAME: Record<LineTier, string> = {
   public: 'Public',
   private: 'Private',
-  xray: 'X-ray',
+  xray: 'Revealed',
 };
 
 export interface DrawerProps {
@@ -231,7 +231,7 @@ export function Drawer({
           Transcript
           <small>
             {xray
-              ? 'with the X-ray’s lines'
+              ? 'with the revealed lines'
               : me
                 ? 'and your own lines'
                 : 'the public record'}

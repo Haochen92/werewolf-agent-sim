@@ -187,11 +187,17 @@ for (const [name, path, ready] of TRAP) {
 
 /**
  * The last two scenes at rest, in the replay's frame (the top drape) where the bench drew them
- * so: the X-ray night's pack spoke on night 2 at its second line (the chat, the marks of the
- * three spokes before it) and the night whole, both with the film in the side slot as bench 67
- * drew them; and the ending's verdict, the winner at the stand and the epilogue's sheet.
+ * so: the X-ray night's spokes in the actor's own room (owner, 2026-09-29), the investigator's
+ * check on night 1 (the pin through seat 1's photo, the lens on it) and the pack's room on night
+ * 2 at its second line (the chat), and the night whole, all with the file in the side slot; and
+ * the ending's verdict, the winner at the stand and the epilogue's sheet.
  */
 const ENDING: [name: string, path: string, ready: string][] = [
+  [
+    'rnight-spoke-solo-d1',
+    'rnight?beat=1&viewer=xray&hud=replay&slot=film',
+    '[role="img"][aria-label="lens"]',
+  ],
   [
     'rnight-spoke-pack-d2-line2',
     'rnight?beat=15&viewer=xray&hud=replay&slot=film',

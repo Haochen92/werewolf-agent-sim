@@ -39,7 +39,7 @@ import { diningCarPlan } from '../paint/dining-car';
 import type { Special } from '../paint/draw';
 import { ROLE_ARTICLE } from '../paint/role-kit';
 import { seatNumber } from '../roles';
-import { bandNarrows, sideOpen, stripButtons } from '../slot';
+import { bandNarrows, fileTap, sideOpen, stripButtons } from '../slot';
 import { STAGE_H, geometry } from '../units';
 import { CarPaint, HouseLights, StandReturns, TableWing } from './DiningCarParts';
 import { notebookGame } from '../notebook';
@@ -405,6 +405,8 @@ function MorningBeat({ view, beat, me, presentation, slot: slotInput }: ScenePro
           opts={{
             untold,
             truth: (seat) => (xray ? (view.xray.roles[seat] ?? null) : null),
+            // nobody speaks here: a card opens its seat's file
+            file: fileTap(presentation, slotInput, true),
           }}
         />
         <TopStrip

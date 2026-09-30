@@ -10,3 +10,19 @@
 .chatBand > * {
   pointer-events: auto;
 }
+/* in the pack's room the chat keeps to the room: from past the wing to the slot's edge, where
+   its full 832 would run over the wing beside an open slot */
+.chatBand > [data-chat='pack'] {
+  left: 22.4px;
+  width: auto;
+  max-width: 832px;
+  margin-left: auto;
+}
+
+/* the act's mark on the chosen print, in the photo's mark box (NightRoom `.bite`: 150% of the
+   print, from -25% across and 12% down): low on the print's left, clear of the pin */
+.stamp {
+  position: absolute;
+  left: 36%;
+  top: 48%;
+}

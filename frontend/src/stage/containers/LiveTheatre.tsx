@@ -385,6 +385,12 @@ export function LiveTheatre({
       ahead,
       onTranscript: () => dispatch({ type: 'transcript' }),
       onFile: () => dispatch({ type: 'file', xray }),
+      onOpenFile: (seat) => {
+        setFileSeat({ seat, key: null });
+        dispatch({ type: 'show-file', xray });
+      },
+      // Reveal is locked until the game ends, then on for good
+      revealLocked: !xray,
     }),
     [
       drawer.filters,

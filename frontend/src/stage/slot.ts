@@ -63,8 +63,12 @@ export function bandNarrows(
   return slotOf(p) === 'drawer' && !atRail(beat);
 }
 
-/** The top strip's two tabs for a scene: pressed states from the presentation, presses to the container (and the replay's way back). */
+/** The top strip's two tabs and its Reveal switch for a scene: pressed states from the presentation, presses to the container (and the replay's way back). */
 export function stripButtons(p: Pick<Presentation, 'slot' | 'xray'>, slot?: SlotInput) {
+  const reveal =
+    slot?.onReveal || slot?.revealLocked !== undefined
+      ? { on: p.xray, onPress: slot.onReveal, locked: !!slot.revealLocked }
+      : undefined;
   return {
     xray: p.xray,
     file: slotOf(p) === 'film',
@@ -72,7 +76,22 @@ export function stripButtons(p: Pick<Presentation, 'slot' | 'xray'>, slot?: Slot
     onFile: slot?.onFile,
     onTranscript: slot?.onTranscript,
     back: slot?.back,
+    reveal,
   };
+}
+
+/**
+ * A seat tap that opens its case file, where one belongs (owner, 2026-09-29): with the X-ray
+ * on, at a beat with no speaker (a vote, the count, the lynch, the morning, the night hub and
+ * whole), when the container can open the file. Null elsewhere: a turn's wing opens read cards.
+ */
+export function fileTap(
+  p: Pick<Presentation, 'xray'>,
+  slot: SlotInput | undefined,
+  noSpeaker: boolean,
+): ((seat: string) => void) | null {
+  if (!p.xray || !noSpeaker || !slot?.onOpenFile) return null;
+  return slot.onOpenFile;
 }
 
 /**
@@ -80,7 +99,7 @@ export function stripButtons(p: Pick<Presentation, 'slot' | 'xray'>, slot?: Slot
  * result to its URL). The strip's two tabs, File and Transcript, only choose what the slot
  * shows: each brings its pane, or closes it if it is there. File needs the X-ray (the film is
  * the X-ray's), so without it the tab is greyed and does nothing. The X-ray itself is one switch
- * (the replay's band): off takes the film with it, and the slot falls back to the transcript
+ * (the strip's Reveal, left of the tabs): off takes the film with it, and the slot falls back to the transcript
  * (owner, 2026-09-29, replacing bench 74's X-ray tab that also brought the film).
  */
 export function pressTranscript(
@@ -101,4 +120,11 @@ export function pressXray(
 ): Pick<Presentation, 'slot' | 'xray'> {
   if (!p.xray) return { xray: true, slot: p.slot };
   return { xray: false, slot: p.slot === 'film' ? 'drawer' : p.slot };
+}
+
+/** A seat's file opened from the stage: the pane shows File (only with the X-ray on). */
+export function showFile(
+  p: Pick<Presentation, 'slot' | 'xray'>,
+): Pick<Presentation, 'slot' | 'xray'> {
+  return p.xray ? { xray: true, slot: 'film' } : { xray: false, slot: p.slot };
 }

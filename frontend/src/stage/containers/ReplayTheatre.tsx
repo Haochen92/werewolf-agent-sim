@@ -18,8 +18,8 @@
  * `mini` makes it a preview (the landing's carriage): the same stage and the same reducer,
  * playing one window of the cut round and round (`loop` in replay-state.ts), with no keys (the
  * page around it keeps its arrows and space). Its controls are the caller's choice: none; the
- * replay's own on the stage (the strip's File and Transcript, the side slot, the band over the
- * window with the X-ray's switch); or, where the stage is too small to read (an upright
+ * replay's own on the stage (the strip's Reveal, File and Transcript, the side slot, the band
+ * over the window); or, where the stage is too small to read (an upright
  * phone), none on the stage and the state handed to `under`, which the caller draws below it.
  * The frame is the caller's.
  */
@@ -204,6 +204,13 @@ export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps
       ahead,
       onTranscript: () => dispatch({ type: 'transcript' }),
       onFile: () => dispatch({ type: 'file' }),
+      // a seat tapped where no one speaks: its file, at this beat, the pick held as the
+      // chooser's would be until a beat brings another seat into focus
+      onOpenFile: (seat) => {
+        setFileSeat({ seat, key: null });
+        dispatch({ type: 'show-file' });
+      },
+      onReveal: onXray,
       // a preview's way to the whole game is the caller's
       back: isMini ? undefined : back,
     }),
@@ -214,9 +221,20 @@ export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps
       filmTab,
       fileSeat,
       ahead,
+      onXray,
       isMini,
       back,
     ],
+  );
+  // the night hub's lamps: a seek to the first beat that answers
+  const onSeek = useCallback(
+    (find: (b: SceneBeat) => boolean) => {
+      const i = beats.findIndex(find);
+      if (i < 0) return false;
+      dispatch({ type: 'seek', index: i });
+      return true;
+    },
+    [beats],
   );
 
   // playing: the beat's hold, paused while the speech is held
@@ -314,6 +332,7 @@ export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps
               me={ME}
               presentation={presentation}
               slot={slotInput}
+              onSeek={controls === 'stage' ? onSeek : undefined}
               // a tap on the speech box turns the page (a preview's box is only read)
               onNext={
                 controls === 'stage' ? () => dispatch({ type: 'step', dir: 1 }) : undefined
@@ -328,7 +347,6 @@ export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps
             index={index - from}
             playing={state.playing}
             speed={state.speed}
-            xray={state.xray}
             label={transportLabel(beats, index)}
             besideDrawer={besideDrawer}
             onChapter={(dir) => dispatch({ type: 'chapter', dir })}
@@ -336,7 +354,6 @@ export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps
             onTogglePlay={togglePlay}
             onSeek={(i) => dispatch({ type: 'seek', index: from + i })}
             onSpeed={(speed) => dispatch({ type: 'speed', speed })}
-            onXray={onXray}
           />
         ) : null}
       </Stage>

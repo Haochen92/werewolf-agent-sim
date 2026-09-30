@@ -43,7 +43,7 @@ import { motion } from 'motion/react';
 import { StageMotion, useMotionScale } from '../motion';
 import type { Special } from '../paint/draw';
 import { seatNumber, seatify } from '../roles';
-import { bandNarrows, sideOpen, stripButtons } from '../slot';
+import { bandNarrows, fileTap, sideOpen, stripButtons } from '../slot';
 import { STAGE_H, STAGE_W, geometry } from '../units';
 import { CarPaint, HouseLights, TableWing } from './DiningCarParts';
 import { notebookGame } from '../notebook';
@@ -328,6 +328,8 @@ function VoteBeat({
             untold,
             lit: (seat) => seat === litSeat,
             truth: (seat) => (xray ? (view.xray.roles[seat] ?? null) : null),
+            // nobody speaks here: a card opens its seat's file
+            file: fileTap(presentation, slotInput, true),
           }}
         />
         <TopStrip

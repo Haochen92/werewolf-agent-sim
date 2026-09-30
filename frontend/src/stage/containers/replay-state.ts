@@ -14,7 +14,7 @@
  */
 import type { SceneBeat } from '@/stage/beats/types';
 import type { MotionSpeed, Presentation } from '@/stage/scenes/types';
-import { pressFile, pressTranscript, pressXray } from '@/stage/slot';
+import { pressFile, pressTranscript, pressXray, showFile } from '@/stage/slot';
 import {
   carryAcross,
   holdFor,
@@ -51,7 +51,9 @@ export type ReplayAction =
   | { type: 'speed'; speed: MotionSpeed }
   | { type: 'xray' }
   | { type: 'transcript' }
-  | { type: 'file' };
+  | { type: 'file' }
+  /** A seat tapped on the stage: its file comes to the pane (the seat is the theatre's). */
+  | { type: 'show-file' };
 
 export interface ReplayBeats {
   public: readonly SceneBeat[];
@@ -170,6 +172,8 @@ export function replayReducer(all: ReplayBeats) {
         return { ...state, ...pressTranscript(state) };
       case 'file':
         return { ...state, ...pressFile(state) };
+      case 'show-file':
+        return { ...state, ...showFile(state) };
       case 'xray': {
         const next = pressXray(state);
         if (next.xray === state.xray) return { ...state, ...next };

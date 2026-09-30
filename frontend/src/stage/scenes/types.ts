@@ -77,6 +77,12 @@ export interface SceneProps {
    * two buttons are drawn but go nowhere (the workbench).
    */
   wayOut?: { replay: string; lobby: string };
+  /**
+   * The replay (and the workbench): move the playhead to the first beat `find` accepts, as a
+   * seek (arrived at, at rest). False when no beat does, so the caller can do something else.
+   * The night hub's lamps use it to jump to an actor's spoke.
+   */
+  onSeek?: (find: (beat: SceneBeat) => boolean) => boolean;
 }
 
 /**
@@ -99,6 +105,18 @@ export interface SlotInput {
   onTranscript?: () => void;
   /** File: brings the film to the slot (only with the X-ray on), or closes it. */
   onFile?: () => void;
+  /**
+   * Opens one seat's case file in the pane at this beat (the pane switches to File): a tap on a
+   * seat at a beat with no speaker, with the X-ray on. Without it the seats are only shown.
+   */
+  onOpenFile?: (seat: string) => void;
+  /** The strip's Reveal switch (the X-ray's one switch): the replay's, which turns it on and off. */
+  onReveal?: () => void;
+  /**
+   * Live: the Reveal switch is drawn but cannot be pressed: locked (true) until the game ends,
+   * then shown on (false; the game's end is the switch). Absent with no `onReveal`: no switch.
+   */
+  revealLocked?: boolean;
   /** Where the drawer was scrolled, and whether it follows the beat, kept across scenes. */
   drawerScroll?: DrawerScroll;
   /**

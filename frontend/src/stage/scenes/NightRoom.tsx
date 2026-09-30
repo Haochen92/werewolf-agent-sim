@@ -5,7 +5,8 @@
  * and §7): the role's painted sleeping compartment (paint/compartment.ts), the night going by
  * behind its window, a line of photographs under the brass rack, one per seat you may choose,
  * and your framed card standing on the table by the candle. There is no avatar of you: you are
- * the one sitting in the chair. The turn's countdown is on the plate, not in the room.
+ * the one sitting in the chair. The turn's countdown is on the plate, not in the room. The
+ * replay's night tells each actor's act in this same room, the actor's (ReplayNightScene).
  *
  * It is dark but for the painted candle: its warm pool falls on the photos and the card.
  * Choosing is light and a pin. Once a photo is chosen the wall goes darker, one light finds
@@ -43,7 +44,7 @@ const LIGHT_FADE = 0.6;
 const PHOTO_STAGGER = 0.08;
 
 /** Each role's painted room; a role with none of its own (a villager, in the workbench) gets the healer's. */
-const ROOM_OF: Record<string, RoomPicture> = {
+export const ROOM_OF: Record<string, RoomPicture> = {
   healer: 'healer',
   investigator: 'investigator',
   vigilante: 'vigilante',
@@ -81,6 +82,12 @@ export interface NightRoomProps extends Pick<
   onEmpty?: () => void;
   /** The plate, the chat: whatever the room adds at its foot. */
   children?: ReactNode;
+  /** The strip's small line, in place of "Night · <beat>" (the replay names the actor). */
+  sub?: string;
+  /** The count pill, handed to the strip (the replay's row keeps it by its plaques). */
+  count?: ReactNode;
+  /** The replay's night: the wing's lit card (the actor) and its lamps (those still to act). */
+  wing?: { lit?: (seat: string) => boolean; lamp?: (seat: string) => boolean };
 }
 
 export function NightRoom({
@@ -103,6 +110,9 @@ export function NightRoom({
   cardNote,
   onEmpty,
   children,
+  sub,
+  count,
+  wing,
 }: NightRoomProps) {
   const { hud, xray, animate, cast } = presentation;
   const k = useMotionScale();
@@ -125,7 +135,12 @@ export function NightRoom({
 
       {onEmpty ? (
         <Layer name="floor">
-          <div className={styles.emptyTap} data-empty="room" aria-hidden onClick={onEmpty} />
+          <div
+            className={styles.emptyTap}
+            data-empty="room"
+            aria-hidden
+            onClick={onEmpty}
+          />
         </Layer>
       ) : null}
 
@@ -174,7 +189,7 @@ export function NightRoom({
           u={g.u * 0.95 * (plan.card.h / 279)}
           alone={alone}
           note={cardNote}
-          onOpen={() => onCard(true)}
+          onOpen={me ? () => onCard(true) : undefined}
         />
       </Layer>
 
@@ -225,14 +240,18 @@ export function NightRoom({
               truth,
               you: seat === me,
               pack: seat !== me && pack.includes(seat),
+              lit: wing?.lit?.(seat),
+              lamp: wing?.lamp?.(seat),
             };
           })}
         />
         <TopStrip
           hud={hud}
           title={`Night ${beat.day}`}
-          sub={`Night · ${beat.label}`}
+          sub={sub ?? `Night · ${beat.label}`}
           {...stripButtons(presentation, slotInput)}
+          side={side}
+          count={count}
         />
         {children}
         {cardOpen && me ? (

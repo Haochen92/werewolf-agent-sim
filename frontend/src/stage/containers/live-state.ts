@@ -30,7 +30,7 @@ import { isTextTurn, type TurnPayload } from '@/lib/api';
 import type { MeView } from '@/game/types';
 import type { SceneBeat } from '@/stage/beats/types';
 import type { Presentation } from '@/stage/scenes/types';
-import { pressFile, pressTranscript } from '@/stage/slot';
+import { pressFile, pressTranscript, showFile } from '@/stage/slot';
 import type { DurableGameEvent, GameStatus } from '@/types/contracts';
 import { nextLiveStep, type LiveContext } from './live-queue';
 import { carryAcross, holdFor, still, type Cursor } from './transport';
@@ -84,7 +84,9 @@ export type LiveAction =
   | { type: 'transcript' }
   /** The strip's File tab. Live, the X-ray is everyone's after game over (the game's end is its
    *  switch), so only the film comes and goes, and only then. */
-  | { type: 'file'; xray: boolean };
+  | { type: 'file'; xray: boolean }
+  /** A seat tapped on the stage after the game: its file comes to the pane. */
+  | { type: 'show-file'; xray: boolean };
 
 export function initialLiveState(slot: Presentation['slot'] = null): LiveState {
   return {
@@ -262,6 +264,8 @@ export function liveReducer(state: LiveState, action: LiveAction): LiveState {
       return { ...state, slot: pressTranscript({ slot: state.slot, xray: true }).slot };
     case 'file':
       return { ...state, slot: pressFile({ slot: state.slot, xray: action.xray }).slot };
+    case 'show-file':
+      return { ...state, slot: showFile({ slot: state.slot, xray: action.xray }).slot };
   }
 }
 
