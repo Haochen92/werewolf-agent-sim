@@ -319,24 +319,34 @@ describe('the stops (the X-ray on)', () => {
     );
   });
 
-  it('a lit seat tapped plays its room; the room’s end returns to the hub', () => {
+  it('a lit seat tapped plays its room and rests on its last step; the same seat replays it', () => {
     const inv = find('rnight.spoke', 2, 'player_4');
     const v = reduce(on(hub), { type: 'visit', index: inv });
     expect(v.cursor).toEqual({ index: inv, animate: true });
     expect([v.playing, v.visit, v.visited]).toEqual([true, '2:player_4', ['2:player_4']]);
-    const back = reduce(v, { type: 'tick' });
-    expect(back.cursor).toEqual(still(hub));
-    expect([back.playing, back.visit]).toEqual([false, null]);
-    expect(back.visited).toEqual(['2:player_4']);
-    // the pack's room has five steps: it plays them all before returning
+    // its one step held: the play rests there, no return to the hub
+    const rest = reduce(v, { type: 'tick' });
+    expect(rest.cursor).toEqual({ index: inv, animate: true });
+    expect([rest.playing, rest.visit]).toEqual([false, '2:player_4']);
+    // tapped again (from the hub or its own room): from its first step, playing
+    const again = reduce(rest, { type: 'visit', index: inv });
+    expect([again.cursor, again.playing]).toEqual([{ index: inv, animate: true }, true]);
+    // the pack's room has five steps: it plays them all, then rests on the kill
     const pack = find('rnight.spoke', 2, 'pack');
-    let p = reduce(back, { type: 'visit', index: pack });
+    let p = reduce(rest, { type: 'visit', index: pack });
     for (let k = 1; k < 5; k++) {
       p = reduce(p, { type: 'tick' });
       expect(p.cursor).toEqual({ index: pack + k, animate: true });
     }
     p = reduce(p, { type: 'tick' });
-    expect(p.cursor).toEqual(still(hub));
+    expect([p.cursor.index, p.playing]).toEqual([pack + 4, false]);
+    // from inside a room another actor's room is a tap away, and play goes on through the night
+    const sk = find('rnight.spoke', 2, 'player_2');
+    const jump = reduce(p, { type: 'visit', index: sk });
+    expect([jump.cursor.index, jump.visit]).toEqual([sk, '2:player_2']);
+    const on2 = reduce(p, { type: 'play' });
+    expect([on2.playing, on2.visit]).toEqual([true, null]);
+    expect(reduce(on2, { type: 'tick' }).cursor.index).toBe(pack + 5);
   });
 
   it('the arrows step through the rooms linearly, and a room reached so plays on', () => {

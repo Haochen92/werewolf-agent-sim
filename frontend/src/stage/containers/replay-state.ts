@@ -42,8 +42,8 @@ export interface ReplayState {
    */
   loop: { from: number; to: number } | null;
   /**
-   * The room the viewer went into from the night hub (`day:actor`, stops.ts `branchOf`): when
-   * its last step has played, the play returns to the hub. Null once the cursor leaves it.
+   * The room the viewer went into by a tap on its seat (`day:actor`, stops.ts `branchOf`): when
+   * its last step has played, the play rests there. Null once the cursor leaves it, or on play.
    */
   visit: string | null;
   /** Every room the cursor has been in (`day:actor`): the hub dims their seats. */
@@ -65,7 +65,10 @@ export type ReplayAction =
   | { type: 'file' }
   /** A seat tapped on the stage: its file comes to the pane (the seat is the theatre's). */
   | { type: 'show-file' }
-  /** The night hub: a lit seat tapped, its room (the spoke at `index`) played; its end returns to the hub. */
+  /**
+   * A lit seat tapped (at the hub, or in another room): its room from its first step (the
+   * spoke at `index`), played, resting on its last. The same seat again plays it again.
+   */
   | { type: 'visit'; index: number }
   /** The night hub's "End the night": on to the first beat after the night whole, playing. */
   | { type: 'end-night' }
@@ -189,15 +192,17 @@ export function replayReducer(all: ReplayBeats) {
         if (state.loop && state.cursor.index >= state.loop.to)
           return landed({ ...state, cursor: still(state.loop.from) }, beats);
         {
-          // a room visited from the hub has played its last step: back to the hub
+          // a room visited by a tap has played its last step: it rests there (owner,
+          // 2026-09-30; it returned to the hub by itself). "Back to the night" is the way back
           const here = beats[state.cursor.index];
-          const hub = here ? hubOf(beats, here.day) : -1;
-          if (state.visit && endsRoom(here) && branchOf(here) === state.visit && hub >= 0)
-            return { ...state, cursor: still(hub), playing: false, visit: null };
+          if (state.visit && endsRoom(here) && branchOf(here) === state.visit)
+            return { ...state, playing: false };
         }
         return landed({ ...state, cursor: stepForward(state.cursor, beats) }, beats);
       case 'play': {
         if (beats.length === 0) return state;
+        // play on from a visited room goes on through the night, as "Watch them all" does
+        if (state.visit) return press({ ...state, visit: null }, action);
         if (state.loop) return landed({ ...state, playing: true }, beats);
         // at the end, play again from the top; on a beat that waits, playing moves on from it
         if (state.cursor.index >= beats.length - 1)

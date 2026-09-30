@@ -8,8 +8,9 @@
  *   read what it voted on, then count the votes.
  *
  * A stop is a playback rule, nothing more: arrived at by the play, a step or a seek, the play
- * pauses there; play (the notice's ▶) moves on from it at once. A room visited from the hub
- * returns to the hub when its last step has played. Nothing here is kept past the page.
+ * pauses there; play (the notice's ▶) moves on from it at once. A room visited by a tap plays
+ * its steps and rests on its last (owner, 2026-09-30; it returned to the hub by itself), and
+ * "Back to the night" is the way back. Nothing here is kept past the page.
  */
 import type { SceneBeat } from '@/stage/beats/types';
 

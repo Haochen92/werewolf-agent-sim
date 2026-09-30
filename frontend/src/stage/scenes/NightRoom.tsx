@@ -86,8 +86,18 @@ export interface NightRoomProps extends Pick<
   sub?: string;
   /** The count pill, handed to the strip (the replay's row keeps it by its plaques). */
   count?: ReactNode;
-  /** The replay's night: the wing's lit card (the actor) and its lamps (those still to act). */
-  wing?: { lit?: (seat: string) => boolean; lamp?: (seat: string) => boolean };
+  /**
+   * The replay's night: the wing's lit card (the actor), its lamps (those still to act), and
+   * (2026-09-30) its taps and words: another actor's card visits that room, "Visit ▸" or "Seen"
+   * on it, anyone else's opens a file.
+   */
+  wing?: {
+    lit?: (seat: string) => boolean;
+    lamp?: (seat: string) => boolean;
+    word?: (seat: string) => 'visit' | 'seen' | undefined;
+    tap?: ((seat: string) => void) | null;
+    tapLabel?: (seat: string) => string;
+  };
 }
 
 export function NightRoom({
@@ -243,6 +253,13 @@ export function NightRoom({
               pack: seat !== me && pack.includes(seat),
               lit: wing?.lit?.(seat),
               lamp: wing?.lamp?.(seat),
+              word: wing?.word?.(seat),
+              file: wing?.tap
+                ? {
+                    onTap: () => wing.tap!(seat),
+                    label: wing.tapLabel?.(seat) ?? `Open seat ${seatNumber(seat)}’s file`,
+                  }
+                : undefined,
             };
           })}
         />

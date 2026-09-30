@@ -43,7 +43,7 @@ import { bandNarrows, fileTap, sideOpen, stripButtons } from '../slot';
 import { STAGE_H, geometry } from '../units';
 import { CarPaint, HouseLights, TableWing } from './DiningCarParts';
 import { notebookGame } from '../notebook';
-import { nightBranchesOf } from './replay-night';
+import { actedTonight } from './replay-night';
 import type { SceneProps } from './types';
 
 /** The roles with a night of their own; the pack is one more unit. */
@@ -83,26 +83,6 @@ export function actorsTonight(view: GameView, day: number): Set<string> {
   return out;
 }
 
-/**
- * Who acted on night `day`, seat by seat, and whose room each is in (`pack` for a wolf). The
- * rooms are read from the log ahead (the hub's own view has not reached the night's acts yet);
- * the pack's seats are the wolves living at the hub, not those left at the log's end.
- */
-export function actedTonight(
-  view: GameView,
-  ahead: GameView,
-  day: number,
-): Map<string, string> {
-  const out = new Map<string, string>();
-  for (const b of nightBranchesOf(ahead, day)) {
-    const seats =
-      b.actor === 'pack'
-        ? view.alive.filter((s) => view.xray.roles[s] === 'wolf')
-        : b.seats.filter((s) => view.alive.includes(s));
-    for (const s of seats) out.set(s, b.actor);
-  }
-  return out;
-}
 
 /**
  * The X-ray hub's way into a seat's night: its first spoke that night (a wolf's is the pack's).
@@ -228,6 +208,9 @@ function LobbyBeat({
             lamp: (seat) => !!actors?.has(seat) && !seen(seat),
             glow: (seat) =>
               acted?.has(seat) ? (seen(seat) ? 'visited' : 'acted') : undefined,
+            // the word on the card says it: the glow alone did not read as lit (2026-09-30)
+            word: (seat) =>
+              acted?.has(seat) ? (seen(seat) ? 'seen' : 'visit') : undefined,
             file: open && hub ? (seat) => (goesIn(seat) ? toNight : open)(seat) : open,
             fileLabel: (seat) =>
               hub && goesIn(seat)
@@ -247,7 +230,8 @@ function LobbyBeat({
           <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
             <Notice
               walnut
-              title={`Night ${beat.day} · ${acted.size} acted.`}
+              // rooms, as the pill counts them (the pack's two wolves are one)
+              title={`Night ${beat.day} · ${new Set(acted.values()).size} acted.`}
               arrive={animate}
               delay={1.2}
               actions={

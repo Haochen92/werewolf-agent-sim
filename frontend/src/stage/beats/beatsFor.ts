@@ -18,21 +18,25 @@ import {
   type SceneId,
 } from './types';
 
-// Holds at normal speed (docs/beat_sheet.md §0).
+// Holds at normal speed (docs/beat_sheet.md §0). Raised to a reading pace on 2026-09-30
+// (shutter 3000, card 2600, open 2800, speech ÷ 3 floor 4 s, a room's mark 2000); the count's
+// chip, lid and verdict were kept, its pace being right.
 const HOLD = {
-  shutter: 3000,
+  shutter: 3500,
   chip: 2000,
-  card: 2600,
+  card: 3200,
   yourCard: 6000,
   yourPack: 4000,
   verdict: 3200,
-  open: 2800,
+  open: 3200,
   held: 2000,
   lid: 1500,
   pass: 4000,
+  /** A room's last step in the X-ray night: the mark landing, or the hold. */
+  mark: 2500,
 } as const;
-const WORDS_PER_SECOND = 3;
-const SPEECH_FLOOR_MS = 4000;
+const WORDS_PER_SECOND = 2.4;
+const SPEECH_FLOOR_MS = 5000;
 const SPEECH_CAP_MS = 15000;
 
 // A pack line or a night spoke is read in a chat, whole: it holds for all its words. A day
@@ -95,9 +99,11 @@ function nightBranches(
         break;
     }
   }
-  // A branch with nothing to show (a consult but no act) is not a spoke.
+  // A seat that weighed its night and chose no one (a consult or reads, no act: the vigilante
+  // holding fire) took a decision: its branch is one spoke with no mark. Only the pack needs
+  // talk or a kill to be told.
   return [...byActor.values()]
-    .filter((b) => b.target !== null || b.lines.length > 0)
+    .filter((b) => b.actor !== 'pack' || b.target !== null || b.lines.length > 0)
     .sort((a, b) => a.lastSeq - b.lastSeq);
 }
 
@@ -375,7 +381,8 @@ export function beatsFor(
         if (options.xray && nightStart >= 0) {
           const branches = nightBranches(events, nightStart, i, wolves);
           branches.forEach((b, rank) => {
-            const steps = b.lines.length + (b.target ? 1 : 0);
+            const held = !b.target && b.lines.length === 0;
+            const steps = b.lines.length + (b.target || held ? 1 : 0);
             b.lines.forEach((line, step) => {
               push({
                 id: 'rnight.spoke',
@@ -388,15 +395,16 @@ export function beatsFor(
                 spoke: { actor: b.actor, rank, step, steps },
               });
             });
-            if (b.target) {
+            if (b.target || held) {
               push({
                 id: 'rnight.spoke',
                 day: e.day,
                 seq: b.lastSeq,
                 end: i,
                 sees: 'xray',
-                subject: b.target,
-                holdMs: HOLD.chip,
+                // the mark's target; a hold's is the seat that held
+                subject: b.target ?? b.actor,
+                holdMs: HOLD.mark,
                 spoke: { actor: b.actor, rank, step: steps - 1, steps },
               });
             }

@@ -65,9 +65,9 @@ describe('paginate', () => {
 });
 
 describe('pageHold', () => {
-  it('holds a page for its words at three a second, 2.5 to 9 s', () => {
-    expect(pageHold('Yes.')).toBe(2500);
-    expect(pageHold(Array(15).fill('word').join(' '))).toBe(5000);
-    expect(pageHold(Array(60).fill('word').join(' '))).toBe(9000);
+  it('holds a page for its words at 2.4 a second (a reading pace), 5 to 15 s', () => {
+    expect(pageHold('Yes.')).toBe(5000);
+    expect(pageHold(Array(24).fill('word').join(' '))).toBe(10000);
+    expect(pageHold(Array(60).fill('word').join(' '))).toBe(15000);
   });
 });

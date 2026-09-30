@@ -1152,3 +1152,88 @@ button.row:hover {
   background: #2a1b10;
   fill: var(--xray-hi);
 }
+
+/* the call to action where a tap opens files (owner, 2026-09-30): the headline is the action,
+   the keyhole and "Tap a seat to open its file" large, every seat's face a button right under
+   it; at the night stop "Visit a room" above it with the actors' faces */
+.cta {
+  margin: 0 0 12.8px;
+  padding-bottom: 11.2px;
+  border-bottom: 1.5px solid rgba(90, 70, 40, 0.45);
+}
+.ctaHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-family: var(--f-title);
+  font-size: calc(var(--meta) * 1.45);
+  line-height: 1.15;
+  color: var(--type);
+}
+.ctaHead .keyhole {
+  width: 1.1em;
+  height: 1.1em;
+}
+.ctaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6.4px;
+  margin-bottom: 11.2px;
+}
+.ctaRow:last-child {
+  margin-bottom: 0;
+}
+.ctaSeat,
+.ctaRoom {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.4px;
+  padding: 4px 4.8px 3.2px;
+  font: inherit;
+  font-family: var(--f-type);
+  font-size: var(--label);
+  font-weight: 700;
+  color: var(--type);
+  background: var(--card);
+  border: 1.5px solid rgba(90, 70, 40, 0.45);
+  border-radius: 6.4px;
+  cursor: pointer;
+}
+.ctaSeat:hover,
+.ctaRoom:hover,
+.ctaSeat:focus-visible,
+.ctaRoom:focus-visible {
+  border-color: var(--ink-follow);
+}
+.ctaSeat small,
+.ctaRoom small {
+  font-size: inherit;
+  line-height: 1;
+}
+.ctaSeat.dead .face {
+  opacity: 0.5;
+}
+.ctaFaces {
+  display: inline-flex;
+}
+.ctaFaces > span + span {
+  margin-left: -8px;
+}
+.ctaRoom {
+  color: var(--ink-follow);
+  border-color: var(--ink-follow);
+}
+.ctaRoom.ctaSeen {
+  color: var(--ink-na);
+  border-color: rgba(90, 70, 40, 0.35);
+}
+/* what the sheet holds, at its foot, in the typewriter's small print */
+.footnote {
+  margin: 12.8px 0 0;
+  font-family: var(--f-type);
+  font-size: calc(var(--label) * 0.9);
+  line-height: 1.45;
+  color: var(--type-mut);
+}

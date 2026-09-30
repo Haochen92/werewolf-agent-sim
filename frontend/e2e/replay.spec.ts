@@ -136,7 +136,7 @@ test('replay: the X-ray on a day-3 speech, the file in the slot', async ({ page 
   await expect(page).toHaveScreenshot('replay-xray-film-d3.png');
 });
 
-test('replay: the night stops at its hub; a lit card plays that actor’s room and comes back', async ({
+test('replay: the night stops at its hub; a lit card plays that actor’s room and rests there', async ({
   page,
 }) => {
   // the room's hold is the page's clock: run on only when asked
@@ -149,10 +149,12 @@ test('replay: the night stops at its hub; a lit card plays that actor’s room a
   // the stop: arrived at, paused, the actors lit, the notice with the ways on
   await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.hub');
   await expect(theatre(page)).toHaveAttribute('data-playing', 'false');
+  // five rooms (the vigilante's held fire is one; the pack's two wolves are one), six seats lit
   await expect(page.getByText('Night 1 · 5 acted.')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Watch them all ▶' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'End the night →' })).toBeVisible();
-  await expect(page.locator('[data-glow="acted"]')).toHaveCount(5);
+  await expect(page.locator('[data-glow="acted"]')).toHaveCount(6);
+  await expect(page.locator('[data-layer="hud"] [data-word="visit"]')).toHaveCount(6);
   await settle(page);
   await expect(page).toHaveScreenshot('replay-night-hub-reveal.png');
   // the investigator's card (lit): its room plays, its file beside it
@@ -166,13 +168,26 @@ test('replay: the night stops at its hub; a lit card plays that actor’s room a
     'data-file-seat',
     'player_4',
   );
-  // its last step played, the hub again: paused, seat 4 now a steady mark
-  await page.clock.runFor(2500);
+  // its last step played, it rests there (no return by itself)
+  await page.clock.runFor(4000);
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.spoke');
+  await expect(theatre(page)).toHaveAttribute('data-playing', 'false');
+  await expect(page.getByText('In the night · Seat 4')).toBeVisible();
+  // from inside the room, another actor's card goes straight to its room: the vigilante's,
+  // who held its fire
+  await expect(card(page, 7)).toHaveAttribute('data-word', 'visit');
+  await card(page, 7).click();
+  await expect(page.getByText('In the night · Seat 7')).toBeVisible();
+  await expect(page.getByText('holds its fire.')).toBeVisible();
+  await expect(card(page, 4)).toHaveAttribute('data-word', 'seen');
+  // "Back to the night": the hub, paused, the rooms seen a steady mark and "Seen"
+  await page.getByRole('button', { name: '← Back to the night' }).click();
   await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.hub');
   await expect(theatre(page)).toHaveAttribute('data-playing', 'false');
   await expect(card(page, 4)).toHaveAttribute('data-glow', 'visited');
-  // the pack's room, left early by its "Back to the night"
-  await card(page, 3).click();
+  await expect(card(page, 7)).toHaveAttribute('data-word', 'seen');
+  // the file's sheet offers the rooms too: the pack's, from there
+  await page.locator('[data-visit="pack"]').click();
   await expect(page.getByText('In the night · The pack')).toBeVisible();
   await page.getByRole('button', { name: '← Back to the night' }).click();
   await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.hub');
@@ -290,8 +305,8 @@ test('replay: played fast, the cursor runs on at twice the pace', async ({ page 
   await expect(band(page).getByRole('button', { name: 'Fast' })).toBeVisible();
   await page.getByRole('button', { name: 'Play', exact: true }).click();
   await expect(theatre(page)).toHaveAttribute('data-playing', 'true');
-  // 16 s at fast reaches the night (beat 6, 10.5 s of holds, each new hold set at the end of a
-  // step); at normal it would still be on day 1's passes (17 s of holds to beat 5)
+  // 16 s at fast reaches the night (beat 6, 11.25 s of holds, each new hold set at the end of a
+  // step); at normal it would still be on day 1's passes (18.5 s of holds to beat 5)
   for (let t = 0; t < 32; t++) await page.clock.runFor(500);
   expect(Number(await theatre(page).getAttribute('data-beat-index'))).toBeGreaterThan(5);
 });

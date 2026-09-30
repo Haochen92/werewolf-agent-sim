@@ -94,12 +94,15 @@ describe('the docket', () => {
       film('rnight.whole', (b) => b.day === 2),
       'night',
     );
+    // the vigilante (seat 7) held its fire: a row of its own, with no target
     expect(all.rows.map((r) => r.actor)).toEqual([
       'player_4',
       'player_9',
+      'player_7',
       'player_2',
       'pack',
     ]);
+    expect(all.rows.find((r) => r.actor === 'player_7')?.target).toBeNull();
   });
 
   it('lists the deal face up, and at the end how each seat went', () => {

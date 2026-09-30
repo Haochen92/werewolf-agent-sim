@@ -83,7 +83,9 @@ export type DocketModel =
       rows: { seat: string; role: string | null; fate: string | null }[];
     }
   | { kind: 'notes'; rows: { seat: string; role: string | null; note: FilmNote | null }[] }
-  | { kind: 'empty'; label: string };
+  /** A beat with nothing of its own on file; `title` names the sheet where "Nothing on file"
+   *  would mislead (the night hub is "The night"). */
+  | { kind: 'empty'; label: string; title?: string };
 
 /**
  * What the no-seat sheet is called, by what it holds (owner, 2026-09-30: "the docket" was
@@ -104,7 +106,7 @@ export function docketTitle(model: DocketModel): string {
     case 'notes':
       return 'The winners’ notes';
     case 'empty':
-      return 'Nothing on file';
+      return model.title ?? 'Nothing on file';
   }
 }
 
@@ -331,5 +333,8 @@ export function docketFor(view: GameView, beat: SceneBeat): DocketModel | null {
     };
 
   if (beat.id === 'over.epilogue') return null;
+  // the night's hub holds nothing yet, but the sheet is the night's (2026-09-30)
+  if (beat.id === 'rnight.hub')
+    return { kind: 'empty', label: beat.label, title: 'The night' };
   return { kind: 'empty', label: beat.label };
 }

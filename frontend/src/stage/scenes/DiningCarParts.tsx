@@ -132,6 +132,8 @@ export interface WingSeatOptions {
   lamp?: (seat: string) => boolean;
   /** The replay's night stop: a seat that acted glows, a visited one keeps a steady mark. */
   glow?: (seat: string) => 'acted' | 'visited' | undefined;
+  /** The replay's night: the word on a card, "Visit ▸" or "Seen" (see `WingTileProps.word`). */
+  word?: (seat: string) => 'visit' | 'seen' | undefined;
   pack?: (seat: string) => boolean;
   /**
    * A tap on a seat's card opens its case file (`fileTap` in slot.ts), or, at the night hub,
@@ -182,6 +184,7 @@ export function TableWing({
             dim: opts.dim?.(seat),
             lamp: opts.lamp?.(seat),
             glow: opts.glow?.(seat),
+            word: opts.word?.(seat),
             pack: opts.pack?.(seat),
             you: seat === me,
             file: opts.file

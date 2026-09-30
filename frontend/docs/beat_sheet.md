@@ -17,17 +17,21 @@ X-ray's verdigris (aqua until 2026-09-29) as "Only seat n". *Stage*: what change
 *Slot*: what the drawer (D) or the case file (F, the X-ray's pane; the film until 2026-09-29) does;
 "—" = nothing new. *Hold*: the replay's wait at normal speed. *Bench*: the revision that drew it.
 
-**Holds** (H§5): shutter 3.0 s · a chip 2.0 s · a card read 2.6 s · your own card at the deal
-6.0 s · your pack at the deal 4.0 s (ruled 2026-09-28) · the verdict 3.2 s · the vote's opening
-move 2.8 s · a plain held beat 2.0 s · **speech** = words ÷ 3 per second (ruled 2026-09-28, was
-4), held while the pointer or a touch is on the speech. **A day speech is told in pages (ruled
+**Holds** (H§5; raised to a reading pace 2026-09-30, the replay's Normal having felt fast: live
+is paced by the agents in real time, the replay only by these): shutter 3.5 s (was 3.0) · a chip
+2.0 s · a card read 3.2 s (was 2.6) · your own card at the deal 6.0 s · your pack at the deal
+4.0 s (ruled 2026-09-28) · the verdict 3.2 s · the vote's opening move 3.2 s (was 2.8) · a room's
+last step in the X-ray night (the mark, or the hold) 2.5 s (was a chip's 2.0) · a plain held beat
+2.0 s · **speech** = words ÷ 2.4 per second (2026-09-30; was 3, and 4 before 2026-09-28), held
+while the pointer or a touch is on the speech. The count's chip, lid and verdict holds were kept
+(its pace was right). Fast halves every one. **A day speech is told in pages (ruled
 2026-09-29):** the speech box is a fixed three lines, so a line longer than a page
 (`PAGE_CHARS` = 150 characters, `beats/pages.ts`) is cut into pages, each its own `day.speech`
 beat marked `page` n of m, all sharing the speech's anchor; a page ends at the last sentence end
 that fits, else the last clause break (, ; : —), else the last whole word, never mid-word. Each
-page holds for its own words at 3 per second, floor 2.5 s, cap 9 s; a tap on the box moves on to
-the next page. Wolf messages and the X-ray night's spokes are read in a chat, whole: words ÷ 3,
-floor 4 s, cap 15 s. Live has no holds: beats animate as events arrive (§12).
+page holds for its own words at 2.4 per second, floor 5 s, cap 15 s (was 3, 2.5 s, 9 s); a tap on the box moves on to
+the next page. Wolf messages and the X-ray night's spokes are read in a chat, whole: words ÷ 2.4,
+floor 5 s, cap 15 s. Live has no holds: beats animate as events arrive (§12).
 
 **Live vs replay.** Live plays every beat its tier receives, in arrival order, with the queue
 rule of §12. The replay plays the P beats with X-ray off and P+X (plus every S and F beat, in
@@ -406,17 +410,30 @@ and a seek or a chapter jump lands there paused too (`containers/stops.ts`; a ni
 to visit plays on). On the wing the seats that acted (read from the log ahead: a branch's seats,
 the pack's as its wolves living at the hub) breathe a clear verdigris glow, a 3.2 unit bright
 edge and a glow whose opacity alone moves (2.0 s; still for reduced motion); a seat whose room
-has been seen keeps a steady, quieter verdigris edge and its lamp goes out. The notice at the foot
-(the walnut board with a brass edge, the speech box's material, in the Notice zone): "Night 2 · 5
-acted." (seats, the pack's wolves each) "Tap a lit seat to visit its room." and two buttons,
-**Watch them all ▶** (the play goes on through the rooms in order, then the whole, then on, as
-before) and **End the night →** (to the first beat after `rnight.whole`, playing). A lit seat's
-tap plays that actor's room from its first spoke (a wolf's, the pack's); when the room's last
-step has played, the play comes back to the hub, paused (only for a room reached by the tap: the
-arrows and the band's step buttons still step linearly, room to room, and a room stepped into
-plays on). In a room the notice (the act's line; the pack's chat, in its header) has **← Back to
-the night** (to the hub, paused). Nothing of it is kept: which rooms were seen lasts as long as
-the page.
+has been seen keeps a steady, quieter verdigris edge and its lamp goes out. **The word says it
+(2026-09-30; the glow alone did not read as lit):** on the cream between each actor's photo and its
+band, "Visit ▸" in the typewriter, bold, in the paper's verdigris ink (`--ink-follow`), and
+"Seen" in a muted grey once its room has been visited; the glow is secondary. The notice at the
+foot (the walnut board with a brass edge, the speech box's material, in the Notice zone): "Night
+2 · 5 acted." (rooms, as the pill counts them: the pack's two wolves are one) "Tap a lit seat to
+visit its room." and two buttons, **Watch them all ▶** (the play goes on through every room in
+order, seen or not, then the whole, then on) and **End the night →** (to the first beat after
+`rnight.whole`, playing). A lit seat's tap plays that actor's room from its first step (a
+wolf's, the pack's) at its holds and **rests on its last step**, paused (2026-09-30; it came back
+to the hub by itself): **← Back to the night** is the way back, and the same seat tapped again,
+from the hub or its own room, plays it again from its first step. **From inside a room** the
+wing works as at the hub: another actor's card ("Visit ▸" or "Seen" on it) goes straight to its
+room, the room's own actor plays it again, anyone else's opens its file. Play (the band's ▶) from
+a room goes on linearly; the arrows and the step buttons always step linearly. In a room the
+notice (the act's line; the pack's chat, in its header) has the back button. **Every seat that
+took a night decision has a room (2026-09-30),** a decision not to act included: a seat that
+consulted or read its night and chose no one (the vigilante holding its fire; the log has no act
+for it, only its `memory_consulted`/`player_reads`) gets a one-step room, its card on the table,
+no light, pin or mark on the wall, the box "Seat 7 · vigilante · holds its fire." (anyone else
+who chose no one: "does not act."), counted in "N acted" and in the pill as its step shows, a
+row "holds" on the night's sheet. With the file up, the night's sheet ("The night") leads with
+"Visit a room", each actor's faces a button into its room, then the file's call to action (§11).
+Nothing of it is kept: which rooms were seen lasts as long as the page.
 
 **X-ray off:** `night.hub` → §8. Nothing on stage says who was awake.
 
@@ -425,7 +442,7 @@ the page.
 | # | Beat | Anchor | Stage | Slot | Hold |
 |---|---|---|---|---|---|
 | 1 | `rnight.hub` | `phase_change: night` | **the night stop** (above): the hub with the wing's lamps lit on every seat that acts tonight, the ones that acted glowing, the visited a steady mark; a lit card plays that actor's room, any other opens its file; the notice with Watch them all ▶ · End the night → | D: the night's lines | 3.0 (a stop: waits) |
-| 2 | `rnight.spoke` (one per actor's branch, branches ordered by their **last** event; a step per pack line and one for the mark. The pack closes nights 1–2 of the fixture; on nights 3–4 the lone wolf votes before the killer and the vigilante act, so the rule is the order, not the pack) | the branch's events: `memory_consulted` · `player_reads` · `night_action`, or for the pack `wolf_message`… `wolf_vote` · `wolf_kill_decided` | the actor's own painted night room (the one live play seats that role in): its card on the table, the seats it could choose as photographs on the line, the choice landing as live shows one (the light and the pin on the target's photo), then the act's mark on the print; the pack's room for the pack, its talk in the chat a line at a time, then the votes and the kill decided, both teeth landing with the pin; the lamp goes dark as the spoke ends; "← Back to the night" on the act's notice (the pack's: in its chat's header); a room visited from the hub returns there after its last step | F: the actor's file (the pack's spoke: either wolf's, flipped from the cover) | per event: a mark 2.0, a message speech |
+| 2 | `rnight.spoke` (one per actor's branch, branches ordered by their **last** event; a step per pack line and one for the mark. The pack closes nights 1–2 of the fixture; on nights 3–4 the lone wolf votes before the killer and the vigilante act, so the rule is the order, not the pack) | the branch's events: `memory_consulted` · `player_reads` · `night_action`, or for the pack `wolf_message`… `wolf_vote` · `wolf_kill_decided` | the actor's own painted night room (the one live play seats that role in): its card on the table, the seats it could choose as photographs on the line, the choice landing as live shows one (the light and the pin on the target's photo), then the act's mark on the print; the pack's room for the pack, its talk in the chat a line at a time, then the votes and the kill decided, both teeth landing with the pin; the lamp goes dark as the spoke ends; "← Back to the night" on the act's notice (the pack's: in its chat's header); a room visited by a tap rests on its last step (2026-09-30); a seat that held has a one-step room with no mark | F: the actor's file (the pack's spoke: either wolf's, flipped from the cover) | per event: a mark (or a hold) 2.5, a message speech |
 | 3 | `rnight.whole` | after the last spoke | every mark on the row at once: the picture the parallel night never shows anyone live | — | 3.0 |
 
 Then §8.
@@ -574,8 +591,12 @@ file (2026-09-29):** with the X-ray on, at a beat with no speaker (the vote and 
 lynch, the morning, the night hub and whole), every wing card is a button, a steady verdigris
 edge (2.4 units; the thin muted one was missed, 2026-09-30) and the Reveal switch's keyhole, lit
 verdigris on a small walnut disc, on the card's top-right corner, brighter under the pointer (no
-breathing: only the night stop's actors breathe), and the no-seat sheet of the case file says
-"Tap a seat to open its file" under the keyhole; a tap opens that seat's file in the pane at the playhead (the pane
+breathing: only the night stop's actors breathe), and the no-seat sheet of the case file leads
+with it (2026-09-30, it was one small line): the headline is the action, the keyhole and "Tap a
+seat to open its file" in IM Fell, large, then every seat's face as a button that opens its
+file (at the night stop "Visit a room" with the actors' faces comes first, §9); what the sheet
+holds goes to a small typewriter footnote at its foot; the count's sheet, whose rows are every
+voter already, keeps the one small line. A tap on the wing opens that seat's file in the pane at the playhead (the pane
 switches to File from the transcript or closed); the pick holds like the chooser's. At a vote or
 the lynch the file is what the voter voted on: its reads and its consult as they stood at the day's
 first ballot (`ballotCut`), so Lessons reads "Consulted Day N · vote". The docket's vote rows and
@@ -744,8 +765,10 @@ seeking while playing plays on from there. **The stops (2026-09-30, `containers/
 the X-ray on, the night hub (§9) and the ballots in (`vote.closes`, §3) pause the play however
 the cursor got there (a tick, a step, a seek, a chapter jump), at either speed; play (the
 notice's ▶) steps on from a stop at once, as from a beat that waits. The reducer also keeps the
-visit (the room tapped from the hub, `day:actor`: its last step's tick returns to the hub, and it
-ends as soon as the cursor leaves that room) and the rooms seen (the hub's steady marks); "End the
+visit (the room tapped at the hub or from another room, `day:actor`: its last step's tick
+pauses the play there, 2026-09-30, it returned to the hub until then; the visit ends as soon as
+the cursor leaves that room, or on play, which then goes on linearly) and the rooms seen (the
+wing's "Seen" and steady marks); "End the
 night" seeks to the first beat after the night whole and plays; "Back to the night" seeks to the
 hub. A preview's loop has no stops. Nothing is persisted. The hold pauses while a pointer or a touch rests on a
 `[data-speech]` (the speech box, the pack's chat) and resumes with what was left; a new beat or a

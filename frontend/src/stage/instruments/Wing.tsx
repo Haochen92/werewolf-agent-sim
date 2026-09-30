@@ -75,6 +75,11 @@ export interface WingTileProps {
    */
   glow?: 'acted' | 'visited';
   /**
+   * The replay's night (owner, 2026-09-30): the word on the cream between the photo and the band
+   * that says what a tap does, "Visit ▸" (an actor's room is a tap away) or "Seen" (visited).
+   */
+  word?: 'visit' | 'seen';
+  /**
    * The X-ray's read on this seat by the seat at the stand: a verdigris edge, brighter for a sure
    * read. `onRead` makes the card a button that opens the read card (handing over the card, so
    * the read can sit level with it); `open` while its card is out. `fresh`: the read is new or
@@ -216,6 +221,7 @@ function WingTile({
   pack,
   lamp,
   glow,
+  word,
   read,
   file,
   note,
@@ -282,6 +288,11 @@ function WingTile({
             <Scribble />
           </>
         ) : null}
+        {word ? (
+          <span className={`${styles.word} ${word === 'seen' ? styles.seen : ''}`}>
+            {word === 'seen' ? 'Seen' : 'Visit ▸'}
+          </span>
+        ) : null}
       </span>
       {band ? (
         <span className={`${styles.band} ${you ? styles.youBand : ''}`}>{band}</span>
@@ -289,7 +300,7 @@ function WingTile({
       {read?.onRead ? <span className={styles.breathe} aria-hidden="true" /> : null}
       {glow === 'acted' ? <span className={styles.glow} aria-hidden="true" /> : null}
       {/* a card that opens a file wears the Reveal switch's keyhole; an actor's opens its room */}
-      {file && !read && glow !== 'acted' ? <Keyhole /> : null}
+      {file && !read && !word && glow !== 'acted' ? <Keyhole /> : null}
       {read?.onRead && read.fresh ? (
         <span key={read.fresh} className={styles.flash} aria-hidden="true" />
       ) : null}
@@ -299,7 +310,7 @@ function WingTile({
   );
   if (!tap)
     return (
-      <div className={cls} data-seat={seat} data-glow={glow}>
+      <div className={cls} data-seat={seat} data-glow={glow} data-word={word}>
         {face}
       </div>
     );
@@ -309,6 +320,7 @@ function WingTile({
       className={`${cls} ${styles.tap}`}
       data-seat={seat}
       data-glow={glow}
+      data-word={word}
       aria-label={label}
       aria-expanded={read?.onRead ? !!read.open : undefined}
       aria-haspopup={read?.onRead || file ? undefined : 'dialog'}

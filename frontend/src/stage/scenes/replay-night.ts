@@ -92,10 +92,24 @@ export function nightBranchesOf(view: GameView, day: number): NightBranch[] {
       : [...wolves].filter((s) => view.alive.includes(s));
     pack.seats = [...living].sort((a, b) => view.seats.indexOf(a) - view.seats.indexOf(b));
   }
-  // a branch with nothing to show (a consult but no act) is not a spoke
+  // a seat that weighed its night and chose no one (the vigilante holding fire: its consult and
+  // reads, no act) took a decision too: its branch is a spoke with no mark (owner, 2026-09-30).
+  // Only the pack needs talk or a kill to be told.
   return [...byActor.values()]
-    .filter((b) => b.target !== null || b.lines > 0)
+    .filter((b) => b.actor !== 'pack' || b.target !== null || b.lines > 0)
     .sort((a, b) => a.lastSeq - b.lastSeq);
+}
+
+/** The branch chose no one: a seat that held (the vigilante holding fire). */
+export function isHeld(branch: NightBranch | undefined): boolean {
+  return (
+    !!branch && branch.actor !== 'pack' && branch.target === null && branch.lines === 0
+  );
+}
+
+/** The spoke's step ends its branch: the mark landing, the pack's last line, or the hold. */
+export function endsBranch(spoke: Spoke, branch: NightBranch | undefined): boolean {
+  return !!branch && spoke.step === spoke.steps - 1;
 }
 
 /** Whether a spoke's step is its mark landing (the last step, when the branch has a target). */
@@ -138,5 +152,26 @@ export function actedAt(
   total: number,
 ): number {
   if (spoke === null) return total;
-  return Math.min(total, spoke.rank + (isMarkStep(spoke, branches[spoke.rank]) ? 1 : 0));
+  return Math.min(total, spoke.rank + (endsBranch(spoke, branches[spoke.rank]) ? 1 : 0));
+}
+
+/**
+ * Who acted on night `day`, seat by seat, and whose room each is in (`pack` for a wolf). The
+ * rooms are read from `ahead`, a view that has reached the night's end (the hub's own view has
+ * not); the pack's seats are the wolves living in `view`, not those left at the log's end.
+ */
+export function actedTonight(
+  view: GameView,
+  ahead: GameView,
+  day: number,
+): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const b of nightBranchesOf(ahead, day)) {
+    const seats =
+      b.actor === 'pack'
+        ? view.alive.filter((s) => view.xray.roles[s] === 'wolf')
+        : b.seats.filter((s) => view.alive.includes(s));
+    for (const s of seats) out.set(s, b.actor);
+  }
+  return out;
 }

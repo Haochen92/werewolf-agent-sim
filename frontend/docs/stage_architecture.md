@@ -702,10 +702,13 @@ its own list by the window's two end beats. The frame is the caller's.
 **The stops (2026-09-30).** With the X-ray on, the whole-log replay pauses at the night hub and
 with the ballots in (`containers/stops.ts`: which beats, the room a spoke is in, where "End the
 night" lands); the reducer (`replay-state.ts`) settles every press through one rule (a cursor
-that has just arrived on a stop pauses the play) and keeps the visit and the rooms seen, so a
+that has just arrived on a stop pauses the play) and keeps the visit (a tapped room rests on its
+last step, 2026-09-30) and the rooms seen, so a
 test can press through it without timers. The container hands the scenes `SceneProps.stop`
 (`StopInput`: the rooms seen that night, visit, play, end the night, back), which the hub, the
-rooms and the vote draw as a walnut notice with its buttons (`Notice` `walnut`, `NoticeButton`);
+rooms and the vote draw as a walnut notice with its buttons (`Notice` `walnut`, `NoticeButton`),
+the wing as "Visit ▸"/"Seen" words and taps (at the hub and in the rooms), and the file's night
+sheet as its "Visit a room" row (`SideSlot`);
 the workbench hands in the same for the X-ray's cut in the replay's frame ("End the night" is
 only logged there, since it leaves the scene). A loop (a preview) has none.
 

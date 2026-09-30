@@ -4,7 +4,8 @@ import { DEFAULT_QUERY } from '../workbench/url';
 import { beatsFor } from '../beats/beatsFor';
 import { FIXTURE_EVENTS } from '../workbench/fixture';
 import { foldEvents } from '@/game/foldEvents';
-import { actedTonight, actorsTonight, nightUnits, spokeOf } from './NightLobbyScene';
+import { actorsTonight, nightUnits, spokeOf } from './NightLobbyScene';
+import { actedTonight } from './replay-night';
 
 const hubs = (xray: boolean) =>
   workbenchFrame(xray ? 'rnight' : 'night', {
@@ -38,8 +39,8 @@ describe('the night lobby on the fixture', () => {
     expect(first('player_4')?.spoke).toMatchObject({ actor: 'player_4', step: 0 });
     expect(first('player_3')?.spoke).toMatchObject({ actor: 'pack', step: 0 });
     expect(first('player_8')).toBe(first('player_3'));
-    // the vigilante held fire on night 1: no spoke, so the hub opens its file instead
-    expect(first('player_7')).toBeUndefined();
+    // the vigilante held fire on night 1: a decision too, so a room of its own (2026-09-30)
+    expect(first('player_7')?.spoke).toMatchObject({ actor: 'player_7', step: 0, steps: 1 });
   });
 });
 
@@ -56,10 +57,11 @@ describe('the replay’s night stop: who acted', () => {
           ) + 1,
         ),
       );
-    // night 1: the serial killer, the investigator, the healer and both wolves
+    // night 1: the serial killer, the investigator, the healer, the vigilante (holding its
+    // fire) and both wolves
     const n1 = actedTonight(hubAt(1), ahead, 1);
     expect([...n1.keys()].sort()).toEqual(
-      ['player_2', 'player_3', 'player_4', 'player_8', 'player_9'].sort(),
+      ['player_2', 'player_3', 'player_4', 'player_7', 'player_8', 'player_9'].sort(),
     );
     expect([n1.get('player_3'), n1.get('player_8'), n1.get('player_4')]).toEqual([
       'pack',

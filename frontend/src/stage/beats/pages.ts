@@ -14,14 +14,17 @@ import { seatify } from '../roles';
 /** The most characters a page holds: three lines of the box's measure, less a word's slack. */
 export const PAGE_CHARS = 150;
 
-/** A page holds for its words at this pace (the pace a speech always held at). */
-const WORDS_PER_SECOND = 3;
-const PAGE_FLOOR_MS = 2500;
-const PAGE_CAP_MS = 9000;
+/**
+ * A page holds for its words at a reading pace, the speech's (owner, 2026-09-30: 2.4 words a
+ * second, 5–15 s; it was 3 a second, 2.5–9 s).
+ */
+const WORDS_PER_SECOND = 2.4;
+const PAGE_FLOOR_MS = 5000;
+const PAGE_CAP_MS = 15000;
 
 const words = (text: string) => text.split(/\s+/).filter(Boolean).length;
 
-/** How long a page holds at normal speed: its words at three a second, 2.5–9 s. */
+/** How long a page holds at normal speed: its words at 2.4 a second, 5–15 s. */
 export function pageHold(page: string): number {
   const ms = Math.round((words(page) / WORDS_PER_SECOND) * 1000);
   return Math.min(PAGE_CAP_MS, Math.max(PAGE_FLOOR_MS, ms));

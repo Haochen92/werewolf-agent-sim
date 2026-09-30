@@ -17,8 +17,9 @@ import { Film } from './film/Film';
 import type { FileChoice } from './film/case-file';
 import type { SceneProps } from './scenes/types';
 import { atRail, railHolds, slotOf, tapsOpenFiles } from './slot';
+import { actedTonight } from './scenes/replay-night';
 
-export function SideSlot({ view, beat, me, presentation, slot }: SceneProps) {
+export function SideSlot({ view, beat, me, presentation, slot, stop }: SceneProps) {
   const own = useDrawerFilters();
   const [ownTab, setOwnTab] = useState('notes');
   const [ownSeat, setOwnSeat] = useState<FileChoice | null>(null);
@@ -26,6 +27,25 @@ export function SideSlot({ view, beat, me, presentation, slot }: SceneProps) {
   // the epilogue is the ledger come down over the whole stage: nothing sits beside it
   if (!occupant || beat.id === 'over.epilogue') return null;
   const { hud, xray, cast, animate } = presentation;
+  // the night stop: the rooms the file's sheet offers to visit, each actor once (the pack's
+  // wolves together), as the wing's lit cards do
+  const rooms: { actor: string; seats: string[]; seen: boolean }[] = [];
+  if (stop && beat.id === 'rnight.hub')
+    for (const [seat, actor] of actedTonight(view, slot?.ahead ?? view, beat.day)) {
+      const r = rooms.find((x) => x.actor === actor);
+      if (r) r.seats.push(seat);
+      else rooms.push({ actor, seats: [seat], seen: stop.visited.includes(actor) });
+    }
+  const visit = rooms.length
+    ? {
+        rooms,
+        onVisit: (actor: string) =>
+          stop!.onVisit(
+            (b) =>
+              b.id === 'rnight.spoke' && b.day === beat.day && b.spoke?.actor === actor,
+          ),
+      }
+    : undefined;
   return (
     <Layer name="hud">
       {occupant === 'drawer' ? (
@@ -56,6 +76,7 @@ export function SideSlot({ view, beat, me, presentation, slot }: SceneProps) {
           onSeat={slot?.onFileSeat ?? setOwnSeat}
           replay={slot?.replayHref}
           seatTaps={!!slot?.onOpenFile && tapsOpenFiles(beat)}
+          visit={visit}
         />
       )}
     </Layer>

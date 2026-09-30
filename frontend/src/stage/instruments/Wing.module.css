@@ -478,6 +478,30 @@
   fill: var(--xray-hi);
 }
 
+/* the replay's night: the word on the card's cream foot, what a tap does (owner, 2026-09-30:
+   the glow alone did not read as lit). "Visit ▸" in the paper's verdigris ink, the file's
+   typewriter; "Seen" muted once the room has been visited */
+.word {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  translate: 0 -50%;
+  text-align: center;
+  font-family: var(--font-stage-type, 'Courier Prime'), 'Courier New', monospace;
+  font-style: normal;
+  font-weight: 700;
+  font-size: min(calc(var(--meta) * 1.05), 21cqw);
+  letter-spacing: 0.04em;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--ink-follow);
+}
+.word.seen {
+  font-weight: 400;
+  color: var(--ink-na);
+}
+
 /* the replay's night stop (2026-09-30): a seat that acted breathes a clear verdigris glow while
    its room is a tap away (an edge drawn once, a glow whose opacity alone moves); visited, it
    keeps a steady, quieter mark */

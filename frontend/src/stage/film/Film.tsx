@@ -110,6 +110,14 @@ export interface FilmProps {
   replay?: string;
   /** A tap on a seat on the rail opens its file at this beat: the docket says so. */
   seatTaps?: boolean;
+  /**
+   * The replay's night stop: the rooms a tap visits (each actor, the pack as its wolves, and
+   * whether it has been seen), which the sheet offers above its seats.
+   */
+  visit?: {
+    rooms: readonly { actor: string; seats: readonly string[]; seen: boolean }[];
+    onVisit: (actor: string) => void;
+  };
 }
 
 export function Film({
@@ -124,6 +132,7 @@ export function Film({
   onSeat,
   replay,
   seatTaps = false,
+  visit,
 }: FilmProps) {
   const [ownSeat, setOwnSeat] = useState<FileChoice | null>(null);
   const box = useRef<HTMLElement>(null);
@@ -235,12 +244,21 @@ export function Film({
             </div>
             <div className={`${styles.sheet} ${styles.docket}`}>
               {nudge}
-              {seatTaps ? (
+              {/* the count's sheet is a list of every voter already: one quiet line there */}
+              {seatTaps && docket!.kind === 'vote' ? (
                 <p className={styles.tapHint} data-tap-hint>
                   <KeyholeGlyph /> Tap a seat to open its file
                 </p>
+              ) : seatTaps ? (
+                <CallToAction
+                  seats={view.seats}
+                  alive={view.alive}
+                  chip={chip}
+                  onSeat={pick}
+                  visit={visit}
+                />
               ) : null}
-              <Docket model={docket!} chip={chip} onSeat={pick} />
+              <Docket model={docket!} chip={chip} onSeat={pick} foot={seatTaps} />
             </div>
           </>
         )}
@@ -392,6 +410,75 @@ function SeatTabs({
           </button>
         );
       })}
+    </div>
+  );
+}
+
+/**
+ * The sheet's call to action where a tap opens files (owner, 2026-09-30: it was buried in the
+ * sheet's small print): at the night stop "Visit a room" with the actors' faces, each a way into
+ * its room; then the headline itself, the keyhole and "Tap a seat to open its file", with every
+ * seat's face right there as a button that opens its file.
+ */
+function CallToAction({
+  seats,
+  alive,
+  chip,
+  onSeat,
+  visit,
+}: {
+  seats: readonly string[];
+  alive: readonly string[];
+  chip: (seat: string, cls?: string) => ReactNode;
+  onSeat: (seat: string) => void;
+  visit?: FilmProps['visit'];
+}) {
+  return (
+    <div className={styles.cta} data-tap-hint>
+      {visit?.rooms.length ? (
+        <>
+          <p className={styles.ctaHead}>Visit a room</p>
+          <div className={styles.ctaRow} role="group" aria-label="Visit a room">
+            {visit.rooms.map((r) => (
+              <button
+                key={r.actor}
+                type="button"
+                className={`${styles.ctaRoom} ${r.seen ? styles.ctaSeen : ''}`}
+                onClick={() => visit.onVisit(r.actor)}
+                aria-label={`${r.actor === 'pack' ? 'The pack' : `Seat ${seatNumber(r.actor)}`}’s night${r.seen ? ', seen' : ''}`}
+                data-visit={r.actor}
+              >
+                <span className={styles.ctaFaces}>
+                  {r.seats.map((s) => (
+                    <span key={s}>{chip(s)}</span>
+                  ))}
+                </span>
+                <small>
+                  {r.actor === 'pack' ? 'Pack' : seatNumber(r.actor)}
+                  {r.seen ? ' · seen' : ' ▸'}
+                </small>
+              </button>
+            ))}
+          </div>
+        </>
+      ) : null}
+      <p className={styles.ctaHead}>
+        <KeyholeGlyph /> Tap a seat to open its file
+      </p>
+      <div className={styles.ctaRow} role="group" aria-label="Open a seat’s file">
+        {seats.map((s) => (
+          <button
+            key={s}
+            type="button"
+            className={`${styles.ctaSeat} ${alive.includes(s) ? '' : styles.dead}`}
+            onClick={() => onSeat(s)}
+            aria-label={`Open seat ${seatNumber(s)}’s file`}
+          >
+            {chip(s, `${styles.face} ${styles.sm}`)}
+            <small>{seatNumber(s)}</small>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -981,10 +1068,13 @@ function Docket({
   model,
   chip,
   onSeat,
+  foot = false,
 }: {
   model: DocketModel;
   chip: (seat: string, cls?: string) => ReactNode;
   onSeat: (seat: string) => void;
+  /** The call to action heads the sheet: what the sheet holds goes to a small footnote. */
+  foot?: boolean;
 }) {
   const sm = `${styles.face} ${styles.sm}`;
   const role = (r: string | null) =>
@@ -1205,17 +1295,21 @@ function Docket({
         </>
       );
 
-    case 'empty':
-      return (
+    case 'empty': {
+      const what =
+        'A turn and a night act open that seat’s file; this sheet holds the count, the lynch’s card, a morning’s brief, the night whole, the deal and the ending.';
+      return foot ? (
+        <p className={styles.footnote}>{what}</p>
+      ) : (
         <>
           {head(docketTitle(model), model.label)}
           <p className={styles.empty}>
-            Nothing on file at this beat. A turn and a night act open that seat’s file; this
-            sheet holds the count, the lynch’s card, a morning’s brief, the night whole, the
-            deal and the ending. Any seat’s file is a tap away, on the name above.
+            Nothing on file at this beat. {what} Any seat’s file is a tap away, on the name
+            above.
           </p>
         </>
       );
+    }
   }
 }
 

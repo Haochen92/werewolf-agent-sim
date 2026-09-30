@@ -42,12 +42,15 @@ import { ROLE_NAME, seatNumber } from '../roles';
 import { bandNarrows, fileTap, sideOpen, stripButtons } from '../slot';
 import { HUD_CHROME, STAGE_H, STAGE_W, geometry } from '../units';
 import { CarPaint, HouseLights, TableWing } from './DiningCarParts';
-import { NightLobbyScene, nightUnits } from './NightLobbyScene';
+import { NightLobbyScene, nightUnits, spokeOf } from './NightLobbyScene';
 import { NightRoom, ROOM_OF } from './NightRoom';
 import { packEntries } from './PackScene';
 import {
   ACT_MARK,
   actedAt,
+  actedTonight,
+  endsBranch,
+  isHeld,
   isMarkStep,
   marksAt,
   nightBranchesOf,
@@ -66,6 +69,8 @@ const VERB: Record<string, string> = {
   serial_killer: 'marks',
   wolf: 'chooses',
 };
+/** A seat that chose no one: what the box says (the vigilante holding its fire). */
+const HOLDS: Record<string, string> = { vigilante: 'holds its fire.' };
 /** When, after the beat starts, the choice lands, its mark follows, and the actor's lamp goes out (seconds). */
 const MARK_AT = 0.9;
 const STAMP_AT = 1.4;
@@ -114,7 +119,7 @@ function useAfter(at: number, animate: boolean): boolean {
  * line arriving in the chat.
  */
 function SpokeRoom(props: SceneProps) {
-  const { view, beat, presentation, stop } = props;
+  const { view, beat, presentation, stop, slot: slotInput, onSeek } = props;
   const { hud, animate, cast } = presentation;
   const side = sideOpen(presentation);
   const g = geometry(hud, side);
@@ -124,6 +129,8 @@ function SpokeRoom(props: SceneProps) {
   const spoke = beat.spoke ?? null;
   const cur: NightBranch | undefined = spoke ? branches[spoke.rank] : undefined;
   const markStep = !!spoke && isMarkStep(spoke, cur);
+  const held = isHeld(cur);
+  const ends = !!spoke && endsBranch(spoke, cur);
   const total = nightUnits(view);
   const acted = actedAt(branches, spoke, total);
   const pack = cur?.actor === 'pack';
@@ -144,9 +151,22 @@ function SpokeRoom(props: SceneProps) {
     branches.some(
       (b, rank) =>
         b.seats.includes(seat) &&
-        (rank > (spoke?.rank ?? Infinity) ||
-          (rank === spoke?.rank && !(markStep && lampOut))),
+        (rank > (spoke?.rank ?? Infinity) || (rank === spoke?.rank && !(ends && lampOut))),
     );
+  // the wing (2026-09-30): another actor's card goes straight to its room, "Visit ▸" on it
+  // ("Seen" once visited), this actor's plays its room again, anyone else's opens a file
+  const actors = actedTonight(view, view, day);
+  const open = fileTap(presentation, slotInput, true);
+  const visit = (seat: string) => {
+    const into = spokeOf(view, day, seat);
+    if (!(stop ? stop.onVisit(into) : onSeek?.(into))) open?.(seat);
+  };
+  const tap = stop || onSeek ? (s: string) => (actors.has(s) ? visit : open)?.(s) : open;
+  const word = (s: string) => {
+    const a = actors.get(s);
+    if (!a || seats.includes(s)) return undefined;
+    return stop?.visited.includes(a) ? 'seen' : 'visit';
+  };
 
   const plan = roomPlan({ room: ROOM_OF[role] ?? 'healer', hud, side, n: photos.length });
   const marks: Partial<Record<string, ReactNode>> = {};
@@ -204,7 +224,18 @@ function SpokeRoom(props: SceneProps) {
       onCard={() => {}}
       sub={`${beat.label} · ${actorWord(cur)}`}
       count={<CountPill hud={hud} label="Acted" n={acted} total={total} side={side} />}
-      wing={{ lit: (s) => seats.includes(s), lamp: lampOn }}
+      wing={{
+        lit: (s) => seats.includes(s),
+        lamp: lampOn,
+        word,
+        tap,
+        tapLabel: (s) =>
+          actors.has(s)
+            ? seats.includes(s)
+              ? `Seat ${seatNumber(s)}’s night, again`
+              : `Seat ${seatNumber(s)}’s night`
+            : `Open seat ${seatNumber(s)}’s file`,
+      }}
     >
       {cur && !pack ? (
         <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
@@ -217,7 +248,9 @@ function SpokeRoom(props: SceneProps) {
             walnut={!!back}
             actions={back}
           >
-            {VERB[cur.role] ?? 'acts on'} seat {seatNumber(cur.target ?? '')}.
+            {held
+              ? (HOLDS[cur.role] ?? 'does not act.')
+              : `${VERB[cur.role] ?? 'acts on'} seat ${seatNumber(cur.target ?? '')}.`}
           </Notice>
         </NoticeZone>
       ) : null}

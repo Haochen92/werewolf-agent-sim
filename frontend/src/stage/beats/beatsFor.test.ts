@@ -173,8 +173,8 @@ describe('beatsFor on the fixture (9369a5c1, memory on)', () => {
     // the pages share the speech's anchor, so they show the same log
     expect(new Set(first.map((b) => b.end)).size).toBe(1);
     for (const b of first) {
-      expect(b.holdMs).toBeGreaterThanOrEqual(2500);
-      expect(b.holdMs).toBeLessThanOrEqual(9000);
+      expect(b.holdMs).toBeGreaterThanOrEqual(5000);
+      expect(b.holdMs).toBeLessThanOrEqual(15000);
     }
     // a speech that fits the box is one beat, with no page mark
     const one = pub.filter((b) => b.id === 'day.speech' && !b.page);

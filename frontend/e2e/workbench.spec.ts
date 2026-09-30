@@ -202,13 +202,27 @@ const ENDING: [name: string, path: string, ready: string][] = [
   ],
   [
     'rnight-spoke-pack-d2-line2',
-    'rnight?beat=15&viewer=xray&hud=replay&slot=film',
+    'rnight?beat=17&viewer=xray&hud=replay&slot=film',
     '[data-chat="pack"]',
   ],
   [
     'rnight-whole-d2',
-    'rnight?beat=19&viewer=xray&hud=replay&slot=film',
+    'rnight?beat=21&viewer=xray&hud=replay&slot=film',
     '[role="img"][aria-label="bite"]',
+  ],
+  // the vigilante holding its fire on night 1: a room of its own, no mark; the other actors'
+  // cards say "Visit ▸"
+  [
+    'rnight-spoke-held-d1',
+    'rnight?beat=3&viewer=xray&hud=replay&slot=film',
+    '[data-layer="hud"] [data-word="visit"]',
+  ],
+  // the night stop with its file up: "Visit a room" and "Tap a seat to open its file" head the
+  // night's sheet, the wing's actors say "Visit ▸"
+  [
+    'rnight-hub-file',
+    'rnight?beat=0&viewer=xray&hud=replay&slot=film',
+    '[data-visit="pack"]',
   ],
   ['over-verdict', 'over?beat=2', '[data-verdict="wolves"]'],
   ['over-winners-stand', 'over?beat=3', '[data-layer="figures"] img'],
