@@ -63,7 +63,7 @@ export function bandNarrows(
   return slotOf(p) === 'drawer' && !atRail(beat);
 }
 
-/** The top strip's two tabs and its Reveal switch for a scene: pressed states from the presentation, presses to the container (and the replay's way back). */
+/** The top strip's two tabs and its Reveal switch for a scene: pressed states from the presentation, presses to the container (and the replay's way back, the live game's door). */
 export function stripButtons(p: Pick<Presentation, 'slot' | 'xray'>, slot?: SlotInput) {
   const reveal =
     slot?.onReveal || slot?.revealLocked !== undefined
@@ -77,6 +77,7 @@ export function stripButtons(p: Pick<Presentation, 'slot' | 'xray'>, slot?: Slot
     onTranscript: slot?.onTranscript,
     back: slot?.back,
     reveal,
+    leave: slot?.onLeave,
   };
 }
 

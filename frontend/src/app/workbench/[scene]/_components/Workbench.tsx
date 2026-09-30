@@ -13,7 +13,8 @@ import type { SceneId } from '@/stage/beats/types';
 import { useDrawerFilters } from '@/stage/drawer/use-drawer-filters';
 import type { FileChoice } from '@/stage/film/case-file';
 import type { SlotInput, StopInput } from '@/stage/scenes/types';
-import { pressFile, pressTranscript } from '@/stage/slot';
+import { LeaveConfirm } from '@/stage/instruments/TopStrip';
+import { pressFile, pressTranscript, sideOpen } from '@/stage/slot';
 import {
   BeatStepper,
   ControlStrip,
@@ -123,6 +124,8 @@ export function Workbench({ scene }: { scene: string }) {
   const drawer = useDrawerFilters();
   const [filmTab, setFilmTab] = useState('notes');
   const [fileSeat, setFileSeat] = useState<FileChoice | null>(null);
+  // a live cut's door: "Leave the table?" is open (Leave is only logged: there is no lobby here)
+  const [leaving, setLeaving] = useState(false);
   const slotInput = useMemo((): SlotInput | undefined => {
     if (!frame) return undefined;
     const now = frame.presentation;
@@ -146,7 +149,10 @@ export function Workbench({ scene }: { scene: string }) {
       // the strip's Reveal as its containers draw it: the replay's switch writes the viewer
       // (as the viewer control above does); a live cut's is locked until the game is over
       ...(q.live
-        ? { revealLocked: !now.xray }
+        ? {
+            revealLocked: !now.xray,
+            onLeave: frame.me && !now.xray ? () => setLeaving(true) : undefined,
+          }
         : q.hud === 'replay'
           ? {
               onReveal: () =>
@@ -246,6 +252,23 @@ export function Workbench({ scene }: { scene: string }) {
         }
       />
     );
+    if (leaving && q.live && Scene && beat && view)
+      stage = (
+        <>
+          {stage}
+          <Layer name="hud">
+            <LeaveConfirm
+              hud="live"
+              side={sideOpen(frame.presentation)}
+              onStay={() => setLeaving(false)}
+              onLeave={() => {
+                console.info('[workbench] leave → /rooms');
+                setLeaving(false);
+              }}
+            />
+          </Layer>
+        </>
+      );
     controls = (
       <>
         <Select

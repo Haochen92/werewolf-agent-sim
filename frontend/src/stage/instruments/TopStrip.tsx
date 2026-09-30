@@ -14,11 +14,14 @@
  * The tabs only report what they are pressed to; the container decides what a press does.
  * The replay also has a way out, "← Replays" (or "← Home", whichever the viewer came from), on
  * its own small plaque just before the day's, there from the first frame: a phone on its side
- * has no browser bar to go back with (owner, 2026-09-29). A live game has none.
+ * has no browser bar to go back with (owner, 2026-09-29). A live game's seated player has a door
+ * instead, at the strip's far right past Transcript, which asks first (`LeaveConfirm`): their
+ * seat's agent plays on for them, and the lobby leads back while the game lasts (2026-09-30).
  */
 import Link from 'next/link';
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { geometry, type Hud } from '../units';
+import { Notice, NoticeButton, NoticeZone } from './Notice';
 import styles from './TopStrip.module.css';
 
 export interface TopStripProps {
@@ -54,6 +57,8 @@ export interface TopStripProps {
    * disabled and unlit (live, before the game ends). Absent: no switch.
    */
   reveal?: { on: boolean; onPress?: () => void; locked?: boolean };
+  /** Live only: the door at the far right, "Leave the table"; the container asks first. */
+  leave?: () => void;
 }
 
 export function TopStrip({
@@ -71,14 +76,16 @@ export function TopStrip({
   count,
   side = false,
   reveal,
+  leave,
 }: TopStripProps) {
   // no HUD (a preview, like the landing's): no strip, and no buttons that would go nowhere
   if (hud === 'none') return null;
   const g = geometry(hud, side);
   const out = !!back && hud === 'replay';
+  const door = !!leave && hud === 'live';
   // with the slot closed the room runs under the right's plaques: the row stops short of them
   // (they grow with the labels), and a count that does not fit wraps under the plaques
-  const reserve = side ? 0 : reveal ? 380 : 220;
+  const reserve = side ? 0 : (reveal ? 380 : 220) + (door ? 64 : 0);
   return (
     <>
       <div
@@ -135,6 +142,18 @@ export function TopStrip({
             Transcript
           </button>
         </div>
+        {door ? (
+          <button
+            type="button"
+            className={styles.door}
+            aria-label="Leave the table"
+            title="Leave the table"
+            aria-haspopup="dialog"
+            onClick={leave}
+          >
+            <DoorGlyph />
+          </button>
+        ) : null}
       </div>
       {out ? null : count}
     </>
@@ -215,5 +234,86 @@ function Disc({ kind }: { kind: 'sun' | 'moon' }) {
         )}
       </svg>
     </span>
+  );
+}
+
+/** The door: a frame with its leaf swung open on the left hinge, a brass knob, the floor. */
+function DoorGlyph() {
+  return (
+    <svg viewBox="0 0 16 16" aria-hidden="true">
+      <path
+        d="M4 14.5V2.5h8v12M2.5 14.5h11"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.3}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M4 2.5 8.6 3.7v11.9L4 14.5Z"
+        fill="currentColor"
+        fillOpacity={0.28}
+        stroke="currentColor"
+        strokeWidth={1.3}
+        strokeLinejoin="round"
+      />
+      <circle cx={7.4} cy={9.4} r={0.75} fill="currentColor" />
+    </svg>
+  );
+}
+
+/**
+ * "Leave the table?", asked when the live strip's door is pressed: a walnut notice in the notice
+ * zone, over whatever the foot holds, with Stay (which has the focus, so a stray Enter keeps the
+ * seat) and Leave. Escape stays. The container holds whether it is open, so it outlives the beat.
+ */
+export function LeaveConfirm({
+  hud,
+  side = false,
+  onStay,
+  onLeave,
+}: {
+  hud: Hud;
+  /** The side slot is open: the zone stops short of it. */
+  side?: boolean;
+  onStay: () => void;
+  onLeave: () => void;
+}) {
+  const box = useRef<HTMLDivElement>(null);
+  // the latest Stay, so the live page's redraws (its clock) neither re-focus nor re-bind
+  const stay = useRef(onStay);
+  stay.current = onStay;
+  useEffect(() => {
+    box.current?.querySelector('button')?.focus();
+    const esc = (e: KeyboardEvent) => e.key === 'Escape' && stay.current();
+    window.addEventListener('keydown', esc);
+    return () => window.removeEventListener('keydown', esc);
+  }, []);
+  return (
+    <NoticeZone hud={hud} side={side}>
+      <div
+        ref={box}
+        className={styles.leave}
+        role="alertdialog"
+        aria-label="Leave the table?"
+        data-leave-confirm
+      >
+        <Notice
+          walnut
+          title="Leave the table?"
+          actions={
+            <>
+              <NoticeButton onPress={onStay}>Stay</NoticeButton>
+              <NoticeButton lead onPress={onLeave}>
+                Leave
+              </NoticeButton>
+            </>
+          }
+        >
+          Your seat’s agent plays on for you. You can come back to this game from the lobby
+          while it lasts.
+        </Notice>
+      </div>
+    </NoticeZone>
   );
 }

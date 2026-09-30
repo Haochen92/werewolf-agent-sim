@@ -498,6 +498,40 @@ test('the seat rail: a seat’s own knowledge bands its cards, and nobody else�
   }
 });
 
+/**
+ * Leaving the table (live only): the strip's door at its far right asks first, a walnut notice in
+ * the foot's zone; Stay and Escape close it. The replay's HUD has no door.
+ */
+test('the strip’s door: live only, and it asks before leaving', async ({ page }) => {
+  const door = page.getByRole('button', { name: 'Leave the table' });
+  const confirm = page.locator('[data-leave-confirm]');
+  await page.goto(
+    '/workbench/day?beat=6&viewer=seat:player_7&hud=replay&animate=0&strip=0',
+    {
+      waitUntil: 'networkidle',
+    },
+  );
+  await expect(page.getByRole('button', { name: 'Transcript', exact: true })).toBeVisible();
+  await expect(door).toHaveCount(0);
+  await page.goto('/workbench/day?live=1&beat=6&viewer=seat:player_7&animate=0&strip=0', {
+    waitUntil: 'networkidle',
+  });
+  await door.click();
+  await expect(confirm).toContainText('Leave the table?');
+  await expect(confirm).toContainText(
+    'Your seat’s agent plays on for you. You can come back to this game from the lobby while it lasts.',
+  );
+  await expect(confirm.getByRole('button', { name: 'Stay' })).toBeFocused();
+  await expect(page.locator('[data-layer="figures"] img')).toHaveCount(1);
+  await settle(page);
+  await expect(page).toHaveScreenshot('leave-confirm-day.png');
+  await page.keyboard.press('Escape');
+  await expect(confirm).toHaveCount(0);
+  await door.click();
+  await confirm.getByRole('button', { name: 'Stay' }).click();
+  await expect(confirm).toHaveCount(0);
+});
+
 /** The guess's panel on the smallest phone: every row on the stage, a finger's height, tappable. */
 test('the seat rail: the role guess fits a small phone and takes a tap', async ({
   page,

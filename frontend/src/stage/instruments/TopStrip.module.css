@@ -4,7 +4,8 @@
 .phase,
 .modes,
 .back,
-.reveal {
+.reveal,
+.door {
   background: linear-gradient(180deg, var(--walnut-top), var(--walnut-bot));
   border: 1.5px solid var(--hud-brass);
   box-shadow:
@@ -289,4 +290,34 @@
 /* live, after it: on for good, nothing to press */
 .reveal:disabled:not([data-reveal='locked']) {
   cursor: default;
+}
+
+/* live: the door at the strip's far right, a small plaque of the tabs' height with the glyph in
+   brass; it asks before anyone leaves (LeaveConfirm) */
+.door {
+  display: grid;
+  place-items: center;
+  padding: 0 calc(10.4px * var(--legible-ui));
+  border-radius: 8px;
+  color: var(--hud-brass-hi);
+  cursor: pointer;
+}
+.door svg {
+  width: calc(22px * var(--legible-ui));
+  height: calc(22px * var(--legible-ui));
+}
+.door:hover {
+  color: var(--cream);
+}
+.door:focus-visible {
+  outline: 2px solid var(--hud-brass-hi);
+  outline-offset: 2px;
+}
+
+/* the confirm stands over what the foot holds (the speech box, the dock) */
+.leave {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  min-width: 0;
 }

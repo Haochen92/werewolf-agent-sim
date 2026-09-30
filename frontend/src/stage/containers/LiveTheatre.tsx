@@ -25,7 +25,8 @@
  *
  * After `game_over` every viewer holds the whole log, so the X-ray is on for everyone: the
  * wing takes the truth, the film opens, and the ending plays to its curtain, whose way out
- * goes to the replay or back to the lobby.
+ * goes to the replay or back to the lobby. Until then a seated player's way out is the strip's
+ * door, which asks first ("Leave the table?") and goes to the lobby; their agent plays on.
  *
  * Before the game, the same stage holds the waiting room: the platform (`StationScene`), drawn
  * from the room the page hands in (`room`), with the host's Lock and Depart going back out
@@ -36,6 +37,7 @@
  * starts from its first beat behind it (beat sheet §1a).
  */
 import { useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useGameSession, type PacingBar } from '@/game/store';
 import { serverNow, useCountdown } from '@/hooks/useCountdown';
@@ -52,6 +54,7 @@ import { useDrawerFilters } from '../drawer/use-drawer-filters';
 import { StageMotion } from '../motion';
 import { notebookForAgent, useNotebook } from '../notebook';
 import { CardOverlay } from '../instruments/FramedCard';
+import { LeaveConfirm } from '../instruments/TopStrip';
 import { draftRequest } from '../instruments/turn-dock';
 import { seatNumber } from '../roles';
 import { SCENES } from '../scenes';
@@ -119,6 +122,9 @@ function departMs(): number {
     window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   return reduce ? 600 : DEPART.total * 1000;
 }
+
+/** The lobby: where the curtain's "Back to the lobby" and the strip's door go. */
+const LOBBY = '/rooms';
 
 /** The drawer is open by default on a screen with room for it (as the replay's). */
 function defaultSlot(): Presentation['slot'] {
@@ -383,6 +389,9 @@ export function LiveTheatre({
   }, [cardOpen]);
   const [filmTab, setFilmTab] = useState('notes');
   const [fileSeat, setFileSeat] = useState<FileChoice | null>(null);
+  // the strip's door: "Leave the table?" is open (a seated player, until the game ends)
+  const [leaving, setLeaving] = useState(false);
+  const router = useRouter();
   const ahead = useMemo(
     () => (xray ? folds.at(events.length) : null),
     [xray, folds, events.length],
@@ -407,6 +416,8 @@ export function LiveTheatre({
       },
       // Reveal is locked until the game ends, then on for good
       revealLocked: !xray,
+      // a seated player's way out, until the game's end brings the curtain's
+      onLeave: me && !xray ? () => setLeaving(true) : undefined,
     }),
     [
       drawer.filters,
@@ -417,6 +428,7 @@ export function LiveTheatre({
       ahead,
       xray,
       gameId,
+      me,
     ],
   );
 
@@ -546,7 +558,7 @@ export function LiveTheatre({
               onNext={() =>
                 dispatch({ type: 'held', step: state.step, ctx: ctxRef.current })
               }
-              wayOut={{ replay: `/replays/${gameId}`, lobby: '/rooms' }}
+              wayOut={{ replay: `/replays/${gameId}`, lobby: LOBBY }}
             />
           </StageMotion>
         ) : null}
@@ -586,6 +598,14 @@ export function LiveTheatre({
               alone={myRole === 'wolf' && !view.packRoster.some((s) => s !== me)}
               note={capsNote(view.me.role?.bullets ?? null)}
               onClose={() => setCardOpen(false)}
+            />
+          ) : null}
+          {liveOn && beat && leaving && me && !xray ? (
+            <LeaveConfirm
+              hud="live"
+              side={sideOpen(presentation)}
+              onStay={() => setLeaving(false)}
+              onLeave={() => router.push(LOBBY)}
             />
           ) : null}
           {connection === 'reconnecting' ? (

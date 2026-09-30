@@ -532,6 +532,17 @@ test('live: a long line counts near the cap and stops at 700; a pending draft sa
   await expect(words).toHaveText('Finding the words…', { timeout: 4000 });
 });
 
+test('live: the strip’s door asks, and Leave goes to the lobby', async ({ page }) => {
+  await mockApi(page, { status: status(200), stream: upTo(200) });
+  await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  await expect(theatre(page)).toHaveAttribute('data-beat-index', /\d+/);
+  await page.getByRole('button', { name: 'Leave the table' }).click();
+  const confirm = page.getByRole('alertdialog', { name: 'Leave the table?' });
+  await expect(confirm).toBeVisible();
+  await confirm.getByRole('button', { name: 'Leave' }).click();
+  await expect(page).toHaveURL(/\/rooms$/);
+});
+
 test('live: after game over the ending plays to its curtain', async ({ page }) => {
   test.setTimeout(90_000); // the whole ending plays, a beat at a time
   await page.clock.install({ time: T0 });

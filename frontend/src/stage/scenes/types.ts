@@ -138,6 +138,11 @@ export interface SlotInput {
    * then shown on (false; the game's end is the switch). Absent with no `onReveal`: no switch.
    */
   revealLocked?: boolean;
+  /**
+   * Live, a seated player: the strip's door at its far right, which asks before leaving the
+   * table (`LeaveConfirm`, held by the container so it outlives the beat). The replay has none.
+   */
+  onLeave?: () => void;
   /** Where the drawer was scrolled, and whether it follows the beat, kept across scenes. */
   drawerScroll?: DrawerScroll;
   /**
