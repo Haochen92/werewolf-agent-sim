@@ -233,6 +233,8 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   src/assets/sprites/props/{jar-glass,jar-lid,stand-front,vote-table,plate,valance,shutter}.webp
   src/assets/sprites/car/{day,night}.webp
   src/assets/sprites/rooms/{healer,investigator,vigilante,serial_killer,wolf}.webp
+  src/assets/sprites/roles/{villager,wolf,investigator,vigilante,healer,serial_killer}.webp
+    (the role cards' felt dolls, 720×960, figure at full height, centred, feet on the bottom edge)
   src/assets/sprites/shadow/day/<character>/{base,talking,thinking,out}.webp
   src/assets/sprites/atmosphere/grain.webp
   ```
@@ -240,7 +242,7 @@ anything that shows state is drawn over the sprite in vector, never baked in.
 - Imported only from [src/assets/manifest.ts](../src/assets/manifest.ts) (the existing ruling:
   static imports through `next/image`, content-hashed URLs, inferred dimensions). The manifest
   exports typed handles — `SPRITES.day[character][state]`, `SPRITES.car[hour]`, `SPRITES.rooms[room]`,
-  `SPRITES.kits[name]`, `SPRITES.wood`, `SPRITES.textures[name]` — and `BODY: Record<Character, { top: number; body:
+  `SPRITES.roles[role]`, `SPRITES.kits[name]`, `SPRITES.wood`, `SPRITES.textures[name]` — and `BODY: Record<Character, { top: number; body:
   number }>`, the head-to-toe measure the cast module scales from, and `HEAD_FRAME`, how each head
   portrait sits in a round window (both measured from the cast, "The cast" below; no JSON at runtime).
 - `castForGame(gameId)` (from `kits/puppet-kit.js`) lives in `src/stage/cast/castForGame.ts`
@@ -250,6 +252,12 @@ anything that shows state is drawn over the sprite in vector, never baked in.
 - The plush dolls (and their shadows and `PLUSH_SCALE`) are gone since 2026-09-28: the night
   rooms hang photographs instead ("The night rooms", below); `convert-sprites.mjs` skips their
   masters. Of the kits only the wolves' is still drawn (the replay night's rail, `RailInstrument`).
+- The role figures (2026-09-30) are painted sprites, `SPRITES.roles[role]`, replacing the vector
+  dolls ported from `kits/role-kit.js`. `roleFigure(role)` (`src/stage/paint/role-kit.ts`) still
+  returns SVG markup, now an `<image>` on a `0 0 720 960` viewBox, so every card (the deal's,
+  "your card", the night rooms', the landing's and the ticket's) sizes one `<svg>` by CSS as
+  before; `roleAvatar(role)` is the same markup with a head-and-shoulders viewBox crop (the top
+  ~56%, per-role offsets for the vigilante's feather and the reaper's hood).
 - The station (the waiting room's platform, review 2026-09-26 §A5) has no masters in the bundle:
   its pictures exist only inlined in `claude_artifacts/design/pages/waiting-room.html`.
   `scripts/extract-station-sprites.mjs` pulls each out once, by the CSS rule that uses it, into

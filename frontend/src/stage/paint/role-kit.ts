@@ -1,193 +1,42 @@
 /**
- * The role figures: the felt doll drawn on each role's card, and the head-and-shoulders crop
- * the "your card" button shows. They are pictures, not state, so like the backdrop they are
- * built once as SVG strings; the card that frames them (name, sigil, front line, faction
- * colour) is an instrument and is drawn in JSX around them.
+ * The role figures: the felt doll on each role's card, and the head-and-shoulders crop the
+ * "your card" button shows. The dolls are painted sprites (SPRITES.roles, 720×960, feet on the
+ * bottom edge); this wraps each in SVG markup so every consumer, stage and site, keeps sizing
+ * one `<svg>` by CSS and injecting it as-is. The card that frames them (name, sigil, front
+ * line, faction colour) is an instrument and is drawn in JSX around them.
  *
- * Ported from the design bundle's role kit (docs/design_2026-09-25/kits/role-kit.js, VERSION
- * 2026-09-22) with types added and nothing else changed, so the stage draws the kit's dolls.
- * The card's words (the front line, what the role does at night) are in `card-text.ts`.
+ * The dolls were once vector drawings ported from the design bundle's role kit
+ * (docs/design_2026-09-25/kits/role-kit.js); git history keeps that drawing. The card's words
+ * (the front line, what the role does at night) are in `card-text.ts`.
  */
-const FB = {
-  K: '#24180c',
-  S: 3,
-  skin: '#e4c8a4',
-  W: '#efe4cb',
-  X: '#3a2e24',
-  WH: '#f6f1e4',
-  body: {
-    villager: '#6f7d5c',
-    healer: '#6d8294',
-    investigator: '#6b5b4b',
-    vigilante: '#4a4f5a',
-    wolf: '#7b4a44',
-    killer: '#3e3656',
-  },
-  acc: { town: '#c9a25e', wolf: '#b0584c', killer: '#8f7cc0' },
-};
-const sh = (d: string, f: string, w: number = FB.S) =>
-  `<path d="${d}" fill="${f}" stroke="${FB.K}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"/>`;
-const ln = (d: string, c: string, w: number) =>
-  `<path d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
-const st = (d: string, c: string = FB.W) =>
-  `<path d="${d}" fill="none" stroke="${c}" stroke-width="1.2" stroke-dasharray="2.6 2.4" stroke-linecap="round" opacity=".85"/>`;
-const ce = (
-  x: number,
-  y: number,
-  rx: number,
-  ry: number,
-  f: string,
-  w: number = FB.S,
-  rot = 0,
-) =>
-  `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${f}" stroke="${FB.K}" stroke-width="${w}"${rot ? ` transform="rotate(${rot} ${x} ${y})"` : ''}/>`;
-const patchB = (x: number, y: number, w: number, h: number, rot: number, fab = '#8b9a7a') =>
-  `<g transform="rotate(${rot} ${x} ${y})"><rect x="${x - w / 2}" y="${y - h / 2}" width="${w}" height="${h}" rx="1.6" fill="${fab}" stroke="${FB.K}" stroke-width="1.4"/>${st(`M${x - w / 2 + 2.4} ${y - h / 2 + 2.4} h${w - 4.8} v${h - 4.8} h-${w - 4.8} z`, '#efe4cb')}</g>`;
-const GLOVE = 'M47 74 C36 84 30 106 29 147 L91 147 C90 106 84 84 73 74 Z';
-const mitt = (x: number, y: number, rot: number, col: string) =>
-  ce(x, y, 12, 6.2, col, FB.S, rot);
-function gloveBody(role: keyof typeof FB.body, extra = '') {
-  const b = FB.body[role];
-  return `${sh(GLOVE, b)}${extra}${st('M33 140 H87')}${patchB(40, 128, 10, 9, -10)}`;
-}
-/* the wolf keeps its own head */
-const WOLF = () => {
-  const G = '#7d7670',
-    G2 = '#cfc6b8';
-  return `
-  ${gloveBody('wolf', sh('M36 78 Q60 68 84 78 L60 108 Z', '#9a6a60', 2.4) + st('M42 80 Q60 73 78 80'))}
-  ${ln('M30 146 q3.8 5 7.5 0 q3.8 5 7.5 0 q3.8 5 7.5 0 q3.8 5 7.5 0 q3.8 5 7.5 0 q3.8 5 7.5 0 q3.8 5 7.5 0 q3.8 5 7.5 0', FB.W, 2.2)}
-  ${mitt(46, 104, 20, G)}${mitt(74, 104, -20, G)}
-  ${sh('M36 30 L32 4 L52 24 Z', G)}${sh('M66 22 L80 2 L84 30 Z', G)}
-  ${sh('M30 54 C28 32 44 22 60 22 C76 22 86 30 88 42 L110 49 Q114 58 106 61 L86 66 C80 76 70 80 58 80 C40 80 31 70 30 54 Z', G)}
-  <path d="M86 44 L110 49 Q114 58 106 61 L86 66 Q80 56 86 44 Z" fill="${G2}"/>${sh('M30 54 C28 32 44 22 60 22 C76 22 86 30 88 42 L110 49 Q114 58 106 61 L86 66 C80 76 70 80 58 80 C40 80 31 70 30 54 Z', 'none')}
-  ${ce(109, 53, 3.2, 2.6, FB.K, 0)}
-  ${sh('M27 62 C22 30 44 16 62 17 C76 17 82 28 82 38 C72 42 62 50 56 62 C50 74 36 74 27 62 Z', FB.W)}
-  ${ln('M82 38 q-2 5 -6 4.6 q-1 5 -5.6 5.4 q0 5 -5 6.4 q.4 5 -4.2 7', FB.K, 1.6)}
-  ${st('M34 36 Q50 26 68 28', '#b4a07c')}
-  ${ln('M56 70 Q62 80 70 80', FB.K, 4)}${ln('M56 70 Q62 80 70 80', '#b9a48a', 2)}
-  <ellipse cx="74" cy="47" rx="3" ry="3.9" fill="${FB.K}"/><circle cx="74.9" cy="45.5" r="1" fill="${FB.WH}"/>
-  ${ln('M90 66 Q97 70 106 63', FB.K, 1.9)}<path d="M95 67.5 L96.6 71 L98.4 67.8" fill="${FB.WH}" stroke="${FB.K}" stroke-width="1"/>`;
-};
-/* human heads: an egg, taller than wide, eyes set low, no nose */
-const EGG =
-  'M60 16 C76 16 85 33 85 52 C85 69 74 80 60 80 C46 80 35 69 35 52 C35 33 44 16 60 16 Z';
-const eyesE = (y = 54, a = 50.5, b = 69.5) =>
-  [a, b]
-    .map(
-      (x) =>
-        `<ellipse cx="${x}" cy="${y}" rx="2.6" ry="3.4" fill="${FB.K}"/><circle cx="${x + 0.8}" cy="${y - 1.3}" r=".9" fill="${FB.WH}"/>`,
-    )
-    .join('');
-const seamE = `${ln('M38 60 L43 69', FB.K, 1)}${ln('M38.6 65 l3 -1.8 M40.4 68 l3 -1.8', FB.K, 1)}`;
-const mouthE = (y: number) =>
-  ln(
-    `M54.5 ${y - 2} Q57.2 ${y + 1.8} 60 ${y - 1.4} Q62.8 ${y + 1.8} 65.5 ${y - 2}`,
-    FB.K,
-    1.8,
-  );
-const GEO: Record<string, () => string> = {
-  villager: () => {
-    const b = FB.body.villager;
-    return `
-  ${ln('M100 22 V147', '#5a4632', 3.6)}${ln('M91 24 Q90 14 92 6 M100 24 V2 M109 24 Q110 14 108 6 M91 24 Q100 30 109 24', '#5a4632', 2.6)}
-  ${ce(60, 12, 8.5, 7.5, FB.X)}
-  ${gloveBody('villager', sh('M40 78 Q60 70 80 78 L72 96 Q60 102 48 96 Z', FB.W, 2.2))}
-  ${mitt(27, 96, 40, b)}${mitt(96, 92, -60, b)}
-  ${sh(EGG, FB.skin)}
-  ${sh('M36 49 C35 31 45 16 60 16 C75 16 85 31 84 49 C79 39 72 34 65 33 C61 38 51 38 44 36 C40 40 37 44 36 49 Z', FB.X)}
-  ${eyesE()}${ln('M45.5 47.5 L53 49.5 M74.5 47.5 L67 49.5', FB.K, 1.9)}${mouthE(69)}${seamE}`;
-  },
-  healer: () => {
-    const b = FB.body.healer,
-      A = FB.acc.town;
-    return `
-  ${gloveBody('healer', sh('M46 94 H74 L78 146 L42 146 Z', FB.W, 2.2) + `<path d="M57 104 H63 V113 H72 V119 H63 V128 H57 V119 H48 V113 H57 Z" fill="${A}" stroke="${FB.K}" stroke-width="1.2"/>`)}
-  ${mitt(26, 98, 40, b)}
-  ${sh('M97 96 C 104 108, 94 116, 102 128 C 107 136, 98 142, 103 148 L 97 148 C 92 140, 101 134, 96 128 C 89 118, 99 110, 92 98 Z', FB.W, 1.6)}
-  ${mitt(94, 92, -40, b)}${ce(99, 86, 7, 6, FB.W, 2.2)}${ce(99, 86, 2.4, 2, FB.X, 0)}
-  ${sh(EGG, FB.skin)}
-  ${sh('M34.5 50 C34 30 45 12 60 12 C75 12 86 30 85.5 50 C77 41 69 38 60 38 C51 38 43 41 34.5 50 Z', FB.W)}
-  ${st('M40 32 Q60 20 80 32', '#b4a07c')}
-  ${sh('M83 40 L96 33 L94 47 Z', FB.W, 2)}${sh('M83 44 L94 53 L84 55 Z', FB.W, 2)}
-  ${eyesE(56)}${mouthE(70.5)}${seamE}`;
-  },
-  investigator: () => {
-    const b = FB.body.investigator;
-    return `
-  ${gloveBody('investigator', ln('M49 76 L56 92 L60 82 L64 92 L71 76', FB.K, 2) + [98, 112, 126].map((y) => `<circle cx="60" cy="${y}" r="2.6" fill="${FB.X}"/>`).join(''))}
-  ${mitt(26, 98, 40, b)}
-  ${sh(EGG, FB.skin)}
-  ${ce(60, 27, 30, 5, FB.X)}${sh('M42 27 Q43 3 60 4 Q77 3 78 27 Z', FB.X)}${ln('M43.4 22 Q60 25 76.6 22', '#b9a48a', 2.2)}
-  <ellipse cx="50" cy="54" rx="2.6" ry="3.4" fill="${FB.K}"/><circle cx="50.8" cy="52.7" r=".9" fill="${FB.WH}"/>
-  ${ln('M80 64 L96 80', '#5a4632', 6)}
-  ${ce(71, 53, 11, 11, FB.W, 3)}${ce(71, 54, 4.6, 5.6, FB.K, 0)}<circle cx="72.8" cy="51.4" r="1.6" fill="${FB.WH}"/>
-  ${mitt(96, 84, -50, b)}
-  ${mouthE(69)}${seamE}`;
-  },
-  vigilante: () => {
-    const b = FB.body.vigilante,
-      A = FB.acc.town,
-      G = '#6d8a4e',
-      G2 = '#56703c';
-    return `
-  ${gloveBody('vigilante', sh('M44 118 Q42 132 49 133 Q56 132 54 118 Z', '#b9a48a', 1.6) + ln('M31 116 H89', FB.K, 3))}
-  ${ln('M52 112 L100 62', FB.K, 11.5)}${ln('M52 112 L100 62', '#8b9a7a', 8)}${ln('M89 73.5 L93.5 78', FB.K, 2.2)}
-  ${sh('M101 55 L109 63 L104 68 L96 60 Z', '#c9a878', 1.8)}${ln('M106 66 C 112 78, 100 88, 90 84', FB.K, 1)}
-  ${mitt(40, 106, -20, b)}${mitt(74, 92, -40, b)}
-  ${sh('M42 74 Q60 82 78 74 L77 80 Q60 88 43 80 Z', A, 2)}${sh('M44 78 Q34 86 30 98 L35 100 Q40 90 47 83 Z', A, 2)}
-  ${sh(EGG, FB.skin)}
-  ${sh('M81 27 C84 12 91 1 101 -9 C100 4 94 17 88 29 Z', '#b8574a', 1.8)}${ln('M84 26 Q91 10 100 -7', FB.K, 1)}
-  ${sh('M23 45 C32 31 48 17 68 12 C80 9 88 15 89 25 L91 35 C74 36 50 40 23 45 Z', G)}
-  ${ln('M38 36 Q54 22 74 14', G2, 2)}${st('M46 30 Q60 20 76 17', '#c9d3a8')}
-  ${sh('M21 47 L26 41 C46 35 70 31 88 27 L98 21 L93 36 C71 38 46 42 21 47 Z', '#87a463', 2.2)}
-  ${st('M29 43.5 C48 38.5 70 35 90 32', '#56703c')}
-  ${sh('M36 51 Q48 45 60 50 Q72 45 84 51 Q85 61 73 60 Q65 60 60 56 Q55 60 47 60 Q35 61 36 51 Z', FB.X, 2)}
-  <circle cx="49.5" cy="53.5" r="2.8" fill="${FB.W}"/><circle cx="70.5" cy="53.5" r="2.8" fill="${FB.W}"/>
-  ${mouthE(71)}`;
-  },
-};
-GEO.wolf = WOLF;
-GEO.reaper = () => {
-  const R1 = '#2b2433',
-    IN = '#140f18',
-    GH = '#eeeae0',
-    A = FB.acc.killer;
-  return `
-  ${ln('M99 147 L94 -8', FB.K, 6.4)}${ln('M99 147 L94 -8', '#5a4632', 3.6)}
-  ${sh('M95 -6 C74 -15 46 -10 30 6 C50 -2 72 -3 95.5 4 Z', '#dcd6ca', 2.4)}${ln('M44 -4 Q62 -10 80 -9', A, 1.8)}
-  ${sh('M44 70 C32 84 26 112 24 140 q6 8 12 0 q6 8 12 0 q6 8 12 0 q6 8 12 0 q6 8 12 0 C94 112 88 84 76 70 Z', R1)}
-  ${st('M32 128 Q60 134 88 128', '#8f86a8')}${patchB(42, 116, 10, 9, -10)}
-  ${sh('M60 12 C82 12 94 32 93 56 C92 72 84 82 72 84 L48 84 C36 82 28 72 27 56 C26 32 38 12 60 12 Z', R1)}
-  <path d="M60 26 C74 26 82 40 82 54 C82 67 72 76 60 76 C48 76 38 67 38 54 C38 40 46 26 60 26 Z" fill="${IN}"/>
-  ${sh('M60 31 C71 31 78 42 78 54 C78 65 70 72 60 72 C50 72 42 65 42 54 C42 42 49 31 60 31 Z', GH, 1.6)}
-  <ellipse cx="52.5" cy="53" rx="2.6" ry="3.4" fill="${FB.K}"/><circle cx="53.3" cy="51.7" r=".9" fill="${FB.WH}"/>
-  <ellipse cx="67.5" cy="53" rx="2.6" ry="3.4" fill="${FB.K}"/><circle cx="68.3" cy="51.7" r=".9" fill="${FB.WH}"/>
-  ${ln('M55.5 62.5 Q58 65.5 60 63 Q62 65.5 64.5 62.5', FB.K, 1.8)}
-  ${st('M36 40 Q60 22 84 40', '#8f86a8')}
-  ${mitt(29, 98, 55, R1)}<circle cx="22" cy="90" r="4.6" fill="${GH}" stroke="${FB.K}" stroke-width="2"/>
-  ${mitt(92, 94, -70, R1)}`;
-};
-GEO.serial_killer = GEO.reaper;
-const VIEW: Record<string, string> = { serial_killer: '2 -18 118 170' };
+import { SPRITES, type RoleSprite } from '@/assets/manifest';
 
-/** The role's felt figure, as SVG markup (empty for a role the kit does not draw). */
+const W = 720;
+const H = 960;
+
+/** The role's felt figure, as SVG markup (empty for a role without a sprite). */
 export function roleFigure(role: string): string {
-  const draw = GEO[role];
-  if (!draw) return '';
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${VIEW[role] || '2 -8 118 160'}" aria-hidden="true">${draw()}</svg>`;
+  if (!Object.hasOwn(SPRITES.roles, role)) return '';
+  const img = SPRITES.roles[role as RoleSprite];
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" aria-hidden="true"><image href="${img.src}" x="0" y="0" width="${W}" height="${H}"/></svg>`;
 }
 
+/*
+ * Head and shoulders: the top ~56% of the canvas at the avatar box's 92:96, centred. The
+ * vigilante's feather and the reaper's hood sit right of the canvas's centre line, so their
+ * windows slide right (the reaper's also drops a little, under the scythe's blade).
+ */
+const CROP_DEFAULT = '101 0 518 540';
 const CROP: Record<string, string> = {
-  serial_killer: '14 -20 92 100',
-  wolf: '20 -12 96 100',
+  vigilante: '150 0 518 540',
+  serial_killer: '135 30 518 540',
 };
 
 /** The figure cropped to head and shoulders: the card at rest beside the box ("your card"). */
 export function roleAvatar(role: string): string {
   return roleFigure(role).replace(
     /viewBox="[^"]*"/,
-    `viewBox="${CROP[role] || '14 -10 92 96'}" preserveAspectRatio="xMidYMin slice"`,
+    `viewBox="${CROP[role] || CROP_DEFAULT}" preserveAspectRatio="xMidYMin slice"`,
   );
 }
 

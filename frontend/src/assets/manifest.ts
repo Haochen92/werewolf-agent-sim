@@ -116,6 +116,12 @@ import roomInvestigator from './sprites/rooms/investigator.webp';
 import roomVigilante from './sprites/rooms/vigilante.webp';
 import roomSerialKiller from './sprites/rooms/serial_killer.webp';
 import roomWolf from './sprites/rooms/wolf.webp';
+import roleVillager from './sprites/roles/villager.webp';
+import roleWolf from './sprites/roles/wolf.webp';
+import roleInvestigator from './sprites/roles/investigator.webp';
+import roleVigilante from './sprites/roles/vigilante.webp';
+import roleHealer from './sprites/roles/healer.webp';
+import roleSerialKiller from './sprites/roles/serial_killer.webp';
 import owlBaseShadow from './sprites/shadow/day/owl/base.webp';
 import owlTalkingShadow from './sprites/shadow/day/owl/talking.webp';
 import owlThinkingShadow from './sprites/shadow/day/owl/thinking.webp';
@@ -285,6 +291,13 @@ export type CarPicture = 'day' | 'night';
 export type RoomPicture =
   'healer' | 'investigator' | 'vigilante' | 'serial_killer' | 'wolf';
 
+/**
+ * The role figures (alpha): each role's felt doll, 720×960, scaled to the full height, centred,
+ * feet on the bottom edge. Drawn on the role cards through `roleFigure` (paint/role-kit.ts).
+ */
+export type RoleSprite =
+  'villager' | 'wolf' | 'investigator' | 'vigilante' | 'healer' | 'serial_killer';
+
 /*
  * The atmosphere's pictures (stage_architecture §4 "Atmosphere"): each day figure's cast
  * shadow, its silhouette baked small and soft (a 12 px margin round 128 px tall), and the film
@@ -308,6 +321,7 @@ export const SPRITES: {
   props: Record<PropPicture, StaticImageData>;
   car: Record<CarPicture, StaticImageData>;
   rooms: Record<RoomPicture, StaticImageData>;
+  roles: Record<RoleSprite, StaticImageData>;
   shadow: {
     day: Record<Character, Record<DayState, StaticImageData>>;
   };
@@ -434,6 +448,14 @@ export const SPRITES: {
     vigilante: roomVigilante,
     serial_killer: roomSerialKiller,
     wolf: roomWolf,
+  },
+  roles: {
+    villager: roleVillager,
+    wolf: roleWolf,
+    investigator: roleInvestigator,
+    vigilante: roleVigilante,
+    healer: roleHealer,
+    serial_killer: roleSerialKiller,
   },
   shadow: {
     day: {

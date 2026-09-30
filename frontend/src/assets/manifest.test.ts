@@ -44,6 +44,14 @@ describe('sprite manifest', () => {
       expect([img.width, img.height]).toEqual([1536, 915]);
   });
 
+  it('has a felt figure for every role, on one 3:4 canvas', () => {
+    expect(Object.keys(SPRITES.roles).sort()).toEqual(
+      ['healer', 'investigator', 'serial_killer', 'vigilante', 'villager', 'wolf'].sort(),
+    );
+    for (const img of Object.values(SPRITES.roles))
+      expect([img.width, img.height]).toEqual([720, 960]);
+  });
+
   it('has the dining car by day and by night, fitted to the stage', () => {
     expect(Object.keys(SPRITES.car).sort()).toEqual(['day', 'night']);
     for (const img of Object.values(SPRITES.car))
