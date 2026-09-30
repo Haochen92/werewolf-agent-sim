@@ -16,6 +16,8 @@ import { DEFAULT_FILTERS, type DrawerFilters } from './drawer-lines';
 export interface DrawerScroll {
   following: boolean;
   top: number;
+  /** The reader scrolled to the very foot: following holds the lines there, not at the beat's. */
+  foot?: boolean;
 }
 
 export function useDrawerFilters(initial: DrawerFilters = DEFAULT_FILTERS) {

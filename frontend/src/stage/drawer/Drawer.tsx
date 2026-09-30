@@ -8,7 +8,9 @@
  *
  * It follows the beat only while the reader is at it: scrolled away to read back, the lines
  * stay put as new ones arrive, and a "Back to now" pill at the foot returns (owner,
- * 2026-09-29). Where they were, and whether they follow, outlives the scene (`scroll`).
+ * 2026-09-29). A reader who scrolls down to the very foot has caught up: it follows again on
+ * its own, held at the foot so the newest line keeps showing, until they scroll up (owner,
+ * 2026-09-30). Where they were, and whether they follow, outlives the scene (`scroll`).
  *
  * Full height under the top strip, because it is a long scroll; the room lays itself out
  * beside it and the box at the foot moves in under the puppet. On the seated human's own
@@ -64,6 +66,13 @@ import {
 } from './drawer-lines';
 import type { DrawerScroll } from './use-drawer-filters';
 import styles from './Drawer.module.css';
+
+/** Scrolled to the very bottom (within a few pixels): the reader has caught up with the lines. */
+export function atFoot(
+  el: Pick<HTMLElement, 'scrollHeight' | 'scrollTop' | 'clientHeight'>,
+) {
+  return el.scrollHeight - el.scrollTop - el.clientHeight <= 4;
+}
 
 const TIER_NAME: Record<LineTier, string> = {
   public: 'Public',
@@ -134,7 +143,10 @@ export function Drawer({
     const el = scroller.current;
     if (!el) return;
     const now = lit ? el.querySelector<HTMLElement>(`[data-line="${lit}"]`) : null;
-    const top = now ? Math.max(0, now.offsetTop - el.clientHeight * 0.6) : el.scrollHeight;
+    const top =
+      now && !memo.foot
+        ? Math.max(0, now.offsetTop - el.clientHeight * 0.6)
+        : el.scrollHeight;
     if (Math.abs(el.scrollTop - Math.min(top, el.scrollHeight - el.clientHeight)) < 1)
       return;
     ours.current = true;
@@ -152,6 +164,11 @@ export function Drawer({
   const follow = (on: boolean) => {
     memo.following = on;
     setFollowing(on);
+  };
+  // the reader at the very foot of the lines: following, held there as lines arrive
+  const foot = () => {
+    const el = scroller.current;
+    return !!el && atFoot(el);
   };
   useLayoutEffect(() => {
     const el = scroller.current;
@@ -174,12 +191,13 @@ export function Drawer({
     if (ours.current) {
       settle.current = setTimeout(() => {
         ours.current = false;
-        const at = atNow();
+        const at = (memo.foot && foot()) || atNow();
         if (at !== memo.following) follow(at);
       }, 160);
       return;
     }
-    const at = atNow();
+    memo.foot = foot();
+    const at = memo.foot || atNow();
     if (at !== memo.following) follow(at);
   };
   // a wheel, a finger or a key on the lines is the reader taking over from our scroll
@@ -187,6 +205,7 @@ export function Drawer({
     ours.current = false;
   };
   const backToNow = () => {
+    memo.foot = false;
     follow(true);
     goTo('smooth');
   };

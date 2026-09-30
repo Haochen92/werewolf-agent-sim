@@ -371,6 +371,36 @@ test('replay: the transcript follows only while the reader is at now', async ({ 
   await expect(page.locator('[data-drawer] [data-line="say-200"]')).toBeInViewport();
 });
 
+test('replay: the transcript follows again once the reader scrolls to its foot', async ({
+  page,
+}) => {
+  await open(page);
+  await seek(page, 48);
+  const lines = page.locator('[data-drawer] [data-line]').first().locator('xpath=..');
+  const back = page.getByRole('button', { name: /Back to now/ });
+  const gap = () =>
+    lines.evaluate((el) => el.scrollHeight - el.scrollTop - el.clientHeight);
+  await lines.evaluate((el) => el.scrollTo({ top: 0 }));
+  await expect(back).toBeVisible();
+  // down to the very foot: caught up, it follows on its own and the pill goes
+  await lines.evaluate((el) => el.scrollTo({ top: el.scrollHeight }));
+  await expect(back).toHaveCount(0);
+  // the beats go on: held at the foot, the newest line showing
+  for (const i of [49, 50, 51]) {
+    await page.keyboard.press('ArrowRight');
+    await expect(theatre(page)).toHaveAttribute('data-beat-index', String(i));
+    await expect.poll(gap).toBeLessThanOrEqual(4);
+    await expect(page.locator('[data-drawer] [data-line]').last()).toBeInViewport();
+  }
+  await expect(back).toHaveCount(0);
+  // scrolled up again, it stops: the next beat leaves the reader where they are
+  await lines.evaluate((el) => el.scrollTo({ top: 0 }));
+  await expect(back).toBeVisible();
+  await page.keyboard.press('ArrowRight');
+  await expect(theatre(page)).toHaveAttribute('data-beat-index', '52');
+  expect(await lines.evaluate((el) => el.scrollTop)).toBe(0);
+});
+
 test('replay: the band fits a small phone on its side', async ({ page }) => {
   await page.setViewportSize({ width: 667, height: 375 });
   await open(page);
