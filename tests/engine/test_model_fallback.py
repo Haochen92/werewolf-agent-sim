@@ -142,3 +142,152 @@ def test_same_model_configuration_skips_the_rescue(monkeypatch):
     monkeypatch.setenv("GOOGLE_GENAI_MODEL", "gemini-3.5-flash-lite")
     monkeypatch.setenv("GAME_FALLBACK_MODEL", "gemini-3.5-flash-lite")
     assert accessors.get_llm_game_fallback() is None
+
+
+# ---- stalls: a slow or full primary goes to the rescue at once, then is skipped for a while -----
+#
+# Vertex's shared pool held requests for minutes on 2026-09-30 (429 RESOURCE_EXHAUSTED after a
+# long wait); with the request budget those surface as transient errors, and the game's health
+# count sends the next turns straight to the rescue model.
+
+import httpx
+import pytest
+from google.genai import errors as genai_errors
+
+from Agents.llm_factory import health as health_mod
+from Agents.llm_factory.backends import GAME_LLM, GameLLM
+from Agents.llm_factory.embeddings import is_transient_provider_error
+
+
+class _StalledLLM:
+    """A primary whose every call is bounced by the provider; counts the calls."""
+
+    def __init__(self, exc):
+        self.calls = 0
+        self._exc = exc
+
+    def with_structured_output(self, _schema):
+        def _stall(_input):
+            self.calls += 1
+            raise self._exc
+        return RunnableLambda(_stall)
+
+
+class _CountingLLM(_WorkingLLM):
+    def __init__(self, result):
+        super().__init__(result)
+        self.calls = 0
+
+    def with_structured_output(self, _schema):
+        def _answer(_input):
+            self.calls += 1
+            return self._result
+        return RunnableLambda(_answer)
+
+
+def _bounce_429():
+    return genai_errors.ClientError(
+        429, {"error": {"code": 429, "message": "Resource exhausted. Please try again later.",
+                        "status": "RESOURCE_EXHAUSTED"}})
+
+
+@pytest.fixture
+def game_health():
+    """A fresh per-game selection with a short cooldown, so no test sees another's stalls."""
+    selection = GameLLM(
+        model="gemini-3.6-flash", rescue_model="gemini-3.5-flash",
+        health=health_mod.ModelHealth(rescue_after=2, cooldown_s=300),
+    )
+    token = GAME_LLM.set(selection)
+    try:
+        yield selection.health
+    finally:
+        GAME_LLM.reset(token)
+
+
+def test_transient_errors_are_the_provider_being_slow_or_full():
+    assert is_transient_provider_error(_bounce_429())
+    assert is_transient_provider_error(httpx.ReadTimeout("The read operation timed out"))
+    assert is_transient_provider_error(TimeoutError())
+    assert not is_transient_provider_error(ValueError("off-schema output"))
+
+
+def test_a_stalled_primary_is_not_asked_again_and_the_rescue_takes_the_turn(
+        monkeypatch, caplog, game_health):
+    primary = _StalledLLM(_bounce_429())
+    rescue = _CountingLLM(_result())
+    monkeypatch.setattr(agent_mod, "get_llm", lambda: primary)
+    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: rescue)
+    with caplog.at_level("WARNING"):
+        out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
+    assert out.entry == "player_3"
+    assert primary.calls == 1  # one request budget, not the two attempts a wrong answer gets
+    assert rescue.calls == 1
+    assert game_health.stalls == 1
+    assert not game_health.prefer_rescue()  # one stall is not yet a pattern
+    assert any("stalled" in r.message for r in caplog.records)
+
+
+def test_repeated_stalls_send_the_next_turns_straight_to_the_rescue(
+        monkeypatch, caplog, game_health):
+    primary = _StalledLLM(httpx.ReadTimeout("The read operation timed out"))
+    rescue = _CountingLLM(_result())
+    monkeypatch.setattr(agent_mod, "get_llm", lambda: primary)
+    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: rescue)
+    for _ in range(2):
+        agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
+    assert primary.calls == 2 and game_health.prefer_rescue()
+
+    with caplog.at_level("WARNING"):
+        out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
+    assert out.entry == "player_3"
+    assert primary.calls == 2  # the third turn never touched the primary
+    assert rescue.calls == 3
+    assert any("starts on the rescue model" in r.message and "2 turns in a row" in r.message
+               for r in caplog.records)
+
+
+def test_a_good_answer_from_the_primary_clears_the_count(monkeypatch, game_health):
+    game_health.note_stall()
+    monkeypatch.setattr(agent_mod, "get_llm", lambda: _WorkingLLM(_result()))
+    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: _BrokenLLM())
+    agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
+    assert game_health.stalls == 0 and not game_health.prefer_rescue()
+
+
+def test_after_the_cooldown_the_primary_is_tried_again(monkeypatch, game_health):
+    now = [1000.0]
+    monkeypatch.setattr(health_mod.time, "monotonic", lambda: now[0])
+    game_health.note_stall(); game_health.note_stall()
+    assert game_health.prefer_rescue()
+    now[0] += 301
+    assert not game_health.prefer_rescue()
+    # one more stall re-arms the rescue at once: the count is still at the threshold
+    game_health.note_stall()
+    assert game_health.prefer_rescue()
+    game_health.note_ok()
+    assert not game_health.prefer_rescue() and game_health.stalls == 0
+
+
+def test_a_turn_on_the_rescue_leaves_the_count_alone(monkeypatch, game_health):
+    game_health.note_stall(); game_health.note_stall()
+    primary = _StalledLLM(_bounce_429())
+    monkeypatch.setattr(agent_mod, "get_llm", lambda: primary)
+    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: _WorkingLLM(_result()))
+    agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
+    assert primary.calls == 0 and game_health.stalls == 2 and game_health.prefer_rescue()
+
+
+def test_the_game_model_carries_the_request_budget(monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "test-key")
+    monkeypatch.delenv("GAME_LLM_TIMEOUT_S", raising=False)
+    monkeypatch.delenv("GAME_LLM_ATTEMPTS", raising=False)
+    token = GAME_LLM.set(GameLLM(model="gemini-3.6-flash", rescue_model="gemini-3.5-flash"))
+    try:
+        llm, rescue, summary = (accessors.get_llm(), accessors.get_llm_game_fallback(),
+                                accessors.get_llm_summary())
+    finally:
+        GAME_LLM.reset(token)
+    assert (llm.timeout, llm.max_retries) == (30.0, 2)
+    assert (rescue.timeout, rescue.max_retries) == (30.0, 2)
+    assert (summary.timeout, summary.max_retries) == (90.0, 2)

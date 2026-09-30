@@ -12,11 +12,13 @@ import logging
 import os
 import threading
 from contextvars import ContextVar
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
+
+from .health import ModelHealth
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +34,9 @@ class GameLLM:
     api_key: str = ""
     model: str = ""
     rescue_model: str | None = None
+    # Mutable, shared by reference across the game's threads: the stall count that sends a
+    # turn straight to the rescue model (health.py). Not part of equality or the cache key.
+    health: ModelHealth = field(default_factory=ModelHealth, compare=False, repr=False)
 
 
 # Per-game model selection, optionally BYOK (pattern 2, ephemeral pass-through). The server's

@@ -310,6 +310,16 @@ recovery problems.
   entitlement (not metered API), are restricted to the provider's own/approved clients,
   and exist for no backend in our factory — a raw key is the only credential every
   provider shares.
+  Stalls (2026-09-30): a served game on Vertex's shared pool saw single requests held for
+  2–5 minutes and then bounced (429 RESOURCE_EXHAUSTED), with the SDK re-sending each bounce
+  five times — nothing failed, so the rescue never fired. Now the game model carries a
+  request budget (`GAME_LLM_TIMEOUT_S`=30, `GAME_LLM_ATTEMPTS`=2; summaries 90 s, their
+  failure path being the raw transcript), a timed-out or bounced call counts as a STALL, and
+  a stalled primary is not asked again that turn: the rescue takes it at once. A per-game
+  count (`GameLLM.health`, `llm_factory/health.py`) sends turns straight to the rescue after
+  `GAME_STALL_RESCUE_AFTER`=2 stalls in a row, for `GAME_STALL_RESCUE_COOLDOWN_S`=300, then
+  tries the primary once more; one good answer clears it. Drafts share the turn code, so a
+  human's draft is rescued the same way. Extraction models are untouched.
 
 ## 7. The AFK fail-safe: delegate the turn to the seat's own agent (ruled 2026-08-20)
 

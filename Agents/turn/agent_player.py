@@ -19,6 +19,8 @@ from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel
 
 from Agents.llm_factory import get_llm, get_llm_game_fallback
+from Agents.llm_factory.backends import GAME_LLM
+from Agents.llm_factory.embeddings import is_transient_provider_error
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
 from Agents.schemas.game_events import (
     DayChannel,
@@ -71,25 +73,43 @@ def run_agent(
 
     # Constrain: bind the model to the legal-targets schema; build + log the prompt once.
     schema = output_schema_with_legal_targets(output_schema, output_key, valid_targets)
-    chain = prompt_template | get_llm().with_structured_output(schema)
+    # A primary that stalled on the last turns (a timeout, a 429) is skipped for a while and
+    # the turn starts on the rescue model; the game's health object keeps that count.
+    health = GAME_LLM.get().health
+    fallback_llm = get_llm_game_fallback()
+    on_rescue = fallback_llm is not None and health.prefer_rescue()
+    if on_rescue:
+        logger.warning(
+            "%s starts on the rescue model for %s: the primary stalled %d turns in a row",
+            player_id, output_key, health.stalls,
+        )
+    llm = fallback_llm if on_rescue else get_llm()
+    chain = prompt_template | llm.with_structured_output(schema)
     prompt_input = build_agent_prompt_input(payload)
     log_prompt(payload, output_key, prompt_input)
 
     for _ in range(max_retries + 1):
         result = _generate(chain, prompt_input, output_key, player_id)
+        if result is _STALLED:
+            # Slow or full is not asked again: the rescue takes the turn, and the count
+            # decides whether the next turns skip the primary altogether.
+            if not on_rescue:
+                health.note_stall()
+            break
         if result is None:
             continue
         reasoning = extract_agent_reasoning(result)
         record_reads(reasoning["reads"], payload, output_key, output_schema)
         outcome = resolve_decision(result, reasoning, output_key, payload, valid_targets)
         if outcome is not RETRY:
+            if not on_rescue:
+                health.note_ok()
             return outcome
 
     # Exhausted on the primary model: one shot on the fallback backend before resorting to a
     # random action — a different provider fails differently (DeepSeek's unconstrained
     # tool-calling emits off-schema output that Gemini's constrained decoding cannot).
-    fallback_llm = get_llm_game_fallback()
-    if fallback_llm is not None:
+    if fallback_llm is not None and not on_rescue:
         fallback_chain = prompt_template | fallback_llm.with_structured_output(schema)
         result = _generate(fallback_chain, prompt_input, output_key, player_id)
         if result is not None:
@@ -165,11 +185,19 @@ def run_agent(
     return None
 
 
+# What _generate returns when the provider was slow or full rather than the answer wrong.
+_STALLED = object()
+
+
 def _generate(chain: Any, prompt_input: dict, output_key: str, player_id: str):
-    """One structured LLM call. Returns the parsed decision, or None on an API/parse error."""
+    """One structured LLM call. Returns the parsed decision; None on a parse or request error;
+    ``_STALLED`` when the provider timed out or bounced the call (429, 5xx, dropped)."""
     try:
         return chain.invoke(prompt_input, config={"run_name": f"{output_key}_{player_id}"})
     except Exception as e:
+        if is_transient_provider_error(e):
+            logger.warning(f"LLM call stalled for {player_id} (slow or full): {e}")
+            return _STALLED
         logger.warning(f"LLM call failed for {player_id}: {e}")
         return None
 
