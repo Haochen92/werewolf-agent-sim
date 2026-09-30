@@ -52,6 +52,11 @@ def run_human_decision(payload: dict[str, Any], output_key: str) -> ResolvedTurn
     return outcome
 
 
+# The longest line a human may say, in characters: about 120 words, which is what the agents are
+# asked to keep under, so a seat can't feed the table (and every agent's prompt) an essay.
+MAX_LINE_CHARS = 700
+
+
 def validate_human_response(request: HumanTurnRequest, raw_response: Any) -> HumanTurnResponse:
     """Check a human's answer against the question they were asked, and return it typed.
     Pure, no side effects: the server calls it before resuming the engine, and the node
@@ -68,8 +73,14 @@ def validate_human_response(request: HumanTurnRequest, raw_response: Any) -> Hum
 
     Raises HumanTurnContractError with a player-facing message when the answer breaks
     those rules (the server serves it as 422), and pydantic's ValidationError when the
-    payload is not even the right shape."""
+    payload is not even the right shape. A message longer than MAX_LINE_CHARS is refused
+    the same way, whatever the phase."""
     response = HumanTurnResponse.model_validate(raw_response)
+    if response.message and len(response.message) > MAX_LINE_CHARS:
+        raise HumanTurnContractError(
+            f"Keep your line under {MAX_LINE_CHARS} characters "
+            f"(yours is {len(response.message)})."
+        )
 
     if response.delegate:
         if response.pass_turn or response.message or response.target is not None:

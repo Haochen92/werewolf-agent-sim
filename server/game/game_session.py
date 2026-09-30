@@ -70,8 +70,10 @@ logger = logging.getLogger(__name__)
 
 # How many times one question may be drafted. The wait for each draft is
 # credited back to the seat's clock, so without a cap an unhappy drafter could keep the
-# table waiting for as long as they liked.
+# table waiting for as long as they liked. The credit itself is capped too: a draft that
+# stalls on the model (and is rescued after its timeouts) is not the whole table's wait.
 DRAFTS_PER_TURN = 3
+DRAFT_CREDIT_CAP_S = 20.0
 
 
 def _paused_task(snapshot: StateSnapshot, interrupt_id: str, seat: str):
@@ -533,7 +535,7 @@ class GameSession:
             line = await asyncio.to_thread(self._preview_line, seat, payload, direction)
         else:
             line = await asyncio.to_thread(self._draft, request, notes)
-        self.clocks.extend(seat, time.monotonic() - started)
+        self.clocks.extend(seat, min(time.monotonic() - started, DRAFT_CREDIT_CAP_S))
         self._drafts_used[seat] = used + 1  # a failed draft is not charged
         return line, DRAFTS_PER_TURN - used - 1
 

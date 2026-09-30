@@ -132,6 +132,16 @@ def test_extra_field_rejected():
         validate_human_response(_request(), {"target": "p2", "sneaky": 1})
 
 
+def test_a_line_longer_than_the_cap_is_refused():
+    req = _request(phase="day_channel", can_pass=True, valid_targets=[])
+    assert validate_human_response(req, {"message": "x" * h.MAX_LINE_CHARS}).message
+    with pytest.raises(HumanTurnContractError, match="700 characters"):
+        validate_human_response(req, {"message": "x" * (h.MAX_LINE_CHARS + 1)})
+    pack = _request(phase="wolf_channel", can_pass=False, valid_targets=[])
+    with pytest.raises(HumanTurnContractError, match="700 characters"):
+        validate_human_response(pack, {"message": "y" * (h.MAX_LINE_CHARS + 1)})
+
+
 def test_pass_honored_when_offered_rejected_when_not():
     # Every human discussion turn now offers a pass (reactive included — a mention isn't a
     # demand); the validator still hard-rejects a pass against a request that didn't offer one.
