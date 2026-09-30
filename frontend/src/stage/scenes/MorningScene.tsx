@@ -449,10 +449,11 @@ function MorningWords({
     `Seat ${seatNumber(seat)}${seat === me ? ' (you)' : ''}`;
   switch (id) {
     case 'morning.shutter-down':
-      // the roll: the whole night at a glance, before it is told a chip at a time
+      // the roll: the whole night at a glance, before it is told a chip at a time; the
+      // roles wait for the cards
       return (
         <Notice title="The morning roll" walnut {...t}>
-          <MorningRoll rows={report} cast={cast} me={me} arrive={arrive} />
+          <MorningRoll rows={report} cast={cast} me={me} arrive={arrive} roles={false} />
         </Notice>
       );
     case 'morning.chip-attacked':

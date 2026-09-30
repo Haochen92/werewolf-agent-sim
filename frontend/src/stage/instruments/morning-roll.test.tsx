@@ -19,6 +19,21 @@ describe('MorningRoll', () => {
     expect(out).toMatch(/data-sigil="wolf"[\s\S]*data-sigil="vigilante"/);
   });
 
+  it('holds the roles back until the cards have come down', () => {
+    const out = renderToStaticMarkup(
+      <MorningRoll
+        rows={[{ kind: 'death', player: 'player_1', role: 'villager', types: ['wolves'] }]}
+        cast={[]}
+        me={null}
+        roles={false}
+      />,
+    );
+    expect(out).toContain('Seat 1');
+    expect(out).not.toContain('Villager');
+    expect(out).not.toContain(' · ');
+    expect(out).toContain('killed by the wolves');
+  });
+
   it('uses the game’s words for each attacker type', () => {
     const d = (types: RollRow['types']): RollRow => ({
       kind: 'death',

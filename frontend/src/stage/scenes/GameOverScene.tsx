@@ -302,7 +302,7 @@ function OverBeat({ view, beat, me, presentation, slot: slotInput, wayOut }: Sce
                 {endingLine(view)}
               </Notice>
             ) : step === 0 ? (
-              // a morning's end: the morning's own roll, as its report beat showed it
+              // a morning's end: the morning's roll, now with the roles (every card is down)
               <Notice title="The morning roll" walnut arrive={animate} delay={0.7}>
                 <MorningRoll
                   rows={reportOf(view.days[view.day]?.night ?? null)}

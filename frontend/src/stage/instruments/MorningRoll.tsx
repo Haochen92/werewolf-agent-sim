@@ -8,6 +8,8 @@
  * night is the one line. The game master's own words stay in the transcript.
  *
  * Played, the rows come in one after another, at the pace the report's hold gives them.
+ * The roll names no roles until the cards have come down (owner, 2026-09-30): at the shutter
+ * it lists the seats and how they went; the game's end, every card already down, reads it whole.
  */
 import { motion } from 'motion/react';
 import type { AttackerType } from '@/types/contracts';
@@ -57,11 +59,14 @@ export function MorningRoll({
   cast,
   me,
   arrive = false,
+  roles = true,
 }: {
   rows: readonly RollRow[];
   cast: readonly Character[];
   me: string | null;
   arrive?: boolean;
+  /** Name each dead seat's role; off before its card has come down. */
+  roles?: boolean;
 }) {
   const k = useMotionScale();
   if (!rows.length) return <p className={styles.quiet}>No one died in the night.</p>;
@@ -92,7 +97,7 @@ export function MorningRoll({
               <span className={styles.who}>
                 Seat {n}
                 {r.player === me ? ' (you)' : ''}
-                {r.kind === 'death' ? ` · ${ROLE_NAME[r.role] ?? r.role}` : ''}
+                {roles && r.kind === 'death' ? ` · ${ROLE_NAME[r.role] ?? r.role}` : ''}
               </span>
               <span className={styles.cause}>
                 {sigils.map((s) => (
