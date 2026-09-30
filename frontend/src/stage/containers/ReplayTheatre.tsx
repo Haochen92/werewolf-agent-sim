@@ -11,9 +11,10 @@
  * folds are remembered, so stepping forward folds only what the new beat adds.
  *
  * Playing is a timer on the beat's hold. A beat that waits for the viewer (the epilogue, the
- * curtain) stops the play there, and so does the end of the log. While a pointer or a finger
- * rests on a speech the hold pauses, and the clock picks up where it left off, so a long line
- * can be read to the end.
+ * curtain) stops the play there, and so does the end of the log; with the X-ray on, so do the
+ * stops (the night hub, the ballots in; stops.ts), whose notice holds the ways on. While a
+ * pointer or a finger rests on a speech the hold pauses, and the clock picks up where it left
+ * off, so a long line can be read to the end.
  *
  * `mini` makes it a preview (the landing's carriage): the same stage and the same reducer,
  * playing one window of the cut round and round (`loop` in replay-state.ts), with no keys (the
@@ -42,7 +43,7 @@ import { beatsFor } from '../beats/beatsFor';
 import { useDrawerFilters } from '../drawer/use-drawer-filters';
 import { StageMotion } from '../motion';
 import type { SceneBeat } from '../beats/types';
-import type { MotionSpeed, Presentation, SlotInput } from '../scenes/types';
+import type { MotionSpeed, Presentation, SlotInput, StopInput } from '../scenes/types';
 import { atRail, slotOf } from '../slot';
 import { Stage } from '../Stage';
 import { SCENES } from '../scenes';
@@ -54,6 +55,7 @@ import {
   replayReducer,
   type ReplayState,
 } from './replay-state';
+import { visitedOn } from './stops';
 import { holdFor, transportLabel } from './transport';
 import { TransportBand } from './TransportBand';
 import type { FileChoice } from '../film/case-file';
@@ -236,6 +238,25 @@ export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps
     },
     [beats],
   );
+  // the stops' notice (the X-ray on, the whole log): visit a room, watch them all, end the night
+  const stopInput = useMemo(
+    (): StopInput | undefined =>
+      controls !== 'stage' || !state.xray || state.loop || !beat
+        ? undefined
+        : {
+            visited: visitedOn(state.visited, beat.day),
+            onVisit: (find) => {
+              const i = beats.findIndex(find);
+              if (i < 0) return false;
+              dispatch({ type: 'visit', index: i });
+              return true;
+            },
+            onPlay: () => dispatch({ type: 'play' }),
+            onEndNight: () => dispatch({ type: 'end-night' }),
+            onBack: () => dispatch({ type: 'to-hub' }),
+          },
+    [controls, state.xray, state.loop, state.visited, beat, beats],
+  );
 
   // playing: the beat's hold, paused while the speech is held
   const [held, setHeld] = useState(false);
@@ -333,6 +354,7 @@ export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps
               presentation={presentation}
               slot={slotInput}
               onSeek={controls === 'stage' ? onSeek : undefined}
+              stop={stopInput}
               // a tap on the speech box turns the page (a preview's box is only read)
               onNext={
                 controls === 'stage' ? () => dispatch({ type: 'step', dir: 1 }) : undefined

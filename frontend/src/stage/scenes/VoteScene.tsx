@@ -27,7 +27,7 @@ import { countText } from '../countdown';
 import { CountPill } from '../instruments/CountPill';
 import { Trap } from '../instruments/Floor';
 import { Lift } from '../instruments/Lift';
-import { CardButton, Notice, NoticeZone } from '../instruments/Notice';
+import { CardButton, Notice, NoticeButton, NoticeZone } from '../instruments/Notice';
 import { Shutter } from '../instruments/Shutter';
 import { Plaque, Stand } from '../instruments/Stand';
 import { TopStrip } from '../instruments/TopStrip';
@@ -47,6 +47,7 @@ import { bandNarrows, fileTap, sideOpen, stripButtons } from '../slot';
 import { STAGE_H, STAGE_W, geometry } from '../units';
 import { CarPaint, HouseLights, TableWing } from './DiningCarParts';
 import { notebookGame } from '../notebook';
+import { VOTE_STOP } from '../containers/stops';
 import type { SceneProps } from './types';
 import {
   candidatesOf,
@@ -96,6 +97,7 @@ function VoteBeat({
   onAct,
   turn,
   slot: slotInput,
+  stop,
 }: SceneProps) {
   const { hud, xray, animate, cast } = presentation;
   const k = useMotionScale();
@@ -245,7 +247,7 @@ function VoteBeat({
               }}
               transition={{ duration: 0.45 * k, ease: 'easeIn' }}
             >
-              <Puppet g={g} shadow character={leavingChar} seat={ln} state="base" />
+              <Puppet g={g} shadow character={leavingChar} seat={null} state="base" />
             </motion.div>
           </Layer>
           <Layer name="stand">
@@ -385,6 +387,22 @@ function VoteBeat({
               cast={cast}
               arrive={animate}
             />
+          ) : null}
+          {/* the replay's stop (the X-ray on): the ballots are in, each seat's file a tap away */}
+          {stop && id === VOTE_STOP && ballots.length ? (
+            <Notice
+              walnut
+              title={`${ballots.length} ballots in.`}
+              arrive={animate}
+              delay={0.6}
+              actions={
+                <NoticeButton lead onPress={stop.onPlay}>
+                  Count the votes ▶
+                </NoticeButton>
+              }
+            >
+              Tap a seat to read what it voted on.
+            </Notice>
           ) : null}
           {words ? (
             <Notice

@@ -83,6 +83,27 @@ export interface SceneProps {
    * The night hub's lamps use it to jump to an actor's spoke.
    */
   onSeek?: (find: (beat: SceneBeat) => boolean) => boolean;
+  /** The replay's stops (the night hub, the ballots in, and the rooms between); see `StopInput`. */
+  stop?: StopInput;
+}
+
+/**
+ * The replay's stops (owner, 2026-09-30; containers/stops.ts): with the X-ray on the play
+ * pauses at the night hub and with the ballots in, and the stage's notice offers the ways on.
+ * Handed down by the replay's container (and the workbench); without it the stage draws no
+ * stop notice and the hub's lit seats only seek.
+ */
+export interface StopInput {
+  /** The actors (a seat, or `pack`) whose rooms the viewer has been in, this beat's night. */
+  visited: readonly string[];
+  /** A lit seat at the hub: the first beat `find` accepts (its room), played; its end returns to the hub. */
+  onVisit: (find: (beat: SceneBeat) => boolean) => boolean;
+  /** The stop's ▶: "Watch them all" at the hub, "Count the votes" with the ballots in. */
+  onPlay: () => void;
+  /** "End the night": on to the first beat after the night whole. */
+  onEndNight: () => void;
+  /** A room's "Back to the night": the hub. */
+  onBack: () => void;
 }
 
 /**

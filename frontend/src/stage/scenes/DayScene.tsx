@@ -21,7 +21,7 @@
  * holding a "…"), then talks and the line comes into the box. Arrived at (a seek, a refresh), it is all simply there.
  */
 import { useEffect, useState } from 'react';
-import type { DayState } from '@/assets/manifest';
+import { SPRITES, type DayState } from '@/assets/manifest';
 import type { PassSlot, SpeechSlot } from '@/game/types';
 import { Atmosphere } from '../Atmosphere';
 import { Layer, Paint } from '../Stage';
@@ -136,7 +136,16 @@ function DayTurn({
       <Atmosphere room="car" phase="day" hud={hud} side={side} />
       <Layer name="paint">
         <CarPaint phase="day" hud={hud} side={side} />
-        <Paint of={shutter} opts={{ hud, side, state: 'open', walnut: WOOD.walnut }} />
+        <Paint
+          of={shutter}
+          opts={{
+            hud,
+            side,
+            state: 'open',
+            walnut: WOOD.walnut,
+            picture: SPRITES.props.shutter.src,
+          }}
+        />
       </Layer>
 
       <Layer name="figures">
@@ -146,7 +155,8 @@ function DayTurn({
             shadow
             glass
             character={character}
-            seat={n}
+            // the stand's plate names the seat: no numeral on the belly
+            seat={null}
             state={state}
             arrive={animate ? 0.1 : false}
             onArrived={() => setRisen(true)}
@@ -184,10 +194,13 @@ function DayTurn({
       </Layer>
 
       <Layer name="hud">
-        {hud === 'replay' ? <Paint of={drape} opts={{ bleed: BLEED }} /> : null}
+        {hud === 'replay' ? (
+          <Paint of={drape} opts={{ bleed: BLEED, src: SPRITES.props.valance.src }} />
+        ) : null}
         <Wing
           width={g.wingN}
           notes={notebookGame(presentation, me)}
+          castCounts={view.castRoleCounts}
           tiles={view.seats.map((seat, i) => {
             const d = deadBySeat.get(seat);
             const rd = readOf(seat);

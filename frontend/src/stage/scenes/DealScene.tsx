@@ -335,7 +335,7 @@ function DealWords({
     case 'deal.face-up':
       return (
         <Notice title="The deal, face up" {...t}>
-          Every card from minute zero. Nobody at the table sees this; the film has it.
+          Every card from minute zero. Nobody at the table sees this; the file has it.
         </Notice>
       );
     default:

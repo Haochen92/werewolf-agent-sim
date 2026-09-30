@@ -112,18 +112,27 @@
   margin-top: auto;
 }
 
-/* the small card: sigil first, large, then the name; no figure */
+/* the small card (2026-09-30): the name, as large as the longest ("Serial killer") fits, over
+   the felt figure the big card carries; the sigil small by the seat at the foot. At the deal's
+   size on a phone the name is a few pixels: the figure and the faction's bands carry it there */
 .small .in {
-  inset: calc(14 * var(--u)) calc(8 * var(--u));
+  inset: calc(16 * var(--u)) calc(8 * var(--u)) calc(14 * var(--u));
 }
 .small .in header {
-  flex-direction: column;
+  margin: calc(6 * var(--u)) 0 calc(4 * var(--u));
+  font-size: calc(46 * var(--u));
+  white-space: nowrap;
+}
+.small .fig {
+  width: 94%;
+}
+.small .in footer {
+  display: flex;
+  align-items: center;
   gap: calc(6 * var(--u));
-  margin-top: calc(6 * var(--u));
-  font-size: calc(36 * var(--u));
+  font-size: calc(24 * var(--u));
 }
 .small .sg {
-  width: calc(150 * var(--u));
-  height: calc(150 * var(--u));
-  margin: calc(14 * var(--u)) 0;
+  width: calc(28 * var(--u));
+  height: calc(28 * var(--u));
 }

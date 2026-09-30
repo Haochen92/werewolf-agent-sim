@@ -12,7 +12,7 @@ import { Layer, Stage } from '@/stage/Stage';
 import type { SceneId } from '@/stage/beats/types';
 import { useDrawerFilters } from '@/stage/drawer/use-drawer-filters';
 import type { FileChoice } from '@/stage/film/case-file';
-import type { SlotInput } from '@/stage/scenes/types';
+import type { SlotInput, StopInput } from '@/stage/scenes/types';
 import { pressFile, pressTranscript } from '@/stage/slot';
 import {
   BeatStepper,
@@ -156,6 +156,29 @@ export function Workbench({ scene }: { scene: string }) {
     };
   }, [frame, drawer, filmTab, fileSeat, go, q.live, q.hud]);
 
+  // the replay's stops, as its container hands them down (the X-ray's cut in the replay's
+  // frame): the rooms and the hub are this scene's beats; "End the night" leaves the scene, so
+  // here it is only logged, like a prompt's answer
+  const stopInput = useMemo((): StopInput | undefined => {
+    if (!frame || q.live || q.hud !== 'replay' || !frame.presentation.xray)
+      return undefined;
+    const { beats, index } = frame;
+    const hub = beats.findIndex(
+      (b) => b.id === 'rnight.hub' && b.day === beats[index]?.day,
+    );
+    return {
+      visited: [],
+      onVisit: (find) => {
+        const i = beats.findIndex(find);
+        if (i >= 0) go({ beat: i });
+        return i >= 0;
+      },
+      onPlay: () => index < beats.length - 1 && go({ beat: index + 1 }),
+      onEndNight: () => console.info('[workbench] end the night'),
+      onBack: () => hub >= 0 && go({ beat: hub }),
+    };
+  }, [frame, go, q.live, q.hud]);
+
   // the arrow keys step beats, unless a control has the focus
   useEffect(() => {
     if (!frame) return;
@@ -208,6 +231,7 @@ export function Workbench({ scene }: { scene: string }) {
         turn={frame.turn}
         room={frame.room}
         slot={slotInput}
+        stop={stopInput}
         onSeek={(find) => {
           const i = frame.beats.findIndex(find);
           if (i >= 0) go({ beat: i });

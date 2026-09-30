@@ -209,7 +209,9 @@ function OverBeat({ view, beat, me, presentation, slot: slotInput, wayOut }: Sce
                     shadow
                     glass
                     character={cast[n - 1]}
-                    seat={n}
+                    // one plate names them all ("Nos. 3 and 8"): with two or three at the
+                    // stand the belly still says which is which; alone, the plate does
+                    seat={winners.length > 1 ? n : null}
                     state="base"
                     dx={set.offsets[i] * g.pwid}
                     scale={set.scale}

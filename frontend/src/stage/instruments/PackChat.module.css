@@ -36,6 +36,14 @@
   font-weight: 600;
   color: var(--wolf);
 }
+/* the replay's "← Back to the night": the header's words stay by the tag, the button right */
+.head:has(.action) {
+  justify-content: flex-start;
+  gap: 16px;
+}
+.action {
+  margin-left: auto;
+}
 .empty {
   opacity: 0.7;
   font-style: italic;

@@ -66,7 +66,9 @@ export function holdFor(beat: SceneBeat, speed: MotionSpeed): number | null {
 /**
  * The X-ray toggle re-cuts the list (beats appear or vanish), so the cursor is carried across
  * by what it was on: the same beat if it survives, else the first beat at or after its seq.
- * Either way the viewer lands still.
+ * Either way the viewer lands still. The X-ray's night (its hub, a room, the whole) goes to
+ * that night's hub in the other list: its rooms are cut from the night's end, and "at or
+ * after" would land on the morning.
  */
 export function carryAcross(
   cursor: Cursor,
@@ -75,6 +77,12 @@ export function carryAcross(
 ): Cursor {
   const was = from[cursor.index];
   if (!was || to.length === 0) return still(0);
+  if (was.scene === 'rnight' || was.id === 'night.hub') {
+    const hub = to.findIndex(
+      (b) => (b.id === 'night.hub' || b.id === 'rnight.hub') && b.day === was.day,
+    );
+    if (hub !== -1) return still(hub);
+  }
   const same = to.findIndex(
     (b) =>
       b.id === was.id &&

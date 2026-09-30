@@ -224,6 +224,7 @@ export function NightRoom({
         <Wing
           width={g.wingN}
           notes={notebookGame(presentation, me)}
+          castCounts={view.castRoleCounts}
           tiles={view.seats.map((seat, i) => {
             const d = deadBySeat.get(seat);
             const truth = xray

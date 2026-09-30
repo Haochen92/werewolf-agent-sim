@@ -38,6 +38,8 @@ export interface PackChatProps {
   empty?: string;
   /** The header's words, in place of "Seat 3 and seat 8" (the replay reads it as nobody's). */
   heading?: string;
+  /** A button at the header's right: the replay's "← Back to the night" from the pack's room. */
+  action?: ReactNode;
   /** The entry that has just arrived (its seq): it fades in when `arrive` is set. */
   arriving?: number;
   arrive?: boolean;
@@ -64,6 +66,7 @@ export function PackChat({
   cast,
   empty,
   heading,
+  action,
   arriving,
   arrive,
   input,
@@ -131,6 +134,7 @@ export function PackChat({
                 ? `Seat ${seatNumber(you)} and seat ${seatNumber(mate)}`
                 : 'You are the pack now')}
           </span>
+          {action ? <span className={styles.action}>{action}</span> : null}
         </header>
         {entries.length === 0 && empty ? <div className={styles.empty}>{empty}</div> : null}
         {entries.map((e) => (

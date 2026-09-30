@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * The stand: the puppet booth's front, below the rail, that the speaking puppet stands in.
  * A painted walnut sideboard front (a brass gallery on its rounded rail, marquetry corners, a
@@ -8,9 +10,9 @@
  * stretches to it as a 9-slice (Stand.module.css). Laid out after the stage kit's `stand()`
  * (kits/stage-kit.js).
  */
-import type { CSSProperties, ReactNode } from 'react';
+import { useLayoutEffect, useRef, type CSSProperties, type ReactNode } from 'react';
 import { SPRITES } from '@/assets/manifest';
-import { HUD_CHROME, STAGE_H, standBox, type StageGeometry } from '../units';
+import { standBox, type StageGeometry } from '../units';
 import type { Faction } from '../roles';
 import styles from './Stand.module.css';
 
@@ -23,29 +25,57 @@ export interface StandProps {
   /** The plaque (or nothing, for an empty stand). */
   children?: ReactNode;
   /**
-   * The speech box is at the foot, over the stand's front. On a phone, where its words grow and
-   * it rises past the rail, the plate rises with it, to sit just above the box's nameplate.
+   * The speech box is at the foot, over the stand's front. Where it rises past the rail (a
+   * phone, whose words grow; the drawer's narrower board) the plate is pinned to the box's top
+   * edge instead of the rail, so it never floats at the puppet's chest (owner, 2026-09-30).
    */
   speech?: boolean;
 }
 
+/** How far the plate tucks behind the speech box's top edge, as a share of its height. */
+const TUCK = 0.12;
+
 export function Stand({ g, lit = true, widen = 1, children, speech = false }: StandProps) {
   const box = standBox(g);
   const w = box.w * widen;
-  // the room between the rail and the box's foot (SpeechBox's `bottom`), less a small gap
-  const clear = STAGE_H - g.railY - HUD_CHROME.band[g.hud] - 19.2 - 8;
+  const ref = useRef<HTMLDivElement>(null);
+  // the plate on the rail, or on the speech box's top edge where the box has risen over the
+  // rail: measured, since the box's height is its words' (and the drawer's measure, and the
+  // phone's growth); re-placed on every render and whenever the stage is resized
+  useLayoutEffect(() => {
+    const el = ref.current;
+    const plate = el?.querySelector<HTMLElement>(`.${styles.plaque}`);
+    if (!el || !plate) return;
+    let world: HTMLElement | null = el;
+    while (world && !world.querySelector('[data-layer="hud"]')) world = world.parentElement;
+    const board = speech
+      ? world?.querySelector<HTMLElement>('[data-layer="hud"] [data-speech]')
+      : null;
+    const place = () => {
+      if (!board) return plate.style.removeProperty('top');
+      const r = el.getBoundingClientRect();
+      const k = r.height / (el.offsetHeight || 1) || 1;
+      const edge = (board.getBoundingClientRect().top - r.top) / k;
+      const rail = 3 * g.u;
+      plate.style.top = `${Math.min(rail, edge - plate.offsetHeight * (1 - TUCK))}px`;
+    };
+    place();
+    const ro = new ResizeObserver(place);
+    ro.observe(el);
+    if (board) ro.observe(board);
+    return () => ro.disconnect();
+  });
   return (
     <div className={styles.pit} style={{ top: g.railY }}>
       <div
+        ref={ref}
         className={styles.box}
-        data-speech-below={speech || undefined}
         style={
           {
             left: g.cx - w / 2,
             width: w,
             '--u': `${g.u}px`,
             '--front': `url(${SPRITES.props.stand.src})`,
-            '--clear': `${clear}px`,
           } as CSSProperties
         }
       >

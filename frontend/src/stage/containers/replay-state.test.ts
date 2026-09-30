@@ -256,3 +256,120 @@ describe('the loop window (a preview)', () => {
 function at0(index: number): ReplayState {
   return { ...initialReplayState(), cursor: still(index), playing: true };
 }
+
+describe('the stops (the X-ray on)', () => {
+  const x = beats.xray;
+  const find = (id: string, day: number, actor?: string) =>
+    x.findIndex(
+      (b) => b.id === id && b.day === day && (!actor || b.spoke?.actor === actor),
+    );
+  const hub = find('rnight.hub', 2);
+  const whole = find('rnight.whole', 2);
+  const ballotsIn = find('vote.closes', 3);
+  const on = (index: number, rest: Partial<ReplayState> = {}): ReplayState => ({
+    ...initialReplayState(),
+    xray: true,
+    cursor: still(index),
+    ...rest,
+  });
+
+  it('the play pauses on arriving at the night hub, normal and fast alike', () => {
+    for (const speed of ['normal', 'fast'] as const) {
+      const s = reduce(on(hub - 1, { playing: true, speed }), { type: 'tick' });
+      expect(s.cursor).toEqual({ index: hub, animate: true });
+      expect(s.playing).toBe(false);
+    }
+    // arrived at by a seek or a chapter jump while playing, it pauses too
+    expect(reduce(on(3, { playing: true }), { type: 'seek', index: hub }).playing).toBe(
+      false,
+    );
+    const jump = reduce(on(hub - 2, { playing: true }), { type: 'chapter', dir: 1 });
+    expect([jump.cursor.index, jump.playing]).toEqual([hub, false]);
+    // without the X-ray there is no stop: the public hub plays on
+    const pub = beats.public.findIndex((b) => b.id === 'night.hub' && b.day === 2);
+    const p = reduce(
+      { ...initialReplayState(), cursor: still(pub - 1), playing: true },
+      {
+        type: 'tick',
+      },
+    );
+    expect([p.cursor.index, p.playing]).toEqual([pub, true]);
+  });
+
+  it('the vote pauses with the ballots in, before the count; ▶ counts them', () => {
+    const s = reduce(on(ballotsIn - 1, { playing: true }), { type: 'tick' });
+    expect([s.cursor.index, s.playing]).toEqual([ballotsIn, false]);
+    expect(x[ballotsIn - 1].id).toBe('vote.ballots-drop');
+    const count = reduce(s, { type: 'play' });
+    expect(count.cursor).toEqual({ index: ballotsIn + 1, animate: true });
+    expect(x[count.cursor.index].id).toBe('vote.count-begins');
+    expect(count.playing).toBe(true);
+  });
+
+  it('“Watch them all” plays the rooms in order, then the whole, then on', () => {
+    let s = reduce(on(hub), { type: 'play' });
+    expect(s.cursor).toEqual({ index: hub + 1, animate: true });
+    while (s.playing && s.cursor.index <= whole) s = reduce(s, { type: 'tick' });
+    // no return to the hub on the way: the whole, then the morning
+    expect(x[s.cursor.index].id).toBe('morning.shutter-down');
+    expect(s.playing).toBe(true);
+    // and every room it passed through is remembered as visited
+    expect(s.visited).toEqual(
+      expect.arrayContaining(['2:player_4', '2:player_9', '2:player_2', '2:pack']),
+    );
+  });
+
+  it('a lit seat tapped plays its room; the room’s end returns to the hub', () => {
+    const inv = find('rnight.spoke', 2, 'player_4');
+    const v = reduce(on(hub), { type: 'visit', index: inv });
+    expect(v.cursor).toEqual({ index: inv, animate: true });
+    expect([v.playing, v.visit, v.visited]).toEqual([true, '2:player_4', ['2:player_4']]);
+    const back = reduce(v, { type: 'tick' });
+    expect(back.cursor).toEqual(still(hub));
+    expect([back.playing, back.visit]).toEqual([false, null]);
+    expect(back.visited).toEqual(['2:player_4']);
+    // the pack's room has five steps: it plays them all before returning
+    const pack = find('rnight.spoke', 2, 'pack');
+    let p = reduce(back, { type: 'visit', index: pack });
+    for (let k = 1; k < 5; k++) {
+      p = reduce(p, { type: 'tick' });
+      expect(p.cursor).toEqual({ index: pack + k, animate: true });
+    }
+    p = reduce(p, { type: 'tick' });
+    expect(p.cursor).toEqual(still(hub));
+  });
+
+  it('the arrows step through the rooms linearly, and a room reached so plays on', () => {
+    const inv = find('rnight.spoke', 2, 'player_4');
+    const v = reduce(on(hub), { type: 'visit', index: inv });
+    // a step out of the visited room ends the visit
+    const next = reduce(v, { type: 'step', dir: 1 });
+    expect(next.cursor).toEqual({ index: inv + 1, animate: true });
+    expect(next.visit).toBeNull();
+    expect(reduce(next, { type: 'tick' }).cursor).toEqual({
+      index: inv + 2,
+      animate: true,
+    });
+    // from the hub, the arrow goes to the first room, not back to the hub
+    expect(reduce(on(hub), { type: 'step', dir: 1 }).cursor.index).toBe(hub + 1);
+  });
+
+  it('“End the night” goes to the first beat after the whole, playing', () => {
+    const s = reduce(on(hub), { type: 'end-night' });
+    expect(s.cursor).toEqual(still(whole + 1));
+    expect(x[s.cursor.index]).toMatchObject({ id: 'morning.shutter-down', day: 2 });
+    expect(s.playing).toBe(true);
+  });
+
+  it('“Back to the night” returns from a room to its hub, paused', () => {
+    const pack = find('rnight.spoke', 2, 'pack');
+    const s = reduce(on(pack + 2, { playing: true }), { type: 'to-hub' });
+    expect([s.cursor, s.playing]).toEqual([still(hub), false]);
+  });
+
+  it('Reveal off inside a room lands on that night’s public hub', () => {
+    const pack = find('rnight.spoke', 2, 'pack');
+    const off = reduce(on(pack + 1, { slot: 'film' }), { type: 'xray' });
+    expect(beats.public[off.cursor.index]).toMatchObject({ id: 'night.hub', day: 2 });
+  });
+});

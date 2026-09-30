@@ -85,6 +85,19 @@ export function stripButtons(p: Pick<Presentation, 'slot' | 'xray'>, slot?: Slot
  * on, at a beat with no speaker (a vote, the count, the lynch, the morning, the night hub and
  * whole), when the container can open the file. Null elsewhere: a turn's wing opens read cards.
  */
+/**
+ * The scenes whose beats have no speaker, where `fileTap` makes the rail's cards open files:
+ * the vote and the count, the lynch, the morning, the night hub and whole. The case file's
+ * docket says so ("Tap a seat to open its file").
+ */
+export function tapsOpenFiles(beat: Pick<SceneBeat, 'scene' | 'id'>): boolean {
+  return (
+    ['vote', 'lynch', 'morning'].includes(beat.scene) ||
+    beat.id === 'rnight.hub' ||
+    beat.id === 'rnight.whole'
+  );
+}
+
 export function fileTap(
   p: Pick<Presentation, 'xray'>,
   slot: SlotInput | undefined,

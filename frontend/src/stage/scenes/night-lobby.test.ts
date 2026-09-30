@@ -3,7 +3,8 @@ import { workbenchFrame } from '../workbench/frame';
 import { DEFAULT_QUERY } from '../workbench/url';
 import { beatsFor } from '../beats/beatsFor';
 import { FIXTURE_EVENTS } from '../workbench/fixture';
-import { actorsTonight, nightUnits, spokeOf } from './NightLobbyScene';
+import { foldEvents } from '@/game/foldEvents';
+import { actedTonight, actorsTonight, nightUnits, spokeOf } from './NightLobbyScene';
 
 const hubs = (xray: boolean) =>
   workbenchFrame(xray ? 'rnight' : 'night', {
@@ -39,5 +40,31 @@ describe('the night lobby on the fixture', () => {
     expect(first('player_8')).toBe(first('player_3'));
     // the vigilante held fire on night 1: no spoke, so the hub opens its file instead
     expect(first('player_7')).toBeUndefined();
+  });
+});
+
+describe('the replay’s night stop: who acted', () => {
+  it('counts each seat that acted, the pack as its wolves living at the hub', () => {
+    const all = FIXTURE_EVENTS;
+    const ahead = foldEvents(all);
+    const hubAt = (day: number) =>
+      foldEvents(
+        all.slice(
+          0,
+          all.findIndex(
+            (e) => e.type === 'phase_change' && e.phase === 'night' && e.day === day,
+          ) + 1,
+        ),
+      );
+    // night 1: the serial killer, the investigator, the healer and both wolves
+    const n1 = actedTonight(hubAt(1), ahead, 1);
+    expect([...n1.keys()].sort()).toEqual(
+      ['player_2', 'player_3', 'player_4', 'player_8', 'player_9'].sort(),
+    );
+    expect([n1.get('player_3'), n1.get('player_8'), n1.get('player_4')]).toEqual([
+      'pack',
+      'pack',
+      'player_4',
+    ]);
   });
 });

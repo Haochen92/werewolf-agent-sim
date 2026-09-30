@@ -29,7 +29,7 @@ import { SideSlot } from '../SideSlot';
 import { ActMark } from '../instruments/ActMark';
 import { Chip } from '../instruments/Chip';
 import { CountPill } from '../instruments/CountPill';
-import { Notice, NoticeZone } from '../instruments/Notice';
+import { Notice, NoticeButton, NoticeZone } from '../instruments/Notice';
 import { PackChat, type PackEntry } from '../instruments/PackChat';
 import { Shutter } from '../instruments/Shutter';
 import { Tooth } from '../instruments/Tooth';
@@ -114,7 +114,7 @@ function useAfter(at: number, animate: boolean): boolean {
  * line arriving in the chat.
  */
 function SpokeRoom(props: SceneProps) {
-  const { view, beat, presentation } = props;
+  const { view, beat, presentation, stop } = props;
   const { hud, animate, cast } = presentation;
   const side = sideOpen(presentation);
   const g = geometry(hud, side);
@@ -182,6 +182,10 @@ function SpokeRoom(props: SceneProps) {
     );
   }
   const lit = target && landed ? target : null;
+  // the replay's stop: from any room, back to the night's hub
+  const back = stop ? (
+    <NoticeButton onPress={stop.onBack}>← Back to the night</NoticeButton>
+  ) : null;
 
   return (
     <NightRoom
@@ -210,6 +214,8 @@ function SpokeRoom(props: SceneProps) {
             aqua={(ROLE_NAME[cur.role] ?? cur.role).toLowerCase()}
             arrive={animate}
             delay={0.7}
+            walnut={!!back}
+            actions={back}
           >
             {VERB[cur.role] ?? 'acts on'} seat {seatNumber(cur.target ?? '')}.
           </Notice>
@@ -236,6 +242,7 @@ function SpokeRoom(props: SceneProps) {
             }
             arriving={markStep ? decidedSeq(night) : beat.seq}
             arrive={animate}
+            action={back}
           />
         </div>
       ) : null}

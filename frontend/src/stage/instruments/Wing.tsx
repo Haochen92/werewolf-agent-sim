@@ -16,12 +16,16 @@
  * everyone may see it) and a black mourning ribbon across the photo's corner; your own seat wears an amber "You" band; with the X-ray on, a living
  * seat wears its faction's band and a sigil badge, the truth only the observer tier holds.
  * With the X-ray on at a beat where nobody speaks, a card opens that seat's case file, and says
- * so with a thin steady verdigris edge (no breathing: nine cards pulsing would be noise).
+ * so with a steady verdigris edge and a small keyhole badge (the Reveal switch's) on its corner
+ * (no breathing: nine cards pulsing would be noise). Only the replay's night stop breathes: the
+ * seats that acted glow until their room has been visited, then keep a steady mark.
  * Lit and dimmed are light only, never a move or a resize. A card that opens the speaker's read
  * breathes a slow glow while it can be tapped, and flashes once when that read is new or changed
  * since the speaker's previous reads (opacity only, still for reduced motion).
  *
- * The notebook: a seated player (live) can tap any other seat's card to write a note on it and
+ * The notebook: a seated player (live) can tap any other seat's card to write a note on it,
+ * guess its role (only roles that could still be alive, with how many are left; the guess
+ * shows as a small pencilled sigil on the card), and
  * mark one seat as the suspect (a wax seal on its card, its head in the suspect slot). The
  * notes stay on this device (notebook.ts), reaching the server only with a speech draft sent
  * with "Use my seat notes" ticked; the suspect never preselects a ballot. In a replay, and for an observer, the cards are only shown.
@@ -40,7 +44,7 @@ import {
 } from 'react';
 import { SPRITES, type Character } from '@/assets/manifest';
 import { ChipSprite } from '../cast/ChipSprite';
-import { useNotebook, type Notebook } from '../notebook';
+import { guessChoices, useNotebook, type Notebook } from '../notebook';
 import { ROLE_NAME, factionOf } from '../roles';
 import { RAIL_GAP, RAIL_PAD, RAIL_STRIP, railLayout } from './rail-layout';
 import { Sigil } from './Sigil';
@@ -66,6 +70,11 @@ export interface WingTileProps {
   /** The X-ray night's lamp: this seat acts tonight. */
   lamp?: boolean;
   /**
+   * The replay's night stop: `acted`, this seat acted tonight and its room is a tap away (a
+   * breathing verdigris glow); `visited`, its room has been seen (a steady, quieter mark).
+   */
+  glow?: 'acted' | 'visited';
+  /**
    * The X-ray's read on this seat by the seat at the stand: a verdigris edge, brighter for a sure
    * read. `onRead` makes the card a button that opens the read card (handing over the card, so
    * the read can sit level with it); `open` while its card is out. `fresh`: the read is new or
@@ -90,12 +99,15 @@ export function Wing({
   width,
   tiles,
   notes = null,
+  castCounts,
 }: {
   width: number;
   /** The seats, in order. */
   tiles: readonly WingTileProps[];
   /** The game whose notebook the seated player keeps here; null: the cards are only shown. */
   notes?: string | null;
+  /** The cast's role counts (`view.castRoleCounts`): what the notebook's role guess offers. */
+  castCounts?: Readonly<Record<string, number>>;
 }) {
   const book = useNotebook(notes);
   const [editing, setEditing] = useState<number | null>(null);
@@ -143,6 +155,7 @@ export function Wing({
             key={t.seat}
             {...t}
             note={book?.notes[t.seat]}
+            guess={t.dead ? undefined : book?.guesses[t.seat]}
             suspect={suspect === t.seat}
             onOpen={editable(t) ? (el) => open(t.seat, el) : undefined}
           />
@@ -168,6 +181,10 @@ export function Wing({
           character={edited.character}
           dead={edited.dead}
           book={book}
+          choices={guessChoices(
+            castCounts ?? {},
+            tiles.map((t) => t.dead?.role ?? null),
+          )}
           suspect={suspect === edited.seat}
           onClose={close}
           style={rail}
@@ -180,6 +197,8 @@ export function Wing({
 interface CardProps extends WingTileProps {
   /** The seated player's note on this seat. */
   note?: string;
+  /** The role the player thinks this seat holds: a small pencilled sigil on the photo. */
+  guess?: string;
   /** Marked as the suspect: the wax seal. */
   suspect?: boolean;
   /** Tapping the card opens its note editor (a seated player, another seat). */
@@ -196,9 +215,11 @@ function WingTile({
   you,
   pack,
   lamp,
+  glow,
   read,
   file,
   note,
+  guess,
   suspect,
   onOpen,
 }: CardProps) {
@@ -218,6 +239,7 @@ function WingTile({
     read?.sure ? styles.sure : '',
     read?.open ? styles.open : '',
     file && !read ? styles.file : '',
+    glow ? styles[glow] : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -237,6 +259,15 @@ function WingTile({
           </span>
         ) : null}
         {lamp ? <span className={styles.lamp} /> : null}
+        {guess ? (
+          <span
+            className={`${styles.guess} ${styles[`c-${factionOf(guess)}`] ?? ''}`}
+            title={`You think: ${ROLE_NAME[guess] ?? guess}`}
+            data-guess={guess}
+          >
+            <Sigil role={guess} />
+          </span>
+        ) : null}
         {dead ? <span className={styles.ribbon} aria-hidden="true" /> : null}
       </span>
       <b className={styles.num}>{seat}</b>
@@ -256,6 +287,9 @@ function WingTile({
         <span className={`${styles.band} ${you ? styles.youBand : ''}`}>{band}</span>
       ) : null}
       {read?.onRead ? <span className={styles.breathe} aria-hidden="true" /> : null}
+      {glow === 'acted' ? <span className={styles.glow} aria-hidden="true" /> : null}
+      {/* a card that opens a file wears the Reveal switch's keyhole; an actor's opens its room */}
+      {file && !read && glow !== 'acted' ? <Keyhole /> : null}
       {read?.onRead && read.fresh ? (
         <span key={read.fresh} className={styles.flash} aria-hidden="true" />
       ) : null}
@@ -265,7 +299,7 @@ function WingTile({
   );
   if (!tap)
     return (
-      <div className={cls} data-seat={seat}>
+      <div className={cls} data-seat={seat} data-glow={glow}>
         {face}
       </div>
     );
@@ -274,6 +308,7 @@ function WingTile({
       type="button"
       className={`${cls} ${styles.tap}`}
       data-seat={seat}
+      data-glow={glow}
       aria-label={label}
       aria-expanded={read?.onRead ? !!read.open : undefined}
       aria-haspopup={read?.onRead || file ? undefined : 'dialog'}
@@ -281,6 +316,60 @@ function WingTile({
     >
       {face}
     </button>
+  );
+}
+
+/** The Reveal switch's keyhole, lit in verdigris on a small walnut disc: this card opens a file. */
+function Keyhole() {
+  return (
+    <span className={styles.keyhole} aria-hidden="true">
+      <svg viewBox="0 0 16 16">
+        <path d="M8 3.6a2.3 2.3 0 0 0-1.2 4.3L6 12.4h4l-.8-4.5A2.3 2.3 0 0 0 8 3.6Z" />
+      </svg>
+    </span>
+  );
+}
+
+/**
+ * "I think they are…": the roles a living seat could still hold, as the table knows it (the
+ * cast less the roles the dead have shown), with how many are left, and "not sure". A guess
+ * kept from before its role ran out stays listed, marked so.
+ */
+function GuessSelect({
+  id,
+  seat,
+  guess,
+  choices,
+  onGuess,
+}: {
+  id: string;
+  seat: number;
+  guess: string | null;
+  choices: readonly { role: string; left: number }[];
+  onGuess: (role: string | null) => void;
+}) {
+  const stale = guess && !choices.some((c) => c.role === guess);
+  return (
+    <label className={styles.guessRow} htmlFor={id}>
+      <span>I think they are…</span>
+      <select
+        id={id}
+        className={styles.guessSelect}
+        value={guess ?? ''}
+        data-seat-guess={seat}
+        onChange={(e) => onGuess(e.target.value || null)}
+      >
+        <option value="">not sure</option>
+        {choices.map((c) => (
+          <option key={c.role} value={c.role}>
+            {ROLE_NAME[c.role] ?? c.role} · {c.left} left
+          </option>
+        ))}
+        {stale ? (
+          <option value={guess}>{ROLE_NAME[guess] ?? guess} · none left</option>
+        ) : null}
+      </select>
+    </label>
   );
 }
 
@@ -349,6 +438,7 @@ function NoteEditor({
   character,
   dead,
   book,
+  choices,
   suspect,
   onClose,
   style,
@@ -357,6 +447,8 @@ function NoteEditor({
   character: Character;
   dead?: { role: string | null };
   book: Notebook;
+  /** The roles a living seat could still hold, with how many are left. */
+  choices: readonly { role: string; left: number }[];
   suspect: boolean;
   onClose: () => void;
   style: CSSProperties;
@@ -411,6 +503,15 @@ function NoteEditor({
           rows={4}
           maxLength={600}
         />
+        {!dead ? (
+          <GuessSelect
+            id={`${id}-g`}
+            seat={seat}
+            guess={book.guesses[seat] ?? null}
+            choices={choices}
+            onGuess={(role) => book.setGuess(seat, role)}
+          />
+        ) : null}
         <div className={styles.editorFoot}>
           {!dead ? (
             <button

@@ -11,7 +11,7 @@
  */
 import { motion } from 'motion/react';
 import type { CSSProperties, ReactNode } from 'react';
-import type { Character } from '@/assets/manifest';
+import { SPRITES, type Character } from '@/assets/manifest';
 import { ChipSprite } from '../cast/ChipSprite';
 import { useMotionScale } from '../motion';
 import { CARD_TEXT } from '../card-text';
@@ -74,6 +74,13 @@ export interface NoticeProps {
   arrive?: boolean;
   /** Arrival delay, seconds. */
   delay?: number;
+  /**
+   * The HUD's walnut board (the speech box's material) in place of the glass: a notice the
+   * viewer answers, the replay's stops (owner, 2026-09-30).
+   */
+  walnut?: boolean;
+  /** The ways on, under the words: `NoticeButton`s. */
+  actions?: ReactNode;
 }
 
 export function Notice({
@@ -86,15 +93,27 @@ export function Notice({
   wide,
   arrive = false,
   delay = 0,
+  walnut = false,
+  actions,
 }: NoticeProps) {
   const k = useMotionScale();
   const f = factionOf(sigil);
-  const cls = [styles.box, wide ? styles.wide : '', aqua ? styles.xr : '']
+  const cls = [
+    styles.box,
+    wide ? styles.wide : '',
+    aqua ? styles.xr : '',
+    walnut ? styles.walnut : '',
+  ]
     .filter(Boolean)
     .join(' ');
   return (
     <motion.div
       className={cls}
+      style={
+        walnut
+          ? ({ '--board': `url(${SPRITES.textures.walnut.src})` } as CSSProperties)
+          : undefined
+      }
       initial={arrive ? { opacity: 0 } : false}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 * k, delay: delay * k }}
@@ -113,7 +132,34 @@ export function Notice({
         {aqua ? <span className={styles.aqua}>{aqua}</span> : null}
       </header>
       {children ? <div className={styles.body}>{children}</div> : null}
+      {actions ? <div className={styles.actions}>{actions}</div> : null}
     </motion.div>
+  );
+}
+
+/**
+ * A way on from a notice ("Watch them all ▶", "End the night →", "← Back to the night"): a
+ * small walnut plaque with a brass edge, the strip's material. `lead` is the one the notice
+ * leads with, its edge brighter.
+ */
+export function NoticeButton({
+  children,
+  onPress,
+  lead = false,
+}: {
+  children: ReactNode;
+  onPress?: () => void;
+  lead?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      className={lead ? `${styles.go} ${styles.lead}` : styles.go}
+      onClick={onPress}
+      data-stop-button
+    >
+      {children}
+    </button>
   );
 }
 

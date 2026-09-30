@@ -179,7 +179,8 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput }: SceneProps
             g={g}
             shadow
             character={character}
-            seat={n}
+            // the stand's plate names the seat: no numeral on the belly
+            seat={null}
             state="base"
             arrive={animate && id === 'lynch.stand-returns' ? 1.05 : false}
           />
@@ -191,7 +192,7 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput }: SceneProps
             animate={{ y: '115%' }}
             transition={{ duration: 0.5 * k, delay: 0.35 * k, ease: [0.55, 0, 0.95, 0.55] }}
           >
-            <Puppet g={g} shadow character={character} seat={n} state="out" />
+            <Puppet g={g} shadow character={character} seat={null} state="out" />
           </motion.div>
         ) : null}
         {role && (id === 'lynch.card-up' || id === 'lynch.truth') ? (

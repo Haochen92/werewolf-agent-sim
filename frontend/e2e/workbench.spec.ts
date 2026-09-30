@@ -49,6 +49,8 @@ for (const [name, query] of SHOTS) {
 const FLIES: [name: string, path: string][] = [
   ['deal-cards-dealt', 'deal?beat=1'],
   ['deal-your-card-seat3', 'deal?beat=2&viewer=seat:player_3'],
+  // the deal face up (the X-ray): each small card the role's figure under its name
+  ['deal-face-up-figures', 'deal?beat=2&viewer=xray&hud=replay'],
   ['morning-chip-fell', 'morning?beat=6'],
   ['morning-chip-saved', 'morning?beat=2'],
   ['night-hub', 'night?beat=0'],
@@ -243,7 +245,7 @@ const SLOT: [name: string, path: string, ready: string, click?: string][] = [
     'slot-day-file-precedents',
     'day?beat=16&viewer=xray&hud=replay&slot=film',
     '[data-sheet="precedents"]',
-    '[role="tab"]:has-text("Precedents")',
+    '[role="tab"]:has-text("Lessons")',
   ],
   [
     'slot-day-file-memory-off',
@@ -352,9 +354,10 @@ test('the phone frame draws the stage at the phone’s size', async ({ page }) =
 
 /**
  * The seat rail's notebook (beat sheet §0, HUD pass 2): a seated player (a live cut) taps another
- * seat's card to write a note and mark a suspect; the note shows on the card, the suspect's head
- * in the slot, and both come back after a reload (this device only). A dead seat has no suspect
- * toggle. The replay's cut shows the cards only.
+ * seat's card to write a note, guess its role (the roles still possible, with how many are left)
+ * and mark a suspect; the note and the guess show on the card, the suspect's head in the slot,
+ * and all come back after a reload (this device only). A dead seat has no suspect toggle and no
+ * guess. The replay's cut shows the cards only.
  */
 test('the seat rail: notes and a suspect for a seated player, none in a replay', async ({
   page,
@@ -372,20 +375,37 @@ test('the seat rail: notes and a suspect for a seated player, none in a replay',
   await expect(hint).toHaveCount(0);
   await page.keyboard.type('Jumped on the slip');
   await dialog.getByRole('button', { name: 'Mark as suspect' }).click();
+  // the role guess: only the roles that could still be alive, with how many are left
+  const guess = dialog.getByLabel('I think they are…');
+  await expect(guess.locator('option')).toHaveText([
+    'not sure',
+    'Villager · 3 left',
+    'Healer · 1 left',
+    'Investigator · 1 left',
+    'Vigilante · 1 left',
+    'Wolf · 2 left',
+    'Serial killer · 1 left',
+  ]);
+  await guess.selectOption('wolf');
+  await page.addStyleTag({ content: 'nextjs-portal{display:none!important}' });
+  await expect(page).toHaveScreenshot('wing-notebook-guess.png');
   await dialog.getByRole('button', { name: 'Done' }).click();
   await expect(dialog).toHaveCount(0);
   const card = page.locator('[data-layer="hud"] [data-seat="5"]');
   await expect(card).toContainText('Jumped on the slip');
+  await expect(card.locator('[data-guess="wolf"]')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Suspect: seat 5, notes' })).toBeVisible();
 
   // kept on the device: a later beat still has it, and the hint stays dismissed
   await page.goto(`${live}&beat=14`, { waitUntil: 'networkidle' });
   await expect(card).toContainText('Jumped on the slip');
+  await expect(card.locator('[data-guess="wolf"]')).toBeVisible();
   await expect(hint).toHaveCount(0);
   // a dead seat: its note may be written, it cannot be marked; Escape closes
   await page.getByRole('button', { name: 'Seat 3, notes' }).click();
   await expect(dialog).toContainText('Dead · Wolf');
   await expect(dialog.getByRole('button', { name: /suspect/ })).toHaveCount(0);
+  await expect(dialog.getByLabel('I think they are…')).toHaveCount(0);
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Seat 3, notes' })).toBeFocused();
@@ -409,6 +429,14 @@ const FRAMES: [name: string, path: string][] = [
   ['frame-iphone14-night', 'night?beat=0&viewer=seat:player_7&frame=iphone14'],
   // the case file on a phone: its cover and tabs in one row over the sheet
   ['frame-iphone14-file', 'day?beat=16&viewer=xray&hud=replay&slot=film&frame=iphone14'],
+  // the stand's plate on a phone: pinned to the speech box's top edge, not at the chest
+  ['frame-667-stand-plate', 'day?beat=55&viewer=xray&hud=replay&frame=667x375'],
+  [
+    'frame-568-stand-plate-file',
+    'day?beat=55&viewer=xray&hud=replay&slot=film&frame=568x320',
+  ],
+  // the epilogue's closing spread on a phone: the rows scroll in place
+  ['frame-iphone14-epilogue', 'over?beat=5&frame=iphone14'],
 ];
 
 for (const [name, path] of FRAMES) {

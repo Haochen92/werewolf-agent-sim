@@ -2,8 +2,9 @@
  * The replay page on the new stage, against the bundled fixture game served as if the API
  * sent it (the API is not running for these): the first beat, two chapter jumps, the transport
  * band beside the open drawer, the X-ray's file on a day-3 speech (turned on by the strip's
- * Reveal), the X-ray's night hub and a lit card taking it to that actor's night, a voter's file
- * opened from the wing at the count, and the strip with Reveal on a small phone. Then tests
+ * Reveal), the X-ray's night stop (the hub paused with its notice, a lit card playing that
+ * actor's room and coming back, "Back to the night"), a voter's file opened from the wing at the
+ * count, the vote's stop with the ballots in, and the strip with Reveal on a small phone. Then tests
  * that are not pictures: played fast, the cursor runs on at twice the pace; the drawer stays
  * where a reader scrolled it; the band fits a small phone on its side.
  */
@@ -135,30 +136,48 @@ test('replay: the X-ray on a day-3 speech, the file in the slot', async ({ page 
   await expect(page).toHaveScreenshot('replay-xray-film-d3.png');
 });
 
-test('replay: the night hub, and a lit card goes to that actor’s night', async ({
+test('replay: the night stops at its hub; a lit card plays that actor’s room and comes back', async ({
   page,
 }) => {
+  // the room's hold is the page's clock: run on only when asked
+  await page.clock.install();
   await open(page);
   await reveal(page).click();
   const next = page.getByRole('button', { name: 'Next chapter' });
   await next.click();
   await next.click();
+  // the stop: arrived at, paused, the actors lit, the notice with the ways on
   await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.hub');
+  await expect(theatre(page)).toHaveAttribute('data-playing', 'false');
+  await expect(page.getByText('Night 1 · 5 acted.')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Watch them all ▶' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'End the night →' })).toBeVisible();
+  await expect(page.locator('[data-glow="acted"]')).toHaveCount(5);
   await settle(page);
   await expect(page).toHaveScreenshot('replay-night-hub-reveal.png');
-  // the investigator's card (lit): its first spoke, in its room, its file beside it
+  // the investigator's card (lit): its room plays, its file beside it
   await expect(card(page, 4)).toHaveAttribute('aria-label', 'Seat 4’s night');
   await card(page, 4).click();
   await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.spoke');
+  await expect(theatre(page)).toHaveAttribute('data-playing', 'true');
   await expect(page.getByText('In the night · Seat 4')).toBeVisible();
   await page.getByRole('button', { name: 'File', exact: true }).click();
   await expect(page.locator('[data-film="file"]')).toHaveAttribute(
     'data-file-seat',
     'player_4',
   );
-  // back at the hub, a seat that does not act opens its own file
-  await page.keyboard.press('[');
+  // its last step played, the hub again: paused, seat 4 now a steady mark
+  await page.clock.runFor(2500);
   await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.hub');
+  await expect(theatre(page)).toHaveAttribute('data-playing', 'false');
+  await expect(card(page, 4)).toHaveAttribute('data-glow', 'visited');
+  // the pack's room, left early by its "Back to the night"
+  await card(page, 3).click();
+  await expect(page.getByText('In the night · The pack')).toBeVisible();
+  await page.getByRole('button', { name: '← Back to the night' }).click();
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.hub');
+  await expect(card(page, 8)).toHaveAttribute('data-glow', 'visited');
+  // a seat that does not act opens its own file
   await card(page, 5).click();
   await expect(page.locator('[data-film="file"]')).toHaveAttribute(
     'data-file-seat',
@@ -185,14 +204,39 @@ test('replay: at the count, a voter’s card opens what it voted on', async ({ p
   await card(page, 8).click();
   const film = page.locator('[data-film="file"]');
   await expect(film).toHaveAttribute('data-file-seat', 'player_8');
-  await page.getByRole('tab', { name: /Precedents/ }).click();
+  await page.getByRole('tab', { name: /Lessons/ }).click();
   await expect(film.getByText('Consulted Day 3 · vote')).toBeVisible();
   await settle(page);
   await expect(page).toHaveScreenshot('replay-vote-voter-file.png');
-  // the docket's rows open a voter's file too
-  await page.getByRole('tab', { name: 'The docket' }).click();
+  // the count's sheet (titled by what it holds) opens a voter's file from its rows too
+  await page.getByRole('tab', { name: 'The vote' }).click();
   await page.locator('[data-film="vote"] button', { hasText: 'Seat 5' }).click();
   await expect(film).toHaveAttribute('data-file-seat', 'player_5');
+});
+
+test('replay: the vote stops with the ballots in, and counts on', async ({ page }) => {
+  test.setTimeout(90_000);
+  await open(page);
+  await reveal(page).click();
+  for (let i = 0; i < 12; i++) {
+    if ((await band(page).textContent())?.includes('Vote 3')) break;
+    await page.keyboard.press(']');
+  }
+  // the drop, the lid down (the stop), the count; back a beat lands on the stop at rest
+  for (const beat of ['vote.ballots-drop', 'vote.closes', 'vote.count-begins']) {
+    await page.keyboard.press('ArrowRight');
+    await expect(theatre(page)).toHaveAttribute('data-beat', beat);
+  }
+  await page.keyboard.press('ArrowLeft');
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'vote.closes');
+  await expect(page.getByText('7 ballots in.')).toBeVisible();
+  await expect(page.getByText('Tap a seat to read what it voted on.')).toBeVisible();
+  await expect(card(page, 6)).toHaveAttribute('aria-label', 'Open seat 6’s file');
+  await settle(page);
+  await expect(page).toHaveScreenshot('replay-vote-stop.png');
+  await page.getByRole('button', { name: 'Count the votes ▶' }).click();
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'vote.count-begins');
+  await expect(theatre(page)).toHaveAttribute('data-playing', 'true');
 });
 
 test('replay: the strip fits a small phone with Reveal on', async ({ page }) => {

@@ -1,8 +1,10 @@
 'use client';
 
 /**
- * A seat's puppet at the stand: the felt figure (a WebP sprite) with the seat's numeral drawn
- * on its belly in vector, because a numeral is state and state is never baked into a sprite.
+ * A seat's puppet at the stand: the felt figure (a WebP sprite), with the seat's numeral drawn
+ * on its belly in vector where nothing else names it, because a numeral is state and state is
+ * never baked into a sprite. Where a brass plate on the stand names the seat, the belly is bare
+ * (owner, 2026-09-30): the scene passes no numeral.
  *
  * Every character is scaled to one head-to-toe height, measured from its silhouette (`BODY`
  * in the manifest), so a tall-eared hare and a round onion stand at the same size and only
@@ -24,7 +26,10 @@ import styles from './Puppet.module.css';
 export interface PuppetProps {
   g: StageGeometry;
   character: Character;
-  /** The numeral on the belly, 1–9; null before seats are dealt (the waiting room): no numeral. */
+  /**
+   * The numeral on the belly, 1–9; null for none: a plate on the stand names the seat, or no
+   * seat is dealt yet (the waiting room).
+   */
   seat: number | null;
   state: DayState;
   /** Offset from the stand's centre line, and a scale, for two or three at the stand. */

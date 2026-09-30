@@ -16,7 +16,7 @@ import { useDrawerFilters } from './drawer/use-drawer-filters';
 import { Film } from './film/Film';
 import type { FileChoice } from './film/case-file';
 import type { SceneProps } from './scenes/types';
-import { atRail, railHolds, slotOf } from './slot';
+import { atRail, railHolds, slotOf, tapsOpenFiles } from './slot';
 
 export function SideSlot({ view, beat, me, presentation, slot }: SceneProps) {
   const own = useDrawerFilters();
@@ -55,6 +55,7 @@ export function SideSlot({ view, beat, me, presentation, slot }: SceneProps) {
           seat={slot?.onFileSeat ? (slot.fileSeat ?? null) : ownSeat}
           onSeat={slot?.onFileSeat ?? setOwnSeat}
           replay={slot?.replayHref}
+          seatTaps={!!slot?.onOpenFile && tapsOpenFiles(beat)}
         />
       )}
     </Layer>

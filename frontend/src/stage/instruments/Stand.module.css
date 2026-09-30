@@ -114,18 +114,8 @@
     inset 0 -1px 0 rgba(74, 51, 23, 0.6),
     0 calc(3 * var(--u)) calc(6 * var(--u)) rgba(0, 0, 0, 0.45);
 }
-/* the speech box over the stand's front: on a phone, where the box rises past the rail, the
-   plate rises to sit just above its nameplate (the box is 6.3 of its ems tall with the tab;
-   its ems are max(25.6px, --said), SpeechBox.module.css). At full size the plate stays put. */
-.box[data-speech-below] .plaque {
-  top: min(
-    calc(3 * var(--u)),
-    calc(
-      var(--clear) - 6.3 * max(25.6px, var(--said)) - 1.9 *
-        max(var(--meta), calc(17 * var(--u)))
-    )
-  );
-}
+/* with the speech box over the stand's front, where the box rises past the rail the plate is
+   pinned to the box's top edge (Stand.tsx measures it: the box's height is its words') */
 .tag {
   font-family: var(--font-body);
   font-size: 0.8em;

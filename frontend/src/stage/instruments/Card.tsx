@@ -6,8 +6,9 @@
  * - `CardBack`: face down. Paper, the stitched ring and the star, and no faction colour
  *   anywhere, not even the edge bands (the card-back rule: a face-down card tells nobody
  *   anything).
- * - `SmallCard`: the one hung under each chip at the deal. Face up it is the role's sigil,
- *   large, and its name.
+ * - `SmallCard`: the one hung under each chip at the deal. Face up it is the role's name over
+ *   its felt figure, the big card's art (owner, 2026-09-30; it was the sigil alone), the sigil
+ *   small by the seat at its foot.
  * - `RoleCard`: the full face, shown large (your card at the deal, a dead seat's at the
  *   morning, the lynch's on the lift): name and sigil, the felt figure, the front line, the
  *   seat, and the faction's colour on the edge bands.
@@ -59,10 +60,16 @@ export function SmallCard({ role, seat, w, turn = false, turnDelay }: FaceProps)
     <div className={faceClass(role, styles.small)} style={cardVars(w)}>
       <div className={styles.in}>
         <header>
-          <Sigil role={role} className={styles.sg} />
           <span>{CARD_TEXT[role]?.name ?? role}</span>
         </header>
-        <footer>Seat {seat}</footer>
+        <div
+          className={styles.fig}
+          dangerouslySetInnerHTML={{ __html: roleFigure(role) }}
+        />
+        <footer>
+          <Sigil role={role} className={styles.sg} />
+          Seat {seat}
+        </footer>
       </div>
     </div>
   );

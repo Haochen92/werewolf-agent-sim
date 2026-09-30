@@ -391,10 +391,11 @@
   inset: -5.6px;
   border-width: 3.2px;
 }
-/* a card that opens its seat's case file (the X-ray, where nobody speaks): a thin steady
-   verdigris edge, brighter under the pointer or the finger */
+/* a card that opens its seat's case file (the X-ray, where nobody speaks): a steady verdigris
+   edge (2026-09-30: the thin muted one was missed), brighter under the pointer or the finger */
 .file::after {
-  border: 1.6px solid var(--xray-mut);
+  border: 2.4px solid var(--xray);
+  box-shadow: 0 0 4.8px rgba(134, 176, 160, 0.35);
 }
 .file:hover::after,
 .file:active::after,
@@ -452,6 +453,80 @@
   .flash {
     display: none;
   }
+}
+
+/* its badge: the Reveal switch's keyhole lit in verdigris on a small walnut disc with a brass
+   edge, on the card's top-right corner (half off it, so the photo's sigil badge stays clear) */
+.keyhole {
+  position: absolute;
+  z-index: 4;
+  right: calc(-6.4px * var(--legible-ui));
+  top: calc(-6.4px * var(--legible-ui));
+  width: calc(20.8px * var(--legible-ui));
+  aspect-ratio: 1;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 40% 35%, #4a3220, #1c120a 75%);
+  border: 1.5px solid var(--hud-brass);
+  box-shadow: 0 1.6px 3.2px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+.keyhole svg {
+  width: 72%;
+  height: 72%;
+  fill: var(--xray-hi);
+}
+
+/* the replay's night stop (2026-09-30): a seat that acted breathes a clear verdigris glow while
+   its room is a tap away (an edge drawn once, a glow whose opacity alone moves); visited, it
+   keeps a steady, quieter mark */
+.acted::after {
+  border: 3.2px solid var(--xray-hi);
+  box-shadow: 0 0 9.6px rgba(134, 176, 160, 0.6);
+}
+.glow {
+  position: absolute;
+  inset: -8px;
+  border-radius: 8.8px;
+  pointer-events: none;
+  box-shadow:
+    0 0 19.2px 6.4px rgba(134, 176, 160, 0.75),
+    inset 0 0 9.6px rgba(185, 214, 200, 0.5);
+  opacity: 0.5;
+  animation: breathe 2s ease-in-out infinite;
+}
+.visited::after {
+  border: 2.4px solid var(--xray-mut);
+  box-shadow: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .glow {
+    animation: none;
+  }
+}
+
+/* the player's role guess (live, the notebook): the role's sigil on a paper disc at the photo's
+   lower left, its edge pencilled (dashed) so it never reads as the X-ray's truth */
+.guess {
+  position: absolute;
+  z-index: 1;
+  left: 2.4px;
+  bottom: 2.4px;
+  width: min(30cqw, 24px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #f3ead3;
+  border: 1.2px dashed #4d4a45;
+  color: var(--c, #4d4a45);
+  line-height: 0;
+}
+.guess svg {
+  width: 72%;
+  height: 72%;
+  stroke-width: 3.4;
 }
 
 /* the X-ray night's lamp on a seat that acts tonight (bench rev 67 `.seat .lamp`) */
@@ -700,6 +775,30 @@ button.suspect:focus-visible {
   font-style: italic;
 }
 .paper:focus-visible {
+  outline: 2.4px solid var(--amber);
+  outline-offset: 2.4px;
+}
+/* "I think they are…": the role guess, a select on the board under the paper */
+.guessRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  font-size: var(--meta);
+  color: var(--cream2);
+}
+.guessSelect {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: calc(34px * var(--legible-ui));
+  padding: 0 0.6em;
+  font: inherit;
+  font-family: var(--font-body);
+  color: #2a1d10;
+  background: #f3ead3;
+  border: 1.5px solid rgba(201, 164, 92, 0.7);
+  border-radius: 5.6px;
+}
+.guessSelect:focus-visible {
   outline: 2.4px solid var(--amber);
   outline-offset: 2.4px;
 }

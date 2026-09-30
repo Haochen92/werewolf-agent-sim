@@ -11,10 +11,14 @@
  * A preview (the landing's mini replay) is the same reducer with a `loop` window: the play runs
  * round the window instead of stopping, so there is no second player to keep in step. Its
  * buttons stay inside the window, and the X-ray carries the window across with the cursor.
+ *
+ * With the X-ray on, the play pauses at the stops (stops.ts: the night hub, the ballots in),
+ * however it got there; the hub's notice visits a room, watches them all or ends the night.
  */
 import type { SceneBeat } from '@/stage/beats/types';
 import type { MotionSpeed, Presentation } from '@/stage/scenes/types';
 import { pressFile, pressTranscript, pressXray, showFile } from '@/stage/slot';
+import { afterNight, branchOf, endsRoom, hubOf, isStop } from './stops';
 import {
   carryAcross,
   holdFor,
@@ -37,6 +41,13 @@ export interface ReplayState {
    * again, and a beat that waits for the viewer is played past. Null for the whole log.
    */
   loop: { from: number; to: number } | null;
+  /**
+   * The room the viewer went into from the night hub (`day:actor`, stops.ts `branchOf`): when
+   * its last step has played, the play returns to the hub. Null once the cursor leaves it.
+   */
+  visit: string | null;
+  /** Every room the cursor has been in (`day:actor`): the hub dims their seats. */
+  visited: readonly string[];
 }
 
 export type ReplayAction =
@@ -53,7 +64,13 @@ export type ReplayAction =
   | { type: 'transcript' }
   | { type: 'file' }
   /** A seat tapped on the stage: its file comes to the pane (the seat is the theatre's). */
-  | { type: 'show-file' };
+  | { type: 'show-file' }
+  /** The night hub: a lit seat tapped, its room (the spoke at `index`) played; its end returns to the hub. */
+  | { type: 'visit'; index: number }
+  /** The night hub's "End the night": on to the first beat after the night whole, playing. */
+  | { type: 'end-night' }
+  /** A room's "Back to the night": that night's hub, still. */
+  | { type: 'to-hub' };
 
 export interface ReplayBeats {
   public: readonly SceneBeat[];
@@ -68,6 +85,8 @@ export function initialReplayState(slot: Presentation['slot'] = null): ReplaySta
     xray: false,
     slot,
     loop: null,
+    visit: null,
+    visited: [],
   };
 }
 
@@ -90,6 +109,8 @@ export function initialLoopState(
     xray: false,
     slot: null,
     loop: { from, to },
+    visit: null,
+    visited: [],
   };
 }
 
@@ -131,7 +152,27 @@ function landed(state: ReplayState, beats: readonly SceneBeat[]): ReplayState {
 
 export function replayReducer(all: ReplayBeats) {
   const of = (xray: boolean) => (xray ? all.xray : all.public);
+  /**
+   * After every press: the rooms the cursor has been in are remembered, a visit ends when the
+   * cursor leaves its room, and a cursor that has just arrived on a stop pauses the play there.
+   */
+  const settle = (was: ReplayState, now: ReplayState): ReplayState => {
+    if (now.loop) return now;
+    const beats = of(now.xray);
+    const branch = branchOf(beats[now.cursor.index]);
+    let s = now;
+    if (s.visit && branch !== s.visit) s = { ...s, visit: null };
+    if (branch && !s.visited.includes(branch))
+      s = { ...s, visited: [...s.visited, branch] };
+    const moved = now.cursor.index !== was.cursor.index || now.xray !== was.xray;
+    if (moved && s.playing && isStop(beats, s.cursor.index, s.xray))
+      s = { ...s, playing: false };
+    return s;
+  };
   return function reduce(state: ReplayState, action: ReplayAction): ReplayState {
+    return settle(state, press(state, action));
+  };
+  function press(state: ReplayState, action: ReplayAction): ReplayState {
     const beats = of(state.xray);
     switch (action.type) {
       case 'step':
@@ -147,6 +188,13 @@ export function replayReducer(all: ReplayBeats) {
         // a loop's last beat has held: round to the window's first, which arrives still
         if (state.loop && state.cursor.index >= state.loop.to)
           return landed({ ...state, cursor: still(state.loop.from) }, beats);
+        {
+          // a room visited from the hub has played its last step: back to the hub
+          const here = beats[state.cursor.index];
+          const hub = here ? hubOf(beats, here.day) : -1;
+          if (state.visit && endsRoom(here) && branchOf(here) === state.visit && hub >= 0)
+            return { ...state, cursor: still(hub), playing: false, visit: null };
+        }
         return landed({ ...state, cursor: stepForward(state.cursor, beats) }, beats);
       case 'play': {
         if (beats.length === 0) return state;
@@ -155,7 +203,11 @@ export function replayReducer(all: ReplayBeats) {
         if (state.cursor.index >= beats.length - 1)
           return { ...state, playing: true, cursor: still(0) };
         const beat = beats[state.cursor.index];
-        if (holdFor(beat, state.speed) === null)
+        // a stop's ▶ ("Watch them all", "Count the votes") moves on from it at once
+        if (
+          holdFor(beat, state.speed) === null ||
+          isStop(beats, state.cursor.index, state.xray)
+        )
           return landed(
             { ...state, playing: true, cursor: stepForward(state.cursor, beats) },
             beats,
@@ -165,7 +217,29 @@ export function replayReducer(all: ReplayBeats) {
       case 'pause':
         return { ...state, playing: false };
       case 'toggle-play':
-        return reduce(state, { type: state.playing ? 'pause' : 'play' });
+        return press(state, { type: state.playing ? 'pause' : 'play' });
+      case 'visit': {
+        const b = beats[action.index];
+        if (!b || state.loop) return state;
+        return {
+          ...state,
+          cursor: { index: action.index, animate: true },
+          playing: true,
+          visit: branchOf(b),
+        };
+      }
+      case 'end-night': {
+        const b = beats[state.cursor.index];
+        const next = b ? afterNight(beats, b.day) : -1;
+        if (next < 0 || state.loop) return state;
+        return landed({ ...state, cursor: still(next), playing: true, visit: null }, beats);
+      }
+      case 'to-hub': {
+        const b = beats[state.cursor.index];
+        const hub = b ? hubOf(beats, b.day) : -1;
+        if (hub < 0 || state.loop) return state;
+        return { ...state, cursor: still(hub), playing: false, visit: null };
+      }
       case 'speed':
         return { ...state, speed: action.speed };
       case 'transcript':
@@ -187,5 +261,5 @@ export function replayReducer(all: ReplayBeats) {
         return { ...state, ...next, cursor, loop };
       }
     }
-  };
+  }
 }

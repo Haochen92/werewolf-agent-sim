@@ -130,6 +130,8 @@ export interface WingSeatOptions {
   /** Out of the scene's focus: the losers at the end. */
   dim?: (seat: string) => boolean;
   lamp?: (seat: string) => boolean;
+  /** The replay's night stop: a seat that acted glows, a visited one keeps a steady mark. */
+  glow?: (seat: string) => 'acted' | 'visited' | undefined;
   pack?: (seat: string) => boolean;
   /**
    * A tap on a seat's card opens its case file (`fileTap` in slot.ts), or, at the night hub,
@@ -162,10 +164,13 @@ export function TableWing({
   const deadBySeat = new Map(view.dead.map((d) => [d.player, d]));
   return (
     <>
-      {hud === 'replay' ? <Paint of={drape} opts={{ bleed: BLEED }} /> : null}
+      {hud === 'replay' ? (
+        <Paint of={drape} opts={{ bleed: BLEED, src: SPRITES.props.valance.src }} />
+      ) : null}
       <Wing
         width={width}
         notes={notes}
+        castCounts={view.castRoleCounts}
         tiles={view.seats.map((seat, i) => {
           const d = opts.untold?.has(seat) ? undefined : deadBySeat.get(seat);
           return {
@@ -176,6 +181,7 @@ export function TableWing({
             lit: opts.lit?.(seat),
             dim: opts.dim?.(seat),
             lamp: opts.lamp?.(seat),
+            glow: opts.glow?.(seat),
             pack: opts.pack?.(seat),
             you: seat === me,
             file: opts.file
@@ -239,7 +245,8 @@ export function StandReturns({
             shadow
             glass
             character={character}
-            seat={n}
+            // the stand's plate names the seat: no numeral on the belly
+            seat={null}
             state={state}
             arrive={animate ? delay : false}
           />

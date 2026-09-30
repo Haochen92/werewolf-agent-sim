@@ -13,6 +13,11 @@
  * to that actor's night (its first spoke; a wolf's, the pack's), and any other card opens that
  * seat's case file (owner, 2026-09-29). The play still runs the spokes in the log's order.
  *
+ * The replay's hub is a stop (owner, 2026-09-30; containers/stops.ts): the play waits here. The
+ * seats that acted glow on the wing, the ones whose rooms have been visited keep a steady mark,
+ * and the notice at the foot says how many acted and offers the ways on: watch them all, or end
+ * the night. A lit seat's room plays, and its end comes back here.
+ *
  * Played forward, the chips come down one after another. After a day with no vote the window
  * goes from day to night first (the shutter stayed up all day, so it stays up). After a vote
  * or a lynch there is nothing to change: both of those end on this very picture, night in the
@@ -26,7 +31,7 @@ import { Layer } from '../Stage';
 import { SideSlot } from '../SideSlot';
 import { Chip } from '../instruments/Chip';
 import { CountPill } from '../instruments/CountPill';
-import { CardButton, Notice, NoticeZone } from '../instruments/Notice';
+import { CardButton, Notice, NoticeButton, NoticeZone } from '../instruments/Notice';
 import { Shutter } from '../instruments/Shutter';
 import { TopStrip } from '../instruments/TopStrip';
 import { chipRow, rowX } from '../instruments/flies';
@@ -38,6 +43,7 @@ import { bandNarrows, fileTap, sideOpen, stripButtons } from '../slot';
 import { STAGE_H, geometry } from '../units';
 import { CarPaint, HouseLights, TableWing } from './DiningCarParts';
 import { notebookGame } from '../notebook';
+import { nightBranchesOf } from './replay-night';
 import type { SceneProps } from './types';
 
 /** The roles with a night of their own; the pack is one more unit. */
@@ -78,6 +84,27 @@ export function actorsTonight(view: GameView, day: number): Set<string> {
 }
 
 /**
+ * Who acted on night `day`, seat by seat, and whose room each is in (`pack` for a wolf). The
+ * rooms are read from the log ahead (the hub's own view has not reached the night's acts yet);
+ * the pack's seats are the wolves living at the hub, not those left at the log's end.
+ */
+export function actedTonight(
+  view: GameView,
+  ahead: GameView,
+  day: number,
+): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const b of nightBranchesOf(ahead, day)) {
+    const seats =
+      b.actor === 'pack'
+        ? view.alive.filter((s) => view.xray.roles[s] === 'wolf')
+        : b.seats.filter((s) => view.alive.includes(s));
+    for (const s of seats) out.set(s, b.actor);
+  }
+  return out;
+}
+
+/**
  * The X-ray hub's way into a seat's night: its first spoke that night (a wolf's is the pack's).
  * A seat whose night left nothing to tell (a vigilante holding fire) has none.
  */
@@ -104,6 +131,7 @@ function LobbyBeat({
   slot: slotInput,
   turn,
   onSeek,
+  stop,
 }: SceneProps) {
   const { hud, xray, animate, cast } = presentation;
   const side = sideOpen(presentation);
@@ -118,14 +146,24 @@ function LobbyBeat({
   const H = STAGE_H;
   // live, the acts come in as the night runs (`phase_progress`): the count
   const units = nightUnits(view);
-  const acted = Math.min(turn?.progress?.n ?? 0, units);
+  const actedN = Math.min(turn?.progress?.n ?? 0, units);
   // the hub's cards: an actor's jumps to its night, anyone else's opens its file
   const open = fileTap(presentation, slotInput, true);
+  const hub = beat.id === 'rnight.hub';
+  // the replay's stop: who acted (from the log ahead), and whose rooms have been seen
+  const atStop = hub && stop ? stop : null;
+  const acted = atStop ? actedTonight(view, slotInput?.ahead ?? view, beat.day) : null;
+  const seen = (seat: string) => {
+    const actor = acted?.get(seat);
+    return !!actor && !!atStop?.visited.includes(actor);
+  };
+  // a tap goes into the seat's night where it has one (at the stop: where it acted)
+  const goesIn = (seat: string) => !!(acted ? acted.has(seat) : actors?.has(seat));
   const toNight = (seat: string) => {
     // a seat whose night left nothing to tell (a vigilante holding fire): its file
-    if (!onSeek?.(spokeOf(view, beat.day, seat))) open?.(seat);
+    const into = spokeOf(view, beat.day, seat);
+    if (!(atStop ? atStop.onVisit(into) : onSeek?.(into))) open?.(seat);
   };
-  const hub = beat.id === 'rnight.hub';
 
   return (
     <>
@@ -187,10 +225,12 @@ function LobbyBeat({
           notes={notebookGame(presentation, me)}
           opts={{
             truth: (seat) => (xray ? (view.xray.roles[seat] ?? null) : null),
-            lamp: (seat) => !!actors?.has(seat),
-            file: open && hub ? (seat) => (actors?.has(seat) ? toNight : open)(seat) : open,
+            lamp: (seat) => !!actors?.has(seat) && !seen(seat),
+            glow: (seat) =>
+              acted?.has(seat) ? (seen(seat) ? 'visited' : 'acted') : undefined,
+            file: open && hub ? (seat) => (goesIn(seat) ? toNight : open)(seat) : open,
             fileLabel: (seat) =>
-              hub && actors?.has(seat)
+              hub && goesIn(seat)
                 ? `Seat ${seatNumber(seat)}’s night`
                 : `Open seat ${seatNumber(seat)}’s file`,
           }}
@@ -201,8 +241,28 @@ function LobbyBeat({
           sub={`Night · ${beat.label}`}
           {...stripButtons(presentation, slotInput)}
           side={side}
-          count={<CountPill hud={hud} label="Acted" n={acted} total={units} side={side} />}
+          count={<CountPill hud={hud} label="Acted" n={actedN} total={units} side={side} />}
         />
+        {atStop && acted?.size ? (
+          <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
+            <Notice
+              walnut
+              title={`Night ${beat.day} · ${acted.size} acted.`}
+              arrive={animate}
+              delay={1.2}
+              actions={
+                <>
+                  <NoticeButton lead onPress={atStop.onPlay}>
+                    Watch them all ▶
+                  </NoticeButton>
+                  <NoticeButton onPress={atStop.onEndNight}>End the night →</NoticeButton>
+                </>
+              }
+            >
+              Tap a lit seat to visit its room.
+            </Notice>
+          </NoticeZone>
+        ) : null}
         {myRole ? (
           <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
             <CardButton role={myRole} />

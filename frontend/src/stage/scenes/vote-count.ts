@@ -7,7 +7,7 @@
 import type { Ballot, DayVote } from '@/game/types';
 import { seatNumber } from '../roles';
 
-/** The plates: every seat that got a vote, in seat order, and the abstain saucer last. */
+/** The plates: every seat that got a vote, in seat order, and abstain's plate last. */
 export function candidatesOf(ballots: readonly Ballot[]): string[] {
   const set = [...new Set(ballots.map((b) => b.votee))];
   return set.sort((a, b) =>
@@ -52,7 +52,7 @@ export function score(counts: Record<string, number>): string {
   return ns.join(' to ');
 }
 
-/** Which plates are lit at the result: the voted-out seat's, the saucer, or the tied ones. */
+/** Which plates are lit at the result: the voted-out seat's, abstain's, or the tied ones. */
 export function litPlates(vote: DayVote): string[] {
   if (vote.outcome === 'lynched' && vote.lynched) return [vote.lynched];
   if (vote.outcome === 'abstain') return ['abstain'];

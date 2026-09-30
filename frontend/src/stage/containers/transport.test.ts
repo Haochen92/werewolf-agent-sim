@@ -62,10 +62,23 @@ describe('the transport', () => {
     });
     expect(across.animate).toBe(false);
     // An X-ray-only beat has no twin: land on the next public beat at or after its seq.
-    const spoke = xray.findIndex((b) => b.id === 'rnight.spoke' && b.day === 2);
-    const back = carryAcross(still(spoke), xray, pub);
-    expect(pub[back.index].seq).toBeGreaterThanOrEqual(xray[spoke].seq);
-    expect(pub[back.index].id).toBe('morning.shutter-down');
+    const face = xray.findIndex((b) => b.id === 'deal.face-up');
+    const past = carryAcross(still(face), xray, pub);
+    expect(pub[past.index].seq).toBeGreaterThanOrEqual(xray[face].seq);
+    // ...except the X-ray's night: a room (or the whole) is that night's public hub, never
+    // the morning its beats are cut at
+    for (const id of ['rnight.spoke', 'rnight.whole', 'rnight.hub'] as const) {
+      const at = xray.findIndex((b) => b.id === id && b.day === 2);
+      const back = carryAcross(still(at), xray, pub);
+      expect(pub[back.index]).toMatchObject({ id: 'night.hub', day: 2 });
+      expect(back.animate).toBe(false);
+    }
+    // and the public hub is the X-ray's hub, the same night
+    const pubHub = pub.findIndex((b) => b.id === 'night.hub' && b.day === 3);
+    expect(xray[carryAcross(still(pubHub), pub, xray).index]).toMatchObject({
+      id: 'rnight.hub',
+      day: 3,
+    });
   });
 
   it('labels a beat with its chapter', () => {

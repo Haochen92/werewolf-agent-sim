@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AGENT_WOULD_PASS, initialTurnState, turnReducer } from '../containers/live-state';
-import { notebookForAgent } from '../notebook';
+import { guessChoices, notebookForAgent, parseNotebook } from '../notebook';
 import type { DockInput } from '../scenes/types';
 import { dockControls, draftRequest, draftsLeftText } from './turn-dock';
 
@@ -166,5 +166,54 @@ describe('“Use my seat notes”: the notebook goes with a draft only when tick
     expect(t.shareNotebook).toBe(false);
     // a new turn starts ticked again
     expect(turnReducer(t, { type: 'open', seq: 8 }).shareNotebook).toBe(true);
+  });
+});
+
+describe('the notebook’s role guess (2026-09-30)', () => {
+  it('offers only the roles that could still be alive, with how many are left', () => {
+    const cast = {
+      villager: 3,
+      healer: 1,
+      investigator: 1,
+      vigilante: 1,
+      wolf: 2,
+      serial_killer: 1,
+    };
+    // a wolf and the investigator have died (their roles were shown), and a seat with no role yet
+    expect(guessChoices(cast, ['wolf', 'investigator', null])).toEqual([
+      { role: 'villager', left: 3 },
+      { role: 'healer', left: 1 },
+      { role: 'vigilante', left: 1 },
+      { role: 'wolf', left: 1 },
+      { role: 'serial_killer', left: 1 },
+    ]);
+  });
+
+  it('keeps a guess in the notebook; an old notebook without one still reads', () => {
+    expect(parseNotebook({ notes: { 5: 'quiet' }, suspect: 5, hinted: true })).toEqual({
+      notes: { 5: 'quiet' },
+      guesses: {},
+      suspect: 5,
+      hinted: true,
+    });
+    expect(
+      parseNotebook({ notes: {}, guesses: { 3: 'wolf', 4: 'nonsense', x: 'wolf' } })
+        .guesses,
+    ).toEqual({ 3: 'wolf' });
+  });
+
+  it('folds the guess into that seat’s note for a draft; the request keeps its shape', () => {
+    const book = {
+      notes: { 3: 'pushed hard on day 2', 6: '  ' },
+      guesses: { 3: 'wolf', 6: 'serial_killer', 7: 'healer' },
+      suspect: 3,
+    };
+    expect(notebookForAgent(book, (n) => n === 7)).toEqual({
+      seat_notes: {
+        player_3: '(I think: wolf) pushed hard on day 2',
+        player_6: '(I think: serial killer)',
+      },
+      suspect: 'player_3',
+    });
   });
 });

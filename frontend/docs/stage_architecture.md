@@ -118,7 +118,10 @@ keyhole on its own plaque just left of the tabs (beat sheet §11);
 the pressed tab, File or Transcript alike, sits in a darker engraved walnut well, its label bright cream over a short
 brass underline), the **speech box** (a fixed board of three lines with a nameplate tab, paged; beat
 sheet §0, §11), and the **stand plate** (the seat engraved on brass, "No. 2", on the stand's
-rail; on a phone, where the box rises past the rail, it rises to sit just above the box). In the
+rail; wherever the speech box rises past the rail, a phone or the drawer's narrower board, it is
+pinned to the box's top edge, placed by measuring the box, `Stand.tsx`, 2026-09-30; it was a CSS
+estimate that left it at the puppet's chest on phones). Where a plate names the seat the puppet's
+belly numeral is not drawn. In the
 replay a **way-out plaque** ("← Replays", or "← Home" from the landing) stands before the day
 plaque in the same material, and the count pill joins their row (beat sheet §11). A modal overlay (the full card, the epilogue's sheet, the
 portrait interstitial) sits above the box in normal page flow. `grade` and `hud` sit outside the
@@ -216,7 +219,7 @@ anything that shows state is drawn over the sprite in vector, never baked in.
     ink, the case file's stamp mask, a white tile whose alpha is the ink: scripts/make-stamp-ink.mjs)
   src/assets/sprites/station/{sky,floor,post,lamp,train,blind}.webp
   src/assets/sprites/window/{day,dusk,night,dawn}-{far,near}.webp
-  src/assets/sprites/props/{jar-glass,jar-lid,stand-front,vote-table}.webp
+  src/assets/sprites/props/{jar-glass,jar-lid,stand-front,vote-table,plate,valance,shutter}.webp
   src/assets/sprites/car/{day,night}.webp
   src/assets/sprites/rooms/{healer,investigator,vigilante,serial_killer,wolf}.webp
   src/assets/sprites/shadow/day/<character>/{base,talking,thinking,out}.webp
@@ -289,6 +292,19 @@ anything that shows state is drawn over the sprite in vector, never baked in.
     units above the rail, over the puppet's waist. Darkened at conversion (`-channel RGB -evaluate
     multiply 0.55`, re-judged for this picture and kept): its panel averages a little below the
     car's wall and the puppet stays the brightest thing. 75 KB.
+  - **The late three (2026-09-30), the owner's rasters, delivered as WebP:** `plate` (900×270,
+    already squashed to ry = 0.3 rx) is each count plate's body, an SVG `<image>` over the spot's
+    box (2rx × 2ry; `VoteTable.tsx` `Plate`), abstain's too, under the chips and over the vector
+    contact shadow. `valance` (2000×395, red velvet swags, a braided gold hem and a fringe, alpha
+    below) is the replay's top edge (`paint/drape.ts`): the world's width in one piece, squashed
+    to half its height (1600 × 158 units, the folds read as tighter gathers; owner, 2026-09-30),
+    its fringe's tips (px 385) at 0.085 H, so the whole red swags, the braid and the fringe show
+    under the strip's plaques and the plain velvet at its top hangs off the stage; its ends do not meet, so the bleed mirrors it about each edge (`scale(-1,1)`) and
+    fades it as before. `shutter` (1640×615, three louvred sections with brass hinges) is the
+    window shutter's panel stretched over the frame (window + 10 units, ~818 × 316: a light
+    stretch), and the folded stack under the pelmet is three 7-unit strips of its rails (px rows
+    0, 182, 372, 34 tall; `paint/window.ts` `shutterParts(…, picture)`), drawn alike by the paint's
+    `shutter()` and the moving `Shutter`; the pelmet stays vector.
   - **Table** (`VoteTable.tsx` `TablePicture`): two strips of one picture meeting at the top's
     front line (px 88): the top (back line px 9, front corners x 21 and 1518.5) stretched to the
     vote's `depth`, so plates and jar stand where they did; the cloth and legs scaled so 138 px is
@@ -377,9 +393,10 @@ anything that shows state is drawn over the sprite in vector, never baked in.
     as light and shade, times the valance's `#4a1418` (`-channel R -separate -evaluate multiply
     1.1102`, then `-compose multiply` with `rgb(148,40,48)`), so it has the valance's colour
     exactly and its folds and pile. It was the replay's valance and its bleed; since 2026-09-29
-    nothing uses it: the valance is one walnut board with a brass hem, vector only (`drape.ts`,
+    nothing uses it: the valance was one walnut board with a brass hem, vector only (`drape.ts`,
     the owner's ruling that the velvet and the dark scalloped border in front read as two
-    layers).
+    layers), and since 2026-09-30 it is the painted velvet valance (`SPRITES.props.valance`,
+    "The painted props" above), not this tile.
   - **The method: the pattern is inside the paint's SVG**, not a DOM layer under it, so the
     paint's own tints and glows reach it. The paints take the textures' URLs (`walnut`, `velvet`
     options; without them they draw the kit's flat colours). The fading car's SVG was once made
@@ -423,7 +440,8 @@ anything that shows state is drawn over the sprite in vector, never baked in.
     air a side) all shrink together. The replay's night keeps the pack's wolf kit its own place
     on the rail right of the pair (`aside`).
   - The numeral is a fifth of the body's height on the canvas's centre line (it was 24% of the
-    image's width, which a wide pose would set).
+    image's width, which a wide pose would set). Drawn only where no plate names the seat
+    (2026-09-30): the winners' stand with two or three on it, whose one plate names them all.
   - Heads: the head portrait at **384 px** (29 KB each, 321 KB), sharp at 2× for the wing's tile
     and the place cards and ~1.6× for the morning's featured chip, the largest (~240 units). It
     replaced the chip cropped from the base (`chip.webp`, gone). `ChipSprite` (HTML: sized from
@@ -532,8 +550,10 @@ file's titles), `Patrick Hand` for pencil (the case file's margin line and penci
 `Courier Prime` (`--font-stage-type`, 2026-09-29) the case file's typewriter for its labels, tabs
 and stamps only, and the sans (Outfit) only where a plate still names it. The case file's paper
 (manila, sheet, card, type, the stamp inks) and the X-ray's verdigris (`--xray*`, the private
-accent outside the file) are materials in `paint/materials.ts` (2026-09-29); the old film tokens
-(`--film*`, `--slip*`) remain only for the epilogue's ledger and the site.
+accent outside the file) are materials in `paint/materials.ts` (2026-09-29); the epilogue's
+ledger moved to the case file's paper too (2026-09-30), so the old film tokens (`--film*`,
+`--slip*`) remain for the site (the archive reads `--film`) and a few stage fallbacks (the
+drawer's and the band's focus outline, `--film-ink`; the pack chat's header, `--film-mut`).
 The stage does not use Mantine components; Mantine stays for the rooms, the landing and forms.
 The site around the stage (Mantine chrome, the token bridge where the theatre's values win, the site's fonts, the `(site)` route group) is in [site_architecture.md](site_architecture.md).
 
@@ -589,7 +609,7 @@ file), picks the beat, and renders the scene through exactly the component the r
 `live=1` (written only when on) cuts the beats as a game in play would, for any viewer: the day's
 `day.turn-thinking` beats appear between the turns. `memory=off` (written only when set) takes
 the fixture's `memory_consulted` and `memory_extracted` out, so the case file can be seen as a
-memory-off game draws it (no Precedents, no Findings).
+memory-off game draws it (no Lessons, no Findings).
 
 `frame=iphone14|iphone15max|pixel8|WxH` (written only when set; `fill`, the default, fills the
 window) draws the stage in a box of that phone's landscape size in CSS px (844×390, 932×430,
@@ -678,6 +698,16 @@ controls: none by default (`hud: 'none'`); `'stage'`, the replay's own HUD, slot
 only; or `'under'`, nothing on the stage and the state (`MiniUnder`) handed to `under`, which the caller portals into
 `underEl` (the landing's phone pane). The loop's presses stay in the window, and the X-ray carries the window across to
 its own list by the window's two end beats. The frame is the caller's.
+
+**The stops (2026-09-30).** With the X-ray on, the whole-log replay pauses at the night hub and
+with the ballots in (`containers/stops.ts`: which beats, the room a spoke is in, where "End the
+night" lands); the reducer (`replay-state.ts`) settles every press through one rule (a cursor
+that has just arrived on a stop pauses the play) and keeps the visit and the rooms seen, so a
+test can press through it without timers. The container hands the scenes `SceneProps.stop`
+(`StopInput`: the rooms seen that night, visit, play, end the night, back), which the hub, the
+rooms and the vote draw as a walnut notice with its buttons (`Notice` `walnut`, `NoticeButton`);
+the workbench hands in the same for the X-ray's cut in the replay's frame ("End the night" is
+only logged there, since it leaves the scene). A loop (a preview) has none.
 
 ## 9. Where this build departs from the handoff
 
