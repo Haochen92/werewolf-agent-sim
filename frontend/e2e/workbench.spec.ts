@@ -397,20 +397,37 @@ test('the seat rail: notes and a suspect for a seated player, none in a replay',
   await expect(hint).toHaveCount(0);
   await page.keyboard.type('Jumped on the slip');
   await dialog.getByRole('button', { name: 'Mark as suspect' }).click();
-  // the role guess: only the roles that could still be alive, with how many are left
-  const guess = dialog.getByLabel('I think they are…');
-  await expect(guess.locator('option')).toHaveText([
+  // the role guess: only the roles that could still be alive, with how many are left, "not
+  // sure" first, in a panel over the notebook; the arrows move and Enter picks
+  const guess = dialog.getByRole('button', { name: /I think they are…/ });
+  await expect(guess).toHaveText('not sure');
+  await guess.click();
+  const menu = dialog.getByRole('listbox');
+  await expect(menu).toBeFocused();
+  await expect(menu.getByRole('option')).toHaveText([
     'not sure',
-    'Villager · 3 left',
-    'Healer · 1 left',
-    'Investigator · 1 left',
-    'Vigilante · 1 left',
-    'Wolf · 2 left',
-    'Serial killer · 1 left',
+    /^Villager\s*3 left$/,
+    /^Healer\s*1 left$/,
+    /^Investigator\s*1 left$/,
+    /^Vigilante\s*1 left$/,
+    /^Wolf\s*2 left$/,
+    /^Serial killer\s*1 left$/,
   ]);
-  await guess.selectOption('wolf');
+  await expect(menu.getByRole('option', { selected: true })).toHaveText('not sure');
+  for (let i = 0; i < 5; i++) await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  await expect(menu).toHaveCount(0);
+  await expect(guess).toBeFocused();
+  await expect(guess).toHaveText('Wolf');
   await page.addStyleTag({ content: 'nextjs-portal{display:none!important}' });
   await expect(page).toHaveScreenshot('wing-notebook-guess.png');
+  // open again: the guess is the selected row; Escape closes the panel, not the notebook
+  await page.keyboard.press('ArrowDown');
+  await expect(menu.getByRole('option', { selected: true })).toHaveText(/^Wolf/);
+  await expect(page).toHaveScreenshot('wing-notebook-menu.png');
+  await page.keyboard.press('Escape');
+  await expect(menu).toHaveCount(0);
+  await expect(dialog).toBeVisible();
   await dialog.getByRole('button', { name: 'Done' }).click();
   await expect(dialog).toHaveCount(0);
   const card = page.locator('[data-layer="hud"] [data-seat="5"]');
@@ -427,7 +444,7 @@ test('the seat rail: notes and a suspect for a seated player, none in a replay',
   await page.getByRole('button', { name: 'Seat 3, notes' }).click();
   await expect(dialog).toContainText('Dead · Wolf');
   await expect(dialog.getByRole('button', { name: /suspect/ })).toHaveCount(0);
-  await expect(dialog.getByLabel('I think they are…')).toHaveCount(0);
+  await expect(dialog.getByRole('button', { name: /I think they are…/ })).toHaveCount(0);
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Seat 3, notes' })).toBeFocused();
@@ -479,6 +496,37 @@ test('the seat rail: a seat’s own knowledge bands its cards, and nobody else�
     await expect(page.locator('[data-layer="hud"] [data-seat]')).toHaveCount(9);
     await expect(known).toHaveCount(0);
   }
+});
+
+/** The guess's panel on the smallest phone: every row on the stage, a finger's height, tappable. */
+test('the seat rail: the role guess fits a small phone and takes a tap', async ({
+  page,
+}) => {
+  await page.goto(
+    '/workbench/day?live=1&viewer=seat:player_7&animate=0&strip=0&beat=6&frame=667x375',
+    { waitUntil: 'networkidle' },
+  );
+  await page.getByRole('button', { name: 'Seat 5, notes' }).click();
+  const dialog = page.getByRole('dialog');
+  // opened from the keys, so no pointer rests on a row for the picture
+  await dialog.getByRole('button', { name: /I think they are…/ }).focus();
+  await page.keyboard.press('Enter');
+  const options = dialog.getByRole('listbox').getByRole('option');
+  await expect(options).toHaveCount(7);
+  const stage = (await page.locator('[data-layer="hud"]').boundingBox())!;
+  for (const box of await options.evaluateAll((els) =>
+    els.map((el) => el.getBoundingClientRect().toJSON() as DOMRect),
+  )) {
+    expect(box.height).toBeGreaterThanOrEqual(37);
+    expect(box.top).toBeGreaterThanOrEqual(stage.y);
+    expect(box.bottom).toBeLessThanOrEqual(stage.y + stage.height);
+  }
+  await page.addStyleTag({ content: 'nextjs-portal{display:none!important}' });
+  await expect(page).toHaveScreenshot('frame-667-notebook-menu.png');
+  await options.filter({ hasText: 'Healer' }).click();
+  await expect(dialog.getByRole('button', { name: /I think they are…/ })).toHaveText(
+    'Healer',
+  );
 });
 
 /**

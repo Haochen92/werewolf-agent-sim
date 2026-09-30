@@ -378,6 +378,11 @@ function Keyhole() {
  * "I think they are…": the roles a living seat could still hold, as the table knows it (the
  * cast less the roles the dead have shown), with how many are left, and "not sure". A guess
  * kept from before its role ran out stays listed, marked so.
+ *
+ * A walnut plaque showing the guess, which opens a small panel over the notebook: a row per
+ * choice, the role's felt sigil, its name and how many are left (owner, 2026-09-30: the native
+ * select looked foreign to the stage). The panel is a listbox: the arrows move, Enter picks,
+ * Escape closes it and keeps the notebook open. Its rows keep 38 css px on a phone.
  */
 function GuessSelect({
   id,
@@ -393,27 +398,133 @@ function GuessSelect({
   onGuess: (role: string | null) => void;
 }) {
   const stale = guess && !choices.some((c) => c.role === guess);
+  const rows: { role: string | null; left: number }[] = [
+    { role: null, left: 0 },
+    ...choices,
+    ...(stale ? [{ role: guess, left: 0 }] : []),
+  ];
+  const chosen = Math.max(
+    0,
+    rows.findIndex((r) => r.role === guess),
+  );
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(chosen);
+  const button = useRef<HTMLButtonElement>(null);
+  const list = useRef<HTMLUListElement>(null);
+  useEffect(() => {
+    if (open) list.current?.focus();
+  }, [open]);
+  const show = () => {
+    setActive(chosen);
+    setOpen(true);
+  };
+  const close = () => {
+    setOpen(false);
+    button.current?.focus();
+  };
+  const pick = (i: number) => {
+    onGuess(rows[i].role);
+    close();
+  };
+  const onButtonKey = (e: ReactKeyboardEvent) => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      show();
+    }
+  };
+  const onListKey = (e: ReactKeyboardEvent) => {
+    const to = (i: number) => {
+      e.preventDefault();
+      setActive(Math.min(rows.length - 1, Math.max(0, i)));
+    };
+    if (e.key === 'ArrowDown') to(active + 1);
+    else if (e.key === 'ArrowUp') to(active - 1);
+    else if (e.key === 'Home') to(0);
+    else if (e.key === 'End') to(rows.length - 1);
+    else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      pick(active);
+    } else if (e.key === 'Escape') {
+      // the notebook stays open: only the panel closes
+      e.stopPropagation();
+      close();
+    } else if (e.key === 'Tab') setOpen(false);
+  };
+  const name = (role: string | null) => (role ? (ROLE_NAME[role] ?? role) : 'not sure');
+  const current = rows[chosen];
   return (
-    <label className={styles.guessRow} htmlFor={id}>
-      <span>I think they are…</span>
-      <select
+    <div className={styles.guessRow}>
+      <span id={`${id}-l`}>I think they are…</span>
+      <button
+        ref={button}
+        type="button"
         id={id}
-        className={styles.guessSelect}
-        value={guess ?? ''}
+        className={styles.guessButton}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={open ? `${id}-list` : undefined}
+        aria-labelledby={`${id}-l ${id}`}
         data-seat-guess={seat}
-        onChange={(e) => onGuess(e.target.value || null)}
+        onClick={() => (open ? close() : show())}
+        onKeyDown={onButtonKey}
       >
-        <option value="">not sure</option>
-        {choices.map((c) => (
-          <option key={c.role} value={c.role}>
-            {ROLE_NAME[c.role] ?? c.role} · {c.left} left
-          </option>
-        ))}
-        {stale ? (
-          <option value={guess}>{ROLE_NAME[guess] ?? guess} · none left</option>
-        ) : null}
-      </select>
-    </label>
+        {current.role ? <Sigil role={current.role} variant="felt" small /> : null}
+        <span className={current.role ? styles.guessName : styles.guessUnsure}>
+          {name(current.role)}
+        </span>
+        <svg className={styles.caret} viewBox="0 0 12 12" aria-hidden="true">
+          <path d="M2.5 4.5 6 8l3.5-3.5" />
+        </svg>
+      </button>
+      {open ? (
+        <ul
+          ref={list}
+          id={`${id}-list`}
+          className={styles.guessList}
+          role="listbox"
+          tabIndex={-1}
+          aria-labelledby={`${id}-l`}
+          aria-activedescendant={`${id}-o${active}`}
+          onKeyDown={onListKey}
+          onBlur={(e) => {
+            // a tap outside the panel closes it (a tap on the plaque toggles it on its own)
+            if (
+              !e.currentTarget.contains(e.relatedTarget) &&
+              e.relatedTarget !== button.current
+            )
+              setOpen(false);
+          }}
+        >
+          {rows.map((r, i) => (
+            <li
+              key={r.role ?? ''}
+              id={`${id}-o${i}`}
+              role="option"
+              aria-selected={r.role === guess || (!r.role && !guess)}
+              data-active={i === active || undefined}
+              data-role={r.role ?? 'unsure'}
+              className={styles.guessOption}
+              // a pointer that moves over a row lights it (the panel opening under a still
+              // pointer does not, so the keys keep their place)
+              onPointerMove={(e) => (e.movementX || e.movementY) && setActive(i)}
+              onClick={() => pick(i)}
+            >
+              <span className={styles.guessSigil}>
+                {r.role ? <Sigil role={r.role} variant="felt" small /> : null}
+              </span>
+              <span className={r.role ? styles.guessName : styles.guessUnsure}>
+                {name(r.role)}
+              </span>
+              {r.role ? (
+                <span className={styles.guessLeft}>
+                  {r.left ? `${r.left} left` : 'none left'}
+                </span>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
   );
 }
 

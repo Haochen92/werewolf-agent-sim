@@ -840,7 +840,8 @@ button.suspect:focus-visible {
   outline: 2.4px solid var(--amber);
   outline-offset: 2.4px;
 }
-/* "I think they are…": the role guess, a select on the board under the paper */
+/* "I think they are…": the role guess, a walnut plaque on the board under the paper showing the
+   guess, which opens a panel of choices over the notebook */
 .guessRow {
   display: flex;
   align-items: center;
@@ -848,21 +849,147 @@ button.suspect:focus-visible {
   font-size: var(--meta);
   color: var(--cream2);
 }
-.guessSelect {
+.guessButton {
   flex: 1 1 auto;
   min-width: 0;
   min-height: calc(34px * var(--legible-ui));
-  padding: 0 0.6em;
+  display: flex;
+  align-items: center;
+  gap: 0.45em;
+  padding: 0 0.5em 0 0.6em;
   font: inherit;
-  font-family: var(--font-body);
-  color: #2a1d10;
-  background: #f3ead3;
-  border: 1.5px solid rgba(201, 164, 92, 0.7);
+  color: var(--cream);
+  text-align: left;
+  background: linear-gradient(180deg, var(--walnut-top), var(--walnut-bot));
+  border: 1.5px solid var(--hud-brass);
   border-radius: 5.6px;
+  box-shadow:
+    inset 0 0 0 2px rgba(22, 13, 7, 0.9),
+    inset 0 0 0 3px rgba(201, 164, 92, 0.25);
+  cursor: pointer;
 }
-.guessSelect:focus-visible {
+.guessButton > svg:first-child {
+  flex: 0 0 auto;
+  width: 1.35em;
+  height: 1.35em;
+}
+.guessButton .guessName,
+.guessButton .guessUnsure {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.caret {
+  flex: 0 0 auto;
+  width: 0.9em;
+  height: 0.9em;
+  fill: none;
+  stroke: var(--hud-brass-hi);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.guessButton[aria-expanded='true'] .caret {
+  transform: rotate(180deg);
+}
+.guessButton:focus-visible,
+.guessList:focus-visible {
   outline: 2.4px solid var(--amber);
   outline-offset: 2.4px;
+}
+.guessName {
+  font-family: var(--font-display);
+  line-height: 1.2;
+}
+.guessUnsure {
+  font-family: var(--font-body);
+  font-style: italic;
+  line-height: 1.2;
+  color: var(--cream2);
+}
+/* the panel: a smaller walnut board over the notebook, level with the plaque's right edge and
+   centred on the notebook's height (so on a phone, where the rows keep 38 css px each, it may
+   stand taller than the notebook and still stays on the stage) */
+.guessList {
+  position: absolute;
+  z-index: 2;
+  right: calc(14.4px * var(--legible-ui));
+  top: 50%;
+  translate: 0 -50%;
+  min-width: calc(250px * var(--legible-ui));
+  max-height: 860px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  margin: 0;
+  padding: calc(4.8px * var(--legible-ui));
+  list-style: none;
+  border-radius: 7.2px;
+  background:
+    linear-gradient(180deg, rgba(58, 38, 22, 0.94), rgba(30, 19, 11, 0.97)),
+    var(--board) 0 0 / 320px 320px repeat,
+    var(--walnut-bot);
+  border: 1.5px solid var(--hud-brass);
+  box-shadow:
+    inset 0 0 0 2.5px rgba(22, 13, 7, 0.9),
+    inset 0 0 0 3.5px rgba(201, 164, 92, 0.3),
+    0 8px 22px rgba(0, 0, 0, 0.65);
+}
+.guessOption {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  min-height: max(
+    calc(34px * var(--legible-ui)),
+    calc(38px / max(var(--stage-scale, 1), 0.01))
+  );
+  padding: 0 0.7em 0 0.5em;
+  border-radius: 4.8px;
+  /* never under 12 css px: a phone's rows are read at arm's length */
+  font-size: max(calc(var(--meta) * 1.08), calc(12px / max(var(--stage-scale, 1), 0.01)));
+  color: var(--cream);
+  cursor: pointer;
+}
+.guessOption + .guessOption {
+  box-shadow: inset 0 1px 0 rgba(201, 164, 92, 0.16);
+}
+.guessOption[data-active] {
+  background: rgba(236, 208, 142, 0.14);
+}
+/* the guess as it stands: an engraved well, the brass rule down its left */
+.guessOption[aria-selected='true'] {
+  background: rgba(14, 8, 4, 0.55);
+  box-shadow:
+    inset 2.4px 0 0 var(--hud-brass-hi),
+    inset 0 1px 3px rgba(0, 0, 0, 0.7);
+}
+.guessOption[aria-selected='true'][data-active] {
+  background: rgba(40, 26, 14, 0.75);
+}
+.guessSigil {
+  flex: 0 0 auto;
+  width: 1.45em;
+  height: 1.45em;
+  line-height: 0;
+}
+.guessSigil svg {
+  width: 100%;
+  height: 100%;
+}
+.guessOption .guessName,
+.guessOption .guessUnsure {
+  flex: 1 1 auto;
+  white-space: nowrap;
+}
+.guessLeft {
+  flex: 0 0 auto;
+  padding-left: 0.8em;
+  font-family: var(--font-stage-type, 'Courier Prime'), 'Courier New', monospace;
+  font-size: 0.82em;
+  letter-spacing: 0.02em;
+  color: var(--hud-brass-hi);
+  white-space: nowrap;
 }
 .editorFoot {
   display: flex;
