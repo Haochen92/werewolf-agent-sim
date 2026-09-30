@@ -50,6 +50,27 @@
   color: #e3503f;
   font-variant-numeric: tabular-nums;
 }
+/* the keyboard button to the full-screen composer, at the head's far end (after the count) */
+.dock .expand {
+  margin-left: auto;
+  align-self: center;
+  display: inline-grid;
+  place-items: center;
+  padding: calc(3.2px * var(--legible-ui)) calc(8px * var(--legible-ui));
+}
+.head .count + .expand {
+  margin-left: 0;
+}
+.expand svg,
+.close svg {
+  width: calc(var(--meta) * 1.3);
+  height: calc(var(--meta) * 1.3);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 
 /* the fields: engraved wells in the board, Literata, a brass-lo rim that brightens on focus */
 .agent input,
@@ -236,4 +257,139 @@
   margin: 0;
   font-size: var(--meta);
   color: #f08a78;
+}
+
+/* ---- the full-screen composer (beat sheet §12): the same line in a box as big as the screen.
+   In css px, not stage units, over the whole stage and fitted to the visible part of the page
+   (TurnDock.tsx sets its box from `visualViewport`), so a phone's soft keyboard never hides the
+   box or Send. The sheet is the dock's own board and rules: only the sizes are set here. ---- */
+.composer {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  box-sizing: border-box;
+  display: grid;
+  padding: 16px;
+  background: rgba(8, 5, 3, 0.72);
+  container-type: size;
+  /* the dock's type, in css px here (the stage's --legible does not reach outside the world) */
+  --legible: 1;
+  --legible-ui: 1;
+  --grown: 0;
+  --meta: 17px;
+  --said: 24px;
+  --font-body: var(--font-stage-body, Literata), Georgia, serif;
+  --font-display: var(--font-stage-display, 'Young Serif'), Georgia, serif;
+  font-family: var(--font-body);
+}
+/* a phone: the sheet to the screen's edges, and never under 16 px in a field (iOS zooms) */
+@media (max-width: 900px) {
+  .composer {
+    padding: 4px;
+    --meta: 16px;
+    --said: 18px;
+  }
+}
+.sheet {
+  place-self: center;
+  width: 100%;
+  max-width: 1100px;
+  height: 100%;
+  max-height: 760px;
+  min-height: 0;
+  gap: 10px;
+  padding: 14px 18px 16px;
+}
+.sheet .head {
+  align-items: center;
+  flex-wrap: nowrap;
+}
+.sheet .head strong {
+  flex: none;
+}
+.sheet .hint {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* the clock, large enough to read across the room */
+.head .clock {
+  flex: none;
+  margin-left: auto;
+  font-family: var(--font-display);
+  font-size: calc(var(--meta) * 2);
+  line-height: 1;
+  color: #e3503f;
+  font-variant-numeric: tabular-nums;
+}
+.dock .close {
+  flex: none;
+  margin-left: auto;
+  display: inline-grid;
+  place-items: center;
+  padding: 4px 8px;
+}
+.head .clock + .close {
+  margin-left: 0;
+}
+.sheet .line {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: calc(var(--said) * 1.35 * 2 + 13px);
+  padding: 10px 14px;
+}
+.foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.wordCount {
+  flex: none;
+  font-size: calc(var(--meta) * 0.85);
+  color: var(--cream2);
+  font-variant-numeric: tabular-nums;
+}
+.sheet .lineCount {
+  position: static;
+  translate: none;
+  flex: none;
+}
+.said {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.sheet .foot .pri {
+  flex: none;
+  min-width: 6.5em;
+}
+/* a short sheet (a phone with the soft keyboard up): the words close up so the box keeps its
+   room and Send stays in view */
+@container (max-height: 340px) {
+  .sheet {
+    gap: 5px;
+    padding: 6px 10px 8px;
+    border-radius: 7px;
+  }
+  .sheet .hint {
+    display: none;
+  }
+  .sheet .head strong {
+    font-size: var(--meta);
+  }
+  .head .clock {
+    font-size: calc(var(--meta) * 1.5);
+  }
+  .sheet .line {
+    min-height: calc(var(--said) * 1.35 + 10px);
+    padding: 4px 10px;
+  }
+  .sheet .agent input {
+    padding-block: 3px;
+  }
+  .sheet button {
+    padding-block: 2px;
+  }
 }

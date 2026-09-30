@@ -10,7 +10,9 @@
  * new game's deal plays from its first beat; "your card" opens and closes, and stays open as
  * the beats go by; on the speaking turn the seat's agent drafts its line (steered or not, and
  * with the seat notebook when "Use my seat notes" is ticked) into the box to be edited, Send
- * sends it, and a line typed by hand sends as it is.
+ * sends it, and a line typed by hand sends as it is; the full-screen composer holds the same
+ * line (a picture of it, and on a phone it keeps above the soft keyboard); while the status is
+ * on its way the page is the empty platform (a picture).
  *
  * The mocked stream ends when its body does, so the browser reads it as a dropped connection;
  * the theatre's "Reconnecting…" note is hidden in the pictures for that reason.
@@ -556,6 +558,151 @@ test('live: a long line counts near the cap and stops at 700; a pending draft sa
   await expect(words).toHaveText('Drafting…');
   await expect(words).toHaveText('Weighing the table…', { timeout: 4000 });
   await expect(words).toHaveText('Finding the words…', { timeout: 4000 });
+});
+
+test('live: the keyboard button opens the full-screen composer, the same line as the box', async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  const posted: Mock['posted'] = [];
+  await page.clock.install({ time: T0 });
+  await mockApi(page, {
+    status: status(200, { pending_seats: [ME], pending_input: true }),
+    stream: [...upTo(200), yourTurn(201)],
+    posted,
+  });
+  // a draft held until the button has turned through its words
+  let release = () => {};
+  const held = new Promise<void>((r) => (release = r));
+  await page.unroute(`**/games/${GAME}/draft`);
+  await page.route(`**/games/${GAME}/draft`, async (route) => {
+    const req = route.request();
+    if (req.method() === 'OPTIONS')
+      return route.fulfill({ status: 204, headers: cors(req) });
+    posted.push({ path: 'draft', body: req.postDataJSON() });
+    await held;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: cors(req),
+      body: JSON.stringify({
+        draft: 'Seat 8 keeps dodging the question.',
+        drafts_left: 2,
+        deadline: new Date(T0 + 120_000).toISOString(),
+      }),
+    });
+  });
+  await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  const dock = page.locator('[data-dock="discuss"]');
+  await expect(dock).toBeVisible();
+  // as the turn's golden: stop the clock a few seconds in (a wide margin: see above)
+  const now = await page.evaluate(() => Date.now());
+  await page.clock.pauseAt(Math.max(T0 + 10_000, now + 1500));
+  await page.clock.runFor(3000);
+  await dock.getByLabel('Your line').fill('I trust seat 4 today, and');
+  await dock.getByRole('button', { name: 'Write full screen' }).click();
+  const composer = page.locator('[data-composer]');
+  await expect(composer).toBeVisible();
+  const big = composer.getByLabel('Your line');
+  // the same line, the caret at its end: the writing goes on where it was
+  await expect(big).toHaveValue('I trust seat 4 today, and');
+  await expect(big).toBeFocused();
+  await page.keyboard.type(' not seat 5.');
+  await expect(dock.getByLabel('Your line')).toHaveValue(
+    'I trust seat 4 today, and not seat 5.',
+  );
+  await expect(composer.locator('[data-word-count]')).toHaveText('9 words');
+  await expect(composer.locator('[data-composer-clock]')).toHaveText(/^1:[3-5]\d$/);
+  await expect(composer.locator('[data-line-count]')).toHaveCount(0);
+  await expect(composer.getByText('3 drafts left')).toBeVisible();
+  await settle(page);
+  await expect(page).toHaveScreenshot('composer-day.png');
+
+  // near the cap the count comes, as in the box
+  await big.fill('ab '.repeat(204));
+  await expect(composer.locator('[data-line-count]')).toHaveText('612 / 700');
+  await expect(composer.locator('[data-word-count]')).toHaveText('204 words');
+  await big.fill('I trust seat 4 today.');
+
+  // Draft: the same button, its words turning while the draft is on its way
+  await composer.getByLabel('Steer your agent').fill('8 dodging');
+  await composer.getByRole('button', { name: 'Redraft', exact: true }).click();
+  const words = composer.locator('[data-draft-word]').last();
+  await expect(words).toHaveText('Drafting…');
+  await page.clock.runFor(1700);
+  await expect(words).toHaveText('Weighing the table…');
+  release();
+  await expect(big).toHaveValue('Seat 8 keeps dodging the question.');
+  await expect(composer.getByText('2 drafts left')).toBeVisible();
+
+  // closed (Esc), the line stays in the box; the X closes too
+  await page.keyboard.press('Escape');
+  await expect(composer).toHaveCount(0);
+  await expect(dock.getByLabel('Your line')).toHaveValue(
+    'Seat 8 keeps dodging the question.',
+  );
+  await dock.getByRole('button', { name: 'Write full screen' }).click();
+  await composer.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(composer).toHaveCount(0);
+
+  // Send from the composer posts what the box's Send would
+  await dock.getByRole('button', { name: 'Write full screen' }).click();
+  await composer.getByRole('button', { name: 'Send' }).click();
+  await expect(composer).toHaveCount(0);
+  await expect(dock).toBeHidden();
+  expect(posted).toEqual([
+    { path: 'draft', body: { notes: '8 dodging', current: 'I trust seat 4 today.' } },
+    { path: 'turns', body: { message: 'Seat 8 keeps dodging the question.' } },
+  ]);
+});
+
+test('live: on a phone a tap on the box opens the composer, fitted above the soft keyboard', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 667, height: 375 });
+  // the soft keyboard up: the browser says only the top 200 px of the page are visible
+  await page.addInitScript(() => {
+    const area = Object.assign(new EventTarget(), {
+      width: 667,
+      height: 200,
+      offsetLeft: 0,
+      offsetTop: 0,
+      pageLeft: 0,
+      pageTop: 0,
+      scale: 1,
+    });
+    Object.defineProperty(window, 'visualViewport', { get: () => area });
+  });
+  await mockApi(page, {
+    status: status(200, { pending_seats: [ME], pending_input: true }),
+    stream: [...upTo(200), yourTurn(201)],
+  });
+  await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  const dock = page.locator('[data-dock="discuss"]');
+  await expect(dock).toBeVisible();
+  const small = dock.getByLabel('Your line');
+  // the small box is the preview here: it takes no typing of its own
+  await expect(small).toHaveAttribute('readonly', '');
+  await small.click();
+  const composer = page.locator('[data-composer]');
+  await expect(composer).toBeVisible();
+  const big = composer.getByLabel('Your line');
+  await expect(big).toBeFocused();
+  await page.keyboard.type('Seat 5 was quick.');
+  await expect(small).toHaveValue('Seat 5 was quick.');
+  const send = composer.getByRole('button', { name: 'Send' });
+  await expect(send).toBeEnabled();
+  const frame = (await composer.boundingBox())!;
+  expect(frame.y).toBeGreaterThanOrEqual(0);
+  expect(frame.y + frame.height).toBeLessThanOrEqual(200.5);
+  for (const el of [big, send]) {
+    const b = (await el.boundingBox())!;
+    expect(b.height).toBeGreaterThan(16);
+    expect(b.y).toBeGreaterThanOrEqual(0);
+    expect(b.y + b.height).toBeLessThanOrEqual(200);
+  }
+  // the box keeps room for more than a line
+  expect((await big.boundingBox())!.height).toBeGreaterThanOrEqual(30);
 });
 
 test('live: the strip’s door asks, and Leave goes to the lobby', async ({ page }) => {

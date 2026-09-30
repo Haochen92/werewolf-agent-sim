@@ -887,7 +887,12 @@ ticked, the notebook goes with the draft, D25); **2.** the reply
 textarea (64 units tall, "Type your line, or draft one above…", Ctrl/⌘+Enter sends) the draft
 lands in, editable, and beside it **Send** (brass; "Sending…") over **Pass** (quiet walnut
 plaques). No "Let my agent speak" on this turn (owner playtest: it sent the agent's line unseen);
-the clock running out still has the agent speak. The server's words under the box in red. Draft errors: 409 → its words and no drafts left, 422 → its
+the clock running out still has the agent speak. **The composer** (2026-09-30): a keyboard button at the dock's
+head (and, on a frame 900 css px wide or narrower, a tap on the reply box, read-only there) opens
+the same line over the whole stage, in css px and fitted to `visualViewport` so a soft keyboard
+never hides the box or Send: the clock large, the steer with Draft and "n drafts left", a big box,
+"n words" and "612 / 700", Pass and Send, the refused line's words; Close (the X, Esc, a tap
+outside) keeps the line, the reply box is its preview, and it shuts when the turn closes. The server's words under the box in red. Draft errors: 409 → its words and no drafts left, 422 → its
 words, anything else → "Could not draft the line; type it instead." (the notes kept); an empty
 draft (the agent would pass) keeps the box's line: "Your agent would pass here. Pass, or tell it
 what to say." Send

@@ -99,6 +99,8 @@ const WIDE: StageCamera = { scale: 1, x: 0, y: 0 };
 type LayerNodes = Partial<Record<LayerName, HTMLDivElement>>;
 const LayerContext = createContext<LayerNodes | null>(null);
 const CameraContext = createContext<((shot: CameraShot | null) => void) | null>(null);
+/** The 16:9 box itself, outside the world's scale: where `Overlay` puts what is laid out in css px. */
+const BoxContext = createContext<HTMLDivElement | null>(null);
 
 export function Stage({
   fit = 'width',
@@ -108,6 +110,7 @@ export function Stage({
   ...layers
 }: StageProps) {
   const boxRef = useRef<HTMLDivElement>(null);
+  const [boxNode, setBoxNode] = useState<HTMLDivElement | null>(null);
   // The layer divs, once mounted, so `<Layer>` can portal into them. Set during the commit,
   // so the filled layers are drawn before the first paint.
   const [nodes, setNodes] = useState<LayerNodes>({});
@@ -127,6 +130,7 @@ export function Stage({
   useLayoutEffect(() => {
     const el = boxRef.current;
     if (!el) return;
+    setBoxNode(el);
     // the house around a `contain` box: how much of the bleed shows left of the world
     const house = fit === 'contain' ? el.parentElement : null;
     const set = () => {
@@ -199,7 +203,9 @@ export function Stage({
         </motion.div>
         {FIXED.map(layerDiv)}
         <LayerContext.Provider value={nodes}>
-          <CameraContext.Provider value={setShot}>{children}</CameraContext.Provider>
+          <BoxContext.Provider value={boxNode}>
+            <CameraContext.Provider value={setShot}>{children}</CameraContext.Provider>
+          </BoxContext.Provider>
         </LayerContext.Provider>
       </div>
     </div>
@@ -222,6 +228,18 @@ export function Stage({
 export function Layer({ name, children }: { name: LayerName; children?: ReactNode }) {
   const node = useContext(LayerContext)?.[name];
   return node ? createPortal(children, node) : null;
+}
+
+/**
+ * Puts its children in the stage's box but outside the world, so they are not scaled with it:
+ * for what is laid out in css px over the whole stage (the full-screen composer, which has to
+ * fit a phone's visible height with the soft keyboard up). It takes the stage's materials; it
+ * sits over every layer. `position: fixed` inside it is the stage's frame (the house's
+ * container) on the theatre pages, which fill the window.
+ */
+export function Overlay({ children }: { children?: ReactNode }) {
+  const box = useContext(BoxContext);
+  return box ? createPortal(children, box) : null;
 }
 
 /**
