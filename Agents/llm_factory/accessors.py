@@ -23,6 +23,15 @@ DEFAULT_GAME_MODEL = "gemini-3.5-flash-lite"
 # DeepSeek's unconstrained tool-calling): one shot on this model beats a random action.
 DEFAULT_GAME_FALLBACK_MODEL = "gemini-3.1-flash-lite"
 DEFAULT_GAME_THINKING_LEVEL = "minimal"
+# A game turn's request budget (2026-09-30): Vertex's shared pool for a new model can hold a
+# request for minutes before answering or bouncing it with 429, and the SDK then re-sent each
+# bounce up to five times, so one seat's turn took 2-5 minutes with nothing failing. Now a
+# request waits GAME_LLM_TIMEOUT_S, is sent GAME_LLM_ATTEMPTS times in all, and then fails,
+# which hands the turn to the rescue model (agent_player.run_agent) within about a minute.
+# The day summary gets a longer wait: its failure path is the raw transcript.
+DEFAULT_GAME_TIMEOUT_S = 30.0
+DEFAULT_GAME_ATTEMPTS = 2
+DEFAULT_SUMMARY_TIMEOUT_S = 90.0
 DEFAULT_SUMMARY_THINKING_LEVEL = "medium"
 DEFAULT_PRO_MODEL = "gemini-2.5-pro"
 # Pinned (was the floating alias "gemini-pro-latest", which Google retargets
@@ -61,6 +70,15 @@ def _thinking_level_from_env(
     return normalized
 
 
+def _request_budget(timeout_env: str, default_timeout: float) -> dict[str, float | int]:
+    """The client's per-request timeout (seconds) and attempts, both counted by the SDK:
+    ``max_retries`` here is the SDK's attempt count, so 1 means a single request."""
+    return {
+        "timeout": float(os.getenv(timeout_env, default_timeout)),
+        "max_retries": max(1, int(os.getenv("GAME_LLM_ATTEMPTS", DEFAULT_GAME_ATTEMPTS))),
+    }
+
+
 def get_llm():
     return create_chat_model(
         _game_model(),
@@ -69,6 +87,7 @@ def get_llm():
             "GOOGLE_GENAI_THINKING_LEVEL",
             DEFAULT_GAME_THINKING_LEVEL,
         ),
+        **_request_budget("GAME_LLM_TIMEOUT_S", DEFAULT_GAME_TIMEOUT_S),
     )
 
 
@@ -91,6 +110,7 @@ def get_llm_game_fallback():
                 "GOOGLE_GENAI_THINKING_LEVEL",
                 DEFAULT_GAME_THINKING_LEVEL,
             ),
+            **_request_budget("GAME_LLM_TIMEOUT_S", DEFAULT_GAME_TIMEOUT_S),
         )
     model = os.getenv("GAME_FALLBACK_MODEL", DEFAULT_GAME_FALLBACK_MODEL)
     if model == os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL):
@@ -102,6 +122,7 @@ def get_llm_game_fallback():
             "GOOGLE_GENAI_THINKING_LEVEL",
             DEFAULT_GAME_THINKING_LEVEL,
         ),
+        **_request_budget("GAME_LLM_TIMEOUT_S", DEFAULT_GAME_TIMEOUT_S),
     )
 
 
@@ -113,6 +134,7 @@ def get_llm_summary():
             "GOOGLE_GENAI_SUMMARY_THINKING_LEVEL",
             DEFAULT_SUMMARY_THINKING_LEVEL,
         ),
+        **_request_budget("GAME_SUMMARY_TIMEOUT_S", DEFAULT_SUMMARY_TIMEOUT_S),
     )
 
 

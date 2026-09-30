@@ -38,7 +38,7 @@ _EMBED_TRANSIENT_STATUS_CODES = {408, 429, 500, 502, 503, 504}
 _EMBED_TRANSIENT_MARKERS = (
     "429", "resource_exhausted", "rate limit", "quota",
     "500", "502", "503", "504", "deadline", "unavailable",
-    "connection reset", "bad gateway", "timeout",
+    "connection reset", "bad gateway", "timeout", "timed out",
 )
 
 
@@ -47,6 +47,8 @@ def _embed_error_is_transient(exc: BaseException) -> bool:
     current: BaseException | None = exc
     while current is not None and id(current) not in seen:
         seen.add(id(current))
+        if isinstance(current, TimeoutError) or "timeout" in type(current).__name__.lower():
+            return True
         if getattr(current, "status_code", None) in _EMBED_TRANSIENT_STATUS_CODES:
             return True
         response = getattr(current, "response", None)
@@ -57,6 +59,12 @@ def _embed_error_is_transient(exc: BaseException) -> bool:
             return True
         current = current.__cause__ or current.__context__
     return False
+
+
+# The same question for a chat call: is this the provider being slow or full (a timeout, a
+# 429 or 5xx, a dropped connection) rather than the request being wrong? A game turn that
+# fails this way goes to its rescue model instead of asking the same model again.
+is_transient_provider_error = _embed_error_is_transient
 
 
 def _embed_with_retries(call: Callable[[], Any], *, op: str) -> Any:
