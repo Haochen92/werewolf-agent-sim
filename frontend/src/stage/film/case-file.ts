@@ -5,8 +5,9 @@
  * - Notes: one typed page per `strategy_update` the seat wrote up to the playhead, each with a
  *   pencil line in the margin saying how it came from the page before (`marginNote`);
  * - Reads: the seat's latest `player_reads`, one row per seat read, against the truth;
- * - Precedents (memory-on games): the seat's latest `memory_consulted`, each lesson with the
- *   agent's verdict and why, the situation it was written for parsed into its facets;
+ * - Precedents, shown as "Lessons" (memory-on games): the seat's latest `memory_consulted`,
+ *   each lesson with the agent's verdict and why, the situation it was written for parsed into
+ *   its facets;
  * - Findings (memory-on games, after the game): what the game taught this seat's ROLE
  *   (`memory_extracted`: its observations, and any strategy points; the extractor files them
  *   by role, not seat). Served games extract observations only (owner, 2026-09-29).
@@ -456,7 +457,8 @@ export function fileTabs(f: SeatFile): TabState[] {
   if (f.memory)
     tabs.push({
       id: 'precedents',
-      label: 'Precedents',
+      // the viewer's word for the agents' precedents (owner, 2026-09-30); the id stays
+      label: 'Lessons',
       count: f.consult?.lessons.length || null,
       enabled: !!f.consult?.lessons.length,
     });

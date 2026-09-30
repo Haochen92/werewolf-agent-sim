@@ -7,10 +7,11 @@
  * pages (owner, 2026-09-29, the case-file bench; it replaced the blue-black X-ray film).
  *
  * A seat's file: the cover (its face, "Seat 2 ▾", "As of Day 3 · discussion", its role stamped
- * on) and divider tabs, Notes · Reads · Precedents · Findings, as case-file.ts works them out;
+ * on) and divider tabs, Notes · Reads · Lessons · Findings, as case-file.ts works them out;
  * the open tab is held by whoever mounts the stage, so it stays put as the viewer steps
  * through the turns, and falls back to Notes where a file does not have it. A beat with no seat
- * in focus shows the docket instead, one sheet in the same paper (film-model.ts `docketFor`).
+ * in focus shows the docket instead, one sheet in the same paper (film-model.ts `docketFor`),
+ * titled by what it holds ("The vote", "Day 2's brief"; `docketTitle`), never "the docket".
  *
  * Whose file: the seat the beat brings into focus (a turn's speaker, a night spoke's actor; the
  * pack's spoke flips between its wolves). The name on the cover is also a chooser that opens
@@ -70,16 +71,18 @@ import {
 import {
   MARK,
   docketFor,
+  docketTitle,
   type DocketModel,
   type FilmNote,
   type Verdict,
 } from './film-model';
 import styles from './Film.module.css';
 
+// the viewer reads the agents' precedents as Lessons (owner, 2026-09-30): these are its stamps
 const VWORD: Record<Verdict, string> = {
   follow: 'Followed',
-  override: 'Overruled',
-  not_relevant: 'Not applicable',
+  override: 'Overrode',
+  not_relevant: 'Doesn’t apply',
 };
 const PIP: Record<Verdict, string> = { follow: 'F', override: 'O', not_relevant: '–' };
 const INK_TEX = { '--ink-tex': `url(${SPRITES.textures.ink.src})` } as CSSProperties;
@@ -105,6 +108,8 @@ export interface FilmProps {
    * that this is how each file ended, and points there for the thinking turn by turn.
    */
   replay?: string;
+  /** A tap on a seat on the rail opens its file at this beat: the docket says so. */
+  seatTaps?: boolean;
 }
 
 export function Film({
@@ -118,6 +123,7 @@ export function Film({
   seat,
   onSeat,
   replay,
+  seatTaps = false,
 }: FilmProps) {
   const [ownSeat, setOwnSeat] = useState<FileChoice | null>(null);
   const box = useRef<HTMLElement>(null);
@@ -127,8 +133,12 @@ export function Film({
   if (beat.id === 'over.epilogue') return null;
   const focus = fileFocus(view, beat);
   const shown = shownSeat(focus, choice);
-  const docket = shown ? null : docketFor(view, beat);
+  // the beat's own docket (a beat with no seat in focus), titled by what it holds
+  const own = focus ? null : docketFor(view, beat);
+  const docket = shown ? null : (own ?? docketFor(view, beat));
   if (!shown && !docket) return null;
+  const title = docket ? docketTitle(docket) : null;
+  const ownTitle = own ? docketTitle(own) : null;
   const r = sideSlot(hud);
   const pick = (s: string | null) => choose({ seat: s, key: focus?.key ?? null });
   const chip = (s: string, cls = styles.face) => {
@@ -156,14 +166,14 @@ export function Film({
       data-film={file ? 'file' : docket!.kind}
       data-file-seat={shown ?? undefined}
       data-wide={wide || undefined}
-      aria-label={shown ? `Case file, seat ${seatNumber(shown)}` : 'Case file, the docket'}
+      aria-label={shown ? `Case file, seat ${seatNumber(shown)}` : `Case file, ${title}`}
     >
       {wide ? (
         <SeatTabs
           seats={view.seats}
           alive={view.alive}
           shown={shown}
-          docket={!focus}
+          docket={ownTitle}
           cast={cast}
           onPick={pick}
         />
@@ -184,7 +194,7 @@ export function Film({
                 label={`Seat ${seatNumber(shown!)}`}
                 seats={view.seats}
                 shown={shown}
-                docket={!focus}
+                docket={ownTitle}
                 chip={chip}
                 onPick={pick}
               />
@@ -212,10 +222,10 @@ export function Film({
                 <div className={styles.who}>
                   <Chooser
                     wide={wide}
-                    label="The docket"
+                    label={title!}
                     seats={view.seats}
                     shown={null}
-                    docket
+                    docket={title}
                     chip={chip}
                     onPick={pick}
                   />
@@ -225,6 +235,11 @@ export function Film({
             </div>
             <div className={`${styles.sheet} ${styles.docket}`}>
               {nudge}
+              {seatTaps ? (
+                <p className={styles.tapHint} data-tap-hint>
+                  <KeyholeGlyph /> Tap a seat to open its file
+                </p>
+              ) : null}
               <Docket model={docket!} chip={chip} onSeat={pick} />
             </div>
           </>
@@ -254,8 +269,8 @@ function Chooser({
   label: string;
   seats: readonly string[];
   shown: string | null;
-  /** The beat has a docket to go back to. */
-  docket: boolean;
+  /** The beat's docket to go back to, by its title ("The vote"); null: none. */
+  docket: string | null;
   chip: (seat: string, cls?: string) => ReactNode;
   onPick: (seat: string | null) => void;
 }) {
@@ -313,7 +328,7 @@ function Chooser({
               aria-pressed={shown === null}
               onClick={() => go(null)}
             >
-              The docket
+              {docket}
             </button>
           ) : null}
         </span>
@@ -338,7 +353,8 @@ function SeatTabs({
   seats: readonly string[];
   alive: readonly string[];
   shown: string | null;
-  docket: boolean;
+  /** The beat's docket, by its title: its tab is the folder glyph, first. */
+  docket: string | null;
   cast: readonly Character[];
   onPick: (seat: string | null) => void;
 }) {
@@ -350,8 +366,8 @@ function SeatTabs({
           role="tab"
           className={`${styles.stab} ${styles.dtab}`}
           aria-selected={shown === null}
-          aria-label="The docket"
-          title="The docket"
+          aria-label={docket}
+          title={docket}
           onClick={() => onPick(null)}
         >
           <DocketGlyph />
@@ -377,6 +393,15 @@ function SeatTabs({
         );
       })}
     </div>
+  );
+}
+
+/** The Reveal switch's keyhole: the docket's hint that a seat on the rail opens its file. */
+function KeyholeGlyph() {
+  return (
+    <svg viewBox="0 0 16 16" aria-hidden="true" className={styles.keyhole}>
+      <path d="M8 3.6a2.3 2.3 0 0 0-1.2 4.3L6 12.4h4l-.8-4.5A2.3 2.3 0 0 0 8 3.6Z" />
+    </svg>
   );
 }
 
@@ -588,7 +613,10 @@ function Reads({
   );
 }
 
-/** Precedents: the lessons the seat last weighed, the chosen one opened. */
+/**
+ * Precedents, as the viewer reads them: Lessons, advice from past games (owner, 2026-09-30).
+ * The lessons the seat last weighed, the chosen one opened.
+ */
 function Precedents({ file, n }: { file: SeatFile; n: number }) {
   const consult = file.consult!;
   const [i, setI] = useState(0);
@@ -596,10 +624,12 @@ function Precedents({ file, n }: { file: SeatFile; n: number }) {
   return (
     <>
       <div className={styles.shHead}>
-        <span className={styles.title}>Precedents</span>
+        <span className={styles.title}>
+          Lessons <small className={styles.sub}>advice from past games</small>
+        </span>
         <span className={styles.typed}>Consulted {when(consult.day, consult.phase)}</span>
       </div>
-      <div className={styles.pidx} role="tablist" aria-label="Precedents">
+      <div className={styles.pidx} role="tablist" aria-label="Lessons">
         {consult.lessons.map((x, k) => (
           <button
             key={x.n}
@@ -624,7 +654,7 @@ function Precedents({ file, n }: { file: SeatFile; n: number }) {
         <p className={styles.said}>{l.why ? cap(seatify(l.why)) : 'No reason given.'}</p>
       </div>
       <div className={`${styles.prec} ${l.verdict === 'not_relevant' ? styles.dim : ''}`}>
-        <p className={styles.cap}>The precedent, from a past game</p>
+        <p className={styles.cap}>The lesson, from a past game</p>
         <p>{seatify(l.action)}</p>
       </div>
       <Situation key={l.n} text={l.situation} label="Written for" />
@@ -1023,7 +1053,7 @@ function Docket({
         <>
           {head('Inside the vote', `Day ${model.day} · what each voter weighed`)}
           <div className={styles.rows}>
-            {/* a voter's row opens its file: the reads and the precedents it voted on */}
+            {/* a voter's row opens its file: the reads and the lessons it voted on */}
             {model.rows.map((v) => (
               <button
                 key={v.voter}
@@ -1041,7 +1071,7 @@ function Docket({
                       : `votes seat ${seatNumber(v.votee)}`}
                   </small>
                 </span>
-                <span className={styles.vd} aria-label="the precedents it weighed">
+                <span className={styles.vd} aria-label="the lessons it weighed">
                   {v.verdicts.length ? (
                     v.verdicts.map((x, i) => (
                       <span
@@ -1060,8 +1090,8 @@ function Docket({
             ))}
           </div>
           <p className={styles.legend}>
-            The precedents each voter weighed before its ballot, No. 1 to 3: F followed, O
-            overruled, – not applicable. Tap a voter for its file.
+            The lessons each voter weighed before its ballot, No. 1 to 3: F followed, O
+            overrode, – doesn’t apply. Tap a voter for its file.
           </p>
         </>
       );
@@ -1178,12 +1208,11 @@ function Docket({
     case 'empty':
       return (
         <>
-          {head('The docket', model.label)}
+          {head(docketTitle(model), model.label)}
           <p className={styles.empty}>
-            Nothing on the docket at this beat. A turn and a night act open that seat’s
-            file; the docket holds the count, the lynch’s card, a morning’s brief, the night
-            whole, the deal and the ending. Any seat’s file is a tap away, on the name
-            above.
+            Nothing on file at this beat. A turn and a night act open that seat’s file; this
+            sheet holds the count, the lynch’s card, a morning’s brief, the night whole, the
+            deal and the ending. Any seat’s file is a tap away, on the name above.
           </p>
         </>
       );

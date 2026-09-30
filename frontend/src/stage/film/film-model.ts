@@ -85,6 +85,29 @@ export type DocketModel =
   | { kind: 'notes'; rows: { seat: string; role: string | null; note: FilmNote | null }[] }
   | { kind: 'empty'; label: string };
 
+/**
+ * What the no-seat sheet is called, by what it holds (owner, 2026-09-30: "the docket" was
+ * nobody's word): its name on the cover, its tab and the phone's chooser.
+ */
+export function docketTitle(model: DocketModel): string {
+  switch (model.kind) {
+    case 'night':
+      return 'The night';
+    case 'vote':
+      return 'The vote';
+    case 'lynch':
+      return 'The lynch';
+    case 'brief':
+      return `Day ${model.day}’s brief`;
+    case 'deal':
+      return model.truth ? 'The case, closed' : 'The deal';
+    case 'notes':
+      return 'The winners’ notes';
+    case 'empty':
+      return 'Nothing on file';
+  }
+}
+
 /** The lessons of one consult, with the agent's verdict on each. */
 export function lessonsOf(consult: MemoryConsulted | undefined): FilmLesson[] {
   if (!consult) return [];

@@ -1122,3 +1122,33 @@ button.row:hover {
   text-underline-offset: 3px;
   white-space: nowrap;
 }
+
+/* a Lessons sheet's small subtitle beside its title: "advice from past games" */
+.title .sub {
+  font-family: var(--f-type);
+  font-size: var(--label);
+  color: var(--type-mut);
+  margin-left: 0.4em;
+}
+
+/* the docket's hint, where a tap on the rail opens a seat's file: the Reveal switch's keyhole
+   and one typed line (owner, 2026-09-30: the wing's edge alone was missed) */
+.tapHint {
+  display: flex;
+  align-items: center;
+  gap: 6.4px;
+  margin: 0 0 9.6px;
+  font-family: var(--f-type);
+  font-size: var(--label);
+  color: var(--type-label);
+}
+.keyhole {
+  width: 1.3em;
+  height: 1.3em;
+  flex: 0 0 auto;
+  padding: 1.6px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: #2a1b10;
+  fill: var(--xray-hi);
+}

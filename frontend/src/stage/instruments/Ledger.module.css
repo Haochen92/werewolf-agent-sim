@@ -1,5 +1,8 @@
-/* The epilogue's sheet, as bench 73 draws it (`.ledger`, `.persp`, `.lrow`, `.kept`), its
-   container units turned into stage units (1cqw = 16 units). */
+/* The epilogue's sheet as the case's closing spread (owner, 2026-09-30; it was the last of the
+   blue-black X-ray film, bench 73's `.ledger`): the case file's manila, its typed paper, the
+   typewriter's labels and IM Fell's titles (Film.module.css), the roles down the left as file
+   tabs joined to the sheet, the verdicts stamped in the file's calm inks. Same content, the
+   same rows and marks; the rows scroll in place on a phone. Units are stage units. */
 
 /* the stage below it, dimmed while the sheet is down. The layers make no stacking context
    of their own (the light has to blend with the paint), so the stand's plaque and footlights
@@ -13,6 +16,7 @@
   pointer-events: none;
 }
 
+/* the folder, opened: manila round the edge, the tabs on its left leaf, the paper on its right */
 .ledger {
   position: absolute;
   z-index: 5;
@@ -20,67 +24,65 @@
   display: grid;
   grid-template-columns: calc(240px * var(--legible-ui)) 1fr;
   grid-template-rows: auto 1fr auto;
-  gap: 0 19.2px;
-  padding: 16px 20.8px;
-  border-radius: 4px;
-  color: var(--film-text);
-  rotate: -0.5deg;
-  background:
-    repeating-linear-gradient(
-      0deg,
-      rgba(127, 220, 242, 0.055) 0 1px,
-      transparent 1px 27.2px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      rgba(127, 220, 242, 0.055) 0 1px,
-      transparent 1px 27.2px
-    ),
-    var(--film);
-  border: 5.12px solid var(--film-border);
+  gap: 0;
+  padding: calc(14.4px * var(--legible-ui)) calc(19.2px * var(--legible-ui));
+  border-radius: 6.4px 14.4px 14.4px 14.4px;
+  color: var(--type);
+  background: var(--manila);
   box-shadow:
-    8px 9.6px 0 rgba(5, 12, 16, 0.55),
-    0 0 48px rgba(127, 220, 242, 0.14);
+    0 20px 40px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px var(--manila-edge),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  --f-type: var(--font-stage-type, 'Courier Prime'), 'Courier New', monospace;
+  --f-title: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  --rule: rgba(90, 70, 40, 0.22);
+  --label: calc(13.6px * var(--legible));
 }
 
 .head {
   grid-column: 1 / -1;
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: 16px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--film-line);
-  margin-bottom: 9.6px;
+  gap: 4.8px 16px;
+  padding: 0 4.8px 9.6px;
 }
 .head strong {
-  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  font-family: var(--f-title);
   font-weight: 400;
   font-size: calc(22.4px * 1.5 * var(--legible-ui));
-  color: var(--film-ink);
-  text-shadow: 0 0 9.6px rgba(127, 220, 242, 0.5);
+  line-height: 1.1;
+  color: var(--type);
 }
 .head span {
+  font-family: var(--font-body);
+  font-style: italic;
   font-size: var(--meta);
-  color: var(--film-mut);
+  color: var(--type-label);
 }
 .head .count {
   margin-left: auto;
+  font-family: var(--f-type);
+  font-style: normal;
+  font-size: var(--label);
   font-variant-numeric: tabular-nums;
 }
 .count b {
-  color: var(--film-main);
-  font-weight: 500;
+  color: var(--type);
+  font-weight: 700;
 }
 
-/* one tab per role, down the left */
+/* one file tab per role, down the left leaf; the open one is the sheet's own paper, joined to it */
 .tabs {
   display: flex;
   flex-direction: column;
-  gap: 5.6px;
+  gap: 4.8px;
   min-height: 0;
   overflow: auto;
+  padding: 8px 0 8px 0;
 }
 .tab {
+  position: relative;
   display: grid;
   grid-template-columns: auto 1fr;
   grid-template-rows: auto auto;
@@ -88,19 +90,32 @@
   align-items: center;
   text-align: left;
   font: inherit;
-  color: var(--film-text);
-  background: transparent;
-  border: 1px solid var(--film-line);
-  border-radius: 8px;
+  color: var(--type);
+  background: var(--manila-dk);
+  border: 0;
+  border-radius: 8px 0 0 8px;
+  box-shadow:
+    inset 1px 1px 0 var(--manila-edge),
+    inset 0 -1px 0 var(--manila-edge);
   padding: calc(6.4px * var(--legible-ui)) calc(9.6px * var(--legible-ui));
+  margin-right: 6.4px;
   cursor: pointer;
-  opacity: 0.7;
+}
+.tab:hover {
+  background: #c6a768;
+}
+.tab:focus-visible {
+  outline: 2px solid var(--type-label);
+  outline-offset: -3px;
 }
 .tab[aria-pressed='true'] {
-  opacity: 1;
-  border-color: var(--film-ink);
-  background: rgba(127, 220, 242, 0.08);
-  box-shadow: inset 4px 0 0 var(--film-ink);
+  z-index: 1;
+  margin-right: -1px;
+  background: var(--sheet);
+  box-shadow:
+    inset 1px 1px 0 var(--manila-edge),
+    inset 0 -1px 0 var(--manila-edge),
+    inset 4px 0 0 var(--c, var(--type-label));
 }
 .tab .sigil {
   grid-row: 1 / 3;
@@ -110,12 +125,15 @@
   stroke-width: 3;
 }
 .name {
-  font-size: var(--meta);
-  color: var(--film-main);
+  font-family: var(--f-type);
+  font-weight: 700;
+  font-size: var(--label);
+  color: var(--type);
   line-height: 1.2;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 4.8px;
+  gap: 3.2px 4.8px;
 }
 .name .chip {
   width: calc(var(--chip) * 0.38);
@@ -124,53 +142,69 @@
   overflow: hidden;
   line-height: 0;
   flex: 0 0 auto;
+  box-shadow: 0 0 0 1px var(--manila-edge);
 }
 .won {
-  font-size: calc(var(--meta) * 0.8);
-  color: var(--film-ink);
+  font-size: calc(var(--label) * 0.85);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-good);
+  border: 1.6px solid currentColor;
+  border-radius: 3.2px;
+  padding: 0 4px;
   margin-left: 4.8px;
 }
 .pips {
   display: flex;
   flex-wrap: wrap;
   gap: 2.56px;
-  margin-top: 2.4px;
+  margin-top: 3.2px;
 }
 .pips i {
   width: 8.8px;
   height: 8.8px;
   box-sizing: border-box;
   border-radius: 1.9px;
-  border: 1px solid var(--film-line);
+  border: 1px solid var(--ink-na);
 }
 .pips .worked {
-  background: #7fd6a0;
-  border-color: #7fd6a0;
+  background: var(--ink-good);
+  border-color: var(--ink-good);
 }
 .pips .cost {
-  background: var(--wolf);
-  border-color: var(--wolf);
+  background: var(--ink-bad);
+  border-color: var(--ink-bad);
 }
 .pips .mixed {
-  background: linear-gradient(90deg, #7fd6a0 50%, var(--wolf) 50%);
-  border-color: var(--film-mut);
+  background: linear-gradient(90deg, var(--ink-good) 50%, var(--ink-bad) 50%);
+  border-color: var(--ink-mixed);
 }
 
-/* the rows, grouped under the phase they came from */
+/* the right leaf: typed paper on a stack, the rows grouped under the phase they came from */
 .rows {
   min-height: 0;
   overflow: auto;
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
   gap: 2.4px;
-  padding-right: 6.4px;
+  padding: calc(12.8px * var(--legible-ui)) calc(17.6px * var(--legible-ui));
+  border-radius: 0 8px 6.4px 6.4px;
+  background: var(--sheet);
+  box-shadow:
+    0 2px 0 var(--sheet2),
+    0 4px 0 #ddcca6,
+    0 8px 14px rgba(0, 0, 0, 0.25);
 }
 .phase {
-  font-size: var(--meta);
-  color: var(--film-ink);
-  letter-spacing: 0.04em;
+  font-family: var(--f-type);
+  font-weight: 700;
+  font-size: var(--label);
+  color: var(--type-label);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  margin: 8px 0 2.4px;
+  margin: 9.6px 0 2.4px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -189,22 +223,23 @@
 }
 .phase i {
   flex: 1;
-  height: 1px;
-  background: var(--film-line);
+  height: 1.5px;
+  background: rgba(90, 70, 40, 0.45);
 }
 .row {
   padding: 6.4px 4.8px 7.2px;
-  border-bottom: 1px solid var(--film-line);
+  border-bottom: 1px solid var(--rule);
   cursor: pointer;
 }
 .row:hover {
-  background: rgba(127, 220, 242, 0.05);
+  background: rgba(212, 182, 124, 0.16);
 }
 .row.open {
-  background: rgba(127, 220, 242, 0.06);
+  background: rgba(212, 182, 124, 0.2);
 }
 .row:focus-visible {
-  outline: 1px solid var(--film-ink);
+  outline: 2px solid var(--type-label);
+  outline-offset: -2px;
 }
 .rowHead {
   display: grid;
@@ -216,7 +251,7 @@
   width: calc(20.8px * var(--legible-ui));
   height: calc(20.8px * var(--legible-ui));
   margin-top: 2.4px;
-  color: var(--film-ink);
+  color: var(--type-label);
   transition: transform 0.2s;
 }
 .chev svg {
@@ -231,36 +266,39 @@
 .open .chev {
   transform: rotate(90deg);
 }
-/* the row's verdict as a mark (VerdictMark): muted inks, the mark carries the meaning */
+/* the row's verdict as a mark (VerdictMark), in the file's calm inks: the mark carries it */
 .vmark {
   width: calc(18px * var(--legible-ui));
   height: calc(18px * var(--legible-ui));
   margin-top: 3.2px;
 }
 .m-worked {
-  color: #8fc4a3;
+  color: var(--ink-good);
 }
 .m-cost {
-  color: #d98b7c;
+  color: var(--ink-bad);
 }
 .m-mixed {
-  color: #e0b25a;
+  color: var(--ink-mixed);
 }
 .m-unclear {
-  color: var(--film-mut);
+  color: var(--ink-na);
 }
 .label {
-  font-size: calc(var(--meta) * 0.85);
-  color: var(--film-ink);
-  letter-spacing: 0.04em;
+  font-family: var(--f-type);
+  font-weight: 700;
+  font-size: calc(var(--label) * 0.85);
+  color: var(--type-label);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  line-height: 1.5;
+  line-height: 1.6;
   margin-top: 1.9px;
 }
 .situation {
+  font-family: var(--font-body);
   font-size: var(--note);
-  line-height: 1.35;
-  color: var(--film-main);
+  line-height: 1.4;
+  color: var(--type);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -269,46 +307,49 @@
 .open .situation {
   display: block;
   -webkit-line-clamp: unset;
-  font-size: calc(var(--note) * 1.12);
+  font-size: calc(var(--note) * 1.08);
 }
 .more {
-  font-size: calc(var(--meta) * 0.8);
-  color: var(--film-mut);
-  border: 1px solid var(--film-line);
-  border-radius: 16px;
-  padding: 0 8.8px;
+  font-family: var(--f-type);
+  font-size: calc(var(--label) * 0.85);
+  color: var(--type-mut);
+  border: 1px solid rgba(90, 70, 40, 0.5);
+  border-radius: 3.2px;
+  padding: 0 6.4px;
   line-height: 1.5;
   margin-top: 1.6px;
   white-space: nowrap;
 }
 .row:hover .more {
-  color: var(--film-ink);
-  border-color: var(--film-ink);
+  color: var(--type);
+  border-color: var(--type-label);
 }
 
-/* a row opened: what it did, and how it went with the verdict's patch */
+/* a row opened: what it did, and how it went with the verdict stamped on it */
 .body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14.4px 22.4px;
   margin: 9.6px 0 3.2px 30.4px;
   padding-top: 8px;
-  border-top: 1px dashed var(--film-line);
+  border-top: 1px dashed rgba(90, 70, 40, 0.45);
 }
 .body b {
   display: block;
-  font-weight: 500;
-  color: var(--film-ink);
-  font-size: calc(var(--meta) * 0.85);
-  letter-spacing: 0.04em;
+  font-family: var(--f-type);
+  font-weight: 700;
+  color: var(--type-label);
+  font-size: calc(var(--label) * 0.85);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   margin-bottom: 2.4px;
 }
 .body p {
   margin: 0;
-  font-size: calc(var(--note) * 1.12);
+  font-family: var(--font-body);
+  font-size: calc(var(--note) * 1.08);
   line-height: 1.45;
-  color: var(--film-text);
+  color: var(--type);
 }
 .went {
   display: grid;
@@ -316,46 +357,66 @@
   gap: 12.8px;
   align-items: start;
   padding-left: 14.4px;
-  border-left: 2px solid var(--film-line);
-}
-.went p {
-  color: var(--film-main);
+  border-left: 2px solid var(--rule);
 }
 .v-worked {
-  border-left-color: #7fd6a0;
+  border-left-color: var(--ink-good);
 }
 .v-cost {
-  border-left-color: var(--wolf);
+  border-left-color: var(--ink-bad);
 }
 .v-mixed {
-  border-left-color: #c9a25e;
+  border-left-color: var(--ink-mixed);
 }
-.patch {
-  display: flex;
-  flex-direction: column;
+/* the verdict stamped, its worn ink a still mask tile (scripts/make-stamp-ink.mjs), no filter */
+.stamp {
+  display: inline-flex;
   align-items: center;
-  gap: 2.4px;
-  padding-top: 1.6px;
+  gap: 4.8px;
+  margin-top: 1.6px;
+  font-family: var(--f-type);
+  font-weight: 700;
+  font-size: calc(var(--label) * 1.05);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.15;
+  white-space: nowrap;
+  border: 2.4px solid currentColor;
+  border-radius: 4.8px;
+  padding: 2.4px 8px 1.6px;
+  opacity: 0.9;
+  rotate: -4deg;
+  mask-image: var(--ink-tex);
+  mask-size: 64px 64px;
+  mask-repeat: repeat;
+  -webkit-mask-image: var(--ink-tex);
+  -webkit-mask-size: 64px 64px;
 }
-.patch svg {
-  width: 57.6px;
-  height: 40.8px;
+.stamp svg {
+  width: 0.95em;
+  height: 0.95em;
 }
-.patch em {
-  font-style: normal;
-  font-size: calc(var(--meta) * 0.85);
-  color: var(--film-mut);
-  letter-spacing: 0.03em;
+.t-worked {
+  color: var(--ink-good);
+}
+.t-cost {
+  color: var(--ink-bad);
+}
+.t-mixed {
+  color: var(--ink-mixed);
+}
+.t-unclear {
+  color: var(--ink-na);
 }
 
-/* along the bottom: the lessons kept, as slips */
+/* along the foot, on the manila: the lessons kept, as index cards */
 .kept {
   grid-column: 1 / -1;
-  border-top: 1px solid var(--film-line);
-  margin-top: 9.6px;
-  padding-top: 8px;
-  font-size: var(--meta);
-  color: var(--film-mut);
+  margin-top: 12.8px;
+  padding: 0 4.8px;
+  font-family: var(--font-body);
+  font-size: var(--note);
+  color: var(--type-label);
   display: flex;
   flex-direction: column;
   gap: 4.8px;
@@ -363,8 +424,10 @@
   overflow: auto;
 }
 .kept strong {
-  color: var(--film-ink);
-  font-weight: 500;
+  font-family: var(--f-title);
+  font-weight: 400;
+  font-size: calc(var(--meta) * 1.3);
+  color: var(--type);
 }
 .slip {
   display: grid;
@@ -372,32 +435,38 @@
   gap: 9.6px;
   align-items: baseline;
   font-size: var(--note);
-  background: var(--slip);
-  color: var(--slip-ink);
-  border-radius: 4.8px;
-  padding: 5.6px 11.2px;
+  background: var(--card);
+  color: var(--type);
+  border-radius: 3.2px;
+  box-shadow:
+    inset 0 2px 0 #c0473a,
+    0 2px 6px rgba(0, 0, 0, 0.2);
+  padding: 7.2px 11.2px 5.6px;
 }
 .slip b {
-  font-weight: 500;
-  color: #6b7896;
-  font-size: calc(var(--meta) * 0.85);
+  font-family: var(--f-type);
+  font-weight: 700;
+  color: var(--type-label);
+  font-size: calc(var(--label) * 0.85);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.08em;
 }
 .slip .mk {
-  font-size: calc(var(--meta) * 0.8);
-  color: #6b7896;
+  font-family: var(--f-type);
+  font-size: calc(var(--label) * 0.85);
+  color: var(--type-label);
   border: 1px solid currentColor;
-  border-radius: 16px;
-  padding: 0 8px;
+  border-radius: 3.2px;
+  padding: 0 6.4px;
   align-self: center;
 }
 
 /* a game with no memory: the sheet says so, and nothing else */
 .none {
   grid-column: 1 / -1;
+  font-family: var(--font-body);
   font-size: var(--said);
-  color: var(--film-text);
+  color: var(--type);
 }
 
 .c-villagers {

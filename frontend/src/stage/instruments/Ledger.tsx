@@ -1,37 +1,54 @@
 'use client';
 
 /**
- * The epilogue: what the finished game taught, as one sheet of the X-ray's film brought down
- * over the whole stage (handoff §4.10, bench 73). The agents' observations were private all
+ * The epilogue: what the finished game taught, as the case's closing spread brought down over
+ * the whole stage (handoff §4.10, bench 73; in the case file's manila and typed paper since
+ * 2026-09-30, it was the X-ray's blue-black film). The agents' observations were private all
  * game; after the game is over the X-ray is everyone's, so every viewer gets this sheet.
  *
- * - Down the left, one tab per role (the wire files observations by role, not seat): its
+ * - Down the left, one file tab per role (the wire files observations by role, not seat): its
  *   sigil, the chips of the seats that held it, "won" on the winning side, and a pip per
  *   verdict as a tally.
  * - Each row carries its verdict as a mark (✓ ✗ ± ?), so it never rests on colour alone.
  * - On the right, that role's rows under the phase they came from (the discussion, the vote,
  *   the night). Each row shows only its scenario, clamped to two lines, with a chevron and
- *   "open"; opened, it adds what the agent did and how it went, with the verdict's stitched
- *   patch beside the outcome, because a verdict is on the outcome.
- * - Along the bottom, the lessons kept (the strategy points) as slips, or "None from this
+ *   "open"; opened, it adds what the agent did and how it went, with the verdict stamped
+ *   beside the outcome, because a verdict is on the outcome.
+ * - Along the bottom, the lessons kept (the strategy points) as index cards, or "None from this
  *   game" when there are none.
  *
  * Tabs and rows are the viewer's own to click; nothing here changes the beat. Played, the
  * sheet comes down 0.6 s after 0.5 s (bench 73 `plateIn`) over a stage dimmed 0.5 s after 0.3 s.
  */
 import { motion } from 'motion/react';
-import { useState } from 'react';
-import type { Character } from '@/assets/manifest';
+import { useState, type CSSProperties } from 'react';
+import { SPRITES, type Character } from '@/assets/manifest';
 import type { MemoryExtracted } from '@/types/contracts';
 import { ChipSprite } from '../cast/ChipSprite';
 import { useMotionScale } from '../motion';
 import { ROLE_NAME, factionOf, seatNumber, seatify, type Faction } from '../roles';
 import { HUD_CHROME, geometry, type Hud } from '../units';
-import { PHASE_NAME, byPhase, ledgerTabs, stripVerdict, type ActionPhase } from './ledger';
+import {
+  PHASE_NAME,
+  byPhase,
+  ledgerTabs,
+  stripVerdict,
+  type ActionPhase,
+  type VerdictKind,
+} from './ledger';
 import { Sigil } from './Sigil';
 import { VerdictMark } from './VerdictMark';
-import { VerdictPatch } from './VerdictPatch';
 import styles from './Ledger.module.css';
+
+/** The verdict as the case file stamps it (its Findings stamp the same marks). */
+const STAMP: Record<VerdictKind, string> = {
+  worked: 'Worked',
+  cost: 'Cost',
+  mixed: 'Mixed',
+  unclear: 'Unclear',
+};
+/** The stamps' worn ink: a still mask tile, as the case file's. */
+const INK_TEX = { '--ink-tex': `url(${SPRITES.textures.ink.src})` } as CSSProperties;
 
 /** Each phase's small line icon (16×16), for the headers the rows are grouped under; the case
  * file's Findings index uses the same. */
@@ -103,7 +120,7 @@ export function Ledger({
   const sheet = (children: React.ReactNode) => (
     <motion.section
       className={styles.ledger}
-      style={box}
+      style={{ ...box, ...INK_TEX }}
       aria-label="What the game taught"
       data-ledger=""
       initial={arrive ? { opacity: 0, y: 24 } : false}
@@ -244,9 +261,12 @@ export function Ledger({
                             <div
                               className={`${styles.went} ${styles[`v-${r.verdict}`] ?? ''}`}
                             >
-                              <span className={styles.patch}>
-                                <VerdictPatch kind={r.verdict} />
-                                <em>{r.verdict}</em>
+                              <span
+                                className={`${styles.stamp} ${styles[`t-${r.verdict}`] ?? ''}`}
+                                data-verdict={r.verdict}
+                              >
+                                <VerdictMark kind={r.verdict} />
+                                {STAMP[r.verdict]}
                               </span>
                               <div>
                                 <b>How it went</b>
