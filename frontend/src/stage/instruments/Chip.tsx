@@ -132,7 +132,7 @@ function SigilFace({ r, role }: { r: number; role: string }) {
       </svg>
       <Sigil
         role={role}
-        strokeWidth={1}
+        small={r * 1.44 < 26}
         style={{
           position: 'absolute',
           left: r * 0.28,

@@ -261,7 +261,8 @@ function WingTile({
         {character ? <ChipSprite character={character} /> : null}
         {truth && !dead ? (
           <span className={styles.badge}>
-            <Sigil role={truth} />
+            {/* the X-ray's truth: a felt badge on paper; the guess below stays a pencilled stamp */}
+            <Sigil role={truth} variant="felt" small />
           </span>
         ) : null}
         {lamp ? <span className={styles.lamp} /> : null}
@@ -271,7 +272,7 @@ function WingTile({
             title={`You think: ${ROLE_NAME[guess] ?? guess}`}
             data-guess={guess}
           >
-            <Sigil role={guess} />
+            <Sigil role={guess} small />
           </span>
         ) : null}
         {dead ? <span className={styles.ribbon} aria-hidden="true" /> : null}

@@ -149,8 +149,7 @@ export function VerdictBoard({ g, winner, day, endedAt, move }: VerdictBoardProp
             y={py - pr * 0.6}
             width={pr * 1.2}
             height={pr * 1.2}
-            strokeWidth={3.4}
-            style={{ color: col }}
+            variant="felt"
           />
           <text
             x={tx}

@@ -387,7 +387,7 @@ function Line({
     const f = factionOf(r);
     return (
       <span className={`${styles.sg} ${f ? styles[`c-${f}`] : ''}`} title={r}>
-        <Sigil role={r} />
+        <Sigil role={r} small />
       </span>
     );
   };

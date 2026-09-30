@@ -1307,7 +1307,13 @@ function Docket({
                     Seat {seatNumber(s.seat)}{' '}
                     {s.role ? (
                       <span className={f ? styles[`s-${f}`] : undefined}>
-                        <Sigil role={s.role} className={styles.sigil} /> {role(s.role)}
+                        <Sigil
+                          role={s.role}
+                          variant="felt"
+                          small
+                          className={styles.sigil}
+                        />{' '}
+                        {role(s.role)}
                       </span>
                     ) : (
                       <i className={styles.role}>unknown</i>

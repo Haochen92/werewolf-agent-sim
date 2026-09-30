@@ -67,7 +67,13 @@ export function SmallCard({ role, seat, w, turn = false, turnDelay }: FaceProps)
           dangerouslySetInnerHTML={{ __html: roleFigure(role) }}
         />
         <footer>
-          <Sigil role={role} className={styles.sg} />
+          {/* felt on the card's paper; small below 26 units (the sigil is 28 card units) */}
+          <Sigil
+            role={role}
+            variant="felt"
+            small={(28 * w) / 340 < 26}
+            className={styles.sg}
+          />
           Seat {seat}
         </footer>
       </div>
@@ -84,7 +90,12 @@ export function RoleCard({ role, seat, w, turn = false, turnDelay }: FaceProps) 
       <div className={styles.in}>
         <header>
           <span>{text?.name ?? role}</span>
-          <Sigil role={role} className={styles.sg} />
+          <Sigil
+            role={role}
+            variant="felt"
+            small={(32 * w) / 340 < 26}
+            className={styles.sg}
+          />
         </header>
         <div
           className={styles.fig}

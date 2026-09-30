@@ -125,7 +125,11 @@ export function Notice({
           </span>
         ) : null}
         {sigil ? (
-          <Sigil role={sigil} className={`${styles.sigil} ${f ? styles[`c-${f}`] : ''}`} />
+          <Sigil
+            role={sigil}
+            variant="felt"
+            className={`${styles.sigil} ${f ? styles[`c-${f}`] : ''}`}
+          />
         ) : null}
         <strong>{title}</strong>
         {aside ? <span>{aside}</span> : null}
@@ -221,7 +225,7 @@ export function CastLine({ counts }: { counts: Record<string, number> }) {
         return (
           <span key={r} className={f ? styles[`c-${f}`] : undefined}>
             <b>{n}</b>
-            <Sigil role={r} />
+            <Sigil role={r} variant="felt" small />
             {n > 1 ? PLURAL[r] : (CARD_TEXT[r]?.name ?? r).toLowerCase()}
           </span>
         );

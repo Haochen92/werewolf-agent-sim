@@ -258,6 +258,18 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   "your card", the night rooms', the landing's and the ticket's) sizes one `<svg>` by CSS as
   before; `roleAvatar(role)` is the same markup with a head-and-shoulders viewBox crop (the top
   ~56%, per-role offsets for the vigilante's feather and the reaper's hood).
+- The role sigils (2026-09-30) are the owner's felt set from the sigil bench (cottage, cross,
+  magnifier, tilted bullet, wolf's head, fat-bladed scythe), vector in `instruments/Sigil.tsx`:
+  one silhouette plus detail pieces per role on a 48 grid (`viewBox -2 -2 52 52`). `<Sigil
+  variant="felt">` paints the side's cloth, second tone and accent with a dark edge and
+  stitching (colours are `MATERIALS.*Felt*`/`*Ink`), for paper and cream: the cards, the wing's
+  X-ray badge, the file's docket, the ledger's tabs, the notices, the verdict plate. The default
+  `stamp` is one colour in `currentColor` (the silhouette fattened, the pieces knocked out through
+  a `useId` mask), for marks inked into a surface: the chips, the transcript, the read card's
+  truth, the wing's pencilled guess, and every site use. `small` (under ~26 px) drops stitching
+  and fine lines. Flat felt: the bench's texture filter is not used (no live filters on the
+  stage). The site's icon sprite takes `PATHS[role]`, the small stamp as a self-painting nested
+  `<svg>` (mask id `sg-mask-<role>`), so `sg-*` still share the stage's shapes.
 - The station (the waiting room's platform, review 2026-09-26 §A5) has no masters in the bundle:
   its pictures exist only inlined in `claude_artifacts/design/pages/waiting-room.html`.
   `scripts/extract-station-sprites.mjs` pulls each out once, by the CSS rule that uses it, into
@@ -553,7 +565,7 @@ Two kinds, by whether they carry state:
   cards (back, small, full, the framed card), chips and their strings, wing tiles, the shutter's
   motion, the verdict board, act marks, sigils, the jar/table/plates, film rows, the drawer.
   **JSX components with props**, because they carry state, need keys, and animate in and out.
-  `RoleKit.sigil()` and the act marks are tiny: `<Sigil role />`, `<ActMark kind />`.
+  The sigils and the act marks are tiny: `<Sigil role variant? small? />`, `<ActMark kind />`.
 
 Faction colour appears on a card only once it is face up (the handoff's card-back rule).
 

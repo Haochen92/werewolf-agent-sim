@@ -78,7 +78,7 @@ export function ReadCard({
         <footer>
           Truth:
           <span className={`${styles.truth} ${f ? styles[`c-${f}`] : ''}`}>
-            <Sigil role={truth} />
+            <Sigil role={truth} small />
             {(ROLE_NAME[truth] ?? truth).toLowerCase()}
           </span>
           <span

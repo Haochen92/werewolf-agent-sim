@@ -177,7 +177,7 @@ export function Ledger({
                   }}
                   data-tab={t.role}
                 >
-                  <Sigil role={t.role} className={styles.sigil} />
+                  <Sigil role={t.role} variant="felt" className={styles.sigil} />
                   <span className={styles.name}>
                     {ROLE_NAME[t.role] ?? t.role}
                     {t.seats.map((s) => {

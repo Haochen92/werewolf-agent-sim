@@ -80,7 +80,7 @@ export function FramedCard({
         <span className={styles.framedIn}>
           <span className={styles.framedHead}>
             <span>{text.name}</span>
-            <Sigil role={role} />
+            <Sigil role={role} variant="felt" small={22 * u < 26} />
           </span>
           <span
             className={styles.framedFig}
@@ -144,7 +144,7 @@ export function CardOverlay({
         <span className={styles.cardIn}>
           <span className={styles.cardHead}>
             <span>{text.name}</span>
-            <Sigil role={role} />
+            <Sigil role={role} variant="felt" small={32 * u < 26} />
           </span>
           <span
             className={styles.cardFig}
