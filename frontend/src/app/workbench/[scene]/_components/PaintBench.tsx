@@ -9,6 +9,7 @@
  *   /workbench/paint?phase=day|dusk|night|dawn&room=car|compartment&shutter=open|closed
  *                   &drape=0|1&hud=none|live|replay&guides=0|1&chosen=0..7&strip=0
  */
+import { SPRITES } from '@/assets/manifest';
 import { Layer, Paint } from '@/stage/Stage';
 import { Compartment } from '@/stage/instruments/Compartment';
 import { CarPaint } from '@/stage/scenes/DiningCarParts';
@@ -80,7 +81,12 @@ export function PaintBench({ params }: { params: URLSearchParams }) {
             <CarPaint phase={o.phase} hud={o.hud} />
             <Paint
               of={shutter}
-              opts={{ hud: o.hud, state: o.shutter, walnut: WOOD.walnut }}
+              opts={{
+                hud: o.hud,
+                state: o.shutter,
+                walnut: WOOD.walnut,
+                picture: SPRITES.props.shutter.src,
+              }}
             />
           </>
         ) : (
@@ -102,7 +108,7 @@ export function PaintBench({ params }: { params: URLSearchParams }) {
         )}
       </Layer>
       <Layer name="hud">
-        {o.drape ? <Paint of={drape} opts={{}} /> : null}
+        {o.drape ? <Paint of={drape} opts={{ src: SPRITES.props.valance.src }} /> : null}
         {o.guides ? <Guides hud={o.hud} /> : null}
       </Layer>
     </>

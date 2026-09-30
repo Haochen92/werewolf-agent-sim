@@ -1,8 +1,9 @@
 'use client';
 
 /**
- * The window's shutter, moving: three louvred sections that come down out of the walnut
- * pelmet over the glass, or gather back up into it. It drops at the vote and at the morning's
+ * The window's shutter, moving: three louvred sections (a painted raster since 2026-09-30,
+ * `SPRITES.props.shutter`) that come down out of the walnut pelmet over the glass, or gather
+ * back up into it. It drops at the vote and at the morning's
  * report, and gathers up when night falls and when the day begins (handoff §2).
  *
  * At rest it draws exactly what the paint's `shutter()` draws (the same markup, from
@@ -13,6 +14,7 @@
  * up 1.2 s after `delay`.
  */
 import { motion } from 'motion/react';
+import { SPRITES } from '@/assets/manifest';
 import { usePaintId } from '../Stage';
 import { useMotionScale } from '../motion';
 import { shutterGeometry, shutterParts, type ShutterState } from '../paint/window';
@@ -32,7 +34,12 @@ export interface ShutterProps {
 export function Shutter({ g, state, animate = false, delay }: ShutterProps) {
   const k = useMotionScale();
   const id = usePaintId();
-  const { clip, panel, stack, pelmet, cid } = shutterParts(g, id, WOOD.walnut);
+  const { clip, panel, stack, pelmet, cid } = shutterParts(
+    g,
+    id,
+    WOOD.walnut,
+    SPRITES.props.shutter.src,
+  );
   const up = -(shutterGeometry(g).f.h + 12);
   const closed = state === 'closed';
   const d = delay ?? (closed ? 0.35 : 1.4);

@@ -158,7 +158,7 @@ export const TOWER_STEP = 0.45;
 export const TOWER_CAP = 4;
 
 export interface PlateSpot {
-  /** The candidate: a seat, or `abstain` for the upturned saucer. */
+  /** The candidate: a seat, or `abstain` for the plate at the right. */
   c: string;
   x: number;
   y: number;
@@ -168,7 +168,7 @@ export interface PlateSpot {
   towers: number;
 }
 
-/** One plate per candidate along the front edge, the saucer last, sized to the full tally. */
+/** One plate per candidate along the front edge, abstain's last, sized to the full tally. */
 export function plateSpots(
   v: VoteGeometry,
   cands: readonly string[],
@@ -179,7 +179,7 @@ export function plateSpots(
     gap = span / Math.max(1, n);
   const rx0 = Math.min(0.2 * v.g.pwid, gap * 0.44);
   return cands.map((c, i) => {
-    const rx = c === 'abstain' ? rx0 * 1.18 : rx0;
+    const rx = rx0;
     return {
       c,
       x: v.cx - span / 2 + gap * (i + 0.5),
@@ -193,11 +193,7 @@ export function plateSpots(
 
 /** The radius of a chip on a plate: big enough to read, small enough for its towers. */
 export function plateChipR(v: VoteGeometry, p: PlateSpot): number {
-  const ab = p.c === 'abstain';
-  return Math.min(
-    v.r * (ab ? 1.05 : 1.25),
-    (p.rx * (ab ? 0.72 : 0.92)) / (p.towers + 0.15),
-  );
+  return Math.min(v.r * 1.25, (p.rx * 0.92) / (p.towers + 0.15));
 }
 
 /** Where the i-th chip on a plate lies: its tower, its level in the tower; and its radius. */
@@ -210,8 +206,7 @@ export function stackPos(
     tower = Math.floor(i / TOWER_CAP),
     level = i % TOWER_CAP;
   const off = (tower - (p.towers - 1) / 2) * rr * 2.15;
-  const lift = p.c === 'abstain' ? p.ry * 1.3 : 0;
-  return [p.x + off, p.y - rr * TOWER_STEP - level * rr * TOWER_STEP - lift, rr];
+  return [p.x + off, p.y - rr * TOWER_STEP - level * rr * TOWER_STEP, rr];
 }
 
 /** The place card under a plate, on the cloth's drop. */

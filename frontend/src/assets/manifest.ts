@@ -104,7 +104,10 @@ import windowDawnFar from './sprites/window/dawn-far.webp';
 import windowDawnNear from './sprites/window/dawn-near.webp';
 import propJarGlass from './sprites/props/jar-glass.webp';
 import propJarLid from './sprites/props/jar-lid.webp';
+import propPlate from './sprites/props/plate.webp';
+import propShutter from './sprites/props/shutter.webp';
 import propStand from './sprites/props/stand-front.webp';
+import propValance from './sprites/props/valance.webp';
 import propVoteTable from './sprites/props/vote-table.webp';
 import carDay from './sprites/car/day.webp';
 import carNight from './sprites/car/night.webp';
@@ -261,9 +264,12 @@ export type WindowPicture = 'far' | 'near';
 
 /**
  * The painted props (alpha): the ballot jar's glass and its lid, the stand's front (drawn as a
- * 9-slice), the vote's table with its cloth. Recipe: stage_architecture §4.
+ * 9-slice), the vote's table with its cloth, the count's plate (already squashed to the table's
+ * perspective, ry = 0.3 rx), the replay's red velvet valance (one piece, the stage's width, its
+ * fringed hem transparent below) and the window's three-leaf shutter. Recipe: stage_architecture §4.
  */
-export type PropPicture = 'jarGlass' | 'jarLid' | 'stand' | 'voteTable';
+export type PropPicture =
+  'jarGlass' | 'jarLid' | 'stand' | 'voteTable' | 'plate' | 'valance' | 'shutter';
 
 /**
  * The dining car (opaque but for the window's glass): its walls, window frame, lamps and floor,
@@ -417,6 +423,9 @@ export const SPRITES: {
     jarLid: propJarLid,
     stand: propStand,
     voteTable: propVoteTable,
+    plate: propPlate,
+    valance: propValance,
+    shutter: propShutter,
   },
   car: { day: carDay, night: carNight },
   rooms: {

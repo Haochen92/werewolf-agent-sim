@@ -61,6 +61,21 @@ describe('sprite manifest', () => {
     for (const img of Object.values(SPRITES.textures)) hasSize(img);
   });
 
+  it('has the painted props, the three late ones at their painted sizes', () => {
+    expect(Object.keys(SPRITES.props).sort()).toEqual(
+      ['jarGlass', 'jarLid', 'plate', 'shutter', 'stand', 'valance', 'voteTable'].sort(),
+    );
+    for (const img of Object.values(SPRITES.props)) hasSize(img);
+    // the plate is squashed to ry = 0.3 rx; the valance spans the stage; the shutter is 8:3
+    expect([SPRITES.props.plate.width, SPRITES.props.plate.height]).toEqual([900, 270]);
+    expect([SPRITES.props.valance.width, SPRITES.props.valance.height]).toEqual([
+      2000, 395,
+    ]);
+    expect([SPRITES.props.shutter.width, SPRITES.props.shutter.height]).toEqual([
+      1640, 615,
+    ]);
+  });
+
   it('has the station’s pictures', () => {
     expect(Object.keys(SPRITES.station).sort()).toEqual(
       ['blind', 'floor', 'lamp', 'post', 'sky', 'train'].sort(),

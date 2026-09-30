@@ -62,7 +62,12 @@ export interface ShutterOpts {
   state: ShutterState;
   /** The walnut tile's URL: the shutter is the walls' wood, its grain along the slats. */
   walnut?: string;
+  /** The painted shutter's URL (`SPRITES.props.shutter`): drawn in place of the vector louvres. */
+  picture?: string;
 }
+
+/** The painted shutter (px): three sections, the rails between them at these rows. */
+const PAINTED_SHUTTER = { w: 1640, h: 615, rails: [0, 182, 372], rail: 34 };
 
 /** The shutter's pieces in units: the frame it covers, the pelmet above it, one section's height. */
 export function shutterGeometry(g: StageGeometry, s = 1) {
@@ -83,8 +88,16 @@ export function shutterGeometry(g: StageGeometry, s = 1) {
  * moves them: the clip that hides the panel under the pelmet (id `<id>-shc`), the three-section
  * panel down over the frame, the folded stack edge-on under the pelmet, and the pelmet itself.
  * Given `walnut`, the wood is textured (the clip then also carries its pattern, `<id>-shx`).
+ * Given `picture` (owner, 2026-09-30), the panel is the painted shutter stretched over the frame
+ * (8:3 on a frame of about 818 × 316, a light stretch) and the folded stack is three strips of
+ * its rails, edge on; the pelmet stays vector.
  */
-export function shutterParts(g: StageGeometry, id: string, walnut?: string) {
+export function shutterParts(
+  g: StageGeometry,
+  id: string,
+  walnut?: string,
+  picture?: string,
+) {
   const s = 1,
     { f, pel, section: h3 } = shutterGeometry(g, s),
     cid = id + '-shc',
@@ -118,19 +131,24 @@ export function shutterParts(g: StageGeometry, id: string, walnut?: string) {
         q += `<rect x="${hx - 5 * s}" y="${y + h - 3 * s}" width="${10 * s}" height="${6 * s}" rx="${1.5 * s}" fill="${brass}" stroke="${K2}" stroke-width="${s}"/>`;
     return q;
   };
-  const panel =
-    louvre(f.y, h3, true) +
-    louvre(f.y + h3, h3, true) +
-    louvre(f.y + 2 * h3, h3, false) +
-    `<rect x="${f.cx - 14 * s}" y="${f.y + f.h - 12 * s}" width="${28 * s}" height="${5 * s}" rx="${2.5 * s}" fill="${brass}" stroke="${K2}" stroke-width="${s}"/>`;
-  // the folded sections, edge on
+  const P = PAINTED_SHUTTER;
+  const panel = picture
+    ? `<image href="${picture}" x="${f.x}" y="${f.y}" width="${f.w}" height="${f.h}" preserveAspectRatio="none"/>`
+    : louvre(f.y, h3, true) +
+      louvre(f.y + h3, h3, true) +
+      louvre(f.y + 2 * h3, h3, false) +
+      `<rect x="${f.cx - 14 * s}" y="${f.y + f.h - 12 * s}" width="${28 * s}" height="${5 * s}" rx="${2.5 * s}" fill="${brass}" stroke="${K2}" stroke-width="${s}"/>`;
+  // the folded sections, edge on: with the picture, a strip of each section's top rail
   let stack = '';
-  for (let i = 0; i < 3; i++)
-    stack += wood(
-      `M${f.x + 2 * s * i},${pel.y + pel.h - 2 * s + i * 7 * s} h${f.w - 4 * s * i} v${7 * s} h${-(f.w - 4 * s * i)}Z`,
-      i % 2 ? WAL : WAL2,
-      1.6 * s,
-    );
+  for (let i = 0; i < 3; i++) {
+    const x = f.x + 2 * s * i,
+      y = pel.y + pel.h - 2 * s + i * 7 * s,
+      w = f.w - 4 * s * i;
+    stack += picture
+      ? `<svg x="${x}" y="${y}" width="${w}" height="${7 * s}" viewBox="0 ${P.rails[i]} ${P.w} ${P.rail}" preserveAspectRatio="none"><image href="${picture}" width="${P.w}" height="${P.h}"/></svg>` +
+        inkP(`M${x},${y} h${w} v${7 * s} h${-w}Z`, 'none', 1.6 * s)
+      : wood(`M${x},${y} h${w} v${7 * s} h${-w}Z`, i % 2 ? WAL : WAL2, 1.6 * s);
+  }
   const clip =
     `<clipPath id="${cid}"><rect x="${pel.x}" y="${pel.y + pel.h - 2 * s}" width="${pel.w}" height="${f.h + 40 * s}"/></clipPath>` +
     (walnut && T
@@ -150,7 +168,7 @@ export function shutterParts(g: StageGeometry, id: string, walnut?: string) {
  */
 export function shutter(o: ShutterOpts): string {
   const g = geometry(o.hud ?? 'live', o.side ?? false),
-    { clip, panel, stack, pelmet, cid } = shutterParts(g, o.id, o.walnut);
+    { clip, panel, stack, pelmet, cid } = shutterParts(g, o.id, o.walnut, o.picture);
   // the panel (clipped below the pelmet, so it comes from under it and goes back under it), then the stack, then the pelmet on top
   const d =
     clip +

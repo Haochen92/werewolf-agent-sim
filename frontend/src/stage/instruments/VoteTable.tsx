@@ -3,9 +3,10 @@
 /**
  * The vote's table: what the lift brings up through the trap. A painted walnut table with a
  * linen cloth hanging from its front edge, a lace hem and turned legs; on it the glass jar. For the count the jar is tipped over at the back
- * rail and a row of plates stands along the front edge, one per seat that got a vote and an
- * upturned saucer at the right for abstain, each with a place card on the cloth below it (the
- * candidate's head, the seat, the running number). The counted chips stack on the plates face
+ * rail and a row of plates stands along the front edge, one per seat that got a vote and one
+ * more at the right for abstain (an ordinary empty plate, owner 2026-09-30; it was an upturned
+ * saucer), each with a place card on the cloth below it (the candidate's head and seat, or
+ * "Abstain", and the running number). The counted chips stack on the plates face
  * up, in towers of four, so the table can be read at a glance.
  *
  * Props describe the state; `play` names what moves in this beat. Nothing here says who
@@ -135,7 +136,7 @@ export interface PlateProps {
   shade: string;
 }
 
-/** A plate on the table's top, or the upturned saucer for abstain, with its chips in towers. */
+/** A plate on the table's top (abstain's is the same plate), with its chips in towers. */
 export function Plate({
   v,
   p,
@@ -178,55 +179,16 @@ export function Plate({
         ry={p.ry * 1.5}
         fill={`url(#${shade})`}
       />
-      {p.c === 'abstain' ? (
-        <>
-          <ellipse
-            cx={p.x}
-            cy={p.y}
-            rx={p.rx}
-            ry={p.ry}
-            fill="#e6dcc4"
-            stroke={K2}
-            strokeWidth={1.8}
-          />
-          <path
-            d={`M${p.x - p.rx * 0.9},${p.y - p.ry * 0.1} Q${p.x},${p.y - p.ry * 3} ${p.x + p.rx * 0.9},${p.y - p.ry * 0.1}`}
-            fill="#f4ecd9"
-            stroke={K2}
-            strokeWidth={1.8}
-          />
-          <ellipse
-            cx={p.x}
-            cy={p.y - p.ry * 1.3}
-            rx={p.rx * 0.5}
-            ry={p.ry * 0.5}
-            fill="#e6dcc4"
-            stroke="#c9a25e"
-            strokeWidth={1.6}
-          />
-        </>
-      ) : (
-        <>
-          <ellipse
-            cx={p.x}
-            cy={p.y}
-            rx={p.rx}
-            ry={p.ry}
-            fill="#f4ecd9"
-            stroke={K2}
-            strokeWidth={1.8}
-          />
-          <ellipse
-            cx={p.x}
-            cy={p.y}
-            rx={p.rx * 0.7}
-            ry={p.ry * 0.7}
-            fill="#ece2cb"
-            stroke="#c9a25e"
-            strokeWidth={1.6}
-          />
-        </>
-      )}
+      {/* the painted plate (2026-09-30), the same for abstain: already squashed to the table's
+          perspective (ry = 0.3 rx), so it fills the spot's box exactly */}
+      <image
+        href={SPRITES.props.plate.src}
+        x={p.x - p.rx}
+        y={p.y - p.ry}
+        width={p.rx * 2}
+        height={p.ry * 2}
+        preserveAspectRatio="none"
+      />
       {voters.map((voter, i) => {
         if (i % TOWER_CAP) return null;
         // each tower's shadow on the plate, longer for a taller tower
@@ -306,7 +268,9 @@ export function PlaceCard({ v, p, nCands, n, cast, lit, hit, lighting }: PlaceCa
   const fs = Math.max(9, ch * 0.3),
     nfs = Math.max(13, ch * 0.62);
   const nx = x + cw - 10;
-  const fits = hx + r * 1.3 + fs * 0.56 * label.length < nx - nfs * 0.75;
+  // abstain's card has no head: its word starts where the head would, so it always fits
+  const tx = ab ? x + r * 0.5 : hx + r * 1.3;
+  const fits = ab || tx + fs * 0.56 * label.length < nx - nfs * 0.75;
   const num = (k: number) => (
     <text
       x={nx}
@@ -358,16 +322,18 @@ export function PlaceCard({ v, p, nCands, n, cast, lit, hit, lighting }: PlaceCa
       ) : (
         frame
       )}
-      <ChipFace
-        x={hx}
-        y={cy}
-        r={r}
-        seat={ab ? null : seatNumber(p.c)}
-        character={ab ? undefined : cast[seatNumber(p.c) - 1]}
-      />
+      {ab ? null : (
+        <ChipFace
+          x={hx}
+          y={cy}
+          r={r}
+          seat={seatNumber(p.c)}
+          character={cast[seatNumber(p.c) - 1]}
+        />
+      )}
       {fits ? (
         <text
-          x={hx + r * 1.3}
+          x={tx}
           y={cy + fs * 0.36}
           fontFamily="var(--font-stage-sans, Outfit), system-ui, sans-serif"
           fontWeight={500}
@@ -457,7 +423,7 @@ export interface VoteTableProps {
   counted: number;
   /** The ballots in the order they are counted. */
   order: readonly Ballot[];
-  /** The plates, left to right; `abstain` for the saucer. */
+  /** The plates, left to right; `abstain` for abstain's plate. */
   candidates: readonly string[];
   /** The full tally, which sizes the towers before the chips arrive. */
   counts: Record<string, number>;

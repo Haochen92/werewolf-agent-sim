@@ -4,7 +4,7 @@
  * The ballot chip: a felt token, drawn inside the vote's SVG. Its back is plain, a stitched
  * ring and the house star, so a chip in the jar says nothing about who dropped it; its face is
  * the voter's head in a paper ring with the seat's numeral (the same face as a hung chip), or,
- * for the abstain saucer's place card, an empty dashed ring.
+ * with no seat, an empty dashed ring.
  *
  * `FlatChip` is a chip lying on a surface, seen from the house: a squashed disc with its edge
  * showing, back up (anonymous, in the jar) or face up (counted, on a plate). Numbers from the
