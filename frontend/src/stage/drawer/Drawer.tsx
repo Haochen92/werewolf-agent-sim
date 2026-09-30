@@ -218,7 +218,8 @@ export function Drawer({
       style={
         {
           left: STAGE_W - g.slotW,
-          width: g.slotW,
+          // out into the right bleed on a wide screen, as the rail on the left (SLOT_REACH)
+          width: `calc(${g.slotW}px + var(--slot-reach, 0px))`,
           '--drawer-h': `${rail ? g.railY : STAGE_H}px`,
         } as CSSProperties
       }

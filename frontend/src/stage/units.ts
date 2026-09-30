@@ -131,7 +131,18 @@ export const HUD_CHROME = {
   band: { none: 0, live: 0, replay: 59.2 } as Record<Hud, number>,
 } as const;
 
-/** The side slot's rectangle, in units, for a HUD mode (the drawer and the film share it). */
+/**
+ * How far the side slot grows past the world's right edge at most, on a screen wider than 16:9
+ * (`--slot-reach` in Stage.module.css, the bleed shown there up to this): the rail's reach for
+ * nine seats (its 310-unit target less its 192), so the wing and the pane stand alike on a
+ * phone. The slot's left edge, and so the room beside it, never move.
+ */
+export const SLOT_REACH = 118;
+
+/**
+ * The side slot's rectangle, in units, for a HUD mode (the drawer and the film share it). Its
+ * drawn width adds `var(--slot-reach)` (see SLOT_REACH).
+ */
 export function sideSlot(hud: Hud) {
   const g = geometry(hud, true);
   const x = STAGE_W - HUD_CHROME.slotInset - (g.slotW - 2 * HUD_CHROME.slotInset);

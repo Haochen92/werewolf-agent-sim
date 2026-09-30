@@ -6,6 +6,8 @@ import { beatsFor } from '../beats/beatsFor';
 import type { SceneBeat } from '../beats/types';
 import { FIXTURE_EVENTS } from '../workbench/fixture';
 import OLD from './__fixtures__/old-situations.json';
+// a real store record (memory_stores/v6_1), its composed situation and its fields, verbatim
+import REC from './__fixtures__/lesson-dimensions.json';
 import {
   asOf,
   ballotCut,
@@ -19,6 +21,8 @@ import {
   seatFile,
   shortForm,
   shownSeat,
+  situationOf,
+  tagsOf,
   tickOf,
   when,
   wordDiff,
@@ -368,5 +372,59 @@ describe('one seat’s file', () => {
     expect(openTab(fileTabs(seatFile(d1.view, 'player_1', whole)), 'precedents')).toBe(
       'notes',
     );
+  });
+});
+
+describe('the situation from the record’s fields (dimensions), else the string', () => {
+  it('reads the facets from the named fields and ticks the classes exactly', () => {
+    const s = situationOf(REC.situation, REC.dimensions);
+    expect(s.lead).toBe(REC.dimensions.situation);
+    expect(s.facets.map((f) => f.name)).toEqual([
+      'Information',
+      'Stakes',
+      'Consensus',
+      'Position',
+      'Heat',
+      'Exposure',
+      'Targets',
+      'Public vs private',
+    ]);
+    expect(s.facets.find((f) => f.key === 'heat')?.value).toBe(REC.dimensions.heat_now);
+    // info_starved and safe tick exactly; heat ("Zero.") has no class and ticks by its words
+    expect(s.exact).toEqual({ information: 'Starved', exposure: 'Safe' });
+    expect(tickOf('heat', s.facets.find((f) => f.key === 'heat')!.value)).toBeNull();
+    expect(s.notes).toEqual({ consensus: 'aligns with my read' });
+    expect(s.count).toBe('9 alive');
+    expect(tagsOf(REC.dimensions)).toBe('defensive · deceptive');
+  });
+
+  it('never parses the string when the fields are there', () => {
+    const s = situationOf('Heat: High. Information landscape: rich', {
+      situation: 'The lead.',
+      heat_now: 'Moderate, and rising.',
+      info_landscape_class: 'info_rich',
+    });
+    expect(s.lead).toBe('The lead.');
+    expect(s.facets).toEqual([
+      { key: 'heat', name: 'Heat', value: 'Moderate, and rising.' },
+    ]);
+    expect(s.exact).toEqual({ information: 'Rich' });
+  });
+
+  it('falls back to the composed string for a legacy record (null), as before', () => {
+    const s = situationOf(REC.situation, null);
+    expect(s.lead).toBe(REC.dimensions.situation);
+    expect(s.facets.map((f) => f.key)).toEqual([
+      'information',
+      'stakes',
+      'consensus',
+      'position',
+      'heat',
+      'exposure',
+      'targets',
+      'public',
+    ]);
+    expect([s.exact, s.notes, s.count]).toEqual([{}, {}, null]);
+    expect(tagsOf(null)).toBeNull();
   });
 });

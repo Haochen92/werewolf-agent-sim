@@ -8,6 +8,7 @@ import { foldEvents } from '@/game/foldEvents';
 import type { GameView } from '@/game/types';
 import type { DurableGameEvent } from '@/types/contracts';
 import { beatsFor } from '../beats/beatsFor';
+import { DIM_FACETS, parseSituation } from '../film/case-file';
 import type { SceneBeat, SceneId } from '../beats/types';
 import type { Presentation, RoomInput, TurnInput } from '../scenes/types';
 import { FIXTURE_CAST, FIXTURE_EVENTS } from './fixture';
@@ -48,6 +49,7 @@ export function workbenchFrame(
 ): WorkbenchFrame {
   // a memory-off game: the same log without what memory adds
   if (q.memoryOff) events = events.filter((e) => !MEMORY_EVENTS.has(e.type));
+  else if (q.memoryFields) events = withFields(events);
   const situations = SYNTHETIC[scene];
   if (situations && !SYNTHETIC_AFTER.has(scene))
     return syntheticFrame(situations, q, events, cast);
@@ -132,4 +134,53 @@ function syntheticFrame(
     turn: f?.turn,
     room: f?.room,
   };
+}
+
+/**
+ * The fixture's memory records with a small synthetic `dimensions` each (the fixture predates
+ * them, server 18ebf3e): the composed situation split back into its fields, and made-up but
+ * plausible classifications and tags, so the case file's field-reading path can be drawn.
+ */
+function withFields(events: readonly DurableGameEvent[]): DurableGameEvent[] {
+  const dims = (situation: string, i: number) => {
+    const s = parseSituation(situation);
+    const out: Record<string, unknown> = { situation: s.lead };
+    for (const f of s.facets) {
+      const dim = DIM_FACETS.find(([, key]) => key === f.key)?.[0];
+      if (dim) out[dim] = f.value;
+    }
+    out.info_landscape_class = /rich/i.test(String(out.information_landscape ?? ''))
+      ? 'info_rich'
+      : 'info_starved';
+    out.exposure_class = i % 2 ? 'exposed' : 'safe';
+    out.consensus_direction = [
+      'aligns_with_my_read',
+      'opposes_my_read',
+      'no_clear_direction',
+    ][i % 3];
+    out.direction = ['defensive', 'offensive', 'positional'][i % 3];
+    out.honesty = i % 2 ? 'deceptive' : 'honest';
+    out.players_alive = 9 - (i % 4);
+    return out;
+  };
+  return events.map((e) =>
+    e.type === 'memory_consulted'
+      ? {
+          ...e,
+          lessons: e.lessons.map((l, i) => ({ ...l, dimensions: dims(l.situation, i) })),
+        }
+      : e.type === 'memory_extracted'
+        ? {
+            ...e,
+            observations: e.observations.map((o, i) => ({
+              ...o,
+              dimensions: dims(o.situation, i),
+            })),
+            strategy_points: e.strategy_points.map((l, i) => ({
+              ...l,
+              dimensions: dims(l.situation, i),
+            })),
+          }
+        : e,
+  );
 }

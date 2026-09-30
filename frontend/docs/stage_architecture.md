@@ -127,6 +127,17 @@ plaque in the same material, and the count pill joins their row (beat sheet §11
 portrait interstitial) sits above the box in normal page flow. `grade` and `hud` sit outside the
 camera's box: a push-in moves the room under the grade, as under a lens.
 
+**The side slot's reach (2026-09-30).** The slot mirrors the rail on the right: the box is
+centred, so the bleed shown right of the world is `--spare` too, and `--slot-reach:
+min(var(--spare), 118px)` (`Stage.module.css`; `SLOT_REACH` in `units.ts`, the rail's reach
+for nine seats) is added to the drawer's and the case file's width (`calc(w + var(--slot-reach))`)
+and taken off the strip's dock's `right`. The slot's left edge (`sideSlot`, `slotW`) and so
+every room laid out beside it are unchanged; on a 16:9 screen the reach is 0. **The records'
+fields:** memory records on the wire carry `dimensions` (server 18ebf3e); `case-file.ts`
+`situationOf(situation, dimensions)` reads the facets and the exact classes from them and falls
+back to `parseSituation` on the string for a legacy record (beat sheet §11); the workbench's
+`memory=fields` gives the fixture's records synthetic ones (`workbench/frame.ts` `withFields`).
+
 **The seat rail (ruled 2026-09-29, pass 2 of 3; beat sheet §0).** The wing is a cork board (a
 still 192 px tile, `scripts/make-cork.mjs`, dimmed and darker towards the frame) in a walnut frame
 with a brass edge on the room's side, the seats tacked to it (a brass tack, a contact shadow) as

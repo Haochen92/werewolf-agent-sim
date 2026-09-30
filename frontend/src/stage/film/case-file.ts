@@ -252,6 +252,83 @@ export function parseSituation(text: string): { lead: string; facets: Facet[] } 
   };
 }
 
+/**
+ * A memory record's structured situation, as the wire carries it since server 18ebf3e
+ * (`dimensions` on WireLesson, WireObservation and the extracted ones): the store's fields
+ * verbatim; null for a legacy record, whose situation is only the composed string.
+ */
+export type Dimensions = { [key: string]: unknown } | null | undefined;
+
+/** The record's text facets, by their keys, in the order `compose_situation_embed` writes them. */
+export const DIM_FACETS: readonly [dim: string, key: FacetKey, name: string][] = [
+  ['information_landscape', 'information', 'Information'],
+  ['criticality_stakes', 'stakes', 'Stakes'],
+  ['consensus_text', 'consensus', 'Consensus'],
+  ['my_position', 'position', 'Position'],
+  ['heat_now', 'heat', 'Heat'],
+  ['forward_exposure', 'exposure', 'Exposure'],
+  ['target_landscape', 'targets', 'Targets'],
+  ['public_private_text', 'public', 'Public vs private'],
+];
+
+const CONSENSUS_NOTE: Record<string, string> = {
+  aligns_with_my_read: 'aligns with my read',
+  opposes_my_read: 'opposes my read',
+  no_clear_direction: 'no clear direction',
+};
+
+export interface SituationRead {
+  lead: string;
+  facets: Facet[];
+  /**
+   * Boxes ticked exactly from the record's classifications (Information from
+   * `info_landscape_class`, Exposure from `exposure_class`); a row absent here ticks by the
+   * leading-word rule on its text (`tickOf`), and Exposure is then not a row at all.
+   */
+  exact: Partial<Record<FormKey, string | null>>;
+  /** A small typed note under a facet: the consensus's direction. */
+  notes: Partial<Record<FacetKey, string>>;
+  /** One quiet typed line of the record's numbers: "9 alive · a swing vote". */
+  count: string | null;
+}
+
+const text = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
+
+/**
+ * A situation as the file sets it. With the record's `dimensions` (owner, 2026-09-30) its
+ * facets are read from the named fields, the string never parsed, and the Information and
+ * Exposure boxes are ticked from the classifications exactly; without them (an old replay) the
+ * composed string is split at its labels, as before.
+ */
+export function situationOf(situation: string, dims?: Dimensions): SituationRead {
+  if (!dims) return { ...parseSituation(situation), exact: {}, notes: {}, count: null };
+  const facets = DIM_FACETS.flatMap(([dim, key, name]) =>
+    text(dims[dim]) ? [{ key, name, value: text(dims[dim]) }] : [],
+  );
+  const exact: SituationRead['exact'] = {};
+  const info = dims.info_landscape_class;
+  if (info === 'info_starved' || info === 'info_rich')
+    exact.information = info === 'info_starved' ? 'Starved' : 'Rich';
+  const exp = dims.exposure_class;
+  if (exp === 'safe' || exp === 'exposed')
+    exact.exposure = exp === 'safe' ? 'Safe' : 'Exposed';
+  const notes: SituationRead['notes'] = {};
+  const dir = CONSENSUS_NOTE[text(dims.consensus_direction)];
+  if (dir && facets.some((f) => f.key === 'consensus')) notes.consensus = dir;
+  const alive =
+    typeof dims.players_alive === 'number' ? `${dims.players_alive} alive` : null;
+  const swing = dims.is_swing === true ? 'a swing vote' : null;
+  const count = [alive, swing].filter(Boolean).join(' · ') || null;
+  return { lead: text(dims.situation), facets, exact, notes, count };
+}
+
+/** A record's tags, "defensive · honest", from its `direction` and `honesty`; null without them. */
+export function tagsOf(dims?: Dimensions): string | null {
+  if (!dims) return null;
+  const t = [text(dims.direction), text(dims.honesty)].filter(Boolean).join(' · ');
+  return t || null;
+}
+
 /** A facet's first sentence (the whole of it when it has one). */
 export function firstSentence(s: string): string {
   const m = s.match(/^(.+?[.!?])(\s|$)/);
@@ -263,9 +340,14 @@ export function shortForm(v: string): string {
   return v.split(/[;.]/)[0].replace(/_/g, ' ').trim();
 }
 
-/** The form's rows and their boxes, in the order they are printed. */
+export type FormKey = 'heat' | 'position' | 'information' | 'exposure';
+
+/**
+ * The form's rows and their boxes, in the order they are printed. Exposure is a row only when
+ * the record classifies it (`exposure_class`); its text has no closed words to tick by.
+ */
 export const FORM: readonly {
-  key: 'heat' | 'position' | 'information';
+  key: FormKey;
   name: string;
   boxes: readonly (readonly [word: string, box: string])[];
 }[] = [
@@ -297,6 +379,14 @@ export const FORM: readonly {
       ['information-rich', 'Rich'],
     ],
   },
+  {
+    key: 'exposure',
+    name: 'Exposure',
+    boxes: [
+      ['safe', 'Safe'],
+      ['exposed', 'Exposed'],
+    ],
+  },
 ];
 
 /**
@@ -306,10 +396,7 @@ export const FORM: readonly {
  * no other box of the row: "Moderate to high" is a range, not Moderate. Anything else ticks
  * nothing and is written in pencil instead.
  */
-export function tickOf(
-  key: 'heat' | 'position' | 'information',
-  value: string,
-): string | null {
+export function tickOf(key: FormKey, value: string): string | null {
   const v = value.trim().toLowerCase().replace(/_/g, ' ');
   const short = shortForm(v);
   const row = FORM.find((r) => r.key === key)!;

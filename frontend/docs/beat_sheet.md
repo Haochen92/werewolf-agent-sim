@@ -607,7 +607,12 @@ window and its photo line stay in the narrower room. The replay's night and the 
 §9's "to reconcile"), and the case file below replaces the stand-in panels §8 and §9 describe.
 Nothing sits beside the epilogue: the ledger (the case's closing spread, in the file's paper
 since 2026-09-30, §10) comes down over it all.
-**The drawer:** 635 units wide (`slotW`), the whole height (its head 73.6 below the top, the top
+**The slot's width (2026-09-30):** on a screen wider than 16:9 the slot (the drawer and the case
+file alike) grows out past the world's right edge into the bleed, as the rail does on the left:
+by the bleed shown there, at most 118 units (the rail's reach for nine seats; `SLOT_REACH`,
+`--slot-reach`), so on a phone the wing and the pane stand alike. Its left edge, and the room
+beside it, never move; the strip's Reveal and tabs keep to its right edge (and the left row gains
+that room when the slot is closed); on a 16:9 desk nothing changes. **The drawer:** 635 units wide (`slotW`, plus that reach), the whole height (its head 73.6 below the top, the top
 strip's buttons over it), z under the strip's buttons and the epilogue's veil. It stops at the
 rail on the prompts (`day.your-turn`, `vote.your-ballot`) and for the whole of the night rooms
 (`room`, `pack`), whose chat and plate keep the band. On a phone (`data-small`) it runs full
@@ -687,7 +692,23 @@ Consensus texture, Agent exposure); none, it is shown whole. **A box is ticked o
 facet's value, lower-cased with `_` as a space, starts with the box's word as a whole word and
 names no other box of its row** (a range, "Moderate to high", is neither); otherwise the value's
 short form (to its first `;` or `.`) is written in pencil and nothing is ticked (owner: a wrong
-tick misstates what the agent believed). Findings (memory-on games, after `game_over`): the
+tick misstates what the agent believed). **From the record's fields (2026-09-30):** a memory
+record on the wire now carries `dimensions` (server 18ebf3e: the store's structured situation,
+verbatim; null for a legacy record). With them the file never parses the string: the lead is
+`situation` and the facets are the named fields (Information `information_landscape`, Stakes
+`criticality_stakes`, Consensus `consensus_text`, Position `my_position`, Heat `heat_now`,
+Exposure `forward_exposure`, Targets `target_landscape`, Public vs private
+`public_private_text`), in that order; Information is ticked from `info_landscape_class`
+exactly (Starved · Rich), and the form gains an **Exposure** row, Safe · Exposed from
+`exposure_class` exactly; Heat and Position keep the leading-word rule on their text (no class
+for them); Consensus has its direction typed small under its words ("aligns with my read" ·
+"opposes my read" · "no clear direction"); one quiet typed line gives the players alive (and
+"a swing vote" when `is_swing`). Under each lesson's action and each finding, the record's tags
+typed small, "defensive · honest" (`direction` · `honesty`); nothing without them. Without
+`dimensions` (an old replay) the string is split at its labels as before, with no Exposure row.
+The form's label column is 12 of the typewriter's characters, so "Information" never runs into
+its boxes (it was 96 px × `--legible-ui`, which the labels outgrew on a phone); on a phone each
+label sits above its boxes (and a facet's name above its words). Findings (memory-on games, after `game_over`): the
 `memory_extracted` observations for the seat's role (served games extract observations only),
 then any strategy points, "What this game taught serial killers: filed by role, not seat, so
 from every serial killer seat"; an index of numbers grouped under the phase they came from, with

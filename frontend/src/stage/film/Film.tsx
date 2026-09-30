@@ -59,7 +59,9 @@ import {
   firstSentence,
   marginNote,
   openTab,
-  parseSituation,
+  situationOf,
+  tagsOf,
+  type Dimensions,
   seatFile,
   shortForm,
   shownSeat,
@@ -171,7 +173,14 @@ export function Film({
     <aside
       ref={box}
       className={styles.folder}
-      style={{ left: r.x, top: r.y, width: r.w, height: r.h, ...INK_TEX }}
+      // the slot grows out into the right bleed on a wide screen (units.ts SLOT_REACH)
+      style={{
+        left: r.x,
+        top: r.y,
+        width: `calc(${r.w}px + var(--slot-reach, 0px))`,
+        height: r.h,
+        ...INK_TEX,
+      }}
       data-film={file ? 'file' : docket!.kind}
       data-file-seat={shown ?? undefined}
       data-wide={wide || undefined}
@@ -743,8 +752,9 @@ function Precedents({ file, n }: { file: SeatFile; n: number }) {
       <div className={`${styles.prec} ${l.verdict === 'not_relevant' ? styles.dim : ''}`}>
         <p className={styles.cap}>The lesson, from a past game</p>
         <p>{seatify(l.action)}</p>
+        <Tags dims={l.dimensions} />
       </div>
-      <Situation key={l.n} text={l.situation} label="Written for" />
+      <Situation key={l.n} text={l.situation} label="Written for" dims={l.dimensions} />
     </>
   );
 }
@@ -759,25 +769,36 @@ function Situation({
   text,
   label,
   folded = false,
+  dims,
 }: {
   text: string;
   label: string;
   folded?: boolean;
+  /** The record's structured fields: read from them when present, the string otherwise. */
+  dims?: Dimensions;
 }) {
   const [full, setFull] = useState(false);
   const [form, setForm] = useState<boolean | null>(null);
   const small = useSmall();
-  const sit = parseSituation(seatify(text));
+  const read = situationOf(text, dims);
+  const sit = {
+    ...read,
+    lead: seatify(read.lead),
+    facets: read.facets.map((f) => ({ ...f, value: seatify(f.value) })),
+  };
   const rows = FORM.flatMap((row) => {
     const f = sit.facets.find((x) => x.key === row.key);
-    if (!f) return [];
-    const tick = tickOf(row.key, f.value);
+    const exact = sit.exact[row.key];
+    // Exposure is a row only with the record's class; the others need their text
+    if (row.key === 'exposure' ? exact === undefined : !f) return [];
+    const value = f?.value ?? '';
+    const tick = exact !== undefined ? exact : tickOf(row.key, value);
     // the full wording, when it says more than the ticked word or the pencilled short form
-    const said = tick ? row.boxes.find(([, b]) => b === tick)![0] : shortForm(f.value);
-    const more = bare(f.value) !== bare(said);
-    return [{ ...row, value: f.value, tick, more }];
+    const said = tick ? row.boxes.find(([, b]) => b === tick)![0] : shortForm(value);
+    const more = !!value && bare(value) !== bare(said);
+    return [{ ...row, value, tick, more }];
   });
-  const rest = sit.facets.filter((f) => !FORM.some((r) => r.key === f.key));
+  const rest = sit.facets.filter((f) => !rows.some((r) => r.key === f.key));
   const formOpen = form ?? !(small.small || folded);
   return (
     <div ref={small.ref}>
@@ -800,9 +821,11 @@ function Situation({
           </button>
           {formOpen
             ? rows.map((row) => (
-                <div key={row.key} className={styles.frow}>
-                  <span className={styles.fl}>{row.name}</span>
-                  <span className={styles.boxes}>
+                <div key={row.key} className={styles.frow} data-form-row={row.key}>
+                  <span className={styles.fl} data-form-label>
+                    {row.name}
+                  </span>
+                  <span className={styles.boxes} data-form-boxes>
                     {row.boxes.map(([, box]) => (
                       <span
                         key={box}
@@ -814,7 +837,7 @@ function Situation({
                         {box}
                       </span>
                     ))}
-                    {row.tick ? null : (
+                    {row.tick || !row.value ? null : (
                       <span className={styles.pword}>{shortForm(row.value)}</span>
                     )}
                   </span>
@@ -831,11 +854,17 @@ function Situation({
           {rest.map((f, k) => (
             <div key={k}>
               <dt>{f.name}</dt>
-              <dd>{full ? f.value : firstSentence(f.value)}</dd>
+              <dd>
+                {full ? f.value : firstSentence(f.value)}
+                {sit.notes[f.key] ? (
+                  <span className={styles.dnote}>{sit.notes[f.key]}</span>
+                ) : null}
+              </dd>
             </div>
           ))}
         </dl>
       ) : null}
+      {sit.count ? <p className={styles.dcount}>{sit.count}</p> : null}
       {sit.facets.length ? (
         <button type="button" className={styles.more} onClick={() => setFull((x) => !x)}>
           {full ? 'Show less' : 'Show the full wording'}
@@ -945,7 +974,12 @@ function Findings({ file }: { file: SeatFile }) {
           <p className={styles.cap}>
             {label(k)} · {PHASE_NAME[cur.phase] ?? cur.phase}
           </p>
-          <Situation text={cur.o.situation} label="The situation" folded />
+          <Situation
+            text={cur.o.situation}
+            label="The situation"
+            folded
+            dims={cur.o.dimensions}
+          />
           <div className={styles.reason}>
             <span
               className={`${styles.stamp} ${styles.vstamp} ${styles[`t-${verdictKind(cur.o.net_verdict)}`]}`}
@@ -957,6 +991,7 @@ function Findings({ file }: { file: SeatFile }) {
             <p className={styles.fbody}>{cap(seatify(cur.o.approach))}</p>
             <p className={`${styles.cap} ${styles.gap}`}>How it turned out</p>
             <p className={styles.fbody}>{cap(seatify(stripVerdict(cur.o.outcome)))}</p>
+            <Tags dims={cur.o.dimensions} />
           </div>
         </div>
       ) : (
@@ -967,12 +1002,24 @@ function Findings({ file }: { file: SeatFile }) {
           <div className={styles.prec}>
             <p className={styles.cap}>The lesson kept</p>
             <p>{seatify(cur.l.action)}</p>
+            <Tags dims={cur.l.dimensions} />
           </div>
-          <Situation text={cur.l.situation} label="Written for" folded />
+          <Situation
+            text={cur.l.situation}
+            label="Written for"
+            folded
+            dims={cur.l.dimensions}
+          />
         </div>
       )}
     </>
   );
+}
+
+/** A record's tags under its action, "defensive · honest" (typed, small); nothing without them. */
+function Tags({ dims }: { dims?: Dimensions }) {
+  const t = tagsOf(dims);
+  return t ? <p className={styles.tags}>{t}</p> : null;
 }
 
 const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);

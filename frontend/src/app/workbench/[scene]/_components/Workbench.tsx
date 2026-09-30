@@ -275,9 +275,14 @@ export function Workbench({ scene }: { scene: string }) {
         />
         <Seg
           label="memory"
-          options={['on', 'off'] as const}
-          value={q.memoryOff ? 'off' : 'on'}
-          onChange={(m) => go({ memoryOff: m === 'off' || undefined })}
+          options={['on', 'off', 'fields'] as const}
+          value={q.memoryOff ? 'off' : q.memoryFields ? 'fields' : 'on'}
+          onChange={(m) =>
+            go({
+              memoryOff: m === 'off' || undefined,
+              memoryFields: m === 'fields' || undefined,
+            })
+          }
         />
         <Seg
           label="hud"

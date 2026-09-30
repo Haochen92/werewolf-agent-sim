@@ -10,6 +10,10 @@
   --stage-scale: 0;
   /* how much of the bleed shows left of the world, in units (Stage.tsx): the seat rail's room */
   --spare: 0px;
+  /* and right of it (the box is centred, so the same): the side slot grows out into it as the
+     rail does on the left, up to the rail's own reach for nine seats (310 − 192 units; units.ts
+     SLOT_REACH), so the wing and the pane stand alike on a phone (2026-09-30) */
+  --slot-reach: min(var(--spare), 118px);
 }
 
 /* fit: 'contain' — the box sits in a wrapper that fills the parent and takes whichever of

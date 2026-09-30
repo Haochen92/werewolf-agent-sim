@@ -13,7 +13,9 @@
  * `live=1`, written only when on, cuts the beats as a game in play would (the thinking seat
  * at the stand between turns), for any viewer; without it the beats are the replay's.
  * `memory=off`, written only when set, draws the fixture as a memory-off game (its
- * `memory_consulted` and `memory_extracted` taken out), for the case file without precedents.
+ * `memory_consulted` and `memory_extracted` taken out), for the case file without precedents;
+ * `memory=fields` draws it with a small synthetic `dimensions` on every memory record (the
+ * fixture predates them), for the case file read from a record's fields.
  * `frame=iphone14|iphone15max|pixel8|WxH`, written only when set (`fill`, the default, fills
  * the window), draws the stage in a box of a landscape phone's size in CSS px, to judge the
  * stage at phone scale on a desktop screen. A preset carries the device's name; `WxH`
@@ -35,6 +37,8 @@ export interface WorkbenchQuery {
   live?: boolean;
   /** The fixture without its memory events; absent = as played (memory on). */
   memoryOff?: boolean;
+  /** The fixture's memory records with synthetic `dimensions` (they have none). */
+  memoryFields?: boolean;
   /** Draw the stage in a phone-sized box; absent = fill the window. */
   frame?: DeviceFrame;
 }
@@ -123,6 +127,7 @@ export function parseQuery(params: URLSearchParams): WorkbenchQuery {
     animate: params.get('animate') === '1',
     ...(params.get('live') === '1' ? { live: true } : {}),
     ...(params.get('memory') === 'off' ? { memoryOff: true } : {}),
+    ...(params.get('memory') === 'fields' ? { memoryFields: true } : {}),
     ...(frame ? { frame } : {}),
   };
 }
@@ -142,6 +147,7 @@ export function writeQuery(q: WorkbenchQuery, rest?: URLSearchParams): string {
   out.set('animate', q.animate ? '1' : '0');
   if (q.live) out.set('live', '1');
   if (q.memoryOff) out.set('memory', 'off');
+  else if (q.memoryFields) out.set('memory', 'fields');
   if (q.frame) out.set('frame', q.frame.id);
   rest?.forEach((v, k) => {
     if (!(QUERY_KEYS as readonly string[]).includes(k)) out.append(k, v);

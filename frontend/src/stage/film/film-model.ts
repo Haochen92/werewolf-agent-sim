@@ -30,6 +30,8 @@ export interface FilmLesson {
   action: string;
   verdict: Verdict | null;
   why: string | null;
+  /** The record's structured situation (case-file.ts `Dimensions`); null for a legacy record. */
+  dimensions: { [key: string]: unknown } | null;
 }
 
 export interface FilmNote {
@@ -121,6 +123,7 @@ export function lessonsOf(consult: MemoryConsulted | undefined): FilmLesson[] {
       action: l.action,
       verdict: v?.verdict ?? null,
       why: v?.why ?? null,
+      dimensions: l.dimensions ?? null,
     };
   });
 }

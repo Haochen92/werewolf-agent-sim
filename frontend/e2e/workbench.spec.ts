@@ -449,6 +449,8 @@ const FRAMES: [name: string, path: string][] = [
     'frame-568-stand-plate-file',
     'day?beat=55&viewer=xray&hud=replay&slot=film&frame=568x320',
   ],
+  // the transcript on a phone: the pane grows out into the right bleed as the wing does left
+  ['frame-iphone14-drawer', 'day?beat=16&hud=replay&slot=drawer&frame=iphone14'],
   // the epilogue's closing spread on a phone: the rows scroll in place
   ['frame-iphone14-epilogue', 'over?beat=5&frame=iphone14'],
 ];
@@ -499,4 +501,43 @@ test('the phone frame: a speech is drawn at a phone’s body size', async ({ pag
     return parseFloat(getComputedStyle(el).fontSize) * scale;
   });
   expect(font).toBeGreaterThanOrEqual(16);
+});
+
+/**
+ * A lesson read from its record's fields (`dimensions`, server 18ebf3e; the workbench's
+ * `memory=fields` gives the fixture's records synthetic ones): the form's Information and
+ * Exposure ticked from the classifications, the consensus's direction under its words, the
+ * tags under the action. And the form's labels never run into their boxes, on the desk or a
+ * small phone (a label sits above its boxes there).
+ */
+test('slot: a lesson read from its record’s fields, the form’s labels clear of its boxes', async ({
+  page,
+}) => {
+  for (const frame of ['', '&frame=667x375']) {
+    await page.goto(
+      `/workbench/day?beat=16&viewer=xray&hud=replay&slot=film&memory=fields${frame}&animate=0&strip=0`,
+      { waitUntil: 'networkidle' },
+    );
+    await page.getByRole('tab', { name: /^Lessons/ }).click();
+    const sheet = page.locator('[data-sheet="precedents"]');
+    const toggle = sheet.getByRole('button', { name: /Situation on file/ });
+    if ((await toggle.getAttribute('aria-expanded')) === 'false') await toggle.click();
+    await expect(sheet.getByText('Exposure', { exact: true }).first()).toBeVisible();
+    for (const row of await sheet.locator('[data-form-row]').all()) {
+      const label = (await row.locator('[data-form-label]').boundingBox())!;
+      const boxes = (await row.locator('[data-form-boxes]').boundingBox())!;
+      const beside = label.y + label.height > boxes.y + 1;
+      if (beside) expect(label.x + label.width).toBeLessThanOrEqual(boxes.x + 0.5);
+    }
+    if (!frame) {
+      await expect(
+        sheet.getByText(/^(defensive|offensive|positional) · (honest|deceptive)$/).first(),
+      ).toBeVisible();
+      await toggle.evaluate((el) => el.scrollIntoView({ block: 'start' }));
+      await settle(page);
+      await expect(page.locator('[data-film]')).toHaveScreenshot(
+        'slot-day-file-lesson-fields.png',
+      );
+    }
+  }
 });

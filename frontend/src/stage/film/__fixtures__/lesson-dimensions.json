@@ -1,0 +1,28 @@
+{
+  "source": "memory_stores/v6_1/strategy_points.json, key 2bba2cf8-f28b-4048-aede-10c94110e213 (value.situation and value.dimensions, verbatim)",
+  "situation": "It's the opening discussion on Day 1 in an information-starved environment. Everyone is making cautious statements, and your primary goal as a key power role is to survive the first night. Information landscape: There is no hard evidence. All reads are speculative and based on initial statements. Stakes: With 9 players alive and 4 net eliminations needed for wolf parity, the game is not yet critical. Your personal survival through the first night is more important than making a strong contribution to the discussion. Consensus: The village is aligned on waiting for information and avoiding early, baseless accusations. My position: You are positioning yourself firmly within the majority consensus to blend in. Heat: Zero. It's Day 1 and you haven't done anything to attract suspicion. Forward exposure: This move minimizes exposure. By saying almost nothing of substance, you offer no hooks for suspicion and are less likely to be perceived as a high-value target by evils. Target landscape: The 'targets' are personas to adopt: a competent-but-exposed player vs. a passive-but-safe one. The choice is to actively avoid standing out among a sea of unknown players. Public vs private: Privately, you know your survival is the village's highest priority. Publicly, you are projecting the image of a generic, cautious villager with no special insight or importance.",
+  "action": "On Day 1, when your survival as a power role is critical, minimize your verbal footprint. Make one brief, agreeable statement that echoes the room's cautious mood without adding any strategic suggestions. Your goal is to appear as a non-threatening, follow-the-crowd villager to avoid being singled out by evils hunting for power roles.",
+  "dimensions": {
+    "action": "On Day 1, when your survival as a power role is critical, minimize your verbal footprint. Make one brief, agreeable statement that echoes the room's cautious mood without adding any strategic suggestions. Your goal is to appear as a non-threatening, follow-the-crowd villager to avoid being singled out by evils hunting for power roles.",
+    "action_phase": "day_discussion",
+    "consensus_direction": "aligns_with_my_read",
+    "consensus_text": "The village is aligned on waiting for information and avoiding early, baseless accusations.",
+    "criticality_stakes": "With 9 players alive and 4 net eliminations needed for wolf parity, the game is not yet critical. Your personal survival through the first night is more important than making a strong contribution to the discussion.",
+    "direction": "defensive",
+    "distance_to_parity": 4,
+    "divergence_sign": "contradicts",
+    "exposure_class": "safe",
+    "forward_exposure": "This move minimizes exposure. By saying almost nothing of substance, you offer no hooks for suspicion and are less likely to be perceived as a high-value target by evils.",
+    "heat_now": "Zero. It's Day 1 and you haven't done anything to attract suspicion.",
+    "honesty": "deceptive",
+    "info_landscape_class": "info_starved",
+    "information_landscape": "There is no hard evidence. All reads are speculative and based on initial statements.",
+    "is_swing": false,
+    "my_position": "You are positioning yourself firmly within the majority consensus to blend in.",
+    "perspective": "healer",
+    "players_alive": 9,
+    "public_private_text": "Privately, you know your survival is the village's highest priority. Publicly, you are projecting the image of a generic, cautious villager with no special insight or importance.",
+    "situation": "It's the opening discussion on Day 1 in an information-starved environment. Everyone is making cautious statements, and your primary goal as a key power role is to survive the first night.",
+    "target_landscape": "The 'targets' are personas to adopt: a competent-but-exposed player vs. a passive-but-safe one. The choice is to actively avoid standing out among a sea of unknown players."
+  }
+}

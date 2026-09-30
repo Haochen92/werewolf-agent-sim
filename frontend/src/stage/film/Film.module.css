@@ -833,9 +833,14 @@
 .formT i {
   font-style: normal;
 }
+/* the label column is measured in the typewriter's own characters, so the longest label
+   ("Information", "Position") always fits beside its boxes: the labels grow with --legible on
+   a phone and a column in px (it was 96 × --legible-ui) let them run into the boxes */
 .frow {
   display: grid;
-  grid-template-columns: calc(96px * var(--legible-ui)) 1fr;
+  font-family: var(--f-type);
+  font-size: var(--label);
+  grid-template-columns: 12ch 1fr;
   gap: 3.2px 8px;
   align-items: baseline;
   padding: 8px 0;
@@ -901,7 +906,10 @@
 }
 .fields > div {
   display: grid;
-  grid-template-columns: calc(96px * var(--legible-ui)) 1fr;
+  /* the same column as the form's, in the typewriter's characters */
+  font-family: var(--f-type);
+  font-size: var(--label);
+  grid-template-columns: 12ch 1fr;
   gap: 8px;
   padding: 8px 0;
   border-top: 1px solid var(--rule);
@@ -1236,4 +1244,32 @@ button.row:hover {
   font-size: calc(var(--label) * 0.9);
   line-height: 1.45;
   color: var(--type-mut);
+}
+
+/* the record's fields (2026-09-30): the consensus's direction under its words, the record's
+   numbers in one quiet line, and its tags under an action, all typed small */
+.dnote,
+.dcount,
+.tags {
+  display: block;
+  font-family: var(--f-type);
+  font-size: calc(var(--label) * 0.9);
+  color: var(--type-mut);
+  letter-spacing: 0.02em;
+}
+.dnote {
+  margin-top: 3.2px;
+}
+.dcount {
+  margin: 4.8px 0 0;
+}
+.tags {
+  margin: 6.4px 0 0;
+}
+/* on a phone the sheet is too narrow for a label column: each label sits above its boxes or
+   its words */
+:global([data-small]) .frow,
+:global([data-small]) .fields > div {
+  grid-template-columns: 1fr;
+  gap: 3.2px;
 }

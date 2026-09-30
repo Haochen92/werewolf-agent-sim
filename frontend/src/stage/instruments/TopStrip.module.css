@@ -87,7 +87,8 @@
   position: absolute;
   /* over the side slot's head (the drawer runs up under the strip), under the epilogue's sheet */
   z-index: 4;
-  right: 12.8px;
+  /* at the side slot's right edge, which grows out into the bleed on a wide screen */
+  right: calc(12.8px - var(--slot-reach, 0px));
   top: 14.4px;
   display: flex;
   align-items: stretch;

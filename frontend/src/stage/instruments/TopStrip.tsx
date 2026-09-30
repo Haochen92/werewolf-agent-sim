@@ -85,7 +85,8 @@ export function TopStrip({
         className={styles.left}
         style={{
           left: g.wingN + 22.4,
-          maxWidth: `calc(${g.room - 2 * 22.4}px - ${reserve}px * var(--legible-ui))`,
+          // the right's plaques stand out in the bleed on a wide screen: the row gains that much
+          maxWidth: `calc(${g.room - 2 * 22.4}px - ${reserve}px * var(--legible-ui) + ${side ? '0px' : 'var(--slot-reach, 0px)'})`,
         }}
       >
         {out ? (
