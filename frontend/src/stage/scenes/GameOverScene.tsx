@@ -89,7 +89,15 @@ export function GameOverScene(props: SceneProps) {
   );
 }
 
-function OverBeat({ view, beat, me, presentation, slot: slotInput, wayOut }: SceneProps) {
+function OverBeat({
+  view,
+  beat,
+  me,
+  presentation,
+  slot: slotInput,
+  turn,
+  wayOut,
+}: SceneProps) {
   const { hud, xray, animate, cast } = presentation;
   const k = useMotionScale();
   const step = STEP[beat.id] ?? 0;
@@ -296,7 +304,9 @@ function OverBeat({ view, beat, me, presentation, slot: slotInput, wayOut }: Sce
         />
         {step !== 5 ? (
           <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
-            {myRole ? <CardButton role={myRole} gone={myDead} /> : null}
+            {myRole ? (
+              <CardButton role={myRole} gone={myDead} onOpen={turn?.onCard} />
+            ) : null}
             {step === 0 && ended === 'lynch' ? (
               <Notice title="The vote’s end" arrive={animate} delay={0.7}>
                 {endingLine(view)}

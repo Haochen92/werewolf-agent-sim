@@ -5,11 +5,12 @@
  * of `event: game` frames, the seat's entitled events only, with the catch-up boundary set by
  * the status's `last_seq` (at or below it is history, above it is news).
  *
- * Three pictures (mid-day catch-up at rest; seat 7's speaking turn with the dock; the curtain
- * after game over), and tests that are not pictures: a new game's deal plays from its first
- * beat; on the speaking turn the seat's agent drafts its line (steered or not, and with the
- * seat notebook when "Use my seat notes" is ticked) into the box to be edited, Send sends it,
- * and a line typed by hand sends as it is.
+ * Four pictures (mid-day catch-up at rest; seat 7's speaking turn with the dock, and with the
+ * seat's card opened over it; the curtain after game over), and tests that are not pictures: a
+ * new game's deal plays from its first beat; "your card" opens and closes, and stays open as
+ * the beats go by; on the speaking turn the seat's agent drafts its line (steered or not, and
+ * with the seat notebook when "Use my seat notes" is ticked) into the box to be edited, Send
+ * sends it, and a line typed by hand sends as it is.
  *
  * The mocked stream ends when its body does, so the browser reads it as a dropped connection;
  * the theatre's "Reconnecting…" note is hidden in the pictures for that reason.
@@ -306,6 +307,55 @@ test('live: seat 7’s turn to speak, the dock at the foot', async ({ page }) =>
   ).toBeVisible();
   await settle(page);
   await expect(page).toHaveScreenshot('live-your-turn-d3.png');
+});
+
+test('live: “your card” opens the seat’s card over the stage; a tap or Esc closes it', async ({
+  page,
+}) => {
+  await page.clock.install({ time: T0 });
+  await mockApi(page, {
+    status: status(200, { pending_seats: [ME], pending_input: true }),
+    stream: [...upTo(200), yourTurn(201)],
+  });
+  await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'day.your-turn');
+  // as the turn's golden: stop the clock a few seconds in (a wide margin: see above)
+  const now = await page.evaluate(() => Date.now());
+  await page.clock.pauseAt(Math.max(T0 + 10_000, now + 3000));
+  const card = page.locator('[data-overlay="card"]');
+  const yours = page.getByRole('button', { name: 'Your card: Vigilante' });
+  await yours.click();
+  await expect(card.getByRole('dialog', { name: 'Vigilante' })).toBeVisible();
+  // let the dock and the card settle
+  await page.clock.runFor(3000);
+  await settle(page);
+  await expect(page).toHaveScreenshot('live-your-card-d3.png');
+  // a tap anywhere closes it; so does Esc
+  await page.mouse.click(1400, 450);
+  await expect(card).toHaveCount(0);
+  await yours.click();
+  await expect(card).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(card).toHaveCount(0);
+});
+
+test('live: the card stays open while the beats go by', async ({ page }) => {
+  await page.clock.install({ time: T0 });
+  // a new game's deal, played from its first beat: seat 7's card is the third
+  await mockApi(page, { status: status(12), stream: upTo(12) });
+  await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'deal.table-seated');
+  await page.clock.runFor(3100);
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'deal.cards-dealt');
+  await page.clock.runFor(3100);
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'deal.your-card');
+  await page.getByRole('button', { name: 'Your card: Vigilante' }).click();
+  const card = page.locator('[data-overlay="card"]');
+  await expect(card).toBeVisible();
+  // the deal plays on under it, into the day: the card is still open
+  await page.clock.runFor(6100);
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'deal.day-begins');
+  await expect(card).toBeVisible();
 });
 
 test('live: a steered draft lands in the box; Send sends the line', async ({ page }) => {

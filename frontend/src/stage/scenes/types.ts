@@ -170,6 +170,12 @@ export interface TurnInput {
   /** The role card opened over the room. */
   cardOpen?: boolean;
   /**
+   * Live: "your card" at the foot of the stage was pressed. The container opens the seat's card
+   * over the stage and keeps it open across beats (scenes remount); without it the button is
+   * only drawn.
+   */
+  onCard?: () => void;
+  /**
    * A night act or pack vote is in (the server takes one answer and refuses a second): sent
    * from here ('you'), taken by the seat's agent ('agent'), or refused as already answered
    * ('closed'). Unset: not sent, or the send failed and may be tried again.

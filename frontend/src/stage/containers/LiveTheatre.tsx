@@ -3,9 +3,11 @@
 /**
  * The live theatre: a game being played, on the stage, as it happens (beat sheet §12, handoff
  * §6). This is the one place the live stage's state lives: which beat is on the stage, what
- * the right side holds, the drawer's filters and the film's tab, and the seated human's open
- * turn (the line being written, the drafts, what was sent). Everything below it is drawn from
- * props; the game itself comes from the session store, which the stream fills.
+ * the right side holds, the drawer's filters and the film's tab, the seat's own card opened over
+ * the stage from "your card" (it stays open while beats go by, until a tap or Esc), and the
+ * seated human's open turn (the line being written, the drafts, what was sent). Everything
+ * below it is drawn from props; the game itself comes from the session store, which the stream
+ * fills.
  *
  * There is no transport. Beats play as events arrive: each new beat animates in and holds for
  * its time, a queue of them drains at fast speed, and history (a refresh, the page opened
@@ -49,8 +51,11 @@ import type { SceneBeat } from '../beats/types';
 import { useDrawerFilters } from '../drawer/use-drawer-filters';
 import { StageMotion } from '../motion';
 import { notebookForAgent, useNotebook } from '../notebook';
+import { CardOverlay } from '../instruments/FramedCard';
 import { draftRequest } from '../instruments/turn-dock';
+import { seatNumber } from '../roles';
 import { SCENES } from '../scenes';
+import { capsNote } from '../scenes/ShelfRoomScene';
 import { StationScene } from '../scenes/StationScene';
 import { CURTAIN, DEPART, stationBeat, stationBeatId } from '../scenes/station';
 import type {
@@ -61,7 +66,9 @@ import type {
   SlotInput,
   TurnInput,
 } from '../scenes/types';
+import { sideOpen } from '../slot';
 import { Layer, Stage } from '../Stage';
+import { geometry } from '../units';
 import { createFoldCache } from './fold-cache';
 import {
   actSent,
@@ -333,9 +340,10 @@ export function LiveTheatre({
   // --- the stage -----------------------------------------------------------------
   const rolesLanded = Object.keys(view.xray.roles).length > 0;
   const openPrompt = open ? pendingSeq : null;
+  const byAgent = turn.byAgent;
   const ctx = useMemo(
-    (): LiveCtx => ({ me, rolesLanded, openPrompt }),
-    [me, rolesLanded, openPrompt],
+    (): LiveCtx => ({ me, rolesLanded, openPrompt, byAgent }),
+    [me, rolesLanded, openPrompt, byAgent],
   );
   const ctxRef = useRef(ctx);
   useEffect(() => {
@@ -365,6 +373,14 @@ export function LiveTheatre({
 
   // the side slot's state that outlives a beat; the game's end is the X-ray's switch here
   const drawer = useDrawerFilters();
+  // the seat's own card, opened over the stage from "your card": it stays open as beats go by
+  const [cardOpen, setCardOpen] = useState(false);
+  useEffect(() => {
+    if (!cardOpen) return;
+    const esc = (e: KeyboardEvent) => e.key === 'Escape' && setCardOpen(false);
+    window.addEventListener('keydown', esc);
+    return () => window.removeEventListener('keydown', esc);
+  }, [cardOpen]);
   const [filmTab, setFilmTab] = useState('notes');
   const [fileSeat, setFileSeat] = useState<FileChoice | null>(null);
   const ahead = useMemo(
@@ -444,16 +460,29 @@ export function LiveTheatre({
     beat?.id === 'day.speech' && beat.subject === me && me !== null
       ? turn.byAgent.includes(requestBefore(events, beat.seq, me) ?? -1)
       : false;
+  // the kill decided on the night this seat was asked for its vote: how that vote went in
+  const votedTonight =
+    beat?.id === 'pack.decided' &&
+    events.some(
+      (e) =>
+        e.seq === turn.seq &&
+        e.type === 'input_request' &&
+        e.action_kind === 'wolf_vote' &&
+        e.day === beat.day,
+    );
   const turnInput: TurnInput | undefined = beat
     ? {
         clock: beat.liveOnly && beat.seq === pendingSeq ? clock : null,
         // the night room's plate seals once its act is in, and reopens if the send failed
         ...(beat.liveOnly && beat.seq === turn.seq ? actSent(turn) : {}),
+        ...(votedTonight ? { sent: actSent(turn).sent } : {}),
         progress: progressFor(beat, pacing),
         agentSpoke,
         dock,
+        onCard: () => setCardOpen(true),
       }
     : undefined;
+  const myRole = me ? (view.me.role?.role ?? null) : null;
 
   // the curtain is down and the deal's first beat is on the stage under it: lift it
   useEffect(() => {
@@ -548,6 +577,16 @@ export function LiveTheatre({
             <p className={styles.error} role="alert">
               {turn.error}
             </p>
+          ) : null}
+          {liveOn && cardOpen && me && myRole ? (
+            <CardOverlay
+              role={myRole}
+              seat={seatNumber(me)}
+              u={geometry('live', sideOpen(presentation)).u * 1.6}
+              alone={myRole === 'wolf' && !view.packRoster.some((s) => s !== me)}
+              note={capsNote(view.me.role?.bullets ?? null)}
+              onClose={() => setCardOpen(false)}
+            />
           ) : null}
           {connection === 'reconnecting' ? (
             <p className={styles.connection} data-connection>

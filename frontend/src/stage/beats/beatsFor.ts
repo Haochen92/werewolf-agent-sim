@@ -128,6 +128,10 @@ export function beatsFor(
     }
   }
   const isWolf = me !== null && wolves.has(me);
+  // The X-ray's night (its hub, a spoke per actor, the whole) is the replay's telling. A game in
+  // play keeps the nights it played (the lobby, the pack's chat) when game over turns the X-ray
+  // on, so the last night is not told again between the viewer's own night and the morning.
+  const xrayNight = options.xray && !options.live;
 
   const out: SceneBeat[] = [];
   const shows = (b: Draft): boolean => {
@@ -254,7 +258,7 @@ export function beatsFor(
           pub('vote.opens', e, next, HOLD.open, { chapter: { kind: 'vote', n: e.day } });
         } else if (e.phase === 'night') {
           nightStart = next;
-          pub(options.xray ? 'rnight.hub' : 'night.hub', e, next, HOLD.shutter, {
+          pub(xrayNight ? 'rnight.hub' : 'night.hub', e, next, HOLD.shutter, {
             chapter: { kind: 'night', n: e.day },
           });
         }
@@ -360,7 +364,7 @@ export function beatsFor(
             holdMs: HOLD.card,
             aqua: true,
           });
-        } else if (!options.xray) {
+        } else if (!xrayNight) {
           push({
             id: 'pack.line',
             day: e.day,
@@ -374,7 +378,7 @@ export function beatsFor(
         break;
 
       case 'wolf_kill_decided':
-        if (!options.xray) {
+        if (!xrayNight) {
           push({
             id: 'pack.decided',
             day: e.day,
@@ -388,7 +392,7 @@ export function beatsFor(
         break;
 
       case 'night_result': {
-        if (options.xray && nightStart >= 0) {
+        if (xrayNight && nightStart >= 0) {
           const branches = nightBranches(events, nightStart, i, wolves);
           branches.forEach((b, rank) => {
             const held = !b.target && b.lines.length === 0;

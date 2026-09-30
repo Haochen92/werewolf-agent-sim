@@ -129,7 +129,7 @@ export function MorningScene(props: SceneProps) {
   );
 }
 
-function MorningBeat({ view, beat, me, presentation, slot: slotInput }: SceneProps) {
+function MorningBeat({ view, beat, me, presentation, slot: slotInput, turn }: SceneProps) {
   const { hud, xray, animate, cast } = presentation;
   const id = beat.id;
   const dayBegins = id === 'morning.day-begins';
@@ -405,7 +405,7 @@ function MorningBeat({ view, beat, me, presentation, slot: slotInput }: ScenePro
         />
         {!dayBegins ? (
           <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
-            {myCard ? <CardButton role={myCard} /> : null}
+            {myCard ? <CardButton role={myCard} onOpen={turn?.onCard} /> : null}
             <MorningWords
               id={id}
               report={report}

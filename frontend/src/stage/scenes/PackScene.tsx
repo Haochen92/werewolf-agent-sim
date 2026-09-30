@@ -14,7 +14,9 @@
  * - A tap on the empty room closes the card and clears a vote not yet sent.
  *
  * Arrived at, it is all simply there; played forward, the newest line fades in and the teeth
- * that arrived with the beat land.
+ * that arrived with the beat land. The room itself (its photos) arrives once, on the first beat
+ * the stage comes in on; the pack's beats after it play in the room. A tooth the seat put in
+ * from here (its vote, then the kill decided) is already in and does not land again.
  */
 import { useState, type ReactNode } from 'react';
 import type { NightView } from '@/game/types';
@@ -68,18 +70,22 @@ export function packEntries(night: NightView | null | undefined): PackEntry[] {
 
 export function PackScene(props: SceneProps) {
   const t = props.turn;
+  const at = `${props.beat.id}:${props.beat.seq}`;
+  // the beat the stage came into the room on: the photos arrive with it, and not again
+  const [entry] = useState(at);
   return (
     <StageMotion speed={props.presentation.motion}>
       <Pack
-        key={`${props.beat.id}:${props.beat.seq}:${props.me}:${t?.chosen ?? ''}:${t?.cardOpen ? 1 : 0}`}
+        key={`${at}:${props.me}:${t?.chosen ?? ''}:${t?.cardOpen ? 1 : 0}`}
         {...props}
+        entering={at === entry}
       />
       <SideSlot {...props} />
     </StageMotion>
   );
 }
 
-function Pack(props: SceneProps) {
+function Pack({ entering, ...props }: SceneProps & { entering: boolean }) {
   const { view, beat, me, presentation, onAct, onSay, turn } = props;
   const { animate, cast, hud } = presentation;
   const g = geometry(hud, false);
@@ -128,8 +134,10 @@ function Pack(props: SceneProps) {
     );
   };
   const arrived = animate ? TOOTH_DELAY : false;
+  // the kill decided after this seat voted from here: its own tooth is already in
+  const votedHere = decided !== null && turn?.sent === 'you';
   add(mateVote, 'left', beat.id === 'pack.vote' || decided ? arrived : false);
-  add(myVote, 'right', mine ? 0 : decided ? arrived : false);
+  add(myVote, 'right', mine ? 0 : decided && !votedHere ? arrived : false);
 
   const entries = packEntries(night);
   if (mine && !votes.some((v) => v.wolf === me) && me)
@@ -146,6 +154,7 @@ function Pack(props: SceneProps) {
   return (
     <NightRoom
       {...props}
+      presentation={{ ...presentation, animate: animate && entering }}
       role="wolf"
       alone={alone}
       photos={photos}

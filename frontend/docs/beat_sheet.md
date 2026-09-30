@@ -856,6 +856,10 @@ plays). News plays: a beat animates in and holds `holdFor(beat, normal | fast)`,
 on when it runs out; a beat with no hold waits (a prompt while it is open, the epilogue until
 "Close the sheet", the curtain). The list is recut on every event and on game over (X-ray on for
 everyone: `view.winner !== null`); the stage is carried by which beat it was on, then by seq.
+The live cut keeps the nights it played under the X-ray (no `rnight.*`: the last night is not
+told again between the seat's own night and the morning); the seat's own pack line, the log's
+copy of what it wrote at its prompt, lands still (an agent's line for it plays); closing the
+epilogue's sheet lands on the curtain still (2026-09-30).
 **The prompt:** open iff the status lists the seat (or the request is newer than the status),
 this client has not answered it, its deadline has not passed, the seat is alive and the game is
 not over. While open and further down the queue, the beat on stage is cut short once and the rest

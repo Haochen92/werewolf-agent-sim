@@ -20,6 +20,8 @@
  * - The dock never waits for the stage. When the seated human's prompt is open further down the
  *   queue, the beat on the stage is cut short once (unless it is the deal) and the rest drain
  *   fast up to it.
+ * - What the seat lived through at its own prompt (its line to the pack) lands still when the
+ *   log's copy of it arrives, and the stage moves on: it is not played a second time.
  * - The winners' stand waits for the roles, which arrive just after `game_over`.
  *
  * The beat list is cut again every time the log grows (and when `game_over` turns the X-ray
@@ -40,6 +42,8 @@ import { carryAcross, holdFor, still, type Cursor } from './transport';
 export interface LiveCtx extends LiveContext {
   /** The seq of the seated human's request while it is theirs to answer, else null. */
   openPrompt: number | null;
+  /** The requests the seat's agent answered for the seated human (`TurnState.byAgent`). */
+  byAgent?: readonly number[];
 }
 
 export interface LiveState {
@@ -184,6 +188,23 @@ function promptAhead(state: LiveState, ctx: LiveCtx): boolean {
   );
 }
 
+/**
+ * The seat's own line to the pack, written on this screen at its prompt (`pack.your-line`): the
+ * seat lived it as it wrote it, so the log's copy of it lands still instead of playing again. A
+ * line the seat's agent said for it (the prompt ran out, or was handed over) is news, and plays.
+ */
+function livedThrough(beats: readonly SceneBeat[], index: number, ctx: LiveCtx): boolean {
+  const beat = beats[index];
+  if (beat?.id !== 'pack.line' || !ctx.me || beat.subject !== ctx.me) return false;
+  for (let i = index - 1; i >= 0; i--) {
+    const b = beats[i];
+    if (b.id === 'pack.line' && b.subject === ctx.me) return false; // that prompt's line came already
+    if (b.id === 'pack.your-line' && b.seat === ctx.me)
+      return !(ctx.byAgent ?? []).includes(b.seq);
+  }
+  return false;
+}
+
 function play(state: LiveState, index: number, speed: 'normal' | 'fast'): LiveState {
   const beat = state.beats[index];
   return {
@@ -210,6 +231,12 @@ function advance(state: LiveState, ctx: LiveCtx): LiveState {
   if (current && waitsHere(current, ctx)) return state;
   const next = nextLiveStep(state.beats, state.cursor.index, ctx);
   if (!next) return state;
+  // what the seat already lived through lands still, and the stage moves on
+  if (livedThrough(state.beats, next.index, ctx))
+    return advance(
+      { ...state, cursor: still(next.index), holding: false, step: state.step + 1 },
+      ctx,
+    );
   // the deal came all at once as history, but plays at its own pace (unless my turn is waiting)
   const dealt = state.beats[next.index].end <= state.dealEnd && !promptAhead(state, ctx);
   return play(state, next.index, dealt ? 'normal' : next.speed);
@@ -257,7 +284,11 @@ export function liveReducer(state: LiveState, action: LiveAction): LiveState {
     case 'dismiss': {
       if (state.beats[state.cursor.index]?.id !== 'over.epilogue') return state;
       const next = nextLiveStep(state.beats, state.cursor.index, action.ctx);
-      return next ? play(state, next.index, 'normal') : state;
+      // the curtain was down under the sheet (it is usually up before the memory lands): it is
+      // there when the sheet is closed, not played again
+      return next
+        ? { ...state, cursor: still(next.index), holding: false, step: state.step + 1 }
+        : state;
     }
     case 'transcript':
       // the film only exists with the X-ray, so read the slot as the X-ray would

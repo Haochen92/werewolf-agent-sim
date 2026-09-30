@@ -65,7 +65,7 @@ export function liftCard(g: StageGeometry) {
   return { x: g.cx - w / 2, top: g.railY - h, w, h };
 }
 
-function LynchBeat({ view, beat, me, presentation, slot: slotInput }: SceneProps) {
+function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: SceneProps) {
   const { hud, xray, animate, cast } = presentation;
   const k = useMotionScale();
   const id = beat.id,
@@ -300,7 +300,9 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput }: SceneProps
           {...stripButtons(presentation, slotInput)}
         />
         <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
-          {myCard ? <CardButton role={myCard} gone={mine && step >= 2} /> : null}
+          {myCard ? (
+            <CardButton role={myCard} gone={mine && step >= 2} onOpen={turn?.onCard} />
+          ) : null}
           {step < 2 ? (
             <Notice
               chip={mine ? null : character}

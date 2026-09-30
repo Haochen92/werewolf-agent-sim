@@ -365,6 +365,7 @@ function VoteBeat({
             <CardButton
               role={myCard}
               gone={view.dead.some((d) => d.player === me && d.player !== lynched)}
+              onOpen={turn?.onCard}
             />
           ) : null}
           {prompt && me && pending ? (

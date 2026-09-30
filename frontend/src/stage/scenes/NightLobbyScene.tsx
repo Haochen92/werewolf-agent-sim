@@ -249,7 +249,7 @@ function LobbyBeat({
         ) : null}
         {myRole ? (
           <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
-            <CardButton role={myRole} />
+            <CardButton role={myRole} onOpen={turn?.onCard} />
             <Notice
               title={myRole === 'villager' ? 'You sleep' : 'Night falls'}
               arrive={animate}

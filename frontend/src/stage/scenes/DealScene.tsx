@@ -65,7 +65,7 @@ export function DealScene(props: SceneProps) {
   );
 }
 
-function DealBeat({ view, beat, me, presentation, slot: slotInput }: SceneProps) {
+function DealBeat({ view, beat, me, presentation, slot: slotInput, turn }: SceneProps) {
   const { hud, xray, animate, cast } = presentation;
   const id = beat.id;
   const at = (b: SceneBeat['id']) => ORDER.indexOf(id) >= ORDER.indexOf(b);
@@ -267,7 +267,9 @@ function DealBeat({ view, beat, me, presentation, slot: slotInput }: SceneProps)
           {...stripButtons(presentation, slotInput)}
         />
         <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
-          {myRole && at('deal.your-card') && !day ? <CardButton role={myRole} /> : null}
+          {myRole && at('deal.your-card') && !day ? (
+            <CardButton role={myRole} onOpen={turn?.onCard} />
+          ) : null}
           <DealWords
             id={id}
             view={view}

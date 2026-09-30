@@ -97,15 +97,21 @@ class Session {
   state: LiveState = initialLiveState();
   events: DurableGameEvent[] = [];
   live = new Set<number>();
-  ctx = ctx();
+  ctx: LiveCtx;
+  /** Checks every move of the stage, when set (see `Watch`). */
+  watch?: Watch;
   /** The status's last seq at connect: set, the theatre's deal rule is on (`historyLanding`). */
   connectedAt: number | null = null;
   /** The newest seq a reconnect caught up on (the store's `caughtUpTo`). */
   caughtUpTo = 0;
 
+  constructor(readonly me = ME) {
+    this.ctx = ctx({ me });
+  }
+
   beats(): SceneBeat[] {
     const xray = this.events.some((e) => e.type === 'game_over');
-    return beatsFor(this.events, { xray, me: ME, live: true });
+    return beatsFor(this.events, { xray, me: this.me, live: true });
   }
   recut() {
     const end = historyEnd(this.events, this.live, this.caughtUpTo);
@@ -119,6 +125,7 @@ class Session {
           : historyLanding(this.events, end, this.connectedAt),
       ctx: this.ctx,
     });
+    this.watch?.see(this.state);
     return this;
   }
   /** Events arriving: as history (catch-up) or as news, one recut per event (one SSE frame each). */
@@ -137,14 +144,53 @@ class Session {
       step: this.state.step,
       ctx: this.ctx,
     });
+    this.watch?.see(this.state);
+    return this;
+  }
+  /** Time passes: every hold runs out. */
+  drain() {
+    while (this.state.holding) this.held();
     return this;
   }
   set(over: Partial<LiveCtx>) {
-    this.ctx = ctx(over);
+    this.ctx = ctx({ me: this.me, ...over });
     return this.recut();
   }
   get beat() {
     return this.state.beats[this.state.cursor.index];
+  }
+}
+
+/** A beat's identity: the same beat in any cut of the list. */
+const idOf = (b: SceneBeat | undefined): string =>
+  b
+    ? [b.id, b.seq, b.page?.index, b.subject, b.ordinal, b.spoke?.actor, b.spoke?.step]
+        .map((x) => x ?? '')
+        .join('|')
+    : '';
+
+/**
+ * Watches the stage as it moves: a beat played (animated in) is never one played before, and a
+ * change that leaves the stage on the beat it is on does not play that beat again.
+ */
+class Watch {
+  played: string[] = [];
+  /** Where the stage landed without playing (history, or what the seat lived through). */
+  landed: string[] = [];
+  private on = '';
+  private step = 0;
+  see(state: LiveState) {
+    const id = idOf(state.beats[state.cursor.index]);
+    if (id === this.on) {
+      expect(state.step, `${id} played again`).toBe(this.step);
+    } else if (state.step !== this.step) {
+      if (state.cursor.animate) {
+        expect(this.played, `${id} played twice`).not.toContain(id);
+        this.played.push(id);
+      } else this.landed.push(id);
+    }
+    this.on = id;
+    this.step = state.step;
   }
 }
 
@@ -427,6 +473,185 @@ describe('the live stage: game over', () => {
     const s = new Session().arrive(everything, false);
     expect(s.beat.id).toBe('over.curtain');
     expect(s.state.cursor.animate).toBe(false);
+  });
+});
+
+/** What a seat receives while the game runs, as the server entitles it (any seat, not only 7). */
+function entitled(me: string) {
+  const wolf = ALL.some((e) => e.type === 'role_assigned' && e.player === me && !!e.pack);
+  return (e: DurableGameEvent) => {
+    if (OBSERVER.has(e.type)) return false;
+    if (FACTION.has(e.type)) return wolf;
+    if (SEAT.has(e.type)) return 'player' in e && e.player === me;
+    return true;
+  };
+}
+
+describe('the live stage: a beat plays once', () => {
+  const gameOver = ALL.find((e) => e.type === 'game_over')!;
+  const extracted = ALL.find((e) => e.type === 'memory_extracted')!;
+
+  // an AI seat's line lands, then the next seat's turn while the stage is still reading it: a
+  // new cut of the list for every event, and the same beat on the stage through each of them
+  it.each([
+    ['seat 7', 'player_7'],
+    ['a wolf', 'player_3'],
+  ])('fed the game one event at a time (%s), no beat is played twice', (_, me) => {
+    const mine = ALL.filter(entitled(me));
+    // how many holds run out between two events: none (the stage falls behind), a few, all
+    for (const holds of [0, 1, 3, Infinity]) {
+      const s = new Session(me);
+      s.watch = new Watch();
+      s.arrive(
+        mine.filter((e) => e.seq <= 12),
+        false,
+      );
+      for (const e of mine.filter((e) => e.seq > 12 && e.seq < gameOver.seq)) {
+        s.arrive([e], true);
+        for (let h = 0; h < holds && s.state.holding; h++) s.held();
+      }
+      // the ending: game over as news, the withheld backlog, the roles, then the memory
+      s.arrive([gameOver], true);
+      s.arrive(
+        ALL.filter((e) => e.seq < gameOver.seq && !entitled(me)(e)),
+        false,
+      );
+      s.set({ rolesLanded: true }).drain();
+      s.arrive([extracted], true).drain();
+      s.state = liveReducer(s.state, { type: 'dismiss', ctx: s.ctx });
+      s.watch.see(s.state);
+      expect(s.beat.id).toBe('over.curtain');
+      // every speech was told, page by page, once
+      const pages = s.state.beats.filter((b) => b.id === 'day.speech' && b.seq > 12);
+      expect(s.watch.played.filter((id) => id.startsWith('day.speech|'))).toHaveLength(
+        pages.length,
+      );
+    }
+  });
+});
+
+describe('the live stage: what the seat lived through', () => {
+  // the fixture with room between its seqs, so a seated human's requests can be put in
+  const SPACED = ALL.map((e) => ({ ...e, seq: e.seq * 10 }) as DurableGameEvent);
+  const over = SPACED.find((e) => e.type === 'game_over')!;
+
+  /**
+   * A seated human's night, as it happens: the log up to `from` as history, then each event
+   * as news, the stage reading everything between two events. A request opens the prompt and
+   * is answered as soon as the stage is on it (by the seat's agent, for `agent`); `to` is where
+   * the news stops, or, past game over, the ending runs to its curtain. With `burst`, the last
+   * answer's response is still out while the rest of the night lands at once, the stage not yet
+   * moved: the kill, the morning, game over (which closes the prompt).
+   */
+  function night(
+    me: string,
+    from: number,
+    to: number,
+    asks: { seq: number; kind: InputRequest['action_kind']; agent?: boolean }[],
+    burst = false,
+  ) {
+    const s = new Session(me);
+    s.watch = new Watch();
+    const mine = SPACED.filter(entitled(me));
+    s.arrive(
+      mine.filter((e) => e.seq <= from),
+      false,
+    );
+    const news = [
+      ...mine.filter((e) => e.seq > from && e.seq <= Math.min(to, over.seq)),
+      ...asks.map((a) => ({ ...request(a.seq, a.kind), player: me })),
+    ].sort((a, b) => a.seq - b.seq);
+    const byAgent: number[] = [];
+    let waiting = false;
+    for (const e of news) {
+      const ask = asks.find((a) => a.seq === e.seq);
+      if (ask) {
+        s.ctx = ctx({ me, openPrompt: ask.seq, byAgent });
+        s.arrive([{ ...e, day: s.events.at(-1)!.day }], true).drain();
+        expect(s.beat.seq).toBe(ask.seq); // the stage is on the prompt, waiting
+        if (ask.agent) byAgent.push(ask.seq);
+        if (burst && ask === asks.at(-1)) waiting = true;
+        else s.set({ openPrompt: null, byAgent: [...byAgent] });
+      } else {
+        // game over closes a prompt still open: nothing is asked any more
+        if (e.type === 'game_over') s.ctx = ctx({ me, byAgent });
+        s.arrive([e], true);
+        if (!waiting) s.drain();
+      }
+    }
+    if (to >= over.seq) {
+      s.arrive(
+        SPACED.filter((e) => e.seq < over.seq && !entitled(me)(e)),
+        false,
+      );
+      s.set({ rolesLanded: true, byAgent }).drain();
+    }
+    return s;
+  }
+  const idsOf = (ids: string[], scene: string) =>
+    ids
+      .filter((id) => id.startsWith(`${scene}.`))
+      .map((id) => id.split('|').slice(0, 2).join(' '));
+
+  it('a wolf’s own lines to the pack land still; the packmate’s lines and the kill play, once', () => {
+    // night 2, seat 3 at the keyboard: two rounds of talk, then the vote
+    const s = night('player_3', 1200, 1590, [
+      { seq: 1215, kind: 'wolf_discuss' },
+      { seq: 1425, kind: 'wolf_discuss' },
+      { seq: 1515, kind: 'wolf_vote' },
+    ]);
+    expect(idsOf(s.watch!.played, 'pack')).toEqual([
+      'pack.your-line 1215',
+      'pack.line 1400', // seat 8
+      'pack.your-line 1425',
+      'pack.line 1460', // seat 8
+      'pack.vote 1515',
+      'pack.decided 1540',
+    ]);
+    // the seat's own lines came as the log's copies of what it wrote: at rest, then on
+    const news = s.watch!.landed.filter((id) => Number(id.split('|')[1]) > 1200);
+    expect(idsOf(news, 'pack')).toEqual(['pack.line 1220', 'pack.line 1430']);
+    expect(s.beat.id).toBe('morning.day-begins');
+  });
+
+  it('a line the seat’s agent said for it is news: it plays', () => {
+    const s = night('player_3', 1200, 1300, [
+      { seq: 1215, kind: 'wolf_discuss', agent: true },
+    ]);
+    expect(idsOf(s.watch!.played, 'pack')).toEqual([
+      'pack.your-line 1215',
+      'pack.line 1220',
+    ]);
+  });
+
+  it('the last night: after the kill vote the morning and the ending play; the pack’s night is not told again', () => {
+    // night 4, seat 8 hunting alone: the vote, then the kill, the morning and game over at once
+    const s = night('player_8', 3870, over.seq, [{ seq: 3935, kind: 'wolf_vote' }], true);
+    // game over turned the X-ray on, but a game in play keeps the nights it played
+    expect(s.state.beats.some((b) => b.scene === 'rnight')).toBe(false);
+    const after = s.watch!.played.map((id) => id.split('|')[0]);
+    expect(after.slice(after.indexOf('pack.vote'), after.indexOf('pack.vote') + 3)).toEqual(
+      ['pack.vote', 'pack.decided', 'morning.shutter-down'],
+    );
+    expect(after.filter((id) => id.startsWith('pack.')).length).toBe(2);
+    expect(s.beat.id).toBe('over.curtain');
+  });
+
+  it('the last night in a room of one’s own: the act plays once, then the morning', () => {
+    // night 4, seat 9 the healer at the keyboard
+    const s = night(
+      'player_9',
+      3870,
+      over.seq,
+      [{ seq: 3885, kind: 'healer_target' }],
+      true,
+    );
+    expect(s.state.beats.some((b) => b.scene === 'rnight')).toBe(false);
+    const after = s.watch!.played.map((id) => id.split('|')[0]);
+    expect(
+      after.slice(after.indexOf('room.opens'), after.indexOf('room.opens') + 2),
+    ).toEqual(['room.opens', 'morning.shutter-down']);
+    expect(s.beat.id).toBe('over.curtain');
   });
 });
 

@@ -52,13 +52,18 @@ import type { SceneProps } from './types';
 /** How long the arriving puppet stands thinking before it speaks, after the rise (seconds). */
 const THINK = 0.6;
 
-/** A turn's key: a new beat is a new turn, except a line (or a pass) after its own thinking. */
+/**
+ * A turn's key: a new beat is a new turn, except a line (or a pass) after its own thinking (or
+ * after the seat's own turn at the dock), and the same beat again: its next page, or the live
+ * list cut afresh as an event arrives (a new copy of the beat, not a new beat).
+ */
 const turnKey = (b: SceneProps['beat']) => `${b.id}:${b.seq}`;
-const continues = (was: SceneProps['beat'], now: SceneProps['beat']) =>
-  was.id === 'day.turn-thinking' &&
-  (now.id === 'day.speech' || now.id === 'day.pass') &&
-  now.subject === was.subject &&
-  now.day === was.day;
+export const continues = (was: SceneProps['beat'], now: SceneProps['beat']) =>
+  turnKey(was) === turnKey(now) ||
+  ((was.id === 'day.turn-thinking' || was.id === 'day.your-turn') &&
+    (now.id === 'day.speech' || now.id === 'day.pass') &&
+    now.subject === (was.subject ?? was.seat) &&
+    now.day === was.day);
 
 export function DayScene(props: SceneProps) {
   // live, the thinking puppet is already at the stand when its line arrives: it does not rise again
@@ -245,7 +250,9 @@ function DayTurn({
         ) : null}
         {dock ? (
           <NoticeZone hud={hud} aside={side}>
-            {view.me.role ? <CardButton role={view.me.role.role} /> : null}
+            {view.me.role ? (
+              <CardButton role={view.me.role.role} onOpen={turn?.onCard} />
+            ) : null}
             <TurnDock
               dock={dock}
               left={turn?.clock ? countText(turn.clock.remainingMs) : null}
