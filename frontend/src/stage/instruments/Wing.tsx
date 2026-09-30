@@ -45,7 +45,7 @@ import {
 import { SPRITES, type Character } from '@/assets/manifest';
 import { ChipSprite } from '../cast/ChipSprite';
 import { guessChoices, useNotebook, type Notebook } from '../notebook';
-import { ROLE_NAME, factionOf } from '../roles';
+import { ROLE_NAME, factionOf, type KnownRole } from '../roles';
 import { RAIL_GAP, RAIL_PAD, RAIL_STRIP, railLayout } from './rail-layout';
 import { Sigil } from './Sigil';
 import styles from './Wing.module.css';
@@ -67,6 +67,12 @@ export interface WingTileProps {
   you?: boolean;
   /** A packmate, as a wolf sees it: the red edge. */
   pack?: boolean;
+  /**
+   * What this seat already knows of that one from its own view (`knownRoles`): the band in
+   * brass, "Your pack" or "Seen · Wolf", with the role's sigil. A dead seat's role, "You" and
+   * the X-ray's truth take the band first.
+   */
+  known?: KnownRole;
   /** The X-ray night's lamp: this seat acts tonight. */
   lamp?: boolean;
   /**
@@ -219,6 +225,7 @@ function WingTile({
   dim,
   you,
   pack,
+  known,
   lamp,
   glow,
   word,
@@ -232,8 +239,9 @@ function WingTile({
   const role = dead ? dead.role : (truth ?? null);
   const faction = factionOf(role);
   const band = you ? 'You' : role ? (ROLE_NAME[role] ?? role) : null;
+  const knew = !band && known ? known : null;
   const cls = [
-    band ? styles.banded : '',
+    band || knew ? styles.banded : '',
     styles.tile,
     faction ? styles[`c-${faction}`] : '',
     !character ? styles.empty : '',
@@ -297,6 +305,29 @@ function WingTile({
       </span>
       {band ? (
         <span className={`${styles.band} ${you ? styles.youBand : ''}`}>{band}</span>
+      ) : null}
+      {knew ? (
+        <span
+          className={`${styles.band} ${styles.knownBand} ${(ROLE_NAME[knew.role] ?? knew.role).length > 6 ? styles.knownLong : ''}`}
+          data-known={knew.how}
+          title={
+            knew.how === 'pack'
+              ? 'Your pack'
+              : `Seen · ${ROLE_NAME[knew.role] ?? knew.role}`
+          }
+        >
+          <Sigil role={knew.role} variant="felt" small />
+          <span className={styles.knownWords}>
+            {knew.how === 'pack' ? (
+              'Your pack'
+            ) : (
+              <>
+                <span className={styles.knownSeen}>Seen · </span>
+                {ROLE_NAME[knew.role] ?? knew.role}
+              </>
+            )}
+          </span>
+        </span>
       ) : null}
       {read?.onRead ? <span className={styles.breathe} aria-hidden="true" /> : null}
       {glow === 'acted' ? <span className={styles.glow} aria-hidden="true" /> : null}

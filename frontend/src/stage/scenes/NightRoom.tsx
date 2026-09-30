@@ -32,7 +32,7 @@ import { Wing } from '../instruments/Wing';
 import { useMotionScale } from '../motion';
 import { notebookGame } from '../notebook';
 import { photoTwine, roomChoice, roomLight, roomPlan } from '../paint/compartment';
-import { seatNumber } from '../roles';
+import { knownRoles, seatNumber } from '../roles';
 import { sideOpen, stripButtons } from '../slot';
 import { BLEED, geometry } from '../units';
 import type { SceneProps } from './types';
@@ -140,6 +140,7 @@ export function NightRoom({
   const plan = roomPlan({ room, hud, side, n });
   const chosenIndex = lit ? photos.indexOf(lit) : -1;
   const deadBySeat = new Map(view.dead.map((d) => [d.player, d]));
+  const known = knownRoles(me, view.me);
   const myRole = view.me.role?.role ?? role;
 
   return (
@@ -258,6 +259,7 @@ export function NightRoom({
               truth,
               you: seat === me,
               pack: seat !== me && pack.includes(seat),
+              known: known.get(seat),
               lit: wing?.lit?.(seat),
               lamp: wing?.lamp?.(seat),
               word: wing?.word?.(seat),

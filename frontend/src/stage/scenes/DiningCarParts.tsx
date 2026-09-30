@@ -24,7 +24,7 @@ import { diningCarPlan } from '../paint/dining-car';
 import { drape } from '../paint/drape';
 import { light, type Pool } from '../paint/light';
 import type { Phase } from '../paint/materials';
-import { ROLE_NAME, factionOf, seatNumber } from '../roles';
+import { ROLE_NAME, factionOf, knownRoles, seatNumber } from '../roles';
 import { BLEED, STAGE_H, STAGE_W, type Hud, type StageGeometry } from '../units';
 
 /**
@@ -136,6 +136,11 @@ export interface WingSeatOptions {
   word?: (seat: string) => 'visit' | 'seen' | undefined;
   pack?: (seat: string) => boolean;
   /**
+   * What the seat knows from its own view (its pack, its investigations) bands the cards
+   * (`knownRoles`); false: not yet, at a beat before it has been told (the deal).
+   */
+  known?: boolean;
+  /**
    * A tap on a seat's card opens its case file (`fileTap` in slot.ts), or, at the night hub,
    * whatever the hub makes of it; null or absent: the cards are only shown.
    */
@@ -164,6 +169,7 @@ export function TableWing({
   opts?: WingSeatOptions;
 }) {
   const deadBySeat = new Map(view.dead.map((d) => [d.player, d]));
+  const known = opts.known === false ? null : knownRoles(me, view.me);
   return (
     <>
       {hud === 'replay' ? (
@@ -186,6 +192,7 @@ export function TableWing({
             glow: opts.glow?.(seat),
             word: opts.word?.(seat),
             pack: opts.pack?.(seat),
+            known: known?.get(seat),
             you: seat === me,
             file: opts.file
               ? {

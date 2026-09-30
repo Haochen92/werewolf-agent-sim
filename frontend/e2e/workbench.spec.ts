@@ -442,6 +442,46 @@ test('the seat rail: notes and a suspect for a seated player, none in a replay',
 });
 
 /**
+ * What a seat already knows shows on its wing, from its own view only: a wolf's pack mate
+ * ("Your pack"), the seat its investigation read ("Seen · Villager"), live and in a replay seen
+ * as that seat; a villager and a spectator have nothing to band.
+ */
+test('the seat rail: a seat’s own knowledge bands its cards, and nobody else’s', async ({
+  page,
+}) => {
+  const known = page.locator('[data-layer="hud"] [data-known]');
+  const day2 = (viewer: string, more = '') =>
+    page.goto(`/workbench/day?beat=3&viewer=${viewer}&animate=0&strip=0${more}`, {
+      waitUntil: 'networkidle',
+    });
+  // the wolf at seat 3: its pack mate, seat 8
+  await day2('seat:player_3');
+  await expect(known).toHaveCount(1);
+  await expect(
+    page.locator('[data-layer="hud"] [data-seat="8"] [data-known="pack"]'),
+  ).toHaveText('Your pack');
+  await expect(page.locator('[data-layer="hud"] [data-seat] img')).toHaveCount(9);
+  await settle(page);
+  await expect(page).toHaveScreenshot('wing-known-wolf-d2.png');
+  for (const more of ['&live=1', '&hud=replay']) {
+    await day2('seat:player_3', more);
+    await expect(known).toHaveCount(1);
+  }
+  // the investigator at seat 4 read seat 1 on the first night
+  await day2('seat:player_4');
+  await expect(known).toHaveCount(1);
+  await expect(
+    page.locator('[data-layer="hud"] [data-seat="1"] [data-known="seen"]'),
+  ).toHaveAttribute('title', 'Seen · Villager');
+  // a villager, a spectator and the X-ray's observer: nothing of their own to band
+  for (const viewer of ['seat:player_5', 'spect', 'xray']) {
+    await day2(viewer);
+    await expect(page.locator('[data-layer="hud"] [data-seat]')).toHaveCount(9);
+    await expect(known).toHaveCount(0);
+  }
+});
+
+/**
  * The bleed (stage_architecture.md §3): on a phone held sideways (19.5:9) the picture carries
  * on past the 16:9 world's sides instead of leaving bars. The count's push-in in the car, with
  * the lantern's wall continuing on the right; the night lobby with the wing on the left.

@@ -258,6 +258,8 @@ function DealBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scene
           opts={{
             truth: (seat) => (xray ? known(seat) : null),
             pack: (seat) => packShown && seat === mate,
+            // the pack's band waits for the beat that shows the pack
+            known: at('deal.your-pack'),
           }}
         />
         <TopStrip

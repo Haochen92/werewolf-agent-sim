@@ -41,7 +41,7 @@ import { diningCarPlan } from '../paint/dining-car';
 import { drape } from '../paint/drape';
 import { light } from '../paint/light';
 import { shutter } from '../paint/window';
-import { ROLE_NAME, factionOf, seatNumber } from '../roles';
+import { ROLE_NAME, factionOf, knownRoles, seatNumber } from '../roles';
 import { bandNarrows, sideOpen, stripButtons } from '../slot';
 import { WOOD } from '../textures';
 import { BLEED, geometry } from '../units';
@@ -126,6 +126,7 @@ function DayTurn({
   const character = n ? cast[n - 1] : null;
   const role = speaker ? view.xray.roles[speaker] : undefined;
   const deadBySeat = new Map(view.dead.map((d) => [d.player, d]));
+  const known = knownRoles(me, view.me);
 
   // the X-ray's reads on the wing: the speaker's reads of the table when it spoke; a tap on a
   // seat opens its card, level with the tile
@@ -216,6 +217,7 @@ function DayTurn({
               truth: xray ? (view.xray.roles[seat] ?? null) : null,
               lit: seat === speaker,
               you: seat === me,
+              known: known.get(seat),
               read: rd
                 ? {
                     sure: rd.confidence === 'high',
