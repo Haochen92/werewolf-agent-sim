@@ -113,6 +113,11 @@ host key, the seat token). Nobody has a seat yet: the i-th person to board stand
 place and wears `castForGame(gameId)[i]`, with no numeral; seats are dealt at the start and the
 empty places go to agents. Never in the replay or the workbench fixture (the workbench draws it from
 synthetic rooms, `SYNTHETIC.station`).
+**The loading still (2026-09-30)**, not a beat: while `/games/[id]` or `/replays/[id]` loads (its
+`loading.tsx`, the page's Suspense fallback, and the game page while its status or a rejoin is on
+its way) the page is this platform empty (`scenes/StationStill.tsx`: the train, the lamps, the sign
+"The Ninth Express", the rail's empty cards, the snow; no people, plates or chips), its ledge
+fading in after 0.3 s with "Boarding…", "Reclaiming your seat…" or "Rewinding the reels…".
 
 | # | Beat | Anchor | Sees | Stage | Slot | Hold |
 |---|---|---|---|---|---|---|

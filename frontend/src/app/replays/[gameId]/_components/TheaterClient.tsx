@@ -3,7 +3,8 @@
 /**
  * The replay page: fetches the finished game's whole log once and hands it to the replay
  * theatre, which plays it on the stage beat by beat (src/stage/containers/ReplayTheatre).
- * The page itself only waits for the log and says so if it cannot have it.
+ * The page itself only waits for the log (on the empty platform, `StationStill`) and says so
+ * if it cannot have it.
  *
  * Nothing here gates on entitlement. The archive serves every tier for a finished game, so
  * the X-ray is an arrangement of what is shown, never a question of what the viewer may know.
@@ -22,6 +23,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { ApiError } from '@/lib/request';
 import { OrientationGuard } from '@/stage/OrientationGuard';
 import { ReplayTheatre } from '@/stage/containers/ReplayTheatre';
+import { StationStill } from '@/stage/scenes/StationStill';
 import classes from './TheaterClient.module.css';
 
 const HOME = { href: '/', label: 'Home' };
@@ -34,7 +36,8 @@ export function TheaterClient({ gameId }: { gameId: string }) {
     staleTime: Infinity, // a finished replay is immutable
   });
 
-  if (isPending) return <p className={classes.meta}>Loading replay…</p>;
+  if (isPending)
+    return <StationStill what="replay" hud="replay" line="Rewinding the reels…" />;
   if (error) {
     const missing = error instanceof ApiError && error.status === 404;
     return (

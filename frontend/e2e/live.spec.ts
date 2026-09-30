@@ -196,6 +196,32 @@ test('live: a refresh mid-day lands still on the latest beat', async ({ page }) 
   await expect(page).toHaveScreenshot('live-catch-up-d3.png');
 });
 
+test('live: while the status is on its way the page is the empty platform, then the stage', async ({
+  page,
+}) => {
+  await mockApi(page, { status: status(200), stream: upTo(200) });
+  // hold the status poll until the picture is taken
+  let release = () => {};
+  const held = new Promise<void>((r) => (release = r));
+  await page.route(`**/games/${GAME}`, async (route) => {
+    if (!isApi(route)) return route.fallback();
+    await held;
+    await route.fallback();
+  });
+  await page.goto(`/games/${GAME}`);
+  const still = page.locator('[data-loading="game"]');
+  await expect(still).toBeVisible();
+  await expect(still.getByRole('status')).toHaveText('Boarding…');
+  // nobody on it: no people, no chips, no plates, no ledge buttons
+  await expect(still.locator('[data-aboard], [data-tag], [data-ledge]')).toHaveCount(0);
+  await expect(still.locator('[data-layer="hud"] img')).toHaveCount(0);
+  await settle(page);
+  await expect(page).toHaveScreenshot('loading-game.png');
+  release();
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'day.speech');
+  await expect(still).toHaveCount(0);
+});
+
 test('live: a new game’s first connection plays the deal from its first beat', async ({
   page,
 }) => {

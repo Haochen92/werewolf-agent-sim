@@ -75,6 +75,30 @@ async function seek(page: Page, i: number) {
   await expect(theatre(page)).toHaveAttribute('data-beat-index', String(i));
 }
 
+test('replay: while the log is on its way the page is the empty platform, then the stage', async ({
+  page,
+}) => {
+  await mockApi(page);
+  // hold the log until the picture is taken
+  let release = () => {};
+  const held = new Promise<void>((r) => (release = r));
+  await page.route(`**/replays/${GAME}*`, async (route) => {
+    const req = route.request();
+    if (req.resourceType() === 'document' || req.headers()['rsc']) return route.fallback();
+    await held;
+    await route.fallback();
+  });
+  await page.goto(`/replays/${GAME}`);
+  const still = page.locator('[data-loading="replay"]');
+  await expect(still).toBeVisible();
+  await expect(still.getByRole('status')).toHaveText('Rewinding the reels…');
+  await settle(page);
+  await expect(page).toHaveScreenshot('loading-replay.png');
+  release();
+  await expect(page.locator('[data-transport]')).toBeVisible();
+  await expect(still).toHaveCount(0);
+});
+
 test('replay: the first beat', async ({ page }) => {
   await open(page);
   await expect(page.locator('[data-layer="hud"] [data-seat]')).toHaveCount(9);

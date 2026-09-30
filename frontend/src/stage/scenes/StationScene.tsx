@@ -597,8 +597,11 @@ function HangTags({
   );
 }
 
-/** The snow over the platform: the mockup's flakes, falling for as long as anyone stares. */
-function Snow({ still }: { still: boolean }) {
+/**
+ * The snow over the platform: the mockup's flakes, falling for as long as anyone stares. The
+ * loading still (`StationStill`) lets the same snow fall.
+ */
+export function Snow({ still }: { still: boolean }) {
   return (
     <div
       className={still ? `${styles.snow} ${styles.still}` : styles.snow}

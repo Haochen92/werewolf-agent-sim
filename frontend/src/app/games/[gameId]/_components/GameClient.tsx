@@ -20,7 +20,8 @@
  * (`StationScene`), mounted in the same guard and the same `LiveTheatre` as the game, so when
  * the host departs the train pulls out and the deal begins on the one stage, nothing
  * remounted. The one step allowed upright is the boarding pass (the name a newcomer boards
- * with), a page before the guard; a full or locked room, or "Just watch", skips it.
+ * with), a page before the guard; a full or locked room, or "Just watch", skips it. While the
+ * status or a rejoin is on its way, the page is the empty platform (`StationStill`).
  */
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -35,6 +36,7 @@ import { KeyNeededCard } from '@/components/KeyNeededCard';
 import { TerminalError } from '@/components/TerminalError';
 import { OrientationGuard } from '@/stage/OrientationGuard';
 import { LiveTheatre } from '@/stage/containers/LiveTheatre';
+import { StationStill } from '@/stage/scenes/StationStill';
 import { BoardingPass } from './BoardingPass';
 import classes from './GameClient.module.css';
 import { useRoom } from './useRoom';
@@ -82,9 +84,10 @@ export function GameClient({ gameId }: { gameId: string }) {
       .finally(() => setRejoining(false));
   }, [gameId, status, statusError, rejoinTried, queryClient]);
 
+  // the wait: the empty platform the room or the game takes over (beat sheet §1a)
   if (isPending || rejoining) {
     return (
-      <p className={classes.meta}>{rejoining ? 'Reclaiming your seat…' : 'Joining…'}</p>
+      <StationStill what="game" line={rejoining ? 'Reclaiming your seat…' : 'Boarding…'} />
     );
   }
 

@@ -1,0 +1,18 @@
+/* The loading still fills the window, as the theatre it stands in for does: the stage
+   letterboxes inside on black. */
+.page {
+  position: fixed;
+  inset: 0;
+  background: #000;
+}
+
+/* The ledge's notice comes after a moment, so a page that mounts at once never shows it:
+   opacity only, and a fade is kept for reduced motion (it moves nothing). */
+.arrive {
+  animation: arrive 0.5s ease-out 0.3s both;
+}
+@keyframes arrive {
+  from {
+    opacity: 0;
+  }
+}
