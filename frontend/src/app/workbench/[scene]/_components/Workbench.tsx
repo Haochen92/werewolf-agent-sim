@@ -109,10 +109,14 @@ export function Workbench({ scene }: { scene: string }) {
     };
   }, [gpu]);
 
+  // A change on the same scene is written with the browser's own history API, which Next's
+  // router reads back into `useSearchParams` without a round trip to the server: a step then
+  // costs the render alone (the pace probe below depends on it). Another scene is a navigation.
   const go = useCallback(
     (next: Partial<WorkbenchQuery>, toScene?: string) => {
-      const path = toScene ? `/workbench/${toScene}` : pathname;
-      router.replace(`${path}?${writeQuery({ ...q, ...next }, params)}`, { scroll: false });
+      const url = `${toScene ? `/workbench/${toScene}` : pathname}?${writeQuery({ ...q, ...next }, params)}`;
+      if (toScene) router.replace(url, { scroll: false });
+      else window.history.replaceState(null, '', url);
     },
     [q, params, pathname, router],
   );
@@ -120,9 +124,9 @@ export function Workbench({ scene }: { scene: string }) {
     (k: string, v: string) => {
       const next = new URLSearchParams(params);
       next.set(k, v);
-      router.replace(`${pathname}?${next.toString()}`, { scroll: false });
+      window.history.replaceState(null, '', `${pathname}?${next.toString()}`);
     },
-    [params, pathname, router],
+    [params, pathname],
   );
 
   const known = isSceneId(scene);
