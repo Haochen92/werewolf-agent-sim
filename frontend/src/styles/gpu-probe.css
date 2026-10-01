@@ -9,6 +9,7 @@
 [data-gpu~='nofilter'] * { filter: none !important; }
 [data-gpu~='noblend'] * { mix-blend-mode: normal !important; }
 [data-gpu~='nomask'] * { mask: none !important; -webkit-mask: none !important; }
+[data-gpu~='noclip'] * { clip-path: none !important; }
 [data-gpu~='noshadow'] * { box-shadow: none !important; text-shadow: none !important; }
 [data-gpu~='nowillchange'] * { will-change: auto !important; }
 [data-gpu~='nosvg'] svg { display: none !important; }

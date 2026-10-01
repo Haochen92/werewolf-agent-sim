@@ -632,7 +632,7 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   `paint.test.ts` fails on an SVG `<mask`/`mask=`, or a CSS `mask:`/`mask-image`/
   `-webkit-mask-image` in any stage stylesheet or inline style, anywhere else under `src/stage`.
 - **The GPU probe**: the workbench's `?gpu=` takes words that each remove one kind of GPU work
-  from the whole page (`nofilter noblend nomask noshadow nowillchange nosvg noimg nobg`, and
+  from the whole page (`nofilter noblend nomask noclip noshadow nowillchange nosvg noimg nobg`, and
   `no<layer>` for one stage layer: `nopaint nohaze nofloor nofigures nostand noinstruments
   nolight nograde nohud`), joined by commas or `+`, e.g. `/workbench/day?beat=6&gpu=nomask`
   (`styles/gpu-probe.css`, workbench only). Open the plain page and one probe at a time on the
