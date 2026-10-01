@@ -78,35 +78,71 @@ about the agents' 120 words) with the server's words shown under the box
 (`Agents/turn/human_turn.py`); the frontend's box stops at the same 700 and counts from 600.
 Commit `b7517ec`; frontend `8b5775a`.
 
-## 3) The stage lags the server, so a timed clock can run before the player has seen the turn (2026-10-01) — OPEN
+## 3) Where no human turn sets the tempo, the stage plays at agent speed (2026-10-01) — OPEN
 
 **What happened.** The live stage was changed to play every beat at its full hold, however
 many are queued (until then a backlog of three or more drained at half speed, which made a
-solo game race by). The agents play at machine speed, so the stage now lags the server by
-design: a solo game's viewer watches at reading pace while the engine is turns ahead.
+solo game race by). That fixed the solo game between turns, and surfaced the real shape of
+the problem, which the owner put more clearly than the first draft of this entry did.
 
-**Why it matters.** The server sends a seated human's turn prompt the moment the engine
-reaches it, and the dock opens at once with the turn clock running on the server's deadline.
-In a multiplayer game with deadlines, a player whose stage is still playing the earlier
-speeches can therefore be asked to answer before they have watched what they are answering
-to; worst case the clock runs out, the seat's agent speaks for them, and they never saw the
-turn they lost. Solo games have no clock, so nothing changes there. This is not a privacy
-leak: the server decides per event, per viewer, what each browser may receive (public,
-wolves only, one seat, observer), and lag changes only *when* a viewer sees what they were
-always entitled to, never *what*. The game-over backlog, which the server sends everyone, is
-gated on the client until the stage reaches the ending (same pass).
+**The owner's explanation.** The engine pauses in exactly two kinds of place: a human's turn
+and the night barrier (resolution waits for every actor). Both are pauses in *generation*.
+A human's turn is therefore the game's only tempo control: every time the engine waits for a
+person, every viewer's stage catches up. Where there is no human to pause the engine, the
+events come at the agents' response time, a few seconds apart, which is too fast for a human
+to read; the stage then either lags behind the server or hurries, and nothing on the server
+waits for a stage (nor should it: a single slow browser must never hold the table, and the
+seat's agent takes over when a human is late). A night with a human wolf in the pack
+illustrates the rule: the agent's line arrives, the human's prompt follows at once and the
+dock opens, the server waits while they read and type, and after their vote the resolution
+runs; the human wolf sees the morning only a few seconds after a villager does (the mark beat,
+perhaps the agent's last line). The wolves "needing more beats" after the response is real but
+small. The large gap belongs to the viewer **with no turn to pause on**:
 
-**Status.** Open; the owner flagged it as major. Fix belongs to the server, not the client:
-- *Pace the agents to the audience.* The engine already has a pacing tracker
-  (`server/game/pacing.py`) that publishes progress bars; the missing piece is a minimum
-  interval between public events (an agent's turn is not released until the previous beat's
-  hold has elapsed for the slowest viewer, or simply a floor of a few seconds per turn), so
-  the stage can keep up. This also makes the live game feel played rather than replayed.
-- *Or start the clock at the stage.* Only the client knows when the turn beat is reached; a
-  deadline that starts when the client reports "the turn is on stage" (an acknowledgement on
-  the turn request) keeps the server authoritative on duration while the player gets the
-  whole allowance. Needs an AFK bound so an absent client cannot hold the table.
-Either way the stage's holds (beat sheet §0) become the game's tempo, which music will
-later sit in. Pointers: `frontend/src/stage/containers/live-queue.ts` (the pacing rules),
-`live-state.ts` (`advance`, the one-time prompt cut), beat sheet §12, design note
+- a dead player spectating the pack room (two agents now, lines at generation speed, read at
+  reading speed: 20–40 s behind by the morning, which then lands mid-chat);
+- a living player watching the agents' day speeches between their own turns (eight agents in
+  a solo game);
+- the landing page's showcase game, and any all-agent stretch.
+
+In each, every beat's reading time exceeds its generation time, so the queue grows by the
+difference at every beat. (Drafts, by contrast, add no lag: the engine is paused at that
+turn and the other stages catch up while the human drafts; a draft only lengthens the table's
+wall time, capped at 20 s of credit each.)
+
+**Why it is not a leak.** The server decides per event, per viewer, what each browser may
+receive (public, wolves only, one seat, observer); lag changes only *when* a viewer sees
+what they were always entitled to. The game-over backlog, sent to everyone, is gated on the
+client until the stage reaches the ending (same pass).
+
+**The ruling, to go at the head of the live timing sheet:** *the human's turn is the tempo;
+where there is no human turn, the stage either reads or jumps, never hurries.* A growing
+queue has two honest answers, and the sheet says which applies where:
+
+- *Read.* Play on at reading pace and let the queue grow. Right for solo play between turns,
+  where nothing is waiting on the viewer.
+- *Jump.* Past a threshold (about 45 s of queued holds), land still on the latest beat, one
+  fold, no beats replayed, with a strip notice ("Caught up to the table · n lines in the
+  transcript") opening the drawer; the transcript is the catch-up. Right whenever a clock or
+  other people are involved: a timed turn prompt far ahead, a backgrounded phone, a dead
+  wolf's pack room when the morning has been waiting. Chosen (owner, 2026-10-01) over
+  trimmed holds, which flicker, and over a replay-inside-the-game of the missed beats, which
+  the transcript already covers. Solo games never jump.
+- *The server clock stays authoritative* and starts when the prompt is released; the seat's
+  agent takes the turn at the deadline. No cursor acknowledgement from the browser is needed
+  under this ruling; it was considered and set aside.
+- *Held for later:* a server-side metered release (one shared tempo for all viewers, the
+  pacing tracker's missing floor; the night padding set from the pack chat's reading length
+  rather than a fixed 20–30 s window) matters only if a shared live moment is wanted, e.g.
+  four friends on their phones at a table. Not built until a real multiplayer game asks.
+
+**Next.** Before code, a *live timing sheet* (`frontend/docs/live_timing_sheet.md`, the
+companion of the entitlement sheet that produced the clean SSE tiers): one row per event the
+graph emits, its tier, the server's emit time with representative durations from a real
+trace, what each viewer's stage does with it and for how long (villager, wolf, investigator,
+the human whose turn it is, spectator), and each viewer's running lag; solo and four-human
+scenarios side by side; the rulings above written at its foot. Pointers:
+`frontend/src/stage/containers/live-queue.ts` (the pacing rules), `live-state.ts`
+(`advance`, the one-time prompt cut, `historyLanding`), `server/game/pacing.py` (the night
+padding and the progress bars), beat sheet §12, design note
 `frontend/docs/server_design_notes.md` §7 (the AFK clocks).
