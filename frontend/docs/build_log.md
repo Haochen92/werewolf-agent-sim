@@ -721,3 +721,64 @@ outstanding, and `ux_journeys` §0 reserves it for the owner against the running
    replacement remains an asset-only swap at that import boundary.
 6. **Absence, disconnection and recovery have one map:** [`seat_continuity.md`](seat_continuity.md)
    (2026-09-09). Read it before touching the AFK timer, rejoin, or recovery.
+
+## 8. The stage on a phone (2026-10-01)
+
+> Added after the Playhouse redesign (2026-09-28) met its first iPhone. Same shape as the
+> sections above: what happened, the mechanism, what it cost, how it was settled, and an honest
+> reading of where the art pipeline stands against production practice.
+
+### 8.1 🔴 iPhone Safari killed every stage page
+
+**What happened.** On an iPhone, every page with a stage — a live game, a replay, the landing's
+carriage, a workbench scene — died at once with "A problem repeatedly occurred". Pages without a
+stage (the ticket office, the rooms list) were fine. Desktop Chrome and desktop WebKit (Playwright's
+Linux build, iPhone profile) never crashed, so headless testing could not have found it.
+
+**The mechanism.** "A problem repeatedly occurred" is the WebKit content process being killed,
+not a JavaScript error. A subtraction probe found the cause in eight taps on the phone:
+`styles/gpu-probe.css` gives the workbench a `?gpu=` switch whose words remove one kind of GPU work
+each (`nofilter`, `noblend`, `nomask`, `noshadow`, `nosvg`, `noimg`, a layer at a time). Only two
+words made the page survive, `nomask` and `nosvg`, and nothing else did. The stage had five
+full-stage SVG `<mask>` elements: the house light (a dark sheet with soft holes cut by a mask whose
+shapes carried a blur filter), the atmosphere's veil and frame shadow, the night room's candle
+light, and the drape's fade into the bleed. iOS renders a masked SVG through a software path with
+intermediate buffers at three times the CSS resolution; five of them at 1600×900 is more than it
+allows one tab. It is a platform limit on one technique, not a general fault.
+
+**What it cost.** The site was unusable on an iPhone from the redesign's deploy on 2026-09-28
+until the fix, and nobody knew for three days because every check ran on a desktop.
+
+**How it was settled.** The five masks became plain vector sheets: one path with
+`fill-rule="evenodd"` cutting the holes, each hole softened from inside by a radial-gradient shape
+of the sheet's own dark. No mask, no new filter. A guard test keeps `<mask` out of the stage; the
+probe stays as the instrument for next time; the rule is in `stage_architecture.md` §6.
+
+### 8.2 Where the art pipeline stands (an honest reading)
+
+Not the cause, and worth saying so: JavaScript is not the bottleneck (the scene's JS heap is about
+10 MB and nothing is computed per frame; motion runs on the compositor), and image size is not
+either (the whole sprite set is 12 MB of WebP; a day scene decodes about 18 MB).
+
+Where it is below production grade:
+
+- **No per-scene GPU budget and no device testing.** The GPU rules of §6 were tuned on one
+  Chrome. A studio has a device matrix and a memory budget per scene before art ships.
+- **One sprite size for every screen.** A puppet is 900×1300 and is drawn at about 300 px on a
+  phone, so the phone decodes four times the pixels it shows; the station's train is 5990×700
+  (16 MB decoded) for a scene that lasts seconds. Production practice is two or three sizes per
+  sprite through `srcset`, which `next/image` would do but `unoptimized` bypasses.
+- **Effects are live rather than baked.** Puppets and chips carry live `drop-shadow` filters, the
+  light has two blend-mode layers, and the stage CSS holds 172 box-shadows. Cheap alone, all paid
+  at device resolution whenever something moves. Studios bake shadows into the sprite and keep
+  live filters for the one thing that animates.
+- **Painted layers are live SVG, never cached as bitmaps.** Generating the set as SVG strings keeps
+  it deterministic and testable, which is a real virtue; the cost is that nothing is rasterised
+  once per scene. §6's own rule ("a backdrop that fades is a picture") is the direction.
+
+What would close the gap, in order of payoff: (1) the mask removal and the probe as a regression
+tool; (2) sprites at two sizes and a decoded-pixel budget per scene written into the beat sheet;
+(3) baked puppet and chip shadows instead of filters; (4) one recording of Safari's Web Inspector
+memory timeline on the phone across a day and a night, with the numbers kept beside the budget.
+None of it needs canvas or WebGL: a DOM stage of ten composited layers is a sound choice at this
+scale, provided each layer is a bitmap or simple vector and a real device is in the loop.
