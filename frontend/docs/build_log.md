@@ -754,6 +754,12 @@ until the fix, and nobody knew for three days because every check ran on a deskt
 of the sheet's own dark. No mask, no new filter. A guard test keeps `<mask` out of the stage; the
 probe stays as the instrument for next time; the rule is in `stage_architecture.md` §6.
 
+**Who did what.** The owner found the crash on his phone, reported that it predated the day's
+deploy, ran the eight probe links and read the result; the subtraction method itself was the
+agent's proposal, following the A/B-by-subtraction the owner had run on his Chrome on
+2026-09-25 (§6's GPU rules came from that); the mask replacement was built by an agent to a
+brief and reviewed on the goldens and on the phone.
+
 ### 8.2 Where the art pipeline stands (an honest reading)
 
 Not the cause, and worth saying so: JavaScript is not the bottleneck (the scene's JS heap is about
