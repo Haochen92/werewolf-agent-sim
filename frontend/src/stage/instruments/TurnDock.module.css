@@ -50,18 +50,68 @@
   color: #e3503f;
   font-variant-numeric: tabular-nums;
 }
-/* the keyboard button to the full-screen composer, at the head's far end (after the count) */
-.dock .expand {
-  margin-left: auto;
-  align-self: center;
-  display: inline-grid;
-  place-items: center;
-  padding: calc(3.2px * var(--legible-ui)) calc(8px * var(--legible-ui));
+/* the dock's head (2026-10-01): the heading, the hint, the count, and at the far right the brass
+   plaque to the full-screen composer, the first thing the eye finds. The hint takes what room
+   is left beside them and wraps in it; on a narrow head (a phone with the side slot open) it
+   drops to a row of its own under them and the heading wraps, so the plaque keeps its size.
+   The head is the query's container, in its own type (em = --meta). */
+.top {
+  container: dock-head / inline-size;
+  font-size: var(--meta);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: calc(3.2px * var(--legible-ui)) calc(11.2px * var(--legible-ui));
 }
-.head .count + .expand {
+.top strong {
+  grid-column: 1;
+  line-height: 1.15;
+}
+.top .hint {
+  grid-column: 2;
+  line-height: 1.3;
+}
+.top .count {
+  grid-column: 3;
   margin-left: 0;
 }
-.expand svg,
+@container dock-head (max-width: 42em) {
+  .top .hint {
+    grid-row: 2;
+    grid-column: 1 / -1;
+  }
+}
+/* the plaque: Send's brass (.pri), as large as Send or larger and never under 44 css px tall
+   (a thumb's width on a phone), the keyboard before its words */
+.dock .plaque {
+  grid-row: 1;
+  grid-column: 4;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45em;
+  min-height: max(
+    calc(44px * var(--legible-ui)),
+    calc(44px / max(var(--stage-scale, 1), 0.01))
+  );
+  padding: 0 0.95em 0 0.8em;
+  font-size: calc(var(--meta) * 1.2);
+  line-height: 1.1;
+  border-radius: 7px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 240, 200, 0.45),
+    0 2px 6px rgba(0, 0, 0, 0.55);
+}
+.plaque svg {
+  flex: none;
+  width: 1.3em;
+  height: 1.3em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 .close svg {
   width: calc(var(--meta) * 1.3);
   height: calc(var(--meta) * 1.3);

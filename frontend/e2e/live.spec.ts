@@ -11,10 +11,12 @@
  * the beats go by; on the speaking turn the seat's agent drafts its line (steered or not, and
  * with the seat notebook when "Use my seat notes" is ticked) into the box to be edited, Send
  * sends it, and a line typed by hand sends as it is; the full-screen composer holds the same
- * line (a picture of it, and on a phone it keeps above the soft keyboard); while the status is
- * on its way the page is the empty platform (a picture). The pace (2026-10-01): a departed
- * game plays its deal and the turns after it from the first beat, however much the log held;
- * a queue of beats plays at its normal holds; Reveal and File wait for the stage's ending.
+ * line (a picture of it, and on a phone it keeps above the soft keyboard), opened from the
+ * dock's brass plaque "Write your line", which leads the head on a phone too (a picture);
+ * while the status is on its way the page is the empty platform (a picture). The pace
+ * (2026-10-01): a departed game plays its deal and the turns after it from the first beat,
+ * however much the log held; a queue of beats plays at its normal holds; Reveal and File wait
+ * for the stage's ending.
  * A seat's notes stay open (words, caret, the role list) while the beats and scenes go by, and
  * close when the seat dies (2026-10-01). The curtain waits for the replay to be filed: a plaque
  * until the archive answers for it (a picture), then the link in its place.
@@ -765,7 +767,7 @@ test('live: a long line counts near the cap and stops at 700; a pending draft sa
   await expect(words).toHaveText('Finding the words…', { timeout: 4000 });
 });
 
-test('live: the keyboard button opens the full-screen composer, the same line as the box', async ({
+test('live: the brass plaque opens the full-screen composer, the same line as the box', async ({
   page,
 }) => {
   test.setTimeout(90_000);
@@ -805,7 +807,7 @@ test('live: the keyboard button opens the full-screen composer, the same line as
   await page.clock.pauseAt(Math.max(T0 + 10_000, now + 1500));
   await page.clock.runFor(3000);
   await dock.getByLabel('Your line').fill('I trust seat 4 today, and');
-  await dock.getByRole('button', { name: 'Write full screen' }).click();
+  await dock.getByRole('button', { name: 'Write your line' }).click();
   const composer = page.locator('[data-composer]');
   await expect(composer).toBeVisible();
   const big = composer.getByLabel('Your line');
@@ -846,12 +848,12 @@ test('live: the keyboard button opens the full-screen composer, the same line as
   await expect(dock.getByLabel('Your line')).toHaveValue(
     'Seat 8 keeps dodging the question.',
   );
-  await dock.getByRole('button', { name: 'Write full screen' }).click();
+  await dock.getByRole('button', { name: 'Write your line' }).click();
   await composer.getByRole('button', { name: 'Close', exact: true }).click();
   await expect(composer).toHaveCount(0);
 
   // Send from the composer posts what the box's Send would
-  await dock.getByRole('button', { name: 'Write full screen' }).click();
+  await dock.getByRole('button', { name: 'Write your line' }).click();
   await composer.getByRole('button', { name: 'Send' }).click();
   await expect(composer).toHaveCount(0);
   await expect(dock).toBeHidden();
@@ -908,6 +910,53 @@ test('live: on a phone a tap on the box opens the composer, fitted above the sof
   }
   // the box keeps room for more than a line
   expect((await big.boundingBox())!.height).toBeGreaterThanOrEqual(30);
+});
+
+test('live: on a phone the brass plaque leads the dock’s head, with the drawer shut or open', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 667, height: 375 });
+  await page.clock.install({ time: T0 });
+  await mockApi(page, {
+    status: status(200, { pending_seats: [ME], pending_input: true }),
+    stream: [...upTo(200), yourTurn(201)],
+  });
+  await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'day.your-turn');
+  const dock = page.locator('[data-dock="discuss"]');
+  await expect(dock).toBeVisible();
+  // as the turn's golden: stop the clock a few seconds in (a wide margin: see above)
+  const now = await page.evaluate(() => Date.now());
+  await page.clock.pauseAt(Math.max(T0 + 10_000, now + 1500));
+  await page.clock.runFor(3000);
+  const plaque = dock.getByRole('button', { name: 'Write your line' });
+  const clock = dock.getByText(/^1:[3-5]\d$/);
+  const hint = dock.getByText(/^Nothing is said until you send it\./);
+  // a thumb's size at the head's right end, the clock to its left, nothing past the dock
+  const fits = async () => {
+    const [p, c, d, h] = await Promise.all(
+      [plaque, clock, dock, hint].map(async (el) => (await el.boundingBox())!),
+    );
+    // 44 css px, give or take the stage's scale rounding
+    expect(p.height).toBeGreaterThanOrEqual(43.9);
+    expect(p.width).toBeGreaterThan(90);
+    expect(c.x + c.width).toBeLessThanOrEqual(p.x);
+    expect(p.x + p.width).toBeLessThanOrEqual(d.x + d.width);
+    expect(Math.abs(c.y + c.height / 2 - (p.y + p.height / 2))).toBeLessThan(4);
+    return { p, h };
+  };
+  await fits();
+  await settle(page);
+  await expect(page).toHaveScreenshot('dock-plaque-phone.png');
+  // the drawer open (the side slot): the dock narrows, the hint drops under the head and the
+  // plaque keeps its size
+  await page.getByRole('button', { name: 'Transcript', exact: true }).click();
+  await expect(page.locator('[data-drawer]')).toBeVisible();
+  const { p, h } = await fits();
+  expect(h.y).toBeGreaterThanOrEqual(p.y + p.height);
+  // the composer opens from it as from the box
+  await plaque.click();
+  await expect(page.locator('[data-composer]')).toBeVisible();
 });
 
 test('live: the strip’s door asks, and Leave goes to the lobby', async ({ page }) => {

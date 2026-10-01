@@ -1,6 +1,6 @@
 /**
  * The full-screen composer's rules (beat sheet §12): the speaking turn's line written in a box
- * as big as the screen, opened from the dock's keyboard button, or by a tap on the dock's small
+ * as big as the screen, opened from the dock's brass plaque, or by a tap on the dock's small
  * box on a phone. It holds the same line as the dock (the container's `dock.text`), so these are
  * only what the composer adds: when it is open, where it sits, and the word count.
  */

@@ -940,7 +940,11 @@ head (and, on a frame 900 css px wide or narrower, a tap on the reply box, read-
 the same line over the whole stage, in css px and fitted to `visualViewport` so a soft keyboard
 never hides the box or Send: the clock large, the steer with Draft and "n drafts left", a big box,
 "n words" and "612 / 700", Pass and Send, the refused line's words; Close (the X, Esc, a tap
-outside) keeps the line, the reply box is its preview, and it shuts when the turn closes. The server's words under the box in red. Draft errors: 409 → its words and no drafts left, 422 → its
+outside) keeps the line, the reply box is its preview, and it shuts when the turn closes. The
+keyboard button is a brass plaque since 2026-10-01 (owner: the glyph was too small and out of
+the way): the keyboard and "Write your line" in Send's brass at the head's right end, the clock
+to its left, never under 44 css px tall; where the head is too narrow for the hint beside it (a
+phone with the side slot open) the hint drops under the head and the plaque keeps its size. The server's words under the box in red. Draft errors: 409 → its words and no drafts left, 422 → its
 words, anything else → "Could not draft the line; type it instead." (the notes kept); an empty
 draft (the agent would pass) keeps the box's line: "Your agent would pass here. Pass, or tell it
 what to say." Send

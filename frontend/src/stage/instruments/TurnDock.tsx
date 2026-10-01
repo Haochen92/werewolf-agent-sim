@@ -20,7 +20,9 @@
  * It only draws what it is handed and reports the presses; the live theatre holds the words
  * and talks to the server. A line refused by the server says why, in the server's words.
  *
- * The full-screen composer (beat sheet §12): the keyboard button at the dock's head, or on a
+ * The full-screen composer (beat sheet §12): the brass plaque "Write your line" at the right of
+ * the dock's head, the first thing the eye finds (the clock to its left; on a narrow dock the
+ * hint drops under the head and the plaque keeps its size, never under 44 css px tall), or on a
  * phone (a frame 900 css px wide or narrower) a tap on the small box, opens the same line in a
  * box as big as the screen, over the whole stage: the clock large, the steer and Draft, the
  * word count and "612 / 700", Send, Pass, and Close (the X, or Esc). It is the same line, not a
@@ -100,9 +102,9 @@ export function TurnDock({ dock, left, onSay, onPass, arrive = false }: TurnDock
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 * k, delay: 0.3 * k }}
     >
-      <header className={styles.head}>
+      <header className={`${styles.head} ${styles.top}`}>
         <strong>Your turn to speak</strong>
-        <span>
+        <span className={styles.hint}>
           Nothing is said until you send it.
           {left ? ' If the clock runs out, your agent speaks for you.' : ''}
         </span>
@@ -110,8 +112,7 @@ export function TurnDock({ dock, left, onSay, onPass, arrive = false }: TurnDock
         <button
           ref={expand}
           type="button"
-          className={styles.expand}
-          aria-label="Write full screen"
+          className={`${styles.pri} ${styles.plaque}`}
           title="Write your line in a full-screen box"
           aria-haspopup="dialog"
           aria-expanded={open}
@@ -119,6 +120,7 @@ export function TurnDock({ dock, left, onSay, onPass, arrive = false }: TurnDock
           disabled={c.busy}
         >
           <KeyboardGlyph />
+          Write your line
         </button>
       </header>
       {c.hasDraft ? <AgentRow id="dock-notes" dock={dock} c={c} draft={draft} /> : null}
@@ -406,7 +408,7 @@ function useVisibleArea() {
   return box;
 }
 
-/** The dock's button to the composer: a small keyboard. */
+/** The keyboard on the dock's plaque to the composer, before its words. */
 function KeyboardGlyph() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
