@@ -131,6 +131,16 @@ export function Workbench({ scene }: { scene: string }) {
     [known, scene, q],
   );
 
+  // the pace probe (build log §8.3): `?auto=250` steps a beat every 250 ms on its own, round
+  // and round the scene's beats, to find the rate at which a phone's browser gives up on the
+  // stage's rebuilds; the reading is the fastest link that stays up
+  const auto = Number(params.get('auto')) || 0;
+  useEffect(() => {
+    if (!auto || !frame || frame.beats.length < 2) return;
+    const t = setTimeout(() => go({ beat: (frame.index + 1) % frame.beats.length }), auto);
+    return () => clearTimeout(t);
+  }, [auto, frame, go]);
+
   // The side slot's state that outlives a beat: the drawer's filters and the film's tab. The
   // strip's two tabs on the stage write the URL, as the replay's container holds them.
   const drawer = useDrawerFilters();
