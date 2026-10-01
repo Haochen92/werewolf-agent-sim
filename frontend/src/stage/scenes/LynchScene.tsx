@@ -284,6 +284,7 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
           hud={hud}
           width={g.wingN}
           notes={notebookGame(presentation, me)}
+          edit={slotInput?.notebook}
           opts={{
             untold,
             lit: (s) => s === seat,

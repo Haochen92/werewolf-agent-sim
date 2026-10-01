@@ -12,6 +12,7 @@ import { Layer, Stage } from '@/stage/Stage';
 import type { SceneId } from '@/stage/beats/types';
 import { useDrawerFilters } from '@/stage/drawer/use-drawer-filters';
 import type { FileChoice } from '@/stage/film/case-file';
+import { useNoteEditing } from '@/stage/notebook';
 import type { SlotInput, StopInput } from '@/stage/scenes/types';
 import { LeaveConfirm } from '@/stage/instruments/TopStrip';
 import { pressFile, pressTranscript, sideOpen } from '@/stage/slot';
@@ -124,6 +125,8 @@ export function Workbench({ scene }: { scene: string }) {
   const drawer = useDrawerFilters();
   const [filmTab, setFilmTab] = useState('notes');
   const [fileSeat, setFileSeat] = useState<FileChoice | null>(null);
+  // a live cut's seat notebook: the open editor stays open as the beats are stepped
+  const noteEditing = useNoteEditing();
   // a live cut's door: "Leave the table?" is open (Leave is only logged: there is no lobby here)
   const [leaving, setLeaving] = useState(false);
   const slotInput = useMemo((): SlotInput | undefined => {
@@ -137,6 +140,7 @@ export function Workbench({ scene }: { scene: string }) {
       onFilmTab: setFilmTab,
       fileSeat,
       onFileSeat: setFileSeat,
+      notebook: noteEditing,
       // a live cut draws the closed file's link to the replay, as a live game would
       replayHref: q.live ? `/replays/${FIXTURE_GAME_ID}` : undefined,
       ahead: frame.ahead,
@@ -160,7 +164,7 @@ export function Workbench({ scene }: { scene: string }) {
             }
           : {}),
     };
-  }, [frame, drawer, filmTab, fileSeat, go, q.live, q.hud]);
+  }, [frame, drawer, filmTab, fileSeat, noteEditing, go, q.live, q.hud]);
 
   // the replay's stops, as its container hands them down (the X-ray's cut in the replay's
   // frame): the rooms and the hub are this scene's beats; "End the night" leaves the scene, so

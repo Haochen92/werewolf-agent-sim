@@ -255,6 +255,7 @@ function DealBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scene
           hud={hud}
           width={g.wingN}
           notes={notebookGame(presentation, me)}
+          edit={slotInput?.notebook}
           opts={{
             truth: (seat) => (xray ? known(seat) : null),
             pack: (seat) => packShown && seat === mate,

@@ -203,6 +203,7 @@ function LobbyBeat({
           hud={hud}
           width={g.wingN}
           notes={notebookGame(presentation, me)}
+          edit={slotInput?.notebook}
           opts={{
             truth: (seat) => (xray ? (view.xray.roles[seat] ?? null) : null),
             lamp: (seat) => !!actors?.has(seat) && !seen(seat),

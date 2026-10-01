@@ -13,6 +13,7 @@ import type { DurableGameEvent, EventType, InputRequest } from '@/types/contract
 import {
   actSent,
   ALREADY_ANSWERED,
+  curtainReplay,
   DEFAULT_TURN_MS,
   DRAFT_FAILED,
   historyEnd,
@@ -975,5 +976,34 @@ describe('the turn’s clock and whose line it was', () => {
     expect(requestBefore(log, 202, ME)).toBe(201);
     expect(requestBefore(log, 203, ME)).toBeNull();
     expect(requestBefore(log, 200, ME)).toBeNull();
+  });
+});
+
+describe('the curtain’s way to the replay waits for it to be filed', () => {
+  const G = 'g1';
+  const at = (over: Partial<Parameters<typeof curtainReplay>[1]> = {}) =>
+    curtainReplay(G, {
+      archived: false,
+      answered: false,
+      memory: false,
+      taught: false,
+      ...over,
+    });
+
+  it('the game is over, its run is not: the plaque, no link', () => {
+    expect(at()).toEqual({ replay: null, lessons: false });
+  });
+
+  it('with memory on, until the lessons come in, the plaque says they are being written', () => {
+    expect(at({ memory: true })).toEqual({ replay: null, lessons: true });
+    expect(at({ memory: true, taught: true })).toEqual({ replay: null, lessons: false });
+  });
+
+  it('the archive answers for the replay, or the status comes from its row: the link', () => {
+    expect(at({ answered: true, memory: true })).toEqual({
+      replay: '/replays/g1',
+      lessons: false,
+    });
+    expect(at({ archived: true })).toEqual({ replay: '/replays/g1', lessons: false });
   });
 });

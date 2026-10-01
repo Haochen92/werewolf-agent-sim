@@ -15,6 +15,9 @@
  * on its way the page is the empty platform (a picture). The pace (2026-10-01): a departed
  * game plays its deal and the turns after it from the first beat, however much the log held;
  * a queue of beats plays at its normal holds; Reveal and File wait for the stage's ending.
+ * A seat's notes stay open (words, caret, the role list) while the beats and scenes go by, and
+ * close when the seat dies (2026-10-01). The curtain waits for the replay to be filed: a plaque
+ * until the archive answers for it (a picture), then the link in its place.
  *
  * The mocked stream ends when its body does, so the browser reads it as a dropped connection;
  * the theatre's "Reconnecting…" note is hidden in the pictures for that reason.
@@ -118,6 +121,8 @@ interface Mock {
   /** The bodies POSTed to /turns and /draft, as sent. */
   posted?: { path: string; body: unknown }[];
   draft?: Record<string, unknown>;
+  /** The archive answers for the game's replay (filed when the run ends); a 404 until then. */
+  filed?: boolean;
 }
 
 async function mockApi(page: Page, mock: Mock) {
@@ -137,6 +142,15 @@ async function mockApi(page: Page, mock: Mock) {
       status: 200,
       headers: { ...cors(route.request()), 'content-type': 'text/event-stream' },
       body,
+    });
+  });
+  await page.route(`**/replays/${GAME}*`, async (route) => {
+    if (!isApi(route)) return route.fallback();
+    await route.fulfill({
+      status: mock.filed ? 200 : 404,
+      contentType: 'application/json',
+      headers: cors(route.request()),
+      body: JSON.stringify(mock.filed ? REPLAY : { detail: 'unknown replay' }),
     });
   });
   for (const path of ['turns', 'draft']) {
@@ -917,6 +931,8 @@ test('live: after game over the ending plays to its curtain', async ({ page }) =
     status: status(405),
     // the morning as history; game over as news, then the withheld backlog and the memory
     stream: [...upTo(405), over, ...backlog, taught],
+    // the run has ended: the replay is filed
+    filed: true,
   });
   await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
   // the ending plays beat by beat, each at its normal hold, until the epilogue's sheet waits
@@ -940,4 +956,107 @@ test('live: after game over the ending plays to its curtain', async ({ page }) =
   await page.clock.runFor(5000);
   await settle(page);
   await expect(page).toHaveScreenshot('live-curtain.png');
+});
+
+test('live: a seat’s notes stay open while the beats and scenes go by, until the seat dies', async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await page.clock.install({ time: T0 });
+  // the stage at day 3's vote; the count, the lynch, the night, and the morning that tells
+  // seat 5's death, as news
+  await mockApi(page, { status: status(244), stream: upTo(280) });
+  const go = await pausedStream(page);
+  await page.goto(`/games/${GAME}`);
+  await expect(theatre(page)).toBeAttached();
+  await go();
+  await expect(theatre(page)).toHaveAttribute('data-beat', /^vote\./);
+  await page.getByRole('button', { name: 'Seat 5, notes' }).click();
+  const editor = page.getByRole('dialog', { name: 'Seat 5' });
+  const paper = editor.getByRole('textbox', { name: 'Your notes on seat 5' });
+  await expect(paper).toBeFocused();
+  await page.keyboard.type('quiet on day 3');
+  // the beats go by under it, into the night: still open, the words and the caret kept
+  const seen: string[] = [(await theatre(page).getAttribute('data-beat'))!];
+  const step = async () => {
+    await page.clock.runFor(1000);
+    const beat = (await theatre(page).getAttribute('data-beat'))!;
+    if (seen.at(-1) !== beat) seen.push(beat);
+    return beat;
+  };
+  while (!(await step()).startsWith('night.')) await expect(editor).toBeVisible();
+  expect(seen.length).toBeGreaterThanOrEqual(3);
+  await expect(editor).toBeVisible();
+  await expect(paper).toBeFocused();
+  await page.keyboard.type(', voted 6');
+  await expect(paper).toHaveValue('quiet on day 3, voted 6');
+  // the guess's listbox, opened, stays open across a beat and still picks
+  await editor.getByRole('button', { name: /I think they are/ }).click();
+  const list = editor.getByRole('listbox');
+  await expect(list).toBeVisible();
+  const at = seen.length;
+  while (seen.length === at) await step();
+  await expect(list).toBeVisible();
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  await expect(list).toHaveCount(0);
+  await expect(editor.locator('[data-seat-guess="5"]')).toContainText('Villager');
+  // and the suspect mark, after another beat
+  const at2 = seen.length;
+  while (seen.length === at2) await step();
+  await editor.getByRole('button', { name: 'Mark as suspect' }).click();
+  await expect(editor.getByRole('button', { name: 'Marked as suspect' })).toBeVisible();
+  // the morning tells seat 5's death: the notes close; what was written is on its card
+  for (let t = 0; t < 120 && (await editor.count()) > 0; t++) await step();
+  await expect(editor).toHaveCount(0);
+  expect(seen.at(-1)).toMatch(/^morning\./);
+  expect(seen.some((b) => b.startsWith('night.'))).toBe(true);
+  await expect(page.locator('[data-layer="hud"] [data-seat="5"]')).toContainText(
+    'quiet on day 3, voted 6',
+  );
+});
+
+test('live: the curtain waits for the replay to be filed, then the link comes in its place', async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await page.clock.install({ time: T0 });
+  const over = ALL.find((e) => e.type === 'game_over')!;
+  const backlog = ALL.filter((e) => e.seq < over.seq && !seen(e));
+  // the game is over; its run is not (the lessons are still being written): no replay yet
+  const mock: Mock = {
+    status: status(405),
+    stream: [...upTo(405), over, ...backlog],
+    filed: false,
+  };
+  await mockApi(page, mock);
+  await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  for (let t = 0; t < 120; t++) {
+    await page.clock.runFor(500);
+    if ((await theatre(page).getAttribute('data-beat')) === 'over.curtain') break;
+  }
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'over.curtain');
+  const plaque = page.getByRole('status').filter({ hasText: 'Winding the reels' });
+  await expect(plaque).toHaveText(
+    /Winding the reels… come back in a few minutes\s*Your seat’s lessons are being written\./,
+  );
+  await expect(page.getByRole('link', { name: 'Watch the replay' })).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'Back to the lobby' })).toBeVisible();
+  await page.clock.runFor(5000);
+  await settle(page);
+  await expect(page).toHaveScreenshot('curtain-winding.png');
+  // the run ends and the replay is filed: the next ask finds it, and the link comes in
+  const lobby = page.getByRole('link', { name: 'Back to the lobby' });
+  const before = (await lobby.boundingBox())!;
+  const held = (await plaque.boundingBox())!;
+  mock.filed = true;
+  await page.clock.runFor(5500);
+  const replay = page.getByRole('link', { name: 'Watch the replay' });
+  await expect(replay).toHaveAttribute('href', `/replays/${GAME}`);
+  await expect(plaque).toBeHidden();
+  // in the plaque's place, against the lobby's button, which has not moved along the row
+  const after = (await lobby.boundingBox())!;
+  const link = (await replay.boundingBox())!;
+  expect(Math.abs(after.x - before.x)).toBeLessThan(1);
+  expect(Math.abs(link.x + link.width - (held.x + held.width))).toBeLessThan(1);
 });

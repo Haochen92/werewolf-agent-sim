@@ -29,6 +29,10 @@
  * mark one seat as the suspect (a wax seal on its card, its head in the suspect slot). The
  * notes stay on this device (notebook.ts), reaching the server only with a speech draft sent
  * with "Use my seat notes" ticked; the suspect never preselects a ballot. In a replay, and for an observer, the cards are only shown.
+ * The open editor is the container's (`edit`, 2026-10-01): the wing is remounted with every turn
+ * and scene, and the editor with it, open on the same seat, the focus and the caret where they
+ * were. It closes on Done, Escape or a tap outside, or when its seat dies or can no longer be
+ * written on; the focus goes back to the card that opened it if that card is still there.
  *
  * Its width: `width` inside the world, and on a screen wider than 16:9 it grows out into the
  * bleed (the stage's `--spare`) up to the layout's `reach`, so a phone's letterbox holds most of
@@ -37,6 +41,7 @@
 import {
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
@@ -44,7 +49,13 @@ import {
 } from 'react';
 import { SPRITES, type Character } from '@/assets/manifest';
 import { ChipSprite } from '../cast/ChipSprite';
-import { guessChoices, useNotebook, type Notebook } from '../notebook';
+import {
+  editorStays,
+  guessChoices,
+  useNotebook,
+  type NoteEdit,
+  type Notebook,
+} from '../notebook';
 import { ROLE_NAME, factionOf, type KnownRole } from '../roles';
 import { RAIL_GAP, RAIL_PAD, RAIL_STRIP, railLayout } from './rail-layout';
 import { Sigil } from './Sigil';
@@ -106,11 +117,22 @@ export interface WingTileProps {
   file?: { onTap: () => void; label: string };
 }
 
+/**
+ * Where the focus was in the open editor (which control, and the caret in the paper), kept
+ * outside the wing: the wing, and the editor with it, is remounted with every turn and scene,
+ * and the editor that comes back puts the focus where it was (`at` null: it had left the
+ * editor). Cleared when the editor closes, or opens on a seat afresh.
+ */
+type EditorAt = 'paper' | 'guess' | 'list' | 'mark' | 'done';
+let carried: { seat: number; at: EditorAt | null; start: number; end: number } | null =
+  null;
+
 export function Wing({
   width,
   tiles,
   notes = null,
   castCounts,
+  edit,
 }: {
   width: number;
   /** The seats, in order. */
@@ -119,10 +141,29 @@ export function Wing({
   notes?: string | null;
   /** The cast's role counts (`view.castRoleCounts`): what the notebook's role guess offers. */
   castCounts?: Readonly<Record<string, number>>;
+  /**
+   * The open editor, held by the container so it outlives this wing (`SlotInput.notebook`);
+   * without it the wing holds it itself, until it is remounted.
+   */
+  edit?: { editing: NoteEdit | null; onEdit: (edit: NoteEdit | null) => void };
 }) {
   const book = useNotebook(notes);
-  const [editing, setEditing] = useState<number | null>(null);
+  const [own, setOwn] = useState<NoteEdit | null>(null);
+  const editing = edit ? edit.editing : own;
+  const setEditing = edit ? edit.onEdit : setOwn;
   const opener = useRef<HTMLElement | null>(null);
+  const bySeat = new Map(tiles.map((t) => [t.seat, t]));
+  const editable = (t: WingTileProps) =>
+    !!book && !!t.character && !t.you && !t.read && !t.file;
+  const edited = editing ? bySeat.get(editing.seat) : undefined;
+  // the seat died, or can no longer be written on, since its notes were opened: they close
+  const stays = editorStays(editing, edited, !!edited && editable(edited));
+  useEffect(() => {
+    if (editing && !stays) {
+      carried = null;
+      setEditing(null);
+    }
+  }, [editing, stays, setEditing]);
   if (width <= 0) return null;
   const L = railLayout(tiles.length, { suspect: !!book });
   const rail = {
@@ -135,22 +176,21 @@ export function Wing({
     '--board': `url(${SPRITES.textures.walnut.src})`,
     '--cork': `url(${SPRITES.textures.cork.src})`,
   } as CSSProperties;
-  const bySeat = new Map(tiles.map((t) => [t.seat, t]));
   // the suspect is a living seat's mark: once that seat dies, the slot is empty again
   const suspect = book?.suspect && !bySeat.get(book.suspect)?.dead ? book.suspect : null;
-  const editable = (t: WingTileProps) =>
-    !!book && !!t.character && !t.you && !t.read && !t.file;
   const open = (seat: number, el: HTMLElement) => {
     opener.current = el;
+    carried = null;
     book?.dismissHint();
-    setEditing(seat);
+    setEditing({ seat, dead: !!bySeat.get(seat)?.dead });
   };
   const close = () => {
+    carried = null;
     setEditing(null);
-    opener.current?.focus();
+    // the card that opened it, if this wing still holds it (a remounted wing does not)
+    if (opener.current?.isConnected) opener.current.focus();
   };
   const hint = !!book && !book.hinted && tiles.some(editable);
-  const edited = editing != null ? bySeat.get(editing) : undefined;
   return (
     <>
       <div className={styles.bleed} style={rail} aria-hidden="true" />
@@ -185,7 +225,7 @@ export function Wing({
           Tap a card to write notes
         </p>
       ) : null}
-      {book && edited?.character ? (
+      {book && stays && edited?.character ? (
         <NoteEditor
           key={edited.seat}
           seat={edited.seat}
@@ -407,7 +447,8 @@ function GuessSelect({
     0,
     rows.findIndex((r) => r.role === guess),
   );
-  const [open, setOpen] = useState(false);
+  // reopened as it was when the wing was remounted under it
+  const [open, setOpen] = useState(() => carried?.seat === seat && carried.at === 'list');
   const [active, setActive] = useState(chosen);
   const button = useRef<HTMLButtonElement>(null);
   const list = useRef<HTMLUListElement>(null);
@@ -465,6 +506,7 @@ function GuessSelect({
         aria-controls={open ? `${id}-list` : undefined}
         aria-labelledby={`${id}-l ${id}`}
         data-seat-guess={seat}
+        data-at="guess"
         onClick={() => (open ? close() : show())}
         onKeyDown={onButtonKey}
       >
@@ -482,6 +524,7 @@ function GuessSelect({
           id={`${id}-list`}
           className={styles.guessList}
           role="listbox"
+          data-at="list"
           tabIndex={-1}
           aria-labelledby={`${id}-l`}
           aria-activedescendant={`${id}-o${active}`}
@@ -610,12 +653,34 @@ function NoteEditor({
 }) {
   const id = useId();
   const area = useRef<HTMLTextAreaElement>(null);
-  useEffect(() => {
+  const board = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
     const el = area.current;
     if (!el) return;
-    el.focus();
-    el.setSelectionRange(el.value.length, el.value.length);
-  }, []);
+    // the wing was remounted under an open editor: the focus goes back where it was (the
+    // listbox refocuses itself); opened afresh, it goes to the end of the note
+    const back = carried?.seat === seat ? carried : null;
+    if (!back || back.at === 'paper') {
+      el.focus();
+      const end = el.value.length;
+      el.setSelectionRange(
+        Math.min(back?.start ?? end, end),
+        Math.min(back?.end ?? end, end),
+      );
+      carried = { seat, at: 'paper', start: el.selectionStart, end: el.selectionEnd };
+    } else if (back.at !== 'list' && back.at)
+      board.current?.querySelector<HTMLElement>(`[data-at="${back.at}"]`)?.focus();
+  }, [seat]);
+  // where the focus is, and the caret, for the editor that comes back after a remount
+  const keep = (at: EditorAt | null) => {
+    const el = area.current;
+    carried = {
+      seat,
+      at,
+      start: el?.selectionStart ?? 0,
+      end: el?.selectionEnd ?? 0,
+    };
+  };
   const onKey = (e: ReactKeyboardEvent) => {
     if (e.key === 'Escape') {
       e.stopPropagation();
@@ -629,12 +694,24 @@ function NoteEditor({
     <>
       <div className={styles.scrim} onClick={onClose} aria-hidden="true" />
       <div
+        ref={board}
         className={styles.editor}
         style={style}
         role="dialog"
         aria-modal="true"
         aria-labelledby={`${id}-h`}
         onKeyDown={onKey}
+        onFocus={(e) =>
+          keep(
+            ((e.target as HTMLElement).closest('[data-at]')?.getAttribute('data-at') ??
+              null) as EditorAt | null,
+          )
+        }
+        onBlur={(e) => {
+          // the focus left the editor (not a remount, which takes the editor with it)
+          if (e.currentTarget.isConnected && !e.currentTarget.contains(e.relatedTarget))
+            keep(null);
+        }}
       >
         <div className={styles.editorHead}>
           <span className={`${styles.editorFace} ${dead ? styles.dead : ''}`}>
@@ -651,10 +728,15 @@ function NoteEditor({
         <textarea
           id={`${id}-t`}
           ref={area}
+          data-at="paper"
           className={styles.paper}
           value={book.notes[seat] ?? ''}
           placeholder="What have they said? Who did they vote for?"
-          onChange={(e) => book.setNote(seat, e.target.value)}
+          onChange={(e) => {
+            book.setNote(seat, e.target.value);
+            keep('paper');
+          }}
+          onSelect={() => keep('paper')}
           rows={4}
           maxLength={600}
         />
@@ -672,6 +754,7 @@ function NoteEditor({
             <button
               type="button"
               className={styles.mark}
+              data-at="mark"
               aria-pressed={suspect}
               onClick={() => book.setSuspect(suspect ? null : seat)}
             >
@@ -681,7 +764,7 @@ function NoteEditor({
           ) : (
             <span />
           )}
-          <button type="button" className={styles.done} onClick={onClose}>
+          <button type="button" className={styles.done} data-at="done" onClick={onClose}>
             Done
           </button>
         </div>

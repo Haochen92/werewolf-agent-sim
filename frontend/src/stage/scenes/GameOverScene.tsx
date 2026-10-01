@@ -17,7 +17,10 @@
  * - `over.truth`: every living tile takes its faction strip and sigil; the case file's docket
  *   lists the deal and how each seat went.
  * - `over.epilogue`: the ledger over the whole stage.
- * - `over.curtain`: the winners at the stand, the result in the box, and (live) the way out.
+ * - `over.curtain`: the winners at the stand, the result in the box, and (live) the way out:
+ *   "Watch the replay" once the replay is filed (the run ends after the game: with memory on,
+ *   after the lessons are written), until then a plaque, "Winding the reels… come back in a
+ *   few minutes", in its place; and "Back to the lobby".
  *
  * Arrived at, each beat is simply there; played, it moves from the beat before.
  */
@@ -283,6 +286,7 @@ function OverBeat({
           hud={hud}
           width={g.wingN}
           notes={notebookGame(presentation, me)}
+          edit={slotInput?.notebook}
           opts={{
             truth: (s) => (xray || truthOut ? roleOf(s) : null),
             lit: (s) => onStand && winners.includes(s),
@@ -382,7 +386,10 @@ function EndBox({
   myDead: boolean;
   cast: SceneProps['presentation']['cast'];
   truth: boolean;
-  /** The curtain's way out (live): where the two buttons go, or `true` for buttons that go nowhere. */
+  /**
+   * The curtain's way out (live): where the two buttons go (the replay's a plaque until it is
+   * filed), or `true` for buttons that go nowhere (the workbench, drawn as the link's state).
+   */
   way: SceneProps['wayOut'] | boolean;
   arrive: boolean;
 }) {
@@ -423,7 +430,25 @@ function EndBox({
           </span>
         ) : way ? (
           <span className={styles.acts}>
-            <Link href={way.replay}>Watch the replay</Link>
+            {/* until the replay is filed a plaque holds the link's place; both lie in one
+                cell, the plaque kept (unseen) once the link is in, so nothing moves */}
+            <span className={styles.toReplay}>
+              <span
+                className={styles.winding}
+                role="status"
+                data-winding={way.replay ? undefined : true}
+              >
+                <span>Winding the reels… come back in a few minutes</span>
+                {way.lessons && !way.replay ? (
+                  <span className={styles.lessons}>
+                    {me
+                      ? 'Your seat’s lessons are being written.'
+                      : 'The seats’ lessons are being written.'}
+                  </span>
+                ) : null}
+              </span>
+              {way.replay ? <Link href={way.replay}>Watch the replay</Link> : null}
+            </span>
             <Link href={way.lobby}>Back to the lobby</Link>
           </span>
         ) : null}

@@ -4,7 +4,8 @@
  * The live theatre: a game being played, on the stage, as it happens (beat sheet §12, handoff
  * §6). This is the one place the live stage's state lives: which beat is on the stage, what
  * the right side holds, the drawer's filters and the film's tab, the seat's own card opened over
- * the stage from "your card" (it stays open while beats go by, until a tap or Esc), and the
+ * the stage from "your card" (it stays open while beats go by, until a tap or Esc), the seat
+ * notebook's open editor (likewise, until Done, Esc, a tap outside or its seat's death), and the
  * seated human's open turn (the line being written, the drafts, what was sent). Everything
  * below it is drawn from props; the game itself comes from the session store, which the stream
  * fills.
@@ -30,8 +31,12 @@
  * the moment the stage reaches the ending (its first `over.*` beat; `game_over` can land while
  * the stage is still playing the last night, 2026-10-01): then the wing takes the truth, Reveal
  * and the File tab unlock, and the ending plays to its curtain, whose way out goes to the
- * replay or back to the lobby. Until then a seated player's way out is the strip's door, which
- * asks first ("Leave the table?") and goes to the lobby; their agent plays on.
+ * replay or back to the lobby. The replay is filed only when the engine's run ends (with
+ * memory on, after the lessons are written, a minute or more after `game_over`): until the
+ * archive answers for it, the curtain says "Winding the reels… come back in a few minutes"
+ * where the link will be (`useReplayFiled`, 2026-10-01). Before the ending a seated player's
+ * way out is the strip's door, which asks first ("Leave the table?") and goes to the lobby;
+ * their agent plays on.
  *
  * Before the game, the same stage holds the waiting room: the platform (`StationScene`), drawn
  * from the room the page hands in (`room`), with the host's Lock and Depart going back out
@@ -46,6 +51,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useGameSession, type PacingBar } from '@/game/store';
 import { serverNow, useCountdown } from '@/hooks/useCountdown';
+import { useReplayFiled } from '@/hooks/useReplayFiled';
 import { draftLine, rejoinGame, submitTurn, type TurnPayload } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { ApiError } from '@/lib/request';
@@ -57,7 +63,7 @@ import { beatsFor } from '../beats/beatsFor';
 import type { SceneBeat } from '../beats/types';
 import { useDrawerFilters } from '../drawer/use-drawer-filters';
 import { StageMotion } from '../motion';
-import { notebookForAgent, useNotebook } from '../notebook';
+import { notebookForAgent, useNotebook, useNoteEditing } from '../notebook';
 import { CardOverlay } from '../instruments/FramedCard';
 import { LeaveConfirm } from '../instruments/TopStrip';
 import { draftRequest } from '../instruments/turn-dock';
@@ -80,6 +86,7 @@ import { geometry } from '../units';
 import { createFoldCache } from './fold-cache';
 import {
   actSent,
+  curtainReplay,
   historyEnd as historyEndOf,
   historyLanding,
   initialLiveState,
@@ -95,7 +102,7 @@ import {
   type LiveCtx,
 } from './live-state';
 import { holdFor } from './transport';
-import type { FileChoice } from '../film/case-file';
+import { memoryOn, type FileChoice } from '../film/case-file';
 import styles from './LiveTheatre.module.css';
 
 export interface LiveTheatreProps {
@@ -403,6 +410,8 @@ export function LiveTheatre({
   }, [cardOpen]);
   const [filmTab, setFilmTab] = useState('notes');
   const [fileSeat, setFileSeat] = useState<FileChoice | null>(null);
+  // the seat notebook's open editor: it stays open while beats and scenes go by
+  const noteEditing = useNoteEditing();
   // the strip's door: "Leave the table?" is open (a seated player, until the game ends)
   const [leaving, setLeaving] = useState(false);
   const router = useRouter();
@@ -410,6 +419,16 @@ export function LiveTheatre({
     () => (xrayShown ? folds.at(events.length) : null),
     [xrayShown, folds, events.length],
   );
+  // the replay is filed when the run ends (with memory on, after the lessons): until the
+  // archive answers for it, the curtain's way to it is a plaque
+  const archived = !!status?.archived;
+  const answered = useReplayFiled(gameId, xray && !archived);
+  const toReplay = curtainReplay(gameId, {
+    archived,
+    answered,
+    memory: memoryOn(view),
+    taught: view.xray.extracted !== null,
+  });
   const slotInput = useMemo(
     (): SlotInput => ({
       filters: drawer.filters,
@@ -419,8 +438,10 @@ export function LiveTheatre({
       onFilmTab: setFilmTab,
       fileSeat,
       onFileSeat: setFileSeat,
-      // the closed file's way to the thinking turn by turn (the curtain's "Watch the replay")
-      replayHref: `/replays/${gameId}`,
+      notebook: noteEditing,
+      // the closed file's way to the thinking turn by turn (the curtain's "Watch the replay"),
+      // once the replay is filed
+      replayHref: toReplay.replay ?? undefined,
       ahead,
       onTranscript: () => dispatch({ type: 'transcript' }),
       onFile: () => dispatch({ type: 'file', xray: xrayShown }),
@@ -439,9 +460,10 @@ export function LiveTheatre({
       drawer.scroll,
       filmTab,
       fileSeat,
+      noteEditing,
       ahead,
       xrayShown,
-      gameId,
+      toReplay.replay,
       me,
     ],
   );
@@ -572,7 +594,7 @@ export function LiveTheatre({
               onNext={() =>
                 dispatch({ type: 'held', step: state.step, ctx: ctxRef.current })
               }
-              wayOut={{ replay: `/replays/${gameId}`, lobby: LOBBY }}
+              wayOut={{ ...toReplay, lobby: LOBBY }}
             />
           </StageMotion>
         ) : null}

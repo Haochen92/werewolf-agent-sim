@@ -41,6 +41,7 @@ import type { GameView } from '@/game/types';
 import { castForGame } from '../cast/castForGame';
 import { beatsFor } from '../beats/beatsFor';
 import { useDrawerFilters } from '../drawer/use-drawer-filters';
+import { useNoteEditing } from '../notebook';
 import { StageMotion } from '../motion';
 import type { SceneBeat } from '../beats/types';
 import type { MotionSpeed, Presentation, SlotInput, StopInput } from '../scenes/types';
@@ -186,6 +187,8 @@ export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps
   const drawer = useDrawerFilters();
   const [filmTab, setFilmTab] = useState('notes');
   const [fileSeat, setFileSeat] = useState<FileChoice | null>(null);
+  // the seat notebook's open editor (a replay has no notebook today: kept as the live game's)
+  const noteEditing = useNoteEditing();
   const onXray = useCallback(() => dispatch({ type: 'xray' }), []);
   // the landing's two buttons under a preview are the older pair, Transcript and X-ray: its
   // X-ray turns the X-ray on and brings the film, or, with the film up, turns it off
@@ -203,6 +206,7 @@ export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps
       onFilmTab: setFilmTab,
       fileSeat,
       onFileSeat: setFileSeat,
+      notebook: noteEditing,
       ahead,
       onTranscript: () => dispatch({ type: 'transcript' }),
       onFile: () => dispatch({ type: 'file' }),
@@ -222,6 +226,7 @@ export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps
       drawer.scroll,
       filmTab,
       fileSeat,
+      noteEditing,
       ahead,
       onXray,
       isMini,

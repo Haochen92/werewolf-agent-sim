@@ -326,6 +326,7 @@ function VoteBeat({
           hud={hud}
           width={g.wingN}
           notes={notebookGame(presentation, me)}
+          edit={slotInput?.notebook}
           opts={{
             untold,
             lit: (seat) => seat === litSeat,

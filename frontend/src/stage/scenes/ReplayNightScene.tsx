@@ -387,6 +387,7 @@ function NightWhole({ view, beat, me, presentation, slot: slotInput }: SceneProp
           hud={hud}
           width={g.wingN}
           notes={notebookGame(presentation, me)}
+          edit={slotInput?.notebook}
           opts={{
             truth: (s) => (xray ? (view.xray.roles[s] ?? null) : null),
             // nobody speaks here: a card opens its seat's file

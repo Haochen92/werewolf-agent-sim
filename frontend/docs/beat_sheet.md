@@ -67,7 +67,14 @@ ink band and a black crepe mourning ribbon across the photo's top corner (2026-0
 and the sigil badge; the game's losers dimmed. Lit and dimmed are light only.
 **Notes (live, seated only).** Tapping another seat's card opens its note editor (the seat's
 head, number, alive or dead; a ruled writing area; "Mark as suspect", not for the dead; Done;
-Escape or a tap outside closes). The first time in a game a paper slip beside the rail says "Tap a
+Escape or a tap outside closes). The editor stays open while the beats, the scenes and the
+recuts go by under it (2026-10-01; it closed on every beat, the wing being remounted with each):
+the container holds which seat it is on (`SlotInput.notebook`), the words are the notebook's as
+typed, and a remounted editor puts the focus and the caret back where they were (an open role
+list stays open). It closes on Done, Escape or a tap outside, when its seat dies (as the stage
+tells the death; a seat already dead when opened stays open), or when the seat can no longer be
+written on; the focus goes back to the card that opened it if that card is still on the rail,
+else nowhere. The first time in a game a paper slip beside the rail says "Tap a
 card to write notes" until the first tap. A card the player may write on has two or three
 faint ruled lines on its foot, the note's first words on them in Literata, never under 11 css
 px; where they would be smaller (a phone) the card shows two short pencil strokes instead, and a
@@ -548,7 +555,21 @@ unclear; bench 73 kept the extraction's order); `net_verdict` positive → worke
 an outcome loses its leading verdict word; a tab change closes the open row; "None from this
 game."; a game with no extraction gets "No memory was kept." The sheet comes down 0.6 s after
 0.5 s over the stage dimmed 0.5 s after 0.3 s. The curtain's way out (live): "Watch the replay",
-"Back to the lobby", inert until the container hands the scene something to call. **To
+"Back to the lobby", inert until the container hands the scene something to call. **The
+curtain's wait (2026-10-01):** the replay is filed only when the engine's run ends, which with
+memory on is after the lessons are written, a minute or more after `game_over`; the link went to
+"No such replay." until then. Until the archive answers for the replay (asked every 5 s from
+`game_over`; the status cannot say it, since a game leaves the live registry, and its status
+turns `archived`, only once nobody watches it), a quiet plaque that cannot be pressed stands in
+the link's place, dashed edge, bone ink: "Winding the reels… come back in a few minutes", and,
+in a memory-on game whose lessons have not come in, "Your seat's lessons are being written."
+under it (a spectator: "The seats' lessons…"). The link comes in where the plaque stood (both
+lie in one cell, the plaque kept unseen), "Back to the lobby" unmoved; the case file's "watch
+the replay →" waits likewise. The workbench draws the link's state. The replay page waits too:
+a 404 asks the status, and a game over but not filed shows the empty platform with "Winding the
+reels… come back in a few minutes", asking for the replay every 5 s until it comes; a status
+from the row means it landed between the two calls (asked once more at once); a dropped game
+says "This game was dropped."; only an id unknown to both is "No such replay.". **To
 reconcile:** the winners come from the roles the view holds; live, `game_over` arrives before the
 backlog's `roles_assigned`, so a spectator's stand is empty until it lands (a seat knows its own
 role, a wolf its pack) and the live queue should hold the stand for the backlog.

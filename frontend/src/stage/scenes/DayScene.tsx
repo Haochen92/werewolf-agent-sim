@@ -206,6 +206,7 @@ function DayTurn({
         <Wing
           width={g.wingN}
           notes={notebookGame(presentation, me)}
+          edit={slotInput?.notebook}
           castCounts={view.castRoleCounts}
           tiles={view.seats.map((seat, i) => {
             const d = deadBySeat.get(seat);

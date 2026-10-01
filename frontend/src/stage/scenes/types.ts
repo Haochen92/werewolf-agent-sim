@@ -10,6 +10,7 @@ import type { SceneBeat } from '@/stage/beats/types';
 import type { DrawerFilters } from '@/stage/drawer/drawer-lines';
 import type { DrawerScroll } from '@/stage/drawer/use-drawer-filters';
 import type { FileChoice } from '@/stage/film/case-file';
+import type { NoteEdit } from '@/stage/notebook';
 
 export type MotionSpeed = 'normal' | 'fast';
 
@@ -76,7 +77,17 @@ export interface SceneProps {
    * Live, at the curtain: where "Watch the replay" and "Back to the lobby" go. Without it the
    * two buttons are drawn but go nowhere (the workbench).
    */
-  wayOut?: { replay: string; lobby: string };
+  wayOut?: {
+    /**
+     * The replay, once it is filed; null until then (the run ends after the game does: with
+     * memory on, after the lessons are written), and a plaque, "Winding the reels… come back
+     * in a few minutes", stands where the link will be.
+     */
+    replay: string | null;
+    lobby: string;
+    /** While the replay is not filed: the seats' lessons are still being written. */
+    lessons?: boolean;
+  };
   /**
    * The replay (and the workbench): move the playhead to the first beat `find` accepts, as a
    * seek (arrived at, at rest). False when no beat does, so the caller can do something else.
@@ -145,6 +156,12 @@ export interface SlotInput {
   onLeave?: () => void;
   /** Where the drawer was scrolled, and whether it follows the beat, kept across scenes. */
   drawerScroll?: DrawerScroll;
+  /**
+   * The seat notebook's editor: whose notes are open (`useNoteEditing`), held by the container
+   * so the editor stays open while beats, scenes and recuts go by (the wing is remounted with
+   * them). Without it the wing keeps the open seat itself, for as long as it is mounted.
+   */
+  notebook?: { editing: NoteEdit | null; onEdit: (edit: NoteEdit | null) => void };
   /**
    * Live only: the finished game's replay, which the closed case file points to after the
    * game ("watch the replay →"). The replay has none: it is the replay.

@@ -6,11 +6,12 @@
  * actor's room and coming back, "Back to the night"), a voter's file opened from the wing at the
  * count, the vote's stop with the ballots in, and the strip with Reveal on a small phone. Then tests
  * that are not pictures: played fast, the cursor runs on at twice the pace; the drawer stays
- * where a reader scrolled it; the band fits a small phone on its side.
+ * where a reader scrolled it; the band fits a small phone on its side. A game over but not yet
+ * filed winds its reels until the replay comes; a dropped game says so, an unknown id has none.
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page, type Request } from '@playwright/test';
 
 const GAME = '9369a5c1-3c28-42ce-86a1-9d594dfa4804';
 const REPLAY = readFileSync(join(__dirname, '../src/stage/fixtures/replay-9369a5c1.json'));
@@ -474,4 +475,101 @@ test('replay: the keys step, jump chapters and play', async ({ page }) => {
   await expect(theatre(page)).toHaveAttribute('data-playing', 'true');
   await page.keyboard.press(' ');
   await expect(theatre(page)).toHaveAttribute('data-playing', 'false');
+});
+
+/**
+ * The replay of a game whose run has not ended: the archive 404s until `filed()` says so, and
+ * the game's status answers as `status` (null: a 404, a game nobody knows).
+ */
+async function mockUnfiled(
+  page: Page,
+  filed: () => boolean,
+  status: Record<string, unknown> | null,
+) {
+  const headers = (req: Request) => ({
+    'access-control-allow-origin': req.headers()['origin'] ?? '*',
+    'access-control-allow-credentials': 'true',
+  });
+  await page.route(`**/replays/${GAME}*`, async (route) => {
+    const req = route.request();
+    if (req.resourceType() === 'document' || req.headers()['rsc']) return route.fallback();
+    await route.fulfill(
+      filed()
+        ? {
+            status: 200,
+            contentType: 'application/json',
+            headers: headers(req),
+            body: REPLAY,
+          }
+        : {
+            status: 404,
+            contentType: 'application/json',
+            headers: headers(req),
+            body: JSON.stringify({ detail: 'unknown replay' }),
+          },
+    );
+  });
+  await page.route(`**/games/${GAME}`, async (route) => {
+    const req = route.request();
+    if (req.resourceType() === 'document' || req.headers()['rsc']) return route.fallback();
+    await route.fulfill({
+      status: status ? 200 : 404,
+      contentType: 'application/json',
+      headers: headers(req),
+      body: JSON.stringify(status ?? { detail: 'unknown game' }),
+    });
+  });
+}
+
+const OVER = {
+  game_id: GAME,
+  state: 'finished',
+  server_time: '2026-10-01T10:00:00Z',
+  players: [],
+  human_players: ['player_7'],
+  you: null,
+  game_over: true,
+  last_seq: 407,
+  archived: false,
+  winner: null,
+  error: null,
+};
+
+test('replay: a game over but not yet filed winds its reels, then plays', async ({
+  page,
+}) => {
+  let filed = false;
+  await mockUnfiled(page, () => filed, OVER);
+  await page.goto(`/replays/${GAME}`);
+  const still = page.locator('[data-loading="replay"]');
+  await expect(still.getByRole('status')).toHaveText(
+    'Winding the reels… come back in a few minutes',
+  );
+  await expect(page.getByText('No such replay.')).toHaveCount(0);
+  // the run ends: the next ask (every five seconds) finds the replay
+  filed = true;
+  await expect(page.locator('[data-transport]')).toBeVisible({ timeout: 12_000 });
+  await expect(still).toHaveCount(0);
+});
+
+test('replay: a dropped game says so; an id nobody knows has no replay', async ({
+  page,
+}) => {
+  await mockUnfiled(page, () => false, {
+    ...OVER,
+    state: 'dropped',
+    game_over: false,
+    archived: true,
+    error: 'nobody came back',
+  });
+  await page.goto(`/replays/${GAME}`);
+  await expect(page.getByText('This game was dropped.')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Back to the lobby' })).toHaveAttribute(
+    'href',
+    '/rooms',
+  );
+  await page.unrouteAll();
+  await mockUnfiled(page, () => false, null);
+  await page.goto(`/replays/${GAME}`);
+  await expect(page.getByText('No such replay.')).toBeVisible();
 });

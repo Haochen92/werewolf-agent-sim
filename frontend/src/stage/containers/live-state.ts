@@ -529,3 +529,23 @@ export function requestBefore(
   }
   return null;
 }
+
+/**
+ * The curtain's way to the replay (beat sheet §10, 2026-10-01). The replay is filed when the
+ * engine's run ends, which with memory on is after the lessons are written, a minute or more
+ * after `game_over`; a link before then finds nothing. It is filed once the archive answers for
+ * it (`answered`) or the status comes from the game's row (`archived`; a game leaves the live
+ * registry only when nobody is watching it, so a page at the curtain learns it from the
+ * archive). Until then there is no link but the plaque, and, while a memory-on game's lessons
+ * have not come in, the line that says they are being written.
+ */
+export function curtainReplay(
+  gameId: string,
+  a: { archived: boolean; answered: boolean; memory: boolean; taught: boolean },
+): { replay: string | null; lessons: boolean } {
+  const filed = a.archived || a.answered;
+  return {
+    replay: filed ? `/replays/${gameId}` : null,
+    lessons: !filed && a.memory && !a.taught,
+  };
+}

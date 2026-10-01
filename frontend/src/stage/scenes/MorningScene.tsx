@@ -390,6 +390,7 @@ function MorningBeat({ view, beat, me, presentation, slot: slotInput, turn }: Sc
           hud={hud}
           width={g.wingN}
           notes={notebookGame(presentation, me)}
+          edit={slotInput?.notebook}
           opts={{
             untold,
             truth: (seat) => (xray ? (view.xray.roles[seat] ?? null) : null),

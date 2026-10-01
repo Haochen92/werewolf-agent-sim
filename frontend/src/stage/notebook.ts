@@ -7,13 +7,15 @@
  *
  * It lives on this device only (localStorage, `notes_{gameId}`), and every scene that draws
  * the seat rail reads the same copy, so a note written in the day is on the card at night.
+ * Which seat's notes are open is held above the scenes (`useNoteEditing`, 2026-10-01), so a
+ * note being written stays open, its words as typed, while beats and scenes go by under it.
  * Storage may be missing or refuse a write (a private window): the notebook then lasts as
  * long as the page, and nothing breaks. It reaches the server only when the player asks their
  * agent for a draft with "Use my seat notes" ticked (`notebookForAgent`), for that one draft,
  * a guess folded into its seat's note ("(I think: wolf) …") so the request keeps its shape;
  * the suspect is the player's own mark, never a preselected ballot.
  */
-import { useCallback, useMemo, useSyncExternalStore } from 'react';
+import { useCallback, useMemo, useState, useSyncExternalStore } from 'react';
 import { seatNotes } from '@/lib/storage';
 import { ROLE_NAME } from './roles';
 
@@ -192,4 +194,41 @@ export function notebookGame(
   me: string | null,
 ): string | null {
   return p.hud === 'live' && me && p.game ? p.game : null;
+}
+
+/**
+ * The note editor's open seat (`SlotInput.notebook`), and whether that seat was already dead
+ * when its notes were opened: a seat that dies while its notes are open closes them, but the
+ * notes on a seat already dead may be read and written.
+ */
+export interface NoteEdit {
+  seat: number;
+  dead: boolean;
+}
+
+/**
+ * Whether the open editor stays open on this render of the wing: its seat is on the rail and
+ * still writable (`editable`), and has not died since its notes were opened. Beats, scenes and
+ * recuts go by under it; this is the only thing besides Done, Escape and a tap outside that
+ * closes it.
+ */
+export function editorStays(
+  edit: NoteEdit | null,
+  tile: { dead?: unknown } | undefined,
+  editable: boolean,
+): boolean {
+  if (!edit || !tile || !editable) return false;
+  return !tile.dead || edit.dead;
+}
+
+/**
+ * The open seat held by a container (the live game, the replay, the workbench), above the
+ * scenes, so the editor outlives the wing, which is remounted with every turn and scene.
+ */
+export function useNoteEditing(): {
+  editing: NoteEdit | null;
+  onEdit: (edit: NoteEdit | null) => void;
+} {
+  const [editing, onEdit] = useState<NoteEdit | null>(null);
+  return useMemo(() => ({ editing, onEdit }), [editing]);
 }
