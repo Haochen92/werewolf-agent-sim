@@ -560,9 +560,9 @@ Two kinds, by whether they carry state:
   `src/stage/paint/`, rendered by one memoised `<Paint html={…} />` per layer via
   `dangerouslySetInnerHTML`. Porting these to JSX buys nothing. Every `<filter>`, `<clipPath>`,
   gradient id is prefixed with `useId()` from the caller so two stages can share a page
-  (the kits' `opts.id` rule). No `<mask>` (§6): a dark sheet with soft holes (the house light,
-  the car's veil, the night room's light) is `paint/holes.ts`, an evenodd sheet with gradient
-  rims.
+  (the kits' `opts.id` rule). No `<mask>` and no CSS mask (§6): a dark sheet with soft holes
+  (the house light, the car's veil, the night room's light and its chosen photo) is
+  `paint/holes.ts`, an evenodd sheet with gradient rims.
 - **Instruments** — stand and plaque (the stand's front a raster, §4), trap and lift,
   cards (back, small, full, the framed card), chips and their strings, wing tiles, the shutter's
   motion, the verdict board, act marks, sigils, the jar/table/plates, film rows, the drawer.
@@ -612,19 +612,25 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   frame as Chrome gives it its own layer, and pinning that layer did not help.
 - A lift's load fades by its position, not the clock (`lift-fade.ts`), so nothing hangs over
   the trap once the table has gone in; the load is its own layer while it moves.
-- **No SVG `<mask>` on the stage** (found 2026-10-01 with the GPU probe, `styles/gpu-probe.css`):
-  iPhone Safari kills the page ("A problem repeatedly occurred") when the stage carries
-  full-stage masks; it survived only with masks removed, not with filters, blend modes, box
-  shadows, the light layer alone or images removed. Soft holes are an evenodd sheet plus gradient
-  rims (`paint/holes.ts`): the dark sheet is one path with the holes cut out, each hole filled
-  from inside with a radial gradient of the sheet's own dark, clear at its middle and as dark as
-  the sheet at its rim, so they meet without a seam; where holes overlap, each place takes the
+- **No mask of any kind on the stage beyond a glyph; CSS masks too** (found 2026-10-01 with the
+  GPU probe, `styles/gpu-probe.css`): iPhone Safari kills the page ("A problem repeatedly
+  occurred") when the stage carries full-stage SVG `<mask>`s; it survived only with masks removed,
+  not with filters, blend modes, box shadows, the light layer alone or images removed. A
+  full-stage CSS `mask-image` kills it the same way (the chosen photo's darkening, `roomChoice`,
+  which faded out before the card through one linear-gradient mask; found the same day on the
+  night room's chosen beat). Soft holes are an evenodd sheet plus gradient rims
+  (`paint/holes.ts`): the dark sheet is one path with the holes cut out, each hole filled from
+  inside with a radial gradient of the sheet's own dark, clear at its middle and as dark as the
+  sheet at its rim, so they meet without a seam; where holes overlap, each place takes the
   clearer, split where both are equally dark (a mask multiplied them; plain paint can only add),
-  and helper holes over the overlap bring it near the product, never clearer than it was.
-  A shape a mask only clipped is a `clipPath` (the pelmet's shadow), and a fade to the bleed is a
-  gradient of the house's dark laid over it (the drape's mirrored ends). The sigil's 52×52 glyph
-  mask and CSS `mask-image` with one gradient (`roomChoice`, the ledger's and film's inks) stay;
-  `paint.test.ts` fails on a `<mask` or `mask=` anywhere else under `src/stage`.
+  and helper holes over the overlap bring it near the product, never clearer than it was. A
+  straight fade is a hole too: a far, tall ellipse whose rim runs straight down the stage
+  (`roomChoice`'s card side). A shape a mask only clipped is a `clipPath` (the pelmet's shadow),
+  and a fade to the bleed is a gradient of the house's dark laid over it (the drape's mirrored
+  ends). The only masks left are glyph-sized: the sigil's 52×52 glyph mask and the rubber
+  stamps' worn ink (`.stamp` in `instruments/Ledger.module.css` and `film/Film.module.css`).
+  `paint.test.ts` fails on an SVG `<mask`/`mask=`, or a CSS `mask:`/`mask-image`/
+  `-webkit-mask-image` in any stage stylesheet or inline style, anywhere else under `src/stage`.
 - **The GPU probe**: the workbench's `?gpu=` takes words that each remove one kind of GPU work
   from the whole page (`nofilter noblend nomask noshadow nowillchange nosvg noimg nobg`, and
   `no<layer>` for one stage layer: `nopaint nohaze nofloor nofigures nostand noinstruments

@@ -256,31 +256,78 @@ export function roomLight(o: RoomLightOpts): string {
 }
 
 export interface RoomChoiceOpts extends RoomOpts {
+  /** Prefix for every id this drawing makes, so two stages can share a page. */
+  id: string;
   /** The chosen photo's index on the line. */
   chosen: number;
   bleed?: number;
 }
 
+/** How far before the card's left edge the choice's dark starts to fade, in units. */
+const CHOICE_FADE = 90;
+/** The card's side as a hole: a far, tall ellipse whose rim is all but straight across the stage. */
+const CHOICE_FAR = 3000;
+
 /**
  * A photo chosen: the wall goes darker still and one light finds that photo, over the candle's
  * room (`roomLight`). The table, its candle and the card are left as they were: the dark fades
- * out just before the card. Plain CSS gradients, so it fades in and out cheaply.
+ * out just before the card. Fades in and out cheaply (its wrapper's opacity).
+ *
+ * No mask of any kind (2026-10-01: a full-stage CSS `mask-image`, which faded this dark out
+ * before the card, killed iPhone Safari as the SVG masks did; stage_architecture.md §6). The dark
+ * is a sheet with two soft holes (`holes.ts`): the chosen photo's ellipse, clear to 55% of its
+ * radius as before, and the card's side, an ellipse so far and tall that its rim runs straight
+ * down the stage, clear from the card's left edge and dark again 90 units before it.
  */
 export function roomChoice(o: RoomChoiceOpts): string {
   const b = o.bleed ?? 0,
+    H = STAGE_H,
+    W = STAGE_W,
+    P = o.id + '-',
     R = roomPlan(o),
     p = R.photos[o.chosen];
   if (!p) return '';
   const f = (n: number) => n.toFixed(0);
-  const x = p.x + b,
+  const x = p.x,
     y = p.top + R.photo.h * 0.5,
     rx = R.photo.w * 1.25,
     ry = R.photo.h * 1.1,
     // the dark ends at the card's left edge, faded over the last stretch
-    end = R.card.x - R.card.w / 2 + b;
-  const bg =
-    `radial-gradient(ellipse ${f(rx * 0.8)}px ${f(ry * 0.8)}px at ${f(x)}px ${f(y)}px, rgba(${R.warm},.18), rgba(${R.warm},0)),` +
-    `radial-gradient(ellipse ${f(rx)}px ${f(ry)}px at ${f(x)}px ${f(y)}px, rgba(10,6,4,0) 0%, rgba(10,6,4,0) 55%, rgba(10,6,4,${DARK.chosen}) 100%)`;
-  const mask = `linear-gradient(to right, #000 ${f(end - 90)}px, transparent ${f(end)}px)`;
-  return `<div style="position:absolute;left:${-b}px;top:0;width:${STAGE_W + 2 * b}px;height:${STAGE_H}px;background:${bg};-webkit-mask-image:${mask};mask-image:${mask}"></div>`;
+    end = R.card.x - R.card.w / 2,
+    far = CHOICE_FAR + CHOICE_FADE;
+  const { sheet, pieces } = softHoles(
+    [
+      {
+        x,
+        y,
+        rx,
+        ry,
+        clear: [
+          [0, 1],
+          [0.55, 1],
+          [1, 0],
+        ],
+      },
+      {
+        x: end + CHOICE_FAR,
+        y: H / 2,
+        rx: far,
+        ry: 40 * H,
+        clear: [
+          [0, 1],
+          [CHOICE_FAR / far, 1],
+          [1, 0],
+        ],
+      },
+    ],
+    { x0: -b, y0: 0, x1: W + b, y1: H },
+  );
+  let d = `<defs>${pieces.map((q, i) => holeGradient(`${P}c${i}`, q.hole, DARK.ink, DARK.chosen)).join('')}<radialGradient id="${P}cwarm"><stop offset="0" stop-color="rgb(${R.warm})" stop-opacity=".18"/><stop offset="1" stop-color="rgb(${R.warm})" stop-opacity="0"/></radialGradient></defs>`;
+  d += `<path d="${sheet}" fill="${DARK.ink}" fill-opacity="${DARK.chosen}" fill-rule="evenodd"/>`;
+  d += pieces
+    .map((q, i) => `<path d="${q.d}" fill="url(#${P}c${i})" fill-rule="evenodd"/>`)
+    .join('');
+  // the light finding the photo, warm
+  d += `<ellipse cx="${f(x)}" cy="${f(y)}" rx="${f(rx * 0.8)}" ry="${f(ry * 0.8)}" fill="url(#${P}cwarm)"/>`;
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%${b ? ';overflow:visible' : ''}">${d}</svg>`;
 }

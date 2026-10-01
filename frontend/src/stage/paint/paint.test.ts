@@ -96,6 +96,13 @@ const CASES: [string, (id: string) => string][] = [
       light({ id, lamps: diningCarPlan({ phase: 'day' }).lamps, bleed: BLEED }),
   ],
   ['roomLight bleed', (id: string) => roomLight({ id, room: 'wolf', bleed: BLEED })],
+  ...ROOM_NAMES.map(
+    (room) =>
+      [
+        `roomChoice ${room}`,
+        (id: string) => roomChoice({ id, room, chosen: 2, bleed: BLEED }),
+      ] as [string, (id: string) => string],
+  ),
 ];
 
 describe.each(CASES)('%s', (_label, draw) => {
@@ -298,8 +305,8 @@ describe('bleed', () => {
     expect(roomLight({ id: 'k', room: 'healer', bleed: 0 })).toBe(
       roomLight({ id: 'k', room: 'healer' }),
     );
-    expect(roomChoice({ room: 'healer', chosen: 2, bleed: 0 })).toBe(
-      roomChoice({ room: 'healer', chosen: 2 }),
+    expect(roomChoice({ id: 'k', room: 'healer', chosen: 2, bleed: 0 })).toBe(
+      roomChoice({ id: 'k', room: 'healer', chosen: 2 }),
     );
   });
 });
@@ -348,15 +355,58 @@ describe('the night rooms', () => {
 
   it('lights with gradients alone: no filter and no blend mode', () => {
     for (const room of ROOM_NAMES) {
-      const lit = roomLight({ id: 'k', room }) + roomChoice({ room, chosen: 2 });
+      const lit = roomLight({ id: 'k', room }) + roomChoice({ id: 'c', room, chosen: 2 });
       expect(lit).not.toContain('filter');
       expect(lit).not.toContain('mix-blend-mode');
     }
   });
 
   it('leaves the table lit on a choice, and draws nothing for a photo that is not there', () => {
-    expect(roomChoice({ room: 'healer', chosen: 2 })).toContain('mask-image');
-    expect(roomChoice({ room: 'healer', chosen: 99 })).toBe('');
+    for (const room of ROOM_NAMES)
+      for (const side of [false, true])
+        for (const chosen of [0, 3, 7]) {
+          const html = roomChoice({ id: 'c', room, side, chosen, bleed: BLEED });
+          // no mask of any kind: a sheet with the photo's hole and the card's side cut out
+          expect(html).not.toMatch(/mask/i);
+          expect(html).toMatch(
+            /<path d="[^"]+" fill="#0a0604" fill-opacity="0.62" fill-rule="evenodd"\/>/,
+          );
+          expect(html).toContain('fill="url(#c-cwarm)"');
+          const R = roomPlan({ room, side }),
+            p = R.photos[chosen],
+            end = R.card.x - R.card.w / 2;
+          const dark = darkness([
+            {
+              x: p.x,
+              y: p.top + R.photo.h / 2,
+              rx: R.photo.w * 1.25,
+              ry: R.photo.h * 1.1,
+              clear: [
+                [0, 1],
+                [0.55, 1],
+                [1, 0],
+              ],
+            },
+            {
+              x: end + 3000,
+              y: 450,
+              rx: 3090,
+              ry: 36000,
+              clear: [
+                [0, 1],
+                [3000 / 3090, 1],
+                [1, 0],
+              ],
+            },
+          ]);
+          // clear on the photo, dark on the wall, half-faded 45 before the card, clear from its edge
+          expect(dark(p.x, p.top + R.photo.h / 2)).toBe(0);
+          expect(dark(-BLEED + 1, 899)).toBe(1);
+          expect(dark(end - 45, 899)).toBeCloseTo(0.5, 2);
+          expect(dark(end, 450)).toBeLessThan(0.001);
+          expect(dark(STAGE_W, 10)).toBe(0);
+        }
+    expect(roomChoice({ id: 'c', room: 'healer', chosen: 99 })).toBe('');
   });
 });
 
@@ -408,30 +458,48 @@ describe('station', () => {
 });
 
 /*
- * No SVG mask on the stage: iPhone Safari kills the page (found 2026-10-01 with the GPU probe,
- * styles/gpu-probe.css). Every paint generator and every stage component, read as source; the
- * sigil's small glyph mask is the one exception.
+ * No mask of any kind on the stage beyond a glyph: iPhone Safari kills the page on a full-stage
+ * SVG <mask> (found 2026-10-01 with the GPU probe, styles/gpu-probe.css) and on a full-stage CSS
+ * mask-image too (the chosen photo's darkening, the same day). Every stage source is read: no SVG
+ * mask outside the sigil's 52-unit glyph, and no CSS mask in a stylesheet or an inline style
+ * except the word-sized rubber stamps (`.stamp` in the ledger's and the film's sheets).
  */
-describe('no SVG mask on the stage', () => {
+describe('no mask on the stage', () => {
   const stage = fileURLToPath(new URL('..', import.meta.url));
-  const sources = [
-    ...readdirSync(`${stage}paint`)
-      .filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts'))
-      .map((f) => `paint/${f}`),
-    ...readdirSync(stage, { recursive: true, encoding: 'utf8' }).filter(
-      (f) => f.endsWith('.tsx') && !f.endsWith('.test.tsx') && !f.endsWith('Sigil.tsx'),
-    ),
-  ];
+  const all = readdirSync(stage, { recursive: true, encoding: 'utf8' });
+  const code = all.filter(
+    (f) => /\.tsx?$/.test(f) && !/\.test\.tsx?$/.test(f) && !f.endsWith('Sigil.tsx'),
+  );
+  const sheets = all.filter((f) => f.endsWith('.css'));
+  // the glyph-sized exceptions: a stylesheet and the one rule in it that may carry a mask
+  const STAMPS: Record<string, string> = {
+    'instruments/Ledger.module.css': '.stamp',
+    'film/Film.module.css': '.stamp',
+  };
+  // comments name masks freely; only code and rules are guarded
+  const bare = (src: string) =>
+    src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  const CSS_MASK = /(?:^|[^-\w])(?:-webkit-)?mask(?:-image)?\s*:/i;
 
   it('reads every source it guards', () => {
-    expect(sources).toContain('paint/light.ts');
-    expect(sources.some((f) => f.endsWith('Stage.tsx'))).toBe(true);
+    expect(code).toContain('paint/light.ts');
+    expect(code).toContain('paint/compartment.ts');
+    expect(code.some((f) => f.endsWith('Stage.tsx'))).toBe(true);
+    for (const f of Object.keys(STAMPS)) expect(sheets).toContain(f);
   });
 
-  it.each(sources)('%s', (f) => {
-    const src = readFileSync(`${stage}${f}`, 'utf8');
+  it.each(code)('%s', (f) => {
+    const src = bare(readFileSync(`${stage}${f}`, 'utf8'));
     expect(src).not.toMatch(/<mask\b/);
     expect(src).not.toMatch(/\bmask=/);
+    expect(src).not.toMatch(/mask-?image/i);
+    expect(src).not.toMatch(CSS_MASK);
+  });
+
+  it.each(sheets)('%s', (f) => {
+    const src = bare(readFileSync(`${stage}${f}`, 'utf8'));
+    for (const [, selector, body] of src.matchAll(/([^{}]+)\{([^{}]*)\}/g))
+      if (CSS_MASK.test(body)) expect(selector.trim()).toBe(STAMPS[f]);
   });
 });
 

@@ -121,10 +121,7 @@ function RoomLight({ hud, chosen }: { hud: Hud; chosen?: number }) {
     <>
       <Paint of={roomLight} opts={{ room: 'healer', hud }} />
       {chosen == null ? null : (
-        <div
-          style={{ position: 'absolute', inset: 0 }}
-          dangerouslySetInnerHTML={{ __html: roomChoice({ room: 'healer', hud, chosen }) }}
-        />
+        <Paint of={roomChoice} opts={{ room: 'healer', hud, chosen }} />
       )}
     </>
   );

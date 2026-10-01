@@ -223,17 +223,12 @@ export function NightRoom({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: LIGHT_FADE * k }}
-              dangerouslySetInnerHTML={{
-                __html: roomChoice({
-                  room,
-                  hud,
-                  side,
-                  n,
-                  chosen: chosenIndex,
-                  bleed: BLEED,
-                }),
-              }}
-            />
+            >
+              <Paint
+                of={roomChoice}
+                opts={{ room, hud, side, n, chosen: chosenIndex, bleed: BLEED }}
+              />
+            </motion.div>
           )}
         </AnimatePresence>
       </Layer>
