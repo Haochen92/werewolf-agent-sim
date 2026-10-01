@@ -381,6 +381,18 @@ image ran on it unharmed, the migration only adds a column). Rollback = the `:pr
 2026-09-17 images). Smoke: every site route and `/api` health, replays (with `X-Total-Count`),
 rooms, models; a live replay rendered in headless Chromium loading the painted window, textures
 and lantern.
+· **2026-10-01 both containers rebuilt at `a651988`** (branch pushed first; built with
+`docker build` from a clean detached worktree, then `compose up -d --no-build`). Server: the
+request budget and stall rescue (30 s, two attempts, two stalls → the rescue model for five
+minutes), the 700-character line cap and the 20 s draft-credit cap, the draft endpoint. Frontend:
+the live pass — the morning roll, the once-only beats, the card in every scene, the known-role
+bands, the role-guess listbox, the drawer's foot, the leave door, the loading platform, the
+composer and the three-plaque dock, reading-pace holds with no fast backlog, the deal after a
+departure, Reveal and File on the stage's clock, the notebook across beats, the curtain's wait
+for the filed replay. No migration (the DB was at 0007). Rollback = the `:prev` tags (the
+2026-09-28 images). Smoke: `/api` health, models, replays with `X-Total-Count` 11, the five site
+routes and a replay page all 200; headless Chromium loaded a replay to `deal.table-seated` with
+the Reveal switch and no page errors.
 
 **P4 — deploy + polish.** Caddy site (same-origin `/api`), HTTPS + `Secure` cookie flag on ·
 production compose (Postgres + `alembic upgrade head` before first boot; one `WW_POSTGRES_DSN`
