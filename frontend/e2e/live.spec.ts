@@ -5,15 +5,18 @@
  * of `event: game` frames, the seat's entitled events only, with the catch-up boundary set by
  * the status's `last_seq` (at or below it is history, above it is news).
  *
- * Four pictures (mid-day catch-up at rest; seat 7's speaking turn with the dock, and with the
+ * Pictures (mid-day catch-up at rest; seat 7's speaking turn with the dock, and with the
  * seat's card opened over it; the curtain after game over), and tests that are not pictures: a
  * new game's deal plays from its first beat; "your card" opens and closes, and stays open as
- * the beats go by; on the speaking turn the seat's agent drafts its line (steered or not, and
- * with the seat notebook when "Use my seat notes" is ticked) into the box to be edited, Send
- * sends it, and a line typed by hand sends as it is; the full-screen composer holds the same
- * line (a picture of it, and on a phone it keeps above the soft keyboard), opened from the
- * dock's brass plaque "Write your line", which leads the head on a phone too (a picture);
- * while the status is on its way the page is the empty platform (a picture). The pace
+ * the beats go by; on the speaking turn the dock is three plaques (2026-10-01), Write your line,
+ * Send (greyed until there is a line, live as soon as the composer's box holds one) and Pass,
+ * the line previewed under the head once written (a picture; a refused line's words under it);
+ * all the writing is in the full-screen composer (a picture), where the seat's agent drafts its
+ * line (steered or not, and with the seat notebook when "Use my seat notes" is ticked) into the
+ * box to be edited, Send sends it, and a line typed by hand sends as it is; on a phone the
+ * plaques keep a thumb's size (a picture), a tap on the preview opens the composer and it keeps
+ * above the soft keyboard; while the status is on its way the page is the empty platform (a
+ * picture). The pace
  * (2026-10-01): a departed game plays its deal and the turns after it from the first beat,
  * however much the log held; a queue of beats plays at its normal holds; Reveal and File wait
  * for the stage's ending.
@@ -246,6 +249,20 @@ const yourTurn = (seq: number): WireEvent => ({
   candidates: [],
   deadline: new Date(T0 + 120_000).toISOString(),
 });
+
+/**
+ * Open the full-screen composer from the dock's brass plaque ("Write your line", or "Edit your
+ * line" once there is one), where all the writing is done.
+ */
+async function openComposer(page: Page) {
+  await page
+    .locator('[data-dock="discuss"]')
+    .getByRole('button', { name: /^(Write|Edit) your line$/ })
+    .click();
+  const composer = page.locator('[data-composer]');
+  await expect(composer).toBeVisible();
+  return composer;
+}
 
 test('live: a refresh mid-day lands still on the latest beat', async ({ page }) => {
   await mockApi(page, { status: status(200), stream: upTo(200) });
@@ -524,7 +541,13 @@ test('live: seat 7’s turn to speak, the dock at the foot', async ({ page }) =>
   await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
   await expect(theatre(page)).toHaveAttribute('data-beat', 'day.your-turn');
   await expect(theatre(page)).toHaveAttribute('data-open-prompt', '201');
-  await expect(page.locator('[data-dock="discuss"]')).toBeVisible();
+  const dock = page.locator('[data-dock="discuss"]');
+  await expect(dock).toBeVisible();
+  // three plaques and no boxes (2026-10-01): Send greyed until there is a line
+  await expect(dock.getByRole('textbox')).toHaveCount(0);
+  await expect(dock.getByRole('button', { name: 'Write your line' })).toBeEnabled();
+  await expect(dock.getByRole('button', { name: 'Send', exact: true })).toBeDisabled();
+  await expect(dock.getByRole('button', { name: 'Pass', exact: true })).toBeEnabled();
   // the drawer stops at the rail so the dock keeps the whole band; closed, the room is bench 72's
   await expect(page.locator('[data-drawer]')).toHaveAttribute('data-drawer', 'rail');
   await page.getByRole('button', { name: 'Transcript', exact: true }).click();
@@ -537,9 +560,7 @@ test('live: seat 7’s turn to speak, the dock at the foot', async ({ page }) =>
   const now = await page.evaluate(() => Date.now());
   await page.clock.pauseAt(Math.max(T0 + 10_000, now + 1500));
   await page.clock.runFor(3000);
-  await expect(
-    page.locator('[data-dock="discuss"]').getByText(/^1:[3-5]\d$/),
-  ).toBeVisible();
+  await expect(dock.getByText(/^1:[3-5]\d$/)).toBeVisible();
   await settle(page);
   await expect(page).toHaveScreenshot('live-your-turn-d3.png');
 });
@@ -593,7 +614,9 @@ test('live: the card stays open while the beats go by', async ({ page }) => {
   await expect(card).toBeVisible();
 });
 
-test('live: a steered draft lands in the box; Send sends the line', async ({ page }) => {
+test('live: a steered draft lands in the composer’s box; the dock’s Send sends the line', async ({
+  page,
+}) => {
   const posted: Mock['posted'] = [];
   await mockApi(page, {
     status: status(200, { pending_seats: [ME], pending_input: true }),
@@ -606,16 +629,26 @@ test('live: a steered draft lands in the box; Send sends the line', async ({ pag
   await expect(dock).toBeVisible();
   // one flow: no hand-over on the speaking turn (the agent speaks only when the clock runs out)
   await expect(dock.getByRole('button', { name: /agent/i })).toHaveCount(0);
-  await expect(dock.getByText('3 drafts left')).toBeVisible();
+  // the dock holds no boxes: the steer, Draft and the line are the composer's
+  await expect(dock.getByRole('textbox')).toHaveCount(0);
+  const composer = await openComposer(page);
+  await expect(composer.getByText('3 drafts left')).toBeVisible();
   // an empty notebook: no box to tick
-  await expect(dock.getByLabel('Use my seat notes')).toHaveCount(0);
-  await dock.getByLabel('Steer your agent').fill('8 dodging');
-  await dock.getByRole('button', { name: 'Draft', exact: true }).click();
-  await expect(dock.getByLabel('Your line')).toHaveValue(
+  await expect(composer.getByLabel('Use my seat notes')).toHaveCount(0);
+  await composer.getByLabel('Steer your agent').fill('8 dodging');
+  await composer.getByRole('button', { name: 'Draft', exact: true }).click();
+  await expect(composer.getByLabel('Your line')).toHaveValue(
     'Seat 8 keeps dodging the question.',
   );
-  await expect(dock.getByText('2 drafts left')).toBeVisible();
+  await expect(composer.getByText('2 drafts left')).toBeVisible();
   // the draft came back with no deadline (a solo game's): no count
+  await expect(composer.getByText(/\d:\d\d/)).toHaveCount(0);
+  // closed, the dock previews the line, and its own Send sends it
+  await page.keyboard.press('Escape');
+  await expect(composer).toHaveCount(0);
+  await expect(dock.locator('[data-dock-preview]')).toContainText(
+    'Seat 8 keeps dodging the question.',
+  );
   await expect(dock.getByText(/\d:\d\d/)).toHaveCount(0);
   await dock.getByRole('button', { name: 'Send' }).click();
   await expect(dock).toBeHidden();
@@ -641,13 +674,15 @@ test('live: with no steer the agent drafts its own line, which is edited before 
   });
   await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
   const dock = page.locator('[data-dock="discuss"]');
-  const line = dock.getByLabel('Your line');
   await expect(dock).toBeVisible();
   await expect(dock.getByRole('button', { name: 'Send' })).toBeDisabled();
-  await dock.getByRole('button', { name: 'Draft', exact: true }).click();
+  const composer = await openComposer(page);
+  const line = composer.getByLabel('Your line');
+  await expect(composer.getByRole('button', { name: 'Send' })).toBeDisabled();
+  await composer.getByRole('button', { name: 'Draft', exact: true }).click();
   await expect(line).toHaveValue('Why did seat 5 vote before anyone spoke?');
   await line.fill('Why did seat 5 vote so fast?');
-  await dock.getByRole('button', { name: 'Send' }).click();
+  await composer.getByRole('button', { name: 'Send' }).click();
   await expect(dock).toBeHidden();
   expect(posted).toEqual([
     { path: 'draft', body: { notes: '', current: '' } },
@@ -655,7 +690,7 @@ test('live: with no steer the agent drafts its own line, which is edited before 
   ]);
 });
 
-test('live: the seat notes go with a draft while ticked; Redraft revises the line', async ({
+test('live: the seat notes go with a draft while ticked; Redraft this revises the line', async ({
   page,
 }) => {
   const posted: Mock['posted'] = [];
@@ -679,11 +714,11 @@ test('live: the seat notes go with a draft while ticked; Redraft revises the lin
   };
   await mockApi(page, mock);
   await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
-  const dock = page.locator('[data-dock="discuss"]');
-  const share = dock.getByLabel('Use my seat notes');
+  const composer = await openComposer(page);
+  const share = composer.getByLabel('Use my seat notes');
   await expect(share).toBeChecked(); // ticked to start
-  await dock.getByRole('button', { name: 'Draft', exact: true }).click();
-  await expect(dock.getByLabel('Your line')).toHaveValue(
+  await composer.getByRole('button', { name: 'Draft', exact: true }).click();
+  await expect(composer.getByLabel('Your line')).toHaveValue(
     'Seat 5 jumped on that slip awfully fast.',
   );
   // a line in the box: the same button redrafts, the steer revises it, and unticked the
@@ -694,12 +729,12 @@ test('live: the seat notes go with a draft while ticked; Redraft revises the lin
     deadline: null,
   };
   await share.uncheck();
-  await dock.getByLabel('Steer your agent').fill('softer');
-  await dock.getByRole('button', { name: 'Redraft', exact: true }).click();
-  await expect(dock.getByLabel('Your line')).toHaveValue(
+  await composer.getByLabel('Steer your agent').fill('softer');
+  await composer.getByRole('button', { name: 'Redraft this', exact: true }).click();
+  await expect(composer.getByLabel('Your line')).toHaveValue(
     'Seat 5, why so quick on the slip?',
   );
-  await expect(dock.getByText('1 draft left')).toBeVisible();
+  await expect(composer.getByText('1 draft left')).toBeVisible();
   expect(posted).toEqual([
     {
       path: 'draft',
@@ -717,7 +752,9 @@ test('live: the seat notes go with a draft while ticked; Redraft revises the lin
   ]);
 });
 
-test('live: a line typed by hand sends as it is, no draft asked for', async ({ page }) => {
+test('live: a line typed by hand in the composer sends as it is, no draft asked for', async ({
+  page,
+}) => {
   const posted: Mock['posted'] = [];
   await mockApi(page, {
     status: status(200, { pending_seats: [ME], pending_input: true }),
@@ -727,13 +764,16 @@ test('live: a line typed by hand sends as it is, no draft asked for', async ({ p
   await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
   const dock = page.locator('[data-dock="discuss"]');
   await expect(dock).toBeVisible();
-  await dock.getByLabel('Your line').fill('I trust seat 4 today.');
-  await dock.getByLabel('Your line').press('Control+Enter');
+  const composer = await openComposer(page);
+  await composer.getByLabel('Your line').fill('I trust seat 4 today.');
+  // Ctrl/⌘+Enter sends from the composer
+  await composer.getByLabel('Your line').press('Control+Enter');
+  await expect(composer).toHaveCount(0);
   await expect(dock).toBeHidden();
   expect(posted).toEqual([{ path: 'turns', body: { message: 'I trust seat 4 today.' } }]);
 });
 
-test('live: a long line counts near the cap and stops at 700; a pending draft says it is working', async ({
+test('live: a long line counts near the cap in the composer and stops at 700; a pending draft says it is working', async ({
   page,
 }) => {
   await mockApi(page, {
@@ -748,9 +788,9 @@ test('live: a long line counts near the cap and stops at 700; a pending draft sa
       return route.fulfill({ status: 204, headers: cors(req) });
   });
   await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
-  const dock = page.locator('[data-dock="discuss"]');
-  const box = dock.getByLabel('Your line');
-  const count = dock.locator('[data-line-count]');
+  const composer = await openComposer(page);
+  const box = composer.getByLabel('Your line');
+  const count = composer.locator('[data-line-count]');
   await box.fill('a'.repeat(599));
   await expect(count).toHaveCount(0);
   await box.press('b');
@@ -759,15 +799,15 @@ test('live: a long line counts near the cap and stops at 700; a pending draft sa
   await page.keyboard.insertText('c'.repeat(110));
   await expect(box).toHaveValue(/^a{599}bc{100}$/);
   await expect(count).toHaveText('700 / 700');
-  await dock.getByRole('button', { name: 'Redraft', exact: true }).click();
+  await composer.getByRole('button', { name: 'Redraft this', exact: true }).click();
   // the newest word (the one fading out stays in the page while it goes)
-  const words = dock.locator('[data-draft-word]').last();
+  const words = composer.locator('[data-draft-word]').last();
   await expect(words).toHaveText('Drafting…');
   await expect(words).toHaveText('Weighing the table…', { timeout: 4000 });
   await expect(words).toHaveText('Finding the words…', { timeout: 4000 });
 });
 
-test('live: the brass plaque opens the full-screen composer, the same line as the box', async ({
+test('live: the brass plaque opens the full-screen composer, which keeps the line when closed', async ({
   page,
 }) => {
   test.setTimeout(90_000);
@@ -806,18 +846,27 @@ test('live: the brass plaque opens the full-screen composer, the same line as th
   const now = await page.evaluate(() => Date.now());
   await page.clock.pauseAt(Math.max(T0 + 10_000, now + 1500));
   await page.clock.runFor(3000);
-  await dock.getByLabel('Your line').fill('I trust seat 4 today, and');
-  await dock.getByRole('button', { name: 'Write your line' }).click();
-  const composer = page.locator('[data-composer]');
-  await expect(composer).toBeVisible();
+  const composer = await openComposer(page);
   const big = composer.getByLabel('Your line');
-  // the same line, the caret at its end: the writing goes on where it was
+  await expect(big).toBeFocused();
+  await expect(composer.getByRole('button', { name: 'Draft', exact: true })).toBeVisible();
+  await page.keyboard.type('I trust seat 4 today, and');
+  // closed, the line stays; Edit your line opens it again with the caret at its end, so the
+  // writing goes on where it was
+  await page.keyboard.press('Escape');
+  await expect(composer).toHaveCount(0);
+  await expect(dock.locator('[data-dock-preview]')).toContainText(
+    'I trust seat 4 today, and',
+  );
+  await dock.getByRole('button', { name: 'Edit your line' }).click();
   await expect(big).toHaveValue('I trust seat 4 today, and');
   await expect(big).toBeFocused();
   await page.keyboard.type(' not seat 5.');
-  await expect(dock.getByLabel('Your line')).toHaveValue(
-    'I trust seat 4 today, and not seat 5.',
-  );
+  await expect(big).toHaveValue('I trust seat 4 today, and not seat 5.');
+  // with text in the box the one button revises it
+  await expect(
+    composer.getByRole('button', { name: 'Redraft this', exact: true }),
+  ).toBeVisible();
   await expect(composer.locator('[data-word-count]')).toHaveText('9 words');
   await expect(composer.locator('[data-composer-clock]')).toHaveText(/^1:[3-5]\d$/);
   await expect(composer.locator('[data-line-count]')).toHaveCount(0);
@@ -833,7 +882,7 @@ test('live: the brass plaque opens the full-screen composer, the same line as th
 
   // Draft: the same button, its words turning while the draft is on its way
   await composer.getByLabel('Steer your agent').fill('8 dodging');
-  await composer.getByRole('button', { name: 'Redraft', exact: true }).click();
+  await composer.getByRole('button', { name: 'Redraft this', exact: true }).click();
   const words = composer.locator('[data-draft-word]').last();
   await expect(words).toHaveText('Drafting…');
   await page.clock.runFor(1700);
@@ -842,18 +891,18 @@ test('live: the brass plaque opens the full-screen composer, the same line as th
   await expect(big).toHaveValue('Seat 8 keeps dodging the question.');
   await expect(composer.getByText('2 drafts left')).toBeVisible();
 
-  // closed (Esc), the line stays in the box; the X closes too
+  // closed (Esc), the dock previews the drafted line; the X closes too
   await page.keyboard.press('Escape');
   await expect(composer).toHaveCount(0);
-  await expect(dock.getByLabel('Your line')).toHaveValue(
+  await expect(dock.locator('[data-dock-preview]')).toContainText(
     'Seat 8 keeps dodging the question.',
   );
-  await dock.getByRole('button', { name: 'Write your line' }).click();
+  await dock.getByRole('button', { name: 'Edit your line' }).click();
   await composer.getByRole('button', { name: 'Close', exact: true }).click();
   await expect(composer).toHaveCount(0);
 
-  // Send from the composer posts what the box's Send would
-  await dock.getByRole('button', { name: 'Write your line' }).click();
+  // Send from the composer posts what the dock's Send would
+  await dock.getByRole('button', { name: 'Edit your line' }).click();
   await composer.getByRole('button', { name: 'Send' }).click();
   await expect(composer).toHaveCount(0);
   await expect(dock).toBeHidden();
@@ -863,9 +912,101 @@ test('live: the brass plaque opens the full-screen composer, the same line as th
   ]);
 });
 
-test('live: on a phone a tap on the box opens the composer, fitted above the soft keyboard', async ({
+test('live: the dock’s plaques: Send waits for a line and is live once the composer holds one; the dock previews it, and a refused line says why under it', async ({
   page,
 }) => {
+  const posted: Mock['posted'] = [];
+  await page.clock.install({ time: T0 });
+  await mockApi(page, {
+    status: status(200, { pending_seats: [ME], pending_input: true }),
+    stream: [...upTo(200), yourTurn(201)],
+    posted,
+  });
+  // the engine refuses the line, in its own words
+  await page.unroute(`**/games/${GAME}/turns`);
+  await page.route(`**/games/${GAME}/turns`, async (route) => {
+    const req = route.request();
+    if (req.method() === 'OPTIONS')
+      return route.fulfill({ status: 204, headers: cors(req) });
+    posted.push({ path: 'turns', body: req.postDataJSON() });
+    await route.fulfill({
+      status: 422,
+      contentType: 'application/json',
+      headers: cors(req),
+      body: JSON.stringify({ detail: 'That line names a seat that is not at the table.' }),
+    });
+  });
+  await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  const dock = page.locator('[data-dock="discuss"]');
+  await expect(dock).toBeVisible();
+  // the drawer shut, as in the turn's picture
+  await page.getByRole('button', { name: 'Transcript', exact: true }).click();
+  await expect(page.locator('[data-drawer]')).toHaveCount(0);
+  // as the turn's golden: stop the clock a few seconds in (a wide margin: see above)
+  const now = await page.evaluate(() => Date.now());
+  await page.clock.pauseAt(Math.max(T0 + 10_000, now + 1500));
+  await page.clock.runFor(3000);
+  // three plaques and no boxes; Send greyed with no line
+  const send = dock.getByRole('button', { name: 'Send', exact: true });
+  await expect(dock.getByRole('button', { name: 'Write your line' })).toBeEnabled();
+  await expect(send).toBeDisabled();
+  await expect(dock.getByRole('button', { name: 'Pass', exact: true })).toBeEnabled();
+  await expect(dock.locator('[data-dock-preview]')).toHaveCount(0);
+  // a letter in the composer's box and the dock's Send is live, with the composer still open
+  const composer = await openComposer(page);
+  await page.keyboard.type('S');
+  await expect(send).toBeEnabled();
+  await expect(composer).toBeVisible();
+  await page.keyboard.press('Backspace');
+  await expect(send).toBeDisabled();
+  const line =
+    'Seat 9 says seat 2 was home all night, but nobody saw the lamp lit after the second bell, and that is the third time seat 9 has vouched for the same seat.';
+  await composer.getByLabel('Your line').fill(line);
+  await page.keyboard.press('Escape');
+  await expect(composer).toHaveCount(0);
+  // closed: the line previewed on one row cut with an ellipsis, its words at the end, Send live
+  // and the plaque reading Edit your line
+  const preview = dock.locator('[data-dock-preview]');
+  await expect(preview.locator('[data-preview-words]')).toHaveText('33 words');
+  await expect(send).toBeEnabled();
+  await expect(dock.getByRole('button', { name: 'Edit your line' })).toBeVisible();
+  const shown = await preview
+    .locator('span')
+    .first()
+    .evaluate((el) => ({
+      text: el.textContent ?? '',
+      clipped: el.scrollWidth > el.clientWidth,
+      ellipsis: getComputedStyle(el).textOverflow,
+      oneLine:
+        el.getBoundingClientRect().height < 2 * parseFloat(getComputedStyle(el).fontSize),
+    }));
+  expect(shown.ellipsis).toBe('ellipsis');
+  expect(shown.oneLine).toBe(true);
+  expect(shown.clipped || shown.text.endsWith('…')).toBe(true);
+  // on a desktop the preview is only a preview: the plaque is the way in
+  await preview.click();
+  await expect(composer).toHaveCount(0);
+  await settle(page);
+  await expect(page).toHaveScreenshot('dock-preview-d3.png');
+  // refused: the server's words under the preview, over the plaques; the line stays
+  await send.click();
+  const error = dock.getByRole('alert');
+  await expect(error).toHaveText('That line names a seat that is not at the table.');
+  await expect(preview).toContainText('Seat 9 says seat 2');
+  const [p, e, w] = await Promise.all(
+    [preview, error, dock.getByRole('button', { name: 'Edit your line' })].map(
+      async (el) => (await el.boundingBox())!,
+    ),
+  );
+  expect(e.y).toBeGreaterThanOrEqual(p.y + p.height - 0.5);
+  expect(w.y).toBeGreaterThanOrEqual(e.y + e.height - 0.5);
+  expect(posted).toEqual([{ path: 'turns', body: { message: line } }]);
+});
+
+test('live: on a phone a tap on the preview opens the composer, fitted above the soft keyboard', async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
   await page.setViewportSize({ width: 667, height: 375 });
   // the soft keyboard up: the browser says only the top 200 px of the page are visible
   await page.addInitScript(() => {
@@ -887,16 +1028,21 @@ test('live: on a phone a tap on the box opens the composer, fitted above the sof
   await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
   const dock = page.locator('[data-dock="discuss"]');
   await expect(dock).toBeVisible();
-  const small = dock.getByLabel('Your line');
-  // the small box is the preview here: it takes no typing of its own
-  await expect(small).toHaveAttribute('readonly', '');
-  await small.click();
-  const composer = page.locator('[data-composer]');
+  // no line yet, no preview: the plaque opens the composer
+  const preview = dock.locator('[data-dock-preview]');
+  await expect(preview).toHaveCount(0);
+  const composer = await openComposer(page);
+  await page.keyboard.type('Seat 5 was quick.');
+  await page.keyboard.press('Escape');
+  await expect(composer).toHaveCount(0);
+  // the preview is a way back in on a phone, the writing going on where it was
+  await expect(preview).toContainText('Seat 5 was quick.');
+  await preview.click();
   await expect(composer).toBeVisible();
   const big = composer.getByLabel('Your line');
   await expect(big).toBeFocused();
-  await page.keyboard.type('Seat 5 was quick.');
-  await expect(small).toHaveValue('Seat 5 was quick.');
+  await page.keyboard.type(' Too quick.');
+  await expect(big).toHaveValue('Seat 5 was quick. Too quick.');
   const send = composer.getByRole('button', { name: 'Send' });
   await expect(send).toBeEnabled();
   const frame = (await composer.boundingBox())!;
@@ -912,7 +1058,7 @@ test('live: on a phone a tap on the box opens the composer, fitted above the sof
   expect((await big.boundingBox())!.height).toBeGreaterThanOrEqual(30);
 });
 
-test('live: on a phone the brass plaque leads the dock’s head, with the drawer shut or open', async ({
+test('live: on a phone the three plaques sit in a row under the head, with the drawer shut or open', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 667, height: 375 });
@@ -929,33 +1075,45 @@ test('live: on a phone the brass plaque leads the dock’s head, with the drawer
   const now = await page.evaluate(() => Date.now());
   await page.clock.pauseAt(Math.max(T0 + 10_000, now + 1500));
   await page.clock.runFor(3000);
-  const plaque = dock.getByRole('button', { name: 'Write your line' });
+  const plaques = ['Write your line', 'Send', 'Pass'].map((name) =>
+    dock.getByRole('button', { name, exact: true }),
+  );
+  await expect(plaques[1]).toBeDisabled();
   const clock = dock.getByText(/^1:[3-5]\d$/);
+  const heading = dock.getByText('Your turn to speak');
   const hint = dock.getByText(/^Nothing is said until you send it\./);
-  // a thumb's size at the head's right end, the clock to its left, nothing past the dock
+  // each a thumb's size, in one row in order under the head, nothing past the dock
   const fits = async () => {
-    const [p, c, d, h] = await Promise.all(
-      [plaque, clock, dock, hint].map(async (el) => (await el.boundingBox())!),
+    const [d, c, t, h, ...ps] = await Promise.all(
+      [dock, clock, heading, hint, ...plaques].map(async (el) => (await el.boundingBox())!),
     );
-    // 44 css px, give or take the stage's scale rounding
-    expect(p.height).toBeGreaterThanOrEqual(43.9);
-    expect(p.width).toBeGreaterThan(90);
-    expect(c.x + c.width).toBeLessThanOrEqual(p.x);
-    expect(p.x + p.width).toBeLessThanOrEqual(d.x + d.width);
-    expect(Math.abs(c.y + c.height / 2 - (p.y + p.height / 2))).toBeLessThan(4);
-    return { p, h };
+    for (const p of ps) {
+      // 44 css px, give or take the stage's scale rounding
+      expect(p.height).toBeGreaterThanOrEqual(43.9);
+      expect(Math.abs(p.y - ps[0].y)).toBeLessThan(1);
+      expect(p.x).toBeGreaterThanOrEqual(d.x);
+      expect(p.x + p.width).toBeLessThanOrEqual(d.x + d.width);
+      expect(p.y + p.height).toBeLessThanOrEqual(d.y + d.height);
+    }
+    expect(ps[0].x + ps[0].width).toBeLessThanOrEqual(ps[1].x);
+    expect(ps[1].x + ps[1].width).toBeLessThanOrEqual(ps[2].x);
+    // the clock at the head's right end, above the row
+    expect(c.x + c.width).toBeLessThanOrEqual(d.x + d.width);
+    expect(c.y + c.height).toBeLessThanOrEqual(ps[0].y);
+    expect(h.y + h.height).toBeLessThanOrEqual(ps[0].y);
+    return { t, h };
   };
   await fits();
   await settle(page);
   await expect(page).toHaveScreenshot('dock-plaque-phone.png');
-  // the drawer open (the side slot): the dock narrows, the hint drops under the head and the
-  // plaque keeps its size
+  // the drawer open (the side slot): the dock narrows, the hint drops under the heading and the
+  // plaques keep their size
   await page.getByRole('button', { name: 'Transcript', exact: true }).click();
   await expect(page.locator('[data-drawer]')).toBeVisible();
-  const { p, h } = await fits();
-  expect(h.y).toBeGreaterThanOrEqual(p.y + p.height);
-  // the composer opens from it as from the box
-  await plaque.click();
+  const { t, h } = await fits();
+  expect(h.y).toBeGreaterThanOrEqual(t.y + t.height - 0.5);
+  // the composer opens from it
+  await plaques[0].click();
   await expect(page.locator('[data-composer]')).toBeVisible();
 });
 

@@ -1,12 +1,15 @@
 /**
- * What the speaking turn's dock allows at a given moment, worked out from what it is handed,
- * so the rules can be tested without drawing it. One button asks the seat's own agent for its
- * line: "Draft" while the box is empty, "Redraft" once it holds one. The optional steer in the
- * field goes with it (and revises the line in the box). Either way the draft only lands in the
- * box, and nothing is said until Send.
+ * What the speaking turn's dock and its composer allow at a given moment, worked out from what
+ * they are handed, so the rules can be tested without drawing them. The dock (2026-10-01) is
+ * three plaques, "Write your line" (or "Edit your line" once there is one), Send and Pass, with
+ * the line previewed on one row above them; the writing is all in the composer. There one
+ * button asks the seat's own agent for its line: "Draft" while the box is empty, "Redraft this"
+ * once it holds one. The optional steer goes with it (and revises the line in the box). Either
+ * way the draft only lands in the box, and nothing is said until Send.
  */
 import type { DraftRequest } from '@/types/contracts';
 import type { DockInput } from '../scenes/types';
+import { wordCount, wordsText } from './composer';
 
 /** The server's cap on drafts per turn (ux_journeys D25), when the dock is not told. */
 const DRAFTS_PER_TURN = 3;
@@ -20,6 +23,26 @@ export const LINE_MAX = 700;
 /** The box's count, "612 / 700", once the line is within 100 of the cap; null before then. */
 export function lineCount(text: string): string | null {
   return text.length >= LINE_MAX - 100 ? `${text.length} / ${LINE_MAX}` : null;
+}
+
+/**
+ * The longest the dock's preview of the line runs before it is cut with "…" (the row's own
+ * width cuts it sooner, with the browser's ellipsis).
+ */
+export const PREVIEW_MAX = 120;
+
+/**
+ * The line as the dock's preview row shows it: on one line (its breaks and runs of space made
+ * one space), cut at the last word before `max` with "…"; null when there is no line.
+ */
+export function previewText(text: string, max = PREVIEW_MAX): string | null {
+  const one = text.replace(/\s+/g, ' ').trim();
+  if (!one) return null;
+  if (one.length <= max) return one;
+  const cut = one.slice(0, max);
+  const space = cut.lastIndexOf(' ');
+  // a word longer than most of the cut is cut through
+  return `${(space > max / 2 ? cut.slice(0, space) : cut).trimEnd()}…`;
 }
 
 export const draftsLeftText = (n: number) =>
@@ -58,6 +81,12 @@ export interface DockControls {
   busy: boolean;
   /** The line in the box, trimmed: what Send sends. */
   line: string;
+  /** The dock's preview of the line, on one line and cut with "…"; null: no line, no row. */
+  preview: string | null;
+  /** The line's word count at the preview's end, "23 words". */
+  words: string;
+  /** The brass plaque to the composer: "Write your line", "Edit your line" once there is one. */
+  writeLabel: string;
   /** The steer for the agent, trimmed; empty = the agent writes its own line. */
   notes: string;
   canSend: boolean;
@@ -65,7 +94,7 @@ export interface DockControls {
   hasDraft: boolean;
   canDraft: boolean;
   draftsLeft: number;
-  /** The Draft button's words: "Draft" for an empty box, "Redraft" once it holds a line. */
+  /** The Draft button's words: "Draft" for an empty box, "Redraft this" once it holds a line. */
   draftLabel: string;
   /** What the Draft button will do, for its tooltip. */
   draftHint: string;
@@ -87,12 +116,16 @@ export function dockControls(dock: DockInput): DockControls {
   return {
     busy,
     line,
+    preview: previewText(dock.text),
+    words: wordsText(wordCount(dock.text)),
+    writeLabel: line ? 'Edit your line' : 'Write your line',
     notes,
+    // Send is live the moment there is a line, wherever it was written (the composer open or not)
     canSend: !!line && !busy && !over,
     hasDraft,
     canDraft: hasDraft && !busy && !dock.drafting && draftsLeft > 0,
     draftsLeft,
-    draftLabel: dock.drafting ? 'Drafting…' : line ? 'Redraft' : 'Draft',
+    draftLabel: dock.drafting ? 'Drafting…' : line ? 'Redraft this' : 'Draft',
     draftHint:
       (notes && line
         ? 'Your agent revises the line in the box as you asked.'

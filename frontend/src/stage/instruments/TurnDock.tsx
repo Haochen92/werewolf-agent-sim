@@ -2,34 +2,36 @@
 
 /**
  * The seated human's speaking turn, in the box at the foot of the stage (bench 72, beat sheet
- * §2 row 4). Where the speech box would hold a seat's line, it holds a place to write one, on
- * the speech box's walnut board: the countdown in red at its head, then one flow, top to foot.
+ * §2 row 4). Where the speech box would hold a seat's line, it holds the turn, on the speech
+ * box's walnut board: "Your turn to speak", the hint and the countdown in red at its head, then
+ * three plaques in a row and no boxes (owner, 2026-10-01; until then the dock held the steer,
+ * Draft and the reply box itself):
  *
- * 1. One button (ux_journeys D25) asks the seat's own agent for the line it would say:
- *    **Draft** while the reply box is empty, **Redraft** once it holds a line. An optional
- *    steer in the field beside it ("push on seat 5", "softer, ask seat 4 instead") goes along,
- *    and revises the line in the box. When the seat notebook holds anything, a "Use my seat
- *    notes" box (ticked to start) sends it along too. Three drafts a turn; the time spent
- *    waiting on one is given back to the clock.
- * 2. The reply box, where the draft lands to be read and edited, or where the player types
- *    their own line. **Send** says what is in it; **Pass** says nothing.
+ * - **Write your line** (brass, the keyboard before its words) opens the full-screen composer,
+ *   where all the writing is done. Once there is a line it reads **Edit your line**.
+ * - **Send** (brass) says the line. Greyed until there is one, live the moment the composer's
+ *   box holds a line, with the composer open or closed; it waits too while a line is over the cap.
+ * - **Pass** (walnut) says nothing.
+ *
+ * Once there is a line, a row under the head previews it, on one line cut with "…", its word
+ * count at the end ("23 words"); on a phone a tap on it opens the composer too. A line refused
+ * by the server says why under it, in the server's words.
+ *
+ * The composer (beat sheet §12) holds the line in a box as big as the screen, over the whole
+ * stage: the clock large; the steer, and one button (ux_journeys D25) asking the seat's own
+ * agent for the line it would say, **Draft** while the box is empty, **Redraft this** once it
+ * holds text (the steer revising that line), "n drafts left" (three a turn; the time spent
+ * waiting on one is given back to the clock) and, when the seat notebook holds anything, "Use
+ * my seat notes" (ticked to start); the box, "n words" and "612 / 700"; Pass, Send
+ * (Ctrl/⌘+Enter) and Close (the X, Esc, a tap outside), which keeps the line. It is laid out in
+ * css px, not stage units, and fitted to what the browser says is visible (`visualViewport`), so
+ * on a phone with the soft keyboard up the box and Send stay in view. Whether it is open is kept
+ * here, so it lasts across the scene's recuts within the turn; it shuts when the turn closes.
  *
  * Nothing is said until Send. If the clock runs out first, the seat's agent speaks on its own
- * (the live theatre sees to that; there is no hand-over button on this turn).
- *
- * It only draws what it is handed and reports the presses; the live theatre holds the words
- * and talks to the server. A line refused by the server says why, in the server's words.
- *
- * The full-screen composer (beat sheet §12): the brass plaque "Write your line" at the right of
- * the dock's head, the first thing the eye finds (the clock to its left; on a narrow dock the
- * hint drops under the head and the plaque keeps its size, never under 44 css px tall), or on a
- * phone (a frame 900 css px wide or narrower) a tap on the small box, opens the same line in a
- * box as big as the screen, over the whole stage: the clock large, the steer and Draft, the
- * word count and "612 / 700", Send, Pass, and Close (the X, or Esc). It is the same line, not a
- * copy: the small box stays as its preview, and closing keeps it. It is laid out in css px, not
- * stage units, and fitted to what the browser says is visible (`visualViewport`), so on a phone
- * with the soft keyboard up the box and Send stay in view. Whether it is open is kept here, so
- * it lasts across the scene's recuts within the turn; it shuts when the turn closes.
+ * (the live theatre sees to that; there is no hand-over button on this turn). The dock only
+ * draws what it is handed and reports the presses; the live theatre holds the words and talks
+ * to the server.
  */
 import { AnimatePresence, motion } from 'motion/react';
 import {
@@ -44,7 +46,7 @@ import { SPRITES } from '@/assets/manifest';
 import { useMotionScale } from '../motion';
 import type { DockInput } from '../scenes/types';
 import { Overlay } from '../Stage';
-import { PHONE_QUERY, composerBox, composerShown, wordCount, wordsText } from './composer';
+import { PHONE_QUERY, composerBox, composerShown } from './composer';
 import styles from './TurnDock.module.css';
 import {
   DRAFT_WORDS,
@@ -74,13 +76,6 @@ export function TurnDock({ dock, left, onSay, onPass, arrive = false }: TurnDock
   const draft = () => {
     if (c.canDraft) dock.onDraft?.(c.notes, c.line);
   };
-  // Ctrl/Cmd + Enter sends, as in any chat box; a plain Enter is a new line
-  const onKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault();
-      say();
-    }
-  };
   // the full-screen composer: open until closed, and never once the turn is
   const phone = usePhone();
   const [open, setOpen] = useState(false);
@@ -109,6 +104,29 @@ export function TurnDock({ dock, left, onSay, onPass, arrive = false }: TurnDock
           {left ? ' If the clock runs out, your agent speaks for you.' : ''}
         </span>
         {left ? <span className={styles.count}>{left}</span> : null}
+      </header>
+      {c.preview ? (
+        <div
+          className={`${styles.preview} ${phone && !c.busy ? styles.tappable : ''}`}
+          data-dock-preview
+          // on a phone the preview is a way into the composer too (the plaque is the button)
+          onClick={phone && !c.busy ? () => setOpen(true) : undefined}
+        >
+          <span className={styles.previewLine}>{c.preview}</span>
+          <span className={styles.previewWords} data-preview-words>
+            {c.words}
+          </span>
+          {c.over ? (
+            <span className={`${styles.previewWords} ${styles.overCap}`}>{c.count}</span>
+          ) : null}
+        </div>
+      ) : null}
+      {dock.error ? (
+        <p className={styles.error} role="alert">
+          {dock.error}
+        </p>
+      ) : null}
+      <div className={styles.plaques}>
         <button
           ref={expand}
           type="button"
@@ -120,53 +138,15 @@ export function TurnDock({ dock, left, onSay, onPass, arrive = false }: TurnDock
           disabled={c.busy}
         >
           <KeyboardGlyph />
-          Write your line
+          {c.writeLabel}
         </button>
-      </header>
-      {c.hasDraft ? <AgentRow id="dock-notes" dock={dock} c={c} draft={draft} /> : null}
-      <div className={styles.reply}>
-        <div className={styles.lineBox}>
-          <textarea
-            className={styles.line}
-            aria-label="Your line"
-            placeholder={
-              c.hasDraft ? 'Type your line, or draft one above…' : 'Type your line…'
-            }
-            value={dock.text}
-            onChange={(e) => dock.onText?.(e.target.value)}
-            onKeyDown={onKey}
-            // on a phone the small box is the composer's preview: a tap opens the composer
-            // rather than the soft keyboard under a box this small
-            onClick={phone && !c.busy ? () => setOpen(true) : undefined}
-            readOnly={!dock.onText || phone}
-            disabled={c.busy}
-            maxLength={LINE_MAX}
-            autoFocus={!phone}
-          />
-          {c.count ? (
-            <span
-              className={`${styles.lineCount} ${c.over ? styles.overCap : ''}`}
-              data-line-count
-              aria-live="polite"
-            >
-              {c.count}
-            </span>
-          ) : null}
-        </div>
-        <div className={styles.sends}>
-          <button type="button" className={styles.pri} onClick={say} disabled={!c.canSend}>
-            {dock.sending ? 'Sending…' : 'Send'}
-          </button>
-          <button type="button" onClick={onPass} disabled={c.busy}>
-            Pass
-          </button>
-        </div>
+        <button type="button" className={styles.pri} onClick={say} disabled={!c.canSend}>
+          {dock.sending ? 'Sending…' : 'Send'}
+        </button>
+        <button type="button" onClick={onPass} disabled={c.busy}>
+          Pass
+        </button>
       </div>
-      {dock.error ? (
-        <p className={styles.error} role="alert">
-          {dock.error}
-        </p>
-      ) : null}
       {composerShown(open, dock) ? (
         <Overlay>
           <Composer
@@ -186,9 +166,9 @@ export function TurnDock({ dock, left, onSay, onPass, arrive = false }: TurnDock
 }
 
 /**
- * The instructions to the seat's agent: a brass label, the steer, Draft (or Redraft, or the
- * turning words while one is on its way), how many drafts are left, and "Use my seat notes".
- * The dock and the composer draw the same row.
+ * The instructions to the seat's agent, in the composer: a brass label, the steer, Draft (or
+ * Redraft this, or the turning words while one is on its way), how many drafts are left, and
+ * "Use my seat notes".
  */
 function AgentRow({
   id,
@@ -207,7 +187,7 @@ function AgentRow({
       <input
         id={id}
         aria-label="Steer your agent"
-        placeholder="Optional — steer or revise, e.g. push on seat 5 / softer, ask seat 4 instead"
+        placeholder="Optional. Leave empty for your agent's own line, or steer it: push on seat 5, softer, ask seat 4 instead."
         maxLength={500}
         value={dock.notes ?? ''}
         onChange={(e) => dock.onNotes?.(e.target.value)}
@@ -342,7 +322,7 @@ function Composer({
         />
         <footer className={styles.foot}>
           <span className={styles.wordCount} data-word-count>
-            {wordsText(wordCount(dock.text))}
+            {c.words}
           </span>
           {c.count ? (
             <span

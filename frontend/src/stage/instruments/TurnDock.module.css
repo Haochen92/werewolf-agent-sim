@@ -1,8 +1,8 @@
 /* The speaking turn's box, as bench 72 places it (in the speech box's stead, the red count at
    its head), in the HUD pass's material (owner, 2026-09-29): the speech box's walnut board and
-   thin brass edge, Young Serif for the heading and the buttons, Literata in the fields. One flow
-   top to foot (HUD pass 3b): instructions to your agent + Draft, then the reply box + Send and
-   Pass. In stage units (1cqw = 16). */
+   thin brass edge, Young Serif for the heading and the buttons, Literata in the fields. Since
+   2026-10-01 no boxes: the head, the line's preview once there is one, then three plaques (Write
+   your line, Send, Pass); the writing is in the composer. In stage units (1cqw = 16). */
 .dock {
   flex: 1 1 auto;
   min-width: 0;
@@ -50,16 +50,15 @@
   color: #e3503f;
   font-variant-numeric: tabular-nums;
 }
-/* the dock's head (2026-10-01): the heading, the hint, the count, and at the far right the brass
-   plaque to the full-screen composer, the first thing the eye finds. The hint takes what room
+/* the dock's head: the heading, the hint, the count at the far right. The hint takes what room
    is left beside them and wraps in it; on a narrow head (a phone with the side slot open) it
-   drops to a row of its own under them and the heading wraps, so the plaque keeps its size.
-   The head is the query's container, in its own type (em = --meta). */
+   drops to a row of its own under them. The head is the query's container, in its own type
+   (em = --meta). */
 .top {
   container: dock-head / inline-size;
   font-size: var(--meta);
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: calc(3.2px * var(--legible-ui)) calc(11.2px * var(--legible-ui));
 }
@@ -81,11 +80,48 @@
     grid-column: 1 / -1;
   }
 }
-/* the plaque: Send's brass (.pri), as large as Send or larger and never under 44 css px tall
-   (a thumb's width on a phone), the keyboard before its words */
-.dock .plaque {
-  grid-row: 1;
-  grid-column: 4;
+/* the line's preview (2026-10-01): one line in Literata, cut with an ellipsis, its word count
+   at the end; on a phone a tap on it opens the composer */
+.preview {
+  display: flex;
+  align-items: baseline;
+  gap: calc(10px * var(--legible-ui));
+  min-width: 0;
+}
+.previewLine {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-body);
+  font-size: calc(var(--said) * 0.9);
+  color: var(--cream);
+}
+.previewWords {
+  flex: none;
+  font-size: calc(var(--meta) * 0.85);
+  color: var(--cream2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.previewWords.overCap {
+  color: #e3503f;
+}
+.tappable {
+  cursor: pointer;
+}
+
+/* the three plaques in a row (2026-10-01): Write your line (Send's brass, the keyboard before its
+   words, the widest), Send (brass), Pass (walnut). Each never under 44 css px tall (a thumb's
+   width on a phone) */
+.plaques {
+  display: flex;
+  gap: calc(8px * var(--legible-ui));
+  min-width: 0;
+}
+.dock .plaques button {
+  flex: 1 1 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -94,13 +130,19 @@
     calc(44px * var(--legible-ui)),
     calc(44px / max(var(--stage-scale, 1), 0.01))
   );
-  padding: 0 0.95em 0 0.8em;
+  padding: 0 0.95em;
   font-size: calc(var(--meta) * 1.2);
   line-height: 1.1;
   border-radius: 7px;
+}
+.dock .plaques .pri {
   box-shadow:
     inset 0 1px 0 rgba(255, 240, 200, 0.45),
     0 2px 6px rgba(0, 0, 0, 0.55);
+}
+.dock .plaques .plaque {
+  flex-grow: 1.6;
+  padding-left: 0.8em;
 }
 .plaque svg {
   flex: none;
@@ -144,7 +186,7 @@
   font-style: italic;
 }
 
-/* 1. the instructions to your agent: a brass label, the field, Draft, how many are left */
+/* the composer's instructions to your agent: a brass label, the field, Draft, how many are left */
 .agent {
   display: flex;
   align-items: center;
@@ -189,29 +231,12 @@
   accent-color: var(--hud-brass-hi);
 }
 
-/* 2. the reply box, and Send over Pass beside it */
-.reply {
-  display: flex;
-  align-items: stretch;
-  gap: calc(8px * var(--legible-ui));
-}
+/* the composer's box */
 .line {
-  flex: 1 1 auto;
   min-width: 0;
-  /* a step smaller on a phone (--grown), so a two-line draft shows whole in the box */
-  font-size: calc(var(--said) * (1.02 - 0.2 * var(--grown)));
+  font-size: calc(var(--said) * 1.02);
   line-height: 1.35;
-  min-height: calc(64px * var(--legible));
-  height: calc(64px * var(--legible));
   resize: none;
-  padding: 6.4px 11.2px;
-}
-.sends {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: calc(5.6px * var(--legible-ui));
 }
 
 /* the buttons: quiet brass-edged walnut plaques in Young Serif; Send is the one in brass */
@@ -250,22 +275,15 @@
   opacity: 0.45;
   cursor: default;
 }
-
-/* the box's count near the cap, "612 / 700": small, in the stage's typewriter, a tag pinned
-   across the box's lower right edge, so it takes no room from the words and nothing moves when
-   it comes; past the cap (a long draft) in the countdown's red */
-.lineBox {
-  position: relative;
-  flex: 1 1 auto;
-  align-self: flex-start;
-  min-width: 0;
-  display: flex;
+/* Send with no line yet: the brass greyed, not only faded */
+.dock .pri:disabled {
+  filter: grayscale(0.75);
 }
+
+/* the box's count near the cap, "612 / 700", in the composer's foot: small, in the stage's
+   typewriter; past the cap (a long draft) in the countdown's red */
 .lineCount {
-  position: absolute;
-  right: calc(10px * var(--legible-ui));
-  bottom: 0;
-  translate: 0 50%;
+  flex: none;
   padding: 0 0.4em;
   border-radius: 3px;
   border: 1px solid var(--hud-brass-lo);
@@ -275,7 +293,6 @@
   color: var(--cream2);
   background: #1b120a;
   font-variant-numeric: tabular-nums;
-  pointer-events: none;
 }
 .lineCount.overCap {
   color: #e3503f;
@@ -322,10 +339,8 @@
   padding: 16px;
   background: rgba(8, 5, 3, 0.72);
   container-type: size;
-  /* the dock's type, in css px here (the stage's --legible does not reach outside the world) */
-  --legible: 1;
+  /* the dock's type, in css px here (the stage's --legible-ui does not reach outside the world) */
   --legible-ui: 1;
-  --grown: 0;
   --meta: 17px;
   --said: 24px;
   --font-body: var(--font-stage-body, Literata), Georgia, serif;
@@ -386,7 +401,6 @@
 }
 .sheet .line {
   flex: 1 1 auto;
-  height: auto;
   min-height: calc(var(--said) * 1.35 * 2 + 13px);
   padding: 10px 14px;
 }
@@ -401,11 +415,6 @@
   font-size: calc(var(--meta) * 0.85);
   color: var(--cream2);
   font-variant-numeric: tabular-nums;
-}
-.sheet .lineCount {
-  position: static;
-  translate: none;
-  flex: none;
 }
 .said {
   flex: 1 1 auto;

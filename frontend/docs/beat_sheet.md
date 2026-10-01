@@ -173,7 +173,7 @@ read card (guess, how sure, why, the truth with ● ◐ ○), a paper index card
 | 1 | `day.turn-thinking` | `turn_started` (first: 13) | P | the seat's puppet takes the stand in the thinking state, no clock; the speech box shows a "…" so the state reads as thinking, not idle (ruled 2026-09-25) | D: nothing yet | live: until the turn resolves · replay: folded into the resolving beat: the puppet rises thinking, holds **0.6 s**, then plays it (accepted 2026-09-25) |
 | 2 | `day.speech` (one per page, §0) | `speech` | P | talking state, the line in the speech box a page at a time, "1 / 2 ▼" at its foot while more follows; X: the box carries the aqua tags (who it answers, stance) and the plaque tags the role; the wing's verdigris edges from the turn's `player_reads` | D: the line, lit and scrolled to · F(X): the speaker's file | speech |
 | 3 | `day.pass` | public: a `turn_started` resolved by no speech (the next `turn_started` or the phase change), live and replay alike, since `turn_started` is public · X-ray: `pass_marker` instead (12 in the fixture), which carries the reason and the draft (ruled 2026-09-25: day 1 of the public replay is three passes, not an empty stand) | P · X | idle state, the box says "passes"; X adds the reason and the held-back draft. Reason wording (accepted 2026-09-25): `voluntary` "chose to pass" · `novelty_gated` "held back: nothing new to say" · `generation_failed` "no line came" | D(X): the pass with its reason and draft | 4.0 |
-| 4 | `day.your-turn` | `input_request` `discuss` for me | S | my puppet at the stand, thinking; the dock carries the two minutes (`deadline`; null = no countdown; the car's wall clock is gone, ruled 2026-09-29); one flow: an optional steer for your agent + **Draft** / **Redraft** (the seat's own agent's line, as it would say it, steered and revising the box's line when the field holds something; "Use my seat notes" sends the notebook along when ticked; three per turn, the returned `deadline` is the new countdown), then the textarea the draft lands in, editable, with **Send** and **Pass** (no hand-over on this turn: the agent speaks only when the clock runs out; HUD pass 3b, 2026-09-29); the drawer stops at the rail so the prompt keeps the full width | D: stops at the rail | until answered / deadline |
+| 4 | `day.your-turn` | `input_request` `discuss` for me | S | my puppet at the stand, thinking; the dock carries the two minutes (`deadline`; null = no countdown; the car's wall clock is gone, ruled 2026-09-29); three plaques and no boxes (2026-10-01; §12): **Write your line** (**Edit your line** once there is one) opens the full-screen composer, which holds an optional steer for your agent + **Draft** / **Redraft this** (the seat's own agent's line, as it would say it, steered and revising the box's line when the field holds something; "Use my seat notes" sends the notebook along when ticked; three per turn, the returned `deadline` is the new countdown) and the box the draft lands in, editable; **Send** (live once there is a line) and **Pass**; the line previewed on one row under the head (no hand-over on this turn: the agent speaks only when the clock runs out); the drawer stops at the rail so the prompt keeps the full width | D: stops at the rail | until answered / deadline |
 | 5 | `day.your-line` | my `speech` after 4 | S (P sees a normal turn) | the puppet talks my line as any turn plays; a pass leaves it idle | D: my line | speech |
 | 6 | `day.agent-spoke-for-you` | my `speech` arriving with my request unanswered at its deadline (client-known) | S only | the puppet talks the agent's line; the plaque's tag and the box say "your seat's agent spoke for you" | D: the line with the tag | speech |
 | — | `day.summary` | `day_summary` (28, 79, 218, 360) | — | **no beat here.** Public on the wire but the live stage has no beat for it; the replay plays it in the Morning of the same day number (§8 row 8) | — | — |
@@ -921,30 +921,37 @@ they drained fast until 2026-10-01). The clock runs on the request's `deadline` 
 draft's returned `deadline` replaces it. A request that runs out unanswered from here, or is
 handed over, is the agent's: my `speech` answering it carries, on my screen only, the plaque's
 tag "your seat's agent" (the agent red) and the box's "your seat's agent spoke for you" (amber).
-**The dock** (`instruments/TurnDock.tsx`, bench 72's `.say2` placement; HUD pass 3b, 2026-09-29,
-one flow): in the notice zone beside my card, full band (the drawer stops at the rail), on the
-speech box's walnut board with its brass edge. Head "Your turn to speak" (Young Serif) · "Nothing
-is said until you send it." (+ " If the clock runs out, your agent speaks for you." with a
-deadline) and the count in red `m:ss` (none in solo). Then, top to foot: **1.** "Your agent"
-(brass) and a Literata field, "Optional — steer or revise, e.g. push on seat 5 / softer, ask
-seat 4 instead" (500 chars, Enter drafts when it holds something), **Draft** with the reply box
-empty, **Redraft** once it holds a line ("Drafting…"; the seat's own agent writes the line it
+**The dock** (`instruments/TurnDock.tsx`, bench 72's `.say2` placement; owner, 2026-10-01: three
+plaques and no boxes): in the notice zone beside my card, full band (the drawer stops at the
+rail), on the speech box's walnut board with its brass edge. Head "Your turn to speak" (Young
+Serif) · "Nothing is said until you send it." (+ " If the clock runs out, your agent speaks for
+you." with a deadline) and the count in red `m:ss` at its right end (none in solo); where the
+head is too narrow for the hint beside it (a phone with the side slot open) the hint drops under
+the heading. Then three plaques in a row, each never under 44 css px tall: **Write your line**
+(Send's brass, the keyboard before its words, the widest) opens the composer; **Send** (brass;
+"Sending…"), greyed until there is a line and live the moment the composer's box holds one,
+with the composer open or closed (it waits too while a line is over the 700 cap); **Pass**
+(walnut). Once there is a line, a **preview row** under the head shows it on one line
+(Literata, cut with "…" at the row's width, or at a word by 120 characters) with its word count
+at the end ("23 words"; past the cap "742 / 700" in red beside it), and the brass plaque reads
+**Edit your line**; on a frame 900 css px wide or narrower a tap on the preview opens the
+composer too. The server's words for a refused line in red under the preview (a draft's errors
+too). No "Let my agent speak" on this turn (owner playtest: it sent the agent's line unseen);
+the clock running out still has the agent speak. Until 2026-10-01 the dock held the steer,
+Draft and the box, the composer opening from a button at its head (HUD pass 3b 2026-09-29, the
+composer 2026-09-30, its brass plaque 2026-10-01); owner: simpler. **The composer**
+(2026-09-30; all the writing since 2026-10-01): opened from the plaque, the line over the whole
+stage, in css px and fitted to `visualViewport` so a soft keyboard never hides the box or Send:
+the clock large; "Your agent" (brass) and a Literata field, "Optional. Leave empty for your
+agent's own line, or steer it: push on seat 5, softer, ask seat 4 instead." (500 chars, Enter
+drafts when it holds something), **Draft** with the box empty, **Redraft this** once it holds
+text ("Drafting…" and the turning words while it works; the seat's own agent writes the line it
 would say, `{notes, current}`, the steer revising the box's line), "n drafts left", and, when
 the seat notebook holds a note or a suspect, a small "Use my seat notes" tick (ticked to start;
-ticked, the notebook goes with the draft, D25); **2.** the reply
-textarea (64 units tall, "Type your line, or draft one above…", Ctrl/⌘+Enter sends) the draft
-lands in, editable, and beside it **Send** (brass; "Sending…") over **Pass** (quiet walnut
-plaques). No "Let my agent speak" on this turn (owner playtest: it sent the agent's line unseen);
-the clock running out still has the agent speak. **The composer** (2026-09-30): a keyboard button at the dock's
-head (and, on a frame 900 css px wide or narrower, a tap on the reply box, read-only there) opens
-the same line over the whole stage, in css px and fitted to `visualViewport` so a soft keyboard
-never hides the box or Send: the clock large, the steer with Draft and "n drafts left", a big box,
-"n words" and "612 / 700", Pass and Send, the refused line's words; Close (the X, Esc, a tap
-outside) keeps the line, the reply box is its preview, and it shuts when the turn closes. The
-keyboard button is a brass plaque since 2026-10-01 (owner: the glyph was too small and out of
-the way): the keyboard and "Write your line" in Send's brass at the head's right end, the clock
-to its left, never under 44 css px tall; where the head is too narrow for the hint beside it (a
-phone with the side slot open) the hint drops under the head and the plaque keeps its size. The server's words under the box in red. Draft errors: 409 → its words and no drafts left, 422 → its
+ticked, the notebook goes with the draft, D25); the big box ("Type your line, or draft one
+above…", Ctrl/⌘+Enter sends) the draft lands in, editable; "n words" and "612 / 700"; the
+refused line's words; Pass and Send. Close (the X, Esc, a tap outside) keeps the line, which the
+dock previews, and it shuts when the turn closes. Draft errors: 409 → its words and no drafts left, 422 → its
 words, anything else → "Could not draft the line; type it instead." (the notes kept); an empty
 draft (the agent would pass) keeps the box's line: "Your agent would pass here. Pass, or tell it
 what to say." Send

@@ -1,12 +1,14 @@
 /**
  * The full-screen composer's rules (beat sheet §12): the speaking turn's line written in a box
- * as big as the screen, opened from the dock's brass plaque, or by a tap on the dock's small
- * box on a phone. It holds the same line as the dock (the container's `dock.text`), so these are
- * only what the composer adds: when it is open, where it sits, and the word count.
+ * as big as the screen, opened from the dock's brass plaque ("Write your line", "Edit your
+ * line"), or on a phone by a tap on the dock's preview of the line. Since 2026-10-01 all the
+ * writing is here (the steer, Draft, the box); the dock only previews the line and sends it.
+ * The line is the container's `dock.text`, so these are only what the composer adds: when it
+ * is open, where it sits, and the word count (the dock's preview shows it too).
  */
 import type { DockInput } from '../scenes/types';
 
-/** A frame this wide or narrower (css px) is a phone: a tap on the small box opens the composer. */
+/** A frame this wide or narrower (css px) is a phone: a tap on the dock's preview opens the composer. */
 export const PHONE_MAX = 900;
 
 /** The media query for `PHONE_MAX`. */

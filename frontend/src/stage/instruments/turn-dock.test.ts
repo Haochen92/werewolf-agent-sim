@@ -5,10 +5,12 @@ import type { DockInput } from '../scenes/types';
 import {
   DRAFT_WORDS,
   LINE_MAX,
+  PREVIEW_MAX,
   cycleDraftWords,
   dockControls,
   draftRequest,
   draftsLeftText,
+  previewText,
 } from './turn-dock';
 
 const dock = (over: Partial<DockInput> = {}): DockInput => ({
@@ -19,8 +21,8 @@ const dock = (over: Partial<DockInput> = {}): DockInput => ({
   ...over,
 });
 
-describe('the speaking turn’s dock: one Draft button', () => {
-  it('asks the agent for its own line: Draft for an empty box, Redraft once it holds one', () => {
+describe('the speaking turn’s composer: one Draft button', () => {
+  it('asks the agent for its own line: Draft for an empty box, Redraft this once it holds one', () => {
     const c = dockControls(dock());
     expect(c).toMatchObject({ canDraft: true, notes: '', draftLabel: 'Draft' });
     expect(c.draftHint).toMatch(/the line it would say/);
@@ -34,10 +36,10 @@ describe('the speaking turn’s dock: one Draft button', () => {
     expect(told.draftHint).toMatch(/steered by what you told it/);
     // a line in the box: the same button redrafts, and a steer revises that line
     expect(dockControls(dock({ text: 'Seat 5 is odd.' }))).toMatchObject({
-      draftLabel: 'Redraft',
+      draftLabel: 'Redraft this',
     });
     const revise = dockControls(dock({ text: 'Seat 5 is odd.', notes: 'softer' }));
-    expect(revise).toMatchObject({ draftLabel: 'Redraft', line: 'Seat 5 is odd.' });
+    expect(revise).toMatchObject({ draftLabel: 'Redraft this', line: 'Seat 5 is odd.' });
     expect(revise.draftHint).toMatch(/revises the line in the box/);
   });
 
@@ -123,6 +125,58 @@ describe('the speaking turn’s dock: one Draft button', () => {
       deadline: null,
     });
     expect(t).toMatchObject({ text: 'x', error: null });
+  });
+});
+
+describe('the dock’s three plaques and the line’s preview (2026-10-01)', () => {
+  it('reads Write your line with no line, Edit your line once there is one', () => {
+    expect(dockControls(dock())).toMatchObject({
+      writeLabel: 'Write your line',
+      preview: null,
+      canSend: false,
+    });
+    // white space alone is no line
+    expect(dockControls(dock({ text: ' \n ' }))).toMatchObject({
+      writeLabel: 'Write your line',
+      preview: null,
+      canSend: false,
+    });
+    expect(dockControls(dock({ text: 'Seat 5 is odd.' }))).toMatchObject({
+      writeLabel: 'Edit your line',
+      preview: 'Seat 5 is odd.',
+      words: '4 words',
+    });
+  });
+
+  it('makes Send live the moment the box holds text, open or closed, until it is on its way', () => {
+    // the dock has no box: it is handed the composer's line, and Send follows it keystroke by keystroke
+    expect(dockControls(dock({ text: 'S' })).canSend).toBe(true);
+    expect(dockControls(dock({ text: 'Seat 5', drafting: true })).canSend).toBe(true);
+    expect(dockControls(dock({ text: 'Seat 5', sending: true })).canSend).toBe(false);
+    expect(dockControls(dock({ text: 'Seat 5', closed: true })).canSend).toBe(false);
+    // over the cap the dock's Send waits as the composer's does, and the preview stays
+    const over = dockControls(dock({ text: 'a '.repeat(371) }));
+    expect(over).toMatchObject({ canSend: false, over: true, words: '371 words' });
+    expect(over.preview).not.toBeNull();
+  });
+
+  it('previews the line on one line, cut at a word with an ellipsis', () => {
+    expect(previewText('')).toBeNull();
+    expect(previewText('  Seat 5 voted\n\nfirst,   and fast. ')).toBe(
+      'Seat 5 voted first, and fast.',
+    );
+    const long = 'Seat five has been far too quiet today '.repeat(5);
+    const cut = previewText(long)!;
+    expect(cut.endsWith('…')).toBe(true);
+    expect(cut.length).toBeLessThanOrEqual(PREVIEW_MAX + 1);
+    // cut at the end of a word, with no space before the ellipsis
+    expect(cut).toMatch(/\S…$/);
+    expect(long.startsWith(cut.slice(0, -1))).toBe(true);
+    expect(long.charAt(cut.length - 1)).toBe(' ');
+    // one word longer than the cut is cut through
+    expect(previewText('x'.repeat(200), 20)).toBe(`${'x'.repeat(20)}…`);
+    // the dock's count is of the whole line, not the preview
+    expect(dockControls(dock({ text: long })).words).toBe('40 words');
   });
 });
 
