@@ -31,3 +31,6 @@ _The spine — a few-minute linear tour of the project, filled in as chapters la
 5. **Frontend** — _added after the build (replay + live spectator)._
    _Server talking points, one page for interviews →_
    [`server_talking_points.md`](server_talking_points.md)
+6. **Serving the agents in production** — what went wrong with the models while real people
+   played (the Vertex stall and the rescue model) →
+   [`../docs/agentic_ai_encountered_issues.md`](../docs/agentic_ai_encountered_issues.md).
