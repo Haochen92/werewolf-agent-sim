@@ -12,10 +12,17 @@
  * a brass line, in the HUD's materials): the painting spans the world's width in one piece,
  * squashed to half its height, the swags, the braid and the fringe on the stage and the plain
  * velvet above it. Its ends do not meet, so with `bleed` it
- * carries on past the world's sides mirrored (the seam is its own edge), fading out as the bleed
- * darkens (stage_architecture.md §3). Without `src` (a test) the frame draws nothing.
+ * carries on past the world's sides mirrored (the seam is its own edge), sinking into the
+ * house's dark as the bleed does (stage_architecture.md §3): over each mirrored copy a gradient
+ * of that dark, clear at the world's edge and whole BLEED_DARK units out. (Until 2026-10-01 the
+ * copies faded out through an SVG mask; iPhone Safari kills a page that masks the stage, §6.
+ * The bleed under them is that same dark by then, so the look is the same.) Without `src` (a
+ * test) the frame draws nothing.
  */
 import { BLEED_DARK, STAGE_H, STAGE_W } from '../units';
+
+/** The house's dark, which the bleed reaches BLEED_DARK units out (bleed.ts, `PaintedBleed`). */
+const HOUSE = '#0c0a07';
 
 /** The painting's size (px) and the row its fringe's tips reach (below it, only stray threads). */
 const PAINTED = { w: 2000, h: 395, tips: 385 };
@@ -39,11 +46,14 @@ export function drape(o: { id?: string; bleed?: number; src?: string } = {}): st
     top = TIPS_AT - (PAINTED.tips / PAINTED.h) * h;
   const img = `<image href="${o.src}" x="0" y="${top.toFixed(1)}" width="${W}" height="${h.toFixed(1)}" preserveAspectRatio="none"/>`;
   if (b) {
-    // past the world's sides, the painting mirrored about each edge, fading out as the bleed darkens
+    // past the world's sides, the painting mirrored about each edge, sinking into the house's
+    // dark as the bleed does: clear at the world's edge, the dark whole BLEED_DARK units out
     const T = W + 2 * b,
       at = (x: number) => ((x + b) / T).toFixed(4);
-    d += `<defs><linearGradient id="${P}dfade" gradientUnits="userSpaceOnUse" x1="${-b}" y1="0" x2="${W + b}" y2="0"><stop offset="${at(-BLEED_DARK)}" stop-color="#000"/><stop offset="${at(0)}" stop-color="#fff"/><stop offset="${at(W)}" stop-color="#fff"/><stop offset="${at(W + BLEED_DARK)}" stop-color="#000"/></linearGradient><mask id="${P}dmask" maskUnits="userSpaceOnUse" x="${-b}" y="0" width="${T}" height="${H}"><rect x="${-b}" y="0" width="${b}" height="${H}" fill="url(#${P}dfade)"/><rect x="${W}" y="0" width="${b}" height="${H}" fill="url(#${P}dfade)"/></mask></defs>`;
-    d += `<g mask="url(#${P}dmask)"><g transform="scale(-1,1)">${img}</g><g transform="translate(${2 * W},0) scale(-1,1)">${img}</g></g>`;
+    d += `<defs><linearGradient id="${P}dfade" gradientUnits="userSpaceOnUse" x1="${-b}" y1="0" x2="${W + b}" y2="0"><stop offset="${at(-BLEED_DARK)}" stop-color="${HOUSE}"/><stop offset="${at(0)}" stop-color="${HOUSE}" stop-opacity="0"/><stop offset="${at(W)}" stop-color="${HOUSE}" stop-opacity="0"/><stop offset="${at(W + BLEED_DARK)}" stop-color="${HOUSE}"/></linearGradient></defs>`;
+    d += `<g transform="scale(-1,1)">${img}</g><g transform="translate(${2 * W},0) scale(-1,1)">${img}</g>`;
+    // the dark over the copies only, the painting's own box
+    d += `<rect x="${-b}" y="${top.toFixed(1)}" width="${b}" height="${h.toFixed(1)}" fill="url(#${P}dfade)"/><rect x="${W}" y="${top.toFixed(1)}" width="${b}" height="${h.toFixed(1)}" fill="url(#${P}dfade)"/>`;
   }
   return d + img + `</svg>`;
 }

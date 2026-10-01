@@ -8,11 +8,18 @@
  * at the hour changes it warms the upper-left of the room a touch; at night the lamp leads, so
  * it all but goes out and leaves the room to the lamps' pools and the specials.
  *
- * The shadow is the long, soft one the key light throws, masked by the pelmet itself, so it only
- * ever lies on the wall. The night compartments have no such pieces; their veil is a plain gradient.
+ * The shadow is the long, soft one the key light throws, clipped round the pelmet itself, so it
+ * only ever lies on the wall. The night compartments have no such pieces; their veil is a plain
+ * gradient.
+ *
+ * No SVG mask (2026-10-01; iPhone Safari kills a page that masks the stage, stage_architecture.md
+ * §6): the shadow keeps its blur but is clipped (a clipPath, the stage less the pelmet), and the
+ * veil is a sheet with the lit lamps' pools cut out, each pool filled from inside with the veil's
+ * own colour, clear at the lamp and as dark as the veil at its rim (`holes.ts`).
  */
 import { BLEED, geometry, STAGE_H, STAGE_W, type Hud } from '../units';
 import { diningCarPlan } from './dining-car';
+import { holeGradient, scaled, softHoles, type Hole, type Profile } from './holes';
 import type { Phase } from './materials';
 import { shutterGeometry } from './window';
 
@@ -24,6 +31,21 @@ const INK = '#0c0704';
 
 /** The veil over the back of the room: a warm dark, a little more towards the ceiling. */
 export const VEIL = { color: '#1e130b', top: 0.15, mid: 0.1, bottom: 0.07 };
+
+/** The veil's darkness at height y, as its gradient falls from the ceiling to the floor. */
+const veilAt = (y: number) => {
+  const t = y / STAGE_H;
+  return t < 0.6
+    ? VEIL.top + ((VEIL.mid - VEIL.top) * t) / 0.6
+    : VEIL.mid + ((VEIL.bottom - VEIL.mid) * (t - 0.6)) / 0.4;
+};
+
+/** A lit lamp's pool in the veil: open at the lamp, fading out to its rim. */
+const LIT: Profile = [
+  [0, 1],
+  [0.45, 0.8],
+  [1, 0],
+];
 
 /** The window's shadow: how far it falls (x, y), how soft it is, and how dark. */
 const CAST = {
@@ -51,30 +73,45 @@ export function carHaze(o: {
     P = o.id + '-';
   // the pieces stand where they do at every hour; the glows are the hour's own
   const plan = diningCarPlan({ phase: o.phase, hud, side });
-  // each piece's shape, in the colour given (the shadow's ink, or the mask's black)
-  const pieces: { kind: keyof typeof CAST; shape: (ink: string) => string }[] = [];
+  // each piece's outline, as path data: its shadow is drawn from it, and the clip cut by it
+  const pieces: { kind: keyof typeof CAST; outline: string }[] = [];
 
   // the shutter's pelmet over the window (the painted frame below it has its own shadow)
   const { pel } = shutterGeometry(geometry(hud, side));
   pieces.push({
     kind: 'frame',
-    shape: () => `<rect x="${pel.x}" y="${pel.y}" width="${pel.w}" height="${pel.h + 5}"/>`,
+    outline: `M${pel.x},${pel.y}h${pel.w}v${pel.h + 5}h${-pel.w}Z`,
   });
 
-  // the holes: each piece's own shape
-  const holes = pieces.map((p) => p.shape('#000')).join('');
-  let d = `<defs><mask id="${P}m" maskUnits="userSpaceOnUse" x="0" y="0" width="${W}" height="${H}"><rect width="${W}" height="${H}" fill="#fff"/><g fill="#000">${holes}</g></mask>`;
+  // the clip: the stage less each piece, so a shadow never lies on what casts it
+  let d = `<defs><clipPath id="${P}m" clipPathUnits="userSpaceOnUse"><path d="M0,0H${W}V${H}H0Z${pieces.map((p) => p.outline).join('')}" clip-rule="evenodd"/></clipPath>`;
   // the veil's fall from ceiling to floor, and its lamps: a lit one's pool left clear
   const lit = plan.glows.filter(([, , , a]) => Number(a) >= 0.7);
-  d += `<linearGradient id="${P}v" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${VEIL.color}" stop-opacity="${VEIL.top}"/><stop offset=".6" stop-color="${VEIL.color}" stop-opacity="${VEIL.mid}"/><stop offset="1" stop-color="${VEIL.color}" stop-opacity="${VEIL.bottom}"/></linearGradient><radialGradient id="${P}h"><stop offset="0" stop-color="#000"/><stop offset=".45" stop-color="#000" stop-opacity=".8"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>`;
-  d += `<mask id="${P}l" maskUnits="userSpaceOnUse" x="${-b}" y="0" width="${W + 2 * b}" height="${H}"><rect x="${-b}" width="${W + 2 * b}" height="${H}" fill="#fff"/>${lit.map(([x, y, r, a]) => `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${(r * 1.1).toFixed(0)}" fill="url(#${P}h)" opacity="${Math.min(1, Number(a))}"/>`).join('')}</mask>`;
+  d += `<linearGradient id="${P}v" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="${H}"><stop offset="0" stop-color="${VEIL.color}" stop-opacity="${VEIL.top}"/><stop offset=".6" stop-color="${VEIL.color}" stop-opacity="${VEIL.mid}"/><stop offset="1" stop-color="${VEIL.color}" stop-opacity="${VEIL.bottom}"/></linearGradient>`;
+  const pools = softHoles(
+    lit.map(([x, y, r, a]): Hole => ({
+      x,
+      y,
+      rx: r * 1.1,
+      ry: r * 1.1,
+      clear: scaled(LIT, Math.min(1, Number(a))),
+    })),
+    { x0: -b, y0: 0, x1: W + b, y1: H },
+  );
+  // each pool's rim as dark as the veil at the lamp's height (the veil changes little across one)
+  d += pools.pieces
+    .map((q, i) => holeGradient(`${P}h${i}`, q.hole, VEIL.color, veilAt(q.hole.y)))
+    .join('');
   for (const k of Object.keys(CAST) as (keyof typeof CAST)[])
     d += `<filter id="${P}b${k}" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="${CAST[k].blur}"/></filter>`;
-  d += `</defs><g mask="url(#${P}m)">`;
+  d += `</defs><g clip-path="url(#${P}m)">`;
   for (const p of pieces) {
     const s = CAST[p.kind];
-    d += `<g filter="url(#${P}b${p.kind})" opacity="${s.a}"><g transform="translate(${s.dx},${s.dy})" fill="${INK}">${p.shape(INK)}</g></g>`;
+    d += `<g filter="url(#${P}b${p.kind})" opacity="${s.a}"><g transform="translate(${s.dx},${s.dy})" fill="${INK}"><path d="${p.outline}"/></g></g>`;
   }
-  d += `</g><rect x="${-b}" width="${W + 2 * b}" height="${H}" fill="url(#${P}v)" mask="url(#${P}l)"/>`;
+  d += `</g><path d="${pools.sheet}" fill="url(#${P}v)" fill-rule="evenodd"/>`;
+  d += pools.pieces
+    .map((q, i) => `<path d="${q.d}" fill="url(#${P}h${i})" fill-rule="evenodd"/>`)
+    .join('');
   return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${d}</svg>`;
 }

@@ -17,6 +17,7 @@
  */
 import type { RoomPicture } from '@/assets/manifest';
 import { geometry, STAGE_H, STAGE_W, type Hud } from '../units';
+import { holeGradient, POOL, scaled, SOFT, softHoles } from './holes';
 
 /** Units per picture pixel: the picture is as wide as the room right of the wing (1512). */
 export const ROOM_SCALE = 1512 / 1536;
@@ -199,7 +200,10 @@ const DARK = { ink: '#0a0604', rest: 0.5, chosen: 0.62 };
  * The room's light at night: the painting in the dark, and its candle's warm pool on the photo
  * line, leaning towards the candle; the card on the table keeps a soft light so it reads, and
  * the candle its own glow. A still picture: soft holes cut with gradients (no filter, no blend
- * mode), so it never has to be redrawn.
+ * mode), so it never has to be redrawn. No SVG mask either (2026-10-01, iPhone Safari): the
+ * dark is a sheet with the holes cut out, each filled from inside with a gradient of the same
+ * dark, clear at its middle and as dark as the sheet at its rim (`holes.ts`); where the card's
+ * light runs into the candle's, the clearer of the two wins.
  */
 export function roomLight(o: RoomLightOpts): string {
   const b = o.bleed ?? 0,
@@ -222,28 +226,29 @@ export function roomLight(o: RoomLightOpts): string {
     rx: (rowR - rowL) / 2 / 0.74,
     ry: (y1 - y0) / 2 / 0.78,
   };
-  const hole = (id: string, stops: [number, number][]) =>
-    `<radialGradient id="${P}${id}">${stops.map(([at, a]) => `<stop offset="${at}" stop-color="#000" stop-opacity="${a}"/>`).join('')}</radialGradient>`;
   const warm = (id: string, a: number) =>
     `<radialGradient id="${P}${id}"><stop offset="0" stop-color="rgb(${R.warm})" stop-opacity="${a}"/><stop offset="1" stop-color="rgb(${R.warm})" stop-opacity="0"/></radialGradient>`;
-  let d = `<defs>${hole('pool', [
-    [0, 1],
-    [0.5, 0.95],
-    [0.78, 0.62],
-    [1, 0],
-  ])}${hole('soft', [
-    [0, 1],
-    [0.6, 0.85],
-    [1, 0],
-  ])}${warm('wash', 0.08)}${warm('halo', 0.22)}`;
-  d += `<mask id="${P}m" maskUnits="userSpaceOnUse" x="${-b}" y="0" width="${W + 2 * b}" height="${H}"><rect x="${-b}" width="${W + 2 * b}" height="${H}" fill="#fff"/>`;
-  d += `<ellipse cx="${f(pool.x)}" cy="${f(pool.y)}" rx="${f(pool.rx)}" ry="${f(pool.ry)}" fill="url(#${P}pool)"/>`;
-  // the card on the table (with its "tap to read" under it), softly, so it still reads
-  d += `<ellipse cx="${f(R.card.x)}" cy="${f(R.card.foot - R.card.h * 0.42)}" rx="${f(R.card.w * 0.95)}" ry="${f(R.card.h * 0.8)}" fill="url(#${P}soft)" opacity=".85"/>`;
-  // round the candle
-  d += `<circle cx="${f(c.x)}" cy="${f(c.y)}" r="${f(0.2 * H)}" fill="url(#${P}soft)"/>`;
-  d += `</mask></defs>`;
-  d += `<rect x="${-b}" width="${W + 2 * b}" height="${H}" fill="${DARK.ink}" opacity="${DARK.rest}" mask="url(#${P}m)"/>`;
+  const { sheet, pieces } = softHoles(
+    [
+      { ...pool, clear: POOL },
+      // the card on the table (with its "tap to read" under it), softly, so it still reads
+      {
+        x: R.card.x,
+        y: R.card.foot - R.card.h * 0.42,
+        rx: R.card.w * 0.95,
+        ry: R.card.h * 0.8,
+        clear: scaled(SOFT, 0.85),
+      },
+      // round the candle
+      { x: c.x, y: c.y, rx: 0.2 * H, ry: 0.2 * H, clear: SOFT },
+    ],
+    { x0: -b, y0: 0, x1: W + b, y1: H },
+  );
+  let d = `<defs>${pieces.map((q, i) => holeGradient(`${P}h${i}`, q.hole, DARK.ink, DARK.rest)).join('')}${warm('wash', 0.08)}${warm('halo', 0.22)}</defs>`;
+  d += `<path d="${sheet}" fill="${DARK.ink}" fill-opacity="${DARK.rest}" fill-rule="evenodd"/>`;
+  d += pieces
+    .map((q, i) => `<path d="${q.d}" fill="url(#${P}h${i})" fill-rule="evenodd"/>`)
+    .join('');
   // the candle's warmth on the pool, and its halo
   d += `<ellipse cx="${f(pool.x)}" cy="${f(pool.y)}" rx="${f(pool.rx * 0.9)}" ry="${f(pool.ry * 0.9)}" fill="url(#${P}wash)"/>`;
   d += `<circle cx="${f(c.x)}" cy="${f(c.y)}" r="${f(0.1 * H)}" fill="url(#${P}halo)"/>`;

@@ -558,9 +558,11 @@ Two kinds, by whether they carry state:
   rooms' photo line, the drape, the shutter's geometry, the station cloth. Pure functions of `(phase, units)`, no state, no
   children, no event handlers. **Ported as string generators** (the kits' style, typed) under
   `src/stage/paint/`, rendered by one memoised `<Paint html={…} />` per layer via
-  `dangerouslySetInnerHTML`. Porting these to JSX buys nothing. Every `<filter>`, `<mask>`,
-  `<linearGradient>` id is prefixed with `useId()` from the caller so two stages can share a page
-  (the kits' `opts.id` rule).
+  `dangerouslySetInnerHTML`. Porting these to JSX buys nothing. Every `<filter>`, `<clipPath>`,
+  gradient id is prefixed with `useId()` from the caller so two stages can share a page
+  (the kits' `opts.id` rule). No `<mask>` (§6): a dark sheet with soft holes (the house light,
+  the car's veil, the night room's light) is `paint/holes.ts`, an evenodd sheet with gradient
+  rims.
 - **Instruments** — stand and plaque (the stand's front a raster, §4), trap and lift,
   cards (back, small, full, the framed card), chips and their strings, wing tiles, the shutter's
   motion, the verdict board, act marks, sigils, the jar/table/plates, film rows, the drawer.
@@ -610,6 +612,25 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   frame as Chrome gives it its own layer, and pinning that layer did not help.
 - A lift's load fades by its position, not the clock (`lift-fade.ts`), so nothing hangs over
   the trap once the table has gone in; the load is its own layer while it moves.
+- **No SVG `<mask>` on the stage** (found 2026-10-01 with the GPU probe, `styles/gpu-probe.css`):
+  iPhone Safari kills the page ("A problem repeatedly occurred") when the stage carries
+  full-stage masks; it survived only with masks removed, not with filters, blend modes, box
+  shadows, the light layer alone or images removed. Soft holes are an evenodd sheet plus gradient
+  rims (`paint/holes.ts`): the dark sheet is one path with the holes cut out, each hole filled
+  from inside with a radial gradient of the sheet's own dark, clear at its middle and as dark as
+  the sheet at its rim, so they meet without a seam; where holes overlap, each place takes the
+  clearer, split where both are equally dark (a mask multiplied them; plain paint can only add),
+  and helper holes over the overlap bring it near the product, never clearer than it was.
+  A shape a mask only clipped is a `clipPath` (the pelmet's shadow), and a fade to the bleed is a
+  gradient of the house's dark laid over it (the drape's mirrored ends). The sigil's 52×52 glyph
+  mask and CSS `mask-image` with one gradient (`roomChoice`, the ledger's and film's inks) stay;
+  `paint.test.ts` fails on a `<mask` or `mask=` anywhere else under `src/stage`.
+- **The GPU probe**: the workbench's `?gpu=` takes words that each remove one kind of GPU work
+  from the whole page (`nofilter noblend nomask noshadow nowillchange nosvg noimg nobg`, and
+  `no<layer>` for one stage layer: `nopaint nohaze nofloor nofigures nostand noinstruments
+  nolight nograde nohud`), joined by commas or `+`, e.g. `/workbench/day?beat=6&gpu=nomask`
+  (`styles/gpu-probe.css`, workbench only). Open the plain page and one probe at a time on the
+  failing device; the word whose page survives names the culprit.
 
 **If a beat "looks glitched" again** (frames overlapping, a black flash for a few ms, a stutter
 while the motion itself completes): it is almost certainly the compositor, not React. Check in

@@ -1,14 +1,15 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { BLEED, geometry, STAGE_W, WING_N, type Hud } from '../units';
 import { bleed } from './bleed';
 import { CAR_PICTURE, diningCarPlan } from './dining-car';
 import { drape } from './drape';
-import { light } from './light';
+import { light, lightHoles, type LightOpts } from './light';
 import { PHASES_IN_ORDER } from './materials';
 import { photoTwine, roomChoice, roomLight, roomPlan, ROOMS } from './compartment';
 import { stationBack, stationFront, stationPlan } from './station';
+import { darkness, softHoles } from './holes';
 import { shutter } from './window';
 
 const HUDS: Hud[] = ['none', 'live', 'replay'];
@@ -118,6 +119,12 @@ describe.each(CASES)('%s', (_label, draw) => {
     const defined = new Set(idsOf(a));
     for (const ref of refsOf(a)) expect(defined.has(ref)).toBe(true);
   });
+
+  // iPhone Safari kills a page that masks the stage (2026-10-01, stage_architecture.md §6)
+  it('draws no SVG mask', () => {
+    expect(a).not.toContain('<mask');
+    expect(a).not.toContain('mask="url(');
+  });
 });
 
 /* The port must draw what the kit draws: the frozen kit, evaluated as-is, is the reference. */
@@ -165,6 +172,23 @@ describe('fidelity to kits/stage-kit.js', () => {
   const round = (v: unknown) => JSON.parse(JSON.stringify(v), (_k, n) =>
     typeof n === 'number' ? Math.round(n * 1e6) / 1e6 : n,
   );
+  // The light's departure (2026-10-01): the kit cuts its holes with an SVG mask of blurred
+  // shapes, which iPhone Safari cannot draw, so the markup differs; each hole is still where
+  // the kit's shape is (the pool's ellipse, each glow's circle, each special's rounded rect),
+  // and the house is as dark.
+  const kitCentres = (html: string) =>
+    [
+      ...[...html.matchAll(/<(?:ellipse|circle) cx="([\d.-]+)" cy="([\d.-]+)"/g)].map(
+        (m) => [+m[1], +m[2]],
+      ),
+      ...[
+        ...html.matchAll(
+          /<rect x="([\d.-]+)" y="([\d.-]+)" width="([\d.-]+)" height="([\d.-]+)" rx=/g,
+        ),
+      ].map((m) => [+m[1] + +m[3] / 2, +m[2] + +m[4] / 2]),
+    ].sort((p, q) => p[0] - q[0] || p[1] - q[1]);
+  const centres = (holes: { x: number; y: number }[]) =>
+    holes.map((h) => [h.x, h.y]).sort((p, q) => p[0] - q[0] || p[1] - q[1]);
 
   for (const hud of HUDS)
     for (const side of [false, true])
@@ -178,11 +202,26 @@ describe('fidelity to kits/stage-kit.js', () => {
           expect(plan.slots).toEqual(sc.slots);
           expect(round(plan.glows)).toEqual(round(sc.glows));
           expect(round(plan.specials)).toEqual(round(sc.specials));
-          expect(light({ id: 'k', hud, side, from: 'over', scene: plan })).toBe(
-            Kit.light(g, sc, { id: 'k', from: 'over' }),
+          const both: [Partial<LightOpts>, object][] = [
+            [{ from: 'over' }, { from: 'over' }],
+            [{ dark: 70 }, { dark: 70 }],
+          ];
+          for (const [ours, kit] of both) {
+            const want = kitCentres(Kit.light(g, sc, { id: 'k', ...kit }));
+            const got = centres(lightHoles({ id: 'k', hud, side, scene: plan, ...ours }));
+            expect(got).toHaveLength(want.length);
+            got.forEach(([x, y], i) => {
+              expect(Math.abs(x - want[i][0])).toBeLessThanOrEqual(1);
+              expect(Math.abs(y - want[i][1])).toBeLessThanOrEqual(1);
+            });
+          }
+          expect(light({ id: 'k', hud, side, scene: plan, dark: 70 })).toContain(
+            'fill="#0c0a07" fill-opacity="0.7"',
           );
-          expect(light({ id: 'k', hud, side, scene: plan, dark: 70 })).toBe(
-            Kit.light(g, sc, { id: 'k', dark: 70 }),
+          // the pool's glow, as the kit warms it
+          const glow = (html: string) => html.slice(html.indexOf('<div'));
+          expect(glow(light({ id: 'k', hud, side, from: 'over', scene: plan }))).toBe(
+            glow(Kit.light(g, sc, { id: 'k', from: 'over' })),
           );
         });
 });
@@ -221,17 +260,16 @@ describe('the dining car’s painting', () => {
             lamps.map(([x, y]) => [x, y]),
           );
           expect(P.lamps.every(([, , , a]) => a === 1)).toBe(true);
-          const html = light({
-            id: 'k',
-            hud,
-            side,
-            scene: P,
-            lamps: P.lamps,
-            bleed: BLEED,
-          });
-          // unblurred, full at the flame: a gradient hole each, and each warmed
-          expect(html.match(/fill="url\(#k-lamp\)"/g)).toHaveLength(3);
-          expect(html).not.toMatch(/url\(#k-lamp\)"[^>]*filter=/);
+          const opts = { id: 'k', hud, side, scene: P, lamps: P.lamps, bleed: BLEED };
+          const html = light(opts);
+          // unblurred, full at the flame: a hole each (its glow folded in), and each warmed
+          const holes = lightHoles(opts);
+          for (const [x, y, r] of P.lamps) {
+            const h = holes.find((q) => q.x === x && q.y === y);
+            expect(h?.clear[0]).toEqual([0, 1]);
+            expect(h!.rx).toBeGreaterThanOrEqual(r);
+          }
+          expect(html).not.toContain('filter');
           expect(html.match(/radial-gradient\(circle/g)).toHaveLength(3);
         }
   });
@@ -366,5 +404,83 @@ describe('station', () => {
     expect(html).toContain(`<rect x="${STAGE_W}" y="0" width="${BLEED}"`);
     expect(html).toContain('stop-opacity="0.85"');
     expect(stationFront({ id: 'k' })).toContain('stop-opacity=".85"');
+  });
+});
+
+/*
+ * No SVG mask on the stage: iPhone Safari kills the page (found 2026-10-01 with the GPU probe,
+ * styles/gpu-probe.css). Every paint generator and every stage component, read as source; the
+ * sigil's small glyph mask is the one exception.
+ */
+describe('no SVG mask on the stage', () => {
+  const stage = fileURLToPath(new URL('..', import.meta.url));
+  const sources = [
+    ...readdirSync(`${stage}paint`)
+      .filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts'))
+      .map((f) => `paint/${f}`),
+    ...readdirSync(stage, { recursive: true, encoding: 'utf8' }).filter(
+      (f) => f.endsWith('.tsx') && !f.endsWith('.test.tsx') && !f.endsWith('Sigil.tsx'),
+    ),
+  ];
+
+  it('reads every source it guards', () => {
+    expect(sources).toContain('paint/light.ts');
+    expect(sources.some((f) => f.endsWith('Stage.tsx'))).toBe(true);
+  });
+
+  it.each(sources)('%s', (f) => {
+    const src = readFileSync(`${stage}${f}`, 'utf8');
+    expect(src).not.toMatch(/<mask\b/);
+    expect(src).not.toMatch(/\bmask=/);
+  });
+});
+
+/* The dark sheet with soft holes (holes.ts): pieces that meet without a gap or a seam. */
+describe('soft holes', () => {
+  const plan = diningCarPlan({ phase: 'night', hud: 'live' });
+  const holes = lightHoles({ id: 'k', scene: plan, lamps: plan.lamps, from: 'over' });
+  const box = { x0: -BLEED, y0: 0, x1: STAGE_W + BLEED, y1: 900 };
+  const { sheet, pieces } = softHoles(holes, box);
+  // every corner of a path, absolute (each loop is a first point and whole-unit steps)
+  const corners = (d: string) =>
+    [...d.matchAll(/M(-?\d+),(-?\d+)l([^Z]*)Z/g)].flatMap((m) => {
+      let [x, y] = [+m[1], +m[2]];
+      const out = [`${x},${y}`];
+      for (const step of m[3].trim().split(' ')) {
+        const [dx, dy] = step.split(',').map(Number);
+        x += dx;
+        y += dy;
+        out.push(`${x},${y}`);
+      }
+      return out;
+    });
+
+  it('cuts a piece for the pool and each lamp, all inside the box', () => {
+    expect(pieces.length).toBeGreaterThanOrEqual(4);
+    for (const d of [sheet, ...pieces.map((q) => q.d)])
+      for (const p of corners(d)) {
+        const [x, y] = p.split(',').map(Number);
+        expect(x).toBeGreaterThanOrEqual(box.x0);
+        expect(x).toBeLessThanOrEqual(box.x1);
+        expect(y).toBeGreaterThanOrEqual(box.y0);
+        expect(y).toBeLessThanOrEqual(box.y1);
+      }
+  });
+
+  it('shares every border: each corner of a piece is a corner of the sheet or another piece', () => {
+    const all = [sheet, ...pieces.map((q) => q.d)].map((d) => new Set(corners(d)));
+    all.slice(1).forEach((own, i) => {
+      for (const p of own) {
+        const [x, y] = p.split(',').map(Number);
+        const onEdge = x === box.x0 || x === box.x1 || y === box.y0 || y === box.y1;
+        expect(onEdge || all.some((other, k) => k !== i + 1 && other.has(p))).toBe(true);
+      }
+    });
+  });
+
+  it('is clear at each lamp’s flame and as dark as the sheet far from every hole', () => {
+    const dark = darkness(holes);
+    for (const [x, y] of plan.lamps) expect(dark(x, y)).toBeLessThan(0.01);
+    expect(dark(-BLEED + 1, 899)).toBe(1);
   });
 });
