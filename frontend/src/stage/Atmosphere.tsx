@@ -25,11 +25,30 @@ import type { Phase } from './paint/materials';
 import { geometry, type Hud } from './units';
 import styles from './Atmosphere.module.css';
 
+/** The car's haze on its own: the key light's warmth and the wall pieces' cast shadows. */
+export function CarHaze({
+  phase,
+  hud,
+  side = false,
+}: {
+  phase: Phase;
+  hud: Hud;
+  side?: boolean;
+}) {
+  return (
+    <>
+      <div className={styles.key} style={{ opacity: KEY[phase] }} />
+      <Paint of={carHaze} opts={{ phase, hud, side }} />
+    </>
+  );
+}
+
 export function Atmosphere({
   room,
   phase,
   hud,
   side = false,
+  baked = false,
 }: {
   /** The dining car (its wall pieces cast shadows) or a seat's compartment at night. */
   room: 'car' | 'compartment';
@@ -38,22 +57,23 @@ export function Atmosphere({
   hud: Hud;
   /** The side slot is open: the car's pieces are further left. */
   side?: boolean;
+  /** The haze is already in the scene's baked backdrop (instruments/Backdrop.tsx): only the grade. */
+  baked?: boolean;
 }) {
   // the grade's vignette centres on the room the puppet stands in (narrower with the slot open)
   const g = geometry(hud, side);
   return (
     <>
-      <Layer name="haze">
-        {/* the seat's room at night is lit by its candle alone (roomLight), not the key */}
-        {room === 'car' ? (
-          <div className={styles.key} style={{ opacity: KEY[phase] }} />
-        ) : null}
-        {room === 'car' ? (
-          <Paint of={carHaze} opts={{ phase, hud, side }} />
-        ) : (
-          <div className={styles.veil} />
-        )}
-      </Layer>
+      {baked ? null : (
+        <Layer name="haze">
+          {/* the seat's room at night is lit by its candle alone (roomLight), not the key */}
+          {room === 'car' ? (
+            <CarHaze phase={phase} hud={hud} side={side} />
+          ) : (
+            <div className={styles.veil} />
+          )}
+        </Layer>
+      )}
       <Layer name="grade">
         <div
           className={styles.grade}

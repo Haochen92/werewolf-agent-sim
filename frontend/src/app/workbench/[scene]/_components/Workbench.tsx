@@ -36,6 +36,7 @@ import {
   type FramePreset,
   type WorkbenchQuery,
 } from '@/stage/workbench/url';
+import { BakeBench } from './BakeBench';
 import { PaintBench, PaintControls } from './PaintBench';
 import styles from './Workbench.module.css';
 
@@ -354,6 +355,8 @@ export function Workbench({ scene }: { scene: string }) {
       </>
     );
   }
+  // the bake bench is the sheet alone, at its own size: no strip, no frame, no house
+  if (scene === 'bake') return <BakeBench params={params} />;
   const frameControl = (
     <Seg<string>
       label="frame"

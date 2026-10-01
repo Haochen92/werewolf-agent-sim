@@ -1,0 +1,14 @@
+/* the sheet is the file: the house's dark, the world set in from the left by the bleed */
+.sheet {
+  position: relative;
+  overflow: hidden;
+  background: #0c0a07;
+}
+.world {
+  position: absolute;
+  top: 0;
+}
+/* the stage's box clips at the world's edge; here the bleed past it is the point */
+.open.open {
+  overflow: visible;
+}
