@@ -853,6 +853,9 @@ game's way out is the curtain's "Watch the replay" and "Back to the lobby" (§12
 ## 12. Live pacing — H§6
 
 Live has no transport. Beats animate as events arrive.
+The time side of this section — when the server emits each event, what each viewer's stage
+does with it, and the lag between them, with the rulings on reading, jumping and the clock —
+is [`live_timing_sheet.md`](live_timing_sheet.md) (2026-10-01).
 
 - **The dock and the clock never wait for the stage.** When `input_request` arrives for me, the
   dock opens at once and the countdown runs on real time from `deadline`; the beat on stage is
