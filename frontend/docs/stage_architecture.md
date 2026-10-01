@@ -642,6 +642,17 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   page when beats come faster than it frees the last beat's layers and pictures; the fastest
   link that stays up is the scene's floor, and a change to what a beat rebuilds is measured as
   a change in that floor (build log §8.3).
+- **The car's set is a baked picture, not live sheets.** The paint and the haze of the dining
+  car (the car picture, the window and its felt country, the bleed, the key light, the wall
+  pieces' blurred shadows) are photographed once by `scripts/bake-sets.mjs` from the bake
+  bench (`/workbench/bake?phase=day&hud=live&side=0`: the set alone, 2200×900, nothing in
+  front of it) into `src/assets/sets/` at 1×, 1.5× and 2×, with `src/assets/sets.ts` as the
+  manifest. `instruments/Backdrop.tsx` shows the sheet for the screen (density capped at 2 on
+  a desktop, 1.5 on a phone) and fades the old hour's sheet off over the new, as `CarPaint`
+  did. A scene with a backdrop passes `baked` to `Atmosphere`, which then draws the grade
+  alone. Same drawing, one bitmap: the browser holds one layer where it held five (build log
+  §8.3). Rerun the bake when the car's paint or haze changes; the goldens say whether the
+  sheets did. The light, the grade and everything that moves stay live.
 - **A scene's set is mounted once; only the beat is keyed.** A scene is a stable set (`DaySet`,
   `MorningSet`: the atmosphere, the car's paint, the shutter, the house light, the wing, the
   strip) that updates in place as the beats go by, and a keyed part (`DayTurn`, `MorningBeat`:

@@ -831,7 +831,27 @@ What a beat step rebuilds, Chromium, 30 steps at 330 ms (`.churn` probe, Mutatio
 (stage_architecture §6). The workbench's URL writes went to the browser's history API at the
 same time: a Next `router.replace` refetches the page from the server on every search-param
 change, which over the internet capped the probe at about three beats a second, the very rate
-in question. The phone's floor, before and after: _[pending the owner's reading]_.
+in question. The phone’s reading, before the split (iPhone, Safari, the day scene on a loop): the page died at `auto=1000`, `500` and `330` alike, so the cost is cumulative as well as rate-bound: the loop walks every speaker’s puppet and the decoded pictures pile up on top of the rebuilds. After the split: _[pending the owner’s reading]_.
+
+**The bake (same day, after the phone's reading on the split).** The split did not move the
+floor: the loop still died at one beat a second, and the subtraction probe on the loop said
+why. No single culprit this time: hiding any one of the paint layer, the figures layer, the haze
+layer or the light layer bought enough room for the loop (the paint and the figures the most),
+hiding all pictures, all filters or all blends alone did not, and the clip-path on the shadows
+was innocent. The page simply sits near the cap with its set up, and the set is a stack of five
+full-stage sheets, each its own bitmap at 3×. So the car's set is now baked: the bake bench
+draws the paint and the haze alone, `scripts/bake-sets.mjs` photographs it for every hour, HUD
+and side at three scales, and `Backdrop` shows one picture where the day and the morning drew
+five sheets (stage_architecture §6).
+
+| sheet                 | pixels      | file (WebP q88) | decoded |
+|-----------------------|-------------|----------------:|--------:|
+| 1× (desktop, goldens) | 2200×900    |      ~100 KB    |  7.9 MB |
+| 1.5× (a phone's cap)  | 3300×1350   |      ~190 KB    | 17.8 MB |
+| 2× (a 2× desktop)     | 4400×1800   |      ~270 KB    | 31.7 MB |
+
+48 sheets, 8.8 MB in the repo, one loaded per scene. The phone's reading on the baked day and
+morning: _[pending]_.
 
 **What to take from it** (the whole of it, in four sentences): the browser turns the page into
 layers, and anything with a transform animation, a filter, a mask or a blend gets its own
