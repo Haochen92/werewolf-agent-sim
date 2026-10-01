@@ -42,7 +42,8 @@ import { ROLE_ARTICLE } from '../paint/role-kit';
 import { seatNumber } from '../roles';
 import { bandNarrows, fileTap, sideOpen, stripButtons } from '../slot';
 import { STAGE_H, geometry } from '../units';
-import { CarPaint, HouseLights, StandReturns, TableWing } from './DiningCarParts';
+import { HouseLights, StandReturns, TableWing } from './DiningCarParts';
+import { Backdrop } from '../instruments/Backdrop';
 import { notebookGame } from '../notebook';
 import type { SceneProps } from './types';
 
@@ -206,9 +207,9 @@ function MorningSet(props: SceneProps) {
 
   return (
     <>
-      <Atmosphere room="car" phase={phase} hud={hud} side={side} />
+      <Atmosphere room="car" phase={phase} hud={hud} side={side} baked />
       <Layer name="paint">
-        <CarPaint
+        <Backdrop
           phase={phase}
           from={dayBegins && animate ? 'night' : null}
           hud={hud}

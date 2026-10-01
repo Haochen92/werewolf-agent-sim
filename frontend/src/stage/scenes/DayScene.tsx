@@ -45,7 +45,7 @@ import { ROLE_NAME, factionOf, knownRoles, seatNumber } from '../roles';
 import { bandNarrows, sideOpen, stripButtons } from '../slot';
 import { WOOD } from '../textures';
 import { BLEED, geometry } from '../units';
-import { CarPaint } from './DiningCarParts';
+import { Backdrop } from '../instruments/Backdrop';
 import { notebookGame } from '../notebook';
 import type { SceneProps } from './types';
 
@@ -129,9 +129,9 @@ function DaySet({
 
   return (
     <>
-      <Atmosphere room="car" phase="day" hud={hud} side={side} />
+      <Atmosphere room="car" phase="day" hud={hud} side={side} baked />
       <Layer name="paint">
-        <CarPaint phase="day" hud={hud} side={side} />
+        <Backdrop phase="day" hud={hud} side={side} />
         <Paint
           of={shutter}
           opts={{
