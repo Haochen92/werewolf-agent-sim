@@ -6,7 +6,8 @@
  *
  * Tier is not gated here beyond what the options say: a public beat is always in; a seat or
  * faction beat is in for the seat it concerns, or, when marked `aqua`, for the X-ray; X-ray
- * beats exist only with `xray` on. What the log holds is the server's decision.
+ * beats exist only with `xray` on, and never in a live cut. What the log holds is the server's
+ * decision.
  */
 import type { DurableGameEvent, EventOf } from '@/types/contracts';
 import { pageHold, speechPages } from './pages';
@@ -19,24 +20,26 @@ import {
 } from './types';
 
 // Holds at normal speed (docs/beat_sheet.md §0). Raised to a reading pace on 2026-09-30
-// (shutter 3000, card 2600, open 2800, speech ÷ 3 floor 4 s, a room's mark 2000); the count's
-// chip, lid and verdict were kept, its pace being right.
+// (shutter 3000, card 2600, open 2800, speech ÷ 3 floor 4 s, a room's mark 2000). Raised again
+// on 2026-10-01 for a live game at reading pace; music will sit in these holds (shutter, report,
+// verdict 3500/3500/3200, card, open 3200, your card 6000, your pack 4000, mark 2500, lid 1500,
+// chip 2000, a report row 1500). The replay shares them.
 const HOLD = {
-  shutter: 3500,
-  chip: 2000,
-  card: 3200,
-  yourCard: 6000,
-  yourPack: 4000,
-  verdict: 3200,
-  open: 3200,
+  shutter: 6000,
+  chip: 2500,
+  card: 4000,
+  yourCard: 8000,
+  yourPack: 6000,
+  verdict: 6000,
+  open: 4000,
   held: 2000,
-  lid: 1500,
+  lid: 2500,
   pass: 4000,
   /** A room's last step in the X-ray night: the mark landing, or the hold. */
-  mark: 2500,
+  mark: 4000,
   /** The morning roll (2026-09-30): the shutter's hold, and this much more per row read. */
-  report: 3500,
-  reportRow: 1500,
+  report: 6000,
+  reportRow: 2000,
 } as const;
 
 /** The morning roll's hold: a row per death, and one for a seat saved; a quiet night the base. */
@@ -129,9 +132,11 @@ export function beatsFor(
   }
   const isWolf = me !== null && wolves.has(me);
   // The X-ray's night (its hub, a spoke per actor, the whole) is the replay's telling. A game in
-  // play keeps the nights it played (the lobby, the pack's chat) when game over turns the X-ray
-  // on, so the last night is not told again between the viewer's own night and the morning.
-  const xrayNight = options.xray && !options.live;
+  // play keeps the beats it played when game over turns the X-ray on: no X-ray night (the last
+  // night is not told again between the viewer's own night and the morning), and no X-ray or
+  // "Only seat n" beat before the ending, so a stage still playing the last night's backlog when
+  // `game_over` lands shows nothing the X-ray knows before it reaches `over.*` (2026-10-01).
+  const xrayCut = options.xray && !options.live;
 
   const out: SceneBeat[] = [];
   const shows = (b: Draft): boolean => {
@@ -140,11 +145,11 @@ export function beatsFor(
       case 'public':
         return true;
       case 'xray':
-        return options.xray;
+        return xrayCut;
       case 'seat':
-        return b.seat === me || (options.xray && b.aqua === true);
+        return b.seat === me || (xrayCut && b.aqua === true);
       case 'faction':
-        return isWolf || (options.xray && b.aqua === true);
+        return isWolf || (xrayCut && b.aqua === true);
     }
   };
   const push = (b: Draft) => {
@@ -171,7 +176,7 @@ export function beatsFor(
   // reason instead, so the derived pass is only cut without it.
   let thinking: EventOf<'turn_started'> | null = null;
   const resolveTurn = (at: number) => {
-    if (thinking && !options.xray) {
+    if (thinking && !xrayCut) {
       pub('day.pass', thinking, at, HOLD.pass, { subject: thinking.player });
     }
     thinking = null;
@@ -258,7 +263,7 @@ export function beatsFor(
           pub('vote.opens', e, next, HOLD.open, { chapter: { kind: 'vote', n: e.day } });
         } else if (e.phase === 'night') {
           nightStart = next;
-          pub(xrayNight ? 'rnight.hub' : 'night.hub', e, next, HOLD.shutter, {
+          pub(xrayCut ? 'rnight.hub' : 'night.hub', e, next, HOLD.shutter, {
             chapter: { kind: 'night', n: e.day },
           });
         }
@@ -364,7 +369,7 @@ export function beatsFor(
             holdMs: HOLD.card,
             aqua: true,
           });
-        } else if (!xrayNight) {
+        } else if (!xrayCut) {
           push({
             id: 'pack.line',
             day: e.day,
@@ -378,7 +383,7 @@ export function beatsFor(
         break;
 
       case 'wolf_kill_decided':
-        if (!xrayNight) {
+        if (!xrayCut) {
           push({
             id: 'pack.decided',
             day: e.day,
@@ -392,7 +397,7 @@ export function beatsFor(
         break;
 
       case 'night_result': {
-        if (xrayNight && nightStart >= 0) {
+        if (xrayCut && nightStart >= 0) {
           const branches = nightBranches(events, nightStart, i, wolves);
           branches.forEach((b, rank) => {
             const held = !b.target && b.lines.length === 0;

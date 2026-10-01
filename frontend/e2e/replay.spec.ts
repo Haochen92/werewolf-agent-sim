@@ -192,8 +192,8 @@ test('replay: the night stops at its hub; a lit card plays that actor’s room a
     'data-file-seat',
     'player_4',
   );
-  // its last step played, it rests there (no return by itself)
-  await page.clock.runFor(4000);
+  // its last step played (the mark's 4 s), it rests there (no return by itself)
+  await page.clock.runFor(4500);
   await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.spoke');
   await expect(theatre(page)).toHaveAttribute('data-playing', 'false');
   await expect(page.getByText('In the night · Seat 4')).toBeVisible();
@@ -248,8 +248,8 @@ test('replay: in an actor’s room the card on the table opens, and the play goe
   await expect(overlay.getByText('Seat 4 · tap anywhere to close')).toBeVisible();
   await expect(theatre(page)).toHaveAttribute('data-beat-index', at!);
   await expect(theatre(page)).toHaveAttribute('data-playing', 'true');
-  // the room plays out and rests on its last step, the card still open over it
-  await page.clock.runFor(4000);
+  // the room plays out and rests on its last step (the mark's 4 s), the card still open over it
+  await page.clock.runFor(4500);
   await expect(theatre(page)).toHaveAttribute('data-playing', 'false');
   await expect(overlay).toBeVisible();
   await settle(page);
@@ -371,9 +371,9 @@ test('replay: played fast, the cursor runs on at twice the pace', async ({ page 
   await expect(band(page).getByRole('button', { name: 'Fast' })).toBeVisible();
   await page.getByRole('button', { name: 'Play', exact: true }).click();
   await expect(theatre(page)).toHaveAttribute('data-playing', 'true');
-  // 16 s at fast reaches the night (beat 6, 11.25 s of holds, each new hold set at the end of a
-  // step); at normal it would still be on day 1's passes (18.5 s of holds to beat 5)
-  for (let t = 0; t < 32; t++) await page.clock.runFor(500);
+  // 20 s at fast reaches the night (beat 6, 15 s of holds, each new hold set at the end of a
+  // step); at normal it would still be on day 1's first pass (26 s of holds to beat 5)
+  for (let t = 0; t < 40; t++) await page.clock.runFor(500);
   expect(Number(await theatre(page).getAttribute('data-beat-index'))).toBeGreaterThan(5);
 });
 

@@ -12,26 +12,32 @@ regenerate the golden, in that order. The narrative behind each row is the hando
 **Columns.** *Anchor*: the wire event (or client condition) the beat is keyed on; a replay
 beat exists iff its anchor is in the log. *Sees*: who has the beat — **P** everyone (public),
 **S** the seated human it concerns, **F** the wolf pack, **X** X-ray on (observer tier; in live,
-everyone after `game_over`). A beat marked S or F is also in the X-ray replay, shown in the
+everyone after `game_over`, from the moment the stage reaches the ending, 2026-10-01; the live
+cut has no X beat before it). A beat marked S or F is also in the X-ray replay, shown in the
 X-ray's verdigris (aqua until 2026-09-29) as "Only seat n". *Stage*: what changes on the stage.
 *Slot*: what the drawer (D) or the case file (F, the X-ray's pane; the film until 2026-09-29) does;
 "—" = nothing new. *Hold*: the replay's wait at normal speed. *Bench*: the revision that drew it.
 
-**Holds** (H§5; raised to a reading pace 2026-09-30, the replay's Normal having felt fast: live
-is paced by the agents in real time, the replay only by these): shutter 3.5 s (was 3.0) · a chip
-2.0 s · a card read 3.2 s (was 2.6) · your own card at the deal 6.0 s · your pack at the deal
-4.0 s (ruled 2026-09-28) · the verdict 3.2 s · the vote's opening move 3.2 s (was 2.8) · a room's
-last step in the X-ray night (the mark, or the hold) 2.5 s (was a chip's 2.0) · a plain held beat
-2.0 s · **speech** = words ÷ 2.4 per second (2026-09-30; was 3, and 4 before 2026-09-28), held
-while the pointer or a touch is on the speech. The count's chip, lid and verdict holds were kept
-(its pace was right). Fast halves every one. **A day speech is told in pages (ruled
+**Holds** (H§5; raised to a reading pace 2026-09-30, the replay's Normal having felt fast; raised
+again 2026-10-01 for a live game at reading pace, where music will sit in these holds; live and
+the replay share them): shutter 6.0 s (3.5 until 2026-10-01, 3.0 before 2026-09-30) · a chip
+2.5 s (was 2.0) · the lid 2.5 s (was 1.5) · a card read 4.0 s (was 3.2, 2.6) · your own card at
+the deal 8.0 s (was 6.0) · your pack at the deal 6.0 s (was 4.0, ruled 2026-09-28) · the verdict
+6.0 s (was 3.2) · the vote's opening move 4.0 s (was 3.2, 2.8) · the morning's roll 6.0 s and
+2.0 s a row read (was 3.5 and 1.5) · a room's last step in the X-ray night (the mark, or the
+hold) 4.0 s (was 2.5, a chip's 2.0) · a plain held beat 2.0 s · a pass 4.0 s · **speech** = words
+÷ 2.4 per second (2026-09-30; was 3, and 4 before 2026-09-28), held while the pointer or a touch
+is on the speech. (2026-09-30 kept the count's chip, lid and verdict; 2026-10-01 raised them
+too.) The scenes' Hold columns below are the values as first drawn; these rule. Fast (the
+replay's) halves every one. **A day speech is told in pages (ruled
 2026-09-29):** the speech box is a fixed three lines, so a line longer than a page
 (`PAGE_CHARS` = 150 characters, `beats/pages.ts`) is cut into pages, each its own `day.speech`
 beat marked `page` n of m, all sharing the speech's anchor; a page ends at the last sentence end
 that fits, else the last clause break (, ; : —), else the last whole word, never mid-word. Each
 page holds for its own words at 2.4 per second, floor 5 s, cap 15 s (was 3, 2.5 s, 9 s); a tap on the box moves on to
 the next page. Wolf messages and the X-ray night's spokes are read in a chat, whole: words ÷ 2.4,
-floor 5 s, cap 15 s. Live has no holds: beats animate as events arrive (§12).
+floor 5 s, cap 15 s. Live plays every beat at these holds at normal speed, in arrival order,
+however many are queued (§12, ruled 2026-10-01).
 
 **Live vs replay.** Live plays every beat its tier receives, in arrival order, with the queue
 rule of §12. The replay plays the P beats with X-ray off and P+X (plus every S and F beat, in
@@ -135,8 +141,11 @@ blinds unroll 0.9 s each from 0.5 s, 0.16 s apart, their shadows 0.6 s from 1.2 
 mockup's ease-in, clipped at the world's edges). A viewer who asked for reduced motion gets a
 0.6 s departure. The hand-off (`LiveTheatre`): the game's events are held back from the stage until
 the curtain is down, then the deal plays from its first beat at normal speed whether it arrived as
-history or as news (`live-state.ts`, `dealEnd`), and the curtain lifts off it; one `<Stage>`
-throughout. The snow falls for as long as the room waits (still for reduced motion).
+history or as news (`live-state.ts`), and the curtain lifts off it; one `<Stage>` throughout.
+Whatever the log already held when the curtain came down plays on after the deal at normal
+speed, as a queue (2026-10-01: a solo game's agents have taken their first turns by then, and the
+stage had jumped past the deal to the latest of them; `historyLanding`'s `departed`). The snow
+falls for as long as the room waits (still for reduced motion).
 Depart needs one person aboard ("Nobody is aboard yet: Depart needs one person on the platform.");
 the server sets no minimum, this is the client's rule from the old lobby card. A newcomer to an open
 room with a place left gets the boarding pass first (a page, upright allowed: name, "Step onto the
@@ -825,17 +834,23 @@ game's way out is the curtain's "Watch the replay" and "Back to the lobby" (§12
 Live has no transport. Beats animate as events arrive.
 
 - **The dock and the clock never wait for the stage.** When `input_request` arrives for me, the
-  dock opens at once and the countdown runs on real time from `deadline`; beats queued between the
-  stage and the request drain at fast speed so the stage catches up to the turn beat.
-- A backlog of three or more beats behind the stream drains at fast speed; one or two queued
-  beats play at normal speed (ruled 2026-09-28, was "more than one"; the count and the morning can
-  fall behind; the live ballot drop cannot, it is paced by `phase_progress`). A speech told in
-  pages counts as one item (ruled 2026-09-29): its later pages are never a backlog, so a long line
-  alone plays at normal speed. A tap on the speech box ends the page's hold.
+  dock opens at once and the countdown runs on real time from `deadline`; the beat on stage is
+  cut short once (its hold ends now) and the beats queued between it and the request play at
+  normal speed (ruled 2026-10-01; until then they drained at fast speed).
+- **No backlog is hurried (ruled 2026-10-01).** Every queued beat plays at its normal hold,
+  however many are waiting: a solo game's agents play at machine speed, so the stage plays at
+  reading pace and lags the server, and that is the design. Until 2026-10-01 a backlog of three or
+  more drained at fast speed (ruled 2026-09-28, was "more than one"; a speech told in pages
+  counted as one item, ruled 2026-09-29), which in a solo game was nearly always. The live ballot
+  drop is paced by `phase_progress`. A tap on the speech box ends the page's hold.
 - **The deal always plays at normal speed (ruled 2026-09-28).** The game start lands as one burst
-  (`game_started`, `role_assigned`, the day's `phase_change`), so every `deal.` beat keeps normal
-  speed however much is queued behind it, and even with my prompt waiting (the dock still opens
-  at once; the deal beat on stage is not cut short).
+  (`game_started`, `role_assigned`, the day's `phase_change`); every beat now keeps normal speed,
+  and the deal beat on stage is not cut short for my prompt (the dock still opens at once; a
+  prompt first seen during the deal cuts nothing, 2026-10-01).
+- **The deal after a departure (ruled 2026-10-01).** A page that watched its platform depart
+  (§1a) lands on the deal's first beat when the curtain is down, whatever the history holds; the
+  deal plays at normal speed from it, and the beats after it (history by seq, unseen by this
+  viewer) play on at normal speed as a queue. A reconnect later catches up still, as anywhere.
 - On reconnect, history renders still at the latest state; the backlog is not played.
 - **The deal on first connection (ruled 2026-09-25):** a solo game starts before its page connects,
   so the deal is history by the time the seated human arrives. Exception to "arrive still": when
@@ -847,6 +862,12 @@ Live has no transport. Beats animate as events arrive.
 - The ending: `game_over` arrives before the backlog's `roles_assigned`, and the winners' stand
   needs the roles. The live queue holds `over.winners-stand` until the backlog has landed (the
   verdict beat covers the wait); `over.truth` then plays as written.
+- **Reveal and File follow the stage's end (ruled 2026-10-01).** `game_over` can land while the
+  stage is still playing the last night's backlog. The X-ray is the viewer's (the Reveal switch
+  on, the File tab open, the wing's truth, the strip's door gone) only once the stage is at or
+  past the first `over.*` beat, never on the server's clock; and the live cut puts no X-ray or
+  "Only seat n" beat before the ending, so nothing the X-ray knows plays in the night it catches
+  up on.
 - **The slot (ruled 2026-09-25):** when the drawer or the film is open, the room lays out for the
   open side slot (the `side` geometry in `units.ts`: the puppet slides left, the box narrows), in
   every scene, live and replay. The stand-in panels that overlaid the room are replaced by this.
@@ -857,18 +878,21 @@ stage, the slot, the drawer's filters, the film's tab, the open turn); the rules
 reducer (`live-state.ts`) over `live-queue.ts` and `transport.ts`. **History or news:** an event
 is news iff the store marked its seq live; the log's head up to the first news is history, and
 every beat whose `end` lies inside it lands still (the stage jumps to the last such beat, nothing
-plays). News plays: a beat animates in and holds `holdFor(beat, normal | fast)`, the timer steps
-on when it runs out; a beat with no hold waits (a prompt while it is open, the epilogue until
-"Close the sheet", the curtain). The list is recut on every event and on game over (X-ray on for
-everyone: `view.winner !== null`); the stage is carried by which beat it was on, then by seq.
-The live cut keeps the nights it played under the X-ray (no `rnight.*`: the last night is not
-told again between the seat's own night and the morning); the seat's own pack line, the log's
+plays). News plays: a beat animates in and holds `holdFor(beat, 'normal')` (live never picks
+fast since 2026-10-01), the timer steps on when it runs out; a beat with no hold waits (a prompt
+while it is open, the epilogue until "Close the sheet", the curtain). The list is recut on every
+event and on game over (X-ray on for everyone: `view.winner !== null`; what the viewer is shown
+of it, `seesXray`, waits for the stage's first `over.*` beat, 2026-10-01); the stage is carried
+by which beat it was on, then by seq. The live cut keeps the beats it played under the X-ray (no
+`rnight.*`: the last night is not told again between the seat's own night and the morning; no X
+or aqua beat before the ending, 2026-10-01); the seat's own pack line, the log's
 copy of what it wrote at its prompt, lands still (an agent's line for it plays); closing the
 epilogue's sheet lands on the curtain still (2026-09-30).
 **The prompt:** open iff the status lists the seat (or the request is newer than the status),
 this client has not answered it, its deadline has not passed, the seat is alive and the game is
-not over. While open and further down the queue, the beat on stage is cut short once and the rest
-drain fast (live-queue's rule). The clock runs on the request's `deadline` in server time
+not over. When first seen open further down the queue, the beat on stage is cut short once (a
+deal beat is not, and then nothing is), and the rest play at normal speed (live-state's rule;
+they drained fast until 2026-10-01). The clock runs on the request's `deadline` in server time
 (`serverNow()`); its whole is arrival → deadline, or 120 s when the request came as history; a
 draft's returned `deadline` replaces it. A request that runs out unanswered from here, or is
 handed over, is the agent's: my `speech` answering it carries, on my screen only, the plaque's
@@ -906,8 +930,9 @@ at the opening ("Ballots in, n of N") and the night hub's "Acted n of N" (clampe
 to the lobby" → `/rooms` (links). The drawer opens by default as the replay's. "Reconnecting…"
 under the strip while the stream reconnects. **The deal on first connection:** a new game's
 deal is over before the page connects, so while the history holds no `turn_started` it plays from
-beat 0 at normal speed (the deal's beats keep normal speed even with news queued behind them or
-my prompt waiting, as news does too); the history counts as all in once news has come after it or it
+beat 0 at normal speed (as every beat does since 2026-10-01); after a departure on this page it
+plays from beat 0 whatever the history holds (`historyLanding`'s `departed`, up to the status's
+`last_seq` at connect); the history counts as all in once news has come after it or it
 reaches the status's `last_seq` at connect, and until then the stage waits on "The table is being
 seated…" rather than land. **The reconnect boundary:** from the moment the stream drops until a
 fresh `GET /games/{id}` after it reopens, every event is catch-up, and after it anything up to

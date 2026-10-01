@@ -1,8 +1,9 @@
 /**
  * The live stage, fed the fixture game one event at a time as a seat would receive it
- * (player_7, the vigilante): history lands still, news plays through the timer, prompts wait,
- * the X-ray at game over carries the stage across, and the ending runs to its curtain. Then the
- * answers: the turn's body per request kind, the draft's state, the clock.
+ * (player_7, the vigilante): history lands still, news plays through the timer at normal speed,
+ * prompts wait, game over cuts nothing in before the ending and the X-ray waits for the stage to
+ * reach it, and the ending runs to its curtain. Then the answers: the turn's body per request
+ * kind, the draft's state, the clock.
  */
 import { describe, expect, it } from 'vitest';
 import fixture from '@/stage/fixtures/replay-9369a5c1.json';
@@ -22,6 +23,7 @@ import {
   payloadFor,
   requestBefore,
   requestIsActive,
+  seesXray,
   turnClock,
   turnReducer,
   type LiveCtx,
@@ -104,6 +106,8 @@ class Session {
   connectedAt: number | null = null;
   /** The newest seq a reconnect caught up on (the store's `caughtUpTo`). */
   caughtUpTo = 0;
+  /** The page watched its platform depart (the theatre's `departedHere`). */
+  departed = false;
 
   constructor(readonly me = ME) {
     this.ctx = ctx({ me });
@@ -122,7 +126,7 @@ class Session {
       landing:
         this.connectedAt === null
           ? undefined
-          : historyLanding(this.events, end, this.connectedAt),
+          : historyLanding(this.events, end, this.connectedAt, this.departed),
       ctx: this.ctx,
     });
     this.watch?.see(this.state);
@@ -229,12 +233,17 @@ describe('the live stage: history and news', () => {
     const before = s.state;
     s.state = liveReducer(s.state, { type: 'held', step: s.state.step - 1, ctx: s.ctx });
     expect(s.state).toBe(before);
-    // past the deal, a backlog of three or more drains fast
+    // past the deal, a backlog of any length plays at normal speed, one beat per hold
+    // (2026-10-01; it drained fast from three queued until then)
     while (s.beat.id.startsWith('deal.')) s.held();
     expect(s.state.beats.length - 1 - s.state.cursor.index).toBeGreaterThanOrEqual(2);
-    expect(s.state.speed).toBe('fast');
-    // drain to the end: the last queued beat plays at normal speed
-    while (s.state.cursor.index < s.state.beats.length - 1) s.held();
+    while (s.state.cursor.index < s.state.beats.length - 1) {
+      expect(s.state.speed).toBe('normal');
+      expect(s.state.holding).toBe(true);
+      const at = s.state.cursor.index;
+      s.held();
+      expect(s.state.cursor).toEqual({ index: at + 1, animate: true });
+    }
     expect(s.state.speed).toBe('normal');
     s.held();
     expect(s.state.holding).toBe(false);
@@ -315,6 +324,48 @@ describe('the live stage: the deal on first connection, and a reconnect', () => 
     expect(q.state.speed).toBe('normal');
   });
 
+  it('a page that watched its platform depart plays the deal and what followed it, however much the log held (2026-10-01)', () => {
+    // a solo game: the agents are well into day 1 by the time the curtain is down
+    const s = new Session();
+    s.connectedAt = 30;
+    s.departed = true;
+    expect(upTo(30).some((e) => e.type === 'turn_started')).toBe(true);
+    s.arrive(upTo(30), false);
+    expect(s.beat.id).toBe('deal.table-seated');
+    expect(s.state.cursor.animate).toBe(true);
+    const played: string[] = [];
+    while (s.state.holding) {
+      expect(s.state.speed).toBe('normal');
+      played.push(s.beat.id);
+      s.held();
+    }
+    // the deal from its first beat, then every beat after it, in order, none skipped
+    expect(played.slice(0, 4)).toEqual([
+      'deal.table-seated',
+      'deal.cards-dealt',
+      'deal.your-card',
+      'deal.day-begins',
+    ]);
+    expect(played).toEqual(s.state.beats.slice(0, played.length).map((b) => b.id));
+    expect(s.state.cursor.index).toBe(s.state.beats.length - 1);
+    // day 1's first turns: each seat on the stand, thinking, then passing
+    expect(played.filter((id) => id === 'day.turn-thinking').length).toBe(3);
+    expect(played.filter((id) => id === 'day.pass').length).toBe(2);
+    // without the departure the same history lands still on its latest beat
+    const q = new Session();
+    q.connectedAt = 30;
+    q.arrive(upTo(30), false);
+    expect(q.state.cursor).toEqual({ index: q.state.beats.length - 1, animate: false });
+    // a reconnect later catches up past the connect: that lands still, as anywhere
+    s.caughtUpTo = 60;
+    s.arrive(
+      MINE.filter((e) => e.seq > 30 && e.seq <= 60),
+      false,
+    );
+    expect(s.state.cursor).toEqual({ index: s.state.beats.length - 1, animate: false });
+    expect(s.state.holding).toBe(false);
+  });
+
   it('a history that holds a turn lands still, as before', () => {
     expect(historyLanding(upTo(13), upTo(13).length, 13)).toBe('still');
     const s = new Session();
@@ -366,7 +417,7 @@ describe('the live stage: the seated human’s prompt', () => {
     expect(s.beat).toMatchObject({ id: 'day.speech', seq: 202, subject: ME });
   });
 
-  it('the dock never waits for the stage: the beat on stage is cut short, the rest drain fast', () => {
+  it('the dock never waits for the stage: the beat on stage is cut short once, the rest keep their pace', () => {
     const s = new Session().arrive(upTo(190), false);
     // three speeches arrive as news, then my request
     s.arrive(
@@ -377,15 +428,46 @@ describe('the live stage: the seated human’s prompt', () => {
     expect(s.state.holding).toBe(true);
     s.ctx = ctx({ openPrompt: 201 });
     s.arrive([request(201, 'discuss')], true);
-    // cut short once: the next beat is already on
+    // cut short once: the next beat is already on, at normal speed (2026-10-01; fast until then)
     expect(s.state.cursor.index).toBe(holding + 1);
-    expect(s.state.speed).toBe('fast');
-    // a later recut does not cut the fast hold again
+    expect(s.state.speed).toBe('normal');
+    expect(s.state.holding).toBe(true);
+    // a later recut does not cut its hold again
     const step = s.state.step;
     s.recut();
     expect(s.state.step).toBe(step);
-    while (s.beat.id !== 'day.your-turn') s.held();
+    expect(s.state.holding).toBe(true);
+    while (s.beat.id !== 'day.your-turn') {
+      expect(s.state.speed).toBe('normal');
+      s.held();
+    }
     expect(s.beat.seq).toBe(201);
+  });
+
+  it('a prompt first seen while the deal is on the stage cuts nothing', () => {
+    const s = new Session();
+    s.connectedAt = 12;
+    s.arrive(upTo(12), false);
+    expect(s.beat.id).toBe('deal.table-seated');
+    // the first turn is mine, and it is open while the deal plays
+    s.ctx = ctx({ openPrompt: 14 });
+    s.arrive(
+      [...MINE.filter((e) => e.seq === 13), { ...request(14, 'discuss'), day: 1 }],
+      true,
+    );
+    expect(s.beat.id).toBe('deal.table-seated');
+    expect(s.state.holding).toBe(true);
+    // the deal plays on, beat by beat, and so does what comes after it: no hold is cut
+    const before = s.state.step;
+    let holds = 0;
+    while (s.state.holding) {
+      expect(s.state.speed).toBe('normal');
+      s.held();
+      holds++;
+      s.recut(); // later cuts of the list do not cut either
+    }
+    expect(s.beat).toMatchObject({ id: 'day.your-turn', seq: 14 });
+    expect(s.state.step - before).toBe(holds);
   });
 });
 
@@ -404,16 +486,16 @@ describe('the live stage: a speech told in pages', () => {
   });
   const quiet = { me: null, rolesLanded: false };
 
-  it('counts a paged speech once toward the backlog', () => {
+  it('plays its pages, and the speeches queued after them, at normal speed', () => {
     // on the stage: a speech's first page; queued: its two more pages and one more speech
     const beats = [page(163, 0, 3), page(163, 1, 3), page(163, 2, 3), page(169, 0, 1)];
     expect(nextLiveStep(beats, 0, quiet)).toEqual({ index: 1, speed: 'normal' });
-    // a third speech queued makes three items behind: fast
+    // more speeches queued are no backlog to hurry (2026-10-01)
     const more = [...beats, page(176, 0, 2), page(176, 1, 2), page(180, 0, 1)];
-    expect(nextLiveStep(more, 0, quiet)?.speed).toBe('fast');
+    expect(nextLiveStep(more, 0, quiet)?.speed).toBe('normal');
   });
 
-  it('still drains fast when my prompt is waiting, pages and all', () => {
+  it('keeps normal speed with my prompt waiting, pages and all', () => {
     const prompt: SceneBeat = {
       ...page(201, 0, 1),
       id: 'day.your-turn',
@@ -423,7 +505,7 @@ describe('the live stage: a speech told in pages', () => {
       holdMs: 0,
     };
     const beats = [page(163, 0, 2), page(163, 1, 2), prompt];
-    expect(nextLiveStep(beats, 0, { me: ME, rolesLanded: false })?.speed).toBe('fast');
+    expect(nextLiveStep(beats, 0, { me: ME, rolesLanded: false })?.speed).toBe('normal');
   });
 });
 
@@ -434,19 +516,43 @@ describe('the live stage: game over', () => {
   const backlog = ALL.filter((e) => e.seq < gameOver.seq && !seen(e));
   const extracted = ALL.find((e) => e.type === 'memory_extracted')!;
 
-  it('the X-ray carries the stage across when earlier beats are cut in', () => {
+  it('game over cuts nothing in before the ending: the stage goes on from the beat it was on', () => {
     const s = new Session().arrive(beforeOver, false);
-    const was = s.beat;
+    const played = s.state.beats.map(idOf);
     const at = s.state.cursor.index;
     s.arrive([gameOver], true);
-    // game over turns the X-ray on: the deal's face-up and the passes are cut in before
+    // the X-ray is on, and the withheld backlog lands, but the list up to the ending is the
+    // one the viewer played (no face-up deal, no X-ray passes, no other seat's "Only seat n")
     s.arrive(backlog, false);
-    const now = s.state.beats.findIndex((b) => b.id === was.id && b.seq === was.seq);
-    expect(now).toBeGreaterThan(at);
-    // the stage went on from the same beat, not from its old position
-    expect(s.state.beats.slice(0, now).some((b) => b.id === 'deal.face-up')).toBe(true);
-    expect(s.state.cursor.index).toBeGreaterThan(now);
+    const ending = s.state.beats.findIndex((b) => b.id.startsWith('over.'));
+    expect(s.state.beats.slice(0, ending).map(idOf)).toEqual(played);
+    expect(s.state.beats.some((b) => b.sees === 'xray' || b.aqua)).toBe(false);
+    expect(s.state.cursor.index).toBeGreaterThan(at);
     expect(s.beat.id.startsWith('over.')).toBe(true);
+  });
+
+  it('the viewer has the X-ray only once the stage reaches the ending (2026-10-01)', () => {
+    // night 4 falls as news while the stage is on the lynch; game over lands behind the
+    // morning's roll, the stage still in the night
+    const s = new Session().arrive(upTo(386), false);
+    s.arrive(
+      MINE.filter((e) => e.seq > 386 && e.seq < gameOver.seq),
+      true,
+    );
+    s.arrive([gameOver], true).arrive(backlog, false).set({ rolesLanded: true });
+    expect(s.beat.id).toBe('night.hub');
+    // what the theatre hands the presentation: the X-ray is not the viewer's yet
+    expect(seesXray(s.state, true)).toBe(false);
+    while (!s.beat.id.startsWith('over.')) {
+      expect(seesXray(s.state, true)).toBe(false);
+      s.held();
+    }
+    expect(s.beat.id).toBe('over.where-it-ended');
+    expect(seesXray(s.state, true)).toBe(true);
+    while (s.beat.id !== 'over.verdict') s.held();
+    expect(seesXray(s.state, true)).toBe(true);
+    // never without game over, wherever the stage is
+    expect(seesXray(s.state, false)).toBe(false);
   });
 
   it('holds the winners’ stand for the roles, then runs to the curtain; the epilogue waits for its close', () => {

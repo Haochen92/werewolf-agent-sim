@@ -10,23 +10,26 @@
  *   beat. Nothing plays; a refresh mid-game is silent. So is what a reconnect catches up on.
  * - Except the deal: a new game's first connection finds the deal already dealt (it happens
  *   before the page connects), so while the history holds no turn yet it plays from the first
- *   beat at normal speed, instead of landing on "the day begins". A deal that arrives as news
- *   (the page watched the waiting room depart) keeps the same pace.
- * - News plays. Each new beat animates in and holds for its time, then the next one plays; when
- *   three or more are waiting they go at fast speed (live-queue.ts decides which and how fast).
- *   The deal always plays at normal speed.
+ *   beat at normal speed, instead of landing on "the day begins". A page that watched its
+ *   waiting room depart plays the deal from its first beat whatever the history holds, and the
+ *   beats after it play on as a queue (2026-10-01): a solo game's agents are turns ahead by the
+ *   time the curtain is down, and this viewer has seen none of it.
+ * - News plays. Each new beat animates in and holds for its time at normal speed, then the next
+ *   one plays, however many are waiting (live-queue.ts; the backlog drained fast until
+ *   2026-10-01). The stage lags the server; that is the design.
  * - A beat that waits for someone holds the stage until the wait is over: a prompt until it is
  *   answered (or gone), the epilogue until its sheet is closed, the curtain for good.
  * - The dock never waits for the stage. When the seated human's prompt is open further down the
- *   queue, the beat on the stage is cut short once (unless it is the deal) and the rest drain
- *   fast up to it.
+ *   queue, the beat on the stage is cut short once (unless it is the deal, which then keeps its
+ *   hold and nothing is cut) and the rest play at normal speed up to it.
  * - What the seat lived through at its own prompt (its line to the pack) lands still when the
  *   log's copy of it arrives, and the stage moves on: it is not played a second time.
  * - The winners' stand waits for the roles, which arrive just after `game_over`.
+ * - The X-ray is everyone's once the game is over, but the viewer sees it only when the stage
+ *   has reached the ending (`seesXray`): the stage may still be playing the last night.
  *
  * The beat list is cut again every time the log grows (and when `game_over` turns the X-ray
- * on for everyone, which puts earlier beats into the list), so the stage is carried across by
- * which beat it was on, not by its position.
+ * on), so the stage is carried across by which beat it was on, not by its position.
  */
 import { isTextTurn, type TurnPayload } from '@/lib/api';
 import type { MeView } from '@/game/types';
@@ -60,13 +63,12 @@ export interface LiveState {
   /** The prompt the stage has already hurried toward (so it is hurried once). */
   hurried: number | null;
   slot: Presentation['slot'];
-  /** Beats ending at or before this index are the deal, played from history at normal speed. */
-  dealEnd: number;
 }
 
 /**
  * How the history lands: still (the default), played from the deal (a new game's first
- * connection), or not yet (the history is still arriving and holds no turn yet).
+ * connection, or a page that watched its platform depart), or not yet (the history is still
+ * arriving and holds no turn yet).
  */
 export type Landing = 'still' | 'deal' | 'pending';
 
@@ -101,7 +103,6 @@ export function initialLiveState(slot: Presentation['slot'] = null): LiveState {
     step: 0,
     hurried: null,
     slot,
-    dealEnd: 0,
   };
 }
 
@@ -125,23 +126,34 @@ export function historyEnd(
  * Whether the history is only the deal (beat sheet §12, "the deal on first connection"). The
  * history is all in once news has come after it or it reaches the seq the status reported at
  * connect (`connectedAt`); until then, with no turn in it yet, it is too early to say.
+ *
+ * A page that watched the platform depart (`departed`) plays from the deal whatever the
+ * history holds (beat sheet §1a): the viewer saw none of it. Only what a reconnect later
+ * catches up on (past `connectedAt`) lands still, as anywhere.
  */
 export function historyLanding(
   events: readonly DurableGameEvent[],
   historyEnd: number,
   connectedAt: number,
+  departed = false,
 ): Landing {
   const history = events.slice(0, historyEnd);
+  if (departed && (history.at(-1)?.seq ?? 0) <= connectedAt) return 'deal';
   if (history.some((e) => e.type === 'turn_started')) return 'still';
   const allIn = historyEnd < events.length || (history.at(-1)?.seq ?? 0) >= connectedAt;
   return allIn ? 'deal' : 'pending';
 }
 
-/** Where the deal's beats end in the log (0 with none yet). */
-function dealBeatsEnd(beats: readonly SceneBeat[]): number {
-  let end = 0;
-  for (const b of beats) if (b.scene === 'deal') end = Math.max(end, b.end);
-  return end;
+/**
+ * Whether the viewer sees the X-ray: the game is over (`over`, the log's `game_over`) and the
+ * stage has reached its ending, the first `over.*` beat. Until then the Reveal switch stays
+ * locked, the File tab shut and the wing without the truth, though the log already holds it:
+ * `game_over` can land while the stage is still playing the last night (2026-10-01).
+ */
+export function seesXray(state: LiveState, over: boolean): boolean {
+  if (!over) return false;
+  const ending = state.beats.findIndex((b) => b.id.startsWith('over.'));
+  return ending !== -1 && state.cursor.index >= ending;
 }
 
 function sameBeat(a: SceneBeat | undefined, b: SceneBeat | undefined): boolean {
@@ -218,15 +230,13 @@ function play(state: LiveState, index: number, speed: 'normal' | 'fast'): LiveSt
 
 /** Move on if the beat on the stage has had its moment and nothing it waits for is pending. */
 function advance(state: LiveState, ctx: LiveCtx): LiveState {
-  // the dock never waits for the stage: cut the beat on the stage short, once per prompt
+  // the dock never waits for the stage: the beat on the stage when my prompt is first seen
+  // ahead is cut short, once per prompt (a deal beat keeps its hold, and nothing is cut)
   const current = state.beats[state.cursor.index];
-  if (
-    state.holding &&
-    promptAhead(state, ctx) &&
-    state.hurried !== ctx.openPrompt &&
-    !current?.id.startsWith('deal.')
-  )
-    state = { ...state, holding: false, hurried: ctx.openPrompt };
+  if (promptAhead(state, ctx) && state.hurried !== ctx.openPrompt) {
+    const cut = state.holding && !current?.id.startsWith('deal.');
+    state = { ...state, holding: cut ? false : state.holding, hurried: ctx.openPrompt };
+  }
   if (state.holding) return state;
   if (current && waitsHere(current, ctx)) return state;
   const next = nextLiveStep(state.beats, state.cursor.index, ctx);
@@ -237,9 +247,7 @@ function advance(state: LiveState, ctx: LiveCtx): LiveState {
       { ...state, cursor: still(next.index), holding: false, step: state.step + 1 },
       ctx,
     );
-  // the deal came all at once as history, but plays at its own pace (unless my turn is waiting)
-  const dealt = state.beats[next.index].end <= state.dealEnd && !promptAhead(state, ctx);
-  return play(state, next.index, dealt ? 'normal' : next.speed);
+  return play(state, next.index, next.speed);
 }
 
 export function liveReducer(state: LiveState, action: LiveAction): LiveState {
@@ -253,9 +261,6 @@ export function liveReducer(state: LiveState, action: LiveAction): LiveState {
         beats,
         cursor: carried.cursor,
         holding: carried.same ? state.holding : false,
-        // the deal plays at its own pace whether it came as history or, after the waiting
-        // room's departure, as news: through its last beat
-        dealEnd: landing === 'deal' ? Math.max(action.historyEnd, dealBeatsEnd(beats)) : 0,
       };
       // the epilogue lands after the curtain is up (memory is extracted after game over): play it
       const at = next.cursor.index;
@@ -269,7 +274,8 @@ export function liveReducer(state: LiveState, action: LiveAction): LiveState {
       }
       // too early to say whether this is a new game's deal: wait for the rest of the history
       if (landing === 'pending') return next;
-      // history lands still, on the latest beat it reaches; nothing of it plays (the deal does)
+      // history lands still, on the latest beat it reaches; nothing of it plays (the deal, and
+      // after a departure here what followed it, play from the first beat)
       let floor = -1;
       if (landing === 'still')
         for (let i = 0; i < beats.length; i++)

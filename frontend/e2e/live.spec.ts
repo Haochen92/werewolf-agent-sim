@@ -12,7 +12,9 @@
  * with the seat notebook when "Use my seat notes" is ticked) into the box to be edited, Send
  * sends it, and a line typed by hand sends as it is; the full-screen composer holds the same
  * line (a picture of it, and on a phone it keeps above the soft keyboard); while the status is
- * on its way the page is the empty platform (a picture).
+ * on its way the page is the empty platform (a picture). The pace (2026-10-01): a departed
+ * game plays its deal and the turns after it from the first beat, however much the log held;
+ * a queue of beats plays at its normal holds; Reveal and File wait for the stage's ending.
  *
  * The mocked stream ends when its body does, so the browser reads it as a dropped connection;
  * the theatre's "Reconnecting…" note is hidden in the pictures for that reason.
@@ -171,6 +173,53 @@ async function settle(page: Page) {
 
 const theatre = (page: Page) => page.locator('[data-beat-index]');
 
+/**
+ * Hold the stream back until the page's clock is paused, so every hold after it is the test's
+ * to run: until then the installed clock flows with real time, and a page load can outlast a
+ * hold. Returns the release, which waits for the stream to be asked for (the status is in by
+ * then: its query's news travels on a timer, which a paused clock would keep), pauses the clock
+ * and lets the stream through.
+ */
+async function pausedStream(page: Page) {
+  let release = () => {};
+  let asked = () => {};
+  const held = new Promise<void>((r) => (release = r));
+  const requested = new Promise<void>((r) => (asked = r));
+  await page.route(`**/games/${GAME}/events*`, async (route) => {
+    asked();
+    await held;
+    await route.fallback();
+  });
+  return async () => {
+    await requested;
+    const now = await page.evaluate(() => Date.now());
+    await page.clock.pauseAt(now + 500);
+    release();
+  };
+}
+
+/**
+ * The stage plays these beats in turn, each for its whole hold: the paused clock runs on in
+ * 200 ms steps until the beat moves on, and the time that took is its hold, give or take a step
+ * or two (a timer set mid-step, a render read a step late). Fast would be half. The first beat
+ * must have just come on.
+ */
+async function holdsEach(page: Page, steps: readonly (readonly [string, number])[]) {
+  for (const [id, hold] of steps) {
+    await expect(theatre(page)).toHaveAttribute('data-beat', id);
+    await expect(theatre(page)).toHaveAttribute('data-holding', 'true');
+    const at = await theatre(page).getAttribute('data-beat-index');
+    let ran = 0;
+    while (ran < hold + 2000) {
+      await page.clock.runFor(200);
+      ran += 200;
+      if ((await theatre(page).getAttribute('data-beat-index')) !== at) break;
+    }
+    expect(ran, `${id}'s hold`).toBeGreaterThanOrEqual(hold - 400);
+    expect(ran, `${id}'s hold`).toBeLessThanOrEqual(hold + 600);
+  }
+}
+
 /** Seat 7's discussion turn, asked just after the snapshot: news, with two minutes on the clock. */
 const yourTurn = (seq: number): WireEvent => ({
   seq,
@@ -234,9 +283,9 @@ test('live: a new game’s first connection plays the deal from its first beat',
   await expect(theatre(page)).toHaveAttribute('data-beat', 'deal.table-seated');
   await expect(theatre(page)).toHaveAttribute('data-holding', 'true');
   // played at normal speed, beat by beat: seat 7's own card comes third
-  await page.clock.runFor(3100);
+  await page.clock.runFor(6100);
   await expect(theatre(page)).toHaveAttribute('data-beat', 'deal.cards-dealt');
-  await page.clock.runFor(3100);
+  await page.clock.runFor(6100);
   await expect(theatre(page)).toHaveAttribute('data-beat', 'deal.your-card');
 });
 
@@ -308,6 +357,148 @@ test('live: the waiting room’s platform departs into the deal on the same stag
   await expect(page.getByRole('button', { name: 'Start game' })).toHaveCount(0);
 });
 
+test('live: a departed game plays its deal and the turns after it, however much the log held', async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await page.clock.install({ time: T0 });
+  await page.addInitScript((game) => localStorage.setItem(`seat_${game}`, 'tok-7'), GAME);
+  const mock: Mock = {
+    status: status(0, {
+      state: 'waiting',
+      players: ['mira'],
+      host: 'mira',
+      name: 'Solo',
+      locked: false,
+      human_players: [],
+      you: null,
+    }),
+    stream: [],
+  };
+  await mockApi(page, mock);
+  await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  await expect(theatre(page)).toHaveAttribute('data-platform', 'waiting');
+
+  // a solo game: by the time the train has left, the agents have taken day 1's first turns
+  const said = (seq: number, player: string): WireEvent => ({
+    seq,
+    day: 1,
+    type: 'speech',
+    player,
+    channel_seq: seq,
+    message: 'Nothing to go on yet; I will watch the vote.',
+  });
+  const turn = (seq: number) => ALL.find((e) => e.seq === seq)!;
+  mock.status = status(24);
+  mock.stream = [
+    ...upTo(12),
+    turn(13),
+    said(14, 'player_1'),
+    turn(18),
+    said(19, 'player_5'),
+    turn(23),
+    said(24, 'player_4'),
+  ];
+  expect(mock.stream.filter((e) => e.type === 'turn_started')).toHaveLength(3);
+  await page.clock.runFor(3100);
+  await expect(theatre(page)).toHaveAttribute('data-platform', 'departing');
+  await page.clock.runFor(7100);
+  await expect(theatre(page)).toHaveAttribute('data-platform', 'closing');
+  await page.clock.runFor(1300);
+  // the curtain is down: the deal's first beat, not the latest turn
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'deal.table-seated');
+  await expect(theatre(page)).toHaveAttribute('data-holding', 'true');
+  await page.clock.runFor(1100);
+  await expect(theatre(page)).toHaveAttribute('data-platform', 'off');
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'deal.table-seated');
+  // from here the clock is the test's: the rest of the table's hold, then each beat in turn
+  const now = await page.evaluate(() => Date.now());
+  await page.clock.pauseAt(now + 50);
+  for (let t = 0; t < 40; t++) {
+    if ((await theatre(page).getAttribute('data-beat')) === 'deal.cards-dealt') break;
+    await page.clock.runFor(200);
+  }
+  await holdsEach(page, [
+    ['deal.cards-dealt', 6000],
+    ['deal.your-card', 8000],
+    ['deal.day-begins', 6000],
+    ['day.turn-thinking', 2000],
+    ['day.speech', 5000],
+    ['day.turn-thinking', 2000],
+    ['day.speech', 5000],
+    ['day.turn-thinking', 2000],
+  ]);
+  // the last line, the latest beat: it plays, and the stage rests there
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'day.speech');
+  await expect(theatre(page)).toHaveAttribute('data-holding', 'true');
+  await expect(page.locator('[data-line="say-24"]')).toBeVisible();
+});
+
+test('live: a queue of beats plays at its normal holds, one after another', async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  await page.clock.install({ time: T0 });
+  // a refresh at day 2's vote: the ballots, the count and the verdict come as news behind it,
+  // fourteen beats queued (they drained at half their holds until 2026-10-01)
+  await mockApi(page, { status: status(81), stream: upTo(119) });
+  const go = await pausedStream(page);
+  await page.goto(`/games/${GAME}`);
+  await expect(theatre(page)).toBeAttached();
+  await go();
+  await holdsEach(page, [
+    ['vote.ballots-drop', 2500],
+    ['vote.closes', 2500],
+    ['vote.count-begins', 2000],
+    ['vote.chip-counted', 2500],
+    ['vote.chip-counted', 2500],
+    ['vote.chip-counted', 2500],
+  ]);
+});
+
+test('live: game over in the night keeps Reveal and File shut until the stage reaches the ending', async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await page.clock.install({ time: T0 });
+  const over = ALL.find((e) => e.type === 'game_over')!;
+  const backlog = ALL.filter((e) => e.seq < over.seq && !seen(e));
+  // the stage on day 4's lynch; night 4, its morning and game over arrive as news
+  await mockApi(page, { status: status(386), stream: [...upTo(405), over, ...backlog] });
+  const go = await pausedStream(page);
+  await page.goto(`/games/${GAME}`);
+  await expect(theatre(page)).toBeAttached();
+  await go();
+  // four hundred frames, a render each, in a dev build: give them time
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'night.hub', {
+    timeout: 30_000,
+  });
+  const reveal = page.getByRole('button', { name: 'Reveal', exact: true });
+  const file = page.getByRole('button', { name: 'File', exact: true });
+  // the log holds the game's end, the stage is still in the night: nothing unlocks
+  const before: string[] = [];
+  for (let t = 0; t < 60; t++) {
+    const beat = (await theatre(page).getAttribute('data-beat'))!;
+    if (beat.startsWith('over.')) break;
+    if (!before.includes(beat)) before.push(beat);
+    await expect(reveal).toHaveAttribute('data-reveal', 'locked');
+    await expect(file).toBeDisabled();
+    await page.clock.runFor(1000);
+  }
+  expect(before).toEqual(expect.arrayContaining(['night.hub', 'morning.shutter-down']));
+  // the ending: Reveal is on and the File tab opens, for good
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'over.where-it-ended');
+  await expect(reveal).toHaveAttribute('data-reveal', 'on');
+  await expect(file).toBeEnabled();
+  for (let t = 0; t < 30; t++) {
+    if ((await theatre(page).getAttribute('data-beat')) === 'over.verdict') break;
+    await page.clock.runFor(1000);
+  }
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'over.verdict');
+  await expect(reveal).toHaveAttribute('data-reveal', 'on');
+  await expect(file).toBeEnabled();
+});
+
 test('live: seat 7’s turn to speak, the dock at the foot', async ({ page }) => {
   await page.clock.install({ time: T0 });
   await mockApi(page, {
@@ -373,15 +564,15 @@ test('live: the card stays open while the beats go by', async ({ page }) => {
   await mockApi(page, { status: status(12), stream: upTo(12) });
   await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
   await expect(theatre(page)).toHaveAttribute('data-beat', 'deal.table-seated');
-  await page.clock.runFor(3100);
+  await page.clock.runFor(6100);
   await expect(theatre(page)).toHaveAttribute('data-beat', 'deal.cards-dealt');
-  await page.clock.runFor(3100);
+  await page.clock.runFor(6100);
   await expect(theatre(page)).toHaveAttribute('data-beat', 'deal.your-card');
   await page.getByRole('button', { name: 'Your card: Vigilante' }).click();
   const card = page.locator('[data-overlay="card"]');
   await expect(card).toBeVisible();
   // the deal plays on under it, into the day: the card is still open
-  await page.clock.runFor(6100);
+  await page.clock.runFor(8100);
   await expect(theatre(page)).toHaveAttribute('data-beat', 'deal.day-begins');
   await expect(card).toBeVisible();
 });
@@ -728,8 +919,8 @@ test('live: after game over the ending plays to its curtain', async ({ page }) =
     stream: [...upTo(405), over, ...backlog, taught],
   });
   await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
-  // the ending plays beat by beat (fast: it is queued) until the epilogue's sheet waits
-  for (let t = 0; t < 40; t++) {
+  // the ending plays beat by beat, each at its normal hold, until the epilogue's sheet waits
+  for (let t = 0; t < 120; t++) {
     await page.clock.runFor(500);
     if ((await theatre(page).getAttribute('data-beat')) === 'over.epilogue') break;
   }

@@ -71,7 +71,7 @@ describe('the X-ray night, read back from the view', () => {
     );
     expect(cut).toMatchObject({
       subject: 'player_7',
-      holdMs: 2500,
+      holdMs: 4000,
       spoke: { step: 0, steps: 1 },
     });
     // night 4 the vigilante shot: no hold that night

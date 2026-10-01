@@ -148,6 +148,9 @@ export interface BeatOptions {
   xray: boolean;
   /** The seated human, if any; never inferred from the log. */
   me?: string | null;
-  /** A game in play: the seated human's prompts become beats. */
+  /**
+   * A game in play: the seated human's prompts become beats, and the list stays the one the
+   * viewer played (`xray` adds nothing before the ending; the stage may still be behind it).
+   */
   live?: boolean;
 }

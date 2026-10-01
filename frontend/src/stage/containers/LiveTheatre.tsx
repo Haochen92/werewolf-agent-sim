@@ -10,23 +10,28 @@
  * fills.
  *
  * There is no transport. Beats play as events arrive: each new beat animates in and holds for
- * its time, a queue of them drains at fast speed, and history (a refresh, the page opened
- * mid-game, what a reconnect caught up on) lands still on the latest beat without playing
- * anything; only a new game's deal, which is always over before the page connects, plays from
- * its first beat. The rules are in live-state.ts; this file runs the timer and talks to the
- * server.
+ * its time at normal speed, however many are queued (ruled 2026-10-01: the stage plays at
+ * reading pace and lags the server), and history (a refresh, the page opened mid-game, what a
+ * reconnect caught up on) lands still on the latest beat without playing anything; only a new
+ * game's deal, which is always over before the page connects, plays from its first beat, and
+ * on a page that watched its platform depart, the deal and everything after it play from the
+ * first beat whatever the log already held. The rules are in live-state.ts; this file runs the
+ * timer and talks to the server.
  *
  * The seated human's turn never waits for the stage: the clock runs on the request's real
- * deadline from the moment it arrives, and the stage hurries to the prompt. Answers go out
- * from whichever scene took them (the dock, the ballot, the shelf room, the pack's chat) to
- * one place here, which picks the right body for the request and says what the server said.
+ * deadline from the moment it arrives, and the beat on the stage is cut short once (the rest
+ * keep their pace up to the prompt). Answers go out from whichever scene took them (the dock,
+ * the ballot, the shelf room, the pack's chat) to one place here, which picks the right body
+ * for the request and says what the server said.
  * A turn that runs out is answered by the seat's agent; that seat's own screen is told so
  * when its line arrives.
  *
- * After `game_over` every viewer holds the whole log, so the X-ray is on for everyone: the
- * wing takes the truth, the film opens, and the ending plays to its curtain, whose way out
- * goes to the replay or back to the lobby. Until then a seated player's way out is the strip's
- * door, which asks first ("Leave the table?") and goes to the lobby; their agent plays on.
+ * After `game_over` every viewer holds the whole log, so the X-ray is on for everyone, from
+ * the moment the stage reaches the ending (its first `over.*` beat; `game_over` can land while
+ * the stage is still playing the last night, 2026-10-01): then the wing takes the truth, Reveal
+ * and the File tab unlock, and the ending plays to its curtain, whose way out goes to the
+ * replay or back to the lobby. Until then a seated player's way out is the strip's door, which
+ * asks first ("Leave the table?") and goes to the lobby; their agent plays on.
  *
  * Before the game, the same stage holds the waiting room: the platform (`StationScene`), drawn
  * from the room the page hands in (`room`), with the host's Lock and Depart going back out
@@ -83,6 +88,7 @@ import {
   payloadFor,
   requestBefore,
   requestIsActive,
+  seesXray,
   turnClock,
   turnReducer,
   type Answer,
@@ -195,8 +201,11 @@ export function LiveTheatre({
   }, [room]);
   // what the platform first showed lands still; after that, what changes on it moves
   const [platformSeen, setPlatformSeen] = useState(false);
+  // the train left on this page: the deal, and whatever followed it, play from the first beat
+  const [departedHere, setDepartedHere] = useState(false);
   useEffect(() => {
     if (platform !== 'off') setPlatformSeen(true);
+    if (platform === 'departing') setDepartedHere(true);
   }, [platform]);
   const begun = status !== undefined && status.state !== 'waiting';
   useEffect(() => {
@@ -219,7 +228,8 @@ export function LiveTheatre({
   const events = fed && storeGame === gameId ? storeEvents : NO_EVENTS;
 
   const me = view.me.seat;
-  // after game over the whole log is everyone's: every viewer is an observer
+  // after game over the whole log is everyone's: every viewer is an observer (what the viewer
+  // sees of it waits for the stage to reach the ending: `xrayShown`, below)
   const xray = view.winner !== null;
   const cast = useMemo(() => castForGame(gameId), [gameId]);
   const beats = useMemo(
@@ -238,8 +248,10 @@ export function LiveTheatre({
   if (connectedAt === null && begun) setConnectedAt(status?.last_seq ?? 0);
   const landing = useMemo(
     () =>
-      connectedAt === null ? 'pending' : historyLanding(events, historyEnd, connectedAt),
-    [events, historyEnd, connectedAt],
+      connectedAt === null
+        ? 'pending'
+        : historyLanding(events, historyEnd, connectedAt, departedHere),
+    [events, historyEnd, connectedAt, departedHere],
   );
   const folds = useMemo(() => createFoldCache(events, { mySeat: me }), [events, me]);
 
@@ -366,6 +378,8 @@ export function LiveTheatre({
 
   const index = state.cursor.index;
   const beat: SceneBeat | undefined = state.beats[index];
+  // the X-ray as the viewer has it: on once the stage has reached the ending, not before
+  const xrayShown = seesXray(state, xray);
   const holdMs = beat && state.holding ? holdFor(beat, state.speed) : null;
   useEffect(() => {
     if (holdMs === null) return;
@@ -393,8 +407,8 @@ export function LiveTheatre({
   const [leaving, setLeaving] = useState(false);
   const router = useRouter();
   const ahead = useMemo(
-    () => (xray ? folds.at(events.length) : null),
-    [xray, folds, events.length],
+    () => (xrayShown ? folds.at(events.length) : null),
+    [xrayShown, folds, events.length],
   );
   const slotInput = useMemo(
     (): SlotInput => ({
@@ -409,15 +423,15 @@ export function LiveTheatre({
       replayHref: `/replays/${gameId}`,
       ahead,
       onTranscript: () => dispatch({ type: 'transcript' }),
-      onFile: () => dispatch({ type: 'file', xray }),
+      onFile: () => dispatch({ type: 'file', xray: xrayShown }),
       onOpenFile: (seat) => {
         setFileSeat({ seat, key: null });
-        dispatch({ type: 'show-file', xray });
+        dispatch({ type: 'show-file', xray: xrayShown });
       },
-      // Reveal is locked until the game ends, then on for good
-      revealLocked: !xray,
+      // Reveal is locked until the stage reaches the game's end, then on for good
+      revealLocked: !xrayShown,
       // a seated player's way out, until the game's end brings the curtain's
-      onLeave: me && !xray ? () => setLeaving(true) : undefined,
+      onLeave: me && !xrayShown ? () => setLeaving(true) : undefined,
     }),
     [
       drawer.filters,
@@ -426,7 +440,7 @@ export function LiveTheatre({
       filmTab,
       fileSeat,
       ahead,
-      xray,
+      xrayShown,
       gameId,
       me,
     ],
@@ -434,7 +448,7 @@ export function LiveTheatre({
 
   const presentation = useMemo(
     (): Presentation => ({
-      xray,
+      xray: xrayShown,
       slot: state.slot,
       motion: state.speed,
       hud: 'live',
@@ -442,7 +456,7 @@ export function LiveTheatre({
       animate: state.cursor.animate,
       game: gameId,
     }),
-    [xray, state.slot, state.speed, cast, state.cursor.animate, gameId],
+    [xrayShown, state.slot, state.speed, cast, state.cursor.animate, gameId],
   );
 
   const sceneView = useMemo(() => (beat ? folds.at(beat.end) : null), [folds, beat]);
@@ -600,7 +614,7 @@ export function LiveTheatre({
               onClose={() => setCardOpen(false)}
             />
           ) : null}
-          {liveOn && beat && leaving && me && !xray ? (
+          {liveOn && beat && leaving && me && !xrayShown ? (
             <LeaveConfirm
               hud="live"
               side={sideOpen(presentation)}

@@ -42,10 +42,10 @@ describe('the transport', () => {
 
   it('holds scale with speed and a 0 hold waits for the viewer', () => {
     const chip = pub.find((b) => b.id === 'vote.chip-counted')!;
-    expect(holdFor(chip, 'normal')).toBe(2000);
-    expect(holdFor(chip, 'fast')).toBe(1000);
+    expect(holdFor(chip, 'normal')).toBe(2500);
+    expect(holdFor(chip, 'fast')).toBe(1250);
     // the old 'skip' speed is gone: a value kept from before it plays at normal
-    expect(holdFor(chip, 'skip' as never)).toBe(2000);
+    expect(holdFor(chip, 'skip' as never)).toBe(2500);
     const curtain = pub.find((b) => b.id === 'over.curtain')!;
     expect(holdFor(curtain, 'normal')).toBeNull();
   });
@@ -92,12 +92,14 @@ describe('the live queue', () => {
   const live = beatsFor(events, { xray: false, me: 'player_7', live: true });
   const ctx = { me: 'player_7', rolesLanded: false };
 
-  it('plays one or two queued beats at normal speed and a backlog of three at fast', () => {
+  it('plays every queued beat at normal speed, however long the backlog (2026-10-01)', () => {
     const last = live.length - 1;
     expect(nextLiveStep(live, last - 1, ctx)).toEqual({ index: last, speed: 'normal' });
     expect(nextLiveStep(live, last - 2, ctx)).toEqual({ index: last - 1, speed: 'normal' });
-    expect(nextLiveStep(live, last - 3, ctx)).toEqual({ index: last - 2, speed: 'fast' });
-    expect(nextLiveStep(live, last - 5, ctx)).toEqual({ index: last - 4, speed: 'fast' });
+    expect(nextLiveStep(live, last - 3, ctx)).toEqual({ index: last - 2, speed: 'normal' });
+    expect(nextLiveStep(live, last - 5, ctx)).toEqual({ index: last - 4, speed: 'normal' });
+    const day3 = live.findIndex((b) => b.id === 'day.speech' && b.day === 3);
+    expect(nextLiveStep(live, day3, ctx)).toEqual({ index: day3 + 1, speed: 'normal' });
     expect(nextLiveStep(live, last, ctx)).toBeNull();
   });
 
@@ -127,7 +129,7 @@ describe('the live queue', () => {
     });
   });
 
-  it('drains fast toward a prompt for the seated human', () => {
+  it('does not hurry toward a prompt for the seated human: the queue keeps normal speed', () => {
     // The fixture has no human prompts; stage one after a speech beat.
     const at = live.findIndex((b) => b.id === 'day.speech' && b.day === 3);
     const prompt = {
@@ -139,8 +141,8 @@ describe('the live queue', () => {
       holdMs: 0,
     };
     const staged = [...live.slice(0, at + 1), prompt, ...live.slice(at + 1)];
-    expect(nextLiveStep(staged, at - 1, ctx)).toEqual({ index: at, speed: 'fast' });
-    expect(nextLiveStep(staged, at, ctx)).toEqual({ index: at + 1, speed: 'fast' });
+    expect(nextLiveStep(staged, at - 1, ctx)).toEqual({ index: at, speed: 'normal' });
+    expect(nextLiveStep(staged, at, ctx)).toEqual({ index: at + 1, speed: 'normal' });
   });
 
   it('a catch-up lands on the latest beat', () => {
