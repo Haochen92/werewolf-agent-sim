@@ -770,10 +770,12 @@ Where it is below production grade:
 
 - **No per-scene GPU budget and no device testing.** The GPU rules of §6 were tuned on one
   Chrome. A studio has a device matrix and a memory budget per scene before art ships.
-- **One sprite size for every screen.** A puppet is 900×1300 and is drawn at about 300 px on a
-  phone, so the phone decodes four times the pixels it shows; the station's train is 5990×700
-  (16 MB decoded) for a scene that lasts seconds. Production practice is two or three sizes per
-  sprite through `srcset`, which `next/image` would do but `unoptimized` bypasses.
+- **One sprite size for every screen.** A puppet is 900×1300 and is drawn at about 300 CSS px on
+  a phone, which at the phone's 3× density is 900 device px: the size we ship, so the phone is
+  not oversupplied (a 1× or 2× desktop is). The station's train is 5990×700 (16 MB decoded) for
+  a scene that lasts seconds. Production practice is two or three sizes per sprite through
+  `srcset`, which `next/image` would do but `unoptimized` bypasses. (Corrected 2026-10-01: an
+  earlier reading here said the phone decoded four times what it shows; that counted CSS px.)
 - **Effects are live rather than baked.** Puppets and chips carry live `drop-shadow` filters, the
   light has two blend-mode layers, and the stage CSS holds 172 box-shadows. Cheap alone, all paid
   at device resolution whenever something moves. Studios bake shadows into the sprite and keep
@@ -788,3 +790,58 @@ tool; (2) sprites at two sizes and a decoded-pixel budget per scene written into
 memory timeline on the phone across a day and a night, with the numbers kept beside the budget.
 None of it needs canvas or WebGL: a DOM stage of ten composited layers is a sound choice at this
 scale, provided each layer is a bitmap or simple vector and a real device is in the loop.
+
+### 8.3 🔴 Fast beats killed the page: the set was rebuilt every beat (2026-10-01)
+
+**Symptom.** With the masks gone (§8.1), every stage page stayed up on the owner's iPhone at one
+beat a second and died at two to three, stepping the workbench: the day, the night room and the
+morning alike. A second crash, with a different shape: rate-dependent, not first-paint.
+
+**Mechanism.** Every scene was written as `<XBeat key={beat.id:seq} />`: the whole scene keyed
+per beat, so that a beat's arrival replays from the start. That key makes React throw the
+scene away and build it again, and the scene is the car's picture (1600×900, 5.8 MB decoded),
+the shutter (4 MB), the valance (3.2 MB), the light sheets, the wing's nine heads and the
+puppet with its live drop-shadow, each a layer with a pixel buffer at device resolution. The
+browser frees the last beat's layers a few frames after the new ones are up, not at once. At
+one beat a second it keeps pace; at three, two or three beats' worth of layers overlap, the tab
+crosses the phone's memory cap, and iOS kills it. Chromium shows the same rise and the same
+clean-up (live nodes 1088 → 1468 mid-run → 693 three seconds later, nothing more freed by a
+forced GC): transient pressure, not a leak, which a desktop's slack hides and a phone's cap
+catches.
+
+Not the cause, measured: sprite size (a puppet is 901×1285 and is drawn at about 300 CSS px,
+which at 3× is 900 device px, 1:1); the paint sheets (6 KB of SVG each, no pictures); the JS
+heap (10 MB throughout).
+
+**Fix.** The set and the beat are split: a scene is a stable set (`DaySet`, `MorningSet`: the
+atmosphere, the car's paint, the shutter, the house light, the wing, the strip) that updates in
+place, and a keyed part (`DayTurn`, `MorningBeat`: the puppet, the figures, the box) that
+remounts so its arrival plays again. The shutter snaps to its state when not played, since it
+now stays mounted while the state changes under it. Rule recorded in stage_architecture §6.
+
+What a beat step rebuilds, Chromium, 30 steps at 330 ms (`.churn` probe, MutationObserver):
+
+| per step                 | day before | day after | morning before | morning after |
+|--------------------------|-----------:|----------:|---------------:|--------------:|
+| DOM nodes added          |        343 |       194 |            321 |           234 |
+| pictures (`img`/`image`) |       15.1 |       6.0 |           15.1 |           6.6 |
+| paint sheets regenerated |        2.0 |       0.0 |            2.1 |           0.1 |
+
+**The probe.** `?auto=<ms>` on the workbench steps a beat every `<ms>` round the scene's beats
+(stage_architecture §6). The workbench's URL writes went to the browser's history API at the
+same time: a Next `router.replace` refetches the page from the server on every search-param
+change, which over the internet capped the probe at about three beats a second, the very rate
+in question. The phone's floor, before and after: _[pending the owner's reading]_.
+
+**What to take from it** (the whole of it, in four sentences): the browser turns the page into
+layers, and anything with a transform animation, a filter, a mask or a blend gets its own
+pixel buffer; a picture costs width × height × 4 bytes however it is compressed on the wire;
+a phone gives one tab a fixed budget for all of it and kills the tab at the line, where a
+desktop just gets slower; and so what is rebuilt per beat, not what is on the page, is the
+number that matters at speed.
+
+**Open.** The other scenes (the vote, the lynch, the night lobby, the deal, the game over, the
+replay night, the shelf room, the pack) are still keyed whole per beat; the same split applies
+if the floor says it is needed. The replay's step button could also coalesce presses faster
+than a quarter second, and the arrow key could ignore auto-repeat, as a guard that holds
+whatever the scenes do.

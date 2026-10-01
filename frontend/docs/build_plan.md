@@ -381,6 +381,12 @@ image ran on it unharmed, the migration only adds a column). Rollback = the `:pr
 2026-09-17 images). Smoke: every site route and `/api` health, replays (with `X-Total-Count`),
 rooms, models; a live replay rendered in headless Chromium loading the painted window, textures
 and lantern.
+· **2026-10-01, later: frontend only, `946c898` → `314b7cc` → `d6a19fe` → `a40f011`** (the GPU
+probe; no SVG mask on the stage; no CSS mask either; the pace probe), each a frontend image
+built from a detached worktree and `compose up -d --no-build wolf-frontend`; the server stayed at
+`a651988`. The iPhone Safari crash on every stage page (build log §8.1) ended at `d6a19fe`; the
+pace probe went up alone so the phone's floor could be read before the scene split (`196ebee`,
+build log §8.3) went up after it.
 · **2026-10-01 both containers rebuilt at `a651988`** (branch pushed first; built with
 `docker build` from a clean detached worktree, then `compose up -d --no-build`). Server: the
 request budget and stall rescue (30 s, two attempts, two stalls → the rescue model for five

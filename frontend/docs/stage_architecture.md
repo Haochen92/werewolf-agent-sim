@@ -637,6 +637,19 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   nolight nograde nohud`), joined by commas or `+`, e.g. `/workbench/day?beat=6&gpu=nomask`
   (`styles/gpu-probe.css`, workbench only). Open the plain page and one probe at a time on the
   failing device; the word whose page survives names the culprit.
+- **The pace probe**: the workbench's `?auto=<ms>` steps a beat every `<ms>` on its own, round
+  the scene's beats (`/workbench/day?beat=0&animate=1&auto=250`). A phone's browser kills the
+  page when beats come faster than it frees the last beat's layers and pictures; the fastest
+  link that stays up is the scene's floor, and a change to what a beat rebuilds is measured as
+  a change in that floor (build log §8.3).
+- **A scene's set is mounted once; only the beat is keyed.** A scene is a stable set (`DaySet`,
+  `MorningSet`: the atmosphere, the car's paint, the shutter, the house light, the wing, the
+  strip) that updates in place as the beats go by, and a keyed part (`DayTurn`, `MorningBeat`:
+  the puppet, the figures, the box) that remounts so its arrival plays again. Keying the whole
+  scene per beat rebuilt the car's pictures and the wing's heads on every step (15 pictures and
+  2 paint sheets a step; 6 and none after the split), and that churn is what the phone's cap
+  catches at speed. The two parts portal into the same layers: the set's nodes come first and
+  stay, the beat's are appended after them, so the stacking order is the JSX order.
 
 **If a beat "looks glitched" again** (frames overlapping, a black flash for a few ms, a stutter
 while the motion itself completes): it is almost certainly the compositor, not React. Check in
