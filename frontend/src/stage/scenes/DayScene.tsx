@@ -75,6 +75,9 @@ export function DayScene(props: SceneProps) {
     });
   return (
     <StageMotion speed={props.presentation.motion}>
+      {/* the set stays up from turn to turn: nothing on it plays again, and a phone's browser
+          cannot afford its pictures rebuilt beat after beat (build log §8.3) */}
+      <DaySet {...props} turnKey={on.key} />
       {/* a new beat is a new turn: the arrival replays from the start */}
       <DayTurn key={on.key} {...props} />
       <SideSlot {...props} />
@@ -82,49 +85,33 @@ export function DayScene(props: SceneProps) {
   );
 }
 
-function DayTurn({
+/** Whose turn the beat is: my own (the dock), or the speaker's seat and its puppet. */
+function speakerOf(beat: SceneProps['beat'], cast: SceneProps['presentation']['cast']) {
+  const mine = beat.id === 'day.your-turn';
+  const speaker = beat.subject ?? (mine ? (beat.seat ?? null) : null);
+  const n = speaker ? seatNumber(speaker) : 0;
+  return { mine, speaker, n, character: n ? cast[n - 1] : null };
+}
+
+/**
+ * The car round the turn: the paint, the house light, the wing and the strip. Mounted once
+ * for the scene and updated in place as the beats go by, so a beat costs the browser the
+ * puppet and the box, not the car's pictures over again. `turnKey` is the turn on the stage:
+ * a read card opened on the wing belongs to it and goes with it.
+ */
+function DaySet({
   view,
   beat,
   me,
   presentation,
   slot: slotInput,
-  turn,
-  onSay,
-  onAct,
-  onNext,
-}: SceneProps) {
-  const { hud, xray, animate, cast } = presentation;
-  const k = useMotionScale();
+  turnKey: at,
+}: SceneProps & { turnKey: string }) {
+  const { hud, xray, cast } = presentation;
   const side = sideOpen(presentation);
   const g = geometry(hud, side);
   const plan = diningCarPlan({ phase: 'day', hud, side });
-
-  // my own turn: the beat is mine (`seat`), with no line yet
-  const mine = beat.id === 'day.your-turn';
-  const speaker = beat.subject ?? (mine ? (beat.seat ?? null) : null);
-  const slot = (view.days[beat.day]?.slots ?? []).find((s) => s.seq === beat.seq) as
-    SpeechSlot | PassSlot | undefined;
-  const isPass = beat.id === 'day.pass';
-  // live: the seat has the stand and no line yet
-  const waiting = beat.id === 'day.turn-thinking';
-
-  // Played forward: arrive thinking, then speak. At rest: already speaking.
-  const [settled, setSettled] = useState(!animate);
-  const [risen, setRisen] = useState(!animate);
-  useEffect(() => {
-    if (!risen || settled) return;
-    const t = setTimeout(() => setSettled(true), THINK * k * 1000);
-    return () => clearTimeout(t);
-  }, [risen, settled, k]);
-
-  const state: DayState =
-    mine || waiting || !settled ? 'thinking' : isPass ? 'base' : 'talking';
-  // my line, said by my seat's agent: only my screen is told
-  const agent = !mine && speaker !== null && speaker === me && !!turn?.agentSpoke;
-  const dock = mine && turn?.dock && !turn.dock.closed ? turn.dock : null;
-  const n = speaker ? seatNumber(speaker) : 0;
-  const character = n ? cast[n - 1] : null;
-  const role = speaker ? view.xray.roles[speaker] : undefined;
+  const { speaker, character } = speakerOf(beat, cast);
   const deadBySeat = new Map(view.dead.map((d) => [d.player, d]));
   const known = knownRoles(me, view.me);
 
@@ -133,9 +120,12 @@ function DayTurn({
   const reads = xray ? turnReads(view, beat) : null;
   // the reads new or changed since the speaker's previous ones flash once on their tiles
   const fresh = freshReads(view, reads);
-  const [card, setCard] = useState<{ seat: string; top: number } | null>(null);
+  const [card, setCard] = useState<{ seat: string; top: number; turn: string } | null>(
+    null,
+  );
   const readOf = (seat: string) => reads?.reads.find((r) => r.player === seat);
-  const opened = card ? readOf(card.seat) : undefined;
+  const open = card?.turn === at ? card : null;
+  const opened = open ? readOf(open.seat) : undefined;
 
   return (
     <>
@@ -152,36 +142,6 @@ function DayTurn({
             picture: SPRITES.props.shutter.src,
           }}
         />
-      </Layer>
-
-      <Layer name="figures">
-        {character ? (
-          <Puppet
-            g={g}
-            shadow
-            glass
-            character={character}
-            // the stand's plate names the seat: no numeral on the belly
-            seat={null}
-            state={state}
-            arrive={animate ? 0.1 : false}
-            onArrived={() => setRisen(true)}
-          />
-        ) : null}
-      </Layer>
-
-      <Layer name="stand">
-        <Stand g={g} speech={!dock}>
-          {n ? (
-            <Plaque
-              seat={n}
-              tag={agent ? 'your seat’s agent' : xray && role ? ROLE_NAME[role] : undefined}
-              tone={
-                agent ? 'agent' : xray && role ? (factionOf(role) ?? undefined) : undefined
-              }
-            />
-          ) : null}
-        </Stand>
       </Layer>
 
       <Layer name="light">
@@ -222,11 +182,13 @@ function DayTurn({
               read: rd
                 ? {
                     sure: rd.confidence === 'high',
-                    open: card?.seat === seat,
+                    open: open?.seat === seat,
                     fresh: fresh.has(seat) ? `${reads?.seq}` : null,
                     onRead: (tile: HTMLElement) =>
                       setCard((c) =>
-                        c?.seat === seat ? null : { seat, top: tile.offsetTop },
+                        c?.seat === seat && c.turn === at
+                          ? null
+                          : { seat, top: tile.offsetTop, turn: at },
                       ),
                   }
                 : undefined,
@@ -239,18 +201,87 @@ function DayTurn({
           sub={`Discussion · ${beat.label}`}
           {...stripButtons(presentation, slotInput)}
         />
-        {card && opened ? (
+        {open && opened ? (
           <ReadCard
-            seat={card.seat}
-            character={cast[seatNumber(card.seat) - 1]}
-            speaker={reads?.player ?? speaker ?? card.seat}
+            seat={open.seat}
+            character={cast[seatNumber(open.seat) - 1]}
+            speaker={reads?.player ?? speaker ?? open.seat}
             speakerCharacter={character ?? undefined}
             read={opened}
-            truth={view.xray.roles[card.seat] ?? null}
+            truth={view.xray.roles[open.seat] ?? null}
             left={g.wingN + 9.6}
-            top={card.top - 8}
+            top={open.top - 8}
           />
         ) : null}
+      </Layer>
+    </>
+  );
+}
+
+/** The turn itself: the puppet at the stand, its plate, and the box (or the dock) at the foot. */
+function DayTurn({ view, beat, me, presentation, turn, onSay, onAct, onNext }: SceneProps) {
+  const { hud, xray, animate, cast } = presentation;
+  const k = useMotionScale();
+  const side = sideOpen(presentation);
+  const g = geometry(hud, side);
+
+  // my own turn: the beat is mine (`seat`), with no line yet
+  const { mine, speaker, n, character } = speakerOf(beat, cast);
+  const slot = (view.days[beat.day]?.slots ?? []).find((s) => s.seq === beat.seq) as
+    SpeechSlot | PassSlot | undefined;
+  const isPass = beat.id === 'day.pass';
+  // live: the seat has the stand and no line yet
+  const waiting = beat.id === 'day.turn-thinking';
+
+  // Played forward: arrive thinking, then speak. At rest: already speaking.
+  const [settled, setSettled] = useState(!animate);
+  const [risen, setRisen] = useState(!animate);
+  useEffect(() => {
+    if (!risen || settled) return;
+    const t = setTimeout(() => setSettled(true), THINK * k * 1000);
+    return () => clearTimeout(t);
+  }, [risen, settled, k]);
+
+  const state: DayState =
+    mine || waiting || !settled ? 'thinking' : isPass ? 'base' : 'talking';
+  // my line, said by my seat's agent: only my screen is told
+  const agent = !mine && speaker !== null && speaker === me && !!turn?.agentSpoke;
+  const dock = mine && turn?.dock && !turn.dock.closed ? turn.dock : null;
+  const role = speaker ? view.xray.roles[speaker] : undefined;
+
+  return (
+    <>
+      <Layer name="figures">
+        {character ? (
+          <Puppet
+            g={g}
+            shadow
+            glass
+            character={character}
+            // the stand's plate names the seat: no numeral on the belly
+            seat={null}
+            state={state}
+            arrive={animate ? 0.1 : false}
+            onArrived={() => setRisen(true)}
+          />
+        ) : null}
+      </Layer>
+
+      <Layer name="stand">
+        <Stand g={g} speech={!dock}>
+          {n ? (
+            <Plaque
+              seat={n}
+              tag={agent ? 'your seat’s agent' : xray && role ? ROLE_NAME[role] : undefined}
+              tone={
+                agent ? 'agent' : xray && role ? (factionOf(role) ?? undefined) : undefined
+              }
+            />
+          ) : null}
+        </Stand>
+      </Layer>
+
+      <Layer name="hud">
         {dock ? (
           <NoticeZone hud={hud} aside={side}>
             {view.me.role ? (

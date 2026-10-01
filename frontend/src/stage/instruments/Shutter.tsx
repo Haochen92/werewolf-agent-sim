@@ -62,10 +62,14 @@ export function Shutter({ g, state, animate = false, delay }: ShutterProps) {
           {...html(panel)}
           initial={animate ? { y: closed ? up : 0 } : false}
           animate={{ y: closed ? 0 : up }}
+          // not played: at rest in its state at once, also when the state changes under a
+          // mounted shutter (the set stays up across a scene's beats)
           transition={
-            closed
-              ? { duration: 1.1 * k, delay: d * k, ease: [0.4, 0.7, 0.4, 1] }
-              : { duration: 1.2 * k, delay: d * k, ease: [0.4, 0.2, 0.4, 1] }
+            !animate
+              ? { duration: 0 }
+              : closed
+                ? { duration: 1.1 * k, delay: d * k, ease: [0.4, 0.7, 0.4, 1] }
+                : { duration: 1.2 * k, delay: d * k, ease: [0.4, 0.2, 0.4, 1] }
           }
         />
       </g>
@@ -73,11 +77,15 @@ export function Shutter({ g, state, animate = false, delay }: ShutterProps) {
         {...html(stack)}
         initial={animate ? { opacity: closed ? 1 : 0 } : false}
         animate={{ opacity: closed ? 0 : 1 }}
-        transition={{
-          duration: 0.3 * k,
-          delay: (closed ? d + 0.05 : d + 1.0) * k,
-          ease: 'linear',
-        }}
+        transition={
+          !animate
+            ? { duration: 0 }
+            : {
+                duration: 0.3 * k,
+                delay: (closed ? d + 0.05 : d + 1.0) * k,
+                ease: 'linear',
+              }
+        }
       />
       <g {...html(pelmet)} />
     </svg>

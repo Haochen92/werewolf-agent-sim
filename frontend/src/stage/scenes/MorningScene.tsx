@@ -120,6 +120,9 @@ function lastPrivate(
 export function MorningScene(props: SceneProps) {
   return (
     <StageMotion speed={props.presentation.motion}>
+      {/* the set stays up across the beats: a phone's browser cannot afford its pictures
+          rebuilt beat after beat (build log §8.3); the figures are the beat's and play afresh */}
+      <MorningSet {...props} />
       <MorningBeat
         key={`${props.beat.id}:${props.beat.seq}:${props.beat.subject ?? ''}`}
         {...props}
@@ -129,22 +132,19 @@ export function MorningScene(props: SceneProps) {
   );
 }
 
-function MorningBeat({ view, beat, me, presentation, slot: slotInput, turn }: SceneProps) {
-  const { hud, xray, animate, cast } = presentation;
+/** What the beat is about, read off the view: the set and the beat's figures share it. */
+function morningFacts({ view, beat, presentation }: SceneProps) {
+  const { hud } = presentation;
   const id = beat.id;
   const dayBegins = id === 'morning.day-begins';
   const nightDay = dayBegins ? beat.day - 1 : beat.day;
   const night = view.days[nightDay]?.night ?? null;
-  const phase = dayBegins ? 'day' : 'night';
+  const phase: 'day' | 'night' = dayBegins ? 'day' : 'night';
   const side = sideOpen(presentation);
   const g = geometry(hud, side);
   const plan = diningCarPlan({ phase: 'night', hud, side });
   const low = chipRow(g, plan, 'low');
   const F = featuredChip(g, low);
-  const card = bigCard(g, 'morning');
-  const H = STAGE_H;
-  const mk = 0.07 * H,
-    markY = F.y + F.r + mk * 1.15;
 
   const report = reportOf(night);
   const deaths = report.filter((t) => t.kind === 'death');
@@ -159,6 +159,131 @@ function MorningBeat({ view, beat, me, presentation, slot: slotInput, turn }: Sc
         : deaths.length;
   const untold = new Set(deaths.slice(toldDead).map((d) => d.player));
   const mine = id === 'morning.only-you' ? privateAt(view, night, beat) : null;
+  return {
+    id,
+    dayBegins,
+    nightDay,
+    night,
+    phase,
+    side,
+    g,
+    plan,
+    low,
+    F,
+    report,
+    deaths,
+    cur,
+    told,
+    untold,
+    mine,
+  };
+}
+
+/**
+ * The room round the report: the car at its hour (crossfading to the day's as it begins),
+ * the shutter, the house lights, the wing and the strip. Mounted once for the scene and
+ * updated in place as the beats go by.
+ */
+function MorningSet(props: SceneProps) {
+  const { view, beat, me, presentation, slot: slotInput } = props;
+  const { hud, xray, animate, cast } = presentation;
+  const { id, dayBegins, nightDay, phase, side, g, low, F, told, untold, mine } =
+    morningFacts(props);
+  const H = STAGE_H;
+
+  const centred = !!told || !!mine || id === 'morning.card-down';
+  const specials: Special[] = centred ? [[F.x, 0, F.y + F.r, F.r * 1.7, 0.95]] : [];
+  const pool = dayBegins
+    ? { x: g.cx, y: g.railY - g.pwid * 0.9, rx: g.pwid * 0.6, ry: g.pwid * 0.95 }
+    : id === 'morning.shutter-down'
+      ? {
+          x: low.x0 + low.span / 2,
+          y: low.rowY - 0.06 * H,
+          rx: low.span * 0.56,
+          ry: 0.3 * H,
+        }
+      : { x: F.x, y: F.y, rx: F.r * 3.2, ry: F.r * 3 };
+
+  return (
+    <>
+      <Atmosphere room="car" phase={phase} hud={hud} side={side} />
+      <Layer name="paint">
+        <CarPaint
+          phase={phase}
+          from={dayBegins && animate ? 'night' : null}
+          hud={hud}
+          fadeDelay={1.4}
+          side={side}
+        />
+        <Shutter
+          g={g}
+          state={dayBegins ? 'open' : 'closed'}
+          animate={animate && (dayBegins || id === 'morning.shutter-down')}
+          delay={dayBegins ? 1.4 : 0.35}
+        />
+      </Layer>
+
+      <Layer name="light">
+        <HouseLights
+          phase={phase}
+          hud={hud}
+          pool={pool}
+          specials={specials}
+          dark={dayBegins ? 14 : 38}
+          side={side}
+        />
+      </Layer>
+
+      <Layer name="hud">
+        <TableWing
+          view={view}
+          cast={cast}
+          me={me}
+          hud={hud}
+          width={g.wingN}
+          notes={notebookGame(presentation, me)}
+          edit={slotInput?.notebook}
+          opts={{
+            untold,
+            truth: (seat) => (xray ? (view.xray.roles[seat] ?? null) : null),
+            // nobody speaks here: a card opens its seat's file
+            file: fileTap(presentation, slotInput, true),
+          }}
+        />
+        <TopStrip
+          hud={hud}
+          title={dayBegins ? `Day ${beat.day}` : `Morning ${nightDay}`}
+          sub={`${dayBegins ? 'Discussion' : 'The report'} · ${beat.label}`}
+          {...stripButtons(presentation, slotInput)}
+        />
+      </Layer>
+    </>
+  );
+}
+
+/** The beat's figures: the chips, the cards and the marks on their strings, and the words. */
+function MorningBeat(props: SceneProps) {
+  const { view, beat, me, presentation, turn } = props;
+  const { hud, xray, animate, cast } = presentation;
+  const {
+    id,
+    dayBegins,
+    nightDay,
+    night,
+    side,
+    g,
+    low,
+    F,
+    report,
+    deaths,
+    cur,
+    told,
+    mine,
+  } = morningFacts(props);
+  const card = bigCard(g, 'morning');
+  const H = STAGE_H;
+  const mk = 0.07 * H,
+    markY = F.y + F.r + mk * 1.15;
 
   // what hung at the centre just before this beat, to draw up as this one begins
   const lastTold = report.at(-1) ?? null;
@@ -320,40 +445,10 @@ function MorningBeat({ view, beat, me, presentation, slot: slotInput, turn }: Sc
       );
   }
 
-  const centred = !!told || !!mine || id === 'morning.card-down';
-  const specials: Special[] = centred ? [[F.x, 0, F.y + F.r, F.r * 1.7, 0.95]] : [];
-  const pool = dayBegins
-    ? { x: g.cx, y: g.railY - g.pwid * 0.9, rx: g.pwid * 0.6, ry: g.pwid * 0.95 }
-    : id === 'morning.shutter-down'
-      ? {
-          x: low.x0 + low.span / 2,
-          y: low.rowY - 0.06 * H,
-          rx: low.span * 0.56,
-          ry: 0.3 * H,
-        }
-      : { x: F.x, y: F.y, rx: F.r * 3.2, ry: F.r * 3 };
-
   const myCard = me ? (view.me.role?.role ?? null) : null;
 
   return (
     <>
-      <Atmosphere room="car" phase={phase} hud={hud} side={side} />
-      <Layer name="paint">
-        <CarPaint
-          phase={phase}
-          from={dayBegins && animate ? 'night' : null}
-          hud={hud}
-          fadeDelay={1.4}
-          side={side}
-        />
-        <Shutter
-          g={g}
-          state={dayBegins ? 'open' : 'closed'}
-          animate={animate && (dayBegins || id === 'morning.shutter-down')}
-          delay={dayBegins ? 1.4 : 0.35}
-        />
-      </Layer>
-
       <Layer name="figures">{figures}</Layer>
       <Layer name="instruments">{marks}</Layer>
 
@@ -371,39 +466,7 @@ function MorningBeat({ view, beat, me, presentation, slot: slotInput, turn }: Sc
         />
       ) : null}
 
-      <Layer name="light">
-        <HouseLights
-          phase={phase}
-          hud={hud}
-          pool={pool}
-          specials={specials}
-          dark={dayBegins ? 14 : 38}
-          side={side}
-        />
-      </Layer>
-
       <Layer name="hud">
-        <TableWing
-          view={view}
-          cast={cast}
-          me={me}
-          hud={hud}
-          width={g.wingN}
-          notes={notebookGame(presentation, me)}
-          edit={slotInput?.notebook}
-          opts={{
-            untold,
-            truth: (seat) => (xray ? (view.xray.roles[seat] ?? null) : null),
-            // nobody speaks here: a card opens its seat's file
-            file: fileTap(presentation, slotInput, true),
-          }}
-        />
-        <TopStrip
-          hud={hud}
-          title={dayBegins ? `Day ${beat.day}` : `Morning ${nightDay}`}
-          sub={`${dayBegins ? 'Discussion' : 'The report'} · ${beat.label}`}
-          {...stripButtons(presentation, slotInput)}
-        />
         {!dayBegins ? (
           <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
             {myCard ? <CardButton role={myCard} onOpen={turn?.onCard} /> : null}
