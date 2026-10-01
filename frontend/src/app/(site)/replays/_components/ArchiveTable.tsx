@@ -34,7 +34,13 @@ export function ArchiveTable({
   mine: ReadonlySet<string>;
 }) {
   return (
-    <Table.ScrollContainer minWidth={860} className={classes.tablewrap}>
+    <Table.ScrollContainer
+      minWidth={860}
+      className={classes.tablewrap}
+      // in scroll-area mode Mantine leaves the root's overflow-x unset, which beside its
+      // overflow-y: hidden resolves to auto: a native bar under the custom one
+      styles={{ scrollContainer: { overflowX: 'hidden' } }}
+    >
       <Table>
         <Table.Thead>
           <Table.Tr>

@@ -192,6 +192,7 @@ export function FilterRail({
               type="date"
               label="From"
               size="sm"
+              classNames={{ input: classes.dateInput }}
               value={filters.from}
               max={filters.to || undefined}
               onChange={(e) => set({ from: e.currentTarget.value })}
@@ -200,6 +201,7 @@ export function FilterRail({
               type="date"
               label="To"
               size="sm"
+              classNames={{ input: classes.dateInput }}
               value={filters.to}
               min={filters.from || undefined}
               onChange={(e) => set({ to: e.currentTarget.value })}

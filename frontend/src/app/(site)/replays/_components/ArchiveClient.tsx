@@ -159,6 +159,7 @@ export function ArchiveClient() {
           <SegmentedControl
             aria-label="View"
             className={classes.viewToggle}
+            classNames={{ label: classes.viewToggleLabel }}
             value={view}
             onChange={(v) => setView(v as 'cards' | 'list')}
             data={[
