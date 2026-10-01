@@ -77,3 +77,36 @@ characters and the server took anything.
 about the agents' 120 words) with the server's words shown under the box
 (`Agents/turn/human_turn.py`); the frontend's box stops at the same 700 and counts from 600.
 Commit `b7517ec`; frontend `8b5775a`.
+
+## 3) The stage lags the server, so a timed clock can run before the player has seen the turn (2026-10-01) — OPEN
+
+**What happened.** The live stage was changed to play every beat at its full hold, however
+many are queued (until then a backlog of three or more drained at half speed, which made a
+solo game race by). The agents play at machine speed, so the stage now lags the server by
+design: a solo game's viewer watches at reading pace while the engine is turns ahead.
+
+**Why it matters.** The server sends a seated human's turn prompt the moment the engine
+reaches it, and the dock opens at once with the turn clock running on the server's deadline.
+In a multiplayer game with deadlines, a player whose stage is still playing the earlier
+speeches can therefore be asked to answer before they have watched what they are answering
+to; worst case the clock runs out, the seat's agent speaks for them, and they never saw the
+turn they lost. Solo games have no clock, so nothing changes there. This is not a privacy
+leak: the server decides per event, per viewer, what each browser may receive (public,
+wolves only, one seat, observer), and lag changes only *when* a viewer sees what they were
+always entitled to, never *what*. The game-over backlog, which the server sends everyone, is
+gated on the client until the stage reaches the ending (same pass).
+
+**Status.** Open; the owner flagged it as major. Fix belongs to the server, not the client:
+- *Pace the agents to the audience.* The engine already has a pacing tracker
+  (`server/game/pacing.py`) that publishes progress bars; the missing piece is a minimum
+  interval between public events (an agent's turn is not released until the previous beat's
+  hold has elapsed for the slowest viewer, or simply a floor of a few seconds per turn), so
+  the stage can keep up. This also makes the live game feel played rather than replayed.
+- *Or start the clock at the stage.* Only the client knows when the turn beat is reached; a
+  deadline that starts when the client reports "the turn is on stage" (an acknowledgement on
+  the turn request) keeps the server authoritative on duration while the player gets the
+  whole allowance. Needs an AFK bound so an absent client cannot hold the table.
+Either way the stage's holds (beat sheet §0) become the game's tempo, which music will
+later sit in. Pointers: `frontend/src/stage/containers/live-queue.ts` (the pacing rules),
+`live-state.ts` (`advance`, the one-time prompt cut), beat sheet §12, design note
+`frontend/docs/server_design_notes.md` §7 (the AFK clocks).
