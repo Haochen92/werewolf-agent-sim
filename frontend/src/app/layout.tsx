@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import '@mantine/core/styles.css';
 import '@/styles/tokens.css';
+import '@/styles/gpu-probe.css';
 import { ColorSchemeScript, mantineHtmlProps } from '@mantine/core';
 import { siteFonts } from '@/theme/fonts';
 import { Providers } from './Providers';

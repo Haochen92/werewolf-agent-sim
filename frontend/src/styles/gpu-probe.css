@@ -1,0 +1,25 @@
+/*
+ * The GPU probe: subtraction switches for finding what a phone's browser cannot draw
+ * (stage_architecture.md §6, "A/B by subtraction"; 2026-10-01, iPhone Safari killing every
+ * stage page). Workbench only: `?gpu=nofilter noblend ...` lands on <html data-gpu="…">, and
+ * each word below removes one kind of GPU work from the whole page. Off unless the URL asks.
+ * CSS beats SVG presentation attributes and inline styles here (`!important`), so the paint
+ * generators need no changes.
+ */
+[data-gpu~='nofilter'] * { filter: none !important; }
+[data-gpu~='noblend'] * { mix-blend-mode: normal !important; }
+[data-gpu~='nomask'] * { mask: none !important; -webkit-mask: none !important; }
+[data-gpu~='noshadow'] * { box-shadow: none !important; text-shadow: none !important; }
+[data-gpu~='nowillchange'] * { will-change: auto !important; }
+[data-gpu~='nosvg'] svg { display: none !important; }
+[data-gpu~='noimg'] img { visibility: hidden !important; }
+[data-gpu~='nobg'] * { background-image: none !important; }
+[data-gpu~='nopaint'] [data-layer='paint'] { display: none !important; }
+[data-gpu~='nohaze'] [data-layer='haze'] { display: none !important; }
+[data-gpu~='nofloor'] [data-layer='floor'] { display: none !important; }
+[data-gpu~='nofigures'] [data-layer='figures'] { display: none !important; }
+[data-gpu~='nostand'] [data-layer='stand'] { display: none !important; }
+[data-gpu~='noinstruments'] [data-layer='instruments'] { display: none !important; }
+[data-gpu~='nolight'] [data-layer='light'] { display: none !important; }
+[data-gpu~='nograde'] [data-layer='grade'] { display: none !important; }
+[data-gpu~='nohud'] [data-layer='hud'] { display: none !important; }

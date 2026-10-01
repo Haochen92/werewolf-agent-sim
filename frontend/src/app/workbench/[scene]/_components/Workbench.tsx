@@ -97,6 +97,17 @@ export function Workbench({ scene }: { scene: string }) {
   const pathname = usePathname();
   const q = useMemo(() => parseQuery(params), [params]);
   const showStrip = params.get('strip') !== '0';
+  // the GPU probe (styles/gpu-probe.css): `?gpu=nofilter noblend …` subtracts kinds of GPU work
+  // from the whole page, to find what a phone's browser cannot draw; cleared when the page goes
+  const gpu = params.get('gpu');
+  useEffect(() => {
+    const html = document.documentElement;
+    if (gpu) html.dataset.gpu = gpu.replace(/[,+]/g, ' ');
+    else delete html.dataset.gpu;
+    return () => {
+      delete html.dataset.gpu;
+    };
+  }, [gpu]);
 
   const go = useCallback(
     (next: Partial<WorkbenchQuery>, toScene?: string) => {
