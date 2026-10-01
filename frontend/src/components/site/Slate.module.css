@@ -167,6 +167,8 @@
 .in {
   position: relative;
   padding: 16px 18px;
+  /* the verdict's size reads the paper's width (`cqi`), so a long one never breaks its line */
+  container-type: inline-size;
 }
 
 /* the print wobbles a little, as ink on paper does (the filter lives in the site's IconSprite) */
@@ -199,17 +201,23 @@
   position: relative;
 }
 
+/*
+ * The header is two rows, each held to one line: the verdict, then the table line — stamps when
+ * there is something to stamp, the printed default when there is not — so the row is never
+ * empty and every slate in a grid row stands the same height.
+ */
 .hd {
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 9px;
 }
 
 .verdict {
   font-family: var(--font-serif);
-  font-size: 31px;
+  font-size: clamp(22px, 11cqi, 31px);
   line-height: 0.94;
+  white-space: nowrap;
 }
 
 .verdict small {
@@ -219,16 +227,23 @@
   margin-left: 0.3em;
 }
 
-.stamps {
+/* the table line's one row, the stamps' height even when the printed default stands in it */
+.stamps,
+.printed {
+  min-height: 22px;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 4px 0;
+  align-items: center;
+}
+
+.stamps {
+  flex-wrap: nowrap;
+  gap: 6px;
+  padding-left: 2px;
 }
 
 .stamp {
   flex: 0 0 auto;
-  transform: rotate(-5deg);
+  transform: rotate(-3deg);
   border: 1.8px solid var(--slate-ink);
   border-radius: 4px;
   padding: 3px 8px;
@@ -238,19 +253,25 @@
   opacity: 0.72;
   text-align: center;
   line-height: 1.05;
+  white-space: nowrap;
 }
 
-.stamp + .stamp {
-  margin-left: -4px;
+.printed {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  opacity: 0.58;
+  white-space: nowrap;
 }
 
 .stampTilt {
-  transform: rotate(3deg);
+  transform: rotate(2deg);
 }
 
 /* the visitor's own game: the same stamp, inked solid */
 .stampYou {
-  transform: rotate(-2deg);
+  transform: rotate(-1.5deg);
   background: var(--slate-ink);
   color: var(--paper);
   opacity: 0.85;
@@ -351,9 +372,6 @@
     grid-column: 1 / -1;
     border-right: 0;
     border-top: 1.5px solid var(--slate-ink);
-  }
-  .verdict {
-    font-size: 27px;
   }
 }
 

@@ -1,7 +1,8 @@
 /**
  * One finished game as a clapperboard slate (the landing and replays mockups' `.game/.slate`),
  * linking into the theatre at `/replays/[id]`. The winning side colours the frame and inks the
- * paper; the header says who won, with stamps for human seats, memory and "you played"; the
+ * paper; the header says who won, and the printed line under it is stamped for human seats, memory
+ * and "you played" (or, with nothing to stamp, prints the table's default); the
  * puppets are the game's own cast, one per seat (the same hash the theatre uses); the fields are the
  * record id, the days, the phase it ended in, and the model.
  *
@@ -19,6 +20,20 @@ import classes from './Slate.module.css';
 /** Seats at the table: the public casting's total (every archived game so far dealt nine). */
 const seatCount = (r: ReplaySummary) =>
   Object.values(r.cast_role_counts).reduce((a, b) => a + b, 0) || undefined;
+
+const NUMBER_WORDS = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+const numberWord = (n: number) => NUMBER_WORDS[n] ?? String(n);
+
+/**
+ * The pre-printed table line for a game that departs from nothing: all agents, memory off. A
+ * clapperboard's fields are printed and the stamps are for exceptions, so the row under the
+ * verdict always carries one line — this when there is nothing to stamp — and every slate
+ * stands the same height.
+ */
+const baselineLine = (r: ReplaySummary) => {
+  const seats = seatCount(r);
+  return `${seats ? `${numberWord(seats)} agents` : 'All agents'} · memory off`;
+};
 
 const FACTION: Record<
   Winner,
@@ -88,29 +103,23 @@ export function Slate({ replay, modelLabel, mine = false, from }: SlateProps) {
               {faction.name}
               <small>{faction.verb}</small>
             </div>
-            <div className={classes.stamps}>
-              {humans > 0 ? (
-                <span className={classes.stamp}>
-                  {humans === 1 ? 'One human' : `${humans} humans`}
-                  <br />
-                  at the table
-                </span>
-              ) : null}
-              {replay.memory ? (
-                <span className={`${classes.stamp} ${classes.stampTilt}`}>
-                  Memory
-                  <br />
-                  on
-                </span>
-              ) : null}
-              {mine ? (
-                <span className={`${classes.stamp} ${classes.stampYou}`}>
-                  You
-                  <br />
-                  played
-                </span>
-              ) : null}
-            </div>
+            {humans > 0 || replay.memory || mine ? (
+              <div className={classes.stamps}>
+                {humans > 0 ? (
+                  <span className={classes.stamp}>
+                    {humans === 1 ? 'One human' : `${numberWord(humans)} humans`} at the table
+                  </span>
+                ) : null}
+                {replay.memory ? (
+                  <span className={`${classes.stamp} ${classes.stampTilt}`}>Memory on</span>
+                ) : null}
+                {mine ? (
+                  <span className={`${classes.stamp} ${classes.stampYou}`}>You played</span>
+                ) : null}
+              </div>
+            ) : (
+              <div className={classes.printed}>{baselineLine(replay)}</div>
+            )}
           </div>
           <div className={classes.cast} aria-hidden="true">
             {castForGame(replay.game_id, seatCount(replay)).map((character, seat) => (
