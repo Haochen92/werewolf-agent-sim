@@ -724,6 +724,9 @@ outstanding, and `ux_journeys` §0 reserves it for the owner against the running
 
 ## 8. The stage on a phone (2026-10-01)
 
+> The plain-words version of this section, one lesson per entry with how to see each on the
+> phone, is `phone_lessons.md`. This section keeps the dated record and the numbers.
+
 > Added after the Playhouse redesign (2026-09-28) met its first iPhone. Same shape as the
 > sections above: what happened, the mechanism, what it cost, how it was settled, and an honest
 > reading of where the art pipeline stands against production practice.

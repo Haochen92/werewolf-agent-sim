@@ -694,6 +694,8 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   `Station` module css). To find the next one: grep the stage's css for `animation:` and
   `will-change`, and the tsx for `repeat: Infinity`; anything that matches and is on screen at
   rest on a phone is a layer and a cascade.
+- **Why these rules exist, in plain words: `phone_lessons.md`** (ten lessons, each with the
+  symptom, the mechanism, the fix and how to see it in the inspector).
 - **The rule is a gate: `e2e/phone-rule.spec.ts`.** It walks every scene and every beat in the
   phone frame (the X-ray on where it changes the stage) and fails on an animation still
   running after a beat's arrival, any `will-change` but the world's, a mask over more than a
