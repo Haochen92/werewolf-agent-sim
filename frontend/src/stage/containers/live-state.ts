@@ -34,6 +34,7 @@
 import { isTextTurn, type TurnPayload } from '@/lib/api';
 import type { MeView } from '@/game/types';
 import type { SceneBeat } from '@/stage/beats/types';
+import type { TurnClock } from '@/stage/countdown';
 import type { Presentation } from '@/stage/scenes/types';
 import { pressFile, pressTranscript, showFile } from '@/stage/slot';
 import type { DurableGameEvent, GameStatus } from '@/types/contracts';
@@ -495,20 +496,19 @@ export function requestIsActive(
 export const DEFAULT_TURN_MS = 120_000;
 
 /**
- * The clock for a request: what is left of it and of how much, in server time. Null with no
- * deadline (a solo game: no ring). The whole is from the request's arrival to its deadline.
+ * The clock for a request: its deadline and the whole allowance, in server time. Null with no
+ * deadline (a solo game: no ring). The whole is from the request's arrival to its deadline. The
+ * time left is not in it: the piece that shows the count reads it, so nothing above it ticks.
  */
 export function turnClock(
   deadline: string | null,
   arrivedAt: number | null,
-  now: number,
-): { remainingMs: number; totalMs: number } | null {
+): TurnClock | null {
   if (!deadline) return null;
   const end = Date.parse(deadline);
   if (Number.isNaN(end)) return null;
-  const remainingMs = Math.max(0, end - now);
   const whole = arrivedAt !== null && end > arrivedAt ? end - arrivedAt : DEFAULT_TURN_MS;
-  return { remainingMs, totalMs: Math.max(whole, remainingMs) };
+  return { deadline, totalMs: whole };
 }
 
 /**

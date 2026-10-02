@@ -7,6 +7,7 @@
 import type { Character } from '@/assets/manifest';
 import type { GameView } from '@/game/types';
 import type { SceneBeat } from '@/stage/beats/types';
+import type { TurnClock } from '@/stage/countdown';
 import type { DrawerFilters } from '@/stage/drawer/drawer-lines';
 import type { DrawerScroll } from '@/stage/drawer/use-drawer-filters';
 import type { FileChoice } from '@/stage/film/case-file';
@@ -185,8 +186,11 @@ export interface SlotInput {
  * prompt mid-answer at rest.
  */
 export interface TurnInput {
-  /** Time left and the whole allowance, in ms; null = no deadline (a solo game): no ring. */
-  clock?: { remainingMs: number; totalMs: number } | null;
+  /**
+   * The deadline and the whole allowance; null = no deadline (a solo game): no ring. The piece
+   * that shows the count ticks it, not the scene.
+   */
+  clock?: TurnClock | null;
   /** A seat already chosen. */
   chosen?: string | null;
   /** The role card opened over the room. */

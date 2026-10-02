@@ -43,10 +43,12 @@ import {
   type KeyboardEvent,
 } from 'react';
 import { SPRITES } from '@/assets/manifest';
+import type { TurnClock } from '../countdown';
 import { useMotionScale } from '../motion';
 import type { DockInput } from '../scenes/types';
 import { Overlay } from '../Stage';
 import { PHONE_QUERY, composerBox, composerShown } from './composer';
+import { CountText } from './CountText';
 import styles from './TurnDock.module.css';
 import {
   DRAFT_WORDS,
@@ -59,15 +61,15 @@ import {
 
 export interface TurnDockProps {
   dock: DockInput;
-  /** The countdown's words ("1:52"), or null: no deadline (a solo game), no count. */
-  left: string | null;
+  /** The turn's clock, or null: no deadline (a solo game), no count. */
+  clock: TurnClock | null;
   onSay?: (text: string) => void;
   onPass?: () => void;
   /** Fade in (the turn arriving); false = at rest. */
   arrive?: boolean;
 }
 
-export function TurnDock({ dock, left, onSay, onPass, arrive = false }: TurnDockProps) {
+export function TurnDock({ dock, clock, onSay, onPass, arrive = false }: TurnDockProps) {
   const k = useMotionScale();
   const c = dockControls(dock);
   const say = () => {
@@ -101,9 +103,13 @@ export function TurnDock({ dock, left, onSay, onPass, arrive = false }: TurnDock
         <strong>Your turn to speak</strong>
         <span className={styles.hint}>
           Nothing is said until you send it.
-          {left ? ' If the clock runs out, your agent speaks for you.' : ''}
+          {clock ? ' If the clock runs out, your agent speaks for you.' : ''}
         </span>
-        {left ? <span className={styles.count}>{left}</span> : null}
+        {clock ? (
+          <span className={styles.count}>
+            <CountText clock={clock} />
+          </span>
+        ) : null}
       </header>
       {c.preview ? (
         <div
@@ -152,7 +158,7 @@ export function TurnDock({ dock, left, onSay, onPass, arrive = false }: TurnDock
           <Composer
             dock={dock}
             c={c}
-            left={left}
+            clock={clock}
             board={board}
             say={say}
             draft={draft}
@@ -223,7 +229,7 @@ function AgentRow({
 function Composer({
   dock,
   c,
-  left,
+  clock,
   board,
   say,
   draft,
@@ -232,7 +238,7 @@ function Composer({
 }: {
   dock: DockInput;
   c: DockControls;
-  left: string | null;
+  clock: TurnClock | null;
   board: CSSProperties;
   say: () => void;
   draft: () => void;
@@ -284,11 +290,11 @@ function Composer({
           <strong>Your turn to speak</strong>
           <span className={styles.hint}>
             Nothing is said until you send it.
-            {left ? ' If the clock runs out, your agent speaks for you.' : ''}
+            {clock ? ' If the clock runs out, your agent speaks for you.' : ''}
           </span>
-          {left ? (
+          {clock ? (
             <span className={styles.clock} data-composer-clock>
-              {left}
+              <CountText clock={clock} />
             </span>
           ) : null}
           <button

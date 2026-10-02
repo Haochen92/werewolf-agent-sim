@@ -68,6 +68,9 @@ const ROOM_LINK = 'https://wolf.liuhaochen.com/games/9369a5c1-3c28-42ce-86a1-9d5
 /** The two minutes every human prompt gets (ux_journeys: the one timeout rule). */
 export const TURN_MS = 120_000;
 
+/** The server time a frame's clock is held at: its count is still, `left` before its deadline. */
+export const STILL_AT = Date.parse('2026-09-25T10:00:00Z');
+
 export interface SyntheticFrame {
   beat: SceneBeat;
   view: GameView;
@@ -171,7 +174,14 @@ export function synthesise(
     view,
     me: s.me,
     turn: {
-      clock: left === null ? null : { remainingMs: left * 1000, totalMs: TURN_MS },
+      clock:
+        left === null
+          ? null
+          : {
+              deadline: new Date(STILL_AT + left * 1000).toISOString(),
+              totalMs: TURN_MS,
+              at: STILL_AT,
+            },
       chosen: s.chosen ?? null,
       cardOpen: !!s.card,
       draft,

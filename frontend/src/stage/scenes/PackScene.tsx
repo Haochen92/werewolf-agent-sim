@@ -21,8 +21,8 @@
 import { useState, type ReactNode } from 'react';
 import type { NightView } from '@/game/types';
 import { SideSlot } from '../SideSlot';
-import { countText } from '../countdown';
 import { ActPlate } from '../instruments/ActPlate';
+import { CountText } from '../instruments/CountText';
 import { pinColour } from '../instruments/Pin';
 import { PackChat, type PackEntry } from '../instruments/PackChat';
 import { Tooth } from '../instruments/Tooth';
@@ -190,9 +190,11 @@ function Pack({ entering, ...props }: SceneProps & { entering: boolean }) {
                   draft: turn?.draft ?? '',
                   onSay,
                   left: g.wingN + 22.4,
-                  note: turn?.clock
-                    ? `${countText(turn.clock.remainingMs)} to say it`
-                    : undefined,
+                  note: turn?.clock ? (
+                    <>
+                      <CountText clock={turn.clock} /> to say it
+                    </>
+                  ) : undefined,
                 }
               : undefined
           }

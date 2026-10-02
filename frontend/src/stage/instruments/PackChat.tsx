@@ -49,8 +49,8 @@ export interface PackChatProps {
     onSay?: (text: string) => void;
     /** The room's left edge (past the wing), in units. */
     left: number;
-    /** The small line under it. */
-    note?: string;
+    /** The small line under it (the countdown, ticking on its own). */
+    note?: ReactNode;
   };
 }
 

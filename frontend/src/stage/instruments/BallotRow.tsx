@@ -13,9 +13,11 @@
 import { motion } from 'motion/react';
 import type { Character } from '@/assets/manifest';
 import { ChipSprite } from '../cast/ChipSprite';
+import type { TurnClock } from '../countdown';
 import { useMotionScale } from '../motion';
 import { seatNumber } from '../roles';
 import styles from './BallotRow.module.css';
+import { CountText } from './CountText';
 
 export interface BallotRowProps {
   /** The server's candidates: seats, and `abstain` if it is allowed. */
@@ -29,8 +31,8 @@ export interface BallotRowProps {
   sent?: boolean;
   /** This seat, for the "in" line's chip. */
   me: string;
-  /** The countdown's words ("1:14"), or null for no deadline. */
-  left?: string | null;
+  /** The turn's clock, or null for no deadline. */
+  clock?: TurnClock | null;
   arrive?: boolean;
 }
 
@@ -45,7 +47,7 @@ export function BallotRow({
   onConfirm,
   sent = false,
   me,
-  left,
+  clock,
   arrive = false,
 }: BallotRowProps) {
   const k = useMotionScale();
@@ -94,8 +96,10 @@ export function BallotRow({
       <header>
         <strong>Your vote</strong>
         <span>Tap a chip{canAbstain ? ', or the empty plate to abstain' : ''}.</span>
-        {left ? (
-          <span className={styles.count}>your seat’s agent votes for you in {left}</span>
+        {clock ? (
+          <span className={styles.count}>
+            your seat’s agent votes for you in <CountText clock={clock} />
+          </span>
         ) : null}
       </header>
       <div className={styles.row} role="radiogroup" aria-label="Your vote">

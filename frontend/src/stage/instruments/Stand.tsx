@@ -39,9 +39,12 @@ export function Stand({ g, lit = true, widen = 1, children, speech = false }: St
   const box = standBox(g);
   const w = box.w * widen;
   const ref = useRef<HTMLDivElement>(null);
+  const plated = Boolean(children);
   // the plate on the rail, or on the speech box's top edge where the box has risen over the
   // rail: measured, since the box's height is its words' (and the drawer's measure, and the
-  // phone's growth); re-placed on every render and whenever the stage is resized
+  // phone's growth). Re-placed whenever the stand, the speech box or the plate changes size
+  // (the plate's words); watched afresh only when the speech box, the rail or the plate comes
+  // or goes, not on every render of the scene around it
   useLayoutEffect(() => {
     const el = ref.current;
     const plate = el?.querySelector<HTMLElement>(`.${styles.plaque}`);
@@ -62,9 +65,10 @@ export function Stand({ g, lit = true, widen = 1, children, speech = false }: St
     place();
     const ro = new ResizeObserver(place);
     ro.observe(el);
+    ro.observe(plate);
     if (board) ro.observe(board);
     return () => ro.disconnect();
-  });
+  }, [speech, g.u, g.railY, plated]);
   return (
     <div className={styles.pit} style={{ top: g.railY }}>
       <div

@@ -482,7 +482,7 @@ export function LiveTheatre({
   );
 
   const sceneView = useMemo(() => (beat ? folds.at(beat.end) : null), [folds, beat]);
-  const clock = open && pending ? turnClock(deadline, arrivedAt, serverNow()) : null;
+  const clock = open && pending ? turnClock(deadline, arrivedAt) : null;
   const dock: DockInput | undefined =
     beat?.id === 'day.your-turn'
       ? {

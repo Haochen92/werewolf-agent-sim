@@ -27,7 +27,6 @@ import { Layer } from '../Stage';
 import { Puppet } from '../cast/Puppet';
 import { ReadCard } from '../film/ReadCard';
 import { freshReads, turnReads } from '../film/film-model';
-import { countText } from '../countdown';
 import { CardButton, NoticeZone } from '../instruments/Notice';
 import { SpeechBox } from '../instruments/SpeechBox';
 import { Plaque, Stand } from '../instruments/Stand';
@@ -237,7 +236,7 @@ function DayTurn({ view, beat, me, presentation, turn, onSay, onAct, onNext }: S
             ) : null}
             <TurnDock
               dock={dock}
-              left={turn?.clock ? countText(turn.clock.remainingMs) : null}
+              clock={turn?.clock ?? null}
               onSay={onSay}
               onPass={() => onAct?.(null)}
               arrive={animate}

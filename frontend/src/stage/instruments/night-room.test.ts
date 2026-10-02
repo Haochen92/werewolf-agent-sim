@@ -15,11 +15,13 @@ describe('the countdown on the plate', () => {
   });
 
   it('drains the bar with the time left, and has none without a deadline', () => {
-    expect(countLeft({ remainingMs: 120_000, totalMs: 120_000 })).toBe(1);
-    expect(countLeft({ remainingMs: 30_000, totalMs: 120_000 })).toBe(0.25);
-    expect(countLeft({ remainingMs: -5, totalMs: 120_000 })).toBe(0);
-    expect(countLeft(null)).toBeNull();
-    expect(countLeft({ remainingMs: 1000, totalMs: 0 })).toBeNull();
+    expect(countLeft({ totalMs: 120_000 }, 120_000)).toBe(1);
+    expect(countLeft({ totalMs: 120_000 }, 30_000)).toBe(0.25);
+    expect(countLeft({ totalMs: 120_000 }, -5)).toBe(0);
+    expect(countLeft({ totalMs: 120_000 }, 180_000)).toBe(1);
+    expect(countLeft(null, 1000)).toBeNull();
+    expect(countLeft({ totalMs: 120_000 }, null)).toBeNull();
+    expect(countLeft({ totalMs: 0 }, 1000)).toBeNull();
     expect(URGENT_MS).toBe(10_000);
   });
 });

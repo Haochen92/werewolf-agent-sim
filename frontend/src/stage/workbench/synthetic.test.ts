@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { FIXTURE_EVENTS } from './fixture';
 import { workbenchFrame } from './frame';
 import { SYNTHETIC } from './registry';
-import { synthesise, synthesiseAll } from './synthetic';
+import { STILL_AT, synthesise, synthesiseAll } from './synthetic';
 import { DEFAULT_QUERY } from './url';
 
 const room = SYNTHETIC.room!;
@@ -91,7 +91,11 @@ describe('synthetic night situations', () => {
 
   it('carries the clock: 1:14 of two minutes by default, none for a solo game', () => {
     const [first] = synthesiseAll(room, FIXTURE_EVENTS);
-    expect(first.turn.clock).toEqual({ remainingMs: 74_000, totalMs: 120_000 });
+    expect(first.turn.clock).toEqual({
+      deadline: '2026-09-25T10:01:14.000Z',
+      totalMs: 120_000,
+      at: STILL_AT,
+    });
     const solo = synthesise(
       byLabel(room, 'healer, night 3, no deadline (solo game)'),
       FIXTURE_EVENTS,

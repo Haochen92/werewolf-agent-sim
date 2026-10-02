@@ -7,6 +7,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import fixture from '@/stage/fixtures/replay-9369a5c1.json';
+import { msLeft } from '@/hooks/useCountdown';
 import { beatsFor } from '@/stage/beats/beatsFor';
 import type { SceneBeat } from '@/stage/beats/types';
 import type { DurableGameEvent, EventType, InputRequest } from '@/types/contracts';
@@ -940,16 +941,18 @@ describe('the turn’s state: the line, the drafts, the answer', () => {
 describe('the turn’s clock and whose line it was', () => {
   it('counts from the arrival to the deadline, or two minutes when the arrival is unknown', () => {
     const end = Date.parse('2026-09-25T10:02:00Z');
-    expect(turnClock(null, null, end)).toBeNull();
-    expect(turnClock('2026-09-25T10:02:00Z', end - 90_000, end - 30_000)).toEqual({
-      remainingMs: 30_000,
+    expect(turnClock(null, null)).toBeNull();
+    expect(turnClock('2026-09-25T10:02:00Z', end - 90_000)).toEqual({
+      deadline: '2026-09-25T10:02:00Z',
       totalMs: 90_000,
     });
-    expect(turnClock('2026-09-25T10:02:00Z', null, end - 30_000)).toEqual({
-      remainingMs: 30_000,
+    expect(turnClock('2026-09-25T10:02:00Z', null)).toEqual({
+      deadline: '2026-09-25T10:02:00Z',
       totalMs: DEFAULT_TURN_MS,
     });
-    expect(turnClock('2026-09-25T10:02:00Z', null, end + 5000)?.remainingMs).toBe(0);
+    expect(msLeft('2026-09-25T10:02:00Z', end - 30_000)).toBe(30_000);
+    expect(msLeft('2026-09-25T10:02:00Z', end + 5000)).toBe(0);
+    expect(msLeft(null, end)).toBeNull();
   });
 
   it('is active while the status says so, or while the request is newer than the status', () => {
