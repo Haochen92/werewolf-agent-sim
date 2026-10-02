@@ -11,9 +11,12 @@
  * (`up`), goes back on when voting closes (`down`), and flies out of the frame when the count
  * begins (`gone`). The glass and the lid are painted pictures (SPRITES.props); the chips are
  * drawn under the glass. Drawn after the vote bench (rev 64 `jar`, `lidGroup`, `pileSVG`).
+ * The glass rides an HTML box of its own so its tip is a CSS transform (see `Jar`).
  */
-import type { ReactNode } from 'react';
+import { motion } from 'motion/react';
+import type { CSSProperties, ReactNode } from 'react';
 import { SPRITES } from '@/assets/manifest';
+import { useMotionScale } from '../motion';
 import { rnd } from '../paint/draw';
 import { STAGE_H } from '../units';
 import { Tween, about, lerp } from './Tween';
@@ -56,6 +59,29 @@ function lyingSpots(v: VoteGeometry, n: number): [number, number][] {
 const FALL = [0.45, 0, 0.85, 0.7] as [number, number, number, number];
 const TIP = [0.4, 0.6, 0.35, 1] as [number, number, number, number];
 
+/** When each falling chip starts: `fallDelay`, then 0.09 s apart in the order they fall. */
+function fallTimes(falling: number[] | undefined, fallDelay: number) {
+  const order = new Map((falling ?? []).map((i, k) => [i, k]));
+  return { order, at: (i: number) => fallDelay + (order.get(i) ?? 0) * 0.09 };
+}
+
+/* the glass box's own drawing fills the box; its viewBox is the box, in the stage's units */
+const SHEET: CSSProperties = {
+  position: 'absolute',
+  inset: 0,
+  width: '100%',
+  height: '100%',
+  overflow: 'visible',
+};
+
+/**
+ * The glass with the chips in it: an HTML box over the table, the glass picture's size, with
+ * its own small drawing inside. The tip is a CSS transform on that box (motion's `x`, `y`,
+ * `rotate` and `scale`, about the base's centre), so the browser repaints one finished picture
+ * through a transform each frame; the same move as an SVG `transform` on a group inside the
+ * table's drawing relaid out the drawing every frame and stuttered on a phone (build log
+ * §8.4). The chips dropping in are drawn over the glass by `JarFallers`, in the table's drawing.
+ */
 export function Jar({
   v,
   n,
@@ -65,11 +91,11 @@ export function Jar({
   falling,
   fallDelay = 0,
 }: JarProps) {
+  const k = useMotionScale();
   const J = jarGeometry(v),
     { cx, base, r } = v,
-    { w, h, yR } = J;
-  const order = new Map((falling ?? []).map((i, k) => [i, k]));
-  const at = (i: number) => fallDelay + (order.get(i) ?? 0) * 0.09;
+    { w, h } = J;
+  const { order, at } = fallTimes(falling, fallDelay);
 
   const upright = pileSpots(v, n).map(([x, y], i) => {
     const chip = (
@@ -93,71 +119,106 @@ export function Jar({
   });
   const lying = lyingSpots(v, n).map(([x, y], i) => <ChipBack key={i} x={x} y={y} r={r} />);
 
+  // the picture's file over the painted glass's height: the box the glass is drawn in
+  const s = h / GLASS_PX.h;
+  const box = {
+    x: cx - w / 2 - GLASS_PX.x * s,
+    y: base - h - GLASS_PX.y * s,
+    w: GLASS_PX.W * s,
+    h: GLASS_PX.H * s,
+  };
   // the painted glass over its chips, so they take its mist and highlights
-  const k = h / GLASS_PX.h;
-  const glass = (pile: ReactNode) => (
-    <g>
+  const sheet = (pile: ReactNode) => (
+    <svg viewBox={`${box.x} ${box.y} ${box.w} ${box.h}`} style={SHEET} aria-hidden="true">
       {pile}
       <image
         href={SPRITES.props.jarGlass.src}
-        x={cx - w / 2 - GLASS_PX.x * k}
-        y={base - h - GLASS_PX.y * k}
-        width={GLASS_PX.W * k}
-        height={GLASS_PX.H * k}
+        x={box.x}
+        y={box.y}
+        width={box.w}
+        height={box.h}
         preserveAspectRatio="none"
       />
-    </g>
+    </svg>
   );
 
-  const fallers = (falling ?? []).map((i) => {
-    const jx = (rnd(i, 501) - 0.5) * r * 1.6,
-      y0 = yR - r * 0.6,
-      fy = -(yR + 3 * r);
-    const face = mine?.index === i ? mine.face : null;
-    return (
-      <Tween
-        key={`f${i}`}
-        play
-        delay={at(i)}
-        duration={0.75}
-        ease={FALL}
-        transform={(p) => `translate(0 ${lerp(fy, 0, p)})`}
-        opacity={(p) => (p < 0.86 ? 1 : 1 - (p - 0.86) / 0.14)}
-      >
-        {face ? (
-          <ChipFace x={cx + jx} y={y0} r={r} {...face} />
-        ) : (
-          <ChipBack x={cx + jx} y={y0} r={r} />
-        )}
+  const pile = !tipped ? (
+    upright
+  ) : !tipping ? (
+    lying
+  ) : (
+    <>
+      <Tween play delay={1.25} duration={0.25} ease="linear" opacity={(p) => 1 - p}>
+        {upright}
       </Tween>
-    );
-  });
-
-  if (!tipped) {
-    return (
-      <g>
-        {glass(upright)}
-        {fallers}
-      </g>
-    );
-  }
+      <Tween play delay={1.3} duration={0.25} ease="linear" opacity={(p) => p}>
+        {lying}
+      </Tween>
+    </>
+  );
   const T = J.tip;
-  const pose = (p: number) =>
-    about(T.ox, T.oy, { dx: T.dx * p, dy: T.dy * p, rot: T.ang * p, sx: lerp(1, T.sc, p) });
-  if (!tipping) return <g transform={pose(1)}>{glass(lying)}</g>;
+  const standing = { x: 0, y: 0, rotate: 0, scale: 1 };
+  const over = { x: T.dx, y: T.dy, rotate: T.ang, scale: T.sc };
   return (
-    <Tween play delay={0.9} duration={0.8} ease={TIP} transform={pose}>
-      {glass(
-        <>
-          <Tween play delay={1.25} duration={0.25} ease="linear" opacity={(p) => 1 - p}>
-            {upright}
+    <motion.div
+      data-moves=""
+      style={{
+        position: 'absolute',
+        left: box.x,
+        top: box.y,
+        width: box.w,
+        height: box.h,
+        transformOrigin: `${T.ox - box.x}px ${T.oy - box.y}px`,
+      }}
+      initial={tipping ? standing : false}
+      animate={tipped ? over : standing}
+      // not played: at rest in its state at once, also when the state changes under it
+      transition={
+        tipping ? { duration: 0.8 * k, delay: 0.9 * k, ease: TIP } : { duration: 0 }
+      }
+    >
+      {sheet(pile)}
+    </motion.div>
+  );
+}
+
+/** The chips dropping into the jar's mouth this beat, drawn over the glass in the table's drawing. */
+export function JarFallers({
+  v,
+  mine,
+  falling,
+  fallDelay = 0,
+}: Pick<JarProps, 'v' | 'mine' | 'falling' | 'fallDelay'>) {
+  const J = jarGeometry(v),
+    { cx, r } = v,
+    { yR } = J;
+  const { at } = fallTimes(falling, fallDelay);
+  return (
+    <>
+      {(falling ?? []).map((i) => {
+        const jx = (rnd(i, 501) - 0.5) * r * 1.6,
+          y0 = yR - r * 0.6,
+          fy = -(yR + 3 * r);
+        const face = mine?.index === i ? mine.face : null;
+        return (
+          <Tween
+            key={`f${i}`}
+            play
+            delay={at(i)}
+            duration={0.75}
+            ease={FALL}
+            transform={(p) => `translate(0 ${lerp(fy, 0, p)})`}
+            opacity={(p) => (p < 0.86 ? 1 : 1 - (p - 0.86) / 0.14)}
+          >
+            {face ? (
+              <ChipFace x={cx + jx} y={y0} r={r} {...face} />
+            ) : (
+              <ChipBack x={cx + jx} y={y0} r={r} />
+            )}
           </Tween>
-          <Tween play delay={1.3} duration={0.25} ease="linear" opacity={(p) => p}>
-            {lying}
-          </Tween>
-        </>,
-      )}
-    </Tween>
+        );
+      })}
+    </>
   );
 }
 

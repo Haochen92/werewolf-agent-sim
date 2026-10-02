@@ -19,7 +19,7 @@ import type { Ballot } from '@/game/types';
 import { K2 } from '../paint/materials';
 import { seatNumber } from '../roles';
 import { STAGE_H, STAGE_W } from '../units';
-import { Jar, JarLid, JarShadow, type LidState } from './Jar';
+import { Jar, JarFallers, JarLid, JarShadow, type LidState } from './Jar';
 import { Tween, about, lerp } from './Tween';
 import { ChipBack, ChipFace, FlatChip } from './VoteChip';
 import {
@@ -472,6 +472,7 @@ export function VoteTable({
   const myFace = me
     ? { seat: seatNumber(me), character: cast[seatNumber(me) - 1], you: true }
     : null;
+  const own = !tipped && mine != null && myFace ? { index: mine, face: myFace } : null;
 
   const plates: ReactNode[] = ps.map((p, i) => {
     const lit = !!winner?.includes(p.c);
@@ -546,19 +547,24 @@ export function VoteTable({
     <div style={{ position: 'absolute', inset: 0 }} data-vote-table="">
       <TableBack v={v} shade={ids + 'b'} />
       <TablePicture v={v} />
+      {/* the jar's shadow under it, the jar as its own box (its tip is a CSS transform, see
+          `Jar`), then what is drawn over the glass: the chips dropping in, the lid, the plates */}
       <svg viewBox={`0 0 ${STAGE_W} ${STAGE_H}`} style={svgFill} aria-hidden="true">
         <defs>
           <SoftShadow id={shade} />
         </defs>
         <JarShadow v={v} tipped={tipped} tipping={play.tipping} shade={shade} />
-        <Jar
-          v={v}
-          n={tipped ? ballotsIn - counted : ballotsIn}
-          mine={!tipped && mine != null && myFace ? { index: mine, face: myFace } : null}
-          tipped={tipped}
-          tipping={play.tipping}
-          falling={play.falling}
-        />
+      </svg>
+      <Jar
+        v={v}
+        n={tipped ? ballotsIn - counted : ballotsIn}
+        mine={own}
+        tipped={tipped}
+        tipping={play.tipping}
+        falling={play.falling}
+      />
+      <svg viewBox={`0 0 ${STAGE_W} ${STAGE_H}`} style={svgFill} aria-hidden="true">
+        <JarFallers v={v} mine={own} falling={play.falling} />
         {!tipped || play.lidFrom ? (
           <JarLid v={v} state={lid} from={play.lidFrom} arriving={play.arriving} />
         ) : null}
