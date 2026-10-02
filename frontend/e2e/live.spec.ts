@@ -130,7 +130,11 @@ interface Mock {
   filed?: boolean;
 }
 
+/** Each page's mock, so a wait for the stage can be sized to the stream it is served. */
+const mocks = new WeakMap<Page, Mock>();
+
 async function mockApi(page: Page, mock: Mock) {
+  mocks.set(page, mock);
   await page.route(`**/games/${GAME}`, async (route) => {
     if (!isApi(route)) return route.fallback();
     await route.fulfill({
@@ -200,6 +204,42 @@ async function settle(page: Page) {
 }
 
 const theatre = (page: Page) => page.locator('[data-beat-index]');
+
+/**
+ * The stage on `beat` once the page has read its stream. The page reads the frames back to back,
+ * a render each (about 85 ms a frame in the dev build alone, more under the suite's three
+ * workers), and answers nothing, not even a read of an attribute, until the last is in: the
+ * default five seconds is less than day 3's 47-frame catch-up under load, and thirty less than
+ * game over's 406. So the wait is sized to the stream: ten seconds and 200 ms a frame.
+ */
+const foldTime = (page: Page) => 10_000 + (mocks.get(page)?.stream.length ?? 0) * 200;
+async function landsOn(page: Page, beat: string | RegExp) {
+  await expect(theatre(page)).toHaveAttribute('data-beat', beat, { timeout: foldTime(page) });
+}
+
+/**
+ * The waiting room's clock, taken from the page while the platform stands idle. A flowing clock
+ * carried the curtain's short phases (1.2 s falling, 1 s lifting) past while a page under three
+ * workers was busy reading the deal's frames; paused, each phase waits for the test. (Paused
+ * later, in the departure, the pause itself landed in the past.)
+ */
+async function pausePlatform(page: Page) {
+  const now = await page.evaluate(() => Date.now());
+  await page.clock.pauseAt(now + 1000);
+}
+
+/**
+ * Run the paused clock on in 100 ms steps until the platform reads `phase`, for at most `ms`.
+ * Steps, not one run: the status poll's news travels on a timer after its answer comes, which
+ * the next step fires.
+ */
+async function stepsTo(page: Page, phase: string, ms: number) {
+  for (let ran = 0; ran < ms; ran += 100) {
+    if ((await theatre(page).getAttribute('data-platform')) === phase) break;
+    await page.clock.runFor(100);
+  }
+  await expect(theatre(page)).toHaveAttribute('data-platform', phase);
+}
 
 /**
  * Hold the stream back until the page's clock is paused, so every hold after it is the test's
@@ -277,7 +317,7 @@ test('live: a refresh mid-day lands still on the latest beat', async ({ page }) 
   await mockApi(page, { status: status(200), stream: upTo(200) });
   await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
   // the fifth speech of day 3 (seat 8, seq 200), at rest: nothing played to get here
-  await expect(theatre(page)).toHaveAttribute('data-beat', 'day.speech');
+  await landsOn(page, 'day.speech');
   await expect(page.locator('[data-line="say-200"]')).toBeVisible();
   await expect(theatre(page)).toHaveAttribute('data-holding', 'false');
   // Reveal is locked until the game ends
@@ -311,7 +351,7 @@ test('live: while the status is on its way the page is the empty platform, then 
   await settle(page);
   await expect(page).toHaveScreenshot('loading-game.png');
   release();
-  await expect(theatre(page)).toHaveAttribute('data-beat', 'day.speech');
+  await landsOn(page, 'day.speech');
   await expect(still).toHaveCount(0);
 });
 
@@ -370,15 +410,14 @@ test('live: the waiting room’s platform departs into the deal on the same stag
     '3 of 9 aboard · waiting for the host',
   );
   const stage = await page.locator('[data-layer="paint"]').elementHandle();
+  await pausePlatform(page);
 
   // the host departs: the next poll finds the game running, its deal already in the log
   mock.status = status(12);
   mock.stream = upTo(12);
-  await page.clock.runFor(3100);
-  await expect(theatre(page)).toHaveAttribute('data-platform', 'departing');
+  await stepsTo(page, 'departing', 6000);
   await expect(theatre(page)).toHaveAttribute('data-beat', 'station.departing');
-  await page.clock.runFor(7100); // the people board, the train pulls out
-  await expect(theatre(page)).toHaveAttribute('data-platform', 'closing');
+  await stepsTo(page, 'closing', 7600); // the people board, the train pulls out
   await page.clock.runFor(1300); // the curtain is down: the game reaches the stage behind it
   await expect(theatre(page)).toHaveAttribute('data-beat', 'deal.table-seated');
   await expect(theatre(page)).toHaveAttribute('data-platform', 'opening');
@@ -420,6 +459,7 @@ test('live: a departed game plays its deal and the turns after it, however much 
   await mockApi(page, mock);
   await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
   await expect(theatre(page)).toHaveAttribute('data-platform', 'waiting');
+  await pausePlatform(page);
 
   // a solo game: by the time the train has left, the agents have taken day 1's first turns
   const said = (seq: number, player: string): WireEvent => ({
@@ -442,10 +482,8 @@ test('live: a departed game plays its deal and the turns after it, however much 
     said(24, 'player_4'),
   ];
   expect(mock.stream.filter((e) => e.type === 'turn_started')).toHaveLength(3);
-  await page.clock.runFor(3100);
-  await expect(theatre(page)).toHaveAttribute('data-platform', 'departing');
-  await page.clock.runFor(7100);
-  await expect(theatre(page)).toHaveAttribute('data-platform', 'closing');
+  await stepsTo(page, 'departing', 6000);
+  await stepsTo(page, 'closing', 7600);
   await page.clock.runFor(1300);
   // the curtain is down: the deal's first beat, not the latest turn
   await expect(theatre(page)).toHaveAttribute('data-beat', 'deal.table-seated');
@@ -501,7 +539,7 @@ test('live: a queue of beats plays at its normal holds, one after another', asyn
 test('live: game over in the night keeps Reveal and File shut until the stage reaches the ending', async ({
   page,
 }) => {
-  test.setTimeout(90_000);
+  test.setTimeout(150_000); // the stream's fold (landsOn), then the night and the ending
   await page.clock.install({ time: T0 });
   const over = ALL.find((e) => e.type === 'game_over')!;
   const backlog = ALL.filter((e) => e.seq < over.seq && !seen(e));
@@ -512,9 +550,7 @@ test('live: game over in the night keeps Reveal and File shut until the stage re
   await expect(theatre(page)).toBeAttached();
   await go();
   // four hundred frames, a render each, in a dev build: give them time
-  await expect(theatre(page)).toHaveAttribute('data-beat', 'night.hub', {
-    timeout: 30_000,
-  });
+  await landsOn(page, 'night.hub');
   const reveal = page.getByRole('button', { name: 'Reveal', exact: true });
   const file = page.getByRole('button', { name: 'File', exact: true });
   // the log holds the game's end, the stage is still in the night: nothing unlocks
@@ -548,7 +584,7 @@ test('live: seat 7’s turn to speak, the dock at the foot', async ({ page }) =>
     stream: [...upTo(200), yourTurn(201)],
   });
   await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
-  await expect(theatre(page)).toHaveAttribute('data-beat', 'day.your-turn');
+  await landsOn(page, 'day.your-turn');
   await expect(theatre(page)).toHaveAttribute('data-open-prompt', '201');
   const dock = page.locator('[data-dock="discuss"]');
   await expect(dock).toBeVisible();
@@ -583,7 +619,7 @@ test('live: “your card” opens the seat’s card over the stage; a tap or Esc
     stream: [...upTo(200), yourTurn(201)],
   });
   await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
-  await expect(theatre(page)).toHaveAttribute('data-beat', 'day.your-turn');
+  await landsOn(page, 'day.your-turn');
   // as the turn's golden: stop the clock a few seconds in (a wide margin: see above)
   const now = await page.evaluate(() => Date.now());
   await page.clock.pauseAt(Math.max(T0 + 10_000, now + 3000));
@@ -634,6 +670,7 @@ test('live: a steered draft lands in the composer’s box; the dock’s Send sen
     draft: { draft: 'Seat 8 keeps dodging the question.', drafts_left: 2, deadline: null },
   });
   await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  await landsOn(page, 'day.your-turn');
   const dock = page.locator('[data-dock="discuss"]');
   await expect(dock).toBeVisible();
   // one flow: no hand-over on the speaking turn (the agent speaks only when the clock runs out)
@@ -682,6 +719,7 @@ test('live: with no steer the agent drafts its own line, which is edited before 
     },
   });
   await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  await landsOn(page, 'day.your-turn');
   const dock = page.locator('[data-dock="discuss"]');
   await expect(dock).toBeVisible();
   await expect(dock.getByRole('button', { name: 'Send' })).toBeDisabled();
@@ -771,6 +809,7 @@ test('live: a line typed by hand in the composer sends as it is, no draft asked 
     posted,
   });
   await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  await landsOn(page, 'day.your-turn');
   const dock = page.locator('[data-dock="discuss"]');
   await expect(dock).toBeVisible();
   const composer = await openComposer(page);
@@ -849,6 +888,7 @@ test('live: the brass plaque opens the full-screen composer, which keeps the lin
     });
   });
   await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  await landsOn(page, 'day.your-turn');
   const dock = page.locator('[data-dock="discuss"]');
   await expect(dock).toBeVisible();
   // as the turn's golden: stop the clock a few seconds in (a wide margin: see above)
@@ -946,6 +986,7 @@ test('live: the dock’s plaques: Send waits for a line and is live once the com
     });
   });
   await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  await landsOn(page, 'day.your-turn');
   const dock = page.locator('[data-dock="discuss"]');
   await expect(dock).toBeVisible();
   // the drawer shut, as in the turn's picture
@@ -1035,6 +1076,7 @@ test('live: on a phone a tap on the preview opens the composer, fitted above the
     stream: [...upTo(200), yourTurn(201)],
   });
   await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  await landsOn(page, 'day.your-turn');
   const dock = page.locator('[data-dock="discuss"]');
   await expect(dock).toBeVisible();
   // no line yet, no preview: the plaque opens the composer
@@ -1077,7 +1119,7 @@ test('live: on a phone the three plaques sit in a row under the head, with the d
     stream: [...upTo(200), yourTurn(201)],
   });
   await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
-  await expect(theatre(page)).toHaveAttribute('data-beat', 'day.your-turn');
+  await landsOn(page, 'day.your-turn');
   const dock = page.locator('[data-dock="discuss"]');
   await expect(dock).toBeVisible();
   // as the turn's golden: stop the clock a few seconds in (a wide margin: see above)
@@ -1134,7 +1176,9 @@ test('live: the strip’s door asks, and Leave goes to the lobby', async ({ page
   const confirm = page.getByRole('alertdialog', { name: 'Leave the table?' });
   await expect(confirm).toBeVisible();
   await confirm.getByRole('button', { name: 'Leave' }).click();
-  await expect(page).toHaveURL(/\/rooms$/);
+  // the address changes once the lobby's page has come from the dev server: 4.8 s of it under
+  // three workers (2026-10-02), past the default five
+  await expect(page).toHaveURL(/\/rooms$/, { timeout: 20_000 });
 });
 
 test('live: after game over the ending plays to its curtain', async ({ page }) => {
@@ -1186,7 +1230,7 @@ test('live: a seat’s notes stay open while the beats and scenes go by, until t
   await page.goto(`/games/${GAME}`);
   await expect(theatre(page)).toBeAttached();
   await go();
-  await expect(theatre(page)).toHaveAttribute('data-beat', /^vote\./);
+  await landsOn(page, /^vote\./);
   await page.getByRole('button', { name: 'Seat 5, notes' }).click();
   const editor = page.getByRole('dialog', { name: 'Seat 5' });
   const paper = editor.getByRole('textbox', { name: 'Your notes on seat 5' });
