@@ -40,7 +40,7 @@ import { roomPlan } from '../paint/compartment';
 import { diningCarPlan } from '../paint/dining-car';
 import { ROLE_NAME, seatNumber } from '../roles';
 import { bandNarrows, fileTap, sideOpen, stripButtons } from '../slot';
-import { HUD_CHROME, bandFoot, STAGE_H, STAGE_W, geometry } from '../units';
+import { bandFoot, STAGE_H, STAGE_W, geometry } from '../units';
 import { HouseLights, TableWing } from './DiningCarParts';
 import { Backdrop } from '../instruments/Backdrop';
 import { NightLobbyScene, nightUnits, spokeOf } from './NightLobbyScene';

@@ -14,7 +14,7 @@ import { Layer } from '../Stage';
 import { chapterMarks } from '../beats/beatsFor';
 import type { SceneBeat } from '../beats/types';
 import type { MotionSpeed } from '../scenes/types';
-import { HUD_CHROME, geometry, type Hud } from '../units';
+import { bandFoot, geometry, type Hud } from '../units';
 import styles from './TransportBand.module.css';
 
 export interface TransportBandProps {
@@ -92,7 +92,7 @@ export function TransportBand({
         className={styles.band}
         data-transport
         style={{
-          height: HUD_CHROME.band[hud],
+          height: bandFoot(hud, 0),
           left: g.wingN + 22.4,
           right: besideDrawer ? g.slotW + 12.8 : 22.4,
         }}

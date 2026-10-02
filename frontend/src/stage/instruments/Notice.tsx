@@ -17,7 +17,7 @@ import { useMotionScale } from '../motion';
 import { CARD_TEXT } from '../card-text';
 import { roleAvatar } from '../paint/role-kit';
 import { factionOf } from '../roles';
-import { HUD_CHROME, geometry, type Hud } from '../units';
+import { bandFoot, geometry, type Hud } from '../units';
 import { Sigil } from './Sigil';
 import styles from './Notice.module.css';
 
@@ -49,7 +49,7 @@ export function NoticeZone({
       style={
         {
           left: g.wingN + inset,
-          bottom: HUD_CHROME.band[hud] + 19.2,
+          bottom: bandFoot(hud, 19.2),
           '--right': `${right}px`,
           '--aside': aside ? `${1600 - s.wingN - s.room + inset}px` : undefined,
         } as CSSProperties

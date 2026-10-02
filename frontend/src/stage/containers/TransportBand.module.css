@@ -66,6 +66,13 @@
   outline: 2px solid var(--film-ink);
   outline-offset: 2px;
 }
+/* on a phone (Stage.tsx `data-small`) the stage is drawn at under half size and a button would
+   be about 25 css px, under a thumb's 44: the band's controls grow until a button is 44 css px
+   tall (40 units × k = 44px / scale), rising into the gap under the speech box as the band's
+   geometry allows; the icons and the speed toggle grow with them */
+[data-small] .band {
+  --k: max(var(--legible-ui), calc(1.1 / max(var(--stage-scale), 0.01)));
+}
 
 /* where we are: the beat's name over the bar */
 .where {

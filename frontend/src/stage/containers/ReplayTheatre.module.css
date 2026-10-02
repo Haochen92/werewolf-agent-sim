@@ -5,3 +5,11 @@
   height: 100%;
   background: #000;
 }
+
+/* on a phone (Stage.tsx `data-small` on the stage's box, where --stage-scale lives) the
+   transport band grows until a button is 44 css px tall (TransportBand.module.css): its height
+   in units is that button plus the band's padding, and what stands on the band (the speech
+   box, the notices, the ledger) rises with it through `bandFoot` (units.ts) */
+.theatre [data-small] {
+  --band-grown: calc(1.1 / max(var(--stage-scale), 0.01) * 40px + 19.2px);
+}

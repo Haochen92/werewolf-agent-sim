@@ -24,7 +24,7 @@ import { speechPages } from '../beats/pages';
 import { ChipSprite } from '../cast/ChipSprite';
 import { useMotionScale } from '../motion';
 import { seatify } from '../roles';
-import { HUD_CHROME, STAGE_W, geometry, type Hud } from '../units';
+import { bandFoot, STAGE_W, geometry, type Hud } from '../units';
 import styles from './SpeechBox.module.css';
 
 export interface SpeechBoxProps {
@@ -87,7 +87,7 @@ export function SpeechBox({
       style={
         {
           left: g.wingN + inset,
-          bottom: HUD_CHROME.band[hud] + 19.2,
+          bottom: bandFoot(hud, 19.2),
           '--left': `${g.wingN + inset}px`,
           '--right': `${right}px`,
         } as CSSProperties

@@ -132,6 +132,17 @@ export const HUD_CHROME = {
 } as const;
 
 /**
+ * Where what stands on the band's top edge sits: `extra` units above the band. On a phone the
+ * band grows so its buttons reach a thumb's 44 css px (`--band-grown`, set by the replay
+ * theatre's stylesheet on the stage's box); everything on it rises with it. With no band (the
+ * live HUD) it is the plain number, so a golden at full size is unchanged.
+ */
+export function bandFoot(hud: Hud, extra: number): number | string {
+  const band = HUD_CHROME.band[hud];
+  return band ? `calc(max(${band}px, var(--band-grown, 0px)) + ${extra}px)` : extra;
+}
+
+/**
  * How far the side slot grows past the world's right edge at most, on a screen wider than 16:9
  * (`--slot-reach` in Stage.module.css, the bleed shown there up to this): the rail's reach for
  * nine seats (its 310-unit target less its 192), so the wing and the pane stand alike on a

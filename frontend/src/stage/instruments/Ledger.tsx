@@ -27,7 +27,7 @@ import type { MemoryExtracted } from '@/types/contracts';
 import { ChipSprite } from '../cast/ChipSprite';
 import { useMotionScale } from '../motion';
 import { ROLE_NAME, factionOf, seatNumber, seatify, type Faction } from '../roles';
-import { HUD_CHROME, geometry, type Hud } from '../units';
+import { bandFoot, geometry, type Hud } from '../units';
 import {
   PHASE_NAME,
   byPhase,
@@ -97,7 +97,7 @@ export function Ledger({
     left: g.wingN + inset,
     right: inset,
     top: inset,
-    bottom: HUD_CHROME.band[hud] + inset,
+    bottom: bandFoot(hud, inset),
   };
   const tabs = extracted ? ledgerTabs(extracted, roles) : [];
   const first =
