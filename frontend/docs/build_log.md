@@ -1014,3 +1014,45 @@ with a seat's room open: at rest it should show the world alone, as the day does
 the page still dies, the next instrument is the Memory timeline over the file's opening, where
 the suspects are the side sheet's decode next to the full one and the pane's mount.
 
+### 8.7 The rule as a gate, and the sweep's list (2026-10-02)
+
+**Why.** Four rounds (§8.3–8.6) each fixed one more instance of one rule, found after the next
+crash; the owner called it whack-a-mole, rightly. The rule is now a test, `e2e/phone-rule.spec.ts`
+(stage_architecture §6), run over every scene and beat in the phone frame with the X-ray on
+where it matters, about three hundred beats, and the sweep's whole list was fixed in one batch.
+
+**What the sweep found.** Beyond §8.6's three (already fixed when it ran):
+- the painted kit's idle life in the night rooms: the compartment's window still carried the
+  kit's falling snow (`.sk-snw`), and the kit's clock sway and lantern flicker (`.sk-hang`,
+  `.sk-flk`) are in the same stylesheet; infinite animations at rest, in every seat's room and
+  the pack's;
+- the lift (`Lift.tsx`): while the table or the card rode it, its load, a full-stage box, held
+  `will-change: transform` for the whole beat (voting opens, the table down, the card up): a
+  full-stage layer at rest plus the light, the grade and the HUD, for four to six seconds, at
+  exactly the changes of phase that crashed in §8.5;
+- the station's train, `will-change` at rest in the live game's first screen;
+- the ledger at the epilogue, three-quarters of the stage fading and sliding in;
+- and a disagreement about what a phone is: the backdrop's cut and the stand's arrival read the
+  window's width (`useNarrow`, under 1000 css px) while every css rule reads the stage's size
+  (`data-small`, under three-quarter scale), so the gate's phone frame saw the desktop's
+  crossfade at night fall. One flag now: `useSmall()` from the Stage, the same measurement as
+  `data-small`, and `screen.ts` is gone.
+On a phone (`data-small`) all of these now stand still, arrive at once or keep no layer; desktop
+is unchanged.
+What the sweep lists and the rule allows (a mover under three-fifths of the stage): the
+puppets' rises paint a quarter to two-fifths of the stage on a phone and the station's train
+half (a picture through a transform, no layer), the notices arrive once, the lift's table is
+redrawn as it moves. The scrollers it lists (the ledger's rows,
+the pack's chat, the drawer) are the open question for a Layers panel reading, not the gate's.
+
+**How it measures.** Each beat is stepped with the arrow key under `animate=1` and watched for
+3.2 s: a `MutationObserver` on the stage counts style writes per element (motion drives its
+moves by writing `style`), `document.getAnimations()` gives the CSS and Web Animations still
+running, and every element's computed `will-change` and mask are read. A mover's size is its
+painted area, the union of its pictures', drawn svg children's, backgrounds' and text's boxes,
+clipped to the stage; a full-stage wrapper round one figure counts as the figure.
+
+**Also in this batch.** At the replay's night stop a card of the acting seat opened nothing
+(it replayed the room already open; in the pack's room that was every wolf's card); it now
+opens the seat's file like any card that is not a visit.
+

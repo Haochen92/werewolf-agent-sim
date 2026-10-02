@@ -694,6 +694,15 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   `Station` module css). To find the next one: grep the stage's css for `animation:` and
   `will-change`, and the tsx for `repeat: Infinity`; anything that matches and is on screen at
   rest on a phone is a layer and a cascade.
+- **The rule is a gate: `e2e/phone-rule.spec.ts`.** It walks every scene and every beat in the
+  phone frame (the X-ray on where it changes the stage) and fails on an animation still
+  running after a beat's arrival, any `will-change` but the world's, a mask over more than a
+  twentieth of the stage, and anything whose painted area (not its box: a wrapper round one
+  figure is full-stage, its figure is not) covers half the stage or more while it moves or
+  fades. Scrollers are listed for information. Run it with the goldens; read its report before
+  deciding a phone crash is a mystery (build log §8.7). What takes the phone's form in code reads
+  `useSmall()` from the Stage, the same measurement as the css rules' `data-small`, so the gate's
+  phone frame sees what a phone sees.
 - **A scene's set is mounted once; only the beat is keyed.** A scene is a stable set (`DaySet`,
   `MorningSet`: the atmosphere, the car's paint, the shutter, the house light, the wing, the
   strip) that updates in place as the beats go by, and a keyed part (`DayTurn`, `MorningBeat`:
