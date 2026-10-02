@@ -21,7 +21,7 @@ import type { GameView } from '@/game/types';
 import { Camera, Layer } from '../Stage';
 import { Puppet, puppetBox } from '../cast/Puppet';
 import { BallotLine, BallotRow } from '../instruments/BallotRow';
-import { countText } from '../countdown';
+import { Bounded, standBand } from '../instruments/Bounded';
 import { CountPill } from '../instruments/CountPill';
 import { Lift } from '../instruments/Lift';
 import { CardButton, Notice, NoticeButton, NoticeZone } from '../instruments/Notice';
@@ -34,7 +34,6 @@ import {
   voteGeometry,
 } from '../instruments/vote-geometry';
 import type { LidState } from '../instruments/Jar';
-import { motion } from 'motion/react';
 import { useMotionScale, useSteps } from '../motion';
 import type { Special } from '../paint/draw';
 import { seatNumber, seatify } from '../roles';
@@ -253,8 +252,9 @@ function VoteBeat({
       {leavingChar ? (
         <>
           <Layer name="figures">
-            <motion.div
-              style={{ position: 'absolute', inset: 0 }}
+            <Bounded
+              box={leavingBox(puppetBox(g, leavingChar, 'base'))}
+              pad={40}
               initial={{ y: 0, opacity: 1 }}
               animate={{
                 y: puppetBox(g, leavingChar, 'base').h * 0.55,
@@ -263,11 +263,11 @@ function VoteBeat({
               transition={step({ duration: 0.45 * k, ease: 'easeIn' })}
             >
               <Puppet g={g} shadow character={leavingChar} seat={null} state="base" />
-            </motion.div>
+            </Bounded>
           </Layer>
           <Layer name="stand">
-            <motion.div
-              style={{ position: 'absolute', inset: 0 }}
+            <Bounded
+              box={standBand(g.railY)}
               initial={{ opacity: 1 }}
               animate={{ opacity: 0 }}
               transition={{ duration: 0.3 * k, delay: 0.38 * k, ease: 'easeIn' }}
@@ -275,7 +275,7 @@ function VoteBeat({
               <Stand g={g}>
                 <Plaque seat={ln} />
               </Stand>
-            </motion.div>
+            </Bounded>
           </Layer>
         </>
       ) : null}
@@ -294,6 +294,13 @@ function VoteBeat({
                   ? 'sink'
                   : null
             }
+            // the table with its plates, the jar and the lid's string from above the frame
+            box={{
+              x: v.cx - v.tw * 0.7,
+              y: -STAGE_H,
+              w: v.tw * 1.4,
+              h: STAGE_H + v.holeBot,
+            }}
           >
             <VoteTable
               v={v}
@@ -340,7 +347,7 @@ function VoteBeat({
               onConfirm={confirm}
               sent={sent}
               me={me}
-              left={turn?.clock ? countText(turn.clock.remainingMs) : null}
+              clock={turn?.clock ?? null}
               arrive={animate}
             />
           ) : null}
@@ -383,4 +390,9 @@ function VoteBeat({
       </Layer>
     </>
   );
+}
+
+/** The leaving figure's box: its own, and the drop below it. */
+function leavingBox(pb: ReturnType<typeof puppetBox>) {
+  return { x: pb.left, y: pb.top, w: pb.w, h: pb.h * 1.6 };
 }

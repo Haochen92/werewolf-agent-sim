@@ -17,7 +17,8 @@
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { Camera, Layer } from '../Stage';
-import { Puppet } from '../cast/Puppet';
+import { Puppet, puppetBox } from '../cast/Puppet';
+import { Bounded, standBand } from '../instruments/Bounded';
 import { RoleCard } from '../instruments/Card';
 import { trapGeometry } from '../instruments/Floor';
 import { Lift } from '../instruments/Lift';
@@ -29,7 +30,7 @@ import type { Special } from '../paint/draw';
 import { ROLE_ARTICLE } from '../paint/role-kit';
 import { ROLE_NAME, factionOf, seatNumber } from '../roles';
 import { bandNarrows, fileTap, sideOpen } from '../slot';
-import { STAGE_W, geometry, type StageGeometry } from '../units';
+import { STAGE_H, STAGE_W, geometry, type StageGeometry } from '../units';
 import { CarSetSpec } from './CarScene';
 import type { SceneProps } from './types';
 import { score, tally } from './vote-count';
@@ -179,10 +180,12 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
           />
         ) : null}
         {character && id === 'lynch.drop' && animate ? (
-          <motion.div
-            style={{ position: 'absolute', inset: 0 }}
+          // the box: the figure's column down to the stage's foot, so the drop is never cut
+          <Bounded
+            box={dropBox(puppetBox(g, character, 'out'))}
+            pad={40}
             initial={{ y: 0 }}
-            animate={{ y: '115%' }}
+            animate={{ y: 1.15 * STAGE_H }}
             transition={steps({
               duration: 0.5 * k,
               delay: 0.35 * k,
@@ -190,7 +193,7 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
             })}
           >
             <Puppet g={g} shadow character={character} seat={null} state="out" />
-          </motion.div>
+          </Bounded>
         ) : null}
         {role && (id === 'lynch.card-up' || id === 'lynch.truth') ? (
           <Lift
@@ -199,6 +202,13 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
             move={animate && id === 'lynch.card-up' ? 'rise' : null}
             delay={0.3}
             duration={1.3}
+            // the card and its shadow's throw
+            box={{
+              x: card.x - card.h * 0.1,
+              y: card.top - card.h * 0.1,
+              w: card.w + card.h * 0.3,
+              h: card.h + card.h * 0.3,
+            }}
           >
             {/* the key light's shadow of the card on the wall behind it, down and to the right */}
             <div
@@ -250,8 +260,8 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
 
       {!(night || ended) || animate ? (
         <Layer name="stand">
-          <motion.div
-            style={{ position: 'absolute', inset: 0 }}
+          <Bounded
+            box={standBand(g.railY)}
             {...(id === 'lynch.stand-returns'
               ? fade(0, 1, 0.5, 0.5)
               : night || ended
@@ -261,7 +271,7 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
             <Stand g={g} lit={!night}>
               {n ? <Plaque seat={n} tag={tag} tone={tone} /> : null}
             </Stand>
-          </motion.div>
+          </Bounded>
         </Layer>
       ) : null}
 
@@ -301,4 +311,9 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
       </Layer>
     </>
   );
+}
+
+/** The dropping figure's box: its own column, down to the stage's foot. */
+function dropBox(pb: ReturnType<typeof puppetBox>) {
+  return { x: pb.left, y: pb.top, w: pb.w, h: STAGE_H - pb.top };
 }

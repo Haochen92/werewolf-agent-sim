@@ -22,15 +22,18 @@
  *   after the lessons are written), until then a plaque, "Winding the reels… come back in a
  *   few minutes", in its place; and "Back to the lobby".
  *
- * Arrived at, each beat is simply there; played, it moves from the beat before.
+ * Arrived at, each beat is simply there; played, it moves from the beat before. On a phone the
+ * winners' hour is simply there too: no rise, no stand fading in (owner, 2026-10-02: the rise
+ * of three figures at once lagged; the screen of them winning is the point). The epilogue's
+ * sheet closes (its button) to the winners at the stand under it.
  */
-import { motion } from 'motion/react';
 import Link from 'next/link';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { GameView } from '@/game/types';
 import { Layer } from '../Stage';
 import { ChipSprite } from '../cast/ChipSprite';
-import { Puppet } from '../cast/Puppet';
+import { Puppet, puppetBox } from '../cast/Puppet';
+import { Bounded, standBand } from '../instruments/Bounded';
 import { RoleCard } from '../instruments/Card';
 import { Ledger } from '../instruments/Ledger';
 import { MorningRoll } from '../instruments/MorningRoll';
@@ -44,6 +47,7 @@ import type { Special } from '../paint/draw';
 import type { Phase } from '../paint/materials';
 import { ROLE_ARTICLE } from '../paint/role-kit';
 import { ROLE_NAME, factionOf, seatNumber, type Faction } from '../roles';
+import { useSmall } from '../set';
 import { bandNarrows, sideOpen } from '../slot';
 import { STAGE_H, geometry } from '../units';
 import { CarSetSpec } from './CarScene';
@@ -85,7 +89,10 @@ export function OverBody(props: SceneProps) {
 function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
   const { hud, xray, animate, cast } = presentation;
   const k = useMotionScale();
+  const small = useSmall();
   const step = STEP[beat.id] ?? 0;
+  // the epilogue's sheet, closed by its button (the beat's own state: a step reopens it)
+  const [shut, setShut] = useState(false);
   const day = beat.day;
   // the side slot open: the room is laid out beside it (bench 73 drew the film up)
   const side = sideOpen(presentation);
@@ -192,12 +199,15 @@ function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
         {onStand
           ? winners.map((seat, i) => {
               const n = seatNumber(seat);
-              const rise = animate && step === 3 ? RISE_AT + i * RISE_STAGGER : false;
+              const dx = set.offsets[i] * g.pwid;
+              const rise =
+                animate && step === 3 && !small ? RISE_AT + i * RISE_STAGGER : false;
               // out of sight below the rail until its rise, while the stand is still fading in
               return (
-                <motion.div
+                <Bounded
                   key={seat}
-                  style={{ position: 'absolute', inset: 0 }}
+                  box={figureBox(puppetBox(g, cast[n - 1], 'base', dx, set.scale))}
+                  pad={40}
                   {...fade(rise !== false, rise || 0, 0.01)}
                 >
                   <Puppet
@@ -209,11 +219,11 @@ function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
                     // stand the belly still says which is which; alone, the plate does
                     seat={winners.length > 1 ? n : null}
                     state="base"
-                    dx={set.offsets[i] * g.pwid}
+                    dx={dx}
                     scale={set.scale}
                     arrive={rise}
                   />
-                </motion.div>
+                </Bounded>
               );
             })
           : null}
@@ -221,9 +231,9 @@ function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
 
       {onStand && winners.length ? (
         <Layer name="stand">
-          <motion.div
-            style={{ position: 'absolute', inset: 0 }}
-            {...fade(animate && step === 3, STAND_AT)}
+          <Bounded
+            box={standBand(g.railY)}
+            {...fade(animate && step === 3 && !small, STAND_AT)}
           >
             <Stand g={g} widen={set.widen}>
               <Plaque
@@ -236,7 +246,7 @@ function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
                 tone={truthOut || xray ? winner : undefined}
               />
             </Stand>
-          </motion.div>
+          </Bounded>
         </Layer>
       ) : null}
 
@@ -253,7 +263,7 @@ function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
       </Layer>
 
       <Layer name="hud">
-        {step !== 5 ? (
+        {step !== 5 || shut ? (
           <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
             {myRole ? (
               <CardButton role={myRole} gone={myDead} onOpen={turn?.onCard} />
@@ -287,7 +297,7 @@ function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
             ) : null}
           </NoticeZone>
         ) : null}
-        {step === 5 ? (
+        {step === 5 && !shut ? (
           <Ledger
             hud={hud}
             extracted={view.xray.extracted}
@@ -295,6 +305,7 @@ function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
             cast={cast}
             winner={winner}
             arrive={animate}
+            onClose={() => setShut(true)}
           />
         ) : null}
       </Layer>
@@ -408,4 +419,9 @@ function EndBox({
       ) : null}
     </Notice>
   );
+}
+
+/** A figure's box from its placement. */
+function figureBox(pb: ReturnType<typeof puppetBox>) {
+  return { x: pb.left, y: pb.top, w: pb.w, h: pb.h };
 }

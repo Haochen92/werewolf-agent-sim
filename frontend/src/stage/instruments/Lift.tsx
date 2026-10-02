@@ -17,7 +17,9 @@
  * gone (`fade`, lift-fade.ts). While it moves the load is its own compositor layer, so the
  * browser slides the picture it already has instead of redrawing the table every frame; not on
  * a phone, where that layer is full-stage for the whole beat and takes the light, the grade and
- * the HUD onto layers with it (build log §8.7): there the table is redrawn as it moves.
+ * the HUD onto layers with it (build log §8.7): there the table is redrawn as it moves. `box`
+ * bounds the moving load to what rides it (Bounded.tsx): without it the load is a full-stage
+ * box, repainted whole each frame on a phone (§8.10).
  */
 import { motion, useMotionValue, useTransform } from 'motion/react';
 import { useId, type ReactNode } from 'react';
@@ -26,6 +28,7 @@ import { BOARD2, K2 } from '../paint/materials';
 import { boards } from '../paint/texture';
 import { WOOD } from '../textures';
 import { STAGE_H, STAGE_W, type StageGeometry } from '../units';
+import type { Box } from './Bounded';
 import { trapGeometry } from './Floor';
 import { loadOpacity } from './lift-fade';
 
@@ -47,6 +50,8 @@ export interface LiftProps {
    * whose reaching the lip starts the fade, and the higher one whose reaching it ends the fade.
    */
   fade?: readonly [number, number];
+  /** The load's bounds at rest, in units (its top may be above the frame): the moving box. */
+  box?: Box;
   children?: ReactNode;
 }
 
@@ -105,6 +110,7 @@ export function Lift({
   ease,
   slab = false,
   fade,
+  box,
   children,
 }: LiftProps) {
   const k = useMotionScale();
@@ -125,6 +131,11 @@ export function Lift({
   // the cut: a box from well above the frame down to the platform's foot; the world inside it
   // is put back at its own coordinates
   const above = STAGE_H;
+  // the moving box: the load's bounds, or the stage; inside it the stage's coordinates
+  const bx = box ? Math.max(box.x, 0) : 0,
+    by = box ? Math.max(box.y, -above) : 0,
+    bw = box ? Math.min(box.x + box.w, STAGE_W) - bx : STAGE_W,
+    bh = box ? Math.min(box.y + box.h, clipY) - by : STAGE_H;
   return (
     <div
       style={{
@@ -143,10 +154,11 @@ export function Lift({
         data-lift-load=""
         style={{
           position: 'absolute',
-          left: 0,
-          top: above,
-          width: STAGE_W,
-          height: STAGE_H,
+          left: bx,
+          top: above + by,
+          width: bw,
+          height: bh,
+          overflow: box ? 'hidden' : undefined,
           willChange: move ? 'transform' : undefined,
           y,
           ...(fade && { opacity }),
@@ -155,8 +167,18 @@ export function Lift({
         animate={{ y: move === 'sink' ? travel : 0 }}
         transition={transition}
       >
-        {slab ? <Slab g={g} /> : null}
-        {children}
+        <div
+          style={{
+            position: 'absolute',
+            left: -bx,
+            top: -by,
+            width: STAGE_W,
+            height: STAGE_H,
+          }}
+        >
+          {slab ? <Slab g={g} /> : null}
+          {children}
+        </div>
       </motion.div>
     </div>
   );
