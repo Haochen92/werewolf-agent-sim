@@ -1055,3 +1055,12 @@ button.suspect:focus-visible {
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* On a phone (Stage.tsx `data-small`) nothing breathes at rest: a read's glow and the night
+   stop's glow hold their middle opacity. An opacity animation at rest promotes the glow and
+   whatever is drawn over it to GPU layers for as long as it runs (build log §8.6). */
+[data-small] .breathe,
+[data-small] .glow {
+  animation: none;
+  opacity: 0.55;
+}

@@ -63,3 +63,11 @@
     transform: translateX(calc(-1 * var(--tile)));
   }
 }
+
+/* On a phone (Stage.tsx `data-small`) the near row stands still and keeps no layer: a row
+   scrolling at rest inside the camera made every stage layer above it a GPU layer of its own
+   (build log §8.3, the night rooms §8.6), and the country then costs the page nothing. */
+[data-small] .near {
+  animation: none;
+  will-change: auto;
+}

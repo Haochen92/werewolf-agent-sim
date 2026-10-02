@@ -266,6 +266,11 @@
 .still i {
   animation: none;
 }
+/* on a phone (Stage.tsx `data-small`) no snow falls: seventy flakes each animating at rest
+   are seventy GPU layers and whatever is drawn over them (build log §8.6) */
+[data-small] .snow i {
+  animation: none;
+}
 @media (prefers-reduced-motion: reduce) {
   .snow i {
     animation: none;
