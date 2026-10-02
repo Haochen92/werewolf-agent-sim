@@ -294,10 +294,28 @@ export function usePaintId(): string {
   return 'p' + useId().replace(/[^A-Za-z0-9_-]/g, '');
 }
 
+/* A generator's markup for an id and options, kept across instances and beats: the house
+   light's holes take 60–110 ms to trace (paint/holes.ts) and a beat's light often repeats an
+   earlier one (the count's, the morning's). A few dozen drawings per generator, oldest out. */
+const DRAWN = new WeakMap<(o: never) => string, Map<string, string>>();
+const KEEP = 48;
+function drawn<O extends { id: string }>(of: (o: O) => string, id: string, key: string) {
+  let m = DRAWN.get(of as (o: never) => string);
+  if (!m) DRAWN.set(of as (o: never) => string, (m = new Map()));
+  const k = id + '\0' + key;
+  const hit = m.get(k);
+  if (hit !== undefined) return hit;
+  const html = of({ ...JSON.parse(key), id } as O);
+  if (m.size >= KEEP) m.delete(m.keys().next().value as string);
+  m.set(k, html);
+  return html;
+}
+
 /**
- * One paint generator's output, drawn once and kept until its options change. `of` is a
- * generator from `src/stage/paint/`; `opts` its options minus `id`, which comes from
- * `useId()` so two stages on one page never share a gradient or a mask.
+ * One paint generator's output, drawn once and kept until its options change (and remembered
+ * across instances, see `drawn`). `of` is a generator from `src/stage/paint/`; `opts` its
+ * options minus `id`, which comes from `useId()` so two stages on one page never share a
+ * gradient or a mask.
  */
 export function Paint<O extends { id: string }>({
   of,
@@ -309,7 +327,7 @@ export function Paint<O extends { id: string }>({
   const id = usePaintId();
   // The options are plain data; their JSON is the memo key, so a new-but-equal object is free.
   const key = JSON.stringify(opts);
-  const html = useMemo(() => of({ ...JSON.parse(key), id } as O), [of, key, id]);
+  const html = useMemo(() => drawn(of, id, key), [of, key, id]);
   // The kit's scatter hash (draw.ts `rnd`) magnifies the last bit of Math.sin, which differs
   // between Node and the browser, so a few coordinates differ by ~1e-10 after hydration. That
   // is invisible, and the hash has to stay the kit's to draw the kit's picture.
