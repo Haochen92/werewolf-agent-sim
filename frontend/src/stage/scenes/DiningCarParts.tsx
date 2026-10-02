@@ -25,6 +25,7 @@ import { drape } from '../paint/drape';
 import { light, type Pool } from '../paint/light';
 import type { Phase } from '../paint/materials';
 import { ROLE_NAME, factionOf, knownRoles, seatNumber } from '../roles';
+import { useNarrow } from '../screen';
 import { BLEED, STAGE_H, STAGE_W, type Hud, type StageGeometry } from '../units';
 import type { SlotInput } from './types';
 
@@ -246,11 +247,16 @@ export function StandReturns({
   const character = n ? cast[n - 1] : null;
   const role = slot ? view.xray.roles[slot.player] : undefined;
   const state: DayState = slot?.kind === 'speech' ? 'talking' : 'base';
-  const fade = {
-    initial: animate ? { opacity: 0 } : false,
-    animate: { opacity: 1 },
-    transition: { duration: 0.5 * k, delay: delay * k },
-  } as const;
+  // the stand's fade is a full-stage layer for half a second, on the stage's heaviest beat;
+  // a phone has no room for it (build log §8.3): there the stand is simply back
+  const phone = useNarrow();
+  const fade = phone
+    ? {}
+    : ({
+        initial: animate ? { opacity: 0 } : false,
+        animate: { opacity: 1 },
+        transition: { duration: 0.5 * k, delay: delay * k },
+      } as const);
   return (
     <>
       <Layer name="figures">
