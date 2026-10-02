@@ -24,6 +24,10 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  // iOS ignores these for the pinch (accessibility) but honours them for the double tap, which
+  // otherwise zooms the page when a second fast tap misses a control (owner, 2026-10-02)
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: 'cover',
   themeColor: '#0c0a07',
 };
