@@ -393,9 +393,11 @@ the backdrop, the camera off its layer on phones, the tappable transport band) a
 (safe areas, no pinch-zoom, no pull-to-refresh on the theatre pages), `8b71e4b` (the morning
 roll after the chips, the drawer's dawn line held until it) `f33c89a` (the jar's tip and the
 shutter's slide on HTML boxes, the Home Screen manifest and the iPhone's line for it) ,
-`86955eb` (on a phone the camera cuts and the figures cast no filtered shadow) and `d924ea0`
+`86955eb` (on a phone the camera cuts and the figures cast no filtered shadow) `d924ea0`
 (on a phone nothing animates at rest: the night room's felt row, the wing's glows, the
-station's snow), each frontend only.
+station's snow) and `9cfe8d4` (the phone rule as a gate and its sweep fixed in one batch: the
+kit's idle life, the lift's layer, the train, the ledger, one phone flag; the wolf card), each
+frontend only.
 · **2026-10-01 both containers rebuilt at `a651988`** (branch pushed first; built with
 `docker build` from a clean detached worktree, then `compose up -d --no-build`). Server: the
 request budget and stall rescue (30 s, two attempts, two stalls → the rescue model for five
