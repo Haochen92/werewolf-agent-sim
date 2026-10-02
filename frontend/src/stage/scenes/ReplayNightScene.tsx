@@ -169,14 +169,19 @@ function SpokeRoom({
         (rank > (spoke?.rank ?? Infinity) || (rank === spoke?.rank && !(ends && lampOut))),
     );
   // the wing (2026-09-30): another actor's card goes straight to its room, "Visit ▸" on it
-  // ("Seen" once visited), this actor's plays its room again, anyone else's opens a file
+  // ("Seen" once visited); anyone else's opens a file, and so does a card of the actor whose
+  // room this is (until 2026-10-02 it replayed the room, which in the pack's room, every wolf's
+  // card, read as a card that would not open; owner)
   const actors = actedTonight(view, view, day);
   const open = fileTap(presentation, slotInput, true);
   const visit = (seat: string) => {
     const into = spokeOf(view, day, seat);
     if (!(stop ? stop.onVisit(into) : onSeek?.(into))) open?.(seat);
   };
-  const tap = stop || onSeek ? (s: string) => (actors.has(s) ? visit : open)?.(s) : open;
+  const tap =
+    stop || onSeek
+      ? (s: string) => (actors.has(s) && !seats.includes(s) ? visit : open)?.(s)
+      : open;
   const word = (s: string) => {
     const a = actors.get(s);
     if (!a || seats.includes(s)) return undefined;
