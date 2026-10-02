@@ -31,3 +31,18 @@
 :global(html):has(.page) {
   overscroll-behavior: none;
 }
+
+/* a second quick tap on a control is the control's, never Safari's double-tap zoom (the page's
+   pan-x pan-y stops the pinch, but WebKit reads only `manipulation` as "no double tap"; owner,
+   2026-10-02: the band's fast-forward zoomed the page into its corner) */
+.page button,
+.page a,
+.page [role='button'],
+.page [role='tab'],
+.page [role='slider'],
+.page input,
+.page select,
+.page textarea,
+.page label {
+  touch-action: manipulation;
+}
