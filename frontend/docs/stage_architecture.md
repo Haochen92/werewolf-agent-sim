@@ -703,6 +703,12 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   deciding a phone crash is a mystery (build log §8.7). What takes the phone's form in code reads
   `useSmall()` from the Stage, the same measurement as the css rules' `data-small`, so the gate's
   phone frame sees what a phone sees.
+- **The backdrop belongs to the Stage.** A scene's `Backdrop` only describes the sheet
+  (phase, HUD, side, the hour it comes from) and the Stage draws one `BackdropSheet` at the foot
+  of the paint layer, kept across beats and across scenes, so a beat never remounts the
+  picture: on iPhone Safari a fresh `<img>` is black until it decodes (build log §8.8). Every
+  other next/image in the stage carries `decoding="sync"` for the same reason: what a beat
+  remounts (the wing's heads in a scene keyed whole) paints at once.
 - **A scene's set is mounted once; only the beat is keyed.** A scene is a stable set (`DaySet`,
   `MorningSet`: the atmosphere, the car's paint, the shutter, the house light, the wing, the
   strip) that updates in place as the beats go by, and a keyed part (`DayTurn`, `MorningBeat`:

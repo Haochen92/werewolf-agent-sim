@@ -1056,3 +1056,46 @@ clipped to the stage; a full-stage wrapper round one figure counts as the figure
 (it replayed the room already open; in the pack's room that was every wolf's card); it now
 opens the seat's file like any card that is not a visit.
 
+### 8.8 A black frame between beats: the backdrop remounted (2026-10-02)
+
+**Seen.** With the crashes mostly gone, the owner saw the screen flash black for an instant
+between beats on the iPhone, which they rated above the staccato.
+
+**Found.** A Chromium probe stepping beats on production and marking the backdrop's `<img>`:
+the day and the morning keep their image across beats (their set is mounted once, §8.3), but
+the vote, the lynch, the night lobby, the deal, the game over and the replay night are still
+keyed whole per beat, so every beat there unmounts the scene and mounts a fresh backdrop
+`<img>`. iPhone Safari paints a fresh image only once its asynchronous decode lands (next/image
+sets `decoding="async"`), so for a frame the house's dark shows through the empty picture, and
+the 18 MB sheet is decoded again each beat, which also feeds the stutter. Chromium keeps the
+decoded picture and shows no flash, which is why the goldens never saw it.
+
+**Done.** The Stage draws one backdrop (`BackdropSheet`) at the foot of the paint layer, in a
+box of its own present from the first render, from a description the scene registers through
+`BackdropContext` (set.ts; `Backdrop` in a scene is now only the registrar, as `Camera` is for
+the shot). The description's clearing and the next one's landing fall in the same commit, so the
+sheet outlives a beat and a change of scene; a change of scene changes only its `src`, and the
+browser keeps the old picture until the new one is ready, so no blank there either. The
+small-screen flag moved to set.ts with it (the instruments and the Stage share no cycle);
+`useSmall` is still exported from the Stage. Goldens unchanged.
+
+The same mechanism, one layer up: at the vote's count the wing flickered once per chip on the
+phone (owner). The scene remounts the wing per beat, and its heads are next/image pictures,
+which decode asynchronously by default (`decoding="async"`), so each remount paints nothing
+for a frame. Every next/image in the stage now carries `decoding="sync"`: a remounted picture
+whose bytes are cached paints at once, at the cost of its decode on the main thread, which for
+the heads is a millisecond or two per card and for a night room's picture some tens; the
+set/beat split for the scenes still keyed whole (§8.3, open) is what removes the remount, and
+with it that cost.
+
+**Open.** The scenes keyed whole per beat still rebuild everything else per beat (the light's
+sheet, the wing, the strip); the set/beat split (§8.3) remains the fuller answer for them, and
+the persistent backdrop now takes the heaviest part of it off the table.
+
+**A flake found on the way, not fixed.** `live-curtain.png` and `curtain-winding.png` (live.spec,
+the ending to its curtain) fail about two runs in three on the committed code as much as with
+this change: the transcript drawer is sometimes a few lines short of its foot at the screenshot
+("Back to now" showing) and the window's snow differs from the pre-bake golden. Timing under the
+fake clock on a loaded dev server; the goldens predate the bake. To re-record once the ending is
+read on a quiet machine.
+
