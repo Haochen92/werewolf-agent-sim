@@ -18,7 +18,7 @@ import { motion } from 'motion/react';
 import type { CSSProperties } from 'react';
 import { SPRITES } from '@/assets/manifest';
 import { usePaintId } from '../Stage';
-import { useMotionScale } from '../motion';
+import { useMotionScale, useSteps } from '../motion';
 import { shutterGeometry, shutterParts, type ShutterState } from '../paint/window';
 import { WOOD } from '../textures';
 import { STAGE_H, STAGE_W, type StageGeometry } from '../units';
@@ -35,6 +35,7 @@ export interface ShutterProps {
 
 export function Shutter({ g, state, animate = false, delay }: ShutterProps) {
   const k = useMotionScale();
+  const step = useSteps();
   const id = usePaintId();
   const { clip, panel, stack, pelmet } = shutterParts(
     g,
@@ -82,8 +83,8 @@ export function Shutter({ g, state, animate = false, delay }: ShutterProps) {
             !animate
               ? { duration: 0 }
               : closed
-                ? { duration: 1.1 * k, delay: d * k, ease: [0.4, 0.7, 0.4, 1] }
-                : { duration: 1.2 * k, delay: d * k, ease: [0.4, 0.2, 0.4, 1] }
+                ? step({ duration: 1.1 * k, delay: d * k, ease: [0.4, 0.7, 0.4, 1] })
+                : step({ duration: 1.2 * k, delay: d * k, ease: [0.4, 0.2, 0.4, 1] })
           }
         >
           <svg

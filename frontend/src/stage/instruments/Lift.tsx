@@ -21,7 +21,7 @@
  */
 import { motion, useMotionValue, useTransform } from 'motion/react';
 import { useId, type ReactNode } from 'react';
-import { useMotionScale } from '../motion';
+import { useMotionScale, useSteps } from '../motion';
 import { BOARD2, K2 } from '../paint/materials';
 import { boards } from '../paint/texture';
 import { WOOD } from '../textures';
@@ -108,15 +108,16 @@ export function Lift({
   children,
 }: LiftProps) {
   const k = useMotionScale();
+  const step = useSteps();
   const t = trapGeometry(g),
     rim = Math.max(4, 0.011 * STAGE_W),
     clipY = t.holeBot - rim;
   const tm = move ? TIMING[move] : null;
-  const transition = {
+  const transition = step({
     delay: (delay ?? tm?.delay ?? 0) * k,
     duration: (duration ?? tm?.duration ?? 0) * k,
     ease: ease ?? (tm ? [...tm.ease] : undefined),
-  };
+  });
   // the load's offset below its resting place, and the fade read off it
   const y = useMotionValue(move === 'rise' ? travel : 0);
   const [f0, f1] = fade ?? [0, 0];

@@ -10,7 +10,7 @@
  * simply there. A tooth is a mark arriving, not the photo moving: the photo stays still.
  */
 import { motion } from 'motion/react';
-import { useMotionScale } from '../motion';
+import { useMotionScale, useSteps } from '../motion';
 import styles from './NightRoom.module.css';
 
 export interface ToothProps {
@@ -22,6 +22,7 @@ export interface ToothProps {
 
 export function Tooth({ side, land = false }: ToothProps) {
   const k = useMotionScale();
+  const step = useSteps();
   const x = side === 'left' ? 36 : 52;
   return (
     <motion.svg
@@ -31,7 +32,11 @@ export function Tooth({ side, land = false }: ToothProps) {
       data-tooth={side}
       initial={land === false ? false : { opacity: 0, y: -24 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45 * k, delay: (land || 0) * k, ease: [0.3, 0.8, 0.4, 1] }}
+      transition={step({
+        duration: 0.45 * k,
+        delay: (land || 0) * k,
+        ease: [0.3, 0.8, 0.4, 1],
+      })}
     >
       <path
         d={`M${x} 58l6 16 6-16z`}

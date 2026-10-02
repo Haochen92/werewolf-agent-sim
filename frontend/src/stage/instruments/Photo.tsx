@@ -18,7 +18,7 @@ import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import type { Character } from '@/assets/manifest';
 import { ChipSprite } from '../cast/ChipSprite';
-import { useMotionScale } from '../motion';
+import { useMotionScale, useSteps } from '../motion';
 import styles from './NightRoom.module.css';
 
 /** How much the chosen print comes forward, and how dark the others go (0–1). */
@@ -64,6 +64,7 @@ export function Photo({
   arrive = false,
 }: PhotoProps) {
   const k = useMotionScale();
+  const step = useSteps();
   const Tag = onChoose ? motion.button : motion.div;
   const tilt = TILT[(seat - 1) % TILT.length] ?? 0;
   // the peg: a clothes-peg's two wooden legs and its spring, clipping the print's top edge
@@ -91,7 +92,7 @@ export function Photo({
       transition={{
         duration: 0.6 * k,
         delay: (arrive || 0) * k,
-        scale: { duration: 0.4 * k, ease: [0.3, 0.7, 0.4, 1] },
+        scale: step({ duration: 0.4 * k, ease: [0.3, 0.7, 0.4, 1] }),
       }}
     >
       {/* crooked about where it hangs from the line, so a long drop swings from its knot */}

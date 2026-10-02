@@ -12,7 +12,7 @@
  */
 import { animate, useMotionValue, useMotionValueEvent } from 'motion/react';
 import { useEffect, useRef, type ReactNode } from 'react';
-import { useMotionScale } from '../motion';
+import { useMotionScale, useSteps } from '../motion';
 
 export type Ease =
   [number, number, number, number] | 'linear' | 'easeIn' | 'easeOut' | 'easeInOut';
@@ -43,6 +43,7 @@ export function Tween({
   children,
 }: TweenProps) {
   const k = useMotionScale();
+  const step = useSteps();
   const p = useMotionValue(play ? 0 : 1);
   const ref = useRef<SVGGElement>(null);
   useMotionValueEvent(p, 'change', (v) => {
@@ -55,13 +56,13 @@ export function Tween({
   useEffect(() => {
     if (!play) return;
     p.set(0);
-    const run = animate(p, 1, {
-      duration: duration * k,
-      delay: delay * k,
-      ease: JSON.parse(easeKey) as Ease,
-    });
+    const run = animate(
+      p,
+      1,
+      step({ duration: duration * k, delay: delay * k, ease: JSON.parse(easeKey) as Ease }),
+    );
     return () => run.stop();
-  }, [play, duration, delay, easeKey, k, p]);
+  }, [play, duration, delay, easeKey, k, p, step]);
   const now = p.get();
   return (
     <g

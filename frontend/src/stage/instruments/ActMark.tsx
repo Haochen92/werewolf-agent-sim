@@ -14,7 +14,7 @@
  */
 import { motion } from 'motion/react';
 import type { AttackerType } from '@/types/contracts';
-import { useMotionScale } from '../motion';
+import { useMotionScale, useSteps } from '../motion';
 import { MATERIALS as M } from '../paint/materials';
 import { Sigil } from './Sigil';
 
@@ -60,6 +60,7 @@ export interface ActMarkProps {
 
 export function ActMark({ kind, x, y, k, arrive = false }: ActMarkProps) {
   const m = useMotionScale();
+  const step = useSteps();
   const role = MARK_ROLE[kind];
   const [tx, ty] = TACK[kind];
   const half = k * 1.3;
@@ -82,11 +83,11 @@ export function ActMark({ kind, x, y, k, arrive = false }: ActMarkProps) {
       data-mark={role}
       initial={arrive === false ? false : { scale: 0.2, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
-      transition={{
+      transition={step({
         duration: 0.5 * m,
         delay: (arrive || 0) * m,
         ease: [0.3, 1.5, 0.5, 1],
-      }}
+      })}
     >
       {/* the patch's shadow on the print: its own silhouette, flat and offset (no live filter) */}
       <g opacity={0.38} style={{ color: '#0c0703' }}>

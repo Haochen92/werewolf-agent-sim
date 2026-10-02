@@ -16,8 +16,9 @@
 import { motion } from 'motion/react';
 import type { CSSProperties, ReactNode } from 'react';
 import { SPRITES } from '@/assets/manifest';
-import { useMotionScale } from '../motion';
+import { useMotionScale, useSteps } from '../motion';
 import { rnd } from '../paint/draw';
+import { useSmall } from '../set';
 import { STAGE_H } from '../units';
 import { Tween, about, lerp } from './Tween';
 import { ChipBack, ChipFace, FlatChip, type ChipFaceProps } from './VoteChip';
@@ -92,6 +93,9 @@ export function Jar({
   fallDelay = 0,
 }: JarProps) {
   const k = useMotionScale();
+  const step = useSteps();
+  // a phone draws the glass far under its file's size: its copy
+  const glass = useSmall() ? SPRITES.small.props.jarGlass : SPRITES.props.jarGlass;
   const J = jarGeometry(v),
     { cx, base, r } = v,
     { w, h } = J;
@@ -132,7 +136,7 @@ export function Jar({
     <svg viewBox={`${box.x} ${box.y} ${box.w} ${box.h}`} style={SHEET} aria-hidden="true">
       {pile}
       <image
-        href={SPRITES.props.jarGlass.src}
+        href={glass.src}
         x={box.x}
         y={box.y}
         width={box.w}
@@ -174,7 +178,7 @@ export function Jar({
       animate={tipped ? over : standing}
       // not played: at rest in its state at once, also when the state changes under it
       transition={
-        tipping ? { duration: 0.8 * k, delay: 0.9 * k, ease: TIP } : { duration: 0 }
+        tipping ? step({ duration: 0.8 * k, delay: 0.9 * k, ease: TIP }) : { duration: 0 }
       }
     >
       {sheet(pile)}
@@ -296,6 +300,7 @@ const LID_EASE = [0.3, 0.8, 0.4, 1] as [number, number, number, number];
 
 /** The brass lid on its string, tied round the ring on its top. */
 export function JarLid({ v, state, from, delay, arriving = false }: JarLidProps) {
+  const pic = useSmall() ? SPRITES.small.props.jarLid : SPRITES.props.jarLid;
   const J = jarGeometry(v),
     { lw, ly, ks, knob, cx, cy } = J.lid;
   const pose = (s: LidState) =>
@@ -343,7 +348,7 @@ export function JarLid({ v, state, from, delay, arriving = false }: JarLidProps)
         string
       )}
       <image
-        href={SPRITES.props.jarLid.src}
+        href={pic.src}
         x={cx - lw / 2 - LID_PX.x * ks}
         y={ly - LID_PX.y * ks}
         width={LID_PX.W * ks}

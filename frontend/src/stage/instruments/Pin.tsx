@@ -14,7 +14,7 @@
 import { useId } from 'react';
 import { motion } from 'motion/react';
 import { factionOf } from '../roles';
-import { useMotionScale } from '../motion';
+import { useMotionScale, useSteps } from '../motion';
 import { K2 } from '../paint/materials';
 import styles from './NightRoom.module.css';
 
@@ -46,6 +46,7 @@ export interface PinProps {
 
 export function Pin({ role, w, at = [62, 40], home = false }: PinProps) {
   const k = useMotionScale();
+  const step = useSteps();
   const clip = 'pin' + useId().replace(/[^A-Za-z0-9_-]/g, '');
   const a = (ANGLE * Math.PI) / 180,
     L = 0.38 * w,
@@ -102,13 +103,13 @@ export function Pin({ role, w, at = [62, 40], home = false }: PinProps) {
             exit={{ x: Math.cos(a) * back * 0.7, y: -Math.sin(a) * back * 0.7, opacity: 0 }}
             transition={
               home
-                ? { duration: 0.2 * k, delay: 0.05 * k, ease: [0.5, 0, 0.2, 1] }
-                : {
+                ? step({ duration: 0.2 * k, delay: 0.05 * k, ease: [0.5, 0, 0.2, 1] })
+                : step({
                     duration: 0.32 * k,
                     delay: 0.1 * k,
                     ease: [0.3, 0.7, 0.4, 1],
                     opacity: { duration: 0.1 * k, delay: 0.1 * k },
-                  }
+                  })
             }
           >
             <path

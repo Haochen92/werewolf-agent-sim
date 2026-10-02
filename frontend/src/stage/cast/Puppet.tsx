@@ -19,7 +19,8 @@ import Image from 'next/image';
 import { motion } from 'motion/react';
 import { BODY, SPRITES, type Character, type DayState } from '@/assets/manifest';
 import type { StageGeometry } from '../units';
-import { useMotionScale } from '../motion';
+import { useMotionScale, useSteps } from '../motion';
+import { useSmall } from '../set';
 import { CastShadow, offGlass } from './CastShadow';
 import styles from './Puppet.module.css';
 
@@ -99,6 +100,9 @@ export function Puppet({
   glass = false,
 }: PuppetProps) {
   const k = useMotionScale();
+  const step = useSteps();
+  // a phone draws the figure well under its file's size: its copy (puppetBox reads the full one)
+  const small = useSmall();
   const box = puppetBox(g, character, state, dx, scale);
   const b = BODY[character];
   // the numeral's disc: a fifth of the body's height (not the canvas's width, which a wide pose
@@ -110,7 +114,11 @@ export function Puppet({
   const rise = {
     initial: arrive === false ? (false as const) : { y: '100%' },
     animate: { y: 0 },
-    transition: { ...RISE, duration: RISE.duration * k, delay: (arrive || 0) * k },
+    transition: step({
+      duration: RISE.duration * k,
+      delay: (arrive || 0) * k,
+      ease: [...RISE.ease],
+    }),
   };
   return (
     <>
@@ -143,7 +151,7 @@ export function Puppet({
       >
         <Image
           decoding="sync"
-          src={SPRITES.day[character][state]}
+          src={(small ? SPRITES.small.day : SPRITES.day)[character][state]}
           alt=""
           unoptimized
           priority

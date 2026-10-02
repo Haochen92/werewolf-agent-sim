@@ -16,7 +16,7 @@
  */
 import { motion } from 'motion/react';
 import type { CSSProperties, ReactNode } from 'react';
-import { useMotionScale } from '../motion';
+import { useMotionScale, useSteps } from '../motion';
 import { STAGE_H } from '../units';
 
 export type Hang = 'lower' | 'raise' | 'fall';
@@ -97,11 +97,12 @@ export function StringDrop({
   children,
 }: StringDropProps) {
   const k = useMotionScale();
-  const t = {
+  const step = useSteps();
+  const t = step({
     duration: (duration ?? (move ? DURATION[move] : 0)) * k,
     delay: delay * k,
     ease: move ? EASE[move] : undefined,
-  };
+  });
   // far enough up that the thing and its tie are out of the frame
   const out = -(y + h + 40);
   const box: CSSProperties = {
@@ -133,7 +134,7 @@ export function StringDrop({
           style={{ position: 'absolute', inset: 0 }}
           initial={{ y: 0 }}
           animate={{ y: out }}
-          transition={{ ...t, ease: EASE.raise, delay: t.delay + 0.1 * k }}
+          transition={step({ ...t, ease: EASE.raise, delay: t.delay + 0.1 * k })}
         >
           {string}
         </motion.div>
