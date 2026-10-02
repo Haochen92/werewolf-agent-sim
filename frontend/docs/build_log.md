@@ -879,6 +879,12 @@ baked day has no live window, which is why its loop held; "before day 1" is the 
 which still drew the car live, as did the vote, the lynch, the night lobby, the game over and
 the replay night. All six now stand in front of the backdrop.
 
+**After** (the same panel, the same page, 2026-10-02, with every car scene on the backdrop and
+the camera off its layer on phones): one stage layer, the world, at 92 MB (its content reaches
+into the bleed), the document and the page root at 11 MB each. Seventeen layers and 534 MB
+became one and 114 MB. The world's own `will-change` is the last resting layer; it stays, since
+a stable root for the blends and the zoom is worth 92 MB inside a budget of about a gigabyte.
+
 The rule the numbers prove, recorded in stage_architecture §6: **nothing animates at rest
 inside the camera**, and while a figure moves, every full-stage layer above it is paid for at
 full resolution for the duration, so the fewer of those the better. The remaining full-stage
