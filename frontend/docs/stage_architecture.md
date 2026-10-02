@@ -638,7 +638,8 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   (`styles/gpu-probe.css`, workbench only). Open the plain page and one probe at a time on the
   failing device; the word whose page survives names the culprit.
 - **The pace probe**: the workbench's `?auto=<ms>` steps a beat every `<ms>` on its own, round
-  the scene's beats (`/workbench/day?beat=0&animate=1&auto=250`). A phone's browser kills the
+  the scene's beats (`/workbench/day?beat=0&animate=1&auto=250`); `&loop=a-b` holds it to beats
+  a..b, wrapping past the end if b < a, to find the one beat that costs the most. A phone's browser kills the
   page when beats come faster than it frees the last beat's layers and pictures; the fastest
   link that stays up is the scene's floor, and a change to what a beat rebuilds is measured as
   a change in that floor (build log §8.3).

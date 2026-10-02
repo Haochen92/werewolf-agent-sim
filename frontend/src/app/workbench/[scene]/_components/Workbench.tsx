@@ -139,12 +139,26 @@ export function Workbench({ scene }: { scene: string }) {
   // the pace probe (build log §8.3): `?auto=250` steps a beat every 250 ms on its own, round
   // and round the scene's beats, to find the rate at which a phone's browser gives up on the
   // stage's rebuilds; the reading is the fastest link that stays up
+  // `&loop=a-b` holds the loop to beats a..b (wrapping past the end if b < a), to find the
+  // beat that costs the most: `auto=1000&loop=22-0` plays the morning's last two and its first
   const auto = Number(params.get('auto')) || 0;
+  const loop = params.get('loop');
   useEffect(() => {
     if (!auto || !frame || frame.beats.length < 2) return;
-    const t = setTimeout(() => go({ beat: (frame.index + 1) % frame.beats.length }), auto);
+    const n = frame.beats.length;
+    const [a, b] = (loop?.match(/^(\d+)-(\d+)$/) ?? [])
+      .slice(1)
+      .map((s) => Math.min(Number(s), n - 1));
+    const first = a ?? 0,
+      last = b ?? n - 1;
+    const inside =
+      first <= last
+        ? frame.index >= first && frame.index <= last
+        : frame.index >= first || frame.index <= last;
+    const next = !inside || frame.index === last ? first : (frame.index + 1) % n;
+    const t = setTimeout(() => go({ beat: next }), auto);
     return () => clearTimeout(t);
-  }, [auto, frame, go]);
+  }, [auto, loop, frame, go]);
 
   // The side slot's state that outlives a beat: the drawer's filters and the film's tab. The
   // strip's two tabs on the stage write the URL, as the replay's container holds them.
