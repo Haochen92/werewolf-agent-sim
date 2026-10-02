@@ -1182,6 +1182,19 @@ never the host's current props. The transcript drawer also stays mounted now, so
 far up the scroll never load, and the live suite's settle waited on them forever; it waits for
 pictures in the window only.
 
+**Read on production, before and after** (`a3d6404` against `fbaef8c`; Chromium in the phone
+frame, CPU throttled four times, every beat stepped under a trace; sums over the scene):
+
+| Scene, steps | Raster ms | Script ms | Paint ms | Frames drawn |
+|---|---|---|---|---|
+| The vote, 41 | 67,480 → 23,064 | 14,117 → 5,424 | 5,270 → 1,458 | 1,238 → 1,560 |
+| The day, 7 | 15,177 → 10,026 | 1,953 → 976 | 341 → 184 | 271 → 379 |
+| The lynch, 11 | 21,722 → 10,802 | 4,905 → 1,685 | 1,167 → 436 | 310 → 387 |
+
+A counted chip went from 1.0–1.8 s of raster to 0.34–0.49 s. A walk of the production replay
+through thirteen changes of scene kept the wing, the light, the shutter and the backdrop every
+time. The phone's own reading is the owner's.
+
 **Verified.** Goldens 65/65 unchanged at the desktop (the day's shutter is now the instrument
 at rest, which draws the paint's markup; the host's portal order is the old JSX order), the
 replay suite 18/18, the live suite 22/23 (the game-over-in-the-night test fails under three

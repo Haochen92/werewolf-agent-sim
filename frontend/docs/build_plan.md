@@ -400,7 +400,13 @@ kit's idle life, the lift's layer, the train, the ledger, one phone flag; the wo
 (a fast second tap on a control is the control's, not a double-tap zoom) and `a9a066c` (the
 same for a tap anywhere in the theatre: the viewport's no-zoom flags, which iOS honours for the
 double tap, and the rule on every element) and `fbaef8c` (the backdrop belongs to the Stage,
-kept across beats and scenes; every stage picture decodes synchronously), each frontend only.
+kept across beats and scenes; every stage picture decodes synchronously) and `a3d6404` (the
+phone's frame time, one batch: the car's set under one host and kept from scene to scene, the
+vote, the lynch, the lobby and the night rooms playing by their props; moves stepped at 24 fps
+on a phone; the light's screened sheets boxed, its drawings remembered; the grade's grain off
+and a room's choice cut on a phone; 55 phone-size picture copies; the next speaker decoded a
+turn ahead; the gate's remount check — build log §8.9: the vote's raster 67 s → 23 s over its
+41 steps), each frontend only.
 · **2026-10-01 both containers rebuilt at `a651988`** (branch pushed first; built with
 `docker build` from a clean detached worktree, then `compose up -d --no-build`). Server: the
 request budget and stall rescue (30 s, two attempts, two stalls → the rescue model for five
