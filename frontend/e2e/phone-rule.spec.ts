@@ -47,7 +47,7 @@ interface Finding {
  * the pictures decode again (build log §8.8–8.9). These scenes are still keyed whole per beat
  * and short; their remounts are listed, not failed, until they are split.
  */
-const KEYED_WHOLE = new Set(['deal', 'over', 'station', 'room', 'pack']);
+const KEYED_WHOLE = new Set(['deal', 'over', 'station']);
 
 /**
  * What a beat keeps: the wing itself, the house light's sheet (not the specials' cones, which

@@ -23,7 +23,7 @@
  *
  * Arrived at, it is all simply there; played forward, the photos fade in along the line.
  */
-import { useState } from 'react';
+import { useCallback, useState, type SetStateAction } from 'react';
 import type { ActionKind } from '@/types/contracts';
 import { SideSlot } from '../SideSlot';
 import { ActPlate } from '../instruments/ActPlate';
@@ -95,32 +95,57 @@ export function plateLabel(kind: ActionKind | undefined, chosen: string | null):
   return `${verb} seat ${seatNumber(chosen)}`;
 }
 
+/**
+ * State that belongs to one request and its seeded choice: it starts over from `init` when
+ * `seed` changes (a new beat, another viewer, a choice or an open card handed in), while the
+ * room around it stays up. The rooms used to be keyed whole on the seed, and every beat rebuilt
+ * the painting, the light, the photos and the wing with it (build log §8.9).
+ */
+export function useSeeded<T>(
+  seed: string,
+  init: () => T,
+): [T, (next: SetStateAction<T>) => void] {
+  const [state, setState] = useState(() => ({ seed, value: init() }));
+  let current = state;
+  if (state.seed !== seed) {
+    current = { seed, value: init() };
+    setState(current);
+  }
+  const set = useCallback(
+    (next: SetStateAction<T>) =>
+      setState((s) => ({
+        seed: s.seed,
+        value: typeof next === 'function' ? (next as (prev: T) => T)(s.value) : next,
+      })),
+    [],
+  );
+  return [current.value, set];
+}
+
 export function ShelfRoomScene(props: SceneProps) {
-  const t = props.turn;
   return (
     <StageMotion speed={props.presentation.motion}>
-      {/* a new request, or a new seeded choice, starts the room afresh */}
-      <ShelfRoom
-        key={`${props.beat.seq}:${props.me}:${t?.chosen ?? ''}:${t?.cardOpen ? 1 : 0}`}
-        {...props}
-      />
+      <ShelfRoom {...props} />
       <SideSlot {...props} />
     </StageMotion>
   );
 }
 
 function ShelfRoom(props: SceneProps) {
-  const { view, onAct, turn } = props;
+  const { view, beat, me, onAct, turn } = props;
   const pending = view.me.pending;
   const kind = pending?.actionKind;
   const role = view.me.role?.role ?? (kind && ROLE_OF_KIND[kind]) ?? 'villager';
   const photos = pending?.candidates ?? [];
-  const [chosen, setChosen] = useState<string | null>(
+  // a new request, another viewer or a new seeded choice starts the choice afresh; the room
+  // itself stays up
+  const seed = `${beat.seq}:${me}:${turn?.chosen ?? ''}:${turn?.cardOpen ? 1 : 0}`;
+  const [chosen, setChosen] = useSeeded<string | null>(seed, () =>
     turn?.chosen && photos.includes(turn.chosen) ? turn.chosen : null,
   );
-  const [cardOpen, setCardOpen] = useState(!!turn?.cardOpen);
+  const [cardOpen, setCardOpen] = useSeeded(seed, () => !!turn?.cardOpen);
   // what this room sent: a seat, or null (hold fire); undefined = nothing yet, or not known
-  const [pressed, setPressed] = useState<string | null | undefined>(
+  const [pressed, setPressed] = useSeeded<string | null | undefined>(seed, () =>
     turn?.sent === 'you' && turn.chosen !== undefined ? turn.chosen : undefined,
   );
 
@@ -145,6 +170,7 @@ function ShelfRoom(props: SceneProps) {
       lit={target ?? null}
       pin={target ?? null}
       pinHome={isIn}
+      seed={seed}
       onChoose={isIn ? undefined : (seat) => setChosen((c) => (c === seat ? null : seat))}
       cardOpen={cardOpen}
       onCard={setCardOpen}

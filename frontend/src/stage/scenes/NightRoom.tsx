@@ -69,6 +69,11 @@ export interface NightRoomProps extends Pick<
   pin?: string | null;
   /** The act is sent: the pin goes fully home. */
   pinHome?: boolean;
+  /**
+   * The choice as handed in (the beat, the viewer, a seeded choice): when it changes, the pin
+   * and the choice's darkness are simply there, as on arriving in the room, which stays up.
+   */
+  seed?: string;
   /** Tapping a photo; without it the photos are only shown. */
   onChoose?: (seat: string) => void;
   /** Marks drawn over a photo (the teeth), by seat. */
@@ -118,6 +123,7 @@ export function NightRoom({
   lit,
   pin = null,
   pinHome = false,
+  seed,
   onChoose,
   marks,
   pack = [],
@@ -192,7 +198,7 @@ export function NightRoom({
             >
               <span className={styles.bite}>{marks?.[seat]}</span>
               {/* starts still: only a pin put in or drawn out in the room plays */}
-              <AnimatePresence initial={false}>
+              <AnimatePresence key={seed} initial={false}>
                 {pin === seat ? (
                   <Pin key="pin" role={role} w={plan.photo.w * 1.3} home={pinHome} />
                 ) : null}
@@ -219,7 +225,7 @@ export function NightRoom({
       <Layer name="light">
         {/* the candle's room stays still; only the choice's darkness fades in and out over it */}
         <Paint of={roomLight} opts={{ room, hud, side, n, bleed: BLEED }} />
-        <AnimatePresence initial={false}>
+        <AnimatePresence key={seed} initial={false}>
           {chosenIndex < 0 ? null : (
             <motion.div
               key={chosenIndex}

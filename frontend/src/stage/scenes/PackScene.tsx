@@ -36,6 +36,7 @@ import {
   LONE_WOLF_SEALED,
   NightCount,
   sealedLabel,
+  useSeeded,
 } from './ShelfRoomScene';
 import type { SceneProps } from './types';
 
@@ -69,17 +70,13 @@ export function packEntries(night: NightView | null | undefined): PackEntry[] {
 }
 
 export function PackScene(props: SceneProps) {
-  const t = props.turn;
   const at = `${props.beat.id}:${props.beat.seq}`;
   // the beat the stage came into the room on: the photos arrive with it, and not again
   const [entry] = useState(at);
   return (
     <StageMotion speed={props.presentation.motion}>
-      <Pack
-        key={`${at}:${props.me}:${t?.chosen ?? ''}:${t?.cardOpen ? 1 : 0}`}
-        {...props}
-        entering={at === entry}
-      />
+      {/* the room stays up across the pack's beats: each line in the chat rebuilt it */}
+      <Pack {...props} entering={at === entry} />
       <SideSlot {...props} />
     </StageMotion>
   );
@@ -87,6 +84,8 @@ export function PackScene(props: SceneProps) {
 
 function Pack({ entering, ...props }: SceneProps & { entering: boolean }) {
   const { view, beat, me, presentation, onAct, onSay, turn } = props;
+  // a new beat, another viewer or a new seeded choice starts the vote and the card afresh
+  const seed = `${beat.id}:${beat.seq}:${me}:${turn?.chosen ?? ''}:${turn?.cardOpen ? 1 : 0}`;
   const { animate, cast, hud } = presentation;
   const g = geometry(hud, false);
   const night = view.days[beat.day]?.night ?? null;
@@ -103,18 +102,18 @@ function Pack({ entering, ...props }: SceneProps & { entering: boolean }) {
       ? pending.candidates
       : view.alive.filter((s) => s !== me && !pack.includes(s));
 
-  const [chosen, setChosen] = useState<string | null>(
+  const [chosen, setChosen] = useSeeded<string | null>(seed, () =>
     voting && turn?.chosen && photos.includes(turn.chosen) ? turn.chosen : null,
   );
   // my vote as sent from here (the server takes one: a sent vote cannot be changed)
-  const [sentVote, setSentVote] = useState<string | null>(
+  const [sentVote, setSentVote] = useSeeded<string | null>(seed, () =>
     voting && turn?.sent === 'you' ? (turn.chosen ?? null) : null,
   );
   // a failed send reopens the plate; a vote the agent (or another tab) gave seals it
   const failed = !!turn?.sendError && !turn.sent;
   const elsewhere = voting && (turn?.sent === 'agent' || turn?.sent === 'closed');
   const mine = failed ? null : sentVote;
-  const [cardOpen, setCardOpen] = useState(!!turn?.cardOpen);
+  const [cardOpen, setCardOpen] = useSeeded(seed, () => !!turn?.cardOpen);
 
   const votes = night?.wolfVotes ?? [];
   const mateVote = mate ? (votes.find((v) => v.wolf === mate)?.votee ?? null) : null;
@@ -129,7 +128,8 @@ function Pack({ entering, ...props }: SceneProps & { entering: boolean }) {
     marks[seat] = (
       <>
         {marks[seat]}
-        <Tooth key={side} side={side} land={land} />
+        {/* the one piece a beat plays again: the teeth that came with it land */}
+        <Tooth key={`${side}:${beat.seq}`} side={side} land={land} />
       </>
     );
   };
@@ -161,6 +161,7 @@ function Pack({ entering, ...props }: SceneProps & { entering: boolean }) {
       lit={lit}
       pin={lit}
       pinHome={!!mine || !!decided}
+      seed={seed}
       onChoose={
         voting && !mine && !elsewhere
           ? (seat) => setChosen((c) => (c === seat ? null : seat))
