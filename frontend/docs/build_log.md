@@ -904,3 +904,39 @@ replay night, the shelf room, the pack) are still keyed whole per beat; the same
 if the floor says it is needed. The replay's step button could also coalesce presses faster
 than a quarter second, and the arrow key could ignore auto-repeat, as a guard that holds
 whatever the scenes do.
+
+### 8.4 The jar's tip and the shutter's slide stuttered on the phone (2026-10-02)
+
+**Seen.** With the set baked and the page steady at 114 MB, two moves still stuttered on the
+iPhone: the ballot jar going over for the count, and the shutter coming down over the window.
+Both were pictures (`SPRITES.props.jarGlass`, `SPRITES.props.shutter`) carried by an SVG
+`<image>` inside a full-stage drawing, moved by an SVG `transform` on their group (`Tween`
+writing the attribute each frame; `motion.g` for the shutter).
+
+**Why.** An SVG transform attribute change is an SVG layout change: the browser relays out the
+group and repaints the drawing around it every frame, and resamples the big picture through the
+new transform on the CPU each time. An HTML element moved by a CSS transform skips the layout:
+the browser repaints one finished picture through the transform, which is what the puppets'
+rises already do, and those were smooth on the same phone.
+
+**Done.** The jar's glass with its chips (`Jar`) and the shutter's panel (`Shutter`) each sit in
+an HTML box of the picture's size with a small `<svg>` of their own inside (its `viewBox` the
+box, in stage units), and motion moves the box: the tip is `x`/`y`/`rotate`/`scale` about the
+base's centre (the same pose `about()` wrote, since a uniform scale and a rotation commute), the
+slide is `y` inside an `overflow: hidden` box at the clip's rectangle under the pelmet. The chips
+dropping in (`JarFallers`), the lid, the shadow, the folded stack and the pelmet stay in the
+drawing, in their old paint order. At rest every golden is unchanged (65 workbench, the replay
+and live specs). No memory moves: motion drives independent transforms in JavaScript (its
+accelerated set is `opacity`, `clipPath`, `filter`, the `transform` string and
+`backgroundColor`), so nothing is promoted to a layer and the Layers panel reads as before,
+during the move too.
+
+**If it still stutters.** The move can go to the GPU with `will-change: transform` on the box for
+its duration. On a phone that costs the box's own bitmap (the jar about 4 MB, the shutter about
+11 MB at the owner's phone) plus a full-resolution bitmap for every stage layer painted above it
+and overlapping it for that second: the light's sheet (about 54 MB) and, in the replay, the
+drape (another full-stage sheet), and the HUD's boxes. Expect +60 MB for the jar and +70–130 MB
+for the shutter, back to rest when the move ends. The workbench word `?gpu=lift` puts
+`will-change: transform` on every `data-moves` box so the price can be read in the Layers panel
+first: `/workbench/vote?beat=18&animate=1&gpu=lift` and `/workbench/morning?beat=5&animate=1&gpu=lift`.
+

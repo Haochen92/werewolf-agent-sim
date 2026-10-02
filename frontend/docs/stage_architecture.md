@@ -667,6 +667,18 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   its own made the grade and the HUD, drawn after it, layers too (three layers, 212 MB, on the
   baked day at rest). Check with the Layers panel: at rest, no `Stage_layer` should appear in
   it at all.
+- **A picture that moves rides an HTML box of its own.** The jar's tip and the shutter's slide
+  were SVG transforms on a group inside a full-stage drawing, and a phone stuttered through both:
+  an SVG `transform` relays out and repaints the drawing every frame. Each now sits in an HTML
+  box the picture's size (`Jar`, `Shutter`) with its own small `<svg>` inside, and motion moves
+  the box (`x`/`y`/`rotate`/`scale`, a CSS transform), so the browser repaints one finished
+  picture through a transform. No layer is made for it (motion drives these in JavaScript, not
+  the Web Animations API, so nothing is promoted), which keeps the rest and the move at the same
+  memory. If a move still stutters, the next notch is `will-change: transform` on the box for the
+  move's duration: the GPU then slides it, at the price of the box's own bitmap plus every stage
+  layer painted above it (the light's sheet, the replay's drape) for that second. The workbench
+  word `?gpu=lift` turns that on for every `data-moves` box, to read the price in the Layers
+  panel before paying it in the build (build log §8.4).
 - **A scene's set is mounted once; only the beat is keyed.** A scene is a stable set (`DaySet`,
   `MorningSet`: the atmosphere, the car's paint, the shutter, the house light, the wing, the
   strip) that updates in place as the beats go by, and a keyed part (`DayTurn`, `MorningBeat`:
