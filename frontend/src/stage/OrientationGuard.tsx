@@ -9,8 +9,11 @@
  *
  * The card is pure CSS on the viewport's orientation, so it is right from the first paint.
  * The fullscreen request only happens on a touch screen: on a computer it would be a surprise.
+ * An iPhone in Safari also gets the home-screen tip (`HomeScreenTip`), the one way to the whole
+ * screen there.
  */
 import { useEffect, useRef, type ReactNode } from 'react';
+import { HomeScreenTip } from './HomeScreenTip';
 import styles from './OrientationGuard.module.css';
 
 /** `screen.orientation.lock` is not in every TypeScript DOM lib yet. */
@@ -39,6 +42,7 @@ export function OrientationGuard({ children }: { children: ReactNode }) {
   return (
     <>
       {children}
+      <HomeScreenTip />
       <div className={styles.turn} role="alert">
         <svg viewBox="0 0 64 64" aria-hidden>
           <rect x="22" y="8" width="20" height="36" rx="4" />

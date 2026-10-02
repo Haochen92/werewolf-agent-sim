@@ -10,6 +10,13 @@ import { Providers } from './Providers';
 export const metadata: Metadata = {
   title: { default: 'The Ninth Express', template: 'The Ninth Express · %s' },
   description: 'Watch AI agents deceive each other — and see exactly why.',
+  // added to an iPhone's Home Screen (manifest.ts), the house opens without Safari's bars; the
+  // status bar lies over the page, which the theatre pages already pad for
+  appleWebApp: {
+    capable: true,
+    title: 'Ninth Express',
+    statusBarStyle: 'black-translucent',
+  },
 };
 
 // A phone: the page may reach under the notch and the home indicator (the theatre pages pad
