@@ -19,6 +19,8 @@
  *
  * Tabs and rows are the viewer's own to click; nothing here changes the beat. Played, the
  * sheet comes down 0.6 s after 0.5 s (bench 73 `plateIn`) over a stage dimmed 0.5 s after 0.3 s.
+ * `onClose` puts a close button in the head: the sheet covers the whole stage and the winners
+ * are under it (owner, 2026-10-02: no way to close it on a phone).
  */
 import { motion } from 'motion/react';
 import { useState, type CSSProperties } from 'react';
@@ -79,6 +81,8 @@ export interface LedgerProps {
   tab?: string;
   /** A row open from the start, by its place in the extraction. */
   open?: number | null;
+  /** Close the sheet (a button in its head). */
+  onClose?: () => void;
 }
 
 export function Ledger({
@@ -90,6 +94,7 @@ export function Ledger({
   arrive = false,
   tab,
   open = null,
+  onClose,
 }: LedgerProps) {
   const k = useMotionScale();
   // a phone: the ledger is simply there (three-quarters of the stage fading in is a full-stage
@@ -112,6 +117,19 @@ export function Ledger({
   const [opened, setOpened] = useState<number | null>(open);
   const shown = tabs.find((t) => t.role === current) ?? first;
   const kept = extracted?.strategy_points ?? [];
+  const close = onClose ? (
+    <button
+      type="button"
+      className={styles.close}
+      aria-label="Close"
+      title="Close"
+      onClick={onClose}
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6 6 L18 18 M18 6 L6 18" />
+      </svg>
+    </button>
+  ) : null;
 
   const veil = (
     <motion.div
@@ -143,6 +161,7 @@ export function Ledger({
           <>
             <header className={styles.head}>
               <strong>What the game taught</strong>
+              {close}
             </header>
             <p className={styles.none}>No memory was kept.</p>
           </>,
@@ -164,6 +183,7 @@ export function Ledger({
               lesson
               {kept.length === 1 ? '' : 's'} kept
             </span>
+            {close}
           </header>
 
           <nav className={styles.tabs} aria-label="Roles">

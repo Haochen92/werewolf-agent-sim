@@ -71,6 +71,36 @@
   color: var(--type);
   font-weight: 700;
 }
+/* the sheet's close: a small square after the count, in the file's rule and type ink */
+.close {
+  flex: none;
+  margin-left: auto;
+  align-self: center;
+  display: inline-grid;
+  place-items: center;
+  width: calc(28px * var(--legible-ui));
+  height: calc(28px * var(--legible-ui));
+  padding: 0;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--type);
+  cursor: pointer;
+}
+.count + .close {
+  margin-left: 0;
+}
+.close svg {
+  width: 60%;
+  height: 60%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+.close:hover {
+  background: rgba(90, 70, 40, 0.1);
+}
 
 /* one file tab per role, down the left leaf; the open one is the sheet's own paper, joined to it */
 .tabs {
