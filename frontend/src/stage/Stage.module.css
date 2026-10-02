@@ -92,6 +92,16 @@
   will-change: transform;
   pointer-events: none;
 }
+/* On a phone (Stage.tsx `data-small`) the camera is not kept on a layer: a layer of its own
+   makes the grade and the HUD, drawn after it, layers too, about 70 MB each at the phone's
+   resolution (Safari's Layers panel, build log §8.3). A zoom there builds its layer as it
+   starts, which is the lesser cost. `will-change` also made the camera a stacking context,
+   which keeps the stand's and the rooms' own z-indexes under the HUD: `isolation` keeps that
+   without the layer. */
+[data-small] .camera {
+  will-change: auto;
+  isolation: isolate;
+}
 
 /* Each layer fills the world. Layers stack by document order and deliberately create no
    stacking context of their own, so the light's blend modes reach the paint beneath. */
