@@ -390,8 +390,10 @@ build log §8.3) went up after it; then `200ffed` (the split, the history-API st
 (the `noclip` probe word), `49c58c9` (the baked backdrop for the day and the morning), `3a5aa83`
 (the phone's cut and the probe's loop range) and, on 2026-10-02, `7fadcd4` (every car scene on
 the backdrop, the camera off its layer on phones, the tappable transport band) and `7f9cadf`
-(safe areas, no pinch-zoom, no pull-to-refresh on the theatre pages) and `8b71e4b` (the morning
-roll after the chips, the drawer's dawn line held until it), each frontend only.
+(safe areas, no pinch-zoom, no pull-to-refresh on the theatre pages), `8b71e4b` (the morning
+roll after the chips, the drawer's dawn line held until it) and `f33c89a` (the jar's tip and the
+shutter's slide on HTML boxes, the Home Screen manifest and the iPhone's line for it), each
+frontend only.
 · **2026-10-01 both containers rebuilt at `a651988`** (branch pushed first; built with
 `docker build` from a clean detached worktree, then `compose up -d --no-build`). Server: the
 request budget and stall rescue (30 s, two attempts, two stalls → the rescue model for five
