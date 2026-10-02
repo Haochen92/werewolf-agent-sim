@@ -34,6 +34,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { preload } from 'react-dom';
 import { BODY, SPRITES } from '@/assets/manifest';
 import { Layer, Paint } from '../Stage';
+import { useSmall } from '../set';
 import { ChipSprite } from '../cast/ChipSprite';
 import { Puppet } from '../cast/Puppet';
 import { Bleed } from '../instruments/Bleed';
@@ -67,6 +68,7 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
   const opening = room?.curtain === 'opening';
   const S = stationPlan(hud);
   const g = geometry(hud);
+  const small = useSmall();
 
   // who was already aboard when the platform was first drawn arrives still; anyone after rises
   const aboard = room?.aboard ?? [];
@@ -78,7 +80,7 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
   // what departure shows in the window, fetched while the room waits, so nothing pops in late
   preload(SPRITES.station.blind.src, { as: 'image' });
   for (const c of cast.slice(0, S.places.length))
-    preload(SPRITES.day[c].base.src, { as: 'image' });
+    preload((small ? SPRITES.small.day : SPRITES.day)[c].base.src, { as: 'image' });
   // played forward, a change moves; arrived at, it is simply there
   const T = (
     duration: number,
@@ -418,6 +420,8 @@ function WindowPlace({
   T: (d: number, delay?: number, ease?: Transition['ease']) => Transition;
 }) {
   const img = SPRITES.day[character].base;
+  // a phone draws the phone's copy; the place is measured on the full picture
+  const pic = useSmall() ? SPRITES.small.day[character].base : img;
   const aspect = img.width / img.height;
   const cx = (i + 0.5) * pitch;
   if (person) {
@@ -434,7 +438,7 @@ function WindowPlace({
       >
         <Image
           decoding="sync"
-          src={img}
+          src={pic}
           alt=""
           unoptimized
           loading="eager"
@@ -476,7 +480,7 @@ function WindowPlace({
       >
         <Image
           decoding="sync"
-          src={img}
+          src={pic}
           alt=""
           unoptimized
           loading="eager"

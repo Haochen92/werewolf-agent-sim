@@ -18,9 +18,11 @@
  * back to its face.
  */
 import type { CSSProperties } from 'react';
+import { SPRITES, type RoleSprite } from '@/assets/manifest';
 import { factionOf } from '../roles';
 import { CARD_TEXT } from '../card-text';
 import { roleFigure } from '../paint/role-kit';
+import { useSmall } from '../set';
 import { BackArt } from './CardBackArt';
 import { Flip } from './Flip';
 import { Sigil } from './Sigil';
@@ -55,7 +57,13 @@ const faceClass = (role: string, ...more: string[]) => {
 };
 
 export function SmallCard({ role, seat, w, turn = false, turnDelay }: FaceProps) {
+  const small = useSmall();
   if (!role) return <CardBack w={w} />;
+  // on a phone the figure is a thumbnail: the tile copy (the big card keeps the full picture)
+  const tile =
+    small && Object.hasOwn(SPRITES.small.roleTiles, role)
+      ? SPRITES.small.roleTiles[role as RoleSprite].src
+      : undefined;
   const face = (
     <div className={faceClass(role, styles.small)} style={cardVars(w)}>
       <div className={styles.in}>
@@ -64,7 +72,7 @@ export function SmallCard({ role, seat, w, turn = false, turnDelay }: FaceProps)
         </header>
         <div
           className={styles.fig}
-          dangerouslySetInnerHTML={{ __html: roleFigure(role) }}
+          dangerouslySetInnerHTML={{ __html: roleFigure(role, tile) }}
         />
         <footer>
           {/* felt on the card's paper; small below 26 units (the sigil is 28 card units) */}

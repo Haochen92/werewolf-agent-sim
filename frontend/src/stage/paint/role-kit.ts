@@ -14,11 +14,14 @@ import { SPRITES, type RoleSprite } from '@/assets/manifest';
 const W = 720;
 const H = 960;
 
-/** The role's felt figure, as SVG markup (empty for a role without a sprite). */
-export function roleFigure(role: string): string {
+/**
+ * The role's felt figure, as SVG markup (empty for a role without a sprite). `src` draws another
+ * copy of the same picture (the phone's small card passes its tile).
+ */
+export function roleFigure(role: string, src?: string): string {
   if (!Object.hasOwn(SPRITES.roles, role)) return '';
-  const img = SPRITES.roles[role as RoleSprite];
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" aria-hidden="true"><image href="${img.src}" x="0" y="0" width="${W}" height="${H}"/></svg>`;
+  const href = src ?? SPRITES.roles[role as RoleSprite].src;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" aria-hidden="true"><image href="${href}" x="0" y="0" width="${W}" height="${H}"/></svg>`;
 }
 
 /*

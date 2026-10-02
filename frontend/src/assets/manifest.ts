@@ -172,6 +172,61 @@ import textureBoards from './sprites/textures/boards.webp';
 import textureVelvet from './sprites/textures/velvet.webp';
 import textureCork from './sprites/textures/cork.webp';
 import textureInk from './sprites/textures/ink.webp';
+import owlBaseSmall from './sprites/day/owl/base@small.webp';
+import owlTalkingSmall from './sprites/day/owl/talking@small.webp';
+import owlThinkingSmall from './sprites/day/owl/thinking@small.webp';
+import owlOutSmall from './sprites/day/owl/out@small.webp';
+import hareBaseSmall from './sprites/day/hare/base@small.webp';
+import hareTalkingSmall from './sprites/day/hare/talking@small.webp';
+import hareThinkingSmall from './sprites/day/hare/thinking@small.webp';
+import hareOutSmall from './sprites/day/hare/out@small.webp';
+import catBaseSmall from './sprites/day/cat/base@small.webp';
+import catTalkingSmall from './sprites/day/cat/talking@small.webp';
+import catThinkingSmall from './sprites/day/cat/thinking@small.webp';
+import catOutSmall from './sprites/day/cat/out@small.webp';
+import badgerBaseSmall from './sprites/day/badger/base@small.webp';
+import badgerTalkingSmall from './sprites/day/badger/talking@small.webp';
+import badgerThinkingSmall from './sprites/day/badger/thinking@small.webp';
+import badgerOutSmall from './sprites/day/badger/out@small.webp';
+import cyclopsBaseSmall from './sprites/day/cyclops/base@small.webp';
+import cyclopsTalkingSmall from './sprites/day/cyclops/talking@small.webp';
+import cyclopsThinkingSmall from './sprites/day/cyclops/thinking@small.webp';
+import cyclopsOutSmall from './sprites/day/cyclops/out@small.webp';
+import threeEyesBaseSmall from './sprites/day/threeEyes/base@small.webp';
+import threeEyesTalkingSmall from './sprites/day/threeEyes/talking@small.webp';
+import threeEyesThinkingSmall from './sprites/day/threeEyes/thinking@small.webp';
+import threeEyesOutSmall from './sprites/day/threeEyes/out@small.webp';
+import dragonBaseSmall from './sprites/day/dragon/base@small.webp';
+import dragonTalkingSmall from './sprites/day/dragon/talking@small.webp';
+import dragonThinkingSmall from './sprites/day/dragon/thinking@small.webp';
+import dragonOutSmall from './sprites/day/dragon/out@small.webp';
+import onionBaseSmall from './sprites/day/onion/base@small.webp';
+import onionTalkingSmall from './sprites/day/onion/talking@small.webp';
+import onionThinkingSmall from './sprites/day/onion/thinking@small.webp';
+import onionOutSmall from './sprites/day/onion/out@small.webp';
+import whaleBaseSmall from './sprites/day/whale/base@small.webp';
+import whaleTalkingSmall from './sprites/day/whale/talking@small.webp';
+import whaleThinkingSmall from './sprites/day/whale/thinking@small.webp';
+import whaleOutSmall from './sprites/day/whale/out@small.webp';
+import polarBearBaseSmall from './sprites/day/polarBear/base@small.webp';
+import polarBearTalkingSmall from './sprites/day/polarBear/talking@small.webp';
+import polarBearThinkingSmall from './sprites/day/polarBear/thinking@small.webp';
+import polarBearOutSmall from './sprites/day/polarBear/out@small.webp';
+import shadeBaseSmall from './sprites/day/shade/base@small.webp';
+import shadeTalkingSmall from './sprites/day/shade/talking@small.webp';
+import shadeThinkingSmall from './sprites/day/shade/thinking@small.webp';
+import shadeOutSmall from './sprites/day/shade/out@small.webp';
+import propJarGlassSmall from './sprites/props/jar-glass@small.webp';
+import propJarLidSmall from './sprites/props/jar-lid@small.webp';
+import propPlateSmall from './sprites/props/plate@small.webp';
+import roleVillagerTile from './sprites/roles/villager@small.webp';
+import roleWolfTile from './sprites/roles/wolf@small.webp';
+import roleInvestigatorTile from './sprites/roles/investigator@small.webp';
+import roleVigilanteTile from './sprites/roles/vigilante@small.webp';
+import roleHealerTile from './sprites/roles/healer@small.webp';
+import roleSerialKillerTile from './sprites/roles/serial_killer@small.webp';
+import windowNightFarSmall from './sprites/window/night-far@small.webp';
+import windowNightNearSmall from './sprites/window/night-near@small.webp';
 
 export const PORTRAITS: StaticImageData[] = [
   p01,
@@ -312,6 +367,19 @@ export type RoleSprite =
  */
 export type TexturePicture = 'walnut' | 'boards' | 'velvet' | 'cork' | 'ink';
 
+/**
+ * The phone's copies (scripts/small-sprites.mjs, each beside its source) of the pictures a small
+ * stage (`useSmall`) draws far under their files' size, so a phone does not decode pixels it
+ * never shows. Each is its full picture scaled, same aspect. `roleTiles` is for the deal's small
+ * cards only; `window` holds only the night, the one hour drawn live (a night room's glass).
+ */
+export interface SmallSprites {
+  day: Record<Character, Record<DayState, StaticImageData>>;
+  props: Record<'jarGlass' | 'jarLid' | 'plate', StaticImageData>;
+  roleTiles: Record<RoleSprite, StaticImageData>;
+  window: { night: Record<WindowPicture, StaticImageData> };
+}
+
 export const SPRITES: {
   day: Record<Character, Record<DayState | 'head', StaticImageData>>;
   kits: Record<KitName, StaticImageData>;
@@ -327,6 +395,7 @@ export const SPRITES: {
   };
   grain: StaticImageData;
   textures: Record<TexturePicture, StaticImageData>;
+  small: SmallSprites;
 } = {
   day: {
     owl: {
@@ -534,6 +603,86 @@ export const SPRITES: {
     velvet: textureVelvet,
     cork: textureCork,
     ink: textureInk,
+  },
+  small: {
+    day: {
+      owl: {
+        base: owlBaseSmall,
+        talking: owlTalkingSmall,
+        thinking: owlThinkingSmall,
+        out: owlOutSmall,
+      },
+      hare: {
+        base: hareBaseSmall,
+        talking: hareTalkingSmall,
+        thinking: hareThinkingSmall,
+        out: hareOutSmall,
+      },
+      cat: {
+        base: catBaseSmall,
+        talking: catTalkingSmall,
+        thinking: catThinkingSmall,
+        out: catOutSmall,
+      },
+      badger: {
+        base: badgerBaseSmall,
+        talking: badgerTalkingSmall,
+        thinking: badgerThinkingSmall,
+        out: badgerOutSmall,
+      },
+      cyclops: {
+        base: cyclopsBaseSmall,
+        talking: cyclopsTalkingSmall,
+        thinking: cyclopsThinkingSmall,
+        out: cyclopsOutSmall,
+      },
+      threeEyes: {
+        base: threeEyesBaseSmall,
+        talking: threeEyesTalkingSmall,
+        thinking: threeEyesThinkingSmall,
+        out: threeEyesOutSmall,
+      },
+      dragon: {
+        base: dragonBaseSmall,
+        talking: dragonTalkingSmall,
+        thinking: dragonThinkingSmall,
+        out: dragonOutSmall,
+      },
+      onion: {
+        base: onionBaseSmall,
+        talking: onionTalkingSmall,
+        thinking: onionThinkingSmall,
+        out: onionOutSmall,
+      },
+      whale: {
+        base: whaleBaseSmall,
+        talking: whaleTalkingSmall,
+        thinking: whaleThinkingSmall,
+        out: whaleOutSmall,
+      },
+      polarBear: {
+        base: polarBearBaseSmall,
+        talking: polarBearTalkingSmall,
+        thinking: polarBearThinkingSmall,
+        out: polarBearOutSmall,
+      },
+      shade: {
+        base: shadeBaseSmall,
+        talking: shadeTalkingSmall,
+        thinking: shadeThinkingSmall,
+        out: shadeOutSmall,
+      },
+    },
+    props: { jarGlass: propJarGlassSmall, jarLid: propJarLidSmall, plate: propPlateSmall },
+    roleTiles: {
+      villager: roleVillagerTile,
+      wolf: roleWolfTile,
+      investigator: roleInvestigatorTile,
+      vigilante: roleVigilanteTile,
+      healer: roleHealerTile,
+      serial_killer: roleSerialKillerTile,
+    },
+    window: { night: { far: windowNightFarSmall, near: windowNightNearSmall } },
   },
 };
 

@@ -21,6 +21,7 @@ import { SPRITES } from '@/assets/manifest';
 import { diningCarPlan } from '../paint/dining-car';
 import { PHASES, type Phase } from '../paint/materials';
 import { snowfall } from '../paint/window';
+import { useSmall } from '../set';
 import type { Hud } from '../units';
 import styles from './FeltWindow.module.css';
 
@@ -99,6 +100,10 @@ export function FeltWindow({
 /** One hour's country: the far picture standing still, the near row scrolling over it. */
 function Country({ hour, w, h }: { hour: Phase; w: number; h: number }) {
   const strip = useRef<HTMLDivElement>(null);
+  // a phone's copies exist for the night only: the one hour drawn live, in a night room's glass
+  const small = useSmall();
+  const pics =
+    small && hour === 'night' ? SPRITES.small.window.night : SPRITES.window[hour];
   const sh = h * NEAR,
     tile = sh * NEAR_ASPECT,
     dur = tile / SPEED;
@@ -111,7 +116,7 @@ function Country({ hour, w, h }: { hour: Phase; w: number; h: number }) {
     <>
       <Image
         decoding="sync"
-        src={SPRITES.window[hour].far}
+        src={pics.far}
         alt=""
         unoptimized
         draggable={false}
@@ -124,7 +129,7 @@ function Country({ hour, w, h }: { hour: Phase; w: number; h: number }) {
           {
             width: w + tile,
             height: sh,
-            backgroundImage: `url(${SPRITES.window[hour].near.src})`,
+            backgroundImage: `url(${pics.near.src})`,
             backgroundSize: `${tile}px ${sh}px`,
             animationDuration: `${dur}s`,
             '--tile': `${tile}px`,

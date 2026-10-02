@@ -18,6 +18,7 @@ import { SPRITES, type Character } from '@/assets/manifest';
 import type { Ballot } from '@/game/types';
 import { K2 } from '../paint/materials';
 import { seatNumber } from '../roles';
+import { useSmall } from '../set';
 import { STAGE_H, STAGE_W } from '../units';
 import { Jar, JarFallers, JarLid, JarShadow, type LidState } from './Jar';
 import { Tween, about, lerp } from './Tween';
@@ -148,6 +149,8 @@ export function Plate({
   lighting,
   shade,
 }: PlateProps) {
+  // a phone's plate is a few dozen pixels wide: its copy
+  const plate = useSmall() ? SPRITES.small.props.plate : SPRITES.props.plate;
   const face = (seat: string) => ({
     seat: seatNumber(seat),
     character: cast[seatNumber(seat) - 1],
@@ -182,7 +185,7 @@ export function Plate({
       {/* the painted plate (2026-09-30), the same for abstain: already squashed to the table's
           perspective (ry = 0.3 rx), so it fills the spot's box exactly */}
       <image
-        href={SPRITES.props.plate.src}
+        href={plate.src}
         x={p.x - p.rx}
         y={p.y - p.ry}
         width={p.rx * 2}
