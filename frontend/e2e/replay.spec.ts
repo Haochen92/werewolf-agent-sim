@@ -411,7 +411,7 @@ test('replay: the transcript follows again once the reader scrolls to its foot',
   await lines.evaluate((el) => el.scrollTo({ top: el.scrollHeight }));
   await expect(back).toHaveCount(0);
   // the beats go on: held at the foot, the newest line showing
-  for (const i of [49, 50, 51]) {
+  for (const i of [51, 52, 53]) {
     await page.keyboard.press('ArrowRight');
     await expect(theatre(page)).toHaveAttribute('data-beat-index', String(i));
     await expect.poll(gap).toBeLessThanOrEqual(4);
@@ -422,7 +422,7 @@ test('replay: the transcript follows again once the reader scrolls to its foot',
   await lines.evaluate((el) => el.scrollTo({ top: 0 }));
   await expect(back).toBeVisible();
   await page.keyboard.press('ArrowRight');
-  await expect(theatre(page)).toHaveAttribute('data-beat-index', '52');
+  await expect(theatre(page)).toHaveAttribute('data-beat-index', '54');
   expect(await lines.evaluate((el) => el.scrollTop)).toBe(0);
 });
 
