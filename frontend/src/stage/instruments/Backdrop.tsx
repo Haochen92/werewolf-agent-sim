@@ -13,13 +13,20 @@
  *
  * Played from another hour (`from`), the old hour's picture fades off over the new one, as the
  * car's live paint did.
+ *
+ * A scene mounts `Backdrop`, which only describes the sheet to the Stage (set.ts); the Stage
+ * draws `BackdropSheet` once, at the foot of the paint layer, and keeps it across the scene's
+ * beats and from one scene to the next. The picture's `<img>` is therefore never remounted by
+ * a beat, which on iPhone Safari showed the house's dark for a frame while a fresh image
+ * decoded, every beat of a scene keyed whole (build log §8.8). A change of hour changes only the
+ * `src`, and the browser keeps the old picture until the new one is ready.
  */
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useLayoutEffect, useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'motion/react';
 import { SETS, type SetScale } from '@/assets/sets';
 import { useMotionScale } from '../motion';
-import { useSmall } from '../Stage';
+import { BackdropContext, useSmall, type BackdropSpec } from '../set';
 import type { Phase } from '../paint/materials';
 import { BLEED, STAGE_H, STAGE_W, type Hud } from '../units';
 
@@ -73,7 +80,22 @@ export function Backdrop({
   from?: Phase | null;
   fadeDelay?: number;
 }) {
+  const set = useContext(BackdropContext);
   const k = useMotionScale();
+  // the description's JSON is its identity: a new-but-equal one changes nothing
+  const key = JSON.stringify({ phase, hud, side, from: from ?? null, fadeDelay, k });
+  useLayoutEffect(() => {
+    if (!set) return;
+    set(JSON.parse(key) as BackdropSpec);
+    // the next description lands in the same commit as this one's clearing (the next beat's,
+    // or the next scene's), so the Stage never draws the gap between them
+    return () => set(null);
+  }, [set, key]);
+  return null;
+}
+
+/** The sheet itself, drawn by the Stage from the scene's description. */
+export function BackdropSheet({ phase, hud, side, from, fadeDelay, k }: BackdropSpec) {
   const { scale, narrow } = useScreen();
   const cut = useCut(narrow ? from : null, phase, fadeDelay * k);
   // the bench's "no HUD" draws the car as the live HUD does (geometry(hud) treats them alike)
@@ -102,6 +124,7 @@ export function Backdrop({
       />
       {!narrow && from && from !== phase ? (
         <motion.div
+          key={from}
           style={{ position: 'absolute', inset: 0 }}
           initial={{ opacity: 1 }}
           animate={{ opacity: 0 }}

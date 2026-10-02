@@ -38,10 +38,14 @@ import {
   type ReactNode,
 } from 'react';
 import { createPortal } from 'react-dom';
+import { BackdropSheet } from './instruments/Backdrop';
+import { BackdropContext, SmallContext, useSmall, type BackdropSpec } from './set';
 import { STAGE_W } from './units';
 import { vars } from './paint/materials';
 import styles from './Stage.module.css';
 import './stage.css';
+
+export { useSmall };
 
 /**
  * The layers, bottom to top (stage_architecture.md §3). `haze` and `grade` are the atmosphere's
@@ -101,8 +105,6 @@ const LayerContext = createContext<LayerNodes | null>(null);
 const CameraContext = createContext<((shot: CameraShot | null) => void) | null>(null);
 /** The 16:9 box itself, outside the world's scale: where `Overlay` puts what is laid out in css px. */
 const BoxContext = createContext<HTMLDivElement | null>(null);
-/** The stage is drawn small (`data-small`): a phone, or a window that draws it under three-quarter size. */
-const SmallContext = createContext(false);
 
 export function Stage({
   fit = 'width',
@@ -114,6 +116,8 @@ export function Stage({
   const boxRef = useRef<HTMLDivElement>(null);
   const [boxNode, setBoxNode] = useState<HTMLDivElement | null>(null);
   const [small, setSmall] = useState(false);
+  // the scene's backdrop, drawn here so it outlives the scene's beats (set.ts)
+  const [backdrop, setBackdrop] = useState<BackdropSpec | null>(null);
   // The layer divs, once mounted, so `<Layer>` can portal into them. Set during the commit,
   // so the filled layers are drawn before the first paint.
   const [nodes, setNodes] = useState<LayerNodes>({});
@@ -196,8 +200,15 @@ export function Stage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shotKey]);
 
+  // the paint layer's foot holds the persistent backdrop in a box of its own, present from the
+  // first render, so the scenes' portalled paint (the shutter, the light) always lands above it
   const layerDiv = (name: LayerName) => (
     <div key={name} ref={refs[name]} className={styles.layer} data-layer={name}>
+      {name === 'paint' ? (
+        <div data-set="" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+          {backdrop ? <BackdropSheet {...backdrop} /> : null}
+        </div>
+      ) : null}
       {layers[name]}
     </div>
   );
@@ -208,17 +219,22 @@ export function Stage({
       style={MATERIAL_VARS}
     >
       <div className={styles.world}>
-        <motion.div className={styles.camera} style={{ x: cx, y: cy, scale: ck }}>
-          {LAYERS.filter((name) => !FIXED.includes(name)).map(layerDiv)}
-        </motion.div>
-        {FIXED.map(layerDiv)}
-        <LayerContext.Provider value={nodes}>
-          <BoxContext.Provider value={boxNode}>
-            <CameraContext.Provider value={setShot}>
-              <SmallContext.Provider value={small}>{children}</SmallContext.Provider>
-            </CameraContext.Provider>
-          </BoxContext.Provider>
-        </LayerContext.Provider>
+        {/* the small-screen flag reaches the layers too: the Stage's own sheet reads it */}
+        <SmallContext.Provider value={small}>
+          <motion.div className={styles.camera} style={{ x: cx, y: cy, scale: ck }}>
+            {LAYERS.filter((name) => !FIXED.includes(name)).map(layerDiv)}
+          </motion.div>
+          {FIXED.map(layerDiv)}
+          <LayerContext.Provider value={nodes}>
+            <BoxContext.Provider value={boxNode}>
+              <CameraContext.Provider value={setShot}>
+                <BackdropContext.Provider value={setBackdrop}>
+                  {children}
+                </BackdropContext.Provider>
+              </CameraContext.Provider>
+            </BoxContext.Provider>
+          </LayerContext.Provider>
+        </SmallContext.Provider>
       </div>
     </div>
   );
@@ -252,16 +268,6 @@ export function Layer({ name, children }: { name: LayerName; children?: ReactNod
 export function Overlay({ children }: { children?: ReactNode }) {
   const box = useContext(BoxContext);
   return box ? createPortal(children, box) : null;
-}
-
-/**
- * Whether the stage is drawn small (`data-small`, under three-quarter size: a phone, or the
- * workbench's phone frame). What takes a cheaper form on a phone for its memory (the backdrop's
- * cut, the stand's and the ledger's arrival at once) reads this, the same measurement the css
- * rules key on, so the phone-rule gate (e2e/phone-rule.spec.ts) sees what a phone sees.
- */
-export function useSmall(): boolean {
-  return useContext(SmallContext);
 }
 
 /**
