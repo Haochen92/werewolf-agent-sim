@@ -22,6 +22,10 @@
   position: absolute;
   will-change: transform;
 }
+/* on a phone (Stage.tsx `data-small`) the train keeps no layer at rest (build log §8.7) */
+[data-small] .train {
+  will-change: auto;
+}
 .glass {
   position: absolute;
   border-radius: 22.4px;

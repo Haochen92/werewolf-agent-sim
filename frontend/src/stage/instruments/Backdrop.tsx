@@ -19,8 +19,8 @@ import Image from 'next/image';
 import { motion } from 'motion/react';
 import { SETS, type SetScale } from '@/assets/sets';
 import { useMotionScale } from '../motion';
+import { useSmall } from '../Stage';
 import type { Phase } from '../paint/materials';
-import { NARROW_PX } from '../screen';
 import { BLEED, STAGE_H, STAGE_W, type Hud } from '../units';
 
 const SCALES: readonly SetScale[] = ['1', '1.5', '2'];
@@ -31,17 +31,14 @@ export function pickScale(dpr: number, cap: number): SetScale {
   return SCALES.find((s) => Number(s) >= want) ?? SCALES[SCALES.length - 1];
 }
 
-/** The sheet for this screen, and whether the screen is a phone's (a narrow window). */
+/** The sheet for this screen, and whether the stage is drawn small (a phone's: `useSmall`). */
 function useScreen(): { scale: SetScale; narrow: boolean } {
-  const [screen, setScreen] = useState<{ scale: SetScale; narrow: boolean }>({
-    scale: '1',
-    narrow: false,
-  });
+  const narrow = useSmall();
+  const [scale, setScale] = useState<SetScale>('1');
   useEffect(() => {
-    const narrow = window.innerWidth < NARROW_PX;
-    setScreen({ scale: pickScale(window.devicePixelRatio || 1, narrow ? 1.5 : 2), narrow });
-  }, []);
-  return screen;
+    setScale(pickScale(window.devicePixelRatio || 1, narrow ? 1.5 : 2));
+  }, [narrow]);
+  return { scale, narrow };
 }
 
 /**

@@ -101,6 +101,8 @@ const LayerContext = createContext<LayerNodes | null>(null);
 const CameraContext = createContext<((shot: CameraShot | null) => void) | null>(null);
 /** The 16:9 box itself, outside the world's scale: where `Overlay` puts what is laid out in css px. */
 const BoxContext = createContext<HTMLDivElement | null>(null);
+/** The stage is drawn small (`data-small`): a phone, or a window that draws it under three-quarter size. */
+const SmallContext = createContext(false);
 
 export function Stage({
   fit = 'width',
@@ -111,6 +113,7 @@ export function Stage({
 }: StageProps) {
   const boxRef = useRef<HTMLDivElement>(null);
   const [boxNode, setBoxNode] = useState<HTMLDivElement | null>(null);
+  const [small, setSmall] = useState(false);
   // The layer divs, once mounted, so `<Layer>` can portal into them. Set during the commit,
   // so the filled layers are drawn before the first paint.
   const [nodes, setNodes] = useState<LayerNodes>({});
@@ -138,7 +141,9 @@ export function Stage({
       el.style.setProperty('--stage-scale', String(w / STAGE_W));
       // a phone: the HUD's boxes that have to fold (the drawer's head, the ballot's row) do.
       // The same 0.75 as `--legible` in Stage.module.css: once the type has grown, they fold.
-      el.toggleAttribute('data-small', w / STAGE_W < 0.75);
+      const sm = w / STAGE_W < 0.75;
+      el.toggleAttribute('data-small', sm);
+      setSmall(sm);
       // the bleed a screen wider than 16:9 shows beside the world, in units: the seat rail
       // grows out into it (Wing.tsx), so on a phone the letterbox holds the rail, not the room
       const spare =
@@ -209,7 +214,9 @@ export function Stage({
         {FIXED.map(layerDiv)}
         <LayerContext.Provider value={nodes}>
           <BoxContext.Provider value={boxNode}>
-            <CameraContext.Provider value={setShot}>{children}</CameraContext.Provider>
+            <CameraContext.Provider value={setShot}>
+              <SmallContext.Provider value={small}>{children}</SmallContext.Provider>
+            </CameraContext.Provider>
           </BoxContext.Provider>
         </LayerContext.Provider>
       </div>
@@ -245,6 +252,16 @@ export function Layer({ name, children }: { name: LayerName; children?: ReactNod
 export function Overlay({ children }: { children?: ReactNode }) {
   const box = useContext(BoxContext);
   return box ? createPortal(children, box) : null;
+}
+
+/**
+ * Whether the stage is drawn small (`data-small`, under three-quarter size: a phone, or the
+ * workbench's phone frame). What takes a cheaper form on a phone for its memory (the backdrop's
+ * cut, the stand's and the ledger's arrival at once) reads this, the same measurement the css
+ * rules key on, so the phone-rule gate (e2e/phone-rule.spec.ts) sees what a phone sees.
+ */
+export function useSmall(): boolean {
+  return useContext(SmallContext);
 }
 
 /**

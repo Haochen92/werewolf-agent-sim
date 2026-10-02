@@ -10,7 +10,7 @@ import { motion } from 'motion/react';
 import { useEffect } from 'react';
 import { SPRITES, type Character, type DayState } from '@/assets/manifest';
 import type { GameView, SpeechSlot, PassSlot } from '@/game/types';
-import { Layer, Paint } from '../Stage';
+import { Layer, Paint, useSmall } from '../Stage';
 import { Puppet } from '../cast/Puppet';
 import { PaintedBleed } from '../instruments/Bleed';
 import { CarBackdrop } from '../instruments/CarBackdrop';
@@ -25,7 +25,6 @@ import { drape } from '../paint/drape';
 import { light, type Pool } from '../paint/light';
 import type { Phase } from '../paint/materials';
 import { ROLE_NAME, factionOf, knownRoles, seatNumber } from '../roles';
-import { useNarrow } from '../screen';
 import { BLEED, STAGE_H, STAGE_W, type Hud, type StageGeometry } from '../units';
 import type { SlotInput } from './types';
 
@@ -249,7 +248,7 @@ export function StandReturns({
   const state: DayState = slot?.kind === 'speech' ? 'talking' : 'base';
   // the stand's fade is a full-stage layer for half a second, on the stage's heaviest beat;
   // a phone has no room for it (build log §8.3): there the stand is simply back
-  const phone = useNarrow();
+  const phone = useSmall();
   const fade = phone
     ? {}
     : ({

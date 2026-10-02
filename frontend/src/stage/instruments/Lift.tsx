@@ -15,7 +15,9 @@
  * A load with things standing on it (the table, with the jar and the plates) can also fade by
  * how far down it is, so its props never hang over the hole once the table under them has
  * gone (`fade`, lift-fade.ts). While it moves the load is its own compositor layer, so the
- * browser slides the picture it already has instead of redrawing the table every frame.
+ * browser slides the picture it already has instead of redrawing the table every frame; not on
+ * a phone, where that layer is full-stage for the whole beat and takes the light, the grade and
+ * the HUD onto layers with it (build log §8.7): there the table is redrawn as it moves.
  */
 import { motion, useMotionValue, useTransform } from 'motion/react';
 import { useId, type ReactNode } from 'react';
@@ -135,6 +137,9 @@ export function Lift({
       }}
     >
       <motion.div
+        // on a phone the load keeps no layer (stage.css `[data-lift-load]`): a full-stage layer
+        // for the beat, and every layer drawn over it, is what the phone cannot hold (§8.7)
+        data-lift-load=""
         style={{
           position: 'absolute',
           left: 0,

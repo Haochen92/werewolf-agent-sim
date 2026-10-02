@@ -36,6 +36,18 @@
     animation: sk-snw 7s linear infinite;
   }
 }
+/* on a phone (Stage.tsx `data-small`) the lift's load keeps no layer while it moves
+   (instruments/Lift.tsx; the inline will-change is the desktop's) */
+[data-small] [data-lift-load] {
+  will-change: auto !important;
+}
+/* on a phone (Stage.tsx `data-small`) the idle life stands still: each of these is a GPU layer
+   at rest and every layer drawn over it (stage_architecture.md §6, build log §8.7) */
+[data-small] .sk-hang,
+[data-small] .sk-flk,
+[data-small] .sk-snw {
+  animation: none;
+}
 @keyframes sk-sway {
   from {
     transform: rotate(-1.1deg);

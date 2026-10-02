@@ -26,6 +26,7 @@ import { SPRITES, type Character } from '@/assets/manifest';
 import type { MemoryExtracted } from '@/types/contracts';
 import { ChipSprite } from '../cast/ChipSprite';
 import { useMotionScale } from '../motion';
+import { useSmall } from '../Stage';
 import { ROLE_NAME, factionOf, seatNumber, seatify, type Faction } from '../roles';
 import { bandFoot, geometry, type Hud } from '../units';
 import {
@@ -91,6 +92,9 @@ export function Ledger({
   open = null,
 }: LedgerProps) {
   const k = useMotionScale();
+  // a phone: the ledger is simply there (three-quarters of the stage fading in is a full-stage
+  // repaint a frame; build log §8.7)
+  const small = useSmall();
   const g = geometry(hud);
   const inset = 35.2;
   const box = {
@@ -112,7 +116,7 @@ export function Ledger({
   const veil = (
     <motion.div
       className={styles.veil}
-      initial={arrive ? { opacity: 0 } : false}
+      initial={arrive && !small ? { opacity: 0 } : false}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 * k, delay: 0.3 * k }}
     />
@@ -123,7 +127,7 @@ export function Ledger({
       style={{ ...box, ...INK_TEX }}
       aria-label="What the game taught"
       data-ledger=""
-      initial={arrive ? { opacity: 0, y: 24 } : false}
+      initial={arrive && !small ? { opacity: 0, y: 24 } : false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 * k, delay: 0.5 * k, ease: [0.3, 0.8, 0.4, 1] }}
     >
