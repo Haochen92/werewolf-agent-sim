@@ -387,8 +387,10 @@ built from a detached worktree and `compose up -d --no-build wolf-frontend`; the
 `a651988`. The iPhone Safari crash on every stage page (build log §8.1) ended at `d6a19fe`; the
 pace probe went up alone so the phone's floor could be read before the scene split (`196ebee`,
 build log §8.3) went up after it; then `200ffed` (the split, the history-API steps), `8f29e70`
-(the `noclip` probe word) and `49c58c9` (the baked backdrop for the day and the morning), each
-frontend only.
+(the `noclip` probe word), `49c58c9` (the baked backdrop for the day and the morning), `3a5aa83`
+(the phone's cut and the probe's loop range) and, on 2026-10-02, `7fadcd4` (every car scene on
+the backdrop, the camera off its layer on phones, the tappable transport band), each frontend
+only.
 · **2026-10-01 both containers rebuilt at `a651988`** (branch pushed first; built with
 `docker build` from a clean detached worktree, then `compose up -d --no-build`). Server: the
 request budget and stall rescue (30 s, two attempts, two stalls → the rescue model for five

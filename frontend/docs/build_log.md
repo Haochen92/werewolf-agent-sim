@@ -851,7 +851,40 @@ five sheets (stage_architecture §6).
 | 2× (a 2× desktop)     | 4400×1800   |      ~270 KB    | 31.7 MB |
 
 48 sheets, 8.8 MB in the repo, one loaded per scene. The phone's reading on the baked day and
-morning: _[pending]_.
+morning: the day's loop held at one beat a second; the morning died on its wrap to its first
+beat (the shutter down over the window with nine chips rising, 162 figure nodes against about
+20 on any other beat) until the phone's version of "the day begins" became a cut instead of a
+crossfade and the returning stand stopped fading (two full-stage fading layers on one beat);
+after that the whole morning loop held too. The replay end to end still died.
+
+**The inspector's numbers (2026-10-02, the owner's iPhone over Safari's Web Inspector,
+Layers panel, the replay at "before day 1", at rest).** This is the reading everything above
+was guessing at:
+
+| layer                         | paints | memory   |
+|-------------------------------|-------:|---------:|
+| `div.Stage_layer` (×6)        | 48–80  | 54–92 MB each |
+| `div.Stage_camera`            | 76     | 73 MB    |
+| an `svg` sheet                | 43     | 52 MB    |
+| `svg.FeltWindow_far`          | **26,217** | 11 MB |
+| the document, the page root   | 7      | 11 MB each |
+
+About 530 MB of layers before a beat had played. One full-stage layer costs this phone about
+54 MB (71 MB when its content reaches into the bleed, 92 MB for the widest), and six stage
+layers plus the camera were each one. What made them so: the felt country scrolling past the
+car's window is an infinite CSS animation with `will-change` (the 26,217 paints), so it has a
+layer of its own, and every stage layer painted above an animating layer must then have its own
+too, to be stacked in order on the GPU. One scrolling window promoted the whole stage. The
+baked day has no live window, which is why its loop held; "before day 1" is the deal scene,
+which still drew the car live, as did the vote, the lynch, the night lobby, the game over and
+the replay night. All six now stand in front of the backdrop.
+
+The rule the numbers prove, recorded in stage_architecture §6: **nothing animates at rest
+inside the camera**, and while a figure moves, every full-stage layer above it is paid for at
+full resolution for the duration, so the fewer of those the better. The remaining full-stage
+layers above the figures are the light's sheet, the grade and the HUD's container; the next
+reading with the same panel open on the baked day, at rest and during a rise, says whether the
+light and the grade are worth moving beneath the figures on a phone.
 
 **What to take from it** (the whole of it, in four sentences): the browser turns the page into
 layers, and anything with a transform animation, a filter, a mask or a blend gets its own

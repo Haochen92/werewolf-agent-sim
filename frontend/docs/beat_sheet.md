@@ -586,7 +586,7 @@ role, a wolf its pack) and the live queue should hold the stand for the backlog.
 | Morning N | `night_result` | `morning.shutter-down` |
 | Game over | `game_over` | `over.where-it-ended` |
 
-**The transport:** previous chapter · back a beat · play/pause · forward a beat · next chapter. Chapter jumps land on the chapter's first beat, still. Arrow keys step beats. The beat's name sits
+**The transport:** previous chapter · back a beat · play/pause · forward a beat · next chapter. On a phone the band's controls grow until a button is 44 css px tall (they drew at about 25 at the phone's scale), the band grows with them and the speech box, the notices and the ledger rise on it (`bandFoot`, units.ts; 2026-10-02). Chapter jumps land on the chapter's first beat, still. Arrow keys step beats. The beat's name sits
 next to the phase label ("Vote 3 · A chip is counted"). The seek bar is the whole log with the
 chapter marks. **Speed:** one toggle, normal · fast (holds halved, motion kept); skip was removed
 2026-09-29 (an old `skip` reads as normal, the workbench's `motion=skip|0` as fast). No scrubbing over seconds; `seq` is the only clock. **Arrive still, play moving:** seeking

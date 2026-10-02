@@ -77,7 +77,8 @@ The stage is a `16 / 9` box. Every position, size, radius and path in every scen
   `--legible` (`Stage.module.css`: 0.75 / scale, clamped 1–1.8) grows the words people read
   (`--said`, `--note`: ~17 css px; `--said` is 23.5 units × `--legible`, 17.6 css px on an
   iPhone 14, ruled 2026-09-29); `--legible-ui` (the same, capped 1.3) grows `--meta`, headings
-  and buttons (~9–10 px, ~22 px tall). Both are 1 at full size (pixel-identical there); neither
+  and buttons (~9–10 px, ~22 px tall; the replay's transport band goes further and grows its
+  buttons to 44 css px, raising what stands on it through `bandFoot`). Both are 1 at full size (pixel-identical there); neither
   touches the geometry, `--chip`, `--gap` or the painted props. Below scale 0.75 (the same point
   the type starts growing) the box has `data-small`: the drawer's head loses its title (seats and
   Show still wrap, so both toggles stay in reach); the ballot's chips stay on one row.
@@ -654,6 +655,18 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   alone. Same drawing, one bitmap: the browser holds one layer where it held five (build log
   §8.3). Rerun the bake when the car's paint or haze changes; the goldens say whether the
   sheets did. The light, the grade and everything that moves stay live.
+- **Nothing animates at rest inside the camera.** An element with a running animation (a CSS
+  animation, `will-change`, a motion value in flight) gets its own GPU layer, and every stage
+  layer painted above it must then get one too, each a full-resolution bitmap: on an iPhone
+  about 54 MB apiece, measured in Safari's Layers panel (build log §8.3). The felt country
+  scrolling past the car's window did exactly that to the whole stage, and the page sat at
+  530 MB of layers before a beat had played. So a scene at rest holds nothing moving inside the
+  camera; what moves does so for a beat's arrival and then stops; and the fewer full-stage
+  layers sit above the figures (the light, the grade, the HUD's container), the smaller the
+  spike while a figure rises. On a phone the camera keeps no `will-change` either: a layer of
+  its own made the grade and the HUD, drawn after it, layers too (three layers, 212 MB, on the
+  baked day at rest). Check with the Layers panel: at rest, no `Stage_layer` should appear in
+  it at all.
 - **A scene's set is mounted once; only the beat is keyed.** A scene is a stable set (`DaySet`,
   `MorningSet`: the atmosphere, the car's paint, the shutter, the house light, the wing, the
   strip) that updates in place as the beats go by, and a keyed part (`DayTurn`, `MorningBeat`:
