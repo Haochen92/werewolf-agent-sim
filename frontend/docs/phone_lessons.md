@@ -7,6 +7,9 @@ numbers and the dated detail live in `build_log.md` §8; each lesson points at i
 rules we keep are in `stage_architecture.md` §6, and the test that enforces them is
 `e2e/phone-rule.spec.ts`.
 
+The part of this that is not about phones at all (React keys and re-rendering, paint
+rectangles, layers, the method) is `frontend_lessons.md`.
+
 The one sentence version: **a phone gives a page a fixed memory budget and kills it at the
 line, and almost everything that spent that budget was something the browser did on our behalf
 (a layer here, a decode there) rather than anything we drew too big.**
@@ -218,6 +221,32 @@ layers.
 
 ---
 
+## 12. The browser repaints the box, not the figure
+
+**What you saw.** With the set kept and the moves stepped, you said the later days felt a
+little heavier than the early ones, and the winners rising together at the end lagged (§8.10).
+
+**What was happening.** Every figure on the stage is placed in the stage's own coordinates, so
+the easy way to move one was to wrap the whole stage in a box and move the box: the lift's
+table, the dropped figure, the figure leaving as the vote opens, the stand fading, each winner
+rising. A browser does not know that only the figure is drawn in such a box; it repaints the
+box, all 1600 × 900 of it, every frame of the move, and everything under that rectangle with
+it: the wing, whose dead tiles are the same photos drawn through a grey filter (one more pass
+per tile, and more of them as the game goes on), and the light's gradients. A walk of the
+production replay with a trace on every beat found no beat of day 4 dearer than the same beat
+of day 2, and no memory growing (heap, nodes, listeners flat over 230 beats), so a later day
+is not heavier on the page: if it feels heavier, the phone is (it throttles after minutes of
+work) and the full-stage boxes made each move cost the most it could. Try it cold: open the
+replay and jump straight to day 4 with the scrubber.
+
+**What fixed it.** Each mover's box is now its load's own bounds, clipped, with the stage's
+coordinates put back inside it, so the repaint is the figure's column, not the stage. And on a
+phone the ending's winners are simply there: no rise, no stand fading in.
+
+**See it yourself.** In the Safari timeline, a move's paint records are the figure's width.
+
+---
+
 ## If you are asked about it
 
 The honest shape of the story: a stage built for a desktop, moved to a phone; the first crash
@@ -225,7 +254,7 @@ was one small animation that cost 300 MB through the layer cascade; the fix was 
 set, keep the set mounted, and let only the beat change; the remaining crashes were the same
 rule in five more places, found by census and closed by a test; the stutter that was left was
 the scene rebuilt per beat and the CPU painting every frame of a move, answered by one set for
-the whole car and moves stepped at film's rate. The thing we did not do, and why: a GPU layer
+the whole car, moves stepped at film's rate, and each mover's box cut to its load. The thing we did not do, and why: a GPU layer
 per mover was measured on the phone and refused (it lifts the whole stage with it); a canvas
 port would make every move a GPU matrix and the memory predictable, at the price of rewriting
 the stage's drawing side; the DOM stage with these rules holds, so the port is the known next

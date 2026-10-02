@@ -694,6 +694,8 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   `Station` module css). To find the next one: grep the stage's css for `animation:` and
   `will-change`, and the tsx for `repeat: Infinity`; anything that matches and is on screen at
   rest on a phone is a layer and a cascade.
+- **The general practice behind them, for the next project: `frontend_lessons.md`** (keys,
+  re-rendering, paint rectangles, layers, and how to work a performance problem).
 - **Why these rules exist, in plain words: `phone_lessons.md`** (ten lessons, each with the
   symptom, the mechanism, the fix and how to see it in the inspector).
 - **The rule is a gate: `e2e/phone-rule.spec.ts`.** It walks every scene and every beat in the
@@ -730,12 +732,16 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   ballot line, a notice) or an instrument that plays into its new state when its props change
   (the shutter, the lift, the jar, a `Tween` mounted by the beat that plays it). Mount-time state
   (a timer that starts "when this beat is played": the lynch's wing waiting for the card, a
-  room's pin landing) is keyed on the beat's `seq` so it starts over with each beat. The deal and
-  the ending still key their figures per beat (short scenes); their set is the host's.
+  room's pin landing) is keyed on the beat's `seq` so it starts over with each beat. The live
+  night rooms (the pack's and the shelf's, outside the car) keep their room the same way: the
+  state that belongs to one request (the choice, the sent vote, the open card) is `useSeeded`
+  on the beat, the viewer and the seeded choice, and starts over when that changes while the
+  room stays up. The deal and the ending still key their figures per beat (short scenes); their
+  set is the host's.
 - **The gate checks the set stays up.** `e2e/phone-rule.spec.ts` marks the wing's first
   picture, the light's sheet and a night room's picture before each step and fails if a beat
   of the same scene (and room) remounts them; the deal, the ending and the platform are listed,
-  not failed, until they are split.
+  not failed, until they are split (the live rooms were, until build log §8.10).
 - **On a phone a move steps at 24 frames a second (`useSteps`, motion.tsx).** A mover with no
   GPU layer is repainted by the CPU every frame, with the light's gradients under it, and at
   the screen's rate that paint does not fit a frame: frames drop unevenly and the move reads
@@ -748,6 +754,18 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   `mix-blend-mode: screen` divs; a screen blend is rendered through a surface the size of the
   repaint, and a figure rising under a full-stage one paid for it every frame. They are boxed to
   their gradients (clear beyond 70% of the radius, so the pixels are the same).
+- **A mover's box is its load's** (`instruments/Bounded.tsx`). A browser repaints the whole of
+  a moving box each frame, not the figure in it, and the easy wrapper for a thing placed in
+  stage coordinates was a full-stage one: the lift's load, the lynch's drop, the vote's leaving
+  figure, the stands' fades and the winners' rises all moved 1600 × 900 round a figure a third
+  of that, and the wing's grey dead tiles and the light under them were repainted every frame
+  with it. `Bounded` is the load's own bounds (plus `pad` for a shadow), clipped, with the
+  stage's coordinates put back inside, so the paint rectangle is the figure's column; the
+  lift takes a `box` the same way. Moves given in percent are of the box now: give them in
+  units (build log §8.10).
+- **On a phone the ending's winners are simply there**: no rise, no stand fading in (the owner,
+  2026-10-02: three figures rising at once lagged, and the screen of them winning is the point).
+  The epilogue's sheet has a close button, to the winners under it.
 - **On a phone the grade keeps its vignette and loses its grain, and a night room's choice
   cuts.** The grain tile is under a pixel at a phone's scale and was blended again under every
   mover; the choice's 0.6 s full-stage fade was a layer and its cascade (build log §8.9).

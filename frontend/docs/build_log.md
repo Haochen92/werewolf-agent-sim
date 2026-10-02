@@ -1152,7 +1152,8 @@ stayed at three through all of it, so this was time, not memory.
   and the platform's figures. Desktop untouched.
 - The next speaker's two poses decoded a turn ahead in the replay (`cast/DecodeAhead.tsx`).
 - The gate marks the set before each step and fails a beat that remounts it within its scene
-  (the deal, the ending and the platform listed, not failed, until they are split).
+  (the deal, the ending and the platform listed, not failed, until they are split; the live
+  rooms were listed too until §8.10).
 
 **A second pass from the readings, the same day.** Another agent's audit of the old snapshot
 (`docs/rendering-audit-2026-10-02.md`, its own measurements) and one more subtraction trace
@@ -1203,3 +1204,118 @@ tests 996/996 (the paint test's glow comparison changed as above), the gate's re
 across every scene in the phone frame, and a walk of the fixture replay through every change of
 scene: the wing, the light, the shutter and the backdrop keep their identity from the deal to
 the ending; only the chip a beat is about is remounted.
+
+### 8.10 The box, not the figure: bounded movers, the ending held still, the rooms kept (2026-10-02)
+
+**Seen.** With `a3d6404` on the phone the owner read fewer high-CPU runs on the timeline and
+the moves smoother, and three things left: the later days (day 4 on) felt a little heavier per
+screen than the early ones; the winners rising together at the ending lagged; and the
+epilogue's sheet, "What the game taught", had no way to close on a phone, where it covers the
+stage. Another agent's audit of the same snapshot asked, in its order, for the live night rooms
+kept across beats, the light's cache keyed by geometry rather than by instance, the live
+countdown's tick kept out of the scene, the movers' boxes cut to their loads, and pictures
+sized by displayed pixels.
+
+**Found.** A walk of the production replay in the phone frame with a trace on every one of its
+208 beats (`day-drift.mjs`): a day-4 speech beat costs what a day-2 one costs (a new speaker
+1.5–1.9 s of raster, a page 0.2 s, on both days), and the count of grey dead tiles in the wing
+made no difference to it. A second walk sampling the page every 20 beats (`mem-walk.mjs`):
+heap 11–13 MB, listeners 1,440–1,730, nodes by scene, nothing growing over 230 beats. So no
+beat of a later day is dearer on the page. What every move was paying, early or late, was the
+box it moved in: the lift's load, the lynch's drop, the vote's leaving figure, the stands'
+fades and the winners' rises were each a `position: absolute; inset: 0` wrapper, 1600 × 900,
+round a figure a third of that width, and a browser repaints the moving box, not the figure:
+the wing (its dead tiles the same photos through a `grayscale` filter) and the light's
+gradients under the whole rectangle, every frame. The painted bounds, measured in the phone
+frame: the vote's table with its plates, jar and the lid's string from above the frame, x
+305–1487; the lynch's card, 722–1070 × 87–639; a figure, about 630–1290 × 30–890 with its
+shadow; the stands' pit, the full width from the rail down. The wing ends at x = 192.
+
+**Done.**
+- `instruments/Bounded.tsx`: a mover's box is its load's bounds plus a pad, clipped, with the
+  stage's coordinates put back inside, so a figure placed in stage units rides it unchanged.
+  Moves given in percent are of the box now and were given in units (the drop: 1.15 × the
+  stage's height, as before). The lift takes a `box` the same way (its clip to the lip stays).
+  Boxed: the vote's table (`cx ± 0.7 tw`, from above the frame to the hole's foot), the
+  lynch's card and its shadow's throw, the dropped figure (its column down to the stage's
+  foot), the leaving figure (its box and the drop below it), every stand's fade (the pit's
+  band from 100 units above the rail), each winner's rise.
+- On a phone the ending's winners are simply there: no rise, no stand fading in; the board
+  still goes up and the result still arrives.
+- The epilogue's sheet takes a close button (its head, after the count): closed, the winners
+  are at the stand under it with the result in the box; a step reopens it.
+- The live night rooms (the pack's and the shelf's) keep their room across beats and across the
+  viewer's choice (an Opus agent's pass): `useSeeded(seed, init)` in `ShelfRoomScene.tsx` holds
+  the state that belongs to one request (the choice, the sent vote, the open card) and starts
+  it over when its seed (the beat, the viewer, the seeded choice, the open card) changes, while
+  the room stays up; the teeth that came with a beat are keyed on it so they still land; a
+  re-seeded pin or darkness is simply there (`NightRoom`'s `seed` keys its presences). The gate
+  now fails `room` and `pack` for a rebuilt set; its walk: 0 findings on both. Two things to
+  know: a card the player opened still closes on the next pack line (an open card is per-beat
+  state, as the old key had it); and in the workbench a re-seeded choice's photo now rises and
+  glows in place rather than appearing lit, because the photos stay mounted (live never seeds
+  a choice). The live suite has no test that drives a night room; the agent walked both in a
+  throwaway spec (choice, seal, card, the teeth) and the goldens for the rooms are unchanged.
+- The live countdown ticks in its own display, not the theatre (an Opus agent's pass): the
+  theatre's `useCountdown` answers only `expired`, looked for on a timer and rendered once when
+  it comes; the count is a leaf, `instruments/CountText.tsx`, over `useTimeLeft(deadline)`, in
+  the dock, the ballot and the pack's line; `turn.clock` carries the deadline and the whole
+  allowance, not a precomputed remainder (the workbench's frames hold theirs still with `at`).
+  The stand's plate re-places on its own, the box's or the speech box's resize, and its
+  observers are made once per subscription, not per render. Left as is: the theatre still
+  hands the bodies a fresh `turnInput` each render, so a keystroke in the composer re-renders
+  the day's body (the dock is in it, so it must); the set sheet is re-registered with it.
+- The general practice behind all of §8, for the owner and the next project:
+  `frontend_lessons.md` (twenty entries: keys and re-rendering, paint rectangles and layers,
+  the method).
+
+**Not done, and why.** The light's cache keyed by geometry rather than instance: with the car's
+host the light is one instance from the deal to the ending, so the instance key rarely misses;
+not worth its own pass now. Pictures sized by displayed pixels: the phone copies were cut to
+the phone's displayed size already (§8.9's census); the wing's heads are small files. Rendering
+only the transcript rows in view: after everything above. The deal and the ending still key
+their figures per beat: three and seven beats, once each, their set the host's.
+
+**Read before and after** (production `a3d6404` against this build on the preview, both
+production builds; Chromium in the phone frame, CPU throttled four times, each beat stepped
+under a trace; raster and paint in ms, paint records counted):
+
+| Beat | Raster | Paint records | Paint ms |
+|---|---|---|---|
+| The lynch's drop | 1,302 → 973 | 7 → 7 | 12 → 13 |
+| The card up | 1,700 → 1,473 | 65 → 67 | 74 → 67 |
+| The stand returns | 1,841 → 1,624 | 62 → 59 | 51 → 44 |
+| The lynch, 11 steps | 12,235 → 10,891 | | 410 → 389 |
+| Voting opens (the table up, the figure leaving) | 1,426 → 1,284 | 81 → 32 | 79 → 39 |
+| The table down | 1,782 → 1,837 | 88 → 22 | 126 → 34 |
+| The vote, 15 steps | 10,489 → 10,341 | | 523 → 387 |
+
+Chromium rasters in tiles, so a smaller paint rectangle shows there mostly as fewer paint
+records (the table's sink: a quarter as many); a phone's Safari paints the rectangle itself,
+and the phone's reading is the owner's. The count's chips, already boxed, are unchanged.
+
+**Found on the way.** The two live tests that failed under three workers and passed alone
+were not races in the app: the page reads its catch-up frames before Playwright can read
+anything from it (about 85 ms a frame in the dev build; the game-over-in-the-night test
+streams 406 frames, 33 s), and a 30 s wait for the first beat and a 5 s wait for the dock gave
+up first. The suite's waits are sized to the stream each page is served (`landsOn`, 10 s plus
+200 ms a frame), the waiting-room tests pause the fake clock while the platform idles, and
+the suite passes three times at three workers. The same reading names a cost for live play:
+each catch-up frame commits a full stage render, so a refresh late in a game freezes the page
+for the whole catch-up; grouping the catch-up's frames into a few renders in `useGameStream`
+is on the list below.
+
+**Verified.** Goldens 65/65 unchanged (the boxed movers clip nothing at rest), the replay
+suite 18/18, the phone gate 15 walks with 0 findings (the live rooms now held to the rule),
+the live suite 23/23 three times at three workers, the unit tests 998/998, `tsc` and lint
+clean. Mid-move screenshots in the phone frame of the drop, the table's rise and the
+ending's third beat (the winner simply there, the board gone, the result in the box). The
+phone's reading is the owner's: in the Safari timeline a move's paint records should be the
+figure's width, and day 4 should feel like day 2 when jumped to cold.
+
+**Next, by the readings.** Group a live game's catch-up frames into a few renders
+(`useGameStream`), measured on a production build first. The theatre's `turnInput` fresh each
+render, and the set re-registered with it, if live typing shows on a phone's timeline. The
+light's cache keyed by geometry, if a remount ever shows the holes' 60–110 ms again. The deal
+and the ending's figures per beat, if their beats ever show. Transcript rows in view only,
+for very long games.
