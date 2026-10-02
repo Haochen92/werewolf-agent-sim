@@ -60,6 +60,7 @@ export function StationStill({
                 }}
               >
                 <Image
+                  decoding="sync"
                   src={SPRITES.station.train}
                   alt=""
                   unoptimized

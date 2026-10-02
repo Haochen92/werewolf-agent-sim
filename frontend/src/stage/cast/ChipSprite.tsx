@@ -33,6 +33,7 @@ export function ChipSprite({
       }}
     >
       <Image
+        decoding="sync"
         src={SPRITES.day[character].head}
         alt=""
         unoptimized

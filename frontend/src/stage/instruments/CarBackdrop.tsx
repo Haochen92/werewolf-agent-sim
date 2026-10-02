@@ -45,6 +45,7 @@ export function CarBackdrop({
         // under the foot of a raised picture: its own last rows again, down to the frame's edge
         <div style={{ ...box, left: x, top: STAGE_H + y, height: -y, overflow: 'hidden' }}>
           <Image
+            decoding="sync"
             src={img}
             alt=""
             unoptimized
@@ -54,6 +55,7 @@ export function CarBackdrop({
         </div>
       ) : null}
       <Image
+        decoding="sync"
         src={img}
         alt=""
         unoptimized

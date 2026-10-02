@@ -171,6 +171,7 @@ export function RailInstrument({
         {...motionProps}
       >
         <Image
+          decoding="sync"
           src={img}
           alt=""
           unoptimized

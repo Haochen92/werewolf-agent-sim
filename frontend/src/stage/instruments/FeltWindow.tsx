@@ -110,6 +110,7 @@ function Country({ hour, w, h }: { hour: Phase; w: number; h: number }) {
   return (
     <>
       <Image
+        decoding="sync"
         src={SPRITES.window[hour].far}
         alt=""
         unoptimized

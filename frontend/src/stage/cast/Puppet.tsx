@@ -142,6 +142,7 @@ export function Puppet({
         onAnimationComplete={onArrived}
       >
         <Image
+          decoding="sync"
           src={SPRITES.day[character][state]}
           alt=""
           unoptimized

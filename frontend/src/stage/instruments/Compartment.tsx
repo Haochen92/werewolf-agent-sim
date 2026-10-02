@@ -47,7 +47,7 @@ export function Compartment({
         data-room={room}
         style={{ left: x, width: w, height: h }}
       >
-        <Image src={img} alt="" unoptimized priority draggable={false} />
+        <Image decoding="sync" src={img} alt="" unoptimized priority draggable={false} />
       </div>
       <PaintedBleed x={x} w={w} h={h} />
     </>

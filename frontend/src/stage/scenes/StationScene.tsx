@@ -132,6 +132,7 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
             transition={T(DEPART.pull, DEPART.pullAt, PULL_EASE)}
           >
             <Image
+              decoding="sync"
               src={SPRITES.station.train}
               alt=""
               unoptimized
@@ -432,6 +433,7 @@ function WindowPlace({
         transition={T(0.8, 0.3, 'easeOut')}
       >
         <Image
+          decoding="sync"
           src={img}
           alt=""
           unoptimized
@@ -456,6 +458,7 @@ function WindowPlace({
         transition={T(0.9, 0.5 + agentIndex * 0.16, UNROLL_EASE)}
       >
         <Image
+          decoding="sync"
           src={SPRITES.station.blind}
           alt=""
           unoptimized
@@ -472,6 +475,7 @@ function WindowPlace({
         transition={T(0.6, 1.2 + agentIndex * 0.16, 'easeOut')}
       >
         <Image
+          decoding="sync"
           src={img}
           alt=""
           unoptimized
