@@ -24,8 +24,8 @@ const cut = (...spec: [SceneBeat['id'], number][]): SceneBeat[] =>
 describe('the featured window', () => {
   it('is day 3’s vote through the lynched card going to the wing, in the fixture', () => {
     const w = featuredWindow(beats);
-    // the public golden (beats/__goldens__/9369a5c1.public.txt): lines 53 and 71
-    expect(w).toEqual({ from: 53, to: 71, day: 3 });
+    // the public golden (beats/__goldens__/9369a5c1.public.txt): lines 55 and 73
+    expect(w).toEqual({ from: 55, to: 73, day: 3 });
     expect([beats[w.from].id, beats[w.from].day]).toEqual(['vote.opens', 3]);
     expect([beats[w.to].id, beats[w.to].day]).toEqual(['lynch.card-to-wing', 3]);
   });

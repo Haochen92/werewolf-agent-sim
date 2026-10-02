@@ -123,6 +123,7 @@ describe('beatsFor on the fixture (9369a5c1, memory on)', () => {
       'morning.shutter-down',
       'morning.chip-attacked',
       'morning.chip-saved',
+      'morning.roll',
     ]);
     expect(ids(2)).toEqual([
       'morning.shutter-down',
@@ -132,6 +133,7 @@ describe('beatsFor on the fixture (9369a5c1, memory on)', () => {
       'morning.chip-attacked',
       'morning.chip-fell',
       'morning.card-down',
+      'morning.roll',
     ]);
   });
 

@@ -170,6 +170,18 @@ describe('the drawer: which lines a viewer holds', () => {
     expect(lines.at(-1)?.key).toBe('brief-1');
     expect(litKey(lines, carried.beat)).toBe('brief-1');
   });
+
+  it('holds the dawn line through the report and lands it with the roll (2026-10-02)', () => {
+    // the game master's line names the dead and their roles, which the chips tell one by one
+    const fell = at('morning.chip-fell', (b) => b.day === 2);
+    expect(
+      byKey(drawerLines(fell.view, { me: null, xray: false, beat: fell.beat }), 'gm-155'),
+    ).toBeUndefined();
+    const roll = at('morning.roll', (b) => b.day === 2);
+    const lines = drawerLines(roll.view, { me: null, xray: false, beat: roll.beat });
+    expect(byKey(lines, 'gm-155')).toBeDefined();
+    expect(litKey(lines, roll.beat)).toBe('gm-155');
+  });
 });
 
 describe('the drawer: the lit line', () => {

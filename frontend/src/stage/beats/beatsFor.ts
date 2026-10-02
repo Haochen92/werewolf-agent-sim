@@ -37,7 +37,7 @@ const HOLD = {
   pass: 4000,
   /** A room's last step in the X-ray night: the mark landing, or the hold. */
   mark: 4000,
-  /** The morning roll (2026-09-30): the shutter's hold, and this much more per row read. */
+  /** The morning roll (2026-09-30; after the chips since 2026-10-02): this, and this much more per row read. */
   report: 6000,
   reportRow: 2000,
 } as const;
@@ -439,7 +439,7 @@ export function beatsFor(
         }
         nightStart = -1;
         reports.set(e.day, e);
-        pub('morning.shutter-down', e, next, reportHold(e), {
+        pub('morning.shutter-down', e, next, HOLD.shutter, {
           chapter: { kind: 'morning', n: e.day },
         });
         for (const d of e.deaths) {
@@ -452,7 +452,10 @@ export function beatsFor(
           pub('morning.chip-attacked', e, next, HOLD.chip, { subject: e.save.player });
           pub('morning.chip-saved', e, next, HOLD.card, { subject: e.save.player });
         }
-        if (e.deaths.length === 0 && !e.save) pub('morning.quiet', e, next, HOLD.shutter);
+        // the roll with the names comes after the chips have told it (owner, 2026-10-02: on
+        // the notice first it read as a spoiler), held for its rows
+        if (e.deaths.length || e.save) pub('morning.roll', e, next, reportHold(e));
+        else pub('morning.quiet', e, next, HOLD.shutter);
         break;
       }
 

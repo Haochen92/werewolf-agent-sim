@@ -132,6 +132,18 @@ const COUNT_BEATS: ReadonlySet<string> = new Set([
   'vote.chip-counted',
 ]);
 /**
+ * The morning's beats from the shutter to the last card: the game master's dawn line names
+ * who died and what they were, which the stage tells a chip at a time, so the line waits for
+ * the roll (owner, 2026-10-02: on the drawer at the shutter it read as a spoiler).
+ */
+const REPORT_BEATS: ReadonlySet<string> = new Set([
+  'morning.shutter-down',
+  'morning.chip-attacked',
+  'morning.chip-fell',
+  'morning.card-down',
+  'morning.chip-saved',
+]);
+/**
  * The beats between the result and the card being read: the game master's vote line names the
  * lynched seat's role, which the stage tells only at `lynch.truth`, so on a day with a lynch
  * the line waits for that (same ruling as the votes line).
@@ -225,6 +237,8 @@ export function drawerLines(view: GameView, o: LineOptions): DrawerLine[] {
           o.beat?.day === d.day &&
           UNTIL_TRUTH.has(o.beat.id)
         )
+          continue;
+        if (about === 'dawn' && o.beat?.day === d.day && REPORT_BEATS.has(o.beat.id))
           continue;
         const roles =
           about === 'vote'
@@ -603,6 +617,7 @@ export function litKey(
     case 'morning.chip-fell':
     case 'morning.card-down':
     case 'morning.chip-saved':
+    case 'morning.roll':
     case 'morning.quiet':
       return gm('dawn');
     case 'morning.carried-summary':

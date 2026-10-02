@@ -51,10 +51,10 @@ const FLIES: [name: string, path: string][] = [
   ['deal-your-card-seat3', 'deal?beat=2&viewer=seat:player_3'],
   // the deal face up (the X-ray): each small card the role's figure under its name
   ['deal-face-up-figures', 'deal?beat=2&viewer=xray&hud=replay'],
-  ['morning-chip-fell', 'morning?beat=6'],
+  ['morning-chip-fell', 'morning?beat=7'],
   ['morning-chip-saved', 'morning?beat=2'],
-  // the report beat's morning roll: morning 2's two deaths, a row each
-  ['morning-roll-two-deaths', 'morning?beat=4'],
+  // the roll after morning 2's report: its two deaths, a row each, roles told
+  ['morning-roll-two-deaths', 'morning?beat=12'],
   ['night-hub', 'night?beat=0'],
 ];
 
@@ -283,7 +283,7 @@ const SLOT: [name: string, path: string, ready: string, click?: string][] = [
   ['slot-lynch-card-up-film', 'lynch?beat=9&viewer=xray&slot=film', '[data-film="lynch"]'],
   [
     'slot-morning-carried-summary-film',
-    'morning?beat=20&viewer=xray&slot=film',
+    'morning?beat=23&viewer=xray&slot=film',
     '[data-film="brief"]',
   ],
 ];
@@ -584,7 +584,7 @@ const FRAMES: [name: string, path: string][] = [
   // the epilogue's closing spread on a phone: the rows scroll in place
   ['frame-iphone14-epilogue', 'over?beat=5&frame=iphone14'],
   // the morning roll on a small phone: a cause too long for its row goes under the name
-  ['frame-667-morning-roll', 'morning?beat=4&frame=667x375'],
+  ['frame-667-morning-roll', 'morning?beat=12&frame=667x375'],
 ];
 
 for (const [name, path] of FRAMES) {

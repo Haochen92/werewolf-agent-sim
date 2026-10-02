@@ -47,6 +47,20 @@ import { Backdrop } from '../instruments/Backdrop';
 import { notebookGame } from '../notebook';
 import type { SceneProps } from './types';
 
+/** How many the night touched, in words. */
+const COUNT = [
+  'No',
+  'One',
+  'Two',
+  'Three',
+  'Four',
+  'Five',
+  'Six',
+  'Seven',
+  'Eight',
+  'Nine',
+];
+
 /** One line of the report: a death, or the save (a row of the morning roll). */
 type Told = RollRow;
 
@@ -301,15 +315,10 @@ function MorningBeat(props: SceneProps) {
           ? ({ kind: 'card', t } as const)
           : ({ kind: 'chip', seat: t.player, saved: true } as const);
     if (id === 'morning.chip-attacked' && cur > 0) before = fromReport(report[cur - 1]);
-    else if (id === 'morning.only-you') before = fromReport(lastTold);
-    else if (id === 'morning.carried-summary')
-      before = prevPrivate
-        ? { kind: 'chip', seat: prevPrivate.target }
-        : fromReport(lastTold);
-    else if (dayBegins && !summaryBeat)
-      before = prevPrivate
-        ? { kind: 'chip', seat: prevPrivate.target }
-        : fromReport(lastTold);
+    // the roll draws the last card (or the saved chip) up; after it nothing of the report hangs
+    else if (id === 'morning.roll') before = fromReport(lastTold);
+    else if (id === 'morning.carried-summary' || (dayBegins && !summaryBeat))
+      before = prevPrivate ? { kind: 'chip', seat: prevPrivate.target } : null;
   }
 
   // the lobby's row, as it hung before the report: the living at dusk, with tonight's dead
@@ -513,12 +522,22 @@ function MorningWords({
   const seatName = (seat: string) =>
     `Seat ${seatNumber(seat)}${seat === me ? ' (you)' : ''}`;
   switch (id) {
-    case 'morning.shutter-down':
-      // the roll: the whole night at a glance, before it is told a chip at a time; the
-      // roles wait for the cards
+    case 'morning.shutter-down': {
+      // only how many the night touched: the names wait for the chips, the roll for the end
+      const n = report.length;
+      return (
+        <Notice title="The morning" walnut {...t}>
+          {n
+            ? `${COUNT[n] ?? n} ${n === 1 ? 'seat was' : 'seats were'} touched in the night.`
+            : null}
+        </Notice>
+      );
+    }
+    case 'morning.roll':
+      // the roll: the whole night at a glance, once it has been told a chip at a time
       return (
         <Notice title="The morning roll" walnut {...t}>
-          <MorningRoll rows={report} cast={cast} me={me} arrive={arrive} roles={false} />
+          <MorningRoll rows={report} cast={cast} me={me} arrive={arrive} />
         </Notice>
       );
     case 'morning.chip-attacked':

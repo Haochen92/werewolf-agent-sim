@@ -82,6 +82,7 @@ export const BEAT_LABELS = {
   'morning.chip-fell': 'Fell',
   'morning.card-down': 'The card comes down',
   'morning.chip-saved': 'Saved',
+  'morning.roll': 'The morning roll',
   'morning.quiet': 'A quiet night',
   'morning.only-you': 'What only you learn',
   'morning.carried-summary': 'What the day taught',
