@@ -40,8 +40,9 @@ import { roomPlan } from '../paint/compartment';
 import { diningCarPlan } from '../paint/dining-car';
 import { ROLE_NAME, seatNumber } from '../roles';
 import { bandNarrows, fileTap, sideOpen, stripButtons } from '../slot';
-import { HUD_CHROME, STAGE_H, STAGE_W, geometry } from '../units';
-import { CarPaint, HouseLights, TableWing } from './DiningCarParts';
+import { HUD_CHROME, bandFoot, STAGE_H, STAGE_W, geometry } from '../units';
+import { HouseLights, TableWing } from './DiningCarParts';
+import { Backdrop } from '../instruments/Backdrop';
 import { NightLobbyScene, nightUnits, spokeOf } from './NightLobbyScene';
 import { NightRoom, ROOM_OF } from './NightRoom';
 import { packEntries } from './PackScene';
@@ -279,7 +280,7 @@ function SpokeRoom({
           className={styles.chatBand}
           style={{
             left: g.wingN,
-            bottom: HUD_CHROME.band[hud],
+            bottom: bandFoot(hud, 0),
             right: STAGE_W - g.wingN - g.room,
           }}
         >
@@ -334,9 +335,9 @@ function NightWhole({ view, beat, me, presentation, slot: slotInput }: SceneProp
 
   return (
     <>
-      <Atmosphere room="car" phase="night" hud={hud} side={side} />
+      <Atmosphere room="car" phase="night" hud={hud} side={side} baked />
       <Layer name="paint">
-        <CarPaint phase="night" hud={hud} side={side} />
+        <Backdrop phase="night" hud={hud} side={side} />
         <Shutter g={g} state="open" />
       </Layer>
 

@@ -45,7 +45,8 @@ import type { Special } from '../paint/draw';
 import { seatNumber, seatify } from '../roles';
 import { bandNarrows, fileTap, sideOpen, stripButtons } from '../slot';
 import { STAGE_H, STAGE_W, geometry } from '../units';
-import { CarPaint, HouseLights, TableWing } from './DiningCarParts';
+import { HouseLights, TableWing } from './DiningCarParts';
+import { Backdrop } from '../instruments/Backdrop';
 import { notebookGame } from '../notebook';
 import { VOTE_STOP } from '../containers/stops';
 import type { SceneProps } from './types';
@@ -209,9 +210,15 @@ function VoteBeat({
   return (
     <>
       {camera ? <Camera {...camera} /> : null}
-      <Atmosphere room="car" phase={nightFalls ? 'night' : 'dusk'} hud={hud} side={side} />
+      <Atmosphere
+        room="car"
+        phase={nightFalls ? 'night' : 'dusk'}
+        hud={hud}
+        side={side}
+        baked
+      />
       <Layer name="paint">
-        <CarPaint
+        <Backdrop
           phase={nightFalls ? 'night' : 'dusk'}
           from={animate ? (id === 'vote.opens' ? 'day' : nightFalls ? 'dusk' : null) : null}
           hud={hud}

@@ -43,7 +43,8 @@ import { ROLE_ARTICLE } from '../paint/role-kit';
 import { seatNumber } from '../roles';
 import { bandNarrows, sideOpen, stripButtons } from '../slot';
 import { STAGE_H, geometry } from '../units';
-import { CarPaint, HouseLights, StandReturns, TableWing } from './DiningCarParts';
+import { HouseLights, StandReturns, TableWing } from './DiningCarParts';
+import { Backdrop } from '../instruments/Backdrop';
 import { notebookGame } from '../notebook';
 import type { SceneProps } from './types';
 
@@ -121,9 +122,9 @@ function DealBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scene
 
   return (
     <>
-      <Atmosphere room="car" phase={phase} hud={hud} side={side} />
+      <Atmosphere room="car" phase={phase} hud={hud} side={side} baked />
       <Layer name="paint">
-        <CarPaint
+        <Backdrop
           phase={phase}
           from={day && animate ? 'dawn' : null}
           hud={hud}

@@ -34,7 +34,8 @@ import { ROLE_ARTICLE } from '../paint/role-kit';
 import { ROLE_NAME, factionOf, seatNumber } from '../roles';
 import { bandNarrows, fileTap, sideOpen, stripButtons } from '../slot';
 import { STAGE_W, geometry, type StageGeometry } from '../units';
-import { CarPaint, HouseLights, TableWing } from './DiningCarParts';
+import { HouseLights, TableWing } from './DiningCarParts';
+import { Backdrop } from '../instruments/Backdrop';
 import { notebookGame } from '../notebook';
 import type { SceneProps } from './types';
 import { score, tally } from './vote-count';
@@ -147,9 +148,9 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
           ease={[0.4, 0.2, 0.3, 1]}
         />
       ) : null}
-      <Atmosphere room="car" phase={night ? 'night' : 'dusk'} hud={hud} side={side} />
+      <Atmosphere room="car" phase={night ? 'night' : 'dusk'} hud={hud} side={side} baked />
       <Layer name="paint">
-        <CarPaint
+        <Backdrop
           phase={night ? 'night' : 'dusk'}
           from={night && animate ? 'dusk' : null}
           hud={hud}

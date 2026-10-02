@@ -41,7 +41,8 @@ import { diningCarPlan } from '../paint/dining-car';
 import { seatNumber } from '../roles';
 import { bandNarrows, fileTap, sideOpen, stripButtons } from '../slot';
 import { STAGE_H, geometry } from '../units';
-import { CarPaint, HouseLights, TableWing } from './DiningCarParts';
+import { HouseLights, TableWing } from './DiningCarParts';
+import { Backdrop } from '../instruments/Backdrop';
 import { notebookGame } from '../notebook';
 import { actedTonight } from './replay-night';
 import type { SceneProps } from './types';
@@ -82,7 +83,6 @@ export function actorsTonight(view: GameView, day: number): Set<string> {
   for (const a of view.days[day]?.night?.actions ?? []) out.add(a.actor);
   return out;
 }
-
 
 /**
  * The X-ray hub's way into a seat's night: its first spoke that night (a wolf's is the pack's).
@@ -147,9 +147,9 @@ function LobbyBeat({
 
   return (
     <>
-      <Atmosphere room="car" phase="night" hud={hud} side={side} />
+      <Atmosphere room="car" phase="night" hud={hud} side={side} baked />
       <Layer name="paint">
-        <CarPaint
+        <Backdrop
           phase="night"
           from={animate && !voted ? 'day' : null}
           hud={hud}

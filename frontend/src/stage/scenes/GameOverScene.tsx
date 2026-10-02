@@ -51,7 +51,8 @@ import { ROLE_ARTICLE } from '../paint/role-kit';
 import { ROLE_NAME, factionOf, seatNumber, type Faction } from '../roles';
 import { bandNarrows, sideOpen, stripButtons } from '../slot';
 import { STAGE_H, geometry } from '../units';
-import { CarPaint, HouseLights, TableWing } from './DiningCarParts';
+import { HouseLights, TableWing } from './DiningCarParts';
+import { Backdrop } from '../instruments/Backdrop';
 import { reportOf } from './MorningScene';
 import {
   WINNERS_HOUR,
@@ -164,9 +165,9 @@ function OverBeat({
 
   return (
     <>
-      <Atmosphere room="car" phase={phase} hud={hud} side={side} />
+      <Atmosphere room="car" phase={phase} hud={hud} side={side} baked />
       <Layer name="paint">
-        <CarPaint
+        <Backdrop
           phase={phase}
           from={animate && step === 1 ? left : null}
           hud={hud}
