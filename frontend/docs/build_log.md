@@ -982,3 +982,35 @@ reading is the Memory timeline at the change, not the Layers panel: the suspects
 decode of the new scene's pictures while the old scene's are still held, which a short overlap
 of unmount and mount would answer.
 
+### 8.6 Crashes at random places with the X-ray on: three things still animated at rest (2026-10-02)
+
+**Seen.** After §8.5 the replay still died on the iPhone at places with no change of phase: in
+the night with Reveal on, and halfway through opening a seat's file.
+
+**Measured.** The pictures held are small at every step of that sequence (a Chromium census on
+the production build, phone size: 23 pictures and 39 MB decoded at the first beat, 14 and 22 MB
+in a night room), the DOM is modest, and the JS heap sits at 13–21 MB; none of that is a
+gigabyte. Chromium's layer tree is no longer readable over the protocol (the Layers panel is
+gone from DevTools), so the layers were found by census instead: every `animation:`,
+`will-change`, filter, blend, mask and scroller in the stage's css.
+
+**Found.** Three things still animated at rest, each the §8.3 mechanism (a layer of its own,
+and every stage layer painted over it promoted with it):
+- the night room's felt country: `FeltWindow` is baked into the car's sheets, but the
+  compartment (`Compartment.tsx`) still mounts it live, its near row scrolling under
+  `will-change: transform`; every seat's room visited with the X-ray, and the seated player's
+  own night live;
+- the wing's glows: a read that can be opened breathes on every day beat with the X-ray on, and
+  at the replay's night stop every seat that acted breathes;
+- the station's snow: seventy flakes, each on its own infinite transform animation, the live
+  game's first screen.
+
+**Done.** On `data-small` all three stand still: the near row keeps no layer, the glows hold a
+middle opacity, no snow falls. Desktop keeps them. Goldens unchanged (the snapshot runner
+already froze animations).
+
+**To read on the phone.** The Layers panel at the replay's night hub with Reveal on, and again
+with a seat's room open: at rest it should show the world alone, as the day does. If it does and
+the page still dies, the next instrument is the Memory timeline over the file's opening, where
+the suspects are the side sheet's decode next to the full one and the pane's mount.
+

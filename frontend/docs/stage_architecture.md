@@ -686,6 +686,14 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   where the move would have started (its delay kept). The puppet's contact shadow is a CSS
   `drop-shadow` recomputed every frame of a rise; a phone draws the figure without it (the wall
   shadow, a picture, still rises with it). Build log §8.5 has the trace that ranked these.
+- **The rule's leftovers, found by census (build log §8.6).** Three things still animated at
+  rest after the bake: the night room's felt country (its near row scrolling with
+  `will-change`, the same mechanism that killed the car scenes), the wing's breathing glows (a
+  read that can be opened, a seat that acted at the replay's night stop) and the station's
+  seventy falling flakes. On `data-small` all three stand still (`FeltWindow`, `Wing`,
+  `Station` module css). To find the next one: grep the stage's css for `animation:` and
+  `will-change`, and the tsx for `repeat: Infinity`; anything that matches and is on screen at
+  rest on a phone is a layer and a cascade.
 - **A scene's set is mounted once; only the beat is keyed.** A scene is a stable set (`DaySet`,
   `MorningSet`: the atmosphere, the car's paint, the shutter, the house light, the wing, the
   strip) that updates in place as the beats go by, and a keyed part (`DayTurn`, `MorningBeat`:
