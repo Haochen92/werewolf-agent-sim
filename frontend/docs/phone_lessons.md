@@ -1,6 +1,6 @@
 # What the phone taught us
 
-Written for: the owner, to re-own and re-explain. Ten lessons from making the theatre survive
+Written for: the owner, to re-own and re-explain. Eleven lessons from making the theatre survive
 and feel right on an iPhone (2026-10-01 to 2026-10-02), each in plain words: what you saw on the
 phone, what the browser was actually doing, what fixed it, and how to see it yourself. The
 numbers and the dated detail live in `build_log.md` §8; each lesson points at its section. The
@@ -186,6 +186,36 @@ closed without anyone remembering the rule.
 **See it yourself.** `npm run e2e -- e2e/phone-rule.spec.ts` with the dev server up. Its report
 lists what still moves and how much of the stage it paints.
 
+## 11. A steady 24 beats an uneven 60, and the GPU is not free
+
+**What you saw.** With the crashes gone, the moves still stuttered: a chip's drop, the card
+coming up, a figure rising. Your Safari timeline showed each as a burst of main-thread work at
+the beat's start and slow frames through the move (§8.9).
+
+**What was happening.** Two things. The burst was the scene rebuilt whole (lesson 5) for every
+chip and every chat line, and again at every change of scene. The slow frames were the move
+itself: a thing moving with no GPU layer is repainted by the CPU every frame, together with the
+light's gradients and blends under it, and that paint does not fit the sixteen milliseconds a
+frame has at the screen's rate, so frames drop unevenly: a few at 16, one at 50, two at 16.
+That unevenness is the stutter.
+
+**What we measured before choosing.** The obvious answer, a GPU layer for the mover, was tried
+on your phone with the `gpu=lift` switch: one jar and one shutter panel given a layer each
+lifted every stage layer painted above them, about 670 MB, and the tab died (lesson 2 at full
+price). So the GPU route was refused, except for things painted last.
+
+**What fixed it.** The set stays up for the whole car, from the deal to the ending, as one
+host that every scene describes its set to; a beat changes two wing tiles, not the car. And on
+a phone every move steps at 24 frames a second: the same curve, sampled 24 times a second, so
+the browser repaints on a steady beat with 42 ms for each frame. Film is 24. A puppet theatre
+at 24 reads as intended. Under the moving rectangle the light's two screened sheets were boxed
+to their gradients, so the figure no longer rises through a full-stage blend, and the phone
+draws its own smaller copies of the pictures it draws small.
+
+**See it yourself.** The timeline from the count's start: one short burst per chip, no blue
+composite inside a scene, and no memory sawtooth. The Layers panel during a move: still three
+layers.
+
 ---
 
 ## If you are asked about it
@@ -193,7 +223,10 @@ lists what still moves and how much of the stage it paints.
 The honest shape of the story: a stage built for a desktop, moved to a phone; the first crash
 was one small animation that cost 300 MB through the layer cascade; the fix was to bake the
 set, keep the set mounted, and let only the beat change; the remaining crashes were the same
-rule in five more places, found by census and closed by a test. The thing we did not do, and
-why: a canvas port would make every move a GPU matrix and the memory predictable, at the price
-of rewriting the stage's drawing side; the DOM stage with these rules holds, so the port is the
-known next step only if the stage has to be a showcase of motion on phones.
+rule in five more places, found by census and closed by a test; the stutter that was left was
+the scene rebuilt per beat and the CPU painting every frame of a move, answered by one set for
+the whole car and moves stepped at film's rate. The thing we did not do, and why: a GPU layer
+per mover was measured on the phone and refused (it lifts the whole stage with it); a canvas
+port would make every move a GPU matrix and the memory predictable, at the price of rewriting
+the stage's drawing side; the DOM stage with these rules holds, so the port is the known next
+step only if the stage has to be a showcase of motion on phones.

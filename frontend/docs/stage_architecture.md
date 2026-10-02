@@ -711,14 +711,55 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   picture: on iPhone Safari a fresh `<img>` is black until it decodes (build log §8.8). Every
   other next/image in the stage carries `decoding="sync"` for the same reason: what a beat
   remounts (the wing's heads in a scene keyed whole) paints at once.
-- **A scene's set is mounted once; only the beat is keyed.** A scene is a stable set (`DaySet`,
-  `MorningSet`: the atmosphere, the car's paint, the shutter, the house light, the wing, the
-  strip) that updates in place as the beats go by, and a keyed part (`DayTurn`, `MorningBeat`:
-  the puppet, the figures, the box) that remounts so its arrival plays again. Keying the whole
-  scene per beat rebuilt the car's pictures and the wing's heads on every step (15 pictures and
-  2 paint sheets a step; 6 and none after the split), and that churn is what the phone's cap
-  catches at speed. The two parts portal into the same layers: the set's nodes come first and
-  stay, the beat's are appended after them, so the stacking order is the JSX order.
+- **The car's set belongs to one host; a scene is a body under it (`scenes/CarScene.tsx`).**
+  Every scene played in the dining car (the deal, the day, the vote, the lynch, the night's
+  lobby, the morning, the ending, the replay's night) is a body of `CarScene`, and describes
+  the set it wants with `<CarSetSpec>` (the hour, the shutter's state and whether it plays,
+  the trap, the house light's pool and specials, the wing's options, the strip's words), as a
+  scene describes its backdrop to the Stage and its shot with `Camera`. The host draws the set
+  once and keeps it from beat to beat and from scene to scene, updating it in place: a counted
+  chip changes two wing tiles, a change of scene changes the light's sheet and the shutter's
+  state. Before this a scene was its own component and most were keyed whole per beat, so a chip
+  counted or a chat line arriving rebuilt the car, the wing and the table, and every change of
+  scene rebuilt them again (build log §8.9). The set is drawn before the body, so the body's own
+  HUD (a notice, the speech box, a read card) paints over the wing and the strip; the first time
+  the set comes up the host mounts the body again under it, in the same commit, so its pieces
+  land after the set's. A body that describes no set (a night room) takes the car's set down.
+- **A body plays by its props, not by remounting.** The vote, the lynch, the lobby and a night
+  room stay mounted across their beats; what must play again per beat is a small keyed piece (a
+  ballot line, a notice) or an instrument that plays into its new state when its props change
+  (the shutter, the lift, the jar, a `Tween` mounted by the beat that plays it). Mount-time state
+  (a timer that starts "when this beat is played": the lynch's wing waiting for the card, a
+  room's pin landing) is keyed on the beat's `seq` so it starts over with each beat. The deal and
+  the ending still key their figures per beat (short scenes); their set is the host's.
+- **The gate checks the set stays up.** `e2e/phone-rule.spec.ts` marks the wing's first
+  picture, the light's sheet and a night room's picture before each step and fails if a beat
+  of the same scene (and room) remounts them; the deal, the ending and the platform are listed,
+  not failed, until they are split.
+- **On a phone a move steps at 24 frames a second (`useSteps`, motion.tsx).** A mover with no
+  GPU layer is repainted by the CPU every frame, with the light's gradients under it, and at
+  the screen's rate that paint does not fit a frame: frames drop unevenly and the move reads
+  as stutter. The GPU route was measured and refused: one jar and one shutter panel given a
+  layer each lifted every stage layer painted above them, about 670 MB on the owner's phone
+  (build log §8.9). Instead each mover's transition goes through `step()`, which samples the
+  same curve at 24 steps a second over its duration, so the browser repaints on a steady beat
+  with 42 ms to paint each frame. Fades are the compositor's and are not stepped.
+- **The light's screened sheets are boxed.** The pool's warmth and the lamps' warmth are
+  `mix-blend-mode: screen` divs; a screen blend is rendered through a surface the size of the
+  repaint, and a figure rising under a full-stage one paid for it every frame. They are boxed to
+  their gradients (clear beyond 70% of the radius, so the pixels are the same).
+- **On a phone the grade keeps its vignette and loses its grain, and a night room's choice
+  cuts.** The grain tile is under a pixel at a phone's scale and was blended again under every
+  mover; the choice's 0.6 s full-stage fade was a layer and its cascade (build log §8.9).
+- **A paint generator's markup is remembered across instances** (`Paint`'s `drawn`): the
+  light's holes cost 60–110 ms to trace, and a beat's light often repeats an earlier one.
+- **A phone draws its own copies of the pictures it draws small** (`SPRITES.small`, made by
+  `scripts/small-sprites.mjs`): the jar's glass and lid, the plate, the deal's small cards, the
+  night window, the day figures, each picked by `useSmall()`. A census in the phone frame found
+  70 MB of decoded pixels the phone never showed, decoded again at every beat that remounted them.
+- **The next speaker's poses are decoded a turn ahead** (`cast/DecodeAhead.tsx`, in the replay,
+  which knows the beats ahead): iPhone Safari decodes a figure's picture when it is first
+  painted, in the same frames as the rise.
 
 **If a beat "looks glitched" again** (frames overlapping, a black flash for a few ms, a stutter
 while the motion itself completes): it is almost certainly the compositor, not React. Check in

@@ -1102,3 +1102,91 @@ this change: the transcript drawer is sometimes a few lines short of its foot at
 fake clock on a loaded dev server; the goldens predate the bake. To re-record once the ending is
 read on a quiet machine.
 
+
+### 8.9 The stutter that was left: the scene rebuilt per beat, and the CPU painting every frame (2026-10-02)
+
+**Seen.** With the crashes and the black frames gone, the owner read the phone's own
+timeline (Safari Web Inspector over the cable): a burst of main-thread work at the start of
+every counted chip, every lynch beat and every new speaker (one beat of 318 ms, half script
+and half paint), a blue Composite record and a memory sawtooth per chip, and slow frames
+through every move; Energy "High" at 42–46% average CPU through the count. The layer count
+stayed at three through all of it, so this was time, not memory.
+
+**Found.** Three costs, read apart.
+- *The rebuild.* The vote, the lynch, the night's lobby, the deal, the ending and the replay's
+  night were keyed whole per beat (§8.8 open): every chip and every chat line unmounted the
+  scene and built it again, the wing, the light's sheet, the table, the valance, with their
+  pictures decoded afresh; and every change of scene did it once more, since each scene was its
+  own component. On production, in the phone frame with the CPU throttled four times, a counted
+  chip cost 1.0–1.8 s of raster and 0.2–0.5 s of script; forty-one vote steps cost 67 s of
+  raster and 14 s of script between them.
+- *The paint under a mover.* A figure, a chip or a card moving with no GPU layer is repainted
+  by the CPU every frame, and inside that rectangle the light's gradient holes are recomputed
+  and its two full-stage `mix-blend-mode: screen` sheets rendered through a surface and blended.
+  Removing the light layer (`gpu=nolight`) doubled the frames drawn during a rise (20 → 42 on the
+  day, 86 → 138 at a chip) for a tenth to a fifth less raster: the light was the frame-time cost.
+- *The GPU route, measured and refused.* The owner opened the vote on the phone with `gpu=lift`
+  (a layer for the jar's box and the shutter's panel): the Layers panel read nine stage layers of
+  52–74 MB, about 670 MB, and the tab died. A layer lifts every stage layer painted above it
+  (§8.1's cascade), and the light and the HUD are above every mover.
+- *A census of pictures against the pixels they are drawn at* (phone frame, 140 beats): the
+  jar's glass 2.4× its drawn size, its lid 3.7×, the plate 2.4×, the deal's small role cards
+  5–8×, the day figures 1.3× (right on a desktop), the night window 1.3–1.6×; the sheets, the
+  valance, the shutter and the table right. 197 MB of decoded pictures touched, 70 MB of them
+  never shown, and decoded again at every beat that remounted them.
+
+**Done, as one batch.**
+- One host for every scene played in the car (`scenes/CarScene.tsx`): a scene is a body that
+  describes its set with `<CarSetSpec>`; the host keeps the set from beat to beat and from scene
+  to scene and updates it in place. The vote, the lynch, the lobby and a night room stay mounted
+  across their beats (the live ballot remounts on its choice; a ballot line and the notices are
+  keyed; the lynch's wait for the card and a room's pin are keyed on the beat's `seq`).
+- On a phone every move steps at 24 frames a second (`useSteps`, `stepped` in motion.tsx): the
+  mover's curve sampled 24 times a second over its duration, through the puppet's rise, the
+  lift, the shutter's panel, the jar's tip, every `Tween`, the string drops, the pin, the tooth,
+  the photo, the marks, the lynch's drop and the card's flight, the vote's leaving puppet.
+- The light's two screened sheets boxed to their gradients (same pixels; `paint.test.ts` now
+  compares the glow's geometry to the kit's, not its markup).
+- Phone copies of the oversized pictures (`SPRITES.small`, 55 files, `scripts/small-sprites.mjs`),
+  picked by `useSmall()` in the jar, the plate, the small cards, the night window, the puppet
+  and the platform's figures. Desktop untouched.
+- The next speaker's two poses decoded a turn ahead in the replay (`cast/DecodeAhead.tsx`).
+- The gate marks the set before each step and fails a beat that remounts it within its scene
+  (the deal, the ending and the platform listed, not failed, until they are split).
+
+**A second pass from the readings, the same day.** Another agent's audit of the old snapshot
+(`docs/rendering-audit-2026-10-02.md`, its own measurements) and one more subtraction trace
+agreed on three more costs, taken in the same batch:
+- *The grade.* Hiding the grade layer (`gpu=nograde`) raised the frames drawn during a move by
+  60–90% (day 19 → 31, a chip 43 → 82; light and grade both off: 41 and 137). Its grain tile,
+  blended at 16% over the whole stage, is under a pixel at a phone's scale and gone from the
+  eye, yet repainted under every moving figure: off under `data-small`; the vignette stays.
+- *A night room's choice.* The target's darkness faded in over 0.6 s as a full-stage opacity
+  animation: a GPU layer for its length and every layer over it, in the room that crashed with
+  the X-ray on (§8.6), and a move the gate could not see because it only read what was still
+  running at the window's end. On a phone it cuts; the gate now samples animations through the
+  window and fails a large element seen animating in two samples or more.
+- *The light's holes.* Tracing them (paint/holes.ts) takes 60–110 ms of script each time a
+  beat's light differs from the last; `Paint` now remembers a generator's markup across
+  instances and beats (48 drawings per generator), so a configuration seen before is free.
+Still on the list from that audit: the lift, the lynch's drop and the vote's leaving puppet move
+a full-stage wrapper (`position: absolute; inset: 0`) round a smaller load, and the browser
+invalidates the box, not the figure; a bounded mover is the next experiment, with a reading of
+the paint rectangles per frame.
+
+**Found on the way.** With the car's set kept across scenes, the live game's notes editor closed
+at the morning's first beat: the host had drawn the set once from the new beat's view under the
+old scene's description (the night's wing holds no death back), which told the wing the seat
+had died. The set is now drawn from the description and the props it was registered with,
+never the host's current props. The transcript drawer also stays mounted now, so its lazy chips
+far up the scroll never load, and the live suite's settle waited on them forever; it waits for
+pictures in the window only.
+
+**Verified.** Goldens 65/65 unchanged at the desktop (the day's shutter is now the instrument
+at rest, which draws the paint's markup; the host's portal order is the old JSX order), the
+replay suite 18/18, the live suite 22/23 (the game-over-in-the-night test fails under three
+parallel workers and passes twice alone: fake-clock timing under load, not chased), the unit
+tests 996/996 (the paint test's glow comparison changed as above), the gate's remount check
+across every scene in the phone frame, and a walk of the fixture replay through every change of
+scene: the wing, the light, the shutter and the backdrop keep their identity from the deal to
+the ending; only the chip a beat is about is remounted.
