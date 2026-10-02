@@ -133,13 +133,27 @@ export function light(o: LightOpts): string {
       .map((q, i) => `<path d="${q.d}" fill="url(#${P}lh${i})" fill-rule="evenodd"/>`)
       .join('') +
     `</svg>`;
-  const glow = `<div style="position:absolute;inset:0;mix-blend-mode:screen;background:radial-gradient(ellipse ${(e.rx * 0.9).toFixed(0)}px ${(e.ry * 0.9).toFixed(0)}px at ${e.x.toFixed(0)}px ${e.y.toFixed(0)}px, rgba(255,179,92,.16), rgba(255,179,92,0) 70%)"></div>`;
-  // the lamps' warmth, over the bleed too (a table lamp can stand at the world's edge)
+  // The two screened sheets are boxed to their gradients (clear beyond 70% of the radius, so
+  // the pixels are the same): a screen blend is rendered through a surface the size of the
+  // repaint, and a figure rising through a full-stage one paid for it every frame (build log §8.9).
+  const R = Math.round,
+    grx = e.rx * 0.9,
+    gry = e.ry * 0.9;
+  // whole-unit boxes, the gradient centred where it was: the same pixels as the full sheet
+  const gl = R(e.x - grx),
+    gt = R(e.y - gry);
+  const glow = `<div style="position:absolute;left:${gl}px;top:${gt}px;width:${R(e.x + grx) - gl}px;height:${R(e.y + gry) - gt}px;mix-blend-mode:screen;background:radial-gradient(ellipse ${R(grx)}px ${R(gry)}px at ${R(e.x) - gl}px ${R(e.y) - gt}px, rgba(255,179,92,.16), rgba(255,179,92,0) 70%)"></div>`;
+  // the lamps' warmth, one sheet round all the lamps, over the bleed too (a table lamp can
+  // stand at the world's edge)
+  const wl = R(Math.min(...lamps.map(([x, , r]) => x - r * 0.8))),
+    wt = R(Math.min(...lamps.map(([, y, r]) => y - r * 0.8))),
+    wr = R(Math.max(...lamps.map(([x, , r]) => x + r * 0.8))),
+    wb = R(Math.max(...lamps.map(([, y, r]) => y + r * 0.8)));
   const warm = lamps.length
-    ? `<div style="position:absolute;top:0;left:${-b}px;width:${W + 2 * b}px;height:${H}px;mix-blend-mode:screen;background:${lamps
+    ? `<div style="position:absolute;left:${wl}px;top:${wt}px;width:${wr - wl}px;height:${wb - wt}px;mix-blend-mode:screen;background:${lamps
         .map(
           ([x, y, r, a]) =>
-            `radial-gradient(circle ${(r * 0.8).toFixed(0)}px at ${(x + b).toFixed(0)}px ${y.toFixed(0)}px, rgba(255,179,92,${(LAMP_WARMTH * Number(a)).toFixed(2)}), rgba(255,179,92,0) 70%)`,
+            `radial-gradient(circle ${R(r * 0.8)}px at ${R(x) - wl}px ${R(y) - wt}px, rgba(255,179,92,${(LAMP_WARMTH * Number(a)).toFixed(2)}), rgba(255,179,92,0) 70%)`,
         )
         .join(',')}"></div>`
     : '';

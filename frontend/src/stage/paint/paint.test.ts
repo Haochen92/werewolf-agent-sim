@@ -159,7 +159,10 @@ describe('fidelity to kits/stage-kit.js', () => {
       'const wingN = on ? W * (phone ? 0.049 : 0.055) : 0',
       `const wingN = on ? (phone ? W * 0.049 : ${WING_N}) : 0`,
     ],
-    ['    if (slotL[1] - slotL[0] > 0.06 * W) parts.push(wallClock(ctx, sh, c, slotL));\n', ''],
+    [
+      '    if (slotL[1] - slotL[0] > 0.06 * W) parts.push(wallClock(ctx, sh, c, slotL));\n',
+      '',
+    ],
     [
       'x = (slot[0] + slot[1]) / 2, y = 0.3 * H, iron = "#1c1a18"',
       `[x, y] = [${at(CAR_PICTURE.lantern)}], iron = "#1c1a18"`,
@@ -176,9 +179,10 @@ describe('fidelity to kits/stage-kit.js', () => {
   const swapped = pieces.reduce((s, [from, to]) => s.replace(from, to), src);
   const Kit = new Function(`${swapped}; return StageKit;`)();
   // the lamps are placed by sums the kit does in another order: equal to well under a unit
-  const round = (v: unknown) => JSON.parse(JSON.stringify(v), (_k, n) =>
-    typeof n === 'number' ? Math.round(n * 1e6) / 1e6 : n,
-  );
+  const round = (v: unknown) =>
+    JSON.parse(JSON.stringify(v), (_k, n) =>
+      typeof n === 'number' ? Math.round(n * 1e6) / 1e6 : n,
+    );
   // The light's departure (2026-10-01): the kit cuts its holes with an SVG mask of blurred
   // shapes, which iPhone Safari cannot draw, so the markup differs; each hole is still where
   // the kit's shape is (the pool's ellipse, each glow's circle, each special's rounded rect),
@@ -225,10 +229,28 @@ describe('fidelity to kits/stage-kit.js', () => {
           expect(light({ id: 'k', hud, side, scene: plan, dark: 70 })).toContain(
             'fill="#0c0a07" fill-opacity="0.7"',
           );
-          // the pool's glow, as the kit warms it
-          const glow = (html: string) => html.slice(html.indexOf('<div'));
-          expect(glow(light({ id: 'k', hud, side, from: 'over', scene: plan }))).toBe(
-            glow(Kit.light(g, sc, { id: 'k', from: 'over' })),
+          // the pool's glow, as the kit warms it: the same ellipse at the same place. The kit's
+          // sheet covers the stage; ours is boxed to the gradient (clear beyond it), so a figure
+          // rising under it is not repainted through a full-stage blend (build log §8.9).
+          const glowAt = (html: string) => {
+            const div = html.slice(html.indexOf('<div'));
+            const box = /left:(-?\d+)px;top:(-?\d+)px/.exec(div);
+            const m =
+              /ellipse (\d+)px (\d+)px at (-?\d+)px (-?\d+)px, (rgba[^)]+\)), (rgba[^)]+\)) (\d+%)/.exec(
+                div,
+              );
+            if (!m) throw new Error('no glow in ' + div);
+            const [ox, oy] = box ? [+box[1], +box[2]] : [0, 0];
+            return {
+              rx: +m[1],
+              ry: +m[2],
+              x: ox + +m[3],
+              y: oy + +m[4],
+              stops: m.slice(5).join(' '),
+            };
+          };
+          expect(glowAt(light({ id: 'k', hud, side, from: 'over', scene: plan }))).toEqual(
+            glowAt(Kit.light(g, sc, { id: 'k', from: 'over' })),
           );
         });
 });
@@ -292,7 +314,9 @@ describe('bleed', () => {
   });
 
   it('darkens to the house’s dark, from the room’s own edge value', () => {
-    expect(station).toMatch(/<linearGradient id="stA-bdark"[^>]*gradientUnits="userSpaceOnUse"/);
+    expect(station).toMatch(
+      /<linearGradient id="stA-bdark"[^>]*gradientUnits="userSpaceOnUse"/,
+    );
     expect(station).toContain('stop-color="#0c0a07" stop-opacity="1"');
     expect(station).toContain('fill="url(#stA-bdark)"');
     // it starts from how dark the platform already is at its edge
