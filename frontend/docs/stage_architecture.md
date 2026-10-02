@@ -679,6 +679,13 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   layer painted above it (the light's sheet, the replay's drape) for that second. The workbench
   word `?gpu=lift` turns that on for every `data-moves` box, to read the price in the Layers
   panel before paying it in the build (build log §8.4).
+- **On a phone the camera cuts, and the figures cast no filtered shadow.** The camera has no
+  layer of its own there (above), so a push-in or a pull-back would repaint the whole world
+  every frame: a full-stage bitmap a frame for a second, which stuttered and churned memory at
+  the count's push-in and both pull-backs. On `data-small` every `Camera` shot lands at once,
+  where the move would have started (its delay kept). The puppet's contact shadow is a CSS
+  `drop-shadow` recomputed every frame of a rise; a phone draws the figure without it (the wall
+  shadow, a picture, still rises with it). Build log §8.5 has the trace that ranked these.
 - **A scene's set is mounted once; only the beat is keyed.** A scene is a stable set (`DaySet`,
   `MorningSet`: the atmosphere, the car's paint, the shutter, the house light, the wing, the
   strip) that updates in place as the beats go by, and a keyed part (`DayTurn`, `MorningBeat`:

@@ -940,3 +940,45 @@ for the shutter, back to rest when the move ends. The workbench word `?gpu=lift`
 `will-change: transform` on every `data-moves` box so the price can be read in the Layers panel
 first: `/workbench/vote?beat=18&animate=1&gpu=lift` and `/workbench/morning?beat=5&animate=1&gpu=lift`.
 
+### 8.5 Scene changes still stuttered and sometimes crashed: the camera's move (2026-10-02)
+
+**Seen.** With the set baked and the jar and shutter on their boxes, three end-to-end replays
+on the iPhone crashed twice, always at a change of phase: the last speech into the vote, the
+vote into the count, the count into the night, the night into the day; and those changes were
+the laggy ones.
+
+**Measured.** A Chromium trace per transition beat, in the phone frame
+(`frame=iphone14`, so `data-small` applies) with the CPU throttled 4×, over the beat's first
+4.5 s on the production build, raster time being the number a per-frame repaint shows up in:
+
+| beat | raster ms | note |
+| --- | ---: | --- |
+| vote.count-begins | 3555 | the camera's push-in |
+| lynch.stand-returns | 2230 | the camera's pull-back |
+| day.pass | 2065 | a puppet's rise |
+| lynch.drop | 1997 | a puppet's fall |
+| vote.table-down | 1879 | the pull-back as night falls |
+| vote.opens | 1123 | the table up, the stand leaving |
+| morning.shutter-down | 1133 | the slide (620 small paints) |
+| lynch.named, vote.result | 393–1071 | nothing full-stage moves |
+
+**Why.** On a phone the camera keeps no layer of its own (§8.3: a layer there made the grade and
+the HUD layers too), so a camera move is a JavaScript-driven transform on a plain element and
+the browser repaints everything inside it every frame: the whole world, at the phone's
+resolution, double-buffered, for the move's second. That is the lag, and the churn of a
+full-stage bitmap a frame is what tips a page already near its budget. The puppets' rises are
+the next tier: the figure's contact shadow is a CSS `drop-shadow`, a blur recomputed every frame
+the figure moves.
+
+**Done.** On `data-small` a `Camera` shot cuts: `Stage.tsx` sets the move's duration to 0 and
+keeps its delay, so the count is pushed in where the push-in would have started, and the
+pull-backs likewise. The figure's `drop-shadow` is off on a phone (`Puppet.module.css`); the
+wall shadow, a picture, still rises with it. Desktop keeps both moves as designed.
+
+**Open.** The remaining per-frame costs on a phone are the figures' rises and falls themselves
+(a picture through a transform, the same class as the jar now) and the light's sheet, redrawn
+once per beat where the pool or a special changes. If a change of phase still crashes, the next
+reading is the Memory timeline at the change, not the Layers panel: the suspects are then the
+decode of the new scene's pictures while the old scene's are still held, which a short overlap
+of unmount and mount would answer.
+
