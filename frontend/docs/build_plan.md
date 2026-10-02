@@ -396,8 +396,8 @@ shutter's slide on HTML boxes, the Home Screen manifest and the iPhone's line fo
 `86955eb` (on a phone the camera cuts and the figures cast no filtered shadow) `d924ea0`
 (on a phone nothing animates at rest: the night room's felt row, the wing's glows, the
 station's snow) and `9cfe8d4` (the phone rule as a gate and its sweep fixed in one batch: the
-kit's idle life, the lift's layer, the train, the ledger, one phone flag; the wolf card), each
-frontend only.
+kit's idle life, the lift's layer, the train, the ledger, one phone flag; the wolf card) and `ddacb4e`
+(a fast second tap on a control is the control's, not a double-tap zoom), each frontend only.
 · **2026-10-01 both containers rebuilt at `a651988`** (branch pushed first; built with
 `docker build` from a clean detached worktree, then `compose up -d --no-build`). Server: the
 request budget and stall rescue (30 s, two attempts, two stalls → the rescue model for five
