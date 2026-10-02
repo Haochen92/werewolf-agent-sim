@@ -214,7 +214,9 @@ const theatre = (page: Page) => page.locator('[data-beat-index]');
  */
 const foldTime = (page: Page) => 10_000 + (mocks.get(page)?.stream.length ?? 0) * 200;
 async function landsOn(page: Page, beat: string | RegExp) {
-  await expect(theatre(page)).toHaveAttribute('data-beat', beat, { timeout: foldTime(page) });
+  await expect(theatre(page)).toHaveAttribute('data-beat', beat, {
+    timeout: foldTime(page),
+  });
 }
 
 /**
@@ -1171,7 +1173,8 @@ test('live: on a phone the three plaques sit in a row under the head, with the d
 test('live: the strip’s door asks, and Leave goes to the lobby', async ({ page }) => {
   await mockApi(page, { status: status(200), stream: upTo(200) });
   await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
-  await expect(theatre(page)).toHaveAttribute('data-beat-index', /\d+/);
+  // the first beat, once the 200 frames are read (past the default five seconds under load)
+  await landsOn(page, /./);
   await page.getByRole('button', { name: 'Leave the table' }).click();
   const confirm = page.getByRole('alertdialog', { name: 'Leave the table?' });
   await expect(confirm).toBeVisible();
