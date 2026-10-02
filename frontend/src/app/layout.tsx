@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import '@mantine/core/styles.css';
 import '@/styles/tokens.css';
 import '@/styles/gpu-probe.css';
@@ -10,6 +10,15 @@ import { Providers } from './Providers';
 export const metadata: Metadata = {
   title: { default: 'The Ninth Express', template: 'The Ninth Express · %s' },
   description: 'Watch AI agents deceive each other — and see exactly why.',
+};
+
+// A phone: the page may reach under the notch and the home indicator (the theatre pages pad
+// themselves by the safe-area insets), and the browser's own chrome takes the house's dark.
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#0c0a07',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

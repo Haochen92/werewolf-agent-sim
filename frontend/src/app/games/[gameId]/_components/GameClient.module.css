@@ -3,6 +3,14 @@
   position: fixed;
   inset: 0;
   background: #000;
+  /* a phone: the stage keeps clear of the notch and the home indicator (viewport-fit=cover in
+     layout.tsx lets the page reach under them, these keep the theatre out), a pinch never
+     zooms the stage, and a drag never pulls the page down to refresh */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+  box-sizing: border-box;
+  touch-action: pan-x pan-y;
+  overscroll-behavior: none;
 }
 
 /* the wait, and what went wrong */
@@ -17,4 +25,9 @@
 }
 .meta a {
   color: inherit;
+}
+
+/* while a theatre page is up the document itself never pulls down to refresh (Safari 16+) */
+:global(html):has(.page) {
+  overscroll-behavior: none;
 }
