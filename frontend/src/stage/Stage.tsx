@@ -175,8 +175,13 @@ export function Stage({
       ck.set(k);
     }
     const [x, y, k] = place(s.to);
+    // a phone (`data-small`): the camera has no layer of its own there (Stage.module.css), so
+    // a move would repaint the whole world every frame, a full-stage bitmap a frame, which is
+    // the stutter and the memory churn at the count's push-in and the pull-backs (build log
+    // §8.5); the shot cuts instead, where the move would have started
+    const cut = boxRef.current?.hasAttribute('data-small') ?? false;
     const t = {
-      duration: s.duration ?? 0,
+      duration: cut ? 0 : (s.duration ?? 0),
       delay: s.delay ?? 0,
       ease: s.ease ?? [0.4, 0.2, 0.3, 1],
     };

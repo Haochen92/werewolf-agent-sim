@@ -19,3 +19,10 @@
 .numeral text {
   font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
 }
+
+/* On a phone (Stage.tsx `data-small`) the figure casts no contact shadow: a CSS filter is
+   recomputed every frame the figure rises, the heaviest per-frame cost left on a day beat
+   (build log §8.5); the wall shadow (CastShadow, a picture) still rises with it. */
+[data-small] .sprite {
+  filter: none;
+}
