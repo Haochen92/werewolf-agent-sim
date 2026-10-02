@@ -39,6 +39,7 @@ import { createPortal } from 'react-dom';
 import type { Character } from '@/assets/manifest';
 import type { GameView } from '@/game/types';
 import { castForGame } from '../cast/castForGame';
+import { DecodeAhead } from '../cast/DecodeAhead';
 import { beatsFor } from '../beats/beatsFor';
 import { useDrawerFilters } from '../drawer/use-drawer-filters';
 import { useNoteEditing } from '../notebook';
@@ -350,6 +351,7 @@ export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps
       onPointerOut={controls === 'stage' ? onPointerOut : undefined}
     >
       <Stage fit="contain">
+        {beat && view ? <DecodeAhead beats={beats} index={index} cast={cast} /> : null}
         {beat && view && Scene ? (
           <StageMotion speed={state.speed}>
             <Scene
