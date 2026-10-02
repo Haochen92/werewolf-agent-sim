@@ -16,37 +16,27 @@
  */
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
-import { Atmosphere } from '../Atmosphere';
 import { Camera, Layer } from '../Stage';
-import { SideSlot } from '../SideSlot';
 import { Puppet } from '../cast/Puppet';
 import { RoleCard } from '../instruments/Card';
-import { Trap, trapGeometry } from '../instruments/Floor';
+import { trapGeometry } from '../instruments/Floor';
 import { Lift } from '../instruments/Lift';
 import { CardButton, Notice, NoticeZone } from '../instruments/Notice';
-import { Shutter } from '../instruments/Shutter';
 import { Plaque, Stand } from '../instruments/Stand';
-import { TopStrip } from '../instruments/TopStrip';
 import { countShot, voteGeometry } from '../instruments/vote-geometry';
-import { StageMotion, useMotionScale } from '../motion';
+import { useMotionScale, useSteps } from '../motion';
 import type { Special } from '../paint/draw';
 import { ROLE_ARTICLE } from '../paint/role-kit';
 import { ROLE_NAME, factionOf, seatNumber } from '../roles';
-import { bandNarrows, fileTap, sideOpen, stripButtons } from '../slot';
+import { bandNarrows, fileTap, sideOpen } from '../slot';
 import { STAGE_W, geometry, type StageGeometry } from '../units';
-import { HouseLights, TableWing } from './DiningCarParts';
-import { Backdrop } from '../instruments/Backdrop';
-import { notebookGame } from '../notebook';
+import { CarSetSpec } from './CarScene';
 import type { SceneProps } from './types';
 import { score, tally } from './vote-count';
 
-export function LynchScene(props: SceneProps) {
-  return (
-    <StageMotion speed={props.presentation.motion}>
-      <LynchBeat key={`${props.beat.id}:${props.beat.seq}`} {...props} />
-      <SideSlot {...props} />
-    </StageMotion>
-  );
+/** The lynch's body under the car's host (CarScene.tsx): up across its beats, playing by its props. */
+export function LynchBody(props: SceneProps) {
+  return <LynchBeat {...props} />;
 }
 
 /** How far along the lynch is: before the drop, the drop, the card up, the truth, the card away. */
@@ -69,6 +59,7 @@ export function liftCard(g: StageGeometry) {
 function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: SceneProps) {
   const { hud, xray, animate, cast } = presentation;
   const k = useMotionScale();
+  const steps = useSteps();
   const id = beat.id,
     day = beat.day,
     step = STEP[id] ?? 0;
@@ -92,14 +83,17 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
       : tally(vote?.ballots ?? []),
   );
 
-  // the wing keeps the live face until the card clears the rail, then turns to the sigil
-  const [told, setTold] = useState(!(animate && id === 'lynch.card-up'));
+  // the wing keeps the live face until the card clears the rail, then turns to the sigil;
+  // the wait starts over each time the card-up beat is played (the scene stays mounted)
+  const waits = animate && id === 'lynch.card-up';
+  const [told, setTold] = useState({ beat: beat.seq, done: !waits });
+  if (told.beat !== beat.seq) setTold({ beat: beat.seq, done: !waits });
   useEffect(() => {
-    if (told) return;
-    const tm = setTimeout(() => setTold(true), 1.45 * k * 1000);
+    if (!waits) return;
+    const tm = setTimeout(() => setTold({ beat: beat.seq, done: true }), 1.45 * k * 1000);
     return () => clearTimeout(tm);
-  }, [told, k]);
-  const untold = new Set(step < 2 || !told ? [seat] : []);
+  }, [waits, beat.seq, k]);
+  const untold = new Set(step < 2 || !told.done ? [seat] : []);
 
   const card = liftCard(g);
   const fade = (from: number, to: number, duration: number, delay: number) => ({
@@ -148,31 +142,29 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
           ease={[0.4, 0.2, 0.3, 1]}
         />
       ) : null}
-      <Atmosphere room="car" phase={night ? 'night' : 'dusk'} hud={hud} side={side} baked />
-      <Layer name="paint">
-        <Backdrop
-          phase={night ? 'night' : 'dusk'}
-          from={night && animate ? 'dusk' : null}
-          hud={hud}
-          fadeDelay={1.3}
-          side={side}
-        />
-        <Shutter
-          g={g}
-          state={night ? 'open' : 'closed'}
-          animate={night && animate}
-          delay={1.4}
-        />
-      </Layer>
-
-      <Layer name="floor">
-        <Trap
-          g={g}
-          phase={night ? 'night' : 'dusk'}
-          state={night ? 'closed' : 'open'}
-          animate={night && animate}
-        />
-      </Layer>
+      <CarSetSpec
+        phase={night ? 'night' : 'dusk'}
+        backdrop={{ from: night && animate ? 'dusk' : null, fadeDelay: 1.3 }}
+        shutter={{
+          state: night ? 'open' : 'closed',
+          animate: night && animate,
+          delay: 1.4,
+        }}
+        trap={{ state: night ? 'closed' : 'open', animate: night && animate }}
+        light={{ pool, specials, quiet, dark }}
+        wing={{
+          untold,
+          lit: (s) => s === seat,
+          truth: (s) => (xray ? (view.xray.roles[s] ?? null) : null),
+          // nobody speaks here: a card opens its seat's file
+          file: fileTap(presentation, slotInput, true),
+        }}
+        strip={{
+          title: `Day ${day}`,
+          sub: `${night ? 'Night falls' : 'The lynch'} · ${beat.label}`,
+          disc: night ? 'moon' : 'sun',
+        }}
+      />
 
       <Layer name="figures">
         {character && step === 0 ? (
@@ -191,7 +183,11 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
             style={{ position: 'absolute', inset: 0 }}
             initial={{ y: 0 }}
             animate={{ y: '115%' }}
-            transition={{ duration: 0.5 * k, delay: 0.35 * k, ease: [0.55, 0, 0.95, 0.55] }}
+            transition={steps({
+              duration: 0.5 * k,
+              delay: 0.35 * k,
+              ease: [0.55, 0, 0.95, 0.55],
+            })}
           >
             <Puppet g={g} shadow character={character} seat={null} state="out" />
           </motion.div>
@@ -241,7 +237,11 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
             }}
             initial={{ y: 0, opacity: 1 }}
             animate={{ y: -1.7 * card.h, opacity: 0.6 }}
-            transition={{ duration: 0.8 * k, delay: 0.3 * k, ease: [0.5, 0, 0.8, 0.5] }}
+            transition={steps({
+              duration: 0.8 * k,
+              delay: 0.3 * k,
+              ease: [0.5, 0, 0.8, 0.5],
+            })}
           >
             <RoleCard role={role} seat={n} w={card.w} />
           </motion.div>
@@ -265,42 +265,7 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
         </Layer>
       ) : null}
 
-      <Layer name="light">
-        <HouseLights
-          phase={night ? 'night' : 'dusk'}
-          hud={hud}
-          pool={pool}
-          specials={specials}
-          quiet={quiet}
-          dark={dark}
-          side={side}
-        />
-      </Layer>
-
       <Layer name="hud">
-        <TableWing
-          view={view}
-          cast={cast}
-          me={me}
-          hud={hud}
-          width={g.wingN}
-          notes={notebookGame(presentation, me)}
-          edit={slotInput?.notebook}
-          opts={{
-            untold,
-            lit: (s) => s === seat,
-            truth: (s) => (xray ? (view.xray.roles[s] ?? null) : null),
-            // nobody speaks here: a card opens its seat's file
-            file: fileTap(presentation, slotInput, true),
-          }}
-        />
-        <TopStrip
-          hud={hud}
-          title={`Day ${day}`}
-          sub={`${night ? 'Night falls' : 'The lynch'} · ${beat.label}`}
-          disc={night ? 'moon' : 'sun'}
-          {...stripButtons(presentation, slotInput)}
-        />
         <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
           {myCard ? (
             <CardButton role={myCard} gone={mine && step >= 2} onOpen={turn?.onCard} />

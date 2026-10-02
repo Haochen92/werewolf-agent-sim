@@ -21,11 +21,9 @@
  * holding a "…"), then talks and the line comes into the box. Arrived at (a seek, a refresh), it is all simply there.
  */
 import { useEffect, useState } from 'react';
-import { SPRITES, type DayState } from '@/assets/manifest';
+import { type DayState } from '@/assets/manifest';
 import type { PassSlot, SpeechSlot } from '@/game/types';
-import { Atmosphere } from '../Atmosphere';
-import { Layer, Paint } from '../Stage';
-import { SideSlot } from '../SideSlot';
+import { Layer } from '../Stage';
 import { Puppet } from '../cast/Puppet';
 import { ReadCard } from '../film/ReadCard';
 import { freshReads, turnReads } from '../film/film-model';
@@ -33,20 +31,12 @@ import { countText } from '../countdown';
 import { CardButton, NoticeZone } from '../instruments/Notice';
 import { SpeechBox } from '../instruments/SpeechBox';
 import { Plaque, Stand } from '../instruments/Stand';
-import { TopStrip } from '../instruments/TopStrip';
 import { TurnDock } from '../instruments/TurnDock';
-import { Wing } from '../instruments/Wing';
-import { StageMotion, useMotionScale } from '../motion';
-import { diningCarPlan } from '../paint/dining-car';
-import { drape } from '../paint/drape';
-import { light } from '../paint/light';
-import { shutter } from '../paint/window';
-import { ROLE_NAME, factionOf, knownRoles, seatNumber } from '../roles';
-import { bandNarrows, sideOpen, stripButtons } from '../slot';
-import { WOOD } from '../textures';
-import { BLEED, geometry } from '../units';
-import { Backdrop } from '../instruments/Backdrop';
-import { notebookGame } from '../notebook';
+import { useMotionScale } from '../motion';
+import { ROLE_NAME, factionOf, seatNumber } from '../roles';
+import { bandNarrows, sideOpen } from '../slot';
+import { geometry } from '../units';
+import { CarSetSpec } from './CarScene';
 import type { SceneProps } from './types';
 
 /** How long the arriving puppet stands thinking before it speaks, after the rise (seconds). */
@@ -65,7 +55,8 @@ export const continues = (was: SceneProps['beat'], now: SceneProps['beat']) =>
     now.subject === (was.subject ?? was.seat) &&
     now.day === was.day);
 
-export function DayScene(props: SceneProps) {
+/** The day's body under the car's host (CarScene.tsx). */
+export function DayBody(props: SceneProps) {
   // live, the thinking puppet is already at the stand when its line arrives: it does not rise again
   const [on, setOn] = useState({ beat: props.beat, key: turnKey(props.beat) });
   if (on.beat !== props.beat)
@@ -74,14 +65,13 @@ export function DayScene(props: SceneProps) {
       key: continues(on.beat, props.beat) ? on.key : turnKey(props.beat),
     });
   return (
-    <StageMotion speed={props.presentation.motion}>
+    <>
       {/* the set stays up from turn to turn: nothing on it plays again, and a phone's browser
           cannot afford its pictures rebuilt beat after beat (build log §8.3) */}
       <DaySet {...props} turnKey={on.key} />
       {/* a new beat is a new turn: the arrival replays from the start */}
       <DayTurn key={on.key} {...props} />
-      <SideSlot {...props} />
-    </StageMotion>
+    </>
   );
 }
 
@@ -94,26 +84,21 @@ function speakerOf(beat: SceneProps['beat'], cast: SceneProps['presentation']['c
 }
 
 /**
- * The car round the turn: the paint, the house light, the wing and the strip. Mounted once
- * for the scene and updated in place as the beats go by, so a beat costs the browser the
- * puppet and the box, not the car's pictures over again. `turnKey` is the turn on the stage:
- * a read card opened on the wing belongs to it and goes with it.
+ * The car round the turn: the paint, the house light, the wing and the strip, described to the
+ * car's host (CarScene.tsx), which keeps them up from turn to turn and from scene to scene, so a
+ * beat costs the browser the puppet and the box, not the car's pictures over again. `turnKey`
+ * is the turn on the stage: a read card opened on the wing belongs to it and goes with it.
  */
 function DaySet({
   view,
   beat,
-  me,
   presentation,
-  slot: slotInput,
   turnKey: at,
 }: SceneProps & { turnKey: string }) {
   const { hud, xray, cast } = presentation;
   const side = sideOpen(presentation);
   const g = geometry(hud, side);
-  const plan = diningCarPlan({ phase: 'day', hud, side });
   const { speaker, character } = speakerOf(beat, cast);
-  const deadBySeat = new Map(view.dead.map((d) => [d.player, d]));
-  const known = knownRoles(me, view.me);
 
   // the X-ray's reads on the wing: the speaker's reads of the table when it spoke; a tap on a
   // seat opens its card, level with the tile
@@ -127,80 +112,43 @@ function DaySet({
   const open = card?.turn === at ? card : null;
   const opened = open ? readOf(open.seat) : undefined;
 
+  // the speaker's pool, where the light falls with no pool given (paint/light.ts `poolOf`)
+  const pool = {
+    x: g.cx,
+    y: g.railY - g.pwid * 0.1,
+    rx: g.pwid * 0.66,
+    ry: g.pwid * 0.82,
+  };
   return (
     <>
-      <Atmosphere room="car" phase="day" hud={hud} side={side} baked />
-      <Layer name="paint">
-        <Backdrop phase="day" hud={hud} side={side} />
-        <Paint
-          of={shutter}
-          opts={{
-            hud,
-            side,
-            state: 'open',
-            walnut: WOOD.walnut,
-            picture: SPRITES.props.shutter.src,
-          }}
-        />
-      </Layer>
-
-      <Layer name="light">
-        <Paint
-          of={light}
-          opts={{
-            hud,
-            side,
-            scene: { glows: plan.glows, specials: plan.specials },
-            lamps: plan.lamps,
-            // the painted room reads as lit: the speaker's pool says "this one", the room stays warm
-            dark: 24,
-            bleed: BLEED,
-          }}
-        />
-      </Layer>
-
-      <Layer name="hud">
-        {hud === 'replay' ? (
-          <Paint of={drape} opts={{ bleed: BLEED, src: SPRITES.props.valance.src }} />
-        ) : null}
-        <Wing
-          width={g.wingN}
-          notes={notebookGame(presentation, me)}
-          edit={slotInput?.notebook}
-          castCounts={view.castRoleCounts}
-          tiles={view.seats.map((seat, i) => {
-            const d = deadBySeat.get(seat);
+      <CarSetSpec
+        phase="day"
+        shutter={{ state: 'open' }}
+        // the painted room reads as lit: the speaker's pool says "this one", the room stays warm
+        light={{ pool, dark: 24 }}
+        wing={{
+          truth: (seat) => (xray ? (view.xray.roles[seat] ?? null) : null),
+          lit: (seat) => seat === speaker,
+          read: (seat) => {
             const rd = readOf(seat);
-            return {
-              seat: seatNumber(seat),
-              character: cast[i],
-              dead: d ? { role: d.role } : undefined,
-              truth: xray ? (view.xray.roles[seat] ?? null) : null,
-              lit: seat === speaker,
-              you: seat === me,
-              known: known.get(seat),
-              read: rd
-                ? {
-                    sure: rd.confidence === 'high',
-                    open: open?.seat === seat,
-                    fresh: fresh.has(seat) ? `${reads?.seq}` : null,
-                    onRead: (tile: HTMLElement) =>
-                      setCard((c) =>
-                        c?.seat === seat && c.turn === at
-                          ? null
-                          : { seat, top: tile.offsetTop, turn: at },
-                      ),
-                  }
-                : undefined,
-            };
-          })}
-        />
-        <TopStrip
-          hud={hud}
-          title={`Day ${beat.day}`}
-          sub={`Discussion · ${beat.label}`}
-          {...stripButtons(presentation, slotInput)}
-        />
+            return rd
+              ? {
+                  sure: rd.confidence === 'high',
+                  open: open?.seat === seat,
+                  fresh: fresh.has(seat) ? `${reads?.seq}` : null,
+                  onRead: (tile: HTMLElement) =>
+                    setCard((c) =>
+                      c?.seat === seat && c.turn === at
+                        ? null
+                        : { seat, top: tile.offsetTop, turn: at },
+                    ),
+                }
+              : undefined;
+          },
+        }}
+        strip={{ title: `Day ${beat.day}`, sub: `Discussion · ${beat.label}` }}
+      />
+      <Layer name="hud">
         {open && opened ? (
           <ReadCard
             seat={open.seat}

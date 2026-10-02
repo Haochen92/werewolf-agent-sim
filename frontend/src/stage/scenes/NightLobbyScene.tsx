@@ -26,24 +26,17 @@
  */
 import type { GameView } from '@/game/types';
 import type { SceneBeat } from '../beats/types';
-import { Atmosphere } from '../Atmosphere';
 import { Layer } from '../Stage';
-import { SideSlot } from '../SideSlot';
 import { Chip } from '../instruments/Chip';
 import { CountPill } from '../instruments/CountPill';
 import { CardButton, Notice, NoticeButton, NoticeZone } from '../instruments/Notice';
-import { Shutter } from '../instruments/Shutter';
-import { TopStrip } from '../instruments/TopStrip';
 import { chipRow, rowX } from '../instruments/flies';
-import { StageMotion } from '../motion';
 import { CARD_TEXT } from '../card-text';
 import { diningCarPlan } from '../paint/dining-car';
 import { seatNumber } from '../roles';
-import { bandNarrows, fileTap, sideOpen, stripButtons } from '../slot';
+import { bandNarrows, fileTap, sideOpen } from '../slot';
 import { STAGE_H, geometry } from '../units';
-import { HouseLights, TableWing } from './DiningCarParts';
-import { Backdrop } from '../instruments/Backdrop';
-import { notebookGame } from '../notebook';
+import { CarSetSpec } from './CarScene';
 import { actedTonight } from './replay-night';
 import type { SceneProps } from './types';
 
@@ -94,13 +87,9 @@ export function spokeOf(view: GameView, day: number, seat: string) {
     b.id === 'rnight.spoke' && b.day === day && b.spoke?.actor === actor;
 }
 
-export function NightLobbyScene(props: SceneProps) {
-  return (
-    <StageMotion speed={props.presentation.motion}>
-      <LobbyBeat key={`${props.beat.id}:${props.beat.seq}`} {...props} />
-      <SideSlot {...props} />
-    </StageMotion>
-  );
+/** The lobby's body under the car's host (CarScene.tsx): up across its beats, playing by its props. */
+export function LobbyBody(props: SceneProps) {
+  return <LobbyBeat {...props} />;
 }
 
 function LobbyBeat({
@@ -147,18 +136,40 @@ function LobbyBeat({
 
   return (
     <>
-      <Atmosphere room="car" phase="night" hud={hud} side={side} baked />
-      <Layer name="paint">
-        <Backdrop
-          phase="night"
-          from={animate && !voted ? 'day' : null}
-          hud={hud}
-          fadeDelay={0.1}
-          side={side}
-        />
-        {/* up: the day never brought it down, and a vote's or a lynch's night gathered it already */}
-        <Shutter g={g} state="open" />
-      </Layer>
+      <CarSetSpec
+        phase="night"
+        backdrop={{ from: animate && !voted ? 'day' : null, fadeDelay: 0.1 }}
+        // up: the day never brought it down, and a vote's or a lynch's night gathered it already
+        shutter={{ state: 'open' }}
+        light={{
+          pool: {
+            x: row.x0 + row.span / 2,
+            y: row.rowY - 0.06 * H,
+            rx: row.span * 0.56,
+            ry: 0.3 * H,
+          },
+          dark: 46,
+        }}
+        wing={{
+          truth: (seat) => (xray ? (view.xray.roles[seat] ?? null) : null),
+          lamp: (seat) => !!actors?.has(seat) && !seen(seat),
+          glow: (seat) =>
+            acted?.has(seat) ? (seen(seat) ? 'visited' : 'acted') : undefined,
+          // the word on the card says it: the glow alone did not read as lit (2026-09-30)
+          word: (seat) => (acted?.has(seat) ? (seen(seat) ? 'seen' : 'visit') : undefined),
+          file: open && hub ? (seat) => (goesIn(seat) ? toNight : open)(seat) : open,
+          fileLabel: (seat) =>
+            hub && goesIn(seat)
+              ? `Seat ${seatNumber(seat)}’s night`
+              : `Open seat ${seatNumber(seat)}’s file`,
+        }}
+        strip={{
+          title: `Night ${beat.day}`,
+          sub: `Night · ${beat.label}`,
+          side,
+          count: <CountPill hud={hud} label="Acted" n={actedN} total={units} side={side} />,
+        }}
+      />
 
       <Layer name="figures">
         {alive.map((seat, i) => {
@@ -180,53 +191,7 @@ function LobbyBeat({
         })}
       </Layer>
 
-      <Layer name="light">
-        <HouseLights
-          phase="night"
-          hud={hud}
-          pool={{
-            x: row.x0 + row.span / 2,
-            y: row.rowY - 0.06 * H,
-            rx: row.span * 0.56,
-            ry: 0.3 * H,
-          }}
-          dark={46}
-          side={side}
-        />
-      </Layer>
-
       <Layer name="hud">
-        <TableWing
-          view={view}
-          cast={cast}
-          me={me}
-          hud={hud}
-          width={g.wingN}
-          notes={notebookGame(presentation, me)}
-          edit={slotInput?.notebook}
-          opts={{
-            truth: (seat) => (xray ? (view.xray.roles[seat] ?? null) : null),
-            lamp: (seat) => !!actors?.has(seat) && !seen(seat),
-            glow: (seat) =>
-              acted?.has(seat) ? (seen(seat) ? 'visited' : 'acted') : undefined,
-            // the word on the card says it: the glow alone did not read as lit (2026-09-30)
-            word: (seat) =>
-              acted?.has(seat) ? (seen(seat) ? 'seen' : 'visit') : undefined,
-            file: open && hub ? (seat) => (goesIn(seat) ? toNight : open)(seat) : open,
-            fileLabel: (seat) =>
-              hub && goesIn(seat)
-                ? `Seat ${seatNumber(seat)}’s night`
-                : `Open seat ${seatNumber(seat)}’s file`,
-          }}
-        />
-        <TopStrip
-          hud={hud}
-          title={`Night ${beat.day}`}
-          sub={`Night · ${beat.label}`}
-          {...stripButtons(presentation, slotInput)}
-          side={side}
-          count={<CountPill hud={hud} label="Acted" n={actedN} total={units} side={side} />}
-        />
         {atStop && acted?.size ? (
           <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
             <Notice

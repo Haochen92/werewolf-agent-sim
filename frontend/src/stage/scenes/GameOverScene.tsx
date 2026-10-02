@@ -28,31 +28,25 @@ import { motion } from 'motion/react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { GameView } from '@/game/types';
-import { Atmosphere } from '../Atmosphere';
 import { Layer } from '../Stage';
-import { SideSlot } from '../SideSlot';
 import { ChipSprite } from '../cast/ChipSprite';
 import { Puppet } from '../cast/Puppet';
 import { RoleCard } from '../instruments/Card';
-import { Trap } from '../instruments/Floor';
 import { Ledger } from '../instruments/Ledger';
 import { MorningRoll } from '../instruments/MorningRoll';
 import { CardButton, Notice, NoticeZone } from '../instruments/Notice';
-import { Shutter } from '../instruments/Shutter';
 import { StringDrop } from '../instruments/StringDrop';
 import { Plaque, Stand } from '../instruments/Stand';
-import { TopStrip } from '../instruments/TopStrip';
 import { VerdictBoard } from '../instruments/VerdictBoard';
 import { bigCard } from '../instruments/flies';
-import { StageMotion, useMotionScale } from '../motion';
+import { useMotionScale } from '../motion';
 import type { Special } from '../paint/draw';
 import type { Phase } from '../paint/materials';
 import { ROLE_ARTICLE } from '../paint/role-kit';
 import { ROLE_NAME, factionOf, seatNumber, type Faction } from '../roles';
-import { bandNarrows, sideOpen, stripButtons } from '../slot';
+import { bandNarrows, sideOpen } from '../slot';
 import { STAGE_H, geometry } from '../units';
-import { HouseLights, TableWing } from './DiningCarParts';
-import { Backdrop } from '../instruments/Backdrop';
+import { CarSetSpec } from './CarScene';
 import { reportOf } from './MorningScene';
 import {
   WINNERS_HOUR,
@@ -63,7 +57,6 @@ import {
   standSet,
   winnersOf,
 } from './game-over';
-import { notebookGame } from '../notebook';
 import type { SceneProps } from './types';
 import { score, tally } from './vote-count';
 import styles from './GameOver.module.css';
@@ -84,24 +77,12 @@ const RISE_AT = 1.1,
   RISE_STAGGER = 0.22,
   STAND_AT = 0.6;
 
-export function GameOverScene(props: SceneProps) {
-  return (
-    <StageMotion speed={props.presentation.motion}>
-      <OverBeat key={`${props.beat.id}:${props.beat.seq}`} {...props} />
-      <SideSlot {...props} />
-    </StageMotion>
-  );
+/** The ending's body under the car's host (CarScene.tsx): its figures are built per beat, the set is the host's. */
+export function OverBody(props: SceneProps) {
+  return <OverBeat key={`${props.beat.id}:${props.beat.seq}`} {...props} />;
 }
 
-function OverBeat({
-  view,
-  beat,
-  me,
-  presentation,
-  slot: slotInput,
-  turn,
-  wayOut,
-}: SceneProps) {
+function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
   const { hud, xray, animate, cast } = presentation;
   const k = useMotionScale();
   const step = STEP[beat.id] ?? 0;
@@ -165,31 +146,34 @@ function OverBeat({
 
   return (
     <>
-      <Atmosphere room="car" phase={phase} hud={hud} side={side} baked />
-      <Layer name="paint">
-        <Backdrop
-          phase={phase}
-          from={animate && step === 1 ? left : null}
-          hud={hud}
-          fadeDelay={1.2}
-          side={side}
-        />
-        <Shutter
-          g={g}
-          state={step === 0 ? 'closed' : 'open'}
-          animate={animate && step === 1}
-          delay={0.4}
-        />
-      </Layer>
-
-      <Layer name="floor">
-        <Trap
-          g={g}
-          phase={phase}
-          state={ended === 'lynch' && step === 0 ? 'open' : 'closed'}
-          animate={animate && step === 1 && ended === 'lynch'}
-        />
-      </Layer>
+      <CarSetSpec
+        phase={phase}
+        backdrop={{ from: animate && step === 1 ? left : null, fadeDelay: 1.2 }}
+        shutter={{
+          state: step === 0 ? 'closed' : 'open',
+          animate: animate && step === 1,
+          delay: 0.4,
+        }}
+        trap={{
+          state: ended === 'lynch' && step === 0 ? 'open' : 'closed',
+          animate: animate && step === 1 && ended === 'lynch',
+        }}
+        light={{ pool, specials, dark }}
+        wing={{
+          truth: (s) => (xray || truthOut ? roleOf(s) : null),
+          lit: (s) => onStand && winners.includes(s),
+          dim: (s) => onStand && !winners.includes(s),
+        }}
+        strip={{
+          title:
+            step < 2 ? (ended === 'lynch' ? `Day ${day}` : `Morning ${day}`) : 'Game over',
+          sub:
+            step < 2
+              ? `${ended === 'lynch' ? 'The vote' : 'The report'} · ${beat.label}`
+              : `Day ${day} · ${WINNER_LINE[winner].toLowerCase()} · ${beat.label}`,
+          unlocked: truthOut && hud === 'live',
+        }}
+      />
 
       <Layer name="figures">
         {step === 0 && animate && lastCard ? (
@@ -268,45 +252,7 @@ function OverBeat({
         ) : null}
       </Layer>
 
-      <Layer name="light">
-        <HouseLights
-          phase={phase}
-          hud={hud}
-          pool={pool}
-          specials={specials}
-          dark={dark}
-          side={side}
-        />
-      </Layer>
-
       <Layer name="hud">
-        <TableWing
-          view={view}
-          cast={cast}
-          me={me}
-          hud={hud}
-          width={g.wingN}
-          notes={notebookGame(presentation, me)}
-          edit={slotInput?.notebook}
-          opts={{
-            truth: (s) => (xray || truthOut ? roleOf(s) : null),
-            lit: (s) => onStand && winners.includes(s),
-            dim: (s) => onStand && !winners.includes(s),
-          }}
-        />
-        <TopStrip
-          hud={hud}
-          title={
-            step < 2 ? (ended === 'lynch' ? `Day ${day}` : `Morning ${day}`) : 'Game over'
-          }
-          sub={
-            step < 2
-              ? `${ended === 'lynch' ? 'The vote' : 'The report'} · ${beat.label}`
-              : `Day ${day} · ${WINNER_LINE[winner].toLowerCase()} · ${beat.label}`
-          }
-          {...stripButtons(presentation, slotInput)}
-          unlocked={truthOut && hud === 'live'}
-        />
         {step !== 5 ? (
           <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
             {myRole ? (

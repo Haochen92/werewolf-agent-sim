@@ -18,19 +18,14 @@
  */
 import { useState } from 'react';
 import type { GameView } from '@/game/types';
-import { Atmosphere } from '../Atmosphere';
 import { Camera, Layer } from '../Stage';
-import { SideSlot } from '../SideSlot';
 import { Puppet, puppetBox } from '../cast/Puppet';
 import { BallotLine, BallotRow } from '../instruments/BallotRow';
 import { countText } from '../countdown';
 import { CountPill } from '../instruments/CountPill';
-import { Trap } from '../instruments/Floor';
 import { Lift } from '../instruments/Lift';
 import { CardButton, Notice, NoticeButton, NoticeZone } from '../instruments/Notice';
-import { Shutter } from '../instruments/Shutter';
 import { Plaque, Stand } from '../instruments/Stand';
-import { TopStrip } from '../instruments/TopStrip';
 import { VoteTable } from '../instruments/VoteTable';
 import {
   countShot,
@@ -40,14 +35,12 @@ import {
 } from '../instruments/vote-geometry';
 import type { LidState } from '../instruments/Jar';
 import { motion } from 'motion/react';
-import { StageMotion, useMotionScale } from '../motion';
+import { useMotionScale, useSteps } from '../motion';
 import type { Special } from '../paint/draw';
 import { seatNumber, seatify } from '../roles';
-import { bandNarrows, fileTap, sideOpen, stripButtons } from '../slot';
+import { bandNarrows, fileTap, sideOpen } from '../slot';
 import { STAGE_H, STAGE_W, geometry } from '../units';
-import { HouseLights, TableWing } from './DiningCarParts';
-import { Backdrop } from '../instruments/Backdrop';
-import { notebookGame } from '../notebook';
+import { CarSetSpec } from './CarScene';
 import { VOTE_STOP } from '../containers/stops';
 import type { SceneProps } from './types';
 import {
@@ -59,17 +52,15 @@ import {
   tally,
 } from './vote-count';
 
-export function VoteScene(props: SceneProps) {
-  const { beat, turn, me } = props;
-  return (
-    <StageMotion speed={props.presentation.motion}>
-      <VoteBeat
-        key={`${beat.id}:${beat.seq}:${beat.ordinal ?? ''}:${me ?? ''}:${turn?.chosen ?? ''}`}
-        {...props}
-      />
-      <SideSlot {...props} />
-    </StageMotion>
-  );
+/**
+ * The vote's body under the car's host (CarScene.tsx). It stays up from beat to beat and plays
+ * by its props: every chip counted used to rebuild the car, the wing and the table, and the
+ * phone paid for it in a burst at the beat's start (build log §8.9); only the seated human's
+ * ballot remounts, on its choice.
+ */
+export function VoteBody(props: SceneProps) {
+  const { turn, me } = props;
+  return <VoteBeat key={`${me ?? ''}:${turn?.chosen ?? ''}`} {...props} />;
 }
 
 /** The last turn of the day before the vote: whose puppet leaves the stand as voting opens. */
@@ -102,6 +93,7 @@ function VoteBeat({
 }: SceneProps) {
   const { hud, xray, animate, cast } = presentation;
   const k = useMotionScale();
+  const step = useSteps();
   const id = beat.id,
     day = beat.day;
   const side = sideOpen(presentation);
@@ -210,37 +202,53 @@ function VoteBeat({
   return (
     <>
       {camera ? <Camera {...camera} /> : null}
-      <Atmosphere
-        room="car"
+      <CarSetSpec
         phase={nightFalls ? 'night' : 'dusk'}
-        hud={hud}
-        side={side}
-        baked
+        backdrop={{
+          from: animate ? (id === 'vote.opens' ? 'day' : nightFalls ? 'dusk' : null) : null,
+          fadeDelay: nightFalls ? 2.4 : 0.15,
+        }}
+        shutter={{
+          state: nightFalls ? 'open' : 'closed',
+          animate: animate && (id === 'vote.opens' || nightFalls),
+          delay: nightFalls ? 2.5 : undefined,
+        }}
+        trap={{
+          state: nightFalls ? 'closed' : 'open',
+          animate: animate && (id === 'vote.opens' || nightFalls),
+        }}
+        light={{ pool, specials, dark: 30 }}
+        wing={{
+          untold,
+          lit: (seat) => seat === litSeat,
+          truth: (seat) => (xray ? (view.xray.roles[seat] ?? null) : null),
+          // nobody speaks here: a card opens its seat's file
+          file: fileTap(presentation, slotInput, true),
+        }}
+        strip={{
+          title: `Day ${day}`,
+          sub: `${nightFalls ? 'Night falls' : 'The vote'} · ${beat.label}`,
+          disc: nightFalls ? 'moon' : 'sun',
+          side,
+          count:
+            opening || id === 'vote.ballots-drop' || id === 'vote.closes' ? (
+              <CountPill
+                hud={hud}
+                label={id === 'vote.closes' ? 'All in' : 'Ballots in'}
+                n={opening ? ballotsIn : ballots.length}
+                total={
+                  prompt
+                    ? (turn?.progress?.total ?? living)
+                    : opening
+                      ? living
+                      : ballots.length
+                }
+                mine={myIndex != null && myIndex >= 0 && ballotsIn > 0 ? myIndex : null}
+                side={side}
+              />
+            ) : null,
+        }}
       />
-      <Layer name="paint">
-        <Backdrop
-          phase={nightFalls ? 'night' : 'dusk'}
-          from={animate ? (id === 'vote.opens' ? 'day' : nightFalls ? 'dusk' : null) : null}
-          hud={hud}
-          fadeDelay={nightFalls ? 2.4 : 0.15}
-          side={side}
-        />
-        <Shutter
-          g={g}
-          state={nightFalls ? 'open' : 'closed'}
-          animate={animate && (id === 'vote.opens' || nightFalls)}
-          delay={nightFalls ? 2.5 : undefined}
-        />
-      </Layer>
-
-      <Layer name="floor">
-        <Trap
-          g={g}
-          phase={nightFalls ? 'night' : 'dusk'}
-          state={nightFalls ? 'closed' : 'open'}
-          animate={animate && (id === 'vote.opens' || nightFalls)}
-        />
-      </Layer>
 
       {leavingChar ? (
         <>
@@ -252,7 +260,7 @@ function VoteBeat({
                 y: puppetBox(g, leavingChar, 'base').h * 0.55,
                 opacity: 0,
               }}
-              transition={{ duration: 0.45 * k, ease: 'easeIn' }}
+              transition={step({ duration: 0.45 * k, ease: 'easeIn' })}
             >
               <Puppet g={g} shadow character={leavingChar} seat={null} state="base" />
             </motion.div>
@@ -314,60 +322,7 @@ function VoteBeat({
         ) : null}
       </Layer>
 
-      <Layer name="light">
-        <HouseLights
-          phase={nightFalls ? 'night' : 'dusk'}
-          hud={hud}
-          pool={pool}
-          specials={specials}
-          dark={30}
-          side={side}
-        />
-      </Layer>
-
       <Layer name="hud">
-        <TableWing
-          view={view}
-          cast={cast}
-          me={me}
-          hud={hud}
-          width={g.wingN}
-          notes={notebookGame(presentation, me)}
-          edit={slotInput?.notebook}
-          opts={{
-            untold,
-            lit: (seat) => seat === litSeat,
-            truth: (seat) => (xray ? (view.xray.roles[seat] ?? null) : null),
-            // nobody speaks here: a card opens its seat's file
-            file: fileTap(presentation, slotInput, true),
-          }}
-        />
-        <TopStrip
-          hud={hud}
-          title={`Day ${day}`}
-          sub={`${nightFalls ? 'Night falls' : 'The vote'} · ${beat.label}`}
-          disc={nightFalls ? 'moon' : 'sun'}
-          {...stripButtons(presentation, slotInput)}
-          side={side}
-          count={
-            opening || id === 'vote.ballots-drop' || id === 'vote.closes' ? (
-              <CountPill
-                hud={hud}
-                label={id === 'vote.closes' ? 'All in' : 'Ballots in'}
-                n={opening ? ballotsIn : ballots.length}
-                total={
-                  prompt
-                    ? (turn?.progress?.total ?? living)
-                    : opening
-                      ? living
-                      : ballots.length
-                }
-                mine={myIndex != null && myIndex >= 0 && ballotsIn > 0 ? myIndex : null}
-                side={side}
-              />
-            ) : null
-          }
-        />
         <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
           {myCard ? (
             <CardButton
@@ -391,6 +346,7 @@ function VoteBeat({
           ) : null}
           {newest ? (
             <BallotLine
+              key={counted}
               voter={newest.voter}
               votee={newest.votee}
               cast={cast}

@@ -17,7 +17,7 @@ import { CarBackdrop } from '../instruments/CarBackdrop';
 import { FeltWindow } from '../instruments/FeltWindow';
 import { SpeechBox } from '../instruments/SpeechBox';
 import { Plaque, Stand } from '../instruments/Stand';
-import { Wing } from '../instruments/Wing';
+import { Wing, type WingTileProps } from '../instruments/Wing';
 import { useMotionScale } from '../motion';
 import { beam, type Special } from '../paint/draw';
 import { diningCarPlan } from '../paint/dining-car';
@@ -99,19 +99,22 @@ export function HouseLights({
   return (
     <>
       {specials.length ? <Paint of={beams} opts={{ specials }} /> : null}
-      <Paint
-        of={light}
-        opts={{
-          hud,
-          side,
-          pool,
-          dark,
-          specials: [...specials, ...quiet],
-          scene: { glows: plan.glows, specials: plan.specials },
-          lamps: plan.lamps,
-          bleed: BLEED,
-        }}
-      />
+      {/* marked for the phone gate: the sheet a beat must keep (e2e/phone-rule.spec.ts) */}
+      <div data-house-light="">
+        <Paint
+          of={light}
+          opts={{
+            hud,
+            side,
+            pool,
+            dark,
+            specials: [...specials, ...quiet],
+            scene: { glows: plan.glows, specials: plan.specials },
+            lamps: plan.lamps,
+            bleed: BLEED,
+          }}
+        />
+      </div>
     </>
   );
 }
@@ -148,6 +151,8 @@ export interface WingSeatOptions {
   file?: ((seat: string) => void) | null;
   /** What a card's tap says, when it is not "Open seat N's file". */
   fileLabel?: (seat: string) => string;
+  /** The X-ray's read on a seat by the seat at the stand (the day; `WingTileProps.read`). */
+  read?: (seat: string) => WingTileProps['read'];
 }
 
 /** The wing, with the replay's drape above it when the HUD is the replay's. */
@@ -198,6 +203,7 @@ export function TableWing({
             word: opts.word?.(seat),
             pack: opts.pack?.(seat),
             known: known?.get(seat),
+            read: opts.read?.(seat),
             you: seat === me,
             file: opts.file
               ? {

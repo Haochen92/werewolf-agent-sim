@@ -1,14 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { BEAT_LABELS } from '../beats/types';
-import { DayScene } from '../scenes/DayScene';
-import { DealScene } from '../scenes/DealScene';
-import { GameOverScene } from '../scenes/GameOverScene';
-import { LynchScene } from '../scenes/LynchScene';
-import { MorningScene } from '../scenes/MorningScene';
-import { NightLobbyScene } from '../scenes/NightLobbyScene';
-import { ReplayNightScene } from '../scenes/ReplayNightScene';
+import { CarScene } from '../scenes';
+import { PackScene } from '../scenes/PackScene';
+import { ShelfRoomScene } from '../scenes/ShelfRoomScene';
 import { StationScene } from '../scenes/StationScene';
-import { VoteScene } from '../scenes/VoteScene';
 import { anchorLine, workbenchFrame } from './frame';
 import { SCENE_IDS, SCENES, isSceneId } from './registry';
 import { DEFAULT_QUERY } from './url';
@@ -21,24 +16,23 @@ describe('the scene registry', () => {
     expect(isSceneId('paint')).toBe(false);
   });
 
-  it('mounts the day scene for the day', () => {
-    expect(SCENES.day).toBe(DayScene);
+  it('plays every scene set in the dining car through the one car host, so its set stays up', () => {
+    for (const id of [
+      'deal',
+      'day',
+      'vote',
+      'lynch',
+      'night',
+      'morning',
+      'rnight',
+      'over',
+    ] as const)
+      expect(SCENES[id]).toBe(CarScene);
   });
 
-  it('mounts the flies scenes: the deal, the night lobby, the morning', () => {
-    expect(SCENES.deal).toBe(DealScene);
-    expect(SCENES.night).toBe(NightLobbyScene);
-    expect(SCENES.morning).toBe(MorningScene);
-    expect(SCENES.rnight).toBe(ReplayNightScene);
-  });
-
-  it('mounts the trap scenes: the vote and the lynch', () => {
-    expect(SCENES.vote).toBe(VoteScene);
-    expect(SCENES.lynch).toBe(LynchScene);
-  });
-
-  it('mounts the ending', () => {
-    expect(SCENES.over).toBe(GameOverScene);
+  it('keeps the live night rooms as places of their own', () => {
+    expect(SCENES.room).toBe(ShelfRoomScene);
+    expect(SCENES.pack).toBe(PackScene);
   });
 
   it('mounts the platform first, before the deal', () => {

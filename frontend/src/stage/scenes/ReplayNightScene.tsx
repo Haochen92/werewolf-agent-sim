@@ -23,27 +23,22 @@
  * newest line fades into the chat, the room around it at rest.
  */
 import { useEffect, useState, type ReactNode } from 'react';
-import { Atmosphere } from '../Atmosphere';
 import { Layer } from '../Stage';
-import { SideSlot } from '../SideSlot';
 import { ActMark } from '../instruments/ActMark';
 import { Chip } from '../instruments/Chip';
 import { CountPill } from '../instruments/CountPill';
 import { Notice, NoticeButton, NoticeZone } from '../instruments/Notice';
 import { PackChat, type PackEntry } from '../instruments/PackChat';
-import { Shutter } from '../instruments/Shutter';
 import { Tooth } from '../instruments/Tooth';
-import { TopStrip } from '../instruments/TopStrip';
 import { chipRow, rowX } from '../instruments/flies';
-import { StageMotion, useMotionScale } from '../motion';
+import { useMotionScale } from '../motion';
 import { roomPlan } from '../paint/compartment';
 import { diningCarPlan } from '../paint/dining-car';
 import { ROLE_NAME, seatNumber } from '../roles';
-import { bandNarrows, fileTap, sideOpen, stripButtons } from '../slot';
+import { bandNarrows, fileTap, sideOpen } from '../slot';
 import { bandFoot, STAGE_H, STAGE_W, geometry } from '../units';
-import { HouseLights, TableWing } from './DiningCarParts';
-import { Backdrop } from '../instruments/Backdrop';
-import { NightLobbyScene, nightUnits, spokeOf } from './NightLobbyScene';
+import { CarSetSpec } from './CarScene';
+import { LobbyBody, nightUnits, spokeOf } from './NightLobbyScene';
 import { NightRoom, ROOM_OF } from './NightRoom';
 import { packEntries } from './PackScene';
 import {
@@ -58,7 +53,6 @@ import {
   type NightBranch,
   type RowMark,
 } from './replay-night';
-import { notebookGame } from '../notebook';
 import type { SceneProps } from './types';
 import styles from './ReplayNight.module.css';
 
@@ -77,7 +71,12 @@ const MARK_AT = 0.9;
 const STAMP_AT = 1.4;
 const LAMP_OUT = 1.6;
 
-export function ReplayNightScene(props: SceneProps) {
+/**
+ * The replay's night under the car's host (CarScene.tsx): the hub and the night whole are
+ * played in the car and describe its set; a spoke's room describes none, so the car's set
+ * comes down while the room is up and returns with the next hub.
+ */
+export function ReplayNightBody(props: SceneProps) {
   // the actor whose card is open on the table (night and actor, so it outlives the room's
   // steps but not the room): the play goes on under it, untouched
   const [cardOf, setCardOf] = useState<string | null>(null);
@@ -86,21 +85,18 @@ export function ReplayNightScene(props: SceneProps) {
       ? `${props.beat.day}:${props.beat.spoke.actor}`
       : null;
   if (cardOf !== null && cardOf !== actor) setCardOf(null);
-  if (props.beat.id === 'rnight.hub') return <NightLobbyScene {...props} />;
+  if (props.beat.id === 'rnight.hub') return <LobbyBody {...props} />;
+  if (props.beat.id === 'rnight.whole')
+    return <NightWhole key={`${props.beat.id}:${props.beat.seq}`} {...props} />;
   return (
-    <StageMotion speed={props.presentation.motion}>
-      {props.beat.id === 'rnight.whole' ? (
-        <NightWhole key={`${props.beat.id}:${props.beat.seq}`} {...props} />
-      ) : (
-        <SpokeRoom
-          key={`${props.beat.id}:${props.beat.seq}:${props.beat.spoke?.step ?? ''}`}
-          {...props}
-          cardOpen={actor !== null && cardOf === actor}
-          onCard={(open) => setCardOf(open ? actor : null)}
-        />
-      )}
-      <SideSlot {...props} />
-    </StageMotion>
+    <SpokeRoom
+      // the room stays up for the spoke's steps (the pack's chat a line at a time) and the
+      // beat moves what moves; each line rebuilt the room's picture (build log §8.9)
+      key={actor ?? `${props.beat.id}:${props.beat.seq}`}
+      {...props}
+      cardOpen={actor !== null && cardOf === actor}
+      onCard={(open) => setCardOf(open ? actor : null)}
+    />
   );
 }
 
@@ -110,16 +106,20 @@ function actorWord(cur: NightBranch | undefined): string {
   return cur.seats.length > 1 ? 'The pack' : `Seat ${seatNumber(cur.seats[0] ?? '')}`;
 }
 
-/** Plays a moment `at` seconds into a beat played forward; already there when arrived at. */
-function useAfter(at: number, animate: boolean): boolean {
+/**
+ * Plays a moment `at` seconds into a beat played forward; already there when arrived at. The
+ * wait starts over with each beat (`seq`): the room stays mounted across a spoke's steps.
+ */
+function useAfter(at: number, animate: boolean, seq: number): boolean {
   const k = useMotionScale();
-  const [done, setDone] = useState(!animate);
+  const [state, setState] = useState({ seq, done: !animate });
+  if (state.seq !== seq) setState({ seq, done: !animate });
   useEffect(() => {
-    if (done) return;
-    const t = setTimeout(() => setDone(true), at * k * 1000);
+    if (!animate) return;
+    const t = setTimeout(() => setState({ seq, done: true }), at * k * 1000);
     return () => clearTimeout(t);
-  }, [done, at, k]);
-  return done;
+  }, [seq, animate, at, k]);
+  return state.seq === seq && state.done;
 }
 
 /**
@@ -159,9 +159,9 @@ function SpokeRoom({
   const target = markStep ? (cur?.target ?? null) : null;
 
   // played: the room arrives on the spoke's first step only; the choice lands, then its mark
-  const landed = useAfter(MARK_AT, animate);
-  const stamped = useAfter(STAMP_AT, animate);
-  const lampOut = useAfter(LAMP_OUT, animate);
+  const landed = useAfter(MARK_AT, animate, beat.seq);
+  const stamped = useAfter(STAMP_AT, animate, beat.seq);
+  const lampOut = useAfter(LAMP_OUT, animate, beat.seq);
   const lampOn = (seat: string) =>
     branches.some(
       (b, rank) =>
@@ -340,11 +340,22 @@ function NightWhole({ view, beat, me, presentation, slot: slotInput }: SceneProp
 
   return (
     <>
-      <Atmosphere room="car" phase="night" hud={hud} side={side} baked />
-      <Layer name="paint">
-        <Backdrop phase="night" hud={hud} side={side} />
-        <Shutter g={g} state="open" />
-      </Layer>
+      <CarSetSpec
+        phase="night"
+        shutter={{ state: 'open' }}
+        light={{ pool, dark: 46 }}
+        wing={{
+          truth: (s) => (xray ? (view.xray.roles[s] ?? null) : null),
+          // nobody speaks here: a card opens its seat's file
+          file: fileTap(presentation, slotInput, true),
+        }}
+        strip={{
+          title: `Night ${day}`,
+          sub: beat.label,
+          side,
+          count: <CountPill hud={hud} label="Acted" n={total} total={total} side={side} />,
+        }}
+      />
 
       <Layer name="figures">
         {alive.map((seat, i) => {
@@ -379,35 +390,6 @@ function NightWhole({ view, beat, me, presentation, slot: slotInput }: SceneProp
             />
           ));
         })}
-      </Layer>
-
-      <Layer name="light">
-        <HouseLights phase="night" hud={hud} pool={pool} dark={46} side={side} />
-      </Layer>
-
-      <Layer name="hud">
-        <TableWing
-          view={view}
-          cast={cast}
-          me={me}
-          hud={hud}
-          width={g.wingN}
-          notes={notebookGame(presentation, me)}
-          edit={slotInput?.notebook}
-          opts={{
-            truth: (s) => (xray ? (view.xray.roles[s] ?? null) : null),
-            // nobody speaks here: a card opens its seat's file
-            file: fileTap(presentation, slotInput, true),
-          }}
-        />
-        <TopStrip
-          hud={hud}
-          title={`Night ${day}`}
-          sub={beat.label}
-          {...stripButtons(presentation, slotInput)}
-          side={side}
-          count={<CountPill hud={hud} label="Acted" n={total} total={total} side={side} />}
-        />
       </Layer>
     </>
   );

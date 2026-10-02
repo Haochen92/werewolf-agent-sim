@@ -17,10 +17,8 @@
  * Nothing on the wire narrates the deal; every line on this stage is the client's. Played
  * forward, each beat moves from the one before it; arrived at, it is all simply there.
  */
-import { Atmosphere } from '../Atmosphere';
 import type { SceneBeat } from '../beats/types';
 import { Layer } from '../Stage';
-import { SideSlot } from '../SideSlot';
 import { CardBack, RoleCard, SmallCard } from '../instruments/Card';
 import { Chip } from '../instruments/Chip';
 import {
@@ -31,21 +29,17 @@ import {
   NoticeZone,
   PackChat,
 } from '../instruments/Notice';
-import { Shutter } from '../instruments/Shutter';
 import { StringDrop } from '../instruments/StringDrop';
-import { TopStrip } from '../instruments/TopStrip';
 import { bigCard, chipRow, rowX, smallCards } from '../instruments/flies';
-import { StageMotion } from '../motion';
 import { CARD_TEXT } from '../card-text';
 import { diningCarPlan } from '../paint/dining-car';
 import type { Special } from '../paint/draw';
 import { ROLE_ARTICLE } from '../paint/role-kit';
 import { seatNumber } from '../roles';
-import { bandNarrows, sideOpen, stripButtons } from '../slot';
+import { bandNarrows, sideOpen } from '../slot';
 import { STAGE_H, geometry } from '../units';
-import { HouseLights, StandReturns, TableWing } from './DiningCarParts';
-import { Backdrop } from '../instruments/Backdrop';
-import { notebookGame } from '../notebook';
+import { StandReturns } from './DiningCarParts';
+import { CarSetSpec } from './CarScene';
 import type { SceneProps } from './types';
 
 const ORDER: SceneBeat['id'][] = [
@@ -57,16 +51,12 @@ const ORDER: SceneBeat['id'][] = [
   'deal.day-begins',
 ];
 
-export function DealScene(props: SceneProps) {
-  return (
-    <StageMotion speed={props.presentation.motion}>
-      <DealBeat key={`${props.beat.id}:${props.beat.seq}`} {...props} />
-      <SideSlot {...props} />
-    </StageMotion>
-  );
+/** The deal's body under the car's host (CarScene.tsx): its figures are built per beat, the set is the host's. */
+export function DealBody(props: SceneProps) {
+  return <DealBeat key={`${props.beat.id}:${props.beat.seq}`} {...props} />;
 }
 
-function DealBeat({ view, beat, me, presentation, slot: slotInput, turn }: SceneProps) {
+function DealBeat({ view, beat, me, presentation, turn }: SceneProps) {
   const { hud, xray, animate, cast } = presentation;
   const id = beat.id;
   const at = (b: SceneBeat['id']) => ORDER.indexOf(id) >= ORDER.indexOf(b);
@@ -122,16 +112,22 @@ function DealBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scene
 
   return (
     <>
-      <Atmosphere room="car" phase={phase} hud={hud} side={side} baked />
-      <Layer name="paint">
-        <Backdrop
-          phase={phase}
-          from={day && animate ? 'dawn' : null}
-          hud={hud}
-          side={side}
-        />
-        <Shutter g={g} state="open" />
-      </Layer>
+      <CarSetSpec
+        phase={phase}
+        backdrop={{ from: day && animate ? 'dawn' : null }}
+        shutter={{ state: 'open' }}
+        light={{ pool, specials, dark: day ? 14 : yours ? 40 : 26 }}
+        wing={{
+          truth: (seat) => (xray ? known(seat) : null),
+          pack: (seat) => packShown && seat === mate,
+          // the pack's band waits for the beat that shows the pack
+          known: at('deal.your-pack'),
+        }}
+        strip={{
+          title: day ? `Day ${beat.day}` : `Before day ${beat.day}`,
+          sub: `${day ? 'Discussion' : 'The deal'} · ${beat.label}`,
+        }}
+      />
 
       <Layer name="figures">
         {chipsShown
@@ -237,39 +233,7 @@ function DealBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scene
         />
       ) : null}
 
-      <Layer name="light">
-        <HouseLights
-          phase={phase}
-          hud={hud}
-          pool={pool}
-          specials={specials}
-          dark={day ? 14 : yours ? 40 : 26}
-          side={side}
-        />
-      </Layer>
-
       <Layer name="hud">
-        <TableWing
-          view={view}
-          cast={cast}
-          me={me}
-          hud={hud}
-          width={g.wingN}
-          notes={notebookGame(presentation, me)}
-          edit={slotInput?.notebook}
-          opts={{
-            truth: (seat) => (xray ? known(seat) : null),
-            pack: (seat) => packShown && seat === mate,
-            // the pack's band waits for the beat that shows the pack
-            known: at('deal.your-pack'),
-          }}
-        />
-        <TopStrip
-          hud={hud}
-          title={day ? `Day ${beat.day}` : `Before day ${beat.day}`}
-          sub={`${day ? 'Discussion' : 'The deal'} · ${beat.label}`}
-          {...stripButtons(presentation, slotInput)}
-        />
         <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
           {myRole && at('deal.your-card') && !day ? (
             <CardButton role={myRole} onOpen={turn?.onCard} />

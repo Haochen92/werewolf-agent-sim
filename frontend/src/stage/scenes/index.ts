@@ -5,29 +5,45 @@
  */
 import type { ComponentType } from 'react';
 import type { SceneId } from '../beats/types';
-import { DayScene } from './DayScene';
-import { DealScene } from './DealScene';
-import { GameOverScene } from './GameOverScene';
-import { LynchScene } from './LynchScene';
-import { MorningScene } from './MorningScene';
-import { NightLobbyScene } from './NightLobbyScene';
+import { carScene } from './CarScene';
+import { DayBody } from './DayScene';
+import { DealBody } from './DealScene';
+import { OverBody } from './GameOverScene';
+import { LynchBody } from './LynchScene';
+import { MorningBody } from './MorningScene';
+import { LobbyBody } from './NightLobbyScene';
 import { PackScene } from './PackScene';
-import { ReplayNightScene } from './ReplayNightScene';
+import { ReplayNightBody } from './ReplayNightScene';
 import { ShelfRoomScene } from './ShelfRoomScene';
 import { StationScene } from './StationScene';
-import { VoteScene } from './VoteScene';
+import { VoteBody } from './VoteScene';
 import type { SceneProps } from './types';
+
+/**
+ * Every scene played in the dining car is a body of one host, so the car's set stays up from
+ * scene to scene (CarScene.tsx). The platform and the live night rooms are places of their own.
+ */
+export const CarScene = carScene({
+  deal: DealBody,
+  day: DayBody,
+  vote: VoteBody,
+  lynch: LynchBody,
+  night: LobbyBody,
+  morning: MorningBody,
+  rnight: ReplayNightBody,
+  over: OverBody,
+});
 
 export const SCENES: Record<SceneId, ComponentType<SceneProps> | null> = {
   station: StationScene,
-  deal: DealScene,
-  day: DayScene,
-  vote: VoteScene,
-  lynch: LynchScene,
-  night: NightLobbyScene,
+  deal: CarScene,
+  day: CarScene,
+  vote: CarScene,
+  lynch: CarScene,
+  night: CarScene,
   room: ShelfRoomScene,
   pack: PackScene,
-  morning: MorningScene,
-  rnight: ReplayNightScene,
-  over: GameOverScene,
+  morning: CarScene,
+  rnight: CarScene,
+  over: CarScene,
 };

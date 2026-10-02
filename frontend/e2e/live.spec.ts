@@ -174,7 +174,12 @@ async function mockApi(page: Page, mock: Mock) {
   }
 }
 
-/** Wait until the frame is still: sprites decoded, fonts in, the dev badge and the dropped-stream note hidden. */
+/**
+ * Wait until the frame is still: sprites decoded, fonts in, the dev badge and the dropped-stream
+ * note hidden. Only pictures in the window are waited for: a lazy picture scrolled out of view
+ * (the transcript's chips far up the drawer, which now stays mounted from scene to scene) never
+ * loads, and its `decode()` never settles.
+ */
 async function settle(page: Page) {
   await page.addStyleTag({
     content:
@@ -182,9 +187,13 @@ async function settle(page: Page) {
   });
   await page.evaluate(async () => {
     await document.fonts.ready;
+    const inWindow = (img: HTMLImageElement) => {
+      const r = img.getBoundingClientRect();
+      return r.bottom > 0 && r.right > 0 && r.top < innerHeight && r.left < innerWidth;
+    };
     await Promise.all(
       [...document.images].map((img) =>
-        img.complete ? null : img.decode().catch(() => null),
+        img.complete || !inWindow(img) ? null : img.decode().catch(() => null),
       ),
     );
   });

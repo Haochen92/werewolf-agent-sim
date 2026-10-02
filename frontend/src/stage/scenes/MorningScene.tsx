@@ -22,29 +22,23 @@
  * day's paint and the stand comes back up.
  */
 import type { GameView, NightView } from '@/game/types';
-import { Atmosphere } from '../Atmosphere';
 import type { SceneBeat } from '../beats/types';
 import { Layer } from '../Stage';
-import { SideSlot } from '../SideSlot';
 import { ATTACK_MARK, ActMark } from '../instruments/ActMark';
 import { RoleCard } from '../instruments/Card';
 import { Chip } from '../instruments/Chip';
 import { BY, DIED, MorningRoll, type RollRow } from '../instruments/MorningRoll';
 import { CardButton, Caps, Notice, NoticeZone } from '../instruments/Notice';
-import { Shutter } from '../instruments/Shutter';
 import { StringDrop } from '../instruments/StringDrop';
-import { TopStrip } from '../instruments/TopStrip';
 import { bigCard, chipRow, featuredChip, rowX } from '../instruments/flies';
-import { StageMotion } from '../motion';
 import { diningCarPlan } from '../paint/dining-car';
 import type { Special } from '../paint/draw';
 import { ROLE_ARTICLE } from '../paint/role-kit';
 import { seatNumber } from '../roles';
-import { bandNarrows, fileTap, sideOpen, stripButtons } from '../slot';
+import { bandNarrows, fileTap, sideOpen } from '../slot';
 import { STAGE_H, geometry } from '../units';
-import { HouseLights, StandReturns, TableWing } from './DiningCarParts';
-import { Backdrop } from '../instruments/Backdrop';
-import { notebookGame } from '../notebook';
+import { StandReturns } from './DiningCarParts';
+import { CarSetSpec } from './CarScene';
 import type { SceneProps } from './types';
 
 /** How many the night touched, in words. */
@@ -132,9 +126,10 @@ function lastPrivate(
   return last === undefined ? null : privateAt(view, night, { seq: last } as SceneBeat);
 }
 
-export function MorningScene(props: SceneProps) {
+/** The morning's body under the car's host (CarScene.tsx). */
+export function MorningBody(props: SceneProps) {
   return (
-    <StageMotion speed={props.presentation.motion}>
+    <>
       {/* the set stays up across the beats: a phone's browser cannot afford its pictures
           rebuilt beat after beat (build log §8.3); the figures are the beat's and play afresh */}
       <MorningSet {...props} />
@@ -142,8 +137,7 @@ export function MorningScene(props: SceneProps) {
         key={`${props.beat.id}:${props.beat.seq}:${props.beat.subject ?? ''}`}
         {...props}
       />
-      <SideSlot {...props} />
-    </StageMotion>
+    </>
   );
 }
 
@@ -200,9 +194,9 @@ function morningFacts({ view, beat, presentation }: SceneProps) {
  * updated in place as the beats go by.
  */
 function MorningSet(props: SceneProps) {
-  const { view, beat, me, presentation, slot: slotInput } = props;
-  const { hud, xray, animate, cast } = presentation;
-  const { id, dayBegins, nightDay, phase, side, g, low, F, told, untold, mine } =
+  const { view, beat, presentation, slot: slotInput } = props;
+  const { xray, animate } = presentation;
+  const { id, dayBegins, nightDay, phase, g, low, F, told, untold, mine } =
     morningFacts(props);
   const H = STAGE_H;
 
@@ -220,59 +214,26 @@ function MorningSet(props: SceneProps) {
       : { x: F.x, y: F.y, rx: F.r * 3.2, ry: F.r * 3 };
 
   return (
-    <>
-      <Atmosphere room="car" phase={phase} hud={hud} side={side} baked />
-      <Layer name="paint">
-        <Backdrop
-          phase={phase}
-          from={dayBegins && animate ? 'night' : null}
-          hud={hud}
-          fadeDelay={1.4}
-          side={side}
-        />
-        <Shutter
-          g={g}
-          state={dayBegins ? 'open' : 'closed'}
-          animate={animate && (dayBegins || id === 'morning.shutter-down')}
-          delay={dayBegins ? 1.4 : 0.35}
-        />
-      </Layer>
-
-      <Layer name="light">
-        <HouseLights
-          phase={phase}
-          hud={hud}
-          pool={pool}
-          specials={specials}
-          dark={dayBegins ? 14 : 38}
-          side={side}
-        />
-      </Layer>
-
-      <Layer name="hud">
-        <TableWing
-          view={view}
-          cast={cast}
-          me={me}
-          hud={hud}
-          width={g.wingN}
-          notes={notebookGame(presentation, me)}
-          edit={slotInput?.notebook}
-          opts={{
-            untold,
-            truth: (seat) => (xray ? (view.xray.roles[seat] ?? null) : null),
-            // nobody speaks here: a card opens its seat's file
-            file: fileTap(presentation, slotInput, true),
-          }}
-        />
-        <TopStrip
-          hud={hud}
-          title={dayBegins ? `Day ${beat.day}` : `Morning ${nightDay}`}
-          sub={`${dayBegins ? 'Discussion' : 'The report'} · ${beat.label}`}
-          {...stripButtons(presentation, slotInput)}
-        />
-      </Layer>
-    </>
+    <CarSetSpec
+      phase={phase}
+      backdrop={{ from: dayBegins && animate ? 'night' : null, fadeDelay: 1.4 }}
+      shutter={{
+        state: dayBegins ? 'open' : 'closed',
+        animate: animate && (dayBegins || id === 'morning.shutter-down'),
+        delay: dayBegins ? 1.4 : 0.35,
+      }}
+      light={{ pool, specials, dark: dayBegins ? 14 : 38 }}
+      wing={{
+        untold,
+        truth: (seat) => (xray ? (view.xray.roles[seat] ?? null) : null),
+        // nobody speaks here: a card opens its seat's file
+        file: fileTap(presentation, slotInput, true),
+      }}
+      strip={{
+        title: dayBegins ? `Day ${beat.day}` : `Morning ${nightDay}`,
+        sub: `${dayBegins ? 'Discussion' : 'The report'} · ${beat.label}`,
+      }}
+    />
   );
 }
 
