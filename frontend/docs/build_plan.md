@@ -406,7 +406,10 @@ vote, the lynch, the lobby and the night rooms playing by their props; moves ste
 on a phone; the light's screened sheets boxed, its drawings remembered; the grade's grain off
 and a room's choice cut on a phone; 55 phone-size picture copies; the next speaker decoded a
 turn ahead; the gate's remount check — build log §8.9: the vote's raster 67 s → 23 s over its
-41 steps), each frontend only.
+41 steps) and `a07067e` (the box, not the figure: every mover's box cut to its load, the ending
+held still on a phone, the epilogue's sheet with a close, the live night rooms kept across beats,
+the live countdown ticking in its own leaf, the live suite's waits sized to their streams — build
+log §8.10; rollback = `:prev` = `a3d6404`), each frontend only.
 · **2026-10-01 both containers rebuilt at `a651988`** (branch pushed first; built with
 `docker build` from a clean detached worktree, then `compose up -d --no-build`). Server: the
 request budget and stall rescue (30 s, two attempts, two stalls → the rescue model for five
