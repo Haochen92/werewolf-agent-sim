@@ -18,7 +18,7 @@ const SCENES: [scene: string, xray: boolean, spectator: boolean][] = [
   ['day', true, true],
   ['vote', true, true],
   ['lynch', true, true],
-  ['night', true, true],
+  ['night', false, true], // the X-ray's night is `rnight`; with the X-ray on this scene has no beats
   ['room', false, true],
   ['pack', false, true],
   ['morning', true, true],
@@ -37,15 +37,41 @@ const MOVES = 6;
 
 interface Finding {
   beat: string;
-  kind: 'idle-animation' | 'will-change' | 'mask' | 'mover';
+  kind: 'idle-animation' | 'will-change' | 'mask' | 'mover' | 'remount';
   what: string;
 }
+
+/**
+ * A beat must not rebuild its scene's set (the wing, the house light, a night room's
+ * picture): rebuilt per beat, the set is a burst of script and paint at the beat's start, and
+ * the pictures decode again (build log §8.8–8.9). These scenes are still keyed whole per beat
+ * and short; their remounts are listed, not failed, until they are split.
+ */
+const KEYED_WHOLE = new Set(['deal', 'over', 'station', 'room', 'pack']);
+
+/**
+ * What a beat keeps: the wing itself, the house light's sheet (not the specials' cones, which
+ * come and go with the beat), a night room's picture. The wing's tiles may change kind under
+ * it (with Reveal on, a tile with a read is a button and one without is not), so remounted
+ * heads are listed, not failed.
+ */
+const SET_MARKS = [
+  '[data-layer=hud] [data-cols]',
+  '[data-layer=light] [data-house-light] .stage-paint',
+  '[data-layer=paint] [data-room] img',
+];
+const TILE_MARK = '[data-layer=hud] [data-cols] img';
 
 declare global {
   interface Window {
     __rule: {
       start(): void;
-      stop(): { findings: Omit<Finding, 'beat'>[]; info: string[] };
+      stop(): {
+        findings: Omit<Finding, 'beat'>[];
+        info: string[];
+        remounted: string[];
+        room: string;
+      };
     };
   }
 }
@@ -54,7 +80,9 @@ declare global {
    rule's four checks; everything here runs in the page */
 const INSTALL = `(() => {
   const LARGE = ${LARGE}, MASK_LARGE = ${MASK_LARGE}, MOVES = ${MOVES};
-  let counts = new Map(), mo = null;
+  const SET_MARKS = ${JSON.stringify([...SET_MARKS, TILE_MARK])};
+  let counts = new Map(), mo = null, marks = [];
+  const roomOf = () => { const r = document.querySelector('[data-layer=paint] [data-room]'); return r ? r.getAttribute('data-room') : ''; };
   const box = () => document.querySelector('[data-small]');
   const name = (el) => {
     const one = (e) => {
@@ -92,22 +120,45 @@ const INSTALL = `(() => {
     return Math.max(0, ix1 - ix0) * Math.max(0, iy1 - iy0) / A;
   };
   const pct = (f) => Math.round(f * 100) + '%';
+  let samples = null, seenAnim = new Map();
+  const sample = () => {
+    const b = box(); if (!b) return;
+    for (const a of document.getAnimations()) {
+      const el = a.effect && a.effect.target; if (!el || !b.contains(el) || a.playState !== 'running') continue;
+      const t = a.effect.getTiming ? a.effect.getTiming() : {};
+      const s = seenAnim.get(el) || { n: 0, name: a.animationName || (a.effect.getKeyframes ? Object.keys(a.effect.getKeyframes()[0] || {}).filter((p) => !/^(offset|easing|composite|computedOffset)$/.test(p)).join('/') : 'animation'), ms: t.duration };
+      s.n++; seenAnim.set(el, s);
+    }
+  };
   const start = () => {
-    stopObserving(); counts = new Map();
+    stopObserving(); counts = new Map(); seenAnim = new Map();
+    if (samples) clearInterval(samples); samples = setInterval(sample, 150);
+    // the set's elements before the step: still in the document after it, or remounted
+    marks = SET_MARKS.map((sel) => [sel, [...document.querySelectorAll(sel)]]);
     const b = box(); if (!b) return;
     mo = new MutationObserver((recs) => { for (const r of recs) counts.set(r.target, (counts.get(r.target) || 0) + 1); });
     mo.observe(b, { attributes: true, attributeFilter: ['style', 'transform', 'opacity'], subtree: true });
   };
-  const stopObserving = () => { if (mo) { mo.disconnect(); mo = null; } };
+  const stopObserving = () => { if (mo) { mo.disconnect(); mo = null; } if (samples) { clearInterval(samples); samples = null; } };
   const stop = () => {
     stopObserving();
     const findings = [], info = [];
+    const remounted = marks.map(([sel, els]) => [sel, els.filter((el) => !el.isConnected).length, els.length]).filter(([, gone]) => gone > 0).map(([sel, gone, n]) => sel + ' (' + gone + ' of ' + n + ')');
+    const room = roomOf();
     const b = box();
-    if (!b) return { findings: [{ kind: 'mover', what: 'no [data-small] stage on the page: the phone frame is not applied' }], info };
+    if (!b) return { findings: [{ kind: 'mover', what: 'no [data-small] stage on the page: the phone frame is not applied' }], info, remounted, room };
     for (const [el, n] of counts) {
       if (n < MOVES || !el.isConnected) continue;
       const share = painted(el);
       if (share >= LARGE) findings.push({ kind: 'mover', what: name(el) + ' paints ' + pct(share) + ' of the stage, ' + n + ' style writes in ' + ${WATCH_MS} + ' ms' + (getComputedStyle(el).filter !== 'none' ? ', with a filter' : '') });
+    }
+    // a large element seen animating in two samples or more (300 ms+) is a GPU layer for that
+    // long, and every layer drawn over it: the window's own moves are caught here, not only
+    // what is still running at its end
+    for (const [el, s] of seenAnim) {
+      if (s.n < 2 || !el.isConnected) continue;
+      const share = painted(el);
+      if (share >= LARGE) findings.push({ kind: 'mover', what: name(el) + ': ' + s.name + ' ' + (s.ms || '?') + ' ms seen in ' + s.n + ' samples, paints ' + pct(share) });
     }
     for (const a of document.getAnimations()) {
       const t = a.effect && a.effect.getTiming ? a.effect.getTiming() : {};
@@ -127,7 +178,7 @@ const INSTALL = `(() => {
       if (mask) { const r = el.getBoundingClientRect(), B = b.getBoundingClientRect(); const share = (r.width * r.height) / (B.width * B.height); if (share >= MASK_LARGE) findings.push({ kind: 'mask', what: name(el) + ' masked over ' + pct(share) }); }
       if ((cs.overflowY === 'auto' || cs.overflowY === 'scroll') && el.scrollHeight > el.clientHeight + 2) info.push(name(el) + ' scrolls ' + Math.round(el.clientWidth) + 'x' + Math.round(el.clientHeight) + ' css px over ' + Math.round(el.scrollHeight) + ' px of content');
     }
-    return { findings, info };
+    return { findings, info, remounted, room };
   };
   window.__rule = { start, stop };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
@@ -142,6 +193,7 @@ async function walk(page: Page, scene: string, viewer: 'spectator' | 'xray') {
   const n = Number((await page.locator('body').innerText()).match(/of (\d+)/)?.[1] ?? 0);
   const findings: Finding[] = [];
   const scrollers = new Set<string>();
+  let prev: { beat: string; room: string } | null = null;
   for (let i = 0; i < n; i++) {
     if (i > 0) {
       await page.evaluate(() => window.__rule.start());
@@ -154,6 +206,20 @@ async function walk(page: Page, scene: string, viewer: 'spectator' | 'xray') {
     const r = await page.evaluate(() => window.__rule.stop());
     for (const f of r.findings) findings.push({ beat: `${scene}#${i} ${beat}`, ...f });
     for (const s of r.info) scrollers.add(s);
+    // the set is kept within a scene: a new room (the replay's night, one actor at a time) or
+    // the night's hub giving way to a room is a new set
+    const sameSet =
+      !!prev &&
+      prev.room === r.room &&
+      !(beat.startsWith('rnight.') && prev.beat !== beat && beat !== 'rnight.spoke');
+    if (sameSet && r.remounted.length) {
+      const what = `the set is rebuilt by this beat: ${r.remounted.join(', ')}`;
+      const tilesOnly = r.remounted.every((m) => m.startsWith(TILE_MARK));
+      if (KEYED_WHOLE.has(scene) || tilesOnly)
+        scrollers.add(`${scene}#${i} ${beat}: ${what}`);
+      else findings.push({ beat: `${scene}#${i} ${beat}`, kind: 'remount', what });
+    }
+    prev = { beat, room: r.room };
   }
   return { n, findings, scrollers: [...scrollers] };
 }
