@@ -30,6 +30,7 @@ import { Pin } from '../instruments/Pin';
 import { TopStrip } from '../instruments/TopStrip';
 import { Wing } from '../instruments/Wing';
 import { useMotionScale } from '../motion';
+import { useSmall } from '../set';
 import { notebookGame } from '../notebook';
 import { photoTwine, roomChoice, roomLight, roomPlan } from '../paint/compartment';
 import { knownRoles, seatNumber } from '../roles';
@@ -132,6 +133,10 @@ export function NightRoom({
 }: NightRoomProps) {
   const { hud, xray, animate, cast } = presentation;
   const k = useMotionScale();
+  // on a phone the choice's darkness cuts in: a full-stage fade is a GPU layer for its length,
+  // and every layer drawn over it (stage_architecture.md §6)
+  const small = useSmall();
+  const fade = small ? { duration: 0 } : { duration: LIGHT_FADE * k };
   // the side slot open: the painting slides left, so its window and its wall stay in view
   const side = sideOpen(presentation);
   const g = geometry(hud, side);
@@ -222,7 +227,7 @@ export function NightRoom({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: LIGHT_FADE * k }}
+              transition={fade}
             >
               <Paint
                 of={roomChoice}

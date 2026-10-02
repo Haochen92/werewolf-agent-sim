@@ -49,3 +49,8 @@
   background: var(--grain) 0 0 / 240px 240px repeat;
   opacity: 0.16;
 }
+/* on a phone (Stage.tsx `data-small`) the grain is under a pixel and gone from the eye, yet the
+   tile was blended again over every repaint under a moving figure (build log §8.9) */
+:global([data-small]) .grade::after {
+  display: none;
+}
