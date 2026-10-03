@@ -46,15 +46,26 @@ def _read_jsonl(path: Path) -> list[dict]:
 # --- worker: one arm, one process ------------------------------------------------
 
 def run_worker(dataset: Path, out: Path, n: int, memory: str, workers: int, limit: int | None) -> None:
+    """Generate ``n`` valid samples per case. An existing file is topped up: its valid samples are
+    kept and only the missing ones (invalid or never generated) are regenerated."""
     from evaluation.src.replay.hallucination_bench import generate
 
     cases = _read_jsonl(dataset)[:limit] if limit else _read_jsonl(dataset)
+    kept: dict[str, list[dict]] = defaultdict(list)
+    if out.exists():
+        for s in _read_jsonl(out):
+            if s["valid"]:
+                kept[s["case_id"]].append(s)
+    todo = [(c, n - len(kept[c["case_id"]])) for c in cases if len(kept[c["case_id"]]) < n]
+    print(f"  {sum(k for _, k in todo)} samples to generate over {len(todo)} cases")
     with ThreadPoolExecutor(max_workers=workers) as ex:
-        results = list(ex.map(lambda c: (c, generate(c, n, memory)), cases))
+        results = list(ex.map(lambda ck: (ck[0], generate(ck[0], ck[1], memory)), todo))
+    for case, samples in results:
+        kept[case["case_id"]] += samples
     with open(out, "w") as f:
-        for case, samples in results:
-            for s in samples:
-                f.write(json.dumps({"case_id": case["case_id"], **s}) + "\n")
+        for case in cases:
+            for i, s in enumerate(kept[case["case_id"]]):
+                f.write(json.dumps({"case_id": case["case_id"], **s, "sample": i}) + "\n")
 
 
 def spawn_arm(arm: dict, cfg: dict, out: Path) -> None:
@@ -63,7 +74,7 @@ def spawn_arm(arm: dict, cfg: dict, out: Path) -> None:
     cmd = [sys.executable, "-m", "evaluation.src.cli_runner.regen_replay.both.hallucination_bench",
            "--worker", "--dataset", cfg["dataset"], "--out", str(out),
            "--n", str(cfg.get("n", 3)), "--memory", arm.get("memory", "none"),
-           "--workers", str(cfg.get("workers", 8))]
+           "--workers", str(cfg.get("workers", 3))]
     if cfg.get("limit"):
         cmd += ["--limit", str(cfg["limit"])]
     subprocess.run(cmd, cwd=REPO_ROOT, env=env, check=True)
@@ -178,7 +189,9 @@ def main() -> None:
     by_arm: dict[str, list[dict]] = {}
     for arm in cfg["arms"]:
         gen_path = out_dir / f"generations_{arm['label']}.jsonl"
-        if not gen_path.exists():  # a rerun reuses an arm's generations; delete the file to redo it
+        existing = _read_jsonl(gen_path) if gen_path.exists() else []
+        if not existing or not all(s["valid"] for s in existing):
+            # a rerun keeps an arm's valid samples and tops up the rest; delete the file to redo it
             print(f"arm {arm['label']}: generating ({arm['model']}, env {arm.get('env') or {}})")
             spawn_arm(arm, cfg, gen_path)
         by_arm[arm["label"]] = _read_jsonl(gen_path)

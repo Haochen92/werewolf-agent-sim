@@ -14,6 +14,8 @@ not covered yet.
 
 from __future__ import annotations
 
+import random
+import time
 from typing import Any
 
 from Agents.schemas.game_events import (
@@ -97,10 +99,18 @@ def generate(case: dict[str, Any], n: int, memory: str = "none") -> list[dict[st
 
     samples = []
     for i in range(n):
-        try:
-            out = chain.invoke(prompt_input)
-        except Exception as e:  # transport / parse: recorded, the sample counts as invalid
-            samples.append({"sample": i, "valid": False, "error": str(e)[:300], "units": []})
+        out, err = None, ""
+        for attempt in range(5):  # the shared Vertex pool answers bursts with 429s: back off and retry
+            try:
+                out = chain.invoke(prompt_input)
+                break
+            except Exception as e:
+                err = str(e)[:300]
+                if "429" not in err and "RESOURCE_EXHAUSTED" not in err and "504" not in err:
+                    break
+                time.sleep(min(60, 4 * 2 ** attempt) + random.random() * 3)
+        if out is None:  # recorded; the sample counts as invalid and a rerun regenerates it
+            samples.append({"sample": i, "valid": False, "error": err, "units": []})
             continue
         units = []
         message = getattr(out, "message", "") or ""
