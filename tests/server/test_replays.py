@@ -138,11 +138,16 @@ def test_replay_dto_drops_private_game_row_fields():
 def test_database_metadata_has_one_game_table_and_normalized_events():
     from sqlmodel import SQLModel
 
-    assert set(SQLModel.metadata.tables) == {"games", "events", "settings"}
+    assert set(SQLModel.metadata.tables) == {
+        "games", "events", "settings", "characters", "game_cast"}
     assert "replays" not in SQLModel.metadata.tables
     event_fk = next(iter(SQLModel.metadata.tables["events"].foreign_keys))
     assert event_fk.target_fullname == "games.game_id"
     assert event_fk.ondelete == "CASCADE"
+    # A game's cast goes with the game, and names only characters the catalogue knows.
+    cast_fks = {fk.target_fullname: fk.ondelete
+                for fk in SQLModel.metadata.tables["game_cast"].foreign_keys}
+    assert cast_fks == {"games.game_id": "CASCADE", "characters.id": None}
 
 
 def test_event_union_reaches_openapi():
@@ -211,11 +216,26 @@ async def test_postgres_round_trip():
     assert await repository.load_game("missing-game") is None
     assert await repository.record_events("itest-game", _log())
     assert await repository.record_events("itest-game", _log())  # retry cannot duplicate rows
+    # The cast goes with the game: written once, listed in seat order, and the
+    # constraints refuse a puppet standing twice or one the catalogue never issued.
+    from sqlalchemy.exc import IntegrityError
+
+    from server.game.cast import CastSeat
+
+    cast = [CastSeat("player_2", "owl", False), CastSeat("player_1", "whale", True)]
+    assert await repository.record_cast("itest-game", cast)
+    assert await repository.record_cast("itest-game", cast)  # retry cannot duplicate rows
+    assert await repository.load_cast("itest-game") == [cast[1], cast[0]]
+    assert not await repository.record_cast(
+        "itest-game", [CastSeat("player_3", "owl", False)])  # owl stands at player_2
+    assert not await repository.record_cast(
+        "itest-game", [CastSeat("player_3", "nobody", False)])  # not in the catalogue
     await repository.complete_game("itest-game", _log(), n_humans=2)
     await repository.complete_game("itest-game", _log(), n_humans=2)  # idempotent
 
     summary = await replay_service.list_replays(limit=50, offset=0)
     game = await replay_service.get_replay("itest-game")
+    assert game.cast == ["whale", "owl"]
     assert any(item.game_id == "itest-game" for item in summary)
     assert await replay_service.count_replays() >= 1
     assert game.winner == "wolves" and len(game.events) == 3

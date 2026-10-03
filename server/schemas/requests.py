@@ -61,6 +61,21 @@ class ModelsMenu(BaseModel):
     house: HouseFunding
 
 
+# --- the puppets: the catalogue a player picks from -----------------------------------
+
+
+class CharacterCard(BaseModel):
+    """One row of GET /characters: a puppet a player may stand as. Costumes say nothing
+    about roles; the cast is dealt independently of the deal."""
+
+    id: str
+    """The slug the sprites are filed under; stable, and what a pick names."""
+    display_name: str
+    """What people read; may change without touching any record."""
+    retired: bool = False
+    """No longer picked or drawn, but old games still name it."""
+
+
 # --- the solo door: one person's table, started on the spot ------------------------
 
 

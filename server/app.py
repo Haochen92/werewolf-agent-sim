@@ -20,6 +20,7 @@ from server.config import server_settings
 from server.housekeeping.recovery import recover_registry
 from server.resources import app_resources
 from server.routes.admin import router as admin_router
+from server.routes.characters import router as characters_router
 from server.routes.games import router as games_router
 from server.routes.replays import TOTAL_COUNT_HEADER, router as replays_router
 from server.routes.rooms import router as rooms_router
@@ -73,6 +74,7 @@ def create_app() -> FastAPI:
     app.include_router(games_router)
     app.include_router(rooms_router)
     app.include_router(replays_router)
+    app.include_router(characters_router)
     app.include_router(admin_router)
     return app
 

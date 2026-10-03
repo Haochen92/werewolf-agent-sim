@@ -17,6 +17,7 @@ from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import select, update
 
+from server.database_models.cast import GameCastRow
 from server.database_models.game import (
     COMPLETED,
     DROPPED,
@@ -26,6 +27,7 @@ from server.database_models.game import (
     GameStatus,
 )
 from server.db import Database
+from server.game.cast import CastSeat, seat_number
 from server.schemas import events as ev
 
 logger = logging.getLogger(__name__)
@@ -168,6 +170,39 @@ class GameRepository:
                 "game %s: event persistence failed (game unaffected)", game_id
             )
             return False
+
+    async def record_cast(self, game_id: str, cast: Sequence[CastSeat]) -> bool:
+        """Write which puppet stands at each seat, once the engine has dealt the seats.
+        One row per seat; rows already there are left alone, so a retry cannot double
+        up. True after commit, or when storage is disabled or the cast is empty; False
+        on a logged failure, so the session keeps the cast unsaved for the next try."""
+        if not self._database.configured or not cast:
+            return True
+        try:
+            stmt = insert(GameCastRow).values([
+                {"game_id": game_id, "seat": c.seat, "character_id": c.character,
+                 "chosen": c.chosen}
+                for c in cast
+            ]).on_conflict_do_nothing(index_elements=["game_id", "seat"])
+            async with self._database.session() as session:
+                await session.execute(stmt)
+                await session.commit()
+            return True
+        except Exception:
+            logger.exception("game %s: cast persistence failed (game unaffected)", game_id)
+            return False
+
+    async def load_cast(self, game_id: str) -> list[CastSeat]:
+        """The puppets a game stored, in seat order; empty for a game recorded before
+        casts were stored, or when storage is off."""
+        if not self._database.configured:
+            return []
+        async with self._database.session() as session:
+            rows = (await session.execute(
+                select(GameCastRow).where(GameCastRow.game_id == game_id)
+            )).scalars().all()
+        return sorted((CastSeat(r.seat, r.character_id, r.chosen) for r in rows),
+                      key=lambda c: seat_number(c.seat))
 
     async def complete_game(
         self,
