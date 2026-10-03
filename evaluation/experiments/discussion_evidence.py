@@ -29,7 +29,6 @@ import re
 import statistics
 import sys
 import time
-import urllib.request
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -41,6 +40,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from evaluation.src.core.settings import REPO_ROOT  # noqa: E402
 from evaluation.src.data.sources.batch_records import load_batch_records  # noqa: E402
+from evaluation.src.data.sources.replay_api import LIVE_SERVER  # noqa: E402
+from evaluation.src.data.sources.replay_api import load_replays as _load_replays  # noqa: E402
+from evaluation.src.data.sources.replay_api import record_from_replay  # noqa: E402,F401
 from evaluation.src.judges.config import DEFAULT_JUDGE_MODEL, get_judge_llm  # noqa: E402
 from evaluation.src.judges.role_fact_read import build_fact_sheet  # noqa: E402
 
@@ -109,67 +111,10 @@ def _load(records_glob: str, games: int | None) -> list[dict]:
     return records[:games] if games else records
 
 
-def _get_json(url: str):
-    # Cloudflare in front of the site refuses urllib's default user agent.
-    req = urllib.request.Request(url, headers={"User-Agent": "werewolf-eval/1.0"})
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        return json.load(resp)
-
-
-_ATTACKER_FIELDS = {"wolves": ("wolves_target", "kill_successful"),
-                    "serial_killer": ("serial_killer_target", "serial_killer_kill_landed"),
-                    "vigilante": ("vigilante_target", "vigilante_kill_landed")}
-
-
-def record_from_replay(replay: dict) -> dict:
-    """A finished website game, rebuilt from its replay events into the run_batch record shape the
-    readers above take. Human seats (any seat the game asked for input) are listed in `humans`."""
-    record: dict = {"game_id": replay["game_id"], "winner": replay["winner"], "roles": {},
-                    "day_channel": [], "day_summaries": [], "day_resolutions": [],
-                    "night_resolutions": [], "investigator_results": [], "humans": set(),
-                    "model": replay.get("model"), "memory": replay.get("memory")}
-    votes: dict[int, list[dict]] = defaultdict(list)
-    for e in replay["events"]:
-        t, day = e["type"], e["day"]
-        if t == "roles_assigned":
-            record["roles"] = e["roles"]
-        elif t == "input_request":
-            record["humans"].add(e["player"])
-        elif t == "speech":
-            record["day_channel"].append({"day": day, "seq": e["channel_seq"], "player": e["player"],
-                                          "message": e["message"], "passed": False})
-        elif t == "pass_marker":
-            record["day_channel"].append({"day": day, "seq": e["channel_seq"], "player": e["player"],
-                                          "message": "", "passed": True,
-                                          "pass_reason": e.get("pass_reason")})
-        elif t == "day_summary_structured":
-            record["day_summaries"].append({"day": day, "structured": e["data"]})
-        elif t == "vote_cast":
-            votes[day].append({"voter": e["voter"], "votee": e["votee"]})
-        elif t == "lynch_result":
-            record["day_resolutions"].append({
-                "day": day, "votes": votes.pop(day, []), "vote_counts": e["vote_counts"],
-                "voted_player": e["player"] if e["outcome"] == "lynched" else None})
-        elif t == "night_result":  # day N = the night after day N, as in the batch records
-            night: dict = {"day": day, "deaths": [d["player"] for d in e["deaths"]]}
-            for d in e["deaths"]:
-                for attacker in d["attacker_types"][:1]:
-                    target, landed = _ATTACKER_FIELDS[attacker]
-                    night[target], night[landed] = d["player"], True
-            record["night_resolutions"].append(night)
-        elif t == "investigation_result":
-            record["investigator_results"].append(
-                {"day": day, "player_investigated": e["target"], "role_revealed": e["role"]})
-    record["humans"] = sorted(record["humans"])
-    return record
-
-
 def load_replays(server: str, game_ids: list[str], latest: int | None) -> list[dict]:
-    if latest:
-        game_ids = [g["game_id"] for g in _get_json(f"{server}/replays?limit={latest}")] + game_ids
-    if not game_ids:
+    if not (game_ids or latest):
         sys.exit("name games with --replays, or take the newest with --latest N")
-    return [record_from_replay(_get_json(f"{server}/replays/{g}")) for g in game_ids]
+    return _load_replays(game_ids, latest=latest, server=server)
 
 
 def _real_messages(record: dict) -> list[dict]:
@@ -376,7 +321,7 @@ def main() -> None:
     src.add_argument("--records", help="repo-relative glob of run_batch game-record .jsonl files")
     src.add_argument("--replays", nargs="+", help="finished website games, by game id")
     src.add_argument("--latest", type=int, help="the N most recently finished website games")
-    ap.add_argument("--server", default="https://wolf.liuhaochen.com/api", help="where --replays/--latest read from")
+    ap.add_argument("--server", default=LIVE_SERVER, help="where --replays/--latest read from")
     ap.add_argument("--games", type=int, default=None, help="read only the first N games")
     ap.add_argument("--label", default="run", help="output folder name under --out")
     ap.add_argument("--out", default=DEFAULT_OUT)
