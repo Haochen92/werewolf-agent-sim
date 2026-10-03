@@ -62,7 +62,7 @@ def spawn_arm(arm: dict, cfg: dict, out: Path) -> None:
     env["GOOGLE_GENAI_MODEL"] = arm["model"]
     cmd = [sys.executable, "-m", "evaluation.src.cli_runner.regen_replay.both.hallucination_bench",
            "--worker", "--dataset", cfg["dataset"], "--out", str(out),
-           "--n", str(cfg.get("n", 3)), "--memory", arm.get("memory", "captured"),
+           "--n", str(cfg.get("n", 3)), "--memory", arm.get("memory", "none"),
            "--workers", str(cfg.get("workers", 8))]
     if cfg.get("limit"):
         cmd += ["--limit", str(cfg["limit"])]
@@ -163,7 +163,7 @@ def main() -> None:
     ap.add_argument("--config")
     ap.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
     ap.add_argument("--dataset"), ap.add_argument("--out")
-    ap.add_argument("--n", type=int, default=3), ap.add_argument("--memory", default="captured")
+    ap.add_argument("--n", type=int, default=3), ap.add_argument("--memory", default="none")
     ap.add_argument("--workers", type=int, default=8), ap.add_argument("--limit", type=int)
     args = ap.parse_args()
     if args.worker:

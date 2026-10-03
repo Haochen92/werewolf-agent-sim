@@ -44,11 +44,12 @@ def hydrate_state(state: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
-def turn_payload(case: dict[str, Any], memory: str = "captured") -> dict[str, Any]:
+def turn_payload(case: dict[str, Any], memory: str = "none") -> dict[str, Any]:
     """The payload the engine would hand this speaker's node, built by the engine's own builders.
 
-    ``memory``: "captured" puts back the memories the agent was shown in the original game;
-    "none" leaves them out, as a memory-off game does.
+    ``memory``: "none" (the default) leaves memories out, as the live site's memory-off games do;
+    "captured" puts back the memories the agent was shown in the original game (the census games'
+    June stores, so only meaningful when that is what is being tested).
     """
     from Agents.nodes.day.flow import build_speaker_send, fan_out_day
     from Agents.schemas import RetrievedObservation, RetrievedStrategyPoint
@@ -56,8 +57,13 @@ def turn_payload(case: dict[str, Any], memory: str = "captured") -> dict[str, An
     state = hydrate_state(case["state"])
     speaker, role = case["speaker"], case["role"]
     if case["phase"] == "day_discussion":
+        from Agents.config.game import GameConfig
+        from Agents.nodes.day.flow import discussion_stage_controls
+
         firing = FiringReason.model_validate(case.get("firing_reason") or {"tier": "proactive"})
-        payload = dict(build_speaker_send(state, speaker, role, firing).arg)
+        voting_available, opener_floor = discussion_stage_controls(state["current_day"], GameConfig())
+        payload = dict(build_speaker_send(state, speaker, role, firing, opener_floor,
+                                          voting_available=voting_available).arg)
     elif case["phase"] == "day_vote":
         sends = fan_out_day(state, "vote", allow_abstain=True)
         payload = dict(next(s.arg for s in sends if s.arg["player_id"] == speaker))
@@ -72,7 +78,7 @@ def turn_payload(case: dict[str, Any], memory: str = "captured") -> dict[str, An
     return payload
 
 
-def generate(case: dict[str, Any], n: int, memory: str = "captured") -> list[dict[str, Any]]:
+def generate(case: dict[str, Any], n: int, memory: str = "none") -> list[dict[str, Any]]:
     """Sample the turn ``n`` times on the process's game model; each sample's text units."""
     from Agents.llm_factory import get_llm
     from Agents.nodes.day.actors import DISCUSS_PROMPTS, VOTE_PROMPTS

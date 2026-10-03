@@ -10,7 +10,7 @@
       "env": {
         "WW_DISCUSSION_PROMPT": "v2"
       },
-      "memory": "captured"
+      "memory": "none"
     }
   ]
 }

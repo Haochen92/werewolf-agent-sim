@@ -428,6 +428,13 @@ eval-hallucination-bench         the benchmark: arms (model × prompt env flags)
 - **Output:** per arm, bad rates overall, for positives, for controls, per phase and per role; each
   later arm against the first, per case, with a sign test. Written to
   `evaluation/eval_results/hallucination_bench/<label>/`.
+- **What an old case is:** today's prompt, schema and model on a June board. The state parses into
+  today's types and every input today's day prompt reads is present (the dead roster is rebuilt,
+  role counts are derived). But the history the turn reads was written under June prompts: the day
+  summaries (then still asking who stayed quiet), the longer messages, the agent's earlier notes.
+  Memories default to off, as on the live site (`"memory": "captured"` restores the June
+  retrievals). Results split by `source`, so census and live-game cases can be read apart; live
+  cases are the in-distribution ones and should grow over time.
 - **Why curate:** the census cases come from June prompts and many no longer go wrong on today's.
   Its July ancestor (T1b) showed that turns which never recur can't show a fix working; error-prone
   situations can (T1c: 48% bad pooled under the old prompt).
