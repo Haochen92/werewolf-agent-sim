@@ -11,9 +11,13 @@ from logging import getLogger
 from Agents.prompts.prompt_formatters import format_day_channel
 from Agents.llm_factory import get_llm_summary
 from Agents.prompts import DAY_SUMMARY_PROMPT, GAME_RULES, SITUATION_STANDARDS
-from Agents.schemas import DaySummaryOutput
+from Agents.prompts.common import DISCUSSION_PROMPT_V2
+from Agents.schemas import DaySummaryOutput, DaySummaryOutputV2
 
 logger = getLogger(__name__)
+
+# v2 asks the summary what evidence the discussion's drivers use, not who stayed quiet.
+_SUMMARY_SCHEMA = DaySummaryOutputV2 if DISCUSSION_PROMPT_V2 else DaySummaryOutput
 
 
 def run_day_summary_agent(
@@ -37,7 +41,7 @@ def run_day_summary_agent(
     for attempt in range(max_retries + 1):
         try:
             llm = get_llm_summary()
-            result = llm.with_structured_output(DaySummaryOutput).invoke(prompt)
+            result = llm.with_structured_output(_SUMMARY_SCHEMA).invoke(prompt)
             return _serialize_day_summary(result), getattr(llm, "model", "") or "", result.model_dump()
         except Exception as exc:
             logger.warning(f"Day discussion summary failed for day {current_day}: {exc}")

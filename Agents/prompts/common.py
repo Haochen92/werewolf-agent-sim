@@ -1,3 +1,12 @@
+import os
+
+# The discussion-evidence prompt pass (evidence/game_play_enhancement/discussion_evidence.md §3):
+# WW_DISCUSSION_PROMPT=v2 turns on the turn-taking fact, the evil claiming option, the shorter
+# message target and the summary's evidence-focused "drivers" field. Off by default; the
+# current prompts stay byte-identical so the two can be compared on one commit.
+DISCUSSION_PROMPT_V2 = os.environ.get("WW_DISCUSSION_PROMPT") == "v2"
+
+
 def build_system_prompt(*sections: str) -> str:
     """Join prompt sections with blank lines after stripping each section."""
     return "\n\n".join(section.strip() for section in sections)
@@ -55,6 +64,16 @@ What is public vs. hidden:
 - A player can claim any role, but the game cannot verify a role claim — only an elimination reveals a role.
 
 The world is closed: the only roles and abilities in this game are the ones listed above."""
+
+# v2: who speaks when is the moderator's doing, so agents stop reading it as behaviour (P1).
+_NIGHT_FLOW = "- Night: the wolves choose a victim"
+_TURN_TAKING_FACT = """- Turn order: the moderator decides who speaks next. The first speaker each day is random, players
+    who were addressed answer first, and a player whose point has already been made may be skipped.
+    Who spoke first, how often someone spoke, or who hasn't spoken yet says nothing about their role.
+"""
+assert _NIGHT_FLOW in GAME_RULES
+if DISCUSSION_PROMPT_V2:
+    GAME_RULES = GAME_RULES.replace(_NIGHT_FLOW, _TURN_TAKING_FACT + _NIGHT_FLOW)
 
 
 # Play-side preamble = a second-person intro + the canonical rules. Reconstructed to be

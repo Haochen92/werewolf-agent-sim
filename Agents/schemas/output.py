@@ -241,6 +241,22 @@ class DaySummaryOutput(LenientToolCallModel):
     village_dynamics: VillageDynamics
 
 
+# WW_DISCUSSION_PROMPT=v2 (P2): the summary stops asking who stayed quiet — its answer fed the
+# next day's prompts. Same keys as the originals, so stored summaries read the same downstream.
+# Model-visible: no class docstring.
+class VillageDynamicsV2(VillageDynamics):
+    drivers: str = Field(
+        description=(
+            "Who is driving the discussion, and what evidence are they using? "
+            "Name specific player IDs. 1-2 sentences."
+        ),
+    )
+
+
+class DaySummaryOutputV2(DaySummaryOutput):
+    village_dynamics: VillageDynamicsV2
+
+
 class HealerOutput(LenientToolCallModel):
     strategy_verdicts: list[StrategyVerdict] = Field(
         default_factory=list,

@@ -11,6 +11,7 @@ prose — the brief is only the generic faction/win/night facts.
 
 import os
 
+from Agents.prompts.common import DISCUSSION_PROMPT_V2
 from Agents.schemas.roles import ROLE_SPECS
 
 # --- per-role PLAYSTYLE prose (how this role contributes; not cross-faction awareness) ----------
@@ -114,6 +115,16 @@ Night Strategy: Each night you eliminate one player. Whom to remove — thinning
 
 Voting & Survival: Your day vote is a tool to deflect suspicion and steer whom the village removes. Decide it from your own reading of the game; a vote that draws attention to you is dangerous.
 """
+
+
+# v2 (P3): in 28 games no wolf or serial killer ever claimed a role, so the investigator was never
+# contested. Facts + a two-sided tradeoff, not a steer — whether to claim stays the agent's call.
+_EVIL_CLAIMING = """
+Claiming a role: You may claim any town role, including investigator, healer or vigilante. A claim can discredit a real claimant or give you cover, but the real holder may counter-claim, the town can check your story against what happens at night, and your true role is revealed if you're eliminated.
+"""
+if DISCUSSION_PROMPT_V2:
+    _WOLF_PLAYSTYLE += _EVIL_CLAIMING
+    _SERIAL_KILLER_PLAYSTYLE += _EVIL_CLAIMING
 
 
 _VIGILANTE_PLAYSTYLE = """
