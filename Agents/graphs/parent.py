@@ -49,6 +49,7 @@ from Agents.config import (
     game_config_from_runnable,
 )
 from Agents.memory import store, checkpointer
+from Agents.rules.night_record import own_night_actions
 from Agents.schemas.roles import cast_role_counts
 from Agents.tracing import GraphContext
 
@@ -79,6 +80,7 @@ def day_phase(
         "human_players": state["human_players"],
         "investigator_results": state.get("investigator_results", []),
         "vigilante_results": state.get("vigilante_results", []),
+        "night_actions": state.get("night_actions", []),
         "vigilante_bullets": state.get("vigilante_bullets", 0),
         "surviving_villagers": state["surviving_villagers"],
         "surviving_wolves": state["surviving_wolves"],
@@ -117,6 +119,11 @@ def wolf_night_phase(
         "agent_strategies": state.get("agent_strategies", {}),
         "day_channel": state.get("day_channel", []),
         "day_summaries": state.get("day_summaries", []),
+        # Public, as for the other night roles: the dead roster and the counts-only cast census.
+        "dead_roster": state.get("dead_roster", []),
+        "cast_role_counts": cast_role_counts(state.get("roles", {})),
+        # The pack's own kill record, shared by every wolf.
+        "night_actions": own_night_actions(state.get("night_actions", []), "", "wolf"),
         "wolf_channel": state.get("wolf_channel", []),
         "surviving_villagers": state["surviving_villagers"],
         "surviving_wolves": state["surviving_wolves"],
@@ -167,6 +174,8 @@ def healer_night_phase(
             if p != healer
         ],
         "player_id": healer,
+        # Private: only this actor's own night record.
+        "night_actions": own_night_actions(state.get("night_actions", []), healer, "healer"),
         "player_role": "healer",
         "human_player": healer in state["human_players"],
     }
@@ -251,6 +260,8 @@ def serial_killer_night_phase(
             if p != serial_killer
         ],
         "player_id": serial_killer,
+        # Private: only this actor's own night record.
+        "night_actions": own_night_actions(state.get("night_actions", []), serial_killer, "serial_killer"),
         "player_role": "serial_killer",
         "human_player": serial_killer in state["human_players"],
     }
@@ -298,6 +309,8 @@ def vigilante_night_phase(
         "vigilante_bullets": state.get("vigilante_bullets", 0),
         "vigilante_results": state.get("vigilante_results", []),
         "player_id": vigilante,
+        # Private: only this actor's own night record.
+        "night_actions": own_night_actions(state.get("night_actions", []), vigilante, "vigilante"),
         "player_role": "vigilante",
         "human_player": vigilante in state["human_players"],
     }

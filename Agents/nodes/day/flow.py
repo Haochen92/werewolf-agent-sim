@@ -17,6 +17,7 @@ from langgraph.types import Send
 
 from Agents.game_config import GameConfig, game_config_from_runnable
 from Agents.schemas import DaySummary, FiringReason
+from Agents.rules.night_record import own_night_actions
 from Agents.schemas.roles import cast_role_counts
 from Agents.state import (
     DayGraphState,
@@ -181,7 +182,15 @@ def build_speaker_send(
         # Deterministic bullets_left fill (situation_agent): the vigilante day cell carries
         # bullets_left, but VillagerDayState otherwise drops the counter — thread it explicitly.
         payload["vigilante_bullets"] = state.get("vigilante_bullets", 0)
+    if role in _NIGHT_RECORD_ROLES:
+        # The speaker's own night record only (the pack's, for a wolf).
+        payload["night_actions"] = own_night_actions(state.get("night_actions", []), speaker_id, role)
     return Send("discuss", payload)
+
+
+# Roles that act at night and so have a private night record (the investigator keeps its own
+# investigator_results).
+_NIGHT_RECORD_ROLES = {"healer", "vigilante", "serial_killer", "wolf"}
 
 
 # Roles with day discuss/vote nodes registered in the day graph.
@@ -248,6 +257,8 @@ def fan_out_day(
         elif role == "vigilante":
             payload["vigilante_results"] = state.get("vigilante_results", [])
             payload["vigilante_bullets"] = state.get("vigilante_bullets", 0)
+        if role in _NIGHT_RECORD_ROLES:
+            payload["night_actions"] = own_night_actions(state.get("night_actions", []), player, role)
 
         # Humans go to the UNCACHED twin node: a human resume aborts and re-runs this
         # superstep, and the cached LLM nodes then replay their results instead of

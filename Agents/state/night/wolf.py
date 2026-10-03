@@ -4,7 +4,7 @@
 from operator import add
 from typing import Annotated, TypedDict
 
-from Agents.schemas.game_events import DayChannel, DaySummary, WolfChannel
+from Agents.schemas.game_events import DayChannel, DaySummary, DeathRecord, NightActionRecord, WolfChannel
 from Agents.state.reducers import merge_strategies
 
 
@@ -16,6 +16,13 @@ class WolfNightGraph(TypedDict, total=False):
     """Public day-discussion transcript carried into the night for context."""
     day_summaries: list[DaySummary]
     """Prior-day summaries for context."""
+    dead_roster: list[DeathRecord]
+    """Public dead roster, so the wolf night prompts get the same who-died block as the other
+    night roles (audit 2026-10-03, finding 8)."""
+    cast_role_counts: dict[str, int]
+    """Public fixed-cast census (counts only) feeding the alive-roles line."""
+    night_actions: list[NightActionRecord]
+    """The pack's own kill record (actor "wolves"), visible to every wolf."""
     wolf_channel: Annotated[list[WolfChannel], add]
     """Private wolf discussion + kill votes; accumulates across the night's rounds."""
     surviving_wolves: list[str]

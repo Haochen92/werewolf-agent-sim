@@ -96,6 +96,7 @@ def build_eval_private_context(
         wolf_channel=payload.get("wolf_channel", []),
         investigator_results=payload.get("investigator_results", []),
         vigilante_results=payload.get("vigilante_results", []),
+        night_actions=payload.get("night_actions", []),
         surviving_players=payload.get("surviving_players", []),
         surviving_wolves=payload.get("surviving_wolves", []),
         surviving_villagers=payload.get("surviving_villagers", []),

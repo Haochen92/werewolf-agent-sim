@@ -2,7 +2,7 @@
 
 from typing import TypedDict
 
-from Agents.schemas.game_events import DayChannel, DaySummary, DeathRecord
+from Agents.schemas.game_events import DayChannel, DaySummary, DeathRecord, NightActionRecord
 
 
 class VigilanteNightGraph(TypedDict, total=False):
@@ -16,6 +16,9 @@ class VigilanteNightGraph(TypedDict, total=False):
     dead_roster: list[DeathRecord]
     """Public dead roster (dead player -> revealed role + when), carried into the night to render the
     who-died block. Must be declared: LangGraph drops undeclared keys off a subgraph's state schema."""
+    night_actions: list[NightActionRecord]
+    """Private: this actor's own night record (for a wolf, the pack's kills), filtered by
+    own_night_actions in the payload builder. Must be declared: LangGraph drops undeclared keys."""
     cast_role_counts: dict[str, int]
     """Public fixed-cast census (role -> count; counts only, no identities) feeding the alive-roles
     line (cast minus revealed dead). Must be declared for the same reason as dead_roster."""

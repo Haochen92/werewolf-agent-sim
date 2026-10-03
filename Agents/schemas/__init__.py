@@ -26,6 +26,7 @@ from Agents.schemas.game_events import (
     DiscussionPassReason,
     FiringReason,
     InvestigatorResult,
+    NightActionRecord,
     WolfChannel,
 )
 from Agents.schemas.human_player import (
@@ -124,6 +125,7 @@ __all__ = [
     "InvestigatorResult",
     "Metrics",
     "NightResolutionMetric",
+    "NightActionRecord",
     "NoveltyJudgment",
     "Observation",
     "ReactiveItem",

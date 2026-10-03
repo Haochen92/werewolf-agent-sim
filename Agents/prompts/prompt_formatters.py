@@ -6,6 +6,7 @@ from Agents.schemas.game_events import (
     DayVote,
     DeathRecord,
     InvestigatorResult,
+    NightActionRecord,
     WolfChannel,
 )
 
@@ -166,3 +167,15 @@ def format_agent_action(
     if action_phase == "day_vote":
         return f"Vote target: {vote.votee if vote else '(not captured)'}"
     return f"Message: {message.message if message else '(silent)'}"
+def format_night_actions_postgame(records: list[NightActionRecord], roles: dict[str, str]) -> str:
+    """Every night actor's record, labelled with its role, for the post-game extractor."""
+    if not records:
+        return "No night actions recorded."
+    lines = []
+    for r in records:
+        who = "the wolves" if r.actor == "wolves" else f"{r.actor} ({roles.get(r.actor, 'unknown')})"
+        act = "held fire" if r.action == "hold_fire" else f"{r.action} {r.target}"
+        lines.append(f"Night {r.day}: {who} {act}. {r.outcome}")
+    return "\n".join(lines)
+
+

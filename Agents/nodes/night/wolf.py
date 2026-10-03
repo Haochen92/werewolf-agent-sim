@@ -87,6 +87,9 @@ def _wolf_payload(state: WolfNightGraph, wolf: str) -> dict:
     return {
         "day_channel": state["day_channel"],
         "day_summaries": state.get("day_summaries", []),
+        "dead_roster": state.get("dead_roster", []),
+        "cast_role_counts": state.get("cast_role_counts", {}),
+        "night_actions": state.get("night_actions", []),  # already the pack's own (parent filters)
         "wolf_channel": state["wolf_channel"],
         "surviving_villagers": state["surviving_villagers"],
         "surviving_wolves": state["surviving_wolves"],

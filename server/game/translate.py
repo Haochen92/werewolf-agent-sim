@@ -377,7 +377,7 @@ class Translator:
     @node("INITIALIZE_GAME", writes={
         "roles", "vigilante_bullets", "current_day", "human_players", "winner",
         "day_channel", "day_summaries", "wolf_channel", "day_votes", "investigator_results",
-        "no_lynch_streak", *_ROLE_HOLDERS, *_SURVIVORS,
+        "night_actions", "no_lynch_streak", *_ROLE_HOLDERS, *_SURVIVORS,
         "human_player",  # pre-rename spelling: the captured game predates multi-human
     })
     def _initialize_game(self, delta):
@@ -592,6 +592,9 @@ class Translator:
     @node("NIGHT_RESOLUTION", writes={
         "day_channel", "dead_roster", "wolf_channel", "investigator_results",
         "vigilante_results", "vigilante_bullets", "day_summaries",
+        # The private night record: engine input for later turns; the browser learns each
+        # seat's own action from night_action events, so no handler.
+        "night_actions",
         *_SURVIVORS, *_ROLE_HOLDERS,
     })
     def _night_resolution(self, delta):

@@ -156,3 +156,22 @@ class DeathRecord(BaseModel):
     """1-based game day of the death (for a night kill: the night belonging to that day)."""
     phase: Literal["night", "day"]
     """"night" = killed overnight (wolves / serial killer / vigilante); "day" = lynched by vote."""
+
+
+class NightActionRecord(BaseModel):
+    """One night action as its actor experienced it: written by night resolution, private to the
+    actor. The healer, vigilante and serial killer each see only their own; every wolf sees the
+    pack's kill. Gives the actor an exact record of what it did, which its own prose note cannot
+    be relied on to keep (audit 2026-10-03, finding 1)."""
+
+    day: int
+    """The night the action was taken (the night belonging to that day)."""
+    actor: str
+    """The acting player_id, or "wolves" for the pack's kill."""
+    action: Literal["protect", "shoot", "hold_fire", "kill"]
+    """What the actor did: the healer protects, the vigilante shoots or holds fire, the serial
+    killer and the wolves kill."""
+    target: str | None
+    """Who the action was on; None for hold_fire."""
+    outcome: str
+    """What the actor is allowed to know of the result, in plain words."""

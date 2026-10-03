@@ -19,6 +19,7 @@ from Agents.schemas.game_events import (
     DayVote,
     DeathRecord,
     InvestigatorResult,
+    NightActionRecord,
     WolfChannel,
 )
 from Agents.schemas.memory import RetrievedObservation, RetrievedStrategyPoint
@@ -34,6 +35,9 @@ class EvalPrivateContext(BaseModel):
     wolf_channel: list[WolfChannel] = Field(default_factory=list)
     investigator_results: list[InvestigatorResult] = Field(default_factory=list)
     vigilante_results: list[str] = Field(default_factory=list)
+    night_actions: list[NightActionRecord] = Field(default_factory=list)
+    """The actor's own private night record (healer / vigilante / serial killer; the pack's for a
+    wolf). Empty before 2026-10-03."""
     surviving_players: list[str] = Field(default_factory=list)
     surviving_wolves: list[str] = Field(default_factory=list)
     surviving_villagers: list[str] = Field(default_factory=list)

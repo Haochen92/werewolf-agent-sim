@@ -25,6 +25,7 @@ from Agents.nodes.orchestrator import (
     _faction_counts,
     _nullify_special_roles,
 )
+from Agents.rules.night_record import night_action_records
 from Agents.rules.resolution import collect_attacks, resolve_attacks
 
 
@@ -151,6 +152,24 @@ def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
                 vote="",
             )
         ]
+
+    # Each actor's private record of what it did and what it may know of the result. The
+    # vigilante was asked tonight iff it is alive with bullets; no target then means it held fire.
+    state_update["night_actions"] = night_action_records(
+        current_day,
+        wolves_target=wolves_target,
+        healer_target=healer_target,
+        serial_killer_target=serial_killer_target,
+        vigilante_target=vigilante_target,
+        attacks_on=attacks_on,
+        verdicts=outcomes,
+        roles=roles,
+        healer=state.get("healer_player"),
+        serial_killer=sk_player,
+        vigilante=state.get("vigilante_player"),
+        vigilante_held_fire=bool(state.get("vigilante_player") and state.get("vigilante_bullets", 0) > 0
+                                 and not vigilante_target),
+    )
 
     lines: list[str] = []
     announced_save = False

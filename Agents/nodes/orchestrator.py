@@ -142,6 +142,7 @@ def initialize_game(state: OrchestratorGraph, config: RunnableConfig):
         "vigilante_bullets": game_config.vigilante_bullets,
         "no_lynch_streak": 0,
         "investigator_results": [],
+        "night_actions": [],
         "day_votes": [],
         "winner": None,
     }

@@ -18,6 +18,7 @@ from Agents.schemas.game_events import (
     DayVote,
     DeathRecord,
     InvestigatorResult,
+    NightActionRecord,
     WolfChannel,
 )
 from Agents.state.reducers import merge_strategies
@@ -78,6 +79,10 @@ class OrchestratorGraph(TypedDict, total=False):
     vigilante_results: Annotated[list[str], add]
     """Private notes the vigilante learns from its shots (e.g. an immune target = the
     serial killer). Siloed to the vigilante, like investigator_results."""
+    night_actions: Annotated[list[NightActionRecord], add]
+    """Every night actor's private record (healer, vigilante, serial killer, and the wolf pack as
+    actor "wolves"), written by night_resolution. Payload builders hand each player only its own
+    (Agents.rules.night_record.own_night_actions)."""
     # Day outcome.
     day_votes: list[DayVote]
     """This day's recorded votes (public, permanent)."""
@@ -115,5 +120,6 @@ def fresh_game_state() -> dict:
         "day_summaries": [],
         "wolf_channel": [],
         "investigator_results": [],
+        "night_actions": [],
         "day_votes": [],
     }

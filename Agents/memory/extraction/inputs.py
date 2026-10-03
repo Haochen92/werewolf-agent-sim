@@ -9,6 +9,7 @@ from __future__ import annotations
 from logging import getLogger
 
 from Agents.prompts.prompt_formatters import (
+    format_night_actions_postgame,
     format_day_channel_postgame,
     format_investigator_results,
     format_roles,
@@ -78,6 +79,11 @@ def format_extraction_inputs(state: OrchestratorGraph) -> dict[str, str]:
         + format_wolf_channel(state.get("wolf_channel", []))
         + "\n\n=== Investigator Results ===\n"
         + format_investigator_results(state.get("investigator_results", []))
+        # Every night actor's exact actions and outcomes (post-game, so the full record is
+        # allowed): without it the extractor inferred night tactics from prose notes (audit
+        # 2026-10-03, finding 12).
+        + "\n\n=== Night Actions (exact, from the game engine) ===\n"
+        + format_night_actions_postgame(state.get("night_actions", []), state.get("roles", {}))
     )
 
     formatted_strategy_notes = format_strategy_notes_postgame(
