@@ -58,7 +58,7 @@ import { ApiError } from '@/lib/request';
 import { seatToken } from '@/lib/storage';
 import { foldEvents } from '@/game/foldEvents';
 import type { DurableGameEvent, GameStatus } from '@/types/contracts';
-import { castForGame } from '../cast/castForGame';
+import { resolveCast } from '../cast/castForGame';
 import { beatsFor } from '../beats/beatsFor';
 import type { SceneBeat } from '../beats/types';
 import { useDrawerFilters } from '../drawer/use-drawer-filters';
@@ -238,7 +238,7 @@ export function LiveTheatre({
   // after game over the whole log is everyone's: every viewer is an observer (what the viewer
   // sees of it waits for the stage to reach the ending: `xrayShown`, below)
   const xray = view.winner !== null;
-  const cast = useMemo(() => castForGame(gameId), [gameId]);
+  const cast = useMemo(() => resolveCast(status?.cast, gameId), [status?.cast, gameId]);
   const beats = useMemo(
     () => beatsFor(events, { xray, me, live: true }),
     [events, xray, me],

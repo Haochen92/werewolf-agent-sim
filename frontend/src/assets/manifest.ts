@@ -279,8 +279,10 @@ export function initialsFor(seat: string): string {
 export type DeathGlyphKind = AttackerType | 'lynch';
 
 /**
- * The stage's cast (stage_architecture.md §4). Order is the puppet kit's, and it matters:
- * castForGame shuffles this list, so reordering it would recast every past game.
+ * The stage's cast (stage_architecture.md §4): every character this build has sprites for.
+ * The server records which of them stand in each game; games recorded before that are cast
+ * from the frozen LEGACY_CHARACTERS in castForGame.ts, not from this list, so this one may
+ * grow.
  */
 export const CHARACTERS = [
   'owl',

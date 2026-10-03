@@ -38,7 +38,7 @@ import { useReducedMotion } from 'motion/react';
 import { createPortal } from 'react-dom';
 import type { Character } from '@/assets/manifest';
 import type { GameView } from '@/game/types';
-import { castForGame } from '../cast/castForGame';
+import { resolveCast } from '../cast/castForGame';
 import { DecodeAhead } from '../cast/DecodeAhead';
 import { beatsFor } from '../beats/beatsFor';
 import { useDrawerFilters } from '../drawer/use-drawer-filters';
@@ -64,7 +64,9 @@ import type { FileChoice } from '../film/case-file';
 import styles from './ReplayTheatre.module.css';
 
 export interface ReplayTheatreProps {
-  game: Pick<ReplayGame, 'game_id' | 'events'>;
+  /** The replay, or as much of it as the stage needs: a preview fed from a fixture has no
+   *  recorded cast, and is cast the legacy way. */
+  game: Pick<ReplayGame, 'game_id' | 'events'> & Partial<Pick<ReplayGame, 'cast'>>;
   /** The way out, at the strip's left: where the viewer came from. Absent: the replays list.
    *  A preview has none (its way to the whole game is the caller's). */
   back?: { href: string; label: string };
@@ -144,7 +146,7 @@ const TO_LIST = { href: '/replays', label: 'Replays' };
 
 export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps) {
   const events = game.events as readonly DurableGameEvent[];
-  const cast = useMemo(() => castForGame(game.game_id), [game.game_id]);
+  const cast = useMemo(() => resolveCast(game.cast, game.game_id), [game.cast, game.game_id]);
   const all = useMemo(
     () => ({
       public: beatsFor(events, { xray: false }),

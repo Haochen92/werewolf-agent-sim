@@ -107,3 +107,5 @@ export type DraftRequest = Partial<S['DraftRequest']>;
 export type DraftResponse = S['DraftResponse'];
 export type ModelsMenu = S['ModelsMenu'];
 export type ModelRow = S['ModelRow'];
+export type CharacterCard = S['CharacterCard'];
+export type ChooseCharacter = S['ChooseCharacter'];

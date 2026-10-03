@@ -5,6 +5,7 @@
 import { request, requestWithHeaders } from './request';
 import type {
   ActionKind,
+  CharacterCard,
   DraftRequest,
   DraftResponse,
   GameCreated,
@@ -62,6 +63,18 @@ export function getGameStatus(gameId: string): Promise<GameStatus> {
 
 export function listRooms(): Promise<RoomSummary[]> {
   return request<RoomSummary[]>('/rooms');
+}
+
+export function listCharacters(): Promise<CharacterCard[]> {
+  return request<CharacterCard[]>('/characters');
+}
+
+/** Pick the puppet your seat stands as in a waiting room; `null` gives the pick up. */
+export function chooseCharacter(gameId: string, character: string | null): Promise<GameStatus> {
+  return request<GameStatus>(`/games/${gameId}/character`, {
+    method: 'POST',
+    body: { character },
+  });
 }
 
 export function getModels(): Promise<ModelsMenu> {
