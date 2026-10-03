@@ -61,10 +61,12 @@ known from the assigned role's perspective. This is a spectrum, not binary:
 
 1. Your own role and private findings — you know these directly.
    e.g. "you have identified a wolf through your investigation."
-2. System-confirmed — role revealed by game mechanics (elimination, healer
-   save announcement).
+2. System-confirmed — role revealed by game mechanics (an elimination reveals
+   the eliminated player's role). A healer save announcement confirms only that
+   the player was attacked and protected, not their role: a wolf can be saved
+   from the serial killer or the vigilante.
    e.g. "the eliminated player was revealed as the Investigator,"
-   "the healer-saved player."
+   "the player the healer saved from the wolves."
 3. Claimed with strong evidence — a player claimed a role and public events
    support it (e.g., their finding was later confirmed by an elimination).
    e.g. "a player claiming Investigator whose guilty finding was confirmed

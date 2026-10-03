@@ -50,27 +50,96 @@ def format_alive_roles(cast_role_counts: dict[str, int], roster: list[DeathRecor
     return ", ".join(parts) or "none"
 
 
-def format_day_channel(messages: list[DayChannel]) -> str:
-    visible = [m for m in messages if not m.passed]
-    if not visible:
-        return "No messages yet."
-    return "\n".join(f"{m.player}: {m.message}" for m in visible)
+def format_day_channel(messages: list[DayChannel], viewer: str | None = None) -> str:
+    """The public transcript. Passes are hidden. `viewer` also sees its own held-back drafts,
+    marked as never seen by anyone: without the mark, an agent whose message the novelty gate
+    withheld could go on believing (and noting) that it had said it (audit 2026-10-03, finding 2)."""
+    lines = []
+    for m in messages:
+        if not m.passed:
+            lines.append(f"{m.player}: {m.message}")
+        elif viewer and m.player == viewer and m.gated and m.gated_candidate:
+            lines.append(
+                f"[{viewer}, held back: you tried to say this, but it repeated what had already been "
+                f"said, so no one else saw it] {m.gated_candidate}"
+            )
+    return "\n".join(lines) if lines else "No messages yet."
 
 
-def format_day_channel_for_day(messages: list[DayChannel], current_day: int) -> str:
-    return format_day_channel([m for m in messages if m.day == current_day])
+def format_day_channel_for_day(messages: list[DayChannel], current_day: int, viewer: str | None = None) -> str:
+    return format_day_channel([m for m in messages if m.day == current_day], viewer)
 
 
 def format_day_summaries(summaries: list[DaySummary], before_day: int | None = None) -> str:
-    selected = [
-        summary for summary in summaries
-        if before_day is None or summary.day < before_day
-    ]
+    """Earlier days, as agents see them, in three blocks of decreasing authority:
+
+    1. the game master's record: the exact night and vote announcements;
+    2. the claims on record: every role claim and claimed result, per player, across days, built by
+       code from the summaries' structured fields;
+    3. the discussion summaries: the summariser's account of what players said and argued.
+
+    The labels carry the hierarchy. A claim a summary repeats is never set beside an announcement as
+    an equal (audit 2026-10-03, finding 5; the case in discussion_evidence.md §6.4)."""
+    selected = [s for s in summaries if before_day is None or s.day < before_day]
     if not selected:
-        return "No previous day summaries yet."
-    return "\n\n".join(
-        f"[Day {summary.day}]\n{summary.summary}" for summary in selected
+        return "No previous days yet."
+    record = [s for s in selected if s.source == "game_master"]
+    discussion = [s for s in selected if s.source != "game_master"]
+    blocks = [
+        "-- The game master's record (exact; it outranks anything a player or a summary says) --\n"
+        + ("\n".join(f"[Day {s.day}] {s.summary.strip()}" for s in record) or "Nothing announced yet.")
+    ]
+    claims = format_claims_on_record(discussion)
+    if claims:
+        blocks.append(
+            "-- Claims on record (what players have claimed so far; claims, not facts) --\n" + claims
+        )
+    blocks.append(
+        "-- Discussion summaries (a summariser's account of what players said and argued; "
+        "anything a player claimed in them is a claim, not a fact) --\n"
+        + ("\n\n".join(f"[Day {s.day}]\n{s.summary}" for s in discussion) or "None yet.")
     )
+    return "\n\n".join(blocks)
+
+
+def format_claims_on_record(discussion: list[DaySummary]) -> str:
+    """Each player's role claims and claimed results across days, from the summaries' structured
+    `role_claims` (results only where the summary recorded them). "" when nobody has claimed."""
+    by_player: dict[str, list[str]] = {}
+    for s in discussion:
+        for c in (s.structured or {}).get("role_claims") or []:
+            player, role = c.get("player"), c.get("claimed_role")
+            if not player or not role:
+                continue
+            entry = f"day {s.day}: claimed {role}"
+            status = c.get("status")
+            if status and status not in ("new", "repeated"):
+                entry += f" ({status})"
+            results = [
+                (f"night {r['night']}: " if r.get("night") else "") + f"{r['target']} {r['result']}"
+                for r in c.get("claimed_results") or []
+                if r.get("target") and r.get("result")
+            ]
+            if results:
+                entry += " — results claimed: " + "; ".join(results)
+            by_player.setdefault(player, []).append(entry)
+    return "\n".join(f"{p}: " + " | ".join(entries) for p, entries in by_player.items())
+
+
+def format_night_actions(records: list[NightActionRecord], current_day: int | None = None) -> str:
+    """The actor's own night record, one line per night, written by the engine."""
+    if not records:
+        return "Nothing yet."
+    verbs = {"protect": "you protected", "shoot": "you shot", "kill": "you attacked"}
+    lines = []
+    for r in records:
+        night = f"Night {r.day}" + (" (last night)" if current_day is not None and r.day == current_day - 1 else "")
+        if r.action == "hold_fire":
+            lines.append(f"{night}: you held your fire.")
+            continue
+        verb = "your pack attacked" if r.actor == "wolves" else verbs[r.action]
+        lines.append(f"{night}: {verb} {r.target}. {r.outcome}")
+    return "\n".join(lines)
 
 
 def format_wolf_channel(messages: list[WolfChannel]) -> str:
@@ -105,6 +174,18 @@ def format_investigator_results(results: list[InvestigatorResult], current_day: 
         f"you investigated {r.player_investigated}, who is the {r.role_revealed.replace('_', ' ')}"
         for r in results
     )
+
+def format_night_actions_postgame(records: list[NightActionRecord], roles: dict[str, str]) -> str:
+    """Every night actor's record, labelled with its role, for the post-game extractor."""
+    if not records:
+        return "No night actions recorded."
+    lines = []
+    for r in records:
+        who = "the wolves" if r.actor == "wolves" else f"{r.actor} ({roles.get(r.actor, 'unknown')})"
+        act = "held fire" if r.action == "hold_fire" else f"{r.action} {r.target}"
+        lines.append(f"Night {r.day}: {who} {act}. {r.outcome}")
+    return "\n".join(lines)
+
 
 def format_day_channel_postgame(messages: list[DayChannel], roles: dict[str, str]) -> str:
     visible = [m for m in messages if not m.passed]
@@ -167,15 +248,3 @@ def format_agent_action(
     if action_phase == "day_vote":
         return f"Vote target: {vote.votee if vote else '(not captured)'}"
     return f"Message: {message.message if message else '(silent)'}"
-def format_night_actions_postgame(records: list[NightActionRecord], roles: dict[str, str]) -> str:
-    """Every night actor's record, labelled with its role, for the post-game extractor."""
-    if not records:
-        return "No night actions recorded."
-    lines = []
-    for r in records:
-        who = "the wolves" if r.actor == "wolves" else f"{r.actor} ({roles.get(r.actor, 'unknown')})"
-        act = "held fire" if r.action == "hold_fire" else f"{r.action} {r.target}"
-        lines.append(f"Night {r.day}: {who} {act}. {r.outcome}")
-    return "\n".join(lines)
-
-

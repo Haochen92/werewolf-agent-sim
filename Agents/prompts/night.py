@@ -30,7 +30,7 @@ _NIGHT_TRANSCRIPT = """
 == Roles still in play (fixed cast minus revealed deaths) ==
 {alive_roles}
 
-=== Day summaries ===
+=== Previous days ===
 {day_summaries}
 
 === Today's day discussion ===
@@ -74,14 +74,15 @@ HEALER_NIGHT = _night_template(
     HEALER_CORE_STRATEGY,
     """
 You are {player_id}, a {player_role}.
-Each night, you may protect one player from being eliminated at night — your protection blocks a kill from either the wolves or the serial killer.
+Each night, you may protect one player from being eliminated at night — your protection blocks any night kill on them, whether from the wolves, the serial killer or the vigilante.
 You cannot protect yourself.
 Choose wisely based on who you think the wolves or the serial killer might target.
 
 You must respond with a valid JSON:
 {{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "reads": [{{"player": "player_2", "why": "pushed the only counted lynch with no evidence", "suspected_role": "wolf", "confidence": "low"}}], "healer_target": "exact player_id from the surviving players list", "updated_strategy": "your updated private strategy note for future turns"}}
 """,
-    "Surviving players you can protect: {surviving_players}\n",
+    "Surviving players you can protect: {surviving_players}\n"
+    "Your night actions so far (private; recorded by the game master):\n{night_actions}\n",
     "Choose a player to protect tonight.",
 )
 
@@ -113,7 +114,8 @@ Choose your target based on who most threatens your survival or your path to bei
 You must respond with a valid JSON:
 {{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "reads": [{{"player": "player_2", "why": "pushed the only counted lynch with no evidence", "suspected_role": "wolf", "confidence": "low"}}], "serial_killer_target": "exact player_id from the surviving players list", "updated_strategy": "your updated private strategy note for future turns"}}
 """,
-    "Surviving players you can target: {surviving_players}\n",
+    "Surviving players you can target: {surviving_players}\n"
+    "Your night actions so far (private; recorded by the game master):\n{night_actions}\n",
     "Choose a player to eliminate tonight.",
 )
 
@@ -131,8 +133,8 @@ The trade-offs, stated plainly:
 Whether to shoot, and whom, is your own decision.
 To take a shot, set "vigilante_target" to a surviving player (not yourself). To hold your fire this night, set "vigilante_target" to "hold_fire".
 
-What you have learned from your past shots:
-{vigilante_results}
+Your night actions so far (private; recorded by the game master):
+{night_actions}
 
 You must respond with a valid JSON:
 {{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "reads": [{{"player": "player_2", "why": "pushed the only counted lynch with no evidence", "suspected_role": "wolf", "confidence": "low"}}], "vigilante_target": "exact player_id from the surviving players list, or \\"hold_fire\\"", "updated_strategy": "your updated private strategy note for future turns"}}
@@ -160,7 +162,7 @@ As a wolf, discuss with your allies to converge on a target to eliminate tonight
 Wolves speak one at a time over 2 rounds of discussion; the chat history below already
 contains everything said before your turn. After the discussion, every wolf casts a
 binding kill vote — so use your message to argue for a target and build agreement now.
-Only surviving villagers can be targeted, not yourself or your allies.
+Only surviving non-wolf players (the village side and the serial killer) can be targeted, not yourself or your allies.
 
 You must respond with a valid JSON:
 {{
@@ -177,10 +179,18 @@ You must respond with a valid JSON:
             "human",
             """Night of Day {current_day}, Discussion round {current_round}.
 
-Surviving villagers: {surviving_villagers}
+Surviving non-wolf players (the village side and the serial killer): {surviving_villagers}
 Your wolf allies: {surviving_wolves}
+Your pack's night kills so far (private to the wolves):
+{night_actions}
 
-=== Day summaries ===
+== Dead so far (public) ==
+{dead_roster}
+
+== Roles still in play (fixed cast minus revealed deaths) ==
+{alive_roles}
+
+=== Previous days ===
 {day_summaries}
 
 === Today's day discussion ===
@@ -208,13 +218,13 @@ You are {player_id}, a {player_role}.
 The wolf discussion is over — cast your binding kill vote now. The target with the
 majority of votes will be eliminated tonight (ties break randomly), so vote with the
 consensus from the chat history unless you have a strong reason to defect.
-You may only vote for surviving villagers, not yourself or your allies.
+You may only vote for surviving non-wolf players, not yourself or your allies.
 
 You must respond with a valid JSON:
 {{
     "strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}],
     "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}],
-    "vote_target": "exact player_id from the surviving villagers list",
+    "vote_target": "exact player_id from the surviving non-wolf players list",
     "updated_strategy": "your updated private strategy note for future turns"
 }}
 """,
@@ -225,10 +235,18 @@ You must respond with a valid JSON:
             "human",
             """Night of Day {current_day} — binding kill vote.
 
-Surviving villagers: {surviving_villagers}
+Surviving non-wolf players (the village side and the serial killer): {surviving_villagers}
 Your wolf allies: {surviving_wolves}
+Your pack's night kills so far (private to the wolves):
+{night_actions}
 
-=== Day summaries ===
+== Dead so far (public) ==
+{dead_roster}
+
+== Roles still in play (fixed cast minus revealed deaths) ==
+{alive_roles}
+
+=== Previous days ===
 {day_summaries}
 
 === Today's day discussion ===

@@ -12,6 +12,7 @@ from Agents.prompts.prompt_formatters import (
     format_day_summaries,
     format_dead_roster,
     format_investigator_results,
+    format_night_actions,
     format_retrieved_observations,
     format_strategy_points,
     format_wolf_channel,
@@ -131,9 +132,11 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
             )
             if p != payload.get("player_id")
         ),
+        # The speaker also sees its own held-back drafts, marked as unseen by anyone else.
         "day_channel": format_day_channel_for_day(
             payload.get("day_channel", []),
             payload.get("current_day", 1),
+            viewer=payload.get("player_id") or None,
         ),
         "day_summaries": format_day_summaries(
             payload.get("day_summaries", []),
@@ -146,6 +149,13 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         "vigilante_results": (
             "\n".join(payload.get("vigilante_results", []))
             or "Nothing learned from your shots yet."
+        ),
+        # The actor's own engine-written night record (only night actors' payloads carry it). A
+        # vigilante payload from before the record existed falls back to its shot notes.
+        "night_actions": (
+            format_night_actions(payload["night_actions"], payload.get("current_day"))
+            if payload.get("night_actions")
+            else "\n".join(payload.get("vigilante_results", [])) or "Nothing yet."
         ),
         "previous_strategy": payload.get("previous_strategy", ""),
         "strategy_points": (

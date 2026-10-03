@@ -33,7 +33,7 @@ _VOTE_TRANSCRIPT = """
 == Roles still in play (fixed cast minus revealed deaths) ==
 {alive_roles}
 
-== Previous days summary ==
+== Previous days ==
 {day_summaries}
 
 === Today's discussion ===
@@ -94,7 +94,8 @@ VILLAGER_DAY_VOTE = _vote_template(
 
 
 HEALER_DAY_VOTE = _vote_template(
-    "Here are the surviving players: {surviving_players}\n",
+    "Here are the surviving players: {surviving_players}\n"
+    "Your night actions (private; recorded by the game master, and only you know them):\n{night_actions}\n",
     "\nCast your vote. Choose the player you find most suspicious while protecting your cover.\n",
     core_strategy=HEALER_CORE_STRATEGY,
 )
@@ -109,10 +110,11 @@ INVESTIGATOR_DAY_VOTE = _vote_template(
 
 
 WOLF_DAY_VOTE = _vote_template(
-    "Surviving villagers: {surviving_villagers}\n"
+    "Surviving non-wolf players (the village side and the serial killer): {surviving_villagers}\n"
     "Known surviving wolves: {surviving_wolves}\n"
+    "Your pack's night kills (private to the wolves; the public heard only the game master's announcements):\n{night_actions}\n"
     "\nYour private wolf channel (night coordination + game-master notes):\n{wolf_channel}\n"
-    "This channel is private to the wolves. Never quote, reference, or hint at its contents in public discussion — parroting night coordination outs you.\n",
+    "This channel is private to the wolves. Never quote, reference, or hint at its contents in public discussion — parroting night coordination outs you. That includes the game master's notes in it: the public was never told them, so claiming the game master announced them is false and exposes you.\n",
     "\nCast your vote. Choose the target that best preserves your cover.",
     system=build_system_prompt(
         GAME_PREAMBLE,
@@ -134,7 +136,8 @@ You must respond with a valid JSON:
 
 
 SERIAL_KILLER_DAY_VOTE = _vote_template(
-    "Here are the surviving players: {surviving_players}\n",
+    "Here are the surviving players: {surviving_players}\n"
+    "Your night actions (private; recorded by the game master, and only you know them):\n{night_actions}\n",
     "\nCast your vote. Vote in the way that best deflects suspicion from you and removes a threat to your survival.\n",
     system=build_system_prompt(
         GAME_PREAMBLE,
@@ -156,7 +159,8 @@ You must respond with a valid JSON:
 
 VIGILANTE_DAY_VOTE = _vote_template(
     "Here are the surviving players: {surviving_players}\n"
-    "What you have learned from your shots: {vigilante_results}\n",
+    "Bullets left: {vigilante_bullets}\n"
+    "Your night actions (private; recorded by the game master, and only you know them):\n{night_actions}\n",
     "\nCast your vote. Choose the player you find most suspicious.\n",
     core_strategy=VIGILANTE_CORE_STRATEGY,
 )

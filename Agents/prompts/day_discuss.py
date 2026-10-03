@@ -141,7 +141,7 @@ _DISCUSS_TRANSCRIPT = """
 == Roles still in play (fixed cast minus revealed deaths) ==
 {alive_roles}
 
-== Previous days summary ==
+== Previous days ==
 {day_summaries}
 
 == Today's discussion ==
@@ -212,6 +212,8 @@ During the day, speak as a normal villager while protecting your cover.
 """,
     """
 Surviving players: {surviving_players}
+Your night actions (private; recorded by the game master, and only you know them):
+{night_actions}
 """,
 )
 
@@ -237,12 +239,14 @@ As the wolf, conceal your real identity and convince everyone else that you are 
 If any of your fellow wolf allies are suspected, try to convince the villagers otherwise
 without revealing your own identity.
 """,
-    """Surviving villagers: {surviving_villagers}.
+    """Surviving non-wolf players (the village side and the serial killer): {surviving_villagers}.
 Surviving allies: {surviving_wolves}.
+Your pack's night kills (private to the wolves; the public heard only the game master's announcements):
+{night_actions}
 
 Your private wolf channel (night coordination + game-master notes):
 {wolf_channel}
-This channel is private to the wolves. Never quote, reference, or hint at its contents in public discussion — parroting night coordination outs you.
+This channel is private to the wolves. Never quote, reference, or hint at its contents in public discussion — parroting night coordination outs you. That includes the game master's notes in it: the public was never told them, so claiming the game master announced them is false and exposes you.
 """,
     trailer="""Based on the discussion, try to speak like a villager. Do NOT reveal your allies identities.
 """,
@@ -259,6 +263,8 @@ are the serial killer. You can be voted out, so blending in is survival.
 """,
     """
 Surviving players: {surviving_players}
+Your night actions (private; recorded by the game master, and only you know them):
+{night_actions}
 """,
 )
 
@@ -274,6 +280,8 @@ paints a target on you (both the wolves and the serial killer gain from removing
 """,
     """
 Surviving players: {surviving_players}
-What you have learned from your shots: {vigilante_results}
+Bullets left: {vigilante_bullets}
+Your night actions (private; recorded by the game master, and only you know them):
+{night_actions}
 """,
 )

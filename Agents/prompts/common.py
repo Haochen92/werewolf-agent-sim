@@ -32,7 +32,8 @@ READS_COMMIT_INSTRUCTION = (
 GAME_RULES = """Team composition (three sides):
 - 3 Villagers (no special abilities)
 - 2 Wolves (know each other, secretly kill one player each night) — they win as a team
-- 1 Healer (each night may protect one player from being killed; cannot protect themselves) — village side
+- 1 Healer (each night may protect one player from any night kill — by the wolves, the serial killer or the vigilante;
+    cannot protect themselves) — village side
 - 1 Investigator (each night may learn one player's true role) — village side
 - 1 Vigilante (village side; each night may shoot one player, but has only a few bullets for the whole game)
 - 1 Serial Killer (works ALONE against everyone; kills one player each night, cannot be killed at night,
@@ -42,6 +43,12 @@ Game Master will narrate the game and manage the flow.
 - The Investigator receives their results privately and may choose when and how to share them with the group.
 - The Game Master announces who died each night and by which kind of attacker (wolves, the serial killer,
     or the vigilante) and any healer saves, but NOT investigation results and NOT who acted.
+- Some night events are never announced: an attack on the serial killer (it simply survives, and nothing
+    is said), a healer protecting someone who was not attacked, and a vigilante holding fire. A night
+    where no one died and no one was saved is announced as "No one died last night."
+- What a player did or learned at night is known only to them (and, for the wolves, to the pack). If they
+    bring it up in the discussion, it is their claim: the Game Master never announced it, and saying it
+    did is false.
 
 Win conditions:
 - The village side (villagers, healer, investigator, vigilante) wins when BOTH the wolves and the serial killer are gone.
@@ -59,7 +66,7 @@ Game flow:
     (it cannot be killed at night).
 
 What is public vs. hidden:
-- Votes are public and permanent — who voted for whom each day stays on the record.
+- Votes are public and permanent — who voted to eliminate whom each day stays on the record.
 - Night actions (who killed, healed, investigated, or shot whom) are hidden; only the outcomes are announced.
 - A player can claim any role, but the game cannot verify a role claim — only an elimination reveals a role.
 

@@ -49,7 +49,8 @@ Dynamic strategy points (strategies from past games relevant to your current sit
 {adoption_instruction}
 {synergy_instruction}
 Adaptive Strategic thinking:
-    You have a private strategy note from your previous turns:
+    You have a private strategy note from your previous turns (your own working notes: they can be
+    out of date or wrong, and the game master's record and the transcript outrank them):
     {previous_strategy}
 
     Update your strategy notes based on new information, relevant observations. If your current approach
@@ -60,6 +61,8 @@ Adaptive Strategic thinking:
 """
 
 
+# The vote asks for updated_strategy, which replaces the note, so it must show the note it replaces:
+# without it, anything only the note remembered was lost at every vote (audit 2026-10-03, finding 3).
 DAY_VOTE_MEMORY_CONTEXT = """
 Relevant observations: (These are specific, detailed observations from past games that are relevant to the current situation):
 {retrieved_observations}
@@ -69,6 +72,14 @@ Dynamic strategy points (strategies from past games relevant to your current sit
 
 {adoption_instruction}
 {synergy_instruction}
+Adaptive Strategic thinking:
+    You have a private strategy note from your previous turns (your own working notes: they can be
+    out of date or wrong, and the game master's record and the transcript outrank them):
+    {previous_strategy}
+
+    Your updated_strategy replaces this note, so carry forward what still matters (your reads, your
+    plans for the night) and drop what the day has disproven. Keep it concise (3-5 sentences).
+    This is private and will not be shared with other players.
 """
 
 
@@ -82,7 +93,8 @@ Dynamic strategy points (strategies from past games relevant to your current sit
 {adoption_instruction}
 {synergy_instruction}
 Adaptive Strategic thinking:
-    You have a private strategy note from your previous turns:
+    You have a private strategy note from your previous turns (your own working notes: they can be
+    out of date or wrong, and the game master's record and the transcript outrank them):
     {previous_strategy}
 
     Update your strategy notes based on new information and relevant observations. If your current
