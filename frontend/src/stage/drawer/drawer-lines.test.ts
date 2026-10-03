@@ -456,6 +456,18 @@ describe('the drawer: how it tells what it holds', () => {
     ]);
   });
 
+  it('reads the ballots in the newer "voted to eliminate" wording too', () => {
+    const l = {
+      text: "\nHere's the vote result for day 3:\n  player_1 voted to eliminate player_6\n  player_2 voted to abstain\nPlayer player_6 has been voted out and was a villager.\n",
+      about: 'vote' as const,
+      seats: ['player_1', 'player_6', 'player_2'],
+      roles: ['villager'],
+    };
+    expect(reportParts(l, true).map((p) => p.text)).toEqual([
+      'Seat 6 has been voted out and was a villager.',
+    ]);
+  });
+
   it('marks each rule with its chapter', () => {
     const rules = xray.filter((l) => l.kind === 'rule');
     expect(new Set(rules.map((l) => l.kind === 'rule' && l.chapter))).toEqual(

@@ -95,7 +95,7 @@ def _strip_vote_blocks(day_text: str) -> str:
     return "\n".join(
         line for line in day_text.splitlines()
         if not (line.startswith("Votes: ") or "vote result for day" in line
-                or (line.startswith("  ") and " voted for " in line))
+                or (line.startswith("  ") and (" voted for " in line or " voted to " in line)))
     )
 
 

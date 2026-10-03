@@ -764,7 +764,8 @@ export interface ReportPart {
 }
 
 const SEAT_AT_START = /^seat (\d+)/i;
-const BALLOT = /\bvoted for\b/i;
+// "voted for" in replays before 2026-10-03; "voted to eliminate" / "voted to abstain" after.
+const BALLOT = /\bvoted (?:for|to eliminate|to abstain)\b/i;
 const VOTE_HEAD = /^here's the vote result/i;
 const NIGHT_HEAD = /^night of day \d+:\s*/i;
 
