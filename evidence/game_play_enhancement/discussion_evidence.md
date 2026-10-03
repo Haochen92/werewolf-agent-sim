@@ -656,7 +656,8 @@ pool of about 16. They are non-human creatures in the existing felt-and-brass no
    judge's "participation" label can answer it once it separates turn order and silence from the
    timing of a reveal (§6.1).
 4. ~~Why the investigator invented a result~~ Answered by the replay (§6.2): the wording of its
-   results. Still open is how often other private facts are misread the same way. The vigilante's
+   results. The turn is now a seeded case, with a hand-written expectation, in the standing
+   hallucination bench (`eval-hallucination-bench`). Still open is how often other private facts are misread the same way. The vigilante's
    shot results are the obvious next place to look.
 5. **A human's vote waits on the slowest agent (2026-10-03).** In the first v2 game, the owner's
    ballot was not offered until all seven agents had voted. One agent's call hit two Google timeouts
