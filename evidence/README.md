@@ -88,7 +88,7 @@ How the pipeline is measured — and how far each measurement can be trusted.
 
 ### [evaluation/](evaluation/) — The Eval Hub
 
-The measurement layer: how we judge whether the memory pipeline works, and (the harder question) how trustworthy each instrument is. [report.md](evaluation/report.md) is the hub; [source_map.md](evaluation/source_map.md) is the reliability ledger (tags, code pointers, dated code-vs-report verification). Per-instrument spokes live inside: `llm_judge/`, `labeling/`, `sampled_human_review/`, `dimension_extraction/`, `discussion_tagger/`, `replay_screens/`, `metrics/`, `loop/`, `end_to_end_ab/`, `hardening_pass/`, `methodology/`. This chapter documents the *apparatus*; the design verdicts it produced live in the subsystem folders above.
+The measurement layer: how we judge whether the memory pipeline works, and (the harder question) how trustworthy each instrument is. [report.md](evaluation/report.md) is the hub; [source_map.md](evaluation/source_map.md) is the reliability ledger (tags, code pointers, dated code-vs-report verification). Per-instrument spokes live inside: `llm_judge/`, `labeling/`, `sampled_human_review/`, `dimension_extraction/`, `discussion_tagger/`, `replay_screens/`, `metrics/`, `loop/`, `end_to_end_ab/`, `hardening_pass/`, `methodology/`, `hallucination_bench/` (the standing benchmark for factual errors, 2026-10-03). This chapter documents the *apparatus*; the design verdicts it produced live in the subsystem folders above.
 
 ### [metrics/](metrics/) — Evaluation Metrics
 
