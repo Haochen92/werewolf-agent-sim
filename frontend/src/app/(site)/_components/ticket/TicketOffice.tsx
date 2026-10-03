@@ -4,12 +4,13 @@
  * ticket with a stub. It has two kinds, each on its own page (review §F4):
  *
  * - `solo` (`/play`): one seat against the agents, started on the spot. The player may choose
- *   their role. Punching the ticket calls `POST /games`, keeps the seat token that comes back
- *   (it is returned once, and a lost cookie has nothing else to rejoin with) and goes straight to
- *   `/games/[id]`, which opens on the deal.
+ *   their role and the puppet they stand as. Punching the ticket calls `POST /games`, keeps the
+ *   seat token that comes back (it is returned once, and a lost cookie has nothing else to
+ *   rejoin with) and goes straight to `/games/[id]`, which opens on the deal.
  * - `room` (`/rooms/new`): a room others join. Rooms always deal at random, so there is no role
  *   choice. Punching calls `POST /rooms`, keeps the host key (returned once, the only proof of
- *   hosting) and goes to `/games/[id]`, where the host gives a name and waits for the others.
+ *   hosting) and goes to `/games/[id]`, where the host gives a name (and picks a puppet, on the
+ *   boarding pass like everyone else) and waits for the others.
  *
  * Both send the model, the agents' memory (off by default) and the key. Whether a key is needed
  * is the house's call, per model (`KeyRow`, `house.ts`). The two hung tags at the top are doors
@@ -17,9 +18,9 @@
  * the key field says why), submitting (the button is busy), and a server refusal (an alert on
  * the stub); success is the redirect.
  *
- * Left out, because the wire has no field for them yet: the puppet picker (review §F5 rules it
- * a later step), the turn clock, watchers, and locking the room at creation (a locked room
- * admits nobody, the host included, so the host locks it from the room once everyone is in).
+ * Left out, because the wire has no field for them yet: the turn clock, watchers, and locking
+ * the room at creation (a locked room admits nobody, the host included, so the host locks it
+ * from the room once everyone is in).
  */
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
@@ -29,6 +30,8 @@ import { createGame, createRoom, getModels } from '@/lib/api';
 import { hostKey, seatToken } from '@/lib/storage';
 import { queryKeys } from '@/lib/queryKeys';
 import { Button, HangTag, Icon, Paper } from '@/components/site';
+import { PuppetPicker } from '@/components/PuppetPicker';
+import { useCharacters } from '@/hooks/useCharacters';
 import { CARD_TEXT } from '@/stage/card-text';
 import type { Role } from '@/types/contracts';
 import { defaultRow, needsKey } from './house';
@@ -68,6 +71,8 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
   const copy = COPY[kind];
   const ids = useId();
   const [role, setRole] = useState<Role | null>(null);
+  const [character, setCharacter] = useState<string | null>(null);
+  const cards = useCharacters();
   const [name, setName] = useState('');
   const [model, setModel] = useState('');
   const [apiKey, setApiKey] = useState('');
@@ -102,6 +107,7 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
           api_key: apiKey,
           model,
           memory,
+          character,
         });
         // The seat token comes back exactly once: stash it before navigating, or a cookie
         // loss later has nothing to rejoin with.
@@ -133,6 +139,8 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
 
   const paidBy = required || apiKey.trim() ? 'Your key' : menu ? 'The house' : null;
   const roleLabel = role ? `${CARD_TEXT[role].name}, chosen` : 'Dealt at random';
+  const puppetLabel =
+    cards.find((c) => c.id === character)?.display_name ?? 'Drawn by the house';
 
   return (
     <main className={classes.office}>
@@ -179,14 +187,32 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
           <p className={classes.ticketLede}>{copy.lede}</p>
 
           {kind === 'solo' ? (
-            <div className={`${classes.fld} ${classes.wide}`}>
-              <div className={classes.lab} id={`${ids}-role`}>
-                Your role <small>optional; the table never knows you chose</small>
+            <>
+              <div className={`${classes.fld} ${classes.wide}`}>
+                <div className={classes.lab} id={`${ids}-role`}>
+                  Your role <small>optional; the table never knows you chose</small>
+                </div>
+                <div className={classes.ctl}>
+                  <RoleCards value={role} onChange={setRole} labelledBy={`${ids}-role`} />
+                </div>
               </div>
-              <div className={classes.ctl}>
-                <RoleCards value={role} onChange={setRole} labelledBy={`${ids}-role`} />
-              </div>
-            </div>
+              {cards.length > 0 ? (
+                <div className={`${classes.fld} ${classes.wide}`}>
+                  <div className={classes.lab} id={`${ids}-puppet`}>
+                    Your puppet <small>optional; it hints at no role</small>
+                  </div>
+                  <div className={classes.ctl}>
+                    <PuppetPicker
+                      cards={cards}
+                      value={character}
+                      onChange={setCharacter}
+                      disabled={create.isPending}
+                      labelledBy={`${ids}-puppet`}
+                    />
+                  </div>
+                </div>
+              ) : null}
+            </>
           ) : (
             <>
               <div className={classes.fld}>
@@ -335,6 +361,8 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
               <>
                 <dt>Role</dt>
                 <dd>{roleLabel}</dd>
+                <dt>Puppet</dt>
+                <dd>{puppetLabel}</dd>
               </>
             ) : null}
             <dt>Memory</dt>

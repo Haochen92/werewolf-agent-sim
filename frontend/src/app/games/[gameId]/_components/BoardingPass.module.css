@@ -56,6 +56,12 @@
   border-bottom-color: var(--ink);
 }
 
+.puppets {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;
