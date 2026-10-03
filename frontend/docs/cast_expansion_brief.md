@@ -547,8 +547,10 @@ canvas, BODY and REACH, manifest imports; `scripts/convert_cast.py`); (2) DONE 2
 server `CATALOGUE`, in the SAME commit as the sprites, so a character exists in the catalogue iff
 its sprites ship; (3) DONE 2026-10-03 (merge 79e8d6b), the picker: on the boarding pass under the
 name field (a pick is made before boarding and sent right after the join, since the platform scene
-has no form; taken puppets dimmed with their holder's name; a pick lost to a faster tap boards
-anyway and the house draws), on the solo ticket under the role cards, and the waiting platform
+has no form; taken puppets dimmed with their holder's name; a pick lost to someone else, before
+or after the join, keeps the pass up naming the puppet until another pick lands or the player
+presses "Let the house draw", never a silent draw (owner ruling 2026-10-03); a game already begun lets them
+go), on the solo ticket under the role cards, and the waiting platform
 wears the picks (`castForRoom`). Not done: a real join against a live server; changing a pick from
 the platform scene (a stage design question).
 
