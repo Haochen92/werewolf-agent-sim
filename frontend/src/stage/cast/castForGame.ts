@@ -46,7 +46,8 @@ export function resolveCast(
   return castForGame(gameId, seats);
 }
 
-function isCharacter(id: string): id is Character {
+/** A character this build has sprites for (the catalogue may list ones it does not yet). */
+export function isCharacter(id: string): id is Character {
   return (CHARACTERS as readonly string[]).includes(id);
 }
 

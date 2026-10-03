@@ -1,0 +1,115 @@
+/* The puppet picker: small head chips on paper that wrap to the width (phones included). */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 4px;
+}
+
+.chip {
+  width: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 2px 4px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-sans, system-ui);
+  font-size: 12px;
+  line-height: 1.15;
+  cursor: pointer;
+}
+.chip:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.28);
+}
+.chip:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+.chip:disabled {
+  cursor: default;
+}
+
+/* another player's: dimmed, with their name under it */
+.chip[data-held] {
+  opacity: 0.45;
+  filter: grayscale(0.6);
+}
+
+.head {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #e4d5b3;
+  box-shadow: 0 0 0 1.5px var(--ink);
+}
+.head[data-empty] {
+  background: transparent;
+  box-shadow: none;
+  border: 1.5px dashed #8a7250;
+}
+
+.chip[aria-pressed='true'] .head {
+  box-shadow:
+    0 0 0 3px var(--amber),
+    0 4px 10px rgba(60, 35, 5, 0.35);
+}
+.chip[aria-pressed='true'] .name {
+  font-weight: 700;
+}
+
+.initials {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  color: var(--ink2);
+}
+
+.name,
+.holder {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.holder {
+  font-style: italic;
+  color: var(--ink2);
+}
+
+.note {
+  margin: 6px 0 0;
+  color: var(--ink2);
+  font-family: var(--font-sans, system-ui);
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+/* the roster: each name with its puppet beside it */
+.roster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.roster li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans, system-ui);
+  font-size: 14px;
+}
+.roster .head {
+  width: 26px;
+  height: 26px;
+}
+.roster .initials {
+  font-size: 11px;
+}

@@ -23,4 +23,6 @@ export const queryKeys = {
     list: () => ['rooms', 'list'] as const,
   },
   models: () => ['models'] as const,
+  /** The puppet catalogue (`GET /characters`): static between deploys. */
+  characters: () => ['characters'] as const,
 } as const;
