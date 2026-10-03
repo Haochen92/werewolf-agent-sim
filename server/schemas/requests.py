@@ -100,6 +100,9 @@ class NewSoloGame(BaseModel):
     """AI memory (experimental): every AI seat consults lessons from past games before
     each decision, and the replay shows which lessons it weighed. Off by default — a
     memory-on game makes an extra model call per AI decision from day 2."""
+    character: str | None = None
+    """The puppet the human stands as, by id from GET /characters; None lets the house
+    draw one. Ignored for an all-AI game. A puppet says nothing about a role."""
 
 
 
@@ -208,6 +211,14 @@ def _name_char(ch: str) -> bool:
 
 
 
+class ChooseCharacter(BaseModel):
+    """POST /games/{id}/character body: the puppet this seat stands as, picked in the
+    waiting room. The seat cookie says whose seat."""
+
+    character: str | None = None
+    """An id from GET /characters, or None to give the pick up and let the house draw."""
+
+
 class SeatJoined(BaseModel):
     """POST /games/{id}/join and POST /games/{id}/rejoin response."""
 
@@ -263,6 +274,9 @@ class GameStatus(BaseModel):
     """The requester's OWN engine seat, resolved from their seat cookie — how the
     client learns which player it is. None for spectators, waiting rooms, and the
     moment before seats are dealt."""
+    characters: list[str | None] = Field(default_factory=list)
+    """Waiting rooms only: each seat's chosen puppet, aligned with ``players`` (None
+    where nobody chose yet). Once running, ``cast`` says who stands where."""
     you_aboard: int | None = None
     """Waiting rooms only: where the requester's own seat stands in ``players`` (0 = the
     first to join), from their seat cookie. None for someone without a seat, and once

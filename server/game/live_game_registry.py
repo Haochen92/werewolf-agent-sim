@@ -148,6 +148,15 @@ class LiveGameRegistry:
         token holds no seat; PermissionError for the host, who closes the room instead."""
         self._require_lobby(game_id).leave(token)
 
+    async def choose_character(self, game_id: str, token: str,
+                               character: str | None) -> GameLobby:
+        """Pick the puppet a seat stands as, or drop the pick. LookupError when the room
+        has started, the token holds no seat, or the puppet is taken; ValueError for a
+        puppet the catalogue does not offer."""
+        room = self._require_lobby(game_id)
+        room.choose(token, character)
+        return room
+
     async def close(self, game_id: str, host_key: str) -> None:
         """Close a waiting room for everyone. Only the host may."""
         room = self._require_lobby(game_id)

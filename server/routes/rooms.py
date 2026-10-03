@@ -9,7 +9,9 @@ from server.database_models.game import GameRow
 from server.dependencies import GamesRegistry, House, Room, SeatToken, ended_detail
 from server.game.lobby import MAX_HUMAN_SEATS, GameLobby
 from server.schemas.requests import (
+    ChooseCharacter,
     GameCreated,
+    GameStatus,
     JoinGame,
     NewRoom,
     RejoinGame,
@@ -18,7 +20,7 @@ from server.schemas.requests import (
     SeatJoined,
 )
 
-from ._shared import authorize_model, clear_seat_cookie, set_seat_cookie
+from ._shared import authorize_model, clear_seat_cookie, live_status, set_seat_cookie
 
 router = APIRouter(tags=["rooms"])
 
@@ -143,6 +145,29 @@ async def leave_room(room: Room, response: Response, games: GamesRegistry,
         status = 403 if isinstance(room, GameLobby) else 409
         raise HTTPException(status_code=status, detail=str(exc)) from exc
     clear_seat_cookie(response, room.game_id)
+
+
+@router.post(
+    "/games/{game_id}/character",
+    response_model=GameStatus,
+    summary="Pick the puppet your seat stands as (waiting room)",
+)
+async def choose_character(room: Room, body: ChooseCharacter, games: GamesRegistry,
+                           token: SeatToken) -> GameStatus:
+    """The seat cookie says whose seat. First come first served: 409 when another seat
+    already stands as that puppet, or once the game has started; 422 for a puppet the
+    catalogue does not offer; 403 without a seat here. Null gives the pick up. Answers
+    the room's snapshot, with everyone's picks."""
+    _open(room)
+    if isinstance(room, GameLobby) and not room.owns(token):
+        raise HTTPException(status_code=403, detail="you hold no seat in this room")
+    try:
+        room = await games.choose_character(room.game_id, token, body.character)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except LookupError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return live_status(room, token)
 
 
 @router.post(

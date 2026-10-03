@@ -106,7 +106,7 @@ def test_status_snapshot_of_a_fresh_session(api_client, quiet_session):
         "human_players": [], "you": None, "you_aboard": None, "pending_input": False, "pending_seats": [],
         "deadlines": {}, "game_over": False, "last_seq": 0, "alive_role_counts": {},
         "error": None, "name": "", "locked": False, "winner": None, "archived": False,
-        "awaiting_key": False, "cast": [],
+        "awaiting_key": False, "cast": [], "characters": [],
     }
 
 
@@ -280,6 +280,71 @@ def test_a_waiting_room_tells_you_where_you_stand_on_the_roster(api_client):
 
     api_client.cookies.clear()  # a spectator stands nowhere
     assert api_client.get(f"/games/{game_id}").json()["you_aboard"] is None
+
+
+def test_players_pick_their_puppet_first_come_first_served(api_client, monkeypatch):
+    """A pick is public like a name, lands on whichever seat the engine deals that
+    player, and can be given up; a taken puppet is refused, an unknown one is a 422."""
+    import server.game.live_game_registry as registry_module
+    from server.game import game_session as rt
+
+    monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
+    launched = []
+
+    class FakeSession(rt.GameSession):
+        def __init__(self, run, **kw):
+            launched.append(kw)
+            kw.pop("graph", None)
+            super().__init__(run, graph=HangingGraph(), **kw)
+
+    monkeypatch.setattr(registry_module, "GameSession", FakeSession)
+
+    game_id, host_key = _make_room(api_client)
+    assert api_client.post(f"/games/{game_id}/character",
+                           json={"character": "whale"}).status_code == 403  # no seat
+    api_client.post(f"/games/{game_id}/join", json={"name": "hao"})
+    r = api_client.post(f"/games/{game_id}/character", json={"character": "whale"})
+    assert r.status_code == 200 and r.json()["characters"] == ["whale"]
+    assert api_client.post(f"/games/{game_id}/character",
+                           json={"character": "wolfman"}).status_code == 422
+
+    api_client.cookies.clear()
+    api_client.post(f"/games/{game_id}/join", json={"name": "li"})
+    r = api_client.post(f"/games/{game_id}/character", json={"character": "whale"})
+    assert r.status_code == 409 and "already stands" in r.json()["detail"]
+    r = api_client.post(f"/games/{game_id}/character", json={"character": "cat"})
+    assert r.json()["characters"] == ["whale", "cat"]
+    r = api_client.post(f"/games/{game_id}/character", json={"character": None})
+    assert r.json()["characters"] == ["whale", None]  # given up: open to anyone again
+    assert api_client.get(f"/games/{game_id}").json()["characters"] == ["whale", None]
+
+    api_client.post(f"/games/{game_id}/start?host_key={host_key}")
+    assert launched[0]["picks"] == ["whale", None]  # join order, like the tokens
+    assert api_client.post(f"/games/{game_id}/character",
+                           json={"character": "cat"}).status_code == 409  # started
+
+
+def test_the_solo_door_takes_a_puppet_too(api_client, monkeypatch):
+    import server.game.live_game_registry as registry_module
+    from server.game import game_session as rt
+
+    monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
+    launched = []
+
+    class FakeSession(rt.GameSession):
+        def __init__(self, run, **kw):
+            launched.append(kw)
+            kw.pop("graph", None)
+            super().__init__(run, graph=HangingGraph(), **kw)
+
+    monkeypatch.setattr(registry_module, "GameSession", FakeSession)
+
+    r = api_client.post("/games", json={"human": True, "character": "wolfman"})
+    assert r.status_code == 422 and launched == []
+    r = api_client.post("/games", json={"human": True, "character": "owl"})
+    assert r.status_code == 200 and launched[0]["picks"] == ["owl"]
+    r = api_client.post("/games", json={"character": "owl"})  # all-AI: nobody to stand
+    assert r.status_code == 200 and launched[1]["picks"] == []
 
 
 def test_a_name_is_short_printable_and_tidied(api_client):

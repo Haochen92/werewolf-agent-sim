@@ -13,8 +13,8 @@ from fastapi.responses import StreamingResponse
 
 from Agents.turn.human_turn import HumanTurnContractError
 from server.dependencies import GameRepositoryDep, House, Game, GamesRegistry, Room, SeatToken
-from server.game.lobby import MAX_HUMAN_SEATS, GameLobby
 from server.database_models.game import COMPLETED, GameRow
+from server.game.cast import is_pickable
 from server.game.entitlement import entitled
 from server.game.game_session import GameSession
 from server.game.run_config import game_run_config
@@ -22,7 +22,7 @@ from server.schemas.requests import (
     DraftRequest, DraftResponse, FundGame, GameCreated, GameStatus, NewSoloGame, TurnAccepted,
 )
 
-from ._shared import authorize_model, set_seat_cookie
+from ._shared import authorize_model, live_status, set_seat_cookie
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +43,8 @@ async def create_game(
     response: Response,
 ) -> GameCreated:
     model = await authorize_model(house, body.api_key, body.model)
+    if body.character is not None and not is_pickable(body.character):
+        raise HTTPException(status_code=422, detail=f"no such character: {body.character}")
     seat_tokens = [str(uuid4())] if body.human or body.human_role is not None else []
     session = await games.start_instant(
         game_run_config(memory=body.memory, human_player=len(seat_tokens),
@@ -51,6 +53,7 @@ async def create_game(
         model=model,
         seat_tokens=seat_tokens,
         memory=body.memory,
+        character=body.character if seat_tokens else None,
     )
     if seat_tokens:
         set_seat_cookie(response, session.game_id, seat_tokens[0])
@@ -66,47 +69,7 @@ async def game_status(session: Room, token: SeatToken,
     if isinstance(session, GameRow):
         return _archived_status(
             session, token, [c.character for c in await repository.load_cast(session.game_id)])
-    return _live_status(session, token)
-
-
-def _live_status(session: GameLobby | GameSession, token: str) -> GameStatus:
-    """The snapshot of a waiting room or a running game, from the live registry."""
-    if token and not session.owns(token):
-        raise HTTPException(status_code=403, detail="unknown seat token")
-    if isinstance(session, GameLobby):
-        return GameStatus(
-            game_id=session.game_id,
-            state="waiting",
-            server_time=datetime.now(timezone.utc).isoformat(),
-            players=list(session.players),
-            host=session.host,
-            max_seats=MAX_HUMAN_SEATS,
-            name=session.name,
-            locked=session.locked,
-            you_aboard=session.place_of(token) if token else None,
-        )
-    you = (session.seat_for_token(token) or None) if token else None
-    # A pending night turn identifies a private actor just as surely as its prompt.
-    # Match the input_request audience: one's own seat until game over, then everyone.
-    pending = sorted(seat for seat in session.pending_requests
-                     if session.game_over or seat == you)
-    return GameStatus(
-        game_id=session.game_id,
-        state="finished" if session.game_over else "running",
-        server_time=datetime.now(timezone.utc).isoformat(),
-        human_players=session.human_players,
-        you=you,
-        awaiting_key=session.awaiting_key,
-        pending_input=bool(pending),
-        pending_seats=pending,
-        deadlines={seat: session.turn_deadlines[seat] for seat in pending
-                   if seat in session.turn_deadlines},
-        game_over=session.game_over,
-        last_seq=session.log[-1].seq if session.log else 0,
-        alive_role_counts=session.public_alive_counts,
-        cast=[c.character for c in session.cast],
-        error=session.error,
-    )
+    return live_status(session, token)
 
 
 def _archived_status(row: GameRow, token: str, cast: list[str]) -> GameStatus:
@@ -151,7 +114,7 @@ async def fund_game(session: Game, body: FundGame, token: SeatToken,
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-    return _live_status(session, token)
+    return live_status(session, token)
 
 
 @router.post(

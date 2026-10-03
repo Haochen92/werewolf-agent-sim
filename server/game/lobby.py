@@ -11,6 +11,11 @@ refusal tells the asker that a human already holds it. Solo players do pick thei
 on the instant-start door POST /games, where there is nobody to leak to. A room therefore
 keeps no per-player secrets, and its roster is public.
 
+A puppet is different from a role: the plush character a player stands as says nothing
+about what they are, because the cast is dealt independently of the deal. So a room does
+let each player pick their puppet, first come first served, and the picks are as public
+as the names.
+
 A lobby is its own object rather than an early state of GameSession because building a
 session starts real engine work (seeding memory, minting a run config) that a room of
 people who have not started yet must not trigger, and because a room has none of a
@@ -24,6 +29,7 @@ from typing import NamedTuple
 from uuid import uuid4
 
 from Agents.config import RunConfig
+from server.game.cast import is_pickable
 from server.game.run_config import game_run_config
 from Agents.config.game import GameConfig
 
@@ -144,6 +150,20 @@ class GameLobby:
         if token == self.host_seat:
             raise PermissionError("the host closes the room instead of leaving it")
         self.seats = [seat for seat in self.seats if seat.token != token]
+
+    def choose(self, token: str, character: str | None) -> None:
+        """Pick the puppet this seat stands as, or give the pick up (None). ValueError
+        for a character the catalogue does not offer; LookupError when the token holds
+        no seat here, or when another seat already stands as that character."""
+        place = self.place_of(token)
+        if place is None:
+            raise LookupError("you hold no seat in this room")
+        if character is not None and not is_pickable(character):
+            raise ValueError(f"no such character: {character}")
+        if character is not None and any(
+                s.character == character for s in self.seats if s.token != token):
+            raise LookupError(f"someone already stands as the {character}")
+        self.seats[place] = self.seats[place]._replace(character=character)
 
     def place_of(self, token: str) -> int | None:
         """Where this token's seat stands on the roster (0 = the first to join), or None
