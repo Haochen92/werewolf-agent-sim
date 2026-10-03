@@ -1,0 +1,27 @@
+{
+  "label": "example_flashlite35_v1_vs_v2",
+  "dataset": "evaluation/frozen_eval_sets/hallucination_bench_v1.jsonl",
+  "n": 3,
+  "workers": 8,
+  "arms": [
+    {
+      "label": "v1",
+      "model": "gemini-3.5-flash-lite",
+      "env": {
+        "WW_DISCUSSION_PROMPT": ""
+      },
+      "memory": "captured"
+    },
+    {
+      "label": "v2",
+      "model": "gemini-3.5-flash-lite",
+      "env": {
+        "WW_DISCUSSION_PROMPT": "v2"
+      },
+      "memory": "captured"
+    }
+  ],
+  "recall_model": "gemini-3.1-flash-lite",
+  "precision_model": "gemini-3.5-flash",
+  "golden_model": "gemini-3.1-flash-lite"
+}

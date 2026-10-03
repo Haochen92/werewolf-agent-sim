@@ -277,14 +277,15 @@ exercises only one, e.g. `turn_eval --replay none` is judge-only):
   captured/application/e2e CLIs (their `eval-captured`/`eval-application`/`eval-e2e` names remain as
   aliases). Plus `situation_summary_pairwise` (`eval-summary`), `situation_summary_rubric`
   (`eval-summary-rubric`), `retrieval` (`eval-retrieval`), `day_summary_judge` (`eval-day-summary`),
-  `batch_dedup_judge` (`eval-batch-dedup`).
+  `batch_dedup_judge` (`eval-batch-dedup`), `hallucination_bench` (`eval-hallucination-bench`; see
+  *Hallucination bench* below).
 
 **Ops at `cli_runner/` root** (not frozen-case evals): the discussion-tagger validation runner
 `discussion_tagger_eval` (`eval-tagger`, modes `accuracy`/`skill`/`deleak`), the diagnosis-sampler CLI
 `diagnosis/case_sampler` (`eval-case-sample`, command wiring over the `diagnosis/` logic package), and
 `graduate_run` (`eval-graduate`).
 
-The frozen-set builders live in **`data/builders/`** (`agent_decision`/`extraction`/`dedup`, the
+The frozen-set builders live in **`data/builders/`** (`agent_decision`/`extraction`/`dedup`/`hallucination_bench`, the
 `eval-build-*` CLIs) — they write the read side, so they sit with `data/`, not `cli_runner/`.
 
 Its former flatmates moved out on 2026-07-02:
@@ -398,6 +399,44 @@ evaluation/frozen_eval_sets/memory_eval_from_session_001.manifest.json
 ```
 
 The JSONL dataset is the stable input for all replay experiments.
+
+## Hallucination bench
+
+A standing benchmark for factual errors in what agents say: does a model or prompt version misstate
+deaths, roles, counts, claims or its own results? Each case is one agent turn frozen as the game
+**state** the engine held when the agent spoke. Replay rebuilds the turn's payload with the engine's
+own builders and renders the production template, so the same cases can be run under any later
+prompt version or model. Day discussion and day votes only for now.
+
+```text
+eval-build-hallucination-bench   candidates: census turns (+ controls) and named website turns
+          │                      (from the game's checkpoint, with an optional hand-written golden)
+eval-hallucination-bench         one arm of today's prompts over the candidates, n samples each
+          │
+eval-build-hallucination-bench   curate: keep the positives that still go wrong, plus every control
+          ▼                      → evaluation/frozen_eval_sets/hallucination_bench_v1.jsonl
+eval-hallucination-bench         the benchmark: arms (model × prompt env flags), paired per case
+```
+
+- **Arms** run in their own processes, because prompt versions are env flags read at import
+  (`WW_DISCUSSION_PROMPT`, …) and the seat model is `GOOGLE_GENAI_MODEL`.
+- **Judging:** cases with a `golden` go to `judges/golden_expectation` (a narrow flash-lite read
+  against the stated expectation). Every other unit goes through the census cascade: the
+  deterministic screen finds the checkable facts it touches, the flash-lite reader judges, and the
+  3.5-flash reader re-reads its positives (`judges/role_fact_read`). A sample is bad if any of its
+  units draws `hallucination` or `golden_violates`.
+- **Output:** per arm, bad rates overall, for positives, for controls, per phase and per role; each
+  later arm against the first, per case, with a sign test. Written to
+  `evaluation/eval_results/hallucination_bench/<label>/`.
+- **Why curate:** the census cases come from June prompts and many no longer go wrong on today's.
+  Its July ancestor (T1b) showed that turns which never recur can't show a fix working; error-prone
+  situations can (T1c: 48% bad pooled under the old prompt).
+
+Templates: `evaluation/config/template/hallucination_bench_{build,screen,curate}_example.json`, and
+`hallucination_bench_example.json` for a two-arm comparison. Run with `poetry run python -m
+evaluation.src.cli_runner.regen_replay.both.hallucination_bench --config …` (and
+`evaluation.src.data.builders.hallucination_bench` for the builder) until the console names are
+installed.
 
 ## Config Files
 

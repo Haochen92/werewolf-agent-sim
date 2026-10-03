@@ -1,0 +1,16 @@
+{
+  "label": "screen_v1",
+  "dataset": "evaluation/eval_results/hallucination_bench/candidates_v1.jsonl",
+  "n": 3,
+  "workers": 8,
+  "arms": [
+    {
+      "label": "current",
+      "model": "gemini-3.5-flash-lite",
+      "env": {
+        "WW_DISCUSSION_PROMPT": "v2"
+      },
+      "memory": "captured"
+    }
+  ]
+}
