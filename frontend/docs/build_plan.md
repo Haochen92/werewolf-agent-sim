@@ -422,6 +422,16 @@ for the filed replay. No migration (the DB was at 0007). Rollback = the `:prev` 
 2026-09-28 images). Smoke: `/api` health, models, replays with `X-Total-Count` 11, the five site
 routes and a replay page all 200; headless Chromium loaded a replay to `deal.table-seated` with
 the Reveal switch and no page errors.
+· **2026-10-03 both containers rebuilt at `9ae5056`** (built with `docker build` from a clean
+detached worktree, then `compose up -d --no-build`; branch not pushed). Server: the
+discussion-evidence prompt pass, switched on by `WW_DISCUSSION_PROMPT=v2` added to
+`.env.production` (evidence/game_play_enhancement/discussion_evidence.md), and the human line cap
+700 → 500. Frontend: the composer's cap 700 → 500. Pre-flight in the new server image with the
+production env: the switch reads on, the rules carry the turn-order line, the wolf has the
+claiming option, the cap is 500, the summary uses its v2 format. No migration. Rollback = the
+`:prev` tags (server `a651988`, frontend `a07067e`); to keep the new images but the old prompts,
+drop the env line and recreate the server. Smoke: `/api` health, models, replays, `/`, `/play`,
+`/rooms`, `/replays` all 200.
 
 **P4 — deploy + polish.** Caddy site (same-origin `/api`), HTTPS + `Secure` cookie flag on ·
 production compose (Postgres + `alembic upgrade head` before first boot; one `WW_POSTGRES_DSN`
