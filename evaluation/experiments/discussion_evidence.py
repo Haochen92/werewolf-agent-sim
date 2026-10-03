@@ -49,7 +49,7 @@ DEFAULT_OUT = "evidence/game_play_enhancement/data"
 
 Basis = Literal[
     "own_night_result", "role_claim", "night_events", "voting_record",
-    "speech_content", "manner", "participation", "none",
+    "speech_content", "manner", "turn_taking", "reveal_timing", "none",
 ]
 ClaimedRole = Literal[
     "none", "villager", "healer", "investigator", "vigilante", "wolf", "serial_killer",
@@ -75,7 +75,8 @@ Evidence kinds (a message may use several):
 - voting_record — how players voted or abstained on earlier days, or who pushed which lynch through their votes.
 - speech_content — something specific a player SAID in discussion: a contradiction, a changed story, pushing hard for a lynch, defending someone, dodging a direct question.
 - manner — tone or attitude without pointing at anything specific said or done ("seems nervous", "too eager", "overly defensive", "acting suspicious").
-- participation — WHEN or HOW MUCH someone speaks: being quiet or silent, passing, speaking first or early or late, talking a lot or very little.
+- turn_taking — how often or in what order someone has spoken: being quiet or silent, passing, not having spoken yet, speaking first, early or late, talking a lot or very little. (The moderator decides who speaks when, so this is about the turn order itself, not about anything the player chose to say.)
+- reveal_timing — WHEN a player chose to share something: claiming a role or a result "suddenly", "right away", "only now", "too late", or holding information back.
 - none — no evidence at all: procedure, general advice ("we should be careful"), agreement without a new reason, greetings.
 
 Rules:
