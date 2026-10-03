@@ -1,7 +1,8 @@
 """WW_DISCUSSION_PROMPT=v2 (evidence/game_play_enhancement/discussion_evidence.md §3).
 
 The switch is read once at import, so each setting runs in a fresh interpreter. Off, the prompts
-must be exactly today's; on, each of the four changes must land where the agents will read it.
+must be exactly today's; on, each of the four changes must land where the agents will read it. (P2,
+the summary's drivers question, is no longer switched: the v3 summary always asks it.)
 """
 import json
 import os
@@ -42,7 +43,8 @@ def test_off_keeps_todays_prompts():
     assert not got["turn_order"]
     assert not got["short_target"] and got["old_cap"]
     assert not any(got["claiming"].values())
-    assert "staying quiet" in got["drivers"]
+    # The day summary left the switch in v3 (2026-10-03): it asks the evidence question either way.
+    assert "evidence" in got["drivers"]
 
 
 @pytest.mark.parametrize("flag", ["v2"])

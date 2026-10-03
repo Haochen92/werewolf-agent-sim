@@ -324,6 +324,7 @@ def summarize_day_discussion(
     ) as summary_span:
         summary, model_used, structured = run_day_summary_agent(
             current_day, current_day_messages, max_retries,
+            day_summaries=state.get("day_summaries", []),
         )
 
         day_summary_case = DaySummaryCase(

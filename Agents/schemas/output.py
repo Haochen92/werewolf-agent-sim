@@ -257,6 +257,81 @@ class DaySummaryOutputV2(DaySummaryOutput):
     village_dynamics: VillageDynamicsV2
 
 
+# Day summary v3 (audit 2026-10-03; discussion_evidence.md §6.4): every claim attributed to whoever
+# made it and checked against the game master's record, with claimed results as fields so code can
+# keep a running claim record across days. Keeps v1's four top-level keys and their sub-fields, so
+# stored summaries and the frontend read it unchanged. Model-visible: no class docstrings.
+class AccusationV3(Accusation):
+    reasoning: str = Field(
+        description=(
+            "The accusers' stated reasoning, written as what they argued (e.g. 'player_8 argued "
+            "that player_2 survived an attack'), never as fact. 1-2 sentences."
+        ),
+    )
+    disputed_by: str = Field(
+        description=(
+            "Who, besides the target, disputed this accusation and why, in one sentence. "
+            "Empty string if no one did."
+        ),
+    )
+    record_check: str = Field(
+        description=(
+            "If the accusation rests on an event that the game master's record contradicts or never "
+            "announced, say so and cite the record (e.g. 'no attack on player_2 was ever announced'). "
+            "Empty string otherwise."
+        ),
+    )
+
+
+class ClaimedResult(LenientToolCallModel):
+    night: int = Field(description="The night the claimed action happened; 0 if the player did not say")
+    target: str = Field(description="Player ID the claimed action was on")
+    result: str = Field(
+        description=(
+            "What the player says happened, in a few words (e.g. 'is a wolf', 'protected, was "
+            "attacked', 'shot, survived')"
+        ),
+    )
+
+
+class RoleClaimV3(RoleClaim):
+    evidence: str = Field(
+        description=(
+            "The claim checked against the game master's record: 'supported: ...' or "
+            "'contradicted: ...' citing the record, or 'unverified' if the record says nothing either way"
+        ),
+    )
+    claimed_results: list[ClaimedResult] = Field(
+        default_factory=list,
+        description=(
+            "Every result this player claimed today (investigations, protections, shots), one entry "
+            "each. Empty list if none."
+        ),
+    )
+    status: Literal["new", "repeated", "changed", "retracted"] = Field(
+        description=(
+            "new = the player's first claim; repeated = the same claim as on record; changed = a "
+            "different role or different results from what is on record; retracted = withdrawn"
+        ),
+    )
+
+
+class DaySummaryOutputV3(LenientToolCallModel):
+    accusations: list[AccusationV3] = Field(
+        default_factory=list,
+        description="All distinct accusations from the discussion. List every accusation separately.",
+    )
+    role_claims: list[RoleClaimV3] = Field(
+        default_factory=list,
+        description="Any role claims made during discussion, including repeated ones. Empty list if none.",
+    )
+    alliances: list[Alliance] = Field(
+        default_factory=list,
+        description="Any alliances or voting blocs that formed. Empty list if none.",
+    )
+    village_dynamics: VillageDynamicsV2
+
+
 class HealerOutput(LenientToolCallModel):
     strategy_verdicts: list[StrategyVerdict] = Field(
         default_factory=list,

@@ -14,8 +14,8 @@ import json
 from pathlib import Path
 
 from Agents.prompts.prompt_formatters import format_day_channel
-from Agents.prompts import DAY_SUMMARY_PROMPT, SITUATION_STANDARDS
-from Agents.schemas import DaySummaryOutput
+from Agents.prompts import DAY_SUMMARY_PROMPT, GAME_RULES
+from Agents.schemas import DaySummaryOutputV3
 from Agents.schemas.game_events import DayChannel
 
 EVAL_SETS = [
@@ -100,10 +100,14 @@ def generate_summary(
         for i, msg in enumerate(raw_discussion)
     ]
 
+    # The frozen sets keep only the day's discussion, not the game master's record or earlier
+    # claims, so the summariser is told they are unavailable.
     prompt = DAY_SUMMARY_PROMPT.format(
         current_day=day,
         day_channel=format_day_channel(messages),
-        situation_standards=SITUATION_STANDARDS,
+        game_rules=GAME_RULES,
+        public_record="(not available for this replay)",
+        claims_on_record="(not available for this replay)",
     )
 
     from Agents.nodes import _serialize_day_summary
@@ -114,7 +118,7 @@ def generate_summary(
         from Agents.llm_factory import get_llm
         llm = get_llm()
 
-    result = llm.with_structured_output(DaySummaryOutput).invoke(prompt)
+    result = llm.with_structured_output(DaySummaryOutputV3).invoke(prompt)
     return _serialize_day_summary(result)
 
 
