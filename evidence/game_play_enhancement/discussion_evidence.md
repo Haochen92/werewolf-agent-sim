@@ -560,10 +560,10 @@ comparison; it is a look at v2 on a stronger model.
 
 ---
 
-## 7. Phase 2 plan: the scheduler (not started)
+## 7. Phase 2 plan: how the day runs (not started)
 
-Phase 2 changes the game engine's turn-taking. It does not change the server, apart from one line
-that lets live games switch it on. The owner writes the code; this section is the brief.
+Phase 2 changes how a day is run: the engine's turn-taking, plus the events and stage scenes that show
+it. The owner writes the code and Claude writes the tests; this section is the brief.
 
 ### 7.1 What the game records say (2026-10-03)
 
@@ -588,8 +588,8 @@ records, with no model involved, except the last row.
 - **The same rule cuts some voting days short.** Every voting day that missed a player was one where
   the first few players passed and the day ended; two website days had no messages at all.
 - **The investigator is not usually kept waiting.** Its first turn comes around the fourth turn of the
-  day, which an opening round would not change on average (the order within it is still random). An
-  opening round matters for the days it would otherwise never be asked.
+  day. What an opening round adds is the guarantee: it is asked at the start of every day, including
+  the days it would otherwise never be asked.
 - **A closing defence needs a different trigger.** The scheduler always lets an accused player reply
   before the day can end on passes, so an "unanswered accusation" exists only on days that hit the
   message cap. "Most-accused" works better: the lynched player was among the most-accused on almost
@@ -602,92 +602,104 @@ records, with no model involved, except the last row.
 
 ### 7.2 What to build
 
-Two switches on the game settings (`Agents/config/game.py`), both off by default, so existing games
-and the prompt goldens are unchanged:
-- `opening_round`: S1 and D1 below.
-- `closing_defence`: S2, with `closing_min_accusers` (default 2) and `closing_max_speakers`
-  (default 2).
+**No switch.** Phase 2 is built as the new default. Before merging it, the last commit without it
+gets an annotated tag (`git tag -a phase2-baseline`), per the repo's rule for structural changes
+compared once; the v2 games already played are the comparison. If it plays worse, revert to the tag.
 
-**D1. Day 1 is an opening round and nothing else.** Every player is offered one turn, in the usual
-seeded random order. Passing is the default. Nobody gets a second turn and accusations get no reply.
-The day ends when everyone has been offered a turn.
-- *Why:* day 1 has no night results to share, so the back-and-forth adds little, and today it ends
-  after three passes anyway. This gives every player, including the human, the one chance to say
-  something (a wolf can use it to fake-claim).
-- *Cost:* about six more calls on day 1 than now (one per player instead of three).
+**The day becomes:**
+- *Day 1:* opening round → summary → night. No discussion after the opening and no vote.
+- *Day 2 on:* opening round → discussion (today's scheduler, unchanged) → closing defence → summary →
+  vote.
 
-**S1. Voting days open with the same round.** Every player is offered one turn before the normal
-back-and-forth begins. Passing is the default; speak only to share something not yet public (one's
-own night result, a role claim) or a new deduction from last night.
-- *Why:* every player is guaranteed a chance to put information on the table, and a day can no
-  longer end before everyone has been asked.
-- *Trade-offs:* up to one extra call per player per day, since a pass still costs a full prompt. An
-  accusation made early in the opening waits until the round is over for its reply.
-- *Rejected form:* everyone writing an opening statement at once, revealed together. Earlier
-  simultaneous turns produced near-identical statements.
+**D1/S1. The opening round: everyone at once.** Every living player is sent an opening turn at the same
+time, the way the vote is. The instructions are strict: the only things allowed are one's own role,
+one's own night action or result, or a challenge to a claim already made. Anything else is a pass,
+and passing is the default. The stage shows "everyone is preparing their opening" while the calls
+run, then plays the openings that were made one by one in a seeded order, with the passes as one line.
+- *Why at once:* a round of mostly passes played one seat at a time is close to a minute of "player_x
+  passes" before anything happens. At once, the wait is about one model call.
+- *Why this is safe now, when simultaneous openings were rejected before:* the earlier simultaneous
+  turns were open statements, and came out near-identical. These are restricted to private facts and
+  claims, and duplicates are filtered out afterwards (below).
+- *Responses come from the existing scheduler.* Opening messages go into the transcript with their
+  accusation tags like any message, so a player named in a claim ("I checked player_5: wolf") is
+  first in the reply queue when discussion starts. No new summariser or planning step. If the tags'
+  misses (§7.1) turn out to matter, an LLM step can be added later.
+- *Cost:* one call per living player per day for the opening (day 1 today makes three).
 
-**S2. A closing defence for the most-accused.** When the day would end, by passes or by the cap, the
+**The echo filter in the opening.** The parallel calls can't see each other, so the filter runs
+afterwards: the collecting step puts the openings in the seeded order and checks each against the
+ones before it. Claims are always kept: two players claiming the same role is a counterclaim, the
+contest phase 1 is trying to create. The exemption goes into the filter's prompt for every turn, as
+"a role claim, or a report of the speaker's own night action or result, that the speaker has not
+already made today, is new", so a counterclaim mid-discussion is never hidden either, while a third
+repeat of the same claim still is.
+
+**S2. The closing defence: the most-accused, at once.** When discussion would end (passes or cap), the
 one or two players accused by the most different players today, with at least two accusers, get one
-last turn before the vote. No new accusations. If nobody qualifies, the day just ends.
-- *Why only the accused:* a closing turn for everyone costs one call per player even when they all
-  pass, and invites a round of summaries. Bystanders state their conclusion with their vote.
+last turn, sent at the same time, through the same mechanism as the opening. No new accusations;
+anything they say gets no reply. If nobody qualifies, the day goes straight to the summary.
 - *Ties:* the more recently accused player first.
-- *A human in a closing turn* may still type an accusation. It gets no reply: the closing round is final.
 - *Don't use the agents' private suspicion reads* to pick the accused. Who gets a closing turn is
   public, so it would leak what the agents secretly think.
 
-**S3. Separate lengths per turn type.** Opening turns: one or two sentences, or pass. Closing turns:
-two to four sentences. Ordinary turns keep the P5 line. Humans keep one limit.
+**S3. Lengths per turn type.** Opening: one or two sentences, or pass. Closing: two to four sentences.
+Discussion keeps the P5 line. Humans keep one limit.
 
 **Where each piece goes:**
-1. **Turn marker.** `FiringReason` (`Agents/schemas/game_events.py:37`) gets
-   `stage: Literal["discussion", "opening", "closing"] = "discussion"`. It is engine-only: the
-   translator copies only the tier and creditors to the event stream (`server/game/translate.py:424`),
-   so the frontend and the event goldens are untouched.
-2. **Scheduler** (`Agents/turn/scheduler.py`, `select_next_speaker`). It stays a pure function: work
-   out the stage from today's transcript, before the steps that exist today.
-   - *Closing under way* (any entry today has stage closing): the next qualifying player who hasn't had
-     a closing turn, else end the day. No reply queue.
-   - *Opening under way* (switch on, a living player has no entry today): the first of
-     `rank_proactive` among those players, stage opening. No reply queue, no three-pass ending. Put it
-     before the cap check.
-   - *Day 1, opening done:* end the day.
-   - *Otherwise* run today's steps unchanged. Wherever they would end the day, if the closing switch is
-     on and someone qualifies, return the first closing speaker instead.
-   - A small helper picks the closing speakers: for each living player, the set of different players
-     who tagged an accusation against them today (`addressed_targets`, stance `accusation`, not
-     themselves); keep those with at least the minimum; sort by count, then latest accusation; take the
-     maximum. Count only the entries before the first closing turn, so a closing speaker's words cannot
-     change the list.
-   - New keyword arguments carry the switches; `route_speaker` (`Agents/nodes/day/flow.py:57`) passes
-     them, with "day 1" meaning `current_day < first_voting_day`.
-3. **Echo filter** (`Agents/turn/resolve.py:116`): only stage-discussion proactive turns are checked.
-4. **Turn brief** (`Agents/prompts/prompt_inputs.py:47`, `_firing_brief`): a line for each stage,
-   including S3's lengths. The day-1 block (`OPENING_NO_VOTE_DISCUSSION_RULES` in
-   `Agents/prompts/day_discuss.py`) already says passing is fine; add "you get one turn today" there
-   or in the brief. The brief prints nothing for stage discussion, so with the switches off the
-   prompts stay byte-identical (the golden in `tests/fixtures/day_discuss_prompt_golden.json` must not
-   change).
-5. **Server switch** (`server/game/run_config.py`, `game_run_config`): pass
-   `game=GameConfig(opening_round=..., closing_defence=...)` from a server setting, so live games can
-   run with it on.
-6. **Tests** (`tests/engine/test_scheduler.py`):
-   - switches off: today's tests pass unchanged;
-   - opening: three passes at the start don't end the day; an accusation during the opening waits;
-     every player is offered exactly once; normal discussion resumes after;
-   - day 1: ends once everyone has been offered a turn, with no second turns;
-   - closing: runs after passes and after the cap; skipped when nobody has two accusers; each speaker
-     once; an accusation in a closing turn adds no reply and no new speaker.
+1. **Day graph** (`Agents/graphs/day.py`). New steps on the vote's pattern (`START_VOTING` →
+   `fan_out_vote` → `vote` / `vote_human` → `COLLECT_VOTES`): one sends the round out, then the
+   per-seat turn node (cached for agents, with an uncached twin for the human, for the same resume
+   reason as the vote), then a collecting step. The same steps serve the opening and the closing,
+   given which round it is. The day starts at the opening instead of `SCHEDULE`; `route_speaker`
+   (`Agents/nodes/day/flow.py:57`) goes to the closing instead of the summary when the day would end;
+   day 1 goes from the opening straight to the summary.
+2. **Turn payload.** `fan_out_day(state, "discuss")` (`flow.py:198`) already builds one discussion
+   Send per survivor; add the round (`opening` / `closing`) to the payload. The prompt reads it, as it
+   reads `voting_available` for day 1 today.
+3. **Collecting step.** The parallel turns must not write into `day_channel` themselves (each would
+   claim the same position). They return their candidate lines to a holding field; the collecting step
+   orders them by the day's seed, runs the echo filter in that order (opening only), and writes the
+   speeches and pass markers into `day_channel` in sequence.
+4. **Echo filter** (`Agents/turn/novelty_agent.py`): the claim exemption in the prompt, and a way to
+   judge a candidate against the earlier openings rather than only the transcript. Normal discussion
+   turns are filtered as today.
+5. **Closing speakers.** A small helper: for each living player, the set of different players who
+   tagged an accusation against them today (`addressed_targets`, stance `accusation`, not themselves);
+   keep those with at least two; sort by count, then latest accusation; take two.
+6. **Prompts** (`Agents/prompts/day_discuss.py`, `prompt_inputs.py`): an opening block and a closing
+   block, chosen by the round in the payload, carrying S3's lengths. The day-1 block
+   (`OPENING_NO_VOTE_DISCUSSION_RULES`) merges into the opening block. The golden in
+   `tests/fixtures/day_discuss_prompt_golden.json` changes on purpose.
+7. **Server events** (`server/game/translate.py` and `server/schemas/events.py`): the new steps need
+   translator entries, and the scene needs a public event marking "openings are being prepared" (for
+   example a new `phase_change` value). Both change the event contract the frontend reads, and the
+   translator's exact goldens.
+8. **Frontend** (`frontend/src/stage/beats/beatsFor.ts`, `frontend/docs/beat_sheet.md`): the
+   "preparing" scene, the openings played in order, and a run of passes shown as one beat. Grouping
+   consecutive passes also shortens today's mid-day passes.
+9. **The human seat.** In the opening the human gets an ordinary turn request, in parallel with the
+   agents. The vote's known delay applies (§9 item 5): the human's request appears only once every
+   agent's call has finished. Here that is hidden by the "preparing" scene, but fixing it for the vote
+   fixes it here too.
+10. **Tests** (written by Claude once the code is in): day 1 is the opening only; every living player is
+    sent exactly one opening turn; openings land in `day_channel` in seeded order with distinct
+    positions; a duplicate opening is filtered and a counterclaim is not; a player named in an opening
+    accusation replies first in discussion; the closing runs after passes and after the cap, picks by
+    distinct accusers, is skipped when nobody has two, and gets no replies; the translator emits the
+    new events.
 
 ### 7.3 How to tell whether it worked
 
-Play two or three games with both switches on, judge them, and compare with the v2 games
-(`832404e9`, `8e26fd3b`):
-- no day ends with a living player never offered a turn;
-- what day 1 now contains: how many speak, and whether evil uses it to claim;
+Play two or three games on `gemini-3.5-flash-lite` (the baseline's model), judge them, and compare
+with v2 game 1 (`832404e9`):
+- what the openings contain: how many players speak, whether evil uses them to claim, and whether
+  counterclaims appear;
+- whether the opening feels slow: how long it takes, and how the "preparing" scene and grouped passes
+  play;
 - how often a closing defence runs, and whether the defended player is still voted out;
 - calls per day (the cost);
-- the judge's turn-taking and reveal-timing labels, and evil role claims.
+- the judge's turn-taking and reveal-timing labels.
 
 *Counts: one-off scripts (not kept), run 2026-10-03 over the 28 June batch
 records and the website replays (9 games: `8e26fd3b`, `832404e9`, `500b5167`, `7bdb16bd`,
