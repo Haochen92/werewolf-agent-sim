@@ -267,6 +267,29 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/games/{game_id}/character': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Pick the puppet your seat stands as (waiting room)
+     * @description The seat cookie says whose seat. First come first served: 409 when another seat
+     *     already stands as that puppet, or once the game has started; 422 for a puppet the
+     *     catalogue does not offer; 403 without a seat here. Null gives the pick up. Answers
+     *     the room's snapshot, with everyone's picks.
+     */
+    post: operations['choose_character_games__game_id__character_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/games/{game_id}/close': {
     parameters: {
       query?: never;
@@ -362,6 +385,27 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/characters': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * The puppets a player may stand as (public)
+     * @description Every character the catalogue has issued, retired ones last. The ids are what a
+     *     pick names and what a game's cast is recorded in.
+     */
+    get: operations['list_characters_characters_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/admin/house': {
     parameters: {
       query?: never;
@@ -420,6 +464,31 @@ export interface components {
       player: string;
       /** Count */
       count: number;
+    };
+    /**
+     * CharacterCard
+     * @description One row of GET /characters: a puppet a player may stand as. Costumes say nothing
+     *     about roles; the cast is dealt independently of the deal.
+     */
+    CharacterCard: {
+      /** Id */
+      id: string;
+      /** Display Name */
+      display_name: string;
+      /**
+       * Retired
+       * @default false
+       */
+      retired: boolean;
+    };
+    /**
+     * ChooseCharacter
+     * @description POST /games/{id}/character body: the puppet this seat stands as, picked in the
+     *     waiting room. The seat cookie says whose seat.
+     */
+    ChooseCharacter: {
+      /** Character */
+      character?: string | null;
     };
     /**
      * DaySummary
@@ -621,6 +690,8 @@ export interface components {
       human_players?: string[];
       /** You */
       you?: string | null;
+      /** Characters */
+      characters?: (string | null)[];
       /** You Aboard */
       you_aboard?: number | null;
       /**
@@ -660,6 +731,8 @@ export interface components {
       alive_role_counts?: {
         [key: string]: number;
       };
+      /** Cast */
+      cast?: string[];
       /** Error */
       error?: string | null;
     };
@@ -992,6 +1065,8 @@ export interface components {
        * @default false
        */
       memory: boolean;
+      /** Character */
+      character?: string | null;
     };
     /**
      * NightAction
@@ -1268,6 +1343,11 @@ export interface components {
         | components['schemas']['VigilanteConfirmation']
         | components['schemas']['BulletsRemaining']
       )[];
+      /**
+       * Cast
+       * @default []
+       */
+      cast: string[];
     };
     /**
      * RoleAssigned
@@ -2086,6 +2166,41 @@ export interface operations {
       };
     };
   };
+  choose_character_games__game_id__character_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        game_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ChooseCharacter'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['GameStatus'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
   close_room_games__game_id__close_post: {
     parameters: {
       query?: {
@@ -2246,6 +2361,26 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  list_characters_characters_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['CharacterCard'][];
         };
       };
     };

@@ -587,6 +587,59 @@
         }
       }
     },
+    "/games/{game_id}/character": {
+      "post": {
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Pick the puppet your seat stands as (waiting room)",
+        "description": "The seat cookie says whose seat. First come first served: 409 when another seat\nalready stands as that puppet, or once the game has started; 422 for a puppet the\ncatalogue does not offer; 403 without a seat here. Null gives the pick up. Answers\nthe room's snapshot, with everyone's picks.",
+        "operationId": "choose_character_games__game_id__character_post",
+        "parameters": [
+          {
+            "name": "game_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Game Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChooseCharacter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameStatus"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/games/{game_id}/close": {
       "post": {
         "tags": [
@@ -846,6 +899,32 @@
         }
       }
     },
+    "/characters": {
+      "get": {
+        "tags": [
+          "characters"
+        ],
+        "summary": "The puppets a player may stand as (public)",
+        "description": "Every character the catalogue has issued, retired ones last. The ids are what a\npick names and what a game's cast is recorded in.",
+        "operationId": "list_characters_characters_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CharacterCard"
+                  },
+                  "type": "array",
+                  "title": "Response List Characters Characters Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/house": {
       "get": {
         "tags": [
@@ -1019,6 +1098,48 @@
           "count"
         ],
         "title": "BulletsRemaining"
+      },
+      "CharacterCard": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "retired": {
+            "type": "boolean",
+            "title": "Retired",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "display_name"
+        ],
+        "title": "CharacterCard",
+        "description": "One row of GET /characters: a puppet a player may stand as. Costumes say nothing\nabout roles; the cast is dealt independently of the deal."
+      },
+      "ChooseCharacter": {
+        "properties": {
+          "character": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Character"
+          }
+        },
+        "type": "object",
+        "title": "ChooseCharacter",
+        "description": "POST /games/{id}/character body: the puppet this seat stands as, picked in the\nwaiting room. The seat cookie says whose seat."
       },
       "DaySummary": {
         "properties": {
@@ -1382,6 +1503,20 @@
             ],
             "title": "You"
           },
+          "characters": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Characters"
+          },
           "you_aboard": {
             "anyOf": [
               {
@@ -1454,6 +1589,13 @@
             },
             "type": "object",
             "title": "Alive Role Counts"
+          },
+          "cast": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Cast"
           },
           "error": {
             "anyOf": [
@@ -2102,6 +2244,17 @@
             "type": "boolean",
             "title": "Memory",
             "default": false
+          },
+          "character": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Character"
           }
         },
         "type": "object",
@@ -2767,6 +2920,14 @@
             },
             "type": "array",
             "title": "Events"
+          },
+          "cast": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Cast",
+            "default": []
           }
         },
         "type": "object",
