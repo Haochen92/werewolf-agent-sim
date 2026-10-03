@@ -484,6 +484,12 @@ anything that shows state is drawn over the sprite in vector, never baked in.
     the circle. The hare is tighter and lower (its upright ear runs off), the polar bear smaller
     (its ears stay in), the onion's curl and the three-eyes' antenna run off the top.
   - `scripts/convert-sprites.mjs` skips the old `day` masters so it can never overwrite the cast.
+  - **Four more** (2026-10-03): kitsune, mushroom, lionCub, automaton, by the same recipe, now
+    kept as `scripts/convert_cast.py` (`poetry run python scripts/convert_cast.py <id>`; prints
+    BODY and REACH; reproduces the whale's canvas within a pixel). The crown and the face's centre
+    line are read by eye into its `MEASURES`: the mushroom's cap counts as a hat (crown ~400 px
+    above the eyes, as the whale's), the lion's crown is its face's circle under the forelock.
+    Shadows and phone copies as for the eleven. Canvases 857–917 wide, 1186–1267 tall.
 - **The night rooms** (2026-09-28, owner-approved): the acting seat's room and the pack's are the
   owner's paintings of a walnut-and-brass sleeping compartment, the role's props painted in,
   replacing the vector shelf room, the kits on its shelf and the plush dolls. Masters:

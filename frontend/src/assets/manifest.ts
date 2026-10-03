@@ -79,6 +79,26 @@ import shadeTalking from './sprites/day/shade/talking.webp';
 import shadeThinking from './sprites/day/shade/thinking.webp';
 import shadeOut from './sprites/day/shade/out.webp';
 import shadeHead from './sprites/day/shade/head.webp';
+import kitsuneBase from './sprites/day/kitsune/base.webp';
+import kitsuneTalking from './sprites/day/kitsune/talking.webp';
+import kitsuneThinking from './sprites/day/kitsune/thinking.webp';
+import kitsuneOut from './sprites/day/kitsune/out.webp';
+import kitsuneHead from './sprites/day/kitsune/head.webp';
+import mushroomBase from './sprites/day/mushroom/base.webp';
+import mushroomTalking from './sprites/day/mushroom/talking.webp';
+import mushroomThinking from './sprites/day/mushroom/thinking.webp';
+import mushroomOut from './sprites/day/mushroom/out.webp';
+import mushroomHead from './sprites/day/mushroom/head.webp';
+import lionCubBase from './sprites/day/lionCub/base.webp';
+import lionCubTalking from './sprites/day/lionCub/talking.webp';
+import lionCubThinking from './sprites/day/lionCub/thinking.webp';
+import lionCubOut from './sprites/day/lionCub/out.webp';
+import lionCubHead from './sprites/day/lionCub/head.webp';
+import automatonBase from './sprites/day/automaton/base.webp';
+import automatonTalking from './sprites/day/automaton/talking.webp';
+import automatonThinking from './sprites/day/automaton/thinking.webp';
+import automatonOut from './sprites/day/automaton/out.webp';
+import automatonHead from './sprites/day/automaton/head.webp';
 import healerKit from './sprites/kits/healer.webp';
 import investigatorKit from './sprites/kits/investigator.webp';
 import vigilanteKit from './sprites/kits/vigilante.webp';
@@ -166,6 +186,22 @@ import shadeBaseShadow from './sprites/shadow/day/shade/base.webp';
 import shadeTalkingShadow from './sprites/shadow/day/shade/talking.webp';
 import shadeThinkingShadow from './sprites/shadow/day/shade/thinking.webp';
 import shadeOutShadow from './sprites/shadow/day/shade/out.webp';
+import kitsuneBaseShadow from './sprites/shadow/day/kitsune/base.webp';
+import kitsuneTalkingShadow from './sprites/shadow/day/kitsune/talking.webp';
+import kitsuneThinkingShadow from './sprites/shadow/day/kitsune/thinking.webp';
+import kitsuneOutShadow from './sprites/shadow/day/kitsune/out.webp';
+import mushroomBaseShadow from './sprites/shadow/day/mushroom/base.webp';
+import mushroomTalkingShadow from './sprites/shadow/day/mushroom/talking.webp';
+import mushroomThinkingShadow from './sprites/shadow/day/mushroom/thinking.webp';
+import mushroomOutShadow from './sprites/shadow/day/mushroom/out.webp';
+import lionCubBaseShadow from './sprites/shadow/day/lionCub/base.webp';
+import lionCubTalkingShadow from './sprites/shadow/day/lionCub/talking.webp';
+import lionCubThinkingShadow from './sprites/shadow/day/lionCub/thinking.webp';
+import lionCubOutShadow from './sprites/shadow/day/lionCub/out.webp';
+import automatonBaseShadow from './sprites/shadow/day/automaton/base.webp';
+import automatonTalkingShadow from './sprites/shadow/day/automaton/talking.webp';
+import automatonThinkingShadow from './sprites/shadow/day/automaton/thinking.webp';
+import automatonOutShadow from './sprites/shadow/day/automaton/out.webp';
 import grain from './sprites/atmosphere/grain.webp';
 import textureWalnut from './sprites/textures/walnut.webp';
 import textureBoards from './sprites/textures/boards.webp';
@@ -216,6 +252,22 @@ import shadeBaseSmall from './sprites/day/shade/base@small.webp';
 import shadeTalkingSmall from './sprites/day/shade/talking@small.webp';
 import shadeThinkingSmall from './sprites/day/shade/thinking@small.webp';
 import shadeOutSmall from './sprites/day/shade/out@small.webp';
+import kitsuneBaseSmall from './sprites/day/kitsune/base@small.webp';
+import kitsuneTalkingSmall from './sprites/day/kitsune/talking@small.webp';
+import kitsuneThinkingSmall from './sprites/day/kitsune/thinking@small.webp';
+import kitsuneOutSmall from './sprites/day/kitsune/out@small.webp';
+import mushroomBaseSmall from './sprites/day/mushroom/base@small.webp';
+import mushroomTalkingSmall from './sprites/day/mushroom/talking@small.webp';
+import mushroomThinkingSmall from './sprites/day/mushroom/thinking@small.webp';
+import mushroomOutSmall from './sprites/day/mushroom/out@small.webp';
+import lionCubBaseSmall from './sprites/day/lionCub/base@small.webp';
+import lionCubTalkingSmall from './sprites/day/lionCub/talking@small.webp';
+import lionCubThinkingSmall from './sprites/day/lionCub/thinking@small.webp';
+import lionCubOutSmall from './sprites/day/lionCub/out@small.webp';
+import automatonBaseSmall from './sprites/day/automaton/base@small.webp';
+import automatonTalkingSmall from './sprites/day/automaton/talking@small.webp';
+import automatonThinkingSmall from './sprites/day/automaton/thinking@small.webp';
+import automatonOutSmall from './sprites/day/automaton/out@small.webp';
 import propJarGlassSmall from './sprites/props/jar-glass@small.webp';
 import propJarLidSmall from './sprites/props/jar-lid@small.webp';
 import propPlateSmall from './sprites/props/plate@small.webp';
@@ -296,6 +348,10 @@ export const CHARACTERS = [
   'whale',
   'polarBear',
   'shade',
+  'kitsune',
+  'mushroom',
+  'lionCub',
+  'automaton',
 ] as const;
 
 export type Character = (typeof CHARACTERS)[number];
@@ -477,6 +533,34 @@ export const SPRITES: {
       out: shadeOut,
       head: shadeHead,
     },
+    kitsune: {
+      base: kitsuneBase,
+      talking: kitsuneTalking,
+      thinking: kitsuneThinking,
+      out: kitsuneOut,
+      head: kitsuneHead,
+    },
+    mushroom: {
+      base: mushroomBase,
+      talking: mushroomTalking,
+      thinking: mushroomThinking,
+      out: mushroomOut,
+      head: mushroomHead,
+    },
+    lionCub: {
+      base: lionCubBase,
+      talking: lionCubTalking,
+      thinking: lionCubThinking,
+      out: lionCubOut,
+      head: lionCubHead,
+    },
+    automaton: {
+      base: automatonBase,
+      talking: automatonTalking,
+      thinking: automatonThinking,
+      out: automatonOut,
+      head: automatonHead,
+    },
   },
   kits: {
     healer: healerKit,
@@ -596,6 +680,30 @@ export const SPRITES: {
         thinking: shadeThinkingShadow,
         out: shadeOutShadow,
       },
+      kitsune: {
+        base: kitsuneBaseShadow,
+        talking: kitsuneTalkingShadow,
+        thinking: kitsuneThinkingShadow,
+        out: kitsuneOutShadow,
+      },
+      mushroom: {
+        base: mushroomBaseShadow,
+        talking: mushroomTalkingShadow,
+        thinking: mushroomThinkingShadow,
+        out: mushroomOutShadow,
+      },
+      lionCub: {
+        base: lionCubBaseShadow,
+        talking: lionCubTalkingShadow,
+        thinking: lionCubThinkingShadow,
+        out: lionCubOutShadow,
+      },
+      automaton: {
+        base: automatonBaseShadow,
+        talking: automatonTalkingShadow,
+        thinking: automatonThinkingShadow,
+        out: automatonOutShadow,
+      },
     },
   },
   grain,
@@ -674,6 +782,30 @@ export const SPRITES: {
         thinking: shadeThinkingSmall,
         out: shadeOutSmall,
       },
+      kitsune: {
+        base: kitsuneBaseSmall,
+        talking: kitsuneTalkingSmall,
+        thinking: kitsuneThinkingSmall,
+        out: kitsuneOutSmall,
+      },
+      mushroom: {
+        base: mushroomBaseSmall,
+        talking: mushroomTalkingSmall,
+        thinking: mushroomThinkingSmall,
+        out: mushroomOutSmall,
+      },
+      lionCub: {
+        base: lionCubBaseSmall,
+        talking: lionCubTalkingSmall,
+        thinking: lionCubThinkingSmall,
+        out: lionCubOutSmall,
+      },
+      automaton: {
+        base: automatonBaseSmall,
+        talking: automatonTalkingSmall,
+        thinking: automatonThinkingSmall,
+        out: automatonOutSmall,
+      },
     },
     props: { jarGlass: propJarGlassSmall, jarLid: propJarLidSmall, plate: propPlateSmall },
     roleTiles: {
@@ -707,6 +839,10 @@ export const BODY: Record<Character, { top: number; body: number }> = {
   whale: { top: 0.139, body: 0.861 },
   polarBear: { top: 0.093, body: 0.907 },
   shade: { top: 0.186, body: 0.814 },
+  kitsune: { top: 0.192, body: 0.808 },
+  mushroom: { top: 0.193, body: 0.807 },
+  lionCub: { top: 0.211, body: 0.789 },
+  automaton: { top: 0.157, body: 0.843 },
 };
 
 /**
@@ -726,6 +862,10 @@ export const REACH: Record<Character, { left: number; right: number }> = {
   whale: { left: 0.434, right: 0.411 },
   polarBear: { left: 0.369, right: 0.413 },
   shade: { left: 0.429, right: 0.428 },
+  kitsune: { left: 0.396, right: 0.42 },
+  mushroom: { left: 0.417, right: 0.441 },
+  lionCub: { left: 0.448, right: 0.451 },
+  automaton: { left: 0.421, right: 0.373 },
 };
 
 /**
@@ -747,4 +887,9 @@ export const HEAD_FRAME: Record<Character, { s: number; x: number; y: number }> 
   // drawn smaller so the ears stay in
   polarBear: { s: 1.0, x: 0, y: 0 },
   shade: { s: 1.35, x: -0.01, y: -0.16 },
+  kitsune: { s: 1.3, x: 0, y: -0.1 },
+  mushroom: { s: 1.45, x: 0, y: -0.2 },
+  // the mane fills the circle as the owl's feathers do
+  lionCub: { s: 1.15, x: 0, y: -0.05 },
+  automaton: { s: 1.4, x: 0, y: -0.15 },
 };

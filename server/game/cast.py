@@ -37,6 +37,10 @@ CATALOGUE: tuple[Character, ...] = (
     Character("whale", "Whale"),
     Character("polarBear", "Polar Bear"),
     Character("shade", "Songbird"),
+    Character("kitsune", "Kitsune"),
+    Character("mushroom", "Mushroom"),
+    Character("lionCub", "Lion Cub"),
+    Character("automaton", "Automaton"),
 )
 
 CHARACTER_IDS: frozenset[str] = frozenset(c.id for c in CATALOGUE)

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { BODY, CHARACTERS, HEAD_FRAME, SPRITES } from './manifest';
+import { LEGACY_CHARACTERS } from '@/stage/cast/castForGame';
+import { BODY, CHARACTERS, HEAD_FRAME, REACH, SPRITES } from './manifest';
 
 const DAY_STATES = ['base', 'talking', 'thinking', 'out', 'head'] as const;
 const KITS = [
@@ -17,9 +18,10 @@ const hasSize = (img: { width: number; height: number }) =>
   expect(img.width > 0 && img.height > 0).toBe(true);
 
 describe('sprite manifest', () => {
-  it('has all eleven characters', () => {
-    expect(CHARACTERS).toHaveLength(11);
-    expect(new Set(CHARACTERS).size).toBe(11);
+  it('has all fifteen characters, the frozen eleven first', () => {
+    expect(CHARACTERS).toHaveLength(15);
+    expect(new Set(CHARACTERS).size).toBe(15);
+    expect(CHARACTERS.slice(0, 11)).toEqual(LEGACY_CHARACTERS);
   });
 
   it('has every day state and head for every character', () => {
@@ -98,6 +100,16 @@ describe('sprite manifest', () => {
       expect(top).toBeGreaterThan(0);
       expect(top).toBeLessThan(1);
       expect(top + body).toBeCloseTo(1, 3);
+    }
+  });
+
+  it('has a reach and a cast shadow for every character, and the phone’s copies', () => {
+    expect(Object.keys(REACH).sort()).toEqual([...CHARACTERS].sort());
+    for (const character of CHARACTERS) {
+      for (const state of ['base', 'talking', 'thinking', 'out'] as const) {
+        hasSize(SPRITES.shadow.day[character][state]);
+        hasSize(SPRITES.small.day[character][state]);
+      }
     }
   });
 

@@ -4,7 +4,9 @@ catalogue is what the server hands out."""
 from __future__ import annotations
 
 import asyncio
+import importlib.util
 import random
+from pathlib import Path
 
 import pytest
 
@@ -53,6 +55,17 @@ def test_the_catalogue_has_distinct_ids_and_the_songbird_keeps_its_slug():
     ids = [c.id for c in CATALOGUE]
     assert len(set(ids)) == len(ids)
     assert next(c.display_name for c in CATALOGUE if c.id == "shade") == "Songbird"
+
+
+def test_the_migrations_seed_exactly_the_catalogue():
+    """A catalogued puppet the table lacks would fail the cast's foreign key at the deal."""
+    seeded = []
+    for path in sorted((Path(__file__).resolve().parents[2] / "alembic/versions").glob("*.py")):
+        spec = importlib.util.spec_from_file_location(path.stem, path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        seeded += getattr(module, "SEED", [])
+    assert seeded == [(c.id, c.display_name) for c in CATALOGUE]
 
 
 # ---- the repository's acknowledgements, as for events --------------------------------
