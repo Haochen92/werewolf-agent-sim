@@ -50,11 +50,13 @@ def test_summary_compares_arms_case_by_case():
 
 
 def test_curation_slices_still_failing_random_and_controls():
-    cases = [{"case_id": f"p{i}", "kind": "positive"} for i in range(6)] + [{"case_id": "ctl", "kind": "control"}]
+    cases = [{"case_id": f"p{i}", "kind": "positive"} for i in range(6)] + [
+        {"case_id": "ctl", "kind": "control"}, {"case_id": "pin", "kind": "positive", "golden": "x"}]
     judged = [{"case_id": f"p{i}", "valid": True, "bad": i < 3} for i in range(6)]  # p0-p2 still fail
     kept = curate(cases, judged, min_bad_rate=0.5, random_slice=2, seed=0)
     slices = {c["case_id"]: c["slice"] for c in kept}
     assert sum(v == "random" for v in slices.values()) == 2 and slices["ctl"] == "control"
+    assert slices["pin"] == "pinned"  # a hand-picked guard stays even though it passes today
     # every still-failing case is kept, in exactly one slice; passing ones only if drawn at random
     assert {"p0", "p1", "p2"} <= set(slices)
     assert all(slices[p] == "random" for p in ("p3", "p4", "p5") if p in slices)

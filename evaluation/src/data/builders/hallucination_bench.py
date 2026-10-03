@@ -261,12 +261,14 @@ def curate(cases: list[dict], judged: list[dict], min_bad_rate: float,
     - ``random``: ``random_slice`` positives drawn from the whole pool regardless of the screen,
       for comparing models without that lean (taken first, so the slices never overlap).
     - ``control``: every control (turns the census reader judged consistent).
+    - ``pinned``: every hand-picked case with a written golden, kept whatever the screen says: it
+      guards a known failure (a fix that passes today must keep passing).
     """
     per_case: dict[str, list[bool]] = defaultdict(list)
     for s in judged:
         if s["valid"]:
             per_case[s["case_id"]].append(s["bad"])
-    positives = [c for c in cases if c["kind"] == "positive"]
+    positives = [c for c in cases if c["kind"] == "positive" and not c.get("golden")]
     rng = random.Random(seed)
     random_ids = {c["case_id"] for c in rng.sample(positives, min(random_slice, len(positives)))}
     kept = []
@@ -274,7 +276,9 @@ def curate(cases: list[dict], judged: list[dict], min_bad_rate: float,
         runs = per_case.get(c["case_id"]) or []
         rate = sum(runs) / len(runs) if runs else 0.0
         tag = {"screen": {"bad": sum(runs), "samples": len(runs)}}
-        if c["kind"] == "control":
+        if c.get("golden"):
+            kept.append({**c, **tag, "slice": "pinned"})
+        elif c["kind"] == "control":
             kept.append({**c, **tag, "slice": "control"})
         elif c["case_id"] in random_ids:
             kept.append({**c, **tag, "slice": "random"})
@@ -300,7 +304,7 @@ def main() -> None:
             f.writelines(json.dumps(c) + "\n" for c in cases)
         manifest = {"eval_set_id": cfg["eval_set_id"], "scope": cfg.get("scope", "shared"),
                     "built_at": datetime.now(timezone.utc).isoformat(), "config": cfg, "n_cases": len(cases),
-                    "slices": {k: sum(c["slice"] == k for c in cases) for k in ("curated", "random", "control")},
+                    "slices": {k: sum(c["slice"] == k for c in cases) for k in ("curated", "random", "control", "pinned")},
                     "of_positive": sum(c["kind"] == "positive" for c in source)}
         out.with_suffix(".manifest.json").write_text(json.dumps(manifest, indent=2))
         print(json.dumps({k: manifest[k] for k in ("n_cases", "slices", "of_positive")}))

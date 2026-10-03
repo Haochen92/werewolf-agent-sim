@@ -424,7 +424,9 @@ eval-hallucination-bench         the benchmark: arms (model × prompt env flags)
   `NVIDIA_API_KEY`, `OPENAI_API_KEY` or `XAI_API_KEY`).
 - **Three slices**, reported apart: `curated` (old cases today's prompts still get wrong, the set for
   prompt changes), `random` (drawn from the pool regardless of the screen, the set for comparing
-  models, since the curated cases lean toward the screen model's own failure modes) and `control`.
+  models, since the curated cases lean toward the screen model's own failure modes), `control`, and
+  `pinned` (hand-picked cases with a written golden, kept whatever the screen says: regression guards
+  for known failures, such as the investigator's invented check).
   Always rerun the screen's model as an arm: even it scores better on a rerun than in the screen,
   so never compare an arm against the screen's numbers.
 - **Judging:** cases with a `golden` go to `judges/golden_expectation` (a narrow flash-lite read

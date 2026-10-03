@@ -6,8 +6,9 @@
   "curate": {
     "from_dataset": "evaluation/eval_results/hallucination_bench/candidates_v1.jsonl",
     "judged": "evaluation/eval_results/hallucination_bench/screen_v1/judged_current.jsonl",
-    "min_bad_rate": 0.34,
+    "min_bad_rate": 0.6,
     "random_slice": 40,
-    "seed": 11
+    "seed": 11,
+    "note": "0.6 = at least 2 of 3 samples bad: cases that fail reliably, not by one unlucky draw"
   }
 }
