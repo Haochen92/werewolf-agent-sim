@@ -190,8 +190,11 @@ def main() -> None:
     by_arm: dict[str, list[dict]] = {}
     for arm in cfg["arms"]:
         gen_path = out_dir / f"generations_{arm['label']}.jsonl"
-        existing = _read_jsonl(gen_path) if gen_path.exists() else []
-        if not existing or not all(s["valid"] for s in existing):
+        valid_per_case: dict[str, int] = defaultdict(int)
+        for s in _read_jsonl(gen_path) if gen_path.exists() else []:
+            valid_per_case[s["case_id"]] += s["valid"]
+        wanted = list(cases)[: cfg["limit"]] if cfg.get("limit") else list(cases)
+        if any(valid_per_case[cid] < cfg.get("n", 3) for cid in wanted):
             # a rerun keeps an arm's valid samples and tops up the rest; delete the file to redo it
             print(f"arm {arm['label']}: generating ({arm['model']}, env {arm.get('env') or {}})")
             spawn_arm(arm, cfg, gen_path)
