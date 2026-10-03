@@ -3,6 +3,7 @@ catalogue is what the server hands out."""
 
 from __future__ import annotations
 
+import asyncio
 import random
 
 import pytest
@@ -10,6 +11,7 @@ import pytest
 from server.db import Database
 from server.game.cast import CATALOGUE, DRAW_POOL, CastSeat, draw_cast, seat_number
 from server.storage.game_repository import GameRepository
+from tests.fixtures.server import FakeGraph
 
 SEATS = [f"player_{i}" for i in range(1, 10)]
 
@@ -80,3 +82,78 @@ def test_the_catalogue_is_served_with_ids_and_display_names(api_client):
     cards = api_client.get("/characters").json()
     assert [c["id"] for c in cards] == [c.id for c in CATALOGUE]
     assert {"id": "shade", "display_name": "Songbird", "retired": False} in cards
+
+
+# ---- the session: the cast is drawn at the deal and written down once ----------------
+
+
+def _deal_chunk(human_players: list[str]) -> dict:
+    """The engine's INITIALIZE_GAME update, as the session sees it: nine seats dealt,
+    ``human_players`` among them."""
+    roles = {f"player_{i}": "villager" for i in range(1, 10)}
+    roles["player_2"] = "wolf"
+    return {"type": "updates", "ns": [], "data": {"INITIALIZE_GAME": {
+        "roles": roles, "human_players": human_players, "current_day": 1}}}
+
+
+class CastRepository:
+    """The narrow contract the session writes the cast through."""
+
+    def __init__(self, accept: bool = True) -> None:
+        self.accept = accept
+        self.written: list[list[CastSeat]] = []
+
+    async def record_events(self, game_id, events):
+        return True
+
+    async def update_game(self, game_id, **fields):
+        return True
+
+    async def record_cast(self, game_id, cast):
+        self.written.append(list(cast))
+        return self.accept
+
+
+async def test_the_deal_lands_each_pick_on_the_seat_its_player_was_dealt(quiet_session):
+    repository = CastRepository()
+    session = quiet_session(
+        FakeGraph([_deal_chunk(["player_4", "player_7"])]),
+        seat_tokens=["tok-a", "tok-b"], picks=["whale", None], repository=repository)
+    session.start()
+    await asyncio.wait_for(session.wait_finished(), timeout=10)
+
+    by_seat = {c.seat: c for c in session.cast}
+    assert sorted(by_seat) == sorted(SEATS)
+    assert by_seat["player_4"] == CastSeat("player_4", "whale", True)  # tok-a's pick
+    assert not by_seat["player_7"].chosen  # tok-b never chose: the house drew
+    assert len({c.character for c in session.cast}) == 9
+    assert repository.written == [session.cast]  # written once, with the deal
+
+
+async def test_a_failed_cast_write_is_retried_with_the_next_save(quiet_session):
+    repository = CastRepository(accept=False)
+    session = quiet_session(FakeGraph([_deal_chunk([])]), repository=repository)
+    session.start()
+    await asyncio.wait_for(session.wait_finished(), timeout=10)
+    assert len(repository.written) == 1 and not session._saved_cast  # refused, kept
+
+    repository.accept = True
+    await session._persist_tail()
+    assert len(repository.written) == 2 and session._saved_cast  # retried with the tail
+    await session._persist_tail()
+    assert len(repository.written) == 2  # saved: never written again
+
+
+async def test_a_rebuilt_game_keeps_the_cast_it_stored_and_never_redraws(quiet_session):
+    stored = [CastSeat(s, c, False) for s, c in zip(SEATS, DRAW_POOL)]
+    session = quiet_session(FakeGraph([]), seat_tokens=["tok-a"], picks=["cat"])
+    session.reload_history([], ["player_3"], stored)
+    assert session.cast == stored and session._saved_cast
+    session._deal_cast(SEATS)  # a replayed deal chunk after a restart changes nothing
+    assert session.cast == stored
+
+
+def test_a_game_recorded_before_casts_were_stored_keeps_none(quiet_session):
+    session = quiet_session(FakeGraph([]))
+    session.reload_history([], [], [])
+    assert session.cast == [] and not session._saved_cast

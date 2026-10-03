@@ -36,3 +36,6 @@ class ReplayGame(ReplayBase):
     """One complete replay with every stored event revalidated for the wire."""
 
     events: list[ev.DurableGameEvent]
+    cast: list[str] = []
+    """Which puppet stood at each seat, in seat order, by character id: the same
+    puppets the live game showed. Empty for games recorded before casts were stored."""

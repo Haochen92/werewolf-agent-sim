@@ -3,8 +3,10 @@
 from sqlalchemy import func
 from sqlmodel import select
 
+from server.database_models.cast import GameCastRow
 from server.database_models.game import COMPLETED, EventRow, GameRow
 from server.db import Database
+from server.game.cast import seat_number
 from server.schemas.replays import ReplayBase, ReplayGame
 
 
@@ -90,6 +92,11 @@ class ReplayService:
                     .order_by(EventRow.seq)
                 )
             ).scalars().all()
+            cast_rows = (
+                await session.execute(
+                    select(GameCastRow).where(GameCastRow.game_id == game_id)
+                )
+            ).scalars().all()
         # Count and contiguity: seq runs from 1 with no gaps, so the last must equal
         # the count. The write side checks the same at completion; this is the net
         # for rows completed before it did, or touched since.
@@ -100,4 +107,5 @@ class ReplayService:
         return ReplayGame(
             **summary.model_dump(),
             events=[event.payload for event in event_rows],
+            cast=[r.character_id for r in sorted(cast_rows, key=lambda r: seat_number(r.seat))],
         )

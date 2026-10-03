@@ -12,7 +12,7 @@ from fastapi import APIRouter, Header, HTTPException, Response
 from fastapi.responses import StreamingResponse
 
 from Agents.turn.human_turn import HumanTurnContractError
-from server.dependencies import House, Game, GamesRegistry, Room, SeatToken
+from server.dependencies import GameRepositoryDep, House, Game, GamesRegistry, Room, SeatToken
 from server.game.lobby import MAX_HUMAN_SEATS, GameLobby
 from server.database_models.game import COMPLETED, GameRow
 from server.game.entitlement import entitled
@@ -61,9 +61,16 @@ async def create_game(
 
 
 @router.get("/games/{game_id}", response_model=GameStatus, summary="Status snapshot")
-async def game_status(session: Room, token: SeatToken) -> GameStatus:
+async def game_status(session: Room, token: SeatToken,
+                      repository: GameRepositoryDep) -> GameStatus:
     if isinstance(session, GameRow):
-        return _archived_status(session, token)
+        return _archived_status(
+            session, token, [c.character for c in await repository.load_cast(session.game_id)])
+    return _live_status(session, token)
+
+
+def _live_status(session: GameLobby | GameSession, token: str) -> GameStatus:
+    """The snapshot of a waiting room or a running game, from the live registry."""
     if token and not session.owns(token):
         raise HTTPException(status_code=403, detail="unknown seat token")
     if isinstance(session, GameLobby):
@@ -97,13 +104,15 @@ async def game_status(session: Room, token: SeatToken) -> GameStatus:
         game_over=session.game_over,
         last_seq=session.log[-1].seq if session.log else 0,
         alive_role_counts=session.public_alive_counts,
+        cast=[c.character for c in session.cast],
         error=session.error,
     )
 
 
-def _archived_status(row: GameRow, token: str) -> GameStatus:
+def _archived_status(row: GameRow, token: str, cast: list[str]) -> GameStatus:
     """The snapshot of a game that has ended and left the live registry: the row says how
-    it ended. A stale seat cookie is not an error here; it just names the seat you held."""
+    it ended, and the cast table which puppets stood where. A stale seat cookie is not an
+    error here; it just names the seat you held."""
     tokens = [seat.get("token", "") for seat in row.seats]
     you = None
     if token and token in tokens:
@@ -118,6 +127,7 @@ def _archived_status(row: GameRow, token: str) -> GameStatus:
         you=you,
         game_over=finished,
         winner=row.winner,
+        cast=cast,
         error=row.error,
         archived=True,
     )
@@ -141,7 +151,7 @@ async def fund_game(session: Game, body: FundGame, token: SeatToken,
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-    return await game_status(session, token)
+    return _live_status(session, token)
 
 
 @router.post(

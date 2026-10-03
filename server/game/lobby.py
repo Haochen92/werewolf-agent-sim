@@ -33,11 +33,12 @@ MAX_HUMAN_SEATS = len(GameConfig().initial_roles)
 
 
 class HumanSeat(NamedTuple):
-    """One claimed seat: the name everyone sees, and the secret token that proves the
-    seat belongs to this player."""
+    """One claimed seat: the name everyone sees, the secret token that proves the seat
+    belongs to this player, and the puppet they chose to stand as, if they chose."""
 
     name: str
     token: str
+    character: str | None = None
 
 
 class GameLobby:
@@ -89,6 +90,12 @@ class GameLobby:
         until the creator boards. Creating a room hands back a host key, not a name; the
         creator's join presents that key, which is how the room knows which seat is theirs."""
         return next((s.name for s in self.seats if s.token == self.host_seat), None)
+
+    @property
+    def picks(self) -> list[str | None]:
+        """Each seat's chosen puppet in join order, None where nobody chose; aligned
+        with ``tokens`` so the session can land each pick on the seat it is dealt."""
+        return [s.character for s in self.seats]
 
     @property
     def tokens(self) -> list[str]:

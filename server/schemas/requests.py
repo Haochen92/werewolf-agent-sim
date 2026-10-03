@@ -293,6 +293,10 @@ class GameStatus(BaseModel):
     game has a replay under the same id."""
     alive_role_counts: dict[str, int] = Field(default_factory=dict)
     """Public census only: fixed cast minus announced deaths, never engine state."""
+    cast: list[str] = Field(default_factory=list)
+    """Which puppet stands at each engine seat, in seat order (index 0 is player_1),
+    by character id. Empty until the seats are dealt, and for games recorded before
+    casts were stored: the client then shows the cast it always derived."""
     error: str | None = None
     """The session's death report (key-redacted); None while healthy."""
 

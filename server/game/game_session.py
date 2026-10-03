@@ -59,6 +59,7 @@ from Agents.tracing import Metrics, create_langfuse_handler, flush, langfuse
 from Agents.turn.drafting_agent import draft_from_notes, player_direction
 from Agents.turn.human_turn import validate_human_response
 
+from server.game.cast import CastSeat, draw_cast
 from server.storage.game_repository import GameRepository
 from server.game.model_catalog import SUPPORTED_GAME_MODELS
 from server.game.pacing import PacingTracker
@@ -147,6 +148,7 @@ class GameSession:
     so each save writes only what came after.
       _saved_event_count  how many events from the front of the log are saved.
       _saved_humans       the human seat list as last written to the game row.
+      _saved_cast         whether the cast has reached the game_cast table.
 
     The human turn, where the game waits.
       human_players     which seats the engine dealt to humans, read from its first
@@ -156,6 +158,12 @@ class GameSession:
                         so token i owns human_players[i]; seat_for_token() is the
                         proof of identity behind turns, private event tiers and the
                         status "you" field.
+      _picks            the puppet each joiner chose, aligned with _seat_tokens (None
+                        where nobody chose). Applied when the seats are dealt.
+      cast              which puppet stands at each engine seat, drawn at the deal:
+                        the picks where they were made, the house's draw elsewhere.
+                        Served by GET /games and written down with the game, so the
+                        replay shows the same puppets. Empty until the deal.
       pending_requests  the questions the engine is waiting on, keyed by seat. A dict
                         because a parallel step (night actions, votes) can ask several
                         human seats at once. Two jobs: the keys say which seats still
@@ -203,8 +211,8 @@ class GameSession:
 
     def __init__(self, run_config: RunConfig | dict[str, Any], *,
                  api_key: str = "", model: str = "",
-                 seat_tokens: Sequence[str] = (), graph=None,
-                 repository: GameRepository | None = None) -> None:
+                 seat_tokens: Sequence[str] = (), picks: Sequence[str | None] = (),
+                 graph=None, repository: GameRepository | None = None) -> None:
 
         # Which model runs, and who pays.
         self._api_key = api_key
@@ -232,10 +240,13 @@ class GameSession:
         self.game_over = False
         self._saved_event_count = 0
         self._saved_humans: list[str] = []
+        self._saved_cast = False
 
         # The human turn.
         self._seat_tokens = list(seat_tokens)
+        self._picks = list(picks)
         self.human_players: list[str] = []
+        self.cast: list[CastSeat] = []
         self.pending_requests: dict[str, HumanTurnRequest] = {}
         self._pending_ids: dict[str, str] = {}
         self._pending_answers: dict[str, asyncio.Future] = {}
@@ -384,6 +395,8 @@ class GameSession:
             if await self._repository.update_game(
                     self.game_id, human_players=self.human_players):
                 self._saved_humans = list(self.human_players)
+        if self.cast and not self._saved_cast:
+            self._saved_cast = await self._repository.record_cast(self.game_id, self.cast)
 
     def _on_chunk(self, chunk) -> bool:
         """Handle one chunk from the engine's stream. Returns True when the chunk is an
@@ -424,7 +437,18 @@ class GameSession:
 
         if "INITIALIZE_GAME" in data:  # the deal: which seats went to humans
             self.human_players = list(data["INITIALIZE_GAME"].get("human_players") or [])
+            self._deal_cast(list(data["INITIALIZE_GAME"].get("roles") or {}))
         return interrupted
+
+    def _deal_cast(self, seats: list[str]) -> None:
+        """Give every seat its puppet, now that the engine has said which seats are
+        whose: each joiner's pick lands on the seat they were dealt, and the house
+        draws the rest. Runs once, at the deal; a rebuilt game gets its cast back
+        from the table instead."""
+        if self.cast or not seats:
+            return
+        picks = {seat: pick for seat, pick in zip(self.human_players, self._picks) if pick}
+        self.cast = draw_cast(seats, picks)
 
     async def drop(self, reason: str) -> None:
         """Give this game up for good: stop it and record why. Retention calls this on a
@@ -610,17 +634,22 @@ class GameSession:
 
     # -- after a restart: rebuilt by the live registry -------------------------------------
 
-    def reload_history(self, log: list[ev.DurableEvent], human_players: list[str]) -> None:
+    def reload_history(self, log: list[ev.DurableEvent], human_players: list[str],
+                       cast: Sequence[CastSeat] = ()) -> None:
         """Put back what the database holds for a game that had already started: the
-        events the players were sent, and which seats are human. The live registry reads
-        both from the events table and the game row and passes them in. Both count as
-        already saved, so the next save writes only what comes after."""
+        events the players were sent, which seats are human, and which puppet stands at
+        each seat. The live registry reads them from the events table, the game row and
+        the cast table and passes them in. All count as already saved, so the next save
+        writes only what comes after. A game with no stored cast keeps none: the client
+        shows such a game the way it always did."""
         self.log = list(log)
         self.translator.hydrate(self.log)
         self.human_players = list(human_players)
+        self.cast = list(cast)
         self.game_over = any(e.type == "game_over" for e in self.log)
         self._saved_event_count = len(self.log)
         self._saved_humans = list(self.human_players)
+        self._saved_cast = bool(self.cast)
 
     def take_key(self, api_key: str) -> None:
         """Take a player's key for the model this game runs on. Only meaningful while

@@ -197,6 +197,13 @@ class RecordingGameRepository:
     async def load_events(self, game_id):
         return []
 
+    async def record_cast(self, game_id, cast):
+        self.cast = list(cast)
+        return True
+
+    async def load_cast(self, game_id):
+        return getattr(self, "stored_cast", [])
+
 
 async def test_failed_saves_retry_the_whole_unsaved_tail_and_human_assignment(quiet_session):
     class FlakyRepository(RecordingGameRepository):
@@ -328,6 +335,26 @@ async def test_parked_game_revives_reparked_and_resumes_on_the_answer(monkeypatc
     await asyncio.wait_for(session.wait_finished(), timeout=10)
     resume = graph.calls[0]
     assert isinstance(resume, Command) and resume.resume["message"] == "back from the dead"
+
+
+async def test_a_rebuilt_game_gets_its_cast_and_its_picks_back(monkeypatch):
+    """The puppets are a fact about the game: the cast table says who stood where, and
+    the row's seats carry each joiner's pick, so a restart cannot redraw either."""
+    from server.game.cast import CastSeat
+
+    state = SimpleNamespace(next=("DAY_PHASE",), tasks=[SimpleNamespace(interrupts=[])])
+    row = _row(seats=[{"name": "hao", "token": "tok-1", "character": "whale"}])
+    stored = [CastSeat(f"player_{i}", c, c == "whale") for i, c in enumerate(
+        ["owl", "hare", "whale", "cat", "badger", "cyclops", "dragon", "onion", "shade"], 1)]
+    monkeypatch.setattr("server.game.game_session.seed_memory_from_config", lambda *a, **k: None)
+    repository = RecordingGameRepository(rows=[row])
+    repository.stored_cast = stored
+    games = LiveGameRegistry(repository, SimpleNamespace(graph=FakeDurableGraph(state)))
+    await recovery.recover_registry(games, repository)
+
+    session = games.get("g-1")
+    assert session.cast == stored and session._saved_cast
+    assert session._picks == ["whale"]
 
 
 async def test_byok_game_waits_for_its_key_and_resumes_when_a_seat_holder_funds_it(monkeypatch):

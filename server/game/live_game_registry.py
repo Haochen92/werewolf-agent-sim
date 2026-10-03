@@ -191,23 +191,27 @@ class LiveGameRegistry:
             raise PermissionError("only the host may start the game")
         session = GameSession(
             room.run_config(), api_key=room.api_key, model=room.model,
-            seat_tokens=room.tokens, graph=self._graph_runtime.graph,
+            seat_tokens=room.tokens, picks=room.picks, graph=self._graph_runtime.graph,
             repository=self._repository)
         return await self._launch(
             session, model=room.model, byok=bool(room.api_key), room_name=room.name,
             memory=room.memory, seats=[seat._asdict() for seat in room.seats])
 
     async def start_instant(self, run_config: RunConfig, *, api_key: str, model: str,
-                            seat_tokens: list[str], memory: bool = False) -> GameSession:
+                            seat_tokens: list[str], memory: bool = False,
+                            character: str | None = None) -> GameSession:
         """Start a game that never had a waiting room: the solo and all-AI door,
         POST /games. ``memory`` is recorded on the row so a restart rebuilds the same
-        game; the config itself already carries it."""
+        game; the config itself already carries it. ``character`` is the solo player's
+        chosen puppet, if they chose one."""
+        picks = [character] * len(seat_tokens)
         session = GameSession(
             run_config, api_key=api_key, model=model, seat_tokens=seat_tokens,
-            graph=self._graph_runtime.graph, repository=self._repository)
+            picks=picks, graph=self._graph_runtime.graph, repository=self._repository)
         return await self._launch(
             session, model=model, byok=bool(api_key), memory=memory,
-            seats=[{"name": "human", "token": token} for token in seat_tokens])
+            seats=[{"name": "human", "token": token, "character": character}
+                   for token in seat_tokens])
 
     async def _launch(self, session: GameSession, **row_fields) -> GameSession:
         """The step both doors share once a game is about to run: put the session in the
@@ -252,9 +256,11 @@ class LiveGameRegistry:
                             game_id=row.game_id),
             model=row.model, graph=self._graph_runtime.graph,
             seat_tokens=[s["token"] for s in row.seats],
+            picks=[s.get("character") for s in row.seats],
             repository=self._repository)
         session.reload_history(await self._repository.load_events(row.game_id),
-                             row.human_players)
+                             row.human_players,
+                             await self._repository.load_cast(row.game_id))
         self._register(session)
 
         if row.byok:

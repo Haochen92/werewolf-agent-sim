@@ -106,8 +106,36 @@ def test_status_snapshot_of_a_fresh_session(api_client, quiet_session):
         "human_players": [], "you": None, "you_aboard": None, "pending_input": False, "pending_seats": [],
         "deadlines": {}, "game_over": False, "last_seq": 0, "alive_role_counts": {},
         "error": None, "name": "", "locked": False, "winner": None, "archived": False,
-        "awaiting_key": False,
+        "awaiting_key": False, "cast": [],
     }
+
+
+def test_the_status_snapshot_lists_the_cast_in_seat_order(api_client, seated_session):
+    from server.game.cast import DRAW_POOL, CastSeat
+
+    session, _ = seated_session
+    seats = [f"player_{i}" for i in range(1, 10)]
+    session.cast = [CastSeat(s, c, False) for s, c in zip(seats, DRAW_POOL)]
+    assert api_client.get(f"/games/{session.game_id}").json()["cast"] == list(DRAW_POOL[:9])
+
+
+def test_an_archived_snapshot_reads_the_cast_from_the_table(api_client, monkeypatch):
+    from server.database_models.game import COMPLETED, GameRow
+    from server.game.cast import CastSeat
+
+    resources = api_client.app.state.resources
+    row = GameRow(game_id="g-old", status=COMPLETED, seats=[], human_players=[], winner="wolves")
+
+    async def load_game(game_id):
+        return row if game_id == "g-old" else None
+
+    async def load_cast(game_id):  # the repository hands the cast over in seat order
+        return [CastSeat("player_1", "cat", True), CastSeat("player_2", "owl", False)]
+
+    monkeypatch.setattr(resources.game_repository, "load_game", load_game)
+    monkeypatch.setattr(resources.game_repository, "load_cast", load_cast)
+    body = api_client.get("/games/g-old").json()
+    assert body["archived"] and body["cast"] == ["cat", "owl"]
 
 
 def test_turn_without_a_pending_request_is_409(api_client, seated_session):
