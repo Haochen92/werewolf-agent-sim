@@ -79,6 +79,7 @@ The rules the agents play under and the prompt discipline that keeps the eval ho
 | [sequential_discussion](sequential_discussion/report.md) | May 31 – Jun 5 | Phase A #1, SHIPPED: concurrent → sequential day-discussion engine; acceptance A/B in [quality_gate](sequential_discussion/quality_gate/experiment_log.md) |
 | [prompt_boundary](generation_prompt/prompt_boundary/experiment_log.md) | — | Enforced the prompt (how-to + facts) vs memory (what-signals-mean) division before the roles phase, so the generator isn't baking strategy into the store it will be A/B-tested against |
 | [prompt_claims_audit](generation_prompt/prompt_claims_audit/experiment_log.md) | Jun 17 | Are the hand-authored PLAYSTYLE tactics actually true? Audit complete; one falsified claim → investigator rewrite drafted behind a default-off flag, ready to A/B |
+| [game_play_enhancement/discussion_evidence](game_play_enhancement/discussion_evidence.md) | Oct 3 – | Why day talk rests on votes and silence (one uncontested info source; most silence is the scheduler's), and the three-phase fix: prompts (phase 1, in progress) → scheduler → roles |
 | [agent_boundaries](agent_boundaries/report.md) | Jun 6 | Information-boundary guarantee: each agent's prompt contains only what its role may know; the leak-regression smoke logs are colocated as the proof |
 
 ## Evaluation Apparatus
