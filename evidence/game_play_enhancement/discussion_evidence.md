@@ -391,7 +391,7 @@ measured.
 
 ## 6. Phase 1 outcome
 
-*Pending: the owner's games under v2, judged with the runner.*
+*In progress: one v2 game played and judged so far.*
 
 **The comparison set.** The "before" side is three website games from before the switch, all on
 `gemini-3.5-flash-lite` with memory off, judged by the same judge model as the "after" side:
@@ -404,6 +404,76 @@ changed between those dates in ways unrelated to the prompts (for example the st
 added 2026-10-01), and the human seats play differently from game to game, which shapes what the
 agents respond to. At three games a side,
 any difference is a direction to look into, not a measured effect. Output: `data/live_baseline/`.
+
+### 6.1 The first v2 game (`832404e9`, 2026-10-03)
+
+The owner played seat 9, a villager. The serial killer won on day 5. Output: `data/live_v2/`.
+
+| Measure | Before (3 games, 117 agent messages) | v2 (1 game, 30 agent messages) |
+|---|---|---|
+| Words per message, mean / 90th percentile | 43 / 56 | 36 / 47 |
+| Messages using participation | 9% | 17% |
+| Accusing messages using participation | 3% | 22% (4 of 18) |
+| Fake role claims by evil players | 0 | 0 |
+
+- **Shorter messages: the expected direction.** One game is not enough to say more.
+- **Participation went up, but not in the way P1 targets.** Four of the five messages carrying the
+  label are one wolf attacking *when* the investigator revealed its result: *"Dropping a hard
+  investigator claim the second discussion starts feels less like helping the town and more like
+  trying to railroad a lynch."* That rests on a choice the investigator made, not on an order the
+  scheduler imposed. The judge's "participation" category lumps the two together. It needs
+  splitting, into turn order and silence (the engine's doing) versus the timing of a reveal (the
+  player's choice), before it can measure P1.
+- **No evil player claimed a role** in this game.
+
+### 6.2 An investigator invented a result, and believed it
+
+On day 4 the investigator said: *"I investigated player_9 last night, and they are the remaining
+wolf."* It never checked player_9. Its three checks were player_1 (wolf), player_4 (villager) and
+player_5 (healer), and its prompt listed all three every day. The village voted player_9 out 4 to 1;
+they were a villager, and the serial killer went on to win.
+
+Its own records show a belief, not a planned lie:
+1. **Before the claim, its private read of player_9 was "serial killer, low confidence".**
+2. **On its turn before, it promised:** *"I'll share who I investigated last night."*
+3. **It then made the claim.**
+4. **It adopted its own claim.** Its read at the vote became *"wolf, high: investigated last night and
+   confirmed as a wolf."*
+5. **It never noticed the contradiction.** After player_9 was revealed as a villager, its note says
+   only *"Player_9 was a villager, meaning one wolf and the serial killer remain"*.
+
+None of the v2 changes touch the investigator: the claiming option went only to the wolves and the
+serial killer. False statements in messages are a known problem; the earlier hallucination count put
+them at about 3% of messages. This one is severe because a fake investigator result decides the vote.
+
+**How the prompt may have set it up.** These are readings of the prompt's structure, not
+measurements:
+
+- **Its own note fed the claim back to it.** Near the end of each turn's message, after the
+  transcript, the agent is shown its private note from its previous turn, under "You have a private
+  strategy note from your previous turns". Only the standing speaking rules come after it. On day 4
+  that note read: *"Continue leading the village using my investigation result from last night.
+  Address player_3's point on the voting split and press player_9 on the abstention."* The note welds
+  "my investigation result" and "press player_9" into one instruction. Nothing in the prompt says
+  the note is the agent's own earlier plan rather than a record of what it knows.
+- **The real result looked like public news.** The private results are rendered as
+  *"Day 3: player_5 was revealed as healer"*. "Revealed" is the same word the rules use for roles
+  shown at death, and player_5 did die that night with the healer role announced. The line does not
+  say "you investigated", and it labels the check by day rather than by night, although it is now
+  day 4 and the check was "last night". So the one private fact the agent had for that night looked
+  like a repeat of public information, which may have left it believing it had nothing new to share
+  after promising to share something.
+- **The results sit far from the decision.** They come near the top of the turn message, ahead of
+  the whole transcript. The promise and the note come at the end.
+- **Committed reads did not prevent it.** The agent records a read of every player before it writes
+  its message, and that read still said "serial killer, low" moments before the claim. Reading
+  first was meant to tie the message to the agent's actual belief, and here it did not.
+
+**How to test it.** Rebuild the investigator's exact day-4 prompt from the game record and resample
+the message many times: as it was; with the results reworded (*"Night 3 (last night): you
+investigated player_5, who is the healer"*); and with the previous note marked as the agent's own
+past plan rather than a fact. If the invented claims fall under a variant, that variant is the fix.
+It is a cheap offline test on the player model and leaves the live site alone.
 
 ---
 
@@ -527,7 +597,15 @@ pool of about 16. They are non-human creatures in the existing felt-and-brass no
    investigator itself (R1) is the next suspect.
 2. **How reliable is the judge?** It is unvalidated until the owner's hand-check in §6.
 3. **Whether speaking order is ever used as evidence** rests only on a crude keyword count (§2.4). The
-   judge's "participation" label will answer it properly.
+   judge's "participation" label can answer it once it separates turn order and silence from the
+   timing of a reveal (§6.1).
+4. **Why the investigator invented a result** (§6.2). Hypotheses about the prompt's structure, with an
+   offline replay test to tell them apart.
+5. **A human's vote waits on the slowest agent (2026-10-03).** In the first v2 game, the owner's
+   ballot was not offered until all seven agents had voted. One agent's call hit two Google timeouts
+   and was rescued by the fallback model after about a minute, so the owner waited that minute with
+   no vote on screen. The rescue worked as designed. The fix is to offer the human's ballot first
+   instead of after the agents' step completes. This is a server and graph change, outside phase 1.
 
 ---
 

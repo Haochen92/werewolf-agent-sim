@@ -1,0 +1,66 @@
+{
+  "source": {
+    "server": "https://wolf.liuhaochen.com/api",
+    "game_ids": [
+      "832404e9-a5f2-434e-8484-5bb953718a8f"
+    ]
+  },
+  "structural": {
+    "games": 1,
+    "human_seats": 1,
+    "agent_messages": 30,
+    "messages_per_day": 7.5,
+    "passes": {
+      "voluntary": 4,
+      "novelty_gated": 8
+    },
+    "words_mean": 35.8,
+    "words_median": 33.0,
+    "words_p90": 47,
+    "town_wins": 0
+  },
+  "model": "gemini-2.5-pro",
+  "judge": {
+    "messages_read": 30,
+    "read_errors": 0,
+    "share_of_messages_using": {
+      "role_claim": "19/30 (63%)",
+      "speech_content": "18/30 (60%)",
+      "voting_record": "11/30 (37%)",
+      "night_events": "10/30 (33%)",
+      "own_night_result": "6/30 (20%)",
+      "participation": "5/30 (17%)",
+      "none": "1/30 (3%)",
+      "manner": "1/30 (3%)"
+    },
+    "accusing_messages": 18,
+    "share_of_accusing_messages_using": {
+      "speech_content": "15/18 (83%)",
+      "role_claim": "11/18 (61%)",
+      "voting_record": "7/18 (39%)",
+      "own_night_result": "4/18 (22%)",
+      "participation": "4/18 (22%)",
+      "night_events": "3/18 (17%)",
+      "manner": "1/18 (6%)"
+    },
+    "town_accusations_on_evil_by_basis": {
+      "own_night_result": "3/4",
+      "speech_content": "9/9",
+      "voting_record": "1/3",
+      "role_claim": "2/3",
+      "night_events": "2/2",
+      "manner": "2/2",
+      "participation": "2/2"
+    },
+    "self_claims": [
+      {
+        "game_id": "832404e9-a5f2-434e-8484-5bb953718a8f",
+        "day": 2,
+        "speaker": "player_7",
+        "claimed": "investigator",
+        "actual": "investigator"
+      }
+    ],
+    "fake_claims_by_evil": 0
+  }
+}
