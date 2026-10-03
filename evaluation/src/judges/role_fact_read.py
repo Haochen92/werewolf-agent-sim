@@ -90,13 +90,17 @@ First-hand knowledge: {knowledge}
 
 
 def _attacker(nr: dict, victim: str) -> str:
+    """Every attacker whose kill landed on the victim: a player can be hit by two at once (the wolves
+    and the serial killer on the same target), and naming only one made a true "killed by both"
+    read as a hallucination."""
+    hits = []
     if nr.get("wolves_target") == victim and nr.get("kill_successful"):
-        return "the wolves"
+        hits.append("the wolves")
     if nr.get("serial_killer_target") == victim and nr.get("serial_killer_kill_landed", True):
-        return "the serial killer"
+        hits.append("the serial killer")
     if nr.get("vigilante_target") == victim and nr.get("vigilante_kill_landed", True):
-        return "the vigilante"
-    return "unknown"
+        hits.append("the vigilante")
+    return " and ".join(hits) or "unknown"
 
 
 def build_fact_sheet(record: dict, cand: dict) -> dict:

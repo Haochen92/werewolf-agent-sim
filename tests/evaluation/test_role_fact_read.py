@@ -71,3 +71,12 @@ def test_claims_log_and_unit_label():
     fs = build_fact_sheet(RECORD, _cand("player_8", unit="updated_strategy"))
     assert fs["claims"] == "player_6 claimed investigator"
     assert fs["unit"] == "private strategy note"
+
+
+def test_a_death_names_every_attacker_whose_kill_landed():
+    from evaluation.src.judges.role_fact_read import _attacker
+
+    night = {"wolves_target": "p9", "kill_successful": True,
+             "serial_killer_target": "p9", "serial_killer_kill_landed": True}
+    assert _attacker(night, "p9") == "the wolves and the serial killer"
+    assert _attacker({"wolves_target": "p2", "kill_successful": True}, "p2") == "the wolves"
