@@ -146,7 +146,8 @@ def summarize(by_arm: dict[str, list[dict]], cases: dict[str, dict]) -> dict:
         per_case: dict[str, list[bool]] = defaultdict(list)
         for r in rows:
             c = cases[r["case_id"]]
-            for g in ("all", c["kind"], f"phase:{c['phase']}", f"role:{c['role']}", f"source:{c['source']}"):
+            for g in ("all", f"slice:{c.get('slice', c['kind'])}", f"phase:{c['phase']}",
+                      f"role:{c['role']}", f"source:{c['source']}"):
                 groups[g].append(r)
             if r["valid"]:
                 per_case[r["case_id"]].append(r["bad"])

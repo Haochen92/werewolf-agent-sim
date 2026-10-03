@@ -20,7 +20,7 @@ Two sources:
 Old census cases come from June prompts, and many no longer go wrong on today's prompt. So the
 intended flow is: build a wide candidate set, run one bench arm of the current prompts over it, then
 ``curate`` (a config with a ``curate`` block): keep the positives that still go wrong at least
-``min_bad_rate`` of the time, plus every control.
+``min_bad_rate`` of the time, an unfiltered random slice of positives, and every control.
 
 Day discussion and day vote turns only (the bench's replay scope). Console:
 ``eval-build-hallucination-bench --config evaluation/config/template/hallucination_bench_build_example.json``
@@ -249,19 +249,35 @@ def checkpoint_cases(specs: list[dict], server: str = LIVE_SERVER) -> list[dict]
 
 # --- curate: keep only the cases the current prompts still get wrong ---------------
 
-def curate(cases: list[dict], judged: list[dict], min_bad_rate: float) -> list[dict]:
-    """Positives whose bad rate in a bench run (one arm of current prompts) reaches ``min_bad_rate``;
-    every control is kept. An old case the current prompt no longer gets wrong measures nothing."""
+def curate(cases: list[dict], judged: list[dict], min_bad_rate: float,
+           random_slice: int = 0, seed: int = 11) -> list[dict]:
+    """The bench's three slices, each case tagged ``slice``:
+
+    - ``curated``: positives whose bad rate in a screen run (one arm of today's prompts) reaches
+      ``min_bad_rate``. An old case today's prompt no longer gets wrong measures nothing for a prompt
+      change. But the screen model chose these, so they lean toward its failure modes.
+    - ``random``: ``random_slice`` positives drawn from the whole pool regardless of the screen,
+      for comparing models without that lean (taken first, so the slices never overlap).
+    - ``control``: every control (turns the census reader judged consistent).
+    """
     per_case: dict[str, list[bool]] = defaultdict(list)
     for s in judged:
         if s["valid"]:
             per_case[s["case_id"]].append(s["bad"])
+    positives = [c for c in cases if c["kind"] == "positive"]
+    rng = random.Random(seed)
+    random_ids = {c["case_id"] for c in rng.sample(positives, min(random_slice, len(positives)))}
     kept = []
     for c in cases:
         runs = per_case.get(c["case_id"]) or []
         rate = sum(runs) / len(runs) if runs else 0.0
-        if c["kind"] == "control" or rate >= min_bad_rate:
-            kept.append({**c, "screen": {"bad": sum(runs), "samples": len(runs)}})
+        tag = {"screen": {"bad": sum(runs), "samples": len(runs)}}
+        if c["kind"] == "control":
+            kept.append({**c, **tag, "slice": "control"})
+        elif c["case_id"] in random_ids:
+            kept.append({**c, **tag, "slice": "random"})
+        elif runs and rate >= min_bad_rate:
+            kept.append({**c, **tag, "slice": "curated"})
     return kept
 
 
@@ -277,15 +293,15 @@ def main() -> None:
             raise SystemExit(f"{out} exists; set overwrite: true to replace it")
         source = [json.loads(line) for line in (REPO_ROOT / cur["from_dataset"]).read_text().splitlines() if line.strip()]
         judged = [json.loads(line) for line in (REPO_ROOT / cur["judged"]).read_text().splitlines() if line.strip()]
-        cases = curate(source, judged, cur["min_bad_rate"])
+        cases = curate(source, judged, cur["min_bad_rate"], cur.get("random_slice", 0), cur.get("seed", 11))
         with open(out, "w") as f:
             f.writelines(json.dumps(c) + "\n" for c in cases)
         manifest = {"eval_set_id": cfg["eval_set_id"], "scope": cfg.get("scope", "shared"),
                     "built_at": datetime.now(timezone.utc).isoformat(), "config": cfg, "n_cases": len(cases),
-                    "kept_positive": sum(c["kind"] == "positive" for c in cases),
+                    "slices": {k: sum(c["slice"] == k for c in cases) for k in ("curated", "random", "control")},
                     "of_positive": sum(c["kind"] == "positive" for c in source)}
         out.with_suffix(".manifest.json").write_text(json.dumps(manifest, indent=2))
-        print(json.dumps({k: manifest[k] for k in ("n_cases", "kept_positive", "of_positive")}))
+        print(json.dumps({k: manifest[k] for k in ("n_cases", "slices", "of_positive")}))
         return
     if out.exists() and not cfg.get("overwrite"):
         raise SystemExit(f"{out} exists; set overwrite: true to replace it")

@@ -419,7 +419,14 @@ eval-hallucination-bench         the benchmark: arms (model × prompt env flags)
 ```
 
 - **Arms** run in their own processes, because prompt versions are env flags read at import
-  (`WW_DISCUSSION_PROMPT`, …) and the seat model is `GOOGLE_GENAI_MODEL`.
+  (`WW_DISCUSSION_PROMPT`, …) and the seat model is `GOOGLE_GENAI_MODEL`. A non-Gemini arm names the model
+  with a provider prefix: `deepseek/…`, `nim/…`, `openai/…` or `xai/…` (needs `DEEPSEEK_API_KEY`,
+  `NVIDIA_API_KEY`, `OPENAI_API_KEY` or `XAI_API_KEY`).
+- **Three slices**, reported apart: `curated` (old cases today's prompts still get wrong, the set for
+  prompt changes), `random` (drawn from the pool regardless of the screen, the set for comparing
+  models, since the curated cases lean toward the screen model's own failure modes) and `control`.
+  Always rerun the screen's model as an arm: even it scores better on a rerun than in the screen,
+  so never compare an arm against the screen's numbers.
 - **Judging:** cases with a `golden` go to `judges/golden_expectation` (a narrow flash-lite read
   against the stated expectation). Every other unit goes through the census cascade: the
   deterministic screen finds the checkable facts it touches, the flash-lite reader judges, and the

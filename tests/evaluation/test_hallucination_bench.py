@@ -40,20 +40,21 @@ def test_payload_comes_from_the_engine_builders_with_role_gating():
 
 
 def test_summary_compares_arms_case_by_case():
-    cases = {"a": {"kind": "positive", "phase": "day_vote", "role": "wolf", "source": "census"},
-             "b": {"kind": "control", "phase": "day_vote", "role": "wolf", "source": "census"}}
+    cases = {"a": {"kind": "positive", "slice": "curated", "phase": "day_vote", "role": "wolf", "source": "census"},
+             "b": {"kind": "control", "slice": "control", "phase": "day_vote", "role": "wolf", "source": "census"}}
     row = lambda cid, bad: {"case_id": cid, "valid": True, "bad": bad}  # noqa: E731
     out = summarize({"old": [row("a", True), row("a", True), row("b", False)],
                      "new": [row("a", False), row("a", True), row("b", False)]}, cases)
-    assert out["arms"]["old"]["bad"]["positive"] == "2/2 (100%)"
+    assert out["arms"]["old"]["bad"]["slice:curated"] == "2/2 (100%)"
     assert out["paired_vs_first"]["new"] == {"cases": 2, "better": 1, "worse": 0, "two_sided_sign_p": 1.0}
 
 
-def test_curation_keeps_positives_that_still_fail_and_every_control():
-    cases = [{"case_id": "still", "kind": "positive"}, {"case_id": "fixed", "kind": "positive"},
-             {"case_id": "ctl", "kind": "control"}]
-    judged = [{"case_id": "still", "valid": True, "bad": True}, {"case_id": "still", "valid": True, "bad": False},
-              {"case_id": "fixed", "valid": True, "bad": False}, {"case_id": "ctl", "valid": True, "bad": False}]
-    kept = curate(cases, judged, min_bad_rate=0.5)
-    assert [c["case_id"] for c in kept] == ["still", "ctl"]
-    assert kept[0]["screen"] == {"bad": 1, "samples": 2}
+def test_curation_slices_still_failing_random_and_controls():
+    cases = [{"case_id": f"p{i}", "kind": "positive"} for i in range(6)] + [{"case_id": "ctl", "kind": "control"}]
+    judged = [{"case_id": f"p{i}", "valid": True, "bad": i < 3} for i in range(6)]  # p0-p2 still fail
+    kept = curate(cases, judged, min_bad_rate=0.5, random_slice=2, seed=0)
+    slices = {c["case_id"]: c["slice"] for c in kept}
+    assert sum(v == "random" for v in slices.values()) == 2 and slices["ctl"] == "control"
+    # every still-failing case is kept, in exactly one slice; passing ones only if drawn at random
+    assert {"p0", "p1", "p2"} <= set(slices)
+    assert all(slices[p] == "random" for p in ("p3", "p4", "p5") if p in slices)
