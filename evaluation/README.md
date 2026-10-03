@@ -414,7 +414,7 @@ eval-build-hallucination-bench   candidates: census turns (+ controls) and named
 eval-hallucination-bench         one arm of today's prompts over the candidates, n samples each
           │
 eval-build-hallucination-bench   curate: keep the positives that still go wrong, plus every control
-          ▼                      → evaluation/frozen_eval_sets/hallucination_bench_v1.jsonl
+          ▼                      → evaluation/frozen_eval_sets/hallucination_bench_v1.jsonl (v2 adds pinned live cases)
 eval-hallucination-bench         the benchmark: arms (model × prompt env flags), paired per case
 ```
 
@@ -437,6 +437,14 @@ eval-hallucination-bench         the benchmark: arms (model × prompt env flags)
 - **Output:** per arm, bad rates overall, for positives, for controls, per phase and per role; each
   later arm against the first, per case, with a sign test. Written to
   `evaluation/eval_results/hallucination_bench/<label>/`.
+- **Two arm options.** `"resummarize": true` rewrites every earlier day's discussion summary with the
+  checked-out summariser before generating (one pass per game, cached as `summaries_<arm>.json`),
+  so the arm tests the summariser as well; without it, cases keep the summaries their games were
+  played with. `"checkout": "<path>"` generates from another checkout, a git worktree on a baseline
+  tag, so an arm can run an older engine for a before/after comparison, judged here like the rest.
+- **Engine-written history is replayed in today's form:** game-master summaries are labelled as such,
+  ballots take today's wording, and the private night record is rebuilt from the case's night targets
+  when the state predates it (what players and summarisers wrote is left as it was).
 - **What an old case is:** today's prompt, schema and model on a June board. The state parses into
   today's types and every input today's day prompt reads is present (the dead roster is rebuilt,
   role counts are derived). But the history the turn reads was written under June prompts: the day

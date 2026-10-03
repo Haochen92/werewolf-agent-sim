@@ -602,16 +602,83 @@ rejected the day before.
   results and the vigilante its shots; the healer gets nothing, only its own note (part of item 4).
   The public saves were announced, but the healer believed a confident lie over them.
 
-**Prompt revisions queued for discussion quality** (each to be tested on the hallucination bench
-before it ships; all matter more once phase 3 adds roles that act at night):
-- R-a. State in the rules which night events are announced and which are silent (a failed attack on
-  the serial killer), and that what only you did or saw at night is private: citing it as public
-  record is a claim others can't verify.
-- R-b. The day summary attributes every claim to whoever made it ("player_8 claimed that...") and
-  never states a contested premise as fact.
-- R-c. Write votes as "voted to eliminate".
-- R-d. Give the healer the same private record as the other night roles: whom it protected each
-  night, and whether that player was attacked.
+**Revisions for information fidelity** (all matter more once phase 3 adds roles that act at night).
+A code audit the same day ([`code_audit_2026_10_03.md`](../evaluation/hallucination_bench/code_audit_2026_10_03.md))
+found more of the same kind: information an agent needed that it was never given, or was given
+without saying how far to trust it. All were built on 2026-10-03 (commits `f1b3017`..`c9dbc79`,
+baseline tag `fidelity-baseline`), as the new default rather than behind a switch:
+- R-a. The rules say which night events are announced and which are silent (an attack on the serial
+  killer, an unneeded protection, a vigilante holding fire), and that what a player did or learned at
+  night is their own claim, never public record. The healer is said to stop any night kill.
+- R-b. **Day summary v3.** The summary is the only account of a past day agents ever see. It is now
+  written as attributed claims: the summariser is given the game master's record and the claims
+  already on record, and records who disputed each accusation, where it conflicts with the record,
+  and each role claim's results and whether it is new, repeated, changed or retracted.
+- R-c. Votes are written "voted to eliminate" / "voted to abstain".
+- R-d. A private night record for the healer, vigilante and serial killer (and the pack's kills for
+  every wolf): what each did each night and what it may know of the result, written by the engine.
+- R-e. Earlier days are shown in three labelled blocks: the game master's exact record first (it
+  outranks anything said), then the claims on record per player (built by code from the
+  summaries), then the discussion summaries.
+- R-f. The vote turn sees the private note it is about to replace (it used to overwrite it unseen),
+  and every note is labelled as the agent's own fallible working notes.
+- R-g. A message the echo filter held back is shown to its author as never seen by anyone.
+- R-h. Smaller fixes: a healer save no longer listed as a role reveal in the shared standards, the
+  wolves' "villagers" list renamed non-wolf players (it includes the serial killer), the census in
+  the wolf night prompts, and the vigilante's bullets shown by day.
+
+The bench comparison (before vs after, and after with the earlier days re-summarised by v3) is in
+§6.5.
+
+### 6.5 The fidelity pass on the hallucination bench (2026-10-03)
+
+Three arms on `hallucination_bench_v2`, `gemini-3.5-flash-lite`, v2 prompts, memory off, 3 samples
+per case, on the curated (44), pinned (5) and control (40) slices, one judge for all:
+- *before:* the code at `fidelity-baseline`, run from a worktree;
+- *after:* the new code, with the summaries the games were played with;
+- *after, re-summarised:* the new code, with every earlier day rewritten by summary v3. This is the
+  arm a live game would match, since its summaries would be v3 from day 1.
+
+| | before | after | after, re-summarised |
+|---|---|---|---|
+| All samples bad | 97/267 (36%) | 86/267 (32%) | 82/267 (31%) |
+| Curated | 85/132 (64%) | 75/132 (57%) | 71/132 (54%) |
+| Pinned | 11/15 (73%) | 9/15 (60%) | 8/15 (53%) |
+| Controls (false alarms) | 1/120 | 2/120 | 3/120 |
+| Messages: bad / checkable | 21/122 (17%) | 32/129 (25%) | 21/127 (17%) |
+| Notes: bad / checkable | 77/155 (50%) | 64/154 (42%) | 67/151 (44%) |
+| Cases better / worse than before | | 18 / 11 (p = 0.26) | 24 / 14 (p = 0.14) |
+
+- **The direction is right, but not established.** With the summaries rewritten, about a sixth fewer
+  bad samples and 24 cases better against 14 worse. That is not significant at this size; it is a
+  direction, like the rest of phase 1.
+- **Notes improved most** (50% to 42–44% of checkable statements bad), consistent with the private
+  night record and the labelled record giving agents facts they used to reconstruct.
+- **Messages got worse in the frozen-summary arm only** (17% to 25%). The new errors are mostly votes
+  misquoted ("the entire table voted for player_7") and the old miscount of who is left. With the
+  game master's record at the top of the prompt, agents cite the vote record more, and get some of
+  it wrong. With v3 summaries the rate is back to 17%. Worth watching in played games.
+- **Vote turns' notes now carry more claims,** since the vote sees the note it rewrites (R-f). In the
+  frozen-summary arm, vote turns went from 4 to 9 bad samples, all in the note; with v3 summaries 3.
+- **The pinned cases, read by hand:**
+  - *the vigilante's "voted to protect player_2":* 3/3 before, 0/3 after; with v3 summaries 2/3, now
+    in the note ("player_4's vote supporting player_2"), so the misreading isn't gone.
+  - *the healer's day-4 message:* 3/3 in every arm, but the content changed. Before, the healer
+    repeated the wolf's premise and the vote misread. After, it disputes the premise ("player_8 did
+    the exact same thing yesterday before turning out to be a wolf"). The judge still counts a
+    message that names the premise to reject it, so this case now under-reports the fix.
+  - *the wolf's "the game master makes it clear":* 3/3 in every arm. The wolf stopped citing the game
+    master, but still states as fact that player_2 survived attacks. R-a moved the wording, not the
+    claim.
+  - *the healer's vote turn:* 1/3 before, 3/3 after, 0/3 with v3 summaries. At least one of the
+    "after" verdicts is a judge error (the read it flagged doesn't call player_2 a liar).
+- **The golden judge needs work before it can carry these cases:** flash-lite reads presupposition as
+  assertion and makes outright errors on long reads. Re-judging the pinned slice with a stronger
+  model, or tightening the expectations to name exactly what counts, comes before trusting their
+  numbers.
+
+*Run: `evaluation/config/template/hallucination_bench_fidelity_pass.json`; output
+`evaluation/eval_results/hallucination_bench/fidelity_pass_flashlite35/` (not tracked).*
 
 **Bench cases from this game** (pinned, with written expectations): the healer's and the
 vigilante's first day-4 messages (items 1 and 2), the healer's day-4 vote turn (item 4; the bench

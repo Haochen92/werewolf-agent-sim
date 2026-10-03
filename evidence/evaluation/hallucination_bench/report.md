@@ -72,6 +72,11 @@ slices, each reported apart:
 | control | 40 | Is the judge raising false alarms? |
 | pinned | 1 | Does a fixed failure stay fixed? (the investigator's invented check) |
 
+**v2 (2026-10-03)** adds four pinned cases from live game 46355b89. Its first use, the
+information-fidelity pass, is in
+[`game_play_enhancement/discussion_evidence.md`](../../game_play_enhancement/discussion_evidence.md) §6.5;
+the code audit behind it is [`code_audit_2026_10_03.md`](code_audit_2026_10_03.md).
+
 ## What to trust, and what not to
 
 - **The judge was right on 10 of 12 hand-checked verdicts.** Both misses came from the fact sheet
