@@ -1,0 +1,35 @@
+{
+  "eval_set_id": "hallucination_bench_v1",
+  "scope": "shared",
+  "built_at": "2026-10-03T10:39:22.250644+00:00",
+  "config": {
+    "eval_set_id": "hallucination_bench_v1",
+    "scope": "shared",
+    "output": "evaluation/frozen_eval_sets/hallucination_bench_v1.jsonl",
+    "overwrite": true,
+    "curate": {
+      "from_dataset": "evaluation/eval_results/hallucination_bench/candidates_v1.jsonl",
+      "judged": "evaluation/eval_results/hallucination_bench/screen_v1/judged_current.jsonl",
+      "min_bad_rate": 0.6,
+      "random_slice": 40,
+      "seed": 11,
+      "note": "0.6 = at least 2 of 3 samples bad: cases that fail reliably, not by one unlucky draw"
+    }
+  },
+  "n_cases": 125,
+  "slices": {
+    "curated": 44,
+    "random": 40,
+    "control": 40,
+    "pinned": 1
+  },
+  "of_positive": 228,
+  "screen": {
+    "run": "evaluation/eval_results/hallucination_bench/screen_v1",
+    "arm": "gemini-3.5-flash-lite, WW_DISCUSSION_PROMPT=v2, memory off",
+    "n": 3,
+    "positives_bad_rate": "153/684 (22%)",
+    "controls_bad_rate": "4/120 (3%)",
+    "judge_hand_check": "10 of 12 sampled bad verdicts correct; both misses from the single-attacker fact sheet, fixed (ba42e92) before the final judging"
+  }
+}
