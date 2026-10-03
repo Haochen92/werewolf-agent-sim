@@ -72,3 +72,40 @@ def test_a_rebuilt_turn_never_sees_the_moderators_later_lines():
                               {"day": 2, "seq": 1, "player": "game_master", "message": "vote result: p1 out"}]}
     case = {"day": 2, "player_id": "p3", "action_phase": "day_vote", "private_context": {}}
     assert [m["player"] for m in _census_state(record, case)["day_channel"]] == ["p2"]
+
+
+def test_an_old_state_reads_with_todays_engine_labels_and_ballot_wording():
+    state = {**STATE, "day_summaries": [
+        {"day": 1, "summary": "Key accusations and defenses: None.", "source": "discussion"},
+        {"day": 1, "summary": "\nHere's the vote result for day 1:\n  p2 voted for p1\n  p3 voted for abstain\n",
+         "source": "discussion"},  # a checkpoint read back through today's model says "discussion"
+    ]}
+    s = hydrate_state(state)
+    assert [x.source for x in s["day_summaries"]] == ["discussion", "game_master"]
+    assert "p2 voted to eliminate p1" in s["day_summaries"][1].summary
+    assert "p3 voted to abstain" in s["day_summaries"][1].summary
+
+
+def test_the_night_record_is_rebuilt_from_stored_targets_for_living_actors_only():
+    from evaluation.src.replay.hallucination_bench import night_actions_from_resolutions
+
+    roles = {"w": "wolf", "h": "healer", "v": "vigilante", "k": "serial_killer", "t": "villager"}
+    nights = [{"day": 1, "wolves_target": "t", "healer_target": "t", "vigilante_target": "k", "deaths": []},
+              {"day": 2, "wolves_target": "k", "healer_target": "t", "deaths": []}]
+    recs = night_actions_from_resolutions(nights, roles, day=3,
+                                          lynches=[{"day": 2, "voted_player": "h"}])
+    got = [(r.day, r.actor, r.target) for r in recs]
+    assert (1, "h", "t") in got and (1, "v", "k") in got and (1, "wolves", "t") in got
+    assert not any(a == "h" and d == 2 for d, a, _ in got)  # voted out on day 2: no night-2 protection
+    assert "serial killer" in next(r for r in recs if r.day == 2 and r.actor == "wolves").outcome
+
+
+def test_a_resummarized_arm_swaps_only_the_earlier_discussion_summaries():
+    from evaluation.src.replay.hallucination_bench import _resummarized
+
+    case = {**_case("day_discussion"), "game_id": "g", "game_arm": "a", "day": 3}
+    state = hydrate_state({**STATE, "day_summaries": [
+        {"day": 1, "summary": "old day 1"}, {"day": 1, "summary": "Night of day 1: quiet"},
+        {"day": 2, "summary": "old day 2"}]})
+    out = _resummarized(case, state, {"g|a|1": {"summary": "new day 1", "structured": {}}})
+    assert [s.summary for s in out] == ["new day 1", "Night of day 1: quiet", "old day 2"]

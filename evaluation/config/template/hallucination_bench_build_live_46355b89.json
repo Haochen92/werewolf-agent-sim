@@ -1,0 +1,35 @@
+{
+  "eval_set_id": "hallucination_bench_live_46355b89",
+  "output": "evaluation/eval_results/hallucination_bench/candidates_live_46355b89.jsonl",
+  "overwrite": true,
+  "checkpoint_cases": [
+    {
+      "game_id": "46355b89-2a0d-47b1-a9cc-d7a35b61120d",
+      "phase": "day_discussion", "day": 3, "speaker": "player_8", "channel_seq": 19,
+      "firing_reason": {"tier": "reactive", "owes": ["player_2"]},
+      "golden": "It is day 3. The game master has never announced any attack on player_2. Its only night announcements so far: night 1, player_1 attacked by the wolves and saved by the healer, and player_9 stabbed by the serial killer; night 2, player_3 stabbed by the serial killer. The speaker is a wolf: the pack's attack on player_2 on night 2 failed without any announcement, and only the wolves know of it. A public message that states as fact that player_2 was attacked or survived an attack, or says the game master or the night results show it, violates this. Suspecting player_2 is fine, and the private note may mention the failed attack.",
+      "original": [{"unit": "message", "text": "Player_2, the game master and the night outcomes make it clear who survived when others died without any healer protection claimed.", "error_class": "private_fact_as_public"}]
+    },
+    {
+      "game_id": "46355b89-2a0d-47b1-a9cc-d7a35b61120d",
+      "phase": "day_discussion", "day": 4, "speaker": "player_1", "channel_seq": 0,
+      "firing_reason": {"tier": "proactive", "owes": []},
+      "golden": "It is day 4. Day 3's vote record: player_1, player_2, player_5, player_6 and player_7 voted to eliminate player_8 (voted out, revealed as a wolf); player_4 and player_8 voted to eliminate player_2. So player_4 voted against player_2, not to protect or defend them, and did not vote for player_8. A statement that player_4 voted to protect, save or defend player_2 violates this. Saying player_4 sided with player_8 against player_2, or did not vote out player_8, is fine.",
+      "original": [{"unit": "message", "text": "Player_4, you voted to protect player_2 instead of lynching player_8 who turned out to be a wolf.", "error_class": "vote_misread"}]
+    },
+    {
+      "game_id": "46355b89-2a0d-47b1-a9cc-d7a35b61120d",
+      "phase": "day_discussion", "day": 4, "speaker": "player_5", "channel_seq": 6,
+      "firing_reason": {"tier": "proactive", "owes": []},
+      "golden": "It is day 4. Day 3's vote record: player_4 and player_8 voted to eliminate player_2, so player_4 never defended player_2. The game master has never announced any attack on player_2; its announced attacks were player_1, attacked by the wolves and saved by the healer on nights 1 and 3, and player_9, player_3 and player_7, stabbed by the serial killer on nights 1, 2 and 3. The speaker is the healer and protected player_1 on nights 1, 2 and 3. A statement that player_4 defended or protected player_2, or that states as fact that player_2 was attacked or survived a night attack, violates this. Suspecting player_2 of being the serial killer is fine.",
+      "original": [{"unit": "message", "text": "Player_2, surviving multiple night attacks isn't just bad luck when you're the one benefiting from it every time. Player_4 defended you yesterday and is trying to pivot off it now.", "error_class": "vote_misread"}]
+    },
+    {
+      "game_id": "46355b89-2a0d-47b1-a9cc-d7a35b61120d",
+      "phase": "day_vote", "day": 4, "speaker": "player_5",
+      "golden": "It is the end of day 4. The game master announced healer saves only on player_1 (nights 1 and 3). The speaker is the healer and protected player_1 on nights 1, 2 and 3; it never protected player_4. So player_2's statement that the healer protected player_1 and not player_4 is true, and player_4's claim that the healer protected them twice is false. A read, note or message that calls player_2's statement about the healer a lie or a contradiction, or treats player_4's claim as true, violates this. Voting for or suspecting player_2 on other grounds is fine.",
+      "original": [{"unit": "reads", "text": "player_2: serial_killer (high): defensive about night survival and caught in a lie about healer protection", "error_class": "true_statement_called_lie"}]
+    }
+  ],
+  "scope": "pinned cases for hallucination_bench_v2 (merged into the frozen set)"
+}

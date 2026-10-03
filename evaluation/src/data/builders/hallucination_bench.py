@@ -46,7 +46,8 @@ from evaluation.src.data.sources.replay_api import LIVE_SERVER, get_json, record
 
 STATE_KEYS = ("roles", "current_day", "current_round", "surviving_villagers", "surviving_wolves",
               "human_players", "day_channel", "day_summaries", "dead_roster", "agent_strategies",
-              "investigator_results", "vigilante_results", "vigilante_bullets", "wolf_channel")
+              "investigator_results", "vigilante_results", "vigilante_bullets", "wolf_channel",
+              "night_actions")
 FACT_KEYS = ("roles", "night_resolutions", "day_resolutions", "investigator_results")
 
 
@@ -224,22 +225,46 @@ def _checkpoint_state(game_id: str, day: int, channel_seq: int | None) -> dict:
                 if v.get("current_day") != day:
                     break
                 today = [m.seq for m in v.get("day_channel", []) if m.day == day]
-                if channel_seq is None or (today and max(today) == channel_seq - 1):
+                # the day's first message (channel_seq 0) follows a checkpoint with no entries yet
+                if channel_seq is None or (today and max(today) == channel_seq - 1) \
+                        or (channel_seq == 0 and not today):
                     return {k: to_jsonable_python(v.get(k)) for k in STATE_KEYS if k in v}
     raise LookupError(f"{game_id}: no day-{day} checkpoint before channel entry {channel_seq}")
 
 
+def _night_targets(replay: dict) -> list[dict]:
+    """Each night's targets from a replay's night events, in the shape the bench's night-record
+    rebuild reads (games from before the engine kept the record)."""
+    nights: dict[int, dict] = defaultdict(dict)
+    field = {"healer": "healer_target", "serial_killer": "serial_killer_target", "vigilante": "vigilante_target"}
+    for e in replay["events"]:
+        if e["type"] == "night_action" and e.get("role") in field:
+            nights[e["day"]][field[e["role"]]] = e.get("target")
+        elif e["type"] == "wolf_kill_decided":
+            nights[e["day"]]["wolves_target"] = e.get("target")
+        elif e["type"] == "night_result":
+            nights[e["day"]]["deaths"] = [d["player"] for d in e["deaths"]]
+    return [{"day": d, **v} for d, v in sorted(nights.items())]
+
+
 def checkpoint_cases(specs: list[dict], server: str = LIVE_SERVER) -> list[dict]:
+    from evaluation.src.replay.hallucination_bench import night_actions_from_resolutions
+
     cases = []
     for s in specs:
-        record = record_from_replay(get_json(f"{server}/replays/{s['game_id']}"))
+        replay = get_json(f"{server}/replays/{s['game_id']}")
+        record = record_from_replay(replay)
         seq = s.get("channel_seq")
+        state = _checkpoint_state(s["game_id"], s["day"], seq)
+        if "night_actions" not in state:
+            state["night_actions"] = to_jsonable_python(night_actions_from_resolutions(
+                _night_targets(replay), record["roles"], s["day"], record["day_resolutions"]))
         cases.append({
             "case_id": _case_id("checkpoint", s["game_id"], s["phase"], s["day"], s["speaker"], seq),
             "source": "checkpoint", "kind": s.get("kind", "positive"),
             "game_id": s["game_id"], "game_arm": "live", "phase": s["phase"], "day": s["day"],
             "speaker": s["speaker"], "role": record["roles"][s["speaker"]],
-            "state": _checkpoint_state(s["game_id"], s["day"], seq),
+            "state": state,
             "firing_reason": s.get("firing_reason") or {"tier": "proactive", "owes": []},
             "memory": {"observations": [], "strategy_points": []},
             "facts": _facts(record),
@@ -293,6 +318,20 @@ def main() -> None:
     args = ap.parse_args()
     cfg = json.loads(Path(args.config).read_text())
     out = REPO_ROOT / cfg["output"]
+    if cfg.get("extend"):  # a new version of a frozen set: its cases plus newly built ones
+        ext = cfg["extend"]
+        if out.exists() and not cfg.get("overwrite"):
+            raise SystemExit(f"{out} exists; set overwrite: true to replace it")
+        read = lambda path: [json.loads(line) for line in (REPO_ROOT / path).read_text().splitlines() if line.strip()]  # noqa: E731
+        cases = read(ext["from_dataset"]) + [{**c, "slice": ext["slice"]} for c in read(ext["add"])]
+        with open(out, "w") as f:
+            f.writelines(json.dumps(c) + "\n" for c in cases)
+        manifest = {"eval_set_id": cfg["eval_set_id"], "scope": cfg.get("scope", "shared"),
+                    "built_at": datetime.now(timezone.utc).isoformat(), "config": cfg, "n_cases": len(cases),
+                    "slices": {k: sum(c.get("slice") == k for c in cases) for k in ("curated", "random", "control", "pinned")}}
+        out.with_suffix(".manifest.json").write_text(json.dumps(manifest, indent=2))
+        print(json.dumps({k: manifest[k] for k in ("n_cases", "slices")}))
+        return
     if cfg.get("curate"):
         cur = cfg["curate"]
         if out.exists() and not cfg.get("overwrite"):

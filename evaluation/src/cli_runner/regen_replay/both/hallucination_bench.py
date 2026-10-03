@@ -13,6 +13,10 @@ samples; the parent then judges them all the same way:
   private knowledge) is counted separately, as the census did.
 - golden (cases with a hand-written expectation): ``judges/golden_expectation``; bad on ``violates``.
 
+An arm with ``"resummarize": true`` first rewrites every earlier day's discussion summary with the
+checked-out summariser (one pass per game, cached beside the generations), so it tests the
+summariser too; without it, cases keep the summaries their games were played with.
+
 A sample is bad if any of its units is. Per arm: bad rate over all samples, over positives and over
 controls, and per phase / role. Every later arm is compared with the first, case by case: a sign
 test over the cases whose bad rate differs between the two.
@@ -46,13 +50,25 @@ def _read_jsonl(path: Path) -> list[dict]:
 # --- worker: one arm, one process ------------------------------------------------
 
 def run_worker(dataset: Path, out: Path, n: int, memory: str, workers: int, limit: int | None,
-               slices: list[str] | None = None) -> None:
+               slices: list[str] | None = None, resummarize: bool = False) -> None:
     """Generate ``n`` valid samples per case. An existing file is topped up: its valid samples are
     kept and only the missing ones (invalid or never generated) are regenerated."""
     from evaluation.src.replay.hallucination_bench import generate
+    from evaluation.src.replay.hallucination_bench import resummarize as rewrite_summaries
 
     cases = [c for c in _read_jsonl(dataset) if not slices or c.get("slice") in slices]
     cases = cases[:limit] if limit else cases
+    summaries = None
+    if resummarize:
+        cache_path = out.with_name(out.name.replace("generations_", "summaries_").replace(".jsonl", ".json"))
+        summaries = json.loads(cache_path.read_text()) if cache_path.exists() else {}
+        by_game: dict[str, list[dict]] = defaultdict(list)
+        for c in cases:
+            by_game[f"{c['game_id']}|{c.get('game_arm', '')}"].append(c)
+        with ThreadPoolExecutor(max_workers=workers) as ex:  # games in parallel, days in order
+            list(ex.map(lambda group: rewrite_summaries(group, summaries), by_game.values()))
+        cache_path.write_text(json.dumps(summaries, indent=1))
+        print(f"  {len(summaries)} day summaries rewritten (cached in {cache_path.name})")
     kept: dict[str, list[dict]] = defaultdict(list)
     if out.exists():
         for s in _read_jsonl(out):
@@ -61,7 +77,7 @@ def run_worker(dataset: Path, out: Path, n: int, memory: str, workers: int, limi
     todo = [(c, n - len(kept[c["case_id"]])) for c in cases if len(kept[c["case_id"]]) < n]
     print(f"  {sum(k for _, k in todo)} samples to generate over {len(todo)} cases")
     with ThreadPoolExecutor(max_workers=workers) as ex:
-        results = list(ex.map(lambda ck: (ck[0], generate(ck[0], ck[1], memory)), todo))
+        results = list(ex.map(lambda ck: (ck[0], generate(ck[0], ck[1], memory, summaries)), todo))
     for case, samples in results:
         kept[case["case_id"]] += samples
     with open(out, "w") as f:
@@ -71,17 +87,21 @@ def run_worker(dataset: Path, out: Path, n: int, memory: str, workers: int, limi
 
 
 def spawn_arm(arm: dict, cfg: dict, out: Path) -> None:
+    """Run one arm's worker. ``arm["checkout"]``: generate from another checkout of the repo (a git
+    worktree on a baseline tag), so the arm runs that commit's engine and prompts; judging stays here."""
     env = {**os.environ, **{k: str(v) for k, v in (arm.get("env") or {}).items()}}
     env["GOOGLE_GENAI_MODEL"] = arm["model"]
     cmd = [sys.executable, "-m", "evaluation.src.cli_runner.regen_replay.both.hallucination_bench",
-           "--worker", "--dataset", cfg["dataset"], "--out", str(out),
+           "--worker", "--dataset", str(REPO_ROOT / cfg["dataset"]), "--out", str(out),
            "--n", str(cfg.get("n", 3)), "--memory", arm.get("memory", "none"),
            "--workers", str(cfg.get("workers", 3))]
     if cfg.get("limit"):
         cmd += ["--limit", str(cfg["limit"])]
     if cfg.get("slices"):
         cmd += ["--slices", *cfg["slices"]]
-    subprocess.run(cmd, cwd=REPO_ROOT, env=env, check=True)
+    if arm.get("resummarize"):
+        cmd += ["--resummarize"]
+    subprocess.run(cmd, cwd=arm.get("checkout") or REPO_ROOT, env=env, check=True)
 
 
 # --- judging ------------------------------------------------------------------
@@ -182,10 +202,11 @@ def main() -> None:
     ap.add_argument("--n", type=int, default=3), ap.add_argument("--memory", default="none")
     ap.add_argument("--workers", type=int, default=8), ap.add_argument("--limit", type=int)
     ap.add_argument("--slices", nargs="*", help="only cases in these slices (curated, random, control, pinned)")
+    ap.add_argument("--resummarize", action="store_true", help=argparse.SUPPRESS)
     args = ap.parse_args()
     if args.worker:
         run_worker(REPO_ROOT / args.dataset, Path(args.out), args.n, args.memory, args.workers, args.limit,
-                   args.slices)
+                   args.slices, args.resummarize)
         return
 
     cfg = json.loads(Path(args.config).read_text())
