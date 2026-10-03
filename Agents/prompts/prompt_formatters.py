@@ -88,11 +88,20 @@ def format_wolf_channel(messages: list[WolfChannel]) -> str:
     )
 
 
-def format_investigator_results(results: list[InvestigatorResult]) -> str:
+def format_investigator_results(results: list[InvestigatorResult], current_day: int | None = None) -> str:
+    """The investigator's own checks, each named as a night and as the player's own action.
+
+    The old line, "Day 3: player_5 was revealed as healer", read like a public death reveal
+    (the same word, and that night's target had died and been revealed). Replaying a live turn
+    20 times, the investigator invented an unchecked result in 20 of 20 samples on that wording
+    and in 0 of 20 on this one (evidence/game_play_enhancement/discussion_evidence.md §6.2).
+    `current_day` tags the previous night's check as "(last night)"; None leaves it untagged.
+    """
     if not results:
         return "No investigations yet."
     return "\n".join(
-        f"Day {r.day}: {r.player_investigated} was revealed as {r.role_revealed}"
+        f"Night {r.day}{' (last night)' if current_day is not None and r.day == current_day - 1 else ''}: "
+        f"you investigated {r.player_investigated}, who is the {r.role_revealed.replace('_', ' ')}"
         for r in results
     )
 

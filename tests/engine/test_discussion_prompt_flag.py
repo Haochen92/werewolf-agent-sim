@@ -53,3 +53,17 @@ def test_v2_applies_all_four_changes(flag):
     # only the two evil roles are told they may claim
     assert {r for r, on in got["claiming"].items() if on} == {"wolf", "serial_killer"}
     assert "quiet" not in got["drivers"] and "evidence" in got["drivers"]
+
+
+def test_investigator_results_name_the_night_and_the_check():
+    from Agents.prompts.prompt_formatters import format_investigator_results
+    from Agents.schemas.game_events import InvestigatorResult
+
+    results = [InvestigatorResult(day=1, player_investigated="player_1", role_revealed="wolf"),
+               InvestigatorResult(day=3, player_investigated="player_5", role_revealed="serial_killer")]
+    assert format_investigator_results(results, current_day=4).splitlines() == [
+        "Night 1: you investigated player_1, who is the wolf",
+        "Night 3 (last night): you investigated player_5, who is the serial killer",
+    ]
+    assert "(last night)" not in format_investigator_results(results)  # no day known: no tag
+    assert format_investigator_results([]) == "No investigations yet."

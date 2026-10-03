@@ -141,7 +141,7 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         ),
         "wolf_channel": format_wolf_channel(payload.get("wolf_channel", [])),
         "investigator_results": format_investigator_results(
-            payload.get("investigator_results", [])
+            payload.get("investigator_results", []), payload.get("current_day")
         ),
         "vigilante_results": (
             "\n".join(payload.get("vigilante_results", []))
