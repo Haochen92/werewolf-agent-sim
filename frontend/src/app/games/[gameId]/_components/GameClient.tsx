@@ -37,7 +37,7 @@ import { TerminalError } from '@/components/TerminalError';
 import { OrientationGuard } from '@/stage/OrientationGuard';
 import { LiveTheatre } from '@/stage/containers/LiveTheatre';
 import { StationStill } from '@/stage/scenes/StationStill';
-import { BoardingPass } from './BoardingPass';
+import { BoardingPass, passIsUp } from './BoardingPass';
 import classes from './GameClient.module.css';
 import { useRoom } from './useRoom';
 
@@ -47,6 +47,8 @@ export function GameClient({ gameId }: { gameId: string }) {
   const { room, departed, onRoomAct, boarded } = useRoom(gameId, status);
   // "Just watch" on the boarding pass: the platform without a seat
   const [watching, setWatching] = useState(false);
+  // aboard, but the pick on the pass was lost: the pass stays up until it is settled
+  const [repicking, setRepicking] = useState(false);
 
   /**
    * Seat recovery (D23). The trigger is NOT a failed request: a lost cookie does not make
@@ -142,13 +144,15 @@ export function GameClient({ gameId }: { gameId: string }) {
   if (error) return <TerminalError message={error} byok={status?.name?.includes('byok')} />;
 
   // a newcomer to an open room with a place left gives their name first (upright is fine)
-  const open = room && !room.locked && room.aboard.length < room.places;
-  if (state === 'waiting' && status && room && !room.seated && open && !watching)
+  if (state === 'waiting' && status && room && !watching && passIsUp(room, repicking))
     return (
       <BoardingPass
         gameId={gameId}
         status={status}
-        onBoarded={boarded}
+        onBoarded={(pickOpen) => {
+          boarded();
+          setRepicking(pickOpen);
+        }}
         onWatch={() => setWatching(true)}
       />
     );

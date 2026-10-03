@@ -66,6 +66,7 @@ export function PuppetPicker({
   onChange,
   disabled = false,
   labelledBy,
+  quiet = false,
 }: {
   /** The catalogue's puppets on offer, in its order (retired ones already left out). */
   cards: readonly CharacterCard[];
@@ -78,6 +79,8 @@ export function PuppetPicker({
   /** Hold the row still (a press on its way). */
   disabled?: boolean;
   labelledBy?: string;
+  /** Leave out the line under the row (the screen says something else about the pick). */
+  quiet?: boolean;
 }) {
   const chosen = cards.find((c) => c.id === value);
   return (
@@ -107,7 +110,7 @@ export function PuppetPicker({
           );
         })}
       </div>
-      {onChange ? (
+      {onChange && !quiet ? (
         <p className={classes.note} aria-live="polite">
           {chosen
             ? `You stand as the ${chosen.display_name}; tap it again to let the house draw.`
