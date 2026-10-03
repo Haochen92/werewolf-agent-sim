@@ -135,10 +135,10 @@ def test_extra_field_rejected():
 def test_a_line_longer_than_the_cap_is_refused():
     req = _request(phase="day_channel", can_pass=True, valid_targets=[])
     assert validate_human_response(req, {"message": "x" * h.MAX_LINE_CHARS}).message
-    with pytest.raises(HumanTurnContractError, match="700 characters"):
+    with pytest.raises(HumanTurnContractError, match="500 characters"):
         validate_human_response(req, {"message": "x" * (h.MAX_LINE_CHARS + 1)})
     pack = _request(phase="wolf_channel", can_pass=False, valid_targets=[])
-    with pytest.raises(HumanTurnContractError, match="700 characters"):
+    with pytest.raises(HumanTurnContractError, match="500 characters"):
         validate_human_response(pack, {"message": "y" * (h.MAX_LINE_CHARS + 1)})
 
 

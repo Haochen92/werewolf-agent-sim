@@ -823,7 +823,7 @@ test('live: a line typed by hand in the composer sends as it is, no draft asked 
   expect(posted).toEqual([{ path: 'turns', body: { message: 'I trust seat 4 today.' } }]);
 });
 
-test('live: a long line counts near the cap in the composer and stops at 700; a pending draft says it is working', async ({
+test('live: a long line counts near the cap in the composer and stops at 500; a pending draft says it is working', async ({
   page,
 }) => {
   await mockApi(page, {
@@ -841,14 +841,14 @@ test('live: a long line counts near the cap in the composer and stops at 700; a 
   const composer = await openComposer(page);
   const box = composer.getByLabel('Your line');
   const count = composer.locator('[data-line-count]');
-  await box.fill('a'.repeat(599));
+  await box.fill('a'.repeat(399));
   await expect(count).toHaveCount(0);
   await box.press('b');
-  await expect(count).toHaveText('600 / 700');
+  await expect(count).toHaveText('400 / 500');
   // typing stops at the cap
   await page.keyboard.insertText('c'.repeat(110));
-  await expect(box).toHaveValue(/^a{599}bc{100}$/);
-  await expect(count).toHaveText('700 / 700');
+  await expect(box).toHaveValue(/^a{399}bc{100}$/);
+  await expect(count).toHaveText('500 / 500');
   await composer.getByRole('button', { name: 'Redraft this', exact: true }).click();
   // the newest word (the one fading out stays in the page while it goes)
   const words = composer.locator('[data-draft-word]').last();

@@ -933,10 +933,10 @@ head is too narrow for the hint beside it (a phone with the side slot open) the 
 the heading. Then three plaques in a row, each never under 44 css px tall: **Write your line**
 (Send's brass, the keyboard before its words, the widest) opens the composer; **Send** (brass;
 "Sending…"), greyed until there is a line and live the moment the composer's box holds one,
-with the composer open or closed (it waits too while a line is over the 700 cap); **Pass**
+with the composer open or closed (it waits too while a line is over the 500 cap); **Pass**
 (walnut). Once there is a line, a **preview row** under the head shows it on one line
 (Literata, cut with "…" at the row's width, or at a word by 120 characters) with its word count
-at the end ("23 words"; past the cap "742 / 700" in red beside it), and the brass plaque reads
+at the end ("23 words"; past the cap "542 / 500" in red beside it), and the brass plaque reads
 **Edit your line**; on a frame 900 css px wide or narrower a tap on the preview opens the
 composer too. The server's words for a refused line in red under the preview (a draft's errors
 too). No "Let my agent speak" on this turn (owner playtest: it sent the agent's line unseen);

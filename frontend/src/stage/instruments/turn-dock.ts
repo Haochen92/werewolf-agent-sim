@@ -15,12 +15,12 @@ import { wordCount, wordsText } from './composer';
 const DRAFTS_PER_TURN = 3;
 
 /**
- * The longest line the box takes, the server's cap too (owner, 2026-09-30: the agents are asked
- * to keep under about 120 words, and a player's line may run a little longer).
+ * The longest line the box takes, the server's cap too (owner, 2026-10-03: the agents are asked
+ * for about 40–80 words, and a player's line may run a little longer, about 85).
  */
-export const LINE_MAX = 700;
+export const LINE_MAX = 500;
 
-/** The box's count, "612 / 700", once the line is within 100 of the cap; null before then. */
+/** The box's count, "412 / 500", once the line is within 100 of the cap; null before then. */
 export function lineCount(text: string): string | null {
   return text.length >= LINE_MAX - 100 ? `${text.length} / ${LINE_MAX}` : null;
 }

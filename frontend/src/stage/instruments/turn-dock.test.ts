@@ -308,14 +308,14 @@ describe('the Draft button’s words while a draft is on its way', () => {
 });
 
 describe('the line’s length', () => {
-  it('caps at 700, and counts once the line is within 100 of it', () => {
-    expect(LINE_MAX).toBe(700);
+  it('caps at 500, and counts once the line is within 100 of it', () => {
+    expect(LINE_MAX).toBe(500);
     const at = (n: number) => dockControls(dock({ text: 'a'.repeat(n) }));
-    expect(at(599)).toMatchObject({ count: null, canSend: true });
-    expect(at(600)).toMatchObject({ count: '600 / 700', canSend: true });
-    expect(at(612).count).toBe('612 / 700');
-    expect(at(700)).toMatchObject({ count: '700 / 700', over: false, canSend: true });
+    expect(at(399)).toMatchObject({ count: null, canSend: true });
+    expect(at(400)).toMatchObject({ count: '400 / 500', canSend: true });
+    expect(at(412).count).toBe('412 / 500');
+    expect(at(500)).toMatchObject({ count: '500 / 500', over: false, canSend: true });
     // a draft set from outside may run past what the box lets a hand type: Send waits
-    expect(at(742)).toMatchObject({ count: '742 / 700', over: true, canSend: false });
+    expect(at(542)).toMatchObject({ count: '542 / 500', over: true, canSend: false });
   });
 });

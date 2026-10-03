@@ -52,9 +52,9 @@ def run_human_decision(payload: dict[str, Any], output_key: str) -> ResolvedTurn
     return outcome
 
 
-# The longest line a human may say, in characters: about 120 words, which is what the agents are
-# asked to keep under, so a seat can't feed the table (and every agent's prompt) an essay.
-MAX_LINE_CHARS = 700
+# The longest line a human may say, in characters: about 85 words, a little over the 40-80 words the
+# agents are asked for, so a seat can't feed the table (and every agent's prompt) an essay.
+MAX_LINE_CHARS = 500
 
 
 def validate_human_response(request: HumanTurnRequest, raw_response: Any) -> HumanTurnResponse:
