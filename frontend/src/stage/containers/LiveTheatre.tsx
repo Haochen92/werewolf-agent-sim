@@ -58,7 +58,7 @@ import { ApiError } from '@/lib/request';
 import { seatToken } from '@/lib/storage';
 import { foldEvents } from '@/game/foldEvents';
 import type { DurableGameEvent, GameStatus } from '@/types/contracts';
-import { resolveCast } from '../cast/castForGame';
+import { castForRoom, resolveCast } from '../cast/castForGame';
 import { beatsFor } from '../beats/beatsFor';
 import type { SceneBeat } from '../beats/types';
 import { useDrawerFilters } from '../drawer/use-drawer-filters';
@@ -238,7 +238,16 @@ export function LiveTheatre({
   // after game over the whole log is everyone's: every viewer is an observer (what the viewer
   // sees of it waits for the stage to reach the ending: `xrayShown`, below)
   const xray = view.winner !== null;
-  const cast = useMemo(() => resolveCast(status?.cast, gameId), [status?.cast, gameId]);
+  // a waiting room wears its picks on the platform; the dealt game wears the recorded cast
+  const picks =
+    status?.state === 'waiting' ? JSON.stringify(status.characters ?? []) : null;
+  const cast = useMemo(
+    () =>
+      picks !== null
+        ? castForRoom(JSON.parse(picks) as (string | null)[], gameId)
+        : resolveCast(status?.cast, gameId),
+    [picks, status?.cast, gameId],
+  );
   const beats = useMemo(
     () => beatsFor(events, { xray, me, live: true }),
     [events, xray, me],

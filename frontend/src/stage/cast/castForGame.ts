@@ -46,6 +46,26 @@ export function resolveCast(
   return castForGame(gameId, seats);
 }
 
+/**
+ * The platform's cast while a room waits, by place on the roster (`picks` lines up with it).
+ * Whoever picked a puppet this build can show wears it; everyone else keeps their place's
+ * puppet from the hash, unless a pick took it, and then the next puppet nobody wears stands in.
+ */
+export function castForRoom(
+  picks: readonly (string | null)[],
+  gameId: string,
+  seats = 9,
+): Character[] {
+  const drawn = castForGame(gameId, LEGACY_CHARACTERS.length);
+  const chosen = drawn
+    .slice(0, seats)
+    .map((_, i) => (picks[i] && isCharacter(picks[i]) ? picks[i] : null));
+  const worn = new Set(chosen.filter((c) => c !== null));
+  const kept = chosen.map((c, i) => c ?? (worn.has(drawn[i]) ? null : drawn[i]));
+  const spare = drawn.filter((c) => !kept.includes(c));
+  return kept.map((c) => c ?? spare.shift()!);
+}
+
 /** A character this build has sprites for (the catalogue may list ones it does not yet). */
 export function isCharacter(id: string): id is Character {
   return (CHARACTERS as readonly string[]).includes(id);
