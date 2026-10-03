@@ -20,7 +20,7 @@ Rules:
   - Confirmed by death reveal: eliminated players' roles are publicly revealed — reference to a dead player's known role is a confirmed fact, NOT a claim. Do not list confirmed-dead roles as role_claims.
   - Claimed with public corroboration (e.g., "accusation confirmed by subsequent elimination")
   - Claimed without evidence (write "unverified")
-  - A healer save announced by the Game Master confirms the player is not a wolf, but does NOT confirm their specific role.
+  - A healer save announced by the Game Master shows the player was attacked and protected. It does NOT clear them: a wolf can be attacked by the serial killer or the vigilante and saved. Only the attacker type the Game Master names is fact.
   - Do not treat unverified claims as fact.
 - Be specific about what was said and claimed, not vague summaries.
 """

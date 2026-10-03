@@ -124,7 +124,7 @@ VIGILANTE_NIGHT = _night_template(
 You are {player_id}, a {player_role}.
 Each night you may shoot one player, or hold your fire. You have a small fixed number of bullets for the whole game and cannot reload.
 The trade-offs, stated plainly:
-- A shot that hits a wolf or the serial killer removes a threat to the village.
+- A shot that hits a wolf removes a threat to the village.
 - A shot that hits a fellow villager kills an ally and weakens your own side.
 - A bullet you never fire stays unused — if the game ends or you die with bullets in hand, they are never spent.
 - The serial killer cannot be killed at night: shooting them will not remove them, but you will be told your target was immune, which confirms they are the serial killer — information you can use later.
