@@ -1,6 +1,6 @@
 """Chat-model construction across the five supported backends.
 
-vertex (default) / google (API-key) / nim / deepseek / mistral — selected by ``LLM_BACKEND``
+vertex (default) / google (API-key) / nim / deepseek / mistral / openai / xai — selected by ``LLM_BACKEND``
 and the model prefix. Instances are memoised by construction args (building one is
 non-trivial: client + auth setup), so callers in hot loops reuse a shared,
 thread-safe instance. See the package docstring for backend selection rules.
@@ -82,6 +82,8 @@ THINKING_LEVEL_TO_BUDGET: dict[str, int] = {
 _NIM_BASE_URL = "https://integrate.api.nvidia.com/v1"
 _DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1"
 _MISTRAL_BASE_URL = "https://api.mistral.ai/v1"
+_OPENAI_BASE_URL = "https://api.openai.com/v1"
+_XAI_BASE_URL = "https://api.x.ai/v1"
 
 
 @dataclass
@@ -247,6 +249,15 @@ def _build_chat_model(
 
     if model.startswith("mistral/"):
         return MistralChatModel(model.removeprefix("mistral/"), temperature=temperature)
+
+    # OpenAI and xAI (Grok) speak the OpenAI protocol; structured output rides tool calling, as
+    # for DeepSeek. Wired for offline evaluation (the hallucination bench's arms), not game seats.
+    if model.startswith("openai/"):
+        return _build_openai_compat_chat_model(
+            model.removeprefix("openai/"), _OPENAI_BASE_URL, "OPENAI_API_KEY", temperature=temperature)
+    if model.startswith("xai/"):
+        return _build_openai_compat_chat_model(
+            model.removeprefix("xai/"), _XAI_BASE_URL, "XAI_API_KEY", temperature=temperature)
 
     build_kwargs: dict[str, Any] = {
         "model": model,

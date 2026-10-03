@@ -291,3 +291,20 @@ def test_the_game_model_carries_the_request_budget(monkeypatch):
     assert (llm.timeout, llm.max_retries) == (30.0, 2)
     assert (rescue.timeout, rescue.max_retries) == (30.0, 2)
     assert (summary.timeout, summary.max_retries) == (90.0, 2)
+
+
+def test_openai_and_xai_prefixes_build_openai_protocol_clients(monkeypatch):
+    """The bench's non-Gemini arms: openai/<model> and xai/<model> need their own key, and build a
+    tool-calling ChatOpenAI pointed at the provider (no network at construction)."""
+    import pytest
+
+    from Agents.llm_factory.backends import _build_chat_model
+
+    for prefix, key, url in (("openai", "OPENAI_API_KEY", "api.openai.com"),
+                             ("xai", "XAI_API_KEY", "api.x.ai")):
+        monkeypatch.delenv(key, raising=False)
+        with pytest.raises(ValueError, match=key):
+            _build_chat_model(f"{prefix}/some-model")
+        monkeypatch.setenv(key, "test-key")
+        llm = _build_chat_model(f"{prefix}/some-model", temperature=1.0)
+        assert llm.model_name == "some-model" and url in str(llm.openai_api_base)
