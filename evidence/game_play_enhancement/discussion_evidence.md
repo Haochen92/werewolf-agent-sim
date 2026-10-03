@@ -391,7 +391,7 @@ measured.
 
 ## 6. Phase 1 outcome
 
-*In progress: two v2 games played and judged so far; only the first matches the baseline's model.*
+*In progress: two v2 games judged so far (only the first matches the baseline's model), and a third read by hand for hallucinations (§6.4).*
 
 **The comparison set.** The "before" side is three website games from before the switch, all on
 `gemini-3.5-flash-lite` with memory off, judged by the same judge model as the "after" side:
@@ -557,6 +557,66 @@ comparison; it is a look at v2 on a stronger model.
   same, P3's wording is too weak to change behaviour.
 - **Day 1 had eight messages,** unlike almost every other website game, where day 1 ends after
   three passes (§7.1).
+
+### 6.4 A game the town won on a fabricated premise (`46355b89`, 2026-10-03)
+
+The owner played seat 2, the serial killer, on `gemini-3.5-flash-lite` with memory off. The village
+won on night 4. Read from day 3 on, with every agent's private notes and reads.
+
+**Day 3: the wolves knew something true and lied about where it came from.** On night 2 the wolves
+attacked the serial killer. The serial killer is immune at night, and the game does not announce a
+failed attack on it; the public heard only that the investigator was stabbed. The wolves' private
+reasoning was right ("player_2 is confirmed as the serial killer since our night kill bounced off
+them"). In public, player_8 then claimed *"the game master and the night outcomes make it clear who
+survived"*. The moderator never said so, and the argument only made sense to someone who knew about
+the attack. Two villagers called it a fabricated case, and player_8 was voted out.
+
+**Day 4: real hallucinations, all by town players.**
+1. The healer: *"Player_4 defended you yesterday."* The vote record shows player_4 voted to
+   eliminate player_2. Corrected by the owner, the healer conceded.
+2. The vigilante (and a villager, in a held-back draft): *"you voted to protect player_2 instead of
+   lynching player_8"*. The same misreading: a vote *for* player_2 read as support.
+3. Three town players treated "player_2 survived multiple night attacks" as fact, though no public
+   record shows any attack on player_2, and the same players had rejected it on day 3.
+4. The healer and a villager privately read player_2 as "caught in a lie about healer protection".
+   Player_2 was right (the moderator announced saves on player_1 only); player_4 had lied that the
+   healer protected them. The healer itself made this read, though it had protected player_1 every
+   night.
+
+The village eliminated the real serial killer, but for a reason a wolf had leaked and the town had
+rejected the day before.
+
+**Likely causes, all in what reaches the agents, not in how much context the model can hold.**
+- *A failed attack on the serial killer is silent, and the rules never say so.* They say healer
+  saves are announced, so agents can't tell their failed attack is private knowledge, and they cite
+  it as public. (First seen in June from the vigilante's side: a true failed-shot claim was called
+  impossible.)
+- *The day summary passes on a claim as if it were narration.* On day 4 the agents had not seen
+  day 3's dialogue, only its summary: *"Player_2 has survived night attacks and remained unharmed
+  without claiming a healer, which these players argue points to serial killer night immunity."*
+  The conclusion is attributed; the premise is stated as fact. Agents who rejected the claim while
+  reading the dialogue accepted it from the summary (cause of item 3).
+- *"voted for" is ambiguous.* Later days read the vote as *"player_4 voted for player_2"*, which in
+  everyday English means supported (likely cause of items 1 and 2; untested).
+- *The healer has no record of its own protections in its day prompt.* The investigator gets its
+  results and the vigilante its shots; the healer gets nothing, only its own note (part of item 4).
+  The public saves were announced, but the healer believed a confident lie over them.
+
+**Prompt revisions queued for discussion quality** (each to be tested on the hallucination bench
+before it ships; all matter more once phase 3 adds roles that act at night):
+- R-a. State in the rules which night events are announced and which are silent (a failed attack on
+  the serial killer), and that what only you did or saw at night is private: citing it as public
+  record is a claim others can't verify.
+- R-b. The day summary attributes every claim to whoever made it ("player_8 claimed that...") and
+  never states a contested premise as fact.
+- R-c. Write votes as "voted to eliminate".
+- R-d. Give the healer the same private record as the other night roles: whom it protected each
+  night, and whether that player was attacked.
+
+**Bench cases from this game** (pinned, with written expectations): the healer's and the
+vigilante's first day-4 messages (items 1 and 2), the healer's day-4 vote turn (item 4; the bench
+will need to judge private reads, not only messages and notes), and player_8's day-3 "the game
+master makes it clear" (a guard for R-a).
 
 ---
 
