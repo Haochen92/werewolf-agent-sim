@@ -375,9 +375,35 @@ thing in every baseline game. It predates this work and is left for a separate l
 
 ---
 
+**Switched on at the live site (2026-10-03).** The owner chose to play the v2 prompts through the
+website rather than in scripted batches, and the site was in development with no outside players.
+So both containers were rebuilt at `9ae5056` with `WW_DISCUSSION_PROMPT=v2` set for the server
+(deploy record: `frontend/docs/build_plan.md`). Removing that one setting and restarting the server
+returns the site to the old prompts.
+
+The judge was extended to read website games. A finished game's public replay holds every event
+(speeches, passes, votes, night deaths with attacker, summaries, roles), and the runner rebuilds
+the same record a batch game produces (`--replays <id>` or `--latest N`). Human seats are kept in
+the transcript the judge reads but are not themselves judged, because the agents are what is being
+measured.
+
+---
+
 ## 6. Phase 1 outcome
 
-*Pending: the owner's hand-run games and the judge's read of them.*
+*Pending: the owner's games under v2, judged with the runner.*
+
+**The comparison set.** The "before" side is three website games from before the switch, all on
+`gemini-3.5-flash-lite` with memory off, judged by the same judge model as the "after" side:
+- `500b5167` (2026-10-03) and `965b8148` (2026-09-27), each with human players at the table, the
+  closest match to how the v2 games will be played;
+- `ff26faff` (2026-09-15), all agents.
+
+Both sides come from the same site and model. What the comparison does not hold fixed: the code
+changed between those dates in ways unrelated to the prompts (for example the stall-rescue model,
+added 2026-10-01), and the human seats play differently from game to game, which shapes what the
+agents respond to. At three games a side,
+any difference is a direction to look into, not a measured effect. Output: `data/live_baseline/`.
 
 ---
 
