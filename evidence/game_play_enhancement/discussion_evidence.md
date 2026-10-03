@@ -652,6 +652,16 @@ wants. It judges only the kind of statement, never whether it is true, so a fake
 one or two players accused by the most different players today, with at least two accusers, get one
 last turn, sent at the same time, through the same mechanism as the opening. No new accusations;
 anything they say gets no reply. If nobody qualifies, the day goes straight to the summary.
+- *The moderator announces the closing, written by code, with no model call:* *"Before the vote:
+  player_5 has been accused by player_2, player_4 and player_7; player_8 by player_1 and player_3.
+  Each gets a last word."* The names come from the accusation tags, so it costs nothing and cannot
+  misstate anything (it can miss an accuser the tags missed, §7.1). It tells everyone, the human
+  and viewers included, who is on trial and who is pressing; the reasons are already in the
+  transcript, which the accused agents read in full.
+- *Not a model-written summary of the case.* The moderator's lines are taken as fact by agents and
+  humans alike, so a summary of opinions in its voice would turn any mistake into a "fact" and read
+  as the game endorsing the case. Considered and dropped: a closing turn for each accused player's
+  top accuser before the defence (adds two calls and gives a pushing wolf one more prominent turn).
 - *Ties:* the more recently accused player first.
 - *Don't use the agents' private suspicion reads* to pick the accused. Who gets a closing turn is
   public, so it would leak what the agents secretly think.
@@ -677,9 +687,12 @@ Discussion keeps the P5 line. Humans keep one limit.
 4. **Opening filter** (new, beside `Agents/turn/novelty_agent.py`): one prompt and an output schema
    with one verdict per speaker (player, kind, keep), every field required (flash-lite fails on
    optional fields). The output schema is model-visible: field descriptions, no class docstring.
-5. **Closing speakers.** A small helper: for each living player, the set of different players who
-   tagged an accusation against them today (`addressed_targets`, stance `accusation`, not themselves);
-   keep those with at least two; sort by count, then latest accusation; take two.
+5. **Closing speakers and announcement.** A small helper: for each living player, the set of
+   different players who tagged an accusation against them today (`addressed_targets`, stance
+   `accusation`, not themselves); keep those with at least two; sort by count, then latest
+   accusation; take two. The collecting step's partner at the start of the closing writes the
+   announcement from the same sets as a `game_master` line in `day_channel`, so agents, the summary
+   and the replay all see it.
 6. **Prompts** (`Agents/prompts/day_discuss.py`, `prompt_inputs.py`): an opening block and a closing
    block, chosen by the round in the payload, carrying S3's lengths. The day-1 block
    (`OPENING_NO_VOTE_DISCUSSION_RULES`) merges into the opening block. The golden in
@@ -687,7 +700,13 @@ Discussion keeps the P5 line. Humans keep one limit.
 7. **Server events** (`server/game/translate.py` and `server/schemas/events.py`): the new steps need
    translator entries, and the scene needs a public event marking "openings are being prepared" (for
    example a new `phase_change` value). Both change the event contract the frontend reads, and the
-   translator's exact goldens.
+   translator's exact goldens. The closing announcement reaches the frontend as an ordinary moderator
+   line, as long as the new step's translator entry emits `day_channel`'s moderator lines
+   (`_gm_messages`, as the existing day steps do).
+   - *Knock-on for the hallucination bench:* its builder drops every same-day moderator line from a
+     replayed vote turn (the vote-result leak fix). After phase 2 that would also drop the closing
+     announcement, which a voter really did see. It should drop only the lines posted after the
+     votes. This only matters once phase 2 games are added to the bench.
 8. **Frontend** (`frontend/src/stage/beats/beatsFor.ts`, `frontend/docs/beat_sheet.md`): the
    "preparing" scene, the openings played in order, and a run of passes shown as one beat. Grouping
    consecutive passes also shortens today's mid-day passes.
@@ -698,7 +717,7 @@ Discussion keeps the P5 line. Humans keep one limit.
 10. **Tests** (written by Claude once the code is in): day 1 is the opening only; every living player is
     sent exactly one opening turn; openings land in `day_channel` in seeded order with distinct
     positions; the opening filter drops padding and a repeat, keeps a counterclaim, and keeps everything when its call fails; a player named in an opening
-    accusation replies first in discussion; the closing runs after passes and after the cap, picks by
+    accusation replies first in discussion; the closing announcement names exactly the accusers the tags record; the closing runs after passes and after the cap, picks by
     distinct accusers, is skipped when nobody has two, and gets no replies; the translator emits the
     new events.
 
