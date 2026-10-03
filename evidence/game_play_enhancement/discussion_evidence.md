@@ -612,28 +612,41 @@ compared once; the v2 games already played are the comparison. If it plays worse
   vote.
 
 **D1/S1. The opening round: everyone at once.** Every living player is sent an opening turn at the same
-time, the way the vote is. The instructions are strict: the only things allowed are one's own role,
-one's own night action or result, or a challenge to a claim already made. Anything else is a pass,
-and passing is the default. The stage shows "everyone is preparing their opening" while the calls
+time, the way the vote is. The instructions are strict: the only things allowed are a role claim
+(or a counterclaim), one's own night action or result, or a challenge to an earlier claim with a
+reason. Deductions wait for the discussion, where they can answer today's claims. Anything else is a
+pass, and passing is the default. The stage shows "everyone is preparing their opening" while the calls
 run, then plays the openings that were made one by one in a seeded order, with the passes as one line.
 - *Why at once:* a round of mostly passes played one seat at a time is close to a minute of "player_x
   passes" before anything happens. At once, the wait is about one model call.
 - *Why this is safe now, when simultaneous openings were rejected before:* the earlier simultaneous
   turns were open statements, and came out near-identical. These are restricted to private facts and
-  claims, and duplicates are filtered out afterwards (below).
+  claims, and a filter afterwards removes everything else (below).
 - *Responses come from the existing scheduler.* Opening messages go into the transcript with their
   accusation tags like any message, so a player named in a claim ("I checked player_5: wolf") is
   first in the reply queue when discussion starts. No new summariser or planning step. If the tags'
   misses (§7.1) turn out to matter, an LLM step can be added later.
 - *Cost:* one call per living player per day for the opening (day 1 today makes three).
 
-**The echo filter in the opening.** The parallel calls can't see each other, so the filter runs
-afterwards: the collecting step puts the openings in the seeded order and checks each against the
-ones before it. Claims are always kept: two players claiming the same role is a counterclaim, the
-contest phase 1 is trying to create. The exemption goes into the filter's prompt for every turn, as
-"a role claim, or a report of the speaker's own night action or result, that the speaker has not
-already made today, is new", so a counterclaim mid-discussion is never hidden either, while a third
-repeat of the same claim still is.
+**The opening filter: one call, an allow-list.** Agents often speak when told to pass, so the
+instructions need a backstop. After the openings are collected, one cheap call sees all of them in
+the seeded order and labels each with what kind of statement it is. It keeps only the allowed kinds:
+- a role claim, or a counterclaim to an earlier one;
+- the speaker's own night action or result;
+- a challenge to an earlier claim, with a reason.
+
+Everything else becomes a pass: general advice, padding (*"good that the healer protected player_2;
+now let's look at the voting records"*), and deductions. The call also drops a repeat of an earlier
+opening, except a claim: two players claiming the same role is a counterclaim, the contest phase 1
+wants. It judges only the kind of statement, never whether it is true, so a fake claim is kept.
+- *Why an allow-list and not the echo filter:* "is this one of these kinds?" is a steadier question
+  for a cheap model than "is this new?", and it enforces what the opening is for.
+- *Failure:* verdicts are keyed by player, not position; a missing verdict or an error keeps the
+  opening, as the echo filter keeps a message when it errors. Human openings are never filtered.
+- *The kind label is recorded* on the entry for analysis (observer only).
+- *Deduction left out for now.* If openings turn out too thin, a very strict deduction rule (names a
+  player and cites a specific night fact, not already made) can be added.
+- The mid-day echo filter is unchanged.
 
 **S2. The closing defence: the most-accused, at once.** When discussion would end (passes or cap), the
 one or two players accused by the most different players today, with at least two accusers, get one
@@ -659,11 +672,11 @@ Discussion keeps the P5 line. Humans keep one limit.
    reads `voting_available` for day 1 today.
 3. **Collecting step.** The parallel turns must not write into `day_channel` themselves (each would
    claim the same position). They return their candidate lines to a holding field; the collecting step
-   orders them by the day's seed, runs the echo filter in that order (opening only), and writes the
-   speeches and pass markers into `day_channel` in sequence.
-4. **Echo filter** (`Agents/turn/novelty_agent.py`): the claim exemption in the prompt, and a way to
-   judge a candidate against the earlier openings rather than only the transcript. Normal discussion
-   turns are filtered as today.
+   orders them by the day's seed, runs the opening filter (opening only), and writes the speeches
+   and pass markers into `day_channel` in sequence.
+4. **Opening filter** (new, beside `Agents/turn/novelty_agent.py`): one prompt and an output schema
+   with one verdict per speaker (player, kind, keep), every field required (flash-lite fails on
+   optional fields). The output schema is model-visible: field descriptions, no class docstring.
 5. **Closing speakers.** A small helper: for each living player, the set of different players who
    tagged an accusation against them today (`addressed_targets`, stance `accusation`, not themselves);
    keep those with at least two; sort by count, then latest accusation; take two.
@@ -684,7 +697,7 @@ Discussion keeps the P5 line. Humans keep one limit.
    fixes it here too.
 10. **Tests** (written by Claude once the code is in): day 1 is the opening only; every living player is
     sent exactly one opening turn; openings land in `day_channel` in seeded order with distinct
-    positions; a duplicate opening is filtered and a counterclaim is not; a player named in an opening
+    positions; the opening filter drops padding and a repeat, keeps a counterclaim, and keeps everything when its call fails; a player named in an opening
     accusation replies first in discussion; the closing runs after passes and after the cap, picks by
     distinct accusers, is skipped when nobody has two, and gets no replies; the translator emits the
     new events.
