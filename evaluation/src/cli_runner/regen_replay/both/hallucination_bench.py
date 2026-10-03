@@ -45,12 +45,14 @@ def _read_jsonl(path: Path) -> list[dict]:
 
 # --- worker: one arm, one process ------------------------------------------------
 
-def run_worker(dataset: Path, out: Path, n: int, memory: str, workers: int, limit: int | None) -> None:
+def run_worker(dataset: Path, out: Path, n: int, memory: str, workers: int, limit: int | None,
+               slices: list[str] | None = None) -> None:
     """Generate ``n`` valid samples per case. An existing file is topped up: its valid samples are
     kept and only the missing ones (invalid or never generated) are regenerated."""
     from evaluation.src.replay.hallucination_bench import generate
 
-    cases = _read_jsonl(dataset)[:limit] if limit else _read_jsonl(dataset)
+    cases = [c for c in _read_jsonl(dataset) if not slices or c.get("slice") in slices]
+    cases = cases[:limit] if limit else cases
     kept: dict[str, list[dict]] = defaultdict(list)
     if out.exists():
         for s in _read_jsonl(out):
@@ -77,6 +79,8 @@ def spawn_arm(arm: dict, cfg: dict, out: Path) -> None:
            "--workers", str(cfg.get("workers", 3))]
     if cfg.get("limit"):
         cmd += ["--limit", str(cfg["limit"])]
+    if cfg.get("slices"):
+        cmd += ["--slices", *cfg["slices"]]
     subprocess.run(cmd, cwd=REPO_ROOT, env=env, check=True)
 
 
@@ -177,15 +181,18 @@ def main() -> None:
     ap.add_argument("--dataset"), ap.add_argument("--out")
     ap.add_argument("--n", type=int, default=3), ap.add_argument("--memory", default="none")
     ap.add_argument("--workers", type=int, default=8), ap.add_argument("--limit", type=int)
+    ap.add_argument("--slices", nargs="*", help="only cases in these slices (curated, random, control, pinned)")
     args = ap.parse_args()
     if args.worker:
-        run_worker(REPO_ROOT / args.dataset, Path(args.out), args.n, args.memory, args.workers, args.limit)
+        run_worker(REPO_ROOT / args.dataset, Path(args.out), args.n, args.memory, args.workers, args.limit,
+                   args.slices)
         return
 
     cfg = json.loads(Path(args.config).read_text())
     out_dir = REPO_ROOT / cfg.get("output_dir", "evaluation/eval_results/hallucination_bench") / cfg["label"]
     out_dir.mkdir(parents=True, exist_ok=True)
-    cases = {c["case_id"]: c for c in _read_jsonl(REPO_ROOT / cfg["dataset"])}
+    cases = {c["case_id"]: c for c in _read_jsonl(REPO_ROOT / cfg["dataset"])
+             if not cfg.get("slices") or c.get("slice") in cfg["slices"]}
 
     by_arm: dict[str, list[dict]] = {}
     for arm in cfg["arms"]:

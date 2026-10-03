@@ -23,5 +23,11 @@
   ],
   "recall_model": "gemini-3.1-flash-lite",
   "precision_model": "gemini-3.5-flash",
-  "golden_model": "gemini-3.1-flash-lite"
+  "golden_model": "gemini-3.1-flash-lite",
+  "slices": [
+    "curated",
+    "pinned",
+    "control"
+  ],
+  "note": "prompt changes: curated + pinned (+ control for false alarms); model comparisons: random + control"
 }
