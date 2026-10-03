@@ -70,14 +70,16 @@
   color: var(--ink2);
 }
 
-.name,
+.name {
+  max-width: 100%;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
 .holder {
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-.holder {
   font-style: italic;
   color: var(--ink2);
 }
