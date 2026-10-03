@@ -15,7 +15,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 # Model-visible: embedded in DayDiscussOutput -> its field descriptions are part of the frozen
@@ -86,12 +86,26 @@ class DayChannel(BaseModel):
 
 
 class DaySummary(BaseModel):
-    """A condensed summary of one day's discussion, carried into later days."""
+    """One block carried into later days: either the summariser's account of a day's discussion,
+    or a game-master announcement (a night's outcome, a vote result) filed alongside it."""
 
     day: int
     """The day summarized."""
     summary: str
     """Serialized day-summary text."""
+    source: Literal["discussion", "game_master"] = "discussion"
+    """Who wrote it: "game_master" = an exact engine announcement; "discussion" = the summariser's
+    account of what players said. Prompts render the two apart, so a claim repeated in a summary
+    never reads with the authority of an announcement (audit 2026-10-03, finding 5)."""
+
+    @model_validator(mode="after")
+    def _label_old_announcements(self) -> "DaySummary":
+        # Saved before `source` existed (a checkpoint of a game in progress at the change): the
+        # engine's announcements open with fixed phrases, and no discussion summary does.
+        if "source" not in self.model_fields_set and self.summary.lstrip().startswith(
+                ("Night of day", "Here's the vote result")):
+            self.source = "game_master"
+        return self
     structured: dict = Field(default_factory=dict)
     """The full DaySummaryOutput (role_claims / accusations / alliances / village_dynamics) as a dict —
     the structured signal the post-game tagger/credit reuse (role_claims for role-reveal; accusations for

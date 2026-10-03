@@ -219,5 +219,5 @@ def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
             message=message,
         )
     ]
-    state_update["day_summaries"] = [DaySummary(day=current_day, summary=message)]
+    state_update["day_summaries"] = [DaySummary(day=current_day, summary=message, source="game_master")]
     return state_update

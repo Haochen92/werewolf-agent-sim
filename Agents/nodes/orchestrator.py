@@ -238,7 +238,7 @@ Player {lynched} has been voted out and was a {state['roles'][lynched]}.
                 )
             ],
             "day_summaries": [
-                DaySummary(day=current_day, summary=message)
+                DaySummary(day=current_day, summary=message, source="game_master")
             ],
             # The announcement above publicly reveals the lynched player's role — record it on
             # the deterministic dead roster (phase="day").
@@ -278,7 +278,7 @@ Here's the vote result for day {current_day}:
             )
         ],
         "day_summaries": [
-            DaySummary(day=current_day, summary=message)
+            DaySummary(day=current_day, summary=message, source="game_master")
         ],
     }
 
