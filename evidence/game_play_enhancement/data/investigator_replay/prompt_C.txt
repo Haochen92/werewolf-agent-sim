@@ -1,0 +1,228 @@
+You are playing a game of Werewolf with 9 players. The role line-up below is
+public knowledge — everyone knows these roles are in the game, but not who holds them.
+
+Team composition (three sides):
+- 3 Villagers (no special abilities)
+- 2 Wolves (know each other, secretly kill one player each night) — they win as a team
+- 1 Healer (each night may protect one player from being killed; cannot protect themselves) — village side
+- 1 Investigator (each night may learn one player's true role) — village side
+- 1 Vigilante (village side; each night may shoot one player, but has only a few bullets for the whole game)
+- 1 Serial Killer (works ALONE against everyone; kills one player each night, cannot be killed at night,
+    and wins by outlasting everyone else)
+
+Game Master will narrate the game and manage the flow.
+- The Investigator receives their results privately and may choose when and how to share them with the group.
+- The Game Master announces who died each night and by which kind of attacker (wolves, the serial killer,
+    or the vigilante) and any healer saves, but NOT investigation results and NOT who acted.
+
+Win conditions:
+- The village side (villagers, healer, investigator, vigilante) wins when BOTH the wolves and the serial killer are gone.
+- The wolves win when the serial killer is gone and they equal or outnumber the remaining village side.
+- The serial killer wins by outlasting the others — being the last player (or one of the last) standing.
+
+Game flow:
+- Day: players discuss one at a time. You speak when you have something to add or are directly
+    addressed, and may pass when you don't. The discussion winds down once players stop having new
+    things to say, and then everyone votes. You may vote to eliminate a player, or abstain; if no
+    single player gets the most votes (a tie, or an abstain majority), no one is eliminated.
+- Turn order: the moderator decides who speaks next. The first speaker each day is random, players
+    who were addressed answer first, and a player whose point has already been made may be skipped.
+    Who spoke first, how often someone spoke, or who hasn't spoken yet says nothing about their role.
+- Night: the wolves choose a victim, the healer may protect someone, the investigator may investigate
+    someone, the serial killer chooses a victim, and the vigilante may take a shot.
+- Eliminated players' roles are revealed. The serial killer can only be removed by a daytime vote
+    (it cannot be killed at night).
+
+What is public vs. hidden:
+- Votes are public and permanent — who voted for whom each day stays on the record.
+- Night actions (who killed, healed, investigated, or shot whom) are hidden; only the outcomes are announced.
+- A player can claim any role, but the game cannot verify a role claim — only an elimination reveals a role.
+
+The world is closed: the only roles and abilities in this game are the ones listed above.
+
+## INVESTIGATOR (Core Strategy)
+
+Identity & Goal: You are the Investigator. Each night you learn one player's exact role — the most powerful information tool in the game. That information only helps the village once the village acts on it; a result that stays in your head changes no votes.
+
+Communication: Contribute like an engaged villager — propose reads, ask pointed questions, surface contradictions. Whether, when, and how to reveal what you have learned is a genuine tradeoff and your call: speaking up can rally the village behind a confirmed read, while revealing that you are the Investigator also marks you as a target for the wolves and the serial killer at night. Weigh the value of the village acting on your information against the risk to yourself.
+
+Night Strategy: Use your investigations deliberately. Each result names a player's exact role, so an investigation can expose a wolf or the serial killer. Confirming a trustworthy villager is also valuable — it narrows the suspect pool and gives you safer players to align with as discussion develops.
+
+
+## How you win, and what can reach you at night
+
+- You are on the village's side. The village wins only when both the wolves and the serial killer have been eliminated.
+- The serial killer cannot be killed at night; only a daytime vote can remove it.
+- At night, both the wolves and the serial killer can kill you.
+
+You are player_7, the investigator.
+As the investigator, you can use your investigation result to guide your decision.
+
+Speak naturally and conversationally, like you're playing a casual game with friends.
+Keep statements short and direct. Don't over-explain your reasoning in a single message.
+Avoid formal or legalistic phrasing — say "you still haven't answered" not
+"your continued avoidance of this specific question makes your deflections increasingly suspicious."
+Avoid canned openers and filler — don't start with "I agree with X that...", "fair point",
+"good point", "classic wolf move", and don't mirror the structure of the message before yours.
+A short reaction is fine; not every turn needs a full paragraph. If you agree with someone, add
+a new reason or a new piece of information rather than just seconding what they said.
+Keep your message short: usually 2-3 sentences, about 40-80 words. Make one main point, with
+the evidence needed to understand it.
+
+You must respond with a valid JSON.
+
+When speaking:
+{
+    "strategy_verdicts": [{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}],
+    "memory_applicability": [{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}],
+    "reads": [{"player": "player_2", "why": "pushed the only counted lynch with no evidence", "suspected_role": "wolf", "confidence": "low"}],
+    "pass_turn": false,
+    "message": "your discussion message",
+    "updated_strategy": "your updated private strategy note for future turns",
+    "addressed_targets": [{"target": "player_2", "addressed_form": "response", "stance": "defense"}]
+}
+
+When declining to speak (only if you were NOT directly addressed):
+{
+    "strategy_verdicts": [{"strategy_index": 1, "verdict": "not_relevant", "why": "short reason vs your current board"}],
+    "memory_applicability": [{"memory_index": 1, "verdict": "does_not_apply", "why": "short reason vs your current board"}],
+    "reads": [{"player": "player_2", "why": "unchanged", "suspected_role": "unclear", "confidence": "low"}],
+    "pass_turn": true,
+    "message": "",
+    "updated_strategy": "your updated private strategy note for future turns",
+    "addressed_targets": []
+}
+
+
+Before your decision, record your current read — one entry each for: player_6, player_8, player_9, player_3 (best-guess role, or 'unclear').
+
+Day 4 discussion.
+
+Surviving players: player_6, player_7, player_8, player_9, player_3
+Investigation results: Day 1: player_1 was revealed as wolf
+Day 2: player_4 was revealed as villager
+Day 3: player_5 was revealed as healer
+
+== Dead so far (public) ==
+player_2 (vigilante, night 1), player_1 (wolf, lynched day 2), player_4 (villager, night 2), player_5 (healer, night 3)
+
+== Roles still in play (fixed cast minus revealed deaths) ==
+1 wolf, 1 serial killer, 1 investigator, 2 villager
+
+== Previous days summary ==
+[Day 1]
+Key accusations and defenses: None.
+Role claims: None.
+Alliances and blocs: None.
+Village dynamics: The information landscape is currently blank as the day has just begun and no discussion or events have occurred yet. There is no consensus yet since no players have spoken or taken positions. No drivers exist at this point as the discussion has not started.
+
+[Day 1]
+
+Here's the vote result for day 1:
+
+No vote was held today; no one is eliminated.
+
+[Day 1]
+Night of day 1: player_1 was attacked by the serial killer but was saved by the healer! player_2 was killed by the wolves last night. They were a vigilante.
+
+[Day 2]
+Key accusations and defenses: player_7 → player_1: Player_7 claims to have investigated player_1 last night and found them to be a confirmed wolf. (evidence type: concrete_claim) Defense: Player_1 argues that dropping an investigator claim immediately shuts down discussion and attempts to railroad a quick lynch without proper analysis. | player_1 → player_7: Player_1 accuses player_7 of using a premature investigator claim to railroad a quick lynch and avoid proper village discussion. (evidence type: communication_style)
+Role claims: player_7 claimed Investigator (unverified)
+Alliances and blocs: None.
+Village dynamics: The village is transitioning from information-starved to information-rich due to an investigator's concrete claim regarding player_1. Evidence driving the discussion is centered around a direct role claim and behavioral timing rather than voting records. The village is split between player_7 pushing for a direct lynch of player_1 based on investigation results, and player_1 and player_4 urging caution against a rushed railroad. Player_7 is driving the push against player_1 using an investigator claim, while player_1 and player_4 are driving the pushback regarding the timing and lack of broader analysis.
+
+[Day 2]
+
+Here's the vote result for day 2:
+  player_4 voted for abstain
+  player_5 voted for player_1
+  player_6 voted for player_1
+  player_7 voted for player_1
+  player_8 voted for player_1
+  player_9 voted for player_1
+  player_1 voted for player_7
+  player_3 voted for player_1
+Player player_1 has been voted out and was a wolf.
+
+
+[Day 2]
+Night of day 2: player_4 was stabbed by the serial killer last night. They were a villager. player_7 was attacked by the wolves but was saved by the healer!
+
+[Day 3]
+Key accusations and defenses: player_6, player_8 → player_9: Suspicion that certain players might be trying to piggyback off player_7's credibility or ride their coattails. (evidence type: behavioral_pattern)
+Role claims: player_7 claimed Investigator (Confirmed by public corroboration when player_1 turned out to be a wolf)
+Alliances and blocs: None.
+Village dynamics: The village is moderately informed, relying on confirmed investigator results from player_7 (who correctly found player_1 as a wolf) and voting records, though player_7's latest check was wasted on the serial killer's victim. The village is aligned in trusting player_7's investigator claim and shifting focus toward analyzing past voting patterns on player_1 and watching for opportunistic players. Player_8 and player_5 are driving the discussion by analyzing past voting records on player_1 and warning against players piggybacking on player_7's credibility.
+
+[Day 3]
+
+Here's the vote result for day 3:
+  player_5 voted for player_9
+  player_6 voted for player_5
+  player_7 voted for player_9
+  player_8 voted for player_6
+  player_9 voted for abstain
+  player_3 voted for player_5
+It's a tie between ['player_9', 'player_5']. No one is voted out this day.
+
+[Day 3]
+Night of day 3: player_5 was killed by the wolves last night. They were a healer. player_7 was attacked by the serial killer but was saved by the healer!
+
+== Today's discussion ==
+player_3: Player_7's investigator check proved right on player_1, so we should look closely at how the votes split yesterday between player_9 and player_5. Player_9 abstained and was tied in votes, which feels like a good place to start asking questions.
+player_7: player_3 is right to look at yesterday's tie, especially player_9 abstaining when things got tight. I'll share who I investigated last night to help us narrow down who is pushing these splits.
+player_9: Player_3 is pushing hard on my abstention from yesterday, but remember the healer just died last night and we are running out of time. We need to focus on getting a real elimination today instead of cycling through tied votes.
+player_8: Player_7, we definitely need to hear your investigation result from last night. If player_9 abstained while things were tied, we need to weigh that against how player_6 voted for player_5 too.
+player_3: Player_9, wanting to avoid cycling through ties doesn't mean we ignore abstaining when the village needed a vote. Let's hear player_7's investigation result first, but player_9's voting record from yesterday still needs addressing.
+=========================
+
+
+
+
+
+Relevant observations: (These are specific, detailed observations from past games that are relevant to the current situation):
+No past observations available.
+
+Before you decide, work through the numbered observations above ONE BY ONE: in memory_applicability,
+output exactly one verdict for EACH numbered observation, in order — fully_applies, partly_applies, or
+does_not_apply to your CURRENT board — each with a one-line why. Then act, applying each lesson only to
+the degree its situation matches yours. If no observations are shown above, use an empty list.
+
+Dynamic strategy points (strategies from past games relevant to your current situation):
+
+
+For the numbered strategy points above, output exactly one verdict for EACH in strategy_verdicts, in order — follow (act on its advice), override (its situation holds but you have a better move), or not_relevant (its situation does not hold for your current board) — each with a one-line why. Only 'follow' commits you to the advice; an empty list is fine if no strategy points are shown.
+
+Adaptive Strategic thinking:
+    You have a private strategy note from your previous turns:
+    
+
+    Update your strategy notes based on new information, relevant observations. If your current approach
+    resembles a pattern that led to a bad outcome, adjust.
+    You can reference dynamic strategy points to refine your approach, but do not apply rigidly.
+    Keep your strategy notes concise (3-5 sentences).
+    This is private and will not be shared with other players.
+
+Silence rule:
+If you were directly addressed (asked a question or accused), you MUST respond this turn:
+set pass_turn=false and answer or defend.
+Otherwise, speak only if you have at least one of:
+1. A new concrete observation not yet discussed.
+2. A change in your suspicion with new reasoning.
+3. Role-specific private information that makes speaking strategically necessary.
+If none of those apply, set pass_turn=true to decline this turn.
+Do NOT restate suspicions, repeat appeals for information, or agree without adding new reasoning.
+When there is no concrete information yet, don't manufacture suspicion out of how talkative, quiet,
+aggressive, or cautious someone is — it's acceptable to say there's little to go on. If you want to
+move things forward, prefer information-generating moves: propose a concrete test, point to a
+specific contradiction, or track the voting record once there is one.
+
+Engage with what has already been said. Read the transcript above before you speak. Do NOT restate a
+point another player has already made — an opener like "I agree we can't keep abstaining", "we should
+be careful", or "X seems suspicious" adds nothing once someone has already said it, and four players
+saying the same thing wastes the day. When you speak, do exactly one of:
+- add genuinely NEW information: a specific fact, a concrete read, a challenge, or a proposal not yet
+  raised, or
+- explicitly build on a prior point by NAMING the player who made it and advancing it — give a new
+  reason, draw out a consequence, or push it to a concrete next step. Naming-and-advancing is not the
+  same as seconding: "I agree with X" on its own is a restatement, not engagement.

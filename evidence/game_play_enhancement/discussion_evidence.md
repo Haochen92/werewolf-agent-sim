@@ -426,6 +426,22 @@ The owner played seat 9, a villager. The serial killer won on day 5. Output: `da
   player's choice), before it can measure P1.
 - **No evil player claimed a role** in this game.
 
+**Re-judged with the category split.** The judge's "participation" label became two: *turn taking*
+(how often or in what order someone has spoken, which the moderator decides) and *reveal timing*
+(when a player chose to share something). Both sides were judged again with the new rubric:
+
+| Measure | Before (3 games, 117 agent messages) | v2 (1 game, 30 agent messages) |
+|---|---|---|
+| Messages using turn taking | 7 (6%) | 0 |
+| Accusing messages using turn taking | 0 of 78 | 0 of 19 |
+| Messages using reveal timing | 19 (16%) | 5 (17%) |
+
+Turn taking falls to zero in the v2 game, the direction P1 aims at, but one game cannot carry that.
+Reveal timing is unchanged, as expected, since P1 says nothing about it. Re-judging also moved other
+shares by several points (the baseline's "something a player said" went from 74% to 63% of
+messages), which is a reminder that the judge's labels shift with its rubric. That is why both sides
+must always be judged with the same rubric in the same run.
+
 ### 6.2 An investigator invented a result, and believed it
 
 On day 4 the investigator said: *"I investigated player_9 last night, and they are the remaining
@@ -469,11 +485,51 @@ measurements:
   its message, and that read still said "serial killer, low" moments before the claim. Reading
   first was meant to tie the message to the agent's actual belief, and here it did not.
 
-**How to test it.** Rebuild the investigator's exact day-4 prompt from the game record and resample
-the message many times: as it was; with the results reworded (*"Night 3 (last night): you
-investigated player_5, who is the healer"*); and with the previous note marked as the agent's own
-past plan rather than a fact. If the invented claims fall under a variant, that variant is the fix.
-It is a cheap offline test on the player model and leaves the live site alone.
+**The replay test (2026-10-03).** The investigator's exact day-4 turn was rebuilt from the game's saved
+engine state (its LangGraph checkpoint, read without writing), using the engine's own builder for the
+turn's inputs. The same template and model (`gemini-3.5-flash-lite` on Vertex, default temperature)
+were then sampled 20 times under each of four variants. The note was removed rather than reworded,
+because removal is the cleaner test of whether it matters at all. Runner:
+`evaluation/experiments/investigator_claim_replay.py`; every prompt and sample is in
+`data/investigator_replay/`.
+
+| Variant | Invented a check | Reported its real check (player_5, healer) |
+|---|---|---|
+| A. As played | 20 / 20 | 0 / 20 |
+| B. Results reworded | 0 / 20 | 20 / 20 |
+| C. Previous note removed | 20 / 20 | 0 / 20 |
+| D. Reworded and note removed | 0 / 20 | 20 / 20 |
+
+The counts come from reading every sampled message. A keyword screen flagged 19 of 20 in A and in C,
+but missed one in each that used other words (*"my investigation last night targeted player_9"*).
+
+**The wording of the results is the cause; the note is not.** As played, the investigator never once
+recognised player_5 as its night-3 check. In most samples it invented a check on player_8, a safe
+"cleared villager" claim, and in some it invented a wolf or serial-killer result, as in the live
+game. With the results reworded, every sample reported player_5 correctly, often adding *"who
+unfortunately was killed by the wolves"*. Removing the note changed nothing, so the first reading
+above (the note fed the claim back) is not supported. The note may still steer who gets suspected,
+but it did not cause the invention.
+
+What the test does and does not show:
+- **It pins one turn exactly.** Same board, same prompt, same model. Only the sampling varies, which
+  is what the 20 draws average over.
+- **It is one turn from one game.** It shows the old wording can make invention near-certain in the
+  right situation: a check whose target also died that night and was revealed. It does not measure
+  how often that happens across games.
+- **The new wording changed two things at once.** It names the check as a night and as the player's
+  own action ("you investigated"). The test cannot say which of the two mattered. For the fix it
+  doesn't need to.
+
+**The fix.** The engine now writes every investigator result the reworded way, for all games and not
+only behind the v2 switch, because the old wording is a correctness bug rather than a design variant.
+For example: *"Night 3 (last night): you investigated player_5, who is the healer"*. "(last night)"
+appears only when the check really was the night before the current day. The exact-prompt golden test
+was regenerated on purpose; its only change is that one line.
+
+*Effect on the comparison:* v2 games played after the fix differ from the first v2 game in this line
+as well. The baseline games all had the old wording. This mainly affects the investigator's own
+messages (the "own night result" category).
 
 ---
 
@@ -599,8 +655,9 @@ pool of about 16. They are non-human creatures in the existing felt-and-brass no
 3. **Whether speaking order is ever used as evidence** rests only on a crude keyword count (§2.4). The
    judge's "participation" label can answer it once it separates turn order and silence from the
    timing of a reveal (§6.1).
-4. **Why the investigator invented a result** (§6.2). Hypotheses about the prompt's structure, with an
-   offline replay test to tell them apart.
+4. ~~Why the investigator invented a result~~ Answered by the replay (§6.2): the wording of its
+   results. Still open is how often other private facts are misread the same way. The vigilante's
+   shot results are the obvious next place to look.
 5. **A human's vote waits on the slowest agent (2026-10-03).** In the first v2 game, the owner's
    ballot was not offered until all seven agents had voted. One agent's call hit two Google timeouts
    and was rescued by the fallback model after about a minute, so the owner waited that minute with

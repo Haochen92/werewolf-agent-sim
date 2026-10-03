@@ -1,0 +1,39 @@
+{
+  "game": "832404e9-a5f2-434e-8484-5bb953718a8f",
+  "day": 4,
+  "speaker": "player_7",
+  "channel_seq": 8,
+  "model": "gemini-3.5-flash-lite",
+  "checked": [
+    "player_1",
+    "player_4",
+    "player_5"
+  ],
+  "n": 20,
+  "variants": {
+    "A": {
+      "spoke": 20,
+      "passed": 0,
+      "flagged_invented_claim": 19,
+      "mentions_player_9": 19
+    },
+    "B": {
+      "spoke": 20,
+      "passed": 0,
+      "flagged_invented_claim": 0,
+      "mentions_player_9": 18
+    },
+    "C": {
+      "spoke": 20,
+      "passed": 0,
+      "flagged_invented_claim": 19,
+      "mentions_player_9": 16
+    },
+    "D": {
+      "spoke": 20,
+      "passed": 0,
+      "flagged_invented_claim": 0,
+      "mentions_player_9": 15
+    }
+  }
+}

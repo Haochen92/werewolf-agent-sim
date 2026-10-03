@@ -26,33 +26,33 @@
     "messages_read": 117,
     "read_errors": 0,
     "share_of_messages_using": {
-      "speech_content": "87/117 (74%)",
+      "speech_content": "74/117 (63%)",
       "role_claim": "72/117 (62%)",
-      "night_events": "50/117 (43%)",
-      "voting_record": "45/117 (38%)",
-      "own_night_result": "15/117 (13%)",
-      "participation": "11/117 (9%)",
-      "manner": "10/117 (9%)",
-      "none": "2/117 (2%)"
+      "night_events": "52/117 (44%)",
+      "voting_record": "47/117 (40%)",
+      "reveal_timing": "19/117 (16%)",
+      "own_night_result": "18/117 (15%)",
+      "turn_taking": "7/117 (6%)",
+      "manner": "6/117 (5%)"
     },
-    "accusing_messages": 76,
+    "accusing_messages": 78,
     "share_of_accusing_messages_using": {
-      "speech_content": "58/76 (76%)",
-      "role_claim": "53/76 (70%)",
-      "voting_record": "31/76 (41%)",
-      "night_events": "29/76 (38%)",
-      "own_night_result": "14/76 (18%)",
-      "manner": "8/76 (11%)",
-      "participation": "2/76 (3%)"
+      "role_claim": "54/78 (69%)",
+      "speech_content": "47/78 (60%)",
+      "night_events": "33/78 (42%)",
+      "voting_record": "32/78 (41%)",
+      "reveal_timing": "17/78 (22%)",
+      "own_night_result": "16/78 (21%)",
+      "manner": "5/78 (6%)"
     },
     "town_accusations_on_evil_by_basis": {
-      "own_night_result": "13/15",
-      "role_claim": "34/41",
-      "speech_content": "30/38",
-      "manner": "4/4",
-      "participation": "1/1",
-      "night_events": "17/25",
-      "voting_record": "12/24"
+      "own_night_result": "14/17",
+      "reveal_timing": "9/9",
+      "role_claim": "32/37",
+      "manner": "3/3",
+      "speech_content": "24/31",
+      "night_events": "14/20",
+      "voting_record": "8/18"
     },
     "self_claims": [
       {
