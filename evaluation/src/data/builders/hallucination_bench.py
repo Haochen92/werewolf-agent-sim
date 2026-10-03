@@ -111,7 +111,9 @@ def _census_state(record: dict, case: dict) -> dict:
     roles, dead_from = record["roles"], death_timeline(record)
     alive = [p for p in roles if dead_from.get(p, 10**9) > day]
     channel = [m for m in record["day_channel"] if int(m["day"]) < day]
-    today = [m for m in record["day_channel"] if int(m["day"]) == day]
+    # The moderator's same-day lines (the vote result, then the night's deaths) are posted after the
+    # votes; the record files them under the day, but no day turn can have seen them yet.
+    today = [m for m in record["day_channel"] if int(m["day"]) == day and m["player"] != "game_master"]
     if case["action_phase"] == "day_discussion":  # the turn sees only what preceded it
         seq = (case.get("agent_message") or {}).get("seq") or 0
         today = [m for m in today if m["seq"] < seq]

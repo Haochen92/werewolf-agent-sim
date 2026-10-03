@@ -58,3 +58,15 @@ def test_curation_slices_still_failing_random_and_controls():
     # every still-failing case is kept, in exactly one slice; passing ones only if drawn at random
     assert {"p0", "p1", "p2"} <= set(slices)
     assert all(slices[p] == "random" for p in ("p3", "p4", "p5") if p in slices)
+
+
+def test_a_rebuilt_turn_never_sees_the_moderators_later_lines():
+    """The record files the day's vote result and the night's deaths under the day itself; a vote
+    turn rebuilt from it must not see them (they are posted after the votes)."""
+    from evaluation.src.data.builders.hallucination_bench import _census_state
+
+    record = {"roles": STATE["roles"], "night_resolutions": [], "day_resolutions": [], "day_summaries": [],
+              "day_channel": [{"day": 2, "seq": 0, "player": "p2", "message": "who?"},
+                              {"day": 2, "seq": 1, "player": "game_master", "message": "vote result: p1 out"}]}
+    case = {"day": 2, "player_id": "p3", "action_phase": "day_vote", "private_context": {}}
+    assert [m["player"] for m in _census_state(record, case)["day_channel"]] == ["p2"]
