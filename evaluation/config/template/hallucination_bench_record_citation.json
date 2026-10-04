@@ -1,0 +1,28 @@
+{
+  "label": "summary_v4_cite_flashlite35",
+  "dataset": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+  "n": 3,
+  "workers": 3,
+  "arms": [
+    {
+      "label": "v4_votes",
+      "model": "gemini-3.5-flash-lite",
+      "checkout": "../ww-v4-votes",
+      "env": {"WW_DISCUSSION_PROMPT": "v2"},
+      "memory": "none",
+      "resummarize": true
+    },
+    {
+      "label": "v4_votes_cite",
+      "model": "gemini-3.5-flash-lite",
+      "env": {"WW_DISCUSSION_PROMPT": "v2"},
+      "memory": "none",
+      "resummarize": true
+    }
+  ],
+  "recall_model": "gemini-3.1-flash-lite",
+  "precision_model": "gemini-3.5-flash",
+  "golden_model": "gemini-3.1-flash-lite",
+  "slices": ["curated", "pinned", "control"],
+  "notes": "The record-citation rule (discussion_evidence.md §6.6). v4_votes = commit 0bab7fe (v4 + per-player vote history); its generations are the summary_v4_vote_history run's v4_votes arm, copied in (git worktree add ../ww-v4-votes 0bab7fe to regenerate). v4_votes_cite = main with the rule. Both use the same 104 cached v4 summaries (summaries_v4_votes.json copied as summaries_v4_votes_cite.json), and are judged together."
+}

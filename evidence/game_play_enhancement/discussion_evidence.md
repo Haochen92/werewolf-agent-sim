@@ -831,6 +831,34 @@ directory, and copy its `summaries_v4.json` as `summaries_v4_votes.json`, then r
 The cached baseline generations are required: generating a v4 baseline from the changed working
 tree would include the vote index and invalidate the comparison.*
 
+**Follow-up: a rule to cite the record exactly (2026-10-04).** Every day discussion and vote turn was
+told, at its end: when the message or the note mentions a past vote, death or healer save, check it
+against the record and keep every name and day as the record has them, in your own words; if the
+record doesn't show it, it is at most a player's claim (commit `bc4100a`). Against v4 + vote
+history, with its generations reused, the same 104 summaries, and both arms judged together:
+
+| | v4 + vote history | + citation rule |
+|---|---|---|
+| All samples bad | 80/267 (30%) | 81/267 (30%) |
+| Messages: bad / checkable | 27/125 (22%) | 27/130 (21%) |
+| Bad messages that mention a vote | 24 | 24 |
+| Notes: bad / checkable | 60/153 (39%) | 66/166 (40%) |
+| Controls (false alarms) | 5/120 | 1/120 |
+| Messages mentioning a vote | 158/199 | 156/197 |
+| Median message length | 42 words | 44 words |
+| Cases better / worse | | 16 / 18 (p = 0.86) |
+
+- **No effect.** The vote misquotes it targeted were unchanged (24 and 24), and so was everything
+  else: agents cite votes as often as before, at the same length, and still write "you voted to
+  eliminate player_9 yesterday just like I did" where the record says otherwise.
+- **What that says about the misquotes.** Laying the votes out per player, and now telling agents to
+  copy them, have both left the rate where it was. It looks like this model writing the point it
+  wants to make and filling in the supporting vote from impression, rather than any problem with how
+  the record is shown. A stronger model on the same cases would test that. It has not been run.
+
+*Run: `evaluation/config/template/hallucination_bench_record_citation.json`; output
+`evaluation/eval_results/hallucination_bench/summary_v4_cite_flashlite35/` (not tracked).*
+
 ---
 
 ## 7. Phase 2 plan: how the day runs (not started)
@@ -1128,6 +1156,20 @@ pool of about 16. They are non-human creatures in the existing felt-and-brass no
      bench, reporting errors per checkable statement as well as per sample (a terser prompt can
      score better just by saying less), then in played games. Per-message updates only if v3 helps
      and dialogue later grows long.
+7. **Deferred idea: a rephrasing layer for what humans read (2026-10-04).** The owner's idea: the
+   agent decides what to say, and a second small call rewrites the wording to sound more human,
+   optionally with a per-character personality. Shape agreed for when it is taken up:
+   - *Display only.* Humans see the rephrased line; agents, summaries, the ledger and the bench keep
+     the original, so a rephrasing error never enters the game, and it is not a prompt epoch.
+   - *Agents keep temperature 1.0.* Gemini 3 is meant to run at its default, temperature 0 is not
+     deterministic anyway, and the bench needs the variety. The wording varies through the second
+     call, not through the decision.
+   - *Facts guarded by code.* The rewrite must keep exactly the original's player IDs, day numbers
+     and role words; otherwise the original is shown.
+   - *Personas by character, never by role* (the cast-costume rule). The tone instructions could
+     move from the agent prompt into the rephraser.
+   - *First step:* rephrase messages from existing replays offline, then read them for fidelity and
+     naturalness, before any server change.
 
 ---
 
