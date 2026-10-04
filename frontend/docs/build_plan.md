@@ -456,6 +456,12 @@ Migration `0010` was already applied to the shared `ww-postgres` (nullable colum
 server ran fine on it). The `60c7cc0b` images are kept as `:prev`. Smoke: `/api` health, models,
 replays, characters, `/`, `/play`, `/rooms`, `/replays`, an old replay page and the ledger
 endpoint (game 140610ad: mornings 2 and 3) all 200; the Record tab renders the real ledger.
+· **2026-10-04 server hotfix at `ae64e8ed`** (server image only). The private night record
+(`NightActionRecord`, in state since the fidelity pass, deployed at `60c7cc0b`) was missing from the
+checkpoint serializer's allowlist, so a human turn after a night resumed it as a plain dict and the
+game died ("'dict' object has no attribute 'day'"; game 6ad64e96). Games whose human died on night 1
+never resumed after a night, which is why the earlier game did not hit it. A new test walks every
+graph state's models against the allowlist. `:prev` for the server is now `2d8bab5e`.
 
 **P4 — deploy + polish.** Caddy site (same-origin `/api`), HTTPS + `Secure` cookie flag on ·
 production compose (Postgres + `alembic upgrade head` before first boot; one `WW_POSTGRES_DSN`
