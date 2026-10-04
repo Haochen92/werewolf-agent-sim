@@ -132,6 +132,8 @@ def test_replay_dto_drops_private_game_row_fields():
         "cast_role_counts": {"wolf": 1},
         "model": "gemini-2.5-pro",  # the two operational columns a replay does show
         "memory": False,
+        "cost_usd": None,  # worked out from the usage column, which itself stays private
+        "avg_call_seconds": None,
     }
 
 

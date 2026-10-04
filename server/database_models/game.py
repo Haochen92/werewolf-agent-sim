@@ -109,6 +109,13 @@ class GameRow(SQLModel, table=True):
         default=None,
         sa_column=Column(JSONB, nullable=True),
     )
+    usage: dict | None = Field(
+        default=None,
+        sa_column=Column(JSONB, nullable=True),
+    )
+    """The tokens the game spent and its model calls' time, per model and UTC hour
+    (server/game/usage.py). Saved as the game runs; the replay's cost is worked out from it.
+    Null for games recorded before the column existed."""
 
 
 class EventRow(SQLModel, table=True):

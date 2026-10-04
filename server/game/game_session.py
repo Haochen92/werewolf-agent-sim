@@ -66,8 +66,11 @@ from server.game.pacing import PacingTracker
 from server.schemas import events as ev
 from server.game.seat_clocks import SeatClocks
 from server.game.translate import Translator, get_source_graph, is_cached
+from server.game.usage import UsageMeter
 
 logger = logging.getLogger(__name__)
+
+_USAGE_SAVE_EVERY_S = 30.0
 
 # How many times one question may be drafted. The wait for each draft is
 # credited back to the seat's clock, so without a cap an unhappy drafter could keep the
@@ -233,6 +236,9 @@ class GameSession:
         self._graph = graph if graph is not None else parent_graph_compiled
         self._repository = repository
         self._context = {"metrics": Metrics(), "eval_sink": EvalCaseSink()}
+        # Tokens and call time per model, saved on the row as the game goes (server/game/usage.py).
+        self.usage_meter = UsageMeter()
+        self._usage_saved_at = 0.0
 
         # What travels to the browsers, and how much of it is already saved.
         self.translator = Translator()
@@ -293,7 +299,7 @@ class GameSession:
                 # like the CLI path. Handing it the ids explicitly instead makes the SDK mark
                 # the graph's own chain span as a trace root, and Langfuse then names the
                 # trace "LangGraph" and takes the chain's output as the trace's.
-                self.config["callbacks"] = [create_langfuse_handler()]
+                self.config["callbacks"] = [create_langfuse_handler(), self.usage_meter]
                 root.update_trace(
                     name="werewolf_game", session_id=self._session_id,
                     input=trace_input, output={"status": "running"},
@@ -397,6 +403,14 @@ class GameSession:
                 self._saved_humans = list(self.human_players)
         if self.cast and not self._saved_cast:
             self._saved_cast = await self._repository.record_cast(self.game_id, self.cast)
+        # Usage changes with every model call, so it is saved at most every 30 seconds, and
+        # always at the end; a restart loses at most the last 30 seconds of counts.
+        if self.usage_meter.changed and (
+                self.game_over or time.monotonic() - self._usage_saved_at >= _USAGE_SAVE_EVERY_S):
+            if await self._repository.update_game(self.game_id, usage=self.usage_meter.snapshot()):
+                self._usage_saved_at = time.monotonic()
+            else:
+                self.usage_meter.changed = True
 
     def _on_chunk(self, chunk) -> bool:
         """Handle one chunk from the engine's stream. Returns True when the chunk is an
@@ -597,7 +611,7 @@ class GameSession:
             as_type="span", name=f"draft_preview_{seat}", input={"direction": direction},
         ) as span:
             span.update_trace(name="draft_preview", session_id=self._session_id)
-            with set_config_context({"callbacks": [create_langfuse_handler()]}) as ctx:
+            with set_config_context({"callbacks": [create_langfuse_handler(), self.usage_meter]}) as ctx:
                 line = ctx.run(preview_discuss, payload, self.config, runtime, direction)
             span.update(output={"line": line})
         return line
@@ -607,7 +621,8 @@ class GameSession:
         # variable the game task uses; a request handler has none, so it is set here.
         if self._llm_selection is not None:
             GAME_LLM.set(self._llm_selection)
-        return draft_from_notes(request, notes)
+        with set_config_context({"callbacks": [self.usage_meter]}) as ctx:
+            return ctx.run(draft_from_notes, request, notes)
 
     async def _collect_answers(self) -> Any:
         """Wait until every seat that was asked has answered, then return the answers in
@@ -635,14 +650,16 @@ class GameSession:
     # -- after a restart: rebuilt by the live registry -------------------------------------
 
     def reload_history(self, log: list[ev.DurableEvent], human_players: list[str],
-                       cast: Sequence[CastSeat] = ()) -> None:
+                       cast: Sequence[CastSeat] = (), usage: dict | None = None) -> None:
         """Put back what the database holds for a game that had already started: the
         events the players were sent, which seats are human, and which puppet stands at
         each seat. The live registry reads them from the events table, the game row and
         the cast table and passes them in. All count as already saved, so the next save
         writes only what comes after. A game with no stored cast keeps none: the client
-        shows such a game the way it always did."""
+        shows such a game the way it always did. ``usage`` is the row's token counts so far,
+        which the meter carries on from."""
         self.log = list(log)
+        self.usage_meter = UsageMeter(usage)
         self.translator.hydrate(self.log)
         self.human_players = list(human_players)
         self.cast = list(cast)

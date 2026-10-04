@@ -38,6 +38,11 @@ class ModelRow(BaseModel):
     """Starting a game on this row right now requires the player's own key: the row is
     not house-funded, or the house is off, or today's house games are used up. The same
     rule the door applies, said in advance so the client can hold the submit."""
+    avg_cost_usd: float | None = None
+    """The mean cost of a finished game on this model, from the games that recorded their
+    tokens (server/game/usage.py). None until one has."""
+    priced_games: int = 0
+    """How many finished games ``avg_cost_usd`` is the mean of."""
 
 
 

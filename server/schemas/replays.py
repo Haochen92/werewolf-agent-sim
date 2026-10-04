@@ -30,6 +30,13 @@ class ReplayBase(BaseModel):
     memory: bool = False
     """Whether the AI seats consulted past-game lessons. False for games recorded
     before the column existed (they all ran memory-off)."""
+    cost_usd: float | None = None
+    """What the game's model calls cost in USD, worked out from its recorded tokens and the
+    price table in force on its date (Agents/llm_factory/pricing.py). None for games recorded
+    before tokens were, or when a model in it has no price on record."""
+    avg_call_seconds: float | None = None
+    """Mean wall time of one model call on the game's model (seat turns and summaries). None
+    for games recorded before call times were."""
 
 
 class ReplayGame(ReplayBase):

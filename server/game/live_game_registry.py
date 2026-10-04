@@ -269,7 +269,8 @@ class LiveGameRegistry:
             repository=self._repository)
         session.reload_history(await self._repository.load_events(row.game_id),
                              row.human_players,
-                             await self._repository.load_cast(row.game_id))
+                             await self._repository.load_cast(row.game_id),
+                             usage=row.usage)
         self._register(session)
 
         if row.byok:

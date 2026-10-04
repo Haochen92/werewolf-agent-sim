@@ -69,7 +69,7 @@ async def test_server_session_opens_one_named_trace_in_the_games_session(
     session.start()
     await asyncio.wait_for(session.wait_finished(), timeout=10)
 
-    assert session.config["callbacks"] == ["game-handler"]
+    assert session.config["callbacks"] == ["game-handler", session.usage_meter]
     # No explicit ids anywhere: a seeded trace id made the SDK hang the root under a remote
     # parent that never exists, and ids handed to the handler made the graph's chain span a
     # second root that Langfuse named the trace after. Both nest through the active context.

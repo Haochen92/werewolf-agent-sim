@@ -34,7 +34,7 @@
           "system"
         ],
         "summary": "The served-game model menu (tested models only), and what the house will pay for",
-        "description": "Every tested model with its rescue, whether the house pays for it, and which one is\nthe default right now; plus the house's purse for today, so the client can say\n\"house pays, 3 left\" or \"your key needed\" before the player submits.",
+        "description": "Every tested model with its rescue, whether the house pays for it, which one is the\ndefault right now, and what a finished game on it has cost on average; plus the house's\npurse for today, so the client can say \"house pays, 3 left\" or \"your key needed\" before\nthe player submits.",
         "operationId": "supported_models_models_get",
         "responses": {
           "200": {
@@ -2390,6 +2390,22 @@
             "type": "boolean",
             "title": "Needs Key",
             "default": true
+          },
+          "avg_cost_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Cost Usd"
+          },
+          "priced_games": {
+            "type": "integer",
+            "title": "Priced Games",
+            "default": 0
           }
         },
         "type": "object",
@@ -2949,6 +2965,28 @@
             "type": "boolean",
             "title": "Memory",
             "default": false
+          },
+          "cost_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Usd"
+          },
+          "avg_call_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Call Seconds"
           }
         },
         "type": "object",
@@ -3034,6 +3072,28 @@
             "type": "boolean",
             "title": "Memory",
             "default": false
+          },
+          "cost_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Usd"
+          },
+          "avg_call_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Call Seconds"
           },
           "events": {
             "items": {

@@ -30,9 +30,10 @@ export interface paths {
     };
     /**
      * The served-game model menu (tested models only), and what the house will pay for
-     * @description Every tested model with its rescue, whether the house pays for it, and which one is
-     *     the default right now; plus the house's purse for today, so the client can say
-     *     "house pays, 3 left" or "your key needed" before the player submits.
+     * @description Every tested model with its rescue, whether the house pays for it, which one is the
+     *     default right now, and what a finished game on it has cost on average; plus the house's
+     *     purse for today, so the client can say "house pays, 3 left" or "your key needed" before
+     *     the player submits.
      */
     get: operations['supported_models_models_get'];
     put?: never;
@@ -1087,6 +1088,13 @@ export interface components {
        * @default true
        */
       needs_key: boolean;
+      /** Avg Cost Usd */
+      avg_cost_usd?: number | null;
+      /**
+       * Priced Games
+       * @default 0
+       */
+      priced_games: number;
     };
     /**
      * ModelsMenu
@@ -1365,6 +1373,10 @@ export interface components {
        * @default false
        */
       memory: boolean;
+      /** Cost Usd */
+      cost_usd?: number | null;
+      /** Avg Call Seconds */
+      avg_call_seconds?: number | null;
     };
     /**
      * ReplayGame
@@ -1402,6 +1414,10 @@ export interface components {
        * @default false
        */
       memory: boolean;
+      /** Cost Usd */
+      cost_usd?: number | null;
+      /** Avg Call Seconds */
+      avg_call_seconds?: number | null;
       /** Events */
       events: (
         | components['schemas']['GameStarted']
