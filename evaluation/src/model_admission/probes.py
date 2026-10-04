@@ -77,6 +77,12 @@ def probe_structured(model: str, mode: str, thinking_level: str | None, samples:
     }
 
 
+def best_mode(results: list[dict[str, Any]]) -> str:
+    """The mode that passed the most calls (the earlier in MODE_ORDER on a tie): what the real
+    prompts are tried on when no mode passed every call."""
+    return max(results, key=lambda r: (int(r["passed"].split("/")[0]), -MODE_ORDER.index(r["mode"])))["mode"]
+
+
 def recommend_mode(results: list[dict[str, Any]], thinking_level: str | None) -> tuple[str | None, str]:
     """The mode to play on, and why. A mode must pass every call; when thinking is asked for, one
     that actually reasons beats one that silently doesn't; otherwise the earlier mode in
@@ -109,7 +115,9 @@ def probe_cache_floor(model: str, sizes: list[int], wait_s: float) -> list[dict[
     """For each target size, an identical prompt sent until the provider serves part of it from
     cache (at most three sends, waiting between them, since a cache takes a moment to build).
     A fresh nonce leads each prompt so no earlier probe's cache can answer for it."""
-    llm = _llm(model, "native" if "/" not in model else "forced_tool", "minimal")
+    # No thinking level: caching does not depend on it, and some endpoints refuse to turn
+    # reasoning off (GLM-5.3 Flash: "Reasoning is mandatory for this endpoint").
+    llm = _llm(model, "native" if "/" not in model else "forced_tool", None)
     rows = []
     for size in sizes:
         text = f"[probe {uuid.uuid4().hex}] "

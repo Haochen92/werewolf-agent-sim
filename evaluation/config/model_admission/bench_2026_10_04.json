@@ -7,16 +7,45 @@
     {
       "label": "flashlite35_medium",
       "model": "gemini-3.5-flash-lite",
-      "env": {"WW_DISCUSSION_PROMPT": "v2"},
+      "env": {
+        "WW_DISCUSSION_PROMPT": "v2"
+      },
       "memory": "none"
     },
     {
       "label": "deepseek_v41_flash_nothink",
       "model": "deepseek/deepseek-flash",
-      "env": {"WW_DISCUSSION_PROMPT": "v2", "GOOGLE_GENAI_THINKING_LEVEL": "minimal"},
+      "env": {
+        "WW_DISCUSSION_PROMPT": "v2",
+        "GOOGLE_GENAI_THINKING_LEVEL": "minimal"
+      },
+      "memory": "none"
+    },
+    {
+      "label": "luna_medium",
+      "model": "openai/gpt-6-luna",
+      "env": {
+        "WW_DISCUSSION_PROMPT": "v2",
+        "GOOGLE_GENAI_THINKING_LEVEL": "medium",
+        "LLM_STRUCTURED_MODE": "json_schema"
+      },
+      "memory": "none"
+    },
+    {
+      "label": "luna_high",
+      "model": "openai/gpt-6-luna",
+      "env": {
+        "WW_DISCUSSION_PROMPT": "v2",
+        "GOOGLE_GENAI_THINKING_LEVEL": "high",
+        "LLM_STRUCTURED_MODE": "json_schema"
+      },
       "memory": "none"
     }
   ],
-  "slices": ["curated", "pinned", "control"],
-  "notes": "Model admission bench (two samples per case). Reference: 3.5 flash-lite at its game level (medium, GAME_THINKING_BY_MODEL), regenerated on today's code. DeepSeek V4.1 Flash with thinking off (forced tool call; its thinking mode rejects forced tool use). Sunday 2026-10-04: DeepSeek off-peak all day. Candidate arms (Qwen3.8 Flash, GLM-5.3 Flash, MiniMax M3, GPT-6 Luna) are added once they pass eval-model-admission."
+  "slices": [
+    "curated",
+    "pinned",
+    "control"
+  ],
+  "notes": "Model admission bench (two samples per case). Reference: 3.5 flash-lite at its game level (medium, GAME_THINKING_BY_MODEL), regenerated on today's code. DeepSeek V4.1 Flash with thinking off (forced tool call; its thinking mode rejects forced tool use). Sunday 2026-10-04: DeepSeek off-peak all day. Candidate arms (Qwen3.8 Flash, GLM-5.3 Flash, MiniMax M3, GPT-6 Luna) are added once they pass eval-model-admission. GPT-6 Luna added after passing admission (json_schema, 27/27 and 6/6 real turns): reasoning_effort medium and high."
 }

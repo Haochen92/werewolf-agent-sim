@@ -83,8 +83,14 @@ def test_an_openrouter_model_is_pinned_to_its_makers_servers_with_reasoning_mapp
     assert llm.model_name == "qwen/qwen3.8-flash"
     assert llm.extra_body == {"provider": {"order": ["alibaba"], "allow_fallbacks": False},
                               "reasoning": {"effort": "medium"}}
-    off = _build_chat_model("openrouter/z-ai/glm-5.3-flash", thinking_level="minimal")
+    off = _build_chat_model("openrouter/minimax/minimax-m3", thinking_level="minimal")
     assert off.extra_body["reasoning"] == {"enabled": False}
+    # GLM reads an effort level as a cap on thinking and refuses it off: its lightest is effort
+    # low, and full thinking is the plain switch
+    light = _build_chat_model("openrouter/z-ai/glm-5.3-flash", thinking_level="minimal")
+    assert light.extra_body["reasoning"] == {"effort": "low"}
+    on = _build_chat_model("openrouter/z-ai/glm-5.3-flash", thinking_level="medium")
+    assert on.extra_body["reasoning"] == {"enabled": True}
     with pytest.raises(ValueError):  # a family with no pinned host is refused, not left to routing
         _build_chat_model("openrouter/some-lab/some-model")
 

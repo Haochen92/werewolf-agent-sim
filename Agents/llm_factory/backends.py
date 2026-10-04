@@ -99,6 +99,11 @@ OPENROUTER_PROVIDER = {
     "minimax/": "minimax",
     "openai/": "openai",
 }
+# Families where an effort level caps thinking instead of setting it, and reasoning cannot be
+# turned off: GLM-5.3 Flash on Z.AI reasoned 8–26 tokens at effort low/medium/high, 1,100–1,700
+# with {"enabled": true}, and refused {"enabled": false} (probe 2026-10-04). So "minimal" and
+# "low" get effort low (its lightest, ~8 tokens) and "medium"/"high" get the plain switch.
+OPENROUTER_REASONING_SWITCH_ONLY = ("z-ai/",)
 
 
 @dataclass
@@ -360,8 +365,12 @@ def _build_chat_model(
         extra: dict[str, Any] = {"provider": {"order": [provider], "allow_fallbacks": False}}
         if thinking_level:
             # OpenRouter's one reasoning switch across providers; "minimal" means off, as on DeepSeek.
-            extra["reasoning"] = ({"enabled": False} if thinking_level == "minimal"
-                                  else {"effort": thinking_level})
+            if routed.startswith(OPENROUTER_REASONING_SWITCH_ONLY):
+                extra["reasoning"] = ({"effort": "low"} if thinking_level in ("minimal", "low")
+                                      else {"enabled": True})
+            else:
+                extra["reasoning"] = ({"enabled": False} if thinking_level == "minimal"
+                                      else {"effort": thinking_level})
         return _build_openai_compat_chat_model(
             routed, _OPENROUTER_BASE_URL, "OPENROUTER_API_KEY",
             temperature=temperature, structured_mode=mode, extra_body=extra,

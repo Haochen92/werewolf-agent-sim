@@ -24,6 +24,11 @@ def test_no_mode_passing_every_call_recommends_nothing():
     assert mode is None and "json_mode at 25/27" in why
 
 
+def test_real_prompts_fall_back_to_the_mode_that_passed_most():
+    assert probes.best_mode([_result("forced_tool", 0, 0), _result("auto_tool", 17, 1200),
+                             _result("json_mode", 26, 1700)]) == "json_mode"
+
+
 def test_the_caching_probe_renders_a_next_turn_that_extends_the_first_and_another_seat():
     rows = [json.loads(line) for line in
             (REPO_ROOT / "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl").read_text().splitlines()]

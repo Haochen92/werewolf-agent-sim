@@ -1,0 +1,24 @@
+{
+  "label": "admission_2026_10_04",
+  "models": [
+    "openrouter/z-ai/glm-5.3-flash",
+    "openrouter/minimax/minimax-m3"
+  ],
+  "thinking_level": "medium",
+  "samples_per_schema": 3,
+  "workers": 4,
+  "caching": {
+    "floor_sizes": [
+      256,
+      512,
+      1024,
+      2048,
+      4096,
+      8192
+    ],
+    "wait_s": 8,
+    "dataset": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+    "cases": 2
+  },
+  "notes": "GLM-5.3 Flash and MiniMax M3 rerun: the candidate run crashed on GLM's cache floor (it refuses reasoning off; the floor now sends no thinking level)."
+}

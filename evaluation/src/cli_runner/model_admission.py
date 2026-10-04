@@ -57,7 +57,7 @@ def admit(model: str, cfg: dict) -> dict:
     real = []
     for case in _cases(REPO_ROOT / caching_cfg.get("dataset", DEFAULT_DATASET), caching_cfg.get("cases", 2)):
         print(f"  {model}: real prompts, case {case['case_id']} ...", flush=True)
-        real.append(probes.probe_real_prompts(model, mode or modes[0], thinking, case, wait_s))
+        real.append(probes.probe_real_prompts(model, mode or probes.best_mode(structured), thinking, case, wait_s))
 
     # The short probes can pass while real turns fail (DeepSeek V4 Pro, auto_tool, 2026-10-04: 27/27
     # probes, 3 of 6 real turns answered in prose), so real-turn failures qualify the recommendation.
@@ -112,7 +112,11 @@ def main() -> None:
     out_dir = REPO_ROOT / "evaluation/eval_results/model_admission" / cfg["label"]
     out_dir.mkdir(parents=True, exist_ok=True)
     for model in cfg["models"]:
-        record = admit(model, cfg)
+        try:
+            record = admit(model, cfg)
+        except Exception as e:  # one model's failure must not cost the others their run
+            print(f"\n{model}: admission run failed: {type(e).__name__}: {str(e)[:300]}")
+            continue
         (out_dir / f"{model.replace('/', '__')}.json").write_text(json.dumps(record, indent=1))
         _print(record)
     print(f"\nrecords: {out_dir.relative_to(REPO_ROOT)}")
