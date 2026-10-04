@@ -1,6 +1,6 @@
 # Credit blind-spot fix pair — validation before any rerun (2026-07-21)
 
-**Status: CLOSED 2026-07-21 (see §⑥).** Steps 1–2 complete (instrument-grain validation + on-epoch
+**Status: CLOSED 2026-07-21 (see §⑥); scope addendum 2026-10-04 (see §⑦: every game ran without reasoning).** Steps 1–2 complete (instrument-grain validation + on-epoch
 screen recovery + the ④c/④d/④e forensics); the live gate/step-3 was considered, arms agreed, then
 DECLINED by the owner — the program closes on the precise concession in §⑥ (no certified
 current-epoch live benefit; epoch-stamped positives and all mechanism findings stand).
@@ -309,3 +309,60 @@ of whether episodic and procedural memory can improve agent play under a limited
 structurally blocked (then fixed at instrument grain), and the remaining questions are precisely
 costed and deliberately unspent. Frontend proceeds as the research-visibility layer (memory
 inspector + replay viewer + playable game), not as a memory-wins product claim.
+
+## ⑦ Addendum (2026-10-04): every memory game was played without reasoning
+
+**What was missed.** Game turns run at the thinking level "minimal", which the code turns into a
+128-token thinking budget on Vertex. A probe made for the hallucination bench on 2026-10-04
+(`evidence/game_play_enhancement/discussion_evidence.md` §6.7) found that `gemini-3.1-flash-lite`,
+asked for the game's structured output at that budget, reasons for 0 tokens. It starts reasoning only
+at "low" (1,024). Every run record stamped the thinking level in its runtime fingerprint, but nobody
+checked whether that level produced any reasoning. So every game behind the memory verdicts was
+played by agents that answered without a reasoning step.
+
+**Which runs.** Checked record by record against the runtime fingerprints:
+
+| Run | Dates | Game records | Game model · thinking level |
+|---|---|---|---|
+| June static paired A/B (`batch_results/ab_*.jsonl`) | 2026-06-11 to 06-12 | 398 | `gemini-3.1-flash-lite` · minimal |
+| v7 loop runs (`evidence/v7_final/runs/`: smokes, loop_gate, town_only_run1/2, v2_full) | 2026-06-19 to 06-22 | 222 | `gemini-3.1-flash-lite` · minimal |
+| v7 endpoint (`batch_results/v7_endpoint_ab`, 30 boards × 2 arms) | 2026-07-20 | 60 | `gemini-3.1-flash-lite` · minimal |
+
+Day summaries ran at "medium" throughout, so the summaries the players read did come from a reasoning
+call. The memory pipeline's own calls (extraction and synthesis, on `gemini-2.5-pro` in June and on
+flash-lite in v7) set no thinking level, so they ran at the model's default. The fingerprint does not
+record what that default produced.
+
+**What it does not change.** Both arms of every comparison ran at the same level. Memory was still the
+only difference between ON and OFF. So each ON−OFF result is still a fair comparison of what it
+measured, and the concession in §⑥ stands as written.
+
+**What it changes.** It narrows what every verdict is about. The June +17/+33pp result and the v7
+negative are both results for a player that does not reason. The framing adopted in §⑥, "gemini
+flash-lite class models", should read "gemini flash-lite class models, with no reasoning on game
+turns". No game in this program says whether memory would help, hurt, or do nothing for a player that
+reasons first.
+
+**Why it might matter.** These are hypotheses. None was tested.
+
+- *The procedural harm.* One plausible reading: a strategy point is an IF-situation → THEN-action rule,
+  and deciding whether the situation applies is a judgment call. A player that does not reason may
+  follow a rule on a surface match. The caution and abstain rules behind the endpoint's harm (§①) are
+  the kind that do damage when followed in the wrong situation. A reasoning player might decline them
+  more often.
+- *The static-observation benefit.* One plausible reading: the benefit rode inference (vote-grain hit
+  z≈+4.0, §④c), so retrieved observations may have supplied conclusions a non-reasoning player could
+  not reach on its own. A reasoning player might gain less from them, or might use them better.
+- *Noise.* On the current bench, turns without reasoning got 21% of checkable messages and 39% of
+  private notes wrong, against 5% and 9% with reasoning. That was measured on a later model
+  (`gemini-3.5-flash-lite`) and a later prompt epoch, so the rates do not carry over to these runs as
+  numbers. But errors of that kind add game-to-game variance, and variance was already what limited
+  power at 30 boards.
+
+**Lesson.** A configured value is not the behaviour it was meant to produce. The fingerprint stamped
+"minimal" on every record, which proved the setting was pinned, not that the model reasoned. This is
+the same class of failure as the `all_enabled` slip in the v7 loop run (`evidence/v7_final/report.md`
+§5c): the harness ran something other than what we believed, and the record showed the setting rather
+than its effect. Record the effect as well. The bench now records reasoning tokens per turn
+(`3e05e8a7`). Any future memory measurement should record them per game too, and should state the
+game thinking level as a deliberate choice of the experiment.
