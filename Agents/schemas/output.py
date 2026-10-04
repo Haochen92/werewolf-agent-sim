@@ -387,15 +387,32 @@ class RoleClaimV4(LenientToolCallModel):
 
 
 class AccusationV4(AccusationV3):
+    # Every written field is capped at 30 words (2026-10-04): DeepSeek wrote a median of 40 and up to
+    # 92 per field, and agents read all of it every day. 3.5 flash-lite already writes about 20.
+    reasoning: str = Field(
+        description=(
+            "The accusers' stated reasoning, written as what they argued (e.g. 'player_8 argued "
+            "that player_2 survived an attack'), never as fact. At most 30 words."
+        ),
+    )
+    defense: str = Field(
+        description="How the target responded, at most 30 words. Empty string if no defense given.",
+    )
+    disputed_by: str = Field(
+        description=(
+            "Who, besides the target, disputed this accusation and why, at most 30 words. "
+            "Empty string if no one did."
+        ),
+    )
     # v3's record_check flagged a claimed investigation as "never announced", but private night results
     # never are: only an event the game master would have announced counts.
     record_check: str = Field(
         description=(
             "If the accusation rests on a public event that the game master's record contradicts, or one "
             "the game master would have announced but did not (a death, a healer save, a vote), say so and "
-            "cite the record (e.g. 'no attack on player_2 was ever announced'). Investigation results, "
-            "protections and other private night actions are never announced, so their absence is not a "
-            "conflict. Empty string otherwise."
+            "cite the record (e.g. 'no attack on player_2 was ever announced'), at most 30 words. "
+            "Investigation results, protections and other private night actions are never announced, so "
+            "their absence is not a conflict. Empty string otherwise."
         ),
     )
 
