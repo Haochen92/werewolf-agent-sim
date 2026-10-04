@@ -25,6 +25,7 @@ _SAVE = re.compile(r"(\S+) was attacked by [^!.]*? but was saved by the healer")
 _NIGHT = re.compile(r"^Night of day (\d+):")
 
 _VERBS = {"investigate": "investigated", "protect": "protected", "shoot": "shot", "kill": "attacked"}
+_NOUNS = {"investigate": "investigation", "protect": "protection", "shoot": "shot", "kill": "kill"}
 _SAYS = {
     "saved_from_attack": "says they saved them from an attack",
     "no_attack": "says there was no attack",
@@ -45,6 +46,8 @@ class ClaimedAction:
     """The day the player said it."""
     earlier: list[str] = field(default_factory=list)
     """What the player said about the same night before changing it, oldest first."""
+    also: list[str] = field(default_factory=list)
+    """Other targets the player named for the same action and night on the same day."""
 
 
 @dataclass
@@ -134,8 +137,10 @@ def _add_action(p: PlayerClaims, new: ClaimedAction) -> None:
     old = p.actions.get(key)
     if old and _same_claim(old, new):
         return  # a repeat
-    if old and not (old.target == new.target and old.result == "not_said"):
-        new.earlier = [*old.earlier, action_text(old)]  # a change; filling in a result is not one
+    if old and new.action and old.day == new.day and old.target != new.target:
+        new.earlier, new.also = old.earlier, [*old.also, action_text(old)]  # two targets named the same day
+    elif old and not (old.target == new.target and old.result == "not_said"):
+        new.earlier = [*old.earlier, *old.also, action_text(old)]  # a change; filling in a result is not one
     p.actions[key] = new
 
 
@@ -196,6 +201,8 @@ def role_checks(player: str, p: PlayerClaims, ledger: dict[str, PlayerClaims], f
 
 def action_checks(player: str, a: ClaimedAction, facts: RecordFacts) -> list[str]:
     notes = []
+    if a.also:
+        notes.append(f"Rules: one {_NOUNS[a.action]} a night.")
     if a.action == "protect" and a.target == player:
         notes.append("Rules: the healer cannot protect themselves.")
     death = facts.dead.get(a.target)
@@ -231,6 +238,8 @@ def format_claim_ledger(summaries: list[DaySummary], dead_roster=(), cast_role_c
             text = "  " + action_text(a)
             if a.earlier:
                 text += f" (changed on day {a.day}; earlier: {'; '.join(a.earlier)})"
+            if a.also:
+                text += f" (on day {a.day} also named: {'; '.join(a.also)})"
             lines.append(" ".join([text + ".", *action_checks(player, a, facts)]))
     return "\n".join(lines)
 

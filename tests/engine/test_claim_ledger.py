@@ -64,6 +64,18 @@ def test_filling_in_a_result_later_is_not_a_change():
     assert "changed" not in text and "says they saved them from an attack" in text
 
 
+def test_two_targets_named_for_one_night_on_the_same_day_break_the_rules():
+    # game 140610ad day 3: "I checked player_2 and got nothing useful ... the one I actually confirmed is player_9"
+    claims = [(2, "investigate", "p2", "not_said"), (2, "investigate", "p9", "healer")]
+    text = _ledger(_day(3, [_claim("p6", "investigator", *claims)]))
+    assert text.splitlines()[1] == ("  Night 2: investigated p9, result: healer (on day 3 also named: Night 2: "
+                                    "investigated p2). Rules: one investigation a night.")
+    # named on different days, it is a change, not a second action
+    text = _ledger(_day(3, [_claim("p6", "investigator", claims[0])]),
+                   _day(4, [_claim("p6", "investigator", claims[1])]))
+    assert "changed on day 4; earlier: Night 2: investigated p2" in text and "Rules" not in text
+
+
 def test_older_summaries_still_read_into_the_ledger():
     v3 = DaySummary(day=2, summary="(text)", structured={"role_claims": [
         {"player": "p3", "claimed_role": "investigator", "status": "new", "evidence": "unverified",
