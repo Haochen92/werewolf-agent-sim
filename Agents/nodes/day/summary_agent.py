@@ -11,7 +11,7 @@ from logging import getLogger
 from Agents.prompts.prompt_formatters import format_claims_on_record, format_day_channel
 from Agents.llm_factory import get_llm_summary
 from Agents.prompts import DAY_SUMMARY_PROMPT, GAME_RULES
-from Agents.rules.claim_ledger import ClaimedAction, action_text
+from Agents.rules.claim_ledger import PLAN_VERBS, ClaimedAction, action_text
 from Agents.schemas import DaySummary, DaySummaryOutput, DaySummaryOutputV4
 from Agents.schemas.game_events import DeathRecord
 
@@ -111,7 +111,7 @@ def _serialize_day_summary(result: DaySummaryOutput | DaySummaryOutputV4) -> str
             actions = [
                 action_text(ClaimedAction(n.night, n.action, n.target, n.result, 0))
                 for n in getattr(c, "night_actions", [])
-            ]
+            ] + [f"plans to {PLAN_VERBS[n.action]} {n.target} tonight" for n in getattr(c, "planned_actions", [])]
             if actions:
                 claim += " — " + ", ".join(actions)
             if getattr(c, "evidence", ""):

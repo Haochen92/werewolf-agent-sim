@@ -9,7 +9,8 @@ v4 (2026-10-04): the summariser only transcribes: the day's accusations, and eac
 claimed night actions in fixed words. Checking claims against the record moved to code
 (Agents/rules/claim_ledger.py), and alliances and village dynamics are gone (discussion_evidence.md §6.6).
 A plan for a coming night is not a claimed action, and a vague result is not_said (2026-10-04: a
-decoy "I'll check player_2 tonight" was logged as a night-2 investigation).
+decoy "I'll check player_2 tonight" was logged as a night-2 investigation). Plans are recorded on
+their own (planned_actions), so the ledger can set them beside what the player later says they did.
 """
 
 
@@ -32,7 +33,8 @@ Rules:
 - Accusations: every distinct accusation is a separate entry with ALL participating accusers listed. Record the target's defence, and who else argued against it and why.
 - The game master's record above is the only source of fact. If an accusation rests on a public event the record contradicts, or one the game master would have announced but did not (a death, a healer save, a vote), say so in record_check and cite the record. Private night results (investigations, protections, a held shot) are never announced, so their absence from the record is not a conflict. An accusation repeated by several players is still a claim.
 - Role claims: list every role claim made today, including a player repeating an earlier claim, and mark a withdrawn claim as retracted. Record each night action the player claimed (investigate, protect, shoot, kill) with its night, target and result, using only the allowed result words. Transcribe what they said; do not judge whether it is true.
-- A night action is one the player says already happened. A plan for a coming night ("I'll check player_2 tonight") is not a night action: leave it out. If the player gave no result, or only a vague one ("got nothing useful"), the result is not_said.
+- A night action is one the player says already happened. A plan for tonight ("I'll check player_2 tonight") is not a night action: record it in planned_actions. If the player gave no result, or only a vague one ("got nothing useful"), the result is not_said.
+- A player who states a night plan without claiming a role is claiming the role that does that action: record the claim with the plan.
 - Do not include the formal vote tally or night event outcomes (these are recorded separately). However, DO include when players reference past votes or declare current voting intentions during discussion.
 - Use player IDs (player_1, player_2, etc.), not role names, since roles are generally unknown during the game.
 - A dead player's role, revealed by the game master, is a fact, not a claim: do not list it as a role claim.

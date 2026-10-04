@@ -351,6 +351,20 @@ class ClaimedNightAction(LenientToolCallModel):
             "not_said if they did not say, or said it only vaguely."
         ),
     )
+    reason: str = Field(
+        description=(
+            "If this differs from a plan the player stated earlier for that night (see the claims "
+            "already on record), the reason they gave for the difference, briefly in their words. "
+            "Empty string if it does not differ or they gave none."
+        ),
+    )
+
+
+class PlannedNightAction(LenientToolCallModel):
+    action: Literal["investigate", "protect", "shoot", "kill"] = Field(
+        description="What the player says they will do tonight",
+    )
+    target: str = Field(description="Player ID they say they will do it on")
 
 
 class RoleClaimV4(LenientToolCallModel):
@@ -362,6 +376,13 @@ class RoleClaimV4(LenientToolCallModel):
     night_actions: list[ClaimedNightAction] = Field(
         default_factory=list,
         description="Every night action this player claimed today, one entry each. Empty list if none.",
+    )
+    planned_actions: list[PlannedNightAction] = Field(
+        default_factory=list,
+        description=(
+            "What the player said they will do tonight, one entry per action; if they changed it "
+            "during the day, only their final word. Empty list if none."
+        ),
     )
 
 

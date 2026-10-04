@@ -199,12 +199,15 @@ def test_the_v4_summary_writes_two_headings_and_transcribes_claims_in_fixed_word
                          "disputed_by": "player_6 said survival proves nothing.",
                          "record_check": "No attack on player_2 was ever announced."}],
         "role_claims": [{"player": "player_3", "claimed_role": "investigator", "kind": "claimed",
-                         "night_actions": [{"night": 1, "action": "investigate", "target": "player_1", "result": "vigilante"}]},
+                         "night_actions": [{"night": 1, "action": "investigate", "target": "player_1", "result": "vigilante",
+                                            "reason": ""}],
+                         "planned_actions": [{"action": "investigate", "target": "player_5"}]},
                         {"player": "player_4", "claimed_role": "healer", "kind": "retracted", "night_actions": []}],
     })
     text = _serialize_day_summary(out)
     assert [line.split(":")[0] for line in text.splitlines()] == ["Key accusations and defenses", "Role claims"]
     assert "Disputed: player_6" in text and "Against the record: No attack on player_2" in text
-    assert "player_3 claimed investigator — Night 1: investigated player_1, result: vigilante" in text
+    assert ("player_3 claimed investigator — Night 1: investigated player_1, result: vigilante, "
+            "plans to investigate player_5 tonight") in text
     assert "player_4 retracted healer" in text
     assert set(out.model_dump()) == {"accusations", "role_claims"}
