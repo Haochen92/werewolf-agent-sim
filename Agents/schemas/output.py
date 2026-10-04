@@ -16,7 +16,7 @@ from typing import Literal, get_origin
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from Agents.schemas.game_events import AddressedTarget
-from Agents.schemas.roles import READ_ROLE_ENUM
+from Agents.schemas.roles import CLAIMED_RESULT_ENUM, CLAIMED_ROLE_ENUM, READ_ROLE_ENUM
 
 
 def _expects_structure(annotation) -> bool:
@@ -330,6 +330,64 @@ class DaySummaryOutputV3(LenientToolCallModel):
         description="Any alliances or voting blocs that formed. Empty list if none.",
     )
     village_dynamics: VillageDynamicsV2
+
+
+# Day summary v4 (2026-10-04; discussion_evidence.md §6.6): the summariser only transcribes. It records
+# the day's accusations and each role claim with its claimed night actions in fixed words; code folds
+# the claims into the running ledger and checks them against the engine's record. Alliances, village
+# dynamics and the summariser's own verdict on a claim are gone. Keeps the `accusations` and
+# `role_claims` keys (with `player` / `claimed_role`), which the frontend and the tagger read.
+# Model-visible: no class docstrings.
+class ClaimedNightAction(LenientToolCallModel):
+    night: int = Field(description="The night the action happened; 0 if the player did not say")
+    action: Literal["investigate", "protect", "shoot", "kill"] = Field(
+        description="What the player says they did that night",
+    )
+    target: str = Field(description="Player ID the action was on")
+    result: CLAIMED_RESULT_ENUM = Field(
+        description=(
+            "What the player says came of it. investigate: the role they say they found, or "
+            "not_a_wolf. protect: saved_from_attack or no_attack. shoot / kill: died or survived. "
+            "not_said if they did not say."
+        ),
+    )
+
+
+class RoleClaimV4(LenientToolCallModel):
+    player: str = Field(description="Player ID who made the claim")
+    claimed_role: CLAIMED_ROLE_ENUM = Field(description="The role claimed (or withdrawn)")
+    kind: Literal["claimed", "retracted"] = Field(
+        description="claimed = the player claims this role today (also when repeating it); retracted = they withdrew it",
+    )
+    night_actions: list[ClaimedNightAction] = Field(
+        default_factory=list,
+        description="Every night action this player claimed today, one entry each. Empty list if none.",
+    )
+
+
+class AccusationV4(AccusationV3):
+    # v3's record_check flagged a claimed investigation as "never announced", but private night results
+    # never are: only an event the game master would have announced counts.
+    record_check: str = Field(
+        description=(
+            "If the accusation rests on a public event that the game master's record contradicts, or one "
+            "the game master would have announced but did not (a death, a healer save, a vote), say so and "
+            "cite the record (e.g. 'no attack on player_2 was ever announced'). Investigation results, "
+            "protections and other private night actions are never announced, so their absence is not a "
+            "conflict. Empty string otherwise."
+        ),
+    )
+
+
+class DaySummaryOutputV4(LenientToolCallModel):
+    accusations: list[AccusationV4] = Field(
+        default_factory=list,
+        description="All distinct accusations from the discussion. List every accusation separately.",
+    )
+    role_claims: list[RoleClaimV4] = Field(
+        default_factory=list,
+        description="Every role claim made today, including repeats of earlier ones. Empty list if none.",
+    )
 
 
 class HealerOutput(LenientToolCallModel):

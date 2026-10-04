@@ -1,4 +1,5 @@
 from Agents.rules.board_clocks import alive_role_counts
+from Agents.rules.claim_ledger import format_claim_ledger, revealed_tag
 from Agents.schemas import RetrievedObservation, RetrievedStrategyPoint
 from Agents.schemas.game_events import (
     DayChannel,
@@ -70,16 +71,20 @@ def format_day_channel_for_day(messages: list[DayChannel], current_day: int, vie
     return format_day_channel([m for m in messages if m.day == current_day], viewer)
 
 
-def format_day_summaries(summaries: list[DaySummary], before_day: int | None = None) -> str:
+def format_day_summaries(summaries: list[DaySummary], before_day: int | None = None,
+                         dead_roster: list[DeathRecord] | None = None,
+                         cast_role_counts: dict[str, int] | None = None) -> str:
     """Earlier days, as agents see them, in three blocks of decreasing authority:
 
     1. the game master's record: the exact night and vote announcements;
-    2. the claims on record: every role claim and claimed result, per player, across days, built by
-       code from the summaries' structured fields;
-    3. the discussion summaries: the summariser's account of what players said and argued.
+    2. the claims made in the day discussion: every role claim and claimed night action, per
+       player, across days, with exact checks against the record (Agents/rules/claim_ledger.py);
+    3. the accusations: the summariser's account of who accused whom, the defence and disputes.
 
-    The labels carry the hierarchy. A claim a summary repeats is never set beside an announcement as
-    an equal (audit 2026-10-03, finding 5; the case in discussion_evidence.md §6.4)."""
+    The labels carry the hierarchy, so a claim is never set beside an announcement as an equal
+    (audit 2026-10-03, finding 5). The stored summaries' other sections (alliances, village
+    dynamics in older games) are not shown: they retold the day as a story (discussion_evidence.md
+    §6.6). `dead_roster` and `cast_role_counts` feed the checks; without them a claim goes unchecked."""
     selected = [s for s in summaries if before_day is None or s.day < before_day]
     if not selected:
         return "No previous days yet."
@@ -89,41 +94,46 @@ def format_day_summaries(summaries: list[DaySummary], before_day: int | None = N
         "-- The game master's record (exact; it outranks anything a player or a summary says) --\n"
         + ("\n".join(f"[Day {s.day}] {s.summary.strip()}" for s in record) or "Nothing announced yet.")
     ]
-    claims = format_claims_on_record(discussion)
+    claims = format_claims_on_record(selected, dead_roster, cast_role_counts)
     if claims:
         blocks.append(
-            "-- Claims on record (what players have claimed so far; claims, not facts) --\n" + claims
+            "-- Claims made in the day discussion (claims, not facts; a note starting \"Record:\" or "
+            "\"Rules:\" is an exact check by the game master) --\n" + claims
         )
     blocks.append(
-        "-- Discussion summaries (a summariser's account of what players said and argued; "
-        "anything a player claimed in them is a claim, not a fact) --\n"
-        + ("\n\n".join(f"[Day {s.day}]\n{s.summary}" for s in discussion) or "None yet.")
+        "-- Accusations in the day discussion (a summariser's account of what players argued; "
+        "claims, not facts) --\n" + (format_accusations(discussion, dead_roster) or "None.")
     )
     return "\n\n".join(blocks)
 
 
-def format_claims_on_record(discussion: list[DaySummary]) -> str:
-    """Each player's role claims and claimed results across days, from the summaries' structured
-    `role_claims` (results only where the summary recorded them). "" when nobody has claimed."""
-    by_player: dict[str, list[str]] = {}
-    for s in discussion:
-        for c in (s.structured or {}).get("role_claims") or []:
-            player, role = c.get("player"), c.get("claimed_role")
-            if not player or not role:
-                continue
-            entry = f"day {s.day}: claimed {role}"
-            status = c.get("status")
-            if status and status not in ("new", "repeated"):
-                entry += f" ({status})"
-            results = [
-                (f"night {r['night']}: " if r.get("night") else "") + f"{r['target']} {r['result']}"
-                for r in c.get("claimed_results") or []
-                if r.get("target") and r.get("result")
-            ]
-            if results:
-                entry += " — results claimed: " + "; ".join(results)
-            by_player.setdefault(player, []).append(entry)
-    return "\n".join(f"{p}: " + " | ".join(entries) for p, entries in by_player.items())
+def format_claims_on_record(summaries: list[DaySummary], dead_roster: list[DeathRecord] | None = None,
+                            cast_role_counts: dict[str, int] | None = None) -> str:
+    """The claim ledger as text (see Agents/rules/claim_ledger.py). "" when nobody has claimed."""
+    return format_claim_ledger(summaries, dead_roster or [], cast_role_counts)
+
+
+def format_accusations(discussion: list[DaySummary], dead_roster: list[DeathRecord] | None = None) -> str:
+    """Each day's accusations from the summaries' structured fields, a player tagged with their
+    revealed role once dead. A day stored only as text (the summariser failed, or an old game) is
+    shown as written. "" when there were none."""
+    dead = {d.player: d for d in dead_roster or []}
+    lines = []
+    for s in sorted(discussion, key=lambda s: s.day):
+        if "accusations" not in (s.structured or {}):
+            lines.append(f"[Day {s.day}]\n{s.summary.strip()}")
+            continue
+        for a in s.structured["accusations"]:
+            accusers = ", ".join(revealed_tag(p, dead) for p in a.get("accusers") or [])
+            entry = f"[Day {s.day}] {accusers} → {revealed_tag(a.get('target', ''), dead)}: {a.get('reasoning', '')}"
+            if a.get("defense"):
+                entry += f" Defense: {a['defense']}"
+            if a.get("disputed_by"):
+                entry += f" Disputed: {a['disputed_by']}"
+            if a.get("record_check"):
+                entry += f" Summariser's check against the record: {a['record_check']}"
+            lines.append(entry)
+    return "\n".join(lines)
 
 
 def format_night_actions(records: list[NightActionRecord], current_day: int | None = None) -> str:

@@ -151,6 +151,8 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         "day_summaries": format_day_summaries(
             payload.get("day_summaries", []),
             before_day=payload.get("current_day", 1),
+            dead_roster=payload.get("dead_roster", []),
+            cast_role_counts=payload.get("cast_role_counts", {}),
         ),
         "wolf_channel": format_wolf_channel(payload.get("wolf_channel", [])),
         "investigator_results": format_investigator_results(

@@ -15,7 +15,7 @@ from pathlib import Path
 
 from Agents.prompts.prompt_formatters import format_day_channel
 from Agents.prompts import DAY_SUMMARY_PROMPT, GAME_RULES
-from Agents.schemas import DaySummaryOutputV3
+from Agents.nodes.day.summary_agent import _SUMMARY_SCHEMA
 from Agents.schemas.game_events import DayChannel
 
 EVAL_SETS = [
@@ -118,7 +118,7 @@ def generate_summary(
         from Agents.llm_factory import get_llm
         llm = get_llm()
 
-    result = llm.with_structured_output(DaySummaryOutputV3).invoke(prompt)
+    result = llm.with_structured_output(_SUMMARY_SCHEMA).invoke(prompt)
     return _serialize_day_summary(result)
 
 

@@ -181,6 +181,8 @@ def run_memory_informed_action(
             "day_summaries": format_day_summaries(
                 payload.get("day_summaries", []),
                 before_day=day,
+                dead_roster=payload.get("dead_roster", []),
+                cast_role_counts=payload.get("cast_role_counts", {}),
             ),
             "wolf_channel": format_wolf_channel(payload.get("wolf_channel", [])),
             "investigator_results": format_investigator_results(
@@ -370,6 +372,8 @@ def run_memory_informed_night_action(
             "day_summaries": format_day_summaries(
                 payload.get("day_summaries", []),
                 before_day=day,
+                dead_roster=payload.get("dead_roster", []),
+                cast_role_counts=payload.get("cast_role_counts", {}),
             ),
             "wolf_channel": format_wolf_channel(payload.get("wolf_channel", [])),
             "investigator_results": format_investigator_results(

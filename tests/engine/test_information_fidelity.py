@@ -3,7 +3,7 @@
 Pins what each agent is now told and how: the private night record (what each night actor did and
 may know, gated to its owner), a held-back draft shown to its author only, the previous days split
 by authority (the game master's record, the claims on record, the discussion summaries), the vote
-turn seeing the note it replaces, the vote wording, and the summariser's attributed v3 output.
+turn seeing the note it replaces, the vote wording, and the summariser's v4 output.
 """
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ from Agents.prompts.prompt_formatters import format_day_channel, format_day_summ
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
 from Agents.rules.night_record import night_action_records, own_night_actions
 from Agents.rules.resolution import collect_attacks, resolve_attacks
-from Agents.schemas import DaySummaryOutputV3
+from Agents.schemas import DaySummaryOutputV4
 from Agents.schemas.game_events import (
     DayChannel,
     DaySummary,
@@ -152,18 +152,22 @@ def test_a_held_back_draft_is_shown_to_its_author_and_nobody_else():
     assert "held back" in mine and "no one else saw it" in mine and "I revealed my role." in mine
 
 
-def test_previous_days_put_the_game_masters_record_above_claims_and_summaries():
+def test_previous_days_put_the_game_masters_record_above_claims_and_accusations():
     summaries = [
-        DaySummary(day=2, summary="Key accusations and defenses: player_8 claimed player_2 survived an attack.",
-                   structured={"role_claims": [{"player": "inv", "claimed_role": "investigator", "status": "new",
-                                                "claimed_results": [{"night": 1, "target": "w0", "result": "is a wolf"}]}]}),
+        DaySummary(day=2, summary="(text)", structured={
+            "accusations": [{"accusers": ["player_8"], "target": "player_2",
+                             "reasoning": "player_8 claimed player_2 survived an attack."}],
+            "role_claims": [{"player": "inv", "claimed_role": "investigator", "kind": "claimed",
+                             "night_actions": [{"night": 1, "action": "investigate", "target": "w0", "result": "wolf"}]}]}),
         DaySummary(day=2, summary="Night of day 2: t0 was stabbed by the serial killer last night.", source="game_master"),
     ]
     text = format_day_summaries(summaries, before_day=3)
-    record, claims, discussion = text.index("game master's record"), text.index("Claims on record"), text.index("Discussion summaries")
-    assert record < claims < discussion
+    record, claims, accusations = (text.index("game master's record"), text.index("Claims made in the day discussion"),
+                                   text.index("Accusations in the day discussion"))
+    assert record < claims < accusations
     assert text.index("t0 was stabbed") < claims < text.index("player_8 claimed")
-    assert "inv: day 2: claimed investigator — results claimed: night 1: w0 is a wolf" in text
+    assert "inv: claimed investigator (day 2)." in text
+    assert "Night 1: investigated w0, result: wolf." in text
 
 
 def test_votes_are_written_as_eliminate_or_abstain():
@@ -176,31 +180,31 @@ def test_votes_are_written_as_eliminate_or_abstain():
     assert "voted for" not in message
 
 
-# --- the v3 day summary -------------------------------------------------------------
+# --- the v4 day summary -------------------------------------------------------------
 
-def test_the_summariser_gets_the_record_and_the_claims_already_on_record():
+def test_the_summariser_gets_the_record_and_the_claim_ledger():
     record, claims = summary_context([
         DaySummary(day=1, summary="Night of day 1: No one died last night.", source="game_master"),
         DaySummary(day=1, summary="...", structured={"role_claims": [{"player": "h", "claimed_role": "healer"}]}),
     ])
     assert record == "[Day 1] Night of day 1: No one died last night."
-    assert claims == "h: day 1: claimed healer"
+    assert claims == "h: claimed healer (day 1)."
 
 
-def test_the_v3_summary_keeps_the_four_headings_and_attributes_disputes_and_record_conflicts():
-    out = DaySummaryOutputV3.model_validate({
+def test_the_v4_summary_writes_two_headings_and_transcribes_claims_in_fixed_words():
+    out = DaySummaryOutputV4.model_validate({
         "accusations": [{"accusers": ["player_8"], "target": "player_2",
                          "reasoning": "player_8 argued that player_2 survived an attack.",
                          "evidence_type": "concrete_claim", "defense": "player_2 denied being attacked.",
                          "disputed_by": "player_6 said survival proves nothing.",
                          "record_check": "No attack on player_2 was ever announced."}],
-        "role_claims": [{"player": "player_3", "claimed_role": "investigator", "evidence": "unverified",
-                         "status": "changed", "claimed_results": [{"night": 1, "target": "player_1", "result": "is the vigilante"}]}],
-        "alliances": [],
-        "village_dynamics": {"information_landscape": "a", "consensus": "b", "drivers": "c"},
+        "role_claims": [{"player": "player_3", "claimed_role": "investigator", "kind": "claimed",
+                         "night_actions": [{"night": 1, "action": "investigate", "target": "player_1", "result": "vigilante"}]},
+                        {"player": "player_4", "claimed_role": "healer", "kind": "retracted", "night_actions": []}],
     })
     text = _serialize_day_summary(out)
-    heads = [line.split(":")[0] for line in text.splitlines()]
-    assert heads == ["Key accusations and defenses", "Role claims", "Alliances and blocs", "Village dynamics"]
+    assert [line.split(":")[0] for line in text.splitlines()] == ["Key accusations and defenses", "Role claims"]
     assert "Disputed: player_6" in text and "Against the record: No attack on player_2" in text
-    assert "player_3 claimed investigator [changed] — results claimed: night 1: player_1 is the vigilante" in text
+    assert "player_3 claimed investigator — Night 1: investigated player_1, result: vigilante" in text
+    assert "player_4 retracted healer" in text
+    assert set(out.model_dump()) == {"accusations", "role_claims"}

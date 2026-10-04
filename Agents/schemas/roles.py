@@ -17,6 +17,12 @@ roles = ["villager", "wolf", "investigator", "healer", "serial_killer", "vigilan
 # field). Deriving it here, not restating the list in output.py, keeps the two from drifting apart.
 READ_ROLE_ENUM = Literal[("unclear", *roles)]
 
+# Day summary v4: what a player may claim, and the fixed result words a claimed night action is
+# transcribed into, so code can check a claim against the engine's record (Agents/rules/claim_ledger.py).
+CLAIMED_ROLE_ENUM = Literal[tuple(roles)]
+NIGHT_RESULT_WORDS = ("not_a_wolf", "saved_from_attack", "no_attack", "died", "survived", "not_said")
+CLAIMED_RESULT_ENUM = Literal[(*roles, *NIGHT_RESULT_WORDS)]
+
 
 def cast_role_counts(role_map: dict[str, str]) -> dict[str, int]:
     """Public role->count census of a cast (counts only, no identities) — the payload-safe form of

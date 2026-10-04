@@ -4,10 +4,14 @@ v3 (2026-10-03): the summary is the only account of a past day that agents ever 
 written as attributed claims checked against the game master's record, never as narration. It is
 given the record and the claims already on record; it no longer gets the situation-description
 standards, which told it never to use player IDs, against its own rule to use them.
+
+v4 (2026-10-04): the summariser only transcribes: the day's accusations, and each role claim with its
+claimed night actions in fixed words. Checking claims against the record moved to code
+(Agents/rules/claim_ledger.py), and alliances and village dynamics are gone (discussion_evidence.md §6.6).
 """
 
 
-DAY_SUMMARY_PROMPT = """You are a game analyst for a Werewolf game. Summarise today's public discussion into the structured fields. On later days the players read your summary instead of the discussion itself, so it must be exact about who said what.
+DAY_SUMMARY_PROMPT = """You are a game analyst for a Werewolf game. Record today's public discussion in the structured fields. On later days the players read your record instead of the discussion itself, so it must be exact about who said what.
 
 GAME CONTEXT:
 {game_rules}
@@ -15,7 +19,7 @@ GAME CONTEXT:
 THE GAME MASTER'S RECORD SO FAR (exact announcements: night outcomes, healer saves, votes, revealed roles):
 {public_record}
 
-CLAIMS ALREADY ON RECORD FROM EARLIER DAYS:
+CLAIMS MADE IN EARLIER DAY DISCUSSIONS (with the game master's checks):
 {claims_on_record}
 
 DAY {current_day} PUBLIC DISCUSSION ONLY:
@@ -23,10 +27,9 @@ DAY {current_day} PUBLIC DISCUSSION ONLY:
 
 Rules:
 - Attribute everything. Write every statement about the game as something a named player said or argued ("player_8 claimed that player_2 survived an attack"). Never state a player's claim as fact, including the premise an accusation rests on.
-- The game master's record above is the only source of fact. Check every claim about a past event against it. If a claim contradicts the record, or describes an event the record never announced, say so (record_check for an accusation, evidence for a role claim) and cite the record. A claim repeated by several players is still a claim.
-- Record disputes: who argued against each accusation, and why.
-- For each role claim, list every result the player claimed (night, target, result), and mark it new, repeated, changed or retracted against the claims already on record.
-- Be exhaustive: every distinct accusation is a separate entry with ALL participating accusers listed.
+- Accusations: every distinct accusation is a separate entry with ALL participating accusers listed. Record the target's defence, and who else argued against it and why.
+- The game master's record above is the only source of fact. If an accusation rests on a public event the record contradicts, or one the game master would have announced but did not (a death, a healer save, a vote), say so in record_check and cite the record. Private night results (investigations, protections, a held shot) are never announced, so their absence from the record is not a conflict. An accusation repeated by several players is still a claim.
+- Role claims: list every role claim made today, including a player repeating an earlier claim, and mark a withdrawn claim as retracted. Record each night action the player claimed (investigate, protect, shoot, kill) with its night, target and result, using only the allowed result words. Transcribe what they said; do not judge whether it is true.
 - Do not include the formal vote tally or night event outcomes (these are recorded separately). However, DO include when players reference past votes or declare current voting intentions during discussion.
 - Use player IDs (player_1, player_2, etc.), not role names, since roles are generally unknown during the game.
 - A dead player's role, revealed by the game master, is a fact, not a claim: do not list it as a role claim.

@@ -2,7 +2,7 @@
 
 The switch is read once at import, so each setting runs in a fresh interpreter. Off, the prompts
 must be exactly today's; on, each of the four changes must land where the agents will read it. (P2,
-the summary's drivers question, is no longer switched: the v3 summary always asks it.)
+the summary's drivers question, left the switch in v3, and the v4 summary dropped village dynamics.)
 """
 import json
 import os
@@ -18,13 +18,12 @@ from Agents.prompts.day_discuss import TONE_INSTRUCTION
 from Agents.prompts.roles import ROLE_CORE_STRATEGY
 from Agents.nodes.day.summary_agent import _SUMMARY_SCHEMA
 
-vd = _SUMMARY_SCHEMA.model_fields["village_dynamics"].annotation
 print(json.dumps({
     "turn_order": "Turn order: the moderator decides who speaks next" in GAME_RULES,
     "short_target": "about 40-80 words" in TONE_INSTRUCTION,
     "old_cap": "under about 120 words" in TONE_INSTRUCTION,
     "claiming": {role: "Claiming a role:" in text for role, text in ROLE_CORE_STRATEGY.items()},
-    "drivers": vd.model_fields["drivers"].description,
+    "summary_fields": sorted(_SUMMARY_SCHEMA.model_fields),
 }))
 """
 
@@ -43,8 +42,8 @@ def test_off_keeps_todays_prompts():
     assert not got["turn_order"]
     assert not got["short_target"] and got["old_cap"]
     assert not any(got["claiming"].values())
-    # The day summary left the switch in v3 (2026-10-03): it asks the evidence question either way.
-    assert "evidence" in got["drivers"]
+    # The day summary is unswitched: v4 (2026-10-04) records accusations and role claims only.
+    assert got["summary_fields"] == ["accusations", "role_claims"]
 
 
 @pytest.mark.parametrize("flag", ["v2"])
@@ -54,7 +53,7 @@ def test_v2_applies_all_four_changes(flag):
     assert got["short_target"] and not got["old_cap"]
     # only the two evil roles are told they may claim
     assert {r for r, on in got["claiming"].items() if on} == {"wolf", "serial_killer"}
-    assert "quiet" not in got["drivers"] and "evidence" in got["drivers"]
+    assert got["summary_fields"] == ["accusations", "role_claims"]
 
 
 def test_investigator_results_name_the_night_and_the_check():

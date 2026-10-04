@@ -325,6 +325,8 @@ def summarize_day_discussion(
         summary, model_used, structured = run_day_summary_agent(
             current_day, current_day_messages, max_retries,
             day_summaries=state.get("day_summaries", []),
+            dead_roster=state.get("dead_roster", []),
+            cast_role_counts=cast_role_counts(state.get("roles", {})),
         )
 
         day_summary_case = DaySummaryCase(

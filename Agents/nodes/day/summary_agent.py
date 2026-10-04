@@ -11,22 +11,25 @@ from logging import getLogger
 from Agents.prompts.prompt_formatters import format_claims_on_record, format_day_channel
 from Agents.llm_factory import get_llm_summary
 from Agents.prompts import DAY_SUMMARY_PROMPT, GAME_RULES
-from Agents.schemas import DaySummary, DaySummaryOutput, DaySummaryOutputV3
+from Agents.rules.claim_ledger import ClaimedAction, action_text
+from Agents.schemas import DaySummary, DaySummaryOutput, DaySummaryOutputV4
+from Agents.schemas.game_events import DeathRecord
 
 logger = getLogger(__name__)
 
-# v3: attributed claims checked against the game master's record, with claimed results as fields.
-# It keeps v2's evidence-focused "drivers" question (who drives the talk, on what evidence).
-_SUMMARY_SCHEMA = DaySummaryOutputV3
+# v4: the summariser transcribes the day's accusations and role claims (with claimed night actions in
+# fixed words); code keeps the ledger and checks it against the record (Agents/rules/claim_ledger.py).
+_SUMMARY_SCHEMA = DaySummaryOutputV4
 
 
-def summary_context(day_summaries: list[DaySummary]) -> tuple[str, str]:
+def summary_context(day_summaries: list[DaySummary], dead_roster: list[DeathRecord] | None = None,
+                    cast_role_counts: dict[str, int] | None = None) -> tuple[str, str]:
     """(public_record, claims_on_record) for the summariser: the game master's announcements so far,
-    and the role claims earlier summaries recorded. Both are public."""
+    and the claim ledger with its checks, as players see it. Both are public."""
     record = "\n".join(
         f"[Day {s.day}] {s.summary.strip()}" for s in day_summaries if s.source == "game_master"
     ) or "Nothing announced yet."
-    claims = format_claims_on_record([s for s in day_summaries if s.source != "game_master"])
+    claims = format_claims_on_record(day_summaries, dead_roster, cast_role_counts)
     return record, claims or "None yet."
 
 
@@ -35,16 +38,19 @@ def run_day_summary_agent(
     current_day_messages: list,
     max_retries: int = 1,
     day_summaries: list[DaySummary] | None = None,
+    dead_roster: list[DeathRecord] | None = None,
+    cast_role_counts: dict[str, int] | None = None,
 ) -> tuple[str, str, dict]:
     """Summarise one day's messages into (summary_text, model_used, structured).
 
-    `structured` is the raw DaySummaryOutput as a dict (role_claims / accusations / alliances /
-    village_dynamics) — persisted alongside the prose for the post-game tagger/credit (gameplay-neutral:
-    agents see only the prose). Retries the structured-output call; on repeated failure falls back to the
-    raw formatted channel (model_used "", structured {}). `day_summaries` (the game so far) supplies
-    the game master's record and the claims on record that the summary checks claims against.
+    `structured` is the DaySummaryOutputV4 as a dict (accusations / role_claims). Agents read the
+    previous days from it (the claim ledger and the accusations, format_day_summaries); the text is
+    what the replay drawer shows, and what agents read for a day stored without it. Retries the
+    structured-output call; on repeated failure falls back to the raw formatted channel (model_used "",
+    structured {}). `day_summaries` (the game so far), `dead_roster` and `cast_role_counts` give the
+    game master's record and the claim ledger the summary is written against.
     """
-    public_record, claims_on_record = summary_context(day_summaries or [])
+    public_record, claims_on_record = summary_context(day_summaries or [], dead_roster, cast_role_counts)
     prompt = DAY_SUMMARY_PROMPT.format(
         current_day=current_day,
         day_channel=format_day_channel(current_day_messages),
@@ -70,9 +76,10 @@ def run_day_summary_agent(
     return format_day_channel(current_day_messages), "", {}
 
 
-def _serialize_day_summary(result: DaySummaryOutput) -> str:
-    """Flatten the structured day-summary output (accusations, role claims, alliances,
-    village dynamics) into the plain-text block stored as the DaySummary."""
+def _serialize_day_summary(result: DaySummaryOutput | DaySummaryOutputV4) -> str:
+    """Flatten the structured day summary into the plain-text block stored as the DaySummary: v4
+    writes two headings (accusations, role claims); an older schema also writes its alliances and
+    village dynamics. The replay drawer splits the text at these headings."""
     parts = []
 
     if result.accusations:
@@ -97,18 +104,25 @@ def _serialize_day_summary(result: DaySummaryOutput) -> str:
     if result.role_claims:
         claims = []
         for c in result.role_claims:
-            status = getattr(c, "status", "")
-            claim = f"{c.player} claimed {c.claimed_role}" + (f" [{status}]" if status and status != "new" else "")
-            results = [
-                (f"night {r.night}: " if r.night else "") + f"{r.target} {r.result}"
-                for r in getattr(c, "claimed_results", [])
+            if getattr(c, "kind", "") == "retracted":
+                claims.append(f"{c.player} retracted {c.claimed_role}")
+                continue
+            claim = f"{c.player} claimed {c.claimed_role}"
+            actions = [
+                action_text(ClaimedAction(n.night, n.action, n.target, n.result, 0))
+                for n in getattr(c, "night_actions", [])
             ]
-            if results:
-                claim += " — results claimed: " + ", ".join(results)
-            claims.append(f"{claim} ({c.evidence})")
+            if actions:
+                claim += " — " + ", ".join(actions)
+            if getattr(c, "evidence", ""):
+                claim += f" ({c.evidence})"
+            claims.append(claim)
         parts.append("Role claims: " + "; ".join(claims))
     else:
         parts.append("Role claims: None.")
+
+    if not hasattr(result, "village_dynamics"):
+        return "\n".join(parts)
 
     if result.alliances:
         blocs = [

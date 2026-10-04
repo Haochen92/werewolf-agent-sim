@@ -107,11 +107,12 @@ class DaySummary(BaseModel):
             self.source = "game_master"
         return self
     structured: dict = Field(default_factory=dict)
-    """The full DaySummaryOutput (role_claims / accusations / alliances / village_dynamics) as a dict —
-    the structured signal the post-game tagger/credit reuse (role_claims for role-reveal; accusations for
-    advocacy-correctness crosses). The prose `summary` above is the agent-facing flatten of the same.
-    {} on the raw-channel fallback. NOT model-visible: agents only ever see `summary`
-    (format_day_summaries reads `.day`/`.summary` only) — so persisting this changes no gameplay input."""
+    """The summariser's structured output as a dict: v4 has accusations / role_claims; older games also
+    alliances / village_dynamics. Agents read previous days from it: format_day_summaries builds the
+    claim ledger and the accusations from these fields (day summary v4, 2026-10-04), and shows the
+    text `summary` only for a day stored without them. Also read by the post-game tagger/credit
+    (role_claims for role-reveal; accusations for advocacy-correctness crosses) and the replay's
+    X-ray card. {} on the raw-channel fallback."""
 
 
 class WolfChannel(BaseModel):
