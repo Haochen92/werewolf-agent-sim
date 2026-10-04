@@ -196,6 +196,8 @@ def turn_payload(case: dict[str, Any], memory: str = "none",
 def generate(case: dict[str, Any], n: int, memory: str = "none",
              summaries: dict[str, dict] | None = None) -> list[dict[str, Any]]:
     """Sample the turn ``n`` times on the process's game model; each sample's text units."""
+    from langchain_core.callbacks import UsageMetadataCallbackHandler
+
     from Agents.llm_factory import get_llm
     from Agents.nodes.day.actors import DISCUSS_PROMPTS, VOTE_PROMPTS
     from Agents.prompts.prompt_inputs import build_agent_prompt_input
@@ -214,9 +216,10 @@ def generate(case: dict[str, Any], n: int, memory: str = "none",
     samples = []
     for i in range(n):
         out, err = None, ""
+        usage, started = UsageMetadataCallbackHandler(), time.monotonic()  # retries count: they're billed
         for attempt in range(5):  # the shared Vertex pool answers bursts with 429s: back off and retry
             try:
-                out = chain.invoke(prompt_input)
+                out = chain.invoke(prompt_input, config={"callbacks": [usage]})
                 break
             except Exception as e:
                 err = str(e)[:300]
@@ -238,5 +241,17 @@ def generate(case: dict[str, Any], n: int, memory: str = "none",
             units.append({"unit": "reads", "text": "\n".join(
                 f"{r.player}: {r.suspected_role} ({r.confidence}): {r.why}" for r in out.reads)})
         samples.append({"sample": i, "valid": True, "units": units,
-                        "vote": getattr(out, "vote_target", None)})
+                        "vote": getattr(out, "vote_target", None),
+                        "usage": _usage_totals(usage, time.monotonic() - started)})
     return samples
+
+
+def _usage_totals(handler: Any, seconds: float) -> dict[str, float]:
+    """One sample's tokens over every model call it made (reasoning is billed as output), and its
+    wall time including any 429 back-off."""
+    totals = {"input": 0, "output": 0, "reasoning": 0}
+    for u in handler.usage_metadata.values():
+        totals["input"] += u.get("input_tokens", 0)
+        totals["output"] += u.get("output_tokens", 0)
+        totals["reasoning"] += (u.get("output_token_details") or {}).get("reasoning", 0)
+    return {**totals, "seconds": round(seconds, 2)}

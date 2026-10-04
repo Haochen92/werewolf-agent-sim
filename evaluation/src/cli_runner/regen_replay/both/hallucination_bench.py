@@ -162,6 +162,17 @@ def _rate(rows: list[dict]) -> str:
     return f"{bad}/{len(valid)} ({bad / len(valid):.0%})" if valid else "0/0"
 
 
+def _generation_usage(rows: list[dict]) -> dict:
+    """The arm's generation tokens and time per valid sample, when its samples recorded them (runs
+    from 2026-10-04 on); judging and re-summarising are not included."""
+    used = [r["usage"] for r in rows if r["valid"] and r.get("usage")]
+    if not used:
+        return {}
+    mean = lambda k: round(sum(u[k] for u in used) / len(used), 1)
+    return {"generation_per_sample": {k: mean(k) for k in ("input", "output", "reasoning", "seconds")},
+            "generation_samples_measured": len(used)}
+
+
 def summarize(by_arm: dict[str, list[dict]], cases: dict[str, dict]) -> dict:
     summary: dict = {"arms": {}, "paired_vs_first": {}}
     case_rate: dict[str, dict[str, float]] = {}
@@ -179,6 +190,7 @@ def summarize(by_arm: dict[str, list[dict]], cases: dict[str, dict]) -> dict:
             "bad": {g: _rate(rs) for g, rs in sorted(groups.items())},
             "deception": sum(r.get("deception", False) for r in rows),
             "invalid": sum(not r["valid"] for r in rows),
+            **_generation_usage(rows),
         }
         case_rate[label] = {cid: sum(v) / len(v) for cid, v in per_case.items()}
     labels = list(by_arm)
