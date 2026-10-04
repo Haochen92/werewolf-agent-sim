@@ -30,6 +30,7 @@ _STATE_MODEL_ALLOWLIST = [
     game_events.InvestigatorResult,
     game_events.DayVote,
     game_events.DeathRecord,
+    game_events.NightActionRecord,  # the private night record (2026-10-03); missing until 2026-10-04
 ]
 
 def durable_serde() -> JsonPlusSerializer:
