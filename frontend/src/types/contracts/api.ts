@@ -510,7 +510,8 @@ export interface components {
     };
     /**
      * DaySummaryStructured
-     * @description O-tier structured form of the summary (accusations / role claims / alliances).
+     * @description O-tier structured form of the summary (accusations / role claims; older games also alliances
+     *     and village dynamics).
      */
     DaySummaryStructured: {
       /** Seq */

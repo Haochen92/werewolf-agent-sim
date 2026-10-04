@@ -4,6 +4,7 @@ import { beatsFor } from '../beats/beatsFor';
 import type { SceneBeat } from '../beats/types';
 import { FIXTURE_EVENTS } from '../workbench/fixture';
 import {
+  claimedActionText,
   docketFor,
   freshReads,
   lessonsOf,
@@ -86,7 +87,7 @@ describe('the docket', () => {
       'brief',
     );
     expect(m.day).toBe(3);
-    expect(m.summary?.dynamics.landscape).toMatch(/information-starved/);
+    expect(m.summary?.dynamics?.landscape).toMatch(/information-starved/);
   });
 
   it('lists what each actor did at the night whole', () => {
@@ -145,5 +146,37 @@ describe('the docket', () => {
 
   it('reads a consult’s lessons with the verdict on each', () => {
     expect(lessonsOf(undefined)).toEqual([]);
+  });
+});
+
+describe('a claimed night action in the brief', () => {
+  it('reads a v4 action in plain words, and a v3 free-text result as written', () => {
+    expect(
+      claimedActionText({
+        night: 1,
+        action: 'investigate',
+        target: 'player_7',
+        result: 'wolf',
+      }),
+    ).toBe('Night 1: investigated player_7 — wolf');
+    expect(
+      claimedActionText({
+        night: 2,
+        action: 'protect',
+        target: 'player_1',
+        result: 'saved_from_attack',
+      }),
+    ).toBe('Night 2: protected player_1 — saved them from an attack');
+    expect(
+      claimedActionText({
+        night: 0,
+        action: 'shoot',
+        target: 'player_4',
+        result: 'not_said',
+      }),
+    ).toBe('Night not stated: shot player_4');
+    expect(
+      claimedActionText({ night: 1, action: '', target: 'player_7', result: 'is a wolf' }),
+    ).toBe('Night 1: player_7 is a wolf');
   });
 });

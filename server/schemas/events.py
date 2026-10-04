@@ -313,7 +313,8 @@ class DaySummary(DurableEvent, frozen=True):
 
 
 class DaySummaryStructured(DurableEvent, frozen=True):
-    """O-tier structured form of the summary (accusations / role claims / alliances)."""
+    """O-tier structured form of the summary (accusations / role claims; older games also alliances
+    and village dynamics)."""
 
     type: Literal["day_summary_structured"] = "day_summary_structured"
     data: dict

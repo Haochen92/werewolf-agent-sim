@@ -50,6 +50,7 @@ export function workbenchFrame(
   // a memory-off game: the same log without what memory adds
   if (q.memoryOff) events = events.filter((e) => !MEMORY_EVENTS.has(e.type));
   else if (q.memoryFields) events = withFields(events);
+  if (q.summaryV4) events = withSummaryV4(events);
   const situations = SYNTHETIC[scene];
   if (situations && !SYNTHETIC_AFTER.has(scene))
     return syntheticFrame(situations, q, events, cast);
@@ -141,6 +142,78 @@ function syntheticFrame(
  * them, server 18ebf3e): the composed situation split back into its fields, and made-up but
  * plausible classifications and tags, so the case file's field-reading path can be drawn.
  */
+/** Synthetic claims for the v4 redraw, by day: the fixture's summaries recorded none. */
+const V4_CLAIMS: Record<number, Record<string, unknown>[]> = {
+  3: [
+    {
+      player: 'player_5',
+      claimed_role: 'investigator',
+      kind: 'claimed',
+      night_actions: [
+        { night: 2, action: 'investigate', target: 'player_3', result: 'wolf' },
+      ],
+    },
+  ],
+  4: [
+    {
+      player: 'player_1',
+      claimed_role: 'healer',
+      kind: 'claimed',
+      night_actions: [
+        { night: 3, action: 'protect', target: 'player_8', result: 'no_attack' },
+      ],
+    },
+    { player: 'player_9', claimed_role: 'vigilante', kind: 'retracted', night_actions: [] },
+  ],
+};
+
+/** A synthetic day-3 accusation for the v4 redraw (the fixture's day 3 had none), in both forms. */
+const V4_ACCUSATION = {
+  accusers: ['player_7'],
+  target: 'player_2',
+  reasoning: 'player_7 argued that player_2 survived a night attack the others did not.',
+  evidence_type: 'concrete_claim',
+  defense: 'player_2 said no one attacked them.',
+  disputed_by: 'player_5 said surviving a night proves nothing.',
+  record_check: 'The game master never announced an attack on player_2.',
+};
+const V4_ACCUSATION_TEXT =
+  'player_7 → player_2: player_7 argued that player_2 survived a night attack the others did ' +
+  'not. (evidence type: concrete_claim) Defense: player_2 said no one attacked them. Disputed: ' +
+  'player_5 said surviving a night proves nothing. Against the record: The game master never ' +
+  'announced an attack on player_2.';
+
+/**
+ * The fixture's day summaries in the v4 shape (`summary=v4`): the synthetic claims above, a
+ * synthetic day-3 accusation with its dispute and record check, and no blocs or mood, in both
+ * the typed summary and its text. Other days keep their own accusations.
+ */
+function withSummaryV4(events: readonly DurableGameEvent[]): DurableGameEvent[] {
+  // the text as the summarizer's serializer writes it (summary_agent._serialize_day_summary)
+  const claimLine: Record<number, string> = {
+    3: 'player_5 claimed investigator — Night 2: investigated player_3, result: wolf',
+    4:
+      'player_1 claimed healer — Night 3: protected player_8, says there was no attack; ' +
+      'player_9 retracted vigilante',
+  };
+  return events.map((e) => {
+    if (e.type === 'day_summary') {
+      const first =
+        e.day === 3
+          ? `Key accusations and defenses: ${V4_ACCUSATION_TEXT}`
+          : e.summary.split('\n')[0];
+      return { ...e, summary: `${first}\nRole claims: ${claimLine[e.day] ?? 'None.'}` };
+    }
+    if (e.type !== 'day_summary_structured') return e;
+    const data = e.data as Record<string, unknown>;
+    const accusations =
+      e.day === 3
+        ? [V4_ACCUSATION]
+        : ((data.accusations as Record<string, unknown>[]) ?? []);
+    return { ...e, data: { accusations, role_claims: V4_CLAIMS[e.day] ?? [] } };
+  });
+}
+
 function withFields(events: readonly DurableGameEvent[]): DurableGameEvent[] {
   const dims = (situation: string, i: number) => {
     const s = parseSituation(situation);

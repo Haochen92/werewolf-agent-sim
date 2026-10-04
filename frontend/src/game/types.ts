@@ -187,12 +187,30 @@ export interface SummaryAccusation {
   reasoning: string;
   evidenceType: string;
   defense: string;
+  /** Who else argued against it, and why (day summary v3 on); '' when no one did or before v3. */
+  disputedBy: string;
+  /** Where its premise conflicts with the game master's record (v3 on); '' otherwise. */
+  recordCheck: string;
+}
+
+/** A night action a player claimed in the discussion (v4: fixed words; v3: free-text result). */
+export interface SummaryNightAction {
+  /** 0 when the player did not say which night. */
+  night: number;
+  /** investigate / protect / shoot / kill; '' for a v3 free-text result. */
+  action: string;
+  target: string;
+  result: string;
 }
 
 export interface SummaryRoleClaim {
   player: string;
   claimedRole: string;
+  /** The summarizer's verdict on the claim (v1–v3 only); '' from v4, where code checks claims. */
   evidence: string;
+  /** True when the player withdrew the claim that day (v3 on). */
+  retracted: boolean;
+  nightActions: SummaryNightAction[];
 }
 
 export interface SummaryBloc {
@@ -200,12 +218,16 @@ export interface SummaryBloc {
   basis: string;
 }
 
-/** A day's summary in the summarizer's own shape: the only memory of that day the agents keep. */
+/**
+ * A day's summary in the summarizer's own shape: the only memory of that day the agents keep.
+ * Games from 2026-10-04 (day summary v4) carry accusations and claims only; older games also
+ * blocs and dynamics, which are null when the summary has no such section.
+ */
 export interface CarriedSummary {
   accusations: SummaryAccusation[];
   roleClaims: SummaryRoleClaim[];
-  blocs: SummaryBloc[];
-  dynamics: { landscape: string; consensus: string; drivers: string };
+  blocs: SummaryBloc[] | null;
+  dynamics: { landscape: string; consensus: string; drivers: string } | null;
 }
 
 // --- seat-private ----------------------------------------------------------

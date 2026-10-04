@@ -72,6 +72,7 @@ import {
 } from './case-file';
 import {
   MARK,
+  claimedActionText,
   docketFor,
   docketTitle,
   type DocketModel,
@@ -1415,6 +1416,16 @@ function Brief({
                     <b>Defence:</b> {seatify(a.defense)}
                   </p>
                 ) : null}
+                {a.disputedBy ? (
+                  <p className={styles.def}>
+                    <b>Disputed:</b> {seatify(a.disputedBy)}
+                  </p>
+                ) : null}
+                {a.recordCheck ? (
+                  <p className={styles.def}>
+                    <b>Against the record:</b> {seatify(a.recordCheck)}
+                  </p>
+                ) : null}
               </div>
             ))
           ) : (
@@ -1425,33 +1436,47 @@ function Brief({
             s.roleClaims.map((c, i) => (
               <div key={i} className={styles.acc}>
                 <header>
-                  {chip(c.player)} Seat {seatNumber(c.player)} claims <b>{c.claimedRole}</b>
+                  {chip(c.player)} Seat {seatNumber(c.player)}{' '}
+                  {c.retracted ? 'withdraws' : 'claims'}{' '}
+                  <b>{c.claimedRole.replace(/_/g, ' ')}</b>
                 </header>
+                {c.nightActions.map((n, j) => (
+                  <p key={j}>{seatify(claimedActionText(n))}</p>
+                ))}
                 {c.evidence ? <p className={styles.def}>{seatify(c.evidence)}</p> : null}
               </div>
             ))
           ) : (
             <p className={styles.none}>None.</p>
           )}
-          <p className={styles.sect}>Blocs</p>
-          {s.blocs.length ? (
-            s.blocs.map((b, i) => (
-              <div key={i} className={styles.acc}>
-                <header>{seats(b.players)}</header>
-                <p className={styles.def}>{seatify(b.basis)}</p>
+          {/* blocs and mood: older games only (the summary stopped writing them 2026-10-04) */}
+          {s.blocs ? (
+            <>
+              <p className={styles.sect}>Blocs</p>
+              {s.blocs.length ? (
+                s.blocs.map((b, i) => (
+                  <div key={i} className={styles.acc}>
+                    <header>{seats(b.players)}</header>
+                    <p className={styles.def}>{seatify(b.basis)}</p>
+                  </div>
+                ))
+              ) : (
+                <p className={styles.none}>None.</p>
+              )}
+            </>
+          ) : null}
+          {s.dynamics ? (
+            <>
+              <p className={styles.sect}>Mood</p>
+              <div className={styles.acc}>
+                {[s.dynamics.landscape, s.dynamics.consensus, s.dynamics.drivers]
+                  .filter(Boolean)
+                  .map((t, i) => (
+                    <p key={i}>{seatify(t)}</p>
+                  ))}
               </div>
-            ))
-          ) : (
-            <p className={styles.none}>None.</p>
-          )}
-          <p className={styles.sect}>Mood</p>
-          <div className={styles.acc}>
-            {[s.dynamics.landscape, s.dynamics.consensus, s.dynamics.drivers]
-              .filter(Boolean)
-              .map((t, i) => (
-                <p key={i}>{seatify(t)}</p>
-              ))}
-          </div>
+            </>
+          ) : null}
         </>
       )}
     </>

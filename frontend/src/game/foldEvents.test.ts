@@ -502,10 +502,18 @@ describe('synthetic cases the fixture cannot contain', () => {
           reasoning: 'player_1 and player_3 accuse player_4 of hypocrisy.',
           evidenceType: 'voting_record',
           defense: 'player_4 calls it self-preservation.',
+          disputedBy: '',
+          recordCheck: '',
         },
       ],
       roleClaims: [
-        { player: 'player_2', claimedRole: 'Investigator', evidence: 'unverified' },
+        {
+          player: 'player_2',
+          claimedRole: 'Investigator',
+          evidence: 'unverified',
+          retracted: false,
+          nightActions: [],
+        },
       ],
       blocs: [
         { players: ['player_1', 'player_3'], basis: 'Joint defense of their votes.' },
@@ -534,9 +542,70 @@ describe('synthetic cases the fixture cannot contain', () => {
     expect(odd.days[base.day].summaryStructured).toEqual({
       accusations: [],
       roleClaims: [],
-      blocs: [],
+      blocs: null,
       dynamics: { landscape: '', consensus: 'Split.', drivers: '' },
     });
+  });
+
+  it('reads a v4 summary (2026-10-04): disputes, record checks, claimed night actions, no blocs or mood', () => {
+    const folded = foldEvent(emptyGameView(), {
+      ...base,
+      type: 'day_summary_structured',
+      data: {
+        accusations: [
+          {
+            accusers: ['player_8'],
+            target: 'player_2',
+            reasoning: 'player_8 argued player_2 survived an attack.',
+            evidence_type: 'concrete_claim',
+            defense: 'player_2 denied it.',
+            disputed_by: 'player_6 said survival proves nothing.',
+            record_check: 'No attack on player_2 was announced.',
+          },
+        ],
+        role_claims: [
+          {
+            player: 'player_3',
+            claimed_role: 'investigator',
+            kind: 'claimed',
+            night_actions: [
+              { night: 1, action: 'investigate', target: 'player_7', result: 'wolf' },
+            ],
+          },
+          {
+            player: 'player_6',
+            claimed_role: 'vigilante',
+            kind: 'retracted',
+            night_actions: [],
+          },
+        ],
+      },
+    } as unknown as DurableGameEvent);
+    const s = folded.days[base.day].summaryStructured!;
+    expect(s.blocs).toBeNull();
+    expect(s.dynamics).toBeNull();
+    expect(s.accusations[0]).toMatchObject({
+      disputedBy: 'player_6 said survival proves nothing.',
+      recordCheck: 'No attack on player_2 was announced.',
+    });
+    expect(s.roleClaims).toEqual([
+      {
+        player: 'player_3',
+        claimedRole: 'investigator',
+        evidence: '',
+        retracted: false,
+        nightActions: [
+          { night: 1, action: 'investigate', target: 'player_7', result: 'wolf' },
+        ],
+      },
+      {
+        player: 'player_6',
+        claimedRole: 'vigilante',
+        evidence: '',
+        retracted: true,
+        nightActions: [],
+      },
+    ]);
   });
 
   it('handles an unresolved turn_started followed by another', () => {

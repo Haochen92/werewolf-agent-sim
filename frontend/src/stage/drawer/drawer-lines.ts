@@ -843,11 +843,12 @@ const orList = (xs: readonly string[]) =>
   xs.length < 2 ? (xs[0] ?? '') : `${xs.slice(0, -1).join(', ')} or ${xs.at(-1)}`;
 
 /**
- * The brief split at its four headings: a row per section with something in it (the accusations
+ * The brief split at its headings: a row per section with something in it (the accusations
  * one item each, the summary joins them with " | "), and the sections that say only "None."
  * folded into one quiet line where the first of them stood ("No accusations, claims or
- * alliances yet"). Null when the text does not open its lines with the four headings, in order:
- * the drawer then sets it as it came.
+ * alliances yet"). A game from 2026-10-04 on writes the first two headings only (day summary v4);
+ * older games all four. Null when the text does not open its lines with either set, in order: the
+ * drawer then sets it as it came.
  */
 export function briefRows(text: string): BriefRow[] | null {
   const bodies: string[] = [];
@@ -861,17 +862,24 @@ export function briefRows(text: string): BriefRow[] | null {
     else if (bodies.length) bodies[bodies.length - 1] += ` ${line}`;
     else return null;
   }
-  if (bodies.length !== BRIEF_HEADINGS.length) return null;
-  const empty = BRIEF_HEADINGS.filter((_, i) => NONE.test(bodies[i]));
+  if (bodies.length !== 2 && bodies.length !== BRIEF_HEADINGS.length) return null;
+  const headings = BRIEF_HEADINGS.slice(0, bodies.length);
+  const empty = headings.filter((_, i) => NONE.test(bodies[i]));
   const out: BriefRow[] = [];
-  BRIEF_HEADINGS.forEach((h, i) => {
+  headings.forEach((h, i) => {
     const body = bodies[i];
     if (NONE.test(body)) {
       if (h === empty[0])
         out.push({ kind: 'none', text: `No ${orList(empty.map((e) => e.none))} yet` });
       return;
     }
-    const items = i === 0 ? body.split(/\s+\|\s+/) : [body];
+    // accusations one per item; a v4 brief's claims too (an older brief's claims carry free text)
+    const items =
+      i === 0
+        ? body.split(/\s+\|\s+/)
+        : i === 1 && bodies.length === 2
+          ? body.split(/;\s+/)
+          : [body];
     out.push({ kind: 'row', label: h.label, items: items.filter(Boolean) });
   });
   return out;

@@ -16,6 +16,10 @@
  * `memory_consulted` and `memory_extracted` taken out), for the case file without precedents;
  * `memory=fields` draws it with a small synthetic `dimensions` on every memory record (the
  * fixture predates them), for the case file read from a record's fields.
+ * `summary=v4`, written only when set, redraws the fixture's day summaries in the shape games
+ * write from 2026-10-04 (day summary v4: accusations with disputes and record checks, role claims
+ * with their night actions, no blocs or mood), with a few synthetic claims, as no played game
+ * has them yet.
  * `frame=iphone14|iphone15max|pixel8|WxH`, written only when set (`fill`, the default, fills
  * the window), draws the stage in a box of a landscape phone's size in CSS px, to judge the
  * stage at phone scale on a desktop screen. A preset carries the device's name; `WxH`
@@ -39,6 +43,8 @@ export interface WorkbenchQuery {
   memoryOff?: boolean;
   /** The fixture's memory records with synthetic `dimensions` (they have none). */
   memoryFields?: boolean;
+  /** The fixture's day summaries redrawn in the v4 shape; absent = as played. */
+  summaryV4?: boolean;
   /** Draw the stage in a phone-sized box; absent = fill the window. */
   frame?: DeviceFrame;
 }
@@ -80,6 +86,7 @@ export const QUERY_KEYS = [
   'animate',
   'live',
   'memory',
+  'summary',
   'frame',
 ] as const;
 
@@ -128,12 +135,13 @@ export function parseQuery(params: URLSearchParams): WorkbenchQuery {
     ...(params.get('live') === '1' ? { live: true } : {}),
     ...(params.get('memory') === 'off' ? { memoryOff: true } : {}),
     ...(params.get('memory') === 'fields' ? { memoryFields: true } : {}),
+    ...(params.get('summary') === 'v4' ? { summaryV4: true } : {}),
     ...(frame ? { frame } : {}),
   };
 }
 
 /**
- * The query string for `q`: the six keys in canonical form (then `live`, `memory` and `frame`, when
+ * The query string for `q`: the six keys in canonical form (then `live`, `memory`, `summary` and `frame`, when
  * set), then any other keys `rest` carries (the paint bench's options, `strip=0`), untouched
  * and in their own order.
  */
@@ -148,6 +156,7 @@ export function writeQuery(q: WorkbenchQuery, rest?: URLSearchParams): string {
   if (q.live) out.set('live', '1');
   if (q.memoryOff) out.set('memory', 'off');
   else if (q.memoryFields) out.set('memory', 'fields');
+  if (q.summaryV4) out.set('summary', 'v4');
   if (q.frame) out.set('frame', q.frame.id);
   rest?.forEach((v, k) => {
     if (!(QUERY_KEYS as readonly string[]).includes(k)) out.append(k, v);

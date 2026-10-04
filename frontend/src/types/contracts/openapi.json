@@ -1200,7 +1200,7 @@
           "data"
         ],
         "title": "DaySummaryStructured",
-        "description": "O-tier structured form of the summary (accusations / role claims / alliances)."
+        "description": "O-tier structured form of the summary (accusations / role claims; older games also alliances\nand village dynamics)."
       },
       "DraftRequest": {
         "properties": {

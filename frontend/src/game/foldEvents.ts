@@ -166,10 +166,12 @@ function pushSlot(
 /**
  * The wire types the structured summary as a bare object (the summarizer's schema is not
  * frozen into the contract yet), so it is read defensively: a missing or malformed section
- * is empty, and a summary with nothing in it is null.
+ * is empty, and a summary with nothing in it is null. Blocs and dynamics are null when the
+ * summary has no such key at all (v4, 2026-10-04), so an old game still shows them, empty or not.
  */
 function readCarriedSummary(data: Record<string, unknown>): CarriedSummary | null {
   const text = (v: unknown) => (typeof v === 'string' ? v : '');
+  const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
   const names = (v: unknown) =>
     Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
   const rows = (v: unknown): Record<string, unknown>[] =>
@@ -187,29 +189,45 @@ function readCarriedSummary(data: Record<string, unknown>): CarriedSummary | nul
       reasoning: text(a.reasoning),
       evidenceType: text(a.evidence_type),
       defense: text(a.defense),
+      disputedBy: text(a.disputed_by),
+      recordCheck: text(a.record_check),
     })),
     roleClaims: rows(data.role_claims).map((c) => ({
       player: text(c.player),
       claimedRole: text(c.claimed_role),
       evidence: text(c.evidence),
+      retracted: c.kind === 'retracted' || c.status === 'retracted',
+      // v4 names its night actions; v3 kept free-text results
+      nightActions: rows(c.night_actions ?? c.claimed_results).map((n) => ({
+        night: num(n.night),
+        action: text(n.action),
+        target: text(n.target),
+        result: text(n.result),
+      })),
     })),
-    blocs: rows(data.alliances).map((b) => ({
-      players: names(b.players),
-      basis: text(b.basis),
-    })),
-    dynamics: {
-      landscape: text(dyn.information_landscape),
-      consensus: text(dyn.consensus),
-      drivers: text(dyn.drivers),
-    },
+    blocs:
+      'alliances' in data
+        ? rows(data.alliances).map((b) => ({
+            players: names(b.players),
+            basis: text(b.basis),
+          }))
+        : null,
+    dynamics:
+      'village_dynamics' in data
+        ? {
+            landscape: text(dyn.information_landscape),
+            consensus: text(dyn.consensus),
+            drivers: text(dyn.drivers),
+          }
+        : null,
   };
   const empty =
     carried.accusations.length === 0 &&
     carried.roleClaims.length === 0 &&
-    carried.blocs.length === 0 &&
-    !carried.dynamics.landscape &&
-    !carried.dynamics.consensus &&
-    !carried.dynamics.drivers;
+    !carried.blocs?.length &&
+    !carried.dynamics?.landscape &&
+    !carried.dynamics?.consensus &&
+    !carried.dynamics?.drivers;
   return empty ? null : carried;
 }
 

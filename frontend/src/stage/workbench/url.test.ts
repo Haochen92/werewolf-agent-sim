@@ -59,6 +59,15 @@ describe('the workbench URL', () => {
     expect(parse('memory=on')).toEqual(DEFAULT_QUERY);
   });
 
+  it('writes `summary=v4` only when set, after `memory`', () => {
+    const v4 = { ...DEFAULT_QUERY, memoryOff: true, summaryV4: true };
+    expect(writeQuery(v4)).toBe(
+      'beat=0&viewer=spect&motion=normal&slot=none&hud=live&animate=0&memory=off&summary=v4',
+    );
+    expect(parse(writeQuery(v4))).toEqual(v4);
+    expect(parse('summary=v3')).toEqual(DEFAULT_QUERY);
+  });
+
   it('reads a phone frame, a preset by its key or a free WxH, and writes it only when set', () => {
     expect(parse('frame=iphone14').frame).toEqual({
       id: 'iphone14',

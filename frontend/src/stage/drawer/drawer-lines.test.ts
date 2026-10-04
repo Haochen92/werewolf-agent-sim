@@ -521,9 +521,41 @@ describe('the day’s brief as rows', () => {
     ]);
   });
 
-  it('gives up on a text that does not open with the four headings, in order', () => {
+  it('lays out a brief from 2026-10-04 on, which writes the first two headings only', () => {
+    expect(briefRows('Key accusations and defenses: None.\nRole claims: None.')).toEqual([
+      { kind: 'none', text: 'No accusations or claims yet' },
+    ]);
+    expect(
+      briefRows(
+        'Key accusations and defenses: player_8 → player_2: argued. | player_1 → player_4: pushed.\n' +
+          'Role claims: player_3 claimed investigator — Night 1: investigated player_7, result: wolf; ' +
+          'player_6 retracted vigilante',
+      ),
+    ).toEqual([
+      {
+        kind: 'row',
+        label: 'Accusations and defences',
+        items: ['player_8 → player_2: argued.', 'player_1 → player_4: pushed.'],
+      },
+      {
+        kind: 'row',
+        label: 'Role claims',
+        items: [
+          'player_3 claimed investigator — Night 1: investigated player_7, result: wolf',
+          'player_6 retracted vigilante',
+        ],
+      },
+    ]);
+  });
+
+  it('gives up on a text that does not open with the headings, in order', () => {
     expect(briefRows('The village argued all day.')).toBeNull();
     expect(briefRows('Role claims: None.\nKey accusations and defenses: None.')).toBeNull();
-    expect(briefRows('Key accusations and defenses: None.\nRole claims: None.')).toBeNull();
+    expect(briefRows('Key accusations and defenses: None.')).toBeNull();
+    expect(
+      briefRows(
+        'Key accusations and defenses: None.\nRole claims: None.\nAlliances and blocs: None.',
+      ),
+    ).toBeNull();
   });
 });
