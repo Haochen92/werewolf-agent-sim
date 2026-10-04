@@ -187,14 +187,44 @@ def _names(players: list[str]) -> str:
     return " and ".join(players) if len(players) < 3 else ", ".join(players[:-1]) + " and " + players[-1]
 
 
-def role_checks(player: str, p: PlayerClaims, ledger: dict[str, PlayerClaims], facts: RecordFacts) -> list[str]:
+@dataclass(frozen=True)
+class Check:
+    text: str
+    fits: bool | None
+    """True: the record agrees with the claim; False: it disagrees, or the claim breaks a rule;
+    None: a fact beside the claim that is neither (a plan whose target died)."""
+
+
+@dataclass
+class LedgerEntry:
+    """One line under a player: a claimed night action, or a plan they never said they carried out."""
+
+    night: int
+    action: str
+    target: str
+    claim: ClaimedAction | None
+    """None for a plan the player never reported on."""
+    planned: str | None = None
+    """The target the player said on that night's day they would act on, if they did."""
+    checks: list[Check] = field(default_factory=list)
+
+
+@dataclass
+class LedgerPlayer:
+    player: str
+    claims: PlayerClaims
+    checks: list[Check]
+    entries: list[LedgerEntry]
+
+
+def role_checks(player: str, p: PlayerClaims, ledger: dict[str, PlayerClaims], facts: RecordFacts) -> list[Check]:
     notes = []
     claimed = [role for _, role, kind in p.roles if kind == "claimed"]
     death = facts.dead.get(player)
     if death and death.role and claimed:
         fits = death.role == claimed[-1]
-        notes.append(f"Record: revealed as {_word(death.role)} when they {_when(death)}"
-                     + (", as claimed." if fits else f", not {_word(claimed[-1])}."))
+        notes.append(Check(f"Record: revealed as {_word(death.role)} when they {_when(death)}"
+                           + (", as claimed." if fits else f", not {_word(claimed[-1])}."), fits))
     role = p.current_role
     if role and not death and facts.role_counts:
         rivals = [q for q, c in ledger.items() if q != player and c.current_role == role and q not in facts.dead]
@@ -206,74 +236,90 @@ def role_checks(player: str, p: PlayerClaims, ledger: dict[str, PlayerClaims], f
                 parts.append(f"{_names(rivals)} also claim{'s' if len(rivals) == 1 else ''} it")
             if revealed:
                 parts.append(f"{_names(revealed)} {'was' if len(revealed) == 1 else 'were'} revealed as {_word(role)}")
-            notes.append(f"Record: the game has {cap} {_word(role)}, and " + " and ".join(parts) + ".")
+            notes.append(Check(f"Record: the game has {cap} {_word(role)}, and " + " and ".join(parts) + ".", False))
     return notes
 
 
-def action_checks(player: str, a: ClaimedAction, facts: RecordFacts) -> list[str]:
+def action_checks(player: str, a: ClaimedAction, facts: RecordFacts) -> list[Check]:
     notes = []
     if a.also:
-        notes.append(f"Rules: one {_NOUNS[a.action]} a night.")
+        notes.append(Check(f"Rules: one {_NOUNS[a.action]} a night.", False))
     if a.action == "protect" and a.target == player:
-        notes.append("Rules: the healer cannot protect themselves.")
+        notes.append(Check("Rules: the healer cannot protect themselves.", False))
     death = facts.dead.get(a.target)
     if a.action == "investigate" and death and death.role and (a.result in ROLES or a.result == "not_a_wolf"):
         fits = death.role == a.result or (a.result == "not_a_wolf" and death.role != "wolf")
-        notes.append(f"Record: {a.target} was revealed as {_word(death.role)}" + (", as claimed." if fits else "."))
+        notes.append(Check(f"Record: {a.target} was revealed as {_word(death.role)}" + (", as claimed." if fits else "."),
+                           fits))
     if not a.night or a.night not in facts.resolved_nights:
         return notes
     if a.action == "protect":
         if (a.night, a.target) in facts.saves:
-            notes.append(f"Record: {a.target} was attacked and saved by the healer that night.")
+            notes.append(Check(f"Record: {a.target} was attacked and saved by the healer that night.", True))
         elif a.result == "saved_from_attack":
-            notes.append(f"Record: no save of {a.target} was announced that night.")
+            notes.append(Check(f"Record: no save of {a.target} was announced that night.", False))
     elif a.action in ("shoot", "kill"):
         if death and death.phase == "night" and death.day == a.night:
-            notes.append(f"Record: {a.target} died that night.")
+            notes.append(Check(f"Record: {a.target} died that night.", True))
         elif a.result == "died":
-            notes.append(f"Record: {a.target} did not die that night.")
+            notes.append(Check(f"Record: {a.target} did not die that night.", False))
     return notes
+
+
+def plan_checks(action: str, target: str, night: int, facts: RecordFacts) -> list[Check]:
+    """A planned protection whose target died that night: the healer blocks any night kill."""
+    death = facts.dead.get(target)
+    if action == "protect" and death and death.phase == "night" and death.day == night:
+        return [Check(f"Record: {target} died that night.", None)]
+    return []
+
+
+def ledger_rows(summaries: list[DaySummary], dead_roster=(), cast_role_counts=None) -> list[LedgerPlayer]:
+    """The ledger with its checks: a row per player who claimed, in the order they first claimed,
+    each with its night actions and unreported plans in night order."""
+    ledger = build_claim_ledger([s for s in summaries if s.source != "game_master"])
+    facts = record_facts(summaries, dead_roster, cast_role_counts)
+    rows = []
+    for player, p in ledger.items():
+        plans = dict(p.plans)
+        entries = []
+        for a in p.actions.values():
+            planned = plans.pop((a.night, a.action), None) if a.night else None
+            entries.append(LedgerEntry(a.night, a.action, a.target, a, planned, action_checks(player, a, facts)))
+        for (night, action), target in plans.items():
+            entries.append(LedgerEntry(night, action, target, None, target, plan_checks(action, target, night, facts)))
+        entries.sort(key=lambda e: (e.night or 99, e.claim.day if e.claim else e.night))
+        rows.append(LedgerPlayer(player, p, role_checks(player, p, ledger, facts), entries))
+    return rows
+
+
+def entry_text(e: LedgerEntry) -> str:
+    a = e.claim
+    if a is None:
+        return f"Night {e.night}: on day {e.night} said they planned to {PLAN_VERBS[e.action]} {e.target}."
+    text = action_text(a)
+    if a.earlier:
+        text += f" (changed on day {a.day}; earlier: {'; '.join(a.earlier)})"
+    if a.also:
+        text += f" (on day {a.day} also named: {'; '.join(a.also)})"
+    if e.planned == a.target:
+        text += f" (planned on day {a.night})"
+    text += "."
+    if e.planned and e.planned != a.target:
+        text += (f" On day {a.night} said they planned to {PLAN_VERBS[a.action]} {e.planned}"
+                 + (f"; reason given on day {a.day}: {a.reason.rstrip('.')}." if a.reason else "."))
+    return text
 
 
 def format_claim_ledger(summaries: list[DaySummary], dead_roster=(), cast_role_counts=None) -> str:
     """The ledger as prompt text: a line per player (role history and checks), then a line per
-    claimed night action (with what it replaced, and its checks). "" when nobody has claimed."""
-    ledger = build_claim_ledger([s for s in summaries if s.source != "game_master"])
-    if not ledger:
-        return ""
-    facts = record_facts(summaries, dead_roster, cast_role_counts)
+    claimed night action or unreported plan (with what it replaced, and its checks). "" when
+    nobody has claimed."""
     lines = []
-    for player, p in ledger.items():
-        lines.append(" ".join([f"{player}: {role_history(p)}.", *role_checks(player, p, ledger, facts)]))
-        plans = dict(p.plans)
-        entries = []
-        for a in p.actions.values():
-            text = "  " + action_text(a)
-            if a.earlier:
-                text += f" (changed on day {a.day}; earlier: {'; '.join(a.earlier)})"
-            if a.also:
-                text += f" (on day {a.day} also named: {'; '.join(a.also)})"
-            planned = plans.pop((a.night, a.action), None) if a.night else None
-            if planned == a.target:
-                text += f" (planned on day {a.night})"
-            notes = [text + "."]
-            if planned and planned != a.target:
-                notes.append(f"On day {a.night} said they planned to {PLAN_VERBS[a.action]} {planned}"
-                             + (f"; reason given on day {a.day}: {a.reason.rstrip('.')}." if a.reason else "."))
-            entries.append(((a.night or 99, a.day), " ".join([*notes, *action_checks(player, a, facts)])))
-        for (night, action), target in plans.items():  # a plan the player never said they carried out
-            entries.append(((night, night), " ".join([f"  Night {night}: on day {night} said they planned to "
-                                                      f"{PLAN_VERBS[action]} {target}.", *plan_checks(action, target, night, facts)])))
-        lines += [text for _, text in sorted(entries, key=lambda e: e[0])]
+    for row in ledger_rows(summaries, dead_roster, cast_role_counts):
+        lines.append(" ".join([f"{row.player}: {role_history(row.claims)}.", *(c.text for c in row.checks)]))
+        lines += ["  " + " ".join([entry_text(e), *(c.text for c in e.checks)]) for e in row.entries]
     return "\n".join(lines)
-
-
-def plan_checks(action: str, target: str, night: int, facts: RecordFacts) -> list[str]:
-    """A planned protection whose target died that night: the healer blocks any night kill."""
-    death = facts.dead.get(target)
-    if action == "protect" and death and death.phase == "night" and death.day == night:
-        return [f"Record: {target} died that night."]
-    return []
 
 
 def revealed_tag(player: str, dead: dict[str, DeathRecord]) -> str:
