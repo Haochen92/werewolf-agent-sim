@@ -30,6 +30,10 @@ DEFAULT_GAME_THINKING_LEVEL = "minimal"
 GAME_THINKING_BY_MODEL = {
     "gemini-3.5-flash-lite": "medium",
     "gemini-3.1-flash-lite": "low",
+    # 2026-10-04 bench: Luna at medium 6% bad, at high 11% and 24 s a turn. GLM is played without
+    # thinking, which its full reasoning makes 34-55 s a call.
+    "openai/gpt-6-luna": "medium",
+    "openrouter/z-ai/glm-5.3-flash": "minimal",
 }
 # A game turn's request budget (2026-09-30): Vertex's shared pool for a new model can hold a
 # request for minutes before answering or bouncing it with 429, and the SDK then re-sent each
@@ -41,6 +45,11 @@ DEFAULT_GAME_TIMEOUT_S = 30.0
 DEFAULT_GAME_ATTEMPTS = 2
 DEFAULT_SUMMARY_TIMEOUT_S = 90.0
 DEFAULT_SUMMARY_THINKING_LEVEL = "medium"
+# A model whose summary must not take the default level: GLM's full reasoning (what "medium"
+# turns on for it) runs 34-55 s even on short prompts, against the summary's 90 s budget.
+SUMMARY_THINKING_BY_MODEL = {
+    "openrouter/z-ai/glm-5.3-flash": "minimal",
+}
 DEFAULT_PRO_MODEL = "gemini-2.5-pro"
 # Pinned (was the floating alias "gemini-pro-latest", which Google retargets
 # silently — a reproducibility hazard for the extraction pipeline that
@@ -135,12 +144,13 @@ def get_llm_game_fallback():
 
 
 def get_llm_summary():
+    model = _game_model()
     return create_chat_model(
-        _game_model(),
+        model,
         temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
         thinking_level=_thinking_level_from_env(
             "GOOGLE_GENAI_SUMMARY_THINKING_LEVEL",
-            DEFAULT_SUMMARY_THINKING_LEVEL,
+            SUMMARY_THINKING_BY_MODEL.get(model, DEFAULT_SUMMARY_THINKING_LEVEL),
         ),
         **_request_budget("GAME_SUMMARY_TIMEOUT_S", DEFAULT_SUMMARY_TIMEOUT_S),
     )

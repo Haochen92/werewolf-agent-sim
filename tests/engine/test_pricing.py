@@ -34,3 +34,11 @@ def test_an_unknown_model_or_date_has_no_price():
     assert cost_usd("some-new-model", _at(2026, 10, 4), input=1, cached=0, output=1) is None
     assert price_at("deepseek-flash", _at(2026, 9, 1)) is None  # before V4.1 Flash existed
     assert price_at("models/gemini-3.1-flash-lite", _at(2026, 10, 4)) is not None
+
+
+def test_every_menu_model_has_a_price():
+    # A model on the menu without a price would show every one of its games as costing nothing known.
+    from server.game.model_catalog import SUPPORTED_GAME_MODELS
+    for model in SUPPORTED_GAME_MODELS:
+        name = model.split("/", 1)[1] if model.startswith(("openai/", "openrouter/", "deepseek/")) else model
+        assert price_at(name, _at(2026, 10, 4, 12)) is not None, model

@@ -47,4 +47,12 @@ SUPPORTED_GAME_MODELS: dict[str, GameModel] = {
     # Probed 2026-09-10 (tests/live): drops required fields on roughly one wolf vote in three;
     # the seat's retry plus this rescue absorb it. The other rows had no failures.
     "deepseek/deepseek-flash": GameModel("deepseek/deepseek-v4-flash", "DeepSeek V4.1 Flash"),
+    # Admitted 2026-10-04 (eval-model-admission + the hallucination bench, two samples a case):
+    # GPT-6 Luna at medium reasoning, json_schema output: 6% bad samples against 3.5 flash-lite
+    # medium's 9% (not worse; better not significant), ~15 s a turn. An OpenAI key; no rescue.
+    "openai/gpt-6-luna": GameModel(None, "GPT-6 Luna"),
+    # GLM-5.3 Flash without thinking (its endpoint cannot turn reasoning fully off; effort low),
+    # json_mode output: 32% bad samples, so a cheap option rather than a recommended one. With
+    # thinking it took 34-55 s a call. An OpenRouter key, pinned to Z.AI's servers; no rescue.
+    "openrouter/z-ai/glm-5.3-flash": GameModel(None, "GLM-5.3 Flash"),
 }

@@ -28,3 +28,19 @@ def test_other_models_keep_the_default_and_the_env_still_overrides(monkeypatch):
     assert accessors.game_thinking_level("gemini-3.6-flash") == "minimal"
     monkeypatch.setenv("GOOGLE_GENAI_THINKING_LEVEL", "minimal")
     assert accessors.game_thinking_level("gemini-3.5-flash-lite") == "minimal"
+
+
+def test_the_admitted_models_play_at_their_bench_levels_and_glm_summarises_without_thinking(monkeypatch):
+    seen = []
+    monkeypatch.setattr(accessors, "create_chat_model", lambda model, **kw: seen.append((model, kw["thinking_level"])))
+    monkeypatch.delenv("GOOGLE_GENAI_THINKING_LEVEL", raising=False)
+    monkeypatch.delenv("GOOGLE_GENAI_SUMMARY_THINKING_LEVEL", raising=False)
+    assert accessors.game_thinking_level("openai/gpt-6-luna") == "medium"
+    assert accessors.game_thinking_level("openrouter/z-ai/glm-5.3-flash") == "minimal"
+    for model in ("openrouter/z-ai/glm-5.3-flash", "openai/gpt-6-luna"):
+        token = GAME_LLM.set(GameLLM(model=model))
+        try:
+            accessors.get_llm_summary()
+        finally:
+            GAME_LLM.reset(token)
+    assert seen == [("openrouter/z-ai/glm-5.3-flash", "minimal"), ("openai/gpt-6-luna", "medium")]

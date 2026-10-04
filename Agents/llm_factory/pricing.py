@@ -48,6 +48,11 @@ PRICES: dict[str, list[Price]] = {
         Price(date(2026, 9, 10), 0.15, 0.003, 0.60, peak=True),
     ],
     "deepseek-flash": [Price(date(2026, 9, 10), 0.15, 0.003, 0.60, peak=True)],
+    # OpenAI's list rates; its cache writes bill at $0.125, which usage does not separate out, so
+    # an uncached input token is priced $0.025 short.
+    "gpt-6-luna": [Price(date(2026, 9, 1), 0.10, 0.01, 0.50)],
+    # Z.AI's list rates after its launch promotion ended on 2026-09-09 (OpenRouter, pinned to Z.AI).
+    "z-ai/glm-5.3-flash": [Price(date(2026, 9, 10), 0.15, 0.03, 0.50)],
 }
 
 

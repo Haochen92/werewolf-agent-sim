@@ -128,7 +128,11 @@ class _OpenAICompatResponse:
 STRUCTURED_MODES = ("forced_tool", "json_schema", "auto_tool", "json_mode")
 # Per-model mode, chosen by the model admission run (eval-model-admission). Unlisted models
 # use forced_tool, which is what every OpenAI-protocol row has played on so far.
-STRUCTURED_MODE_BY_MODEL: dict[str, str] = {}
+STRUCTURED_MODE_BY_MODEL: dict[str, str] = {
+    # Both refuse a forced tool call with reasoning on (admission 2026-10-04).
+    "openai/gpt-6-luna": "json_schema",
+    "openrouter/z-ai/glm-5.3-flash": "json_mode",
+}
 
 
 def _schema_instruction(schema: type) -> str:

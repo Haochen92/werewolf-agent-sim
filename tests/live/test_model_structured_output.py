@@ -33,6 +33,7 @@ from pathlib import Path
 
 import pytest
 
+from Agents.llm_factory.accessors import game_thinking_level
 from Agents.llm_factory.backends import create_chat_model
 from evaluation.src.model_admission.seat_schemas import SEAT_SCHEMAS, TABLE, reply_problem
 from server.game.model_catalog import SUPPORTED_GAME_MODELS
@@ -46,6 +47,10 @@ def _credential_missing(model: str) -> str | None:
         return None if os.getenv("DEEPSEEK_API_KEY") else "DEEPSEEK_API_KEY not set"
     if model.startswith("nim/"):
         return None if os.getenv("NVIDIA_API_KEY") else "NVIDIA_API_KEY not set"
+    if model.startswith("openai/"):
+        return None if os.getenv("OPENAI_API_KEY") else "OPENAI_API_KEY not set"
+    if model.startswith("openrouter/"):
+        return None if os.getenv("OPENROUTER_API_KEY") else "OPENROUTER_API_KEY not set"
     adc = Path.home() / ".config/gcloud/application_default_credentials.json"
     if os.getenv("GOOGLE_API_KEY") or os.getenv("GOOGLE_APPLICATION_CREDENTIALS") or adc.exists():
         return None
@@ -60,7 +65,8 @@ def test_model_returns_valid_structured_output(model, schema, role_line, acted_f
     if reason:
         pytest.skip(reason)
 
-    llm = create_chat_model(model, temperature=1.0)
+    # What a seat's turn sends: the model's own thinking level and calling mode.
+    llm = create_chat_model(model, temperature=1.0, thinking_level=game_thinking_level(model))
     started = time.time()
     out = llm.with_structured_output(schema).invoke(TABLE + role_line)
     elapsed = time.time() - started
