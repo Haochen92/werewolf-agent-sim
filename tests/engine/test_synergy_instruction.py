@@ -7,6 +7,7 @@ from Agents.prompts.memory import (
     DAY_VOTE_MEMORY_CONTEXT,
     NIGHT_ACTION_MEMORY_CONTEXT,
     OBS_STRATEGY_SYNERGY_INSTRUCTION,
+    STRATEGY_POINTS_BLOCK,
 )
 
 _OBS_SENTINEL = "No past observations available."
@@ -35,8 +36,10 @@ def test_synergy_fires_only_when_both_present():
 
 
 def test_slot_in_every_memory_context_template():
+    # the synergy slot rides the strategy-points block, which every memory context carries
+    assert "{synergy_instruction}" in STRATEGY_POINTS_BLOCK
     for template in (DAY_VOTE_MEMORY_CONTEXT, NIGHT_ACTION_MEMORY_CONTEXT, DAY_DISCUSSION_MEMORY_CONTEXT):
-        assert "{synergy_instruction}" in template
+        assert "{strategy_points_block}" in template
 
 
 def test_synergy_text_points_to_override():

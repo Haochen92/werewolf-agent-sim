@@ -39,23 +39,32 @@ the degree its situation matches yours. If no observations are shown above, use 
 """
 
 
-DAY_DISCUSSION_MEMORY_CONTEXT = """
-Relevant observations: (These are specific, detailed observations from past games that are relevant to the current situation):
+# The memory blocks appear only when they hold something: memory is off by default on the live site,
+# and a retrieval can come back empty. Instructions about an empty list were ~1k characters of every
+# turn spent on nothing. prompt_inputs fills {observations_block} / {night_observations_block} /
+# {strategy_points_block} from these templates, or with "".
+OBSERVATIONS_BLOCK = """
+Relevant observations: (These are specific, detailed observations from past games that are relevant to {where}):
 {retrieved_observations}
-""" + MEMORY_APPLICABILITY_INSTRUCTION + """
+""" + MEMORY_APPLICABILITY_INSTRUCTION
+
+STRATEGY_POINTS_BLOCK = """
 Dynamic strategy points (strategies from past games relevant to your current situation):
 {strategy_points}
 
 {adoption_instruction}
-{synergy_instruction}
+You can use these strategy points to refine your approach, but do not apply them rigidly.
+{synergy_instruction}"""
+
+
+DAY_DISCUSSION_MEMORY_CONTEXT = """{observations_block}{strategy_points_block}
 Adaptive Strategic thinking:
     You have a private strategy note from your previous turns (your own working notes: they can be
     out of date or wrong, and the game master's record and the transcript outrank them):
     {previous_strategy}
 
-    Update your strategy notes based on new information, relevant observations. If your current approach
-    resembles a pattern that led to a bad outcome, adjust.
-    You can reference dynamic strategy points to refine your approach, but do not apply rigidly.
+    Update your strategy notes based on new information. If your current approach resembles a
+    pattern that led to a bad outcome, adjust.
     Keep your strategy notes concise (3-5 sentences).
     This is private and will not be shared with other players.
 """
@@ -63,15 +72,7 @@ Adaptive Strategic thinking:
 
 # The vote asks for updated_strategy, which replaces the note, so it must show the note it replaces:
 # without it, anything only the note remembered was lost at every vote (audit 2026-10-03, finding 3).
-DAY_VOTE_MEMORY_CONTEXT = """
-Relevant observations: (These are specific, detailed observations from past games that are relevant to the current situation):
-{retrieved_observations}
-""" + MEMORY_APPLICABILITY_INSTRUCTION + """
-Dynamic strategy points (strategies from past games relevant to your current situation):
-{strategy_points}
-
-{adoption_instruction}
-{synergy_instruction}
+DAY_VOTE_MEMORY_CONTEXT = """{observations_block}{strategy_points_block}
 Adaptive Strategic thinking:
     You have a private strategy note from your previous turns (your own working notes: they can be
     out of date or wrong, and the game master's record and the transcript outrank them):
@@ -83,23 +84,13 @@ Adaptive Strategic thinking:
 """
 
 
-NIGHT_ACTION_MEMORY_CONTEXT = """
-Relevant observations: (These are specific, detailed observations from past games that are relevant to your night decision):
-{retrieved_observations}
-""" + MEMORY_APPLICABILITY_INSTRUCTION + """
-Dynamic strategy points (strategies from past games relevant to your current situation):
-{strategy_points}
-
-{adoption_instruction}
-{synergy_instruction}
+NIGHT_ACTION_MEMORY_CONTEXT = """{night_observations_block}{strategy_points_block}
 Adaptive Strategic thinking:
     You have a private strategy note from your previous turns (your own working notes: they can be
     out of date or wrong, and the game master's record and the transcript outrank them):
     {previous_strategy}
 
-    Update your strategy notes based on new information and relevant observations. If your current
-    approach resembles a pattern that led to a bad outcome, adjust. You can reference dynamic strategy
-    points to refine your target choice, but do not apply rigidly. Keep your strategy notes concise
-    (3-5 sentences). This is private and will not be shared with other players.
+    Update your strategy notes based on new information. If your current approach resembles a
+    pattern that led to a bad outcome, adjust. Keep your strategy notes concise (3-5 sentences).
+    This is private and will not be shared with other players.
 """
-

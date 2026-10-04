@@ -10,6 +10,8 @@ from Agents.prompts.memory.context import (
     DAY_VOTE_MEMORY_CONTEXT,
     MEMORY_APPLICABILITY_INSTRUCTION,
     NIGHT_ACTION_MEMORY_CONTEXT,
+    OBSERVATIONS_BLOCK,
+    STRATEGY_POINTS_BLOCK,
 )
 from Agents.prompts.memory.rerank import RERANK_PROMPT
 from Agents.prompts.memory.situation_summary import (
@@ -35,6 +37,8 @@ __all__ = [
     "INVESTIGATOR_SITUATION_SUMMARY",
     "MEMORY_APPLICABILITY_INSTRUCTION",
     "NIGHT_ACTION_MEMORY_CONTEXT",
+    "OBSERVATIONS_BLOCK",
+    "STRATEGY_POINTS_BLOCK",
     "RERANK_PROMPT",
     "SERIAL_KILLER_SITUATION_SUMMARY",
     "SITUATION_ROLE_LENS",

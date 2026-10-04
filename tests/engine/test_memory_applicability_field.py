@@ -84,9 +84,13 @@ def test_memory_applicability_field_description_is_terse():
 
 
 def test_instruction_in_every_memory_context_block():
-    snippet = MEMORY_APPLICABILITY_INSTRUCTION.strip()[:40]
-    for block in (DAY_VOTE_MEMORY_CONTEXT, DAY_DISCUSSION_MEMORY_CONTEXT, NIGHT_ACTION_MEMORY_CONTEXT):
-        assert snippet in block
+    # the instruction rides the observations block, which every memory context carries
+    from Agents.prompts.memory import OBSERVATIONS_BLOCK
+
+    assert MEMORY_APPLICABILITY_INSTRUCTION.strip()[:40] in OBSERVATIONS_BLOCK
+    for block in (DAY_VOTE_MEMORY_CONTEXT, DAY_DISCUSSION_MEMORY_CONTEXT):
+        assert "{observations_block}" in block
+    assert "{night_observations_block}" in NIGHT_ACTION_MEMORY_CONTEXT
 
 
 def test_memory_verdict_shape():

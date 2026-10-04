@@ -22,6 +22,8 @@ from Agents.prompts.prompt_formatters import (
 # would be a back-edge (cycle risk during package init).
 from Agents.prompts.memory import (
     OBS_STRATEGY_SYNERGY_INSTRUCTION,
+    OBSERVATIONS_BLOCK,
+    STRATEGY_POINTS_BLOCK,
     STRATEGY_VERDICT_INSTRUCTION,
     SITUATION_ROLE_LENS,
 )
@@ -86,6 +88,14 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         OBS_STRATEGY_SYNERGY_INSTRUCTION
         if _retrieved_present(retrieved_observations) and _retrieved_present(strategy_points)
         else ""
+    )
+    strategy_points_text = (
+        strategy_points if isinstance(strategy_points, str) else format_strategy_points(strategy_points)
+    )
+    observations_text = (
+        retrieved_observations
+        if isinstance(retrieved_observations, str)
+        else format_retrieved_observations(retrieved_observations)
     )
     current_round = payload.get("current_round", 1)
     if payload.get("allow_abstain"):
@@ -158,15 +168,22 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
             else "\n".join(payload.get("vigilante_results", [])) or "Nothing yet."
         ),
         "previous_strategy": payload.get("previous_strategy", ""),
-        "strategy_points": (
-            strategy_points
-            if isinstance(strategy_points, str)
-            else format_strategy_points(strategy_points)
+        "strategy_points": strategy_points_text,
+        "retrieved_observations": observations_text,
+        # The memory blocks and their instructions appear only when they hold something.
+        "observations_block": (
+            OBSERVATIONS_BLOCK.format(where="the current situation", retrieved_observations=observations_text)
+            if _retrieved_present(retrieved_observations) else ""
         ),
-        "retrieved_observations": (
-            retrieved_observations
-            if isinstance(retrieved_observations, str)
-            else format_retrieved_observations(retrieved_observations)
+        "night_observations_block": (
+            OBSERVATIONS_BLOCK.format(where="your night decision", retrieved_observations=observations_text)
+            if _retrieved_present(retrieved_observations) else ""
+        ),
+        "strategy_points_block": (
+            STRATEGY_POINTS_BLOCK.format(strategy_points=strategy_points_text,
+                                         adoption_instruction=STRATEGY_VERDICT_INSTRUCTION,
+                                         synergy_instruction=synergy_instruction)
+            if _retrieved_present(strategy_points) else ""
         ),
         "situation_standards": SITUATION_STANDARDS,
         "epistemic_status_rule": EPISTEMIC_STATUS_RULE,
