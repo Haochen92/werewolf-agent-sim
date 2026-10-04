@@ -115,6 +115,7 @@ def resummarize(cases: list[dict[str, Any]], cache: dict[str, dict]) -> None:
     the checked-out summariser, day by day, each given the game master's record and the claims on
     record as of that day, as in a live game. One pass per game, from its latest case."""
     from Agents.nodes.day.summary_agent import run_day_summary_agent
+    from Agents.schemas.roles import cast_role_counts
 
     latest: dict[str, dict] = {}
     for c in cases:
@@ -131,7 +132,11 @@ def resummarize(cases: list[dict[str, Any]], cache: dict[str, dict]) -> None:
                 continue
             if f"{key}|{d}" not in cache:
                 context = sorted([s for s in record if s.day < d] + done, key=lambda s: s.day)
-                text, _, structured = run_day_summary_agent(d, msgs, 1, day_summaries=context)
+                # deaths known by day d's discussion: every lynch and night before it
+                dead = [x for x in state.get("dead_roster") or [] if x.day < d]
+                text, _, structured = run_day_summary_agent(
+                    d, msgs, 1, day_summaries=context, dead_roster=dead,
+                    cast_role_counts=cast_role_counts(state["roles"]))
                 cache[f"{key}|{d}"] = {"summary": text, "structured": structured}
             done.append(DaySummary(day=d, **cache[f"{key}|{d}"]))
 

@@ -1,0 +1,28 @@
+{
+  "label": "summary_v4_flashlite35",
+  "dataset": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+  "n": 3,
+  "workers": 3,
+  "arms": [
+    {
+      "label": "v3",
+      "model": "gemini-3.5-flash-lite",
+      "checkout": "../ww-summary-v3",
+      "env": {"WW_DISCUSSION_PROMPT": "v2"},
+      "memory": "none",
+      "resummarize": true
+    },
+    {
+      "label": "v4",
+      "model": "gemini-3.5-flash-lite",
+      "env": {"WW_DISCUSSION_PROMPT": "v2"},
+      "memory": "none",
+      "resummarize": true
+    }
+  ],
+  "recall_model": "gemini-3.1-flash-lite",
+  "precision_model": "gemini-3.5-flash",
+  "golden_model": "gemini-3.1-flash-lite",
+  "slices": ["curated", "pinned", "control"],
+  "notes": "Day summary v4 and the code-checked claim ledger (discussion_evidence.md §6.6). v3 = the summary-v3-baseline tag (= e53cb1e; git worktree add ../ww-summary-v3 summary-v3-baseline to regenerate); its generations and re-summarised days are the fidelity_pass_flashlite35 run's after_resum arm, made by the same code, copied in rather than regenerated. v4 = main, earlier days re-summarised by summary v4. Both arms judged in this run."
+}
