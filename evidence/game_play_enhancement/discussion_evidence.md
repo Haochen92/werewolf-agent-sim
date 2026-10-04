@@ -901,11 +901,42 @@ the thinking budget differs. Both arms freshly generated with token recording, a
 - **What this does to §6.4–6.6.** Every comparison there ran at minimal, with no reasoning. They
   measured layout and wording for a model that wasn't checking anything, which may be why they
   stayed within noise. They are not re-run here.
+- **It reaches past this bench.** Every memory experiment (the June static A/B, the v7 loop runs, the
+  v7 endpoint) also played its games at minimal on 3.1 flash-lite. The scope this puts on their
+  verdicts is recorded in `evidence/credit/blindspot_fix/experiment_log.md` §⑦.
 
 *Run: `evaluation/config/template/hallucination_bench_thinking.json`; output
 `evaluation/eval_results/hallucination_bench/thinking_flashlite35/` (not tracked). The minimal arm
 could have reused the earlier v4 arm's generations (same code); it was regenerated to record its
 tokens.*
+
+**The cheaper reasoning model: `gemini-3.1-flash-lite` at "low".** 3.1 does reason at low (1,024),
+and its tokens cost less ($0.25 / $1.50 per million). One arm was added to the same run, with the
+same summaries and the other two arms' verdicts reused:
+
+| | 3.5, minimal | 3.5, medium | 3.1, low |
+|---|---|---|---|
+| All samples bad | 82/267 (31%) | 27/267 (10%) | 39/267 (15%) |
+| Curated | 53% | 13% | 26% |
+| Messages: bad / checkable | 21% | 5% | 15/130 (12%) |
+| Notes: bad / checkable | 39% | 9% | 25/145 (17%) |
+| Bad messages that mention a vote | 22 | 5 | 12 |
+| Median message length | 42 words | 41 words | 61 words |
+| Reasoning tokens per turn | 0 | 1,365 | 820 |
+| Cost per turn | $0.0025 | $0.0059 | $0.0032 |
+| Time per turn | 2.3 s | 7.5 s | 6.2 s |
+
+- **It halves the errors at almost no extra cost** (15% against 31%; 32 cases better and 6 worse,
+  p < 0.0001), for 1.3× the cost per turn.
+- **It is behind 3.5 at medium** (15% against 10%), though not significantly at this size (12 cases
+  better and 19 worse, p = 0.28). It is barely faster (6.2 against 7.5 seconds), since it reasons too.
+- **Its messages are longer** (median 61 words against 42), and the owner's earlier reading put 3.5's
+  dialogue clearly above 3.1's (`evidence/model_selection/report.md`). Neither was re-judged here.
+
+The bigger Flash models are no cheaper route to reasoning. A two-turn probe each found
+`gemini-3.5-flash` and `gemini-3.6-flash` reasoning even at minimal (about 600–1,100 tokens, past
+the 128-token budget), but at $1.50 per million input tokens a turn costs about $0.016–0.020:
+three times 3.5 flash-lite at medium, and slower.
 
 ---
 
