@@ -1,6 +1,6 @@
 """Chat-model construction across the five supported backends.
 
-vertex (default) / google (API-key) / nim / deepseek / mistral / openai / xai — selected by ``LLM_BACKEND``
+vertex (default) / google (API-key) / nim / deepseek / mistral / openai / xai / openrouter — selected by ``LLM_BACKEND``
 and the model prefix. Instances are memoised by construction args (building one is
 non-trivial: client + auth setup), so callers in hot loops reuse a shared,
 thread-safe instance. See the package docstring for backend selection rules.
@@ -8,6 +8,7 @@ thread-safe instance. See the package docstring for backend selection rules.
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 import threading
@@ -15,6 +16,9 @@ from contextvars import ContextVar
 from dataclasses import dataclass, field
 from typing import Any
 
+from langchain_core.exceptions import OutputParserException
+from langchain_core.messages import HumanMessage
+from langchain_core.runnables import RunnableLambda
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 
@@ -84,6 +88,17 @@ _DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1"
 _MISTRAL_BASE_URL = "https://api.mistral.ai/v1"
 _OPENAI_BASE_URL = "https://api.openai.com/v1"
 _XAI_BASE_URL = "https://api.x.ai/v1"
+_OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+# OpenRouter serves most open-weight models from many hosts at different prices, precisions and
+# cache behaviour, and a fallback to another host loses the warm cache. So each model family is
+# pinned to its maker's own servers (OpenRouter's provider slugs, read 2026-10-04); a family with
+# no entry here is refused rather than left to OpenRouter's routing.
+OPENROUTER_PROVIDER = {
+    "qwen/": "alibaba",
+    "z-ai/": "z-ai",
+    "minimax/": "minimax",
+    "openai/": "openai",
+}
 
 
 @dataclass
@@ -91,18 +106,79 @@ class _OpenAICompatResponse:
     content: str
 
 
+# How an OpenAI-protocol model is asked for a schema-shaped answer (Gemini always uses its own
+# constrained output). Every caller just calls ``with_structured_output(schema)``; the mode
+# decides what that sends:
+#   forced_tool  the schema as a tool the model must call. Reliable, but DeepSeek's thinking
+#                mode rejects any forced tool_choice (HTTP 400), so it means thinking off there.
+#   json_schema  the provider's native structured output (response_format json_schema, strict):
+#                its decoder cannot produce an invalid reply, and it works with reasoning where
+#                the provider supports it (OpenAI, Alibaba; DeepSeek 400s it).
+#   auto_tool    the schema as a tool the model may call. Works with thinking on; a reply
+#                that answers in prose instead is a parse failure, which the seat retries.
+#   json_mode    no tool: a trailing instruction carries the JSON schema, the provider's JSON
+#                output mode is on, and the reply is validated here. Also works with thinking.
+# Probed on DeepSeek V4 Flash 2026-10-04 (one call each): thinking + forced or "required"
+# tool_choice → 400; thinking + auto → tool called; thinking + JSON mode → valid JSON.
+STRUCTURED_MODES = ("forced_tool", "json_schema", "auto_tool", "json_mode")
+# Per-model mode, chosen by the model admission run (eval-model-admission). Unlisted models
+# use forced_tool, which is what every OpenAI-protocol row has played on so far.
+STRUCTURED_MODE_BY_MODEL: dict[str, str] = {}
+
+
+def _schema_instruction(schema: type) -> str:
+    return ("Answer with only a JSON object, no prose and no code fence, that matches this JSON "
+            "schema:\n" + json.dumps(schema.model_json_schema(), separators=(",", ":")))
+
+
+def _parse_json_reply(schema: type, message: Any) -> Any:
+    """The reply's JSON validated against the schema; a parse failure raises, so the seat retries."""
+    text = (message.content if isinstance(message.content, str) else str(message.content)).strip()
+    if text.startswith("```"):  # tolerated even though asked against: it carries no ambiguity
+        text = text.strip("`").removeprefix("json").strip()
+    try:
+        return schema.model_validate_json(text)
+    except ValueError as e:
+        raise OutputParserException(f"reply is not a valid {schema.__name__}: {e}", llm_output=text) from e
+
+
+def _first_tool_call(schema: type, message: Any) -> Any:
+    """The tool call's arguments validated against the schema; no tool call raises."""
+    for call in getattr(message, "tool_calls", None) or []:
+        if call.get("name") == schema.__name__:
+            return schema.model_validate(call.get("args") or {})
+    raise OutputParserException(f"the model answered without calling {schema.__name__}",
+                                llm_output=str(message.content)[:500])
+
+
 class _ToolCallStructuredChatOpenAI(ChatOpenAI):
-    """ChatOpenAI whose ``with_structured_output`` defaults to tool calling.
+    """ChatOpenAI whose ``with_structured_output`` follows ``structured_mode`` (see above).
 
     LangChain's default method is ``json_schema`` (the OpenAI ``response_format``),
     which OpenAI-compatible providers don't reliably serve — DeepSeek 400s it
-    outright — while their tool-calling path is solid. Callers that pass an
+    outright — so the default here is forced tool calling. Callers that pass an
     explicit ``method=`` still win.
     """
 
+    structured_mode: str = "forced_tool"
+
     def with_structured_output(self, schema=None, **kwargs):
-        kwargs.setdefault("method", "function_calling")
-        return super().with_structured_output(schema, **kwargs)
+        if "method" in kwargs or self.structured_mode == "forced_tool" or not isinstance(schema, type):
+            kwargs.setdefault("method", "function_calling")
+            return super().with_structured_output(schema, **kwargs)
+        if self.structured_mode == "json_schema":
+            return super().with_structured_output(schema, method="json_schema", strict=True, **kwargs)
+        if self.structured_mode == "auto_tool":
+            bound = self.bind_tools([schema], tool_choice="auto")
+            return bound | RunnableLambda(lambda m: _first_tool_call(schema, m))
+        instruction = _schema_instruction(schema)
+
+        def with_instruction(prompt: Any) -> list:
+            # Appended last, so the cached prefix of the prompt is unchanged.
+            return [*self._convert_input(prompt).to_messages(), HumanMessage(instruction)]
+
+        bound = self.bind(response_format={"type": "json_object"})
+        return RunnableLambda(with_instruction) | bound | RunnableLambda(lambda m: _parse_json_reply(schema, m))
 
 
 def _build_openai_compat_chat_model(
@@ -185,12 +261,15 @@ def create_chat_model(
         Sampling temperature.
     thinking_level:
         Symbolic thinking level (``"minimal"``, ``"low"``, ``"medium"``,
-        ``"high"``).  Ignored for NIM/DeepSeek models.
+        ``"high"``).  Ignored for NIM; on DeepSeek anything above ``"minimal"``
+        turns thinking on, unless the model's structured mode is forced_tool.
     thinking_budget:
         Explicit thinking token budget.  Takes precedence over
         ``thinking_level`` when both are provided.  Ignored for NIM/DeepSeek models.
     **kwargs:
-        Forwarded to ``ChatGoogleGenerativeAI`` (ignored for NIM/DeepSeek).
+        Forwarded to ``ChatGoogleGenerativeAI`` (ignored for NIM/DeepSeek), except
+        ``structured_mode``: one of ``STRUCTURED_MODES``, overriding
+        ``STRUCTURED_MODE_BY_MODEL`` for an OpenAI-protocol model.
     """
     try:
         # The BYOK key in the cache key: a game must never be handed a client built with
@@ -224,27 +303,38 @@ def _build_chat_model(
     **kwargs: Any,
 ) -> ChatGoogleGenerativeAI | ChatOpenAI:
     """Construct a fresh chat model (uncached). See ``create_chat_model``."""
+    # ``structured_mode`` overrides the model's catalogue mode (the admission run tries each);
+    # LLM_STRUCTURED_MODE does the same for a whole process (a bench arm), and Gemini ignores it.
+    mode = kwargs.pop("structured_mode", None)
+    if mode is not None and _provider_family(model) in ("google", "mistral"):
+        raise ValueError(f"{model} has no structured_mode: it uses its own structured output")
+    if mode is None and _provider_family(model) not in ("google", "mistral"):
+        mode = os.getenv("LLM_STRUCTURED_MODE") or None
+    if mode is not None and mode not in STRUCTURED_MODES:
+        raise ValueError(f"structured_mode must be one of {STRUCTURED_MODES}, not {mode!r}")
+    mode = mode or STRUCTURED_MODE_BY_MODEL.get(model, "forced_tool")
+
     if model.startswith("nim/"):
         return _build_openai_compat_chat_model(
             model.removeprefix("nim/"), _NIM_BASE_URL, "NVIDIA_API_KEY",
-            temperature=temperature,
+            temperature=temperature, structured_mode=mode,
         )
 
     if model.startswith("deepseek/"):
-        # Thinking is ALWAYS disabled: V4's thinking mode rejects the forced
-        # tool_choice that with_structured_output sends, and every game call is
-        # structured — a thinking DeepSeek seat 400s on its first turn (seen live
-        # with the summary agent's default "medium" level).
-        if thinking_level not in (None, "minimal"):
+        # V4's thinking mode rejects the forced tool_choice of forced_tool mode (a thinking seat
+        # 400s on its first turn; seen live with the summary agent's "medium" level). So thinking
+        # is on only when asked for AND the model's mode doesn't force the tool call.
+        thinking = thinking_level not in (None, "minimal") and mode != "forced_tool"
+        if thinking_level not in (None, "minimal") and not thinking:
             logger.info(
-                "DeepSeek: thinking_level=%s ignored (thinking mode is incompatible "
-                "with structured output on this endpoint).", thinking_level,
+                "DeepSeek: thinking_level=%s ignored (forced tool calling is incompatible "
+                "with thinking mode).", thinking_level,
             )
         return _build_openai_compat_chat_model(
             model.removeprefix("deepseek/"), _DEEPSEEK_BASE_URL, "DEEPSEEK_API_KEY",
-            temperature=temperature,
+            temperature=temperature, structured_mode=mode,
             api_key_override=_game_key_for("deepseek"),
-            extra_body={"thinking": {"type": "disabled"}},
+            extra_body={"thinking": {"type": "enabled" if thinking else "disabled"}},
         )
 
     if model.startswith("mistral/"):
@@ -253,11 +343,30 @@ def _build_chat_model(
     # OpenAI and xAI (Grok) speak the OpenAI protocol; structured output rides tool calling, as
     # for DeepSeek. Wired for offline evaluation (the hallucination bench's arms), not game seats.
     if model.startswith("openai/"):
+        # Reasoning models take an effort level; "minimal" means off, as elsewhere (GPT-6 Luna
+        # takes none / low / medium / high / xhigh and rejects "minimal").
+        effort = ({"reasoning_effort": "none" if thinking_level == "minimal" else thinking_level}
+                  if thinking_level else {})
         return _build_openai_compat_chat_model(
-            model.removeprefix("openai/"), _OPENAI_BASE_URL, "OPENAI_API_KEY", temperature=temperature)
+            model.removeprefix("openai/"), _OPENAI_BASE_URL, "OPENAI_API_KEY",
+            temperature=temperature, structured_mode=mode, **effort)
+    if model.startswith("openrouter/"):
+        routed = model.removeprefix("openrouter/")
+        provider = next((v for k, v in OPENROUTER_PROVIDER.items() if routed.startswith(k)), None)
+        if provider is None:
+            raise ValueError(f"{model}: no pinned OpenRouter provider for this model family")
+        extra: dict[str, Any] = {"provider": {"order": [provider], "allow_fallbacks": False}}
+        if thinking_level:
+            # OpenRouter's one reasoning switch across providers; "minimal" means off, as on DeepSeek.
+            extra["reasoning"] = ({"enabled": False} if thinking_level == "minimal"
+                                  else {"effort": thinking_level})
+        return _build_openai_compat_chat_model(
+            routed, _OPENROUTER_BASE_URL, "OPENROUTER_API_KEY",
+            temperature=temperature, structured_mode=mode, extra_body=extra)
     if model.startswith("xai/"):
         return _build_openai_compat_chat_model(
-            model.removeprefix("xai/"), _XAI_BASE_URL, "XAI_API_KEY", temperature=temperature)
+            model.removeprefix("xai/"), _XAI_BASE_URL, "XAI_API_KEY",
+            temperature=temperature, structured_mode=mode)
 
     build_kwargs: dict[str, Any] = {
         "model": model,

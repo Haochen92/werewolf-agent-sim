@@ -43,6 +43,8 @@ from .backends import (  # noqa: E402
     GAME_LLM,
     GameLLM,
     MistralChatModel,
+    STRUCTURED_MODE_BY_MODEL,
+    STRUCTURED_MODES,
     THINKING_LEVEL_TO_BUDGET,
     _use_vertex as _use_vertex,  # private but imported externally; re-export
     create_chat_model,
@@ -80,6 +82,8 @@ __all__ = [
     "GAME_LLM",
     "GameLLM",
     "MistralChatModel",
+    "STRUCTURED_MODE_BY_MODEL",
+    "STRUCTURED_MODES",
     "THINKING_LEVEL_TO_BUDGET",
     "create_chat_model",
     # accessors
