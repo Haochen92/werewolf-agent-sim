@@ -859,6 +859,54 @@ history, with its generations reused, the same 104 summaries, and both arms judg
 *Run: `evaluation/config/template/hallucination_bench_record_citation.json`; output
 `evaluation/eval_results/hallucination_bench/summary_v4_cite_flashlite35/` (not tracked).*
 
+### 6.7 The agents were not reasoning at all (2026-10-04)
+
+**The finding.** Game turns run at thinking level "minimal" (`DEFAULT_GAME_THINKING_LEVEL`), which on
+Vertex is a 128-token budget. A probe with the game's structured output found that `gemini-3.5-flash-lite`
+then reasons for 0 tokens, and also at "low" (1,024), passed as a budget or as the native level alike.
+It reasons only from "medium" (4,096). `gemini-3.1-flash-lite`, the game model until 2026-09-10, also
+reasons 0 tokens at minimal but does reason at low. So every game so far was played with no
+reasoning step on its turns. The Google AI backend was not tested (no key in this environment).
+
+**The bench.** Same code (main after `ed7fb76c`, day summary v4), same 104 cached summaries, and only
+the thinking budget differs. Both arms freshly generated with token recording, and judged together:
+
+| | minimal (the game default) | medium |
+|---|---|---|
+| All samples bad | 82/267 (31%) | 27/267 (10%) |
+| Curated | 70/132 (53%) | 17/132 (13%) |
+| Pinned (golden judge) | 9/15 (60%) | 8/15 (53%) |
+| Controls (false alarms) | 3/120 | 2/120 |
+| Messages: bad / checkable | 27/129 (21%) | 7/143 (5%) |
+| Bad messages that mention a vote | 22 | 5 |
+| Notes: bad / checkable | 59/153 (39%) | 15/162 (9%) |
+| Cases better / worse | | 36 / 4 (p < 0.0001) |
+| Reasoning tokens per turn | 0 | 1,365 |
+| Output tokens per turn | 399 | 1,747 |
+| Cost per turn (at $0.30 / $2.50 per million) | $0.0025 | $0.0059 |
+| Time per turn | 2.3 s | 7.5 s |
+
+- **Reasoning is the lever.** Errors fall by about two-thirds, in messages (21% to 5%) and notes
+  (39% to 9%) alike. That is the first effect on this bench that is not noise, and it is larger than
+  everything in §6.4–6.6 put together. The vote misquotes that no layout or instruction moved fell
+  from 22 to 5.
+- **It reads as better play, not only fewer errors.** The serial killer at minimal asks how to tell
+  "the wolf versus the killer" when both wolves are dead. At medium it counts the dead and uses the
+  miscount against its accuser. Messages are the same length (median 42 and 41 words), mention
+  votes about as often, and more of their statements are checkable (143 against 129).
+- **The cost is about 2.4× per turn and 3.3× the time.** Reasoning tokens are billed as output.
+  Over a game that is roughly $0.27 to $0.65 if every turn reasons, and about 5 seconds more per turn.
+- **The pinned cases barely moved** (9 to 8 of 15). They are judged by the golden judge, which §6.5
+  already found unreliable, so this says more about that judge than about the pinned cases.
+- **What this does to §6.4–6.6.** Every comparison there ran at minimal, with no reasoning. They
+  measured layout and wording for a model that wasn't checking anything, which may be why they
+  stayed within noise. They are not re-run here.
+
+*Run: `evaluation/config/template/hallucination_bench_thinking.json`; output
+`evaluation/eval_results/hallucination_bench/thinking_flashlite35/` (not tracked). The minimal arm
+could have reused the earlier v4 arm's generations (same code); it was regenerated to record its
+tokens.*
+
 ---
 
 ## 7. Phase 2 plan: how the day runs (not started)

@@ -1,0 +1,27 @@
+{
+  "label": "thinking_flashlite35",
+  "dataset": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+  "n": 3,
+  "workers": 3,
+  "arms": [
+    {
+      "label": "minimal",
+      "model": "gemini-3.5-flash-lite",
+      "env": {"WW_DISCUSSION_PROMPT": "v2", "GOOGLE_GENAI_THINKING_LEVEL": "minimal"},
+      "memory": "none",
+      "resummarize": true
+    },
+    {
+      "label": "medium",
+      "model": "gemini-3.5-flash-lite",
+      "env": {"WW_DISCUSSION_PROMPT": "v2", "GOOGLE_GENAI_THINKING_LEVEL": "medium"},
+      "memory": "none",
+      "resummarize": true
+    }
+  ],
+  "recall_model": "gemini-3.1-flash-lite",
+  "precision_model": "gemini-3.5-flash",
+  "golden_model": "gemini-3.1-flash-lite",
+  "slices": ["curated", "pinned", "control"],
+  "notes": "Does reasoning reduce agent hallucination? Same code (main after ed7fb76c, day summary v4), thinking budget the only difference: minimal = 128 tokens (the game default; a probe found structured-output turns then reason 0 tokens, as at low = 1024), medium = 4096. Both arms freshly generated with token recording; both use the same 104 cached v4 summaries (summary_v4_flashlite35's summaries_v4.json copied per arm)."
+}
