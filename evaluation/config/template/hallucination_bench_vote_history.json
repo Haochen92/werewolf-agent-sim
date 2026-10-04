@@ -1,0 +1,45 @@
+{
+  "label": "summary_v4_vote_history_flashlite35",
+  "dataset": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+  "n": 3,
+  "workers": 3,
+  "arms": [
+    {
+      "label": "v3",
+      "model": "gemini-3.5-flash-lite",
+      "checkout": "../ww-summary-v3",
+      "env": {
+        "WW_DISCUSSION_PROMPT": "v2"
+      },
+      "memory": "none",
+      "resummarize": true
+    },
+    {
+      "label": "v4",
+      "model": "gemini-3.5-flash-lite",
+      "env": {
+        "WW_DISCUSSION_PROMPT": "v2"
+      },
+      "memory": "none",
+      "resummarize": true
+    },
+    {
+      "label": "v4_votes",
+      "model": "gemini-3.5-flash-lite",
+      "env": {
+        "WW_DISCUSSION_PROMPT": "v2"
+      },
+      "memory": "none",
+      "resummarize": true
+    }
+  ],
+  "recall_model": "gemini-3.1-flash-lite",
+  "precision_model": "gemini-3.5-flash",
+  "golden_model": "gemini-3.1-flash-lite",
+  "slices": [
+    "curated",
+    "pinned",
+    "control"
+  ],
+  "notes": "Isolate the per-player published vote index added after 0831d9b. Reuse v3 and v4 generations from summary_v4_flashlite35; copy summaries_v4.json to summaries_v4_votes.json to hold all 104 summaries fixed. Generate only v4_votes, then judge all three arms together. v3 baseline checkout: summary-v3-baseline; v4 baseline checkout: 0831d9b. Cached baseline generations are required when running from the changed working tree."
+}

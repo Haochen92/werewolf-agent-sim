@@ -774,7 +774,7 @@ re-summarised. *v3* is §6.5's "after, re-summarised" arm: the same code, its ge
   elsewhere, and "you were pushing against the investigator from day two". The record is in the
   prompt, but each day's votes are listed one voter per line and agents recall them wrongly. A
   compact per-player vote history (code-built, like the ledger) is the obvious next thing to try.
-  It is untested.
+  The follow-up below tests that index.
 - **The summariser behaves better.** Across the 104 re-summarised days there were no failures. The
   "investigations are never announced" false flags went from six to none, while the 46355b89
   premise and a misquoted abstention were still caught. Of v4's two other flags, one is a
@@ -784,6 +784,52 @@ re-summarised. *v3* is §6.5's "after, re-summarised" arm: the same code, its ge
 
 *Run: `evaluation/config/template/hallucination_bench_summary_v4.json`; output
 `evaluation/eval_results/hallucination_bench/summary_v4_flashlite35/` (not tracked).*
+
+**Follow-up: per-player vote history (2026-10-04).** A deterministic index in
+`Agents/prompts/prompt_formatters.py` groups published ballots by voter, in day order:
+`player_4: day 2 abstained; day 3 voted to eliminate player_3; day 4 voted to eliminate player_2.`
+It follows the original game-master announcements, before claims and accusations. It accepts both
+the current and legacy engine ballot wording, ignores discussion summaries and missing ballots,
+and inherits the renderer's exclusion of current and future days. No model calls or stored-state
+changes are needed. Across all 89 selected cases, the index preserves exactly the published ballot
+count. Its body averages 500 characters (maximum 987), plus its heading; four cases have no index.
+
+The follow-up reuses both earlier arms' 267 generated answers and all 104 v4 summaries, generates
+267 valid answers with the index, and judges all three arms together. The summary cache was checked
+for equality after the run: no summaries changed. The baseline counts move slightly because their
+unchanged answers were judged again. There were no judge read errors in this run.
+
+| | v3, re-judged | v4, re-judged | v4 + vote history |
+|---|---|---|---|
+| All samples bad | 83/267 (31%) | 87/267 (33%) | 80/267 (30%) |
+| Messages: bad / checkable | 22/127 (17%) | 33/128 (26%) | 26/125 (21%) |
+| Notes: bad / checkable | 66/151 (44%) | 64/154 (42%) | 59/153 (39%) |
+| Controls (false alarms) | 3/120 | 6/120 | 4/120 |
+
+As above, message/note rates count fact-sheet hallucinations over successfully checked fact-sheet
+units, excluding unanchored units and the separately judged golden expectations. All-sample and
+control counts also include golden violations.
+
+- **Numerically better than v4, but inconclusive.** On messages, 14 cases improved and 11 worsened
+  versus v4 (two-sided sign p = 0.6900). Against v3, 11 improved and 13 worsened (p = 0.8388).
+  On all-sample errors versus v3, 17 improved and 16 worsened (p = 1.0).
+- **The proposed deployment target was not met.** Messages remain at 21%, above the roughly 17%
+  v3 baseline. This run does not establish a hallucination reduction or equivalence to v3.
+- **Recommendation:** restore the v3-style agent view for the next release while retaining the
+  v4 summariser, ledger, and frontend improvements, then validate that combination. This experiment
+  does not test that hybrid: the v3 baseline used v3 summaries as well as the old view. The candidate
+  vote-history patch remains local for review; no rollback, push, or deployment was performed.
+
+Validation: 44 targeted formatter, claim-ledger, information-fidelity, and benchmark tests passed.
+
+*Run: `evaluation/config/template/hallucination_bench_vote_history.json`; output
+`evaluation/eval_results/hallucination_bench/summary_v4_vote_history_flashlite35/` (not tracked),
+including `summary.json` and `unit_comparison.json`. To reproduce this isolated experiment, first
+copy `generations_v3.jsonl` and `generations_v4.jsonl` from the earlier run into the new output
+directory, and copy its `summaries_v4.json` as `summaries_v4_votes.json`, then run
+`poetry run eval-hallucination-bench --config evaluation/config/template/hallucination_bench_vote_history.json`.
+The cached baseline generations are required: generating a v4 baseline from the changed working
+tree would include the vote index and invalidate the comparison.*
 
 ---
 
