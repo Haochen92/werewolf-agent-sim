@@ -93,12 +93,12 @@ def runtime_fingerprint() -> dict:
         DEFAULT_EMBEDDING_DIMS,
         DEFAULT_EMBEDDING_MODEL,
         DEFAULT_GAME_MODEL,
-        DEFAULT_GAME_THINKING_LEVEL,
         DEFAULT_PRO_BACKUP_MODEL,
         DEFAULT_PRO_MODEL,
         DEFAULT_SUMMARY_THINKING_LEVEL,
         _thinking_level_from_env,
         _use_vertex,
+        game_thinking_level,
     )
 
     backend = "vertex" if _use_vertex() else "google"
@@ -108,8 +108,8 @@ def runtime_fingerprint() -> dict:
         "llm_backend": backend,
         "game_model": os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL),
         "temperature": float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
-        "game_thinking_level": _thinking_level_from_env(
-            "GOOGLE_GENAI_THINKING_LEVEL", DEFAULT_GAME_THINKING_LEVEL
+        "game_thinking_level": game_thinking_level(
+            os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL)
         ),
         "summary_thinking_level": _thinking_level_from_env(
             "GOOGLE_GENAI_SUMMARY_THINKING_LEVEL", DEFAULT_SUMMARY_THINKING_LEVEL

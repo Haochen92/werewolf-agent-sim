@@ -23,6 +23,14 @@ DEFAULT_GAME_MODEL = "gemini-3.5-flash-lite"
 # DeepSeek's unconstrained tool-calling): one shot on this model beats a random action.
 DEFAULT_GAME_FALLBACK_MODEL = "gemini-3.1-flash-lite"
 DEFAULT_GAME_THINKING_LEVEL = "minimal"
+# Thinking per game model (2026-10-04, discussion_evidence.md §6.7). With structured output both
+# flash-lites reason for 0 tokens at "minimal", and 3.5 also at "low"; at these levels they reason,
+# and the hallucination bench's bad samples fell from 31% to 10% (3.5, medium) and 15% (3.1, low).
+# A rescued turn gets its rescue model's level. Other models keep DEFAULT_GAME_THINKING_LEVEL.
+GAME_THINKING_BY_MODEL = {
+    "gemini-3.5-flash-lite": "medium",
+    "gemini-3.1-flash-lite": "low",
+}
 # A game turn's request budget (2026-09-30): Vertex's shared pool for a new model can hold a
 # request for minutes before answering or bouncing it with 429, and the SDK then re-sent each
 # bounce up to five times, so one seat's turn took 2-5 minutes with nothing failing. Now a
@@ -70,6 +78,14 @@ def _thinking_level_from_env(
     return normalized
 
 
+def game_thinking_level(model: str) -> str | None:
+    """A game turn's thinking level on ``model``: GOOGLE_GENAI_THINKING_LEVEL when set (a bench arm
+    pins it), else the model's own level, else the default."""
+    return _thinking_level_from_env(
+        "GOOGLE_GENAI_THINKING_LEVEL", GAME_THINKING_BY_MODEL.get(model, DEFAULT_GAME_THINKING_LEVEL)
+    )
+
+
 def _request_budget(timeout_env: str, default_timeout: float) -> dict[str, float | int]:
     """The client's per-request timeout (seconds) and attempts, both counted by the SDK:
     ``max_retries`` here is the SDK's attempt count, so 1 means a single request."""
@@ -80,13 +96,11 @@ def _request_budget(timeout_env: str, default_timeout: float) -> dict[str, float
 
 
 def get_llm():
+    model = _game_model()
     return create_chat_model(
-        _game_model(),
+        model,
         temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
-        thinking_level=_thinking_level_from_env(
-            "GOOGLE_GENAI_THINKING_LEVEL",
-            DEFAULT_GAME_THINKING_LEVEL,
-        ),
+        thinking_level=game_thinking_level(model),
         **_request_budget("GAME_LLM_TIMEOUT_S", DEFAULT_GAME_TIMEOUT_S),
     )
 
@@ -106,10 +120,7 @@ def get_llm_game_fallback():
         return create_chat_model(
             override.rescue_model,
             temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
-            thinking_level=_thinking_level_from_env(
-                "GOOGLE_GENAI_THINKING_LEVEL",
-                DEFAULT_GAME_THINKING_LEVEL,
-            ),
+            thinking_level=game_thinking_level(override.rescue_model),
             **_request_budget("GAME_LLM_TIMEOUT_S", DEFAULT_GAME_TIMEOUT_S),
         )
     model = os.getenv("GAME_FALLBACK_MODEL", DEFAULT_GAME_FALLBACK_MODEL)
@@ -118,10 +129,7 @@ def get_llm_game_fallback():
     return create_chat_model(
         model,
         temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
-        thinking_level=_thinking_level_from_env(
-            "GOOGLE_GENAI_THINKING_LEVEL",
-            DEFAULT_GAME_THINKING_LEVEL,
-        ),
+        thinking_level=game_thinking_level(model),
         **_request_budget("GAME_LLM_TIMEOUT_S", DEFAULT_GAME_TIMEOUT_S),
     )
 

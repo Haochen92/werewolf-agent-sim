@@ -32,8 +32,9 @@ class GameModel(NamedTuple):
 
 SUPPORTED_GAME_MODELS: dict[str, GameModel] = {
     # 3.5 Flash-Lite is the fallback default: the first house-funded row (owner preference
-    # 2026-09-10; the live default is a setting, see server/house.py). Note that
-    # 3.5 thinks by default and bills those reasoning tokens as output; 3.1 does not.
+    # 2026-09-10; the live default is a setting, see server/house.py). Each flash-lite turn
+    # reasons at its own thinking level (GAME_THINKING_BY_MODEL in Agents/llm_factory/accessors.py:
+    # 3.5 medium, 3.1 low), and reasoning tokens are billed as output.
     "gemini-3.5-flash-lite": GameModel(
         "gemini-3.1-flash-lite", "Gemini 3.5 Flash-Lite", True),
     "gemini-3.1-flash-lite": GameModel(
