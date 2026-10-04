@@ -60,6 +60,7 @@ Game flow:
     addressed, and may pass when you don't. The discussion winds down once players stop having new
     things to say, and then everyone votes. You may vote to eliminate a player, or abstain; if no
     single player gets the most votes (a tie, or an abstain majority), no one is eliminated.
+- Day 1 has no vote: it is discussion only, then night. From day 2 on, each day ends in a vote.
 - Night: the wolves choose a victim, the healer may protect someone, the investigator may investigate
     someone, the serial killer chooses a victim, and the vigilante may take a shot.
 - Eliminated players' roles are revealed. The serial killer can only be removed by a daytime vote
