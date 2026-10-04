@@ -180,6 +180,15 @@ def test_votes_are_written_as_eliminate_or_abstain():
     assert "voted for" not in message
 
 
+def test_day_one_is_not_announced_as_a_vote_result():
+    # "Here's the vote result for day 1: No vote was held today" read to agents as a day-1 abstention
+    state = {"current_day": 1, "roles": ROLES, "surviving_wolves": ["w0", "w1"],
+             "surviving_villagers": ["sk", "h", "v", "inv", "t0"], "day_channel": [], "no_lynch_streak": 0,
+             "day_votes": []}
+    message = day_resolution(state, _runtime())["day_channel"][0].message
+    assert message.strip() == "There is no vote on day 1, so no one voted and no one is eliminated."
+
+
 # --- the v4 day summary -------------------------------------------------------------
 
 def test_the_summariser_gets_the_record_and_the_claim_ledger():

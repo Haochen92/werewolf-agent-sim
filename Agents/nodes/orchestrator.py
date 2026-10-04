@@ -261,13 +261,15 @@ Player {lynched} has been voted out and was a {state['roles'][lynched]}.
 
     # No lynch: no votes, an abstain plurality, or a tie.
     if tally.outcome == "no_vote":
-        outcome = "No vote was held today; no one is eliminated."
-    elif tally.outcome == "abstain":
-        outcome = "The village chose to abstain. No one is eliminated today."
+        # No ballots means no vote was held (day 1): a voting day's failed turns still cast one.
+        # Not worded as a vote result, which agents read as a day-1 abstention (2026-10-04).
+        message = f"\nThere is no vote on day {current_day}, so no one voted and no one is eliminated."
     else:
-        outcome = f"It's a tie between {candidates}. No one is voted out this day."
-
-    message = f"""
+        if tally.outcome == "abstain":
+            outcome = "The village chose to abstain. No one is eliminated today."
+        else:
+            outcome = f"It's a tie between {candidates}. No one is voted out this day."
+        message = f"""
 Here's the vote result for day {current_day}:
 {vote_summary}
 {outcome}"""
