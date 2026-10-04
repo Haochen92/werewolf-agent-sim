@@ -17,6 +17,9 @@ export const queryKeys = {
   games: {
     all: ['games'] as const,
     status: (gameId: string) => ['games', 'status', gameId] as const,
+    /** The claim ledger as of a morning (live: a new morning is a new key); `final` for a replay. */
+    ledger: (gameId: string, morning: number | 'final') =>
+      ['games', 'ledger', gameId, morning] as const,
   },
   rooms: {
     all: ['rooms'] as const,

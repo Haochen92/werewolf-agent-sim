@@ -10,6 +10,7 @@ import type {
   DraftResponse,
   GameCreated,
   GameStatus,
+  LedgerDay,
   ModelsMenu,
   NewSoloGame,
   NewRoom,
@@ -61,6 +62,11 @@ export function getGameStatus(gameId: string): Promise<GameStatus> {
   return request<GameStatus>(`/games/${encodeURIComponent(gameId)}`);
 }
 
+/** Each morning's claim ledger, rebuilt from the game's public events: running or ended, for anyone. */
+export function getLedger(gameId: string): Promise<LedgerDay[]> {
+  return request<LedgerDay[]>(`/games/${encodeURIComponent(gameId)}/ledger`);
+}
+
 export function listRooms(): Promise<RoomSummary[]> {
   return request<RoomSummary[]>('/rooms');
 }
@@ -70,7 +76,10 @@ export function listCharacters(): Promise<CharacterCard[]> {
 }
 
 /** Pick the puppet your seat stands as in a waiting room; `null` gives the pick up. */
-export function chooseCharacter(gameId: string, character: string | null): Promise<GameStatus> {
+export function chooseCharacter(
+  gameId: string,
+  character: string | null,
+): Promise<GameStatus> {
   return request<GameStatus>(`/games/${gameId}/character`, {
     method: 'POST',
     body: { character },

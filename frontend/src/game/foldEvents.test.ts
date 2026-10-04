@@ -381,6 +381,7 @@ describe('partial and out-of-order logs', () => {
       'turn_started',
       'speech',
       'day_summary',
+      'day_summary_structured',
       'vote_cast',
       'gm_message',
       'lynch_result',
@@ -466,7 +467,7 @@ describe('synthetic cases the fixture cannot contain', () => {
     });
   });
 
-  it('files day_summary_structured on its day in the typed shape, and counts it as O-tier arrival', () => {
+  it('files day_summary_structured on its day in the typed shape, a public event (no O-tier arrival)', () => {
     const folded = foldEvent(emptyGameView(), {
       ...base,
       type: 'day_summary_structured',
@@ -524,7 +525,7 @@ describe('synthetic cases the fixture cannot contain', () => {
         drivers: 'player_4 drives.',
       },
     });
-    expect(folded.xray.available).toBe(true);
+    expect(folded.xray.available).toBe(false);
   });
 
   it('reads an empty or malformed structured summary as absent, never as a crash', () => {

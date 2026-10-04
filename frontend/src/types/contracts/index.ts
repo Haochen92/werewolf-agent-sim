@@ -109,3 +109,11 @@ export type ModelsMenu = S['ModelsMenu'];
 export type ModelRow = S['ModelRow'];
 export type CharacterCard = S['CharacterCard'];
 export type ChooseCharacter = S['ChooseCharacter'];
+
+// --- the claim ledger (`GET /games/{id}/ledger`): each morning's claims, checked by code ---
+
+export type LedgerDay = S['LedgerDay'];
+export type LedgerPlayer = S['LedgerPlayerView'];
+export type LedgerEntry = S['LedgerEntryView'];
+export type LedgerCheck = S['LedgerCheck'];
+export type LedgerRole = S['LedgerRole'];

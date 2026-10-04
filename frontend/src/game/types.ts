@@ -169,9 +169,9 @@ export interface DayView {
   /** Emitted at the end of this day: the flattened text every agent reads next morning. */
   summary: string | null;
   /**
-   * The same summary in the summarizer's typed form (observer tier). The X-ray renders it
-   * atop day+1 as what the agents carry into that day (D13); null until it arrives, and for
-   * a day whose summarizer failed.
+   * The same summary in the summarizer's typed form (public since 2026-10-04, live during the
+   * day). The case file's Record sets its accusations out the morning after (D13); null until
+   * it arrives, and for a day whose summarizer failed.
    */
   summaryStructured: CarriedSummary | null;
   /** The phases this day actually entered, in order — the scrubber's steps. */

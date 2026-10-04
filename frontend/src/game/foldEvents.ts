@@ -282,7 +282,6 @@ const OBSERVER_TIER_EVENTS = new Set([
   'memory_extracted',
   'player_reads',
   'night_action',
-  'day_summary_structured',
 ]);
 
 // --- the fold --------------------------------------------------------------
