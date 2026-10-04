@@ -432,6 +432,18 @@ claiming option, the cap is 500, the summary uses its v2 format. No migration. R
 `:prev` tags (server `a651988`, frontend `a07067e`); to keep the new images but the old prompts,
 drop the env line and recreate the server. Smoke: `/api` health, models, replays, `/`, `/play`,
 `/rooms`, `/replays` all 200.
+· **2026-10-04 both containers rebuilt at `60c7cc0b`** (branch pushed first; built with
+`docker build` from a clean detached worktree, then `compose up -d --no-build`). Server: the
+information-fidelity pass (private night records, the game master's record shown apart from
+claims), day summary v4 with the code-checked claim ledger, memory instructions only with
+memories, and thinking per game model (3.5 flash-lite medium, 3.1 flash-lite low; rescues get
+their own model's level), all in evidence/game_play_enhancement/discussion_evidence.md §6.4–6.7;
+plus the cast record and the four new puppets. Frontend: the cast picker and new puppets, and
+the v4 summary in the X-ray brief and the drawer. No migration step: the shared `ww-postgres` was
+already at `0009` (applied for the local server). The images running before this deploy, 16
+hours old and newer than the `9ae5056` tags, are kept as `:prev`. Pre-flight in the new server
+image: the thinking levels and the rescue table resolve. Smoke: `/api` health, models,
+replays, characters, `/`, `/play`, `/rooms`, `/replays` and an old replay page all 200.
 
 **P4 — deploy + polish.** Caddy site (same-origin `/api`), HTTPS + `Secure` cookie flag on ·
 production compose (Postgres + `alembic upgrade head` before first boot; one `WW_POSTGRES_DSN`
