@@ -87,7 +87,7 @@ export function CarriageUnder(u: MiniUnder) {
  * the film's box fills the pane's width, shows only that corner: the same film, at a size a
  * phone can read (the stage's legibility floor grows its type below three-quarter scale).
  */
-function FilmPane({ view, beat, ahead, cast, filmTab, onFilmTab }: MiniUnder) {
+function FilmPane({ view, beat, ahead, cast, xray, filmTab, onFilmTab }: MiniUnder) {
   const box = useRef<HTMLDivElement>(null);
   const [w, setW] = useState(0);
   useLayoutEffect(() => {
@@ -126,6 +126,7 @@ function FilmPane({ view, beat, ahead, cast, filmTab, onFilmTab }: MiniUnder) {
                 ahead={ahead}
                 tab={filmTab}
                 onTab={onFilmTab}
+                xray={xray}
               />
             }
           />
@@ -282,8 +283,9 @@ function Line({
         </>,
         typeof l.text === 'string' ? seatify(l.text) : `${l.text.lead}${l.text.rest}`, // the chip is a picture beside words that name the seat
       );
-    case 'brief':
-      return row('xray', `The day’s brief, day ${l.day}`, seatify(l.text));
+    case 'record':
+      // the day's summary is the case file's Record now; the stage's drawer points to it
+      return row('public', `Day ${l.day}’s record is in the X-ray’s file`);
     case 'over':
       return row('public', WINNER_TEXT[l.winner] ?? l.winner);
   }

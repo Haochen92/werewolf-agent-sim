@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { fileTap, showFile, stripButtons } from './slot';
+import {
+  fileTap,
+  pressFile,
+  pressXray,
+  showFile,
+  showRecord,
+  slotOf,
+  stripButtons,
+} from './slot';
 
 describe('the strip’s Reveal switch', () => {
   it('is drawn only when the container has one: the replay’s to press, live’s locked', () => {
@@ -44,5 +52,33 @@ describe('a seat tapped for its file', () => {
       xray: false,
       slot: 'drawer',
     });
+  });
+});
+
+describe('the case file without the X-ray (the Record)', () => {
+  it('opens and closes from the File tab, X-ray or not', () => {
+    for (const xray of [false, true]) {
+      expect(pressFile({ slot: 'drawer', xray })).toEqual({ xray, slot: 'film' });
+      expect(pressFile({ slot: null, xray })).toEqual({ xray, slot: 'film' });
+      expect(pressFile({ slot: 'film', xray })).toEqual({ xray, slot: null });
+    }
+    // the file is in the slot whatever the X-ray says
+    expect(slotOf({ slot: 'film' })).toBe('film');
+    expect(stripButtons({ slot: 'film', xray: false }).file).toBe(true);
+  });
+
+  it('stays in the slot when Reveal is switched, going to the Record when it goes off', () => {
+    expect(pressXray({ slot: 'film', xray: true })).toEqual({ xray: false, slot: 'film' });
+    expect(pressXray({ slot: 'film', xray: false })).toEqual({ xray: true, slot: 'film' });
+    expect(pressXray({ slot: 'drawer', xray: true })).toEqual({
+      xray: false,
+      slot: 'drawer',
+    });
+  });
+
+  it('comes to the pane from the transcript’s pointer, from anywhere', () => {
+    for (const slot of [null, 'drawer', 'film'] as const)
+      for (const xray of [false, true])
+        expect(showRecord({ slot, xray })).toEqual({ xray, slot: 'film' });
   });
 });

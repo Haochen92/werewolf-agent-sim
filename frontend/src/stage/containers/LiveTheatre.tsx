@@ -30,7 +30,7 @@
  * After `game_over` every viewer holds the whole log, so the X-ray is on for everyone, from
  * the moment the stage reaches the ending (its first `over.*` beat; `game_over` can land while
  * the stage is still playing the last night, 2026-10-01): then the wing takes the truth, Reveal
- * and the File tab unlock, and the ending plays to its curtain, whose way out goes to the
+ * and the seats' files unlock, and the ending plays to its curtain, whose way out goes to the
  * replay or back to the lobby. The replay is filed only when the engine's run ends (with
  * memory on, after the lessons are written, a minute or more after `game_over`): until the
  * archive answers for it, the curtain says "Winding the reels… come back in a few minutes"
@@ -51,6 +51,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useGameSession, type PacingBar } from '@/game/store';
 import { serverNow, useCountdown } from '@/hooks/useCountdown';
+import { useLedger } from '@/hooks/useLedger';
 import { useReplayFiled } from '@/hooks/useReplayFiled';
 import { draftLine, rejoinGame, submitTurn, type TurnPayload } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
@@ -103,6 +104,7 @@ import {
 } from './live-state';
 import { holdFor } from './transport';
 import { memoryOn, type FileChoice } from '../film/case-file';
+import type { RecordPick } from '../film/record-model';
 import styles from './LiveTheatre.module.css';
 
 export interface LiveTheatreProps {
@@ -419,6 +421,14 @@ export function LiveTheatre({
   }, [cardOpen]);
   const [filmTab, setFilmTab] = useState('notes');
   const [fileSeat, setFileSeat] = useState<FileChoice | null>(null);
+  const [recordPick, setRecordPick] = useState<RecordPick | null>(null);
+  // the claim ledger for the file's Record (public, so from the first morning): asked again
+  // each time a new day begins, which is a new morning's ledger
+  const morning =
+    storeGame === gameId
+      ? view.timeline.reduce((m, t) => (t.phase === 'day' ? Math.max(m, t.day) : m), 0)
+      : 0;
+  const ledger = useLedger(gameId, morning);
   // the seat notebook's open editor: it stays open while beats and scenes go by
   const noteEditing = useNoteEditing();
   // the strip's door: "Leave the table?" is open (a seated player, until the game ends)
@@ -447,13 +457,18 @@ export function LiveTheatre({
       onFilmTab: setFilmTab,
       fileSeat,
       onFileSeat: setFileSeat,
+      ledger,
+      recordPick,
+      onRecordPick: setRecordPick,
+      onShowRecord: () => dispatch({ type: 'show-record' }),
       notebook: noteEditing,
       // the closed file's way to the thinking turn by turn (the curtain's "Watch the replay"),
       // once the replay is filed
       replayHref: toReplay.replay ?? undefined,
       ahead,
       onTranscript: () => dispatch({ type: 'transcript' }),
-      onFile: () => dispatch({ type: 'file', xray: xrayShown }),
+      // the file opens any time: until the game's end it holds the Record alone
+      onFile: () => dispatch({ type: 'file' }),
       onOpenFile: (seat) => {
         setFileSeat({ seat, key: null });
         dispatch({ type: 'show-file', xray: xrayShown });
@@ -469,6 +484,8 @@ export function LiveTheatre({
       drawer.scroll,
       filmTab,
       fileSeat,
+      ledger,
+      recordPick,
       noteEditing,
       ahead,
       xrayShown,

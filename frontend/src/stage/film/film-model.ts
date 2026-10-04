@@ -6,7 +6,7 @@
  * - the count: what each voter weighed before its ballot;
  * - the lynch's card: "Who had them right", each voter's read of the voted-out seat against
  *   the truth, and the seat's own last note;
- * - a morning: the brief the agents carry into the next day, in its typed form;
+ * - the carried summary's morning: not a docket; the file opens the Record (record-model.ts);
  * - the night whole: what each actor did;
  * - the deal face up; at the end the case closed ("the deal, and how each seat went"), and
  *   the winners' last notes at their stand.
@@ -14,7 +14,7 @@
  * The epilogue has no docket: the ledger comes down over the whole stage instead. The reads a
  * turn was made from are also on the wing (`turnReads`), where a tap opens the read card.
  */
-import type { CarriedSummary, GameView, SummaryNightAction } from '@/game/types';
+import type { GameView } from '@/game/types';
 import type { MemoryConsulted, PlayerReads } from '@/types/contracts';
 import type { SceneBeat } from '../beats/types';
 import { nightBranchesOf } from '../scenes/replay-night';
@@ -77,7 +77,6 @@ export type DocketModel =
       rows: HadThemRight[];
       note: FilmNote | null;
     }
-  | { kind: 'brief'; day: number; summary: CarriedSummary | null }
   | {
       kind: 'deal';
       /** The end's truth: each seat's fate too. */
@@ -93,35 +92,6 @@ export type DocketModel =
  * What the no-seat sheet is called, by what it holds (owner, 2026-09-30: "the docket" was
  * nobody's word): its name on the cover, its tab and the phone's chooser.
  */
-const CLAIM_VERB: Record<string, string> = {
-  investigate: 'investigated',
-  protect: 'protected',
-  shoot: 'shot',
-  kill: 'attacked',
-};
-const CLAIM_SAYS: Record<string, string> = {
-  saved_from_attack: 'saved them from an attack',
-  no_attack: 'no attack came',
-  died: 'they died',
-  survived: 'they survived',
-  not_a_wolf: 'not a wolf',
-};
-
-/**
- * A claimed night action as the brief sets it: "Night 1: investigated player_7 — wolf". A v3
- * summary's free-text result reads as it was written; a result the player never gave is left off.
- */
-export function claimedActionText(n: SummaryNightAction): string {
-  const night = n.night ? `Night ${n.night}` : 'Night not stated';
-  if (!n.action) return `${night}: ${n.target} ${n.result}`.trim();
-  const verb = CLAIM_VERB[n.action] ?? n.action;
-  const result =
-    n.result && n.result !== 'not_said'
-      ? (CLAIM_SAYS[n.result] ?? n.result.replace(/_/g, ' '))
-      : '';
-  return `${night}: ${verb} ${n.target}${result ? ` — ${result}` : ''}`;
-}
-
 export function docketTitle(model: DocketModel): string {
   switch (model.kind) {
     case 'night':
@@ -130,8 +100,6 @@ export function docketTitle(model: DocketModel): string {
       return 'The vote';
     case 'lynch':
       return 'The lynch';
-    case 'brief':
-      return `Day ${model.day}’s brief`;
     case 'deal':
       return model.truth ? 'The case, closed' : 'The deal';
     case 'notes':
@@ -272,7 +240,8 @@ const VOTE_DOCKET: readonly SceneBeat['id'][] = [
 
 /**
  * The docket for a beat with no seat in focus (a turn and a night spoke open a seat's file
- * instead, case-file.ts `fileFocus`). Null at the epilogue.
+ * instead, case-file.ts `fileFocus`; the carried summary's beat opens the Record). Null at the
+ * epilogue.
  */
 export function docketFor(view: GameView, beat: SceneBeat): DocketModel | null {
   const day = beat.day;
@@ -320,9 +289,6 @@ export function docketFor(view: GameView, beat: SceneBeat): DocketModel | null {
       note: lastNote(view, seat, -Infinity, vote?.ballots[0]?.seq ?? beat.seq),
     };
   }
-
-  if (beat.id === 'morning.carried-summary')
-    return { kind: 'brief', day, summary: view.days[day]?.summaryStructured ?? null };
 
   if (beat.id === 'rnight.whole')
     return {

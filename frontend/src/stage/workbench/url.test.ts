@@ -50,6 +50,20 @@ describe('the workbench URL', () => {
     expect(parse('live=0')).toEqual(DEFAULT_QUERY);
   });
 
+  it('writes `game` and `ledger=off` only when set, after `summary`', () => {
+    const q = {
+      ...DEFAULT_QUERY,
+      summaryV4: true,
+      game: '140610ad' as const,
+      noLedger: true,
+    };
+    expect(writeQuery(q)).toBe(
+      'beat=0&viewer=spect&motion=normal&slot=none&hud=live&animate=0&summary=v4&game=140610ad&ledger=off',
+    );
+    expect(parse(writeQuery(q))).toEqual(q);
+    expect(parse('game=nope&ledger=on')).toEqual(DEFAULT_QUERY);
+  });
+
   it('writes `memory=off` only when set, after `live`', () => {
     const off = { ...DEFAULT_QUERY, live: true, memoryOff: true };
     expect(writeQuery(off)).toBe(

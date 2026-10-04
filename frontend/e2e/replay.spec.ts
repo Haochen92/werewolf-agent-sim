@@ -140,14 +140,18 @@ test('replay: the transport band beside the open drawer', async ({ page }) => {
 test('replay: the X-ray on a day-3 speech, the file in the slot', async ({ page }) => {
   await open(page);
   await seek(page, 50); // seat 8's speech (seq 200), its first page
-  // the File tab is the X-ray's pane: greyed until the strip's Reveal turns the X-ray on
+  // the File tab opens without the X-ray too, on the Record alone: the seats' files greyed
   const file = page.getByRole('button', { name: 'File', exact: true });
-  await expect(file).toBeDisabled();
   await expect(reveal(page)).toHaveAttribute('aria-pressed', 'false');
   await expect(reveal(page)).toHaveText('Reveal');
+  await file.click();
+  await expect(page.locator('[data-film="record"]')).toBeVisible();
+  const seat3 = page.getByRole('tab', { name: 'Seat 3’s file' });
+  await expect(seat3).toBeDisabled();
+  await expect(seat3).toHaveAttribute('title', 'Opens with Reveal on');
+  // back to the transcript; the switch leaves the pane as it was, now with the X-ray's lines
+  await page.getByRole('button', { name: 'Transcript', exact: true }).click();
   await reveal(page).click();
-  await expect(file).toBeEnabled();
-  // the switch leaves the pane as it was (the transcript), now with the X-ray's lines
   await expect(page.locator('[data-drawer="full"]')).toBeVisible();
   await file.click();
   await expect(page.locator('[data-film="file"]')).toBeVisible();

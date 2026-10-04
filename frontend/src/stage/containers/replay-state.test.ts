@@ -65,9 +65,11 @@ describe('the replay reducer', () => {
     expect(off.cursor.index).toBe(speech);
   });
 
-  it('File and Transcript only choose the pane; File needs the X-ray', () => {
-    // no X-ray: File does nothing
-    expect(reduce(at(40, { slot: 'drawer' }), { type: 'file' }).slot).toBe('drawer');
+  it('File and Transcript only choose the pane; File opens without the X-ray too', () => {
+    // no X-ray: File brings the file (it holds the Record alone), and closes it again
+    const record = reduce(at(40, { slot: 'drawer' }), { type: 'file' });
+    expect([record.xray, record.slot]).toEqual([false, 'film']);
+    expect(reduce(record, { type: 'file' }).slot).toBe(null);
     const on = reduce(at(40, { slot: 'drawer' }), { type: 'xray' });
     const file = reduce(on, { type: 'file' });
     expect([file.xray, file.slot, file.cursor.index]).toEqual([
@@ -78,9 +80,17 @@ describe('the replay reducer', () => {
     expect(reduce(file, { type: 'transcript' }).slot).toBe('drawer');
     // pressed again, the pane closes
     expect(reduce(file, { type: 'file' }).slot).toBe(null);
-    // the X-ray off with the file up: the pane falls back to the transcript
+    // the X-ray off with the file up: the file stays, on the Record
     const off = reduce(file, { type: 'xray' });
-    expect([off.xray, off.slot]).toEqual([false, 'drawer']);
+    expect([off.xray, off.slot]).toEqual([false, 'film']);
+  });
+
+  it('the transcript’s pointer brings the file, X-ray or not; a second press keeps it', () => {
+    const shown = reduce(at(40, { slot: 'drawer' }), { type: 'show-record' });
+    expect([shown.xray, shown.slot, shown.cursor.index]).toEqual([false, 'film', 40]);
+    expect(reduce(shown, { type: 'show-record' }).slot).toBe('film');
+    const on = reduce(at(40, { slot: null }), { type: 'xray' });
+    expect(reduce(on, { type: 'show-record' }).slot).toBe('film');
   });
 
   it('a seat tapped on the stage brings its file, only with the X-ray', () => {

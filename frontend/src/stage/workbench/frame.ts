@@ -6,12 +6,12 @@
 import type { Character } from '@/assets/manifest';
 import { foldEvents } from '@/game/foldEvents';
 import type { GameView } from '@/game/types';
-import type { DurableGameEvent } from '@/types/contracts';
+import type { DurableGameEvent, LedgerDay } from '@/types/contracts';
 import { beatsFor } from '../beats/beatsFor';
 import { DIM_FACETS, parseSituation } from '../film/case-file';
 import type { SceneBeat, SceneId } from '../beats/types';
 import type { Presentation, RoomInput, TurnInput } from '../scenes/types';
-import { FIXTURE_CAST, FIXTURE_EVENTS } from './fixture';
+import { FIXTURE_CAST, FIXTURE_EVENTS, LEDGER_GAME } from './fixture';
 import { SYNTHETIC, SYNTHETIC_AFTER, sceneBeats } from './registry';
 import { synthesiseAll, type AnySituation } from './synthetic';
 import type { WorkbenchQuery } from './url';
@@ -39,33 +39,46 @@ export interface WorkbenchFrame {
    * (see `SlotInput.ahead`). A replay has the whole log, so the workbench hands it all over.
    */
   ahead?: GameView | null;
+  /** The claim ledger for the case file's Record (`SlotInput.ledger`); null: none. */
+  ledger: readonly LedgerDay[] | null;
 }
 
 export function workbenchFrame(
   scene: SceneId,
   q: WorkbenchQuery,
-  events: readonly DurableGameEvent[] = FIXTURE_EVENTS,
-  cast: readonly Character[] = FIXTURE_CAST,
+  events: readonly DurableGameEvent[] = q.game ? LEDGER_GAME.events : FIXTURE_EVENTS,
+  cast: readonly Character[] = q.game ? LEDGER_GAME.cast : FIXTURE_CAST,
 ): WorkbenchFrame {
+  // the Record's ledger: the second game's own, the v4 redraw's synthetic one, or none
+  const ledger = q.noLedger
+    ? null
+    : q.game
+      ? LEDGER_GAME.ledger
+      : q.summaryV4
+        ? V4_LEDGER
+        : null;
   // a memory-off game: the same log without what memory adds
   if (q.memoryOff) events = events.filter((e) => !MEMORY_EVENTS.has(e.type));
   else if (q.memoryFields) events = withFields(events);
   if (q.summaryV4) events = withSummaryV4(events);
   const situations = SYNTHETIC[scene];
   if (situations && !SYNTHETIC_AFTER.has(scene))
-    return syntheticFrame(situations, q, events, cast);
+    return { ...syntheticFrame(situations, q, events, cast), ledger };
   const me = q.viewer.kind === 'seat' ? q.viewer.seat : null;
   const xray = q.viewer.kind === 'xray';
   const beats = sceneBeats(beatsFor(events, { xray, me, live: q.live }), scene);
   // a live-only prompt among the fixture's beats: its situations follow them in the stepper
   if (situations && q.beat >= beats.length)
-    return syntheticFrame(
-      situations,
-      { ...q, beat: q.beat - beats.length },
-      events,
-      cast,
-      beats,
-    );
+    return {
+      ...syntheticFrame(
+        situations,
+        { ...q, beat: q.beat - beats.length },
+        events,
+        cast,
+        beats,
+      ),
+      ledger,
+    };
   const index = Math.max(0, Math.min(q.beat, beats.length - 1));
   const beat = beats[index] ?? null;
   const view = beat ? foldEvents(events.slice(0, beat.end), { mySeat: me }) : null;
@@ -79,6 +92,7 @@ export function workbenchFrame(
     view,
     me,
     ahead,
+    ledger,
     presentation: {
       xray,
       slot: q.slot === 'none' ? null : q.slot,
@@ -111,7 +125,7 @@ function syntheticFrame(
   events: readonly DurableGameEvent[],
   cast: readonly Character[],
   before: readonly SceneBeat[] = [],
-): WorkbenchFrame {
+): Omit<WorkbenchFrame, 'ledger'> {
   const frames = synthesiseAll(situations, events);
   const index = Math.max(0, Math.min(q.beat, frames.length - 1));
   const f = frames[index];
@@ -182,6 +196,150 @@ const V4_ACCUSATION_TEXT =
   'not. (evidence type: concrete_claim) Defense: player_2 said no one attacked them. Disputed: ' +
   'player_5 said surviving a night proves nothing. Against the record: The game master never ' +
   'announced an attack on player_2.';
+
+type LedgerLine = LedgerDay['players'][number]['entries'][number];
+const check = (text: string, fits: boolean | null) => ({ text, fits });
+const line = (over: Partial<LedgerLine>): LedgerLine => ({
+  night: 1,
+  action: 'investigate',
+  target: '',
+  result: 'not_said',
+  said_on_day: 2,
+  reported: true,
+  earlier: [],
+  also: [],
+  planned: null,
+  reason: '',
+  text: '',
+  checks: [],
+  ...over,
+});
+/** Morning 3's ledger: the claims of day 2. */
+const V4_MORNING_3: LedgerDay['players'] = [
+  {
+    player: 'player_9',
+    history: 'claimed healer (day 2)',
+    roles: [{ day: 2, role: 'healer', kind: 'claimed' }],
+    checks: [],
+    entries: [
+      line({
+        action: 'protect',
+        target: 'player_1',
+        result: 'saved_from_attack',
+        planned: 'player_1',
+        text: 'Night 1: protected player_1, says they saved them from an attack (planned on day 1).',
+        checks: [
+          check('Record: player_1 was attacked and saved by the healer that night.', true),
+        ],
+      }),
+    ],
+  },
+  {
+    player: 'player_1',
+    history: 'claimed villager (day 2)',
+    roles: [{ day: 2, role: 'villager', kind: 'claimed' }],
+    checks: [],
+    entries: [],
+  },
+];
+
+/**
+ * A synthetic claim ledger for the v4 redraw (`summary=v4`), with a line of every kind the
+ * Record draws: a check that agrees, one that does not, a plain note; an action changed, two
+ * targets named for one night, a plan kept, a plan changed with its reason, a plan never
+ * reported on; a claim withdrawn, and a role that changed. Built to fit the fixture's deaths
+ * (seat 3, a wolf, and seat 4 on night 2; seat 6 voted out on day 3; seat 5 on night 3), not
+ * from played claims.
+ */
+const V4_LEDGER: readonly LedgerDay[] = [
+  { day: 2, players: [] },
+  { day: 3, players: V4_MORNING_3 },
+  {
+    day: 4,
+    players: [
+      {
+        ...V4_MORNING_3[0],
+        history: 'claimed healer (day 2), retracted healer (day 3)',
+        roles: [
+          { day: 2, role: 'healer', kind: 'claimed' },
+          { day: 3, role: 'healer', kind: 'retracted' },
+        ],
+      },
+      {
+        player: 'player_1',
+        history: 'claimed villager (day 2), then claimed healer (day 3)',
+        roles: [
+          { day: 2, role: 'villager', kind: 'claimed' },
+          { day: 3, role: 'healer', kind: 'claimed' },
+        ],
+        checks: [],
+        entries: [
+          line({
+            night: 3,
+            action: 'protect',
+            target: 'player_5',
+            result: '',
+            said_on_day: 3,
+            reported: false,
+            planned: 'player_5',
+            text: 'Night 3: on day 3 said they planned to protect player_5.',
+            checks: [check('Record: player_5 died that night.', null)],
+          }),
+        ],
+      },
+      {
+        player: 'player_5',
+        history: 'claimed investigator (day 3)',
+        roles: [{ day: 3, role: 'investigator', kind: 'claimed' }],
+        checks: [
+          check(
+            'Record: revealed as villager when they died on night 3, not investigator.',
+            false,
+          ),
+        ],
+        entries: [
+          line({
+            night: 2,
+            target: 'player_3',
+            result: 'wolf',
+            said_on_day: 3,
+            earlier: ['Night 2: investigated player_8'],
+            text:
+              'Night 2: investigated player_3, result: wolf (changed on day 3; earlier: ' +
+              'Night 2: investigated player_8).',
+            checks: [check('Record: player_3 was revealed as wolf, as claimed.', true)],
+          }),
+        ],
+      },
+      {
+        player: 'player_7',
+        history: 'claimed vigilante (day 3)',
+        roles: [{ day: 3, role: 'vigilante', kind: 'claimed' }],
+        checks: [],
+        entries: [
+          line({
+            night: 2,
+            action: 'shoot',
+            target: 'player_3',
+            result: 'died',
+            said_on_day: 3,
+            also: ['Night 2: shot player_2'],
+            planned: 'player_8',
+            reason: 'player_3 pushed the abstain hardest',
+            text:
+              'Night 2: shot player_3, says they died (on day 3 also named: Night 2: shot ' +
+              'player_2). On day 2 said they planned to shoot player_8; reason given on day 3: ' +
+              'player_3 pushed the abstain hardest.',
+            checks: [
+              check('Rules: one shot a night.', false),
+              check('Record: player_3 died that night.', true),
+            ],
+          }),
+        ],
+      },
+    ],
+  },
+];
 
 /**
  * The fixture's day summaries in the v4 shape (`summary=v4`): the synthetic claims above, a

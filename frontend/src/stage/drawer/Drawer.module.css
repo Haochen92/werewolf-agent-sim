@@ -527,66 +527,32 @@
   letter-spacing: 0.03em;
   opacity: 0.85;
 }
-.brief {
-  cursor: pointer;
+/* a day's record: one line in its morning pointing to the case file, where the summary is */
+.record {
+  align-items: center;
 }
-.brief .txt {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  white-space: pre-line;
-}
-.brief.open .txt {
-  display: block;
-}
-/* the brief split at its headings: a small label over each section's words, and the empty
-   sections as one quiet line; closed, each section shows its first item's first two lines */
-.brief .rows {
-  display: flex;
-  flex-direction: column;
-  gap: 6.4px;
-  white-space: normal;
-}
-.brief.open .rows {
-  display: flex;
-}
-.rows p {
+.toRecord {
+  justify-self: start;
   margin: 0;
-}
-.brief:not(.open) .brow p {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.brief:not(.open) .brow p + p {
-  display: none;
-}
-.brow h5 {
-  margin: 0 0 1.6px;
-  font-family: var(--font-body);
-  font-weight: 600;
-  font-size: calc(var(--meta) * 0.86);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--cream2);
-}
-.brow p + p {
-  margin-top: 3.2px;
-}
-.bnone {
+  padding: 1.6px 0;
+  font: inherit;
+  font-size: calc(var(--said) * 0.82);
   font-style: italic;
-  font-size: calc(var(--said) * 0.8);
   color: var(--cream2);
+  background: none;
+  border: 0;
+  text-align: left;
 }
-.open-tag {
-  margin-left: auto;
-  font-size: calc(var(--meta) * 0.8);
-  border: 1px solid var(--hud-brass-lo);
-  border-radius: 16px;
-  padding: 0 7.2px;
-  color: var(--cream2);
+button.toRecord {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--hud-brass-lo);
+  text-underline-offset: 3px;
+}
+button.toRecord:hover,
+button.toRecord:focus-visible {
+  color: var(--cream);
+  text-decoration-color: var(--hud-brass);
 }
 /* the beat on stage: lit, a brass edge and a lamp's warmth (last, so it wins over a tier's edge) */
 .now {

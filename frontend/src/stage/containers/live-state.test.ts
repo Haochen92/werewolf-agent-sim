@@ -764,15 +764,25 @@ describe('the live stage: what the seat lived through', () => {
 });
 
 describe('the live stage: the side slot', () => {
-  it('Transcript brings the drawer or closes it; File brings the film only once the game is over', () => {
+  it('Transcript and File each bring their pane or close it, the file before the game’s end too', () => {
     let st = initialLiveState(null);
     st = liveReducer(st, { type: 'transcript' });
     expect(st.slot).toBe('drawer');
-    expect(liveReducer(st, { type: 'file', xray: false }).slot).toBe('drawer');
-    st = liveReducer(st, { type: 'file', xray: true });
+    // the file opens any time: before the game's end it holds the Record alone
+    st = liveReducer(st, { type: 'file' });
     expect(st.slot).toBe('film');
     expect(liveReducer(st, { type: 'transcript' }).slot).toBe('drawer');
-    expect(liveReducer(st, { type: 'file', xray: true }).slot).toBe(null);
+    expect(liveReducer(st, { type: 'file' }).slot).toBe(null);
+  });
+
+  it('a seat’s file waits for the game’s end; the transcript’s pointer brings the Record any time', () => {
+    const drawer = initialLiveState('drawer');
+    expect(liveReducer(drawer, { type: 'show-file', xray: false }).slot).toBe('drawer');
+    expect(liveReducer(drawer, { type: 'show-file', xray: true }).slot).toBe('film');
+    for (const slot of [null, 'drawer', 'film'] as const)
+      expect(liveReducer(initialLiveState(slot), { type: 'show-record' }).slot).toBe(
+        'film',
+      );
   });
 });
 

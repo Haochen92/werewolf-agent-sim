@@ -38,6 +38,7 @@ import { useReducedMotion } from 'motion/react';
 import { createPortal } from 'react-dom';
 import type { Character } from '@/assets/manifest';
 import type { GameView } from '@/game/types';
+import { useLedger } from '@/hooks/useLedger';
 import { resolveCast } from '../cast/castForGame';
 import { DecodeAhead } from '../cast/DecodeAhead';
 import { beatsFor } from '../beats/beatsFor';
@@ -61,6 +62,7 @@ import { visitedOn } from './stops';
 import { holdFor, transportLabel } from './transport';
 import { TransportBand } from './TransportBand';
 import type { FileChoice } from '../film/case-file';
+import type { RecordPick } from '../film/record-model';
 import styles from './ReplayTheatre.module.css';
 
 export interface ReplayTheatreProps {
@@ -98,7 +100,7 @@ export interface MiniUnder {
   label: string;
   playing: boolean;
   xray: boolean;
-  /** Which the pane holds: the film only with the X-ray on, else the transcript. */
+  /** Which the pane holds: the case file or the transcript. */
   pane: 'transcript' | 'film';
   filmTab: string;
   onFilmTab: (tab: string) => void;
@@ -146,7 +148,10 @@ const TO_LIST = { href: '/replays', label: 'Replays' };
 
 export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps) {
   const events = game.events as readonly DurableGameEvent[];
-  const cast = useMemo(() => resolveCast(game.cast, game.game_id), [game.cast, game.game_id]);
+  const cast = useMemo(
+    () => resolveCast(game.cast, game.game_id),
+    [game.cast, game.game_id],
+  );
   const all = useMemo(
     () => ({
       public: beatsFor(events, { xray: false }),
@@ -190,15 +195,20 @@ export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps
   const drawer = useDrawerFilters();
   const [filmTab, setFilmTab] = useState('notes');
   const [fileSeat, setFileSeat] = useState<FileChoice | null>(null);
+  const [recordPick, setRecordPick] = useState<RecordPick | null>(null);
+  // the claim ledger for the file's Record, asked once (a preview does without: its Record
+  // shows the summaries' own claims)
+  const ledger = useLedger(game.game_id, 'final', !mini);
   // the seat notebook's open editor (a replay has no notebook today: kept as the live game's)
   const noteEditing = useNoteEditing();
   const onXray = useCallback(() => dispatch({ type: 'xray' }), []);
   // the landing's two buttons under a preview are the older pair, Transcript and X-ray: its
-  // X-ray turns the X-ray on and brings the film, or, with the film up, turns it off
+  // X-ray turns the X-ray on and brings the film, or, with the film up, turns it off and
+  // brings the transcript back (Reveal alone leaves the file in the slot, on the Record)
   const underXray = useCallback(() => {
     const film = slotOf(state) === 'film';
-    if (!state.xray || film) dispatch({ type: 'xray' });
-    if (!film) dispatch({ type: 'file' });
+    if (film ? state.xray : !state.xray) dispatch({ type: 'xray' });
+    dispatch({ type: film ? 'transcript' : 'file' });
   }, [state]);
   const slotInput = useMemo(
     (): SlotInput => ({
@@ -209,6 +219,10 @@ export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps
       onFilmTab: setFilmTab,
       fileSeat,
       onFileSeat: setFileSeat,
+      ledger,
+      recordPick,
+      onRecordPick: setRecordPick,
+      onShowRecord: () => dispatch({ type: 'show-record' }),
       notebook: noteEditing,
       ahead,
       onTranscript: () => dispatch({ type: 'transcript' }),
@@ -229,6 +243,8 @@ export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps
       drawer.scroll,
       filmTab,
       fileSeat,
+      ledger,
+      recordPick,
       noteEditing,
       ahead,
       onXray,

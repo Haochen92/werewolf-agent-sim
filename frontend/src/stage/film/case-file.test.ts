@@ -20,6 +20,7 @@ import {
   parseSituation,
   seatFile,
   shortForm,
+  recordPicked,
   shownSeat,
   situationOf,
   tagsOf,
@@ -91,6 +92,18 @@ describe('whose file is open', () => {
     const pack = { seats: ['player_3', 'player_8'], key: 'night:2:pack' };
     expect(shownSeat(pack, null)).toBe('player_3');
     expect(shownSeat(pack, { seat: 'player_8', key: 'night:2:pack' })).toBe('player_8');
+  });
+
+  it('holds a pick of the Record as it holds a seat’s', () => {
+    const turn = { seats: ['player_8'], key: 'turn:200' };
+    const record = { seat: null, key: 'turn:200', record: true };
+    expect(recordPicked(turn, record)).toBe(true);
+    expect(shownSeat(turn, record)).toBeNull();
+    expect(recordPicked(null, record)).toBe(true);
+    // the next turn brings its speaker's file
+    expect(recordPicked({ seats: ['player_9'], key: 'turn:204' }, record)).toBe(false);
+    expect(recordPicked(turn, { seat: 'player_2', key: 'turn:200' })).toBe(false);
+    expect(recordPicked(null, null)).toBe(false);
   });
 
   it('says where the playhead is', () => {

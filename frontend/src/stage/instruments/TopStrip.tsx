@@ -3,8 +3,8 @@
  * sun or a moon, "Day 3" engraved large, and under it the phase and the beat's name, so a
  * viewer arriving cold knows what they are looking at), and the side pane's two tabs, File and
  * Transcript, on one brass-edged plaque pinned at the right. Transcript is always the far right,
- * live and replay alike. The tabs only choose what the pane shows; File, the X-ray's own pane,
- * is greyed while the X-ray is off (owner, 2026-09-29).
+ * live and replay alike. The tabs only choose what the pane shows; File opens with the X-ray off
+ * too, on the Record, the public claims and accusations (owner, 2026-10-04; it was greyed).
  *
  * Just left of the tabs, on its own small plaque, the X-ray's one switch, which the viewer
  * knows as Reveal (owner, 2026-09-29; it was the band's "X-ray on/off"): a brass keyhole
@@ -32,8 +32,6 @@ export interface TopStripProps {
   sub?: string;
   /** The disc on the plaque: the sun by day, the moon by night. Absent: read from the title. */
   disc?: 'sun' | 'moon';
-  /** The X-ray is on: the File tab can be pressed. */
-  xray: boolean;
   /** The film has the side slot: File reads as pressed. */
   file?: boolean;
   /** The drawer has the side slot: Transcript reads as pressed. */
@@ -66,7 +64,6 @@ export function TopStrip({
   title,
   sub,
   disc,
-  xray,
   file = false,
   transcript = false,
   unlocked,
@@ -127,8 +124,6 @@ export function TopStrip({
             type="button"
             className={`${styles.btn} ${styles.xr}`}
             aria-pressed={file}
-            disabled={!xray}
-            title={xray ? undefined : 'The file opens with Reveal on'}
             onClick={onFile}
           >
             {unlocked && !file ? 'File · unlocked' : 'File'}

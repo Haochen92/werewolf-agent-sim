@@ -22,9 +22,14 @@ async function settle(page: Page) {
   await page.addStyleTag({ content: 'nextjs-portal{display:none!important}' });
   await page.evaluate(async () => {
     await document.fonts.ready;
+    // only the images in the window: a lazy one scrolled out of a long drawer never loads
+    const inView = (img: HTMLImageElement) => {
+      const r = img.getBoundingClientRect();
+      return r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth;
+    };
     await Promise.all(
       [...document.images].map((img) =>
-        img.complete ? null : img.decode().catch(() => null),
+        img.complete || !inView(img) ? null : img.decode().catch(() => null),
       ),
     );
   });
@@ -251,8 +256,11 @@ for (const [name, path, ready] of ENDING) {
  * moment, seat 8 on day 3, in the replay's frame), the drawer on the count with the day's vote
  * as one line of chips, the drawer stopped at the rail on the seated human's ballot; the case
  * file on a turn (the speaker's notes; its precedents, opened; the same turn in a memory-off
- * game), with a read card opened from the wing, and the docket at the lynch's card ("who had them
- * right") and at the morning's carried brief.
+ * game), with a read card opened from the wing, the docket at the lynch's card ("who had them
+ * right"), and the Record: at the morning's carried summary, with Reveal off on a day-3 turn of
+ * the second game (its real ledger), the v4 redraw's synthetic ledger (every kind of line), the
+ * same without a ledger (an old archive), and the transcript's line pointing to it (lit, at the
+ * carried summary's beat).
  */
 const SLOT: [name: string, path: string, ready: string, click?: string][] = [
   ['slot-day-speech-drawer', 'day?beat=16&hud=replay&slot=drawer', '[data-line="say-200"]'],
@@ -284,7 +292,27 @@ const SLOT: [name: string, path: string, ready: string, click?: string][] = [
   [
     'slot-morning-carried-summary-film',
     'morning?beat=23&viewer=xray&slot=film',
-    '[data-film="brief"]',
+    '[data-film="record"]',
+  ],
+  [
+    'slot-record-reveal-off',
+    'day?beat=120&hud=replay&slot=film&game=140610ad',
+    '[data-film="record"] [data-claim="player_6"]',
+  ],
+  [
+    'slot-record-v4-ledger',
+    'day?beat=40&hud=replay&slot=film&summary=v4',
+    '[data-film="record"] [data-claim="player_7"]',
+  ],
+  [
+    'slot-record-no-ledger',
+    'day?beat=40&hud=replay&slot=film&summary=v4&ledger=off',
+    '[data-film="record"] [data-claim="player_5"]',
+  ],
+  [
+    'slot-record-line-drawer',
+    'morning?beat=23&viewer=xray&hud=replay&slot=drawer',
+    '[data-line="record-3"]',
   ],
 ];
 
@@ -340,8 +368,10 @@ test('the stage’s File and Transcript tabs write the slot into the URL', async
   await page.getByRole('button', { name: 'Transcript' }).click();
   await expect(page).toHaveURL(/viewer=spect&motion=normal&slot=drawer/);
   await expect(page.locator('[data-drawer="full"]')).toBeVisible();
-  // the file is the X-ray's pane: greyed without it (the X-ray is the viewer control here)
-  await expect(file).toBeDisabled();
+  // without the X-ray the file opens on the Record alone (the X-ray is the viewer control here)
+  await file.click();
+  await expect(page).toHaveURL(/viewer=spect&motion=normal&slot=film/);
+  await expect(page.locator('[data-film="record"]')).toBeVisible();
   await page.goto('/workbench/day?beat=16&viewer=xray&slot=drawer&strip=0', {
     waitUntil: 'networkidle',
   });
@@ -356,6 +386,26 @@ test('the stage’s File and Transcript tabs write the slot into the URL', async
   await expect(page).toHaveURL(/viewer=xray&motion=normal&slot=film/);
   await file.click();
   await expect(page).toHaveURL(/viewer=xray&motion=normal&slot=none/);
+});
+
+test('the transcript’s line to a day’s record opens the file on that day’s Record', async ({
+  page,
+}) => {
+  await page.goto(
+    '/workbench/day?beat=120&hud=replay&slot=drawer&game=140610ad&animate=0&strip=0',
+    { waitUntil: 'networkidle' },
+  );
+  await page.locator('[data-line="record-1"] button').click();
+  await expect(page).toHaveURL(/slot=film/);
+  const record = page.locator('[data-sheet="record"]');
+  await expect(record.getByText('Day 1’s record')).toBeVisible();
+  // the pager goes on to day 2's (the stage is on day 3), never past it
+  await record.getByRole('button', { name: 'Day 2 →' }).click();
+  await expect(record.getByText('Day 2’s record')).toBeVisible();
+  await expect(record.getByRole('button', { name: 'Day 2 →' })).toBeDisabled();
+  // an accusation opens to its defence
+  await record.getByRole('button', { name: 'Defence ▸' }).first().click();
+  await expect(record.getByText('Defence:').first()).toBeVisible();
 });
 
 /**

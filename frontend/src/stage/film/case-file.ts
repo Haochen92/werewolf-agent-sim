@@ -55,12 +55,14 @@ export function fileFocus(view: GameView, beat: SceneBeat): FileFocus | null {
 }
 
 /**
- * The viewer's own pick from the chooser: a seat, or the docket (null), and the focus it was
- * made under. It holds until a beat brings a different seat into focus.
+ * The viewer's own pick from the chooser: a seat, or the docket (null), or the Record, and the
+ * focus it was made under. It holds until a beat brings a different seat into focus.
  */
 export interface FileChoice {
   seat: string | null;
   key: string | null;
+  /** The Record's tab (`seat` is then null). */
+  record?: boolean;
 }
 
 /**
@@ -74,6 +76,11 @@ export function shownSeat(
 ): string | null {
   if (choice && (focus === null || focus.key === choice.key)) return choice.seat;
   return focus ? focus.seats[0] : null;
+}
+
+/** The viewer picked the Record, and the pick still holds, as a seat's would (`shownSeat`). */
+export function recordPicked(focus: FileFocus | null, choice: FileChoice | null): boolean {
+  return !!choice?.record && (focus === null || focus.key === choice.key);
 }
 
 /** "Day 3 · discussion", "Night 2", "Morning 3", "Game over": where the playhead is. */

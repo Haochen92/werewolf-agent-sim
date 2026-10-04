@@ -36,7 +36,7 @@ import type { MeView } from '@/game/types';
 import type { SceneBeat } from '@/stage/beats/types';
 import type { TurnClock } from '@/stage/countdown';
 import type { Presentation } from '@/stage/scenes/types';
-import { pressFile, pressTranscript, showFile } from '@/stage/slot';
+import { pressFile, pressTranscript, showFile, showRecord } from '@/stage/slot';
 import type { DurableGameEvent, GameStatus } from '@/types/contracts';
 import { nextLiveStep, type LiveContext } from './live-queue';
 import { carryAcross, holdFor, still, type Cursor } from './transport';
@@ -89,11 +89,13 @@ export type LiveAction =
   /** The viewer closed the epilogue's sheet. */
   | { type: 'dismiss'; ctx: LiveCtx }
   | { type: 'transcript' }
-  /** The strip's File tab. Live, the X-ray is everyone's after game over (the game's end is its
-   *  switch), so only the film comes and goes, and only then. */
-  | { type: 'file'; xray: boolean }
+  /** The strip's File tab: the case file comes and goes; before the game's end it holds only
+   *  the Record (the X-ray is everyone's after game over: the game's end is its switch). */
+  | { type: 'file' }
   /** A seat tapped on the stage after the game: its file comes to the pane. */
-  | { type: 'show-file'; xray: boolean };
+  | { type: 'show-file'; xray: boolean }
+  /** The transcript's pointer: the case file comes to the pane on the Record, any time. */
+  | { type: 'show-record' };
 
 export function initialLiveState(slot: Presentation['slot'] = null): LiveState {
   return {
@@ -148,7 +150,7 @@ export function historyLanding(
 /**
  * Whether the viewer sees the X-ray: the game is over (`over`, the log's `game_over`) and the
  * stage has reached its ending, the first `over.*` beat. Until then the Reveal switch stays
- * locked, the File tab shut and the wing without the truth, though the log already holds it:
+ * locked, the case file on the Record and the wing without the truth, though the log holds it:
  * `game_over` can land while the stage is still playing the last night (2026-10-01).
  */
 export function seesXray(state: LiveState, over: boolean): boolean {
@@ -298,12 +300,13 @@ export function liveReducer(state: LiveState, action: LiveAction): LiveState {
         : state;
     }
     case 'transcript':
-      // the film only exists with the X-ray, so read the slot as the X-ray would
-      return { ...state, slot: pressTranscript({ slot: state.slot, xray: true }).slot };
+      return { ...state, slot: pressTranscript({ slot: state.slot, xray: false }).slot };
     case 'file':
-      return { ...state, slot: pressFile({ slot: state.slot, xray: action.xray }).slot };
+      return { ...state, slot: pressFile({ slot: state.slot, xray: false }).slot };
     case 'show-file':
       return { ...state, slot: showFile({ slot: state.slot, xray: action.xray }).slot };
+    case 'show-record':
+      return { ...state, slot: showRecord({ slot: state.slot, xray: false }).slot };
   }
 }
 

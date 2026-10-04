@@ -55,7 +55,6 @@ const OBSERVER = new Set([
   'memory_consulted',
   'memory_extracted',
   'player_reads',
-  'day_summary_structured',
   'night_action',
 ]);
 const FACTION = new Set([
@@ -538,7 +537,7 @@ test('live: a queue of beats plays at its normal holds, one after another', asyn
   ]);
 });
 
-test('live: game over in the night keeps Reveal and File shut until the stage reaches the ending', async ({
+test('live: game over in the night keeps Reveal and the seats’ files shut until the stage reaches the ending', async ({
   page,
 }) => {
   test.setTimeout(150_000); // the stream's fold (landsOn), then the night and the ending
@@ -555,6 +554,13 @@ test('live: game over in the night keeps Reveal and File shut until the stage re
   await landsOn(page, 'night.hub');
   const reveal = page.getByRole('button', { name: 'Reveal', exact: true });
   const file = page.getByRole('button', { name: 'File', exact: true });
+  // the File opens all game, on the Record alone: the seats' files wait for the game's end
+  await file.click();
+  await expect(page.locator('[data-film="record"]')).toBeVisible();
+  const seat3 = page.getByRole('tab', { name: 'Seat 3’s file (out)' });
+  await expect(seat3).toBeDisabled();
+  await expect(seat3).toHaveAttribute('title', 'Revealed after the game');
+  await file.click();
   // the log holds the game's end, the stage is still in the night: nothing unlocks
   const before: string[] = [];
   for (let t = 0; t < 60; t++) {
@@ -562,11 +568,10 @@ test('live: game over in the night keeps Reveal and File shut until the stage re
     if (beat.startsWith('over.')) break;
     if (!before.includes(beat)) before.push(beat);
     await expect(reveal).toHaveAttribute('data-reveal', 'locked');
-    await expect(file).toBeDisabled();
     await page.clock.runFor(1000);
   }
   expect(before).toEqual(expect.arrayContaining(['night.hub', 'morning.shutter-down']));
-  // the ending: Reveal is on and the File tab opens, for good
+  // the ending: Reveal is on and the seats' files open, for good
   await expect(theatre(page)).toHaveAttribute('data-beat', 'over.where-it-ended');
   await expect(reveal).toHaveAttribute('data-reveal', 'on');
   await expect(file).toBeEnabled();

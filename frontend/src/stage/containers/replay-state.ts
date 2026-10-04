@@ -17,7 +17,7 @@
  */
 import type { SceneBeat } from '@/stage/beats/types';
 import type { MotionSpeed, Presentation } from '@/stage/scenes/types';
-import { pressFile, pressTranscript, pressXray, showFile } from '@/stage/slot';
+import { pressFile, pressTranscript, pressXray, showFile, showRecord } from '@/stage/slot';
 import { afterNight, branchOf, endsRoom, hubOf, isStop } from './stops';
 import {
   carryAcross,
@@ -65,6 +65,8 @@ export type ReplayAction =
   | { type: 'file' }
   /** A seat tapped on the stage: its file comes to the pane (the seat is the theatre's). */
   | { type: 'show-file' }
+  /** The transcript's pointer: the case file comes to the pane on the Record, X-ray or not. */
+  | { type: 'show-record' }
   /**
    * A lit seat tapped (at the hub, or in another room): its room from its first step (the
    * spoke at `index`), played, resting on its last. The same seat again plays it again.
@@ -253,6 +255,8 @@ export function replayReducer(all: ReplayBeats) {
         return { ...state, ...pressFile(state) };
       case 'show-file':
         return { ...state, ...showFile(state) };
+      case 'show-record':
+        return { ...state, ...showRecord(state) };
       case 'xray': {
         const next = pressXray(state);
         if (next.xray === state.xray) return { ...state, ...next };

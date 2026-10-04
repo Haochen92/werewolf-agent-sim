@@ -11,18 +11,20 @@ import type { TurnClock } from '@/stage/countdown';
 import type { DrawerFilters } from '@/stage/drawer/drawer-lines';
 import type { DrawerScroll } from '@/stage/drawer/use-drawer-filters';
 import type { FileChoice } from '@/stage/film/case-file';
+import type { RecordPick } from '@/stage/film/record-model';
+import type { LedgerDay } from '@/types/contracts';
 import type { NoteEdit } from '@/stage/notebook';
 
 export type MotionSpeed = 'normal' | 'fast';
 
 export interface Presentation {
-  /** Observer tier on: the case file exists and the wing wears the truth. */
+  /** Observer tier on: the seats' case files open and the wing wears the truth. */
   xray: boolean;
   /**
-   * What the right side holds, one thing at a time: the transcript drawer, the X-ray's case
-   * file (`film`, its old name), or nothing (null, the slot closed). While it holds something
-   * every scene lays its room out narrower (`geometry(hud, true)`); the file exists only with
-   * the X-ray on, so `film` with `xray` off reads as closed (see `slotOf` in slot.ts).
+   * What the right side holds, one thing at a time: the transcript drawer, the case file
+   * (`film`, its old name), or nothing (null, the slot closed). While it holds something every
+   * scene lays its room out narrower (`geometry(hud, true)`); with the X-ray off the file holds
+   * only the Record (see `slotOf` in slot.ts).
    */
   slot: 'drawer' | 'film' | null;
   motion: MotionSpeed;
@@ -131,12 +133,25 @@ export interface SlotInput {
   /** The case file's open tab: `notes`, `reads`, `precedents` or `findings`. */
   filmTab?: string;
   onFilmTab?: (tab: string) => void;
-  /** The seat picked in the case file's chooser (null: none, the beat's own). */
+  /** The seat picked in the case file's chooser (null: none, the beat's own; or the Record). */
   fileSeat?: FileChoice | null;
   onFileSeat?: (choice: FileChoice | null) => void;
+  /**
+   * The claim ledger the agents read each morning (`useLedger`), for the Record; null until
+   * it answers, or if it fails (the Record then shows the summaries' own claims, unchecked).
+   */
+  ledger?: readonly LedgerDay[] | null;
+  /** The Record's page the viewer turned to (null: the latest morning). */
+  recordPick?: RecordPick | null;
+  onRecordPick?: (pick: RecordPick | null) => void;
+  /**
+   * Brings the case file to the slot whatever the X-ray says (the Record is public): the
+   * transcript's pointer, "Day 2's record is in the File →". Without it the pointer is only read.
+   */
+  onShowRecord?: () => void;
   /** Transcript: brings the drawer to the slot, or closes it. */
   onTranscript?: () => void;
-  /** File: brings the film to the slot (only with the X-ray on), or closes it. */
+  /** File: brings the case file to the slot (the Record only, with the X-ray off), or closes it. */
   onFile?: () => void;
   /**
    * Opens one seat's case file in the pane at this beat (the pane switches to File): a tap on a

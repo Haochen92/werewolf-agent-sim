@@ -45,7 +45,6 @@ import { factionOf, seatNumber, seatify, ROLE_NAME } from '../roles';
 import { STAGE_H, STAGE_W, geometry, type Hud } from '../units';
 import {
   ACT_VERB,
-  briefRows,
   drawerDays,
   drawerLines,
   filterLines,
@@ -97,6 +96,11 @@ export interface DrawerProps {
   animate?: boolean;
   /** Where the reader was and whether they follow the beat, kept across scenes by the container. */
   scroll?: DrawerScroll;
+  /**
+   * A day's record line pressed: open the case file on the Record at that `morning`. Without
+   * it the line is only read.
+   */
+  onRecord?: (morning: number) => void;
 }
 
 export function Drawer({
@@ -112,6 +116,7 @@ export function Drawer({
   railHolds = false,
   animate = false,
   scroll: kept,
+  onRecord,
 }: DrawerProps) {
   const g = geometry(hud, true);
   const lines = useMemo(
@@ -128,7 +133,6 @@ export function Drawer({
   const days = drawerDays(lines);
   const tiers = showRow(me, xray);
   const dead = new Set(view.dead.map((d) => d.player));
-  const [open, setOpen] = useState<ReadonlySet<string>>(new Set());
 
   // Following, the beat's line is scrolled into view, a little below the middle (bench 74);
   // none: the end. Scrolled away by the reader, it stays where they left it.
@@ -321,15 +325,7 @@ export function Drawer({
                 line={l}
                 lit={lit}
                 ballotsTold={told.has(l.day)}
-                open={open.has(l.key)}
-                onToggle={() =>
-                  setOpen((o) => {
-                    const n = new Set(o);
-                    if (n.has(l.key)) n.delete(l.key);
-                    else n.add(l.key);
-                    return n;
-                  })
-                }
+                onRecord={onRecord}
                 chip={chip}
                 roleTag={roleTag}
                 you={you}
@@ -379,8 +375,7 @@ function Line({
   line: l,
   lit: litKey,
   ballotsTold,
-  open,
-  onToggle,
+  onRecord,
   chip,
   roleTag,
   you,
@@ -389,8 +384,7 @@ function Line({
   /** The beat's line: this one, or one of a run's passes. */
   lit: string | null;
   ballotsTold: boolean;
-  open: boolean;
-  onToggle: () => void;
+  onRecord?: (morning: number) => void;
   chip: (seat: string, cls?: string) => ReactNode;
   roleTag: (seat: string) => ReactNode;
   you: (seat: string) => string;
@@ -569,23 +563,23 @@ function Line({
           <div className={styles.txt}>{only(l)}</div>
         </div>
       );
-    case 'brief':
+    case 'record':
+      // the day's summary and its claims are the case file's Record: one line points there,
+      // at the morning the agents read it
       return (
-        <div
-          className={cls('brief', ...(open ? ['open'] : []))}
-          {...at}
-          role="button"
-          tabIndex={0}
-          aria-expanded={open}
-          onClick={onToggle}
-          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ' ? onToggle() : undefined)}
-        >
+        <div className={cls('record')} {...at}>
           {blank}
-          <div className={styles.who}>
-            The day’s brief, day {l.day} <i>what the agents carry from here</i>
-            <span className={styles['open-tag']}>{open ? 'close' : 'open'}</span>
-          </div>
-          <Brief text={l.text} />
+          {onRecord ? (
+            <button
+              type="button"
+              className={styles.toRecord}
+              onClick={() => onRecord(l.day + 1)}
+            >
+              Day {l.day}’s record is in the File <span aria-hidden="true">→</span>
+            </button>
+          ) : (
+            <p className={styles.toRecord}>Day {l.day}’s record is in the File</p>
+          )}
         </div>
       );
     case 'over':
@@ -595,33 +589,6 @@ function Line({
         </div>
       );
   }
-}
-
-/**
- * The day's brief: a labelled row per section (the label a small heading over its words), the
- * sections with nothing in them one quiet line; as it came when it does not split.
- */
-function Brief({ text }: { text: string }) {
-  const rows = briefRows(text);
-  if (!rows) return <div className={styles.txt}>{seatify(text)}</div>;
-  return (
-    <div className={`${styles.txt} ${styles.rows}`}>
-      {rows.map((r, i) =>
-        r.kind === 'none' ? (
-          <p key={i} className={styles.bnone}>
-            {r.text}
-          </p>
-        ) : (
-          <section key={i} className={styles.brow}>
-            <h5>{r.label}</h5>
-            {r.items.map((t, j) => (
-              <p key={j}>{seatify(t)}</p>
-            ))}
-          </section>
-        ),
-      )}
-    </div>
-  );
 }
 
 /** The night heading's crescent, the day plaque's moon in line (TopStrip's Disc). */

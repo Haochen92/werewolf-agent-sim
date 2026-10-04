@@ -4,7 +4,6 @@ import { beatsFor } from '../beats/beatsFor';
 import type { SceneBeat } from '../beats/types';
 import { FIXTURE_EVENTS } from '../workbench/fixture';
 import {
-  briefRows,
   DEFAULT_FILTERS,
   drawerDays,
   drawerLines,
@@ -40,13 +39,13 @@ function at(
 }
 
 describe('the drawer: which lines a viewer holds', () => {
-  it('gives a spectator the public record only, the day’s briefs among it', () => {
+  it('gives a spectator the public record only, a line to each day’s record among it', () => {
     const lines = drawerLines(whole, { me: null, xray: false });
-    expect([...kinds(lines)].sort()).toEqual(['brief', 'gm', 'rule', 'speech', 'votes']);
+    expect([...kinds(lines)].sort()).toEqual(['gm', 'record', 'rule', 'speech', 'votes']);
     expect(count(lines, 'speech')).toBe(20);
     expect(lines.every((l) => l.tier === 'public')).toBe(true);
-    // day 4 ended the game at its morning: its brief was never read, so it is dropped
-    expect(lines.filter((l) => l.kind === 'brief').map((l) => l.day)).toEqual([1, 2, 3]);
+    // day 4 ended the game at its morning: its record was never read, so it is dropped
+    expect(lines.filter((l) => l.kind === 'record').map((l) => l.day)).toEqual([1, 2, 3]);
   });
 
   it('adds, with the X-ray, the passes, the acts, the pack and everyone’s private lines', () => {
@@ -55,7 +54,7 @@ describe('the drawer: which lines a viewer holds', () => {
     expect(count(lines, 'act')).toBe(10);
     expect(count(lines, 'pack')).toBe(8);
     expect(count(lines, 'kill')).toBe(4);
-    expect(lines.filter((l) => l.kind === 'brief').map((l) => l.day)).toEqual([1, 2, 3]);
+    expect(lines.filter((l) => l.kind === 'record').map((l) => l.day)).toEqual([1, 2, 3]);
     const only = lines.filter((l) => l.kind === 'only');
     expect(only.map((l) => [l.seq, l.kind === 'only' && l.who])).toEqual([
       [59, 'Only seat 4'],
@@ -160,15 +159,15 @@ describe('the drawer: which lines a viewer holds', () => {
     expect(litKey(lines, beat)).toBe('say-200');
   });
 
-  it('shows a day’s brief from its own morning beat on, not before', () => {
+  it('points to a day’s record from its own morning beat on, not before', () => {
     const only = at('morning.only-you', (b) => b.day === 1);
     expect(
-      byKey(drawerLines(only.view, { me: null, xray: true, beat: only.beat }), 'brief-1'),
+      byKey(drawerLines(only.view, { me: null, xray: true, beat: only.beat }), 'record-1'),
     ).toBeUndefined();
     const carried = at('morning.carried-summary', (b) => b.day === 1);
     const lines = drawerLines(carried.view, { me: null, xray: true, beat: carried.beat });
-    expect(lines.at(-1)?.key).toBe('brief-1');
-    expect(litKey(lines, carried.beat)).toBe('brief-1');
+    expect(lines.at(-1)?.key).toBe('record-1');
+    expect(litKey(lines, carried.beat)).toBe('record-1');
   });
 
   it('holds the dawn line through the report and lands it with the roll (2026-10-02)', () => {
@@ -239,8 +238,8 @@ describe('the drawer: the filters', () => {
       show: { public: true, private: true, xray: false },
     });
     expect(count(noXray, 'pass') + count(noXray, 'act')).toBe(0);
-    // the brief is public: it stays
-    expect(count(noXray, 'brief')).toBe(3);
+    // the record's line is public: it stays
+    expect(count(noXray, 'record')).toBe(3);
     expect(count(noXray, 'only')).toBe(3);
     const nothing = filterLines(lines, {
       ...DEFAULT_FILTERS,
@@ -473,89 +472,5 @@ describe('the drawer: how it tells what it holds', () => {
     expect(new Set(rules.map((l) => l.kind === 'rule' && l.chapter))).toEqual(
       new Set(['day', 'vote', 'night', 'morning', 'over']),
     );
-  });
-});
-
-describe('the day’s brief as rows', () => {
-  const day1 =
-    'Key accusations and defenses: None.\nRole claims: None.\nAlliances and blocs: None.\n' +
-    'Village dynamics: The village is information-starved.';
-
-  it('folds the sections that say "None." into one quiet line where the first stood', () => {
-    expect(briefRows(day1)).toEqual([
-      { kind: 'none', text: 'No accusations, claims or alliances yet' },
-      {
-        kind: 'row',
-        label: 'Village dynamics',
-        items: ['The village is information-starved.'],
-      },
-    ]);
-  });
-
-  it('splits the accusations one per item and keeps the order of the headings', () => {
-    const rows = briefRows(
-      'Key accusations and defenses: player_7 → player_6: pushed. | player_8 → player_2: hid.\n' +
-        'Role claims: None.\nAlliances and blocs: player_1 and player_2.\n' +
-        'Village dynamics: Split.\nStill split.',
-    );
-    expect(rows).toEqual([
-      {
-        kind: 'row',
-        label: 'Accusations and defences',
-        items: ['player_7 → player_6: pushed.', 'player_8 → player_2: hid.'],
-      },
-      { kind: 'none', text: 'No claims yet' },
-      { kind: 'row', label: 'Alliances and blocs', items: ['player_1 and player_2.'] },
-      // a line with no heading carries on the section above it
-      { kind: 'row', label: 'Village dynamics', items: ['Split. Still split.'] },
-    ]);
-  });
-
-  it('says nothing is there when every section is "None."', () => {
-    expect(
-      briefRows(
-        'Key accusations and defenses: None.\nRole claims: None.\nAlliances and blocs: None.\nVillage dynamics: None.',
-      ),
-    ).toEqual([
-      { kind: 'none', text: 'No accusations, claims, alliances or village dynamics yet' },
-    ]);
-  });
-
-  it('lays out a brief from 2026-10-04 on, which writes the first two headings only', () => {
-    expect(briefRows('Key accusations and defenses: None.\nRole claims: None.')).toEqual([
-      { kind: 'none', text: 'No accusations or claims yet' },
-    ]);
-    expect(
-      briefRows(
-        'Key accusations and defenses: player_8 → player_2: argued. | player_1 → player_4: pushed.\n' +
-          'Role claims: player_3 claimed investigator — Night 1: investigated player_7, result: wolf; ' +
-          'player_6 retracted vigilante',
-      ),
-    ).toEqual([
-      {
-        kind: 'row',
-        label: 'Accusations and defences',
-        items: ['player_8 → player_2: argued.', 'player_1 → player_4: pushed.'],
-      },
-      {
-        kind: 'row',
-        label: 'Role claims',
-        items: [
-          'player_3 claimed investigator — Night 1: investigated player_7, result: wolf',
-          'player_6 retracted vigilante',
-        ],
-      },
-    ]);
-  });
-
-  it('gives up on a text that does not open with the headings, in order', () => {
-    expect(briefRows('The village argued all day.')).toBeNull();
-    expect(briefRows('Role claims: None.\nKey accusations and defenses: None.')).toBeNull();
-    expect(briefRows('Key accusations and defenses: None.')).toBeNull();
-    expect(
-      briefRows(
-        'Key accusations and defenses: None.\nRole claims: None.\nAlliances and blocs: None.',
-      ),
-    ).toBeNull();
   });
 });

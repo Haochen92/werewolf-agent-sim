@@ -11,12 +11,18 @@
  * the open tab is held by whoever mounts the stage, so it stays put as the viewer steps
  * through the turns, and falls back to Notes where a file does not have it. A beat with no seat
  * in focus shows the docket instead, one sheet in the same paper (film-model.ts `docketFor`),
- * titled by what it holds ("The vote", "Day 2's brief"; `docketTitle`), never "the docket".
+ * titled by what it holds ("The vote", "The lynch"; `docketTitle`), never "the docket".
  *
  * Whose file: the seat the beat brings into focus (a turn's speaker, a night spoke's actor; the
  * pack's spoke flips between its wolves). The name on the cover is also a chooser that opens
  * any seat's file (or the docket) at the playhead; the pick holds until a beat brings a
  * different seat into focus (`shownSeat`).
+ *
+ * The Record (owner, 2026-10-04): the public sheet, the day summary's accusations and the claim
+ * ledger as the agents read them each morning (Record.tsx, record-model.ts). Its tab stands first
+ * in the strip. It is all the file holds with the X-ray off (live, until the game's end): the
+ * file opens on it, the docket and the seats' tabs greyed; with the X-ray on it is one more pick,
+ * and the carried summary's beat opens it.
  *
  * The file stops above the rail: nothing in it repeats the speech, so the box below keeps the
  * whole band. On a phone the cover and the tabs share one row, and the long parts fold behind
@@ -33,6 +39,7 @@ import {
 import Link from 'next/link';
 import { SPRITES, type Character } from '@/assets/manifest';
 import type { GameView } from '@/game/types';
+import type { LedgerDay } from '@/types/contracts';
 import type { SceneBeat } from '../beats/types';
 import { ChipSprite } from '../cast/ChipSprite';
 import { Sigil } from '../instruments/Sigil';
@@ -59,6 +66,7 @@ import {
   firstSentence,
   marginNote,
   openTab,
+  recordPicked,
   situationOf,
   tagsOf,
   type Dimensions,
@@ -72,13 +80,20 @@ import {
 } from './case-file';
 import {
   MARK,
-  claimedActionText,
   docketFor,
   docketTitle,
   type DocketModel,
   type FilmNote,
   type Verdict,
 } from './film-model';
+import { RecordSheet } from './Record';
+import {
+  recordBeat,
+  recordMornings,
+  recordPage,
+  shownMorning,
+  type RecordPick,
+} from './record-model';
 import styles from './Film.module.css';
 
 // the viewer reads the agents' precedents as Lessons (owner, 2026-09-30): these are its stamps
@@ -89,6 +104,8 @@ const VWORD: Record<Verdict, string> = {
 };
 const PIP: Record<Verdict, string> = { follow: 'F', override: 'O', not_relevant: '–' };
 const INK_TEX = { '--ink-tex': `url(${SPRITES.textures.ink.src})` } as CSSProperties;
+/** The Record's name on its cover, its tab and the phone's chooser. */
+const RECORD = 'The record';
 
 export interface FilmProps {
   view: GameView;
@@ -121,6 +138,13 @@ export interface FilmProps {
     rooms: readonly { actor: string; seats: readonly string[]; seen: boolean }[];
     onVisit: (actor: string) => void;
   };
+  /** The X-ray: off, the file holds only the Record, the docket and the seats' tabs greyed. */
+  xray?: boolean;
+  /** The claim ledger (`useLedger`), for the Record; null: the summaries' own claims, unchecked. */
+  ledger?: readonly LedgerDay[] | null;
+  /** The Record's page the viewer turned to; with `onRecordPick` it is the container's. */
+  recordPick?: RecordPick | null;
+  onRecordPick?: (pick: RecordPick | null) => void;
 }
 
 export function Film({
@@ -136,23 +160,45 @@ export function Film({
   replay,
   seatTaps = false,
   visit,
+  xray = true,
+  ledger = null,
+  recordPick,
+  onRecordPick,
 }: FilmProps) {
   const [ownSeat, setOwnSeat] = useState<FileChoice | null>(null);
+  const [ownPick, setOwnPick] = useState<RecordPick | null>(null);
   const box = useRef<HTMLElement>(null);
   const wide = useWideSlot(box);
   const choice = onSeat ? (seat ?? null) : ownSeat;
   const choose = onSeat ?? setOwnSeat;
   if (beat.id === 'over.epilogue') return null;
   const focus = fileFocus(view, beat);
-  const shown = shownSeat(focus, choice);
+  const picked = xray ? shownSeat(focus, choice) : null;
+  // the Record: all the file holds with the X-ray off; with it on, the viewer's pick, or the
+  // carried summary's beat (a day's record, a moment before its morning)
+  const record =
+    !xray || (picked === null && (recordPicked(focus, choice) || recordBeat(beat)));
+  const shown = record ? null : picked;
   // the beat's own docket (a beat with no seat in focus), titled by what it holds
-  const own = focus ? null : docketFor(view, beat);
-  const docket = shown ? null : (own ?? docketFor(view, beat));
-  if (!shown && !docket) return null;
+  const own = focus || recordBeat(beat) ? null : docketFor(view, beat);
+  const docket = record || shown ? null : (own ?? docketFor(view, beat));
+  if (!record && !shown && !docket) return null;
   const title = docket ? docketTitle(docket) : null;
   const ownTitle = own ? docketTitle(own) : null;
+  // with the X-ray off the docket and the seats' files are greyed, each saying why
+  const locked = xray
+    ? null
+    : hud === 'live'
+      ? 'Revealed after the game'
+      : 'Opens with Reveal on';
+  // the Record's page: the latest morning the stage has reached, or one the viewer turned to
+  const mornings = record ? recordMornings(view, beat) : [];
+  const morning = shownMorning(mornings, onRecordPick ? recordPick : ownPick);
+  const turnTo = (m: number) =>
+    (onRecordPick ?? setOwnPick)({ morning: m, latest: mornings.at(-1) ?? m });
   const r = sideSlot(hud);
   const pick = (s: string | null) => choose({ seat: s, key: focus?.key ?? null });
+  const pickRecord = () => choose({ seat: null, key: focus?.key ?? null, record: true });
   const chip = (s: string, cls = styles.face) => {
     const c = cast[seatNumber(s) - 1];
     return <span className={cls}>{c ? <ChipSprite character={c} /> : null}</span>;
@@ -182,10 +228,16 @@ export function Film({
         height: r.h,
         ...INK_TEX,
       }}
-      data-film={file ? 'file' : docket!.kind}
+      data-film={record ? 'record' : file ? 'file' : docket!.kind}
       data-file-seat={shown ?? undefined}
       data-wide={wide || undefined}
-      aria-label={shown ? `Case file, seat ${seatNumber(shown)}` : `Case file, ${title}`}
+      aria-label={
+        record
+          ? `Case file, ${RECORD.toLowerCase()}`
+          : shown
+            ? `Case file, seat ${seatNumber(shown)}`
+            : `Case file, ${title}`
+      }
     >
       {wide ? (
         <SeatTabs
@@ -193,8 +245,11 @@ export function Film({
           alive={view.alive}
           shown={shown}
           docket={ownTitle}
+          record={record}
+          locked={locked}
           cast={cast}
           onPick={pick}
+          onRecord={pickRecord}
         />
       ) : null}
       <div className={styles.fold}>
@@ -216,6 +271,7 @@ export function Film({
                 docket={ownTitle}
                 chip={chip}
                 onPick={pick}
+                onRecord={pickRecord}
               />
             }
             flip={
@@ -231,6 +287,44 @@ export function Film({
               ) : null
             }
           />
+        ) : record ? (
+          <>
+            <div className={styles.head}>
+              <div className={styles.cover}>
+                <span className={`${styles.face} ${styles.docketFace}`} aria-hidden="true">
+                  <RecordGlyph />
+                </span>
+                <div className={styles.who}>
+                  <Chooser
+                    wide={wide}
+                    label={RECORD}
+                    seats={view.seats}
+                    shown={null}
+                    docket={ownTitle}
+                    record
+                    locked={locked}
+                    chip={chip}
+                    onPick={pick}
+                    onRecord={pickRecord}
+                  />
+                  <span className={styles.when}>As of {asOf(beat)}</span>
+                </div>
+              </div>
+            </div>
+            {/* a page of its own per morning: turned, it opens at its top */}
+            <div
+              key={morning ?? 0}
+              className={`${styles.sheet} ${styles.docket}`}
+              data-sheet="record"
+            >
+              <RecordSheet
+                page={morning === null ? null : recordPage(view, morning, ledger)}
+                mornings={mornings}
+                onMorning={turnTo}
+                chip={chip}
+              />
+            </div>
+          </>
         ) : (
           <>
             <div className={styles.head}>
@@ -247,6 +341,7 @@ export function Film({
                     docket={title}
                     chip={chip}
                     onPick={pick}
+                    onRecord={pickRecord}
                   />
                   <span className={styles.when}>As of {asOf(beat)}</span>
                 </div>
@@ -282,7 +377,8 @@ export function Film({
 /**
  * The cover's name. Where the slot is wide the chip tabs along the folder's top do the
  * choosing, so it is only a title; on a phone (no width for nine tabs) it is a bordered
- * button, "Seat 5 · change ▾", that opens a small grid of every seat's face (and the docket).
+ * button, "Seat 5 · change ▾", that opens a small grid: the Record, every seat's face, and the
+ * docket (the seats and the docket greyed while `locked`).
  */
 function Chooser({
   wide,
@@ -290,8 +386,11 @@ function Chooser({
   seats,
   shown,
   docket,
+  record = false,
+  locked = null,
   chip,
   onPick,
+  onRecord,
 }: {
   wide: boolean;
   label: string;
@@ -299,8 +398,13 @@ function Chooser({
   shown: string | null;
   /** The beat's docket to go back to, by its title ("The vote"); null: none. */
   docket: string | null;
+  /** The Record is open. */
+  record?: boolean;
+  /** Why the seats and the docket cannot be opened (the X-ray is off); null: they can. */
+  locked?: string | null;
   chip: (seat: string, cls?: string) => ReactNode;
   onPick: (seat: string | null) => void;
+  onRecord: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLSpanElement>(null);
@@ -321,6 +425,10 @@ function Chooser({
     setOpen(false);
     onPick(s);
   };
+  const goRecord = () => {
+    setOpen(false);
+    onRecord();
+  };
   if (wide) return <span className={styles.nameText}>{label}</span>;
   return (
     <span ref={box} className={styles.choose}>
@@ -337,12 +445,23 @@ function Chooser({
       </button>
       {open ? (
         <span className={styles.chooser} role="dialog" aria-label="Open a file">
+          <button
+            type="button"
+            className={`${styles.pick} ${styles.pickDocket}`}
+            aria-pressed={record}
+            onClick={goRecord}
+          >
+            <RecordGlyph className={styles.pickGlyph} />
+            {RECORD}
+          </button>
           {seats.map((s) => (
             <button
               key={s}
               type="button"
               className={styles.pick}
               aria-pressed={s === shown}
+              disabled={!!locked}
+              title={locked ?? undefined}
               onClick={() => go(s)}
             >
               {chip(s)}
@@ -353,7 +472,9 @@ function Chooser({
             <button
               type="button"
               className={`${styles.pick} ${styles.pickDocket}`}
-              aria-pressed={shown === null}
+              aria-pressed={shown === null && !record}
+              disabled={!!locked}
+              title={locked ?? undefined}
               onClick={() => go(null)}
             >
               {docket}
@@ -368,34 +489,55 @@ function Chooser({
 /**
  * Where the slot is wide: every seat's face on a small tab standing up off the folder's top
  * edge, like the tabs in a filing drawer; the open file's tab raised, the dead greyed (still
- * openable), and the docket's own tab first when the beat has one.
+ * openable). First the Record's tab, always there, then the docket's own when the beat has one.
+ * With the X-ray off (`locked`) only the Record's opens: the others are greyed and say why.
  */
 function SeatTabs({
   seats,
   alive,
   shown,
   docket,
+  record,
+  locked,
   cast,
   onPick,
+  onRecord,
 }: {
   seats: readonly string[];
   alive: readonly string[];
   shown: string | null;
-  /** The beat's docket, by its title: its tab is the folder glyph, first. */
+  /** The beat's docket, by its title: its tab is the folder glyph, after the Record's. */
   docket: string | null;
+  /** The Record is open. */
+  record: boolean;
+  /** Why the docket and the seats cannot be opened (the X-ray is off); null: they can. */
+  locked: string | null;
   cast: readonly Character[];
   onPick: (seat: string | null) => void;
+  onRecord: () => void;
 }) {
   return (
     <div className={styles.drawer} role="tablist" aria-label="Seats' files">
+      <button
+        type="button"
+        role="tab"
+        className={`${styles.stab} ${styles.dtab} ${styles.rtab}`}
+        aria-selected={record}
+        title="The record: the claims and accusations, public"
+        onClick={onRecord}
+      >
+        <RecordGlyph />
+        Record
+      </button>
       {docket ? (
         <button
           type="button"
           role="tab"
           className={`${styles.stab} ${styles.dtab}`}
-          aria-selected={shown === null}
+          aria-selected={shown === null && !record}
           aria-label={docket}
-          title={docket}
+          title={locked ?? docket}
+          disabled={!!locked}
           onClick={() => onPick(null)}
         >
           <DocketGlyph />
@@ -412,7 +554,8 @@ function SeatTabs({
             className={dead ? `${styles.stab} ${styles.dead}` : styles.stab}
             aria-selected={s === shown}
             aria-label={`Seat ${seatNumber(s)}’s file${dead ? ' (out)' : ''}`}
-            title={`Seat ${seatNumber(s)}${dead ? ' · out' : ''}`}
+            title={locked ?? `Seat ${seatNumber(s)}${dead ? ' · out' : ''}`}
+            disabled={!!locked}
             onClick={() => onPick(s)}
           >
             <span className={styles.tface}>{c ? <ChipSprite character={c} /> : null}</span>
@@ -498,6 +641,27 @@ function KeyholeGlyph() {
   return (
     <svg viewBox="0 0 16 16" aria-hidden="true" className={styles.keyhole}>
       <path d="M8 3.6a2.3 2.3 0 0 0-1.2 4.3L6 12.4h4l-.8-4.5A2.3 2.3 0 0 0 8 3.6Z" />
+    </svg>
+  );
+}
+
+/** The Record's glyph: a bound ledger, its lines ruled. */
+function RecordGlyph({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d="M5 4.5h11.5a2.5 2.5 0 0 1 2.5 2.5v13H7.5A2.5 2.5 0 0 1 5 17.5z"
+        strokeLinejoin="round"
+      />
+      <path d="M5 17.5A2.5 2.5 0 0 1 7.5 15H19" />
+      <path d="M9 8.5h6.5M9 11.5h4" strokeLinecap="round" />
     </svg>
   );
 }
@@ -1283,9 +1447,6 @@ function Docket({
       );
     }
 
-    case 'brief':
-      return <Brief model={model} chip={(s) => chip(s, sm)} />;
-
     case 'deal':
       return (
         <>
@@ -1351,7 +1512,7 @@ function Docket({
 
     case 'empty': {
       const what =
-        'A turn and a night act open that seat’s file; this sheet holds the count, the lynch’s card, a morning’s brief, the night whole, the deal and the ending.';
+        'A turn and a night act open that seat’s file; this sheet holds the count, the lynch’s card, the night whole, the deal and the ending, and the Record the claims and accusations.';
       return foot ? (
         <p className={styles.footnote}>{what}</p>
       ) : (
@@ -1373,112 +1534,5 @@ function LastNote({ label, note }: { label: string; note: FilmNote }) {
       <p className={styles.cap}>{label}</p>
       <p>{seatify(note.text)}</p>
     </div>
-  );
-}
-
-function Brief({
-  model,
-  chip,
-}: {
-  model: Extract<DocketModel, { kind: 'brief' }>;
-  chip: (seat: string) => ReactNode;
-}) {
-  const s = model.summary;
-  const seats = (list: readonly string[]) =>
-    list.map((p) => <span key={p}>{chip(p)}</span>);
-  return (
-    <>
-      <div className={styles.shHead}>
-        <span className={styles.title}>What day {model.day} taught</span>
-        <span className={styles.typed}>the brief carried into day {model.day + 1}</span>
-      </div>
-      {!s ? (
-        <p className={styles.empty}>No summary was carried from this day.</p>
-      ) : (
-        <>
-          <p className={styles.sect}>Accusations</p>
-          {s.accusations.length ? (
-            s.accusations.map((a, i) => (
-              <div key={i} className={styles.acc}>
-                <header>
-                  {seats(a.accusers)}
-                  <span aria-hidden="true">→</span>
-                  {chip(a.target)}
-                  <span>
-                    {a.accusers.map((p) => `Seat ${seatNumber(p)}`).join(', ')} → Seat{' '}
-                    {seatNumber(a.target)}
-                  </span>
-                  <span className={styles.tag}>{a.evidenceType.replace(/_/g, ' ')}</span>
-                </header>
-                <p>{seatify(a.reasoning)}</p>
-                {a.defense ? (
-                  <p className={styles.def}>
-                    <b>Defence:</b> {seatify(a.defense)}
-                  </p>
-                ) : null}
-                {a.disputedBy ? (
-                  <p className={styles.def}>
-                    <b>Disputed:</b> {seatify(a.disputedBy)}
-                  </p>
-                ) : null}
-                {a.recordCheck ? (
-                  <p className={styles.def}>
-                    <b>Against the record:</b> {seatify(a.recordCheck)}
-                  </p>
-                ) : null}
-              </div>
-            ))
-          ) : (
-            <p className={styles.none}>No accusations that day.</p>
-          )}
-          <p className={styles.sect}>Claims</p>
-          {s.roleClaims.length ? (
-            s.roleClaims.map((c, i) => (
-              <div key={i} className={styles.acc}>
-                <header>
-                  {chip(c.player)} Seat {seatNumber(c.player)}{' '}
-                  {c.retracted ? 'withdraws' : 'claims'}{' '}
-                  <b>{c.claimedRole.replace(/_/g, ' ')}</b>
-                </header>
-                {c.nightActions.map((n, j) => (
-                  <p key={j}>{seatify(claimedActionText(n))}</p>
-                ))}
-                {c.evidence ? <p className={styles.def}>{seatify(c.evidence)}</p> : null}
-              </div>
-            ))
-          ) : (
-            <p className={styles.none}>None.</p>
-          )}
-          {/* blocs and mood: older games only (the summary stopped writing them 2026-10-04) */}
-          {s.blocs ? (
-            <>
-              <p className={styles.sect}>Blocs</p>
-              {s.blocs.length ? (
-                s.blocs.map((b, i) => (
-                  <div key={i} className={styles.acc}>
-                    <header>{seats(b.players)}</header>
-                    <p className={styles.def}>{seatify(b.basis)}</p>
-                  </div>
-                ))
-              ) : (
-                <p className={styles.none}>None.</p>
-              )}
-            </>
-          ) : null}
-          {s.dynamics ? (
-            <>
-              <p className={styles.sect}>Mood</p>
-              <div className={styles.acc}>
-                {[s.dynamics.landscape, s.dynamics.consensus, s.dynamics.drivers]
-                  .filter(Boolean)
-                  .map((t, i) => (
-                    <p key={i}>{seatify(t)}</p>
-                  ))}
-              </div>
-            </>
-          ) : null}
-        </>
-      )}
-    </>
   );
 }

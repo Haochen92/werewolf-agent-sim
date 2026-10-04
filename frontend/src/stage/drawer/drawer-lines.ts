@@ -8,8 +8,9 @@
  * - public, for everyone: the speeches; the game master's lines verbatim (they are the record,
  *   so the lynch and the night that follow one only lend it their sigils, and nothing is said
  *   twice); the votes as one line per day at the count, voter → votee pairs, because the vote
- *   is blind and the ballots arrive as one batch; the day's brief in its morning (the summary
- *   is public, owner 2026-09-29); the ending;
+ *   is blind and the ballots arrive as one batch; in each morning, one line pointing to the
+ *   day's record in the case file (the summary is public, owner 2026-09-29; its text moved to
+ *   the file's Record, 2026-10-04); the ending;
  * - private: a seated human's own results as "Only you" lines (what happened to their act and
  *   when; only the investigator's reading names a role); a wolf's pack chat and the kill; with
  *   the X-ray, everyone's private results as "Only seat 4";
@@ -42,7 +43,7 @@ export const DEFAULT_FILTERS: DrawerFilters = {
 };
 
 interface LineBase {
-  /** Stable across beats, so the lit line and the brief's open state survive a step. */
+  /** Stable across beats, so the lit line survives a step. */
   key: string;
   seq: number;
   day: number;
@@ -93,7 +94,8 @@ export type DrawerLine =
       about: string;
       text: OnlyText | string;
     })
-  | (LineBase & { kind: 'brief'; text: string })
+  /** The day's record is in the case file: one line, at the morning it was read on. */
+  | (LineBase & { kind: 'record' })
   | (LineBase & { kind: 'over'; winner: string });
 
 export type LineKind = DrawerLine['kind'];
@@ -161,7 +163,7 @@ export interface LineOptions {
   me: string | null;
   xray: boolean;
   /**
-   * The beat on stage: the carried summary's beat shows its brief a moment before the day; an
+   * The beat on stage: the carried summary's beat shows its record a moment before the day; an
    * X-ray night's spoke shows that night only as far as the spokes have got (see `spokeCut`).
    */
   beat?: (Pick<SceneBeat, 'id' | 'day'> & Partial<Pick<SceneBeat, 'seq' | 'spoke'>>) | null;
@@ -395,20 +397,21 @@ export function drawerLines(view: GameView, o: LineOptions): DrawerLine[] {
       }
     }
 
-    // The day's brief plays in its morning, once the agents have read it (§4.2): when the
+    // The day's record plays in its morning, once the agents have read it (§4.2): when the
     // next day begins, or at the carried summary's own beat (the X-ray's). A day that ended
-    // the game has no morning after it, and its brief is dropped. It is public: everyone's.
+    // the game has no morning after it, and its record is dropped. It is public: everyone's.
+    // The summary itself is the case file's Record (record-model.ts `recordMornings`, the same
+    // rule); here only a line points to it.
     const next = phaseSeq(d.day + 1, 'day');
     const carried = o.beat?.id === 'morning.carried-summary' && o.beat.day === d.day;
-    if (d.summary && (next !== null || carried))
+    if ((d.summary || d.summaryStructured) && (next !== null || carried))
       push(next !== null ? next - 0.5 : view.lastSeq + 0.5, {
-        kind: 'brief',
-        key: `brief-${d.day}`,
+        kind: 'record',
+        key: `record-${d.day}`,
         seq: next ?? view.lastSeq,
         day: d.day,
         tier: 'public',
         seats: [],
-        text: d.summary,
       });
   }
 
@@ -621,7 +624,7 @@ export function litKey(
     case 'morning.quiet':
       return gm('dawn');
     case 'morning.carried-summary':
-      return `brief-${beat.day}`;
+      return `record-${beat.day}`;
     case 'pack.decided':
       return `kill-${beat.day}`;
     default:
@@ -817,70 +820,5 @@ export function reportParts(
   // a role the words never reached still lends its sigil, at the end
   const left = l.roles.filter((_, i) => !used.has(i));
   if (left.length && out.length && !out.at(-1)!.role) out[out.length - 1].role = left[0];
-  return out;
-}
-
-/** The day's brief, as the drawer sets it: a labelled row per section, or one quiet line. */
-export type BriefRow =
-  { kind: 'row'; label: string; items: string[] } | { kind: 'none'; text: string };
-
-/** The four headings `day_summary` always opens its lines with, in order, and how each reads. */
-const BRIEF_HEADINGS = [
-  {
-    head: 'Key accusations and defenses:',
-    label: 'Accusations and defences',
-    none: 'accusations',
-  },
-  { head: 'Role claims:', label: 'Role claims', none: 'claims' },
-  { head: 'Alliances and blocs:', label: 'Alliances and blocs', none: 'alliances' },
-  { head: 'Village dynamics:', label: 'Village dynamics', none: 'village dynamics' },
-] as const;
-
-const NONE = /^none\.?$/i;
-
-/** "a", "a or b", "a, b or c". */
-const orList = (xs: readonly string[]) =>
-  xs.length < 2 ? (xs[0] ?? '') : `${xs.slice(0, -1).join(', ')} or ${xs.at(-1)}`;
-
-/**
- * The brief split at its headings: a row per section with something in it (the accusations
- * one item each, the summary joins them with " | "), and the sections that say only "None."
- * folded into one quiet line where the first of them stood ("No accusations, claims or
- * alliances yet"). A game from 2026-10-04 on writes the first two headings only (day summary v4);
- * older games all four. Null when the text does not open its lines with either set, in order: the
- * drawer then sets it as it came.
- */
-export function briefRows(text: string): BriefRow[] | null {
-  const bodies: string[] = [];
-  for (const line of text
-    .split('\n')
-    .map((s) => s.trim())
-    .filter(Boolean)) {
-    const next = BRIEF_HEADINGS[bodies.length];
-    if (next && line.startsWith(next.head))
-      bodies.push(line.slice(next.head.length).trim());
-    else if (bodies.length) bodies[bodies.length - 1] += ` ${line}`;
-    else return null;
-  }
-  if (bodies.length !== 2 && bodies.length !== BRIEF_HEADINGS.length) return null;
-  const headings = BRIEF_HEADINGS.slice(0, bodies.length);
-  const empty = headings.filter((_, i) => NONE.test(bodies[i]));
-  const out: BriefRow[] = [];
-  headings.forEach((h, i) => {
-    const body = bodies[i];
-    if (NONE.test(body)) {
-      if (h === empty[0])
-        out.push({ kind: 'none', text: `No ${orList(empty.map((e) => e.none))} yet` });
-      return;
-    }
-    // accusations one per item; a v4 brief's claims too (an older brief's claims carry free text)
-    const items =
-      i === 0
-        ? body.split(/\s+\|\s+/)
-        : i === 1 && bodies.length === 2
-          ? body.split(/;\s+/)
-          : [body];
-    out.push({ kind: 'row', label: h.label, items: items.filter(Boolean) });
-  });
   return out;
 }

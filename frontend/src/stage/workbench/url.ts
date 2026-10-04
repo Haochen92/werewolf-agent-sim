@@ -19,7 +19,12 @@
  * `summary=v4`, written only when set, redraws the fixture's day summaries in the shape games
  * write from 2026-10-04 (day summary v4: accusations with disputes and record checks, role claims
  * with their night actions, no blocs or mood), with a few synthetic claims, as no played game
- * has them yet.
+ * has them yet, and a synthetic claim ledger for the case file's Record that shows every kind of
+ * line (a plan, a change, two targets named, a withdrawal, each kind of check).
+ * `game=140610ad`, written only when set, draws the second bundled game instead (a DeepSeek
+ * game with long summaries, 2026-10-03) with its claim ledger as the server answered it.
+ * `ledger=off`, written only when set, draws the Record without a ledger, as an old archive (or a
+ * failed fetch) has it: each summary's own claims, unchecked.
  * `frame=iphone14|iphone15max|pixel8|WxH`, written only when set (`fill`, the default, fills
  * the window), draws the stage in a box of a landscape phone's size in CSS px, to judge the
  * stage at phone scale on a desktop screen. A preset carries the device's name; `WxH`
@@ -29,6 +34,10 @@ import type { MotionSpeed } from '../scenes/types';
 import type { Hud } from '../units';
 
 export type Viewer = { kind: 'spect' } | { kind: 'xray' } | { kind: 'seat'; seat: string };
+
+/** The games the workbench can draw besides its fixture (`game=`). */
+export const WORKBENCH_GAMES = ['140610ad'] as const;
+export type WorkbenchGame = (typeof WORKBENCH_GAMES)[number];
 
 export interface WorkbenchQuery {
   beat: number;
@@ -45,6 +54,10 @@ export interface WorkbenchQuery {
   memoryFields?: boolean;
   /** The fixture's day summaries redrawn in the v4 shape; absent = as played. */
   summaryV4?: boolean;
+  /** The second bundled game, with its claim ledger; absent = the 9369a5c1 fixture. */
+  game?: WorkbenchGame;
+  /** The Record without a claim ledger (an old archive); absent = the game's ledger. */
+  noLedger?: boolean;
   /** Draw the stage in a phone-sized box; absent = fill the window. */
   frame?: DeviceFrame;
 }
@@ -87,6 +100,8 @@ export const QUERY_KEYS = [
   'live',
   'memory',
   'summary',
+  'game',
+  'ledger',
   'frame',
 ] as const;
 
@@ -136,12 +151,16 @@ export function parseQuery(params: URLSearchParams): WorkbenchQuery {
     ...(params.get('memory') === 'off' ? { memoryOff: true } : {}),
     ...(params.get('memory') === 'fields' ? { memoryFields: true } : {}),
     ...(params.get('summary') === 'v4' ? { summaryV4: true } : {}),
+    ...(WORKBENCH_GAMES.includes(params.get('game') as WorkbenchGame)
+      ? { game: params.get('game') as WorkbenchGame }
+      : {}),
+    ...(params.get('ledger') === 'off' ? { noLedger: true } : {}),
     ...(frame ? { frame } : {}),
   };
 }
 
 /**
- * The query string for `q`: the six keys in canonical form (then `live`, `memory`, `summary` and `frame`, when
+ * The query string for `q`: the six keys in canonical form (then `live`, `memory`, `summary`, `game`, `ledger` and `frame`, when
  * set), then any other keys `rest` carries (the paint bench's options, `strip=0`), untouched
  * and in their own order.
  */
@@ -157,6 +176,8 @@ export function writeQuery(q: WorkbenchQuery, rest?: URLSearchParams): string {
   if (q.memoryOff) out.set('memory', 'off');
   else if (q.memoryFields) out.set('memory', 'fields');
   if (q.summaryV4) out.set('summary', 'v4');
+  if (q.game) out.set('game', q.game);
+  if (q.noLedger) out.set('ledger', 'off');
   if (q.frame) out.set('frame', q.frame.id);
   rest?.forEach((v, k) => {
     if (!(QUERY_KEYS as readonly string[]).includes(k)) out.append(k, v);

@@ -2,8 +2,8 @@
  * The side slot's rules, in one place, so every scene lays itself out the same way
  * (beat sheet §12, "The slot"; handoff §2, "The transcript").
  *
- * The right side of the stage holds one thing at a time: the transcript drawer or the X-ray
- * film (the File tab). While it holds either, the room is drawn narrower (the puppet slides left, the paint
+ * The right side of the stage holds one thing at a time: the transcript drawer or the case
+ * file (the File tab; `film`, its old name). While it holds either, the room is drawn narrower (the puppet slides left, the paint
  * and the lights follow) and the wing stays where it is. The two differ below the rail:
  *
  * - the drawer is a long scroll, full height, so the box at the foot moves in under the
@@ -17,14 +17,16 @@ import type { Presentation, SlotInput } from './scenes/types';
 
 export type SlotOccupant = 'drawer' | 'film';
 
-/** What the slot holds now: the film only exists with the X-ray on. */
-export function slotOf(p: Pick<Presentation, 'slot' | 'xray'>): SlotOccupant | null {
-  if (p.slot === 'film') return p.xray ? 'film' : null;
+/**
+ * What the slot holds now. The file opens with the X-ray off too: then it holds only the
+ * Record, the public claims and accusations (owner, 2026-10-04; it was the X-ray's alone).
+ */
+export function slotOf(p: Pick<Presentation, 'slot'>): SlotOccupant | null {
   return p.slot ?? null;
 }
 
 /** The slot holds something, so the room lays out beside it: `geometry(hud, sideOpen(p))`. */
-export function sideOpen(p: Pick<Presentation, 'slot' | 'xray'>): boolean {
+export function sideOpen(p: Pick<Presentation, 'slot'>): boolean {
   return slotOf(p) !== null;
 }
 
@@ -57,7 +59,7 @@ export function railHolds(beat: Pick<SceneBeat, 'scene'>): boolean {
 
 /** The box at the foot narrows to the room: only a full-height drawer takes the band's right. */
 export function bandNarrows(
-  p: Pick<Presentation, 'slot' | 'xray'>,
+  p: Pick<Presentation, 'slot'>,
   beat: Pick<SceneBeat, 'id' | 'scene'>,
 ): boolean {
   return slotOf(p) === 'drawer' && !atRail(beat);
@@ -70,7 +72,6 @@ export function stripButtons(p: Pick<Presentation, 'slot' | 'xray'>, slot?: Slot
       ? { on: p.xray, onPress: slot.onReveal, locked: !!slot.revealLocked }
       : undefined;
   return {
-    xray: p.xray,
     file: slotOf(p) === 'film',
     transcript: slotOf(p) === 'drawer',
     onFile: slot?.onFile,
@@ -111,10 +112,10 @@ export function fileTap(
 /**
  * What the presses do to the presentation (the containers call these; the workbench writes the
  * result to its URL). The strip's two tabs, File and Transcript, only choose what the slot
- * shows: each brings its pane, or closes it if it is there. File needs the X-ray (the film is
- * the X-ray's), so without it the tab is greyed and does nothing. The X-ray itself is one switch
- * (the strip's Reveal, left of the tabs): off takes the film with it, and the slot falls back to the transcript
- * (owner, 2026-09-29, replacing bench 74's X-ray tab that also brought the film).
+ * shows: each brings its pane, or closes it if it is there. File opens with the X-ray off too,
+ * on the Record, the seats' files greyed (owner, 2026-10-04). The X-ray itself is one switch
+ * (the strip's Reveal, left of the tabs; owner, 2026-09-29, replacing bench 74's X-ray tab that
+ * also brought the film): it leaves the slot as it is, and a file left open goes to the Record.
  */
 export function pressTranscript(
   p: Pick<Presentation, 'slot' | 'xray'>,
@@ -125,15 +126,13 @@ export function pressTranscript(
 export function pressFile(
   p: Pick<Presentation, 'slot' | 'xray'>,
 ): Pick<Presentation, 'slot' | 'xray'> {
-  if (!p.xray) return { xray: p.xray, slot: p.slot };
-  return { xray: true, slot: slotOf(p) === 'film' ? null : 'film' };
+  return { xray: p.xray, slot: slotOf(p) === 'film' ? null : 'film' };
 }
 
 export function pressXray(
   p: Pick<Presentation, 'slot' | 'xray'>,
 ): Pick<Presentation, 'slot' | 'xray'> {
-  if (!p.xray) return { xray: true, slot: p.slot };
-  return { xray: false, slot: p.slot === 'film' ? 'drawer' : p.slot };
+  return { xray: !p.xray, slot: p.slot };
 }
 
 /** A seat's file opened from the stage: the pane shows File (only with the X-ray on). */
@@ -141,4 +140,15 @@ export function showFile(
   p: Pick<Presentation, 'slot' | 'xray'>,
 ): Pick<Presentation, 'slot' | 'xray'> {
   return p.xray ? { xray: true, slot: 'film' } : { xray: false, slot: p.slot };
+}
+
+/**
+ * The Record opened from the transcript's pointer ("Day 2's record is in the File →"): the
+ * pane shows File, with or without the X-ray (the Record is public). Which page and the
+ * Record's tab are the container's (`SlotInput.onRecordPick`, `onFileSeat`).
+ */
+export function showRecord(
+  p: Pick<Presentation, 'slot' | 'xray'>,
+): Pick<Presentation, 'slot' | 'xray'> {
+  return { xray: p.xray, slot: 'film' };
 }
