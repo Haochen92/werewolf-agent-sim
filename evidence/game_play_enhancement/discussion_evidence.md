@@ -685,6 +685,106 @@ vigilante's first day-4 messages (items 1 and 2), the healer's day-4 vote turn (
 will need to judge private reads, not only messages and notes), and player_8's day-3 "the game
 master makes it clear" (a guard for R-a).
 
+### 6.6 Day summary v4: the summariser transcribes, code checks (2026-10-04)
+
+**Why.** Three things about v3 (R-b, R-e) came up the day after it was built:
+- *Its verdict on a claim was its own judgement, and then got lost.* Each role claim carried
+  "supported / contradicted / unverified", written by the summariser. Nearly all were "unverified",
+  and the compact claim record built from them dropped the field, so the next day's summariser
+  never saw an earlier verdict (verification note
+  [`fix_verification_2026_10_04.md`](../evaluation/hallucination_bench/fix_verification_2026_10_04.md),
+  item 3).
+- *Two sections retold the day.* "Alliances and blocs" restated the accusations, and "village
+  dynamics" retold the day as a story, which is how the wolf's premise in §6.4 entered the summary
+  as narration.
+- *It was long.* In 46355b89, the healer's day-4 prompt spent 4,911 characters on previous days,
+  most of it the summaries' prose, with each claim appearing both in the claim record and in its
+  day's summary.
+
+**What changed** (built as the default; the code before it is tagged `summary-v3-baseline`, at
+`e53cb1e`):
+- *The summariser only transcribes.* Summary v4 writes two things: the day's accusations (with the
+  defence, who else disputed it, and `record_check`), and each role claim with the night actions
+  the player claimed, in fixed words (investigate / protect / shoot / kill; results such as a role
+  name, `saved_from_attack`, `died`, `not_said`). A claim is `claimed` or `retracted`; whether it is
+  new, repeated or changed is worked out by code. Alliances, village dynamics and the per-claim
+  verdict are gone.
+- *`record_check` is narrowed.* In a live test of v4, it flagged "the game master never announced
+  any investigation results" against an investigator's true claim. Investigations are never
+  announced. It now counts only an event the game master would have announced (a death, a save, a
+  vote), and says so.
+- *A claim ledger, kept by code* (`Agents/rules/claim_ledger.py`). It folds every day's claims per
+  player. A changed claim keeps the earlier one, and a claim repeated or later given its night is
+  merged. Each claim is checked against engine facts:
+  - the claimant's revealed role once they are dead;
+  - an investigation result against the target's revealed role;
+  - a claimed save against the announced saves, and a claimed kill against the deaths;
+  - more living claimants of a role than the cast holds (counting revealed holders);
+  - the rules (a healer protecting itself).
+
+  A check states the fact and nothing more. It stays silent where the record fits more than one
+  reading: a shot player who lived may have been saved, or may be the serial killer, whose survival
+  is never announced. The ledger is never stored. Every prompt rebuilds it from the summaries and
+  the dead roster, so a role revealed overnight shows in the next prompt's checks.
+- *What agents read about earlier days:*
+  - the game master's record, unchanged;
+  - "Claims made in the day discussion": the ledger, its checks marked "Record:" or "Rules:";
+  - "Accusations in the day discussion", each player tagged with their revealed role once dead.
+
+  The summaries' prose, alliances, village dynamics and evidence types are not shown, except for a
+  day stored only as text (a failed summary, or a game from before structured summaries). On the
+  46355b89 prompt, previous days went from 4,911 to about 2,600 characters.
+- *Memory instructions only with memories.* The instructions for retrieved observations and
+  strategy points appear only when some are shown. That's about 1,200 characters off every
+  memory-off turn, which is every turn on the live site.
+- *The healer's core strategy* now says its protection stops any night kill (verification note,
+  item 1).
+- *Frontend.* An old replay shows its summaries as before. A v4 summary shows accusations with their
+  disputes and record checks, and claims with their night actions, without the blocs and mood
+  sections. The workbench draws the fixture in the v4 shape with `summary=v4`.
+
+Not done, from the same verification note: a held-back draft is shown to its author on that day
+only (item 2), and an investigator's result from the night it died is still missing from
+post-game extraction (item 4). Message IDs and revision links for claims were deferred; the
+natural keys (a role claim by player, a night action by player and night) carry the history
+without them.
+
+This and the fidelity pass are one prompt epoch: neither had been deployed when this was built.
+
+**Bench result.** Two arms on `hallucination_bench_v2`, set up as in §6.5 (`gemini-3.5-flash-lite`,
+v2 prompts, memory off, 3 samples, curated + pinned + control), both with every earlier day
+re-summarised. *v3* is §6.5's "after, re-summarised" arm: the same code, its generations reused.
+*v4* is this build. Both were judged in one run.
+
+| | v3 | v4 |
+|---|---|---|
+| All samples bad | 82/267 (31%) | 85/267 (32%) |
+| Curated | 70/132 (53%) | 71/132 (54%) |
+| Pinned | 9/15 (60%) | 9/15 (60%) |
+| Controls (false alarms) | 3/120 | 5/120 |
+| Messages: bad / checkable | 21/127 (17%) | 34/128 (27%) |
+| Notes: bad / checkable | 65/151 (43%) | 62/153 (41%) |
+| Cases better / worse | | 11 / 11 (p = 1.0) |
+
+- **No change in hallucination overall.** v4 cut what agents read, not what they get wrong.
+- **Messages may have got worse** (17% to 27% of checkable messages; 15 cases worse, 7 better on
+  messages alone, p ≈ 0.13). It is not established, but it repeats §6.5's frozen-summary arm (25%),
+  and the errors are of the same kind. They are mostly late-game vote and push history misquoted:
+  "Player 2 voted to eliminate player_3 just like I did", from a player whose own day-4 vote went
+  elsewhere, and "you were pushing against the investigator from day two". The record is in the
+  prompt, but each day's votes are listed one voter per line and agents recall them wrongly. A
+  compact per-player vote history (code-built, like the ledger) is the obvious next thing to try.
+  It is untested.
+- **The summariser behaves better.** Across the 104 re-summarised days there were no failures. The
+  "investigations are never announced" false flags went from six to none, while the 46355b89
+  premise and a misquoted abstention were still caught. Of v4's two other flags, one is a
+  confirmation and one is weak. The stored summaries are 55% shorter (113,526 to 50,629 characters).
+- **Notes are flat** (43% to 41%). Re-judging the reused v3 arm gave notes 65/151 against §6.5's
+  67/151: that is the judge's own noise on identical samples.
+
+*Run: `evaluation/config/template/hallucination_bench_summary_v4.json`; output
+`evaluation/eval_results/hallucination_bench/summary_v4_flashlite35/` (not tracked).*
+
 ---
 
 ## 7. Phase 2 plan: how the day runs (not started)
