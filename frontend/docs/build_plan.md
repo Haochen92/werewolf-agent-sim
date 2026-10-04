@@ -462,6 +462,10 @@ checkpoint serializer's allowlist, so a human turn after a night resumed it as a
 game died ("'dict' object has no attribute 'day'"; game 6ad64e96). Games whose human died on night 1
 never resumed after a night, which is why the earlier game did not hit it. A new test walks every
 graph state's models against the allowlist. `:prev` for the server is now `2d8bab5e`.
+· **2026-10-04 server at `5441a564`** (server image only; prompt change = new epoch). The rules
+now say day 1 has no vote, and day 1's moderator line reads "There is no vote on day 1, so no one
+voted and no one is eliminated" instead of a "vote result" with no votes: agents in game 48e56d44
+cited a day-1 abstention that never happened. `:prev` for the server is now `ae64e8ed`.
 
 **P4 — deploy + polish.** Caddy site (same-origin `/api`), HTTPS + `Secure` cookie flag on ·
 production compose (Postgres + `alembic upgrade head` before first boot; one `WW_POSTGRES_DSN`
