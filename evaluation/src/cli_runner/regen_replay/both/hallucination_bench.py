@@ -168,8 +168,8 @@ def _generation_usage(rows: list[dict]) -> dict:
     used = [r["usage"] for r in rows if r["valid"] and r.get("usage")]
     if not used:
         return {}
-    mean = lambda k: round(sum(u[k] for u in used) / len(used), 1)
-    return {"generation_per_sample": {k: mean(k) for k in ("input", "output", "reasoning", "seconds")},
+    mean = lambda k: round(sum(u.get(k, 0) for u in used) / len(used), 1)  # older samples have no "cached"
+    return {"generation_per_sample": {k: mean(k) for k in ("input", "cached", "output", "reasoning", "seconds")},
             "generation_samples_measured": len(used)}
 
 

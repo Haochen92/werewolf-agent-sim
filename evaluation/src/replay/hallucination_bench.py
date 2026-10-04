@@ -247,11 +247,12 @@ def generate(case: dict[str, Any], n: int, memory: str = "none",
 
 
 def _usage_totals(handler: Any, seconds: float) -> dict[str, float]:
-    """One sample's tokens over every model call it made (reasoning is billed as output), and its
-    wall time including any 429 back-off."""
-    totals = {"input": 0, "output": 0, "reasoning": 0}
+    """One sample's tokens over every model call it made (cached is the part of input the provider
+    served from cache; reasoning is billed as output), and its wall time including any 429 back-off."""
+    totals = {"input": 0, "cached": 0, "output": 0, "reasoning": 0}
     for u in handler.usage_metadata.values():
         totals["input"] += u.get("input_tokens", 0)
+        totals["cached"] += (u.get("input_token_details") or {}).get("cache_read", 0) or 0
         totals["output"] += u.get("output_tokens", 0)
         totals["reasoning"] += (u.get("output_token_details") or {}).get("reasoning", 0)
     return {**totals, "seconds": round(seconds, 2)}
