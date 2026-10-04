@@ -113,8 +113,9 @@ grain under the stain) with a thin brass edge (`--hud-brass`, a dark reveal and 
 line), the words in lamp-glow cream (`--cream`, `--cream2`), brass the accent for "speaking" (the wing's lit tile). Two voices (§5): Young Serif for what is engraved
 or announced, Literata for what is said and read. The pieces: the **day plaque** (a sun or moon
 disc, "Day 3" large, the phase beneath; `TopStrip`), the **pane tabs** (File and Transcript as
-two tabs of one plaque split by a thin brass rule, the labels muted brass, File greyed without the
-X-ray; since 2026-09-29 they only choose the pane, the X-ray being one switch, **Reveal**, a brass
+two tabs of one plaque split by a thin brass rule, the labels muted brass; File was greyed without
+the X-ray until 2026-10-04, when it began opening on the Record alone, the seats' tabs greyed
+instead; since 2026-09-29 they only choose the pane, the X-ray being one switch, **Reveal**, a brass
 keyhole on its own plaque just left of the tabs (beat sheet §11);
 the pressed tab, File or Transcript alike, sits in a darker engraved walnut well, its label bright cream over a short
 brass underline), the **speech box** (a fixed board of three lines with a nameplate tab, paged; beat

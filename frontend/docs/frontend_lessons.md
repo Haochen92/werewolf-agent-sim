@@ -131,6 +131,15 @@ for the attribute or element the next assertion needs; never for a duration. A s
 that waited on every lazy image hung once a drawer stayed mounted off-screen: wait only for
 what is in the window.
 
+**21. A viewer's override carries the moment it was made in, so it lapses without an effect.**
+The Record opens on the latest morning, and the viewer may turn back a page; when a new
+morning arrives (or the replay steps back past it) the pick should give way. Resetting it with an
+effect on "a new morning" renders the stale page once and races the stage. Instead the pick is
+stored as `{morning, latest}`: it holds only while `latest` is still the latest, and is computed
+away otherwise (`film/record-model.ts` `shownMorning`; the seat chooser's `{seat, key}` in
+`case-file.ts` `shownSeat` is the same shape). Derive "does the override still apply" in render;
+never schedule its expiry.
+
 ---
 
 ## Small things that cost an afternoon

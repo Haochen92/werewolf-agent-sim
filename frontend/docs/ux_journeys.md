@@ -153,6 +153,9 @@ accusations as "accusers → target" with the summarizer's sentence on its own l
 "Defense:" line, then role claims, then blocs); the public flattened text is the fallback
 when the structured form is absent (summarizer failed, or a live viewer before R7). A human
 just lived through day N and the text is written for a context window, not a page.
+*Superseded 2026-10-04:* the summary is public now and lives in the case file's **Record**
+(accusations plus the code-checked claim ledger, open without the X-ray, a page per morning);
+the transcript keeps one line, "Day N's record is in the File →" (beat sheet §11).
 
 **D14 · Voting.** On `phase_change: voting`: a GM line calls the vote; the dock switches
 to the vote form (D17). While ballots are out, `phase_progress (day_vote)` drives a thin

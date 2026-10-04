@@ -409,7 +409,7 @@ arrive together; private results follow them (59, 271→272, 402), never precede
 | 5b | `morning.roll` (2026-10-02) | `night_result`, after the last `deaths`/`save` beat | P | nothing new on the stage (the last card or the saved chip is drawn up as it begins); the notice is **the morning roll** on the walnut board: a row per death and the save, with the role each card told. It used to be the shutter beat's notice, before the chips; played on a phone it read as a spoiler (so did the drawer's dawn line, now held until this beat) | — | 6.0 + 2.0 per row |
 | 6 | `morning.quiet` | `night_result` with no deaths and no save | P | the line alone | — | 3.0 |
 | 7 | `morning.only-you` | `investigation_result` (59) · `vigilante_confirmation` · the pack's failed kill: `wolf_message` from `game_master` (271, arrives after `night_result`) | S · F | one beat after the report, on my screen only. Investigator: the target's chip comes down and turns to its sigil, the lens beneath (the one private result that names a role). Wolf: the target's chip down whole, "Your kill on seat 2 failed. Seat 2 survived", no sigil (the GM's verbatim note names the role; that wording is X-ray's). Vigilante: the same shape, "You shot seat 2. Seat 2 survived", no sigil; the caps count (`bullets_remaining`, 402, is a view update, not a beat). The healer has nothing private. A kill the healer stopped is public (the save names its attackers) and has no private beat | D: dashed "Only you" line · X: in aqua, "Only seat n" / "Only the pack" | 2.6 |
-| 8 | `morning.carried-summary` | `day_summary_structured` of day N (the summary of the day just ended) | X | none on stage | F, the docket: the typed brief: accusations as rows (accuser → accused, evidence type, defence), then claims, blocs, mood. The summary of a day on which the game ended at the lynch is dropped (never consumed) | reading time |
+| 8 | `morning.carried-summary` | `day_summary_structured` of day N (the summary of the day just ended) | X | none on stage | F: the case file opens on the **Record** at "Day N's record" (2026-10-04; it was the docket's typed brief): the claim ledger, then day N's accusations (§11, the case file). The summary of a day on which the game ended at the lynch is dropped (never consumed) | reading time |
 | 9 | `morning.day-begins` | `phase_change: day` (60, 159, 274). **Chapter mark: Day N+1** | P | the shutter rises on the day's paint; the stand returns with the first speaker. If this morning ends the game → §10 instead | — | 3.0 |
 
 As built 2026-10-02: the shutter beat's notice says only how many the night touched ("Two seats were touched in the night."), held 6.0 s; the names wait for the chips and the roll for the end (row 5b).
@@ -421,8 +421,8 @@ gives way at 1.3 s; the card lowers over 1.2 s after 0.2 s; each box fades in af
 investigator's target turns at 1.4 s. X-ray wording for only-you: "What only they learn", "Seat
 4's reading: …", "The pack's kill on seat 2 failed. Seat 2 survived." The wing tile flips at
 `card-down` (bench 67 flipped it at the drop; the sheet wins). Whatever hangs at the centre goes
-back up as the next beat starts. The carried summary's panel: "What day N taught" / "No
-accusations that day" (a stand-in for the film).
+back up as the next beat starts. The carried summary's panel: the case file's Record at that
+day (2026-10-04; it was "What day N taught", then the docket's brief).
 
 ## 9. The replay's night — H§4.9 · benches 67, 73 · replay only
 
@@ -610,17 +610,18 @@ Private (ruled 2026-09-29: no X-ray toggle; the X-ray's lines follow the X-ray's
 In the replay the drawer stops at the current beat.
 
 As built 2026-09-25 (benches 74 and 52 where they give it; the rest no bench gives, change here
-first). **The slot:** `Presentation.slot` is `'drawer' | 'film' | null` (null = closed; the film
-exists only with the X-ray on, so `film` without it reads as closed); `src/stage/slot.ts` holds
-the rules. **Ruled 2026-09-29, replacing bench 74's X-ray tab:** the strip's two tabs are
-**File | Transcript** and only choose the pane: each brings its pane, or closes it if it is there;
-File (the case file, below; the film until 2026-09-29) is greyed without the X-ray. The
+first). **The slot:** `Presentation.slot` is `'drawer' | 'film' | null` (null = closed); with
+the X-ray off the case file holds only the Record (2026-10-04; until then the film existed only
+with the X-ray); `src/stage/slot.ts` holds the rules. **Ruled 2026-09-29, replacing bench 74's
+X-ray tab:** the strip's two tabs are **File | Transcript** and only choose the pane: each brings
+its pane, or closes it if it is there; File (the case file, below; the film until 2026-09-29) opens
+without the X-ray too, on the Record, replay and live alike (2026-10-04; it was greyed). The
 X-ray is one switch, **Reveal**, on the strip just left of the tabs (ruled 2026-09-29; it was the
 band's "X-ray on/off" button): its own small walnut plaque, a brass escutcheon with a keyhole riding
 a dark slot, "Reveal" at the slot's left, "Revealed" slid right with the keyhole lit in verdigris
 (`aria-pressed`, named "Reveal"; only the knob's transform and the light's opacity move). It re-cuts
-the beats, adds the drawer's revealed lines and enables File; off with the file up, the pane falls
-back to the transcript. Each tab reads pressed while its pane is open. Live: the switch is drawn
+the beats, adds the drawer's revealed lines and opens the seats' files; off with the file up, the
+file stays, on the Record (2026-10-04; it fell back to the transcript). Each tab reads pressed while its pane is open. Live: the switch is drawn
 locked (disabled, keyhole dark, "Revealed after the game") until `game_over`, then on for good
 (the game's end is the switch), and File reads "File · unlocked" until opened. With the slot
 closed the strip's left row stops short of the switch and the tabs, so a count pill wraps under
@@ -660,17 +661,16 @@ height (bench 74); with no line of its own the drawer shows its end. It follows 
 reader is at now (the lit line in view, or the end): scrolled away, new lines arrive without
 moving it and a "↓ Back to now" pill sits at its foot until tapped or scrolled back (ruled
 2026-09-29; the place and the follow outlive the scene, `useDrawerFilters().scroll`). The day's
-brief is set as a labelled row per heading of `day_summary` (a small label over its words, the
-accusations one per item); the headings that say only "None." fold into one quiet line ("No
-accusations, claims or alliances yet"); a text without the four headings is set as it came. Wording: a pass reads the
+summary is not set here any more (2026-10-04; it was a labelled block per heading, unreadable at
+length): in its place one line, "Day N's record is in the File →", which opens the case file on
+the Record at that day, X-ray or not. Wording: a pass reads the
 box's accepted reasons ("held back: nothing new to say"; bench 74 wrote "held back by the novelty
 gate"); the vote "The table votes, 7 ballots at the count"; acts "Seat 4 checks seat 1" (the
 bench's verbs); the kill "The pack chooses seat 1"; theirs-only lines "Only seat 4 · the
 investigator's reading · Seat 1 is a villager.", "Only seat 7 · Night 4 · Seat 7 shot seat 9.
-Seat 9 survived.", "One cap left.", "Only the pack · the game master's note, verbatim"; the brief
-"The day's brief, day N · what the agents carry from here", three lines, "open"/"close". The
-brief sits after the morning's private results and shows from its own carried-summary beat on
-(bench 74 put it straight after the dawn line; that would show it before its beat). The closing
+Seat 9 survived.", "One cap left.", "Only the pack · the game master's note, verbatim". The
+record's line sits after the morning's private results and shows from its own carried-summary
+beat on (bench 74 put the brief straight after the dawn line; that would show it before its beat). The closing
 game-master line stands for `game_over` (the Game over rule goes before it); a separate "The
 wolves have won." line only when no such line exists. The seat filter is one seat at a time (a
 second tap clears it), as bench 74. **The drawer's look (HUD pass 3a, ruled 2026-09-29, from the
@@ -764,25 +764,48 @@ night spoke the actor's (the pack's: the first wolf's, "⇄ Seat 8" on the cover
 other). **Choosing a file (2026-09-29, "Seat 5 ▾" read as a title):** where the slot is drawn at
 least 424 css px wide (three-quarters of its full size), a tab per seat stands up off the
 folder's top edge, its face and number, like a filing drawer's: the open file's raised, the dead
-greyed but openable, the docket's own tab (a small folder glyph, no word) first at a beat that has one; narrower (a phone), the
-cover's name is a bordered button, "Seat 5 · change ▾", opening a small card of every seat's face
-(and the docket, by its title). Either opens that file at the playhead; **the pick holds until a beat brings a
+greyed but openable, the Record's tab first (its ledger glyph and "Record", always there), then the docket's own tab (a small folder glyph, no word) at a beat that has one; narrower (a phone), the
+cover's name is a bordered button, "Seat 5 · change ▾", opening a small card: the Record, every
+seat's face (and the docket, by its title). Either opens that file at the playhead; **the pick holds until a beat brings a
 different seat into focus** (another turn, another spoke), through the docket beats between
 (`shownSeat`). **The docket** (the code's name; viewers never see the word since 2026-09-30: the
 sheet is titled by what it holds, `docketTitle`, on its cover, its tab's name and the phone's
-chooser: "The vote", "The lynch", "Day 2's brief", "The night", "The deal", "The case, closed",
+chooser: "The vote", "The lynch", "The night", "The deal", "The case, closed",
 "The winners' notes", "Nothing on file"; where a tap on the wing opens a file, its first line is
 the keyhole and "Tap a seat to open its file"): the beats with no seat in focus, one sheet in the same paper: the
 count (from the ballots' drop to the lynch's drop) "Inside the vote · Day N · what each voter
 weighed", a dot per lesson (F · O · –: followed, overrode, doesn't apply); from the lynch's card to the card leaving "Who had them
-right" and the seat's last note before the vote; the morning's brief "What day N taught · the
-brief carried into day N+1" (Accusations, Claims, Blocs, Mood); the night whole; the deal face up
+right" and the seat's last note before the vote; the night whole; the deal face up
 ("The deal · every seat, face up"); at the truth and the curtain "The case, closed · the deal,
 and how each seat went", its rows opening each seat's final file (live, after the game: "File ·
 unlocked"; there the closed file, docket and each seat's, opens with "This is how each file
 ended. To see what each seat was thinking turn by turn, watch the replay →", the curtain's
 replay link; not in the replay); the winners' stand "The winners' last notes"; any other beat "Nothing on file
-at this beat." The type: Literata for everything read (upright, never rotated), IM Fell English
+at this beat." **The Record (ruled 2026-10-04; it replaced the docket's brief and the drawer's
+brief block):** the public sheet, what the agents read each morning, so it opens without the
+X-ray: with Reveal off (live: until the game's end) File opens on it, the docket's and the seats'
+tabs greyed, titled "Opens with Reveal on" (replay) / "Revealed after the game" (live); with
+Reveal on it is one more pick, holding like a seat's, and the carried summary's beat (§8 row 8)
+opens it. A page per morning the stage has reached (`film/record-model.ts`): "Day 2's record ·
+read the morning of day 3", a pager under the head to earlier days, never past the stage's, the
+latest open unless the viewer turned back since it arrived; before the first, "Nothing on record
+yet — the first record is written at the end of day 1". **Claims**, from the claim ledger
+(`GET /games/{id}/ledger`, every role claim and claimed night action, checked by code against the
+game master's record): a row per player like a read's (face, "Seat 6", the claimed role in bold,
+in plain ink: a claim is not a fact, never a faction's colour or a stamp; struck through and
+"withdrawn" when retracted), the role's history when it changed, the player's checks, then a line
+per claimed action, "Night 1 · investigated [face] Seat 5 → wolf", what it replaced struck through
+("earlier: …"), other targets named that night ("also named: …"); a check that agrees ✓ in
+`--ink-follow`, one that disagrees or breaks a rule ✗ in `--ink-over`, a neutral fact a plain
+muted note. A plan is graphite pencil (Patrick Hand in `--pencil`, never the red margin pencil: a
+plan binds no one): "said on day 2 they planned to investigate [face] Seat 2 · reason given: …",
+"as planned" a small typed tag when kept, the pencil line alone for a plan never reported on.
+**Accusations · day N**, from that day's `day_summary_structured`: accusers' faces → the accused's,
+the reasoning clamped to two lines (a tap opens it), "Defence ▸" for the defence and who disputed
+it, "✗ Against the record: …" always shown (no evidence-type tag: the agents never see it). An old
+game with no ledger (or a failed fetch) shows each summary's own claims in the same rows, unchecked;
+blocs and mood are not drawn. The legend: "✓ the game record agrees · ✗ the record disagrees or a
+rule is broken · claims are what players said, not facts". The type: Literata for everything read (upright, never rotated), IM Fell English
 for the titles and the cover's name, Courier Prime (the typewriter) for labels, tabs and stamps,
 Patrick Hand for pencil. Only the stamps and the ticks sit crooked; the stamps' worn ink is a
 still mask tile (`scripts/make-stamp-ink.mjs`), no live filter. On a phone the cover and the tabs
@@ -891,10 +914,11 @@ is [`live_timing_sheet.md`](live_timing_sheet.md) (2026-10-01).
   verdict beat covers the wait); `over.truth` then plays as written.
 - **Reveal and File follow the stage's end (ruled 2026-10-01).** `game_over` can land while the
   stage is still playing the last night's backlog. The X-ray is the viewer's (the Reveal switch
-  on, the File tab open, the wing's truth, the strip's door gone) only once the stage is at or
+  on, the seats' files open, the wing's truth, the strip's door gone) only once the stage is at or
   past the first `over.*` beat, never on the server's clock; and the live cut puts no X-ray or
   "Only seat n" beat before the ending, so nothing the X-ray knows plays in the night it catches
-  up on.
+  up on. The File tab itself opens all game, on the Record (2026-10-04), whose ledger is asked
+  again each new morning (`useLedger`).
 - **The slot (ruled 2026-09-25):** when the drawer or the film is open, the room lays out for the
   open side slot (the `side` geometry in `units.ts`: the puppet slides left, the box narrows), in
   every scene, live and replay. The stand-in panels that overlaid the room are replaced by this.
@@ -989,7 +1013,12 @@ reload during a vote already cast reopens the ballot (a second send gets the 409
 | Spectator (P), and the replay with X-ray off | the theatre | the jar, the count | all of it | the lobby: chips, count | the report, chip by chip | the verdict, the winners, the truth, the epilogue |
 | Seated human (S) | + my turn: my puppet, the box, the countdown, the draft | + my chip row and face-up chip | + "you are voted out", my card | my room on my turn; the lobby after | + what only I learn | + "you won" / "you lost" |
 | Wolf (F) | as S | as S | as S | the pack's room, the chat, both teeth as they land | + the pack's note | as S |
-| Replay, X-ray on (X) | + notes, reads | + the voters' consults; the ballots named at the drop | + who had them right | hub, spokes, whole; every act, consult, note | + all private results; the carried summary | + the deal and how it went |
+| Replay, X-ray on (X) | + notes, reads | + the voters' consults; the ballots named at the drop | + who had them right | hub, spokes, whole; every act, consult, note | + all private results; the carried summary's beat | + the deal and how it went |
+
+The carried summary (`day_summary_structured`) is **public** since 2026-10-04 (the server sends
+it live during the day, not only after the game), and so is the claim ledger built from public
+facts: every viewer's case file holds the Record (§11). Only the carried summary's own beat stays
+in the X-ray's cut.
 
 ## 14. Polish list (seen on the built scenes, not yet fixed)
 
