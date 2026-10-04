@@ -20,7 +20,8 @@ async def check_key(model: str, api_key: str) -> None:
     def call() -> None:
         token = GAME_LLM.set(GameLLM(api_key=api_key, model=model))
         try:
-            create_chat_model(model, temperature=0.0).invoke("Reply with the single word OK.")
+            # Temperature 1: OpenAI's reasoning models (GPT-6 Luna) refuse any other value.
+            create_chat_model(model, temperature=1.0).invoke("Reply with the single word OK.")
         finally:
             GAME_LLM.reset(token)
 

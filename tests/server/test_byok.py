@@ -56,6 +56,18 @@ def test_deepseek_selection_routes_the_key_to_deepseek():
     assert "deepseek" in str(client.openai_api_base)
 
 
+def test_openai_and_openrouter_selections_route_the_key_to_their_provider(monkeypatch):
+    # The server's own keys are set too: a player's game must never fall back to them.
+    monkeypatch.setenv("OPENAI_API_KEY", "server-openai-key")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "server-openrouter-key")
+    for model, base in (("openai/gpt-6-luna", "api.openai.com"),
+                        ("openrouter/z-ai/glm-5.3-flash", "openrouter.ai")):
+        client = _with_override(GameLLM(api_key="player-key", model=model),
+                                lambda: create_chat_model(model, temperature=0.42))
+        assert client.openai_api_key.get_secret_value() == "player-key", model
+        assert base in str(client.openai_api_base)
+
+
 def test_off_family_models_never_receive_the_game_key():
     # A DeepSeek game's key must not leak into a Gemini-family client (e.g. the pro
     # extraction models) — those fall back to server credentials.

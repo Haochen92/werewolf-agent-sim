@@ -318,6 +318,7 @@ def _build_chat_model(
         return _build_openai_compat_chat_model(
             model.removeprefix("nim/"), _NIM_BASE_URL, "NVIDIA_API_KEY",
             temperature=temperature, structured_mode=mode,
+            api_key_override=_game_key_for("nim"),
         )
 
     if model.startswith("deepseek/"):
@@ -349,7 +350,8 @@ def _build_chat_model(
                   if thinking_level else {})
         return _build_openai_compat_chat_model(
             model.removeprefix("openai/"), _OPENAI_BASE_URL, "OPENAI_API_KEY",
-            temperature=temperature, structured_mode=mode, **effort)
+            temperature=temperature, structured_mode=mode,
+            api_key_override=_game_key_for("openai"), **effort)
     if model.startswith("openrouter/"):
         routed = model.removeprefix("openrouter/")
         provider = next((v for k, v in OPENROUTER_PROVIDER.items() if routed.startswith(k)), None)
@@ -362,11 +364,13 @@ def _build_chat_model(
                                   else {"effort": thinking_level})
         return _build_openai_compat_chat_model(
             routed, _OPENROUTER_BASE_URL, "OPENROUTER_API_KEY",
-            temperature=temperature, structured_mode=mode, extra_body=extra)
+            temperature=temperature, structured_mode=mode, extra_body=extra,
+            api_key_override=_game_key_for("openrouter"))
     if model.startswith("xai/"):
         return _build_openai_compat_chat_model(
             model.removeprefix("xai/"), _XAI_BASE_URL, "XAI_API_KEY",
-            temperature=temperature, structured_mode=mode)
+            temperature=temperature, structured_mode=mode,
+            api_key_override=_game_key_for("xai"))
 
     build_kwargs: dict[str, Any] = {
         "model": model,
