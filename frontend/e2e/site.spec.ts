@@ -92,6 +92,8 @@ const REPLAYS = [
     n_humans: 1,
     model: 'gemini-3.6-flash',
     memory: false,
+    cost_usd: 0.2671,
+    avg_call_seconds: 4.06,
   }),
   summary({
     game_id: '7f2a9d10-8c4b-4e2f-a1d3-6b5e9f0c2d87',
@@ -123,6 +125,8 @@ const MODELS = {
       house_funded: true,
       is_default: true,
       needs_key: false,
+      avg_cost_usd: 0.2671,
+      priced_games: 12,
     },
     {
       model: 'gemini-3.6-flash',
@@ -131,6 +135,16 @@ const MODELS = {
       house_funded: true,
       is_default: false,
       needs_key: false,
+      priced_games: 0,
+    },
+    {
+      model: 'deepseek/deepseek-v4-pro',
+      label: 'DeepSeek V4 Pro',
+      rescue_model: null,
+      house_funded: false,
+      is_default: false,
+      needs_key: true,
+      priced_games: 0,
     },
   ],
   house: {
@@ -190,12 +204,16 @@ test('archive: slates say the model by name and where the game ended', async ({ 
   await expect(fixture).toHaveAttribute('href', `/replays/${GAME}`);
   await expect(fixture).toContainText('Wolves');
   await expect(fixture).toContainText('Gemini 3.5 Flash-Lite');
-  await expect(fixture).toContainText('gemini-3.5-flash-lite');
+  await expect(fixture).not.toContainText('gemini-3.5-flash-lite'); // the name, not the raw id twice
   await expect(fixture).toContainText('Night 4');
   await expect(fixture).toHaveAttribute('aria-label', /ended night 4/);
   await expect(fixture.locator('img')).toHaveCount(9);
 
   await expect(page.locator(`[data-game="${MINE}"]`)).toContainText('Day 3 vote');
+  // a game that recorded its tokens says what it cost and how long an AI call took
+  await expect(page.locator(`[data-game="${MINE}"]`)).toContainText(
+    '$0.27 · 4.1 s per AI call',
+  );
   await expect(page.locator(`[data-game="${MINE}"]`)).toContainText('played');
   await expect(page.locator('[data-game="seed-chunk-catalogue"]')).toContainText(
     'Unrecorded',
@@ -278,6 +296,26 @@ test('ticket: the house pays, so /play asks for no key', async ({ page }) => {
     'true',
   );
   await expect(page.getByText('Wolf, chosen')).toBeVisible();
+});
+
+test('ticket: the model menu groups the house rows and shows what a game costs', async ({
+  page,
+}) => {
+  await openTicket(page, '/play', 3);
+  await page.getByLabel('Model', { exact: true }).click();
+  const menu = page.getByRole('listbox');
+  await expect(menu.getByText('Recommended')).toBeVisible();
+  await expect(menu.getByText('With your own key')).toBeVisible();
+  const lite = menu.getByRole('option', { name: /Gemini 3\.5 Flash-Lite/ });
+  await expect(lite).toContainText('≈ $0.27 a game');
+  await expect(lite).toContainText('house pays');
+  await expect(lite).toContainText('default');
+  await expect(menu.getByRole('option', { name: /DeepSeek V4 Pro/ })).toContainText(
+    'your key',
+  );
+  await expect(menu.getByRole('option', { name: /Gemini 3\.6 Flash/ })).not.toContainText(
+    'a game',
+  );
 });
 
 test('ticket: a spent purse opens the key field and holds the ticket', async ({ page }) => {

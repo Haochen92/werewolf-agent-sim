@@ -226,19 +226,73 @@
   font-size: 12.5px;
 }
 
+/* The model menu's rows (the dropdown is a portal on the theme's dark panel): the name with the
+   mean price of a game on the right, then the raw id and pill tags for who pays and the default. */
+.optionRow {
+  padding: 9px 12px;
+}
+
 .option {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 4px;
+  width: 100%;
+}
+
+.optionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.optionName {
+  color: var(--bone);
+  font-size: 15px;
+}
+
+.optionPrice {
+  color: var(--amber);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .optionMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
   color: var(--muted);
   font-size: 12px;
 }
 
 .optionMeta code {
+  margin-right: 2px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.optionTag {
+  padding: 0 7px;
+  border: 1px solid var(--cloak2);
+  border-radius: 999px;
+  color: var(--bone2);
+  font-size: 11px;
+  line-height: 17px;
+}
+
+.optionTagDefault {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
+.groupLabel {
+  padding: 10px 12px 4px;
+  color: var(--bone3);
+  font-size: 11px;
+  font-variant: small-caps;
+  letter-spacing: 0.12em;
+  text-transform: lowercase;
 }
 
 /* the switch on paper: an ink-ringed track that fills amber, an ink thumb */

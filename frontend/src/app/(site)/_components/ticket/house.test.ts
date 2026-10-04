@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ModelRow, ModelsMenu } from '@/types/contracts';
-import { defaultRow, houseLine, needsKey } from './house';
+import { defaultRow, houseLine, modelGroups, needsKey } from './house';
 
 const row = (over: Partial<ModelRow>): ModelRow => ({
   model: 'm',
@@ -9,6 +9,7 @@ const row = (over: Partial<ModelRow>): ModelRow => ({
   house_funded: false,
   is_default: false,
   needs_key: true,
+  priced_games: 0,
   ...over,
 });
 
@@ -85,5 +86,26 @@ describe('houseLine', () => {
 
   it('says nothing about a row the menu does not list', () => {
     expect(houseLine(menu(), 'retired-model')).toBe('');
+  });
+});
+
+describe('modelGroups', () => {
+  it('puts house rows under Recommended with the default first, and leaves out an empty group', () => {
+    const rows = [
+      row({ model: 'a', label: 'A', house_funded: true }),
+      row({ model: 'b', label: 'B', house_funded: true, is_default: true }),
+      row({ model: 'c', label: 'C' }),
+    ];
+    expect(modelGroups(rows)).toEqual([
+      {
+        group: 'Recommended',
+        items: [
+          { value: 'b', label: 'B' },
+          { value: 'a', label: 'A' },
+        ],
+      },
+      { group: 'With your own key', items: [{ value: 'c', label: 'C' }] },
+    ]);
+    expect(modelGroups([rows[2]]).map((g) => g.group)).toEqual(['With your own key']);
   });
 });

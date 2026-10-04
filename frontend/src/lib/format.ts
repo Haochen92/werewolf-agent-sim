@@ -85,3 +85,15 @@ export function endedLabel(
   if (phase === 'voting') return `Day ${day} vote`;
   return null;
 }
+
+/** A game's cost in dollars: "$0.27", or "<$0.01" for a sliver. Empty when it is unknown. */
+export function formatCost(usd: number | null | undefined): string {
+  if (usd == null) return '';
+  return usd < 0.01 ? '<$0.01' : `$${usd.toFixed(2)}`;
+}
+
+/** A mean model-call time: "4.1 s", or "12 s" from ten seconds up. Empty when it is unknown. */
+export function formatCallSeconds(seconds: number | null | undefined): string {
+  if (seconds == null) return '';
+  return seconds < 10 ? `${seconds.toFixed(1)} s` : `${Math.round(seconds)} s`;
+}

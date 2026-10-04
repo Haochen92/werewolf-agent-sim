@@ -27,6 +27,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Alert, Select, Switch, TextInput } from '@mantine/core';
 import { createGame, createRoom, getModels } from '@/lib/api';
+import { formatCost } from '@/lib/format';
 import { hostKey, seatToken } from '@/lib/storage';
 import { queryKeys } from '@/lib/queryKeys';
 import { Button, HangTag, Icon, Paper } from '@/components/site';
@@ -34,7 +35,7 @@ import { PuppetPicker } from '@/components/PuppetPicker';
 import { useCharacters } from '@/hooks/useCharacters';
 import { CARD_TEXT } from '@/stage/card-text';
 import type { Role } from '@/types/contracts';
-import { defaultRow, needsKey } from './house';
+import { defaultRow, modelGroups, needsKey } from './house';
 import { KeyRow } from './KeyRow';
 import { RoleCards } from './RoleCards';
 import classes from './Ticket.module.css';
@@ -288,21 +289,43 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
             <div className={classes.ctl}>
               <Select
                 id={`${ids}-model`}
-                data={(menu?.models ?? []).map((r) => ({ value: r.model, label: r.label }))}
+                data={modelGroups(menu?.models ?? [])}
                 value={model || null}
                 onChange={(next) => next && setModel(next)}
                 allowDeselect={false}
                 disabled={!menu}
                 placeholder={models.isError ? 'The server’s default' : 'Reading the menu…'}
+                maxDropdownHeight={420}
                 renderOption={({ option }) => {
                   const r = menu?.models.find((m) => m.model === option.value);
+                  const price = formatCost(r?.avg_cost_usd);
                   return (
                     <span className={classes.option}>
-                      <span>{option.label}</span>
+                      <span className={classes.optionHead}>
+                        <span className={classes.optionName}>{option.label}</span>
+                        {price ? (
+                          <span
+                            className={classes.optionPrice}
+                            title={`The mean of ${r?.priced_games} finished games`}
+                          >
+                            ≈ {price} a game
+                          </span>
+                        ) : null}
+                      </span>
                       <span className={classes.optionMeta}>
                         <code>{option.value}</code>
-                        {r ? ` · ${r.house_funded ? 'house pays' : 'your key'}` : ''}
-                        {r?.is_default ? ' · default' : ''}
+                        {r ? (
+                          <span className={classes.optionTag}>
+                            {r.house_funded ? 'house pays' : 'your key'}
+                          </span>
+                        ) : null}
+                        {r?.is_default ? (
+                          <span
+                            className={`${classes.optionTag} ${classes.optionTagDefault}`}
+                          >
+                            default
+                          </span>
+                        ) : null}
                       </span>
                     </span>
                   );
@@ -311,6 +334,8 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
                   root: classes.lineRoot,
                   input: `${classes.line} ${classes.selectInput}`,
                   section: classes.lineSection,
+                  option: classes.optionRow,
+                  groupLabel: classes.groupLabel,
                 }}
               />
               {row ? <code className={classes.rawId}>{row.model}</code> : null}

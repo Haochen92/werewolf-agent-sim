@@ -4,7 +4,8 @@
  * paper; the header says who won, and the printed line under it is stamped for human seats, memory
  * and "you played" (or, with nothing to stamp, prints the table's default); the
  * puppets are the game's own cast, one per seat (the same hash the theatre uses); the fields are the
- * record id, the days, the phase it ended in, and the model.
+ * record id, the days, the phase it ended in, and the model, with what the game cost and how long
+ * an AI call took on average when the server recorded them (games from 2026-10-04 on).
  *
  * Pure: the page passes the model's display name (from `GET /models`) and whether this browser
  * sat in the game, so the slate itself never fetches.
@@ -14,7 +15,7 @@ import type { ReplaySummary, Winner } from '@/types/contracts';
 import { castForGame } from '@/stage/cast/castForGame';
 import { ChipSprite } from '@/stage/cast/ChipSprite';
 import { Sigil } from '@/stage/instruments/Sigil';
-import { endedLabel, formatDate } from '@/lib/format';
+import { endedLabel, formatCallSeconds, formatCost, formatDate } from '@/lib/format';
 import classes from './Slate.module.css';
 
 /** Seats at the table: the public casting's total (every archived game so far dealt nine). */
@@ -64,6 +65,12 @@ export function Slate({ replay, modelLabel, mine = false, from }: SlateProps) {
   const ended = endedLabel(replay.ended_phase, replay.days);
   const date = formatDate(replay.finished_at);
   const model = replay.model ? (modelLabel ?? replay.model) : null;
+  const cost = formatCost(replay.cost_usd);
+  const callTime = formatCallSeconds(replay.avg_call_seconds);
+  // Under the model's name: the game's cost and AI call time when recorded, then the date.
+  const modelLine = [cost, callTime && `${callTime} per AI call`, date]
+    .filter(Boolean)
+    .join(' · ');
   const humans = replay.n_humans;
 
   const aria = [
@@ -71,6 +78,7 @@ export function Slate({ replay, modelLabel, mine = false, from }: SlateProps) {
     `${replay.days} ${replay.days === 1 ? 'day' : 'days'}`,
     ended ? `ended ${ended.toLowerCase()}` : null,
     model ?? 'model unrecorded',
+    cost ? `cost ${cost}` : null,
     mine ? 'you played' : null,
   ]
     .filter(Boolean)
@@ -146,10 +154,7 @@ export function Slate({ replay, modelLabel, mine = false, from }: SlateProps) {
               {model ? (
                 <dd>
                   {model}
-                  <span className={classes.mono}>
-                    {replay.model}
-                    {date ? ` · ${date}` : ''}
-                  </span>
+                  {modelLine ? <span className={classes.mono}>{modelLine}</span> : null}
                 </dd>
               ) : (
                 <dd className={classes.none}>

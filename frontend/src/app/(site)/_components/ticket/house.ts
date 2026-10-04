@@ -37,3 +37,22 @@ export function houseLine(menu: ModelsMenu, model: string): string {
   }
   return `The house pays for this model: ${remaining} of ${games_per_day} games left today. Your own key is optional.`;
 }
+
+/**
+ * The menu as the model select's groups: the rows the house can pay for under "Recommended",
+ * the default first, then the rows that always take a player's key. An empty group is left out.
+ */
+export function modelGroups(rows: ModelRow[]) {
+  const option = (r: ModelRow) => ({ value: r.model, label: r.label });
+  const house = rows.filter((r) => r.house_funded);
+  return [
+    {
+      group: 'Recommended',
+      items: [
+        ...house.filter((r) => r.is_default),
+        ...house.filter((r) => !r.is_default),
+      ].map(option),
+    },
+    { group: 'With your own key', items: rows.filter((r) => !r.house_funded).map(option) },
+  ].filter((g) => g.items.length > 0);
+}
