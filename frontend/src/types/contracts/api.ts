@@ -77,6 +77,27 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/games/{game_id}/ledger': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * The claim ledger the agents read each morning
+     * @description Each morning's claim ledger, rebuilt from the game's public events: running or ended,
+     *     for anyone. A waiting room has none yet.
+     */
+    get: operations['game_ledger_games__game_id__ledger_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/games/{game_id}/key': {
     parameters: {
       query?: never;
@@ -510,8 +531,9 @@ export interface components {
     };
     /**
      * DaySummaryStructured
-     * @description O-tier structured form of the summary (accusations / role claims; older games also alliances
-     *     and village dynamics).
+     * @description Structured form of the summary (accusations / role claims; older games also alliances and
+     *     village dynamics). Public, like the text: it only transcribes the public discussion, and the
+     *     browser's Record tab shows it during the day (2026-10-04; it was observer-only before).
      */
     DaySummaryStructured: {
       /** Seq */
@@ -875,6 +897,75 @@ export interface components {
        * @default human
        */
       name: string;
+    };
+    /** LedgerCheck */
+    LedgerCheck: {
+      /** Text */
+      text: string;
+      /** Fits */
+      fits: boolean | null;
+    };
+    /** LedgerDay */
+    LedgerDay: {
+      /** Day */
+      day: number;
+      /** Players */
+      players: components['schemas']['LedgerPlayerView'][];
+    };
+    /**
+     * LedgerEntryView
+     * @description One claimed night action, or a plan the player never said they carried out.
+     */
+    LedgerEntryView: {
+      /** Night */
+      night: number;
+      /** Action */
+      action: string;
+      /** Target */
+      target: string;
+      /** Result */
+      result: string;
+      /** Said On Day */
+      said_on_day: number;
+      /** Reported */
+      reported: boolean;
+      /** Earlier */
+      earlier: string[];
+      /** Also */
+      also: string[];
+      /** Planned */
+      planned: string | null;
+      /** Reason */
+      reason: string;
+      /** Text */
+      text: string;
+      /** Checks */
+      checks: components['schemas']['LedgerCheck'][];
+    };
+    /** LedgerPlayerView */
+    LedgerPlayerView: {
+      /** Player */
+      player: string;
+      /** History */
+      history: string;
+      /** Roles */
+      roles: components['schemas']['LedgerRole'][];
+      /** Checks */
+      checks: components['schemas']['LedgerCheck'][];
+      /** Entries */
+      entries: components['schemas']['LedgerEntryView'][];
+    };
+    /** LedgerRole */
+    LedgerRole: {
+      /** Day */
+      day: number;
+      /** Role */
+      role: string;
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: 'claimed' | 'retracted';
     };
     /**
      * LynchResult
@@ -1859,6 +1950,37 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['GameStatus'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  game_ledger_games__game_id__ledger_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        game_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['LedgerDay'][];
         };
       };
       /** @description Validation Error */

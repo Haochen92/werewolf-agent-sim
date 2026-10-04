@@ -313,8 +313,9 @@ class DaySummary(DurableEvent, frozen=True):
 
 
 class DaySummaryStructured(DurableEvent, frozen=True):
-    """O-tier structured form of the summary (accusations / role claims; older games also alliances
-    and village dynamics)."""
+    """Structured form of the summary (accusations / role claims; older games also alliances and
+    village dynamics). Public, like the text: it only transcribes the public discussion, and the
+    browser's Record tab shows it during the day (2026-10-04; it was observer-only before)."""
 
     type: Literal["day_summary_structured"] = "day_summary_structured"
     data: dict
@@ -525,7 +526,7 @@ EVENT_TIERS: dict[str, Tier] = {
     "player_reads": Tier.OBSERVER,
     "input_request": Tier.SEAT,
     "day_summary": Tier.PUBLIC,
-    "day_summary_structured": Tier.OBSERVER,
+    "day_summary_structured": Tier.PUBLIC,
     "vote_cast": Tier.PUBLIC,
     "gm_message": Tier.PUBLIC,
     "lynch_result": Tier.PUBLIC,

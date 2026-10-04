@@ -133,6 +133,53 @@
         }
       }
     },
+    "/games/{game_id}/ledger": {
+      "get": {
+        "tags": [
+          "games"
+        ],
+        "summary": "The claim ledger the agents read each morning",
+        "description": "Each morning's claim ledger, rebuilt from the game's public events: running or ended,\nfor anyone. A waiting room has none yet.",
+        "operationId": "game_ledger_games__game_id__ledger_get",
+        "parameters": [
+          {
+            "name": "game_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Game Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LedgerDay"
+                  },
+                  "title": "Response Game Ledger Games  Game Id  Ledger Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/games/{game_id}/key": {
       "post": {
         "tags": [
@@ -1200,7 +1247,7 @@
           "data"
         ],
         "title": "DaySummaryStructured",
-        "description": "O-tier structured form of the summary (accusations / role claims; older games also alliances\nand village dynamics)."
+        "description": "Structured form of the summary (accusations / role claims; older games also alliances and\nvillage dynamics). Public, like the text: it only transcribes the public discussion, and the\nbrowser's Record tab shows it during the day (2026-10-04; it was observer-only before)."
       },
       "DraftRequest": {
         "properties": {
@@ -1897,6 +1944,206 @@
         "type": "object",
         "title": "JoinGame",
         "description": "POST /games/{id}/join body. No role field on purpose: rooms deal random\nseats (role choice is solo-only, on the instant-start path)."
+      },
+      "LedgerCheck": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "fits": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fits"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "fits"
+        ],
+        "title": "LedgerCheck"
+      },
+      "LedgerDay": {
+        "properties": {
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "players": {
+            "items": {
+              "$ref": "#/components/schemas/LedgerPlayerView"
+            },
+            "type": "array",
+            "title": "Players"
+          }
+        },
+        "type": "object",
+        "required": [
+          "day",
+          "players"
+        ],
+        "title": "LedgerDay"
+      },
+      "LedgerEntryView": {
+        "properties": {
+          "night": {
+            "type": "integer",
+            "title": "Night"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "result": {
+            "type": "string",
+            "title": "Result"
+          },
+          "said_on_day": {
+            "type": "integer",
+            "title": "Said On Day"
+          },
+          "reported": {
+            "type": "boolean",
+            "title": "Reported"
+          },
+          "earlier": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Earlier"
+          },
+          "also": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Also"
+          },
+          "planned": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/LedgerCheck"
+            },
+            "type": "array",
+            "title": "Checks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "night",
+          "action",
+          "target",
+          "result",
+          "said_on_day",
+          "reported",
+          "earlier",
+          "also",
+          "planned",
+          "reason",
+          "text",
+          "checks"
+        ],
+        "title": "LedgerEntryView",
+        "description": "One claimed night action, or a plan the player never said they carried out."
+      },
+      "LedgerPlayerView": {
+        "properties": {
+          "player": {
+            "type": "string",
+            "title": "Player"
+          },
+          "history": {
+            "type": "string",
+            "title": "History"
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/LedgerRole"
+            },
+            "type": "array",
+            "title": "Roles"
+          },
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/LedgerCheck"
+            },
+            "type": "array",
+            "title": "Checks"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/LedgerEntryView"
+            },
+            "type": "array",
+            "title": "Entries"
+          }
+        },
+        "type": "object",
+        "required": [
+          "player",
+          "history",
+          "roles",
+          "checks",
+          "entries"
+        ],
+        "title": "LedgerPlayerView"
+      },
+      "LedgerRole": {
+        "properties": {
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "claimed",
+              "retracted"
+            ],
+            "title": "Kind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "day",
+          "role",
+          "kind"
+        ],
+        "title": "LedgerRole"
       },
       "LynchResult": {
         "properties": {

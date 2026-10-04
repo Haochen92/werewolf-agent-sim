@@ -17,7 +17,9 @@ from server.database_models.game import COMPLETED, GameRow
 from server.game.cast import is_pickable
 from server.game.entitlement import entitled
 from server.game.game_session import GameSession
+from server.game.ledger import ledger_days
 from server.game.run_config import game_run_config
+from server.schemas.ledger import LedgerDay
 from server.schemas.requests import (
     DraftRequest, DraftResponse, FundGame, GameCreated, GameStatus, NewSoloGame, TurnAccepted,
 )
@@ -70,6 +72,18 @@ async def game_status(session: Room, token: SeatToken,
         return _archived_status(
             session, token, [c.character for c in await repository.load_cast(session.game_id)])
     return live_status(session, token)
+
+
+@router.get("/games/{game_id}/ledger", response_model=list[LedgerDay],
+            summary="The claim ledger the agents read each morning")
+async def game_ledger(session: Room, repository: GameRepositoryDep) -> list[LedgerDay]:
+    """Each morning's claim ledger, rebuilt from the game's public events: running or ended,
+    for anyone. A waiting room has none yet."""
+    if isinstance(session, GameRow):
+        return ledger_days(await repository.load_events(session.game_id))
+    if isinstance(session, GameSession):
+        return ledger_days(list(session.log))
+    return []
 
 
 def _archived_status(row: GameRow, token: str, cast: list[str]) -> GameStatus:
