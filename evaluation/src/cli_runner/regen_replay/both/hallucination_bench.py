@@ -173,6 +173,22 @@ def _generation_usage(rows: list[dict]) -> dict:
             "generation_samples_measured": len(used)}
 
 
+def _reuse_verdicts(samples: list[dict], judged_path: Path) -> bool:
+    """Copy an earlier judging of exactly these samples onto them (in place), so adding an arm to a
+    run doesn't pay to judge the others again. False when there is none or any sample differs."""
+    if not judged_path.exists():
+        return False
+    judged = {(j["case_id"], j["sample"]): j for j in _read_jsonl(judged_path)}
+    key = lambda s: (s["case_id"], s["sample"])
+    if len(judged) != len(samples) or any(
+            key(s) not in judged or judged[key(s)]["units"] != s["units"] for s in samples):
+        return False
+    for s in samples:
+        j = judged[key(s)]
+        s.update({k: j[k] for k in ("unit_verdicts", "bad", "deception") if k in j})
+    return True
+
+
 def summarize(by_arm: dict[str, list[dict]], cases: dict[str, dict]) -> dict:
     summary: dict = {"arms": {}, "paired_vs_first": {}}
     case_rate: dict[str, dict[str, float]] = {}
@@ -241,9 +257,13 @@ def main() -> None:
         by_arm[arm["label"]] = _read_jsonl(gen_path)
 
     for label, samples in by_arm.items():
+        judged_path = out_dir / f"judged_{label}.jsonl"
+        if not cfg.get("rejudge") and _reuse_verdicts(samples, judged_path):
+            print(f"arm {label}: verdicts reused from {judged_path.name} (same samples; \"rejudge\": true to redo)")
+            continue
         print(f"arm {label}:")
         judge_samples(samples, cases, cfg)
-        with open(out_dir / f"judged_{label}.jsonl", "w") as f:
+        with open(judged_path, "w") as f:
             f.writelines(json.dumps(s) + "\n" for s in samples)
 
     result = {"label": cfg["label"], "run_at": datetime.now(timezone.utc).isoformat(), "config": cfg,

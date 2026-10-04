@@ -109,3 +109,18 @@ def test_a_resummarized_arm_swaps_only_the_earlier_discussion_summaries():
         {"day": 2, "summary": "old day 2"}]})
     out = _resummarized(case, state, {"g|a|1": {"summary": "new day 1", "structured": {}}})
     assert [s.summary for s in out] == ["new day 1", "Night of day 1: quiet", "old day 2"]
+
+
+def test_an_arms_earlier_verdicts_are_reused_only_for_the_same_samples(tmp_path):
+    import json
+
+    from evaluation.src.cli_runner.regen_replay.both.hallucination_bench import _reuse_verdicts
+
+    samples = [{"case_id": "c1", "sample": 0, "valid": True, "units": [{"unit": "message", "text": "hi"}]}]
+    judged = tmp_path / "judged_a.jsonl"
+    judged.write_text(json.dumps({**samples[0], "unit_verdicts": ["consistent"], "bad": False}) + "\n")
+    fresh = [dict(s) for s in samples]
+    assert _reuse_verdicts(fresh, judged) and fresh[0]["unit_verdicts"] == ["consistent"]
+    changed = [{**samples[0], "units": [{"unit": "message", "text": "bye"}]}]
+    assert not _reuse_verdicts(changed, judged) and "unit_verdicts" not in changed[0]
+    assert not _reuse_verdicts(samples, tmp_path / "missing.jsonl")
