@@ -24,6 +24,17 @@ READS_COMMIT_INSTRUCTION = (
 )
 
 
+# Day turns (discussion and vote): most bad messages in the hallucination bench misquote the record
+# (who voted for whom, who was attacked or saved) although it is all in the prompt (discussion_evidence.md
+# §6.6). Covers the message and the private note; own words are allowed so the talk stays natural.
+RECORD_CITATION_RULE = """
+Citing the record: when your message or your strategy note mentions a past vote, death or healer save,
+check it against the game master's record above (the announcements and the vote history by player)
+and keep every name and day exactly as the record has them; you may put it in your own words. If the
+record doesn't show it, don't state it as fact: at most, say which player claimed it.
+"""
+
+
 # Canonical game rules — the single source of truth for the role line-up, abilities,
 # win conditions, and flow. Composed into GAME_PREAMBLE (play prompt) AND the
 # extraction-family prompts (postgame / per-role / day-summary) so the rules can never

@@ -10,7 +10,12 @@ their win conditions make "remove an anti-village threat" wrong.
 
 from langchain_core.prompts import ChatPromptTemplate
 
-from Agents.prompts.common import GAME_PREAMBLE, READS_COMMIT_INSTRUCTION, build_system_prompt
+from Agents.prompts.common import (
+    GAME_PREAMBLE,
+    READS_COMMIT_INSTRUCTION,
+    RECORD_CITATION_RULE,
+    build_system_prompt,
+)
 from Agents.prompts.memory import DAY_VOTE_MEMORY_CONTEXT
 from Agents.prompts.roles import (
     HEALER_CORE_STRATEGY,
@@ -78,7 +83,8 @@ def _vote_template(context, closing, *, core_strategy=None, system=None):
                 # unless the arm configures a book (Agents/memory/tell_book.py).
                 "{tell_book}"
                 + READS_COMMIT_INSTRUCTION
-                + _VOTE_HEADER + context + _VOTE_TRANSCRIPT + DAY_VOTE_MEMORY_CONTEXT + closing,
+                + _VOTE_HEADER + context + _VOTE_TRANSCRIPT + DAY_VOTE_MEMORY_CONTEXT
+                + RECORD_CITATION_RULE + closing,
             ),
         ]
     )

@@ -202,3 +202,17 @@ def test_a_claim_repeated_without_its_night_merges_into_the_dated_one():
     text = _ledger(_day(2, [_claim("p5", "investigator", (0, "investigate", "p1", "wolf"))]),
                    _day(3, [_claim("p5", "investigator", (1, "investigate", "p1", "not_said"))]))
     assert text.splitlines()[1:] == ["  Night 1: investigated p1, result: wolf."]
+
+
+def test_every_day_turn_is_told_to_cite_the_record_exactly():
+    from Agents.prompts.common import RECORD_CITATION_RULE
+    from Agents.prompts.day_discuss import (HEALER_DAY_DISCUSS, INVESTIGATOR_DAY_DISCUSS, SERIAL_KILLER_DAY_DISCUSS,
+                                            VIGILANTE_DAY_DISCUSS, WOLF_DAY_DISCUSS)
+    from Agents.prompts.day_vote import (HEALER_DAY_VOTE, INVESTIGATOR_DAY_VOTE, SERIAL_KILLER_DAY_VOTE,
+                                         VIGILANTE_DAY_VOTE, VILLAGER_DAY_VOTE, WOLF_DAY_VOTE)
+
+    for template in (VILLAGER_DAY_DISCUSS, HEALER_DAY_DISCUSS, INVESTIGATOR_DAY_DISCUSS, WOLF_DAY_DISCUSS,
+                     SERIAL_KILLER_DAY_DISCUSS, VIGILANTE_DAY_DISCUSS, VILLAGER_DAY_VOTE, HEALER_DAY_VOTE,
+                     INVESTIGATOR_DAY_VOTE, WOLF_DAY_VOTE, SERIAL_KILLER_DAY_VOTE, VIGILANTE_DAY_VOTE):
+        human = template.messages[-1].prompt.template
+        assert RECORD_CITATION_RULE in human
