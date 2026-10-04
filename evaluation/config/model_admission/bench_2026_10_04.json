@@ -1,0 +1,22 @@
+{
+  "label": "admission_bench_2026_10_04",
+  "dataset": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+  "n": 2,
+  "workers": 3,
+  "arms": [
+    {
+      "label": "flashlite35_medium",
+      "model": "gemini-3.5-flash-lite",
+      "env": {"WW_DISCUSSION_PROMPT": "v2"},
+      "memory": "none"
+    },
+    {
+      "label": "deepseek_v41_flash_nothink",
+      "model": "deepseek/deepseek-flash",
+      "env": {"WW_DISCUSSION_PROMPT": "v2", "GOOGLE_GENAI_THINKING_LEVEL": "minimal"},
+      "memory": "none"
+    }
+  ],
+  "slices": ["curated", "pinned", "control"],
+  "notes": "Model admission bench (two samples per case). Reference: 3.5 flash-lite at its game level (medium, GAME_THINKING_BY_MODEL), regenerated on today's code. DeepSeek V4.1 Flash with thinking off (forced tool call; its thinking mode rejects forced tool use). Sunday 2026-10-04: DeepSeek off-peak all day. Candidate arms (Qwen3.8 Flash, GLM-5.3 Flash, MiniMax M3, GPT-6 Luna) are added once they pass eval-model-admission."
+}
