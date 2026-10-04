@@ -466,6 +466,18 @@ graph state's models against the allowlist. `:prev` for the server is now `2d8ba
 now say day 1 has no vote, and day 1's moderator line reads "There is no vote on day 1, so no one
 voted and no one is eliminated" instead of a "vote result" with no votes: agents in game 48e56d44
 cited a day-1 abstention that never happened. `:prev` for the server is now `ae64e8ed`.
+· **2026-10-04 server at `1964f993`** (server image only; branch pushed first; clean detached
+worktree). Two player-key rows join the model menu after admission and the hallucination bench:
+GPT-6 Luna (medium reasoning, json_schema output; 6% bad bench samples against 3.5 flash-lite
+medium's 9%) and GLM-5.3 Flash (no thinking, json_mode; 32%, a cheap option). Shipped with the
+fix they depend on: OpenAI, OpenRouter, xAI and NVIDIA models had ignored a player's own key and
+used the server's, so a player's game would have billed the server and any key passed the check
+(`8cd83ba7`; never exploitable before, since no such row was on the menu). No migration. Pre-flight
+in the new image: both rows, their calling modes, thinking levels and prices resolve, and a
+player's OpenRouter key reaches the client. Smoke: `/api` health, models (both rows, `needs_key`
+true), replays, characters, `/`, `/play`, `/rooms`, `/replays` and an old replay page all 200; the
+replay API carries `cost_usd` 0.5151 and `avg_call_seconds` 5.13 for game 48e56d44. `:prev` for
+the server is now `5441a564`.
 
 **P4 — deploy + polish.** Caddy site (same-origin `/api`), HTTPS + `Secure` cookie flag on ·
 production compose (Postgres + `alembic upgrade head` before first boot; one `WW_POSTGRES_DSN`
