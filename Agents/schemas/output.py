@@ -341,14 +341,14 @@ class DaySummaryOutputV3(LenientToolCallModel):
 class ClaimedNightAction(LenientToolCallModel):
     night: int = Field(description="The night the action happened; 0 if the player did not say")
     action: Literal["investigate", "protect", "shoot", "kill"] = Field(
-        description="What the player says they did that night",
+        description="What the player says they already did that night (not a plan for a coming night)",
     )
     target: str = Field(description="Player ID the action was on")
     result: CLAIMED_RESULT_ENUM = Field(
         description=(
             "What the player says came of it. investigate: the role they say they found, or "
             "not_a_wolf. protect: saved_from_attack or no_attack. shoot / kill: died or survived. "
-            "not_said if they did not say."
+            "not_said if they did not say, or said it only vaguely."
         ),
     )
 
