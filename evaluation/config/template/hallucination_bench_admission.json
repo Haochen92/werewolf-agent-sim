@@ -1,0 +1,26 @@
+{
+  "label": "admission_example",
+  "dataset": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+  "n": 2,
+  "workers": 3,
+  "arms": [
+    {
+      "label": "default",
+      "model": "gemini-3.5-flash-lite",
+      "env": {"WW_DISCUSSION_PROMPT": "v2"},
+      "memory": "none"
+    },
+    {
+      "label": "candidate",
+      "model": "deepseek/deepseek-v4-pro",
+      "env": {
+        "WW_DISCUSSION_PROMPT": "v2",
+        "GOOGLE_GENAI_THINKING_LEVEL": "medium",
+        "LLM_STRUCTURED_MODE": "json_mode"
+      },
+      "memory": "none"
+    }
+  ],
+  "slices": ["curated", "pinned", "control"],
+  "notes": "Model admission arm: two samples per case (178 samples per arm) instead of the usual three, enough to catch a model clearly worse than the default, not to rank close models. No resummarize, so every arm reads the same day summaries and only the seat model differs. The default arm plays at its own game thinking level (GAME_THINKING_BY_MODEL); set the candidate's thinking level and calling mode from its admission record (eval-model-admission)."
+}

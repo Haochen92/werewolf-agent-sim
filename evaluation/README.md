@@ -282,8 +282,11 @@ exercises only one, e.g. `turn_eval --replay none` is judge-only):
 
 **Ops at `cli_runner/` root** (not frozen-case evals): the discussion-tagger validation runner
 `discussion_tagger_eval` (`eval-tagger`, modes `accuracy`/`skill`/`deleak`), the diagnosis-sampler CLI
-`diagnosis/case_sampler` (`eval-case-sample`, command wiring over the `diagnosis/` logic package), and
-`graduate_run` (`eval-graduate`).
+`diagnosis/case_sampler` (`eval-case-sample`, command wiring over the `diagnosis/` logic package),
+`graduate_run` (`eval-graduate`), and `model_admission` (`eval-model-admission`: the checks a model
+passes before it joins the game's model menu — structured output under each calling mode, the
+recommended mode, the provider's cache floor and the cached share of real turns; logic in
+`evaluation/src/model_admission/`, configs in `evaluation/config/model_admission/`).
 
 The frozen-set builders live in **`data/builders/`** (`agent_decision`/`extraction`/`dedup`/`hallucination_bench`, the
 `eval-build-*` CLIs) — they write the read side, so they sit with `data/`, not `cli_runner/`.
