@@ -444,6 +444,18 @@ already at `0009` (applied for the local server). The images running before this
 hours old and newer than the `9ae5056` tags, are kept as `:prev`. Pre-flight in the new server
 image: the thinking levels and the rescue table resolve. Smoke: `/api` health, models,
 replays, characters, `/`, `/play`, `/rooms`, `/replays` and an old replay page all 200.
+· **2026-10-04 both containers rebuilt at `2d8bab5e`** (branch pushed first; clean detached
+worktree, `docker build`, `compose up -d --no-build`). Server: day summary v4.1 (a plan for
+tonight is recorded apart from actions already taken, with the player's reason when they differ;
+a vague result is "not stated"; accusation fields at most 30 words), the claim ledger's same-night
+double claims and plans, `GET /games/{id}/ledger`, and `day_summary_structured` made public; plus
+the per-game usage record (`games.usage`), dated price table, calling modes per model and the
+model menu's mean game cost. Frontend: the File's Record tab (opens without Reveal), the
+transcript's one-line pointer to it, and the replay slate's cost line and grouped model menu.
+Migration `0010` was already applied to the shared `ww-postgres` (nullable column, so the old
+server ran fine on it). The `60c7cc0b` images are kept as `:prev`. Smoke: `/api` health, models,
+replays, characters, `/`, `/play`, `/rooms`, `/replays`, an old replay page and the ledger
+endpoint (game 140610ad: mornings 2 and 3) all 200; the Record tab renders the real ledger.
 
 **P4 — deploy + polish.** Caddy site (same-origin `/api`), HTTPS + `Secure` cookie flag on ·
 production compose (Postgres + `alembic upgrade head` before first boot; one `WW_POSTGRES_DSN`
