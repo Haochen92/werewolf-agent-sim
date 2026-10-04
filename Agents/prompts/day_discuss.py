@@ -15,7 +15,6 @@ from Agents.prompts.common import (
     DISCUSSION_PROMPT_V2,
     GAME_PREAMBLE,
     READS_COMMIT_INSTRUCTION,
-    RECORD_CITATION_RULE,
     build_system_prompt,
 )
 from Agents.prompts.memory import DAY_DISCUSSION_MEMORY_CONTEXT
@@ -186,8 +185,7 @@ def _discuss_template(core_strategy, framing, context, *, trailer=""):
                 + _FIRING_BRIEF
                 + DAY_DISCUSSION_MEMORY_CONTEXT
                 + DISCUSSION_SILENCE_RULE
-                + ENGAGE_WITH_DISCUSSION_RULE
-                + RECORD_CITATION_RULE,
+                + ENGAGE_WITH_DISCUSSION_RULE,
             ),
         ]
     )

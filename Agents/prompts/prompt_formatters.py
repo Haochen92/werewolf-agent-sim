@@ -1,5 +1,3 @@
-import re
-
 from Agents.rules.board_clocks import alive_role_counts
 from Agents.rules.claim_ledger import format_claim_ledger, revealed_tag
 from Agents.schemas import RetrievedObservation, RetrievedStrategyPoint
@@ -73,42 +71,12 @@ def format_day_channel_for_day(messages: list[DayChannel], current_day: int, vie
     return format_day_channel([m for m in messages if m.day == current_day], viewer)
 
 
-_VOTE_HEADER = re.compile(r"^Here's the vote result for day (\d+):$")
-_BALLOT_LINE = re.compile(r"^\s+(\S+) voted (?:to eliminate (\S+)|to (abstain)|for (\S+))\s*$")
-
-
-def format_vote_history(summaries: list[DaySummary]) -> str:
-    """Index published engine ballots by voter, including the legacy 'voted for' wording.
-
-    Callers supply only visible days. Never infer an abstention from an absent ballot, or parse
-    a player's claims as ballots. The original announcements remain available alongside this index.
-    """
-    history: dict[str, list[str]] = {}
-    for s in sorted(summaries, key=lambda s: s.day):
-        if s.source != "game_master":
-            continue
-        lines = s.summary.strip().splitlines()
-        header = _VOTE_HEADER.fullmatch(lines[0]) if lines else None
-        if not header or int(header.group(1)) != s.day:
-            continue
-        for line in lines[1:]:
-            ballot = _BALLOT_LINE.fullmatch(line)
-            if not ballot:
-                continue
-            voter, target, abstain, legacy_target = ballot.groups()
-            target = target or abstain or legacy_target
-            action = "abstained" if target == "abstain" else f"voted to eliminate {target}"
-            history.setdefault(voter, []).append(f"day {s.day} {action}")
-    return "\n".join(f"{voter}: {'; '.join(history[voter])}." for voter in sorted(history))
-
-
 def format_day_summaries(summaries: list[DaySummary], before_day: int | None = None,
                          dead_roster: list[DeathRecord] | None = None,
                          cast_role_counts: dict[str, int] | None = None) -> str:
-    """Earlier days, as agents see them, in three levels of decreasing authority:
+    """Earlier days, as agents see them, in three blocks of decreasing authority:
 
-    1. the game master's record: the exact night and vote announcements, then a per-player
-       index of the published ballots;
+    1. the game master's record: the exact night and vote announcements;
     2. the claims made in the day discussion: every role claim and claimed night action, per
        player, across days, with exact checks against the record (Agents/rules/claim_ledger.py);
     3. the accusations: the summariser's account of who accused whom, the defence and disputes.
@@ -126,9 +94,6 @@ def format_day_summaries(summaries: list[DaySummary], before_day: int | None = N
         "-- The game master's record (exact; it outranks anything a player or a summary says) --\n"
         + ("\n".join(f"[Day {s.day}] {s.summary.strip()}" for s in record) or "Nothing announced yet.")
     ]
-    votes = format_vote_history(record)
-    if votes:
-        blocks.append("-- Vote history by player (from the game master's published ballots) --\n" + votes)
     claims = format_claims_on_record(selected, dead_roster, cast_role_counts)
     if claims:
         blocks.append(
