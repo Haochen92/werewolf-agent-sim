@@ -76,6 +76,40 @@ def test_two_targets_named_for_one_night_on_the_same_day_break_the_rules():
     assert "changed on day 4; earlier: Night 2: investigated p2" in text and "Rules" not in text
 
 
+def _planning(player, role, *plans, actions=()):
+    claim = _claim(player, role, *actions)
+    claim["planned_actions"] = [{"action": a, "target": t} for a, t in plans]
+    return claim
+
+
+def test_a_plan_is_set_beside_what_the_player_later_says_they_did():
+    kept = _ledger(_day(2, [_planning("p6", "investigator", ("investigate", "p2"))]),
+                   _day(3, [_claim("p6", "investigator", (2, "investigate", "p2", "not_a_wolf"))]))
+    assert kept.splitlines()[1] == "  Night 2: investigated p2, result: not a wolf (planned on day 2)."
+    switched = _ledger(_day(2, [_planning("p6", "investigator", ("investigate", "p2"))]),
+                       _day(3, [_claim("p6", "investigator", (2, "investigate", "p9", "healer"))]))
+    assert switched.splitlines()[1] == ("  Night 2: investigated p9, result: healer. "
+                                        "On day 2 said they planned to investigate p2.")
+    # the player's own reason travels with it; the line states facts, never a broken promise
+    reasoned = _claim("p6", "investigator", (2, "investigate", "p9", "healer"))
+    reasoned["night_actions"][0]["reason"] = "they named p2 as a decoy."
+    text = _ledger(_day(2, [_planning("p6", "investigator", ("investigate", "p2"))]), _day(3, [reasoned]))
+    assert text.endswith("On day 2 said they planned to investigate p2; reason given on day 3: they named p2 as a decoy.")
+    assert not any(word in text for word in ("promise", "broke", "instead"))
+
+
+def test_a_plan_never_reported_on_stands_alone_and_a_protected_death_is_checked():
+    text = _ledger(_day(2, [_planning("p5", "healer", ("protect", "p1"))]),
+                   _gm("Night of day 2: p1 was killed by the wolves last night. They were a villager.", 2),
+                   dead=[DeathRecord(player="p1", role="villager", day=2, phase="night")])
+    assert text.splitlines()[1] == "  Night 2: on day 2 said they planned to protect p1. Record: p1 died that night."
+
+
+def test_agents_are_told_a_day_plan_binds_no_one():
+    text = format_day_summaries([_day(2, [_planning("p6", "investigator", ("investigate", "p2"))])], before_day=3)
+    assert "a plan said in the day binds no one" in text
+
+
 def test_older_summaries_still_read_into_the_ledger():
     v3 = DaySummary(day=2, summary="(text)", structured={"role_claims": [
         {"player": "p3", "claimed_role": "investigator", "status": "new", "evidence": "unverified",

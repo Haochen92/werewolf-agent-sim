@@ -4,6 +4,8 @@ across days, with exact checks against the game master's record.
 The day summariser only transcribes what was claimed (DaySummaryOutputV4.role_claims). The rest is
 code: each player's history is kept (a changed claim keeps the earlier one), and each claim is
 checked against engine facts: revealed roles, announced saves and deaths, the cast and the rules.
+A plan said in the day for that night is set beside what the player later says they did, as fact
+("on day 2 said they planned to investigate player_2"), never as a broken promise.
 The ledger is never stored. Every prompt rebuilds it from the day summaries and the dead roster, so
 a role revealed overnight shows up in the next prompt's checks.
 
@@ -26,6 +28,7 @@ _NIGHT = re.compile(r"^Night of day (\d+):")
 
 _VERBS = {"investigate": "investigated", "protect": "protected", "shoot": "shot", "kill": "attacked"}
 _NOUNS = {"investigate": "investigation", "protect": "protection", "shoot": "shot", "kill": "kill"}
+PLAN_VERBS = {"investigate": "investigate", "protect": "protect", "shoot": "shoot", "kill": "attack"}
 _SAYS = {
     "saved_from_attack": "says they saved them from an attack",
     "no_attack": "says there was no attack",
@@ -48,6 +51,8 @@ class ClaimedAction:
     """What the player said about the same night before changing it, oldest first."""
     also: list[str] = field(default_factory=list)
     """Other targets the player named for the same action and night on the same day."""
+    reason: str = ""
+    """The player's reason for doing something other than what they planned, if they gave one."""
 
 
 @dataclass
@@ -56,6 +61,8 @@ class PlayerClaims:
     """(day, role, "claimed" | "retracted"), one entry per change; a repeated claim adds nothing."""
     actions: dict[tuple, ClaimedAction] = field(default_factory=dict)
     """Keyed by (night, action), or (0, action, target) when no night was given."""
+    plans: dict[tuple[int, str], str] = field(default_factory=dict)
+    """(night, action) -> target the player said on that day they would act on that night."""
 
     @property
     def current_role(self) -> str | None:
@@ -116,7 +123,10 @@ def build_claim_ledger(discussion: list[DaySummary]) -> dict[str, PlayerClaims]:
             for a in actions:
                 if a.get("target"):
                     _add_action(p, ClaimedAction(int(a.get("night") or 0), a.get("action", ""), a["target"],
-                                                 a.get("result", ""), s.day))
+                                                 a.get("result", ""), s.day, reason=a.get("reason") or ""))
+            for plan in c.get("planned_actions") or []:  # said on day N about night N
+                if plan.get("action") in PLAN_VERBS and plan.get("target"):
+                    p.plans[(s.day, plan["action"])] = plan["target"]
     return ledger
 
 
@@ -136,6 +146,7 @@ def _add_action(p: PlayerClaims, new: ClaimedAction) -> None:
     key = (new.night, new.action) if new.night else (0, new.action, new.target)
     old = p.actions.get(key)
     if old and _same_claim(old, new):
+        old.reason = old.reason or new.reason
         return  # a repeat
     if old and new.action and old.day == new.day and old.target != new.target:
         new.earlier, new.also = old.earlier, [*old.also, action_text(old)]  # two targets named the same day
@@ -234,14 +245,35 @@ def format_claim_ledger(summaries: list[DaySummary], dead_roster=(), cast_role_c
     lines = []
     for player, p in ledger.items():
         lines.append(" ".join([f"{player}: {role_history(p)}.", *role_checks(player, p, ledger, facts)]))
-        for a in sorted(p.actions.values(), key=lambda a: (a.night or 99, a.day)):
+        plans = dict(p.plans)
+        entries = []
+        for a in p.actions.values():
             text = "  " + action_text(a)
             if a.earlier:
                 text += f" (changed on day {a.day}; earlier: {'; '.join(a.earlier)})"
             if a.also:
                 text += f" (on day {a.day} also named: {'; '.join(a.also)})"
-            lines.append(" ".join([text + ".", *action_checks(player, a, facts)]))
+            planned = plans.pop((a.night, a.action), None) if a.night else None
+            if planned == a.target:
+                text += f" (planned on day {a.night})"
+            notes = [text + "."]
+            if planned and planned != a.target:
+                notes.append(f"On day {a.night} said they planned to {PLAN_VERBS[a.action]} {planned}"
+                             + (f"; reason given on day {a.day}: {a.reason.rstrip('.')}." if a.reason else "."))
+            entries.append(((a.night or 99, a.day), " ".join([*notes, *action_checks(player, a, facts)])))
+        for (night, action), target in plans.items():  # a plan the player never said they carried out
+            entries.append(((night, night), " ".join([f"  Night {night}: on day {night} said they planned to "
+                                                      f"{PLAN_VERBS[action]} {target}.", *plan_checks(action, target, night, facts)])))
+        lines += [text for _, text in sorted(entries, key=lambda e: e[0])]
     return "\n".join(lines)
+
+
+def plan_checks(action: str, target: str, night: int, facts: RecordFacts) -> list[str]:
+    """A planned protection whose target died that night: the healer blocks any night kill."""
+    death = facts.dead.get(target)
+    if action == "protect" and death and death.phase == "night" and death.day == night:
+        return [f"Record: {target} died that night."]
+    return []
 
 
 def revealed_tag(player: str, dead: dict[str, DeathRecord]) -> str:

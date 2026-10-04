@@ -98,7 +98,8 @@ def format_day_summaries(summaries: list[DaySummary], before_day: int | None = N
     if claims:
         blocks.append(
             "-- Claims made in the day discussion (claims, not facts; a note starting \"Record:\" or "
-            "\"Rules:\" is an exact check by the game master) --\n" + claims
+            "\"Rules:\" is an exact check by the game master; a plan said in the day binds no one: a player "
+            "may choose a different target at night) --\n" + claims
         )
     blocks.append(
         "-- Accusations in the day discussion (a summariser's account of what players argued; "
