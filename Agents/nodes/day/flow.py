@@ -2,8 +2,7 @@
 
 Discussion is sequential — route_speaker is the scheduler hop that picks the next
 speaker (or ends discussion) and the graph self-loops back through day_scheduler.
-Voting: the seated humans vote first (fan_out_vote), each at their own prompt, then
-fan_out_agent_votes dispatches every agent's vote node at once.
+Voting is concurrent — fan_out_vote dispatches every survivor's vote node at once.
 The per-role actor nodes these dispatch to (via Send) live in day/actors.py.
 """
 
@@ -210,14 +209,12 @@ def fan_out_day(
     state: DayGraphState,
     phase: Literal["discuss", "vote"],
     allow_abstain: bool = False,
-    only: Literal["human", "agent"] | None = None,
 ):
     """Build a concurrent Send to the generic {phase} node for every surviving acting player.
 
     The shared fan-out used for voting (discussion now goes one speaker at a time
     via route_speaker). Same role-gated private-field rule as build_speaker_send:
     wolf roster / investigator / vigilante results attach only to their own role.
-    `only` keeps one kind of player: the vote asks the humans first, then the agents.
     """
     concurrent_nodes = []
     surviving_players = seat_order(state["surviving_villagers"] + state["surviving_wolves"])
@@ -247,8 +244,6 @@ def fan_out_day(
         is_human = player in state["human_players"]
         if role not in _DAY_ACTING_ROLES:
             continue
-        if only is not None and (only == "human") != is_human:
-            continue
 
         payload = base_payload(player, role, is_human)
         if role == "wolf":
@@ -274,29 +269,15 @@ def fan_out_day(
     return concurrent_nodes
 
 
-def _allow_abstain(state: DayGraphState, config: RunnableConfig) -> bool:
-    """Abstain is offered only while abstain is enabled and the no-lynch streak is under
-    the force cap."""
+def fan_out_vote(state: DayGraphState, config: RunnableConfig):
+    """Router from START_VOTING: fan every survivor out to their vote node. Abstain is
+    offered only while abstain is enabled and the no-lynch streak is under the force cap."""
     game_config = game_config_from_runnable(config)
-    return (
+    allow_abstain = (
         game_config.abstain_enabled
         and state.get("no_lynch_streak", 0) < game_config.no_lynch_force_after
     )
-
-
-def fan_out_vote(state: DayGraphState, config: RunnableConfig):
-    """Router from START_VOTING: the seated humans vote first, each at their own prompt, so
-    the prompt opens the vote instead of arriving after the agents' ballots have dropped
-    (2026-10-06); the agents follow from VOTE_AGENTS. With no human alive the agents vote at
-    once from here."""
-    humans = fan_out_day(state, "vote", _allow_abstain(state, config), only="human")
-    return humans or fan_out_agent_votes(state, config)
-
-
-def fan_out_agent_votes(state: DayGraphState, config: RunnableConfig):
-    """Router from VOTE_AGENTS (and from START_VOTING when no human is seated): every agent
-    survivor's vote node at once, or straight to the count when none is left."""
-    return fan_out_day(state, "vote", _allow_abstain(state, config), only="agent") or ["COLLECT_VOTES"]
+    return fan_out_day(state, "vote", allow_abstain)
 
 
 def summarize_day_discussion(
@@ -392,11 +373,6 @@ def route_after_day_summary(
 
 def start_voting(state: DayGraphState):
     """No-op entry node for the voting phase (the fan-out happens on its out-edge)."""
-    return {}
-
-
-def vote_agents(state: DayGraphState):
-    """No-op barrier where the humans' ballots rejoin before the agents are fanned out."""
     return {}
 
 

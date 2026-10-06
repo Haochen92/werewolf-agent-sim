@@ -34,14 +34,12 @@ from Agents.nodes import (
 )
 from Agents.nodes import (
     collect_votes,
-    fan_out_agent_votes,
     fan_out_vote,
     day_scheduler,
     route_after_day_summary,
     start_voting,
     summarize_day_discussion,
-    route_speaker,
-    vote_agents,
+    route_speaker
 )
 from Agents.state import DayGraphState
 from Agents.tracing import GraphContext
@@ -50,15 +48,12 @@ from Agents.tracing import GraphContext
 def build_day_graph():
     """Wire the day topology: START -> SCHEDULE -(route_speaker)-> discuss (which loops back
     to SCHEDULE) | SUMMARIZE_DAY_DISCUSSION -(route_after_day_summary)-> START_VOTING | END;
-    START_VOTING fans the seated humans out to vote_human -> VOTE_AGENTS fans the agents out
-    to vote -> COLLECT_VOTES -> END (with no human seated, START_VOTING fans the agents out
-    itself). The humans go first so their prompt opens the vote (2026-10-06)."""
+    START_VOTING fans the survivors out to vote -> COLLECT_VOTES -> END."""
     day_graph = StateGraph(DayGraphState, context_schema=GraphContext)
 
     day_graph.add_node("SCHEDULE", day_scheduler)
     day_graph.add_node("SUMMARIZE_DAY_DISCUSSION", summarize_day_discussion)
     day_graph.add_node("START_VOTING", start_voting)
-    day_graph.add_node("VOTE_AGENTS", vote_agents)
     day_graph.add_node("COLLECT_VOTES", collect_votes)
 
     day_graph.add_node("discuss", discuss)
@@ -86,12 +81,9 @@ def build_day_graph():
         route_after_day_summary,
         ["START_VOTING", END],
     )
-    day_graph.add_conditional_edges(
-        "START_VOTING", fan_out_vote, ["vote", "vote_human", "COLLECT_VOTES"]
-    )
-    day_graph.add_edge("vote_human", "VOTE_AGENTS")
-    day_graph.add_conditional_edges("VOTE_AGENTS", fan_out_agent_votes, ["vote", "COLLECT_VOTES"])
+    day_graph.add_conditional_edges("START_VOTING", fan_out_vote, ["vote", "vote_human"])
     day_graph.add_edge("vote", "COLLECT_VOTES")
+    day_graph.add_edge("vote_human", "COLLECT_VOTES")
     day_graph.add_edge("COLLECT_VOTES", END)
 
     return day_graph
