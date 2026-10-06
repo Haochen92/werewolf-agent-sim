@@ -10,6 +10,7 @@ const row = (over: Partial<ModelRow>): ModelRow => ({
   is_default: false,
   needs_key: true,
   priced_games: 0,
+  priced_memory_games: 0,
   ...over,
 });
 
