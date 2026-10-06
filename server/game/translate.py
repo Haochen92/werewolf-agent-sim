@@ -456,6 +456,9 @@ class Translator:
     def _start_voting(self, delta):
         return [self._emit(ev.PhaseChange, phase="voting")]
 
+    # The barrier between the seated humans' ballots and the agents' (humans vote first).
+    silent_node("VOTE_AGENTS")
+
     @node("vote", writes={"day_votes", "agent_strategies"})
     def _vote(self, delta):
         self._buffer_day_votes(delta)

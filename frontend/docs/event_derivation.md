@@ -45,6 +45,8 @@
 
 **START_VOTING** — public `phase_change` (self-disambiguating: anchored on the routed-to node).
 
+**VOTE_AGENTS** — nothing. The barrier where the seated humans' ballots rejoin before the agents are fanned out: the humans vote first, so the seat's `input_request` opens the vote scene instead of landing after the agents' ballots (2026-10-06).
+
 **vote · vote_human**
 
 | Tier | Events |
