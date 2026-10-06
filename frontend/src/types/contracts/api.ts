@@ -31,7 +31,8 @@ export interface paths {
     /**
      * The served-game model menu (tested models only), and what the house will pay for
      * @description Every tested model with its rescue, whether the house pays for it, which one is the
-     *     default right now, and what a finished game on it has cost on average; plus the house's
+     *     default right now, and what a finished game on it has cost on average (memory off and
+     *     memory on apart); plus the house's
      *     purse for today, so the client can say "house pays, 3 left" or "your key needed" before
      *     the player submits.
      */
@@ -1095,6 +1096,13 @@ export interface components {
        * @default 0
        */
       priced_games: number;
+      /** Avg Cost Memory Usd */
+      avg_cost_memory_usd?: number | null;
+      /**
+       * Priced Memory Games
+       * @default 0
+       */
+      priced_memory_games: number;
     };
     /**
      * ModelsMenu

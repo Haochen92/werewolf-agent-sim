@@ -98,13 +98,15 @@ async def test_usage_is_saved_at_most_every_30_seconds_and_always_at_the_end(qui
     assert repo.updates[-1]["usage"]["buckets"][0]["calls"] == 2
 
 
-def test_the_model_menu_averages_only_games_that_can_be_priced():
+def test_the_model_menu_averages_only_games_that_can_be_priced_memory_off_and_on_apart():
     from server.storage.replay_service import average_costs
 
     usage = lambda calls: {"buckets": [
         {"model": "deepseek-v4-pro", "hour": "2026-10-04T12:00:00+00:00", "calls": calls, "failed": 0,
          "input": 1_000_000 * calls, "cached": 0, "output": 0, "reasoning": 0, "seconds": 1.0}]}
     unpriced = {"buckets": [{**usage(1)["buckets"][0], "model": "unpriced-model"}]}
-    rows = [("deepseek/deepseek-v4-pro", usage(1)), ("deepseek/deepseek-v4-pro", usage(3)),
-            ("deepseek/deepseek-v4-pro", None), ("deepseek/deepseek-v4-pro", unpriced)]
-    assert average_costs(rows) == {"deepseek/deepseek-v4-pro": (round((0.66 + 1.98) / 2, 4), 2)}
+    rows = [("deepseek/deepseek-v4-pro", False, usage(1)), ("deepseek/deepseek-v4-pro", False, usage(3)),
+            ("deepseek/deepseek-v4-pro", False, None), ("deepseek/deepseek-v4-pro", False, unpriced),
+            ("deepseek/deepseek-v4-pro", True, usage(5))]  # memory on: its own mean
+    assert average_costs(rows) == {("deepseek/deepseek-v4-pro", False): (round((0.66 + 1.98) / 2, 4), 2),
+                                   ("deepseek/deepseek-v4-pro", True): (3.3, 1)}

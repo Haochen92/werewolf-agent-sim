@@ -298,7 +298,9 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
                 maxDropdownHeight={420}
                 renderOption={({ option }) => {
                   const r = menu?.models.find((m) => m.model === option.value);
-                  const price = formatCost(r?.avg_cost_usd);
+                  // a memory-on game makes more calls, so its mean is kept apart (2026-10-06)
+                  const price = formatCost(memory ? r?.avg_cost_memory_usd : r?.avg_cost_usd);
+                  const priced = memory ? r?.priced_memory_games : r?.priced_games;
                   return (
                     <span className={classes.option}>
                       <span className={classes.optionHead}>
@@ -306,7 +308,7 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
                         {price ? (
                           <span
                             className={classes.optionPrice}
-                            title={`The mean of ${r?.priced_games} finished games`}
+                            title={`The mean of ${priced} finished games with memory ${memory ? 'on' : 'off'}`}
                           >
                             ≈ {price} a game
                           </span>

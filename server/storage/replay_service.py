@@ -32,15 +32,19 @@ def _summary(row: GameRow) -> ReplayBase:
     })
 
 
-def average_costs(rows: list[tuple[str, dict | None]]) -> dict[str, tuple[float, int]]:
-    """Per model, the mean cost of the games that have one, and how many that is. A game with
-    no usage, or with a model the price table cannot price, is left out rather than counted."""
-    costs: dict[str, list[float]] = {}
-    for model, usage in rows:
+def average_costs(
+    rows: list[tuple[str, bool, dict | None]],
+) -> dict[tuple[str, bool], tuple[float, int]]:
+    """Per model and memory setting, the mean cost of the games that have one, and how many
+    that is. A memory-on game makes more calls (retrieval, extraction) and so costs more, so
+    the two means are kept apart (owner, 2026-10-06). A game with no usage, or with a model
+    the price table cannot price, is left out rather than counted."""
+    costs: dict[tuple[str, bool], list[float]] = {}
+    for model, memory, usage in rows:
         cost = game_cost(usage)
         if model and cost is not None:
-            costs.setdefault(model, []).append(cost)
-    return {m: (round(sum(c) / len(c), 4), len(c)) for m, c in costs.items()}
+            costs.setdefault((model, bool(memory)), []).append(cost)
+    return {k: (round(sum(c) / len(c), 4), len(c)) for k, c in costs.items()}
 
 
 class ReplayArchiveNotConfigured(RuntimeError):
@@ -78,20 +82,21 @@ class ReplayService:
             rows = (await session.execute(stmt)).scalars().all()
         return [_summary(row) for row in rows]
 
-    async def average_costs(self, recent: int = 500) -> dict[str, tuple[float, int]]:
-        """Mean game cost per model over the most recent ``recent`` completed games with usage
-        recorded (the model menu shows it). Empty when storage is off."""
+    async def average_costs(self, recent: int = 500) -> dict[tuple[str, bool], tuple[float, int]]:
+        """Mean game cost per model and memory setting over the most recent ``recent``
+        completed games with usage recorded (the model menu shows it). Empty when storage
+        is off."""
         if not self._database.configured:
             return {}
         stmt = (
-            select(GameRow.model, GameRow.usage)
+            select(GameRow.model, GameRow.memory, GameRow.usage)
             .where(*_LISTED, GameRow.usage.is_not(None))
             .order_by(GameRow.finished_at.desc())
             .limit(recent)
         )
         async with self._database.session() as session:
             rows = (await session.execute(stmt)).all()
-        return average_costs([(model, usage) for model, usage in rows])
+        return average_costs([(model, memory, usage) for model, memory, usage in rows])
 
     async def count_replays(self) -> int:
         """How many games the list holds in all, across every page: the "N games" a

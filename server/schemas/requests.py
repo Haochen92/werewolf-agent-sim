@@ -39,10 +39,15 @@ class ModelRow(BaseModel):
     not house-funded, or the house is off, or today's house games are used up. The same
     rule the door applies, said in advance so the client can hold the submit."""
     avg_cost_usd: float | None = None
-    """The mean cost of a finished game on this model, from the games that recorded their
-    tokens (server/game/usage.py). None until one has."""
+    """The mean cost of a finished memory-off game on this model, from the games that
+    recorded their tokens (server/game/usage.py). None until one has."""
     priced_games: int = 0
-    """How many finished games ``avg_cost_usd`` is the mean of."""
+    """How many finished memory-off games ``avg_cost_usd`` is the mean of."""
+    avg_cost_memory_usd: float | None = None
+    """The same mean over memory-on games, which make more calls (retrieval, extraction)
+    and so cost more; the menu shows it when the player turns memory on. None until one has."""
+    priced_memory_games: int = 0
+    """How many finished memory-on games ``avg_cost_memory_usd`` is the mean of."""
 
 
 

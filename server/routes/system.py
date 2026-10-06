@@ -21,7 +21,8 @@ async def health_check() -> dict:
 )
 async def supported_models(house: House, replays: ReplayServiceDep) -> ModelsMenu:
     """Every tested model with its rescue, whether the house pays for it, which one is the
-    default right now, and what a finished game on it has cost on average; plus the house's
+    default right now, and what a finished game on it has cost on average (memory off and
+    memory on apart); plus the house's
     purse for today, so the client can say "house pays, 3 left" or "your key needed" before
     the player submits."""
     status = await house.status()
@@ -32,8 +33,10 @@ async def supported_models(house: House, replays: ReplayServiceDep) -> ModelsMen
                      house_funded=row.house_funded, is_default=(model == status.default_model),
                      needs_key=(not row.house_funded or not status.enabled
                                 or status.remaining <= 0),
-                     avg_cost_usd=costs.get(model, (None, 0))[0],
-                     priced_games=costs.get(model, (None, 0))[1])
+                     avg_cost_usd=costs.get((model, False), (None, 0))[0],
+                     priced_games=costs.get((model, False), (None, 0))[1],
+                     avg_cost_memory_usd=costs.get((model, True), (None, 0))[0],
+                     priced_memory_games=costs.get((model, True), (None, 0))[1])
             for model, row in SUPPORTED_GAME_MODELS.items()
         ],
         house=HouseFunding(enabled=status.enabled, games_per_day=status.games_per_day,
