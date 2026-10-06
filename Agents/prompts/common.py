@@ -1,10 +1,10 @@
 import os
 
 # The discussion-evidence prompt pass (evidence/game_play_enhancement/discussion_evidence.md §3):
-# WW_DISCUSSION_PROMPT=v2 turns on the turn-taking fact, the evil claiming option, the shorter
-# message target and the summary's evidence-focused "drivers" field. Off by default; the
-# current prompts stay byte-identical so the two can be compared on one commit.
-DISCUSSION_PROMPT_V2 = os.environ.get("WW_DISCUSSION_PROMPT") == "v2"
+# the turn-taking fact, the evil claiming option and the shorter message target (40-80 words).
+# The default since 2026-10-06 (production had run it since 2026-10-03 through the env var);
+# WW_DISCUSSION_PROMPT=v1 keeps the earlier prompts (the 120-word cap) for a comparison.
+DISCUSSION_PROMPT_V2 = os.environ.get("WW_DISCUSSION_PROMPT", "v2") != "v1"
 
 
 def build_system_prompt(*sections: str) -> str:
@@ -33,7 +33,7 @@ GAME_RULES = """Team composition (three sides):
 - 3 Villagers (no special abilities)
 - 2 Wolves (know each other, secretly kill one player each night) — they win as a team
 - 1 Healer (each night may protect one player from any night kill — by the wolves, the serial killer or the vigilante;
-    cannot protect themselves) — village side
+    cannot protect themselves; protecting is never used up — the healer may protect every night) — village side
 - 1 Investigator (each night may learn one player's true role) — village side
 - 1 Vigilante (village side; each night may shoot one player, but has only a few bullets for the whole game)
 - 1 Serial Killer (works ALONE against everyone; kills one player each night, cannot be killed at night,

@@ -1,8 +1,9 @@
-"""WW_DISCUSSION_PROMPT=v2 (evidence/game_play_enhancement/discussion_evidence.md §3).
+"""WW_DISCUSSION_PROMPT (evidence/game_play_enhancement/discussion_evidence.md §3).
 
-The switch is read once at import, so each setting runs in a fresh interpreter. Off, the prompts
-must be exactly today's; on, each of the four changes must land where the agents will read it. (P2,
-the summary's drivers question, left the switch in v3, and the v4 summary dropped village dynamics.)
+The switch is read once at import, so each setting runs in a fresh interpreter. v2 is the default
+(2026-10-06; production had run it since 2026-10-03): each of its changes must land where the
+agents will read it. v1 keeps the earlier prompts, for a comparison. (P2, the summary's drivers
+question, left the switch in v3, and the v4 summary dropped village dynamics.)
 """
 import json
 import os
@@ -37,8 +38,8 @@ def _probe(flag: str | None) -> dict:
     return json.loads(result.stdout.strip().splitlines()[-1])
 
 
-def test_off_keeps_todays_prompts():
-    got = _probe(None)
+def test_v1_keeps_the_earlier_prompts():
+    got = _probe("v1")
     assert not got["turn_order"]
     assert not got["short_target"] and got["old_cap"]
     assert not any(got["claiming"].values())
@@ -46,8 +47,8 @@ def test_off_keeps_todays_prompts():
     assert got["summary_fields"] == ["accusations", "role_claims"]
 
 
-@pytest.mark.parametrize("flag", ["v2"])
-def test_v2_applies_all_four_changes(flag):
+@pytest.mark.parametrize("flag", [None, "v2"], ids=["default", "v2"])
+def test_v2_the_default_applies_all_its_changes(flag):
     got = _probe(flag)
     assert got["turn_order"]
     assert got["short_target"] and not got["old_cap"]
