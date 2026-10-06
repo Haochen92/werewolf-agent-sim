@@ -174,6 +174,11 @@ class GameSession:
                         that), and each value holds that turn's rules, which the
                         answer is checked against. The full request never leaves the
                         server; the wire carries only the slim input_request event.
+      _announced        seat -> (day, phase) of a question parked from the engine's
+                        announcement, before its interrupt existed (a vote or a night
+                        action: the prompt opens while the agents act). The interrupt
+                        that follows adopts the parked question and its answer, if one
+                        is already in, instead of asking again.
       _pending_ids      the engine's own id for each parked question, so a batch of
                         answers can be filed back under the names the engine expects.
       _pending_answers  one empty Future per parked seat, created at park time: the
@@ -254,6 +259,7 @@ class GameSession:
         self.human_players: list[str] = []
         self.cast: list[CastSeat] = []
         self.pending_requests: dict[str, HumanTurnRequest] = {}
+        self._announced: dict[str, tuple[int, str]] = {}
         self._pending_ids: dict[str, str] = {}
         self._pending_answers: dict[str, asyncio.Future] = {}
         self._drafts_used: dict[str, int] = {}
@@ -435,6 +441,8 @@ class GameSession:
             self.translator.restore_cached_inputs(chunk)
             return False
 
+        if chunk.get("type") == "custom" and data.get("event") == "human_turn_opened":
+            self.announce(data)  # parked first, so the event goes out with its deadline
         interrupted = "__interrupt__" in data and not (chunk.get("ns") or ())
         if interrupted:
             self.parked_since = datetime.now(timezone.utc)
@@ -504,12 +512,37 @@ class GameSession:
 
     # -- the human turn, where the game waits (POST /turns) --------------------------------
 
+    def announce(self, payload: dict) -> None:
+        """The engine says a human's vote or night action is coming (announce_human_turn):
+        park the question now, with the targets the node will offer, so the prompt opens
+        while the agents act. The interrupt, when it comes, adopts it (see park). A second
+        announcement of the same question (a router re-run) changes nothing."""
+        seat, key = payload["player"], (payload["day"], payload["phase"])
+        if self._announced.get(seat) == key and (
+                seat in self.pending_requests or seat in self._pending_answers):
+            return
+        self.park(HumanTurnRequest(
+            player_id=seat, role=payload["role"], phase=payload["phase"], day=payload["day"],
+            instruction="", valid_targets=list(payload["valid_targets"]), can_pass=False,
+            dialogue="", day_summaries="", surviving_players=[], dead_roster="",
+            alive_roles="", firing_brief="", wolf_channel="", investigator_results="",
+            vigilante_results="", previous_strategy=""))
+        self._announced[seat] = key
+
     def park(self, request: HumanTurnRequest, interrupt_id: str = "") -> None:
         """Hold one question for a human seat until /turns answers it, and start the
         seat's AFK clock. The question is kept so the answer can be checked against its
         rules; the empty Future is what the game task waits on. The interrupt id is what
-        the engine wants the answer filed under; without one, the seat is used."""
+        the engine wants the answer filed under; without one, the seat is used.
+
+        A question already parked from its announcement is adopted: the interrupt only
+        brings the id to file the answer under. The announced question stays the one on
+        record (the clock checks it by identity) and its answer, if already in, stands."""
         seat = request.player_id
+        if (self._announced.get(seat) == (request.day, request.phase)
+                and seat in self._pending_answers):
+            self._pending_ids[seat] = interrupt_id or seat
+            return
         self.pending_requests[seat] = request
         self._pending_ids[seat] = interrupt_id or seat
         self._drafts_used.pop(seat, None)  # a new question, a fresh allowance
@@ -634,6 +667,7 @@ class GameSession:
         belongs to which seat."""
         await asyncio.gather(*self._pending_answers.values())
         self.parked_since = None
+        self._announced.clear()
         answers = {self._pending_ids.pop(seat): fut.result()
                    for seat, fut in self._pending_answers.items()}
         self._pending_answers = {}

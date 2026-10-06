@@ -50,7 +50,7 @@
 | Tier | Events |
 | --- | --- |
 | Ephemeral | `phase_progress {stage: "day_vote", done, total}` — anonymous voting-progress snapshot (replaces the durable `player_voted {voter}` indicator; progress ticks are replay noise, and the pattern unifies with night pacing. Denominator = surviving roster, public, no padding needed. Loss accepted: no per-player "waiting on X" checkmarks — reversible additively.) |
-| Seat | `input_request` (interrupt) |
+| Seat | `input_request` — born from the `human_turn_opened` custom chunk the vote router writes before the step (2026-10-06, server_client_transport.md §8b), so the ballot opens while the agents vote; the interrupt that ends the step then emits none. A night solo role's `input_request` is born the same way at `NIGHT_START`. |
 | Observer | `strategy_update` |
 - Ballots buffered server-side (entitlement deferral — wire is the boundary, not the render).
 

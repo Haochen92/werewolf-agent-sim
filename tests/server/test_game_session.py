@@ -361,6 +361,69 @@ async def test_child_namespace_interrupt_mirrors_park_and_send_once(quiet_sessio
     assert session.error is None
 
 
+class _GatedGraph(FakeGraph):
+    """The vote step as the engine streams it: the announcement first, then (once the test
+    lets it) the interrupt that ends the step."""
+
+    def __init__(self, announce, interrupt, gate):
+        super().__init__([announce, interrupt], [])
+        self.gate = gate
+
+    async def astream(self, payload, *, config, context, stream_mode, subgraphs, version):
+        self.calls.append(payload)
+        if len(self.calls) == 1:
+            yield self.phases[0][0]
+            await self.gate.wait()
+            yield self.phases[0][1]
+
+
+def _announce_chunk(player="player_3", phase="day_votes", day=1) -> dict:
+    return {"type": "custom", "ns": [], "data": {
+        "event": "human_turn_opened", "player": player, "role": "villager", "phase": phase,
+        "day": day, "valid_targets": ["p9", "abstain"]}}
+
+
+async def test_an_announced_vote_opens_at_once_and_its_answer_waits_for_the_interrupt(quiet_session):
+    """The announcement parks the seat and sends the one input_request; an answer given
+    before the interrupt exists is held and filed under the interrupt's id when it comes."""
+    value = human_turn_request(player_id="player_3", phase="day_votes", day=1,
+                               valid_targets=["p9", "abstain"]).model_dump()
+    interrupt = {"type": "updates", "ns": [], "data": {"__interrupt__": [{"value": value, "id": "int-a"}]}}
+    gate = asyncio.Event()
+    session = quiet_session(_GatedGraph(_announce_chunk(), interrupt, gate))
+    session.start()
+    while not session.pending_requests:
+        await asyncio.sleep(0.01)
+    assert [e.type for e in session.log if e.type == "input_request"] == ["input_request"]
+    (opened,) = [e for e in session.log if e.type == "input_request"]
+    assert (opened.player, opened.action_kind, opened.candidates) == ("player_3", "vote", ["p9", "abstain"])
+
+    session.submit_turn({"target": "p9"}, seat="player_3")  # before the interrupt
+    assert not session.pending_requests
+    gate.set()
+    await asyncio.wait_for(session.wait_finished(), timeout=10)
+    assert session.error is None
+    # still the one prompt on the wire, and the early answer resumed the engine
+    assert len([e for e in session.log if e.type == "input_request"]) == 1
+    assert session._graph.calls[1].resume["target"] == "p9"
+
+
+async def test_an_announced_vote_answered_after_the_interrupt_resumes_as_before(quiet_session):
+    value = human_turn_request(player_id="player_3", phase="day_votes", day=1,
+                               valid_targets=["p9", "abstain"]).model_dump()
+    interrupt = {"type": "updates", "ns": [], "data": {"__interrupt__": [{"value": value, "id": "int-a"}]}}
+    gate = asyncio.Event(); gate.set()
+    session = quiet_session(_GatedGraph(_announce_chunk(), interrupt, gate))
+    session.start()
+    while len(session._graph.calls) < 1 or not session._pending_ids.get("player_3") == "int-a":
+        await asyncio.sleep(0.01)
+    assert len([e for e in session.log if e.type == "input_request"]) == 1
+    session.submit_turn({"target": "abstain"}, seat="player_3")
+    await asyncio.wait_for(session.wait_finished(), timeout=10)
+    assert session.error is None
+    assert session._graph.calls[1].resume["target"] == "abstain"
+
+
 def _two_seat_interrupt_chunk() -> dict:
     """One parallel superstep interrupting for two human seats (multi-human room)."""
     def item(player, interrupt_id):

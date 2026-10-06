@@ -28,6 +28,8 @@ from Agents.schemas import DaySummaryCase
 
 from Agents.nodes.day.summary_agent import run_day_summary_agent
 from Agents.observability import day_summary_span_name, freeze_case
+from Agents.turn.action_space import valid_targets_for_action
+from Agents.turn.human_turn import announce_human_turn
 from Agents.turn.scheduler import cycle_seed, select_next_speaker
 
 from Agents.tracing import (
@@ -271,13 +273,21 @@ def fan_out_day(
 
 def fan_out_vote(state: DayGraphState, config: RunnableConfig):
     """Router from START_VOTING: fan every survivor out to their vote node. Abstain is
-    offered only while abstain is enabled and the no-lynch streak is under the force cap."""
+    offered only while abstain is enabled and the no-lynch streak is under the force cap.
+    A human's vote is announced here, so their ballot opens as the agents start voting
+    rather than after the step ends (2026-10-06; see announce_human_turn)."""
     game_config = game_config_from_runnable(config)
     allow_abstain = (
         game_config.abstain_enabled
         and state.get("no_lynch_streak", 0) < game_config.no_lynch_force_after
     )
-    return fan_out_day(state, "vote", allow_abstain)
+    sends = fan_out_day(state, "vote", allow_abstain)
+    for send in sends:
+        if send.node == "vote_human":
+            announce_human_turn(send.arg["player_id"], send.arg["player_role"], "day_votes",
+                                send.arg["current_day"],
+                                valid_targets_for_action(send.arg, "day_votes"))
+    return sends
 
 
 def summarize_day_discussion(

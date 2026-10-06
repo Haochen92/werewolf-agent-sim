@@ -21,7 +21,10 @@ from langgraph.runtime import Runtime
 
 from Agents.game_config import game_config_from_runnable
 from Agents.rules.resolution import tally_day_vote
+from Agents.rules.seats import seat_order
 from Agents.schemas import DayChannel, DaySummary, DeathRecord
+from Agents.turn.action_space import valid_targets_for_action
+from Agents.turn.human_turn import announce_human_turn
 from Agents.state import (
     OrchestratorGraph,
 )
@@ -409,7 +412,13 @@ def night_start(state: OrchestratorGraph):
 def route_night_actors(state: OrchestratorGraph) -> list[str]:
     """Fan out every present night actor in one parallel superstep (NIGHT_RESOLUTION is the
     barrier). The real actor list computed here must never reach the wire — routers don't
-    commit, which is what keeps the silent SK-whiff silent."""
+    commit, which is what keeps the silent SK-whiff silent.
+
+    A human solo actor's turn is announced here (announce_human_turn), so their room opens as
+    the night starts instead of after the slowest branch, the pack's whole talk, has ended
+    (2026-10-06). The announcement names only that seat's own turn, which the seat tier alone
+    receives. A human wolf is not announced: the pack's talk is sequential and prompts at the
+    turn."""
     alive_phases = []
     if state.get("surviving_wolves"):
         alive_phases.append("WOLF_NIGHT_PHASE")
@@ -423,7 +432,35 @@ def route_night_actors(state: OrchestratorGraph) -> list[str]:
         alive_phases.append("INVESTIGATOR_NIGHT_PHASE")
     # An undecided game always has a live killer faction (wolves or SK).
     assert alive_phases, "night fan-out is empty but no winner was determined"
+    _announce_human_night_turns(state, alive_phases)
     return alive_phases
+
+
+_SOLO_NIGHT_ROLES = {
+    "HEALER_NIGHT_PHASE": "healer",
+    "SERIAL_KILLER_NIGHT_PHASE": "serial_killer",
+    "VIGILANTE_NIGHT_PHASE": "vigilante",
+    "INVESTIGATOR_NIGHT_PHASE": "investigator",
+}
+
+
+def _announce_human_night_turns(state: OrchestratorGraph, alive_phases: list[str]) -> None:
+    """Announce each human solo actor's night turn with the targets its node will offer:
+    every other survivor in seat order, plus hold_fire for the vigilante (the same
+    valid_targets_for_action the node uses)."""
+    humans = set(state.get("human_players", []))
+    survivors = seat_order(
+        list(state.get("surviving_wolves", [])) + list(state.get("surviving_villagers", []))
+    )
+    for phase in alive_phases:
+        role = _SOLO_NIGHT_ROLES.get(phase)
+        actor = state.get(f"{role}_player") if role else None
+        if not actor or actor not in humans:
+            continue
+        targets = valid_targets_for_action(
+            {"player_id": actor, "surviving_players": survivors}, f"{role}_target"
+        )
+        announce_human_turn(actor, role, f"{role}_target", state.get("current_day", 1), targets)
 
 
 

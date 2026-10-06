@@ -16,6 +16,7 @@ resolution/validation of what it returns stays in resolve.py.
 from types import SimpleNamespace
 from typing import Any
 
+from langgraph.config import get_stream_writer
 from langgraph.types import interrupt
 
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
@@ -25,6 +26,24 @@ from Agents.schemas.turn import ResolvedTurn
 from Agents.turn.action_space import TARGET_FIELD_BY_OUTPUT_KEY, valid_targets_for_action
 from Agents.turn.addressing_agent import extract_addressed_targets
 from Agents.turn.resolve import RETRY, extract_agent_reasoning, resolve_decision
+
+
+def announce_human_turn(player_id: str, role: str, phase: str, day: int,
+                        valid_targets: list[str]) -> None:
+    """Tell the server a human's turn is coming, before the step it sits in has ended.
+
+    A vote or a night action runs in one parallel step with the agents' siblings, and LangGraph
+    surfaces an ``interrupt()`` only when the whole step is done, so the human's prompt used to
+    arrive after the agents had acted. Written from the routing edge that fans the step out, this
+    reaches the server at once; the server opens the prompt and holds the answer until the
+    interrupt arrives, which stays the point where the answer is taken (the checkpoint, recovery
+    and the CLI driver know nothing of this). Routers run again on a resume, so the server dedupes
+    by (player, day, phase). A no-op outside a graph run (tests)."""
+    try:
+        get_stream_writer()({"event": "human_turn_opened", "player": player_id, "role": role,
+                             "phase": phase, "day": day, "valid_targets": list(valid_targets)})
+    except RuntimeError:  # direct call outside a graph run
+        pass
 
 
 def run_human_decision(payload: dict[str, Any], output_key: str) -> ResolvedTurn | None:

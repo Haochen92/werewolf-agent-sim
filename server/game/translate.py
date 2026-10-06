@@ -171,6 +171,10 @@ class Translator:
         self._seen_day_entries: set[tuple[int, int]] = set()
         self._seen_wolf_msgs: set[tuple[int, int, str]] = set()
         self._seen_memory: set[tuple[str, int, int, str]] = set()
+        # Human turns announced ahead of their interrupt, (player, day, phase): the
+        # interrupt that follows sends no second input_request.
+        self._announced: set[tuple[str, int, str]] = set()
+        self._deadlines: Mapping[str, str] = {}  # the session's, for an announced prompt
         self._seen_reads: set[tuple[str, int, int, str]] = set()
         self._memory_extracted_sent = False
         self._strategies: dict[str, str] = {}
@@ -242,6 +246,7 @@ class Translator:
         # enums); the fixture carries their JSON. The handlers read the JSON shape.
         chunk = to_jsonable_python(chunk)
         if chunk["type"] == "custom":
+            self._deadlines = deadlines or {}
             return self._turn_tick(chunk["data"])
         if chunk["type"] != "updates":
             raise TranslationError(f"unexpected stream chunk type: {chunk['type']}")
@@ -305,6 +310,16 @@ class Translator:
         # CAN fire again on a re-run: sent once, like a re-run speech.
         if payload.get("event") == "turn_started":
             return [self._emit(ev.TurnStarted, day=payload["day"], player=payload["player"])]
+        if payload.get("event") == "human_turn_opened":
+            # A human's vote or night action, announced before its parallel step ends so
+            # the prompt opens at once (announce_human_turn). Same event as the interrupt
+            # would send; the interrupt then sends none. A router runs again on a resume,
+            # so the key dedupes that too.
+            key = (payload["player"], payload["day"], payload["phase"])
+            if not _first_time(self._announced, key):
+                return []
+            return [self._input_request(payload["player"], payload["day"], payload["phase"],
+                                        payload["valid_targets"], self._deadlines)]
         if payload.get("event") == "player_reads":
             key = (payload["player"], payload["day"], payload["round"], payload["action_phase"])
             if not _first_time(self._seen_reads, key):
@@ -332,16 +347,21 @@ class Translator:
         out = []
         for item in interrupts:
             req = item["value"]
-            kind = _ACTION_KINDS.get(req["phase"])
-            if kind is None:
-                raise TranslationError(f"unknown human-turn phase: {req['phase']!r}")
-            player = req["player_id"]
-            out.append(self._emit(
-                ev.InputRequest, day=req["day"], player=player, action_kind=kind,
-                candidates=list(req.get("valid_targets") or []),
-                deadline=deadlines.get(player),
-            ))
+            key = (req["player_id"], req["day"], req["phase"])
+            if key in self._announced:
+                self._announced.discard(key)  # the prompt went out when the step began
+                continue
+            out.append(self._input_request(req["player_id"], req["day"], req["phase"],
+                                           req.get("valid_targets") or [], deadlines))
         return out
+
+    def _input_request(self, player: str, day: int, phase: str, candidates,
+                       deadlines: Mapping[str, str]) -> ev.DurableEvent:
+        kind = _ACTION_KINDS.get(phase)
+        if kind is None:
+            raise TranslationError(f"unknown human-turn phase: {phase!r}")
+        return self._emit(ev.InputRequest, day=day, player=player, action_kind=kind,
+                          candidates=list(candidates), deadline=deadlines.get(player))
 
     def _gm_messages(self, delta):
         return [self._emit(ev.GmMessage, day=e["day"], channel_seq=e["seq"], text=e["message"])

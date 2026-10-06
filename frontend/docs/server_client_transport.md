@@ -636,6 +636,59 @@ confine it to one place, and put an exhaustiveness alarm on it.
 
 ---
 
+## 8b. A human's turn is announced before its step ends (decided 2026-10-06)
+
+**The problem.** A day vote and the night are each one parallel LangGraph step: every
+survivor's vote node, or every night actor's branch, runs at once and a barrier node rejoins
+them. A human seat's turn is an `interrupt()` inside that step, and LangGraph surfaces an
+interrupt only when the *whole* step has finished. So the seat's `input_request` arrived after
+the agents' ballots had already dropped into the jar, and a human healer's room opened only
+after the pack's entire night talk. Commit-point emission (§8) is exactly right for game truth,
+and exactly wrong for *asking*: a question is not truth, and waiting for the step to commit it
+costs the human the whole step.
+
+**Options considered.**
+
+1. *Serialise: humans first, then agents.* Split the step in two (a humans-only step, a
+   barrier, then the agents). Built and reverted the same day: the prompt opens at once, but
+   the agents now wait on the human, so the vote takes human time *plus* agent time, and a
+   human healer would hold up the pack. It trades one wait for another.
+2. *Block instead of interrupt.* A human node that announces itself and then blocks on the
+   session's answer, no `interrupt()` at all. Rejected: the interrupt is what makes a human turn
+   durable (a restart recovers from the checkpoint at the interrupt and re-parks the seat), and
+   the CLI driver and every HITL test are written against it.
+3. *Announce early, commit on the interrupt.* **Chosen.**
+
+**The design.** The routing edge that fans the step out (`fan_out_vote`, `route_night_actors`)
+writes a custom stream chunk per human solo turn, `human_turn_opened`: player, role, phase,
+day and the exact targets the node will offer (the same `valid_targets_for_action` the node
+calls). Routing edges run before the step, so the chunk reaches the server at once, the way
+`turn_started` already does for "X is thinking".
+
+- **Session.** On the chunk it parks the seat (`announce`) with a request built from the
+  announcement, starts the AFK clock, and only then lets the translator emit, so the event is
+  born with its deadline. An answer that arrives before the interrupt exists is accepted and
+  held in the seat's Future. When the interrupt surfaces, `park` *adopts* the parked question:
+  it records the interrupt id to file the answer under and changes nothing else (the clock
+  checks the question by identity, so the announced object stays on record). The game task's
+  `_collect_answers` then finds the early answer already set and resumes immediately.
+- **Translator.** The chunk becomes the one `input_request`; the interrupt for the same
+  (player, day, phase) emits nothing. A router runs again on a resume, so a repeated
+  announcement is dropped by the same key.
+- **Engine.** Nothing else changes: the interrupt remains the point where the answer is taken,
+  the checkpoint is the same, recovery re-parks from the interrupt as before, and the CLI
+  driver (which never sees custom chunks) is untouched.
+
+**What is announced.** The day vote for every seated human, and the four solo night roles
+(healer, investigator, serial killer, vigilante) when a human holds one. A human wolf is not:
+the pack's talk is sequential inside its branch and already prompts at the turn. Day
+discussion is sequential too and needs nothing.
+
+**Invariants to keep.** The announcement must offer exactly the targets the node will accept
+(the node still validates). Only the seat's own announcement is written, and `input_request`
+is seat-tier, so the announcement reveals nothing to anyone else. The interrupt must never be
+skipped on the engine side: it is the commit point, the announcement is a courtesy.
+
 ## 9. Typing UX: stream events, not tokens
 
 (Ruled in `design_log.md` §8; recorded here because it's a transport decision.)
