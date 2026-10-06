@@ -127,6 +127,17 @@ describe('the drawer: which lines a viewer holds', () => {
     expect(byKey(lines, 'gm-405')).toMatchObject({ about: 'over', covers: [406] });
   });
 
+  it('holds the game master’s closing line back until the verdict (it names the winner)', () => {
+    const before = at('over.where-it-ended', () => true);
+    const early = drawerLines(before.view, { me: null, xray: false, beat: before.beat });
+    expect(early.some((l) => l.kind === 'gm' && l.about === 'over')).toBe(false);
+    expect(early.some((l) => l.kind === 'rule' && l.text === 'Game over')).toBe(false);
+    const verdict = at('over.verdict', () => true);
+    const late = drawerLines(verdict.view, { me: null, xray: false, beat: verdict.beat });
+    expect(byKey(late, 'gm-405')).toMatchObject({ about: 'over' });
+    expect(late.some((l) => l.kind === 'rule' && l.text === 'Game over')).toBe(true);
+  });
+
   it('runs the chapters down it as rules, in the log’s order', () => {
     const rules = drawerLines(whole, { me: null, xray: false })
       .filter((l) => l.kind === 'rule')

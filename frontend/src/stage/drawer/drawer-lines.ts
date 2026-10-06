@@ -159,6 +159,13 @@ const UNTIL_TRUTH: ReadonlySet<string> = new Set([
   'lynch.card-up',
 ]);
 
+/**
+ * The ending's beats before the verdict: the game master's closing line names the winner,
+ * which the stage tells only at `over.verdict`, so the line (and its rule) waits for that
+ * (owner, 2026-10-06: it read as a spoiler while the stage was still on where it ended).
+ */
+const UNTIL_VERDICT: ReadonlySet<string> = new Set(['over.where-it-ended', 'over.winners-hour']);
+
 export interface LineOptions {
   me: string | null;
   xray: boolean;
@@ -242,6 +249,7 @@ export function drawerLines(view: GameView, o: LineOptions): DrawerLine[] {
           continue;
         if (about === 'dawn' && o.beat?.day === d.day && REPORT_BEATS.has(o.beat.id))
           continue;
+        if (about === 'over' && o.beat && UNTIL_VERDICT.has(o.beat.id)) continue;
         const roles =
           about === 'vote'
             ? lynch?.role
