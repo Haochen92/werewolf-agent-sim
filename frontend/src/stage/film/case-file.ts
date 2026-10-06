@@ -83,7 +83,7 @@ export function recordPicked(focus: FileFocus | null, choice: FileChoice | null)
   return !!choice?.record && (focus === null || focus.key === choice.key);
 }
 
-/** "Day 3 · discussion", "Night 2", "Morning 3", "Game over": where the playhead is. */
+/** "Day 3 · discussion", "Night 2", "Dawn 3" (the report of night 2), "Game over": where the playhead is. */
 export function asOf(beat: Pick<SceneBeat, 'id' | 'scene' | 'day'>): string {
   const d = beat.day;
   switch (beat.scene) {
@@ -97,7 +97,7 @@ export function asOf(beat: Pick<SceneBeat, 'id' | 'scene' | 'day'>): string {
     case 'lynch':
       return `Day ${d} · vote`;
     case 'morning':
-      return beat.id === 'morning.day-begins' ? `Day ${d} · discussion` : `Morning ${d}`;
+      return beat.id === 'morning.day-begins' ? `Day ${d} · discussion` : `Dawn ${d + 1}`;
     case 'over':
       return 'Game over';
     default:

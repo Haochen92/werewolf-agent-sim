@@ -17,7 +17,7 @@
  * - X-ray, in verdigris: the passes with their reason and held-back draft, the night acts,
  *   and the pack's talk.
  *
- * The chapters (Day N · discussion, the vote, Night N, Morning N, Game over) run down it as
+ * The chapters (Day N · discussion, the vote, Night N, Dawn N+1, Game over) run down it as
  * rules, the seek bar's marks read downwards; a rule with nothing under it after the filters
  * is dropped. `firing_reason` and `addressed_targets` are deferred by decision.
  */
@@ -279,7 +279,7 @@ export function drawerLines(view: GameView, o: LineOptions): DrawerLine[] {
             day: d.day,
             tier: 'public',
             seats: [],
-            text: `Morning ${d.day}`,
+            text: `Dawn ${d.day + 1}`,
             chapter: 'morning',
           });
         if (about === 'over') pushOverRule(push, s.seq - 0.5, d.day);

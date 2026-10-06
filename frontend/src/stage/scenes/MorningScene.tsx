@@ -230,7 +230,7 @@ function MorningSet(props: SceneProps) {
         file: fileTap(presentation, slotInput, true),
       }}
       strip={{
-        title: dayBegins ? `Day ${beat.day}` : `Morning ${nightDay}`,
+        title: dayBegins ? `Day ${beat.day}` : `Dawn ${nightDay + 1}`,
         sub: `${dayBegins ? 'Discussion' : 'The report'} · ${beat.label}`,
       }}
     />

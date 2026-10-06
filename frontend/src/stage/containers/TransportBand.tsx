@@ -52,12 +52,14 @@ function Glyph({ d }: { d: string }) {
   );
 }
 
-const CHAPTER_NAME = { day: 'Day', vote: 'Vote', night: 'Night', morning: 'Morning' };
+const CHAPTER_NAME = { day: 'Day', vote: 'Vote', night: 'Night', morning: 'Dawn' };
 
 function chapterName(beat: SceneBeat): string {
   const c = beat.chapter;
   if (!c) return '';
-  return c.kind === 'over' ? 'Game over' : `${CHAPTER_NAME[c.kind]} ${c.n}`;
+  // the report of night N is the dawn of day N+1 (owner, 2026-10-06: was "Morning N")
+  const n = c.kind === 'morning' ? c.n + 1 : c.n;
+  return c.kind === 'over' ? 'Game over' : `${CHAPTER_NAME[c.kind]} ${n}`;
 }
 
 export function TransportBand({

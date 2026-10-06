@@ -214,7 +214,7 @@ const line = (over: Partial<LedgerLine>): LedgerLine => ({
   checks: [],
   ...over,
 });
-/** Morning 3's ledger: the claims of day 2. */
+/** Dawn 3's ledger (the report of night 2): the claims of day 2. */
 const V4_MORNING_3: LedgerDay['players'] = [
   {
     player: 'player_9',

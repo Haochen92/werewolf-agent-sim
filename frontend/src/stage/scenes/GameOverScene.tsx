@@ -173,7 +173,7 @@ function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
         }}
         strip={{
           title:
-            step < 2 ? (ended === 'lynch' ? `Day ${day}` : `Morning ${day}`) : 'Game over',
+            step < 2 ? (ended === 'lynch' ? `Day ${day}` : `Dawn ${day + 1}`) : 'Game over',
           sub:
             step < 2
               ? `${ended === 'lynch' ? 'The vote' : 'The report'} · ${beat.label}`

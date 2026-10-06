@@ -134,19 +134,19 @@ describe('the drawer: which lines a viewer holds', () => {
     expect(rules).toEqual([
       'Day 1 · discussion',
       'Night 1',
-      'Morning 1',
+      'Dawn 2',
       'Day 2 · discussion',
       'Day 2 · the vote',
       'Night 2',
-      'Morning 2',
+      'Dawn 3',
       'Day 3 · discussion',
       'Day 3 · the vote',
       'Night 3',
-      'Morning 3',
+      'Dawn 4',
       'Day 4 · discussion',
       'Day 4 · the vote',
       'Night 4',
-      'Morning 4',
+      'Dawn 5',
       'Game over',
     ]);
   });

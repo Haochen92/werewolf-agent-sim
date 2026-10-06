@@ -176,7 +176,7 @@ read card (guess, how sure, why, the truth with ● ◐ ○), a paper index card
 | 4 | `day.your-turn` | `input_request` `discuss` for me | S | my puppet at the stand, thinking; the dock carries the two minutes (`deadline`; null = no countdown; the car's wall clock is gone, ruled 2026-09-29); three plaques and no boxes (2026-10-01; §12): **Write your line** (**Edit your line** once there is one) opens the full-screen composer, which holds an optional steer for your agent + **Draft** / **Redraft this** (the seat's own agent's line, as it would say it, steered and revising the box's line when the field holds something; "Use my seat notes" sends the notebook along when ticked; three per turn, the returned `deadline` is the new countdown) and the box the draft lands in, editable; **Send** (live once there is a line) and **Pass**; the line previewed on one row under the head (no hand-over on this turn: the agent speaks only when the clock runs out); the drawer stops at the rail so the prompt keeps the full width | D: stops at the rail | until answered / deadline |
 | 5 | `day.your-line` | my `speech` after 4 | S (P sees a normal turn) | the puppet talks my line as any turn plays; a pass leaves it idle | D: my line | speech |
 | 6 | `day.agent-spoke-for-you` | my `speech` arriving with my request unanswered at its deadline (client-known) | S only | the puppet talks the agent's line; the plaque's tag and the box say "your seat's agent spoke for you" | D: the line with the tag | speech |
-| — | `day.summary` | `day_summary` (28, 79, 218, 360) | — | **no beat here.** Public on the wire but the live stage has no beat for it; the replay plays it in the Morning of the same day number (§8 row 8) | — | — |
+| — | `day.summary` | `day_summary` (28, 79, 218, 360) | — | **no beat here.** Public on the wire but the live stage has no beat for it; the replay plays it at the Dawn after the same day (§8 row 8) | — | — |
 
 **The one timeout rule** (every human turn: speak, vote, night act, wolf chat): the countdown runs
 on `input_request.deadline`; on expiry the seat's agent acts and only the seat is told. A human
@@ -401,7 +401,7 @@ arrive together; private results follow them (59, 271→272, 402), never precede
 
 | # | Beat | Anchor | Sees | Stage | Slot | Hold |
 |---|---|---|---|---|---|---|
-| 1 | `morning.shutter-down` | `night_result` (58, 156, 270, 401). **Chapter mark: Morning N** (not a phase change: 156 comes before `phase_change: day` at 159) | P | the shutter comes down; the chips go up; the report plays in the night's paint. The notice is **the morning roll** (2026-09-30), on the walnut board: a row per death (the chip, "Seat 1 · Villager", the attacker's felt sigil and the game's words: "killed by the wolves" · "stabbed by the serial killer" · "shot by the vigilante"; two attackers "attacked by X and Y, and fell"), a row for a seat saved ("attacked by X, saved by the healer", no role), a quiet night "No one died in the night."; the rows fade in 0.6 s apart. A game that ends at this morning shows the same roll at `over.where-it-ended` (§10), at the same hold | D: the GM's dawn line, with the night atoms' sigils lent to it | 3.5 + 1.5 a row |
+| 1 | `morning.shutter-down` | `night_result` (58, 156, 270, 401). **Chapter mark: Dawn N+1** (the dawn of the next day; 2026-10-06, was "Morning N") (not a phase change: 156 comes before `phase_change: day` at 159) | P | the shutter comes down; the chips go up; the report plays in the night's paint. The notice is **the morning roll** (2026-09-30), on the walnut board: a row per death (the chip, "Seat 1 · Villager", the attacker's felt sigil and the game's words: "killed by the wolves" · "stabbed by the serial killer" · "shot by the vigilante"; two attackers "attacked by X and Y, and fell"), a row for a seat saved ("attacked by X, saved by the healer", no role), a quiet night "No one died in the night."; the rows fade in 0.6 s apart. A game that ends at this morning shows the same roll at `over.where-it-ended` (§10), at the same hold | D: the GM's dawn line, with the night atoms' sigils lent to it | 3.5 + 1.5 a row |
 | 2 | `morning.chip-attacked` | each entry of `deaths` and `save`, in order | P | the chip comes down alone, at the centre, large: "Seat 3 was attacked in the night" | — | 2.0 |
 | 3 | `morning.chip-fell` | a `deaths` entry | P | the act mark appears beneath it (from `attacker_types`: the attacker's felt sigil tacked on, 2026-09-30: wolf's head · scythe · bullet); the string gives way; the chip drops | — | 2.0 |
 | 4 | `morning.card-down` | 〃 (`role`) | P | once the chip has fully dropped, the role card comes down large and centred; the wing's tile flips; the card is drawn up out of frame as the next beat begins | — | 2.6 |
@@ -414,7 +414,7 @@ arrive together; private results follow them (59, 271→272, 402), never precede
 
 As built 2026-10-02: the shutter beat's notice says only how many the night touched ("Two seats were touched in the night."), held 6.0 s; the names wait for the chips and the roll for the end (row 5b).
 
-As built 2026-09-25: top strip "Morning N · The report · <label>"; the attacked chip is 1.9× the
+As built 2026-09-25: top strip "Dawn N+1 · The report · <label>" (2026-10-06; was "Morning N"); the attacked chip is 1.9× the
 lobby's; "Seat 3 was stabbed by the serial killer" / "was bitten by the wolves" / "was shot by
 the vigilante", two attackers "was attacked by X and Y, and fell"; the marks pop in and the string
 gives way at 1.3 s; the card lowers over 1.2 s after 0.2 s; each box fades in after 0.7 s; the
@@ -530,7 +530,7 @@ was watching from the wing.
 
 As built 2026-09-25 (bench 73's measures and timings; the rest no bench gives, change here first):
 the game stopped at a morning if the last day's night was resolved, else at the lynch. Top strip
-"Morning N · The report · Where it ended" (after a lynch "Day N · The vote · …") through the hour,
+"Dawn N+1 · The report · Where it ended" (after a lynch "Day N · The vote · …") through the hour,
 then "Game over · Day N · the wolves have won · <label>". Where it ended: "The report · Seat 1 was
 killed by the wolves: a villager. Seat 9 was shot by the vigilante: the healer." or "The vote's
 end · Seat 8 is voted out, 3 to 0: a wolf." (bench 73); played after a morning, the last card is
@@ -586,7 +586,7 @@ role, a wolf its pack) and the live queue should hold the stand for the backlog.
 | Day N | `phase_change: day` | `deal.day-begins` (day 1) · `morning.day-begins` |
 | Vote N | `phase_change: voting` | `vote.opens` (absent on a no-vote day) |
 | Night N | `phase_change: night` | `night.hub` / `rnight.hub` (absent if the game ended at the lynch) |
-| Morning N | `night_result` | `morning.shutter-down` |
+| Dawn N+1 | `night_result` | `morning.shutter-down` |
 | Game over | `game_over` | `over.where-it-ended` |
 
 **The transport:** previous chapter · back a beat · play/pause · forward a beat · next chapter. On a phone the band's controls grow until a button is 44 css px tall (they drew at about 25 at the phone's scale), the band grows with them and the speech box, the notices and the ledger rise on it (`bandFoot`, units.ts; 2026-10-02). Chapter jumps land on the chapter's first beat, still. Arrow keys step beats. The beat's name sits
@@ -599,7 +599,7 @@ renders the beat at rest; playing forward animates.
 of the lynch/night atoms lent to them; the votes as one line per day, landing with the result
 (held back through the count, since `vote_cast` is a batch and the stage reveals it a chip at a
 time; ruled 2026-09-26); the game master's vote line, which names the lynched seat's role, held
-back on a lynch day until `lynch.truth` for the same reason; the day's brief in its Morning
+back on a lynch day until `lynch.truth` for the same reason; the day's brief at its Dawn
 (clamped, opens on a tap; public, so everyone's since 2026-09-29, when it was X-ray only); the ending); a
 seated human's private results as dashed "Only you" lines; a wolf's pack chat with the red edge;
 X-ray on adds, in the X-ray's verdigris (aqua until 2026-09-29): roles after names, passes with
@@ -677,7 +677,7 @@ second tap clears it), as bench 74. **The drawer's look (HUD pass 3a, ruled 2026
 owner's transcript mock; replaces bench 74's cards and the wording above where they differ):** a
 warm dark ground under the HUD's brass edge; no card per entry, the entries set apart by space and
 type. The chapters as headings: "Day 3" in Young Serif, large, "Discussion" small and muted beside
-it; "Vote", "Morning 2", "Game over" and the night (a crescent before "Night 2", in a cool pale
+it; "Vote", "Dawn 3", "Game over" and the night (a crescent before "Night 2", in a cool pale
 blue-grey, never lavender: that is the serial killer's) smaller, each under a hairline. A speech:
 a small head, "Seat 2" in brass-cream Young Serif, the words in Literata. A run of passes one after
 another is one quiet italic line ("Seat 7 passed. Seat 9 held back."; `groupPasses`), each
@@ -1008,7 +1008,7 @@ reload during a vote already cast reopens the ballot (a second send gets the 409
 
 ## 13. Viewers and tiers — H§7
 
-| Viewer | Day | Vote | Lynch | Night | Morning | Game over |
+| Viewer | Day | Vote | Lynch | Night | Dawn | Game over |
 |---|---|---|---|---|---|---|
 | Spectator (P), and the replay with X-ray off | the theatre | the jar, the count | all of it | the lobby: chips, count | the report, chip by chip | the verdict, the winners, the truth, the epilogue |
 | Seated human (S) | + my turn: my puppet, the box, the countdown, the draft | + my chip row and face-up chip | + "you are voted out", my card | my room on my turn; the lobby after | + what only I learn | + "you won" / "you lost" |

@@ -63,7 +63,7 @@ export function RecordSheet({ page, mornings, onMorning, chip }: RecordSheetProp
     <>
       <div className={styles.shHead}>
         <span className={styles.title}>Day {page.day}’s record</span>
-        <span className={styles.typed}>read the morning of day {page.morning}</span>
+        <span className={styles.typed}>read at the dawn of day {page.morning}</span>
       </div>
       {mornings.length > 1 ? (
         <div className={`${styles.pager} ${styles.rpager}`}>
