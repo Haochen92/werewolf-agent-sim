@@ -18,6 +18,7 @@ from langgraph.types import Send
 from Agents.game_config import GameConfig, game_config_from_runnable
 from Agents.schemas import DaySummary, FiringReason
 from Agents.rules.night_record import own_night_actions
+from Agents.rules.seats import seat_order
 from Agents.schemas.roles import cast_role_counts
 from Agents.state import (
     DayGraphState,
@@ -144,7 +145,7 @@ def build_speaker_send(
     one template edit away from leaking (tests/leak_test.py guards this invariant).
     This replaces the old per-role fan-out branching.
     """
-    surviving_players = state["surviving_villagers"] + state["surviving_wolves"]
+    surviving_players = seat_order(state["surviving_villagers"] + state["surviving_wolves"])
     payload = {
         "human_player": speaker_id in state["human_players"],
         "day_channel": state["day_channel"],
@@ -216,7 +217,7 @@ def fan_out_day(
     wolf roster / investigator / vigilante results attach only to their own role.
     """
     concurrent_nodes = []
-    surviving_players = state["surviving_villagers"] + state["surviving_wolves"]
+    surviving_players = seat_order(state["surviving_villagers"] + state["surviving_wolves"])
     strategies = state.get("agent_strategies", {})
 
     def base_payload(player: str, role: str, is_human: bool) -> dict:

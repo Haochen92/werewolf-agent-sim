@@ -5,4 +5,5 @@ every layer (nodes, memory, server) import the rulebook without cycles.
 
 board_clocks.py — faction win-clocks + alive-role census from PUBLIC board facts
 resolution.py  — night attack precedence + day-vote plurality classification
+seats.py       — seat order for any player list (never one faction before the other)
 """

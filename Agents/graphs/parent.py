@@ -50,6 +50,7 @@ from Agents.config import (
 )
 from Agents.memory import store, checkpointer
 from Agents.rules.night_record import own_night_actions
+from Agents.rules.seats import seat_order
 from Agents.schemas.roles import cast_role_counts
 from Agents.tracing import GraphContext
 
@@ -170,7 +171,7 @@ def healer_night_phase(
         "cast_role_counts": cast_role_counts(state.get("roles", {})),
         "surviving_players": [
             p
-            for p in state["surviving_wolves"] + state["surviving_villagers"]
+            for p in seat_order(state["surviving_wolves"] + state["surviving_villagers"])
             if p != healer
         ],
         "player_id": healer,
@@ -214,7 +215,7 @@ def investigator_night_phase(
         "investigator_results": state.get("investigator_results", []),
         "surviving_players": [
             p
-            for p in state["surviving_wolves"] + state["surviving_villagers"]
+            for p in seat_order(state["surviving_wolves"] + state["surviving_villagers"])
             if p != investigator
         ],
         "player_id": investigator,
@@ -256,7 +257,7 @@ def serial_killer_night_phase(
         "cast_role_counts": cast_role_counts(state.get("roles", {})),
         "surviving_players": [
             p
-            for p in state["surviving_wolves"] + state["surviving_villagers"]
+            for p in seat_order(state["surviving_wolves"] + state["surviving_villagers"])
             if p != serial_killer
         ],
         "player_id": serial_killer,
@@ -303,7 +304,7 @@ def vigilante_night_phase(
         "cast_role_counts": cast_role_counts(state.get("roles", {})),
         "surviving_players": [
             p
-            for p in state["surviving_wolves"] + state["surviving_villagers"]
+            for p in seat_order(state["surviving_wolves"] + state["surviving_villagers"])
             if p != vigilante
         ],
         "vigilante_bullets": state.get("vigilante_bullets", 0),
