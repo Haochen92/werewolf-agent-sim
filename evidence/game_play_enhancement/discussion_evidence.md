@@ -940,7 +940,7 @@ three times 3.5 flash-lite at medium, and slower.
 
 ---
 
-## 7. Phase 2 plan: how the day runs (not started)
+## 7. Phase 2 plan: how the day runs (started 2026-10-07; build order in §7.4)
 
 Phase 2 changes how a day is run: the engine's turn-taking, plus the events and stage scenes that show
 it. The owner writes the code and Claude writes the tests; this section is the brief.
@@ -990,6 +990,8 @@ compared once; the v2 games already played are the comparison. If it plays worse
 - *Day 1:* opening round → summary → night. No discussion after the opening and no vote.
 - *Day 2 on:* opening round → discussion (today's scheduler, unchanged) → closing defence → summary →
   vote.
+- *Revised 2026-10-07 (§7.4 step 4b):* from day 2 the discussion's proactive picks become a
+  parallel proactive round between the reactive chains; the scheduler keeps the reactive queue only.
 
 **D1/S1. The opening round: everyone at once.** Every living player is sent an opening turn at the same
 time, the way the vote is. The instructions are strict: the only things allowed are a role claim
@@ -1116,6 +1118,229 @@ with v2 game 1 (`832404e9`):
 *Counts: one-off scripts (not kept), run 2026-10-03 over the 28 June batch
 records and the website replays (9 games: `8e26fd3b`, `832404e9`, `500b5167`, `7bdb16bd`,
 `553a1875`, `35e3677c`, `965b8148`, `9369a5c1`, `ff26faff`).*
+
+### 7.4 Build order (2026-10-07)
+
+Phase 2 started on 2026-10-07. The owner writes the code, step by step, after a few months away
+from hand-coding; Claude reviews each step, and the tests (§7.2 item 10) are written after a step
+lands, not before. Each step names what to read first and what to change. A game is playable after
+step 4. Three choices this order makes for the brief, open to objection:
+
+- The engine marks a round on the transcript entry (`DayChannel.day_round`, and `opening_kind`
+  from the filter), not through new `FiringReason` tiers. The firing reason stays the scheduler's.
+- The wire gets one new public event, `round_opened` (the round and its players). Passes in a
+  round are derived on the stage as "players of the round with no speech", so there is no new
+  pass event and the X-ray's `pass_marker` is unchanged.
+- The opening's lines are collected in plain seat order (owner, 2026-10-07: nobody saw anyone
+  else's line, so the order is only for the reader; a seeded shuffle was not worth a seed).
+
+**Step 0. Housekeeping, no Phase 2 code.**
+- Tag the baseline before anything lands: `git tag -a phase2-baseline 84328b79` (annotate with the
+  backend and model: Vertex, `gemini-3.5-flash-lite`).
+- The uncommitted role edits in `frontend/src/stage/roles.ts`, `paint/materials.ts` and the token
+  files (the eight 1920s roles) are Phase 3 work. Commit them on their own first, so no Phase 2
+  commit carries them.
+- Deploying the 2026-10-06 batch is independent of all this; do it whenever.
+
+**Step 1. The closing-speaker rule (pure code; the warm-up).**
+- Read: `Agents/schemas/game_events.py` (`DayChannel`, `AddressedTarget`), `Agents/rules/seats.py`
+  and `Agents/rules/claim_ledger.py` (the shape of a rules helper: deterministic, no model).
+- Write: `Agents/rules/closing.py` with two functions. `closing_speakers(day_channel, current_day,
+  surviving_players)` returns up to two `(player, accusers)` pairs: over today's spoken,
+  non-moderator entries, each `addressed_targets` item with stance `accusation` whose target is a
+  living player other than the speaker counts one accuser; keep targets with at least two distinct
+  accusers; sort by count, then by the latest accusing `seq`; take two. `closing_announcement(pairs)`
+  renders the moderator line from §7.2 S2 ("Before the vote: player_5 has been accused by player_2,
+  player_4 and player_7; ... Each gets a last word.").
+- Review: the tie rule, the self-accusation filter, the accuser order inside the line.
+
+**Step 2. The round rides the payload; the prompts read it.**
+- Read: `Agents/nodes/day/flow.py` (`build_speaker_send`, `fan_out_day`: the two payload builders,
+  the leak boundary), `Agents/state/day.py` (the payload TypedDicts), `Agents/prompts/prompt_inputs.py`
+  (`build_agent_prompt_input`, the `discussion_stage_rules` key), `Agents/prompts/day_discuss.py`
+  (`OPENING_NO_VOTE_DISCUSSION_RULES`, `TONE_INSTRUCTION`, `_discuss_template`).
+- Write: a `day_round` payload key (`opening` / `discussion` / `closing`, default `discussion`) in
+  both builders, with a `day_round` parameter on `fan_out_day`, and the field documented on the
+  payload TypedDicts. In `day_discuss.py`, `OPENING_ROUND_RULES` (the allowed kinds from §7.2, one or
+  two sentences, passing is the default; the day-1 no-vote sentence folds in, so
+  `OPENING_NO_VOTE_DISCUSSION_RULES` goes away) and `CLOSING_ROUND_RULES` (S3: two to four sentences,
+  no new accusations, nobody replies). `prompt_inputs.py` picks the block by `day_round`, with
+  `voting_available` only choosing the day-1 sentence. `DayDiscussOutput` is unchanged: `pass_turn`,
+  `message` and `addressed_targets` are what a round turn needs.
+- Then regenerate the golden (`poetry run python -m tests.fixtures.day_discuss_prompt_golden`) and
+  read its diff: for the existing discussion board nothing should move but the stage-rules block.
+- Review: the two prompt blocks (wording is the epoch bump), the default so nothing else changes.
+
+**Step 3. The round's nodes: fan out, turn, collect.**
+- Read: `flow.py` again for the vote's pattern (`start_voting`, `fan_out_vote`, `collect_votes`),
+  `Agents/nodes/day/actors.py` (`discuss`, `DiscussDelta`), `Agents/turn/resolve.py` lines 60-150
+  (`seq` is counted from the payload's channel, so every parallel turn would claim the same
+  position: that is why the collector re-numbers), `Agents/turn/human_turn.py`
+  (`announce_human_turn`, `_PHASE_INSTRUCTION`), `Agents/graphs/parent.py` `day_phase` (the day
+  state is rebuilt every day and only four keys come back, so a holding field never reaches the
+  parent).
+- Write, in `Agents/schemas/game_events.py`: `RoundCandidate` (day, round, entry), internal, attribute
+  docstrings; `DayChannel.day_round` (default `discussion`). In `Agents/state/day.py`: `day_round: str`
+  and `round_candidates: Annotated[list[RoundCandidate], add]`. In `flow.py`: `start_opening` sets
+  `day_round`; `start_closing` sets it and writes the moderator announcement (step 1) into
+  `day_channel` as a `game_master` entry; `fan_out_round` calls `fan_out_day(state, "round_turn",
+  day_round=...)`, keeps only the accused for the closing, and announces the human twin
+  (`announce_human_turn`, phase `day_channel`); `collect_round` takes the candidates of
+  (today, this round), orders them by the seeded seat order, re-numbers `seq` from today's count,
+  and writes them to `day_channel` (the filter of step 5 slots in before the write). In
+  `actors.py`: `round_turn`, the same engine call as `discuss`, returning `round_candidates` instead
+  of `day_channel`. `_PHASE_INSTRUCTION` gets an opening and a closing ask.
+- Check: `server/game/game_session.py` finds a seat's paused turn by the task's node name
+  generically (`_paused_task`), so the draft endpoint should work for a round turn unchanged; confirm
+  while reviewing.
+- Review: no parallel node writes `day_channel`; the human twin is the uncached one; the collector's
+  order and numbering.
+
+**Step 4. Wire the day graph (a game is playable after this).**
+- Read: `Agents/graphs/day.py` (all of it), `flow.py` `route_speaker`, `route_after_day_summary`,
+  `discussion_stage_controls`, `Agents/config/langgraph.py` `discussion_recursion_limit`,
+  `Agents/nodes/__init__.py` (exports).
+- Write: nodes `START_OPENING`, `START_CLOSING`, `round_turn` (cached, the vote's `CachePolicy`),
+  `round_turn_human` (uncached), `COLLECT_ROUND`. Edges: `START` to `START_OPENING`; both start
+  nodes fan out through `fan_out_round` to the two turn nodes, which join at `COLLECT_ROUND`;
+  `COLLECT_ROUND` routes to `SCHEDULE` after an opening on a voting day, else to
+  `SUMMARIZE_DAY_DISCUSSION` (day 1, or any closing); `route_speaker` returns `START_CLOSING` on
+  terminate when `closing_speakers` is non-empty, else the summary. A fan-out edge must always
+  produce at least one Send: the opening has every survivor, and `START_CLOSING` runs only when
+  someone qualifies. Day 1 never reaches `SCHEDULE` now, so the pre-voting cap in `route_speaker`
+  and `discussion_stage_controls` are dead: delete them here. Two more supersteps per round fit in
+  the recursion limit's headroom; say so in its docstring.
+- Then play one cheap headless game and read the transcript: day 1 is opening, summary, night.
+- Review: the topology against §7.2 "the day becomes", the dead code gone.
+- *Played 2026-10-07* (`data/phase2_step4_smoke_game_2026-10-07.json`; flash-lite, memory off,
+  no filter yet): villagers won in 5 days, 743 s. Day 1 = nine opening passes, summary, night.
+  Days 2–5 each ran opening → discussion → closing → vote, and every voting day produced a
+  closing with exactly one accused. The openings were used as meant: the investigator claimed
+  with its night-1 result on day 2, the healer and investigator on day 3, the investigator (the
+  serial killer found) and a vigilante "held fire" on day 4. Day 2's discussion ran to 36
+  entries (the cap), which step 4b's rounds address.
+
+**Step 4b. The proactive round replaces the scheduler's proactive tier (owner, 2026-10-07).**
+Decided after step 3, before the graph was wired. On 96 June voting days the scheduler offered
+a median 16 turns: 5 reactive, about 10 proactive picks of which 4 passed, and the day ended on
+three passes in a row; 5 of about 7 survivors spoke. The proactive tier picks one quiet player at
+a time; a round asks all of them at once. The day becomes: opening → reactive chains →
+proactive round → reactive chains → (another proactive round while the last one produced a new
+line, at most two or three) → closing → summary → vote. The scheduler keeps only the reactive
+queue, which is the part that makes a conversation.
+- *The risk is the one that ended concurrent discussion in Phase A:* simultaneous open
+  statements came out near-identical. The opening escapes it by being restricted to private
+  facts and claims; a proactive round does not. So the round gets a filter on the opening
+  filter's shape: one cheap call over the round's lines, groups near-duplicate points, keeps the
+  first of each group in seat order, turns the rest into passes. A held player is told on its
+  next turn that its line was not said (the fidelity audit's finding 2: a suppressed line must
+  not survive as a private belief that it was spoken).
+- *Test the filter offline first:* take a June day's spoken proactive lines as if said at once,
+  run the call, read what it would have held. Runs alongside step 4; no graph change needed.
+- *Code:* `select_next_speaker` drops the trailing-pass and proactive steps and terminates when
+  the reactive queue is empty (`rank_proactive`, `proactive_budget`, `opener_floor` and the
+  proactive novelty-gate path go; the `proactive` tier stays a Literal value for old records);
+  `DayRound` gains `proactive`; a `START_PROACTIVE` entry node; `fan_out_round` narrows to the
+  players who have not spoken since the last round; a router after the chains picks the next
+  round, the closing, or the summary; a proactive-round prompt block carries the engage rule's
+  content for a round nobody has seen yet; `test_scheduler.py` is largely rewritten; the
+  sequential-discussion study's quality gate is superseded in part (a note there).
+- *Order:* step 4 as briefed first (one game shows the opening and closing on the round
+  machinery), then 4b, so the comparison games in step 8 measure the whole new day once.
+- *Built 2026-10-07 (first half: scheduler reactive-only + the proactive round; no echo filter
+  yet).* Smoke game `data/phase2_step4b_smoke_game_2026-10-07.json` (flash-lite, memory off):
+  villagers won in 4 days, 305 s against 743 s for the step-4 game, since the quiet players'
+  turns now run in parallel. Day 2 ran opening (1 claim, 8 passes) → proactive round (7 lines,
+  1 pass) → 1 reply → a second proactive round → 2 replies; day 3 ran two proactive rounds and
+  a closing with two accused; day 4 one round and a closing. Two findings: (1) a BUG, the second
+  proactive round re-published the first round's lines word for word, because the collector
+  picked candidates by round kind and both rounds are "proactive"; fixed the same day by
+  stamping each candidate with its round number (`RoundCandidate.round_no`). (2) The echo
+  problem is visible as predicted: day 2's seven proactive lines were all reactions to the one
+  opening claim, several making the same "convenient timing" point, which is what the second
+  half's filter is for.
+- *The cap drains instead of cutting (owner, 2026-10-07; built the same day).* The scheduler
+  used to check the utterance cap first, so an open accusation or question died when the cap
+  hit (the "unanswered accusation on capped days" of §7.1). Now, once the cap-th real utterance
+  is in, only debts opened at or before that point are answered, each debtor answers at most
+  once more (a reply that fails to tag its creditor cannot re-fire), anything a post-cap reply
+  opens is left for the closing, and no proactive round runs. `select_next_speaker`'s drain is
+  pure and bounded by the survivors; the recursion limit allows one extra turn per survivor.
+- *Second half built 2026-10-07: the echo filter.* `Agents/turn/round_filter.py`: one call per
+  proactive round reads the lines in seat order and names, per line, the earlier line that makes
+  the same point; the first of each group is kept, the others become `round_echo` pass markers
+  that keep the held text, which the existing held-back marker shows to the author on its next
+  turn (the fidelity audit's finding 2, already fixed for the novelty gate, covers this for free).
+  A human's line is never held. The offline check (`data/round_echo_check/`, runner
+  `evaluation/experiments/round_echo_filter_check.py`, final prompt): June pseudo-rounds
+  93 rounds, 638 lines, 107 held (17%); the smoke games' real rounds 5 blocks,
+  32 lines, 9 held (28%; two blocks are the bug's duplicates). Nearly every hold is
+  "X makes a good point about..." followed by X's conclusion. One false-positive class was found and
+  put into the prompt: a player's claim about their own role or night action, or confirming or
+  denying what was said about themselves, is never a duplicate (the vigilante's "I can confirm your
+  read on me" had been held). Ruled the same day: a held line keeps its accusation tags, so two players
+  independently accusing the same target for the same reason count as two accusers for the
+  closing (`closing_speakers` counts held echoes; the reactive queue skips them, so nobody is
+  asked to answer a line that was never shown). Also ruled as built: a drained reactive turn
+  gets the ordinary "respond" brief; the first proactive round always runs when anyone is
+  silent; a player who claimed in the opening is not asked in proactive round 1 unless addressed.
+
+**Step 5. The opening filter.**
+- Read: `Agents/turn/novelty_agent.py` (the shape to copy: one prompt, `get_llm_judge`, fail open),
+  `Agents/schemas/output.py` (`NoveltyJudgment`; the model-visible rule: `Field(description=)`,
+  no class docstring, every field required because flash-lite fails on optional ones),
+  `Agents/prompts/prompt_formatters.py` (`format_day_channel`).
+- Write: `Agents/turn/opening_filter.py`, `filter_openings(entries, day)`: one call over the openings
+  in order; output `OpeningVerdicts` with one `OpeningVerdict` (player, kind, keep) per speaker, kind
+  in claim / counterclaim / own_night_action / challenge / repeat / other; verdicts keyed by player;
+  a missing verdict or any exception keeps the entry; a dropped entry becomes a pass marker with a
+  new `DiscussionPassReason.OPENING_FILTERED`; a human's entry is never sent to the filter; the kind
+  is recorded on the entry (`DayChannel.opening_kind`). `collect_round` calls it for the opening only.
+- Review: the prompt judges the kind of statement, never its truth; the schema is all-required.
+- *Built 2026-10-07*, beside the echo filter in `Agents/turn/round_filter.py` (one module for the
+  filters a collected round goes through, sharing the held-marker mechanics): kinds claim /
+  night_action / challenge kept, repeat / other held as `opening_filtered` pass markers with the
+  text kept for the author; the kind is recorded on the entry (`DayChannel.opening_kind`). Checked
+  offline on the two smoke games' 13 real openings (all kept, labelled as expected) plus one
+  planted padding line (held as other). Held lines of either filter keep their accusation tags
+  for the closing's count and are skipped by the reactive queue.
+
+**Step 6. The wire: events and the translator.**
+- Read: `server/schemas/events.py` (`PhaseChange`, `PassMarker`, `InputRequest`),
+  `server/game/translate.py` (the `node` registry, `_discuss`, `_start_voting`, `_turn_tick`,
+  `_input_request`, `_gm_messages`), `tests/fixtures/translator_golden.py`,
+  `tests/server/test_event_schema_contract.py`, `test_openapi_snapshot.py`, and the chain in commit
+  `1c137c16` (the frontend's generated contract).
+- Write: `RoundOpened` (round, players) in `events.py`; `opening_filtered` on `PassMarker.pass_reason`;
+  the round on `InputRequest` so the composer can label the ask. In `translate.py`: `START_OPENING`
+  emits `round_opened` for the survivors; `START_CLOSING` (writes `day_channel`, `day_round`) emits
+  the moderator line through `_gm_messages` and `round_opened` for the accused; `round_turn` and
+  `round_turn_human` (writes `round_candidates`, `agent_strategies`) emit strategy updates only;
+  `COLLECT_ROUND` (writes `day_channel`) emits the entries with `_discuss`'s loop, factored into a
+  helper both use. Every node the graph has must be registered, or the translator raises.
+- Regenerate the OpenAPI snapshot and the frontend contract. The translator goldens replay captured
+  chunks with no rounds in them, so capture a Phase 2 game into the fixture catalogue before trusting
+  them (see `notebooks/fixtures`).
+- Later, when Phase 2 games enter the hallucination bench: `evaluation/src/data/builders/
+  hallucination_bench.py` line 115 drops every same-day moderator line; it should drop only the
+  lines after the vote, so the closing announcement stays.
+
+**Step 7. The stage.**
+- Read: `frontend/docs/beat_sheet.md` §2, `frontend/src/stage/beats/beatsFor.ts` (the
+  `turn_started`, `phase_change`, `speech`, `pass_marker` cases), `frontend/src/game/types.ts` and
+  `foldEvents.ts` (where the new event folds), `frontend/docs/frontend_lessons.md`.
+- Write the beat sheet rows first, then the code: `day.opening-prepares` (on `round_opened`
+  opening, "everyone is preparing their opening", held until the round's first speech or the next
+  event), each opening as `day.speech`, `day.round-passes` (one beat for the round's players with no
+  speech), `day.closing-called` (the moderator line with the accused on the stand), and the
+  composer's label for a human's opening or closing turn. Grouping a run of mid-day passes into
+  one beat is the same beat. Then the Playwright benches.
+
+**Step 8. Tests, then play.**
+- After each step is reviewed, Claude writes its tests from §7.2 item 10 (`tests/engine/`,
+  `tests/server/`), plus a `tests/leak_test.py` check that the round payload is built by
+  `fan_out_day`, so private fields stay gated.
+- Then §7.3: two or three games on `gemini-3.5-flash-lite`, judged against `832404e9`.
 
 ---
 
@@ -1249,6 +1474,15 @@ pool of about 16. They are non-human creatures in the existing felt-and-brass no
      move from the agent prompt into the rephraser.
    - *First step:* rephrase messages from existing replays offline, then read them for fidelity and
      naturalness, before any server change.
+
+8. **The accusation and response tags carry more rules than they were measured for
+   (2026-10-07).** The reactive queue, the closing pick (§7.2 S2), the proactive round's "who has
+   spoken" and the post-cap drain all read `addressed_targets`, which each speaker writes about
+   its own message. The only measurement is the one-off census in §7.1 (79% agreement with the
+   judge on accusations, 183 messages; misses outnumber inventions 24 to 1), and no standing test
+   or eval checks the tags. Candidate: a frozen set of messages with hand-labelled targets, form
+   and stance, scored like the other judge cases, so a prompt or model change that degrades the
+   tags is caught before it degrades the scheduler.
 
 ---
 
