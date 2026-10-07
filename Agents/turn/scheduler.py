@@ -21,8 +21,9 @@ from Agents.schemas import (
 )
 
 
-def cycle_seed(game_id: str, day: int, cycle: int) -> int:
-    """Deterministic per-cycle seed for proactive ranking.
+# Pass markers whose line was written but never shown (a round filter held it). Their tags stay
+# on the marker for the closing's count, but they open and discharge nothing here.
+_HELD_REASONS = {DiscussionPassReason.ROUND_ECHO, DiscussionPassReason.OPENING_FILTERED}
 
     Stable within a run (game_id is fixed); replayable across runs if game_id is pinned.
     Pure (primitives only) so it stays unit-testable with the rest of the scheduler.
@@ -51,6 +52,10 @@ def build_reactive_queue(
         balance = debt_ledger[(creditor, debtor)]
         if balance.open_sequence is not None:
             balance.cycles += 1
+        # A proactive-round line held back as an echo was never shown: its tags count for the
+        # closing (closing_speakers) but must not open a debt nobody can see the cause of.
+        if entry.passed and entry.pass_reason in _HELD_REASONS:
+            continue
             balance.open_sequence = None
             balance.last_touch_sequence = sequence
 

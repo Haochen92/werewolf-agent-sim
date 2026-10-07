@@ -568,6 +568,50 @@ class AddressingExtraction(LenientToolCallModel):
     )
 
 
+# The echo filter's verdict on one line of a parallel round (Phase 2). Model-visible: field
+# descriptions only, every field required (flash-lite fails on optional fields).
+class RoundEchoVerdict(LenientToolCallModel):
+    player: str = Field(description="The player id whose line this verdict is about.")
+    same_point_as: str = Field(
+        description=(
+            "Empty string if this line makes a point no EARLIER line in the list makes. Otherwise the "
+            "player id of the FIRST line in the list that makes the same point: the same observation, "
+            "the same suspicion of the same player for the same reason, or the same proposal. A line "
+            "that adds a new reason, a new fact, or a different target is NOT the same point."
+        ),
+    )
+    why: str = Field(description="One sentence: what the point is, and if a duplicate, what it repeats.")
+
+
+class RoundEchoVerdicts(LenientToolCallModel):
+    verdicts: list[RoundEchoVerdict] = Field(
+        description="Exactly one verdict per line in the list, in the same order.",
+    )
+
+
+# The opening filter's verdict on one opening line (Phase 2). Model-visible: field descriptions
+# only, every field required.
+class OpeningVerdict(LenientToolCallModel):
+    player: str = Field(description="The player id whose line this verdict is about.")
+    kind: Literal["claim", "night_action", "challenge", "repeat", "other"] = Field(
+        description=(
+            "claim = the speaker claims a role for themselves, or claims a role someone else claimed "
+            "(a counterclaim); night_action = the speaker states their OWN night action or its result "
+            "(whom they protected, investigated, shot, or that they held fire, and what they learned); "
+            "challenge = the speaker disputes a claim made on an earlier day, giving a reason; "
+            "repeat = the line only repeats an earlier line in this list that is not a claim; "
+            "other = anything else: a deduction, a suspicion, advice, a general remark."
+        ),
+    )
+    why: str = Field(description="One sentence: what the line does.")
+
+
+class OpeningVerdicts(LenientToolCallModel):
+    verdicts: list[OpeningVerdict] = Field(
+        description="Exactly one verdict per line in the list, in the same order.",
+    )
+
+
 class NoveltyJudgment(LenientToolCallModel):
     novel: bool = Field(
         description=(

@@ -13,6 +13,7 @@ from Agents.rules.claim_ledger import format_claim_ledger, revealed_tag
 from Agents.schemas import RetrievedObservation, RetrievedStrategyPoint
 from Agents.schemas.game_events import (
     DayChannel,
+    DiscussionPassReason,
     DaySummary,
     DayVote,
     DeathRecord,
@@ -70,10 +71,15 @@ def format_day_channel(messages: list[DayChannel], viewer: str | None = None) ->
         if not m.passed:
             lines.append(f"{m.player}: {m.message}")
         elif viewer and m.player == viewer and m.gated and m.gated_candidate:
-            lines.append(
-                f"[{viewer}, held back: you tried to say this, but it repeated what had already been "
-                f"said, so no one else saw it] {m.gated_candidate}"
-            )
+            if m.pass_reason == DiscussionPassReason.ROUND_ECHO:
+                reason = ("another player made the same point in the same round, so only theirs "
+                          "was kept and no one saw yours")
+            elif m.pass_reason == DiscussionPassReason.OPENING_FILTERED:
+                reason = ("an opening may hold only a role claim, your own night action or a "
+                          "challenge to a claim, so no one saw it; say it in the discussion")
+            else:
+                reason = "it repeated what had already been said, so no one else saw it"
+            lines.append(f"[{viewer}, held back: you tried to say this, but {reason}] {m.gated_candidate}")
     return "\n".join(lines) if lines else "No messages yet."
 
 

@@ -2759,7 +2759,9 @@
                 "enum": [
                   "voluntary",
                   "novelty_gated",
-                  "generation_failed"
+                  "generation_failed",
+                  "round_echo",
+                  "opening_filtered"
                 ]
               },
               {

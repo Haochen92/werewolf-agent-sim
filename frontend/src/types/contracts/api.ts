@@ -1272,7 +1272,15 @@ export interface components {
       /** Player */
       player: string;
       /** Pass Reason */
-      pass_reason?: ('voluntary' | 'novelty_gated' | 'generation_failed') | null;
+      pass_reason?:
+        | (
+            | 'voluntary'
+            | 'novelty_gated'
+            | 'generation_failed'
+            | 'round_echo'
+            | 'opening_filtered'
+          )
+        | null;
       /**
        * Gated
        * @default false

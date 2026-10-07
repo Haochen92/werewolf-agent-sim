@@ -56,6 +56,15 @@ class DayChannel(BaseModel):
     """One entry in the public day-discussion transcript (a spoken message or a pass marker)."""
 
     day: int
+    ROUND_ECHO = "round_echo"
+    """A proactive-round line held back because another line of the same round, earlier in seat
+    order, made the same point (Phase 2's echo filter). The held text is kept in gated_candidate
+    and shown to its author only."""
+    OPENING_FILTERED = "opening_filtered"
+    """An opening line held back because it was not one of the kinds an opening may hold (a role
+    claim, the speaker's own night action or result, a challenge to an earlier claim), or it
+    repeated an earlier opening that was not a claim (Phase 2's opening filter). Held text in
+    gated_candidate, shown to its author only."""
     """1-based game day this entry belongs to."""
     seq: int
     """Order within the day (monotonic; pass markers included)."""
@@ -89,6 +98,10 @@ class DaySummary(BaseModel):
     """One block carried into later days: either the summariser's account of a day's discussion,
     or a game-master announcement (a night's outcome, a vote result) filed alongside it."""
 
+    """The held-back text of a gated or filtered pass marker; shown to its author only."""
+    opening_kind: str = ""
+    """The opening filter's label for an opening line (claim / night_action / challenge / repeat /
+    other); observer only, "" on every other entry."""
     day: int
     """The day summarized."""
     summary: str

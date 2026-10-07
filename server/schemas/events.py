@@ -132,7 +132,8 @@ class PassMarker(DurableEvent, frozen=True):
     type: Literal["pass_marker"] = "pass_marker"
     channel_seq: int
     player: str
-    pass_reason: Literal["voluntary", "novelty_gated", "generation_failed"] | None = None
+    pass_reason: Literal["voluntary", "novelty_gated", "generation_failed", "round_echo",
+                         "opening_filtered"] | None = None
     """None only on legacy records predating the typed reasons."""
     gated: bool = False
     gated_candidate: str | None = None
