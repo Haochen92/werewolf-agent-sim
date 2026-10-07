@@ -136,7 +136,7 @@ def resolve_decision(
         # denying what was said about themselves is never a duplicate, decided from the tags, so
         # it holds even when the judge misses it; seen 2026-10-07, a mention tagged neutral left
         # the named player no reactive turn and the gate then held their denial).
-        # The held marker keeps the text for its author and its tags for the closing's count.
+        # The held marker keeps the text for its author; its tags stay for records only.
         if is_proactive and not payload.get("human_player"):
             earlier_today = [m for m in payload.get("day_channel", []) if m.day == current_day]
             if _answers_someone_who_named_me(addressed_targets, player_id, earlier_today):

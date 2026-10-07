@@ -27,7 +27,7 @@ from Agents.schemas import (
 
 
 # Pass markers whose line was written but never shown (the echo gate or a round filter held it).
-# Their tags stay on the marker for the closing's count, but they open and discharge nothing here.
+# Their tags stay on the marker for records, but they open and discharge nothing here.
 _HELD_REASONS = {
     DiscussionPassReason.NOVELTY_GATED,
     DiscussionPassReason.ROUND_ECHO,
@@ -61,8 +61,8 @@ def build_reactive_queue(
             balance.last_touch_sequence = sequence
 
     for entry in day_channel:
-        # A line held back as an echo was never shown: its tags count for the closing
-        # (closing_speakers) but must not open a debt nobody can see the cause of.
+        # A line held back as an echo was never shown: it must not open a debt nobody can see
+        # the cause of (and, since 2026-10-07, it counts for nothing in the closing either).
         if entry.passed and entry.pass_reason in _HELD_REASONS:
             continue
         # A reactive model failure is an attempted turn, not speech. Close exactly the obligations

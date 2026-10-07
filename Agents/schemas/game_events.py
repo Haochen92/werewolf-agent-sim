@@ -63,7 +63,8 @@ class DiscussionPassReason(str, Enum):
     NOVELTY_GATED = "novelty_gated"
     """A proactive turn held back because an earlier line of the day made the same point (the echo
     gate, Agents/turn/echo_gate.py). The held text is kept in gated_candidate and shown to its
-    author only; its accusation tags still count for the closing."""
+    author only; its accusation tags stay on the marker for records but count for nothing (the
+    closing counts spoken lines only, ruling 2026-10-07)."""
     GENERATION_FAILED = "generation_failed"
     ROUND_ECHO = "round_echo"
     """Records only. A line of the parallel proactive round held back because another line of the
@@ -107,15 +108,14 @@ class DayChannel(BaseModel):
     were previously one indistinguishable passed=True marker). Observability only; never on a real
     utterance."""
     gated_candidate: str = ""
-    """The held-back text of a gated or filtered pass marker; shown to its author only."""
+    """The held-back text of a gated or filtered pass marker; shown to its author only. ⚠️ LEAK
+    BOUNDARY: this text was removed from the discussion ON PURPOSE — it must NEVER be formatted into
+    any other player's prompt. Persisted-but-hidden like firing_reason: the day-channel formatters
+    drop passed markers, so it is guarded there; tests/leak_test.check_held_lines_reach_only_their_author
+    is the standing guard. Observability only (a future gate audit reads it), never model-visible."""
     opening_kind: str = ""
     """The opening filter's label for an opening line (claim / night_action / challenge / repeat /
     other); observer only, "" on every other entry."""
-    """The discarded candidate text the novelty gate silenced (empty unless gated=True). ⚠️ LEAK
-    BOUNDARY: this text was removed from the discussion ON PURPOSE — it must NEVER be formatted into
-    any agent-facing prompt. Persisted-but-hidden like firing_reason: the day-channel formatters drop
-    passed markers, so it is guarded there; tests/leak_test.check_gated_candidate_isolation is the
-    standing guard. Observability only (a future gate audit reads it), never model-visible."""
 
 
 class RoundCandidate(BaseModel):

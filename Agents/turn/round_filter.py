@@ -106,8 +106,8 @@ def _judge_kinds(spoken: list[DayChannel]) -> dict[str, str] | None:
 
 def _held(entry: DayChannel, reason: DiscussionPassReason) -> DayChannel:
     """The pass marker that replaces a held line: the text is kept for its author only. Its
-    addressed targets stay on the marker (the closing's count and the reactive queue decide
-    what to do with them, each by pass_reason)."""
+    addressed targets stay on the marker for records; the closing and the reactive queue skip
+    every pass."""
     return entry.model_copy(update={
         "message": "",
         "passed": True,

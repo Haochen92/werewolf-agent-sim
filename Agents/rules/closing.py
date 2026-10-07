@@ -14,7 +14,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-from Agents.schemas.game_events import DayChannel, DiscussionPassReason
+from Agents.schemas.game_events import DayChannel
 
 # A player is "on trial" with this many different accusers, and at most this many players
 # get a closing turn.
@@ -31,19 +31,18 @@ class Accused:
     """The transcript position of the latest accusation against them (the tie-breaker)."""
 
 
-# Pass reasons of a line that was written but held back for repeating a kept line.
-_HELD_ECHO_REASONS = (DiscussionPassReason.NOVELTY_GATED, DiscussionPassReason.ROUND_ECHO)
-
-
 def closing_speakers(
     day_channel: Iterable[DayChannel], current_day: int, surviving_players: Iterable[str]
 ) -> list[Accused]:
     """The players who get a last word today, most accused first.
 
-    Over today's spoken, non-moderator entries (plus lines held back as echoes,
-    whose accusations a kept line also made), every accusation tag against a living player other
-    than the speaker counts its speaker as one accuser (a player accusing twice counts once). Players with at least MIN_ACCUSERS accusers qualify; the most accusers first, then
-    the more recently accused, then the player id so the order is fixed; at most MAX_ACCUSED.
+    Over today's spoken, non-moderator entries, every accusation tag against a living player
+    other than the speaker counts its speaker as one accuser (a player accusing twice counts
+    once). A pass counts nothing, a held line included: the table never heard it, and naming its
+    author as an accuser announced accusations nobody had seen (owner, 2026-10-07, after the step 8
+    games: four of six named accusers in one closing had been held). Players with at least
+    MIN_ACCUSERS accusers qualify; the most accusers first, then the more recently accused, then
+    the player id so the order is fixed; at most MAX_ACCUSED.
     Empty when nobody qualifies, and the day goes straight to its summary.
     """
     alive = set(surviving_players)
@@ -56,10 +55,8 @@ def closing_speakers(
     for entry in day_channel:
         if entry.day != current_day or entry.player == "game_master":
             continue
-        # A pass has no accusation in it, except a line held back as an echo (the echo gate on a
-        # sweep turn, or the parallel round's filter in older records): the accuser made the same
-        # accusation as a kept line, so they count (owner, 2026-10-07).
-        if entry.passed and entry.pass_reason not in _HELD_ECHO_REASONS:
+        # A pass has no accusation the table heard, a held line included.
+        if entry.passed:
             continue
         for tag in entry.addressed_targets:
             if tag.stance != "accusation":
