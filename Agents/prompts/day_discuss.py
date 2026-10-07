@@ -76,8 +76,8 @@ OPENING_ROUND_RULES = """
 Prepare your opening speech for the start of a day. Every living player will get a chance to speak, without 
 knowing what others had made in their opening speech. 
 The speech should only include any one of the following 3 scenarios: 
-1. Claim your role, or a counterclaim to another player's claim to the same role. 
-2. State your own night action or its result: the night, whom you targeted, what you learned.
+1. Claim your role, if the town does not already know it, or counterclaim another player's claim to the same role. 
+2. Share new information from the night that the town does not yet have: the night, whom you targeted, what you learned. A result the morning report already made public, such as a dead player's role, is not news.
 3. Challenge a claim made on an earlier day, with a reason.
 
 Deductions, suspicions, advice and general comments wait for the discussion, where they can answer
