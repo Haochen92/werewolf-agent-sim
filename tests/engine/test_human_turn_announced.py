@@ -68,3 +68,36 @@ def test_a_human_wolf_is_not_announced_the_pack_prompts_at_the_turn(monkeypatch)
     written = _capture(monkeypatch, orchestrator)
     orchestrator.route_night_actors(_night_state(human_players=["player_2"]))
     assert written == []
+
+
+def test_a_human_round_turn_is_announced_with_its_round(monkeypatch):
+    written = _capture(monkeypatch, flow)
+    state = _day_state(human="player_3")
+    state["day_round"] = "opening"
+    state["round_players"] = ["player_1", "player_2", "player_3"]
+
+    sends = flow.fan_out_round(state, {})
+
+    nodes = []
+    for send in sends:
+        nodes.append(send.node)
+    assert nodes == ["round_turn", "round_turn", "round_turn_human"]
+    (announcement,) = written
+    assert announcement["event"] == "human_turn_opened"
+    assert announcement["player"] == "player_3"
+    assert announcement["phase"] == "day_channel"
+    assert announcement["day_round"] == "opening"
+
+    state["day_round"] = "closing"
+    state["round_players"] = ["player_3"]
+    flow.fan_out_round(state, {})
+    assert written[1]["day_round"] == "closing"
+
+
+def test_a_human_vote_announcement_carries_no_round(monkeypatch):
+    monkeypatch.setattr(flow, "game_config_from_runnable", lambda config: GameConfig())
+    written = _capture(monkeypatch, flow)
+
+    flow.fan_out_vote(_day_state(human="player_3"), {})
+
+    assert written[0]["day_round"] is None

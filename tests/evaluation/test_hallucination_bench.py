@@ -74,6 +74,26 @@ def test_a_rebuilt_turn_never_sees_the_moderators_later_lines():
     assert [m["player"] for m in _census_state(record, case)["day_channel"]] == ["p2"]
 
 
+def test_a_rebuilt_vote_turn_keeps_the_closing_call_it_did_see():
+    """Phase 2: the closing's moderator line is posted before the votes, so a rebuilt vote turn
+    keeps it, while the vote result after it is still dropped."""
+    from evaluation.src.data.builders.hallucination_bench import _census_state
+
+    closing_call = {"day": 2, "seq": 1, "player": "game_master", "day_round": "closing",
+                    "message": "Before the vote: p1 has been accused by p2 and p3. p1 gets a last word."}
+    last_word = {"day": 2, "seq": 2, "player": "p1", "day_round": "closing", "message": "I am town."}
+    vote_result = {"day": 2, "seq": 3, "player": "game_master", "message": "vote result: p1 out"}
+    record = {"roles": STATE["roles"], "night_resolutions": [], "day_resolutions": [], "day_summaries": [],
+              "day_channel": [{"day": 2, "seq": 0, "player": "p2", "message": "who?"},
+                              closing_call, last_word, vote_result]}
+    case = {"day": 2, "player_id": "p3", "action_phase": "day_vote", "private_context": {}}
+
+    seen = []
+    for entry in _census_state(record, case)["day_channel"]:
+        seen.append(entry["seq"])
+    assert seen == [0, 1, 2]
+
+
 def test_an_old_state_reads_with_todays_engine_labels_and_ballot_wording():
     state = {**STATE, "day_summaries": [
         {"day": 1, "summary": "Key accusations and defenses: None.", "source": "discussion"},

@@ -308,3 +308,22 @@ def test_openai_and_xai_prefixes_build_openai_protocol_clients(monkeypatch):
         monkeypatch.setenv(key, "test-key")
         llm = _build_chat_model(f"{prefix}/some-model", temperature=1.0)
         assert llm.model_name == "some-model" and url in str(llm.openai_api_base)
+
+
+def test_an_exhausted_round_turn_keeps_its_round_on_the_technical_pass(monkeypatch):
+    # Seen in a step 8 game (2026-10-07): the accused's closing turn failed every attempt and its
+    # pass marker landed in the transcript as day_round "discussion" after the closing's call
+    # (fixed the same day: the technical pass copies the payload's day_round).
+    payload = {
+        **_payload(),
+        "day_channel": [],
+        "day_summaries": [],
+        "day_round": "closing",
+    }
+    monkeypatch.setattr(agent_mod, "get_llm", lambda: _BrokenLLM())
+    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: _BrokenLLM())
+
+    out = agent_mod.run_agent(payload, VILLAGER_DAY_DISCUSS, DayDiscussOutput, "day_channel")
+
+    assert out.entry.pass_reason == DiscussionPassReason.GENERATION_FAILED
+    assert out.entry.day_round == "closing"

@@ -77,3 +77,51 @@ def test_opening_no_vote_rules_are_uniform_across_role_prompts():
         assert "Day 1: no vote" in opening, role
         assert "Day 1: no vote" not in regular, role
 
+
+
+def _rendered_for_round(role: str, template, day_round: str, *, voting_available: bool = True) -> str:
+    prompt_input = build_agent_prompt_input(
+        {
+            "player_id": "player_1",
+            "player_role": role,
+            "current_day": 3,
+            "surviving_players": ["player_1", "player_2", "player_3"],
+            "surviving_wolves": ["player_1"],
+            "surviving_villagers": ["player_2", "player_3"],
+            "voting_available": voting_available,
+            "day_round": day_round,
+        }
+    )
+    messages = template.format_messages(**prompt_input)
+    parts = []
+    for message in messages:
+        parts.append(message.content)
+    return "\n".join(parts)
+
+
+def test_each_round_of_the_day_gets_its_own_rules_block_in_every_role_prompt():
+    # Phase 2: the payload's day_round picks the block; a reactive turn gets none of them.
+    headings = {
+        "opening": "== Opening round ==",
+        "proactive": "== Open floor ==",
+        "closing": "== Closing defence ==",
+    }
+    for role, template in _ROLE_TEMPLATES:
+        for day_round, heading in headings.items():
+            rendered = _rendered_for_round(role, template, day_round)
+            assert heading in rendered, (role, day_round)
+            for other_round, other_heading in headings.items():
+                if other_round != day_round:
+                    assert other_heading not in rendered, (role, day_round, other_heading)
+        discussion = _rendered_for_round(role, template, "discussion")
+        for heading in headings.values():
+            assert heading not in discussion, (role, heading)
+
+
+def test_the_day_one_opening_says_there_is_no_vote():
+    for role, template in _ROLE_TEMPLATES:
+        day_one = _rendered_for_round(role, template, "opening", voting_available=False)
+        voting_day = _rendered_for_round(role, template, "opening", voting_available=True)
+        assert "== Opening round ==" in day_one, role
+        assert "Day 1: no vote" in day_one, role
+        assert "Day 1: no vote" not in voting_day, role

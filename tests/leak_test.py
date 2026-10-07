@@ -59,7 +59,7 @@ def check_wolf_identity_isolation(
 # The output_keys a WOLF player's decision produces: wolf_channel (night discussion+vote),
 # day_channel (day discussion), day_votes (day elimination vote). As of 2026-07-05 the wolf
 # channel rides all three (day exposure added); any other pairing carrying it is a leak.
-_WOLF_OUTPUT_KEYS = frozenset({"wolf_channel", "day_channel", "day_votes"})
+_WOLF_OUTPUT_KEYS = frozenset({"wolf_channel", "wolf_vote", "day_channel", "day_votes"})
 
 
 def check_wolf_channel_isolation(prompt_log: list[dict[str, Any]]) -> list[str]:
@@ -255,6 +255,47 @@ def check_eliminated_players_excluded(
                 f"LEAK: eliminated player {player} received prompt on day {entry['day']}",
             )
 
+    return leaks
+
+
+def check_held_lines_reach_only_their_author(
+    prompt_log: list[dict[str, Any]], held_lines: Iterable[tuple[str, str]]
+) -> list[str]:
+    """A line held back by the echo gate or the opening filter (Phase 2) was never said: its text
+    is shown to its author, marked as unheard, and must reach no other player's prompt.
+    ``held_lines`` is (author, held text) pairs, the gated_candidate of each held pass marker.
+    (check_gated_candidate_isolation predates the author seeing their own held line and flags
+    the author too; this is the check for the current rule.)"""
+    leaks: list[str] = []
+    for author, text in held_lines:
+        if not text or not text.strip():
+            continue
+        for entry in prompt_log:
+            if entry["player_id"] == author:
+                continue
+            if text in repr(entry.get("prompt_input", {})):
+                _record_leak(
+                    leaks,
+                    f"LEAK: {entry['player_id']} ({entry['player_role']}) received "
+                    f"{author}'s held line in prompt_input: {text!r}",
+                )
+    return leaks
+
+
+def check_round_players_are_seat_ids(
+    round_player_lists: Iterable[Any], roles: dict[str, str]
+) -> list[str]:
+    """The players of a round (``round_players`` on the state, ``round_opened.players`` on the
+    wire, public) must be bare seat ids: anything else, a role, a faction label, a dict with a
+    role in it, would tell every viewer something private."""
+    leaks: list[str] = []
+    for players in round_player_lists:
+        if not isinstance(players, list):
+            _record_leak(leaks, f"LEAK: round players are not a list of seat ids: {players!r}")
+            continue
+        for player in players:
+            if not isinstance(player, str) or player not in roles:
+                _record_leak(leaks, f"LEAK: round players hold something other than a seat id: {player!r}")
     return leaks
 
 

@@ -144,6 +144,7 @@ def run_agent(
                 passed=True,
                 pass_reason=DiscussionPassReason.GENERATION_FAILED,
                 firing_reason=payload.get("firing_reason"),
+                day_round=payload.get("day_round", "discussion"),
             )
         )
     if output_key == "wolf_channel":

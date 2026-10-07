@@ -360,6 +360,122 @@ def test_reexecuted_strategy_note_is_sent_once_but_changes_still_are():
     assert [e.type for e in t.translate(changed)] == ["strategy_update"]
 
 
+# ---- the rounds (Phase 2): round_opened, the closing's moderator line, the round's ask ------
+
+def _day_chunk(node_name: str, delta: dict) -> dict:
+    return {"type": "updates", "ns": ["DAY_PHASE:x"], "data": {node_name: delta}}
+
+
+def test_start_opening_emits_round_opened_with_the_players_in_order():
+    t = _seeded_translator()
+    t.current_day = 2
+    players = ["h", "inv", "sk", "t0", "v", "w0", "w1"]
+
+    events = t.translate(_day_chunk("START_OPENING", {"day_round": "opening", "round_players": players}))
+
+    (opened,) = events
+    assert opened.type == "round_opened"
+    assert opened.round == "opening"
+    assert opened.players == players
+    assert opened.day == 2
+
+
+def test_start_closing_emits_the_moderator_line_then_round_opened():
+    t = _seeded_translator()
+    t.current_day = 3
+    line = "Before the vote: w0 has been accused by inv and t0. w0 gets a last word."
+    delta = {
+        "day_round": "closing",
+        "day_channel": [{"day": 3, "seq": 9, "player": "game_master", "message": line,
+                         "day_round": "closing", "passed": False}],
+        "round_players": ["w0"],
+    }
+
+    events = t.translate(_day_chunk("START_CLOSING", delta))
+
+    types = []
+    for event in events:
+        types.append(event.type)
+    assert types == ["gm_message", "round_opened"]
+    assert events[0].text == line
+    assert events[0].channel_seq == 9
+    assert events[1].round == "closing"
+    assert events[1].players == ["w0"]
+
+
+def test_a_round_turn_sends_only_its_strategy_note():
+    t = _seeded_translator()
+    held_line = {"day": 2, "day_round": "opening",
+                 "entry": {"day": 2, "seq": 0, "player": "t0", "message": "I am the healer.",
+                           "passed": False}}
+    delta = {"round_candidates": [held_line], "agent_strategies": {"t0": "claim early"}}
+
+    events = t.translate(_day_chunk("round_turn", delta))
+
+    types = []
+    for event in events:
+        types.append(event.type)
+    assert types == ["strategy_update"]  # the line itself waits for COLLECT_ROUND
+
+
+def test_collect_round_sends_the_round_lines_like_discussion_turns():
+    t = _seeded_translator()
+    delta = {"day_channel": [
+        {"day": 2, "seq": 0, "player": "inv", "message": "I checked w0: wolf.", "passed": False,
+         "day_round": "opening",
+         "addressed_targets": [{"target": "w0", "addressed_form": "mention", "stance": "accusation"}]},
+        {"day": 2, "seq": 1, "player": "t0", "message": "", "passed": True, "day_round": "opening",
+         "pass_reason": "voluntary"},
+    ]}
+
+    events = t.translate(_day_chunk("COLLECT_ROUND", delta))
+
+    types = []
+    for event in events:
+        types.append(event.type)
+    assert types == ["speech", "addressed_targets", "pass_marker"]
+
+
+def _interrupt_for(phase: str, day_round) -> dict:
+    request = {"player_id": "t0", "phase": phase, "day": 2, "valid_targets": []}
+    if day_round != "absent":
+        request["day_round"] = day_round
+    return {"type": "updates", "ns": [], "data": {"__interrupt__": [{"value": request}]}}
+
+
+def test_a_discuss_ask_carries_its_round():
+    for day_round in ["opening", "discussion", "proactive", "closing"]:
+        t = _seeded_translator()
+        (event,) = t.translate(_interrupt_for("day_channel", day_round))
+        assert event.action_kind == "discuss"
+        assert event.round == day_round
+
+
+def test_every_other_ask_carries_no_round():
+    t = _seeded_translator()
+    (vote,) = t.translate(_interrupt_for("day_votes", "opening"))
+    assert vote.action_kind == "vote"
+    assert vote.round is None
+
+    t = _seeded_translator()
+    (old_record,) = t.translate(_interrupt_for("day_channel", "absent"))
+    assert old_record.round is None
+
+
+def test_an_announced_round_turn_carries_its_round_and_the_interrupt_sends_no_second_ask():
+    t = _seeded_translator()
+    announced = {"type": "custom", "ns": ["DAY_PHASE:x"], "data": {
+        "event": "human_turn_opened", "player": "t0", "role": "villager", "phase": "day_channel",
+        "day": 2, "valid_targets": [], "day_round": "opening"}}
+
+    (ask,) = t.translate(announced)
+    assert ask.type == "input_request"
+    assert ask.action_kind == "discuss"
+    assert ask.round == "opening"
+
+    assert t.translate(_interrupt_for("day_channel", "opening")) == []
+
+
 # ---- live chunk shape ------------------------------------------------------------------
 
 def test_live_shaped_chunk_translates_like_its_saved_form():
