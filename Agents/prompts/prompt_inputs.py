@@ -91,7 +91,7 @@ def _discussion_stage_rules(payload: dict[str, Any]) -> str:
 
     The payload's ``day_round`` says which round the turn belongs to: ``opening`` (every living
     player at once, claims and night facts only), ``discussion`` (the scheduler's reactive
-    turns), ``proactive`` (everyone who has not spoken since the last round, at once) or
+    turns), ``proactive`` (a sweep turn: the floor given to a player who has not spoken) or
     ``closing`` (the accused's last word). On day 1 there is no vote, and the opening says so.
     A missing ``day_round`` is a discussion turn, so older payloads and replays render as before.
     """

@@ -79,11 +79,14 @@ class DayGraphState(TypedDict, total=False):
     """Consecutive no-elimination days; forces abstain off past a cap."""
 
     day_round: DayRound
-    """The round of the day now running (Phase 2). Written by the round's entry node
-    (start_opening / start_proactive / start_closing); fan_out_round and collect_round read it."""
-    proactive_rounds: int
-    """How many proactive rounds have run today; start_proactive counts one up, and the day router
-    stops at GameConfig.max_proactive_rounds."""
+    """The round of the day now running (Phase 2): "opening" or "closing". Written by the round's
+    entry node (start_opening / start_closing); fan_out_round and collect_round read it. The
+    scheduler's sweep turns carry "proactive" on their entries but run no round."""
+    round_players: list[str]
+    """Who is in the round now running, in the order their lines are played: every survivor in seat
+    order for the opening, the accused for the closing. Written by the round's entry node with
+    day_round; fan_out_round sends to exactly these players and collect_round plays their lines in
+    this order. The translator reads it off the entry node's chunk for the round_opened event."""
     round_candidates: Annotated[list[RoundCandidate], add]
     """The parallel round turns' lines, held until collect_round orders and numbers them into
     day_channel. The day graph's state is rebuilt every day and day_phase returns only four keys,
@@ -98,8 +101,6 @@ class VillagerDayState(TypedDict):
     """1-based current game day."""
     day_round: DayRound
     """Which round of the day the turn belongs to (opening / discussion / proactive / closing)."""
-    round_no: int
-    """Which round of that kind today (the proactive count; 0 for the others)."""
     previous_strategy: str
     """This agent's own prior strategy note, fed back in."""
     strategy_points: str
@@ -131,8 +132,6 @@ class HealerDayState(TypedDict):
     """1-based current game day."""
     day_round: DayRound
     """Which round of the day the turn belongs to (opening / discussion / proactive / closing)."""
-    round_no: int
-    """Which round of that kind today (the proactive count; 0 for the others)."""
     previous_strategy: str
     """The healer's own prior strategy note."""
     strategy_points: str
@@ -163,8 +162,6 @@ class InvestigatorDayState(TypedDict):
     """1-based current game day."""
     day_round: DayRound
     """Which round of the day the turn belongs to (opening / discussion / proactive / closing)."""
-    round_no: int
-    """Which round of that kind today (the proactive count; 0 for the others)."""
 
     human_player: bool
     """True if this seat is the human player."""
@@ -198,8 +195,6 @@ class WolfDayState(TypedDict):
     """1-based current game day."""
     day_round: DayRound
     """Which round of the day the turn belongs to (opening / discussion / proactive / closing)."""
-    round_no: int
-    """Which round of that kind today (the proactive count; 0 for the others)."""
 
     human_player: bool
     """True if this seat is the human player."""

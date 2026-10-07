@@ -95,11 +95,11 @@ today. You are not required to manufacture a read or commitment; passing is equa
 
 PROACTIVE_ROUND_RULES = """
 == Open floor ==
-Everyone who has not spoken since the last round is asked at once, so nobody has seen the others'
-lines. Make your one most useful point: a concrete observation or read with the evidence it rests
+You have the floor because you have not spoken since the day began (or since the floor last went
+round). Make one or two useful points: a concrete observation or read with the evidence it rests
 on, a contradiction you noticed, or a proposal for what to test. Build on what is already in the
-transcript rather than repeating it. If you have nothing new to add, set pass_turn=true; a pass
-costs nothing here.
+transcript rather than repeating it: a point the table has already heard is held back and nobody
+hears it. If you have nothing new to add, set pass_turn=true; a pass costs nothing here.
 """
 
 CLOSING_ROUND_RULES = """

@@ -139,7 +139,7 @@ def round_turn(
     if turn.entry is not None:
         updates["round_candidates"] = [
             RoundCandidate(day=payload["current_day"], day_round=payload["day_round"],
-                           round_no=payload.get("round_no", 0), entry=turn.entry)
+                           entry=turn.entry)
         ]
     if turn.effects.strategy:
         updates["agent_strategies"] = {

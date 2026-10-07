@@ -45,7 +45,6 @@ from Agents.nodes.day import (  # noqa: F401
     route_speaker,
     start_closing,
     start_opening,
-    start_proactive,
     start_voting,
     summarize_day_discussion,
     vote,

@@ -1,16 +1,21 @@
 """Sequential-discussion speaker selection — the pure core behind route_speaker.
 
 Stateless: every decision is recomputed from the day_channel transcript, so it is
-deterministic and unit-testable in isolation. select_next_speaker is the entry point: cap →
-reactive obligations → terminate. Since Phase 2 (2026-10-07) the scheduler fires only the
-reactive chains; players with nothing owed speak in the day's rounds (the opening, the
-proactive round, the closing), which run in parallel outside this module. Kept free of
-graph/LLM deps on purpose (test_scheduler.py).
+deterministic and unit-testable in isolation. select_next_speaker is the entry point:
+reactive obligations → the proactive sweep → terminate, with the utterance cap's drain. The
+reactive chains answer whoever is owed an answer, freshest debt first. When nobody is owed, the
+sweep gives the floor to the survivors who have not spoken since the day began, one at a time
+in seat order, each line's chains running before the next player is asked; a second sweep goes
+round those silent since the first began, if the first produced a new line (Phase 2 step 4c,
+2026-10-07: the sweep replaced the parallel proactive round, which replaced the old
+quietest-first picks). The opening and the closing rounds run outside this module. Kept free
+of graph/LLM deps on purpose (test_scheduler.py).
 """
 
 from collections import defaultdict
 
 from Agents.game_config import GameConfig
+from Agents.rules.seats import seat_order
 from Agents.schemas import (
     Balance,
     DayChannel,
@@ -21,9 +26,13 @@ from Agents.schemas import (
 )
 
 
-# Pass markers whose line was written but never shown (a round filter held it). Their tags stay
-# on the marker for the closing's count, but they open and discharge nothing here.
-_HELD_REASONS = {DiscussionPassReason.ROUND_ECHO, DiscussionPassReason.OPENING_FILTERED}
+# Pass markers whose line was written but never shown (the echo gate or a round filter held it).
+# Their tags stay on the marker for the closing's count, but they open and discharge nothing here.
+_HELD_REASONS = {
+    DiscussionPassReason.NOVELTY_GATED,
+    DiscussionPassReason.ROUND_ECHO,
+    DiscussionPassReason.OPENING_FILTERED,
+}
 
 
 def build_reactive_queue(
@@ -52,8 +61,8 @@ def build_reactive_queue(
             balance.last_touch_sequence = sequence
 
     for entry in day_channel:
-        # A proactive-round line held back as an echo was never shown: its tags count for the
-        # closing (closing_speakers) but must not open a debt nobody can see the cause of.
+        # A line held back as an echo was never shown: its tags count for the closing
+        # (closing_speakers) but must not open a debt nobody can see the cause of.
         if entry.passed and entry.pass_reason in _HELD_REASONS:
             continue
         # A reactive model failure is an attempted turn, not speech. Close exactly the obligations
@@ -127,11 +136,13 @@ def select_next_speaker(
     surviving_players: list[str],
     game_config: GameConfig,
 ) -> Decision:
-    """Pick the next speaker (or terminate): reactive → terminate, with a drain once the cap hits.
+    """Pick the next speaker (or terminate): reactive → sweep → terminate, with a drain once the
+    cap hits.
 
     The reactive queue holds every player who owes someone an answer; the freshest debt
-    speaks first and answers all its creditors at once. With nothing owed, the chains are over
-    and the day router decides what comes next (another round, the closing, or the summary).
+    speaks first and answers all its creditors at once. With nothing owed, the sweep gives the
+    floor to the next player who has not spoken (next_sweep_speaker); when the sweeps are done
+    too, the day router decides what comes next (the closing or the summary).
 
     The utterance cap does not cut a chain mid-air (owner, 2026-10-07). Once the cap-th real
     utterance is in, the day DRAINS: only debts opened at or before that point are answered,
@@ -162,7 +173,116 @@ def select_next_speaker(
 
     if capped:
         return Decision(terminate=True, terminate_reason="cap")
+
+    sweep_decision = next_sweep_speaker(day_channel, surviving_players, game_config.max_proactive_sweeps)
+    if sweep_decision is not None:
+        return sweep_decision
     return Decision(terminate=True, terminate_reason="no_obligations")
+
+
+def next_sweep_speaker(
+    day_channel: list[DayChannel], surviving_players: list[str], max_sweeps: int
+) -> Decision | None:
+    """The next player the proactive sweep gives the floor to, or None when the sweeps are done.
+
+    Sweep 1 goes round the survivors with no spoken line today, in seat order (a player who
+    spoke in the opening or answered a debt is not asked). It continues until everyone in it has
+    had the floor once, chains included in between. Sweep 2 then goes round those silent since
+    sweep 1 began, so a player who only spoke in the opening is asked once more, but only if
+    sweep 1 produced a new line, and so on up to ``max_sweeps``. A player whose earlier sweep
+    line was held by the echo gate is not asked again that day: they had the floor and repeated
+    the table, and asked again they repeated themselves (owner, 2026-10-07, after the recaptured
+    game). Which sweep is running, and where it began, is read back from the sweep marks on the
+    proactive entries (FiringReason.sweep), so this stays stateless.
+    """
+    sweep_starts = _sweep_starts(day_channel)
+    current_sweep = len(sweep_starts)
+
+    if current_sweep >= 1:
+        waiting = _players_to_sweep(day_channel, surviving_players, current_sweep, sweep_starts)
+        if waiting:
+            return Decision(
+                speaker=waiting[0],
+                firing_reason=FiringReason(tier="proactive", sweep=current_sweep),
+            )
+
+    if current_sweep >= max_sweeps:
+        return None
+    if current_sweep >= 1:
+        previous_began = sweep_starts[current_sweep - 1]
+        if not _anyone_spoke_since(day_channel, previous_began):
+            return None
+    next_sweep = current_sweep + 1
+    waiting = _players_to_sweep(day_channel, surviving_players, next_sweep, sweep_starts)
+    if not waiting:
+        return None
+    return Decision(
+        speaker=waiting[0],
+        firing_reason=FiringReason(tier="proactive", sweep=next_sweep),
+    )
+
+
+def _sweep_starts(day_channel: list[DayChannel]) -> list[int]:
+    """The seq where each sweep began, sweep 1 first: the lowest seq among the proactive entries
+    marked with that sweep."""
+    first_seq_by_sweep: dict[int, int] = {}
+    for entry in day_channel:
+        firing = entry.firing_reason
+        if firing is None or firing.tier != "proactive" or firing.sweep < 1:
+            continue
+        known = first_seq_by_sweep.get(firing.sweep)
+        if known is None or entry.seq < known:
+            first_seq_by_sweep[firing.sweep] = entry.seq
+    starts: list[int] = []
+    for sweep in sorted(first_seq_by_sweep):
+        starts.append(first_seq_by_sweep[sweep])
+    return starts
+
+
+def _players_to_sweep(
+    day_channel: list[DayChannel], surviving_players: list[str], sweep: int, sweep_starts: list[int]
+) -> list[str]:
+    """Who is still owed the floor in ``sweep``, in seat order: survivors with no spoken line
+    since the previous sweep began (the day's start for sweep 1) who have not had a turn in this
+    sweep yet (a pass or a held line is a turn), and whose line in an earlier sweep was not held
+    by the echo gate."""
+    if sweep == 1:
+        since_seq = 0
+    else:
+        since_seq = sweep_starts[sweep - 2]
+
+    spoke: set[str] = set()
+    asked: set[str] = set()
+    held_earlier: set[str] = set()
+    for entry in day_channel:
+        if entry.player == "game_master":
+            continue
+        if not entry.passed and entry.seq >= since_seq:
+            spoke.add(entry.player)
+        firing = entry.firing_reason
+        if firing is None or firing.tier != "proactive":
+            continue
+        if firing.sweep == sweep:
+            asked.add(entry.player)
+        if firing.sweep < sweep and entry.passed and entry.gated:
+            held_earlier.add(entry.player)
+
+    waiting: list[str] = []
+    for player in seat_order(surviving_players):
+        if player in spoke or player in asked or player in held_earlier:
+            continue
+        waiting.append(player)
+    return waiting
+
+
+def _anyone_spoke_since(day_channel: list[DayChannel], since_seq: int) -> bool:
+    """Whether any player's spoken line sits at or after ``since_seq``."""
+    for entry in day_channel:
+        if entry.player == "game_master":
+            continue
+        if not entry.passed and entry.seq >= since_seq:
+            return True
+    return False
 
 
 def _drainable(

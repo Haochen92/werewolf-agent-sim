@@ -50,5 +50,5 @@ class Decision(BaseModel):
     """Why this turn fired; rides the Send payload and is stamped onto the resulting DayChannel.
     None iff terminate."""
     terminate_reason: Literal["cap", "no_obligations"] | None = None
-    """Why the chains ended (trace only): the utterance cap (reached, and the pre-cap debts
-    drained), or nobody owes an answer. Set iff terminate."""
+    """Why the discussion ended (trace only): the utterance cap (reached, and the pre-cap debts
+    drained), or nobody owes an answer and the sweeps are done. Set iff terminate."""

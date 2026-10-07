@@ -2,8 +2,9 @@
 
 Pure functions over a synthetic transcript — no LLM, no graph. Covers the reactive
 obligations (open/discharge/freshness/K-cap/cooldown) and the select_next_speaker flow
-(cap -> reactive -> terminate). The proactive tier the scheduler once had (quietest-first
-picks, trailing-pass termination) was replaced by the day's rounds on 2026-10-07 (Phase 2).
+(reactive -> the proactive sweep -> terminate, with the cap's drain). The sweep (Phase 2 step
+4c, 2026-10-07) gives the floor to the survivors who have not spoken, one at a time in seat
+order; its own cases are in test_sweep.py (step 8).
 """
 from __future__ import annotations
 
@@ -198,13 +199,26 @@ def test_cap_counts_real_utterances_only():
     at_cap = [msg(i, "A" if i % 2 else "B") for i in range(cap)]  # nothing owed: ends at once
     assert select_next_speaker(at_cap, SURV, cfg).terminate_reason == "cap"
     # cap-1 real utterances + a couple passes must NOT cap (passes don't count); with nothing
-    # owed, the chains are simply over.
+    # owed, the floor goes to the next survivor who has not spoken.
     below = [msg(i, "A") for i in range(cap - 1)] + [msg(98, "C", passed=True), msg(99, "D", passed=True)]
-    assert select_next_speaker(below, SURV, cfg).terminate_reason == "no_obligations"
+    d = select_next_speaker(below, SURV, cfg)
+    assert d.terminate is False
+    assert d.firing_reason.tier == "proactive"
+    assert d.speaker == "B"
 
 
-def test_nothing_owed_ends_the_chains():
+def test_nothing_owed_starts_the_sweep():
+    # An empty day: nobody is owed, so the sweep gives the floor to the first seat.
     d = select_next_speaker([], SURV, DEFAULT_GAME_CONFIG)
+    assert d.terminate is False
+    assert d.speaker == "A"
+    assert d.firing_reason.tier == "proactive"
+    assert d.firing_reason.sweep == 1
+
+
+def test_discussion_ends_when_nobody_is_owed_and_everyone_has_spoken():
+    everyone_spoke = [msg(i, player) for i, player in enumerate(SURV)]
+    d = select_next_speaker(everyone_spoke, SURV, DEFAULT_GAME_CONFIG)
     assert d.terminate is True
     assert d.terminate_reason == "no_obligations"
 
@@ -222,11 +236,13 @@ def test_invalid_target_ignored_with_valid_players():
 
 def test_select_next_never_picks_non_survivor_target():
     # An agent addressing "all" (not a real player) owes nobody an answer and nobody owes it one:
-    # the chains end rather than a non-survivor being scheduled (no KeyError upstream).
+    # the sweep gives the floor to a real survivor rather than "all" being scheduled (no KeyError
+    # upstream).
     d = select_next_speaker(
         [msg(0, "A", [at("all", "question", "accusation")])],
         ["A", "B", "C"],
         DEFAULT_GAME_CONFIG,
     )
-    assert d.terminate is True
-    assert d.terminate_reason == "no_obligations"
+    assert d.terminate is False
+    assert d.speaker == "B"
+    assert d.firing_reason.tier == "proactive"

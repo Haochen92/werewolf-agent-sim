@@ -568,24 +568,26 @@ class AddressingExtraction(LenientToolCallModel):
     )
 
 
-# The echo filter's verdict on one line of a parallel round (Phase 2). Model-visible: field
+# The echo gate's verdict on one new line against the day so far (Phase 2). Model-visible: field
 # descriptions only, every field required (flash-lite fails on optional fields).
-class RoundEchoVerdict(LenientToolCallModel):
-    player: str = Field(description="The player id whose line this verdict is about.")
-    same_point_as: str = Field(
+class LineEchoVerdict(LenientToolCallModel):
+    new_point: str = Field(
+        description="The new line's point in one sentence: what it says about the game.",
+    )
+    adds: str = Field(
         description=(
-            "Empty string if this line makes a point no EARLIER line in the list makes. Otherwise the "
-            "player id of the FIRST line in the list that makes the same point: the same observation, "
-            "the same suspicion of the same player for the same reason, or the same proposal. A line "
-            "that adds a new reason, a new fact, or a different target is NOT the same point."
+            "What the new line says that no earlier line said: a reason, a fact, a name, a conclusion, "
+            "a next step, a question put to a player, an answer to a player. Crediting an earlier "
+            "speaker and then adding to their point counts as adding. Write exactly 'nothing' only if "
+            "every part of the new line's point was already said by an earlier line."
         ),
     )
-    why: str = Field(description="One sentence: what the point is, and if a duplicate, what it repeats.")
-
-
-class RoundEchoVerdicts(LenientToolCallModel):
-    verdicts: list[RoundEchoVerdict] = Field(
-        description="Exactly one verdict per line in the list, in the same order.",
+    same_point_as: str = Field(
+        description=(
+            "Empty string unless adds is 'nothing'. Then the player id of the FIRST earlier line that "
+            "already made the whole point: the same observation, the same suspicion of the same player "
+            "for the same reason, or the same proposal."
+        ),
     )
 
 
@@ -612,12 +614,3 @@ class OpeningVerdicts(LenientToolCallModel):
     )
 
 
-class NoveltyJudgment(LenientToolCallModel):
-    novel: bool = Field(
-        description=(
-            "True if the message adds a new argument, observation, piece of evidence, "
-            "a changed suspicion, or a direct response to a specific player. False if it "
-            "merely restates or agrees with points already made (echo/reinforcement)."
-        ),
-    )
-    reason: str = Field(description="One-sentence justification.")

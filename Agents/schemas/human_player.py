@@ -19,6 +19,9 @@ class HumanTurnRequest(BaseModel):
     phase: str
     """The output_key this turn decides: day_channel | day_votes | wolf_channel | <role>_target."""
     day: int
+    day_round: Optional[str] = None
+    """For a day discussion turn, the round it belongs to (opening / discussion / proactive /
+    closing), so the client can label the ask; None for a vote or a night action."""
     instruction: str
     """Human-readable ask for this phase."""
     valid_targets: list[str]

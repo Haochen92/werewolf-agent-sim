@@ -35,8 +35,8 @@ class AddressedTarget(BaseModel):
 
 
 # The rounds of a day (Phase 2): the opening (every living player at once), the scheduler's
-# reactive discussion chains, the proactive round (everyone who has not spoken since the last
-# round, at once) and the closing defence of the most accused.
+# reactive discussion chains, the scheduler's sweep over the players who have not spoken (one at
+# a time, the echo gate holding repeats) and the closing defence of the most accused.
 DayRound = Literal["opening", "discussion", "proactive", "closing"]
 
 
@@ -45,9 +45,15 @@ class FiringReason(BaseModel):
     the resulting DayChannel, but hidden from agents."""
 
     tier: Literal["reactive", "proactive"]
-    """reactive=turn forced by an open obligation; proactive=scheduler-initiated on a quiet cycle."""
+    """reactive = the turn answers an open obligation; proactive = the scheduler's sweep gave the
+    floor to a player who had not spoken."""
     owes: list[str] = Field(default_factory=list)
     """Creditors the speaker owes a response to (reactive only). Empty for proactive."""
+    sweep: int = 0
+    """For a proactive turn, which sweep of the day it belongs to: 1 = the first pass over the
+    players silent since the day began, 2 = the second pass over those silent since the first
+    sweep began. 0 on a reactive turn. The scheduler is stateless and reads the day's sweep
+    structure back from these marks (Agents/turn/scheduler.py)."""
 
 
 class DiscussionPassReason(str, Enum):
@@ -55,11 +61,14 @@ class DiscussionPassReason(str, Enum):
 
     VOLUNTARY = "voluntary"
     NOVELTY_GATED = "novelty_gated"
+    """A proactive turn held back because an earlier line of the day made the same point (the echo
+    gate, Agents/turn/echo_gate.py). The held text is kept in gated_candidate and shown to its
+    author only; its accusation tags still count for the closing."""
     GENERATION_FAILED = "generation_failed"
     ROUND_ECHO = "round_echo"
-    """A proactive-round line held back because another line of the same round, earlier in seat
-    order, made the same point (Phase 2's echo filter). The held text is kept in gated_candidate
-    and shown to its author only."""
+    """Records only. A line of the parallel proactive round held back because another line of the
+    same round made the same point (Phase 2 step 4b, 2026-10-07; the round went sequential the
+    same day, step 4c, and the engine no longer produces this reason)."""
     OPENING_FILTERED = "opening_filtered"
     """An opening line held back because it was not one of the kinds an opening may hold (a role
     claim, the speaker's own night action or result, a challenge to an earlier claim), or it
@@ -82,9 +91,9 @@ class DayChannel(BaseModel):
     """Structured who-this-addresses tags parsed from the speech (empty for narration/passes)."""
     day_round: DayRound = "discussion"
     """Which round of the day the entry belongs to: "opening" (every living player at once, before
-    the discussion), "discussion" (the scheduler's reactive turns), "proactive" (everyone who had
-    not spoken since the last round, at once) or "closing" (the accused's last word). Phase 2;
-    entries from before it carry the default."""
+    the discussion), "discussion" (the scheduler's reactive turns), "proactive" (a sweep turn: the
+    scheduler gave the floor to a player who had not spoken) or "closing" (the accused's last
+    word). Phase 2; entries from before it carry the default."""
     passed: bool = False
     """True = hidden pass marker (voluntary, novelty-gated, or generation failure)."""
     pass_reason: DiscussionPassReason | None = None
@@ -120,12 +129,8 @@ class RoundCandidate(BaseModel):
     day: int
     """The day the round belongs to."""
     day_round: DayRound
-    """"opening", "proactive" or "closing" (a discussion turn writes day_channel directly)."""
-    round_no: int
-    """Which round of that kind today: 0 for the opening and the closing, 1, 2, ... for the
-    proactive rounds. collect_round picks a round's candidates by (day, day_round, round_no);
-    without it the second proactive round swept the first round's held lines back in and
-    published them twice (seen 2026-10-07)."""
+    """"opening" or "closing" (a discussion or sweep turn writes day_channel directly). Each runs
+    once a day, so (day, day_round) names a round."""
     entry: DayChannel
     """The turn's line or pass marker, with the seq it counted itself (overwritten on collection)."""
 

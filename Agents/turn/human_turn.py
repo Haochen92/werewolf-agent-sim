@@ -29,7 +29,7 @@ from Agents.turn.resolve import RETRY, extract_agent_reasoning, resolve_decision
 
 
 def announce_human_turn(player_id: str, role: str, phase: str, day: int,
-                        valid_targets: list[str]) -> None:
+                        valid_targets: list[str], *, day_round: str | None = None) -> None:
     """Tell the server a human's turn is coming, before the step it sits in has ended.
 
     A vote or a night action runs in one parallel step with the agents' siblings, and LangGraph
@@ -38,10 +38,13 @@ def announce_human_turn(player_id: str, role: str, phase: str, day: int,
     reaches the server at once; the server opens the prompt and holds the answer until the
     interrupt arrives, which stays the point where the answer is taken (the checkpoint, recovery
     and the CLI driver know nothing of this). Routers run again on a resume, so the server dedupes
-    by (player, day, phase). A no-op outside a graph run (tests)."""
+    by (player, day, phase). ``day_round`` names the round of a discussion turn (a round's
+    turns are the announced ones), so the browser can label the ask. A no-op outside a graph
+    run (tests)."""
     try:
         get_stream_writer()({"event": "human_turn_opened", "player": player_id, "role": role,
-                             "phase": phase, "day": day, "valid_targets": list(valid_targets)})
+                             "phase": phase, "day": day, "valid_targets": list(valid_targets),
+                             "day_round": day_round})
     except RuntimeError:  # direct call outside a graph run
         pass
 
@@ -194,11 +197,15 @@ def _build_human_request(
     """The interrupt request: the same board the LLM sees (role-filtered upstream), curated to what a
     human needs to decide, plus the legal choices and whether a pass is allowed this turn."""
     ctx = build_agent_prompt_input(payload)
+    day_round = None
+    if output_key == "day_channel":
+        day_round = payload.get("day_round", "discussion")
     return HumanTurnRequest(
         player_id=payload.get("player_id", ""),
         role=payload.get("player_role", ""),
         phase=output_key,
         day=payload.get("current_day", 1),
+        day_round=day_round,
         instruction=_instruction_for(payload, output_key),
         valid_targets=valid_targets,
         # A human may decline ANY discussion turn, reactive included — a mention isn't a demand;

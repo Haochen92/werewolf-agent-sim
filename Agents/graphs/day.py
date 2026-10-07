@@ -2,14 +2,13 @@
 
 The day's four kinds of step (Phase 2, discussion_evidence.md §7):
 
-- ROUNDS are concurrent: START_OPENING / START_PROACTIVE / START_CLOSING fan the round's
-  players out to ``round_turn`` (fan_out_round, one Send per player) and COLLECT_ROUND is the
-  rejoin barrier that orders and numbers their lines into day_channel. Day 1 is the opening
-  alone.
-- DISCUSSION is one-speaker-at-a-time and reactive only: SCHEDULE fires the next player who
-  owes an answer (route_speaker) and the ``discuss`` node loops straight back to SCHEDULE,
-  until nobody owes one; then route_after_discussion picks START_PROACTIVE (the quiet players'
-  round, while something new is being said), START_CLOSING (someone has two accusers) or
+- ROUNDS are concurrent: START_OPENING / START_CLOSING fan the round's players out to
+  ``round_turn`` (fan_out_round, one Send per player) and COLLECT_ROUND is the rejoin barrier
+  that orders and numbers their lines into day_channel. Day 1 is the opening alone.
+- DISCUSSION is one speaker at a time: SCHEDULE fires the next speaker (route_speaker: whoever
+  owes an answer, else the sweep's next player who has not spoken) and the ``discuss`` node
+  loops straight back to SCHEDULE, until nobody is owed and the sweeps are done; then
+  route_after_discussion picks START_CLOSING (someone has two accusers) or
   SUMMARIZE_DAY_DISCUSSION.
 - VOTING is concurrent: START_VOTING fans every survivor out to ``vote`` (fan_out_vote) and
   COLLECT_VOTES is the rejoin barrier.
@@ -58,7 +57,6 @@ from Agents.nodes import (
     route_speaker,
     start_closing,
     start_opening,
-    start_proactive,
     start_voting,
     summarize_day_discussion,
 )
@@ -71,8 +69,7 @@ def build_day_graph():
 
         START -> START_OPENING -(fan_out_round)-> round_turn | round_turn_human -> COLLECT_ROUND
         COLLECT_ROUND -(route_after_round)-> SCHEDULE (voting day) | SUMMARIZE_DAY_DISCUSSION (day 1)
-        SCHEDULE -(route_speaker)-> discuss (loops back) | START_PROACTIVE | START_CLOSING | SUMMARIZE
-        START_PROACTIVE -(fan_out_round)-> round_turn | round_turn_human -> COLLECT_ROUND -> SCHEDULE
+        SCHEDULE -(route_speaker)-> discuss (loops back) | START_CLOSING | SUMMARIZE
         START_CLOSING -(fan_out_round)-> round_turn | round_turn_human -> COLLECT_ROUND -> SUMMARIZE
         SUMMARIZE_DAY_DISCUSSION -(route_after_day_summary)-> START_VOTING | END
         START_VOTING -(fan_out_vote)-> vote | vote_human -> COLLECT_VOTES -> END
@@ -80,7 +77,6 @@ def build_day_graph():
     day_graph = StateGraph(DayGraphState, context_schema=GraphContext)
 
     day_graph.add_node("START_OPENING", start_opening)
-    day_graph.add_node("START_PROACTIVE", start_proactive)
     day_graph.add_node("START_CLOSING", start_closing)
     day_graph.add_node("COLLECT_ROUND", collect_round)
     day_graph.add_node("SCHEDULE", day_scheduler)
@@ -114,19 +110,17 @@ def build_day_graph():
         ["SCHEDULE", "SUMMARIZE_DAY_DISCUSSION"],
     )
 
-    # The reactive chains: one speaker at a time, back to SCHEDULE after each, until nobody
-    # owes an answer; then a proactive round (whose chains come back here), the closing
+    # The discussion: one speaker at a time (the reactive chains, then the sweep), back to
+    # SCHEDULE after each, until nobody is owed and the sweeps are done; then the closing
     # (someone has two accusers) or the summary — route_after_discussion decides.
     day_graph.add_conditional_edges(
         "SCHEDULE",
         route_speaker,
-        ["discuss", "START_PROACTIVE", "START_CLOSING", "SUMMARIZE_DAY_DISCUSSION"],
+        ["discuss", "START_CLOSING", "SUMMARIZE_DAY_DISCUSSION"],
     )
     day_graph.add_edge("discuss", "SCHEDULE")
 
-    # The proactive and closing rounds share the round nodes; route_after_round sends a
-    # proactive round back to SCHEDULE and a closing to the summary.
-    day_graph.add_conditional_edges("START_PROACTIVE", fan_out_round, ["round_turn", "round_turn_human"])
+    # The closing shares the round nodes with the opening; route_after_round sends it to the summary.
     day_graph.add_conditional_edges("START_CLOSING", fan_out_round, ["round_turn", "round_turn_human"])
 
     day_graph.add_conditional_edges(

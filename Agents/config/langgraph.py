@@ -115,15 +115,17 @@ def game_config_from_runnable(config: dict[str, Any] | None) -> GameConfig:
 def discussion_recursion_limit(game: GameConfig, num_survivors: int) -> int:
     """LangGraph recursion_limit for the day subgraph.
 
-    Each discussion cycle = 2 super-steps (SCHEDULE node + the speaker's node). Since Phase 2
-    every scheduled turn is reactive, so a pass marker (a human declining, a failed
-    generation) is rare; allow one pass per utterance slot anyway. Once the cap is reached
-    the day drains the debts already open, at most one more turn per survivor. Each round (the opening,
-    up to max_proactive_rounds proactive rounds, the closing) adds three super-steps (entry
-    node, the parallel turns, the collect node), plus the summary and the vote's three. Sized
-    so the graceful cap always fires before an ungraceful GraphRecursionError.
+    Each discussion cycle = 2 super-steps (SCHEDULE node + the speaker's node). A real utterance
+    counts toward the cap; a pass marker does not, so allow one pass per utterance slot, plus a
+    pass for every sweep turn (each sweep asks each survivor at most once, and a sweep turn that
+    passes or is held by the echo gate consumes no cap). Once the cap is reached the day drains
+    the debts already open, at most one more turn per survivor. The two rounds (the opening, the
+    closing) add three super-steps each (entry node, the parallel turns, the collect node), plus
+    the summary and the vote's three. Sized so the graceful cap always fires before an ungraceful
+    GraphRecursionError.
     """
     discussion_steps = 2 * 2 * game.utterance_cap(num_survivors)
+    sweep_pass_steps = 2 * game.max_proactive_sweeps * num_survivors
     drain_steps = 2 * num_survivors  # after the cap, each debtor answers at most once more
-    round_steps = 3 * (2 + game.max_proactive_rounds)
-    return discussion_steps + drain_steps + round_steps + 10
+    round_steps = 3 * 2
+    return discussion_steps + sweep_pass_steps + drain_steps + round_steps + 10

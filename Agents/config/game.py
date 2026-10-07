@@ -64,11 +64,12 @@ class GameConfig(BaseModel):
     # utterances untouched, its K cycle-count resets to 0 so a cooled feud can reopen
     # after the room has moved on. Throttles CONSECUTIVE ping-pong (K caps a burst)
     # without permanently killing a topic for the day; default ~one full table.
-    max_proactive_rounds: int = Field(default=2, ge=0)
-    # Phase 2 (2026-10-07): the day's rounds replaced the scheduler's one-at-a-time proactive
-    # picks. After the opening's reactive chains, every survivor who has not spoken since the
-    # last round is asked at once; a further round runs only while the previous round and its
-    # chains produced a new line, up to this many rounds a day. 0 = openings and chains only.
+    max_proactive_sweeps: int = Field(default=2, ge=0)
+    # Phase 2 (2026-10-07): when nobody owes an answer, the scheduler sweeps the floor round the
+    # survivors who have not spoken since the day began, one at a time in seat order, each line
+    # answered before the next player is asked. A second sweep goes round those silent since the
+    # first began, only if the first produced a new line; up to this many sweeps a day. 0 = the
+    # opening and its chains only.
 
     @model_validator(mode="after")
     def validate_day_order(self) -> "GameConfig":

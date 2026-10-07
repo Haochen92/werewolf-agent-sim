@@ -30,6 +30,7 @@ from Agents.schemas.turn import (
     TurnEffects,
 )
 from Agents.turn.action_space import validate_target
+from Agents.turn.echo_gate import line_echo_of
 
 logger = getLogger(__name__)
 
@@ -53,7 +54,7 @@ def resolve_decision(
     """Resolve a player's decision into a legal, typed domain action.
 
     The decision states an intent — speak, vote, or target a player. Resolution applies pass
-    handling, the proactive novelty gate, and target validation, then returns a ``Resolved*`` turn.
+    handling, the sweep turns' echo gate, and target validation, then returns a ``Resolved*`` turn.
     Returns RETRY when a target is illegal; the agent caller regenerates and the human caller raises.
     """
     player_id = payload.get("player_id", "")
@@ -107,9 +108,57 @@ def resolve_decision(
                 )
                 return ResolvedDayDiscussion(entry=entry, effects=effects)
 
+        is_proactive = firing_reason is not None and firing_reason.tier == "proactive"
         message = result.message.strip() if result.message else None
         if not message or message.lower() == "null":
+            if is_proactive:
+                # A sweep turn that came back empty is recorded as a pass, or the stateless
+                # scheduler would give the same player the floor again at once.
+                entry = DayChannel(
+                    day=current_day,
+                    seq=seq,
+                    player=player_id,
+                    day_round=day_round,
+                    message="",
+                    passed=True,
+                    pass_reason=DiscussionPassReason.VOLUNTARY,
+                    firing_reason=firing_reason,
+                    gated=False,
+                )
+                return ResolvedDayDiscussion(entry=entry, effects=effects)
             return ResolvedDayDiscussion(entry=None, effects=effects)
+
+        addressed_targets = getattr(result, "addressed_targets", [])
+
+        # The echo gate: a sweep turn that makes a point already made today is held, not
+        # published. Reactive turns are never gated (the answer is owed), nor is a human seat,
+        # nor a player answering someone who named them (the ruling that a player confirming or
+        # denying what was said about themselves is never a duplicate, decided from the tags, so
+        # it holds even when the judge misses it; seen 2026-10-07, a mention tagged neutral left
+        # the named player no reactive turn and the gate then held their denial).
+        # The held marker keeps the text for its author and its tags for the closing's count.
+        if is_proactive and not payload.get("human_player"):
+            earlier_today = [m for m in payload.get("day_channel", []) if m.day == current_day]
+            if _answers_someone_who_named_me(addressed_targets, player_id, earlier_today):
+                echo_of = ""
+            else:
+                echo_of = line_echo_of(message, player_id, earlier_today)
+            if echo_of:
+                logger.info("[echo gate] day=%d %s held: same point as %s", current_day, player_id, echo_of)
+                entry = DayChannel(
+                    day=current_day,
+                    seq=seq,
+                    player=player_id,
+                    day_round=day_round,
+                    message="",
+                    addressed_targets=addressed_targets,
+                    passed=True,
+                    pass_reason=DiscussionPassReason.NOVELTY_GATED,
+                    firing_reason=firing_reason,
+                    gated=True,
+                    gated_candidate=message,
+                )
+                return ResolvedDayDiscussion(entry=entry, effects=effects)
 
         entry = DayChannel(
             day=current_day,
@@ -117,7 +166,7 @@ def resolve_decision(
             player=player_id,
             day_round=day_round,
             message=message,
-            addressed_targets=getattr(result, "addressed_targets", []),
+            addressed_targets=addressed_targets,
             firing_reason=firing_reason,
         )
         return ResolvedDayDiscussion(entry=entry, effects=effects)
@@ -171,6 +220,24 @@ def resolve_decision(
         return result_type(entry=validated, effects=_turn_effects(reasoning))
 
     return None
+
+
+def _answers_someone_who_named_me(
+    addressed_targets: list[AddressedTarget], player_id: str, earlier_today: list[DayChannel]
+) -> bool:
+    """Whether the line is tagged as a response to a player whose earlier spoken line today
+    named the speaker: the speaker is answering something said about them."""
+    named_me: set[str] = set()
+    for entry in earlier_today:
+        if entry.passed or entry.player == "game_master":
+            continue
+        for tag in entry.addressed_targets:
+            if tag.target == player_id:
+                named_me.add(entry.player)
+    for tag in addressed_targets:
+        if tag.addressed_form == "response" and tag.target in named_me:
+            return True
+    return False
 
 
 def extract_agent_reasoning(result: BaseModel) -> dict[str, Any]:
