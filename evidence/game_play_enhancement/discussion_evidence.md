@@ -1285,6 +1285,61 @@ queue, which is the part that makes a conversation.
   gets the ordinary "respond" brief; the first proactive round always runs when anyone is
   silent; a player who claimed in the opening is not asked in proactive round 1 unless addressed.
 
+**Step 4c. The proactive sweep goes sequential; the per-line echo gate returns (owner, 2026-10-07).**
+- Decided after reading the step 6 capture: the parallel proactive round generated seven lines to keep
+  two in a day's first round, because seven players reading the same board at once reach the same
+  conclusion, and the aggregated filter existed only because parallel turns cannot see each other.
+  The owner chose the old schedule's shape for the sweep with the per-line gate kept, under the
+  step 4b criterion (the same point, not "nothing new"), not the old "adds nothing" one.
+- The scheduler gets a proactive tier back (`next_sweep_speaker`): when nobody owes an answer, the
+  floor goes to the survivors who have not spoken since the day began, one at a time in seat order,
+  each line's chains running before the next player is asked (a reactive debt always outranks the
+  sweep). A second sweep goes round those silent since the first began (so a player who spoke only
+  in the opening, or whose first-sweep line was held, is asked once more), only if the first
+  produced a new line; `GameConfig.max_proactive_sweeps` (default 2). Still stateless: which sweep
+  is running and where it began are read back from `FiringReason.sweep` on the proactive entries.
+  A sweep turn carries `day_round="proactive"`, so the open-floor rules block and the human's ask
+  stay. The cap's drain is unchanged; sweep turns that pass consume no cap, so the recursion budget
+  gained a term for them.
+- The gate (`Agents/turn/echo_gate.py`, called from `resolve_decision` on a proactive turn by an
+  agent): one cheap call judging the new line against the day's spoken lines; a repeat becomes a
+  `novelty_gated` pass marker that keeps the text for its author and its accusation tags for the
+  closing's count, and that the reactive queue skips. Two deterministic exemptions the judge is not
+  trusted with: a human seat, and a line tagged as a response to a player whose earlier line named
+  the speaker (the "about themselves" rule). An empty sweep line is recorded as a voluntary pass so
+  the stateless scheduler does not re-ask at once.
+- Gone: `START_PROACTIVE`, the proactive branch of the round nodes, `RoundCandidate.round_no` and the
+  payload's `round_no`, `max_proactive_rounds`, the second-round rule in `route_after_discussion`
+  (now closing-or-summary only), `filter_round_echoes` with its schemas, the `round_echo` wire value's
+  producer (the value stays in the vocabularies for records). `round_opened` is `opening|closing`
+  now; the OpenAPI snapshot and frontend contract were regenerated. The parallel design is tagged
+  `phase2-parallel-proactive` (f6d539b6) for a one-shot comparison if wanted.
+- Offline check of the gate (`evaluation/experiments/line_echo_gate_check.py`, replacing the round
+  filter's runner; results and lineage in `data/line_echo_check/README.md`): on the first 20 June
+  voting days the first prompt held 29% of lines the old gate had kept, and reading them showed the
+  small judge treating "player_5 is right that..., so let's also..." as a repeat of player_5. Spelling
+  the criterion out changed little (27%); restructuring the verdict so the judge states what the
+  line adds before it may name a repeat, with the code holding only when it adds nothing, brought it
+  to 18%, about half of them clear repeats on reading. A small judge errs toward holding; step 8
+  should count held and restated lines per day before tuning further.
+- The live game under this shape (the recaptured chunk catalogue, played under the first prompt):
+  3 days, serial killer won, 244 chunks in 289 s. Sweep turns 16 (day 2: 7 in sweep 1, 2 in sweep
+  2; day 3: 5 and 2), 6 held, 10 spoken, with reactive answers landing between sweep turns the way
+  the old schedule did; closings on both voting days. Openings: 1 spoken line in 22 turns (the
+  investigator's result on day 2), the rest voluntary passes, as in the parallel game. One hold was
+  a player denying they led a lynch, which the response-to-my-accuser exemption now covers.
+- Read in full (owner's question, 2026-10-07): the cap never bit (9 of 24 real lines on day 2, 8 of
+  15 on day 3); the days ended because the sweeps ran out. Each day was one topic (player_4's claim;
+  who pushed that lynch), coherent but narrow, and the best rebuttal of day 2 (night actions are
+  simultaneous, so a check on a player who then died is normal) drew no reply because its tags
+  opened no debt (§9.8 again: the chains are starved by tagging more than by the cap). The holds
+  were genuine repeats. The second sweep re-asked the two players held in the first and they
+  repeated themselves again (four calls, nothing kept), so a player held by the gate is no longer
+  asked again that day (owner ruling). Levers kept in view, not pulled: how easily a reactive
+  chain opens (a defence that re-engages the accuser, tag accuracy), the gate's strictness (would
+  buy repetition while the holds are genuine), and the open-floor prompt's "one most useful point",
+  which makes every sweep speaker pick the same hottest topic.
+
 **Step 5. The opening filter.**
 - Read: `Agents/turn/novelty_agent.py` (the shape to copy: one prompt, `get_llm_judge`, fail open),
   `Agents/schemas/output.py` (`NoveltyJudgment`; the model-visible rule: `Field(description=)`,
@@ -1324,6 +1379,31 @@ queue, which is the part that makes a conversation.
 - Later, when Phase 2 games enter the hallucination bench: `evaluation/src/data/builders/
   hallucination_bench.py` line 115 drops every same-day moderator line; it should drop only the
   lines after the vote, so the closing announcement stays.
+- *Built 2026-10-07.* The round's players became a state field, `round_players`, written by the
+  round's entry node (seat order for the opening, the silent players for a proactive round, the
+  accused as called for the closing); `fan_out_round` sends to exactly that list and
+  `collect_round` plays the lines in that order, so the three places that used to recompute the
+  list agree by construction, and the translator reads it off the entry node's chunk (it reads
+  nothing else). `round_opened {round, players}` is public; the entry nodes emit it (START_CLOSING
+  after its moderator line). The human's ask carries its round: `fan_out_round` passes
+  `day_round` into the early announcement, `HumanTurnRequest` carries it on the interrupt, and
+  `input_request.round` is set for a discuss ask (None for every other kind). The bench builder
+  keeps a same-day moderator line when its `day_round` is `closing`. OpenAPI snapshot and the
+  frontend contract regenerated; the frontend typechecks (the fold's default case records
+  `round_opened` as an unknown type until step 7 handles it).
+- *The captured game.* `notebooks/fixtures/chunk_catalogue_phase2.jsonl`: one AI-only game on
+  the default slate, memory off, streamed the production way. First captured under the parallel
+  proactive round (299 chunks, 311 s, villagers on day 4): the opening round was nearly silent (1
+  spoken opening in 26 turns over 4 days), the first proactive round of a day was held hard by the
+  echo filter (5 of 7 on day 2, 4 of 6 on day 3), and the closing fired once. Reading those held
+  lines (all but one genuinely the same point, made by seven players reading the same board at
+  once) is what led to step 4c; the catalogue was then recaptured under the sequential sweep (244
+  chunks, 289 s, serial killer on day 3; a vote turn ran on the rescue model after a 429). The
+  2026-08 catalogue stays, since the index-pinned spot checks and the session suites' FakeGraph
+  are built on it; the translator now has a third golden (`translator_golden_phase2.jsonl`, 317
+  events) and the scripted human path was rewritten to the day with rounds (two humans in the
+  opening round: the early announcement, the interrupt, the cached siblings' re-stream, the
+  uncached twin, then a reactive chain).
 
 **Step 7. The stage.**
 - Read: `frontend/docs/beat_sheet.md` §2, `frontend/src/stage/beats/beatsFor.ts` (the
