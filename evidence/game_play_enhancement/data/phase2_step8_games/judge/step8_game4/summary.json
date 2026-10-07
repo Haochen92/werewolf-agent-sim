@@ -1,0 +1,53 @@
+{
+  "model": "gemini-2.5-pro",
+  "judge": {
+    "messages_read": 29,
+    "read_errors": 0,
+    "share_of_messages_using": {
+      "speech_content": "22/29 (76%)",
+      "role_claim": "15/29 (52%)",
+      "voting_record": "12/29 (41%)",
+      "own_night_result": "7/29 (24%)",
+      "manner": "5/29 (17%)",
+      "reveal_timing": "4/29 (14%)",
+      "night_events": "4/29 (14%)",
+      "none": "1/29 (3%)"
+    },
+    "accusing_messages": 19,
+    "share_of_accusing_messages_using": {
+      "speech_content": "18/19 (95%)",
+      "voting_record": "10/19 (53%)",
+      "role_claim": "9/19 (47%)",
+      "manner": "5/19 (26%)",
+      "own_night_result": "3/19 (16%)",
+      "night_events": "3/19 (16%)",
+      "reveal_timing": "2/19 (11%)"
+    },
+    "town_accusations_on_evil_by_basis": {
+      "speech_content": "9/18",
+      "role_claim": "4/5",
+      "reveal_timing": "0/1",
+      "night_events": "2/4",
+      "voting_record": "4/11",
+      "manner": "4/7",
+      "own_night_result": "4/4"
+    },
+    "self_claims": [
+      {
+        "game_id": "phase2-step8-game4-e2eb516d",
+        "day": 2,
+        "speaker": "player_9",
+        "claimed": "investigator",
+        "actual": "investigator"
+      },
+      {
+        "game_id": "phase2-step8-game4-e2eb516d",
+        "day": 3,
+        "speaker": "player_1",
+        "claimed": "vigilante",
+        "actual": "vigilante"
+      }
+    ],
+    "fake_claims_by_evil": 0
+  }
+}

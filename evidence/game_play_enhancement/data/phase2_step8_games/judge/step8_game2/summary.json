@@ -1,0 +1,38 @@
+{
+  "model": "gemini-2.5-pro",
+  "judge": {
+    "messages_read": 18,
+    "read_errors": 0,
+    "share_of_messages_using": {
+      "voting_record": "11/18 (61%)",
+      "speech_content": "10/18 (56%)",
+      "night_events": "9/18 (50%)",
+      "manner": "3/18 (17%)",
+      "none": "2/18 (11%)",
+      "reveal_timing": "1/18 (6%)"
+    },
+    "accusing_messages": 9,
+    "share_of_accusing_messages_using": {
+      "voting_record": "8/9 (89%)",
+      "speech_content": "6/9 (67%)",
+      "night_events": "4/9 (44%)",
+      "reveal_timing": "1/9 (11%)"
+    },
+    "town_accusations_on_evil_by_basis": {
+      "night_events": "4/5",
+      "voting_record": "4/5",
+      "speech_content": "2/3",
+      "reveal_timing": "0/1"
+    },
+    "self_claims": [
+      {
+        "game_id": "phase2-step8-game2-977d4407",
+        "day": 4,
+        "speaker": "player_6",
+        "claimed": "villager",
+        "actual": "villager"
+      }
+    ],
+    "fake_claims_by_evil": 0
+  }
+}

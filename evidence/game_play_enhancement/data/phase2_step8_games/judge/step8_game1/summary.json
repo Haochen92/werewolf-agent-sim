@@ -1,0 +1,44 @@
+{
+  "model": "gemini-2.5-pro",
+  "judge": {
+    "messages_read": 21,
+    "read_errors": 0,
+    "share_of_messages_using": {
+      "speech_content": "14/21 (67%)",
+      "voting_record": "13/21 (62%)",
+      "night_events": "12/21 (57%)",
+      "turn_taking": "5/21 (24%)",
+      "role_claim": "4/21 (19%)",
+      "own_night_result": "3/21 (14%)",
+      "reveal_timing": "1/21 (5%)",
+      "manner": "1/21 (5%)"
+    },
+    "accusing_messages": 15,
+    "share_of_accusing_messages_using": {
+      "speech_content": "12/15 (80%)",
+      "voting_record": "11/15 (73%)",
+      "night_events": "8/15 (53%)",
+      "turn_taking": "5/15 (33%)",
+      "role_claim": "2/15 (13%)",
+      "manner": "1/15 (7%)"
+    },
+    "town_accusations_on_evil_by_basis": {
+      "role_claim": "0/1",
+      "night_events": "4/5",
+      "speech_content": "4/6",
+      "voting_record": "4/5",
+      "turn_taking": "1/1",
+      "manner": "1/1"
+    },
+    "self_claims": [
+      {
+        "game_id": "phase2-step8-game1-c3eec1ba",
+        "day": 2,
+        "speaker": "player_9",
+        "claimed": "investigator",
+        "actual": "investigator"
+      }
+    ],
+    "fake_claims_by_evil": 0
+  }
+}

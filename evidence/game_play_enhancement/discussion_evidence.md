@@ -1303,8 +1303,8 @@ queue, which is the part that makes a conversation.
   gained a term for them.
 - The gate (`Agents/turn/echo_gate.py`, called from `resolve_decision` on a proactive turn by an
   agent): one cheap call judging the new line against the day's spoken lines; a repeat becomes a
-  `novelty_gated` pass marker that keeps the text for its author and its accusation tags for the
-  closing's count, and that the reactive queue skips. Two deterministic exemptions the judge is not
+  `novelty_gated` pass marker that keeps the text for its author (its accusation tags counted for
+  the closing until the step 8 ruling, below), and that the reactive queue skips. Two deterministic exemptions the judge is not
   trusted with: a human seat, and a line tagged as a response to a player whose earlier line named
   the speaker (the "about themselves" rule). An empty sweep line is recorded as a voluntary pass so
   the stateless scheduler does not re-ask at once.
@@ -1357,8 +1357,9 @@ queue, which is the part that makes a conversation.
   night_action / challenge kept, repeat / other held as `opening_filtered` pass markers with the
   text kept for the author; the kind is recorded on the entry (`DayChannel.opening_kind`). Checked
   offline on the two smoke games' 13 real openings (all kept, labelled as expected) plus one
-  planted padding line (held as other). Held lines of either filter keep their accusation tags
-  for the closing's count and are skipped by the reactive queue.
+  planted padding line (held as other). Held lines of either filter are skipped by the reactive
+  queue; their accusation tags stay on the marker for records only (the code never counted the
+  opening filter's holds for the closing, and since the step 8 ruling it counts no held line).
 
 **Step 6. The wire: events and the translator.**
 - Read: `server/schemas/events.py` (`PhaseChange`, `PassMarker`, `InputRequest`),
@@ -1421,6 +1422,44 @@ queue, which is the part that makes a conversation.
   `tests/server/`), plus a `tests/leak_test.py` check that the round payload is built by
   `fan_out_day`, so private fields stay gated.
 - Then §7.3: two or three games on `gemini-3.5-flash-lite`, judged against `832404e9`.
+- *Built 2026-10-07* (an Opus subagent wrote the tests and played the games; reviewed): 81 new
+  pytest cases (`tests/engine/test_{sweep,closing,opening_filter,echo_gate,day_rounds,
+  round_payload_leaks}.py` plus cases in the translator, announcement, prompt, fallback and bench
+  tests; 1259 passing) and 16 vitest cases (the round beats, the fold's rounds, the dock heading,
+  the seat capitalisation; 1089 passing). Four bugs found and fixed the same day: the stage closed
+  a round at the human's ask, which arrives before the round's lines; a turn that failed every
+  attempt lost its round; the leak check's wolf output keys lacked `wolf_vote`, so every game
+  reported a false leak; an orphaned docstring in `DayChannel`. Four games on flash-lite, memory
+  off, 380–494 s and $0.34–0.55 each, about 30 calls a voting day: `data/phase2_step8_games/`
+  (README, `counts.md`, the judge's reads, `report.md`). The reading: the mechanics work as
+  designed and the cap never bit; the opening produced no contest (5 of 106 opening turns spoken,
+  only the investigator and the vigilante, no evil claim, no counterclaim); the closing changed no
+  vote (7 of 7 defended players lynched); the gate still errs toward holding (about 12 of 19 holds
+  clear repeats) and once held an accused player's own defence because the accusations against
+  them were untagged (§9.8 again); the moderator named accusers whose lines had been held.
+- *Ruling 2026-10-07:* **held lines count for nothing in the closing.** `closing_speakers` counts
+  spoken lines only; the tags stay on the marker for records.
+- *The investigator finding.* In every Phase 2 game where the investigator claimed in a day 2
+  opening it was lynched that day (games 1 and 4 and the step 6 capture, 7–1 each time), where the
+  June games had 1 such lynch in 18 day 2 claims. Read in full, the chain is: (1) **seat 1 draws
+  every night 1 action.** The night prompts list the survivors in seat order and nobody has a read
+  yet, so the first name is picked: over the 28 June games the investigator checked `player_1` on
+  night 1 in 21, the serial killer hit it in 26, the wolves in 20, the healer protected it in 25;
+  in the four step 8 games the investigator checked `player_1` in all four. (2) So the
+  investigator's first result is about the player most likely to be dead by morning, and the
+  opening rule asks it to state that result even when the morning already revealed it: "I
+  investigated player_1, the healer" after player_1 flipped healer. (3) Everyone else passes the
+  opening, so the sweep hands seven players the same single topic and the open floor asks for "a
+  contradiction you noticed": seven versions of "a convenient claim", held or not. (4) The
+  closing named three to six accusers, held lines included. (5) The vote asks for the most
+  suspicious player and the only name on the table is the investigator's; its defenders voted
+  with the rest ("drawing universal suspicion and a massive bandwagon" was the healer's own stated
+  reason in game 4). The June game with the same claim on a dead player (`228eb3f8`) ended the
+  same way, 6 votes, but there it was one claim in eighteen; the rounds made it three in three.
+  Levers, not pulled (owner to rule): the night prompts' target list (shuffled or without a
+  fixed first name; a prompt-input change, so an epoch), an opening rule that a result the
+  morning already made public is not worth an opening, and the vote's "most suspicious" ask
+  when one name is on the table.
 
 ---
 

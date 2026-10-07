@@ -1,0 +1,101 @@
+# Judge review sheet
+
+Mark each row: ✓ if the labels are right, or write what they should be.
+
+## phase2-step8-game2-977d4407
+
+### Day 2
+
+- **player_2** (wolf): Losing both the healer and the investigator on night one is a brutal start. We have zero information roles left to guide us.
+  - bases: `night_events` · accuses: `—` · claims: `none`
+  - judge: The speaker is commenting on the publicly announced deaths of the healer and the investigator, which are events from the previous night.
+  - check: 
+
+- **player_4** (villager): It is a terrible blow losing both info roles right away, but player_2 is right that we're entirely on our own now. That means we have to pay extra close attention to who tries to push fast wagons today.
+  - bases: `night_events, speech_content` · accuses: `—` · claims: `none`
+  - judge: The message agrees with player_2's statement about the night's deaths and then offers general advice on how the town should proceed based on this situation.
+  - check: 
+
+- **player_5** (villager): Building on player_4's warning about fast wagons, we need to scrutinize anyone who tries to rush a vote today. Without investigation roles, pushing an easy lynch is a prime way for wolves or the serial killer to direct a miselimination.
+  - bases: `speech_content, night_events` · accuses: `—` · claims: `none`
+  - judge: The speaker agrees with player_4's prior statement and uses the public information about the dead investigator and healer to propose a general strategy for the town.
+  - check: 
+
+- **player_6** (villager): Building on player_5's point about rushed votes, we should each commit to stating our top suspect and reasoning before voting starts so nobody can coast on a bandwagon.
+  - bases: `none` · accuses: `—` · claims: `none`
+  - judge: The message proposes a procedure for the day's discussion and voting, building on a previous speaker's point without introducing any new evidence.
+  - check: 
+
+- **player_8** (wolf): Building on player_6's suggestion, we should also keep track of who shifts their stance once people start naming suspects. If someone suddenly pivots their target without a clear reason, that is much more telling than just how cautious they sound right now.
+  - bases: `speech_content, manner` · accuses: `—` · claims: `none`
+  - judge: The message proposes a strategy of watching for players who change their stated suspect without good reason, which is a form of analyzing future speech content and manner.
+  - check: 
+
+- **player_9** (vigilante): Player 8's point about tracking stance shifts is key, but to make that work, everyone actually has to put a name out instead of just agreeing we need to be careful.
+  - bases: `none` · accuses: `—` · claims: `none`
+  - judge: The message agrees with a previous speaker's point and adds a procedural suggestion for how the discussion should proceed, which is a form of general advice without using evidence.
+  - check: 
+
+### Day 3
+
+- **player_5** (villager): Player_8, you voted to eliminate player_4 on day 2, and player_4 turned out to be a villager. Meanwhile, the dead wolf player_2 pushed for player_7. We should look closely at both of those voting directions.
+  - bases: `voting_record, night_events` · accuses: `player_8, player_7` · claims: `none`
+  - judge: The speaker analyzes the day 2 voting record in light of the roles revealed during the night, pointing out that player_8 voted for a now-dead villager and a now-dead wolf voted for player_7.
+  - check: 
+
+- **player_8** (wolf): I voted for player_4 because their control of the conversation felt off, but I was wrong. Regarding player_2 pushing player_7, wolves usually try to railroad someone outside the pack, so player_7 might actually be worth clearing instead of assuming guilt there.
+  - bases: `manner, voting_record, night_events` · accuses: `—` · claims: `none`
+  - judge: The speaker explains their past vote against player_4 by citing their manner, and then interprets the dead wolf's vote against player_7 by using the voting record and the wolf's revealed role.
+  - check: 
+
+- **player_7** (serial_killer): Player_8, I wouldn't rush to clear anyone just because a dead wolf pushed them. Wolves often throw votes around to create confusion rather than purely targeting non-pack members.
+  - bases: `speech_content, voting_record, night_events` · accuses: `—` · claims: `none`
+  - judge: The message responds directly to player_8's speech, offering an alternative interpretation of a past vote from a now-dead wolf.
+  - check: 
+
+- **player_9** (vigilante): Building on what player_7 said about wolf vote-throwing, player_2's push on player_7 looks more like deflection than a genuine partnership, whereas player_8 actually pushed a misvote onto player_4. We should examine player_8's intent there more closely than player_2's stray vote.
+  - bases: `speech_content, voting_record, night_events` · accuses: `player_8` · claims: `none`
+  - judge: The message analyzes the day 2 voting record, specifically player_8's vote on the now-revealed villager player_4, and also builds on player_7's prior speech about wolf voting tactics.
+  - check: 
+
+- **player_8** (wolf): Focusing solely on my mistaken vote for player_4 ignores the wider context of player_2's actions. Player_2 pushed hard onto player_7 yesterday, and since player_2 turned out to be a wolf, we should be looking at player_6 instead, who has stayed completely out of the voting spotlight.
+  - bases: `voting_record, night_events` · accuses: `player_6` · claims: `none`
+  - judge: The speaker uses the dead wolf's (player_2) vote against player_7 and player_6's abstention to argue that player_6 is suspicious for staying out of voting conflicts.
+  - check: 
+
+- **player_8** (wolf): I owned up to my mistaken vote on player_4 because I misread their control of the conversation, but a bad read is a mistake anyone can make, not proof of being a wolf. Piling on someone who was actively trying to sort through the game while others stayed completely silent on every vote overlooks the real evasion happening. Look at the full voting pattern instead of zeroing in on an honest error.
+  - bases: `voting_record, manner` · accuses: `—` · claims: `none`
+  - judge: The speaker defends their past mistaken vote by contrasting their active participation with the voting records of players who abstained, arguing their silence is more suspicious.
+  - check: 
+
+### Day 4
+
+- **player_6** (villager): Both wolves are gone, which leaves just the three of us. Since all three villagers are accounted for, one of you is the serial killer and the other is the vigilante.
+  - bases: `night_events` · accuses: `player_7, player_9` · claims: `villager`
+  - judge: The speaker uses the publicly revealed roles of the dead players to deduce the possible roles for the three remaining players through a process of elimination.
+  - check: 
+
+- **player_7** (serial_killer): Player_6 is right about the remaining breakdown. Between the two of you, player_9 has kept a much lower profile through the votes and hasn't really committed to pushing on the wolf cases the way the rest of us did.
+  - bases: `voting_record, speech_content` · accuses: `player_9` · claims: `none`
+  - judge: The message accuses player_9 by referencing their past voting patterns and their lack of contribution to discussions about finding the wolves.
+  - check: 
+
+- **player_9** (vigilante): Player 7, voting low profile is hardly proof of being the serial killer when we both voted to eliminate the wolf player 8 yesterday. If you're so eager to point fingers at my voting record, what do you make of player 6 setting up this exact three-player narrative right away?
+  - bases: `voting_record, speech_content, reveal_timing` · accuses: `player_6` · claims: `none`
+  - judge: The message defends against an accusation by referencing a past vote, and then casts suspicion on player_6 by questioning the content and timing of their opening statement.
+  - check: 
+
+- **player_7** (serial_killer): Player 6 is just stating the obvious math now that the wolves are gone. You are trying to deflect because you stayed completely passive during the earlier votes while the rest of us actually took risks to weed out the pack.
+  - bases: `speech_content, voting_record` · accuses: `player_9` · claims: `none`
+  - judge: Player 7 accuses player 9 by pointing to their past voting record as evidence of passivity and by interpreting player 9's previous speech as an attempt to deflect.
+  - check: 
+
+- **player_9** (vigilante): You're calling out my voting record, Player 7, but you abstained on Day 2 right along with me. Trying to rewrite history about who took risks doesn't hide the fact that your own voting history was identical.
+  - bases: `voting_record, speech_content` · accuses: `player_7` · claims: `none`
+  - judge: The message counters an accusation from player_7 by pointing out that player_7's own voting record from Day 2 is identical to the one being criticized.
+  - check: 
+
+- **player_7** (serial_killer): Fair point on Day 2, we both abstained. But you're deflecting from the fact that Player 6 immediately boxed us into a strict two-person dilemma. If you're the vigilante, why are you spending all your energy sparring with me instead of questioning Player 6's instant narrative?
+  - bases: `voting_record, speech_content` · accuses: `player_9` · claims: `none`
+  - judge: The message acknowledges a point about a past vote, then accuses player_9 by analyzing the content of their speech and contrasting it with the content of player_6's earlier speech.
+  - check: 
