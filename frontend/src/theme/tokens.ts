@@ -52,6 +52,8 @@ export const THEATRE_NAMES = [
   '--town-ink',
   '--wolf-ink',
   '--sk-ink',
+  '--benign',
+  '--benign-ink',
   '--film',
   '--sure',
 ] as const satisfies readonly CssVar[];

@@ -59,6 +59,17 @@ export const MATERIALS = {
   skFelt2: '#cdc6e2',
   skAccent: '#e0503f',
   skHi: '#efe8ff',
+  // the neutral-evil faction mark's second tone (the raven's wing and perch, the faction bench
+  // 2026-10-07): a deeper purple than the sigils' pale skFelt2
+  skShade: '#5b44a6',
+  // the fourth side (the faction bench 2026-10-07): neutral benign, moon-silver cloth on a slate
+  // ink; its roles (speculator, fortune teller) are drawn before the engine deals them
+  benign: '#d5dce4',
+  benignInk: '#262c35',
+  benignFelt: '#c7ced6',
+  benignFelt2: '#8d97a3',
+  benignAccent: '#f0c24a',
+  benignHi: '#f4f7fa',
   border: '#1b120b',
   frameLine: '#8d7a55',
   floor: '#0c0a07',
@@ -100,6 +111,7 @@ export const MATERIALS = {
   inkTown: '#8a5a12',
   inkWolf: '#a3281c',
   inkSk: '#4b3294',
+  inkBenign: '#55606e',
 } as const;
 
 export interface PhasePaint {
@@ -242,6 +254,8 @@ export function vars(): Record<CssVar, string> {
     '--town-ink': m.townInk,
     '--wolf-ink': m.wolfInk,
     '--sk-ink': m.skInk,
+    '--benign': m.benign,
+    '--benign-ink': m.benignInk,
     '--cream': m.cream,
     '--cream2': m.cream2,
     '--walnut-top': m.walnutTop,
@@ -273,5 +287,6 @@ export function vars(): Record<CssVar, string> {
     '--ink-town': m.inkTown,
     '--ink-wolf': m.inkWolf,
     '--ink-sk': m.inkSk,
+    '--ink-benign': m.inkBenign,
   };
 }
