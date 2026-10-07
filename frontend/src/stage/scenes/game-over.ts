@@ -32,14 +32,6 @@ export const WINNER_LINE: Record<Faction, string> = {
   neutral_benign: 'The neutrals have won',
 };
 
-/** The sigil a winning side is shown by. */
-export const WINNER_SIGIL: Record<Faction, string> = {
-  villagers: 'villager',
-  wolves: 'wolf',
-  serial_killer: 'serial_killer',
-  neutral_benign: 'speculator',
-};
-
 /**
  * Where the game stopped: at a morning (the night of the last day was resolved) or at a
  * lynch (the vote took the last one out, and no night began).

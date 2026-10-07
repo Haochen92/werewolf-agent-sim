@@ -5,18 +5,17 @@
  * six sigils picks the role, and the card below turns over on a tap to show its back, the
  * briefing its agent is given (by day, at night, how it wins). The card is the ticket office's
  * role card at section size: the same sigil, felt figure and words (`CARD_TEXT`), inked in its
- * side's colour.
+ * side's colour, the side's badge as the seal by its name.
  */
 import { useState } from 'react';
 import { CARD_TEXT } from '@/stage/card-text';
 import { roleFigure } from '@/stage/paint/role-kit';
-import { factionOf } from '@/stage/roles';
+import { FACTION_NAME, factionOf } from '@/stage/roles';
+import { FactionMark } from '@/stage/instruments/FactionMark';
 import { Sigil } from '@/stage/instruments/Sigil';
 import type { Role } from '@/types/contracts';
 import { ROLES } from '../ticket/RoleCards';
 import classes from './RoleHand.module.css';
-
-const SIDE = { villagers: 'Villagers', wolves: 'Wolves', serial_killer: 'Serial killer' };
 
 /** "Two of them,\nand neither is Grandma." with the kit's line breaks kept. */
 function Lines({ text }: { text: string }) {
@@ -99,8 +98,8 @@ export function RoleHand() {
             <Lines text={text.line} />
           </span>
           <span className={classes.fac}>
-            <span>{SIDE[faction]}</span>
-            <span className={classes.seal} />
+            <span>{FACTION_NAME[faction]}</span>
+            <FactionMark faction={faction} format="badge" small className={classes.seal} />
           </span>
           <span className={classes.hint}>Turn the card</span>
         </span>

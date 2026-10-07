@@ -1,8 +1,9 @@
 /**
  * One finished game as a clapperboard slate (the landing and replays mockups' `.game/.slate`),
- * linking into the theatre at `/replays/[id]`. The winning side colours the frame and inks the
- * paper; the header says who won, and the printed line under it is stamped for human seats, memory
- * and "you played" (or, with nothing to stamp, prints the table's default); the
+ * linking into the theatre at `/replays/[id]`. The winning side colours the frame, inks the
+ * paper and is watermarked on it as its badge; the header says who won, and the printed line
+ * under it is stamped for human seats, memory and "you played" (or, with nothing to stamp,
+ * prints the table's default); the
  * puppets are the game's own cast, one per seat (the same hash the theatre uses); the fields are the
  * record id, the days, the phase it ended in, and the model, with what the game cost and how long
  * an AI call took on average when the server recorded them (games from 2026-10-04 on).
@@ -14,7 +15,7 @@ import Link from 'next/link';
 import type { ReplaySummary, Winner } from '@/types/contracts';
 import { castForGame } from '@/stage/cast/castForGame';
 import { ChipSprite } from '@/stage/cast/ChipSprite';
-import { Sigil } from '@/stage/instruments/Sigil';
+import { FactionMark } from '@/stage/instruments/FactionMark';
 import { endedLabel, formatCallSeconds, formatCost, formatDate } from '@/lib/format';
 import classes from './Slate.module.css';
 
@@ -22,7 +23,18 @@ import classes from './Slate.module.css';
 const seatCount = (r: ReplaySummary) =>
   Object.values(r.cast_role_counts).reduce((a, b) => a + b, 0) || undefined;
 
-const NUMBER_WORDS = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+const NUMBER_WORDS = [
+  '',
+  'One',
+  'Two',
+  'Three',
+  'Four',
+  'Five',
+  'Six',
+  'Seven',
+  'Eight',
+  'Nine',
+];
 const numberWord = (n: number) => NUMBER_WORDS[n] ?? String(n);
 
 /**
@@ -36,18 +48,10 @@ const baselineLine = (r: ReplaySummary) => {
   return `${seats ? `${numberWord(seats)} agents` : 'All agents'} · memory off`;
 };
 
-const FACTION: Record<
-  Winner,
-  { name: string; verb: string; sigil: string; className: string }
-> = {
-  villagers: { name: 'Villagers', verb: 'win', sigil: 'villager', className: classes.town },
-  wolves: { name: 'Wolves', verb: 'win', sigil: 'wolf', className: classes.wolf },
-  serial_killer: {
-    name: 'Serial killer',
-    verb: 'wins',
-    sigil: 'serial_killer',
-    className: classes.sk,
-  },
+const FACTION: Record<Winner, { name: string; verb: string; className: string }> = {
+  villagers: { name: 'Villagers', verb: 'win', className: classes.town },
+  wolves: { name: 'Wolves', verb: 'win', className: classes.wolf },
+  serial_killer: { name: 'Serial killer', verb: 'wins', className: classes.sk },
 };
 
 export interface SlateProps {
@@ -104,7 +108,12 @@ export function Slate({ replay, modelLabel, mine = false, from }: SlateProps) {
         </div>
         <div className={classes.in}>
           <div className={classes.watermark}>
-            <Sigil role={faction.sigil} />
+            <FactionMark
+              faction={replay.winner}
+              format="badge"
+              variant="stamp"
+              small={false}
+            />
           </div>
           <div className={classes.hd}>
             <div className={classes.verdict}>
@@ -115,7 +124,8 @@ export function Slate({ replay, modelLabel, mine = false, from }: SlateProps) {
               <div className={classes.stamps}>
                 {humans > 0 ? (
                   <span className={classes.stamp}>
-                    {humans === 1 ? 'One human' : `${numberWord(humans)} humans`} at the table
+                    {humans === 1 ? 'One human' : `${numberWord(humans)} humans`} at the
+                    table
                   </span>
                 ) : null}
                 {replay.memory ? (

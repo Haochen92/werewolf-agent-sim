@@ -7,14 +7,15 @@ import Link from 'next/link';
 import { Table } from '@mantine/core';
 import type { ReplaySummary, Winner } from '@/types/contracts';
 import { Button } from '@/components/site';
-import { Sigil } from '@/stage/instruments/Sigil';
+import { FactionMark } from '@/stage/instruments/FactionMark';
 import { endedLabel, formatDate } from '@/lib/format';
 import classes from './Archive.module.css';
 
-const WON: Record<Winner, { name: string; sigil: string; hue: string }> = {
-  villagers: { name: 'Villagers', sigil: 'villager', hue: 'var(--town)' },
-  wolves: { name: 'Wolves', sigil: 'wolf', hue: 'var(--wolf)' },
-  serial_killer: { name: 'Serial killer', sigil: 'serial_killer', hue: 'var(--sk)' },
+/** The side's name and hue; its bare mark stands by the name at text size. */
+const WON: Record<Winner, { name: string; hue: string }> = {
+  villagers: { name: 'Villagers', hue: 'var(--town)' },
+  wolves: { name: 'Wolves', hue: 'var(--wolf)' },
+  serial_killer: { name: 'Serial killer', hue: 'var(--sk)' },
 };
 
 function atTheTable(r: ReplaySummary): string {
@@ -64,7 +65,13 @@ export function ArchiveTable({
               <Table.Tr key={r.game_id}>
                 <Table.Td>
                   <span className={classes.won}>
-                    <Sigil role={won.sigil} strokeWidth={3.2} style={{ color: won.hue }} />
+                    <FactionMark
+                      faction={r.winner}
+                      format="mark"
+                      variant="stamp"
+                      small
+                      style={{ color: won.hue }}
+                    />
                     {won.name}
                   </span>
                 </Table.Td>

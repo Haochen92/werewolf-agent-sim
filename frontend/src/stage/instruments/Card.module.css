@@ -114,6 +114,23 @@
   color: #6e4a2a;
   margin-top: auto;
 }
+/* the big card's foot: the seat left, the side's pennant and name right */
+.foot {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: calc(8 * var(--u));
+}
+.side {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(5 * var(--u));
+}
+.side svg {
+  width: calc(22 * var(--u));
+  height: calc(22 * var(--u));
+}
 
 /* the small card (2026-09-30): the name, as large as the longest ("Serial killer") fits, over
    the felt figure the big card carries; the sigil small by the seat at the foot. At the deal's

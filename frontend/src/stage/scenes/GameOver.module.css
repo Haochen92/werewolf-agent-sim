@@ -6,6 +6,13 @@
   align-items: baseline;
   gap: 4.8px 19.2px;
 }
+/* the winning side's felt pennant, the height of the result's line, hung before it */
+.pennant {
+  align-self: center;
+  width: calc(22.4px * 1.6 * var(--legible-ui) * 1.25);
+  height: calc(22.4px * 1.6 * var(--legible-ui) * 1.25);
+  margin-right: -9.6px;
+}
 .result {
   font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
   font-weight: 400;

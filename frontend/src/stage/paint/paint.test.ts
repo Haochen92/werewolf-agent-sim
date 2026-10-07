@@ -485,14 +485,17 @@ describe('station', () => {
  * No mask of any kind on the stage beyond a glyph: iPhone Safari kills the page on a full-stage
  * SVG <mask> (found 2026-10-01 with the GPU probe, styles/gpu-probe.css) and on a full-stage CSS
  * mask-image too (the chosen photo's darkening, the same day). Every stage source is read: no SVG
- * mask outside the sigil's 52-unit glyph, and no CSS mask in a stylesheet or an inline style
- * except the word-sized rubber stamps (`.stamp` in the ledger's and the film's sheets).
+ * mask outside the sigil's and the faction mark's 52-unit glyphs, and no CSS mask in a
+ * stylesheet or an inline style except the word-sized rubber stamps (`.stamp` in the ledger's
+ * and the film's sheets).
  */
 describe('no mask on the stage', () => {
   const stage = fileURLToPath(new URL('..', import.meta.url));
   const all = readdirSync(stage, { recursive: true, encoding: 'utf8' });
+  const GLYPHS = ['Sigil.tsx', 'FactionMark.tsx'];
   const code = all.filter(
-    (f) => /\.tsx?$/.test(f) && !/\.test\.tsx?$/.test(f) && !f.endsWith('Sigil.tsx'),
+    (f) =>
+      /\.tsx?$/.test(f) && !/\.test\.tsx?$/.test(f) && !GLYPHS.some((g) => f.endsWith(g)),
   );
   const sheets = all.filter((f) => f.endsWith('.css'));
   // the glyph-sized exceptions: a stylesheet and the one rule in it that may carry a mask

@@ -46,6 +46,7 @@ import { useMotionScale } from '../motion';
 import type { Special } from '../paint/draw';
 import type { Phase } from '../paint/materials';
 import { ROLE_ARTICLE } from '../paint/role-kit';
+import { FactionMark } from '../instruments/FactionMark';
 import { ROLE_NAME, factionOf, seatNumber, type Faction } from '../roles';
 import { useSmall } from '../set';
 import { bandNarrows, sideOpen } from '../slot';
@@ -364,6 +365,7 @@ function EndBox({
     <Notice
       title={
         <span className={`${styles.title} ${styles[`c-${winner}`]}`}>
+          <FactionMark faction={winner} format="pennant" className={styles.pennant} />
           <span className={styles.result}>{WINNER_LINE[winner]}</span>
           {you}
         </span>

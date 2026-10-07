@@ -9,7 +9,7 @@ import { useId, useState } from 'react';
 import { Chip, SegmentedControl, Select, Switch, TextInput } from '@mantine/core';
 import type { Winner } from '@/types/contracts';
 import { Icon } from '@/components/site';
-import { Sigil } from '@/stage/instruments/Sigil';
+import { FactionMark } from '@/stage/instruments/FactionMark';
 import { NO_FILTERS, type ReplayFilters } from '@/lib/replay-filters';
 import classes from './Archive.module.css';
 
@@ -17,15 +17,10 @@ import classes from './Archive.module.css';
 const ANY_MODEL = '__any__';
 const NO_MODEL = '__none__';
 
-const WINNERS: { value: Winner; label: string; sigil: string; hue: string }[] = [
-  { value: 'villagers', label: 'The village', sigil: 'villager', hue: 'var(--town)' },
-  { value: 'wolves', label: 'The wolves', sigil: 'wolf', hue: 'var(--wolf)' },
-  {
-    value: 'serial_killer',
-    label: 'The serial killer',
-    sigil: 'serial_killer',
-    hue: 'var(--sk)',
-  },
+const WINNERS: { value: Winner; label: string; hue: string }[] = [
+  { value: 'villagers', label: 'The village', hue: 'var(--town)' },
+  { value: 'wolves', label: 'The wolves', hue: 'var(--wolf)' },
+  { value: 'serial_killer', label: 'The serial killer', hue: 'var(--sk)' },
 ];
 
 export function FilterRail({
@@ -113,11 +108,13 @@ export function FilterRail({
             <div className={classes.fchips}>
               {WINNERS.map((w) => (
                 <Chip key={w.value} value={w.value}>
-                  <Sigil
-                    role={w.sigil}
+                  <FactionMark
+                    faction={w.value}
+                    format="mark"
+                    variant="stamp"
+                    small
                     className={classes.fchipSigil}
                     style={{ color: w.hue }}
-                    strokeWidth={3.2}
                   />
                   {w.label}
                 </Chip>

@@ -260,18 +260,40 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   "your card", the night rooms', the landing's and the ticket's) sizes one `<svg>` by CSS as
   before; `roleAvatar(role)` is the same markup with a head-and-shoulders viewBox crop (the top
   ~56%, per-role offsets for the vigilante's feather and the reaper's hood).
-- The role sigils (2026-09-30) are the owner's felt set from the sigil bench (cottage, cross,
-  magnifier, tilted bullet, wolf's head, fat-bladed scythe), vector in `instruments/Sigil.tsx`:
-  one silhouette plus detail pieces per role on a 48 grid (`viewBox -2 -2 52 52`). `<Sigil
-  variant="felt">` paints the side's cloth, second tone and accent with a dark edge and
-  stitching (colours are `MATERIALS.*Felt*`/`*Ink`), for paper and cream: the cards, the wing's
-  X-ray badge, the file's docket, the ledger's tabs, the notices, the verdict plate. The default
-  `stamp` is one colour in `currentColor` (the silhouette fattened, the pieces knocked out through
-  a `useId` mask), for marks inked into a surface: the chips, the transcript, the read card's
-  truth, the wing's pencilled guess, and every site use. `small` (under ~26 px) drops stitching
-  and fine lines. Flat felt: the bench's texture filter is not used (no live filters on the
-  stage). The site's icon sprite takes `PATHS[role]`, the small stamp as a self-painting nested
-  `<svg>` (mask id `sg-mask-<role>`), so `sg-*` still share the stage's shapes.
+- The role sigils (2026-09-30; the twelve-role set 2026-10-07) are the owner's felt set from
+  the sigil bench, vector in `instruments/Sigil.tsx`: one silhouette plus detail pieces per
+  role on a 48 grid (`viewBox -2 -2 52 52`). The four originals keep their drawings (cross,
+  magnifier, tilted bullet, fat-bladed scythe); the eight 1920s roles are the bench's chosen
+  variants (candle in a chamberstick, wingtip footprints, pyramid eye, rose bud, top hat and
+  wand, cross with a puppet, stacks of coins, crystal ball), keyed by the engine-style ids
+  `sentinel trailseer sigilist chanteuse illusionist necromancer speculator fortune_teller`
+  ahead of the engine (`roles.ts` names and sides them; `CARD_TEXT` has no words for them yet).
+  The plain villager's and the plain wolf's sigils are their sides' marks, the cottage and the
+  wolf's head (`MARKS`, below). `<Sigil variant="felt">` paints the side's cloth, second tone
+  and accent with a dark edge and stitching (colours are `MATERIALS.*Felt*`/`*Ink`, the side
+  from `factionOf`), for paper and cream: the cards, the wing's X-ray badge, the file's docket,
+  the ledger's tabs, the notices. The default `stamp` is one colour in `currentColor` (the
+  silhouette fattened, the pieces knocked out through a `useId` mask), for marks inked into a
+  surface: the chips, the transcript, the read card's truth, the wing's pencilled guess, and
+  every site use. `small` (under ~26 px) drops stitching and fine lines. Flat felt: the bench's
+  texture filter is not used (no live filters on the stage). The site's icon sprite takes
+  `PATHS[role]`, the small stamp as a self-painting nested `<svg>` (mask id `sg-mask-<role>`),
+  so `sg-*` still share the stage's shapes.
+- The faction marks (the owner's faction set, 2026-10-07) are `instruments/FactionMark.tsx`:
+  the four sides' glyphs (`MARKS` in Sigil.tsx: cottage, wolf's head, perched raven, two-point
+  jester cap; the raven's wing in the deeper `MATERIALS.skShade`) on a backing. The grammar is
+  **a backed mark is a side, a bare mark is a role**: `badge` (round ink patch, felt rim,
+  stitching) where the side is an object; `pennant` where the side flags something that belongs
+  to it; `mark` (bare) only inline by a word at text size, where a backing would be a blot.
+  Felt and stamp, `small`, as sigils. The fitting transform is baked (`BOX`: the bench measured
+  each mark's base path once; the stage has no `getBBox` at render time). Placed (provisional
+  defaults for the owner's ruling against the running app): the verdict board's badge (it was
+  the winner's role sigil on a paper plate); a pennant before the ending box's result; the big
+  role card's foot ("Seat n" left, the side's pennant and name right; the small card and the
+  night room's cards carry only the bands); the slate's watermark (badge stamp); the archive's
+  "Won by" and the filter chips (mark stamp); the landing card's seal (badge small). The fourth
+  side, `neutral_benign` (moon-silver, `--benign`/`--benign-ink`), is in every faction-keyed
+  record and stylesheet rule though the wire has no such winner yet.
 - The station (the waiting room's platform, review 2026-09-26 §A5) has no masters in the bundle:
   its pictures exist only inlined in `claude_artifacts/design/pages/waiting-room.html`.
   `scripts/extract-station-sprites.mjs` pulls each out once, by the CSS rule that uses it, into

@@ -3,7 +3,7 @@
 /**
  * The verdict: a walnut board the flies lower on two strings at the end of the game, large
  * and centred, in the morning card's grammar. The winning side's colour runs along its top
- * and bottom edges, the side's sigil sits on a paper plate at its left, and the result is
+ * and bottom edges, the side's felt badge is sewn on at its left, and the result is
  * printed in the card's old serif ("The wolves have won"), with where the game stopped
  * beneath it ("Day 4 · at the morning"). It is read, then drawn up out of the frame as the
  * next beat begins.
@@ -14,10 +14,10 @@
  * after 0.1 s.
  */
 import { CAR, MATERIALS } from '../paint/materials';
-import { WINNER_LINE, WINNER_SIGIL, type EndedAt } from '../scenes/game-over';
+import { WINNER_LINE, type EndedAt } from '../scenes/game-over';
 import type { Faction } from '../roles';
 import { STAGE_H, STAGE_W, type StageGeometry } from '../units';
-import { Sigil } from './Sigil';
+import { FactionMark } from './FactionMark';
 import { StringDrop, Twine } from './StringDrop';
 
 const WAL = '#4a2c18',
@@ -128,29 +128,15 @@ export function VerdictBoard({ g, winner, day, endedAt, move }: VerdictBoardProp
               />
             </g>
           ))}
-          <circle
-            cx={px}
-            cy={py}
-            r={pr}
-            fill={MATERIALS.paper}
-            stroke={INK}
-            strokeWidth={2.2}
-          />
-          <circle
-            cx={px}
-            cy={py}
-            r={pr * 0.82}
-            fill="none"
-            stroke="#cbb992"
-            strokeWidth={1.6}
-          />
-          <Sigil
-            role={WINNER_SIGIL[winner]}
-            x={px - pr * 0.6}
-            y={py - pr * 0.6}
-            width={pr * 1.2}
-            height={pr * 1.2}
-            variant="felt"
+          {/* the badge's disc is 43 of its 52 box, so the box is 2.4 radii for a disc of radius pr */}
+          <FactionMark
+            faction={winner}
+            format="badge"
+            x={px - pr * 1.2}
+            y={py - pr * 1.2}
+            width={pr * 2.4}
+            height={pr * 2.4}
+            small={false}
           />
           <text
             x={tx}

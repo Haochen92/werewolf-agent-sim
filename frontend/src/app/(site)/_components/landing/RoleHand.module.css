@@ -221,15 +221,11 @@
   letter-spacing: 0.04em;
   opacity: 0.85;
 }
+/* the side's felt badge, small (under 26px: no stitching) */
 .seal {
   flex: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--rc-ink);
-  box-shadow:
-    inset 0 0 0 3px var(--paper),
-    inset 0 0 0 4px var(--rc-ink);
+  width: 20px;
+  height: 20px;
 }
 .brief {
   flex: 1;

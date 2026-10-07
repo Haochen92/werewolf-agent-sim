@@ -11,7 +11,8 @@
  *   small by the seat at its foot.
  * - `RoleCard`: the full face, shown large (your card at the deal, a dead seat's at the
  *   morning, the lynch's on the lift): name and sigil, the felt figure, the front line, the
- *   seat, and the faction's colour on the edge bands.
+ *   seat with the side's pennant and name at the foot, and the faction's colour on the edge
+ *   bands.
  *
  * A card fills the box it is put in (a `StringDrop`, usually) and sizes its print from `w`,
  * its width in units, so a card reads the same small or large. `turn` plays it over from its
@@ -19,11 +20,12 @@
  */
 import type { CSSProperties } from 'react';
 import { SPRITES, type RoleSprite } from '@/assets/manifest';
-import { factionOf } from '../roles';
+import { FACTION_NAME, factionOf } from '../roles';
 import { CARD_TEXT } from '../card-text';
 import { roleFigure } from '../paint/role-kit';
 import { useSmall } from '../set';
 import { BackArt } from './CardBackArt';
+import { FactionMark } from './FactionMark';
 import { Flip } from './Flip';
 import { Sigil } from './Sigil';
 import styles from './Card.module.css';
@@ -93,6 +95,7 @@ export function SmallCard({ role, seat, w, turn = false, turnDelay }: FaceProps)
 export function RoleCard({ role, seat, w, turn = false, turnDelay }: FaceProps) {
   if (!role) return <CardBack w={w} big />;
   const text = CARD_TEXT[role];
+  const faction = factionOf(role);
   const face = (
     <div className={faceClass(role, styles.big)} style={cardVars(w)}>
       <div className={styles.in}>
@@ -117,7 +120,16 @@ export function RoleCard({ role, seat, w, turn = false, turnDelay }: FaceProps) 
             </span>
           ))}
         </p>
-        <footer>Seat {seat}</footer>
+        <footer className={styles.foot}>
+          <span>Seat {seat}</span>
+          {faction ? (
+            <span className={styles.side}>
+              {/* the side's pennant, small below 26 units (the pennant is 22 card units) */}
+              <FactionMark faction={faction} format="pennant" small={(22 * w) / 340 < 26} />
+              {FACTION_NAME[faction]}
+            </span>
+          ) : null}
+        </footer>
       </div>
     </div>
   );
