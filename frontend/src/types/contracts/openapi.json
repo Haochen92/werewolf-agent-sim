@@ -1863,6 +1863,23 @@
             "type": "array",
             "title": "Candidates"
           },
+          "round": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "opening",
+                  "discussion",
+                  "proactive",
+                  "closing"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Round"
+          },
           "deadline": {
             "anyOf": [
               {
@@ -3135,6 +3152,9 @@
                   "$ref": "#/components/schemas/TurnStarted"
                 },
                 {
+                  "$ref": "#/components/schemas/RoundOpened"
+                },
+                {
                   "$ref": "#/components/schemas/Speech"
                 },
                 {
@@ -3232,6 +3252,7 @@
                   "role_assigned": "#/components/schemas/RoleAssigned",
                   "roles_assigned": "#/components/schemas/RolesAssigned",
                   "roster_update": "#/components/schemas/RosterUpdate",
+                  "round_opened": "#/components/schemas/RoundOpened",
                   "speech": "#/components/schemas/Speech",
                   "strategy_update": "#/components/schemas/StrategyUpdate",
                   "turn_started": "#/components/schemas/TurnStarted",
@@ -3473,6 +3494,48 @@
         ],
         "title": "RosterUpdate",
         "description": "Union only: the translator merges the wolf-partitioned survivor lists before the\npublic tier ever sees them."
+      },
+      "RoundOpened": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "round_opened",
+            "title": "Type",
+            "default": "round_opened"
+          },
+          "round": {
+            "type": "string",
+            "enum": [
+              "opening",
+              "closing"
+            ],
+            "title": "Round"
+          },
+          "players": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Players"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "round",
+          "players"
+        ],
+        "title": "RoundOpened",
+        "description": "A round of the day begins: its players are all given a turn at once (START_OPENING,\nSTART_CLOSING). Their lines follow as speech events once the round is collected; a player\nof the round with no speech passed, so there is no pass event for a round (the X-ray's\npass_marker still arrives, observer-only)."
       },
       "SeatJoined": {
         "properties": {

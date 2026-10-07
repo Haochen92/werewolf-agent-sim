@@ -659,11 +659,13 @@ costs the human the whole step.
    the CLI driver and every HITL test are written against it.
 3. *Announce early, commit on the interrupt.* **Chosen.**
 
-**The design.** The routing edge that fans the step out (`fan_out_vote`, `route_night_actors`)
+**The design.** The routing edge that fans the step out (`fan_out_vote`, `route_night_actors`,
+and since Phase 2 of the day `fan_out_round` for the opening, proactive and closing rounds)
 writes a custom stream chunk per human solo turn, `human_turn_opened`: player, role, phase,
-day and the exact targets the node will offer (the same `valid_targets_for_action` the node
-calls). Routing edges run before the step, so the chunk reaches the server at once, the way
-`turn_started` already does for "X is thinking".
+day, the exact targets the node will offer (the same `valid_targets_for_action` the node
+calls) and, for a round turn, `day_round`, which the translator puts on the `input_request` as
+`round` so the composer can label the ask. Routing edges run before the step, so the chunk
+reaches the server at once, the way `turn_started` already does for "X is thinking".
 
 - **Session.** On the chunk it parks the seat (`announce`) with a request built from the
   announcement, starts the AFK clock, and only then lets the translator emit, so the event is

@@ -117,6 +117,21 @@ class TurnStarted(DurableEvent, frozen=True):
     player: str
 
 
+DayRound = Literal["opening", "discussion", "proactive", "closing"]
+
+
+class RoundOpened(DurableEvent, frozen=True):
+    """A round of the day begins: its players are all given a turn at once (START_OPENING,
+    START_CLOSING). Their lines follow as speech events once the round is collected; a player
+    of the round with no speech passed, so there is no pass event for a round (the X-ray's
+    pass_marker still arrives, observer-only)."""
+
+    type: Literal["round_opened"] = "round_opened"
+    round: Literal["opening", "closing"]
+    players: list[str]
+    """Who is in the round, in the order their lines will be played."""
+
+
 class Speech(DurableEvent, frozen=True):
     type: Literal["speech"] = "speech"
     channel_seq: int
@@ -299,6 +314,9 @@ class InputRequest(DurableEvent, frozen=True):
     ]
     candidates: list[str] = Field(default_factory=list)
     """Legal targets where the action needs one; empty for free-text turns."""
+    round: DayRound | None = None
+    """For a discuss ask, the round of the day it belongs to, so the composer can label it
+    (an opening, the open floor, a last word); None for every other kind."""
     deadline: str | None = None
     """When the AFK timer will delegate this turn to the seat's agent (ISO-8601 UTC),
     the client's countdown source. None = no timer armed (solo games — the lone human
@@ -480,6 +498,7 @@ DurableGameEvent = Annotated[
         PhaseChange,
         GameOver,
         TurnStarted,
+        RoundOpened,
         Speech,
         PassMarker,
         FiringReasonAnnotation,
@@ -517,6 +536,7 @@ EVENT_TIERS: dict[str, Tier] = {
     "phase_change": Tier.PUBLIC,
     "game_over": Tier.PUBLIC,
     "turn_started": Tier.PUBLIC,
+    "round_opened": Tier.PUBLIC,
     "speech": Tier.PUBLIC,
     "pass_marker": Tier.OBSERVER,
     "firing_reason": Tier.OBSERVER,

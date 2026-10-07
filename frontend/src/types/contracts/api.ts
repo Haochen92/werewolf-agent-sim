@@ -861,6 +861,8 @@ export interface components {
         | 'vigilante_target';
       /** Candidates */
       candidates?: string[];
+      /** Round */
+      round?: ('opening' | 'discussion' | 'proactive' | 'closing') | null;
       /** Deadline */
       deadline?: string | null;
     };
@@ -1442,6 +1444,7 @@ export interface components {
         | components['schemas']['PhaseChange']
         | components['schemas']['GameOver']
         | components['schemas']['TurnStarted']
+        | components['schemas']['RoundOpened']
         | components['schemas']['Speech']
         | components['schemas']['PassMarker']
         | components['schemas']['FiringReasonAnnotation']
@@ -1568,6 +1571,31 @@ export interface components {
       type: 'roster_update';
       /** Surviving Players */
       surviving_players: string[];
+    };
+    /**
+     * RoundOpened
+     * @description A round of the day begins: its players are all given a turn at once (START_OPENING,
+     *     START_CLOSING). Their lines follow as speech events once the round is collected; a player
+     *     of the round with no speech passed, so there is no pass event for a round (the X-ray's
+     *     pass_marker still arrives, observer-only).
+     */
+    RoundOpened: {
+      /** Seq */
+      seq: number;
+      /** Day */
+      day: number;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'round_opened';
+      /**
+       * Round
+       * @enum {string}
+       */
+      round: 'opening' | 'closing';
+      /** Players */
+      players: string[];
     };
     /**
      * SeatJoined

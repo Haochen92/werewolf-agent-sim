@@ -319,7 +319,8 @@ class Translator:
             if not _first_time(self._announced, key):
                 return []
             return [self._input_request(payload["player"], payload["day"], payload["phase"],
-                                        payload["valid_targets"], self._deadlines)]
+                                        payload["valid_targets"], self._deadlines,
+                                        day_round=payload.get("day_round"))]
         if payload.get("event") == "player_reads":
             key = (payload["player"], payload["day"], payload["round"], payload["action_phase"])
             if not _first_time(self._seen_reads, key):
@@ -352,16 +353,23 @@ class Translator:
                 self._announced.discard(key)  # the prompt went out when the step began
                 continue
             out.append(self._input_request(req["player_id"], req["day"], req["phase"],
-                                           req.get("valid_targets") or [], deadlines))
+                                           req.get("valid_targets") or [], deadlines,
+                                           day_round=req.get("day_round")))
         return out
 
     def _input_request(self, player: str, day: int, phase: str, candidates,
-                       deadlines: Mapping[str, str]) -> ev.DurableEvent:
+                       deadlines: Mapping[str, str], *,
+                       day_round: str | None = None) -> ev.DurableEvent:
         kind = _ACTION_KINDS.get(phase)
         if kind is None:
             raise TranslationError(f"unknown human-turn phase: {phase!r}")
+        # Only a discussion turn belongs to a round; the engine sends None for the rest, and a
+        # record from before the rounds has no field at all.
+        if kind != "discuss":
+            day_round = None
         return self._emit(ev.InputRequest, day=day, player=player, action_kind=kind,
-                          candidates=list(candidates), deadline=deadlines.get(player))
+                          candidates=list(candidates), round=day_round,
+                          deadline=deadlines.get(player))
 
     def _gm_messages(self, delta):
         return [self._emit(ev.GmMessage, day=e["day"], channel_seq=e["seq"], text=e["message"])
@@ -459,18 +467,26 @@ class Translator:
         out.extend(self._strategy_updates(delta))
         return out
 
-    # ---- the opening and closing rounds (Phase 2) ----------------------------------------
+    # ---- the rounds (Phase 2): the opening and the closing -------------------------------
     # A round's turns run at once and hold their lines in round_candidates; COLLECT_ROUND
     # numbers them into day_channel, so the lines are sent from there, through the same loop
-    # as a discussion turn. The entry nodes only set which round runs; START_CLOSING also
-    # writes the moderator's announcement. (The round_opened event for the stage: step 6.)
+    # as a discussion turn. The entry node sets which round runs and lists its players, which
+    # is the round_opened event; START_CLOSING also writes the moderator's announcement. The
+    # scheduler's sweep turns are ordinary ``discuss`` turns (firing_reason proactive).
 
-    silent_node("START_OPENING", writes={"day_round"})
-    silent_node("START_PROACTIVE", writes={"day_round", "proactive_rounds"})
+    def _round_opened(self, which: str, delta):
+        return [self._emit(ev.RoundOpened, round=which,
+                           players=list(delta.get("round_players") or []))]
 
-    @node("START_CLOSING", writes={"day_round", "day_channel"})
+    @node("START_OPENING", writes={"day_round", "round_players"})
+    def _start_opening(self, delta):
+        return self._round_opened("opening", delta)
+
+    @node("START_CLOSING", writes={"day_round", "day_channel", "round_players"})
     def _start_closing(self, delta):
-        return self._gm_messages(delta)
+        out = self._gm_messages(delta)
+        out.extend(self._round_opened("closing", delta))
+        return out
 
     @node("round_turn", writes={"round_candidates", "agent_strategies"})
     def _round_turn(self, delta):

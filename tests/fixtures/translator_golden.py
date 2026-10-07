@@ -1,14 +1,19 @@
 """Exact-output goldens for the translator: the events it must produce, field for field.
 
-Two chunk sequences, two golden files next to this module:
+Three chunk sequences, three golden files next to this module:
 
-- ``translator_golden.jsonl``: every event from replaying the captured game
-  (notebooks/fixtures/chunk_catalogue.jsonl). An AI-only game, so it never pauses.
+- ``translator_golden.jsonl``: every event from replaying the captured game of 2026-08
+  (notebooks/fixtures/chunk_catalogue.jsonl), the sequential day before the rounds. An
+  AI-only game, so it never pauses.
+- ``translator_golden_phase2.jsonl``: every event from replaying the captured game of
+  2026-10 (notebooks/fixtures/chunk_catalogue_phase2.jsonl), the day with rounds: the
+  opening, the proactive rounds, the closing (discussion_evidence.md §7). AI-only too.
 - ``translator_golden_human.jsonl``: every event from ``human_path_chunks()``, a scripted
-  sequence that starts from the captured game's real deal and then walks the paths only a
-  human seat causes (interrupts, the uncached vote twins, re-run steps, cached re-streams)
-  plus the night rows the captured game happened not to contain (deaths, a save, the
-  vigilante's shot).
+  sequence that starts from the first captured game's real deal and then walks the paths
+  only a human seat causes (a human in the opening round: the early announcement, the
+  interrupt, the cached siblings' re-stream and the uncached twin; the uncached vote twins;
+  re-run steps; cached re-streams) plus the night rows the captured game happened not to
+  contain (deaths, a save, the vigilante's shot).
 
 The property tests say the output is well-formed; these say it is unchanged. Regenerate
 on purpose only, after a deliberate change to what ships::
@@ -22,10 +27,11 @@ import json
 import pathlib
 
 from server.game.translate import Translator
-from tests.fixtures.stream import load_fixture_chunks
+from tests.fixtures.stream import FIXTURE_PHASE2, load_fixture_chunks
 
 HERE = pathlib.Path(__file__).resolve().parent
 GOLDEN_FIXTURE = HERE / "translator_golden.jsonl"
+GOLDEN_PHASE2 = HERE / "translator_golden_phase2.jsonl"
 GOLDEN_HUMAN = HERE / "translator_golden_human.jsonl"
 
 
@@ -36,10 +42,35 @@ def _updates(node: str, delta, ns: str | None = None, cached: bool = False) -> d
     return {"type": "updates", "ns": [f"{ns}:task"] if ns else [], "data": data}
 
 
-def _speech(day: int, seq: int, player: str, message: str) -> dict:
+def _speech(day: int, seq: int, player: str, message: str,
+            day_round: str = "discussion") -> dict:
     return {"day": day, "seq": seq, "player": player, "message": message,
             "addressed_targets": [], "passed": False, "pass_reason": None,
-            "firing_reason": None, "gated": False, "gated_candidate": ""}
+            "firing_reason": None, "gated": False, "gated_candidate": "",
+            "day_round": day_round, "opening_kind": ""}
+
+
+def _opening(player: str, message: str, kind: str = "claim") -> dict:
+    """An opening-round line as round_turn holds it: no seq yet (COLLECT_ROUND numbers it)."""
+    entry = _speech(1, 0, player, message, day_round="opening")
+    entry["opening_kind"] = kind
+    return entry
+
+
+def _round_turn(entry: dict, strategy: str, cached: bool = False) -> dict:
+    """One round turn's chunk: the line held as a RoundCandidate, plus the strategy note."""
+    candidate = {"day": entry["day"], "day_round": entry["day_round"], "round_no": 0,
+                 "entry": entry}
+    delta = {"round_candidates": [candidate],
+             "agent_strategies": {entry["player"]: strategy} if strategy else {}}
+    return _updates("round_turn", delta, "DAY_PHASE", cached=cached)
+
+
+def _human_turn_opened(player: str, role: str, day: int, day_round: str) -> dict:
+    return {"type": "custom", "ns": ["DAY_PHASE:task"],
+            "data": {"event": "human_turn_opened", "player": player, "role": role,
+                     "phase": "day_channel", "day": day, "valid_targets": [],
+                     "day_round": day_round}}
 
 
 def _player_reads(player: str, role: str, day: int, phase: str = "day_discussion") -> dict:
@@ -73,8 +104,10 @@ def _memory_extracted(day: int) -> dict:
                              "action": "Counter-claim at once; silence reads as guilt."}]}}
 
 
-def _interrupt(player: str, phase: str, day: int, targets: list[str]) -> dict:
+def _interrupt(player: str, phase: str, day: int, targets: list[str],
+               day_round: str | None = None) -> dict:
     return {"value": {"player_id": player, "phase": phase, "day": day,
+                      "day_round": day_round,
                       "valid_targets": targets, "surviving_players": targets,
                       "instruction": "", "can_pass": phase == "day_channel"},
             "id": f"int-{player}-{phase}"}
@@ -91,35 +124,99 @@ def human_path_chunks() -> list[dict]:
     day = "DAY_PHASE"
     wolf = "WOLF_NIGHT_PHASE"
     out: list[dict] = [init]
+    seats = [f"player_{n}" for n in range(1, 10)]
 
-    # --- day 1: discussion, with the human's turn as an interrupt -------------------------
+    # --- day 1: the opening round, with the two humans' turns as interrupts ----------------
+    # The round's entry node lists its players; the router announces each human's turn as the
+    # round starts, so their prompts open before the agents have finished.
     out += [
+        _updates("START_OPENING", {"day_round": "opening", "round_players": seats}, day),
+        _human_turn_opened("player_6", "villager", 1, "opening"),
+        _human_turn_opened("player_9", "wolf", 1, "opening"),
+    ]
+    # The agents' turns land first; the vigilante's suspicions stream from inside its node,
+    # and its re-run streams them again, which is sent once.
+    openings = [
+        ("player_3", "I am the investigator.", "claim", "claim early"),
+        ("player_4", "", "other", "lie low"),
+        ("player_1", "player_4 is quiet.", "challenge", "watch player_4"),
+        ("player_2", "Nothing yet.", "other", ""),
+        ("player_5", "Nothing yet.", "other", ""),
+        ("player_7", "Nothing yet.", "other", ""),
+        ("player_8", "Nothing yet.", "other", ""),
+    ]
+    out.append(_player_reads("player_1", "vigilante", 1))
+    out.append(_player_reads("player_1", "vigilante", 1))
+    for player, message, kind, strategy in openings:
+        entry = _opening(player, message, kind)
+        if message == "":
+            entry["passed"] = True
+            entry["pass_reason"] = "voluntary"
+        out.append(_round_turn(entry, strategy))
+    out += [
+        # the humans' turns: each interrupt streams under the subgraph, then at root; the
+        # announcement already sent the prompts, so these send nothing
+        _updates("__interrupt__", [_interrupt("player_6", "day_channel", 1, [], "opening"),
+                                   _interrupt("player_9", "day_channel", 1, [], "opening")], day),
+        _updates("__interrupt__", [_interrupt("player_6", "day_channel", 1, [], "opening"),
+                                   _interrupt("player_9", "day_channel", 1, [], "opening")]),
+    ]
+    # resume: the agents' turns come back from the cache (dropped whole), the humans' lines
+    # arrive through the uncached twin
+    for player, message, kind, strategy in openings:
+        entry = _opening(player, message, kind)
+        if message == "":
+            entry["passed"] = True
+            entry["pass_reason"] = "voluntary"
+        out.append(_round_turn(entry, strategy, cached=True))
+    out += [
+        _updates("round_turn_human",
+                 {"round_candidates": [{"day": 1, "day_round": "opening", "round_no": 0,
+                                        "entry": _opening("player_6", "Agreed, player_4.", "challenge")}],
+                  "agent_strategies": {}}, day),
+        _updates("round_turn_human",
+                 {"round_candidates": [{"day": 1, "day_round": "opening", "round_no": 0,
+                                        "entry": _opening("player_9", "", "other")}],
+                  "agent_strategies": {}}, day),
+    ]
+    # COLLECT_ROUND plays the lines in seat order, numbered, after the opening's filter: the
+    # agents' empty "nothing yet" lines are held as opening_filtered passes with the text kept
+    collected = []
+    for seq, player in enumerate(seats):
+        if player == "player_3":
+            collected.append({**_speech(1, seq, player, "I am the investigator.", "opening"),
+                              "opening_kind": "claim"})
+        elif player == "player_1":
+            collected.append({**_speech(1, seq, player, "player_4 is quiet.", "opening"),
+                              "opening_kind": "challenge",
+                              "addressed_targets": [{"target": "player_4",
+                                                     "addressed_form": "mention",
+                                                     "stance": "accusation"}]})
+        elif player == "player_6":
+            collected.append({**_speech(1, seq, player, "Agreed, player_4.", "opening"),
+                              "opening_kind": "challenge"})
+        elif player in ("player_4", "player_9"):
+            collected.append({**_speech(1, seq, player, "", "opening"), "opening_kind": "other",
+                              "passed": True, "pass_reason": "voluntary"})
+        else:
+            collected.append({**_speech(1, seq, player, "", "opening"), "opening_kind": "other",
+                              "passed": True, "pass_reason": "opening_filtered",
+                              "gated": True, "gated_candidate": "Nothing yet."})
+    # then the reactive chain: player_4 owes player_1 and player_6 an answer, which the
+    # scheduler fires one speaker at a time (the only turns that announce "X is thinking")
+    out += [
+        _updates("COLLECT_ROUND", {"day_channel": collected}, day),
         _updates("SCHEDULE", None, day),
         {"type": "custom", "ns": [f"{day}:task"],
-         "data": {"event": "turn_started", "player": "player_3", "day": 1}},
-        _updates("discuss", {"day_channel": [_speech(1, 0, "player_3", "I am the investigator.")],
-                             "agent_strategies": {"player_3": "claim early"}}, day),
-        _updates("discuss", {"day_channel": [{**_speech(1, 1, "player_4", ""), "passed": True,
-                                              "pass_reason": "voluntary"}],
+         "data": {"event": "turn_started", "player": "player_4", "day": 1}},
+        _updates("discuss", {"day_channel": [{**_speech(1, 9, "player_4", "I had nothing to say, player_1. That is not a tell."),
+                                              "addressed_targets": [{"target": "player_1",
+                                                                     "addressed_form": "response",
+                                                                     "stance": "defense"}],
+                                              "firing_reason": {"tier": "reactive",
+                                                                "owes": ["player_1", "player_6"]}}],
                              "agent_strategies": {"player_4": "lie low"}}, day),
-        # the vigilante's suspicions before it speaks; its node re-ran and streamed them
-        # again, which is sent once
-        _player_reads("player_1", "vigilante", 1),
-        _player_reads("player_1", "vigilante", 1),
-        _updates("discuss", {"day_channel": [{**_speech(1, 2, "player_1", "player_4 is quiet."),
-                                              "addressed_targets": [{"target": "player_4",
-                                                                     "addressed_form": "mention",
-                                                                     "stance": "accusation"}],
-                                              "firing_reason": {"tier": "proactive", "owes": []}}],
-                             "agent_strategies": {"player_1": "watch player_4"}}, day),
-        # the human's turn: the interrupt streams under the subgraph, then at root
-        _updates("__interrupt__", [_interrupt("player_6", "day_channel", 1, [])], day),
-        _updates("__interrupt__", [_interrupt("player_6", "day_channel", 1, [])]),
-        # resume: the discuss step re-runs and re-delivers the earlier entry (dropped)
-        _updates("discuss", {"day_channel": [_speech(1, 2, "player_1", "player_4 is quiet.")],
-                             "agent_strategies": {"player_1": "watch player_4"}}, day),
-        _updates("discuss", {"day_channel": [_speech(1, 3, "player_6", "Agreed, player_4.")],
-                             "agent_strategies": {}}, day),
+        _updates("SCHEDULE", None, day),
         _updates("SUMMARIZE_DAY_DISCUSSION",
                  {"day_summaries": [{"day": 1, "summary": "Suspicion on player_4.",
                                      "structured": {}}]}, day),
@@ -220,13 +317,15 @@ def human_path_chunks() -> list[dict]:
                                   "investigator_target": None, "serial_killer_target": None,
                                   "vigilante_target": None}),
     ]
-    # --- day 2: a restart re-streams the committed step tagged cached, then the end -------
+    # --- day 2: a restart re-streams the committed steps tagged cached, then the end ------
+    alive = ["player_1", "player_2", "player_3", "player_5", "player_6", "player_9"]
+    accusation = {**_opening("player_3", "player_9 is a wolf."), "day": 2,
+                  "addressed_targets": [{"target": "player_9", "addressed_form": "mention",
+                                         "stance": "accusation"}]}
     out += [
-        _updates("SCHEDULE", None, day, cached=True),
-        _updates("discuss", {"day_channel": [_speech(2, 0, "player_3", "player_9 is a wolf.")],
-                             "agent_strategies": {"player_3": "claim early"}}, day, cached=True),
-        _updates("discuss", {"day_channel": [_speech(2, 0, "player_3", "player_9 is a wolf.")],
-                             "agent_strategies": {"player_3": "claim early"}}, day),
+        _updates("START_OPENING", {"day_round": "opening", "round_players": alive}, day, cached=True),
+        _round_turn(accusation, "claim early", cached=True),
+        _updates("COLLECT_ROUND", {"day_channel": [{**accusation, "seq": 0}]}, day),
         _updates("END_GAME", {"winner": "villagers",
                               "day_channel": [_speech(2, 1, "game_master", "Game over! The villagers have won!")]}),
         # what the game taught (a memory-on game), streamed from inside the post-game
@@ -253,6 +352,7 @@ def load_golden(path: pathlib.Path) -> list[dict]:
 
 def write_goldens() -> None:
     for path, chunks in ((GOLDEN_FIXTURE, load_fixture_chunks()),
+                         (GOLDEN_PHASE2, load_fixture_chunks(FIXTURE_PHASE2)),
                          (GOLDEN_HUMAN, human_path_chunks())):
         with path.open("w") as f:
             for event in events_of(chunks):

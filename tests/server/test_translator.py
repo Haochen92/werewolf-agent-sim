@@ -399,6 +399,14 @@ def test_fixture_replay_matches_the_golden_event_for_event():
     assert events_of(load_fixture_chunks()) == load_golden(GOLDEN_FIXTURE)
 
 
+def test_phase2_replay_matches_the_golden_event_for_event():
+    """The 2026-10 game: the day with rounds (round_opened, the closing's moderator line,
+    the round filters' pass markers), which the 2026-08 game has none of."""
+    from tests.fixtures.stream import FIXTURE_PHASE2
+    from tests.fixtures.translator_golden import GOLDEN_PHASE2, events_of, load_golden
+    assert events_of(load_fixture_chunks(FIXTURE_PHASE2)) == load_golden(GOLDEN_PHASE2)
+
+
 def test_human_path_matches_the_golden_event_for_event():
     from tests.fixtures.translator_golden import (
         GOLDEN_HUMAN, events_of, human_path_chunks, load_golden)
@@ -408,4 +416,4 @@ def test_human_path_matches_the_golden_event_for_event():
     types = {e["type"] for e in got}
     assert {"input_request", "vote_cast", "wolf_vote", "wolf_kill_decided", "night_result",
             "investigation_result", "vigilante_confirmation", "bullets_remaining",
-            "roster_update", "pack_roster_update", "turn_started"} <= types
+            "roster_update", "pack_roster_update", "turn_started", "round_opened"} <= types

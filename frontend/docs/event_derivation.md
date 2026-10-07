@@ -20,6 +20,19 @@
 
 **DAY_PHASE · SCHEDULE** — registered silent. SCHEDULE writes nothing; DAY_PHASE is the root wrapper whose commit repeats what the day subgraph already streamed (see Stream behaviours below).
 
+**START_OPENING · START_CLOSING** (the entry node of a round, Phase 2 — discussion_evidence.md §7: every player of the round takes a turn at once; the day opens with the opening round, the closing gives the most-accused a last word. The scheduler's sweep turns, which give the floor to the players who have not spoken one at a time, are ordinary `discuss` turns with `firing_reason.tier = proactive`)
+
+| Tier | Events |
+| --- | --- |
+| Public | `round_opened {round: opening\|closing, players}` — the node's `round_players` delta, in the order the lines will be played (seat order; the accused as called). The stage reads "preparing" from it and derives a round's passes as players of the round with no speech, so there is no pass event for a round |
+| Public | `gm_message` — START_CLOSING only: the moderator's announcement of who is accused and by whom, written to `day_channel` by the node from the accusation tags (no model call) |
+| Seat | `input_request {.., round}` — a human in the round, born from the `human_turn_opened` custom chunk `fan_out_round` writes as the round starts (same mechanism as the vote's); `round` names the round so the composer can label the ask. The interrupt that ends the step then emits none |
+- `day_round` (which round runs) → IGNORED: loop control; the event carries the round.
+
+**round_turn · round_turn_human** — a round's turn (the generic actor, cached; the human seat through the uncached twin). Its line is held in `round_candidates` → IGNORED on this node (not yet numbered, not yet filtered); only `strategy_update` (observer) is sent from here.
+
+**COLLECT_ROUND** — the barrier after a round: orders the held lines, runs the round's filter (the opening's allow-list, the proactive round's echo filter; a held line becomes a pass marker that keeps its text), numbers them into `day_channel`. Sent through `discuss`'s loop: `speech` or `pass_marker` per line, plus `addressed_targets`; no `firing_reason` (a round turn has none). `turn_started` is never sent for a round turn — `round_opened` announces the whole round instead.
+
 **route_speaker edge** (a `custom` stream chunk, not a node) — `turn_started {player, day}` via `get_stream_writer()` (edge emission — cannot double-fire on interrupt resume).
 
 **every AI decision that produced reads, memory on or off** (a `custom` chunk from inside the acting node, `Agents/turn/pipeline.py`) — observer `player_reads {player, role, day, round, action_phase, reads[{player, suspected_role, confidence, why}]}`: the agent's per-player suspicions at that decision. Never graph state. Node emission, so a re-run fires it again — sent once per `(player, day, round, action_phase)`.
@@ -32,8 +45,8 @@
 | --- | --- |
 | Public | `speech {day, channel_seq, player, message}` — `channel_seq` = position in the day transcript (the state-side DayChannel seq), renamed on the wire because the durable base class already owns the global `seq` |
 | Faction | — |
-| Seat | `input_request {player, action_kind, candidates}` (interrupt source; human seat only) — `action_kind` + legal-target list lifted from `HumanTurnRequest` so the client can render the right control; the full prompt payload deliberately stays server-side (it duplicates the event log as prose and churns with every prompt epoch) |
-| Observer | `strategy_update` · `pass_marker {pass_reason: voluntary\|novelty_gated\|generation_failed, gated, gated_candidate}` (the engine's typed reason, not a bare `passed` bool) · `firing_reason` · `addressed_targets` — annotations join the speech via `about_channel_seq` |
+| Seat | `input_request {player, action_kind, candidates, round}` (interrupt source; human seat only) — `action_kind` + legal-target list lifted from `HumanTurnRequest` so the client can render the right control, and `round` (opening / discussion / proactive / closing) for the label of the ask; the full prompt payload deliberately stays server-side (it duplicates the event log as prose and churns with every prompt epoch) |
+| Observer | `strategy_update` · `pass_marker {pass_reason: voluntary\|novelty_gated\|generation_failed\|round_echo\|opening_filtered, gated, gated_candidate}` (the engine's typed reason, not a bare `passed` bool; `novelty_gated` is the echo gate's hold on a sweep turn and `opening_filtered` the opening filter's, both with the held text in `gated_candidate`; `round_echo` only in records of the parallel proactive round, 2026-10-07) · `firing_reason` · `addressed_targets` — annotations join the speech via `about_channel_seq` |
 - One delta → speech **or** pass_marker (branch on `entry.passed`). `None` return = no events (turn_started is not a promise).
 
 **SUMMARIZE_DAY_DISCUSSION**
