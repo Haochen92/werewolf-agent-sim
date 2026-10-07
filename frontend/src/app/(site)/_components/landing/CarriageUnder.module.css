@@ -185,6 +185,9 @@
 .role[data-faction='serial_killer'] {
   color: #d9774a;
 }
+.role[data-faction='neutral_benign'] {
+  color: var(--benign);
+}
 .txt {
   grid-column: 2;
   color: #e6dcc4;

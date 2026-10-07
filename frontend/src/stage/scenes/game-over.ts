@@ -14,17 +14,22 @@ import { standBox, type StageGeometry } from '../units';
 
 export type EndedAt = 'morning' | 'lynch';
 
-/** The hour the shutter rises on for each winner: the village's day, the wolves' night. */
+/**
+ * The hour the shutter rises on for each winner: the village's day, the wolves' night. The
+ * neutrals' dawn is provisional: the wire has no such winner yet (roles.ts).
+ */
 export const WINNERS_HOUR: Record<Faction, Phase> = {
   villagers: 'day',
   wolves: 'night',
   serial_killer: 'dusk',
+  neutral_benign: 'dawn',
 };
 
 export const WINNER_LINE: Record<Faction, string> = {
   villagers: 'The village has won',
   wolves: 'The wolves have won',
   serial_killer: 'The serial killer has won',
+  neutral_benign: 'The neutrals have won',
 };
 
 /** The sigil a winning side is shown by. */
@@ -32,6 +37,7 @@ export const WINNER_SIGIL: Record<Faction, string> = {
   villagers: 'villager',
   wolves: 'wolf',
   serial_killer: 'serial_killer',
+  neutral_benign: 'speculator',
 };
 
 /**

@@ -23,6 +23,7 @@ const HEAD = {
   villagers: 'var(--town)',
   wolves: 'var(--wolf)',
   serial_killer: 'var(--sk)',
+  neutral_benign: 'var(--benign)',
 };
 
 /** The pin's line, up and to the right from where it enters (degrees above the horizontal). */

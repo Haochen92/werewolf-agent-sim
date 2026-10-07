@@ -81,6 +81,9 @@
 .c-serial_killer {
   --c: var(--sk);
 }
+.c-neutral_benign {
+  --c: var(--benign);
+}
 
 /* the cast counts: "3 villagers · 1 healer · …" with the sigils */
 .cast {
@@ -176,6 +179,9 @@
 }
 .r-serial_killer {
   --rink: var(--sk-ink);
+}
+.r-neutral_benign {
+  --rink: var(--benign-ink);
 }
 
 /* the pack chat, opened at the deal for a wolf (a placeholder until the chat is built); the

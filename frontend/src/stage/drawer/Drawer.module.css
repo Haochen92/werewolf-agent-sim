@@ -385,9 +385,13 @@
 .c-serial_killer {
   --c: var(--sk);
 }
+.c-neutral_benign {
+  --c: var(--benign);
+}
 .rt.c-villagers,
 .rt.c-wolves,
-.rt.c-serial_killer {
+.rt.c-serial_killer,
+.rt.c-neutral_benign {
   color: var(--c);
 }
 .txt {

@@ -3,7 +3,7 @@
  * with `<use>`. Rendered once, by the site layout, so each page ships the paths a single time.
  *
  * Two families. `i-*` are the mockups' interface icons, on a 24 grid, stroked at 1.9 (plus
- * `i-github`, a filled mark). `sg-*` are the six role sigils on a 40 grid, stroked at 3.2; their
+ * `i-github`, a filled mark). `sg-*` are the role sigils on a 40 grid, stroked at 3.2; their
  * paths are the stage's own (`stage/instruments/Sigil`), so the site and the stage cannot drift.
  */
 import type { ReactNode } from 'react';

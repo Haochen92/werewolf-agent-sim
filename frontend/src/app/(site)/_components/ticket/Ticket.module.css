@@ -474,6 +474,9 @@
 .card[data-faction='serial_killer'] {
   --rc: var(--sk);
 }
+.card[data-faction='neutral_benign'] {
+  --rc: var(--benign);
+}
 
 .card:hover {
   opacity: 0.8;

@@ -3,18 +3,43 @@
  * `serial_killer`; the stage says "Wolf" and colours it by the side it plays for. Faction
  * colour is the card-back rule's business (stage_architecture.md §4): it appears only where
  * the role is known to this viewer, so these helpers are handed a role, never guess one.
+ *
+ * The eight 1920s roles (the owner's sigil set, 2026-10-07) are named and sided here ahead of
+ * the engine, which does not deal them yet; their ids are the engine's style (`fortune_teller`
+ * like `serial_killer`) and will follow the engine's word when it lands.
  */
 import type { MeView } from '@/game/types';
 
-export type Faction = 'villagers' | 'wolves' | 'serial_killer';
+/**
+ * The four sides. The first three are the wire's winners; `serial_killer` is also the
+ * neutral-evil side as a whole (the necromancer, when it lands, plays for itself the same way).
+ * `neutral_benign` (the speculator, the fortune teller) has no engine winner yet.
+ */
+export type Faction = 'villagers' | 'wolves' | 'serial_killer' | 'neutral_benign';
 
 export const ROLE_NAME: Record<string, string> = {
   villager: 'Villager',
   healer: 'Healer',
   investigator: 'Investigator',
   vigilante: 'Vigilante',
+  sentinel: 'Sentinel',
+  trailseer: 'Trailseer',
+  sigilist: 'Sigilist',
   wolf: 'Wolf',
+  chanteuse: 'Chanteuse',
+  illusionist: 'Illusionist',
   serial_killer: 'Serial killer',
+  necromancer: 'Necromancer',
+  speculator: 'Speculator',
+  fortune_teller: 'Fortune teller',
+};
+
+/** The side's name, as the table says it. */
+export const FACTION_NAME: Record<Faction, string> = {
+  villagers: 'Villagers',
+  wolves: 'Wolves',
+  serial_killer: 'Serial killer',
+  neutral_benign: 'Neutral',
 };
 
 const FACTION: Record<string, Faction> = {
@@ -22,8 +47,16 @@ const FACTION: Record<string, Faction> = {
   healer: 'villagers',
   investigator: 'villagers',
   vigilante: 'villagers',
+  sentinel: 'villagers',
+  trailseer: 'villagers',
+  sigilist: 'villagers',
   wolf: 'wolves',
+  chanteuse: 'wolves',
+  illusionist: 'wolves',
   serial_killer: 'serial_killer',
+  necromancer: 'serial_killer',
+  speculator: 'neutral_benign',
+  fortune_teller: 'neutral_benign',
 };
 
 /** The side a role plays for; null for a role the stage does not know. */

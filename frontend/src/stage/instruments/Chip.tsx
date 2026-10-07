@@ -63,6 +63,7 @@ const FACTION_INK: Record<Faction, string> = {
   villagers: MATERIALS.town,
   wolves: MATERIALS.wolf,
   serial_killer: MATERIALS.sk,
+  neutral_benign: MATERIALS.benign,
 };
 
 /** The chip's face, drawn in its own box: centre (r, 4 + r), the string tied on at (r, 0). */

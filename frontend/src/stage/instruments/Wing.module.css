@@ -364,6 +364,10 @@
   --c: var(--sk);
   --ci: var(--sk-ink);
 }
+.c-neutral_benign {
+  --c: var(--benign);
+  --ci: var(--benign-ink);
+}
 
 /* the suspect's wax seal, pressed over the photo's lower corner */
 .seal {

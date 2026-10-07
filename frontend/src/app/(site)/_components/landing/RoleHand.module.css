@@ -11,6 +11,9 @@
 .hand [data-faction='serial_killer'] {
   --rc-ink: var(--sk-ink);
 }
+.hand [data-faction='neutral_benign'] {
+  --rc-ink: var(--benign-ink);
+}
 
 /* ---------- the picker ---------- */
 .pick {

@@ -1,17 +1,31 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { PATHS, Sigil } from './Sigil';
+import { MARKS, PATHS, SIGIL_ROLES, Sigil } from './Sigil';
 
-const ROLES = ['villager', 'healer', 'investigator', 'vigilante', 'wolf', 'serial_killer'];
+const ROLES = [...SIGIL_ROLES];
 const html = (el: React.ReactElement) => renderToStaticMarkup(el);
 
 describe('Sigil', () => {
+  it('knows the twelve roles, the four originals among them', () => {
+    expect(ROLES).toHaveLength(14);
+    for (const r of [
+      'villager',
+      'healer',
+      'investigator',
+      'vigilante',
+      'wolf',
+      'serial_killer',
+    ])
+      expect(ROLES).toContain(r);
+  });
+
   it.each(ROLES)('draws %s as felt and as a stamp', (role) => {
     const felt = html(<Sigil role={role} variant="felt" />);
     expect(felt).toContain(`data-sigil="${role}"`);
     expect(felt).toContain('viewBox="-2 -2 52 52"');
     expect(felt).not.toContain('<mask');
-    expect(felt).toContain('stroke-dasharray'); // stitched at full size
+    // stitched at full size, except the speculator's coins, which the bench left unstitched
+    if (role !== 'speculator') expect(felt).toContain('stroke-dasharray');
 
     const stamp = html(<Sigil role={role} />);
     expect(stamp).toContain('data-variant="stamp"');
@@ -29,6 +43,20 @@ describe('Sigil', () => {
     // a numeric width under 26 means small; the stamp drops its fine knockouts too
     expect(html(<Sigil role="vigilante" width={20} />)).not.toContain('M17 37.6H31');
     expect(html(<Sigil role="vigilante" width={40} />)).toContain('M17 37.6H31');
+  });
+
+  it('draws the plain villager and the plain wolf as their sides’ marks', () => {
+    expect(html(<Sigil role="villager" variant="felt" />)).toContain(MARKS.villagers.base);
+    expect(html(<Sigil role="wolf" variant="felt" />)).toContain(MARKS.wolves.base);
+  });
+
+  it('lays an ink line under the puppet’s strings and keeps them solid in the stamp', () => {
+    const felt = html(<Sigil role="necromancer" variant="felt" />);
+    expect(felt).toMatch(
+      /stroke="#241548" stroke-width="2.9"[^>]*><\/path><path d="M9.5 10.5/,
+    );
+    const stamp = html(<Sigil role="necromancer" />);
+    expect(stamp).toMatch(/d="M9.5 10.5[^"]*" fill="none" stroke="#fff"/);
   });
 
   it('draws nothing for a role it does not know', () => {

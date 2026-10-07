@@ -114,3 +114,6 @@
 .c-serial_killer {
   --c: var(--sk);
 }
+.c-neutral_benign {
+  --c: var(--benign);
+}

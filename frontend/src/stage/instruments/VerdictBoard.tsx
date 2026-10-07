@@ -28,6 +28,7 @@ const EDGE: Record<Faction, string> = {
   villagers: MATERIALS.town,
   wolves: MATERIALS.wolf,
   serial_killer: MATERIALS.sk,
+  neutral_benign: MATERIALS.benign,
 };
 
 /** Where the board hangs, in units. */

@@ -121,3 +121,6 @@
 .c-serial_killer {
   --c: var(--ink-sk);
 }
+.c-neutral_benign {
+  --c: var(--ink-benign);
+}

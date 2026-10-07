@@ -45,6 +45,9 @@
 .f-serial_killer {
   --rc: var(--sk);
 }
+.f-neutral_benign {
+  --rc: var(--benign);
+}
 
 /* the back: the stitched ring and the star */
 .back {

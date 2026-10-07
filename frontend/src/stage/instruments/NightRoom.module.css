@@ -280,6 +280,9 @@ button.photo:focus-visible {
 .serial_killer {
   --rc: var(--sk);
 }
+.neutral_benign {
+  --rc: var(--benign);
+}
 
 /* ---- the full card, opened over the room ---- */
 .veil {

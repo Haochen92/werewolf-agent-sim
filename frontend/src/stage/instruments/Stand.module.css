@@ -135,6 +135,10 @@
 .t-serial_killer {
   background: var(--sk);
 }
+.t-neutral_benign {
+  background: var(--benign);
+  color: var(--benign-ink);
+}
 /* said on the seat's own screen: its agent spoke, or it was voted out */
 .t-agent {
   background: #8a2a24;

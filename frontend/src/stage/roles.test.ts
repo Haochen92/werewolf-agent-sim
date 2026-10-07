@@ -11,6 +11,8 @@ describe('the stage’s role and seat words', () => {
     expect(seatNumber('player_7')).toBe(7);
     expect(factionOf('healer')).toBe('villagers');
     expect(factionOf('serial_killer')).toBe('serial_killer');
+    expect(factionOf('necromancer')).toBe('serial_killer');
+    expect(factionOf('speculator')).toBe('neutral_benign');
     expect(factionOf(null)).toBeNull();
   });
 });
