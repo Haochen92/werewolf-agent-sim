@@ -4,9 +4,9 @@ A bench case freezes the game STATE at the moment an agent took its turn (its JS
 builder, ``data/builders/hallucination_bench.py``). Replay rebuilds the turn's payload with the
 engine's own Send builders (``build_speaker_send`` for a discussion turn, ``fan_out_day`` for a vote)
 and renders the production template and output schema for the speaker's role, so the prompt is
-whatever the checked-out code sends today. The prompt version and the model therefore come from
-the process this runs in (env flags such as ``WW_DISCUSSION_PROMPT``, and ``GOOGLE_GENAI_MODEL``):
-the bench runner gives each arm its own process.
+whatever the checked-out code sends today. The model therefore comes from the process this runs
+in (``GOOGLE_GENAI_MODEL``, read at import), and the prompt from the checked-out code: the bench
+runner gives each arm its own process.
 
 Day discussion and day votes only for now. Night turns go through per-role night builders and are
 not covered yet.

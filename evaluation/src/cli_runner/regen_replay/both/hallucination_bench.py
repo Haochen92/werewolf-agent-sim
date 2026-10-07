@@ -1,8 +1,8 @@
 """eval-hallucination-bench: replay frozen hallucination cases under arms (model × prompt version),
 judge every output, and compare the arms.
 
-Each arm runs in its own process, because the prompt version is chosen by env flags read at import
-(``WW_DISCUSSION_PROMPT``, ``WW_INVESTIGATOR_PROMPT``) and the seat model by ``GOOGLE_GENAI_MODEL``.
+Each arm runs in its own process, because the seat model is chosen by an env variable read at import
+(``GOOGLE_GENAI_MODEL``); the prompt-version flags that once joined it were retired on 2026-10-07.
 A worker regenerates every case ``n`` times (``replay/hallucination_bench.py``) and writes its
 samples; the parent then judges them all the same way:
 

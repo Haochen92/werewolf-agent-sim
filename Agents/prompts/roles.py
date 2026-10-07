@@ -9,9 +9,6 @@ interactions (the vigilante's shot confirming the SK, the healer's block) stay i
 prose — the brief is only the generic faction/win/night facts.
 """
 
-import os
-
-from Agents.prompts.common import DISCUSSION_PROMPT_V2
 from Agents.schemas.roles import ROLE_SPECS
 
 # --- per-role PLAYSTYLE prose (how this role contributes; not cross-faction awareness) ----------
@@ -29,33 +26,7 @@ Voting & Logic: Your vote matters as much as your protection. Decide it from you
 """
 
 
-# BASELINE investigator block. The prompt-claims audit (evidence/generation_prompt/prompt_claims_audit) found its
-# "survival is primary / worthless if you die before you can use it" framing and "let consensus build,
-# don't accuse the moment you have a result" Information-Management steer are FALSE and HARMFUL: they
-# cap the investigator->lynch transmission chain (the read never reaches the village; provenance is
-# suppressed). SUPERSEDED as default; kept RUNNABLE for A/B comparison via WW_INVESTIGATOR_PROMPT=baseline
-# — DO NOT silently change it (it's the frozen control).
-_INVESTIGATOR_PLAYSTYLE_BASELINE = """
-## INVESTIGATOR (Core Strategy)
-
-Identity & Goal: You are the Investigator. You hold the most powerful information tool in the game, but your primary goal is survival — your information is worthless if you die before you can use it.
-
-Communication: Guide the conversation subtly. Blend in by proposing hypotheses and asking pointed questions. Don't paint a target on your back by being overly analytical early, but don't be purely passive either. Never reveal your role prematurely.
-
-Night Strategy: Use your investigations deliberately. Each result names a player's exact role, so an investigation can expose a wolf or the serial killer. Confirming a trustworthy villager is also valuable — it narrows the suspect pool and gives you safer players to align with as discussion develops.
-
-Information Management: Control the flow of what you know. Rather than publicly clearing or accusing the moment you have a result, you can steer attention with questions and let consensus build. When and how much to reveal is your judgment call.
-"""
-
-
-# NEUTRAL block — now the DEFAULT substrate. NOT the opposite tactic — baking in "reveal immediately"
-# would launder our strategy the same way concealment did. It corrects the false framing toward the
-# true mechanic (a read only helps once the village ACTS on it; an unshared read changes no votes) and
-# presents reveal as a genuine two-sided call (rally the village vs paint a night target) — the
-# agent's to weigh. Facts + symmetric tradeoff, no imperatival hit-list (same fact/tactic line as the
-# threat-brief). Removing a FALSIFIED steer is a correctness fix, not a treatment — whether the agent
-# then conceals more/less is for MEMORY to learn from outcomes, not for the prompt to dictate.
-_INVESTIGATOR_PLAYSTYLE_TRANSMIT = """
+_INVESTIGATOR_PLAYSTYLE = """
 ## INVESTIGATOR (Core Strategy)
 
 Identity & Goal: You are the Investigator. Each night you learn one player's exact role — the most powerful information tool in the game. That information only helps the village once the village acts on it; a result that stays in your head changes no votes.
@@ -64,18 +35,6 @@ Communication: Contribute like an engaged villager — propose reads, ask pointe
 
 Night Strategy: Use your investigations deliberately. Each result names a player's exact role, so an investigation can expose a wolf or the serial killer. Confirming a trustworthy villager is also valuable — it narrows the suspect pool and gives you safer players to align with as discussion develops.
 """
-
-
-# DEFAULT = the neutral block (the false concealment steer removed). The old capped BASELINE is kept
-# RUNNABLE for A/B comparison via WW_INVESTIGATOR_PROMPT=baseline (versioning policy: keep the
-# superseded design runnable). ⚠️ This changes generated play → memory must be RE-MINED on this
-# substrate before any memory run (old capped-play memory is stale against the neutral prompt — same
-# lesson as the wolf threat-brief).
-_INVESTIGATOR_PLAYSTYLE = (
-    _INVESTIGATOR_PLAYSTYLE_BASELINE
-    if os.environ.get("WW_INVESTIGATOR_PROMPT") == "baseline"
-    else _INVESTIGATOR_PLAYSTYLE_TRANSMIT
-)
 
 
 _VILLAGER_PLAYSTYLE = """
@@ -117,14 +76,14 @@ Voting & Survival: Your day vote is a tool to deflect suspicion and steer whom t
 """
 
 
-# v2 (P3): in 28 games no wolf or serial killer ever claimed a role, so the investigator was never
-# contested. Facts + a two-sided tradeoff, not a steer — whether to claim stays the agent's call.
+# In 28 games no wolf or serial killer ever claimed a role, so the investigator was never contested
+# (the discussion-evidence pass, P3). Facts + a two-sided tradeoff, not a steer — whether to claim
+# stays the agent's call.
 _EVIL_CLAIMING = """
 Claiming a role: You may claim any town role, including investigator, healer or vigilante. A claim can discredit a real claimant or give you cover, but the real holder may counter-claim, the town can check your story against what happens at night, and your true role is revealed if you're eliminated.
 """
-if DISCUSSION_PROMPT_V2:
-    _WOLF_PLAYSTYLE += _EVIL_CLAIMING
-    _SERIAL_KILLER_PLAYSTYLE += _EVIL_CLAIMING
+_WOLF_PLAYSTYLE += _EVIL_CLAIMING
+_SERIAL_KILLER_PLAYSTYLE += _EVIL_CLAIMING
 
 
 _VIGILANTE_PLAYSTYLE = """

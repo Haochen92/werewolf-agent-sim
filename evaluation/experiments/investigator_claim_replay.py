@@ -14,7 +14,7 @@ engine's own payload builder, and samples the same template and model many times
 Each sampled message is screened for a claimed investigation of someone the investigator never
 checked; the screen flags candidates and every flagged line is written out to be read by hand.
 
-  WW_DISCUSSION_PROMPT=v2 poetry run python evaluation/experiments/investigator_claim_replay.py --n 20
+  poetry run python evaluation/experiments/investigator_claim_replay.py --n 20
 """
 
 from __future__ import annotations
@@ -113,8 +113,6 @@ def main() -> None:
     ap.add_argument("--variants", default="ABCD")
     ap.add_argument("--workers", type=int, default=8)
     args = ap.parse_args()
-    if os.environ.get("WW_DISCUSSION_PROMPT") != "v2":
-        sys.exit("the live game ran WW_DISCUSSION_PROMPT=v2; set it to replay faithfully")
     os.environ["GOOGLE_GENAI_MODEL"] = MODEL
 
     state = load_state()

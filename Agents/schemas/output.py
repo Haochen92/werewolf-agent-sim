@@ -241,7 +241,7 @@ class DaySummaryOutput(LenientToolCallModel):
     village_dynamics: VillageDynamics
 
 
-# WW_DISCUSSION_PROMPT=v2 (P2): the summary stops asking who stayed quiet — its answer fed the
+# The discussion-evidence pass (P2): the summary stops asking who stayed quiet — its answer fed the
 # next day's prompts. Same keys as the originals, so stored summaries read the same downstream.
 # Model-visible: no class docstring.
 class VillageDynamicsV2(VillageDynamics):

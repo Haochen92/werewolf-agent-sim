@@ -12,7 +12,6 @@ the discuss phase uses them.
 from langchain_core.prompts import ChatPromptTemplate
 
 from Agents.prompts.common import (
-    DISCUSSION_PROMPT_V2,
     GAME_PREAMBLE,
     READS_COMMIT_INSTRUCTION,
     build_system_prompt,
@@ -37,15 +36,9 @@ Avoid canned openers and filler — don't start with "I agree with X that...", "
 "good point", "classic wolf move", and don't mirror the structure of the message before yours.
 A short reaction is fine; not every turn needs a full paragraph. If you agree with someone, add
 a new reason or a new piece of information rather than just seconding what they said.
-Keep your message under about 120 words: state your strongest, most important points.
+Keep your message short: usually 2-3 sentences, about 40-80 words. Make one main point, with
+the evidence needed to understand it.
 """
-# v2 (P5): a target, not a cut — one point plus the evidence needed to follow it.
-if DISCUSSION_PROMPT_V2:
-    TONE_INSTRUCTION = TONE_INSTRUCTION.replace(
-        "Keep your message under about 120 words: state your strongest, most important points.",
-        "Keep your message short: usually 2-3 sentences, about 40-80 words. Make one main point, with\n"
-        "the evidence needed to understand it.",
-    )
 
 
 DISCUSSION_SILENCE_RULE = """
