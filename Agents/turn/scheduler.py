@@ -1,14 +1,14 @@
 """Sequential-discussion speaker selection — the pure core behind route_speaker.
 
 Stateless: every decision is recomputed from the day_channel transcript, so it is
-deterministic (seeded) and unit-testable in isolation. select_next_speaker is the
-entry point; it layers cap → reactive obligations → trailing-pass termination →
-proactive ranking. Kept free of graph/LLM deps on purpose (test_scheduler.py).
+deterministic and unit-testable in isolation. select_next_speaker is the entry point: cap →
+reactive obligations → terminate. Since Phase 2 (2026-10-07) the scheduler fires only the
+reactive chains; players with nothing owed speak in the day's rounds (the opening, the
+proactive round, the closing), which run in parallel outside this module. Kept free of
+graph/LLM deps on purpose (test_scheduler.py).
 """
 
 from collections import defaultdict
-import random
-import zlib
 
 from Agents.game_config import GameConfig
 from Agents.schemas import (
@@ -25,10 +25,6 @@ from Agents.schemas import (
 # on the marker for the closing's count, but they open and discharge nothing here.
 _HELD_REASONS = {DiscussionPassReason.ROUND_ECHO, DiscussionPassReason.OPENING_FILTERED}
 
-    Stable within a run (game_id is fixed); replayable across runs if game_id is pinned.
-    Pure (primitives only) so it stays unit-testable with the rest of the scheduler.
-    """
-    return zlib.crc32(f"{game_id}:{day}:{cycle}".encode())
 
 def build_reactive_queue(
     day_channel: list[DayChannel],
@@ -52,14 +48,14 @@ def build_reactive_queue(
         balance = debt_ledger[(creditor, debtor)]
         if balance.open_sequence is not None:
             balance.cycles += 1
-        # A proactive-round line held back as an echo was never shown: its tags count for the
-        # closing (closing_speakers) but must not open a debt nobody can see the cause of.
-        if entry.passed and entry.pass_reason in _HELD_REASONS:
-            continue
             balance.open_sequence = None
             balance.last_touch_sequence = sequence
 
     for entry in day_channel:
+        # A proactive-round line held back as an echo was never shown: its tags count for the
+        # closing (closing_speakers) but must not open a debt nobody can see the cause of.
+        if entry.passed and entry.pass_reason in _HELD_REASONS:
+            continue
         # A reactive model failure is an attempted turn, not speech. Close exactly the obligations
         # which caused the turn so an unavailable provider cannot re-fire the same debtor forever;
         # do this explicitly rather than fabricating AddressedTarget responses the agent never made.
@@ -115,65 +111,48 @@ def build_reactive_queue(
             reactive_items[debtor] = ReactiveItem(
                 agent_id=debtor,
                 creditors=[creditor],
+                opened=[balance.open_sequence],
                 latest_sequence=balance.open_sequence,
             )
         else:
             item.creditors.append(creditor)
+            item.opened.append(balance.open_sequence)
             item.latest_sequence = max(item.latest_sequence, balance.open_sequence)
 
     return sorted(reactive_items.values(), key=lambda i: i.latest_sequence, reverse=True)
-
-
-def rank_proactive(
-    day_channel: list[DayChannel],
-    surviving_players: list[str],
-    seed: int,
-) -> list[str]:
-    """Role-blind proactive ranking: quietest-first, seeded-random tiebreak.
-
-    A pass marker advances its passer's recency (it's a real `DayChannel` entry), so the
-    passer sinks to the bottom and the next pick auto-rotates. Never-spoke agents rank
-    first (the opener is one big tie, broken by the seed).
-    """
-    last_spoke: dict[str, int] = {}
-    for entry in day_channel:
-        last_spoke[entry.player] = entry.seq
-
-    candidates = list(surviving_players)
-    random.Random(seed).shuffle(candidates)
-    candidates.sort(key=lambda p: last_spoke.get(p, -1))
-    return candidates
 
 
 def select_next_speaker(
     day_channel: list[DayChannel],
     surviving_players: list[str],
     game_config: GameConfig,
-    seed: int,
-    *,
-    utterance_cap: int | None = None,
 ) -> Decision:
-    """Pick the next speaker (or terminate): cap → reactive → trailing-pass → proactive.
+    """Pick the next speaker (or terminate): reactive → terminate, with a drain once the cap hits.
 
-    utterance_cap overrides the config-derived cap (the caller uses this for the
-    lighter pre-voting-day cap); falls back to game_config.utterance_cap otherwise.
+    The reactive queue holds every player who owes someone an answer; the freshest debt
+    speaks first and answers all its creditors at once. With nothing owed, the chains are over
+    and the day router decides what comes next (another round, the closing, or the summary).
+
+    The utterance cap does not cut a chain mid-air (owner, 2026-10-07). Once the cap-th real
+    utterance is in, the day DRAINS: only debts opened at or before that point are answered,
+    each debtor answers at most once more (so a reply that fails to tag its creditor cannot
+    re-fire forever), and anything a post-cap reply opens is left for the closing. The day
+    ends with reason "cap" when nothing is left to drain.
     """
-    num_survivors = len(surviving_players)
-    proactive_budget = game_config.proactive_budget
-    cap = utterance_cap if utterance_cap is not None else game_config.utterance_cap(num_survivors)
+    cap = game_config.utterance_cap(len(surviving_players))
+    real_utterances = [entry for entry in day_channel if not entry.passed]
+    capped = len(real_utterances) >= cap
+    cap_seq = real_utterances[cap - 1].seq if capped else None
 
-    # 1. Hard cap backstop — real utterances only; pass markers don't count.
-    real_utterances = sum(1 for entry in day_channel if not entry.passed)
-    if real_utterances >= cap:
-        return Decision(terminate=True, terminate_reason="cap")
-
-    # 2. Open obligations take priority — the obligated agent answers everyone owed.
     reactive_queue = build_reactive_queue(
         day_channel,
         per_pair_cap=game_config.per_pair_reengagement_cap,
-        reengagement_cooldown=game_config.reengagement_cooldown(num_survivors),
+        reengagement_cooldown=game_config.reengagement_cooldown(len(surviving_players)),
         valid_players=set(surviving_players),
     )
+    if capped:
+        reactive_queue = _drainable(reactive_queue, day_channel, cap_seq)
+
     if reactive_queue:
         top = reactive_queue[0]
         return Decision(
@@ -181,13 +160,31 @@ def select_next_speaker(
             firing_reason=FiringReason(tier="reactive", owes=top.creditors),
         )
 
-    # 3. Proactive path — terminate if the trailing P picks all declined.
-    if len(day_channel) >= proactive_budget and all(
-        entry.passed for entry in day_channel[-proactive_budget:]
-    ):
-        return Decision(terminate=True, terminate_reason="trailing_passes")
+    if capped:
+        return Decision(terminate=True, terminate_reason="cap")
+    return Decision(terminate=True, terminate_reason="no_obligations")
 
-    ranked = rank_proactive(day_channel, surviving_players, seed)
-    if not ranked:
-        return Decision(terminate=True, terminate_reason="no_eligible")
-    return Decision(speaker=ranked[0], firing_reason=FiringReason(tier="proactive"))
+
+def _drainable(
+    reactive_queue: list[ReactiveItem], day_channel: list[DayChannel], cap_seq: int
+) -> list[ReactiveItem]:
+    """The part of the reactive queue the drain still answers: debts opened at or before the
+    cap, owed by players who have not spoken since the cap was reached."""
+    spoke_after_cap = {entry.player for entry in day_channel if entry.seq > cap_seq}
+
+    drainable: list[ReactiveItem] = []
+    for item in reactive_queue:
+        if item.agent_id in spoke_after_cap:
+            continue
+        creditors: list[str] = []
+        opened: list[int] = []
+        for creditor, opened_at in zip(item.creditors, item.opened):
+            if opened_at <= cap_seq:
+                creditors.append(creditor)
+                opened.append(opened_at)
+        if creditors:
+            drainable.append(ReactiveItem(
+                agent_id=item.agent_id, creditors=creditors, opened=opened,
+                latest_sequence=max(opened),
+            ))
+    return drainable

@@ -30,7 +30,6 @@ from Agents.schemas.turn import (
     TurnEffects,
 )
 from Agents.turn.action_space import validate_target
-from Agents.turn.novelty_agent import judge_proactive_novelty
 
 logger = getLogger(__name__)
 
@@ -64,6 +63,7 @@ def resolve_decision(
         current_day = payload.get("current_day", 1)
         firing_reason = payload.get("firing_reason")  # scheduler trace; rides the Send
         seq = sum(1 for m in payload.get("day_channel", []) if m.day == current_day)
+        day_round = payload.get("day_round", "discussion")  # which round of the day this turn is
 
         # Reactive picks must answer — an agent's bare pass wouldn't discharge the obligation, so
         # it falls through to message handling. The human seat MAY decline (a mention isn't a
@@ -76,6 +76,7 @@ def resolve_decision(
                     day=current_day,
                     seq=seq,
                     player=player_id,
+                    day_round=day_round,
                     message="",
                     passed=True,
                     pass_reason=DiscussionPassReason.VOLUNTARY,
@@ -96,6 +97,7 @@ def resolve_decision(
                     day=current_day,
                     seq=seq,
                     player=player_id,
+                    day_round=day_round,
                     message="",
                     passed=True,
                     pass_reason=DiscussionPassReason.VOLUNTARY,
@@ -109,45 +111,15 @@ def resolve_decision(
         if not message or message.lower() == "null":
             return ResolvedDayDiscussion(entry=None, effects=effects)
 
-        # Proactive novelty gate: an echo/restatement proactive turn becomes a hidden pass. Reactive
-        # turns are never gated; the day's effective opener_floor real utterances bypass the gate so
-        # it can open before echo-gating engages. The day router lowers that floor for pre-voting
-        # rounds. A human seat is never gated.
-        is_proactive = firing_reason is not None and firing_reason.tier == "proactive"
-        today_real = sum(
-            1
-            for m in payload.get("day_channel", [])
-            if m.day == current_day
-            and m.player != "game_master"
-            and not getattr(m, "passed", False)
+        entry = DayChannel(
+            day=current_day,
+            seq=seq,
+            player=player_id,
+            day_round=day_round,
+            message=message,
+            addressed_targets=getattr(result, "addressed_targets", []),
+            firing_reason=firing_reason,
         )
-        if (
-            is_proactive
-            and today_real >= payload.get("opener_floor", 0)
-            and not payload.get("human_player")
-            and not judge_proactive_novelty(message, payload, current_day)
-        ):
-            # gated_candidate is persisted for selectivity audits but hidden by prompt formatters.
-            entry = DayChannel(
-                day=current_day,
-                seq=seq,
-                player=player_id,
-                message="",
-                passed=True,
-                pass_reason=DiscussionPassReason.NOVELTY_GATED,
-                firing_reason=firing_reason,
-                gated=True,
-                gated_candidate=message,
-            )
-        else:
-            entry = DayChannel(
-                day=current_day,
-                seq=seq,
-                player=player_id,
-                message=message,
-                addressed_targets=getattr(result, "addressed_targets", []),
-                firing_reason=firing_reason,
-            )
         return ResolvedDayDiscussion(entry=entry, effects=effects)
 
     if output_key == "day_votes":

@@ -32,10 +32,7 @@ from Agents.turn.addressing_agent import (  # noqa: F401
     ADDRESSING_EXTRACTOR_PROMPT,
     extract_addressed_targets,
 )
-from Agents.turn.novelty_agent import NOVELTY_JUDGE_PROMPT, judge_proactive_novelty  # noqa: F401
 from Agents.turn.scheduler import (  # noqa: F401
     build_reactive_queue,
-    cycle_seed,
-    rank_proactive,
     select_next_speaker,
 )

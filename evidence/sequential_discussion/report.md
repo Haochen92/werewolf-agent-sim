@@ -1,5 +1,12 @@
 # Sequential Day Discussion — How It Works
 
+> **Status 2026-10-07 — superseded in part.** The reactive mechanism below (obligations,
+> freshness, K-cap, cooldown) is still the live discussion engine. The proactive tier (quietest-first
+> seeded picks, the novelty gate, trailing-pass termination) was replaced by the day's parallel
+> rounds in Phase 2 of the discussion-evidence work; see
+> [`game_play_enhancement/discussion_evidence.md`](../game_play_enhancement/discussion_evidence.md) §7.4
+> step 4b. This report is kept as the record of the design that ran from 2026-06 to 2026-10.
+
 **Scope:** the day-phase discussion engine — how agents take turns, when they stay silent, how the
 conversation terminates, and why it reads as a conversation rather than parallel monologues. Covers the
 shipped design (Phase A #1) and the evidence that it works. **Companion docs:** the chronological build

@@ -64,14 +64,11 @@ class GameConfig(BaseModel):
     # utterances untouched, its K cycle-count resets to 0 so a cooled feud can reopen
     # after the room has moved on. Throttles CONSECUTIVE ping-pong (K caps a burst)
     # without permanently killing a topic for the day; default ~one full table.
-    proactive_budget: int = Field(default=3, ge=1)
-    # terminate once this many DISTINCT proactive picks pass (decline the floor) in a
-    # row on a quiet cycle; any real utterance resets the streak.
-    opener_floor: int = Field(default=3, ge=0)
-    # The day's first `opener_floor` real utterances bypass the proactive novelty gate, so
-    # a voting day gets a substantive opening before echo-gating (and trailing-pass termination)
-    # can kick in. Pre-voting opening rounds clamp this to at most one: their dedicated prompt
-    # acknowledges the lack of evidence, and three ungated procedural echoes made Day 1 worse.
+    max_proactive_rounds: int = Field(default=2, ge=0)
+    # Phase 2 (2026-10-07): the day's rounds replaced the scheduler's one-at-a-time proactive
+    # picks. After the opening's reactive chains, every survivor who has not spoken since the
+    # last round is asked at once; a further round runs only while the previous round and its
+    # chains produced a new line, up to this many rounds a day. 0 = openings and chains only.
 
     @model_validator(mode="after")
     def validate_day_order(self) -> "GameConfig":

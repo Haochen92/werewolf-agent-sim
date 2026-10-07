@@ -22,7 +22,7 @@ from Agents.prompts import (
 )
 from typing import TypedDict
 
-from Agents.schemas import DayChannel, DayDiscussOutput, DayVote, DayVoteOutput
+from Agents.schemas import DayChannel, DayDiscussOutput, DayVote, DayVoteOutput, RoundCandidate
 from Agents.schemas.game_events import DiscussionPassReason
 from Agents.schemas.turn import ResolvedDayDiscussion, ResolvedDayVote
 from Agents.state import HealerDayState, InvestigatorDayState, VillagerDayState, WolfDayState
@@ -38,6 +38,13 @@ DayActorPayload = VillagerDayState | HealerDayState | WolfDayState | Investigato
 class DiscussDelta(TypedDict, total=False):
     day_channel: list[DayChannel]
     """One entry: the speech, or a pass marker (voluntary or novelty-gated)."""
+    agent_strategies: dict[str, str]
+    """{player_id: updated strategy note} — present only when the strategy changed."""
+
+
+class RoundDelta(TypedDict, total=False):
+    round_candidates: list[RoundCandidate]
+    """One entry: this player's opening or closing line (or pass), held for collect_round."""
     agent_strategies: dict[str, str]
     """{player_id: updated strategy note} — present only when the strategy changed."""
 
@@ -98,6 +105,42 @@ def discuss(
     if turn.entry is not None:
         # DayGraphState.day_channel is an append-reduced list; this invocation contributes one entry.
         updates["day_channel"] = [turn.entry]
+    if turn.effects.strategy:
+        updates["agent_strategies"] = {
+            payload["player_id"]: turn.effects.strategy,
+        }
+    return updates or None
+
+
+def round_turn(
+    payload: DayActorPayload,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+) -> RoundDelta | None:
+    """An opening or closing turn: the same engine call as ``discuss`` (the prompt picks its
+    rules block from the payload's ``day_round``), but the line goes to ``round_candidates``
+    instead of ``day_channel``, because the round's turns run in parallel and only
+    ``collect_round`` may number them into the transcript."""
+    turn = run_memory_informed_action(
+        payload,
+        config,
+        runtime,
+        "day_discussion",
+        DISCUSS_PROMPTS[payload["player_role"]],
+        DayDiscussOutput,
+        "day_channel",
+    )
+    if turn is None:
+        return None
+    if not isinstance(turn, ResolvedDayDiscussion):
+        raise TypeError(f"round turn resolved to unexpected turn: {turn.kind}")
+
+    updates: RoundDelta = {}
+    if turn.entry is not None:
+        updates["round_candidates"] = [
+            RoundCandidate(day=payload["current_day"], day_round=payload["day_round"],
+                           round_no=payload.get("round_no", 0), entry=turn.entry)
+        ]
     if turn.effects.strategy:
         updates["agent_strategies"] = {
             payload["player_id"]: turn.effects.strategy,

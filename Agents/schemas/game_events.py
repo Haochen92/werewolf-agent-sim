@@ -34,6 +34,12 @@ class AddressedTarget(BaseModel):
     )
 
 
+# The rounds of a day (Phase 2): the opening (every living player at once), the scheduler's
+# reactive discussion chains, the proactive round (everyone who has not spoken since the last
+# round, at once) and the closing defence of the most accused.
+DayRound = Literal["opening", "discussion", "proactive", "closing"]
+
+
 class FiringReason(BaseModel):
     """Why the scheduler fired a turn — observability only; rides the Send and is stamped onto
     the resulting DayChannel, but hidden from agents."""
@@ -50,12 +56,6 @@ class DiscussionPassReason(str, Enum):
     VOLUNTARY = "voluntary"
     NOVELTY_GATED = "novelty_gated"
     GENERATION_FAILED = "generation_failed"
-
-
-class DayChannel(BaseModel):
-    """One entry in the public day-discussion transcript (a spoken message or a pass marker)."""
-
-    day: int
     ROUND_ECHO = "round_echo"
     """A proactive-round line held back because another line of the same round, earlier in seat
     order, made the same point (Phase 2's echo filter). The held text is kept in gated_candidate
@@ -65,6 +65,12 @@ class DayChannel(BaseModel):
     claim, the speaker's own night action or result, a challenge to an earlier claim), or it
     repeated an earlier opening that was not a claim (Phase 2's opening filter). Held text in
     gated_candidate, shown to its author only."""
+
+
+class DayChannel(BaseModel):
+    """One entry in the public day-discussion transcript (a spoken message or a pass marker)."""
+
+    day: int
     """1-based game day this entry belongs to."""
     seq: int
     """Order within the day (monotonic; pass markers included)."""
@@ -74,6 +80,11 @@ class DayChannel(BaseModel):
     """The spoken text (empty for a pass marker)."""
     addressed_targets: list[AddressedTarget] = Field(default_factory=list)
     """Structured who-this-addresses tags parsed from the speech (empty for narration/passes)."""
+    day_round: DayRound = "discussion"
+    """Which round of the day the entry belongs to: "opening" (every living player at once, before
+    the discussion), "discussion" (the scheduler's reactive turns), "proactive" (everyone who had
+    not spoken since the last round, at once) or "closing" (the accused's last word). Phase 2;
+    entries from before it carry the default."""
     passed: bool = False
     """True = hidden pass marker (voluntary, novelty-gated, or generation failure)."""
     pass_reason: DiscussionPassReason | None = None
@@ -87,6 +98,10 @@ class DayChannel(BaseModel):
     were previously one indistinguishable passed=True marker). Observability only; never on a real
     utterance."""
     gated_candidate: str = ""
+    """The held-back text of a gated or filtered pass marker; shown to its author only."""
+    opening_kind: str = ""
+    """The opening filter's label for an opening line (claim / night_action / challenge / repeat /
+    other); observer only, "" on every other entry."""
     """The discarded candidate text the novelty gate silenced (empty unless gated=True). ⚠️ LEAK
     BOUNDARY: this text was removed from the discussion ON PURPOSE — it must NEVER be formatted into
     any agent-facing prompt. Persisted-but-hidden like firing_reason: the day-channel formatters drop
@@ -94,14 +109,31 @@ class DayChannel(BaseModel):
     standing guard. Observability only (a future gate audit reads it), never model-visible."""
 
 
+class RoundCandidate(BaseModel):
+    """One round turn's line, held until the round is collected (Phase 2).
+
+    The opening and closing rounds send every player's turn at once, and parallel turns cannot
+    write day_channel themselves: each would count the same seq from the transcript it was
+    given. So a round turn returns its entry here, and collect_round orders the round's
+    candidates, numbers them, and writes them into day_channel in one step."""
+
+    day: int
+    """The day the round belongs to."""
+    day_round: DayRound
+    """"opening", "proactive" or "closing" (a discussion turn writes day_channel directly)."""
+    round_no: int
+    """Which round of that kind today: 0 for the opening and the closing, 1, 2, ... for the
+    proactive rounds. collect_round picks a round's candidates by (day, day_round, round_no);
+    without it the second proactive round swept the first round's held lines back in and
+    published them twice (seen 2026-10-07)."""
+    entry: DayChannel
+    """The turn's line or pass marker, with the seq it counted itself (overwritten on collection)."""
+
+
 class DaySummary(BaseModel):
     """One block carried into later days: either the summariser's account of a day's discussion,
     or a game-master announcement (a night's outcome, a vote result) filed alongside it."""
 
-    """The held-back text of a gated or filtered pass marker; shown to its author only."""
-    opening_kind: str = ""
-    """The opening filter's label for an opening line (claim / night_action / challenge / repeat /
-    other); observer only, "" on every other entry."""
     day: int
     """The day summarized."""
     summary: str

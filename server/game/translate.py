@@ -459,6 +459,30 @@ class Translator:
         out.extend(self._strategy_updates(delta))
         return out
 
+    # ---- the opening and closing rounds (Phase 2) ----------------------------------------
+    # A round's turns run at once and hold their lines in round_candidates; COLLECT_ROUND
+    # numbers them into day_channel, so the lines are sent from there, through the same loop
+    # as a discussion turn. The entry nodes only set which round runs; START_CLOSING also
+    # writes the moderator's announcement. (The round_opened event for the stage: step 6.)
+
+    silent_node("START_OPENING", writes={"day_round"})
+    silent_node("START_PROACTIVE", writes={"day_round", "proactive_rounds"})
+
+    @node("START_CLOSING", writes={"day_round", "day_channel"})
+    def _start_closing(self, delta):
+        return self._gm_messages(delta)
+
+    @node("round_turn", writes={"round_candidates", "agent_strategies"})
+    def _round_turn(self, delta):
+        return self._strategy_updates(delta)
+
+    # The human seat's round turn goes through the uncached twin: same delta, same handling.
+    node("round_turn_human", writes={"round_candidates", "agent_strategies"})(_round_turn)
+
+    @node("COLLECT_ROUND", writes={"day_channel"})
+    def _collect_round(self, delta):
+        return self._discuss(delta)
+
     @node("SUMMARIZE_DAY_DISCUSSION", writes={"day_summaries"})
     def _summarize_day_discussion(self, delta):
         # The summarizer stores its typed answer next to the flattened text the agents

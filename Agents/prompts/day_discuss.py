@@ -71,12 +71,44 @@ saying the same thing wastes the day. When you speak, do exactly one of:
 """
 
 
-OPENING_NO_VOTE_DISCUSSION_RULES = """
+OPENING_ROUND_RULES = """
+== Opening round ==
+Prepare your opening speech for the start of a day. Every living player will get a chance to speak, without 
+knowing what others had made in their opening speech. 
+The speech should only include any one of the following 3 scenarios: 
+1. Claim your role, or a counterclaim to another player's claim to the same role. 
+2. State your own night action or its result: the night, whom you targeted, what you learned.
+3. Challenge a claim made on an earlier day, with a reason.
+
+Deductions, suspicions, advice and general comments wait for the discussion, where they can answer
+today's claims. If none of the three applies to you, set pass_turn=true: passing is the normal
+answer here, and a statement of another kind is removed before anyone reads it.
+Length: one or two sentences, not the usual message length.
+"""
+
+# Day 1 has no vote; appended to the opening block on that day.
+DAY_ONE_NO_VOTE_RULES = """
 == Day 1: no vote ==
 Today is the first day. There is little public information, and no elimination vote will be held
-today. At your own risk and discretion, you may make a proposal or a role claim. You are not
-required to manufacture a read or commitment. If you have nothing useful to say, passing is equally
-valid.
+today. You are not required to manufacture a read or commitment; passing is equally valid.
+"""
+
+PROACTIVE_ROUND_RULES = """
+== Open floor ==
+Everyone who has not spoken since the last round is asked at once, so nobody has seen the others'
+lines. Make your one most useful point: a concrete observation or read with the evidence it rests
+on, a contradiction you noticed, or a proposal for what to test. Build on what is already in the
+transcript rather than repeating it. If you have nothing new to add, set pass_turn=true; a pass
+costs nothing here.
+"""
+
+CLOSING_ROUND_RULES = """
+== Closing defence ==
+The discussion is over, and you have been called to give a last word before the vote: the
+moderator's line above names who accused you. Answer the case against you — explain, correct, or
+point to what your accusers have overlooked. Do not open a new accusation. Nobody replies to this
+turn; the vote follows at once.
+Length: two to four sentences.
 """
 
 

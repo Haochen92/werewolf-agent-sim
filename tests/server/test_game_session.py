@@ -520,7 +520,9 @@ async def test_a_draft_previews_the_seats_real_turn_and_changes_nothing(quiet_se
     state["human_players"] = state["surviving_villagers"] + state["surviving_wolves"]
     await graph.ainvoke(state, session.config)
     snapshot = await graph.aget_state(session.config, subgraphs=True)
-    (interrupt,) = snapshot.tasks[0].interrupts
+    # The day opens with a round, so every human seat is paused at once; take one of them.
+    # The draft must read that seat's own round turn back, as it does a discussion turn.
+    interrupt = sorted(snapshot.tasks[0].interrupts, key=lambda i: i.value["player_id"])[0]
     request = HumanTurnRequest.model_validate(interrupt.value)
     seat = request.player_id
     session.park(request, interrupt.id)
@@ -530,6 +532,7 @@ async def test_a_draft_previews_the_seats_real_turn_and_changes_nothing(quiet_se
     monkeypatch.setattr(agent_player, "get_llm", lambda: capturing_llm(sent))
     payload = await session._turn_payload(seat)
     assert payload["player_id"] == seat and payload["human_player"] is True
+    assert payload["day_round"] == "opening"
 
     line, left = await session.draft_line(seat, "")
     assert (line, left) == ("player_2, answer the question.", 2)

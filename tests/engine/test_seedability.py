@@ -1,8 +1,9 @@
 """Role-draw seedability: the initial-condition parity the paired memory A/B relies on.
 
-game_id is the single master seed — the scheduler's turn-order tie-break already derives
-from it (cycle_seed), and the role draw now does too. Pinning game_id across two runs must
-reproduce the role assignment; distinct game_ids must (overwhelmingly) differ.
+game_id is the single master seed, and the role draw derives from it. Pinning game_id across
+two runs must reproduce the role assignment; distinct game_ids must (overwhelmingly) differ.
+(The scheduler's seeded proactive tie-break, the seed's first user, went with the proactive
+tier on 2026-10-07; the rounds that replaced it order by seat.)
 """
 
 from __future__ import annotations

@@ -16,8 +16,14 @@ from typing import Any
 
 from pydantic import BaseModel
 
+from Agents.schemas.game_events import DayRound
 from Agents.prompts.cell_prompt import cell_driver_horizon, dimension_menu
-from Agents.prompts.day_discuss import OPENING_NO_VOTE_DISCUSSION_RULES
+from Agents.prompts.day_discuss import (
+    CLOSING_ROUND_RULES,
+    DAY_ONE_NO_VOTE_RULES,
+    OPENING_ROUND_RULES,
+    PROACTIVE_ROUND_RULES,
+)
 from Agents.prompts.prompt_formatters import (
     format_alive_roles,
     format_day_channel_for_day,
@@ -80,6 +86,34 @@ def _firing_brief(firing_reason: Any) -> str:
     return ""
 
 
+def _discussion_stage_rules(payload: dict[str, Any]) -> str:
+    """The rules block for this turn's place in the day (Phase 2, discussion_evidence.md §7.2).
+
+    The payload's ``day_round`` says which round the turn belongs to: ``opening`` (every living
+    player at once, claims and night facts only), ``discussion`` (the scheduler's reactive
+    turns), ``proactive`` (everyone who has not spoken since the last round, at once) or
+    ``closing`` (the accused's last word). On day 1 there is no vote, and the opening says so.
+    A missing ``day_round`` is a discussion turn, so older payloads and replays render as before.
+    """
+    day_round: DayRound = payload.get("day_round", "discussion")
+    voting_today = payload.get("voting_available", True)
+
+    if day_round == "opening":
+        rules = OPENING_ROUND_RULES
+        if not voting_today:
+            rules = rules + DAY_ONE_NO_VOTE_RULES
+        return rules
+    if day_round == "proactive":
+        return PROACTIVE_ROUND_RULES
+    if day_round == "closing":
+        return CLOSING_ROUND_RULES
+    # A discussion turn. Until the opening round is wired in (step 4), day 1 still holds a
+    # discussion, and it keeps the no-vote note.
+    if not voting_today:
+        return DAY_ONE_NO_VOTE_RULES
+    return ""
+
+
 def _retrieved_present(x: Any) -> bool:
     """True when a retrieved-memory input actually has items: a non-empty list, or a pre-formatted
     string that isn't the empty-sentinel ("No past observations available." / "No dynamic strategy
@@ -129,10 +163,7 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         "abstain_instruction": abstain_instruction,
         "vigilante_bullets": payload.get("vigilante_bullets", 0),
         "firing_brief": _firing_brief(payload.get("firing_reason")),
-        "discussion_stage_rules": (
-            "" if payload.get("voting_available", True)
-            else OPENING_NO_VOTE_DISCUSSION_RULES
-        ),
+        "discussion_stage_rules": _discussion_stage_rules(payload),
         "surviving_players": ", ".join(payload.get("surviving_players", [])),
         "surviving_wolves": ", ".join(payload.get("surviving_wolves", [])),
         "surviving_villagers": ", ".join(payload.get("surviving_villagers", [])),

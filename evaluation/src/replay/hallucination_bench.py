@@ -173,12 +173,14 @@ def turn_payload(case: dict[str, Any], memory: str = "none",
     speaker, role = case["speaker"], case["role"]
     if case["phase"] == "day_discussion":
         from Agents.config.game import GameConfig
-        from Agents.nodes.day.flow import discussion_stage_controls
 
+        # A frozen case is a discussion turn; since Phase 2 only voting days hold a discussion.
+        game_config = GameConfig()
         firing = FiringReason.model_validate(case.get("firing_reason") or {"tier": "proactive"})
-        voting_available, opener_floor = discussion_stage_controls(state["current_day"], GameConfig())
-        payload = dict(build_speaker_send(state, speaker, role, firing, opener_floor,
-                                          voting_available=voting_available).arg)
+        payload = dict(build_speaker_send(
+            state, speaker, role, firing,
+            voting_available=state["current_day"] >= game_config.first_voting_day,
+        ).arg)
     elif case["phase"] == "day_vote":
         sends = fan_out_day(state, "vote", allow_abstain=True)
         payload = dict(next(s.arg for s in sends if s.arg["player_id"] == speaker))

@@ -150,6 +150,25 @@ _PHASE_INSTRUCTION = {
 }
 
 
+# The ask for a round turn (Phase 2): a discussion turn with a narrower brief.
+_ROUND_INSTRUCTION = {
+    "opening": "Anything to put on the table before the talk starts? A role claim, something from "
+               "last night, or a challenge to a claim. Keep it short, or pass.",
+    "proactive": "The floor is open. One point, and what it rests on, or pass.",
+    "closing": "The village has its eye on you. Say your piece before the vote.",
+}
+
+
+def _instruction_for(payload: dict[str, Any], output_key: str) -> str:
+    """The human-readable ask: the round's own brief for an opening or closing turn, else the
+    phase's."""
+    if output_key == "day_channel":
+        day_round = payload.get("day_round", "discussion")
+        if day_round in _ROUND_INSTRUCTION:
+            return _ROUND_INSTRUCTION[day_round]
+    return _PHASE_INSTRUCTION.get(output_key, "Make your move.")
+
+
 def _human_player_action(
     payload: dict[str, Any], output_key: str, valid_targets: list[str]
 ) -> SimpleNamespace | None:
@@ -180,7 +199,7 @@ def _build_human_request(
         role=payload.get("player_role", ""),
         phase=output_key,
         day=payload.get("current_day", 1),
-        instruction=_PHASE_INSTRUCTION.get(output_key, "Make your move."),
+        instruction=_instruction_for(payload, output_key),
         valid_targets=valid_targets,
         # A human may decline ANY discussion turn, reactive included — a mention isn't a demand;
         # resolve_decision discharges the reactive obligation on a human pass.

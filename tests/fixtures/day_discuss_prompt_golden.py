@@ -79,7 +79,7 @@ def speaker_payload(role: str) -> dict:
     state = board()
     seat = next(p for p, r in state["roles"].items() if r == role)
     send = build_speaker_send(
-        state, seat, role, FiringReason(tier="reactive", owes=["player_4"]), opener_floor=3)
+        state, seat, role, FiringReason(tier="reactive", owes=["player_4"]))
     return send.arg
 
 

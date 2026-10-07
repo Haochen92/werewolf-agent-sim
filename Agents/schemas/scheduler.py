@@ -32,6 +32,9 @@ class ReactiveItem(BaseModel):
     """The obligated agent (debtor); answers all its creditors in one grouped turn."""
     creditors: list[str]
     """Who the debtor owes a response to; names feed FiringReason.owes."""
+    opened: list[int]
+    """The seq each of those debts opened at, aligned with ``creditors``; the drain after the
+    utterance cap answers only debts opened before the cap was reached."""
     latest_sequence: int
     """Max open_sequence over this debtor's open pairs; the reactive sort key (descending)."""
 
@@ -42,9 +45,10 @@ class Decision(BaseModel):
     terminate: bool = False
     """True = end the discussion this cycle; no speaker fires."""
     speaker: str | None = None
-    """Next speaker (debtor for reactive, ranked agent for proactive). None iff terminate."""
+    """Next speaker (the debtor whose debt is freshest). None iff terminate."""
     firing_reason: FiringReason | None = None
     """Why this turn fired; rides the Send payload and is stamped onto the resulting DayChannel.
     None iff terminate."""
-    terminate_reason: Literal["cap", "trailing_passes", "no_eligible"] | None = None
-    """Why the discussion ended (trace only). Set iff terminate."""
+    terminate_reason: Literal["cap", "no_obligations"] | None = None
+    """Why the chains ended (trace only): the utterance cap (reached, and the pre-cap debts
+    drained), or nobody owes an answer. Set iff terminate."""

@@ -1,9 +1,9 @@
 """Unit tests for the sequential-discussion scheduler (Agents/scheduler.py).
 
-Pure functions over a synthetic transcript — no LLM, no graph. Covers the locked
-Phase-0 design: reactive obligations (open/discharge/freshness/K-cap/cooldown),
-proactive ranking (quietest-first + seeded tiebreak, pass rotation), and the
-select_next_speaker flow (cap -> reactive -> trailing-pass -> proactive).
+Pure functions over a synthetic transcript — no LLM, no graph. Covers the reactive
+obligations (open/discharge/freshness/K-cap/cooldown) and the select_next_speaker flow
+(cap -> reactive -> terminate). The proactive tier the scheduler once had (quietest-first
+picks, trailing-pass termination) was replaced by the day's rounds on 2026-10-07 (Phase 2).
 """
 from __future__ import annotations
 
@@ -16,7 +16,6 @@ from Agents.schemas import (
 )
 from Agents.turn.scheduler import (
     build_reactive_queue,
-    rank_proactive,
     select_next_speaker,
 )
 
@@ -183,76 +182,31 @@ def test_queue_sorted_by_recency_desc():
     assert [i.agent_id for i in q] == ["D", "B"]  # most-recent first
 
 
-# --- rank_proactive -----------------------------------------------------------
-
-def test_proactive_ranks_quietest_first():
-    # only A has spoken (seq 0) -> A ranks last; never-spoke rank ahead
-    ranked = rank_proactive([msg(0, "A")], SURV, seed=0)
-    assert ranked[-1] == "A"
-
-
-def test_proactive_pass_marker_rotates_passer_down():
-    # a pass is a real DayChannel entry -> advances recency -> passer sinks
-    ranked = rank_proactive([msg(0, "B", passed=True)], SURV, seed=0)
-    assert ranked[-1] == "B"
-
-
-def test_proactive_seeded_deterministic_and_a_survivor():
-    a = rank_proactive([], SURV, seed=7)
-    b = rank_proactive([], SURV, seed=7)
-    assert a == b
-    assert set(a) == set(SURV)
-
-
 # --- select_next_speaker: full flow -------------------------------------------
 
-def test_reactive_takes_priority_over_proactive():
-    d = select_next_speaker([msg(0, "A", [at("B", "question")])], SURV, DEFAULT_GAME_CONFIG, seed=0)
+def test_open_obligation_fires_the_debtor():
+    d = select_next_speaker([msg(0, "A", [at("B", "question")])], SURV, DEFAULT_GAME_CONFIG)
     assert d.terminate is False
     assert d.speaker == "B"
     assert d.firing_reason.tier == "reactive"
     assert d.firing_reason.owes == ["A"]
 
 
-def test_opener_is_proactive_and_deterministic():
-    d1 = select_next_speaker([], SURV, DEFAULT_GAME_CONFIG, seed=3)
-    d2 = select_next_speaker([], SURV, DEFAULT_GAME_CONFIG, seed=3)
-    assert d1.firing_reason.tier == "proactive"
-    assert d1.speaker in SURV
-    assert d1.speaker == d2.speaker
-
-
-def test_trailing_p_passes_terminates():
-    cfg = DEFAULT_GAME_CONFIG
-    passes = [msg(i, p, passed=True) for i, p in enumerate(["A", "B", "C"][: cfg.proactive_budget])]
-    d = select_next_speaker(passes, SURV, cfg, seed=0)
-    assert d.terminate is True
-    assert d.terminate_reason == "trailing_passes"
-
-
-def test_one_real_utterance_resets_pass_streak():
-    cfg = DEFAULT_GAME_CONFIG
-    # P-1 passes then a real utterance: streak broken -> not terminate
-    entries = [msg(0, "A", passed=True), msg(1, "B", passed=True), msg(2, "C")]
-    d = select_next_speaker(entries, SURV, cfg, seed=0)
-    assert d.terminate is False
-    assert d.firing_reason.tier == "proactive"
-
-
 def test_cap_counts_real_utterances_only():
     cfg = DEFAULT_GAME_CONFIG
     cap = cfg.utterance_cap(len(SURV))
-    at_cap = [msg(i, "A" if i % 2 else "B") for i in range(cap)]
-    assert select_next_speaker(at_cap, SURV, cfg, seed=0).terminate_reason == "cap"
-    # cap-1 real utterances + a couple passes must NOT cap (passes don't count)
+    at_cap = [msg(i, "A" if i % 2 else "B") for i in range(cap)]  # nothing owed: ends at once
+    assert select_next_speaker(at_cap, SURV, cfg).terminate_reason == "cap"
+    # cap-1 real utterances + a couple passes must NOT cap (passes don't count); with nothing
+    # owed, the chains are simply over.
     below = [msg(i, "A") for i in range(cap - 1)] + [msg(98, "C", passed=True), msg(99, "D", passed=True)]
-    assert select_next_speaker(below, SURV, cfg, seed=0).terminate is False
+    assert select_next_speaker(below, SURV, cfg).terminate_reason == "no_obligations"
 
 
-def test_no_eligible_when_no_survivors():
-    d = select_next_speaker([], [], DEFAULT_GAME_CONFIG, seed=0)
+def test_nothing_owed_ends_the_chains():
+    d = select_next_speaker([], SURV, DEFAULT_GAME_CONFIG)
     assert d.terminate is True
-    assert d.terminate_reason == "no_eligible"
+    assert d.terminate_reason == "no_obligations"
 
 
 def test_invalid_target_ignored_with_valid_players():
@@ -267,12 +221,12 @@ def test_invalid_target_ignored_with_valid_players():
 
 
 def test_select_next_never_picks_non_survivor_target():
-    # Even when an agent addresses "all", select_next must pick a real survivor (no KeyError upstream).
+    # An agent addressing "all" (not a real player) owes nobody an answer and nobody owes it one:
+    # the chains end rather than a non-survivor being scheduled (no KeyError upstream).
     d = select_next_speaker(
         [msg(0, "A", [at("all", "question", "accusation")])],
         ["A", "B", "C"],
         DEFAULT_GAME_CONFIG,
-        seed=0,
     )
-    assert d.terminate is False
-    assert d.speaker in {"A", "B", "C"}  # 'all' never selected
+    assert d.terminate is True
+    assert d.terminate_reason == "no_obligations"

@@ -15,11 +15,13 @@ from typing import Annotated, TypedDict
 
 from Agents.schemas.game_events import (
     DayChannel,
+    DayRound,
     DaySummary,
     DayVote,
     DeathRecord,
     InvestigatorResult,
     NightActionRecord,
+    RoundCandidate,
     WolfChannel,
 )
 from Agents.state.reducers import merge_strategies

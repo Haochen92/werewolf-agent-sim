@@ -1,11 +1,16 @@
-"""Day-phase control flow: scheduling speakers, fanning out votes, summarizing the day.
+"""Day-phase control flow: the rounds, scheduling speakers, fanning out votes, summarizing.
 
-Discussion is sequential — route_speaker is the scheduler hop that picks the next
-speaker (or ends discussion) and the graph self-loops back through day_scheduler.
-Voting is concurrent — fan_out_vote dispatches every survivor's vote node at once.
+A day opens with a round (every survivor's opening at once: start_opening / fan_out_round /
+collect_round), then on voting days the reactive chains — route_speaker is the scheduler hop
+that fires the next player who owes an answer and the graph self-loops back through
+day_scheduler — then a proactive round for everyone who has not spoken (start_proactive) and
+its chains, repeated while something new is said, then, when anyone has two accusers, the
+closing round (start_closing), then the summary and the concurrent vote (fan_out_vote). Day 1
+is the opening and the summary only. route_after_discussion holds the day's branching.
 The per-role actor nodes these dispatch to (via Send) live in day/actors.py.
 """
 
+from collections.abc import Iterable
 from logging import getLogger as _getLogger
 from typing import Literal
 
@@ -16,7 +21,8 @@ from langgraph.runtime import Runtime
 from langgraph.types import Send
 
 from Agents.game_config import GameConfig, game_config_from_runnable
-from Agents.schemas import DaySummary, FiringReason
+from Agents.schemas import DayChannel, DayRound, DaySummary, FiringReason, RoundCandidate
+from Agents.rules.closing import closing_announcement, closing_speakers
 from Agents.rules.night_record import own_night_actions
 from Agents.rules.seats import seat_order
 from Agents.schemas.roles import cast_role_counts
@@ -30,7 +36,8 @@ from Agents.nodes.day.summary_agent import run_day_summary_agent
 from Agents.observability import day_summary_span_name, freeze_case
 from Agents.turn.action_space import valid_targets_for_action
 from Agents.turn.human_turn import announce_human_turn
-from Agents.turn.scheduler import cycle_seed, select_next_speaker
+from Agents.turn.round_filter import filter_openings, filter_round_echoes
+from Agents.turn.scheduler import select_next_speaker
 
 from Agents.tracing import (
     GraphContext,
@@ -46,26 +53,15 @@ def day_scheduler(state: DayGraphState):
     return {}
 
 
-def discussion_stage_controls(current_day: int, game_config: GameConfig) -> tuple[bool, int]:
-    """Return (voting_available, novelty-bypass floor) for this discussion.
+def route_speaker(
+    state: DayGraphState, config: RunnableConfig
+) -> Send | Literal["START_PROACTIVE", "START_CLOSING", "SUMMARIZE_DAY_DISCUSSION"]:
+    """The scheduler hop: the next player who owes an answer speaks, or the chains are over.
 
-    Pre-voting opening rounds have less public material and no elimination decision to
-    make. They get a dedicated prompt mode and only the first real utterance bypasses
-    the novelty judge; regular voting days retain the configured opener floor.
-    """
-    voting_available = current_day >= game_config.first_voting_day
-    opener_floor = game_config.opener_floor if voting_available else min(game_config.opener_floor, 1)
-    return voting_available, opener_floor
-
-
-def route_speaker(state: DayGraphState, config: RunnableConfig) -> Send | Literal["SUMMARIZE_DAY_DISCUSSION"]:
-    """The scheduler hop: pick the next speaker from the day so far, or end discussion.
-
-    Recomputes from day_channel (the scheduler is stateless), applies a lighter
-    one-round cap on pre-voting days, seeds the speaker choice deterministically
-    (game_id, day, utterances-so-far) and delegates ranking to select_next_speaker.
-    Returns SUMMARIZE_DAY_DISCUSSION on terminate, else a Send to the chosen
-    speaker's role node.
+    Recomputes from day_channel (the scheduler is stateless) and delegates to
+    select_next_speaker, which since Phase 2 fires reactive turns only. When nothing is owed
+    (or the cap is reached) route_after_discussion decides what the day does next. Only voting
+    days reach this hop: day 1 is the opening round alone (route_after_round).
     """
     game_config = game_config_from_runnable(config)
     current_day = state.get("current_day", 1)
@@ -75,18 +71,10 @@ def route_speaker(state: DayGraphState, config: RunnableConfig) -> Send | Litera
         if m.day == current_day and m.player != "game_master"
     ]
 
-    # Pre-voting days get a lighter cap (~one round = N); regular days use the config cap.
-    num_survivors = len(surviving_players)
-    cap = num_survivors if current_day < game_config.first_voting_day else game_config.utterance_cap(num_survivors)
-    game_id = (config.get("configurable", {}) if config else {}).get("game_id", "")
-    seed = cycle_seed(game_id, current_day, len(current_day_discussion))
-
     route_decision = select_next_speaker(
         day_channel=current_day_discussion,
         surviving_players=surviving_players,
         game_config=game_config,
-        seed=seed,
-        utterance_cap=cap,
     )
 
     seq = len(current_day_discussion)
@@ -94,7 +82,7 @@ def route_speaker(state: DayGraphState, config: RunnableConfig) -> Send | Litera
         logger.info(
             "[schedule] day=%d seq=%d terminate=%s", current_day, seq, route_decision.terminate_reason,
         )
-        return "SUMMARIZE_DAY_DISCUSSION"
+        return route_after_discussion(state, config, route_decision.terminate_reason == "cap")
 
     fr = route_decision.firing_reason
     logger.info(
@@ -102,7 +90,6 @@ def route_speaker(state: DayGraphState, config: RunnableConfig) -> Send | Litera
         current_day, seq, fr.tier, route_decision.speaker, fr.owes,
     )
     role = state["roles"][route_decision.speaker]
-    voting_available, opener_floor = discussion_stage_controls(current_day, game_config)
     # turn_started for the "X is thinking" UI. Emitted from the edge, not the node: resume
     # after interrupt() re-runs the node but not this routing, so it can't double-fire.
     try:
@@ -111,15 +98,73 @@ def route_speaker(state: DayGraphState, config: RunnableConfig) -> Send | Litera
         )
     except RuntimeError:  # direct call outside a graph run (tests)
         pass
-    return build_speaker_send(
-        state,
-        route_decision.speaker,
-        role,
-        fr,
-        opener_floor,
-        voting_available=voting_available,
-    )
+    return build_speaker_send(state, route_decision.speaker, role, fr)
 
+
+def route_after_discussion(
+    state: DayGraphState, config: RunnableConfig, capped: bool
+) -> Literal["START_PROACTIVE", "START_CLOSING", "SUMMARIZE_DAY_DISCUSSION"]:
+    """What the day does once nobody owes an answer: another proactive round, the closing
+    defence, or the summary.
+
+    A proactive round asks everyone who has not spoken since the last round began. The first
+    one always runs (it is the quiet players' turn, the job the scheduler's proactive picks
+    used to do); a further one runs only while the previous round and its chains produced a
+    new line, up to GameConfig.max_proactive_rounds. No round runs when the cap is reached or
+    when nobody is left who has not spoken. Then the closing, when anyone has two accusers,
+    else the summary.
+    """
+    game_config = game_config_from_runnable(config)
+    current_day = state["current_day"]
+    surviving_players = state["surviving_villagers"] + state["surviving_wolves"]
+    rounds_run = state.get("proactive_rounds", 0)
+
+    if not capped and rounds_run < game_config.max_proactive_rounds:
+        since = _last_round_start_seq(state)
+        silent = _silent_since(state, since)
+        something_new = rounds_run == 0 or _spoke_since(state, since)
+        if silent and something_new:
+            return "START_PROACTIVE"
+
+    accused = closing_speakers(state.get("day_channel", []), current_day, surviving_players)
+    if accused:
+        return "START_CLOSING"
+    return "SUMMARIZE_DAY_DISCUSSION"
+
+
+def _todays_entries(state: DayGraphState) -> list[DayChannel]:
+    current_day = state["current_day"]
+    return [entry for entry in state.get("day_channel", []) if entry.day == current_day]
+
+
+def _last_round_start_seq(state: DayGraphState) -> int:
+    """The seq where today's most recent round (opening or proactive) began. Rounds land as one
+    contiguous block each, so it is the first entry of the last such block."""
+    start = 0
+    previous_round = None
+    for entry in _todays_entries(state):
+        if entry.day_round in ("opening", "proactive") and entry.day_round != previous_round:
+            start = entry.seq
+        previous_round = entry.day_round
+    return start
+
+
+def _silent_since(state: DayGraphState, since_seq: int) -> list[str]:
+    """The survivors with no spoken line at or after ``since_seq`` today, in seat order."""
+    spoke = set()
+    for entry in _todays_entries(state):
+        if entry.seq >= since_seq and not entry.passed and entry.player != "game_master":
+            spoke.add(entry.player)
+    survivors = state["surviving_villagers"] + state["surviving_wolves"]
+    return [player for player in seat_order(survivors) if player not in spoke]
+
+
+def _spoke_since(state: DayGraphState, since_seq: int) -> bool:
+    """Whether any player spoke a line at or after ``since_seq`` today."""
+    for entry in _todays_entries(state):
+        if entry.seq >= since_seq and not entry.passed and entry.player != "game_master":
+            return True
+    return False
 
 
 def _initial_wolf_count(state: DayGraphState) -> int:
@@ -134,7 +179,6 @@ def build_speaker_send(
     speaker_id: str,
     role: str,
     firing_reason: FiringReason,
-    opener_floor: int = 0,
     *,
     voting_available: bool = True,
 ) -> Send:
@@ -163,6 +207,9 @@ def build_speaker_send(
         "player_role": role,
         "current_day": state["current_day"],
         "voting_available": voting_available,
+        # The scheduler only ever dispatches discussion turns; the opening and closing rounds
+        # are fanned out by fan_out_day (Phase 2).
+        "day_round": "discussion",
         "previous_strategy": state.get("agent_strategies", {}).get(speaker_id, ""),
         "strategy_points": "",
         "firing_reason": firing_reason,
@@ -207,17 +254,23 @@ _DAY_ACTING_ROLES = {
 
 def fan_out_day(
     state: DayGraphState,
-    phase: Literal["discuss", "vote"],
+    phase: Literal["discuss", "vote", "round_turn"],
     allow_abstain: bool = False,
+    day_round: DayRound = "discussion",
+    players: Iterable[str] | None = None,
+    round_no: int = 0,
 ):
     """Build a concurrent Send to the generic {phase} node for every surviving acting player.
 
-    The shared fan-out used for voting (discussion now goes one speaker at a time
-    via route_speaker). Same role-gated private-field rule as build_speaker_send:
-    wolf roster / investigator / vigilante results attach only to their own role.
+    The shared fan-out used for voting and for the opening and closing rounds (discussion
+    goes one speaker at a time via route_speaker). ``players`` narrows the fan-out to a
+    subset of the survivors (the closing round's accused); None means everyone. Same
+    role-gated private-field rule as build_speaker_send: wolf roster / investigator /
+    vigilante results attach only to their own role.
     """
     concurrent_nodes = []
     surviving_players = seat_order(state["surviving_villagers"] + state["surviving_wolves"])
+    chosen = None if players is None else set(players)
     strategies = state.get("agent_strategies", {})
 
     def base_payload(player: str, role: str, is_human: bool) -> dict:
@@ -236,12 +289,20 @@ def fan_out_day(
             "previous_strategy": strategies.get(player, ""),
             "strategy_points": "",
             "allow_abstain": allow_abstain,
+            # Which round of the day this turn belongs to (opening / discussion / proactive /
+            # closing); the prompt picks its rules block by it. Votes carry it too, unused.
+            "day_round": day_round,
+            # Which round of that kind today (the proactive count; 0 otherwise), so collect_round
+            # can tell this round's held lines from an earlier round's.
+            "round_no": round_no,
         }
 
     for player in surviving_players:
         role = state["roles"][player]
         is_human = player in state["human_players"]
         if role not in _DAY_ACTING_ROLES:
+            continue
+        if chosen is not None and player not in chosen:
             continue
 
         payload = base_payload(player, role, is_human)
@@ -285,6 +346,160 @@ def fan_out_vote(state: DayGraphState, config: RunnableConfig):
                                 send.arg["current_day"],
                                 valid_targets_for_action(send.arg, "day_votes"))
     return sends
+
+
+# ---- The opening and closing rounds (Phase 2, discussion_evidence.md §7.2) -------------------
+#
+# A round sends several players their turn at once, on the vote's pattern: an entry node, a
+# fan-out edge to the per-seat turn node (round_turn, with an uncached twin for a human), and a
+# collecting node. The turns return their lines as round_candidates; collect_round orders and
+# numbers them into day_channel, because parallel turns each count the same seq from the
+# transcript they were given.
+
+
+def _todays_entry_count(state: DayGraphState) -> int:
+    """How many entries today's transcript already has: the next entry's seq."""
+    current_day = state["current_day"]
+    return sum(1 for entry in state.get("day_channel", []) if entry.day == current_day)
+
+
+def start_opening(state: DayGraphState):
+    """Entry node of the opening round: every living player gets a turn at once."""
+    return {"day_round": "opening"}
+
+
+def start_proactive(state: DayGraphState):
+    """Entry node of a proactive round: everyone who has not spoken since the last round began
+    gets a turn at once. Counts the round, for route_after_discussion's cap."""
+    return {"day_round": "proactive", "proactive_rounds": state.get("proactive_rounds", 0) + 1}
+
+
+def start_closing(state: DayGraphState, config: RunnableConfig):
+    """Entry node of the closing defence: the moderator names who is on trial and who is
+    pressing, from the accusation tags alone (no model call), so the accused, the summary and
+    the replay all see the same line. route_speaker only routes here when someone qualifies."""
+    current_day = state["current_day"]
+    surviving_players = state["surviving_villagers"] + state["surviving_wolves"]
+    accused = closing_speakers(state.get("day_channel", []), current_day, surviving_players)
+    if not accused:
+        raise RuntimeError("start_closing ran with nobody accused by two players")
+
+    announcement = DayChannel(
+        day=current_day,
+        seq=_todays_entry_count(state),
+        player="game_master",
+        message=closing_announcement(accused),
+        day_round="closing",
+    )
+    return {"day_round": "closing", "day_channel": [announcement]}
+
+
+def fan_out_round(state: DayGraphState, config: RunnableConfig):
+    """Router out of start_opening / start_closing: one round turn per player in the round.
+
+    The opening goes to every survivor; a proactive round to those who have not spoken since
+    the last round began; the closing only to the accused (recomputed from the transcript, the
+    same way start_closing picked them). A human's turn is announced here so the seat's prompt
+    opens as the round starts (see announce_human_turn)."""
+    day_round = state["day_round"]
+    if day_round == "closing":
+        surviving_players = state["surviving_villagers"] + state["surviving_wolves"]
+        accused = closing_speakers(state.get("day_channel", []), state["current_day"], surviving_players)
+        players = [trial.player for trial in accused]
+    elif day_round == "proactive":
+        # The round began one entry ago at most (start_proactive wrote nothing to the transcript),
+        # so "since the last round" still means since the previous opening or proactive round.
+        players = _silent_since(state, _last_round_start_seq(state))
+    else:
+        players = None
+
+    round_no = state.get("proactive_rounds", 0) if day_round == "proactive" else 0
+    sends = fan_out_day(state, "round_turn", day_round=day_round, players=players, round_no=round_no)
+    for send in sends:
+        if send.node == "round_turn_human":
+            announce_human_turn(send.arg["player_id"], send.arg["player_role"], "day_channel",
+                                send.arg["current_day"],
+                                valid_targets_for_action(send.arg, "day_channel"))
+    return sends
+
+
+def _round_order(state: DayGraphState) -> list[str]:
+    """The order a round's lines are played in. The opening and a proactive round are plain
+    seat order (nobody saw anyone else's line, so the order is only for the reader); the
+    closing is the accused in the order they were called, most accused first."""
+    surviving_players = state["surviving_villagers"] + state["surviving_wolves"]
+    if state["day_round"] == "closing":
+        accused = closing_speakers(state.get("day_channel", []), state["current_day"], surviving_players)
+        return [trial.player for trial in accused]
+    return seat_order(surviving_players)
+
+
+def collect_round(state: DayGraphState, config: RunnableConfig):
+    """Barrier node after the round's turns: order the round's lines, run the round's filter
+    (the opening's allow-list, the proactive round's echo filter; humans exempt), number them,
+    and write them into day_channel in sequence."""
+    current_day = state["current_day"]
+    day_round = state["day_round"]
+    round_no = state.get("proactive_rounds", 0) if day_round == "proactive" else 0
+
+    # Only this round's candidates: round_candidates accumulates all day, so an earlier
+    # proactive round's held lines are still in it.
+    by_player: dict[str, DayChannel] = {}
+    for candidate in state.get("round_candidates", []):
+        same_round = (candidate.day == current_day and candidate.day_round == day_round
+                      and candidate.round_no == round_no)
+        if same_round:
+            by_player[candidate.entry.player] = candidate.entry
+    if not by_player:
+        return {}
+
+    ordered: list[DayChannel] = []
+    for player in _round_order(state):
+        if player in by_player:
+            ordered.append(by_player.pop(player))
+    # Defensive: a candidate from a player the order did not name (should not happen) still lands.
+    for player in seat_order(by_player):
+        ordered.append(by_player[player])
+
+    if day_round == "opening":
+        ordered = _filter_keeping_humans(ordered, state, filter_openings)
+    elif day_round == "proactive":
+        ordered = _filter_keeping_humans(ordered, state, filter_round_echoes)
+
+    first_seq = _todays_entry_count(state)
+    numbered: list[DayChannel] = []
+    for offset, entry in enumerate(ordered):
+        numbered.append(entry.model_copy(update={"seq": first_seq + offset}))
+    return {"day_channel": numbered}
+
+
+def _filter_keeping_humans(ordered: list[DayChannel], state: DayGraphState, round_filter) -> list[DayChannel]:
+    """A round filter over the round's lines, with a human's line never held: the judge sees
+    every line (a human's can be the one others echo), but a verdict against a human's own line
+    is undone."""
+    filtered = round_filter(ordered)
+    humans = set(state.get("human_players", []))
+    restored: list[DayChannel] = []
+    for before, after in zip(ordered, filtered):
+        if before.player in humans and after.passed and not before.passed:
+            restored.append(before)
+        else:
+            restored.append(after)
+    return restored
+
+
+def route_after_round(
+    state: DayGraphState, config: RunnableConfig
+) -> Literal["SCHEDULE", "SUMMARIZE_DAY_DISCUSSION"]:
+    """Router after a round is collected. An opening on a voting day and a proactive round hand
+    over to the scheduler for the reactive chains; an opening on day 1 (no vote, no discussion)
+    and a closing (nobody replies) go straight to the summary."""
+    game_config = game_config_from_runnable(config)
+    if state["day_round"] == "proactive":
+        return "SCHEDULE"
+    if state["day_round"] == "opening" and state["current_day"] >= game_config.first_voting_day:
+        return "SCHEDULE"
+    return "SUMMARIZE_DAY_DISCUSSION"
 
 
 def summarize_day_discussion(

@@ -113,13 +113,17 @@ def game_config_from_runnable(config: dict[str, Any] | None) -> GameConfig:
 
 
 def discussion_recursion_limit(game: GameConfig, num_survivors: int) -> int:
-    """LangGraph recursion_limit for the day SCHEDULE self-loop.
+    """LangGraph recursion_limit for the day subgraph.
 
-    Each cycle = 2 super-steps (SCHEDULE node + role node). A cycle may be a real utterance OR a
-    pass marker: passes consume super-steps but do NOT count toward the cap, and up to
-    proactive_budget-1 passes can occur between real utterances before a trailing-pass run
-    terminates the day. Worst case is therefore ~proactive_budget cycles per utterance slot, so size
-    the limit at 2 * proactive_budget * cap (+headroom) to guarantee the graceful cap /
-    trailing-pass termination always fires before an ungraceful GraphRecursionError.
+    Each discussion cycle = 2 super-steps (SCHEDULE node + the speaker's node). Since Phase 2
+    every scheduled turn is reactive, so a pass marker (a human declining, a failed
+    generation) is rare; allow one pass per utterance slot anyway. Once the cap is reached
+    the day drains the debts already open, at most one more turn per survivor. Each round (the opening,
+    up to max_proactive_rounds proactive rounds, the closing) adds three super-steps (entry
+    node, the parallel turns, the collect node), plus the summary and the vote's three. Sized
+    so the graceful cap always fires before an ungraceful GraphRecursionError.
     """
-    return 2 * game.proactive_budget * game.utterance_cap(num_survivors) + 10
+    discussion_steps = 2 * 2 * game.utterance_cap(num_survivors)
+    drain_steps = 2 * num_survivors  # after the cap, each debtor answers at most once more
+    round_steps = 3 * (2 + game.max_proactive_rounds)
+    return discussion_steps + drain_steps + round_steps + 10

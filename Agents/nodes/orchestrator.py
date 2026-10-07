@@ -68,8 +68,7 @@ def initialize_game(state: OrchestratorGraph, config: RunnableConfig):
     default 0 leaves the list empty so eval/batch runs stay fully automated (no interrupt()).
     """
     game_config = game_config_from_runnable(config)
-    # Role assignment is seeded off game_id — the single master seed (the scheduler's
-    # turn-order tie-break already derives from it via cycle_seed). A unique uuid4
+    # Role assignment is seeded off game_id — the single master seed. A unique uuid4
     # game_id per game keeps draws varied; pinning the same game_id across two runs
     # reproduces the role draw — the initial-condition parity the paired memory A/B
     # needs. No game_id (e.g. a bare unit test) → unseeded, preserving prior behaviour.

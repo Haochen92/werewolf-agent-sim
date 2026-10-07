@@ -31,6 +31,7 @@ _STATE_MODEL_ALLOWLIST = [
     game_events.DayVote,
     game_events.DeathRecord,
     game_events.NightActionRecord,  # the private night record (2026-10-03); missing until 2026-10-04
+    game_events.RoundCandidate,  # a round turn's held line (Phase 2, 2026-10-07); wraps a DayChannel
 ]
 
 def durable_serde() -> JsonPlusSerializer:
