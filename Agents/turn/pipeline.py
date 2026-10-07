@@ -156,7 +156,7 @@ def run_memory_informed_action(
     player_id = payload["player_id"]
     role = payload["player_role"]
     day = payload["current_day"]
-    round_num = payload["current_round"]
+    round_num = payload.get("current_round", 0)  # night turns carry the pack's talk round; day turns none
     prompt_payload = dict(payload)
 
     recent_messages = [message for message in payload["day_channel"] if message.day == day]

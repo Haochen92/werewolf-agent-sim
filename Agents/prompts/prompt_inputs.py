@@ -1,3 +1,15 @@
+"""The Send payload turned into a template's variables: the policy layer between a turn's
+payload and its prompt.
+
+``build_agent_prompt_input`` reads the payload a Send builder made (Agents/nodes/day/flow.py, the
+leak boundary) and returns the dict whose keys match the ``{placeholders}`` in the templates.
+Each block of game state is rendered through prompt_formatters.py; this module adds what is not
+formatting: which rules block this turn gets (the day's round, the abstain rule), the firing brief,
+whether the memory synergy instruction fires, the read targets minus the speaker. The order the
+blocks appear in the prompt is not decided here but by the ChatPromptTemplates and their factory
+functions in the template modules.
+"""
+
 from __future__ import annotations
 
 from typing import Any
@@ -97,7 +109,7 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         if isinstance(retrieved_observations, str)
         else format_retrieved_observations(retrieved_observations)
     )
-    current_round = payload.get("current_round", 1)
+    current_round = payload.get("current_round", 0)  # only the night templates render it
     if payload.get("allow_abstain"):
         abstain_instruction = (
             'You may vote "abstain" if you have no one you can justify eliminating yet — '

@@ -86,7 +86,7 @@ def enrich_payload_with_memory(
             "player_id": payload["player_id"],
             "player_role": payload["player_role"],
             "current_day": payload["current_day"],
-            "current_round": payload["current_round"],
+            "current_round": payload.get("current_round", 0),
             "action_phase": action_phase,
             "retrieve_observations": plan.retrieve_observations,
             "retrieve_strategy_points": plan.retrieve_strategy,

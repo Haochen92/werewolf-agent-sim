@@ -162,8 +162,6 @@ def build_speaker_send(
         "player_id": speaker_id,
         "player_role": role,
         "current_day": state["current_day"],
-        "current_round": 0,  # vestigial until Stage 5 removes round-based prompts
-        "opener_floor": opener_floor,  # day's first N real utterances bypass the novelty gate
         "voting_available": voting_available,
         "previous_strategy": state.get("agent_strategies", {}).get(speaker_id, ""),
         "strategy_points": "",
@@ -234,7 +232,6 @@ def fan_out_day(
             "surviving_players": surviving_players,
             "player_id": player,
             "player_role": role,
-            "current_round": state["current_round"],
             "current_day": state["current_day"],
             "previous_strategy": strategies.get(player, ""),
             "strategy_points": "",

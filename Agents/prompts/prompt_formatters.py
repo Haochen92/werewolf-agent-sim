@@ -1,3 +1,13 @@
+"""Game records as prompt text: one typed list in, one block of text out.
+
+Every function here renders a kind of record (the day transcript, the dead roster, the night
+record, retrieved memory) the same way wherever it appears: a turn prompt, the human seat's
+request, the summariser, post-game extraction. Nothing here knows which prompt the text lands
+in or who is reading it beyond a viewer filter; what a turn is told, and under what condition,
+is prompt_inputs.py's job, and the wording of the prompts themselves lives in the template
+modules (day_discuss.py, day_vote.py, night.py).
+"""
+
 from Agents.rules.board_clocks import alive_role_counts
 from Agents.rules.claim_ledger import format_claim_ledger, revealed_tag
 from Agents.schemas import RetrievedObservation, RetrievedStrategyPoint

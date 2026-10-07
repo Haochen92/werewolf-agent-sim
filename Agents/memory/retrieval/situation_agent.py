@@ -200,7 +200,7 @@ def _generate_situations_for_agent(
     player_id = payload["player_id"]
     role = payload["player_role"]
     current_day = payload["current_day"]
-    current_round = payload["current_round"]
+    current_round = payload.get("current_round", 0)
     run_name = f"situation_summary_{role}_{action_phase}_day_{current_day}_round_{current_round}"
 
     cell_schema = cell_situation_schema_for(role, action_phase)

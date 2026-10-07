@@ -86,7 +86,6 @@ def day_phase(
         "surviving_villagers": state["surviving_villagers"],
         "surviving_wolves": state["surviving_wolves"],
         "no_lynch_streak": state.get("no_lynch_streak", 0),
-        "current_round": 0,
         "day_votes": [],
     }
     result = day_graph_compiled.invoke(

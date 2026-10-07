@@ -76,8 +76,16 @@ class DayGraphState(TypedDict, total=False):
     no_lynch_streak: int
     """Consecutive no-elimination days; forces abstain off past a cap."""
 
-    current_round: int
-    """Discussion round within the current day."""
+    day_round: DayRound
+    """The round of the day now running (Phase 2). Written by the round's entry node
+    (start_opening / start_proactive / start_closing); fan_out_round and collect_round read it."""
+    proactive_rounds: int
+    """How many proactive rounds have run today; start_proactive counts one up, and the day router
+    stops at GameConfig.max_proactive_rounds."""
+    round_candidates: Annotated[list[RoundCandidate], add]
+    """The parallel round turns' lines, held until collect_round orders and numbers them into
+    day_channel. The day graph's state is rebuilt every day and day_phase returns only four keys,
+    so these never reach the parent graph."""
 
 
 class VillagerDayState(TypedDict):
@@ -86,8 +94,10 @@ class VillagerDayState(TypedDict):
 
     current_day: int
     """1-based current game day."""
-    current_round: int
-    """Discussion round within the day."""
+    day_round: DayRound
+    """Which round of the day the turn belongs to (opening / discussion / proactive / closing)."""
+    round_no: int
+    """Which round of that kind today (the proactive count; 0 for the others)."""
     previous_strategy: str
     """This agent's own prior strategy note, fed back in."""
     strategy_points: str
@@ -117,8 +127,10 @@ class HealerDayState(TypedDict):
 
     current_day: int
     """1-based current game day."""
-    current_round: int
-    """Discussion round within the day."""
+    day_round: DayRound
+    """Which round of the day the turn belongs to (opening / discussion / proactive / closing)."""
+    round_no: int
+    """Which round of that kind today (the proactive count; 0 for the others)."""
     previous_strategy: str
     """The healer's own prior strategy note."""
     strategy_points: str
@@ -147,8 +159,10 @@ class InvestigatorDayState(TypedDict):
 
     current_day: int
     """1-based current game day."""
-    current_round: int
-    """Discussion round within the day."""
+    day_round: DayRound
+    """Which round of the day the turn belongs to (opening / discussion / proactive / closing)."""
+    round_no: int
+    """Which round of that kind today (the proactive count; 0 for the others)."""
 
     human_player: bool
     """True if this seat is the human player."""
@@ -180,8 +194,10 @@ class WolfDayState(TypedDict):
 
     current_day: int
     """1-based current game day."""
-    current_round: int
-    """Discussion round within the day."""
+    day_round: DayRound
+    """Which round of the day the turn belongs to (opening / discussion / proactive / closing)."""
+    round_no: int
+    """Which round of that kind today (the proactive count; 0 for the others)."""
 
     human_player: bool
     """True if this seat is the human player."""
