@@ -36,7 +36,7 @@ import type { Hud } from '../units';
 export type Viewer = { kind: 'spect' } | { kind: 'xray' } | { kind: 'seat'; seat: string };
 
 /** The games the workbench can draw besides its fixture (`game=`). */
-export const WORKBENCH_GAMES = ['140610ad'] as const;
+export const WORKBENCH_GAMES = ['140610ad', 'phase2'] as const;
 export type WorkbenchGame = (typeof WORKBENCH_GAMES)[number];
 
 export interface WorkbenchQuery {
@@ -54,7 +54,11 @@ export interface WorkbenchQuery {
   memoryFields?: boolean;
   /** The fixture's day summaries redrawn in the v4 shape; absent = as played. */
   summaryV4?: boolean;
-  /** The second bundled game, with its claim ledger; absent = the 9369a5c1 fixture. */
+  /**
+   * Another bundled game; absent = the 9369a5c1 fixture. `140610ad`: the DeepSeek game with
+   * its claim ledger. `phase2`: the 2026-10-07 game of the day with rounds (the opening written
+   * at once, the sweep, the closing; `fixtures/replay-phase2.json`), the fixture of the round beats.
+   */
   game?: WorkbenchGame;
   /** The Record without a claim ledger (an old archive); absent = the game's ledger. */
   noLedger?: boolean;

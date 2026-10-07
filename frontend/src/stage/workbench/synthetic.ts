@@ -133,6 +133,7 @@ export function synthesise(
         actionKind: s.actionKind,
         candidates: candidatesFor(folded, s.me, s.actionKind),
         deadline: null,
+        round: null,
       }
     : null;
   const view: GameView = { ...folded, me: { ...folded.me, pending } };

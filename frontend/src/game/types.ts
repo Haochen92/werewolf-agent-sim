@@ -27,6 +27,7 @@ import type {
   ActionKind,
   AddressedTarget,
   AttackerType,
+  DayRound,
   DurableGameEvent,
   FiringReason,
   InputRequest,
@@ -152,10 +153,19 @@ export interface DeathRecord {
 
 // --- day page --------------------------------------------------------------
 
+/** A round of the day (Phase 2): who was given a turn at once, in the order their lines are played. */
+export interface RoundView {
+  seq: number;
+  round: 'opening' | 'closing';
+  players: string[];
+}
+
 export interface DayView {
   day: number;
   /** Dense, ordered by channelSeq. */
   slots: ChannelSlot[];
+  /** The day's rounds as announced (`round_opened`): the opening, and the closing when one was called. */
+  rounds: RoundView[];
   /**
    * channelSeq → O-tier annotations. Kept as a side map rather than a field on the slot so
    * the join is order-independent by construction: an annotation that somehow arrived
@@ -275,6 +285,8 @@ export interface MeView {
     /** The server's list is the ONLY source of legal targets — never derive eligibility. */
     candidates: string[];
     deadline: string | null;
+    /** A discuss ask's round (opening / discussion / proactive / closing), for the dock's head; null otherwise or on an older record. */
+    round: DayRound | null;
   } | null;
   privateResults: PrivateResult[];
   alive: boolean;

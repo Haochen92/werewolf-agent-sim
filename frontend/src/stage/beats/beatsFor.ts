@@ -182,10 +182,54 @@ export function beatsFor(
     thinking = null;
   };
 
+  // A round in progress (Phase 2): its players, and who of them has spoken. The lines of a
+  // round arrive as plain speech events right after `round_opened`; the first event that is
+  // not one of them (or an annotation of one) ends the round, and the players with no speech
+  // are told as one beat, "nothing to add". The X-ray plays each `pass_marker` instead.
+  let round: { opened: EventOf<'round_opened'>; spoke: Set<string> } | null = null;
+  const resolveRound = (at: number) => {
+    if (round && !xrayCut) {
+      const quiet: string[] = [];
+      for (const player of round.opened.players) {
+        if (!round.spoke.has(player)) quiet.push(player);
+      }
+      if (quiet.length > 0) {
+        pub('day.round-passes', round.opened, at, HOLD.pass, { subjects: quiet });
+      }
+    }
+    round = null;
+  };
+  const ROUND_LINE_EVENTS: ReadonlySet<string> = new Set([
+    'speech',
+    'pass_marker',
+    'addressed_targets',
+    'firing_reason',
+    'strategy_update',
+    'player_reads',
+    'memory_consulted',
+    // a seated human's ask is sent right after round_opened, before any of the round's lines
+    'input_request',
+  ]);
+
   for (let i = 0; i < events.length && !over; i++) {
     const e = events[i];
     const next = i + 1;
+    if (round && !ROUND_LINE_EVENTS.has(e.type)) resolveRound(i);
     switch (e.type) {
+      case 'round_opened':
+        resolveTurn(i);
+        if (e.round === 'opening') {
+          pub('day.opening-prepares', e, next, HOLD.open, { subjects: [...e.players] });
+        } else {
+          // the moderator's line is the event before this one; the first accused takes the stand
+          pub('day.closing-called', e, next, HOLD.open, {
+            subject: e.players[0],
+            subjects: [...e.players],
+          });
+        }
+        round = { opened: e, spoke: new Set() };
+        break;
+
       case 'turn_started':
         resolveTurn(i);
         thinking = e;
@@ -275,6 +319,7 @@ export function beatsFor(
 
       case 'speech': {
         if (thinking?.player === e.player) thinking = null;
+        if (round) round.spoke.add(e.player);
         const pages = speechPages(e.message);
         pages.forEach((page, index) =>
           pub('day.speech', e, next, pageHold(page), {
@@ -494,6 +539,7 @@ export function beatsFor(
         break;
     }
   }
+  // a log cut mid-round (live): the round is still open, so nothing is told as a pass yet
   return out;
 }
 

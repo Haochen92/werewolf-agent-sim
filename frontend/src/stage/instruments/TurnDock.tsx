@@ -43,6 +43,7 @@ import {
   type KeyboardEvent,
 } from 'react';
 import { SPRITES } from '@/assets/manifest';
+import type { DayRound } from '@/types/contracts';
 import type { TurnClock } from '../countdown';
 import { useMotionScale } from '../motion';
 import type { DockInput } from '../scenes/types';
@@ -69,9 +70,31 @@ export interface TurnDockProps {
   arrive?: boolean;
 }
 
+/**
+ * The head of the dock and the composer, by the ask's round (beat sheet §2 row 11): the
+ * opening before the talk, the open floor given to a quiet seat, the last word before the vote,
+ * else the discussion's turn.
+ */
+export function dockHeading(round: DayRound | null | undefined): { title: string; hint: string } {
+  if (round === 'opening') {
+    return {
+      title: 'Your opening',
+      hint: 'A role claim, something from last night, or a challenge. Or pass.',
+    };
+  }
+  if (round === 'proactive') {
+    return { title: 'The floor is yours', hint: 'One or two useful points, or pass.' };
+  }
+  if (round === 'closing') {
+    return { title: 'Your last word', hint: 'The village has its eye on you.' };
+  }
+  return { title: 'Your turn to speak', hint: 'Nothing is said until you send it.' };
+}
+
 export function TurnDock({ dock, clock, onSay, onPass, arrive = false }: TurnDockProps) {
   const k = useMotionScale();
   const c = dockControls(dock);
+  const heading = dockHeading(dock.round);
   const say = () => {
     if (c.canSend) onSay?.(c.line);
   };
@@ -100,9 +123,9 @@ export function TurnDock({ dock, clock, onSay, onPass, arrive = false }: TurnDoc
       transition={{ duration: 0.4 * k, delay: 0.3 * k }}
     >
       <header className={`${styles.head} ${styles.top}`}>
-        <strong>Your turn to speak</strong>
+        <strong>{heading.title}</strong>
         <span className={styles.hint}>
-          Nothing is said until you send it.
+          {heading.hint}
           {clock ? ' If the clock runs out, your agent speaks for you.' : ''}
         </span>
         {clock ? (
@@ -245,6 +268,7 @@ function Composer({
   onPass?: () => void;
   onClose: () => void;
 }) {
+  const heading = dockHeading(dock.round);
   const id = useId();
   const area = useVisibleArea();
   const line = useRef<HTMLTextAreaElement>(null);
@@ -287,9 +311,9 @@ function Composer({
     >
       <div className={`${styles.dock} ${styles.sheet}`} style={board}>
         <header className={styles.head}>
-          <strong>Your turn to speak</strong>
+          <strong>{heading.title}</strong>
           <span className={styles.hint}>
-            Nothing is said until you send it.
+            {heading.hint}
             {clock ? ' If the clock runs out, your agent speaks for you.' : ''}
           </span>
           {clock ? (

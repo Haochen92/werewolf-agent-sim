@@ -16,18 +16,23 @@
  *   Draft, then the line, Send and Pass), its countdown on it.
  * - A line the seat's agent said for this seat, because its turn ran out: on this seat's own
  *   screen the plaque and the box say "your seat's agent spoke for you".
+ * - The rounds (Phase 2, beat sheet §2 rows 7-10): `day.opening-prepares`, the stand empty and
+ *   a walnut notice where the box would be, every seat of the round lit on the wing;
+ *   `day.round-passes`, the same notice naming the seats of the round that said nothing;
+ *   `day.closing-called`, the first accused at the stand thinking while the box carries the
+ *   moderator's line, then the accused's own lines play as any turn, without rising again.
  *
  * Played forward (`presentation.animate`), the puppet rises into the stand thinking (the box
  * holding a "…"), then talks and the line comes into the box. Arrived at (a seek, a refresh), it is all simply there.
  */
 import { useEffect, useState } from 'react';
 import { type DayState } from '@/assets/manifest';
-import type { PassSlot, SpeechSlot } from '@/game/types';
+import type { GameView, PassSlot, SpeechSlot } from '@/game/types';
 import { Layer } from '../Stage';
 import { Puppet } from '../cast/Puppet';
 import { ReadCard } from '../film/ReadCard';
 import { freshReads, turnReads } from '../film/film-model';
-import { CardButton, NoticeZone } from '../instruments/Notice';
+import { CardButton, Notice, NoticeZone } from '../instruments/Notice';
 import { SpeechBox } from '../instruments/SpeechBox';
 import { Plaque, Stand } from '../instruments/Stand';
 import { TurnDock } from '../instruments/TurnDock';
@@ -49,10 +54,70 @@ const THINK = 0.6;
 const turnKey = (b: SceneProps['beat']) => `${b.id}:${b.seq}`;
 export const continues = (was: SceneProps['beat'], now: SceneProps['beat']) =>
   turnKey(was) === turnKey(now) ||
-  ((was.id === 'day.turn-thinking' || was.id === 'day.your-turn') &&
+  ((was.id === 'day.turn-thinking' ||
+    was.id === 'day.your-turn' ||
+    was.id === 'day.closing-called') &&
     (now.id === 'day.speech' || now.id === 'day.pass') &&
     now.subject === (was.subject ?? was.seat) &&
     now.day === was.day);
+
+/** The beats with nobody at the stand: a notice stands where the box would be. */
+const isNotice = (beat: SceneProps['beat']) =>
+  beat.id === 'day.opening-prepares' || beat.id === 'day.round-passes';
+
+/** "seats 2, 5 and 8", with the viewer's own seat as "you" (first). */
+function seatsPhrase(seats: readonly string[], me: string | null): string {
+  const others: string[] = [];
+  let you = false;
+  for (const seat of seats) {
+    if (seat === me) you = true;
+    else others.push(`${seatNumber(seat)}`);
+  }
+  const numbers =
+    others.length === 0
+      ? ''
+      : others.length === 1
+        ? `seat ${others[0]}`
+        : `seats ${others.slice(0, -1).join(', ')} and ${others[others.length - 1]}`;
+  if (you && numbers) return `you and ${numbers}`;
+  if (you) return 'you';
+  return numbers;
+}
+
+/** The notice's line for a round's passes (beat sheet §2 row 9). */
+function passesLine(
+  round: 'opening' | 'closing' | null,
+  quiet: readonly string[],
+  players: readonly string[],
+  me: string | null,
+): string {
+  const everyone = players.length > 0 && quiet.length === players.length;
+  if (round === 'closing') {
+    const who = seatsPhrase(quiet, me);
+    return `${who[0].toUpperCase()}${who.slice(1)} said nothing in defence.`;
+  }
+  if (everyone) return 'Nobody had anything to put on the table.';
+  const who = seatsPhrase(quiet, me);
+  return `${who[0].toUpperCase()}${who.slice(1)} had nothing to put on the table.`;
+}
+
+/** The round a beat belongs to, as the fold recorded it (`round_opened`). */
+function roundOf(view: GameView, beat: SceneProps['beat']) {
+  const rounds = view.days[beat.day]?.rounds ?? [];
+  for (const round of rounds) {
+    if (round.seq === beat.seq) return round;
+  }
+  return null;
+}
+
+/** The moderator's line the closing was called with: the last game-master slot before the beat. */
+function moderatorLine(view: GameView, beat: SceneProps['beat']): string | null {
+  let text: string | null = null;
+  for (const slot of view.days[beat.day]?.slots ?? []) {
+    if (slot.kind === 'gm' && slot.seq < beat.seq) text = slot.text;
+  }
+  return text;
+}
 
 /** The day's body under the car's host (CarScene.tsx). */
 export function DayBody(props: SceneProps) {
@@ -127,7 +192,8 @@ function DaySet({
         light={{ pool, dark: 24 }}
         wing={{
           truth: (seat) => (xray ? (view.xray.roles[seat] ?? null) : null),
-          lit: (seat) => seat === speaker,
+          // the speaker; or, at a round's notice, every seat the notice is about
+          lit: (seat) => seat === speaker || (beat.subjects?.includes(seat) ?? false),
           read: (seat) => {
             const rd = readOf(seat);
             return rd
@@ -179,6 +245,9 @@ function DayTurn({ view, beat, me, presentation, turn, onSay, onAct, onNext }: S
   const isPass = beat.id === 'day.pass';
   // live: the seat has the stand and no line yet
   const waiting = beat.id === 'day.turn-thinking';
+  // the accused called to answer: at the stand thinking, the moderator's line in the box
+  const called = beat.id === 'day.closing-called';
+  const notice = isNotice(beat);
 
   // Played forward: arrive thinking, then speak. At rest: already speaking.
   const [settled, setSettled] = useState(!animate);
@@ -190,7 +259,7 @@ function DayTurn({ view, beat, me, presentation, turn, onSay, onAct, onNext }: S
   }, [risen, settled, k]);
 
   const state: DayState =
-    mine || waiting || !settled ? 'thinking' : isPass ? 'base' : 'talking';
+    mine || waiting || called || !settled ? 'thinking' : isPass ? 'base' : 'talking';
   // my line, said by my seat's agent: only my screen is told
   const agent = !mine && speaker !== null && speaker === me && !!turn?.agentSpoke;
   const dock = mine && turn?.dock && !turn.dock.closed ? turn.dock : null;
@@ -242,20 +311,50 @@ function DayTurn({ view, beat, me, presentation, turn, onSay, onAct, onNext }: S
               arrive={animate}
             />
           </NoticeZone>
+        ) : notice ? (
+          <NoticeZone hud={hud} aside={side}>
+            <Notice
+              walnut
+              wide
+              arrive={animate}
+              title={
+                beat.id === 'day.opening-prepares'
+                  ? beat.day === 1
+                    ? 'Everyone is writing their opening, before the first night.'
+                    : 'Everyone is writing their opening.'
+                  : passesLine(
+                      roundOf(view, beat)?.round ?? null,
+                      beat.subjects ?? [],
+                      roundOf(view, beat)?.players ?? [],
+                      me,
+                    )
+              }
+            />
+          </NoticeZone>
         ) : character ? (
           <SpeechBox
             hud={hud}
             seat={n}
             character={character}
-            line={isPass ? null : slot?.kind === 'speech' ? slot.message : ''}
+            line={
+              called
+                ? moderatorLine(view, beat)
+                : isPass
+                  ? null
+                  : slot?.kind === 'speech'
+                    ? slot.message
+                    : ''
+            }
             page={beat.page?.index}
             onNext={beat.id === 'day.speech' && settled ? onNext : undefined}
             tag={
-              agent
-                ? { text: 'your seat’s agent spoke for you', tone: 'agent' }
-                : speaker === me
-                  ? { text: 'you' }
-                  : undefined
+              called
+                ? { text: 'the moderator' }
+                : agent
+                  ? { text: 'your seat’s agent spoke for you', tone: 'agent' }
+                  : speaker === me
+                    ? { text: 'you' }
+                    : undefined
             }
             xray={
               xray && slot?.kind === 'pass'
@@ -263,7 +362,8 @@ function DayTurn({ view, beat, me, presentation, turn, onSay, onAct, onNext }: S
                 : undefined
             }
             arrive={animate}
-            thinking={mine || waiting || !settled}
+            // the called seat thinks while the box carries the moderator's line, not a "…"
+            thinking={mine || waiting || (!settled && !called)}
             side={bandNarrows(presentation, beat)}
           />
         ) : null}

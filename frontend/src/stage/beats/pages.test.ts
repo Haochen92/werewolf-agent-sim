@@ -60,7 +60,7 @@ describe('paginate', () => {
   });
 
   it('pages a speech as the box shows it, seat names rewritten', () => {
-    expect(speechPages('player_3 is a wolf.')).toEqual(['seat 3 is a wolf.']);
+    expect(speechPages('player_3 is a wolf.')).toEqual(['Seat 3 is a wolf.']);
   });
 });
 

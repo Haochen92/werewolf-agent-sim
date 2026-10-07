@@ -4,7 +4,23 @@ import { factionOf, seatNumber, seatify } from './roles';
 describe('the stage’s role and seat words', () => {
   it('rewrites the agents’ seat names for the table', () => {
     expect(seatify('Player_2, calling it a pivot. player_6 and Player 8’s point')).toBe(
-      'Seat 2, calling it a pivot. seat 6 and Seat 8’s point',
+      // a seat that starts a sentence is capitalised (the moderator's line, 2026-10-07)
+      'Seat 2, calling it a pivot. Seat 6 and Seat 8’s point',
+    );
+  });
+  it('capitalises a seat that starts a sentence, and only there', () => {
+    expect(seatify('player_4 gets a last word.')).toBe('Seat 4 gets a last word.');
+    expect(
+      seatify(
+        'Before the vote: player_5 has been accused by player_2. player_5 gets a last word.',
+      ),
+    ).toBe('Before the vote: seat 5 has been accused by seat 2. Seat 5 gets a last word.');
+    expect(seatify('Is it player_3? player_3 says no! player_3 left.')).toBe(
+      'Is it seat 3? Seat 3 says no! Seat 3 left.',
+    );
+    // mid-sentence and after a comma or colon it stays lower case
+    expect(seatify('I trust player_2, not player_7: player_7 lied.')).toBe(
+      'I trust seat 2, not seat 7: seat 7 lied.',
     );
   });
   it('reads seat numbers and factions', () => {

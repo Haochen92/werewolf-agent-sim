@@ -464,6 +464,8 @@ describe('synthetic cases the fixture cannot contain', () => {
       actionKind: 'vote',
       candidates: ['player_2', 'player_3'],
       deadline: '2026-08-21T10:00:00Z',
+      // a vote has no round; a discuss ask carries its own (opening, discussion, proactive, closing)
+      round: null,
     });
   });
 
@@ -691,5 +693,78 @@ describe('synthetic cases the fixture cannot contain', () => {
     expect(v.xray.agents.a.reads).toEqual([reads]);
     expect(v.xray.agents.a.strategy).toEqual([]); // the timeline is untouched
     expect(v.xray.extracted).toBe(extracted);
+  });
+});
+
+describe('the rounds of the day (Phase 2)', () => {
+  it('records each round_opened on its day, in order, with its players', () => {
+    const opening = {
+      seq: 11,
+      day: 2,
+      type: 'round_opened',
+      round: 'opening',
+      players: ['player_1', 'player_2', 'player_3'],
+    } as DurableGameEvent;
+    const closing = {
+      seq: 40,
+      day: 2,
+      type: 'round_opened',
+      round: 'closing',
+      players: ['player_3'],
+    } as DurableGameEvent;
+
+    let v = emptyGameView();
+    v = foldEvent(v, opening);
+    v = foldEvent(v, closing);
+
+    expect(v.droppedEventTypes).toEqual([]);
+    expect(v.days[2].rounds).toEqual([
+      { seq: 11, round: 'opening', players: ['player_1', 'player_2', 'player_3'] },
+      { seq: 40, round: 'closing', players: ['player_3'] },
+    ]);
+  });
+
+  it('starts every day with no rounds', () => {
+    const speech = {
+      seq: 5,
+      day: 1,
+      type: 'speech',
+      channel_seq: 0,
+      player: 'player_1',
+      message: 'hello',
+    } as DurableGameEvent;
+
+    const v = foldEvent(emptyGameView(), speech);
+
+    expect(v.days[1].rounds).toEqual([]);
+  });
+
+  it('files a discuss ask with its round, and an older ask with none', () => {
+    const ask = {
+      seq: 12,
+      day: 2,
+      type: 'input_request',
+      player: 'player_1',
+      action_kind: 'discuss',
+      candidates: [],
+      deadline: null,
+      round: 'closing',
+    } as DurableGameEvent;
+    const olderAsk = {
+      seq: 13,
+      day: 2,
+      type: 'input_request',
+      player: 'player_1',
+      action_kind: 'discuss',
+      candidates: [],
+      deadline: null,
+    } as unknown as DurableGameEvent;
+
+    const withRound = foldEvent(emptyGameView({ mySeat: 'player_1' }), ask);
+    expect(withRound.me.pending?.round).toBe('closing');
+    expect(withRound.me.pending?.actionKind).toBe('discuss');
+
+    const withoutRound = foldEvent(emptyGameView({ mySeat: 'player_1' }), olderAsk);
+    expect(withoutRound.me.pending?.round).toBeNull();
   });
 });

@@ -49,6 +49,11 @@ export const BEAT_LABELS = {
   'day.speech': 'Speaks',
   'day.pass': 'Passes',
   'day.your-turn': 'Your turn',
+  // the rounds (Phase 2): the opening written by everyone at once, the seats of a round that
+  // said nothing, the most-accused called to answer before the vote (beat sheet §2 rows 7-10)
+  'day.opening-prepares': 'The openings are written',
+  'day.round-passes': 'Nothing to add',
+  'day.closing-called': 'Called to answer',
 
   'vote.opens': 'Voting opens',
   'vote.your-ballot': 'Your ballot',
@@ -122,6 +127,8 @@ export interface SceneBeat {
   seat?: string;
   /** The seat the beat is about: the chip that fell, the card, the actor. */
   subject?: string;
+  /** The seats a round's beat is about: everyone writing an opening, or the seats that said nothing. */
+  subjects?: string[];
   /** The nth of a run: the nth chip counted. */
   ordinal?: number;
   spoke?: Spoke;

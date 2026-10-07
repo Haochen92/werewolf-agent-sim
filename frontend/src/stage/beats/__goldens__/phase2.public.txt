@@ -1,0 +1,123 @@
+  0  deal.table-seated        d1 seq  1 end  1  public  6000ms
+  1  deal.cards-dealt         d1 seq  1 end  1  public  6000ms
+  2  deal.day-begins          d1 seq 12 end 12  public  6000ms  [day 1]
+  3  day.opening-prepares     d1 seq 13 end 13  public {1,2,3,4,5,6,7,8,9}  4000ms
+  4  day.round-passes         d1 seq 13 end 40  public {1,2,3,4,5,6,7,8,9}  4000ms
+  5  night.hub                d1 seq 45 end 45  public  6000ms  [night 1]
+  6  morning.shutter-down     d1 seq 71 end 71  public  6000ms  [morning 1]
+  7  morning.chip-attacked    d1 seq 71 end 71  public →player_1  2500ms
+  8  morning.chip-fell        d1 seq 71 end 71  public →player_1  2500ms
+  9  morning.card-down        d1 seq 71 end 71  public →player_1  4000ms
+ 10  morning.roll             d1 seq 71 end 71  public  8000ms
+ 11  morning.day-begins       d2 seq 75 end 75  public  6000ms  [day 2]
+ 12  day.opening-prepares     d2 seq 76 end 76  public {2,3,4,5,6,7,8,9}  4000ms
+ 13  day.speech               d2 seq 95 end 95  public →player_4  5417ms
+ 14  day.round-passes         d2 seq 76 end100  public {2,3,5,6,7,8,9}  4000ms
+ 15  day.speech               d2 seq102 end102  public →player_2 p1/2  9583ms
+ 16  day.speech               d2 seq102 end102  public →player_2 p2/2  5833ms
+ 17  day.speech               d2 seq107 end107  public →player_4 p1/2  9167ms
+ 18  day.speech               d2 seq107 end107  public →player_4 p2/2  8750ms
+ 19  day.pass                 d2 seq111 end115  public →player_3  4000ms
+ 20  day.speech               d2 seq117 end117  public →player_5 p1/3  5000ms
+ 21  day.speech               d2 seq117 end117  public →player_5 p2/3  7083ms
+ 22  day.speech               d2 seq117 end117  public →player_5 p3/3  5000ms
+ 23  day.pass                 d2 seq121 end125  public →player_6  4000ms
+ 24  day.speech               d2 seq127 end127  public →player_7 p1/2  10833ms
+ 25  day.speech               d2 seq127 end127  public →player_7 p2/2  7083ms
+ 26  day.speech               d2 seq132 end132  public →player_4 p1/3  5833ms
+ 27  day.speech               d2 seq132 end132  public →player_4 p2/3  6667ms
+ 28  day.speech               d2 seq132 end132  public →player_4 p3/3  7083ms
+ 29  day.speech               d2 seq137 end137  public →player_8 p1/2  5417ms
+ 30  day.speech               d2 seq137 end137  public →player_8 p2/2  9583ms
+ 31  day.speech               d2 seq142 end142  public →player_9 p1/2  10833ms
+ 32  day.speech               d2 seq142 end142  public →player_9 p2/2  8333ms
+ 33  day.pass                 d2 seq146 end150  public →player_3  4000ms
+ 34  day.pass                 d2 seq151 end156  public →player_6  4000ms
+ 35  day.closing-called       d2 seq157 end157  public →player_4 {4}  4000ms
+ 36  day.speech               d2 seq159 end159  public →player_4 p1/4  6667ms
+ 37  day.speech               d2 seq159 end159  public →player_4 p2/4  5833ms
+ 38  day.speech               d2 seq159 end159  public →player_4 p3/4  6667ms
+ 39  day.speech               d2 seq159 end159  public →player_4 p4/4  8750ms
+ 40  vote.opens               d2 seq163 end163  public  4000ms  [vote 2]
+ 41  vote.ballots-drop        d2 seq180 end187  public  2500ms
+ 42  vote.closes              d2 seq180 end187  public  2500ms
+ 43  vote.count-begins        d2 seq180 end187  public  2000ms
+ 44  vote.chip-counted        d2 seq180 end187  public #1  2500ms
+ 45  vote.chip-counted        d2 seq180 end187  public #2  2500ms
+ 46  vote.chip-counted        d2 seq180 end187  public #3  2500ms
+ 47  vote.chip-counted        d2 seq180 end187  public #4  2500ms
+ 48  vote.chip-counted        d2 seq180 end187  public #5  2500ms
+ 49  vote.chip-counted        d2 seq180 end187  public #6  2500ms
+ 50  vote.chip-counted        d2 seq180 end187  public #7  2500ms
+ 51  vote.chip-counted        d2 seq180 end187  public #8  2500ms
+ 52  vote.result              d2 seq189 end189  public →player_4  6000ms
+ 53  vote.table-down          d2 seq189 end189  public  6000ms
+ 54  lynch.stand-returns      d2 seq189 end189  public →player_4  6000ms
+ 55  lynch.named              d2 seq189 end189  public →player_4  2000ms
+ 56  lynch.drop               d2 seq189 end189  public →player_4  2000ms
+ 57  lynch.card-up            d2 seq189 end189  public →player_4  4000ms
+ 58  lynch.truth              d2 seq189 end189  public →player_4  4000ms
+ 59  lynch.card-to-wing       d2 seq189 end189  public →player_4  6000ms
+ 60  night.hub                d2 seq192 end192  public  6000ms  [night 2]
+ 61  morning.shutter-down     d2 seq212 end212  public  6000ms  [morning 2]
+ 62  morning.chip-attacked    d2 seq212 end212  public →player_2  2500ms
+ 63  morning.chip-fell        d2 seq212 end212  public →player_2  2500ms
+ 64  morning.card-down        d2 seq212 end212  public →player_2  4000ms
+ 65  morning.chip-attacked    d2 seq212 end212  public →player_3  2500ms
+ 66  morning.chip-fell        d2 seq212 end212  public →player_3  2500ms
+ 67  morning.card-down        d2 seq212 end212  public →player_3  4000ms
+ 68  morning.roll             d2 seq212 end212  public  10000ms
+ 69  morning.day-begins       d3 seq216 end216  public  6000ms  [day 3]
+ 70  day.opening-prepares     d3 seq217 end217  public {5,6,7,8,9}  4000ms
+ 71  day.round-passes         d3 seq217 end232  public {5,6,7,8,9}  4000ms
+ 72  day.speech               d3 seq234 end234  public →player_5 p1/2  7500ms
+ 73  day.speech               d3 seq234 end234  public →player_5 p2/2  6667ms
+ 74  day.speech               d3 seq239 end239  public →player_6 p1/2  10417ms
+ 75  day.speech               d3 seq239 end239  public →player_6 p2/2  5833ms
+ 76  day.pass                 d3 seq243 end247  public →player_7  4000ms
+ 77  day.speech               d3 seq249 end249  public →player_8 p1/2  8333ms
+ 78  day.speech               d3 seq249 end249  public →player_8 p2/2  8333ms
+ 79  day.pass                 d3 seq253 end257  public →player_9  4000ms
+ 80  day.speech               d3 seq259 end259  public →player_7 p1/2  8750ms
+ 81  day.speech               d3 seq259 end259  public →player_7 p2/2  7083ms
+ 82  day.speech               d3 seq264 end264  public →player_5 p1/2  9167ms
+ 83  day.speech               d3 seq264 end264  public →player_5 p2/2  5833ms
+ 84  day.speech               d3 seq269 end269  public →player_9 p1/2  11250ms
+ 85  day.speech               d3 seq269 end269  public →player_9 p2/2  5000ms
+ 86  day.speech               d3 seq274 end274  public →player_5 p1/2  8750ms
+ 87  day.speech               d3 seq274 end274  public →player_5 p2/2  8333ms
+ 88  day.closing-called       d3 seq279 end279  public →player_5 {5}  4000ms
+ 89  day.speech               d3 seq281 end281  public →player_5 p1/2  9167ms
+ 90  day.speech               d3 seq281 end281  public →player_5 p2/2  10417ms
+ 91  vote.opens               d3 seq285 end285  public  4000ms  [vote 3]
+ 92  vote.ballots-drop        d3 seq296 end300  public  2500ms
+ 93  vote.closes              d3 seq296 end300  public  2500ms
+ 94  vote.count-begins        d3 seq296 end300  public  2000ms
+ 95  vote.chip-counted        d3 seq296 end300  public #1  2500ms
+ 96  vote.chip-counted        d3 seq296 end300  public #2  2500ms
+ 97  vote.chip-counted        d3 seq296 end300  public #3  2500ms
+ 98  vote.chip-counted        d3 seq296 end300  public #4  2500ms
+ 99  vote.chip-counted        d3 seq296 end300  public #5  2500ms
+100  vote.result              d3 seq302 end302  public →player_5  6000ms
+101  vote.table-down          d3 seq302 end302  public  6000ms
+102  lynch.stand-returns      d3 seq302 end302  public →player_5  6000ms
+103  lynch.named              d3 seq302 end302  public →player_5  2000ms
+104  lynch.drop               d3 seq302 end302  public →player_5  2000ms
+105  lynch.card-up            d3 seq302 end302  public →player_5  4000ms
+106  lynch.truth              d3 seq302 end302  public →player_5  4000ms
+107  lynch.card-to-wing       d3 seq302 end302  public →player_5  6000ms
+108  night.hub                d3 seq305 end305  public  6000ms  [night 3]
+109  morning.shutter-down     d3 seq313 end313  public  6000ms  [morning 3]
+110  morning.chip-attacked    d3 seq313 end313  public →player_6  2500ms
+111  morning.chip-fell        d3 seq313 end313  public →player_6  2500ms
+112  morning.card-down        d3 seq313 end313  public →player_6  4000ms
+113  morning.chip-attacked    d3 seq313 end313  public →player_7  2500ms
+114  morning.chip-fell        d3 seq313 end313  public →player_7  2500ms
+115  morning.card-down        d3 seq313 end313  public →player_7  4000ms
+116  morning.roll             d3 seq313 end313  public  10000ms
+117  over.where-it-ended      d3 seq317 end317  public  10000ms  [over 0]
+118  over.winners-hour        d3 seq317 end317  public  6000ms
+119  over.verdict             d3 seq317 end317  public  6000ms
+120  over.winners-stand       d3 seq317 end317  public  6000ms
+121  over.truth               d3 seq317 end317  public  4000ms
+122  over.curtain             d3 seq317 end317  public  0ms

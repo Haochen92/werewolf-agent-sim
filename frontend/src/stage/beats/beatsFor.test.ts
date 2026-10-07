@@ -6,6 +6,7 @@
 import { describe, expect, it } from 'vitest';
 import type { DurableGameEvent } from '@/types/contracts';
 import fixture from '@/stage/fixtures/replay-9369a5c1.json';
+import phase2 from '@/stage/fixtures/replay-phase2.json';
 import { beatsFor, chapterMarks } from './beatsFor';
 import type { SceneBeat } from './types';
 
@@ -19,11 +20,34 @@ function line(b: SceneBeat, i: number): string {
     ? ` spoke ${b.spoke.actor} r${b.spoke.rank} ${b.spoke.step + 1}/${b.spoke.steps}`
     : '';
   const page = b.page ? ` p${b.page.index + 1}/${b.page.count}` : '';
+  const seats = b.subjects ? ` {${b.subjects.map((s) => s.replace('player_', '')).join(',')}}` : '';
   const chapter = b.chapter ? `  [${b.chapter.kind} ${b.chapter.n}]` : '';
-  return `${String(i).padStart(3)}  ${b.id.padEnd(24)} d${b.day} seq${String(b.seq).padStart(3)} end${String(b.end).padStart(3)}  ${b.sees}${who}${about}${nth}${spoke}${page}  ${b.holdMs}ms${chapter}`;
+  return `${String(i).padStart(3)}  ${b.id.padEnd(24)} d${b.day} seq${String(b.seq).padStart(3)} end${String(b.end).padStart(3)}  ${b.sees}${who}${about}${seats}${nth}${spoke}${page}  ${b.holdMs}ms${chapter}`;
 }
 
 const dump = (beats: SceneBeat[]) => beats.map(line).join('\n') + '\n';
+
+describe('beatsFor on the Phase 2 game (the day with rounds, memory off)', () => {
+  const log = phase2.events as unknown as DurableGameEvent[];
+  const pub = beatsFor(log, { xray: false });
+  const xray = beatsFor(log, { xray: true });
+
+  it('public tier matches the golden', async () => {
+    await expect(dump(pub)).toMatchFileSnapshot('./__goldens__/phase2.public.txt');
+  });
+
+  it('X-ray tier matches the golden', async () => {
+    await expect(dump(xray)).toMatchFileSnapshot('./__goldens__/phase2.xray.txt');
+  });
+
+  it('reveals the log monotonically', () => {
+    for (const beats of [pub, xray]) {
+      for (let i = 1; i < beats.length; i++)
+        expect(beats[i].end).toBeGreaterThanOrEqual(beats[i - 1].end);
+      expect(beats.at(-1)?.end).toBe(log.length);
+    }
+  });
+});
 
 describe('beatsFor on the fixture (9369a5c1, memory on)', () => {
   const pub = beatsFor(events, { xray: false });
@@ -209,4 +233,203 @@ describe('beatsFor on the fixture (9369a5c1, memory on)', () => {
     expect(pack.at(-1)?.spoke?.rank).toBe(Math.max(...ranks));
     expect(pack.length).toBeGreaterThan(1);
   });
+});
+
+describe('the rounds of the day, on a hand-built log (Phase 2)', () => {
+  // A day-2 log built by hand so each rule can be read off a few events: the opening round
+  // (four seats, one of them speaks), the first discussion turn, then a closing for two accused.
+  const ev = (seq: number, type: string, rest: Record<string, unknown> = {}) =>
+    ({ seq, day: 2, type, ...rest }) as unknown as DurableGameEvent;
+  const SEATS = ['player_1', 'player_2', 'player_3', 'player_4'];
+
+  const openingRound: DurableGameEvent[] = [
+    ev(10, 'phase_change', { phase: 'day' }),
+    ev(11, 'round_opened', { round: 'opening', players: SEATS }),
+    ev(12, 'pass_marker', {
+      channel_seq: 0,
+      player: 'player_1',
+      pass_reason: 'voluntary',
+      gated: false,
+    }),
+    ev(13, 'speech', {
+      channel_seq: 1,
+      player: 'player_2',
+      message: 'I checked player_4: wolf.',
+    }),
+    ev(14, 'addressed_targets', {
+      about_channel_seq: 1,
+      player: 'player_2',
+      targets: [{ target: 'player_4', addressed_form: 'mention', stance: 'accusation' }],
+    }),
+    ev(15, 'pass_marker', {
+      channel_seq: 2,
+      player: 'player_3',
+      pass_reason: 'voluntary',
+      gated: false,
+    }),
+    ev(16, 'pass_marker', {
+      channel_seq: 3,
+      player: 'player_4',
+      pass_reason: 'voluntary',
+      gated: false,
+    }),
+    ev(17, 'turn_started', { player: 'player_4' }),
+    ev(18, 'speech', { channel_seq: 4, player: 'player_4', message: 'That is a lie.' }),
+  ];
+
+  const closingRound: DurableGameEvent[] = [
+    ev(19, 'gm_message', {
+      channel_seq: 5,
+      text: 'Before the vote: player_4 has been accused by player_2 and player_3; player_3 by player_1 and player_4. Each gets a last word.',
+    }),
+    ev(20, 'round_opened', { round: 'closing', players: ['player_4', 'player_3'] }),
+    ev(21, 'speech', { channel_seq: 6, player: 'player_4', message: 'I am town.' }),
+    ev(22, 'pass_marker', {
+      channel_seq: 7,
+      player: 'player_3',
+      pass_reason: 'voluntary',
+      gated: false,
+    }),
+    ev(23, 'day_summary', { summary: 'the day in brief' }),
+  ];
+
+  const byId = (beats: SceneBeat[], id: string) => {
+    const found: SceneBeat[] = [];
+    for (const beat of beats) {
+      if (beat.id === id) found.push(beat);
+    }
+    return found;
+  };
+
+  it('opens with everyone preparing their opening, a public beat held open', () => {
+    const beats = beatsFor(openingRound, { xray: false });
+
+    const prepares = byId(beats, 'day.opening-prepares');
+    expect(prepares).toHaveLength(1);
+    expect(prepares[0].subjects).toEqual(SEATS);
+    expect(prepares[0].sees).toBe('public');
+    expect(prepares[0].seq).toBe(11);
+    expect(prepares[0].end).toBe(2); // shows the log up to and including round_opened
+    expect(prepares[0].holdMs).toBe(4000);
+  });
+
+  it('tells the round’s silent seats as one beat when the round ends, without the one who spoke', () => {
+    const beats = beatsFor(openingRound, { xray: false });
+
+    const passes = byId(beats, 'day.round-passes');
+    expect(passes).toHaveLength(1);
+    expect(passes[0].subjects).toEqual(['player_1', 'player_3', 'player_4']);
+    expect(passes[0].sees).toBe('public');
+    expect(passes[0].seq).toBe(11); // anchored on the round it closes
+    // cut when the first event that is not one of the round's lines arrives (turn_started)
+    expect(openingRound[passes[0].end].type).toBe('turn_started');
+    // the round's own lines are not told one pass at a time in the public tier
+    expect(byId(beats, 'day.pass')).toHaveLength(0);
+
+    const order: string[] = [];
+    for (const beat of beats) {
+      if (beat.scene === 'day') order.push(beat.id);
+    }
+    expect(order).toEqual([
+      'day.opening-prepares',
+      'day.speech',
+      'day.round-passes',
+      'day.speech',
+    ]);
+  });
+
+  it('in the X-ray plays each pass marker instead of the grouped beat', () => {
+    const beats = beatsFor(openingRound, { xray: true });
+
+    expect(byId(beats, 'day.round-passes')).toHaveLength(0);
+    const passed: string[] = [];
+    for (const beat of byId(beats, 'day.pass')) passed.push(beat.subject ?? '');
+    expect(passed).toEqual(['player_1', 'player_3', 'player_4']);
+    expect(byId(beats, 'day.opening-prepares')).toHaveLength(1);
+  });
+
+  it('live with the X-ray on (game over) keeps the grouped beat, as the game played it', () => {
+    const beats = beatsFor(openingRound, { xray: true, live: true });
+
+    expect(byId(beats, 'day.round-passes')).toHaveLength(1);
+  });
+
+  it('calls the first accused to the stand and groups the closing’s silent seat', () => {
+    const beats = beatsFor([...openingRound, ...closingRound], { xray: false });
+
+    const called = byId(beats, 'day.closing-called');
+    expect(called).toHaveLength(1);
+    expect(called[0].subject).toBe('player_4');
+    expect(called[0].subjects).toEqual(['player_4', 'player_3']);
+    expect(called[0].sees).toBe('public');
+
+    const passes = byId(beats, 'day.round-passes');
+    expect(passes).toHaveLength(2);
+    expect(passes[1].subjects).toEqual(['player_3']);
+    expect(passes[1].seq).toBe(20);
+    expect(byId(beats, 'day.opening-prepares')).toHaveLength(1); // the closing is not an opening
+  });
+
+  it('tells no grouped beat when everyone in the round spoke', () => {
+    const everyone: DurableGameEvent[] = [
+      ev(11, 'round_opened', { round: 'opening', players: ['player_1', 'player_2'] }),
+      ev(12, 'speech', { channel_seq: 0, player: 'player_1', message: 'I am the healer.' }),
+      ev(13, 'speech', {
+        channel_seq: 1,
+        player: 'player_2',
+        message: 'I am the healer too.',
+      }),
+      ev(14, 'day_summary', { summary: 'the day in brief' }),
+    ];
+
+    const beats = beatsFor(everyone, { xray: false });
+
+    expect(byId(beats, 'day.round-passes')).toHaveLength(0);
+  });
+
+  it('a log cut mid-round (live) tells no passes yet', () => {
+    const cut = openingRound.slice(0, 5); // round_opened, a pass marker, the speech, its tags
+
+    const beats = beatsFor(cut, { xray: false, live: true });
+
+    expect(byId(beats, 'day.round-passes')).toHaveLength(0);
+    expect(byId(beats, 'day.speech')).toHaveLength(1);
+  });
+
+  // The server announces a human's round turn as soon as the round opens (the human golden:
+  // round_opened, then input_request, then the agents' strategy notes, then the lines). The
+  // input_request is not one of ROUND_LINE_EVENTS, so the round closes on it, every seat is
+  // told as silent before anyone has spoken, and the speeches that follow are outside the round.
+  it(
+    'a human in the round does not close the round before its lines arrive (fixed 2026-10-07)',
+    () => {
+      const withHuman: DurableGameEvent[] = [
+        ev(11, 'round_opened', { round: 'opening', players: SEATS }),
+        ev(12, 'input_request', {
+          player: 'player_3',
+          action_kind: 'discuss',
+          candidates: [],
+          round: 'opening',
+          deadline: null,
+        }),
+        ev(13, 'speech', {
+          channel_seq: 0,
+          player: 'player_2',
+          message: 'I checked player_4: wolf.',
+        }),
+        ev(14, 'speech', {
+          channel_seq: 1,
+          player: 'player_3',
+          message: 'I am the healer.',
+        }),
+        ev(15, 'turn_started', { player: 'player_4' }),
+      ];
+
+      const beats = beatsFor(withHuman, { xray: false, me: 'player_3', live: true });
+
+      const passes = byId(beats, 'day.round-passes');
+      expect(passes).toHaveLength(1);
+      expect(passes[0].subjects).toEqual(['player_1', 'player_4']);
+    },
+  );
 });

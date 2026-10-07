@@ -513,6 +513,7 @@ export function LiveTheatre({
     beat?.id === 'day.your-turn'
       ? {
           text: turn.text,
+          round: pending?.round ?? null,
           onText: (text) => turnDispatch({ type: 'text', text }),
           notes: turn.notes,
           onNotes: (notes) => turnDispatch({ type: 'notes', notes }),

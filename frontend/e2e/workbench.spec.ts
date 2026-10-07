@@ -17,6 +17,21 @@ const SHOTS: [name: string, query: string][] = [
   ['day-thinking-live-seat7', 'beat=86&viewer=seat:player_7&live=1'],
 ];
 
+/**
+ * The rounds (beat sheet §2 rows 7-10), on the Phase 2 game (`game=phase2`, goldens
+ * `phase2.public.txt`): day 1's opening being written and nobody having anything to say, day
+ * 2's seats that said nothing (seat 2 is the viewer: "you and seats…"), and the first accused
+ * called to answer with the moderator's line in the box. No puppet stands at a notice, so these
+ * settle on the wing.
+ */
+const ROUND_SHOTS: [name: string, query: string, figures: number][] = [
+  // the day scene's own beat numbers (golden lines 3, 4, 14 and 35)
+  ['phase2-opening-prepares-day1', 'beat=0&game=phase2', 0],
+  ['phase2-round-passes-everyone', 'beat=1&game=phase2', 0],
+  ['phase2-round-passes-seat2-you', 'beat=4&game=phase2&viewer=seat:player_2', 0],
+  ['phase2-closing-called', 'beat=25&game=phase2', 1],
+];
+
 /** Wait until the frame is still: sprites decoded, fonts in, and Next's dev badge hidden. */
 async function settle(page: Page) {
   await page.addStyleTag({ content: 'nextjs-portal{display:none!important}' });
@@ -41,6 +56,17 @@ for (const [name, query] of SHOTS) {
       waitUntil: 'networkidle',
     });
     await expect(page.locator('[data-layer="figures"] img')).toHaveCount(1);
+    await settle(page);
+    await expect(page).toHaveScreenshot(`${name}.png`);
+  });
+}
+
+for (const [name, query, figures] of ROUND_SHOTS) {
+  test(`day, the rounds: ${name}`, async ({ page }) => {
+    await page.goto(`/workbench/day?${query}&animate=0&strip=0`, {
+      waitUntil: 'networkidle',
+    });
+    await expect(page.locator('[data-layer="figures"] img')).toHaveCount(figures);
     await settle(page);
     await expect(page).toHaveScreenshot(`${name}.png`);
   });

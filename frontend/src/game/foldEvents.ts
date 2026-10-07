@@ -39,6 +39,7 @@ export function emptyDay(day: number): DayView {
   return {
     day,
     slots: [],
+    rounds: [],
     annotations: {},
     turnMarkers: [],
     vote: {
@@ -380,6 +381,13 @@ export function foldEvent(
       };
     }
 
+    case 'round_opened': {
+      return withDay(next, event.day, (d) => ({
+        ...d,
+        rounds: [...d.rounds, { seq: event.seq, round: event.round, players: [...event.players] }],
+      }));
+    }
+
     case 'speech': {
       return pushSlot(next, event.day, (turnStartedSeq) => ({
         kind: 'speech',
@@ -506,6 +514,7 @@ export function foldEvent(
             actionKind: event.action_kind,
             candidates: event.candidates ?? [],
             deadline: event.deadline ?? null,
+            round: event.round ?? null,
           },
         },
       };

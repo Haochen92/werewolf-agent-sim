@@ -11,7 +11,7 @@ import { beatsFor } from '../beats/beatsFor';
 import { DIM_FACETS, parseSituation } from '../film/case-file';
 import type { SceneBeat, SceneId } from '../beats/types';
 import type { Presentation, RoomInput, TurnInput } from '../scenes/types';
-import { FIXTURE_CAST, FIXTURE_EVENTS, LEDGER_GAME } from './fixture';
+import { FIXTURE_CAST, FIXTURE_EVENTS, LEDGER_GAME, PHASE2_GAME, } from './fixture';
 import { SYNTHETIC, SYNTHETIC_AFTER, sceneBeats } from './registry';
 import { synthesiseAll, type AnySituation } from './synthetic';
 import type { WorkbenchQuery } from './url';
@@ -43,18 +43,25 @@ export interface WorkbenchFrame {
   ledger: readonly LedgerDay[] | null;
 }
 
+/** The bundled game the URL names: the fixture, the ledger game, or the Phase 2 game. */
+function gameOf(q: WorkbenchQuery): { events: readonly DurableGameEvent[]; cast: readonly Character[] } {
+  if (q.game === '140610ad') return { events: LEDGER_GAME.events, cast: LEDGER_GAME.cast };
+  if (q.game === 'phase2') return { events: PHASE2_GAME.events, cast: PHASE2_GAME.cast };
+  return { events: FIXTURE_EVENTS, cast: FIXTURE_CAST };
+}
+
 export function workbenchFrame(
   scene: SceneId,
   q: WorkbenchQuery,
-  events: readonly DurableGameEvent[] = q.game ? LEDGER_GAME.events : FIXTURE_EVENTS,
-  cast: readonly Character[] = q.game ? LEDGER_GAME.cast : FIXTURE_CAST,
+  events: readonly DurableGameEvent[] = gameOf(q).events,
+  cast: readonly Character[] = gameOf(q).cast,
 ): WorkbenchFrame {
   // the Record's ledger: the second game's own, the v4 redraw's synthetic one, or none
   const ledger = q.noLedger
     ? null
-    : q.game
+    : q.game === '140610ad'
       ? LEDGER_GAME.ledger
-      : q.summaryV4
+      : q.summaryV4 && !q.game
         ? V4_LEDGER
         : null;
   // a memory-off game: the same log without what memory adds

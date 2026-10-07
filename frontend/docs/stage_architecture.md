@@ -235,7 +235,8 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   src/assets/sprites/props/{jar-glass,jar-lid,stand-front,vote-table,plate,valance,shutter}.webp
   src/assets/sprites/car/{day,night}.webp
   src/assets/sprites/rooms/{healer,investigator,vigilante,serial_killer,wolf}.webp
-  src/assets/sprites/roles/{villager,wolf,investigator,vigilante,healer,serial_killer}.webp
+  src/assets/sprites/roles/{villager,wolf,investigator,vigilante,healer,serial_killer,
+    sentinel,trailseer,sigilist,chanteuse,illusionist,necromancer,speculator,fortune_teller}.webp
     (the role cards' felt dolls, 720×960, figure at full height, centred, feet on the bottom edge)
   src/assets/sprites/shadow/day/<character>/{base,talking,thinking,out}.webp
   src/assets/sprites/atmosphere/grain.webp
@@ -259,7 +260,10 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   returns SVG markup, now an `<image>` on a `0 0 720 960` viewBox, so every card (the deal's,
   "your card", the night rooms', the landing's and the ticket's) sizes one `<svg>` by CSS as
   before; `roleAvatar(role)` is the same markup with a head-and-shoulders viewBox crop (the top
-  ~56%, per-role offsets for the vigilante's feather and the reaper's hood).
+  ~56%, per-role offsets for the vigilante's feather and the reaper's hood). The eight 1920s
+  roles' figures joined 2026-10-07 (`docs/role_cards_brief.md`), fitted by
+  `scripts/fit-role-figures.mjs`: the master's alpha box scaled to the full 960 height and
+  centred on the 720 width, quality 85; the default crop carries each one's prop.
 - The role sigils (2026-09-30; the twelve-role set 2026-10-07) are the owner's felt set from
   the sigil bench, vector in `instruments/Sigil.tsx`: one silhouette plus detail pieces per
   role on a 48 grid (`viewBox -2 -2 52 52`). The four originals keep their drawings (cross,
@@ -831,8 +835,14 @@ cases; `PaintPicture`'s docstring (in git history, `Stage.tsx` before 2026-09-29
 file), picks the beat, and renders the scene through exactly the component the real pages use.
 
 ```
-/workbench/vote?beat=5&viewer=spect|seat:player_7|xray&motion=normal|fast&slot=none|drawer|film&hud=live|replay|none&animate=0|1[&live=1][&memory=off][&frame=iphone14|iphone15max|pixel8|WxH]
+/workbench/vote?beat=5&viewer=spect|seat:player_7|xray&motion=normal|fast&slot=none|drawer|film&hud=live|replay|none&animate=0|1[&live=1][&memory=off][&game=140610ad|phase2][&frame=iphone14|iphone15max|pixel8|WxH]
 ```
+
+`beat=` counts within the scene (the nth of the scene's beats in play order, as the registry
+lists them), not down the whole golden: a golden line's number and a bench's `beat=` differ by
+every beat of the other scenes before it. `game=phase2` draws the 2026-10-07 game of the day with
+rounds (`fixtures/replay-phase2.json`, memory off), the fixture of the round beats (beat sheet §2
+rows 7-10); its goldens are `beats/__goldens__/phase2.*.txt`.
 
 `live=1` (written only when on) cuts the beats as a game in play would, for any viewer: the day's
 `day.turn-thinking` beats appear between the turns. `memory=off` (written only when set) takes

@@ -178,6 +178,32 @@ read card (guess, how sure, why, the truth with ● ◐ ○), a paper index card
 | 6 | `day.agent-spoke-for-you` | my `speech` arriving with my request unanswered at its deadline (client-known) | S only | the puppet talks the agent's line; the plaque's tag and the box say "your seat's agent spoke for you" | D: the line with the tag | speech |
 | — | `day.summary` | `day_summary` (28, 79, 218, 360) | — | **no beat here.** Public on the wire but the live stage has no beat for it; the replay plays it at the Dawn after the same day (§8 row 8) | — | — |
 
+**The rounds (Phase 2, 2026-10-07; `evidence/game_play_enhancement/discussion_evidence.md` §7).** A
+day opens with every living seat writing an opening at once, and on a voting day it ends with the
+most-accused given a last word before the vote; the discussion between them is the scheduler's
+turns as above (the sweep's turns, where a quiet seat is given the floor, are ordinary turns on the
+wire: `turn_started`, then the speech or the pass). A round is announced by one public event,
+`round_opened {round, players}`, and its lines then arrive as plain `speech` events in the order
+they are played; a player of the round with no speech passed, so there is no pass event for a
+round (the X-ray's `pass_marker` still carries each pass with its reason). The fixture for these
+rows is the Phase 2 game (`fixtures/replay-phase2.json`, memory off; goldens `phase2.*.txt`).
+
+| # | Beat | Anchor | Sees | Stage | Slot | Hold |
+|---|---|---|---|---|---|---|
+| 7 | `day.opening-prepares` | `round_opened` `opening` | P | the stand empty, every seat of the round lit on the wing, a walnut notice where the box would be: "Everyone is writing their opening." (day 1: "…before the first night", since nothing has happened yet) | D: the notice line | live: until the round's first line (or the next beat) · replay: **4.0** |
+| 8 | `day.speech` | each `speech` of the round | P | as row 2; the puppet rises for each opening in turn (seat order) | D: the line | speech |
+| 9 | `day.round-passes` | the round's end: the first event after its lines that is not one of them (`turn_started`, the next `round_opened`, `day_summary`, a phase change), when any player of the round has no speech | P (the X-ray plays each `pass_marker` as row 3 instead, with its reason and draft) | the stand empty, the passing seats lit on the wing, the notice: "Seats 2, 5 and 8 had nothing to put on the table." (one seat: "Seat 2 had…"; everyone: "Nobody had anything to put on the table.") | D: the notice line | **4.0** |
+| 10 | `day.closing-called` | `round_opened` `closing` (the moderator's `gm_message` is the event before it) | P | the first accused takes the stand thinking; the box shows the moderator's line under a "the moderator" tag: "Before the vote: seat 4 has been accused by seats 2, 3 and 6. Seat 4 gets a last word."; the accused lit on the wing | D: the moderator's line | **4.0**, then the accused's lines as row 2 without rising again (one puppet per accused) |
+| 11 | `day.your-turn`, labelled | `input_request` `discuss` with `round` | S | as row 4, with the dock's head by the round: `opening` **Your opening** "A role claim, something from last night, or a challenge. Or pass." · `proactive` **The floor is yours** "One or two useful points, or pass." · `closing` **Your last word** "The village has its eye on you." · `discussion` (and a record without the field) **Your turn to speak** as before | — | as row 4 |
+
+As built 2026-10-07 (benches `phase2-*` in `e2e/workbench.spec.ts`): the round's notices use the
+speech box's board without a nameplate, and the wing lights every seat the notice is about. A seat
+of the round that is the viewer's own appears in the notice as "you" ("You and seats 3, 5 and 6
+had nothing to put on the table."). The called seat's box carries the moderator's line under a
+"the moderator" tag on its nameplate, the puppet thinking (no "…" in the box). Day 1 of the Phase
+2 fixture is rows 7 and 9 and nothing else. The seat rewrite capitalises a seat that starts a
+sentence ("…and seat 7. Seat 4 gets a last word."), for the moderator's line and any other.
+
 **The one timeout rule** (every human turn: speak, vote, night act, wolf chat): the countdown runs
 on `input_request.deadline`; on expiry the seat's agent acts and only the seat is told. A human
 who leaves is the same rule made permanent: the table sees nothing; if they come back they arrive

@@ -70,11 +70,15 @@ export function seatNumber(seat: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-/** The agents write `player_2` (or "Player 2"); the table reads "seat 2". */
+/**
+ * The agents write `player_2` (or "Player 2"); the table reads "seat 2", capitalised where it
+ * starts a sentence (the moderator's "player_4 gets a last word." after a full stop, 2026-10-07).
+ */
 export function seatify(text: string): string {
   return text
     .replace(/\bplayer[_ ](\d+)/g, 'seat $1')
-    .replace(/\bPlayer[_ ](\d+)/g, 'Seat $1');
+    .replace(/\bPlayer[_ ](\d+)/g, 'Seat $1')
+    .replace(/(^|[.!?]\s+)seat (\d+)/g, '$1Seat $2');
 }
 
 /** A role this seat already knows on another living seat: a pack mate's, or one it has read. */

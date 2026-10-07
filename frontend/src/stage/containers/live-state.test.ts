@@ -972,6 +972,7 @@ describe('the turn’s clock and whose line it was', () => {
       actionKind: 'discuss' as const,
       candidates: [],
       deadline: null,
+      round: null,
     };
     expect(requestIsActive(pending, ME, { pending_seats: [ME], last_seq: 250 })).toBe(true);
     expect(requestIsActive(pending, ME, { pending_seats: [], last_seq: 200 })).toBe(true);

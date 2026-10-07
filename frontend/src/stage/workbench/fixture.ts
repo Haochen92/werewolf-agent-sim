@@ -11,6 +11,7 @@ import type { DurableGameEvent, LedgerDay } from '@/types/contracts';
 import fixture from '../fixtures/replay-9369a5c1.json';
 import ledgerGame from '../fixtures/replay-140610ad.json';
 import ledger from '../fixtures/ledger-140610ad.json';
+import phase2Game from '../fixtures/replay-phase2.json';
 import { castForGame, resolveCast } from '../cast/castForGame';
 
 export const FIXTURE_GAME_ID: string = fixture.game_id;
@@ -24,4 +25,16 @@ export const LEDGER_GAME = {
   events: ledgerGame.events as unknown as readonly DurableGameEvent[],
   cast: resolveCast(ledgerGame.cast, ledgerGame.game_id),
   ledger: ledger as unknown as readonly LedgerDay[],
+};
+
+/**
+ * The third game (`game=phase2`): the 2026-10-07 game of the day with rounds (Phase 2 of the
+ * discussion work), the translator's own golden for its captured stream turned into a replay.
+ * AI-only, memory off, no ledger. The round beats (`day.opening-prepares`, `day.round-passes`,
+ * `day.closing-called`) are drawn and golden-tested from it; its cast is derived from the id.
+ */
+export const PHASE2_GAME = {
+  id: phase2Game.game_id,
+  events: phase2Game.events as unknown as readonly DurableGameEvent[],
+  cast: castForGame(phase2Game.game_id),
 };

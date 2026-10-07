@@ -12,7 +12,7 @@ import type { DrawerFilters } from '@/stage/drawer/drawer-lines';
 import type { DrawerScroll } from '@/stage/drawer/use-drawer-filters';
 import type { FileChoice } from '@/stage/film/case-file';
 import type { RecordPick } from '@/stage/film/record-model';
-import type { LedgerDay } from '@/types/contracts';
+import type { DayRound, LedgerDay } from '@/types/contracts';
 import type { NoteEdit } from '@/stage/notebook';
 
 export type MotionSpeed = 'normal' | 'fast';
@@ -249,6 +249,12 @@ export interface TurnInput {
 export interface DockInput {
   /** The line in the box. */
   text: string;
+  /**
+   * The ask's round (`input_request.round`): an opening, the open floor (`proactive`), a last
+   * word (`closing`), or the discussion; null on a record from before the rounds. The dock's
+   * head reads by it (beat sheet §2 row 11).
+   */
+  round?: DayRound | null;
   onText?: (text: string) => void;
   /** The player's optional steer for the seat's agent ("push on seat 5", "softer"). */
   notes?: string;
