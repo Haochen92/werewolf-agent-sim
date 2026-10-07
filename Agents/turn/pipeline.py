@@ -60,6 +60,14 @@ from Agents.turn.eval import build_eval_private_context
 logger = getLogger(__name__)
 
 
+
+def _with_game_id(enriched_payload: dict[str, Any], config: RunnableConfig) -> dict[str, Any]:
+    """The game id on the prompt payload: the seed of each agent's own order of the player
+    lists (prompt_inputs.prompt_order). Public information; "" when a bare test has none."""
+    configurable = config.get("configurable", {}) if config else {}
+    enriched_payload["game_id"] = str(configurable.get("game_id") or "")
+    return enriched_payload
+
 def _announce_memory_consulted(
     *,
     player_id: str,
@@ -203,6 +211,7 @@ def run_memory_informed_action(
             runtime,
             action_phase,
         )
+        enriched_payload = _with_game_id(enriched_payload, config)
         result = run_agent(
             enriched_payload,
             prompt_template,
@@ -324,6 +333,7 @@ def preview_agent_action(
     empty, the model is sent exactly what the real turn would send.
     """
     enriched_payload, _ = enrich_payload_with_memory(dict(payload), config, runtime, action_phase)
+    enriched_payload = _with_game_id(enriched_payload, config)
     if direction:
         prompt_template = prompt_template + HumanMessage(content=direction)
     return run_agent(enriched_payload, prompt_template, output_schema, output_key)
@@ -393,6 +403,7 @@ def run_memory_informed_night_action(
             runtime,
             action_phase,
         )
+        enriched_payload = _with_game_id(enriched_payload, config)
         result = run_agent(
             enriched_payload,
             prompt_template,

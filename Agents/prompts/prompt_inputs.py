@@ -12,6 +12,8 @@ functions in the template modules.
 
 from __future__ import annotations
 
+import random
+import zlib
 from typing import Any
 
 from pydantic import BaseModel
@@ -123,6 +125,50 @@ def _retrieved_present(x: Any) -> bool:
     return bool(x)
 
 
+# The solo night roles that draw a lot on night 1. The vigilante does not: a shot with no
+# evidence is bad play, and holding fire is its night 1 answer. The wolves draw one lot as a pack
+# (the chat template), so the two do not argue over two draws.
+_LOT_ROLES = ("investigator", "healer", "serial_killer")
+
+
+def night_one_lot(payload: dict[str, Any]) -> str:
+    """The line a night 1 prompt adds for a role that must choose with nothing to go on.
+
+    Left to itself, a model with no reason to prefer anyone takes the smallest player number:
+    over 32 boards, 95 of 96 night 1 choices were the lowest-numbered other seat, whatever order
+    the list came in (discussion_evidence.md §7.5). So on night 1 the engine draws the default
+    by lot, seeded by the game, the night and the player (the pack as one), and offers it: the
+    agent may still prefer someone for a reason. "" on every later night, and for every role
+    that draws no lot.
+    """
+    if payload.get("current_day", 1) != 1:
+        return ""
+    role = payload.get("player_role", "")
+    player_id = payload.get("player_id", "")
+    if role == "wolf":
+        candidates = list(payload.get("surviving_villagers", []))
+        who = "pack"
+        wording = "a lot has been drawn for the pack"
+    elif role in _LOT_ROLES:
+        candidates = []
+        for player in payload.get("surviving_players", []):
+            if player != player_id:
+                candidates.append(player)
+        who = player_id
+        wording = "a lot has been drawn for you"
+    else:
+        return ""
+    if not candidates:
+        return ""
+    seed_text = "{}:{}:{}:lot".format(payload.get("game_id", ""), payload.get("current_day", 1), who)
+    rng = random.Random(zlib.crc32(seed_text.encode("utf-8")))
+    drawn = candidates[rng.randrange(len(candidates))]
+    return (
+        "Night 1: nothing in the record points anywhere yet, so {}: {}. "
+        "Take it unless you have a reason to prefer someone else.\n\n".format(wording, drawn)
+    )
+
+
 def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
     """Format a graph/eval payload into the keys consumed by agent prompts."""
     role = payload.get("player_role", "")
@@ -167,6 +213,8 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         "surviving_players": ", ".join(payload.get("surviving_players", [])),
         "surviving_wolves": ", ".join(payload.get("surviving_wolves", [])),
         "surviving_villagers": ", ".join(payload.get("surviving_villagers", [])),
+        # Night 1 only, the solo roles and the pack: the default drawn by lot (night_one_lot).
+        "night_lot": night_one_lot(payload),
         "dead_roster": format_dead_roster(payload.get("dead_roster", [])),
         # Roles still in play = the fixed public cast census minus every revealed-dead role (public,
         # deterministic — see format_alive_roles). "" when no census rode the payload (legacy replay).

@@ -1461,6 +1461,63 @@ queue, which is the part that makes a conversation.
   morning already made public is not worth an opening, and the vote's "most suspicious" ask
   when one name is on the table.
 
+### 7.5 Two prompt biases found by the step 8 games (2026-10-07)
+
+Two things in the prompts, not in the design, decided who was picked whenever the agents had no
+reason to pick anyone. Both were invisible in a single game and plain across thirty.
+
+**1. A fixed list order: everyone picks the first name.** Every prompt listed the survivors in
+seat order (made deliberate on 2026-10-06, when the wolves-first order had leaked the faction).
+On night 1 nothing distinguishes the seats, and a model with no reason takes the first name it
+reads. Over the 28 June games the investigator checked `player_1` on night 1 in 21, the serial
+killer hit it in 26, the wolves in 20, the healer protected it in 25; in the four step 8 games the
+investigator checked `player_1` in all four. The wolves' chat shows the mechanism in words: "any
+thoughts on player_1 or player_2?", "player_1 sounds like a reasonable target, keeping things
+standard". Consequences: the investigator's first result is about the player most likely to be
+dead or revealed by morning (the lynch chain of §7.4 step 8); in June the healer's seat 1 habit
+saved most night 1 kills, so night 1 almost never killed; a human dealt seat 1 is the night 1
+target in most of their games.
+
+**2. A seat named in the response example: the example player is picked.** Every JSON example
+in the night and day prompts carried one sample read, `{"player": "player_2", "why": "pushed the
+only counted lynch with no evidence", ...}`. When the investigator did not pick seat 1 it picked
+seat 2 all 7 times; the serial killer's two exceptions were seat 2; on day 2 across the 32
+games `player_2` drew 40 accusation tags and 41 votes against a median of about 8 and 12 for
+the other seats (the lynch count over whole games is spread, so the day corrects itself later,
+but day 2 leans on the example). The example was meant to show the shape of a read; the model
+read it as a hint.
+
+**Settled (owner's rulings, 2026-10-07), in two steps.** The first fix was a seeded shuffle of
+every player list per agent (the human's board kept in seat order), on the reading that the model
+took the first name it read. Checked offline before any game (`data/night1_target_bias/
+results_order_check.jsonl`, 192 calls: night 1 of the investigator, the healer and the serial
+killer on 32 recorded boards, seat order against the shuffle), it was wrong: with the lists
+shuffled the first name shown was seat 1 in 1 to 9 of 32 calls per role, and the target was
+still the lowest-numbered other seat in 95 of 96 calls (94 of 96 in seat order). Every actor in
+seat 1 took seat 2, whatever was shown first. **The model follows the number, not the order:**
+ordinal ids are an order in themselves, and with nothing to go on it takes the smallest. The
+shuffle was taken out again (the owner: simpler to remove what made no difference) and replaced
+by **a default drawn by lot on night 1 only**: the engine draws a seat per game, night and player
+(`Agents/prompts/prompt_inputs.night_one_lot`, seeded like the role draw; the game id rides the
+prompt payload from `Agents/turn/pipeline._with_game_id`), and the night prompt of the
+investigator, the healer and the serial killer says "Night 1: nothing in the record points
+anywhere yet, so a lot has been drawn for you: player_N. Take it unless you have a reason to
+prefer someone else." The pack draws one lot, shown in the wolves' chat prompt. The vigilante
+draws none (a shot with no evidence is bad play). Nothing on later nights. The example read
+names no seat: `"player": "<exact player_id>"`, the wording the target fields already used; no
+read copied the placeholder in 192 calls. Both are one prompt epoch (the day-discuss prompt
+golden was regenerated on purpose). Checked on the same 32 boards (`data/night1_target_bias/
+results.jsonl`, 192 calls, the lot line empty against the lot): without it seat 1 took 78 of 96
+night 1 actions and on 16 of 32 boards the check, the protection and the kill all fell on one
+player; with it the agents took the lot in 95 of 96 calls, the actions landed on all nine seats
+(6 to 16 each) and no board had the three roles on one player.
+
+**The lesson, for every prompt after this.** An example must not name a legal answer, since a
+sample value the model can return is a hint however it is labelled; ordinal ids are themselves
+an order the model falls back on, whatever order a list comes in; and a choice with no evidence
+behind it needs its randomness supplied by the engine, not asked of the model. Measure before
+fixing: the first fix here was the obvious one and did nothing.
+
 ---
 
 ## 8. Phase 3 plan: roles and cast (not started)

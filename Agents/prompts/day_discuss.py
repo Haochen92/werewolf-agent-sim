@@ -119,7 +119,7 @@ When speaking:
 {{
     "strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}],
     "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}],
-    "reads": [{{"player": "player_2", "why": "pushed the only counted lynch with no evidence", "suspected_role": "wolf", "confidence": "low"}}],
+    "reads": [{{"player": "<exact player_id>", "why": "pushed the only counted lynch with no evidence", "suspected_role": "wolf", "confidence": "low"}}],
     "pass_turn": false,
     "message": "your discussion message",
     "updated_strategy": "your updated private strategy note for future turns",
@@ -130,7 +130,7 @@ When declining to speak (only if you were NOT directly addressed):
 {{
     "strategy_verdicts": [{{"strategy_index": 1, "verdict": "not_relevant", "why": "short reason vs your current board"}}],
     "memory_applicability": [{{"memory_index": 1, "verdict": "does_not_apply", "why": "short reason vs your current board"}}],
-    "reads": [{{"player": "player_2", "why": "unchanged", "suspected_role": "unclear", "confidence": "low"}}],
+    "reads": [{{"player": "<exact player_id>", "why": "unchanged", "suspected_role": "unclear", "confidence": "low"}}],
     "pass_turn": true,
     "message": "",
     "updated_strategy": "your updated private strategy note for future turns",

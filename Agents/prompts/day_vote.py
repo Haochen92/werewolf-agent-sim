@@ -54,7 +54,7 @@ You cannot vote for yourself.
 {abstain_instruction}
 
 You must respond with a valid JSON:
-{{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "reads": [{{"player": "player_2", "why": "pushed the only counted lynch with no evidence", "suspected_role": "wolf", "confidence": "low"}}], "vote_target": "exact player_id from the surviving players list, or \\"abstain\\"", "updated_strategy": "your updated private strategy note"}}
+{{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "reads": [{{"player": "<exact player_id>", "why": "pushed the only counted lynch with no evidence", "suspected_role": "wolf", "confidence": "low"}}], "vote_target": "exact player_id from the surviving players list, or \\"abstain\\"", "updated_strategy": "your updated private strategy note"}}
 """
 
 
@@ -88,7 +88,7 @@ def _vote_template(context, closing, *, core_strategy=None, system=None):
 
 VILLAGER_DAY_VOTE = _vote_template(
     "Here are the surviving players: {surviving_players}\n",
-    "\nCast your vote. Choose the player you find most suspicious.\n",
+    "\nCast your vote. Choose the player who is the greatest threat to the village.\n",
     core_strategy=VILLAGER_CORE_STRATEGY,
 )
 
@@ -96,7 +96,7 @@ VILLAGER_DAY_VOTE = _vote_template(
 HEALER_DAY_VOTE = _vote_template(
     "Here are the surviving players: {surviving_players}\n"
     "Your night actions (private; recorded by the game master, and only you know them):\n{night_actions}\n",
-    "\nCast your vote. Choose the player you find most suspicious while protecting your cover.\n",
+    "\nCast your vote. Choose the player who is the greatest threat to the village, while protecting your cover.\n",
     core_strategy=HEALER_CORE_STRATEGY,
 )
 
@@ -104,7 +104,7 @@ HEALER_DAY_VOTE = _vote_template(
 INVESTIGATOR_DAY_VOTE = _vote_template(
     "Here are the surviving players: {surviving_players}\n"
     "Here are your investigation results: {investigator_results}\n",
-    "\nCast your vote. Choose the player you find most suspicious.\n",
+    "\nCast your vote. Choose the player who is the greatest threat to the village.\n",
     core_strategy=INVESTIGATOR_CORE_STRATEGY,
 )
 
@@ -129,7 +129,7 @@ You may also vote "abstain" when it is offered (an abstain plurality means no el
 {abstain_instruction}
 
 You must respond with a valid JSON:
-{{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "reads": [{{"player": "player_2", "why": "pushed the only counted lynch with no evidence", "suspected_role": "wolf", "confidence": "low"}}], "vote_target": "exact player_id from the surviving players list, or \\"abstain\\"", "updated_strategy": "your updated private strategy note"}}
+{{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "reads": [{{"player": "<exact player_id>", "why": "pushed the only counted lynch with no evidence", "suspected_role": "wolf", "confidence": "low"}}], "vote_target": "exact player_id from the surviving players list, or \\"abstain\\"", "updated_strategy": "your updated private strategy note"}}
 """,
     ),
 )
@@ -151,7 +151,7 @@ You may also vote "abstain" when it is offered (an abstain plurality means no el
 {abstain_instruction}
 
 You must respond with a valid JSON:
-{{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "reads": [{{"player": "player_2", "why": "pushed the only counted lynch with no evidence", "suspected_role": "wolf", "confidence": "low"}}], "vote_target": "exact player_id from the surviving players list, or \\"abstain\\"", "updated_strategy": "your updated private strategy note"}}
+{{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "reads": [{{"player": "<exact player_id>", "why": "pushed the only counted lynch with no evidence", "suspected_role": "wolf", "confidence": "low"}}], "vote_target": "exact player_id from the surviving players list, or \\"abstain\\"", "updated_strategy": "your updated private strategy note"}}
 """,
     ),
 )
@@ -161,6 +161,6 @@ VIGILANTE_DAY_VOTE = _vote_template(
     "Here are the surviving players: {surviving_players}\n"
     "Bullets left: {vigilante_bullets}\n"
     "Your night actions (private; recorded by the game master, and only you know them):\n{night_actions}\n",
-    "\nCast your vote. Choose the player you find most suspicious.\n",
+    "\nCast your vote. Choose the player who is the greatest threat to the village.\n",
     core_strategy=VIGILANTE_CORE_STRATEGY,
 )
