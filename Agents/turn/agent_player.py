@@ -112,7 +112,9 @@ def run_agent(
     if fallback_llm is not None and not on_rescue:
         fallback_chain = prompt_template | fallback_llm.with_structured_output(schema)
         result = _generate(fallback_chain, prompt_input, output_key, player_id)
-        if result is not None:
+        # The rescue can stall too (both models bounced under load, 2026-10-09): then the turn
+        # falls to the typed fallback below, never to the resolver.
+        if result is not None and result is not _STALLED:
             reasoning = extract_agent_reasoning(result)
             record_reads(reasoning["reads"], payload, output_key, output_schema)
             outcome = resolve_decision(result, reasoning, output_key, payload, valid_targets)

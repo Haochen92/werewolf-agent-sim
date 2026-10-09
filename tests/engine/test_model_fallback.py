@@ -258,6 +258,21 @@ def test_repeated_stalls_send_the_next_turns_straight_to_the_rescue(
                for r in caplog.records)
 
 
+def test_both_models_stalled_falls_to_the_typed_fallback_not_a_crash(monkeypatch, caplog, game_health):
+    """Under load the rescue bounces too (six games died this way on 2026-10-09): the stall
+    sentinel must never reach the resolver; the turn takes the role's typed fallback."""
+    primary = _StalledLLM(_bounce_429())
+    rescue = _StalledLLM(_bounce_429())
+    monkeypatch.setattr(agent_mod, "get_llm", lambda: primary)
+    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: rescue)
+    with caplog.at_level("WARNING"):
+        out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
+    assert isinstance(out, ResolvedNightChoice) and out.entry is not None
+    assert out.entry.kind == "protect" and out.entry.target in ("player_1", "player_2", "player_3")
+    assert primary.calls == 1 and rescue.calls == 1
+    assert any("random fallback" in r.message for r in caplog.records)
+
+
 def test_a_good_answer_from_the_primary_clears_the_count(monkeypatch, game_health):
     game_health.note_stall()
     monkeypatch.setattr(agent_mod, "get_llm", lambda: _WorkingLLM(_result()))
