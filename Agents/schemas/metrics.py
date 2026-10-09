@@ -40,11 +40,14 @@ class NightResolutionMetric(BaseModel):
     day: int
     wolves_target: str | None
     wolf_target_role: str | None
-    healer_target: str | None
-    investigator_target: str | None
-    investigator_target_role: str | None
     kill_successful: bool
-    healer_saved: bool
+    choices: list[dict] = Field(default_factory=list)
+    # Every choice of the night (Agents/schemas/night.NightChoice as dicts): the ten-seat record.
+    # The per-role fields below are the nine-seat game's and stay for its stored metrics.
+    healer_target: str | None = None
+    investigator_target: str | None = None
+    investigator_target_role: str | None = None
+    healer_saved: bool = False
     serial_killer_target: str | None = None
     serial_killer_target_role: str | None = None
     vigilante_target: str | None = None

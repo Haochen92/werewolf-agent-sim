@@ -16,7 +16,7 @@ from typing import Annotated, Any, Literal, Optional
 
 from pydantic import BaseModel, Field, computed_field, create_model, field_validator, model_validator
 
-from Agents.schemas.roles import ActionPhase, VALID_ACTION_PHASES_BY_ROLE, roles
+from Agents.schemas.roles import ROLE_SPECS, ActionPhase, VALID_ACTION_PHASES_BY_ROLE, roles
 
 
 def _compose_situation(
@@ -86,8 +86,9 @@ def compose_situation_embed(obj: BaseModel) -> str:
 class Observation(BaseModel):
     perspective: str = Field(
         description=(
-            "The role this observation is most useful for: wolf, villager, "
-            "healer, investigator, vigilante, or serial_killer"
+            "The role this observation is most useful for: investigator, sentinel, trailseer, "
+            "vigilante, sigilist, healer, chanteuse, illusionist, serial_killer, necromancer, "
+            "speculator, or fortune_teller"
         )
     )
     action_phase: ActionPhase = Field(
@@ -185,7 +186,7 @@ class Observation(BaseModel):
 
     @field_validator("perspective")
     def validate_perspective(cls, value: str) -> str:
-        if value not in roles:
+        if value not in ROLE_SPECS:  # the pool, and the nine-seat roles of old records
             raise ValueError(
                 f"{value} is not a valid role. Perspective must be one of {roles}"
             )
@@ -205,8 +206,9 @@ class Observation(BaseModel):
 class StrategyPoint(BaseModel):
     perspective: str = Field(
         description=(
-            "The role this strategy point is most useful for: wolf, villager, "
-            "healer, investigator, vigilante, or serial_killer"
+            "The role this strategy point is most useful for: investigator, sentinel, trailseer, "
+            "vigilante, sigilist, healer, chanteuse, illusionist, serial_killer, necromancer, "
+            "speculator, or fortune_teller"
         )
     )
     action_phase: ActionPhase = Field(
@@ -278,7 +280,7 @@ class StrategyPoint(BaseModel):
 
     @field_validator("perspective")
     def validate_perspective(cls, value: str) -> str:
-        if value not in roles:
+        if value not in ROLE_SPECS:  # the pool, and the nine-seat roles of old records
             raise ValueError(
                 f"{value} is not a valid role. Perspective must be one of {roles}"
             )

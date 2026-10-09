@@ -12,6 +12,7 @@ from typing import Annotated, Literal, TypeAlias
 from pydantic import BaseModel, ConfigDict, Field
 
 from Agents.schemas.game_events import DayChannel, DayVote, WolfChannel
+from Agents.schemas.night import NightChoice
 from Agents.schemas.output import MemoryVerdict, PlayerRead, StrategyVerdict
 
 
@@ -21,17 +22,13 @@ class TurnKind(str, Enum):
     DAY_DISCUSSION = "day_discussion"
     DAY_VOTE = "day_vote"
     WOLF_DISCUSSION = "wolf_discussion"
-    WOLF_VOTE = "wolf_vote"
-    HEALER_TARGET = "healer_target"
-    INVESTIGATOR_TARGET = "investigator_target"
-    SERIAL_KILLER_TARGET = "serial_killer_target"
-    VIGILANTE_TARGET = "vigilante_target"
+    NIGHT_CHOICE = "night_choice"
 
 
 class _InternalTurnModel(BaseModel):
     """Strict immutable base for internal turn results."""
 
-    model_config = ConfigDict(frozen=True, extra="forbid")
+    model_config = ConfigDict(frozen=True, extra="forbid", arbitrary_types_allowed=True)
 
 
 class TurnEffects(_InternalTurnModel):
@@ -61,45 +58,18 @@ class ResolvedWolfDiscussion(_InternalTurnModel):
     effects: TurnEffects = Field(default_factory=TurnEffects)
 
 
-class ResolvedWolfVote(_InternalTurnModel):
-    kind: Literal[TurnKind.WOLF_VOTE] = TurnKind.WOLF_VOTE
-    entry: WolfChannel
-    effects: TurnEffects = Field(default_factory=TurnEffects)
+class ResolvedNightChoice(_InternalTurnModel):
+    """A night turn's decision as a choice the night layer resolves: the carrier's kill, a solo
+    role's action, a wolf's skill. ``entry`` is None when the role declined (keep_sigil,
+    no_conceal, stay_put, not_yet); the vigilante's hold_fire is a choice of its own kind."""
 
-
-class ResolvedHealerTarget(_InternalTurnModel):
-    kind: Literal[TurnKind.HEALER_TARGET] = TurnKind.HEALER_TARGET
-    entry: str
-    effects: TurnEffects = Field(default_factory=TurnEffects)
-
-
-class ResolvedInvestigatorTarget(_InternalTurnModel):
-    kind: Literal[TurnKind.INVESTIGATOR_TARGET] = TurnKind.INVESTIGATOR_TARGET
-    entry: str
-    effects: TurnEffects = Field(default_factory=TurnEffects)
-
-
-class ResolvedSerialKillerTarget(_InternalTurnModel):
-    kind: Literal[TurnKind.SERIAL_KILLER_TARGET] = TurnKind.SERIAL_KILLER_TARGET
-    entry: str
-    effects: TurnEffects = Field(default_factory=TurnEffects)
-
-
-class ResolvedVigilanteTarget(_InternalTurnModel):
-    kind: Literal[TurnKind.VIGILANTE_TARGET] = TurnKind.VIGILANTE_TARGET
-    entry: str
+    kind: Literal[TurnKind.NIGHT_CHOICE] = TurnKind.NIGHT_CHOICE
+    entry: NightChoice | None
     effects: TurnEffects = Field(default_factory=TurnEffects)
 
 
 ResolvedTurn: TypeAlias = Annotated[
-    ResolvedDayDiscussion
-    | ResolvedDayVote
-    | ResolvedWolfDiscussion
-    | ResolvedWolfVote
-    | ResolvedHealerTarget
-    | ResolvedInvestigatorTarget
-    | ResolvedSerialKillerTarget
-    | ResolvedVigilanteTarget,
+    ResolvedDayDiscussion | ResolvedDayVote | ResolvedWolfDiscussion | ResolvedNightChoice,
     Field(discriminator="kind"),
 ]
 
@@ -107,13 +77,9 @@ ResolvedTurn: TypeAlias = Annotated[
 __all__ = [
     "ResolvedDayDiscussion",
     "ResolvedDayVote",
-    "ResolvedHealerTarget",
-    "ResolvedInvestigatorTarget",
-    "ResolvedSerialKillerTarget",
+    "ResolvedNightChoice",
     "ResolvedTurn",
-    "ResolvedVigilanteTarget",
     "ResolvedWolfDiscussion",
-    "ResolvedWolfVote",
     "TurnEffects",
     "TurnKind",
 ]

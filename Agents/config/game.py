@@ -12,31 +12,32 @@ from typing import Any
 
 from pydantic import BaseModel, Field, model_validator
 
+from Agents.schemas.roles import LONE_KILLER_ROLES, NEUTRAL_ROLES, SEATS
+
 
 class GameConfig(BaseModel):
-    initial_roles: list[str] = Field(
-        default_factory=lambda: [
-            # Lean-eval casting (Phase A #2): 9 players, 3 factions.
-            "villager",
-            "villager",
-            "villager",
-            "wolf",
-            "wolf",
-            "healer",
-            "investigator",
-            "vigilante",
-            "serial_killer",
-        ],
-        min_length=1,
-    )
+    # --- The deal (Phase 3) -------------------------------------------------------
+    # Ten seats from a pool of twelve (Agents/schemas/roles.py): eight fixed, and the lone killer's
+    # and the neutral seat each drawn at random per game unless chosen here.
+    lone_killer: str | None = Field(default=None)
+    # "serial_killer" | "necromancer"; None = drawn by the game's seed.
+    neutral: str | None = Field(default=None)
+    # "speculator" | "fortune_teller"; None = drawn by the game's seed.
     player_id_prefix: str = Field(default="player", min_length=1)
     starting_day: int = Field(default=1, ge=1)
     first_voting_day: int = Field(default=2, ge=1)
 
-    # --- Role / faction rules (Phase A #2) ---------------------------------------
+    # --- Role rules with a number in them ------------------------------------------
     vigilante_bullets: int = Field(default=2, ge=0)
-    # Town-side night kills the vigilante may attempt over the whole game. A shot is
-    # spent on the attempt (even if healed or whiffed on the night-immune SK).
+    # Shots the vigilante may take over the whole game; a shot is spent on the attempt.
+    sigils: int = Field(default=2, ge=0)
+    # The sigilist's sigils; one is spent when placed, hit or miss.
+    conceals: int = Field(default=2, ge=0)
+    # The illusionist's conceals; one is spent only when a body is concealed.
+    self_bets: int = Field(default=2, ge=0)
+    # The fortune teller's self-bets, each a night it cannot be killed.
+    fortune_points_to_win: int = Field(default=2, ge=1)
+    # The score the fortune teller wins at.
 
     # --- Relaxed / optional voting (Phase A #2) ----------------------------------
     abstain_enabled: bool = Field(default=True)
@@ -75,15 +76,26 @@ class GameConfig(BaseModel):
     def validate_day_order(self) -> "GameConfig":
         if self.first_voting_day < self.starting_day:
             raise ValueError("first_voting_day cannot be before starting_day")
-        if "wolf" not in self.initial_roles:
-            raise ValueError("initial_roles must include at least one wolf")
-        if all(role == "wolf" for role in self.initial_roles):
-            raise ValueError("initial_roles must include at least one non-wolf player")
-        if "healer" not in self.initial_roles:
-            raise ValueError("initial_roles must include a healer")
-        if "investigator" not in self.initial_roles:
-            raise ValueError("initial_roles must include an investigator")
+        if self.lone_killer is not None and self.lone_killer not in LONE_KILLER_ROLES:
+            raise ValueError(f"lone_killer must be one of {LONE_KILLER_ROLES}")
+        if self.neutral is not None and self.neutral not in NEUTRAL_ROLES:
+            raise ValueError(f"neutral must be one of {NEUTRAL_ROLES}")
         return self
+
+    @property
+    def seats(self) -> int:
+        """How many players a game seats."""
+        return SEATS
+
+    def starting_uses(self) -> dict[str, int]:
+        """What each limited ability starts the game with, by role."""
+        return {
+            "vigilante": self.vigilante_bullets,
+            "sigilist": self.sigils,
+            "illusionist": self.conceals,
+            "fortune_teller": self.self_bets,
+            "speculator": 1,
+        }
 
     def utterance_cap(self, num_survivors: int) -> int:
         """Hard backstop on real utterances in a day's discussion."""

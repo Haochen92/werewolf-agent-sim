@@ -90,6 +90,11 @@ class DayChannel(BaseModel):
     """The spoken text (empty for a pass marker)."""
     addressed_targets: list[AddressedTarget] = Field(default_factory=list)
     """Structured who-this-addresses tags parsed from the speech (empty for narration/passes)."""
+    claim: str = "none"
+    """The role the speaker claims in this message, from the output's claim field (an enum of the
+    dealt roles), or "none". Public, like the words. The claim ledger takes its role lines from
+    here; the summariser's transcription of the role is the cross-check (role_sheet.md, formal
+    claims). "none" on passes, narration, a human's line and entries from before the field."""
     day_round: DayRound = "discussion"
     """Which round of the day the entry belongs to: "opening" (every living player at once, before
     the discussion), "discussion" (the scheduler's reactive turns), "proactive" (a sweep turn: the
@@ -216,11 +221,13 @@ class DeathRecord(BaseModel):
     player: str
     """The dead player's player_id."""
     role: str
-    """The role the announcement publicly revealed (empty only if a future path stops revealing it)."""
+    """The role the announcement publicly revealed; empty when the body was concealed."""
     day: int
     """1-based game day of the death (for a night kill: the night belonging to that day)."""
     phase: Literal["night", "day"]
     """"night" = killed overnight (wolves / serial killer / vigilante); "day" = lynched by vote."""
+    concealed: bool = False
+    """True when the illusionist concealed the body: the role is not public until game end."""
 
 
 class NightActionRecord(BaseModel):
@@ -233,10 +240,21 @@ class NightActionRecord(BaseModel):
     """The night the action was taken (the night belonging to that day)."""
     actor: str
     """The acting player_id, or "wolves" for the pack's kill."""
-    action: Literal["protect", "shoot", "hold_fire", "kill"]
+    action: Literal[
+        "protect", "shoot", "hold_fire", "kill", "investigate", "watch", "follow", "sigil",
+        "block", "conceal", "pick", "bet",
+    ]
     """What the actor did: the healer protects, the vigilante shoots or holds fire, the serial
-    killer and the wolves kill."""
+    killer and the wolves kill, the investigator investigates, the sentinel watches, the trailseer
+    follows, the sigilist sets a sigil, the chanteuse blocks, the illusionist conceals, the
+    speculator picks, the fortune teller bets. A necromancer's record carries the body's action."""
     target: str | None
-    """Who the action was on; None for hold_fire."""
+    """Who the action was on; None for hold_fire and conceal; the side for a pick."""
     outcome: str
     """What the actor is allowed to know of the result, in plain words."""
+    result: str = ""
+    """A fixed word for what came of it (the list is in Agents/rules/night_record.py). The dead
+    role's disclosure is composed from this and `seen`, never from the prose."""
+    seen: list[str] = Field(default_factory=list)
+    """Names the action learned: the sentinel's visitors, the player the trailseer's target
+    visited, the role the illusionist concealed."""

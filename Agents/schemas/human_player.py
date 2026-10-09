@@ -17,7 +17,8 @@ class HumanTurnRequest(BaseModel):
     player_id: str
     role: str
     phase: str
-    """The output_key this turn decides: day_channel | day_votes | wolf_channel | <role>_target."""
+    """The output_key this turn decides: day_channel | day_votes | wolf_channel | kill_target |
+    the role's night field (healer_target, sigil_target, conceal, ...)."""
     day: int
     day_round: Optional[str] = None
     """For a day discussion turn, the round it belongs to (opening / discussion / proactive /
@@ -25,9 +26,11 @@ class HumanTurnRequest(BaseModel):
     instruction: str
     """Human-readable ask for this phase."""
     valid_targets: list[str]
-    """The legal vote/action targets to offer; empty for pure discussion."""
+    """The legal answers to offer: players, and the no-action word or the side words where the
+    turn has them; empty for pure discussion."""
     can_pass: bool
-    """Day discussion on a non-reactive turn — the human may decline to speak (a reactive turn must answer)."""
+    """Day discussion on a non-reactive turn, and a wolf chat round — the human may decline to
+    speak (a reactive turn must answer)."""
     dialogue: str
     """Today's public discussion so far."""
     day_summaries: str
@@ -42,12 +45,13 @@ class HumanTurnRequest(BaseModel):
     """Wolf-pack night transcript (non-empty only for a wolf seat)."""
     pack: str = ""
     """The wolf roster, comma-joined (non-empty only for a wolf seat — the payload is role-gated
-    upstream, so other seats never carry it). Without it a night-1 wolf can only infer their own
-    partner from the kill menu's exclusions."""
-    investigator_results: str
-    """Past investigation results (investigator seat only)."""
-    vigilante_results: str
-    """Past shot outcomes (vigilante seat only)."""
+    upstream, so other seats never carry it)."""
+    night_actions: str = ""
+    """The seat's own night record, as the prompt shows it (a night actor's seat only)."""
+    uses_left: Optional[int] = None
+    """What is left of a limited ability; None for a role without one."""
+    bodies: list[str] = []
+    """A necromancer's turn: the bodies it may act through tonight."""
     previous_strategy: str
     """The human's own strategy note from last turn."""
 
@@ -61,8 +65,12 @@ class HumanTurnResponse(BaseModel):
     """Discussion text, or the wolf-night message; None/empty = said nothing."""
     target: str | None = None
     """The chosen vote/action target; must be one of the request's valid_targets."""
+    body: str | None = None
+    """A necromancer's turn: the dead player to act through; one of the request's bodies."""
+    role_named: str | None = None
+    """A fortune teller's turn: the role also named on the bet, or None."""
     pass_turn: bool = False
-    """Day discussion only: decline to speak."""
+    """Day discussion and the wolf chat: decline to speak."""
     delegate: bool = False
     """Hand this turn to the agent path: the seat's LLM plays it instead (the server's
     AFK-timeout default). A delegate response carries nothing else — no message,

@@ -1,10 +1,9 @@
-"""Day-subgraph state + the per-role payloads delivered to actor nodes.
+"""Day-subgraph state + the payload delivered to the actor nodes.
 
-DayGraphState is the day subgraph's working state. The ``*DayState`` classes are the payload
-contracts for the per-speaker/per-voter ``Send``s — each carries only the private fields its
-role is allowed to see (wolf rosters / investigator results / vigilante results), which is the
-information-leak invariant enforced in build_speaker_send / fan_out_day (Agents.nodes.day.flow):
-a private field never rides along to a role that shouldn't see it.
+DayGraphState is the day subgraph's working state. DayActorState is the payload contract of the
+per-speaker/per-voter ``Send``s: it carries only the private fields the role is allowed to see,
+which is the information-leak invariant enforced in build_speaker_send / fan_out_day
+(Agents.nodes.day.flow): a private field never rides along to a role that shouldn't see it.
 
 Field docstrings are IDE-only (Pylance hover) — TypedDict state is never serialized to a model,
 so nothing here leaks. See the project schema-doc convention.
@@ -19,7 +18,7 @@ from Agents.schemas.game_events import (
     DaySummary,
     DayVote,
     DeathRecord,
-    InvestigatorResult,
+    FiringReason,
     NightActionRecord,
     RoundCandidate,
     WolfChannel,
@@ -28,51 +27,42 @@ from Agents.state.reducers import merge_strategies
 
 
 class DayGraphState(TypedDict, total=False):
-    """Working state of the day subgraph. Channels accumulate (`add`); agent_strategies merges
-    per-key (merge_strategies) so concurrent vote-node updates don't clobber each other."""
+    """Working state of the day subgraph: the orchestrator's public channels and rosters in,
+    the day's lines, votes and strategy notes out."""
 
+    agent_strategies: Annotated[dict[str, str], merge_strategies]
+    """player_id -> private strategy note; merged per-key across parallel actor turns."""
     current_day: int
     """1-based current game day."""
     day_channel: Annotated[list[DayChannel], add]
-    """Public day-discussion transcript; accumulates across speaker turns."""
+    """Public day-discussion transcript; this day's lines accumulate."""
     day_summaries: Annotated[list[DaySummary], add]
-    """Prior-day summaries carried in as context."""
+    """Prior-day summaries, plus today's once written."""
     dead_roster: list[DeathRecord]
-    """Ordered PUBLIC dead roster (dead player -> revealed role + when), seeded from orchestrator
-    state so every day payload can render who is dead. Read-only in the day graph (deaths are
-    written by night/day resolution, which are parent-graph nodes — never here)."""
-    cast_role_counts: dict[str, int]
-    """Public fixed-cast census (role -> how many players were cast with it; counts only, no
-    identities), seeded from orchestrator state so every day payload can render the alive-roles line
-    (this census minus the revealed dead). Read-only in the day graph like dead_roster."""
+    """Public dead roster, read-only in the day graph."""
     wolf_channel: list[WolfChannel]
-    """Wolf night coordination + GM whiff notes, seeded from orchestrator state so the wolf day
-    payload can carry it into discuss/vote turns (read-only in the day graph — never written here)."""
-    day_votes: Annotated[list[DayVote], add]
-    """Votes cast this day; accumulates as vote nodes report."""
-
-    agent_strategies: Annotated[dict[str, str], merge_strategies]
-    """player_id -> private strategy note; merged per-key so concurrent votes don't clobber."""
+    """The pack's night chat, carried into the day for the wolves' payloads only."""
     roles: dict[str, str]
-    """player_id -> true role (ground truth; never shown to other agents)."""
+    """player_id -> true role: read by the payload builders to gate private fields, never put on
+    a payload."""
+    lineup: list[str]
+    """The dealt roles, public."""
     human_players: list[str]
-    """player_ids of the human seats; empty when fully agent-played."""
-
-    investigator_player: str | None
-    """Investigator's player_id while alive; None once dead/absent."""
-    investigator_results: list[InvestigatorResult]
-    """Private investigation outcomes (siloed to the investigator's payload)."""
-    vigilante_results: list[str]
-    """Private notes the vigilante learned from its shots (siloed to the vigilante)."""
+    """player_ids of the human seats."""
     night_actions: list[NightActionRecord]
     """Every night actor's private record; each payload builder attaches only the speaker's own
     (own_night_actions). Read-only in the day graph."""
-    vigilante_bullets: int
-    """Remaining vigilante shots; seeded from orchestrator state so the vigilante's day payload can
-    fill the deterministic `bullets_left` situation dim (not shown in any prompt)."""
+    uses_left: dict[str, int]
+    """role -> uses remaining, for the day payloads' private lines (bullets, sigils)."""
+    speculator_pick: str | None
+    """The speculator's pick, for its own payload."""
+    fortune_points: int
+    """The fortune teller's score, for its own payload."""
+    day_votes: Annotated[list[DayVote], add]
+    """This day's votes; the parallel vote nodes each append one."""
 
     surviving_villagers: list[str]
-    """Living non-wolves (includes the solo serial killer)."""
+    """Living non-wolves: town, the lone killer and the neutral."""
     surviving_wolves: list[str]
     """Living wolves — the wolf-visible ally roster."""
     no_lynch_streak: int
@@ -93,9 +83,11 @@ class DayGraphState(TypedDict, total=False):
     so these never reach the parent graph."""
 
 
-class VillagerDayState(TypedDict):
-    """Discuss/vote payload for a role with NO private info (villager / serial killer /
-    vigilante-on-discuss-without-results). The common fields shared by every role payload."""
+class DayActorState(TypedDict, total=False):
+    """The Send payload of one player's discussion, round or vote turn. The common fields are on
+    every payload; the private ones (marked) only on the role they belong to — the builders in
+    flow.py are the leak boundary (tests/leak_test.py guards it), since run_agent builds the
+    prompt input straight from the payload."""
 
     current_day: int
     """1-based current game day."""
@@ -105,7 +97,6 @@ class VillagerDayState(TypedDict):
     """This agent's own prior strategy note, fed back in."""
     strategy_points: str
     """Retrieved/reranked memory strategy points formatted for the prompt."""
-
     human_player: bool
     """True if this seat is the human player (suppresses the LLM call)."""
     day_channel: list[DayChannel]
@@ -116,108 +107,35 @@ class VillagerDayState(TypedDict):
     """Public dead roster (dead player -> revealed role + when); shown to every role."""
     cast_role_counts: dict[str, int]
     """Public fixed-cast census (role -> count; counts only, no identities) feeding the alive-roles line."""
+    lineup: list[str]
+    """The dealt roles, public: the rules block and the output schema come from it."""
     surviving_players: list[str]
-    """Role-blind roster of all living players (no faction split — this role can't see one)."""
+    """Role-blind roster of all living players."""
     player_id: str
     """This actor's player_id."""
     player_role: str
     """This actor's role label (drives the prompt's role block)."""
-
-
-class HealerDayState(TypedDict):
-    """Healer payload — same shape as VillagerDayState (the healer keeps no public private
-    field during the day; its protection info is night-side only)."""
-
-    current_day: int
-    """1-based current game day."""
-    day_round: DayRound
-    """Which round of the day the turn belongs to (opening / discussion / proactive / closing)."""
-    previous_strategy: str
-    """The healer's own prior strategy note."""
-    strategy_points: str
-    """Retrieved memory strategy points formatted for the prompt."""
-
-    human_player: bool
-    """True if this seat is the human player."""
-    day_channel: list[DayChannel]
-    """Public day-discussion transcript."""
-    day_summaries: list[DaySummary]
-    """Prior-day summaries for context."""
-    dead_roster: list[DeathRecord]
-    """Public dead roster (dead player -> revealed role + when); shown to every role."""
-    cast_role_counts: dict[str, int]
-    """Public fixed-cast census (role -> count; counts only, no identities) feeding the alive-roles line."""
-    surviving_players: list[str]
-    """Role-blind roster of all living players."""
-    player_id: str
-    """This actor's player_id."""
-    player_role: str
-    """This actor's role label."""
-
-
-class InvestigatorDayState(TypedDict):
-    """Investigator payload: common fields + the private investigator_results it may reason from."""
-
-    current_day: int
-    """1-based current game day."""
-    day_round: DayRound
-    """Which round of the day the turn belongs to (opening / discussion / proactive / closing)."""
-
-    human_player: bool
-    """True if this seat is the human player."""
-    day_channel: list[DayChannel]
-    """Public day-discussion transcript."""
-    day_summaries: list[DaySummary]
-    """Prior-day summaries for context."""
-    dead_roster: list[DeathRecord]
-    """Public dead roster (dead player -> revealed role + when); shown to every role."""
-    cast_role_counts: dict[str, int]
-    """Public fixed-cast census (role -> count; counts only, no identities) feeding the alive-roles line."""
-    surviving_players: list[str]
-    """Role-blind roster of all living players."""
-    investigator_results: list[InvestigatorResult]
-    """Private: the roles this investigator has learned (the leak-boundary payload field)."""
-    player_id: str
-    """This actor's player_id."""
-    player_role: str
-    """This actor's role label."""
-    previous_strategy: str
-    """The investigator's own prior strategy note."""
-    strategy_points: str
-    """Retrieved memory strategy points formatted for the prompt."""
-
-
-class WolfDayState(TypedDict):
-    """Wolf payload: common fields but with the wolf-visible rosters (surviving_wolves +
-    surviving_villagers) instead of the role-blind surviving_players list."""
-
-    current_day: int
-    """1-based current game day."""
-    day_round: DayRound
-    """Which round of the day the turn belongs to (opening / discussion / proactive / closing)."""
-
-    human_player: bool
-    """True if this seat is the human player."""
-    day_channel: list[DayChannel]
-    """Public day-discussion transcript."""
-    day_summaries: list[DaySummary]
-    """Prior-day summaries for context."""
-    dead_roster: list[DeathRecord]
-    """Public dead roster (dead player -> revealed role + when); shown to every role."""
-    cast_role_counts: dict[str, int]
-    """Public fixed-cast census (role -> count; counts only, no identities) feeding the alive-roles line."""
+    voting_available: bool
+    """Whether today ends in a vote (day 1 does not)."""
+    allow_abstain: bool
+    """Vote turns: whether "abstain" is offered today."""
+    firing_reason: FiringReason
+    """Discussion turns: why the scheduler fired this player."""
+    night_actions: list[NightActionRecord]
+    """PRIVATE: the speaker's own night record (and the pack's kills for a wolf)."""
     surviving_wolves: list[str]
-    """Private: living wolf allies (the leak-boundary payload field — wolves only)."""
+    """PRIVATE, wolves only: the pack."""
     surviving_villagers: list[str]
-    """Living non-wolves the wolves may target."""
+    """Wolves only: the non-wolves."""
     wolf_channel: list[WolfChannel]
-    """Private: the wolves' night coordination + GM whiff notes, carried into day discuss/vote so a
-    wolf can act on what was decided/learned at night (wolves only — a wolf's own information)."""
-    player_id: str
-    """This actor's player_id."""
-    player_role: str
-    """This actor's role label."""
-    previous_strategy: str
-    """This wolf's own prior strategy note."""
-    strategy_points: str
-    """Retrieved memory strategy points formatted for the prompt."""
+    """PRIVATE, wolves only: the pack's night chat."""
+    initial_wolf_count: int
+    """Wolves only: how many wolves were dealt (a count, for the memory cell's fill)."""
+    uses_left: int
+    """PRIVATE, a role with a limit: what is left of it."""
+    vigilante_bullets: int
+    """PRIVATE, the vigilante: its bullets (the memory cell's fill reads this name)."""
+    speculator_pick: str
+    """PRIVATE, the speculator: its pick so far."""
+    fortune_points: int
+    """PRIVATE, the fortune teller: its score."""

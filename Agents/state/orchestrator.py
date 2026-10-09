@@ -1,12 +1,10 @@
 """Orchestrator (parent-graph) state: the authoritative state for a whole game.
 
 This is the single source of truth the day/night subgraphs read from and write deltas back
-into. Two things to know: (1) list channels marked ``Annotated[..., add]`` ACCUMULATE across
-phases (the subgraphs return only their newly-appended slice — see graphs/parent.py); (2) the
-special-role aliveness model is two-layer — the survivor *buckets* (surviving_wolves /
-surviving_villagers) hold who's alive for discussion/targeting, while the role *markers*
-(healer_player / investigator_player / serial_killer_player / vigilante_player) are the source
-of truth for whether each special role is still in play (set to None when that player dies).
+into. List channels marked ``Annotated[..., add]`` ACCUMULATE across phases (the subgraphs return
+only their newly-appended slice — see graphs/parent.py). Who is alive is the two survivor buckets
+(surviving_wolves / surviving_villagers), split by side; who holds a role is read off ``roles``
+and the buckets (Agents.rules.seats.alive_holder), so a death is one removal from a bucket.
 """
 
 from operator import add
@@ -17,11 +15,11 @@ from Agents.schemas.game_events import (
     DaySummary,
     DayVote,
     DeathRecord,
-    InvestigatorResult,
     NightActionRecord,
     WolfChannel,
 )
-from Agents.state.reducers import merge_strategies
+from Agents.schemas.night import NightChoice, NightReport
+from Agents.state.reducers import merge_night_choices, merge_strategies
 
 
 class OrchestratorGraph(TypedDict, total=False):
@@ -33,7 +31,7 @@ class OrchestratorGraph(TypedDict, total=False):
     day_summaries: Annotated[list[DaySummary], add]
     """One condensed summary per completed day, carried into later days."""
     wolf_channel: Annotated[list[WolfChannel], add]
-    """Wolf-night discussion + kill-vote transcript; accumulates across nights."""
+    """The pack's night chat and the carrier's kill; accumulates across nights."""
     dead_roster: Annotated[list[DeathRecord], add]
     """Ordered PUBLIC dead roster; a DeathRecord is appended at each death (night_resolution /
     day_resolution) so agents read who died + their revealed role from state, not GM prose."""
@@ -45,43 +43,36 @@ class OrchestratorGraph(TypedDict, total=False):
     overwriting the whole map — matching how the day/wolf subgraph channels already reduce it."""
     roles: dict[str, str]
     """player_id -> true role (ground truth; never shown to other agents)."""
+    lineup: list[str]
+    """The ten roles this game dealt, in the rules block's order (public: the line-up is common
+    knowledge). The prompts, the output schemas and the win logic read it."""
     human_players: list[str]
     """player_ids of the human seats (multi-human rooms hold several); empty when
     fully agent-played."""
-    # Role markers: source of truth for special-role aliveness (None once that player dies).
-    healer_player: str | None
-    """Healer's player_id while alive; None once dead/absent."""
-    investigator_player: str | None
-    """Investigator's player_id while alive; None once dead/absent."""
-    serial_killer_player: str | None
-    """Serial killer's player_id while alive; None once dead/absent."""
-    vigilante_player: str | None
-    """Vigilante's player_id while alive; None once dead/absent."""
 
-    # Tonight's chosen targets (reset each night; None = no action / not present).
-    wolves_kill_target: str | None
-    """Tonight's wolf kill target; None if no kill resolved."""
-    healer_target: str | None
-    """Player the healer protects tonight; None if no protection."""
-    investigator_target: str | None
-    """Player the investigator probes tonight; None if no probe."""
-    serial_killer_target: str | None
-    """Player the serial killer strikes tonight; None if no strike."""
-    vigilante_target: str | None
-    """Player the vigilante shoots tonight; None if holding fire."""
-    vigilante_bullets: int
-    """Remaining vigilante shots (starts at 2)."""
+    # Tonight, as it is decided.
+    night_choices: Annotated[list[NightChoice], merge_night_choices]
+    """Every choice made tonight, one per acting player (the pack's kill under its carrier),
+    appended by the parallel night branches and cleared by one_more_day (None)."""
+    night_report: NightReport | None
+    """The night's public outcome, as night_resolution committed it: what the morning said. The
+    wire reads it instead of recomputing the night."""
 
-    investigator_results: Annotated[list[InvestigatorResult], add]
-    """Private investigation outcomes, siloed to the investigator."""
-    # Private notes the vigilante learns from its own shots (e.g. discovering an immune
-    # target is the serial killer). Siloed to the vigilante, like investigator_results.
-    vigilante_results: Annotated[list[str], add]
-    """Private notes the vigilante learns from its shots (e.g. an immune target = the
-    serial killer). Siloed to the vigilante, like investigator_results."""
+    # What is left of the limited abilities, spent by night_resolution, never by a turn.
+    uses_left: dict[str, int]
+    """role -> uses remaining, for the roles with a limit (vigilante bullets, sigils, conceals,
+    the fortune teller's self-bets, the speculator's one pick)."""
+    speculator_pick: str | None
+    """The side the speculator picked (town, wolves, lone_killer, self); None until it picks."""
+    fortune_points: int
+    """The fortune teller's running score."""
+    last_body: str | None
+    """The body the necromancer acted through last night; it may not use the same one twice
+    in a row."""
+
     night_actions: Annotated[list[NightActionRecord], add]
-    """Every night actor's private record (healer, vigilante, serial killer, and the wolf pack as
-    actor "wolves"), written by night_resolution. Payload builders hand each player only its own
+    """Every night actor's private record (the pack's kill as actor "wolves"), written by
+    night_resolution. Payload builders hand each player only its own
     (Agents.rules.night_record.own_night_actions)."""
     # Day outcome.
     day_votes: list[DayVote]
@@ -91,20 +82,21 @@ class OrchestratorGraph(TypedDict, total=False):
     no_lynch_streak: int
     """Consecutive no-elimination days; forces abstain off past a cap."""
 
-    # The solo serial killer has no allies, so there is no "surviving SK" list to be
-    # aware of (unlike surviving_wolves). It lives in surviving_villagers (the non-wolf
-    # bucket) for discussion/targeting; serial_killer_player tracks whether it is alive.
     surviving_wolves: list[str]
     """Living wolves — the wolf-visible ally roster."""
     surviving_villagers: list[str]
-    """Living non-wolves (includes the solo serial killer) for discussion/targeting."""
+    """Living non-wolves: town, the lone killer and the neutral, for discussion/targeting."""
 
     current_day: int
     """1-based current game day."""
     current_round: int
     """Discussion round within the current day."""
     winner: str | None
-    """Winning faction once decided; None while the game is live."""
+    """Winning side once decided (villagers, wolves, or the lone killer's role); None while the
+    game is live, and at the end of a drawn game."""
+    neutral_result: str | None
+    """How the neutral fared, beside the winner: "won" or "lost" for a speculator, the fortune
+    teller's points as "won (N points)" / "lost (N points)"; None before the end."""
 
 
 def fresh_game_state() -> dict:
@@ -119,7 +111,7 @@ def fresh_game_state() -> dict:
         "day_channel": [],
         "day_summaries": [],
         "wolf_channel": [],
-        "investigator_results": [],
         "night_actions": [],
+        "night_choices": [],
         "day_votes": [],
     }
