@@ -29,15 +29,15 @@ from typing import Callable
 
 from server.schemas import events as ev
 
-_SPECIAL_UNITS = ("healer", "investigator", "serial_killer", "vigilante")
+# The solo night roles of the pool, each its own unit; the pack is one unit however many wolves.
+_SPECIAL_UNITS = (
+    "investigator", "sentinel", "trailseer", "vigilante", "sigilist", "healer",
+    "serial_killer", "necromancer", "speculator", "fortune_teller",
+)
+_PACK_ROLES = ("chanteuse", "illusionist", "wolf")
 # Root-level night branch nodes → the public unit each one completes.
-BRANCH_UNITS = {
-    "WOLF_NIGHT_PHASE": "wolves",
-    "HEALER_NIGHT_PHASE": "healer",
-    "INVESTIGATOR_NIGHT_PHASE": "investigator",
-    "SERIAL_KILLER_NIGHT_PHASE": "serial_killer",
-    "VIGILANTE_NIGHT_PHASE": "vigilante",
-}
+BRANCH_UNITS = {f"{role.upper()}_NIGHT_PHASE": role for role in _SPECIAL_UNITS}
+BRANCH_UNITS["PACK_NIGHT_PHASE"] = "wolves"
 _PAD_SECONDS = (20.0, 30.0)
 
 
@@ -100,6 +100,8 @@ class PacingTracker:
             self._public_alive[event.role] = max(0, self._public_alive.get(event.role, 0) - 1)
         elif event.type == "night_result":
             for death in event.deaths:
+                if not death.role:
+                    continue  # a concealed body: the audience cannot tell which unit it was
                 self._public_alive[death.role] = max(0, self._public_alive.get(death.role, 0) - 1)
             self._finish_stage()  # dawn: force the night bar full, whatever the timers did
         elif event.type == "phase_change":
@@ -144,7 +146,7 @@ class PacingTracker:
         the pack if any wolf is. Publishes 0/total and arms a padding timer per unit."""
         self._reset_stage()
         units = [u for u in _SPECIAL_UNITS if self._public_alive.get(u, 0) > 0]
-        if self._public_alive.get("wolf", 0) > 0:
+        if any(self._public_alive.get(r, 0) > 0 for r in _PACK_ROLES):
             units.append("wolves")  # the pack is one unit: per-wolf ticks would size the pack
         self._stage, self._stage_total, self._completed_units = "night", len(units), set()
         self._publish_snapshot(0)

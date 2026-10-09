@@ -22,7 +22,7 @@ def entitled(event: ev.DurableEvent, seat: str, roles: dict[str, str],
     if tier is ev.Tier.PUBLIC:
         return True
     if tier is ev.Tier.FACTION:
-        return bool(seat) and roles.get(seat) == "wolf"
+        return bool(seat) and roles.get(seat) in ev.PACK_ROLES
     if tier is ev.Tier.SEAT:
         return bool(seat) and getattr(event, "player", None) == seat
     return False  # observer tier: in the log only, until game over unlocks it

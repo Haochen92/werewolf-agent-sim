@@ -524,9 +524,9 @@ class GameSession:
         self.park(HumanTurnRequest(
             player_id=seat, role=payload["role"], phase=payload["phase"], day=payload["day"],
             instruction="", valid_targets=list(payload["valid_targets"]), can_pass=False,
+            bodies=list(payload.get("bodies") or []),
             dialogue="", day_summaries="", surviving_players=[], dead_roster="",
-            alive_roles="", firing_brief="", wolf_channel="", investigator_results="",
-            vigilante_results="", previous_strategy=""))
+            alive_roles="", firing_brief="", wolf_channel="", previous_strategy=""))
         self._announced[seat] = key
 
     def park(self, request: HumanTurnRequest, interrupt_id: str = "") -> None:
@@ -821,6 +821,6 @@ class GameSession:
         started = next((e for e in self.log if e.type == "game_started"), None)
         if started is None:
             return {}
-        dead = [d for n in self.log if n.type == "night_result" for d in n.deaths]
+        dead = [d for n in self.log if n.type == "night_result" for d in n.deaths if d.role]
         dead += [e for e in self.log if e.type == "lynch_result" and e.role]
         return alive_role_counts(started.cast_role_counts, dead)

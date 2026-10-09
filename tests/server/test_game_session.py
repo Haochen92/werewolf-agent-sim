@@ -183,7 +183,7 @@ async def test_pre_start_subscriber_still_gets_faction_events(quiet_session, fix
     expected = Translator()
     for p in fixture_chunks:
         expected.translate(p)
-    wolf_seat = next(s for s, r in expected.roles.items() if r == "wolf")
+    wolf_seat = next(s for s, r in expected.roles.items() if r in ev.PACK_ROLES)
 
     session = quiet_session(FakeGraph(fixture_chunks))
     monkeypatch.setattr(session, "seat_of_viewer", lambda token: wolf_seat)  # view as the wolf
@@ -340,7 +340,8 @@ async def test_interrupt_parks_validates_and_resumes(quiet_session):
     assert request_event.action_kind == "discuss"
     # A lone answer resumes as a bare value — the path proven in live HITL games.
     assert session._graph.calls[1].resume == {"message": "hello table", "pass_turn": False,
-                                              "target": None, "delegate": False}
+                                              "target": None, "body": None,
+                                              "role_named": None, "delegate": False}
 
 
 async def test_child_namespace_interrupt_mirrors_park_and_send_once(quiet_session):
@@ -516,7 +517,7 @@ async def test_a_draft_previews_the_seats_real_turn_and_changes_nothing(quiet_se
 
     graph = _day_graph_with_a_checkpoint()
     session = quiet_session(graph)
-    state = board()
+    state = board("sentinel")  # the seat drafted below is the lowest id, player_1, the sentinel
     state["human_players"] = state["surviving_villagers"] + state["surviving_wolves"]
     await graph.ainvoke(state, session.config)
     snapshot = await graph.aget_state(session.config, subgraphs=True)
@@ -863,3 +864,28 @@ async def test_pacing_vote_stage_counts_ballots_against_survivors():
     tracker.on_ballot()
     tracker.on_ballot()
     assert snapshots[-1].done == 2
+
+
+async def test_an_announced_necromancer_turn_takes_a_body_after_the_interrupt(quiet_session):
+    """The announcement parks the bodies with the targets; the interrupt adopts that question,
+    so the body check runs against the announced bodies (review 2026-10-09, point 2)."""
+    announce = {"type": "custom", "ns": [], "data": {
+        "event": "human_turn_opened", "player": "player_3", "role": "necromancer",
+        "phase": "necromancer_target", "day": 3, "valid_targets": ["p9", "stay_put"],
+        "bodies": ["p1"]}}
+    value = human_turn_request(player_id="player_3", role="necromancer", phase="necromancer_target",
+                               day=3, valid_targets=["p9", "stay_put"], bodies=["p1"]).model_dump()
+    interrupt = {"type": "updates", "ns": [], "data": {"__interrupt__": [{"value": value, "id": "int-a"}]}}
+    gate = asyncio.Event(); gate.set()
+    session = quiet_session(_GatedGraph(announce, interrupt, gate))
+    session.start()
+    while len(session._graph.calls) < 1 or not session._pending_ids.get("player_3") == "int-a":
+        await asyncio.sleep(0.01)
+    (opened,) = [e for e in session.log if e.type == "input_request"]
+    assert opened.bodies == ["p1"]
+    with pytest.raises(HumanTurnContractError):
+        session.submit_turn({"target": "p9", "body": "p7"}, seat="player_3")
+    session.submit_turn({"target": "p9", "body": "p1"}, seat="player_3")
+    await asyncio.wait_for(session.wait_finished(), timeout=10)
+    assert session.error is None
+    assert session._graph.calls[1].resume["body"] == "p1"

@@ -23,10 +23,23 @@ from typing import Annotated, Any, Literal, Union, get_args
 from pydantic import BaseModel, Field
 
 
-# Two vocabularies the engine owns and this module repeats on purpose (it must not import
-# Agents/): tests/server/test_engine_sync.py checks the copy of the roles against ROLE_SPECS.
-Role = Literal["villager", "wolf", "investigator", "healer", "serial_killer", "vigilante"]
-Winner = Literal["villagers", "wolves", "serial_killer"]
+# Vocabularies the engine owns and this module repeats on purpose (it must not import Agents/):
+# tests/server/test_engine_sync.py checks the copies against the role registry. The pool is the
+# ten-seat game's twelve roles; villager and wolf are the nine-seat game's, kept so archived
+# replays still validate, never dealt.
+PoolRole = Literal[
+    "investigator", "sentinel", "trailseer", "vigilante", "sigilist", "healer",
+    "chanteuse", "illusionist", "serial_killer", "necromancer", "speculator", "fortune_teller",
+]
+Role = Literal[
+    "investigator", "sentinel", "trailseer", "vigilante", "sigilist", "healer",
+    "chanteuse", "illusionist", "serial_killer", "necromancer", "speculator", "fortune_teller",
+    "villager", "wolf",
+]
+PACK_ROLES = ("chanteuse", "illusionist", "wolf")
+"""The roles that share the pack's chat (the faction tier)."""
+Winner = Literal["villagers", "wolves", "serial_killer", "necromancer"]
+AttackerType = Literal["wolves", "serial_killer", "vigilante", "sigilist"]
 
 
 class Tier(str, Enum):
@@ -67,6 +80,8 @@ class GameStarted(DurableEvent, frozen=True):
     """Player ids at the table, in seating order."""
     cast_role_counts: dict[str, int]
     """Public casting: role -> count. The client derives the alive-role census from this."""
+    lineup: list[str] = Field(default_factory=list)
+    """The ten roles dealt, in the rules block's order (public). Empty on a nine-seat record."""
 
 
 class RoleAssigned(DurableEvent, frozen=True):
@@ -79,7 +94,9 @@ class RoleAssigned(DurableEvent, frozen=True):
     pack: list[str] | None = None
     """Fellow wolves — wolves only."""
     bullets: int | None = None
-    """Starting bullets — vigilante only."""
+    """Starting bullets — vigilante only (nine-seat records; the ten-seat game sends uses)."""
+    uses: int | None = None
+    """What a limited ability starts with: bullets, sigils, conceals, self-bets, the one pick."""
 
 
 class RolesAssigned(DurableEvent, frozen=True):
@@ -104,7 +121,11 @@ class GameOver(DurableEvent, frozen=True):
     the withheld observer-tier backlog from the durable log."""
 
     type: Literal["game_over"] = "game_over"
-    winner: Winner
+    winner: Winner | None = None
+    """None for a drawn game."""
+    neutral_result: str | None = None
+    """How the neutral fared, beside the winner ("won", "lost", "won (2 points)"); None on a
+    nine-seat record."""
 
 
 # --- day: discussion ---------------------------------------------------------
@@ -139,6 +160,9 @@ class Speech(DurableEvent, frozen=True):
     annotations reference; distinct from the global `seq`."""
     player: str
     message: str
+    claim: str = "none"
+    """The role the speaker's own output claimed in this line, or "none". The claim ledger's
+    role lines are built from these; a record from before the field has "none" throughout."""
 
 
 class PassMarker(DurableEvent, frozen=True):
@@ -307,13 +331,25 @@ class InputRequest(DurableEvent, frozen=True):
         "vote",
         "wolf_discuss",
         "wolf_vote",
+        "carrier_kill",
         "healer_target",
         "investigator_target",
+        "sentinel_target",
+        "trailseer_target",
         "serial_killer_target",
         "vigilante_target",
+        "sigil_target",
+        "block_target",
+        "conceal",
+        "necromancer_target",
+        "speculator_pick",
+        "bet_target",
     ]
     candidates: list[str] = Field(default_factory=list)
     """Legal targets where the action needs one; empty for free-text turns."""
+    bodies: list[str] = Field(default_factory=list)
+    """A necromancer's turn: the dead players it may act through tonight, one of which the
+    answer names beside its target. Empty for every other turn."""
     round: DayRound | None = None
     """For a discuss ask, the round of the day it belongs to, so the composer can label it
     (an opening, the open floor, a last word); None for every other kind."""
@@ -406,6 +442,8 @@ class WolfMessage(DurableEvent, frozen=True):
     round: int
     wolf: str
     message: str
+    passed: bool = False
+    """A chat round the wolf passed: nothing to add (the ten-seat chat)."""
 
 
 class WolfVote(DurableEvent, frozen=True):
@@ -418,33 +456,40 @@ class WolfVote(DurableEvent, frozen=True):
 
 
 class WolfKillDecided(DurableEvent, frozen=True):
-    """The pack's plurality tally (random tiebreak) — the only way a wolf seat learns it
-    before dawn."""
+    """The pack's kill: the carrier's choice in the ten-seat game (the plurality tally in a
+    nine-seat record) — the only way a wolf seat learns it before dawn."""
 
     type: Literal["wolf_kill_decided"] = "wolf_kill_decided"
     target: str
+    carrier: str | None = None
+    """The wolf who carries the kill; None on a nine-seat record."""
 
 
 class NightDeath(BaseModel, frozen=True):
     player: str
-    role: Role
-    """Publicly revealed on death."""
-    attacker_types: list[Literal["wolves", "serial_killer", "vigilante"]]
+    role: str
+    """Publicly revealed on death; "" when an illusionist hid it."""
+    attacker_types: list[AttackerType]
     """Attacker TYPE is public flavor; attacker identity never is."""
+    concealed: bool = False
 
 
 class NightSave(BaseModel, frozen=True):
     player: str
-    attacker_types: list[Literal["wolves", "serial_killer", "vigilante"]]
+    attacker_types: list[AttackerType]
 
 
 class NightResult(DurableEvent, frozen=True):
     """The night death atom (= the dead_roster delta) + free-riders. Empty deaths = quiet
-    night. Silent whiffs (immune SK) appear NOWHERE here — absence is the design."""
+    night. Silent whiffs (an immune target) appear NOWHERE here — absence is the design."""
 
     type: Literal["night_result"] = "night_result"
     deaths: list[NightDeath]
     save: NightSave | None = None
+    saves: list[NightSave] = Field(default_factory=list)
+    """Every announced save (the ten-seat game can have several); `save` keeps the first."""
+    pick: str | None = None
+    """The side the speculator picked tonight, announced without the seat."""
 
 
 class InvestigationResult(DurableEvent, frozen=True):
@@ -471,6 +516,36 @@ class BulletsRemaining(DurableEvent, frozen=True):
     player: str
     """Recipient seat (the vigilante)."""
     count: int
+
+
+class UsesRemaining(DurableEvent, frozen=True):
+    """What is left of a limited ability after the night: bullets, sigils, conceals, self-bets,
+    the speculator's pick."""
+
+    type: Literal["uses_remaining"] = "uses_remaining"
+    player: str
+    """Recipient seat (the holder)."""
+    role: Role
+    count: int
+
+
+class NightRecord(DurableEvent, frozen=True):
+    """One seat's private record of its night action and what it may know of the result, as
+    the engine wrote it (Agents/rules/night_record.py): the sentinel's visitors, the sigil's
+    outcome, the investigator's read, the pack's kill for each wolf."""
+
+    type: Literal["night_record"] = "night_record"
+    player: str
+    """Recipient seat."""
+    actor: str
+    """The acting seat, or "wolves" for the pack's kill."""
+    action: str
+    target: str | None = None
+    result: str
+    """The fixed result word."""
+    outcome: str
+    """The result in plain words, as the seat reads it."""
+    seen: list[str] = Field(default_factory=list)
 
 
 # --- ephemeral (pacing) ------------------------------------------------------
@@ -523,6 +598,8 @@ DurableGameEvent = Annotated[
         InvestigationResult,
         VigilanteConfirmation,
         BulletsRemaining,
+        UsesRemaining,
+        NightRecord,
     ],
     Field(discriminator="type"),
 ]
@@ -561,6 +638,8 @@ EVENT_TIERS: dict[str, Tier] = {
     "investigation_result": Tier.SEAT,
     "vigilante_confirmation": Tier.SEAT,
     "bullets_remaining": Tier.SEAT,
+    "uses_remaining": Tier.SEAT,
+    "night_record": Tier.SEAT,
 }
 
 

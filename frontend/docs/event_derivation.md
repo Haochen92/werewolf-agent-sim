@@ -12,9 +12,9 @@
 
 | Tier | Events |
 | --- | --- |
-| Public | `game_started {seats, cast_role_counts}` |
+| Public | `game_started {seats, cast_role_counts, lineup}` — `lineup` the ten dealt roles in the rules block's order |
 | Faction | — |
-| Seat | `role_assigned {role, pack? (wolves), bullets? (vigilante)}` ×9 |
+| Seat | `role_assigned {role, pack? (the pack's roles), uses? (a limited ability's start), bullets? (nine-seat records)}` ×10 |
 | Observer | `roles_assigned {player: role}` — nobody receives it live; exists so the game_over backlog replay has survivor roles from minute zero |
 - `phase_change("day")` — marker table (node identity). `human_player` = no event (session handshake).
 
@@ -35,7 +35,7 @@
 
 **route_speaker edge** (a `custom` stream chunk, not a node) — `turn_started {player, day}` via `get_stream_writer()` (edge emission — cannot double-fire on interrupt resume).
 
-**every AI decision that produced reads, memory on or off** (a `custom` chunk from inside the acting node, `Agents/turn/pipeline.py`) — observer `player_reads {player, role, day, round, action_phase, reads[{player, suspected_role, confidence, why}]}`: the agent's per-player suspicions at that decision. Never graph state. Node emission, so a re-run fires it again — sent once per `(player, day, round, action_phase)`.
+**every AI decision that produced reads, memory on or off** (a `custom` chunk from inside the acting node, `Agents/turn/pipeline.py`) — observer `player_reads {player, role, day, round, action_phase, reads[{player, suspected_role, confidence, why}]}`: the agent's per-player suspicions at that decision. Never graph state. Node emission, so a re-run fires it again — sent once per `(player, day, round, action_phase)`. A wolf's night turns are told apart by `round`: the chat rounds 1 to 3, the carrier's kill 4, its skill turn 5.
 
 **every AI decision, memory-on games only** (a `custom` chunk from inside the acting node, `Agents/turn/pipeline.py`) — observer `memory_consulted {player, role, day, round, action_phase, lessons[], verdicts[], observations[], applicability[]}`: the lessons/observations retrieved for the decision and the agent's verdict on each. Never graph state (the verdicts are kept out of state on purpose). Node emission, so a re-run (human answer, restart resume) fires it again — sent once per `(player, day, round, action_phase)`, the same guard as a re-run speech. Day 1 never retrieves, so it starts on day 2.
 
@@ -43,7 +43,7 @@
 
 | Tier | Events |
 | --- | --- |
-| Public | `speech {day, channel_seq, player, message}` — `channel_seq` = position in the day transcript (the state-side DayChannel seq), renamed on the wire because the durable base class already owns the global `seq` |
+| Public | `speech {day, channel_seq, player, message, claim}` — `channel_seq` = position in the day transcript (the state-side DayChannel seq), renamed on the wire because the durable base class already owns the global `seq`; `claim` = the role the speaker's own output claimed in the line, or `none` (Phase 3: the claim ledger's role lines come from these, the summariser's `role_claims` fill in the night actions; records from before the field read `none`) |
 | Faction | — |
 | Seat | `input_request {player, action_kind, candidates, round}` (interrupt source; human seat only) — `action_kind` + legal-target list lifted from `HumanTurnRequest` so the client can render the right control, and `round` (opening / discussion / proactive / closing) for the label of the ask; the full prompt payload deliberately stays server-side (it duplicates the event log as prose and churns with every prompt epoch) |
 | Observer | `strategy_update` · `pass_marker {pass_reason: voluntary\|novelty_gated\|generation_failed\|round_echo\|opening_filtered, gated, gated_candidate}` (the engine's typed reason, not a bare `passed` bool; `novelty_gated` is the echo gate's hold on a sweep turn and `opening_filtered` the opening filter's, both with the held text in `gated_candidate`; `round_echo` only in records of the parallel proactive round, 2026-10-07) · `firing_reason` · `addressed_targets` — annotations join the speech via `about_channel_seq` |
@@ -77,7 +77,7 @@
 | Public | `lynch_result {outcome: lynched\|tie\|abstain\|no_vote, player?, role?, vote_counts, no_lynch_streak, day}` — the death atom (= the dead_roster delta) + the free-rider fields the node already computed |
 | Public | `roster_update {surviving_players}` — **union only**: translator merges the wolf-partitioned lists before the public tier |
 | Faction | `pack_roster_update {surviving_wolves}` |
-- `voted_player` delta → IGNORED (inside `lynch_result`).
+- `voted_player` delta → IGNORED (inside `lynch_result`). The nine-seat `*_player` role markers are gone: a role's aliveness is read off the rosters.
 - `day_summaries` vote-result append → IGNORED: verbatim the node's own `gm_message`, and the client renders a day's summary from SUMMARIZE_DAY_DISCUSSION's event alone (ruled 2026-09-15; completion note 3).
 
 **NIGHT_START** (between the `check_game_end_day` and `route_night_actors` edges) —
@@ -87,53 +87,50 @@ check, so a game-ending day can never ghost a night marker. `route_night_actors`
 present night actors; the real actor list this router computes must **never** reach the wire —
 the pacing denominator comes from public knowledge only (see Ephemeral channel).
 
-**healer_act · investigator_act · serial_killer_act · vigilante_act** — one pattern ×4 (structural clones). Their root wrappers `HEALER_NIGHT_PHASE` … `VIGILANTE_NIGHT_PHASE` are registered silent: each commit repeats the act's target and strategy.
+**`<ROLE>_NIGHT_PHASE`** — one named node per solo night role of the pool (INVESTIGATOR, SENTINEL, TRAILSEER, VIGILANTE, SIGILIST, HEALER, SERIAL_KILLER, NECROMANCER, SPECULATOR, FORTUNE_TELLER), one shared body (Agents/nodes/night/solo.py). The node commits the role's choice to `night_choices` and its strategy note.
 
 | Tier | Events |
 | --- | --- |
 | Public | — silence is the spec: no per-role markers, no engine-state progress |
 | Faction | — |
-| Seat | `input_request` (interrupt; human seat only) — fires inside the parallel night step; see Stream behaviours below |
-| Observer | `night_action {actor, role, target, day}` · `strategy_update` |
-- No seat ack for the target (ruled): the seat re-learns its act from dawn's `gm_message`; the live client echoes locally. Observer event is the only committed-target record.
+| Seat | `input_request {action_kind: the role's field}` — born from the `human_turn_opened` chunk `route_night_actors` writes at `NIGHT_START`; the interrupt that ends the step then emits none. `candidates` lists the players and the role's no-action word (`hold_fire`, `keep_sigil`, `stay_put`, `not_yet`) or, for the speculator, the sides; a necromancer's ask also carries `bodies`, the dead players it may act through, and its answer names one beside the target. A fortune teller's `candidates` include itself only while it has a self-bet left |
+| Observer | `night_action {actor, role, target, day}` — one per choice (the speculator's `target` is the side; the illusionist's conceal has none) · `strategy_update` |
+- A declined action (the no-action word) commits no choice, so no `night_action`.
 - `None` return = no events (engine fallback), same as discuss.
 
-**PREPARE_WOLF_NIGHT · WOLF_NIGHT_DISCUSS · START_WOLF_VOTE · WOLF_NIGHT_VOTE · WOLF_NIGHT_VOTE_HUMAN · COLLECT_WOLF_VOTES** (the wolf subgraph: prepare → discuss loop → parallel vote → collect)
+**PREPARE_PACK_NIGHT · PACK_CHAT · START_CARRIER · CARRIER_KILL · CARRIER_KILL_HUMAN · PACK_SKILL · PACK_SKILL_HUMAN · COLLECT_PACK** (the pack subgraph, Phase 3: prepare → chat loop, the carrier first, up to three rounds, ending early once every wolf passed in a round → the carrier's kill → the skills in parallel → collect). The pack vote is gone.
 
 | Tier | Events |
 | --- | --- |
 | Public | — |
-| Faction | `wolf_message {wolf, message, day, round}` — sequential talk, sent live |
-| Faction | `wolf_vote {wolf, votee, day}` — **buffered** until the tally |
-| Faction | `wolf_kill_decided {target, day}` — the plurality tally + random tiebreak; flushes the vote buffer |
-| Seat | `input_request` (human wolf talk/vote — interrupt nested inside the outer parallel superstep) |
-| Observer | faction mirror + `strategy_update` |
-- Vote buffer rationale: sending live leaks packmate votes to the interrupted human wolf (LLM wolves vote blind → unfair edge); tally-only gives the human LESS than the LLM seat (next-night `_wolf_payload` carries past votes → parity violation). Buffered release = blind voting + wire/state parity, full per-vote breakdown at round end. Same pattern as the day ballot buffer; same buffer-empty-at-dawn alarm.
-- `current_round` (written by PREPARE_WOLF_NIGHT) → IGNORED (loop control). START_WOLF_VOTE and the `WOLF_NIGHT_PHASE` root wrapper → registered silent.
+| Faction | `wolf_message {wolf, message, day, round, passed}` — sequential chat, sent live; `passed` marks a round the wolf passed (empty message) |
+| Faction | `wolf_kill_decided {target, carrier, day}` — the carrier's choice, sent as it is made (no vote buffer: nothing is blind any more) |
+| Seat | `input_request` (a human wolf's chat turn, `wolf_discuss`, may be passed; the carrier's `carrier_kill`; a skill turn `block_target` / `conceal`) |
+| Observer | `night_action` for the carrier's kill (`role` = the carrier's own role) and for each skill · `strategy_update` |
+- `current_round` (written by PREPARE_PACK_NIGHT), `wolves_target` (the carrier's kill, inside `wolf_kill_decided`) → IGNORED. START_CARRIER, COLLECT_PACK and the `PACK_NIGHT_PHASE` root wrapper → registered silent.
 
-**NIGHT_RESOLUTION** (the barrier — fattest commit in the game: one delta, four audiences)
+**NIGHT_RESOLUTION** (the barrier — fattest commit in the game: one delta, four audiences). The node resolves every choice once (Agents/rules/night.py) and commits the public outcome as `night_report`; the translator reads that report and recomputes nothing.
 
 | Tier | Events |
 | --- | --- |
-| Public | `gm_message {day, seq, text}` — dawn narration verbatim |
-| Public | `night_result {day, deaths: [{player, role, attacker_types}], save?: {player, attacker_types}}` — the death atom (= the dead_roster delta) + the free-rider fields; empty deaths = quiet night |
+| Public | `gm_message {day, seq, text}` — dawn narration verbatim: the deaths by attacker type, the saves, the dead town roles' records read out, the speculator's pick |
+| Public | `night_result {day, deaths: [{player, role, attacker_types, concealed}], save?, saves[], pick?}` — the death atom (= the dead_roster delta): `role` is "" and `concealed` true when an illusionist hid it; `attacker_types` now includes `sigilist`; every save in `saves` (`save` keeps the first); `pick` is the side a speculator picked tonight, never the seat; empty deaths = quiet night |
 | Public | `roster_update {surviving_players}` — union only, as day_resolution |
-| Faction | `pack_roster_update {surviving_wolves}` · `wolf_message {wolf: "game_master", ...}` — the SK-whiff note: first server-authored *faction* narration |
-| Seat (investigator) | `investigation_result {target, role, day}` |
-| Seat (vigilante) | `vigilante_confirmation {target, day}` (immune-whiff SK confirmation) · `bullets_remaining {count}` |
-- The investigator survival gate lives in the NODE (no delta committed → no event exists) — the translator needs zero logic for it; committed→sent does the right thing automatically.
-- Silent whiffs send NOTHING publicly — absence is the design; the wire must not un-silence what the engine silences (see pacing denominator).
-- `day_summaries` append → IGNORED (verbatim inside this node's `gm_message`; precedent: `voted_player` inside `lynch_result`).
-- `*_player` marker clears → IGNORED (fold doctrine: send the client-facing form, fold the internal form — committed→sent governs INFORMATION, not raw keys).
+| Faction | `pack_roster_update {surviving_wolves}` |
+| Seat (every night actor) | `night_record {actor, action, target, result, outcome, seen}` — the seat's own record as the engine wrote it (the investigator's read, the sentinel's visitors, the sigil's outcome, the fortune teller's points); the pack's kill record goes to every living wolf with `actor: "wolves"`. A seat that died tonight gets none (it learned nothing from the night it died) |
+| Seat (a role with a limit) | `uses_remaining {role, count}` — bullets, sigils, conceals, self-bets, the pick; to a holder alive at dawn |
+- `investigation_result`, `vigilante_confirmation` and `bullets_remaining` are nine-seat events, kept in the schema for archived replays and no longer sent.
+- Silent whiffs (an attack on an immune player: the serial killer, the necromancer on night 1, a self-betting fortune teller) send NOTHING publicly — absence is the design; the wire must not un-silence what the engine silences (see pacing denominator). A concealed death lowers no public role count: the audience cannot tell which unit it was.
+- `day_summaries` append → IGNORED (verbatim inside this node's `gm_message`); `night_report`, `uses_left`, `speculator_pick`, `fortune_points`, `last_body` → folded into the events above.
 - Metric append + langfuse span → diagnostic plane, never the wire.
 
-**ONE_MORE_DAY** — `phase_change("day") {day}` (content-disambiguated, as day_resolution's night marker). `current_day` delta → IGNORED (inside it). Also commits the new-day RESETS — `healer_target` / `investigator_target` / `serial_killer_target` / `vigilante_target` / `wolves_kill_target` / `day_votes` / `voted_player` all cleared → IGNORED (blank-slate bookkeeping, zero information).
+**ONE_MORE_DAY** — `phase_change("day") {day}` (content-disambiguated, as day_resolution's night marker). `current_day` delta → IGNORED (inside it). Also commits the new-day RESETS — `night_choices` / `night_report` / `day_votes` / `voted_player` all cleared → IGNORED (blank-slate bookkeeping, zero information).
 
 **END_GAME**
 
 | Tier | Events |
 | --- | --- |
-| Public | `game_over {winner, day}` — thin: an entitlement flip, not a data package |
+| Public | `game_over {winner, neutral_result, day}` — thin: an entitlement flip, not a data package; `winner` is a side (`villagers`, `wolves`) or the lone killer's role (`serial_killer`, `necromancer`), None for a draw; `neutral_result` how the speculator or fortune teller fared beside it |
 - At game_over the client's tier becomes observer; the server streams the withheld O-tier backlog from the durable log (full X-ray replay: wolf channel, probes, strategies, `roles_assigned`). No reveal payload is duplicated into the event.
 - POST_GAME_ANALYSIS → registered silent with the key check off: its state output is large and never sent. In a memory-on game it streams one `custom` chunk from inside the node, observer `memory_extracted {observations[], strategy_points[], day}` — what the game taught, raw (a served game never writes the store, so there is no post-dedup form). Arrives after game_over, so every viewer is already an observer. Sent once per game (a re-run streams it again).
 
@@ -179,7 +176,7 @@ Day vote: START_VOTING starts it, denominator = surviving roster (public, unpadd
 | --- | --- |
 | Night actor progress | ephemeral `phase_progress` snapshots only — never derivable from game events (by design) |
 | Pacing denominator | alive-role census above (public knowledge) |
-| Human wolf's kill-vote view | buffered `wolf_vote` batch + `wolf_kill_decided`, flushed together at the tally |
+| Human wolf's view of the kill | `wolf_kill_decided {target, carrier}`, sent as the carrier names it |
 | Full chat history | the client's own event log (`speech`/`gm_message` accumulate; `day_channel` is append-only server-side, but the client never re-fetches) |
 
 ---

@@ -651,11 +651,10 @@ export interface components {
        * @enum {string}
        */
       type: 'game_over';
-      /**
-       * Winner
-       * @enum {string}
-       */
-      winner: 'villagers' | 'wolves' | 'serial_killer';
+      /** Winner */
+      winner?: ('villagers' | 'wolves' | 'serial_killer' | 'necromancer') | null;
+      /** Neutral Result */
+      neutral_result?: string | null;
     };
     /** GameStarted */
     GameStarted: {
@@ -674,6 +673,8 @@ export interface components {
       cast_role_counts: {
         [key: string]: number;
       };
+      /** Lineup */
+      lineup?: string[];
     };
     /**
      * GameStatus
@@ -746,7 +747,7 @@ export interface components {
        */
       awaiting_key: boolean;
       /** Winner */
-      winner?: ('villagers' | 'wolves' | 'serial_killer') | null;
+      winner?: ('villagers' | 'wolves' | 'serial_killer' | 'necromancer') | null;
       /**
        * Archived
        * @default false
@@ -855,12 +856,23 @@ export interface components {
         | 'vote'
         | 'wolf_discuss'
         | 'wolf_vote'
+        | 'carrier_kill'
         | 'healer_target'
         | 'investigator_target'
+        | 'sentinel_target'
+        | 'trailseer_target'
         | 'serial_killer_target'
-        | 'vigilante_target';
+        | 'vigilante_target'
+        | 'sigil_target'
+        | 'block_target'
+        | 'conceal'
+        | 'necromancer_target'
+        | 'speculator_pick'
+        | 'bet_target';
       /** Candidates */
       candidates?: string[];
+      /** Bodies */
+      bodies?: string[];
       /** Round */
       round?: ('opening' | 'discussion' | 'proactive' | 'closing') | null;
       /** Deadline */
@@ -888,7 +900,21 @@ export interface components {
        * Role
        * @enum {string}
        */
-      role: 'villager' | 'wolf' | 'investigator' | 'healer' | 'serial_killer' | 'vigilante';
+      role:
+        | 'investigator'
+        | 'sentinel'
+        | 'trailseer'
+        | 'vigilante'
+        | 'sigilist'
+        | 'healer'
+        | 'chanteuse'
+        | 'illusionist'
+        | 'serial_killer'
+        | 'necromancer'
+        | 'speculator'
+        | 'fortune_teller'
+        | 'villager'
+        | 'wolf';
     };
     /**
      * JoinGame
@@ -994,7 +1020,22 @@ export interface components {
       player?: string | null;
       /** Role */
       role?:
-        | ('villager' | 'wolf' | 'investigator' | 'healer' | 'serial_killer' | 'vigilante')
+        | (
+            | 'investigator'
+            | 'sentinel'
+            | 'trailseer'
+            | 'vigilante'
+            | 'sigilist'
+            | 'healer'
+            | 'chanteuse'
+            | 'illusionist'
+            | 'serial_killer'
+            | 'necromancer'
+            | 'speculator'
+            | 'fortune_teller'
+            | 'villager'
+            | 'wolf'
+          )
         | null;
       /** Vote Counts */
       vote_counts: {
@@ -1026,7 +1067,21 @@ export interface components {
        * Role
        * @enum {string}
        */
-      role: 'villager' | 'wolf' | 'investigator' | 'healer' | 'serial_killer' | 'vigilante';
+      role:
+        | 'investigator'
+        | 'sentinel'
+        | 'trailseer'
+        | 'vigilante'
+        | 'sigilist'
+        | 'healer'
+        | 'chanteuse'
+        | 'illusionist'
+        | 'serial_killer'
+        | 'necromancer'
+        | 'speculator'
+        | 'fortune_teller'
+        | 'villager'
+        | 'wolf';
       /** Round */
       round: number;
       /**
@@ -1158,7 +1213,20 @@ export interface components {
       human: boolean;
       /** Human Role */
       human_role?:
-        | ('villager' | 'wolf' | 'investigator' | 'healer' | 'serial_killer' | 'vigilante')
+        | (
+            | 'investigator'
+            | 'sentinel'
+            | 'trailseer'
+            | 'vigilante'
+            | 'sigilist'
+            | 'healer'
+            | 'chanteuse'
+            | 'illusionist'
+            | 'serial_killer'
+            | 'necromancer'
+            | 'speculator'
+            | 'fortune_teller'
+          )
         | null;
       /**
        * Api Key
@@ -1199,7 +1267,21 @@ export interface components {
        * Role
        * @enum {string}
        */
-      role: 'villager' | 'wolf' | 'investigator' | 'healer' | 'serial_killer' | 'vigilante';
+      role:
+        | 'investigator'
+        | 'sentinel'
+        | 'trailseer'
+        | 'vigilante'
+        | 'sigilist'
+        | 'healer'
+        | 'chanteuse'
+        | 'illusionist'
+        | 'serial_killer'
+        | 'necromancer'
+        | 'speculator'
+        | 'fortune_teller'
+        | 'villager'
+        | 'wolf';
       /** Target */
       target: string;
     };
@@ -1207,18 +1289,51 @@ export interface components {
     NightDeath: {
       /** Player */
       player: string;
+      /** Role */
+      role: string;
+      /** Attacker Types */
+      attacker_types: ('wolves' | 'serial_killer' | 'vigilante' | 'sigilist')[];
       /**
-       * Role
+       * Concealed
+       * @default false
+       */
+      concealed: boolean;
+    };
+    /**
+     * NightRecord
+     * @description One seat's private record of its night action and what it may know of the result, as
+     *     the engine wrote it (Agents/rules/night_record.py): the sentinel's visitors, the sigil's
+     *     outcome, the investigator's read, the pack's kill for each wolf.
+     */
+    NightRecord: {
+      /** Seq */
+      seq: number;
+      /** Day */
+      day: number;
+      /**
+       * @description discriminator enum property added by openapi-typescript
        * @enum {string}
        */
-      role: 'villager' | 'wolf' | 'investigator' | 'healer' | 'serial_killer' | 'vigilante';
-      /** Attacker Types */
-      attacker_types: ('wolves' | 'serial_killer' | 'vigilante')[];
+      type: 'night_record';
+      /** Player */
+      player: string;
+      /** Actor */
+      actor: string;
+      /** Action */
+      action: string;
+      /** Target */
+      target?: string | null;
+      /** Result */
+      result: string;
+      /** Outcome */
+      outcome: string;
+      /** Seen */
+      seen?: string[];
     };
     /**
      * NightResult
      * @description The night death atom (= the dead_roster delta) + free-riders. Empty deaths = quiet
-     *     night. Silent whiffs (immune SK) appear NOWHERE here — absence is the design.
+     *     night. Silent whiffs (an immune target) appear NOWHERE here — absence is the design.
      */
     NightResult: {
       /** Seq */
@@ -1233,13 +1348,17 @@ export interface components {
       /** Deaths */
       deaths: components['schemas']['NightDeath'][];
       save?: components['schemas']['NightSave'] | null;
+      /** Saves */
+      saves?: components['schemas']['NightSave'][];
+      /** Pick */
+      pick?: string | null;
     };
     /** NightSave */
     NightSave: {
       /** Player */
       player: string;
       /** Attacker Types */
-      attacker_types: ('wolves' | 'serial_killer' | 'vigilante')[];
+      attacker_types: ('wolves' | 'serial_killer' | 'vigilante' | 'sigilist')[];
     };
     /** PackRosterUpdate */
     PackRosterUpdate: {
@@ -1335,7 +1454,21 @@ export interface components {
        * Role
        * @enum {string}
        */
-      role: 'villager' | 'wolf' | 'investigator' | 'healer' | 'serial_killer' | 'vigilante';
+      role:
+        | 'investigator'
+        | 'sentinel'
+        | 'trailseer'
+        | 'vigilante'
+        | 'sigilist'
+        | 'healer'
+        | 'chanteuse'
+        | 'illusionist'
+        | 'serial_killer'
+        | 'necromancer'
+        | 'speculator'
+        | 'fortune_teller'
+        | 'villager'
+        | 'wolf';
       /** Round */
       round: number;
       /**
@@ -1368,7 +1501,7 @@ export interface components {
        * Winner
        * @enum {string}
        */
-      winner: 'villagers' | 'wolves' | 'serial_killer';
+      winner: 'villagers' | 'wolves' | 'serial_killer' | 'necromancer';
       /** Days */
       days: number;
       /** Ended Phase */
@@ -1409,7 +1542,7 @@ export interface components {
        * Winner
        * @enum {string}
        */
-      winner: 'villagers' | 'wolves' | 'serial_killer';
+      winner: 'villagers' | 'wolves' | 'serial_killer' | 'necromancer';
       /** Days */
       days: number;
       /** Ended Phase */
@@ -1469,6 +1602,8 @@ export interface components {
         | components['schemas']['InvestigationResult']
         | components['schemas']['VigilanteConfirmation']
         | components['schemas']['BulletsRemaining']
+        | components['schemas']['UsesRemaining']
+        | components['schemas']['NightRecord']
       )[];
       /**
        * Cast
@@ -1496,11 +1631,27 @@ export interface components {
        * Role
        * @enum {string}
        */
-      role: 'villager' | 'wolf' | 'investigator' | 'healer' | 'serial_killer' | 'vigilante';
+      role:
+        | 'investigator'
+        | 'sentinel'
+        | 'trailseer'
+        | 'vigilante'
+        | 'sigilist'
+        | 'healer'
+        | 'chanteuse'
+        | 'illusionist'
+        | 'serial_killer'
+        | 'necromancer'
+        | 'speculator'
+        | 'fortune_teller'
+        | 'villager'
+        | 'wolf';
       /** Pack */
       pack?: string[] | null;
       /** Bullets */
       bullets?: number | null;
+      /** Uses */
+      uses?: number | null;
     };
     /**
      * RolesAssigned
@@ -1622,6 +1773,11 @@ export interface components {
       player: string;
       /** Message */
       message: string;
+      /**
+       * Claim
+       * @default none
+       */
+      claim: string;
     };
     /** StrategyUpdate */
     StrategyUpdate: {
@@ -1666,6 +1822,45 @@ export interface components {
       type: 'turn_started';
       /** Player */
       player: string;
+    };
+    /**
+     * UsesRemaining
+     * @description What is left of a limited ability after the night: bullets, sigils, conceals, self-bets,
+     *     the speculator's pick.
+     */
+    UsesRemaining: {
+      /** Seq */
+      seq: number;
+      /** Day */
+      day: number;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'uses_remaining';
+      /** Player */
+      player: string;
+      /**
+       * Role
+       * @enum {string}
+       */
+      role:
+        | 'investigator'
+        | 'sentinel'
+        | 'trailseer'
+        | 'vigilante'
+        | 'sigilist'
+        | 'healer'
+        | 'chanteuse'
+        | 'illusionist'
+        | 'serial_killer'
+        | 'necromancer'
+        | 'speculator'
+        | 'fortune_teller'
+        | 'villager'
+        | 'wolf';
+      /** Count */
+      count: number;
     };
     /** ValidationError */
     ValidationError: {
@@ -1740,7 +1935,20 @@ export interface components {
        * @enum {string}
        */
       perspective:
-        'villager' | 'wolf' | 'investigator' | 'healer' | 'serial_killer' | 'vigilante';
+        | 'investigator'
+        | 'sentinel'
+        | 'trailseer'
+        | 'vigilante'
+        | 'sigilist'
+        | 'healer'
+        | 'chanteuse'
+        | 'illusionist'
+        | 'serial_killer'
+        | 'necromancer'
+        | 'speculator'
+        | 'fortune_teller'
+        | 'villager'
+        | 'wolf';
       /**
        * Action Phase
        * @enum {string}
@@ -1762,7 +1970,20 @@ export interface components {
        * @enum {string}
        */
       perspective:
-        'villager' | 'wolf' | 'investigator' | 'healer' | 'serial_killer' | 'vigilante';
+        | 'investigator'
+        | 'sentinel'
+        | 'trailseer'
+        | 'vigilante'
+        | 'sigilist'
+        | 'healer'
+        | 'chanteuse'
+        | 'illusionist'
+        | 'serial_killer'
+        | 'necromancer'
+        | 'speculator'
+        | 'fortune_teller'
+        | 'villager'
+        | 'wolf';
       /**
        * Action Phase
        * @enum {string}
@@ -1851,8 +2072,8 @@ export interface components {
     };
     /**
      * WolfKillDecided
-     * @description The pack's plurality tally (random tiebreak) — the only way a wolf seat learns it
-     *     before dawn.
+     * @description The pack's kill: the carrier's choice in the ten-seat game (the plurality tally in a
+     *     nine-seat record) — the only way a wolf seat learns it before dawn.
      */
     WolfKillDecided: {
       /** Seq */
@@ -1866,6 +2087,8 @@ export interface components {
       type: 'wolf_kill_decided';
       /** Target */
       target: string;
+      /** Carrier */
+      carrier?: string | null;
     };
     /**
      * WolfMessage
@@ -1887,6 +2110,11 @@ export interface components {
       wolf: string;
       /** Message */
       message: string;
+      /**
+       * Passed
+       * @default false
+       */
+      passed: boolean;
     };
     /**
      * WolfVote

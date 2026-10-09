@@ -14,7 +14,7 @@ import unicodedata
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from server.schemas.events import Role, Winner
+from server.schemas.events import PoolRole, Role, Winner
 
 
 # --- the menu: what the page fetches before any game exists ------------------------
@@ -95,7 +95,7 @@ class NewSoloGame(BaseModel):
     table, are the other door (POST /rooms) and a deliberately separate contract."""
 
     human: bool = False
-    human_role: Role | None = None
+    human_role: PoolRole | None = None
     """Role choice lives ONLY here: solo has no other players to leak it to.
     Rooms always deal random seats."""
     api_key: str = ""

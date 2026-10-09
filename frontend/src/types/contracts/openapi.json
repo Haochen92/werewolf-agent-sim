@@ -1421,20 +1421,38 @@
             "default": "game_over"
           },
           "winner": {
-            "type": "string",
-            "enum": [
-              "villagers",
-              "wolves",
-              "serial_killer"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "villagers",
+                  "wolves",
+                  "serial_killer",
+                  "necromancer"
+                ]
+              },
+              {
+                "type": "null"
+              }
             ],
             "title": "Winner"
+          },
+          "neutral_result": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Neutral Result"
           }
         },
         "type": "object",
         "required": [
           "seq",
-          "day",
-          "winner"
+          "day"
         ],
         "title": "GameOver",
         "description": "Thin by ruling: an entitlement flip, not a data package \u2014 the server follows it with\nthe withheld observer-tier backlog from the durable log."
@@ -1468,6 +1486,13 @@
             },
             "type": "object",
             "title": "Cast Role Counts"
+          },
+          "lineup": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Lineup"
           }
         },
         "type": "object",
@@ -1616,7 +1641,8 @@
                 "enum": [
                   "villagers",
                   "wolves",
-                  "serial_killer"
+                  "serial_killer",
+                  "necromancer"
                 ]
               },
               {
@@ -1849,10 +1875,19 @@
               "vote",
               "wolf_discuss",
               "wolf_vote",
+              "carrier_kill",
               "healer_target",
               "investigator_target",
+              "sentinel_target",
+              "trailseer_target",
               "serial_killer_target",
-              "vigilante_target"
+              "vigilante_target",
+              "sigil_target",
+              "block_target",
+              "conceal",
+              "necromancer_target",
+              "speculator_pick",
+              "bet_target"
             ],
             "title": "Action Kind"
           },
@@ -1862,6 +1897,13 @@
             },
             "type": "array",
             "title": "Candidates"
+          },
+          "bodies": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Bodies"
           },
           "round": {
             "anyOf": [
@@ -1929,12 +1971,20 @@
           "role": {
             "type": "string",
             "enum": [
-              "villager",
-              "wolf",
               "investigator",
+              "sentinel",
+              "trailseer",
+              "vigilante",
+              "sigilist",
               "healer",
+              "chanteuse",
+              "illusionist",
               "serial_killer",
-              "vigilante"
+              "necromancer",
+              "speculator",
+              "fortune_teller",
+              "villager",
+              "wolf"
             ],
             "title": "Role"
           }
@@ -2204,12 +2254,20 @@
               {
                 "type": "string",
                 "enum": [
-                  "villager",
-                  "wolf",
                   "investigator",
+                  "sentinel",
+                  "trailseer",
+                  "vigilante",
+                  "sigilist",
                   "healer",
+                  "chanteuse",
+                  "illusionist",
                   "serial_killer",
-                  "vigilante"
+                  "necromancer",
+                  "speculator",
+                  "fortune_teller",
+                  "villager",
+                  "wolf"
                 ]
               },
               {
@@ -2264,12 +2322,20 @@
           "role": {
             "type": "string",
             "enum": [
-              "villager",
-              "wolf",
               "investigator",
+              "sentinel",
+              "trailseer",
+              "vigilante",
+              "sigilist",
               "healer",
+              "chanteuse",
+              "illusionist",
               "serial_killer",
-              "vigilante"
+              "necromancer",
+              "speculator",
+              "fortune_teller",
+              "villager",
+              "wolf"
             ],
             "title": "Role"
           },
@@ -2512,12 +2578,18 @@
               {
                 "type": "string",
                 "enum": [
-                  "villager",
-                  "wolf",
                   "investigator",
+                  "sentinel",
+                  "trailseer",
+                  "vigilante",
+                  "sigilist",
                   "healer",
+                  "chanteuse",
+                  "illusionist",
                   "serial_killer",
-                  "vigilante"
+                  "necromancer",
+                  "speculator",
+                  "fortune_teller"
                 ]
               },
               {
@@ -2580,12 +2652,20 @@
           "role": {
             "type": "string",
             "enum": [
-              "villager",
-              "wolf",
               "investigator",
+              "sentinel",
+              "trailseer",
+              "vigilante",
+              "sigilist",
               "healer",
+              "chanteuse",
+              "illusionist",
               "serial_killer",
-              "vigilante"
+              "necromancer",
+              "speculator",
+              "fortune_teller",
+              "villager",
+              "wolf"
             ],
             "title": "Role"
           },
@@ -2613,14 +2693,6 @@
           },
           "role": {
             "type": "string",
-            "enum": [
-              "villager",
-              "wolf",
-              "investigator",
-              "healer",
-              "serial_killer",
-              "vigilante"
-            ],
             "title": "Role"
           },
           "attacker_types": {
@@ -2629,11 +2701,17 @@
               "enum": [
                 "wolves",
                 "serial_killer",
-                "vigilante"
+                "vigilante",
+                "sigilist"
               ]
             },
             "type": "array",
             "title": "Attacker Types"
+          },
+          "concealed": {
+            "type": "boolean",
+            "title": "Concealed",
+            "default": false
           }
         },
         "type": "object",
@@ -2643,6 +2721,74 @@
           "attacker_types"
         ],
         "title": "NightDeath"
+      },
+      "NightRecord": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "night_record",
+            "title": "Type",
+            "default": "night_record"
+          },
+          "player": {
+            "type": "string",
+            "title": "Player"
+          },
+          "actor": {
+            "type": "string",
+            "title": "Actor"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "target": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target"
+          },
+          "result": {
+            "type": "string",
+            "title": "Result"
+          },
+          "outcome": {
+            "type": "string",
+            "title": "Outcome"
+          },
+          "seen": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Seen"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "player",
+          "actor",
+          "action",
+          "result",
+          "outcome"
+        ],
+        "title": "NightRecord",
+        "description": "One seat's private record of its night action and what it may know of the result, as\nthe engine wrote it (Agents/rules/night_record.py): the sentinel's visitors, the sigil's\noutcome, the investigator's read, the pack's kill for each wolf."
       },
       "NightResult": {
         "properties": {
@@ -2676,6 +2822,24 @@
                 "type": "null"
               }
             ]
+          },
+          "saves": {
+            "items": {
+              "$ref": "#/components/schemas/NightSave"
+            },
+            "type": "array",
+            "title": "Saves"
+          },
+          "pick": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pick"
           }
         },
         "type": "object",
@@ -2685,7 +2849,7 @@
           "deaths"
         ],
         "title": "NightResult",
-        "description": "The night death atom (= the dead_roster delta) + free-riders. Empty deaths = quiet\nnight. Silent whiffs (immune SK) appear NOWHERE here \u2014 absence is the design."
+        "description": "The night death atom (= the dead_roster delta) + free-riders. Empty deaths = quiet\nnight. Silent whiffs (an immune target) appear NOWHERE here \u2014 absence is the design."
       },
       "NightSave": {
         "properties": {
@@ -2699,7 +2863,8 @@
               "enum": [
                 "wolves",
                 "serial_killer",
-                "vigilante"
+                "vigilante",
+                "sigilist"
               ]
             },
             "type": "array",
@@ -2872,12 +3037,20 @@
           "role": {
             "type": "string",
             "enum": [
-              "villager",
-              "wolf",
               "investigator",
+              "sentinel",
+              "trailseer",
+              "vigilante",
+              "sigilist",
               "healer",
+              "chanteuse",
+              "illusionist",
               "serial_killer",
-              "vigilante"
+              "necromancer",
+              "speculator",
+              "fortune_teller",
+              "villager",
+              "wolf"
             ],
             "title": "Role"
           },
@@ -2952,7 +3125,8 @@
             "enum": [
               "villagers",
               "wolves",
-              "serial_killer"
+              "serial_killer",
+              "necromancer"
             ],
             "title": "Winner"
           },
@@ -3059,7 +3233,8 @@
             "enum": [
               "villagers",
               "wolves",
-              "serial_killer"
+              "serial_killer",
+              "necromancer"
             ],
             "title": "Winner"
           },
@@ -3225,6 +3400,12 @@
                 },
                 {
                   "$ref": "#/components/schemas/BulletsRemaining"
+                },
+                {
+                  "$ref": "#/components/schemas/UsesRemaining"
+                },
+                {
+                  "$ref": "#/components/schemas/NightRecord"
                 }
               ],
               "discriminator": {
@@ -3244,6 +3425,7 @@
                   "memory_consulted": "#/components/schemas/MemoryConsulted",
                   "memory_extracted": "#/components/schemas/MemoryExtracted",
                   "night_action": "#/components/schemas/NightAction",
+                  "night_record": "#/components/schemas/NightRecord",
                   "night_result": "#/components/schemas/NightResult",
                   "pack_roster_update": "#/components/schemas/PackRosterUpdate",
                   "pass_marker": "#/components/schemas/PassMarker",
@@ -3256,6 +3438,7 @@
                   "speech": "#/components/schemas/Speech",
                   "strategy_update": "#/components/schemas/StrategyUpdate",
                   "turn_started": "#/components/schemas/TurnStarted",
+                  "uses_remaining": "#/components/schemas/UsesRemaining",
                   "vigilante_confirmation": "#/components/schemas/VigilanteConfirmation",
                   "vote_cast": "#/components/schemas/VoteCast",
                   "wolf_kill_decided": "#/components/schemas/WolfKillDecided",
@@ -3312,12 +3495,20 @@
           "role": {
             "type": "string",
             "enum": [
-              "villager",
-              "wolf",
               "investigator",
+              "sentinel",
+              "trailseer",
+              "vigilante",
+              "sigilist",
               "healer",
+              "chanteuse",
+              "illusionist",
               "serial_killer",
-              "vigilante"
+              "necromancer",
+              "speculator",
+              "fortune_teller",
+              "villager",
+              "wolf"
             ],
             "title": "Role"
           },
@@ -3345,6 +3536,17 @@
               }
             ],
             "title": "Bullets"
+          },
+          "uses": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Uses"
           }
         },
         "type": "object",
@@ -3578,6 +3780,11 @@
           "message": {
             "type": "string",
             "title": "Message"
+          },
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "none"
           }
         },
         "type": "object",
@@ -3665,6 +3872,62 @@
         ],
         "title": "TurnStarted",
         "description": "Edge-emitted (route_speaker): who is about to speak. Not a promise of speech."
+      },
+      "UsesRemaining": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "uses_remaining",
+            "title": "Type",
+            "default": "uses_remaining"
+          },
+          "player": {
+            "type": "string",
+            "title": "Player"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "investigator",
+              "sentinel",
+              "trailseer",
+              "vigilante",
+              "sigilist",
+              "healer",
+              "chanteuse",
+              "illusionist",
+              "serial_killer",
+              "necromancer",
+              "speculator",
+              "fortune_teller",
+              "villager",
+              "wolf"
+            ],
+            "title": "Role"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "player",
+          "role",
+          "count"
+        ],
+        "title": "UsesRemaining",
+        "description": "What is left of a limited ability after the night: bullets, sigils, conceals, self-bets,\nthe speculator's pick."
       },
       "ValidationError": {
         "properties": {
@@ -3815,12 +4078,20 @@
           "perspective": {
             "type": "string",
             "enum": [
-              "villager",
-              "wolf",
               "investigator",
+              "sentinel",
+              "trailseer",
+              "vigilante",
+              "sigilist",
               "healer",
+              "chanteuse",
+              "illusionist",
               "serial_killer",
-              "vigilante"
+              "necromancer",
+              "speculator",
+              "fortune_teller",
+              "villager",
+              "wolf"
             ],
             "title": "Perspective"
           },
@@ -3868,12 +4139,20 @@
           "perspective": {
             "type": "string",
             "enum": [
-              "villager",
-              "wolf",
               "investigator",
+              "sentinel",
+              "trailseer",
+              "vigilante",
+              "sigilist",
               "healer",
+              "chanteuse",
+              "illusionist",
               "serial_killer",
-              "vigilante"
+              "necromancer",
+              "speculator",
+              "fortune_teller",
+              "villager",
+              "wolf"
             ],
             "title": "Perspective"
           },
@@ -4113,6 +4392,17 @@
           "target": {
             "type": "string",
             "title": "Target"
+          },
+          "carrier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Carrier"
           }
         },
         "type": "object",
@@ -4122,7 +4412,7 @@
           "target"
         ],
         "title": "WolfKillDecided",
-        "description": "The pack's plurality tally (random tiebreak) \u2014 the only way a wolf seat learns it\nbefore dawn."
+        "description": "The pack's kill: the carrier's choice in the ten-seat game (the plurality tally in a\nnine-seat record) \u2014 the only way a wolf seat learns it before dawn."
       },
       "WolfMessage": {
         "properties": {
@@ -4151,6 +4441,11 @@
           "message": {
             "type": "string",
             "title": "Message"
+          },
+          "passed": {
+            "type": "boolean",
+            "title": "Passed",
+            "default": false
           }
         },
         "type": "object",

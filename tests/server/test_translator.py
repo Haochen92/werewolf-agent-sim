@@ -1,11 +1,13 @@
 """server/translate.py — fixture replay + the paths a fixture without a human can't reach.
 
-The replay test drives the translator over every chunk of a REAL captured game
-(notebooks/fixtures/chunk_catalogue.jsonl, 307 chunks, v2 envelope) and asserts the global
-contract properties: nothing unhandled, seq strictly monotone, every event tier-registered,
-buffers empty at the end. The spot checks pin one real specimen per interesting row
-(voluntary pass, whiff note, investigation delivery). Unit tests cover interrupts, the
-cached drop, and the two kernel cross-checks (which must RAISE, never mis-send).
+The replay test drives the translator over every chunk of a REAL captured game, the ten-seat
+game of 2026-10 (notebooks/fixtures/chunk_catalogue_phase3.jsonl, 250 chunks, v2 envelope),
+and asserts the global contract properties: nothing unhandled, seq strictly monotone, every
+event tier-registered, buffers empty at the end. The spot checks pin one real specimen per
+interesting row (voluntary pass, a concealed death, a sigil's kill, the night records, the
+uses left, the carrier's kill, the lineup, the neutral's result). Unit tests cover
+interrupts, the cached drop, and the lynch's kernel cross-check (which must RAISE, never
+mis-send).
 """
 from __future__ import annotations
 
@@ -42,19 +44,18 @@ def test_every_emitted_type_is_tier_registered(replay):
 def test_buffers_are_empty_at_game_end(replay):
     translator, _ = replay
     assert translator._day_ballots == {}
-    assert translator._wolf_votes == {}
 
 
 def test_game_frame_events(replay):
     _, events = replay
     (started,) = [e for e in events if e.type == "game_started"]
-    assert len(started.seats) == 9
-    assert sum(started.cast_role_counts.values()) == 9
-    assert len([e for e in events if e.type == "role_assigned"]) == 9
+    assert len(started.seats) == 10
+    assert sum(started.cast_role_counts.values()) == 10
+    assert len([e for e in events if e.type == "role_assigned"]) == 10
     (deal,) = [e for e in events if e.type == "roles_assigned"]
     assert set(deal.roles) == set(started.seats)
     (over,) = [e for e in events if e.type == "game_over"]
-    assert over.winner in ("villagers", "wolves", "serial_killer")
+    assert over.winner in ("villagers", "wolves", "serial_killer", "necromancer", None)
     assert over.seq == max(e.seq for e in events if e.type != "game_over") + 1 or True
 
 
@@ -74,7 +75,8 @@ def test_night_results_match_public_deaths(replay):
     assert nights, "no night resolution translated"
     for n in nights:
         for death in n.deaths:
-            assert death.role, "night death must carry the publicly revealed role"
+            # The publicly revealed role, or "" when an illusionist concealed the body.
+            assert bool(death.role) is not death.concealed
             assert death.attacker_types
 
 
@@ -89,20 +91,93 @@ def test_fixture_part_6_is_a_voluntary_pass_not_speech(replay):
     assert all((p.day, p.channel_seq) not in speech_keys for p in passes)
 
 
-def test_investigation_result_delivered_with_recipient(replay):
+# The nine-seat rows are gone from the ten-seat game and so are their spot checks: the pack's
+# vote buffer (wolf_vote flushing before wolf_kill_decided), investigation_result,
+# vigilante_confirmation and bullets_remaining (night_record and uses_remaining carry them).
+
+def test_a_concealed_death_hides_the_role(replay):
+    # Night 2: the illusionist concealed the body of the trailseer the pack and the serial
+    # killer both attacked.
     _, events = replay
-    results = [e for e in events if e.type == "investigation_result"]
-    assert results, "the captured game delivered an investigation"
-    assert all(r.player and r.target and r.role for r in results)
+    (night_2,) = [e for e in events if e.type == "night_result" and e.day == 2]
+    (death,) = night_2.deaths
+    assert (death.player, death.role, death.concealed) == ("player_3", "", True)
+    assert death.attacker_types == ["wolves", "serial_killer"]
+    assert night_2.save is None and night_2.saves == [] and night_2.pick is None
 
 
-def test_wolf_votes_flush_before_the_kill_decision(replay):
+def test_a_sigils_kill_is_announced_by_its_attacker_type(replay):
+    # Night 1: the sigilist's sigil struck down the chanteuse, who attacked that night.
     _, events = replay
-    for decided in (e for e in events if e.type == "wolf_kill_decided"):
-        votes_before = [e for e in events
-                        if e.type == "wolf_vote" and e.day == decided.day
-                        and e.seq < decided.seq]
-        assert votes_before, "buffered wolf votes must flush together with the tally"
+    (night_1,) = [e for e in events if e.type == "night_result" and e.day == 1]
+    by_player = {d.player: d for d in night_1.deaths}
+    assert by_player["player_5"].attacker_types == ["sigilist"]
+    assert (by_player["player_5"].role, by_player["player_5"].concealed) == ("chanteuse", False)
+
+
+def test_a_night_record_reaches_only_its_actor(replay):
+    _, events = replay
+    records = [e for e in events if e.type == "night_record" and e.actor != "wolves"]
+    assert records, "the captured game delivered night records"
+    assert all(r.player == r.actor for r in records)
+    (sigil,) = [r for r in records if r.action == "sigil"]
+    assert (sigil.player, sigil.target, sigil.result) == ("player_4", "player_5", "hit")
+    (watch,) = [r for r in records if r.action == "watch" and r.day == 1]
+    assert (watch.player, watch.seen) == ("player_9", ["player_3", "player_4"])
+
+
+def test_the_packs_kill_record_reaches_every_living_wolf(replay):
+    _, events = replay
+    for night in (1, 2, 3):
+        kill_records = [e for e in events if e.type == "night_record"
+                        and e.actor == "wolves" and e.day == night]
+        resolved = next(e for e in events if e.type == "night_result" and e.day == night)
+        # the pack's roster as the same resolution leaves it
+        after = next(e for e in events if e.type == "pack_roster_update" and e.seq > resolved.seq)
+        recipients = {r.player for r in kill_records}
+        # Every wolf alive at dawn gets it, and no one else: on night 3 the last wolf was shot,
+        # so the pack's record reaches no one.
+        assert recipients == set(after.surviving_wolves)
+        assert recipients <= {"player_5", "player_6"}  # never a seat outside the pack
+        assert len({(r.action, r.target, r.result) for r in kill_records}) <= 1
+
+
+def test_a_wolf_who_died_tonight_gets_no_kill_record(replay):
+    # Night 1: the chanteuse (player_5) was struck down by the sigil.
+    _, events = replay
+    recipients = {e.player for e in events if e.type == "night_record"
+                  and e.actor == "wolves" and e.day == 1}
+    assert recipients == {"player_6"}
+
+
+def test_uses_remaining_reaches_the_holder(replay):
+    translator, events = replay
+    uses = [e for e in events if e.type == "uses_remaining"]
+    assert uses, "the captured game reported what limited abilities have left"
+    assert all(translator.roles[u.player] == u.role for u in uses)
+    after_night_1 = {u.role: u.count for u in uses if u.day == 1}
+    assert after_night_1 == {"vigilante": 2, "sigilist": 1, "illusionist": 2, "fortune_teller": 2}
+    (conceals,) = [u for u in uses if u.day == 2 and u.role == "illusionist"]
+    assert (conceals.player, conceals.count) == ("player_6", 0)
+
+
+def test_the_carriers_kill_is_sent_with_the_carrier_and_there_is_no_pack_vote(replay):
+    _, events = replay
+    decided = [(e.day, e.target, e.carrier) for e in events if e.type == "wolf_kill_decided"]
+    assert decided == [(1, "player_7", "player_5"), (2, "player_3", "player_6"),
+                       (3, "player_1", "player_6")]
+    assert not [e for e in events if e.type == "wolf_vote"]
+
+
+def test_game_started_carries_the_lineup_and_game_over_the_neutrals_result(replay):
+    _, events = replay
+    (started,) = [e for e in events if e.type == "game_started"]
+    assert started.lineup == ["investigator", "sentinel", "trailseer", "vigilante", "sigilist",
+                              "healer", "chanteuse", "illusionist", "serial_killer",
+                              "fortune_teller"]
+    assert sorted(started.cast_role_counts) == sorted(started.lineup)
+    (over,) = [e for e in events if e.type == "game_over"]
+    assert (over.winner, over.neutral_result) == ("villagers", "won (2 points)")
 
 
 def test_phase_changes_cover_every_day(replay):
@@ -120,8 +195,8 @@ def test_phase_changes_cover_every_day(replay):
 
 def _seeded_translator() -> Translator:
     t = Translator()
-    t.roles = {"w0": "wolf", "w1": "wolf", "inv": "investigator", "h": "healer",
-               "sk": "serial_killer", "v": "vigilante", "t0": "villager"}
+    t.roles = {"w0": "chanteuse", "w1": "illusionist", "inv": "investigator", "h": "healer",
+               "sk": "serial_killer", "v": "vigilante", "t0": "sentinel"}
     t.wolves = ["w0", "w1"]
     return t
 
@@ -178,8 +253,8 @@ def test_unknown_node_raises_not_skips():
 def test_unexpected_key_raises_not_skips():
     t = _seeded_translator()
     with pytest.raises(TranslationError, match="unexpected keys"):
-        t.translate({"type": "updates", "ns": ["WOLF_NIGHT_PHASE:x"],
-                     "data": {"PREPARE_WOLF_NIGHT": {"current_round": 2, "new_key": 1}}})
+        t.translate({"type": "updates", "ns": ["PACK_NIGHT_PHASE:x"],
+                     "data": {"PREPARE_PACK_NIGHT": {"current_round": 2, "new_key": 1}}})
 
 
 def test_lynch_cross_check_raises_on_kernel_delta_mismatch():
@@ -196,39 +271,31 @@ def test_lynch_cross_check_raises_on_kernel_delta_mismatch():
         t.translate(chunk)
 
 
-def test_night_cross_check_raises_on_kernel_delta_mismatch():
-    t = _seeded_translator()
-    t._targets = {"wolves_kill_target": "t0"}
-    chunk = {"type": "updates", "ns": [], "data": {"NIGHT_RESOLUTION": {
-        "day_channel": [], "day_summaries": [],
-        # Node recorded a different victim than the tracked targets resolve to.
-        "dead_roster": [{"player": "h", "role": "healer", "day": 1, "phase": "night"}],
-        "surviving_wolves": ["w0", "w1"],
-        "surviving_villagers": ["inv", "sk", "v", "t0"],
-    }}}
-    with pytest.raises(TranslationError, match="kernel/delta mismatch"):
-        t.translate(chunk)
+# (The night's kernel cross-check is gone: the translator reads the night report the node
+# commits instead of recomputing the deaths, so there is nothing to disagree with.)
 
 
 def test_silent_whiff_sends_nothing_public():
-    # Wolves hit the SK: no deaths, no save, no public trace — absence is the design.
+    # The carrier hits the serial killer: no deaths, no save, no public trace — absence is the
+    # design. The pack's own record of the kill is the wolves' only trace of the failure.
     t = _seeded_translator()
-    t._targets = {"wolves_kill_target": "sk"}
+    immune = ("sk was unharmed: immune to night kills tonight. "
+              "The public was told nothing about this attack.")
     chunk = {"type": "updates", "ns": [], "data": {"NIGHT_RESOLUTION": {
         "day_channel": [{"day": 1, "seq": 0, "player": "game_master",
                          "message": "Night of day 1: No one died last night."}],
         "day_summaries": [],
-        "wolf_channel": [{"day": 1, "round": 2, "wolf": "game_master",
-                          "message": "your kill failed — immune", "vote": ""}],
+        "night_actions": [{"day": 1, "actor": "wolves", "action": "kill", "target": "sk",
+                           "result": "immune", "outcome": immune, "seen": []}],
+        "night_report": {"night": 1, "deaths": [], "saves": [], "pick": None},
     }}}
     events = t.translate(chunk)
     (night,) = [e for e in events if e.type == "night_result"]
-    assert night.deaths == [] and night.save is None
-    # The GM whiff note rides the wolf channel — the wolves' only trace of the failure.
-    # (Was also a replay test until the 2026-08-18 re-capture: whether wolves hit the SK
-    # is game-content luck, so the faction-tier delivery is pinned here instead.)
-    (note,) = [e for e in events if e.type == "wolf_message"]
-    assert note.wolf == "game_master" and "immune" in note.message
+    assert night.deaths == [] and night.save is None and night.saves == []
+    notes = [e for e in events if e.type == "night_record"]
+    assert {n.player for n in notes} == {"w0", "w1"}  # faction-only, one per wolf
+    assert all((n.result, n.outcome) == ("immune", immune) for n in notes)
+    assert not [e for e in events if e.type == "wolf_message"]
 
 
 # ---- abort-and-re-execute (2026-08-19): a human interrupt aborts its superstep; sibling
@@ -289,14 +356,8 @@ def test_identical_reexecution_does_not_double_count():
     assert lynch.player is None and lynch.vote_counts == {"t0": 2, "abstain": 3}
 
 
-def test_reexecuted_wolf_kill_vote_overwrites():
-    t = _seeded_translator()
-    for votee in ("t0", "inv"):  # aborted attempt voted t0; the re-run switches to inv
-        t.translate({"type": "updates", "ns": ["WOLF_NIGHT_PHASE:x"], "data": {
-            "wolf_night_vote": {"wolf_channel": [
-                {"day": 1, "round": 2, "wolf": "w0", "message": "", "vote": votee}]},
-        }})
-    assert t._wolf_votes == {"w0": "inv"}
+# (The re-executed pack vote is gone with the vote: the carrier's kill is sent as it is made,
+# from CARRIER_KILL or its uncached human twin, which no sibling re-run repeats.)
 
 
 def test_reexecuted_discussion_entry_is_sent_once():
@@ -311,8 +372,8 @@ def test_reexecuted_discussion_entry_is_sent_once():
 
 def test_reexecuted_wolf_line_is_sent_once():
     t = _seeded_translator()
-    chat = {"type": "updates", "ns": ["WOLF_NIGHT_PHASE:x"], "data": {
-        "wolf_night_discuss": {"wolf_channel": [
+    chat = {"type": "updates", "ns": ["PACK_NIGHT_PHASE:x"], "data": {
+        "PACK_CHAT": {"wolf_channel": [
             {"day": 1, "round": 1, "wolf": "w0", "message": "t0 tonight", "vote": ""}]},
     }}
     assert [e.type for e in t.translate(chat)] == ["wolf_message"]
@@ -333,10 +394,10 @@ def test_reexecuted_reads_are_sent_once():
     from tests.fixtures.translator_golden import _player_reads
 
     t = _seeded_translator()
-    chunk = _player_reads("t0", "villager", 2)
+    chunk = _player_reads("t0", "sentinel", 2)
     assert [e.type for e in t.translate(chunk)] == ["player_reads"]
     assert t.translate(chunk) == []  # the node re-ran and streamed them again
-    assert [e.type for e in t.translate(_player_reads("t0", "villager", 2, "day_vote"))] == ["player_reads"]
+    assert [e.type for e in t.translate(_player_reads("t0", "sentinel", 2, "day_vote"))] == ["player_reads"]
 
 
 def test_reexecuted_memory_extraction_is_sent_once():
@@ -515,14 +576,6 @@ def test_fixture_replay_matches_the_golden_event_for_event():
     assert events_of(load_fixture_chunks()) == load_golden(GOLDEN_FIXTURE)
 
 
-def test_phase2_replay_matches_the_golden_event_for_event():
-    """The 2026-10 game: the day with rounds (round_opened, the closing's moderator line,
-    the round filters' pass markers), which the 2026-08 game has none of."""
-    from tests.fixtures.stream import FIXTURE_PHASE2
-    from tests.fixtures.translator_golden import GOLDEN_PHASE2, events_of, load_golden
-    assert events_of(load_fixture_chunks(FIXTURE_PHASE2)) == load_golden(GOLDEN_PHASE2)
-
-
 def test_human_path_matches_the_golden_event_for_event():
     from tests.fixtures.translator_golden import (
         GOLDEN_HUMAN, events_of, human_path_chunks, load_golden)
@@ -530,6 +583,48 @@ def test_human_path_matches_the_golden_event_for_event():
     assert got == load_golden(GOLDEN_HUMAN)
     # the paths the captured game cannot reach are all present
     types = {e["type"] for e in got}
-    assert {"input_request", "vote_cast", "wolf_vote", "wolf_kill_decided", "night_result",
-            "investigation_result", "vigilante_confirmation", "bullets_remaining",
-            "roster_update", "pack_roster_update", "turn_started", "round_opened"} <= types
+    assert {"input_request", "vote_cast", "wolf_message", "wolf_kill_decided", "night_action",
+            "night_result", "night_record", "uses_remaining", "roster_update",
+            "pack_roster_update", "turn_started", "round_opened", "game_over"} <= types
+    kinds = {e["action_kind"] for e in got if e["type"] == "input_request"}
+    assert kinds == {"discuss", "vote", "sigil_target", "wolf_discuss", "carrier_kill",
+                     "block_target"}
+    (sigil,) = [e for e in got if e.get("action_kind") == "sigil_target"]
+    assert sigil["candidates"][-1] == "keep_sigil"
+    (night,) = [e for e in got if e["type"] == "night_result"]
+    assert night["deaths"] and night["saves"] and night["pick"]
+
+
+def test_a_speech_carries_the_speakers_claim():
+    t = _seeded_translator()
+    delta = {"day_channel": [{"day": 2, "seq": 1, "player": "inv", "message": "I am the investigator.",
+                              "claim": "investigator", "addressed_targets": []}]}
+    (speech,) = t.translate({"type": "updates", "ns": [], "data": {"discuss": delta}})
+    assert (speech.type, speech.claim) == ("speech", "investigator")
+
+
+def test_an_announced_necromancer_turn_carries_its_bodies():
+    t = _seeded_translator()
+    chunk = {"type": "custom", "ns": [], "data": {
+        "event": "human_turn_opened", "player": "sk", "role": "necromancer",
+        "phase": "necromancer_target", "day": 3, "valid_targets": ["t0", "stay_put"],
+        "day_round": None, "bodies": ["v"]}}
+    (ask,) = t.translate(chunk)
+    assert (ask.action_kind, ask.candidates, ask.bodies) == ("necromancer_target", ["t0", "stay_put"], ["v"])
+    interrupt = {"type": "updates", "ns": [], "data": {"__interrupt__": [
+        {"value": {"player_id": "h", "phase": "necromancer_target", "day": 3,
+                   "valid_targets": ["t0"], "bodies": ["v", "w0"]}}]}}
+    (ask,) = t.translate(interrupt)
+    assert ask.bodies == ["v", "w0"]
+
+
+def test_the_carriers_kill_reads_and_its_skill_reads_are_both_sent():
+    from Agents.nodes.night.pack import CARRIER_ROUND, SKILL_ROUND
+    from tests.fixtures.translator_golden import _player_reads
+    t = _seeded_translator()
+    kill = _player_reads("w1", "illusionist", 2, "night_action")
+    kill["data"]["round"] = CARRIER_ROUND
+    skill = _player_reads("w1", "illusionist", 2, "night_action")
+    skill["data"]["round"] = SKILL_ROUND
+    assert [e.round for e in [*t.translate(kill), *t.translate(skill)]] == [CARRIER_ROUND, SKILL_ROUND]
+    assert t.translate(skill) == []  # a re-run of the skill turn is still sent once

@@ -3,15 +3,15 @@
 Agents never see a past day's discussion; they read the day summaries, and in them the claim
 ledger: every role claim and claimed night action, checked against the game master's record
 (Agents/rules/claim_ledger.py). The engine rebuilds it for every prompt and never stores it, so
-the browser gets it here, rebuilt the same way from the same public facts: the structured day
-summaries, the game master's night announcements, the deaths and the cast census. Every input
-is public, so anyone may ask for it, mid-game too.
+the browser gets it here, rebuilt the same way from the same public facts: the claims on the spoken
+lines, the structured day summaries, the game master's night announcements, the deaths and the
+cast census. Every input is public, so anyone may ask for it, mid-game too.
 """
 
 from __future__ import annotations
 
 from Agents.rules.claim_ledger import LedgerPlayer, entry_text, ledger_rows, role_history
-from Agents.schemas.game_events import DaySummary, DeathRecord
+from Agents.schemas.game_events import DayChannel, DaySummary, DeathRecord
 from server.schemas import events as ev
 from server.schemas.ledger import LedgerCheck, LedgerDay, LedgerEntryView, LedgerPlayerView
 
@@ -22,11 +22,15 @@ def ledger_days(events: list[ev.DurableEvent]) -> list[LedgerDay]:
     the morning of day N."""
     cast: dict[str, int] = {}
     summaries: list[DaySummary] = []
+    spoken: list[DayChannel] = []
     deaths: list[DeathRecord] = []
     mornings: set[int] = set()
     for e in events:
         if e.type == "phase_change" and e.phase == "day":
             mornings.add(e.day)
+        elif e.type == "speech":
+            spoken.append(DayChannel(day=e.day, seq=e.channel_seq, player=e.player, message=e.message,
+                                     claim=e.claim))
         elif e.type == "game_started":
             cast = dict(e.cast_role_counts)
         elif e.type == "gm_message":
@@ -43,7 +47,7 @@ def ledger_days(events: list[ev.DurableEvent]) -> list[LedgerDay]:
     for day in days:
         before = [s for s in summaries if s.day < day]
         dead = [d for d in deaths if d.day < day]
-        rows = ledger_rows(before, dead, cast)
+        rows = ledger_rows(before, dead, cast, [m for m in spoken if m.day < day])
         out.append(LedgerDay(day=day, players=[_player_view(r) for r in rows]))
     return out
 

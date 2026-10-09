@@ -68,3 +68,13 @@ def test_a_running_game_serves_its_ledger(api_client, quiet_session):
     body = api_client.get(f"/games/{session.game_id}/ledger").json()
     assert [d["day"] for d in body] == [2, 3]
     assert body[0]["players"][0]["entries"][0]["checks"] == [{"text": "Record: p1 died that night.", "fits": None}]
+
+
+def test_the_role_line_comes_from_the_spoken_claim_and_the_summariser_fills_the_rest():
+    events = _game()
+    events.insert(2, ev.Speech(seq=20, day=1, channel_seq=1, player="p6", message="I am the sentinel.",
+                               claim="sentinel"))
+    day2, _ = ledger_days(events)
+    [p6] = day2.players
+    assert p6.history == "claimed sentinel (day 1)"  # the speaker's field outranks the transcription
+    assert [e.planned for e in p6.entries] == ["p1"]  # the transcribed plan still counts

@@ -44,10 +44,10 @@ def test_hydrate_rebuilds_the_shadow_from_the_log(fixture_chunks):
     assert revived._seen_day_entries == lived._seen_day_entries
     assert revived._seen_wolf_msgs == lived._seen_wolf_msgs
     assert revived._strategies == lived._strategies
-    assert revived._targets == lived._targets
     assert revived._last_day_ballots == lived._last_day_ballots
-    # Uncollected ballots come back from the resumed step, including cached chunks.
-    assert revived._day_ballots == {} and revived._wolf_votes == {}
+    # Uncollected ballots come back from the resumed step, including cached chunks. (The
+    # night keeps no buffer: NIGHT_RESOLUTION commits the night report the wire reads.)
+    assert revived._day_ballots == {}
 
 
 @pytest.mark.parametrize("resolution", ["DAY_RESOLUTION", "NIGHT_RESOLUTION"])
@@ -66,25 +66,23 @@ def test_restart_before_every_resolution_matches_uninterrupted_play(fixture_chun
             assert restored.translate(chunk) == expected
             checked += 1
         log.extend(expected)
-    assert checked == 5  # Includes empty nights, saves, lynches and multi-day resets.
+    # Three of each in the ten-seat game: a day 1 with no vote and two lynches; a night of
+    # three deaths, one with a concealed death, one that ends the game; multi-day resets.
+    assert checked == 3
 
 
-@pytest.mark.parametrize("wolf", [False, True], ids=["day-vote", "wolf-vote"])
 async def test_recovered_cached_votes_wait_for_collection_and_include_every_voter(
-        quiet_session, fixture_chunks, wolf):
-    scope = "WOLF_NIGHT_PHASE" if wolf else "DAY_PHASE"
-    node = "WOLF_NIGHT_VOTE" if wolf else "vote"
-    human_node = "WOLF_NIGHT_VOTE_HUMAN" if wolf else "vote_human"
-    collector = "COLLECT_WOLF_VOTES" if wolf else "COLLECT_VOTES"
-    event_type = "wolf_vote" if wolf else "vote_cast"
+        quiet_session, fixture_chunks):
+    # The day vote only: the ten-seat pack has no vote (the carrier names the kill, sent as
+    # it is made), so the wolf-vote case of this test is gone with the buffer it covered.
+    scope, node, human_node, collector = "DAY_PHASE", "vote", "vote_human", "COLLECT_VOTES"
 
     def ballot(player, target):
-        return ({"wolf_channel": [{"wolf": player, "vote": target}]}
-                if wolf else {"day_votes": [{"voter": player, "votee": target}]})
+        return {"day_votes": [{"voter": player, "votee": target}]}
 
     before = quiet_session(FakeGraph([]))
     before._on_chunk(fixture_chunks[0])
-    before._on_chunk(_updates("NIGHT_START" if wolf else "START_VOTING", {}))
+    before._on_chunk(_updates("START_VOTING", {}))
     ai_vote = ballot("player_4", "player_6")
     before._on_chunk(_updates(node, ai_vote, scope))
 
@@ -96,12 +94,11 @@ async def test_recovered_cached_votes_wait_for_collection_and_include_every_vote
     restored._on_chunk(_updates(node, ai_vote, scope, cached=True))  # duplicate is harmless
     assert restored.log == original
     restored._on_chunk(_updates(human_node, ballot("player_9", "player_6"), scope))
-    assert not any(e.type == event_type for e in restored.log)
-    restored._on_chunk(_updates(collector, {"wolves_kill_target": "player_6"}
-                               if wolf else {}, scope))
-    votes = [e for e in restored.log if e.type == event_type]
+    assert not any(e.type == "vote_cast" for e in restored.log)
+    restored._on_chunk(_updates(collector, {}, scope))
+    votes = [e for e in restored.log if e.type == "vote_cast"]
     assert len(votes) == 2
-    assert {e.wolf if wolf else e.voter for e in votes} == {"player_4", "player_9"}
+    assert {e.voter for e in votes} == {"player_4", "player_9"}
     assert {e.votee for e in votes} == {"player_6"}
     await before.suspend()
     await restored.suspend()

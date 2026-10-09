@@ -35,7 +35,7 @@ from Agents.config.game import GameConfig
 
 # Maximum number of human seats is equal to
 # the maximum number of characters in a game, defined in configuration.
-MAX_HUMAN_SEATS = len(GameConfig().initial_roles)
+MAX_HUMAN_SEATS = GameConfig().seats
 
 
 class HumanSeat(NamedTuple):

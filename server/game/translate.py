@@ -25,8 +25,9 @@ stream more than once, and each is handled at its guard: a re-streamed committed
 two votes (parallel steps which re-run when a human answers; buffered until the tally,
 last write per voter wins).
 
-The lynch and the night deaths are computed here with the engine's own rule functions and
-compared with what the node recorded; a mismatch raises rather than sending a wrong event.
+The lynch is computed here with the engine's own tally and compared with what the node
+recorded; a mismatch raises rather than sending a wrong event. The night is not recomputed:
+the resolution node commits the night report it produced, and that is what is sent.
 The day summary is sent twice from its node: the flattened text the agents read, and the
 summarizer's structured answer (accusations, claims, blocs, dynamics) for the observer
 tier, skipped only when the summarizer failed and the raw channel was stored instead.
@@ -43,7 +44,8 @@ from typing import Any
 
 from pydantic_core import to_jsonable_python
 
-from Agents.rules.resolution import collect_attacks, resolve_attacks, tally_day_vote
+from Agents.rules.resolution import tally_day_vote
+from Agents.schemas.roles import ROLE_SPECS, roles as POOL
 from server.schemas import events as ev
 
 
@@ -98,22 +100,27 @@ def silent_node(name: str, *, writes: Iterable[str] | None = ()) -> None:
     _register(name, writes, None)
 
 
-# Human-turn `phase` -> wire action_kind (the two channel-named turns get UX names).
+# Human-turn `phase` -> wire action_kind (the channel-named turns get UX names; a night turn's
+# phase is its role's field, Agents/schemas/roles.py).
 _ACTION_KINDS = {
     "day_channel": "discuss",
     "day_votes": "vote",
     "wolf_channel": "wolf_discuss",
     "wolf_vote": "wolf_vote",
-    "healer_target": "healer_target",
-    "investigator_target": "investigator_target",
-    "serial_killer_target": "serial_killer_target",
-    "vigilante_target": "vigilante_target",
+    "kill_target": "carrier_kill",
+    **{spec.target_field: spec.target_field for spec in ROLE_SPECS.values() if spec.target_field},
 }
 
-# The parent state's night-role bookkeeping, re-committed by the resolution nodes.
-_ROLE_HOLDERS = {"healer_player", "investigator_player", "serial_killer_player",
-                 "vigilante_player"}
+# The parent state's survivor buckets, re-committed by the resolution nodes.
 _SURVIVORS = {"surviving_wolves", "surviving_villagers"}
+# What the night leaves in parent state beside the records: the night report the wire reads,
+# and the roles' running counts.
+_NIGHT_BOOKKEEPING = {"night_report", "uses_left", "speculator_pick", "fortune_points", "last_body"}
+_PACK_ROLES = tuple(name for name, spec in ROLE_SPECS.items() if spec.pack)
+
+
+def _is_pack(role: str | None) -> bool:
+    return role in _PACK_ROLES
 
 
 def _first_time(seen: set, key) -> bool:
@@ -138,15 +145,12 @@ class Translator:
       current_day   bumped at ONE_MORE_DAY; the day stamped on events that carry none.
       roles         seat -> role, from INITIALIZE_GAME. Names the holder of a night role.
       wolves        the wolves still alive, kept current by the roster updates.
-      _targets      tonight's committed night targets by state key, cleared at
-                    ONE_MORE_DAY; the input to the night-death derivation.
 
     Vote buffers, held until the tally node commits. Keyed by voter and last write wins, so
     a ballot re-run after a human interrupt replaces the aborted one.
       _day_ballots       voter -> votee for the day vote in progress.
       _last_day_ballots  the ballots just flushed, kept until DAY_RESOLUTION recomputes
                          the lynch from them.
-      _wolf_votes        wolf -> kill vote for the night in progress.
 
     Send-once guards for the kinds that are sent as they arrive.
       _seen_day_entries  (day, channel seq) of every speech or pass already sent.
@@ -162,11 +166,10 @@ class Translator:
         self.current_day = 1
         self.roles: dict[str, str] = {}
         self.wolves: list[str] = []
-        self._targets: dict[str, str | None] = {}
+        self._villagers: list[str] | None = None  # the non-wolves alive, once a roster update came
         # Vote buffers.
         self._day_ballots: dict[str, str] = {}
         self._last_day_ballots: list[tuple[str, str]] = []
-        self._wolf_votes: dict[str, str] = {}
         # Ship-once guards.
         self._seen_day_entries: set[tuple[int, int]] = set()
         self._seen_wolf_msgs: set[tuple[int, int, str]] = set()
@@ -188,9 +191,9 @@ class Translator:
           all derivable from sent events — REBUILT (without the guards, the resume's
           abort-and-re-execute re-run would re-send every already-delivered message
           under fresh seqs).
-        - resolution inputs: REBUILT from today's vote_cast and this night's
-          night_action / wolf_kill_decided events. Their producing phase may already
-          be committed while the resolution that needs them has not run yet.
+        - the day's ballots: REBUILT from today's vote_cast events. The vote may already
+          be committed while the resolution that needs them has not run yet. The night
+          needs nothing: the resolution node commits the night report the wire reads.
         - in-flight ballot buffers: not public until collection, so absent from the
           log. The resumed vote step refills them, including from cached chunks;
           cached ballots produce no duplicate events.
@@ -200,16 +203,11 @@ class Translator:
             self.seq = max(self.seq, e.seq)
             self.current_day = max(self.current_day, e.day)
             if e.type == "phase_change":
-                if e.phase == "day":
-                    self._targets.clear()
+                if e.phase in ("day", "voting"):
                     self._last_day_ballots.clear()
-                elif e.phase == "voting":
-                    self._last_day_ballots.clear()
-                elif e.phase == "night":
-                    self._targets.clear()
             if e.type == "roles_assigned":
                 self.roles = dict(e.roles)
-                self.wolves = [p for p, r in self.roles.items() if r == "wolf"]
+                self.wolves = [p for p, r in self.roles.items() if _is_pack(r)]
             elif e.type in ("speech", "pass_marker"):
                 self._seen_day_entries.add((e.day, e.channel_seq))
             elif e.type == "wolf_message":
@@ -224,16 +222,14 @@ class Translator:
                 self._memory_extracted_sent = True
             elif e.type == "vote_cast":
                 self._last_day_ballots.append((e.voter, e.votee))
-            elif e.type == "night_action":
-                self._targets[f"{e.role}_target"] = e.target
-            elif e.type == "wolf_kill_decided":
-                self._targets["wolves_kill_target"] = e.target
             elif e.type == "night_result":
                 dead.update(d.player for d in e.deaths)
             elif e.type == "lynch_result" and e.player:
                 dead.add(e.player)
         # wolves tracks SURVIVING wolves live (the chunks update it); replay the deaths.
         self.wolves = [w for w in self.wolves if w not in dead]
+        if self.roles:
+            self._villagers = [p for p, r in self.roles.items() if not _is_pack(r) and p not in dead]
 
     # ---- entry point ------------------------------------------------------------------
 
@@ -280,8 +276,6 @@ class Translator:
         for name, delta in chunk["data"].items():
             if name.lower() in ("vote", "vote_human"):
                 self._buffer_day_votes(delta or {})
-            elif name.lower() in ("wolf_night_vote", "wolf_night_vote_human"):
-                self._buffer_wolf_votes(delta or {})
 
     def _dispatch(self, name: str, delta: Mapping[str, Any]) -> list[ev.DurableEvent]:
         try:
@@ -304,6 +298,12 @@ class Translator:
     def _role_holder(self, role: str) -> str | None:
         return next((p for p, r in self.roles.items() if r == role), None)
 
+    def _non_wolves_alive(self) -> list[str]:
+        """The non-wolves still alive: the last roster update's, or everyone at the start."""
+        if self._villagers is not None:
+            return list(self._villagers)
+        return [p for p, r in self.roles.items() if not _is_pack(r)]
+
     def _turn_tick(self, payload: Mapping[str, Any]) -> list[ev.DurableEvent]:
         # The custom chunks. "X is thinking" is written from a routing edge, so a re-run
         # node cannot fire it twice. The others are written from inside their nodes and
@@ -320,7 +320,8 @@ class Translator:
                 return []
             return [self._input_request(payload["player"], payload["day"], payload["phase"],
                                         payload["valid_targets"], self._deadlines,
-                                        day_round=payload.get("day_round"))]
+                                        day_round=payload.get("day_round"),
+                                        bodies=payload.get("bodies"))]
         if payload.get("event") == "player_reads":
             key = (payload["player"], payload["day"], payload["round"], payload["action_phase"])
             if not _first_time(self._seen_reads, key):
@@ -354,12 +355,13 @@ class Translator:
                 continue
             out.append(self._input_request(req["player_id"], req["day"], req["phase"],
                                            req.get("valid_targets") or [], deadlines,
-                                           day_round=req.get("day_round")))
+                                           day_round=req.get("day_round"),
+                                           bodies=req.get("bodies")))
         return out
 
     def _input_request(self, player: str, day: int, phase: str, candidates,
                        deadlines: Mapping[str, str], *,
-                       day_round: str | None = None) -> ev.DurableEvent:
+                       day_round: str | None = None, bodies=None) -> ev.DurableEvent:
         kind = _ACTION_KINDS.get(phase)
         if kind is None:
             raise TranslationError(f"unknown human-turn phase: {phase!r}")
@@ -368,8 +370,8 @@ class Translator:
         if kind != "discuss":
             day_round = None
         return self._emit(ev.InputRequest, day=day, player=player, action_kind=kind,
-                          candidates=list(candidates), round=day_round,
-                          deadline=deadlines.get(player))
+                          candidates=list(candidates), bodies=list(bodies or []),
+                          round=day_round, deadline=deadlines.get(player))
 
     def _gm_messages(self, delta):
         return [self._emit(ev.GmMessage, day=e["day"], channel_seq=e["seq"], text=e["message"])
@@ -394,6 +396,7 @@ class Translator:
                 "resolution committed only one survivor bucket; the engine always commits "
                 "both together, refusing to send a partial roster")
         self.wolves = list(wolves)
+        self._villagers = list(villagers)
         # The public roster is the union; the split by faction stays off the public tier.
         return [
             self._emit(ev.RosterUpdate, surviving_players=sorted([*villagers, *wolves])),
@@ -403,26 +406,27 @@ class Translator:
     # ---- lifecycle --------------------------------------------------------------------
 
     @node("INITIALIZE_GAME", writes={
-        "roles", "vigilante_bullets", "current_day", "human_players", "winner",
-        "day_channel", "day_summaries", "wolf_channel", "day_votes", "investigator_results",
-        "night_actions", "no_lynch_streak", *_ROLE_HOLDERS, *_SURVIVORS,
-        "human_player",  # pre-rename spelling: the captured game predates multi-human
+        "roles", "lineup", "current_day", "human_players", "winner", "neutral_result",
+        "day_channel", "day_summaries", "wolf_channel", "day_votes", "night_actions",
+        "night_choices", "no_lynch_streak", *_NIGHT_BOOKKEEPING, *_SURVIVORS,
     })
     def _initialize_game(self, delta):
         self.roles = dict(delta.get("roles") or {})
-        self.wolves = [p for p, r in self.roles.items() if r == "wolf"]
+        self.wolves = [p for p, r in self.roles.items() if _is_pack(r)]
         self.current_day = delta.get("current_day", 1)
-        bullets = delta.get("vigilante_bullets", 0)
+        uses = dict(delta.get("uses_left") or {})
         cast_counts: dict[str, int] = {}
         for role in self.roles.values():
             cast_counts[role] = cast_counts.get(role, 0) + 1
 
-        out = [self._emit(ev.GameStarted, seats=list(self.roles), cast_role_counts=cast_counts)]
+        out = [self._emit(ev.GameStarted, seats=list(self.roles), cast_role_counts=cast_counts,
+                          lineup=list(delta.get("lineup") or []))]
         for player, role in self.roles.items():
             out.append(self._emit(
                 ev.RoleAssigned, player=player, role=role,
-                pack=list(self.wolves) if role == "wolf" else None,
-                bullets=bullets if role == "vigilante" else None,
+                pack=list(self.wolves) if _is_pack(role) else None,
+                bullets=uses.get("vigilante") if role == "vigilante" else None,
+                uses=uses.get(role),
             ))
         out.append(self._emit(ev.RolesAssigned, roles=dict(self.roles)))
         out.append(self._emit(ev.PhaseChange, phase="day"))
@@ -448,7 +452,8 @@ class Translator:
                 ))
             else:
                 out.append(self._emit(ev.Speech, day=day, channel_seq=cseq,
-                                      player=player, message=entry["message"]))
+                                      player=player, message=entry["message"],
+                                      claim=entry.get("claim") or "none"))
             firing = entry.get("firing_reason")
             if firing is not None:
                 out.append(self._emit(
@@ -545,7 +550,7 @@ class Translator:
 
     @node("DAY_RESOLUTION", writes={
         "day_channel", "dead_roster", "voted_player", "no_lynch_streak", "day_summaries",
-        *_SURVIVORS, *_ROLE_HOLDERS,
+        *_SURVIVORS,
     })
     def _day_resolution(self, delta):
         out = self._gm_messages(delta)
@@ -573,152 +578,120 @@ class Translator:
 
     # ---- night ------------------------------------------------------------------------
 
-    silent_node("PREPARE_WOLF_NIGHT", writes={"current_round"})
+    silent_node("PREPARE_PACK_NIGHT", writes={"current_round"})
 
-    @node("WOLF_NIGHT_DISCUSS", writes={"wolf_channel", "agent_strategies"})
-    def _wolf_night_discuss(self, delta):
+    @node("PACK_CHAT", writes={"wolf_channel", "agent_strategies"})
+    def _pack_chat(self, delta):
         out = []
         for entry in delta.get("wolf_channel") or []:
-            if entry.get("passed"):
-                continue  # technical pass: hidden from the pack, no wire event defined
+            if entry.get("pass_reason") == "generation_failed":
+                continue  # technical pass: hidden from the pack, no wire event
             day, round_, wolf = entry["day"], entry["round"], entry["wolf"]
             if not _first_time(self._seen_wolf_msgs, (day, round_, wolf)):
                 continue  # already sent (a re-run or a restart replay)
             out.append(self._emit(ev.WolfMessage, day=day, round=round_, wolf=wolf,
-                                  message=entry["message"]))
+                                  message=entry["message"], passed=bool(entry.get("passed"))))
         out.extend(self._strategy_updates(delta))
         return out
 
-    silent_node("START_WOLF_VOTE")
+    silent_node("START_CARRIER")
 
-    @node("WOLF_NIGHT_VOTE", writes={"wolf_channel", "agent_strategies"})
-    def _wolf_night_vote(self, delta):
-        # Buffered: blind while voting, flushed with the tally. The runtime streams each
-        # wolf's vote as it lands, so the holding has to happen here.
-        self._buffer_wolf_votes(delta)
-        return self._strategy_updates(delta)
-
-    def _buffer_wolf_votes(self, delta):
-        for entry in delta.get("wolf_channel") or []:
-            if entry.get("vote"):
-                # Last write wins per wolf, as with day ballots.
-                self._wolf_votes[entry["wolf"]] = entry["vote"]
-
-    # A human wolf votes through the uncached twin node: same delta, same handling.
-    node("WOLF_NIGHT_VOTE_HUMAN", writes={"wolf_channel", "agent_strategies"})(_wolf_night_vote)
-
-    @node("COLLECT_WOLF_VOTES", writes={"wolves_kill_target"})
-    def _collect_wolf_votes(self, delta):
-        out = [self._emit(ev.WolfVote, wolf=wolf, votee=votee)
-               for wolf, votee in self._wolf_votes.items()]
-        self._wolf_votes.clear()
-        target = delta.get("wolves_kill_target")
-        if target is not None:
-            self._targets["wolves_kill_target"] = target
-            out.append(self._emit(ev.WolfKillDecided, target=target))
-        return out
-
-    def _night_act(self, role: str, delta):
-        target_key = f"{role}_target"
-        target = delta.get(target_key)
-        # The vigilante's no-shot sentinel. The wrapper node turns it into None before it
-        # reaches root state; the subgraph chunk still carries it raw. No act, no event.
-        if target == "hold_fire":
-            target = None
+    def _night_choices(self, delta):
+        """The choices a night node committed, as night_action events (observer tier)."""
         out = []
-        if target is not None:
-            self._targets[target_key] = target
-            out.append(self._emit(ev.NightAction,
-                                  actor=self._role_holder(role), role=role, target=target))
-        strategy = delta.get("updated_strategy")
-        if strategy:
-            # Same guard as the day path: send on change and remember what was sent, so
-            # a restart can rebuild the map from the log.
-            out.extend(self._strategy_updates(
-                {"agent_strategies": {self._role_holder(role): strategy}}))
+        for choice in delta.get("night_choices") or []:
+            out.append(self._emit(ev.NightAction, actor=choice["actor"], role=choice["role"],
+                                  target=choice.get("target") or ""))
         return out
 
-    silent_node("WOLF_NIGHT_PHASE", writes={
-        "wolf_channel", "wolves_kill_target", "agent_strategies"})
+    @node("CARRIER_KILL", writes={"wolf_channel", "night_choices", "wolves_target", "agent_strategies"})
+    def _carrier_kill(self, delta):
+        out = []
+        target = delta.get("wolves_target")
+        carrier = next((c["actor"] for c in delta.get("night_choices") or []), None)
+        if target:
+            out.append(self._emit(ev.WolfKillDecided, target=target, carrier=carrier))
+        out.extend(self._night_choices(delta))
+        out.extend(self._strategy_updates(delta))
+        return out
 
-    for _role in ("healer", "investigator", "serial_killer", "vigilante"):
-        node(f"{_role}_act", writes={f"{_role}_target", "updated_strategy"})(
-            lambda self, delta, role=_role: self._night_act(role, delta))
-        # The root wrapper's commit: the target, and the strategy under the parent's key.
-        silent_node(f"{_role.upper()}_NIGHT_PHASE",
-                    writes={f"{_role}_target", "agent_strategies"})
+    # A human carrier goes through the uncached twin node: same delta, same handling.
+    node("CARRIER_KILL_HUMAN", writes={"wolf_channel", "night_choices", "wolves_target", "agent_strategies"})(_carrier_kill)
+
+    @node("PACK_SKILL", writes={"night_choices", "agent_strategies"})
+    def _pack_skill(self, delta):
+        return [*self._night_choices(delta), *self._strategy_updates(delta)]
+
+    node("PACK_SKILL_HUMAN", writes={"night_choices", "agent_strategies"})(_pack_skill)
+    silent_node("COLLECT_PACK")
+
+    # The root wrapper's commit: the pack's result, already translated above.
+    silent_node("PACK_NIGHT_PHASE", writes={"wolf_channel", "night_choices", "agent_strategies"})
+
+    # One named node per solo night role: its choice and its strategy note.
+    for _role in POOL:
+        if ROLE_SPECS[_role].night_action and not ROLE_SPECS[_role].pack:
+            node(f"{_role.upper()}_NIGHT_PHASE", writes={"night_choices", "agent_strategies"})(
+                lambda self, delta: [*self._night_choices(delta), *self._strategy_updates(delta)])
     del _role
 
     @node("NIGHT_RESOLUTION", writes={
-        "day_channel", "dead_roster", "wolf_channel", "investigator_results",
-        "vigilante_results", "vigilante_bullets", "day_summaries",
-        # The private night record: engine input for later turns; the browser learns each
-        # seat's own action from night_action events, so no handler.
+        "day_channel", "dead_roster", "day_summaries",
+        # The private night record: engine input for later turns, and each seat's own
+        # night_record event below.
         "night_actions",
-        *_SURVIVORS, *_ROLE_HOLDERS,
+        *_NIGHT_BOOKKEEPING, *_SURVIVORS,
     })
     def _night_resolution(self, delta):
         out = self._gm_messages(delta)
 
-        # Compute the deaths with the engine's own rules, then compare with what the
-        # node recorded.
-        attacks = collect_attacks(self._targets.get("wolves_kill_target"),
-                                  self._targets.get("serial_killer_target"),
-                                  self._targets.get("vigilante_target"))
-        verdicts = resolve_attacks(attacks, self._targets.get("healer_target"),
-                                   self._role_holder("serial_killer"))
-        deaths = [ev.NightDeath(player=t, role=self.roles.get(t, ""), attacker_types=attacks[t])
-                  for t in sorted(attacks) if verdicts[t] == "killed"]
-        recorded = {d["player"] for d in delta.get("dead_roster") or []}
-        if {d.player for d in deaths} != recorded:
-            raise TranslationError(
-                f"kernel/delta mismatch: derived night deaths {[d.player for d in deaths]} "
-                f"but the node recorded {sorted(recorded)}; refusing to send")
-        save = next((ev.NightSave(player=t, attacker_types=attacks[t])
-                     for t in attacks if verdicts[t] == "saved"), None)
-        out.append(self._emit(ev.NightResult, deaths=deaths, save=save))
+        # The night's public outcome, as the node committed it (the authoritative report).
+        report = delta.get("night_report") or {}
+        deaths = [ev.NightDeath(player=p, role=role, attacker_types=types, concealed=not role)
+                  for p, role, types in report.get("deaths") or []]
+        saves = [ev.NightSave(player=p, attacker_types=types) for p, types in report.get("saves") or []]
+        out.append(self._emit(ev.NightResult, deaths=deaths, save=saves[0] if saves else None,
+                              saves=saves, pick=report.get("pick")))
 
-        # The GM's whiff note to the pack arrives on the wolf channel.
-        for entry in delta.get("wolf_channel") or []:
-            out.append(self._emit(ev.WolfMessage, day=entry["day"], round=entry["round"],
-                                  wolf=entry["wolf"], message=entry["message"]))
-
-        # Seat events: the investigation (the node omits it when the investigator is
-        # dead, so no event either), the vigilante's private confirmation, the bullets.
-        for result in delta.get("investigator_results") or []:
-            out.append(self._emit(
-                ev.InvestigationResult, day=result["day"],
-                player=self._role_holder("investigator"),
-                target=result["player_investigated"], role=result["role_revealed"],
-            ))
-        for _note in delta.get("vigilante_results") or []:
-            out.append(self._emit(ev.VigilanteConfirmation, player=self._role_holder("vigilante"),
-                                  target=self._targets.get("vigilante_target")))
-        if "vigilante_bullets" in delta:
-            out.append(self._emit(ev.BulletsRemaining, player=self._role_holder("vigilante"),
-                                  count=delta["vigilante_bullets"]))
+        # Seat events: each actor's own record (the pack's kill to every wolf still alive at
+        # dawn), and what each limited ability has left, to a living holder. The delta carries
+        # the survivor buckets only when someone died; otherwise the shadow copies stand.
+        wolves_alive = delta.get("surviving_wolves")
+        if wolves_alive is None:
+            wolves_alive = list(self.wolves)
+        alive = set(wolves_alive) | set(delta.get("surviving_villagers") or self._non_wolves_alive())
+        for record in delta.get("night_actions") or []:
+            recipients = list(wolves_alive) if record["actor"] == "wolves" else [record["actor"]]
+            for seat in recipients:
+                out.append(self._emit(
+                    ev.NightRecord, player=seat, actor=record["actor"], action=record["action"],
+                    target=record.get("target"), result=record.get("result", ""),
+                    outcome=record.get("outcome", ""), seen=list(record.get("seen") or []),
+                ))
+        for role, count in (delta.get("uses_left") or {}).items():
+            holder = self._role_holder(role)
+            if holder is not None and holder in alive:
+                out.append(self._emit(ev.UsesRemaining, player=holder, role=role, count=count))
 
         out.extend(self._roster_updates(delta))
         return out
 
     @node("ONE_MORE_DAY", writes={
-        "current_day", "day_votes", "voted_player", "wolves_kill_target", "healer_target",
-        "investigator_target", "serial_killer_target", "vigilante_target",
+        "current_day", "day_votes", "voted_player", "night_choices", "night_report",
     })
     def _one_more_day(self, delta):
         self.current_day = delta.get("current_day", self.current_day + 1)
-        self._targets = {}
         self._day_ballots.clear()
         self._last_day_ballots.clear()
-        self._wolf_votes.clear()
         return [self._emit(ev.PhaseChange, phase="day")]
 
     # ---- end --------------------------------------------------------------------------
 
-    @node("END_GAME", writes={"day_channel", "winner"})
+    @node("END_GAME", writes={"day_channel", "winner", "neutral_result"})
     def _end_game(self, delta):
         out = self._gm_messages(delta)
-        out.append(self._emit(ev.GameOver, winner=delta.get("winner")))
+        out.append(self._emit(ev.GameOver, winner=delta.get("winner"),
+                              neutral_result=delta.get("neutral_result")))
         return out
 
     # Post-game memory work is not part of the game record; whatever it writes is ignored.
