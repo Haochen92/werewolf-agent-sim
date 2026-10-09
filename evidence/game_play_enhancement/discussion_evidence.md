@@ -1520,10 +1520,14 @@ fixing: the first fix here was the obvious one and did nothing.
 
 ---
 
-## 8. Phase 3 plan: roles and cast (not started)
+## 8. Phase 3 plan: roles and cast
 
 Phase 3 is the large one. It touches the engine, the prompts, the website and the artwork. §2.5 sets
 its target: several imperfect information sources, and a real way for evil to contest them.
+
+*Status 2026-10-07: the owner's role sheet (`role_sheet.md`, dated 6 Oct 2026) is the ruling for
+this phase and wins over R1–R7 below where they differ. R1–R7 are kept as the plan of 2026-10-03; the
+build order agreed on the sheet is §8.1.*
 
 **R1. Replace the single exact investigator with several narrower observers.** Today the investigator
 learns a player's exact role, which concentrates all the certainty in one player. Candidate observers,
@@ -1594,6 +1598,89 @@ pool of about 16. They are non-human creatures in the existing felt-and-brass no
   may read as "the wolf" to a human viewer, even though casting is independent of roles. Good fits
   include pig, robot, lion, unicorn, tortoise and toad. A yeti and a dinosaur would need clearly
   different silhouettes from the existing polar bear and dragon.
+
+### 8.1 The build order (agreed 2026-10-07, on the role sheet)
+
+**What the sheet settles against R1–R7.** The Seer (comparer) is deferred. The decoy visit is dropped;
+evil muddies the evidence through the Illusionist's conceal and the Chanteuse's block instead. The
+lineup is fixed (10 seats, no plain villagers, the sheet's table), not drawn from public categories.
+The investigator becomes a pure wolf detector ("Suspicious" / "Not suspicious"). The claim ledger
+already exists (the fidelity pass), so R5 reduces to logging formal claims as actions. Wills (R6) are
+replaced by the engine's own disclosure, below. The cast (R7) is a separate track.
+
+**Rulings taken on the day (owner):**
+- The vigilante stays as built (bullets and misfire penalty unchanged).
+- **No wills. The engine discloses a dead town role's record instead.** When a town player dies and
+  the role is revealed, the moderator publishes what that role received each night (its checks,
+  what it saw, whom it protected and whether a save happened, where a sigil was placed and what
+  came of it) as a public fact, with the reveal and before the next death's reveal. Today the table
+  only has the player's own account of those results in the transcript, which can be invented or
+  forgotten; the disclosure is engine-written, so it is true and cannot be forged. A concealed body
+  (the Illusionist) discloses nothing, which is what makes the conceal matter. *Assumptions to
+  confirm:* town roles only; the record is the role's own actions and results, never what the player
+  said; the day summary and claim ledger take the disclosure as facts.
+- The balance run (about 20 agent-only games, one dial at a time, the sheet's dials) comes **after
+  level 2 is built**, not after level 1.
+
+**The order.** Level 1 first; each step is reviewed before the next (the Phase 2 working mode, §7.4).
+
+0. **Record.** This section; the sheet is the design. Open items go into §9 as they appear.
+1. **Shared rules as one resolution layer**, before any role card: a per-night visit record (who
+   visited whom; the carrier is the only wolf who visits; bets are not visits), attacks collected
+   from it, the roleblock applied before actions resolve, night immunity, the morning report by
+   attacker type, death reveal with a concealed flag, the dead role's disclosure. Every role card
+   then reads from this layer, which is where the token cost is decided.
+2. **Ten seats, no villagers**, the sheet's lineup as the casting; the config's required-role checks
+   change; a census of the nine-seat assumptions on the stage and in the server.
+3. **The investigator's result** becomes suspicious / not suspicious, with the Necromancer's
+   attack-night rule left as a hook.
+4. **The three cheap town roles:** Sentinel and Trailseer read the visit record; the Sigilist reads
+   the attack record (2 sigils, retaliation after the victim dies). One choice per night each; the
+   prompt carries uses left and past results, never left to memory.
+5. **The wolf skills and the carrier.** Pack chat and the target vote as today, then the carrier
+   (rotating by default, overridable in chat, the survivor if one wolf is dead), then one short
+   skill prompt per wolf: the Chanteuse's block (town only, same target allowed) and the
+   Illusionist's conceal (2 uses, learns the role privately). The main extra-token item: up to two
+   more calls a night.
+6. **The Speculator:** one private pick by the end of day 2, announced in the next morning report
+   without the seat; a fourth winning side in the win logic; "made no choice" when it never picks.
+7. **Formal claims and accusations as logged actions**, feeding the claim ledger.
+8. **Level 1 tests, then a few games** read in full, as §7.3 did for Phase 2.
+9. **Level 2:** the Necromancer (borrowed bodies from night 2, the stealth and trace rules) and the
+   Fortune Teller (bets, points, self-bets). Each behind a casting choice, not a flag.
+10. **The balance run and the dials**, tracking faction win rates, the day games end, the nights the
+    investigator gets results, and how often the Illusionist conceals an info role.
+
+**Frontend.** The stage already names and sides all fourteen roles (`frontend/src/stage/roles.ts`),
+and the sigils and faction marks landed on 2026-10-07; the stage work this phase is the ten-seat
+census, the new morning-report lines (blocked, concealed, the disclosure), and the night rooms for
+the new roles, each as beat-sheet rows first.
+
+### 8.2 The wiring and the first ten-seat games (2026-10-09)
+
+The prompt side (the role cards, the composed rules block, the per-lineup output schemas) and the
+wiring landed together on 2026-10-09; the plan and the census of every nine-seat assumption are in
+`phase3_wiring_census.md`, the rulings taken on the way in the role sheet's change log. What was
+built, in the plan's order: the role registry (twelve roles, four sides; the retired villager and
+wolf kept for old records), the deal with the two drawn seats (a solo human's request forces its
+draw), one shared night turn behind a named node per role, the pack's night as chat (three rounds,
+the carrier first, a pass, an early end on a round of passes) then the carrier's kill then each
+wolf's skill, the night resolved once for every role with the public outcome committed as a night
+report the wire reads, the four-side win with the neutral's result beside the winner, the day
+flow seating every dealt role, the translator and the wire events, and the deletion of the
+nine-seat game's templates, schemas, rules and core strategy (the tag goes on the commit before
+this one).
+
+Three AI-only games on gemini-3.5-flash-lite, memory off, read in full
+(`data/phase3_games/README.md`): the town won all three (days 3, 5 and 4); every mechanic ran as
+the sheet says (the sigil's strike, the conceal and the hidden body, the carrier's visits seen by
+the sentinel and the trailseer, a will read out, the necromancer acting through three bodies, the
+fortune teller's two points, the speculator's pick announced without the seat). The games found
+two bugs, fixed before game3: the per-lineup read class was rejected by the turn effects, and a
+blocked action spent its use. The leak check passed on all three once the pack's chat was added
+to its shared-vocabulary corpus (a chat line had shared its phrasing with another player's read).
+Open for the reading pass: the day 1 opening is still thin on claims; the vigilante held fire all
+of game3; the lone killer survived to the last votes in every game.
 
 ---
 

@@ -1,0 +1,1583 @@
+{
+ "game_id": "phase3-game1-6365ed9b",
+ "winner": "villagers",
+ "current_day": 3,
+ "duration_seconds": 302.0,
+ "roles": {
+  "player_1": "vigilante",
+  "player_2": "healer",
+  "player_3": "trailseer",
+  "player_4": "sigilist",
+  "player_5": "chanteuse",
+  "player_6": "illusionist",
+  "player_7": "investigator",
+  "player_8": "fortune_teller",
+  "player_9": "sentinel",
+  "player_10": "serial_killer"
+ },
+ "lineup": [
+  "investigator",
+  "sentinel",
+  "trailseer",
+  "vigilante",
+  "sigilist",
+  "healer",
+  "chanteuse",
+  "illusionist",
+  "serial_killer",
+  "fortune_teller"
+ ],
+ "neutral_result": "won (2 points)",
+ "speculator_pick": null,
+ "fortune_points": 2,
+ "uses_left": {
+  "vigilante": 1,
+  "sigilist": 1,
+  "illusionist": 0,
+  "fortune_teller": 2
+ },
+ "night_actions": [
+  {
+   "day": 1,
+   "actor": "player_8",
+   "action": "bet",
+   "target": "player_1",
+   "outcome": "player_1 did not die tonight: no points.",
+   "result": "missed",
+   "seen": []
+  },
+  {
+   "day": 1,
+   "actor": "wolves",
+   "action": "kill",
+   "target": "player_7",
+   "outcome": "player_7 died. They were a investigator.",
+   "result": "killed",
+   "seen": []
+  },
+  {
+   "day": 1,
+   "actor": "player_9",
+   "action": "watch",
+   "target": "player_5",
+   "outcome": "Tonight player_5 was visited by player_3 and player_4.",
+   "result": "seen",
+   "seen": [
+    "player_3",
+    "player_4"
+   ]
+  },
+  {
+   "day": 1,
+   "actor": "player_10",
+   "action": "kill",
+   "target": "player_2",
+   "outcome": "player_2 died. They were a healer.",
+   "result": "killed",
+   "seen": []
+  },
+  {
+   "day": 1,
+   "actor": "player_4",
+   "action": "sigil",
+   "target": "player_5",
+   "outcome": "player_5 attacked someone tonight, and your sigil struck them down.",
+   "result": "hit",
+   "seen": []
+  },
+  {
+   "day": 1,
+   "actor": "player_3",
+   "action": "follow",
+   "target": "player_5",
+   "outcome": "Tonight player_5 visited player_7 and player_1.",
+   "result": "seen",
+   "seen": [
+    "player_7",
+    "player_1"
+   ]
+  },
+  {
+   "day": 1,
+   "actor": "player_1",
+   "action": "hold_fire",
+   "target": null,
+   "outcome": "You were roleblocked: your action was not carried out and you learned nothing tonight.",
+   "result": "roleblocked",
+   "seen": []
+  },
+  {
+   "day": 2,
+   "actor": "player_8",
+   "action": "bet",
+   "target": "player_1",
+   "outcome": "player_1 did not die tonight: no points.",
+   "result": "missed",
+   "seen": []
+  },
+  {
+   "day": 2,
+   "actor": "wolves",
+   "action": "kill",
+   "target": "player_3",
+   "outcome": "player_3 died. Their role was concealed.",
+   "result": "killed",
+   "seen": []
+  },
+  {
+   "day": 2,
+   "actor": "player_6",
+   "action": "conceal",
+   "target": null,
+   "outcome": "You concealed player_3's body. They were a trailseer.",
+   "result": "concealed",
+   "seen": [
+    "trailseer"
+   ]
+  },
+  {
+   "day": 2,
+   "actor": "player_9",
+   "action": "watch",
+   "target": "player_3",
+   "outcome": "Tonight player_3 was visited by player_6 and player_10.",
+   "result": "seen",
+   "seen": [
+    "player_6",
+    "player_10"
+   ]
+  },
+  {
+   "day": 2,
+   "actor": "player_10",
+   "action": "kill",
+   "target": "player_3",
+   "outcome": "player_3 died. Their role was concealed.",
+   "result": "killed",
+   "seen": []
+  },
+  {
+   "day": 2,
+   "actor": "player_1",
+   "action": "hold_fire",
+   "target": null,
+   "outcome": "You held your fire.",
+   "result": "held",
+   "seen": []
+  },
+  {
+   "day": 3,
+   "actor": "player_8",
+   "action": "bet",
+   "target": "player_6",
+   "outcome": "player_6 died and was a illusionist: two points.",
+   "result": "scored_2",
+   "seen": []
+  },
+  {
+   "day": 3,
+   "actor": "wolves",
+   "action": "kill",
+   "target": "player_1",
+   "outcome": "player_1 died. They were a vigilante.",
+   "result": "killed",
+   "seen": []
+  },
+  {
+   "day": 3,
+   "actor": "player_9",
+   "action": "watch",
+   "target": "player_6",
+   "outcome": "Tonight player_6 was visited by player_1.",
+   "result": "seen",
+   "seen": [
+    "player_1"
+   ]
+  }
+ ],
+ "day_channel": [
+  {
+   "day": 1,
+   "seq": 0,
+   "player": "player_1",
+   "message": "",
+   "addressed_targets": [],
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 1,
+   "seq": 1,
+   "player": "player_2",
+   "message": "",
+   "addressed_targets": [],
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 1,
+   "seq": 2,
+   "player": "player_3",
+   "message": "",
+   "addressed_targets": [],
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 1,
+   "seq": 3,
+   "player": "player_4",
+   "message": "",
+   "addressed_targets": [],
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 1,
+   "seq": 4,
+   "player": "player_5",
+   "message": "",
+   "addressed_targets": [],
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 1,
+   "seq": 5,
+   "player": "player_6",
+   "message": "",
+   "addressed_targets": [],
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 1,
+   "seq": 6,
+   "player": "player_7",
+   "message": "",
+   "addressed_targets": [],
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 1,
+   "seq": 7,
+   "player": "player_8",
+   "message": "",
+   "addressed_targets": [],
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 1,
+   "seq": 8,
+   "player": "player_9",
+   "message": "",
+   "addressed_targets": [],
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 1,
+   "seq": 9,
+   "player": "player_10",
+   "message": "",
+   "addressed_targets": [],
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 1,
+   "seq": 10,
+   "player": "game_master",
+   "message": "\nThere is no vote on day 1, so no one voted and no one is eliminated.",
+   "addressed_targets": [],
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 1,
+   "seq": 11,
+   "player": "game_master",
+   "message": "Night of day 1: player_2 was stabbed by the serial killer last night. They were a healer. player_5 was struck down by a sigil last night. They were a chanteuse. player_7 was killed by the wolves last night. They were a investigator.",
+   "addressed_targets": [],
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 0,
+   "player": "player_1",
+   "message": "",
+   "addressed_targets": [],
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 1,
+   "player": "player_3",
+   "message": "On night 1, I followed player_5 and learned that they visited both player_7 and player_1.",
+   "addressed_targets": [],
+   "day_round": "opening",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": "night_action"
+  },
+  {
+   "day": 2,
+   "seq": 2,
+   "player": "player_4",
+   "message": "",
+   "addressed_targets": [],
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 3,
+   "player": "player_6",
+   "message": "",
+   "addressed_targets": [],
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 4,
+   "player": "player_8",
+   "message": "",
+   "addressed_targets": [],
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 5,
+   "player": "player_9",
+   "message": "I watched player_5 last night and saw that both player_3 and player_4 visited them. We should hear what they were doing over there.",
+   "addressed_targets": [],
+   "day_round": "opening",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": "night_action"
+  },
+  {
+   "day": 2,
+   "seq": 6,
+   "player": "player_10",
+   "message": "",
+   "addressed_targets": [],
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 7,
+   "player": "player_1",
+   "message": "Player_3, your claim of following player_5 matches player_9 seeing you visit them. Since you mentioned player_5 visited me, I was just minding my own business and didn't leave my room. But player_5 was a wolf, so why they dropped by is worth noting.",
+   "addressed_targets": [
+    {
+     "target": "player_3",
+     "addressed_form": "response",
+     "stance": "neutral"
+    }
+   ],
+   "day_round": "proactive",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 1
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 8,
+   "player": "player_4",
+   "message": "I visited player_5 last night because their behavior caught my eye, but I didn't expect them to turn up as a wolf who attacked. Player_9, since you were watching player_5, did you see anyone else drop by besides player_3 and me?",
+   "addressed_targets": [
+    {
+     "target": "player_9",
+     "addressed_form": "response",
+     "stance": "neutral"
+    }
+   ],
+   "day_round": "proactive",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 1
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 9,
+   "player": "player_6",
+   "message": "",
+   "addressed_targets": [],
+   "day_round": "proactive",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 1
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 10,
+   "player": "player_8",
+   "message": "",
+   "addressed_targets": [],
+   "day_round": "proactive",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 1
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 11,
+   "player": "player_10",
+   "message": "Player_3's follow results actually line up with player_5 being the chanteuse\u2014visiting player_7 for the wolf kill and player_1 for a block. Player_9 and player_4 both confirming visits to player_5 creates a pretty tight circle of interactions to look at.",
+   "addressed_targets": [
+    {
+     "target": "player_3",
+     "addressed_form": "mention",
+     "stance": "neutral"
+    }
+   ],
+   "day_round": "proactive",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 1
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 12,
+   "player": "player_3",
+   "message": "Player_1, since player_5 visited your room while I was tracking them, did you receive a roleblock notification? Confirming whether you were blocked would help clear up what player_5 was doing during that stop.",
+   "addressed_targets": [
+    {
+     "target": "player_1",
+     "addressed_form": "response",
+     "stance": "neutral"
+    }
+   ],
+   "day_round": "proactive",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 2
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 13,
+   "player": "player_6",
+   "message": "",
+   "addressed_targets": [
+    {
+     "target": "player_3",
+     "addressed_form": "mention",
+     "stance": "agreement"
+    },
+    {
+     "target": "player_1",
+     "addressed_form": "mention",
+     "stance": "neutral"
+    }
+   ],
+   "day_round": "proactive",
+   "passed": true,
+   "pass_reason": "novelty_gated",
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 2
+   },
+   "gated": true,
+   "gated_candidate": "Player_3 asking player_1 about the roleblock notification is a crucial check. If player_1 confirms being blocked, it gives us solid confirmation on player_5's actions that night.",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 14,
+   "player": "player_8",
+   "message": "",
+   "addressed_targets": [],
+   "day_round": "proactive",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 2
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 15,
+   "player": "player_9",
+   "message": "No, player_4, my watch on player_5 only picked up you and player_3 last night. That matches what player_3 reported, but two visitors to a wolf still warrant a close look at both of your claims.",
+   "addressed_targets": [
+    {
+     "target": "player_4",
+     "addressed_form": "response",
+     "stance": "neutral"
+    }
+   ],
+   "day_round": "proactive",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 2
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 16,
+   "player": "game_master",
+   "message": "\nHere's the vote result for day 2:\n  player_1 voted to eliminate player_4\n  player_3 voted to eliminate player_4\n  player_4 voted to abstain\n  player_6 voted to eliminate player_4\n  player_8 voted to abstain\n  player_9 voted to eliminate player_4\n  player_10 voted to eliminate player_4\nPlayer player_4 has been voted out and was a sigilist.\nThe record of player_4, the sigilist: night 1, set a sigil on player_5, who attacked and was struck down.\n",
+   "addressed_targets": [],
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 17,
+   "player": "game_master",
+   "message": "Night of day 2: player_3 was attacked by the wolves and the serial killer last night. Their role is hidden by an illusionist.",
+   "addressed_targets": [],
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 0,
+   "player": "player_1",
+   "message": "",
+   "addressed_targets": [],
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 1,
+   "player": "player_6",
+   "message": "",
+   "addressed_targets": [],
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 2,
+   "player": "player_8",
+   "message": "",
+   "addressed_targets": [],
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 3,
+   "player": "player_9",
+   "message": "Last night I watched player_3, and my sentinel check shows they were visited by player_6 and player_10. Since player_3 was killed by the wolves that same night, we need to hear from both of them about why they were at player_3's door.",
+   "addressed_targets": [],
+   "day_round": "opening",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": "night_action"
+  },
+  {
+   "day": 3,
+   "seq": 4,
+   "player": "player_10",
+   "message": "",
+   "addressed_targets": [],
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 5,
+   "player": "player_1",
+   "message": "",
+   "addressed_targets": [
+    {
+     "target": "player_6",
+     "addressed_form": "mention",
+     "stance": "neutral"
+    },
+    {
+     "target": "player_10",
+     "addressed_form": "mention",
+     "stance": "neutral"
+    }
+   ],
+   "day_round": "proactive",
+   "passed": true,
+   "pass_reason": "novelty_gated",
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 1
+   },
+   "gated": true,
+   "gated_candidate": "Player_9's sentinel check gives us a sharp starting point for who interacted with player_3 before they died. Since player_3 turned up dead with a hidden role, player_6 and player_10 both need to give clear reasons for why they visited player_3 last night.",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 6,
+   "player": "player_6",
+   "message": "I visited player_3 last night because their claim needed a closer look given everything going on. Player_9 is pointing fingers at visitors, but let us not forget player_3 was hit by multiple attackers, meaning other things happened last night too.",
+   "addressed_targets": [
+    {
+     "target": "player_9",
+     "addressed_form": "response",
+     "stance": "defense"
+    }
+   ],
+   "day_round": "proactive",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 1
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 7,
+   "player": "player_8",
+   "message": "",
+   "addressed_targets": [],
+   "day_round": "proactive",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 1
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 8,
+   "player": "player_10",
+   "message": "Player_6 just admitted to visiting player_3, and since player_3 was hit by the wolves, that confession points straight at them as the wolf carrier. Player_9, you caught us at the scene, but player_6's excuse falls apart when a wolf attack happened right there.",
+   "addressed_targets": [
+    {
+     "target": "player_9",
+     "addressed_form": "response",
+     "stance": "defense"
+    },
+    {
+     "target": "player_6",
+     "addressed_form": "response",
+     "stance": "accusation"
+    }
+   ],
+   "day_round": "proactive",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 1
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 9,
+   "player": "player_6",
+   "message": "You were right there at player_3's door too, player_10, so trying to pin the whole attack on me while deflecting your own visit does not make sense. If being at the scene is suspicious, your excuse is just as weak as mine.",
+   "addressed_targets": [
+    {
+     "target": "player_10",
+     "addressed_form": "response",
+     "stance": "accusation"
+    }
+   ],
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_10"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 10,
+   "player": "player_10",
+   "message": "Calling out my visit doesn't erase yours, player_6. You are just deflecting because you got caught at the exact house the wolves hit, and checking a claim is a very convenient excuse when you are the one carrying out the kill.",
+   "addressed_targets": [
+    {
+     "target": "player_6",
+     "addressed_form": "response",
+     "stance": "accusation"
+    }
+   ],
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_6"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 11,
+   "player": "player_6",
+   "message": "You are acting like being at player_3's door is a smoking gun only when it comes to me, player_10, while conveniently ignoring that you were standing right beside me. If visiting a target makes someone an attacker, your excuse is just as hollow as mine.",
+   "addressed_targets": [
+    {
+     "target": "player_10",
+     "addressed_form": "response",
+     "stance": "accusation"
+    }
+   ],
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_10"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 12,
+   "player": "player_10",
+   "message": "Trying to equate our visits doesn't wash away your wolf connection, player_6. You were caught right at the kill site offering a flimsy excuse about checking a claim while the pack struck.",
+   "addressed_targets": [
+    {
+     "target": "player_6",
+     "addressed_form": "response",
+     "stance": "accusation"
+    }
+   ],
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_6"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 13,
+   "player": "player_8",
+   "message": "While player_6 and player_10 are going back and forth about their visits to player_3, player_1 hasn't chimed in at all. We should hear where player_1 stands on this instead of letting the two of them dominate the entire room.",
+   "addressed_targets": [
+    {
+     "target": "player_1",
+     "addressed_form": "mention",
+     "stance": "neutral"
+    }
+   ],
+   "day_round": "proactive",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 2
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 14,
+   "player": "player_9",
+   "message": "",
+   "addressed_targets": [
+    {
+     "target": "player_8",
+     "addressed_form": "response",
+     "stance": "agreement"
+    },
+    {
+     "target": "player_1",
+     "addressed_form": "mention",
+     "stance": "neutral"
+    }
+   ],
+   "day_round": "proactive",
+   "passed": true,
+   "pass_reason": "novelty_gated",
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 2
+   },
+   "gated": true,
+   "gated_candidate": "Player_8 is right that player_1 has been quiet while player_6 and player_10 trade blame over who carried out the kill. One of those two visitors is likely the wolf, but we need player_1 to share where they stand instead of coasting.",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 15,
+   "player": "game_master",
+   "message": "\nHere's the vote result for day 3:\n  player_1 voted to eliminate player_10\n  player_6 voted to eliminate player_10\n  player_8 voted to eliminate player_6\n  player_9 voted to eliminate player_10\n  player_10 voted to eliminate player_6\nPlayer player_10 has been voted out and was a serial killer.\n",
+   "addressed_targets": [],
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 16,
+   "player": "game_master",
+   "message": "Night of day 3: player_1 was killed by the wolves last night. They were a vigilante. The record of player_1, the vigilante: night 1, was roleblocked; night 2, held fire. player_6 was shot by the vigilante last night. They were a illusionist.",
+   "addressed_targets": [],
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 17,
+   "player": "game_master",
+   "message": "Game over! The town has won! The fortune teller won (2 points).",
+   "addressed_targets": [],
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  }
+ ],
+ "day_summaries": [
+  {
+   "day": 1,
+   "summary": "Key accusations and defenses: None.\nRole claims: None.",
+   "source": "discussion",
+   "structured": {
+    "accusations": [],
+    "role_claims": []
+   }
+  },
+  {
+   "day": 1,
+   "summary": "\nThere is no vote on day 1, so no one voted and no one is eliminated.",
+   "source": "game_master",
+   "structured": {}
+  },
+  {
+   "day": 1,
+   "summary": "Night of day 1: player_2 was stabbed by the serial killer last night. They were a healer. player_5 was struck down by a sigil last night. They were a chanteuse. player_7 was killed by the wolves last night. They were a investigator.",
+   "source": "game_master",
+   "structured": {}
+  },
+  {
+   "day": 2,
+   "summary": "Key accusations and defenses: player_9, player_10 \u2192 player_3: player_9 and player_10 argued that player_3 visited player_5, who turned out to be a wolf, warranting a closer look at their claims. (evidence type: behavioral_pattern) Defense: player_3 argued they followed player_5 as part of tracking their movements. Disputed: player_1 noted player_3's claim matched watcher results. | player_9, player_10 \u2192 player_4: player_9 and player_10 argued that player_4 visited player_5, a wolf, making their interaction suspicious and requiring scrutiny. (evidence type: behavioral_pattern) Defense: player_4 argued they visited player_5 because their behavior caught their eye.\nRole claims: player_3 claimed trailseer \u2014 Night 1: followed player_5; player_9 claimed sentinel \u2014 Night 1: watched player_5",
+   "source": "discussion",
+   "structured": {
+    "accusations": [
+     {
+      "accusers": [
+       "player_9",
+       "player_10"
+      ],
+      "target": "player_3",
+      "reasoning": "player_9 and player_10 argued that player_3 visited player_5, who turned out to be a wolf, warranting a closer look at their claims.",
+      "evidence_type": "behavioral_pattern",
+      "defense": "player_3 argued they followed player_5 as part of tracking their movements.",
+      "disputed_by": "player_1 noted player_3's claim matched watcher results.",
+      "record_check": ""
+     },
+     {
+      "accusers": [
+       "player_9",
+       "player_10"
+      ],
+      "target": "player_4",
+      "reasoning": "player_9 and player_10 argued that player_4 visited player_5, a wolf, making their interaction suspicious and requiring scrutiny.",
+      "evidence_type": "behavioral_pattern",
+      "defense": "player_4 argued they visited player_5 because their behavior caught their eye.",
+      "disputed_by": "",
+      "record_check": ""
+     }
+    ],
+    "role_claims": [
+     {
+      "player": "player_3",
+      "claimed_role": "trailseer",
+      "kind": "claimed",
+      "night_actions": [
+       {
+        "night": 1,
+        "action": "follow",
+        "target": "player_5",
+        "result": "not_said",
+        "reason": ""
+       }
+      ],
+      "planned_actions": []
+     },
+     {
+      "player": "player_9",
+      "claimed_role": "sentinel",
+      "kind": "claimed",
+      "night_actions": [
+       {
+        "night": 1,
+        "action": "watch",
+        "target": "player_5",
+        "result": "not_said",
+        "reason": ""
+       }
+      ],
+      "planned_actions": []
+     }
+    ]
+   }
+  },
+  {
+   "day": 2,
+   "summary": "\nHere's the vote result for day 2:\n  player_1 voted to eliminate player_4\n  player_3 voted to eliminate player_4\n  player_4 voted to abstain\n  player_6 voted to eliminate player_4\n  player_8 voted to abstain\n  player_9 voted to eliminate player_4\n  player_10 voted to eliminate player_4\nPlayer player_4 has been voted out and was a sigilist.\nThe record of player_4, the sigilist: night 1, set a sigil on player_5, who attacked and was struck down.\n",
+   "source": "game_master",
+   "structured": {}
+  },
+  {
+   "day": 2,
+   "summary": "Night of day 2: player_3 was attacked by the wolves and the serial killer last night. Their role is hidden by an illusionist.",
+   "source": "game_master",
+   "structured": {}
+  },
+  {
+   "day": 3,
+   "summary": "Key accusations and defenses: player_9 \u2192 player_6: player_9 argued that player_6 visited player_3 on the night player_3 was killed by the wolves. (evidence type: behavioral_pattern) Defense: player_6 argued they visited player_3 to look closer at player_3's claim. Disputed: player_6 argued player_10 was also there and deflecting. | player_9 \u2192 player_10: player_9 argued that player_10 visited player_3 on the night player_3 was killed by the wolves. (evidence type: behavioral_pattern) Defense: player_10 argued their visit caught player_6 at the scene. Disputed: player_10 argued player_6 was the wolf carrier trying to deflect. | player_10 \u2192 player_6: player_10 argued player_6 visited player_3 and was the wolf carrier responsible for the attack. (evidence type: behavioral_pattern) Defense: player_6 argued player_10 was also standing beside them at player_3's door. Disputed: player_6 argued player_10's visit made player_10 equally suspicious. | player_6 \u2192 player_10: player_6 argued player_10 visited player_3's door on the night of the wolf attack. (evidence type: behavioral_pattern) Defense: player_10 argued checking a claim did not wash away player_6's wolf connection. Disputed: player_10 argued player_6 was deflecting from being at the kill site.\nRole claims: player_9 claimed sentinel \u2014 Night 2: watched player_3",
+   "source": "discussion",
+   "structured": {
+    "accusations": [
+     {
+      "accusers": [
+       "player_9"
+      ],
+      "target": "player_6",
+      "reasoning": "player_9 argued that player_6 visited player_3 on the night player_3 was killed by the wolves.",
+      "evidence_type": "behavioral_pattern",
+      "defense": "player_6 argued they visited player_3 to look closer at player_3's claim.",
+      "disputed_by": "player_6 argued player_10 was also there and deflecting.",
+      "record_check": ""
+     },
+     {
+      "accusers": [
+       "player_9"
+      ],
+      "target": "player_10",
+      "reasoning": "player_9 argued that player_10 visited player_3 on the night player_3 was killed by the wolves.",
+      "evidence_type": "behavioral_pattern",
+      "defense": "player_10 argued their visit caught player_6 at the scene.",
+      "disputed_by": "player_10 argued player_6 was the wolf carrier trying to deflect.",
+      "record_check": ""
+     },
+     {
+      "accusers": [
+       "player_10"
+      ],
+      "target": "player_6",
+      "reasoning": "player_10 argued player_6 visited player_3 and was the wolf carrier responsible for the attack.",
+      "evidence_type": "behavioral_pattern",
+      "defense": "player_6 argued player_10 was also standing beside them at player_3's door.",
+      "disputed_by": "player_6 argued player_10's visit made player_10 equally suspicious.",
+      "record_check": ""
+     },
+     {
+      "accusers": [
+       "player_6"
+      ],
+      "target": "player_10",
+      "reasoning": "player_6 argued player_10 visited player_3's door on the night of the wolf attack.",
+      "evidence_type": "behavioral_pattern",
+      "defense": "player_10 argued checking a claim did not wash away player_6's wolf connection.",
+      "disputed_by": "player_10 argued player_6 was deflecting from being at the kill site.",
+      "record_check": ""
+     }
+    ],
+    "role_claims": [
+     {
+      "player": "player_9",
+      "claimed_role": "sentinel",
+      "kind": "claimed",
+      "night_actions": [
+       {
+        "night": 2,
+        "action": "watch",
+        "target": "player_3",
+        "result": "not_said",
+        "reason": ""
+       }
+      ],
+      "planned_actions": []
+     }
+    ]
+   }
+  },
+  {
+   "day": 3,
+   "summary": "\nHere's the vote result for day 3:\n  player_1 voted to eliminate player_10\n  player_6 voted to eliminate player_10\n  player_8 voted to eliminate player_6\n  player_9 voted to eliminate player_10\n  player_10 voted to eliminate player_6\nPlayer player_10 has been voted out and was a serial killer.\n",
+   "source": "game_master",
+   "structured": {}
+  },
+  {
+   "day": 3,
+   "summary": "Night of day 3: player_1 was killed by the wolves last night. They were a vigilante. The record of player_1, the vigilante: night 1, was roleblocked; night 2, held fire. player_6 was shot by the vigilante last night. They were a illusionist.",
+   "source": "game_master",
+   "structured": {}
+  }
+ ],
+ "day_resolutions": [
+  {
+   "day": 1,
+   "votes": [],
+   "voted_player": null,
+   "voted_player_role": null,
+   "vote_counts": {},
+   "tied_players": [],
+   "no_vote": true
+  },
+  {
+   "day": 2,
+   "votes": [
+    {
+     "voter": "player_1",
+     "votee": "player_4"
+    },
+    {
+     "voter": "player_3",
+     "votee": "player_4"
+    },
+    {
+     "voter": "player_4",
+     "votee": "abstain"
+    },
+    {
+     "voter": "player_6",
+     "votee": "player_4"
+    },
+    {
+     "voter": "player_8",
+     "votee": "abstain"
+    },
+    {
+     "voter": "player_9",
+     "votee": "player_4"
+    },
+    {
+     "voter": "player_10",
+     "votee": "player_4"
+    }
+   ],
+   "voted_player": "player_4",
+   "voted_player_role": "sigilist",
+   "vote_counts": {
+    "player_4": 5,
+    "abstain": 2
+   },
+   "tied_players": [],
+   "no_vote": false
+  },
+  {
+   "day": 3,
+   "votes": [
+    {
+     "voter": "player_1",
+     "votee": "player_10"
+    },
+    {
+     "voter": "player_6",
+     "votee": "player_10"
+    },
+    {
+     "voter": "player_8",
+     "votee": "player_6"
+    },
+    {
+     "voter": "player_9",
+     "votee": "player_10"
+    },
+    {
+     "voter": "player_10",
+     "votee": "player_6"
+    }
+   ],
+   "voted_player": "player_10",
+   "voted_player_role": "serial_killer",
+   "vote_counts": {
+    "player_10": 3,
+    "player_6": 2
+   },
+   "tied_players": [],
+   "no_vote": false
+  }
+ ],
+ "night_resolutions": [
+  {
+   "day": 1,
+   "wolves_target": "player_7",
+   "wolf_target_role": "investigator",
+   "kill_successful": true,
+   "choices": [
+    {
+     "actor": "player_8",
+     "role": "fortune_teller",
+     "kind": "bet",
+     "target": "player_1",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_2",
+     "role": "healer",
+     "kind": "protect",
+     "target": "player_3",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_7",
+     "role": "investigator",
+     "kind": "investigate",
+     "target": "player_6",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_5",
+     "role": "chanteuse",
+     "kind": "kill",
+     "target": "player_7",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_5",
+     "role": "chanteuse",
+     "kind": "block",
+     "target": "player_1",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_9",
+     "role": "sentinel",
+     "kind": "watch",
+     "target": "player_5",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_10",
+     "role": "serial_killer",
+     "kind": "kill",
+     "target": "player_2",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_4",
+     "role": "sigilist",
+     "kind": "sigil",
+     "target": "player_5",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_3",
+     "role": "trailseer",
+     "kind": "follow",
+     "target": "player_5",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_1",
+     "role": "vigilante",
+     "kind": "hold_fire",
+     "target": null,
+     "via": null,
+     "role_named": null
+    }
+   ],
+   "healer_target": null,
+   "investigator_target": null,
+   "investigator_target_role": null,
+   "healer_saved": false,
+   "serial_killer_target": null,
+   "serial_killer_target_role": null,
+   "vigilante_target": null,
+   "vigilante_target_role": null,
+   "serial_killer_kill_landed": false,
+   "vigilante_kill_landed": false,
+   "deaths": [
+    "player_2",
+    "player_5",
+    "player_7"
+   ],
+   "wolves_before": 2,
+   "town_before": 6,
+   "sk_before": 1
+  },
+  {
+   "day": 2,
+   "wolves_target": "player_3",
+   "wolf_target_role": "trailseer",
+   "kill_successful": true,
+   "choices": [
+    {
+     "actor": "player_8",
+     "role": "fortune_teller",
+     "kind": "bet",
+     "target": "player_1",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_6",
+     "role": "illusionist",
+     "kind": "kill",
+     "target": "player_3",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_6",
+     "role": "illusionist",
+     "kind": "conceal",
+     "target": null,
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_9",
+     "role": "sentinel",
+     "kind": "watch",
+     "target": "player_3",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_10",
+     "role": "serial_killer",
+     "kind": "kill",
+     "target": "player_3",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_3",
+     "role": "trailseer",
+     "kind": "follow",
+     "target": "player_1",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_1",
+     "role": "vigilante",
+     "kind": "hold_fire",
+     "target": null,
+     "via": null,
+     "role_named": null
+    }
+   ],
+   "healer_target": null,
+   "investigator_target": null,
+   "investigator_target_role": null,
+   "healer_saved": false,
+   "serial_killer_target": null,
+   "serial_killer_target_role": null,
+   "vigilante_target": null,
+   "vigilante_target_role": null,
+   "serial_killer_kill_landed": false,
+   "vigilante_kill_landed": false,
+   "deaths": [
+    "player_3"
+   ],
+   "wolves_before": 1,
+   "town_before": 3,
+   "sk_before": 1
+  },
+  {
+   "day": 3,
+   "wolves_target": "player_1",
+   "wolf_target_role": "vigilante",
+   "kill_successful": true,
+   "choices": [
+    {
+     "actor": "player_8",
+     "role": "fortune_teller",
+     "kind": "bet",
+     "target": "player_6",
+     "via": null,
+     "role_named": "illusionist"
+    },
+    {
+     "actor": "player_6",
+     "role": "illusionist",
+     "kind": "kill",
+     "target": "player_1",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_9",
+     "role": "sentinel",
+     "kind": "watch",
+     "target": "player_6",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_1",
+     "role": "vigilante",
+     "kind": "kill",
+     "target": "player_6",
+     "via": null,
+     "role_named": null
+    }
+   ],
+   "healer_target": null,
+   "investigator_target": null,
+   "investigator_target_role": null,
+   "healer_saved": false,
+   "serial_killer_target": null,
+   "serial_killer_target_role": null,
+   "vigilante_target": null,
+   "vigilante_target_role": null,
+   "serial_killer_kill_landed": false,
+   "vigilante_kill_landed": false,
+   "deaths": [
+    "player_1",
+    "player_6"
+   ],
+   "wolves_before": 1,
+   "town_before": 2,
+   "sk_before": 0
+  }
+ ],
+ "humans": [],
+ "leak_check": {
+  "passed": true,
+  "leaks": []
+ }
+}
