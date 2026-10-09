@@ -1,0 +1,28 @@
+[25] 23 s ()
+LLM call stalled for player_5 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_5 rescued by the fallback model on wolf_channel
+[50] 91 s ('PACK_NIGHT_PHASE:24fd347b-05d3-f889-7eba-5b3976a868be',)
+[75] 124 s ('DAY_PHASE:64c431a8-fc7e-21ab-d960-9e612bd069bb',)
+[100] 147 s ('DAY_PHASE:64c431a8-fc7e-21ab-d960-9e612bd069bb',)
+[125] 194 s ('DAY_PHASE:64c431a8-fc7e-21ab-d960-9e612bd069bb',)
+[150] 241 s ('DAY_PHASE:64c431a8-fc7e-21ab-d960-9e612bd069bb',)
+[175] 252 s ()
+[200] 303 s ('PACK_NIGHT_PHASE:8c7289f1-0109-901f-00b3-df0ff6456287',)
+[225] 318 s ('DAY_PHASE:669619c4-407e-3d8a-e738-b1dce2f3e9c3',)
+[250] 368 s ('DAY_PHASE:669619c4-407e-3d8a-e738-b1dce2f3e9c3',)
+[275] 413 s ('DAY_PHASE:669619c4-407e-3d8a-e738-b1dce2f3e9c3',)
+[300] 468 s ('DAY_PHASE:669619c4-407e-3d8a-e738-b1dce2f3e9c3',)
+[325] 478 s ()
+[350] 506 s ('PACK_NIGHT_PHASE:16f6853c-7052-2ad6-5e7b-18f81033fa7d',)
+[375] 524 s ('DAY_PHASE:dd78756c-6d23-a481-6ce2-ddda65febf27',)
+[400] 562 s ('DAY_PHASE:dd78756c-6d23-a481-6ce2-ddda65febf27',)
+[425] 608 s ('DAY_PHASE:dd78756c-6d23-a481-6ce2-ddda65febf27',)
+[450] 659 s ('DAY_PHASE:dd78756c-6d23-a481-6ce2-ddda65febf27',)
+[475] 672 s ('PACK_NIGHT_PHASE:fabdc49e-a637-7ff2-75e5-2432add97de2',)
+[500] 688 s ('DAY_PHASE:4c71bb66-e547-46cb-1873-a24f51689bb3',)
+[525] 736 s ('DAY_PHASE:4c71bb66-e547-46cb-1873-a24f51689bb3',)
+[550] 777 s ('DAY_PHASE:4c71bb66-e547-46cb-1873-a24f51689bb3',)
+[575] 814 s ('DAY_PHASE:4c71bb66-e547-46cb-1873-a24f51689bb3',)
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+phase3-b03-4c5dbead: winner villagers, day 5, 813.8 s, 214 calls, cost 1.1502

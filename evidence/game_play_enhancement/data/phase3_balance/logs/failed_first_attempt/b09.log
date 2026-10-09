@@ -1,0 +1,91 @@
+[25] 24 s ()
+[50] 34 s ('PACK_NIGHT_PHASE:b30d67d4-63a1-0995-cd9d-2c91e389d589',)
+LLM call stalled for player_5 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+LLM call stalled for player_9 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+LLM call stalled for player_8 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+[75] 69 s ('DAY_PHASE:3da2753d-3df0-234c-3f7a-ea8383f40f9a',)
+LLM call stalled for player_10 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+LLM call stalled for player_10 (slow or full): Error calling model 'gemini-3.1-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+reads under-covered: player=player_10 phase=day_channel coverage=0% missing=['player_1', 'player_3', 'player_4', 'player_5', 'player_6', 'player_7', 'player_8', 'player_9']
+player_8 rescued by the fallback model on day_channel
+LLM call stalled for player_5 (slow or full): 504 DEADLINE_EXCEEDED. {'error': {'code': 504, 'message': 'Deadline expired before operation could complete.', 'status': 'DEADLINE_EXCEEDED'}}
+reads under-covered: player=player_5 phase=day_channel coverage=0% missing=['player_1', 'player_3', 'player_4', 'player_6', 'player_7', 'player_8', 'player_9', 'player_10']
+LLM call stalled for player_9 (slow or full): 504 DEADLINE_EXCEEDED. {'error': {'code': 504, 'message': 'Deadline expired before operation could complete.', 'status': 'DEADLINE_EXCEEDED'}}
+reads under-covered: player=player_9 phase=day_channel coverage=0% missing=['player_1', 'player_3', 'player_4', 'player_5', 'player_6', 'player_7', 'player_8', 'player_10']
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/ubuntu/projects/werewolf-agent-sim/evaluation/experiments/phase3_capture.py", line 208, in <module>
+    main()
+  File "/home/ubuntu/projects/werewolf-agent-sim/evaluation/experiments/phase3_capture.py", line 140, in main
+    for part in parent_graph_compiled.stream(
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/pregel/main.py", line 2759, in stream
+    for _ in runner.tick(
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/pregel/_runner.py", line 258, in tick
+    _panic_or_proceed(
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/pregel/_runner.py", line 520, in _panic_or_proceed
+    raise exc
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/pregel/_executor.py", line 80, in done
+    task.result()
+  File "/home/ubuntu/.pyenv/versions/3.11.12/lib/python3.11/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.pyenv/versions/3.11.12/lib/python3.11/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/home/ubuntu/.pyenv/versions/3.11.12/lib/python3.11/concurrent/futures/thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/pregel/_retry.py", line 126, in run_with_retry
+    return task.proc.invoke(task.input, config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/_internal/_runnable.py", line 656, in invoke
+    input = context.run(step.invoke, input, config, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/_internal/_runnable.py", line 400, in invoke
+    ret = self.func(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/Agents/graphs/parent.py", line 82, in day_phase
+    result = day_graph_compiled.invoke(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/pregel/main.py", line 3365, in invoke
+    for chunk in self.stream(
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/pregel/main.py", line 2759, in stream
+    for _ in runner.tick(
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/pregel/_runner.py", line 258, in tick
+    _panic_or_proceed(
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/pregel/_runner.py", line 520, in _panic_or_proceed
+    raise exc
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/pregel/_executor.py", line 80, in done
+    task.result()
+  File "/home/ubuntu/.pyenv/versions/3.11.12/lib/python3.11/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.pyenv/versions/3.11.12/lib/python3.11/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/home/ubuntu/.pyenv/versions/3.11.12/lib/python3.11/concurrent/futures/thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/pregel/_retry.py", line 126, in run_with_retry
+    return task.proc.invoke(task.input, config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/_internal/_runnable.py", line 656, in invoke
+    input = context.run(step.invoke, input, config, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/_internal/_runnable.py", line 400, in invoke
+    ret = self.func(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/Agents/nodes/day/actors.py", line 99, in round_turn
+    turn = run_memory_informed_action(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/Agents/turn/pipeline.py", line 203, in run_memory_informed_action
+    result = run_agent(
+             ^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/Agents/turn/agent_player.py", line 118, in run_agent
+    outcome = resolve_decision(result, reasoning, output_key, payload, valid_targets)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/Agents/turn/resolve.py", line 106, in resolve_decision
+    message = result.message.strip() if result.message else None
+                                        ^^^^^^^^^^^^^^
+AttributeError: 'object' object has no attribute 'message'
+During task with name 'round_turn' and id '5f8342b6-07cb-36d4-3f3c-f14c62d28be5'
+During task with name 'DAY_PHASE' and id '3da2753d-3df0-234c-3f7a-ea8383f40f9a'

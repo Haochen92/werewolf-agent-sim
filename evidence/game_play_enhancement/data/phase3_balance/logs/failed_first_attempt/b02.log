@@ -1,0 +1,74 @@
+[25] 20 s ()
+LLM call stalled for player_7 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+[50] 35 s ('PACK_NIGHT_PHASE:b57e2824-2c96-5c5c-6dd2-152318a8d84f',)
+LLM call stalled for player_3 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_3 rescued by the fallback model on wolf_channel
+LLM call stalled for player_1 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_7 rescued by the fallback model on vigilante_target
+LLM call stalled for player_1 (slow or full): Error calling model 'gemini-3.1-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+reads under-covered: player=player_1 phase=wolf_channel coverage=0% missing=['player_3', 'player_2', 'player_4', 'player_5', 'player_6', 'player_7', 'player_8', 'player_9', 'player_10']
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/ubuntu/projects/werewolf-agent-sim/evaluation/experiments/phase3_capture.py", line 208, in <module>
+    main()
+  File "/home/ubuntu/projects/werewolf-agent-sim/evaluation/experiments/phase3_capture.py", line 140, in main
+    for part in parent_graph_compiled.stream(
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/pregel/main.py", line 2759, in stream
+    for _ in runner.tick(
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/pregel/_runner.py", line 258, in tick
+    _panic_or_proceed(
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/pregel/_runner.py", line 520, in _panic_or_proceed
+    raise exc
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/pregel/_executor.py", line 80, in done
+    task.result()
+  File "/home/ubuntu/.pyenv/versions/3.11.12/lib/python3.11/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.pyenv/versions/3.11.12/lib/python3.11/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/home/ubuntu/.pyenv/versions/3.11.12/lib/python3.11/concurrent/futures/thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/pregel/_retry.py", line 126, in run_with_retry
+    return task.proc.invoke(task.input, config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/_internal/_runnable.py", line 656, in invoke
+    input = context.run(step.invoke, input, config, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/_internal/_runnable.py", line 400, in invoke
+    ret = self.func(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/Agents/graphs/parent.py", line 127, in pack_night_phase
+    result = pack_night_graph_compiled.invoke(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/pregel/main.py", line 3365, in invoke
+    for chunk in self.stream(
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/pregel/main.py", line 2759, in stream
+    for _ in runner.tick(
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/pregel/_runner.py", line 167, in tick
+    run_with_retry(
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/pregel/_retry.py", line 126, in run_with_retry
+    return task.proc.invoke(task.input, config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/_internal/_runnable.py", line 656, in invoke
+    input = context.run(step.invoke, input, config, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/_internal/_runnable.py", line 400, in invoke
+    ret = self.func(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/Agents/nodes/night/pack.py", line 168, in pack_chat
+    turn = run_memory_informed_night_action(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/Agents/turn/pipeline.py", line 392, in run_memory_informed_night_action
+    result = run_agent(
+             ^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/Agents/turn/agent_player.py", line 118, in run_agent
+    outcome = resolve_decision(result, reasoning, output_key, payload, valid_targets)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/Agents/turn/resolve.py", line 182, in resolve_decision
+    passed = bool(getattr(result, "pass_turn", False)) or not (result.message or "").strip()
+                                                               ^^^^^^^^^^^^^^
+AttributeError: 'object' object has no attribute 'message'
+During task with name 'PACK_CHAT' and id '9f33604f-50e3-460c-837e-6610fa8f8dc4'
+During task with name 'PACK_NIGHT_PHASE' and id 'b57e2824-2c96-5c5c-6dd2-152318a8d84f'

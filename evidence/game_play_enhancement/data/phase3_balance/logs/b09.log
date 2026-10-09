@@ -1,0 +1,15 @@
+LLM call stalled for player_6 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+LLM call stalled for player_6 (slow or full): 504 DEADLINE_EXCEEDED. {'error': {'code': 504, 'message': 'Deadline expired before operation could complete.', 'status': 'DEADLINE_EXCEEDED'}}
+player_6 failed all decision attempts on day_channel; recording technical pass
+[25] 75 s ()
+[50] 90 s ('PACK_NIGHT_PHASE:047ce97b-8597-64eb-9dc3-954e6347d440',)
+[75] 115 s ('DAY_PHASE:4161f592-34e7-6279-95c4-e9647d69ffc0',)
+[100] 149 s ('DAY_PHASE:4161f592-34e7-6279-95c4-e9647d69ffc0',)
+[125] 201 s ('DAY_PHASE:4161f592-34e7-6279-95c4-e9647d69ffc0',)
+[150] 232 s ('DAY_PHASE:4161f592-34e7-6279-95c4-e9647d69ffc0',)
+[175] 249 s ('PACK_NIGHT_PHASE:c9b66575-799d-449e-fb95-c19d310fd2e6',)
+[200] 282 s ('DAY_PHASE:a3936d72-74f7-51b5-137f-00ab2586c3ea',)
+[225] 315 s ('DAY_PHASE:a3936d72-74f7-51b5-137f-00ab2586c3ea',)
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+phase3-b09-737c5b16: winner villagers, day 3, 340.0 s, 97 calls, cost 0.4749

@@ -1,0 +1,29 @@
+[25] 18 s ()
+[50] 34 s ('PACK_NIGHT_PHASE:8beefaf9-468d-c325-87ad-3f042ad23550',)
+[75] 65 s ('DAY_PHASE:b6a0075b-6517-1758-d488-c7d459c8338f',)
+[100] 90 s ('DAY_PHASE:b6a0075b-6517-1758-d488-c7d459c8338f',)
+[125] 134 s ('DAY_PHASE:b6a0075b-6517-1758-d488-c7d459c8338f',)
+[150] 195 s ('DAY_PHASE:b6a0075b-6517-1758-d488-c7d459c8338f',)
+[175] 212 s ()
+[200] 237 s ('PACK_NIGHT_PHASE:41169073-4ac5-33c9-26d6-82c5356243c8',)
+[225] 267 s ('DAY_PHASE:b3697354-48eb-79eb-c9ae-ba41a35fd4b6',)
+LLM call stalled for player_1 (slow or full): 504 DEADLINE_EXCEEDED. {'error': {'code': 504, 'message': 'Deadline expired before operation could complete.', 'status': 'DEADLINE_EXCEEDED'}}
+player_1 rescued by the fallback model on day_channel
+[250] 372 s ('DAY_PHASE:b3697354-48eb-79eb-c9ae-ba41a35fd4b6',)
+[275] 419 s ('DAY_PHASE:b3697354-48eb-79eb-c9ae-ba41a35fd4b6',)
+[300] 452 s ('DAY_PHASE:b3697354-48eb-79eb-c9ae-ba41a35fd4b6',)
+[325] 465 s ('PACK_NIGHT_PHASE:2e2ef082-e851-aa60-f5ff-04576e9e123a',)
+[350] 497 s ('DAY_PHASE:0b1613a6-8b57-fabc-de96-a89731222e8e',)
+[375] 523 s ('DAY_PHASE:0b1613a6-8b57-fabc-de96-a89731222e8e',)
+[400] 586 s ('DAY_PHASE:0b1613a6-8b57-fabc-de96-a89731222e8e',)
+[425] 632 s ('DAY_PHASE:0b1613a6-8b57-fabc-de96-a89731222e8e',)
+[450] 660 s ()
+[475] 696 s ('PACK_NIGHT_PHASE:c22f0cb8-8b74-afe9-93d6-0597a1977f39',)
+[500] 721 s ('DAY_PHASE:f9a901f7-e27e-cf92-8042-6237b3eb2267',)
+[525] 773 s ('DAY_PHASE:f9a901f7-e27e-cf92-8042-6237b3eb2267',)
+[550] 803 s ()
+[575] 839 s ('DAY_PHASE:51848da1-9bec-1950-c885-d1b33e977d5c',)
+[600] 888 s ()
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+phase3-b06-15b8f963: winner villagers, day 6, 887.7 s, 229 calls, cost 1.2231
