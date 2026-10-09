@@ -139,7 +139,7 @@ Current day: {current_day}
 
 Surviving players: {surviving_players}
 Your private investigation results:
-{investigator_results}
+{night_actions}
 
 Previous days summary:
 {day_summaries}
@@ -272,9 +272,8 @@ Today's public discussion:
 {day_channel}
 
 Your private information (only what your role knows):
-Investigation results: {investigator_results}
+Night record: {night_actions}
 Wolf channel: {wolf_channel}
-Vigilante results: {vigilante_results}
 
 Your current strategy note:
 {previous_strategy}

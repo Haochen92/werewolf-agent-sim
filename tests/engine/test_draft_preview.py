@@ -15,7 +15,7 @@ import json
 import pytest
 
 from Agents.nodes.day.actors import preview_discuss
-from Agents.schemas import DayDiscussOutput
+from Agents.schemas import day_discuss_output
 from Agents.turn import agent_player, pipeline
 from Agents.turn.drafting_agent import player_direction
 from tests.fixtures.day_discuss_prompt_golden import (
@@ -51,8 +51,8 @@ def test_preview_with_direction_adds_one_message_and_nothing_else(monkeypatch):
     monkeypatch.setattr(agent_player, "get_llm", lambda: capturing_llm(sent))
     direction = player_direction("push on player_2 {softly}", "player_2 is odd",
                                  {"player_5": "quiet"}, "player_2")
-    preview_discuss(_human_payload("villager"), {"configurable": {}}, runtime(), direction)
-    golden = json.loads(GOLDEN.read_text())["villager"]
+    preview_discuss(_human_payload("healer"), {"configurable": {}}, runtime(), direction)
+    golden = json.loads(GOLDEN.read_text())["healer"]
     assert [list(m) for m in sent[0]] == golden + [["human", direction]]
 
 
@@ -66,7 +66,7 @@ def test_preview_commits_and_records_nothing(monkeypatch):
         raise AssertionError("the preview must not write strategy adoption back")
 
     monkeypatch.setattr(pipeline, "process_strategy_adoption", no_adoption)
-    payload = _human_payload("wolf")
+    payload = _human_payload("chanteuse")
     before = copy.deepcopy(payload)
     rt = runtime()
     line = preview_discuss(payload, {"configurable": {}}, rt, "be brief")
@@ -76,17 +76,17 @@ def test_preview_commits_and_records_nothing(monkeypatch):
 
 
 def test_preview_reports_a_pass_as_empty_and_a_failure_as_an_error(monkeypatch):
-    passing = DayDiscussOutput(message="", pass_turn=True, updated_strategy="note",
-                               addressed_targets=[], strategy_verdicts=[],
-                               memory_applicability=[], reads=[])
+    passing = day_discuss_output(ROLES)(message="", pass_turn=True, claim="none", updated_strategy="note",
+                                        addressed_targets=[], strategy_verdicts=[],
+                                        memory_applicability=[], reads=[])
     monkeypatch.setattr(agent_player, "get_llm", lambda: _answering(passing))
-    payload = {**_human_payload("villager"), "firing_reason": None}  # proactive-free turn
+    payload = {**_human_payload("healer"), "firing_reason": None}  # proactive-free turn
     assert preview_discuss(payload, {"configurable": {}}, runtime()) == ""
 
     monkeypatch.setattr(agent_player, "get_llm", lambda: _answering(None))
     monkeypatch.setattr(agent_player, "get_llm_game_fallback", lambda: None)
     with pytest.raises(RuntimeError):
-        preview_discuss(_human_payload("villager"), {"configurable": {}}, runtime())
+        preview_discuss(_human_payload("healer"), {"configurable": {}}, runtime())
 
 
 def _answering(reply):

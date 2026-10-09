@@ -1,0 +1,119 @@
+Team composition (10 players, four sides):
+Town (wins as a side):
+- 1 Investigator: each night checks one player and learns "Suspicious" or "Not suspicious".
+- 1 Sentinel: each night watches one player and learns who visited them.
+- 1 Trailseer: each night follows one player and learns whom they visited.
+- 1 Vigilante: may shoot one player at night, with only a few bullets for the whole game.
+- 1 Sigilist: has 2 sigils; a sigil placed on a player strikes them if they attack anyone that night.
+- 1 Healer: each night protects one other player from any night attack; never used up.
+Wolves (know each other and win as a team):
+- 1 Chanteuse: a wolf; each night also blocks one player's night action.
+- 1 Illusionist: a wolf; twice per game may hide the role of the player the wolves killed.
+Lone killer (works alone against everyone):
+- 1 Serial Killer: kills one player each night; cannot be killed at night.
+Neutral (has no side; wins by meeting its own win condition):
+- 1 Speculator: privately picks the side it expects to win; the pick is announced, the picker is not.
+
+How each side and role works:
+- Investigator: Each night the Investigator checks one player and privately learns "Suspicious" or "Not
+    suspicious". Wolves read Suspicious; everyone else reads Not suspicious, unless a role's rules below
+    say otherwise. The check is a visit.
+- Sentinel: Each night the Sentinel watches one player and privately learns the names of everyone who
+    visited them that night, or that no one did. Watching is a visit.
+- Trailseer: Each night the Trailseer follows one player and privately learns whom they visited that
+    night, or that they visited no one. Following is a visit.
+- Vigilante: The Vigilante has a few bullets for the whole game and cannot reload. At night it may shoot
+    one player or hold its fire; a shot is an attack and a visit, and spends a bullet even if it does
+    not kill. A shot at a player who cannot be killed at night does not kill them, but the Vigilante is
+    told the target was immune.
+- Sigilist: The Sigilist has 2 sigils for the whole game. At night it may place one on a player, or keep
+    its sigils. If that player attacks anyone that night, the sigil strikes them: an attack of its own,
+    resolved after theirs, which protection or night immunity can stop; their original attack resolves
+    as normal either way. A death by sigil is announced as struck down by a sigil. The Sigilist is told
+    whether its target attacked and what came of the sigil. A sigil is spent when placed, whether or not
+    it triggers. Placing a sigil is a visit.
+- Healer: Each night the Healer protects one other player, never itself, from any night attack;
+    protection is never used up. A protected player who was attacked survives, and the morning report
+    says so ("X was attacked by the wolves but was saved by the healer"). An attack on a player who
+    cannot be killed at night is never announced, protected or not, and the Healer learns nothing of it.
+    Protecting is a visit.
+- The wolves: The wolves know each other and talk privately at night. Each night one of them, the
+    carrier, kills one player; the carrier rotates unless the pack agrees otherwise, and is the only
+    wolf who visits for the kill. Every wolf knows the pack's kill. A wolf may carry the kill and use
+    its own ability on the same night.
+- Chanteuse: Each night the Chanteuse also blocks one player's night action; the same player may be
+    blocked again on later nights. A blocked player is told "You were roleblocked", does nothing that
+    night and makes no visit. The block works on Town players and on wolves; the lone killer and the
+    neutral cannot be blocked, and the Chanteuse is told when a block did not take. Blocking is a visit.
+- Illusionist: Twice per game the Illusionist may hide the role of the player the wolves killed that
+    night. The morning report then says "Their role is hidden by an illusionist" instead of the role,
+    that player has no will, and the Illusionist privately learns the role. If the wolves' victim
+    survived, nothing is hidden and the use is kept. Going to hide is a visit to the victim, whether or
+    not they died.
+- Serial Killer: The Serial Killer works alone against everyone. Each night it kills one player; the
+    kill is an attack and a visit. It cannot be killed at night by any attack (an attack on it fails,
+    and nothing is announced), it cannot be blocked, it reads Not suspicious to the Investigator, and it
+    can only be removed by a daytime vote.
+- Speculator: The Speculator belongs to no side: it never counts as a member of any side, but it is a
+    living player who votes. On any night it may privately pick the side it expects to win: Town, the
+    Wolves, the lone killer, or itself. The next morning the Game Master announces the pick but not who
+    made it. The pick is made once and cannot be changed. Picking early gives the Speculator a side for
+    more of the game; picking late gives it more to go on, but if it dies before picking it has lost.
+    The pick is not a visit, and the Speculator cannot be blocked. It has no will: its record is never
+    read out.
+
+How a day and a night run, in order (the Game Master narrates and manages the flow):
+Day, the discussion:
+- Players speak one at a time, never over each other. The day opens with an opening round: every living
+    player is given one turn, in an order drawn at random that day, to speak or to pass. After the
+    opening round the moderator decides who speaks next: a player who was addressed answers first, a
+    player with something to add may be asked, and a player whose point has already been made may be
+    skipped. The discussion winds down once players stop having new things to say.
+- The order of speech is the moderator's doing: who spoke first, how often someone spoke, or who hasn't
+    spoken yet says nothing about their role.
+- A player can claim any role or any night result. A claim is recorded, but nothing a player says is
+    verified unless the Game Master announced it; a night result a player brings up is their claim, not
+    an announcement, and saying the Game Master announced it is false. Everything else is for the
+    players to work out by deduction and by elimination.
+Day, the vote:
+- Day 1 has no vote: it is discussion only, then night. From day 2 on, each day ends in a vote.
+- Before the vote, the most accused player gets a last word. Then everyone votes. You may vote to
+    eliminate a player, or abstain when abstaining is offered; if no single player gets the most votes
+    (a tie, or an abstain majority), no one is eliminated. After two days in a row with no elimination,
+    abstaining is no longer offered and everyone must name a player.
+- Votes are public and permanent — who voted to eliminate whom each day stays on the record. An
+    eliminated player's role is revealed, and their will read out, by the same rule as a night death.
+Night, the actions:
+- Every role with a night action acts, all at once. A night action that is carried out on a player is a
+    visit, unless the role's rules say it is not; an action that was blocked is not carried out and is
+    not a visit. Roles that watch or follow see visits.
+- An attack kills its target unless the target is protected that night (a save, announced in the
+    morning) or cannot be killed at night (nothing announced). A player attacked by more than one
+    attacker still dies once.
+- What a player did or learned at night is known only to them. Town players do not share their results
+    with each other; the wolves share only the pack's kill, each wolf's own ability and result stay its
+    own. Night actions are hidden; only the outcomes are announced in the morning.
+Morning, the report:
+- Players receive public and private information about the night. Public: every player who was attacked,
+    unless they cannot be killed at night (that attack is never mentioned); whether an attacked player
+    was saved; each dead player's role, unless a role listed above hid it; and, for each dead Town
+    player whose role was revealed, their record read out as their will. Private: each surviving
+    player's own night action and its result. A player who died in the night learns nothing from it, so
+    that night is not in their will either.
+- The order: the Game Master goes through the attacked players in seat order; for a death, the kind of
+    attacker, then the role, then the will of a revealed Town player; for a save, that they were
+    attacked and saved. A night where no one died and no one was saved is announced as "No one died last
+    night."
+- Nothing else about the night is announced, beyond what a role's rules above say is announced: not a
+    protection where no attack came, not an ability held back, not who did what. Only Town wills are read out, and a hidden role has none. Once read out, a will is
+    announced fact; anything a player says about the night is a claim.
+
+Win conditions:
+- Town wins when BOTH the wolves and the lone killer are gone.
+- The wolves win when the lone killer is gone and they equal or outnumber everyone else still alive.
+- The Serial Killer wins when at most one other player is still alive.
+- The Speculator wins if the side it picked wins, whether or not the Speculator is still alive; a pick
+    of itself wins only by being the last one standing. A Speculator that dies without having picked
+    loses.
+
+The world is closed: the only roles and abilities in this game are the ones listed above.

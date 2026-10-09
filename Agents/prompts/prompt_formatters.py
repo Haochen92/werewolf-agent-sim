@@ -9,6 +9,7 @@ modules (day_discuss.py, day_vote.py, night.py).
 """
 
 from Agents.rules.board_clocks import alive_role_counts
+from Agents.schemas.roles import ROLE_SPECS, roles
 from Agents.rules.claim_ledger import format_claim_ledger, revealed_tag
 from Agents.schemas import RetrievedObservation, RetrievedStrategyPoint
 from Agents.schemas.game_events import (
@@ -39,7 +40,8 @@ def format_dead_roster(roster: list[DeathRecord]) -> str:
     return ", ".join(parts)
 
 
-_ALIVE_ROLE_ORDER = ["wolf", "serial_killer", "healer", "investigator", "vigilante", "villager"]
+# The pool in the rules block's order, then the nine-seat game's retired roles for its records.
+_ALIVE_ROLE_ORDER = [*roles, *[name for name, spec in ROLE_SPECS.items() if spec.retired]]
 
 
 def format_alive_roles(cast_role_counts: dict[str, int], roster: list[DeathRecord]) -> str:
@@ -59,7 +61,18 @@ def format_alive_roles(cast_role_counts: dict[str, int], roster: list[DeathRecor
         for role in _ALIVE_ROLE_ORDER
         if remaining.get(role, 0) > 0
     ]
-    return ", ".join(parts) or "none"
+    line = ", ".join(parts) or "none"
+    # A concealed body subtracts nothing above, so the count is one too high per hidden role;
+    # say so in words rather than leave the agents to guess (owner, 2026-10-08).
+    hidden = 0
+    for death in roster:
+        if getattr(death, "concealed", False):
+            hidden += 1
+    if hidden == 1:
+        line += " (one of these is dead: a body whose role is hidden)"
+    elif hidden > 1:
+        line += f" ({hidden} of these are dead: bodies whose roles are hidden)"
+    return line
 
 
 def format_day_channel(messages: list[DayChannel], viewer: str | None = None) -> str:
@@ -89,7 +102,8 @@ def format_day_channel_for_day(messages: list[DayChannel], current_day: int, vie
 
 def format_day_summaries(summaries: list[DaySummary], before_day: int | None = None,
                          dead_roster: list[DeathRecord] | None = None,
-                         cast_role_counts: dict[str, int] | None = None) -> str:
+                         cast_role_counts: dict[str, int] | None = None,
+                         messages: list[DayChannel] | None = None) -> str:
     """Earlier days, as agents see them, in three blocks of decreasing authority:
 
     1. the game master's record: the exact night and vote announcements;
@@ -110,7 +124,8 @@ def format_day_summaries(summaries: list[DaySummary], before_day: int | None = N
         "-- The game master's record (exact; it outranks anything a player or a summary says) --\n"
         + ("\n".join(f"[Day {s.day}] {s.summary.strip()}" for s in record) or "Nothing announced yet.")
     ]
-    claims = format_claims_on_record(selected, dead_roster, cast_role_counts)
+    spoken = [m for m in messages or [] if before_day is None or m.day < before_day]
+    claims = format_claims_on_record(selected, dead_roster, cast_role_counts, spoken)
     if claims:
         blocks.append(
             "-- Claims made in the day discussion (claims, not facts; a note starting \"Record:\" or "
@@ -125,9 +140,11 @@ def format_day_summaries(summaries: list[DaySummary], before_day: int | None = N
 
 
 def format_claims_on_record(summaries: list[DaySummary], dead_roster: list[DeathRecord] | None = None,
-                            cast_role_counts: dict[str, int] | None = None) -> str:
-    """The claim ledger as text (see Agents/rules/claim_ledger.py). "" when nobody has claimed."""
-    return format_claim_ledger(summaries, dead_roster or [], cast_role_counts)
+                            cast_role_counts: dict[str, int] | None = None,
+                            messages: list[DayChannel] | None = None) -> str:
+    """The claim ledger as text (see Agents/rules/claim_ledger.py): the role lines from the
+    spoken ``messages``' claim fields, the rest from the summaries. "" when nobody has claimed."""
+    return format_claim_ledger(summaries, dead_roster or [], cast_role_counts, messages or [])
 
 
 def format_accusations(discussion: list[DaySummary], dead_roster: list[DeathRecord] | None = None) -> str:
@@ -157,14 +174,23 @@ def format_night_actions(records: list[NightActionRecord], current_day: int | No
     """The actor's own night record, one line per night, written by the engine."""
     if not records:
         return "Nothing yet."
-    verbs = {"protect": "you protected", "shoot": "you shot", "kill": "you attacked"}
+    verbs = {"protect": "you protected", "shoot": "you shot", "kill": "you attacked",
+             "investigate": "you checked", "watch": "you watched", "follow": "you followed",
+             "sigil": "you set a sigil on", "block": "you blocked", "bet": "you bet on"}
     lines = []
     for r in records:
         night = f"Night {r.day}" + (" (last night)" if current_day is not None and r.day == current_day - 1 else "")
+        if r.result == "roleblocked":
+            lines.append(f"{night}: {r.outcome}")
+            continue
         if r.action == "hold_fire":
             lines.append(f"{night}: you held your fire.")
             continue
-        verb = "your pack attacked" if r.actor == "wolves" else verbs[r.action]
+        if r.action in ("conceal", "pick"):
+            # No player target of its own: the outcome says what was hidden, or picked.
+            lines.append(f"{night}: {r.outcome}")
+            continue
+        verb = "your pack attacked" if r.actor == "wolves" else verbs.get(r.action, f"you {r.action}")
         lines.append(f"{night}: {verb} {r.target}. {r.outcome}")
     return "\n".join(lines)
 
@@ -209,7 +235,12 @@ def format_night_actions_postgame(records: list[NightActionRecord], roles: dict[
     lines = []
     for r in records:
         who = "the wolves" if r.actor == "wolves" else f"{r.actor} ({roles.get(r.actor, 'unknown')})"
-        act = "held fire" if r.action == "hold_fire" else f"{r.action} {r.target}"
+        if r.action == "hold_fire":
+            act = "held fire"
+        elif r.target is None:
+            act = r.action
+        else:
+            act = f"{r.action} {r.target}"
         lines.append(f"Night {r.day}: {who} {act}. {r.outcome}")
     return "\n".join(lines)
 

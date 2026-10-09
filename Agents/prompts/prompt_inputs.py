@@ -18,7 +18,9 @@ from typing import Any
 
 from pydantic import BaseModel
 
+from Agents.prompts.compose import preamble
 from Agents.schemas.game_events import DayRound
+from Agents.schemas.roles import ROLE_SPECS
 from Agents.prompts.cell_prompt import cell_driver_horizon, dimension_menu
 from Agents.prompts.day_discuss import (
     CLOSING_ROUND_RULES,
@@ -31,7 +33,6 @@ from Agents.prompts.prompt_formatters import (
     format_day_channel_for_day,
     format_day_summaries,
     format_dead_roster,
-    format_investigator_results,
     format_night_actions,
     format_retrieved_observations,
     format_strategy_points,
@@ -125,10 +126,11 @@ def _retrieved_present(x: Any) -> bool:
     return bool(x)
 
 
-# The solo night roles that draw a lot on night 1. The vigilante does not: a shot with no
-# evidence is bad play, and holding fire is its night 1 answer. The wolves draw one lot as a pack
-# (the chat template), so the two do not argue over two draws.
-_LOT_ROLES = ("investigator", "healer", "serial_killer")
+# The solo night roles that draw a lot on night 1, as their cards say (NightWords.lot). The
+# vigilante does not: a shot with no evidence is bad play, and holding fire is its night 1
+# answer. The wolves draw one lot as a pack (the chat and the carrier's turn), so the two do not
+# argue over two draws.
+_LOT_ROLES = ("investigator", "healer", "serial_killer", "sentinel", "trailseer", "sigilist", "chanteuse")
 
 
 def night_one_lot(payload: dict[str, Any]) -> str:
@@ -145,13 +147,17 @@ def night_one_lot(payload: dict[str, Any]) -> str:
         return ""
     role = payload.get("player_role", "")
     player_id = payload.get("player_id", "")
-    if role == "wolf":
+    spec = ROLE_SPECS.get(role)
+    if spec is not None and spec.pack and payload.get("pack_turn"):
+        # The chat and the carrier's turn: one lot for the pack's kill.
         candidates = list(payload.get("surviving_villagers", []))
         who = "pack"
         wording = "a lot has been drawn for the pack"
     elif role in _LOT_ROLES:
+        # A wolf's own skill turn draws its own lot, among the non-wolves.
+        pool = payload.get("surviving_villagers") if spec is not None and spec.pack else payload.get("surviving_players", [])
         candidates = []
-        for player in payload.get("surviving_players", []):
+        for player in pool or []:
             if player != player_id:
                 candidates.append(player)
         who = player_id
@@ -201,13 +207,25 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         abstain_instruction = (
             "Abstaining is not available today — you must vote for a surviving player."
         )
+    uses_left = payload.get("uses_left")
     return {
         "player_id": payload.get("player_id", ""),
         "player_role": role,
         "current_day": payload.get("current_day", 1),
         "current_round": current_round,
         "abstain_instruction": abstain_instruction,
-        "vigilante_bullets": payload.get("vigilante_bullets", 0),
+        # The rules block, composed from the dealt lineup (public).
+        "preamble": preamble(list(payload.get("lineup", []))) if payload.get("lineup") else "",
+        # What a limited ability has left, under the name its card uses.
+        "vigilante_bullets": uses_left if role == "vigilante" and uses_left is not None else payload.get("vigilante_bullets", 0),
+        "sigils_left": uses_left if role == "sigilist" else 0,
+        "conceal_uses": uses_left if role == "illusionist" else 0,
+        "fortune_self_bets": uses_left if role == "fortune_teller" else 0,
+        "fortune_points": payload.get("fortune_points", 0),
+        "speculator_pick": payload.get("speculator_pick", "not yet"),
+        "bodies": ", ".join(payload.get("bodies", [])) or "none tonight",
+        "carrier": payload.get("carrier", ""),
+        "wolves_target": payload.get("wolves_target") or "not named yet",
         "firing_brief": _firing_brief(payload.get("firing_reason")),
         "discussion_stage_rules": _discussion_stage_rules(payload),
         "surviving_players": ", ".join(payload.get("surviving_players", [])),
@@ -244,22 +262,11 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
             before_day=payload.get("current_day", 1),
             dead_roster=payload.get("dead_roster", []),
             cast_role_counts=payload.get("cast_role_counts", {}),
+            messages=payload.get("day_channel", []),
         ),
         "wolf_channel": format_wolf_channel(payload.get("wolf_channel", [])),
-        "investigator_results": format_investigator_results(
-            payload.get("investigator_results", []), payload.get("current_day")
-        ),
-        "vigilante_results": (
-            "\n".join(payload.get("vigilante_results", []))
-            or "Nothing learned from your shots yet."
-        ),
-        # The actor's own engine-written night record (only night actors' payloads carry it). A
-        # vigilante payload from before the record existed falls back to its shot notes.
-        "night_actions": (
-            format_night_actions(payload["night_actions"], payload.get("current_day"))
-            if payload.get("night_actions")
-            else "\n".join(payload.get("vigilante_results", [])) or "Nothing yet."
-        ),
+        # The actor's own engine-written night record (only night actors' payloads carry it).
+        "night_actions": format_night_actions(payload.get("night_actions", []), payload.get("current_day")),
         "previous_strategy": payload.get("previous_strategy", ""),
         "strategy_points": strategy_points_text,
         "retrieved_observations": observations_text,

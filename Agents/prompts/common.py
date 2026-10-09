@@ -1,85 +1,53 @@
+import json
+
+from pydantic import BaseModel
+
+
 def build_system_prompt(*sections: str) -> str:
     """Join prompt sections with blank lines after stripping each section."""
     return "\n\n".join(section.strip() for section in sections)
 
 
-# Human-turn instruction that pairs with the schema `reads` field (Agents.schemas.output.PlayerRead)
-# and the {read_targets} key filled by build_agent_prompt_input: it names the exact living players
-# the agent must commit a read for BEFORE its decision. Deliberately terse — the schema field
-# description and the JSON example carry the fuller spec; the load-bearing part is the {read_targets}
-# enumeration (the T4 completeness mechanism the turn/eval.py tripwire scores against). Exact tested
-# text (T1c replay) — do not reword.
+# The line that asks the model for its "reads" (its guess of every other living player's role)
+# before it decides. {read_targets} is filled with the living players' names, so the model cannot
+# skip one. The wording was tested in a replay and the hallucination bench scores against it, so
+# changing it is a prompt epoch.
 READS_COMMIT_INSTRUCTION = (
     "\nBefore your decision, record your current read — one entry each for: "
     "{read_targets} (best-guess role, or 'unclear').\n"
 )
 
 
-# Canonical game rules — the single source of truth for the role line-up, abilities,
-# win conditions, and flow. Composed into GAME_PREAMBLE (play prompt) AND the
-# extraction-family prompts (postgame / per-role / day-summary) so the rules can never
-# drift between copies. Person-neutral facts; keep it free of `{}` (it is passed as a
-# .format() value). When the game design changes, edit HERE only.
-GAME_RULES = """Team composition (three sides):
-- 3 Villagers (no special abilities)
-- 2 Wolves (know each other, secretly kill one player each night) — they win as a team
-- 1 Healer (each night may protect one player from any night kill — by the wolves, the serial killer or the vigilante;
-    cannot protect themselves; protecting is never used up — the healer may protect every night) — village side
-- 1 Investigator (each night may learn one player's true role) — village side
-- 1 Vigilante (village side; each night may shoot one player, but has only a few bullets for the whole game)
-- 1 Serial Killer (works ALONE against everyone; kills one player each night, cannot be killed at night,
-    and wins by outlasting everyone else)
-
-Game Master will narrate the game and manage the flow.
-- The Investigator receives their results privately and may choose when and how to share them with the group.
-- The Game Master announces who died each night and by which kind of attacker (wolves, the serial killer,
-    or the vigilante) and any healer saves, but NOT investigation results and NOT who acted.
-- Some night events are never announced: an attack on the serial killer (it simply survives, and nothing
-    is said), a healer protecting someone who was not attacked, and a vigilante holding fire. A night
-    where no one died and no one was saved is announced as "No one died last night."
-- What a player did or learned at night is known only to them (and, for the wolves, to the pack). If they
-    bring it up in the discussion, it is their claim: the Game Master never announced it, and saying it
-    did is false.
-
-Win conditions:
-- The village side (villagers, healer, investigator, vigilante) wins when BOTH the wolves and the serial killer are gone.
-- The wolves win when the serial killer is gone and they equal or outnumber the remaining village side.
-- The serial killer wins by outlasting the others — being the last player (or one of the last) standing.
-
-Game flow:
-- Day: players discuss one at a time. You speak when you have something to add or are directly
-    addressed, and may pass when you don't. The discussion winds down once players stop having new
-    things to say, and then everyone votes. You may vote to eliminate a player, or abstain; if no
-    single player gets the most votes (a tie, or an abstain majority), no one is eliminated.
-- Day 1 has no vote: it is discussion only, then night. From day 2 on, each day ends in a vote.
-- Night: the wolves choose a victim, the healer may protect someone, the investigator may investigate
-    someone, the serial killer chooses a victim, and the vigilante may take a shot.
-- Eliminated players' roles are revealed. The serial killer can only be removed by a daytime vote
-    (it cannot be killed at night).
-
-What is public vs. hidden:
-- Votes are public and permanent — who voted to eliminate whom each day stays on the record.
-- Night actions (who killed, healed, investigated, or shot whom) are hidden; only the outcomes are announced.
-- A player can claim any role, but the game cannot verify a role claim — only an elimination reveals a role.
-
-The world is closed: the only roles and abilities in this game are the ones listed above."""
-
-# Who speaks when is the moderator's doing, so agents stop reading it as behaviour (the
-# discussion-evidence pass, P1, 2026-10-03). Spliced in ahead of the night line.
-_NIGHT_FLOW = "- Night: the wolves choose a victim"
-_TURN_TAKING_FACT = """- Turn order: the moderator decides who speaks next. The first speaker each day is random, players
-    who were addressed answer first, and a player whose point has already been made may be skipped.
-    Who spoke first, how often someone spoke, or who hasn't spoken yet says nothing about their role.
+# How to hold what you know. Read by every turn once the ten-seat prompts are wired (the review of
+# 2026-10-09 asked for it): the game needs bluffing, so the rule is not "never invent", it is to keep
+# three kinds of statement apart in your own reasoning and record.
+REASONING_DISCIPLINE = """
+Keep three things apart in your own reasoning: what the Game Master announced or you learned yourself
+(fact), what other players said (their claims), and what you infer (your hypotheses). In public you may
+say what serves you, including a bluff; a bluff is still a claim, and it never becomes a fact in your
+own private notes. Never say the Game Master announced something it did not.
 """
-assert _NIGHT_FLOW in GAME_RULES
-GAME_RULES = GAME_RULES.replace(_NIGHT_FLOW, _TURN_TAKING_FACT + _NIGHT_FLOW)
 
 
-# Play-side preamble = a second-person intro + the canonical rules. Reconstructed to be
-# byte-identical to the prior literal (verified by sha256) — the rules text did not change.
-GAME_PREAMBLE = (
-    "You are playing a game of Werewolf with 9 players. The role line-up below is\n"
-    "public knowledge — everyone knows these roles are in the game, but not who holds them.\n\n"
-    + GAME_RULES
-    + "\n"
-)
+# The "respond with" line of a ten-seat turn, generated from its output schema (Agents/schemas/
+# lineup_output.py) so the fields cannot drift. The shared fields show a fixed example; the example
+# read names no player and no role, since a named one gets copied.
+_CONTRACT_EXAMPLES = {
+    "strategy_verdicts": [{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}],
+    "memory_applicability": [{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}],
+    "reads": [{"player": "<exact player_id>", "why": "pushed the only counted lynch with no evidence",
+               "suspected_role": "<a role from the line-up, or unclear>", "confidence": "low"}],
+    "updated_strategy": "your updated private strategy note for future turns",
+    "pass_turn": False,
+    "message": "your discussion message",
+}
+"""The example value of each shared field; any other field shows its own description."""
+
+
+def json_contract(schema: type[BaseModel]) -> str:
+    """The "respond with" line: one example value per field, in the schema's order."""
+    example = {}
+    for name, field in schema.model_fields.items():
+        example[name] = _CONTRACT_EXAMPLES.get(name, field.description)
+    text = json.dumps(example, ensure_ascii=False)
+    return "You must respond with a valid JSON:\n" + text.replace("{", "{{").replace("}", "}}")
