@@ -1,9 +1,14 @@
 """The claim ledger: every role claim and claimed night action made in the day discussion, folded
 across days, with exact checks against the game master's record.
 
-The day summariser only transcribes what was claimed (DaySummaryOutputV4.role_claims). The rest is
-code: each player's history is kept (a changed claim keeps the earlier one), and each claim is
-checked against engine facts: revealed roles, announced saves and deaths, the cast and the rules.
+A role claim comes from the speaker: the claim field of the discussion output rides the spoken
+entry (DayChannel.claim), so who claimed what on which day is never misattributed. The day
+summariser transcribes the claimed night actions, the retractions and the plans
+(DaySummaryOutputV4.role_claims); its transcription of the role itself is the cross-check: taken
+only for a player who set no claim that day (a human's line has no field), dropped where it
+disagrees with the field. The rest is code: each player's history is kept (a changed claim keeps
+the earlier one), and each claim is checked against engine facts: revealed roles, announced saves
+and deaths, the cast and the rules.
 A plan said in the day for that night is set beside what the player later says they did, as fact
 ("on day 2 said they planned to investigate player_2"), never as a broken promise.
 The ledger is never stored. Every prompt rebuilds it from the day summaries and the dead roster, so
@@ -19,17 +24,25 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
-from Agents.schemas.game_events import DaySummary, DeathRecord
-from Agents.schemas.roles import roles as ROLES
+from Agents.schemas.game_events import DayChannel, DaySummary, DeathRecord
+from Agents.schemas.roles import ROLE_SPECS, WOLVES, roles as ROLES
 
 # The engine's own announcement wording (night_resolution): a save, and the night it belongs to.
 _SAVE = re.compile(r"(\S+) was attacked by [^!.]*? but was saved by the healer")
 _NIGHT = re.compile(r"^Night of day (\d+):")
 
-_VERBS = {"investigate": "investigated", "protect": "protected", "shoot": "shot", "kill": "attacked"}
-_NOUNS = {"investigate": "investigation", "protect": "protection", "shoot": "shot", "kill": "kill"}
-PLAN_VERBS = {"investigate": "investigate", "protect": "protect", "shoot": "shoot", "kill": "attack"}
+_VERBS = {"investigate": "checked", "protect": "protected", "shoot": "shot", "kill": "attacked",
+          "watch": "watched", "follow": "followed", "sigil": "set a sigil on", "block": "blocked",
+          "conceal": "concealed", "bet": "bet on", "pick": "picked"}
+_NOUNS = {"investigate": "check", "protect": "protection", "shoot": "shot", "kill": "kill",
+          "watch": "watch", "follow": "trail", "sigil": "sigil", "block": "block",
+          "conceal": "conceal", "bet": "bet", "pick": "pick"}
+PLAN_VERBS = {"investigate": "check", "protect": "protect", "shoot": "shoot", "kill": "attack",
+              "watch": "watch", "follow": "follow", "sigil": "set a sigil on", "block": "block",
+              "conceal": "conceal", "bet": "bet on", "pick": "pick"}
 _SAYS = {
+    "suspicious": "says they read Suspicious",
+    "not_suspicious": "says they read Not suspicious",
     "saved_from_attack": "says they saved them from an attack",
     "no_attack": "says there was no attack",
     "died": "says they died",
@@ -105,10 +118,35 @@ def _entry(c: dict) -> tuple[str, list[dict]]:
     return kind, actions
 
 
-def build_claim_ledger(discussion: list[DaySummary]) -> dict[str, PlayerClaims]:
-    """Each player's claims across days, in the order players first claimed."""
+def spoken_claims(messages: list[DayChannel]) -> dict[int, list[tuple[str, str]]]:
+    """The role claims the speakers made, by day: (player, role) in the order spoken. A held or
+    passed entry claimed nothing the table heard."""
+    by_day: dict[int, list[tuple[str, str]]] = {}
+    for m in sorted(messages, key=lambda m: (m.day, m.seq)):
+        if m.passed or m.claim == "none" or not m.claim:
+            continue
+        by_day.setdefault(m.day, []).append((m.player, m.claim))
+    return by_day
+
+
+def build_claim_ledger(discussion: list[DaySummary], messages: list[DayChannel] = ()) -> dict[str, PlayerClaims]:
+    """Each player's claims across days, in the order players first claimed. The role lines come
+    from the speakers' own claim fields (``messages``); the summariser's role claims fill in for
+    a player who set none that day, and its night actions, retractions and plans are taken as
+    transcribed."""
     ledger: dict[str, PlayerClaims] = {}
-    for s in sorted(discussion, key=lambda s: s.day):
+    spoken = spoken_claims(list(messages))
+    summaries = {s.day: s for s in discussion}
+    for day in sorted({*spoken, *summaries}):
+        claimed_today: set[str] = set()
+        for player, role in spoken.get(day, []):
+            claimed_today.add(player)
+            p = ledger.setdefault(player, PlayerClaims())
+            if role != p.current_role:
+                p.roles.append((day, role, "claimed"))
+        s = summaries.get(day)
+        if s is None:
+            continue
         for c in (s.structured or {}).get("role_claims") or []:
             player, role = c.get("player"), c.get("claimed_role")
             if not player or not role:
@@ -116,9 +154,9 @@ def build_claim_ledger(discussion: list[DaySummary]) -> dict[str, PlayerClaims]:
             kind, actions = _entry(c)
             p = ledger.setdefault(player, PlayerClaims())
             if kind == "retracted":
-                if p.roles:
+                if p.roles and player not in claimed_today:
                     p.roles.append((s.day, role, "retracted"))
-            elif role != p.current_role:
+            elif role != p.current_role and player not in claimed_today:
                 p.roles.append((s.day, role, "claimed"))
             for a in actions:
                 if a.get("target"):
@@ -247,8 +285,15 @@ def action_checks(player: str, a: ClaimedAction, facts: RecordFacts) -> list[Che
     if a.action == "protect" and a.target == player:
         notes.append(Check("Rules: the healer cannot protect themselves.", False))
     death = facts.dead.get(a.target)
-    if a.action == "investigate" and death and death.role and (a.result in ROLES or a.result == "not_a_wolf"):
-        fits = death.role == a.result or (a.result == "not_a_wolf" and death.role != "wolf")
+    if a.action == "investigate" and death and death.role and a.result in (*ROLES, "not_a_wolf", "suspicious", "not_suspicious"):
+        revealed_wolf = ROLE_SPECS.get(death.role) is not None and ROLE_SPECS[death.role].side == WOLVES
+        if a.result in ROLES:
+            fits = death.role == a.result
+        elif a.result == "suspicious":
+            # A Suspicious read fits a wolf; a necromancer reads Suspicious only on its attack nights.
+            fits = revealed_wolf or death.role == "necromancer"
+        else:
+            fits = not revealed_wolf
         notes.append(Check(f"Record: {a.target} was revealed as {_word(death.role)}" + (", as claimed." if fits else "."),
                            fits))
     if not a.night or a.night not in facts.resolved_nights:
@@ -274,10 +319,12 @@ def plan_checks(action: str, target: str, night: int, facts: RecordFacts) -> lis
     return []
 
 
-def ledger_rows(summaries: list[DaySummary], dead_roster=(), cast_role_counts=None) -> list[LedgerPlayer]:
+def ledger_rows(summaries: list[DaySummary], dead_roster=(), cast_role_counts=None,
+                messages: list[DayChannel] = ()) -> list[LedgerPlayer]:
     """The ledger with its checks: a row per player who claimed, in the order they first claimed,
-    each with its night actions and unreported plans in night order."""
-    ledger = build_claim_ledger([s for s in summaries if s.source != "game_master"])
+    each with its night actions and unreported plans in night order. ``messages`` are the spoken
+    entries whose claim fields make the role lines (the days the ledger covers)."""
+    ledger = build_claim_ledger([s for s in summaries if s.source != "game_master"], messages)
     facts = record_facts(summaries, dead_roster, cast_role_counts)
     rows = []
     for player, p in ledger.items():
@@ -311,12 +358,13 @@ def entry_text(e: LedgerEntry) -> str:
     return text
 
 
-def format_claim_ledger(summaries: list[DaySummary], dead_roster=(), cast_role_counts=None) -> str:
+def format_claim_ledger(summaries: list[DaySummary], dead_roster=(), cast_role_counts=None,
+                        messages: list[DayChannel] = ()) -> str:
     """The ledger as prompt text: a line per player (role history and checks), then a line per
     claimed night action or unreported plan (with what it replaced, and its checks). "" when
     nobody has claimed."""
     lines = []
-    for row in ledger_rows(summaries, dead_roster, cast_role_counts):
+    for row in ledger_rows(summaries, dead_roster, cast_role_counts, messages):
         lines.append(" ".join([f"{row.player}: {role_history(row.claims)}.", *(c.text for c in row.checks)]))
         lines += ["  " + " ".join([entry_text(e), *(c.text for c in e.checks)]) for e in row.entries]
     return "\n".join(lines)

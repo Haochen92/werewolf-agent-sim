@@ -23,3 +23,17 @@ def seat_number(player: str) -> int | None:
 def seat_order(players: Iterable[str]) -> list[str]:
     """The players by seat number, then by name (ids with no number go last, by name)."""
     return sorted(players, key=lambda p: (seat_number(p) is None, seat_number(p) or 0, p))
+
+
+def survivors(state) -> list[str]:
+    """Every living player, in seat order, from the two survivor buckets."""
+    return seat_order([*state.get("surviving_wolves", []), *state.get("surviving_villagers", [])])
+
+
+def alive_holder(state, role: str) -> str | None:
+    """The living player who holds a role; None when the role is dead or was not dealt."""
+    roles = state.get("roles", {})
+    for player in survivors(state):
+        if roles.get(player) == role:
+            return player
+    return None

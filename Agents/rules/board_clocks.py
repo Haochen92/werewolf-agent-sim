@@ -10,6 +10,11 @@ countdown clock — eliminations until that faction's win condition is met:
   other survivor left. Absent while no SK is alive.
 - town clock = wolves + SK — town wins when both threat factions are gone.
 
+"SK" is the lone killer's seat (the serial killer or the necromancer) and "wolves" every role on the
+wolves' side, read from the role registry; "town" is everyone else, the neutral included (it is
+never a member of a side but counts as a body in both evil win conditions). A nine-seat census
+(wolf, villager) reads the same way: its retired roles are still in the registry.
+
 Every clock is read by all three factions at once (zero-sum: one faction's win clock is the
 others' danger clock). ``distance_to_parity`` = min of the two EVIL clocks — "the leading
 remaining evil faction", the model-facing field definition; ``is_swing`` = min of ALL THREE
@@ -27,7 +32,14 @@ the true role map: the two must agree wherever the census exists.
 
 from collections.abc import Iterable, Mapping
 
-THREAT_ROLE_NAMES = ("wolf", "serial_killer")
+from Agents.schemas.roles import LONE_KILLER, ROLE_SPECS, WOLVES
+
+
+def _threat_side(role: str) -> str | None:
+    """The threat side a role counts on (wolves or the lone killer); None for town, the neutral,
+    or a role the registry does not know."""
+    spec = ROLE_SPECS.get(role)
+    return spec.side if spec is not None and spec.side in (WOLVES, LONE_KILLER) else None
 
 
 def _role_of(death) -> str | None:
@@ -70,9 +82,7 @@ def criticality_from_census(
     if not cast_role_counts:
         return None
     remaining = alive_role_counts(cast_role_counts, dead_roster or [])
-    wolves = max(0, remaining.get("wolf", 0))
-    sk = max(0, remaining.get("serial_killer", 0))
-    town = sum(
-        max(0, count) for role, count in remaining.items() if role not in THREAT_ROLE_NAMES
-    )
-    return criticality_from_counts(wolves, sk, town)
+    by_side = {WOLVES: 0, LONE_KILLER: 0, None: 0}
+    for role, count in remaining.items():
+        by_side[_threat_side(role)] += max(0, count)
+    return criticality_from_counts(by_side[WOLVES], by_side[LONE_KILLER], by_side[None])

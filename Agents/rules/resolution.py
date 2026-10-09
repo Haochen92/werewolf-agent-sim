@@ -1,54 +1,13 @@
-"""Pure resolution rules, shared by the engine nodes and the wire translator.
+"""The day vote's classification, shared by the engine node and the wire translator.
 
-The single source for the two rule sets that would otherwise exist twice — once in the
-resolution nodes and once re-derived on the wire: night attack precedence (SK night-immunity
-beats a heal beats a kill, immune whiffs stay silent) and the day-vote plurality
-classification. Both consumers supply their own inputs; nothing here touches graph state,
-so drift between the game and the wire is impossible by construction.
+One implementation of the plurality rule, so the game and the wire cannot drift. (The night's
+rules, which lived here too, are the night layer in ``Agents/rules/night.py`` since Phase 3.)
 """
 
 from collections import Counter
 from typing import Iterable, Literal, NamedTuple
 
-AttackerType = Literal["wolves", "serial_killer", "vigilante"]
-NightVerdict = Literal["immune", "saved", "killed"]
 DayVoteOutcome = Literal["lynched", "tie", "abstain", "no_vote"]
-
-
-def collect_attacks(
-    wolves_target: str | None,
-    serial_killer_target: str | None,
-    vigilante_target: str | None,
-) -> dict[str, list[AttackerType]]:
-    """target -> attacker types this night (a target may be hit by more than one killer)."""
-    attacks_on: dict[str, list[AttackerType]] = {}
-    for target, attacker in (
-        (wolves_target, "wolves"),
-        (serial_killer_target, "serial_killer"),
-        (vigilante_target, "vigilante"),
-    ):
-        if target:
-            attacks_on.setdefault(target, []).append(attacker)
-    return attacks_on
-
-
-def resolve_attacks(
-    attacks_on: dict[str, list[AttackerType]],
-    healer_target: str | None,
-    serial_killer_player: str | None,
-) -> dict[str, NightVerdict]:
-    """Verdict per attacked target. Precedence: the immune SK never dies at night (and the
-    whiff is SILENT — announcing it would out the SK), a healed target is saved, else killed.
-    A player attacked by multiple killers still resolves exactly once."""
-
-    def _resolved(target: str) -> NightVerdict:
-        if target == serial_killer_player:
-            return "immune"
-        if target == healer_target:
-            return "saved"
-        return "killed"
-
-    return {target: _resolved(target) for target in attacks_on}
 
 
 class DayVoteTally(NamedTuple):
