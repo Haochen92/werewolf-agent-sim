@@ -219,6 +219,8 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         # What a limited ability has left, under the name its card uses.
         "vigilante_bullets": uses_left if role == "vigilante" and uses_left is not None else payload.get("vigilante_bullets", 0),
         "sigils_left": uses_left if role == "sigilist" else 0,
+        "checks_left": uses_left if role == "investigator" else 0,
+        "watches_left": uses_left if role == "sentinel" else 0,
         "conceal_uses": uses_left if role == "illusionist" else 0,
         "fortune_self_bets": uses_left if role == "fortune_teller" else 0,
         "fortune_points": payload.get("fortune_points", 0),

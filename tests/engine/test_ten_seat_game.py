@@ -229,7 +229,7 @@ def test_uses_are_spent_in_the_resolution_once_per_night_and_a_decline_spends_no
     runtime = SimpleNamespace(context={"metrics": Metrics()})
     once = night_resolution(st, runtime)["uses_left"]
     again = night_resolution(st, runtime)["uses_left"]  # a re-run of the same night
-    assert once == again == {"vigilante": 1, "sigilist": 1, "illusionist": 2, "speculator": 1}
+    assert once == again == {"investigator": 2, "sentinel": 2, "vigilante": 1, "sigilist": 1, "illusionist": 2, "speculator": 1}
     st["night_choices"] = [NightChoice(h["vigilante"], "vigilante", "hold_fire", None)]
     held = night_resolution(st, runtime)
     assert held["uses_left"]["vigilante"] == 2
@@ -336,3 +336,43 @@ def test_a_wolfs_skill_turn_is_stamped_with_its_own_round():
     sends = pack_fan_out_skills(pack)
     assert SKILL_ROUND != CARRIER_ROUND
     assert [s.arg["current_round"] for s in sends] == [SKILL_ROUND, SKILL_ROUND]
+
+
+def test_a_sigil_on_an_immune_attacker_reads_as_a_miss_and_is_spent():
+    st = _state({"lone_killer": "serial_killer", "neutral": "speculator"})
+    h = _holders(st)
+    choices = [
+        NightChoice(h["serial_killer"], "serial_killer", "kill", h["healer"]),
+        NightChoice(h["sigilist"], "sigilist", "sigil", h["serial_killer"]),
+    ]
+    outcome = resolve_night(choices, st["roles"], 2)
+    assert outcome.verdicts[h["serial_killer"]] == "immune"
+    record = next(r for r in night_action_records(choices, outcome, st["roles"]) if r.actor == h["sigilist"])
+    assert (record.result, record.outcome) == ("miss", "Your sigil had no effect.")
+    quiet = resolve_night(choices[1:], st["roles"], 2)  # the same words as a night nobody attacked
+    quiet_record = next(r for r in night_action_records(choices[1:], quiet, st["roles"]))
+    assert (quiet_record.result, quiet_record.outcome) == (record.result, record.outcome)
+    st["night_choices"] = choices
+    update = night_resolution(st, SimpleNamespace(context={"metrics": Metrics()}))
+    assert update["uses_left"]["sigilist"] == 1
+    assert h["serial_killer"] not in update["day_channel"][0].message  # nothing public either
+
+
+def test_checks_and_watches_are_capped_and_a_kept_one_spends_nothing():
+    from Agents.turn.action_space import valid_targets_for_action
+    st = _state({"lone_killer": "serial_killer", "neutral": "speculator"})
+    h = _holders(st)
+    assert st["uses_left"]["investigator"] == 2 and st["uses_left"]["sentinel"] == 2
+    assert valid_targets_for_action({"player_id": h["investigator"], "surviving_players": [h["healer"]]},
+                                    "investigator_target")[-1] == "no_check"
+    runtime = SimpleNamespace(context={"metrics": Metrics()})
+    st["night_choices"] = [
+        NightChoice(h["investigator"], "investigator", "investigate", h["chanteuse"]),
+        NightChoice(h["sentinel"], "sentinel", "watch", h["healer"]),
+    ]
+    update = night_resolution(st, runtime)
+    assert update["uses_left"]["investigator"] == 1 and update["uses_left"]["sentinel"] == 1
+    assert night_choice("investigator", h["investigator"], SimpleNamespace(investigator_target="no_check", body=None, bet_role="none"),
+                        {"player_id": h["investigator"]}, [h["healer"], "no_check"]) is None
+    st["uses_left"].update({"investigator": 0, "sentinel": 0})
+    assert not acts_tonight(st, "investigator") and not acts_tonight(st, "sentinel")

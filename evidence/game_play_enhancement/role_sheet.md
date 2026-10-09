@@ -93,12 +93,12 @@ one verdict, and a conceal hides the pack's victim if that kill landed.
   level; it feeds the claim ledger directly, and the summariser's transcription becomes a
   cross-check. A prompt epoch.
 - **A night off:** a role may decline to act only when acting has a cost. The Vigilante (hold
-  fire, as built), the Sigilist (2 sigils) and the Illusionist (2 conceals; its choice is
-  conceal tonight or not) get a no-action option; the Necromancer gets "Stay put tonight", and is
-  held to it when no usable body exists; the Speculator may answer "not yet" on any night, since it has no deadline.
-  Every-night roles with no cost act every night: the Healer, the Investigator, the Sentinel, the
-  Trailseer, the Chanteuse, the Fortune Teller, and the killers (the pack and the Serial Killer
-  always attack someone).
+  fire, as built), the Sigilist (2 sigils), the Investigator (2 checks, `no_check`), the Sentinel
+  (2 watches, `no_watch`) and the Illusionist (2 conceals; its choice is conceal tonight or not)
+  get a no-action option; the Necromancer gets "Stay put tonight", and is held to it when no
+  usable body exists; the Speculator may answer "not yet" on any night, since it has no deadline.
+  Every-night roles with no cost act every night: the Healer, the Trailseer, the Chanteuse, the
+  Fortune Teller, and the killers (the pack and the Serial Killer always attack someone).
 - **State in every prompt:** uses left and past results are given to agents each turn, never left
   to memory. Each wolf gets its own private result for its skill.
 - **The public alive-roles census** (cast minus revealed dead, written by code) cannot subtract a
@@ -111,8 +111,8 @@ Three seats. Each gives partial evidence; together they trace wolves from three 
 
 | Role | Status | Acts | What it does |
 |---|---|---|---|
-| Investigator | Built, changed | Every night | Checks one player: "Suspicious" or "Not suspicious" (see Shared rules) |
-| Sentinel | New, level 1 | Every night | Watches one player and learns the names of everyone who visited them |
+| Investigator | Built, changed | Night, 2 checks | Checks one player: "Suspicious" or "Not suspicious" (see Shared rules). 2 checks for the game (balance ruling 2026-10-09; was every night) |
+| Sentinel | New, level 1 | Night, 2 watches | Watches one player and learns the names of everyone who visited them. 2 watches for the game (balance ruling 2026-10-09; was every night) |
 | Trailseer | New, level 1 | Every night | Follows one player and learns whom they visited, or "no one" |
 
 - Investigator is now a pure wolf detector. The Serial Killer never reads suspicious; town catches
@@ -142,9 +142,12 @@ Three seats: one killer acting on suspicion, one on prediction, and one protecto
 - "Attacked" means any kill that went ahead (not blocked), whatever came of it: a saved or immune
   victim still counts. The retaliation is an ordinary attack, so the healer's protection saves the
   attacker from it, and the morning report names the death as "struck down by a sigil".
-- The Sigilist learns all three outcomes: the target attacked and was struck down; attacked but
-  was unharmed (the Serial Killer tell, hard evidence for a lynch); attacked but the healer saved
-  them. Otherwise "Your target did not attack tonight."
+- The Sigilist learns two outcomes: the target attacked and was struck down; attacked but the
+  healer saved them. Otherwise only "Your sigil had no effect", which is what both a target who
+  did not attack and an attacker night immunity protected look like, in the result word, the
+  private record and the will alike (ruling 2026-10-09; the draft's "attacked but was unharmed"
+  named the Serial Killer in one step and preceded three of six Serial Killer lynches in the
+  balance run; "your target did not attack" would be false of an immune attacker).
 - A sigil is spent when placed, hit or miss. A sigil on a Vigilante who shoots kills the Vigilante.
 - An action a block cancelled spends nothing: a blocked shot keeps its bullet, a blocked sigil its
   sigil (ruling from game2, 2026-10-09: the vigilante lost a bullet to a block).
@@ -282,9 +285,9 @@ node.
 | Watch | `Tonight Y was visited by A and B.` / `No one visited Y tonight.` |
 | Follow | `Tonight Y visited Z.` / `Y visited no one tonight.` |
 | Sigil, hit | `Y attacked someone tonight, and your sigil struck them down.` |
-| Sigil, immune | `Y attacked someone tonight, but your sigil could not kill them: they are immune to night kills.` |
+| Sigil, immune | the miss row, result `miss`: an immune attacker is not told apart from a quiet night (ruling 2026-10-09 from the balance run, where three of six Serial Killer lynches followed the old "immune" record) |
 | Sigil, saved | `Y attacked someone tonight, but the healer's protection saved them from your sigil.` |
-| Sigil, miss | `Your target did not attack tonight.` |
+| Sigil, miss | `Your sigil had no effect.` (also what an immune attacker reads as) |
 | Block, took | `Y was roleblocked tonight.` |
 | Block, no effect | `Your block did not affect Y.` |
 | Conceal, a body | `You concealed Y's body. They were a {role}.` |
@@ -386,3 +389,5 @@ and how often the Illusionist conceals an info role.
   lone killer's seat (Serial Killer or Necromancer) and the neutral seat (Speculator or Fortune
   Teller) are each drawn at random per game unless the user chose one (owner).
 - **2026-10-09 (review):** an external review of the wiring found six gaps the suite missed, all fixed: the Fortune Teller's self-bets are now its limited ability (2 uses in the registry, spent on a self-bet only, not offered once spent; the ordinary bet goes on every night); carrying the pack's kill spends no conceal (a use is charged only by the role's own action); the conceal is a visit to the pack's victim whenever the conceal went ahead on a named target, dead or saved (the Sentinel at that door sees the carrier and the Illusionist, as the pack rules say; a blocked Illusionist goes nowhere); a wolf's skill turn is stamped with its own round so its reads reach the wire; a human Necromancer's announced turn carries its bodies (`input_request.bodies`); and the formal-claims ruling is built: the speaker's `claim` rides the spoken line (`DayChannel.claim`, `speech.claim` on the wire) and makes the ledger's role lines, the summariser's transcription of the role is taken only for a player who set no claim that day (a human's line) and dropped where it disagrees, its night actions, retractions and plans stand. The pack rules now say the rotation only (the chat override was never built).
+- **2026-10-09 (balance run):** thirteen games on the cast, the town won all (data/phase3_balance/README.md). Ruled: a sigil on an attacker night immunity protected reads exactly as a quiet night, result `miss`, record and will "Your sigil had no effect" ("your target did not attack" would be false), since the "immune" record named the Serial Killer in one step and preceded three of its six lynches; the strings and the Sigilist's card say so. The Sentinel keeps reporting names: its sightings decided one of the twenty-seven evil lynches, so it is not the lever. The Illusionist learns the concealed role, as before.
+- **2026-10-09 (balance, caps):** the Investigator has 2 checks and the Sentinel 2 watches for the whole game (`no_check` / `no_watch` to keep them; the night-1 lot still applies, as for the Sigilist), owner's ruling after the balance run; a declined check or watch leaves no record and spends nothing. To be read against one batch of six games with the sigil ruling before any further dial; the Vigilante reading Suspicious is the proposed next dial, not ruled.

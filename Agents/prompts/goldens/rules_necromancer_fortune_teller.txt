@@ -1,7 +1,7 @@
 Team composition (10 players, four sides):
 Town (wins as a side):
-- 1 Investigator: each night checks one player and learns "Suspicious" or "Not suspicious".
-- 1 Sentinel: each night watches one player and learns who visited them.
+- 1 Investigator: has 2 checks; a check on a player learns "Suspicious" or "Not suspicious".
+- 1 Sentinel: has 2 watches; a watch on a player learns who visited them that night.
 - 1 Trailseer: each night follows one player and learns whom they visited.
 - 1 Vigilante: may shoot one player at night, with only a few bullets for the whole game.
 - 1 Sigilist: has 2 sigils; a sigil placed on a player strikes them if they attack anyone that night.
@@ -15,11 +15,12 @@ Neutral (has no side; wins by meeting its own win condition):
 - 1 Fortune Teller: bets each night on who will die; wins by scoring two points.
 
 How each side and role works:
-- Investigator: Each night the Investigator checks one player and privately learns "Suspicious" or "Not
-    suspicious". Wolves read Suspicious; everyone else reads Not suspicious, unless a role's rules below
-    say otherwise. The check is a visit.
-- Sentinel: Each night the Sentinel watches one player and privately learns the names of everyone who
-    visited them that night, or that no one did. Watching is a visit.
+- Investigator: The Investigator has 2 checks for the whole game. At night it may check one player, or
+    keep its checks, and privately learns "Suspicious" or "Not suspicious". Wolves read Suspicious;
+    everyone else reads Not suspicious, unless a role's rules below say otherwise. The check is a visit.
+- Sentinel: The Sentinel has 2 watches for the whole game. At night it may watch one player, or keep its
+    watches, and privately learns the names of everyone who visited them that night, or that no one did.
+    Watching is a visit.
 - Trailseer: Each night the Trailseer follows one player and privately learns whom they visited that
     night, or that they visited no one. Following is a visit.
 - Vigilante: The Vigilante has a few bullets for the whole game and cannot reload. At night it may shoot
@@ -30,8 +31,9 @@ How each side and role works:
     its sigils. If that player attacks anyone that night, the sigil strikes them: an attack of its own,
     resolved after theirs, which protection or night immunity can stop; their original attack resolves
     as normal either way. A death by sigil is announced as struck down by a sigil. The Sigilist is told
-    whether its target attacked and what came of the sigil. A sigil is spent when placed, whether or not
-    it triggers. Placing a sigil is a visit.
+    whether the sigil struck, or the healer saved its target from it; otherwise only that the sigil had
+    no effect, which is what both a target who did not attack and an attacker night immunity protected
+    look like. A sigil is spent when placed, whether or not it triggers. Placing a sigil is a visit.
 - Healer: Each night the Healer protects one other player, never itself, from any night attack;
     protection is never used up. A protected player who was attacked survives, and the morning report
     says so ("X was attacked by the wolves but was saved by the healer"). An attack on a player who

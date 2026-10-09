@@ -34,6 +34,10 @@ class GameConfig(BaseModel):
     # The sigilist's sigils; one is spent when placed, hit or miss.
     conceals: int = Field(default=2, ge=0)
     # The illusionist's conceals; one is spent only when a body is concealed.
+    investigator_checks: int = Field(default=2, ge=0)
+    # The investigator's checks for the whole game (balance ruling 2026-10-09; was every night).
+    sentinel_watches: int = Field(default=2, ge=0)
+    # The sentinel's watches for the whole game (balance ruling 2026-10-09; was every night).
     self_bets: int = Field(default=2, ge=0)
     # The fortune teller's self-bets, each a night it cannot be killed.
     fortune_points_to_win: int = Field(default=2, ge=1)
@@ -90,6 +94,8 @@ class GameConfig(BaseModel):
     def starting_uses(self) -> dict[str, int]:
         """What each limited ability starts the game with, by role."""
         return {
+            "investigator": self.investigator_checks,
+            "sentinel": self.sentinel_watches,
             "vigilante": self.vigilante_bullets,
             "sigilist": self.sigils,
             "illusionist": self.conceals,

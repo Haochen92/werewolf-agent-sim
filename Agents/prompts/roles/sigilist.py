@@ -7,8 +7,10 @@ The Sigilist has 2 sigils for the whole game. At night it may place one on a pla
 sigils. If that player attacks anyone that night, the sigil strikes them: an attack of its own,
 resolved after theirs, which protection or night immunity can stop; their original attack
 resolves as normal either way. A death by sigil is announced as struck down by a sigil. The
-Sigilist is told whether its target attacked and what came of the sigil. A sigil is spent when
-placed, whether or not it triggers. Placing a sigil is a visit.
+Sigilist is told whether the sigil struck, or the healer saved its target from it; otherwise only
+that the sigil had no effect, which is what both a target who did not attack and an attacker
+night immunity protected look like. A sigil is spent when placed, whether or not it triggers.
+Placing a sigil is a visit.
 """
 
 PLAYSTYLE = """

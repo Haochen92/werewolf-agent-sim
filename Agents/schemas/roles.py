@@ -57,8 +57,8 @@ class RoleSpec:
 
 ROLE_SPECS: dict[str, RoleSpec] = {
     # Town
-    "investigator": RoleSpec("investigator", TOWN, "investigate", "investigator_target"),
-    "sentinel": RoleSpec("sentinel", TOWN, "watch", "sentinel_target"),
+    "investigator": RoleSpec("investigator", TOWN, "investigate", "investigator_target", no_action="no_check", uses=2),
+    "sentinel": RoleSpec("sentinel", TOWN, "watch", "sentinel_target", no_action="no_watch", uses=2),
     "trailseer": RoleSpec("trailseer", TOWN, "follow", "trailseer_target"),
     "vigilante": RoleSpec("vigilante", TOWN, "kill", "vigilante_target", no_action="hold_fire", uses=2),
     "sigilist": RoleSpec("sigilist", TOWN, "sigil", "sigil_target", no_action="keep_sigil", uses=2),

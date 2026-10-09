@@ -33,7 +33,8 @@ _ATTACKER_PHRASE = {
 #   hold_fire:   held
 #   investigate: suspicious | not_suspicious   (the target is in `seen`)
 #   watch, follow: seen            (the names are in `seen`; empty = no one)
-#   sigil:       hit | immune | saved | miss
+#   sigil:       hit | saved | miss  (a quiet night and an immune attacker both read as a miss,
+#                owner 2026-10-09: the sigilist learns only that the sigil had no effect)
 #   block:       blocked | no_effect
 #   conceal:     concealed | no_body  (the concealed role is in `seen`)
 #   pick:        picked              (the side is in `seen`)
@@ -142,11 +143,10 @@ def _record_of(choice: NightChoice, outcome: NightOutcome, roles: dict[str, str]
                 result = "hit"
                 outcome_text = f"{target} attacked someone tonight, and your sigil struck them down."
             elif verdict == "immune":
-                result = "immune"
-                outcome_text = (
-                    f"{target} attacked someone tonight, but your sigil could not kill them: "
-                    "they are immune to night kills."
-                )
+                # An immune attacker (the serial killer, on this cast) reads exactly as a quiet
+                # night: the "immune" record named it in one step (balance run, 2026-10-09; owner).
+                result = "miss"
+                outcome_text = "Your sigil had no effect."
             else:
                 result = "saved"
                 outcome_text = (
@@ -155,7 +155,7 @@ def _record_of(choice: NightChoice, outcome: NightOutcome, roles: dict[str, str]
                 )
         else:
             result = "miss"
-            outcome_text = "Your target did not attack tonight."
+            outcome_text = "Your sigil had no effect."
 
     elif choice.kind == "block":
         if target in outcome.blocked:
@@ -272,11 +272,9 @@ def _disclosed(record: NightActionRecord) -> str:
     if record.action == "sigil":
         if record.result == "hit":
             return f"set a sigil on {target}, who attacked and was struck down"
-        if record.result == "immune":
-            return f"set a sigil on {target}, who attacked and was unharmed"
         if record.result == "saved":
             return f"set a sigil on {target}, who attacked and was saved"
-        return f"set a sigil on {target}, who did not attack"
+        return f"set a sigil on {target}; it had no effect"
     return f"{record.action} {target}"
 
 

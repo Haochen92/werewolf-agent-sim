@@ -348,9 +348,8 @@ def human_path_chunks() -> list[dict]:
                         "player_6 reads Suspicious.", ["player_6"]),
                 _record("player_10", "kill", "player_3", "killed",
                         "player_3 died. They were a trailseer."),
-                _record("player_4", "sigil", "player_10", "immune",
-                        "player_10 attacked someone tonight, but your sigil could not kill "
-                        "them: they are immune to night kills."),
+                _record("player_4", "sigil", "player_10", "miss",  # the serial killer: reads as a miss
+                        "Your sigil had no effect."),
                 _record("player_8", "bet", "player_3", "scored_1", "player_3 died: one point."),
                 _record("player_2", "protect", "player_7", "saved",
                         "player_7 was attacked by the wolves, and your protection saved them."),

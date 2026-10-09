@@ -104,11 +104,11 @@ class DayVoteOutput(TurnOutput[ReadRole], Generic[ReadRole]):
 
 
 class InvestigatorOutput(TurnOutput[ReadRole], Generic[ReadRole]):
-    investigator_target: str = Field(description="exact player_id from the surviving players list")
+    investigator_target: str = Field(description='exact player_id from the surviving players list, or "no_check"')
 
 
 class SentinelOutput(TurnOutput[ReadRole], Generic[ReadRole]):
-    sentinel_target: str = Field(description="exact player_id from the surviving players list")
+    sentinel_target: str = Field(description='exact player_id from the surviving players list, or "no_watch"')
 
 
 class TrailseerOutput(TurnOutput[ReadRole], Generic[ReadRole]):
