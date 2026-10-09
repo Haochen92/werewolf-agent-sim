@@ -15,7 +15,10 @@ from Agents.turn import human_turn as h
 from Agents.turn import pipeline as pl
 from Agents.turn.addressing_agent import _sanitize_against_roster
 from Agents.turn.human_turn import HumanTurnContractError, validate_human_response
+from Agents.schemas.roles import lineup
 from tests.factories.builders import human_turn_request as _request
+
+LINEUP = lineup("serial_killer", "speculator")
 
 
 def _state(**run_kwargs):
@@ -24,9 +27,9 @@ def _state(**run_kwargs):
 
 def _human_payload(**over):
     payload = dict(
-        player_id="p1", player_role="villager", current_day=1, current_round=1,
+        player_id="p1", player_role="healer", current_day=1, current_round=1,
         human_player=True, surviving_players=["p1", "p2", "p3"],
-        day_channel=[], day_summaries=[], dead_roster=[], cast_role_counts={},
+        day_channel=[], day_summaries=[], dead_roster=[], cast_role_counts={}, lineup=LINEUP,
     )
     payload.update(over)
     return payload
@@ -45,9 +48,13 @@ def test_human_opt_in_assigns_a_real_seat():
     assert state["human_players"][0] in state["roles"]
 
 
-def test_human_role_preference_lands_on_the_human_seat():
-    state = _state(human_player=True, human_role="wolf")
-    assert state["roles"][state["human_players"][0]] == "wolf"
+@pytest.mark.parametrize("role", ["chanteuse", "necromancer", "fortune_teller"])
+def test_human_role_preference_lands_on_the_human_seat(role):
+    # A fixed seat is swapped onto the human; a drawn one (the lone killer's, the neutral's)
+    # also forces the draw, so the role is in the lineup to be swapped.
+    state = _state(human_player=True, human_role=role)
+    assert role in state["lineup"]
+    assert state["roles"][state["human_players"][0]] == role
 
 
 def test_multi_human_deals_distinct_seats():
@@ -66,9 +73,13 @@ def test_extra_humans_do_not_perturb_the_role_draw():
     assert solo["human_players"][0] == multi["human_players"][0]
 
 
-def test_role_preference_is_ignored_for_multi_human_games():
+@pytest.mark.parametrize("role", [
+    "chanteuse",
+    "necromancer",
+])
+def test_role_preference_is_ignored_for_multi_human_games(role):
     # The solo-only rule at the engine root: a shared room always deals random roles.
-    assert _state(human_player=2, human_role="wolf")["roles"] == _state()["roles"]
+    assert _state(human_player=2, human_role=role)["roles"] == _state()["roles"]
 
 
 def test_human_seat_count_caps_at_the_cast():
@@ -191,9 +202,10 @@ def test_discussion_message_ok_but_target_forbidden():
 def test_delegate_is_legal_for_every_phase():
     # The server's AFK timer submits the same sentinel whatever the turn asks for —
     # the phase rules apply to what the AGENT then produces, not to this response.
-    for phase in ("day_channel", "day_votes", "wolf_channel", "wolf_vote",
+    for phase in ("day_channel", "day_votes", "wolf_channel", "kill_target",
                   "healer_target", "investigator_target", "serial_killer_target",
-                  "vigilante_target"):
+                  "vigilante_target", "sentinel_target", "trailseer_target", "sigil_target",
+                  "block_target", "conceal", "necromancer_target", "speculator_pick", "bet_target"):
         req = _request(phase=phase, can_pass=(phase == "day_channel"))
         assert validate_human_response(req, {"delegate": True}).delegate
 
@@ -261,7 +273,7 @@ def test_reactive_debt_discharged_from_owes(monkeypatch):
 def _day_vote_state(human_players):
     return {
         "surviving_villagers": ["p1", "p2"], "surviving_wolves": ["p3"],
-        "roles": {"p1": "villager", "p2": "healer", "p3": "wolf"},
+        "roles": {"p1": "sentinel", "p2": "healer", "p3": "chanteuse"}, "lineup": LINEUP,
         "human_players": human_players, "agent_strategies": {},
         "day_channel": [], "day_summaries": [], "dead_roster": [],
         "current_round": 0, "current_day": 1, "no_lynch_streak": 0,
@@ -276,18 +288,21 @@ def test_day_vote_fanout_routes_humans_to_the_uncached_twin():
         ("vote", "p1"), ("vote_human", "p2"), ("vote", "p3")}
 
 
-def test_wolf_vote_fanout_routes_human_wolves_to_the_uncached_twin():
-    from Agents.nodes.night.wolf import wolf_fan_out_vote
+def test_pack_skill_fanout_routes_human_wolves_to_the_uncached_twin():
+    # The pack's skill turns are its one parallel superstep (the nine-seat pack vote's place).
+    from Agents.nodes.night.pack import CARRIER_ROUND, pack_fan_out_skills
 
     state = {
         "surviving_wolves": ["p3", "p4"], "surviving_villagers": ["p1"],
+        "roles": {"p1": "healer", "p3": "chanteuse", "p4": "illusionist"}, "lineup": LINEUP,
+        "uses_left": {"illusionist": 2},
         "human_players": ["p4"], "agent_strategies": {},
         "day_channel": [], "day_summaries": [], "wolf_channel": [],
-        "current_day": 1, "current_round": 3,
+        "current_day": 1, "current_round": CARRIER_ROUND, "carrier": "p3", "wolves_target": "p1",
     }
-    sends = wolf_fan_out_vote(state)
+    sends = pack_fan_out_skills(state)
     assert {(s.node, s.arg["player_id"]) for s in sends} == {
-        ("WOLF_NIGHT_VOTE", "p3"), ("WOLF_NIGHT_VOTE_HUMAN", "p4")}
+        ("PACK_SKILL", "p3"), ("PACK_SKILL_HUMAN", "p4")}
 
 
 @pytest.mark.parametrize("notes, free", [("4 dodging", False), ("  ", True), ("", True)])

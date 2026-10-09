@@ -21,7 +21,6 @@ from Agents.tracing import GraphContext, langfuse
 from Agents.prompts.prompt_formatters import (
     format_day_channel,
     format_day_summaries,
-    format_investigator_results,
     format_wolf_channel,
 )
 from Agents.memory.retrieval import enrich_payload_with_memory
@@ -38,20 +37,11 @@ from Agents.schemas.game_events import (
 from Agents.schemas.turn import (
     ResolvedDayDiscussion,
     ResolvedDayVote,
-    ResolvedHealerTarget,
-    ResolvedInvestigatorTarget,
-    ResolvedSerialKillerTarget,
+    ResolvedNightChoice,
     ResolvedTurn,
-    ResolvedVigilanteTarget,
     ResolvedWolfDiscussion,
-    ResolvedWolfVote,
 )
-from Agents.state import (
-    HealerDayState,
-    InvestigatorDayState,
-    VillagerDayState,
-    WolfDayState,
-)
+from Agents.state import DayActorState
 from Agents.turn.agent_player import run_agent
 from Agents.turn.human_turn import run_human_decision
 from Agents.turn.adoption import process_strategy_adoption
@@ -139,7 +129,7 @@ def _announce_reads(
 
 
 def run_memory_informed_action(
-    payload: VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState,
+    payload: DayActorState,
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
     action_phase: str,
@@ -191,11 +181,9 @@ def run_memory_informed_action(
                 before_day=day,
                 dead_roster=payload.get("dead_roster", []),
                 cast_role_counts=payload.get("cast_role_counts", {}),
+                messages=payload.get("day_channel", []),
             ),
             "wolf_channel": format_wolf_channel(payload.get("wolf_channel", [])),
-            "investigator_results": format_investigator_results(
-                payload.get("investigator_results", [])
-            ),
             "surviving_players": payload.get("surviving_players", []),
             "surviving_wolves": payload.get("surviving_wolves", []),
             "surviving_villagers": payload.get("surviving_villagers", []),
@@ -384,12 +372,9 @@ def run_memory_informed_night_action(
                 before_day=day,
                 dead_roster=payload.get("dead_roster", []),
                 cast_role_counts=payload.get("cast_role_counts", {}),
+                messages=payload.get("day_channel", []),
             ),
             "wolf_channel": format_wolf_channel(payload.get("wolf_channel", [])),
-            "investigator_results": format_investigator_results(
-                payload.get("investigator_results", [])
-            ),
-            "vigilante_results": payload.get("vigilante_results", []),
             "surviving_players": payload.get("surviving_players", []),
         },
         metadata={
@@ -427,20 +412,8 @@ def run_memory_informed_night_action(
 
         target: str | None = None
         updated_strategy = (effects.strategy or "") if effects else ""
-        if isinstance(result, ResolvedWolfVote):
-            target = result.entry.vote
-        elif isinstance(
-            result,
-            (
-                ResolvedHealerTarget,
-                ResolvedInvestigatorTarget,
-                ResolvedSerialKillerTarget,
-                ResolvedVigilanteTarget,
-            ),
-        ):
-            target = result.entry
-        elif isinstance(result, ResolvedWolfDiscussion):
-            target = None
+        if isinstance(result, ResolvedNightChoice) and result.entry is not None:
+            target = result.entry.target
         eval_case = EvalCase(
             span_name=span_name,
             player_id=player_id,

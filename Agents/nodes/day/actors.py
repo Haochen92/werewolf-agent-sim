@@ -6,30 +6,19 @@ from Agents.tracing import GraphContext
 # Day actor nodes (thin wrappers over the shared runtime engine).
 from Agents.turn import run_memory_informed_action
 from Agents.turn.pipeline import preview_agent_action
-from Agents.prompts import (
-    HEALER_DAY_DISCUSS,
-    HEALER_DAY_VOTE,
-    INVESTIGATOR_DAY_DISCUSS,
-    INVESTIGATOR_DAY_VOTE,
-    SERIAL_KILLER_DAY_DISCUSS,
-    SERIAL_KILLER_DAY_VOTE,
-    VIGILANTE_DAY_DISCUSS,
-    VIGILANTE_DAY_VOTE,
-    VILLAGER_DAY_DISCUSS,
-    VILLAGER_DAY_VOTE,
-    WOLF_DAY_DISCUSS,
-    WOLF_DAY_VOTE,
-)
+from Agents.prompts.day_discuss import day_discuss_template
+from Agents.prompts.day_vote import day_vote_template
 from typing import TypedDict
 
-from Agents.schemas import DayChannel, DayDiscussOutput, DayVote, DayVoteOutput, RoundCandidate
+from Agents.schemas import DayChannel, DayVote, RoundCandidate, day_discuss_output, day_vote_output
 from Agents.schemas.game_events import DiscussionPassReason
+from Agents.schemas.roles import roles
 from Agents.schemas.turn import ResolvedDayDiscussion, ResolvedDayVote
-from Agents.state import HealerDayState, InvestigatorDayState, VillagerDayState, WolfDayState
+from Agents.state import DayActorState
 
-# The Send-payload shape: one of the role-gated payload TypedDicts built by flow.py's
-# builders (documentation-only — Send payloads are not runtime-validated; see state/day.py).
-DayActorPayload = VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState
+# The Send-payload shape, built by flow.py's builders (documentation-only — Send payloads are
+# not runtime-validated; see state/day.py).
+DayActorPayload = DayActorState
 
 
 # The commit contracts: exactly what a turn's superstep can fold into graph state.
@@ -57,27 +46,13 @@ class VoteDelta(TypedDict, total=False):
 
 
 # Every role's day-discuss / day-vote turn makes the identical call into the shared
-# engine — only the prompt differs. So the graph registers ONE generic node per phase
-# and the role rides the Send payload (player_role, already attached by the role-gated
-# payload builders in flow.py). Role-specific behaviour is data (the prompt tables),
-# not code: adding a role = one prompt entry per phase.
-DISCUSS_PROMPTS: dict[str, str] = {
-    "villager": VILLAGER_DAY_DISCUSS,
-    "healer": HEALER_DAY_DISCUSS,
-    "wolf": WOLF_DAY_DISCUSS,
-    "investigator": INVESTIGATOR_DAY_DISCUSS,
-    "serial_killer": SERIAL_KILLER_DAY_DISCUSS,
-    "vigilante": VIGILANTE_DAY_DISCUSS,
-}
-
-VOTE_PROMPTS: dict[str, str] = {
-    "villager": VILLAGER_DAY_VOTE,
-    "healer": HEALER_DAY_VOTE,
-    "wolf": WOLF_DAY_VOTE,
-    "investigator": INVESTIGATOR_DAY_VOTE,
-    "serial_killer": SERIAL_KILLER_DAY_VOTE,
-    "vigilante": VIGILANTE_DAY_VOTE,
-}
+# engine — only the prompt differs, and it is built once per role from the role's card.
+# So the graph registers ONE generic node per phase and the role rides the Send payload
+# (player_role, already attached by the payload builders in flow.py). The output schema
+# depends on the dealt lineup (the roles a read or a claim may name), so it is looked up
+# per payload.
+DISCUSS_PROMPTS = {role: day_discuss_template(role) for role in roles}
+VOTE_PROMPTS = {role: day_vote_template(role) for role in roles}
 
 
 # The payload is the explicitly-built dict from build_speaker_send / fan_out_day (role-gated
@@ -93,7 +68,7 @@ def discuss(
         runtime,
         "day_discussion",
         DISCUSS_PROMPTS[payload["player_role"]],
-        DayDiscussOutput,
+        day_discuss_output(payload["lineup"]),
         "day_channel",
     )
     if turn is None:
@@ -127,7 +102,7 @@ def round_turn(
         runtime,
         "day_discussion",
         DISCUSS_PROMPTS[payload["player_role"]],
-        DayDiscussOutput,
+        day_discuss_output(payload["lineup"]),
         "day_channel",
     )
     if turn is None:
@@ -167,7 +142,7 @@ def preview_discuss(
         runtime,
         "day_discussion",
         DISCUSS_PROMPTS[payload["player_role"]],
-        DayDiscussOutput,
+        day_discuss_output(payload["lineup"]),
         "day_channel",
         direction,
     )
@@ -188,7 +163,7 @@ def vote(
         runtime,
         "day_vote",
         VOTE_PROMPTS[payload["player_role"]],
-        DayVoteOutput,
+        day_vote_output(payload["lineup"]),
         "day_votes",
     )
     if turn is None:

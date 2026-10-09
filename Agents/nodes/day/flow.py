@@ -25,7 +25,7 @@ from Agents.schemas import DayChannel, DayRound, DaySummary, FiringReason, Round
 from Agents.rules.closing import closing_announcement, closing_speakers
 from Agents.rules.night_record import own_night_actions
 from Agents.rules.seats import seat_order
-from Agents.schemas.roles import cast_role_counts
+from Agents.schemas.roles import ROLE_SPECS, WOLVES, cast_role_counts, side_of
 from Agents.state import (
     DayGraphState,
 )
@@ -120,7 +120,36 @@ def _initial_wolf_count(state: DayGraphState) -> int:
     """How many wolves the game was CAST with (from the true role map). Used only to fill the wolf
     day cell's deterministic `ally_revealed` — a scalar count, so no wolf identity rides the payload
     (the leak-boundary invariant is about names, not the count the wolf already knows)."""
-    return sum(1 for r in state.get("roles", {}).values() if r == "wolf")
+    return sum(1 for r in state.get("roles", {}).values() if r in ROLE_SPECS and side_of(r) == WOLVES)
+
+
+def _private_fields(state: DayGraphState, player: str, role: str) -> dict:
+    """The private fields of one player's day payload, by role: the leak boundary. The pack's
+    rosters and chat go to a wolf; every night actor gets its own record; a limited ability its
+    uses left; the neutrals their pick or score."""
+    spec = ROLE_SPECS[role]
+    fields: dict = {}
+    if spec.pack:
+        fields["surviving_wolves"] = state["surviving_wolves"]
+        fields["surviving_villagers"] = state["surviving_villagers"]
+        # Wolves carry their own night coordination + GM notes into day discuss/vote (their own
+        # information; gated to wolves only — see check_wolf_channel_isolation).
+        fields["wolf_channel"] = state.get("wolf_channel", [])
+        # Deterministic ally_revealed fill (situation_agent): how many wolves were cast, so a live
+        # query can compute "a partner is gone" from surviving_wolves without trusting the LLM.
+        fields["initial_wolf_count"] = _initial_wolf_count(state)
+    if spec.night_action:
+        # The speaker's own night record only (and the pack's kills, for a wolf).
+        fields["night_actions"] = own_night_actions(state.get("night_actions", []), player, role)
+    if spec.uses is not None:
+        fields["uses_left"] = state.get("uses_left", {}).get(role, 0)
+    if role == "vigilante":
+        fields["vigilante_bullets"] = state.get("uses_left", {}).get(role, 0)
+    if role == "speculator":
+        fields["speculator_pick"] = state.get("speculator_pick") or "not yet"
+    if role == "fortune_teller":
+        fields["fortune_points"] = state.get("fortune_points", 0)
+    return fields
 
 
 def build_speaker_send(
@@ -151,6 +180,7 @@ def build_speaker_send(
         # Public fixed-cast census (counts only, no identities) — feeds the alive-roles line
         # (cast minus revealed deaths). Same no-leak rationale as dead_roster.
         "cast_role_counts": cast_role_counts(state.get("roles", {})),
+        "lineup": state.get("lineup", []),
         "surviving_players": surviving_players,
         "player_id": speaker_id,
         "player_role": role,
@@ -164,42 +194,8 @@ def build_speaker_send(
         "strategy_points": "",
         "firing_reason": firing_reason,
     }
-    if role == "wolf":
-        payload["surviving_wolves"] = state["surviving_wolves"]
-        payload["surviving_villagers"] = state["surviving_villagers"]
-        # Wolves carry their own night coordination + GM whiff notes into day discuss/vote (their own
-        # information; gated to wolves only — see check_wolf_channel_isolation).
-        payload["wolf_channel"] = state.get("wolf_channel", [])
-        # Deterministic ally_revealed fill (situation_agent): how many wolves were cast, so a live
-        # query can compute "a partner is gone" from surviving_wolves without trusting the LLM.
-        payload["initial_wolf_count"] = _initial_wolf_count(state)
-    elif role == "investigator":
-        payload["investigator_results"] = state.get("investigator_results", [])
-    elif role == "vigilante":
-        payload["vigilante_results"] = state.get("vigilante_results", [])
-        # Deterministic bullets_left fill (situation_agent): the vigilante day cell carries
-        # bullets_left, but VillagerDayState otherwise drops the counter — thread it explicitly.
-        payload["vigilante_bullets"] = state.get("vigilante_bullets", 0)
-    if role in _NIGHT_RECORD_ROLES:
-        # The speaker's own night record only (the pack's, for a wolf).
-        payload["night_actions"] = own_night_actions(state.get("night_actions", []), speaker_id, role)
+    payload.update(_private_fields(state, speaker_id, role))
     return Send("discuss", payload)
-
-
-# Roles that act at night and so have a private night record (the investigator keeps its own
-# investigator_results).
-_NIGHT_RECORD_ROLES = {"healer", "vigilante", "serial_killer", "wolf"}
-
-
-# Roles with day discuss/vote nodes registered in the day graph.
-_DAY_ACTING_ROLES = {
-    "villager",
-    "wolf",
-    "healer",
-    "investigator",
-    "serial_killer",
-    "vigilante",
-}
 
 
 def fan_out_day(
@@ -231,6 +227,7 @@ def fan_out_day(
             "dead_roster": state.get("dead_roster", []),
             # Public fixed-cast census feeding the alive-roles line (see build_speaker_send).
             "cast_role_counts": cast_role_counts(state.get("roles", {})),
+            "lineup": state.get("lineup", []),
             "surviving_players": surviving_players,
             "player_id": player,
             "player_role": role,
@@ -246,26 +243,11 @@ def fan_out_day(
     for player in surviving_players:
         role = state["roles"][player]
         is_human = player in state["human_players"]
-        if role not in _DAY_ACTING_ROLES:
-            continue
         if chosen is not None and player not in chosen:
             continue
 
         payload = base_payload(player, role, is_human)
-        if role == "wolf":
-            payload["surviving_wolves"] = state["surviving_wolves"]
-            payload["surviving_villagers"] = state["surviving_villagers"]
-            # Wolves carry their own night coordination + GM whiff notes into the vote too
-            # (gated to wolves only — see check_wolf_channel_isolation).
-            payload["wolf_channel"] = state.get("wolf_channel", [])
-            payload["initial_wolf_count"] = _initial_wolf_count(state)
-        elif role == "investigator":
-            payload["investigator_results"] = state["investigator_results"]
-        elif role == "vigilante":
-            payload["vigilante_results"] = state.get("vigilante_results", [])
-            payload["vigilante_bullets"] = state.get("vigilante_bullets", 0)
-        if role in _NIGHT_RECORD_ROLES:
-            payload["night_actions"] = own_night_actions(state.get("night_actions", []), player, role)
+        payload.update(_private_fields(state, player, role))
 
         # Humans go to the UNCACHED twin node: a human resume aborts and re-runs this
         # superstep, and the cached LLM nodes then replay their results instead of
@@ -471,6 +453,8 @@ def summarize_day_discussion(
             day_summaries=state.get("day_summaries", []),
             dead_roster=state.get("dead_roster", []),
             cast_role_counts=cast_role_counts(state.get("roles", {})),
+            lineup=state.get("lineup", []),
+            earlier_messages=[m for m in state.get("day_channel", []) if m.day < current_day],
         )
 
         day_summary_case = DaySummaryCase(

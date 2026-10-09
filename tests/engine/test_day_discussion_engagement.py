@@ -11,26 +11,20 @@ from __future__ import annotations
 
 from Agents.prompts.day_discuss import (
     ENGAGE_WITH_DISCUSSION_RULE,
-    HEALER_DAY_DISCUSS,
-    INVESTIGATOR_DAY_DISCUSS,
     DAY_ONE_NO_VOTE_RULES,
-    SERIAL_KILLER_DAY_DISCUSS,
-    VIGILANTE_DAY_DISCUSS,
-    VILLAGER_DAY_DISCUSS,
-    WOLF_DAY_DISCUSS,
+    day_discuss_template,
 )
 from Agents.game_config import GameConfig
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
+from Agents.schemas.roles import ALL_LINEUPS, roles
 
-# (role, discuss template) — one entry per surviving day-acting role.
-_ROLE_TEMPLATES = [
-    ("villager", VILLAGER_DAY_DISCUSS),
-    ("healer", HEALER_DAY_DISCUSS),
-    ("investigator", INVESTIGATOR_DAY_DISCUSS),
-    ("wolf", WOLF_DAY_DISCUSS),
-    ("serial_killer", SERIAL_KILLER_DAY_DISCUSS),
-    ("vigilante", VIGILANTE_DAY_DISCUSS),
-]
+# (role, discuss template) — one entry per role of the pool.
+_ROLE_TEMPLATES = [(role, day_discuss_template(role)) for role in roles]
+
+
+def _lineup_for(role: str) -> list[str]:
+    """A dealt lineup that has the role (the drawn roles are in two of the four)."""
+    return next(lineup for lineup in ALL_LINEUPS if role in lineup)
 
 
 def _input_for(role: str, *, voting_available: bool = True) -> dict:
@@ -43,6 +37,7 @@ def _input_for(role: str, *, voting_available: bool = True) -> dict:
             "surviving_wolves": ["player_1"],
             "surviving_villagers": ["player_2", "player_3"],
             "voting_available": voting_available,
+            "lineup": _lineup_for(role),
         }
     )
 
@@ -90,6 +85,7 @@ def _rendered_for_round(role: str, template, day_round: str, *, voting_available
             "surviving_villagers": ["player_2", "player_3"],
             "voting_available": voting_available,
             "day_round": day_round,
+            "lineup": _lineup_for(role),
         }
     )
     messages = template.format_messages(**prompt_input)

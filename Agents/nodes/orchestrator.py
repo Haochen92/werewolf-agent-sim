@@ -1,9 +1,8 @@
 """Orchestrator graph nodes: the game's spine outside the day/night sub-graphs.
 
-Owns the OrchestratorGraph state shape and the nodes that bracket each cycle —
-game setup, day-vote resolution, the day/night advance, the terminal/winner
-logic, and the post-game memory pipeline. The day and night phases themselves
-live in their own sub-graphs (nodes/day/, nodes/night/); this module wires the
+Owns the nodes that bracket each cycle: the deal, day-vote resolution, the day/night advance,
+the terminal/winner logic, and the post-game memory pipeline. The day and night phases
+themselves live in their own sub-graphs (nodes/day/, nodes/night/); this module wires the
 transitions between them and decides when the game ends.
 """
 
@@ -20,9 +19,25 @@ from langgraph.config import get_stream_writer
 from langgraph.runtime import Runtime
 
 from Agents.game_config import game_config_from_runnable
+from Agents.rules.night import usable_bodies
+from Agents.rules.night_record import disclosure
 from Agents.rules.resolution import tally_day_vote
-from Agents.rules.seats import seat_order
+from Agents.rules.seats import alive_holder, seat_order, survivors
 from Agents.schemas import DayChannel, DaySummary, DeathRecord
+from Agents.schemas.roles import (
+    ACTS_WHEN_SPENT,
+    FIXED_SEATS,
+    LONE_KILLER,
+    LONE_KILLER_ROLES,
+    NEUTRAL,
+    NEUTRAL_ROLES,
+    ROLE_SPECS,
+    TOWN,
+    WINNER_OF_SIDE,
+    WOLVES,
+    lineup as lineup_of,
+    side_of,
+)
 from Agents.turn.action_space import valid_targets_for_action
 from Agents.turn.human_turn import announce_human_turn
 from Agents.state import (
@@ -57,33 +72,45 @@ from Agents.tracing import (
 
 # --- Game setup --------------------------------------------------------------
 
+def _draw_seat(rng: random.Random, chosen: str | None, pool: list[str], human_role: str | None) -> str:
+    """One drawn seat: the config's choice, else the human's requested role if it is in this
+    pool, else the game's seed decides. The draw is made even when the choice is fixed, so the
+    rng sequence, and so the role shuffle after it, is the same whatever was chosen."""
+    drawn = rng.choice(pool)
+    if chosen is not None:
+        return chosen
+    if human_role in pool:
+        return human_role
+    return drawn
+
+
 def initialize_game(state: OrchestratorGraph, config: RunnableConfig):
     """Set up a fresh game and return the initial OrchestratorGraph state.
 
-    Assigns and shuffles roles, then seeds the two-layer survivor model: the
-    survivor *buckets* (surviving_wolves, surviving_villagers = the non-wolf
-    bucket of town + the solo SK) and the per-role *markers* (healer_player, …,
-    serial_killer_player) that the rest of the game reads role-aliveness off.
-    Human seats are dealt only when the run opts in (RunConfig.human_player = the seat count);
-    default 0 leaves the list empty so eval/batch runs stay fully automated (no interrupt()).
+    Deals the ten seats: the eight fixed roles, then the lone killer's seat and the neutral seat
+    drawn by the game's seed unless the config or a solo human's request fixed them; shuffles
+    the lineup over the seats; seeds the two survivor buckets by side, the limited abilities and
+    the accumulators. Human seats are dealt only when the run opts in (RunConfig.human_player =
+    the seat count); default 0 leaves the list empty so eval/batch runs stay fully automated.
     """
     game_config = game_config_from_runnable(config)
-    # Role assignment is seeded off game_id — the single master seed. A unique uuid4
-    # game_id per game keeps draws varied; pinning the same game_id across two runs
-    # reproduces the role draw — the initial-condition parity the paired memory A/B
-    # needs. No game_id (e.g. a bare unit test) → unseeded, preserving prior behaviour.
+    # Everything random is seeded off game_id — the single master seed. A unique uuid4 game_id
+    # per game keeps draws varied; pinning the same game_id across two runs reproduces the
+    # deal. No game_id (a bare unit test) -> unseeded.
     configurable = config.get("configurable", {}) if config else {}
     game_id = configurable.get("game_id") or ""
     rng = random.Random(zlib.crc32(game_id.encode())) if game_id else random.Random()
+    human_role = configurable.get("human_role")
+    # The request is honoured for a solo human only (the swap below is solo-only too).
+    requested = human_role if int(configurable.get("human_player") or 0) == 1 else None
 
-    roles = game_config.initial_roles.copy()
-    characters = [
-        f"{game_config.player_id_prefix}_{i}" for i in range(1, len(roles) + 1)
-    ]
-    # Draw a candidate seat UNCONDITIONALLY so the role shuffle's rng sequence stays byte-identical
-    # to historical runs (same game_id -> same role draw) — then only SEAT the human when the run
-    # opted in (RunConfig.human_player). Default 0 -> [] -> no seat is flagged human downstream, so
-    # run_agent never hits interrupt() (fully automated all-LLM game).
+    lone_killer = _draw_seat(rng, game_config.lone_killer, LONE_KILLER_ROLES, requested)
+    neutral = _draw_seat(rng, game_config.neutral, NEUTRAL_ROLES, requested)
+    lineup = lineup_of(lone_killer, neutral)
+    roles = list(lineup)
+    characters = [f"{game_config.player_id_prefix}_{i}" for i in range(1, len(roles) + 1)]
+    # Draw a candidate seat UNCONDITIONALLY so the role shuffle's rng sequence stays the same
+    # with or without a human — then only SEAT the human when the run opted in.
     human_candidate = rng.choice(characters)
     human_seats = min(int(configurable.get("human_player") or 0), len(characters))
     human_players = [human_candidate] if human_seats else []
@@ -97,16 +124,15 @@ def initialize_game(state: OrchestratorGraph, config: RunnableConfig):
         remaining = [c for c in characters if c != human_candidate]
         human_players += rng.sample(remaining, human_seats - 1)
 
-    # Optional role preference: seat is random, but the human may opt to play a specific role. Swap
-    # that role onto the human's seat (with whatever seat drew it) — a swap preserves the exact cast
-    # counts, and derives before the *_player markers below so they stay consistent. SOLO-ONLY:
-    # honored only with exactly one human seat AND a requested role — in a shared room role choice
-    # leaks/races (server rule mirrored here), so multi-human games keep the untouched shuffle.
-    human_role = configurable.get("human_role")
+    # Optional role preference: seat is random, but the human may opt to play a specific role.
+    # Swap that role onto the human's seat (a drawn role was forced into the lineup above). A
+    # swap preserves the cast. SOLO-ONLY: honored only with exactly one human seat and a
+    # requested role — in a shared room role choice leaks/races, so multi-human games keep the
+    # untouched shuffle.
     if len(human_players) == 1 and human_role:
         human_player = human_players[0]
         if human_role not in roles:
-            raise ValueError(f"Unknown human role: {human_role} (not in the cast)")
+            raise ValueError(f"Unknown human role: {human_role} (not in the pool)")
         if assigned_roles[human_player] != human_role:
             donor = next(p for p, r in assigned_roles.items() if r == human_role)
             assigned_roles[human_player], assigned_roles[donor] = (
@@ -114,67 +140,37 @@ def initialize_game(state: OrchestratorGraph, config: RunnableConfig):
                 assigned_roles[human_player],
             )
 
-    def _first_with_role(role: str) -> str | None:
-        players = [p for p, r in assigned_roles.items() if r == role]
-        return players[0] if players else None
-
-    healer_player = _first_with_role("healer")
-    investigator_player = _first_with_role("investigator")
-    serial_killer_player = _first_with_role("serial_killer")
-    vigilante_player = _first_with_role("vigilante")
     return {
         "day_channel": [],
         "day_summaries": [],
         "wolf_channel": [],
         "roles": assigned_roles,
-        "surviving_wolves": [
-            player for player, role in assigned_roles.items() if role == "wolf"
-        ],
-        # Non-wolf bucket: town (villager/healer/investigator/vigilante) AND the solo
-        # serial killer. Factional standing is read off the *_player markers, not this list.
-        "surviving_villagers": [
-            player for player, role in assigned_roles.items() if role != "wolf"
-        ],
+        "lineup": lineup,
+        "surviving_wolves": [p for p, r in assigned_roles.items() if side_of(r) == WOLVES],
+        "surviving_villagers": [p for p, r in assigned_roles.items() if side_of(r) != WOLVES],
         "current_day": game_config.starting_day,
         "human_players": human_players,
-        "healer_player": healer_player,
-        "investigator_player": investigator_player,
-        "serial_killer_player": serial_killer_player,
-        "vigilante_player": vigilante_player,
-        "vigilante_bullets": game_config.vigilante_bullets,
+        "uses_left": {role: n for role, n in game_config.starting_uses().items() if role in lineup},
+        "speculator_pick": None,
+        "fortune_points": 0,
+        "last_body": None,
+        "night_choices": [],
+        "night_report": None,
         "no_lynch_streak": 0,
-        "investigator_results": [],
         "night_actions": [],
         "day_votes": [],
         "winner": None,
+        "neutral_result": None,
     }
-
 
 
 # --- Death bookkeeping (shared by day + night resolution) --------------------
 
-def _nullify_special_roles(
-    state_update: dict,
-    player: str,
-    state: OrchestratorGraph,
-) -> None:
-    """Clear the special-role marker(s) held by a player who just died.
-
-    The *_player markers are the source of truth for a special role's aliveness:
-    _faction_counts reads serial_killer_player to count the SK, and night routing
-    skips a role whose marker is None. Removing a dead player from the survivor
-    buckets does NOT touch the markers, so both death paths — day_resolution
-    (lynch) and night_resolution — call this to keep the two layers in sync.
-    Mutates state_update in place.
-    """
-    if player == state.get("healer_player"):
-        state_update["healer_player"] = None
-    if player == state.get("investigator_player"):
-        state_update["investigator_player"] = None
-    if player == state.get("serial_killer_player"):
-        state_update["serial_killer_player"] = None
-    if player == state.get("vigilante_player"):
-        state_update["vigilante_player"] = None
+def remove_from_buckets(state_update: dict, state: OrchestratorGraph, dead: list[str]) -> None:
+    """Take the dead out of both survivor buckets (a role's aliveness is read off the buckets, so
+    this is the whole of a death's bookkeeping). Mutates state_update in place."""
+    state_update["surviving_wolves"] = [p for p in state.get("surviving_wolves", []) if p not in dead]
+    state_update["surviving_villagers"] = [p for p in state.get("surviving_villagers", []) if p not in dead]
 
 
 # --- Day resolution ----------------------------------------------------------
@@ -184,9 +180,8 @@ def day_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
 
     A real lynch needs a unique, non-"abstain" plurality; a tie, an abstain
     plurality, or no votes is a no-lynch day (which bumps no_lynch_streak). On a
-    lynch: removes the player from both survivor buckets, nullifies any
-    special-role marker they held, and writes a game_master message + day
-    summary. Records a DayResolutionMetric span on every path.
+    lynch: removes the player from both survivor buckets and writes a game_master message +
+    day summary. Records a DayResolutionMetric span on every path.
     """
     current_day = state.get("current_day", 1)
     day_votes = state.get("day_votes", [])
@@ -225,17 +220,16 @@ def day_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
         message = f"""
 Here's the vote result for day {current_day}:
 {vote_summary}
-Player {lynched} has been voted out and was a {state['roles'][lynched]}.
+Player {lynched} has been voted out and was a {state['roles'][lynched].replace('_', ' ')}.
 """
+        # A revealed town role's night record is published with the reveal (no wills: the
+        # engine's own record, which cannot be forged).
+        record_line = disclosure(lynched, state["roles"][lynched], list(state.get("night_actions", [])))
+        if record_line:
+            message = message + record_line + "\n"
         state_update = {
             "voted_player": lynched,
             "no_lynch_streak": no_lynch_streak,
-            "surviving_wolves": [
-                p for p in state["surviving_wolves"] if p != lynched
-            ],
-            "surviving_villagers": [
-                p for p in state["surviving_villagers"] if p != lynched
-            ],
             "day_channel": [
                 DayChannel(
                     day=current_day,
@@ -258,7 +252,7 @@ Player {lynched} has been voted out and was a {state['roles'][lynched]}.
                 )
             ],
         }
-        _nullify_special_roles(state_update, lynched, state)
+        remove_from_buckets(state_update, state, [lynched])
         return state_update
 
     # No lynch: no votes, an abstain plurality, or a tie.
@@ -268,7 +262,7 @@ Player {lynched} has been voted out and was a {state['roles'][lynched]}.
         message = f"\nThere is no vote on day {current_day}, so no one voted and no one is eliminated."
     else:
         if tally.outcome == "abstain":
-            outcome = "The village chose to abstain. No one is eliminated today."
+            outcome = "The town chose to abstain. No one is eliminated today."
         else:
             outcome = f"It's a tie between {candidates}. No one is voted out this day."
         message = f"""
@@ -292,96 +286,145 @@ Here's the vote result for day {current_day}:
     }
 
 
-
-
 # --- Day/night advance -------------------------------------------------------
 
 def one_more_day(state: OrchestratorGraph):
-    """Advance to the next day: bump current_day and clear the day's votes and all
-    night-action targets so the new cycle starts from a clean slate."""
+    """Advance to the next day: bump current_day and clear the day's votes and the night's
+    choices so the new cycle starts from a clean slate."""
     return {
         "current_day": state.get("current_day", 1) + 1,
         "day_votes": [],
-        "wolves_kill_target": None,
-        "healer_target": None,
-        "investigator_target": None,
-        "serial_killer_target": None,
-        "vigilante_target": None,
+        "night_choices": None,
+        "night_report": None,
         "voted_player": None,
     }
 
 
 # --- Terminal conditions & winner --------------------------------------------
 
-def _faction_counts(state: OrchestratorGraph) -> tuple[int, int, int]:
-    """Return (wolves, town, serial_killer) survivor counts.
+def side_counts(state: OrchestratorGraph) -> dict[str, int]:
+    """How many living players each side has: town, wolves, lone_killer, neutral."""
+    roles = state.get("roles", {})
+    counts = {TOWN: 0, WOLVES: 0, LONE_KILLER: 0, NEUTRAL: 0}
+    for player in survivors(state):
+        role = roles.get(player)
+        if role in ROLE_SPECS:
+            counts[side_of(role)] += 1
+    return counts
 
-    surviving_villagers is the non-wolf bucket (town + the solo SK). Town excludes the
-    SK, whose aliveness is tracked by the serial_killer_player marker.
-    """
-    wolves = len(state.get("surviving_wolves", []))
-    non_wolf = len(state.get("surviving_villagers", []))
-    sk = 1 if state.get("serial_killer_player") else 0
-    town = non_wolf - sk
-    return wolves, town, sk
+
+def _lone_killer_role(state: OrchestratorGraph) -> str:
+    """The lone killer this game dealt, by role name (the wire's winner for that side)."""
+    for role in state.get("lineup", []):
+        if role in LONE_KILLER_ROLES:
+            return role
+    return "serial_killer"
 
 
 def determine_winner(state: OrchestratorGraph) -> str | None:
-    """The locked 3-faction terminal rule; None means the game continues.
+    """The terminal rule (role_sheet.md, "Win logic"); None means the game continues.
 
-    Order matters. W=wolves, T=town, S=serial killer (0/1).
-    - TOWN  : W==0 and S==0
-    - SK    : S==1 and (T+W) <= 1  (night-immune + a guaranteed kill ⇒ can't lose; a
-              1v1 day vote ties ⇒ no lynch, so declaring here is correct)
-    - WOLVES: S==0 and W >= T      (classic parity, only once the SK wildcard is gone)
+    The neutral is never a member of a side but is a living voter, so it counts in the numbers
+    that decide whether a side can still be out-voted. A side wins only with a member alive.
+    - TOWN:        no wolf and no lone killer remain, and a town player is alive.
+    - LONE KILLER: at most one other living player remains, neutral included.
+    - WOLVES:      the lone killer is gone and the wolves equal or outnumber town + neutral.
     """
-    wolves, town, sk = _faction_counts(state)
-    if wolves == 0 and sk == 0:
-        return "villagers"
-    if sk == 1 and (town + wolves) <= 1:
-        return "serial_killer"
-    if sk == 0 and wolves >= town:
-        return "wolves"
+    counts = side_counts(state)
+    wolves, town, killer, neutral = counts[WOLVES], counts[TOWN], counts[LONE_KILLER], counts[NEUTRAL]
+    if wolves == 0 and killer == 0 and town > 0:
+        return WINNER_OF_SIDE[TOWN]
+    if killer == 1 and (town + wolves + neutral) <= 1:
+        return _lone_killer_role(state)
+    if killer == 0 and wolves > 0 and wolves >= town + neutral:
+        return WINNER_OF_SIDE[WOLVES]
     return None
 
 
 def _max_days_winner(state: OrchestratorGraph) -> str | None:
-    """Cost-backstop tiebreak: the largest surviving faction wins; a tie is a draw."""
-    wolves, town, sk = _faction_counts(state)
-    tally = {"villagers": town, "wolves": wolves, "serial_killer": sk}
+    """Cost-backstop tiebreak: the largest surviving side wins; a tie is a draw."""
+    counts = side_counts(state)
+    tally = {
+        WINNER_OF_SIDE[TOWN]: counts[TOWN],
+        WINNER_OF_SIDE[WOLVES]: counts[WOLVES],
+        _lone_killer_role(state): counts[LONE_KILLER],
+    }
     top = max(tally.values())
-    leaders = [faction for faction, count in tally.items() if count == top]
+    leaders = [side for side, count in tally.items() if count == top]
     return leaders[0] if len(leaders) == 1 else None
 
 
+def is_draw(state: OrchestratorGraph) -> bool:
+    """A board with no side alive: the last wolf and the last town player killing each other.
+    Nobody wins, and only a speculator's self-pick wins it."""
+    counts = side_counts(state)
+    return counts[TOWN] == 0 and counts[WOLVES] == 0 and counts[LONE_KILLER] == 0
+
+
+def neutral_result(state: OrchestratorGraph, winner: str | None, points_to_win: int) -> str | None:
+    """How the neutral fared, beside the winner. The speculator wins when the side it picked
+    wins, alive or dead; a self-pick wins only as the last one standing; unpicked is a loss. The
+    fortune teller wins on its points, whoever else won."""
+    roles = state.get("roles", {})
+    lineup = state.get("lineup", [])
+    if "speculator" in lineup:
+        pick = state.get("speculator_pick")
+        if pick is None:
+            return "lost"
+        if pick == "self":
+            standing = survivors(state)
+            won = len(standing) == 1 and roles.get(standing[0]) == "speculator"
+        elif pick == TOWN:
+            won = winner == WINNER_OF_SIDE[TOWN]
+        elif pick == WOLVES:
+            won = winner == WINNER_OF_SIDE[WOLVES]
+        else:
+            won = winner in LONE_KILLER_ROLES
+        return "won" if won else "lost"
+    if "fortune_teller" in lineup:
+        points = state.get("fortune_points", 0)
+        return f"{'won' if points >= points_to_win else 'lost'} ({points} points)"
+    return None
+
+
 _WINNER_MESSAGE = {
-    "villagers": "Game over! The villagers have won!",
+    "villagers": "Game over! The town has won!",
     "wolves": "Game over! The wolves have won!",
     "serial_killer": "Game over! The serial killer has won!",
-    None: "Game over! The day limit was reached — the game ends in a draw.",
+    "necromancer": "Game over! The necromancer has won!",
+    None: "Game over! No side is left standing: the game ends in a draw.",
 }
+_DAY_LIMIT_MESSAGE = "Game over! The day limit was reached — the game ends in a draw."
 
 
 def end_game(state: OrchestratorGraph, config: RunnableConfig):
-    """Terminal node: compute the winner and announce it.
+    """Terminal node: compute the winner and announce it, with the neutral's result.
 
-    Uses determine_winner; if still undecided when the day limit is hit, falls
-    back to _max_days_winner (largest surviving faction, draw on a tie). Writes
-    winner + a game_master announcement.
+    Uses determine_winner; if still undecided when the day limit is hit, falls back to
+    _max_days_winner (largest surviving side, draw on a tie). Writes winner, neutral_result and
+    a game_master announcement.
     """
     game_config = game_config_from_runnable(config)
     winner = determine_winner(state)
-    if winner is None and state.get("current_day", 1) >= game_config.max_days:
+    at_limit = winner is None and not is_draw(state) and state.get("current_day", 1) >= game_config.max_days
+    if at_limit:
         winner = _max_days_winner(state)
+    result = neutral_result(state, winner, game_config.fortune_points_to_win)
+
+    message = _WINNER_MESSAGE.get(winner, _WINNER_MESSAGE[None]) if not (at_limit and winner is None) else _DAY_LIMIT_MESSAGE
+    neutral_role = next((r for r in state.get("lineup", []) if r in NEUTRAL_ROLES), None)
+    if neutral_role and result:
+        message += f" The {neutral_role.replace('_', ' ')} {result}."
 
     return {
         "winner": winner,
+        "neutral_result": result,
         "day_channel": [
             DayChannel(
                 day=state.get("current_day", 1),
                 seq=sum(1 for m in state["day_channel"] if m.day == state.get("current_day", 1)),
                 player="game_master",
-                message=_WINNER_MESSAGE.get(winner, _WINNER_MESSAGE[None]),
+                message=message,
             )
         ],
     }
@@ -391,10 +434,10 @@ def check_game_end_day(
     state: OrchestratorGraph,
     config: RunnableConfig,
 ) -> Literal["END_GAME", "NIGHT_START"]:
-    """Router after the day phase: END_GAME if a faction has won or the day limit
-    is reached, otherwise NIGHT_START (which fans out the night actors)."""
+    """Router after the day phase: END_GAME if a side has won, the board is a draw or the day
+    limit is reached, otherwise NIGHT_START (which fans out the night actors)."""
     game_config = game_config_from_runnable(config)
-    if determine_winner(state) is not None:
+    if determine_winner(state) is not None or is_draw(state):
         return "END_GAME"
     if state.get("current_day", 1) >= game_config.max_days:
         return "END_GAME"
@@ -408,69 +451,79 @@ def night_start(state: OrchestratorGraph):
     return {}
 
 
+def night_phase_name(role: str) -> str:
+    """The parent graph's node for a role's night turn: HEALER_NIGHT_PHASE; the pack's is
+    PACK_NIGHT_PHASE."""
+    return f"{role.upper()}_NIGHT_PHASE"
+
+
+def acts_tonight(state: OrchestratorGraph, role: str) -> bool:
+    """Whether a solo role takes a night turn tonight: alive, from its first night, with a use
+    left when its ability is limited, the speculator only until it has picked."""
+    spec = ROLE_SPECS[role]
+    if spec.pack or spec.night_action is None or alive_holder(state, role) is None:
+        return False
+    if state.get("current_day", 1) < spec.acts_from_night:
+        return False
+    if (spec.uses is not None and role not in ACTS_WHEN_SPENT
+            and state.get("uses_left", {}).get(role, 0) <= 0):
+        return False
+    if role == "necromancer" and not usable_bodies(state.get("dead_roster", []), state.get("last_body")):
+        return False
+    return True
+
+
 def route_night_actors(state: OrchestratorGraph) -> list[str]:
     """Fan out every present night actor in one parallel superstep (NIGHT_RESOLUTION is the
-    barrier). The real actor list computed here must never reach the wire — routers don't
-    commit, which is what keeps the silent SK-whiff silent.
+    barrier): the pack if a wolf is alive, and each solo role that acts tonight. The real actor
+    list computed here must never reach the wire — routers don't commit, which is what keeps a
+    silent whiff silent.
 
     A human solo actor's turn is announced here (announce_human_turn), so their room opens as
     the night starts instead of after the slowest branch, the pack's whole talk, has ended
-    (2026-10-06). The announcement names only that seat's own turn, which the seat tier alone
-    receives. A human wolf is not announced: the pack's talk is sequential and prompts at the
-    turn."""
+    (2026-10-06). A human wolf is not announced: the pack's talk is sequential and prompts at
+    the turn."""
     alive_phases = []
     if state.get("surviving_wolves"):
-        alive_phases.append("WOLF_NIGHT_PHASE")
-    if state.get("healer_player"):
-        alive_phases.append("HEALER_NIGHT_PHASE")
-    if state.get("serial_killer_player"):
-        alive_phases.append("SERIAL_KILLER_NIGHT_PHASE")
-    if state.get("vigilante_player") and state.get("vigilante_bullets", 0) > 0:
-        alive_phases.append("VIGILANTE_NIGHT_PHASE")
-    if state.get("investigator_player"):
-        alive_phases.append("INVESTIGATOR_NIGHT_PHASE")
-    # An undecided game always has a live killer faction (wolves or SK).
+        alive_phases.append("PACK_NIGHT_PHASE")
+    for role in state.get("lineup", []):
+        if acts_tonight(state, role):
+            alive_phases.append(night_phase_name(role))
+    # An undecided game always has a live killer side (wolves or the lone killer); the lone
+    # killer may sit out night 1 (the necromancer), so the fan-out can still be the pack alone.
     assert alive_phases, "night fan-out is empty but no winner was determined"
     _announce_human_night_turns(state, alive_phases)
     return alive_phases
 
 
-_SOLO_NIGHT_ROLES = {
-    "HEALER_NIGHT_PHASE": "healer",
-    "SERIAL_KILLER_NIGHT_PHASE": "serial_killer",
-    "VIGILANTE_NIGHT_PHASE": "vigilante",
-    "INVESTIGATOR_NIGHT_PHASE": "investigator",
-}
-
-
 def _announce_human_night_turns(state: OrchestratorGraph, alive_phases: list[str]) -> None:
-    """Announce each human solo actor's night turn with the targets its node will offer:
-    every other survivor in seat order, plus hold_fire for the vigilante (the same
-    valid_targets_for_action the node uses)."""
+    """Announce each human solo actor's night turn with the targets its node will offer: every
+    other survivor in seat order plus the role's no-action word (the same
+    valid_targets_for_action the node uses, on the same uses), and a necromancer's bodies."""
     humans = set(state.get("human_players", []))
-    survivors = seat_order(
-        list(state.get("surviving_wolves", [])) + list(state.get("surviving_villagers", []))
-    )
-    for phase in alive_phases:
-        role = _SOLO_NIGHT_ROLES.get(phase)
-        actor = state.get(f"{role}_player") if role else None
+    standing = survivors(state)
+    for role in state.get("lineup", []):
+        if night_phase_name(role) not in alive_phases:
+            continue
+        actor = alive_holder(state, role)
         if not actor or actor not in humans:
             continue
+        field = ROLE_SPECS[role].target_field
         targets = valid_targets_for_action(
-            {"player_id": actor, "surviving_players": survivors}, f"{role}_target"
-        )
-        announce_human_turn(actor, role, f"{role}_target", state.get("current_day", 1), targets)
-
+            {"player_id": actor, "surviving_players": standing,
+             "uses_left": state.get("uses_left", {}).get(role)}, field)
+        bodies = usable_bodies(state.get("dead_roster", []), state.get("last_body")) if role == "necromancer" else []
+        announce_human_turn(actor, role, field, state.get("current_day", 1), targets, bodies=bodies)
 
 
 def check_game_end_night(
     state: OrchestratorGraph,
     config: RunnableConfig,
 ) -> Literal["END_GAME", "ONE_MORE_DAY"]:
-    """Router after the night phase: END_GAME if a faction has won or the day
+    """Router after the night phase: END_GAME if a side has won, the board is a draw or the day
     limit is reached, otherwise ONE_MORE_DAY."""
     game_config = game_config_from_runnable(config)
-    if determine_winner(state) is not None:
+    if determine_winner(state) is not None or is_draw(state):
         return "END_GAME"
     if state.get("current_day", 1) >= game_config.max_days:
         return "END_GAME"

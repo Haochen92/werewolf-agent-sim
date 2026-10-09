@@ -18,30 +18,24 @@ from Agents.schemas.game_events import (
     DiscussionPassReason,
     WolfChannel,
 )
+from Agents.schemas.night import NightChoice
+from Agents.schemas.output import PlayerRead
+from Agents.schemas.roles import ROLE_SPECS, role_for_field
 from Agents.schemas.turn import (
     ResolvedDayDiscussion,
     ResolvedDayVote,
-    ResolvedHealerTarget,
-    ResolvedInvestigatorTarget,
-    ResolvedSerialKillerTarget,
-    ResolvedVigilanteTarget,
+    ResolvedNightChoice,
     ResolvedWolfDiscussion,
-    ResolvedWolfVote,
     TurnEffects,
 )
-from Agents.turn.action_space import validate_target
+from Agents.rules.night import borrowed_kind
+from Agents.turn.action_space import KILL_TARGET, WORD_CHOICES, validate_target
 from Agents.turn.echo_gate import line_echo_of
 
 logger = getLogger(__name__)
 
 # resolve_decision sentinel: the decision was rejected (invalid target) — re-generate.
 RETRY = object()
-NIGHT_TARGET_KEYS = (
-    "healer_target",
-    "investigator_target",
-    "serial_killer_target",
-    "vigilante_target",
-)
 
 
 def resolve_decision(
@@ -167,6 +161,7 @@ def resolve_decision(
             day_round=day_round,
             message=message,
             addressed_targets=addressed_targets,
+            claim=_claim_of(result),  # a held line's claim was never heard, so only a spoken one
             firing_reason=firing_reason,
         )
         return ResolvedDayDiscussion(entry=entry, effects=effects)
@@ -182,44 +177,83 @@ def resolve_decision(
         )
 
     if output_key == "wolf_channel":
-        # Sequential talk turn: message-only, no target to validate.
+        # A chat turn: a message, or a pass with nothing to add. Reads are kept (every turn
+        # records them).
+        passed = bool(getattr(result, "pass_turn", False)) or not (result.message or "").strip()
         return ResolvedWolfDiscussion(
             entry=WolfChannel(
                 day=payload.get("current_day", 1),
                 round=payload.get("current_round", 1),
                 wolf=player_id,
-                message=result.message,
+                message="" if passed else result.message.strip(),
                 vote="",
+                passed=passed,
+                pass_reason=DiscussionPassReason.VOLUNTARY if passed else None,
             ),
-            effects=_turn_effects(reasoning, include_reads=False),
+            effects=_turn_effects(reasoning),
         )
 
-    if output_key == "wolf_vote":
-        validated = validate_target(result.vote_target, valid_targets, player_id)
-        if not validated:
-            logger.warning(f"{player_id} voted for invalid target: {result.vote_target}")
-            return RETRY
-        return ResolvedWolfVote(
-            entry=WolfChannel(
-                day=payload.get("current_day", 1),
-                round=payload.get("current_round", 1),
-                wolf=player_id,
-                message="",
-                vote=validated,
-            ),
-            effects=_turn_effects(reasoning, include_reads=False),
-        )
-
-    if output_key in NIGHT_TARGET_KEYS:
-        target = getattr(result, output_key)
+    if output_key == KILL_TARGET:
+        # The carrier names the pack's target: a kill in the carrier's own name.
+        target = getattr(result, KILL_TARGET)
         validated = validate_target(target, valid_targets, player_id)
         if not validated:
-            logger.warning(f"{player_id} chose invalid {output_key}: {target}")
+            logger.warning(f"{player_id} named an invalid pack target: {target}")
             return RETRY
-        result_type = _NIGHT_RESULT_BY_KEY[output_key]
-        return result_type(entry=validated, effects=_turn_effects(reasoning))
+        choice = NightChoice(player_id, payload.get("player_role", ""), "kill", validated)
+        return ResolvedNightChoice(entry=choice, effects=_turn_effects(reasoning))
+
+    role = role_for_field(output_key)
+    if role is not None:
+        choice = night_choice(role, player_id, result, payload, valid_targets)
+        if choice is RETRY:
+            return RETRY
+        return ResolvedNightChoice(entry=choice, effects=_turn_effects(reasoning))
 
     return None
+
+
+def _claim_of(result: BaseModel) -> str:
+    return getattr(result, "claim", None) or "none"
+
+
+def night_choice(role: str, actor: str, result: Any, payload: dict[str, Any], valid_targets: list[str]):
+    """A role's night decision as the choice the night layer resolves, or RETRY when illegal.
+    None means the role declined (its no-action word), except the vigilante's hold_fire, which is
+    a choice of its own kind (it is recorded)."""
+    spec = ROLE_SPECS[role]
+    answer = getattr(result, spec.target_field, None)
+    if answer not in valid_targets:
+        logger.warning(f"{actor} chose invalid {spec.target_field}: {answer}")
+        return RETRY
+    if answer == spec.no_action:
+        if role == "vigilante":
+            return NightChoice(actor, role, "hold_fire", None)
+        return None
+    if role == "speculator":
+        return NightChoice(actor, role, "pick", answer)
+    if role == "illusionist":
+        return NightChoice(actor, role, "conceal", None)
+    if role == "fortune_teller":
+        role_named = getattr(result, "bet_role", None) or None
+        if role_named == "none":
+            role_named = None
+        return NightChoice(actor, role, "bet", answer, role_named=role_named)
+    if role == "necromancer":
+        body = getattr(result, "body", None)
+        bodies = payload.get("bodies", [])
+        if body not in bodies:
+            logger.warning(f"{actor} chose an invalid body: {body} (bodies: {bodies})")
+            return RETRY
+        body_role = next((d.get("role") if isinstance(d, dict) else d.role
+                          for d in payload.get("dead_roster", [])
+                          if (d.get("player") if isinstance(d, dict) else d.player) == body), None)
+        kind = borrowed_kind(body_role or "")
+        if kind is None:
+            logger.warning(f"{actor} chose a body with nothing to give: {body}")
+            return RETRY
+        return NightChoice(actor, role, kind, answer, via=body)
+    return NightChoice(actor, role, spec.night_action, answer)
 
 
 def _answers_someone_who_named_me(
@@ -260,17 +294,12 @@ def _turn_effects(
     These values never share a dictionary with graph state, so private reads and verdicts cannot
     reach a state channel through an unknown-key filtering convention.
     """
+    # A read comes from the lineup's own read class (its role guess narrowed to the dealt roles);
+    # the effects keep the pool-wide PlayerRead, so each is rebuilt from its values.
+    reads = [PlayerRead.model_validate(r.model_dump()) for r in reasoning["reads"]] if include_reads else []
     return TurnEffects(
         strategy=reasoning["strategy"] or None,
         strategy_verdicts=reasoning["strategy_verdicts"],
         memory_verdicts=reasoning["memory_verdicts"],
-        reads=reasoning["reads"] if include_reads else [],
+        reads=reads,
     )
-
-
-_NIGHT_RESULT_BY_KEY = {
-    "healer_target": ResolvedHealerTarget,
-    "investigator_target": ResolvedInvestigatorTarget,
-    "serial_killer_target": ResolvedSerialKillerTarget,
-    "vigilante_target": ResolvedVigilanteTarget,
-}

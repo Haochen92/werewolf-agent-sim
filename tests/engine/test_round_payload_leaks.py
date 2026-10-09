@@ -8,26 +8,26 @@ from __future__ import annotations
 from Agents.nodes.day import flow
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
 from Agents.schemas import DayChannel, DiscussionPassReason, FiringReason
-from Agents.schemas.game_events import InvestigatorResult, NightActionRecord, WolfChannel
+from Agents.schemas.game_events import NightActionRecord, WolfChannel
+from Agents.schemas.roles import ROLE_SPECS, lineup
 from server.game.translate import Translator
 from tests.leak_test import (
     check_held_lines_reach_only_their_author,
-    check_investigator_results_isolation,
+    check_night_record_isolation,
     check_round_players_are_seat_ids,
-    check_vigilante_results_isolation,
     check_wolf_channel_isolation,
     check_wolf_identity_isolation,
 )
 
 
 ROLES = {
-    "player_1": "villager",
+    "player_1": "sentinel",
     "player_2": "investigator",
     "player_3": "healer",
-    "player_4": "wolf",
+    "player_4": "chanteuse",
     "player_5": "vigilante",
     "player_6": "serial_killer",
-    "player_7": "wolf",
+    "player_7": "illusionist",
 }
 SEATS = ["player_1", "player_2", "player_3", "player_4", "player_5", "player_6", "player_7"]
 HELD_TEXT = "player_6 has been far too quiet about the healer's save."
@@ -39,7 +39,7 @@ def day_state(**over) -> dict:
         "roles": dict(ROLES),
         "human_players": [],
         "day_channel": [
-            DayChannel(day=2, seq=0, player="player_1", message="I am a villager.", day_round="opening"),
+            DayChannel(day=2, seq=0, player="player_1", message="I am the sentinel.", day_round="opening"),
             DayChannel(day=2, seq=1, player="player_3", message="", passed=True,
                        pass_reason=DiscussionPassReason.NOVELTY_GATED, gated=True,
                        gated_candidate=HELD_TEXT,
@@ -48,24 +48,27 @@ def day_state(**over) -> dict:
         "day_summaries": [],
         "wolf_channel": [WolfChannel(day=1, round=1, wolf="player_4", message="take player_2 tonight",
                                      vote="")],
-        "investigator_results": [InvestigatorResult(day=1, player_investigated="player_7",
-                                                    role_revealed="wolf")],
-        "vigilante_results": ["Your shot at player_6 failed: immune at night."],
-        "vigilante_bullets": 1,
-        "night_actions": [
-            NightActionRecord(day=1, actor="player_3", action="protect", target="player_2",
-                              outcome="your protection was not needed"),
-            NightActionRecord(day=1, actor="wolves", action="kill", target="player_2",
-                              outcome="your kill was blocked"),
-            NightActionRecord(day=1, actor="player_5", action="shoot", target="player_6",
-                              outcome="the shot did not land"),
-        ],
+        "lineup": lineup("serial_killer", "speculator"),
+        "uses_left": {"vigilante": 1, "illusionist": 2},
+        "night_actions": NIGHT_RECORDS,
         "surviving_villagers": ["player_1", "player_2", "player_3", "player_5", "player_6"],
         "surviving_wolves": ["player_7", "player_4"],
         "agent_strategies": {},
     }
     state.update(over)
     return state
+
+
+NIGHT_RECORDS = [
+    NightActionRecord(day=1, actor="player_3", action="protect", target="player_2",
+                      outcome="your protection was not needed"),
+    NightActionRecord(day=1, actor="wolves", action="kill", target="player_2",
+                      outcome="your kill was blocked"),
+    NightActionRecord(day=1, actor="player_5", action="shoot", target="player_6",
+                      outcome="the shot did not land"),
+    NightActionRecord(day=1, actor="player_2", action="investigate", target="player_7",
+                      outcome="player_7 reads Suspicious.", result="suspicious", seen=["player_7"]),
+]
 
 
 def prompt_log_for(payloads: list[dict]) -> list[dict]:
@@ -95,8 +98,7 @@ def standing_checks(log: list[dict]) -> list[str]:
     leaks = []
     leaks.extend(check_wolf_identity_isolation(log, ROLES))
     leaks.extend(check_wolf_channel_isolation(log))
-    leaks.extend(check_investigator_results_isolation(log))
-    leaks.extend(check_vigilante_results_isolation(log))
+    leaks.extend(check_night_record_isolation(log, NIGHT_RECORDS, ROLES))
     return leaks
 
 
@@ -115,13 +117,14 @@ def test_opening_and_closing_payloads_pass_the_standing_leak_checks():
 def test_a_round_payload_carries_each_private_field_to_its_own_role_only():
     for payload in round_payloads("opening", SEATS):
         role = payload["player_role"]
-        assert ("surviving_wolves" in payload) == (role == "wolf"), payload["player_id"]
-        assert ("wolf_channel" in payload) == (role == "wolf"), payload["player_id"]
-        assert ("investigator_results" in payload) == (role == "investigator"), payload["player_id"]
-        assert ("vigilante_results" in payload) == (role == "vigilante"), payload["player_id"]
+        is_wolf = ROLE_SPECS[role].pack
+        assert ("surviving_wolves" in payload) == is_wolf, payload["player_id"]
+        assert ("wolf_channel" in payload) == is_wolf, payload["player_id"]
+        assert ("uses_left" in payload) == (ROLE_SPECS[role].uses is not None), payload["player_id"]
+        assert ("vigilante_bullets" in payload) == (role == "vigilante"), payload["player_id"]
         for record in payload.get("night_actions", []):
-            if role == "wolf":
-                assert record.actor == "wolves"
+            if is_wolf:
+                assert record.actor in ("wolves", payload["player_id"])
             else:
                 assert record.actor == payload["player_id"]
 
@@ -194,7 +197,7 @@ def test_round_players_reaching_the_wire_are_seat_ids_only():
 
 
 def test_the_round_players_check_flags_anything_but_a_seat_id():
-    planted = [["player_1", "player_4 (wolf)"], [{"player": "player_4", "role": "wolf"}], "player_1"]
+    planted = [["player_1", "player_4 (chanteuse)"], [{"player": "player_4", "role": "chanteuse"}], "player_1"]
 
     leaks = check_round_players_are_seat_ids(planted, ROLES)
 

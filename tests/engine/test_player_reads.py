@@ -13,28 +13,35 @@ from __future__ import annotations
 
 import logging
 
+import typing
+
+import pytest
 from langchain_core.runnables import RunnableLambda
 
-from Agents.prompts.day_discuss import VILLAGER_DAY_DISCUSS
-from Agents.prompts.day_vote import VILLAGER_DAY_VOTE
-from Agents.prompts.night import HEALER_NIGHT
+from Agents.prompts.day_discuss import day_discuss_template
+from Agents.prompts.day_vote import day_vote_template
+from Agents.prompts.night import night_template
 from Agents.prompts.prompt_formatters import format_alive_roles
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
 from Agents.schemas.evaluation import EvalCase
 from Agents.schemas.game_events import DeathRecord
-from Agents.schemas.output import (
-    DayDiscussOutput,
-    DayVoteOutput,
-    HealerOutput,
-    PlayerRead,
-)
-from Agents.schemas.roles import cast_role_counts
+from Agents.schemas.lineup_output import day_discuss_output, day_vote_output, night_output
+from Agents.schemas.output import PlayerRead
+from Agents.schemas.roles import ALL_LINEUPS, cast_role_counts, lineup
 from Agents.turn import agent_player as agent_mod
 from Agents.turn.action_space import output_schema_with_legal_targets
 from Agents.turn.eval import build_eval_private_context, _reads_coverage
 from tests.leak_test import check_reads_isolation
 
 
+LINEUP = lineup("serial_killer", "speculator")
+DayDiscussOutput = day_discuss_output(LINEUP)
+DayVoteOutput = day_vote_output(LINEUP)
+HealerOutput = night_output("healer", LINEUP)
+HEALER_NIGHT = night_template("healer")
+
+# The ten-seat census (one of each dealt role), and a nine-seat one for the old replays.
+_TEN_SEAT_CAST = {role: 1 for role in LINEUP}
 _FULL_CAST = {
     "villager": 3, "wolf": 2, "healer": 1, "investigator": 1, "vigilante": 1, "serial_killer": 1,
 }
@@ -63,7 +70,7 @@ def test_field_order_on_healer_output():
 
 def test_eval_case_loads_without_reads():
     minimal = {
-        "player_id": "player_1", "player_role": "villager", "day": 1, "round": 0,
+        "player_id": "player_1", "player_role": "healer", "day": 1, "round": 0,
         "action_phase": "day_vote", "memory_enabled": False,
     }
     case = EvalCase.model_validate(minimal)
@@ -80,11 +87,29 @@ def test_dynamic_target_enum_preserves_required_reads():
     assert schema.model_fields["reads"].is_required()
 
 
+# --- (3b) the reads enum is the dealt lineup --------------------------------
+
+@pytest.mark.parametrize("dealt", ALL_LINEUPS)
+def test_the_read_role_enum_is_unclear_plus_the_dealt_roles(dealt):
+    read = day_vote_output(dealt).model_fields["reads"].annotation
+    player_read = typing.get_args(read)[0]
+    enum = player_read.model_fields["suspected_role"].annotation
+    assert typing.get_args(enum) == ("unclear", *dealt)
+
+
 # --- (4) format_alive_roles: subtraction, fixed order, edges -----------------
+# The fixed-order tests read a nine-seat census (old replays); the ten-seat census is below.
+
+def test_format_alive_roles_ten_seat_cast_names_every_dealt_role():
+    line = format_alive_roles(_TEN_SEAT_CAST, [])
+    for role in LINEUP:
+        assert f"1 {role.replace('_', ' ')}" in line, role
+
 
 def test_format_alive_roles_full_cast_fixed_order():
+    # The fixed order is the pool's (the rules block's), then the nine-seat game's retired roles.
     line = format_alive_roles(_FULL_CAST, [])
-    assert line == "2 wolf, 1 serial killer, 1 healer, 1 investigator, 1 vigilante, 3 villager"
+    assert line == "1 investigator, 1 vigilante, 1 healer, 1 serial killer, 3 villager, 2 wolf"
     # No pluralization (matches the tested study text).
     assert "villagers" not in line and "wolves" not in line
 
@@ -95,7 +120,7 @@ def test_format_alive_roles_subtracts_revealed_dead():
         DeathRecord(player="player_5", role="wolf", day=2, phase="day"),
     ]
     assert format_alive_roles(_FULL_CAST, roster) == (
-        "1 wolf, 1 serial killer, 1 healer, 1 investigator, 1 vigilante, 2 villager"
+        "1 investigator, 1 vigilante, 1 healer, 1 serial killer, 2 villager, 1 wolf"
     )
 
 
@@ -112,21 +137,21 @@ def test_format_alive_roles_all_dead_returns_none():
 
 def test_read_targets_excludes_self():
     pi = build_agent_prompt_input({
-        "player_id": "player_1", "player_role": "villager", "current_day": 2,
+        "player_id": "player_1", "player_role": "healer", "current_day": 2,
         "surviving_players": ["player_1", "player_3", "player_4"],
-        "cast_role_counts": _FULL_CAST,
+        "cast_role_counts": _TEN_SEAT_CAST, "lineup": LINEUP,
     })
     assert pi["read_targets"] == "player_3, player_4"
-    assert pi["alive_roles"].startswith("2 wolf")
+    assert "1 serial killer" in pi["alive_roles"]
 
 
 def test_read_targets_wolf_payload_shape():
     # Wolf day payload splits survivors into wolves + villagers (no surviving_players key).
     pi = build_agent_prompt_input({
-        "player_id": "player_1", "player_role": "wolf", "current_day": 2,
+        "player_id": "player_1", "player_role": "chanteuse", "current_day": 2,
         "surviving_wolves": ["player_1", "player_2"],
         "surviving_villagers": ["player_3", "player_4"],
-        "cast_role_counts": _FULL_CAST,
+        "cast_role_counts": _TEN_SEAT_CAST, "lineup": LINEUP,
     })
     assert pi["read_targets"] == "player_2, player_3, player_4"
 
@@ -170,15 +195,15 @@ def _healer_payload():
     return {
         "player_id": "player_1", "player_role": "healer", "current_day": 2,
         "surviving_players": [f"player_{i}" for i in range(2, 10)],  # 8 targets, self excluded
-        "dead_roster": [], "cast_role_counts": _FULL_CAST,
+        "dead_roster": [], "cast_role_counts": _TEN_SEAT_CAST, "lineup": LINEUP,
     }
 
 
 def _healer_result(read_players):
     return HealerOutput(
         strategy_verdicts=[], memory_applicability=[],
-        reads=[PlayerRead(player=p, why=f"a distinct read reason about {p}",
-                          suspected_role="unclear", confidence="low") for p in read_players],
+        reads=[{"player": p, "why": f"a distinct read reason about {p}",
+                "suspected_role": "unclear", "confidence": "low"} for p in read_players],
         updated_strategy="", healer_target="player_3",
     )
 
@@ -189,7 +214,7 @@ def test_tripwire_warns_on_undercoverage(monkeypatch, caplog):
     monkeypatch.setattr(agent_mod, "get_llm", lambda: _FakeLLM(result))
     with caplog.at_level(logging.WARNING, logger="Agents.turn.eval"):
         out = agent_mod.run_agent(payload, HEALER_NIGHT, HealerOutput, "healer_target")
-    assert out.entry == "player_3"
+    assert out.entry.target == "player_3"
     assert "reads under-covered" in caplog.text
     assert "player_8" in caplog.text and "player_9" in caplog.text
 
@@ -206,12 +231,12 @@ def test_tripwire_silent_on_full_coverage(monkeypatch, caplog):
 # --- (7) check_reads_isolation: private reads never reach ANOTHER prompt -----
 
 def _log(prompt_input: dict, player: str = "player_3") -> list[dict]:
-    return [{"player_id": player, "player_role": "villager", "prompt_input": prompt_input}]
+    return [{"player_id": player, "player_role": "sentinel", "prompt_input": prompt_input}]
 
 
 def _reads_of(author: str, why: str) -> list[dict]:
     return [{"player_id": author, "reads": [{"player": "player_9", "why": why,
-                                             "suspected_role": "wolf", "confidence": "low"}]}]
+                                             "suspected_role": "chanteuse", "confidence": "low"}]}]
 
 
 _LONG_WHY = "pushed the only counted lynch with no evidence and flipped after the reveal"
@@ -252,16 +277,16 @@ def test_check_reads_isolation_shared_vocabulary_not_attributable():
 
 def _render_payload() -> dict:
     return build_agent_prompt_input({
-        "player_id": "player_1", "player_role": "villager", "current_day": 2,
+        "player_id": "player_1", "player_role": "healer", "current_day": 2,
         "surviving_players": ["player_1", "player_3", "player_4"],
-        "dead_roster": [DeathRecord(player="player_2", role="villager", day=1, phase="night")],
-        "cast_role_counts": _FULL_CAST,
+        "dead_roster": [DeathRecord(player="player_2", role="sentinel", day=1, phase="night")],
+        "cast_role_counts": _TEN_SEAT_CAST, "lineup": LINEUP,
     })
 
 
 def test_changed_templates_render():
     pi = _render_payload()
-    for tpl in (VILLAGER_DAY_DISCUSS, VILLAGER_DAY_VOTE, HEALER_NIGHT):
+    for tpl in (day_discuss_template("healer"), day_vote_template("healer"), HEALER_NIGHT):
         rendered = tpl.invoke(pi).to_string()
         assert "record your current read" in rendered  # reads instruction present
         assert "Roles still in play" in rendered        # alive-roles block present
@@ -271,9 +296,9 @@ def test_changed_templates_render():
 # --- (9) the shared census helper: counts only, no identities ----------------
 
 def test_cast_role_counts_is_name_free():
-    role_map = {"player_1": "wolf", "player_2": "wolf", "player_3": "villager"}
+    role_map = {"player_1": "chanteuse", "player_2": "illusionist", "player_3": "healer"}
     counts = cast_role_counts(role_map)
-    assert counts == {"wolf": 2, "villager": 1}
+    assert counts == {"chanteuse": 1, "illusionist": 1, "healer": 1}
     # The payload-safe invariant: no player identity survives the census.
     assert not set(counts) & set(role_map)
 
@@ -281,12 +306,12 @@ def test_cast_role_counts_is_name_free():
 # --- (10) the EvalCase captures the board inputs the turn saw ----------------
 
 def test_eval_private_context_captures_board_inputs():
-    roster = [DeathRecord(player="player_2", role="villager", day=1, phase="night")]
+    roster = [DeathRecord(player="player_2", role="sentinel", day=1, phase="night")]
     ctx = build_eval_private_context(
         {**_healer_payload(), "dead_roster": roster}, day=2,
     )
     assert ctx.dead_roster == roster
-    assert ctx.cast_role_counts == _FULL_CAST
+    assert ctx.cast_role_counts == _TEN_SEAT_CAST
     # Legacy payloads (pre-board) still snapshot cleanly with empty defaults.
     legacy = build_eval_private_context({"player_id": "player_1"}, day=1)
     assert legacy.dead_roster == [] and legacy.cast_role_counts == {}

@@ -9,15 +9,22 @@ fallback model avoids.
 from langchain_core.runnables import RunnableLambda
 
 from Agents.llm_factory import accessors
-from Agents.prompts.day_discuss import VILLAGER_DAY_DISCUSS
-from Agents.prompts.night import HEALER_NIGHT
-from Agents.prompts.night import WOLF_NIGHT_DISCUSS
+from Agents.prompts.day_discuss import day_discuss_template
+from Agents.prompts.night import night_template, wolf_chat_template
 from Agents.schemas.game_events import DiscussionPassReason, FiringReason
-from Agents.schemas.output import DayDiscussOutput, WolfNightDiscussOutput
-from Agents.schemas.output import PlayerRead
-from Agents.schemas.output import HealerOutput
-from Agents.schemas.turn import ResolvedDayDiscussion, ResolvedWolfDiscussion
+from Agents.schemas.lineup_output import day_discuss_output, night_output, wolf_chat_output
+from Agents.schemas.night import NightChoice
+from Agents.schemas.roles import lineup
+from Agents.schemas.turn import ResolvedDayDiscussion, ResolvedNightChoice, ResolvedWolfDiscussion
 from Agents.turn import agent_player as agent_mod
+
+LINEUP = lineup("serial_killer", "speculator")
+HEALER_NIGHT = night_template("healer")
+HealerOutput = night_output("healer", LINEUP)
+HEALER_DAY_DISCUSS = day_discuss_template("healer")
+DayDiscussOutput = day_discuss_output(LINEUP)
+# The healer's protection of player_3, as the night layer receives it.
+PROTECT_3 = NightChoice("player_1", "healer", "protect", "player_3")
 
 
 class _BrokenLLM:
@@ -39,14 +46,14 @@ def _payload():
     return {
         "player_id": "player_1", "player_role": "healer", "current_day": 2,
         "surviving_players": ["player_2", "player_3"],
-        "dead_roster": [], "cast_role_counts": {},
+        "dead_roster": [], "cast_role_counts": {}, "lineup": LINEUP,
     }
 
 
 def _result():
     return HealerOutput(
         strategy_verdicts=[], memory_applicability=[],
-        reads=[PlayerRead(player=p, why="quiet", suspected_role="unclear", confidence="low")
+        reads=[{"player": p, "why": "quiet", "suspected_role": "unclear", "confidence": "low"}
                for p in ("player_2", "player_3")],
         updated_strategy="", healer_target="player_3",
     )
@@ -57,7 +64,7 @@ def test_fallback_model_rescues_an_exhausted_seat(monkeypatch, caplog):
     monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: _WorkingLLM(_result()))
     with caplog.at_level("WARNING"):
         out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
-    assert out.entry == "player_3"
+    assert out.entry == PROTECT_3
     assert any("rescued by the fallback model" in r.message for r in caplog.records)
     assert not any("random fallback" in r.message for r in caplog.records)
 
@@ -67,7 +74,10 @@ def test_no_fallback_model_still_degrades_to_random(monkeypatch, caplog):
     monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: None)
     with caplog.at_level("ERROR"):
         out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
-    assert out.entry in ("player_2", "player_3")
+    # The healer has no no-action word: the fallback is a random legal protection.
+    assert isinstance(out, ResolvedNightChoice)
+    assert (out.entry.actor, out.entry.kind) == ("player_1", "protect")
+    assert out.entry.target in ("player_2", "player_3")
     assert any("random fallback" in r.message for r in caplog.records)
 
 
@@ -75,7 +85,7 @@ def test_broken_fallback_still_degrades_to_random(monkeypatch):
     monkeypatch.setattr(agent_mod, "get_llm", lambda: _BrokenLLM())
     monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: _BrokenLLM())
     out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
-    assert out.entry in ("player_2", "player_3")
+    assert out.entry.kind == "protect" and out.entry.target in ("player_2", "player_3")
 
 
 def test_exhausted_day_discussion_records_technical_pass(monkeypatch, caplog):
@@ -91,7 +101,7 @@ def test_exhausted_day_discussion_records_technical_pass(monkeypatch, caplog):
     with caplog.at_level("ERROR"):
         out = agent_mod.run_agent(
             payload,
-            VILLAGER_DAY_DISCUSS,
+            HEALER_DAY_DISCUSS,
             DayDiscussOutput,
             "day_channel",
         )
@@ -107,7 +117,8 @@ def test_exhausted_day_discussion_records_technical_pass(monkeypatch, caplog):
 def test_exhausted_wolf_discussion_records_technical_pass(monkeypatch):
     payload = {
         "player_id": "wolf_1",
-        "player_role": "wolf",
+        "player_role": "chanteuse",
+        "lineup": LINEUP,
         "current_day": 2,
         "current_round": 1,
         "surviving_wolves": ["wolf_1", "wolf_2"],
@@ -123,8 +134,8 @@ def test_exhausted_wolf_discussion_records_technical_pass(monkeypatch):
 
     out = agent_mod.run_agent(
         payload,
-        WOLF_NIGHT_DISCUSS,
-        WolfNightDiscussOutput,
+        wolf_chat_template("chanteuse"),
+        wolf_chat_output(LINEUP),
         "wolf_channel",
     )
 
@@ -220,7 +231,7 @@ def test_a_stalled_primary_is_not_asked_again_and_the_rescue_takes_the_turn(
     monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: rescue)
     with caplog.at_level("WARNING"):
         out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
-    assert out.entry == "player_3"
+    assert out.entry == PROTECT_3
     assert primary.calls == 1  # one request budget, not the two attempts a wrong answer gets
     assert rescue.calls == 1
     assert game_health.stalls == 1
@@ -240,7 +251,7 @@ def test_repeated_stalls_send_the_next_turns_straight_to_the_rescue(
 
     with caplog.at_level("WARNING"):
         out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
-    assert out.entry == "player_3"
+    assert out.entry == PROTECT_3
     assert primary.calls == 2  # the third turn never touched the primary
     assert rescue.calls == 3
     assert any("starts on the rescue model" in r.message and "2 turns in a row" in r.message
@@ -323,7 +334,7 @@ def test_an_exhausted_round_turn_keeps_its_round_on_the_technical_pass(monkeypat
     monkeypatch.setattr(agent_mod, "get_llm", lambda: _BrokenLLM())
     monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: _BrokenLLM())
 
-    out = agent_mod.run_agent(payload, VILLAGER_DAY_DISCUSS, DayDiscussOutput, "day_channel")
+    out = agent_mod.run_agent(payload, HEALER_DAY_DISCUSS, DayDiscussOutput, "day_channel")
 
     assert out.entry.pass_reason == DiscussionPassReason.GENERATION_FAILED
     assert out.entry.day_round == "closing"

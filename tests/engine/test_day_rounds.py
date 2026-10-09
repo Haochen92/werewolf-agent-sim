@@ -15,18 +15,20 @@ from Agents.game_config import GameConfig
 from Agents.graphs.day import build_day_graph
 from Agents.nodes.day import actors, flow
 from Agents.schemas import AddressedTarget, DayChannel, DayVote, RoundCandidate
+from Agents.schemas.roles import lineup
 from Agents.schemas.turn import ResolvedDayVote
 from Agents.tracing import Metrics
 from Agents.turn import resolve
 
 
 ROLES = {
-    "player_1": "villager",
+    "player_1": "sentinel",
     "player_2": "investigator",
     "player_3": "healer",
-    "player_4": "wolf",
-    "player_5": "wolf",
+    "player_4": "chanteuse",
+    "player_5": "illusionist",
 }
+LINEUP = lineup("serial_killer", "speculator")
 SEATS = ["player_1", "player_2", "player_3", "player_4", "player_5"]
 NO_REASONING = {"strategy": None, "strategy_verdicts": [], "memory_verdicts": [], "reads": []}
 
@@ -124,11 +126,10 @@ def play_day(monkeypatch):
             "dead_roster": [],
             "wolf_channel": [],
             "roles": dict(ROLES),
+            "lineup": LINEUP,
             "human_players": [],
-            "investigator_results": [],
-            "vigilante_results": [],
             "night_actions": [],
-            "vigilante_bullets": 0,
+            "uses_left": {"illusionist": 2},
             # The engine's two buckets, wolves apart; the rounds must not follow this order.
             "surviving_villagers": ["player_1", "player_2", "player_3"],
             "surviving_wolves": ["player_5", "player_4"],
@@ -187,7 +188,7 @@ def test_day_one_is_the_opening_and_the_summary_only(play_day):
 
 def test_a_player_accused_in_an_opening_answers_first(play_day):
     table = ScriptedTable(rounds={
-        ("opening", "player_2"): ("I checked player_4 last night: wolf.", [accusation("player_4")]),
+        ("opening", "player_2"): ("I checked player_4 last night: Suspicious.", [accusation("player_4")]),
     })
 
     final, _ = play_day(2, table)
@@ -302,8 +303,8 @@ def round_state(**over) -> dict:
         "day_channel": [],
         "day_summaries": [],
         "roles": dict(ROLES),
+        "lineup": LINEUP,
         "human_players": [],
-        "investigator_results": [],
         "surviving_villagers": ["player_1", "player_2", "player_3"],
         "surviving_wolves": ["player_5", "player_4"],
         "agent_strategies": {},

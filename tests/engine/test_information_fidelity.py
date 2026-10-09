@@ -11,13 +11,13 @@ from Agents.nodes.day.flow import build_speaker_send, fan_out_day
 from Agents.nodes.day.summary_agent import _serialize_day_summary, summary_context
 from Agents.nodes.night.resolution import night_resolution
 from Agents.nodes.orchestrator import day_resolution
-from Agents.prompts.day_discuss import VIGILANTE_DAY_DISCUSS
-from Agents.prompts.day_vote import HEALER_DAY_VOTE
-from Agents.prompts.night import WOLF_NIGHT_VOTE
+from Agents.prompts.day_discuss import day_discuss_template
+from Agents.prompts.day_vote import day_vote_template
+from Agents.prompts.night import carrier_template
 from Agents.prompts.prompt_formatters import format_day_channel, format_day_summaries
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
+from Agents.rules.night import pack_carrier, resolve_night
 from Agents.rules.night_record import night_action_records, own_night_actions
-from Agents.rules.resolution import collect_attacks, resolve_attacks
 from Agents.schemas import DaySummaryOutputV4
 from Agents.schemas.game_events import (
     DayChannel,
@@ -27,18 +27,35 @@ from Agents.schemas.game_events import (
     FiringReason,
     NightActionRecord,
 )
+from Agents.schemas.night import NightChoice
+from Agents.schemas.roles import lineup
 from tests.factories.builders import night_runtime as _runtime
 
-ROLES = {"w0": "wolf", "w1": "wolf", "sk": "serial_killer", "h": "healer", "v": "vigilante",
-         "inv": "investigator", "t0": "villager"}
+ROLES = {"w0": "chanteuse", "w1": "illusionist", "sk": "serial_killer", "h": "healer", "v": "vigilante",
+         "inv": "investigator", "t0": "sentinel"}
+LINEUP = lineup("serial_killer", "speculator")
+
+
+def _choices(wolves=None, healer=None, sk=None, vig=None, held=False) -> list[NightChoice]:
+    """Night 1's choices, the kills first (the order attacks on one player are announced in)."""
+    choices = []
+    if wolves:
+        carrier = pack_carrier(["w0", "w1"], 1)
+        choices.append(NightChoice(carrier, ROLES[carrier], "kill", wolves))
+    if sk:
+        choices.append(NightChoice("sk", "serial_killer", "kill", sk))
+    if vig:
+        choices.append(NightChoice("v", "vigilante", "kill", vig))
+    elif held:
+        choices.append(NightChoice("v", "vigilante", "hold_fire", None))
+    if healer:
+        choices.append(NightChoice("h", "healer", "protect", healer))
+    return choices
 
 
 def _records(wolves=None, healer=None, sk=None, vig=None, held=False):
-    attacks = collect_attacks(wolves, sk, vig)
-    return night_action_records(
-        1, wolves_target=wolves, healer_target=healer, serial_killer_target=sk, vigilante_target=vig,
-        attacks_on=attacks, verdicts=resolve_attacks(attacks, healer, "sk"), roles=ROLES,
-        healer="h", serial_killer="sk", vigilante="v", vigilante_held_fire=held)
+    choices = _choices(wolves, healer, sk, vig, held)
+    return night_action_records(choices, resolve_night(choices, ROLES, 1), ROLES)
 
 
 def _by(records, actor):
@@ -59,8 +76,9 @@ def test_healer_learns_a_save_and_otherwise_only_what_the_public_does():
 
 def test_killers_learn_their_result_and_only_the_attackers_learn_the_silent_immunity():
     recs = _records(wolves="sk", vig="t0", sk="inv", healer="inv")
-    assert "confirms sk is the serial killer" in _by(recs, "wolves")[0].outcome
-    assert _by(recs, "v")[0].outcome == "t0 died. They were a villager."
+    assert _by(recs, "wolves")[0].outcome == (
+        "sk was unharmed: immune to night kills tonight. The public was told nothing about this attack.")
+    assert _by(recs, "v")[0].outcome == "t0 died. They were a sentinel."
     assert _by(recs, "sk")[0].outcome == "inv survived: the healer saved them."
     # the healer hears the (public) save, never the wolves' silent failed attack on sk
     assert "immune" not in _by(recs, "h")[0].outcome and "sk" not in _by(recs, "h")[0].outcome
@@ -74,16 +92,15 @@ def test_vigilante_holding_fire_is_recorded():
 def test_each_player_sees_only_its_own_record_and_every_wolf_sees_the_packs():
     recs = _records(wolves="t0", healer="inv", sk="v", vig="w1")
     assert {r.actor for r in own_night_actions(recs, "h", "healer")} == {"h"}
-    assert {r.actor for r in own_night_actions(recs, "w0", "wolf")} == {"wolves"}
-    assert own_night_actions(recs, "t0", "villager") == []
+    assert {r.actor for r in own_night_actions(recs, "w0", "chanteuse")} == {"wolves"}
+    assert {r.actor for r in own_night_actions(recs, "w1", "illusionist")} == {"wolves"}
+    assert own_night_actions(recs, "t0", "sentinel") == []  # acted on nothing tonight
 
 
 def test_night_resolution_writes_the_record():
-    state = {"current_day": 1, "roles": ROLES, "surviving_wolves": ["w0", "w1"],
-             "surviving_villagers": ["sk", "h", "v", "inv", "t0"], "serial_killer_player": "sk",
-             "healer_player": "h", "investigator_player": "inv", "vigilante_player": "v",
-             "vigilante_bullets": 2, "day_channel": [], "wolves_kill_target": "t0",
-             "healer_target": "t0", "serial_killer_target": None, "vigilante_target": None}
+    state = {"current_day": 1, "roles": ROLES, "lineup": LINEUP, "surviving_wolves": ["w0", "w1"],
+             "surviving_villagers": ["sk", "h", "v", "inv", "t0"], "uses_left": {"vigilante": 2},
+             "day_channel": [], "night_choices": _choices(wolves="t0", healer="t0", held=True)}
     update = night_resolution(state, _runtime())
     assert {(r.actor, r.action) for r in update["night_actions"]} == {
         ("h", "protect"), ("wolves", "kill"), ("v", "hold_fire")}
@@ -91,11 +108,11 @@ def test_night_resolution_writes_the_record():
 
 
 def _day_state(records):
-    return {"current_day": 2, "current_round": 0, "roles": ROLES, "human_players": [],
+    return {"current_day": 2, "current_round": 0, "roles": ROLES, "lineup": LINEUP, "human_players": [],
             "day_channel": [], "day_summaries": [], "wolf_channel": [],
             "surviving_wolves": ["w0", "w1"], "surviving_villagers": ["sk", "h", "v", "inv", "t0"],
-            "agent_strategies": {}, "investigator_results": [], "vigilante_results": [],
-            "vigilante_bullets": 1, "night_actions": records}
+            "agent_strategies": {}, "uses_left": {"vigilante": 1, "illusionist": 2},
+            "night_actions": records}
 
 
 def test_day_payloads_carry_only_the_speakers_own_record():
@@ -114,28 +131,30 @@ def test_day_payloads_carry_only_the_speakers_own_record():
 # --- what the prompts render ------------------------------------------------------
 
 def test_the_vigilante_day_prompt_shows_bullets_and_its_record():
-    rec = NightActionRecord(day=1, actor="v", action="shoot", target="t0", outcome="t0 died. They were a villager.")
+    rec = NightActionRecord(day=1, actor="v", action="shoot", target="t0", outcome="t0 died. They were a sentinel.")
     payload = build_speaker_send(_day_state([rec]), "v", "vigilante", FiringReason(tier="proactive", owes=[])).arg
-    text = "\n".join(m.content for m in VIGILANTE_DAY_DISCUSS.format_messages(**build_agent_prompt_input(payload)))
+    text = "\n".join(m.content for m in day_discuss_template("vigilante").format_messages(**build_agent_prompt_input(payload)))
     assert "Bullets left: 1" in text
-    assert "Night 1 (last night): you shot t0. t0 died. They were a villager." in text
+    assert "Night 1 (last night): you shot t0. t0 died. They were a sentinel." in text
 
 
 def test_the_vote_prompt_shows_the_note_it_replaces():
     payload = {**_day_state([]), "player_id": "h", "player_role": "healer",
                "surviving_players": list(ROLES), "previous_strategy": "SENTINEL-NOTE", "allow_abstain": True}
-    text = "\n".join(m.content for m in HEALER_DAY_VOTE.format_messages(**build_agent_prompt_input(payload)))
+    text = "\n".join(m.content for m in day_vote_template("healer").format_messages(**build_agent_prompt_input(payload)))
     assert "SENTINEL-NOTE" in text
 
 
-def test_the_wolf_night_vote_gets_the_census_and_the_packs_record():
+def test_the_carriers_kill_turn_gets_the_census_and_the_packs_record():
     rec = NightActionRecord(day=1, actor="wolves", action="kill", target="sk",
                             outcome="sk was unharmed: immune to night kills.")
-    payload = {"current_day": 2, "current_round": 3, "player_id": "w0", "player_role": "wolf",
+    payload = {"current_day": 2, "current_round": 4, "player_id": "w0", "player_role": "chanteuse",
+               "lineup": LINEUP, "carrier": "w0",
                "day_channel": [], "day_summaries": [], "wolf_channel": [], "surviving_wolves": ["w0", "w1"],
-               "surviving_villagers": ["sk", "t0"], "dead_roster": [], "cast_role_counts": {"wolf": 2},
+               "surviving_villagers": ["sk", "t0"], "dead_roster": [],
+               "cast_role_counts": {"chanteuse": 1, "illusionist": 1},
                "night_actions": [rec], "previous_strategy": "", "strategy_points": ""}
-    text = "\n".join(m.content for m in WOLF_NIGHT_VOTE.format_messages(**build_agent_prompt_input(payload)))
+    text = "\n".join(m.content for m in carrier_template("chanteuse").format_messages(**build_agent_prompt_input(payload)))
     assert "== Dead so far (public) ==" in text and "your pack attacked sk" in text
     assert "Surviving non-wolf players" in text
 
@@ -158,7 +177,7 @@ def test_previous_days_put_the_game_masters_record_above_claims_and_accusations(
             "accusations": [{"accusers": ["player_8"], "target": "player_2",
                              "reasoning": "player_8 claimed player_2 survived an attack."}],
             "role_claims": [{"player": "inv", "claimed_role": "investigator", "kind": "claimed",
-                             "night_actions": [{"night": 1, "action": "investigate", "target": "w0", "result": "wolf"}]}]}),
+                             "night_actions": [{"night": 1, "action": "investigate", "target": "w0", "result": "suspicious"}]}]}),
         DaySummary(day=2, summary="Night of day 2: t0 was stabbed by the serial killer last night.", source="game_master"),
     ]
     text = format_day_summaries(summaries, before_day=3)
@@ -167,11 +186,11 @@ def test_previous_days_put_the_game_masters_record_above_claims_and_accusations(
     assert record < claims < accusations
     assert text.index("t0 was stabbed") < claims < text.index("player_8 claimed")
     assert "inv: claimed investigator (day 2)." in text
-    assert "Night 1: investigated w0, result: wolf." in text
+    assert "Night 1: checked w0, says they read Suspicious." in text
 
 
 def test_votes_are_written_as_eliminate_or_abstain():
-    state = {"current_day": 2, "roles": ROLES, "surviving_wolves": ["w0", "w1"],
+    state = {"current_day": 2, "roles": ROLES, "lineup": LINEUP, "surviving_wolves": ["w0", "w1"],
              "surviving_villagers": ["sk", "h", "v", "inv", "t0"], "day_channel": [], "no_lynch_streak": 0,
              "day_votes": [DayVote(voter="h", votee="w0"), DayVote(voter="t0", votee="w0"),
                            DayVote(voter="inv", votee="abstain")]}
@@ -182,7 +201,7 @@ def test_votes_are_written_as_eliminate_or_abstain():
 
 def test_day_one_is_not_announced_as_a_vote_result():
     # "Here's the vote result for day 1: No vote was held today" read to agents as a day-1 abstention
-    state = {"current_day": 1, "roles": ROLES, "surviving_wolves": ["w0", "w1"],
+    state = {"current_day": 1, "roles": ROLES, "lineup": LINEUP, "surviving_wolves": ["w0", "w1"],
              "surviving_villagers": ["sk", "h", "v", "inv", "t0"], "day_channel": [], "no_lynch_streak": 0,
              "day_votes": []}
     message = day_resolution(state, _runtime())["day_channel"][0].message
@@ -216,7 +235,7 @@ def test_the_v4_summary_writes_two_headings_and_transcribes_claims_in_fixed_word
     text = _serialize_day_summary(out)
     assert [line.split(":")[0] for line in text.splitlines()] == ["Key accusations and defenses", "Role claims"]
     assert "Disputed: player_6" in text and "Against the record: No attack on player_2" in text
-    assert ("player_3 claimed investigator — Night 1: investigated player_1, result: vigilante, "
-            "plans to investigate player_5 tonight") in text
+    assert ("player_3 claimed investigator — Night 1: checked player_1, result: vigilante, "
+            "plans to check player_5 tonight") in text
     assert "player_4 retracted healer" in text
     assert set(out.model_dump()) == {"accusations", "role_claims"}

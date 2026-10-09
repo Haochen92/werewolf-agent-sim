@@ -2,11 +2,11 @@
 
 day/flow.py     — day discussion/vote control flow (scheduler hop, routers, fan-out, summary)
 day/actors.py   — the two generic day actor nodes (discuss/vote); role rides the payload
-orchestrator.py — game setup, day resolution, winner/terminal logic, postgame
-night/<role>.py — each single-role night actor explicitly commits its resolved turn
-night/wolf.py   — the wolf night flow, a miniature of the day pattern (scheduler hub ->
-                  sequential talk -> vote marker -> parallel vote -> collect)
-night/resolution.py — the NIGHT_RESOLUTION barrier: cross-role kill + investigation resolution
+orchestrator.py — the deal, day resolution, winner/terminal logic, night routing, postgame
+night/solo.py   — one body for every solo role's night node (named per role in the parent)
+night/pack.py   — the pack's night flow, a miniature of the day pattern (scheduler hub ->
+                  sequential chat -> the carrier's kill -> parallel skills -> collect)
+night/resolution.py — the NIGHT_RESOLUTION barrier: the night resolved once for every role
 
 The turn system itself (speaker scheduling, run_agent, the memory-informed
 actions, the proactive-novelty gate) lives in Agents.turn, not here — these
@@ -16,19 +16,23 @@ Everything is re-exported here so `from Agents.nodes import X` resolves unchange
 """
 
 from Agents.nodes.orchestrator import (  # noqa: F401
-    _faction_counts,
     _max_days_winner,
-    _nullify_special_roles,
+    acts_tonight,
     check_game_end_day,
     check_game_end_night,
     day_resolution,
     determine_winner,
     end_game,
     initialize_game,
+    is_draw,
+    neutral_result,
+    night_phase_name,
     night_start,
     one_more_day,
     post_game_analysis,
+    remove_from_buckets,
     route_night_actors,
+    side_counts,
 )
 from Agents.nodes.day import (  # noqa: F401
     _serialize_day_summary,
@@ -49,19 +53,16 @@ from Agents.nodes.day import (  # noqa: F401
     summarize_day_discussion,
     vote,
 )
-from Agents.nodes.night.resolution import (  # noqa: F401
-    night_resolution,
+from Agents.nodes.night.resolution import night_resolution  # noqa: F401
+from Agents.nodes.night.solo import night_turn_payload, solo_night_phase  # noqa: F401
+from Agents.nodes.night.pack import (  # noqa: F401
+    carrier_kill,
+    collect_pack,
+    pack_chat,
+    pack_fan_out_skills,
+    pack_skill,
+    prepare_pack_night,
+    route_carrier,
+    route_pack_speaker,
+    start_carrier,
 )
-from Agents.nodes.night.wolf import (  # noqa: F401
-    collect_wolf_votes,
-    prepare_wolf_night,
-    route_wolf_speaker,
-    start_wolf_vote,
-    wolf_fan_out_vote,
-    wolf_night_discuss,
-    wolf_night_vote,
-)
-from Agents.nodes.night.healer import healer_act  # noqa: F401
-from Agents.nodes.night.investigator import investigator_act  # noqa: F401
-from Agents.nodes.night.serial_killer import serial_killer_act  # noqa: F401
-from Agents.nodes.night.vigilante import vigilante_act  # noqa: F401

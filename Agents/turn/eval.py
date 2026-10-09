@@ -83,8 +83,7 @@ def build_eval_private_context(
     """Snapshot the private context an agent acted on, for the eval case.
 
     Reads everything via ``.get`` so it works for both day payloads (which carry
-    faction-split survivor lists) and night payloads (flat ``surviving_players``,
-    plus ``vigilante_results`` for the vigilante).
+    faction-split survivor lists) and night payloads (flat ``surviving_players``).
     """
     return EvalPrivateContext(
         previous_strategy=payload.get("previous_strategy", "") or "",
@@ -94,8 +93,6 @@ def build_eval_private_context(
             if summary.day < day
         ],
         wolf_channel=payload.get("wolf_channel", []),
-        investigator_results=payload.get("investigator_results", []),
-        vigilante_results=payload.get("vigilante_results", []),
         night_actions=payload.get("night_actions", []),
         surviving_players=payload.get("surviving_players", []),
         surviving_wolves=payload.get("surviving_wolves", []),

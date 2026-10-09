@@ -10,10 +10,11 @@ from logging import getLogger
 
 from Agents.prompts.prompt_formatters import format_claims_on_record, format_day_channel
 from Agents.llm_factory import get_llm_summary
-from Agents.prompts import DAY_SUMMARY_PROMPT, GAME_RULES
+from Agents.prompts import DAY_SUMMARY_PROMPT
+from Agents.prompts.compose import rules_block
 from Agents.rules.claim_ledger import PLAN_VERBS, ClaimedAction, action_text
 from Agents.schemas import DaySummary, DaySummaryOutput, DaySummaryOutputV4
-from Agents.schemas.game_events import DeathRecord
+from Agents.schemas.game_events import DayChannel, DeathRecord
 
 logger = getLogger(__name__)
 
@@ -23,13 +24,15 @@ _SUMMARY_SCHEMA = DaySummaryOutputV4
 
 
 def summary_context(day_summaries: list[DaySummary], dead_roster: list[DeathRecord] | None = None,
-                    cast_role_counts: dict[str, int] | None = None) -> tuple[str, str]:
+                    cast_role_counts: dict[str, int] | None = None,
+                    messages: list[DayChannel] | None = None) -> tuple[str, str]:
     """(public_record, claims_on_record) for the summariser: the game master's announcements so far,
-    and the claim ledger with its checks, as players see it. Both are public."""
+    and the claim ledger with its checks, as players see it (``messages``: the spoken entries of
+    the earlier days, whose claim fields make the ledger's role lines). Both are public."""
     record = "\n".join(
         f"[Day {s.day}] {s.summary.strip()}" for s in day_summaries if s.source == "game_master"
     ) or "Nothing announced yet."
-    claims = format_claims_on_record(day_summaries, dead_roster, cast_role_counts)
+    claims = format_claims_on_record(day_summaries, dead_roster, cast_role_counts, messages)
     return record, claims or "None yet."
 
 
@@ -40,6 +43,8 @@ def run_day_summary_agent(
     day_summaries: list[DaySummary] | None = None,
     dead_roster: list[DeathRecord] | None = None,
     cast_role_counts: dict[str, int] | None = None,
+    lineup: list[str] | None = None,
+    earlier_messages: list[DayChannel] | None = None,
 ) -> tuple[str, str, dict]:
     """Summarise one day's messages into (summary_text, model_used, structured).
 
@@ -48,13 +53,15 @@ def run_day_summary_agent(
     what the replay drawer shows, and what agents read for a day stored without it. Retries the
     structured-output call; on repeated failure falls back to the raw formatted channel (model_used "",
     structured {}). `day_summaries` (the game so far), `dead_roster` and `cast_role_counts` give the
-    game master's record and the claim ledger the summary is written against.
+    game master's record and the claim ledger the summary is written against; ``earlier_messages``
+    (the spoken entries of the days before) give the ledger its role lines.
     """
-    public_record, claims_on_record = summary_context(day_summaries or [], dead_roster, cast_role_counts)
+    public_record, claims_on_record = summary_context(day_summaries or [], dead_roster, cast_role_counts,
+                                                      earlier_messages)
     prompt = DAY_SUMMARY_PROMPT.format(
         current_day=current_day,
         day_channel=format_day_channel(current_day_messages),
-        game_rules=GAME_RULES,
+        game_rules=rules_block(lineup or list(cast_role_counts or {})),
         public_record=public_record,
         claims_on_record=claims_on_record,
     )

@@ -11,6 +11,7 @@ lives in ``eval.py``; ``run_agent`` calls ``log_prompt`` / ``record_reads`` as s
 never touch the returned delta.
 """
 from logging import getLogger
+from types import SimpleNamespace
 from typing import Any
 import random
 
@@ -28,26 +29,25 @@ from Agents.schemas.game_events import (
     DiscussionPassReason,
     WolfChannel,
 )
+from Agents.schemas.night import NightChoice
+from Agents.schemas.roles import ROLE_SPECS, role_for_field
 from Agents.schemas.turn import (
     ResolvedDayDiscussion,
     ResolvedDayVote,
-    ResolvedHealerTarget,
-    ResolvedInvestigatorTarget,
-    ResolvedSerialKillerTarget,
+    ResolvedNightChoice,
     ResolvedTurn,
-    ResolvedVigilanteTarget,
     ResolvedWolfDiscussion,
-    ResolvedWolfVote,
 )
 from Agents.turn.action_space import (
+    KILL_TARGET,
     valid_targets_for_action,
     output_schema_with_legal_targets,
 )
 from Agents.turn.eval import log_prompt, record_reads
 from Agents.turn.resolve import (
-    NIGHT_TARGET_KEYS,
     RETRY,
     extract_agent_reasoning,
+    night_choice,
     resolve_decision,
 )
 
@@ -170,19 +170,17 @@ def run_agent(
         return ResolvedDayVote(
             entry=DayVote(voter=player_id, votee=random.choice(valid_targets))
         )
-    if output_key in NIGHT_TARGET_KEYS:
-        result_type = _NIGHT_RESULT_BY_KEY[output_key]
-        return result_type(entry=random.choice(valid_targets))
-    if output_key == "wolf_vote":
-        return ResolvedWolfVote(
-            entry=WolfChannel(
-                day=payload.get("current_day", 1),
-                round=payload.get("current_round", 1),
-                wolf=player_id,
-                message="",
-                vote=random.choice(valid_targets),
-            )
-        )
+    if output_key == KILL_TARGET:
+        return ResolvedNightChoice(entry=NightChoice(
+            player_id, payload.get("player_role", ""), "kill", random.choice(valid_targets)))
+    role = role_for_field(output_key)
+    if role is not None:
+        # The role's no-action word when it has one (a random shot or sigil is worse play than
+        # none); a random legal choice otherwise. A necromancer stays put.
+        spec = ROLE_SPECS[role]
+        fallback = SimpleNamespace(**{output_key: spec.no_action or random.choice(valid_targets), "body": None, "bet_role": "none"})
+        choice = night_choice(role, player_id, fallback, payload, valid_targets)
+        return ResolvedNightChoice(entry=None if choice is RETRY else choice)
     return None
 
 
@@ -201,11 +199,3 @@ def _generate(chain: Any, prompt_input: dict, output_key: str, player_id: str):
             return _STALLED
         logger.warning(f"LLM call failed for {player_id}: {e}")
         return None
-
-
-_NIGHT_RESULT_BY_KEY = {
-    "healer_target": ResolvedHealerTarget,
-    "investigator_target": ResolvedInvestigatorTarget,
-    "serial_killer_target": ResolvedSerialKillerTarget,
-    "vigilante_target": ResolvedVigilanteTarget,
-}

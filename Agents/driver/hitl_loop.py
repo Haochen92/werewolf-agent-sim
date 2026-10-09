@@ -65,10 +65,19 @@ def _send_request(request: HumanTurnRequest, err_message: str | None) -> Any:
         return {"message": message}
 
     if request.phase == "wolf_channel":
-        return {"message": input("pack message> ").strip()}
+        message = input("pack message (or 'pass')> ").strip()
+        if message.lower() == "pass":
+            return {"pass_turn": True}
+        return {"message": message}
 
     target = input("target> ").strip()
-    return {"target": _resolve_target(target, request.valid_targets)}
+    answer = {"target": _resolve_target(target, request.valid_targets)}
+    if request.bodies and answer["target"] != "stay_put":
+        answer["body"] = _resolve_target(input("through which body> ").strip(), request.bodies)
+    if request.phase == "bet_target":
+        named = input("name a role too (or enter for none)> ").strip()
+        answer["role_named"] = named or None
+    return answer
 
 
 def _render_request(request: HumanTurnRequest) -> None:
@@ -86,8 +95,9 @@ def _render_request(request: HumanTurnRequest) -> None:
         ("Why you're up", request.firing_brief),
         ("Your pack", request.pack),
         ("Wolf channel", _format_transcript(request.wolf_channel, -request.day, request.player_id)),
-        ("Your investigations", request.investigator_results),
-        ("Your shots", request.vigilante_results),
+        ("Your night record", request.night_actions),
+        ("Uses left", "" if request.uses_left is None else str(request.uses_left)),
+        ("Bodies you can use", ", ".join(request.bodies)),
         ("Your strategy note", request.previous_strategy),
     ]
     for title, body in sections:
