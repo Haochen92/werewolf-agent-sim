@@ -1,15 +1,16 @@
 """Top-level game orchestration graph: the day<->night cycle that drives a whole game.
 
-Each phase is a *subgraph* compiled elsewhere (day; wolf/healer/investigator/serial-killer/
-vigilante night). The ``*_phase`` wrappers here invoke that subgraph with a payload built from
-orchestrator state, then fold the subgraph's result back as a state delta. Channel/summary
-fields are returned as the *newly appended slice only*: the subgraph receives the running list
-and returns the grown list, so we diff against what we sent (``result[...][len(sent):]``) and
-let the orchestrator's reducer append once instead of duplicating the whole history.
+The day and the pack's night are *subgraphs* compiled elsewhere; the ``*_phase`` wrappers here
+invoke them with a payload built from orchestrator state, then fold the result back as a state
+delta. Channel/summary fields are returned as the *newly appended slice only*: the subgraph
+receives the running list and returns the grown list, so we diff against what we sent
+(``result[...][len(sent):]``) and let the orchestrator's reducer append once instead of
+duplicating the whole history. Each solo role's night is one named node, ``<ROLE>_NIGHT_PHASE``,
+sharing one body (Agents.nodes.night.solo).
 
 build_parent_graph wires the phases into the day -> resolution -> night-groups -> resolution ->
-(next day | end) loop; the per-night-actor routing and termination live in the ``route_after_*``
-and ``check_game_end_*`` functions imported from Agents.nodes.
+(next day | end) loop; the per-night-actor routing and termination live in the ``route_*`` and
+``check_game_end_*`` functions imported from Agents.nodes.
 """
 
 from langchain_core.runnables import RunnableConfig
@@ -17,41 +18,30 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.runtime import Runtime
 
 from Agents.graphs.day import day_graph_compiled
-from Agents.graphs.night.healer import healer_graph_compiled
-from Agents.graphs.night.investigator import investigator_graph_compiled
-from Agents.graphs.night.serial_killer import serial_killer_graph_compiled
-from Agents.graphs.night.vigilante import vigilante_graph_compiled
-from Agents.graphs.night.wolf import wolf_night_graph_compiled
+from Agents.graphs.night.pack import pack_night_graph_compiled
 from Agents.nodes import (
     check_game_end_day,
     check_game_end_night,
     day_resolution,
     end_game,
     initialize_game,
+    night_phase_name,
     night_resolution,
     night_start,
     one_more_day,
     route_night_actors,
     post_game_analysis,
+    solo_night_phase,
 )
-from Agents.state import (
-    DayGraphState,
-    HealerNightGraph,
-    InvestigatorNightGraph,
-    OrchestratorGraph,
-    SerialKillerNightGraph,
-    VigilanteNightGraph,
-    WolfNightGraph,
-)
+from Agents.rules.night import pack_carrier
+from Agents.state import DayGraphState, OrchestratorGraph, PackNightGraph
 from Agents.config import (
     child_runnable_config,
     discussion_recursion_limit,
     game_config_from_runnable,
 )
 from Agents.memory import store, checkpointer
-from Agents.rules.night_record import own_night_actions
-from Agents.rules.seats import seat_order
-from Agents.schemas.roles import cast_role_counts
+from Agents.schemas.roles import ROLE_SPECS, cast_role_counts, roles
 from Agents.tracing import GraphContext
 
 
@@ -78,11 +68,12 @@ def day_phase(
         "dead_roster": state.get("dead_roster", []),
         "wolf_channel": state.get("wolf_channel", []),
         "roles": state["roles"],
+        "lineup": state.get("lineup", []),
         "human_players": state["human_players"],
-        "investigator_results": state.get("investigator_results", []),
-        "vigilante_results": state.get("vigilante_results", []),
         "night_actions": state.get("night_actions", []),
-        "vigilante_bullets": state.get("vigilante_bullets", 0),
+        "uses_left": state.get("uses_left", {}),
+        "speculator_pick": state.get("speculator_pick"),
+        "fortune_points": state.get("fortune_points", 0),
         "surviving_villagers": state["surviving_villagers"],
         "surviving_wolves": state["surviving_wolves"],
         "no_lynch_streak": state.get("no_lynch_streak", 0),
@@ -105,229 +96,49 @@ def day_phase(
     }
 
 
-def wolf_night_phase(
+def pack_night_phase(
     state: OrchestratorGraph,
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
 ):
-    """Run the wolf-night subgraph (multi-wolf discussion -> kill vote) and fold its delta back.
-
-    Seeds the subgraph with the wolf channel + both rosters; returns the newly appended
-    wolf-channel slice, the agreed wolves_kill_target, and any strategy/adoption delta.
-    """
-    payload: WolfNightGraph = {
-        "agent_strategies": state.get("agent_strategies", {}),
+    """Run the pack's night subgraph: the chat, the carrier's kill, each wolf's skill. Folds
+    back the new chat entries, the pack's choices and any strategy notes."""
+    sent_channel = state.get("wolf_channel", [])
+    payload: PackNightGraph = {
         "day_channel": state.get("day_channel", []),
         "day_summaries": state.get("day_summaries", []),
-        # Public, as for the other night roles: the dead roster and the counts-only cast census.
         "dead_roster": state.get("dead_roster", []),
         "cast_role_counts": cast_role_counts(state.get("roles", {})),
-        # The pack's own kill record, shared by every wolf.
-        "night_actions": own_night_actions(state.get("night_actions", []), "", "wolf"),
-        "wolf_channel": state.get("wolf_channel", []),
-        "surviving_villagers": state["surviving_villagers"],
+        "lineup": state.get("lineup", []),
+        "night_actions": state.get("night_actions", []),
+        "wolf_channel": sent_channel,
         "surviving_wolves": state["surviving_wolves"],
+        "surviving_villagers": state["surviving_villagers"],
+        "roles": state["roles"],
+        "uses_left": state.get("uses_left", {}),
+        "agent_strategies": state.get("agent_strategies", {}),
         "human_players": state["human_players"],
         "current_day": state["current_day"],
+        "current_round": 1,
+        "carrier": pack_carrier(state["surviving_wolves"], state["current_day"]) or "",
+        "wolves_target": None,
+        "night_choices": [],
     }
-    result = wolf_night_graph_compiled.invoke(
-        payload,
-        config=child_runnable_config(config),
-        context=runtime.context,
+    result = pack_night_graph_compiled.invoke(
+        payload, config=child_runnable_config(config), context=runtime.context,
     )
-
-    updates = {
-        "wolf_channel": result["wolf_channel"][len(state.get("wolf_channel", [])):],
-        "wolves_kill_target": result.get("wolves_kill_target"),
+    return {
+        "wolf_channel": result.get("wolf_channel", [])[len(sent_channel):],
+        "night_choices": result.get("night_choices", []),
         "agent_strategies": result.get("agent_strategies", {}),
     }
-    return updates
 
 
-def healer_night_phase(
-    state: OrchestratorGraph,
-    config: RunnableConfig,
-    runtime: Runtime[GraphContext],
-):
-    """Run the healer night subgraph: the healer picks one player to protect.
-
-    Single-actor night pattern (shared by healer/investigator/serial_killer/vigilante): read the
-    role's player marker (healer_player) + shared night context, offer every *other* survivor as
-    a target, invoke the role subgraph, and write the role's target (healer_target) plus any
-    strategy/adoption delta.
-    """
-    healer = state["healer_player"]
-    assert healer is not None  # routing only enters this phase while the healer is alive
-    payload: HealerNightGraph = {
-        "previous_strategy": state.get("agent_strategies", {}).get(healer, ""),
-        "strategy_points": "",
-        "current_day": state["current_day"],
-        "current_round": 0,
-        "day_channel": state.get("day_channel", []),
-        "day_summaries": state.get("day_summaries", []),
-        # Both public: the dead roster is announced, the cast census is counts-only (no identities).
-        "dead_roster": state.get("dead_roster", []),
-        "cast_role_counts": cast_role_counts(state.get("roles", {})),
-        "surviving_players": [
-            p
-            for p in seat_order(state["surviving_wolves"] + state["surviving_villagers"])
-            if p != healer
-        ],
-        "player_id": healer,
-        # Private: only this actor's own night record.
-        "night_actions": own_night_actions(state.get("night_actions", []), healer, "healer"),
-        "player_role": "healer",
-        "human_player": healer in state["human_players"],
-    }
-    result = healer_graph_compiled.invoke(
-        payload,
-        config=child_runnable_config(config),
-        context=runtime.context,
-    )
-    updates = {"healer_target": result.get("healer_target")}
-    if result.get("updated_strategy"):
-        updates["agent_strategies"] = {
-            healer: result["updated_strategy"]
-        }
-    return updates
-
-
-def investigator_night_phase(
-    state: OrchestratorGraph,
-    config: RunnableConfig,
-    runtime: Runtime[GraphContext],
-):
-    """Single-actor night phase (see healer_night_phase): the investigator learns one player's
-    true role; reads investigator_player + prior results, writes investigator_target."""
-    investigator = state["investigator_player"]
-    assert investigator is not None  # routing only enters this phase while the investigator is alive
-    payload: InvestigatorNightGraph = {
-        "previous_strategy": state.get("agent_strategies", {}).get(investigator, ""),
-        "strategy_points": "",
-        "current_day": state["current_day"],
-        "current_round": 0,
-        "day_channel": state.get("day_channel", []),
-        "day_summaries": state.get("day_summaries", []),
-        # Both public: the dead roster is announced, the cast census is counts-only (no identities).
-        "dead_roster": state.get("dead_roster", []),
-        "cast_role_counts": cast_role_counts(state.get("roles", {})),
-        "investigator_results": state.get("investigator_results", []),
-        "surviving_players": [
-            p
-            for p in seat_order(state["surviving_wolves"] + state["surviving_villagers"])
-            if p != investigator
-        ],
-        "player_id": investigator,
-        "player_role": "investigator",
-        "human_player": investigator in state["human_players"],
-    }
-    result = investigator_graph_compiled.invoke(
-        payload,
-        config=child_runnable_config(config),
-        context=runtime.context,
-    )
-
-    updates = {"investigator_target": result.get("investigator_target")}
-    if result.get("updated_strategy"):
-        updates["agent_strategies"] = {
-            investigator: result["updated_strategy"]
-        }
-    return updates
-
-
-def serial_killer_night_phase(
-    state: OrchestratorGraph,
-    config: RunnableConfig,
-    runtime: Runtime[GraphContext],
-):
-    """Single-actor night phase (see healer_night_phase): the serial killer picks a kill target;
-    reads serial_killer_player, writes serial_killer_target."""
-    serial_killer = state["serial_killer_player"]
-    assert serial_killer is not None  # routing only enters this phase while the serial killer is alive
-    payload: SerialKillerNightGraph = {
-        "previous_strategy": state.get("agent_strategies", {}).get(serial_killer, ""),
-        "strategy_points": "",
-        "current_day": state["current_day"],
-        "current_round": 0,
-        "day_channel": state.get("day_channel", []),
-        "day_summaries": state.get("day_summaries", []),
-        # Both public: the dead roster is announced, the cast census is counts-only (no identities).
-        "dead_roster": state.get("dead_roster", []),
-        "cast_role_counts": cast_role_counts(state.get("roles", {})),
-        "surviving_players": [
-            p
-            for p in seat_order(state["surviving_wolves"] + state["surviving_villagers"])
-            if p != serial_killer
-        ],
-        "player_id": serial_killer,
-        # Private: only this actor's own night record.
-        "night_actions": own_night_actions(state.get("night_actions", []), serial_killer, "serial_killer"),
-        "player_role": "serial_killer",
-        "human_player": serial_killer in state["human_players"],
-    }
-    result = serial_killer_graph_compiled.invoke(
-        payload,
-        config=child_runnable_config(config),
-        context=runtime.context,
-    )
-
-    updates = {"serial_killer_target": result.get("serial_killer_target")}
-    if result.get("updated_strategy"):
-        updates["agent_strategies"] = {
-            serial_killer: result["updated_strategy"]
-        }
-    return updates
-
-
-def vigilante_night_phase(
-    state: OrchestratorGraph,
-    config: RunnableConfig,
-    runtime: Runtime[GraphContext],
-):
-    """Single-actor night phase (see healer_night_phase): the vigilante may shoot or hold fire.
-
-    Reads vigilante_player + remaining bullets/results; "hold_fire" is normalized to None on the
-    way out (see below) so resolution skips a non-shot. Writes vigilante_target.
-    """
-    vigilante = state["vigilante_player"]
-    assert vigilante is not None  # routing only enters this phase while the vigilante is alive
-    payload: VigilanteNightGraph = {
-        "previous_strategy": state.get("agent_strategies", {}).get(vigilante, ""),
-        "strategy_points": "",
-        "current_day": state["current_day"],
-        "current_round": 0,
-        "day_channel": state.get("day_channel", []),
-        "day_summaries": state.get("day_summaries", []),
-        # Both public: the dead roster is announced, the cast census is counts-only (no identities).
-        "dead_roster": state.get("dead_roster", []),
-        "cast_role_counts": cast_role_counts(state.get("roles", {})),
-        "surviving_players": [
-            p
-            for p in seat_order(state["surviving_wolves"] + state["surviving_villagers"])
-            if p != vigilante
-        ],
-        "vigilante_bullets": state.get("vigilante_bullets", 0),
-        "vigilante_results": state.get("vigilante_results", []),
-        "player_id": vigilante,
-        # Private: only this actor's own night record.
-        "night_actions": own_night_actions(state.get("night_actions", []), vigilante, "vigilante"),
-        "player_role": "vigilante",
-        "human_player": vigilante in state["human_players"],
-    }
-    result = vigilante_graph_compiled.invoke(
-        payload,
-        config=child_runnable_config(config),
-        context=runtime.context,
-    )
-
-    target = result.get("vigilante_target")
-    # "hold_fire" is the no-shot sentinel — normalize to None so resolution skips it.
-    updates = {"vigilante_target": None if target == "hold_fire" else target}
-    if result.get("updated_strategy"):
-        updates["agent_strategies"] = {
-            vigilante: result["updated_strategy"]
-        }
-    return updates
+# One named night node per role of the pool that acts on its own at night.
+SOLO_NIGHT_PHASES = {
+    night_phase_name(role): solo_night_phase(role)
+    for role in roles if ROLE_SPECS[role].night_action and not ROLE_SPECS[role].pack
+}
 
 
 def build_parent_graph():
@@ -335,21 +146,18 @@ def build_parent_graph():
 
     START -> INITIALIZE_GAME -> DAY_PHASE -> DAY_RESOLUTION -> (check_game_end_day: END_GAME |
     NIGHT_START). NIGHT_START is the no-op night anchor -> (route_night_actors: the list of
-    present night phases, run in ONE parallel superstep — the codebase's static fan-out).
-    Every phase edges into NIGHT_RESOLUTION, the barrier, which resolves kills + investigation
-    and -> (check_game_end_night: ONE_MORE_DAY -> DAY_PHASE | END_GAME).
-    END_GAME -> POST_GAME_ANALYSIS -> END.
+    present night phases, run in ONE parallel superstep). Every phase edges into
+    NIGHT_RESOLUTION, the barrier, which resolves the night and -> (check_game_end_night:
+    ONE_MORE_DAY -> DAY_PHASE | END_GAME). END_GAME -> POST_GAME_ANALYSIS -> END.
     """
     parent_graph = StateGraph(OrchestratorGraph, context_schema=GraphContext)
 
     parent_graph.add_node("INITIALIZE_GAME", initialize_game)
     parent_graph.add_node("DAY_PHASE", day_phase)
     parent_graph.add_node("DAY_RESOLUTION", day_resolution)
-    parent_graph.add_node("WOLF_NIGHT_PHASE", wolf_night_phase)
-    parent_graph.add_node("HEALER_NIGHT_PHASE", healer_night_phase)
-    parent_graph.add_node("SERIAL_KILLER_NIGHT_PHASE", serial_killer_night_phase)
-    parent_graph.add_node("INVESTIGATOR_NIGHT_PHASE", investigator_night_phase)
-    parent_graph.add_node("VIGILANTE_NIGHT_PHASE", vigilante_night_phase)
+    parent_graph.add_node("PACK_NIGHT_PHASE", pack_night_phase)
+    for name, phase in SOLO_NIGHT_PHASES.items():
+        parent_graph.add_node(name, phase)
     parent_graph.add_node("NIGHT_START", night_start)
     parent_graph.add_node("NIGHT_RESOLUTION", night_resolution)
     parent_graph.add_node("ONE_MORE_DAY", one_more_day)
@@ -366,24 +174,12 @@ def build_parent_graph():
     )
     # List-returning router: NIGHT_START fans out every present night actor in one parallel
     # superstep. path_map is explicit because a list return defeats Literal inference.
-    parent_graph.add_conditional_edges(
-        "NIGHT_START",
-        route_night_actors,
-        [
-            "WOLF_NIGHT_PHASE",
-            "HEALER_NIGHT_PHASE",
-            "SERIAL_KILLER_NIGHT_PHASE",
-            "VIGILANTE_NIGHT_PHASE",
-            "INVESTIGATOR_NIGHT_PHASE",
-        ],
-    )
+    night_phases = ["PACK_NIGHT_PHASE", *SOLO_NIGHT_PHASES]
+    parent_graph.add_conditional_edges("NIGHT_START", route_night_actors, night_phases)
     # BSP barrier: all fan-out branches complete before the next superstep, so
-    # NIGHT_RESOLUTION sees every actor's committed target (collect_votes precedent).
-    parent_graph.add_edge("WOLF_NIGHT_PHASE", "NIGHT_RESOLUTION")
-    parent_graph.add_edge("HEALER_NIGHT_PHASE", "NIGHT_RESOLUTION")
-    parent_graph.add_edge("SERIAL_KILLER_NIGHT_PHASE", "NIGHT_RESOLUTION")
-    parent_graph.add_edge("VIGILANTE_NIGHT_PHASE", "NIGHT_RESOLUTION")
-    parent_graph.add_edge("INVESTIGATOR_NIGHT_PHASE", "NIGHT_RESOLUTION")
+    # NIGHT_RESOLUTION sees every actor's committed choice (collect_votes precedent).
+    for name in night_phases:
+        parent_graph.add_edge(name, "NIGHT_RESOLUTION")
     parent_graph.add_conditional_edges("NIGHT_RESOLUTION", check_game_end_night)
     parent_graph.add_edge("ONE_MORE_DAY", "DAY_PHASE")
     parent_graph.add_edge("END_GAME", "POST_GAME_ANALYSIS")
