@@ -71,6 +71,46 @@ export const ROOMS: Record<RoomPicture, RoomMeasure> = {
     card: [1040, 630],
     warm: '255,76,52',
   },
+  // The 2026-10-07 rooms (docs/night_rooms_brief.md), measured by scripts/fit-night-rooms.mjs;
+  // the plan's table, so one card spot. Light: amber for the town, the neutral side's
+  // moon-silver (the speculator's lamp, the fortune teller's crystal ball), the necromancer's
+  // sickly green to match his figure.
+  sentinel: {
+    glass: { x0: 893, x1: 1339, y0: 252, y1: 525, r: 49 },
+    candle: [1245, 561],
+    card: [1045, 628],
+    warm: '255,180,96',
+  },
+  trailseer: {
+    glass: { x0: 892, x1: 1338, y0: 253, y1: 525, r: 46 },
+    candle: [1247, 549],
+    card: [1045, 628],
+    warm: '255,180,96',
+  },
+  sigilist: {
+    glass: { x0: 892, x1: 1337, y0: 253, y1: 526, r: 46 },
+    candle: [1242, 550],
+    card: [1045, 628],
+    warm: '255,180,96',
+  },
+  speculator: {
+    glass: { x0: 891, x1: 1338, y0: 254, y1: 527, r: 48 },
+    candle: [1244, 579],
+    card: [1045, 628],
+    warm: '214,224,240',
+  },
+  necromancer: {
+    glass: { x0: 892, x1: 1338, y0: 252, y1: 524, r: 48 },
+    candle: [1257, 576],
+    card: [1045, 628],
+    warm: '190,230,110',
+  },
+  fortune_teller: {
+    glass: { x0: 891, x1: 1339, y0: 252, y1: 526, r: 48 },
+    candle: [1252, 589],
+    card: [1045, 628],
+    warm: '214,224,240',
+  },
 };
 
 /**

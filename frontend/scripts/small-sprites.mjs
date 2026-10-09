@@ -25,9 +25,22 @@ const LIST = [
   ['props/jar-lid.webp', 0.35],
   ['props/plate.webp', 0.45],
   // the deal's small cards (Card.tsx SmallCard): 86 units wide, 720×960 → 180×240
-  ...['villager', 'wolf', 'investigator', 'vigilante', 'healer', 'serial_killer'].map(
-    (r) => [`roles/${r}.webp`, 0.25],
-  ),
+  ...[
+    'villager',
+    'wolf',
+    'investigator',
+    'vigilante',
+    'healer',
+    'serial_killer',
+    'sentinel',
+    'trailseer',
+    'sigilist',
+    'chanteuse',
+    'illusionist',
+    'necromancer',
+    'speculator',
+    'fortune_teller',
+  ].map((r) => [`roles/${r}.webp`, 0.25]),
   // only the night's pair is drawn live (a night room's glass); the car's hours are baked
   ['window/night-far.webp', 0.65],
   ['window/night-near.webp', 0.75],

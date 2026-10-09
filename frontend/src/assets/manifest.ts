@@ -136,12 +136,26 @@ import roomInvestigator from './sprites/rooms/investigator.webp';
 import roomVigilante from './sprites/rooms/vigilante.webp';
 import roomSerialKiller from './sprites/rooms/serial_killer.webp';
 import roomWolf from './sprites/rooms/wolf.webp';
+import roomSentinel from './sprites/rooms/sentinel.webp';
+import roomTrailseer from './sprites/rooms/trailseer.webp';
+import roomSigilist from './sprites/rooms/sigilist.webp';
+import roomSpeculator from './sprites/rooms/speculator.webp';
+import roomNecromancer from './sprites/rooms/necromancer.webp';
+import roomFortuneTeller from './sprites/rooms/fortune_teller.webp';
 import roleVillager from './sprites/roles/villager.webp';
 import roleWolf from './sprites/roles/wolf.webp';
 import roleInvestigator from './sprites/roles/investigator.webp';
 import roleVigilante from './sprites/roles/vigilante.webp';
 import roleHealer from './sprites/roles/healer.webp';
 import roleSerialKiller from './sprites/roles/serial_killer.webp';
+import roleSentinel from './sprites/roles/sentinel.webp';
+import roleTrailseer from './sprites/roles/trailseer.webp';
+import roleSigilist from './sprites/roles/sigilist.webp';
+import roleChanteuse from './sprites/roles/chanteuse.webp';
+import roleIllusionist from './sprites/roles/illusionist.webp';
+import roleNecromancer from './sprites/roles/necromancer.webp';
+import roleSpeculator from './sprites/roles/speculator.webp';
+import roleFortuneTeller from './sprites/roles/fortune_teller.webp';
 import owlBaseShadow from './sprites/shadow/day/owl/base.webp';
 import owlTalkingShadow from './sprites/shadow/day/owl/talking.webp';
 import owlThinkingShadow from './sprites/shadow/day/owl/thinking.webp';
@@ -277,6 +291,14 @@ import roleInvestigatorTile from './sprites/roles/investigator@small.webp';
 import roleVigilanteTile from './sprites/roles/vigilante@small.webp';
 import roleHealerTile from './sprites/roles/healer@small.webp';
 import roleSerialKillerTile from './sprites/roles/serial_killer@small.webp';
+import roleSentinelTile from './sprites/roles/sentinel@small.webp';
+import roleTrailseerTile from './sprites/roles/trailseer@small.webp';
+import roleSigilistTile from './sprites/roles/sigilist@small.webp';
+import roleChanteuseTile from './sprites/roles/chanteuse@small.webp';
+import roleIllusionistTile from './sprites/roles/illusionist@small.webp';
+import roleNecromancerTile from './sprites/roles/necromancer@small.webp';
+import roleSpeculatorTile from './sprites/roles/speculator@small.webp';
+import roleFortuneTellerTile from './sprites/roles/fortune_teller@small.webp';
 import windowNightFarSmall from './sprites/window/night-far@small.webp';
 import windowNightNearSmall from './sprites/window/night-near@small.webp';
 
@@ -402,14 +424,37 @@ export type CarPicture = 'day' | 'night';
  * role, and the pack's. Cropped to the stage's band, the glass cleared. Recipe: stage_architecture §4.
  */
 export type RoomPicture =
-  'healer' | 'investigator' | 'vigilante' | 'serial_killer' | 'wolf';
+  | 'healer'
+  | 'investigator'
+  | 'vigilante'
+  | 'serial_killer'
+  | 'wolf'
+  | 'sentinel'
+  | 'trailseer'
+  | 'sigilist'
+  | 'speculator'
+  | 'necromancer'
+  | 'fortune_teller';
 
 /**
  * The role figures (alpha): each role's felt doll, 720×960, scaled to the full height, centred,
  * feet on the bottom edge. Drawn on the role cards through `roleFigure` (paint/role-kit.ts).
  */
 export type RoleSprite =
-  'villager' | 'wolf' | 'investigator' | 'vigilante' | 'healer' | 'serial_killer';
+  | 'villager'
+  | 'wolf'
+  | 'investigator'
+  | 'vigilante'
+  | 'healer'
+  | 'serial_killer'
+  | 'sentinel'
+  | 'trailseer'
+  | 'sigilist'
+  | 'chanteuse'
+  | 'illusionist'
+  | 'necromancer'
+  | 'speculator'
+  | 'fortune_teller';
 
 /*
  * The atmosphere's pictures (stage_architecture §4 "Atmosphere"): each day figure's cast
@@ -603,6 +648,12 @@ export const SPRITES: {
     vigilante: roomVigilante,
     serial_killer: roomSerialKiller,
     wolf: roomWolf,
+    sentinel: roomSentinel,
+    trailseer: roomTrailseer,
+    sigilist: roomSigilist,
+    speculator: roomSpeculator,
+    necromancer: roomNecromancer,
+    fortune_teller: roomFortuneTeller,
   },
   roles: {
     villager: roleVillager,
@@ -611,6 +662,14 @@ export const SPRITES: {
     vigilante: roleVigilante,
     healer: roleHealer,
     serial_killer: roleSerialKiller,
+    sentinel: roleSentinel,
+    trailseer: roleTrailseer,
+    sigilist: roleSigilist,
+    chanteuse: roleChanteuse,
+    illusionist: roleIllusionist,
+    necromancer: roleNecromancer,
+    speculator: roleSpeculator,
+    fortune_teller: roleFortuneTeller,
   },
   shadow: {
     day: {
@@ -815,6 +874,14 @@ export const SPRITES: {
       vigilante: roleVigilanteTile,
       healer: roleHealerTile,
       serial_killer: roleSerialKillerTile,
+      sentinel: roleSentinelTile,
+      trailseer: roleTrailseerTile,
+      sigilist: roleSigilistTile,
+      chanteuse: roleChanteuseTile,
+      illusionist: roleIllusionistTile,
+      necromancer: roleNecromancerTile,
+      speculator: roleSpeculatorTile,
+      fortune_teller: roleFortuneTellerTile,
     },
     window: { night: { far: windowNightFarSmall, near: windowNightNearSmall } },
   },

@@ -523,6 +523,13 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   `claude_artifacts/design/rasters/rooms/{healer,invest,vigilante,serial_killer,wolf}.png`
   (1536×1024, all to one plan: `refs/compartment-night.png`). `SPRITES.rooms[room]`, by the acting
   seat's role (the request's kind when the role is unknown); the wolves' room is the pack's.
+  Six more (2026-10-07, `docs/night_rooms_brief.md`): `{sentinel,trailseer,sigilist,speculator,
+  necromancer,fortune_teller}.png`, painted on the same plan with an empty white glass, made by
+  `scripts/fit-night-rooms.mjs` (the glass flooded clear from its middle, each pixel's whiteness
+  its transparency and its colour unmixed from the white, so the rim leaves no halo; the same
+  crop and encoding as below; it prints the glass rect and the light's point). The chanteuse
+  and the illusionist use the pack's room. Their light: amber for the town, moon-silver for the
+  neutral side's lamp and crystal ball, the necromancer's sickly green; no glass tint.
   Plan and light: `paint/compartment.ts` (`ROOMS` holds every measure below, in master px).
   - **Glass.** The vigilante's master has real alpha in its glass, kept. The other four have a
     grey/white checkerboard painted in; converted with Pillow + scipy (a one-off script, not in the

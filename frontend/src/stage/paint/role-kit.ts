@@ -51,4 +51,12 @@ export const ROLE_ARTICLE: Record<string, string> = {
   vigilante: 'the vigilante',
   wolf: 'a wolf',
   serial_killer: 'the serial killer',
+  sentinel: 'the sentinel',
+  trailseer: 'the trailseer',
+  sigilist: 'the sigilist',
+  chanteuse: 'the chanteuse',
+  illusionist: 'the illusionist',
+  necromancer: 'the necromancer',
+  speculator: 'the speculator',
+  fortune_teller: 'the fortune teller',
 };

@@ -51,6 +51,15 @@ export const ROOM_OF: Record<string, RoomPicture> = {
   vigilante: 'vigilante',
   serial_killer: 'serial_killer',
   wolf: 'wolf',
+  // the two wolf skills play in the pack's room (owner, 2026-10-07)
+  chanteuse: 'wolf',
+  illusionist: 'wolf',
+  sentinel: 'sentinel',
+  trailseer: 'trailseer',
+  sigilist: 'sigilist',
+  speculator: 'speculator',
+  necromancer: 'necromancer',
+  fortune_teller: 'fortune_teller',
 };
 
 export interface NightRoomProps extends Pick<

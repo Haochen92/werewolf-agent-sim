@@ -40,7 +40,19 @@ describe('sprite manifest', () => {
 
   it('has a night room for each acting role and the pack, cropped to the stage’s band', () => {
     expect(Object.keys(SPRITES.rooms).sort()).toEqual(
-      ['healer', 'investigator', 'serial_killer', 'vigilante', 'wolf'].sort(),
+      [
+        'healer',
+        'investigator',
+        'serial_killer',
+        'vigilante',
+        'wolf',
+        'sentinel',
+        'trailseer',
+        'sigilist',
+        'speculator',
+        'necromancer',
+        'fortune_teller',
+      ].sort(),
     );
     for (const img of Object.values(SPRITES.rooms))
       expect([img.width, img.height]).toEqual([1536, 915]);
@@ -48,7 +60,22 @@ describe('sprite manifest', () => {
 
   it('has a felt figure for every role, on one 3:4 canvas', () => {
     expect(Object.keys(SPRITES.roles).sort()).toEqual(
-      ['healer', 'investigator', 'serial_killer', 'vigilante', 'villager', 'wolf'].sort(),
+      [
+        'healer',
+        'investigator',
+        'serial_killer',
+        'vigilante',
+        'villager',
+        'wolf',
+        'sentinel',
+        'trailseer',
+        'sigilist',
+        'chanteuse',
+        'illusionist',
+        'necromancer',
+        'speculator',
+        'fortune_teller',
+      ].sort(),
     );
     for (const img of Object.values(SPRITES.roles))
       expect([img.width, img.height]).toEqual([720, 960]);
