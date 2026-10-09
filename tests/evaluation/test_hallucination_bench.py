@@ -33,10 +33,11 @@ def test_state_hydrates_to_engine_types():
 def test_payload_comes_from_the_engine_builders_with_role_gating():
     discuss = turn_payload(_case("day_discussion"))
     assert discuss["previous_strategy"] == "watch p1"
-    assert discuss["investigator_results"][0].role_revealed == "wolf"  # the investigator's own results
+    # the investigator's own results, rebuilt from the nine-seat investigator_results as its night record
+    assert [(r.actor, r.target, r.result) for r in discuss["night_actions"]] == [("p3", "p1", "suspicious")]
     vote = turn_payload(_case("day_vote", speaker="p2", role="villager"))
     assert vote["allow_abstain"] is True
-    assert "investigator_results" not in vote  # never on another role's payload
+    assert "night_actions" not in vote  # never on another role's payload
 
 
 def test_summary_compares_arms_case_by_case():
@@ -117,7 +118,7 @@ def test_the_night_record_is_rebuilt_from_stored_targets_for_living_actors_only(
     got = [(r.day, r.actor, r.target) for r in recs]
     assert (1, "h", "t") in got and (1, "v", "k") in got and (1, "wolves", "t") in got
     assert not any(a == "h" and d == 2 for d, a, _ in got)  # voted out on day 2: no night-2 protection
-    assert "serial killer" in next(r for r in recs if r.day == 2 and r.actor == "wolves").outcome
+    assert next(r for r in recs if r.day == 2 and r.actor == "wolves").result == "immune"  # the SK's immunity
 
 
 def test_a_resummarized_arm_swaps_only_the_earlier_discussion_summaries():

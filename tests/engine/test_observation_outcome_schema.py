@@ -9,7 +9,7 @@ from Agents.schemas.memory import Observation
 
 
 def _obs(**kw):
-    base = dict(perspective="wolf", action_phase="day_vote", situation="s",
+    base = dict(perspective="chanteuse", action_phase="day_vote", situation="s",
                information_landscape="il", game_phase="mid", approach="voted off-pile",
                impact_on_final_game_outcome="NET NEGATIVE: this vote got me lynched next day",
                immediate_response="it bought survival that turn", net_verdict="negative")

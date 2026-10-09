@@ -13,6 +13,8 @@ Design constraints (read/tactic design record §3):
   every scanned cell is a denominator entry by construction.
 - Deterministic post-screens are STRUCTURAL only (role words, player ids, quote-not-in-record) — the
   semantic-eval-≠-string-parse rule; flagged rows never feed lift (tell_credit drops them).
+
+Reads nine-seat records; the prompts' rules block renders only for a ten-seat lineup (``_game_rules``).
 """
 
 from __future__ import annotations
@@ -134,16 +136,26 @@ def screen_tell(tell: dict, day_text: str) -> list[str]:
     return flags
 
 
+def _game_rules(rec: dict) -> str:
+    """The rules block of the record's dealt lineup. The loop's records are nine-seat, whose rules
+    block is retired: a record of a retired role raises ValueError (the day-call's failure path)."""
+    from Agents.prompts import rules_block
+    from Agents.schemas.roles import ROLE_SPECS
+
+    cast = rec.get("lineup") or list(rec["roles"].values())
+    if any(role not in ROLE_SPECS or ROLE_SPECS[role].retired for role in cast):
+        raise ValueError(f"{rec.get('game_id', '')}: a nine-seat record has no rules block to render")
+    return rules_block(cast)
+
+
 def _mine_day(llm, prompt_template: str, rec: dict, day: int, days: list[int], version: str,
               channel: str) -> list[dict]:
-    from Agents.prompts.common import GAME_RULES
-
     roles_line = ", ".join(f"{p} = {r}" for p, r in sorted(rec["roles"].items()))
     prior = "\n\n".join(_render_day(rec, d) for d in days if d < day) or "(game start)"
     # discussion-layer call excludes the focus day's vote block: temporally the vote hasn't happened
     day_text = _render_day(rec, day, include_votes=(channel != "discussion"))
     prompt = prompt_template.format(
-        game_rules=GAME_RULES, roles_line=roles_line,
+        game_rules=_game_rules(rec), roles_line=roles_line,
         prior_days=prior, focus_day=day, day_record=day_text,
     )
     result = llm.invoke(prompt)
@@ -246,15 +258,13 @@ def _render_checklist(items: list[dict]) -> str:
 
 def _build_prompt_parts(template: str, rec: dict, channel: str, checklist: dict,
                         split_view: bool) -> tuple[str, str]:
-    from Agents.prompts.common import GAME_RULES
-
     days = _game_days(rec)
     if split_view and channel == "discussion":
         transcript = "\n\n".join(_strip_vote_blocks(_render_day(rec, d)) for d in days)
     else:
         transcript = "\n\n".join(_render_day(rec, d) for d in days)
     prefix_tpl, tail_tpl = template.split("FOCUS PLAYER:", 1)
-    prefix = prefix_tpl.format(game_rules=GAME_RULES, transcript=transcript,
+    prefix = prefix_tpl.format(game_rules=_game_rules(rec), transcript=transcript,
                                channel=channel.upper(),
                                checklist=_render_checklist(checklist[channel]))
     return prefix, "FOCUS PLAYER:" + tail_tpl

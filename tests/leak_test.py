@@ -14,9 +14,18 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import Any
 
+from Agents.rules.night_record import PACK_ACTOR
+from Agents.schemas.roles import ROLE_SPECS
+
 NO_WOLF_MESSAGES = "No messages yet."
 NO_INVESTIGATIONS = "No investigations yet."
 NO_VIGILANTE_RESULTS = "Nothing learned from your shots yet."
+
+
+def _is_wolf(role: str) -> bool:
+    """A role of the pack: the chanteuse and the illusionist (and the nine-seat wolf, for old logs)."""
+    spec = ROLE_SPECS.get(role)
+    return spec is not None and spec.pack
 
 
 def _record_leak(leaks: list[str], message: str) -> None:
@@ -29,10 +38,10 @@ def check_wolf_identity_isolation(
 ) -> list[str]:
     """Wolf names should only appear in wolf agents' private prompt fields."""
     leaks: list[str] = []
-    wolf_names = [player for player, role in roles.items() if role == "wolf"]
+    wolf_names = [player for player, role in roles.items() if _is_wolf(role)]
 
     for entry in prompt_log:
-        if entry["player_role"] == "wolf":
+        if _is_wolf(entry["player_role"]):
             continue
 
         prompt_input = entry["prompt_input"]
@@ -56,10 +65,14 @@ def check_wolf_identity_isolation(
     return leaks
 
 
-# The output_keys a WOLF player's decision produces: wolf_channel (night discussion+vote),
-# day_channel (day discussion), day_votes (day elimination vote). As of 2026-07-05 the wolf
-# channel rides all three (day exposure added); any other pairing carrying it is a leak.
-_WOLF_OUTPUT_KEYS = frozenset({"wolf_channel", "wolf_vote", "day_channel", "day_votes"})
+# The output_keys a WOLF player's decision produces: wolf_channel (the pack's chat), kill_target
+# (the carrier's kill), each wolf's skill field (block_target, conceal), day_channel (day
+# discussion), day_votes (day elimination vote); wolf_vote is the nine-seat pack vote, kept for
+# old logs. The wolf channel rides all of them; any other pairing carrying it is a leak.
+_WOLF_OUTPUT_KEYS = frozenset({
+    "wolf_channel", "wolf_vote", "kill_target", "day_channel", "day_votes",
+    *(spec.target_field for spec in ROLE_SPECS.values() if spec.pack and spec.target_field),
+})
 
 
 def check_wolf_channel_isolation(prompt_log: list[dict[str, Any]]) -> list[str]:
@@ -73,7 +86,7 @@ def check_wolf_channel_isolation(prompt_log: list[dict[str, Any]]) -> list[str]:
     """
     leaks: list[str] = []
     for entry in prompt_log:
-        if entry["player_role"] == "wolf" and entry["output_key"] in _WOLF_OUTPUT_KEYS:
+        if _is_wolf(entry["player_role"]) and entry["output_key"] in _WOLF_OUTPUT_KEYS:
             continue
 
         wolf_channel = entry["prompt_input"]["wolf_channel"]
@@ -88,13 +101,14 @@ def check_wolf_channel_isolation(prompt_log: list[dict[str, Any]]) -> list[str]:
 
 
 def check_investigator_results_isolation(prompt_log: list[dict[str, Any]]) -> list[str]:
-    """Investigation results should only appear in investigator prompts."""
+    """Investigation results should only appear in investigator prompts. A nine-seat field: the
+    ten-seat game keeps every result in the night record (check_night_record_isolation)."""
     leaks: list[str] = []
     for entry in prompt_log:
         if entry["player_role"] == "investigator":
             continue
 
-        results = entry["prompt_input"]["investigator_results"]
+        results = entry["prompt_input"].get("investigator_results", "")
         if results and results != NO_INVESTIGATIONS:
             _record_leak(
                 leaks,
@@ -120,7 +134,8 @@ def check_healer_target_absent(prompt_log: list[dict[str, Any]]) -> list[str]:
 
 
 def check_vigilante_results_isolation(prompt_log: list[dict[str, Any]]) -> list[str]:
-    """Vigilante shot feedback (SK confirmations) should only appear in vigilante prompts."""
+    """Vigilante shot feedback (SK confirmations) should only appear in vigilante prompts. A
+    nine-seat field, like investigator_results (see check_night_record_isolation)."""
     leaks: list[str] = []
     for entry in prompt_log:
         if entry["player_role"] == "vigilante":
@@ -134,6 +149,35 @@ def check_vigilante_results_isolation(prompt_log: list[dict[str, Any]]) -> list[
                 "received vigilante_results",
             )
 
+    return leaks
+
+
+def check_night_record_isolation(
+    prompt_log: list[dict[str, Any]], records: Iterable[Any], roles: dict[str, str]
+) -> list[str]:
+    """A night record's result is its actor's alone: its outcome text may reach only the actor's
+    own prompts, and a pack record (actor "wolves") only the wolves'. ``records`` is the game's
+    night_actions (NightActionRecord objects or their dicts); the ten-seat successor of the
+    investigator_results / vigilante_results checks."""
+    leaks: list[str] = []
+    for record in records:
+        actor = record["actor"] if isinstance(record, dict) else record.actor
+        outcome = record["outcome"] if isinstance(record, dict) else record.outcome
+        if not outcome or not outcome.strip():
+            continue
+        for entry in prompt_log:
+            if actor == PACK_ACTOR:
+                allowed = _is_wolf(roles.get(entry["player_id"], entry["player_role"]))
+            else:
+                allowed = entry["player_id"] == actor
+            if allowed:
+                continue
+            if outcome in entry["prompt_input"].get("night_actions", ""):
+                _record_leak(
+                    leaks,
+                    f"LEAK: {entry['player_id']} ({entry['player_role']}) received "
+                    f"{actor}'s night record: {outcome!r}",
+                )
     return leaks
 
 
@@ -306,6 +350,7 @@ def run_leak_tests(
     gated_candidates: Iterable[str] = (),
     reads_log: Iterable[dict[str, Any]] = (),
     public_text: str = "",
+    night_records: Iterable[Any] = (),
 ) -> list[str]:
     print("=== Running Leak Tests ===")
     leaks = [
@@ -313,6 +358,7 @@ def run_leak_tests(
         *check_wolf_channel_isolation(prompt_log),
         *check_investigator_results_isolation(prompt_log),
         *check_vigilante_results_isolation(prompt_log),
+        *check_night_record_isolation(prompt_log, night_records, roles),
         *check_healer_target_absent(prompt_log),
         *check_eliminated_players_excluded(prompt_log, eliminated_players),
         *check_gated_candidate_isolation(prompt_log, gated_candidates),

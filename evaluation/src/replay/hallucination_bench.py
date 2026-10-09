@@ -16,6 +16,9 @@ it would have them: game-master summaries are labelled as such, ballot lines tak
 and the private night record is rebuilt from the case's stored night targets when the state
 predates it. What players and the summariser wrote stays as it was, unless an arm re-summarises
 the earlier days (``resummarize``), which tests the current summariser.
+
+Reads nine-seat records: the frozen bench is nine-seat, and the ten-seat prompts render only a case
+whose state carries a ten-seat ``lineup``; a nine-seat case's payload still builds, its prompt does not.
 """
 
 from __future__ import annotations
@@ -79,34 +82,41 @@ def hydrate_state(state: dict[str, Any]) -> dict[str, Any]:
 
 
 def night_actions_from_resolutions(resolutions: list[dict], roles: dict[str, str], day: int,
-                                   lynches: list[dict] | None = None) -> list[NightActionRecord]:
+                                   lynches: list[dict] | None = None,
+                                   investigations: list[dict] | None = None) -> list[NightActionRecord]:
     """The private night record as the engine would have written it, from stored night targets
-    (``wolves_target`` / ``healer_target`` / ``serial_killer_target`` / ``vigilante_target`` per night),
+    (``wolves_target`` / ``healer_target`` / ``serial_killer_target`` / ``vigilante_target`` per night,
+    and the investigator's checks from ``investigations``, the nine-seat ``investigator_results``),
     for the nights before ``day``. Actors are the role holders alive at each nightfall (``lynches``:
     the day resolutions, so a player voted out that day doesn't act). Holding fire can't be told from
     not being asked, so it is left out."""
+    from Agents.rules.night import choices_from_targets, resolve_night
     from Agents.rules.night_record import night_action_records
-    from Agents.rules.resolution import collect_attacks, resolve_attacks
 
     night_death: dict[str, int] = {}  # killed on night d: still acted that night
     for r in resolutions:
         for p in r.get("deaths") or []:
             night_death.setdefault(p, int(r["day"]))
     lynch_day = {x["voted_player"]: int(x["day"]) for x in lynches or [] if x.get("voted_player")}
+    checked = {int(x["day"]): x["player_investigated"] for x in investigations or []}
+    nights = {int(r["day"]): r for r in resolutions}
+    for d in checked:  # a night whose only stored action is the check
+        nights.setdefault(d, {"day": d})
     records: list[NightActionRecord] = []
-    for r in sorted(resolutions, key=lambda r: int(r["day"])):
+    for r in sorted(nights.values(), key=lambda r: int(r["day"])):
         d = int(r["day"])
         if d >= day:
             continue
-        holder = lambda role: next((p for p, x in roles.items() if x == role  # noqa: E731
-                                    and night_death.get(p, 10**9) >= d and lynch_day.get(p, 10**9) > d), None)
-        sk = holder("serial_killer")
-        attacks = collect_attacks(r.get("wolves_target"), r.get("serial_killer_target"), r.get("vigilante_target"))
-        records += night_action_records(
+        alive = lambda p: night_death.get(p, 10**9) >= d and lynch_day.get(p, 10**9) > d  # noqa: E731
+        holder = lambda role: next((p for p, x in roles.items() if x == role and alive(p)), None)  # noqa: E731
+        wolves_alive = [p for p, x in roles.items() if x == "wolf" and alive(p)]
+        choices = choices_from_targets(
             d, wolves_target=r.get("wolves_target"), healer_target=r.get("healer_target"),
             serial_killer_target=r.get("serial_killer_target"), vigilante_target=r.get("vigilante_target"),
-            attacks_on=attacks, verdicts=resolve_attacks(attacks, r.get("healer_target"), sk), roles=roles,
-            healer=holder("healer"), serial_killer=sk, vigilante=holder("vigilante"))
+            investigator_target=checked.get(d),
+            healer=holder("healer"), serial_killer=holder("serial_killer"), vigilante=holder("vigilante"),
+            investigator=holder("investigator"), surviving_wolves=wolves_alive)
+        records += night_action_records(choices, resolve_night(choices, roles, d), roles)
     return records
 
 
@@ -167,7 +177,8 @@ def turn_payload(case: dict[str, Any], memory: str = "none",
     if "night_actions" not in case["state"]:  # a state from before the record existed
         facts = case.get("facts") or {}
         state["night_actions"] = night_actions_from_resolutions(
-            facts.get("night_resolutions") or [], state["roles"], case["day"], facts.get("day_resolutions"))
+            facts.get("night_resolutions") or [], state["roles"], case["day"], facts.get("day_resolutions"),
+            case["state"].get("investigator_results"))
     if summaries is not None:
         state["day_summaries"] = _resummarized(case, state, summaries)
     speaker, role = case["speaker"], case["role"]
@@ -195,22 +206,31 @@ def turn_payload(case: dict[str, Any], memory: str = "none",
     return payload
 
 
+def turn_template(case: dict[str, Any], payload: dict[str, Any]) -> tuple[Any, type, str]:
+    """The production template, output schema and output key of the case's turn, for the dealt
+    lineup on its payload. A nine-seat case (no lineup, or a retired role) has none: ValueError."""
+    from Agents.nodes.day.actors import DISCUSS_PROMPTS, VOTE_PROMPTS
+    from Agents.schemas import day_discuss_output, day_vote_output
+
+    lineup = payload.get("lineup") or []
+    if not lineup or case["role"] not in DISCUSS_PROMPTS:
+        raise ValueError(f"{case.get('case_id', '')}: a nine-seat case ({case['role']}) has no ten-seat prompt")
+    if case["phase"] == "day_discussion":
+        return DISCUSS_PROMPTS[case["role"]], day_discuss_output(lineup), "day_channel"
+    return VOTE_PROMPTS[case["role"]], day_vote_output(lineup), "day_votes"
+
+
 def generate(case: dict[str, Any], n: int, memory: str = "none",
              summaries: dict[str, dict] | None = None) -> list[dict[str, Any]]:
     """Sample the turn ``n`` times on the process's game model; each sample's text units."""
     from langchain_core.callbacks import UsageMetadataCallbackHandler
 
     from Agents.llm_factory import get_llm
-    from Agents.nodes.day.actors import DISCUSS_PROMPTS, VOTE_PROMPTS
     from Agents.prompts.prompt_inputs import build_agent_prompt_input
-    from Agents.schemas import DayDiscussOutput, DayVoteOutput
     from Agents.turn.action_space import output_schema_with_legal_targets, valid_targets_for_action
 
     payload = turn_payload(case, memory, summaries)
-    if case["phase"] == "day_discussion":
-        template, schema, key = DISCUSS_PROMPTS[case["role"]], DayDiscussOutput, "day_channel"
-    else:
-        template, schema, key = VOTE_PROMPTS[case["role"]], DayVoteOutput, "day_votes"
+    template, schema, key = turn_template(case, payload)
     bound = output_schema_with_legal_targets(schema, key, valid_targets_for_action(payload, key))
     chain = template | get_llm().with_structured_output(bound)
     prompt_input = build_agent_prompt_input(payload)

@@ -164,16 +164,14 @@ def turn_variants(case: dict) -> dict[str, dict]:
 
 def _render(case: dict) -> tuple[Any, type, dict]:
     """The production template, its legal-target schema and its input for one discussion turn."""
-    from Agents.nodes.day.actors import DISCUSS_PROMPTS
     from Agents.prompts.prompt_inputs import build_agent_prompt_input
-    from Agents.schemas import DayDiscussOutput
     from Agents.turn.action_space import output_schema_with_legal_targets, valid_targets_for_action
-    from evaluation.src.replay.hallucination_bench import turn_payload
+    from evaluation.src.replay.hallucination_bench import turn_payload, turn_template
 
     payload = turn_payload(case)
-    bound = output_schema_with_legal_targets(
-        DayDiscussOutput, "day_channel", valid_targets_for_action(payload, "day_channel"))
-    return DISCUSS_PROMPTS[case["role"]], bound, build_agent_prompt_input(payload)
+    template, schema, key = turn_template(case, payload)
+    bound = output_schema_with_legal_targets(schema, key, valid_targets_for_action(payload, key))
+    return template, bound, build_agent_prompt_input(payload)
 
 
 def _text(template: Any, prompt_input: dict) -> str:

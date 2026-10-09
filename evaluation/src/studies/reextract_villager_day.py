@@ -10,6 +10,9 @@ shows the lever, the full DAG + live rewiring follow.
 
   poetry run python evaluation/src/studies/reextract_villager_day.py --limit 2   # smoke
   poetry run python evaluation/src/studies/reextract_villager_day.py             # full 20 games
+
+Reads nine-seat records: their rules block is retired, so the prompt takes the rules of the
+inputs' ten-seat ``lineup`` (as the live extraction does) and a nine-seat source no longer reruns.
 """
 
 from __future__ import annotations
@@ -28,7 +31,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from Agents.llm_factory import get_llm_pro, get_llm_pro_backup
 from Agents.memory.extraction import extraction_inputs_from_frozen_case
 from Agents.memory.persistence import memory_store_paths
-from Agents.prompts import EPISTEMIC_STATUS_RULE, GAME_RULES
+from Agents.prompts import EPISTEMIC_STATUS_RULE, rules_block
 from Agents.prompts.extraction import VILLAGER_DAY_EXTRACTION_PROMPT
 from Agents.schemas.memory import StoredObservation, VillagerDayExtraction, VillagerDayObservation
 from evaluation.src.core.manifest import build_manifest
@@ -56,7 +59,7 @@ def _build_prompt(inputs: dict[str, str]) -> str:
     str.format): replace each known placeholder token in turn; inserted content is never re-scanned."""
     prompt = VILLAGER_DAY_EXTRACTION_PROMPT
     subs = {
-        "{game_rules}": GAME_RULES,
+        "{game_rules}": rules_block(inputs.get("lineup") or []),
         "{epistemic_status_rule}": EPISTEMIC_STATUS_RULE,
         "{formatted_roles}": inputs["formatted_roles"],
         "{formatted_discussions}": inputs["formatted_discussions"],

@@ -11,20 +11,19 @@ from logging import getLogger
 from Agents.prompts.prompt_formatters import (
     format_night_actions_postgame,
     format_day_channel_postgame,
-    format_investigator_results,
     format_roles,
     format_strategy_notes_postgame,
     format_wolf_channel,
 )
 from Agents.prompts import (
     EPISTEMIC_STATUS_RULE,
-    GAME_RULES,
     POSTGAME_EXTRACTION_PROMPT,
     ROLE_EXTRACTION_PREFIX,
     ROLE_EXTRACTION_TAIL,
     ROLE_PHASE_EXTRACTION_TAIL,
     SITUATION_STANDARDS,
 )
+from Agents.prompts.compose import rules_block
 from Agents.prompts.extraction.cell import (
     CELL_EXTRACTION_PREFIX,
     CELL_OBSERVATION_TAIL,
@@ -77,8 +76,6 @@ def format_extraction_inputs(state: OrchestratorGraph) -> dict[str, str]:
         )
         + "\n\n=== Wolf Night Discussions ===\n"
         + format_wolf_channel(state.get("wolf_channel", []))
-        + "\n\n=== Investigator Results ===\n"
-        + format_investigator_results(state.get("investigator_results", []))
         # Every night actor's exact actions and outcomes (post-game, so the full record is
         # allowed): without it the extractor inferred night tactics from prose notes (audit
         # 2026-10-03, finding 12).
@@ -92,6 +89,7 @@ def format_extraction_inputs(state: OrchestratorGraph) -> dict[str, str]:
 
     return {
         "formatted_roles": formatted_roles,
+        "lineup": list(state.get("lineup", [])),
         "formatted_discussions": formatted_discussions,
         "formatted_strategy_notes": formatted_strategy_notes,
         "formatted_previous_strategies": (
@@ -106,7 +104,7 @@ def build_extraction_prompt(inputs: dict[str, str]) -> str:
     return POSTGAME_EXTRACTION_PROMPT.format(
         situation_standards=SITUATION_STANDARDS,
         epistemic_status_rule=EPISTEMIC_STATUS_RULE,
-        game_rules=GAME_RULES,
+        game_rules=rules_block(inputs.get("lineup") or []),
         **inputs,
     )
 
@@ -118,7 +116,7 @@ def build_role_extraction_prefix(inputs: dict[str, str]) -> str:
     return ROLE_EXTRACTION_PREFIX.format(
         situation_standards=SITUATION_STANDARDS,
         epistemic_status_rule=EPISTEMIC_STATUS_RULE,
-        game_rules=GAME_RULES,
+        game_rules=rules_block(inputs.get("lineup") or []),
         **inputs,
     )
 
@@ -173,7 +171,7 @@ def build_cell_extraction_prefix(inputs: dict[str, str]) -> str:
     return CELL_EXTRACTION_PREFIX.format(
         situation_quality=SITUATION_QUALITY_STANDARDS,
         epistemic_status_rule=EPISTEMIC_STATUS_RULE,
-        game_rules=GAME_RULES,
+        game_rules=rules_block(inputs.get("lineup") or []),
         **inputs,
     )
 

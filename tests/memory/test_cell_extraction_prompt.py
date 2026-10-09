@@ -7,6 +7,7 @@ from Agents.memory.extraction.inputs import (
     build_cell_observation_tail,
 )
 from Agents.prompts.extraction.cell import CELL_EXTRACTION_PREFIX
+from Agents.schemas.roles import lineup
 from Agents.schemas.memory import cell_observation_schema_for
 
 _INPUTS = {
@@ -15,6 +16,7 @@ _INPUTS = {
     "formatted_strategy_notes": "notes",
     "formatted_previous_strategies": "none",
     "game_outcome": "villagers",
+    "lineup": lineup("serial_killer", "speculator"),
 }
 
 

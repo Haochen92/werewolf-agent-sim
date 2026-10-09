@@ -18,6 +18,7 @@ from Agents.memory.extraction import (
 )
 from Agents.memory.persistence import ExtractionConfig
 from Agents.schemas import GameStrategyOutput
+from Agents.schemas.roles import lineup
 from Agents.schemas.memory import Observation, StrategyPoint
 
 _INPUTS = {
@@ -26,6 +27,7 @@ _INPUTS = {
     "formatted_strategy_notes": "NOTES",
     "formatted_previous_strategies": "PREV",
     "game_outcome": "villagers",
+    "lineup": lineup("serial_killer", "speculator"),
 }
 
 
@@ -93,20 +95,20 @@ class FanoutMergeTests(unittest.TestCase):
         self.assertEqual(res.model_used, "per_role")
 
     def test_partial_failure_drops_only_failed_role(self) -> None:
-        def boom_on_wolf(llm, prompt, run_name):
-            if "ASSIGNED ROLE: wolf" in prompt:
+        def boom_on_chanteuse(llm, prompt, run_name):
+            if "ASSIGNED ROLE: chanteuse" in prompt:
                 raise RuntimeError("boom")
             return _fake_invoke(llm, prompt, run_name)
 
-        ea._invoke_extraction_model = boom_on_wolf
+        ea._invoke_extraction_model = boom_on_chanteuse
         res = ea.extract_postgame_per_role(
             "PREFIX\n", max_workers=6, max_retries=0, backup_max_retries=0
         )
         assert res is not None
         perspectives = [o.perspective for o in res.output.observations]
-        self.assertNotIn("wolf", perspectives)
-        self.assertEqual(len(perspectives), 5)
-        self.assertIn("missing: wolf", res.model_used)
+        self.assertNotIn("chanteuse", perspectives)
+        self.assertEqual(len(perspectives), len(EXTRACTION_ROLES) - 1)
+        self.assertIn("missing: chanteuse", res.model_used)
 
     def test_total_failure_returns_none(self) -> None:
         def always_boom(llm, prompt, run_name):

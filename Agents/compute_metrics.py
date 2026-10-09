@@ -1,6 +1,7 @@
 import hashlib
 
 from Agents.game_config import GameConfig
+from Agents.schemas.roles import LONE_KILLER, ROLE_SPECS, TOWN, WOLVES
 from Agents.schemas.metrics import (
     BaseGameMetrics,
     ComputedGameMetrics,
@@ -10,12 +11,13 @@ from Agents.schemas.metrics import (
 from Agents.tracing import langfuse
 
 
-# Town-aligned roles (win when both wolves and the SK are gone) and the roles that
-# are ENEMIES of the town (the two kill-worthy factions: wolves + the night-immune SK).
-TOWN_ROLES = {"villager", "healer", "investigator", "vigilante"}
-THREAT_ROLES = {"wolf", "serial_killer"}
+# Town-aligned roles (win when both the wolves and the lone killer are gone) and the roles that
+# are ENEMIES of the town (the wolves and the lone killer), from the registry; the retired roles
+# stay so the nine-seat run records still score.
+TOWN_ROLES = {name for name, spec in ROLE_SPECS.items() if spec.side == TOWN}
+THREAT_ROLES = {name for name, spec in ROLE_SPECS.items() if spec.side in (WOLVES, LONE_KILLER)}
 # Town power roles the wolves most want to remove (used for targeting/exposure metrics).
-POWER_ROLES = ("healer", "investigator", "vigilante")
+POWER_ROLES = tuple(name for name, spec in ROLE_SPECS.items() if spec.side == TOWN and spec.night_action)
 
 # Vigilante starting loadout = the SUPPLY denominator for the wolf-kill rate (constant per game).
 # vigilante_bullets is NOT persisted in run records (nor in the record's game_config), so the rate

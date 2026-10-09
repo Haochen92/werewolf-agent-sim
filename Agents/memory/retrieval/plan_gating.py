@@ -12,14 +12,9 @@ from typing import Any
 
 from langchain_core.runnables import RunnableConfig
 
-from Agents.state import (
-    HealerDayState,
-    InvestigatorDayState,
-    VillagerDayState,
-    WolfDayState,
-)
+from Agents.state import DayActorState
 
-_DayPayload = VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState
+_DayPayload = DayActorState
 
 
 @dataclass(frozen=True)

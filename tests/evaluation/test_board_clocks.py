@@ -8,6 +8,7 @@ from Agents.rules.board_clocks import (
     criticality_from_census,
     criticality_from_counts,
 )
+from Agents.schemas.roles import lineup
 from evaluation.src.loop.decision_scoring import query_criticality
 
 
@@ -42,6 +43,15 @@ def test_census_criticality_equals_role_map_criticality():
     roles = {"w2": "wolf", "sk": "serial_killer", "v2": "villager", "v3": "villager",
              "h": "healer", "inv": "investigator"}
     assert criticality_from_census(cast, roster) == query_criticality(list(roles), roles)
+
+
+def test_ten_seat_census_reads_the_sides_from_the_registry():
+    # Both wolves' roles count as wolves, the necromancer as the lone killer, the neutral as a body.
+    cast = {role: 1 for role in lineup("necromancer", "fortune_teller")}
+    roster = [{"role": "chanteuse"}, {"role": "healer"}]
+    # 8 alive: the illusionist, the necromancer, five town and the fortune teller.
+    assert criticality_from_census(cast, roster) == criticality_from_counts(wolves=1, sk=1, town=6)
+    assert criticality_from_counts(wolves=1, sk=1, town=6) == (8, 6, False)
 
 
 def test_census_criticality_none_without_census():

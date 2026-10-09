@@ -68,7 +68,6 @@ from evaluation.src.replay.decision_screen import (
     load_game_index,
     mcnemar_p,
 )
-from Agents.schemas.output import DayDiscussOutput
 from evaluation.src.data.sources.sidecar import LocalCaseSource
 
 PLAIN_ARMS = ("off", "v5_plain", "v6_plain")
@@ -282,9 +281,9 @@ def _discussion_row(case, retrieved) -> dict[str, Any]:
     payload = eval_case_to_agent_payload(case)
     payload["retrieved_observations"] = retrieved
     payload["strategy_points"] = []
-    spec = action_spec_for(case)  # (role, day_discussion) -> DayDiscussOutput
+    spec = action_spec_for(case)  # (role, day_discussion) -> the lineup's DayDiscussOutput
     try:
-        obj = (spec.prompt_template | get_llm().with_structured_output(DayDiscussOutput)).invoke(
+        obj = (spec.prompt_template | get_llm().with_structured_output(spec.output_schema)).invoke(
             build_agent_prompt_input(payload), config={"run_name": f"disc_{case.player_id}"}
         )
     except Exception:  # noqa: BLE001

@@ -6,6 +6,8 @@ empty list so memory-off / no-retrieval decisions construct without it. The "one
 instruction lives in the PROMPT BODY (MEMORY_APPLICABILITY_INSTRUCTION), not the field description.
 """
 
+from typing import Literal, get_args, get_origin
+
 import pytest
 
 from Agents.prompts.memory import (
@@ -14,28 +16,31 @@ from Agents.prompts.memory import (
     MEMORY_APPLICABILITY_INSTRUCTION,
     NIGHT_ACTION_MEMORY_CONTEXT,
 )
-from Agents.schemas.output import (
-    DayDiscussOutput,
-    DayVoteOutput,
-    HealerOutput,
-    InvestigatorOutput,
-    MemoryVerdict,
-    SerialKillerOutput,
-    VigilanteOutput,
-    WolfNightDiscussOutput,
-    WolfNightVoteOutput,
+from Agents.schemas.lineup_output import (
+    carrier_output,
+    day_discuss_output,
+    day_vote_output,
+    night_output,
+    wolf_chat_output,
 )
+from Agents.schemas.output import MemoryVerdict
+from Agents.schemas.roles import ALL_LINEUPS, ROLE_SPECS, roles
 
-# (schema, the action field memory_applicability must precede)
+LINEUP = ALL_LINEUPS[0]
+
+
+def _lineup_for(role: str) -> list[str]:
+    return next(lineup for lineup in ALL_LINEUPS if role in lineup)
+
+
+# (schema, the action field memory_applicability must precede): the day turns, the pack's chat
+# and kill, and every role's night turn, each filled for a lineup that deals it.
 SCHEMAS = [
-    (DayVoteOutput, "vote_target"),
-    (DayDiscussOutput, "pass_turn"),
-    (HealerOutput, "healer_target"),
-    (InvestigatorOutput, "investigator_target"),
-    (SerialKillerOutput, "serial_killer_target"),
-    (VigilanteOutput, "vigilante_target"),
-    (WolfNightDiscussOutput, "message"),
-    (WolfNightVoteOutput, "vote_target"),
+    (day_vote_output(LINEUP), "vote_target"),
+    (day_discuss_output(LINEUP), "pass_turn"),
+    (wolf_chat_output(LINEUP), "pass_turn"),
+    (carrier_output(LINEUP), "kill_target"),
+    *[(night_output(role, _lineup_for(role)), ROLE_SPECS[role].target_field) for role in roles],
 ]
 
 
@@ -67,7 +72,14 @@ def _minimal_kwargs(schema) -> dict:
         if not f.is_required():
             continue
         ann = f.annotation
-        out[name] = True if ann is bool else ([] if getattr(ann, "__origin__", None) is list else "x")
+        if ann is bool:
+            out[name] = True
+        elif get_origin(ann) is list:
+            out[name] = []
+        elif get_origin(ann) is Literal:
+            out[name] = get_args(ann)[0]
+        else:
+            out[name] = "x"
     return out
 
 
@@ -79,7 +91,7 @@ def test_memory_applicability_defaults_empty(schema, action_field):
 
 def test_memory_applicability_field_description_is_terse():
     # rich "how" lives in the prompt body, not the model-visible field description
-    desc = DayVoteOutput.model_fields["memory_applicability"].description
+    desc = day_vote_output(LINEUP).model_fields["memory_applicability"].description
     assert desc is not None and len(desc) < 120
 
 
@@ -104,7 +116,7 @@ def test_eval_case_captures_memory_applicability_and_roundtrips():
     from Agents.schemas.evaluation import EvalCase
 
     ec = EvalCase(
-        player_id="p1", player_role="villager", day=2, round=1,
+        player_id="p1", player_role="healer", day=2, round=1,
         action_phase="day_vote", memory_enabled=True,
         memory_applicability=[MemoryVerdict(memory_index=1, verdict="does_not_apply", why="x")],
     )

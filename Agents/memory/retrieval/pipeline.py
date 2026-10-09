@@ -36,12 +36,7 @@ from Agents.memory.vectors import embed_texts
 from Agents.memory.store import embeddings as memory_embeddings
 from Agents.memory.retrieval.plan_gating import retrieval_plan
 from Agents.memory.retrieval.situation_agent import _generate_situations_for_agent
-from Agents.state import (
-    HealerDayState,
-    InvestigatorDayState,
-    VillagerDayState,
-    WolfDayState,
-)
+from Agents.state import DayActorState
 
 if TYPE_CHECKING:
     from Agents.tracing import GraphContext
@@ -50,7 +45,7 @@ logger = getLogger(__name__)
 
 
 def enrich_payload_with_memory(
-    payload: VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState,
+    payload: DayActorState,
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
     action_phase: str,
@@ -255,7 +250,7 @@ def _skipped_metadata(store_dir: str, skip_reason: str) -> dict[str, Any]:
 
 def _retrieve(
     active_store: Any,
-    payload: VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState,
+    payload: DayActorState,
     action_phase: str,
     situations: list[str],
     retrieval_top_k: int,

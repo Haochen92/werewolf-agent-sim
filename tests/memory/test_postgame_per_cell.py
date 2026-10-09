@@ -5,8 +5,10 @@ No LLM calls — the per-cell worker (_extract_one_cell) is stubbed."""
 
 from unittest.mock import patch
 
+from Agents.memory.extraction import EXTRACTION_ROLES
 from Agents.memory.extraction import extraction_agent as ea
 from Agents.memory.extraction.cell_units import ROLE_UNITS
+from Agents.schemas.roles import lineup
 
 _INPUTS = {
     "formatted_roles": "player_1: villager",
@@ -14,13 +16,17 @@ _INPUTS = {
     "formatted_strategy_notes": "s",
     "formatted_previous_strategies": "none",
     "game_outcome": "villagers",
+    "lineup": lineup("serial_killer", "speculator"),
 }
 
-_N_CELLS = sum(len(units) for units in ROLE_UNITS.values())  # villager day + 5 roles × (day+night)
+# The fan-out runs over the pool; only the roles the v6 cells were built for (the nine-seat game's)
+# have cells, so a ten-seat game extracts healer, investigator, vigilante, serial killer × (day+night).
+_N_CELLS = sum(len(ROLE_UNITS.get(role, [])) for role in EXTRACTION_ROLES)
 
 
-def test_n_cells_is_eleven():
-    assert _N_CELLS == 11
+def test_the_cells_are_the_nine_seat_eleven_and_the_pool_reaches_eight():
+    assert sum(len(units) for units in ROLE_UNITS.values()) == 11  # villager day + 5 roles × (day+night)
+    assert _N_CELLS == 8
 
 
 def test_fans_out_obs_only_by_default():
@@ -53,7 +59,7 @@ def test_dual_when_strategy_points_requested():
 
 def test_none_cell_is_dropped_and_reported_missing():
     def fake(prefix, role, wording, rep_phase, cache, mr, bmr, wsp):
-        if role == "villager":
+        if role == "investigator" and rep_phase == "night_action":
             return None  # cell failed / no schema
         return ([f"obs:{role}"], [], "primary")
 
@@ -62,7 +68,7 @@ def test_none_cell_is_dropped_and_reported_missing():
 
     assert len(result.output.observations) == _N_CELLS - 1
     assert "missing" in result.model_used
-    assert "villager/day" in result.model_used
+    assert "investigator/night" in result.model_used
 
 
 def test_all_cells_fail_returns_none():
@@ -72,10 +78,10 @@ def test_all_cells_fail_returns_none():
 
 def test_backup_use_surfaces_in_model_used():
     def fake(prefix, role, wording, rep_phase, cache, mr, bmr, wsp):
-        return ([f"obs:{role}"], [], "backup" if role == "wolf" else "primary")
+        return ([f"obs:{role}"], [], "backup" if role == "serial_killer" else "primary")
 
     with patch.object(ea, "_extract_one_cell", side_effect=fake):
         result = ea.extract_postgame_per_cell(_INPUTS)
 
     assert "backup" in result.model_used
-    assert "wolf" in result.model_used
+    assert "serial_killer" in result.model_used

@@ -8,23 +8,12 @@ from typing import Any
 from pydantic import BaseModel
 
 from Agents.turn import run_agent
-from Agents.prompts import (
-    HEALER_DAY_DISCUSS,
-    HEALER_DAY_VOTE,
-    INVESTIGATOR_DAY_DISCUSS,
-    INVESTIGATOR_DAY_VOTE,
-    SERIAL_KILLER_DAY_DISCUSS,
-    SERIAL_KILLER_DAY_VOTE,
-    VIGILANTE_DAY_DISCUSS,
-    VIGILANTE_DAY_VOTE,
-    VILLAGER_DAY_DISCUSS,
-    VILLAGER_DAY_VOTE,
-    WOLF_DAY_DISCUSS,
-    WOLF_DAY_VOTE,
-)
-from Agents.schemas import DayChannel, DayDiscussOutput, DayVote, DayVoteOutput
+from Agents.prompts import day_discuss_template, day_vote_template
+from Agents.schemas import DayChannel, DayVote
 from Agents.schemas.evaluation import EvalCase
-from evaluation.src.replay.situation_summary import eval_case_to_agent_payload
+from Agents.schemas.lineup_output import day_discuss_output, day_vote_output
+from Agents.schemas.roles import ROLE_SPECS
+from evaluation.src.replay.situation_summary import case_lineup, eval_case_to_agent_payload
 
 
 @dataclass(frozen=True)
@@ -34,64 +23,27 @@ class ActionSpec:
     output_key: str
 
 
-ACTION_SPECS: dict[tuple[str, str], ActionSpec] = {
-    ("villager", "day_discussion"): ActionSpec(
-        VILLAGER_DAY_DISCUSS,
-        DayDiscussOutput,
-        "day_channel",
-    ),
-    ("healer", "day_discussion"): ActionSpec(
-        HEALER_DAY_DISCUSS,
-        DayDiscussOutput,
-        "day_channel",
-    ),
-    ("investigator", "day_discussion"): ActionSpec(
-        INVESTIGATOR_DAY_DISCUSS,
-        DayDiscussOutput,
-        "day_channel",
-    ),
-    ("wolf", "day_discussion"): ActionSpec(
-        WOLF_DAY_DISCUSS,
-        DayDiscussOutput,
-        "day_channel",
-    ),
-    ("vigilante", "day_discussion"): ActionSpec(
-        VIGILANTE_DAY_DISCUSS,
-        DayDiscussOutput,
-        "day_channel",
-    ),
-    ("serial_killer", "day_discussion"): ActionSpec(
-        SERIAL_KILLER_DAY_DISCUSS,
-        DayDiscussOutput,
-        "day_channel",
-    ),
-    ("villager", "day_vote"): ActionSpec(VILLAGER_DAY_VOTE, DayVoteOutput, "day_votes"),
-    ("healer", "day_vote"): ActionSpec(HEALER_DAY_VOTE, DayVoteOutput, "day_votes"),
-    ("investigator", "day_vote"): ActionSpec(
-        INVESTIGATOR_DAY_VOTE,
-        DayVoteOutput,
-        "day_votes",
-    ),
-    ("wolf", "day_vote"): ActionSpec(WOLF_DAY_VOTE, DayVoteOutput, "day_votes"),
-    # vigilante (town power role) + serial_killer day-votes — added so the deceiver /
-    # power-role side of the board is replayable, not just the town trio.
-    ("vigilante", "day_vote"): ActionSpec(VIGILANTE_DAY_VOTE, DayVoteOutput, "day_votes"),
-    ("serial_killer", "day_vote"): ActionSpec(
-        SERIAL_KILLER_DAY_VOTE,
-        DayVoteOutput,
-        "day_votes",
-    ),
+# The day turns, built per case from the role's card and the case's lineup (ten-seat game).
+# A nine-seat case (villager, wolf) has no card any more and is refused.
+_DAY_BUILDERS = {
+    "day_discussion": (day_discuss_template, day_discuss_output, "day_channel"),
+    "day_vote": (day_vote_template, day_vote_output, "day_votes"),
 }
 
 
 def action_spec_for(case: EvalCase) -> ActionSpec:
     key = (case.player_role, case.action_phase)
-    try:
-        return ACTION_SPECS[key]
-    except KeyError as exc:
+    spec = ROLE_SPECS.get(case.player_role)
+    lineup = case_lineup(case)
+    if (
+        case.action_phase not in _DAY_BUILDERS or spec is None or spec.retired
+        or case.player_role not in lineup
+    ):
         raise ValueError(
             f"Unsupported application replay role/action: {key!r}"
-        ) from exc
+        )
+    template, schema, output_key = _DAY_BUILDERS[case.action_phase]
+    return ActionSpec(template(case.player_role), schema(lineup), output_key)
 
 
 def run_application_action(
@@ -99,7 +51,7 @@ def run_application_action(
     *,
     retrieved_observations: list[Any] | None = None,
     strategy_points: list[Any] | None = None,
-) -> tuple[dict[str, Any] | None, DayChannel | None, DayVote | None, str]:
+) -> tuple[Any | None, DayChannel | None, DayVote | None, str]:
     payload = eval_case_to_agent_payload(case)
     if retrieved_observations is not None:
         payload["retrieved_observations"] = retrieved_observations
@@ -120,17 +72,12 @@ def run_application_action(
     if not result:
         return result, agent_message, agent_vote, updated_strategy
 
+    # run_agent returns a resolved turn: the message or the vote is its entry.
     if spec.output_key == "day_channel":
-        messages = result.get("day_channel", [])
-        if messages:
-            agent_message = messages[0]
-        strategies = result.get("agent_strategies", {})
-        if isinstance(strategies, dict):
-            updated_strategy = strategies.get(case.player_id, "") or ""
+        agent_message = result.entry
     elif spec.output_key == "day_votes":
-        votes = result.get("day_votes", [])
-        if votes:
-            agent_vote = votes[0]
+        agent_vote = result.entry
+    updated_strategy = result.effects.strategy or ""
 
     return result, agent_message, agent_vote, updated_strategy
 

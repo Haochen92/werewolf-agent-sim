@@ -1,7 +1,11 @@
 """Full v6 mixin-DAG cells (step 4A). Guards the invariants across all 11 concrete cells: the
 registry covers exactly the valid (role, action_phase) combinations, every cell is all-required
 (flash-lite), the criticality numbers + direction enums stay OUT of the embedding string, and the
-`_Embed` marker never reaches a model. See evidence/extraction/situation_dimensions/dimension_schema_build_spec.md §2."""
+`_Embed` marker never reaches a model. See evidence/extraction/situation_dimensions/dimension_schema_build_spec.md §2.
+
+The cells were built for the nine-seat roles (v6 is default-off, and the ten-seat roles have no
+cells yet), so the registry is checked over those six roles; the retired villager and wolf are
+still in the role registry for exactly this kind of record."""
 
 import json
 import typing
@@ -9,7 +13,10 @@ import typing
 import pytest
 
 from Agents.schemas import memory as M
-from Agents.schemas.roles import VALID_ACTION_PHASES_BY_ROLE, roles
+from Agents.schemas.roles import VALID_ACTION_PHASES_BY_ROLE
+
+# The roles the v6 cells were built for: the nine-seat game's.
+roles = ["villager", "wolf", "healer", "investigator", "vigilante", "serial_killer"]
 
 _SAMPLE = dict(
     situation="Aardvark accused Badger and demanded a vote.",

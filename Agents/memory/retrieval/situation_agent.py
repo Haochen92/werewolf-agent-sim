@@ -30,12 +30,7 @@ from Agents.prompts import (
 from Agents.prompts.memory import V6_SITUATION_SUMMARY
 from Agents.schemas import SituationSummary
 from Agents.schemas.memory import cell_situation_schema_for
-from Agents.state import (
-    HealerDayState,
-    InvestigatorDayState,
-    VillagerDayState,
-    WolfDayState,
-)
+from Agents.state import DayActorState
 
 logger = getLogger(__name__)
 
@@ -189,7 +184,7 @@ def _known_board_facts(payload: dict, cell_schema: type[BaseModel]) -> str:
 
 
 def _generate_situations_for_agent(
-    payload: VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState,
+    payload: DayActorState,
     action_phase: str,
     max_retries: int = 1,
 ) -> tuple[list[str], list[dict]]:

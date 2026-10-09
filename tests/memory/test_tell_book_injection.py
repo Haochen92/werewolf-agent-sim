@@ -7,7 +7,9 @@ from __future__ import annotations
 import json
 
 from Agents.memory.tell_book import _load, tell_book_block
+from Agents.prompts.day_vote import day_vote_template
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
+from Agents.schemas.roles import lineup
 
 BOOK = [
     {"tell_id": "vote_9", "channel": "vote", "text": "votes a player who drew no discussion",
@@ -15,7 +17,11 @@ BOOK = [
     {"tell_id": "disc_4", "channel": "discussion", "text": "goes silent when directly accused",
      "subject_role": "serial_killer", "subject_count": 6, "n": 9, "subject_lift": 0.22},
 ]
+# The v1 book was mined from nine-seat games, so the filter is pinned on a nine-seat census; the
+# prompt tests run a ten-seat payload, where the serial-killer tell still applies.
 CENSUS = {"villager": 3, "wolf": 2, "serial_killer": 1, "healer": 1, "investigator": 1, "vigilante": 1}
+LINEUP = lineup("serial_killer", "speculator")
+TEN_SEAT_CENSUS = {role: 1 for role in LINEUP}
 
 
 def _book_env(tmp_path, monkeypatch):
@@ -46,25 +52,23 @@ def test_block_renders_and_filters_revealed_roles(tmp_path, monkeypatch):
 
 def test_book_reaches_a_real_prompt(tmp_path, monkeypatch):
     _book_env(tmp_path, monkeypatch)
-    from Agents.prompts.day_vote import VILLAGER_DAY_VOTE
 
     pi = build_agent_prompt_input({
-        "player_id": "p1", "player_role": "villager", "current_day": 2,
-        "surviving_players": ["p1", "p2"], "cast_role_counts": CENSUS, "dead_roster": [],
+        "player_id": "p1", "player_role": "healer", "current_day": 2, "lineup": LINEUP,
+        "surviving_players": ["p1", "p2"], "cast_role_counts": TEN_SEAT_CENSUS, "dead_roster": [],
     })
-    assert "drew no discussion" in pi["tell_book"]
-    rendered = VILLAGER_DAY_VOTE.format_messages(**pi)
+    assert "silent when directly accused" in pi["tell_book"]
+    rendered = day_vote_template("healer").format_messages(**pi)
     human = rendered[-1].content
     # the book sits ABOVE the reads instruction (evidence before belief)
-    assert human.index("drew no discussion") < human.index("record your current read")
+    assert human.index("silent when directly accused") < human.index("record your current read")
 
 
 def test_memory_off_payloads_render_without_book(monkeypatch):
     monkeypatch.delenv("WW_TELL_BOOK", raising=False)
-    from Agents.prompts.day_vote import VILLAGER_DAY_VOTE
 
-    pi = build_agent_prompt_input({"player_id": "p1", "player_role": "villager",
+    pi = build_agent_prompt_input({"player_id": "p1", "player_role": "healer", "lineup": LINEUP,
                                    "surviving_players": ["p1", "p2"]})
     assert pi["tell_book"] == ""
-    human = VILLAGER_DAY_VOTE.format_messages(**pi)[-1].content
+    human = day_vote_template("healer").format_messages(**pi)[-1].content
     assert human.startswith("\nBefore your decision")   # the empty slot leaves the prompt unchanged

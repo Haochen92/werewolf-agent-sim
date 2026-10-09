@@ -7,6 +7,9 @@ Used by the ``eval-day-summary`` judge CLI (``cli_runner/regen_replay/
 day_summary_judge``); also runnable standalone for an old-vs-new eyeball dump::
 
     poetry run python -m evaluation.src.replay.day_summary [--pair PAIR_ID]
+
+Reads nine-seat frozen sets; their rules block is retired, so the summariser gets the ten-seat
+rules of ``lineup`` (default REPLAY_LINEUP).
 """
 
 import argparse
@@ -14,15 +17,18 @@ import json
 from pathlib import Path
 
 from Agents.prompts.prompt_formatters import format_day_channel
-from Agents.prompts import DAY_SUMMARY_PROMPT, GAME_RULES
+from Agents.prompts import DAY_SUMMARY_PROMPT, rules_block
 from Agents.nodes.day.summary_agent import _SUMMARY_SCHEMA
 from Agents.schemas.game_events import DayChannel
+from Agents.schemas.roles import ALL_LINEUPS
 
 EVAL_SETS = [
     Path("evaluation/frozen_eval_sets/v4_filtering_eval.jsonl"),
     Path("evaluation/frozen_eval_sets/v2_memory_wolfs_only_all_enabled_all_enabled.jsonl"),
 ]
 OUTPUT = Path("evidence/extraction/day_summary/regen_comparison.json")
+REPLAY_LINEUP = ALL_LINEUPS[0]
+"""The lineup whose rules block the summariser reads when none is given."""
 
 
 def _extract_pairs_from_file(path: Path) -> list[dict]:
@@ -87,6 +93,7 @@ def generate_summary(
     *,
     model: str | None = None,
     thinking_level: str | None = None,
+    lineup: list[str] | None = None,
 ) -> str:
     from Agents.llm_factory import create_chat_model
 
@@ -105,7 +112,7 @@ def generate_summary(
     prompt = DAY_SUMMARY_PROMPT.format(
         current_day=day,
         day_channel=format_day_channel(messages),
-        game_rules=GAME_RULES,
+        game_rules=rules_block(lineup or REPLAY_LINEUP),
         public_record="(not available for this replay)",
         claims_on_record="(not available for this replay)",
     )

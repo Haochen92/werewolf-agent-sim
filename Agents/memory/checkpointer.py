@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
 
-from Agents.schemas import game_events
+from Agents.schemas import game_events, night
 
 load_dotenv()
 
@@ -32,6 +32,8 @@ _STATE_MODEL_ALLOWLIST = [
     game_events.DeathRecord,
     game_events.NightActionRecord,  # the private night record (2026-10-03); missing until 2026-10-04
     game_events.RoundCandidate,  # a round turn's held line (Phase 2, 2026-10-07); wraps a DayChannel
+    night.NightChoice,  # tonight's choices (Phase 3, 2026-10-09): a dataclass, like the next
+    night.NightReport,  # the night's public outcome, read by the wire
 ]
 
 def durable_serde() -> JsonPlusSerializer:
