@@ -1,0 +1,24 @@
+[25] 18 s ()
+[50] 33 s ('PACK_NIGHT_PHASE:a04459bf-d1bb-b2ae-731a-d4416034f329',)
+[75] 64 s ('DAY_PHASE:ab54bbf0-fa1f-509f-8eed-01b2b365e438',)
+[100] 94 s ('DAY_PHASE:ab54bbf0-fa1f-509f-8eed-01b2b365e438',)
+[125] 146 s ('DAY_PHASE:ab54bbf0-fa1f-509f-8eed-01b2b365e438',)
+[150] 165 s ('PACK_NIGHT_PHASE:d136ac6c-4227-9dea-4114-59a769efe725',)
+[175] 181 s ('DAY_PHASE:51a15bde-690e-04f1-ee9d-d60a4bf771a3',)
+[200] 216 s ('DAY_PHASE:51a15bde-690e-04f1-ee9d-d60a4bf771a3',)
+[225] 261 s ('DAY_PHASE:51a15bde-690e-04f1-ee9d-d60a4bf771a3',)
+[250] 301 s ('DAY_PHASE:51a15bde-690e-04f1-ee9d-d60a4bf771a3',)
+[275] 336 s ()
+[300] 362 s ('DAY_PHASE:f98472a9-d2e9-d5a8-f8e8-939bcd24bf80',)
+LLM call stalled for player_9 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+LLM call stalled for player_9 (slow or full): 504 DEADLINE_EXCEEDED. {'error': {'code': 504, 'message': 'Deadline expired before operation could complete.', 'status': 'DEADLINE_EXCEEDED'}}
+player_9 failed all decision attempts on day_channel; recording technical pass
+[325] 463 s ('DAY_PHASE:f98472a9-d2e9-d5a8-f8e8-939bcd24bf80',)
+[350] 497 s ()
+LLM call stalled for player_10 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_10 rescued by the fallback model on day_channel
+[375] 565 s ('DAY_PHASE:e7c99391-aef8-ce5f-c624-eb7cc2ebda9c',)
+[400] 613 s ('DAY_PHASE:e7c99391-aef8-ce5f-c624-eb7cc2ebda9c',)
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+phase3-c06-d3b7c5d7: winner villagers, day 5, 641.5 s, 152 calls, cost 0.8322

@@ -1,0 +1,85 @@
+[25] 19 s ()
+LLM call stalled for player_2 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+[50] 39 s ('PACK_NIGHT_PHASE:a1de0cb6-90a7-6d3b-c37b-cbd547a3af8f',)
+player_2 rescued by the fallback model on sigil_target
+[75] 70 s ('DAY_PHASE:4c39d0e8-9128-f901-49ce-82d8cee00286',)
+LLM call stalled for player_1 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_1 rescued by the fallback model on day_channel
+[100] 129 s ('DAY_PHASE:4c39d0e8-9128-f901-49ce-82d8cee00286',)
+[125] 201 s ('DAY_PHASE:4c39d0e8-9128-f901-49ce-82d8cee00286',)
+[150] 245 s ('DAY_PHASE:4c39d0e8-9128-f901-49ce-82d8cee00286',)
+[175] 258 s ('PACK_NIGHT_PHASE:d738e6d7-0f27-4ad0-4f10-c2ace7a33369',)
+[200] 303 s ('PACK_NIGHT_PHASE:d738e6d7-0f27-4ad0-4f10-c2ace7a33369',)
+[225] 317 s ('DAY_PHASE:984daf80-64ed-8593-cbec-8329ac8dc03b',)
+[250] 370 s ('DAY_PHASE:984daf80-64ed-8593-cbec-8329ac8dc03b',)
+LLM call stalled for player_3 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_3 rescued by the fallback model on day_channel
+LLM call stalled for player_5 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_5 rescued by the fallback model on day_channel
+player_6 starts on the rescue model for day_channel: the primary stalled 2 turns in a row
+player_10 starts on the rescue model for day_channel: the primary stalled 2 turns in a row
+player_5 starts on the rescue model for day_channel: the primary stalled 2 turns in a row
+[275] 458 s ('DAY_PHASE:984daf80-64ed-8593-cbec-8329ac8dc03b',)
+player_8 starts on the rescue model for day_channel: the primary stalled 2 turns in a row
+LLM call stalled for player_8 (slow or full): Error calling model 'gemini-3.1-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_8 failed all decision attempts on day_channel; recording technical pass
+player_1 starts on the rescue model for day_votes: the primary stalled 2 turns in a row
+player_2 starts on the rescue model for day_votes: the primary stalled 2 turns in a row
+player_3 starts on the rescue model for day_votes: the primary stalled 2 turns in a row
+player_4 starts on the rescue model for day_votes: the primary stalled 2 turns in a row
+player_5 starts on the rescue model for day_votes: the primary stalled 2 turns in a row
+player_6 starts on the rescue model for day_votes: the primary stalled 2 turns in a row
+player_7 starts on the rescue model for day_votes: the primary stalled 2 turns in a row
+player_8 starts on the rescue model for day_votes: the primary stalled 2 turns in a row
+player_10 starts on the rescue model for day_votes: the primary stalled 2 turns in a row
+LLM call stalled for player_6 (slow or full): Error calling model 'gemini-3.1-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_6 failed all retries on day_votes, using random fallback
+LLM call stalled for player_2 (slow or full): 504 DEADLINE_EXCEEDED. {'error': {'code': 504, 'message': 'Deadline expired before operation could complete.', 'status': 'DEADLINE_EXCEEDED'}}
+player_2 failed all retries on day_votes, using random fallback
+LLM call stalled for player_3 (slow or full): 504 DEADLINE_EXCEEDED. {'error': {'code': 504, 'message': 'Deadline expired before operation could complete.', 'status': 'DEADLINE_EXCEEDED'}}
+player_3 failed all retries on day_votes, using random fallback
+LLM call stalled for player_10 (slow or full): 504 DEADLINE_EXCEEDED. {'error': {'code': 504, 'message': 'Deadline expired before operation could complete.', 'status': 'DEADLINE_EXCEEDED'}}
+player_10 failed all retries on day_votes, using random fallback
+LLM call stalled for player_7 (slow or full): 504 DEADLINE_EXCEEDED. {'error': {'code': 504, 'message': 'Deadline expired before operation could complete.', 'status': 'DEADLINE_EXCEEDED'}}
+player_7 failed all retries on day_votes, using random fallback
+LLM call stalled for player_1 (slow or full): 504 DEADLINE_EXCEEDED. {'error': {'code': 504, 'message': 'Deadline expired before operation could complete.', 'status': 'DEADLINE_EXCEEDED'}}
+player_1 failed all retries on day_votes, using random fallback
+[300] 535 s ()
+player_8 starts on the rescue model for healer_target: the primary stalled 2 turns in a row
+player_7 starts on the rescue model for bet_target: the primary stalled 2 turns in a row
+player_10 starts on the rescue model for sentinel_target: the primary stalled 2 turns in a row
+player_3 starts on the rescue model for necromancer_target: the primary stalled 2 turns in a row
+player_2 starts on the rescue model for sigil_target: the primary stalled 2 turns in a row
+player_1 starts on the rescue model for vigilante_target: the primary stalled 2 turns in a row
+player_4 starts on the rescue model for kill_target: the primary stalled 2 turns in a row
+player_4 starts on the rescue model for block_target: the primary stalled 2 turns in a row
+player_1 starts on the rescue model for day_channel: the primary stalled 2 turns in a row
+player_2 starts on the rescue model for day_channel: the primary stalled 2 turns in a row
+player_3 starts on the rescue model for day_channel: the primary stalled 2 turns in a row
+player_4 starts on the rescue model for day_channel: the primary stalled 2 turns in a row
+player_8 starts on the rescue model for day_channel: the primary stalled 2 turns in a row
+player_10 starts on the rescue model for day_channel: the primary stalled 2 turns in a row
+[325] 601 s ('DAY_PHASE:d6b52463-3dde-8485-3803-e5cada3227e8',)
+LLM call stalled for player_1 (slow or full): Error calling model 'gemini-3.1-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_1 failed all decision attempts on day_channel; recording technical pass
+player_4 starts on the rescue model for day_channel: the primary stalled 2 turns in a row
+player_10 starts on the rescue model for day_channel: the primary stalled 2 turns in a row
+player_4 starts on the rescue model for day_channel: the primary stalled 2 turns in a row
+[350] 750 s ('DAY_PHASE:d6b52463-3dde-8485-3803-e5cada3227e8',)
+LLM call stalled for player_1 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_1 rescued by the fallback model on day_channel
+LLM call stalled for player_8 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_8 rescued by the fallback model on day_channel
+[375] 844 s ('DAY_PHASE:d6b52463-3dde-8485-3803-e5cada3227e8',)
+LLM call stalled for player_8 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+LLM call stalled for player_3 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_8 rescued by the fallback model on day_channel
+[400] 891 s ('DAY_PHASE:25979fa1-df5a-de27-0886-2033db96cd64',)
+player_3 rescued by the fallback model on day_channel
+LLM call stalled for player_10 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_10 rescued by the fallback model on day_channel
+[425] 975 s ('DAY_PHASE:25979fa1-df5a-de27-0886-2033db96cd64',)
+[450] 1011 s ()
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+phase3-c04-3d5a04cf: winner villagers, day 5, 1011.1 s, 192 calls, cost 0.8134

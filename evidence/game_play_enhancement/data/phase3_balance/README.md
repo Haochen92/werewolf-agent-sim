@@ -31,25 +31,29 @@ necromancer win on this cast yet. The neutral is the only other side that wins: 
 won four of six (every time it picked, it picked Town), the fortune teller two of seven.
 
 **The town votes evil out with very few misses.** Over the thirteen games the table voted 33
-times: 16 wolves, 11 lone killers, 5 town, 1 neutral. 27 of the 33 evil deaths in all were by
-vote; the vigilante shot 7 (3 of them on a night the sigil struck the same player), a sigil alone
+times: 16 wolves, 11 lone killers, 5 town, 1 neutral. All 39 evil seats died; 27 by vote,
+the vigilante shot 7 (3 of them on a night the sigil struck the same player), a sigil alone
 killed 2, the serial killer killed 3 wolves. The first evil lynch came on day 2 in six games and
 day 3 in six (one game, b10, took until day 6).
 
-**Where the town's reads came from.** Of the 27 evil lynches, 12 followed a town night result
-that had named the player before the vote: 7 an investigator's Suspicious, 3 a sigil's "immune"
-result on the serial killer, 1 a sentinel's sighting at a death. The other 15 came from the
-day: claims checked against the record, two visits at the wrong doors, and from day 4 on the
-process of elimination, since by then the dead roles are public and the living evil are few.
+**What preceded the town's votes.** Of the 27 evil lynches, 11 were preceded by a town night
+result that had named the player: 7 an investigator's Suspicious, 3 a sigil's "immune" result on
+the serial killer, 1 a sentinel's sighting at a death. A preceding result does not by itself
+show why the table voted as it did; the day-2 summaries of b02 and b09 do show the sigilist's
+result argued and accepted. The other 16 had no such result before them: claims checked against
+the record, visits argued from the trails, and from day 4 on the process of elimination, since
+by then the dead roles are public and the living evil are few.
 
 Two mechanics stand out as stronger than the sheet expected:
 
 - **The sigil finds the serial killer.** A sigil on an attacker who is immune gives the sigilist
   the record "immune", and on this cast the only player immune every night is the serial killer
-  (the necromancer only on night 1, a self-betting fortune teller only that night). Three of the
-  five serial killer lynches followed exactly that (b02 and b09 on day 2, game1 on day 3), with
-  the sigilist claiming "set a sigil on X, they attacked and survived". The immune string names
-  no role, but the deduction is one step. The serial killer's silent whiff is no cover against a
+  (the necromancer only on night 1 and it cannot attack then, a self-betting fortune teller is
+  not an attacker, a borrowed attack evades the sigil). Three of the six serial killer lynches
+  followed exactly that (b02 and b09 on day 2, b05 on day 4), with the sigilist claiming "set a
+  sigil on X, they attacked and survived"; in b02 the sigilist argued that a vigilante could not
+  have survived by immunity, which undid the killer's cover claim. The immune string names no
+  role, but the deduction is one step. The serial killer's silent whiff is no cover against a
   sigil.
 - **Three information roles on ten seats, and visits by name.** The sentinel and trailseer see
   names at doors; a killer visits every night; the investigator reads the pack and an attacking
@@ -69,9 +73,9 @@ points at, in the order of their likely effect:
 
 1. **The sentinel reports factions instead of names** (sheet, "Shared rules"): the sighting
    still says a killer came, not which seat. This blunts the strongest single read.
-2. **The sigil's immune result**: either the sigil does not retaliate on an immune attacker (the
-   sigilist learns only "miss"), or the record says "struck" without the survival, so the serial
-   killer is not named by one night's luck.
+2. **The sigil's immune result** (RULED 2026-10-09, built): an immune attacker reads exactly as
+   a quiet night, "Your sigil had no effect", in the result word, the record and the will, so the
+   serial killer is not named by one night's luck.
 3. **The investigator's read of an attacking necromancer** stays; it fired rarely.
 4. **The neutral**: the speculator's pick of Town is a sure thing while the town always wins;
    it corrects itself once the other sides can win. The fortune teller's third self-bet (sheet)
