@@ -47,7 +47,8 @@ def _solo_night_roles() -> list[str]:
 
 
 def test_every_field_the_translator_lists_exists_in_some_graph_state():
-    stale = _translator_writes() - _engine_fields()
+    # A retired key is tolerated for recorded games (translate._RETIRED_KEYS), never live.
+    stale = _translator_writes() - _engine_fields() - translate._RETIRED_KEYS
     assert not stale, f"translate.py lists fields the engine no longer has: {sorted(stale)}"
 
 

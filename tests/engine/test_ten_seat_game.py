@@ -135,7 +135,7 @@ def test_a_borrowed_kill_shows_the_body_and_reads_as_the_body_would():
     body = h["illusionist"]
     st["dead_roster"] = [DeathRecord(player=body, role="illusionist", day=1, phase="night")]
     st["surviving_wolves"] = [w for w in st["surviving_wolves"] if w != body]
-    assert usable_bodies(st["dead_roster"], None) == [body]
+    assert usable_bodies(st["dead_roster"]) == [body]
     assert acts_tonight(st, "necromancer")
     assert "NECROMANCER_NIGHT_PHASE" in route_night_actors(st)
     choices = [
@@ -318,11 +318,24 @@ def test_the_conceal_is_a_visit_to_the_packs_victim():
         NightChoice(h["trailseer"], "trailseer", "follow", h["illusionist"]),
     ]
     outcome = resolve_night(choices, st["roles"], 2)
-    assert visitors_of(outcome, h["healer"]) == sorted([h["chanteuse"], h["illusionist"], h["sentinel"]],
+    # The victim died and was concealed: the carrier's visit is hidden, the illusionist's is not.
+    assert outcome.concealed == [h["healer"]]
+    assert visitors_of(outcome, h["healer"]) == sorted([h["illusionist"], h["sentinel"]],
                                                        key=lambda p: int(p.split("_")[1]))
     records = {r.actor: r for r in night_action_records(choices, outcome, st["roles"])}
-    assert sorted(records[h["sentinel"]].seen) == sorted([h["chanteuse"], h["illusionist"]])
+    assert records[h["sentinel"]].seen == [h["illusionist"]]
     assert records[h["trailseer"]].seen == [h["healer"]]
+    # Saved, nothing is concealed and the carrier's visit is seen as before.
+    saved = resolve_night(choices + [NightChoice(h["healer"], "healer", "protect", h["healer"])], st["roles"], 2)
+    assert not saved.concealed and h["chanteuse"] in visitors_of(saved, h["healer"])
+    # The carrier's other visit stays visible: a trailseer on the carrier sees its block.
+    carrier_blocks = [NightChoice(h["chanteuse"], "chanteuse", "kill", h["healer"]),
+                      NightChoice(h["chanteuse"], "chanteuse", "block", h["vigilante"]),
+                      NightChoice(h["illusionist"], "illusionist", "conceal", None),
+                      NightChoice(h["trailseer"], "trailseer", "follow", h["chanteuse"])]
+    traced = resolve_night(carrier_blocks, st["roles"], 2)
+    trail = next(r for r in night_action_records(carrier_blocks, traced, st["roles"]) if r.actor == h["trailseer"])
+    assert trail.seen == [h["vigilante"]]
     # Blocked, the illusionist went nowhere.
     choices.append(NightChoice(h["chanteuse"], "chanteuse", "block", h["illusionist"]))
     assert h["illusionist"] not in visitors_of(resolve_night(choices, st["roles"], 2), h["healer"])
@@ -376,3 +389,16 @@ def test_checks_and_watches_are_capped_and_a_kept_one_spends_nothing():
                         {"player_id": h["investigator"]}, [h["healer"], "no_check"]) is None
     st["uses_left"].update({"investigator": 0, "sentinel": 0})
     assert not acts_tonight(st, "investigator") and not acts_tonight(st, "sentinel")
+
+
+def test_the_necromancer_may_use_the_same_body_night_after_night():
+    st = _state({"lone_killer": "necromancer", "neutral": "speculator"}, day=3)
+    h = _holders(st)
+    body = DeathRecord(player=h["illusionist"], role="illusionist", day=1, phase="night")
+    assert usable_bodies([body]) == [h["illusionist"]]
+    st["dead_roster"] = [body]
+    st["night_choices"] = [NightChoice(h["necromancer"], "necromancer", "kill", h["healer"], via=h["illusionist"])]
+    update = night_resolution(st, SimpleNamespace(context={"metrics": Metrics()}))
+    assert "last_body" not in update
+    st.update({"current_day": 4, "dead_roster": st["dead_roster"] + update["dead_roster"]})
+    assert acts_tonight(st, "necromancer") and h["illusionist"] in usable_bodies(st["dead_roster"])

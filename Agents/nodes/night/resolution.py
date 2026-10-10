@@ -107,14 +107,12 @@ def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
     tonight_records = [r for r in night_action_records(choices, outcome, roles) if r.actor not in deaths]
     state_update["night_actions"] = tonight_records
 
-    # The neutrals' running state, and the necromancer's last body.
+    # The neutrals' running state.
     for actor, side in outcome.picks:
         state_update["speculator_pick"] = side
     points = sum(bet.points for bet in outcome.bets)
     if points:
         state_update["fortune_points"] = state.get("fortune_points", 0) + points
-    bodies_used = [c.via for c in choices if c.via is not None]
-    state_update["last_body"] = bodies_used[0] if bodies_used else None
 
     # The dead role's disclosure reads the earlier nights only: a player does not receive its
     # result the night it dies, so the GM reads out nothing from tonight (owner, 2026-10-08).

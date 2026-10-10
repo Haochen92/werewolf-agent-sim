@@ -115,7 +115,11 @@ _ACTION_KINDS = {
 _SURVIVORS = {"surviving_wolves", "surviving_villagers"}
 # What the night leaves in parent state beside the records: the night report the wire reads,
 # and the roles' running counts.
-_NIGHT_BOOKKEEPING = {"night_report", "uses_left", "speculator_pick", "fortune_points", "last_body"}
+_NIGHT_BOOKKEEPING = {"night_report", "uses_left", "speculator_pick", "fortune_points"}
+# Keys the engine no longer writes but recorded games still carry: accepted and ignored on a
+# replay, never a live field. last_body: the necromancer's previous body, retired 2026-10-09
+# when the same body became usable night after night.
+_RETIRED_KEYS = {"last_body"}
 _PACK_ROLES = tuple(name for name, spec in ROLE_SPECS.items() if spec.pack)
 
 
@@ -408,7 +412,7 @@ class Translator:
     @node("INITIALIZE_GAME", writes={
         "roles", "lineup", "current_day", "human_players", "winner", "neutral_result",
         "day_channel", "day_summaries", "wolf_channel", "day_votes", "night_actions",
-        "night_choices", "no_lynch_streak", *_NIGHT_BOOKKEEPING, *_SURVIVORS,
+        "night_choices", "no_lynch_streak", *_NIGHT_BOOKKEEPING, *_RETIRED_KEYS, *_SURVIVORS,
     })
     def _initialize_game(self, delta):
         self.roles = dict(delta.get("roles") or {})
@@ -640,7 +644,7 @@ class Translator:
         # The private night record: engine input for later turns, and each seat's own
         # night_record event below.
         "night_actions",
-        *_NIGHT_BOOKKEEPING, *_SURVIVORS,
+        *_NIGHT_BOOKKEEPING, *_RETIRED_KEYS, *_SURVIVORS,
     })
     def _night_resolution(self, delta):
         out = self._gm_messages(delta)

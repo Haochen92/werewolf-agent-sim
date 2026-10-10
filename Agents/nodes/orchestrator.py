@@ -153,7 +153,6 @@ def initialize_game(state: OrchestratorGraph, config: RunnableConfig):
         "uses_left": {role: n for role, n in game_config.starting_uses().items() if role in lineup},
         "speculator_pick": None,
         "fortune_points": 0,
-        "last_body": None,
         "night_choices": [],
         "night_report": None,
         "no_lynch_streak": 0,
@@ -468,7 +467,7 @@ def acts_tonight(state: OrchestratorGraph, role: str) -> bool:
     if (spec.uses is not None and role not in ACTS_WHEN_SPENT
             and state.get("uses_left", {}).get(role, 0) <= 0):
         return False
-    if role == "necromancer" and not usable_bodies(state.get("dead_roster", []), state.get("last_body")):
+    if role == "necromancer" and not usable_bodies(state.get("dead_roster", [])):
         return False
     return True
 
@@ -512,7 +511,7 @@ def _announce_human_night_turns(state: OrchestratorGraph, alive_phases: list[str
         targets = valid_targets_for_action(
             {"player_id": actor, "surviving_players": standing,
              "uses_left": state.get("uses_left", {}).get(role)}, field)
-        bodies = usable_bodies(state.get("dead_roster", []), state.get("last_body")) if role == "necromancer" else []
+        bodies = usable_bodies(state.get("dead_roster", [])) if role == "necromancer" else []
         announce_human_turn(actor, role, field, state.get("current_day", 1), targets, bodies=bodies)
 
 

@@ -50,14 +50,15 @@ def borrowed_kind(body_role: str) -> NightKind | None:
     return BORROWED_ABILITY.get(body_role)
 
 
-def usable_bodies(dead_roster, last_body: str | None) -> list[str]:
+def usable_bodies(dead_roster) -> list[str]:
     """The dead players a necromancer may act through tonight: revealed (not concealed), with an
-    ability to give, and not the body it used last night."""
+    ability to give. The same body may be used night after night (balance ruling 2026-10-09:
+    on 19 of its 31 nights the necromancer had no body that could kill)."""
     bodies: list[str] = []
     for death in dead_roster:
         player = death.get("player") if isinstance(death, dict) else death.player
         role = death.get("role") if isinstance(death, dict) else death.role
-        if not role or borrowed_kind(role) is None or player == last_body:
+        if not role or borrowed_kind(role) is None:
             continue
         bodies.append(player)
     return seat_order(bodies)
@@ -212,6 +213,12 @@ def resolve_night(choices: list[NightChoice], roles: dict[str, str], night: int)
         for victim in pack_victims:
             if verdicts.get(victim) == "killed" and victim not in concealed:
                 concealed.append(victim)
+    # A conceal that took also hides the attacking trace: the carrier's visit to that victim is
+    # not among the visits the sentinel and trailseer see (balance ruling 2026-10-09). The
+    # carrier's other visit that night, and the illusionist's own, stay visible.
+    carriers = [c.actor for c in in_effect if is_pack_kill(c) and c.target in concealed]
+    visits = [(visitor, visited) for visitor, visited in visits
+              if not (visitor in carriers and visited in concealed)]
 
     # 6. What an investigator reads: the wolves, and a necromancer on a night it attacked.
     suspicious: list[str] = []

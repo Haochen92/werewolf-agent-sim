@@ -16,7 +16,8 @@ SIDES = {
             "The wolves know each other and talk privately at night. Each night one of them, the carrier, "
             "kills one player; the carrier rotates unless the pack agrees otherwise, and is the only wolf who "
             "visits for the kill. Every wolf knows the pack's kill. A wolf may carry the kill and use its own "
-            "ability on the same night."
+            "ability on the same night. When an illusionist conceals the pack's victim, the carrier's visit to "
+            "that victim is hidden as well: whoever watched the victim or followed the carrier does not see it."
         ),
         "win": "The wolves win when the lone killer is gone and they equal or outnumber everyone else still alive.",
     },
@@ -59,7 +60,8 @@ Day, the vote:
 Night, the actions:
 - Every role with a night action acts, all at once. A night action that is carried out on a player is a
     visit, unless the role's rules say it is not; an action that was blocked is not carried out and is
-    not a visit. Roles that watch or follow see visits.
+    not a visit. Roles that watch or follow see visits, except the pack's kill on a victim an illusionist
+    concealed, which leaves no trace.
 - An attack kills its target unless the target is protected that night (a save, announced in the
     morning) or cannot be killed at night (nothing announced). A player attacked by more than one
     attacker still dies once.

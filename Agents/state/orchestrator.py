@@ -66,9 +66,6 @@ class OrchestratorGraph(TypedDict, total=False):
     """The side the speculator picked (town, wolves, lone_killer, self); None until it picks."""
     fortune_points: int
     """The fortune teller's running score."""
-    last_body: str | None
-    """The body the necromancer acted through last night; it may not use the same one twice
-    in a row."""
 
     night_actions: Annotated[list[NightActionRecord], add]
     """Every night actor's private record (the pack's kill as actor "wolves"), written by

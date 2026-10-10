@@ -47,7 +47,7 @@ def night_turn_payload(state: OrchestratorGraph, actor: str, role: str) -> Night
     if spec.uses is not None:
         payload["uses_left"] = state.get("uses_left", {}).get(role, 0)
     if role == "necromancer":
-        payload["bodies"] = usable_bodies(state.get("dead_roster", []), state.get("last_body"))
+        payload["bodies"] = usable_bodies(state.get("dead_roster", []))
     if role == "speculator":
         payload["speculator_pick"] = state.get("speculator_pick") or "not yet"
     if role == "fortune_teller":

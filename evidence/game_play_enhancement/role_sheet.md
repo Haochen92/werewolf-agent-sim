@@ -62,7 +62,7 @@ one verdict, and a conceal hides the pack's victim if that kill landed.
   An attack on an immune player is not mentioned.
 - **Visits:** a night action on a player is a visit, seen by the Sentinel and Trailseer. A block
   is a visit; the Illusionist's conceal is a visit to the victim; a blocked player does not
-  visit. Fortune Teller bets and the Speculator's pick are not visits. A Necromancer's borrowed
+  visit; the carrier's visit to a victim the Illusionist concealed is hidden (Illusionist rules). Fortune Teller bets and the Speculator's pick are not visits. A Necromancer's borrowed
   body shows as the visitor.
 - **Attacks:** the wolf kill, the Serial Killer, the Vigilante, the Sigilist's retaliation and the
   Necromancer's borrowed kills. Healer protection and night immunity stop attacks, the retaliation
@@ -180,6 +180,10 @@ Two wolves share one kill each night. Each also has one skill.
 
 - A conceal is spent only when a body is actually concealed; a saved or immune victim keeps the
   use, because the Illusionist cannot know in advance.
+- A conceal that takes also hides the attacking trace: the carrier's visit to the concealed
+  victim is not among the visits the Sentinel and Trailseer see. The carrier's other visit that
+  night and the Illusionist's own visit are still seen; the Investigator's read is untouched
+  (balance ruling 2026-10-09; the shared rules tell every player).
 - Illusionist conceals hide roles from everyone except the engine. The Fortune Teller's role bonus
   is still scored correctly (so a two-point result tells her the hidden role; accepted).
 - Concealed bodies cannot be borrowed by the Necromancer.
@@ -199,7 +203,7 @@ One seat. Both options work alone and win by being the last standing.
   second permanently immune solo killer would be too hard to beat).
 - From Night 2: picks a dead, unconcealed body and a target, then uses that body's night ability.
   Results come to the Necromancer.
-- Same body: never two nights in a row. Otherwise no use limits.
+- Same body: allowed night after night (balance ruling 2026-10-09; the draft forbade two nights in a row, and on 19 of its 31 nights the Necromancer had no body that could kill). No use limits.
 - Wolf bodies: a dead Illusionist gives an attack. A dead Chanteuse gives a block, under the block
   rules above (so it can block a living wolf).
 - Town bodies: a dead Vigilante gives a shot with no misfire penalty. Info roles give private
@@ -391,3 +395,5 @@ and how often the Illusionist conceals an info role.
 - **2026-10-09 (review):** an external review of the wiring found six gaps the suite missed, all fixed: the Fortune Teller's self-bets are now its limited ability (2 uses in the registry, spent on a self-bet only, not offered once spent; the ordinary bet goes on every night); carrying the pack's kill spends no conceal (a use is charged only by the role's own action); the conceal is a visit to the pack's victim whenever the conceal went ahead on a named target, dead or saved (the Sentinel at that door sees the carrier and the Illusionist, as the pack rules say; a blocked Illusionist goes nowhere); a wolf's skill turn is stamped with its own round so its reads reach the wire; a human Necromancer's announced turn carries its bodies (`input_request.bodies`); and the formal-claims ruling is built: the speaker's `claim` rides the spoken line (`DayChannel.claim`, `speech.claim` on the wire) and makes the ledger's role lines, the summariser's transcription of the role is taken only for a player who set no claim that day (a human's line) and dropped where it disagrees, its night actions, retractions and plans stand. The pack rules now say the rotation only (the chat override was never built).
 - **2026-10-09 (balance run):** thirteen games on the cast, the town won all (data/phase3_balance/README.md). Ruled: a sigil on an attacker night immunity protected reads exactly as a quiet night, result `miss`, record and will "Your sigil had no effect" ("your target did not attack" would be false), since the "immune" record named the Serial Killer in one step and preceded three of its six lynches; the strings and the Sigilist's card say so. The Sentinel keeps reporting names: its sightings decided one of the twenty-seven evil lynches, so it is not the lever. The Illusionist learns the concealed role, as before.
 - **2026-10-09 (balance, caps):** the Investigator has 2 checks and the Sentinel 2 watches for the whole game (`no_check` / `no_watch` to keep them; the night-1 lot still applies, as for the Sigilist), owner's ruling after the balance run; a declined check or watch leaves no record and spends nothing. To be read against one batch of six games with the sigil ruling before any further dial; the Vigilante reading Suspicious is the proposed next dial, not ruled.
+- **2026-10-09 (balance, evil buffs):** two rulings from the counts over nineteen games (the Necromancer lineups went to the town ten of ten; the pack won one of nineteen while aiming 34 of its 56 kills at the information roles and blocking the Healer on 6 nights). The Necromancer may use the same body night after night (it lacked a killing body on 19 of its 31 nights). A conceal that takes also hides the carrier's visit to the concealed victim from the Sentinel and Trailseer; nothing else about the carrier is hidden, and the shared rules state it for every player. To be read against six-game batches, one buff at a time if they are to be told apart; both are built together here on the owner's word.
+- **2026-10-09 (discussion quality, a prompt epoch):** after a review of the transcripts (a Chanteuse explaining a sighting with its real block; a visit taken as proof of the visitor's role): the wolves' shared discussion words and the Serial Killer's card tell an evil seat never to explain a visit with its real action and to keep a cover in its strategy note ("Public cover / Public account / Do not disclose"; unclaimed is a valid cover); the discussion output's `claim` counts a role claimed by describing its action; the summariser transcribes the players a claimed watch or follow saw (`seen`), and the ledger writes them as the claimant's word with the line "a visit alone does not establish a visitor's role or what they did". Measured first: the summariser never contradicted a set claim field over 71 summarised days (126 agree, 0 differ, 9 repeats missed, 16 roles inferred from a described action with no field set, 2 missed by the speaker). Repeated-accusation suppression is not built (it would need a semantic judgment per turn).

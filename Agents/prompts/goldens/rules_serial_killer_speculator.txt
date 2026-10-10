@@ -42,16 +42,20 @@ How each side and role works:
 - The wolves: The wolves know each other and talk privately at night. Each night one of them, the
     carrier, kills one player; the carrier rotates unless the pack agrees otherwise, and is the only
     wolf who visits for the kill. Every wolf knows the pack's kill. A wolf may carry the kill and use
-    its own ability on the same night.
+    its own ability on the same night. When an illusionist conceals the pack's victim, the carrier's
+    visit to that victim is hidden as well: whoever watched the victim or followed the carrier does not
+    see it.
 - Chanteuse: Each night the Chanteuse also blocks one player's night action; the same player may be
     blocked again on later nights. A blocked player is told "You were roleblocked", does nothing that
     night and makes no visit. The block works on Town players and on wolves; the lone killer and the
     neutral cannot be blocked, and the Chanteuse is told when a block did not take. Blocking is a visit.
 - Illusionist: Twice per game the Illusionist may hide the role of the player the wolves killed that
     night. The morning report then says "Their role is hidden by an illusionist" instead of the role,
-    that player has no will, and the Illusionist privately learns the role. If the wolves' victim
-    survived, nothing is hidden and the use is kept. Going to hide is a visit to the victim, whether or
-    not they died.
+    that player has no will, and the Illusionist privately learns the role. Hiding the body also hides
+    the attacking trace: the carrier's visit to that victim is not seen by a Sentinel watching the
+    victim or a Trailseer following the carrier (the carrier's other visit that night, and the
+    Illusionist's own, are still seen). If the wolves' victim survived, nothing is hidden and the use is
+    kept. Going to hide is a visit to the victim, whether or not they died.
 - Serial Killer: The Serial Killer works alone against everyone. Each night it kills one player; the
     kill is an attack and a visit. It cannot be killed at night by any attack (an attack on it fails,
     and nothing is announced), it cannot be blocked, it reads Not suspicious to the Investigator, and it
@@ -88,7 +92,8 @@ Day, the vote:
 Night, the actions:
 - Every role with a night action acts, all at once. A night action that is carried out on a player is a
     visit, unless the role's rules say it is not; an action that was blocked is not carried out and is
-    not a visit. Roles that watch or follow see visits.
+    not a visit. Roles that watch or follow see visits, except the pack's kill on a victim an illusionist
+    concealed, which leaves no trace.
 - An attack kills its target unless the target is protected that night (a save, announced in the
     morning) or cannot be killed at night (nothing announced). A player attacked by more than one
     attacker still dies once.

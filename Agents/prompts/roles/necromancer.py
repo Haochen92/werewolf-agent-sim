@@ -6,8 +6,8 @@ RULES = """
 The Necromancer works alone against everyone. On the first night it does nothing and cannot be
 killed; from the second night on it can be killed like anyone else. Each night from the second,
 it may pick a dead player whose role was announced and use that role's night ability on a
-target, or stay put. It may not use the same body two nights in a row; a body whose role was
-hidden cannot be used. Through a dead wolf it attacks (an Illusionist's body) or blocks (a
+target, or stay put. The same body may be used night after night; a body whose role was hidden
+cannot be used. Through a dead wolf it attacks (an Illusionist's body) or blocks (a
 Chanteuse's body); through a dead Vigilante it shoots with no penalty for a miss; through a dead
 Healer it protects; through a dead Sigilist it places a sigil; through a dead Investigator,
 Sentinel or Trailseer it learns what that role would have learned. The dead player's name, not
