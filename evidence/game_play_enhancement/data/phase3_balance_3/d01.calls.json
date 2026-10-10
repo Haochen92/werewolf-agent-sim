@@ -1,0 +1,1194 @@
+[
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:ab073b7f-3068-8006-76bd-9f2e4caf5a01",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558428.8071146,
+  "ended": 1791558435.5177283,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:ab073b7f-3068-8006-76bd-9f2e4caf5a01",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558428.7509637,
+  "ended": 1791558435.5768552,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:ab073b7f-3068-8006-76bd-9f2e4caf5a01",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558428.7586277,
+  "ended": 1791558436.1517885,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:ab073b7f-3068-8006-76bd-9f2e4caf5a01",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558428.8036215,
+  "ended": 1791558436.5482416,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:ab073b7f-3068-8006-76bd-9f2e4caf5a01",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558428.669851,
+  "ended": 1791558436.6246037,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:ab073b7f-3068-8006-76bd-9f2e4caf5a01",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558428.5179334,
+  "ended": 1791558436.731854,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:ab073b7f-3068-8006-76bd-9f2e4caf5a01",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558428.7622466,
+  "ended": 1791558437.0239327,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:ab073b7f-3068-8006-76bd-9f2e4caf5a01",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558428.6201732,
+  "ended": 1791558437.4338732,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:ab073b7f-3068-8006-76bd-9f2e4caf5a01",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558435.5329697,
+  "ended": 1791558439.6837385,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:ab073b7f-3068-8006-76bd-9f2e4caf5a01",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558435.5916002,
+  "ended": 1791558440.3888493,
+  "ok": true
+ },
+ {
+  "node": "SUMMARIZE_DAY_DISCUSSION",
+  "checkpoint_ns": "DAY_PHASE:ab073b7f-3068-8006-76bd-9f2e4caf5a01",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558440.5286982,
+  "ended": 1791558445.0491853,
+  "ok": true
+ },
+ {
+  "node": "SPECULATOR_NIGHT_PHASE",
+  "checkpoint_ns": "SPECULATOR_NIGHT_PHASE:97d74392-e807-9a78-e0f2-e8ff0a0b8689",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558445.153173,
+  "ended": 1791558448.7341356,
+  "ok": true
+ },
+ {
+  "node": "SENTINEL_NIGHT_PHASE",
+  "checkpoint_ns": "SENTINEL_NIGHT_PHASE:88ce419e-d8e3-44e1-c56c-7459217a4a88",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558445.1115754,
+  "ended": 1791558448.7608669,
+  "ok": true
+ },
+ {
+  "node": "INVESTIGATOR_NIGHT_PHASE",
+  "checkpoint_ns": "INVESTIGATOR_NIGHT_PHASE:636cf765-a3ce-5264-b4a7-71e4c1102158",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558445.099599,
+  "ended": 1791558449.0899453,
+  "ok": true
+ },
+ {
+  "node": "TRAILSEER_NIGHT_PHASE",
+  "checkpoint_ns": "TRAILSEER_NIGHT_PHASE:252e6818-7e6d-5ef9-f44c-1c265040a366",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558445.1942515,
+  "ended": 1791558449.1018236,
+  "ok": true
+ },
+ {
+  "node": "SIGILIST_NIGHT_PHASE",
+  "checkpoint_ns": "SIGILIST_NIGHT_PHASE:fe81d341-5a49-60d5-9df6-76425cfa386e",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558445.130982,
+  "ended": 1791558449.2501183,
+  "ok": true
+ },
+ {
+  "node": "PACK_CHAT",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:fed7b1d7-39b7-4c12-51f2-30fb3373e82a",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558445.1751056,
+  "ended": 1791558449.5332503,
+  "ok": true
+ },
+ {
+  "node": "VIGILANTE_NIGHT_PHASE",
+  "checkpoint_ns": "VIGILANTE_NIGHT_PHASE:0a3a9fdb-8c4b-5d46-5357-caa8f9b8c4ae",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558445.2067702,
+  "ended": 1791558449.8845038,
+  "ok": true
+ },
+ {
+  "node": "HEALER_NIGHT_PHASE",
+  "checkpoint_ns": "HEALER_NIGHT_PHASE:4e312fb1-a117-735f-978f-08777ecbcb19",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558445.0782075,
+  "ended": 1791558449.8924303,
+  "ok": true
+ },
+ {
+  "node": "PACK_CHAT",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:fed7b1d7-39b7-4c12-51f2-30fb3373e82a",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558449.5492167,
+  "ended": 1791558455.168367,
+  "ok": true
+ },
+ {
+  "node": "PACK_CHAT",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:fed7b1d7-39b7-4c12-51f2-30fb3373e82a",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558455.18297,
+  "ended": 1791558459.9034355,
+  "ok": true
+ },
+ {
+  "node": "PACK_CHAT",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:fed7b1d7-39b7-4c12-51f2-30fb3373e82a",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558459.9171264,
+  "ended": 1791558464.240191,
+  "ok": true
+ },
+ {
+  "node": "PACK_CHAT",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:fed7b1d7-39b7-4c12-51f2-30fb3373e82a",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558464.2542248,
+  "ended": 1791558469.8069472,
+  "ok": true
+ },
+ {
+  "node": "PACK_CHAT",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:fed7b1d7-39b7-4c12-51f2-30fb3373e82a",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558469.8219466,
+  "ended": 1791558475.2952213,
+  "ok": true
+ },
+ {
+  "node": "CARRIER_KILL",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:fed7b1d7-39b7-4c12-51f2-30fb3373e82a",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558475.3165586,
+  "ended": 1791558480.0965867,
+  "ok": true
+ },
+ {
+  "node": "PACK_SKILL",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:fed7b1d7-39b7-4c12-51f2-30fb3373e82a",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558480.1214576,
+  "ended": 1791558484.4650867,
+  "ok": true
+ },
+ {
+  "node": "PACK_SKILL",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:fed7b1d7-39b7-4c12-51f2-30fb3373e82a",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558480.1371102,
+  "ended": 1791558485.7872677,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558485.9344847,
+  "ended": 1791558490.0554867,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558485.8399107,
+  "ended": 1791558491.0263166,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558485.9310417,
+  "ended": 1791558491.4119692,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558485.9035642,
+  "ended": 1791558491.4621527,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558485.8711734,
+  "ended": 1791558491.6543632,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558485.9129012,
+  "ended": 1791558493.1795654,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558485.8604536,
+  "ended": 1791558493.1897817,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558485.8243747,
+  "ended": 1791558493.2498133,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558490.06951,
+  "ended": 1791558496.619463,
+  "ok": true
+ },
+ {
+  "node": "COLLECT_ROUND",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558496.7472336,
+  "ended": 1791558500.374446,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558500.3892314,
+  "ended": 1791558507.751823,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558507.755864,
+  "ended": 1791558508.7722404,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558508.7900567,
+  "ended": 1791558516.38121,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558516.383838,
+  "ended": 1791558517.5346072,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558517.552401,
+  "ended": 1791558524.538515,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558524.5410726,
+  "ended": 1791558525.4070463,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558525.424426,
+  "ended": 1791558529.8377643,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558529.8403833,
+  "ended": 1791558531.0660646,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558531.0837498,
+  "ended": 1791558537.5119934,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558537.5145729,
+  "ended": 1791558538.7666602,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558538.78481,
+  "ended": 1791558547.128346,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558547.1474051,
+  "ended": 1791558555.2548642,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558555.2574825,
+  "ended": 1791558556.4820635,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558556.5005767,
+  "ended": 1791558563.6957614,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558563.6984067,
+  "ended": 1791558564.9985497,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558565.0173469,
+  "ended": 1791558570.1109064,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558570.1135263,
+  "ended": 1791558571.2264755,
+  "ok": true
+ },
+ {
+  "node": "SUMMARIZE_DAY_DISCUSSION",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558571.2445686,
+  "ended": 1791558580.741837,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558580.860346,
+  "ended": 1791558586.0163522,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558580.875409,
+  "ended": 1791558586.3863,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558580.8801095,
+  "ended": 1791558586.4498649,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558580.7998252,
+  "ended": 1791558586.5575178,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558580.8052707,
+  "ended": 1791558586.6683207,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558580.8502297,
+  "ended": 1791558586.9435985,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558580.870357,
+  "ended": 1791558587.7962716,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558580.8439229,
+  "ended": 1791558588.2116003,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558586.034536,
+  "ended": 1791558591.6206188,
+  "ok": true
+ },
+ {
+  "node": "SIGILIST_NIGHT_PHASE",
+  "checkpoint_ns": "SIGILIST_NIGHT_PHASE:a020ee3f-4f8b-cf95-ba8b-f33bd4e69e2c",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558591.6943734,
+  "ended": 1791558596.336661,
+  "ok": true
+ },
+ {
+  "node": "VIGILANTE_NIGHT_PHASE",
+  "checkpoint_ns": "VIGILANTE_NIGHT_PHASE:6e027cdc-8f19-6a73-a29f-dbfe230c4d76",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558591.7085059,
+  "ended": 1791558596.668503,
+  "ok": true
+ },
+ {
+  "node": "SPECULATOR_NIGHT_PHASE",
+  "checkpoint_ns": "SPECULATOR_NIGHT_PHASE:95da26c1-90ff-89da-7368-f3ac60105f88",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558591.725171,
+  "ended": 1791558596.8365643,
+  "ok": true
+ },
+ {
+  "node": "TRAILSEER_NIGHT_PHASE",
+  "checkpoint_ns": "TRAILSEER_NIGHT_PHASE:448e5227-0226-0cd0-cd76-18a88156dcad",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558591.729641,
+  "ended": 1791558597.5417373,
+  "ok": true
+ },
+ {
+  "node": "HEALER_NIGHT_PHASE",
+  "checkpoint_ns": "HEALER_NIGHT_PHASE:67fd5f11-c39c-4523-078c-a842f0383b72",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558591.7419646,
+  "ended": 1791558597.7074428,
+  "ok": true
+ },
+ {
+  "node": "PACK_CHAT",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:07e1604a-c2c2-f839-70a5-4bd8f5502892",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558591.7369363,
+  "ended": 1791558597.9281604,
+  "ok": true
+ },
+ {
+  "node": "PACK_CHAT",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:07e1604a-c2c2-f839-70a5-4bd8f5502892",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558597.9439278,
+  "ended": 1791558602.2798233,
+  "ok": true
+ },
+ {
+  "node": "INVESTIGATOR_NIGHT_PHASE",
+  "checkpoint_ns": "INVESTIGATOR_NIGHT_PHASE:77e19753-4105-7097-946c-018e50ec45c1",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558591.7045195,
+  "ended": 1791558602.9375803,
+  "ok": true
+ },
+ {
+  "node": "PACK_CHAT",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:07e1604a-c2c2-f839-70a5-4bd8f5502892",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558602.295465,
+  "ended": 1791558607.1585205,
+  "ok": true
+ },
+ {
+  "node": "PACK_CHAT",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:07e1604a-c2c2-f839-70a5-4bd8f5502892",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558607.1733773,
+  "ended": 1791558611.6648626,
+  "ok": true
+ },
+ {
+  "node": "PACK_CHAT",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:07e1604a-c2c2-f839-70a5-4bd8f5502892",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558611.6802049,
+  "ended": 1791558616.2466562,
+  "ok": true
+ },
+ {
+  "node": "PACK_CHAT",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:07e1604a-c2c2-f839-70a5-4bd8f5502892",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558616.2623615,
+  "ended": 1791558622.4288425,
+  "ok": true
+ },
+ {
+  "node": "CARRIER_KILL",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:07e1604a-c2c2-f839-70a5-4bd8f5502892",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558622.451605,
+  "ended": 1791558628.8889453,
+  "ok": true
+ },
+ {
+  "node": "PACK_SKILL",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:07e1604a-c2c2-f839-70a5-4bd8f5502892",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558628.9228702,
+  "ended": 1791558633.963737,
+  "ok": true
+ },
+ {
+  "node": "PACK_SKILL",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:07e1604a-c2c2-f839-70a5-4bd8f5502892",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558628.9205947,
+  "ended": 1791558635.475082,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558635.6138294,
+  "ended": 1791558640.1439877,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558635.6044915,
+  "ended": 1791558640.4983575,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558635.5634787,
+  "ended": 1791558640.695866,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558635.5840983,
+  "ended": 1791558641.204555,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558635.5478628,
+  "ended": 1791558642.0858638,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558635.5214546,
+  "ended": 1791558642.6083903,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558635.6230545,
+  "ended": 1791558642.7860856,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558635.54152,
+  "ended": 1791558643.7059994,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558640.1607213,
+  "ended": 1791558645.8575833,
+  "ok": true
+ },
+ {
+  "node": "COLLECT_ROUND",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558645.8662221,
+  "ended": 1791558647.130187,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558647.1566718,
+  "ended": 1791558655.5701556,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558655.5894377,
+  "ended": 1791558662.3472817,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558662.349955,
+  "ended": 1791558663.3596127,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558663.3785264,
+  "ended": 1791558670.851057,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558670.8698535,
+  "ended": 1791558679.167978,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558679.17056,
+  "ended": 1791558680.3702374,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558680.3891578,
+  "ended": 1791558689.2593966,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558689.262014,
+  "ended": 1791558690.342413,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558690.3607004,
+  "ended": 1791558701.16653,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558701.1692312,
+  "ended": 1791558702.4742856,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558702.4940684,
+  "ended": 1791558711.0166283,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558711.0192595,
+  "ended": 1791558712.2722616,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558712.2912734,
+  "ended": 1791558718.5445116,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558718.5648377,
+  "ended": 1791558727.335095,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558727.3550098,
+  "ended": 1791558735.0900073,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558735.1100898,
+  "ended": 1791558743.527829,
+  "ok": true
+ },
+ {
+  "node": "SUMMARIZE_DAY_DISCUSSION",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558743.5468252,
+  "ended": 1791558754.6720548,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558755.013554,
+  "ended": 1791558759.6996946,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558754.743735,
+  "ended": 1791558760.3670697,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558754.728914,
+  "ended": 1791558760.6720645,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558754.9742472,
+  "ended": 1791558760.6852427,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558755.0048025,
+  "ended": 1791558760.9134145,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558754.9684587,
+  "ended": 1791558761.1048007,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558755.0072494,
+  "ended": 1791558762.5601819,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558754.7388358,
+  "ended": 1791558764.3476882,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558759.7182896,
+  "ended": 1791558766.6539462,
+  "ok": true
+ },
+ {
+  "node": "TRAILSEER_NIGHT_PHASE",
+  "checkpoint_ns": "TRAILSEER_NIGHT_PHASE:f46ae018-c06c-2eb7-ce31-18b70d9d983e",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558766.7779784,
+  "ended": 1791558771.4775982,
+  "ok": true
+ },
+ {
+  "node": "SIGILIST_NIGHT_PHASE",
+  "checkpoint_ns": "SIGILIST_NIGHT_PHASE:092e012b-bb61-6324-a12f-2ad1a770db9b",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558766.783853,
+  "ended": 1791558772.2882712,
+  "ok": true
+ },
+ {
+  "node": "VIGILANTE_NIGHT_PHASE",
+  "checkpoint_ns": "VIGILANTE_NIGHT_PHASE:80c11354-4e3a-17ff-65b4-58c110b0ea0f",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558766.8117228,
+  "ended": 1791558772.398006,
+  "ok": true
+ },
+ {
+  "node": "HEALER_NIGHT_PHASE",
+  "checkpoint_ns": "HEALER_NIGHT_PHASE:294b944a-88c1-b570-247a-d6b725319083",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558766.7219205,
+  "ended": 1791558772.430239,
+  "ok": true
+ },
+ {
+  "node": "CARRIER_KILL",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:c1668059-2641-642c-b022-4df82bd0d235",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558766.8254075,
+  "ended": 1791558772.5227523,
+  "ok": true
+ },
+ {
+  "node": "SPECULATOR_NIGHT_PHASE",
+  "checkpoint_ns": "SPECULATOR_NIGHT_PHASE:a36ccec7-89c4-171b-5947-496ffd17386b",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558766.7629979,
+  "ended": 1791558772.75149,
+  "ok": true
+ },
+ {
+  "node": "NECROMANCER_NIGHT_PHASE",
+  "checkpoint_ns": "NECROMANCER_NIGHT_PHASE:97b9e83e-ff9b-998f-8000-8bedaff26ae5",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558766.7282794,
+  "ended": 1791558772.9962075,
+  "ok": true
+ },
+ {
+  "node": "INVESTIGATOR_NIGHT_PHASE",
+  "checkpoint_ns": "INVESTIGATOR_NIGHT_PHASE:b2843a8c-5ef3-fc31-1a53-050c369a2863",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558766.7457876,
+  "ended": 1791558774.219968,
+  "ok": true
+ },
+ {
+  "node": "PACK_SKILL",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:c1668059-2641-642c-b022-4df82bd0d235",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558772.5466795,
+  "ended": 1791558777.4784036,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558777.5943127,
+  "ended": 1791558782.9965606,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558777.6441233,
+  "ended": 1791558783.966779,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558777.5613322,
+  "ended": 1791558784.2426744,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558777.6151845,
+  "ended": 1791558784.2611177,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558777.555792,
+  "ended": 1791558784.9037051,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558777.6212907,
+  "ended": 1791558785.0141625,
+  "ok": true
+ },
+ {
+  "node": "COLLECT_ROUND",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558785.021946,
+  "ended": 1791558786.2577546,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558786.2746348,
+  "ended": 1791558793.3239708,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558793.3266492,
+  "ended": 1791558794.540985,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558794.5608568,
+  "ended": 1791558803.291463,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558803.2940896,
+  "ended": 1791558804.5024471,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558804.5224235,
+  "ended": 1791558812.1111972,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558812.113809,
+  "ended": 1791558816.3669822,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558816.387262,
+  "ended": 1791558821.5627754,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558821.584054,
+  "ended": 1791558832.9376297,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558832.9402986,
+  "ended": 1791558833.930752,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558833.9535189,
+  "ended": 1791558841.9399152,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558841.942545,
+  "ended": 1791558843.2876253,
+  "ok": true
+ },
+ {
+  "node": "SUMMARIZE_DAY_DISCUSSION",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558843.3053408,
+  "ended": 1791558855.5207992,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558855.6224694,
+  "ended": 1791558861.2798607,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558855.5643797,
+  "ended": 1791558861.547816,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558855.6053777,
+  "ended": 1791558862.6494122,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558855.574681,
+  "ended": 1791558862.8727186,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558855.6326137,
+  "ended": 1791558863.069726,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426",
+  "model": "gemini-3.5-flash-lite",
+  "started": 1791558855.5955496,
+  "ended": 1791558863.314617,
+  "ok": true
+ }
+]

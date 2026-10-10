@@ -1,0 +1,17 @@
+[25] 18 s ()
+[50] 33 s ('PACK_NIGHT_PHASE:fed7b1d7-39b7-4c12-51f2-30fb3373e82a',)
+[75] 64 s ('DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff',)
+[100] 91 s ('DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff',)
+[125] 138 s ('DAY_PHASE:f11b58e3-8e48-aafc-8e19-47d2eef2b3ff',)
+[150] 165 s ()
+[175] 185 s ('PACK_NIGHT_PHASE:07e1604a-c2c2-f839-70a5-4bd8f5502892',)
+[200] 214 s ('DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7',)
+[225] 244 s ('DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7',)
+[250] 300 s ('DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7',)
+[275] 336 s ('DAY_PHASE:a291ae1b-0ed6-b237-cf9f-dcba046a6dd7',)
+[300] 347 s ()
+[325] 368 s ('DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426',)
+[350] 434 s ('DAY_PHASE:b860321d-fb7d-af0e-f9f7-42c86ea02426',)
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+phase3-d01-64377068: winner villagers, day 4, 436.4 s, 149 calls, cost 0.76

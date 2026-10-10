@@ -62,9 +62,11 @@ Two mechanics stand out as stronger than the sheet expected:
 
 **What evil did with its nights.** Night 1 kills landed on town 12 times of 19, on the neutral 5
 times, on another evil 2 (the serial killer hit a wolf once, the chanteuse the necromancer once).
-The serial killer's targets over all nights: town 9, wolves 3. Evil never coordinated against
-the information roles in particular; the night-1 lot spreads the first kill, and from night 2
-the pack mostly took whoever had accused it.
+The serial killer's targets over all nights: town 9, wolves 3. The pack did aim at the
+information roles (a count over all nineteen games, made after this README was first written:
+34 of its 56 kills went to the investigator, trailseer and sentinel), and the chanteuse blocked
+the healer on 6 nights, 3 of which let a protected target die; the healer still saved 12 pack
+kills. The night-1 lot spreads the first kill.
 
 ## What the sheet offers as dials (nothing is ruled here)
 
