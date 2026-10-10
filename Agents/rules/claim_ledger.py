@@ -64,6 +64,8 @@ class ClaimedAction:
     """What the player said about the same night before changing it, oldest first."""
     also: list[str] = field(default_factory=list)
     """Other targets the player named for the same action and night on the same day."""
+    seen: list[str] = field(default_factory=list)
+    """A claimed watch or follow: the players they say they saw. The claimant's word, like the rest."""
     reason: str = ""
     """The player's reason for doing something other than what they planned, if they gave one."""
 
@@ -161,7 +163,8 @@ def build_claim_ledger(discussion: list[DaySummary], messages: list[DayChannel] 
             for a in actions:
                 if a.get("target"):
                     _add_action(p, ClaimedAction(int(a.get("night") or 0), a.get("action", ""), a["target"],
-                                                 a.get("result", ""), s.day, reason=a.get("reason") or ""))
+                                                 a.get("result", ""), s.day, reason=a.get("reason") or "",
+                                                 seen=[v for v in a.get("seen") or [] if v]))
             for plan in c.get("planned_actions") or []:  # said on day N about night N
                 if plan.get("action") in PLAN_VERBS and plan.get("target"):
                     p.plans[(s.day, plan["action"])] = plan["target"]
@@ -185,6 +188,7 @@ def _add_action(p: PlayerClaims, new: ClaimedAction) -> None:
     old = p.actions.get(key)
     if old and _same_claim(old, new):
         old.reason = old.reason or new.reason
+        old.seen = old.seen or new.seen
         return  # a repeat
     if old and new.action and old.day == new.day and old.target != new.target:
         new.earlier, new.also = old.earlier, [*old.also, action_text(old)]  # two targets named the same day
@@ -206,7 +210,17 @@ def action_text(a: ClaimedAction) -> str:
         text += f", result: {_word(a.result) if a.result in ROLES else 'not a wolf'}"
     elif a.result in _SAYS:
         text += f", {_SAYS[a.result]}"
+    # A claimed sighting stays the claimant's word, and the ledger says what it does not establish
+    # (review 2026-10-09: a visit was taken as proof of the visitor's role and result).
+    if a.action == "watch" and a.seen:
+        text += f"; says {_join(a.seen)} visited them (a visit alone does not establish a visitor's role or what they did)"
+    elif a.action == "follow" and a.seen:
+        text += f"; says they visited {_join(a.seen)} (a visit alone does not establish what they did there)"
     return text
+
+
+def _join(names: list[str]) -> str:
+    return names[0] if len(names) == 1 else ", ".join(names[:-1]) + " and " + names[-1]
 
 
 def role_history(p: PlayerClaims) -> str:

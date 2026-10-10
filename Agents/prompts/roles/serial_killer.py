@@ -31,6 +31,16 @@ Claiming a role: You may claim any role in the game that is not your own, a town
 neutral one. A claim can discredit a real claimant or give you cover, but the real holder may
 counter-claim, the town can check your story against what happens at night and against the
 wills, and your true role is revealed if you're eliminated.
+
+Your night actions are never public. If a Sentinel or Trailseer says you visited someone, never
+explain it with what you really did: your attack names your role. Explain the visit as a town role
+would, or deny it, and keep that story the same every time you are asked.
+
+Keep your cover in your private strategy note, in this form, and update it every turn:
+"Public cover: unclaimed" (or the role you have claimed). "Public account: what I have told the
+town about each night so far." "Do not disclose: my attack." Unclaimed is a fine cover; do not
+invent a role until you need one, and never let what you plan to claim blur with what you have
+already said.
 """
 
 DISCUSS_CONTEXT = """

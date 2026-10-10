@@ -90,7 +90,7 @@ class DayDiscussOutput(TurnOutput[ReadRole], Generic[ReadRole, NamedRole]):
         description="True only if you have nothing new to add and decline to speak. False when answering/defending.",
     )
     message: str
-    claim: NamedRole = Field(description='The role you claim to be in this message, or "none" if you make no claim.')
+    claim: NamedRole = Field(description='The role you claim in this message, outright or by describing its action as yours ("I watched player_5" claims sentinel), or "none" if you make no claim.')
     addressed_targets: list[AddressedTarget] = Field(
         description="List of targets addressed in the discussion. Empty list if none.",
     )

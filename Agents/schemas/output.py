@@ -302,6 +302,13 @@ class ClaimedNightAction(LenientToolCallModel):
             "Empty string if it does not differ or they gave none."
         ),
     )
+    seen: list[str] = Field(
+        default_factory=list,
+        description=(
+            "watch / follow only: the exact player_ids the player says they saw (visitors of the watched "
+            "player, or where the followed player went). Empty list otherwise, or if they say they saw no one."
+        ),
+    )
 
 
 class PlannedNightAction(LenientToolCallModel):

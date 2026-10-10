@@ -306,3 +306,20 @@ def test_agents_read_only_the_claims_of_earlier_days():
     text = format_day_summaries([_day(2)], before_day=3, cast_role_counts=CAST,
                                 messages=[_said(2, 1, "p3", "investigator"), _said(3, 1, "p5", "healer")])
     assert "p3: claimed investigator (day 2)." in text and "p5" not in text
+
+
+def test_a_claimed_sighting_is_the_claimants_word_and_says_what_it_does_not_establish():
+    watch = {"player": "p3", "claimed_role": "sentinel", "kind": "claimed",
+             "night_actions": [{"night": 1, "action": "watch", "target": "p5", "result": "not_said", "seen": ["p4", "p7"]}]}
+    follow = {"player": "p6", "claimed_role": "trailseer", "kind": "claimed",
+              "night_actions": [{"night": 1, "action": "follow", "target": "p4", "result": "not_said", "seen": ["p5"]}]}
+    quiet = {"player": "p8", "claimed_role": "sentinel", "kind": "claimed",
+             "night_actions": [{"night": 1, "action": "watch", "target": "p9", "result": "not_said", "seen": []}]}
+    text = _ledger(_day(2, [watch, follow, quiet]))
+    assert ("  Night 1: watched p5; says p4 and p7 visited them (a visit alone does not establish a "
+            "visitor's role or what they did).") in text.splitlines()
+    assert "  Night 1: followed p4; says they visited p5 (a visit alone does not establish what they did there)." in text
+    assert "  Night 1: watched p9." in text  # saw no one: no names, no line
+    # a repeat on a later day keeps the names
+    later = _ledger(_day(2, [watch]), _day(3, [{**watch, "night_actions": [{**watch["night_actions"][0], "seen": []}]}]))
+    assert "says p4 and p7 visited them" in later
