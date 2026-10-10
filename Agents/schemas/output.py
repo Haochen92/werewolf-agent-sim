@@ -22,7 +22,8 @@ from Agents.schemas.roles import roles
 # claimed night action is transcribed into, so code can check a claim against the engine's record
 # (Agents/rules/claim_ledger.py). Every role of the pool, dealt or not: the summariser transcribes
 # claims and a player may claim anything.
-NIGHT_RESULT_WORDS = ("not_a_wolf", "suspicious", "not_suspicious", "saved_from_attack", "no_attack", "died", "survived", "not_said")
+NIGHT_RESULT_WORDS = ("not_a_wolf", "suspicious", "not_suspicious", "saved_from_attack", "no_attack", "died", "survived",
+                      "no_visitors", "no_effect", "roleblocked", "not_said")
 CLAIMED_ROLE_ENUM = Literal[tuple(roles)]
 CLAIMED_RESULT_ENUM = Literal[(*roles, *NIGHT_RESULT_WORDS)]
 
@@ -284,15 +285,22 @@ class DaySummaryOutputV3(LenientToolCallModel):
 # Model-visible: no class docstrings.
 class ClaimedNightAction(LenientToolCallModel):
     night: int = Field(description="The night the action happened; 0 if the player did not say")
-    action: Literal["investigate", "protect", "shoot", "kill", "watch", "follow", "sigil", "block", "conceal", "bet", "pick"] = Field(
-        description="What the player says they already did that night (not a plan for a coming night)",
+    action: Literal["investigate", "protect", "shoot", "kill", "watch", "follow", "sigil", "block", "conceal", "bet", "pick", "no_action"] = Field(
+        description=(
+            "What the player says they already did that night (not a plan for a coming night); no_action "
+            "when they say they did not act or visited no one that night (held fire, kept a watch or a "
+            "sigil, stayed home, did not visit someone)"
+        ),
     )
-    target: str = Field(description="Player ID the action was on")
+    target: str = Field(description="Player ID the action was on; for no_action, the player they say they did not visit, or empty string")
     result: CLAIMED_RESULT_ENUM = Field(
         description=(
             "What the player says came of it. investigate: suspicious or not_suspicious (or the role "
             "they say they found). protect: saved_from_attack or no_attack. shoot / kill: died or "
-            "survived. not_said if they did not say, or said it only vaguely."
+            "survived. watch: no_visitors if they say no one visited; follow: no_visitors if they say the "
+            "player visited no one. sigil: no_effect if they say it had no effect. Any action: roleblocked "
+            "if they say they were blocked and it was not carried out. not_said if they did not say, or said "
+            "it only vaguely."
         ),
     )
     reason: str = Field(
@@ -320,7 +328,9 @@ class PlannedNightAction(LenientToolCallModel):
 
 class RoleClaimV4(LenientToolCallModel):
     player: str = Field(description="Player ID who made the claim")
-    claimed_role: CLAIMED_ROLE_ENUM = Field(description="The role claimed (or withdrawn)")
+    claimed_role: Literal[(*roles, "none")] = Field(
+        description='The role claimed (or withdrawn); "none" when the player claims no role but says what they did or did not do at night',
+    )
     kind: Literal["claimed", "retracted"] = Field(
         description="claimed = the player claims this role today (also when repeating it); retracted = they withdrew it",
     )

@@ -345,3 +345,49 @@ def test_a_true_role_keeps_its_claim_when_a_held_fire_is_written_as_a_self_shot(
             "night_actions": [{"night": 1, "action": "shoot", "target": "p9", "result": "not_said"},
                               {"night": 2, "action": "shoot", "target": "p9", "result": "not_said"}]}
     assert _ledger(_day(3, [held])).splitlines() == ["p9: claimed vigilante (day 3)."]
+
+
+# --- denials (review 2026-10-10: "I didn't visit anyone last night" was dropped from the record) ---
+
+def test_a_denial_is_kept_as_the_claimants_word_with_or_without_a_role():
+    unclaimed = {"player": "p5", "claimed_role": "none", "kind": "claimed",
+                 "night_actions": [{"night": 2, "action": "no_action", "target": "", "result": "not_said"}]}
+    vig = {"player": "p8", "claimed_role": "vigilante", "kind": "claimed",
+           "night_actions": [{"night": 3, "action": "no_action", "target": "", "result": "not_said"}]}
+    named = {"player": "p6", "claimed_role": "none", "kind": "claimed",
+             "night_actions": [{"night": 1, "action": "no_action", "target": "p7", "result": "not_said"}]}
+    lines = _ledger(_day(3, [unclaimed, vig, named])).splitlines()
+    assert lines == ["p5: claimed no role.", "  Night 2: says they did not act.",
+                     "p8: claimed vigilante (day 3).", "  Night 3: says they did not act.",
+                     "p6: claimed no role.", "  Night 1: says they did not visit p7."]
+
+
+def test_a_later_action_claim_for_the_same_night_keeps_the_denial_as_history():
+    denial = {"player": "p5", "claimed_role": "none", "kind": "claimed",
+              "night_actions": [{"night": 2, "action": "no_action", "target": "", "result": "not_said"}]}
+    sigil = {"player": "p5", "claimed_role": "sigilist", "kind": "claimed",
+             "night_actions": [{"night": 2, "action": "sigil", "target": "p1", "result": "not_said"}]}
+    text = _ledger(_day(3, [denial]), _day(4, [sigil]))
+    assert "Night 2: set a sigil on p1 (changed on day 4; earlier: Night 2: says they did not act)." in text
+
+
+def test_a_no_role_entry_with_nothing_in_it_is_not_shown():
+    empty = {"player": "p2", "claimed_role": "none", "kind": "claimed", "night_actions": []}
+    assert _ledger(_day(2, [empty])) == ""
+
+
+def test_a_roleblock_is_an_attempt_and_empty_results_are_kept():
+    blocked = {"player": "p10", "claimed_role": "trailseer", "kind": "claimed",
+               "night_actions": [{"night": 1, "action": "follow", "target": "", "result": "roleblocked"}]}
+    quiet = {"player": "p5", "claimed_role": "trailseer", "kind": "claimed",
+             "night_actions": [{"night": 1, "action": "follow", "target": "p7", "result": "no_visitors"}]}
+    watch = {"player": "p3", "claimed_role": "sentinel", "kind": "claimed",
+             "night_actions": [{"night": 1, "action": "watch", "target": "p7", "result": "no_visitors"}]}
+    sigil = {"player": "p8", "claimed_role": "sigilist", "kind": "claimed",
+             "night_actions": [{"night": 3, "action": "sigil", "target": "p4", "result": "no_effect"}]}
+    lines = _ledger(_day(2, [blocked, quiet, watch]), _day(4, [sigil])).splitlines()
+    assert "  Night 1: says they tried to follow and were roleblocked." in lines
+    assert "  Night 1: followed p7; says they visited no one." in lines
+    assert "  Night 1: watched p7; says no one visited them." in lines
+    assert "  Night 3: set a sigil on p4, says it had no effect." in lines
+    assert not any("did not act" in line for line in lines)

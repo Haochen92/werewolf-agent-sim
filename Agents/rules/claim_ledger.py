@@ -31,7 +31,7 @@ from Agents.schemas.roles import ROLE_SPECS, WOLVES, roles as ROLES
 _SAVE = re.compile(r"(\S+) was attacked by [^!.]*? but was saved by the healer")
 _NIGHT = re.compile(r"^Night of day (\d+):")
 
-_VERBS = {"investigate": "checked", "protect": "protected", "shoot": "shot", "kill": "attacked",
+_VERBS = {"no_action": "did not act", "investigate": "checked", "protect": "protected", "shoot": "shot", "kill": "attacked",
           "watch": "watched", "follow": "followed", "sigil": "set a sigil on", "block": "blocked",
           "conceal": "concealed", "bet": "bet on", "pick": "picked"}
 _NOUNS = {"investigate": "check", "protect": "protection", "shoot": "shot", "kill": "kill",
@@ -49,6 +49,7 @@ _SAYS = {
     "no_attack": "says there was no attack",
     "died": "says they died",
     "survived": "says they survived",
+    "no_effect": "says it had no effect",
 }
 
 
@@ -155,6 +156,15 @@ def build_claim_ledger(discussion: list[DaySummary], messages: list[DayChannel] 
             player, role = c.get("player"), c.get("claimed_role")
             if not player or not role:
                 continue
+            if role == "none":  # no role claimed: only what they said they did or did not do
+                said = [a for a in c.get("night_actions") or []
+                        if a.get("target") or a.get("action") == "no_action" or a.get("result") == "roleblocked"]
+                if said:  # an entry with nothing in it is not shown
+                    p = ledger.setdefault(player, PlayerClaims())
+                    for a in said:
+                        _add_action(p, ClaimedAction(int(a.get("night") or 0), a.get("action", ""), a.get("target") or "",
+                                                     a.get("result", ""), s.day, reason=a.get("reason") or ""))
+                continue
             kind, actions = _entry(c)
             # A block, watch, follow, check, sigil or attack on oneself is no one's claim: it is
             # something done to the speaker, or a no-action ("held my fire") with nowhere else to
@@ -176,8 +186,8 @@ def build_claim_ledger(discussion: list[DaySummary], messages: list[DayChannel] 
             elif role != p.current_role and player not in claimed_today:
                 p.roles.append((s.day, role, "claimed"))
             for a in actions:
-                if a.get("target"):
-                    _add_action(p, ClaimedAction(int(a.get("night") or 0), a.get("action", ""), a["target"],
+                if a.get("target") or a.get("action") == "no_action" or a.get("result") == "roleblocked":
+                    _add_action(p, ClaimedAction(int(a.get("night") or 0), a.get("action", ""), a.get("target") or "",
                                                  a.get("result", ""), s.day, reason=a.get("reason") or "",
                                                  seen=[v for v in a.get("seen") or [] if v]))
             for plan in c.get("planned_actions") or []:  # said on day N about night N
@@ -191,6 +201,13 @@ def _same_claim(old: ClaimedAction, new: ClaimedAction) -> bool:
 
 
 def _add_action(p: PlayerClaims, new: ClaimedAction) -> None:
+    # A denial and an action for the same night replace each other, and the earlier one is kept as
+    # history ("I didn't visit anyone" on day 3, a sigil claimed for that night on day 4: f06).
+    if new.night and new.action:
+        for k in [k for k, a in p.actions.items()
+                  if a.night == new.night and (a.action == "no_action") != (new.action == "no_action")]:
+            new.earlier = [*new.earlier, *p.actions[k].earlier, action_text(p.actions[k])]
+            del p.actions[k]
     same = [k for k, a in p.actions.items() if a.action == new.action and _same_claim(a, new)]
     if not new.night and same:
         return  # repeated without its night: the earlier entry already says it
@@ -220,6 +237,14 @@ def action_text(a: ClaimedAction) -> str:
     night = f"Night {a.night}" if a.night else "Night not stated"
     if not a.action:
         return f"{night}: {a.target} {a.result}"
+    if a.action == "no_action":
+        return f"{night}: says they did not visit {a.target}" if a.target else f"{night}: says they did not act"
+    if a.result == "roleblocked":  # tried and blocked: an attempt, not a denial
+        tried = f"{PLAN_VERBS.get(a.action, a.action)} {a.target}".strip()
+        return f"{night}: says they tried to {tried} and were roleblocked"
+    if a.result == "no_visitors" and a.action in ("watch", "follow"):
+        said = "says no one visited them" if a.action == "watch" else "says they visited no one"
+        return f"{night}: {_VERBS[a.action]} {a.target}; {said}"
     text = f"{night}: {_VERBS[a.action]} {a.target}"
     if a.action == "investigate" and (a.result in ROLES or a.result == "not_a_wolf"):
         text += f", result: {_word(a.result) if a.result in ROLES else 'not a wolf'}"
@@ -243,7 +268,7 @@ def role_history(p: PlayerClaims) -> str:
     for i, (day, role, kind) in enumerate(p.roles):
         verb = "retracted" if kind == "retracted" else ("claimed" if i == 0 else "then claimed")
         parts.append(f"{verb} {_word(role)} (day {day})")
-    return ", ".join(parts)
+    return ", ".join(parts) or "claimed no role"
 
 
 def _when(d: DeathRecord) -> str:
@@ -309,7 +334,7 @@ def role_checks(player: str, p: PlayerClaims, ledger: dict[str, PlayerClaims], f
 
 def action_checks(player: str, a: ClaimedAction, facts: RecordFacts) -> list[Check]:
     notes = []
-    if a.also:
+    if a.also and a.action in _NOUNS:
         notes.append(Check(f"Rules: one {_NOUNS[a.action]} a night.", False))
     if a.action == "protect" and a.target == player:
         notes.append(Check("Rules: the healer cannot protect themselves.", False))
