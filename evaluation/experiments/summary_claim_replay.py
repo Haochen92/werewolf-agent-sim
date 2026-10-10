@@ -12,6 +12,8 @@ checks, not readings of prose:
   done to them (a block, watch, follow, check, sigil, attack or conceal on oneself).
 - record_check: an accusation's record check says "no attack on X was ever announced" when the
   record shows an attack on X (the copied example).
+- denial: a player said they did not act or visited no one that night; the summary must keep it as a
+  no_action claim for that night, and the ledger must show it (added 2026-10-10, claim retention).
 - control: a true claim the speaker made by describing its action without setting its claim field;
   the summary and the ledger must keep it.
 
@@ -47,6 +49,19 @@ CASES = [
     {"game": "phase3_balance_4/e03", "day": 2, "kind": "control", "player": "player_4"},
     {"game": "phase3_balance_4/e05", "day": 2, "kind": "control", "player": "player_2"},
     {"game": "phase3_balance_4/e06", "day": 3, "kind": "control", "player": "player_5"},
+    # Denials the summary dropped (review 2026-10-10: claim retention), with the night they cover.
+    {"game": "phase3_balance_2/c03", "day": 4, "kind": "denial", "player": "player_8", "night": 3},
+    {"game": "phase3_balance_2/c03", "day": 5, "kind": "denial", "player": "player_8", "night": 4},
+    {"game": "phase3_balance_2/c04", "day": 3, "kind": "denial", "player": "player_10", "night": 2},
+    {"game": "phase3_balance_4/e03", "day": 2, "kind": "denial", "player": "player_6", "night": 1},
+    {"game": "phase3_flash_games/f02", "day": 5, "kind": "denial", "player": "player_7", "night": 3},
+    {"game": "phase3_flash_games/f06", "day": 3, "kind": "denial", "player": "player_5", "night": 2},
+    # From the Luna games (2026-10-10): a roleblock filed as a denial, and results the record could not hold.
+    {"game": "phase3_luna_games/l03", "day": 2, "kind": "roleblock", "player": "player_10", "night": 1},
+    {"game": "phase3_luna_games/l04", "day": 3, "kind": "roleblock", "player": "player_9", "night": 2},
+    {"game": "phase3_luna_games/l01", "day": 3, "kind": "roleblock", "player": "player_5", "night": 2},
+    {"game": "phase3_luna_games/l01", "day": 2, "kind": "result_word", "player": "player_5", "night": 1, "word": "no_visitors"},
+    {"game": "phase3_luna_games/l01", "day": 4, "kind": "result_word", "player": "player_8", "night": 3, "word": "no_effect"},
 ]
 
 _ACTED_ON = r"(blocked|watched|followed|checked|set a sigil on|attacked|shot|concealed)"
@@ -97,6 +112,17 @@ def _check(case: dict, record: dict, structured: dict, ledger: str) -> dict:
         checks = [a.get("record_check") or "" for a in structured.get("accusations", [])]
         summary_bad = any(re.search(rf"no attack on {p}\b", rc) for rc in checks)
         ledger_bad = summary_bad  # the record check is the summary's own text, shown beside the ledger
+    elif case["kind"] == "denial":  # the denial kept, for its night, by the summary and the ledger
+        summary_bad = not any(a.get("action") == "no_action" and int(a.get("night") or 0) in (case["night"], 0)
+                              for c in claims for a in c.get("night_actions", []))
+        ledger_bad = not re.search(rf"Night ({case['night']}|not stated): says they did not", section)
+    elif case["kind"] == "roleblock":  # never a denial; the ledger must not say they did not act
+        summary_bad = any(a.get("action") == "no_action" and int(a.get("night") or 0) in (case["night"], 0)
+                          for c in claims for a in c.get("night_actions", []))
+        ledger_bad = "says they did not act" in section
+    elif case["kind"] == "result_word":  # the stated result kept, by the summary and the ledger
+        summary_bad = not any(a.get("result") == case["word"] for c in claims for a in c.get("night_actions", []))
+        ledger_bad = not re.search(r"says no one visited them|says they visited no one|says it had no effect", section)
     else:  # control: the true role, by the summary and by the ledger
         role = roles[p]
         summary_bad = not any(c.get("claimed_role") == role for c in claims)
@@ -126,6 +152,7 @@ def main() -> None:
     ap.add_argument("--arm", required=True)
     ap.add_argument("--n", type=int, default=5)
     ap.add_argument("--workers", type=int, default=6)
+    ap.add_argument("--kinds", nargs="*", help="only the cases of these kinds")
     args = ap.parse_args()
     from dotenv import load_dotenv
     load_dotenv(MAIN / ".env")
@@ -133,7 +160,7 @@ def main() -> None:
     import Agents
     assert Path(Agents.__file__).resolve().is_relative_to(Path(args.tree).resolve()), Agents.__file__
 
-    jobs = [(c, i) for c in CASES for i in range(args.n)]
+    jobs = [(c, i) for c in CASES if not args.kinds or c["kind"] in args.kinds for i in range(args.n)]
     with ThreadPoolExecutor(max_workers=args.workers) as ex:
         rows = list(ex.map(lambda job: _one(*job), jobs))
     OUT_DIR.mkdir(parents=True, exist_ok=True)

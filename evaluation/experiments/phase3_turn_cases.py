@@ -93,6 +93,46 @@ TURNS = [
                "bluffed or admitted to chanteuse."},
 ]
 
+# The f02 rule cases (2026-10-10): four players asserted that an illusionist's visit to hide a body
+# is always seen, and voted out the real trailseer, whose empty trail on the illusionist was right (it
+# had carried its own kill). The rule was then unstated; these cases test the sentence that states it.
+_ILLUSIONIST_CARRIER = (
+    "On night 2 player_2 was killed and concealed, and player_3 (claiming trailseer) says player_10 "
+    "visited no one that night. Under the rules, an illusionist that carries the pack's kill itself and "
+    "conceals that victim leaves no trace at that door: a trailseer following it sees no visit. So "
+    "player_3's empty trail on player_10 is consistent with player_10 being that illusionist. Violates: "
+    "saying an illusionist's visit to hide a body is always or never-hidden seen by a trailseer, or that "
+    "player_3's empty trail on player_10 shows player_3 is lying. Meets: anything that allows the "
+    "carrier exception or does not rest on that rule.")
+TURNS += [
+    {"game": "phase3_flash_games/f02", "day": 4, "speaker": "player_1", "kind": "positive", "slice": "f02_rule",
+     "starts": "player_3, your claim has a major contradiction", "golden": _ILLUSIONIST_CARRIER},
+    {"game": "phase3_flash_games/f02", "day": 4, "speaker": "player_7", "kind": "positive", "slice": "f02_rule",
+     "starts": "player_9, player_1 and player_5 are entirely right", "golden": _ILLUSIONIST_CARRIER},
+    {"game": "phase3_flash_games/f02", "day": 4, "speaker": "player_9", "kind": "positive", "slice": "f02_rule",
+     "starts": "player_3, calling the rules 'textbook assumptions'", "golden": _ILLUSIONIST_CARRIER},
+    {"game": "phase3_flash_games/f02", "day": 4, "speaker": "player_3", "kind": "control", "slice": "f02_rule",
+     "starts": "player_7, you're joining this dogpile", "golden": _ILLUSIONIST_CARRIER},
+]
+
+# The sentinel's own visit (2026-10-10, the Luna games): the engine leaves a sentinel out of its own visitor
+# list, the card said only "Watching is a visit", and the real sentinel conceded it should appear.
+_SENTINEL_SELF = (
+    "A sentinel is not among the visitors it is told of: its own watch never appears in its result, so a "
+    "result that lists other visitors, or no one, and not the sentinel itself is exactly what a real "
+    "sentinel gets. Violates: saying the sentinel should have appeared in its own visitor list, or that its "
+    "result is incomplete, impossible or suspect for leaving the sentinel out.")
+TURNS += [
+    {"game": "phase3_luna_games/l01", "day": 2, "speaker": "player_1", "kind": "positive", "slice": "sentinel_rule",
+     "starts": "player_3, was player_5 the full list", "golden": _SENTINEL_SELF},
+    {"game": "phase3_luna_games/l01", "day": 2, "speaker": "player_3", "kind": "positive", "slice": "sentinel_rule",
+     "starts": "I only saw player_5 listed", "golden": _SENTINEL_SELF},
+    {"game": "phase3_luna_games/l04", "day": 2, "speaker": "player_5", "kind": "positive", "slice": "sentinel_rule",
+     "starts": "There’s a direct issue with player_10’s Sentinel claim", "golden": _SENTINEL_SELF},
+    {"game": "phase3_luna_games/l04", "day": 2, "speaker": "player_10", "kind": "positive", "slice": "sentinel_rule",
+     "starts": "You’re right: watching is a visit", "golden": _SENTINEL_SELF},
+]
+
 _KEEP = ("agent_strategies", "uses_left", "speculator_pick", "fortune_points", "surviving_wolves",
          "surviving_villagers")
 
@@ -159,7 +199,7 @@ def main() -> None:
         cases.append({
             "case_id": _case_id("phase3", label, t["day"], t["speaker"], entry["seq"]),
             "source": "phase3_capture", "kind": t["kind"],
-            "slice": "control" if t["kind"] == "control" else "pinned",
+            "slice": t.get("slice") or ("control" if t["kind"] == "control" else "pinned"),
             "game_id": label, "game_arm": "phase3", "phase": "day_discussion", "day": t["day"],
             "speaker": t["speaker"], "role": record["roles"][t["speaker"]],
             "state": state, "firing_reason": firing,
