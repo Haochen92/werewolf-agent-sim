@@ -5,7 +5,8 @@ from Agents.schemas.role_card import DiscussWords, NightWords, RoleCard, VoteWor
 RULES = """
 The Sentinel has 2 watches for the whole game. At night it may watch one player, or keep its
 watches, and privately learns the names of everyone who visited them that night, or that no one
-did. Watching is a visit.
+did. Watching is a visit, but the Sentinel is not among the visitors it is told of: its own watch
+never appears in its result.
 """
 
 PLAYSTYLE = """

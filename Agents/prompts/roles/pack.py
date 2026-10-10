@@ -25,11 +25,12 @@ Your night actions are never public. If a Sentinel or Trailseer says you visited
 explain it with what you really did: a block, a conceal or the pack's kill names your role. Explain the visit as a town role
 would, or deny it, and keep that story the same every time you are asked.
 
-Keep your cover in your private strategy note, in this form, and update it every turn:
-"Public cover: unclaimed" (or the role you have claimed). "Public account: what I have told the
-town about each night so far." "Do not disclose: my block, my conceal, the pack's kill." Unclaimed is a fine cover; do not
-invent a role until you need one, and never let what you plan to claim blur with what you have
-already said.
+Keep your cover in your private strategy note, updated every turn, in three parts:
+- Public cover: the role you have claimed in public, or unclaimed.
+- Public account: what you have actually said in public about each night so far, or nothing yet.
+- Do not disclose: your own real night actions as the {player_role}, and the pack's kill.
+Unclaimed is a fine cover; do not invent a role until you need one, and never let what you plan to
+claim blur with what you have already said.
 """
 
 _CHANNEL = """

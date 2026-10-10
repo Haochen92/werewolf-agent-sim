@@ -440,3 +440,23 @@ def test_a_kill_through_the_illusionists_body_cleans_and_the_necromancer_learns_
                "night_choices": [NightChoice(h["necromancer"], "necromancer", "kill", h["healer"], via=h["vigilante"])]})
     shot = night_resolution(st, SimpleNamespace(context={"metrics": Metrics()}))
     assert f"{h['healer']} was shot by a reanimated vigilante last night. They were a healer." in shot["day_channel"][0].message
+
+
+def test_an_illusionist_that_carries_and_conceals_leaves_no_trace_at_that_door():
+    from Agents.rules.night import visitors_of
+    st = _state({"lone_killer": "serial_killer", "neutral": "speculator"})
+    h = _holders(st)
+    choices = [
+        NightChoice(h["illusionist"], "illusionist", "kill", h["investigator"]),
+        NightChoice(h["illusionist"], "illusionist", "conceal", None),
+        NightChoice(h["sentinel"], "sentinel", "watch", h["investigator"]),
+        NightChoice(h["trailseer"], "trailseer", "follow", h["illusionist"]),
+    ]
+    outcome = resolve_night(choices, st["roles"], 2)
+    assert outcome.concealed == [h["investigator"]]
+    assert h["illusionist"] not in visitors_of(outcome, h["investigator"])
+    records = {r.actor: r for r in night_action_records(choices, outcome, st["roles"])}
+    assert records[h["sentinel"]].seen == [] and records[h["trailseer"]].seen == []
+    # saved, nothing is concealed, so the carrier is seen as usual
+    saved = resolve_night(choices + [NightChoice(h["healer"], "healer", "protect", h["investigator"])], st["roles"], 2)
+    assert h["illusionist"] in visitors_of(saved, h["investigator"])

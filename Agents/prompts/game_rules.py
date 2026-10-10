@@ -17,7 +17,8 @@ SIDES = {
             "kills one player; the carrier rotates unless the pack agrees otherwise, and is the only wolf who "
             "visits for the kill. Every wolf knows the pack's kill. A wolf may carry the kill and use its own "
             "ability on the same night. When an illusionist conceals the pack's victim, the carrier's visit to "
-            "that victim is hidden as well: whoever watched the victim or followed the carrier does not see it."
+            "that victim is hidden as well: whoever watched the victim or followed the carrier does not see it. "
+            "An illusionist that carries the kill itself and conceals that victim is not seen there at all."
         ),
         "win": "The wolves win when the lone killer is gone and they equal or outnumber everyone else still alive.",
     },
@@ -86,4 +87,6 @@ Morning, the report:
 Win conditions:
 {wins}
 
-The world is closed: the only roles and abilities in this game are the ones listed above."""
+The world is closed: the only roles and abilities in this game are the ones listed above.
+These rules are exact. A player's statement of how a rule works is a claim like any other, and where it
+disagrees with these rules, these rules are right."""
