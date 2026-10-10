@@ -1,0 +1,35 @@
+{
+  "label": "phase3_turns",
+  "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+  "n": 5,
+  "workers": 3,
+  "arms": [
+    {
+      "label": "flashlite_committed",
+      "model": "gemini-3.5-flash-lite",
+      "env": {},
+      "memory": "none",
+      "checkout": "/tmp/claude-1001/-home-ubuntu-projects-werewolf-agent-sim/714c3a81-d7cb-4640-9388-68d628041c2e/scratchpad/ww-head"
+    },
+    {
+      "label": "flashlite_fixed",
+      "model": "gemini-3.5-flash-lite",
+      "env": {},
+      "memory": "none"
+    },
+    {
+      "label": "flash_fixed",
+      "model": "gemini-3.5-flash",
+      "env": {},
+      "memory": "none"
+    }
+  ],
+  "recall_model": "gemini-3.1-flash-lite",
+  "precision_model": "gemini-3.5-flash",
+  "golden_model": "gemini-3.5-flash",
+  "slices": [
+    "pinned",
+    "control"
+  ],
+  "note": "Phase 3 reasoning failures frozen from the captured games (evaluation/experiments/phase3_turn_cases.py). flashlite_committed runs the committed code (a worktree at 56b21471; the claim-ledger fix changes what the e06 cases see); flashlite_fixed vs flash_fixed on the working tree is the capability test."
+}
