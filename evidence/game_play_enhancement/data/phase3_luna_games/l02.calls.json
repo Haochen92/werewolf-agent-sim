@@ -1,0 +1,1538 @@
+[
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:709e203a-dc28-bbff-9840-f539378469b0",
+  "model": "gpt-6-luna",
+  "started": 1791610157.188082,
+  "ended": 1791610162.6621077,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:709e203a-dc28-bbff-9840-f539378469b0",
+  "model": "gpt-6-luna",
+  "started": 1791610157.1851332,
+  "ended": 1791610162.7098725,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:709e203a-dc28-bbff-9840-f539378469b0",
+  "model": "gpt-6-luna",
+  "started": 1791610157.1820693,
+  "ended": 1791610163.075178,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:709e203a-dc28-bbff-9840-f539378469b0",
+  "model": "gpt-6-luna",
+  "started": 1791610157.1835792,
+  "ended": 1791610163.4877377,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:709e203a-dc28-bbff-9840-f539378469b0",
+  "model": "gpt-6-luna",
+  "started": 1791610157.1896396,
+  "ended": 1791610163.5975184,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:709e203a-dc28-bbff-9840-f539378469b0",
+  "model": "gpt-6-luna",
+  "started": 1791610157.1910725,
+  "ended": 1791610163.7772632,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:709e203a-dc28-bbff-9840-f539378469b0",
+  "model": "gpt-6-luna",
+  "started": 1791610157.1928325,
+  "ended": 1791610163.9128242,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:709e203a-dc28-bbff-9840-f539378469b0",
+  "model": "gpt-6-luna",
+  "started": 1791610157.1762176,
+  "ended": 1791610164.9581954,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:709e203a-dc28-bbff-9840-f539378469b0",
+  "model": "gpt-6-luna",
+  "started": 1791610162.721835,
+  "ended": 1791610167.2573164,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:709e203a-dc28-bbff-9840-f539378469b0",
+  "model": "gpt-6-luna",
+  "started": 1791610162.674553,
+  "ended": 1791610167.8764458,
+  "ok": true
+ },
+ {
+  "node": "SUMMARIZE_DAY_DISCUSSION",
+  "checkpoint_ns": "DAY_PHASE:709e203a-dc28-bbff-9840-f539378469b0",
+  "model": "gpt-6-luna",
+  "started": 1791610167.8931425,
+  "ended": 1791610169.4191227,
+  "ok": true
+ },
+ {
+  "node": "HEALER_NIGHT_PHASE",
+  "checkpoint_ns": "HEALER_NIGHT_PHASE:3fac8e32-5b90-481c-6ee3-3e7ccbfbc728",
+  "model": "gpt-6-luna",
+  "started": 1791610169.4640698,
+  "ended": 1791610173.6821237,
+  "ok": true
+ },
+ {
+  "node": "SENTINEL_NIGHT_PHASE",
+  "checkpoint_ns": "SENTINEL_NIGHT_PHASE:7bebfc66-923a-629c-eac8-c30cfebfce27",
+  "model": "gpt-6-luna",
+  "started": 1791610169.503296,
+  "ended": 1791610173.8400288,
+  "ok": true
+ },
+ {
+  "node": "INVESTIGATOR_NIGHT_PHASE",
+  "checkpoint_ns": "INVESTIGATOR_NIGHT_PHASE:7404d7cb-8362-8c7c-96de-f46485f33fbf",
+  "model": "gpt-6-luna",
+  "started": 1791610169.4764304,
+  "ended": 1791610174.2349014,
+  "ok": true
+ },
+ {
+  "node": "SIGILIST_NIGHT_PHASE",
+  "checkpoint_ns": "SIGILIST_NIGHT_PHASE:e9794ab3-85be-4416-5921-3665278ee875",
+  "model": "gpt-6-luna",
+  "started": 1791610169.523208,
+  "ended": 1791610174.3864286,
+  "ok": true
+ },
+ {
+  "node": "TRAILSEER_NIGHT_PHASE",
+  "checkpoint_ns": "TRAILSEER_NIGHT_PHASE:259bc393-ecc6-c292-8080-361edd4a216e",
+  "model": "gpt-6-luna",
+  "started": 1791610169.5422127,
+  "ended": 1791610174.490424,
+  "ok": true
+ },
+ {
+  "node": "VIGILANTE_NIGHT_PHASE",
+  "checkpoint_ns": "VIGILANTE_NIGHT_PHASE:9d55b014-a104-e3d2-4ff0-672cc956193e",
+  "model": "gpt-6-luna",
+  "started": 1791610169.569097,
+  "ended": 1791610175.8977394,
+  "ok": true
+ },
+ {
+  "node": "PACK_CHAT",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:5cd7108d-0c65-e6b8-b23b-283802eef93e",
+  "model": "gpt-6-luna",
+  "started": 1791610169.575402,
+  "ended": 1791610177.980765,
+  "ok": true
+ },
+ {
+  "node": "FORTUNE_TELLER_NIGHT_PHASE",
+  "checkpoint_ns": "FORTUNE_TELLER_NIGHT_PHASE:a1cb0b2a-aa86-53ec-e634-01032e8c7b6e",
+  "model": "gpt-6-luna",
+  "started": 1791610169.455217,
+  "ended": 1791610178.316656,
+  "ok": true
+ },
+ {
+  "node": "PACK_CHAT",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:5cd7108d-0c65-e6b8-b23b-283802eef93e",
+  "model": "gpt-6-luna",
+  "started": 1791610177.9940314,
+  "ended": 1791610185.7103446,
+  "ok": true
+ },
+ {
+  "node": "PACK_CHAT",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:5cd7108d-0c65-e6b8-b23b-283802eef93e",
+  "model": "gpt-6-luna",
+  "started": 1791610185.7236307,
+  "ended": 1791610192.1069047,
+  "ok": true
+ },
+ {
+  "node": "PACK_CHAT",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:5cd7108d-0c65-e6b8-b23b-283802eef93e",
+  "model": "gpt-6-luna",
+  "started": 1791610192.1189532,
+  "ended": 1791610198.9359534,
+  "ok": true
+ },
+ {
+  "node": "PACK_CHAT",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:5cd7108d-0c65-e6b8-b23b-283802eef93e",
+  "model": "gpt-6-luna",
+  "started": 1791610198.9491763,
+  "ended": 1791610207.3645706,
+  "ok": true
+ },
+ {
+  "node": "PACK_CHAT",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:5cd7108d-0c65-e6b8-b23b-283802eef93e",
+  "model": "gpt-6-luna",
+  "started": 1791610207.376555,
+  "ended": 1791610216.6097896,
+  "ok": true
+ },
+ {
+  "node": "CARRIER_KILL",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:5cd7108d-0c65-e6b8-b23b-283802eef93e",
+  "model": "gpt-6-luna",
+  "started": 1791610216.6295843,
+  "ended": 1791610222.7653377,
+  "ok": true
+ },
+ {
+  "node": "PACK_SKILL",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:5cd7108d-0c65-e6b8-b23b-283802eef93e",
+  "model": "gpt-6-luna",
+  "started": 1791610222.7932856,
+  "ended": 1791610229.5433133,
+  "ok": true
+ },
+ {
+  "node": "PACK_SKILL",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:5cd7108d-0c65-e6b8-b23b-283802eef93e",
+  "model": "gpt-6-luna",
+  "started": 1791610222.8008573,
+  "ended": 1791610246.1764047,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610246.293043,
+  "ended": 1791610250.5440338,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610246.2287066,
+  "ended": 1791610251.6477582,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610246.2395754,
+  "ended": 1791610252.1410708,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610246.2448502,
+  "ended": 1791610252.4734812,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610246.262733,
+  "ended": 1791610253.594434,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610246.3056533,
+  "ended": 1791610254.2629287,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610246.2772436,
+  "ended": 1791610255.3365111,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610246.2252743,
+  "ended": 1791610255.4622653,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610250.5556033,
+  "ended": 1791610256.0215957,
+  "ok": true
+ },
+ {
+  "node": "COLLECT_ROUND",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610256.0316627,
+  "ended": 1791610258.0473049,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610258.059394,
+  "ended": 1791610277.8761911,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610277.8800046,
+  "ended": 1791610279.8280578,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610279.8425677,
+  "ended": 1791610296.301583,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610296.3164241,
+  "ended": 1791610306.24508,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610306.2611618,
+  "ended": 1791610323.3070347,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610323.3226352,
+  "ended": 1791610342.797481,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610342.7999709,
+  "ended": 1791610344.7820606,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610344.797717,
+  "ended": 1791610360.4158695,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610360.4322474,
+  "ended": 1791610374.7416534,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610374.7574968,
+  "ended": 1791610391.285921,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610391.288329,
+  "ended": 1791610393.3093283,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610393.3263047,
+  "ended": 1791610415.1833904,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610415.185796,
+  "ended": 1791610417.4069197,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610417.4235246,
+  "ended": 1791610445.9370327,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610445.9394732,
+  "ended": 1791610447.7366598,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610447.7532794,
+  "ended": 1791610471.1217685,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610471.12422,
+  "ended": 1791610472.8593297,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610472.87613,
+  "ended": 1791610485.984482,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610486.0016713,
+  "ended": 1791610510.7103324,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610510.7284238,
+  "ended": 1791610535.2016077,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610535.2208426,
+  "ended": 1791610546.2691417,
+  "ok": true
+ },
+ {
+  "node": "SUMMARIZE_DAY_DISCUSSION",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610546.2861338,
+  "ended": 1791610567.338276,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610567.44374,
+  "ended": 1791610576.2482731,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610567.3857083,
+  "ended": 1791610577.7814014,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610567.4339774,
+  "ended": 1791610579.3801522,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610567.408206,
+  "ended": 1791610579.6303806,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610567.44518,
+  "ended": 1791610579.811987,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610567.4792502,
+  "ended": 1791610581.039764,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610567.457901,
+  "ended": 1791610583.3835416,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610567.4919896,
+  "ended": 1791610587.3806193,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:70ece817-a200-c1ad-0a25-1c544a05eba5",
+  "model": "gpt-6-luna",
+  "started": 1791610576.266061,
+  "ended": 1791610590.408957,
+  "ok": true
+ },
+ {
+  "node": "NECROMANCER_NIGHT_PHASE",
+  "checkpoint_ns": "NECROMANCER_NIGHT_PHASE:55dfc874-bf6e-b754-f15b-b7f702690b38",
+  "model": "gpt-6-luna",
+  "started": 1791610590.4899175,
+  "ended": 1791610599.504166,
+  "ok": true
+ },
+ {
+  "node": "CARRIER_KILL",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:c7d4d163-fa3b-90e0-7df1-6cf562d6ad5a",
+  "model": "gpt-6-luna",
+  "started": 1791610590.5867121,
+  "ended": 1791610602.0448027,
+  "ok": true
+ },
+ {
+  "node": "SENTINEL_NIGHT_PHASE",
+  "checkpoint_ns": "SENTINEL_NIGHT_PHASE:1ac84c0c-3fed-f81f-fb5c-d2366a0d2b28",
+  "model": "gpt-6-luna",
+  "started": 1791610590.5475159,
+  "ended": 1791610603.7010312,
+  "ok": true
+ },
+ {
+  "node": "FORTUNE_TELLER_NIGHT_PHASE",
+  "checkpoint_ns": "FORTUNE_TELLER_NIGHT_PHASE:1300592e-2835-be1b-ddda-72a496ed2b56",
+  "model": "gpt-6-luna",
+  "started": 1791610590.4427006,
+  "ended": 1791610604.5087593,
+  "ok": true
+ },
+ {
+  "node": "INVESTIGATOR_NIGHT_PHASE",
+  "checkpoint_ns": "INVESTIGATOR_NIGHT_PHASE:559cb548-145f-0ae8-a0c8-6300a6a7e95e",
+  "model": "gpt-6-luna",
+  "started": 1791610590.4682348,
+  "ended": 1791610605.2776415,
+  "ok": true
+ },
+ {
+  "node": "TRAILSEER_NIGHT_PHASE",
+  "checkpoint_ns": "TRAILSEER_NIGHT_PHASE:7cb084cd-925c-6d2f-63cc-83ce33238e0d",
+  "model": "gpt-6-luna",
+  "started": 1791610590.5823991,
+  "ended": 1791610605.8229825,
+  "ok": true
+ },
+ {
+  "node": "HEALER_NIGHT_PHASE",
+  "checkpoint_ns": "HEALER_NIGHT_PHASE:f004719b-0911-e0c1-557d-4beeee31053b",
+  "model": "gpt-6-luna",
+  "started": 1791610590.4474018,
+  "ended": 1791610608.0656376,
+  "ok": true
+ },
+ {
+  "node": "SIGILIST_NIGHT_PHASE",
+  "checkpoint_ns": "SIGILIST_NIGHT_PHASE:df373f28-8308-927e-a874-de17d75f9380",
+  "model": "gpt-6-luna",
+  "started": 1791610590.5241427,
+  "ended": 1791610609.171683,
+  "ok": true
+ },
+ {
+  "node": "PACK_SKILL",
+  "checkpoint_ns": "PACK_NIGHT_PHASE:c7d4d163-fa3b-90e0-7df1-6cf562d6ad5a",
+  "model": "gpt-6-luna",
+  "started": 1791610602.0622876,
+  "ended": 1791610615.1612313,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610615.2897747,
+  "ended": 1791610622.9197779,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610615.2169116,
+  "ended": 1791610623.851823,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610615.2088356,
+  "ended": 1791610624.814246,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610615.2524388,
+  "ended": 1791610625.8136933,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610615.2474961,
+  "ended": 1791610627.242233,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610615.2845972,
+  "ended": 1791610627.6623614,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610615.2435422,
+  "ended": 1791610629.003322,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610615.3106446,
+  "ended": 1791610629.9370897,
+  "ok": true
+ },
+ {
+  "node": "COLLECT_ROUND",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610629.9440174,
+  "ended": 1791610632.8348126,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610632.8484812,
+  "ended": 1791610660.8420086,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610660.8444667,
+  "ended": 1791610662.352438,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610662.369255,
+  "ended": 1791610676.6656384,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610676.6832182,
+  "ended": 1791610697.2718182,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610697.2744405,
+  "ended": 1791610699.3889222,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610699.4059243,
+  "ended": 1791610716.3175616,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610716.319986,
+  "ended": 1791610718.2247531,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610718.2415192,
+  "ended": 1791610737.078803,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610737.0963604,
+  "ended": 1791610754.6005404,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610754.6030009,
+  "ended": 1791610756.3798463,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610756.397797,
+  "ended": 1791610773.0328043,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610773.0511305,
+  "ended": 1791610792.2454605,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610792.2478492,
+  "ended": 1791610793.9856207,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610794.0036173,
+  "ended": 1791610817.347917,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610817.368101,
+  "ended": 1791610830.8345115,
+  "ok": true
+ },
+ {
+  "node": "SUMMARIZE_DAY_DISCUSSION",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610830.8516166,
+  "ended": 1791610857.2104557,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610857.284677,
+  "ended": 1791610866.4070423,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610857.3317845,
+  "ended": 1791610866.866242,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610857.3145862,
+  "ended": 1791610867.210128,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610857.2759335,
+  "ended": 1791610867.8467195,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610857.2928128,
+  "ended": 1791610868.9451928,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610857.2854555,
+  "ended": 1791610870.862383,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610857.341671,
+  "ended": 1791610871.0935664,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:dacd672d-38f8-0137-c658-518325f96470",
+  "model": "gpt-6-luna",
+  "started": 1791610857.3595114,
+  "ended": 1791610872.4718084,
+  "ok": true
+ },
+ {
+  "node": "HEALER_NIGHT_PHASE",
+  "checkpoint_ns": "HEALER_NIGHT_PHASE:9a402491-a760-d925-01a7-091b41fa30ec",
+  "model": "gpt-6-luna",
+  "started": 1791610872.5190742,
+  "ended": 1791610880.2802591,
+  "ok": true
+ },
+ {
+  "node": "FORTUNE_TELLER_NIGHT_PHASE",
+  "checkpoint_ns": "FORTUNE_TELLER_NIGHT_PHASE:69c0f730-3129-d959-578d-40cecf089570",
+  "model": "gpt-6-luna",
+  "started": 1791610872.5427198,
+  "ended": 1791610886.6547096,
+  "ok": true
+ },
+ {
+  "node": "NECROMANCER_NIGHT_PHASE",
+  "checkpoint_ns": "NECROMANCER_NIGHT_PHASE:3bcce455-bbda-f447-58a2-dc7b019a56d4",
+  "model": "gpt-6-luna",
+  "started": 1791610872.5347211,
+  "ended": 1791610888.69278,
+  "ok": true
+ },
+ {
+  "node": "SENTINEL_NIGHT_PHASE",
+  "checkpoint_ns": "SENTINEL_NIGHT_PHASE:3d7cd43a-748c-060f-5538-08108ed171e9",
+  "model": "gpt-6-luna",
+  "started": 1791610872.5345535,
+  "ended": 1791610889.861005,
+  "ok": true
+ },
+ {
+  "node": "SIGILIST_NIGHT_PHASE",
+  "checkpoint_ns": "SIGILIST_NIGHT_PHASE:58b9a31e-f6a5-c3f1-58b3-dfc0a1b17fe9",
+  "model": "gpt-6-luna",
+  "started": 1791610872.5698538,
+  "ended": 1791610891.8025956,
+  "ok": true
+ },
+ {
+  "node": "TRAILSEER_NIGHT_PHASE",
+  "checkpoint_ns": "TRAILSEER_NIGHT_PHASE:3bdeee4a-712b-100e-b7d4-5e878784fce0",
+  "model": "gpt-6-luna",
+  "started": 1791610872.5687513,
+  "ended": 1791610895.816041,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791610895.9202797,
+  "ended": 1791610902.0354774,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791610895.8898168,
+  "ended": 1791610903.3416324,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791610895.8706346,
+  "ended": 1791610904.862763,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791610895.9235537,
+  "ended": 1791610905.9127998,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791610895.8796654,
+  "ended": 1791610907.3215103,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791610895.8999326,
+  "ended": 1791610909.2115016,
+  "ok": true
+ },
+ {
+  "node": "COLLECT_ROUND",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791610909.219003,
+  "ended": 1791610910.9598632,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791610910.9745681,
+  "ended": 1791610928.776727,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791610928.795594,
+  "ended": 1791610946.4029326,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791610946.4227717,
+  "ended": 1791610954.7128139,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791610954.7314157,
+  "ended": 1791610968.3886015,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791610968.391023,
+  "ended": 1791610970.2340615,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791610970.2522717,
+  "ended": 1791610987.6853695,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791610987.7036183,
+  "ended": 1791611015.8450449,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791611015.8634408,
+  "ended": 1791611031.4053757,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791611031.4078064,
+  "ended": 1791611033.12559,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791611033.1456335,
+  "ended": 1791611050.782348,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791611050.8014722,
+  "ended": 1791611078.9649174,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791611078.9674668,
+  "ended": 1791611080.8560257,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791611080.8754041,
+  "ended": 1791611103.3711216,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791611103.3946645,
+  "ended": 1791611117.6232347,
+  "ok": true
+ },
+ {
+  "node": "SUMMARIZE_DAY_DISCUSSION",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791611117.6404777,
+  "ended": 1791611145.9936416,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791611146.079304,
+  "ended": 1791611153.984032,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791611146.091829,
+  "ended": 1791611158.0619462,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791611146.0849254,
+  "ended": 1791611161.4511075,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791611146.1096911,
+  "ended": 1791611165.1679547,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791611146.1046994,
+  "ended": 1791611166.7390807,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:51d69518-68fc-357d-c6bf-0e9695d4ded9",
+  "model": "gpt-6-luna",
+  "started": 1791611146.073865,
+  "ended": 1791611171.5781324,
+  "ok": true
+ },
+ {
+  "node": "TRAILSEER_NIGHT_PHASE",
+  "checkpoint_ns": "TRAILSEER_NIGHT_PHASE:d1e1487f-aaa0-de7d-087c-21b70903d63b",
+  "model": "gpt-6-luna",
+  "started": 1791611171.6532433,
+  "ended": 1791611184.9993749,
+  "ok": true
+ },
+ {
+  "node": "FORTUNE_TELLER_NIGHT_PHASE",
+  "checkpoint_ns": "FORTUNE_TELLER_NIGHT_PHASE:dcb639b4-d94b-87a4-502e-57a20b670116",
+  "model": "gpt-6-luna",
+  "started": 1791611171.6169147,
+  "ended": 1791611185.785055,
+  "ok": true
+ },
+ {
+  "node": "NECROMANCER_NIGHT_PHASE",
+  "checkpoint_ns": "NECROMANCER_NIGHT_PHASE:1979e3a4-6e7b-928b-5e35-abecdc20fa47",
+  "model": "gpt-6-luna",
+  "started": 1791611171.6303496,
+  "ended": 1791611186.9050143,
+  "ok": true
+ },
+ {
+  "node": "SIGILIST_NIGHT_PHASE",
+  "checkpoint_ns": "SIGILIST_NIGHT_PHASE:7bf81e7b-f6c0-6f69-5d1b-9703bdf40b70",
+  "model": "gpt-6-luna",
+  "started": 1791611171.6481078,
+  "ended": 1791611202.4334893,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:f9080f77-5a34-2cef-2e13-4ae8bb3e2ded",
+  "model": "gpt-6-luna",
+  "started": 1791611202.4867969,
+  "ended": 1791611209.637015,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:f9080f77-5a34-2cef-2e13-4ae8bb3e2ded",
+  "model": "gpt-6-luna",
+  "started": 1791611202.5137813,
+  "ended": 1791611211.1457982,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:f9080f77-5a34-2cef-2e13-4ae8bb3e2ded",
+  "model": "gpt-6-luna",
+  "started": 1791611202.5235705,
+  "ended": 1791611211.1873047,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:f9080f77-5a34-2cef-2e13-4ae8bb3e2ded",
+  "model": "gpt-6-luna",
+  "started": 1791611202.481354,
+  "ended": 1791611217.4704123,
+  "ok": true
+ },
+ {
+  "node": "COLLECT_ROUND",
+  "checkpoint_ns": "DAY_PHASE:f9080f77-5a34-2cef-2e13-4ae8bb3e2ded",
+  "model": "gpt-6-luna",
+  "started": 1791611217.4784358,
+  "ended": 1791611218.6929176,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:f9080f77-5a34-2cef-2e13-4ae8bb3e2ded",
+  "model": "gpt-6-luna",
+  "started": 1791611218.708373,
+  "ended": 1791611244.2803752,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:f9080f77-5a34-2cef-2e13-4ae8bb3e2ded",
+  "model": "gpt-6-luna",
+  "started": 1791611244.2827487,
+  "ended": 1791611246.1351807,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:f9080f77-5a34-2cef-2e13-4ae8bb3e2ded",
+  "model": "gpt-6-luna",
+  "started": 1791611246.1549325,
+  "ended": 1791611262.4618502,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:f9080f77-5a34-2cef-2e13-4ae8bb3e2ded",
+  "model": "gpt-6-luna",
+  "started": 1791611262.4804478,
+  "ended": 1791611269.8065944,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:f9080f77-5a34-2cef-2e13-4ae8bb3e2ded",
+  "model": "gpt-6-luna",
+  "started": 1791611269.8256853,
+  "ended": 1791611293.0486884,
+  "ok": true
+ },
+ {
+  "node": "SUMMARIZE_DAY_DISCUSSION",
+  "checkpoint_ns": "DAY_PHASE:f9080f77-5a34-2cef-2e13-4ae8bb3e2ded",
+  "model": "gpt-6-luna",
+  "started": 1791611293.0649714,
+  "ended": 1791611317.4510822,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:f9080f77-5a34-2cef-2e13-4ae8bb3e2ded",
+  "model": "gpt-6-luna",
+  "started": 1791611317.532767,
+  "ended": 1791611330.472244,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:f9080f77-5a34-2cef-2e13-4ae8bb3e2ded",
+  "model": "gpt-6-luna",
+  "started": 1791611317.5231361,
+  "ended": 1791611331.5876665,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:f9080f77-5a34-2cef-2e13-4ae8bb3e2ded",
+  "model": "gpt-6-luna",
+  "started": 1791611317.487505,
+  "ended": 1791611336.1490655,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:f9080f77-5a34-2cef-2e13-4ae8bb3e2ded",
+  "model": "gpt-6-luna",
+  "started": 1791611317.5113592,
+  "ended": 1791611338.9756634,
+  "ok": true
+ },
+ {
+  "node": "FORTUNE_TELLER_NIGHT_PHASE",
+  "checkpoint_ns": "FORTUNE_TELLER_NIGHT_PHASE:8f646309-0df4-1660-4767-bd47ddf2e649",
+  "model": "gpt-6-luna",
+  "started": 1791611339.0194056,
+  "ended": 1791611352.097076,
+  "ok": true
+ },
+ {
+  "node": "NECROMANCER_NIGHT_PHASE",
+  "checkpoint_ns": "NECROMANCER_NIGHT_PHASE:fa1a39b8-fb6b-846f-9893-59d506ac4a9a",
+  "model": "gpt-6-luna",
+  "started": 1791611339.0407088,
+  "ended": 1791611354.0288606,
+  "ok": true
+ },
+ {
+  "node": "SIGILIST_NIGHT_PHASE",
+  "checkpoint_ns": "SIGILIST_NIGHT_PHASE:831f8bbe-b066-18fb-dd23-866bf68be3ab",
+  "model": "gpt-6-luna",
+  "started": 1791611339.0362878,
+  "ended": 1791611360.2766814,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:9cc6c894-94ba-eea9-7842-3ae1fc080c45",
+  "model": "gpt-6-luna",
+  "started": 1791611360.3599558,
+  "ended": 1791611367.2600894,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:9cc6c894-94ba-eea9-7842-3ae1fc080c45",
+  "model": "gpt-6-luna",
+  "started": 1791611360.3651125,
+  "ended": 1791611368.4603243,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:9cc6c894-94ba-eea9-7842-3ae1fc080c45",
+  "model": "gpt-6-luna",
+  "started": 1791611360.3327768,
+  "ended": 1791611375.862456,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:9cc6c894-94ba-eea9-7842-3ae1fc080c45",
+  "model": "gpt-6-luna",
+  "started": 1791611360.3260126,
+  "ended": 1791611377.8878143,
+  "ok": true
+ },
+ {
+  "node": "COLLECT_ROUND",
+  "checkpoint_ns": "DAY_PHASE:9cc6c894-94ba-eea9-7842-3ae1fc080c45",
+  "model": "gpt-6-luna",
+  "started": 1791611377.8967512,
+  "ended": 1791611379.894256,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:9cc6c894-94ba-eea9-7842-3ae1fc080c45",
+  "model": "gpt-6-luna",
+  "started": 1791611379.9094334,
+  "ended": 1791611408.4128025,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:9cc6c894-94ba-eea9-7842-3ae1fc080c45",
+  "model": "gpt-6-luna",
+  "started": 1791611408.4333935,
+  "ended": 1791611425.3090696,
+  "ok": true
+ },
+ {
+  "node": "SUMMARIZE_DAY_DISCUSSION",
+  "checkpoint_ns": "DAY_PHASE:9cc6c894-94ba-eea9-7842-3ae1fc080c45",
+  "model": "gpt-6-luna",
+  "started": 1791611425.3263862,
+  "ended": 1791611447.7296937,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:9cc6c894-94ba-eea9-7842-3ae1fc080c45",
+  "model": "gpt-6-luna",
+  "started": 1791611447.7950492,
+  "ended": 1791611461.7214143,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:9cc6c894-94ba-eea9-7842-3ae1fc080c45",
+  "model": "gpt-6-luna",
+  "started": 1791611447.785196,
+  "ended": 1791611463.315781,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:9cc6c894-94ba-eea9-7842-3ae1fc080c45",
+  "model": "gpt-6-luna",
+  "started": 1791611447.8026826,
+  "ended": 1791611463.5568593,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:9cc6c894-94ba-eea9-7842-3ae1fc080c45",
+  "model": "gpt-6-luna",
+  "started": 1791611447.8140502,
+  "ended": 1791611464.9146886,
+  "ok": true
+ },
+ {
+  "node": "NECROMANCER_NIGHT_PHASE",
+  "checkpoint_ns": "NECROMANCER_NIGHT_PHASE:50503cfd-f899-ff3b-ee28-c7f46ef7a725",
+  "model": "gpt-6-luna",
+  "started": 1791611464.9736986,
+  "ended": 1791611475.5540051,
+  "ok": true
+ },
+ {
+  "node": "FORTUNE_TELLER_NIGHT_PHASE",
+  "checkpoint_ns": "FORTUNE_TELLER_NIGHT_PHASE:d6439bb1-4bf2-6dac-34fe-275a19a497bb",
+  "model": "gpt-6-luna",
+  "started": 1791611464.9579217,
+  "ended": 1791611477.9602509,
+  "ok": true
+ },
+ {
+  "node": "SIGILIST_NIGHT_PHASE",
+  "checkpoint_ns": "SIGILIST_NIGHT_PHASE:1ae7bd54-b4f5-af92-a4dd-5184c7889c59",
+  "model": "gpt-6-luna",
+  "started": 1791611464.9618154,
+  "ended": 1791611480.9579773,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:24db5196-6884-0a26-61f5-afa6416d0346",
+  "model": "gpt-6-luna",
+  "started": 1791611481.022374,
+  "ended": 1791611489.6497273,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:24db5196-6884-0a26-61f5-afa6416d0346",
+  "model": "gpt-6-luna",
+  "started": 1791611481.0123067,
+  "ended": 1791611495.3302686,
+  "ok": true
+ },
+ {
+  "node": "round_turn",
+  "checkpoint_ns": "DAY_PHASE:24db5196-6884-0a26-61f5-afa6416d0346",
+  "model": "gpt-6-luna",
+  "started": 1791611481.0169625,
+  "ended": 1791611498.0180457,
+  "ok": true
+ },
+ {
+  "node": "COLLECT_ROUND",
+  "checkpoint_ns": "DAY_PHASE:24db5196-6884-0a26-61f5-afa6416d0346",
+  "model": "gpt-6-luna",
+  "started": 1791611498.0276697,
+  "ended": 1791611499.9755683,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:24db5196-6884-0a26-61f5-afa6416d0346",
+  "model": "gpt-6-luna",
+  "started": 1791611499.991204,
+  "ended": 1791611520.14631,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:24db5196-6884-0a26-61f5-afa6416d0346",
+  "model": "gpt-6-luna",
+  "started": 1791611520.174752,
+  "ended": 1791611543.3829918,
+  "ok": true
+ },
+ {
+  "node": "discuss",
+  "checkpoint_ns": "DAY_PHASE:24db5196-6884-0a26-61f5-afa6416d0346",
+  "model": "gpt-6-luna",
+  "started": 1791611543.40443,
+  "ended": 1791611556.180055,
+  "ok": true
+ },
+ {
+  "node": "SUMMARIZE_DAY_DISCUSSION",
+  "checkpoint_ns": "DAY_PHASE:24db5196-6884-0a26-61f5-afa6416d0346",
+  "model": "gpt-6-luna",
+  "started": 1791611556.1981966,
+  "ended": 1791611583.4311757,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:24db5196-6884-0a26-61f5-afa6416d0346",
+  "model": "gpt-6-luna",
+  "started": 1791611583.491227,
+  "ended": 1791611590.5357983,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:24db5196-6884-0a26-61f5-afa6416d0346",
+  "model": "gpt-6-luna",
+  "started": 1791611583.4951198,
+  "ended": 1791611596.9225595,
+  "ok": true
+ },
+ {
+  "node": "vote",
+  "checkpoint_ns": "DAY_PHASE:24db5196-6884-0a26-61f5-afa6416d0346",
+  "model": "gpt-6-luna",
+  "started": 1791611583.4675522,
+  "ended": 1791611605.1451697,
+  "ok": true
+ }
+]

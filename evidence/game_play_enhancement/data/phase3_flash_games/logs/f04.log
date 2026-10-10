@@ -1,0 +1,27 @@
+[25] 19 s ()
+[50] 30 s ('PACK_NIGHT_PHASE:d76540b7-12be-8246-b60a-39b54f154eee',)
+[75] 49 s ('DAY_PHASE:270e3e11-e51b-03ba-8444-dff15179020d',)
+[100] 60 s ('DAY_PHASE:270e3e11-e51b-03ba-8444-dff15179020d',)
+[125] 87 s ('DAY_PHASE:270e3e11-e51b-03ba-8444-dff15179020d',)
+[150] 102 s ()
+[175] 116 s ('PACK_NIGHT_PHASE:e134847a-6f0b-7243-cb06-b3ddb0dd25f0',)
+[200] 139 s ('DAY_PHASE:4cc38380-cc23-0f75-b0c6-903b754d7fe3',)
+[225] 164 s ('DAY_PHASE:4cc38380-cc23-0f75-b0c6-903b754d7fe3',)
+[250] 208 s ('DAY_PHASE:4cc38380-cc23-0f75-b0c6-903b754d7fe3',)
+[275] 298 s ('DAY_PHASE:4cc38380-cc23-0f75-b0c6-903b754d7fe3',)
+[300] 341 s ()
+LLM call stalled for player_2 (slow or full): Error calling model 'gemini-3.5-flash' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_2 rescued by the fallback model on conceal
+LLM call stalled for player_2 (slow or full): Error calling model 'gemini-3.5-flash' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+[325] 403 s ('DAY_PHASE:1922cdd4-6f0a-13ed-8083-c8898b8b71f1',)
+LLM call stalled for player_7 (slow or full): Error calling model 'gemini-3.5-flash' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_2 rescued by the fallback model on day_channel
+player_7 rescued by the fallback model on day_channel
+[350] 468 s ('DAY_PHASE:1922cdd4-6f0a-13ed-8083-c8898b8b71f1',)
+[375] 509 s ('DAY_PHASE:1922cdd4-6f0a-13ed-8083-c8898b8b71f1',)
+[400] 567 s ('PACK_NIGHT_PHASE:d8f619fa-7f75-57ce-915d-0fc480ca7915',)
+[425] 595 s ('DAY_PHASE:9b191f47-6e8f-5c97-1387-6994e115f025',)
+[450] 667 s ('DAY_PHASE:9b191f47-6e8f-5c97-1387-6994e115f025',)
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+phase3-f04-61d1ee31: winner villagers, day 5, 681.1 s, 167 calls, cost None

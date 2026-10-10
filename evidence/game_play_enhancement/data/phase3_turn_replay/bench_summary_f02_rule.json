@@ -1,0 +1,156 @@
+{
+  "label": "phase3_f02_rule",
+  "run_at": "2026-10-10T04:56:48.688692+00:00",
+  "config": {
+    "label": "phase3_f02_rule",
+    "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+    "n": 5,
+    "workers": 3,
+    "slices": [
+      "f02_rule"
+    ],
+    "arms": [
+      {
+        "label": "flash_before",
+        "model": "gemini-3.5-flash",
+        "env": {},
+        "memory": "none",
+        "checkout": "/home/ubuntu/projects/ww-pre-illusionist-rule"
+      },
+      {
+        "label": "flash_after",
+        "model": "gemini-3.5-flash",
+        "env": {},
+        "memory": "none"
+      },
+      {
+        "label": "flashlite_before",
+        "model": "gemini-3.5-flash-lite",
+        "env": {},
+        "memory": "none",
+        "checkout": "/home/ubuntu/projects/ww-pre-illusionist-rule"
+      },
+      {
+        "label": "flashlite_after",
+        "model": "gemini-3.5-flash-lite",
+        "env": {},
+        "memory": "none"
+      }
+    ],
+    "recall_model": "gemini-3.1-flash-lite",
+    "precision_model": "gemini-3.5-flash",
+    "golden_model": "gemini-3.5-flash",
+    "note": "Does the sentence that an illusionist carrying its own kill is invisible at that door stop the f02 misreading? before = fb193104 (a worktree at ../ww-pre-illusionist-rule: git worktree add ../ww-pre-illusionist-rule fb193104, link .env), after = the working tree with the sentence (and the cover-note rewrite, which these non-wolf turns do not read)."
+  },
+  "n_cases": 4,
+  "arms": {
+    "flash_before": {
+      "bad": {
+        "all": "11/20 (55%)",
+        "phase:day_discussion": "11/20 (55%)",
+        "role:fortune_teller": "1/5 (20%)",
+        "role:sigilist": "5/5 (100%)",
+        "role:trailseer": "0/5 (0%)",
+        "role:vigilante": "5/5 (100%)",
+        "slice:f02_rule": "11/20 (55%)",
+        "source:phase3_capture": "11/20 (55%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 7710.5,
+        "cached": 5220.2,
+        "output": 1276.7,
+        "reasoning": 793.0,
+        "seconds": 8.3
+      },
+      "generation_samples_measured": 20
+    },
+    "flash_after": {
+      "bad": {
+        "all": "8/20 (40%)",
+        "phase:day_discussion": "8/20 (40%)",
+        "role:fortune_teller": "0/5 (0%)",
+        "role:sigilist": "4/5 (80%)",
+        "role:trailseer": "0/5 (0%)",
+        "role:vigilante": "4/5 (80%)",
+        "slice:f02_rule": "8/20 (40%)",
+        "source:phase3_capture": "8/20 (40%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 7755.5,
+        "cached": 5009.6,
+        "output": 1288.2,
+        "reasoning": 801.9,
+        "seconds": 7.9
+      },
+      "generation_samples_measured": 20
+    },
+    "flashlite_before": {
+      "bad": {
+        "all": "11/20 (55%)",
+        "phase:day_discussion": "11/20 (55%)",
+        "role:fortune_teller": "1/5 (20%)",
+        "role:sigilist": "5/5 (100%)",
+        "role:trailseer": "0/5 (0%)",
+        "role:vigilante": "5/5 (100%)",
+        "slice:f02_rule": "11/20 (55%)",
+        "source:phase3_capture": "11/20 (55%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 7710.5,
+        "cached": 3919.8,
+        "output": 1906.5,
+        "reasoning": 1479.5,
+        "seconds": 7.6
+      },
+      "generation_samples_measured": 20
+    },
+    "flashlite_after": {
+      "bad": {
+        "all": "11/20 (55%)",
+        "phase:day_discussion": "11/20 (55%)",
+        "role:fortune_teller": "1/5 (20%)",
+        "role:sigilist": "5/5 (100%)",
+        "role:trailseer": "0/5 (0%)",
+        "role:vigilante": "5/5 (100%)",
+        "slice:f02_rule": "11/20 (55%)",
+        "source:phase3_capture": "11/20 (55%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 7755.5,
+        "cached": 3518.4,
+        "output": 1745.7,
+        "reasoning": 1321.8,
+        "seconds": 6.7
+      },
+      "generation_samples_measured": 20
+    }
+  },
+  "paired_vs_first": {
+    "flash_after": {
+      "cases": 4,
+      "better": 3,
+      "worse": 0,
+      "two_sided_sign_p": 0.25
+    },
+    "flashlite_before": {
+      "cases": 4,
+      "better": 0,
+      "worse": 0,
+      "two_sided_sign_p": 1.0
+    },
+    "flashlite_after": {
+      "cases": 4,
+      "better": 0,
+      "worse": 0,
+      "two_sided_sign_p": 1.0
+    }
+  }
+}

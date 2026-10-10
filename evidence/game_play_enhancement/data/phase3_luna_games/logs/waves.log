@@ -1,0 +1,6 @@
+luna batch start 05:29:10, commit fb193104 + working tree
+l01 exit 0 05:45:54
+l02 exit 0 05:53:30
+l03 exit 0 06:11:14
+l04 exit 0 06:22:44
+l05, l06 stopped by the owner after they started; partial files in logs/stopped/

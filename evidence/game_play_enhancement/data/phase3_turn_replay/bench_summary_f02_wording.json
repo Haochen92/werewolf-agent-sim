@@ -1,0 +1,86 @@
+{
+  "label": "phase3_f02_wording",
+  "run_at": "2026-10-10T06:30:15.116914+00:00",
+  "config": {
+    "label": "phase3_f02_wording",
+    "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+    "n": 5,
+    "workers": 3,
+    "slices": [
+      "f02_rule"
+    ],
+    "arms": [
+      {
+        "label": "luna_wording",
+        "model": "openai/gpt-6-luna",
+        "env": {},
+        "memory": "none"
+      },
+      {
+        "label": "flashlite_wording",
+        "model": "gemini-3.5-flash-lite",
+        "env": {},
+        "memory": "none"
+      }
+    ],
+    "recall_model": "gemini-3.1-flash-lite",
+    "precision_model": "gemini-3.5-flash",
+    "golden_model": "gemini-3.5-flash",
+    "note": "The four f02 rule turns after the illusionist card states the carrier exception in one sentence; the baseline is phase3_luna (the same turns and models on the previous wording)."
+  },
+  "n_cases": 4,
+  "arms": {
+    "luna_wording": {
+      "bad": {
+        "all": "0/20 (0%)",
+        "phase:day_discussion": "0/20 (0%)",
+        "role:fortune_teller": "0/5 (0%)",
+        "role:sigilist": "0/5 (0%)",
+        "role:trailseer": "0/5 (0%)",
+        "role:vigilante": "0/5 (0%)",
+        "slice:f02_rule": "0/20 (0%)",
+        "source:phase3_capture": "0/20 (0%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 7135.8,
+        "cached": 5706.2,
+        "output": 1780.0,
+        "reasoning": 1351.0,
+        "seconds": 16.7
+      },
+      "generation_samples_measured": 20
+    },
+    "flashlite_wording": {
+      "bad": {
+        "all": "10/20 (50%)",
+        "phase:day_discussion": "10/20 (50%)",
+        "role:fortune_teller": "0/5 (0%)",
+        "role:sigilist": "5/5 (100%)",
+        "role:trailseer": "0/5 (0%)",
+        "role:vigilante": "5/5 (100%)",
+        "slice:f02_rule": "10/20 (50%)",
+        "source:phase3_capture": "10/20 (50%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 7791.5,
+        "cached": 3922.2,
+        "output": 1661.9,
+        "reasoning": 1250.0,
+        "seconds": 6.5
+      },
+      "generation_samples_measured": 20
+    }
+  },
+  "paired_vs_first": {
+    "flashlite_wording": {
+      "cases": 4,
+      "better": 0,
+      "worse": 2,
+      "two_sided_sign_p": 0.5
+    }
+  }
+}

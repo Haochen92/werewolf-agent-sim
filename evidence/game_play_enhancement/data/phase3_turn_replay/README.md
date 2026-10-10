@@ -53,3 +53,67 @@ strategy note or reads; those counts are in the bench output):
   a trailseer quoting the other player's "empty house" while arguing against it).
 
 Ten cases and five samples: a regression set and a capability test, not a rate.
+
+## The f02 rule: does stating it stop the misreading? (2026-10-10)
+
+In f02 four players asserted that "the Illusionist's visit to hide a body is always seen by a Trailseer"
+and voted out the real trailseer, whose empty trail on the illusionist was right (it had carried its own
+kill). The owner then ruled such an illusionist invisible at that door, and a sentence saying so went
+into the shared rules and the illusionist's card. Four day-4 turns were frozen (three that asserted the
+false rule, and the trailseer's correct defence as a control) and replayed before and after the sentence
+on both models (`evaluation/config/hallucination_bench_phase3_f02_rule.json`; before = a worktree at
+fb193104), five samples each, judged against one expectation and read by hand
+(`bench_summary_f02_rule.json`):
+
+| Turn | flash before / after | flash-lite before / after |
+|---|---|---|
+| player_1, the first to assert the false rule | 1/5 → 0/5 | 1/5 → 1/5 |
+| player_7, after it had been asserted several times | 5/5 → 4/5 | 5/5 → 5/5 |
+| player_9, likewise | 5/5 → 3/5 | 5/5 → 5/5 |
+| player_3, the trailseer (control) | 0/5 → 0/5 | 0/5 → 0/5 |
+
+The first speaker seldom makes the error at all (the game drew a one-in-five); once the false rule has
+been asserted a few times in the transcript, later speakers repeat it against the rules text in front of
+them. The stated rule helps the stronger model a little and flash-lite not at all. Stating the rule
+guards the origin of a misreading; it does not stop a cascade once one has started.
+
+### A rule claim is a claim (2026-10-10)
+
+The cascade turns test resistance to a confident false rule from peers, which a real game can produce
+anyway (a misreading, or an evil seat lying about a rule; f02's necromancer was among the loudest). The
+prompts already ranked the game master's record above anything a player says about events, but not the
+rules above what a player says about rules. One line was added to the shared rules: "These rules are
+exact. A player's statement of how a rule works is a claim like any other, and where it disagrees with
+these rules, these rules are right." The same four turns, five samples each
+(`evaluation/config/hallucination_bench_phase3_f02_hierarchy.json`, `bench_summary_f02_hierarchy.json`),
+against the illusionist-sentence arms above:
+
+| Turn | flash, sentence / + line | flash-lite, sentence / + line |
+|---|---|---|
+| player_1 (origin) | 0/5 → 1/5 | 1/5 → 0/5 |
+| player_7 (cascade) | 4/5 → 3/5 | 5/5 → 5/5 |
+| player_9 (cascade) | 3/5 → 1/5 | 5/5 → 5/5 |
+| player_3 (control) | 0/5 → 0/5 | 0/5 → 0/5 |
+
+On the stronger model the cascade turns went 10/10 with no rule sentence, 7/10 with it, 4/10 with the
+line as well; one flash sigilist now argues the rule correctly against the table. Flash-lite repeats the
+false rule every time under all three prompts. The origin and control changes are within noise.
+
+## The sentinel's own visit (2026-10-10, from the Luna games)
+
+The engine leaves a sentinel out of its own visitor list; the card said only "Watching is a visit". Four
+turns from the Luna games were frozen (the two players who raised it and the two real sentinels who
+conceded, l01 and l04 day 2) and replayed before and after the card gained "Watching is a visit, but the
+Sentinel is not among the visitors it is told of: its own watch never appears in its result", five samples
+each (`bench_summary_sentinel_before.json`, `_after.json`):
+
+| Turn | Luna before / after | flash-lite before / after |
+|---|---|---|
+| l01 player_1, raising it | 0/5 → 0/5 | 0/5 → 0/5 |
+| l01 player_3, the real sentinel | 5/5 → 0/5 | 0/5 → 0/5 |
+| l04 player_5, raising it | 0/5 → 0/5 | 0/5 → 0/5 |
+| l04 player_10, the real sentinel | 5/5 → 0/5 | 0/5 → 0/5 |
+
+The raising turns seldom raise it at all on a replay (the games drew it), but once raised, the real Luna
+sentinel conceded every time on the old card and never on the new one. Flash-lite did not concede in any
+sample before or after: the gap was one a literal reader falls into.

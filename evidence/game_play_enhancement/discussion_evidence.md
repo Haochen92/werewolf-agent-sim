@@ -1682,6 +1682,217 @@ to its shared-vocabulary corpus (a chat line had shared its phrasing with anothe
 Open for the reading pass: the day 1 opening is still thin on claims; the vigilante held fire all
 of game3; the lone killer survived to the last votes in every game.
 
+### 8.3 Balance: four batches, the rulings, and a hold (2026-10-09 and 10)
+
+Thirty-one AI-only games on gemini-3.5-flash-lite, memory off, two at a time on the shared Vertex pool
+(five at once overloaded it and six games died on a bug that is now fixed, 05b5365f: a rescue model
+that also stalled reached the resolver). Each batch's table and reading is in its folder under
+`data/`; the rulings, with the counts behind each, are in the role sheet's change log.
+
+| Batch | Games | Rules in force | Town | Evil | Data |
+|---|---|---|---|---|---|
+| first games + 1 | 13 | as wired | 13 | 0 | `phase3_games/`, `phase3_balance/` |
+| 2 | 6 | the sigil reads "no effect" on an immune attacker; the investigator 2 checks, the sentinel 2 watches | 3 | 3 (serial killer 2, wolves 1) | `phase3_balance_2/` |
+| 3 | 6 | + the necromancer reuses a body; a conceal hides the carrier's visit | 6 | 0 | `phase3_balance_3/` |
+| 4 | 6 | + the evil seats' cover story and the ledger's sightings (a prompt epoch) | 5 | 1 (necromancer) | `phase3_balance_4/` |
+
+**What the town won on, and how that moved.** In the first thirteen games every evil seat died, 27 of
+the 39 by vote, and 11 of those 27 lynches followed a night result that named the seat (7 investigator
+reads, 3 sigil "immune" records, 1 sentinel sighting); a preceding result does not prove the cause, but
+the day-2 summaries of b02 and b09 show the sigil result argued and accepted. The sigil was a one-step
+tell: "attacked and immune" fits only the serial killer, so blanking the role name hid nothing; the fix
+had to merge the immune case with a quiet night ("Your sigil had no effect", which is true of both, where
+"your target did not attack" would have been false). After it, a sigil landed on the serial killer twice
+and the serial killer won both games. The caps on the investigator and the sentinel bit little in count,
+since games last three to five days. From batch 2 on, 13 of 30 evil lynches had any night observation
+of the seat behind them and 17 had none: the day decides most games now.
+
+**What the evil seats lacked was not mechanics.** The pack aimed 34 of its 56 kills at the information
+roles and blocked the healer six times, so "they do not use their tools" was not the cause. The
+necromancer had no body that could kill on 19 of its 31 nights; body reuse and the conceal hiding the
+carrier's visit barely fired in batch 3 (no consecutive killing body; three of eight conceals hid a
+visit). What moved batch 4 was the cover story in the prompt: evil claim fields went from 4 to 8 a batch
+to 19, four days had two claimants for one role, and the town resolved three of the four against the
+evil claimant, because the real holder has the record. Two investigators were voted out in batch 4.
+
+**Held.** The owner closed balance work at batch 4 with the rules as they stand, plus two necromancer
+changes made the same day for reasons of fact rather than balance: an attack through a body is named by
+the body's kind, reanimated ("killed by a reanimated wolf"), since naming the body's kind alone had told
+the table two wolf attacks happened when one was the necromancer's; and a kill through the dead
+illusionist's body also cleans its victim while the illusionist has conceals left. Every balance reading
+above is a reading of flash-lite play (see §8.5).
+
+### 8.4 Hallucination in the ten-seat game: what goes wrong, and what fixed what (2026-10-10)
+
+The balance counts said what the town voted on, not whether anyone reasoned well, so fifteen games were
+read in full (`data/phase3_reads/`: five read for the decisive moves, ten audited against a rubric that
+keeps invented facts, summary errors, invalid deductions, evil deception and night errors apart). Then
+the failures were replayed instead of playing new games: the summaries that went wrong
+(`data/phase3_summary_replay/`) and ten frozen discussion turns (`data/phase3_turn_replay/`, the
+hallucination bench's golden judge, every verdict read by hand). Finally six games ran on the stronger
+model (`data/phase3_flash_games/`).
+
+**The kinds, and how often.** Over the ten audited games (about 345 heard lines): invented facts 2, summary
+errors 22, invalid deductions 28, evil seats misstating a rule they believed 2, night errors 6, and
+deliberate deception common and mostly sound. Invented facts, the class the July census measured on the
+nine-seat game, are rare now. The commonest player error is an invalid deduction about what an ability
+observes: a watch read as clearing or confirming the watched player, a sighting taken as proof of a role or
+of what the visitor did, an empty watch read as an empty house, night timing. The commonest error overall
+is the summariser's: omissions and distortions of plain claims, and twice more the self-block
+transcription below. The new roles' mechanics themselves (the necromancer's bodies, the hidden carrier,
+a block landing the night its chanteuse dies) were reasoned correctly where they came up, which does not
+make the added complexity free: most invalid deductions are about what a new role's ability observes,
+general over-inference that a cast with more interacting observations makes more likely. Three limits on
+these counts, raised in review: a player reasoning well from a corrupted summary is not making a
+reasoning error, and the counts do not trace which deductions ran on corrupted context; a defeasible read
+("they helped catch a killer, so I trust them more") is play, while "that proves they are town" is the
+error, and the readers did not always keep them apart; and an error's effect is stated as the downstream
+use observed, never as "the winner would have been the same", which needs a counterfactual. Two games
+turned on rules the engine applied and the prompts did not state (d05, f02), and those count against the
+specification: d05's players were told the opposite of what the engine did.
+
+**Record errors outweigh their count.** One summary line becomes shared context for every player. In e06
+the summariser turned "I was roleblocked last night, which confirms we have an active Chanteuse" into
+"player_2 claimed chanteuse — blocked player_2"; the ledger's fallback (the speaker had set no claim field)
+let it stand; the sigilist opened day 3 on it, the investigator accepted the false premise about itself
+("I claimed chanteuse yesterday to draw fire"), and was voted out 7 to 1 holding a true Suspicious read;
+the necromancer won that game. Separately, the summary's record check copied its own example ("no attack
+on player_2 was ever announced") against an announced death and against attacks on immune players
+(b02, b09, c03). Fixes (6248fc58): the summariser is told that something done to a player is not their
+claim; the ledger drops a claimed action on oneself that can only have been done to the speaker, and the
+role with it only for a chanteuse resting on a self-block (the one action a target is told about; a first,
+broader rule lost a true vigilante whose "held my fire" the summariser wrote as shooting itself, and the
+replay caught it); the record-check example is gone. The morning line had its own record error: a
+necromancer and the pack on one victim read "attacked by the wolves and the wolves" (b10, c03, c04).
+
+**The replays.** Summaries, ten cases × five samples, bad samples among 30 positives / true claims lost
+among 20 controls, through the current ledger: flash-lite on the committed code 2 / 0 (6 / 2 by the raw
+summary), flash-lite on the fixes 0 / 1, gemini-3.5-flash as summariser 0 / 0, and its raw summaries were
+clean too. The invented chanteuse claim did not recur in any arm: rare, so the ledger rule and a test guard
+it. Turns, bad spoken messages among 40 positives / 10 controls: flash-lite committed 17 / 4, flash-lite
+fixed 6 / 5, gemini-3.5-flash fixed 1 / 0. The ledger fix ended the invented-claim chain on both e06
+speakers (5 of 5 to 0 of 5). The rest, the invalid deductions, flash-lite makes on the control turns as
+often as on the positives (the original control lines were lucky draws), and the stronger model all but
+stops making them on identical prompts, on these turns.
+
+**The stronger model in full games.** Six games with gemini-3.5-flash in every seat and as summariser
+(`data/phase3_flash_games/`, audited on the same rubric): town 5, necromancer 1, the same split as flash-lite's batch 4. The
+discussion is the clear gain: 40 heard lines a game against 29, 52 words a line against 32, real
+claim contests, cross-examination that breaks covers, counting arguments from the record, players
+correcting each other's rule claims, and more coherent evil covers (the f06 necromancer won on a fake
+fortune teller claim). Errors move less than the replay suggested: invented facts 1 in six games;
+summary errors 1.5 a game against 2.2; invalid deductions about one heard line in 15 against one in
+12. The stronger model drops the specific confusions the replay held and still misreads abilities
+elsewhere (a sigil's "no effect" as "did not attack", a reported block as proof of the blocked
+player's role). One game turned on a rule the prompts did not state: four players asserted that an
+illusionist's conceal visit is always visible and voted out the real trailseer, whose empty trail was
+right because the illusionist had carried its own kill (f02). The owner ruled the same day that such an
+illusionist is invisible at that door, and the rules now say so.
+
+**Retention, a stated rule, and the odd votes (after review).** Three follow-ups. *Claim retention:* the
+summary could not hold a denial, and every spoken denial in the later games had been dropped (one of them,
+f06's "I didn't visit anyone last night", was the counter-evidence to the same player's sigil claim the
+next day). With a `no_action` claim and an instruction to keep rebuttals, the summary replay lost 7 of 30
+denial samples on flash-lite and none with the flash summariser (30 of 30 before), with no new bad
+positives and possibly a small cost in true claims left out (`data/phase3_summary_replay/`). *The stated
+rule:* replaying f02's day-4 turns before and after the illusionist sentence, the first speaker seldom made
+the error at all, and the later speakers repeated it from the transcript against the rules text (flash 10
+of 10 before, 7 of 10 after; flash-lite 10 of 10 both): stating a rule guards the origin of a misreading,
+not a cascade already in the transcript (`data/phase3_turn_replay/`). Those later turns carry lines written
+under the old prompts, so they cannot show whether the fix prevents f02 (with the sentence the first speaker
+almost never starts the error); what they measure is resistance to a confident false rule from peers, which a
+game can still produce (an evil seat lying about a rule). A line ranking the rules above any player's
+statement of a rule took the stronger model to 4 of 10 on those turns; flash-lite stayed at 10 of 10. *The odd votes:* eleven read
+against the voters' own vote-call reads and notes (`data/phase3_reads/README.md`); none was an unexplained
+change of mind. They rested on the unstated illusionist rule (f04, so it decided two of the six flash
+games), on a "pressure a quiet player" default when nothing pointed anywhere (f03), on an invalid inference
+from a vote (c02), and on a sighting taken as proof that an evil cover exploited (e04).
+
+**A third model: GPT-6 Luna.** Four games with Luna (medium reasoning) in every seat and as summariser
+(`data/phase3_luna_games/`): town 3, wolves 1, at $0.17 a game against flash-lite's $0.72 and flash's $2.72,
+but 22 minutes a game against 8 and 12. On the frozen turns with today's prompts it made 7 bad messages in 55
+against flash-lite's 17 (flash 6, on slightly earlier prompts): no sighting taken as proof. Its errors fell
+on rules it reads literally. The illusionist's card stated the general case before the carrier exception,
+and Luna applied the general case (8 of 20 on the f02 turns; 0 of 20 after the card said it in one
+sentence). In the games, the sentinel's card says "Watching is a visit" and never that the sentinel is left
+out of its own visitor list, which the engine does and the sheet states; in all four games a player argued
+the sentinel should appear in its own list, the real sentinel conceded, and in three it was voted out.
+Eleven of Luna's fourteen invalid deductions belong to that one chain, which neither Google model fell into
+in the games read: a more literal reader exposes unstated rules a looser one glosses over. The audit also
+caught a regression of the same day's claim retention: the summariser filed "I was roleblocked" as a
+denial ("says they did not act"), and in two games a later player called the real trailseer inconsistent
+because of it. About half of the remaining summary errors are results the claim record cannot hold (a
+watch that saw no one, a sigil with no effect). All three were fixed the same day and replayed before and
+after on the model that showed each: the sentinel's card now says it is not among its own visitors (the real
+Luna sentinel conceded 10 of 10 before, 0 of 10 after; flash-lite never conceded); a roleblock is recorded as
+the attempt (Luna's summaries filed it as a denial 15 of 15 before, 0 after); and the claim record gained
+no_visitors, no_effect and roleblocked (dropped 10 of 10 before, 0 after, on both summarisers). The Luna
+summariser also transcribes conservatively: it will not credit a role the speaker never named, where
+flash-lite infers it from a described action.
+
+**Votes and the reasoning behind them.** The readers reported votes that did not follow the voter's own
+reasoning; measured, that is mostly votes with no public reasoning, not contradicted reasoning. Of town
+votes on flash-lite (batches 2 to 4, 178), 24% went to a player the voter had accused that day, 6% to
+someone other than everyone it accused, and 70% came from a voter who accused no one that day or said
+nothing; 21% went to a player nobody had addressed. On flash (61): 57%, 7%, 36% and 8%. Inside the vote
+call, town voters chose their own top suspect from the reads they wrote in that call 81% of the time on
+flash-lite and 90% on flash; most of the rest went to a player read "unclear, low" for being quiet
+(the f03 fortune teller was lynched that way, undiscussed). Flash-lite reasoned more per call (about 977
+reasoning tokens at its medium setting against flash's 414 at minimal), so the budget is not the cause:
+on flash-lite the public discussion and the vote are largely separate, and the stronger model ties them
+together. (Accusations are counted from the speakers' own stance tags, which may undercount.)
+
+### 8.5 Learnings: what a fix can reach, and what it costs
+
+1. **Separate the kinds before fixing.** Invented events and claims yield to structure: a claim field the
+   speaker sets, a ledger that checks claims against the record, a code rule that drops what cannot be a
+   claim. Invalid deductions do not: the facts were presented correctly and the model inferred wrongly,
+   and another prompt sentence is not the evidence-backed remedy. Deliberate lies are play, and a reader
+   needs the speaker's own notes to tell a lie from a misunderstanding.
+2. **The record is the highest-leverage surface.** A summariser error is read by every player on every
+   later turn; a speaking agent's error is one line. The summariser is also cheap to upgrade: about four
+   calls a game against about 150 seat calls, so moving it to gemini-3.5-flash adds an estimated $0.06 to
+   $0.12 to a $0.60 to $1.15 game, about 5 to 15%, while all seats on the stronger model cost about three
+   times as much (measured: $2.72 a game against $0.72, at a flash price taken from a third-party listing).
+3. **Replay before playing, then check in full games.** Freezing the failures (the summary inputs, the game state before a turn) and
+   replaying them old against new, with controls and several samples, answered in a few dollars what a
+   batch of games could not: whether a fix works, whether it breaks a true case (it did, once), and whether
+   the model or the prompt is the limit. A replay is a regression check on known failures, not a rate:
+   "0 of 10" means the failure stopped reproducing, not that it is gone. The full games then tempered the
+   replay's capability result: 1 error in 50 frozen turns became one in 15 heard lines, because the frozen
+   turns were known failures and full games find new ones.
+4. **Read the judge.** The first golden judging marked correct samples bad because an expectation said
+   "never claimed any role" on a day the speaker had truly claimed investigator. Every judge verdict used
+   here was read by hand first.
+5. **Balance is a property of the model too.** Every balance change in §8.3 was tuned on flash-lite play,
+   where the town loses information to its own reasoning slips and the evil seats lose covers they cannot
+   keep. A stronger model moves both, so balance has to be re-read on the model the live game uses, and a
+   buff aimed at flash-lite's weakness can overshoot for humans or a stronger model.
+6. **The aim is information-driven mistakes.** Agents that never err would remove the game; the target is
+   mistakes that come from incomplete information, misleading opponents and uncertain judgment, rather than
+   from confusing what one's own ability observed.
+
+7. **State every rule the engine applies, and early.** Twice a game turned on a rule the engine applied and the prompts
+   did not state (an illusionist carrying its own kill leaves no trace, f02; before it, a necromancer's
+   borrowed kill read as a second wolf attack). A stronger model reasons more confidently from the rules
+   it is given, so a missing rule costs more, not less. And a stated rule protects only the origin: once
+   a false rule has been asserted a few times in the transcript, the next speakers repeat it against the
+   rules text (the f02 replay). Ranking the rules above a player's statement of a rule, as the record is
+   ranked above claims about events, moved the stronger model and not flash-lite.
+8. **Change one prompt, check the others' readers.** Every fix here was checked on the model that showed the
+   error; the claim-retention instruction, checked on flash-lite and flash, made the Luna summariser file a
+   roleblock as a denial. A literal reader tests the wording; a loose reader tests the reasoning.
+9. **Keep what was said, including what was denied.** A downstream player can reason well from a record
+   that has lost the evidence and still be wrong; denials and rebuttals are the evidence a later
+   contradiction needs, and they were the first thing the summary dropped.
+
+Open from this pass: votes with no public reasoning (on flash-lite 70% of town votes come from a voter who
+accused no one that day, and a "pressure a quiet player" default lynches undiscussed players, perhaps
+leaned on by the vote prompt's abstain line); misinformation cascades within a day, which no rule text
+stopped; flash-lite dropping a denial that sits beside other claims; human claims, which carry no claim field (an optional claim
+selector is the proposed fix, in the frontend pass); and the hallucination screen, never yet run on the
+ten-seat games (about $2 to $3 for a rate comparable to July's, invented facts only).
+
 ---
 
 ## 9. Open questions (as of 2026-10-03)

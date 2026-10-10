@@ -1,0 +1,18 @@
+[25] 15 s ()
+[50] 39 s ('PACK_NIGHT_PHASE:db220ac9-e5ef-35d8-f92a-e2e154168f90',)
+[75] 91 s ('DAY_PHASE:b4046530-10ee-23c7-0a0b-68aa86d8ba55',)
+[100] 132 s ('DAY_PHASE:b4046530-10ee-23c7-0a0b-68aa86d8ba55',)
+[125] 232 s ('DAY_PHASE:b4046530-10ee-23c7-0a0b-68aa86d8ba55',)
+[150] 342 s ('DAY_PHASE:b4046530-10ee-23c7-0a0b-68aa86d8ba55',)
+[175] 412 s ('DAY_PHASE:b4046530-10ee-23c7-0a0b-68aa86d8ba55',)
+[200] 435 s ('PACK_NIGHT_PHASE:d9cee3f5-be43-404f-97bd-2cda91bd6b85',)
+[225] 515 s ('DAY_PHASE:c014a81a-73f6-c334-10ba-5d8597343b3a',)
+[250] 591 s ('DAY_PHASE:c014a81a-73f6-c334-10ba-5d8597343b3a',)
+[275] 687 s ('DAY_PHASE:c014a81a-73f6-c334-10ba-5d8597343b3a',)
+[300] 732 s ('PACK_NIGHT_PHASE:1c86623b-d247-9cea-6054-4c9f1ffd8839',)
+[325] 818 s ('PACK_NIGHT_PHASE:1c86623b-d247-9cea-6054-4c9f1ffd8839',)
+[350] 904 s ('DAY_PHASE:36d988cd-867f-b9ef-d87c-925d21b883c7',)
+[375] 994 s ()
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+phase3-l01-1f864282: winner wolves, day 4, 994.3 s, 142 calls, cost 0.1247

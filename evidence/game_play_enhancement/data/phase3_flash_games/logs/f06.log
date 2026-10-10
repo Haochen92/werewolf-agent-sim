@@ -1,0 +1,31 @@
+[25] 23 s ()
+[50] 37 s ('PACK_NIGHT_PHASE:4f32a15a-aa71-4471-194c-3fdbe83adfa5',)
+[75] 59 s ('DAY_PHASE:fe38d055-da5e-f0c8-464a-e9cb7bd404b3',)
+[100] 85 s ('DAY_PHASE:fe38d055-da5e-f0c8-464a-e9cb7bd404b3',)
+[125] 109 s ('DAY_PHASE:fe38d055-da5e-f0c8-464a-e9cb7bd404b3',)
+LLM call failed for player_7: Error calling model 'gemini-3.5-flash' (CANCELLED): 499 CANCELLED. {'error': {'code': 499, 'message': 'The operation was cancelled.', 'status': 'CANCELLED'}}
+[150] 189 s ('DAY_PHASE:fe38d055-da5e-f0c8-464a-e9cb7bd404b3',)
+LLM call stalled for player_7 (slow or full): Error calling model 'gemini-3.5-flash' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+LLM call stalled for player_10 (slow or full): Error calling model 'gemini-3.5-flash' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_7 rescued by the fallback model on day_votes
+player_10 rescued by the fallback model on day_votes
+[175] 226 s ('DAY_PHASE:fe38d055-da5e-f0c8-464a-e9cb7bd404b3',)
+[200] 243 s ('PACK_NIGHT_PHASE:9eb2d19d-6fc5-bf4c-0fb5-2546eeb22a71',)
+[225] 279 s ('DAY_PHASE:a1d3d51d-669f-8ddd-572e-f81595f6b8f9',)
+[250] 308 s ('DAY_PHASE:a1d3d51d-669f-8ddd-572e-f81595f6b8f9',)
+[275] 366 s ('DAY_PHASE:a1d3d51d-669f-8ddd-572e-f81595f6b8f9',)
+[300] 421 s ('DAY_PHASE:a1d3d51d-669f-8ddd-572e-f81595f6b8f9',)
+[325] 463 s ('DAY_PHASE:a1d3d51d-669f-8ddd-572e-f81595f6b8f9',)
+[350] 498 s ()
+[375] 513 s ('DAY_PHASE:87095df5-30eb-9060-08be-314ea1095f4d',)
+[400] 562 s ('DAY_PHASE:87095df5-30eb-9060-08be-314ea1095f4d',)
+[425] 611 s ('DAY_PHASE:87095df5-30eb-9060-08be-314ea1095f4d',)
+LLM call stalled for player_5 (slow or full): 504 DEADLINE_EXCEEDED. {'error': {'code': 504, 'message': 'Deadline expired before operation could complete.', 'status': 'DEADLINE_EXCEEDED'}}
+player_5 rescued by the fallback model on day_channel
+[450] 716 s ()
+[475] 741 s ('DAY_PHASE:ce346b44-be8a-9089-4d1c-419261fa9b1f',)
+[500] 787 s ('DAY_PHASE:ce346b44-be8a-9089-4d1c-419261fa9b1f',)
+[525] 834 s ()
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+phase3-f06-e3f2d3f0: winner necromancer, day 5, 836.2 s, 186 calls, cost None

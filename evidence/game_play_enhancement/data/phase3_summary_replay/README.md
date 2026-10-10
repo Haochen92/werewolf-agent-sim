@@ -46,3 +46,59 @@ action without setting its claim field; the summary and the ledger must keep the
   Committed lost 0 of 5 on that case.
 
 Ten cases, five samples: a regression check on known failures, not a rate.
+
+## A third arm: gemini-3.5-flash as summariser (2026-10-10)
+
+The same ten cases, five samples each, on the fixed code with `GOOGLE_GENAI_MODEL=gemini-3.5-flash`
+(`generations_fixed_flash_summariser.jsonl`): no bad summary and no bad ledger entry in 30 positive
+samples, no true claim lost from the ledger in 20 controls (one control summary left a claim out; the
+ledger still had it from the speaker's field). Against flash-lite on the fixes (2 bad summaries, 0 bad
+ledger entries, 1 control lost), the stronger summariser also stops writing the self-targeted actions
+the ledger otherwise has to drop. About four summary calls a game, so the estimated extra cost is $0.06
+to $0.12 a game.
+
+## Claim retention: denials and rebuttals (2026-10-10)
+
+After review, the summariser was given a way to keep a denial ("I didn't visit anyone last night", "I
+held my fire", "I kept my second watch"): a claimed night action `no_action`, with the player named if
+the denial names one, under a role claim of `none` when no role is claimed; and an instruction to keep
+every rebuttal of an accusation. The ledger shows a denial as the claimant's word ("Night 2: says they
+did not act"), and a later action claimed for the same night keeps the denial as history. Six denial
+cases were added (every spoken denial found in batches 2 to 4 and the flash games had been dropped:
+c03 days 4 and 5, c04 day 3, e03 day 2, f02 day 5, f06 day 3), and all sixteen cases were replayed on
+three arms: the committed code (a worktree at fb193104), the fix on flash-lite, and the fix with
+gemini-3.5-flash as summariser. Ledger built with the current code:
+
+| Arm | Bad positives | True claims lost (controls) | Denials lost |
+|---|---|---|---|
+| committed, flash-lite | 0/30 | 1/20 | 30/30 (the schema could not hold one) |
+| fixed, flash-lite | 0/30 | 2/20 | 7/30 |
+| fixed, gemini-3.5-flash | 0/30 | 2/20 | 0/30 |
+
+Flash-lite misses the denial when it sits beside other claimed actions (f02 day 5: the sigils of nights 1
+and 4 kept, "I didn't visit on Night 3" dropped, 5 of 5); the stronger summariser keeps all of them. The
+controls lost are the summariser leaving a true claim out entirely (e05 day 2, 2 of 5 on both fixed arms,
+0 of 5 before): possibly a cost of the longer instructions, not established at five samples. The first
+scoring flagged three flash-lite samples on e06 day 2 as invented claims; they were empty no-role
+entries ("claimed no role" with nothing in it), which the ledger now leaves out.
+
+## Roleblocks and empty results (2026-10-10, from the Luna games)
+
+The Luna audit found the summariser filing "I was roleblocked" as a denial ("says they did not act"), a
+regression of the claim retention above, and results the claim record could not hold (a watch that saw no
+one, a follow that went nowhere, a sigil with no effect). The fix: result words no_visitors, no_effect and
+roleblocked, and an instruction that a roleblock is the attempt, never a denial; the ledger shows "says they
+tried to follow and were roleblocked", "followed p7; says they visited no one", "says it had no effect".
+Five cases were added (three roleblocks: l03 day 2, l04 day 3, l01 day 3; an empty follow, l01 day 2; a sigil
+with no effect, l01 day 4) and run with the denial and control cases, before and after, with Luna and
+flash-lite as summariser (`--kinds roleblock result_word denial control`). Bad samples through the current
+ledger:
+
+| Summariser | Roleblock filed as a denial | Empty result dropped | Denial lost | True claim lost (controls) |
+|---|---|---|---|---|
+| Luna, before → after | 15/15 → 0/15 | 10/10 → 0/10 | 0/30 → 0/30 | 8/20 → 6/20 |
+| flash-lite, before → after | 6/15 → 0/15 | 10/10 → 0/10 | 5/30 → 7/30 | 2/20 → 0/20 |
+
+Luna's lost controls are a transcription habit, not the change: it does not credit a role nobody named (e05
+day 2, a sighting reported without "I followed": 5 of 5) and records "held my fire" as a denial without
+inferring the vigilante (e02 day 3); flash-lite infers both.

@@ -1,0 +1,98 @@
+{
+  "label": "phase3_luna",
+  "run_at": "2026-10-10T05:46:13.050797+00:00",
+  "config": {
+    "label": "phase3_luna",
+    "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+    "n": 5,
+    "workers": 3,
+    "slices": [
+      "pinned",
+      "control",
+      "f02_rule"
+    ],
+    "arms": [
+      {
+        "label": "flashlite_current",
+        "model": "gemini-3.5-flash-lite",
+        "env": {},
+        "memory": "none"
+      },
+      {
+        "label": "luna_current",
+        "model": "openai/gpt-6-luna",
+        "env": {},
+        "memory": "none"
+      }
+    ],
+    "recall_model": "gemini-3.1-flash-lite",
+    "precision_model": "gemini-3.5-flash",
+    "golden_model": "gemini-3.5-flash",
+    "note": "The fourteen Phase 3 frozen turns (ten reasoning failures and controls, four f02 rule turns) on today's prompts (the illusionist sentence, the rules-are-exact line, the cover-note rewrite, claim retention): GPT-6 Luna at medium reasoning against gemini-3.5-flash-lite, the live default. gemini-3.5-flash on these turns is in phase3_turns and phase3_f02_hierarchy, on slightly earlier prompts."
+  },
+  "n_cases": 14,
+  "arms": {
+    "flashlite_current": {
+      "bad": {
+        "all": "25/70 (36%)",
+        "phase:day_discussion": "25/70 (36%)",
+        "role:fortune_teller": "0/5 (0%)",
+        "role:investigator": "0/10 (0%)",
+        "role:sentinel": "9/15 (60%)",
+        "role:sigilist": "5/10 (50%)",
+        "role:speculator": "0/5 (0%)",
+        "role:trailseer": "6/20 (30%)",
+        "role:vigilante": "5/5 (100%)",
+        "slice:control": "7/10 (70%)",
+        "slice:f02_rule": "10/20 (50%)",
+        "slice:pinned": "8/40 (20%)",
+        "source:phase3_capture": "25/70 (36%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 7066.8,
+        "cached": 4558.9,
+        "output": 1970.1,
+        "reasoning": 1500.7,
+        "seconds": 9.1
+      },
+      "generation_samples_measured": 70
+    },
+    "luna_current": {
+      "bad": {
+        "all": "10/70 (14%)",
+        "phase:day_discussion": "10/70 (14%)",
+        "role:fortune_teller": "2/5 (40%)",
+        "role:investigator": "0/10 (0%)",
+        "role:sentinel": "1/15 (7%)",
+        "role:sigilist": "3/10 (30%)",
+        "role:speculator": "0/5 (0%)",
+        "role:trailseer": "3/20 (15%)",
+        "role:vigilante": "1/5 (20%)",
+        "slice:control": "1/10 (10%)",
+        "slice:f02_rule": "8/20 (40%)",
+        "slice:pinned": "1/40 (2%)",
+        "source:phase3_capture": "10/70 (14%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 6430.8,
+        "cached": 5331.2,
+        "output": 1723.6,
+        "reasoning": 1278.1,
+        "seconds": 19.1
+      },
+      "generation_samples_measured": 70
+    }
+  },
+  "paired_vs_first": {
+    "luna_current": {
+      "cases": 14,
+      "better": 7,
+      "worse": 2,
+      "two_sided_sign_p": 0.1797
+    }
+  }
+}
