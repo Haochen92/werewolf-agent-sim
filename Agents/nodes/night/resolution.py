@@ -29,6 +29,9 @@ _ATTACK_FLAVOR = {
     "serial_killer": ("stabbed", "the serial killer"),
     "vigilante": ("shot", "the vigilante"),
     "sigilist": ("struck down", "a sigil"),
+    "reanimated_wolves": ("killed", "a reanimated wolf"),
+    "reanimated_vigilante": ("shot", "a reanimated vigilante"),
+    "reanimated_sigilist": ("struck down", "a reanimated sigil"),
 }
 
 _SIDE_WORDS = {"town": "Town", "wolves": "the Wolves", "lone_killer": "the lone killer", "self": "itself"}
@@ -48,6 +51,11 @@ def _spent(state: OrchestratorGraph, choices, outcome) -> dict[str, int]:
     illusionist carrying the pack's kill, an ordinary bet)."""
     uses = dict(state.get("uses_left", {}))
     for choice in choices:
+        # A clean through the illusionist's body spends the dead illusionist's conceal.
+        if (choice.via is not None and state.get("roles", {}).get(choice.via) == "illusionist"
+                and choice.kind == "kill" and choice.target in outcome.concealed and uses.get("illusionist", 0) > 0):
+            uses["illusionist"] -= 1
+            continue
         spec = ROLE_SPECS[choice.role]
         if spec.uses is None or choice.role not in uses:
             continue
@@ -78,7 +86,8 @@ def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
     choices = list(state.get("night_choices", []))
     before = side_counts(state)
 
-    outcome = resolve_night(choices, roles, current_day)
+    outcome = resolve_night(choices, roles, current_day,
+                            body_conceals=state.get("uses_left", {}).get("illusionist", 0))
     attacks_on, verdicts, deaths = outcome.attacks_on, outcome.verdicts, outcome.deaths
     pack_target = next((c.target for c in choices if is_pack_kill(c)), None)
 
@@ -126,7 +135,9 @@ def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
         verdict = verdicts[target]
         if verdict == "immune":
             continue  # silent
-        attacker_types = [attack.attacker_type for attack in attacks_on[target]]
+        # Each attacker TYPE once (a guard: "attacked by the wolves and the wolves" was seen on
+        # 2026-10-10 when a borrowed kill still read as the body's kind; it now reads "reanimated").
+        attacker_types = list(dict.fromkeys(attack.attacker_type for attack in attacks_on[target]))
         phrase = _join([_ATTACK_FLAVOR[t][1] for t in attacker_types])
         if verdict == "saved":
             # Use a neutral verb so it doesn't read as "killed ... but saved".
@@ -137,7 +148,8 @@ def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
         # Killed. The announcement names the attacker type, and the role unless concealed.
         verb = _ATTACK_FLAVOR[attacker_types[0]][0] if len(attacker_types) == 1 else "attacked"
         if target in outcome.concealed:
-            lines.append(f"{target} was {verb} by {phrase} last night. Their role is hidden by an illusionist.")
+            cleaner = "a reanimated illusionist" if "reanimated_wolves" in attacker_types else "an illusionist"
+            lines.append(f"{target} was {verb} by {phrase} last night. Their role is hidden by {cleaner}.")
             dead_roster.append(DeathRecord(player=target, role="", day=current_day, phase="night", concealed=True))
             report_deaths.append((target, "", attacker_types))
         else:

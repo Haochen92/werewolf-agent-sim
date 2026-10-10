@@ -1292,7 +1292,15 @@ export interface components {
       /** Role */
       role: string;
       /** Attacker Types */
-      attacker_types: ('wolves' | 'serial_killer' | 'vigilante' | 'sigilist')[];
+      attacker_types: (
+        | 'wolves'
+        | 'serial_killer'
+        | 'vigilante'
+        | 'sigilist'
+        | 'reanimated_wolves'
+        | 'reanimated_vigilante'
+        | 'reanimated_sigilist'
+      )[];
       /**
        * Concealed
        * @default false
@@ -1358,7 +1366,15 @@ export interface components {
       /** Player */
       player: string;
       /** Attacker Types */
-      attacker_types: ('wolves' | 'serial_killer' | 'vigilante' | 'sigilist')[];
+      attacker_types: (
+        | 'wolves'
+        | 'serial_killer'
+        | 'vigilante'
+        | 'sigilist'
+        | 'reanimated_wolves'
+        | 'reanimated_vigilante'
+        | 'reanimated_sigilist'
+      )[];
     };
     /** PackRosterUpdate */
     PackRosterUpdate: {

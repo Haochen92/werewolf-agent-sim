@@ -226,6 +226,7 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         "fortune_points": payload.get("fortune_points", 0),
         "speculator_pick": payload.get("speculator_pick", "not yet"),
         "bodies": ", ".join(payload.get("bodies", [])) or "none tonight",
+        "body_conceals": payload.get("body_conceals", 0),
         "carrier": payload.get("carrier", ""),
         "wolves_target": payload.get("wolves_target") or "not named yet",
         "firing_brief": _firing_brief(payload.get("firing_reason")),

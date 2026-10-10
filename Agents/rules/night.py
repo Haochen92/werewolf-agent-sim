@@ -111,12 +111,16 @@ def choices_from_targets(
 
 
 def _attacker_type(choice: NightChoice, roles: dict[str, str]) -> str:
-    """How the morning names this kill: by the killer's role, or the body's for a borrowed kill."""
-    role = roles.get(choice.via, choice.role) if choice.via else choice.role
-    return ATTACKER_TYPE_OF_ROLE[role]
+    """How the morning names this kill: by the killer's role, or by the body's kind, reanimated, for
+    a kill made through a body (owner, 2026-10-10: the body's kind alone told the table two wolf
+    attacks happened when one was the necromancer's)."""
+    if choice.via:
+        return "reanimated_" + ATTACKER_TYPE_OF_ROLE[roles[choice.via]]
+    return ATTACKER_TYPE_OF_ROLE[choice.role]
 
 
-def resolve_night(choices: list[NightChoice], roles: dict[str, str], night: int) -> NightOutcome:
+def resolve_night(choices: list[NightChoice], roles: dict[str, str], night: int,
+                  body_conceals: int = 0) -> NightOutcome:
     """Apply the shared rules to the night's choices, all at once.
 
     In order: a block cancels the action of a town player or a wolf (the serial killer, the
@@ -179,7 +183,8 @@ def resolve_night(choices: list[NightChoice], roles: dict[str, str], night: int)
         if choice.kind != "sigil" or choice.target is None:
             continue
         if choice.target in attackers:
-            attacks_on.setdefault(choice.target, []).append(Attack(choice.actor, "sigilist"))
+            kind = "reanimated_sigilist" if choice.via else "sigilist"  # a sigil placed through a body
+            attacks_on.setdefault(choice.target, []).append(Attack(choice.actor, kind))
 
     # 4. One verdict per attacked player. A fortune teller's self-bet makes it unharmed tonight.
     protected: list[str] = []
@@ -213,6 +218,14 @@ def resolve_night(choices: list[NightChoice], roles: dict[str, str], night: int)
         for victim in pack_victims:
             if verdicts.get(victim) == "killed" and victim not in concealed:
                 concealed.append(victim)
+    # A kill through the illusionist's body also cleans its victim, while the dead illusionist has a
+    # conceal left (``body_conceals``; owner, 2026-10-10): the role is hidden and the necromancer
+    # learns it. The conceal is spent in the resolution node.
+    for choice in in_effect:
+        if (body_conceals > 0 and choice.kind == "kill" and choice.via is not None
+                and roles.get(choice.via) == "illusionist" and verdicts.get(choice.target) == "killed"
+                and choice.target not in concealed):
+            concealed.append(choice.target)
     # A conceal that took also hides the attacking trace: the carrier's visit to that victim is
     # not among the visits the sentinel and trailseer see (balance ruling 2026-10-09). The
     # carrier's other visit that night, and the illusionist's own, stay visible.

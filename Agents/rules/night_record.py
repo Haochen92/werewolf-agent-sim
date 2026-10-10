@@ -25,6 +25,9 @@ _ATTACKER_PHRASE = {
     "serial_killer": "the serial killer",
     "vigilante": "the vigilante",
     "sigilist": "a sigil",
+    "reanimated_wolves": "a reanimated wolf",
+    "reanimated_vigilante": "a reanimated vigilante",
+    "reanimated_sigilist": "a reanimated sigil",
 }
 
 # The result words a record may carry, by action. The disclosure reads these, never the prose.
@@ -109,6 +112,11 @@ def _record_of(choice: NightChoice, outcome: NightOutcome, roles: dict[str, str]
         verdict = outcome.verdicts.get(target)
         result = verdict or "killed"
         outcome_text = _kill_outcome(target, verdict, roles, target in outcome.concealed)
+        if choice.via is not None and roles.get(choice.via) == "illusionist" and target in outcome.concealed:
+            # The necromancer cleaned this body through the illusionist's, and learns the role.
+            seen = [target]
+            outcome_text = (f"{target} died, and you hid their role: they were a "
+                            f"{_role_words(roles.get(target, 'unknown'))}.")
 
     elif choice.kind == "investigate":
         seen = [target]

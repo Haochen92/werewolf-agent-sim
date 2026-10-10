@@ -39,7 +39,7 @@ Role = Literal[
 PACK_ROLES = ("chanteuse", "illusionist", "wolf")
 """The roles that share the pack's chat (the faction tier)."""
 Winner = Literal["villagers", "wolves", "serial_killer", "necromancer"]
-AttackerType = Literal["wolves", "serial_killer", "vigilante", "sigilist"]
+AttackerType = Literal["wolves", "serial_killer", "vigilante", "sigilist", "reanimated_wolves", "reanimated_vigilante", "reanimated_sigilist"]
 
 
 class Tier(str, Enum):

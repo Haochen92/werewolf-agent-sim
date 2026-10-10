@@ -12,7 +12,10 @@ from typing import Literal
 from Agents.schemas.roles import NightKind
 
 # How the morning report names an attack from its source
-AttackerType = Literal["wolves", "serial_killer", "vigilante", "sigilist"]
+AttackerType = Literal["wolves", "serial_killer", "vigilante", "sigilist", "reanimated_wolves", "reanimated_vigilante", "reanimated_sigilist"]
+"""How the morning names an attack. An attack a necromancer made through a body is the body's kind,
+reanimated: a kill through a wolf's body, a shot through the vigilante's, a sigil through the
+sigilist's (owner, 2026-10-10)."""
 
 # What happened to an attacked player: immune > saved > killed
 NightVerdict = Literal["immune", "saved", "killed"]

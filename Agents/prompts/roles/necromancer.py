@@ -8,11 +8,16 @@ killed; from the second night on it can be killed like anyone else. Each night f
 it may pick a dead player whose role was announced and use that role's night ability on a
 target, or stay put. The same body may be used night after night; a body whose role was hidden
 cannot be used. Through a dead wolf it attacks (an Illusionist's body) or blocks (a
-Chanteuse's body); through a dead Vigilante it shoots with no penalty for a miss; through a dead
+Chanteuse's body); an attack through the Illusionist's body also hides the victim's role if they
+die, and the Necromancer learns it, while the Illusionist has conceals left (the two it started
+with, less those it spent); through a dead Vigilante it shoots with no penalty for a miss; through a dead
 Healer it protects; through a dead Sigilist it places a sigil; through a dead Investigator,
 Sentinel or Trailseer it learns what that role would have learned. The dead player's name, not
 the Necromancer's, is what a Sentinel or Trailseer sees at the door, and a sigil cannot punish
-an attack made through a body. On a night it attacks, it reads Suspicious to the Investigator;
+an attack made through a body. The morning names an attack made through a body by the body's kind,
+reanimated ("killed by a reanimated wolf", "shot by a reanimated vigilante", "struck down by a
+reanimated sigil"), so the town learns a Necromancer struck, though not who. On a night it
+attacks, it reads Suspicious to the Investigator;
 on other nights, Not suspicious. It cannot be blocked, and it can be removed by a daytime vote
 or, from the second night, by a night attack.
 """
@@ -80,6 +85,7 @@ bodies exist is public, so the town knows what you could have done each night.
 
 NIGHT_CONTEXT = """
 Bodies you can use tonight (dead players whose role was announced): {bodies}
+Conceals left to the Illusionist's body, if it is dead: {body_conceals}
 Surviving players: {surviving_players}
 Your night actions so far (private; recorded by the game master):
 {night_actions}

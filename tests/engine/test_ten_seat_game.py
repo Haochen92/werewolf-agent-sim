@@ -146,7 +146,7 @@ def test_a_borrowed_kill_shows_the_body_and_reads_as_the_body_would():
     ]
     outcome = resolve_night(choices, st["roles"], 2)
     assert outcome.deaths == [h["healer"]]
-    assert outcome.attacks_on[h["healer"]][0].attacker_type == "wolves"  # the body's kind
+    assert outcome.attacks_on[h["healer"]][0].attacker_type == "reanimated_wolves"  # owner 2026-10-10
     assert (body, h["healer"]) in outcome.visits and h["necromancer"] not in outcome.attackers
     assert h["necromancer"] in outcome.suspicious
     records = {r.actor: r for r in night_action_records(choices, outcome, st["roles"])}
@@ -402,3 +402,41 @@ def test_the_necromancer_may_use_the_same_body_night_after_night():
     assert "last_body" not in update
     st.update({"current_day": 4, "dead_roster": st["dead_roster"] + update["dead_roster"]})
     assert acts_tonight(st, "necromancer") and h["illusionist"] in usable_bodies(st["dead_roster"])
+
+
+def test_a_borrowed_kill_on_the_packs_victim_names_the_wolves_and_a_reanimated_corpse():
+    st = _state({"lone_killer": "necromancer", "neutral": "speculator"}, day=3)
+    h = _holders(st)
+    st["dead_roster"] = [DeathRecord(player=h["illusionist"], role="illusionist", day=1, phase="night")]
+    st["night_choices"] = [
+        NightChoice(h["chanteuse"], "chanteuse", "kill", h["healer"]),
+        NightChoice(h["necromancer"], "necromancer", "kill", h["healer"], via=h["illusionist"]),
+    ]
+    update = night_resolution(st, SimpleNamespace(context={"metrics": Metrics()}))
+    message = update["day_channel"][0].message
+    assert f"{h['healer']} was attacked by the wolves and a reanimated wolf last night." in message
+    assert update["night_report"].deaths == [(h["healer"], "", ["wolves", "reanimated_wolves"])]  # cleaned
+    # alone, with the illusionist's conceals spent, a borrowed kill is a reanimated wolf's
+    st["night_choices"] = st["night_choices"][1:]
+    st["uses_left"]["illusionist"] = 0
+    alone = night_resolution(st, SimpleNamespace(context={"metrics": Metrics()}))
+    assert f"{h['healer']} was killed by a reanimated wolf last night. They were a healer." in alone["day_channel"][0].message
+
+
+def test_a_kill_through_the_illusionists_body_cleans_and_the_necromancer_learns_the_role():
+    st = _state({"lone_killer": "necromancer", "neutral": "speculator"}, day=3)
+    h = _holders(st)
+    st["dead_roster"] = [DeathRecord(player=h["illusionist"], role="illusionist", day=1, phase="night")]
+    st["uses_left"]["illusionist"] = 1
+    st["night_choices"] = [NightChoice(h["necromancer"], "necromancer", "kill", h["healer"], via=h["illusionist"])]
+    update = night_resolution(st, SimpleNamespace(context={"metrics": Metrics()}))
+    assert (f"{h['healer']} was killed by a reanimated wolf last night. Their role is hidden by a reanimated "
+            "illusionist.") in update["day_channel"][0].message
+    assert update["dead_roster"][0].concealed and update["uses_left"]["illusionist"] == 0
+    record = next(r for r in update["night_actions"] if r.actor == h["necromancer"])
+    assert record.outcome.endswith(f"{h['healer']} died, and you hid their role: they were a healer.")
+    # a vigilante's body gives a plain shot, named as the vigilante's, reanimated
+    st.update({"dead_roster": [DeathRecord(player=h["vigilante"], role="vigilante", day=1, phase="night")],
+               "night_choices": [NightChoice(h["necromancer"], "necromancer", "kill", h["healer"], via=h["vigilante"])]})
+    shot = night_resolution(st, SimpleNamespace(context={"metrics": Metrics()}))
+    assert f"{h['healer']} was shot by a reanimated vigilante last night. They were a healer." in shot["day_channel"][0].message

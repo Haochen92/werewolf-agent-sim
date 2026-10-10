@@ -2702,7 +2702,10 @@
                 "wolves",
                 "serial_killer",
                 "vigilante",
-                "sigilist"
+                "sigilist",
+                "reanimated_wolves",
+                "reanimated_vigilante",
+                "reanimated_sigilist"
               ]
             },
             "type": "array",
@@ -2864,7 +2867,10 @@
                 "wolves",
                 "serial_killer",
                 "vigilante",
-                "sigilist"
+                "sigilist",
+                "reanimated_wolves",
+                "reanimated_vigilante",
+                "reanimated_sigilist"
               ]
             },
             "type": "array",
