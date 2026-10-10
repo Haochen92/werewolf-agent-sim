@@ -1,0 +1,21 @@
+[25] 17 s ()
+[50] 32 s ('PACK_NIGHT_PHASE:91a51138-1c5e-788c-148c-ef3fbdc37179',)
+[75] 52 s ('DAY_PHASE:fe0fa2cd-4ed8-b403-ccbe-05e8e54c2094',)
+[100] 113 s ('DAY_PHASE:fe0fa2cd-4ed8-b403-ccbe-05e8e54c2094',)
+[125] 160 s ('DAY_PHASE:fe0fa2cd-4ed8-b403-ccbe-05e8e54c2094',)
+[150] 196 s ('DAY_PHASE:fe0fa2cd-4ed8-b403-ccbe-05e8e54c2094',)
+[175] 205 s ()
+[200] 240 s ('PACK_NIGHT_PHASE:a4445bdf-7512-3558-fba2-623dfb99838d',)
+[225] 280 s ('DAY_PHASE:eb1207c9-fa7b-72a6-a4a1-bf6bb62fc459',)
+[250] 335 s ('DAY_PHASE:eb1207c9-fa7b-72a6-a4a1-bf6bb62fc459',)
+[275] 345 s ()
+reads under-covered: player=player_4 phase=wolf_channel coverage=83% missing=['player_8']
+[300] 368 s ('PACK_NIGHT_PHASE:e6e143dc-526e-e488-0ff7-58d2115c2fa9',)
+[325] 386 s ('DAY_PHASE:ac31d2a6-54a6-f4d2-d2d0-34e5e8d60e6a',)
+[350] 435 s ('DAY_PHASE:ac31d2a6-54a6-f4d2-d2d0-34e5e8d60e6a',)
+[375] 449 s ('PACK_NIGHT_PHASE:a9f85aac-5a78-71d3-8532-e6564fae0aa8',)
+[400] 470 s ('DAY_PHASE:7a5cfc2a-cff6-1fef-f177-9f171828db0b',)
+[425] 509 s ('DAY_PHASE:7a5cfc2a-cff6-1fef-f177-9f171828db0b',)
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+phase3-e06-087f159c: winner necromancer, day 5, 515.8 s, 170 calls, cost 0.8048

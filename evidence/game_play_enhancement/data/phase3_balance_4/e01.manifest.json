@@ -1,0 +1,166 @@
+{
+ "game_id": "phase3-e01-7df27eac",
+ "label": "e01",
+ "git": "56b21471e8e20d3ba28c2a6ded0480ea6ea6af9f",
+ "git_dirty_paths": [
+  " M .gitignore",
+  "?? LICENSE",
+  "?? evidence/game_play_enhancement/data/phase3_balance_4/",
+  "?? frontend/docs/rendering-audit-2026-10-02.md",
+  "?? frontend/src/assets/LICENSE",
+  "?? frontend/undefined/",
+  "?? notebooks/hitl_durability_spike.ipynb",
+  "?? notebooks/hitl_spike_test.ipynb"
+ ],
+ "runtime_fingerprint": {
+  "git_commit": "56b21471e8e20d3ba28c2a6ded0480ea6ea6af9f",
+  "git_dirty": true,
+  "prompt_bundle_hash": "b1260a16c0c10a18",
+  "llm_backend": "vertex",
+  "game_model": "gemini-3.5-flash-lite",
+  "temperature": 1.0,
+  "game_thinking_level": "medium",
+  "summary_thinking_level": "medium",
+  "judge_thinking_level": "minimal",
+  "pro_model": "gemini-2.5-pro",
+  "pro_backup_model": "gemini-3.5-flash",
+  "embedding_model": "gemini-embedding-2",
+  "embedding_dims": 1536,
+  "vertex_location": "global"
+ },
+ "langgraph": "1.1.10",
+ "model": "gemini-3.5-flash-lite",
+ "thinking_level": "medium",
+ "memory": "off (memory_config all False, dump off)",
+ "run_config": {
+  "game": {
+   "lone_killer": "serial_killer",
+   "neutral": "speculator",
+   "player_id_prefix": "player",
+   "starting_day": 1,
+   "first_voting_day": 2,
+   "vigilante_bullets": 2,
+   "sigils": 2,
+   "conceals": 2,
+   "investigator_checks": 2,
+   "sentinel_watches": 2,
+   "self_bets": 2,
+   "fortune_points_to_win": 2,
+   "abstain_enabled": true,
+   "no_lynch_force_after": 2,
+   "max_days": 12,
+   "discussion_utterance_multiplier": 3.0,
+   "min_discussion_utterances": 6,
+   "per_pair_reengagement_cap": 2,
+   "reengagement_cooldown_multiplier": 1.0,
+   "max_proactive_sweeps": 2
+  },
+  "memory_config": {
+   "wolf": false,
+   "villager": false,
+   "healer": false,
+   "investigator": false
+  },
+  "reranking_config": {
+   "observations": {
+    "wolf": false,
+    "villager": false,
+    "healer": false,
+    "investigator": false
+   },
+   "strategy_points": {
+    "wolf": false,
+    "villager": false,
+    "healer": false,
+    "investigator": false
+   }
+  },
+  "filtering_config": {
+   "wolf": false,
+   "villager": false,
+   "healer": false,
+   "investigator": false
+  },
+  "retrieval_types_config": {
+   "observations": true,
+   "strategy_points": true
+  },
+  "memory_persistence": {
+   "seed_enabled": true,
+   "dump_enabled": false,
+   "seed_store_dir": "/home/ubuntu/projects/werewolf-agent-sim/memory_stores/v6_1",
+   "dump_store_dir": "/home/ubuntu/projects/werewolf-agent-sim/memory_stores/v6_1",
+   "batch_dedup": {
+    "enabled": false,
+    "two_pass": true,
+    "triage_model": "gemini-3.1-flash-lite",
+    "triage_thinking_level": "medium",
+    "verify_model": "gemini-2.5-pro",
+    "verify_thinking_level": null,
+    "prompt_variant": "default"
+   },
+   "extraction": {
+    "per_role": true,
+    "cache_prefix": true,
+    "max_workers": 6,
+    "extract_without_dump": false
+   }
+  },
+  "sp_proven_tiering": true,
+  "sp_exploration_slot": true,
+  "game_id": "phase3-e01-7df27eac",
+  "session_id": null,
+  "human_player": 0,
+  "human_role": null
+ },
+ "stream": {
+  "stream_mode": [
+   "updates",
+   "custom"
+  ],
+  "subgraphs": true,
+  "version": "v2"
+ },
+ "started_at": "2026-10-10T00:25:20.406753+00:00",
+ "ended_at": "2026-10-10T00:33:56.923695+00:00",
+ "duration_seconds": 516.1,
+ "chunks": 393,
+ "winner": "villagers",
+ "neutral_result": "won",
+ "lineup": [
+  "investigator",
+  "sentinel",
+  "trailseer",
+  "vigilante",
+  "sigilist",
+  "healer",
+  "chanteuse",
+  "illusionist",
+  "serial_killer",
+  "speculator"
+ ],
+ "days": 4,
+ "model_calls": 152,
+ "usage": {
+  "buckets": [
+   {
+    "model": "gemini-3.5-flash-lite",
+    "hour": "2026-10-10T00:00:00+00:00",
+    "calls": 152,
+    "failed": 0,
+    "input": 777324,
+    "cached": 18043,
+    "output": 213822,
+    "reasoning": 148531,
+    "seconds": 899.552
+   }
+  ]
+ },
+ "cost_usd": 0.7629,
+ "leak_check_passed": true,
+ "files": {
+  "chunks": "e01.chunks.jsonl",
+  "record": "e01.record.json",
+  "calls": "e01.calls.json"
+ }
+}

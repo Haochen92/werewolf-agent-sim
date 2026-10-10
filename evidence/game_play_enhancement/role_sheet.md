@@ -57,7 +57,8 @@ attacks, a sigil on anyone who attacked adds the Sigilist's retaliation, each at
 one verdict, and a conceal hides the pack's victim if that kill landed.
 
 - **Morning report:** names each death and its attacker type (the wolves, the serial killer, the
-  vigilante, a sigil). A save names the saved player and the attackers: "X was attacked by the
+  vigilante, a sigil; an attack the Necromancer made through a body is the body's kind,
+  reanimated: a reanimated wolf, vigilante or sigil). A save names the saved player and the attackers: "X was attacked by the
   wolves but was saved by the healer!" The attacked player learns of the attack from that line.
   An attack on an immune player is not mentioned.
 - **Visits:** a night action on a player is a visit, seen by the Sentinel and Trailseer. A block
@@ -204,7 +205,9 @@ One seat. Both options work alone and win by being the last standing.
 - From Night 2: picks a dead, unconcealed body and a target, then uses that body's night ability.
   Results come to the Necromancer.
 - Same body: allowed night after night (balance ruling 2026-10-09; the draft forbade two nights in a row, and on 19 of its 31 nights the Necromancer had no body that could kill). No use limits.
-- Wolf bodies: a dead Illusionist gives an attack. A dead Chanteuse gives a block, under the block
+- Wolf bodies: a dead Illusionist gives an attack, and that attack also hides its victim's role
+  if they die (the Necromancer learns it), while the Illusionist has conceals left: its unspent
+  ones carry to its body (owner, 2026-10-10). A dead Chanteuse gives a block, under the block
   rules above (so it can block a living wolf).
 - Town bodies: a dead Vigilante gives a shot with no misfire penalty. Info roles give private
   results. A dead Healer gives a protect. A dead Sigilist gives a sigil.
@@ -269,6 +272,8 @@ node.
 | Serial Killer kill | `X was stabbed by the serial killer last night. They were a {role}.` |
 | Vigilante kill | `X was shot by the vigilante last night. They were a {role}.` |
 | Sigil retaliation | `X was struck down by a sigil last night. They were a {role}.` |
+| Necromancer, through a body | `X was killed by a reanimated wolf last night. They were a {role}.` / `shot by a reanimated vigilante` / `struck down by a reanimated sigil` (the body's kind, reanimated; owner 2026-10-10) |
+| Necromancer, cleaned through the Illusionist's body | `X was killed by a reanimated wolf last night. Their role is hidden by a reanimated illusionist.` |
 | Two attackers | `X was attacked by the wolves and the serial killer last night. They were a {role}.` |
 | Save | `X was attacked by {attackers} but was saved by the healer!` |
 | Attack on an immune player | nothing |
@@ -312,6 +317,8 @@ node.
 - A concealed role shows nothing or "record cleaned"; X-ray on reveals it. The hidden card's look
   (a blank card, or a question mark) is undecided.
 - The 14 sigils, the faction marks and the role figures already exist on the stage.
+- Reanimated attacks (2026-10-10): `reanimated_wolves`, `reanimated_vigilante` and `reanimated_sigilist`
+  use the body kind's own attacker icon (the wolves', the vigilante's, the sigil's); no new icons (owner).
 - Wolves' reads at night (2026-10-09): every wolf night turn now gives reads, so a wolf can emit
   up to five `player_reads` in one night: each chat round, the carrier's turn, and its skill turn.
   The translator sends one per player, day, round and phase, so each of a wolf's night turns
@@ -397,3 +404,7 @@ and how often the Illusionist conceals an info role.
 - **2026-10-09 (balance, caps):** the Investigator has 2 checks and the Sentinel 2 watches for the whole game (`no_check` / `no_watch` to keep them; the night-1 lot still applies, as for the Sigilist), owner's ruling after the balance run; a declined check or watch leaves no record and spends nothing. To be read against one batch of six games with the sigil ruling before any further dial; the Vigilante reading Suspicious is the proposed next dial, not ruled.
 - **2026-10-09 (balance, evil buffs):** two rulings from the counts over nineteen games (the Necromancer lineups went to the town ten of ten; the pack won one of nineteen while aiming 34 of its 56 kills at the information roles and blocking the Healer on 6 nights). The Necromancer may use the same body night after night (it lacked a killing body on 19 of its 31 nights). A conceal that takes also hides the carrier's visit to the concealed victim from the Sentinel and Trailseer; nothing else about the carrier is hidden, and the shared rules state it for every player. To be read against six-game batches, one buff at a time if they are to be told apart; both are built together here on the owner's word.
 - **2026-10-09 (discussion quality, a prompt epoch):** after a review of the transcripts (a Chanteuse explaining a sighting with its real block; a visit taken as proof of the visitor's role): the wolves' shared discussion words and the Serial Killer's card tell an evil seat never to explain a visit with its real action and to keep a cover in its strategy note ("Public cover / Public account / Do not disclose"; unclaimed is a valid cover); the discussion output's `claim` counts a role claimed by describing its action; the summariser transcribes the players a claimed watch or follow saw (`seen`), and the ledger writes them as the claimant's word with the line "a visit alone does not establish a visitor's role or what they did". Measured first: the summariser never contradicted a set claim field over 71 summarised days (126 agree, 0 differ, 9 repeats missed, 16 roles inferred from a described action with no field set, 2 missed by the speaker). Repeated-accusation suppression is not built (it would need a semantic judgment per turn).
+- **2026-10-10 (record fixes, from reading five games by hand; data/phase3_reads/):** two record errors had changed outcomes. (1) The summariser credited "I was roleblocked" to the speaker as a Chanteuse claim, the ledger's fallback let it stand (no claim field that day), and the Investigator was voted out over it (e06). Fixed at the source (the summariser is told that something done to a player is not a claim by them) and in the ledger (a claimed block, watch, follow, check, sigil, attack or conceal on oneself is dropped as something done to the speaker; the role goes too only when it is the Chanteuse resting on a self-block, since a block is the one action a player is told was done to them; a self-bet is legal and a claimed self-protection stays for the rules check). A replay of the summaries without new games (data/phase3_summary_replay/) checked both fixes. The fallback itself stays: in batch 4 four of the five summariser claims for agents who set no field were true. (2) The summariser's record check copied its own example "no attack on player_2 was ever announced" against true claims of attacks on immune players (b02, b09); the example is gone and the instruction names that an attack on a player who cannot be killed at night is never announced.
+- **2026-10-10 (morning line; its cause superseded the same day by the reanimated ruling below, the once-per-type rule stays as a guard):** a target attacked by two attackers of the same type is named once ("killed by the wolves", not "the wolves and the wolves"): a Necromancer attacking through a wolf's body on the pack's victim had shown the table a second wolf-type attacker (b10, c03, c04).
+- **2026-10-10 (owner, amends the 2026-10-09 wiring ruling that a borrowed kill reads as the body's):** an attack a Necromancer makes through a body is announced by the body's kind, reanimated: "killed by a reanimated wolf", "shot by a reanimated vigilante", "struck down by a reanimated sigil" (attacker types `reanimated_wolves`, `reanimated_vigilante`, `reanimated_sigilist` on the wire). The body's kind alone had told the table two wolf attacks happened when one was the Necromancer's, which is false; the town now learns a Necromancer struck, not who. The Sentinel and Trailseer still see the body's name at the door.
+- **2026-10-10 (owner, a Necromancer buff):** a kill through the Illusionist's body also cleans its victim, hiding the role ("Their role is hidden by a reanimated illusionist") and telling the Necromancer the role, while the dead Illusionist has a conceal left: its unspent conceals carry to its body, one per clean. The Necromancer lineups had gone to the town in all but one game.

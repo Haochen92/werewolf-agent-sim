@@ -144,7 +144,9 @@ these places, which is where the frontend pass starts: `replays/_components/Filt
 and `lib/replay-filters.ts:113,145` and `components/site/Slate.tsx:51,112` (the `Winner` union
 gained `necromancer` and `null`), `assets/glyphs/PixelGlyph.tsx:97,104`, `stage/instruments/
 ActMark.tsx:24` and `MorningRoll.tsx:29-40` (the attacker type gained `sigilist`). Everything
-below compiles but assumes the old game at runtime.
+below compiles but assumes the old game at runtime. Since then (2026-10-10) the attacker type also gained `reanimated_wolves`,
+`reanimated_vigilante` and `reanimated_sigilist`, which take the body kind's icon (no new icons, owner), and
+`input_request` gained `bodies` and `speech` a `claim`.
 
 - `stage/roles.ts:18, 38-60, 106` — the `Faction` union and the pack label.
 - `scenes/game-over.ts:21-60`, `GameOverScene.tsx:101`, `FramedCard.tsx:57,138`, `Pin.tsx:34`, `RoleHand.tsx:35`, `replays/_components/FilterRail.tsx:21-23` — winners, one winning side assumed.

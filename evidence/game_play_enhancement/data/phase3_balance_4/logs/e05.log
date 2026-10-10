@@ -1,0 +1,18 @@
+[25] 17 s ()
+[50] 26 s ()
+[75] 62 s ('DAY_PHASE:6578fcb4-eebb-9083-5fc5-88977d4fc71d',)
+LLM call stalled for player_8 (slow or full): 504 DEADLINE_EXCEEDED. {'error': {'code': 504, 'message': 'Deadline expired before operation could complete.', 'status': 'DEADLINE_EXCEEDED'}}
+player_8 rescued by the fallback model on day_channel
+[100] 139 s ('DAY_PHASE:6578fcb4-eebb-9083-5fc5-88977d4fc71d',)
+[125] 185 s ('DAY_PHASE:6578fcb4-eebb-9083-5fc5-88977d4fc71d',)
+[150] 233 s ('DAY_PHASE:6578fcb4-eebb-9083-5fc5-88977d4fc71d',)
+[175] 251 s ('PACK_NIGHT_PHASE:3eb84c76-bd4a-8b98-7f32-5acabaa45330',)
+[200] 267 s ('DAY_PHASE:5554c86d-294c-603a-17c4-29ed9e2840fb',)
+[225] 336 s ('DAY_PHASE:5554c86d-294c-603a-17c4-29ed9e2840fb',)
+[250] 381 s ('DAY_PHASE:5554c86d-294c-603a-17c4-29ed9e2840fb',)
+[275] 411 s ()
+[300] 434 s ('DAY_PHASE:624964ff-b798-e220-3878-397bbdefd3ad',)
+[325] 479 s ()
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+phase3-e05-1b4cbf7d: winner villagers, day 4, 479.4 s, 124 calls, cost 0.6445
