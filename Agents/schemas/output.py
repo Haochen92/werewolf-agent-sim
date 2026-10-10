@@ -361,8 +361,8 @@ class AccusationV4(AccusationV3):
         description=(
             "If the accusation rests on a public event that the game master's record contradicts, or one "
             "the game master would have announced but did not (a death, a healer save, a vote), say so and "
-            "cite the record (e.g. 'no attack on player_2 was ever announced'), at most 30 words. "
-            "Investigation results, protections and other private night actions are never announced, so "
+            "cite the record, at most 30 words. Investigation results, protections and other private night "
+            "actions are never announced, and nor is an attack on a player who cannot be killed at night, so "
             "their absence is not a conflict. Empty string otherwise."
         ),
     )

@@ -37,6 +37,8 @@ _VERBS = {"investigate": "checked", "protect": "protected", "shoot": "shot", "ki
 _NOUNS = {"investigate": "check", "protect": "protection", "shoot": "shot", "kill": "kill",
           "watch": "watch", "follow": "trail", "sigil": "sigil", "block": "block",
           "conceal": "conceal", "bet": "bet", "pick": "pick"}
+# Claimed actions on oneself that only make sense as something done TO the speaker.
+_DONE_TO_ONESELF = {"block", "watch", "follow", "investigate", "sigil", "kill", "shoot", "conceal"}
 PLAN_VERBS = {"investigate": "check", "protect": "protect", "shoot": "shoot", "kill": "attack",
               "watch": "watch", "follow": "follow", "sigil": "set a sigil on", "block": "block",
               "conceal": "conceal", "bet": "bet on", "pick": "pick"}
@@ -154,6 +156,19 @@ def build_claim_ledger(discussion: list[DaySummary], messages: list[DayChannel] 
             if not player or not role:
                 continue
             kind, actions = _entry(c)
+            # A block, watch, follow, check, sigil or attack on oneself is no one's claim: it is
+            # something done to the speaker, or a no-action ("held my fire") with nowhere else to
+            # go, mis-transcribed as their own. Such an action is dropped. The role goes too only
+            # when it is the chanteuse resting on a self-block: a block is the one action a player
+            # is told was done to them ("You were roleblocked"), and "I was roleblocked" became
+            # "claimed chanteuse, blocked player_2" (e06, 2026-10-10); any other role stays, since
+            # the replay showed a true vigilante whose held fire was written as shooting itself.
+            # A self-bet is legal, and a claimed self-protection stays for the healer rules check.
+            dropped = [a for a in actions if a.get("target") == player and a.get("action") in _DONE_TO_ONESELF]
+            if (role == "chanteuse" and any(a.get("action") == "block" for a in dropped)
+                    and player not in claimed_today):
+                continue
+            actions = [a for a in actions if a not in dropped]
             p = ledger.setdefault(player, PlayerClaims())
             if kind == "retracted":
                 if p.roles and player not in claimed_today:

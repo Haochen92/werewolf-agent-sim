@@ -323,3 +323,25 @@ def test_a_claimed_sighting_is_the_claimants_word_and_says_what_it_does_not_esta
     # a repeat on a later day keeps the names
     later = _ledger(_day(2, [watch]), _day(3, [{**watch, "night_actions": [{**watch["night_actions"][0], "seen": []}]}]))
     assert "says p4 and p7 visited them" in later
+
+
+def test_an_action_done_to_the_speaker_is_not_their_claim():
+    # e06, 2026-10-10: "I was roleblocked last night" was transcribed as a chanteuse claim.
+    invented = {"player": "p2", "claimed_role": "chanteuse", "kind": "claimed",
+                "night_actions": [{"night": 1, "action": "block", "target": "p2", "result": "not_said"}]}
+    assert _ledger(_day(2, [invented])) == ""
+    # a real claim on the same day keeps its role; only the self-targeted action goes
+    text = format_claim_ledger([_day(2, [invented])], [], CAST, [_said(2, 1, "p2", "investigator")])
+    assert text.splitlines() == ["p2: claimed investigator (day 2)."]
+    # the fortune teller's self-bet is the one action a role takes on itself
+    bet = {"player": "p4", "claimed_role": "fortune_teller", "kind": "claimed",
+           "night_actions": [{"night": 1, "action": "bet", "target": "p4", "result": "not_said"}]}
+    assert "p4: claimed fortune teller (day 2)." in _ledger(_day(2, [bet]))
+
+
+def test_a_true_role_keeps_its_claim_when_a_held_fire_is_written_as_a_self_shot():
+    # replay 2026-10-10 (e02 day 3): "I was roleblocked on night 1 and held my fire last night"
+    held = {"player": "p9", "claimed_role": "vigilante", "kind": "claimed",
+            "night_actions": [{"night": 1, "action": "shoot", "target": "p9", "result": "not_said"},
+                              {"night": 2, "action": "shoot", "target": "p9", "result": "not_said"}]}
+    assert _ledger(_day(3, [held])).splitlines() == ["p9: claimed vigilante (day 3)."]
