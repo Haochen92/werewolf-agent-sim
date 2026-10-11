@@ -1,20 +1,22 @@
 /**
- * The day scene in the workbench, at rest, against its goldens: a first speech (day 3, seq
- * 163), the bench's own line (seat 7, day 4, seq 356, seated at 7 as bench 72 is), an X-ray
- * pass, the replay's frame, a public pass (day 1's first turn, which ended with no line), and
- * a live game's thinking seat (seat 7 at the stand before that line, `live=1`). The public
- * indices count day 1 and 2's passes, and a page per beat for a speech told in pages. `strip=0` leaves the stage alone in a 1600×900
- * viewport, one unit a pixel.
+ * The day scene in the workbench, at rest, against its goldens, on the ten-seat game (the
+ * workbench's default, `fixtures/replay-phase3.json`): the first speech (day 2, seq 128, seat
+ * 3), a seated viewer's own line (seat 9's sweep line, day 2, seq 169), an X-ray pass (day 1,
+ * seat 1, a turn that ended with no line), seat 10's line in the replay's frame (day 2, seq
+ * 151), a public pass (day 2, seat 6), and a live game's thinking seat (seat 9 at the stand
+ * before its line, `live=1`). The public indices count the rounds' notices, and a page per beat
+ * for a speech told in pages. `strip=0` leaves the stage alone in a 1600×900 viewport, one unit
+ * a pixel.
  */
 import { expect, test, type Page } from '@playwright/test';
 
 const SHOTS: [name: string, query: string][] = [
-  ['day-speech-first', 'beat=6'],
-  ['day-speech-seat7-bench72', 'beat=55&viewer=seat:player_7'],
-  ['day-pass-xray', 'beat=0&viewer=xray'],
-  ['day-speech-replay', 'beat=55&hud=replay'],
-  ['day-pass-public', 'beat=0'],
-  ['day-thinking-live-seat7', 'beat=86&viewer=seat:player_7&live=1'],
+  ['day-speech-first', 'beat=3'],
+  ['day-speech-seat9-own', 'beat=19&viewer=seat:player_9'],
+  ['day-pass-xray', 'beat=1&viewer=xray'],
+  ['day-speech-replay', 'beat=13&hud=replay'],
+  ['day-pass-public', 'beat=11'],
+  ['day-thinking-live-seat9', 'beat=27&viewer=seat:player_9&live=1'],
 ];
 
 /**
@@ -75,24 +77,25 @@ for (const [name, query, figures] of ROUND_SHOTS) {
 /**
  * The flies scenes (the deal, the night lobby, the morning) at rest: nothing at the stand, so
  * they settle on the wing instead of a puppet. The chips' heads are SVG images, which
- * `networkidle` has already waited for.
+ * `networkidle` has already waited for. All ten-seat: the default game has no save, so the
+ * saved chip is the other ten-seat game's (`game=phase3-necro`, seat 1 on morning 2).
  */
 const FLIES: [name: string, path: string][] = [
   ['deal-cards-dealt', 'deal?beat=1'],
   ['deal-your-card-seat3', 'deal?beat=2&viewer=seat:player_3'],
   // the deal face up (the X-ray): each small card the role's figure under its name
   ['deal-face-up-figures', 'deal?beat=2&viewer=xray&hud=replay'],
-  ['morning-chip-fell', 'morning?beat=7'],
-  ['morning-chip-saved', 'morning?beat=2'],
-  // the roll after morning 2's report: its two deaths, a row each, roles told
-  ['morning-roll-two-deaths', 'morning?beat=12'],
+  ['morning-chip-fell', 'morning?beat=2'],
+  ['morning-chip-saved', 'morning?beat=11&game=phase3-necro'],
+  // the roll after morning 3's report: its two deaths, a row each, roles told
+  ['morning-roll-two-deaths', 'morning?beat=25'],
   ['night-hub', 'night?beat=0'],
 ];
 
 for (const [name, path] of FLIES) {
   test(`flies: ${name}`, async ({ page }) => {
     await page.goto(`/workbench/${path}&animate=0&strip=0`, { waitUntil: 'networkidle' });
-    await expect(page.locator('[data-layer="hud"] [data-seat]')).toHaveCount(9);
+    await expect(page.locator('[data-layer="hud"] [data-seat]')).toHaveCount(10);
     await settle(page);
     await expect(page).toHaveScreenshot(`${name}.png`);
   });
@@ -100,15 +103,15 @@ for (const [name, path] of FLIES) {
 
 /**
  * The platform (the waiting room) at rest, from its synthetic rooms (`?beat=N` indexes the
- * station's situations in registry.ts): the host with three aboard, a guest in a locked room
- * of five, someone watching a full room, and a guest in an open room of four. Ready when every
- * person on the platform is drawn.
+ * station's situations in registry.ts, the two ten-place rooms first): in rooms of nine places,
+ * the host with three aboard, a guest in a locked room of five, someone watching a full room,
+ * and a guest in an open room of four. Ready when every person on the platform is drawn.
  */
 const STATION: [name: string, path: string, aboard: number][] = [
-  ['station-host-3', 'station?beat=0', 3],
-  ['station-guest-locked', 'station?beat=1', 5],
-  ['station-spectator-full', 'station?beat=2', 9],
-  ['station-guest-4', 'station?beat=5', 4],
+  ['station-host-3', 'station?beat=2', 3], // nine seats: the host, 3 aboard
+  ['station-guest-locked', 'station?beat=3', 5], // nine seats: a guest, 5 aboard, locked
+  ['station-spectator-full', 'station?beat=4', 9], // nine seats: watching, all 9 aboard
+  ['station-guest-4', 'station?beat=7', 4], // nine seats: a guest, 4 aboard
 ];
 
 for (const [name, path, aboard] of STATION) {
@@ -127,22 +130,27 @@ test('the control strip writes the URL', async ({ page }) => {
   await expect(page).toHaveURL(/beat=4&viewer=spect&motion=normal/);
   await page.getByLabel('viewer').selectOption('xray');
   await expect(page).toHaveURL(/beat=0&viewer=xray/);
+  await page.getByRole('button', { name: '▶' }).click();
   await expect(
-    page.getByText('day.pass · seq 15 · xray → player_1 · 4000 ms'),
+    page.getByText('day.pass · seq 35 · xray → player_1 · 4000 ms'),
   ).toBeVisible();
+  // the ten-seat game's seats in the viewer control
+  await page.getByLabel('viewer').selectOption('seat:player_10');
+  await expect(page).toHaveURL(/beat=0&viewer=seat:player_10/);
 });
 
 /**
  * The night rooms, drawn from the workbench's synthetic situations (`?beat=N` indexes the
- * scene's situation list in registry.ts): the healer on night 2 at rest, with seat 1 chosen,
- * and with the card open; the pack's vote on night 2 with the packmate's tooth on seat 4.
- * Ready when every photo on the line has its portrait.
+ * scene's situation list in registry.ts, the ten-seat ones first): on the nine-seat fixture,
+ * the healer on night 2 at rest, with seat 1 chosen, and with the card open; the pack's vote on
+ * night 2 with the packmate's tooth on seat 4. Ready when every photo on the line has its
+ * portrait.
  */
 const NIGHT_SHOTS: [name: string, path: string, photos: number][] = [
-  ['room-healer-rest', 'room?beat=0', 8],
-  ['room-healer-chosen', 'room?beat=1', 8],
-  ['room-healer-card', 'room?beat=2', 8],
-  ['pack-vote-mate-tooth', 'pack?beat=3', 7],
+  ['room-healer-rest', 'room?beat=16', 8], // nine seats: healer, night 2
+  ['room-healer-chosen', 'room?beat=17', 8], // nine seats: healer, night 2, seat 1 chosen
+  ['room-healer-card', 'room?beat=18', 8], // nine seats: healer, night 2, the card open
+  ['pack-vote-mate-tooth', 'pack?beat=8', 7], // nine seats: wolf, the vote, packmate voted
 ];
 
 for (const [name, path, photos] of NIGHT_SHOTS) {
@@ -166,7 +174,10 @@ test('night: a tap on the empty room clears an unsent choice and closes the card
 }) => {
   const pressed = page.locator('[data-seat][aria-pressed="true"]');
   const card = page.locator('[data-overlay="card"]');
-  await page.goto('/workbench/room?beat=1&animate=0&strip=0', { waitUntil: 'networkidle' });
+  // nine seats: healer, night 2, seat 1 chosen
+  await page.goto('/workbench/room?beat=17&animate=0&strip=0', {
+    waitUntil: 'networkidle',
+  });
   await expect(pressed).toHaveCount(1);
   await page.mouse.click(300, 650);
   await expect(pressed).toHaveCount(0);
@@ -174,7 +185,9 @@ test('night: a tap on the empty room clears an unsent choice and closes the card
     page.getByRole('button', { name: 'Choose a seat to protect' }),
   ).toBeVisible();
 
-  await page.goto('/workbench/room?beat=1&animate=0&strip=0', { waitUntil: 'networkidle' });
+  await page.goto('/workbench/room?beat=17&animate=0&strip=0', {
+    waitUntil: 'networkidle',
+  });
   await page.locator('button[data-card]').click();
   await page.getByRole('dialog').click(); // on the card: closes it, the choice stays
   await expect(card).toHaveCount(0);
@@ -184,31 +197,36 @@ test('night: a tap on the empty room clears an unsent choice and closes the card
   await expect(card).toHaveCount(0);
   await expect(pressed).toHaveCount(0);
 
-  await page.goto('/workbench/room?beat=8&animate=0&strip=0', { waitUntil: 'networkidle' });
+  // nine seats: healer, night 2, seat 1 protected (sent)
+  await page.goto('/workbench/room?beat=24&animate=0&strip=0', {
+    waitUntil: 'networkidle',
+  });
   await page.locator('button[data-card]').click();
   await page.mouse.click(1400, 450);
   await expect(card).toHaveCount(0);
   await expect(page.getByText('Seat 1 is protected tonight')).toBeVisible();
 
-  await page.goto('/workbench/pack?beat=4&animate=0&strip=0', { waitUntil: 'networkidle' });
+  // nine seats: wolf, the vote, seat 4 chosen
+  await page.goto('/workbench/pack?beat=9&animate=0&strip=0', { waitUntil: 'networkidle' });
   await expect(pressed).toHaveCount(1);
   await page.mouse.click(1000, 650);
   await expect(pressed).toHaveCount(0);
 });
 
 /**
- * The trap scenes at rest: voting opens on day 3 (the table up, the jar empty, the lid lifted),
- * the fourth chip counted that day, the result (seat 6 voted out, 6 to 1), the seated human's
- * ballot with seat 6 chosen (the second of the vote's synthetic situations, after the fixture's
- * 39 vote beats), and the lynch's role card on the lift on day 4 (seat 2, the serial killer).
- * Each waits for its own instrument, since the ballot row adds seat chips to the HUD.
+ * The trap scenes at rest, on the ten-seat game: voting opens on day 3 (the table up, the jar
+ * empty, the lid lifted), the fourth chip counted that day, the result (seat 10 voted out, 3 to
+ * 2), the seated human's ballot (seat 9) with seat 6 chosen (the second of the vote's synthetic
+ * situations, after the game's 24 vote beats), and the lynch's role card on the lift on day 3
+ * (seat 10, the serial killer). Each waits for its own instrument, since the ballot row adds seat
+ * chips to the HUD.
  */
 const TRAP: [name: string, path: string, ready: string][] = [
-  ['vote-opens-d3', 'vote?beat=15', '[data-vote-table]'],
-  ['vote-chip-counted-4-d3', 'vote?beat=22', '[data-plate="player_6"]'],
-  ['vote-result-d3', 'vote?beat=26', '[data-card="player_6"]'],
-  ['vote-your-ballot-chosen', 'vote?beat=40', '[data-ballot="open"]'],
-  ['lynch-card-up-d4', 'lynch?beat=9', '[data-lift-card]'],
+  ['vote-opens-d3', 'vote?beat=13', '[data-vote-table]'],
+  ['vote-chip-counted-4-d3', 'vote?beat=20', '[data-plate="player_10"]'],
+  ['vote-result-d3', 'vote?beat=22', '[data-card="player_10"]'],
+  ['vote-your-ballot-chosen', 'vote?beat=25', '[data-ballot="open"]'],
+  ['lynch-card-up-d3', 'lynch?beat=9', '[data-lift-card]'],
 ];
 
 for (const [name, path, ready] of TRAP) {
@@ -222,38 +240,39 @@ for (const [name, path, ready] of TRAP) {
 
 /**
  * The last two scenes at rest, in the replay's frame (the top drape) where the bench drew them
- * so: the X-ray night's spokes in the actor's own room (owner, 2026-09-29), the investigator's
- * check on night 1 (the pin through seat 1's photo, the lens on it) and the pack's room on night
- * 2 at its second line (the chat), and the night whole, all with the file in the side slot; and
- * the ending's verdict, the winner at the stand and the epilogue's sheet.
+ * so, on the ten-seat game: the X-ray night's spokes in the actor's own room (owner,
+ * 2026-09-29), the investigator's check on night 1 (the pin through seat 6's photo, the lens on
+ * it) and the pack's room on night 1 at its second line (the chat), and night 2 whole, all with
+ * the file in the side slot; and the ending's verdict, the winners at the stand and, on the
+ * nine-seat fixture (`game=9369a5c1`, the one game with memory on), the epilogue's sheet.
  */
 const ENDING: [name: string, path: string, ready: string][] = [
   [
     'rnight-spoke-solo-d1',
-    'rnight?beat=1&viewer=xray&hud=replay&slot=film',
+    'rnight?beat=2&viewer=xray&hud=replay&slot=film',
     '[role="img"][aria-label="lens"]',
   ],
   [
-    'rnight-spoke-pack-d2-line2',
-    'rnight?beat=17&viewer=xray&hud=replay&slot=film',
+    'rnight-spoke-pack-d1-line2',
+    'rnight?beat=10&viewer=xray&hud=replay&slot=film',
     '[data-chat="pack"]',
   ],
   [
     'rnight-whole-d2',
-    'rnight?beat=21&viewer=xray&hud=replay&slot=film',
+    'rnight?beat=26&viewer=xray&hud=replay&slot=film',
     '[role="img"][aria-label="bite"]',
   ],
-  // the photo wall at full width: the serial killer's scythe tacked on seat 1's print
+  // the photo wall at full width: the serial killer's scythe tacked on seat 2's print
   [
     'rnight-spoke-knife-d1',
-    'rnight?beat=2&viewer=xray&hud=replay',
+    'rnight?beat=3&viewer=xray&hud=replay',
     '[role="img"][aria-label="knife"]',
   ],
   // the vigilante holding its fire on night 1: a room of its own, no mark; the other actors'
   // cards say "Visit ▸"
   [
     'rnight-spoke-held-d1',
-    'rnight?beat=3&viewer=xray&hud=replay&slot=film',
+    'rnight?beat=8&viewer=xray&hud=replay&slot=film',
     '[data-layer="hud"] [data-word="visit"]',
   ],
   // the night stop with its file up: "Visit a room" and "Tap a seat to open its file" head the
@@ -263,9 +282,9 @@ const ENDING: [name: string, path: string, ready: string][] = [
     'rnight?beat=0&viewer=xray&hud=replay&slot=film',
     '[data-visit="pack"]',
   ],
-  ['over-verdict', 'over?beat=2', '[data-verdict="wolves"]'],
+  ['over-verdict', 'over?beat=2', '[data-verdict="villagers"]'],
   ['over-winners-stand', 'over?beat=3', '[data-layer="figures"] img'],
-  ['over-epilogue', 'over?beat=5', '[data-ledger]'],
+  ['over-epilogue', 'over?beat=5&game=9369a5c1', '[data-ledger]'],
 ];
 
 for (const [name, path, ready] of ENDING) {
@@ -278,28 +297,29 @@ for (const [name, path, ready] of ENDING) {
 }
 
 /**
- * The side slot open (beat sheet §12): the drawer at full height on a speech (bench 74's
- * moment, seat 8 on day 3, in the replay's frame), the drawer on the count with the day's vote
- * as one line of chips, the drawer stopped at the rail on the seated human's ballot; the case
- * file on a turn (the speaker's notes; its precedents, opened; the same turn in a memory-off
- * game), with a read card opened from the wing, the docket at the lynch's card ("who had them
- * right"), and the Record: at the morning's carried summary, with Reveal off on a day-3 turn of
- * the second game (its real ledger), the v4 redraw's synthetic ledger (every kind of line), the
- * same without a ledger (an old archive), and the transcript's line pointing to it (lit, at the
- * carried summary's beat).
+ * The side slot open (beat sheet §12), on the ten-seat game unless a shot says otherwise: the
+ * drawer at full height on a speech (seat 10 on day 2, in the replay's frame), the drawer on the
+ * count with the day's vote as one line of chips, the drawer stopped at the rail on the seated
+ * human's ballot; the case file on a turn (the speaker's notes; on the nine-seat fixture, the one
+ * game with memory on, its precedents, opened, and the same turn in a memory-off game), with a
+ * read card opened from the wing, the docket at the lynch's card ("who had them right"), and the
+ * Record: at the morning's carried summary, with Reveal off on a day-3 turn of the second game
+ * (its real ledger), the v4 redraw's synthetic ledger (every kind of line, the nine-seat
+ * fixture's), the same without a ledger (an old archive), and the transcript's line pointing to
+ * it (lit, at the carried summary's beat).
  */
 const SLOT: [name: string, path: string, ready: string, click?: string][] = [
-  ['slot-day-speech-drawer', 'day?beat=16&hud=replay&slot=drawer', '[data-line="say-200"]'],
-  ['slot-vote-line-drawer', 'vote?beat=26&slot=drawer', '[data-line="votes-3"]'],
-  ['slot-ballot-drawer-rail', 'vote?beat=40&slot=drawer', '[data-drawer="rail"]'],
+  ['slot-day-speech-drawer', 'day?beat=13&hud=replay&slot=drawer', '[data-line="say-151"]'],
+  ['slot-vote-line-drawer', 'vote?beat=22&slot=drawer', '[data-line="votes-3"]'],
+  ['slot-ballot-drawer-rail', 'vote?beat=25&slot=drawer', '[data-drawer="rail"]'],
   [
     'slot-day-speech-film',
-    'day?beat=16&viewer=xray&hud=replay&slot=film',
+    'day?beat=26&viewer=xray&hud=replay&slot=film',
     '[data-film="file"]',
   ],
   [
     'slot-day-file-precedents',
-    'day?beat=16&viewer=xray&hud=replay&slot=film',
+    'day?beat=16&viewer=xray&hud=replay&slot=film&game=9369a5c1',
     '[data-sheet="precedents"]',
     '[role="tab"]:has-text("Lessons")',
   ],
@@ -310,14 +330,14 @@ const SLOT: [name: string, path: string, ready: string, click?: string][] = [
   ],
   [
     'slot-day-read-card',
-    'day?beat=16&viewer=xray&hud=replay&slot=film',
+    'day?beat=26&viewer=xray&hud=replay&slot=film',
     '[data-read-card="player_1"]',
     '[data-layer="hud"] [data-seat="1"]',
   ],
   ['slot-lynch-card-up-film', 'lynch?beat=9&viewer=xray&slot=film', '[data-film="lynch"]'],
   [
     'slot-morning-carried-summary-film',
-    'morning?beat=23&viewer=xray&slot=film',
+    'morning?beat=31&viewer=xray&slot=film',
     '[data-film="record"]',
   ],
   [
@@ -337,8 +357,8 @@ const SLOT: [name: string, path: string, ready: string, click?: string][] = [
   ],
   [
     'slot-record-line-drawer',
-    'morning?beat=23&viewer=xray&hud=replay&slot=drawer',
-    '[data-line="record-3"]',
+    'morning?beat=31&viewer=xray&hud=replay&slot=drawer',
+    '[data-line="record-2"]',
   ],
 ];
 
@@ -355,11 +375,12 @@ for (const [name, path, ready, click] of SLOT) {
 
 /**
  * The closed case at the curtain: a seat opened from the docket's rows, and its Findings, what
- * the game taught its role (the serial killer's nine observations, the first opened).
+ * the game taught its role (the serial killer's nine observations, the first opened), on the
+ * nine-seat fixture (the one game with memory on).
  */
 test('slot: the case file’s findings at game over', async ({ page }) => {
   await page.goto(
-    '/workbench/over?beat=6&viewer=xray&hud=replay&slot=film&animate=0&strip=0',
+    '/workbench/over?beat=6&viewer=xray&hud=replay&slot=film&game=9369a5c1&animate=0&strip=0',
     {
       waitUntil: 'networkidle',
     },
@@ -374,7 +395,7 @@ test('slot: the case file’s findings at game over', async ({ page }) => {
 /** The same findings on a phone: the index's numbers grouped by phase, wrapping. */
 test('bleed: frame-iphone14-findings', async ({ page }) => {
   await page.goto(
-    '/workbench/over?beat=6&viewer=xray&hud=replay&slot=film&frame=iphone14&animate=0&strip=0',
+    '/workbench/over?beat=6&viewer=xray&hud=replay&slot=film&game=9369a5c1&frame=iphone14&animate=0&strip=0',
     { waitUntil: 'networkidle' },
   );
   await page.locator('[data-film="deal"] button[title^="Open seat 3"]').click();
@@ -439,7 +460,7 @@ test('the transcript’s line to a day’s record opens the file on that day’s
  * (430 × 16/9 ≈ 764 wide), with the drawer closed as the phone opens it.
  */
 test('the phone frame draws the stage at the phone’s size', async ({ page }) => {
-  await page.goto('/workbench/vote?beat=32&viewer=seat:player_7&frame=iphone15max', {
+  await page.goto('/workbench/vote?beat=17&viewer=seat:player_9&frame=iphone15max', {
     waitUntil: 'networkidle',
   });
   // the stage box: the world's parent, the HUD layer's grandparent
@@ -451,30 +472,31 @@ test('the phone frame draws the stage at the phone’s size', async ({ page }) =
 });
 
 /**
- * The seat rail's notebook (beat sheet §0, HUD pass 2): a seated player (a live cut) taps another
- * seat's card to write a note, guess its role (the roles still possible, with how many are left)
- * and mark a suspect; the note and the guess show on the card, the suspect's head in the slot,
- * and all come back after a reload (this device only). A dead seat has no suspect toggle and no
- * guess. The replay's cut shows the cards only.
+ * The seat rail's notebook (beat sheet §0, HUD pass 2): a seated player (a live cut, seat 9 on
+ * day 2 of the ten-seat game) taps another seat's card to write a note, guess its role (the
+ * roles still possible, with how many are left) and mark a suspect; the note and the guess show
+ * on the card, the suspect's head in the slot, and all come back after a reload (this device
+ * only). A dead seat has no suspect toggle and no guess. The replay's cut shows the cards only.
  */
 test('the seat rail: notes and a suspect for a seated player, none in a replay', async ({
   page,
 }) => {
-  const live = '/workbench/day?live=1&viewer=seat:player_7&animate=0&strip=0';
-  await page.goto(`${live}&beat=6`, { waitUntil: 'networkidle' });
+  const live = '/workbench/day?live=1&viewer=seat:player_9&animate=0&strip=0';
+  await page.goto(`${live}&beat=7`, { waitUntil: 'networkidle' });
   const hint = page.getByText('Tap a card to write notes');
   await expect(hint).toBeVisible();
   // your own card is not a notebook page
-  await expect(page.getByRole('button', { name: 'Seat 7, notes' })).toHaveCount(0);
-  await page.getByRole('button', { name: 'Seat 5, notes' }).click();
+  await expect(page.getByRole('button', { name: 'Seat 9, notes' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Seat 10, notes' }).click();
   const dialog = page.getByRole('dialog');
-  await expect(dialog).toContainText('Seat 5');
+  await expect(dialog).toContainText('Seat 10');
   await expect(dialog).toContainText('Alive');
   await expect(hint).toHaveCount(0);
   await page.keyboard.type('Jumped on the slip');
   await dialog.getByRole('button', { name: 'Mark as suspect' }).click();
-  // the role guess: only the roles that could still be alive, with how many are left, "not
-  // sure" first, in a panel over the notebook; the arrows move and Enter picks
+  // the role guess: only the roles that could still be alive (the night's three dead were told:
+  // healer, chanteuse, investigator), with how many are left, "not sure" first, in a panel over
+  // the notebook; the arrows move and Enter picks
   const guess = dialog.getByRole('button', { name: /I think they are…/ });
   await expect(guess).toHaveText('not sure');
   await guess.click();
@@ -482,95 +504,102 @@ test('the seat rail: notes and a suspect for a seated player, none in a replay',
   await expect(menu).toBeFocused();
   await expect(menu.getByRole('option')).toHaveText([
     'not sure',
-    /^Villager\s*3 left$/,
-    // the pool's order (ten-seat pass §7): the healer after the vigilante
-    /^Investigator\s*1 left$/,
+    // the pool's order (ten-seat pass §7)
+    /^Sentinel\s*1 left$/,
+    /^Trailseer\s*1 left$/,
     /^Vigilante\s*1 left$/,
-    /^Healer\s*1 left$/,
-    /^Wolf\s*2 left$/,
+    /^Sigilist\s*1 left$/,
+    /^Illusionist\s*1 left$/,
     /^Serial killer\s*1 left$/,
+    /^Fortune teller\s*1 left$/,
   ]);
   await expect(menu.getByRole('option', { selected: true })).toHaveText('not sure');
-  for (let i = 0; i < 5; i++) await page.keyboard.press('ArrowDown');
+  for (let i = 0; i < 6; i++) await page.keyboard.press('ArrowDown');
   await page.keyboard.press('Enter');
   await expect(menu).toHaveCount(0);
   await expect(guess).toBeFocused();
-  await expect(guess).toHaveText('Wolf');
+  await expect(guess).toHaveText('Serial killer');
   await page.addStyleTag({ content: 'nextjs-portal{display:none!important}' });
   await expect(page).toHaveScreenshot('wing-notebook-guess.png');
   // open again: the guess is the selected row; Escape closes the panel, not the notebook
   await page.keyboard.press('ArrowDown');
-  await expect(menu.getByRole('option', { selected: true })).toHaveText(/^Wolf/);
+  await expect(menu.getByRole('option', { selected: true })).toHaveText(/^Serial killer/);
   await expect(page).toHaveScreenshot('wing-notebook-menu.png');
   await page.keyboard.press('Escape');
   await expect(menu).toHaveCount(0);
   await expect(dialog).toBeVisible();
   await dialog.getByRole('button', { name: 'Done' }).click();
   await expect(dialog).toHaveCount(0);
-  const card = page.locator('[data-layer="hud"] [data-seat="5"]');
+  const card = page.locator('[data-layer="hud"] [data-seat="10"]');
   await expect(card).toContainText('Jumped on the slip');
-  await expect(card.locator('[data-guess="wolf"]')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Suspect: seat 5, notes' })).toBeVisible();
+  await expect(card.locator('[data-guess="serial_killer"]')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Suspect: seat 10, notes' })).toBeVisible();
 
   // kept on the device: a later beat still has it, and the hint stays dismissed
   await page.goto(`${live}&beat=14`, { waitUntil: 'networkidle' });
   await expect(card).toContainText('Jumped on the slip');
-  await expect(card.locator('[data-guess="wolf"]')).toBeVisible();
+  await expect(card.locator('[data-guess="serial_killer"]')).toBeVisible();
   await expect(hint).toHaveCount(0);
   // a dead seat: its note may be written, it cannot be marked; Escape closes
-  await page.getByRole('button', { name: 'Seat 3, notes' }).click();
-  await expect(dialog).toContainText('Dead · Wolf');
+  await page.getByRole('button', { name: 'Seat 5, notes' }).click();
+  await expect(dialog).toContainText('Dead · Chanteuse');
   await expect(dialog.getByRole('button', { name: /suspect/ })).toHaveCount(0);
   await expect(dialog.getByRole('button', { name: /I think they are…/ })).toHaveCount(0);
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Seat 3, notes' })).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Seat 5, notes' })).toBeFocused();
 
   // the replay's cut: the same seat, nothing to write on
-  await page.goto('/workbench/day?beat=6&viewer=seat:player_7&animate=0&strip=0', {
+  await page.goto('/workbench/day?beat=6&viewer=seat:player_9&animate=0&strip=0', {
     waitUntil: 'networkidle',
   });
-  await expect(page.locator('[data-layer="hud"] [data-seat]')).toHaveCount(9);
-  await expect(page.getByRole('button', { name: /^Seat \d, notes$/ })).toHaveCount(0);
+  await expect(page.locator('[data-layer="hud"] [data-seat]')).toHaveCount(10);
+  await expect(page.getByRole('button', { name: /^Seat \d+, notes$/ })).toHaveCount(0);
   await expect(hint).toHaveCount(0);
 });
 
 /**
  * What a seat already knows shows on its wing, from its own view only: a wolf's pack mate
- * ("Your pack"), the seat its investigation read ("Seen · Villager"), live and in a replay seen
- * as that seat; a villager and a spectator have nothing to band.
+ * ("Your pack", day 1 of the ten-seat game), the seat its investigation read ("Seen · Villager":
+ * the ten-seat game's investigator died on the night it checked, so the nine-seat fixture's day
+ * 2), live and in a replay seen as that seat; a town seat and a spectator have nothing to band.
  */
 test('the seat rail: a seat’s own knowledge bands its cards, and nobody else’s', async ({
   page,
 }) => {
   const known = page.locator('[data-layer="hud"] [data-known]');
-  const day2 = (viewer: string, more = '') =>
-    page.goto(`/workbench/day?beat=3&viewer=${viewer}&animate=0&strip=0${more}`, {
+  const day = (viewer: string, more = '') =>
+    page.goto(`/workbench/day?beat=1&viewer=${viewer}&animate=0&strip=0${more}`, {
       waitUntil: 'networkidle',
     });
-  // the wolf at seat 3: its pack mate, seat 8
-  await day2('seat:player_3');
+  // the illusionist at seat 6, a wolf: its pack mate, seat 5
+  await day('seat:player_6');
   await expect(known).toHaveCount(1);
   await expect(
-    page.locator('[data-layer="hud"] [data-seat="8"] [data-known="pack"]'),
+    page.locator('[data-layer="hud"] [data-seat="5"] [data-known="pack"]'),
   ).toHaveText('Your pack');
-  await expect(page.locator('[data-layer="hud"] [data-seat] img')).toHaveCount(9);
+  await expect(page.locator('[data-layer="hud"] [data-seat] img')).toHaveCount(10);
   await settle(page);
-  await expect(page).toHaveScreenshot('wing-known-wolf-d2.png');
+  await expect(page).toHaveScreenshot('wing-known-wolf-d1.png');
   for (const more of ['&live=1', '&hud=replay']) {
-    await day2('seat:player_3', more);
+    await day('seat:player_6', more);
     await expect(known).toHaveCount(1);
   }
-  // the investigator at seat 4 read seat 1 on the first night
-  await day2('seat:player_4');
+  // the nine-seat fixture's investigator at seat 4 read seat 1 on the first night
+  await page.goto(
+    '/workbench/day?beat=3&viewer=seat:player_4&game=9369a5c1&animate=0&strip=0',
+    {
+      waitUntil: 'networkidle',
+    },
+  );
   await expect(known).toHaveCount(1);
   await expect(
     page.locator('[data-layer="hud"] [data-seat="1"] [data-known="seen"]'),
   ).toHaveAttribute('title', 'Seen · Villager');
-  // a villager, a spectator and the X-ray's observer: nothing of their own to band
-  for (const viewer of ['seat:player_5', 'spect', 'xray']) {
-    await day2(viewer);
-    await expect(page.locator('[data-layer="hud"] [data-seat]')).toHaveCount(9);
+  // a town seat, a spectator and the X-ray's observer: nothing of their own to band
+  for (const viewer of ['seat:player_9', 'spect', 'xray']) {
+    await day(viewer);
+    await expect(page.locator('[data-layer="hud"] [data-seat]')).toHaveCount(10);
     await expect(known).toHaveCount(0);
   }
 });
@@ -583,14 +612,14 @@ test('the strip’s door: live only, and it asks before leaving', async ({ page 
   const door = page.getByRole('button', { name: 'Leave the table' });
   const confirm = page.locator('[data-leave-confirm]');
   await page.goto(
-    '/workbench/day?beat=6&viewer=seat:player_7&hud=replay&animate=0&strip=0',
+    '/workbench/day?beat=7&viewer=seat:player_9&hud=replay&animate=0&strip=0',
     {
       waitUntil: 'networkidle',
     },
   );
   await expect(page.getByRole('button', { name: 'Transcript', exact: true })).toBeVisible();
   await expect(door).toHaveCount(0);
-  await page.goto('/workbench/day?live=1&beat=6&viewer=seat:player_7&animate=0&strip=0', {
+  await page.goto('/workbench/day?live=1&beat=7&viewer=seat:player_9&animate=0&strip=0', {
     waitUntil: 'networkidle',
   });
   await door.click();
@@ -614,16 +643,16 @@ test('the seat rail: the role guess fits a small phone and takes a tap', async (
   page,
 }) => {
   await page.goto(
-    '/workbench/day?live=1&viewer=seat:player_7&animate=0&strip=0&beat=6&frame=667x375',
+    '/workbench/day?live=1&viewer=seat:player_9&animate=0&strip=0&beat=7&frame=667x375',
     { waitUntil: 'networkidle' },
   );
-  await page.getByRole('button', { name: 'Seat 5, notes' }).click();
+  await page.getByRole('button', { name: 'Seat 10, notes' }).click();
   const dialog = page.getByRole('dialog');
   // opened from the keys, so no pointer rests on a row for the picture
   await dialog.getByRole('button', { name: /I think they are…/ }).focus();
   await page.keyboard.press('Enter');
   const options = dialog.getByRole('listbox').getByRole('option');
-  await expect(options).toHaveCount(7);
+  await expect(options).toHaveCount(8);
   const stage = (await page.locator('[data-layer="hud"]').boundingBox())!;
   for (const box of await options.evaluateAll((els) =>
     els.map((el) => el.getBoundingClientRect().toJSON() as DOMRect),
@@ -634,40 +663,43 @@ test('the seat rail: the role guess fits a small phone and takes a tap', async (
   }
   await page.addStyleTag({ content: 'nextjs-portal{display:none!important}' });
   await expect(page).toHaveScreenshot('frame-667-notebook-menu.png');
-  await options.filter({ hasText: 'Healer' }).click();
+  await options.filter({ hasText: 'Sigilist' }).click();
   await expect(dialog.getByRole('button', { name: /I think they are…/ })).toHaveText(
-    'Healer',
+    'Sigilist',
   );
 });
 
 /**
  * The bleed (stage_architecture.md §3): on a phone held sideways (19.5:9) the picture carries
  * on past the 16:9 world's sides instead of leaving bars. The count's push-in in the car, with
- * the lantern's wall continuing on the right; the night lobby with the wing on the left.
+ * the lantern's wall continuing on the right; the night lobby with the wing on the left. On the
+ * ten-seat game, but the epilogue (the nine-seat fixture's: the one game with memory on).
  */
 const FRAMES: [name: string, path: string][] = [
-  ['frame-iphone14-vote', 'vote?beat=32&viewer=seat:player_7&frame=iphone14'],
-  ['frame-iphone14-night', 'night?beat=0&viewer=seat:player_7&frame=iphone14'],
+  ['frame-iphone14-vote', 'vote?beat=17&viewer=seat:player_9&frame=iphone14'],
+  ['frame-iphone14-night', 'night?beat=0&viewer=seat:player_9&frame=iphone14'],
   // the case file on a phone: its cover and tabs in one row over the sheet
-  ['frame-iphone14-file', 'day?beat=16&viewer=xray&hud=replay&slot=film&frame=iphone14'],
+  ['frame-iphone14-file', 'day?beat=26&viewer=xray&hud=replay&slot=film&frame=iphone14'],
   // the stand's plate on a phone: pinned to the speech box's top edge, not at the chest
-  ['frame-667-stand-plate', 'day?beat=55&viewer=xray&hud=replay&frame=667x375'],
+  ['frame-667-stand-plate', 'day?beat=26&viewer=xray&hud=replay&frame=667x375'],
   [
     'frame-568-stand-plate-file',
-    'day?beat=55&viewer=xray&hud=replay&slot=film&frame=568x320',
+    'day?beat=26&viewer=xray&hud=replay&slot=film&frame=568x320',
   ],
   // the transcript on a phone: the pane grows out into the right bleed as the wing does left
-  ['frame-iphone14-drawer', 'day?beat=16&hud=replay&slot=drawer&frame=iphone14'],
+  ['frame-iphone14-drawer', 'day?beat=13&hud=replay&slot=drawer&frame=iphone14'],
   // the epilogue's closing spread on a phone: the rows scroll in place
-  ['frame-iphone14-epilogue', 'over?beat=5&frame=iphone14'],
+  ['frame-iphone14-epilogue', 'over?beat=5&game=9369a5c1&frame=iphone14'],
   // the morning roll on a small phone: a cause too long for its row goes under the name
-  ['frame-667-morning-roll', 'morning?beat=12&frame=667x375'],
+  ['frame-667-morning-roll', 'morning?beat=10&frame=667x375'],
 ];
 
 for (const [name, path] of FRAMES) {
   test(`bleed: ${name}`, async ({ page }) => {
     await page.goto(`/workbench/${path}&animate=0&strip=0`, { waitUntil: 'networkidle' });
-    await expect(page.locator('[data-layer="hud"] [data-seat]')).toHaveCount(9);
+    await expect(page.locator('[data-layer="hud"] [data-seat]')).toHaveCount(
+      path.includes('game=9369a5c1') ? 9 : 10,
+    );
     await settle(page);
     await expect(page.locator('[data-frame]')).toHaveScreenshot(`${name}.png`);
   });
@@ -682,7 +714,7 @@ for (const [name, path] of FRAMES) {
 test('the phone frame: the top strip’s buttons are drawn large enough to read and tap', async ({
   page,
 }) => {
-  await page.goto('/workbench/vote?beat=32&viewer=seat:player_7&frame=iphone14&strip=0', {
+  await page.goto('/workbench/vote?beat=17&viewer=seat:player_9&frame=iphone14&strip=0', {
     waitUntil: 'networkidle',
   });
   const button = page
@@ -700,7 +732,7 @@ test('the phone frame: the top strip’s buttons are drawn large enough to read 
 });
 
 test('the phone frame: a speech is drawn at a phone’s body size', async ({ page }) => {
-  await page.goto('/workbench/day?beat=55&viewer=seat:player_7&frame=iphone14&strip=0', {
+  await page.goto('/workbench/day?beat=19&viewer=seat:player_9&frame=iphone14&strip=0', {
     waitUntil: 'networkidle',
   });
   // the speech box's line: the div after its head
@@ -714,7 +746,7 @@ test('the phone frame: a speech is drawn at a phone’s body size', async ({ pag
 
 /**
  * A lesson read from its record's fields (`dimensions`, server 18ebf3e; the workbench's
- * `memory=fields` gives the fixture's records synthetic ones): the form's Information and
+ * `memory=fields` gives the nine-seat fixture's records synthetic ones, and draws that game): the form's Information and
  * Exposure ticked from the classifications, the consensus's direction under its words, the
  * tags under the action. And the form's labels never run into their boxes, on the desk or a
  * small phone (a label sits above its boxes there).

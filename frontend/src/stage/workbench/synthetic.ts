@@ -1,11 +1,11 @@
 /**
  * Situations for the scenes that exist only while a game is being played: the night rooms and
- * the seated human's ballot. Their beats are prompts to a seated human (`input_request`), and the fixture game had no
- * human in it, so the log never yields them. To draw them anyway, the workbench takes a real
- * moment of the fixture (a seat, a night, a point in the log), seats a human there, and puts
+ * the seated human's ballot. Their beats are prompts to a seated human (`input_request`), and the bundled games had no
+ * human in them, so the log never yields them. To draw them anyway, the workbench takes a real
+ * moment of a bundled game (a seat, a night, a point in the log), seats a human there, and puts
  * the prompt that seat would have been sent into the view: its candidates are the living
  * seats but the seat itself (and, for a wolf, but the pack), exactly as the server builds
- * them. Everything else on stage is the fixture's own truth at that moment.
+ * them. Everything else on stage is that game's own truth at that moment.
  *
  * The waiting room (the platform) has no log at all: a room is only the status poll's roster,
  * so its situations are the room itself (`RoomSituation`), drawn over an empty view.
@@ -20,10 +20,20 @@ import { nightUnits } from '../scenes/NightLobbyScene';
 import { MIN_ABOARD, stationBeat, type StationBeatId } from '../scenes/station';
 import type { RoomInput, TurnInput } from '../scenes/types';
 import { castForGame } from '../cast/castForGame';
-import { FIXTURE_GAME_ID, PHASE3_GAME, PHASE3_NECRO_GAME } from './fixture';
+import {
+  FIXTURE_CAST,
+  FIXTURE_EVENTS,
+  FIXTURE_GAME_ID,
+  PHASE3_GAME,
+  PHASE3_NECRO_GAME,
+} from './fixture';
 
-/** The ten-seat games a situation may be drawn from instead of the fixture (`Situation.game`). */
-const TEN_SEAT = { phase3: PHASE3_GAME, 'phase3-necro': PHASE3_NECRO_GAME } as const;
+/** The games a situation may be drawn from instead of the workbench's (`Situation.game`). */
+const GAMES = {
+  phase3: PHASE3_GAME,
+  'phase3-necro': PHASE3_NECRO_GAME,
+  '9369a5c1': { id: FIXTURE_GAME_ID, events: FIXTURE_EVENTS, cast: FIXTURE_CAST },
+} as const;
 
 export interface Situation {
   /** What the stepper calls it: "healer, night 2". */
@@ -31,10 +41,10 @@ export interface Situation {
   /** The seat the human sits in. */
   me: string;
   /**
-   * A ten-seat game to draw it from instead of the fixture (the Phase 3 kinds: ten-seat pass
-   * §2), with that game's cast; absent = the fixture, or the game the workbench was handed.
+   * The game to draw it from, with that game's cast: a ten-seat game (the Phase 3 kinds:
+   * ten-seat pass §2) or the nine-seat fixture; absent = the game the workbench was handed.
    */
-  game?: keyof typeof TEN_SEAT;
+  game?: keyof typeof GAMES;
   /** The night (its day number), or the day of the vote. */
   day: number;
   /** The request open on the seat; null for a beat with no prompt (a packmate's line). */
@@ -77,7 +87,7 @@ export function isRoomSituation(s: AnySituation): s is RoomSituation {
   return 'room' in s;
 }
 
-/** The invite the workbench's rooms show: the fixture game's own address. */
+/** The invite the workbench's rooms show: the nine-seat fixture game's own address. */
 const ROOM_LINK = 'https://wolf.liuhaochen.com/games/9369a5c1-3c28-42ce-86a1-9d594dfa4804';
 
 /** The two minutes every human prompt gets (ux_journeys: the one timeout rule). */
@@ -96,6 +106,8 @@ export interface SyntheticFrame {
   room?: RoomInput;
   /** The cast of the game the situation was drawn from, when it is not the workbench's. */
   cast?: readonly Character[];
+  /** That game's id, when it is not the workbench's. */
+  gameId?: string;
 }
 
 function beatFor(kind: ActionKind | null): BeatId {
@@ -159,7 +171,7 @@ export function synthesise(
   events: readonly DurableGameEvent[],
 ): SyntheticFrame {
   if (isRoomSituation(s)) return synthesiseRoom(s);
-  if (s.game) events = TEN_SEAT[s.game].events;
+  if (s.game) events = GAMES[s.game].events;
   const phase = s.actionKind === 'vote' ? 'voting' : 'night';
   const nightStart = events.find(
     (e) => e.type === 'phase_change' && e.phase === phase && e.day === s.day,
@@ -239,7 +251,7 @@ export function synthesise(
       progress: s.acted === undefined ? undefined : { n: s.acted, total: nightUnits(view) },
       sendError: s.sendError ?? null,
     },
-    ...(s.game ? { cast: TEN_SEAT[s.game].cast } : {}),
+    ...(s.game ? { cast: GAMES[s.game].cast, gameId: GAMES[s.game].id } : {}),
   };
 }
 

@@ -8,9 +8,11 @@ import { foldEvents } from '@/game/foldEvents';
 import { actorsTonight, nightUnits, roomsToTry, spokeOf } from './NightLobbyScene';
 import { actedTonight } from './replay-night';
 
+// the nine-seat fixture (the workbench's default is the ten-seat game)
+const NINE = { ...DEFAULT_QUERY, game: '9369a5c1' as const };
 const hubs = (xray: boolean) =>
   workbenchFrame(xray ? 'rnight' : 'night', {
-    ...DEFAULT_QUERY,
+    ...NINE,
     viewer: { kind: xray ? 'xray' : 'spect' },
   });
 
@@ -18,7 +20,7 @@ describe('the night lobby on the fixture', () => {
   it('counts the night as the server paces it: one unit per living seat', () => {
     const f = hubs(false);
     const totals = f.beats.map((_, i) =>
-      nightUnits(workbenchFrame('night', { ...DEFAULT_QUERY, beat: i }).view!),
+      nightUnits(workbenchFrame('night', { ...NINE, beat: i }).view!),
     );
     // nine seats through night 2; night 3 has lost a wolf, the investigator and a villager;
     // night 4 a villager and the serial killer too

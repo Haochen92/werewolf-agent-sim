@@ -62,6 +62,8 @@ describe('the workbench URL', () => {
     );
     expect(parse(writeQuery(q))).toEqual(q);
     expect(parse('game=nope&ledger=on')).toEqual(DEFAULT_QUERY);
+    // the old default, the nine-seat fixture, is a game of its own now
+    expect(parse('game=9369a5c1')).toEqual({ ...DEFAULT_QUERY, game: '9369a5c1' });
   });
 
   it('writes `memory=off` only when set, after `live`', () => {

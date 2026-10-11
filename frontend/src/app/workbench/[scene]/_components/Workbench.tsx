@@ -25,7 +25,6 @@ import {
   UrlReadout,
 } from '@/stage/workbench/ControlStrip';
 import { anchorLine, workbenchFrame } from '@/stage/workbench/frame';
-import { FIXTURE_GAME_ID } from '@/stage/workbench/fixture';
 import { SCENE_IDS, SCENES, isSceneId } from '@/stage/workbench/registry';
 import {
   parseFrame,
@@ -189,7 +188,7 @@ export function Workbench({ scene }: { scene: string }) {
       onShowRecord: () => go({ slot: 'film' }),
       notebook: noteEditing,
       // a live cut draws the closed file's link to the replay, as a live game would
-      replayHref: q.live ? `/replays/${FIXTURE_GAME_ID}` : undefined,
+      replayHref: q.live ? `/replays/${frame.gameId}` : undefined,
       ahead: frame.ahead,
       onTranscript: () => go({ slot: pressTranscript(now).slot ?? 'none' }),
       onFile: () => go({ slot: pressFile(now).slot ?? 'none' }),

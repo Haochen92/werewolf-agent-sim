@@ -1,6 +1,8 @@
 /**
  * The workbench's URL contract: the URL is the whole state, so any view of any scene can be
  * named in a line of text, pasted, and reproduced exactly (by a person, or by Playwright).
+ * Every view is drawn from the ten-seat game (`fixtures/replay-phase3.json`) unless `game=`
+ * names another bundled game.
  *
  *   /workbench/<scene>?beat=N&viewer=spect|xray|seat:player_7&motion=normal|fast|skip
  *                     &slot=drawer|film|none&hud=live|replay|none&animate=0|1
@@ -12,17 +14,23 @@
  * stage write `slot` and `viewer=xray` here, as the replay's own container would hold them.
  * `live=1`, written only when on, cuts the beats as a game in play would (the thinking seat
  * at the stand between turns), for any viewer; without it the beats are the replay's.
- * `memory=off`, written only when set, draws the fixture as a memory-off game (its
+ * `memory=off`, `memory=fields` and `summary=v4` redraw the nine-seat game 9369a5c1 (the only
+ * bundled game played with memory on and before day summary v4), so without `game=` they draw
+ * that game, not the ten-seat default.
+ * `memory=off`, written only when set, draws the game as a memory-off game (its
  * `memory_consulted` and `memory_extracted` taken out), for the case file without precedents;
  * `memory=fields` draws it with a small synthetic `dimensions` on every memory record (the
- * fixture predates them), for the case file read from a record's fields.
- * `summary=v4`, written only when set, redraws the fixture's day summaries in the shape games
+ * game predates them), for the case file read from a record's fields.
+ * `summary=v4`, written only when set, redraws 9369a5c1's day summaries in the shape games
  * write from 2026-10-04 (day summary v4: accusations with disputes and record checks, role claims
  * with their night actions, no blocs or mood), with a few synthetic claims, as no played game
  * has them yet, and a synthetic claim ledger for the case file's Record that shows every kind of
  * line (a plan, a change, two targets named, a withdrawal, each kind of check).
- * `game=140610ad`, written only when set, draws the second bundled game instead (a DeepSeek
- * game with long summaries, 2026-10-03) with its claim ledger as the server answered it.
+ * `game=…`, written only when set, draws another bundled game: `9369a5c1` the nine-seat game
+ * that was the default until the ten-seat pass (memory on; the beat goldens' game), `140610ad` a
+ * DeepSeek game with long summaries (2026-10-03) with its claim ledger as the server answered it,
+ * `phase2` the game of the day with rounds (2026-10-07), `phase3-necro` the ten-seat game with the
+ * necromancer and the speculator drawn; `phase3` names the default.
  * `ledger=off`, written only when set, draws the Record without a ledger, as an old archive (or a
  * failed fetch) has it: each summary's own claims, unchecked.
  * `frame=iphone14|iphone15max|pixel8|WxH`, written only when set (`fill`, the default, fills
@@ -35,8 +43,14 @@ import type { Hud } from '../units';
 
 export type Viewer = { kind: 'spect' } | { kind: 'xray' } | { kind: 'seat'; seat: string };
 
-/** The games the workbench can draw besides its fixture (`game=`). */
-export const WORKBENCH_GAMES = ['140610ad', 'phase2', 'phase3', 'phase3-necro'] as const;
+/** The games the workbench can draw besides its default, the ten-seat game (`game=`). */
+export const WORKBENCH_GAMES = [
+  '9369a5c1',
+  '140610ad',
+  'phase2',
+  'phase3',
+  'phase3-necro',
+] as const;
 export type WorkbenchGame = (typeof WORKBENCH_GAMES)[number];
 
 export interface WorkbenchQuery {
@@ -48,18 +62,20 @@ export interface WorkbenchQuery {
   animate: boolean;
   /** Cut the beats as a live game would; absent = the replay's cut. */
   live?: boolean;
-  /** The fixture without its memory events; absent = as played (memory on). */
+  /** The game without its memory events; absent = as played. Implies 9369a5c1 without `game`. */
   memoryOff?: boolean;
-  /** The fixture's memory records with synthetic `dimensions` (they have none). */
+  /** 9369a5c1's memory records with synthetic `dimensions` (they have none). */
   memoryFields?: boolean;
-  /** The fixture's day summaries redrawn in the v4 shape; absent = as played. */
+  /** 9369a5c1's day summaries redrawn in the v4 shape; absent = as played. */
   summaryV4?: boolean;
   /**
-   * Another bundled game; absent = the 9369a5c1 fixture. `140610ad`: the DeepSeek game with
+   * Another bundled game; absent = the ten-seat game (`fixtures/replay-phase3.json`, serial
+   * killer and fortune teller drawn), which `phase3` also names. `9369a5c1`: the nine-seat
+   * fixture (memory on), the default until the ten-seat pass. `140610ad`: the DeepSeek game with
    * its claim ledger. `phase2`: the 2026-10-07 game of the day with rounds (the opening written
    * at once, the sweep, the closing; `fixtures/replay-phase2.json`), the fixture of the round beats.
-   * `phase3` / `phase3-necro`: the ten-seat games (`fixtures/replay-phase3.json`, serial killer and
-   * fortune teller; `fixtures/replay-phase3-necro.json`, necromancer and speculator).
+   * `phase3-necro`: the other ten-seat game (`fixtures/replay-phase3-necro.json`, necromancer and
+   * speculator).
    */
   game?: WorkbenchGame;
   /** The Record without a claim ledger (an old archive); absent = the game's ledger. */

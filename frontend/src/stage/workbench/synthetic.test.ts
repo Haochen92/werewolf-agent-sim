@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FIXTURE_EVENTS } from './fixture';
+import { FIXTURE_EVENTS, PHASE3_GAME } from './fixture';
 import { workbenchFrame } from './frame';
 import { SYNTHETIC } from './registry';
 import { STILL_AT, synthesise, synthesiseAll } from './synthetic';
@@ -28,8 +28,12 @@ describe('synthetic night situations', () => {
     }
   });
 
-  it('builds the fixture’s nights as they were', () => {
-    const healer = synthesise(room[0], FIXTURE_EVENTS);
+  it('builds the nine-seat fixture’s nights as they were', () => {
+    // pinned to the fixture, whatever game the workbench hands over
+    const healer = synthesise(
+      byLabel(room, 'nine seats: healer, night 2'),
+      PHASE3_GAME.events,
+    );
     expect(healer.view.me.pending?.candidates).toEqual([
       'player_1',
       'player_2',
@@ -48,7 +52,7 @@ describe('synthetic night situations', () => {
       seat: 'player_9',
     });
 
-    const vig = synthesise(byLabel(room, 'vigilante, night 4'), FIXTURE_EVENTS);
+    const vig = synthesise(byLabel(room, 'nine seats: vigilante, night 4'), FIXTURE_EVENTS);
     expect(vig.view.me.pending?.candidates).toEqual([
       'player_1',
       'player_8',
@@ -56,7 +60,10 @@ describe('synthetic night situations', () => {
       'hold_fire',
     ]);
 
-    const wolf = synthesise(pack[0], FIXTURE_EVENTS);
+    const wolf = synthesise(
+      byLabel(pack, 'nine seats: wolf, round 1 to open'),
+      FIXTURE_EVENTS,
+    );
     expect(wolf.beat.id).toBe('pack.your-line');
     expect(wolf.view.me.pending?.candidates).toEqual([
       'player_1',
@@ -70,7 +77,7 @@ describe('synthetic night situations', () => {
     expect(wolf.turn.draft).toMatch(/^Hey seat 8/);
 
     const vote = synthesise(
-      byLabel(pack, 'wolf, the vote, packmate voted'),
+      byLabel(pack, 'nine seats: wolf, the vote, packmate voted'),
       FIXTURE_EVENTS,
     );
     expect(vote.beat.id).toBe('pack.vote');
@@ -78,7 +85,10 @@ describe('synthetic night situations', () => {
       { seq: 152, wolf: 'player_3', votee: 'player_4' },
     ]);
 
-    const lone = synthesise(byLabel(pack, 'lone wolf, night 3'), FIXTURE_EVENTS);
+    const lone = synthesise(
+      byLabel(pack, 'nine seats: lone wolf, night 3'),
+      FIXTURE_EVENTS,
+    );
     expect(lone.view.packRoster).toEqual(['player_8']);
     expect(lone.view.me.pending?.candidates).toEqual([
       'player_1',
@@ -89,11 +99,14 @@ describe('synthetic night situations', () => {
     ]);
 
     const line = synthesise(
-      byLabel(pack, 'wolf, the packmate’s line arrives'),
+      byLabel(pack, 'nine seats: wolf, the packmate’s line arrives'),
       FIXTURE_EVENTS,
     );
     expect(line.beat).toMatchObject({ id: 'pack.line', subject: 'player_8', seq: 46 });
-    const decided = synthesise(byLabel(pack, 'wolf, the kill decided'), FIXTURE_EVENTS);
+    const decided = synthesise(
+      byLabel(pack, 'nine seats: wolf, the kill decided'),
+      FIXTURE_EVENTS,
+    );
     expect(decided.beat).toMatchObject({ id: 'pack.decided', subject: 'player_4' });
   });
 
@@ -105,21 +118,36 @@ describe('synthetic night situations', () => {
       at: STILL_AT,
     });
     const solo = synthesise(
-      byLabel(room, 'healer, night 3, no deadline (solo game)'),
+      byLabel(room, 'nine seats: healer, night 3, no deadline (solo game)'),
       FIXTURE_EVENTS,
     );
     expect(solo.turn.clock).toBeNull();
   });
 
-  it('steps the workbench through the situations with ?beat=N', () => {
+  it('steps the workbench through the situations with ?beat=N, the ten-seat ones first', () => {
     const f = workbenchFrame('room', { ...DEFAULT_QUERY, beat: 1 });
     expect(f.beats).toHaveLength(room.length);
-    expect(f.situation?.label).toBe('healer, night 2, seat 1 chosen');
-    expect(f.me).toBe('player_9');
-    expect(f.turn?.chosen).toBe('player_1');
+    expect(f.situation?.label).toBe('trailseer, night 1, seat 5 chosen');
+    expect(f.me).toBe('player_3');
+    expect(f.turn?.chosen).toBe('player_5');
+    expect(f.presentation.cast).toHaveLength(10);
+    // the nine-seat ones follow, marked, each with the fixture's cast
+    for (const list of [room, pack, SYNTHETIC.station!]) {
+      const first = list.findIndex((s) => s.label.startsWith('nine seats: '));
+      expect(first).toBeGreaterThan(0);
+      expect(list.slice(first).every((s) => s.label.startsWith('nine seats: '))).toBe(true);
+      expect(list.slice(0, first).some((s) => /seats:|places:/.test(s.label))).toBe(false);
+    }
+    const nine = room.findIndex(
+      (s) => s.label === 'nine seats: healer, night 2, seat 1 chosen',
+    );
+    const healer = workbenchFrame('room', { ...DEFAULT_QUERY, beat: nine });
+    expect(healer.me).toBe('player_9');
+    expect(healer.turn?.chosen).toBe('player_1');
+    expect(healer.presentation.cast).toHaveLength(9);
     const clamped = workbenchFrame('pack', { ...DEFAULT_QUERY, beat: 99 });
     expect(clamped.index).toBe(pack.length - 1);
-    expect(clamped.beat?.id).toBe('pack.decided');
+    expect(clamped.beat?.id).toBe('pack.vote');
   });
 });
 
@@ -166,34 +194,35 @@ describe('the ten-seat kinds (ten-seat pass §2)', () => {
 
   it('draws them from the ten-seat games, with their own cast and the server’s lists', () => {
     const by = (label: string) => synthesise(byLabel(room, label), FIXTURE_EVENTS);
-    const sentinel = by('ten seats: sentinel, night 1');
+    const sentinel = by('sentinel, night 1');
     expect(sentinel.cast).toHaveLength(10);
     expect(sentinel.view.me.role?.role).toBe('sentinel');
     expect(sentinel.view.me.pending?.candidates.at(-1)).toBe('no_watch');
     expect(sentinel.view.me.pending?.candidates).toHaveLength(10); // nine seats and the word
 
-    const block = by('ten seats: chanteuse’s block, night 1, seat 1 chosen');
+    const block = by('chanteuse’s block, night 1, seat 1 chosen');
     expect(block.beat.id).toBe('room.opens');
     expect(block.view.me.pending?.candidates).not.toContain('player_6'); // the packmate
 
+    expect(by('illusionist’s conceal, night 2').view.me.pending?.candidates).toEqual([
+      'conceal',
+      'no_conceal',
+    ]);
     expect(
-      by('ten seats: illusionist’s conceal, night 2').view.me.pending?.candidates,
-    ).toEqual(['conceal', 'no_conceal']);
-    expect(
-      by('ten seats: speculator, night 1, the wolves chosen').view.me.pending?.candidates,
+      by('speculator, night 1, the wolves chosen').view.me.pending?.candidates,
     ).toEqual(['town', 'wolves', 'lone_killer', 'self', 'not_yet']);
 
-    const bet = by('ten seats: fortune teller, night 1, a self-bet chosen');
+    const bet = by('fortune teller, night 1, a self-bet chosen');
     expect(bet.view.me.pending?.candidates).toContain('player_8');
     expect(bet.turn.chosen).toBe('player_8');
 
-    const necro = by('ten seats: necromancer, through seat 4 on seat 1');
+    const necro = by('necromancer, through seat 4 on seat 1');
     expect(necro.view.me.pending?.bodies).toEqual(['player_4', 'player_8']);
     expect(necro.view.me.pending?.candidates.at(-1)).toBe('stay_put');
     expect(necro.turn).toMatchObject({ chosen: 'player_1', body: 'player_4' });
 
     const carrier = synthesise(
-      byLabel(pack, 'ten seats: the carrier names the kill, seat 7 chosen'),
+      byLabel(pack, 'the carrier names the kill, seat 7 chosen'),
       FIXTURE_EVENTS,
     );
     expect(carrier.beat.id).toBe('pack.vote');
@@ -201,7 +230,7 @@ describe('the ten-seat kinds (ten-seat pass §2)', () => {
   });
 
   it('hands a ten-seat situation’s cast to the workbench frame', () => {
-    const i = room.findIndex((s) => s.label === 'ten seats: sentinel, night 1');
+    const i = room.findIndex((s) => s.label === 'sentinel, night 1');
     const f = workbenchFrame('room', { ...DEFAULT_QUERY, beat: i });
     expect(f.presentation.cast).toHaveLength(10);
     expect(f.me).toBe('player_9');
@@ -210,18 +239,26 @@ describe('the ten-seat kinds (ten-seat pass §2)', () => {
 
 describe('the seated human’s ballot', () => {
   const vote = SYNTHETIC.vote!;
+  // the ten-seat game's day 3: seats 2 to 5 and 7 are dead, seat 10 is still at the table (in
+  // seat order: the server sorts the roster as text, the fold puts it back in seat order)
+  const PHASE3_CANDIDATES = ['player_1', 'player_6', 'player_8', 'player_10', 'abstain'];
 
-  it('opens at the vote with every living seat but mine, and abstain', () => {
-    const f = synthesise(vote[0], FIXTURE_EVENTS);
+  it('opens at the vote with every living seat but mine, and abstain, in the game drawn', () => {
+    const f = synthesise(vote[0], PHASE3_GAME.events);
     expect(f.beat.id).toBe('vote.your-ballot');
-    expect(f.beat.seq).toBe(220);
-    expect(f.view.me.pending?.candidates).toEqual([
+    expect(f.beat.seq).toBe(303);
+    expect(f.view.me.pending?.candidates).toEqual(PHASE3_CANDIDATES);
+    expect(f.cast).toBeUndefined(); // the workbench's own game, and its cast
+    // the same ballot on the nine-seat fixture: its own day 3
+    const nine = synthesise(vote[0], FIXTURE_EVENTS);
+    expect(nine.beat.seq).toBe(220);
+    expect(nine.view.me.pending?.candidates).toEqual([
       'player_1',
       'player_2',
       'player_5',
       'player_6',
+      'player_7',
       'player_8',
-      'player_9',
       'abstain',
     ]);
   });

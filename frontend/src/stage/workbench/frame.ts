@@ -14,6 +14,7 @@ import type { Presentation, RoomInput, TurnInput } from '../scenes/types';
 import {
   FIXTURE_CAST,
   FIXTURE_EVENTS,
+  FIXTURE_GAME_ID,
   LEDGER_GAME,
   PHASE2_GAME,
   PHASE3_GAME,
@@ -48,19 +49,26 @@ export interface WorkbenchFrame {
   ahead?: GameView | null;
   /** The claim ledger for the case file's Record (`SlotInput.ledger`); null: none. */
   ledger: readonly LedgerDay[] | null;
+  /** The id of the game drawn, for a live cut's link to its replay. */
+  gameId: string;
 }
 
-/** The bundled game the URL names: the fixture, the ledger game, the Phase 2 or a Phase 3 game. */
+/**
+ * The bundled game the URL names: the ten-seat game by default, or the nine-seat fixture, the
+ * ledger game, the Phase 2 game or the other Phase 3 game. A redraw of the nine-seat fixture
+ * (`memory=`, `summary=v4`) without a `game` draws that fixture.
+ */
 function gameOf(q: WorkbenchQuery): {
+  id: string;
   events: readonly DurableGameEvent[];
   cast: readonly Character[];
 } {
-  if (q.game === '140610ad') return { events: LEDGER_GAME.events, cast: LEDGER_GAME.cast };
-  if (q.game === 'phase2') return { events: PHASE2_GAME.events, cast: PHASE2_GAME.cast };
-  if (q.game === 'phase3') return { events: PHASE3_GAME.events, cast: PHASE3_GAME.cast };
-  if (q.game === 'phase3-necro')
-    return { events: PHASE3_NECRO_GAME.events, cast: PHASE3_NECRO_GAME.cast };
-  return { events: FIXTURE_EVENTS, cast: FIXTURE_CAST };
+  if (q.game === '9369a5c1' || (!q.game && (q.memoryOff || q.memoryFields || q.summaryV4)))
+    return { id: FIXTURE_GAME_ID, events: FIXTURE_EVENTS, cast: FIXTURE_CAST };
+  if (q.game === '140610ad') return LEDGER_GAME;
+  if (q.game === 'phase2') return PHASE2_GAME;
+  if (q.game === 'phase3-necro') return PHASE3_NECRO_GAME;
+  return PHASE3_GAME;
 }
 
 export function workbenchFrame(
@@ -74,22 +82,24 @@ export function workbenchFrame(
     ? null
     : q.game === '140610ad'
       ? LEDGER_GAME.ledger
-      : q.summaryV4 && !q.game
+      : q.summaryV4 && (!q.game || q.game === '9369a5c1')
         ? V4_LEDGER
         : null;
   // a memory-off game: the same log without what memory adds
   if (q.memoryOff) events = events.filter((e) => !MEMORY_EVENTS.has(e.type));
   else if (q.memoryFields) events = withFields(events);
   if (q.summaryV4) events = withSummaryV4(events);
+  const gameId = gameOf(q).id;
   const situations = SYNTHETIC[scene];
   if (situations && !SYNTHETIC_AFTER.has(scene))
-    return { ...syntheticFrame(situations, q, events, cast), ledger };
+    return { gameId, ...syntheticFrame(situations, q, events, cast), ledger };
   const me = q.viewer.kind === 'seat' ? q.viewer.seat : null;
   const xray = q.viewer.kind === 'xray';
   const beats = sceneBeats(beatsFor(events, { xray, me, live: q.live }), scene);
   // a live-only prompt among the fixture's beats: its situations follow them in the stepper
   if (situations && q.beat >= beats.length)
     return {
+      gameId,
       ...syntheticFrame(
         situations,
         { ...q, beat: q.beat - beats.length },
@@ -113,6 +123,7 @@ export function workbenchFrame(
     me,
     ahead,
     ledger,
+    gameId,
     presentation: {
       xray,
       slot: q.slot === 'none' ? null : q.slot,
@@ -145,7 +156,7 @@ function syntheticFrame(
   events: readonly DurableGameEvent[],
   cast: readonly Character[],
   before: readonly SceneBeat[] = [],
-): Omit<WorkbenchFrame, 'ledger'> {
+): Omit<WorkbenchFrame, 'ledger' | 'gameId'> & { gameId?: string } {
   const frames = synthesiseAll(situations, events);
   const index = Math.max(0, Math.min(q.beat, frames.length - 1));
   const f = frames[index];
@@ -169,6 +180,8 @@ function syntheticFrame(
     situation: situations[index],
     turn: f?.turn,
     room: f?.room,
+    // a situation drawn from another game links to that game
+    ...(f?.gameId ? { gameId: f.gameId } : {}),
   };
 }
 

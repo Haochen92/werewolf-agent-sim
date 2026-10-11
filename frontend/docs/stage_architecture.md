@@ -837,17 +837,22 @@ cases; `PaintPicture`'s docstring (in git history, `Stage.tsx` before 2026-09-29
 
 ## 7. The workbench
 
-`app/workbench/[scene]/page.tsx` (one route). It reads the URL, folds the bundled fixture
-(`src/stage/fixtures/replay-9369a5c1.json`, the full `ReplayGame`; the beat goldens use the same
-file), picks the beat, and renders the scene through exactly the component the real pages use.
+`app/workbench/[scene]/page.tsx` (one route). It reads the URL, folds a bundled game (the
+ten-seat game unless `game=` names another, below; each a full `ReplayGame`), picks the beat, and
+renders the scene through exactly the component the real pages use.
 
 ```
-/workbench/vote?beat=5&viewer=spect|seat:player_7|xray&motion=normal|fast&slot=none|drawer|film&hud=live|replay|none&animate=0|1[&live=1][&memory=off][&game=140610ad|phase2][&frame=iphone14|iphone15max|pixel8|WxH]
+/workbench/vote?beat=5&viewer=spect|seat:player_7|xray&motion=normal|fast&slot=none|drawer|film&hud=live|replay|none&animate=0|1[&live=1][&memory=off][&game=phase3|phase3-necro|9369a5c1|140610ad|phase2][&frame=iphone14|iphone15max|pixel8|WxH]
 ```
 
 `beat=` counts within the scene (the nth of the scene's beats in play order, as the registry
 lists them), not down the whole golden: a golden line's number and a bench's `beat=` differ by
-every beat of the other scenes before it. `game=phase2` draws the 2026-10-07 game of the day with
+every beat of the other scenes before it. `game=` (written only when set) names the bundled
+game: without it, or with `game=phase3`, the ten-seat game (`fixtures/replay-phase3.json`, the
+default since 2026-10-11); `phase3-necro` the other ten-seat game (necromancer and speculator
+drawn); `9369a5c1` the nine-seat fixture (`src/stage/fixtures/replay-9369a5c1.json`), the beat goldens' game (and the one `memory=` and
+`summary=v4` redraw when no `game=` is given); `140610ad` the DeepSeek game with its claim
+ledger, for the case file's Record. `game=phase2` draws the 2026-10-07 game of the day with
 rounds (`fixtures/replay-phase2.json`, memory off), the fixture of the round beats (beat sheet §2
 rows 7-10); its goldens are `beats/__goldens__/phase2.*.txt`.
 

@@ -1,7 +1,10 @@
 /**
- * The game every workbench view is drawn from: the bundled replay of 9369a5c1 (memory on),
- * the same file the beat goldens are cut from, so a beat number in the workbench and a line in
- * the golden are the same beat.
+ * The workbench draws the ten-seat game (`PHASE3_GAME`, below) unless the URL names another.
+ *
+ * The fixture: the bundled replay of 9369a5c1 (nine seats, memory on, `game=9369a5c1`), the
+ * workbench's default until the ten-seat pass (ruling 2026-10-11) and still the game the beat
+ * goldens and most stage tests are cut from, so a beat number in the workbench on
+ * `game=9369a5c1` and a line in its golden are the same beat.
  *
  * And a second game, for the case file's Record (`game=140610ad`): a DeepSeek game with long
  * day summaries (2026-10-03), with the claim ledger the server answered for it
@@ -49,7 +52,7 @@ const phase3Events = phase3Game.events as unknown as readonly DurableGameEvent[]
 const phase3NecroEvents = phase3NecroGame.events as unknown as readonly DurableGameEvent[];
 
 /**
- * The ten-seat games (Phase 3). `game=phase3`: the translator's golden for the captured
+ * The ten-seat games (Phase 3). The default (no `game=`, or `game=phase3`): the translator's golden for the captured
  * 2026-10 game (serial killer and fortune teller drawn; a sigil kill, a concealed body, the
  * fortune teller's win at game over). `game=phase3-necro`: batch game e04 of
  * evidence/game_play_enhancement/data/phase3_balance_4 through the translator (necromancer and
