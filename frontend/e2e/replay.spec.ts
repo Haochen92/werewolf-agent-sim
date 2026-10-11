@@ -230,6 +230,57 @@ test('replay: the night stops at its hub; a lit card plays that actor’s room a
   await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.hub');
 });
 
+test('replay: a ten-seat wolf’s card plays its own skill’s room, then the pack’s, and reads Seen once both are', async ({
+  page,
+}) => {
+  // the ten-seat golden: on night 1 the chanteuse (seat 5) carries the kill and blocks seat 1
+  const id = 'phase3-translator-golden-2026-10';
+  const body = readFileSync(join(__dirname, '../src/stage/fixtures/replay-phase3.json'));
+  await page.route(`**/replays/${id}*`, async (route) => {
+    const req = route.request();
+    if (req.resourceType() === 'document' || req.headers()['rsc']) return route.fallback();
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: {
+        'access-control-allow-origin': req.headers()['origin'] ?? '*',
+        'access-control-allow-credentials': 'true',
+      },
+      body,
+    });
+  });
+  await page.clock.install();
+  await page.goto(`/replays/${id}`, { waitUntil: 'networkidle' });
+  await expect(page.locator('[data-transport]')).toBeVisible();
+  await reveal(page).click();
+  const next = page.getByRole('button', { name: 'Next chapter' });
+  for (let i = 0; i < 4; i++) {
+    if ((await theatre(page).getAttribute('data-beat')) === 'rnight.hub') break;
+    await next.click();
+  }
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.hub');
+  const back = page.getByRole('button', { name: '← Back to the night' });
+  // nine seats acted, in ten rooms: the pack's kill, and the chanteuse's block its own
+  await expect(page.getByText('Night 1 · 10 acted.')).toBeVisible();
+  // the chanteuse's card: her block first
+  await expect(card(page, 5)).toHaveAttribute('data-word', 'visit');
+  await card(page, 5).click();
+  await expect(page.getByText('In the night · Seat 5')).toBeVisible();
+  await back.click();
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.hub');
+  // the pack's kill not yet seen: still "Visit", and the same card goes there now
+  await expect(card(page, 5)).toHaveAttribute('data-word', 'visit');
+  await card(page, 5).click();
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.spoke');
+  await expect(page.locator('[data-chat="pack"]')).toBeVisible();
+  await back.click();
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.hub');
+  // both rooms seen: the mark clears to "Seen", and the illusionist's (the pack's only) too
+  await expect(card(page, 5)).toHaveAttribute('data-word', 'seen');
+  await expect(card(page, 5)).toHaveAttribute('data-glow', 'visited');
+  await expect(card(page, 6)).toHaveAttribute('data-word', 'seen');
+});
+
 test('replay: in an actor’s room the card on the table opens, and the play goes on under it', async ({
   page,
 }) => {

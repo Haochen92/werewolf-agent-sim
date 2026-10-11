@@ -483,9 +483,10 @@ test('the seat rail: notes and a suspect for a seated player, none in a replay',
   await expect(menu.getByRole('option')).toHaveText([
     'not sure',
     /^Villager\s*3 left$/,
-    /^Healer\s*1 left$/,
+    // the pool's order (ten-seat pass §7): the healer after the vigilante
     /^Investigator\s*1 left$/,
     /^Vigilante\s*1 left$/,
+    /^Healer\s*1 left$/,
     /^Wolf\s*2 left$/,
     /^Serial killer\s*1 left$/,
   ]);

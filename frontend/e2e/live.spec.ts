@@ -931,9 +931,9 @@ test('live: the brass plaque opens the full-screen composer, which keeps the lin
   await expect(page).toHaveScreenshot('composer-day.png');
 
   // near the cap the count comes, as in the box
-  await big.fill('ab '.repeat(204));
-  await expect(composer.locator('[data-line-count]')).toHaveText('612 / 700');
-  await expect(composer.locator('[data-word-count]')).toHaveText('204 words');
+  await big.fill('ab '.repeat(150));
+  await expect(composer.locator('[data-line-count]')).toHaveText('450 / 500');
+  await expect(composer.locator('[data-word-count]')).toHaveText('150 words');
   await big.fill('I trust seat 4 today.');
 
   // Draft: the same button, its words turning while the draft is on its way
@@ -1058,6 +1058,87 @@ test('live: the dock’s plaques: Send waits for a line and is live once the com
   expect(e.y).toBeGreaterThanOrEqual(p.y + p.height - 0.5);
   expect(w.y).toBeGreaterThanOrEqual(e.y + e.height - 0.5);
   expect(posted).toEqual([{ path: 'turns', body: { message: line } }]);
+});
+
+test('live: a wolf’s line to the pack refused (422) reopens the box with why, and the retry goes in', async ({
+  page,
+}) => {
+  // seat 3, a wolf, asked for its first line on night 1 (the fixture's own line is seq 33)
+  const WOLF = 'player_3';
+  const wolfSees = (e: WireEvent) =>
+    !OBSERVER.has(e.type) && (!SEAT.has(e.type) || e.player === WOLF);
+  const posted: Mock['posted'] = [];
+  await page.clock.install({ time: T0 });
+  await mockApi(page, {
+    status: status(32, {
+      you: WOLF,
+      human_players: [WOLF],
+      pending_seats: [WOLF],
+      pending_input: true,
+    }),
+    stream: [
+      ...ALL.filter((e) => e.seq <= 32 && wolfSees(e)),
+      {
+        seq: 33,
+        day: 1,
+        type: 'input_request',
+        player: WOLF,
+        action_kind: 'wolf_discuss',
+        candidates: [],
+        round: 1,
+        deadline: new Date(T0 + 120_000).toISOString(),
+      },
+    ],
+    posted,
+  });
+  // the first line is refused in the engine's words; the second goes in
+  let refuse = true;
+  await page.unroute(`**/games/${GAME}/turns`);
+  await page.route(`**/games/${GAME}/turns`, async (route) => {
+    const req = route.request();
+    if (req.method() === 'OPTIONS')
+      return route.fulfill({ status: 204, headers: cors(req) });
+    posted.push({ path: 'turns', body: req.postDataJSON() });
+    const no = refuse;
+    refuse = false;
+    await route.fulfill({
+      status: no ? 422 : 200,
+      contentType: 'application/json',
+      headers: cors(req),
+      body: JSON.stringify(
+        no
+          ? { detail: 'That line names a seat that is not at the table.' }
+          : { accepted: true },
+      ),
+    });
+  });
+  await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  await landsOn(page, 'pack.your-line');
+  const box = page.getByLabel('Your line to the pack');
+  const line = page.locator('form').filter({ has: box });
+  const say = line.getByRole('button', { name: 'Say it', exact: true });
+  const pass = line.getByRole('button', { name: 'Pass', exact: true });
+  await box.fill('Seat 12 tonight.');
+  await say.click();
+  // refused: the words under the box, which is open again with the line still in it
+  await expect(line.getByRole('alert')).toHaveText(
+    'That line names a seat that is not at the table.',
+  );
+  await expect(box).toBeEnabled();
+  await expect(box).toHaveValue('Seat 12 tonight.');
+  await expect(say).toBeEnabled();
+  await expect(pass).toBeEnabled();
+  // the retry goes in: the words go, and the box and both buttons shut
+  await box.fill('Seat 1 tonight.');
+  await say.click();
+  await expect(box).toBeDisabled();
+  await expect(say).toBeDisabled();
+  await expect(pass).toBeDisabled();
+  await expect(line.getByRole('alert')).toHaveCount(0);
+  expect(posted).toEqual([
+    { path: 'turns', body: { message: 'Seat 12 tonight.' } },
+    { path: 'turns', body: { message: 'Seat 1 tonight.' } },
+  ]);
 });
 
 test('live: on a phone a tap on the preview opens the composer, fitted above the soft keyboard', async ({

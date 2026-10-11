@@ -287,15 +287,27 @@ test('ticket: the house pays, so /play asks for no key', async ({ page }) => {
   ).toBeVisible();
   await expect(page.getByLabel('Your key')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Use my own key instead' })).toBeVisible();
-  await expect(page.getByRole('switch', { name: 'Agents’ memory' })).not.toBeChecked();
+  // memory is held off for the ten-seat cast until its store ships
+  const memory = page.getByRole('switch', { name: 'Agents’ memory' });
+  await expect(memory).not.toBeChecked();
+  await expect(memory).toBeDisabled();
+  await expect(page.getByText(/Memory for the new cast is being built/)).toBeVisible();
+  await expect(page.getByText('You and 9 agents')).toBeVisible();
 
-  // the role cards: one chosen at a time, and the stub says which
-  await page.getByRole('button', { name: 'Wolf' }).click();
-  await expect(page.getByRole('button', { name: 'Wolf' })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
-  await expect(page.getByText('Wolf, chosen')).toBeVisible();
+  // the role cards: a radio group, one chosen at a time, and the stub says which
+  const roles = page.getByRole('radiogroup', { name: /Your role/ });
+  await roles.getByRole('radio', { name: 'Chanteuse' }).click();
+  await expect(roles.getByRole('radio', { name: 'Chanteuse' })).toBeChecked();
+  await expect(page.getByText('Chanteuse, chosen')).toBeVisible();
+  await expect(page.getByText(/Your packmate will be an agent\./)).toBeVisible();
+  // the arrow keys move the choice and the focus; a drawn role says so in its name
+  await page.keyboard.press('ArrowRight');
+  await expect(roles.getByRole('radio', { name: 'Illusionist' })).toBeFocused();
+  await page.keyboard.press('ArrowRight');
+  const killer = roles.getByRole('radio', { name: 'Serial killer, a drawn seat' });
+  await expect(killer).toBeChecked();
+  await expect(killer).toBeFocused();
+  await expect(page.getByText(/the draw follows you/)).toBeVisible();
 });
 
 test('ticket: the model menu groups the house rows and shows what a game costs', async ({
@@ -357,6 +369,7 @@ test('ticket: /rooms/new opens a room and goes to it', async ({ page }) => {
     });
   });
   await openTicket(page, '/rooms/new', 3);
+  await expect(page.getByText('Up to 10 people')).toBeVisible();
 
   await page.getByLabel('Room name').fill('Night shift');
   await expect(page.getByText('Night shift', { exact: true })).toBeVisible(); // the stub
@@ -614,13 +627,13 @@ test('landing: the carriage plays day 3 of the featured game, with the replay’
   // no way back to the replay list from inside the landing: the marquee links the game
   await expect(carriage(page).getByRole('link', { name: 'Replays' })).toHaveCount(0);
 
-  // it starts on day 3's vote and plays (the window is 53..71 of the public cut)
+  // it starts on day 3's vote and plays (the window is 55..73 of the public cut)
   await carriage(page).scrollIntoViewIfNeeded();
   await expect(mini(page)).toHaveAttribute('data-playing', 'true');
-  await expect(mini(page)).not.toHaveAttribute('data-beat-index', '53', { timeout: 6000 });
+  await expect(mini(page)).not.toHaveAttribute('data-beat-index', '55', { timeout: 6000 });
   const at = Number(await mini(page).getAttribute('data-beat-index'));
-  expect(at).toBeGreaterThan(53);
-  expect(at).toBeLessThanOrEqual(71);
+  expect(at).toBeGreaterThan(55);
+  expect(at).toBeLessThanOrEqual(73);
 
   // the band sees the window only, and its buttons stay in it
   const band = carriage(page).locator('[data-transport]');
@@ -631,16 +644,21 @@ test('landing: the carriage plays day 3 of the featured game, with the replay’
     '19',
   );
   await band.getByRole('slider', { name: 'Seek' }).click({ position: { x: 1, y: 4 } });
-  await expect(mini(page)).toHaveAttribute('data-beat-index', '53');
+  await expect(mini(page)).toHaveAttribute('data-beat-index', '55');
   await band.getByRole('button', { name: 'Back a beat' }).click();
-  await expect(mini(page)).toHaveAttribute('data-beat-index', '53');
+  await expect(mini(page)).toHaveAttribute('data-beat-index', '55');
 
-  // the X-ray brings its film beside the stage, the drawer the transcript
-  await carriage(page).getByRole('button', { name: 'X-ray', exact: true }).click();
+  // the strip's Reveal shows the hidden roles: seat 8's band names its role, a wolf; File
+  // brings the case file beside the stage, Transcript the drawer
+  const seat8 = carriage(page).locator('[data-layer="hud"] [data-seat="8"]');
+  await expect(seat8).not.toContainText('Wolf');
+  await carriage(page).getByRole('button', { name: 'Reveal', exact: true }).click();
+  await expect(seat8).toContainText('Wolf');
+  await carriage(page).getByRole('button', { name: 'File', exact: true }).click();
   await expect(
-    carriage(page).getByRole('complementary', { name: 'X-ray film' }),
+    carriage(page).getByRole('complementary', { name: /^Case file/ }),
   ).toBeVisible();
-  await carriage(page).getByRole('button', { name: 'Transcript' }).click();
+  await carriage(page).getByRole('button', { name: 'Transcript', exact: true }).click();
   await expect(carriage(page).locator('[data-drawer]')).toBeVisible();
 
   // the marquee names the game, goes to it whole, and says its facts
@@ -680,7 +698,7 @@ test('landing: on an upright phone the controls sit under the stage, at reading 
   const pips = carriage(page).getByRole('group', { name: 'Beats' }).getByRole('button');
   await expect(pips).toHaveCount(19);
   await pips.nth(0).click();
-  await expect(mini(page)).toHaveAttribute('data-beat-index', '53');
+  await expect(mini(page)).toHaveAttribute('data-beat-index', '55');
 
   // the transcript is the drawer's own lines: the day's talk, the vote's line not yet
   const lines = carriage(page).getByLabel('Transcript', { exact: true });
@@ -690,11 +708,12 @@ test('landing: on an upright phone the controls sit under the stage, at reading 
   await pips.nth(18).click();
   await expect(lines).toContainText('The table votes');
 
-  // the X-ray swaps the pane for the stage's own film
+  // the X-ray swaps the pane for the stage's own case file, the hidden roles shown: at the
+  // lynch, who had them right, seat 8 among them a wolf
   await carriage(page).getByRole('button', { name: 'X-ray', exact: true }).click();
-  await expect(
-    carriage(page).getByRole('complementary', { name: 'X-ray film' }),
-  ).toBeVisible();
+  const file = carriage(page).getByRole('complementary', { name: /^Case file/ });
+  await expect(file).toBeVisible();
+  await expect(file).toContainText(/Seat 8\s*wolf/);
   await expect(carriage(page).getByRole('link', { name: 'Whole game' })).toHaveAttribute(
     'href',
     `/replays/${GAME}?from=home`,
@@ -712,7 +731,7 @@ for (const [name, viewport] of [
     // at rest on the window's first beat: reduced motion stops the play, and so does ?still=1
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await openLanding(page, '?still=1');
-    await expect(mini(page)).toHaveAttribute('data-beat-index', '53');
+    await expect(mini(page)).toHaveAttribute('data-beat-index', '55');
     await expect(page.locator('[data-game]')).toHaveCount(3);
     await expect(page.getByRole('contentinfo')).toContainText('212 games archived');
     await settle(page);
