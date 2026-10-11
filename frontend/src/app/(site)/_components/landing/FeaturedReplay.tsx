@@ -15,6 +15,13 @@
  * The game is `SITE.featuredReplay`; if the archive no longer has it, the newest game plays
  * instead, with its own window. It plays while it is on screen; it rests on the window's first
  * beat for a viewer who asked for reduced motion, and with `?still=1` (the goldens).
+ *
+ * The carriage sits below the fold, so nothing of the preview is fetched at load (audit
+ * 2026-10-11 §2): the frame is drawn at its full size, the marquee's lines and the controls'
+ * room held empty, and the theatre's code (a chunk of its own), the replay and the stage's
+ * pictures come only once the window is on screen, or within a screen of it after the visitor
+ * has scrolled (`useNear`). Once up it stays up; scrolled away it pauses, and so does a hidden
+ * page (the theatre's own clock).
  */
 import {
   useCallback,
@@ -23,7 +30,9 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type RefObject,
 } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
@@ -37,12 +46,22 @@ import { queryKeys } from '@/lib/queryKeys';
 import { ApiError } from '@/lib/request';
 import { SITE } from '@/lib/site';
 import { beatsFor } from '@/stage/beats/beatsFor';
-import { ReplayTheatre, type MiniUnder } from '@/stage/containers/ReplayTheatre';
+import type { MiniUnder } from '@/stage/containers/ReplayTheatre';
 import { stageFonts } from '@/stage/fonts';
 import { winnerKey, type WinnerKey } from '@/stage/roles';
 import type { DurableGameEvent, ReplayGame } from '@/types/contracts';
 import classes from './Carriage.module.css';
-import { CarriageUnder } from './CarriageUnder';
+
+// the stage and the controls under it load when the carriage comes near (`useNear`), not with
+// the landing: they are the whole theatre, and most of the page's script
+const ReplayTheatre = dynamic(
+  () => import('@/stage/containers/ReplayTheatre').then((m) => m.ReplayTheatre),
+  { ssr: false },
+);
+const CarriageUnder = dynamic(
+  () => import('./CarriageUnder').then((m) => m.CarriageUnder),
+  { ssr: false },
+);
 
 const WON: Record<WinnerKey, string> = {
   villagers: 'Town won',
@@ -65,13 +84,14 @@ function tilesOf(game: ReplayGame, modelName: (id: string) => string): string[] 
   ].filter(Boolean);
 }
 
-/** The featured game, or the newest one when the archive no longer has it. */
-function useShownGame() {
+/** The featured game, or the newest one when the archive no longer has it; asked once `wanted`. */
+function useShownGame(wanted: boolean) {
   const featured = useQuery({
     queryKey: queryKeys.replays.detail(SITE.featuredReplay),
     queryFn: () => getReplay(SITE.featuredReplay),
     staleTime: Infinity, // a finished replay is immutable
     retry: false,
+    enabled: wanted,
   });
   const gone = featured.error instanceof ApiError && featured.error.status === 404;
   // the footer asks the same one-row page for the archive's total: one request serves both
@@ -114,6 +134,50 @@ function useOnScreen<T extends Element>() {
   return [ref, on] as const;
 }
 
+/**
+ * True once the element is on screen, or within a screen of it after the visitor has scrolled
+ * at all: the preview's code, replay and pictures are fetched from then. Not at load for a
+ * carriage just under the fold, so a visitor who never scrolls never pays for it; and a
+ * screen ahead once they do, so it is usually up before it is seen. It stays true.
+ */
+function useNear(ref: RefObject<Element | null>) {
+  const [near, setNear] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || near) return;
+    let seen = false;
+    let reach = false;
+    let moved = window.scrollY > 0;
+    const check = () => {
+      if (seen || (reach && moved)) setNear(true);
+    };
+    const onScroll = () => {
+      moved = true;
+      check();
+    };
+    const look = new IntersectionObserver(([entry]) => {
+      seen = entry.isIntersecting;
+      check();
+    });
+    const ahead = new IntersectionObserver(
+      ([entry]) => {
+        reach = entry.isIntersecting;
+        check();
+      },
+      { rootMargin: '100% 0px' },
+    );
+    look.observe(el);
+    ahead.observe(el);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      look.disconnect();
+      ahead.disconnect();
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, [ref, near]);
+  return near;
+}
+
 /** Bogie: the carriage's wheels, drawn once (the mockup's `frames` script). */
 function Bogie({ className }: { className: string }) {
   const spokes = [0, 45, 90, 135].map((a) => {
@@ -146,10 +210,11 @@ function Bogie({ className }: { className: string }) {
 
 export function FeaturedReplay() {
   const still = useSearchParams().get('still') === '1';
-  const { game, failed } = useShownGame();
   const modelName = useModelLabels();
   const wide = useMediaQuery('(min-width: 700px)');
   const [screenRef, onScreen] = useOnScreen<HTMLDivElement>();
+  const near = useNear(screenRef);
+  const { game, failed } = useShownGame(near);
   const [underEl, setUnderEl] = useState<HTMLDivElement | null>(null);
   const under = useCallback((u: MiniUnder) => <CarriageUnder {...u} />, []);
 
@@ -195,7 +260,20 @@ export function FeaturedReplay() {
                   ))}
                 </ul>
               </>
-            ) : null}
+            ) : failed ? null : (
+              // the lines' room, held until the game arrives so nothing under them moves
+              <>
+                <span className={`${classes.mqTitle} ${classes.ghost}`} aria-hidden="true">
+                  Day 3 of game
+                </span>
+                <span className={`${classes.mqAct} ${classes.ghost}`} aria-hidden="true">
+                  Whole game
+                </span>
+                <span className={`${classes.tiles} ${classes.ghost}`} aria-hidden="true">
+                  <span className={classes.tile}>Model</span>
+                </span>
+              </>
+            )}
           </div>
           <span className={`${classes.bulbs} ${classes.bulbsLow}`} aria-hidden="true" />
         </div>
@@ -219,7 +297,12 @@ export function FeaturedReplay() {
             </p>
           )}
         </div>
-        {wide ? null : <div ref={setUnderEl} className={stageFonts} />}
+        {wide ? null : (
+          <div
+            ref={setUnderEl}
+            className={failed ? stageFonts : `${stageFonts} ${classes.underHold}`}
+          />
+        )}
         <span className={classes.chassis} aria-hidden="true">
           <Bogie className={`${classes.bogie} ${classes.bogieL}`} />
           <Bogie className={`${classes.bogie} ${classes.bogieR}`} />

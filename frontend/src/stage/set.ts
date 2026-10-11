@@ -29,6 +29,17 @@ export function useSmall(): boolean {
   return useContext(SmallContext);
 }
 
+/**
+ * How wide the stage box is drawn, in css px (0 until the Stage has measured it): what a
+ * picture's density is chosen from (the backdrop's sheet). Kept apart from `useSmall`, which is
+ * a layout decision: a small stage on a dense screen can still need a large picture.
+ */
+export const StageWidthContext = createContext(0);
+
+export function useStageWidth(): number {
+  return useContext(StageWidthContext);
+}
+
 /** A scene's backdrop, as it describes it (instruments/Backdrop.tsx). */
 export interface BackdropSpec {
   phase: Phase;

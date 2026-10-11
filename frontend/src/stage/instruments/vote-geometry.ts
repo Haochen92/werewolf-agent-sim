@@ -6,7 +6,7 @@
  * `stackPos`, `cardSVG`) by eye.
  */
 import { carLines } from '../paint/window';
-import { STAGE_H, STAGE_W, type StageGeometry } from '../units';
+import { CAMERA_ZOOM_MAX, STAGE_H, STAGE_W, type StageGeometry } from '../units';
 import { trapGeometry } from './Floor';
 
 export interface VoteGeometry {
@@ -218,7 +218,7 @@ export function placeCardBox(v: VoteGeometry, p: PlateSpot, nCands: number) {
 
 /** The camera's push-in for the count: 1.32 about a point just above the table (bench 64). */
 export function countShot(v: VoteGeometry) {
-  const k = 1.32;
+  const k = CAMERA_ZOOM_MAX;
   // the bench scales about (cx, topY − 0.04H) and then drops the picture 0.015H; one fixed
   // point says the same: the point that scale alone leaves where it is
   return { scale: k, x: v.cx, y: v.topY - 0.04 * STAGE_H - (0.015 * STAGE_H) / (k - 1) };

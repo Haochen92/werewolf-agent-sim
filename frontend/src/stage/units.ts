@@ -25,6 +25,12 @@ export const STAGE_H = 900;
 export const BLEED = 300;
 /** How far out the bleed reaches the house's full dark: the whole of what a 21:9 screen shows. */
 export const BLEED_DARK = 250;
+/**
+ * The closest the stage's camera comes: the vote's count pushes in to 1.32 (`countShot` in
+ * instruments/vote-geometry.ts), and nothing else scales the world up. A picture chosen for
+ * the stage's size has to hold up at this magnification too (instruments/Backdrop.tsx).
+ */
+export const CAMERA_ZOOM_MAX = 1.32;
 
 export type Hud = 'none' | 'live' | 'replay';
 

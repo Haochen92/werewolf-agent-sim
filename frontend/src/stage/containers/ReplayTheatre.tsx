@@ -14,7 +14,8 @@
  * curtain) stops the play there, and so does the end of the log; with the X-ray on, so do the
  * stops (the night hub, the ballots in; stops.ts), whose notice holds the ways on. While a
  * pointer or a finger rests on a speech the hold pauses, and the clock picks up where it left
- * off, so a long line can be read to the end.
+ * off, so a long line can be read to the end. The clock stops the same way while the page is
+ * hidden (another tab, a locked phone), the preview's and the whole replay's alike.
  *
  * `mini` makes it a preview (the landing's carriage): the same stage and the same reducer,
  * playing one window of the cut round and round (`loop` in replay-state.ts), with no keys (the
@@ -39,6 +40,7 @@ import { createPortal } from 'react-dom';
 import type { Character } from '@/assets/manifest';
 import type { GameView } from '@/game/types';
 import { useLedger } from '@/hooks/useLedger';
+import { usePageVisible } from '@/hooks/usePageVisible';
 import { resolveCast, rosterSize } from '../cast/castForGame';
 import { DecodeAhead } from '../cast/DecodeAhead';
 import { beatsFor } from '../beats/beatsFor';
@@ -282,14 +284,15 @@ export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps
     [controls, state.xray, state.loop, state.visited, beat, beats],
   );
 
-  // playing: the beat's hold, paused while the speech is held
+  // playing: the beat's hold, paused while the speech is held or the page is hidden
   const [held, setHeld] = useState(false);
+  const visible = usePageVisible();
   const tick = useCallback(() => dispatch({ type: 'tick' }), []);
   const hold = beat ? holdFor(beat, state.speed) : null;
   useHold(
     `${state.xray}:${index}:${state.speed}`,
     hold,
-    state.playing && (controls !== 'stage' || !held),
+    state.playing && visible && (controls !== 'stage' || !held),
     tick,
   );
   const onPointerOver = (e: PointerEvent) => setHeld(isSpeech(e.target));

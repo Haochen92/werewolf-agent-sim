@@ -586,7 +586,8 @@ const TWO_ROOMS = [
   { ...ROOMS[0], game_id: FULL.replace(/3$/, '4'), name: 'Late car' },
 ];
 
-async function openLanding(page: Page, query = '') {
+/** The landing's API, mocked; nothing loaded yet. */
+async function routeLanding(page: Page) {
   await page.route(
     (url) => url.pathname.endsWith('/replays'),
     api(REPLAYS.slice(0, 3), { 'X-Total-Count': '212' }),
@@ -606,8 +607,18 @@ async function openLanding(page: Page, query = '') {
   });
   await page.route('**/rooms', api(TWO_ROOMS));
   await page.route('**/models', api(MODELS));
+}
+
+/**
+ * The landing with its preview up: the carriage is scrolled to (it loads only when near),
+ * then the page goes back to its top.
+ */
+async function openLanding(page: Page, query = '') {
+  await routeLanding(page);
   await page.goto(`/${query}`, { waitUntil: 'networkidle' });
+  await page.locator('[data-frame="carriage"]').scrollIntoViewIfNeeded();
   await expect(page.locator('[data-frame="carriage"] [data-mini]')).toBeAttached();
+  await page.evaluate(() => window.scrollTo(0, 0));
 }
 
 const carriage = (page: Page) => page.locator('[data-frame="carriage"]');
@@ -720,6 +731,90 @@ test('landing: on an upright phone the controls sit under the stage, at reading 
   );
   // nothing reaches past the phone's edge
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+});
+
+/**
+ * The preview's lifecycle and its backdrop's density (audit 2026-10-11 §1, §2): nothing of it
+ * is fetched while the carriage is under the fold; scrolled to, one backdrop sheet comes, the
+ * smallest whose pixels cover the stage's width × the screen's density × the camera's 1.32
+ * push-in (`pickScale`). The carriage's stage is 334 css px wide on a 390 phone and 1052 on a
+ * 1440 desktop.
+ */
+const SHEET = /\/car-[a-z]+-[a-z]+-[a-z]+@([\d.]+)x\.[^/]*\.webp/;
+for (const { name, viewport, dpr, sheet, px } of [
+  // 334 × 3 × 1.32 ≈ 1323 px: the 2200 sheet (the old pick, by density alone, was the 3300)
+  { name: 'phone', viewport: { width: 390, height: 844 }, dpr: 3, sheet: '1', px: 2200 },
+  // 1052 × 2 × 1.32 ≈ 2777 px: the 3300 sheet
+  {
+    name: 'desktop',
+    viewport: { width: 1440, height: 900 },
+    dpr: 2,
+    sheet: '1.5',
+    px: 3300,
+  },
+]) {
+  test.describe(`landing preview on a ${name} at density ${dpr}`, () => {
+    test.use({ viewport, deviceScaleFactor: dpr });
+    test('loads when scrolled to, with one backdrop sheet of the size it needs', async ({
+      page,
+    }) => {
+      const sheets: string[] = [];
+      let replays = 0;
+      page.on('request', (req) => {
+        const url = req.url();
+        const m = SHEET.exec(url);
+        if (m) sheets.push(m[1]);
+        if (url.includes(`/replays/${GAME}`) && req.resourceType() !== 'document')
+          replays++;
+      });
+      await routeLanding(page);
+      await page.goto('/', { waitUntil: 'networkidle' });
+      // under the fold: the frame is drawn, nothing of the preview asked for
+      await expect(carriage(page)).toBeAttached();
+      await expect(mini(page)).toHaveCount(0);
+      expect(sheets).toEqual([]);
+      expect(replays).toBe(0);
+
+      await carriage(page).scrollIntoViewIfNeeded();
+      await expect(mini(page)).toBeAttached();
+      const img = carriage(page).locator('[data-backdrop] img');
+      await expect(img).toHaveJSProperty('complete', true);
+      expect(await img.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBe(px);
+      await page.waitForLoadState('networkidle');
+      expect(sheets).toEqual([sheet]);
+      expect(replays).toBe(1);
+    });
+  });
+}
+
+test('landing: the preview stops its clock while the page is hidden, and goes on from there', async ({
+  page,
+}) => {
+  test.slow(); // it waits out a beat's hold with the page hidden
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openLanding(page);
+  await carriage(page).scrollIntoViewIfNeeded();
+  const band = carriage(page).locator('[data-transport]');
+  await band.getByRole('button', { name: 'Pause' }).click();
+  await band.getByRole('slider', { name: 'Seek' }).click({ position: { x: 1, y: 4 } });
+  await expect(mini(page)).toHaveAttribute('data-beat-index', '55');
+
+  const hidden = (on: boolean) =>
+    page.evaluate((h) => {
+      Object.defineProperty(document, 'visibilityState', {
+        configurable: true,
+        get: () => (h ? 'hidden' : 'visible'),
+      });
+      document.dispatchEvent(new Event('visibilitychange'));
+    }, on);
+  await hidden(true);
+  await band.getByRole('button', { name: 'Play' }).click();
+  await expect(mini(page)).toHaveAttribute('data-playing', 'true');
+  // longer than the beat's hold (the first test sees it end inside six seconds)
+  await page.waitForTimeout(7000);
+  await expect(mini(page)).toHaveAttribute('data-beat-index', '55');
+  await hidden(false);
+  await expect(mini(page)).not.toHaveAttribute('data-beat-index', '55', { timeout: 6000 });
 });
 
 for (const [name, viewport] of [

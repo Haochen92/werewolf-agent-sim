@@ -202,6 +202,17 @@
   position: absolute;
   inset: 0;
 }
+/* the marquee's lines before the game arrives: their room, nothing drawn */
+.ghost {
+  visibility: hidden;
+}
+/* the controls' room under an upright phone's stage (CarriageUnder.module.css: 10 + 44 + 10 +
+   40 + 10 + 300 + 4), held while it is empty, before the preview is up */
+@media (max-width: 699.98px) {
+  .underHold:empty {
+    height: 418px;
+  }
+}
 .wait {
   position: absolute;
   inset: 0;

@@ -140,6 +140,23 @@ away otherwise (`film/record-model.ts` `shownMorning`; the seat chooser's `{seat
 `case-file.ts` `shownSeat` is the same shape). Derive "does the override still apply" in render;
 never schedule its expiry.
 
+**22. Choose a picture's size from the pixels it is drawn at, and choose it once.** The
+backdrop's sheet was picked by the screen's density alone, so the landing's 334 px preview on
+a phone took the same 3300 px sheet as a full theatre (17 MB decoded where 7.6 MB covered it),
+and it was picked in an effect after a 1× default, so Chromium fetched both. Now the stage's
+measured width × density × the camera's closest zoom picks the sheet, in render, and nothing
+is drawn until the width is known; a resize trades down only past a margin. Layout ("is it
+small?") and density are separate questions: a small stage on a dense screen still needs
+pixels. See `instruments/Backdrop.tsx` `pickScale`, audit 2026-10-11 §1.
+
+**23. A deferred component is deferred only if its mount, its data and its pictures all
+wait.** `next/dynamic` moves the code out of the first load, but a dynamic component rendered
+at once still loads at once, and a query enabled at once still fetches. The landing's preview
+now holds its frame (and the marquee's and the controls' room, so nothing shifts) and starts
+the chunk, the replay and the sheet together when the carriage is near (`FeaturedReplay.tsx`
+`useNear`). Assert it the way it fails: count the requests before the scroll, not the DOM
+after it (`e2e/site.spec.ts`, "loads when scrolled to").
+
 ---
 
 ## Small things that cost an afternoon

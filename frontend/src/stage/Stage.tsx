@@ -39,7 +39,13 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { BackdropSheet } from './instruments/Backdrop';
-import { BackdropContext, SmallContext, useSmall, type BackdropSpec } from './set';
+import {
+  BackdropContext,
+  SmallContext,
+  StageWidthContext,
+  useSmall,
+  type BackdropSpec,
+} from './set';
 import { STAGE_W } from './units';
 import { vars } from './paint/materials';
 import styles from './Stage.module.css';
@@ -116,6 +122,8 @@ export function Stage({
   const boxRef = useRef<HTMLDivElement>(null);
   const [boxNode, setBoxNode] = useState<HTMLDivElement | null>(null);
   const [small, setSmall] = useState(false);
+  // the box's drawn width in css px, for the pictures' density (set.ts `useStageWidth`)
+  const [width, setWidth] = useState(0);
   // the scene's backdrop, drawn here so it outlives the scene's beats (set.ts)
   const [backdrop, setBackdrop] = useState<BackdropSpec | null>(null);
   // The layer divs, once mounted, so `<Layer>` can portal into them. Set during the commit,
@@ -148,6 +156,7 @@ export function Stage({
       const sm = w / STAGE_W < 0.75;
       el.toggleAttribute('data-small', sm);
       setSmall(sm);
+      setWidth(w);
       // the bleed a screen wider than 16:9 shows beside the world, in units: the seat rail
       // grows out into it (Wing.tsx), so on a phone the letterbox holds the rail, not the room
       const spare =
@@ -219,21 +228,23 @@ export function Stage({
       style={MATERIAL_VARS}
     >
       <div className={styles.world}>
-        {/* the small-screen flag reaches the layers too: the Stage's own sheet reads it */}
+        {/* the small flag and the width reach the layers too: the Stage's own sheet reads them */}
         <SmallContext.Provider value={small}>
-          <motion.div className={styles.camera} style={{ x: cx, y: cy, scale: ck }}>
-            {LAYERS.filter((name) => !FIXED.includes(name)).map(layerDiv)}
-          </motion.div>
-          {FIXED.map(layerDiv)}
-          <LayerContext.Provider value={nodes}>
-            <BoxContext.Provider value={boxNode}>
-              <CameraContext.Provider value={setShot}>
-                <BackdropContext.Provider value={setBackdrop}>
-                  {children}
-                </BackdropContext.Provider>
-              </CameraContext.Provider>
-            </BoxContext.Provider>
-          </LayerContext.Provider>
+          <StageWidthContext.Provider value={width}>
+            <motion.div className={styles.camera} style={{ x: cx, y: cy, scale: ck }}>
+              {LAYERS.filter((name) => !FIXED.includes(name)).map(layerDiv)}
+            </motion.div>
+            {FIXED.map(layerDiv)}
+            <LayerContext.Provider value={nodes}>
+              <BoxContext.Provider value={boxNode}>
+                <CameraContext.Provider value={setShot}>
+                  <BackdropContext.Provider value={setBackdrop}>
+                    {children}
+                  </BackdropContext.Provider>
+                </CameraContext.Provider>
+              </BoxContext.Provider>
+            </LayerContext.Provider>
+          </StageWidthContext.Provider>
         </SmallContext.Provider>
       </div>
     </div>

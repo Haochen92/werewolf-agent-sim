@@ -63,7 +63,9 @@ file on the wire, and the cost is the pixels after.
 
 **What fixed it.** Picking the sheet by the screen: 1.5× on a phone, 2× on a desktop, never
 more than the screen can show (§8.3). A 2× sheet on a 900 px wide stage would decode to 32 MB
-for no visible gain.
+for no visible gain. Since 2026-10-11 the pick is by the pixels the stage is drawn at, not the
+screen's density alone (the landing's small preview takes the 1× sheet on a phone; the phone
+cap of 1.5 stays): `frontend_lessons.md` entry 22.
 
 **See it yourself.** Width × height × 4, for every picture on screen at once. The census probe
 in §8.6 sums it for a page: 39 MB at the first beat, 22 MB in a night room.
