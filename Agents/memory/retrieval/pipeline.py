@@ -57,7 +57,7 @@ def enrich_payload_with_memory(
 
     enriched_payload = dict(payload)
     active_store = runtime.store
-    plan = retrieval_plan(config, payload, active_store)
+    plan = retrieval_plan(config, payload, active_store, action_phase)
 
     if plan.skip_reason:
         enriched_payload["retrieved_observations"] = []

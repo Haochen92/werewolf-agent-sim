@@ -12,7 +12,12 @@ from typing import Any
 
 from langchain_core.runnables import RunnableConfig
 
+from Agents.schemas.roles import ROLE_SPECS, TOWN
 from Agents.state import DayActorState
+
+# Town's day lessons are extracted and synthesized for the owner to review, never retrieved in play
+# (plan 2026-10-11 §9.1): advice the owner approves becomes fixed role-prompt text instead.
+TOWN_DAY_PHASES = frozenset({"day_discussion", "day_vote"})
 
 _DayPayload = DayActorState
 
@@ -61,6 +66,7 @@ def retrieval_plan(
     config: RunnableConfig,
     payload: _DayPayload,
     active_store: Any,
+    action_phase: str | None = None,
 ) -> RetrievalPlan:
     """Read the runnable config + payload state into a concrete retrieval policy for this turn."""
     role = payload["player_role"]
@@ -71,6 +77,8 @@ def retrieval_plan(
         skip_reason = "no_store"
     elif not _memory_enabled_for_role(config, role):
         skip_reason = "memory_disabled_for_role"
+    elif action_phase in TOWN_DAY_PHASES and ROLE_SPECS.get(role) and ROLE_SPECS[role].side == TOWN:
+        skip_reason = "town_day"
     else:
         skip_reason = None
 

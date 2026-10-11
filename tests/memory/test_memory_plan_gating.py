@@ -178,6 +178,15 @@ def test_no_store_beats_role_off():
     assert meta["retrieval_skipped_reason"] == "no_store"
 
 
+def test_town_day_is_never_retrieved_but_town_night_and_evil_day_are():
+    store = object()
+    for role, phase, skipped in (("investigator", "day_discussion", True), ("healer", "day_vote", True),
+                                 ("investigator", "night_action", False), ("chanteuse", "day_discussion", False),
+                                 ("speculator", "day_vote", False)):
+        p = retrieval_plan(cfg(), payload(2, role), store, phase)
+        assert (p.skip_reason == "town_day") is skipped, (role, phase)
+
+
 # --- retrieval_plan: the policy object the pipeline executes ------------------
 
 def plan(day=2, role="villager", store=object(), config=None):
@@ -316,7 +325,7 @@ def test_retrieval_metadata_carries_resolved_sp_tiering():
         with patch.object(tracing_mod, "langfuse", MagicMock()), \
                 patch("Agents.memory.retrieval.pipeline._generate_situations_for_agent",
                       return_value=([], [])):
-            _, meta = enrich(day=2, config=config)
+            _, meta = enrich(day=2, role="chanteuse", config=config)
         return meta
 
     assert meta_for(cfg())["sp_proven_tiering_enabled"] is True                       # default ON
