@@ -1,6 +1,6 @@
-/* The roles on the landing (the mockup's `#table .rolepick` and `.hand .seat`): six sigils on
-   paper discs as the picker, one card below that turns over. `--rc-ink` is the card's ink, its
-   side's dark tone (town, wolf, killer), as the kit prints it. */
+/* The roles on the landing (the mockup's `#table .rolepick` and `.hand .seat`): the pool's twelve
+   sigils on paper discs as the picker, in two rows, one card below that turns over. `--rc-ink` is
+   the card's ink, its side's dark tone (town, wolf, killer, neutral), as the kit prints it. */
 
 .hand {
   --rc-ink: var(--town-ink);
@@ -18,9 +18,15 @@
 /* ---------- the picker ---------- */
 .pick {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 0 8px;
   margin: 0 0 18px;
+}
+/* the town's six on the first row, the other sides on the second; the break is the rows' gap */
+.rowBreak {
+  flex-basis: 100%;
+  height: 10px;
 }
 .pickSlot {
   display: contents;
@@ -312,7 +318,7 @@
 }
 @media (max-width: 420px) {
   .pick {
-    gap: 6px;
+    column-gap: 6px;
   }
   .sigilButton {
     width: 42px;

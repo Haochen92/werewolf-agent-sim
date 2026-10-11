@@ -34,7 +34,7 @@ import { Button, HangTag, Icon, Paper } from '@/components/site';
 import { PuppetPicker } from '@/components/PuppetPicker';
 import { useCharacters } from '@/hooks/useCharacters';
 import { CARD_TEXT } from '@/stage/card-text';
-import type { Role } from '@/types/contracts';
+import type { PoolRole } from '@/types/contracts';
 import { defaultRow, modelGroups, needsKey } from './house';
 import { KeyRow } from './KeyRow';
 import { RoleCards } from './RoleCards';
@@ -61,9 +61,14 @@ const COPY = {
   },
 } as const;
 
-// the places drawn on the room ticket: the table as the server deals it today (its
-// MAX_HUMAN_SEATS). No room exists yet to ask; the room's own page shows the server's count.
-const TABLE_PLACES = 9;
+// the places drawn on the room ticket and counted on the stub: the table as the server deals it
+// today (its MAX_HUMAN_SEATS). No room exists yet to ask; the room's own page shows the server's
+// count.
+const TABLE_PLACES = 10;
+
+// Memory stays off for the ten-seat game until a store of lessons exists for its cast
+// (ten_seat_pass.md §1): the switch shows, held off, and the request still says `memory: false`.
+const MEMORY_READY = false;
 
 const KEY_NEEDED = 'Paste an API key: the house is not paying for this model right now.';
 
@@ -71,7 +76,7 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
   const router = useRouter();
   const copy = COPY[kind];
   const ids = useId();
-  const [role, setRole] = useState<Role | null>(null);
+  const [role, setRole] = useState<PoolRole | null>(null);
   const [character, setCharacter] = useState<string | null>(null);
   const cards = useCharacters();
   const [name, setName] = useState('');
@@ -261,6 +266,7 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
             <div className={classes.ctl}>
               <Switch
                 checked={memory}
+                disabled={!MEMORY_READY}
                 onChange={(e) => setMemory(e.currentTarget.checked)}
                 label={
                   memory ? 'On: lessons from past games' : 'Off: every agent plays fresh'
@@ -272,11 +278,16 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
                   thumb: classes.thumb,
                   label: classes.switchLabel,
                 }}
+                styles={(_theme, { disabled }) => ({
+                  track: disabled ? { opacity: 0.45 } : {},
+                })}
               />
               <p className={classes.note}>
-                {memory
-                  ? 'From day 2, before each decision, the agents look up lessons from past games, and the replay’s X-ray shows which ones they weighed. One extra model call per agent decision.'
-                  : 'Every agent plays from the rules and its role alone. Switch it on to have them consult lessons from past games; the replay’s X-ray then shows which ones they weighed.'}
+                {!MEMORY_READY
+                  ? 'Memory for the new cast is being built; the switch returns when it ships.'
+                  : memory
+                    ? 'From day 2, before each decision, the agents look up lessons from past games, and the replay’s X-ray shows which ones they weighed. One extra model call per agent decision.'
+                    : 'Every agent plays from the rules and its role alone. Switch it on to have them consult lessons from past games; the replay’s X-ray then shows which ones they weighed.'}
               </p>
             </div>
           </div>
@@ -299,7 +310,9 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
                 renderOption={({ option }) => {
                   const r = menu?.models.find((m) => m.model === option.value);
                   // a memory-on game makes more calls, so its mean is kept apart (2026-10-06)
-                  const price = formatCost(memory ? r?.avg_cost_memory_usd : r?.avg_cost_usd);
+                  const price = formatCost(
+                    memory ? r?.avg_cost_memory_usd : r?.avg_cost_usd,
+                  );
                   const priced = memory ? r?.priced_memory_games : r?.priced_games;
                   return (
                     <span className={classes.option}>
@@ -383,7 +396,11 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
           </div>
           <dl className={classes.terms}>
             <dt>At the table</dt>
-            <dd>{kind === 'solo' ? 'You and 8 agents' : 'Up to 9 people'}</dd>
+            <dd>
+              {kind === 'solo'
+                ? `You and ${TABLE_PLACES - 1} agents`
+                : `Up to ${TABLE_PLACES} people`}
+            </dd>
             {kind === 'solo' ? (
               <>
                 <dt>Role</dt>

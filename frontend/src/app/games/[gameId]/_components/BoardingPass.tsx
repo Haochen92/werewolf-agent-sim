@@ -147,7 +147,7 @@ export function BoardingPass({
   const cards = useCharacters();
   const players = status.players ?? [];
   const aboard = players.length;
-  const places = status.max_seats || 9;
+  const places = status.max_seats || 10;
   const { held } = roomPicks(status);
   // someone else took it while this pass was open: the poll says so, the pick lapses, the pass says so
   if (choice && held.has(choice)) {

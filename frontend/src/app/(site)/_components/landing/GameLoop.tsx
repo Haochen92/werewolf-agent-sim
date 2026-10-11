@@ -47,7 +47,7 @@ const STEPS: { icon: keyof typeof ICON; title: string; text: string }[] = [
   {
     icon: 'night',
     title: 'Night',
-    text: 'Hidden acts: the wolves choose a kill, the healer protects, the investigator checks a role, the vigilante may shoot, the serial killer strikes.',
+    text: 'Hidden acts: the wolves kill, block and hide a body; the healer protects; the investigator, the sentinel and the trailseer gather evidence; the vigilante may shoot and the sigilist mark a door; the lone killer strikes; the neutral places its bet.',
   },
 ];
 

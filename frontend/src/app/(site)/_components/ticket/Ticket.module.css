@@ -427,6 +427,35 @@
   gap: 10px;
 }
 
+/* the two drawn pairs, on a row of their own under the fixed eight, each under a dashed
+   bracket that names its seat */
+.drawnRow {
+  display: flex;
+  flex-wrap: wrap;
+  flex-basis: 100%;
+  gap: 10px 26px;
+  margin-top: 4px;
+}
+
+.drawn {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.drawnLabel {
+  padding-bottom: 3px;
+  border-bottom: 1.5px dashed rgba(36, 24, 12, 0.38);
+  color: var(--ink2);
+  font-size: 14px;
+  font-style: italic;
+}
+
+.drawnCards {
+  display: flex;
+  gap: 10px;
+}
+
 .card {
   --rc: #cbb992;
   position: relative;
@@ -483,7 +512,7 @@
   filter: saturate(0.85);
 }
 
-.card[aria-pressed='true'] {
+.card[aria-checked='true'] {
   opacity: 1;
   filter: none;
   box-shadow:
@@ -504,13 +533,15 @@
   align-items: center;
 }
 
+/* the sigil over the name, which may take two lines ("Fortune / teller") on a narrow card */
 .cardHead {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 3px;
   font-size: 13px;
-  line-height: 1;
-  white-space: nowrap;
+  line-height: 1.05;
+  text-align: center;
   letter-spacing: -0.01em;
 }
 

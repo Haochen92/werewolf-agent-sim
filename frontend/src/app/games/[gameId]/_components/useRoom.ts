@@ -112,7 +112,7 @@ export function useRoom(gameId: string, status: GameStatus | undefined): Room {
     return {
       name: waiting.name,
       aboard,
-      places: waiting.max_seats || 9,
+      places: waiting.max_seats || 10,
       host: waiting.host ?? null,
       locked: waiting.locked,
       isHost: Boolean(key),

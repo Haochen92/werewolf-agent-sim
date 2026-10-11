@@ -2,10 +2,12 @@
 
 /**
  * The roles, one card at a time (the landing's "Who's at the table", v2 picker): a row of the
- * six sigils picks the role, and the card below turns over on a tap to show its back, the
+ * pool's twelve sigils picks the role, and the card below turns over on a tap to show its back, the
  * briefing its agent is given (by day, at night, how it wins). The card is the ticket office's
  * role card at section size: the same sigil, felt figure and words (`CARD_TEXT`), inked in its
- * side's colour, the side's badge as the seal by its name.
+ * side's colour, the side's badge as the seal by its name. The picker sits as the sides do: the
+ * town's six on one row, then the wolves, the lone killers and the neutrals; a drawn role's card
+ * says on its side strip that its seat is drawn.
  */
 import { useState } from 'react';
 import { CARD_TEXT } from '@/stage/card-text';
@@ -13,9 +15,16 @@ import { roleFigure } from '@/stage/paint/role-kit';
 import { FACTION_NAME, factionOf } from '@/stage/roles';
 import { FactionMark } from '@/stage/instruments/FactionMark';
 import { Sigil } from '@/stage/instruments/Sigil';
-import type { Role } from '@/types/contracts';
-import { ROLES } from '../ticket/RoleCards';
+import type { PoolRole } from '@/types/contracts';
+import { ROLES, drawnSeat } from '../ticket/RoleCards';
 import classes from './RoleHand.module.css';
+
+const STEP: Record<string, number> = {
+  ArrowRight: 1,
+  ArrowDown: 1,
+  ArrowLeft: -1,
+  ArrowUp: -1,
+};
 
 /** "Two of them,\nand neither is Grandma." with the kit's line breaks kept. */
 function Lines({ text }: { text: string }) {
@@ -29,12 +38,12 @@ function Lines({ text }: { text: string }) {
 }
 
 export function RoleHand() {
-  const [role, setRole] = useState<Role>('wolf');
+  const [role, setRole] = useState<PoolRole>('chanteuse');
   const [turned, setTurned] = useState(false);
   const text = CARD_TEXT[role];
   const faction = factionOf(role) ?? 'villagers';
 
-  const choose = (r: Role) => {
+  const choose = (r: PoolRole) => {
     setRole(r);
     setTurned(false);
   };
@@ -46,9 +55,10 @@ export function RoleHand() {
         role="radiogroup"
         aria-label="Roles"
         onKeyDown={(e) => {
-          if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+          const step = STEP[e.key];
+          if (!step) return;
           e.preventDefault();
-          const i = ROLES.indexOf(role) + (e.key === 'ArrowRight' ? 1 : -1);
+          const i = ROLES.indexOf(role) + step;
           const next = ROLES[(i + ROLES.length) % ROLES.length];
           choose(next);
           e.currentTarget.querySelector<HTMLElement>(`[data-role="${next}"]`)?.focus();
@@ -56,7 +66,12 @@ export function RoleHand() {
       >
         {ROLES.map((r) => (
           <span key={r} className={classes.pickSlot}>
-            {r === 'wolf' ? <span className={classes.gap} aria-hidden="true" /> : null}
+            {r === 'chanteuse' ? (
+              <span className={classes.rowBreak} aria-hidden="true" />
+            ) : null}
+            {r === 'serial_killer' || r === 'speculator' ? (
+              <span className={classes.gap} aria-hidden="true" />
+            ) : null}
             <button
               type="button"
               role="radio"
@@ -98,7 +113,7 @@ export function RoleHand() {
             <Lines text={text.line} />
           </span>
           <span className={classes.fac}>
-            <span>{FACTION_NAME[faction]}</span>
+            <span>{drawnSeat(role) ?? FACTION_NAME[faction]}</span>
             <FactionMark faction={faction} format="badge" small className={classes.seal} />
           </span>
           <span className={classes.hint}>Turn the card</span>

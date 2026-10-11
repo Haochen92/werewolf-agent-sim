@@ -62,7 +62,8 @@ export default function HomePage() {
         <div className={classes.secHead}>
           <h2 id="table-head">Who&rsquo;s at the table</h2>
           <p>
-            Three sides, one table. Every seat is dealt a secret role; its card is the
+            Four sides, ten seats. Every seat is dealt a secret role: eight roles every
+            game, and a lone killer and a neutral each drawn from two. Its card is the
             briefing its agent is given, down to how its side wins.
           </p>
         </div>
