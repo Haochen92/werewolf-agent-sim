@@ -815,35 +815,70 @@ async def test_shutdown_cancels_a_parked_game(quiet_session):
 
 # ---- pacing: public denominator + padded completion -------------------------------------
 
-async def test_pacing_night_denominator_is_the_public_census():
+_TEN_SEATS = [f"p{i}" for i in range(1, 11)]
+
+
+async def test_pacing_totals_are_the_publicly_alive_seats_and_shrink_with_every_death():
+    """One unit per living seat, acting tonight or not; a concealed body still counts off."""
     snapshots = []
     tracker = PacingTracker(snapshots.append)
-    tracker.on_event(_ev(ev.GameStarted, seats=[], cast_role_counts={
-        "wolf": 2, "villager": 3, "healer": 1, "investigator": 1,
-        "serial_killer": 1, "vigilante": 1,
-    }))
-    # The investigator was publicly lynched -> not a unit tonight.
-    tracker.on_event(_ev(ev.LynchResult, outcome="lynched", player="p", role="investigator",
-                         vote_counts={}, no_lynch_streak=0))
+    tracker.on_event(_ev(ev.GameStarted, seats=_TEN_SEATS, cast_role_counts={"wolf": 2}))
     tracker.on_event(_ev(ev.PhaseChange, phase="night"))
-    assert snapshots[-1].total == 4  # wolves, healer, SK, vigilante
-    assert snapshots[-1].done == 0
+    assert (snapshots[-1].stage, snapshots[-1].done, snapshots[-1].total) == ("night", 0, 10)
 
-    tracker.on_branch_done("wolves")
-    assert (snapshots[-1].done, snapshots[-1].stage) == (1, "night")
-    tracker.on_branch_done("wolves")  # idempotent
+    tracker.on_event(_ev(ev.NightResult, deaths=[ev.NightDeath(
+        player="p3", role="", attacker_types=["wolves"], concealed=True)]))
+    tracker.on_event(_ev(ev.RosterUpdate, surviving_players=[s for s in _TEN_SEATS if s != "p3"]))
+    tracker.on_event(_ev(ev.PhaseChange, phase="voting"))
+    assert (snapshots[-1].stage, snapshots[-1].total) == ("day_vote", 9)
+
+    tracker.on_event(_ev(ev.LynchResult, outcome="lynched", player="p4", role="healer",
+                         vote_counts={}, no_lynch_streak=0))
+    tracker.on_event(_ev(ev.RosterUpdate,
+                         surviving_players=[s for s in _TEN_SEATS if s not in ("p3", "p4")]))
+    tracker.on_event(_ev(ev.PhaseChange, phase="night"))
+    assert (snapshots[-1].stage, snapshots[-1].done, snapshots[-1].total) == ("night", 0, 8)
+
+    tracker.on_branch_done()
     assert snapshots[-1].done == 1
-
     tracker.on_event(_ev(ev.NightResult, deaths=[], save=None))  # dawn: stage closes
-    assert snapshots[-1].done == snapshots[-1].total
+    assert (snapshots[-1].done, snapshots[-1].total) == (8, 8)
+
+
+async def test_pacing_real_ticks_plus_padding_never_exceed_the_total(monkeypatch):
+    monkeypatch.setattr("server.game.pacing._PAD_SECONDS", (0.0, 0.01))
+    snapshots = []
+    tracker = PacingTracker(snapshots.append)
+    tracker.on_event(_ev(ev.GameStarted, seats=["p1", "p2", "p3"], cast_role_counts={}))
+    tracker.on_event(_ev(ev.PhaseChange, phase="night"))
+    tracker.on_branch_done()
+    tracker.on_branch_done()
+    await asyncio.sleep(0.05)  # all three timers fire on top of the two real ticks
+    tracker.on_branch_done()  # a late real tick on a full bar adds nothing
+    assert [f.done for f in snapshots] == [0, 1, 2, 3]
+    assert all(f.total == 3 for f in snapshots)
+
+
+async def test_pacing_a_night_with_no_real_tick_still_fills_by_the_timers(monkeypatch):
+    """A spent vigilante, a necromancer on night 1, a seat with no night action: no
+    turn finishes for them, and the timers fill their units all the same."""
+    monkeypatch.setattr("server.game.pacing._PAD_SECONDS", (0.0, 0.01))
+    snapshots = []
+    tracker = PacingTracker(snapshots.append)
+    tracker.on_event(_ev(ev.GameStarted, seats=["p1", "p2", "p3", "p4"], cast_role_counts={}))
+    tracker.on_event(_ev(ev.PhaseChange, phase="night"))
+    await asyncio.sleep(0.05)
+    assert [f.done for f in snapshots] == [0, 1, 2, 3, 4]
+    assert tracker.current_frame == ev.PhaseProgress(day=1, stage="night", done=4, total=4)
 
 
 async def test_a_viewer_joining_mid_stage_is_handed_the_bar_first(quiet_session):
     session = quiet_session(FakeGraph([]), seat_tokens=["t1"], human_players=["p1"])
     tracker = session._tracker
-    tracker.on_event(_ev(ev.GameStarted, seats=[], cast_role_counts={"wolf": 1, "healer": 1}))
+    tracker.on_event(_ev(ev.GameStarted, seats=["p1", "p2"],
+                         cast_role_counts={"wolf": 1, "healer": 1}))
     tracker.on_event(_ev(ev.PhaseChange, phase="night"))
-    tracker.on_branch_done("healer")
+    tracker.on_branch_done()
     q = session.subscribe()
     kind, frame = q.get_nowait()
     assert kind == "pacing" and (frame.stage, frame.done, frame.total) == ("night", 1, 2)
@@ -855,7 +890,7 @@ async def test_a_viewer_joining_mid_stage_is_handed_the_bar_first(quiet_session)
 async def test_pacing_vote_stage_counts_ballots_against_survivors():
     snapshots = []
     tracker = PacingTracker(snapshots.append)
-    tracker.on_event(_ev(ev.GameStarted, seats=[], cast_role_counts={
+    tracker.on_event(_ev(ev.GameStarted, seats=["p1", "p2", "p3"], cast_role_counts={
         "wolf": 1, "villager": 2,
     }))
     tracker.on_event(_ev(ev.PhaseChange, phase="voting"))

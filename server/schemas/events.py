@@ -552,10 +552,12 @@ class NightRecord(DurableEvent, frozen=True):
 
 
 class PhaseProgress(EphemeralEvent, frozen=True):
-    """Anonymous pacing snapshot, one mechanism for both waits. `total` derives from PUBLIC
-    knowledge only — night: alive-role census (wolf pack = 1) with padded ~20-30s completions
-    for non-actors, NEVER the real fan-out list; day_vote: the surviving roster (no padding
-    needed). Snapshot semantics: duplicates are harmless, the client applies monotonic-max."""
+    """Anonymous pacing snapshot, one mechanism for both waits. `total` is the number of
+    publicly alive players for both stages (one unit per living seat, whether or not it acts
+    tonight), NEVER the real fan-out list or the role census. Night: real turn finishes and
+    padded ~20-30s completions both add one, capped at the total; day_vote: one per ballot
+    (no padding needed). Snapshot semantics: duplicates are harmless, the client applies
+    monotonic-max."""
 
     type: Literal["phase_progress"] = "phase_progress"
     stage: Literal["night", "day_vote"]

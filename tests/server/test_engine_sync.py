@@ -74,10 +74,8 @@ def test_every_solo_night_role_has_its_translator_entries():
 
 def test_every_solo_night_role_has_its_pacing_entries():
     solo = _solo_night_roles()
-    assert set(pacing._SPECIAL_UNITS) == set(solo)
-    wrappers = {night_phase_name(role): role for role in solo}
-    wrappers["PACK_NIGHT_PHASE"] = "wolves"
-    assert pacing.BRANCH_UNITS == wrappers
+    assert set(pacing._SOLO_NIGHT_ROLES) == set(solo)
+    assert pacing.BRANCH_UNITS == {night_phase_name(role) for role in solo} | {"PACK_NIGHT_PHASE"}
 
 
 def test_the_wire_role_vocabulary_is_the_engine_role_set():

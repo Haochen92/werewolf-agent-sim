@@ -89,7 +89,7 @@ def _play(monkeypatch, game: dict, seed: int) -> tuple[dict, list, set[str]]:
         chunk = {"type": part["type"], "ns": list(part["ns"]), "data": to_jsonable_python(part["data"])}
         events.extend(translator.translate(chunk))
         if chunk["type"] == "updates" and not chunk["ns"]:
-            units |= {BRANCH_UNITS[n] for n in chunk["data"] if n in BRANCH_UNITS}
+            units |= {n for n in chunk["data"] if n in BRANCH_UNITS}
     return parent_graph_compiled.get_state(config).values, events, units
 
 
@@ -106,7 +106,7 @@ def test_a_whole_game_runs_on_the_real_graph_and_the_wire_accepts_every_chunk(mo
     assert {"game_started", "role_assigned", "night_result", "night_record", "wolf_kill_decided",
             "night_action", "uses_remaining", "game_over"} <= types
     assert "wolf_vote" not in types
-    assert "wolves" in units and len(units) >= 5
+    assert "PACK_NIGHT_PHASE" in units and len(units) >= 5
     started = next(e for e in events if e.type == "game_started")
     assert started.lineup == result["lineup"] and len(started.seats) == 10
     over = next(e for e in events if e.type == "game_over")
