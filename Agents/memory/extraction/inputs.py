@@ -206,6 +206,20 @@ _CELL_AMPLIFY_OVERRIDE = (
 )
 
 
+# The discussion and the vote are extracted in separate calls; each is told what belongs to the other.
+_DAY_PHASE_RULES = {
+    "day_discussion": (
+        " This cell is the DISCUSSION only: what the {role} said, claimed, argued or kept back, how it "
+        "read others and how it managed suspicion. A lesson about whom to vote for belongs to the separate "
+        "vote cell, even when the discussion led to the vote. Tag every observation day_discussion."
+    ),
+    "day_vote": (
+        " This cell is the VOTE only: whom the {role} voted for, or abstained, and when. A lesson about "
+        "what to say belongs to the separate discussion cell. Tag every observation day_vote."
+    ),
+}
+
+
 def build_cell_observation_tail(role: str, phase: str, action_phase: str, schema, anchor: str = "",
                                 amplify: bool = False) -> str:
     """Per-cell observation lock appended after the cached prefix: role + phase + driver/horizon + the
@@ -219,6 +233,7 @@ def build_cell_observation_tail(role: str, phase: str, action_phase: str, schema
     return CELL_OBSERVATION_TAIL.format(
         role=role,
         phase=phase,
+        phase_rule=_DAY_PHASE_RULES.get(action_phase, "").format(role=role),
         driver_horizon=guidance["driver_horizon"],
         dimension_menu=guidance["dimension_menu"],
     ) + amp + anchor

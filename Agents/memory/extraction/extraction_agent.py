@@ -273,7 +273,11 @@ def _extract_one_cell(
                 if isinstance(result, dict):
                     result = schema.model_validate(result)
                 sps = list(result.strategy_points) if with_strategy_points else []
-                return list(result.observations), sps, label
+                observations = list(result.observations)
+                if rep_phase in ("day_discussion", "day_vote"):  # one phase per call: the tag is the call's
+                    for o in observations:
+                        o.action_phase = rep_phase
+                return observations, sps, label
             except Exception as e:
                 logger.warning(
                     "cell %s/%s failed with %s model on attempt %s: %s",

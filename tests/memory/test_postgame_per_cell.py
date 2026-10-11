@@ -23,9 +23,24 @@ _INPUTS = {
 _N_CELLS = sum(len(ROLE_UNITS.get(role, [])) for role in EXTRACTION_ROLES)
 
 
-def test_every_pool_role_has_a_day_and_a_night_cell():
-    assert all(len(ROLE_UNITS[role]) == 2 for role in EXTRACTION_ROLES)
-    assert _N_CELLS == 24  # 12 roles x (day+night); a game extracts its 10 dealt roles
+def test_every_pool_role_has_a_discussion_a_vote_and_a_night_cell():
+    assert all([u[2] for u in ROLE_UNITS[role]] == ["day_discussion", "day_vote", "night_action"]
+               for role in EXTRACTION_ROLES)
+    assert _N_CELLS == 36  # 12 roles x 3; a game extracts its 10 dealt roles
+
+
+def test_the_discussion_and_vote_calls_each_keep_to_their_own_phase():
+    from Agents.memory.extraction.inputs import build_cell_observation_tail
+    from Agents.schemas.memory import cell_observation_schema_for
+
+    for phase, own, other in (("day_discussion", "DISCUSSION only", "separate vote cell"),
+                              ("day_vote", "VOTE only", "separate discussion cell")):
+        tail = build_cell_observation_tail("chanteuse", phase, phase,
+                                           cell_observation_schema_for("chanteuse", phase))
+        assert own in tail and other in tail and f"Tag every observation {phase}" in tail
+    night = build_cell_observation_tail("chanteuse", "night", "night_action",
+                                        cell_observation_schema_for("chanteuse", "night_action"))
+    assert "DISCUSSION only" not in night and "VOTE only" not in night
 
 
 def test_fans_out_obs_only_by_default():

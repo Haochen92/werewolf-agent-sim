@@ -88,9 +88,7 @@ ASSIGNED CELL — extract observations for: role = {role}, phase = {phase}.
 Apply everything above EXCLUSIVELY to the {role} for the {phase} phase. Write every field from the
 {role}'s own perspective: approach = what the {role} DID, never what the opposing side did, and never a
 move the {role} did not make. Something that happened TO the {role} belongs here only when the record
-connects it to what the {role} did. For day cells, tag each observation by WHEN the lesson applies:
-day_discussion (what to say, how to argue, reading others, managing suspicion) vs day_vote (vote
-target, timing, voting to preserve cover).
+connects it to what the {role} did.{phase_rule}
 
 {driver_horizon}
 
