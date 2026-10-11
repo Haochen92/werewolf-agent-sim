@@ -34,7 +34,6 @@ import type {
   LynchOutcome,
   MemoryConsulted,
   MemoryExtracted,
-  NightDeath,
   NightSave,
   PlayerReads,
   PassReason,
@@ -123,6 +122,20 @@ export interface WolfEntry {
   /** `"game_master"` for the server-authored SK-whiff note — render as a GM line inside the tint. */
   wolf: string;
   message: string;
+  /** The wolf passed this round (ten-seat chat): `message` is empty. False in nine-seat games. */
+  passed: boolean;
+}
+
+/**
+ * A night death as the view keeps it. A body an illusionist concealed arrives as `role: ""`
+ * with `concealed: true`; here it is `role: null`, so no surface can print an empty role.
+ */
+export interface NightDeath {
+  player: string;
+  /** Null only for a concealed body. */
+  role: string | null;
+  attacker_types: AttackerType[];
+  concealed: boolean;
 }
 
 export interface NightView {
@@ -132,10 +145,17 @@ export interface NightView {
   wolfChannel: WolfEntry[];
   wolfVotes: { seq: number; wolf: string; votee: string }[];
   wolfKill: string | null;
+  /** The wolf who carried the kill (ten-seat `wolf_kill_decided.carrier`); null in nine-seat games. */
+  carrier: string | null;
   /** O-tier committed targets of every single-target actor. */
   actions: { seq: number; actor: string; role: string; target: string }[];
   deaths: NightDeath[];
+  /** The first save (`saves[0]`), as the nine-seat views read it. */
   save: NightSave | null;
+  /** Every save of the night, in the wire's order; `[]` on a night without one. */
+  saves: NightSave[];
+  /** The side a speculator picked tonight (`town`, `wolves`, ...), announced at dawn; never a seat. */
+  pick: string | null;
   /** `night_result` seen — distinguishes "quiet night" from "night still running". */
   resolved: boolean;
 }
@@ -144,7 +164,7 @@ export type DeathCause = 'lynch' | AttackerType;
 
 export interface DeathRecord {
   player: string;
-  /** Deaths are role-revealing on the wire, in both directions (lynch and night). */
+  /** Deaths are role-revealing on the wire (lynch and night), except a concealed body: null. */
   role: string | null;
   day: number;
   seq: number;
@@ -248,6 +268,12 @@ export interface RoleCard {
   pack: string[] | null;
   /** Vigilante only. */
   bullets: number | null;
+  /**
+   * What is left of a limited ability (bullets, sigils, conceals, checks, watches, self-bets,
+   * the pick), from the deal's `uses` and each `uses_remaining`; null for a role without a limit
+   * and in nine-seat games, which count `bullets` only.
+   */
+  uses: number | null;
 }
 
 export type PrivateResult =
@@ -266,7 +292,21 @@ export type PrivateResult =
       day: number;
       target: string;
     }
-  | { kind: 'bullets'; player: string; seq: number; day: number; count: number };
+  | { kind: 'bullets'; player: string; seq: number; day: number; count: number }
+  | {
+      /** A seat's own record of its night as the engine wrote it; the pack's has `actor: "wolves"`. */
+      kind: 'night_record';
+      player: string;
+      seq: number;
+      day: number;
+      actor: string;
+      action: string;
+      target: string | null;
+      result: string;
+      outcome: string;
+      seen: string[];
+    }
+  | { kind: 'uses'; player: string; seq: number; day: number; role: string; count: number };
 
 export interface MeView {
   /** From the caller (`GameStatus.you`), never guessed — see the fold options. */
@@ -287,6 +327,8 @@ export interface MeView {
     deadline: string | null;
     /** A discuss ask's round (opening / discussion / proactive / closing), for the dock's head; null otherwise or on an older record. */
     round: DayRound | null;
+    /** A necromancer's ask: the dead players it may act through; `[]` for every other ask. */
+    bodies: string[];
   } | null;
   privateResults: PrivateResult[];
   alive: boolean;
@@ -330,12 +372,19 @@ export interface XrayView {
 export interface GameView {
   seats: string[];
   castRoleCounts: Record<string, number>;
+  /** The roles dealt (`game_started.lineup`, the ten-seat game); `[]` for older games. */
+  lineup: string[];
   /** The newest day seen — the live view pins here; the replay scrubber picks any. */
   day: number;
   phase: Phase;
   /** Every phase entered, in order: the scrubber's step list. */
   timeline: { day: number; phase: Phase; seq: number }[];
+  /** Null until the game is over, and after it for a draw: read `over` for whether it ended. */
   winner: Winner | null;
+  /** `game_over` seen. A draw ends the game with `winner: null`. */
+  over: boolean;
+  /** The neutral seat's result at game over (`game_over.neutral_result`), a second line, never the winner. */
+  neutralResult: string | null;
   /** Seq of `game_over` — same live-vs-folded question as `me.roleSeq`, for D22. */
   winnerSeq: number | null;
   alive: string[];

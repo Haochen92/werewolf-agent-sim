@@ -64,9 +64,12 @@ function emptyNight(day: number): NightView {
     wolfChannel: [],
     wolfVotes: [],
     wolfKill: null,
+    carrier: null,
     actions: [],
     deaths: [],
     save: null,
+    saves: [],
+    pick: null,
     resolved: false,
   };
 }
@@ -75,10 +78,13 @@ export function emptyGameView(options: FoldOptions = {}): GameView {
   return {
     seats: [],
     castRoleCounts: {},
+    lineup: [],
     day: 1,
     phase: 'day',
     timeline: [],
     winner: null,
+    over: false,
+    neutralResult: null,
     winnerSeq: null,
     alive: [],
     dead: [],
@@ -308,6 +314,7 @@ export function foldEvent(
         ...next,
         seats: event.seats,
         castRoleCounts: event.cast_role_counts,
+        lineup: event.lineup ?? [],
         alive: event.seats,
       };
     }
@@ -319,6 +326,7 @@ export function foldEvent(
         role: event.role,
         pack: event.pack ?? null,
         bullets: event.bullets ?? null,
+        uses: event.uses ?? null,
       };
       // Deliberately NOT filed into `xray.roles`: that map is observer-tier truth
       // (`roles_assigned`) and nothing else. A live seat receives exactly one
@@ -355,7 +363,13 @@ export function foldEvent(
     }
 
     case 'game_over': {
-      return { ...next, winner: event.winner, winnerSeq: event.seq };
+      return {
+        ...next,
+        winner: event.winner ?? null,
+        over: true,
+        neutralResult: event.neutral_result ?? null,
+        winnerSeq: event.seq,
+      };
     }
 
     case 'turn_started': {
@@ -515,6 +529,7 @@ export function foldEvent(
             candidates: event.candidates ?? [],
             deadline: event.deadline ?? null,
             round: event.round ?? null,
+            bodies: event.bodies ?? [],
           },
         },
       };
@@ -603,7 +618,13 @@ export function foldEvent(
         ...n,
         wolfChannel: [
           ...n.wolfChannel,
-          { seq: event.seq, round: event.round, wolf: event.wolf, message: event.message },
+          {
+            seq: event.seq,
+            round: event.round,
+            wolf: event.wolf,
+            message: event.message,
+            passed: event.passed ?? false,
+          },
         ],
       }));
     }
@@ -619,19 +640,33 @@ export function foldEvent(
     }
 
     case 'wolf_kill_decided': {
-      return withNight(next, event.day, (n) => ({ ...n, wolfKill: event.target }));
+      return withNight(next, event.day, (n) => ({
+        ...n,
+        wolfKill: event.target,
+        carrier: event.carrier ?? null,
+      }));
     }
 
     case 'night_result': {
+      // a concealed body comes as role "" — the view never holds an empty role
+      const deaths = event.deaths.map((d) => ({
+        player: d.player,
+        role: d.concealed || !d.role ? null : d.role,
+        attacker_types: d.attacker_types,
+        concealed: d.concealed ?? false,
+      }));
+      const saves = event.saves ?? (event.save ? [event.save] : []);
       next = withNight(next, event.day, (n) => ({
         ...n,
-        deaths: event.deaths,
-        save: event.save ?? null,
+        deaths,
+        save: event.save ?? saves[0] ?? null,
+        saves,
+        pick: event.pick ?? null,
         resolved: true,
       }));
       return recordDeaths(
         next,
-        event.deaths.map((d) => ({
+        deaths.map((d) => ({
           player: d.player,
           role: d.role,
           day: event.day,
@@ -687,6 +722,57 @@ export function foldEvent(
         next = {
           ...next,
           me: { ...next.me, role: { ...next.me.role, bullets: event.count } },
+        };
+      }
+      return next;
+    }
+
+    case 'night_record': {
+      return recordPrivateResult(
+        next,
+        {
+          kind: 'night_record',
+          player: event.player,
+          seq: event.seq,
+          day: event.day,
+          actor: event.actor,
+          action: event.action,
+          target: event.target ?? null,
+          result: event.result,
+          outcome: event.outcome,
+          seen: event.seen ?? [],
+        },
+        mySeat,
+      );
+    }
+
+    case 'uses_remaining': {
+      next = recordPrivateResult(
+        next,
+        {
+          kind: 'uses',
+          player: event.player,
+          seq: event.seq,
+          day: event.day,
+          role: event.role,
+          count: event.count,
+        },
+        mySeat,
+      );
+      // The card's chip reads `uses`; a vigilante's also writes `bullets`, which the
+      // nine-seat chip reads.
+      if (event.player === mySeat && next.me.role) {
+        const role = next.me.role;
+        next = {
+          ...next,
+          me: {
+            ...next.me,
+            role: {
+              ...role,
+              uses: event.count,
+              bullets: event.role === 'vigilante' ? event.count : role.bullets,
+            },
+          },
         };
       }
       return next;

@@ -59,6 +59,8 @@ export type NightResult = EventOf<'night_result'>;
 export type InvestigationResult = EventOf<'investigation_result'>;
 export type VigilanteConfirmation = EventOf<'vigilante_confirmation'>;
 export type BulletsRemaining = EventOf<'bullets_remaining'>;
+export type UsesRemaining = EventOf<'uses_remaining'>;
+export type NightRecord = EventOf<'night_record'>;
 
 // `day_summary_structured` is deliberately NOT aliased: its `data` is a bare object the
 // summarizer owns, read defensively by the reducer. (It was schema-only when this façade
@@ -69,6 +71,8 @@ export type NightSave = S['NightSave'];
 export type AddressedTarget = S['WireAddressedTarget'];
 export type Winner = GameOver['winner'];
 export type Role = RoleAssigned['role'];
+/** The roles a solo human may ask for: the deal's pool (villager and wolf are not in it). */
+export type PoolRole = NonNullable<S['NewSoloGame']['human_role']>;
 export type Phase = PhaseChange['phase'];
 export type ActionKind = InputRequest['action_kind'];
 export type DayRound = NonNullable<InputRequest['round']>;

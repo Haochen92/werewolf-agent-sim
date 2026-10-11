@@ -19,6 +19,8 @@ import type { DurableGameEvent, ReplayGame } from '@/types/contracts';
 import { emptyGameView, foldEvent, foldEvents } from './foldEvents';
 import type { PassSlot, SpeechSlot } from './types';
 import fixture from './__fixtures__/seed-chunk-catalogue.json';
+import phase3Fixture from '@/stage/fixtures/replay-phase3.json';
+import phase3NecroFixture from '@/stage/fixtures/replay-phase3-necro.json';
 
 const replay = fixture as unknown as ReplayGame;
 const events = replay.events as DurableGameEvent[];
@@ -466,6 +468,7 @@ describe('synthetic cases the fixture cannot contain', () => {
       deadline: '2026-08-21T10:00:00Z',
       // a vote has no round; a discuss ask carries its own (opening, discussion, proactive, closing)
       round: null,
+      bodies: [],
     });
   });
 
@@ -766,5 +769,167 @@ describe('the rounds of the day (Phase 2)', () => {
 
     const withoutRound = foldEvent(emptyGameView({ mySeat: 'player_1' }), olderAsk);
     expect(withoutRound.me.pending?.round).toBeNull();
+  });
+});
+
+/**
+ * The ten-seat wire (Phase 3), against the translator's golden wrapped as a replay
+ * (`stage/fixtures/replay-phase3.json`: serial killer and fortune teller drawn, a sigil kill,
+ * a concealed body on night 2, the fortune teller's win at game over) and batch game e04
+ * (`replay-phase3-necro.json`: necromancer and speculator drawn, a save, the speculator's pick).
+ */
+describe('the ten-seat game', () => {
+  const p3 = (phase3Fixture as unknown as ReplayGame).events as DurableGameEvent[];
+  const necro = (phase3NecroFixture as unknown as ReplayGame).events as DurableGameEvent[];
+
+  it('folds both ten-seat fixtures with no dropped event types', () => {
+    expect(foldEvents(p3).droppedEventTypes).toEqual([]);
+    expect(foldEvents(necro).droppedEventTypes).toEqual([]);
+  });
+
+  it('seats ten from the roster and keeps the lineup', () => {
+    const v = foldEvents(p3);
+    expect(v.seats).toHaveLength(10);
+    expect(v.lineup).toContain('fortune_teller');
+    expect(v.lineup).toHaveLength(10);
+    // an old game has no lineup
+    expect(view.lineup).toEqual([]);
+  });
+
+  it('ends over with the winner and the neutral’s result as a second line', () => {
+    const v = foldEvents(p3);
+    expect(v.over).toBe(true);
+    expect(v.winner).toBe('villagers');
+    expect(v.neutralResult).toBe('won (2 points)');
+    expect(view.over).toBe(true);
+    expect(view.neutralResult).toBeNull();
+    expect(foldEvents(p3.slice(0, -1)).over).toBe(false);
+  });
+
+  it('a draw is over with no winner', () => {
+    const drawn = foldEvent(emptyGameView(), {
+      seq: 5,
+      day: 4,
+      type: 'game_over',
+      winner: null,
+      neutral_result: null,
+    } as DurableGameEvent);
+    expect(drawn.over).toBe(true);
+    expect(drawn.winner).toBeNull();
+  });
+
+  it('keeps a concealed body’s role hidden: role null, concealed true, in the night and the dead', () => {
+    const v = foldEvents(p3);
+    expect(v.days[2].night!.deaths).toEqual([
+      {
+        player: 'player_3',
+        role: null,
+        attacker_types: ['wolves', 'serial_killer'],
+        concealed: true,
+      },
+    ]);
+    expect(v.dead.find((d) => d.player === 'player_3')?.role).toBeNull();
+    // an open body keeps its role
+    expect(v.days[1].night!.deaths.map((d) => [d.role, d.concealed])).toContainEqual([
+      'chanteuse',
+      false,
+    ]);
+    expect(v.dead.some((d) => d.role === '')).toBe(false);
+  });
+
+  it('carries the carrier, the passes, every save and the pick', () => {
+    const v = foldEvents(p3);
+    expect(v.days[1].night!.carrier).toBe('player_5');
+    expect(v.days[1].night!.wolfKill).toBe('player_7');
+    const entries = Object.values(v.days).flatMap((d) => d.night?.wolfChannel ?? []);
+    expect(entries.filter((e) => e.passed)).toHaveLength(2);
+    expect(entries.filter((e) => e.passed).every((e) => e.message === '')).toBe(true);
+
+    const n = foldEvents(necro).days[2].night!;
+    expect(n.saves).toEqual([{ player: 'player_1', attacker_types: ['wolves'] }]);
+    expect(n.save).toEqual(n.saves[0]);
+    expect(n.pick).toBe('wolves');
+    expect(foldEvents(necro).days[1].night!.pick).toBeNull();
+  });
+
+  it('files a night_record as a private result for its own seat only', () => {
+    const mine = foldEvents(p3, { mySeat: 'player_9' });
+    const records = mine.me.privateResults.filter((r) => r.kind === 'night_record');
+    expect(records).toHaveLength(3);
+    expect(records.every((r) => r.player === 'player_9')).toBe(true);
+    expect(records[0]).toEqual({
+      kind: 'night_record',
+      player: 'player_9',
+      seq: 100,
+      day: 1,
+      actor: 'player_9',
+      action: 'watch',
+      target: 'player_5',
+      result: 'seen',
+      outcome: 'Tonight player_5 was visited by player_3 and player_4.',
+      seen: ['player_3', 'player_4'],
+    });
+    // the X-ray files every seat's under its own seat; the pack's kill reaches each wolf
+    expect(mine.xray.privateResults.player_8?.some((r) => r.kind === 'night_record')).toBe(
+      true,
+    );
+    expect(
+      mine.xray.privateResults.player_6?.some(
+        (r) => r.kind === 'night_record' && r.actor === 'wolves',
+      ),
+    ).toBe(true);
+  });
+
+  it('counts uses down on my card from uses_remaining, and the vigilante’s bullets too', () => {
+    const sigilist = foldEvents(
+      p3.filter((e) => e.seq <= 106),
+      { mySeat: 'player_4' },
+    );
+    expect(sigilist.me.role).toMatchObject({ role: 'sigilist', uses: 1, bullets: null });
+    expect(sigilist.me.privateResults.at(-1)).toEqual({
+      kind: 'uses',
+      player: 'player_4',
+      seq: 106,
+      day: 1,
+      role: 'sigilist',
+      count: 1,
+    });
+    // the deal fills uses before the first night
+    const dealt = foldEvents(p3.slice(0, 12), { mySeat: 'player_4' });
+    expect(dealt.me.role?.uses).toBe(2);
+
+    const vigilante = foldEvent(foldEvents(p3.slice(0, 12), { mySeat: 'player_1' }), {
+      seq: 900,
+      day: 2,
+      type: 'uses_remaining',
+      player: 'player_1',
+      role: 'vigilante',
+      count: 1,
+    } as DurableGameEvent);
+    expect(vigilante.me.role).toMatchObject({ uses: 1, bullets: 1 });
+  });
+
+  it('puts a necromancer’s bodies on the pending ask, and [] on an ask without them', () => {
+    const ask = foldEvent(emptyGameView({ mySeat: 'player_9' }), {
+      seq: 300,
+      day: 2,
+      type: 'input_request',
+      player: 'player_9',
+      action_kind: 'necromancer_target',
+      candidates: ['player_1', 'player_5', 'stay_put'],
+      bodies: ['player_4'],
+      deadline: null,
+    } as DurableGameEvent);
+    expect(ask.me.pending?.bodies).toEqual(['player_4']);
+    const old = foldEvent(emptyGameView({ mySeat: 'player_1' }), {
+      seq: 12,
+      day: 2,
+      type: 'input_request',
+      player: 'player_1',
+      action_kind: 'vote',
+      candidates: ['player_2'],
+      deadline: null,
+    } as unknown as DurableGameEvent);
+    expect(old.me.pending?.bodies).toEqual([]);
   });
 });
