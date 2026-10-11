@@ -5,8 +5,17 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DurableGameEvent, ReplayGame } from '@/types/contracts';
-import { deathTold } from '@/lib/storage';
-import { awayDeath, awayWords } from '@/stage/containers/live-state';
+import { awayTold, liveSeen } from '@/lib/storage';
+import {
+  agentLine,
+  awayNotice,
+  chapterLine,
+  deathWords,
+  GOES_ON,
+  lateSpan,
+  missedEvents,
+  YOUR_TURN,
+} from '@/stage/containers/live-state';
 import { foldEvents } from './foldEvents';
 import { useGameSession } from './store';
 import fixture from './__fixtures__/seed-chunk-catalogue.json';
@@ -231,15 +240,22 @@ describe('pacing', () => {
   });
 });
 
-describe('the seat’s own death, told on return (live game ab44887a, seat 3)', () => {
-  // seat 3 (the necromancer) as the server streamed it: night 2's result (seq 279) kills the
-  // seat by the wolves and conceals the body, during a two-minute drop on a phone
-  const seatEvents = liveGame.events as unknown as DurableGameEvent[];
+describe('what went by while the viewer was away (live game ab44887a, seat 3)', () => {
+  // seat 3 (the necromancer) as the server streamed it: day 2's vote (205–232), night 2 (233),
+  // whose result (279) kills the seat by the wolves and conceals the body, then day 3 (296). A
+  // solo game: its requests carry no deadline. As a room's, the same requests are on the clock
+  // that hands a turn to the seat's agent.
+  const solo = liveGame.events as unknown as DurableGameEvent[];
+  const room: DurableGameEvent[] = solo.map((e) =>
+    e.type === 'input_request' ? { ...e, deadline: '2026-10-11T10:00:00Z' } : e,
+  );
+  let seatEvents = room;
   const GAME = 'ab44887a';
   const SEAT = 'player_3';
   const session = new Map<string, string>();
   beforeEach(() => {
     session.clear();
+    seatEvents = room;
     vi.stubGlobal('window', {
       sessionStorage: {
         getItem: (k: string) => session.get(k) ?? null,
@@ -249,55 +265,189 @@ describe('the seat’s own death, told on return (live game ab44887a, seat 3)', 
   });
   afterEach(() => vi.unstubAllGlobals());
 
-  /** The question the theatre asks after each fold: anything to tell, not told in this tab? */
-  const toTell = () => {
+  /** A connection (the page opened, reloaded, or its stream reopened after a reload). */
+  const connect = (seat: string | null = SEAT) =>
+    useGameSession.getState().hydrate([], { gameId: GAME, mySeat: seat });
+  const live = (from: number, to: number) => {
+    for (const e of seatEvents.filter((x) => x.seq >= from && x.seq <= to))
+      useGameSession.getState().applyLive(e);
+  };
+  const caughtUp = (from: number, to = Infinity) => {
+    for (const e of seatEvents.filter((x) => x.seq >= from && x.seq <= to))
+      useGameSession.getState().applyCatchUp(e);
+  };
+  /** What the theatre asks after each fold: what was missed, and what the notice says of it. */
+  const told = (turnOpen = false) => {
     const s = useGameSession.getState();
-    return awayDeath(s.view, s.liveSeqs, deathTold.has(GAME, SEAT));
+    const missed = missedEvents(s.events, s.liveSeqs, {
+      liveBefore: s.liveBefore,
+      seated: s.view.me.seat !== null,
+      told: awayTold.get(GAME),
+    });
+    const late = lateSpan(missed, s.liveSeqs, s.liveBefore);
+    return awayNotice(s.view, s.events, missed, { turnOpen, late });
   };
 
-  it('a catch-up that carries my death tells it, in the morning roll’s words', () => {
-    const store = useGameSession.getState();
-    store.hydrate([], { gameId: GAME, mySeat: SEAT });
-    // live up to the night, then the drop: what the reopened stream sends is catch-up
-    for (const e of seatEvents.filter((x) => x.seq <= 240)) store.applyLive(e);
-    expect(toTell()).toBeNull();
-    for (const e of seatEvents.filter((x) => x.seq > 240)) store.applyCatchUp(e);
-    const death = toTell();
-    expect(death).toMatchObject({ player: SEAT, day: 2, role: null, causes: ['wolves'] });
-    expect(awayWords(death!)).toBe(
-      'You were killed by the wolves on night 2. Your role was hidden. ' +
-        'The game goes on without you: watch it to the end, or leave the table.',
-    );
+  it('a drop in the night: the death leads, then the chapters, then that the game goes on', () => {
+    connect();
+    live(1, 240);
+    expect(told()).toBeNull();
+    caughtUp(241); // the reopened stream: what it sends is catch-up
+    const notice = told();
+    expect(notice).toMatchObject({ first: 278, last: 297 });
+    expect(notice!.death).toMatchObject({
+      player: SEAT,
+      day: 2,
+      role: null,
+      causes: ['wolves'],
+    });
+    expect(notice!.lines).toEqual([
+      'You were killed by the wolves on night 2. Your role was hidden.',
+      'Night 2 and day 3 went by while you were away.',
+      GOES_ON,
+    ]);
   });
 
-  it('the first connection to a running game is a catch-up too', () => {
-    const store = useGameSession.getState();
-    store.hydrate([], { gameId: GAME, mySeat: SEAT });
-    for (const e of seatEvents) store.applyCatchUp(e);
-    expect(toTell()?.seq).toBe(279);
+  it('a reload in the same tab: the span from the last seq seen live; told once', () => {
+    connect();
+    live(1, 240);
+    expect(liveSeen.get(GAME)).toBe(233);
+    // the reload: the whole log again, all of it catch-up, the store reading what the tab saw
+    connect();
+    expect(useGameSession.getState().liveBefore).toBe(233);
+    caughtUp(1);
+    const notice = told()!;
+    expect(notice.first).toBe(278);
+    awayTold.mark(GAME, notice.last); // "Carry on", or "See what happened"
+    expect(told()).toBeNull();
+    connect();
+    caughtUp(1);
+    expect(told()).toBeNull();
   });
 
-  it('a death that arrived live is not told: its beats played it', () => {
-    const store = useGameSession.getState();
-    store.hydrate([], { gameId: GAME, mySeat: SEAT });
-    for (const e of seatEvents) store.applyLive(e);
-    expect(toTell()).toBeNull();
+  it('a blip that missed nothing shows nothing', () => {
+    connect();
+    live(1, 240);
+    caughtUp(200, 240); // the reopen resends what the page already holds
+    expect(told()).toBeNull();
   });
 
-  it('a second catch-up of the same death does not tell it again', () => {
-    const store = useGameSession.getState();
-    store.hydrate([], { gameId: GAME, mySeat: SEAT });
-    for (const e of seatEvents) store.applyCatchUp(e);
-    expect(toTell()).not.toBeNull();
-    deathTold.mark(GAME, SEAT); // the notice, dismissed
-    // a reload in the same tab: the whole log again, all of it history
-    useGameSession.getState().hydrate([], { gameId: GAME, mySeat: SEAT });
-    for (const e of seatEvents) useGameSession.getState().applyCatchUp(e);
-    expect(awayDeath(useGameSession.getState().view, new Set())).not.toBeNull();
-    expect(toTell()).toBeNull();
+  it('a death watched live is not told: only what came in as catch-up', () => {
+    connect();
+    live(1, 300);
+    expect(told()).toBeNull();
+    connect();
+    caughtUp(1);
+    expect(told()).toBeNull();
   });
 
-  it('says a vote-out and a shown card in the table’s words; not a spectator’s, nor after the end', () => {
+  it('a new tab on a running game: a seat’s whole history went by; a spectator’s did not', () => {
+    connect();
+    caughtUp(1);
+    expect(told()!.lines).toEqual([
+      'You were killed by the wolves on night 2. Your role was hidden.',
+      'Day 1, night 1 and more went by while you were away.',
+      GOES_ON,
+    ]);
+    session.clear();
+    connect(null);
+    caughtUp(1);
+    expect(told()).toBeNull(); // D23 "late link": zero drama
+    // until a drop later costs the spectator something it was watching
+    useGameSession.getState().reset();
+    connect(null);
+    caughtUp(1, 140);
+    live(141, 240);
+    caughtUp(241);
+    expect(told()!.lines).toEqual(['Night 2 and day 3 went by while you were away.']);
+  });
+
+  it('a new tab whose history is only the deal: the deal plays, nothing went by', () => {
+    connect();
+    caughtUp(1, 12);
+    expect(told()).toBeNull();
+    live(13, 40);
+    expect(told()).toBeNull();
+    // a span that touched no chapter yet names none
+    expect(chapterLine([], seatEvents.slice(0, 3))).toBeNull();
+  });
+
+  it('a page that watched its platform depart: what followed played from the deal', () => {
+    connect();
+    caughtUp(1, 140);
+    const s = useGameSession.getState();
+    const o = { seated: true, told: 0, departed: true };
+    expect(missedEvents(s.events, s.liveSeqs, { ...o, liveBefore: null })).toEqual([]);
+    expect(missedEvents(s.events, s.liveSeqs, { ...o, liveBefore: 0 })).toEqual([]);
+    live(141, 240);
+    caughtUp(241);
+    const after = useGameSession.getState();
+    expect(
+      missedEvents(after.events, after.liveSeqs, { ...o, liveBefore: null })[0].seq,
+    ).toBe(278);
+  });
+
+  it('a spectator who dropped: the chapters alone, no death, no turn', () => {
+    connect(null);
+    live(1, 240);
+    caughtUp(241);
+    expect(told(true)!.lines).toEqual(['Night 2 and day 3 went by while you were away.']);
+  });
+
+  it('back on a turn of the seat’s own: the discussion went on, and it is your turn', () => {
+    connect();
+    live(1, 112);
+    caughtUp(113, 113);
+    expect(told(true)!.lines).toEqual([
+      'Day 2’s discussion went on while you were away.',
+      YOUR_TURN,
+    ]);
+  });
+
+  it('back after the vote: it was held, and the seat’s agent cast its ballot', () => {
+    connect();
+    live(1, 210);
+    caughtUp(211, 232);
+    expect(told()!.lines).toEqual(['The vote on day 2 was held while you were away.']);
+    useGameSession.getState().reset();
+    session.clear();
+    connect();
+    live(1, 204);
+    caughtUp(205, 240);
+    expect(told()!.lines).toEqual([
+      'Day 2 and night 2 went by while you were away.',
+      'Your agent played your turn: it abstained on day 2.',
+    ]);
+  });
+
+  it('more than two chapters: two named, and more; several turns the agent played', () => {
+    connect();
+    live(1, 140);
+    caughtUp(141);
+    expect(told()!.lines).toEqual([
+      'You were killed by the wolves on night 2. Your role was hidden.',
+      'Day 2, night 2 and more went by while you were away.',
+      'Your agent played 3 of your turns.',
+      GOES_ON,
+    ]);
+    // a solo game's turns wait for their player: no agent played them
+    useGameSession.getState().reset();
+    session.clear();
+    seatEvents = solo;
+    connect();
+    live(1, 140);
+    caughtUp(141);
+    expect(told()!.lines).not.toContain('Your agent played 3 of your turns.');
+  });
+
+  it('nothing after the game is over: its ending tells everything', () => {
+    const view = foldEvents(seatEvents, { mySeat: SEAT });
+    expect(awayNotice(view, seatEvents, seatEvents)).not.toBeNull();
+    expect(awayNotice({ ...view, over: true }, seatEvents, seatEvents)).toBeNull();
+    expect(awayNotice(view, seatEvents, [])).toBeNull();
+  });
+
+  it('says a vote-out and a shown card in the table’s words', () => {
     const lynched = {
       player: SEAT,
       role: 'healer',
@@ -305,16 +455,80 @@ describe('the seat’s own death, told on return (live game ab44887a, seat 3)', 
       seq: 1,
       causes: ['lynch' as const],
     };
-    expect(awayWords(lynched)).toMatch(
-      /^You were voted out on day 3\. The table saw your card: Healer\. /,
+    expect(deathWords(lynched)).toBe(
+      'You were voted out on day 3. The table saw your card: Healer.',
     );
     const both = { ...lynched, causes: ['wolves' as const, 'serial_killer' as const] };
-    expect(awayWords(both)).toMatch(
+    expect(deathWords(both)).toMatch(
       /^You were attacked by the wolves and the serial killer on night 3, and fell\./,
     );
-    const view = foldEvents(seatEvents, { mySeat: SEAT });
-    expect(awayDeath(view, new Set())).not.toBeNull();
-    expect(awayDeath({ ...view, me: { ...view.me, seat: null } }, new Set())).toBeNull();
-    expect(awayDeath({ ...view, over: true }, new Set())).toBeNull();
+  });
+
+  it('says the turn its agent played in the dock’s and the plates’ words', () => {
+    const ME = 'player_2';
+    const ask = (
+      seq: number,
+      day: number,
+      action_kind: string,
+      deadline: string | null = 'x',
+    ) =>
+      ({
+        seq,
+        day,
+        type: 'input_request',
+        player: ME,
+        action_kind,
+        deadline,
+      }) as DurableGameEvent;
+    const e = (o: Record<string, unknown>) => o as unknown as DurableGameEvent;
+    const one = (log: DurableGameEvent[]) => agentLine(log, log, ME);
+    expect(
+      one([ask(1, 3, 'discuss'), e({ seq: 2, day: 3, type: 'speech', player: ME })]),
+    ).toBe('Your agent played your turn: it spoke for you on day 3.');
+    expect(one([ask(1, 3, 'discuss'), e({ seq: 2, day: 3, type: 'phase_change' })])).toBe(
+      'Your agent played your turn: it passed on day 3.',
+    );
+    expect(
+      one([
+        ask(1, 3, 'vote'),
+        e({ seq: 2, day: 3, type: 'vote_cast', voter: ME, votee: 'player_4' }),
+      ]),
+    ).toBe('Your agent played your turn: it voted seat 4 on day 3.');
+    expect(
+      one([
+        ask(1, 2, 'wolf_vote'),
+        e({ seq: 2, day: 2, type: 'wolf_vote', wolf: ME, votee: 'player_4' }),
+      ]),
+    ).toBe('Your agent played your turn: you vote seat 4 on night 2.');
+    expect(
+      one([ask(1, 2, 'healer_target'), e({ seq: 2, day: 3, type: 'phase_change' })]),
+    ).toBe('Your agent played your turn: it took your night’s act on night 2.');
+    // still open (nothing since), or a solo game's (no clock): not played by the agent
+    expect(one([ask(1, 3, 'discuss')])).toBeNull();
+    expect(
+      one([ask(1, 3, 'discuss', null), e({ seq: 2, day: 3, type: 'speech', player: ME })]),
+    ).toBeNull();
+  });
+
+  it('names a day that ran into its vote, and a night still going', () => {
+    const timeline = [
+      { day: 3, phase: 'day' as const, seq: 10 },
+      { day: 3, phase: 'voting' as const, seq: 20 },
+    ];
+    const ev = (seq: number, type: string) => ({ seq, day: 3, type }) as DurableGameEvent;
+    expect(chapterLine(timeline, [ev(15, 'speech'), ev(20, 'phase_change')])).toBe(
+      'Day 3’s discussion went by and the vote began while you were away.',
+    );
+    expect(
+      chapterLine(timeline, [
+        ev(15, 'speech'),
+        ev(20, 'phase_change'),
+        ev(25, 'lynch_result'),
+      ]),
+    ).toBe('Day 3’s discussion and vote went by while you were away.');
+    const night = [{ day: 2, phase: 'night' as const, seq: 5 }];
+    expect(chapterLine(night, [ev(7, 'gm_message')])).toBe(
+      'Night 2 went on while you were away.',
+    );
   });
 });

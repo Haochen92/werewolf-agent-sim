@@ -37,10 +37,11 @@ import { NO_ACTION, noActionWord } from '@/game/turn-words';
 import type { SceneBeat } from '@/stage/beats/types';
 import type { TurnClock } from '@/stage/countdown';
 import { BY, DIED } from '@/stage/instruments/MorningRoll';
-import { ROLE_NAME } from '@/stage/roles';
+import { ROLE_NAME, seatNumber } from '@/stage/roles';
+import { sealedLabel } from '@/stage/scenes/ShelfRoomScene';
 import type { ActMore, Presentation } from '@/stage/scenes/types';
 import { pressFile, pressTranscript, showFile, showRecord } from '@/stage/slot';
-import type { DurableGameEvent, GameStatus } from '@/types/contracts';
+import type { DurableGameEvent, EventOf, GameStatus, Phase } from '@/types/contracts';
 import { nextLiveStep, type LiveContext } from './live-queue';
 import { carryAcross, holdFor, still, type Cursor } from './transport';
 
@@ -162,34 +163,56 @@ export function seesXray(state: LiveState, over: boolean): boolean {
   return ending !== -1 && state.cursor.index >= ending;
 }
 
-// --- the seat's own death, told on return ------------------------------------
+// --- what went by while the viewer was away -------------------------------------
 
 /**
- * This seat's own death, when it reached the page as catch-up rather than news: the page was
- * away (a phone asleep, a dropped connection, the game opened again) while it happened, so no
- * beat played it and the stage landed still on a seat that is out (live testing 2026-10-11:
- * night 2 killed the seat and concealed it during a two-minute drop, and nothing said so). Null
- * for a death that arrived live (its beats tell it), for a spectator, and once the game is over
- * (its ending tells everything), and once this tab has `told` it (`deathTold`, which a death
- * watched live also marks).
+ * What the page knows of how this viewer has watched the game, for `missedEvents`.
  */
-export function awayDeath(
-  view: Pick<GameView, 'dead' | 'over' | 'me'>,
-  liveSeqs: ReadonlySet<number>,
-  told = false,
-): DeathRecord | null {
-  const seat = view.me.seat;
-  if (!seat || view.over || told) return null;
-  const death = view.dead.find((d) => d.player === seat);
-  return death && !liveSeqs.has(death.seq) ? death : null;
+export interface AwayOptions {
+  /** The newest seq this tab saw live before this connection (the store's `liveBefore`). */
+  liveBefore: number | null;
+  /** The viewer holds a seat. */
+  seated: boolean;
+  /** How far this tab has told it already (`awayTold`): nothing up to it is told again. */
+  told: number;
+  /** This page watched the platform depart: what followed played from the deal, not missed. */
+  departed?: boolean;
 }
 
 /**
- * What the notice says of it, in the morning roll's words for the cause: "You were killed by
- * the wolves on night 2. Your role was hidden." / "You were voted out on day 3. The table saw
- * your card: Healer." Then that the game goes on.
+ * The events that went by while the viewer was away (owner, 2026-10-11): what came in as
+ * catch-up, not as news, above the newest seq this tab had seen live. A drop and its reopen, a
+ * phone asleep, a reload, the game opened again in the same tab: the stage lands still on the
+ * latest beat (the catch-up rule), and these are what the "You're back" notice tells.
+ *
+ * A tab that never saw the game live (a new tab on a game already running) is a late arrival:
+ * a seat's whole history went by without it (unless that history is only the deal, which then
+ * plays, or the page watched its platform depart, after which everything played); a spectator
+ * arriving late has missed nothing (D23 "late link"), only what a drop later costs it.
  */
-export function awayWords(death: DeathRecord): string {
+export function missedEvents(
+  events: readonly DurableGameEvent[],
+  liveSeqs: ReadonlySet<number>,
+  o: AwayOptions,
+): DurableGameEvent[] {
+  const caught = events.filter((e) => !liveSeqs.has(e.seq));
+  let after: number;
+  // a page that watched its platform depart played what followed from the deal
+  if (o.liveBefore !== null && !o.departed) after = o.liveBefore;
+  else {
+    const firstLive = Math.min(...liveSeqs);
+    const history = caught.filter((e) => e.seq < firstLive);
+    if (o.seated && !o.departed && history.some((e) => e.type === 'turn_started'))
+      after = 0;
+    else if (firstLive === Infinity) return [];
+    else after = firstLive;
+  }
+  after = Math.max(after, o.told);
+  return caught.filter((e) => e.seq > after);
+}
+
+/** The death in the morning roll's words: "You were killed by the wolves on night 2. Your role was hidden." */
+export function deathWords(death: DeathRecord): string {
   const attacks = death.causes.filter((c) => c !== 'lynch');
   const how =
     attacks.length === 0
@@ -201,7 +224,176 @@ export function awayWords(death: DeathRecord): string {
     death.role === null
       ? 'Your role was hidden.'
       : `The table saw your card: ${ROLE_NAME[death.role] ?? death.role}.`;
-  return `${how} ${card} The game goes on without you: watch it to the end, or leave the table.`;
+  return `${how} ${card}`;
+}
+
+export const GOES_ON =
+  'The game goes on without you: watch it to the end, or leave the table.';
+export const YOUR_TURN = 'It’s your turn.';
+
+/**
+ * The chapters the span went through, in one sentence of the game's own words: "Night 2 and
+ * day 3 went by while you were away." / "Day 3’s discussion went on while you were away." /
+ * "The vote on day 3 was held while you were away." At most two are named, "and more" past
+ * that; a day's vote goes with its day. Null when the span touched no chapter (only the deal).
+ */
+export function chapterLine(
+  timeline: GameView['timeline'],
+  missed: readonly DurableGameEvent[],
+): string | null {
+  if (!missed.length) return null;
+  const first = missed[0].seq;
+  const inSpan = new Set(missed.map((e) => e.seq));
+  // the chapter the span began in, then each one it entered
+  const start = timeline.filter((t) => t.seq <= first).at(-1);
+  const entered = timeline.filter((t) => t.seq > first && inSpan.has(t.seq));
+  const chapters: { phase: Phase; day: number; vote: boolean }[] = [];
+  for (const t of start ? [start, ...entered] : entered) {
+    const prev = chapters.at(-1);
+    if (t.phase === 'voting' && prev?.phase === 'day' && prev.day === t.day)
+      prev.vote = true;
+    else chapters.push({ phase: t.phase, day: t.day, vote: false });
+  }
+  const held = (type: 'lynch_result' | 'night_result', day: number) =>
+    missed.some((e) => e.type === type && e.day === day);
+  const AWAY = 'while you were away.';
+  if (!chapters.length) return null;
+  if (chapters.length === 1) {
+    const { phase, day, vote } = chapters[0];
+    if (phase === 'night')
+      return `Night ${day} ${held('night_result', day) ? 'went by' : 'went on'} ${AWAY}`;
+    if (phase === 'voting')
+      return `The vote on day ${day} ${held('lynch_result', day) ? 'was held' : 'went on'} ${AWAY}`;
+    if (!vote) return `Day ${day}’s discussion went on ${AWAY}`;
+    return held('lynch_result', day)
+      ? `Day ${day}’s discussion and vote went by ${AWAY}`
+      : `Day ${day}’s discussion went by and the vote began ${AWAY}`;
+  }
+  const name = (c: (typeof chapters)[number]) =>
+    c.phase === 'voting' ? `the vote on day ${c.day}` : `${c.phase} ${c.day}`;
+  const [a, b] = chapters.map(name);
+  const lead = a.charAt(0).toUpperCase() + a.slice(1);
+  return chapters.length === 2
+    ? `${lead} and ${b} went by ${AWAY}`
+    : `${lead}, ${b} and more went by ${AWAY}`;
+}
+
+/**
+ * Whether the span is a late arrival's history (this tab never saw the game live before it),
+ * rather than what a return missed: no turn in it was anyone's to answer from here.
+ */
+export function lateSpan(
+  missed: readonly DurableGameEvent[],
+  liveSeqs: ReadonlySet<number>,
+  liveBefore: number | null,
+): boolean {
+  return liveBefore === null && missed.length > 0 && missed[0].seq < Math.min(...liveSeqs);
+}
+
+/**
+ * The seat's own turns its agent played while it was away (a room's clock hands an unanswered
+ * turn to the seat's agent; a request with a deadline is on that clock, a solo game's has none
+ * and waits): the requests in the span the log shows answered since. One line:
+ * "Your agent played your turn: it voted seat 4 on day 3." in the ballot's and the plates'
+ * words, or "Your agent played 2 of your turns." Null when it played none.
+ */
+export function agentLine(
+  events: readonly DurableGameEvent[],
+  missed: readonly DurableGameEvent[],
+  me: string,
+): string | null {
+  const asked = missed.filter(
+    (e): e is EventOf<'input_request'> =>
+      e.type === 'input_request' && e.player === me && !!e.deadline,
+  );
+  const played = asked.flatMap((r) => {
+    // what the log holds of this turn, up to my next request
+    const after = events.filter((e) => e.seq > r.seq);
+    const nextAsk = after.findIndex((e) => e.type === 'input_request' && e.player === me);
+    const turn = nextAsk === -1 ? after : after.slice(0, nextAsk);
+    const mine = turn.find(
+      (e) =>
+        (e.type === 'speech' && e.player === me) ||
+        (e.type === 'wolf_message' && e.wolf === me) ||
+        (e.type === 'vote_cast' && e.voter === me) ||
+        (e.type === 'wolf_vote' && e.wolf === me) ||
+        (e.type === 'wolf_kill_decided' && r.action_kind === 'carrier_kill'),
+    );
+    // answered: my answer is in, the next request came, or the phase moved on
+    const over = !!mine || nextAsk !== -1 || turn.some((e) => e.type === 'phase_change');
+    return over ? [{ r, mine }] : [];
+  });
+  if (!played.length) return null;
+  if (played.length > 1) return `Your agent played ${played.length} of your turns.`;
+  const { r, mine } = played[0];
+  const night = ` on night ${r.day}`;
+  const plate = (target: string) =>
+    sealedLabel(r.action_kind, target, { me }).replace(/ tonight$/, '') + night;
+  const what =
+    r.action_kind === 'discuss'
+      ? `${mine ? 'it spoke for you' : 'it passed'} on day ${r.day}`
+      : r.action_kind === 'wolf_discuss'
+        ? mine?.type === 'wolf_message' && !mine.passed
+          ? `it spoke to the pack${night}`
+          : `it kept quiet in the pack${night}`
+        : mine?.type === 'vote_cast'
+          ? mine.votee === 'abstain'
+            ? `it abstained on day ${r.day}`
+            : `it voted seat ${seatNumber(mine.votee)} on day ${r.day}`
+          : mine?.type === 'wolf_vote'
+            ? plate(mine.votee)
+            : mine?.type === 'wolf_kill_decided'
+              ? plate(mine.target)
+              : `it took your night’s act${night}`;
+  const said = what.charAt(0).toLowerCase() + what.slice(1);
+  return `Your agent played your turn: ${said}.`;
+}
+
+/** The "You're back" notice: its lines, and the span it tells (`first` for the transcript). */
+export interface AwayNotice {
+  lines: string[];
+  /** The seat's own death, when it is in the span: the notice keeps "Leave the table". */
+  death: DeathRecord | null;
+  /** The first missed seq: "See what happened" opens the transcript there. */
+  first: number;
+  /** The last missed seq: telling the notice marks the span told up to it. */
+  last: number;
+}
+
+/**
+ * What the notice says of the span (owner, 2026-10-11): the seat's own death first, in the
+ * existing words; the chapters that went by; turns its agent played; "It's your turn." when
+ * one is open; and, for a seat that is out, that the game goes on. A spectator (no seat) gets
+ * the chapters alone. Null for a span with nothing to tell, and once the game is over (its
+ * ending tells everything).
+ */
+export function awayNotice(
+  view: Pick<GameView, 'dead' | 'over' | 'me' | 'timeline'>,
+  events: readonly DurableGameEvent[],
+  missed: readonly DurableGameEvent[],
+  o: {
+    /** The seat's turn is open (the dock, a ballot, a night act): "It's your turn." */
+    turnOpen?: boolean;
+    /** A late arrival's history (`lateSpan`): its turns were not played while away from here. */
+    late?: boolean;
+  } = {},
+): AwayNotice | null {
+  if (view.over || !missed.length) return null;
+  const me = view.me.seat;
+  const inSpan = new Set(missed.map((e) => e.seq));
+  const death = (me && view.dead.find((d) => d.player === me && inSpan.has(d.seq))) || null;
+  const chapters = chapterLine(view.timeline, missed);
+  const agent = me && !o.late ? agentLine(events, missed, me) : null;
+  const turn = me && o.turnOpen && !death ? YOUR_TURN : null;
+  if (!death && !chapters && !agent && !turn) return null;
+  const lines = [
+    death ? deathWords(death) : null,
+    chapters,
+    agent,
+    turn,
+    death ? GOES_ON : null,
+  ].filter((l): l is string => l !== null);
+  return { lines, death, first: missed[0].seq, last: missed.at(-1)!.seq };
 }
 
 function sameBeat(a: SceneBeat | undefined, b: SceneBeat | undefined): boolean {

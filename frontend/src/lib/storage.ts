@@ -13,7 +13,8 @@ const KEYS = {
   byok: 'byok_key',
   ghost: (gameId: string) => `ghost_${gameId}`,
   notes: (gameId: string) => `notes_${gameId}`,
-  told: (gameId: string, seat: string) => `told_${gameId}_${seat}`,
+  live: (gameId: string) => `live_${gameId}`,
+  away: (gameId: string) => `away_${gameId}`,
 } as const;
 
 function read(key: string): string | null {
@@ -117,26 +118,44 @@ export const seatNotes = {
   set: (gameId: string, notes: unknown) => write(KEYS.notes(gameId), JSON.stringify(notes)),
 };
 
+function readTab(key: string): number | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.sessionStorage.getItem(key);
+    const n = raw === null ? NaN : Number(raw);
+    return Number.isFinite(n) ? n : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Raise a tab's number, never lower it (two connections may race). */
+function raiseTab(key: string, seq: number): void {
+  if (typeof window === 'undefined') return;
+  try {
+    if ((readTab(key) ?? -1) < seq) window.sessionStorage.setItem(key, String(seq));
+  } catch {
+    /* disabled storage: a return may be told again, or as a late arrival, nothing worse */
+  }
+}
+
 /**
- * Whether this tab has already told a seat of its own death that came in while the page was
- * away (the live theatre's "While you were away" notice), or watched it happen. Session storage:
- * a reload in the same tab does not tell it twice; a new tab may, once.
+ * The newest seq this tab has seen arrive LIVE in a game (the store writes it as news comes
+ * in). On a return (a dropped stream, a sleeping phone, a reload, the game opened again in the
+ * same tab) whatever came in above it as catch-up went by while the viewer was away. Session
+ * storage: per tab, so a new tab is a late arrival. Null: this tab never watched the game live.
  */
-export const deathTold = {
-  has: (gameId: string, seat: string): boolean => {
-    if (typeof window === 'undefined') return false;
-    try {
-      return window.sessionStorage.getItem(KEYS.told(gameId, seat)) !== null;
-    } catch {
-      return false;
-    }
-  },
-  mark: (gameId: string, seat: string): void => {
-    if (typeof window === 'undefined') return;
-    try {
-      window.sessionStorage.setItem(KEYS.told(gameId, seat), '1');
-    } catch {
-      /* disabled storage: the notice may come back on a reload, nothing worse */
-    }
-  },
+export const liveSeen = {
+  get: (gameId: string): number | null => readTab(KEYS.live(gameId)),
+  note: (gameId: string, seq: number): void => raiseTab(KEYS.live(gameId), seq),
+};
+
+/**
+ * How far this tab has told the viewer what went by while they were away (the live theatre's
+ * "You're back" notice): the last missed seq of the span it told. Dismissing the notice, or
+ * opening the transcript from it, marks the span told; it is not told again in this tab.
+ */
+export const awayTold = {
+  get: (gameId: string): number => readTab(KEYS.away(gameId)) ?? 0,
+  mark: (gameId: string, seq: number): void => raiseTab(KEYS.away(gameId), seq),
 };

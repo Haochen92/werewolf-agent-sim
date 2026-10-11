@@ -17,6 +17,7 @@
  * re-render storm, and the store is testable without React.
  */
 import { create } from 'zustand';
+import { liveSeen } from '@/lib/storage';
 import type { DurableGameEvent, PhaseProgress } from '@/types/contracts';
 import { emptyGameView, foldEvent, foldEvents } from './foldEvents';
 import type { FoldOptions, GameView } from './types';
@@ -48,6 +49,13 @@ interface SessionState {
    * stage lands on them still instead of playing them; 0 until anything has.
    */
   caughtUpTo: number;
+  /**
+   * The newest seq this tab had seen arrive live in this game before this connection
+   * (`liveSeen`, read at hydrate); null when it never watched it live (a new tab, a late
+   * arrival). What later came in as catch-up above it went by while the viewer was away: the
+   * live theatre's "You're back" notice is built from it (`missedEvents`).
+   */
+  liveBefore: number | null;
   pacing: Record<string, PacingBar>;
   connection: ConnectionState;
 
@@ -120,6 +128,7 @@ const initial = {
   events: [] as DurableGameEvent[],
   liveSeqs: new Set<number>(),
   caughtUpTo: 0,
+  liveBefore: null as number | null,
   pacing: {} as Record<string, PacingBar>,
   connection: 'idle' as ConnectionState,
 };
@@ -130,14 +139,17 @@ export const useGameSession = create<SessionState>((set, get) => ({
   hydrate: (events, options = {}) => {
     const { gameId, ...foldOptions } = options;
     const ordered = normaliseEvents(events);
+    const game = gameId ?? get().gameId;
     set({
-      gameId: gameId ?? get().gameId,
+      gameId: game,
       events: ordered,
       view: foldEvents(ordered, foldOptions),
       // Deliberately NOT merged with any existing liveSeqs: a hydrate re-folds from
       // scratch, so every seq in the new view is history by definition.
       liveSeqs: new Set(),
       caughtUpTo: 0,
+      // what this tab saw live before (a reload, a reconnect's new connection): kept per tab
+      liveBefore: game ? liveSeen.get(game) : null,
       // Pacing is ephemeral and belongs to one connection. A re-hydrate/rejoin/new game
       // must not inherit a completed strip from the previous stream.
       pacing: {},
@@ -160,6 +172,8 @@ export const useGameSession = create<SessionState>((set, get) => ({
     if (!next) return;
     const nextLive = new Set(liveSeqs);
     nextLive.add(event.seq);
+    const { gameId } = get();
+    if (gameId) liveSeen.note(gameId, event.seq);
     set({
       ...next,
       liveSeqs: nextLive,
@@ -236,6 +250,7 @@ export const useGameSession = create<SessionState>((set, get) => ({
       view: emptyGameView(),
       liveSeqs: new Set(),
       caughtUpTo: 0,
+      liveBefore: null,
       pacing: {},
     }),
 

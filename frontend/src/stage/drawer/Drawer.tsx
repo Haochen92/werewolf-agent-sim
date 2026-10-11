@@ -49,6 +49,7 @@ import {
   drawerLines,
   filterLines,
   groupPasses,
+  lineFrom,
   litKey,
   passSentence,
   passWhy,
@@ -101,6 +102,11 @@ export interface DrawerProps {
    * it the line is only read.
    */
   onRecord?: (morning: number) => void;
+  /**
+   * Live, after a return: open at the first line from this seq ("See what happened"), once; the
+   * reader is then reading back, and "Back to now" returns.
+   */
+  seek?: number | null;
 }
 
 export function Drawer({
@@ -117,6 +123,7 @@ export function Drawer({
   animate = false,
   scroll: kept,
   onRecord,
+  seek = null,
 }: DrawerProps) {
   const g = geometry(hud, true);
   const lines = useMemo(
@@ -177,6 +184,18 @@ export function Drawer({
   useLayoutEffect(() => {
     const el = scroller.current;
     if (!el) return;
+    // "See what happened": the first line the reader missed, at the top, once
+    const from = seek !== null && memo.sought !== seek ? lineFrom(shown, seek) : null;
+    const missed = from ? el.querySelector<HTMLElement>(`[data-line="${from}"]`) : null;
+    if (missed) {
+      memo.sought = seek!;
+      memo.foot = false;
+      follow(false);
+      ours.current = true;
+      el.scrollTop = Math.max(0, missed.offsetTop - 8);
+      memo.top = el.scrollTop;
+      return;
+    }
     if (memo.following) goTo(animate ? 'smooth' : 'auto');
     // a new drawer (another scene) opens where the reader left the last one
     else if (Math.abs(el.scrollTop - memo.top) > 1) {
@@ -184,7 +203,7 @@ export function Drawer({
       el.scrollTop = memo.top;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lit, shown, animate]);
+  }, [lit, shown, animate, seek]);
   useEffect(() => () => clearTimeout(settle.current), []);
   const onScroll = () => {
     const el = scroller.current;

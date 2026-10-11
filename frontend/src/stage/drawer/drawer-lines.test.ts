@@ -12,6 +12,7 @@ import {
   drawerLines,
   filterLines,
   groupPasses,
+  lineFrom,
   litKey,
   passSentence,
   passWhy,
@@ -564,5 +565,25 @@ describe('the drawer on a ten-seat game', () => {
     expect(mark).not.toContain('act-94');
     expect(night1((b) => b.spoke?.actor === 'player_5')).toContain('act-94');
     expect(night1((b) => b.spoke?.rank === 0)).not.toContain('act-91');
+  });
+});
+
+describe('the drawer: where "See what happened" opens it', () => {
+  const lines = groupPasses(drawerLines(whole, { me: null, xray: true }));
+  it('at the first line from the first missed seq: a chapter heading when it begins one', () => {
+    const night = lines.find((l) => l.kind === 'rule' && l.chapter === 'night')!;
+    expect(lineFrom(lines, (night as DrawerLine).seq)).toBe(night.key);
+  });
+  it('a run of passes, or the vote’s line, answers for a seq it stands for', () => {
+    const votes = lines.find((l) => l.kind === 'votes') as DrawerLine;
+    const last = votes.covers!.at(-1)!;
+    // the first line at or after the last ballot: the vote's line itself, which covers it
+    expect(lineFrom(lines, last)).toBe(votes.key);
+    const run = lines.find((l) => l.kind === 'passes');
+    if (run?.kind === 'passes')
+      expect(lineFrom(lines, run.passes.at(-1)!.seq)).toBe(run.key);
+  });
+  it('none past the last line', () => {
+    expect(lineFrom(lines, Number.MAX_SAFE_INTEGER)).toBeNull();
   });
 });

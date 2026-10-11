@@ -18,6 +18,8 @@ export interface DrawerScroll {
   top: number;
   /** The reader scrolled to the very foot: following holds the lines there, not at the beat's. */
   foot?: boolean;
+  /** The last `seek` the drawer went to, so a new scene's drawer does not go there again. */
+  sought?: number;
 }
 
 export function useDrawerFilters(initial: DrawerFilters = DEFAULT_FILTERS) {

@@ -127,6 +127,12 @@ interface Mock {
   draft?: Record<string, unknown>;
   /** The archive answers for the game's replay (filed when the run ends); a 404 until then. */
   filed?: boolean;
+  /**
+   * A new tab, a late arrival: nothing says it watched the game before. Otherwise the tab is
+   * taken to have watched it live up to the status's `last_seq` at the first load (the store's
+   * `live_{game}`), so a seat opening mid-game is not told its whole history went by.
+   */
+  late?: boolean;
 }
 
 /** Each page's mock, so a wait for the stage can be sized to the stream it is served. */
@@ -134,6 +140,17 @@ const mocks = new WeakMap<Page, Mock>();
 
 async function mockApi(page: Page, mock: Mock) {
   mocks.set(page, mock);
+  if (!mock.late)
+    await page.addInitScript(
+      ([key, seq]) => {
+        try {
+          if (sessionStorage.getItem(key) === null) sessionStorage.setItem(key, seq);
+        } catch {
+          /* no storage: a late arrival */
+        }
+      },
+      [`live_${GAME}`, String(mock.status.last_seq ?? 0)],
+    );
   await page.route(`**/games/${GAME}`, async (route) => {
     if (!isApi(route)) return route.fallback();
     await route.fulfill({
@@ -1270,7 +1287,7 @@ test('live: the strip’s door asks, and Leave goes to the lobby', async ({ page
   await expect(page).toHaveURL(/\/rooms$/, { timeout: 20_000 });
 });
 
-test('live: back from a dropped stream the page reopens it at once, and a seat that died meanwhile is told so, once', async ({
+test('live: back from a dropped stream the page reopens it at once, says what went by, and opens the transcript at the first missed line', async ({
   page,
 }) => {
   test.setTimeout(60_000);
@@ -1294,6 +1311,9 @@ test('live: back from a dropped stream the page reopens it at once, and a seat t
   await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
   await landsOn(page, 'night.hub');
   expect(streams).toHaveLength(1);
+  const told = page.getByRole('alertdialog', { name: 'You’re back' });
+  // this tab had watched up to there: nothing went by yet
+  await expect(told).toHaveCount(0);
   // meanwhile the night resolved and day 3 began; the server sends what the page missed
   mock.status = status(170, as4);
   mock.stream = ALL.filter((e) => e.seq > 140 && e.seq <= 170 && seenBy4(e));
@@ -1303,16 +1323,30 @@ test('live: back from a dropped stream the page reopens it at once, and a seat t
   await expect.poll(() => streams.length).toBe(2);
   const had = Math.max(...ALL.filter((e) => e.seq <= 140 && seenBy4(e)).map((e) => e.seq));
   expect(new URL(streams[1]).searchParams.get('last_seq')).toBe(String(had));
-  // what came back is history: the stage lands still on day 3, and the seat is told
+  // what came back is history: the stage lands still on day 3, and the seat is told what went
+  // by, its own death first
+  const lines = page.locator('[data-drawer] [data-line]').first().locator('..');
   await expect(page.locator('[data-line="say-169"]')).toBeVisible({ timeout: 15_000 });
-  const told = page.getByRole('alertdialog', { name: 'While you were away' });
   await expect(told).toContainText(
-    'You were killed by the wolves on night 2. The table saw your card: Investigator.',
+    'You were killed by the wolves on night 2. The table saw your card: Investigator. ' +
+      'Night 2 and day 3 went by while you were away. ' +
+      'The game goes on without you: watch it to the end, or leave the table.',
   );
-  await expect(told).toContainText('The game goes on without you');
-  await told.getByRole('button', { name: 'Watch on' }).click();
+  await expect(told.getByRole('button', { name: 'Carry on' })).toBeVisible();
+  await expect(told.getByRole('button', { name: 'Leave the table' })).toBeVisible();
+  // See what happened: the transcript opens at the first line the seat missed (the night's
+  // end, seq 155, "Dawn 3"), at the top of the lines
+  await told.getByRole('button', { name: 'See what happened' }).click();
   await expect(told).toHaveCount(0);
-  // a reload in the same tab catches the whole log up again: the death is not told twice
+  const first = page.locator('[data-drawer] [data-line="rule-morning-2"]');
+  await expect(first).toBeInViewport();
+  const top = async () => {
+    const [box, line] = await Promise.all([lines.boundingBox(), first.boundingBox()]);
+    return line!.y - box!.y;
+  };
+  await expect.poll(top).toBeLessThan(40);
+  expect(await top()).toBeGreaterThanOrEqual(-1);
+  // a reload in the same tab catches the whole log up again: it is not told twice
   mock.stream = ALL.filter((e) => e.seq <= 170 && seenBy4(e));
   await page.reload({ waitUntil: 'networkidle' });
   await expect(page.locator('[data-line="say-169"]')).toBeVisible({

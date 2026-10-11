@@ -310,6 +310,8 @@ export function Workbench({ scene }: { scene: string }) {
             <LeaveConfirm
               hud="live"
               side={sideOpen(frame.presentation)}
+              // `solo=1`: the door of a solo game, which waits for its player
+              solo={params.get('solo') === '1'}
               onStay={() => setLeaving(false)}
               onLeave={() => {
                 console.info('[workbench] leave → /rooms');

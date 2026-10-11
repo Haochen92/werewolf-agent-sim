@@ -36,9 +36,11 @@
  * archive answers for it, the curtain says "Winding the reels… come back in a few minutes"
  * where the link will be (`useReplayFiled`, 2026-10-01). Before the ending a seated player's
  * way out is the strip's door, which asks first ("Leave the table?") and goes to the lobby;
- * their agent plays on. A seated player whose own death came in while the page was away (what a
- * reconnect caught up on lands still, so no beat played it) is told it once, in a notice at the
- * foot (`AwayNotice`, 2026-10-11).
+ * in a room their agent plays on, a solo game waits for them. A viewer back from being away (a
+ * dropped stream, a phone asleep, a reload: what the page caught up on lands still, so no beat
+ * played it) is told once, in a notice at the foot, that they are back and what went by, the
+ * seat's own death first, with the transcript opened at the first line they missed on request
+ * (`AwayNotice`, owner 2026-10-11).
  *
  * Before the game, the same stage holds the waiting room: the platform (`StationScene`), drawn
  * from the room the page hands in (`room`), with the host's Lock and Depart going back out
@@ -58,7 +60,7 @@ import { useReplayFiled } from '@/hooks/useReplayFiled';
 import { draftLine, rejoinGame, submitTurn, type TurnPayload } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { ApiError } from '@/lib/request';
-import { deathTold, seatToken } from '@/lib/storage';
+import { awayTold, seatToken } from '@/lib/storage';
 import { foldEvents } from '@/game/foldEvents';
 import type { DurableGameEvent, GameStatus } from '@/types/contracts';
 import { isNineSeat } from '../card-text';
@@ -91,14 +93,15 @@ import { geometry } from '../units';
 import { createFoldCache } from './fold-cache';
 import {
   actSent,
-  awayDeath,
-  awayWords,
+  awayNotice,
   curtainReplay,
   historyEnd as historyEndOf,
   historyLanding,
   initialLiveState,
   initialTurnState,
+  lateSpan,
   liveReducer,
+  missedEvents,
   payloadFor,
   requestBefore,
   requestIsActive,
@@ -202,6 +205,7 @@ export function LiveTheatre({
   const view = useGameSession((s) => s.view);
   const liveSeqs = useGameSession((s) => s.liveSeqs);
   const caughtUpTo = useGameSession((s) => s.caughtUpTo);
+  const liveBefore = useGameSession((s) => s.liveBefore);
   const pacing = useGameSession((s) => s.pacing);
   const connection = useGameSession((s) => s.connection);
   const clearPending = useGameSession((s) => s.clearPending);
@@ -444,23 +448,43 @@ export function LiveTheatre({
   const noteEditing = useNoteEditing();
   // the strip's door: "Leave the table?" is open (a seated player, until the game ends)
   const [leaving, setLeaving] = useState(false);
-  // the seat's own death, come in while the page was away: told once in this tab; one watched
-  // live is marked told, so a later reload's catch-up does not tell it again
-  const [toldHere, setToldHere] = useState<string | null>(null);
-  const myDeath = me ? view.dead.find((d) => d.player === me) : undefined;
-  const diedLive = !!myDeath && liveSeqs.has(myDeath.seq);
-  useEffect(() => {
-    if (me && diedLive && storeGame === gameId) deathTold.mark(gameId, me);
-  }, [me, diedLive, storeGame, gameId]);
-  const away =
-    storeGame === gameId && me
-      ? awayDeath(view, liveSeqs, toldHere === me || deathTold.has(gameId, me))
-      : null;
-  const dismissAway = useCallback(() => {
-    if (!me) return;
-    deathTold.mark(gameId, me);
-    setToldHere(me);
-  }, [gameId, me]);
+  // what went by while the page was away (a drop, a sleep, a reload): told once in this tab,
+  // the seat's own death first; "See what happened" opens the transcript at the first of it
+  const [toldHere, setToldHere] = useState(0);
+  const [seek, setSeek] = useState<number | null>(null);
+  const logHere = storeGame === gameId ? storeEvents : NO_EVENTS;
+  const told = Math.max(toldHere, storeGame === gameId ? awayTold.get(gameId) : 0);
+  const missed = useMemo(
+    () =>
+      missedEvents(logHere, liveSeqs, {
+        liveBefore,
+        seated: !!me,
+        told,
+        departed: departedHere,
+      }),
+    [logHere, liveSeqs, liveBefore, me, told, departedHere],
+  );
+  const away = useMemo(
+    () =>
+      awayNotice(view, logHere, missed, {
+        turnOpen: open,
+        late: lateSpan(missed, liveSeqs, liveBefore),
+      }),
+    [view, logHere, missed, open, liveSeqs, liveBefore],
+  );
+  const tellAway = useCallback(() => {
+    if (!away) return;
+    awayTold.mark(gameId, away.last);
+    setToldHere((t) => Math.max(t, away.last));
+  }, [gameId, away]);
+  const seeAway = useCallback(() => {
+    if (!away) return;
+    tellAway();
+    // every line, so the first missed one is there to open at
+    drawer.setFilters({ ...drawer.filters, day: 'all', seat: null });
+    setSeek(away.first);
+    if (state.slot !== 'drawer') dispatch({ type: 'transcript' });
+  }, [away, tellAway, drawer, state.slot]);
   const router = useRouter();
   const ahead = useMemo(
     () => (xrayShown ? folds.at(events.length) : null),
@@ -481,6 +505,7 @@ export function LiveTheatre({
       filters: drawer.filters,
       onFilters: drawer.setFilters,
       drawerScroll: drawer.scroll,
+      drawerSeek: seek,
       filmTab,
       onFilmTab: setFilmTab,
       fileSeat,
@@ -510,6 +535,7 @@ export function LiveTheatre({
       drawer.filters,
       drawer.setFilters,
       drawer.scroll,
+      seek,
       filmTab,
       fileSeat,
       ledger,
@@ -701,12 +727,17 @@ export function LiveTheatre({
             <AwayNotice
               hud="live"
               side={sideOpen(presentation)}
-              words={awayWords(away)}
-              onWatch={dismissAway}
-              onLeave={() => {
-                dismissAway();
-                router.push(LOBBY);
-              }}
+              lines={away.lines}
+              onSee={seeAway}
+              onCarryOn={tellAway}
+              onLeave={
+                away.death
+                  ? () => {
+                      tellAway();
+                      router.push(LOBBY);
+                    }
+                  : undefined
+              }
             />
           ) : null}
           {liveOn && beat && leaving && me && !xrayShown ? (
@@ -714,6 +745,8 @@ export function LiveTheatre({
               hud="live"
               side={sideOpen(presentation)}
               out={!view.me.alive}
+              // one human seat: the server's solo table (no seat clocks), which waits for them
+              solo={(status?.human_players ?? []).length === 1}
               onStay={() => setLeaving(false)}
               onLeave={() => router.push(LOBBY)}
             />

@@ -15,8 +15,9 @@
  * The replay also has a way out, "← Replays" (or "← Home", whichever the viewer came from), on
  * its own small plaque just before the day's, there from the first frame: a phone on its side
  * has no browser bar to go back with (owner, 2026-09-29). A live game's seated player has a door
- * instead, at the strip's far right past Transcript, which asks first (`LeaveConfirm`): their
- * seat's agent plays on for them, and the lobby leads back while the game lasts (2026-09-30).
+ * instead, at the strip's far right past Transcript, which asks first (`LeaveConfirm`): in a room
+ * their seat's agent plays on for them, a solo game waits for them (2026-10-11), and the lobby
+ * leads back while the game lasts (2026-09-30).
  */
 import Link from 'next/link';
 import { useEffect, useRef, type ReactNode } from 'react';
@@ -266,6 +267,7 @@ export function LeaveConfirm({
   hud,
   side = false,
   out = false,
+  solo = false,
   onStay,
   onLeave,
 }: {
@@ -274,6 +276,12 @@ export function LeaveConfirm({
   side?: boolean;
   /** The seat is out of the game: no agent plays on for it, so the words say so. */
   out?: boolean;
+  /**
+   * A solo game (one human seat): it stops while its player is away and picks up on their
+   * return, so no agent plays on for them (owner, 2026-10-11). A room's seat is played by its
+   * agent.
+   */
+  solo?: boolean;
   onStay: () => void;
   onLeave: () => void;
 }) {
@@ -310,7 +318,9 @@ export function LeaveConfirm({
         >
           {out
             ? 'You are out of this game; the others play on without you. You can come back to watch from the lobby while it lasts.'
-            : 'Your seat’s agent plays on for you. You can come back to this game from the lobby while it lasts.'}
+            : solo
+              ? 'The game waits for you: it stops while you are away and picks up where you left off when you come back from the lobby.'
+              : 'Your seat’s agent plays on for you. You can come back to this game from the lobby while it lasts.'}
         </Notice>
       </div>
     </NoticeZone>
@@ -318,33 +328,39 @@ export function LeaveConfirm({
 }
 
 /**
- * The seat's own death, told once to a player who was away when it happened (live testing
- * 2026-10-11): what the history caught up on lands still, so without this the stage simply
- * showed a seat that was out. In the leave confirm's place and look (the walnut notice); Watch
- * on closes it, Leave goes to the lobby as the door's Leave does (a seat that is out has no
- * agent playing on, so it does not ask again).
+ * "You're back": what went by while the viewer was away, told once on their return (owner,
+ * 2026-10-11). The stage itself lands still on the latest beat (the catch-up rule), so this says
+ * that they reconnected and what they missed, in the game's own chapter words, the seat's own
+ * death first when it is among it, and offers the transcript at the first line they missed. In
+ * the leave confirm's place and look (the walnut notice). See what happened opens the
+ * transcript there; Carry on closes it (Escape too); a seat that is out keeps Leave the table,
+ * which goes to the lobby as the door's Leave does (no agent plays on for it, so it does not
+ * ask again).
  */
 export function AwayNotice({
   hud,
   side = false,
-  words,
-  onWatch,
+  lines,
+  onSee,
+  onCarryOn,
   onLeave,
 }: {
   hud: Hud;
   /** The side slot is open: the zone stops short of it. */
   side?: boolean;
-  /** `awayWords` (containers/live-state.ts). */
-  words: string;
-  onWatch: () => void;
-  onLeave: () => void;
+  /** `awayNotice(…).lines` (containers/live-state.ts). */
+  lines: readonly string[];
+  onSee: () => void;
+  onCarryOn: () => void;
+  /** A seat that is out: Leave the table. */
+  onLeave?: () => void;
 }) {
   const box = useRef<HTMLDivElement>(null);
-  const watch = useRef(onWatch);
-  watch.current = onWatch;
+  const carryOn = useRef(onCarryOn);
+  carryOn.current = onCarryOn;
   useEffect(() => {
     box.current?.querySelector('button')?.focus();
-    const esc = (e: KeyboardEvent) => e.key === 'Escape' && watch.current();
+    const esc = (e: KeyboardEvent) => e.key === 'Escape' && carryOn.current();
     window.addEventListener('keydown', esc);
     return () => window.removeEventListener('keydown', esc);
   }, []);
@@ -354,22 +370,25 @@ export function AwayNotice({
         ref={box}
         className={styles.leave}
         role="alertdialog"
-        aria-label="While you were away"
+        aria-label="You’re back"
         data-away-notice
       >
         <Notice
           walnut
-          title="While you were away"
+          title="You’re back"
           actions={
             <>
-              <NoticeButton lead onPress={onWatch}>
-                Watch on
+              <NoticeButton lead onPress={onSee}>
+                See what happened
               </NoticeButton>
-              <NoticeButton onPress={onLeave}>Leave the table</NoticeButton>
+              <NoticeButton onPress={onCarryOn}>Carry on</NoticeButton>
+              {onLeave ? (
+                <NoticeButton onPress={onLeave}>Leave the table</NoticeButton>
+              ) : null}
             </>
           }
         >
-          {words}
+          {lines.join(' ')}
         </Notice>
       </div>
     </NoticeZone>

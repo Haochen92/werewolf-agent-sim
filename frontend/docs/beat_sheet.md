@@ -959,7 +959,10 @@ is [`live_timing_sheet.md`](live_timing_sheet.md) (2026-10-01).
   (§1a) lands on the deal's first beat when the curtain is down, whatever the history holds; the
   deal plays at normal speed from it, and the beats after it (history by seq, unseen by this
   viewer) play on at normal speed as a queue. A reconnect later catches up still, as anywhere.
-- On reconnect, history renders still at the latest state; the backlog is not played.
+- On reconnect, history renders still at the latest state; the backlog is not played. **The
+  viewer is told they are back (ruled 2026-10-11):** a "You're back" notice says what went by
+  while they were away, and its "See what happened" opens the transcript at the first missed
+  line (as built below). Most of all for rooms with several humans.
 - **The deal on first connection (ruled 2026-09-25):** a solo game starts before its page connects,
   so the deal is history by the time the seated human arrives. Exception to "arrive still": when
   the history holds no `turn_started` yet (nothing has happened but the deal), the stage plays
@@ -1063,20 +1066,51 @@ page is shown again or comes back online and the stream is not open (the browser
 still waiting, or given up), the hook closes it and opens a new one at once from the newest seq
 folded (`?last_seq=N`), the boundary dropped as for any reconnect; an open stream is left be
 (`reopenNow`). Live testing found a phone back from a two-minute sleep waiting on the browser.
-**The seat's own death, told on return (2026-10-11):** a death of the seated human's that arrived
-as catch-up (a reconnect's, or the first connection's history) played no beat, so the stage
-landed still on a seat that was out and nothing said so. Once per seat per tab
-(`sessionStorage` `told_{game}_{seat}`), a walnut notice in the leave confirm's place, "While you
-were away": "You were killed by the wolves on night 2. Your role was hidden. The game goes on
-without you: watch it to the end, or leave the table." (the cause in the morning roll's words,
-`DIED`/`BY`; several attackers: "You were attacked by the wolves and the serial killer on night 2,
-and fell."; a vote-out: "You were voted out on day 3."; a role shown: "The table saw your card:
-Healer."), with **Watch on** (closes it; Esc too) and **Leave the table** (to `/rooms`, no second
-ask). A death that arrived live is marked told and never noticed (its beats told it); none after
-`game_over` (the ending tells everything). `awayDeath`/`awayWords` in `containers/live-state.ts`,
-`AwayNotice` in `instruments/TopStrip.tsx`. **Not built / to reconcile:** the live
-ballot drop (§3 row 2) moves the count, not chips; "your seat's agent played 3 turns for you"
-after a return (the client forgets across a reload); the draft helper in the pack's chat (the
+**You're back (owner, 2026-10-11):** what a return caught up on lands still, so without a word
+the stage simply showed a later scene (live testing: night 2 killed the seat and concealed it in
+a two-minute drop, and nothing said so). **What was missed:** the store notes in `sessionStorage`
+`live_{game}` the newest seq this tab saw arrive live (`applyLive`) and reads it at each
+connection (`liveBefore`); the events above it that came in as catch-up went by while away
+(`missedEvents`: a drop and reopen, a sleep, a reload, the game opened again in the same tab).
+A tab that never saw the game live is a late arrival: a seat's whole history went by, unless it
+is only the deal (which plays) or the page watched its platform depart (everything after played
+from the deal); a spectator's history did not, only what a later drop costs it. Nothing missed:
+no notice. **The notice**, in the leave confirm's place and walnut look, title "You’re back",
+one paragraph: the seat's own death first when it is in the span (the morning roll's words,
+`DIED`/`BY`: "You were killed by the wolves on night 2. Your role was hidden." / "You were voted
+out on day 3. The table saw your card: Healer." / "You were attacked by the wolves and the serial
+killer on night 2, and fell."); the chapters it went through, from the one it began in and each
+phase it entered, a day's vote going with its day, at most two named (`chapterLine`: "Night 2
+and day 3 went by while you were away." · "Day 3’s discussion went on while you were away." ·
+"The vote on day 3 was held while you were away." / "… went on …" while it is still on · "Night
+2 went by …" / "went on" · "Day 3’s discussion went by and the vote began while you were away." ·
+"Day 2, night 2 and more went by while you were away."); in a room, the seat's own turns its
+agent played on the clock (a request with a deadline, answered since in the log; a solo game's
+requests have none and wait: `agentLine`): "Your agent played your turn: it spoke for you on day
+3." / "it passed on day 3" / "it voted seat 4 on day 3" / "it abstained on day 2" / "it spoke to
+the pack on night 2" / the sealed plate's words with "tonight" made "on night 2" ("you vote seat
+4 on night 2") / "it took your night’s act on night 2", or "Your agent played 3 of your turns.";
+none for a late arrival's history; "It’s your turn." when the seat's turn is open (not for a
+seat that died); and for a seat that is out "The game goes on without you: watch it to the end,
+or leave the table." A spectator gets the chapters alone. Buttons: **See what happened** (the
+lead: the drawer opens if it is not open, its day and seat filters cleared, scrolled to the first
+shown line at or after the first missed seq, `lineFrom`, the reader reading back from there with
+"Back to now" at the foot; once, `DrawerScroll.sought`), **Carry on** (closes; Esc too), and for
+a seat that is out **Leave the table** (to `/rooms`, no second ask). Any of them marks the span
+told in the tab (`sessionStorage` `away_{game}`, the span's last seq); a later span is told on
+its own, an untold one runs on into the next. Never after `game_over` (the ending tells
+everything). `missedEvents`/`awayNotice` in `containers/live-state.ts`, `AwayNotice` in
+`instruments/TopStrip.tsx`. Earlier the same day it told the death alone ("While you were away",
+Watch on, `told_{game}_{seat}`). **The door's words (owner, 2026-10-11):** a living seat in a room,
+"Your seat’s agent plays on for you. You can come back to this game from the lobby while it
+lasts."; in a solo game (one human seat, the server's rule for a table without seat clocks,
+which now suspends while its player is away), "The game waits for you: it stops while you are
+away and picks up where you left off when you come back from the lobby."; a seat that is out,
+"You are out of this game; the others play on without you. You can come back to watch from the
+lobby while it lasts." **Not built / to reconcile:** the live
+ballot drop (§3 row 2) moves the count, not chips; a night act the agent played while away is named
+with its target only for the pack's vote and kill (a seat's own `night_action` is observer tier,
+so the notice says "it took your night’s act"); the draft helper in the pack's chat (the
 pack's turn still has the "Let my agent play this turn" pill); a
 reload during a vote already cast reopens the ballot (a second send gets the 409 line).
 

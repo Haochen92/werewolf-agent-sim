@@ -774,6 +774,16 @@ export function groupPasses(lines: readonly DrawerLine[]): ShownLine[] {
   return out;
 }
 
+/**
+ * The first shown line at or after `seq` (or standing for a seq there, as the vote's line stands
+ * for its ballots): where the transcript opens on "See what happened" after a return. Null when
+ * none is shown.
+ */
+export function lineFrom(lines: readonly ShownLine[], seq: number): string | null {
+  const at = (l: DrawerLine) => l.seq >= seq || (l.covers ?? []).some((c) => c >= seq);
+  return lines.find((l) => (l.kind === 'passes' ? l.passes.some(at) : at(l)))?.key ?? null;
+}
+
 /** A shown line's own keys: a run answers to each of its passes (the lit line, the scroll). */
 export function shownKeys(l: ShownLine): string[] {
   return l.kind === 'passes' ? l.passes.map((p) => p.key) : [l.key];

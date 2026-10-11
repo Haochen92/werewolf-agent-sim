@@ -606,7 +606,8 @@ test('the seat rail: a seat’s own knowledge bands its cards, and nobody else�
 
 /**
  * Leaving the table (live only): the strip's door at its far right asks first, a walnut notice in
- * the foot's zone; Stay and Escape close it. The replay's HUD has no door.
+ * the foot's zone; Stay and Escape close it. In a room the seat's agent plays on; a solo game
+ * waits. The replay's HUD has no door.
  */
 test('the strip’s door: live only, and it asks before leaving', async ({ page }) => {
   const door = page.getByRole('button', { name: 'Leave the table' });
@@ -636,6 +637,15 @@ test('the strip’s door: live only, and it asks before leaving', async ({ page 
   await door.click();
   await confirm.getByRole('button', { name: 'Stay' }).click();
   await expect(confirm).toHaveCount(0);
+  // a solo game: no agent plays on, the game waits for its player (owner, 2026-10-11)
+  await page.goto(
+    '/workbench/day?live=1&beat=7&viewer=seat:player_9&animate=0&strip=0&solo=1',
+    { waitUntil: 'networkidle' },
+  );
+  await door.click();
+  await expect(confirm).toContainText(
+    'The game waits for you: it stops while you are away and picks up where you left off when you come back from the lobby.',
+  );
 });
 
 /** The guess's panel on the smallest phone: every row on the stage, a finger's height, tappable. */

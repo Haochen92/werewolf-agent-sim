@@ -175,6 +175,11 @@ export interface SlotInput {
   /** Where the drawer was scrolled, and whether it follows the beat, kept across scenes. */
   drawerScroll?: DrawerScroll;
   /**
+   * Live, after a return: the first seq the viewer missed, which the drawer opens at, once
+   * ("See what happened" on the "You're back" notice). Null: nowhere.
+   */
+  drawerSeek?: number | null;
+  /**
    * The seat notebook's editor: whose notes are open (`useNoteEditing`), held by the container
    * so the editor stays open while beats, scenes and recuts go by (the wing is remounted with
    * them). Without it the wing keeps the open seat itself, for as long as it is mounted.

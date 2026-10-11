@@ -85,6 +85,7 @@ export function SideSlot({ view, beat, me, presentation, slot, stop }: SceneProp
           animate={animate}
           scroll={slot?.drawerScroll ?? own.scroll}
           onRecord={openRecord}
+          seek={slot?.drawerSeek ?? null}
         />
       ) : (
         <Film

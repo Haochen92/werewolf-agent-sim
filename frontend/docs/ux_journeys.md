@@ -298,18 +298,41 @@ winner chip in the header.
 - *Refresh mid-game*: skeleton → status poll → SSE replay from seq 0 → fold fast-forward
   under the catch-up rule (§0) → land on the newest day, dock restored if a turn pends
   (`pending_input` + a fresh `input_request` in the log). Cost: seconds, zero drama.
-- *Reconnect*: browser-native SSE retry, silent; thin "reconnecting…" bar only after
-  repeated `onerror` while the tab is visible (ux_baseline §4).
+- *Reconnect* (ruled 2026-10-11, was "silent"): the stage updates straight to the latest
+  scene (the catch-up rule, §0: missed events land in their settled form, no missed scene is
+  replayed), but the viewer is told clearly that they are back and can read what went by
+  while they were away, through the transcript. Thin "reconnecting…" bar while the stream is
+  down and the tab is visible (ux_baseline §4). It matters most in rooms with several humans.
   *As built 2026-10-11:* when the page is shown again or comes back online and the stream is
   not open, it is reopened at once from the newest seq folded rather than left to the
   browser's backing-off retry (a phone back from a two-minute sleep waited on it); the catch-up
-  rule holds for what it sends.
-- *Returning to your own death* (2026-10-11): the catch-up rule means a seated player whose
-  death came in while away (a drop, a sleep, the game opened again) sees no beat for it. So it
-  is told once, in a walnut notice ("While you were away · You were killed by the wolves on
-  night 2. Your role was hidden. The game goes on without you: watch it to the end, or leave the
-  table." · Watch on · Leave the table), once per seat per tab, never for a death watched live
-  and never after game over (beat sheet §12).
+  rule holds for what it sends. **What was missed:** each tab keeps the newest seq it saw live
+  (`sessionStorage`); on any catch-up (a drop and reopen, a sleep, a reload, the game opened
+  again in the same tab) the events above it that came in as catch-up went by while away. A new
+  tab on a running game is a late arrival: a seat's whole history went by (unless it is only
+  the deal, which plays, or the page watched its platform depart); a spectator arriving late
+  is told nothing (the late link stays zero-drama), only what a later drop costs it. A blip
+  that missed nothing shows nothing. **The notice**, once per missed span, in the leave
+  confirm's place and walnut look: "You're back", then one paragraph: the seat's own death
+  first when it is in the span ("You were killed by the wolves on night 2. Your role was
+  hidden."), the chapters in the game's words, at most two named ("Night 2 and day 3 went by
+  while you were away." / "Day 3's discussion went on while you were away." / "The vote on day 3
+  was held while you were away." / "Day 2, night 2 and more went by while you were away."), in
+  a room the turns the seat's agent played on the clock ("Your agent played your turn: it voted
+  seat 4 on day 3." / "Your agent played 3 of your turns."), "It's your turn." when the seat
+  has one open, and for a seat that is out "The game goes on without you: watch it to the end,
+  or leave the table." **See what happened** opens the transcript at the first missed line,
+  read back from there ("Back to now" returns); **Carry on** closes it (Esc too); a seat that
+  is out keeps **Leave the table**. Either marks the span told for the tab. Spectators get the
+  chapters alone. Never after game over (the ending tells everything). Beat sheet §12.
+  (The death-only notice of earlier on 2026-10-11, "While you were away · … · Watch on", is
+  folded into it.)
+- *Leaving the table* (ruled 2026-10-11): the strip's door asks first. In a room a living
+  seat's agent plays on ("Your seat's agent plays on for you. You can come back to this game
+  from the lobby while it lasts."); a solo game stops while its player is away and resumes on
+  their return ("The game waits for you: it stops while you are away and picks up where you
+  left off when you come back from the lobby."); a seat that is out: "You are out of this game;
+  the others play on without you. …" Solo = one human seat, the server's own rule.
 - *Dead game* (`GameStatus.error` set, state still "running"): full-width terminal error
   state over the table — the session's death report (key-redacted server-side), a "these
   games don't survive restarts" note when BYOK, one door: home. No retry affordance (the
