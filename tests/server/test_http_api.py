@@ -228,7 +228,18 @@ def test_room_contract_has_no_human_fields(api_client):
     assert api_client.post("/rooms", json={"human_role": "wolf"}).status_code == 422
 
 
-def test_the_host_chooses_memory_for_the_whole_room(api_client):
+def test_memory_on_is_refused_until_the_server_has_lessons_for_the_cast(api_client, monkeypatch):
+    from server.config import server_settings
+    monkeypatch.setattr(server_settings, "WW_MEMORY_ENABLED", False)
+    for path in ("/rooms", "/games"):
+        r = api_client.post(path, json={"memory": True})
+        assert r.status_code == 409 and "memory is not available" in r.json()["detail"]
+    assert api_client.post("/rooms", json={}).status_code == 200
+
+
+def test_the_host_chooses_memory_for_the_whole_room(api_client, monkeypatch):
+    from server.config import server_settings
+    monkeypatch.setattr(server_settings, "WW_MEMORY_ENABLED", True)
     body = api_client.post("/rooms", json={"memory": True}).json()
     room = api_client.app.state.resources.games.get(body["game_id"])
     assert room.memory is True

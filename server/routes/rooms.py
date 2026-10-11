@@ -20,7 +20,9 @@ from server.schemas.requests import (
     SeatJoined,
 )
 
-from ._shared import authorize_model, clear_seat_cookie, live_status, set_seat_cookie
+from ._shared import (
+    authorize_model, clear_seat_cookie, live_status, require_memory_available, set_seat_cookie,
+)
 
 router = APIRouter(tags=["rooms"])
 
@@ -37,6 +39,7 @@ async def create_room(body: NewRoom, games: GamesRegistry, house: House) -> Room
     and the house consulted here so the host learns early; the cap is checked again at
     start, which is when the game actually costs anything.
     """
+    require_memory_available(body.memory)
     model = await authorize_model(house, body.api_key, body.model)
     room = await games.open_room(api_key=body.api_key, model=model, name=body.name,
                                  memory=body.memory)

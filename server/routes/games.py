@@ -24,7 +24,7 @@ from server.schemas.requests import (
     DraftRequest, DraftResponse, FundGame, GameCreated, GameStatus, NewSoloGame, TurnAccepted,
 )
 
-from ._shared import authorize_model, live_status, set_seat_cookie
+from ._shared import authorize_model, live_status, require_memory_available, set_seat_cookie
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +44,7 @@ async def create_game(
     house: House,
     response: Response,
 ) -> GameCreated:
+    require_memory_available(body.memory)
     model = await authorize_model(house, body.api_key, body.model)
     if body.character is not None and not is_pickable(body.character):
         raise HTTPException(status_code=422, detail=f"no such character: {body.character}")

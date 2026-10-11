@@ -46,6 +46,16 @@ def clear_seat_cookie(response: Response, game_id: str) -> None:
     )
 
 
+def require_memory_available(memory: bool) -> None:
+    """Refuse a memory-on game with 409 while the server has no lessons for the current cast
+    (``WW_MEMORY_ENABLED`` off). The page's switch is disabled too; this stops a direct call."""
+    if memory and not server_settings.WW_MEMORY_ENABLED:
+        raise HTTPException(
+            status_code=409,
+            detail="memory is not available yet: lessons for the current cast are still being built",
+        )
+
+
 async def authorize_model(house: HousePolicy, api_key: str, model: str) -> str:
     """Resolve the model a new game runs on and settle who pays, or answer why not: 422
     for a model not on the menu or a player-funded row without a key, 402 when the house

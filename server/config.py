@@ -33,6 +33,13 @@ class ServerSettings(BaseSettings):
     own default store. Every game seeds from it at start, memory on or off; only a
     memory-on game actually consults it."""
 
+    WW_MEMORY_ENABLED: bool = False
+    """Whether a new game may switch memory on. Off by default: the only stores built so
+    far hold lessons from the older nine-seat game, and a ten-seat game must not be fed
+    them. Turn it on together with pointing ``WW_MEMORY_STORE_DIR`` at a store built for
+    the current cast. While off, a request to start a game or room with memory on is
+    refused; games already running are not affected."""
+
     SEAT_COOKIE_SECURE: bool = False
     """Send the seat cookie with the ``Secure`` flag (HTTPS-only). Off by default so
     plain-HTTP dev (localhost) keeps working; the production deploy behind Caddy/TLS
