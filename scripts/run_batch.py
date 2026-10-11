@@ -267,6 +267,12 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--lineup-offset",
+        type=int,
+        default=0,
+        help="With --cycle-lineups, start the cycle this many lineups in (e.g. 2 to deal the third first).",
+    )
+    parser.add_argument(
         "--skip-embedding-canary",
         action="store_true",
         help=(
@@ -578,7 +584,7 @@ def run_batch(args: argparse.Namespace) -> int:
         game_id = game_ids[run_index - 1] if game_ids else None
         run_game_config = game_config
         if args.cycle_lineups:
-            dealt = ALL_LINEUPS[(run_index - 1) % len(ALL_LINEUPS)]
+            dealt = ALL_LINEUPS[(run_index - 1 + args.lineup_offset) % len(ALL_LINEUPS)]
             run_game_config = {
                 "lone_killer": next(r for r in dealt if r in LONE_KILLER_ROLES),
                 "neutral": next(r for r in dealt if r in NEUTRAL_ROLES),
