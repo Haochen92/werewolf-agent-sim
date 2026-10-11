@@ -10,7 +10,7 @@ memory improves play.
 |---|---|
 | `plan.md` | The current plan. §9 is the final plan and wins over earlier sections |
 | `decisions.md` | How the rulings were reached, with the commit that carried each out |
-| `experiment_log.md` | What was run: the pilot, the extraction model comparison, the day split |
+| `experiment_log.md` | What was run: the pilot, the extraction model comparison, the day split, the smoke game and de-halo, the bulk seeding |
 | `data/` | Run outputs kept for the record: the model comparisons' re-extractions, the de-halo comparison, and the seeding's coverage, per-game table, strategy points and rule screen |
 | `prompt_versions/` | The memory prompts as they stood for the seeding |
 
@@ -20,9 +20,12 @@ memory improves play.
   - the extraction model (gemini-3.8-flash);
   - the day split;
   - provenance;
-  - the metrics port.
-- Next: the bulk seeding, 12 games (plan §9.5).
-- After seeding: synthesis and review, retrieval cadence, the gate, launch.
+  - the metrics port;
+  - the de-halo pass (Claude Haiku 5.5);
+  - the bulk seeding (12 games) and its offline synthesis, `memory_stores/v8_seed_synth`.
+- Next: the owner's review of the synthesized points (14 state a wrong rule,
+  `data/seeding/rule_screen.md`), then publish `ten_seat_v1`.
+- After that: retrieval cadence, the gate, launch.
 - After launch: the credit port (plan §9.6).
 
 **Code.** The authoritative code is in `Agents/memory/` (extraction, synthesis, retrieval,
