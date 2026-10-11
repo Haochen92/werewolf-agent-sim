@@ -24,6 +24,7 @@ from Agents.nodes.orchestrator import acts_tonight, initialize_game, route_night
 from Agents.rules.night import resolve_night, usable_bodies
 from Agents.rules.night_record import night_action_records
 from Agents.schemas.game_events import DeathRecord
+from Agents.observability.case_sink import EvalCaseSink
 from Agents.schemas.metrics import Metrics
 from Agents.schemas.night import NightChoice
 from Agents.schemas.roles import ALL_LINEUPS, lineup
@@ -70,7 +71,7 @@ class _FakeLLM:
         return RunnableLambda(lambda prompt: _fill(schema, self.rng))
 
 
-def _play(monkeypatch, game: dict, seed: int) -> tuple[dict, list, set[str]]:
+def _play(monkeypatch, game: dict, seed: int, sink: EvalCaseSink | None = None) -> tuple[dict, list, set[str]]:
     rng = random.Random(seed)
     monkeypatch.setattr(agent_player, "get_llm", lambda: _FakeLLM(rng))
     monkeypatch.setattr(agent_player, "get_llm_game_fallback", lambda: None)
@@ -82,7 +83,7 @@ def _play(monkeypatch, game: dict, seed: int) -> tuple[dict, list, set[str]]:
     game_id = f"offline-{game['lone_killer']}-{game['neutral']}-{seed}"
     run = normalize_run_config(RunConfig(game_id=game_id, game=game, memory_persistence={"dump_enabled": False}))
     config = build_runnable_config(run)
-    context = {"metrics": Metrics(), "eval_sink": None}
+    context = {"metrics": Metrics(), "eval_sink": sink}
     translator, events, units = Translator(), [], set()
     for part in parent_graph_compiled.stream(fresh_game_state(), config=config, context=context,
                                              stream_mode=["updates", "custom"], subgraphs=True, version="v2"):
@@ -115,6 +116,30 @@ def test_a_whole_game_runs_on_the_real_graph_and_the_wire_accepts_every_chunk(mo
     for e in events:
         if e.type == "night_record" and e.actor == "wolves":
             assert result["roles"][e.player] in ("chanteuse", "illusionist")
+
+
+def test_every_day_turn_reaches_the_replay_and_every_wolf_turn_says_what_it_decided(monkeypatch):
+    sink = EvalCaseSink()
+    result, events, _ = _play(monkeypatch, {"lone_killer": "serial_killer", "neutral": "speculator"},
+                              seed=11, sink=sink)
+    # The translator sends one reads event per (player, day, round, phase): a player's later
+    # discussion turns of a day must not share its first turn's round, or they are dropped.
+    rounds: dict[tuple[str, int], list[int]] = {}
+    for e in events:
+        if e.type == "player_reads" and e.action_phase == "day_discussion":
+            rounds.setdefault((e.player, e.day), []).append(e.round)
+    assert any(len(r) > 1 for r in rounds.values())
+    assert all(len(r) == len(set(r)) for r in rounds.values())
+    # The night_action phase tag is shared by the pack's chat, kill and skill turns.
+    kinds = {}
+    for record in sink.records:
+        case = record["output"].get("eval_case") or {}
+        action = case.get("agent_night_action")
+        if action and action["role"] in ("chanteuse", "illusionist"):
+            kinds.setdefault(action["role"], set()).add(action["kind"])
+    assert {"chat", "kill"} <= kinds["chanteuse"] | kinds["illusionist"]
+    assert kinds["chanteuse"] <= {"chat", "kill", "block"}
+    assert kinds["illusionist"] <= {"chat", "kill", "conceal", "declined"}
 
 
 # --- the rules random play cannot be relied on to reach ----------------------------------------

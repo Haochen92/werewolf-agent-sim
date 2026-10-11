@@ -288,12 +288,17 @@ def run_memory_informed_action(
                 "adopted_count": len(adopted_store_keys),
             },
         )
+        # Day turns carry no round, and the translator sends one of each event per (player, day,
+        # round, phase), so every turn after a player's first of the day was dropped. Every turn
+        # adds an entry to the day's channel (passes too), so its length before the turn tells a
+        # player's turns apart, and stays the same when the node re-runs.
+        wire_round = len(recent_messages)
         _announce_memory_consulted(
-            player_id=player_id, role=role, day=day, round_num=round_num,
+            player_id=player_id, role=role, day=day, round_num=wire_round,
             action_phase=action_phase, enriched_payload=enriched_payload,
             retrieval_meta=retrieval_meta, effects=effects,
         )
-        _announce_reads(player_id=player_id, role=role, day=day, round_num=round_num,
+        _announce_reads(player_id=player_id, role=role, day=day, round_num=wire_round,
                         action_phase=action_phase, effects=effects)
 
     return result
