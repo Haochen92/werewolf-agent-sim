@@ -11,7 +11,6 @@
  * stuck behind a cached copy — plus inferred dimensions, so no layout shift.
  */
 import type { StaticImageData } from 'next/image';
-import type { AttackerType } from '@/types/contracts';
 import p01 from './portraits/01.webp';
 import p02 from './portraits/02.webp';
 import p03 from './portraits/03.webp';
@@ -344,13 +343,6 @@ export function initialsFor(seat: string): string {
   // "player_5" → "P5", which keeps a nine-seat table distinguishable at chip size.
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
-
-/**
- * Kill glyphs, keyed by how the death happened. Death notices carry the attacker type as a
- * typed mark rather than as grey text (ux_baseline §1) — the glyphs are hand-authored
- * pixel SVGs on one 16px grid, imported here as React components.
- */
-export type DeathGlyphKind = AttackerType | 'lynch';
 
 /**
  * The stage's cast (stage_architecture.md §4): every character this build has sprites for.
