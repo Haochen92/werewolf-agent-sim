@@ -478,6 +478,7 @@ player's OpenRouter key reaches the client. Smoke: `/api` health, models (both r
 true), replays, characters, `/`, `/play`, `/rooms`, `/replays` and an old replay page all 200; the
 replay API carries `cost_usd` 0.5151 and `avg_call_seconds` 5.13 for game 48e56d44. `:prev` for
 the server is now `5441a564`.
+· **2026-10-11 both containers rebuilt at `74d8206b`** (branch pushed first; `docker build` from a clean detached worktree, then `compose up -d --no-build`; `:prev` = the 2026-10-04 images, rollback). The ten-seat cast: the Phase 3 engine and its balance and hallucination fixes (72 commits since the last deploy), the frontend pass (`docs/ten_seat_pass.md`), the night bar's total as the living seats, the workbench on the ten-seat game, the backdrop density and preview lifecycle. No migration step: the shared `ww-postgres` was already at `0010`. Memory stays off (the ticket's switch disabled until a ten-seat store ships). Smoke: `/api/health`, the OpenAPI carrying the ten-seat ask kinds and the night record events, replays with the archive's nine-seat game parsing and its page serving, the landing saying four sides and ten seats, `/play`, the model menu. Not yet run on this build: a live ten-seat game through the server (the owner's user testing is the first).
 
 **P4 — deploy + polish.** Caddy site (same-origin `/api`), HTTPS + `Secure` cookie flag on ·
 production compose (Postgres + `alembic upgrade head` before first boot; one `WW_POSTGRES_DSN`
