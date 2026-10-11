@@ -186,6 +186,19 @@ export function seatNumber(seat: string): number {
 }
 
 /**
+ * Seats in seat order, then whatever is not a seat (abstain, a no-action word, a side) as it
+ * came. The server's roster sorts its ids as text (`player_10` before `player_2`), so the fold
+ * puts every list of seats it keeps through here.
+ */
+export function inSeatOrder(list: readonly string[]): string[] {
+  const isSeat = (s: string) => /^player_\d+$/.test(s);
+  return [
+    ...list.filter(isSeat).sort((a, b) => seatNumber(a) - seatNumber(b)),
+    ...list.filter((s) => !isSeat(s)),
+  ];
+}
+
+/**
  * The agents write `player_2` (or "Player 2"); the table reads "seat 2", capitalised where it
  * starts a sentence (the moderator's "player_4 gets a last word." after a full stop, 2026-10-07).
  */

@@ -711,6 +711,17 @@ button.suspect:focus-visible {
   bottom: 22%;
   right: -4px;
 }
+/* the strip's card is a row, so the seal at its edge sat on the seat's number ("Sec 10"): it is
+   pressed over the head's lower corner instead, as in the cell, at the head's scale */
+.strip .suspectHead {
+  flex: none;
+}
+.strip .suspectCard .seal {
+  right: auto;
+  bottom: -3.2px;
+  left: calc(4px + 62cqh * 0.62);
+  width: calc(62cqh * 0.56);
+}
 
 /* ---- the first-time hint, a paper slip beside the rail ---- */
 .hint {

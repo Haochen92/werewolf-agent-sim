@@ -796,6 +796,43 @@ describe('the ten-seat game', () => {
     expect(view.lineup).toEqual([]);
   });
 
+  it('keeps the roster and a prompt’s candidates in seat order, not the wire’s text order', () => {
+    // the server's roster_update sorts its ids as text: player_10 straight after player_1
+    const at = p3.findIndex((e) => e.type === 'roster_update');
+    const raw = p3[at] as Extract<DurableGameEvent, { type: 'roster_update' }>;
+    expect(raw.surviving_players.slice(0, 2)).toEqual(['player_1', 'player_10']);
+    const v = foldEvents(p3.slice(0, at + 1));
+    expect(v.alive).toEqual([
+      'player_1',
+      'player_3',
+      'player_4',
+      'player_6',
+      'player_8',
+      'player_9',
+      'player_10',
+    ]);
+    const asked = foldEvents(
+      [
+        ...p3.slice(0, at + 1),
+        {
+          type: 'input_request',
+          seq: raw.seq + 1,
+          day: raw.day,
+          player: 'player_9',
+          action_kind: 'vote',
+          candidates: ['player_1', 'player_10', 'player_6', 'abstain'],
+        } as DurableGameEvent,
+      ],
+      { mySeat: 'player_9' },
+    );
+    expect(asked.me.pending?.candidates).toEqual([
+      'player_1',
+      'player_6',
+      'player_10',
+      'abstain',
+    ]);
+  });
+
   it('ends over with the winner and the neutral’s result as a second line', () => {
     const v = foldEvents(p3);
     expect(v.over).toBe(true);

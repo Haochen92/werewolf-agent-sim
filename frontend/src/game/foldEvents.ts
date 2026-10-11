@@ -19,6 +19,7 @@
  * Updates are immutable along the touched path — a live fold must change object identity
  * for the day it wrote to, or memoised components subscribed to that day never re-render.
  */
+import { inSeatOrder } from '@/stage/roles';
 import type { DurableGameEvent } from '@/types/contracts';
 import type {
   CarriedSummary,
@@ -526,7 +527,7 @@ export function foldEvent(
             seq: event.seq,
             day: event.day,
             actionKind: event.action_kind,
-            candidates: event.candidates ?? [],
+            candidates: inSeatOrder(event.candidates ?? []),
             deadline: event.deadline ?? null,
             round: event.round ?? null,
             bodies: event.bodies ?? [],
@@ -587,7 +588,8 @@ export function foldEvent(
       const alive = new Set(event.surviving_players);
       return {
         ...next,
-        alive: event.surviving_players,
+        // the server sorts the roster as text (player_10 before player_2)
+        alive: inSeatOrder(event.surviving_players),
         me: {
           ...next.me,
           alive: next.me.seat === null ? true : alive.has(next.me.seat),

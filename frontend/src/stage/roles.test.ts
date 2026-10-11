@@ -3,6 +3,7 @@ import {
   factionOf,
   isLoneKiller,
   isPackRole,
+  inSeatOrder,
   isSoloNightRole,
   seatNumber,
   seatify,
@@ -32,6 +33,10 @@ describe('the stage’s role and seat words', () => {
   });
   it('reads seat numbers and factions', () => {
     expect(seatNumber('player_7')).toBe(7);
+    // seats by number, the words after them as they came
+    expect(
+      inSeatOrder(['player_1', 'player_10', 'abstain', 'player_2', 'hold_fire']),
+    ).toEqual(['player_1', 'player_2', 'player_10', 'abstain', 'hold_fire']);
     expect(factionOf('healer')).toBe('villagers');
     expect(factionOf('serial_killer')).toBe('serial_killer');
     expect(factionOf('necromancer')).toBe('serial_killer');

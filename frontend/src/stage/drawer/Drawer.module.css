@@ -119,8 +119,8 @@
 }
 .seatp {
   padding: 1.6px;
-  width: calc(var(--chip) * 0.72);
-  height: calc(var(--chip) * 0.72);
+  width: calc(var(--chip) * 0.72 * var(--seat-k, 1));
+  height: calc(var(--chip) * 0.72 * var(--seat-k, 1));
   min-height: 0;
   border-radius: 50%;
   justify-content: center;

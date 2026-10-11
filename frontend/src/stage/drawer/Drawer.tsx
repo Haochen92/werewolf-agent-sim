@@ -262,7 +262,14 @@ export function Drawer({
           </small>
         </div>
         <div className={styles.filters}>
-          <div className={styles.fg} role="group" aria-label="Seat">
+          <div
+            className={styles.fg}
+            role="group"
+            aria-label="Seat"
+            // the heads were drawn for nine; a bigger table narrows each (ten: a tenth narrower)
+            // so the row still fits the drawer, as the chip row is sized (flies.ts)
+            style={{ '--seat-k': Math.min(1, 9 / view.seats.length) } as CSSProperties}
+          >
             <span>Seat</span>
             <button
               type="button"

@@ -75,14 +75,24 @@ export function ReplayNightBody(props: SceneProps) {
       ? `${props.beat.day}:${props.beat.spoke.actor}`
       : null;
   if (cardOf !== null && cardOf !== actor) setCardOf(null);
+  // the room's picture this night: a wolf's skill plays in the pack's room, so the pack's spoke
+  // and that seat's own one share it, and the set stays up between them (phone rule)
+  const spokeRole =
+    props.beat.id === 'rnight.spoke' && props.beat.spoke
+      ? (nightBranchesOf(props.view, props.beat.day)[props.beat.spoke.rank]?.role ??
+        'villager')
+      : null;
+  const room =
+    spokeRole === null ? null : `${props.beat.day}:${ROOM_OF[spokeRole] ?? 'healer'}`;
   if (props.beat.id === 'rnight.hub') return <LobbyBody {...props} />;
   if (props.beat.id === 'rnight.whole')
     return <NightWhole key={`${props.beat.id}:${props.beat.seq}`} {...props} />;
   return (
     <SpokeRoom
-      // the room stays up for the spoke's steps (the pack's chat a line at a time) and the
-      // beat moves what moves; each line rebuilt the room's picture (build log §8.9)
-      key={actor ?? `${props.beat.id}:${props.beat.seq}`}
+      // the room stays up for the spoke's steps (the pack's chat a line at a time) and between
+      // spokes in the same picture, and the beat moves what moves; each line rebuilt the room's
+      // picture (build log §8.9)
+      key={room ?? `${props.beat.id}:${props.beat.seq}`}
       {...props}
       cardOpen={actor !== null && cardOf === actor}
       onCard={(open) => setCardOf(open ? actor : null)}
