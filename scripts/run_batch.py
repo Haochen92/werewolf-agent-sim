@@ -23,7 +23,10 @@ load_dotenv(REPO_ROOT / ".env")
 from evaluation.src.data import batch_layout
 
 
-from Agents.schemas.roles import LONE_KILLER, NEUTRAL, ROLE_SPECS, TOWN, WOLVES, roles as ROLES  # the pool
+from Agents.schemas.roles import (  # the pool
+    ALL_LINEUPS, LONE_KILLER, LONE_KILLER_ROLES, NEUTRAL, NEUTRAL_ROLES, ROLE_SPECS, TOWN, WOLVES,
+    roles as ROLES,
+)
 
 
 def role_config(*enabled_roles: str) -> dict[str, bool]:
@@ -55,6 +58,9 @@ MEMORY_CONFIGS = {
     # gates read the dict differently — retrieval treats an absent role as off, extraction treats
     # it as on — so listing only the town roles (False) is what selects the evil cells.
     "extract_evil_only": {r: False for r in ROLES if ROLE_SPECS[r].side == TOWN},
+    # Seeding arm: retrieval off for every role, extraction for every role the game dealt (an
+    # absent role reads as off to retrieval and on to extraction).
+    "extract_only": {},
 }
 
 RERANKING_CONFIGS = {
@@ -249,6 +255,15 @@ def parse_args() -> argparse.Namespace:
         help=(
             "Opt out of the experiment-folder layout: write the legacy flat "
             "batch_results/<session-prefix>.jsonl + eval_cases/<session>/ instead."
+        ),
+    )
+    parser.add_argument(
+        "--cycle-lineups",
+        action="store_true",
+        help=(
+            "Deal the four lineups in turn (game 1 the first lineup, game 2 the second, ...) "
+            "instead of drawing each game's lone killer and neutral at random, so every role "
+            "is dealt evenly."
         ),
     )
     parser.add_argument(
@@ -561,12 +576,19 @@ def run_batch(args: argparse.Namespace) -> int:
         print(f"Running {current_run_id} in session {session_id}")
 
         game_id = game_ids[run_index - 1] if game_ids else None
+        run_game_config = game_config
+        if args.cycle_lineups:
+            dealt = ALL_LINEUPS[(run_index - 1) % len(ALL_LINEUPS)]
+            run_game_config = {
+                "lone_killer": next(r for r in dealt if r in LONE_KILLER_ROLES),
+                "neutral": next(r for r in dealt if r in NEUTRAL_ROLES),
+            }
         try:
             outcome = run_game(
                 RunConfig(
                     memory_config=memory_config,
                     session_id=session_id,
-                    game=game_config,
+                    game=run_game_config,
                     memory_persistence=memory_persistence_config,
                     reranking_config=reranking_config,
                     filtering_config=filtering_config,
@@ -608,7 +630,7 @@ def run_batch(args: argparse.Namespace) -> int:
                 "reranking_config": reranking_config,
                 "filtering_config": filtering_config,
                 "retrieval_types_config": retrieval_types_config,
-                "game_config": game_config,
+                "game_config": run_game_config,
                 "run_index": run_index,
                 "run_id": current_run_id,
                 "session_id": session_id,
@@ -664,7 +686,7 @@ def run_batch(args: argparse.Namespace) -> int:
                 "reranking_config": reranking_config,
                 "filtering_config": filtering_config,
                 "retrieval_types_config": retrieval_types_config,
-                "game_config": game_config,
+                "game_config": run_game_config,
                 "run_index": run_index,
                 "run_id": current_run_id,
                 "session_id": session_id,

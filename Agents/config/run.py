@@ -24,12 +24,10 @@ from Agents.memory.persistence.config import (
 )
 
 # --- Pipeline arm defaults (memory OFF baseline) --------------------------------------
-DEFAULT_MEMORY_CONFIG = {
-    "wolf": False,
-    "villager": False,
-    "healer": False,
-    "investigator": False,
-}
+# Empty: retrieval reads a role that is not listed as off, and the post-game extraction reads it as on,
+# so the default is memory off for every role while a game that extracts covers every dealt role.
+# (Listing the nine-seat roles as False here silently skipped the healer's and investigator's cells.)
+DEFAULT_MEMORY_CONFIG: dict[str, bool] = {}
 
 DEFAULT_RERANKING_CONFIG = {
     "observations": {"wolf": False, "villager": False, "healer": False, "investigator": False},
