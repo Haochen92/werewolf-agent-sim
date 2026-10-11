@@ -8,6 +8,19 @@ async path runs them in worker threads, and their blocking LLM calls never stall
 chunk semantics are identical to the sync stream()). Our own code stays on the loop: no
 hand-rolled threads, no bridge.
 
+A solo game (one human seat) does not play on while its player is away. After each chunk,
+if that player is still alive and has no stream open (the tab closed, the phone asleep, the
+network down), the task stops reading the stream and waits until their browser connects
+again. With nothing read, the engine stops within the step it is running, not mid-call:
+the node calls that step already started finish in their worker threads and their output
+waits, and the next step does not begin. A step can be long (the day's talk runs as one
+step, up to the player's next turn), but a step that had not started when the game noticed
+the player was gone, such as the night's resolution, waits for them. The game suspends at
+once, with no grace period: a brief drop that suspends and resumes costs nothing. While
+suspended it counts as parked, so the sweeper gives it up after the same shelf life. A
+player who has died is not waited for, so the game runs to its end and its replay is
+saved. Games with several humans keep the AFK clocks instead (seat_clocks.py).
+
 Which model runs, and on whose key, is a choice from SUPPORTED_GAME_MODELS
 (game/model_catalog.py: tested models only, each with its compatible rescue). It rides a
 ContextVar set inside the game's task; LangGraph copies the task context into its worker
@@ -103,15 +116,16 @@ class GameSession:
     Two lifecycles live here, and they run independently of each other:
 
     * The game's: one task, from start() to _end(). It runs whether or not anyone is
-      watching, pauses while a human seat owes an answer, and ends when the game is
-      over, dropped, or crashed.
+      watching, pauses while a human seat owes an answer (and, in a solo game, while
+      its living player is away), and ends when the game is over, dropped, or crashed.
     * The streams': one open event stream per browser tab, from subscribe() to
       unsubscribe(). There are zero to many at once, they come and go at any point in
       the game, and each is a queue that _deliver() feeds.
 
     They meet in two places only: a seat holder's stream opening or closing tells the
-    AFK clocks whether that seat is present, and the last stream closing after the game
-    has ended fires on_idle so the registry can forget this object.
+    AFK clocks whether that seat is present (and, opening, wakes a solo game suspended
+    for its player), and the last stream closing after the game has ended fires on_idle
+    so the registry can forget this object.
 
     Attributes, by job. Every one is set in __init__; this is the only place they are
     explained.
@@ -198,6 +212,11 @@ class GameSession:
                         seat holder supplies the key again (the live registry's
                         resume_with_key). No task runs during the wait; the sweeper
                         treats it like a parked turn.
+      suspended_since   when a solo game stopped to wait for its absent player; None
+                        while the player is here or the game is not solo. The sweeper
+                        reads it like parked_since.
+      _player_returned  set by subscribe() whenever a human seat's stream opens; the
+                        suspended task waits on it, then checks it is its player.
 
     The streams' lifecycle.
       _subscribers  one queue per open event stream, keyed by the queue because that is
@@ -269,6 +288,8 @@ class GameSession:
             delegate=lambda seat: self.submit_turn({"delegate": True}, seat=seat))
         self.parked_since: datetime | None = None
         self.awaiting_key: bool = False
+        self.suspended_since: datetime | None = None
+        self._player_returned = asyncio.Event()
 
         # The streams' lifecycle.
         self._subscribers: dict[asyncio.Queue, str] = {}
@@ -361,8 +382,10 @@ class GameSession:
     async def _drive_graph(self, graph_input: Any, waiting_on_humans: bool) -> None:
         """The streaming loop. Run the engine until the game ends, handling each chunk as
         it arrives. Each time the engine pauses for a human seat, the stream ends; wait
-        for every parked seat's answer, then resume it with the batch. Returns only when
-        the game is over, or a restart cancels the task, or the engine raises."""
+        for every parked seat's answer, then resume it with the batch. After each chunk a
+        solo game may stop and wait for its absent player (_wait_for_absent_player).
+        Returns only when the game is over, or a restart cancels the task, or the engine
+        raises."""
         if waiting_on_humans:
             # Recovered at an interrupt: the seats were re-parked from the checkpoint
             # before this task started; wait for their answers.
@@ -379,6 +402,7 @@ class GameSession:
                     interrupted = True
                 # Synchronous per chunk: a crash loses at most this chunk's events.
                 await self._persist_tail()
+                await self._wait_for_absent_player()
             if not interrupted:
                 break
             # Resume with user input, once every interrupted seat has answered.
@@ -391,6 +415,43 @@ class GameSession:
             # and lifecycle on their parent GameRow, never copies the log.
             await self._repository.complete_game(
                 self.game_id, self.log, len(self.human_players))
+
+    async def _wait_for_absent_player(self) -> None:
+        """If this is a solo game and its player is away, wait here until they are back.
+        Called between chunks, so while it waits the stream is not read and the engine
+        goes no further than the step it is in (see the module docstring). There is no
+        grace period: a drop of a second or two suspends and resumes at no cost, since the
+        step in flight keeps running either way.
+
+        Returns at once when there is nothing to wait for. Otherwise it records when the
+        wait began (the sweeper reads suspended_since) and wakes each time a human seat's
+        stream opens, until one of them is this player's. A restart or a drop cancels
+        the wait like any other."""
+        seat = self._absent_solo_seat()
+        if not seat:
+            return
+        since = self.suspended_since = datetime.now(timezone.utc)
+        logger.info("game %s: suspended, its player (%s) is away", self.game_id, seat)
+        try:
+            while not self.seat_present(seat):
+                self._player_returned.clear()
+                await self._player_returned.wait()
+        finally:
+            self.suspended_since = None
+        logger.info("game %s: resumed, its player (%s) is back after %d s", self.game_id,
+                    seat, (datetime.now(timezone.utc) - since).total_seconds())
+
+    def _absent_solo_seat(self) -> str:
+        """The player's seat when the game should wait for them, "" when it should not.
+        It waits only when there is exactly one human seat, that seat has been dealt, the
+        game is not over, the player is alive, and no stream of theirs is open. A game
+        with several humans never waits here: it has the AFK clocks."""
+        if len(self._seat_tokens) != 1 or self.game_over:
+            return ""
+        seat = self.seat_of_viewer(self._seat_tokens[0])
+        if not seat or self.seat_present(seat) or seat in self._dead_seats:
+            return ""
+        return seat
 
     async def _persist_tail(self) -> None:
         """Push the log's unpersisted suffix + newly-learned human seats to the
@@ -620,6 +681,14 @@ class GameSession:
         started = next((e for e in self.log if e.type == "game_started"), None)
         return set(started.seats) if started is not None else set()
 
+    @property
+    def _dead_seats(self) -> set[str]:
+        """Every seat that has died, as the players were told: the night's deaths, a
+        hidden body included, and the day's lynch. Read from the log, so a game rebuilt
+        after a restart knows its dead too."""
+        dead = {d.player for e in self.log if e.type == "night_result" for d in e.deaths}
+        return dead | {e.player for e in self.log if e.type == "lynch_result" and e.player}
+
     async def _turn_payload(self, seat: str) -> dict[str, Any]:
         """What the engine handed the seat's waiting turn: the Send its paused node was
         started with, read back from the checkpoint. It is the very input the node runs on
@@ -754,7 +823,9 @@ class GameSession:
     def subscribe(self, token: str = "") -> asyncio.Queue:
         """Open a stream: make its queue and file it with the connection's seat token,
         "" for a spectator. A human seat connecting is the presence signal that lifts
-        a grace or un-parks the table."""
+        a grace, un-parks the table, or wakes a solo game suspended for its player. The
+        bar showing, if any, goes into the queue first, so a player coming back to a
+        suspended game sees it before the game moves on."""
         q: asyncio.Queue = asyncio.Queue()
         self._subscribers[q] = token
         frame = self._tracker.current_frame
@@ -763,6 +834,7 @@ class GameSession:
         seat = self.seat_of_viewer(token)
         if seat:
             self.clocks.on_seat_returned(seat)
+            self._player_returned.set()
         return q
 
     def _deliver(self, event: ev.DurableEvent) -> None:

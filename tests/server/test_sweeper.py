@@ -98,3 +98,33 @@ async def test_a_game_waiting_for_its_key_has_the_same_shelf_life(quiet_session)
     session.awaiting_key = False
     assert not is_expired(session, SETTINGS)  # neither parked nor waiting: nothing to sweep
 
+
+
+async def test_a_suspended_solo_game_has_the_same_shelf_life(quiet_session):
+    """A solo game suspended with its player away counts as parked: it is dropped after
+    the solo shelf life, not before, never while its player is connected, and the reason
+    says it was suspended."""
+    from tests.fixtures.server import FakeGraph
+
+    silent = {"type": "updates", "ns": [], "data": {"DAY_PHASE": {}}}
+    session = quiet_session(FakeGraph([silent, silent]), seat_tokens=["t1"],
+                            human_players=["player_3"])
+    session.start()
+    while session.suspended_since is None:
+        await asyncio.sleep(0.01)
+    assert not session.pending_requests and session.parked_since is None
+
+    session.suspended_since = datetime.now(timezone.utc) - timedelta(minutes=59)
+    assert not is_expired(session, SETTINGS)
+    session.suspended_since = datetime.now(timezone.utc) - timedelta(minutes=61)
+    assert is_expired(session, SETTINGS)
+    spectator = session.subscribe()
+    assert is_expired(session, SETTINGS)  # a spectator does not count
+    session.unsubscribe(spectator)
+
+    repo = Repo()
+    games = LiveGameRegistry(repo, SimpleNamespace(graph=None))
+    games._register(session)
+    assert await sweep_parked_games(games, SETTINGS) == [session.game_id]
+    assert session.error == "abandoned: suspended with its player away for 61 min"
+    assert session.ended and session.suspended_since is None

@@ -836,6 +836,91 @@ async def test_shutdown_cancels_a_parked_game(quiet_session):
     assert session.ended
 
 
+# ---- a solo game suspends while its player is away ---------------------------------------
+
+
+def _silent_chunk() -> dict:
+    """A step finishing that sends nothing to the wire (the day wrapper's commit)."""
+    return {"type": "updates", "ns": [], "data": {"DAY_PHASE": {}}}
+
+
+class _CountingGraph(FakeGraph):
+    """Yields silent step chunks, counting each one the session pulls from the stream."""
+
+    def __init__(self, n_chunks: int):
+        super().__init__([_silent_chunk() for _ in range(n_chunks)])
+        self.pulled = 0
+
+    async def astream(self, payload, *, config, context, stream_mode, subgraphs, version):
+        self.calls.append(payload)
+        for part in self.phases[0]:
+            self.pulled += 1
+            yield part
+
+
+async def _until(predicate, timeout=5.0):
+    async def poll():
+        while not predicate():
+            await asyncio.sleep(0.01)
+    await asyncio.wait_for(poll(), timeout)
+
+
+async def test_a_solo_game_stops_while_its_player_is_away_and_resumes_on_their_return(
+        quiet_session):
+    """Live testing 2026-10-11: the phone slept for two minutes and the night was played
+    and resolved without its player. Now the game reads no further than the chunk it is
+    on until the player's stream opens again, and the returning viewer gets the bar first."""
+    graph = _CountingGraph(3)
+    session = quiet_session(graph, seat_tokens=["t1"], human_players=["player_3"])
+    session.start()
+    await _until(lambda: session.suspended_since is not None)
+    await asyncio.sleep(0.05)
+    assert graph.pulled == 1 and not session.ended  # nothing read past the first chunk
+
+    spectator = session.subscribe()  # a spectator is not the player
+    await asyncio.sleep(0.05)
+    assert graph.pulled == 1 and session.suspended_since is not None
+
+    session._tracker.on_event(_ev(ev.GameStarted, seats=["player_3", "p9"], cast_role_counts={}))
+    session._tracker.on_event(_ev(ev.PhaseChange, phase="voting"))  # a bar is showing
+    q = session.subscribe("t1")
+    kind, frame = q.get_nowait()
+    assert kind == "pacing" and (frame.stage, frame.done, frame.total) == ("day_vote", 0, 2)
+    await asyncio.wait_for(session.wait_finished(), timeout=5)
+    assert graph.pulled == 3 and session.suspended_since is None and session.error is None
+    session.unsubscribe(q)
+    session.unsubscribe(spectator)
+
+
+async def test_a_solo_game_whose_player_has_died_plays_on_to_its_end(quiet_session):
+    """A dead player is not waited for: the game finishes so its replay is saved. The
+    death is read from the log, a hidden body included."""
+    graph = _CountingGraph(3)
+    session = quiet_session(graph, seat_tokens=["t1"], human_players=["player_3"])
+    session.log.append(_ev(ev.NightResult, deaths=[ev.NightDeath(
+        player="player_3", role="", attacker_types=["wolves"], concealed=True)]))
+    session.start()
+    await asyncio.wait_for(session.wait_finished(), timeout=5)
+    assert graph.pulled == 3 and session.error is None
+
+
+async def test_a_room_with_several_humans_never_suspends(quiet_session):
+    graph = _CountingGraph(3)
+    session = quiet_session(graph, seat_tokens=["t1", "t2"],
+                            human_players=["player_3", "player_5"])
+    session.start()
+    await asyncio.wait_for(session.wait_finished(), timeout=5)
+    assert graph.pulled == 3 and session.suspended_since is None
+
+
+async def test_a_solo_game_stopped_while_suspended_clears_the_mark(quiet_session):
+    session = quiet_session(_CountingGraph(2), seat_tokens=["t1"], human_players=["player_3"])
+    session.start()
+    await _until(lambda: session.suspended_since is not None)
+    await asyncio.wait_for(session.suspend(), timeout=5)  # the server going down
+    assert session.ended and session.suspended_since is None
+
+
 # ---- pacing: public denominator + padded completion -------------------------------------
 
 _TEN_SEATS = [f"p{i}" for i in range(1, 11)]

@@ -10,9 +10,11 @@ that seat's turn is played by the seat's own AI so the rest of the table can car
 nobody is connected, the game parks: it just waits, nothing is spent, and the question is
 still there when someone comes back.
 
-Only games with more than one human seat use these clocks; a solo player may think for as
-long as they like. This file holds the timing and nothing else. GameSession lends it the
-two things it cannot work out itself: who is connected, and how to hand a turn to an AI.
+Only games with more than one human seat use these clocks. A solo player may think for as
+long as they like, and when they leave the game does not play on without them: it
+suspends until they come back (GameSession). This file holds the timing and nothing
+else. GameSession lends it the two things it cannot work out itself: who is connected,
+and how to hand a turn to an AI.
 """
 
 from __future__ import annotations

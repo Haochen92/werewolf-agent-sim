@@ -334,6 +334,33 @@ async def test_parked_game_revives_reparked_and_resumes_on_the_answer(monkeypatc
     assert isinstance(resume, Command) and resume.resume["message"] == "back from the dead"
 
 
+async def test_a_recovered_solo_game_with_no_viewer_suspends_at_its_first_chunk(monkeypatch):
+    """A restart brings a solo game back with nobody watching: it reads one chunk, then
+    waits for its player like any solo game whose player is away."""
+    silent = {"type": "updates", "ns": [], "data": {"DAY_PHASE": {}}}
+
+    class SteppingGraph(FakeDurableGraph):
+        pulled = 0
+
+        async def astream(self, payload, **_):
+            self.calls.append(payload)
+            for _ in range(2):
+                self.pulled += 1
+                yield silent
+
+    graph = SteppingGraph(SimpleNamespace(next=("NIGHT_RESOLUTION",), tasks=[]))
+    games, _ = await _recover(monkeypatch, [_row()], graph)
+    session = games.get("g-1")
+    while session.suspended_since is None:
+        await asyncio.sleep(0.01)
+    assert graph.calls == [None] and graph.pulled == 1  # resumed from the checkpoint
+
+    q = session.subscribe("tok-1")
+    await asyncio.wait_for(session.wait_finished(), timeout=10)
+    assert graph.pulled == 2 and session.error is None
+    session.unsubscribe(q)
+
+
 async def test_a_rebuilt_game_gets_its_cast_and_its_picks_back(monkeypatch):
     """The puppets are a fact about the game: the cast table says who stood where, and
     the row's seats carry each joiner's pick, so a restart cannot redraw either."""

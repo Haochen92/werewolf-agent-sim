@@ -1,12 +1,13 @@
 """The timer job that gives up on games nobody ever came back to.
 
-A game left waiting on a human question, or waiting for its owner's API key after a
-restart, with no human seat connected costs nothing while it waits, but boot recovery
-would keep bringing it back forever. This is its shelf life: once a solo game has waited
-an hour, or a game with several humans a whole day, the sweeper marks it ``dropped`` and
-stores the reason, which is what someone opening the game later sees. Running the sweep
-again is harmless, and it never touches a game with a human seat connected (a spectator
-does not count), one that is actually playing, or one that has already ended.
+A game left waiting on a human question, waiting for its owner's API key after a
+restart, or suspended because its solo player went away, with no human seat connected
+costs nothing while it waits, but boot recovery would keep bringing it back forever.
+This is its shelf life: once a solo game has waited an hour, or a game with several
+humans a whole day, the sweeper marks it ``dropped`` and stores the reason, which is
+what someone opening the game later sees. Running the sweep again is harmless, and it
+never touches a game with a human seat connected (a spectator does not count), one that
+is actually playing, or one that has already ended.
 
 Waiting rooms have a shelf life too: a room nobody departed within ROOM_LIST_TTL_SECONDS
 is closed on the same pass (``LiveGameRegistry.expire_rooms``).
@@ -33,20 +34,31 @@ def _shelf_life(session: GameSession, settings: ServerSettings) -> timedelta:
     return timedelta(seconds=seconds)
 
 
+def _waiting_since(session: GameSession) -> tuple[datetime, str] | None:
+    """When the game began waiting for a human, and what to call that wait in the reason;
+    None when it is not waiting. Parked on a question or on a key comes first; otherwise
+    a solo game suspended because its player is away."""
+    if session.parked_since is not None and (session.pending_requests or session.awaiting_key):
+        return session.parked_since, "parked on a human turn with nobody connected"
+    if session.suspended_since is not None:
+        return session.suspended_since, "suspended with its player away"
+    return None
+
+
 def is_expired(session: GameSession, settings: ServerSettings,
                now: datetime | None = None) -> bool:
-    """True when the game is waiting on a human, nobody is connected to watch it, and it
-    has been in that state longer than its shelf life. The cheapest checks come first."""
+    """True when the game is waiting on a human (parked on a question or a key, or
+    suspended with its solo player away), nobody is connected to watch it, and it has
+    been in that state longer than its shelf life. The cheapest checks come first."""
     if session.error is not None or session.game_over or session.ended:
         return False
-    if session.parked_since is None:
-        return False
-    if not session.pending_requests and not session.awaiting_key:
+    waiting = _waiting_since(session)
+    if waiting is None:
         return False
     if session.humans_present:
         return False
     now = now or datetime.now(timezone.utc)
-    return now - session.parked_since >= _shelf_life(session, settings)
+    return now - waiting[0] >= _shelf_life(session, settings)
 
 
 async def sweep_parked_games(registry: LiveGameRegistry,
@@ -57,9 +69,9 @@ async def sweep_parked_games(registry: LiveGameRegistry,
     for session in registry.sessions:
         if not is_expired(session, settings, now):
             continue
-        idle = datetime.now(timezone.utc) - session.parked_since  # type: ignore[operator]
-        reason = (f"abandoned: parked on a human turn with nobody connected for "
-                  f"{int(idle.total_seconds() // 60)} min")
+        since, waiting = _waiting_since(session)  # type: ignore[misc]
+        idle = datetime.now(timezone.utc) - since
+        reason = f"abandoned: {waiting} for {int(idle.total_seconds() // 60)} min"
         try:
             await registry.drop(session.game_id, reason)
         except Exception:  # one bad game must not stop the rest of the sweep
