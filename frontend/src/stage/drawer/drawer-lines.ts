@@ -24,7 +24,7 @@
 import type { GameView, GmSlot, PassSlot, PrivateResult } from '@/game/types';
 import type { PassReason } from '@/types/contracts';
 import type { SceneBeat } from '../beats/types';
-import { seatNumber, seatify } from '../roles';
+import { isPackRole, seatNumber, seatify } from '../roles';
 
 export type LineTier = 'public' | 'private' | 'xray';
 
@@ -120,9 +120,11 @@ const ARTICLE: Record<string, string> = {
 
 /** The ending, as the drawer's last line says it when no game-master line says it first. */
 export const WINNER_TEXT: Record<string, string> = {
-  villagers: 'The village has won.',
+  villagers: 'The town has won.',
   wolves: 'The wolves have won.',
   serial_killer: 'The serial killer has won.',
+  necromancer: 'The necromancer has won.',
+  draw: 'The game is a draw.',
 };
 
 const GAME_OVER = /^\s*game over/i;
@@ -164,7 +166,10 @@ const UNTIL_TRUTH: ReadonlySet<string> = new Set([
  * which the stage tells only at `over.verdict`, so the line (and its rule) waits for that
  * (owner, 2026-10-06: it read as a spoiler while the stage was still on where it ended).
  */
-const UNTIL_VERDICT: ReadonlySet<string> = new Set(['over.where-it-ended', 'over.winners-hour']);
+const UNTIL_VERDICT: ReadonlySet<string> = new Set([
+  'over.where-it-ended',
+  'over.winners-hour',
+]);
 
 export interface LineOptions {
   me: string | null;
@@ -181,7 +186,7 @@ export function drawerLines(view: GameView, o: LineOptions): DrawerLine[] {
   const { me, xray } = o;
   const out: { at: number; line: DrawerLine }[] = [];
   const push = (at: number, line: DrawerLine) => out.push({ at, line });
-  const wolfMe = !!me && (view.me.role?.role === 'wolf' || !!view.me.role?.pack);
+  const wolfMe = !!me && (isPackRole(view.me.role?.role) || !!view.me.role?.pack);
 
   const phaseSeq = (day: number, phase: string) =>
     view.timeline.find((t) => t.day === day && t.phase === phase)?.seq ?? null;
@@ -256,7 +261,7 @@ export function drawerLines(view: GameView, o: LineOptions): DrawerLine[] {
               ? [lynch.role]
               : []
             : about === 'dawn'
-              ? (d.night?.deaths ?? []).map((x) => x.role)
+              ? (d.night?.deaths ?? []).flatMap((x) => (x.role === null ? [] : [x.role]))
               : [];
         const seats =
           about === 'vote'
@@ -266,7 +271,13 @@ export function drawerLines(view: GameView, o: LineOptions): DrawerLine[] {
             : about === 'dawn'
               ? [
                   ...(d.night?.deaths ?? []).map((x) => x.player),
-                  ...(d.night?.save ? [d.night.save.player] : []),
+                  // every seat saved (a view folded before `saves` existed has only `save`)
+                  ...(d.night?.saves?.length
+                    ? d.night.saves
+                    : d.night?.save
+                      ? [d.night.save]
+                      : []
+                  ).map((x) => x.player),
                 ]
               : [];
         const covers =
@@ -423,9 +434,10 @@ export function drawerLines(view: GameView, o: LineOptions): DrawerLine[] {
       });
   }
 
-  for (const p of privateResultsFor(view, me, xray)) push(p.seq, onlyLine(p, me));
+  for (const { p, covers } of privateResultsFor(view, me, xray))
+    push(p.seq, onlyLine(p, me, covers));
 
-  if (view.winner && view.winnerSeq !== null && !overGm) {
+  if (view.over && view.winnerSeq !== null && !overGm) {
     pushOverRule(push, view.winnerSeq - 0.5, view.day);
     push(view.winnerSeq, {
       kind: 'over',
@@ -434,7 +446,7 @@ export function drawerLines(view: GameView, o: LineOptions): DrawerLine[] {
       day: view.day,
       tier: 'public',
       seats: [],
-      winner: view.winner,
+      winner: view.winner ?? 'draw',
     });
   }
 
@@ -461,14 +473,28 @@ function spokeCut(
   seq: number,
   actor: string,
 ): DrawerLine[] {
+  // a ten-seat carrier's kill is an act of its own, and the pack's (as `nightBranchesOf`)
+  const kill = lines.find((l) => l.kind === 'kill' && l.day === day);
+  const carried =
+    kill?.kind === 'kill'
+      ? lines.find(
+          (l) =>
+            l.kind === 'act' &&
+            l.day === day &&
+            isPackRole(l.role) &&
+            l.target === kill.target,
+        )
+      : undefined;
   const branchOf = (l: DrawerLine): string | null =>
     l.day !== day
       ? null
-      : l.kind === 'act'
-        ? l.actor
-        : l.kind === 'pack' || l.kind === 'kill'
-          ? 'pack'
-          : null;
+      : l === carried
+        ? 'pack'
+        : l.kind === 'act'
+          ? l.actor
+          : l.kind === 'pack' || l.kind === 'kill'
+            ? 'pack'
+            : null;
   const last = new Map<string, number>();
   for (const l of lines) {
     const b = branchOf(l);
@@ -532,21 +558,46 @@ function failedKill(target: string, whose: string): OnlyText {
   };
 }
 
-/** The private results this viewer holds: its own seated; everyone's with the X-ray. */
+/**
+ * The private results this viewer holds: its own seated; everyone's with the X-ray. The pack's
+ * kill record reaches every wolf (`actor: "wolves"`), so it is one line a night: the viewer's
+ * own copy, else the first, standing for the others (`covers`).
+ */
 function privateResultsFor(
   view: GameView,
   me: string | null,
   xray: boolean,
-): PrivateResult[] {
+): { p: PrivateResult; covers: number[] }[] {
   const all = [
     ...(me ? view.me.privateResults.filter((p) => p.player === me) : []),
-    ...(xray ? Object.values(view.xray.privateResults).flat() : []),
+    ...(xray
+      ? Object.values(view.xray.privateResults)
+          .flat()
+          .sort((a, b) => a.seq - b.seq)
+      : []),
   ];
   const seen = new Set<number>();
-  return all.filter((p) => (seen.has(p.seq) ? false : (seen.add(p.seq), true)));
+  const packNights = new Map<number, { p: PrivateResult; covers: number[] }>();
+  const out: { p: PrivateResult; covers: number[] }[] = [];
+  for (const p of all) {
+    if (seen.has(p.seq)) continue;
+    seen.add(p.seq);
+    const kept = isPackRecord(p) ? packNights.get(p.day) : undefined;
+    if (kept) {
+      kept.covers.push(p.seq);
+      continue;
+    }
+    const entry = { p, covers: [] };
+    if (isPackRecord(p)) packNights.set(p.day, entry);
+    out.push(entry);
+  }
+  return out;
 }
 
-function onlyLine(p: PrivateResult, me: string | null): DrawerLine {
+const isPackRecord = (p: PrivateResult): boolean =>
+  p.kind === 'night_record' && p.actor === 'wolves';
+
+function onlyLine(p: PrivateResult, me: string | null, covers: number[]): DrawerLine {
   const mine = p.player === me;
   const n = seatNumber(p.player);
   const base = {
@@ -556,7 +607,8 @@ function onlyLine(p: PrivateResult, me: string | null): DrawerLine {
     day: p.day,
     tier: 'private' as const,
     mine,
-    who: mine ? 'Only you' : `Only seat ${n}`,
+    who: mine ? 'Only you' : isPackRecord(p) ? 'Only the pack' : `Only seat ${n}`,
+    ...(covers.length ? { covers } : {}),
   };
   if (p.kind === 'investigation') {
     const t = seatNumber(p.target);
@@ -583,11 +635,22 @@ function onlyLine(p: PrivateResult, me: string | null): DrawerLine {
       },
     };
   }
+  if (p.kind === 'night_record') {
+    // the engine's own sentence; the Record tab sets the fields out (step 4 of the ten-seat pass)
+    return {
+      ...base,
+      seats: [p.player, ...(p.target && p.target.startsWith('player_') ? [p.target] : [])],
+      about: `Night ${p.day}`,
+      text: p.outcome,
+    };
+  }
+  // a nine-seat vigilante's bullets, or a ten-seat limit (`uses`): the vigilante's are caps
+  const word = p.kind === 'bullets' || p.role === 'vigilante' ? 'cap' : 'use';
   return {
     ...base,
     seats: [p.player],
     about: `Night ${p.day}`,
-    text: p.count === 1 ? 'One cap left.' : `${p.count} caps left.`,
+    text: p.count === 1 ? `One ${word} left.` : `${p.count} ${word}s left.`,
   };
 }
 

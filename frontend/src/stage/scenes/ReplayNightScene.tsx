@@ -34,19 +34,19 @@ import { chipRow, rowX } from '../instruments/flies';
 import { useMotionScale } from '../motion';
 import { roomPlan } from '../paint/compartment';
 import { diningCarPlan } from '../paint/dining-car';
-import { ROLE_NAME, seatNumber } from '../roles';
+import { ROLE_NAME, isPackRole, seatNumber } from '../roles';
 import { bandNarrows, fileTap, sideOpen } from '../slot';
 import { bandFoot, STAGE_H, STAGE_W, geometry } from '../units';
 import { CarSetSpec } from './CarScene';
-import { LobbyBody, nightUnits, spokeOf } from './NightLobbyScene';
+import { LobbyBody, nightUnits, roomsToTry, spokeOf } from './NightLobbyScene';
 import { NightRoom, ROOM_OF } from './NightRoom';
 import { packEntries } from './PackScene';
 import {
   ACT_MARK,
   actedAt,
+  actLine,
   actedTonight,
   endsBranch,
-  isHeld,
   isMarkStep,
   marksAt,
   nightBranchesOf,
@@ -56,16 +56,6 @@ import {
 import type { SceneProps } from './types';
 import styles from './ReplayNight.module.css';
 
-/** What each act does, as the box says it (bench 67 `VERB`). */
-const VERB: Record<string, string> = {
-  healer: 'protects',
-  investigator: 'checks',
-  vigilante: 'shoots',
-  serial_killer: 'marks',
-  wolf: 'chooses',
-};
-/** A seat that chose no one: what the box says (the vigilante holding its fire). */
-const HOLDS: Record<string, string> = { vigilante: 'holds its fire.' };
 /** When, after the beat starts, the choice lands, its mark follows, and the actor's lamp goes out (seconds). */
 const MARK_AT = 0.9;
 const STAMP_AT = 1.4;
@@ -144,7 +134,6 @@ function SpokeRoom({
   const spoke = beat.spoke ?? null;
   const cur: NightBranch | undefined = spoke ? branches[spoke.rank] : undefined;
   const markStep = !!spoke && isMarkStep(spoke, cur);
-  const held = isHeld(cur);
   const ends = !!spoke && endsBranch(spoke, cur);
   const total = nightUnits(view);
   const acted = actedAt(branches, spoke, total);
@@ -152,7 +141,7 @@ function SpokeRoom({
   const role = cur?.role ?? 'villager';
   const seats = cur?.seats ?? [];
   const alive = view.seats.filter((s) => view.alive.includes(s));
-  const wolves = new Set(alive.filter((s) => view.xray.roles[s] === 'wolf'));
+  const wolves = new Set(alive.filter((s) => isPackRole(view.xray.roles[s])));
   const photos = pack
     ? alive.filter((s) => !wolves.has(s))
     : alive.filter((s) => s !== cur?.actor || s === cur?.target);
@@ -174,18 +163,23 @@ function SpokeRoom({
   // card, read as a card that would not open; owner)
   const actors = actedTonight(view, view, day);
   const open = fileTap(presentation, slotInput, true);
+  // the rooms another actor's card leads to (a wolf's: its skill's, the pack's); this room's
+  // own actors' cards open their files
+  const elsewhere = (s: string) =>
+    seats.includes(s) ? [] : (actors.get(s) ?? []).filter((a) => a !== cur?.actor);
   const visit = (seat: string) => {
-    const into = spokeOf(view, day, seat);
-    if (!(stop ? stop.onVisit(into) : onSeek?.(into))) open?.(seat);
+    for (const actor of roomsToTry(view, seat, elsewhere(seat), stop?.visited)) {
+      const into = spokeOf(day, actor);
+      if (stop ? stop.onVisit(into) : onSeek?.(into)) return;
+    }
+    open?.(seat);
   };
   const tap =
-    stop || onSeek
-      ? (s: string) => (actors.has(s) && !seats.includes(s) ? visit : open)?.(s)
-      : open;
+    stop || onSeek ? (s: string) => (elsewhere(s).length ? visit : open)?.(s) : open;
   const word = (s: string) => {
-    const a = actors.get(s);
-    if (!a || seats.includes(s)) return undefined;
-    return stop?.visited.includes(a) ? 'seen' : 'visit';
+    const rooms = elsewhere(s);
+    if (!rooms.length) return undefined;
+    return rooms.every((a) => stop?.visited.includes(a)) ? 'seen' : 'visit';
   };
 
   const plan = roomPlan({ room: ROOM_OF[role] ?? 'healer', hud, side, n: photos.length });
@@ -274,9 +268,7 @@ function SpokeRoom({
             walnut={!!back}
             actions={back}
           >
-            {held
-              ? (HOLDS[cur.role] ?? 'does not act.')
-              : `${VERB[cur.role] ?? 'acts on'} seat ${seatNumber(cur.target ?? '')}.`}
+            {actLine(cur.role, cur.target)}
           </Notice>
         </NoticeZone>
       ) : null}
@@ -319,7 +311,7 @@ function NightWhole({ view, beat, me, presentation, slot: slotInput }: SceneProp
   const side = sideOpen(presentation);
   const g = geometry(hud, side);
   const plan = diningCarPlan({ phase: 'night', hud, side });
-  const row = chipRow(g, plan, 'low');
+  const row = chipRow(g, plan, 'low', view.seats.length);
   const day = beat.day;
   const branches = nightBranchesOf(view, day);
   const marks = marksAt(branches, null);

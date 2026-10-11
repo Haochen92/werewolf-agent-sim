@@ -12,6 +12,7 @@
 import type { GameView } from '@/game/types';
 import type { Spoke } from '../beats/types';
 import type { ActKind } from '../instruments/ActMark';
+import { isPackRole, seatNumber } from '../roles';
 
 export interface NightBranch {
   /** A seat, or `pack` for the wolves together. */
@@ -37,6 +38,52 @@ export const ACT_MARK: Record<string, ActKind> = {
   investigator: 'lens',
 };
 
+/** What each act does to its target, as the spoke's box says it (bench 67, the role sheet's verbs). */
+const VERB: Record<string, string> = {
+  wolf: 'chooses',
+  healer: 'protects',
+  investigator: 'checks',
+  sentinel: 'watches',
+  trailseer: 'follows',
+  vigilante: 'shoots',
+  sigilist: 'marks',
+  chanteuse: 'blocks',
+  serial_killer: 'kills',
+  // the act carries only the target; the body it borrowed is not on the wire
+  necromancer: 'acts on',
+  fortune_teller: 'bets on',
+};
+/** A seat that weighed its night and chose no one (its consult and reads, no act). */
+const HOLDS: Record<string, string> = {
+  vigilante: 'holds its fire.',
+  investigator: 'keeps its checks.',
+  sentinel: 'keeps its watches.',
+  sigilist: 'keeps its sigils.',
+  necromancer: 'stays put.',
+  speculator: 'waits.',
+  fortune_teller: 'waits.',
+};
+/** The speculator's pick is a side word, not a seat. */
+const SIDE: Record<string, string> = {
+  town: 'Town',
+  wolves: 'the Wolves',
+  lone_killer: 'the lone killer',
+  self: 'itself',
+};
+
+/**
+ * The spoke's line: "protects seat 3.", "picks the Wolves.", "holds its fire.". The
+ * illusionist's act has no target (the engine sends "" for a conceal, and nothing at all for
+ * "keep your conceals", whose consult falls to the pack's branch), so its branch with no
+ * target is the conceal.
+ */
+export function actLine(role: string, target: string | null): string {
+  if (role === 'illusionist') return 'conceals the body.';
+  if (!target) return HOLDS[role] ?? 'does not act.';
+  if (role === 'speculator') return `picks ${SIDE[target] ?? target}.`;
+  return `${VERB[role] ?? 'acts on'} seat ${seatNumber(target)}.`;
+}
+
 /** Every branch of night `day` the view holds, in the order the replay plays them. */
 export function nightBranchesOf(view: GameView, day: number): NightBranch[] {
   const night = view.days[day]?.night;
@@ -45,7 +92,7 @@ export function nightBranchesOf(view: GameView, day: number): NightBranch[] {
   const wolves = new Set([
     ...night.packRoster,
     ...Object.entries(view.xray.roles)
-      .filter(([, r]) => r === 'wolf')
+      .filter(([, r]) => isPackRole(r))
       .map(([s]) => s),
   ]);
 
@@ -64,7 +111,23 @@ export function nightBranchesOf(view: GameView, day: number): NightBranch[] {
     return b;
   };
 
-  for (const a of night.actions) touch(a.actor, a.seq, a.role).target = a.target;
+  // A ten-seat carrier's kill comes as its own act beside its skill's (2026-10-10): the first
+  // pack act on the kill's target is the pack's, the rest (a block, a conceal) the seat's own.
+  let carried = false;
+  for (const a of night.actions) {
+    if (
+      !carried &&
+      night.wolfKill !== null &&
+      wolves.has(a.actor) &&
+      a.target === night.wolfKill
+    ) {
+      carried = true;
+      touch('pack', a.seq, 'wolf');
+    } else {
+      // an act with no target (a held fire, a conceal) comes as "": a spoke with no mark
+      touch(a.actor, a.seq, a.role).target = a.target || null;
+    }
+  }
   for (const m of night.wolfChannel)
     if (m.wolf !== 'game_master') touch('pack', m.seq, 'wolf').lines++;
   for (const v of night.wolfVotes) touch('pack', v.seq, 'wolf');
@@ -156,22 +219,24 @@ export function actedAt(
 }
 
 /**
- * Who acted on night `day`, seat by seat, and whose room each is in (`pack` for a wolf). The
- * rooms are read from `ahead`, a view that has reached the night's end (the hub's own view has
- * not); the pack's seats are the wolves living in `view`, not those left at the log's end.
+ * Who acted on night `day`, seat by seat, and the rooms each is in, in the order the replay
+ * plays them: a seat's own, and for a wolf the pack's (`pack`) too; a ten-seat wolf's skill, a
+ * block or a conceal, is a room of its own beside the pack's. The rooms are read from `ahead`,
+ * a view that has reached the night's end (the hub's own view has not); the pack's seats are
+ * the wolves living in `view`, not those left at the log's end.
  */
 export function actedTonight(
   view: GameView,
   ahead: GameView,
   day: number,
-): Map<string, string> {
-  const out = new Map<string, string>();
+): Map<string, string[]> {
+  const out = new Map<string, string[]>();
   for (const b of nightBranchesOf(ahead, day)) {
     const seats =
       b.actor === 'pack'
-        ? view.alive.filter((s) => view.xray.roles[s] === 'wolf')
+        ? view.alive.filter((s) => isPackRole(view.xray.roles[s]))
         : b.seats.filter((s) => view.alive.includes(s));
-    for (const s of seats) out.set(s, b.actor);
+    for (const s of seats) out.set(s, [...(out.get(s) ?? []), b.actor]);
   }
   return out;
 }

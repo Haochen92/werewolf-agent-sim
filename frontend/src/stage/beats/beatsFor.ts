@@ -42,10 +42,18 @@ const HOLD = {
   reportRow: 2000,
 } as const;
 
-/** The morning roll's hold: a row per death, and one for a seat saved; a quiet night the base. */
-function reportHold(e: EventOf<'night_result'>): number {
-  return HOLD.report + HOLD.reportRow * (e.deaths.length + (e.save ? 1 : 0));
+/** Every seat the night saved: a ten-seat night lists them in `saves`, a nine-seat one has `save`. */
+function savesOf(e: EventOf<'night_result'>) {
+  return e.saves?.length ? e.saves : e.save ? [e.save] : [];
 }
+
+/** The morning roll's hold: a row per death, per seat saved, and the pick's; a quiet night the base. */
+function reportHold(e: EventOf<'night_result'>): number {
+  const rows = e.deaths.length + savesOf(e).length + (e.pick ? 1 : 0);
+  return HOLD.report + HOLD.reportRow * rows;
+}
+
+const isSeat = (s: string | null | undefined): s is string => !!s && /^player_\d+$/.test(s);
 const WORDS_PER_SECOND = 2.4;
 const SPEECH_FLOOR_MS = 5000;
 const SPEECH_CAP_MS = 15000;
@@ -79,6 +87,14 @@ function nightBranches(
   to: number,
   wolves: ReadonlySet<string>,
 ): Branch[] {
+  // A ten-seat carrier's kill comes as its own `night_action` beside its skill's (2026-10-10):
+  // the first pack act on the kill's target is the pack's, the rest is the seat's own spoke.
+  let kill: string | null = null;
+  for (let i = from; i < to; i++) {
+    const e = events[i];
+    if (e.type === 'wolf_kill_decided') kill = e.target;
+  }
+  let carried = false;
   const byActor = new Map<string, Branch>();
   const touch = (actor: string, seq: number) => {
     const b = byActor.get(actor) ?? { actor, lastSeq: seq, lines: [], target: null };
@@ -90,7 +106,10 @@ function nightBranches(
     const e = events[i];
     switch (e.type) {
       case 'night_action':
-        touch(e.actor, e.seq).target = e.target;
+        if (!carried && kill !== null && wolves.has(e.actor) && e.target === kill) {
+          carried = true;
+          touch('pack', e.seq).target = kill;
+        } else touch(e.actor, e.seq).target = e.target;
         break;
       case 'wolf_message':
         if (e.wolf !== 'game_master') touch('pack', e.seq).lines.push(e);
@@ -131,6 +150,14 @@ export function beatsFor(
     }
   }
   const isWolf = me !== null && wolves.has(me);
+  // The pack's kill record reaches every wolf (`actor: "wolves"`): its holders, by night. It
+  // stands for the game master's note on a night that has one.
+  const packRecords = new Map<number, string[]>();
+  for (const e of events) {
+    if (e.type === 'night_record' && e.actor === 'wolves')
+      packRecords.set(e.day, [...(packRecords.get(e.day) ?? []), e.player]);
+  }
+  const packTold = new Set<number>();
   // The X-ray's night (its hub, a spoke per actor, the whole) is the replay's telling. A game in
   // play keeps the beats it played when game over turns the X-ray on: no X-ray night (the last
   // night is not told again between the viewer's own night and the morning), and no X-ray or
@@ -350,7 +377,8 @@ export function beatsFor(
               ? 'vote.your-ballot'
               : e.action_kind === 'wolf_discuss'
                 ? 'pack.your-line'
-                : e.action_kind === 'wolf_vote'
+                : // the nine-seat pack's ballot, or the ten-seat carrier's kill (one plate, one target)
+                  e.action_kind === 'wolf_vote' || e.action_kind === 'carrier_kill'
                   ? 'pack.vote'
                   : 'room.opens';
         push({
@@ -404,6 +432,7 @@ export function beatsFor(
 
       case 'wolf_message':
         if (e.wolf === 'game_master') {
+          if (packRecords.has(e.day)) break; // the pack's kill record is the beat
           // The server's note that the kill failed: private to the pack, arrives in the morning.
           push({
             id: 'morning.only-you',
@@ -493,13 +522,14 @@ export function beatsFor(
           pub('morning.chip-fell', e, next, HOLD.chip, who);
           pub('morning.card-down', e, next, HOLD.card, who);
         }
-        if (e.save) {
-          pub('morning.chip-attacked', e, next, HOLD.chip, { subject: e.save.player });
-          pub('morning.chip-saved', e, next, HOLD.card, { subject: e.save.player });
+        const saves = savesOf(e);
+        for (const save of saves) {
+          pub('morning.chip-attacked', e, next, HOLD.chip, { subject: save.player });
+          pub('morning.chip-saved', e, next, HOLD.card, { subject: save.player });
         }
         // the roll with the names comes after the chips have told it (owner, 2026-10-02: on
         // the notice first it read as a spoiler), held for its rows
-        if (e.deaths.length || e.save) pub('morning.roll', e, next, reportHold(e));
+        if (e.deaths.length || saves.length) pub('morning.roll', e, next, reportHold(e));
         else pub('morning.quiet', e, next, HOLD.shutter);
         break;
       }
@@ -518,6 +548,29 @@ export function beatsFor(
           aqua: true,
         });
         break;
+
+      case 'night_record': {
+        // A ten-seat seat's own record of its night. The pack's kill record is one beat a
+        // night, at its first copy, for whichever wolf holds one (the viewer, when it does).
+        let seat = e.player;
+        if (e.actor === 'wolves') {
+          if (packTold.has(e.day)) break;
+          packTold.add(e.day);
+          if (me !== null && packRecords.get(e.day)?.includes(me)) seat = me;
+        }
+        push({
+          id: 'morning.only-you',
+          day: e.day,
+          seq: e.seq,
+          end: next,
+          sees: 'seat',
+          seat,
+          ...(isSeat(e.target) ? { subject: e.target } : {}),
+          holdMs: HOLD.card,
+          aqua: true,
+        });
+        break;
+      }
 
       case 'game_over': {
         over = true;

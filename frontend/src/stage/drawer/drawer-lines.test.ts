@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { foldEvents } from '@/game/foldEvents';
 import { beatsFor } from '../beats/beatsFor';
 import type { SceneBeat } from '../beats/types';
+import type { DurableGameEvent } from '@/types/contracts';
+import phase3 from '@/stage/fixtures/replay-phase3.json';
+import necro from '@/stage/fixtures/replay-phase3-necro.json';
 import { FIXTURE_EVENTS } from '../workbench/fixture';
 import {
   DEFAULT_FILTERS,
@@ -483,5 +486,83 @@ describe('the drawer: how it tells what it holds', () => {
     expect(new Set(rules.map((l) => l.kind === 'rule' && l.chapter))).toEqual(
       new Set(['day', 'vote', 'night', 'morning', 'over']),
     );
+  });
+});
+
+describe('the drawer on a ten-seat game', () => {
+  const necroLog = necro.events as unknown as DurableGameEvent[];
+  const p3Log = phase3.events as unknown as DurableGameEvent[];
+
+  it('shows the X-ray the pack’s kill record once a night, standing for every wolf’s copy', () => {
+    const lines = drawerLines(foldEvents(necroLog), { me: null, xray: true });
+    // night 1's record reached both wolves (seqs 99 and 100)
+    expect(byKey(lines, 'only-99')).toMatchObject({
+      who: 'Only the pack',
+      mine: false,
+      covers: [100],
+      text: 'player_4 died. They were a sigilist.',
+    });
+    expect(byKey(lines, 'only-100')).toBeUndefined();
+    const packLines = lines.filter((l) => l.kind === 'only' && l.who === 'Only the pack');
+    expect(packLines.map((l) => l.seq)).toEqual([99, 314]);
+    // the X-ray's only-you beat lights it, whichever copy it stands on
+    expect(litKey(lines, { id: 'morning.only-you', day: 1, seq: 99 })).toBe('only-99');
+    expect(litKey(lines, { id: 'morning.only-you', day: 1, seq: 100 })).toBe('only-99');
+  });
+
+  it('gives a seated wolf its own copy of the pack’s record', () => {
+    const view = foldEvents(necroLog, { mySeat: 'player_10' });
+    const only = drawerLines(view, { me: 'player_10', xray: false }).filter(
+      (l) => l.kind === 'only',
+    );
+    expect(only.map((l) => [l.seq, l.kind === 'only' && l.who])).toEqual([
+      [100, 'Only you'],
+      [101, 'Only you'],
+    ]);
+  });
+
+  it('counts every seat saved in the dawn line’s seats', () => {
+    const twoSaves = necroLog.map((e) =>
+      e.type === 'night_result' && e.day === 2
+        ? ({
+            ...e,
+            saves: [
+              { player: 'player_1', attacker_types: ['wolves'] },
+              { player: 'player_3', attacker_types: ['vigilante'] },
+            ],
+          } as DurableGameEvent)
+        : e,
+    );
+    const lines = drawerLines(foldEvents(twoSaves), { me: null, xray: false });
+    expect(byKey(lines, 'gm-310')?.seats).toEqual(['player_10', 'player_1', 'player_3']);
+    expect(
+      filterLines(lines, { ...DEFAULT_FILTERS, seat: 'player_3' }).some(
+        (l) => l.key === 'gm-310',
+      ),
+    ).toBe(true);
+  });
+
+  it('cuts the carrier’s kill with the pack’s branch at a spoke, its skill with its own', () => {
+    const night1 = (pick: (b: SceneBeat) => boolean) => {
+      const beat = beatsFor(p3Log, { xray: true }).find(
+        (b) => b.id === 'rnight.spoke' && b.day === 1 && pick(b),
+      )!;
+      return drawerLines(foldEvents(p3Log.slice(0, beat.end)), {
+        me: null,
+        xray: true,
+        beat,
+      })
+        .filter((l) => l.day === 1 && l.kind === 'act')
+        .map((l) => l.key);
+    };
+    // the chanteuse carried the kill (91) and blocked seat 1 (94): the kill lands with the
+    // pack's mark, the block with her own spoke after it
+    const mark = night1(
+      (b) => b.spoke?.actor === 'pack' && b.spoke.step === b.spoke.steps - 1,
+    );
+    expect(mark).toContain('act-91');
+    expect(mark).not.toContain('act-94');
+    expect(night1((b) => b.spoke?.actor === 'player_5')).toContain('act-94');
+    expect(night1((b) => b.spoke?.rank === 0)).not.toContain('act-91');
   });
 });
