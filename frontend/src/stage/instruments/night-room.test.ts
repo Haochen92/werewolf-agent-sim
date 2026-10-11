@@ -56,15 +56,13 @@ describe('the plate', () => {
   });
 
   it('asks the necromancer for both a body and a seat', () => {
-    expect(plateLabel('necromancer_target', null)).toBe('Choose a body and a seat');
-    expect(plateLabel('necromancer_target', 'player_5')).toBe(
-      'Choose a body to act through',
-    );
+    expect(plateLabel('necromancer_target', null)).toBe('A body, then a seat');
+    expect(plateLabel('necromancer_target', 'player_5')).toBe('Choose a body for seat 5');
     expect(plateLabel('necromancer_target', null, { body: 'player_3' })).toBe(
-      'Through seat 3, choose a seat',
+      'As seat 3, choose a seat',
     );
     expect(plateLabel('necromancer_target', 'player_5', { body: 'player_3' })).toBe(
-      'Through seat 3, act on seat 5',
+      'As seat 3, act on seat 5',
     );
   });
 
@@ -174,8 +172,10 @@ describe('the sealed plate', () => {
       'You keep your pick for another night',
     );
     expect(sealedLabel('necromancer_target', 'player_5', { body: 'player_3' })).toBe(
-      'Through seat 3, you act on seat 5 tonight',
+      'As seat 3, you act on seat 5 tonight',
     );
+    // a remount that lost the body
+    expect(sealedLabel('necromancer_target', 'player_5')).toBe('You act on seat 5 tonight');
     expect(sealedLabel('bet_target', 'player_4')).toBe('You bet on seat 4');
     expect(sealedLabel('bet_target', 'player_4', { roleNamed: 'healer' })).toBe(
       'You bet on seat 4 as Healer',

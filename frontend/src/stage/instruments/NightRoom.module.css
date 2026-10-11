@@ -222,6 +222,10 @@ button.photo:focus-visible {
   line-height: 1;
   margin: calc(10 * var(--u)) 0 calc(4 * var(--u));
 }
+.framedHead[data-long] {
+  font-size: calc(20 * var(--u));
+  white-space: nowrap;
+}
 .framedHead svg,
 .cardHead svg {
   width: calc(22 * var(--u));

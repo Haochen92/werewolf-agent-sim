@@ -174,7 +174,7 @@ export function sealedLabel(
       return `You bet on seat ${seatNumber(target)} as ${ROLE_NAME[more.roleNamed] ?? more.roleNamed}`;
   }
   if (kind === 'necromancer_target' && target && more.body)
-    return `Through seat ${seatNumber(more.body)}, you act on seat ${seatNumber(target)} tonight`;
+    return `As seat ${seatNumber(more.body)}, you act on seat ${seatNumber(target)} tonight`;
   const say = kind && ACT_SEALED[kind];
   // a remount that lost which seat was pressed still knows the act is in
   return target && say ? say(seatNumber(target)) : 'Your act is in';
@@ -222,11 +222,14 @@ export function plateLabel(
   if (kind === 'conceal') return CONCEAL_PLATE;
   if (kind === 'speculator_pick')
     return chosen && SIDE_PICKED[chosen] ? `Pick ${SIDE_PICKED[chosen]}` : 'Choose a side';
+  // the necromancer acts as the dead player it borrows: short words, so its plate and Stay
+  // put sit in the room as the others' do on a phone (2026-10-11)
   if (kind === 'necromancer_target') {
-    if (more.body && chosen)
-      return `Through seat ${seatNumber(more.body)}, act on seat ${seatNumber(chosen)}`;
-    if (more.body) return `Through seat ${seatNumber(more.body)}, choose a seat`;
-    return chosen ? 'Choose a body to act through' : 'Choose a body and a seat';
+    const body = more.body ? seatNumber(more.body) : null;
+    if (body && chosen) return `As seat ${body}, act on seat ${seatNumber(chosen)}`;
+    if (body) return `As seat ${body}, choose a seat`;
+    if (chosen) return `Choose a body for seat ${seatNumber(chosen)}`;
+    return 'A body, then a seat';
   }
   if (kind === 'bet_target' && chosen) {
     if (chosen === more.me) return 'Bet on yourself';

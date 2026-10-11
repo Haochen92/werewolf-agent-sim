@@ -22,6 +22,13 @@ import styles from './NightRoom.module.css';
 /** The frame's outermost ring, drawn past its box (NightRoom.module.css `.framed`). */
 const FRAME_RING = 9.6;
 
+/**
+ * A name too wide for the card's head at full size with its sigil beside it (Necromancer,
+ * Investigator, Fortune teller, measured 2026-10-11): a step smaller, on one line, on the
+ * framed card and the opened one alike.
+ */
+const longName = (name: string) => (name.length > 10 ? true : undefined);
+
 export interface FramedCardProps {
   role: string;
   /** The frame's centre x and the table's top it stands on, in units. */
@@ -90,7 +97,7 @@ export function FramedCard({
         }
       >
         <span className={styles.framedIn}>
-          <span className={styles.framedHead}>
+          <span className={styles.framedHead} data-long={longName(text.name)}>
             <span>{text.name}</span>
             <Sigil role={role} variant="felt" small={22 * u < 26} />
           </span>
@@ -160,11 +167,7 @@ export function CardOverlay({
         style={{ '--u': `${u}px` } as CSSProperties}
       >
         <span className={styles.cardIn}>
-          <span
-            className={styles.cardHead}
-            // "Fortune teller", too wide for the head at full size: a step smaller, on one line
-            data-long={text.name.length > 13 ? true : undefined}
-          >
+          <span className={styles.cardHead} data-long={longName(text.name)}>
             <span>{text.name}</span>
             <Sigil role={role} variant="felt" small={32 * u < 26} />
           </span>
