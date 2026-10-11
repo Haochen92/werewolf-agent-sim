@@ -36,7 +36,9 @@
  * archive answers for it, the curtain says "Winding the reels… come back in a few minutes"
  * where the link will be (`useReplayFiled`, 2026-10-01). Before the ending a seated player's
  * way out is the strip's door, which asks first ("Leave the table?") and goes to the lobby;
- * their agent plays on.
+ * their agent plays on. A seated player whose own death came in while the page was away (what a
+ * reconnect caught up on lands still, so no beat played it) is told it once, in a notice at the
+ * foot (`AwayNotice`, 2026-10-11).
  *
  * Before the game, the same stage holds the waiting room: the platform (`StationScene`), drawn
  * from the room the page hands in (`room`), with the host's Lock and Depart going back out
@@ -56,7 +58,7 @@ import { useReplayFiled } from '@/hooks/useReplayFiled';
 import { draftLine, rejoinGame, submitTurn, type TurnPayload } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { ApiError } from '@/lib/request';
-import { seatToken } from '@/lib/storage';
+import { deathTold, seatToken } from '@/lib/storage';
 import { foldEvents } from '@/game/foldEvents';
 import type { DurableGameEvent, GameStatus } from '@/types/contracts';
 import { isNineSeat } from '../card-text';
@@ -67,7 +69,7 @@ import { useDrawerFilters } from '../drawer/use-drawer-filters';
 import { StageMotion } from '../motion';
 import { notebookForAgent, useNotebook, useNoteEditing } from '../notebook';
 import { CardOverlay } from '../instruments/FramedCard';
-import { LeaveConfirm } from '../instruments/TopStrip';
+import { AwayNotice, LeaveConfirm } from '../instruments/TopStrip';
 import { draftRequest } from '../instruments/turn-dock';
 import { isPackRole, seatNumber } from '../roles';
 import { SCENES } from '../scenes';
@@ -89,6 +91,8 @@ import { geometry } from '../units';
 import { createFoldCache } from './fold-cache';
 import {
   actSent,
+  awayDeath,
+  awayWords,
   curtainReplay,
   historyEnd as historyEndOf,
   historyLanding,
@@ -440,6 +444,23 @@ export function LiveTheatre({
   const noteEditing = useNoteEditing();
   // the strip's door: "Leave the table?" is open (a seated player, until the game ends)
   const [leaving, setLeaving] = useState(false);
+  // the seat's own death, come in while the page was away: told once in this tab; one watched
+  // live is marked told, so a later reload's catch-up does not tell it again
+  const [toldHere, setToldHere] = useState<string | null>(null);
+  const myDeath = me ? view.dead.find((d) => d.player === me) : undefined;
+  const diedLive = !!myDeath && liveSeqs.has(myDeath.seq);
+  useEffect(() => {
+    if (me && diedLive && storeGame === gameId) deathTold.mark(gameId, me);
+  }, [me, diedLive, storeGame, gameId]);
+  const away =
+    storeGame === gameId && me
+      ? awayDeath(view, liveSeqs, toldHere === me || deathTold.has(gameId, me))
+      : null;
+  const dismissAway = useCallback(() => {
+    if (!me) return;
+    deathTold.mark(gameId, me);
+    setToldHere(me);
+  }, [gameId, me]);
   const router = useRouter();
   const ahead = useMemo(
     () => (xrayShown ? folds.at(events.length) : null),
@@ -676,10 +697,23 @@ export function LiveTheatre({
               legacy={isNineSeat(view)}
             />
           ) : null}
+          {liveOn && beat && away && !leaving && !xrayShown ? (
+            <AwayNotice
+              hud="live"
+              side={sideOpen(presentation)}
+              words={awayWords(away)}
+              onWatch={dismissAway}
+              onLeave={() => {
+                dismissAway();
+                router.push(LOBBY);
+              }}
+            />
+          ) : null}
           {liveOn && beat && leaving && me && !xrayShown ? (
             <LeaveConfirm
               hud="live"
               side={sideOpen(presentation)}
+              out={!view.me.alive}
               onStay={() => setLeaving(false)}
               onLeave={() => router.push(LOBBY)}
             />

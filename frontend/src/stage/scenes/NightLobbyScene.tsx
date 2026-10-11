@@ -34,11 +34,12 @@ import { CardButton, Notice, NoticeButton, NoticeZone } from '../instruments/Not
 import { chipRow, rowX } from '../instruments/flies';
 import { cardTextFor, isNineSeat } from '../card-text';
 import { diningCarPlan } from '../paint/dining-car';
-import { isPackRole, isSoloNightRole, seatNumber } from '../roles';
+import { isPackRole, isSoloNightRole, seatNumber, usableBodies } from '../roles';
 import { bandNarrows, fileTap, sideOpen } from '../slot';
 import { STAGE_H, geometry } from '../units';
 import { CarSetSpec } from './CarScene';
 import { actedTonight } from './replay-night';
+import { spentNote } from './ShelfRoomScene';
 import type { SceneProps } from './types';
 
 /**
@@ -74,6 +75,30 @@ export function actorsTonight(view: GameView, day: number): Set<string> {
   }
   for (const a of view.days[day]?.night?.actions ?? []) out.add(a.actor);
   return out;
+}
+
+/**
+ * Why the seated human is asked nothing tonight, read from what the seat knows, mirroring the
+ * engine's `acts_tonight` (Agents/nodes/orchestrator.py): the necromancer's power wakes on
+ * night 2 and needs a revealed body with an ability to give (`usableBodies`); a limited ability
+ * whose uses are spent (`spentNote`). Null while an ask may still come, which keeps the card's
+ * night line; an ask that has come wins (live testing 2026-10-11: the necromancer's night 1
+ * said nothing of why there was no room).
+ */
+export function noAskLine(
+  me: Pick<GameView['me'], 'role' | 'alive' | 'pending'>,
+  dead: GameView['dead'],
+  day: number,
+): string | null {
+  const role = me.role?.role;
+  if (!role || !me.alive) return null;
+  const kind = me.pending?.day === day ? me.pending.actionKind : null;
+  if (kind && kind !== 'discuss' && kind !== 'vote') return null;
+  if (role === 'necromancer') {
+    if (day < 2) return 'Your power wakes on night 2.';
+    return usableBodies(dead).length ? null : 'No body you can use tonight.';
+  }
+  return spentNote(role, me.role?.uses ?? null, me.role?.bullets ?? null) ?? null;
 }
 
 /** The way into an actor's room on night `day` (a seat, or `pack`): its first spoke. */
@@ -131,6 +156,8 @@ function LobbyBeat({
   const voted = phases.includes('voting');
   const actors = xray ? actorsTonight(view, beat.day) : null;
   const myRole = me ? (view.me.role?.role ?? null) : null;
+  // the seat asked nothing tonight, and why (the box under its card)
+  const noAsk = me ? noAskLine(view.me, view.dead, beat.day) : null;
   const H = STAGE_H;
   // live, the acts come in as the night runs (`phase_progress`): the count
   const units = nightUnits(view, turn?.progress);
@@ -240,14 +267,15 @@ function LobbyBeat({
           <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
             <CardButton role={myRole} onOpen={turn?.onCard} />
             <Notice
-              title={myRole === 'villager' ? 'You sleep' : 'Night falls'}
+              title={myRole === 'villager' || noAsk ? 'You sleep' : 'Night falls'}
               arrive={animate}
               delay={1.2}
             >
-              {isPackRole(myRole) && (view.packRoster.length || 0) < 2
-                ? (cardTextFor(myRole, isNineSeat(view))?.nightAlone ??
-                  cardTextFor(myRole, isNineSeat(view))?.night)
-                : cardTextFor(myRole, isNineSeat(view))?.night}
+              {noAsk ??
+                (isPackRole(myRole) && (view.packRoster.length || 0) < 2
+                  ? (cardTextFor(myRole, isNineSeat(view))?.nightAlone ??
+                    cardTextFor(myRole, isNineSeat(view))?.night)
+                  : cardTextFor(myRole, isNineSeat(view))?.night)}
             </Notice>
           </NoticeZone>
         ) : null}

@@ -1270,6 +1270,57 @@ test('live: the strip’s door asks, and Leave goes to the lobby', async ({ page
   await expect(page).toHaveURL(/\/rooms$/, { timeout: 20_000 });
 });
 
+test('live: back from a dropped stream the page reopens it at once, and a seat that died meanwhile is told so, once', async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  // seat 4, the investigator, killed by the wolves on night 2 (seq 156): the page watches the
+  // night begin, then the stream drops (the mock's body ends, and its retry is an hour off)
+  const SEAT4 = 'player_4';
+  const seenBy4 = (e: WireEvent) =>
+    !OBSERVER.has(e.type) &&
+    !FACTION.has(e.type) &&
+    (!SEAT.has(e.type) || e.player === SEAT4);
+  const as4 = { you: SEAT4, human_players: [SEAT4] };
+  const mock: Mock = {
+    status: status(140, as4),
+    stream: ALL.filter((e) => e.seq <= 140 && seenBy4(e)),
+  };
+  await mockApi(page, mock);
+  const streams: string[] = [];
+  page.on('request', (req) => {
+    if (req.url().includes(`/games/${GAME}/events`)) streams.push(req.url());
+  });
+  await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  await landsOn(page, 'night.hub');
+  expect(streams).toHaveLength(1);
+  // meanwhile the night resolved and day 3 began; the server sends what the page missed
+  mock.status = status(170, as4);
+  mock.stream = ALL.filter((e) => e.seq > 140 && e.seq <= 170 && seenBy4(e));
+  // the page comes back into view: the stream is not open, so it is reopened from where the
+  // page had got to, without waiting on the browser's retry
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+  await expect.poll(() => streams.length).toBe(2);
+  const had = Math.max(...ALL.filter((e) => e.seq <= 140 && seenBy4(e)).map((e) => e.seq));
+  expect(new URL(streams[1]).searchParams.get('last_seq')).toBe(String(had));
+  // what came back is history: the stage lands still on day 3, and the seat is told
+  await expect(page.locator('[data-line="say-169"]')).toBeVisible({ timeout: 15_000 });
+  const told = page.getByRole('alertdialog', { name: 'While you were away' });
+  await expect(told).toContainText(
+    'You were killed by the wolves on night 2. The table saw your card: Investigator.',
+  );
+  await expect(told).toContainText('The game goes on without you');
+  await told.getByRole('button', { name: 'Watch on' }).click();
+  await expect(told).toHaveCount(0);
+  // a reload in the same tab catches the whole log up again: the death is not told twice
+  mock.stream = ALL.filter((e) => e.seq <= 170 && seenBy4(e));
+  await page.reload({ waitUntil: 'networkidle' });
+  await expect(page.locator('[data-line="say-169"]')).toBeVisible({
+    timeout: foldTime(page),
+  });
+  await expect(told).toHaveCount(0);
+});
+
 test('live: after game over the ending plays to its curtain', async ({ page }) => {
   test.setTimeout(90_000); // the whole ending plays, a beat at a time
   await page.clock.install({ time: T0 });

@@ -3,11 +3,14 @@
  * liveness flagging (ux_journeys §0, binding), reconnect de-duplication, and pacing
  * monotonicity. Fold correctness itself is covered in `foldEvents.test.ts`.
  */
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DurableGameEvent, ReplayGame } from '@/types/contracts';
+import { deathTold } from '@/lib/storage';
+import { awayDeath, awayWords } from '@/stage/containers/live-state';
 import { foldEvents } from './foldEvents';
 import { useGameSession } from './store';
 import fixture from './__fixtures__/seed-chunk-catalogue.json';
+import liveGame from './__fixtures__/live-ab44887a-p3.json';
 
 const events = (fixture as unknown as ReplayGame).events as DurableGameEvent[];
 
@@ -225,5 +228,93 @@ describe('pacing', () => {
     });
     store.hydrate([]);
     expect(useGameSession.getState().pacing).toEqual({});
+  });
+});
+
+describe('the seat’s own death, told on return (live game ab44887a, seat 3)', () => {
+  // seat 3 (the necromancer) as the server streamed it: night 2's result (seq 279) kills the
+  // seat by the wolves and conceals the body, during a two-minute drop on a phone
+  const seatEvents = liveGame.events as unknown as DurableGameEvent[];
+  const GAME = 'ab44887a';
+  const SEAT = 'player_3';
+  const session = new Map<string, string>();
+  beforeEach(() => {
+    session.clear();
+    vi.stubGlobal('window', {
+      sessionStorage: {
+        getItem: (k: string) => session.get(k) ?? null,
+        setItem: (k: string, v: string) => void session.set(k, v),
+      },
+    });
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  /** The question the theatre asks after each fold: anything to tell, not told in this tab? */
+  const toTell = () => {
+    const s = useGameSession.getState();
+    return awayDeath(s.view, s.liveSeqs, deathTold.has(GAME, SEAT));
+  };
+
+  it('a catch-up that carries my death tells it, in the morning roll’s words', () => {
+    const store = useGameSession.getState();
+    store.hydrate([], { gameId: GAME, mySeat: SEAT });
+    // live up to the night, then the drop: what the reopened stream sends is catch-up
+    for (const e of seatEvents.filter((x) => x.seq <= 240)) store.applyLive(e);
+    expect(toTell()).toBeNull();
+    for (const e of seatEvents.filter((x) => x.seq > 240)) store.applyCatchUp(e);
+    const death = toTell();
+    expect(death).toMatchObject({ player: SEAT, day: 2, role: null, causes: ['wolves'] });
+    expect(awayWords(death!)).toBe(
+      'You were killed by the wolves on night 2. Your role was hidden. ' +
+        'The game goes on without you: watch it to the end, or leave the table.',
+    );
+  });
+
+  it('the first connection to a running game is a catch-up too', () => {
+    const store = useGameSession.getState();
+    store.hydrate([], { gameId: GAME, mySeat: SEAT });
+    for (const e of seatEvents) store.applyCatchUp(e);
+    expect(toTell()?.seq).toBe(279);
+  });
+
+  it('a death that arrived live is not told: its beats played it', () => {
+    const store = useGameSession.getState();
+    store.hydrate([], { gameId: GAME, mySeat: SEAT });
+    for (const e of seatEvents) store.applyLive(e);
+    expect(toTell()).toBeNull();
+  });
+
+  it('a second catch-up of the same death does not tell it again', () => {
+    const store = useGameSession.getState();
+    store.hydrate([], { gameId: GAME, mySeat: SEAT });
+    for (const e of seatEvents) store.applyCatchUp(e);
+    expect(toTell()).not.toBeNull();
+    deathTold.mark(GAME, SEAT); // the notice, dismissed
+    // a reload in the same tab: the whole log again, all of it history
+    useGameSession.getState().hydrate([], { gameId: GAME, mySeat: SEAT });
+    for (const e of seatEvents) useGameSession.getState().applyCatchUp(e);
+    expect(awayDeath(useGameSession.getState().view, new Set())).not.toBeNull();
+    expect(toTell()).toBeNull();
+  });
+
+  it('says a vote-out and a shown card in the table’s words; not a spectator’s, nor after the end', () => {
+    const lynched = {
+      player: SEAT,
+      role: 'healer',
+      day: 3,
+      seq: 1,
+      causes: ['lynch' as const],
+    };
+    expect(awayWords(lynched)).toMatch(
+      /^You were voted out on day 3\. The table saw your card: Healer\. /,
+    );
+    const both = { ...lynched, causes: ['wolves' as const, 'serial_killer' as const] };
+    expect(awayWords(both)).toMatch(
+      /^You were attacked by the wolves and the serial killer on night 3, and fell\./,
+    );
+    const view = foldEvents(seatEvents, { mySeat: SEAT });
+    expect(awayDeath(view, new Set())).not.toBeNull();
+    expect(awayDeath({ ...view, me: { ...view.me, seat: null } }, new Set())).toBeNull();
+    expect(awayDeath({ ...view, over: true }, new Set())).toBeNull();
   });
 });

@@ -265,12 +265,15 @@ function DoorGlyph() {
 export function LeaveConfirm({
   hud,
   side = false,
+  out = false,
   onStay,
   onLeave,
 }: {
   hud: Hud;
   /** The side slot is open: the zone stops short of it. */
   side?: boolean;
+  /** The seat is out of the game: no agent plays on for it, so the words say so. */
+  out?: boolean;
   onStay: () => void;
   onLeave: () => void;
 }) {
@@ -305,8 +308,68 @@ export function LeaveConfirm({
             </>
           }
         >
-          Your seat’s agent plays on for you. You can come back to this game from the lobby
-          while it lasts.
+          {out
+            ? 'You are out of this game; the others play on without you. You can come back to watch from the lobby while it lasts.'
+            : 'Your seat’s agent plays on for you. You can come back to this game from the lobby while it lasts.'}
+        </Notice>
+      </div>
+    </NoticeZone>
+  );
+}
+
+/**
+ * The seat's own death, told once to a player who was away when it happened (live testing
+ * 2026-10-11): what the history caught up on lands still, so without this the stage simply
+ * showed a seat that was out. In the leave confirm's place and look (the walnut notice); Watch
+ * on closes it, Leave goes to the lobby as the door's Leave does (a seat that is out has no
+ * agent playing on, so it does not ask again).
+ */
+export function AwayNotice({
+  hud,
+  side = false,
+  words,
+  onWatch,
+  onLeave,
+}: {
+  hud: Hud;
+  /** The side slot is open: the zone stops short of it. */
+  side?: boolean;
+  /** `awayWords` (containers/live-state.ts). */
+  words: string;
+  onWatch: () => void;
+  onLeave: () => void;
+}) {
+  const box = useRef<HTMLDivElement>(null);
+  const watch = useRef(onWatch);
+  watch.current = onWatch;
+  useEffect(() => {
+    box.current?.querySelector('button')?.focus();
+    const esc = (e: KeyboardEvent) => e.key === 'Escape' && watch.current();
+    window.addEventListener('keydown', esc);
+    return () => window.removeEventListener('keydown', esc);
+  }, []);
+  return (
+    <NoticeZone hud={hud} side={side}>
+      <div
+        ref={box}
+        className={styles.leave}
+        role="alertdialog"
+        aria-label="While you were away"
+        data-away-notice
+      >
+        <Notice
+          walnut
+          title="While you were away"
+          actions={
+            <>
+              <NoticeButton lead onPress={onWatch}>
+                Watch on
+              </NoticeButton>
+              <NoticeButton onPress={onLeave}>Leave the table</NoticeButton>
+            </>
+          }
+        >
+          {words}
         </Notice>
       </div>
     </NoticeZone>

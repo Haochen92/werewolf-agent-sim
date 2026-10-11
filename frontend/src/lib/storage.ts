@@ -13,6 +13,7 @@ const KEYS = {
   byok: 'byok_key',
   ghost: (gameId: string) => `ghost_${gameId}`,
   notes: (gameId: string) => `notes_${gameId}`,
+  told: (gameId: string, seat: string) => `told_${gameId}_${seat}`,
 } as const;
 
 function read(key: string): string | null {
@@ -114,4 +115,28 @@ export const seatNotes = {
     }
   },
   set: (gameId: string, notes: unknown) => write(KEYS.notes(gameId), JSON.stringify(notes)),
+};
+
+/**
+ * Whether this tab has already told a seat of its own death that came in while the page was
+ * away (the live theatre's "While you were away" notice), or watched it happen. Session storage:
+ * a reload in the same tab does not tell it twice; a new tab may, once.
+ */
+export const deathTold = {
+  has: (gameId: string, seat: string): boolean => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return window.sessionStorage.getItem(KEYS.told(gameId, seat)) !== null;
+    } catch {
+      return false;
+    }
+  },
+  mark: (gameId: string, seat: string): void => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.sessionStorage.setItem(KEYS.told(gameId, seat), '1');
+    } catch {
+      /* disabled storage: the notice may come back on a reload, nothing worse */
+    }
+  },
 };

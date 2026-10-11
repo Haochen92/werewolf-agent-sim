@@ -5,7 +5,15 @@ import { beatsFor } from '../beats/beatsFor';
 import { FIXTURE_EVENTS, PHASE3_GAME, PHASE3_NECRO_GAME } from '../workbench/fixture';
 import type { DurableGameEvent } from '@/types/contracts';
 import { foldEvents } from '@/game/foldEvents';
-import { actorsTonight, nightUnits, roomsToTry, spokeOf } from './NightLobbyScene';
+import liveGame from '@/game/__fixtures__/live-ab44887a-p3.json';
+import { usableBodies } from '../roles';
+import {
+  actorsTonight,
+  nightUnits,
+  noAskLine,
+  roomsToTry,
+  spokeOf,
+} from './NightLobbyScene';
 import { actedTonight } from './replay-night';
 
 // the nine-seat fixture (the workbench's default is the ten-seat game)
@@ -156,5 +164,81 @@ describe('the night lobby on the ten-seat games', () => {
     expect(order(['player_6'])).toEqual(['pack', 'player_6']);
     for (const actor of ['player_6', 'pack'])
       expect(beats.some(spokeOf(2, actor))).toBe(true);
+  });
+});
+
+describe('why the seat is asked nothing tonight', () => {
+  // live game ab44887a (2026-10-11), seat 3 the necromancer, as the server streamed it
+  const seatEvents = liveGame.events as unknown as DurableGameEvent[];
+  const atNightfall = (day: number) => {
+    const fall = seatEvents.find(
+      (e) => e.type === 'phase_change' && e.phase === 'night' && e.day === day,
+    )!;
+    return foldEvents(
+      seatEvents.filter((e) => e.seq <= fall.seq),
+      { mySeat: 'player_3' },
+    );
+  };
+
+  it('the necromancer: its power wakes on night 2, and needs a body it can use', () => {
+    const n1 = atNightfall(1);
+    expect(noAskLine(n1.me, n1.dead, 1)).toBe('Your power wakes on night 2.');
+    // night 1 killed the speculator (seat 2), whose body gives nothing
+    const n2 = atNightfall(2);
+    expect(n2.dead.map((d) => [d.player, d.role])).toEqual([['player_2', 'speculator']]);
+    expect(noAskLine(n2.me, n2.dead, 2)).toBe('No body you can use tonight.');
+    // a revealed healer's body is one: the ask may still come, so the card's line stays
+    const healer = [
+      ...n2.dead,
+      { player: 'player_6', role: 'healer', day: 2, seq: 1, causes: [] },
+    ];
+    expect(noAskLine(n2.me, healer, 2)).toBeNull();
+  });
+
+  it('a body counts only revealed, and only with an ability to give', () => {
+    const body = (player: string, role: string | null) => ({ player, role });
+    expect(
+      usableBodies([
+        body('player_1', 'villager'),
+        body('player_2', 'wolf'),
+        body('player_3', 'serial_killer'),
+        body('player_4', 'speculator'),
+        body('player_5', null), // concealed
+        body('player_6', 'chanteuse'),
+        body('player_7', 'trailseer'),
+      ]),
+    ).toEqual(['player_6', 'player_7']);
+  });
+
+  it('a spent ability, in the card note’s words; an ask that has come wins', () => {
+    const me = (role: string, uses: number | null, bullets: number | null = null) => ({
+      role: { role, pack: null, bullets, uses },
+      alive: true,
+      pending: null,
+    });
+    expect(noAskLine(me('investigator', 0), [], 3)).toBe('No checks left.');
+    expect(noAskLine(me('sentinel', 0), [], 3)).toBe('No watches left.');
+    expect(noAskLine(me('vigilante', 0), [], 3)).toBe('No caps left.');
+    expect(noAskLine(me('vigilante', null, 0), [], 3)).toBe('No caps left.'); // nine-seat
+    expect(noAskLine(me('sigilist', 0), [], 3)).toBe('No sigils left.');
+    expect(noAskLine(me('speculator', 0), [], 3)).toBe('You have made your pick.');
+    // a use left, a role whose turn comes spent or not, a dead seat: nothing to say
+    expect(noAskLine(me('investigator', 1), [], 3)).toBeNull();
+    expect(noAskLine(me('fortune_teller', 0), [], 3)).toBeNull();
+    expect(noAskLine(me('healer', null), [], 3)).toBeNull();
+    expect(noAskLine({ ...me('sigilist', 0), alive: false }, [], 3)).toBeNull();
+    const asked = {
+      ...me('necromancer', null),
+      pending: {
+        seq: 9,
+        day: 1,
+        actionKind: 'necromancer_target' as const,
+        candidates: [],
+        deadline: null,
+        round: null,
+        bodies: [],
+      },
+    };
+    expect(noAskLine(asked, [], 1)).toBeNull();
   });
 });

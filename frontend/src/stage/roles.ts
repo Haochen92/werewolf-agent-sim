@@ -174,6 +174,32 @@ export function isSoloNightRole(role: string | null | undefined): boolean {
   return !!role && (SOLO_NIGHT_ROLES as readonly string[]).includes(role);
 }
 
+/**
+ * The roles whose body gives the necromancer an ability, mirroring the engine's table
+ * (`Agents/schemas/roles.py` `BORROWED_ABILITY`; `Agents/rules/night.py` `usable_bodies`): a
+ * pack body attacks or blocks, a town body gives its own ability. A lone killer's, a neutral's,
+ * a plain villager's or a plain wolf's body gives nothing, and nor does a concealed one.
+ */
+export const BORROWED_ROLES = [
+  'illusionist',
+  'chanteuse',
+  'vigilante',
+  'healer',
+  'sigilist',
+  'investigator',
+  'sentinel',
+  'trailseer',
+] as const;
+
+/** The dead a necromancer may act through tonight: revealed, with an ability to give. */
+export function usableBodies(
+  dead: readonly { player: string; role: string | null }[],
+): string[] {
+  return dead
+    .filter((d) => !!d.role && (BORROWED_ROLES as readonly string[]).includes(d.role))
+    .map((d) => d.player);
+}
+
 /** The side a role plays for; null for a role the stage does not know. */
 export function factionOf(role: string | null | undefined): Faction | null {
   return (role && FACTION[role]) || null;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { catchUpBoundary } from './catch-up-boundary';
+import { catchUpBoundary, reopenNow } from './catch-up-boundary';
 
 describe('the catch-up boundary', () => {
   it('on the first connection, history is everything up to the status’s last seq', () => {
@@ -27,5 +27,18 @@ describe('the catch-up boundary', () => {
     b.dropped();
     b.resumed(150);
     expect(b.isHistory(200)).toBe(true);
+  });
+});
+
+describe('reopening the stream when the page comes back', () => {
+  it('reopens a stream that is reconnecting or closed, at once', () => {
+    expect(reopenNow(0, false)).toBe(true); // the browser's own retry, still waiting
+    expect(reopenNow(2, false)).toBe(true); // the browser gave up
+  });
+
+  it('leaves an open stream alone, and does nothing while the page is hidden', () => {
+    expect(reopenNow(1, false)).toBe(false);
+    expect(reopenNow(0, true)).toBe(false);
+    expect(reopenNow(2, true)).toBe(false);
   });
 });

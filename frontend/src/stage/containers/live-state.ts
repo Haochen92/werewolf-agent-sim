@@ -32,10 +32,12 @@
  * on), so the stage is carried across by which beat it was on, not by its position.
  */
 import { isTextTurn, type TurnPayload } from '@/lib/api';
-import type { MeView } from '@/game/types';
+import type { DeathRecord, GameView, MeView } from '@/game/types';
 import { NO_ACTION, noActionWord } from '@/game/turn-words';
 import type { SceneBeat } from '@/stage/beats/types';
 import type { TurnClock } from '@/stage/countdown';
+import { BY, DIED } from '@/stage/instruments/MorningRoll';
+import { ROLE_NAME } from '@/stage/roles';
 import type { ActMore, Presentation } from '@/stage/scenes/types';
 import { pressFile, pressTranscript, showFile, showRecord } from '@/stage/slot';
 import type { DurableGameEvent, GameStatus } from '@/types/contracts';
@@ -158,6 +160,48 @@ export function seesXray(state: LiveState, over: boolean): boolean {
   if (!over) return false;
   const ending = state.beats.findIndex((b) => b.id.startsWith('over.'));
   return ending !== -1 && state.cursor.index >= ending;
+}
+
+// --- the seat's own death, told on return ------------------------------------
+
+/**
+ * This seat's own death, when it reached the page as catch-up rather than news: the page was
+ * away (a phone asleep, a dropped connection, the game opened again) while it happened, so no
+ * beat played it and the stage landed still on a seat that is out (live testing 2026-10-11:
+ * night 2 killed the seat and concealed it during a two-minute drop, and nothing said so). Null
+ * for a death that arrived live (its beats tell it), for a spectator, and once the game is over
+ * (its ending tells everything), and once this tab has `told` it (`deathTold`, which a death
+ * watched live also marks).
+ */
+export function awayDeath(
+  view: Pick<GameView, 'dead' | 'over' | 'me'>,
+  liveSeqs: ReadonlySet<number>,
+  told = false,
+): DeathRecord | null {
+  const seat = view.me.seat;
+  if (!seat || view.over || told) return null;
+  const death = view.dead.find((d) => d.player === seat);
+  return death && !liveSeqs.has(death.seq) ? death : null;
+}
+
+/**
+ * What the notice says of it, in the morning roll's words for the cause: "You were killed by
+ * the wolves on night 2. Your role was hidden." / "You were voted out on day 3. The table saw
+ * your card: Healer." Then that the game goes on.
+ */
+export function awayWords(death: DeathRecord): string {
+  const attacks = death.causes.filter((c) => c !== 'lynch');
+  const how =
+    attacks.length === 0
+      ? `You were voted out on day ${death.day}.`
+      : attacks.length === 1
+        ? `You were ${DIED[attacks[0]]} on night ${death.day}.`
+        : `You were attacked by ${attacks.map((c) => BY[c]).join(' and ')} on night ${death.day}, and fell.`;
+  const card =
+    death.role === null
+      ? 'Your role was hidden.'
+      : `The table saw your card: ${ROLE_NAME[death.role] ?? death.role}.`;
+  return `${how} ${card} The game goes on without you: watch it to the end, or leave the table.`;
 }
 
 function sameBeat(a: SceneBeat | undefined, b: SceneBeat | undefined): boolean {

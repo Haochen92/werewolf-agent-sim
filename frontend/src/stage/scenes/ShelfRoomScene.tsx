@@ -210,6 +210,30 @@ export function usesNote(
   return left === 1 ? `your last ${words[0]}` : `${left} ${words[1]} left`;
 }
 
+/**
+ * Why a seat with a limited ability is asked nothing tonight: its uses are spent (the engine's
+ * `acts_tonight`). "No checks left." in the card note's words; the speculator's one pick, made,
+ * is "You have made your pick." Undefined while a use is left, and for a role whose turn comes
+ * spent or not (the fortune teller, whose ordinary bet goes on; the illusionist, in the pack).
+ */
+export function spentNote(
+  role: string | null | undefined,
+  uses: number | null,
+  bullets: number | null = null,
+): string | undefined {
+  const left = uses ?? (role === 'vigilante' ? bullets : null);
+  if (left === null || left > 0) return undefined;
+  if (role === 'speculator') return 'You have made your pick.';
+  if (
+    role !== 'investigator' &&
+    role !== 'sentinel' &&
+    role !== 'vigilante' &&
+    role !== 'sigilist'
+  )
+    return undefined;
+  return `No ${USE_WORDS[role][1]} left.`;
+}
+
 /** The sealed plate when the seat's agent answered, or the server already had an answer. */
 export const AGENT_SEALED = 'Your seat’s agent acted for you';
 

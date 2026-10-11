@@ -37,3 +37,14 @@ export function catchUpBoundary(connectedAt: number): CatchUpBoundary {
     resuming: () => away,
   };
 }
+
+/**
+ * Whether to reopen the stream at once, now that the page is back (shown again, or online):
+ * yes while it is not open, rather than wait on the browser's own retry, which backs off and
+ * on a phone woken from sleep left a player two minutes behind (live testing 2026-10-11). An
+ * open stream is left alone, and nothing reconnects while the page is hidden. `readyState` is
+ * the EventSource's (0 connecting, 1 open, 2 closed).
+ */
+export function reopenNow(readyState: number, hidden: boolean): boolean {
+  return !hidden && readyState !== 1;
+}

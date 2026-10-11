@@ -300,6 +300,16 @@ winner chip in the header.
   (`pending_input` + a fresh `input_request` in the log). Cost: seconds, zero drama.
 - *Reconnect*: browser-native SSE retry, silent; thin "reconnecting…" bar only after
   repeated `onerror` while the tab is visible (ux_baseline §4).
+  *As built 2026-10-11:* when the page is shown again or comes back online and the stream is
+  not open, it is reopened at once from the newest seq folded rather than left to the
+  browser's backing-off retry (a phone back from a two-minute sleep waited on it); the catch-up
+  rule holds for what it sends.
+- *Returning to your own death* (2026-10-11): the catch-up rule means a seated player whose
+  death came in while away (a drop, a sleep, the game opened again) sees no beat for it. So it
+  is told once, in a walnut notice ("While you were away · You were killed by the wolves on
+  night 2. Your role was hidden. The game goes on without you: watch it to the end, or leave the
+  table." · Watch on · Leave the table), once per seat per tab, never for a death watched live
+  and never after game over (beat sheet §12).
 - *Dead game* (`GameStatus.error` set, state still "running"): full-width terminal error
   state over the table — the session's death report (key-redacted server-side), a "these
   games don't survive restarts" note when BYOK, one door: home. No retry affordance (the

@@ -306,6 +306,16 @@ actor's box reads "Night falls" with their card's night line; a villager's "You 
 previous hour's paint crossfades 1.2 s; the chips lower 0.6 s + 0.06 s each; on a no-vote day the
 hub gathers the shutter up itself (0.2 s in).
 
+No ask tonight (2026-10-11): a living seat with a night role that the engine will not ask tonight
+reads "You sleep" with the reason in place of the card's night line, derived on the client from
+what the seat knows, mirroring the engine's `acts_tonight` (`noAskLine`): the necromancer on night
+1 "Your power wakes on night 2."; from night 2 with no revealed body whose role gives an ability
+(`BORROWED_ROLES` in `roles.ts`, the engine's `BORROWED_ABILITY`) "No body you can use tonight.";
+a spent limited ability "No checks left." / "No watches left." / "No caps left." / "No sigils
+left.", the speculator after its pick "You have made your pick." Otherwise the night line stays
+(an ask may still come), and an ask that has come wins. Live testing found the necromancer's
+night 1 saying nothing of why it had no room.
+
 ## 6. Night, the acting seat — H§4.6 · bench 70
 
 The role's own sleeping compartment (the owner's paintings, 2026-09-28): walnut and brass, the
@@ -1048,7 +1058,23 @@ seated…" rather than land. **The reconnect boundary:** from the moment the str
 fresh `GET /games/{id}` after it reopens, every event is catch-up, and after it anything up to
 that status's `last_seq` (`hooks/catch-up-boundary.ts`); the store keeps the newest catch-up seq
 that extended the log (`caughtUpTo`, not a late insert like the backlog after game over), and the
-history runs to it, so the missed events land still. **Not built / to reconcile:** the live
+history runs to it, so the missed events land still. **Reopened at once (2026-10-11):** when the
+page is shown again or comes back online and the stream is not open (the browser's own retry
+still waiting, or given up), the hook closes it and opens a new one at once from the newest seq
+folded (`?last_seq=N`), the boundary dropped as for any reconnect; an open stream is left be
+(`reopenNow`). Live testing found a phone back from a two-minute sleep waiting on the browser.
+**The seat's own death, told on return (2026-10-11):** a death of the seated human's that arrived
+as catch-up (a reconnect's, or the first connection's history) played no beat, so the stage
+landed still on a seat that was out and nothing said so. Once per seat per tab
+(`sessionStorage` `told_{game}_{seat}`), a walnut notice in the leave confirm's place, "While you
+were away": "You were killed by the wolves on night 2. Your role was hidden. The game goes on
+without you: watch it to the end, or leave the table." (the cause in the morning roll's words,
+`DIED`/`BY`; several attackers: "You were attacked by the wolves and the serial killer on night 2,
+and fell."; a vote-out: "You were voted out on day 3."; a role shown: "The table saw your card:
+Healer."), with **Watch on** (closes it; Esc too) and **Leave the table** (to `/rooms`, no second
+ask). A death that arrived live is marked told and never noticed (its beats told it); none after
+`game_over` (the ending tells everything). `awayDeath`/`awayWords` in `containers/live-state.ts`,
+`AwayNotice` in `instruments/TopStrip.tsx`. **Not built / to reconcile:** the live
 ballot drop (§3 row 2) moves the count, not chips; "your seat's agent played 3 turns for you"
 after a return (the client forgets across a reload); the draft helper in the pack's chat (the
 pack's turn still has the "Let my agent play this turn" pill); a

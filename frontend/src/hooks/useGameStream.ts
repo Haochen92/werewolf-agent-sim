@@ -17,6 +17,10 @@
  * fire a beat. Without that split, every refresh would replay the role reveal and the
  * game-over takeover for events that happened an hour ago (ux_journeys §0, D23). A reconnect
  * moves the boundary on to what it caught up on (catch-up-boundary.ts).
+ *
+ * When the page comes back (shown again, or back online) and the stream is not open, it is
+ * reopened at once from where the page has got to, instead of waiting on the browser's own
+ * retry; what it then sends is a reconnect's catch-up like any other (2026-10-11).
  */
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -24,7 +28,7 @@ import { apiUrl } from '@/lib/config';
 import { getGameStatus } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { useGameSession } from '@/game/store';
-import { catchUpBoundary } from './catch-up-boundary';
+import { catchUpBoundary, reopenNow } from './catch-up-boundary';
 import { recordServerClock } from './useCountdown';
 import type {
   DurableGameEvent,
@@ -100,53 +104,72 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
     // last_seq=0: we want the whole log, and the catch-up boundary above — not a cursor —
     // is what keeps the replay silent. The browser's auto-reconnect reuses this URL
     // verbatim and carries its real position in Last-Event-ID, which the server prefers.
-    const source = new EventSource(apiUrl(`/games/${encodeURIComponent(gameId)}/events`), {
-      withCredentials: true,
-    });
+    // A reopen of our own (below) carries the page's position in the URL instead.
+    const url = apiUrl(`/games/${encodeURIComponent(gameId)}/events`);
+    const connect = (at: string): EventSource => {
+      const source = new EventSource(at, { withCredentials: true });
+      source.addEventListener('open', () => {
+        setConnection('open');
+        // back after a drop: ask how far the log has got; up to there is catch-up, not news
+        if (boundary.resuming())
+          getGameStatus(gameId).then(
+            (fresh) => boundary.resumed(fresh.last_seq ?? 0),
+            () => boundary.resumed(useGameSession.getState().view.lastSeq),
+          );
+      });
 
-    source.addEventListener('open', () => {
-      setConnection('open');
-      // back after a drop: ask how far the log has got; up to there is catch-up, not news
-      if (boundary.resuming())
-        getGameStatus(gameId).then(
-          (fresh) => boundary.resumed(fresh.last_seq ?? 0),
-          () => boundary.resumed(useGameSession.getState().view.lastSeq),
+      source.addEventListener('game', (message) => {
+        try {
+          const event = JSON.parse(
+            (message as MessageEvent<string>).data,
+          ) as DurableGameEvent;
+          if (boundary.isHistory(event.seq)) applyCatchUp(event);
+          else applyLive(event);
+        } catch {
+          // A frame we cannot parse is a wire problem, not a render problem. Dropping it
+          // keeps the session alive; the status poll remains the authority on game state.
+        }
+      });
+
+      source.addEventListener('pacing', (message) => {
+        try {
+          applyPacing(JSON.parse((message as MessageEvent<string>).data) as PhaseProgress);
+        } catch {
+          /* pacing is decorative — never worth breaking a session over */
+        }
+      });
+
+      source.addEventListener('error', () => {
+        // the browser is reopening the stream: what it resends until the fresh status is catch-up
+        if (source.readyState === EventSource.CONNECTING) boundary.dropped();
+        // A backgrounded tab gets throttled and drops the connection; that is the browser
+        // doing its job, not a fault, and surfacing it would cry wolf on every tab switch.
+        if (typeof document !== 'undefined' && document.hidden) return;
+        setConnection(
+          source.readyState === EventSource.CONNECTING ? 'reconnecting' : 'closed',
         );
-    });
+      });
+      return source;
+    };
+    let source = connect(url);
 
-    source.addEventListener('game', (message) => {
-      try {
-        const event = JSON.parse(
-          (message as MessageEvent<string>).data,
-        ) as DurableGameEvent;
-        if (boundary.isHistory(event.seq)) applyCatchUp(event);
-        else applyLive(event);
-      } catch {
-        // A frame we cannot parse is a wire problem, not a render problem. Dropping it
-        // keeps the session alive; the status poll remains the authority on game state.
-      }
-    });
-
-    source.addEventListener('pacing', (message) => {
-      try {
-        applyPacing(JSON.parse((message as MessageEvent<string>).data) as PhaseProgress);
-      } catch {
-        /* pacing is decorative — never worth breaking a session over */
-      }
-    });
-
-    source.addEventListener('error', () => {
-      // the browser is reopening the stream: what it resends until the fresh status is catch-up
-      if (source.readyState === EventSource.CONNECTING) boundary.dropped();
-      // A backgrounded tab gets throttled and drops the connection; that is the browser
-      // doing its job, not a fault, and surfacing it would cry wolf on every tab switch.
-      if (typeof document !== 'undefined' && document.hidden) return;
-      setConnection(
-        source.readyState === EventSource.CONNECTING ? 'reconnecting' : 'closed',
-      );
-    });
+    // Back from a sleep or a dropped network: reopen now, from the newest seq folded, rather
+    // than wait for the browser's retry. Until a fresh status says how far the log has got,
+    // what the new stream sends is catch-up, as after any drop. An open stream is left be.
+    const reopen = () => {
+      if (!reopenNow(source.readyState, document.hidden)) return;
+      source.close();
+      boundary.dropped();
+      setConnection('reconnecting');
+      const at = useGameSession.getState().view.lastSeq;
+      source = connect(at > 0 ? `${url}?last_seq=${at}` : url);
+    };
+    document.addEventListener('visibilitychange', reopen);
+    window.addEventListener('online', reopen);
 
     return () => {
+      document.removeEventListener('visibilitychange', reopen);
+      window.removeEventListener('online', reopen);
       source.close();
       setConnection('idle');
     };
