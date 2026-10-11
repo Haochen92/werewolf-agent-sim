@@ -108,3 +108,27 @@ ends, 3.8 Flash's price doubles.
 - Two things are open: whether a Vertex batch job can use an explicit cache at all, and the cache's
   hourly storage cost while a job queues.
 - Listed in plan §9.4.
+
+## 2026-10-11 — The day extracted as two calls: discussion and vote
+
+**Why.** In the pilot, one day call per role tagged nearly every day observation `day_vote`: a day
+moment ends in a vote, so the vote became its outcome. An evil player's discussion turn retrieves
+from `day_discussion`, which was nearly empty (0 for the Chanteuse and the Speculator).
+
+**Change.** Each role now gets three calls: discussion, vote, night. Each day call is told what
+belongs to the other, and every observation is tagged with the call's phase.
+
+**Check.** Pilot game `cc80ecdf` re-extracted with gemini-3.8-flash:
+
+| | Discussion | Vote | Night | Observations | Extraction cost |
+|---|---|---|---|---|---|
+| Before (one day call) | 0 | 16 | 18 | 34 | ~$0.32 |
+| After (two day calls) | 16 | 18 | 19 | 53 | ~$0.50 |
+
+The new discussion lessons are about the talk itself:
+- the Chanteuse defending its partner's fake Investigator claim;
+- the Illusionist claiming Investigator when the Trailseer caught it at the victim's door;
+- the Necromancer's silence while its outlier vote was examined;
+- the Fortune Teller's read of a cornered claimant, which set up its scoring bet.
+
+Expected cost is now about $0.9 play plus about $0.5 extraction a game.
