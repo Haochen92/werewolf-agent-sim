@@ -273,6 +273,15 @@ def test_check_reads_isolation_shared_vocabulary_not_attributable():
     ) == []
 
 
+def test_check_reads_isolation_pack_chat_is_shared_on_purpose():
+    # A wolf's why that it also wrote in the pack's chat reaches its packmate legitimately (the
+    # 2026-10-11 pilot's false positive); the same why anywhere else is still a leak.
+    chat = _log({"wolf_channel": f"player_1: {_LONG_WHY}"}, player="player_2")
+    assert check_reads_isolation(chat, _reads_of("player_1", _LONG_WHY)) == []
+    elsewhere = _log({"night_actions": _LONG_WHY}, player="player_2")
+    assert check_reads_isolation(elsewhere, _reads_of("player_1", _LONG_WHY))
+
+
 # --- (8) every changed template renders with the new keys -------------------
 
 def _render_payload() -> dict:

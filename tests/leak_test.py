@@ -230,12 +230,15 @@ def check_reads_isolation(
          (``previous_strategy``): text the recipient authored can independently converge on the
          same phrasing of a public event as someone else's why — 2026-07-17, this exact case
          (needle at the 40-char floor, "abstained during the serial killer lynch") false-halted
-         the v7 run. A match inside recipient-authored prose is convergence, not receipt."""
+         the v7 run. A match inside recipient-authored prose is convergence, not receipt. The pack's
+         chat (``wolf_channel``) is excluded the same way: only wolves write it and only wolves read
+         it, so a why a wolf also wrote there was shared with its packmate on purpose (2026-10-11, a
+         ten-seat pilot game flagged the chanteuse's own chat line in the illusionist's prompt)."""
     leaks: list[str] = []
     blobs = [(entry, repr(entry.get("prompt_input", {}))) for entry in prompt_log]
     # Recipient-authored-by-construction fields: excluded from the PROSE pass only (the structural
     # pass still sees the full prompt_input — a rendered read OBJECT anywhere stays a leak).
-    _OWN_PROSE_FIELDS = ("previous_strategy",)
+    _OWN_PROSE_FIELDS = ("previous_strategy", "wolf_channel")
     prose_blobs = [
         (entry, repr({k: v for k, v in entry.get("prompt_input", {}).items()
                       if k not in _OWN_PROSE_FIELDS}))
