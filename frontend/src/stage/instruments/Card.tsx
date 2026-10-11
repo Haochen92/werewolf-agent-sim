@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * The role cards: the paper card a role is dealt on, in three forms.
+ * The role cards: the paper card a role is dealt on, in three forms, and the pack mate's.
  *
  * - `CardBack`: face down. Paper, the stitched ring and the star, and no faction colour
  *   anywhere, not even the edge bands (the card-back rule: a face-down card tells nobody
@@ -9,6 +9,8 @@
  * - `SmallCard`: the one hung under each chip at the deal. Face up it is the role's name over
  *   its felt figure, the big card's art (owner, 2026-09-30; it was the sigil alone), the sigil
  *   small by the seat at its foot.
+ * - `PackCard`: a pack mate's small card at the deal, the pack's side mark and "Your pack"
+ *   (a mate's role is not on the wire).
  * - `RoleCard`: the full face, shown large (your card at the deal, a dead seat's at the
  *   morning, the lynch's on the lift): name and sigil, the felt figure, the front line, the
  *   seat with the side's pennant and name at the foot, and the faction's colour on the edge
@@ -21,7 +23,7 @@
 import type { CSSProperties } from 'react';
 import { SPRITES, type RoleSprite } from '@/assets/manifest';
 import { FACTION_NAME, factionOf } from '../roles';
-import { CARD_TEXT } from '../card-text';
+import { CARD_TEXT, cardTextFor } from '../card-text';
 import { roleFigure } from '../paint/role-kit';
 import { useSmall } from '../set';
 import { BackArt } from './CardBackArt';
@@ -51,6 +53,8 @@ interface FaceProps {
   /** Play the turn from the back to the face. */
   turn?: boolean;
   turnDelay?: number;
+  /** An archived nine-seat game: the face reads that game's rules (`isNineSeat`). */
+  legacy?: boolean;
 }
 
 const faceClass = (role: string, ...more: string[]) => {
@@ -92,9 +96,30 @@ export function SmallCard({ role, seat, w, turn = false, turnDelay }: FaceProps)
   return <Flip back={<CardBack w={w} />} face={face} turn={turn} delay={turnDelay} />;
 }
 
-export function RoleCard({ role, seat, w, turn = false, turnDelay }: FaceProps) {
+/**
+ * A pack mate's small card at the deal: the wire lists the pack's seats, never a mate's role,
+ * so the face is the pack's side mark and "Your pack" on the wolves' bands, not a role.
+ */
+export function PackCard({ seat, w, turn = false, turnDelay }: Omit<FaceProps, 'role'>) {
+  const face = (
+    <div className={faceClass('wolf', styles.small)} style={cardVars(w)} data-pack-card>
+      <div className={styles.in}>
+        <header>
+          <span>Your pack</span>
+        </header>
+        <div className={styles.fig}>
+          <FactionMark faction="wolves" format="badge" small={false} />
+        </div>
+        <footer>Seat {seat}</footer>
+      </div>
+    </div>
+  );
+  return <Flip back={<CardBack w={w} />} face={face} turn={turn} delay={turnDelay} />;
+}
+
+export function RoleCard({ role, seat, w, turn = false, turnDelay, legacy }: FaceProps) {
   if (!role) return <CardBack w={w} big />;
-  const text = CARD_TEXT[role];
+  const text = cardTextFor(role, legacy);
   const faction = factionOf(role);
   const face = (
     <div className={faceClass(role, styles.big)} style={cardVars(w)}>

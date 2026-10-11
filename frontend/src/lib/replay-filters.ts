@@ -3,7 +3,8 @@
  * `GET /replays`). Pure functions over `ReplaySummary` rows, so the page only holds state and
  * these decide what it shows.
  */
-import type { ReplaySummary, Winner } from '@/types/contracts';
+import type { ReplaySummary } from '@/types/contracts';
+import { winnerKey, type WinnerKey } from '@/stage/roles';
 
 export type EndedPhase = NonNullable<ReplaySummary['ended_phase']>;
 
@@ -12,8 +13,8 @@ export interface ReplayFilters {
   q: string;
   /** Only games this browser holds a seat in. */
   mine: boolean;
-  /** Won by any of these; empty = any winner. */
-  winners: Winner[];
+  /** Won by any of these (`draw`: no one); empty = any winner. */
+  winners: WinnerKey[];
   memory: 'any' | 'on' | 'off';
   /** `people`: at least one human seat; `agents`: agents in every seat. */
   table: 'any' | 'people' | 'agents';
@@ -47,7 +48,7 @@ export function matchesReplay(
   const q = f.q.trim().toLowerCase();
   if (q && !r.game_id.toLowerCase().includes(q)) return false;
   if (f.mine && !mine.has(r.game_id)) return false;
-  if (f.winners.length && !f.winners.includes(r.winner)) return false;
+  if (f.winners.length && !f.winners.includes(winnerKey(r.winner))) return false;
   if (f.memory === 'on' && !r.memory) return false;
   if (f.memory === 'off' && r.memory) return false;
   if (f.table === 'people' && r.n_humans === 0) return false;
@@ -110,10 +111,12 @@ export function distinctModels(rows: readonly ReplaySummary[]): string[] {
   return ids.has('') ? [...named, ''] : named;
 }
 
-export const WINNER_NAME: Record<Winner, string> = {
-  villagers: 'the village',
+export const WINNER_NAME: Record<WinnerKey, string> = {
+  villagers: 'the town',
   wolves: 'the wolves',
   serial_killer: 'the serial killer',
+  necromancer: 'the necromancer',
+  draw: 'no one',
 };
 
 const ENDED_NAME: Record<EndedPhase, string> = {

@@ -241,10 +241,11 @@ describe('the notebook’s role guess (2026-09-30)', () => {
       serial_killer: 1,
     };
     // a wolf and the investigator have died (their roles were shown), and a seat with no role yet
+    // (or a concealed body); the list reads in the role sheet's order
     expect(guessChoices(cast, ['wolf', 'investigator', null])).toEqual([
       { role: 'villager', left: 3 },
-      { role: 'healer', left: 1 },
       { role: 'vigilante', left: 1 },
+      { role: 'healer', left: 1 },
       { role: 'wolf', left: 1 },
       { role: 'serial_killer', left: 1 },
     ]);

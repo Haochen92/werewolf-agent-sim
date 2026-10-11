@@ -39,14 +39,17 @@ import { SITE } from '@/lib/site';
 import { beatsFor } from '@/stage/beats/beatsFor';
 import { ReplayTheatre, type MiniUnder } from '@/stage/containers/ReplayTheatre';
 import { stageFonts } from '@/stage/fonts';
-import type { DurableGameEvent, ReplayGame, Winner } from '@/types/contracts';
+import { winnerKey, type WinnerKey } from '@/stage/roles';
+import type { DurableGameEvent, ReplayGame } from '@/types/contracts';
 import classes from './Carriage.module.css';
 import { CarriageUnder } from './CarriageUnder';
 
-const WON: Record<Winner, string> = {
-  villagers: 'Villagers won',
+const WON: Record<WinnerKey, string> = {
+  villagers: 'Town won',
   wolves: 'Wolves won',
   serial_killer: 'Serial killer won',
+  necromancer: 'Necromancer won',
+  draw: 'A draw',
 };
 
 /** The marquee's tiles: the game's facts, as the archive's slates say them. A phone shows the first two. */
@@ -57,7 +60,7 @@ function tilesOf(game: ReplayGame, modelName: (id: string) => string): string[] 
     game.memory ? 'Memory on' : 'Memory off',
     humans ? `${humans} human${humans > 1 ? 's' : ''} at the table` : 'All agents',
     `${game.days} ${game.days === 1 ? 'day' : 'days'}`,
-    WON[game.winner],
+    WON[winnerKey(game.winner)],
     formatDate(game.finished_at),
   ].filter(Boolean);
 }

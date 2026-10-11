@@ -9,6 +9,7 @@ describe('ActMark', () => {
     ['bite', 'wolf'],
     ['knife', 'serial_killer'],
     ['bullet', 'vigilante'],
+    ['sigil', 'sigilist'],
     ['plaster', 'healer'],
     ['lens', 'investigator'],
   ] as [ActKind, string][])('pins %s as the %s’s felt sigil', (kind, role) => {
@@ -33,11 +34,15 @@ describe('ActMark', () => {
     );
   });
 
-  it('maps each attacker type to the mark its role leaves', () => {
+  it('maps each attacker type to the mark its role leaves (a reanimated body, its kind’s)', () => {
     expect(ATTACK_MARK).toEqual({
       wolves: 'bite',
       serial_killer: 'knife',
       vigilante: 'bullet',
+      sigilist: 'sigil',
+      reanimated_wolves: 'bite',
+      reanimated_vigilante: 'bullet',
+      reanimated_sigilist: 'sigil',
     });
   });
 });

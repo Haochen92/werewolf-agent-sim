@@ -12,14 +12,21 @@
  * sat in the game, so the slate itself never fetches.
  */
 import Link from 'next/link';
-import type { ReplaySummary, Winner } from '@/types/contracts';
+import type { ReplaySummary } from '@/types/contracts';
 import { castForGame } from '@/stage/cast/castForGame';
 import { ChipSprite } from '@/stage/cast/ChipSprite';
 import { FactionMark } from '@/stage/instruments/FactionMark';
+import {
+  DRAW_NAME,
+  WINNER_NAME,
+  winnerFaction,
+  winnerKey,
+  type WinnerKey,
+} from '@/stage/roles';
 import { endedLabel, formatCallSeconds, formatCost, formatDate } from '@/lib/format';
 import classes from './Slate.module.css';
 
-/** Seats at the table: the public casting's total (every archived game so far dealt nine). */
+/** Seats at the table: the public casting's total (nine in the older games, ten since Phase 3). */
 const seatCount = (r: ReplaySummary) =>
   Object.values(r.cast_role_counts).reduce((a, b) => a + b, 0) || undefined;
 
@@ -34,6 +41,7 @@ const NUMBER_WORDS = [
   'Seven',
   'Eight',
   'Nine',
+  'Ten',
 ];
 const numberWord = (n: number) => NUMBER_WORDS[n] ?? String(n);
 
@@ -48,10 +56,13 @@ const baselineLine = (r: ReplaySummary) => {
   return `${seats ? `${numberWord(seats)} agents` : 'All agents'} · memory off`;
 };
 
-const FACTION: Record<Winner, { name: string; verb: string; className: string }> = {
-  villagers: { name: 'Villagers', verb: 'win', className: classes.town },
-  wolves: { name: 'Wolves', verb: 'win', className: classes.wolf },
-  serial_killer: { name: 'Serial killer', verb: 'wins', className: classes.sk },
+/** A draw wears no side's colour and stamps no side's badge. */
+const FACTION: Record<WinnerKey, { name: string; verb: string; className: string }> = {
+  villagers: { name: WINNER_NAME.villagers, verb: 'wins', className: classes.town },
+  wolves: { name: WINNER_NAME.wolves, verb: 'win', className: classes.wolf },
+  serial_killer: { name: WINNER_NAME.serial_killer, verb: 'wins', className: classes.sk },
+  necromancer: { name: WINNER_NAME.necromancer, verb: 'wins', className: classes.sk },
+  draw: { name: DRAW_NAME, verb: '', className: classes.draw },
 };
 
 export interface SlateProps {
@@ -65,7 +76,8 @@ export interface SlateProps {
 }
 
 export function Slate({ replay, modelLabel, mine = false, from }: SlateProps) {
-  const faction = FACTION[replay.winner];
+  const faction = FACTION[winnerKey(replay.winner)];
+  const side = winnerFaction(replay.winner);
   const ended = endedLabel(replay.ended_phase, replay.days);
   const date = formatDate(replay.finished_at);
   const model = replay.model ? (modelLabel ?? replay.model) : null;
@@ -78,7 +90,7 @@ export function Slate({ replay, modelLabel, mine = false, from }: SlateProps) {
   const humans = replay.n_humans;
 
   const aria = [
-    `Replay: ${faction.name.toLowerCase()} ${faction.verb}`,
+    `Replay: ${faction.name.toLowerCase()} ${faction.verb}`.trim(),
     `${replay.days} ${replay.days === 1 ? 'day' : 'days'}`,
     ended ? `ended ${ended.toLowerCase()}` : null,
     model ?? 'model unrecorded',
@@ -108,12 +120,9 @@ export function Slate({ replay, modelLabel, mine = false, from }: SlateProps) {
         </div>
         <div className={classes.in}>
           <div className={classes.watermark}>
-            <FactionMark
-              faction={replay.winner}
-              format="badge"
-              variant="stamp"
-              small={false}
-            />
+            {side ? (
+              <FactionMark faction={side} format="badge" variant="stamp" small={false} />
+            ) : null}
           </div>
           <div className={classes.hd}>
             <div className={classes.verdict}>

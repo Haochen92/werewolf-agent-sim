@@ -17,7 +17,7 @@
  */
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react';
 import { seatNotes } from '@/lib/storage';
-import { ROLE_NAME } from './roles';
+import { ROLE_NAME, ROLE_ORDER } from './roles';
 
 export interface NotebookState {
   /** A note per seat number, as written. */
@@ -62,15 +62,8 @@ export function parseNotebook(raw: unknown): NotebookState {
   return { notes, guesses, suspect, hinted: r.hinted === true };
 }
 
-/** The roles in the order the cast is read out, for the guess's choices. */
-const GUESS_ORDER = [
-  'villager',
-  'healer',
-  'investigator',
-  'vigilante',
-  'wolf',
-  'serial_killer',
-];
+/** The roles in the order the cast is read out (the cast plate's), for the guess's choices. */
+const GUESS_ORDER = ROLE_ORDER;
 
 /**
  * The roles a living seat could still hold, as the table knows it: the cast's counts less the

@@ -3,7 +3,7 @@
 /**
  * The verdict: a walnut board the flies lower on two strings at the end of the game, large
  * and centred, in the morning card's grammar. The winning side's colour runs along its top
- * and bottom edges, the side's felt badge is sewn on at its left, and the result is
+ * and bottom edges (a draw's are bone, with no badge), the side's felt badge is sewn on at its left, and the result is
  * printed in the card's old serif ("The wolves have won"), with where the game stopped
  * beneath it ("Day 4 · at the morning"). It is read, then drawn up out of the frame as the
  * next beat begins.
@@ -15,7 +15,7 @@
  */
 import { CAR, MATERIALS } from '../paint/materials';
 import { WINNER_LINE, type EndedAt } from '../scenes/game-over';
-import type { Faction } from '../roles';
+import { winnerFaction, type Faction, type WinnerKey } from '../roles';
 import { STAGE_H, STAGE_W, type StageGeometry } from '../units';
 import { FactionMark } from './FactionMark';
 import { StringDrop, Twine } from './StringDrop';
@@ -30,6 +30,8 @@ const EDGE: Record<Faction, string> = {
   serial_killer: MATERIALS.sk,
   neutral_benign: MATERIALS.benign,
 };
+/** A draw wears no side's colour: its edges are the board's own bone. */
+const DRAW_EDGE = MATERIALS.bone3;
 
 /** Where the board hangs, in units. */
 export function verdictBoardBox(g: StageGeometry) {
@@ -40,7 +42,8 @@ export function verdictBoardBox(g: StageGeometry) {
 
 export interface VerdictBoardProps {
   g: StageGeometry;
-  winner: Faction;
+  /** Who won, or `draw`: a draw has no badge and no side's colour. */
+  winner: WinnerKey;
   /** The day the game ended on. */
   day: number;
   endedAt: EndedAt;
@@ -50,12 +53,14 @@ export interface VerdictBoardProps {
 
 export function VerdictBoard({ g, winner, day, endedAt, move }: VerdictBoardProps) {
   const { x, y, w, h } = verdictBoardBox(g);
-  const col = EDGE[winner];
+  const side = winnerFaction(winner);
+  const col = side ? EDGE[side] : DRAW_EDGE;
   const band = h * 0.085;
   const pr = h * 0.24,
     px = w * 0.16,
     py = h / 2;
-  const tx = w * 0.63;
+  // without a badge the words stand in the middle
+  const tx = side ? w * 0.63 : w / 2;
   return (
     <StringDrop
       x={x + w / 2}
@@ -129,15 +134,17 @@ export function VerdictBoard({ g, winner, day, endedAt, move }: VerdictBoardProp
             </g>
           ))}
           {/* the badge's disc is 43 of its 52 box, so the box is 2.4 radii for a disc of radius pr */}
-          <FactionMark
-            faction={winner}
-            format="badge"
-            x={px - pr * 1.2}
-            y={py - pr * 1.2}
-            width={pr * 2.4}
-            height={pr * 2.4}
-            small={false}
-          />
+          {side ? (
+            <FactionMark
+              faction={side}
+              format="badge"
+              x={px - pr * 1.2}
+              y={py - pr * 1.2}
+              width={pr * 2.4}
+              height={pr * 2.4}
+              small={false}
+            />
+          ) : null}
           <text
             x={tx}
             y={h * 0.5}

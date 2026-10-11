@@ -7,9 +7,9 @@
  */
 import { useId, useState } from 'react';
 import { Chip, SegmentedControl, Select, Switch, TextInput } from '@mantine/core';
-import type { Winner } from '@/types/contracts';
 import { Icon } from '@/components/site';
 import { FactionMark } from '@/stage/instruments/FactionMark';
+import { winnerFaction, type WinnerKey } from '@/stage/roles';
 import { NO_FILTERS, type ReplayFilters } from '@/lib/replay-filters';
 import classes from './Archive.module.css';
 
@@ -17,10 +17,12 @@ import classes from './Archive.module.css';
 const ANY_MODEL = '__any__';
 const NO_MODEL = '__none__';
 
-const WINNERS: { value: Winner; label: string; hue: string }[] = [
-  { value: 'villagers', label: 'The village', hue: 'var(--town)' },
+const WINNERS: { value: WinnerKey; label: string; hue: string }[] = [
+  { value: 'villagers', label: 'The town', hue: 'var(--town)' },
   { value: 'wolves', label: 'The wolves', hue: 'var(--wolf)' },
   { value: 'serial_killer', label: 'The serial killer', hue: 'var(--sk)' },
+  { value: 'necromancer', label: 'The necromancer', hue: 'var(--sk)' },
+  { value: 'draw', label: 'A draw', hue: 'var(--muted)' },
 ];
 
 export function FilterRail({
@@ -103,22 +105,27 @@ export function FilterRail({
           <Chip.Group
             multiple
             value={filters.winners}
-            onChange={(v) => set({ winners: v as Winner[] })}
+            onChange={(v) => set({ winners: v as WinnerKey[] })}
           >
             <div className={classes.fchips}>
-              {WINNERS.map((w) => (
-                <Chip key={w.value} value={w.value}>
-                  <FactionMark
-                    faction={w.value}
-                    format="mark"
-                    variant="stamp"
-                    small
-                    className={classes.fchipSigil}
-                    style={{ color: w.hue }}
-                  />
-                  {w.label}
-                </Chip>
-              ))}
+              {WINNERS.map((w) => {
+                const side = winnerFaction(w.value);
+                return (
+                  <Chip key={w.value} value={w.value}>
+                    {side ? (
+                      <FactionMark
+                        faction={side}
+                        format="mark"
+                        variant="stamp"
+                        small
+                        className={classes.fchipSigil}
+                        style={{ color: w.hue }}
+                      />
+                    ) : null}
+                    {w.label}
+                  </Chip>
+                );
+              })}
             </div>
           </Chip.Group>
         </fieldset>

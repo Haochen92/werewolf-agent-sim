@@ -39,7 +39,7 @@ import { createPortal } from 'react-dom';
 import type { Character } from '@/assets/manifest';
 import type { GameView } from '@/game/types';
 import { useLedger } from '@/hooks/useLedger';
-import { resolveCast } from '../cast/castForGame';
+import { resolveCast, rosterSize } from '../cast/castForGame';
 import { DecodeAhead } from '../cast/DecodeAhead';
 import { beatsFor } from '../beats/beatsFor';
 import { useDrawerFilters } from '../drawer/use-drawer-filters';
@@ -149,8 +149,8 @@ const TO_LIST = { href: '/replays', label: 'Replays' };
 export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps) {
   const events = game.events as readonly DurableGameEvent[];
   const cast = useMemo(
-    () => resolveCast(game.cast, game.game_id),
-    [game.cast, game.game_id],
+    () => resolveCast(game.cast, game.game_id, rosterSize(events)),
+    [game.cast, game.game_id, events],
   );
   const all = useMemo(
     () => ({

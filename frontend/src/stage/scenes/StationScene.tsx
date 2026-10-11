@@ -3,7 +3,7 @@
 /**
  * The platform (beat sheet §1a, review 2026-09-26 §A5 and ruling F1): the waiting room before a
  * game, as a scene on the same stage the game is played on. The train stands at the platform
- * with the dining car in the middle; its long window holds the nine places, and the people who
+ * with the dining car in the middle; its long window holds the room's places, and the people who
  * have boarded wait on the platform, one under each place, their names on paper tags at their
  * feet and on the brass plates under the window. A place nobody has taken has a dashed mark and
  * an "open" plate: at departure an agent takes it.
@@ -66,7 +66,7 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
   const { hud, cast, animate } = presentation;
   const departing = beat.id === 'station.departing';
   const opening = room?.curtain === 'opening';
-  const S = stationPlan(hud);
+  const S = stationPlan(hud, room?.places);
   const g = geometry(hud);
   const small = useSmall();
 

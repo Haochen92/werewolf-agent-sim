@@ -1,6 +1,6 @@
 /**
- * The count pill: how many are in, and never who. "Acted 2 of 5" through the night (the pack
- * counts as one, and seats with nothing to do are padded in, so the count leaks nobody);
+ * The count pill: how many are in, and never who. "Acted 2 of 9" through the night (one unit
+ * per living seat, and seats with nothing to do are padded in, so the count leaks nobody);
  * "Ballots in, 4 of 7" through the vote. A dot per unit, filled as they come in; the viewer's
  * own, if it has one, in amber. It sits at the top centre of the room, clear of the wing.
  */

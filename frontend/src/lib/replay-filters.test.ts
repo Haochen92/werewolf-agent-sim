@@ -148,7 +148,7 @@ describe('archive filters', () => {
     const chips = activeFilters(f, (id) => `label:${id}`);
     expect(chips.map((c) => c.label)).toEqual([
       'Won by the wolves',
-      'Won by the village',
+      'Won by the town',
       'Ended at night',
       'label:gemini-3.6-flash',
     ]);

@@ -5,17 +5,26 @@
  */
 import Link from 'next/link';
 import { Table } from '@mantine/core';
-import type { ReplaySummary, Winner } from '@/types/contracts';
+import type { ReplaySummary } from '@/types/contracts';
 import { Button } from '@/components/site';
 import { FactionMark } from '@/stage/instruments/FactionMark';
+import {
+  DRAW_NAME,
+  WINNER_NAME,
+  winnerFaction,
+  winnerKey,
+  type WinnerKey,
+} from '@/stage/roles';
 import { endedLabel, formatDate } from '@/lib/format';
 import classes from './Archive.module.css';
 
-/** The side's name and hue; its bare mark stands by the name at text size. */
-const WON: Record<Winner, { name: string; hue: string }> = {
-  villagers: { name: 'Villagers', hue: 'var(--town)' },
-  wolves: { name: 'Wolves', hue: 'var(--wolf)' },
-  serial_killer: { name: 'Serial killer', hue: 'var(--sk)' },
+/** The side's name and hue; its bare mark stands by the name at text size (a draw has none). */
+const WON: Record<WinnerKey, { name: string; hue: string }> = {
+  villagers: { name: WINNER_NAME.villagers, hue: 'var(--town)' },
+  wolves: { name: WINNER_NAME.wolves, hue: 'var(--wolf)' },
+  serial_killer: { name: WINNER_NAME.serial_killer, hue: 'var(--sk)' },
+  necromancer: { name: WINNER_NAME.necromancer, hue: 'var(--sk)' },
+  draw: { name: DRAW_NAME, hue: 'var(--muted)' },
 };
 
 function atTheTable(r: ReplaySummary): string {
@@ -59,19 +68,22 @@ export function ArchiveTable({
         </Table.Thead>
         <Table.Tbody>
           {rows.map((r) => {
-            const won = WON[r.winner];
+            const won = WON[winnerKey(r.winner)];
+            const side = winnerFaction(r.winner);
             const ended = endedLabel(r.ended_phase, r.days);
             return (
               <Table.Tr key={r.game_id}>
                 <Table.Td>
                   <span className={classes.won}>
-                    <FactionMark
-                      faction={r.winner}
-                      format="mark"
-                      variant="stamp"
-                      small
-                      style={{ color: won.hue }}
-                    />
+                    {side ? (
+                      <FactionMark
+                        faction={side}
+                        format="mark"
+                        variant="stamp"
+                        small
+                        style={{ color: won.hue }}
+                      />
+                    ) : null}
                     {won.name}
                   </span>
                 </Table.Td>

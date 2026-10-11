@@ -16,7 +16,7 @@ import { ChipSprite } from '../cast/ChipSprite';
 import { useMotionScale } from '../motion';
 import { CARD_TEXT } from '../card-text';
 import { roleAvatar } from '../paint/role-kit';
-import { factionOf } from '../roles';
+import { ROLE_ORDER, ROLE_PLURAL, factionOf } from '../roles';
 import { bandFoot, geometry, type Hud } from '../units';
 import { Sigil } from './Sigil';
 import styles from './Notice.module.css';
@@ -194,29 +194,17 @@ export function CardButton({
   );
 }
 
-const CAST_ORDER = [
-  'villager',
-  'healer',
-  'investigator',
-  'vigilante',
-  'wolf',
-  'serial_killer',
-];
-const PLURAL: Record<string, string> = {
-  villager: 'villagers',
-  healer: 'healers',
-  investigator: 'investigators',
-  vigilante: 'vigilantes',
-  wolf: 'wolves',
-  serial_killer: 'serial killers',
-};
+/** The plate's roles in the role sheet's order (`ROLE_ORDER`), any the stage does not know last. */
+export function castOrder(counts: Record<string, number>): string[] {
+  return [
+    ...ROLE_ORDER.filter((r) => counts[r]),
+    ...Object.keys(counts).filter((r) => !ROLE_ORDER.includes(r) && counts[r]),
+  ];
+}
 
 /** The cast counts, as the plate reads them: "3 villagers, 1 healer, …", each with its sigil. */
 export function CastLine({ counts }: { counts: Record<string, number> }) {
-  const roles = [
-    ...CAST_ORDER.filter((r) => counts[r]),
-    ...Object.keys(counts).filter((r) => !CAST_ORDER.includes(r) && counts[r]),
-  ];
+  const roles = castOrder(counts);
   return (
     <div className={styles.cast}>
       {roles.map((r) => {
@@ -226,7 +214,7 @@ export function CastLine({ counts }: { counts: Record<string, number> }) {
           <span key={r} className={f ? styles[`c-${f}`] : undefined}>
             <b>{n}</b>
             <Sigil role={r} variant="felt" small />
-            {n > 1 ? PLURAL[r] : (CARD_TEXT[r]?.name ?? r).toLowerCase()}
+            {n > 1 ? (ROLE_PLURAL[r] ?? r) : (CARD_TEXT[r]?.name ?? r).toLowerCase()}
           </span>
         );
       })}

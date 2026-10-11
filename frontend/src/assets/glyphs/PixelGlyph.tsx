@@ -1,13 +1,14 @@
 /**
  * Hand-authored pixel glyphs on ONE 16×16 grid (ux_baseline §1 asset set: wolf / serial
- * killer / vigilante / lynch).
+ * killer / vigilante / lynch, and the sigilist's ward; a reanimated attacker wears its body
+ * kind's glyph).
  *
  * Authored as string grids rather than path data on purpose: the art stays legible and
  * editable in the source, the 16-grid is enforced by construction rather than by
  * convention, and `shapeRendering="crispEdges"` keeps the pixels hard at any scale — an
  * antialiased pixel glyph is just a blurry glyph.
  *
- * These are the four DEATH marks. Role icons use tabler (per the baseline) rather than
+ * These are the five DEATH marks. Role icons use tabler (per the baseline) rather than
  * being hand-authored, since a role badge is chrome, not story.
  */
 import type { DeathGlyphKind } from '../manifest';
@@ -74,6 +75,27 @@ const CARTRIDGE = [
   '................',
 ];
 
+// a ward-mark: a diamond around a dot (awaits the owner's review)
+// prettier-ignore
+const SIGIL = [
+  '.......##.......',
+  '......####......',
+  '.....##..##.....',
+  '....##....##....',
+  '...##......##...',
+  '..##...##...##..',
+  '.##...####...##.',
+  '.##...####...##.',
+  '..##...##...##..',
+  '...##......##...',
+  '....##....##....',
+  '.....##..##.....',
+  '......####......',
+  '.......##.......',
+  '................',
+  '................',
+];
+
 // prettier-ignore
 const NOOSE = [
   '......##........',
@@ -98,6 +120,10 @@ const GRIDS: Record<DeathGlyphKind, string[]> = {
   wolves: FANGS,
   serial_killer: DAGGER,
   vigilante: CARTRIDGE,
+  sigilist: SIGIL,
+  reanimated_wolves: FANGS,
+  reanimated_vigilante: CARTRIDGE,
+  reanimated_sigilist: SIGIL,
   lynch: NOOSE,
 };
 
@@ -105,6 +131,10 @@ const LABELS: Record<DeathGlyphKind, string> = {
   wolves: 'killed by the wolves',
   serial_killer: 'killed by the serial killer',
   vigilante: 'shot by the vigilante',
+  sigilist: 'struck down by a sigil',
+  reanimated_wolves: 'killed by a reanimated wolf',
+  reanimated_vigilante: 'shot by a reanimated vigilante',
+  reanimated_sigilist: 'struck down by a reanimated sigil',
   lynch: 'lynched by the village',
 };
 

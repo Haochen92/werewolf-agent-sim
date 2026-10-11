@@ -8,13 +8,15 @@
  * kit (mask, bone, red hood) stands on the rail instead.
  *
  * Vector for the four (bench 67 `instrument()`, drawn about the centre at size `k`), the kit
- * sprite for the pack. Played, it fades in with the actor.
+ * sprite for the pack. The ten-seat roles have no prop drawn yet: each lays its felt sigil on
+ * the rail instead. Played, it fades in with the actor.
  */
 import Image from 'next/image';
 import { motion } from 'motion/react';
 import { SPRITES } from '@/assets/manifest';
 import { useMotionScale } from '../motion';
 import { CAR, K2 } from '../paint/materials';
+import { Sigil } from './Sigil';
 
 const ink = (d: string, fill: string, w: number) => (
   <path d={d} fill={fill} stroke={K2} strokeWidth={w} strokeLinejoin="round" />
@@ -123,7 +125,10 @@ function Drawing({ role, k, bullets }: { role: string; k: number; bullets: numbe
         </>
       );
     default:
-      return null;
+      // the ten-seat roles have no prop of their own yet: the role's felt sigil stands in
+      return (
+        <Sigil role={role} variant="felt" x={-k} y={-k} width={2 * k} height={2 * k} />
+      );
   }
 }
 

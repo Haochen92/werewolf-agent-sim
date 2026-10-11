@@ -10,9 +10,18 @@
  * it would recast every game recorded before casts were stored. Ported unchanged from the
  * design bundle's puppet kit: the same id must give the same cast here as in the benches.
  *
- * Both return nine characters; index 0 is seat 1 (`player_1`).
+ * Both return one character per seat (`seats`, from the game's roster: nine or ten); index 0
+ * is seat 1 (`player_1`). The default of nine is the nine-seat archive's; a caller holding a
+ * game passes its roster's size (`rosterSize`, or the view's `seats.length`).
  */
 import { CHARACTERS, type Character } from '@/assets/manifest';
+import type { DurableGameEvent } from '@/types/contracts';
+
+/** The table's size from a game's own roster (`game_started.seats`); nine for a log without one. */
+export function rosterSize(events: readonly DurableGameEvent[]): number {
+  const started = events.find((e) => e.type === 'game_started');
+  return started?.type === 'game_started' ? started.seats.length : 9;
+}
 
 /** The cast pool as it was before the server stored casts. Never reorder or extend. */
 export const LEGACY_CHARACTERS: readonly Character[] = [
@@ -30,8 +39,8 @@ export const LEGACY_CHARACTERS: readonly Character[] = [
 ];
 
 /**
- * The cast the server recorded, when it recorded one this build can show (nine ids the
- * manifest knows); otherwise the legacy hash. A game that predates stored casts sends an
+ * The cast the server recorded, when it recorded one this build can show (one id per seat, all
+ * known to the manifest); otherwise the legacy hash. A game that predates stored casts sends an
  * empty list; a game cast with a character this build has no sprites for falls back too,
  * rather than leaving a seat blank.
  */

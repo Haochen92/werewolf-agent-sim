@@ -16,17 +16,21 @@ export interface ChipRow {
   rowY: number;
   /** A chip's radius. */
   cr: number;
+  /** The table's size the row is sized for (the roster's, not the living). */
+  seats: number;
 }
 
 /**
  * The two rows the benches hang. `low`: with nothing at the stand, across the whole room over
  * the dado (the night lobby). `high`: at the window's height, across the wall either side of it
- * (the deal, where the cards hang below it).
+ * (the deal, where the cards hang below it). A chip is sized for the whole table (`seats`, the
+ * roster's size), so the row's chips keep their size as seats die.
  */
 export function chipRow(
   g: StageGeometry,
   plan: DiningCarPlan,
   kind: 'low' | 'high',
+  seats: number,
 ): ChipRow {
   const W = STAGE_W,
     H = STAGE_H;
@@ -36,7 +40,8 @@ export function chipRow(
       x0: g.wingN + g.room * 0.07,
       span,
       rowY: 0.52 * H,
-      cr: Math.min(0.036 * W, (span / 9) * 0.42),
+      cr: Math.min(0.036 * W, (span / seats) * 0.42),
+      seats,
     };
   }
   const [, wy, , wh] = plan.window;
@@ -47,7 +52,8 @@ export function chipRow(
     x0,
     span: x1 - x0,
     rowY: wy + wh * 0.46,
-    cr: Math.min(0.027 * W, ((x1 - x0) / 9) * 0.44),
+    cr: Math.min(0.027 * W, ((x1 - x0) / seats) * 0.44),
+    seats,
   };
 }
 
@@ -62,7 +68,10 @@ export const tieY = (y: number, r: number) => y - r - 4;
 /** The small cards the deal hangs, one under each chip of the high row. */
 export function smallCards(g: StageGeometry, row: ChipRow) {
   const top = row.rowY + row.cr + 0.035 * STAGE_H;
-  const w = Math.min((row.span / 9) * 0.86, (g.railY - 0.04 * STAGE_H - top) * 0.72);
+  const w = Math.min(
+    (row.span / row.seats) * 0.86,
+    (g.railY - 0.04 * STAGE_H - top) * 0.72,
+  );
   return { top, w, h: w / 0.72 };
 }
 

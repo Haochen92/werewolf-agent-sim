@@ -10,6 +10,7 @@
 import Link from 'next/link';
 import type { GameStatus } from '@/types/contracts';
 import { humanise } from '@/lib/format';
+import { WINNER_NAME } from '@/stage/roles';
 import classes from './Lobby.module.css';
 
 export function GameEndedCard({ gameId, status }: { gameId: string; status: GameStatus }) {
@@ -21,7 +22,7 @@ export function GameEndedCard({ gameId, status }: { gameId: string; status: Game
           {finished ? 'This game has finished' : 'This game was dropped'}
         </h1>
         {finished && status.winner ? (
-          <p className={classes.note}>Winner: {humanise(status.winner)}</p>
+          <p className={classes.note}>Winner: {WINNER_NAME[status.winner]}</p>
         ) : null}
         {status.you ? <p className={classes.note}>You played as {humanise(status.you)}.</p> : null}
         {!finished && status.error ? <p className={classes.note}>{status.error}</p> : null}

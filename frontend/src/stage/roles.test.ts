@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { factionOf, seatNumber, seatify } from './roles';
+import {
+  factionOf,
+  isLoneKiller,
+  isPackRole,
+  isSoloNightRole,
+  seatNumber,
+  seatify,
+} from './roles';
 
 describe('the stage’s role and seat words', () => {
   it('rewrites the agents’ seat names for the table', () => {
@@ -30,5 +37,19 @@ describe('the stage’s role and seat words', () => {
     expect(factionOf('necromancer')).toBe('serial_killer');
     expect(factionOf('speculator')).toBe('neutral_benign');
     expect(factionOf(null)).toBeNull();
+  });
+});
+
+describe('the role sets', () => {
+  it('the pack is three roles, the lone killer two, and the solo night ten', () => {
+    expect(['wolf', 'chanteuse', 'illusionist'].every(isPackRole)).toBe(true);
+    expect(isPackRole('serial_killer')).toBe(false);
+    expect(isPackRole(null)).toBe(false);
+    expect(['serial_killer', 'necromancer'].every(isLoneKiller)).toBe(true);
+    expect(isLoneKiller('wolf')).toBe(false);
+    expect(isSoloNightRole('fortune_teller')).toBe(true);
+    // the pack acts together, and a villager has no night
+    expect(isSoloNightRole('chanteuse')).toBe(false);
+    expect(isSoloNightRole('villager')).toBe(false);
   });
 });

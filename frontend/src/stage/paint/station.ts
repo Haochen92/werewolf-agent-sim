@@ -62,7 +62,7 @@ export interface StationPlan {
   glass: Box;
   /** One place's width in the window. */
   pitch: number;
-  /** The nine places' centres, left to right; the platform's marks sit under them. */
+  /** The places' centres, one per seat, left to right; the platform's marks sit under them. */
   places: number[];
   /** The top of the brass plates under the window. */
   plateY: number;
@@ -83,8 +83,12 @@ export interface StationPlan {
   pull: number;
 }
 
-/** Where everything on the platform is, in units, for a HUD mode (the wing narrows the room). */
-export function stationPlan(hud: Hud = 'live'): StationPlan {
+/**
+ * Where everything on the platform is, in units, for a HUD mode (the wing narrows the room).
+ * `seats` divides the window into places: the room's size (`RoomInput.places`); nine where no
+ * room is known (the loading still, the back and front paint, which use no places).
+ */
+export function stationPlan(hud: Hud = 'live', seats = 9): StationPlan {
   const g = geometry(hud);
   // one master pixel in units, the same both ways (the mockup's `s`, turned into units)
   const k = CAR_H / (TRAIN_PX.bottom - TRAIN_PX.snow);
@@ -103,7 +107,7 @@ export function stationPlan(hud: Hud = 'live'): StationPlan {
     w: wlen,
     h: (TRAIN_PX.wy1 - TRAIN_PX.wy0) * k,
   };
-  const pitch = wlen / 9;
+  const pitch = wlen / seats;
   const postH = 0.69 * STAGE_H;
   const lampH = 0.13 * STAGE_H;
   // the posts stand 4.6cqw outside the window's ends; the lanterns hang 9.4cqw in from them
@@ -116,7 +120,7 @@ export function stationPlan(hud: Hud = 'live'): StationPlan {
     train,
     glass,
     pitch,
-    places: Array.from({ length: 9 }, (_, i) => wl + (i + 0.5) * pitch),
+    places: Array.from({ length: seats }, (_, i) => wl + (i + 0.5) * pitch),
     plateY: glass.y + glass.h + 4.5,
     floorY: 0.66 * STAGE_H,
     edgeH: 0.038 * STAGE_H,

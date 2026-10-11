@@ -58,8 +58,12 @@ import {
 } from '../notebook';
 import { ROLE_NAME, factionOf, type KnownRole } from '../roles';
 import { RAIL_GAP, RAIL_PAD, RAIL_STRIP, railLayout } from './rail-layout';
+import { FactionMark } from './FactionMark';
 import { Sigil } from './Sigil';
 import styles from './Wing.module.css';
+
+/** The role names too wide for a desk card's band at full size: they take a step smaller. */
+const LONG_BAND = new Set(['Necromancer', 'Fortune teller']);
 
 export interface WingTileProps {
   /** The numeral. */
@@ -276,9 +280,17 @@ function WingTile({
   suspect,
   onOpen,
 }: CardProps) {
-  const role = dead ? dead.role : (truth ?? null);
+  // a concealed body's role is hidden (`dead.role` null) unless this viewer holds the truth
+  const role = dead ? (dead.role ?? truth ?? null) : (truth ?? null);
+  const hidden = !!dead && !role;
   const faction = factionOf(role);
-  const band = you ? 'You' : role ? (ROLE_NAME[role] ?? role) : null;
+  const band = you
+    ? 'You'
+    : role
+      ? (ROLE_NAME[role] ?? role)
+      : hidden
+        ? 'Role hidden'
+        : null;
   const knew = !band && known ? known : null;
   const cls = [
     band || knew ? styles.banded : '',
@@ -344,11 +356,17 @@ function WingTile({
         ) : null}
       </span>
       {band ? (
-        <span className={`${styles.band} ${you ? styles.youBand : ''}`}>{band}</span>
+        <span
+          className={`${styles.band} ${you ? styles.youBand : ''}`}
+          data-hidden={hidden && !you ? true : undefined}
+          data-long={LONG_BAND.has(band) ? true : undefined}
+        >
+          {band}
+        </span>
       ) : null}
       {knew ? (
         <span
-          className={`${styles.band} ${styles.knownBand} ${(ROLE_NAME[knew.role] ?? knew.role).length > 6 ? styles.knownLong : ''}`}
+          className={`${styles.band} ${styles.knownBand} ${knew.how === 'seen' && (ROLE_NAME[knew.role] ?? knew.role).length > 6 ? styles.knownLong : ''}`}
           data-known={knew.how}
           title={
             knew.how === 'pack'
@@ -356,7 +374,12 @@ function WingTile({
               : `Seen · ${ROLE_NAME[knew.role] ?? knew.role}`
           }
         >
-          <Sigil role={knew.role} variant="felt" small />
+          {/* a pack mate's role is not on the wire: the pack's side mark, never a role's sigil */}
+          {knew.how === 'pack' ? (
+            <FactionMark faction="wolves" small />
+          ) : (
+            <Sigil role={knew.role} variant="felt" small />
+          )}
           <span className={styles.knownWords}>
             {knew.how === 'pack' ? (
               'Your pack'
@@ -688,7 +711,7 @@ function NoteEditor({
     }
   };
   const status = dead
-    ? `Dead${dead.role ? ` · ${ROLE_NAME[dead.role] ?? dead.role}` : ''}`
+    ? `Dead · ${dead.role ? (ROLE_NAME[dead.role] ?? dead.role) : 'role hidden'}`
     : 'Alive';
   return (
     <>

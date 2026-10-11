@@ -49,6 +49,11 @@
   --slate-hue: var(--sk);
   --slate-ink: var(--sk-ink);
 }
+/* a draw: no side won, so no side's colour */
+.draw {
+  --slate-hue: var(--muted);
+  --slate-ink: var(--ink);
+}
 
 .game:hover {
   transform: translateY(-4px);
