@@ -50,3 +50,13 @@ def test_a_new_strategy_records_its_source_cluster_and_the_call_is_logged():
     assert len(log) == 1 and log[0]["source_observations"] == ["o1"]
     assert "approach: voted the quiet one" in log[0]["observations_text"]
     assert log[0]["strategy_points"][0]["key"] == new[0]["key"]
+
+
+def test_the_tick_snapshot_keeps_the_synthesis_log():
+    from Agents.memory.consolidation.db import export_snapshot
+
+    with tempfile.TemporaryDirectory() as scratch, tempfile.TemporaryDirectory() as out:
+        for name in ("observations.json", "strategy_points.json", "synthesis_log.jsonl"):
+            (Path(scratch) / name).write_text("{}")
+        snap = export_snapshot(scratch, Path(out) / "gen1", manifest={})
+        assert (snap / "synthesis_log.jsonl").exists()
