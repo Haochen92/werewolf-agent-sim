@@ -33,9 +33,10 @@
  */
 import { isTextTurn, type TurnPayload } from '@/lib/api';
 import type { MeView } from '@/game/types';
+import { NO_ACTION, noActionWord } from '@/game/turn-words';
 import type { SceneBeat } from '@/stage/beats/types';
 import type { TurnClock } from '@/stage/countdown';
-import type { Presentation } from '@/stage/scenes/types';
+import type { ActMore, Presentation } from '@/stage/scenes/types';
 import { pressFile, pressTranscript, showFile, showRecord } from '@/stage/slot';
 import type { DurableGameEvent, GameStatus } from '@/types/contracts';
 import { nextLiveStep, type LiveContext } from './live-queue';
@@ -445,23 +446,31 @@ export function actSent(t: TurnState): {
 
 // --- answering -------------------------------------------------------------------
 
-/** What a scene reports: a line, a seat (null = the act that names no one), or the agent. */
-export type Answer = { say: string } | { act: string | null } | { delegate: true };
-
-/** The choices the server lists that are not seats (never guessed: only if listed). */
-const SENTINELS = ['abstain', 'hold_fire', 'no_target'];
+/**
+ * What a scene reports: a line, a target (null = the act that names no one), or the agent. A
+ * target is a seat, or one of the server's words for the kinds that choose no seat (a side the
+ * speculator picks, `conceal`); a necromancer's also names a body, a fortune teller's may name a
+ * role.
+ */
+export type Answer =
+  { say: string } | ({ act: string | null } & ActMore) | { delegate: true };
 
 /**
- * The turn's body for the answer, by the request's kind (build_plan §5), or null when the
- * answer does not fit it (an empty line; a seat the server did not offer).
+ * The turn's body for the answer, by the request's kind (build_plan §5, ten-seat pass §2), or
+ * null when the answer does not fit it (an empty line; a target the server did not offer; a
+ * necromancer's seat without a listed body).
  *
- *   discuss      → `{message}`, or `{pass_turn: true}` for a pass
- *   wolf_discuss → `{message}` only
- *   the rest     → `{target}` from `candidates`; "no one" is the listed abstain or hold fire
- *   any kind     → `{delegate: true}`, the seat's agent answers
+ *   discuss, wolf_discuss → `{message}`, or `{pass_turn: true}` for a pass
+ *   necromancer_target    → `{target, body}`; staying put is `{target}` alone
+ *   bet_target            → `{target}`, with `role_named` when a role was named
+ *   the rest              → `{target}` from `candidates` (a seat, a side, `conceal`); "no one"
+ *                           is the request's listed no-action word
+ *   any kind              → `{delegate: true}`, the seat's agent answers
  */
 export function payloadFor(
-  pending: Pick<NonNullable<MeView['pending']>, 'actionKind' | 'candidates'>,
+  pending: Pick<NonNullable<MeView['pending']>, 'actionKind' | 'candidates'> & {
+    bodies?: readonly string[];
+  },
   answer: Answer,
 ): TurnPayload | null {
   if ('delegate' in answer) return { delegate: true };
@@ -470,13 +479,17 @@ export function payloadFor(
     const message = answer.say.trim();
     return isTextTurn(kind) && message ? { message } : null;
   }
-  if (kind === 'discuss') return answer.act === null ? { pass_turn: true } : null;
-  if (kind === 'wolf_discuss') return null;
-  if (answer.act === null) {
-    const none = pending.candidates.find((c) => SENTINELS.includes(c));
-    return none ? { target: none } : null;
+  if (isTextTurn(kind)) return answer.act === null ? { pass_turn: true } : null;
+  const target = answer.act ?? noActionWord(pending.candidates);
+  if (target === null || !pending.candidates.includes(target)) return null;
+  const none = (NO_ACTION as readonly string[]).includes(target);
+  if (kind === 'necromancer_target' && !none) {
+    const body = answer.body;
+    return body && (pending.bodies ?? []).includes(body) ? { target, body } : null;
   }
-  return pending.candidates.includes(answer.act) ? { target: answer.act } : null;
+  if (kind === 'bet_target' && answer.roleNamed)
+    return { target, role_named: answer.roleNamed };
+  return { target };
 }
 
 /**

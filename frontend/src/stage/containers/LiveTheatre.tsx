@@ -59,6 +59,7 @@ import { ApiError } from '@/lib/request';
 import { seatToken } from '@/lib/storage';
 import { foldEvents } from '@/game/foldEvents';
 import type { DurableGameEvent, GameStatus } from '@/types/contracts';
+import { isNineSeat } from '../card-text';
 import { castForRoom, resolveCast } from '../cast/castForGame';
 import { beatsFor } from '../beats/beatsFor';
 import type { SceneBeat } from '../beats/types';
@@ -68,12 +69,13 @@ import { notebookForAgent, useNotebook, useNoteEditing } from '../notebook';
 import { CardOverlay } from '../instruments/FramedCard';
 import { LeaveConfirm } from '../instruments/TopStrip';
 import { draftRequest } from '../instruments/turn-dock';
-import { seatNumber } from '../roles';
+import { isPackRole, seatNumber } from '../roles';
 import { SCENES } from '../scenes';
-import { capsNote } from '../scenes/ShelfRoomScene';
+import { usesNote } from '../scenes/ShelfRoomScene';
 import { StationScene } from '../scenes/StationScene';
 import { CURTAIN, DEPART, stationBeat, stationBeatId } from '../scenes/station';
 import type {
+  ActMore,
   DockInput,
   Presentation,
   RoomAct,
@@ -239,16 +241,18 @@ export function LiveTheatre({
   const me = view.me.seat;
   // after game over the whole log is everyone's: every viewer is an observer (what the viewer
   // sees of it waits for the stage to reach the ending: `xrayShown`, below)
-  const xray = view.winner !== null;
+  const xray = view.over;
   // a waiting room wears its picks on the platform; the dealt game wears the recorded cast
   const picks =
     status?.state === 'waiting' ? JSON.stringify(status.characters ?? []) : null;
+  // the table's size: the dealt roster once it is in, the room's size until then
+  const seatTotal = view.seats.length || (status?.max_seats ?? 9);
   const cast = useMemo(
     () =>
       picks !== null
-        ? castForRoom(JSON.parse(picks) as (string | null)[], gameId)
-        : resolveCast(status?.cast, gameId),
-    [picks, status?.cast, gameId],
+        ? castForRoom(JSON.parse(picks) as (string | null)[], gameId, seatTotal)
+        : resolveCast(status?.cast, gameId, seatTotal),
+    [picks, status?.cast, gameId, seatTotal],
   );
   const beats = useMemo(
     () => beatsFor(events, { xray, me, live: true }),
@@ -338,7 +342,10 @@ export function LiveTheatre({
     [pending, mine, turn.answered, turn.sending, send],
   );
   const onSay = useCallback((text: string) => answer({ say: text }), [answer]);
-  const onAct = useCallback((target: string | null) => answer({ act: target }), [answer]);
+  const onAct = useCallback(
+    (target: string | null, more?: ActMore) => answer({ act: target, ...more }),
+    [answer],
+  );
   const onDelegate = useCallback(() => answer({ delegate: true }), [answer]);
 
   // The seat notebook goes with a draft only while "Use my seat notes" is ticked; a dead
@@ -535,14 +542,15 @@ export function LiveTheatre({
     beat?.id === 'day.speech' && beat.subject === me && me !== null
       ? turn.byAgent.includes(requestBefore(events, beat.seq, me) ?? -1)
       : false;
-  // the kill decided on the night this seat was asked for its vote: how that vote went in
+  // the kill decided on the night this seat was asked for its vote (nine-seat) or, as the
+  // carrier, for the kill itself (ten-seat): how that answer went in
   const votedTonight =
     beat?.id === 'pack.decided' &&
     events.some(
       (e) =>
         e.seq === turn.seq &&
         e.type === 'input_request' &&
-        e.action_kind === 'wolf_vote' &&
+        (e.action_kind === 'wolf_vote' || e.action_kind === 'carrier_kill') &&
         e.day === beat.day,
     );
   const turnInput: TurnInput | undefined = beat
@@ -658,9 +666,14 @@ export function LiveTheatre({
               role={myRole}
               seat={seatNumber(me)}
               u={geometry('live', sideOpen(presentation)).u * 1.6}
-              alone={myRole === 'wolf' && !view.packRoster.some((s) => s !== me)}
-              note={capsNote(view.me.role?.bullets ?? null)}
+              alone={isPackRole(myRole) && !view.packRoster.some((s) => s !== me)}
+              note={usesNote(
+                myRole,
+                view.me.role?.uses ?? null,
+                view.me.role?.bullets ?? null,
+              )}
               onClose={() => setCardOpen(false)}
+              legacy={isNineSeat(view)}
             />
           ) : null}
           {liveOn && beat && leaving && me && !xrayShown ? (

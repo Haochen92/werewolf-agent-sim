@@ -30,8 +30,10 @@ const TILT = [-2.4, 1.7, -1.1, 2.9, -3.1, 0.8, 2.3, -1.8, 1.3];
 
 export interface PhotoProps {
   character: Character;
-  /** The numeral on its border, 1–9. */
+  /** The numeral on its border, 1–10. */
   seat: number;
+  /** Written on the border in place of the numeral (the fortune teller's own seat: "yourself"). */
+  caption?: string;
   /** Its centre x and its top, in units. */
   x: number;
   top: number;
@@ -53,6 +55,7 @@ export interface PhotoProps {
 export function Photo({
   character,
   seat,
+  caption,
   x,
   top,
   w,
@@ -76,7 +79,7 @@ export function Photo({
       className={styles.photo}
       data-seat={seat}
       data-light={light ?? 'even'}
-      aria-label={onChoose ? `Seat ${seat}` : undefined}
+      aria-label={onChoose ? (caption ?? `Seat ${seat}`) : undefined}
       aria-pressed={onChoose ? light === 'lit' : undefined}
       onClick={onChoose}
       style={{
@@ -122,8 +125,14 @@ export function Photo({
             <ChipSprite character={character} />
           </span>
           <svg className={styles.photoNumeral} viewBox="0 0 100 30" aria-hidden="true">
-            <text x="50" y="26" textAnchor="middle" fontSize="30" fill="#2a1d10">
-              {seat}
+            <text
+              x="50"
+              y={caption ? 23 : 26}
+              textAnchor="middle"
+              fontSize={caption ? 20 : 30}
+              fill="#2a1d10"
+            >
+              {caption ?? seat}
             </text>
           </svg>
           {/* the chosen print catches the candle; the others darken where they hang */}

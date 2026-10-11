@@ -138,6 +138,13 @@ export interface RoomOpts {
   side?: boolean;
   /** How many photos hang on the line. */
   n?: number;
+  /**
+   * Units the whole line of prints hangs lower, each on its own length of twine (the
+   * necromancer's targets, under its bodies on the line itself); default 0.
+   */
+  lower?: number;
+  /** The widest a print may be, in units (default 140, one height's widest). */
+  maxW?: number;
 }
 
 /** Where the painting and everything in it sits, in units. */
@@ -167,7 +174,8 @@ export function roomPlan(o: RoomOpts) {
   const rows =
     n <= 4 && (span / n) * 0.9 >= MIN_PRINT ? 1 : n >= 6 && across(2) < MIN_PRINT ? 3 : 2;
   // one height: evenly spaced, each in its own stretch
-  const w = rows === 1 ? Math.min(140, (span / n) * 0.9) : across(rows),
+  const widest = o.maxW ?? 140;
+  const w = Math.min(widest, rows === 1 ? (span / n) * 0.9 : across(rows)),
     pitch = rows === 1 ? span / n : (span - w) / (n - 1),
     first = rows === 1 ? lo + pitch / 2 : lo + w / 2,
     h = w * PHOTO_H;
@@ -176,7 +184,7 @@ export function roomPlan(o: RoomOpts) {
       at = lineY(x),
       row = i % rows;
     // the first height is pegged to the line itself; a lower one hangs on its own length of twine
-    const top = at + 3 + row * (h + DROP_GAP);
+    const top = at + 3 + (o.lower ?? 0) + row * (h + DROP_GAP);
     return { x, top, line: at, drop: top - at, row };
   });
   const cardW = CARD_H * 0.72;

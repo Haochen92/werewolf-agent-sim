@@ -168,11 +168,16 @@ export function createRoom(body: NewRoom): Promise<RoomCreated> {
  *
  *   delegate       → `{delegate: true}` and NOTHING else. Legal in every phase.
  *   discuss        → `{message}` or `{pass_turn: true}` (pass needs the turn to be passable)
- *   wolf_discuss   → `{message}` only — wolf talk cannot be passed and takes no target
- *   every other kind → `{target}`, which must be one of the request's candidates
+ *   wolf_discuss   → `{message}` or `{pass_turn: true}` (a wolf may pass a chat round); no target
+ *   every other kind → `{target}`, which must be one of the request's candidates; a
+ *     necromancer's also carries `body` (one of the request's `bodies`, unless it stays put),
+ *     a fortune teller's may carry `role_named` (the role named on the bet)
  */
 export type TurnPayload =
-  { delegate: true } | { pass_turn: true } | { message: string } | { target: string };
+  | { delegate: true }
+  | { pass_turn: true }
+  | { message: string }
+  | { target: string; body?: string; role_named?: string };
 
 export function submitTurn(gameId: string, payload: TurnPayload): Promise<TurnAccepted> {
   return request<TurnAccepted>(`/games/${encodeURIComponent(gameId)}/turns`, {

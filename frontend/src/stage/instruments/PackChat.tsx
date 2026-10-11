@@ -9,8 +9,9 @@
  *
  * The newest entry is always in view: the chat scrolls to its foot as lines arrive.
  *
- * When it is your turn to talk, a line and "Say it" sit at the foot of the room on the left;
- * the chat keeps the right.
+ * When it is your turn to talk, a line, "Say it" and "Pass" sit at the foot of the room on the
+ * left; the chat keeps the right. A round a wolf passed shows as "passed". They shut while the
+ * line is on its way and once it is in; a send that failed reopens them, with why under the box.
  */
 import { motion } from 'motion/react';
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
@@ -21,10 +22,19 @@ import { seatify, seatNumber } from '../roles';
 import styles from './PackChat.module.css';
 
 export type PackEntry =
-  | { kind: 'line'; seq: number; wolf: string; round: number; message: string }
+  | {
+      kind: 'line';
+      seq: number;
+      wolf: string;
+      round: number;
+      message: string;
+      /** The wolf passed the round (ten-seat chat): "passed", no words. */
+      passed?: boolean;
+    }
   | { kind: 'gm'; seq: number; message: string }
   | { kind: 'vote'; seq: number; wolf: string; votee: string }
-  | { kind: 'decided'; seq: number; target: string };
+  /** The kill decided; `carrier` = the wolf who named it (ten-seat), absent for the pack's vote. */
+  | { kind: 'decided'; seq: number; target: string; carrier?: string | null };
 
 export interface PackChatProps {
   entries: readonly PackEntry[];
@@ -51,6 +61,14 @@ export interface PackChatProps {
     left: number;
     /** The small line under it (the countdown, ticking on its own). */
     note?: ReactNode;
+    /** Pass the round (the ten-seat chat ends once every wolf passed a round). */
+    onPass?: () => void;
+    /** The request this line answers: a new one starts the box afresh. */
+    seq?: number;
+    /** The line (or the pass) is on its way, or in: the box and both buttons are shut. */
+    sent?: boolean;
+    /** Why the last send failed; while the line is not in, the box reopens to try again. */
+    error?: string | null;
   };
 }
 
@@ -86,7 +104,7 @@ export function PackChat({
               <small>
                 {e.wolf === you ? 'You' : `Seat ${seatNumber(e.wolf)}`} · round {e.round}
               </small>
-              {seatify(e.message)}
+              {e.passed ? <em>passed</em> : seatify(e.message)}
             </div>
           </div>
         );
@@ -107,7 +125,12 @@ export function PackChat({
           </div>
         );
       case 'decided':
-        return (
+        return e.carrier ? (
+          <div className={`${styles.vline} ${styles.dec}`}>
+            {e.carrier === you ? 'You name' : `Seat ${seatNumber(e.carrier)} names`} the
+            kill: <Chip seat={e.target} cast={cast} /> seat {seatNumber(e.target)}
+          </div>
+        ) : (
           <div className={`${styles.vline} ${styles.dec}`}>
             The pack chooses <Chip seat={e.target} cast={cast} /> seat{' '}
             {seatNumber(e.target)}
@@ -149,22 +172,34 @@ export function PackChat({
           </motion.div>
         ))}
       </section>
-      {input ? <SayLine {...input} /> : null}
+      {input ? <SayLine key={input.seq} {...input} /> : null}
     </>
   );
 }
 
-function SayLine({ draft, onSay, left, note }: NonNullable<PackChatProps['input']>) {
+function SayLine({
+  draft,
+  onSay,
+  onPass,
+  left,
+  note,
+  sent,
+  error,
+}: NonNullable<PackChatProps['input']>) {
   const [text, setText] = useState(draft);
-  const [sent, setSent] = useState(false);
+  // pressed here: shut at once, before the container says the send is on its way
+  const [pressed, setPressed] = useState(false);
+  // a failed send reopens the box; a line in (or refused as already answered) keeps it shut
+  const failed = !!error && !sent;
+  const shut = !failed && (pressed || !!sent);
   return (
     <form
       className={styles.say}
       style={{ left }}
       onSubmit={(e) => {
         e.preventDefault();
-        if (!text.trim() || sent) return;
-        setSent(true);
+        if (!text.trim() || shut) return;
+        setPressed(true);
         onSay?.(text.trim());
       }}
     >
@@ -172,12 +207,30 @@ function SayLine({ draft, onSay, left, note }: NonNullable<PackChatProps['input'
         aria-label="Your line to the pack"
         placeholder="Say something to your packmate…"
         value={text}
-        disabled={sent}
+        disabled={shut}
         onChange={(e) => setText(e.target.value)}
       />
-      <button type="submit" disabled={sent || !text.trim()}>
+      <button type="submit" disabled={shut || !text.trim()}>
         Say it
       </button>
+      {onPass ? (
+        <button
+          type="button"
+          disabled={shut}
+          onClick={() => {
+            if (shut) return;
+            setPressed(true);
+            onPass();
+          }}
+        >
+          Pass
+        </button>
+      ) : null}
+      {error ? (
+        <span className={styles.error} role="alert">
+          {error}
+        </span>
+      ) : null}
       {note ? <span className={styles.count}>{note}</span> : null}
     </form>
   );

@@ -345,13 +345,18 @@ button.photo:focus-visible {
   line-height: 1;
   margin: calc(4 * var(--u)) 0 calc(8 * var(--u));
 }
+.cardHead[data-long] {
+  font-size: calc(26 * var(--u));
+  white-space: nowrap;
+}
 .cardHead svg {
   width: calc(32 * var(--u));
   height: calc(32 * var(--u));
 }
 .cardFig {
   width: 72%;
-  min-height: 34%;
+  /* the figure gives way to a long night text (the fortune teller's), so the foot stays on */
+  min-height: 22%;
 }
 .cardNight {
   font-family: var(--font-stage-sans, Outfit), system-ui, sans-serif;
@@ -359,6 +364,9 @@ button.photo:focus-visible {
   line-height: 1.35;
   margin: calc(8 * var(--u)) 0 0;
   color: #3a2a1a;
+}
+.cardNight[data-long] {
+  font-size: calc(13 * var(--u));
 }
 .cardNight b {
   font-weight: 600;
@@ -505,4 +513,81 @@ button.photo:focus-visible {
   box-shadow:
     inset 0 -2px 0 rgba(0, 0, 0, 0.3),
     0 0 0 1.6px rgba(20, 12, 6, 0.9);
+}
+
+/* ---- a necromancer's bodies: the tag under their line ("act through") ---- */
+.lineTag {
+  position: absolute;
+  margin: 0;
+  white-space: nowrap;
+  font-size: calc(var(--meta) * 1.1);
+  color: var(--paper);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+/* ---- plates to choose from, over the plate: the speculator's sides, the fortune teller's
+   roles (ten-seat pass §2); the plate's own buttons, a size down, the chosen one lit ---- */
+.choices {
+  position: absolute;
+  left: 50%;
+  bottom: calc(8px + 132px * var(--legible-ui));
+  transform: translateX(-50%);
+  /* its own width, not what is left right of `left`: the row wraps only past its max-width */
+  width: max-content;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(8px * var(--legible-ui));
+  z-index: 2;
+}
+.choicesCaption {
+  margin: 0;
+  white-space: nowrap;
+  font-size: calc(var(--meta) * 1.1);
+  color: var(--paper);
+  opacity: 0.75;
+}
+.choicesRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: calc(9.6px * var(--legible-ui));
+  /* the plates grow with --legible-ui on a phone; the row's measure grows with them */
+  max-width: calc(760px * var(--legible-ui));
+}
+.choices button {
+  font: inherit;
+  font-size: calc(22.4px * 1.05 * var(--legible-ui));
+  font-weight: 600;
+  padding: calc(9.6px * var(--legible-ui)) calc(20px * var(--legible-ui));
+  border-radius: 8px;
+  border: 2.9px solid #24180c;
+  background: linear-gradient(#5a4632, #3a2a1a);
+  color: var(--paper);
+  box-shadow:
+    0 4px 0 #5a3a12,
+    0 8px 16px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.choices button[aria-pressed='true'] {
+  background: linear-gradient(#efd9a8, #c9a25e);
+  color: #2a1a08;
+  box-shadow:
+    0 4px 0 #5a3a12,
+    0 0 18px 4px rgba(255, 190, 110, 0.35);
+}
+.choices button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+/* a role's sigil in place of words */
+.choices button.sigil {
+  padding: calc(6.4px * var(--legible-ui));
+  line-height: 0;
+}
+.choices button.sigil svg {
+  width: calc(36px * var(--legible-ui));
+  height: calc(36px * var(--legible-ui));
 }

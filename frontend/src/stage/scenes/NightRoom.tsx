@@ -23,6 +23,7 @@ import type { ReactNode } from 'react';
 import type { RoomPicture } from '@/assets/manifest';
 import { Atmosphere } from '../Atmosphere';
 import { Layer, Paint } from '../Stage';
+import { isNineSeat } from '../card-text';
 import { Compartment } from '../instruments/Compartment';
 import { CardOverlay, FramedCard } from '../instruments/FramedCard';
 import { Photo } from '../instruments/Photo';
@@ -43,6 +44,9 @@ import styles from '../instruments/NightRoom.module.css';
 const LIGHT_FADE = 0.6;
 /** Arriving in the room: each photo fades in a beat after the one before it (seconds). */
 const PHOTO_STAGGER = 0.08;
+/** A necromancer's bodies: their prints' widest, and the room under them for their tag (units). */
+const BODY_W = 104,
+  BODY_GAP = 52;
 
 /** Each role's painted room; a role with none of its own (a villager, in the workbench) gets the healer's. */
 export const ROOM_OF: Record<string, RoomPicture> = {
@@ -85,6 +89,19 @@ export interface NightRoomProps extends Pick<
   seed?: string;
   /** Tapping a photo; without it the photos are only shown. */
   onChoose?: (seat: string) => void;
+  /** Words on a print in place of its numeral, by seat (the fortune teller's own: "yourself"). */
+  captions?: Partial<Record<string, string>>;
+  /**
+   * A necromancer's bodies: a line of their own on the twine, tagged "act through", over the
+   * seats it may act on, which then hang lower, each on its own length of twine. The chosen
+   * body is lit and wears a pin as the chosen seat does.
+   */
+  bodies?: {
+    seats: readonly string[];
+    chosen: string | null;
+    onChoose?: (seat: string) => void;
+    tag: string;
+  };
   /** Marks drawn over a photo (the teeth), by seat. */
   marks?: Partial<Record<string, ReactNode>>;
   /** Seats the wing marks as the pack's (red edge). */
@@ -134,6 +151,8 @@ export function NightRoom({
   pinHome = false,
   seed,
   onChoose,
+  captions,
+  bodies,
   marks,
   pack = [],
   cardOpen,
@@ -157,7 +176,12 @@ export function NightRoom({
   const g = geometry(hud, side);
   const room = ROOM_OF[role] ?? 'healer';
   const n = Math.max(1, photos.length);
-  const plan = roomPlan({ room, hud, side, n });
+  // a necromancer's bodies hang on the twine; the seats then hang below them
+  const bodyPlan = bodies
+    ? roomPlan({ room, hud, side, n: Math.max(1, bodies.seats.length), maxW: BODY_W })
+    : null;
+  const lower = bodyPlan ? bodyPlan.photo.h + BODY_GAP : 0;
+  const plan = roomPlan({ room, hud, side, n, lower });
   const chosenIndex = lit ? photos.indexOf(lit) : -1;
   const deadBySeat = new Map(view.dead.map((d) => [d.player, d]));
   const known = knownRoles(me, view.me);
@@ -196,6 +220,7 @@ export function NightRoom({
               key={seat}
               character={character}
               seat={s}
+              caption={captions?.[seat]}
               x={at.x}
               top={at.top}
               w={plan.photo.w}
@@ -215,6 +240,57 @@ export function NightRoom({
             </Photo>
           );
         })}
+        {bodies && bodyPlan
+          ? bodies.seats.map((seat, i) => {
+              const s = seatNumber(seat);
+              const character = cast[s - 1];
+              const at = bodyPlan.photos[i];
+              if (!character || !at) return null;
+              return (
+                <Photo
+                  key={`body:${seat}`}
+                  character={character}
+                  seat={s}
+                  x={at.x}
+                  top={at.top}
+                  w={bodyPlan.photo.w}
+                  h={bodyPlan.photo.h}
+                  drop={at.drop}
+                  light={
+                    bodies.chosen === null
+                      ? undefined
+                      : bodies.chosen === seat
+                        ? 'lit'
+                        : 'dim'
+                  }
+                  onChoose={bodies.onChoose ? () => bodies.onChoose!(seat) : undefined}
+                  arrive={animate ? 0.1 + i * PHOTO_STAGGER : false}
+                >
+                  <AnimatePresence key={seed} initial={false}>
+                    {bodies.chosen === seat ? (
+                      <Pin
+                        key="pin"
+                        role={role}
+                        w={bodyPlan.photo.w * 1.3}
+                        home={pinHome}
+                      />
+                    ) : null}
+                  </AnimatePresence>
+                </Photo>
+              );
+            })
+          : null}
+        {bodies && bodyPlan?.photos[0] ? (
+          <p
+            className={styles.lineTag}
+            style={{
+              left: bodyPlan.photos[0].x - bodyPlan.photo.w / 2,
+              top: bodyPlan.photos[0].top + bodyPlan.photo.h + 6,
+            }}
+          >
+            {bodies.tag}
+          </p>
+        ) : null}
       </Layer>
 
       <Layer name="instruments">
@@ -227,13 +303,14 @@ export function NightRoom({
           alone={alone}
           note={cardNote}
           owner={cardOwner}
+          legacy={isNineSeat(view)}
           onOpen={me || cardOwner ? () => onCard(true) : undefined}
         />
       </Layer>
 
       <Layer name="light">
         {/* the candle's room stays still; only the choice's darkness fades in and out over it */}
-        <Paint of={roomLight} opts={{ room, hud, side, n, bleed: BLEED }} />
+        <Paint of={roomLight} opts={{ room, hud, side, n, lower, bleed: BLEED }} />
         <AnimatePresence key={seed} initial={false}>
           {chosenIndex < 0 ? null : (
             <motion.div
@@ -246,7 +323,7 @@ export function NightRoom({
             >
               <Paint
                 of={roomChoice}
-                opts={{ room, hud, side, n, chosen: chosenIndex, bleed: BLEED }}
+                opts={{ room, hud, side, n, lower, chosen: chosenIndex, bleed: BLEED }}
               />
             </motion.div>
           )}
@@ -265,7 +342,9 @@ export function NightRoom({
               ? (view.xray.roles[seat] ?? null)
               : seat === me
                 ? myRole
-                : pack.includes(seat)
+                : // a mate the seat knows as its pack wears "Your pack", never a role
+                  // (ten-seat pass §1: a mate's role is not on the wire)
+                  pack.includes(seat) && !known.has(seat)
                   ? 'wolf'
                   : null;
             return {
@@ -307,6 +386,7 @@ export function NightRoom({
             note={cardNote}
             onClose={() => onCard(false)}
             onOutside={onEmpty}
+            legacy={isNineSeat(view)}
           />
         ) : null}
       </Layer>

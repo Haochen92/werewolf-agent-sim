@@ -60,8 +60,10 @@ export interface SceneProps {
    * null for an act that chooses no one (the vigilante's "Hold fire"). The scene only reports
    * it; the live container sends it to the server, the workbench logs it. The waiting room's
    * room reports its plates here too, as a `RoomAct` (`lock`, `unlock`, `close`, `depart`, `leave`).
+   * The target can also be one of the server's words that is not a seat (a side the speculator
+   * picks, `conceal`); `more` carries a necromancer's body and a fortune teller's named role.
    */
-  onAct?: (target: string | null) => void;
+  onAct?: (target: string | null, more?: ActMore) => void;
   /** The seated human's line (the pack's chat): reported the same way as `onAct`. */
   onSay?: (text: string) => void;
   /**
@@ -206,8 +208,12 @@ export interface TurnInput {
    * that shows the count ticks it, not the scene.
    */
   clock?: TurnClock | null;
-  /** A seat already chosen. */
+  /** A seat already chosen (or a side, for the speculator). */
   chosen?: string | null;
+  /** A necromancer's body already chosen. */
+  body?: string | null;
+  /** A fortune teller's role already named. */
+  roleNamed?: string | null;
   /** The role card opened over the room. */
   cardOpen?: boolean;
   /**
@@ -285,6 +291,14 @@ export interface DockInput {
  * host's lock, close and depart, and everyone else's leave.
  */
 export type RoomAct = 'lock' | 'unlock' | 'close' | 'depart' | 'leave';
+
+/** What a night act carries besides its target (`SceneProps.onAct`). */
+export interface ActMore {
+  /** A necromancer's: the body it acts through (one of the request's `bodies`). */
+  body?: string;
+  /** A fortune teller's: the role it names on the bet, for two points. */
+  roleNamed?: string;
+}
 
 /**
  * The waiting room before the game, for the platform (`StationScene`). A room has no event log:

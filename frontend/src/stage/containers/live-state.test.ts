@@ -787,9 +787,14 @@ describe('the live stage: the side slot', () => {
 });
 
 describe('the turn’s body, by request kind', () => {
-  const ask = (kind: InputRequest['action_kind'], candidates: string[] = []) => ({
+  const ask = (
+    kind: InputRequest['action_kind'],
+    candidates: string[] = [],
+    bodies: string[] = [],
+  ) => ({
     actionKind: kind,
     candidates,
+    bodies,
   });
   it('a line, or a pass, for the day’s turn', () => {
     expect(payloadFor(ask('discuss'), { say: '  Seat 8 is dodging. ' })).toEqual({
@@ -798,11 +803,12 @@ describe('the turn’s body, by request kind', () => {
     expect(payloadFor(ask('discuss'), { say: '   ' })).toBeNull();
     expect(payloadFor(ask('discuss'), { act: null })).toEqual({ pass_turn: true });
   });
-  it('a line only for the pack', () => {
+  it('a line to the pack, or a pass (the ten-seat chat ends once every wolf passed)', () => {
     expect(payloadFor(ask('wolf_discuss'), { say: 'Seat 4.' })).toEqual({
       message: 'Seat 4.',
     });
-    expect(payloadFor(ask('wolf_discuss'), { act: null })).toBeNull();
+    expect(payloadFor(ask('wolf_discuss'), { act: null })).toEqual({ pass_turn: true });
+    expect(payloadFor(ask('wolf_discuss'), { act: 'player_4' })).toBeNull();
   });
   it('a seat from the list for votes and acts; "no one" only as the listed sentinel', () => {
     const vote = ask('vote', ['player_1', 'player_2', 'abstain']);
@@ -815,6 +821,92 @@ describe('the turn’s body, by request kind', () => {
     expect(payloadFor(ask('wolf_vote', ['player_4']), { act: 'player_4' })).toEqual({
       target: 'player_4',
     });
+  });
+  it('every solo kind: a listed seat, or the request’s own no-action word', () => {
+    const seats = ['player_1', 'player_2'];
+    const words = {
+      healer_target: null,
+      serial_killer_target: null,
+      trailseer_target: null,
+      investigator_target: 'no_check',
+      sentinel_target: 'no_watch',
+      vigilante_target: 'hold_fire',
+      sigil_target: 'keep_sigil',
+    } as const;
+    for (const [kind, none] of Object.entries(words) as [
+      keyof typeof words,
+      string | null,
+    ][]) {
+      const req = ask(kind, none ? [...seats, none] : seats);
+      expect(payloadFor(req, { act: 'player_2' })).toEqual({ target: 'player_2' });
+      expect(payloadFor(req, { act: 'player_3' })).toBeNull();
+      // "no one" is the word the request lists, never one guessed
+      expect(payloadFor(req, { act: null })).toEqual(none ? { target: none } : null);
+    }
+    // a word the request does not list is no answer
+    expect(payloadFor(ask('sentinel_target', seats), { act: 'no_watch' })).toBeNull();
+  });
+  it('the pack’s kill and the wolves’ skills', () => {
+    expect(payloadFor(ask('carrier_kill', ['player_4']), { act: 'player_4' })).toEqual({
+      target: 'player_4',
+    });
+    expect(payloadFor(ask('carrier_kill', ['player_4']), { act: null })).toBeNull();
+    expect(
+      payloadFor(ask('block_target', ['player_1', 'player_9']), { act: 'player_9' }),
+    ).toEqual({ target: 'player_9' });
+    const conceal = ask('conceal', ['conceal', 'no_conceal']);
+    expect(payloadFor(conceal, { act: 'conceal' })).toEqual({ target: 'conceal' });
+    expect(payloadFor(conceal, { act: null })).toEqual({ target: 'no_conceal' });
+    expect(payloadFor(conceal, { act: 'player_1' })).toBeNull();
+  });
+  it('the speculator picks a side by the server’s word, or not yet', () => {
+    const pick = ask('speculator_pick', [
+      'town',
+      'wolves',
+      'lone_killer',
+      'self',
+      'not_yet',
+    ]);
+    for (const side of ['town', 'wolves', 'lone_killer', 'self'])
+      expect(payloadFor(pick, { act: side })).toEqual({ target: side });
+    expect(payloadFor(pick, { act: null })).toEqual({ target: 'not_yet' });
+    expect(payloadFor(pick, { act: 'player_1' })).toBeNull();
+  });
+  it('the necromancer acts through a listed body, or stays put', () => {
+    const necro = ask(
+      'necromancer_target',
+      ['player_1', 'player_5', 'stay_put'],
+      ['player_3'],
+    );
+    expect(payloadFor(necro, { act: 'player_5', body: 'player_3' })).toEqual({
+      target: 'player_5',
+      body: 'player_3',
+    });
+    // a seat needs a body, and only a listed one
+    expect(payloadFor(necro, { act: 'player_5' })).toBeNull();
+    expect(payloadFor(necro, { act: 'player_5', body: 'player_4' })).toBeNull();
+    expect(payloadFor(necro, { act: null })).toEqual({ target: 'stay_put' });
+    expect(payloadFor(necro, { act: 'stay_put', body: 'player_3' })).toEqual({
+      target: 'stay_put',
+    });
+  });
+  it('the fortune teller bets on a seat, itself while listed, and may name a role', () => {
+    const bet = ask('bet_target', ['player_1', 'player_8']);
+    expect(payloadFor(bet, { act: 'player_1' })).toEqual({ target: 'player_1' });
+    expect(payloadFor(bet, { act: 'player_1', roleNamed: 'healer' })).toEqual({
+      target: 'player_1',
+      role_named: 'healer',
+    });
+    expect(payloadFor(bet, { act: 'player_8' })).toEqual({ target: 'player_8' });
+    // the bet goes on every night: there is no "no one"
+    expect(payloadFor(bet, { act: null })).toBeNull();
+    // a role named on another kind is not sent
+    expect(
+      payloadFor(ask('investigator_target', ['player_1']), {
+        act: 'player_1',
+        roleNamed: 'healer',
+      }),
+    ).toEqual({ target: 'player_1' });
   });
   it('the agent can take any turn', () => {
     for (const kind of ['discuss', 'vote', 'wolf_discuss', 'serial_killer_target'] as const)
@@ -973,6 +1065,7 @@ describe('the turn’s clock and whose line it was', () => {
       candidates: [],
       deadline: null,
       round: null,
+      bodies: [],
     };
     expect(requestIsActive(pending, ME, { pending_seats: [ME], last_seq: 250 })).toBe(true);
     expect(requestIsActive(pending, ME, { pending_seats: [], last_seq: 200 })).toBe(true);

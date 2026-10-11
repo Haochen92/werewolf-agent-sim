@@ -1,8 +1,9 @@
 /**
  * The brass plate at the foot of the night room: it names the act ("Protect seat 1", "Check
  * seat 4", "Shoot seat 2", "Kill seat 5") once a photo is chosen, and pressing it confirms.
- * Before a choice it asks ("Choose a seat to protect") and cannot be pressed. The vigilante's
- * plate has a second button, "Hold fire", because not shooting is an act too.
+ * Before a choice it asks ("Choose a seat to protect") and cannot be pressed. A request that
+ * lists a no-action word has a second button in its words ("Hold fire", "Keep your checks",
+ * "Stay put"), because not acting is an act too.
  *
  * In the pack's room the plate sits at the left, because the wolves' chat has the right. On the
  * waiting room's ledge it is `inline`, in the ledge's row beside its notice ("Depart", "Lock").
@@ -17,6 +18,7 @@
  * act is in the plate is `sealed`: a label saying what was done, with nothing left to press.
  * A send that failed says why in that line, and the plate can be pressed again.
  */
+import type { ReactNode } from 'react';
 import { useTimeLeft } from '@/hooks/useCountdown';
 import { countLeft, countText, URGENT_MS, type TurnClock } from '../countdown';
 import styles from './NightRoom.module.css';
@@ -27,7 +29,7 @@ export interface ActPlateProps {
   onConfirm?: () => void;
   /** Nothing chosen yet, or already sent. */
   disabled?: boolean;
-  /** A second act beside it (the vigilante's "Hold fire"). */
+  /** A second act beside it (the request's no-action word: "Hold fire", "Keep your checks"). */
   secondary?: { label: string; onClick?: () => void; disabled?: boolean };
   /** Centred on the stage, or at the room's left edge in units (the pack). */
   left?: number;
@@ -101,6 +103,68 @@ export function ActPlate({
           {secondary.label}
         </button>
       ) : null}
+    </div>
+  );
+}
+
+/** One plate in a `ChoicePlates` row: its word (or a sigil), and whether it is the chosen one. */
+export interface PlateChoice {
+  id: string;
+  label: ReactNode;
+  /** Its name in words, when the label is a picture (a role's sigil). */
+  title?: string;
+  on: boolean;
+}
+
+/**
+ * A row of plates to choose from, over the plate (ten-seat pass §2): the speculator's sides,
+ * the fortune teller's roles (as sigils, `sigils`). Tapping one lights it, tapping it again
+ * puts it out; the gold plate under it still commits. A small sibling of the plate, in its
+ * style, placed over it at the same x.
+ */
+export function ChoicePlates({
+  choices,
+  onToggle,
+  caption,
+  centre,
+  sigils,
+  disabled,
+}: {
+  choices: readonly PlateChoice[];
+  onToggle: (id: string) => void;
+  /** A quiet line over the row ("name a role for two points"). */
+  caption?: string;
+  /** Centred on this x in units (the plate's). */
+  centre?: number;
+  /** The labels are pictures: square plates. */
+  sigils?: boolean;
+  disabled?: boolean;
+}) {
+  return (
+    <div
+      className={styles.choices}
+      style={centre == null ? undefined : { left: centre }}
+      role="group"
+      aria-label={caption}
+    >
+      {caption ? <p className={styles.choicesCaption}>{caption}</p> : null}
+      <div className={styles.choicesRow}>
+        {choices.map((c) => (
+          <button
+            key={c.id}
+            type="button"
+            className={sigils ? styles.sigil : undefined}
+            data-choice={c.id}
+            aria-pressed={c.on}
+            aria-label={c.title}
+            title={c.title}
+            disabled={disabled}
+            onClick={() => onToggle(c.id)}
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
