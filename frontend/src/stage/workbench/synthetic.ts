@@ -10,20 +10,31 @@
  * The waiting room (the platform) has no log at all: a room is only the status poll's roster,
  * so its situations are the room itself (`RoomSituation`), drawn over an empty view.
  */
+import type { Character } from '@/assets/manifest';
 import { foldEvents } from '@/game/foldEvents';
 import type { GameView } from '@/game/types';
 import type { ActionKind, DurableGameEvent } from '@/types/contracts';
 import { BEAT_LABELS, type BeatId, type SceneBeat, type SceneId } from '../beats/types';
-import { seatify } from '../roles';
+import { isPackRole, seatify } from '../roles';
 import { nightUnits } from '../scenes/NightLobbyScene';
 import { MIN_ABOARD, stationBeat, type StationBeatId } from '../scenes/station';
 import type { RoomInput, TurnInput } from '../scenes/types';
+import { castForGame } from '../cast/castForGame';
+import { FIXTURE_GAME_ID, PHASE3_GAME, PHASE3_NECRO_GAME } from './fixture';
+
+/** The ten-seat games a situation may be drawn from instead of the fixture (`Situation.game`). */
+const TEN_SEAT = { phase3: PHASE3_GAME, 'phase3-necro': PHASE3_NECRO_GAME } as const;
 
 export interface Situation {
   /** What the stepper calls it: "healer, night 2". */
   label: string;
   /** The seat the human sits in. */
   me: string;
+  /**
+   * A ten-seat game to draw it from instead of the fixture (the Phase 3 kinds: ten-seat pass
+   * §2), with that game's cast; absent = the fixture, or the game the workbench was handed.
+   */
+  game?: keyof typeof TEN_SEAT;
   /** The night (its day number), or the day of the vote. */
   day: number;
   /** The request open on the seat; null for a beat with no prompt (a packmate's line). */
@@ -32,8 +43,12 @@ export interface Situation {
   at?: number;
   /** The beat to draw; default from the request (`room.opens`, `pack.your-line`, `pack.vote`). */
   beat?: BeatId;
-  /** A doll already chosen. */
+  /** A doll already chosen (or a side, or `conceal`). */
   chosen?: string;
+  /** A necromancer's body already chosen. */
+  body?: string;
+  /** A fortune teller's role already named. */
+  roleNamed?: string;
   /** The role card open over the room. */
   card?: boolean;
   /** Seconds left of the two minutes (default 74, bench 70's "1:14"); null = no deadline. */
@@ -79,18 +94,32 @@ export interface SyntheticFrame {
   turn: TurnInput;
   /** The waiting room, for the platform's situations. */
   room?: RoomInput;
+  /** The cast of the game the situation was drawn from, when it is not the workbench's. */
+  cast?: readonly Character[];
 }
 
 function beatFor(kind: ActionKind | null): BeatId {
   if (kind === 'vote') return 'vote.your-ballot';
   if (kind === 'wolf_discuss') return 'pack.your-line';
-  if (kind === 'wolf_vote') return 'pack.vote';
+  if (kind === 'wolf_vote' || kind === 'carrier_kill') return 'pack.vote';
   return 'room.opens';
 }
 
+/** The no-action word each kind lists after its seats (Agents/schemas/roles.py `no_action`). */
+const NO_ACTION_OF: Partial<Record<ActionKind, string>> = {
+  investigator_target: 'no_check',
+  sentinel_target: 'no_watch',
+  vigilante_target: 'hold_fire',
+  sigil_target: 'keep_sigil',
+  necromancer_target: 'stay_put',
+};
+
 /**
- * The living seats the server would offer this seat: not itself, and for a wolf's night vote
- * not the pack. A day vote also offers `abstain` (Agents/turn/action_space.py).
+ * What the server would offer this seat (Agents/turn/action_space.py): the living seats but
+ * itself, and for the pack's kill and a wolf's skill not the pack; a day vote also offers
+ * `abstain`, a role with a no-action word lists it last (the nine-seat game listed only the
+ * vigilante's), a fortune teller its own seat while it has a self-bet. The conceal and the
+ * speculator's pick offer words, not seats.
  */
 export function candidatesFor(
   view: GameView,
@@ -98,8 +127,18 @@ export function candidatesFor(
   kind: ActionKind | null = null,
 ): string[] {
   if (kind === 'vote') return [...view.alive.filter((s) => s !== me), 'abstain'];
-  const pack = view.me.role?.role === 'wolf' ? view.packRoster : [];
-  return view.alive.filter((s) => s !== me && !pack.includes(s));
+  if (kind === 'conceal') return ['conceal', 'no_conceal'];
+  if (kind === 'speculator_pick')
+    return ['town', 'wolves', 'lone_killer', 'self', 'not_yet'];
+  const pack = isPackRole(view.me.role?.role) ? view.packRoster : [];
+  const seats = view.alive.filter((s) => s !== me && !pack.includes(s));
+  if (kind === 'bet_target' && (view.me.role?.uses ?? 0) > 0) seats.push(me);
+  // the nine-seat game listed only the vigilante's hold fire; the ten-seat one says its lineup
+  const none =
+    kind && (kind === 'vigilante_target' || view.lineup.length > 0)
+      ? NO_ACTION_OF[kind]
+      : null;
+  return none ? [...seats, none] : seats;
 }
 
 /** A waiting room on the platform: no log, so an empty view under the room. */
@@ -110,6 +149,8 @@ export function synthesiseRoom(s: RoomSituation): SyntheticFrame {
     me: null,
     turn: {},
     room: { ...s.room, minAboard: MIN_ABOARD, link: ROOM_LINK },
+    // one puppet per place, as the live platform casts the room's size (the fixture's nine first)
+    cast: castForGame(FIXTURE_GAME_ID, s.room.places),
   };
 }
 
@@ -118,6 +159,7 @@ export function synthesise(
   events: readonly DurableGameEvent[],
 ): SyntheticFrame {
   if (isRoomSituation(s)) return synthesiseRoom(s);
+  if (s.game) events = TEN_SEAT[s.game].events;
   const phase = s.actionKind === 'vote' ? 'voting' : 'night';
   const nightStart = events.find(
     (e) => e.type === 'phase_change' && e.phase === phase && e.day === s.day,
@@ -134,6 +176,11 @@ export function synthesise(
         candidates: candidatesFor(folded, s.me, s.actionKind),
         deadline: null,
         round: null,
+        // a necromancer acts through the dead whose bodies were not concealed
+        bodies:
+          s.actionKind === 'necromancer_target'
+            ? folded.dead.filter((d) => d.role !== null).map((d) => d.player)
+            : [],
       }
     : null;
   const view: GameView = { ...folded, me: { ...folded.me, pending } };
@@ -184,12 +231,15 @@ export function synthesise(
               at: STILL_AT,
             },
       chosen: s.chosen ?? null,
+      body: s.body ?? null,
+      roleNamed: s.roleNamed ?? null,
       cardOpen: !!s.card,
       draft,
       sent: s.sent ? 'you' : null,
       progress: s.acted === undefined ? undefined : { n: s.acted, total: nightUnits(view) },
       sendError: s.sendError ?? null,
     },
+    ...(s.game ? { cast: TEN_SEAT[s.game].cast } : {}),
   };
 }
 

@@ -44,13 +44,15 @@ describe('the scene registry', () => {
 describe('the platform on the workbench', () => {
   const at = (beat: number) => workbenchFrame('station', { ...DEFAULT_QUERY, beat });
 
-  it('steps through its rooms: host, locked guest, watcher, departing, empty, guest', () => {
+  it('steps through its rooms: host, locked guest, watcher, departing, empty, guest, and two of ten places', () => {
     const f = at(0);
     expect(f.beats.map((b) => b.id)).toEqual([
       'station.waiting',
       'station.locked',
       'station.waiting',
       'station.departing',
+      'station.waiting',
+      'station.waiting',
       'station.waiting',
       'station.waiting',
     ]);
@@ -81,7 +83,9 @@ describe('the platform on the workbench', () => {
     expect(f.me).toBeNull();
     expect(f.view?.lastSeq).toBe(0);
     expect(f.presentation.xray).toBe(false);
-    expect(at(99).index).toBe(5);
+    expect(at(99).index).toBe(7);
+    expect(at(7).room).toMatchObject({ places: 10 });
+    expect(at(7).room?.aboard).toHaveLength(10);
   });
 });
 

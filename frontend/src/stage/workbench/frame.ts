@@ -11,7 +11,14 @@ import { beatsFor } from '../beats/beatsFor';
 import { DIM_FACETS, parseSituation } from '../film/case-file';
 import type { SceneBeat, SceneId } from '../beats/types';
 import type { Presentation, RoomInput, TurnInput } from '../scenes/types';
-import { FIXTURE_CAST, FIXTURE_EVENTS, LEDGER_GAME, PHASE2_GAME, } from './fixture';
+import {
+  FIXTURE_CAST,
+  FIXTURE_EVENTS,
+  LEDGER_GAME,
+  PHASE2_GAME,
+  PHASE3_GAME,
+  PHASE3_NECRO_GAME,
+} from './fixture';
 import { SYNTHETIC, SYNTHETIC_AFTER, sceneBeats } from './registry';
 import { synthesiseAll, type AnySituation } from './synthetic';
 import type { WorkbenchQuery } from './url';
@@ -43,10 +50,16 @@ export interface WorkbenchFrame {
   ledger: readonly LedgerDay[] | null;
 }
 
-/** The bundled game the URL names: the fixture, the ledger game, or the Phase 2 game. */
-function gameOf(q: WorkbenchQuery): { events: readonly DurableGameEvent[]; cast: readonly Character[] } {
+/** The bundled game the URL names: the fixture, the ledger game, the Phase 2 or a Phase 3 game. */
+function gameOf(q: WorkbenchQuery): {
+  events: readonly DurableGameEvent[];
+  cast: readonly Character[];
+} {
   if (q.game === '140610ad') return { events: LEDGER_GAME.events, cast: LEDGER_GAME.cast };
   if (q.game === 'phase2') return { events: PHASE2_GAME.events, cast: PHASE2_GAME.cast };
+  if (q.game === 'phase3') return { events: PHASE3_GAME.events, cast: PHASE3_GAME.cast };
+  if (q.game === 'phase3-necro')
+    return { events: PHASE3_NECRO_GAME.events, cast: PHASE3_NECRO_GAME.cast };
   return { events: FIXTURE_EVENTS, cast: FIXTURE_CAST };
 }
 
@@ -148,7 +161,8 @@ function syntheticFrame(
       motion: q.motion,
       hud: q.hud,
       animate: q.animate,
-      cast,
+      // a ten-seat situation brings its own game's cast
+      cast: f?.cast ?? cast,
       // a live-only prompt is a seated player's: their notebook is kept
       game: WORKBENCH_GAME,
     },

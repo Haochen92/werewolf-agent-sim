@@ -14,7 +14,7 @@ import { useDrawerFilters } from '@/stage/drawer/use-drawer-filters';
 import type { FileChoice } from '@/stage/film/case-file';
 import type { RecordPick } from '@/stage/film/record-model';
 import { useNoteEditing } from '@/stage/notebook';
-import type { SlotInput, StopInput } from '@/stage/scenes/types';
+import type { ActMore, SlotInput, StopInput } from '@/stage/scenes/types';
 import { LeaveConfirm } from '@/stage/instruments/TopStrip';
 import { pressFile, pressTranscript, sideOpen } from '@/stage/slot';
 import {
@@ -41,18 +41,18 @@ import { BakeBench } from './BakeBench';
 import { PaintBench, PaintControls } from './PaintBench';
 import styles from './Workbench.module.css';
 
-const VIEWERS = [
+/** The viewer choices: a spectator, the X-ray, and each seat of the game drawn (nine or ten). */
+const viewersOf = (seats: readonly string[]) => [
   { value: 'spect', label: 'spectator' },
   { value: 'xray', label: 'X-ray' },
-  ...Array.from({ length: 9 }, (_, i) => ({
-    value: `seat:player_${i + 1}`,
-    label: `seat ${i + 1}`,
-  })),
+  ...(seats.length ? seats : Array.from({ length: 9 }, (_, i) => `player_${i + 1}`)).map(
+    (seat) => ({ value: `seat:${seat}`, label: seat.replace(/^player_/, 'seat ') }),
+  ),
 ];
 
 // The workbench has no server: a prompt's answer is logged where the console can see it.
-const logAct = (target: string | null) =>
-  console.info('[workbench] act →', target ?? 'no one');
+const logAct = (target: string | null, more?: ActMore) =>
+  console.info('[workbench] act →', target ?? 'no one', more ?? '');
 const logSay = (text: string) => console.info('[workbench] say →', text);
 
 /** The strip's frame buttons: fill, then the presets under a short name (a WxH is URL-only). */
@@ -324,7 +324,7 @@ export function Workbench({ scene }: { scene: string }) {
       <>
         <Select
           label="viewer"
-          options={VIEWERS}
+          options={viewersOf(frame.view?.seats ?? [])}
           value={viewerParam(q.viewer)}
           onChange={(v) => go({ viewer: parseViewer(v), beat: 0 })}
         />
