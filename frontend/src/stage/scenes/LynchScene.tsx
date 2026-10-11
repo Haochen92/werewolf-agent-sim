@@ -277,7 +277,12 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
       ) : null}
 
       <Layer name="hud">
-        <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
+        <NoticeZone
+          hud={hud}
+          side={bandNarrows(presentation, beat)}
+          aside={side}
+          hidden={presentation.footHidden}
+        >
           {myCard ? (
             <CardButton role={myCard} gone={mine && step >= 2} onOpen={turn?.onCard} />
           ) : null}

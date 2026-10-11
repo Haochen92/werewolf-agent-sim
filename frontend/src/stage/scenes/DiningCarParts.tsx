@@ -233,6 +233,7 @@ export function StandReturns({
   animate,
   delay,
   narrow = false,
+  hidden = false,
 }: {
   g: StageGeometry;
   view: GameView;
@@ -244,6 +245,8 @@ export function StandReturns({
   delay: number;
   /** The drawer is open at full height: the box narrows under the puppet. */
   narrow?: boolean;
+  /** The box not drawn (`Presentation.footHidden`). */
+  hidden?: boolean;
 }) {
   const k = useMotionScale();
   const slot = view.days[day]?.slots.find((s) => s.kind !== 'gm') as
@@ -300,6 +303,7 @@ export function StandReturns({
             line={slot.kind === 'speech' ? slot.message : null}
             arrive={animate}
             side={narrow}
+            hidden={hidden}
           />
         </Layer>
       ) : null}

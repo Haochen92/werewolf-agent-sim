@@ -332,7 +332,10 @@ export function LeaveConfirm({
  * 2026-10-11). The stage itself lands still on the latest beat (the catch-up rule), so this says
  * that they reconnected and what they missed, in the game's own chapter words, the seat's own
  * death first when it is among it, and offers the transcript at the first line they missed. In
- * the leave confirm's place and look (the walnut notice). See what happened opens the
+ * the leave confirm's place and look (the walnut notice), as short lines, each a block of its
+ * own, the box fitted to them. It stands alone at the foot: while it does, the boxes it stands in
+ * place of (the speech box, the dock, the plates) are not drawn (`Presentation.footHidden`), and
+ * the stage around it, the wing and the drawer, stay as they were. See what happened opens the
  * transcript there; Carry on closes it (Escape too); a seat that is out keeps Leave the table,
  * which goes to the lobby as the door's Leave does (no agent plays on for it, so it does not
  * ask again).
@@ -348,8 +351,8 @@ export function AwayNotice({
   hud: Hud;
   /** The side slot is open: the zone stops short of it. */
   side?: boolean;
-  /** `awayNotice(…).lines` (containers/live-state.ts). */
-  lines: readonly string[];
+  /** `awayNotice(…).lines` (containers/live-state.ts): each its own short line. */
+  lines: readonly { text: string; quiet?: string }[];
   onSee: () => void;
   onCarryOn: () => void;
   /** A seat that is out: Leave the table. */
@@ -388,7 +391,19 @@ export function AwayNotice({
             </>
           }
         >
-          {lines.join(' ')}
+          <div className={styles.awayLines}>
+            {lines.map((l) => (
+              <p key={l.text}>
+                {l.text}
+                {l.quiet ? (
+                  <>
+                    {' '}
+                    <span className={styles.awayQuiet}>{l.quiet}</span>
+                  </>
+                ) : null}
+              </p>
+            ))}
+          </div>
         </Notice>
       </div>
     </NoticeZone>

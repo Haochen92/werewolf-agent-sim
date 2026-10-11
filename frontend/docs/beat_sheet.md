@@ -1076,10 +1076,26 @@ A tab that never saw the game live is a late arrival: a seat's whole history wen
 is only the deal (which plays) or the page watched its platform depart (everything after played
 from the deal); a spectator's history did not, only what a later drop costs it. Nothing missed:
 no notice. **The notice**, in the leave confirm's place and walnut look, title "You’re back",
-one paragraph: the seat's own death first when it is in the span (the morning roll's words,
-`DIED`/`BY`: "You were killed by the wolves on night 2. Your role was hidden." / "You were voted
-out on day 3. The table saw your card: Healer." / "You were attacked by the wolves and the serial
-killer on night 2, and fell."); the chapters it went through, from the one it began in and each
+then short lines, each a block of its own, never one paragraph (owner, 2026-10-11: the paragraph
+read too dense), a step under the walnut notice's words (`--note` in the speech box's cream), the
+box fitted to its longest line, the buttons in one row under them from their left edge. It
+stands alone at the foot: while it does, what it stands in place of is not drawn
+(`Presentation.footHidden`, set by the live theatre and passed down every scene): the speech box
+(and the stand's returning box), the day's dock with "your card" beside it and an open composer,
+the foot's notices and the ballot, a night room's plates and the pack's chat. Hidden with
+`visibility`, never unmounted, so the dock, a line half written in the composer and the scene
+come back exactly as they were when the notice closes (Carry on, See what happened, Leave,
+Esc). Nothing dims the stage and nothing takes the taps outside the notice: the wing, the strip
+and the drawer stay usable, but a seat whose turn is open answers it after Carry on (its dock,
+ballot or plate comes back then; "Let my agent play this turn" stays at the top). Owner
+2026-10-11: no full-stage veil, which earlier the same day dimmed the stage behind the notice; a
+full-stage element over the stage becomes its own GPU layer whenever anything under it moves
+(phone_lessons.md §1–2, ~54 MB a layer on the owner's iPhone), and the notice opens just after a
+reconnect, when the stage is likely to move. In order: the
+seat's own death first when it is in the span (the morning roll's words, `DIED`/`BY`), the card
+under it a step quieter (`--note` × 0.88 in `--cream2`): "You were killed by the wolves on night
+2." / "Your role was hidden." · "You were voted out on day 3." / "The table saw your card:
+Healer." · "You were attacked by the wolves and the serial killer on night 2, and fell."; the chapters it went through, from the one it began in and each
 phase it entered, a day's vote going with its day, at most two named (`chapterLine`: "Night 2
 and day 3 went by while you were away." · "Day 3’s discussion went on while you were away." ·
 "The vote on day 3 was held while you were away." / "… went on …" while it is still on · "Night
@@ -1091,8 +1107,8 @@ requests have none and wait: `agentLine`): "Your agent played your turn: it spok
 the pack on night 2" / the sealed plate's words with "tonight" made "on night 2" ("you vote seat
 4 on night 2") / "it took your night’s act on night 2", or "Your agent played 3 of your turns.";
 none for a late arrival's history; "It’s your turn." when the seat's turn is open (not for a
-seat that died); and for a seat that is out "The game goes on without you: watch it to the end,
-or leave the table." A spectator gets the chapters alone. Buttons: **See what happened** (the
+seat that died); and for a seat that is out, last, "The game goes on without you." (its
+buttons say watch on or leave). A spectator gets the chapters alone. Buttons: **See what happened** (the
 lead: the drawer opens if it is not open, its day and seat filters cleared, scrolled to the first
 shown line at or after the first missed seq, `lineFrom`, the reader reading back from there with
 "Back to now" at the foot; once, `DrawerScroll.sought`), **Carry on** (closes; Esc too), and for

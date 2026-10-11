@@ -23,10 +23,16 @@ export const wordsText = (n: number) => (n === 1 ? '1 word' : `${n} words`);
 
 /**
  * Whether the composer shows: opened, and the turn still this seat's. Once the turn is closed
- * (sent, or run out) it shuts and stays shut; the dock itself goes when the turn ends.
+ * (sent, or run out) it shuts and stays shut; the dock itself goes when the turn ends. While
+ * the foot is hidden (the "You're back" notice stands there) it is not drawn, and stays opened:
+ * it comes back as it was, the line in its box, when the notice closes.
  */
-export function composerShown(open: boolean, dock: Pick<DockInput, 'closed'>): boolean {
-  return open && !dock.closed;
+export function composerShown(
+  open: boolean,
+  dock: Pick<DockInput, 'closed'>,
+  hidden = false,
+): boolean {
+  return open && !dock.closed && !hidden;
 }
 
 /** What the browser says of the visible part of the page (`window.visualViewport`). */

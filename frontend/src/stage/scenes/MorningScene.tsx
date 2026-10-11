@@ -505,12 +505,18 @@ function MorningBeat(props: SceneProps) {
           animate={animate}
           delay={2.6}
           narrow={bandNarrows(presentation, beat)}
+          hidden={presentation.footHidden}
         />
       ) : null}
 
       <Layer name="hud">
         {!dayBegins ? (
-          <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
+          <NoticeZone
+            hud={hud}
+            side={bandNarrows(presentation, beat)}
+            aside={side}
+            hidden={presentation.footHidden}
+          >
             {myCard ? <CardButton role={myCard} onOpen={turn?.onCard} /> : null}
             <MorningWords
               id={id}

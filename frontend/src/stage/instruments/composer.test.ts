@@ -25,6 +25,10 @@ describe('composerShown', () => {
     expect(composerShown(true, { closed: true })).toBe(false);
     expect(composerShown(false, { closed: false })).toBe(false);
   });
+  it('is not drawn while the foot is hidden, and shows again once it is not', () => {
+    expect(composerShown(true, { closed: false }, true)).toBe(false);
+    expect(composerShown(true, { closed: false }, false)).toBe(true);
+  });
 });
 
 describe('composerBox', () => {

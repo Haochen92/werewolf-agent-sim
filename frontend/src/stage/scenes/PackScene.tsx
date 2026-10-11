@@ -224,6 +224,7 @@ function Pack({ entering, ...props }: SceneProps & { entering: boolean }) {
           empty={empty}
           arriving={beat.id === 'pack.line' ? beat.seq : undefined}
           arrive={animate}
+          hidden={presentation.footHidden}
           input={
             talking
               ? {
@@ -253,6 +254,7 @@ function Pack({ entering, ...props }: SceneProps & { entering: boolean }) {
       {voting ? (
         <ActPlate
           left={g.wingN + 22.4}
+          hidden={presentation.footHidden}
           label={
             mine
               ? `${verb} seat ${seatNumber(mine)}`

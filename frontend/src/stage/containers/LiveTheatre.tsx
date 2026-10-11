@@ -548,6 +548,9 @@ export function LiveTheatre({
     ],
   );
 
+  // the "You're back" notice stands at the foot: the boxes there are not drawn meanwhile
+  const liveOn = platform === 'off' || platform === 'opening';
+  const awayShown = liveOn && !!beat && !!away && !leaving && !xrayShown;
   const presentation = useMemo(
     (): Presentation => ({
       xray: xrayShown,
@@ -557,8 +560,9 @@ export function LiveTheatre({
       cast,
       animate: state.cursor.animate,
       game: gameId,
+      footHidden: awayShown,
     }),
-    [xrayShown, state.slot, state.speed, cast, state.cursor.animate, gameId],
+    [xrayShown, state.slot, state.speed, cast, state.cursor.animate, gameId, awayShown],
   );
 
   const sceneView = useMemo(() => (beat ? folds.at(beat.end) : null), [folds, beat]);
@@ -621,7 +625,6 @@ export function LiveTheatre({
 
   const Scene = beat ? SCENES[beat.scene] : null;
   const platformOn = platform !== 'off' && heldRoom !== undefined;
-  const liveOn = platform === 'off' || platform === 'opening';
   const stationId = stationBeatId(heldRoom ?? { locked: false }, platform !== 'waiting');
   const stationPresentation: Presentation = {
     xray: false,
@@ -723,7 +726,7 @@ export function LiveTheatre({
               legacy={isNineSeat(view)}
             />
           ) : null}
-          {liveOn && beat && away && !leaving && !xrayShown ? (
+          {awayShown && away ? (
             <AwayNotice
               hud="live"
               side={sideOpen(presentation)}

@@ -426,6 +426,7 @@ function ShelfRoom(props: SceneProps) {
       {pending && !isIn && sides.length ? (
         <ChoicePlates
           centre={centre}
+          hidden={props.presentation.footHidden}
           choices={sides.map((c) => ({ id: c, label: SIDE_PLATE[c], on: c === chosen }))}
           onToggle={choose}
         />
@@ -433,6 +434,7 @@ function ShelfRoom(props: SceneProps) {
       {pending && !isIn && bet && chosen !== me ? (
         <ChoicePlates
           centre={centre}
+          hidden={props.presentation.footHidden}
           caption="name a role for two points"
           sigils
           choices={betRoles(view.lineup, role).map((r) => ({
@@ -449,6 +451,7 @@ function ShelfRoom(props: SceneProps) {
           label={plateLabel(kind, chosen, more)}
           // centred in the room, left of an open side slot, so the drawer can run full height
           centre={centre}
+          hidden={props.presentation.footHidden}
           clock={isIn ? null : turn?.clock}
           disabled={!ready || isIn}
           onConfirm={() => act(kind === 'conceal' ? 'conceal' : chosen)}

@@ -211,8 +211,11 @@ export function missedEvents(
   return caught.filter((e) => e.seq > after);
 }
 
-/** The death in the morning roll's words: "You were killed by the wolves on night 2. Your role was hidden." */
-export function deathWords(death: DeathRecord): string {
+/**
+ * The death in the morning roll's words, the how and, quieter under it, the card: "You were
+ * killed by the wolves on night 2." / "Your role was hidden."
+ */
+export function deathWords(death: DeathRecord): AwayLine {
   const attacks = death.causes.filter((c) => c !== 'lynch');
   const how =
     attacks.length === 0
@@ -224,11 +227,11 @@ export function deathWords(death: DeathRecord): string {
     death.role === null
       ? 'Your role was hidden.'
       : `The table saw your card: ${ROLE_NAME[death.role] ?? death.role}.`;
-  return `${how} ${card}`;
+  return { text: how, quiet: card };
 }
 
-export const GOES_ON =
-  'The game goes on without you: watch it to the end, or leave the table.';
+/** For a seat that is out, the notice's last line; its buttons say watch on or leave. */
+export const GOES_ON = 'The game goes on without you.';
 export const YOUR_TURN = 'It’s your turn.';
 
 /**
@@ -349,9 +352,18 @@ export function agentLine(
   return `Your agent played your turn: ${said}.`;
 }
 
+/**
+ * One of the notice's short lines, each a block of its own; `quiet` is a smaller, dimmer
+ * sentence under it (the death's card).
+ */
+export interface AwayLine {
+  text: string;
+  quiet?: string;
+}
+
 /** The "You're back" notice: its lines, and the span it tells (`first` for the transcript). */
 export interface AwayNotice {
-  lines: string[];
+  lines: AwayLine[];
   /** The seat's own death, when it is in the span: the notice keeps "Leave the table". */
   death: DeathRecord | null;
   /** The first missed seq: "See what happened" opens the transcript there. */
@@ -388,11 +400,10 @@ export function awayNotice(
   if (!death && !chapters && !agent && !turn) return null;
   const lines = [
     death ? deathWords(death) : null,
-    chapters,
-    agent,
-    turn,
-    death ? GOES_ON : null,
-  ].filter((l): l is string => l !== null);
+    ...[chapters, agent, turn, death ? GOES_ON : null].map((text) =>
+      text === null ? null : { text },
+    ),
+  ].filter((l): l is AwayLine => l !== null);
   return { lines, death, first: missed[0].seq, last: missed.at(-1)!.seq };
 }
 

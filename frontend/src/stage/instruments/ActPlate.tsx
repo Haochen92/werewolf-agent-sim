@@ -18,7 +18,7 @@
  * act is in the plate is `sealed`: a label saying what was done, with nothing left to press.
  * A send that failed says why in that line, and the plate can be pressed again.
  */
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { useTimeLeft } from '@/hooks/useCountdown';
 import { countLeft, countText, URGENT_MS, type TurnClock } from '../countdown';
 import styles from './NightRoom.module.css';
@@ -45,6 +45,8 @@ export interface ActPlateProps {
   error?: string | null;
   /** The act is in: the plate is this label, sealed in the acting side's colour. */
   sealed?: { label: string; colour: string } | null;
+  /** Not drawn, and still mounted (`Presentation.footHidden`: the "You're back" notice stands here). */
+  hidden?: boolean;
 }
 
 export function ActPlate({
@@ -59,14 +61,16 @@ export function ActPlate({
   note,
   error,
   sealed,
+  hidden = false,
 }: ActPlateProps) {
   const place = inline ? styles.inline : left == null ? '' : styles.left;
   const x = left ?? centre;
+  const style: CSSProperties = { left: x, visibility: hidden ? 'hidden' : undefined };
   if (sealed)
     return (
       <div
         className={place ? `${styles.plate} ${place}` : styles.plate}
-        style={x == null ? undefined : { left: x }}
+        style={style}
         data-plate={sealed.label}
         data-sealed
       >
@@ -84,7 +88,7 @@ export function ActPlate({
   return (
     <div
       className={place ? `${styles.plate} ${place}` : styles.plate}
-      style={x == null ? undefined : { left: x }}
+      style={style}
       data-plate={label}
     >
       {error ? (
@@ -129,6 +133,7 @@ export function ChoicePlates({
   centre,
   sigils,
   disabled,
+  hidden = false,
 }: {
   choices: readonly PlateChoice[];
   onToggle: (id: string) => void;
@@ -139,11 +144,13 @@ export function ChoicePlates({
   /** The labels are pictures: square plates. */
   sigils?: boolean;
   disabled?: boolean;
+  /** Not drawn, and still mounted (`Presentation.footHidden`: the "You're back" notice stands here). */
+  hidden?: boolean;
 }) {
   return (
     <div
       className={styles.choices}
-      style={centre == null ? undefined : { left: centre }}
+      style={{ left: centre, visibility: hidden ? 'hidden' : undefined }}
       role="group"
       aria-label={caption}
     >

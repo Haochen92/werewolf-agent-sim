@@ -302,9 +302,9 @@ describe('what went by while the viewer was away (live game ab44887a, seat 3)', 
       causes: ['wolves'],
     });
     expect(notice!.lines).toEqual([
-      'You were killed by the wolves on night 2. Your role was hidden.',
-      'Night 2 and day 3 went by while you were away.',
-      GOES_ON,
+      { text: 'You were killed by the wolves on night 2.', quiet: 'Your role was hidden.' },
+      { text: 'Night 2 and day 3 went by while you were away.' },
+      { text: GOES_ON },
     ]);
   });
 
@@ -345,9 +345,9 @@ describe('what went by while the viewer was away (live game ab44887a, seat 3)', 
     connect();
     caughtUp(1);
     expect(told()!.lines).toEqual([
-      'You were killed by the wolves on night 2. Your role was hidden.',
-      'Day 1, night 1 and more went by while you were away.',
-      GOES_ON,
+      { text: 'You were killed by the wolves on night 2.', quiet: 'Your role was hidden.' },
+      { text: 'Day 1, night 1 and more went by while you were away.' },
+      { text: GOES_ON },
     ]);
     session.clear();
     connect(null);
@@ -359,7 +359,9 @@ describe('what went by while the viewer was away (live game ab44887a, seat 3)', 
     caughtUp(1, 140);
     live(141, 240);
     caughtUp(241);
-    expect(told()!.lines).toEqual(['Night 2 and day 3 went by while you were away.']);
+    expect(told()!.lines).toEqual([
+      { text: 'Night 2 and day 3 went by while you were away.' },
+    ]);
   });
 
   it('a new tab whose history is only the deal: the deal plays, nothing went by', () => {
@@ -391,7 +393,9 @@ describe('what went by while the viewer was away (live game ab44887a, seat 3)', 
     connect(null);
     live(1, 240);
     caughtUp(241);
-    expect(told(true)!.lines).toEqual(['Night 2 and day 3 went by while you were away.']);
+    expect(told(true)!.lines).toEqual([
+      { text: 'Night 2 and day 3 went by while you were away.' },
+    ]);
   });
 
   it('back on a turn of the seat’s own: the discussion went on, and it is your turn', () => {
@@ -399,8 +403,8 @@ describe('what went by while the viewer was away (live game ab44887a, seat 3)', 
     live(1, 112);
     caughtUp(113, 113);
     expect(told(true)!.lines).toEqual([
-      'Day 2’s discussion went on while you were away.',
-      YOUR_TURN,
+      { text: 'Day 2’s discussion went on while you were away.' },
+      { text: YOUR_TURN },
     ]);
   });
 
@@ -408,15 +412,17 @@ describe('what went by while the viewer was away (live game ab44887a, seat 3)', 
     connect();
     live(1, 210);
     caughtUp(211, 232);
-    expect(told()!.lines).toEqual(['The vote on day 2 was held while you were away.']);
+    expect(told()!.lines).toEqual([
+      { text: 'The vote on day 2 was held while you were away.' },
+    ]);
     useGameSession.getState().reset();
     session.clear();
     connect();
     live(1, 204);
     caughtUp(205, 240);
     expect(told()!.lines).toEqual([
-      'Day 2 and night 2 went by while you were away.',
-      'Your agent played your turn: it abstained on day 2.',
+      { text: 'Day 2 and night 2 went by while you were away.' },
+      { text: 'Your agent played your turn: it abstained on day 2.' },
     ]);
   });
 
@@ -425,10 +431,10 @@ describe('what went by while the viewer was away (live game ab44887a, seat 3)', 
     live(1, 140);
     caughtUp(141);
     expect(told()!.lines).toEqual([
-      'You were killed by the wolves on night 2. Your role was hidden.',
-      'Day 2, night 2 and more went by while you were away.',
-      'Your agent played 3 of your turns.',
-      GOES_ON,
+      { text: 'You were killed by the wolves on night 2.', quiet: 'Your role was hidden.' },
+      { text: 'Day 2, night 2 and more went by while you were away.' },
+      { text: 'Your agent played 3 of your turns.' },
+      { text: GOES_ON },
     ]);
     // a solo game's turns wait for their player: no agent played them
     useGameSession.getState().reset();
@@ -437,7 +443,9 @@ describe('what went by while the viewer was away (live game ab44887a, seat 3)', 
     connect();
     live(1, 140);
     caughtUp(141);
-    expect(told()!.lines).not.toContain('Your agent played 3 of your turns.');
+    expect(told()!.lines).not.toContainEqual({
+      text: 'Your agent played 3 of your turns.',
+    });
   });
 
   it('nothing after the game is over: its ending tells everything', () => {
@@ -455,12 +463,13 @@ describe('what went by while the viewer was away (live game ab44887a, seat 3)', 
       seq: 1,
       causes: ['lynch' as const],
     };
-    expect(deathWords(lynched)).toBe(
-      'You were voted out on day 3. The table saw your card: Healer.',
-    );
+    expect(deathWords(lynched)).toEqual({
+      text: 'You were voted out on day 3.',
+      quiet: 'The table saw your card: Healer.',
+    });
     const both = { ...lynched, causes: ['wolves' as const, 'serial_killer' as const] };
-    expect(deathWords(both)).toMatch(
-      /^You were attacked by the wolves and the serial killer on night 3, and fell\./,
+    expect(deathWords(both).text).toBe(
+      'You were attacked by the wolves and the serial killer on night 3, and fell.',
     );
   });
 

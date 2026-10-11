@@ -330,7 +330,12 @@ function VoteBeat({
       </Layer>
 
       <Layer name="hud">
-        <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
+        <NoticeZone
+          hud={hud}
+          side={bandNarrows(presentation, beat)}
+          aside={side}
+          hidden={presentation.footHidden}
+        >
           {myCard ? (
             <CardButton
               role={myCard}

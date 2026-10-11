@@ -26,6 +26,7 @@ export function NoticeZone({
   hud,
   side = false,
   aside = false,
+  hidden = false,
   children,
 }: {
   hud: Hud;
@@ -37,6 +38,8 @@ export function NoticeZone({
    * stops short of it too (see `--grown`); at full size it keeps the band.
    */
   aside?: boolean;
+  /** Not drawn, and still mounted (`Presentation.footHidden`: the "You're back" notice stands here). */
+  hidden?: boolean;
   children: ReactNode;
 }) {
   const g = geometry(hud, side);
@@ -52,6 +55,7 @@ export function NoticeZone({
           bottom: bandFoot(hud, 19.2),
           '--right': `${right}px`,
           '--aside': aside ? `${1600 - s.wingN - s.room + inset}px` : undefined,
+          visibility: hidden ? 'hidden' : undefined,
         } as CSSProperties
       }
     >

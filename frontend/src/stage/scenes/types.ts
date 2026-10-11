@@ -46,6 +46,13 @@ export interface Presentation {
    * none, so its cards are only shown.
    */
   game?: string;
+  /**
+   * Live only: the "You're back" notice stands at the foot, so what it stands in place of is
+   * not drawn: the speech box, the dock and its composer, the foot's notices and the ballot,
+   * a night room's plates and the pack's chat. Hidden (`visibility`), never unmounted, so a
+   * draft and the scene keep; they come back as they were when the notice closes.
+   */
+  footHidden?: boolean;
 }
 
 export interface SceneProps {

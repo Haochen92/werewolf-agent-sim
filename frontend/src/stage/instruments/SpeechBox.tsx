@@ -53,6 +53,8 @@ export interface SpeechBoxProps {
    * The film stops at the rail, over the board's top: the board keeps the band beside it.
    */
   side?: boolean;
+  /** Not drawn, and still mounted (`Presentation.footHidden`: the "You're back" notice stands here). */
+  hidden?: boolean;
 }
 
 const PASS_REASON: Record<string, string> = {
@@ -73,6 +75,7 @@ export function SpeechBox({
   arrive,
   thinking = false,
   side = false,
+  hidden = false,
 }: SpeechBoxProps) {
   const k = useMotionScale();
   const g = geometry(hud, side);
@@ -90,6 +93,7 @@ export function SpeechBox({
           bottom: bandFoot(hud, 19.2),
           '--left': `${g.wingN + inset}px`,
           '--right': `${right}px`,
+          visibility: hidden ? 'hidden' : undefined,
         } as CSSProperties
       }
     >

@@ -1327,17 +1327,35 @@ test('live: back from a dropped stream the page reopens it at once, says what we
   // by, its own death first
   const lines = page.locator('[data-drawer] [data-line]').first().locator('..');
   await expect(page.locator('[data-line="say-169"]')).toBeVisible({ timeout: 15_000 });
-  await expect(told).toContainText(
-    'You were killed by the wolves on night 2. The table saw your card: Investigator. ' +
-      'Night 2 and day 3 went by while you were away. ' +
-      'The game goes on without you: watch it to the end, or leave the table.',
-  );
+  // in short lines, each a block of its own, the card under the death
+  const said = told.locator('p');
+  await expect(said).toHaveText([
+    'You were killed by the wolves on night 2. The table saw your card: Investigator.',
+    'Night 2 and day 3 went by while you were away.',
+    'The game goes on without you.',
+  ]);
   await expect(told.getByRole('button', { name: 'Carry on' })).toBeVisible();
   await expect(told.getByRole('button', { name: 'Leave the table' })).toBeVisible();
+  // the buttons in one row under the words, from the words' left edge
+  const [p0, p2, ...bs] = await Promise.all(
+    [said.first(), said.last(), ...(await told.getByRole('button').all())].map(
+      async (el) => (await el.boundingBox())!,
+    ),
+  );
+  expect(bs).toHaveLength(3);
+  for (const b of bs) {
+    expect(b.y).toBeGreaterThanOrEqual(p2.y + p2.height);
+    expect(Math.abs(b.y - bs[0].y)).toBeLessThan(1);
+  }
+  expect(Math.abs(bs[0].x - p0.x)).toBeLessThan(1);
+  // it stands alone at the foot: the speech box is not drawn while it does, and is back after
+  const speech = page.locator('[data-speech]');
+  await expect(speech).toBeHidden();
   // See what happened: the transcript opens at the first line the seat missed (the night's
   // end, seq 155, "Dawn 3"), at the top of the lines
   await told.getByRole('button', { name: 'See what happened' }).click();
   await expect(told).toHaveCount(0);
+  await expect(speech).toBeVisible();
   const first = page.locator('[data-drawer] [data-line="rule-morning-2"]');
   await expect(first).toBeInViewport();
   const top = async () => {
@@ -1353,6 +1371,68 @@ test('live: back from a dropped stream the page reopens it at once, says what we
     timeout: foldTime(page),
   });
   await expect(told).toHaveCount(0);
+});
+
+test('live: back from a dropped stream on the seat’s turn, the notice stands alone in the dock’s place, and the line being written comes back with it', async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  const mock: Mock = {
+    status: status(200, { pending_seats: [ME], pending_input: true }),
+    stream: [...upTo(200), yourTurn(201)],
+  };
+  await mockApi(page, mock);
+  await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  await landsOn(page, 'day.your-turn');
+  const dock = page.locator('[data-dock="discuss"]');
+  await expect(dock).toBeVisible();
+  // a mark on the dock's own element: still there after, so the dock was never mounted again
+  await dock.evaluate((el) => ((el as HTMLElement).dataset.kept = 'yes'));
+  const composer = await openComposer(page);
+  await composer.getByLabel('Your line').fill('I trust seat 4 today, and');
+  // the stream drops; meanwhile the table's roster came (no beat of its own); the page comes back
+  mock.status = status(202, { pending_seats: [ME], pending_input: true });
+  mock.stream = [
+    {
+      seq: 202,
+      day: 3,
+      type: 'roster_update',
+      surviving_players: [
+        'player_1',
+        'player_2',
+        'player_5',
+        'player_6',
+        ME,
+        'player_8',
+        'player_9',
+      ],
+    },
+  ];
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+  const told = page.getByRole('alertdialog', { name: 'You’re back' });
+  await expect(told).toBeVisible({ timeout: 15_000 });
+  await expect(told.locator('p')).toHaveText([
+    'Day 3’s discussion went on while you were away.',
+    'It’s your turn.',
+  ]);
+  // alone at the foot: the dock and its composer are not drawn while it stands
+  await expect(dock).toBeHidden();
+  await expect(composer).toHaveCount(0);
+  // and nothing covers the stage: the strip's buttons still take a tap (the drawer shuts)
+  await page.getByRole('button', { name: 'Transcript', exact: true }).click();
+  await expect(page.locator('[data-drawer]')).toHaveCount(0);
+  await expect(told).toBeVisible();
+  // Carry on: the dock and the composer back as they were, the line still in its box
+  await told.getByRole('button', { name: 'Carry on' }).click();
+  await expect(told).toHaveCount(0);
+  await expect(composer).toBeVisible();
+  await expect(composer.getByLabel('Your line')).toHaveValue('I trust seat 4 today, and');
+  await expect(dock).toHaveAttribute('data-kept', 'yes');
+  await composer.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(dock).toBeVisible();
+  await expect(dock.locator('[data-dock-preview]')).toContainText(
+    'I trust seat 4 today, and',
+  );
 });
 
 test('live: after game over the ending plays to its curtain', async ({ page }) => {

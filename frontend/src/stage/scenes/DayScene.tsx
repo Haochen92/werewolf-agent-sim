@@ -299,7 +299,7 @@ function DayTurn({ view, beat, me, presentation, turn, onSay, onAct, onNext }: S
 
       <Layer name="hud">
         {dock ? (
-          <NoticeZone hud={hud} aside={side}>
+          <NoticeZone hud={hud} aside={side} hidden={presentation.footHidden}>
             {view.me.role ? (
               <CardButton role={view.me.role.role} onOpen={turn?.onCard} />
             ) : null}
@@ -309,10 +309,11 @@ function DayTurn({ view, beat, me, presentation, turn, onSay, onAct, onNext }: S
               onSay={onSay}
               onPass={() => onAct?.(null)}
               arrive={animate}
+              hidden={presentation.footHidden}
             />
           </NoticeZone>
         ) : notice ? (
-          <NoticeZone hud={hud} aside={side}>
+          <NoticeZone hud={hud} aside={side} hidden={presentation.footHidden}>
             <Notice
               walnut
               wide
@@ -365,6 +366,7 @@ function DayTurn({ view, beat, me, presentation, turn, onSay, onAct, onNext }: S
             // the called seat thinks while the box carries the moderator's line, not a "…"
             thinking={mine || waiting || (!settled && !called)}
             side={bandNarrows(presentation, beat)}
+            hidden={presentation.footHidden}
           />
         ) : null}
       </Layer>

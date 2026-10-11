@@ -313,15 +313,19 @@ winner chip in the header.
   the deal, which plays, or the page watched its platform depart); a spectator arriving late
   is told nothing (the late link stays zero-drama), only what a later drop costs it. A blip
   that missed nothing shows nothing. **The notice**, once per missed span, in the leave
-  confirm's place and walnut look: "You're back", then one paragraph: the seat's own death
-  first when it is in the span ("You were killed by the wolves on night 2. Your role was
-  hidden."), the chapters in the game's words, at most two named ("Night 2 and day 3 went by
-  while you were away." / "Day 3's discussion went on while you were away." / "The vote on day 3
-  was held while you were away." / "Day 2, night 2 and more went by while you were away."), in
+  confirm's place and walnut look: "You're back", then short lines, each a block of its own:
+  the seat's own death first when it is in the span ("You were killed by the wolves on night
+  2." with "Your role was hidden." under it, quieter), the chapters in the game's words, at
+  most two named ("Night 2 and day 3 went by while you were away." / "Day 3's discussion went
+  on while you were away." / "The vote on day 3 was held while you were away." / "Day 2,
+  night 2 and more went by while you were away."), in
   a room the turns the seat's agent played on the clock ("Your agent played your turn: it voted
   seat 4 on day 3." / "Your agent played 3 of your turns."), "It's your turn." when the seat
-  has one open, and for a seat that is out "The game goes on without you: watch it to the end,
-  or leave the table." **See what happened** opens the transcript at the first missed line,
+  has one open, and for a seat that is out, last, "The game goes on without you." It stands
+  alone at the foot: the speech box, the dock (with an open composer), the ballot or the night
+  plate are not drawn while it does and come back as they were, a half-written line included;
+  nothing dims the stage, and the wing and the drawer stay usable, but an open turn is answered
+  after Carry on. **See what happened** opens the transcript at the first missed line,
   read back from there ("Back to now" returns); **Carry on** closes it (Esc too); a seat that
   is out keeps **Leave the table**. Either marks the span told for the tab. Spectators get the
   chapters alone. Never after game over (the ending tells everything). Beat sheet §12.

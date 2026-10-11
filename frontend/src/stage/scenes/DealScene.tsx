@@ -233,11 +233,17 @@ function DealBeat({ view, beat, me, presentation, turn }: SceneProps) {
           animate={animate}
           delay={2.6}
           narrow={bandNarrows(presentation, beat)}
+          hidden={presentation.footHidden}
         />
       ) : null}
 
       <Layer name="hud">
-        <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
+        <NoticeZone
+          hud={hud}
+          side={bandNarrows(presentation, beat)}
+          aside={side}
+          hidden={presentation.footHidden}
+        >
           {myRole && at('deal.your-card') && !day ? (
             <CardButton role={myRole} onOpen={turn?.onCard} />
           ) : null}

@@ -70,6 +70,8 @@ export interface PackChatProps {
     /** Why the last send failed; while the line is not in, the box reopens to try again. */
     error?: string | null;
   };
+  /** Not drawn, and still mounted (`Presentation.footHidden`: the "You're back" notice stands here). */
+  hidden?: boolean;
 }
 
 function Chip({ seat, cast }: { seat: string; cast: readonly Character[] }) {
@@ -88,6 +90,7 @@ export function PackChat({
   arriving,
   arrive,
   input,
+  hidden = false,
 }: PackChatProps) {
   const k = useMotionScale();
   const box = useRef<HTMLElement>(null);
@@ -145,6 +148,7 @@ export function PackChat({
       <section
         ref={box}
         className={styles.chat}
+        style={hidden ? { visibility: 'hidden' } : undefined}
         aria-label="Wolf chat"
         data-chat="pack"
         data-speech
@@ -172,7 +176,7 @@ export function PackChat({
           </motion.div>
         ))}
       </section>
-      {input ? <SayLine key={input.seq} {...input} /> : null}
+      {input ? <SayLine key={input.seq} {...input} hidden={hidden} /> : null}
     </>
   );
 }
@@ -185,7 +189,8 @@ function SayLine({
   note,
   sent,
   error,
-}: NonNullable<PackChatProps['input']>) {
+  hidden,
+}: NonNullable<PackChatProps['input']> & { hidden: boolean }) {
   const [text, setText] = useState(draft);
   // pressed here: shut at once, before the container says the send is on its way
   const [pressed, setPressed] = useState(false);
@@ -195,7 +200,7 @@ function SayLine({
   return (
     <form
       className={styles.say}
-      style={{ left }}
+      style={{ left, visibility: hidden ? 'hidden' : undefined }}
       onSubmit={(e) => {
         e.preventDefault();
         if (!text.trim() || shut) return;

@@ -243,7 +243,12 @@ function LobbyBeat({
 
       <Layer name="hud">
         {atStop && acted?.size ? (
-          <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
+          <NoticeZone
+            hud={hud}
+            side={bandNarrows(presentation, beat)}
+            aside={side}
+            hidden={presentation.footHidden}
+          >
             <Notice
               walnut
               // rooms, as the pill counts them (the pack's two wolves are one)
@@ -264,7 +269,12 @@ function LobbyBeat({
           </NoticeZone>
         ) : null}
         {myRole ? (
-          <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
+          <NoticeZone
+            hud={hud}
+            side={bandNarrows(presentation, beat)}
+            aside={side}
+            hidden={presentation.footHidden}
+          >
             <CardButton role={myRole} onOpen={turn?.onCard} />
             <Notice
               title={myRole === 'villager' || noAsk ? 'You sleep' : 'Night falls'}

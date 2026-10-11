@@ -68,6 +68,11 @@ export interface TurnDockProps {
   onPass?: () => void;
   /** Fade in (the turn arriving); false = at rest. */
   arrive?: boolean;
+  /**
+   * Not drawn, and still mounted (`Presentation.footHidden`: the "You're back" notice stands in
+   * the dock's place): the dock and an open composer, which come back as they were.
+   */
+  hidden?: boolean;
 }
 
 /**
@@ -75,7 +80,10 @@ export interface TurnDockProps {
  * opening before the talk, the open floor given to a quiet seat, the last word before the vote,
  * else the discussion's turn.
  */
-export function dockHeading(round: DayRound | null | undefined): { title: string; hint: string } {
+export function dockHeading(round: DayRound | null | undefined): {
+  title: string;
+  hint: string;
+} {
   if (round === 'opening') {
     return {
       title: 'Your opening',
@@ -91,7 +99,14 @@ export function dockHeading(round: DayRound | null | undefined): { title: string
   return { title: 'Your turn to speak', hint: 'Nothing is said until you send it.' };
 }
 
-export function TurnDock({ dock, clock, onSay, onPass, arrive = false }: TurnDockProps) {
+export function TurnDock({
+  dock,
+  clock,
+  onSay,
+  onPass,
+  arrive = false,
+  hidden = false,
+}: TurnDockProps) {
   const k = useMotionScale();
   const c = dockControls(dock);
   const heading = dockHeading(dock.round);
@@ -117,7 +132,7 @@ export function TurnDock({ dock, clock, onSay, onPass, arrive = false }: TurnDoc
     <motion.div
       className={styles.dock}
       data-dock="discuss"
-      style={board}
+      style={hidden ? { ...board, visibility: 'hidden' } : board}
       initial={arrive ? { opacity: 0 } : false}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 * k, delay: 0.3 * k }}
@@ -176,7 +191,7 @@ export function TurnDock({ dock, clock, onSay, onPass, arrive = false }: TurnDoc
           Pass
         </button>
       </div>
-      {composerShown(open, dock) ? (
+      {composerShown(open, dock, hidden) ? (
         <Overlay>
           <Composer
             dock={dock}

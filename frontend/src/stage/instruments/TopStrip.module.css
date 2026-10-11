@@ -315,3 +315,23 @@
   display: flex;
   min-width: 0;
 }
+
+/* "You're back": short lines, each a block, a step under the walnut notice's words (--note in
+   the speech box's cream); the death's card under its line, a step quieter in the meta tone */
+.awayLines {
+  display: flex;
+  flex-direction: column;
+  gap: calc(6.4px * var(--legible-ui));
+  margin-top: calc(4.8px * var(--legible-ui));
+  font-size: var(--note);
+  line-height: 1.35;
+  color: var(--cream);
+}
+.awayLines p {
+  margin: 0;
+}
+.awayQuiet {
+  display: block;
+  font-size: calc(var(--note) * 0.88);
+  color: var(--cream2);
+}
