@@ -9,6 +9,9 @@ import os
 # research project. Set before Agents.tracing is imported, which builds the client once per
 # process. An explicit LANGFUSE_TRACING_ENABLED=true in the environment still wins.
 os.environ.setdefault("LANGFUSE_TRACING_ENABLED", "false")
+# Nor call a paid model from a game's post-game extraction: the de-halo pass is on by default in
+# production (Agents/memory/persistence/config.py). Its own tests turn it on with a stubbed judge.
+os.environ.setdefault("MEMORY_DEHALO_ENABLED", "false")
 
 pytest_plugins = [
     "tests.fixtures.stream",

@@ -24,6 +24,7 @@ from Agents.rules.night_record import disclosure
 from Agents.rules.resolution import tally_day_vote
 from Agents.rules.seats import alive_holder, seat_order, survivors
 from Agents.schemas import DayChannel, DaySummary, DeathRecord
+from Agents.memory.extraction.dehalo import dehalo_observations
 from Agents.schemas.game_events import NightActionRecord
 from Agents.schemas.roles import (
     ACTS_WHEN_SPENT,
@@ -688,6 +689,19 @@ def post_game_analysis(
     if not result:
         logger.warning("No observations extracted from post-game analysis.")
         return {}
+
+    # The de-halo pass (ExtractionConfig.dehalo): verdicts the game record does not support are
+    # rewritten before the observations are shown or stored. The extraction case above keeps the
+    # verdicts as extracted; the de-halo record keeps both, with the judge's reasons.
+    dehalo_record = dehalo_observations(result.output.observations, extraction_inputs, extraction_config.dehalo)
+    if dehalo_record is not None:
+        with langfuse.start_as_current_observation(as_type="span", name=f"dehalo_{game_id}") as dehalo_span:
+            dehalo_span.update(output={"dehalo": dehalo_record})
+        sink = runtime.context.get("eval_sink")
+        if sink is not None:
+            sink.records.append({"kind": "dehalo", "id": "", "name": f"dehalo_{game_id}", "trace_id": "",
+                                 "parent_observation_id": None, "metadata": {}, "input": None,
+                                 "output": {"dehalo": dehalo_record}})
 
     _announce_memory_extracted(result.output, day=state.get("current_day", 1))
 
