@@ -50,8 +50,11 @@ def _judge_with_claude(prompt: str, config: DehaloConfig) -> tuple[Judgments | N
     elif level:
         kwargs["thinking"] = {"type": "adaptive"}
         kwargs["output_config"] = {"effort": level}
+    # Haiku 5.5 thinks by default and thinking counts against max_tokens: a 46-lesson game used about
+    # 12k, so 16k cut a longer game's JSON short. Above about 21k the SDK requires streaming unless
+    # the call sets its own timeout.
     response = anthropic.Anthropic(api_key=api_key).messages.parse(
-        model=config.model, max_tokens=16000, output_format=Judgments,
+        model=config.model, max_tokens=32000, timeout=600, output_format=Judgments,
         messages=[{"role": "user", "content": prompt}], **kwargs)
     usage = {"input_tokens": response.usage.input_tokens, "output_tokens": response.usage.output_tokens}
     return response.parsed_output, usage
