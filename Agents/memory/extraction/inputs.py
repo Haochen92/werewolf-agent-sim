@@ -144,8 +144,15 @@ def extraction_inputs_from_frozen_case(case: dict) -> dict[str, str]:
     The frozen extraction set carries the same pre-formatted game data the live
     extraction node produced (roles, discussions, strategy notes, outcome), so a
     finished game can be re-mined offline with no transcript or Langfuse access.
-    Mirrors the dict shape of `format_extraction_inputs`."""
+    Mirrors the dict shape of `format_extraction_inputs`. The case carries no lineup, so it is
+    rebuilt from the roles; without it the rules block would come out empty."""
+    from Agents.schemas.roles import LONE_KILLER_ROLES, NEUTRAL_ROLES, lineup
+
+    dealt = list(case.get("roles", {}).values())
+    killer = next((r for r in dealt if r in LONE_KILLER_ROLES), None)
+    neutral = next((r for r in dealt if r in NEUTRAL_ROLES), None)
     return {
+        "lineup": lineup(killer, neutral) if killer and neutral else dealt,
         "formatted_roles": format_roles(case.get("roles", {})),
         "formatted_discussions": case.get("formatted_discussions", ""),
         "formatted_strategy_notes": case.get("formatted_strategy_notes", ""),
