@@ -168,7 +168,7 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Tick
     from Agents.memory.batch_deduplication.config import BatchDedupRunConfig
     from Agents.memory.persistence import memory_store_paths, seed_memory_from_json_files_cached
     from Agents.memory.store import store
-    from Agents.memory.strategy_synthesis import (cluster_observations_for_synth,
+    from Agents.memory.strategy_synthesis import (_format_cluster, cluster_observations_for_synth,
                                                    fetch_observations_for_synth, synthesize_cluster_sps)
     from Agents.schemas.roles import VALID_ACTION_PHASES_BY_ROLE, roles as ALL_ROLES
 
@@ -237,15 +237,20 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Tick
 
     def _run(t):
         role, phase, live, items, tr, tr_keys = t
-        return role, tr_keys, synthesize_cluster_sps(role, phase, live, items, max_retries=1, track_record=tr)
+        return t, synthesize_cluster_sps(role, phase, live, items, max_retries=1, track_record=tr)
 
+    # Each synthesis call's input and output, one JSON line per call, beside the store: the record a
+    # worked example of synthesis is shown from (the full cluster, not only the excerpts displayed).
+    log_path = Path(store_dir) / "synthesis_log.jsonl"
     if tasks:
         with ThreadPoolExecutor(max_workers=12) as pool:
-            for role, tr_keys, sps in pool.map(_run, tasks):
+            for (role, phase, live, items, tr, tr_keys), sps in pool.map(_run, tasks):
+                new_keys = []
                 for sp in sps:
                     ns = f"strategy_points/{role}/{sp.action_phase}"
+                    new_keys.append(str(uuid.uuid4()))
                     sp_namespaces.setdefault(ns, []).append({
-                        "created_at": now.isoformat(), "key": str(uuid.uuid4()),
+                        "created_at": now.isoformat(), "key": new_keys[-1],
                         "namespace": ["strategy_points", role, sp.action_phase],
                         "updated_at": now.isoformat(),
                         # distilled_from: keys of the SPs whose track record was fed into synthesis
@@ -259,9 +264,22 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Tick
                                   "follow_count": 0, "retrieved_count": 0, "positive_count": 0,
                                   "neutral_count": 0, "negative_count": 0,
                                   "distilled_from": tr_keys,
+                                  # source_observations: the cluster this SP was synthesized from —
+                                  # inert provenance (agents never see it); kept only on the SP as
+                                  # written, a dedup survivor does not absorb a discarded SP's list.
+                                  "source_observations": live,
                                   "dimensions": sp.model_dump(mode="json")},
                     })
                     added += 1
+                with log_path.open("a", encoding="utf-8") as log:
+                    log.write(json.dumps({
+                        "at": now.isoformat(), "role": role, "phase": phase,
+                        "source_observations": live,
+                        "observations_text": _format_cluster(live, items),
+                        "track_record": tr, "distilled_from": tr_keys,
+                        "strategy_points": [{"key": k, "situation": sp.composed_situation, "action": sp.action}
+                                            for k, sp in zip(new_keys, sps)],
+                    }) + "\n")
     # with_track_record = cells synthesized using a realized-credit track record (the credit-AWARE
     # path) — makes the mechanism observable per tick instead of hoped.
     with_tr = len({(r, p) for r, p, _live, _items, tr, _keys in tasks if tr})
