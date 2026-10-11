@@ -43,6 +43,10 @@ EXTRACTION GUIDELINES (apply to every observation):
   death. A link IS supported when the record shows it, e.g. the wolves' chat names the reveal as their
   reason for the kill. Even then, a supported explanation of what happened is not proof that a
   different move would have done better.
+- OUTCOME IS NOT CREDIT: a side's win does not make each member's move positive, and a side's loss
+  does not make each move negative. Judge a move only by what the record shows it did. A vote, an
+  abstain, a held shot or a check that merely came before a good or bad night is 'unclear', however
+  the game ended.
 - Keep each field concise (1-2 sentences).
 - QUALITY BAR: EXCLUDE common-sense fundamentals the base strategy already covers (e.g. "vote with the
   majority", "protect important players", "eliminate suspicious players"); EXCLUDE vague situations

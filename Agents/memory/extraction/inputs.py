@@ -215,7 +215,9 @@ _DAY_PHASE_RULES = {
     ),
     "day_vote": (
         " This cell is the VOTE only: whom the {role} voted for, or abstained, and when. A lesson about "
-        "what to say belongs to the separate discussion cell. Tag every observation day_vote."
+        "what to say belongs to the separate discussion cell. Skip a vote that simply joined an "
+        "evidence-backed majority or a majority abstain, unless the vote decided the outcome or went "
+        "against the room. Tag every observation day_vote."
     ),
 }
 
