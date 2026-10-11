@@ -7,12 +7,14 @@
  *
  * A page is one morning: the ledger read that morning and the accusations of the day before.
  * The pages are the mornings the view has reached (never one past the stage); the latest is
- * open unless the viewer paged back. A game whose ledger is missing (an old archive, or a
- * failed fetch) shows each summary's own claims instead, with no checks.
+ * open unless the viewer paged back. A game that ended at dawn adds one page at game over: the
+ * last night's records alone, which no morning carried. A game whose ledger is missing (an old
+ * archive, or a failed fetch) shows each summary's own claims instead, with no checks.
  */
 import type {
   CarriedSummary,
   GameView,
+  PrivateResult,
   SummaryAccusation,
   SummaryNightAction,
 } from '@/game/types';
@@ -28,6 +30,30 @@ export interface RecordPage {
   players: LedgerPlayer[];
   /** The claims are the ledger's, checked by code; false: the summary's own, unchecked. */
   checked: boolean;
+  /**
+   * The night before this morning as the engine recorded it for each seat (`night_record`): the
+   * viewer's own seat, or every seat in the X-ray; `[]` for a nine-seat game and for a viewer
+   * who holds none.
+   */
+  nights: NightRecordLine[];
+  /** The game over's last page (`finalMorning`): the night's records alone, no claims or accusations. */
+  final?: boolean;
+}
+
+/** Who is looking: their seat's own night records, or every seat's with the X-ray. */
+export interface RecordViewer {
+  me: string | null;
+  xray: boolean;
+}
+
+/** One seat's record of its night, in the engine's words; the pack's kill is one line for the pack. */
+export interface NightRecordLine {
+  /** The seat it was sent to, or `wolves` for the pack's kill. */
+  seat: string;
+  night: number;
+  outcome: string;
+  /** The viewer's own (a pack line: the viewer is in the pack). */
+  mine: boolean;
 }
 
 /**
@@ -44,16 +70,21 @@ export function recordBeat(beat: Pick<SceneBeat, 'id'>): boolean {
   return beat.id === 'morning.carried-summary';
 }
 
+type RecordView = Pick<GameView, 'days' | 'timeline'> &
+  Partial<Pick<GameView, 'over' | 'me' | 'xray'>>;
+
 /**
  * The mornings whose record the view has reached, oldest first: morning N once day N-1's
  * summary is in and day N has begun, or while the X-ray's carried-summary beat for day N-1 is
  * on stage. The summary of the day the game ended on is never read: no morning follows it.
+ * Given who is looking (`seen`), a game over at dawn adds the last night's page (`finalMorning`).
  */
 export function recordMornings(
-  view: Pick<GameView, 'days' | 'timeline'>,
+  view: RecordView,
   beat: Pick<SceneBeat, 'id' | 'day'>,
+  seen?: RecordViewer,
 ): number[] {
-  return Object.values(view.days)
+  const out = Object.values(view.days)
     .filter(
       (d) =>
         (d.summary || d.summaryStructured) &&
@@ -62,6 +93,25 @@ export function recordMornings(
     )
     .map((d) => d.day + 1)
     .sort((a, b) => a - b);
+  const last = finalMorning(view, seen);
+  return last !== null && !out.includes(last) ? [...out, last] : out;
+}
+
+/**
+ * The game over's last page, as a morning number: a night's records are complete once it
+ * resolves, so the last night the viewer holds records for gets a page when the game ended at
+ * its dawn (no day followed to carry them; a summary is read only on a morning that comes). Null
+ * before game over, for a game that ended at a lynch (its last night is that day's morning page),
+ * and for a viewer who holds no record of it.
+ */
+export function finalMorning(view: RecordView, seen?: RecordViewer): number | null {
+  if (!view.over || !seen) return null;
+  const nights = Object.values(view.days)
+    .map((d) => d.day)
+    .filter((d) => nightRecords(view, d, seen.me, seen.xray).length > 0);
+  if (!nights.length) return null;
+  const morning = Math.max(...nights) + 1;
+  return view.timeline.some((t) => t.day === morning && t.phase === 'day') ? null : morning;
 }
 
 /** The morning to open: the viewer's pick while it still holds, else the latest; null: none yet. */
@@ -76,12 +126,28 @@ export function shownMorning(
     : latest;
 }
 
-/** One morning's page: the ledger's claims when it has any, else the summary's own. */
+/**
+ * One morning's page: the ledger's claims when it has any, else the summary's own; and, given
+ * who is looking (`seen`), the night records of the night before it.
+ */
 export function recordPage(
-  view: Pick<GameView, 'days'>,
+  view: Pick<GameView, 'days'> &
+    Partial<Pick<GameView, 'timeline' | 'over' | 'me' | 'xray'>>,
   morning: number,
   ledger: readonly LedgerDay[] | null | undefined,
+  seen?: RecordViewer,
 ): RecordPage {
+  // the game over's last page: the night alone (the day before it was read by no morning)
+  if (view.timeline && morning === finalMorning({ ...view, timeline: view.timeline }, seen))
+    return {
+      morning,
+      day: morning - 1,
+      accusations: [],
+      players: [],
+      checked: false,
+      nights: nightRecords(view, morning - 1, seen!.me, seen!.xray),
+      final: true,
+    };
   const summary = view.days[morning - 1]?.summaryStructured ?? null;
   const filed = ledger?.find((d) => d.day === morning)?.players ?? [];
   return {
@@ -90,7 +156,39 @@ export function recordPage(
     accusations: summary?.accusations ?? [],
     players: filed.length ? filed : summaryClaims(summary, morning - 1),
     checked: filed.length > 0,
+    nights: seen ? nightRecords(view, morning - 1, seen.me, seen.xray) : [],
   };
+}
+
+/**
+ * A night's records as this viewer holds them, in the log's order: a seat its own; the X-ray
+ * every seat's. They are private, so a viewer with neither (a spectator, the replay without the
+ * X-ray) has none. The pack's kill reaches every wolf: it is one line, the pack's.
+ */
+export function nightRecords(
+  view: Partial<Pick<GameView, 'me' | 'xray'>>,
+  night: number,
+  me: string | null,
+  xray: boolean,
+): NightRecordLine[] {
+  const held: readonly PrivateResult[] = xray
+    ? Object.values(view.xray?.privateResults ?? {}).flat()
+    : me
+      ? (view.me?.privateResults ?? []).filter((p) => p.player === me)
+      : [];
+  const out: NightRecordLine[] = [];
+  for (const p of [...held].sort((a, b) => a.seq - b.seq)) {
+    if (p.kind !== 'night_record' || p.day !== night) continue;
+    const pack = p.actor === 'wolves';
+    if (pack && out.some((l) => l.seat === 'wolves')) continue;
+    out.push({
+      seat: pack ? 'wolves' : p.player,
+      night,
+      outcome: p.outcome,
+      mine: pack ? !!me && !!view.me?.role?.pack?.includes(me) : p.player === me,
+    });
+  }
+  return out;
 }
 
 /**

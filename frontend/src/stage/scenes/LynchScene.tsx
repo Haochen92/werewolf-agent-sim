@@ -17,6 +17,7 @@
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { Camera, Layer } from '../Stage';
+import { isNineSeat } from '../card-text';
 import { Puppet, puppetBox } from '../cast/Puppet';
 import { Bounded, standBand } from '../instruments/Bounded';
 import { RoleCard } from '../instruments/Card';
@@ -232,7 +233,7 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
               }}
               data-lift-card=""
             >
-              <RoleCard role={role} seat={n} w={card.w} />
+              <RoleCard role={role} seat={n} w={card.w} legacy={isNineSeat(view)} />
             </div>
           </Lift>
         ) : null}
@@ -253,7 +254,7 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
               ease: [0.5, 0, 0.8, 0.5],
             })}
           >
-            <RoleCard role={role} seat={n} w={card.w} />
+            <RoleCard role={role} seat={n} w={card.w} legacy={isNineSeat(view)} />
           </motion.div>
         ) : null}
       </Layer>

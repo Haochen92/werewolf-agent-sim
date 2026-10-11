@@ -24,17 +24,18 @@
 import type { GameView, NightView } from '@/game/types';
 import type { SceneBeat } from '../beats/types';
 import { Layer } from '../Stage';
+import { isNineSeat } from '../card-text';
 import { ATTACK_MARK, ActMark } from '../instruments/ActMark';
 import { RoleCard } from '../instruments/Card';
 import { Chip } from '../instruments/Chip';
-import { BY, DIED, MorningRoll, type RollRow } from '../instruments/MorningRoll';
+import { BY, DIED, MorningRoll, pickLine, type RollRow } from '../instruments/MorningRoll';
 import { CardButton, Caps, Notice, NoticeZone } from '../instruments/Notice';
 import { StringDrop } from '../instruments/StringDrop';
 import { bigCard, chipRow, featuredChip, rowX } from '../instruments/flies';
 import { diningCarPlan } from '../paint/dining-car';
 import type { Special } from '../paint/draw';
 import { ROLE_ARTICLE } from '../paint/role-kit';
-import { seatNumber } from '../roles';
+import { seatNumber, seatify } from '../roles';
 import { bandNarrows, fileTap, sideOpen } from '../slot';
 import { STAGE_H, geometry } from '../units';
 import { StandReturns } from './DiningCarParts';
@@ -55,15 +56,33 @@ const COUNT = [
   'Nine',
 ];
 
-/** One line of the report: a death, or the save (a row of the morning roll). */
+/** One line of the report: a death, a save, or the speculator's pick (a row of the morning roll). */
 type Told = RollRow;
+/** A line of the report about a seat: a death or a save, each told a chip at a time. */
+type SeatTold = Exclude<Told, { kind: 'pick' }>;
 
-/** What one seat alone learns this morning. */
-type Private =
+/**
+ * What one seat alone learns this morning. `record` is a ten-seat seat's own night record, its
+ * `outcome` the engine's sentence (the investigator's read, the sentinel's visitors, the sigil,
+ * the fortune teller's points; `pack` for the pack's kill, sent to every wolf); `target` is the
+ * seat whose chip comes down, null when the record names none (a held fire, a pick).
+ */
+export type Private =
   | { kind: 'investigation'; seat: string; target: string; role: string }
   | { kind: 'vigilante'; seat: string; target: string }
-  | { kind: 'pack'; target: string };
+  | { kind: 'pack'; target: string }
+  | {
+      kind: 'record';
+      seat: string;
+      target: string | null;
+      outcome: string;
+      pack: boolean;
+    };
 
+/**
+ * The night's report in the log's order: each death, then every save (the healer's, and any
+ * other a ten-seat night makes), then the speculator's pick, the game master's fact, last.
+ */
 export function reportOf(night: NightView | null): Told[] {
   if (!night) return [];
   const told: Told[] = night.deaths.map((d) => ({
@@ -72,16 +91,26 @@ export function reportOf(night: NightView | null): Told[] {
     role: d.role,
     types: d.attacker_types,
   }));
-  if (night.save)
-    told.push({ kind: 'save', ...night.save, types: night.save.attacker_types });
+  // a view folded before `saves` existed has only `save`
+  const saves = night.saves?.length ? night.saves : night.save ? [night.save] : [];
+  for (const save of saves)
+    told.push({ kind: 'save', player: save.player, types: save.attacker_types });
+  if (night.pick) told.push({ kind: 'pick', pick: night.pick });
   return told;
 }
 
-/** The private result a beat is about, by its seq; or, for the pack's note, the night's kill. */
-function privateAt(
+const seatTold = (t: Told): t is SeatTold => t.kind !== 'pick';
+const isSeat = (s: string | null | undefined): s is string => !!s && /^player_\d+$/.test(s);
+
+/**
+ * The private result a beat is about, by its seq; or, for the pack's note, the night's kill.
+ * The pack's kill record (`actor: "wolves"`) stands for the pack's note: where a night has one,
+ * the game master's note says nothing more.
+ */
+export function privateAt(
   view: GameView,
   night: NightView | null,
-  beat: SceneBeat,
+  beat: Pick<SceneBeat, 'seq'>,
 ): Private | null {
   const all = [
     ...view.me.privateResults,
@@ -92,39 +121,68 @@ function privateAt(
     return { kind: 'investigation', seat: r.player, target: r.target, role: r.role };
   if (r?.kind === 'vigilante_confirmation')
     return { kind: 'vigilante', seat: r.player, target: r.target };
+  if (r?.kind === 'night_record')
+    return {
+      kind: 'record',
+      seat: r.player,
+      target: isSeat(r.target) ? r.target : null,
+      outcome: r.outcome,
+      pack: r.actor === 'wolves',
+    };
   const note = night?.wolfChannel.find(
     (w) => w.seq === beat.seq && w.wolf === 'game_master',
   );
-  if (note && night?.wolfKill) return { kind: 'pack', target: night.wolfKill };
+  if (note && night?.wolfKill) {
+    const record = all.find(
+      (p) => p.kind === 'night_record' && p.actor === 'wolves' && p.day === night.day,
+    );
+    return record
+      ? privateAt(view, night, record)
+      : { kind: 'pack', target: night.wolfKill };
+  }
   return null;
 }
 
 /**
- * The private beats this viewer has for a night (the last one's result), so a later beat can
- * tell what was hanging just before it: the X-ray has everyone's; a seat only its own; a wolf
- * the pack's note.
+ * Everything only one seat (or the pack) learns this night, as this viewer has it, in the log's
+ * order: the X-ray has everyone's; a seat only its own; a wolf the pack's note. The pack's kill
+ * record reaches every wolf, so it is one entry here however many wolves hold it, and the game
+ * master's note on a night that has the record is not a second one. A `uses` count is not news
+ * (it moves the card's chip), nor is a nine-seat `bullets`.
  */
-function lastPrivate(
+export function morningPrivates(
   view: GameView,
   night: NightView | null,
   day: number,
   me: string | null,
   xray: boolean,
-): Private | null {
+): Private[] {
   const pack = view.me.role?.pack ?? null;
   const results = (
     xray ? Object.values(view.xray.privateResults).flat() : view.me.privateResults
   )
-    .filter((p) => p.day === day && p.kind !== 'bullets')
+    .filter((p) => p.day === day && p.kind !== 'bullets' && p.kind !== 'uses')
     .filter((p) => xray || p.player === me);
   const notes =
     (xray || pack) && night
       ? night.wolfChannel.filter((w) => w.wolf === 'game_master').map((w) => w.seq)
       : [];
-  const seqs = [...results.map((p) => p.seq), ...notes].sort((a, b) => a - b);
-  const last = seqs.at(-1);
-  return last === undefined ? null : privateAt(view, night, { seq: last } as SceneBeat);
+  const seqs = [...new Set([...results.map((p) => p.seq), ...notes])].sort((a, b) => a - b);
+  const out: Private[] = [];
+  let packTold = false;
+  for (const seq of seqs) {
+    const p = privateAt(view, night, { seq });
+    if (!p) continue;
+    const isPack = p.kind === 'pack' || (p.kind === 'record' && p.pack);
+    if (isPack && packTold) continue;
+    packTold ||= isPack;
+    out.push(p);
+  }
+  return out;
 }
+
+/** The chip a private result brings down: its target seat, if it names one. */
+const privateSeat = (p: Private | null): string | null => p?.target ?? null;
 
 /** The morning's body under the car's host (CarScene.tsx). */
 export function MorningBody(props: SceneProps) {
@@ -152,12 +210,17 @@ function morningFacts({ view, beat, presentation }: SceneProps) {
   const side = sideOpen(presentation);
   const g = geometry(hud, side);
   const plan = diningCarPlan({ phase: 'night', hud, side });
-  const low = chipRow(g, plan, 'low');
+  const low = chipRow(g, plan, 'low', view.seats.length);
   const F = featuredChip(g, low);
 
-  const report = reportOf(night);
+  // the seats the night touched, told a chip at a time; the pick is the roll's last row only
+  const report = reportOf(night).filter(seatTold);
   const deaths = report.filter((t) => t.kind === 'death');
-  const cur = beat.subject ? report.findIndex((t) => t.player === beat.subject) : -1;
+  // an only-you beat comes after the report: its subject (a record's target) is not a report row
+  const cur =
+    beat.subject && id !== 'morning.only-you'
+      ? report.findIndex((t) => t.player === beat.subject)
+      : -1;
   const told = cur >= 0 ? report[cur] : null;
   // how many of the night's deaths the wing has been told (its tile turns at the card)
   const toldDead =
@@ -200,7 +263,7 @@ function MorningSet(props: SceneProps) {
     morningFacts(props);
   const H = STAGE_H;
 
-  const centred = !!told || !!mine || id === 'morning.card-down';
+  const centred = !!told || !!privateSeat(mine) || id === 'morning.card-down';
   const specials: Special[] = centred ? [[F.x, 0, F.y + F.r, F.r * 1.7, 0.95]] : [];
   const pool = dayBegins
     ? { x: g.cx, y: g.railY - g.pwid * 0.9, rx: g.pwid * 0.6, ry: g.pwid * 0.95 }
@@ -263,13 +326,15 @@ function MorningBeat(props: SceneProps) {
 
   // what hung at the centre just before this beat, to draw up as this one begins
   const lastTold = report.at(-1) ?? null;
-  const prevPrivate = lastPrivate(view, night, nightDay, me, xray);
+  const prevPrivate = privateSeat(
+    morningPrivates(view, night, nightDay, me, xray).at(-1) ?? null,
+  );
   const summaryBeat = xray && !!view.days[nightDay]?.summaryStructured;
   let before:
-    { kind: 'card'; t: Told } | { kind: 'chip'; seat: string; saved?: boolean } | null =
+    { kind: 'card'; t: SeatTold } | { kind: 'chip'; seat: string; saved?: boolean } | null =
     null;
   if (animate) {
-    const fromReport = (t: Told | null) =>
+    const fromReport = (t: SeatTold | null) =>
       !t
         ? null
         : t.kind === 'death'
@@ -279,7 +344,7 @@ function MorningBeat(props: SceneProps) {
     // the roll draws the last card (or the saved chip) up; after it nothing of the report hangs
     else if (id === 'morning.roll') before = fromReport(lastTold);
     else if (id === 'morning.carried-summary' || (dayBegins && !summaryBeat))
-      before = prevPrivate ? { kind: 'chip', seat: prevPrivate.target } : null;
+      before = prevPrivate ? { kind: 'chip', seat: prevPrivate } : null;
   }
 
   // the lobby's row, as it hung before the report: the living at dusk, with tonight's dead
@@ -302,7 +367,7 @@ function MorningBeat(props: SceneProps) {
       />
     );
   };
-  const roleCard = (t: Told, move: 'lower' | 'raise' | null) =>
+  const roleCard = (t: SeatTold, move: 'lower' | 'raise' | null) =>
     t.kind === 'death' ? (
       <StringDrop
         key={`card-${t.player}-${move ?? ''}`}
@@ -314,7 +379,12 @@ function MorningBeat(props: SceneProps) {
         delay={move === 'raise' ? 0.1 : 0.2}
         duration={move === 'lower' ? 1.2 : 0.9}
       >
-        <RoleCard role={t.role} seat={seatNumber(t.player)} w={card.w} />
+        <RoleCard
+          role={t.role}
+          seat={seatNumber(t.player)}
+          w={card.w}
+          legacy={isNineSeat(view)}
+        />
       </StringDrop>
     ) : null;
 
@@ -392,10 +462,11 @@ function MorningBeat(props: SceneProps) {
       />,
     );
   }
-  if (mine) {
+  const mineSeat = privateSeat(mine);
+  if (mine && mineSeat) {
     const known = mine.kind === 'investigation' ? mine.role : null;
     figures.push(
-      featured(mine.target, {
+      featured(mineSeat, {
         move: animate ? 'lower' : null,
         delay: 0.3,
         sigil: known,
@@ -444,6 +515,7 @@ function MorningBeat(props: SceneProps) {
             <MorningWords
               id={id}
               report={report}
+              pick={night?.pick ?? null}
               told={told}
               mine={mine}
               me={me}
@@ -462,6 +534,7 @@ function MorningBeat(props: SceneProps) {
 function MorningWords({
   id,
   report,
+  pick,
   told,
   mine,
   me,
@@ -470,8 +543,11 @@ function MorningWords({
   arrive,
 }: {
   id: SceneBeat['id'];
-  report: Told[];
-  told: Told | null;
+  /** The seats the night touched (deaths and saves). */
+  report: SeatTold[];
+  /** The side a speculator picked tonight, a fact the roll (or the quiet night) tells last. */
+  pick: string | null;
+  told: SeatTold | null;
   mine: Private | null;
   me: string | null;
   view: GameView;
@@ -498,7 +574,12 @@ function MorningWords({
       // the roll: the whole night at a glance, once it has been told a chip at a time
       return (
         <Notice title="The morning roll" walnut {...t}>
-          <MorningRoll rows={report} cast={cast} me={me} arrive={arrive} />
+          <MorningRoll
+            rows={pick ? [...report, { kind: 'pick', pick }] : report}
+            cast={cast}
+            me={me}
+            arrive={arrive}
+          />
         </Notice>
       );
     case 'morning.chip-attacked':
@@ -524,10 +605,15 @@ function MorningWords({
     }
     case 'morning.card-down':
       if (!told || told.kind !== 'death') return null;
+      // a concealed body: the card comes down face down (the role stays hidden on every public surface)
       return (
         <Notice
           sigil={told.role}
-          title={`Seat ${seatNumber(told.player)} was ${ROLE_ARTICLE[told.role] ?? told.role}`}
+          title={
+            told.role === null
+              ? `Seat ${seatNumber(told.player)}’s role was hidden`
+              : `Seat ${seatNumber(told.player)} was ${ROLE_ARTICLE[told.role] ?? told.role}`
+          }
           {...t}
         >
           {told.player === me ? 'You stay at the table as a spectator.' : null}
@@ -547,11 +633,30 @@ function MorningWords({
     case 'morning.quiet':
       return (
         <Notice title="A quiet night" {...t}>
-          No one died.
+          No one died.{pick ? ` ${pickLine(pick)}` : ''}
         </Notice>
       );
     case 'morning.only-you': {
       if (!mine) return null;
+      if (mine.kind === 'record') {
+        // the engine's own sentence, seats as the table says them; the pack's goes to every wolf
+        const yours = mine.pack ? !!view.me.role?.pack && !!me : mine.seat === me;
+        return (
+          <Notice
+            title={yours ? 'What only you learn' : 'What only they learn'}
+            aqua={
+              yours
+                ? null
+                : mine.pack
+                  ? 'Only the pack'
+                  : `Only seat ${seatNumber(mine.seat)}`
+            }
+            {...t}
+          >
+            {seatify(mine.outcome)}
+          </Notice>
+        );
+      }
       const target = seatNumber(mine.target);
       const yours = mine.kind === 'pack' ? !!view.me.role?.pack && !!me : mine.seat === me;
       const aqua = yours

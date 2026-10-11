@@ -19,7 +19,7 @@ import { fileFocus, type FileChoice } from './film/case-file';
 import { recordMornings, type RecordPick } from './film/record-model';
 import type { SceneProps } from './scenes/types';
 import { atRail, railHolds, slotOf, tapsOpenFiles } from './slot';
-import { actedTonight } from './scenes/replay-night';
+import { actedTonight, nightBranchesOf } from './scenes/replay-night';
 
 export function SideSlot({ view, beat, me, presentation, slot, stop }: SceneProps) {
   const own = useDrawerFilters();
@@ -33,12 +33,17 @@ export function SideSlot({ view, beat, me, presentation, slot, stop }: SceneProp
   // the night stop: the rooms the file's sheet offers to visit, each actor once (the pack's
   // wolves together), as the wing's lit cards do
   const rooms: { actor: string; seats: string[]; seen: boolean }[] = [];
-  if (stop && beat.id === 'rnight.hub')
-    for (const [seat, actor] of actedTonight(view, slot?.ahead ?? view, beat.day)) {
-      const r = rooms.find((x) => x.actor === actor);
-      if (r) r.seats.push(seat);
-      else rooms.push({ actor, seats: [seat], seen: stop.visited.includes(actor) });
-    }
+  if (stop && beat.id === 'rnight.hub') {
+    for (const [seat, actors] of actedTonight(view, slot?.ahead ?? view, beat.day))
+      for (const actor of actors) {
+        const r = rooms.find((x) => x.actor === actor);
+        if (r) r.seats.push(seat);
+        else rooms.push({ actor, seats: [seat], seen: stop.visited.includes(actor) });
+      }
+    // in the order the night plays them (a wolf's own room may come before the pack's)
+    const order = nightBranchesOf(slot?.ahead ?? view, beat.day).map((b) => b.actor);
+    rooms.sort((a, b) => order.indexOf(a.actor) - order.indexOf(b.actor));
+  }
   const visit = rooms.length
     ? {
         rooms,
@@ -55,7 +60,10 @@ export function SideSlot({ view, beat, me, presentation, slot, stop }: SceneProp
   const showRecord = slot?.onShowRecord;
   const openRecord = showRecord
     ? (morning: number) => {
-        pickPage({ morning, latest: recordMornings(view, beat).at(-1) ?? morning });
+        pickPage({
+          morning,
+          latest: recordMornings(view, beat, { me: view.me.seat, xray }).at(-1) ?? morning,
+        });
         pickSeat({ seat: null, key: fileFocus(view, beat)?.key ?? null, record: true });
         showRecord();
       }

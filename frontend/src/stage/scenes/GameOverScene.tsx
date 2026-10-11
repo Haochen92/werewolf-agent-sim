@@ -9,11 +9,12 @@
  * - `over.where-it-ended`: the last scene's frame, held. After a morning: the night behind the
  *   shutter, the room empty (the last card drawn up). After a lynch: dusk, the shutter down,
  *   the trap's leaves standing open, the card gone.
- * - `over.winners-hour`: the shutter rises on the winners' hour (the village's day, the
- *   wolves' night, the serial killer's dusk); open leaves fold.
+ * - `over.winners-hour`: the shutter rises on the winners' hour (the town's day, the wolves'
+ *   night, the lone killer's dusk, a draw's grey dawn); open leaves fold.
  * - `over.verdict`: the walnut board comes down on its two strings.
  * - `over.winners-stand`: the board goes up; the stand comes up widened for the winning
- *   side's survivors, who rise into it; their tiles in the wing are lit, the rest dimmed.
+ *   side's survivors, who rise into it; their tiles in the wing are lit, the rest dimmed. A
+ *   draw has no one at the stand; a neutral's result is the line under the winner's.
  * - `over.truth`: every living tile takes its faction strip and sigil; the case file's docket
  *   lists the deal and how each seat went.
  * - `over.epilogue`: the ledger over the whole stage.
@@ -31,6 +32,7 @@ import Link from 'next/link';
 import { useState, type ReactNode } from 'react';
 import type { GameView } from '@/game/types';
 import { Layer } from '../Stage';
+import { isNineSeat } from '../card-text';
 import { ChipSprite } from '../cast/ChipSprite';
 import { Puppet, puppetBox } from '../cast/Puppet';
 import { Bounded, standBand } from '../instruments/Bounded';
@@ -47,7 +49,7 @@ import type { Special } from '../paint/draw';
 import type { Phase } from '../paint/materials';
 import { ROLE_ARTICLE } from '../paint/role-kit';
 import { FactionMark } from '../instruments/FactionMark';
-import { ROLE_NAME, factionOf, seatNumber, type Faction } from '../roles';
+import { ROLE_NAME, seatNumber, winnerFaction, winnerKey, type WinnerKey } from '../roles';
 import { useSmall } from '../set';
 import { bandNarrows, sideOpen } from '../slot';
 import { STAGE_H, geometry } from '../units';
@@ -59,6 +61,8 @@ import {
   endedAt,
   knownRole,
   lastStanding,
+  neutralLine,
+  roleWon,
   standSet,
   winnersOf,
 } from './game-over';
@@ -98,7 +102,9 @@ function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
   // the side slot open: the room is laid out beside it (bench 73 drew the film up)
   const side = sideOpen(presentation);
   const g = geometry(hud, side);
-  const winner = (view.winner ?? 'villagers') as Faction;
+  // the winner as a key (a draw is `draw`), and the side whose colour it wears (none for a draw)
+  const winner = winnerKey(view.winner);
+  const tone = winnerFaction(winner) ?? undefined;
   const ended = endedAt(view);
   const left: Phase = ended === 'lynch' ? 'dusk' : 'night';
   const hour = WINNERS_HOUR[winner];
@@ -194,7 +200,12 @@ function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
             delay={0.1}
             duration={0.9}
           >
-            <RoleCard role={lastCard.role} seat={seatNumber(lastCard.player)} w={card.w} />
+            <RoleCard
+              role={lastCard.role}
+              seat={seatNumber(lastCard.player)}
+              w={card.w}
+              legacy={isNineSeat(view)}
+            />
           </StringDrop>
         ) : null}
         {onStand
@@ -244,7 +255,7 @@ function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
                     ? winners.map((s) => ROLE_NAME[roleOf(s) ?? ''] ?? '').join(', ')
                     : undefined
                 }
-                tone={truthOut || xray ? winner : undefined}
+                tone={truthOut || xray ? tone : undefined}
               />
             </Stand>
           </Bounded>
@@ -286,6 +297,8 @@ function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
             ) : onStand ? (
               <EndBox
                 winner={winner}
+                neutral={neutralLine(view)}
+                won={!!myRole && roleWon(myRole, winner, view.neutralResult)}
                 winners={winners}
                 me={me}
                 myRole={myRole}
@@ -304,7 +317,7 @@ function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
             extracted={view.xray.extracted}
             roles={view.xray.roles}
             cast={cast}
-            winner={winner}
+            winner={tone ?? null}
             arrive={animate}
             onClose={() => setShut(true)}
           />
@@ -326,9 +339,14 @@ function endingLine(view: GameView): string {
   return `Seat ${seatNumber(seat)} is voted out, ${score(counts)}${role ? `: ${ROLE_ARTICLE[role] ?? role}` : ''}.`;
 }
 
-/** The result in the box: who won, their survivors, and for a seated human, how they did. */
-function EndBox({
+/**
+ * The result in the box: who won (or no side, a draw), the neutral's result under it, their
+ * survivors, and for a seated human, how they did.
+ */
+export function EndBox({
   winner,
+  neutral,
+  won,
   winners,
   me,
   myRole,
@@ -338,7 +356,11 @@ function EndBox({
   way,
   arrive,
 }: {
-  winner: Faction;
+  winner: WinnerKey;
+  /** The neutral's result, the second line (`neutralLine`); null without one. */
+  neutral: string | null;
+  /** The seated human won (`roleWon`: a neutral on its own result). */
+  won: boolean;
   winners: string[];
   me: string | null;
   myRole: string | null;
@@ -352,7 +374,7 @@ function EndBox({
   way: SceneProps['wayOut'] | boolean;
   arrive: boolean;
 }) {
-  const won = !!myRole && factionOf(myRole) === winner;
+  const side = winnerFaction(winner);
   let you: ReactNode = null;
   if (me && myRole)
     you = (
@@ -364,8 +386,11 @@ function EndBox({
   return (
     <Notice
       title={
-        <span className={`${styles.title} ${styles[`c-${winner}`]}`}>
-          <FactionMark faction={winner} format="pennant" className={styles.pennant} />
+        <span className={`${styles.title} ${side ? styles[`c-${side}`] : ''}`}>
+          {/* a draw has no side, so no pennant and no side's colour */}
+          {side ? (
+            <FactionMark faction={side} format="pennant" className={styles.pennant} />
+          ) : null}
           <span className={styles.result}>{WINNER_LINE[winner]}</span>
           {you}
         </span>
@@ -373,6 +398,11 @@ function EndBox({
       arrive={arrive}
       delay={1.6}
     >
+      {neutral ? (
+        <div className={styles.sub} data-neutral>
+          {neutral}
+        </div>
+      ) : null}
       <div className={styles.winners}>
         {winners.map((s) => {
           const c = cast[seatNumber(s) - 1];
@@ -382,7 +412,8 @@ function EndBox({
             </span>
           );
         })}
-        <span>{lastStanding(winners)}</span>
+        {/* a draw: nobody takes the stand, and nobody is "the last of them" */}
+        {winner === 'draw' ? null : <span>{lastStanding(winners)}</span>}
         {way === true ? (
           <span className={styles.acts}>
             <button type="button">Watch the replay</button>

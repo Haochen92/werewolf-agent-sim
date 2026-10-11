@@ -9,27 +9,38 @@
 import { REACH, type Character } from '@/assets/manifest';
 import type { GameView } from '@/game/types';
 import type { Phase } from '../paint/materials';
-import { factionOf, seatNumber, type Faction } from '../roles';
+import {
+  factionOf,
+  isPackRole,
+  ROLE_NAME,
+  seatNumber,
+  winnerKey,
+  type Faction,
+  type WinnerKey,
+} from '../roles';
 import { standBox, type StageGeometry } from '../units';
 
 export type EndedAt = 'morning' | 'lynch';
 
 /**
- * The hour the shutter rises on for each winner: the village's day, the wolves' night. The
- * neutrals' dawn is provisional: the wire has no such winner yet (roles.ts).
+ * The hour the shutter rises on for each winner: the town's day, the wolves' night, the lone
+ * killer's dusk (the serial killer's or the necromancer's), and for a draw, which nobody won, a
+ * grey dawn.
  */
-export const WINNERS_HOUR: Record<Faction, Phase> = {
+export const WINNERS_HOUR: Record<WinnerKey, Phase> = {
   villagers: 'day',
   wolves: 'night',
   serial_killer: 'dusk',
-  neutral_benign: 'dawn',
+  necromancer: 'dusk',
+  draw: 'dawn',
 };
 
-export const WINNER_LINE: Record<Faction, string> = {
-  villagers: 'The village has won',
+export const WINNER_LINE: Record<WinnerKey, string> = {
+  villagers: 'The town has won',
   wolves: 'The wolves have won',
   serial_killer: 'The serial killer has won',
-  neutral_benign: 'The neutrals have won',
+  necromancer: 'The necromancer has won',
+  draw: 'No side has won',
 };
 
 /**
@@ -42,21 +53,91 @@ export function endedAt(view: GameView): EndedAt {
 
 /**
  * A seat's role as far as this viewer knows it: the observer's roles once they are out, the
- * seated human's own card, a wolf's packmates.
+ * seated human's own card. A wolf's pack mates have no role here (the wire lists the pack's
+ * seats, never a mate's role): `knownSide` has them.
  */
 export function knownRole(view: GameView, seat: string): string | null {
   if (view.xray.roles[seat]) return view.xray.roles[seat];
   if (seat === view.me.seat && view.me.role) return view.me.role.role;
-  if (view.packRoster.includes(seat) && view.me.role?.role === 'wolf') return 'wolf';
   return null;
 }
 
-/** The winning side's survivors, in seat order: the ones who take the stand. */
+/** A seat's side as far as this viewer knows it: its known role's, or the pack's for a mate. */
+export function knownSide(view: GameView, seat: string): Faction | null {
+  const role = knownRole(view, seat);
+  if (role) return factionOf(role);
+  if (view.packRoster.includes(seat) && isPackRole(view.me.role?.role)) return 'wolves';
+  return null;
+}
+
+/**
+ * Whether a role won: the town's and the pack's by side, a lone killer by its own role (the
+ * serial killer's win is not the necromancer's), nobody in a draw. A neutral (the speculator,
+ * the fortune teller) wins or loses on its own result beside the winner (`neutral_result`,
+ * "won", "won (2 points)", "lost").
+ */
+export function roleWon(
+  role: string | null,
+  winner: WinnerKey,
+  neutralResult: string | null = null,
+): boolean {
+  const side = factionOf(role);
+  if (side === 'neutral_benign') return !!neutralResult?.startsWith('won');
+  if (winner === 'draw' || !role) return false;
+  if (winner === 'villagers' || winner === 'wolves') return side === winner;
+  return role === winner;
+}
+
+/** The winners' survivors, in seat order: the ones who take the stand. A draw has none. */
 export function winnersOf(view: GameView): string[] {
-  if (!view.winner) return [];
-  return view.seats.filter(
-    (s) => view.alive.includes(s) && factionOf(knownRole(view, s)) === view.winner,
+  if (!view.over) return [];
+  const winner = winnerKey(view.winner);
+  if (winner === 'draw') return [];
+  return view.seats.filter((s) => {
+    if (!view.alive.includes(s)) return false;
+    const role = knownRole(view, s);
+    // a neutral never takes the stand: its result is the line under the winner's
+    if (role) return factionOf(role) !== 'neutral_benign' && roleWon(role, winner);
+    // a pack mate, known by side only
+    return winner === 'wolves' && knownSide(view, s) === 'wolves';
+  });
+}
+
+/**
+ * How each neutral's result reads under the winner line; `{the}` is "The" and the role's name
+ * as the game writes it (`ROLE_NAME`, "The fortune teller"), `{n}` the points, when given.
+ * These lines are the client's own; the engine's (the pick at dawn) are left as it writes them.
+ */
+const NEUTRAL_WORDS: Record<string, { won: string; lost: string }> = {
+  speculator: { won: '{the}’s pick won', lost: '{the} lost' },
+  fortune_teller: { won: '{the} won, with {n}', lost: '{the} lost, with {n}' },
+};
+
+/**
+ * The neutral's result as the second line under the winner's: "The speculator’s pick won",
+ * "The fortune teller won, with 2 points", "The speculator lost". The neutral is the lineup's
+ * (the cast counts' in a game without one); null when none was dealt or the engine gave no
+ * result (every nine-seat game).
+ */
+export function neutralLine(
+  view: Pick<GameView, 'neutralResult' | 'lineup' | 'castRoleCounts'>,
+): string | null {
+  const result = view.neutralResult?.trim();
+  if (!result) return null;
+  const role = [...view.lineup, ...Object.keys(view.castRoleCounts)].find(
+    (r) => factionOf(r) === 'neutral_benign',
   );
+  const words = role ? NEUTRAL_WORDS[role] : undefined;
+  if (!role || !words) return `The neutral ${result}`;
+  const won = result.startsWith('won');
+  const points = /\((\d+) points?\)/.exec(result)?.[1];
+  const the = `The ${(ROLE_NAME[role] ?? role).toLowerCase()}`;
+  const line = (won ? words.won : words.lost).replace('{the}', the);
+  if (line.includes('{n}'))
+    return points !== undefined
+      ? line.replace('{n}', `${points} ${points === '1' ? 'point' : 'points'}`)
+      : line.replace(/, with \{n\}$/, '');
+  return line;
 }
 
 export interface StandSet {
@@ -132,6 +213,10 @@ const BY: Record<string, string> = {
   wolves: 'the wolves',
   serial_killer: 'the serial killer',
   vigilante: 'the vigilante',
+  sigilist: 'a sigil',
+  reanimated_wolves: 'a reanimated wolf',
+  reanimated_vigilante: 'a reanimated vigilante',
+  reanimated_sigilist: 'a reanimated sigil',
 };
 
 /** How a seat went: "survived", "day 3, voted out", "night 4, the wolves". */

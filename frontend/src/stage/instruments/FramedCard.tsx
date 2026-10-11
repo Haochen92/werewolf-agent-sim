@@ -13,7 +13,7 @@
  * The faction's colour is on the card because the card is face up: it is your own.
  */
 import type { CSSProperties } from 'react';
-import { CARD_TEXT } from '../card-text';
+import { cardTextFor } from '../card-text';
 import { roleFigure } from '../paint/role-kit';
 import { factionOf } from '../roles';
 import { Sigil } from './Sigil';
@@ -37,6 +37,8 @@ export interface FramedCardProps {
   note?: string;
   /** Not yours: whose card it is ("Seat 4", "The pack"), for its label. */
   owner?: string;
+  /** An archived nine-seat game: the card reads that game's rules (`isNineSeat`). */
+  legacy?: boolean;
   onOpen?: () => void;
 }
 
@@ -49,9 +51,10 @@ export function FramedCard({
   alone,
   note,
   owner,
+  legacy,
   onOpen,
 }: FramedCardProps) {
-  const text = CARD_TEXT[role];
+  const text = cardTextFor(role, legacy);
   if (!text) return null;
   const w = height * 0.72;
   const faction = factionOf(role) ?? 'villagers';
@@ -121,6 +124,8 @@ export interface CardOverlayProps {
   onClose?: () => void;
   /** A tap past the card, on the room behind it (before `onClose`). */
   onOutside?: () => void;
+  /** An archived nine-seat game: the card reads that game's rules (`isNineSeat`). */
+  legacy?: boolean;
 }
 
 export function CardOverlay({
@@ -132,8 +137,9 @@ export function CardOverlay({
   note,
   onClose,
   onOutside,
+  legacy,
 }: CardOverlayProps) {
-  const text = CARD_TEXT[role];
+  const text = cardTextFor(role, legacy);
   if (!text) return null;
   const faction = factionOf(role) ?? 'villagers';
   return (
@@ -154,7 +160,11 @@ export function CardOverlay({
         style={{ '--u': `${u}px` } as CSSProperties}
       >
         <span className={styles.cardIn}>
-          <span className={styles.cardHead}>
+          <span
+            className={styles.cardHead}
+            // "Fortune teller", too wide for the head at full size: a step smaller, on one line
+            data-long={text.name.length > 13 ? true : undefined}
+          >
             <span>{text.name}</span>
             <Sigil role={role} variant="felt" small={32 * u < 26} />
           </span>
@@ -162,7 +172,14 @@ export function CardOverlay({
             className={styles.cardFig}
             dangerouslySetInnerHTML={{ __html: roleFigure(role) }}
           />
-          <span className={styles.cardNight}>
+          <span
+            className={styles.cardNight}
+            // the ten-seat cards' longer rules (the fortune teller's bets) a step smaller
+            data-long={
+              (alone && text.nightAlone ? text.nightAlone : text.night).length > 180 ||
+              undefined
+            }
+          >
             <b>At night</b> {alone && text.nightAlone ? text.nightAlone : text.night}
           </span>
           {note ? <span className={styles.cardCount}>{note}</span> : null}

@@ -89,6 +89,7 @@ import {
 import { RecordSheet } from './Record';
 import {
   recordBeat,
+  finalMorning,
   recordMornings,
   recordPage,
   shownMorning,
@@ -192,7 +193,8 @@ export function Film({
       ? 'Revealed after the game'
       : 'Opens with Reveal on';
   // the Record's page: the latest morning the stage has reached, or one the viewer turned to
-  const mornings = record ? recordMornings(view, beat) : [];
+  const seen = { me: view.me.seat, xray };
+  const mornings = record ? recordMornings(view, beat, seen) : [];
   const morning = shownMorning(mornings, onRecordPick ? recordPick : ownPick);
   const turnTo = (m: number) =>
     (onRecordPick ?? setOwnPick)({ morning: m, latest: mornings.at(-1) ?? m });
@@ -210,7 +212,7 @@ export function Film({
       : null;
   const file = shown ? seatFile(view, shown, ahead, ballotCut(view, beat)) : null;
   const nudge =
-    replay && view.winner ? (
+    replay && view.over ? (
       <p className={styles.nudge} data-nudge>
         This is how each file ended. To see what each seat was thinking turn by turn,{' '}
         <Link href={replay}>watch the replay →</Link>
@@ -318,10 +320,11 @@ export function Film({
               data-sheet="record"
             >
               <RecordSheet
-                page={morning === null ? null : recordPage(view, morning, ledger)}
+                page={morning === null ? null : recordPage(view, morning, ledger, seen)}
                 mornings={mornings}
                 onMorning={turnTo}
                 chip={chip}
+                final={record ? finalMorning(view, seen) : null}
               />
             </div>
           </>

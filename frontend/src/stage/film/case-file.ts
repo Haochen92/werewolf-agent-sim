@@ -487,7 +487,7 @@ export function seatFile(
     (list ?? []).filter((e) => cut === null || e.seq < cut).at(-1);
   const r = before(agent?.reads);
   const c = before(agent?.consulted);
-  const extracted = view.winner ? (later.xray.extracted ?? view.xray.extracted) : null;
+  const extracted = view.over ? (later.xray.extracted ?? view.xray.extracted) : null;
   return {
     seat,
     role,
@@ -571,12 +571,5 @@ export function openTab(tabs: readonly TabState[], want: string | undefined): Fi
   return tabs.find((t) => t.id === want && t.enabled)?.id ?? 'notes';
 }
 
-/** "serial killers", "wolves": a role's plural, for "What this game taught …". */
-export const ROLE_PLURAL: Record<string, string> = {
-  villager: 'villagers',
-  healer: 'healers',
-  investigator: 'investigators',
-  vigilante: 'vigilantes',
-  wolf: 'wolves',
-  serial_killer: 'serial killers',
-};
+/** "serial killers", "wolves": a role's plural, for "What this game taught …" (the twelve and the nine-seat two). */
+export { ROLE_PLURAL } from '../roles';

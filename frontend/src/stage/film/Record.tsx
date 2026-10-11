@@ -16,8 +16,13 @@
  *   long until opened, "Defence ▸" for the defence and who disputed it, and where the
  *   accusation runs against the record, that ✗ line, always shown.
  *
+ * - The night before the morning, in the engine's words: the viewer's own seat's night records
+ *   (a ten-seat game), every seat's with the X-ray; the pack's kill once.
+ *
  * A page is named by the day it records ("Day 2's record", read the morning of day 3), as the
  * transcript's pointer to it is. A pager turns back to earlier days, never past the stage's.
+ * A game that ended at dawn ends on "Night 3's record": that night's records alone, no claims
+ * or accusations (no morning read them).
  */
 import { useState, type ReactNode } from 'react';
 import type { SummaryAccusation } from '@/game/types';
@@ -30,6 +35,7 @@ import {
   nightName,
   planKind,
   resultWords,
+  type NightRecordLine,
   type RecordPage,
 } from './record-model';
 import styles from './Film.module.css';
@@ -43,9 +49,11 @@ export interface RecordSheetProps {
   mornings: readonly number[];
   onMorning: (morning: number) => void;
   chip: Chip;
+  /** The game over's last page, by its morning (`finalMorning`): named for its night in the pager. */
+  final?: number | null;
 }
 
-export function RecordSheet({ page, mornings, onMorning, chip }: RecordSheetProps) {
+export function RecordSheet({ page, mornings, onMorning, chip, final }: RecordSheetProps) {
   if (!page)
     return (
       <>
@@ -59,11 +67,21 @@ export function RecordSheet({ page, mornings, onMorning, chip }: RecordSheetProp
     );
   const at = mornings.indexOf(page.morning);
   const against = page.accusations.some((a) => a.recordCheck);
+  const name = (m: number) => `${m === final ? 'Night' : 'Day'} ${m - 1}`;
   return (
     <>
       <div className={styles.shHead}>
-        <span className={styles.title}>Day {page.day}’s record</span>
-        <span className={styles.typed}>read at the dawn of day {page.morning}</span>
+        {page.final ? (
+          <>
+            <span className={styles.title}>Night {page.day}’s record</span>
+            <span className={styles.typed}>the game ended at dawn</span>
+          </>
+        ) : (
+          <>
+            <span className={styles.title}>Day {page.day}’s record</span>
+            <span className={styles.typed}>read at the dawn of day {page.morning}</span>
+          </>
+        )}
       </div>
       {mornings.length > 1 ? (
         <div className={`${styles.pager} ${styles.rpager}`}>
@@ -73,14 +91,14 @@ export function RecordSheet({ page, mornings, onMorning, chip }: RecordSheetProp
             disabled={at <= 0}
             onClick={() => onMorning(mornings[at - 1])}
           >
-            ← Day {mornings[Math.max(at - 1, 0)] - 1}
+            ← {name(mornings[Math.max(at - 1, 0)])}
           </button>
           <span className={styles.dots}>
             {mornings.map((m) => (
               <button
                 key={m}
                 type="button"
-                aria-label={`Day ${m - 1}’s record`}
+                aria-label={`${name(m)}’s record`}
                 aria-current={m === page.morning ? 'page' : undefined}
                 onClick={() => onMorning(m)}
               >
@@ -94,31 +112,49 @@ export function RecordSheet({ page, mornings, onMorning, chip }: RecordSheetProp
             disabled={at >= mornings.length - 1}
             onClick={() => onMorning(mornings[at + 1])}
           >
-            Day {mornings[Math.min(at + 1, mornings.length - 1)] - 1} →
+            {name(mornings[Math.min(at + 1, mornings.length - 1)])} →
           </button>
         </div>
       ) : null}
-      <p className={styles.sect}>Claims</p>
-      {page.players.length ? (
-        <div className={styles.rows}>
-          {page.players.map((p) => (
-            <Claim key={p.player} player={p} chip={chip} />
+      {/* the game over's last page is the night alone: no morning read its day's summary */}
+      {page.final ? null : (
+        <>
+          <p className={styles.sect}>Claims</p>
+          {page.players.length ? (
+            <div className={styles.rows}>
+              {page.players.map((p) => (
+                <Claim key={p.player} player={p} chip={chip} />
+              ))}
+            </div>
+          ) : (
+            <p className={styles.none}>No one has claimed a role yet.</p>
+          )}
+          <p className={styles.sect}>Accusations · day {page.day}</p>
+          {page.accusations.length ? (
+            page.accusations.map((a, i) => <Accusation key={i} a={a} chip={chip} />)
+          ) : (
+            <p className={styles.none}>No accusations on day {page.day}.</p>
+          )}
+        </>
+      )}
+      {page.nights.length ? (
+        <>
+          <p className={styles.sect}>
+            Night {page.day} ·{' '}
+            {page.nights.every((n) => n.mine) ? 'only you' : 'what only each seat learned'}
+          </p>
+          {page.nights.map((n) => (
+            <NightLine key={n.seat} line={n} chip={chip} />
           ))}
-        </div>
-      ) : (
-        <p className={styles.none}>No one has claimed a role yet.</p>
+        </>
+      ) : null}
+      {page.final ? null : (
+        <p className={styles.legend}>
+          {page.checked
+            ? '✓ the game record agrees · ✗ the record disagrees or a rule is broken · claims are what players said, not facts'
+            : `${against ? '✗ the record disagrees · ' : ''}claims are what players said, not facts; this game’s claims were not checked against the record`}
+        </p>
       )}
-      <p className={styles.sect}>Accusations · day {page.day}</p>
-      {page.accusations.length ? (
-        page.accusations.map((a, i) => <Accusation key={i} a={a} chip={chip} />)
-      ) : (
-        <p className={styles.none}>No accusations on day {page.day}.</p>
-      )}
-      <p className={styles.legend}>
-        {page.checked
-          ? '✓ the game record agrees · ✗ the record disagrees or a rule is broken · claims are what players said, not facts'
-          : `${against ? '✗ the record disagrees · ' : ''}claims are what players said, not facts; this game’s claims were not checked against the record`}
-      </p>
     </>
   );
 }
@@ -229,6 +265,36 @@ function Checks({ list }: { list: readonly LedgerCheck[] }) {
       {seatify(c.text)}
     </p>
   ));
+}
+
+/**
+ * A seat's night as the engine recorded it, one line in its words ("Tonight seat 5 was visited
+ * by seat 3 and seat 4."): the viewer's own as "You", another's by its seat, the pack's kill
+ * once for the pack.
+ */
+function NightLine({ line, chip }: { line: NightRecordLine; chip: Chip }) {
+  const who =
+    line.seat === 'wolves' ? (
+      line.mine ? (
+        'Your pack'
+      ) : (
+        'The pack'
+      )
+    ) : line.mine ? (
+      'You'
+    ) : (
+      <span className={styles.seat}>
+        {chip(line.seat, `${styles.face} ${styles.xs}`)}Seat {seatNumber(line.seat)}
+      </span>
+    );
+  return (
+    <div className={styles.entry} data-night-record={line.seat}>
+      <p className={styles.eline}>
+        <span className={styles.night}>{who} ·</span>
+        {seatify(line.outcome)}
+      </p>
+    </div>
+  );
 }
 
 /** One accusation, compact: who → whom, the reasoning in two lines; opened, all of it. */

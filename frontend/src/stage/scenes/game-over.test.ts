@@ -3,8 +3,20 @@ import { CHARACTERS, REACH, type Character } from '@/assets/manifest';
 import { foldEvents } from '@/game/foldEvents';
 import type { GameView } from '@/game/types';
 import { geometry, standBox } from '../units';
-import { FIXTURE_EVENTS } from '../workbench/fixture';
-import { endedAt, fateOf, lastStanding, standSet, winnersOf } from './game-over';
+import { FIXTURE_EVENTS, PHASE3_GAME, PHASE3_NECRO_GAME } from '../workbench/fixture';
+import {
+  WINNERS_HOUR,
+  WINNER_LINE,
+  endedAt,
+  fateOf,
+  knownRole,
+  knownSide,
+  lastStanding,
+  neutralLine,
+  roleWon,
+  standSet,
+  winnersOf,
+} from './game-over';
 
 const over = FIXTURE_EVENTS.findIndex((e) => e.type === 'game_over') + 1;
 const view = foldEvents(FIXTURE_EVENTS.slice(0, over));
@@ -104,5 +116,91 @@ describe('the stand for the winners', () => {
         expect(set.scale).toBeLessThanOrEqual(n === 2 ? 0.78 * 0.84 : 0.6 * 0.84);
       }
     }
+  });
+});
+
+describe('the ending per winner (ten-seat pass §1)', () => {
+  it('rises on each winner’s hour, with its own line', () => {
+    expect(WINNERS_HOUR).toEqual({
+      villagers: 'day',
+      wolves: 'night',
+      serial_killer: 'dusk',
+      necromancer: 'dusk',
+      draw: 'dawn',
+    });
+    expect(WINNER_LINE).toEqual({
+      villagers: 'The town has won',
+      wolves: 'The wolves have won',
+      serial_killer: 'The serial killer has won',
+      necromancer: 'The necromancer has won',
+      draw: 'No side has won',
+    });
+  });
+
+  const p3 = foldEvents(PHASE3_GAME.events);
+  const necro = foldEvents(PHASE3_NECRO_GAME.events);
+
+  it('stands the town’s survivors, never the neutral beside them', () => {
+    expect(p3.winner).toBe('villagers');
+    // the fortune teller (seat 8) is alive and lost nothing, but it is not the town's
+    expect(p3.alive).toContain('player_8');
+    expect(winnersOf(p3)).not.toContain('player_8');
+    expect(winnersOf(p3).every((s) => p3.xray.roles[s] !== 'fortune_teller')).toBe(true);
+  });
+
+  it('stands the necromancer alone for a necromancer win, and nobody for a draw', () => {
+    const won = {
+      ...necro,
+      winner: 'necromancer' as const,
+      alive: ['player_2', 'player_9'],
+    };
+    expect(winnersOf(won)).toEqual(['player_9']);
+    // the serial killer's win is not the necromancer's
+    expect(winnersOf({ ...won, winner: 'serial_killer' as const })).toEqual([]);
+    expect(winnersOf({ ...necro, winner: null })).toEqual([]);
+  });
+
+  it('knows a pack mate by its side, not a role', () => {
+    // seat 6 (the illusionist) on day 1, before the X-ray's roles: its mate is seat 10
+    const wolf = foldEvents(
+      PHASE3_NECRO_GAME.events.filter((e) => e.seq < 90 && e.type !== 'roles_assigned'),
+      { mySeat: 'player_6' },
+    );
+    expect(knownRole(wolf, 'player_10')).toBeNull();
+    expect(knownSide(wolf, 'player_10')).toBe('wolves');
+    const packWin = {
+      ...wolf,
+      over: true,
+      winner: 'wolves' as const,
+      alive: ['player_6', 'player_10'],
+    };
+    expect(winnersOf(packWin)).toEqual(['player_6', 'player_10']);
+  });
+
+  it('says whether a role won, a neutral on its own result', () => {
+    expect(roleWon('illusionist', 'wolves')).toBe(true);
+    expect(roleWon('healer', 'wolves')).toBe(false);
+    expect(roleWon('necromancer', 'necromancer')).toBe(true);
+    expect(roleWon('necromancer', 'serial_killer')).toBe(false);
+    expect(roleWon('healer', 'draw')).toBe(false);
+    expect(roleWon('fortune_teller', 'villagers', 'won (2 points)')).toBe(true);
+    expect(roleWon('speculator', 'villagers', 'lost')).toBe(false);
+  });
+
+  it('reads the neutral’s result as the line under the winner’s', () => {
+    expect(neutralLine(p3)).toBe('The fortune teller won, with 2 points');
+    expect(neutralLine(necro)).toBe('The speculator lost');
+    expect(neutralLine({ ...necro, neutralResult: 'won' })).toBe(
+      'The speculator’s pick won',
+    );
+    expect(neutralLine({ ...p3, neutralResult: 'lost (1 points)' })).toBe(
+      'The fortune teller lost, with 1 point',
+    );
+    // a nine-seat game has no neutral
+    expect(neutralLine(view)).toBeNull();
+  });
+
+  it('names the ten-seat causes in the case file’s fates', () => {
+    expect(fateOf(p3, 'player_5')).toBe('night 1, a sigil');
   });
 });

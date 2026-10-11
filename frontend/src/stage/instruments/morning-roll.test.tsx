@@ -35,7 +35,7 @@ describe('MorningRoll', () => {
   });
 
   it('uses the game’s words for each attacker type', () => {
-    const d = (types: RollRow['types']): RollRow => ({
+    const d = (types: Extract<RollRow, { kind: 'death' }>['types']): RollRow => ({
       kind: 'death',
       player: 'player_2',
       role: 'wolf',

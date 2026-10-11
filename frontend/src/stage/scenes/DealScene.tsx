@@ -9,8 +9,9 @@
  * - everyone: the table seated; the cards dealt, the plate reading the cast counts;
  * - a seated human: their own card comes down large and turns face up, and the box says who
  *   they are and what they do at night;
- * - a wolf: the packmate's chip takes the red edge and its small card turns to the wolf, and
- *   the pack chat opens with the game master's line;
+ * - a wolf: the packmate's chip takes the red edge and its small card turns to the pack's
+ *   card (the side's mark, "Your pack": a mate's role is not on the wire), and the pack chat
+ *   opens with the game master's line;
  * - the X-ray: all nine small cards turn at once and the wing takes its strips and badges;
  * - then the day begins: cards and chips go up, the paint goes to day, the stand returns.
  *
@@ -19,7 +20,7 @@
  */
 import type { SceneBeat } from '../beats/types';
 import { Layer } from '../Stage';
-import { CardBack, RoleCard, SmallCard } from '../instruments/Card';
+import { CardBack, PackCard, RoleCard, SmallCard } from '../instruments/Card';
 import { Chip } from '../instruments/Chip';
 import {
   CardButton,
@@ -31,7 +32,7 @@ import {
 } from '../instruments/Notice';
 import { StringDrop } from '../instruments/StringDrop';
 import { bigCard, chipRow, rowX, smallCards } from '../instruments/flies';
-import { CARD_TEXT } from '../card-text';
+import { cardTextFor, isNineSeat } from '../card-text';
 import { diningCarPlan } from '../paint/dining-car';
 import type { Special } from '../paint/draw';
 import { ROLE_ARTICLE } from '../paint/role-kit';
@@ -65,7 +66,7 @@ function DealBeat({ view, beat, me, presentation, turn }: SceneProps) {
   const side = sideOpen(presentation);
   const g = geometry(hud, side);
   const plan = diningCarPlan({ phase, hud, side });
-  const row = chipRow(g, plan, 'high');
+  const row = chipRow(g, plan, 'high', view.seats.length);
   const sc = smallCards(g, row);
   const seats = view.seats;
   const H = STAGE_H;
@@ -75,12 +76,11 @@ function DealBeat({ view, beat, me, presentation, turn }: SceneProps) {
   const mate = card?.pack?.find((p) => p !== me) ?? null;
   const packShown = mate !== null && at('deal.your-pack');
 
-  // what this viewer knows of each small card at this beat
-  const known = (seat: string): string | null => {
-    if (xray) return view.xray.roles[seat] ?? null;
-    if (packShown && seat === mate) return 'wolf';
-    return null;
-  };
+  // what this viewer knows of each small card at this beat: a role (the X-ray's), or a pack
+  // mate, whose role the wire never says (its card shows the pack, not a role)
+  const known = (seat: string): string | null =>
+    xray ? (view.xray.roles[seat] ?? null) : null;
+  const mateCard = (seat: string) => !xray && packShown && seat === mate;
   const yours = id === 'deal.your-card' && !!myRole;
   // your card was the big one from its beat on; its small one is not hung again
   const mineAway = (seat: string) => seat === me && !!myRole && at('deal.your-card');
@@ -191,6 +191,8 @@ function DealBeat({ view, beat, me, presentation, turn }: SceneProps) {
                       turn={turning}
                       turnDelay={0.3 + i * 0.08}
                     />
+                  ) : mateCard(seat) ? (
+                    <PackCard seat={n} w={sc.w} turn={turning} turnDelay={0.3 + i * 0.08} />
                   ) : (
                     <CardBack w={sc.w} />
                   )}
@@ -214,6 +216,7 @@ function DealBeat({ view, beat, me, presentation, turn }: SceneProps) {
               w={big.w}
               turn={yours && animate}
               turnDelay={1.9}
+              legacy={isNineSeat(view)}
             />
           </StringDrop>
         ) : null}
@@ -252,6 +255,9 @@ function DealBeat({ view, beat, me, presentation, turn }: SceneProps) {
   );
 }
 
+/** The table's size in words, from the roster: nine-seat archives and the ten-seat deal. */
+const TABLE_SIZE: Record<number, string> = { 9: 'Nine', 10: 'Ten' };
+
 /** The box at the foot for each beat of the deal. */
 function DealWords({
   id,
@@ -272,7 +278,10 @@ function DealWords({
   switch (id) {
     case 'deal.table-seated':
       return (
-        <Notice title="Nine at the table" {...t}>
+        <Notice
+          title={`${TABLE_SIZE[view.seats.length] ?? view.seats.length} at the table`}
+          {...t}
+        >
           The seats are taken, in order. Nothing is known yet.
         </Notice>
       );
@@ -292,7 +301,7 @@ function DealWords({
       const bullets = view.me.role?.bullets ?? null;
       return (
         <Notice sigil={myRole} title={`You are ${ROLE_ARTICLE[myRole] ?? myRole}`} {...t}>
-          {CARD_TEXT[myRole]?.night}
+          {cardTextFor(myRole, isNineSeat(view))?.night}
           {myRole === 'vigilante' && bullets !== null ? <Caps n={bullets} /> : null}
         </Notice>
       );
