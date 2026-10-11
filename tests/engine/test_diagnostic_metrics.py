@@ -233,3 +233,35 @@ def test_no_metric_pushes_as_validated_until_revalidated_on_the_ten_seat_game():
     from Agents.compute_metrics import VALIDATED_BASKET_METRICS
     for name in VALIDATED_BASKET_METRICS:
         assert _metric_tier(name) == "diagnostic", name
+
+
+def test_a_ten_seat_game_is_scored_from_its_night_records():
+    # Pilot game 286816b0 (serial killer, speculator), checked by hand against its engine record.
+    import json
+    from pathlib import Path
+
+    from Agents.schemas.roles import ROLE_SPECS, WOLVES
+
+    r = json.loads((Path(__file__).parents[1] / "fixtures" / "ten_seat_game_record.json").read_text())
+    m = Metrics(day_resolutions=r["day_resolutions"], night_resolutions=r["night_resolutions"])
+    dead = {d.voted_player for d in m.day_resolutions if d.voted_player} | {p for n in m.night_resolutions for p in n.deaths}
+    alive = [p for p in r["roles"] if p not in dead]
+    result = {"roles": r["roles"], "current_day": r["current_day"], "winner": r["winner"],
+              "neutral_result": r["neutral_result"], "day_channel": [],
+              "surviving_wolves": [p for p in alive if ROLE_SPECS[r["roles"][p]].side == WOLVES],
+              "surviving_villagers": [p for p in alive if ROLE_SPECS[r["roles"][p]].side != WOLVES]}
+    g = compute_game_metrics(result, m)
+    # Lynched the illusionist, the chanteuse and the serial killer.
+    assert g.correct_elimination_rate == 1.0 and g.lone_killer_lynched == 1
+    assert g.healer_save_count == 1 and g.healer_town_save_rate == 0.5
+    assert g.investigator_finds_total == 0  # its one check read Not suspicious, and it died that night
+    assert g.sk_kills_landed == 4 and g.sk_kill_rate == 1.0
+    assert g.power_roles_killed_by_evil == 5
+    assert (g.vigilante_shots_taken, g.vigilante_bullets_unused) == (0, 2)
+    # Blocked the immune serial killer, the trailseer's follow, and the night's victim (no action left).
+    assert (g.chanteuse_blocks, g.chanteuse_blocks_real, g.chanteuse_blocks_wasted) == (3, 1, 2)
+    assert (g.illusionist_conceals, g.illusionist_conceals_hid_record) == (1, 1)
+    assert (g.speculator_pick_night, g.speculator_pick_side, g.speculator_won) == (3, "town", 1)
+    assert (g.sentinel_watches, g.sentinel_watches_naming_evil) == (2, 1)
+    assert (g.trailseer_follows, g.sigilist_sigils, g.sigilist_hits) == (3, 2, 0)
+    assert g.necromancer_nights_survived is None and g.fortune_teller_points is None

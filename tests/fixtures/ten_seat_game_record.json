@@ -1,0 +1,1007 @@
+{
+ "game_id": "286816b0-f239-4ac9-815f-89a68eff5641",
+ "roles": {
+  "player_1": "speculator",
+  "player_10": "serial_killer",
+  "player_2": "illusionist",
+  "player_3": "sigilist",
+  "player_4": "investigator",
+  "player_5": "sentinel",
+  "player_6": "chanteuse",
+  "player_7": "healer",
+  "player_8": "vigilante",
+  "player_9": "trailseer"
+ },
+ "winner": "villagers",
+ "current_day": 5,
+ "neutral_result": "won",
+ "day_resolutions": [
+  {
+   "day": 1,
+   "no_vote": true,
+   "tied_players": [],
+   "vote_counts": {},
+   "voted_player": null,
+   "voted_player_role": null,
+   "votes": []
+  },
+  {
+   "day": 2,
+   "no_vote": false,
+   "tied_players": [
+    "abstain",
+    "player_3"
+   ],
+   "vote_counts": {
+    "abstain": 4,
+    "player_1": 1,
+    "player_3": 4
+   },
+   "voted_player": null,
+   "voted_player_role": null,
+   "votes": [
+    {
+     "votee": "abstain",
+     "voter": "player_1"
+    },
+    {
+     "votee": "player_3",
+     "voter": "player_2"
+    },
+    {
+     "votee": "abstain",
+     "voter": "player_3"
+    },
+    {
+     "votee": "abstain",
+     "voter": "player_5"
+    },
+    {
+     "votee": "player_3",
+     "voter": "player_6"
+    },
+    {
+     "votee": "player_1",
+     "voter": "player_7"
+    },
+    {
+     "votee": "abstain",
+     "voter": "player_8"
+    },
+    {
+     "votee": "player_3",
+     "voter": "player_9"
+    },
+    {
+     "votee": "player_3",
+     "voter": "player_10"
+    }
+   ]
+  },
+  {
+   "day": 3,
+   "no_vote": false,
+   "tied_players": [],
+   "vote_counts": {
+    "player_2": 6,
+    "player_5": 1
+   },
+   "voted_player": "player_2",
+   "voted_player_role": "illusionist",
+   "votes": [
+    {
+     "votee": "player_2",
+     "voter": "player_1"
+    },
+    {
+     "votee": "player_5",
+     "voter": "player_2"
+    },
+    {
+     "votee": "player_2",
+     "voter": "player_5"
+    },
+    {
+     "votee": "player_2",
+     "voter": "player_6"
+    },
+    {
+     "votee": "player_2",
+     "voter": "player_8"
+    },
+    {
+     "votee": "player_2",
+     "voter": "player_9"
+    },
+    {
+     "votee": "player_2",
+     "voter": "player_10"
+    }
+   ]
+  },
+  {
+   "day": 4,
+   "no_vote": false,
+   "tied_players": [],
+   "vote_counts": {
+    "player_1": 1,
+    "player_6": 4
+   },
+   "voted_player": "player_6",
+   "voted_player_role": "chanteuse",
+   "votes": [
+    {
+     "votee": "player_6",
+     "voter": "player_1"
+    },
+    {
+     "votee": "player_1",
+     "voter": "player_6"
+    },
+    {
+     "votee": "player_6",
+     "voter": "player_8"
+    },
+    {
+     "votee": "player_6",
+     "voter": "player_9"
+    },
+    {
+     "votee": "player_6",
+     "voter": "player_10"
+    }
+   ]
+  },
+  {
+   "day": 5,
+   "no_vote": false,
+   "tied_players": [],
+   "vote_counts": {
+    "player_1": 1,
+    "player_10": 2
+   },
+   "voted_player": "player_10",
+   "voted_player_role": "serial_killer",
+   "votes": [
+    {
+     "votee": "player_10",
+     "voter": "player_1"
+    },
+    {
+     "votee": "player_10",
+     "voter": "player_9"
+    },
+    {
+     "votee": "player_1",
+     "voter": "player_10"
+    }
+   ]
+  }
+ ],
+ "night_resolutions": [
+  {
+   "choices": [
+    {
+     "actor": "player_7",
+     "kind": "protect",
+     "role": "healer",
+     "role_named": null,
+     "target": "player_8",
+     "via": null
+    },
+    {
+     "actor": "player_4",
+     "kind": "investigate",
+     "role": "investigator",
+     "role_named": null,
+     "target": "player_9",
+     "via": null
+    },
+    {
+     "actor": "player_2",
+     "kind": "kill",
+     "role": "illusionist",
+     "role_named": null,
+     "target": "player_8",
+     "via": null
+    },
+    {
+     "actor": "player_6",
+     "kind": "block",
+     "role": "chanteuse",
+     "role_named": null,
+     "target": "player_10",
+     "via": null
+    },
+    {
+     "actor": "player_5",
+     "kind": "watch",
+     "role": "sentinel",
+     "role_named": null,
+     "target": "player_1",
+     "via": null
+    },
+    {
+     "actor": "player_10",
+     "kind": "kill",
+     "role": "serial_killer",
+     "role_named": null,
+     "target": "player_4",
+     "via": null
+    },
+    {
+     "actor": "player_3",
+     "kind": "sigil",
+     "role": "sigilist",
+     "role_named": null,
+     "target": "player_10",
+     "via": null
+    },
+    {
+     "actor": "player_9",
+     "kind": "follow",
+     "role": "trailseer",
+     "role_named": null,
+     "target": "player_7",
+     "via": null
+    },
+    {
+     "actor": "player_8",
+     "kind": "hold_fire",
+     "role": "vigilante",
+     "role_named": null,
+     "target": null,
+     "via": null
+    }
+   ],
+   "day": 1,
+   "deaths": [
+    "player_4"
+   ],
+   "healer_saved": false,
+   "healer_target": null,
+   "investigator_target": null,
+   "investigator_target_role": null,
+   "kill_successful": false,
+   "outcome": {
+    "attackers": [
+     "player_2",
+     "player_10"
+    ],
+    "attacks_on": {
+     "player_10": [
+      {
+       "attacker": "player_3",
+       "attacker_type": "sigilist"
+      }
+     ],
+     "player_4": [
+      {
+       "attacker": "player_10",
+       "attacker_type": "serial_killer"
+      }
+     ],
+     "player_8": [
+      {
+       "attacker": "player_2",
+       "attacker_type": "wolves"
+      }
+     ]
+    },
+    "bets": [],
+    "blocked": [],
+    "blocks_without_effect": [
+     "player_10"
+    ],
+    "concealed": [],
+    "deaths": [
+     "player_4"
+    ],
+    "night": 1,
+    "picks": [],
+    "self_bets": [],
+    "suspicious": [
+     "player_2",
+     "player_6"
+    ],
+    "verdicts": {
+     "player_10": "immune",
+     "player_4": "killed",
+     "player_8": "saved"
+    },
+    "visits": [
+     [
+      "player_7",
+      "player_8"
+     ],
+     [
+      "player_4",
+      "player_9"
+     ],
+     [
+      "player_2",
+      "player_8"
+     ],
+     [
+      "player_6",
+      "player_10"
+     ],
+     [
+      "player_5",
+      "player_1"
+     ],
+     [
+      "player_10",
+      "player_4"
+     ],
+     [
+      "player_3",
+      "player_10"
+     ],
+     [
+      "player_9",
+      "player_7"
+     ]
+    ]
+   },
+   "records": [
+    {
+     "action": "protect",
+     "actor": "player_7",
+     "day": 1,
+     "outcome": "player_8 was attacked by the wolves, and your protection saved them.",
+     "result": "saved",
+     "seen": [],
+     "target": "player_8"
+    },
+    {
+     "action": "investigate",
+     "actor": "player_4",
+     "day": 1,
+     "outcome": "player_9 reads Not suspicious.",
+     "result": "not_suspicious",
+     "seen": [
+      "player_9"
+     ],
+     "target": "player_9"
+    },
+    {
+     "action": "kill",
+     "actor": "wolves",
+     "day": 1,
+     "outcome": "player_8 survived: the healer saved them.",
+     "result": "saved",
+     "seen": [],
+     "target": "player_8"
+    },
+    {
+     "action": "block",
+     "actor": "player_6",
+     "day": 1,
+     "outcome": "Your block did not affect player_10.",
+     "result": "no_effect",
+     "seen": [],
+     "target": "player_10"
+    },
+    {
+     "action": "watch",
+     "actor": "player_5",
+     "day": 1,
+     "outcome": "No one visited player_1 tonight.",
+     "result": "seen",
+     "seen": [],
+     "target": "player_1"
+    },
+    {
+     "action": "kill",
+     "actor": "player_10",
+     "day": 1,
+     "outcome": "player_4 died. They were a investigator.",
+     "result": "killed",
+     "seen": [],
+     "target": "player_4"
+    },
+    {
+     "action": "sigil",
+     "actor": "player_3",
+     "day": 1,
+     "outcome": "Your sigil had no effect.",
+     "result": "miss",
+     "seen": [],
+     "target": "player_10"
+    },
+    {
+     "action": "follow",
+     "actor": "player_9",
+     "day": 1,
+     "outcome": "Tonight player_7 visited player_8.",
+     "result": "seen",
+     "seen": [
+      "player_8"
+     ],
+     "target": "player_7"
+    },
+    {
+     "action": "hold_fire",
+     "actor": "player_8",
+     "day": 1,
+     "outcome": "You held your fire.",
+     "result": "held",
+     "seen": [],
+     "target": null
+    }
+   ],
+   "serial_killer_kill_landed": false,
+   "serial_killer_target": null,
+   "serial_killer_target_role": null,
+   "sk_before": 1,
+   "town_before": 6,
+   "vigilante_kill_landed": false,
+   "vigilante_target": null,
+   "vigilante_target_role": null,
+   "wolf_target_role": "vigilante",
+   "wolves_before": 2,
+   "wolves_target": "player_8"
+  },
+  {
+   "choices": [
+    {
+     "actor": "player_7",
+     "kind": "protect",
+     "role": "healer",
+     "role_named": null,
+     "target": "player_9",
+     "via": null
+    },
+    {
+     "actor": "player_6",
+     "kind": "kill",
+     "role": "chanteuse",
+     "role_named": null,
+     "target": "player_3",
+     "via": null
+    },
+    {
+     "actor": "player_2",
+     "kind": "conceal",
+     "role": "illusionist",
+     "role_named": null,
+     "target": null,
+     "via": null
+    },
+    {
+     "actor": "player_6",
+     "kind": "block",
+     "role": "chanteuse",
+     "role_named": null,
+     "target": "player_9",
+     "via": null
+    },
+    {
+     "actor": "player_5",
+     "kind": "watch",
+     "role": "sentinel",
+     "role_named": null,
+     "target": "player_3",
+     "via": null
+    },
+    {
+     "actor": "player_10",
+     "kind": "kill",
+     "role": "serial_killer",
+     "role_named": null,
+     "target": "player_7",
+     "via": null
+    },
+    {
+     "actor": "player_3",
+     "kind": "sigil",
+     "role": "sigilist",
+     "role_named": null,
+     "target": "player_2",
+     "via": null
+    },
+    {
+     "actor": "player_9",
+     "kind": "follow",
+     "role": "trailseer",
+     "role_named": null,
+     "target": "player_3",
+     "via": null
+    },
+    {
+     "actor": "player_8",
+     "kind": "hold_fire",
+     "role": "vigilante",
+     "role_named": null,
+     "target": null,
+     "via": null
+    }
+   ],
+   "day": 2,
+   "deaths": [
+    "player_3",
+    "player_7"
+   ],
+   "healer_saved": false,
+   "healer_target": null,
+   "investigator_target": null,
+   "investigator_target_role": null,
+   "kill_successful": true,
+   "outcome": {
+    "attackers": [
+     "player_6",
+     "player_10"
+    ],
+    "attacks_on": {
+     "player_3": [
+      {
+       "attacker": "player_6",
+       "attacker_type": "wolves"
+      }
+     ],
+     "player_7": [
+      {
+       "attacker": "player_10",
+       "attacker_type": "serial_killer"
+      }
+     ]
+    },
+    "bets": [],
+    "blocked": [
+     "player_9"
+    ],
+    "blocks_without_effect": [],
+    "concealed": [
+     "player_3"
+    ],
+    "deaths": [
+     "player_3",
+     "player_7"
+    ],
+    "night": 2,
+    "picks": [],
+    "self_bets": [],
+    "suspicious": [
+     "player_2",
+     "player_6"
+    ],
+    "verdicts": {
+     "player_3": "killed",
+     "player_7": "killed"
+    },
+    "visits": [
+     [
+      "player_7",
+      "player_9"
+     ],
+     [
+      "player_2",
+      "player_3"
+     ],
+     [
+      "player_6",
+      "player_9"
+     ],
+     [
+      "player_5",
+      "player_3"
+     ],
+     [
+      "player_10",
+      "player_7"
+     ],
+     [
+      "player_3",
+      "player_2"
+     ]
+    ]
+   },
+   "records": [
+    {
+     "action": "protect",
+     "actor": "player_7",
+     "day": 2,
+     "outcome": "No attack on player_9 was announced.",
+     "result": "no_attack",
+     "seen": [],
+     "target": "player_9"
+    },
+    {
+     "action": "kill",
+     "actor": "wolves",
+     "day": 2,
+     "outcome": "player_3 died. Their role was concealed.",
+     "result": "killed",
+     "seen": [],
+     "target": "player_3"
+    },
+    {
+     "action": "conceal",
+     "actor": "player_2",
+     "day": 2,
+     "outcome": "You concealed player_3's body. They were a sigilist.",
+     "result": "concealed",
+     "seen": [
+      "sigilist"
+     ],
+     "target": null
+    },
+    {
+     "action": "block",
+     "actor": "player_6",
+     "day": 2,
+     "outcome": "player_9 was roleblocked tonight.",
+     "result": "blocked",
+     "seen": [],
+     "target": "player_9"
+    },
+    {
+     "action": "watch",
+     "actor": "player_5",
+     "day": 2,
+     "outcome": "Tonight player_3 was visited by player_2.",
+     "result": "seen",
+     "seen": [
+      "player_2"
+     ],
+     "target": "player_3"
+    },
+    {
+     "action": "kill",
+     "actor": "player_10",
+     "day": 2,
+     "outcome": "player_7 died. They were a healer.",
+     "result": "killed",
+     "seen": [],
+     "target": "player_7"
+    },
+    {
+     "action": "sigil",
+     "actor": "player_3",
+     "day": 2,
+     "outcome": "Your sigil had no effect.",
+     "result": "miss",
+     "seen": [],
+     "target": "player_2"
+    },
+    {
+     "action": "follow",
+     "actor": "player_9",
+     "day": 2,
+     "outcome": "You were roleblocked: your action was not carried out and you learned nothing tonight.",
+     "result": "roleblocked",
+     "seen": [],
+     "target": "player_3"
+    },
+    {
+     "action": "hold_fire",
+     "actor": "player_8",
+     "day": 2,
+     "outcome": "You held your fire.",
+     "result": "held",
+     "seen": [],
+     "target": null
+    }
+   ],
+   "serial_killer_kill_landed": false,
+   "serial_killer_target": null,
+   "serial_killer_target_role": null,
+   "sk_before": 1,
+   "town_before": 5,
+   "vigilante_kill_landed": false,
+   "vigilante_target": null,
+   "vigilante_target_role": null,
+   "wolf_target_role": "sigilist",
+   "wolves_before": 2,
+   "wolves_target": "player_3"
+  },
+  {
+   "choices": [
+    {
+     "actor": "player_6",
+     "kind": "kill",
+     "role": "chanteuse",
+     "role_named": null,
+     "target": "player_5",
+     "via": null
+    },
+    {
+     "actor": "player_6",
+     "kind": "block",
+     "role": "chanteuse",
+     "role_named": null,
+     "target": "player_5",
+     "via": null
+    },
+    {
+     "actor": "player_10",
+     "kind": "kill",
+     "role": "serial_killer",
+     "role_named": null,
+     "target": "player_5",
+     "via": null
+    },
+    {
+     "actor": "player_1",
+     "kind": "pick",
+     "role": "speculator",
+     "role_named": null,
+     "target": "town",
+     "via": null
+    },
+    {
+     "actor": "player_9",
+     "kind": "follow",
+     "role": "trailseer",
+     "role_named": null,
+     "target": "player_1",
+     "via": null
+    },
+    {
+     "actor": "player_8",
+     "kind": "hold_fire",
+     "role": "vigilante",
+     "role_named": null,
+     "target": null,
+     "via": null
+    }
+   ],
+   "day": 3,
+   "deaths": [
+    "player_5"
+   ],
+   "healer_saved": false,
+   "healer_target": null,
+   "investigator_target": null,
+   "investigator_target_role": null,
+   "kill_successful": true,
+   "outcome": {
+    "attackers": [
+     "player_6",
+     "player_10"
+    ],
+    "attacks_on": {
+     "player_5": [
+      {
+       "attacker": "player_6",
+       "attacker_type": "wolves"
+      },
+      {
+       "attacker": "player_10",
+       "attacker_type": "serial_killer"
+      }
+     ]
+    },
+    "bets": [],
+    "blocked": [
+     "player_5"
+    ],
+    "blocks_without_effect": [],
+    "concealed": [],
+    "deaths": [
+     "player_5"
+    ],
+    "night": 3,
+    "picks": [
+     [
+      "player_1",
+      "town"
+     ]
+    ],
+    "self_bets": [],
+    "suspicious": [
+     "player_2",
+     "player_6"
+    ],
+    "verdicts": {
+     "player_5": "killed"
+    },
+    "visits": [
+     [
+      "player_6",
+      "player_5"
+     ],
+     [
+      "player_6",
+      "player_5"
+     ],
+     [
+      "player_10",
+      "player_5"
+     ],
+     [
+      "player_9",
+      "player_1"
+     ]
+    ]
+   },
+   "records": [
+    {
+     "action": "kill",
+     "actor": "wolves",
+     "day": 3,
+     "outcome": "player_5 died. They were a sentinel.",
+     "result": "killed",
+     "seen": [],
+     "target": "player_5"
+    },
+    {
+     "action": "block",
+     "actor": "player_6",
+     "day": 3,
+     "outcome": "player_5 was roleblocked tonight.",
+     "result": "blocked",
+     "seen": [],
+     "target": "player_5"
+    },
+    {
+     "action": "kill",
+     "actor": "player_10",
+     "day": 3,
+     "outcome": "player_5 died. They were a sentinel.",
+     "result": "killed",
+     "seen": [],
+     "target": "player_5"
+    },
+    {
+     "action": "pick",
+     "actor": "player_1",
+     "day": 3,
+     "outcome": "You picked town. The morning will announce the pick, not you.",
+     "result": "picked",
+     "seen": [
+      "town"
+     ],
+     "target": "town"
+    },
+    {
+     "action": "follow",
+     "actor": "player_9",
+     "day": 3,
+     "outcome": "player_1 visited no one tonight.",
+     "result": "seen",
+     "seen": [],
+     "target": "player_1"
+    },
+    {
+     "action": "hold_fire",
+     "actor": "player_8",
+     "day": 3,
+     "outcome": "You held your fire.",
+     "result": "held",
+     "seen": [],
+     "target": null
+    }
+   ],
+   "serial_killer_kill_landed": false,
+   "serial_killer_target": null,
+   "serial_killer_target_role": null,
+   "sk_before": 1,
+   "town_before": 3,
+   "vigilante_kill_landed": false,
+   "vigilante_target": null,
+   "vigilante_target_role": null,
+   "wolf_target_role": "sentinel",
+   "wolves_before": 1,
+   "wolves_target": "player_5"
+  },
+  {
+   "choices": [
+    {
+     "actor": "player_10",
+     "kind": "kill",
+     "role": "serial_killer",
+     "role_named": null,
+     "target": "player_8",
+     "via": null
+    },
+    {
+     "actor": "player_9",
+     "kind": "follow",
+     "role": "trailseer",
+     "role_named": null,
+     "target": "player_8",
+     "via": null
+    },
+    {
+     "actor": "player_8",
+     "kind": "hold_fire",
+     "role": "vigilante",
+     "role_named": null,
+     "target": null,
+     "via": null
+    }
+   ],
+   "day": 4,
+   "deaths": [
+    "player_8"
+   ],
+   "healer_saved": false,
+   "healer_target": null,
+   "investigator_target": null,
+   "investigator_target_role": null,
+   "kill_successful": false,
+   "outcome": {
+    "attackers": [
+     "player_10"
+    ],
+    "attacks_on": {
+     "player_8": [
+      {
+       "attacker": "player_10",
+       "attacker_type": "serial_killer"
+      }
+     ]
+    },
+    "bets": [],
+    "blocked": [],
+    "blocks_without_effect": [],
+    "concealed": [],
+    "deaths": [
+     "player_8"
+    ],
+    "night": 4,
+    "picks": [],
+    "self_bets": [],
+    "suspicious": [
+     "player_2",
+     "player_6"
+    ],
+    "verdicts": {
+     "player_8": "killed"
+    },
+    "visits": [
+     [
+      "player_10",
+      "player_8"
+     ],
+     [
+      "player_9",
+      "player_8"
+     ]
+    ]
+   },
+   "records": [
+    {
+     "action": "kill",
+     "actor": "player_10",
+     "day": 4,
+     "outcome": "player_8 died. They were a vigilante.",
+     "result": "killed",
+     "seen": [],
+     "target": "player_8"
+    },
+    {
+     "action": "follow",
+     "actor": "player_9",
+     "day": 4,
+     "outcome": "player_8 visited no one tonight.",
+     "result": "seen",
+     "seen": [],
+     "target": "player_8"
+    },
+    {
+     "action": "hold_fire",
+     "actor": "player_8",
+     "day": 4,
+     "outcome": "You held your fire.",
+     "result": "held",
+     "seen": [],
+     "target": null
+    }
+   ],
+   "serial_killer_kill_landed": false,
+   "serial_killer_target": null,
+   "serial_killer_target_role": null,
+   "sk_before": 1,
+   "town_before": 2,
+   "vigilante_kill_landed": false,
+   "vigilante_target": null,
+   "vigilante_target_role": null,
+   "wolf_target_role": null,
+   "wolves_before": 0,
+   "wolves_target": null
+  }
+ ]
+}

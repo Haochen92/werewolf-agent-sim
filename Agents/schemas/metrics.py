@@ -292,6 +292,26 @@ class ComputedGameMetrics(DerivedGameMetrics):
     vigilante_friendly_fire_shots: int | None
     vigilante_bullets_unused: int | None
     vigilante_exit_method: str
+    # The ten-seat roles (Agents/ten_seat_metrics.py; plan 2026-10-11 §8.3). None when the game did
+    # not deal the role, or on a record from before nights kept their full outcome. Unvalidated.
+    lone_killer_lynched: int | None = None          # 0/1: the serial killer or the necromancer voted out
+    chanteuse_blocks: int | None = None
+    chanteuse_blocks_real: int | None = None        # cancelled a town player's action
+    chanteuse_blocks_critical: int | None = None    # ... one that would have hurt the pack
+    chanteuse_blocks_wasted: int | None = None      # an unblockable target, nothing to cancel, or a teammate
+    illusionist_conceals: int | None = None         # conceals that hid a body
+    illusionist_conceals_hid_record: int | None = None  # ... of a town role with an earlier night record
+    necromancer_nights_survived: int | None = None
+    speculator_pick_night: int | None = None        # None = never picked
+    speculator_pick_side: str | None = None         # "none" = never picked
+    speculator_won: int | None = None               # 0/1
+    fortune_teller_points: int | None = None
+    sentinel_watches: int | None = None
+    sentinel_watches_naming_evil: int | None = None  # a watch that named a wolf or the lone killer
+    trailseer_follows: int | None = None
+    trailseer_follows_naming_evil: int | None = None  # a follow that showed an evil player's visit
+    sigilist_sigils: int | None = None
+    sigilist_hits: int | None = None
     # Diagnostic-tier denominators (carried so a reader can filter low-sample games without
     # re-deriving; the rates themselves live on DerivedGameMetrics above).
     power_role_alive_nights: int = 0       # wolf_power_kill_rate denominator

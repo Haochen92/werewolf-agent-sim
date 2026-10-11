@@ -8,6 +8,7 @@ from Agents.schemas.metrics import (
     DerivedGameMetrics,
     Metrics,
 )
+from Agents.ten_seat_metrics import has_night_records, ten_seat_metrics
 from Agents.tracing import langfuse
 
 
@@ -609,6 +610,9 @@ SERIAL_KILLER_METRICS = frozenset({
 
 
 def compute_game_metrics(result: dict, metrics: Metrics) -> ComputedGameMetrics:
+    """The game's metrics. A ten-seat game's nine-seat-only metrics are recomputed from each night's
+    full record (Agents/ten_seat_metrics.py), with the new roles' proxies; a ten-seat record from
+    before nights kept their full outcome leaves them None."""
     computed = _compute_game_metrics(result, metrics)
     dealt = set(result["roles"].values())
     unscored: set[str] = set()
@@ -616,7 +620,10 @@ def compute_game_metrics(result: dict, metrics: Metrics) -> ComputedGameMetrics:
         unscored |= NINE_SEAT_ONLY_METRICS
     if "serial_killer" not in dealt:
         unscored |= SERIAL_KILLER_METRICS
-    return computed.model_copy(update=dict.fromkeys(unscored))
+    update: dict = dict.fromkeys(unscored)
+    if "wolf" not in dealt and has_night_records(metrics):
+        update.update(ten_seat_metrics(result, metrics))
+    return computed.model_copy(update=update)
 
 
 def _compute_game_metrics(result: dict, metrics: Metrics) -> ComputedGameMetrics:
