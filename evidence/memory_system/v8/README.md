@@ -11,7 +11,7 @@ memory improves play.
 | `plan.md` | The current plan. §9 is the final plan and wins over earlier sections |
 | `decisions.md` | How the rulings were reached, with the commit that carried each out |
 | `experiment_log.md` | What was run: the pilot, the extraction model comparison, the day split |
-| `data/` | Run outputs kept for the record (the model comparison's re-extractions) |
+| `data/` | Run outputs kept for the record: the model comparisons' re-extractions, the de-halo comparison, and the seeding's coverage, per-game table, strategy points and rule screen |
 | `prompt_versions/` | The memory prompts as they stood for the seeding |
 
 **Status (2026-10-11).**

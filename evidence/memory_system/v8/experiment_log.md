@@ -24,7 +24,12 @@ with credit, prune and eviction off, and no database or bootstrap store. The pro
 not used: it writes generations to the Postgres the deployed server shares, and its default
 bootstrap is the nine-seat `v7_fixed` store. Synthesis model gemini-3.1-flash-lite.
 - 51 strategy points in 23 of 36 cells.
-- The other 13 cells had fewer than the 4 new observations synthesis requires (`synth_min_new_obs`).
+- The other 13 cells got no points. *Corrected 2026-10-11:* this first said they had fewer than
+  the 4 new observations synthesis requires (`synth_min_new_obs`). That gate is waived for a cell
+  holding fewer than 3 points (`synth_replenish_floor`), so on a fresh store synthesis ran on every
+  cell with observations. Two of the 13 were empty (Chanteuse and Speculator `day_discussion`); in
+  the rest, synthesis made no point from what was there (the Speculator's `day_vote` had 6
+  observations), and the Fortune Teller's night cell got 2 points from 3 observations in 2 games.
 
 **Cost.** $8.08 for the four games, from the Langfuse session total. That is about $2.02 a game:
 about $0.70 play (the balance runs' figure), the rest extraction and dedup. The synthesis pass is
@@ -188,3 +193,61 @@ would call halo; "wrongly erased" means the 3 mechanically supported verdicts tu
   wasted first sigil to "unclear", which the comparison run had kept. The judge varies between runs;
   these are single samples, one game, one reader.
 - The Claude call is not traced through Langfuse; its tokens are in the de-halo record.
+
+## 2026-10-11 — Bulk seeding: 12 games, merge and offline synthesis
+
+**Run.** 12 AI-only games, three per lineup, retrieval off, extraction on (gemini-3.8-flash, fixed
+prompts) with the de-halo pass (Claude Haiku 5.5). Three parallel `run_batch` processes of 4 games
+(`--cycle-lineups`, so each process dealt every lineup once), each dumping to its own store
+(`memory_stores/v8_seed_{a,b,c}`); code at `7640156e`. Records: `batch_results/v8_seed_*/`. Per-game
+table: `data/seeding/games.json`.
+- Winners: town 6, wolves 4, Serial Killer 1, Necromancer 1; 3–6 days. No leak flagged, no failures.
+- **Rate limits.** Three processes on one Vertex quota hit 429s on the game model (flash-lite); the
+  stall rescue covered most. Process c's fourth game (Necromancer + Fortune Teller) lost five
+  discussion turns to technical passes and then had five day votes cast at random by the fallback in
+  one day, so it was stopped before extraction and replaced by one game run alone afterwards
+  (`v8_seed_d`, `--lineup-offset 3`, added for this). Of the 12 kept games, one has a single missed
+  discussion turn (process b, game 4); no kept game has a random vote. Next time: two processes, not
+  three.
+- **De-halo cut off on long games.** Haiku 5.5 thinks by default, and thinking counts against
+  `max_tokens`: four games passed 16k and the JSON was cut off, so the pass was skipped and verdicts
+  kept as extracted. Fixed (`efa232de`: 32k with an explicit timeout); the four games were
+  backfilled after their process finished (`scripts/dehalo_backfill.py`: the same pass on the
+  extraction case, the matching stored verdicts rewritten, the record marked `backfilled`).
+- **Cost:** $16.46 from the Langfuse session totals (including the stopped game's partial run),
+  about $1.35 a game, plus about $0.15 of Haiku de-halo calls (four of them cut off). The merge's
+  dedup and synthesis are not included.
+
+**De-halo over the 12 games:** 146 of 567 verdicts revised (26%), against 5–6 of 40–43 on the smoke
+game. Mostly negative → unclear (90) and positive → unclear (35); 6 negative → positive.
+- A read of one game's 19 revisions: most are fair (blame for a later death or a lost vote that the
+  record does not tie to the move), a few over-correct. A Fortune Teller's death after it did not
+  self-bet was turned to unclear although a self-bet gives immunity by rule; a Sigilist's vote to
+  unclear although the next day's voters plausibly cited it.
+- The stored verdict mix after de-halo: 217 unclear, 169 positive, 129 negative, 38 mixed of 553.
+  The originals are in the de-halo records, so the pass can be re-judged or reverted.
+
+**Merge.** `merge_new_obs` into `memory_stores/v8_seed` (fresh store; flash-lite dedup triage, no
+merge writes): 562 observations, 9 cross-process duplicates collapsed, 553 kept.
+
+**Coverage** (`data/seeding/coverage.md`):
+- Every retrieved cell has observations from 5–12 distinct games (the drawn roles 5–6 of their 6
+  possible, the fixed roles 11–12). No top-up games needed.
+- The day split worked: `day_discussion` holds 8–25 observations per cell (the pilot had 0–4).
+
+**Synthesis.** Offline `consolidate()` on a copy (`memory_stores/v8_seed_synth`; credit, prune and
+eviction off; gemini-3.1-flash-lite): 165 points, 150 after point dedup, in all 36 cells (1–9 a cell).
+The first attempt failed on 429 twelve times; every retry succeeded. No player IDs in any point.
+Provenance (`source_observations`, `synthesis_log.jsonl`) is in the store.
+
+**Rule errors in strategy points** (`data/seeding/rule_screen.md`, one read):
+- 14 of 150 points state a rule the game does not have (8 high confidence, 6 medium). Examples: an
+  Illusionist body gives the Necromancer concealment; a Healer's save is "essentially permanent";
+  on a save the Illusionist's visit is not seen; a sigil can punish a lone killer. Sigilist and
+  Illusionist mechanics account for 8.
+- Traced to source observations, the errors are mostly synthesis over-generalising from facts that
+  are right (two Healer saves of the same player → permanent protection), not extraction mistakes.
+  Synthesis is given the rules block and still does it.
+- **Found on the way, outside memory:** the agents' rules text says the pack's "carrier rotates
+  unless the pack agrees otherwise", but `pack_carrier` only rotates by seat order. Two points
+  follow the rules text.
