@@ -115,7 +115,7 @@ def validate_human_response(request: HumanTurnRequest, raw_response: Any) -> Hum
     if request.phase == "day_channel":
         if response.pass_turn:
             if not request.can_pass:
-                raise HumanTurnContractError("You must respond on this reactive turn.")
+                raise HumanTurnContractError("This turn cannot be passed.")
         elif not (response.message and response.message.strip()):
             raise HumanTurnContractError("Enter a message or choose pass.")
         if response.target is not None:

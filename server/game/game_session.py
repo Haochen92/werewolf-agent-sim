@@ -523,7 +523,11 @@ class GameSession:
             return
         self.park(HumanTurnRequest(
             player_id=seat, role=payload["role"], phase=payload["phase"], day=payload["day"],
-            instruction="", valid_targets=list(payload["valid_targets"]), can_pass=False,
+            instruction="", valid_targets=list(payload["valid_targets"]),
+            # The same rule the engine's own request applies (human_turn.py): a discussion
+            # turn or a pack chat round may be passed, a vote or a night action may not. The
+            # announced question stays the one on record, so it must carry the right rule.
+            can_pass=payload["phase"] in ("day_channel", "wolf_channel"),
             bodies=list(payload.get("bodies") or []),
             dialogue="", day_summaries="", surviving_players=[], dead_roster="",
             alive_roles="", firing_brief="", wolf_channel="", previous_strategy=""))

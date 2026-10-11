@@ -409,6 +409,29 @@ async def test_an_announced_vote_opens_at_once_and_its_answer_waits_for_the_inte
     assert session._graph.calls[1].resume["target"] == "p9"
 
 
+async def test_an_announced_discussion_turn_may_be_passed(quiet_session):
+    """Live testing 2026-10-11: a human in the opening round could not pass. The announced
+    question is the one on record, and it was parked with can_pass=False whatever its phase,
+    so the pass failed the rules check. A discussion turn may always be passed."""
+    value = human_turn_request(player_id="player_3", phase="day_channel", day=1,
+                               valid_targets=[], can_pass=True, day_round="opening").model_dump()
+    interrupt = {"type": "updates", "ns": [], "data": {"__interrupt__": [{"value": value, "id": "int-a"}]}}
+    gate = asyncio.Event()
+    chunk = _announce_chunk(phase="day_channel")
+    chunk["data"]["valid_targets"] = []
+    chunk["data"]["day_round"] = "opening"
+    session = quiet_session(_GatedGraph(chunk, interrupt, gate))
+    session.start()
+    while not session.pending_requests:
+        await asyncio.sleep(0.01)
+    session.submit_turn({"pass_turn": True}, seat="player_3")  # before the interrupt
+    assert not session.pending_requests
+    gate.set()
+    await asyncio.wait_for(session.wait_finished(), timeout=10)
+    assert session.error is None
+    assert session._graph.calls[1].resume["pass_turn"] is True
+
+
 async def test_an_announced_vote_answered_after_the_interrupt_resumes_as_before(quiet_session):
     value = human_turn_request(player_id="player_3", phase="day_votes", day=1,
                                valid_targets=["p9", "abstain"]).model_dump()
