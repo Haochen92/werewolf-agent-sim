@@ -604,8 +604,11 @@ def post_game_analysis(
     # Only mine cells for roles whose memory is ENABLED this arm (e.g. town_only -> town cells only),
     # so a single-role arm builds a true single-role store instead of extracting content no one reads.
     # Absent memory_config (default runs) -> all roles (backward compatible).
+    # Only the roles this game dealt: a ten-seat game deals 10 of the 12, and a cell for an absent
+    # role is paid for and can only invent a game that did not happen.
     mem_cfg = configurable.get("memory_config") or {}
-    extraction_roles = tuple(r for r in EXTRACTION_ROLES if mem_cfg.get(r, True))
+    dealt = set(state.get("roles", {}).values())
+    extraction_roles = tuple(r for r in EXTRACTION_ROLES if r in dealt and mem_cfg.get(r, True))
 
     # Format once, use for both the LLM prompt and the trace span.
     extraction_inputs = format_extraction_inputs(state)
@@ -627,7 +630,7 @@ def post_game_analysis(
         # package for the offline store-builders / experiments that aren't on v6 yet.)
         result = extract_postgame_per_cell(
             extraction_inputs,
-            roles=extraction_roles or EXTRACTION_ROLES,
+            roles=extraction_roles or tuple(r for r in EXTRACTION_ROLES if r in dealt),
             max_workers=extraction_config.max_workers,
             cache_prefix=extraction_config.cache_prefix,
         )

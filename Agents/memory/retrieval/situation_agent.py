@@ -96,8 +96,13 @@ def _computed_dims(payload: dict, available: dict) -> dict[str, int | bool]:
     alive = _computed_players_alive(payload)
     if alive is not None and "players_alive" in available:
         dims["players_alive"] = alive
-    if "bullets_left" in available and payload.get("vigilante_bullets") is not None:
-        dims["bullets_left"] = int(payload["vigilante_bullets"])
+    # The vigilante's day payload names its bullets; its night payload, like every limited-use
+    # role's, carries them as uses_left.
+    bullets = payload.get("vigilante_bullets", payload.get("uses_left"))
+    if "bullets_left" in available and bullets is not None:
+        dims["bullets_left"] = int(bullets)
+    if "uses_left" in available and payload.get("uses_left") is not None:
+        dims["uses_left"] = int(payload["uses_left"])
     if "ally_revealed" in available and payload.get("initial_wolf_count") is not None:
         dims["ally_revealed"] = len(payload.get("surviving_wolves", [])) < int(payload["initial_wolf_count"])
     # Criticality is PUBLIC info too (fixed cast + role-revealing deaths -> the census gives the

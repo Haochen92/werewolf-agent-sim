@@ -28,7 +28,7 @@ _SAMPLE = dict(
     consensus_direction="opposes_my_read", heat_now="no pressure on me",
     target_landscape="two candidates remain, cases purely behavioral",
     forward_exposure="acting now would expose my hand", public_private_text="my finding clashes with the public read",
-    divergence_sign="contradicts", bullets_left=4, ally_revealed=False,
+    divergence_sign="contradicts", bullets_left=4, uses_left=2, ally_revealed=False,
     approach="voted the accused", impact_on_final_game_outcome="NET POSITIVE removed a threat",
     immediate_response="the room followed", net_verdict="positive",
 )

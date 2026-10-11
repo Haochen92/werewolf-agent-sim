@@ -19,14 +19,13 @@ _INPUTS = {
     "lineup": lineup("serial_killer", "speculator"),
 }
 
-# The fan-out runs over the pool; only the roles the v6 cells were built for (the nine-seat game's)
-# have cells, so a ten-seat game extracts healer, investigator, vigilante, serial killer × (day+night).
+# The fan-out runs over the pool, and every pool role has a day and a night cell (plan 2026-10-11 §9).
 _N_CELLS = sum(len(ROLE_UNITS.get(role, [])) for role in EXTRACTION_ROLES)
 
 
-def test_the_cells_are_the_nine_seat_eleven_and_the_pool_reaches_eight():
-    assert sum(len(units) for units in ROLE_UNITS.values()) == 11  # villager day + 5 roles × (day+night)
-    assert _N_CELLS == 8
+def test_every_pool_role_has_a_day_and_a_night_cell():
+    assert all(len(ROLE_UNITS[role]) == 2 for role in EXTRACTION_ROLES)
+    assert _N_CELLS == 24  # 12 roles x (day+night); a game extracts its 10 dealt roles
 
 
 def test_fans_out_obs_only_by_default():

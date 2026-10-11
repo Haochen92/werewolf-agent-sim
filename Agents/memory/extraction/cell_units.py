@@ -20,4 +20,14 @@ ROLE_UNITS: dict[str, list[tuple[str, str, str]]] = {
     "vigilante": [DAY_GROUP, NIGHT_GROUP],
     "wolf": [DAY_GROUP, NIGHT_GROUP],
     "serial_killer": [DAY_GROUP, NIGHT_GROUP],
+    # The ten-seat roles: every one has a day and a night cell (plan 2026-10-11 §9). Town day is
+    # extracted for the owner's review but never retrieved in play (plan_gating).
+    "sentinel": [DAY_GROUP, NIGHT_GROUP],
+    "trailseer": [DAY_GROUP, NIGHT_GROUP],
+    "sigilist": [DAY_GROUP, NIGHT_GROUP],
+    "chanteuse": [DAY_GROUP, NIGHT_GROUP],
+    "illusionist": [DAY_GROUP, NIGHT_GROUP],
+    "necromancer": [DAY_GROUP, NIGHT_GROUP],
+    "speculator": [DAY_GROUP, NIGHT_GROUP],
+    "fortune_teller": [DAY_GROUP, NIGHT_GROUP],
 }
