@@ -1,6 +1,8 @@
-# Memory for the ten-seat cast: launch scope, seeding and batch updates
+# v8 memory: the ten-seat cast — launch scope, seeding and batch updates
 
-Written 2026-10-10; revised 2026-10-11 after the owner discussion and code review.
+Written 2026-10-10; revised 2026-10-11 after the owner discussion and code review. Part of **v8**
+(everything from the ten-seat iteration on; folder `evidence/memory_system/v8/`, see `README.md`).
+How the rulings were reached is in `decisions.md`; what was run is in `experiment_log.md`.
 
 **Status:** planning document, not a record of implemented changes. **The final plan is §9**,
 which overrides §2 and §8 where they differ. In short:
@@ -8,7 +10,8 @@ which overrides §2 and §8 where they differ. In short:
 - the town information roles still choose when to share (no forced disclosure);
 - evil and neutral roles get day/night memory.
 
-D2 and D3 are ruled in §9.1.
+D2 and D3 are ruled in §9.1. The later rulings of 2026-10-11 (extraction model, the day split,
+counterfactual handling, the credit port) are §9.5 and §9.6.
 
 Updating this document does not authorize paid runs or claim that the new pipeline has been
 validated.
@@ -370,12 +373,12 @@ What a seeding game does not save is lost for that game. Before the first paid g
 
 | Role | What to grade or track |
 |---|---|
-| Chanteuse | Tiered blocks. **Critical:** the blocked action would have saved the pack's victim, struck the carrier with a sigil, shot a wolf, read a wolf Suspicious, or shown a wolf's visit to a Sentinel or Trailseer. **Real:** any other town action cancelled. **Wasted or negative:** blocked a teammate or a target with no action. **Proposed, to confirm:** "would have hurt the pack" counts fellow wolves only, not all evil, because the lone killer is the wolves' rival. |
+| Chanteuse | Tiered blocks. **Critical:** the blocked action would have saved the pack's victim, struck the carrier with a sigil, shot a wolf, read a wolf Suspicious, or shown a wolf's visit to a Sentinel or Trailseer. **Real:** any other town action cancelled. **Wasted or negative:** blocked a teammate or a target with no action. "Would have hurt the pack" counts fellow wolves only, not all evil, because the lone killer is the wolves' rival (ruled 2026-10-11, §9.5). |
 | Illusionist | Track two things: the conceal hid a town role that had a record to read out, and the conceal landed on a town role. Claim space (a wolf later claiming the hidden role) is **left out**: whether the claim is made and survives is day play, not attributable to the night action. |
 | Necromancer | Nights survived and win/loss as the proxies. Grading by what the borrowed body's action achieved is **deferred**: rewarding kills alone would push it to kill every night. Both proxies are per game, so neither can credit a single lesson. |
 | Speculator | The pick is graded at game end: the picked side won, lost, or it died unpicked. Pick day is tracked as a descriptive number. Day votes after the pick are graded as a member of the picked side. Day votes before the pick are unscored. |
 | Fortune Teller | Points per bet. Day votes unscored (lynches never score for it). |
-| Sentinel, Trailseer, Sigilist | **Proposed:** results that named an evil visitor (Sentinel, Trailseer); hits per sigil spent (Sigilist). |
+| Sentinel, Trailseer, Sigilist | Results that named an evil visitor (Sentinel, Trailseer); hits per sigil spent (Sigilist). Ruled 2026-10-11, §9.5. |
 
 Every proxy starts as unvalidated. The nine-seat validations do not carry over. The seeding games,
 played with memory off, are the data for re-validating them.
@@ -565,11 +568,10 @@ change. Anything larger goes to the report's limitations and future work (§9.4)
 
 ### 9.3 Then, in order
 
-5. **Pilot:** one game per lineup. Read one full extraction → synthesis → replay path. This replaces
-   the separate prompt experiment: compare old and new prompts on a few cells by eye, check how many
-   cells come back empty, and measure the town day cells' added cost.
-6. **Port the metrics** against the pilot records (§8.2, §8.3; no model cost).
-7. **Bulk seeding**, retrieval off.
+5. **Pilot** (done 2026-10-11, `experiment_log.md`): one game per lineup, extraction and an offline
+   synthesis. It led to §9.5: a cheaper extraction model, the day split, the death-night fix.
+6. **Port the metrics** (done 2026-10-11, `e5763cd1`; §8.2, §8.3; no model cost).
+7. **Bulk seeding** (next), as set in §9.5.
 8. **Synthesize, review, publish** `ten_seat_v1`. The owner's review is v1's quality check (D5:
    credit as a diagnostic). Town day strategies are read for option A.
 9. **Retrieval cadence (D4)** and the situation-summary prompts for the new roles.
@@ -594,3 +596,75 @@ change. Anything larger goes to the report's limitations and future work (§9.4)
 - Necromancer grading by what the borrowed body achieved; Illusionist claim space; neutral day votes
   before the pick; the D2 disclosure judge.
 - Fixed policies (D1, D2, option A lines) are product choices, not proven optimal play.
+
+### 9.5 Rulings and changes later on 2026-10-11 (after the pilot)
+
+Records: `experiment_log.md` (pilot, model comparison, day split) and `decisions.md` (the discussion).
+
+- **Extraction model: gemini-3.8-flash** at its default thinking (medium); backup gemini-2.5-pro
+  (ruled).
+  - Re-extracting two pilot games: about $0.34 a game against 2.5-pro's $1.17, no player IDs, as
+    well grounded.
+  - The price is a promotion ($0.75/$3.75 per 1M) to 2026-12-31, then double.
+  - Vertex prices are not confirmed.
+- **The day is two extraction calls, discussion and vote** (ruled). One shared day call filed nearly
+  every day observation under the vote. Re-extracting one game: 0 → 16 discussion lessons, for
+  about $0.18 more a game.
+- **The extractor sees a role's last night, marked "never told"** (defect fixed). Game state drops
+  a dying actor's record; extraction now reads each night's full record.
+- **Synthesis provenance** for the portfolio's worked example (ruled):
+  - each strategy point keeps `source_observations`;
+  - each synthesis call's input and output goes to `synthesis_log.jsonl`;
+  - the tick's snapshot keeps the log;
+  - a dedup survivor keeps only its own list, which is enough for a showcase.
+- **Counterfactual conclusions: option A** (ruled). The extraction wording stays as §9.2 left it.
+  About 6 of 66 observations in the pilot read still drew counterfactual or hindsight conclusions.
+  The guards are synthesis's "no opposite of a failure" rule and the owner's review of strategy
+  points. Stronger wording (option B) risked dropping supported, mechanically checkable lessons.
+- **New-role proxies** (ruled): the Chanteuse's critical blocks count fellow wolves only; Sentinel
+  and Trailseer results naming an evil player; Sigilist hits per sigil. Built in `e5763cd1`.
+- **Seeding** (ruled):
+  - 12 AI-only games via `run_batch --configs extract_only --cycle-lineups`, 3 per lineup; retrieval
+    off, extraction on, fresh store;
+  - about $1.40 a game (about $0.9 play, about $0.5 extraction), so about $17;
+  - synthesis offline with `consolidate()` (credit, prune and evict off) on a copy of the store,
+    not the tick (see §9.6).
+- **Demo and portfolio direction** (agreed):
+  - one worked example on the portfolio: source observations (expandable, "N of M shown") →
+    synthesized strategy → its later use with the agent's verdict, from the seeding plus the gate
+    pilot;
+  - the app shows a small teaser linking to it, and the memory inspector links "How was this
+    strategy created?";
+  - a credit-informed example is the optional second, traced from the v7 records (deferred; owner
+    KIV);
+  - none of it is a claim that a strategy improved play.
+
+### 9.6 What the credit system needs before it runs (after launch, D5: diagnostic first)
+
+The per-game metrics are ported (`e5763cd1`). Credit runs on per-decision grades in
+`Agents/memory/consolidation/`, which need their own port:
+
+1. **Decision grades by side** (`credit_rules.py`, `decision_scoring.py`, `credit.py`):
+   - votes: the pack by blending with the room; the lone killer as the serial killer was; town as
+     before; the Speculator after its pick as its picked side; before the pick, and the Fortune
+     Teller always, unscored;
+   - nights per §8.2 and §8.3 (the investigator on a delivered Suspicious; the vigilante by side;
+     the healer against any attacker; the Chanteuse's tiers; ...); the Necromancer per game only;
+   - the evil roles' concealment rule extended to the new evil roles.
+2. **A followed pack-chat lesson is graded by the pack's kill that night** (ruled). Chat, kill and
+   skill share the `night_action` namespace; each eval case carries its turn kind.
+3. **Drop the conversion channel.** It credits strategies retrieved on town day turns, which no
+   longer happen.
+4. **A missing baseline reads unscored, not 0.** The seeding games, graded by the same new rules,
+   serve as the memory-off baseline.
+5. **The tick on its own database.** The Postgres in `WW_POSTGRES_DSN` holds the nine-seat
+   `demo_gen1` store at generation 1 (723 records); a ten-seat tick would fold onto it. Use a
+   separate database (`--dsn`) or archive and reset. Point `--bootstrap-store` at the ten-seat store,
+   not the default `v7_fixed`.
+6. **Data:** AI-only games with memory on (retrieval on, extraction off). A strategy needs 5
+   scored follows before its track record enters synthesis, and 8 before it can be pruned.
+7. **Validate the thresholds** (prune at −0.15 with ≥8 follows, protect with ≥2) on the ten-seat
+   game before credit gains authority.
+
+Additional limitation, kept for the report: on Vertex, the cache discount and the batch discount do
+not stack (§9.4, batch extraction).

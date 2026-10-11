@@ -15,7 +15,7 @@ engine can ask of it, and an archived nine-seat replay still plays. Then user te
 Owner's, before the pass: the side is **Town**, not Villagers, UI-wide (2026-10-07); the
 reanimated attacker kinds use the body kind's icon, no new icons (2026-10-10); memory stays
 off for the ten-seat game until a store exists for it (the seeding runs in parallel,
-`evidence/memory_system/ten_seat_seeding/plan.md`); no balance dials in this pass.
+`evidence/memory_system/v8/plan.md`); no balance dials in this pass.
 
 Mine, flagged for the owner (change here first if overruled):
 

@@ -53,7 +53,7 @@ SUMMARY_THINKING_BY_MODEL = {
 # The post-game extraction model. gemini-3.8-flash since 2026-10-11: re-extracting two ten-seat pilot
 # games, it cost about $0.34 a game against 2.5-pro's $1.17 (promo price, $0.75/$3.75 per 1M to
 # 2026-12-31, then $1.50/$7.50), wrote fewer observations with no player IDs, and read as well
-# grounded (evidence/memory_system/ten_seat_seeding/experiment_log.md). 3.5-flash-lite was cheaper
+# grounded (evidence/memory_system/v8/experiment_log.md). 3.5-flash-lite was cheaper
 # still but leaked player IDs into 41% of one game's observations.
 DEFAULT_PRO_MODEL = "gemini-3.8-flash"
 # Pinned, never a floating alias (Google retargets those silently — a reproducibility hazard). The

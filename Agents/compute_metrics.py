@@ -576,7 +576,7 @@ def _compute_derived_metrics(base: BaseGameMetrics) -> DerivedGameMetrics:
 # vigilante_target, ...) or count only the literal "wolf" role. On a ten-seat game those fields are
 # never filled and the pack is the chanteuse and the illusionist, so these read 0 even when the event
 # happened (every one of 28 ten-seat balance games, 2026-10-11). None until they are ported to the
-# ten-seat record (evidence/memory_system/ten_seat_seeding/plan.md §8.4).
+# ten-seat record (evidence/memory_system/v8/plan.md §8.4).
 NINE_SEAT_ONLY_METRICS = frozenset({
     "correct_elimination_rate",
     "wolf_elimination_rate",

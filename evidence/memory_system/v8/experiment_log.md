@@ -1,4 +1,4 @@
-# Ten-seat memory seeding: experiment log
+# v8 memory: experiment log (ten-seat seeding)
 
 The plan is `plan.md` (§9 is the final plan). This log records what was run and what came of it.
 Nothing here is a claim that memory improves play.
