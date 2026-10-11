@@ -582,7 +582,8 @@ change. Anything larger goes to the report's limitations and future work (§9.4)
 
 - An evidence-verification judge, and audit references to transcript events.
 - Counterfactual testing: branching a saved game at a decision, matching similar games.
-- Counting distinct source games in code. Stored items carry no game id, as far as found.
+- Counting distinct source games in code. A stored item keeps one `game_id` (its first source
+  game); the duplicates merged into it keep only a count, not their games.
 - Separate immediate and net verdict fields in the schema.
 - Per-role cell fields (e.g. the Necromancer's available bodies, the Fortune Teller's points).
 - Full credit-guided library updates.
