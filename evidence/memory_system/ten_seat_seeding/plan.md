@@ -586,6 +586,9 @@ change. Anything larger goes to the report's limitations and future work (§9.4)
   game); the duplicates merged into it keep only a count, not their games.
 - Separate immediate and net verdict fields in the schema.
 - Per-role cell fields (e.g. the Necromancer's available bodies, the Fortune Teller's points).
+- Batch extraction (Vertex batch, 50% off): worth it once the store is updated regularly. About
+  250–350 lines. On Vertex the cache and batch discounts do not stack. Whether batch can use an explicit
+  cache is unverified (experiment_log.md, 2026-10-11).
 - Full credit-guided library updates.
 - Code-selected town day advice (option B), metadata-only retrieval, the tell book.
 - Necromancer grading by what the borrowed body achieved; Illusionist claim space; neutral day votes

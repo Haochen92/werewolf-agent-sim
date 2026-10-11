@@ -56,3 +56,55 @@ not included.
 phrase in the wolf chat on night 2 that the Illusionist legitimately reads, and the same phrase was
 in its private read. `check_*` read why-text should exempt text the author also wrote where the
 recipient can see it.
+
+## 2026-10-11 — Extraction model: 2.5-pro → 3.8 Flash
+
+**Why.** The pilot cost about $2 a game. Langfuse puts extraction at $1.00–1.19 a game on
+gemini-2.5-pro ($1.25 in / $10 out per 1M). Its visible output (24–30k tokens a game) explains
+about $0.30 of that; the rest is mostly its thinking, billed as output.
+
+**Run.** Two pilot games (`286816b0` Serial Killer + Speculator, `cc80ecdf` Necromancer + Fortune
+Teller) were re-extracted from their saved extraction cases with the same prompts, the explicit
+prefix cache and the dealt roles only:
+- `extraction_inputs_from_frozen_case` → `extract_postgame_per_cell`;
+- primary and backup both set to the candidate model;
+- token usage taken from LangChain's usage callback.
+
+Outputs are in `data/extraction_model_comparison/`.
+
+Making the run fixed a bug: a saved case carries no lineup, so a re-run had an empty rules block.
+The lineup is now rebuilt from the roles.
+
+| Model (per 1M in/out) | Cost, game 1 / 2 | Observations | Unclear verdicts | Player IDs | Counterfactual phrasing* |
+|---|---|---|---|---|---|
+| 2.5-pro ($1.25/$10) | $1.16 / $1.19 | 45 / 52 | 5 / 3 | 6 / 4 | 5 / 3 |
+| 3.8 Flash ($0.75/$3.75, promo to 2026-12-31) | ~$0.36 / ~$0.32 | 32 / 34 | 3 / 1 | 0 / 0 | 6 / 2 |
+| 3.5-flash-lite ($0.30/$2.50) | ~$0.07 / ~$0.06 | 45 / 43 | 5 / 10 | 5 / 18 | 0 / 0 |
+
+\*A regex for "had I/we", "would have", "instead of", "should have" in the approach or end-of-game
+field: a pointer for reading, not a measure. The 3.8 Flash and 3.5-flash-lite costs are computed
+from token counts at Google's list prices. Vertex prices were not confirmed; Google's Vertex pricing
+page did not load. 3.8 Flash spent about 58–70k thinking tokens a game, most of its cost.
+
+**Read** (same cells side by side: Chanteuse, Necromancer and Sentinel nights; one reading):
+- **3.8 Flash** was specific and mechanically right: the reanimated body seen at a watched door, a
+  borrowed shot stopped by the Healer. Its end-of-game claims point at what happened ("reporting
+  the watch on day five directly exposed the surviving wolf").
+- **2.5-pro** is not clearly better. Several end-of-game fields are the bare word "positive" or
+  "negative", and one Necromancer verdict calls killing a wolf "against my win condition".
+- **3.5-flash-lite** wrote trivial observations (the Necromancer's forced night-1 stay) and thin
+  verdicts, and leaked player IDs into 18 of 43 observations in one game.
+
+**Ruling (owner, 2026-10-11): switch extraction to gemini-3.8-flash.** The backup becomes
+gemini-2.5-pro: a different family and quota pool, used only when the primary fails. Expected cost
+is about $0.9 play plus about $0.35 extraction a game, against about $2 on 2.5-pro. After the promo
+ends, 3.8 Flash's price doubles.
+
+**Considered, not built:** batch extraction (Vertex batch, 50% off).
+- On Vertex the cache discount (90% off cached input) and the batch discount do not stack.
+- Extraction input is already mostly cached, so batch would mainly halve the output.
+- About $2–3 on a 12-game seeding, for about 250–350 lines (defer extraction, build and submit the
+  job through Cloud Storage, parse, write the store offline).
+- Two things are open: whether a Vertex batch job can use an explicit cache at all, and the cache's
+  hourly storage cost while a job queues.
+- Listed in plan §9.4.
