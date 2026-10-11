@@ -255,42 +255,42 @@ class ComputedGameMetrics(DerivedGameMetrics):
     game_length: int
     # Town
     mislynches: int                  # town-member lynches (count)
-    serial_killer_lynched: int
+    serial_killer_lynched: int | None
     tie_count: int
     no_vote_count: int
     # Healer
-    healer_save_count: int
+    healer_save_count: int | None
     healer_exit_method: str
     # Investigator
     investigator_exit_method: str
-    investigator_wolves_found: int
+    investigator_wolves_found: int | None
     investigator_found_wolf_day: int | None = None
-    investigator_finds_total: int = 0      # conversion denominator (filter low-sample games)
-    investigator_finds_lynched: int = 0
+    investigator_finds_total: int | None = 0      # conversion denominator (filter low-sample games)
+    investigator_finds_lynched: int | None = 0
     # Wolves
     power_roles_killed_by_wolves: int
-    power_roles_killed_by_evil: int
+    power_roles_killed_by_evil: int | None
     wolf_killed_healer_day: int | None = None
     wolf_killed_investigator_day: int | None = None
-    wolf_blend_votes_aligned: int = 0   # numerator of wolf_unconditioned_blending_rate
-    wolf_blend_votes_total: int = 0      # denominator (0 -> rate is None); carry it to filter low-sample games
+    wolf_blend_votes_aligned: int | None = 0   # numerator of wolf_unconditioned_blending_rate
+    wolf_blend_votes_total: int | None = 0      # denominator (0 -> rate is None); carry it to filter low-sample games
     wolf_skconfirms_total: int = 0       # conversion denominator (filter low-sample games)
     wolf_skconfirms_lynched: int = 0
     # Serial killer
-    sk_nights_survived: int
+    sk_nights_survived: int | None
     sk_exit_method: str
-    sk_kills_landed: int
-    sk_power_roles_killed: int = 0
-    sk_wolf_kills: int = 0
-    sk_blend_votes_total: int = 0     # denominator for sk blending (filter low-sample games)
+    sk_kills_landed: int | None
+    sk_power_roles_killed: int | None = 0
+    sk_wolf_kills: int | None = 0
+    sk_blend_votes_total: int | None = 0     # denominator for sk blending (filter low-sample games)
     # Vigilante
-    vigilante_shots_taken: int
-    vigilante_evil_shots: int
-    vigilante_wolf_kills: int
-    vigilante_skconfirms_total: int = 0    # conversion denominator (filter low-sample games)
-    vigilante_skconfirms_lynched: int = 0
-    vigilante_friendly_fire_shots: int
-    vigilante_bullets_unused: int
+    vigilante_shots_taken: int | None
+    vigilante_evil_shots: int | None
+    vigilante_wolf_kills: int | None
+    vigilante_skconfirms_total: int | None = 0    # conversion denominator (filter low-sample games)
+    vigilante_skconfirms_lynched: int | None = 0
+    vigilante_friendly_fire_shots: int | None
+    vigilante_bullets_unused: int | None
     vigilante_exit_method: str
     # Diagnostic-tier denominators (carried so a reader can filter low-sample games without
     # re-deriving; the rates themselves live on DerivedGameMetrics above).

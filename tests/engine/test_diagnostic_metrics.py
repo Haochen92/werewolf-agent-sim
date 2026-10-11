@@ -212,3 +212,24 @@ def test_diagnostic_metrics_are_tiered_diagnostic_and_present_on_dump():
     from Agents.compute_metrics import DO_NOT_USE_METRICS, VALIDATED_BASKET_METRICS
     assert not (DIAGNOSTIC_METRICS & VALIDATED_BASKET_METRICS)
     assert not (DIAGNOSTIC_METRICS & DO_NOT_USE_METRICS)
+
+
+# --------------------------------------------------------------------------- the ten-seat game
+
+
+def test_a_ten_seat_game_leaves_the_nine_seat_only_metrics_unscored():
+    from Agents.compute_metrics import NINE_SEAT_ONLY_METRICS, SERIAL_KILLER_METRICS
+    roles = {"c": "chanteuse", "i": "illusionist", "n": "necromancer", "v": "vigilante",
+             "h": "healer", "inv": "investigator", "s": "speculator"}
+    ten_seat = compute_game_metrics({**_result([]), "roles": roles}, Metrics()).model_dump()
+    for name in NINE_SEAT_ONLY_METRICS | SERIAL_KILLER_METRICS:
+        assert ten_seat[name] is None, name
+    # The nine-seat records still score as they did.
+    nine_seat = _compute([]).model_dump()
+    assert nine_seat["sk_kills_landed"] == 0 and nine_seat["serial_killer_lynched"] == 0
+
+
+def test_no_metric_pushes_as_validated_until_revalidated_on_the_ten_seat_game():
+    from Agents.compute_metrics import VALIDATED_BASKET_METRICS
+    for name in VALIDATED_BASKET_METRICS:
+        assert _metric_tier(name) == "diagnostic", name

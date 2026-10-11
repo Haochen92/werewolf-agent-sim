@@ -571,7 +571,55 @@ def _compute_derived_metrics(base: BaseGameMetrics) -> DerivedGameMetrics:
     )
 
 
+# Metrics that read the nine-seat game's per-role night fields (healer_target, serial_killer_target,
+# vigilante_target, ...) or count only the literal "wolf" role. On a ten-seat game those fields are
+# never filled and the pack is the chanteuse and the illusionist, so these read 0 even when the event
+# happened (every one of 28 ten-seat balance games, 2026-10-11). None until they are ported to the
+# ten-seat record (evidence/memory_system/ten_seat_seeding/plan.md §8.4).
+NINE_SEAT_ONLY_METRICS = frozenset({
+    "correct_elimination_rate",
+    "wolf_elimination_rate",
+    "sk_kill_rate",
+    "vigilante_wolf_kills_rate",
+    "healer_save_count",
+    "investigator_wolves_found",
+    "investigator_finds_total",
+    "investigator_finds_lynched",
+    "power_roles_killed_by_evil",
+    "wolf_blend_votes_aligned",
+    "wolf_blend_votes_total",
+    "sk_kills_landed",
+    "sk_power_roles_killed",
+    "sk_wolf_kills",
+    "vigilante_shots_taken",
+    "vigilante_evil_shots",
+    "vigilante_wolf_kills",
+    "vigilante_skconfirms_total",
+    "vigilante_skconfirms_lynched",
+    "vigilante_friendly_fire_shots",
+    "vigilante_bullets_unused",
+})
+
+# The serial killer's own counts, which read 0 in a game that dealt a necromancer instead.
+SERIAL_KILLER_METRICS = frozenset({
+    "serial_killer_lynched",
+    "sk_nights_survived",
+    "sk_blend_votes_total",
+})
+
+
 def compute_game_metrics(result: dict, metrics: Metrics) -> ComputedGameMetrics:
+    computed = _compute_game_metrics(result, metrics)
+    dealt = set(result["roles"].values())
+    unscored: set[str] = set()
+    if "wolf" not in dealt:  # a ten-seat game: its pack is the chanteuse and the illusionist
+        unscored |= NINE_SEAT_ONLY_METRICS
+    if "serial_killer" not in dealt:
+        unscored |= SERIAL_KILLER_METRICS
+    return computed.model_copy(update=dict.fromkeys(unscored))
+
+
+def _compute_game_metrics(result: dict, metrics: Metrics) -> ComputedGameMetrics:
     base = _compute_base_metrics(result, metrics)
     derived = _compute_derived_metrics(base)
 
@@ -667,10 +715,16 @@ DIAGNOSTIC_METRICS = frozenset({
 })
 
 
+# The basket above was validated on the nine-seat game; none of it is re-validated on the ten-seat
+# game yet (plan §8.4). The push runs at the end of a live game, and live games are ten-seat, so
+# the basket pushes as "diagnostic". Name a metric here once its ten-seat validation is recorded.
+VALIDATED_ON_TEN_SEAT_METRICS: frozenset[str] = frozenset()
+
+
 def _metric_tier(field_name: str) -> str:
     if field_name in DO_NOT_USE_METRICS:
         return "do_not_use"
-    if field_name in VALIDATED_BASKET_METRICS:
+    if field_name in VALIDATED_ON_TEN_SEAT_METRICS:
         return "validated"
     # DIAGNOSTIC_METRICS members and everything un-tiered both push as "diagnostic"; the named
     # set documents the audit-graduated adoptions (proxy_discovery_log §3).
