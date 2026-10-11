@@ -244,6 +244,27 @@ def test_uses_are_spent_in_the_resolution_once_per_night_and_a_decline_spends_no
     assert [r.result for r in blocked["night_actions"] if r.actor == h["vigilante"]] == ["roleblocked"]
 
 
+def test_the_night_metric_keeps_what_the_night_decided_and_every_actors_record():
+    st = _state({"lone_killer": "serial_killer", "neutral": "speculator"})
+    h = _holders(st)
+    st["night_choices"] = [
+        NightChoice(h["chanteuse"], "chanteuse", "block", h["vigilante"]),
+        NightChoice(h["vigilante"], "vigilante", "kill", h["speculator"]),
+        NightChoice(h["serial_killer"], "serial_killer", "kill", h["sentinel"]),
+        NightChoice(h["sentinel"], "sentinel", "watch", h["healer"]),
+    ]
+    runtime = SimpleNamespace(context={"metrics": Metrics()})
+    night_resolution(st, runtime)
+    metric = runtime.context["metrics"].night_resolutions[-1]
+    assert metric.outcome["blocked"] == [h["vigilante"]]
+    assert metric.outcome["deaths"] == [h["sentinel"]]
+    results = {r["actor"]: r["result"] for r in metric.records}
+    assert results[h["vigilante"]] == "roleblocked"
+    # The sentinel died tonight and is never told its watch, but the record keeps it.
+    assert h["sentinel"] in results
+    assert metric.model_dump(mode="json")["outcome"]["blocked"] == [h["vigilante"]]
+
+
 def test_a_dead_player_gets_no_record_of_its_last_night():
     st = _state({"lone_killer": "serial_killer", "neutral": "speculator"})
     h = _holders(st)

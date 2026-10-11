@@ -8,6 +8,8 @@ abilities spent, the neutrals' pick and points, and the morning report with the 
 disclosures. The public outcome is also committed as the night report, which the wire reads.
 """
 
+from dataclasses import asdict
+
 from langgraph.runtime import Runtime
 
 from Agents.schemas import DayChannel, DaySummary, DeathRecord
@@ -90,6 +92,7 @@ def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
                             body_conceals=state.get("uses_left", {}).get("illusionist", 0))
     attacks_on, verdicts, deaths = outcome.attacks_on, outcome.verdicts, outcome.deaths
     pack_target = next((c.target for c in choices if is_pack_kill(c)), None)
+    records = night_action_records(choices, outcome, roles)
 
     metric = NightResolutionMetric(
         day=current_day,
@@ -101,6 +104,8 @@ def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
         town_before=before["town"],
         sk_before=before["lone_killer"],
         choices=[c.__dict__ for c in choices],
+        outcome=asdict(outcome),
+        records=[r.model_dump(mode="json") for r in records],
     )
     runtime.context["metrics"].night_resolutions.append(metric)
     with langfuse.start_as_current_observation(
@@ -113,7 +118,7 @@ def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
 
     # Each actor's private record of what it did and what it may know of the result. A player
     # who died tonight gets no record of tonight (it learns nothing from the night it died).
-    tonight_records = [r for r in night_action_records(choices, outcome, roles) if r.actor not in deaths]
+    tonight_records = [r for r in records if r.actor not in deaths]
     state_update["night_actions"] = tonight_records
 
     # The neutrals' running state.

@@ -43,6 +43,12 @@ class NightResolutionMetric(BaseModel):
     kill_successful: bool
     choices: list[dict] = Field(default_factory=list)
     # Every choice of the night (Agents/schemas/night.NightChoice as dicts): the ten-seat record.
+    outcome: dict = Field(default_factory=dict)
+    # What the rules made of the choices (Agents/schemas/night.NightOutcome as a dict): blocks,
+    # visits, attacks, verdicts, conceals, Suspicious reads, picks and settled bets.
+    records: list[dict] = Field(default_factory=list)
+    # Every actor's private record of the night (NightActionRecord dicts), including actors who
+    # died that night and so were never told it: what the engine decided, not what was delivered.
     # The per-role fields below are the nine-seat game's and stay for its stored metrics.
     healer_target: str | None = None
     investigator_target: str | None = None
