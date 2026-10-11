@@ -57,3 +57,13 @@ def test_ten_seat_census_reads_the_sides_from_the_registry():
 def test_census_criticality_none_without_census():
     assert criticality_from_census({}, []) is None
     assert criticality_from_census(None, None) is None
+
+
+def test_a_concealed_body_is_dead_but_its_side_unknown():
+    cast = {r: lineup("serial_killer", "speculator").count(r) for r in lineup("serial_killer", "speculator")}
+    nobody = criticality_from_census(cast, [])
+    hidden = criticality_from_census(cast, [{"role": "", "concealed": True}])
+    revealed_town = criticality_from_census(cast, [{"role": "healer"}])
+    # One fewer alive, and the reading most dangerous to town: the hidden body taken as a town player.
+    assert hidden[0] == nobody[0] - 1
+    assert hidden == revealed_town

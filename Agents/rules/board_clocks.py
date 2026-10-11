@@ -31,6 +31,7 @@ the true role map: the two must agree wherever the census exists.
 """
 
 from collections.abc import Iterable, Mapping
+from itertools import product
 
 from Agents.schemas.roles import LONE_KILLER, ROLE_SPECS, WOLVES
 
@@ -45,6 +46,11 @@ def _threat_side(role: str) -> str | None:
 def _role_of(death) -> str | None:
     """A DeathRecord's revealed role, tolerant of dict-shaped records (replayed/JSON payloads)."""
     return death.get("role") if isinstance(death, Mapping) else getattr(death, "role", None)
+
+
+def _is_concealed(death) -> bool:
+    """Whether the illusionist concealed this body (its role is not public until game end)."""
+    return bool(death.get("concealed") if isinstance(death, Mapping) else getattr(death, "concealed", False))
 
 
 def alive_role_counts(
@@ -81,8 +87,25 @@ def criticality_from_census(
     back to the LLM's own fill."""
     if not cast_role_counts:
         return None
-    remaining = alive_role_counts(cast_role_counts, dead_roster or [])
+    dead_roster = list(dead_roster or [])
+    remaining = alive_role_counts(cast_role_counts, dead_roster)
     by_side = {WOLVES: 0, LONE_KILLER: 0, None: 0}
     for role, count in remaining.items():
         by_side[_threat_side(role)] += max(0, count)
-    return criticality_from_counts(by_side[WOLVES], by_side[LONE_KILLER], by_side[None])
+    hidden = sum(1 for death in dead_roster if _is_concealed(death))
+    if not hidden:
+        return criticality_from_counts(by_side[WOLVES], by_side[LONE_KILLER], by_side[None])
+    # A concealed body subtracts nothing above, and its side is not public: it may have come off any
+    # side the census still shows. Take every way the hidden bodies could be spread over the sides and
+    # report the one most dangerous to town: the nearest evil win, and a swing if any spread is one.
+    # The living count is exact either way.
+    readings = []
+    for sides in product((WOLVES, LONE_KILLER, None), repeat=hidden):
+        counts = dict(by_side)
+        for side in sides:
+            counts[side] -= 1
+        if min(counts.values()) >= 0:
+            readings.append(criticality_from_counts(counts[WOLVES], counts[LONE_KILLER], counts[None]))
+    if not readings:  # an inconsistent roster: fall back to the census as it stands
+        return criticality_from_counts(by_side[WOLVES], by_side[LONE_KILLER], by_side[None])
+    return readings[0][0], min(r[1] for r in readings), any(r[2] for r in readings)
