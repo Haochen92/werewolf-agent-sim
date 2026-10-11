@@ -1,0 +1,251 @@
+{
+ "model": "claude-sonnet-5-5",
+ "stop_reason": "end_turn",
+ "usage": {
+  "input_tokens": 17266,
+  "output_tokens": 7882
+ },
+ "cost_usd": 0.113352,
+ "judgments": [
+  {
+   "index": 1,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The night 2 watch on player_9 showed player_1 and player_10 visiting, and player_1 was voted out on that evidence."
+  },
+  {
+   "index": 2,
+   "halo": false,
+   "revised_verdict": "mixed",
+   "reason": "Player_1 thanked the investigator for the clean check on day 2 and nobody voted for them that day, while on day 3 the investigator said it did not clear them, so both effects are at least loosely traceable."
+  },
+  {
+   "index": 3,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "The action was roleblocked and produced nothing, so unclear holds."
+  },
+  {
+   "index": 4,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "The wolf's night 2 targeting of player_5 follows the claim, but the healer's protection and the sigil that killed the chanteuse are not tied to it; the sigilist placed the sigil because of the chanteuse's vote."
+  },
+  {
+   "index": 5,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "Other players' notes and the votes cite the tracking evidence, and nothing in the record shows this statement removed doubt or caused the unanimous vote."
+  },
+  {
+   "index": 6,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The sentinel's watch result and its vote against player_1 fed directly into the elimination of the serial killer."
+  },
+  {
+   "index": 7,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "The record shows no concrete link between the early claim and the final outcome."
+  },
+  {
+   "index": 8,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The trailseer's corroboration and accusation of player_1 are tied to the pre-vote accusations and the unified vote."
+  },
+  {
+   "index": 9,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "The follow found nothing and was not tied to the outcome."
+  },
+  {
+   "index": 10,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The trailseer's night 2 visit to player_9's door accounts for one of the two visits the sentinel reported, which the trailseer then publicly confirmed."
+  },
+  {
+   "index": 11,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The investigator voted to eliminate the player later revealed as the serial killer, matching the evidence in the record."
+  },
+  {
+   "index": 12,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The trailseer's vote and confirmation of the visit contributed to eliminating the serial killer."
+  },
+  {
+   "index": 13,
+   "halo": false,
+   "revised_verdict": "mixed",
+   "reason": "The sigilist's own notes tie player_2's vote against them to the sigil that killed player_2, while the claim also exposed them, so both a benefit and a cost are traceable."
+  },
+  {
+   "index": 14,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "Nothing in the record shows that staying quiet preserved the sentinel, since the night 2 watch result did not depend on the day 2 silence."
+  },
+  {
+   "index": 15,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The sentinel's public report of the watch result was echoed by the trailseer and vigilante and led to the vote on player_1."
+  },
+  {
+   "index": 16,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "Player_7 is named among the three accusers before the vote and argued for player_1 being the serial killer, which ties the discussion to the vote."
+  },
+  {
+   "index": 17,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "The sigil kill, the heal and the sentinel result came from other players' own actions and are not connected to the vigilante holding fire."
+  },
+  {
+   "index": 18,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "The vote did not change the abstain outcome, so unclear holds."
+  },
+  {
+   "index": 19,
+   "halo": false,
+   "revised_verdict": "negative",
+   "reason": "The sigilist's notes name player_2 as having voted against them and the sigil struck player_2, so the vote is linked to the chanteuse's death."
+  },
+  {
+   "index": 20,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The healer protected player_5, the wolves attacked player_5, and the save was announced."
+  },
+  {
+   "index": 21,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "The remark had no traceable effect on the outcome."
+  },
+  {
+   "index": 22,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "The first sigil had no effect and nothing in the record links that spend to harm; the second sigil still struck down the wolf."
+  },
+  {
+   "index": 23,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The sigil on player_2 struck them when they attacked on night 2, killing the last wolf."
+  },
+  {
+   "index": 24,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "No one threatened the healer, and the save came from the healer's own night choice, so concealment is not tied to it."
+  },
+  {
+   "index": 25,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "The vote against player_1 rested on the tracking evidence, not on the healer's claim."
+  },
+  {
+   "index": 26,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "The vigilante's abstain is not tied to the sigilist's survival or to the sigil strike that killed the chanteuse."
+  },
+  {
+   "index": 27,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The vigilante voted against the serial killer, who was eliminated by the vote."
+  },
+  {
+   "index": 28,
+   "halo": false,
+   "revised_verdict": "negative",
+   "reason": "The pack's kill on night 1 targeted the night-immune serial killer and was wasted, which is a mechanical failure."
+  },
+  {
+   "index": 29,
+   "halo": false,
+   "revised_verdict": "negative",
+   "reason": "The kill was healed and the chanteuse carried the kill under the sigil, so it was struck down."
+  },
+  {
+   "index": 30,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The healer's vote was part of the majority that eliminated the serial killer."
+  },
+  {
+   "index": 31,
+   "halo": false,
+   "revised_verdict": "negative",
+   "reason": "The attack on the immune serial killer failed and the concealment was wasted, which is a mechanical failure of the move."
+  },
+  {
+   "index": 32,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "The day 2 abstain was not shown to result from this statement, and the serial killer was caught later by independent tracking."
+  },
+  {
+   "index": 33,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "The elimination came from the sentinel and trailseer evidence, not from the denials."
+  },
+  {
+   "index": 34,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "Killing the illusionist removed a wolf, but the claimed downside is speculative and the record does not link the kill to the final outcome."
+  },
+  {
+   "index": 35,
+   "halo": false,
+   "revised_verdict": "negative",
+   "reason": "The sentinel watched player_9 and saw player_1's visit, and player_1 was voted out on that evidence."
+  },
+  {
+   "index": 36,
+   "halo": false,
+   "revised_verdict": "negative",
+   "reason": "Without a pick the speculator could not win, and Town won."
+  },
+  {
+   "index": 37,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "The vote did not change the outcome."
+  },
+  {
+   "index": 38,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "The confirmation had no traceable bearing on the outcome."
+  },
+  {
+   "index": 39,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "The vote did not change the abstain result."
+  },
+  {
+   "index": 40,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "The vote had no bearing on the consensus that eliminated player_1."
+  }
+ ]
+}

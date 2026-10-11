@@ -132,3 +132,59 @@ The new discussion lessons are about the talk itself:
 - the Fortune Teller's read of a cornered claimant, which set up its scoring bet.
 
 Expected cost is now about $0.9 play plus about $0.5 extraction a game.
+
+## 2026-10-11 — The smoke game, halo in verdicts, and the de-halo pass
+
+**Smoke game** (`batch_results/v8_smoke/`, code at `4a78bf7f`): one game with the day split, the
+death-night records and gemini-3.8-flash extraction.
+- Serial Killer and Speculator, 3 days, town win; leak check clean; 30 extraction calls, none failed.
+- 43 observations; the "never told" marks on all three night deaths.
+- $1.03, now priced correctly in Langfuse (3.6 and 3.8 Flash entries added at the promo price).
+
+**Claude's read of the game and its 43 observations:**
+- **42 factually correct.** One invented the Serial Killer citing the Investigator's check.
+- **The retaliation chain is supported:** the Sigilist's note names the player who voted against it.
+- **Halo:**
+  - town (won): about 21 positive, 1 negative of 28; evil (lost): 7 negative, 1 positive of 11;
+  - five day-2 abstains credited with the Sigilist's later kill;
+  - the Vigilante's hold called positive; the Investigator's check on the Serial Killer called positive.
+- **Redundancy:** the day-3 vote extracted 7 times, the day-2 abstain 5 times, once per role.
+- **Missed:** the pack's attack on the immune Serial Killer told the wolves who the lone killer was.
+
+**Prompt fixes** (`de4134b2`): outcome is not credit; skip a vote that just joined the majority; the
+pack's night results in the Chanteuse and Illusionist drivers.
+- Halo about halved (~20% → ~10% by one reading).
+- The duplicate abstains are gone.
+- The day-3 vote is still extracted per role, and the immune-target lesson is still missed.
+
+**Extraction by model** (same game, same fixed prompts; `data/dehalo_compare/`):
+
+| Model | Cost | Observations | Halo (one reading) | Errors | Player IDs |
+|---|---|---|---|---|---|
+| gemini-3.8-flash | $0.51 (cached) | 40 | ~4–5 | ~0 | 0 |
+| Claude Haiku 5.5 | $0.11 (no cache hit; ~$0.06 with) | 47 | ~1–2 | 2 | 5 |
+| Claude Sonnet 5.5 | $1.79 (no cache hit; ~$0.85 with) | 52 | ~1 | 1 small | 0 |
+
+The Claude runs did not reuse the cached prefix: each cell's output schema precedes it. All three
+missed the Sigilist's note as evidence and the immune-target lesson.
+
+**De-halo judges** on the 40 gemini-3.8-flash observations. "Clear halo" means the 4 cases a reader
+would call halo; "wrongly erased" means the 3 mechanically supported verdicts turned to unclear.
+
+| Judge | Cost | Changed | Clear halo caught (of 4) | Supported verdicts wrongly erased |
+|---|---|---|---|---|
+| gemini-3.8-flash | $0.077 | 10 | 4 | 3 |
+| Claude Sonnet 5 | $0.168 | 3 | 3 | 0 |
+| Claude Sonnet 5.5 | $0.113 | 11 | 4 | 1–3 |
+| Claude Haiku 5.5 | $0.006 | 5 | 4 | 0 |
+
+**Ruling (owner): extraction stays on gemini-3.8-flash with the fixed prompts, plus a de-halo pass**
+(`395cfa7f`).
+- It is configurable: on/off, model and thinking level (`ExtractionConfig.dehalo`, environment
+  defaults `MEMORY_DEHALO_*`), set to Claude Haiku 5.5 by default.
+- It is a deliberate exception to the no-extra-judge rule, and the memory pipeline's first Claude
+  dependency (`CLAUDE_API_KEY`).
+- One live run of the stage on the original 43 observations revised 6 verdicts. It also turned the
+  wasted first sigil to "unclear", which the comparison run had kept. The judge varies between runs;
+  these are single samples, one game, one reader.
+- The Claude call is not traced through Langfuse; its tokens are in the de-halo record.

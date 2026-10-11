@@ -582,7 +582,10 @@ change. Anything larger goes to the report's limitations and future work (§9.4)
 
 ### 9.4 Limitations and future work (report only, not built)
 
-- An evidence-verification judge, and audit references to transcript events.
+- An evidence-verification judge, and audit references to transcript events (the de-halo pass
+  checks verdicts only, not facts).
+- Extraction on Claude (Sonnet 5.5 wrote the least halo; about $0.85 a game with working caching):
+  it would need its own path, with the output schema placed after the cached prefix.
 - Counterfactual testing: branching a saved game at a decision, matching similar games.
 - Counting distinct source games in code. A stored item keeps one `game_id` (its first source
   game); the duplicates merged into it keep only a count, not their games.
@@ -621,6 +624,12 @@ Records: `experiment_log.md` (pilot, model comparison, day split) and `decisions
   About 6 of 66 observations in the pilot read still drew counterfactual or hindsight conclusions.
   The guards are synthesis's "no opposite of a failure" rule and the owner's review of strategy
   points. Stronger wording (option B) risked dropping supported, mechanically checkable lessons.
+- **A de-halo pass after extraction** (ruled, `395cfa7f`; `experiment_log.md`, the smoke game):
+  - Claude Haiku 5.5 rewrites verdicts the game record does not support.
+  - It is configurable (`ExtractionConfig.dehalo`, `MEMORY_DEHALO_*`) and costs about $0.006 a game.
+  - The extraction prompts also gained outcome-is-not-credit and skip-majority-votes rules
+    (`de4134b2`).
+  - It is an exception to the no-extra-judge constraint, and the pipeline's first Claude dependency.
 - **New-role proxies** (ruled): the Chanteuse's critical blocks count fellow wolves only; Sentinel
   and Trailseer results naming an evil player; Sigilist hits per sigil. Built in `e5763cd1`.
 - **Seeding** (ruled):

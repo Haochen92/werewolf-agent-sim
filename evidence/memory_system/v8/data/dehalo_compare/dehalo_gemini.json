@@ -1,0 +1,259 @@
+{
+ "model": "gemini-3.8-flash",
+ "usage": {
+  "gemini-3.8-flash": {
+   "input_tokens": 11771,
+   "output_tokens": 18298,
+   "total_tokens": 30069,
+   "input_token_details": {
+    "cache_read": 0
+   },
+   "output_token_details": {
+    "reasoning": 15663
+   }
+  }
+ },
+ "cost_usd": 0.07744575,
+ "judgments": [
+  {
+   "index": 1,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "Watching the victim revealed the serial killer's visit, which was presented the next day and directly led to voting out the serial killer."
+  },
+  {
+   "index": 2,
+   "halo": false,
+   "revised_verdict": "mixed",
+   "reason": "The check provided temporary social cover for the serial killer on Day 2 but later helped town confirm their identity once wolves were dead."
+  },
+  {
+   "index": 3,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "The investigation was blocked by the chanteuse, producing no information and having no impact on the game."
+  },
+  {
+   "index": 4,
+   "halo": false,
+   "revised_verdict": "mixed",
+   "reason": "Claiming investigator publicly drew the wolf attack and block into the healer's save, though it also suppressed the investigator's Night 2 check."
+  },
+  {
+   "index": 5,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "Clarifying that the serial killer reads Not suspicious to the investigator directly prevented confusion and solidified the consensus vote against player 1."
+  },
+  {
+   "index": 6,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "Casting an elimination vote on the lone remaining serial killer directly executed the last hostile role and won the game for town."
+  },
+  {
+   "index": 7,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "The early claim and inquiry clarified game mechanics but resulted in a general abstain that did not alter faction alignments."
+  },
+  {
+   "index": 8,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "Explaining that the trailseer's follow required visiting the doorstep mechanically validated the sentinel's watch and dismantled the serial killer's defense."
+  },
+  {
+   "index": 9,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "Following an inactive player learned they made no visits, which established a baseline but did not advance the elimination of any evil roles."
+  },
+  {
+   "index": 10,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "Visiting the sigilist as part of the follow action registered on the sentinel's watch, mechanically validating the watch that incriminated the serial killer."
+  },
+  {
+   "index": 11,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "Voting to eliminate the serial killer on Day 3 directly removed the final evil role and secured town victory."
+  },
+  {
+   "index": 12,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "Voting to eliminate the serial killer on Day 3 directly contributed to the winning majority that ended the game."
+  },
+  {
+   "index": 13,
+   "halo": false,
+   "revised_verdict": "mixed",
+   "reason": "Misspeaking drew suspicion and votes, but player 2's vote against player 9 prompted player 9 to place the sigil that eliminated player 2."
+  },
+  {
+   "index": 14,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "Remaining silent during the day was not connected by the record to surviving the night, which resulted from other players' independent targeting choices."
+  },
+  {
+   "index": 15,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "Publicly revealing the watch result on the murder victim directly exposed the serial killer and unified town to vote them out."
+  },
+  {
+   "index": 16,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "Publicly arguing that the unexplained visit uniquely implicated player 1 with both wolves dead helped cement town consensus for the winning vote."
+  },
+  {
+   "index": 17,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "Holding fire did not cause other town roles to succeed; the successful night actions resulted entirely from other players' independent choices."
+  },
+  {
+   "index": 18,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "The lone vote against player 7 had no effect on the day's outcome because the abstain majority prevailed."
+  },
+  {
+   "index": 19,
+   "halo": false,
+   "revised_verdict": "negative",
+   "reason": "Voting against player 9 explicitly prompted player 9 to place a retaliatory sigil on player 2, which struck player 2 down when carrying the kill."
+  },
+  {
+   "index": 20,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "Protecting the claimed investigator successfully thwarted the wolf attack on Night 2, keeping a town power role alive."
+  },
+  {
+   "index": 21,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "The discussion post helped blend in during the day but had no bearing on being targeted and eliminated by the sigilist at night."
+  },
+  {
+   "index": 22,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "Placing an ineffective sigil had no mechanical effect and did not actively harm town, making a negative judgment speculative."
+  },
+  {
+   "index": 23,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "Placing a sigil on the chanteuse killed the final wolf when they carried the night attack, wiping out the wolf faction."
+  },
+  {
+   "index": 24,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "Surviving the night resulted from the evil factions choosing other targets rather than the healer's subdued daytime comments."
+  },
+  {
+   "index": 25,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "Confirming the save on the investigator corroborated both claims and solidified village unity against the serial killer."
+  },
+  {
+   "index": 26,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "Abstaining is credited with preserving the sigilist and town victory, but the abstain bloc held regardless and subsequent actions were other players' own decisions."
+  },
+  {
+   "index": 27,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "Voting to eliminate the serial killer on Day 3 directly removed the final hostile player and secured a town win."
+  },
+  {
+   "index": 28,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "The attack merely failed against an immune target, while the partner's death resulted from an independent attack by the serial killer."
+  },
+  {
+   "index": 29,
+   "halo": false,
+   "revised_verdict": "negative",
+   "reason": "Carrying the night attack triggered the sigil placed on the chanteuse, resulting in their immediate death and the defeat of the wolves."
+  },
+  {
+   "index": 30,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "Voting to eliminate the serial killer on Day 3 directly removed the last evil threat and won the game for town."
+  },
+  {
+   "index": 31,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "Attempting concealment had no effect because the target survived, and dying that night was caused by the serial killer's independent target choice."
+  },
+  {
+   "index": 32,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "The day's lack of scrutiny and subsequent abstain resulted from the investigator's check and town's lack of leads, not this brief statement."
+  },
+  {
+   "index": 33,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "The elimination was driven by the sentinel's and trailseer's corroborated tracking evidence rather than the serial killer's flat denials."
+  },
+  {
+   "index": 34,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "The kill directly advanced the serial killer's win condition, and claiming it accelerated town tracking focus is unsupported speculation."
+  },
+  {
+   "index": 35,
+   "halo": false,
+   "revised_verdict": "negative",
+   "reason": "Attacking the sigilist was caught on watch by the sentinel, which directly provided the evidence that got the serial killer eliminated."
+  },
+  {
+   "index": 36,
+   "halo": false,
+   "revised_verdict": "negative",
+   "reason": "Failing to pick a side left the speculator with no active win condition when the game abruptly ended on Day 3, sealing an outright loss."
+  },
+  {
+   "index": 37,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "Voting with the town did not impact the speculator's lost condition, as having registered no pick had already doomed their game."
+  },
+  {
+   "index": 38,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "Confirming the lack of night visits satisfied town curiosity but had no causal relationship to losing from an unsubmitted faction pick."
+  },
+  {
+   "index": 39,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "The rogue vote had no influence on the day's outcome, which was decided by the five-player abstain majority."
+  },
+  {
+   "index": 40,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "A single defensive vote against an accuser had no mathematical effect against the six-vote consensus that eliminated the serial killer."
+  }
+ ]
+}
