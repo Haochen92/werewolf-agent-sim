@@ -61,6 +61,11 @@ _PHASE_DEFINITIONS: dict[str, str] = {
 }
 
 
+def _field(record, name: str):
+    """A field of a DeathRecord, or of its dict form."""
+    return record.get(name) if isinstance(record, dict) else getattr(record, name, None)
+
+
 def format_extraction_inputs(state: OrchestratorGraph) -> dict[str, str]:
     """Format game state into the strings needed for the extraction prompt.
 
@@ -80,7 +85,11 @@ def format_extraction_inputs(state: OrchestratorGraph) -> dict[str, str]:
         # allowed): without it the extractor inferred night tactics from prose notes (audit
         # 2026-10-03, finding 12).
         + "\n\n=== Night Actions (exact, from the game engine) ===\n"
-        + format_night_actions_postgame(state.get("night_actions", []), state.get("roles", {}))
+        + format_night_actions_postgame(
+            state.get("night_actions", []), state.get("roles", {}),
+            {(_field(d, "player"), _field(d, "day")) for d in state.get("dead_roster", [])
+             if _field(d, "phase") == "night"},
+        )
     )
 
     formatted_strategy_notes = format_strategy_notes_postgame(

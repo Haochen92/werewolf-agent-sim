@@ -24,6 +24,7 @@ from Agents.rules.night_record import disclosure
 from Agents.rules.resolution import tally_day_vote
 from Agents.rules.seats import alive_holder, seat_order, survivors
 from Agents.schemas import DayChannel, DaySummary, DeathRecord
+from Agents.schemas.game_events import NightActionRecord
 from Agents.schemas.roles import (
     ACTS_WHEN_SPENT,
     FIXED_SEATS,
@@ -610,8 +611,16 @@ def post_game_analysis(
     dealt = set(state.get("roles", {}).values())
     extraction_roles = tuple(r for r in EXTRACTION_ROLES if r in dealt and mem_cfg.get(r, True))
 
-    # Format once, use for both the LLM prompt and the trace span.
-    extraction_inputs = format_extraction_inputs(state)
+    # Format once, use for both the LLM prompt and the trace span. The night records come from the
+    # nights' own records, which keep every actor's last night: game state drops the record of an
+    # actor who died that night (it is never told the result), so the extractor guessed what a
+    # dying role did. Post-game, the full record is allowed. Game state is the fallback (a game
+    # rebuilt after a restart has no in-process records).
+    full_records = [NightActionRecord.model_validate(r)
+                    for night in getattr(runtime.context.get("metrics"), "night_resolutions", [])
+                    for r in night.records]
+    extraction_inputs = format_extraction_inputs(
+        {**state, "night_actions": full_records} if full_records else state)
 
     span_name = extraction_span_name(game_id)
     with langfuse.start_as_current_observation(

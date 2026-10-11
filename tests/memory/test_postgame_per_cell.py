@@ -84,3 +84,17 @@ def test_backup_use_surfaces_in_model_used():
 
     assert "backup" in result.model_used
     assert "serial_killer" in result.model_used
+
+
+def test_the_extractor_sees_a_dying_actors_last_night_marked_as_never_told():
+    from Agents.memory.extraction.inputs import format_extraction_inputs
+    from Agents.schemas.game_events import DeathRecord, NightActionRecord
+
+    record = NightActionRecord(day=1, actor="player_4", action="investigate", target="player_9",
+                               outcome="player_9 is Not suspicious.", result="not_suspicious")
+    state = {"roles": {"player_4": "investigator", "player_9": "trailseer"}, "night_actions": [record],
+             "dead_roster": [DeathRecord(player="player_4", role="investigator", day=1, phase="night")],
+             "day_channel": [], "wolf_channel": [], "agent_strategies": {}, "lineup": []}
+    text = format_extraction_inputs(state)["formatted_discussions"]
+    assert "Night 1: player_4 (investigator) investigate player_9." in text
+    assert "(They died that night and were never told this.)" in text

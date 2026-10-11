@@ -228,8 +228,10 @@ def format_investigator_results(results: list[InvestigatorResult], current_day: 
         for r in results
     )
 
-def format_night_actions_postgame(records: list[NightActionRecord], roles: dict[str, str]) -> str:
-    """Every night actor's record, labelled with its role, for the post-game extractor."""
+def format_night_actions_postgame(records: list[NightActionRecord], roles: dict[str, str],
+                                  died_that_night: set[tuple[str, int]] = frozenset()) -> str:
+    """Every night actor's record, labelled with its role, for the post-game extractor. A record of
+    the night its actor died is marked as never delivered (``died_that_night`` holds (player, night))."""
     if not records:
         return "No night actions recorded."
     lines = []
@@ -241,7 +243,8 @@ def format_night_actions_postgame(records: list[NightActionRecord], roles: dict[
             act = r.action
         else:
             act = f"{r.action} {r.target}"
-        lines.append(f"Night {r.day}: {who} {act}. {r.outcome}")
+        unseen = " (They died that night and were never told this.)" if (r.actor, r.day) in died_that_night else ""
+        lines.append(f"Night {r.day}: {who} {act}. {r.outcome}{unseen}")
     return "\n".join(lines)
 
 
