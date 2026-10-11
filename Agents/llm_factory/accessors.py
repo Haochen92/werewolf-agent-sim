@@ -50,14 +50,16 @@ DEFAULT_SUMMARY_THINKING_LEVEL = "medium"
 SUMMARY_THINKING_BY_MODEL = {
     "openrouter/z-ai/glm-5.3-flash": "minimal",
 }
-DEFAULT_PRO_MODEL = "gemini-2.5-pro"
-# Pinned (was the floating alias "gemini-pro-latest", which Google retargets
-# silently — a reproducibility hazard for the extraction pipeline that
-# conditions gold labels). gemini-3.5-flash: stable GA, pro-comparable quality,
-# and a different model family/quota pool than the primary, so it remains a
-# genuine fallback. (3.1-pro-preview rejected: preview tier = no SLA +
-# retirement risk.)
-DEFAULT_PRO_BACKUP_MODEL = "gemini-3.5-flash"
+# The post-game extraction model. gemini-3.8-flash since 2026-10-11: re-extracting two ten-seat pilot
+# games, it cost about $0.34 a game against 2.5-pro's $1.17 (promo price, $0.75/$3.75 per 1M to
+# 2026-12-31, then $1.50/$7.50), wrote fewer observations with no player IDs, and read as well
+# grounded (evidence/memory_system/ten_seat_seeding/experiment_log.md). 3.5-flash-lite was cheaper
+# still but leaked player IDs into 41% of one game's observations.
+DEFAULT_PRO_MODEL = "gemini-3.8-flash"
+# Pinned, never a floating alias (Google retargets those silently — a reproducibility hazard). The
+# backup only runs when the primary fails, so it is chosen for being a different model family and
+# quota pool, a genuine fallback: gemini-2.5-pro, the extraction model before 2026-10-11.
+DEFAULT_PRO_BACKUP_MODEL = "gemini-2.5-pro"
 # Per-item downstream dedup — fixed cheap model (overridable via DEDUP_MODEL env).
 DEFAULT_DEDUP_MODEL = "gemini-3.1-flash-lite"
 DEFAULT_DEDUP_THINKING_LEVEL = "low"
