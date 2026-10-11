@@ -433,9 +433,10 @@ class WithAllyRevealed(BaseModel):
 
 
 class CellObservationMixin(BaseModel):
-    approach: str = Field(description="What the agent did or failed to do in that situation.")
+    approach: str = Field(description="What the agent did in that situation.")
     impact_on_final_game_outcome: str = Field(
-        description="The NET effect on this role's win condition, judged from game end ('unclear' if untraceable)."
+        description="The NET effect on this role's win condition, judged from game end, with what in the "
+        "record links it to the approach; 'unclear' when nothing does."
     )
     immediate_response: str = Field(description="The immediate, in-the-moment effect, before the longer-term consequence.")
     net_verdict: Literal["positive", "negative", "mixed", "unclear"] = Field(

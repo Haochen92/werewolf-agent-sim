@@ -61,11 +61,15 @@ known from the assigned role's perspective. This is a spectrum, not binary:
 
 1. Your own role and private findings — you know these directly.
    e.g. "you have identified a wolf through your investigation."
-2. System-confirmed — role revealed by game mechanics (an elimination reveals
-   the eliminated player's role). A healer save announcement confirms only that
-   the player was attacked and protected, not their role: a wolf can be saved
-   from the serial killer or the vigilante.
+2. System-confirmed — role revealed by game mechanics. A death reveals the
+   dead player's role UNLESS the illusionist concealed the body: a concealed
+   body's role stays hidden until the game ends, so during play only the
+   illusionist knows it (privately), however obvious it is in hindsight. When a town player dies
+   and the role is revealed, the game master reads out that role's record of
+   earlier nights; that record is public fact too. A healer save announcement
+   confirms only that the player was attacked and protected, not their role.
    e.g. "the eliminated player was revealed as the Investigator,"
+   "the player the wolves killed, whose role was concealed,"
    "the player the healer saved from the wolves."
 3. Claimed with strong evidence — a player claimed a role and public events
    support it (e.g., their finding was later confirmed by an elimination).
@@ -96,8 +100,12 @@ GOOD: "One player is relentlessly accusing another with no concrete evidence,
 creating a deadlock." — unknown roles, behavioral descriptors only.
 
 BAD: "A wolf was being targeted by the Investigator." — uses hidden ground
-truth for both players. From a villager's perspective, this is just two
+truth for both players. From a town player's perspective, this is just two
 players in conflict.
+
+BAD: "After the Sentinel was killed and concealed, the town lost its watcher."
+— the concealed role was not known to the town during play. Say "after a
+player was killed and their role concealed".
 
 BAD: "The wolves are trying to eliminate the Healer." — omniscient narrator
 perspective. From the healer's perspective: "You suspect you may be targeted

@@ -56,11 +56,12 @@ def _dealt(cast: list[str]) -> tuple[list[str], list[str]]:
     return roles, sides
 
 
-def _lineup(cast: list[str]) -> str:
-    """The "Team composition" header and one line per role, grouped by side."""
+def _lineup(cast: list[str], players: int | None = None) -> str:
+    """The "Team composition" header and one line per role, grouped by side. ``players`` overrides
+    the head count when the cast is a pool rather than one game's deal."""
     counts = Counter(cast)
     roles, sides = _dealt(cast)
-    lines = [f"Team composition ({len(cast)} players, {_NUMBER_WORDS[len(sides)]} sides):"]
+    lines = [f"Team composition ({players or len(cast)} players, {_NUMBER_WORDS[len(sides)]} sides):"]
     for side in sides:
         lines.append(SIDES[side]["heading"])
         for role in roles:
@@ -101,6 +102,21 @@ def _wins(cast: list[str]) -> str:
 def rules_block(cast: list[str]) -> str:
     """The rules block for one cast."""
     return RULES_TEMPLATE.format(lineup=_lineup(cast), roles=_roles(cast), wins=_wins(cast))
+
+
+def pool_rules_block() -> str:
+    """The rules block for the whole role pool, for a prompt that reads several games at once
+    (strategy synthesis over observations from different lineups): every role's rules, and a header
+    that says which seats are drawn per game."""
+    from Agents.schemas.roles import FIXED_SEATS, LONE_KILLER_ROLES, NEUTRAL_ROLES, SEATS
+
+    cast = [*FIXED_SEATS, *LONE_KILLER_ROLES, *NEUTRAL_ROLES]
+    killers = " or the ".join(_card(r).name for r in LONE_KILLER_ROLES)
+    neutrals = " or the ".join(_card(r).name for r in NEUTRAL_ROLES)
+    drawn = (f"Each game deals one lone killer (the {killers}) and one neutral (the {neutrals}), "
+             "drawn per game; the other roles are dealt every game.")
+    lineup = _lineup(cast, players=SEATS) + "\n" + drawn
+    return RULES_TEMPLATE.format(lineup=lineup, roles=_roles(cast), wins=_wins(cast))
 
 
 def preamble(cast: list[str]) -> str:

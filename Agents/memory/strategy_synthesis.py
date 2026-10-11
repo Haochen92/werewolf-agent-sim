@@ -27,6 +27,7 @@ from Agents.memory.batch_deduplication.clustering import (
 )
 from Agents.memory.dedup_gate import gate_key, situation_for_dedup
 from Agents.prompts.cell_prompt import dimension_menu
+from Agents.prompts.compose import pool_rules_block
 from Agents.prompts.extraction import CELL_SP_SYNTHESIS_PROMPT
 from Agents.schemas.memory import cell_strategy_schema_for
 
@@ -61,15 +62,22 @@ def cluster_observations_for_synth(
 
 def _format_cluster(cluster_keys: list[str], items_by_key: dict[str, Any]) -> str:
     """Render a cluster's observations for the synthesis prompt — situation residual + approach +
-    outcome, each tagged with its net_verdict so the LLM can weight by the outcome spread."""
+    outcome, each tagged with its net_verdict so the LLM can weight by the outcome spread. The
+    immediate effect and the end-of-game effect go on separate lines when both are stored, so a move
+    that cost something at once and paid off later is not read as one verdict."""
     lines: list[str] = []
     for i, key in enumerate(cluster_keys, 1):
         v = items_by_key[key].value
-        situation = situation_for_dedup(v.get("dimensions", {}), v.get("situation", ""))
+        dims = v.get("dimensions", {})
+        situation = situation_for_dedup(dims, v.get("situation", ""))
         lines.append(f"[{i}] (outcome: {v.get('net_verdict', '?')})")
         lines.append(f"situation: {situation}")
         lines.append(f"approach: {v.get('approach', '')}")
-        lines.append(f"outcome: {v.get('outcome', '')}")
+        if dims.get("immediate_response") or dims.get("impact_on_final_game_outcome"):
+            lines.append(f"immediate effect: {dims.get('immediate_response', '')}")
+            lines.append(f"end-of-game effect: {dims.get('impact_on_final_game_outcome', '')}")
+        else:
+            lines.append(f"outcome: {v.get('outcome', '')}")
         lines.append("")
     return "\n".join(lines).strip()
 
@@ -149,6 +157,7 @@ def synthesize_cluster_sps(
         )
     else:
         prompt = CELL_SP_SYNTHESIS_PROMPT.format(
+            game_rules=pool_rules_block(),
             role=role,
             phase=action_phase,
             observations=_format_cluster(cluster_keys, items_by_key),

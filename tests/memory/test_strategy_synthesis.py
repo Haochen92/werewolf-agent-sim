@@ -27,6 +27,29 @@ def test_format_cluster_tags_each_obs_with_verdict():
     assert "situation: S1" in out and "approach:" in out
 
 
+def test_format_cluster_shows_the_immediate_and_end_of_game_effects_apart():
+    obs = _obs("S1", "mixed")
+    obs.value["dimensions"] = {"immediate_response": "drew the night kill",
+                               "impact_on_final_game_outcome": "the town lynched a wolf next day"}
+    out = ss._format_cluster(["k1"], {"k1": obs})
+    assert "immediate effect: drew the night kill" in out
+    assert "end-of-game effect: the town lynched a wolf next day" in out
+    assert "\noutcome:" not in out
+
+
+def test_the_synthesis_prompt_carries_the_ten_seat_rules_and_no_opposite_rule():
+    from Agents.prompts.compose import pool_rules_block
+    from Agents.prompts.extraction import CELL_SP_SYNTHESIS_PROMPT
+
+    rules = pool_rules_block()
+    assert rules.startswith("Team composition (10 players, four sides):")
+    assert "Necromancer" in rules and "Fortune Teller" in rules and "Villager" not in rules
+    prompt = CELL_SP_SYNTHESIS_PROMPT.format(game_rules=rules, role="sentinel", phase="night_action",
+                                             observations="[1]", dimension_menu="- x")
+    assert "Emit 0-3 strategy points" in prompt
+    assert "corrective/opposite" not in prompt
+
+
 def test_synth_partition_is_gate_key_not_verdict(monkeypatch):
     # Two obs share the situation regime (gate_key) but DIFFER on net_verdict. The SP-synth partition
     # uses gate_key only, so they must land in ONE partition (mixed verdicts together) — unlike the
