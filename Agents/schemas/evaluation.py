@@ -62,6 +62,14 @@ class NightAction(BaseModel):
 
     role: str
     target: str | None = None
+    kind: str | None = None
+    """What the turn decided: the night kind for a choice (kill, block, conceal, ...), "chat" for
+    a pack chat turn, "declined" when the role took no action. The night_action phase tag alone
+    cannot tell a carrier's kill from its skill. None on cases from before 2026-10-11."""
+    via: str | None = None
+    """The dead body a necromancer acted through."""
+    role_named: str | None = None
+    """The role a fortune teller named on its bet."""
 
 
 class EvalProvenance(BaseModel):

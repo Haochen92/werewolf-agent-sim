@@ -410,10 +410,16 @@ def run_memory_informed_night_action(
             round_num=round_num,
         )
 
-        target: str | None = None
+        night_action = NightAction(role=role)
         updated_strategy = (effects.strategy or "") if effects else ""
         if isinstance(result, ResolvedNightChoice) and result.entry is not None:
-            target = result.entry.target
+            entry = result.entry
+            night_action = NightAction(role=role, target=entry.target, kind=entry.kind,
+                                       via=entry.via, role_named=entry.role_named)
+        elif isinstance(result, ResolvedNightChoice):
+            night_action = NightAction(role=role, kind="declined")
+        elif isinstance(result, ResolvedWolfDiscussion):
+            night_action = NightAction(role=role, kind="chat")
         eval_case = EvalCase(
             span_name=span_name,
             player_id=player_id,
@@ -436,7 +442,7 @@ def run_memory_informed_night_action(
                 reranking_enabled=retrieval_meta["reranking_enabled"],
                 filtering_enabled=retrieval_meta["filtering_enabled"],
             ),
-            agent_night_action=NightAction(role=role, target=target),
+            agent_night_action=night_action,
             updated_strategy=updated_strategy,
             adopted_strategy_keys=raw_adopted_indices,
             adopted_strategy_store_keys=adopted_store_keys,
