@@ -12,6 +12,10 @@ rescue must be in the catalogue, and a model goes on the menu only with a price 
     poetry run python scripts/model_catalog.py price gemini-3.6-flash --since 2026-10-12 \\
         --input 0.75 --cached 0.075 --output 3.75 --source "Gemini API pricing page, promo to 2026-12-31"
     poetry run python scripts/model_catalog.py set gemini-3.6-flash --listed
+    poetry run python scripts/model_catalog.py sync-langfuse
+
+A price change is also written to Langfuse's model definitions, so traces are priced at the
+catalogue's rates; ``sync-langfuse`` does it on its own (after editing the table directly).
 
 A new model needs ``--name``, starts off the menu, and is listed with ``--listed`` once it has a
 price. ``none`` clears a rescue; ``default`` clears a level or a mode.
@@ -158,6 +162,18 @@ def cmd_price(conn, args) -> None:
           " (every game on or after that date is now priced at it)")
 
 
+def cmd_sync_langfuse(conn, args) -> None:
+    """Write the catalogue's prices into Langfuse's model definitions (Agents/observability/
+    langfuse_prices.py). Runs after every price change; run it by hand after editing the table directly."""
+    from Agents.llm_factory.catalog import load_from_database
+    from Agents.observability.langfuse_prices import sync
+    from Agents.tracing import langfuse
+
+    counts = sync(langfuse.api, load_from_database(args.dsn).prices)
+    print(f"Langfuse: {counts['definitions']} prices, {counts['created']} written, "
+          f"{counts['removed']} stale removed, {counts['unchanged']} already right.")
+
+
 def main() -> None:
     load_dotenv(REPO_ROOT / ".env")
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
@@ -187,6 +203,7 @@ def main() -> None:
     p.add_argument("--output", required=True, type=float, help="USD per 1M output tokens, reasoning included")
     p.add_argument("--peak", action="store_true", help="DeepSeek-style peak hours bill double")
     p.add_argument("--source", default="", help="where the price comes from")
+    sub.add_parser("sync-langfuse", help="write the catalogue's prices into Langfuse's model definitions")
     args = parser.parse_args()
     if not args.dsn:
         raise SystemExit("WW_POSTGRES_DSN is not set")
@@ -194,10 +211,17 @@ def main() -> None:
     import psycopg
 
     with psycopg.connect(_sync_dsn(args.dsn)) as conn:
-        {"list": cmd_list, "show": cmd_show, "set": cmd_set, "price": cmd_price}[args.command](conn, args)
+        {"list": cmd_list, "show": cmd_show, "set": cmd_set, "price": cmd_price,
+         "sync-langfuse": cmd_sync_langfuse}[args.command](conn, args)
         if args.command in ("set", "price"):
             conn.commit()
             print("A running server picks this up within about ten seconds.")
+        if args.command == "price":
+            # Langfuse prices traces from its own model definitions; keep them the catalogue's.
+            try:
+                cmd_sync_langfuse(conn, args)
+            except Exception as e:  # noqa: BLE001 — the price is saved; the sync can be rerun
+                print(f"Langfuse not updated ({e}); run: scripts/model_catalog.py sync-langfuse")
 
 
 if __name__ == "__main__":
