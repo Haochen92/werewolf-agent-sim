@@ -267,3 +267,21 @@ cached). 176 points, 164 after point dedup, all 36 cells, no player IDs.
 against 14 of 150 (9%) for flash-lite. The points are about three times longer and more specific;
 stating more mechanics, they state more wrong ones. A stronger synthesis model alone does not fix
 it. The long points also lengthen every memory-on game prompt.
+
+**Claude's read of advice quality, both stores** (7 cells side by side: Healer, Investigator and
+Sentinel night; Chanteuse discussion; Illusionist and Serial Killer vote; Speculator night. One reader):
+- **flash-lite:** short (median 33 words) and readable, but mostly advice that needs no game data
+  ("prioritize contested players", "avoid rogue votes"), few conditions, rarely a reason.
+- **Sonnet 5.5:** decision rules with a trigger, an action, a reason and an exception, often tied
+  correctly to mechanics: a Not suspicious check also clears the Serial Killer and the neutral; a
+  Speculator dying unpicked loses; a watch on a suspect shows who visits them, not where they go; a
+  lone-killer's only exit is the vote. More useful where right. Problems besides the 20% rule errors:
+  - long (median 109 words, max 178), often several directives in one point;
+  - **town day advice inside town night cells** (a Sentinel night point that is all about what to
+    share on Day 2): 31 of 34 town night points mention claiming, sharing or reporting (a regex
+    pointer, confirmed in the cells read). Town day is not retrieved by ruling, and this brings it
+    back through the night cells;
+  - some situations narrowed to one game's endgame, and one anecdote ("in one game a Necromancer…").
+- Implied synthesis-prompt changes: mechanics only as the rules block states them; one directive
+  per point, about two sentences and its reason; advice about the cell's own action only; no game
+  anecdotes.
