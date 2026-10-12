@@ -184,6 +184,9 @@ class Translator:
         self._deadlines: Mapping[str, str] = {}  # the session's, for an announced prompt
         self._seen_reads: set[tuple[str, int, int, str]] = set()
         self._memory_extracted_sent = False
+        self.extraction_input: dict | None = None
+        """The finished game's extraction input (the post-game node's chunk), for completion to
+        keep with the game; never a wire event."""
         self._strategies: dict[str, str] = {}
 
     def hydrate(self, log: list) -> None:
@@ -347,6 +350,9 @@ class Translator:
             return [self._emit(ev.MemoryExtracted, day=payload["day"],
                                observations=payload["observations"],
                                strategy_points=payload["strategy_points"])]
+        if payload.get("event") == "extraction_input":
+            self.extraction_input = payload["case"]
+            return []
         raise TranslationError(f"unknown custom payload: {payload!r}")
 
     def _input_requests(self, interrupts, deadlines: Mapping[str, str]) -> list[ev.DurableEvent]:

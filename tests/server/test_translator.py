@@ -628,3 +628,11 @@ def test_the_carriers_kill_reads_and_its_skill_reads_are_both_sent():
     skill["data"]["round"] = SKILL_ROUND
     assert [e.round for e in [*t.translate(kill), *t.translate(skill)]] == [CARRIER_ROUND, SKILL_ROUND]
     assert t.translate(skill) == []  # a re-run of the skill turn is still sent once
+
+
+def test_the_extraction_input_is_kept_for_completion_and_never_sent():
+    t = _seeded_translator()
+    case = {"game_id": "g", "roles": {"player_1": "healer"}, "formatted_discussions": "..."}
+    chunk = {"type": "custom", "ns": [], "data": {"event": "extraction_input", "case": case}}
+    assert t.translate(chunk) == []
+    assert t.extraction_input == case

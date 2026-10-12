@@ -27,9 +27,6 @@ def test_a_served_game_never_dumps_and_seeds_from_the_named_store(monkeypatch):
 
     on = game_run_config(memory=True, human_player=0).memory_persistence
     assert on.dump_enabled is False
-    # Memory-on games extract what they taught for the replay, still without writing.
-    assert on.extraction.extract_without_dump is True
-    assert game_run_config(memory=False, human_player=0).memory_persistence.extraction.extract_without_dump is False
 
     monkeypatch.setattr(server_settings, "WW_MEMORY_STORE_DIR", "memory_stores/demo_gen1")
     run = game_run_config(memory=True, human_player=0)

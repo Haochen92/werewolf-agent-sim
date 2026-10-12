@@ -185,7 +185,7 @@ class RecordingGameRepository:
         self.update_calls.append((game_id, fields))
         return True
 
-    async def complete_game(self, game_id, log, n_humans):
+    async def complete_game(self, game_id, log, n_humans, extraction_input=None):
         self.completions.append((game_id, len(log), n_humans))
 
     async def load_recoverable_games(self):
@@ -239,7 +239,7 @@ async def test_final_chunk_gets_one_bounded_retry_before_completion(
                     return False
             return await super().record_events(game_id, events)
 
-        async def complete_game(self, game_id, log, n_humans):
+        async def complete_game(self, game_id, log, n_humans, extraction_input=None):
             assert self.attempts == 2
             assert (self.events == log) is not persistent_failure
             await super().complete_game(game_id, log, n_humans)

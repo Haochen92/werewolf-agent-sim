@@ -414,7 +414,8 @@ class GameSession:
             # Existing EventRows become the replay: completion only finalizes metadata
             # and lifecycle on their parent GameRow, never copies the log.
             await self._repository.complete_game(
-                self.game_id, self.log, len(self.human_players))
+                self.game_id, self.log, len(self.human_players),
+                extraction_input=self.translator.extraction_input)
 
     async def _wait_for_absent_player(self) -> None:
         """If this is a solo game and its player is away, wait here until they are back.

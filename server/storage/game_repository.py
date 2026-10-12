@@ -209,6 +209,7 @@ class GameRepository:
         game_id: str,
         log: Sequence[ev.DurableEvent],
         n_humans: int,
+        extraction_input: dict | None = None,
     ) -> None:
         """Finalize a game row so its existing events become replay-visible.
 
@@ -216,6 +217,7 @@ class GameRepository:
             game_id: Game to transition to ``completed``.
             log: Complete authoritative event log used to derive replay metadata.
             n_humans: Number of human-controlled seats in the game.
+            extraction_input: What the game can teach, kept for the offline extraction job.
 
         Returns:
             Nothing. A log with no clean ending, or one the table holds only part of
@@ -249,6 +251,7 @@ class GameRepository:
                 "status": COMPLETED,
                 "finished_at": func.now(),
                 "n_humans": n_humans,
+                "extraction_input": extraction_input,
                 "error": None,
                 **metadata,
             }

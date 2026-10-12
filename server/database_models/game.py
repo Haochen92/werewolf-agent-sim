@@ -116,6 +116,19 @@ class GameRow(SQLModel, table=True):
     """The tokens the game spent and its model calls' time, per model and UTC hour
     (server/game/usage.py). Saved as the game runs; the replay's cost is worked out from it.
     Null for games recorded before the column existed."""
+    extraction_input: dict | None = Field(
+        default=None,
+        sa_column=Column(JSONB, nullable=True),
+    )
+    """What the game can teach, kept for the offline extraction job: the roles, the day talk,
+    the wolf chat, the exact night actions, each player's notes and the outcome. Saved when the
+    game completes; no AI reads it during the game. Null for games before the column existed."""
+    lessons_extracted_at: datetime | None = Field(
+        default=None,
+        sa_column=Column(TIMESTAMP(timezone=True), nullable=True),
+    )
+    """When the offline job extracted this game's lessons. Null until then; a memory-on game's
+    replay says its lessons are still being written."""
 
 
 class EventRow(SQLModel, table=True):
