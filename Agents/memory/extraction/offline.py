@@ -2,15 +2,20 @@
 
 Extraction never runs in a live game (owner's ruling 2026-10-12, evidence/memory_system/v8/
 decisions.md §11): a game saves its input when it ends (the post-game node) and the offline job
-extracts in batches. This module holds what the job hands on: the replay's "what this game taught"
-payload, the same shape the post-game node once streamed.
+extracts in batches. This module holds the job's parts: the inputs of games that ended before
+inputs were saved (rebuilt from their records), the batched extraction and de-halo pass, and the
+replay's "what this game taught" payload, the same shape the post-game node once streamed. The
+entry point is scripts/extract_batch.py.
 """
 
 from __future__ import annotations
 
+from logging import getLogger
 from typing import Any
 
 from Agents.schemas.memory import BaseSituation
+
+logger = getLogger(__name__)
 
 
 def extracted_dimensions(item: Any) -> dict | None:
@@ -132,3 +137,129 @@ def input_from_event_log(game_id: str, events: list[dict], human_players: list |
     state = {"day_channel": day_channel, "wolf_channel": wolf_channel, "night_actions": list(records.values()),
              "dead_roster": dead, "agent_strategies": {p: notes[p] for p in _seat_order(roles) if p in notes}}
     return _case(game_id, roles, lineup, winner, state, human_players)
+
+
+# --- The job: saved inputs extracted in Claude batches -----------------------------------------
+# One call per (game, dealt role, phase), as live extraction made them (cell_units.ROLE_UNITS): a
+# game's calls share its prefix (the rules, the standards and the whole game record), marked for
+# Claude's cache. A batch runs in no set order, so each game's first call goes direct and writes the
+# prefix to the 1-hour cache; its other calls go in the batch and read it. Nothing is wasted: the
+# direct call's answer is kept. A call the batch loses or cannot parse is retried direct.
+
+def load_inputs(paths: list[str]) -> list[tuple[dict, Any]]:
+    """(metadata, ExtractionCase) for each saved input in the given case files: records of kind
+    ``extraction_input``, and ``postgame_extraction`` (an extracted game, whose input is reused)."""
+    import json
+    from pathlib import Path
+
+    from Agents.schemas.evaluation import ExtractionCase
+
+    out = []
+    for path in paths:
+        for line in Path(path).read_text().splitlines():
+            record = json.loads(line)
+            if record.get("kind") not in ("extraction_input", "postgame_extraction"):
+                continue
+            case = ExtractionCase.model_validate(record["output"]["extraction_case"])
+            out.append((record.get("metadata") or {}, case.model_copy(update={"observations": [], "strategy_points": []})))
+    return out
+
+
+def cell_calls(case) -> tuple[str, list[tuple[str, str, str, type]]]:
+    """The game's shared prefix and its calls: (role, action_phase, prompt, schema) for each phase
+    of each dealt role."""
+    from Agents.memory.extraction.cell_units import ROLE_UNITS
+    from Agents.memory.extraction.inputs import (
+        build_cell_extraction_prefix,
+        build_cell_observation_tail,
+        extraction_inputs_from_frozen_case,
+    )
+    from Agents.schemas.memory import cell_observation_schema_for, cell_observations_extraction_schema
+
+    prefix = build_cell_extraction_prefix(extraction_inputs_from_frozen_case(case.model_dump()))
+    calls = []
+    for role in dict.fromkeys(case.roles.values()):
+        for _group, wording, phase in ROLE_UNITS.get(role, []):
+            obs_schema = cell_observation_schema_for(role, phase)
+            schema = cell_observations_extraction_schema(role, phase)
+            if obs_schema is None or schema is None:
+                continue
+            calls.append((role, phase, prefix + build_cell_observation_tail(role, wording, phase, obs_schema), schema))
+    return prefix, calls
+
+
+def _observations(result, phase: str) -> list:
+    observations = list(result.observations)
+    if phase in ("day_discussion", "day_vote"):  # one phase per call: the tag is the call's
+        for o in observations:
+            o.action_phase = phase
+    return observations
+
+
+def extract_cases(cases: list, model: str, thinking_level: str | None = None,
+                  warm: bool = True, workers: int = 8) -> dict[str, dict]:
+    """Extract each case's observations; by game id: {"observations", "missing", "model_used"}."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    from Agents.memory.claude_structured import batch_parse, parse_with_claude
+
+    games = {case.game_id: cell_calls(case) for case in cases}
+    keyed: dict[str, tuple[str, str, str, str, type, str]] = {}
+    for gi, (game_id, (prefix, calls)) in enumerate(games.items()):
+        for ci, (role, phase, prompt, schema) in enumerate(calls):
+            keyed[f"g{gi}_c{ci}"] = (game_id, role, phase, prompt, schema, prefix)
+
+    def direct(key: str):
+        _game, _role, _phase, prompt, schema, prefix = keyed[key]
+        try:
+            return parse_with_claude(prompt, schema, model, thinking_level, cache_prefix=prefix, cache_ttl="1h")[0]
+        except Exception as e:  # noqa: BLE001 — a lost cell is reported, never fatal
+            logger.warning("Direct extraction call %s failed: %s", key, e)
+            return None
+
+    leads = [next(k for k in keyed if keyed[k][0] == g) for g in games] if warm else []
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        parsed = dict(zip(leads, pool.map(direct, leads)))
+    rest = {k: (v[3], v[4], v[5]) for k, v in keyed.items() if k not in parsed}
+    if rest:
+        parsed.update(batch_parse(rest, model, thinking_level, cache_ttl="1h"))
+    lost = [k for k, v in parsed.items() if v is None]
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        parsed.update(zip(lost, pool.map(direct, lost)))
+
+    out = {g: {"observations": [], "missing": [], "model_used": model} for g in games}
+    for key, result in parsed.items():
+        game_id, role, phase, *_ = keyed[key]
+        if result is None:
+            out[game_id]["missing"].append(f"{role}/{phase}")
+        else:
+            out[game_id]["observations"] += _observations(result, phase)
+    return out
+
+
+def dehalo_cases(cases: list, extracted: dict[str, dict], config) -> dict[str, dict]:
+    """The de-halo pass over each game's observations as one batch (``config``: DehaloConfig), the
+    verdicts rewritten in place; by game id, the de-halo record."""
+    from Agents.memory.claude_structured import batch_parse, parse_with_claude
+    from Agents.memory.extraction.dehalo import apply_judgments, dehalo_prompt
+    from Agents.memory.extraction.inputs import extraction_inputs_from_frozen_case
+    from Agents.schemas.dehalo import Judgments
+
+    if not config.enabled:
+        return {}
+    prompts = {f"g{i}": (case.game_id, dehalo_prompt(extracted[case.game_id]["observations"],
+                                                     extraction_inputs_from_frozen_case(case.model_dump())))
+               for i, case in enumerate(cases) if extracted[case.game_id]["observations"]}
+    judged = batch_parse({k: (p, Judgments) for k, (_g, p) in prompts.items()}, config.model, config.thinking_level)
+    records = {}
+    for key, (game_id, prompt) in prompts.items():
+        result = judged.get(key)
+        if result is None:
+            try:
+                result = parse_with_claude(prompt, Judgments, config.model, config.thinking_level)[0]
+            except Exception as e:  # noqa: BLE001 — verdicts stay as extracted
+                logger.warning("De-halo of %s failed: %s", game_id, e)
+        if result is not None:
+            records[game_id] = apply_judgments(extracted[game_id]["observations"], result, config.model,
+                                               config.thinking_level, {"batched": True})
+    return records
