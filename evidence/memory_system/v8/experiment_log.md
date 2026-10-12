@@ -241,8 +241,8 @@ The first attempt failed on 429 twelve times; every retry succeeded. No player I
 Provenance (`source_observations`, `synthesis_log.jsonl`) is in the store.
 
 **Rule errors in strategy points** (`data/seeding/rule_screen.md`, one read):
-- 14 of 150 points state a rule the game does not have (8 high confidence, 6 medium). Examples: an
-  Illusionist body gives the Necromancer concealment; a Healer's save is "essentially permanent";
+- 14 of 150 points state a rule the game does not have (8 high confidence, 6 medium). Examples: a borrowed
+  block is announced as reanimated; a Healer's save is "essentially permanent";
   on a save the Illusionist's visit is not seen; a sigil can punish a lone killer. Sigilist and
   Illusionist mechanics account for 8.
 - Traced to source observations, the errors are mostly synthesis over-generalising from facts that

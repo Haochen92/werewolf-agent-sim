@@ -10,7 +10,7 @@ a role know are flagged, not strategy. One read, not a measurement.
 
 | Key | Cell | Claim | The rule |
 |---|---|---|---|
-| 77bf9429 | necromancer/night_action | an Illusionist body gives concealment that hides the Necromancer from death reports | a body attack is announced as reanimated; an Illusionist body gives an attack (`BORROWED_ABILITY`) |
+| 77bf9429 | necromancer/night_action | a kill through an Illusionist body hides the Necromancer from death reports | the victim's role is hidden (while the Illusionist had conceals left), but the attack is announced as reanimated, so the Necromancer's presence is not. *Corrected 2026-10-12: this row first said an Illusionist body gives no concealment, which is wrong (`night.py`, owner ruling 2026-10-10).* |
 | 3da5f01a | necromancer/night_action | a borrowed block triggers a "system-announced reanimated ability signature" | only attacks are announced; a block is told to the blocked player alone |
 | 7e0540c4 | serial_killer/night_action | a saved player's protection is "essentially permanent" | the Healer protects one player per night |
 | 70cfc8b0 | illusionist/night_action | sigils protect victims; a reanimated entity can take the pack's kill; the kill can stall; a save reveals the attacker | the sigil goes on the attacker; the Necromancer is not in the pack; the pack kills every night; a save names only "the wolves" |
