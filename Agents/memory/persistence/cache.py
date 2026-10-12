@@ -13,6 +13,21 @@ from .serialization import _file_sha256
 logger = logging.getLogger(__name__)
 
 
+def _embedding_signature() -> dict[str, Any]:
+    """The embedding model and size the running process indexes with. Vectors from another model are
+    meaningless to it, so a cache built under a different signature is stale."""
+    from Agents.llm_factory import DEFAULT_EMBEDDING_DIMS, DEFAULT_EMBEDDING_MODEL
+
+    return {"embedding_model": DEFAULT_EMBEDDING_MODEL, "embedding_dims": DEFAULT_EMBEDDING_DIMS}
+
+
+def _signature_matches(payload: dict) -> bool:
+    # A cache written before the signature was recorded was built on gemini-embedding-2 at 1536.
+    built = {"embedding_model": payload.get("embedding_model", "gemini-embedding-2"),
+             "embedding_dims": payload.get("embedding_dims", 1536)}
+    return built == _embedding_signature()
+
+
 def save_indexed_store_cache(
     target_store: BaseStore,
     cache_path: str | Path,
@@ -46,6 +61,7 @@ def save_indexed_store_cache(
         "version": 1,
         "observations_sha256": _file_sha256(Path(observations_path)),
         "strategy_points_sha256": _file_sha256(Path(strategy_points_path)),
+        **_embedding_signature(),
         "data": data_dict,
         "vectors": vectors_dict,
     }
@@ -84,6 +100,9 @@ def load_indexed_store_cache(
         return False
 
     if payload.get("version") != 1:
+        return False
+    if not _signature_matches(payload):
+        logger.info("Cache built with another embedding model, will re-seed")
         return False
 
     obs_sha = _file_sha256(Path(observations_path))
@@ -135,7 +154,7 @@ def load_cached_vectors(cache_path: str | Path) -> dict[tuple, tuple]:
             payload = pickle.load(f)  # noqa: S301
     except Exception:
         return {}
-    if payload.get("version") != 1:
+    if payload.get("version") != 1 or not _signature_matches(payload):
         return {}
     data = payload.get("data", {})
     vectors = payload.get("vectors", {})
