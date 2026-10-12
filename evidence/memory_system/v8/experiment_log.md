@@ -431,7 +431,7 @@ subagent with the same rubric (`read.jsonl`).
 - Refilling from the cell mostly adds misfits: of the 28 promoted lessons, 2 fit. The cells hold few
   lessons for any one stage, so a filtered lookup should show fewer lessons, not different ones.
 - Uses left never applied here: no sampled seat had run out, and no stored night lesson was learned at
-  zero uses. The Speculator's lessons that assume a pick already made (four lookups) are the case it
+  zero uses. The Speculator's lessons that assume a pick already made (four lookups in part one's read alone) are the case it
   would catch, but the Speculator's cells have no uses field (the pick is its one use; `uses=1`).
 
 **Reading.** The stored board is a real stage signal: filtering on it lifts fit from 15% to 25% and
