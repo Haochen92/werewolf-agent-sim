@@ -111,6 +111,11 @@ Night, the actions:
     visit, unless the role's rules say it is not; an action that was blocked is not carried out and is
     not a visit. Roles that watch or follow see visits, except the pack's kill on a victim an illusionist
     concealed, which leaves no trace.
+- A visit goes one way, from the visitor to the player visited. A watch on a player shows who came to
+    them, never where they went or whether they acted; a follow on a player shows whom they went to,
+    never who came to them. "I visited no one" and "no one visited me" are different claims, and a watch
+    that saw no one does not mean the watched player stayed home. When you speak of a visit, say which
+    way it went: "I went to X", "X came to me".
 - An attack kills its target unless the target is protected that night (a save, announced in the
     morning) or cannot be killed at night (nothing announced). A player attacked by more than one
     attacker still dies once.

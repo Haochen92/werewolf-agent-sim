@@ -20,13 +20,14 @@ from pydantic import BaseModel
 
 from Agents.prompts.compose import preamble
 from Agents.schemas.game_events import DayRound
-from Agents.schemas.roles import ROLE_SPECS
+from Agents.schemas.roles import ROLE_SPECS, TOWN
 from Agents.prompts.cell_prompt import cell_driver_horizon, dimension_menu
 from Agents.prompts.day_discuss import (
     CLOSING_ROUND_RULES,
     DAY_ONE_NO_VOTE_RULES,
     OPENING_ROUND_RULES,
     PROACTIVE_ROUND_RULES,
+    TOWN_VOTE_REASON_RULE,
 )
 from Agents.prompts.prompt_formatters import (
     format_alive_roles,
@@ -72,7 +73,8 @@ def _firing_brief(firing_reason: Any) -> str:
     """Turn the scheduler's firing_reason into a one-line turn brief for the agent.
 
     Reactive picks get an explicit 'you were addressed by X, respond' nudge so the agent
-    aims its reply at the right player (and labels it a response → the debt discharges).
+    aims its reply at the right player (and labels it a response → the debt discharges), and
+    answers only what is new (2026-10-12: Haiku's replies restated whole earlier answers).
     Proactive / missing reasons add nothing (the silence rule already governs those).
     """
     if firing_reason is None:
@@ -84,7 +86,10 @@ def _firing_brief(firing_reason: Any) -> str:
     if tier == "reactive" and owes:
         return (
             f"You were directly addressed by {', '.join(owes)}. Respond to them this turn — "
-            "answer their question or defend against their accusation. Do not stay silent."
+            "answer their question or defend against their accusation. Do not stay silent. "
+            "Answer what is new in their latest message: if you already said it today, point back to "
+            "it in a few words (\"as I said, ...\") instead of restating it, and do not ask again a "
+            "question that has already been answered."
         )
     return ""
 
@@ -94,7 +99,8 @@ def _discussion_stage_rules(payload: dict[str, Any]) -> str:
 
     The payload's ``day_round`` says which round the turn belongs to: ``opening`` (every living
     player at once, claims and night facts only), ``discussion`` (the scheduler's reactive
-    turns), ``proactive`` (a sweep turn: the floor given to a player who has not spoken) or
+    turns), ``proactive`` (a sweep turn: the floor given to a player who has not spoken; a town
+    seat's, on a voting day, also asks for the reason behind a vote it leans to) or
     ``closing`` (the accused's last word). On day 1 there is no vote, and the opening says so.
     A missing ``day_round`` is a discussion turn, so older payloads and replays render as before.
     """
@@ -107,6 +113,9 @@ def _discussion_stage_rules(payload: dict[str, Any]) -> str:
             rules = rules + DAY_ONE_NO_VOTE_RULES
         return rules
     if day_round == "proactive":
+        role = ROLE_SPECS.get(payload.get("player_role", ""))
+        if voting_today and role is not None and role.side == TOWN:
+            return PROACTIVE_ROUND_RULES + TOWN_VOTE_REASON_RULE
         return PROACTIVE_ROUND_RULES
     if day_round == "closing":
         return CLOSING_ROUND_RULES

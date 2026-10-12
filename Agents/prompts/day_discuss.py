@@ -94,6 +94,15 @@ transcript rather than repeating it: a point the table has already heard is held
 hears it. If you have nothing new to add, set pass_turn=true; a pass costs nothing here.
 """
 
+# Town only, on a voting day, after the open-floor block (owner, 2026-10-12: in the first Haiku game
+# half the votes came from players who had not spoken that day). Not for evil seats, for whom
+# silence can be the better play.
+TOWN_VOTE_REASON_RULE = """
+The vote follows this discussion. Decide now whom you would vote for if it were held now. If that is
+a player and you have not said why today, say it in a sentence or two instead of passing: a vote
+with no stated reason gives the town nothing to weigh. If you would abstain, you may pass.
+"""
+
 CLOSING_ROUND_RULES = """
 == Closing defence ==
 The discussion is over, and you have been called to give a last word before the vote: the
