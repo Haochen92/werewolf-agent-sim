@@ -28,7 +28,7 @@ def _answer(schema, n=1):
 
 
 def test_first_call_direct_rest_batched_lost_calls_retried(monkeypatch):
-    direct, batched = [], {}
+    direct, batched, rounds = [], {}, []
 
     def fake_parse(prompt, schema, model, thinking_level=None, cache_prefix=None, cache_ttl=None,
                    schema_in_prompt=False):
@@ -38,9 +38,10 @@ def test_first_call_direct_rest_batched_lost_calls_retried(monkeypatch):
     def fake_batch(requests, model, thinking_level=None, cache_prefix=None, poll_seconds=30, cache_ttl=None,
                    schema_in_prompt=False):
         assert schema_in_prompt  # one cached prefix for every cell: the schema goes after it
+        rounds.append(sorted(requests))
         batched.update(requests)
         keys = sorted(requests)
-        return {k: (None if k == keys[0] else _answer(requests[k][1])) for k in keys}  # one request lost
+        return {k: (None if k == keys[0] else _answer(requests[k][1])) for k in keys}  # one lost each round
 
     monkeypatch.setattr(claude_structured, "parse_with_claude", fake_parse)
     monkeypatch.setattr(claude_structured, "batch_parse", fake_batch)
@@ -50,11 +51,14 @@ def test_first_call_direct_rest_batched_lost_calls_retried(monkeypatch):
     per_game = len(offline.cell_calls(cases[0])[1])  # 2 roles x 3 phases
     assert per_game == 6
     assert len(batched) == 2 * per_game - 2  # all but each game's lead call
+    assert len(rounds) == 2 and rounds[1] == [rounds[0][0]]  # the lost call batched again first
     for prompt, _schema, prefix in batched.values():
         assert prompt.startswith(prefix) and "record of game-" in prefix
     assert len(direct) == 3 and all(ttl == "1h" for _p, _pre, ttl, _sip in direct)
-    # the two leads write the shared prefix with the schema as text; the lost call retries enforced
+    # the two leads write the shared prefix with the schema as text; the call lost twice goes direct,
+    # enforced, with no cache marker (under its own schema it would write a prefix nobody reads)
     assert sorted(sip for *_x, sip in direct) == [False, True, True]
+    assert [pre for _p, pre, _t, sip in direct if not sip] == [None]
     assert all(len(out[g]["observations"]) == per_game and not out[g]["missing"] for g in ("game-a", "game-b"))
     phases = {o.action_phase for o in out["game-a"]["observations"]}
     assert phases == {"day_discussion", "day_vote", "night_action"}

@@ -497,3 +497,24 @@ the de-halo pass as one Haiku batch. 570 calls, none lost, no backup model used,
   vs none is wrong in 23 (4.4%), mostly a last use written as 0, so the definition alone did not fix
   what the stage filter compares. The exact fix: the observation records the day of its decision and
   the count is computed from the record, as the seat's own is.
+
+## 2026-10-12 — The remaining 21 games on Claude Sonnet 5.5, batched
+
+**Run** (owner's choice; `extract_batch.py --model claude-sonnet-5-5 --thinking off`, code at `9bd2677b`;
+`batch_results/extraction_runs/sonnet_rest_2026-10-12/`): the 16 served games of 2026-10-10, the 4 pilot
+games and the smoke game, from their backfilled inputs, the schema as text after the cached prefix.
+630 calls, none lost, 16 minutes; de-halo as one Haiku batch.
+
+- **Cost: $19.99**, against an estimate of about $9.50. Output $7.39 (1.28M tokens, as expected). The
+  rest was cache writes:
+  - about 91 replies (15%) did not validate and were retried direct with the schema enforced; under its
+    own schema each retry wrote a 16k prefix that no other call reads, at the 1-hour rate: $7.02;
+  - about 92 batch requests (15%) wrote the game's prefix instead of reading the first call's ($3.01):
+    Anthropic does not promise cache hits in a batch.
+  - Fixed for later runs (`claude_structured`, `offline`): a reply that does not validate goes in a
+    second batch the same way, and only what fails again is sent direct, enforced and uncached; the
+    validation errors are now logged (this run's were not, so their cause is unknown).
+- **1,405 observations** (about 67 a game, against Flash's 46): discussion 475, vote 436, night 494.
+  Player ids in 18 (1.3%). De-halo revised 407 (29%).
+- **`uses_left`**, on the 5 games with local records (191 observations): 74% exact, some vs none wrong in
+  5.8% (Flash: 89%, 4.4%).

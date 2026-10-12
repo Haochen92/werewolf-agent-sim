@@ -100,9 +100,10 @@ def _validated(text: str, schema: type[BaseModel]) -> BaseModel | None:
     start, end = text.find("{"), text.rfind("}")
     try:
         return schema.model_validate_json(text[start:end + 1])
-    except Exception:  # noqa: BLE001 — the caller retries with the schema enforced
+    except Exception as e:  # noqa: BLE001 — the caller retries
         with _lock:
             usage_totals["unvalidated_replies"] += 1
+        logger.warning("Reply did not validate as %s: %s", schema.__name__, str(e).replace("\n", " ")[:300])
         return None
 
 

@@ -146,7 +146,10 @@ def input_from_event_log(game_id: str, events: list[dict], human_players: list |
 # prefix to the 1-hour cache; its other calls go in the batch and read it. Nothing is wasted: the
 # direct call's answer is kept. Each call has its own cell schema, and an enforced schema is part of
 # Claude's cache key, so the schema goes as text after the prefix (schema_in_prompt). A call the
-# batch loses, or whose reply does not validate, is retried direct with the schema enforced.
+# batch loses, or whose reply does not validate, goes in a second batch the same way (still reading
+# the cache); what fails again is sent direct with the schema enforced and no cache marker: under its
+# own schema it could only write a prefix no other call reads (in the first Sonnet run, 2026-10-12,
+# 91 such retries each wrote a 16k prefix at the 1-hour rate, $7 of a $20 run).
 
 def load_inputs(paths: list[str]) -> list[tuple[dict, Any]]:
     """(metadata, ExtractionCase) for each saved input in the given case files: records of kind
@@ -214,7 +217,8 @@ def extract_cases(cases: list, model: str, thinking_level: str | None = None,
     def direct(key: str, schema_in_prompt: bool = True):
         _game, _role, _phase, prompt, schema, prefix = keyed[key]
         try:
-            return parse_with_claude(prompt, schema, model, thinking_level, cache_prefix=prefix, cache_ttl="1h",
+            return parse_with_claude(prompt, schema, model, thinking_level,
+                                     cache_prefix=prefix if schema_in_prompt else None, cache_ttl="1h",
                                      schema_in_prompt=schema_in_prompt)[0]
         except Exception as e:  # noqa: BLE001 — a lost cell is reported, never fatal
             logger.warning("Direct extraction call %s failed: %s", key, e)
@@ -226,6 +230,10 @@ def extract_cases(cases: list, model: str, thinking_level: str | None = None,
     rest = {k: (v[3], v[4], v[5]) for k, v in keyed.items() if k not in parsed}
     if rest:
         parsed.update(batch_parse(rest, model, thinking_level, cache_ttl="1h", schema_in_prompt=True))
+    again = {k: (keyed[k][3], keyed[k][4], keyed[k][5]) for k, v in parsed.items() if v is None}
+    if again:
+        logger.info("%d calls lost or unvalidated; a second batch", len(again))
+        parsed.update(batch_parse(again, model, thinking_level, cache_ttl="1h", schema_in_prompt=True))
     lost = [k for k, v in parsed.items() if v is None]
     with ThreadPoolExecutor(max_workers=workers) as pool:
         parsed.update(zip(lost, pool.map(lambda k: direct(k, schema_in_prompt=False), lost)))
