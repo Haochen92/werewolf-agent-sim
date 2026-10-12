@@ -7,7 +7,9 @@ with its cost, a batched call at the batch rate), and its tokens are added to ``
 
 Two ways to call: ``parse_with_claude`` (one call, now) and ``batch_parse`` (many calls as one
 Message Batch, at half price, back within the hour as a rule; for offline runs only). Both can mark
-a shared prompt prefix for caching: the text the model reads is the same, split into two blocks.
+a shared prompt prefix for caching: the text the model reads is the same, split into two blocks. A
+batch runs its requests in no set order, so a prefix shared within it is cached only once a request
+has written it; a caller can write it first with a direct call and the 1-hour cache (``cache_ttl``).
 """
 
 from __future__ import annotations
@@ -48,20 +50,26 @@ def _client():
     return anthropic.Anthropic(api_key=api_key)
 
 
-def _thinking(thinking_level: str | None) -> dict[str, Any]:
+def _thinking(thinking_level: str | None, model: str = "") -> dict[str, Any]:
+    from Agents.llm_factory.backends import _CLAUDE_THINKING_OFF
+
     level = (thinking_level or "").lower()
     if level in _THINKING_OFF:
-        return {"thinking": {"type": "disabled"}}
+        # Sonnet 5.5 refuses "disabled"; its off is "between_tools" (backends). No temperature here.
+        off = _CLAUDE_THINKING_OFF.get(model, {"thinking": {"type": "disabled"}})
+        return {"thinking": off["thinking"]}
     if level:
         return {"thinking": {"type": "adaptive"}, "output_config": {"effort": level}}
     return {}
 
 
-def _content(prompt: str, cache_prefix: str | None) -> str | list[dict]:
-    """The prompt as one block, or as a cached prefix block and the rest when it starts with it."""
+def _content(prompt: str, cache_prefix: str | None, cache_ttl: str | None = None) -> str | list[dict]:
+    """The prompt as one block, or as a cached prefix block and the rest when it starts with it.
+    ``cache_ttl`` "1h" keeps the prefix an hour (written at twice the input rate, not 1.25x)."""
     if not cache_prefix or not prompt.startswith(cache_prefix) or len(prompt) == len(cache_prefix):
         return prompt
-    return [{"type": "text", "text": cache_prefix, "cache_control": {"type": "ephemeral"}},
+    control = {"type": "ephemeral", **({"ttl": cache_ttl} if cache_ttl else {})}
+    return [{"type": "text", "text": cache_prefix, "cache_control": control},
             {"type": "text", "text": prompt[len(cache_prefix):]}]
 
 
@@ -128,28 +136,32 @@ def usage_cost_usd() -> float | None:
 
 
 def parse_with_claude(prompt: str, schema: type[BaseModel], model: str, thinking_level: str | None = None,
-                      cache_prefix: str | None = None) -> tuple[BaseModel | None, dict]:
+                      cache_prefix: str | None = None, cache_ttl: str | None = None) -> tuple[BaseModel | None, dict]:
     """The parsed output and token usage of one call. Raises when there is no key."""
     response = _client().messages.parse(
         model=model, max_tokens=_MAX_TOKENS, timeout=600, output_format=schema,
-        messages=[{"role": "user", "content": _content(prompt, cache_prefix)}], **_thinking(thinking_level))
+        messages=[{"role": "user", "content": _content(prompt, cache_prefix, cache_ttl)}],
+        **_thinking(thinking_level, model))
     return response.parsed_output, _count(response.usage, model=model)
 
 
-def batch_parse(requests: dict[str, tuple[str, type[BaseModel]]], model: str, thinking_level: str | None = None,
-                cache_prefix: str | None = None, poll_seconds: int = 30) -> dict[str, BaseModel | None]:
-    """Each request's parsed output, by id, from one Message Batch ({id: (prompt, schema)}). Blocks
-    until the batch ends; a request that errored, expired or did not parse maps to None, for the
-    caller to retry directly."""
+def batch_parse(requests: dict[str, tuple], model: str, thinking_level: str | None = None,
+                cache_prefix: str | None = None, poll_seconds: int = 30,
+                cache_ttl: str | None = None) -> dict[str, BaseModel | None]:
+    """Each request's parsed output, by id, from one Message Batch ({id: (prompt, schema)}, or
+    (prompt, schema, prefix) to mark that request's own cached prefix instead of ``cache_prefix``).
+    Blocks until the batch ends; a request that errored, expired or did not parse maps to None, for
+    the caller to retry directly."""
     from anthropic.lib._parse._transform import transform_schema  # the schema transform parse() applies
 
     client = _client()
-    thinking = _thinking(thinking_level)
+    thinking = _thinking(thinking_level, model)
     batch_requests = []
-    for custom_id, (prompt, schema) in requests.items():
+    for custom_id, (prompt, schema, *own_prefix) in requests.items():
+        prefix = own_prefix[0] if own_prefix else cache_prefix
         output_format = {"type": "json_schema", "schema": transform_schema(TypeAdapter(schema).json_schema())}
         params: dict[str, Any] = {"model": model, "max_tokens": _MAX_TOKENS,
-                                  "messages": [{"role": "user", "content": _content(prompt, cache_prefix)}],
+                                  "messages": [{"role": "user", "content": _content(prompt, prefix, cache_ttl)}],
                                   **thinking}
         params["output_config"] = {**params.get("output_config", {}), "format": output_format}
         batch_requests.append({"custom_id": custom_id, "params": params})
