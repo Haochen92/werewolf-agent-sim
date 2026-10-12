@@ -33,6 +33,9 @@ PRICES: dict[str, list[Price]] = {
     "gemini-3.1-flash-lite": [Price(date(2026, 1, 1), 0.25, 0.025, 1.50)],
     "gemini-3.5-flash-lite": [Price(date(2026, 7, 21), 0.30, 0.03, 2.50)],
     "gemini-3.6-flash": [Price(date(2026, 7, 21), 1.50, 0.15, 7.50)],
+    # Vertex AI's pricing page, global endpoint (read 2026-10-12); the Gemini API has deprecated
+    # it and routes it to 3.6 Flash, but Vertex still serves gemini-3.5-flash itself.
+    "gemini-3.5-flash": [Price(date(2026, 5, 19), 1.50, 0.15, 9.00)],
     # Not in the Langfuse table (it used its built-in price); list rates, cached rate unverified.
     "gemini-2.5-pro": [Price(date(2025, 6, 1), 1.25, 0.3125, 10.00)],
     "deepseek-v4-pro": [
