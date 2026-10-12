@@ -42,3 +42,10 @@ def test_claude_thinks_only_when_its_mode_does_not_force_the_tool_call(monkeypat
     assert forced.thinking == {"type": "disabled"} and off.thinking == {"type": "disabled"}
     assert schema.thinking == {"type": "adaptive"} and schema.reasoning_effort == "medium"
     assert schema.model == "claude-haiku-5-5"
+
+
+def test_sonnet_5_5_with_thinking_off_asks_for_between_tools_and_sends_no_temperature(monkeypatch):
+    monkeypatch.setenv("CLAUDE_API_KEY", "k")
+    llm = _build_chat_model("anthropic/claude-sonnet-5-5", thinking_level=None)
+    assert llm.thinking == {"type": "between_tools"} and llm.temperature is None
+    assert llm.structured_mode == "json_schema"

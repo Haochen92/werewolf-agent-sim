@@ -135,6 +135,8 @@ STRUCTURED_MODE_BY_MODEL: dict[str, str] = {
     # A forced tool call turns Claude's thinking off; JSON-schema output kept it (admission
     # 2026-10-11: 51/51, against 45/51 with the forced tool call).
     "anthropic/claude-haiku-5-5": "json_schema",
+    # Refuses tool_choice "tool" and "any" (2026-10-12).
+    "anthropic/claude-sonnet-5-5": "json_schema",
 }
 
 
@@ -215,6 +217,14 @@ def _build_openai_compat_chat_model(
     )
 
 
+# A Claude model with thinking off, where the default request is refused (2026-10-12, Sonnet 5.5 as
+# the golden judge): it answers "thinking disabled" with a 400 asking for "between_tools", and takes no
+# temperature (and no forced tool call: STRUCTURED_MODE_BY_MODEL).
+_CLAUDE_THINKING_OFF: dict[str, dict[str, Any]] = {
+    "claude-sonnet-5-5": {"thinking": {"type": "between_tools"}},
+}
+
+
 def _build_claude_chat_model(model: str, *, temperature: float, thinking_level: str | None,
                              mode: str) -> Any:
     """A Claude seat (claude.py). Thinking is adaptive, steered by the effort level; "minimal" or
@@ -231,7 +241,7 @@ def _build_claude_chat_model(model: str, *, temperature: float, thinking_level: 
                     "with thinking).", thinking_level)
     extra: dict[str, Any] = (
         {"thinking": {"type": "adaptive"}, "effort": thinking_level} if thinking
-        else {"thinking": {"type": "disabled"}, "temperature": temperature})
+        else _CLAUDE_THINKING_OFF.get(model) or {"thinking": {"type": "disabled"}, "temperature": temperature})
     return ClaudeChat(model=model, api_key=api_key, max_tokens=16_000, structured_mode=mode, **extra)
 
 
