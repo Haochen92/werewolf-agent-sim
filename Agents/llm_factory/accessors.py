@@ -30,9 +30,14 @@ DEFAULT_GAME_THINKING_LEVEL = "minimal"
 GAME_THINKING_BY_MODEL = {
     "gemini-3.5-flash-lite": "medium",
     "gemini-3.1-flash-lite": "low",
-    # 2026-10-04 bench: Luna at medium 6% bad, at high 11% and 24 s a turn. GLM is played without
-    # thinking, which its full reasoning makes 34-55 s a call.
-    "openai/gpt-6-luna": "medium",
+    # 2026-10-04 bench: Luna at medium 6% bad, at high 11% and 24 s a turn. 2026-10-11 Phase 3
+    # bench (phase3_luna_haiku): low 7% bad against medium's 4%, a tie case by case, at ~390
+    # reasoning tokens against ~1,260 and 8 s a turn against 16. GLM is played without thinking,
+    # which its full reasoning makes 34-55 s a call.
+    "openai/gpt-6-luna": "low",
+    # 2026-10-11 Phase 3 bench: Haiku 5.5 at effort low 10% and 16% bad over two runs (flash-lite
+    # 34-39%), ~1,250 reasoning tokens, 9.5 s a turn; at medium 16% and ~2,100 tokens.
+    "anthropic/claude-haiku-5-5": "low",
     "openrouter/z-ai/glm-5.3-flash": "minimal",
 }
 # A game turn's request budget (2026-09-30): Vertex's shared pool for a new model can hold a

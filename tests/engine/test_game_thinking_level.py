@@ -35,8 +35,9 @@ def test_the_admitted_models_play_at_their_bench_levels_and_glm_summarises_witho
     monkeypatch.setattr(accessors, "create_chat_model", lambda model, **kw: seen.append((model, kw["thinking_level"])))
     monkeypatch.delenv("GOOGLE_GENAI_THINKING_LEVEL", raising=False)
     monkeypatch.delenv("GOOGLE_GENAI_SUMMARY_THINKING_LEVEL", raising=False)
-    assert accessors.game_thinking_level("openai/gpt-6-luna") == "medium"
+    assert accessors.game_thinking_level("openai/gpt-6-luna") == "low"
     assert accessors.game_thinking_level("openrouter/z-ai/glm-5.3-flash") == "minimal"
+    assert accessors.game_thinking_level("anthropic/claude-haiku-5-5") == "low"
     for model in ("openrouter/z-ai/glm-5.3-flash", "openai/gpt-6-luna"):
         token = GAME_LLM.set(GameLLM(model=model))
         try:

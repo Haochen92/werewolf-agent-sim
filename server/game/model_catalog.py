@@ -51,6 +51,12 @@ SUPPORTED_GAME_MODELS: dict[str, GameModel] = {
     # GPT-6 Luna at medium reasoning, json_schema output: 6% bad samples against 3.5 flash-lite
     # medium's 9% (not worse; better not significant), ~15 s a turn. An OpenAI key; no rescue.
     "openai/gpt-6-luna": GameModel(None, "GPT-6 Luna"),
+    # Admitted 2026-10-11 (eval-model-admission; the Phase 3 hallucination bench, five samples of
+    # fourteen ten-seat turns): Claude Haiku 5.5 at effort low, json_schema output, 10-16% bad
+    # samples against 3.5 flash-lite's 34-39%, ~9.5 s a turn. Paid from the owner's Anthropic
+    # credits; the rescue stays on the server's own Gemini backend.
+    "anthropic/claude-haiku-5-5": GameModel(
+        "gemini-3.5-flash-lite", "Claude Haiku 5.5", True),
     # GLM-5.3 Flash without thinking (its endpoint cannot turn reasoning fully off; effort low),
     # json_mode output: 32% bad samples, so a cheap option rather than a recommended one. With
     # thinking it took 34-55 s a call. An OpenRouter key, pinned to Z.AI's servers; no rescue.

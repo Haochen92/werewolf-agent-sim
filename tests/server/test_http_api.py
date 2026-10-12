@@ -69,7 +69,8 @@ def test_the_menu_says_who_pays_and_which_row_is_default(api_client):
     menu = api_client.get("/models").json()
     by_model = {row["model"]: row for row in menu["models"]}
     house = {m for m, row in by_model.items() if row["house_funded"]}
-    assert house == {"gemini-3.1-flash-lite", "gemini-3.5-flash-lite", "gemini-3.6-flash"}
+    assert house == {"gemini-3.1-flash-lite", "gemini-3.5-flash-lite", "gemini-3.6-flash",
+                     "anthropic/claude-haiku-5-5"}
     assert [m for m, row in by_model.items() if row["is_default"]] == ["gemini-3.5-flash-lite"]
     # Storage is off in tests, so the purse is the process defaults: on, nothing used yet.
     assert menu["house"]["enabled"] is True
