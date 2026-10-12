@@ -166,3 +166,14 @@ selected and the lookup's record, never the payload or a verdict: each decision 
 and a reused lookup's record says it was reused and on which round it was made. The cache lives in the
 server process, so a restart only means a fresh lookup. Built in `Agents/memory/retrieval/lookup_cache.py`.
 A human's claim carries no claim field yet, so it does not refresh a lookup.
+
+**Amended the same day, after an outside review of the query.** A wolf's night is two lookups, one for
+the pack's chat and one for its kill and ability: in a played game the talk moved from candidate
+targets to a kill-and-block plan the first lookup could not anticipate (about six more lookups a game).
+The review's other findings were fixed in the query prompt: it now states the rules, the public dead,
+the seat's own exact state (a fortune teller's points, a speculator's pick, a necromancer's bodies and
+conceals, the pack's carrier and target), and calls a parity count after a concealed death the worst
+case for the town rather than exact; the four labels used only by the switched-off dimension gating
+are no longer asked for. Not built, by the owner's choice: a whole-cell shortcut for cells of three or
+fewer points (10 of the 24 cells retrieved in play), since more seeding will grow them; the offline
+check of 12 to 20 frozen situations against a show-the-whole-cell baseline is deferred.
