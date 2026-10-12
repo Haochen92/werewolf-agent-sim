@@ -313,3 +313,45 @@ flagged, serve only the valid ones). The 19 points of `rule_screen_sonnet2.md` c
 (screen, confidence, claim, rule) in `v8_seed_synth_sonnet2`; `ten_seat_v1` is that store without
 them: 157 points, at least one in every cell. Not yet loaded by a server: a fresh directory embeds
 its points on first load (gemini-embedding-2).
+
+## 2026-10-12 — Embedder: gemini-embedding-2 → Qwen3-Embedding-8B
+
+**Why (owner):** Gemini credits will lapse and gemini-embedding-2 ($0.20/M, multimodal) is the
+priciest embedder on OpenRouter. Compared live 2026-10-12 (OpenRouter's model API, Voyage's pricing
+page): Qwen3-Embedding-8B $0.01/M, voyage-4-lite $0.02, voyage-4 $0.06 (Voyage direct: 200M tokens
+free), OpenAI text-embedding-3-small $0.02. Chosen: Qwen3-8B on the existing OpenRouter key (open
+weights, 32k context, sizes 32–4096). At our volume (the whole store ~0.2M tokens; a game well under
+0.1M) every option costs cents.
+
+**Built:** `MEMORY_EMBEDDING_MODEL` (default now `qwen/qwen3-embedding-8b`, `507116a7`, `85daf18a`);
+OpenRouter hosts pinned to Nebius then DeepInfra (two hosts' vectors for one text differ, cosine
+~0.998; SiliconFlow serves fp8); every cosine threshold read per model from
+`SIMILARITY_THRESHOLDS`; a store cache now records its embedding model and is refused under
+another (`a32a396c`: before, a switch would have served Gemini vectors to Qwen queries); seeding
+batches 64 records a call on OpenRouter (`6a7823f5`: 13 min → 40 s for 710 records). Canary re-pinned.
+
+**Thresholds** (`data/embedder_migration/`):
+
+| Threshold | Gemini | Qwen | How |
+|---|---|---|---|
+| dedup candidate | 0.55 | 0.36 | below every within-cell pair on both (Gemini's lowest 0.670, Qwen's 0.476) |
+| synthesis clustering | 0.65 | 0.46 | same |
+| batch clustering | 0.70 | 0.50 | same |
+| retrieval dedup gate | 0.87 | 0.80 | percentile: p68 of within-cell situation pairs |
+| obs content keep / discard | 0.935 / 0.96 | 0.72 / 0.94 | dedup_v2 golden labels, zero errors |
+| SP action keep / discard | 0.81 / 0.93 | 0.61 / 0.88 | dedup_v2 golden labels, zero errors |
+
+- The prefilter thresholds were set on gemini-embedding-001 and never remapped in July. On the
+  golden labels, gemini-embedding-2 needs keep < 0.50 for zero errors (production 0.81 / 0.935), so
+  today's Gemini prefilter auto-keeps some labelled duplicates. Left as is: that path is retiring.
+  Percentile mapping would have carried the miscalibration to Qwen (keep 0.90 / 0.69).
+- Qwen's prefilter decides fewer pairs without the LLM (obs 7.5%, SPs 16% of golden cases).
+
+**Retrieval check** (observation situations as stand-in queries, top-5 strategy points in the
+cell, 236 queries): 81% of the top 5 shared, same first point 55%. Read of five first-point
+disagreements: Qwen better on 2, Gemini on 2, neither on 1. No sign of worse retrieval; the gate's
+relevance check (judge: Claude Haiku 5.5, owner 2026-10-12) on real queries is the real test,
+replaying the same queries on both embeddings.
+
+**`ten_seat_v1` re-indexed on Qwen** (cache signature recorded); a healer-night query returned three
+on-target protection points in 0.8 s.

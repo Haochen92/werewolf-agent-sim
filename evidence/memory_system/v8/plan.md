@@ -581,7 +581,9 @@ change. Anything larger goes to the report's limitations and future work (§9.4)
      Open: the owner's read of the rest; the de-halo pass turned 26% of verdicts, a few over-corrected.
 9. **Retrieval cadence (D4)** and the situation-summary prompts for the new roles.
 10. **The gate** (§8.7), with existing tools only: coverage, the existing `eval-retrieval` judge
-    updated for the ten-seat cast, leak checks, cost. Then deploy, with `WW_MEMORY_ENABLED` set and
+    updated for the ten-seat cast (on Claude Haiku 5.5, batched: about $0.20 for 200 cases on two
+    embeddings; owner 2026-10-12), leak checks, cost. The store is embedded with Qwen3-Embedding-8B
+    (2026-10-12); production needs `OPENROUTER_API_KEY` and the store's `indexed_cache.pkl`. Then deploy, with `WW_MEMORY_ENABLED` set and
     `WW_MEMORY_STORE_DIR` pointing at `ten_seat_v1`.
 11. **After launch:** port the credit grades as a diagnostic.
 
