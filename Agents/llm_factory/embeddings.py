@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 # A model id with a slash (``qwen/qwen3-embedding-8b``) is served through OpenRouter; anything else
 # is a Gemini model. Selected by MEMORY_EMBEDDING_MODEL: a store, its cache and the thresholds below
 # all belong to one model.
-DEFAULT_EMBEDDING_MODEL = os.getenv("MEMORY_EMBEDDING_MODEL", "gemini-embedding-2")
+DEFAULT_EMBEDDING_MODEL = os.getenv("MEMORY_EMBEDDING_MODEL", "qwen/qwen3-embedding-8b")
 DEFAULT_EMBEDDING_DIMS = 1536
 
 # OpenRouter routes a model to several hosts, and their vectors for one text differ slightly (Qwen3
@@ -56,6 +56,20 @@ SIMILARITY_THRESHOLDS: dict[str, dict[str, float]] = {
         "batch_cluster": 0.70,          # batch dedup clustering (situation)
         "synth_cluster": 0.65,          # synthesis clustering (situation)
         "retrieval_dedup_gate": 0.87,   # near-duplicate filter on retrieved items (situation)
+    },
+    # 2026-10-12, from gemini-embedding-2 over within-cell pairs of the v8 seed store, and the
+    # dedup_v2 golden labels for the prefilter (zero errors; gemini-embedding-2's own values above
+    # were set on -001 and make errors on those labels). The candidate and clustering thresholds bind
+    # on almost no pair on either model; they keep their distance below each model's lowest pair.
+    "qwen/qwen3-embedding-8b": {
+        "dedup_candidate": 0.36,
+        "obs_content_keep": 0.72,
+        "obs_content_discard": 0.94,
+        "sp_action_keep": 0.61,
+        "sp_action_discard": 0.88,
+        "batch_cluster": 0.50,
+        "synth_cluster": 0.46,
+        "retrieval_dedup_gate": 0.80,   # p68 of within-cell situation pairs, as 0.87 is on Gemini
     },
 }
 
