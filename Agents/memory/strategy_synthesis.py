@@ -131,28 +131,23 @@ def _sp_container(sp_schema: type[BaseModel]) -> type[BaseModel]:
     )
 
 
-def synthesize_cluster_sps(
-    role: str,
-    action_phase: str,
-    cluster_keys: list[str],
-    items_by_key: dict[str, Any],
-    *,
-    max_retries: int = 2,
-    track_record: str = "",
-    model: str | None = None,
-) -> list:
-    """Synthesize 1-N strategy points from one observation cluster. Returns SP cell objects (their
-    action_phase is set by the model within the cell's allowed phases).
+def synthesis_cache_prefix() -> str:
+    """The start every canonical synthesis prompt shares (the opening lines and the rules block),
+    marked for caching on a Claude model."""
+    head = CELL_SP_SYNTHESIS_PROMPT[:CELL_SP_SYNTHESIS_PROMPT.index("{game_rules}")]
+    return head + pool_rules_block()
 
-    `model` (``TickConfig.model``): a Claude model is called through the Anthropic SDK, retrying on
-    itself; anything else (or None) goes through the factory's pro model and its backup.
+
+def synthesis_request(role: str, action_phase: str, cluster_keys: list[str], items_by_key: dict[str, Any],
+                      track_record: str = "") -> tuple[str, type[BaseModel]] | None:
+    """The prompt and output schema for one cluster's synthesis; None for a cell with no schema.
 
     `track_record` (default "" → canonical halo-weighted synthesis) is the v7 A/B's CREDIT-AWARE arm: a
     rendered realized-de-luck brief; when given, synthesis weights by it (not the per-obs outcome halo)
     and is asked for a conditioned directive."""
     sp_schema = cell_strategy_schema_for(role, action_phase)
     if sp_schema is None:
-        return []
+        return None
     container = _sp_container(sp_schema)
     if track_record:
         prompt = CREDIT_SYNTH_PROMPT.format(
@@ -168,11 +163,33 @@ def synthesize_cluster_sps(
             observations=_format_cluster(cluster_keys, items_by_key),
             dimension_menu=dimension_menu(sp_schema),
         )
+    return prompt, container
+
+
+def synthesize_cluster_sps(
+    role: str,
+    action_phase: str,
+    cluster_keys: list[str],
+    items_by_key: dict[str, Any],
+    *,
+    max_retries: int = 2,
+    track_record: str = "",
+    model: str | None = None,
+) -> list:
+    """Synthesize 1-N strategy points from one observation cluster. Returns SP cell objects (their
+    action_phase is set by the model within the cell's allowed phases).
+
+    `model` (``TickConfig.model``): a Claude model is called through the Anthropic SDK, retrying on
+    itself; anything else (or None) goes through the factory's pro model and its backup."""
+    request = synthesis_request(role, action_phase, cluster_keys, items_by_key, track_record)
+    if request is None:
+        return []
+    prompt, container = request
     run = f"sp_synth_{role}_{action_phase}"
     if model and model.startswith("claude"):
         for attempt in range(max_retries + 1):
             try:
-                res, _usage = parse_with_claude(prompt, container, model)
+                res, _usage = parse_with_claude(prompt, container, model, cache_prefix=synthesis_cache_prefix())
                 return list(res.strategy_points) if res is not None else []
             except Exception as e:  # noqa: BLE001
                 logger.warning("%s %s attempt %s failed: %s", run, model, attempt + 1, e)

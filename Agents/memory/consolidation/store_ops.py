@@ -245,7 +245,9 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Tick
     log_path = Path(store_dir) / "synthesis_log.jsonl"
     if tasks:
         with ThreadPoolExecutor(max_workers=12) as pool:
-            for (role, phase, live, items, tr, tr_keys), sps in pool.map(_run, tasks):
+            results = (_batch_results(tasks, cfg, _run, pool) if cfg.batch and cfg.model.startswith("claude")
+                       else pool.map(_run, tasks))
+            for (role, phase, live, items, tr, tr_keys), sps in results:
                 new_keys = []
                 for sp in sps:
                     ns = f"strategy_points/{role}/{sp.action_phase}"
@@ -286,6 +288,29 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Tick
     with_tr = len({(r, p) for r, p, _live, _items, tr, _keys in tasks if tr})
     return ({"added": added, "cells_synthed": len({(r, p) for r, p, *_ in tasks}),
              "with_track_record": with_tr, "cells_capped": cells_capped}, obs_counts)
+
+
+def _batch_results(tasks: list, cfg: TickConfig, run_one, pool) -> list:
+    """Every task's strategy points from one Message Batch (offline runs, ``TickConfig.batch``); a
+    request the batch did not return parsed is retried as a direct call."""
+    from Agents.memory.claude_structured import batch_parse
+    from Agents.memory.strategy_synthesis import synthesis_cache_prefix, synthesis_request
+
+    requests = {f"t{i}": synthesis_request(role, phase, live, items, tr)
+                for i, (role, phase, live, items, tr, _keys) in enumerate(tasks)}
+    parsed = batch_parse({k: v for k, v in requests.items() if v is not None}, cfg.model,
+                         cache_prefix=synthesis_cache_prefix())
+    retry = [i for i, k in enumerate(requests) if requests[k] is not None and parsed.get(k) is None]
+    retried = dict(zip(retry, pool.map(lambda i: run_one(tasks[i])[1], retry)))
+    results = []
+    for i, task in enumerate(tasks):
+        if i in retried:
+            sps = retried[i]
+        else:
+            res = parsed.get(f"t{i}")
+            sps = list(res.strategy_points) if res is not None else []
+        results.append((task, sps))
+    return results
 
 
 def _dedup_strategy_points(store_dir: Path, model: str) -> dict:

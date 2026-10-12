@@ -42,6 +42,8 @@ class TickConfig:
 
     # synthesis (slow-synth: the one paid op, every k ticks)
     synthesize: bool = True
+    batch: bool = False                         # a Claude synthesis model runs as one Message Batch (half
+                                                # price, back within the hour as a rule): offline runs only
     incremental: bool = True
     synth_min_new_obs: int = 4
     synth_replenish_floor: int = 3
