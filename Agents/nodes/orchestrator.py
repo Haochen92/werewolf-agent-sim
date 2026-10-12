@@ -24,7 +24,6 @@ from Agents.rules.night_record import disclosure
 from Agents.rules.resolution import tally_day_vote
 from Agents.rules.seats import alive_holder, seat_order, survivors
 from Agents.schemas import DayChannel, DaySummary, DeathRecord
-from Agents.memory.extraction.dehalo import dehalo_observations
 from Agents.schemas.game_events import NightActionRecord
 from Agents.schemas.roles import (
     ACTS_WHEN_SPENT,
@@ -46,25 +45,11 @@ from Agents.state import (
     OrchestratorGraph,
 )
 
-from Agents.memory.extraction import (
-    EXTRACTION_ROLES,
-    extract_postgame_per_cell,
-    format_extraction_inputs,
-)
+from Agents.memory.extraction import format_extraction_inputs
 
 
 from Agents.observability import extraction_span_name, freeze_case
 from Agents.schemas.evaluation import ExtractionCase
-from Agents.schemas.memory import BaseSituation
-from Agents.memory.deduplication import (
-    run_downstream_strategy_dedup,
-    run_downstream_observation_dedup,
-)
-from Agents.memory.persistence import (
-    dump_memory_to_json_files_from_config,
-    memory_persistence_config_from_runnable,
-    run_batch_dedup_from_config,
-)
 from Agents.tracing import (
     DayResolutionMetric,
     GraphContext,
@@ -532,237 +517,46 @@ def check_game_end_night(
 
 
 
-# --- Post-game memory pipeline -----------------------------------------------
-
-def _extracted_dimensions(item) -> dict | None:
-    """The structured fields of one extracted v6 cell record, dumped the way the store write keeps
-    them (store_ops: ``dimensions=model_dump``). None for a legacy Observation / StrategyPoint,
-    which has no structured situation."""
-    return item.model_dump(mode="json") if isinstance(item, BaseSituation) else None
-
-
-def _announce_memory_extracted(output, *, day: int) -> None:
-    """Stream what the finished game taught, for the replay's X-ray: the raw extraction,
-    before any dedup against the store (a served game never writes the store, so there is
-    no post-dedup form of it). A custom chunk, never graph state."""
-    observations = [
-        {"perspective": o.perspective, "action_phase": o.action_phase, "situation": o.situation,
-         "approach": getattr(o, "approach", ""), "outcome": getattr(o, "outcome", ""),
-         "net_verdict": getattr(o, "net_verdict", ""), "dimensions": _extracted_dimensions(o)}
-        for o in output.observations
-    ]
-    strategy_points = [
-        {"perspective": s.perspective, "action_phase": s.action_phase, "situation": s.situation,
-         "action": s.action, "dimensions": _extracted_dimensions(s)}
-        for s in output.strategy_points
-    ]
-    try:
-        get_stream_writer()({"event": "memory_extracted", "day": day,
-                             "observations": observations, "strategy_points": strategy_points})
-    except RuntimeError:  # direct call outside a graph run (tests)
-        pass
-
+# --- Post-game: the extraction input -------------------------------------------
 
 def post_game_analysis(
     state: OrchestratorGraph,
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
 ):
-    """Extract observations/strategy points from the finished game and persist them.
+    """Save the finished game's extraction input: the roles, the day discussion, the wolf chat, the
+    exact night actions, each seat's strategy notes and the outcome. No model is called. Extraction
+    is an offline batch job over the saved inputs, never part of a live game (owner's ruling
+    2026-10-12, evidence/memory_system/v8/decisions.md §11); it decides which games teach the store
+    (never one with a human seat) and which only feed a replay.
 
-    No-op when memory dumping is disabled: the extracted memories would be deduped
-    into the ephemeral runtime store and discarded with it, so the (expensive)
-    extraction LLM call would be pure waste. Otherwise: extract → trace an
-    ExtractionCase span → downstream-dedup into the store → dump to JSON →
-    batch-dedup. This is what seeds the next memory-store version.
-    """
-    store = runtime.store
-    if store is None:
-        raise RuntimeError("Post-game analysis requires a LangGraph runtime store.")
-
-    memory_persistence_config = memory_persistence_config_from_runnable(config)
-    extraction_config = memory_persistence_config.extraction
-    persist = memory_persistence_config.dump_enabled
-    # POISONING GUARD: a human-involved game is never PERSISTED — human play is out-of-distribution
-    # for the store (and the memory-config role filter below can't be trusted to exclude it: roles
-    # absent from the config dict default to True). Extracting for display only (no dump) is fine:
-    # nothing reaches the store. Replayable, never mined.
-    if state.get("human_players") and persist:
-        logger.info("Human seat in game; skipping post-game extraction (poisoning guard).")
-        return {}
-    # A no-dump run normally skips extraction entirely (the memories would be deduped
-    # into the ephemeral runtime store and discarded — the LLM cost is pure waste).
-    # extract_without_dump overrides that: run + trace extraction, and stream what the game
-    # taught (served games show it in the replay), but skip persistence below.
-    if not persist and not extraction_config.extract_without_dump:
-        logger.info("Memory dump disabled; skipping post-game extraction.")
-        return {}
-
+    The input goes to the run's local case file (run_batch) and, as a stream chunk, to the server,
+    which keeps it with the game. The night records come from the nights' own records, which keep
+    every actor's last night: game state drops the record of an actor who died that night. Game
+    state is the fallback (a game rebuilt after a restart has no in-process records)."""
     configurable = config.get("configurable", {}) if config else {}
-    game_id = str(
-        configurable.get("game_id")
-        or f"game_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    )
-    # Only mine cells for roles whose memory is ENABLED this arm (e.g. town_only -> town cells only),
-    # so a single-role arm builds a true single-role store instead of extracting content no one reads.
-    # Absent memory_config (default runs) -> all roles (backward compatible).
-    # Only the roles this game dealt: a ten-seat game deals 10 of the 12, and a cell for an absent
-    # role is paid for and can only invent a game that did not happen.
-    mem_cfg = configurable.get("memory_config") or {}
-    dealt = set(state.get("roles", {}).values())
-    extraction_roles = tuple(r for r in EXTRACTION_ROLES if r in dealt and mem_cfg.get(r, True))
-
-    # Format once, use for both the LLM prompt and the trace span. The night records come from the
-    # nights' own records, which keep every actor's last night: game state drops the record of an
-    # actor who died that night (it is never told the result), so the extractor guessed what a
-    # dying role did. Post-game, the full record is allowed. Game state is the fallback (a game
-    # rebuilt after a restart has no in-process records).
+    game_id = str(configurable.get("game_id") or f"game_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
     full_records = [NightActionRecord.model_validate(r)
                     for night in getattr(runtime.context.get("metrics"), "night_resolutions", [])
                     for r in night.records]
-    extraction_inputs = format_extraction_inputs(
-        {**state, "night_actions": full_records} if full_records else state)
-
-    span_name = extraction_span_name(game_id)
-    with langfuse.start_as_current_observation(
-        as_type="span",
-        name=span_name,
-        input={
-            "roles": state.get("roles", {}),
-            "game_outcome": extraction_inputs["game_outcome"],
-            "formatted_discussions": extraction_inputs["formatted_discussions"],
-            "formatted_strategy_notes": extraction_inputs["formatted_strategy_notes"],
-        },
-        metadata={"eval_schema": "extraction_case_v1"},
-    ) as extraction_span:
-        # v6 post-game extraction: fan out over (role, phase) cells producing the v6 cell schema.
-        # (Superseded the v5 per-role GameStrategyOutput fan-out; the v5 extractors stay in the
-        # package for the offline store-builders / experiments that aren't on v6 yet.)
-        result = extract_postgame_per_cell(
-            extraction_inputs,
-            roles=extraction_roles or tuple(r for r in EXTRACTION_ROLES if r in dealt),
-            max_workers=extraction_config.max_workers,
-            cache_prefix=extraction_config.cache_prefix,
-        )
-
-        if result:
-            extracted_observations_output = result.output
-            extraction_case = ExtractionCase(
-                span_name=span_name,
-                game_id=game_id,
-                game_outcome=extraction_inputs["game_outcome"],
-                roles=state.get("roles", {}),
-                formatted_discussions=extraction_inputs["formatted_discussions"],
-                formatted_strategy_notes=extraction_inputs["formatted_strategy_notes"],
-                observations=[
-                    o.model_dump(mode="json")
-                    for o in extracted_observations_output.observations
-                ],
-                strategy_points=[
-                    s.model_dump(mode="json")
-                    for s in extracted_observations_output.strategy_points
-                ],
-                model_used=result.model_used,
-            )
-            extraction_span.update(
-                output={
-                    "extraction_case": freeze_case(
-                        extraction_span,
-                        extraction_case,
-                        kind="postgame_extraction",
-                        case_key="extraction_case",
-                        sink=runtime.context.get("eval_sink"),
-                    ),
-                },
-                metadata={
-                    "eval_schema": extraction_case.schema_version,
-                    "model_used": result.model_used,
-                    "observation_count": len(
-                        extracted_observations_output.observations
-                    ),
-                    "strategy_point_count": len(
-                        extracted_observations_output.strategy_points
-                    ),
-                },
-            )
-
-    if not result:
-        logger.warning("No observations extracted from post-game analysis.")
-        return {}
-
-    # The de-halo pass (ExtractionConfig.dehalo): verdicts the game record does not support are
-    # rewritten before the observations are shown or stored. The extraction case above keeps the
-    # verdicts as extracted; the de-halo record keeps both, with the judge's reasons.
-    dehalo_record = dehalo_observations(result.output.observations, extraction_inputs, extraction_config.dehalo)
-    if dehalo_record is not None:
-        with langfuse.start_as_current_observation(as_type="span", name=f"dehalo_{game_id}") as dehalo_span:
-            dehalo_span.update(output={"dehalo": dehalo_record})
-        sink = runtime.context.get("eval_sink")
-        if sink is not None:
-            sink.records.append({"kind": "dehalo", "id": "", "name": f"dehalo_{game_id}", "trace_id": "",
-                                 "parent_observation_id": None, "metadata": {}, "input": None,
-                                 "output": {"dehalo": dehalo_record}})
-
-    _announce_memory_extracted(result.output, day=state.get("current_day", 1))
-
-    if not persist:
-        logger.info(
-            "Extraction ran (traced for measurement); skipping persistence "
-            "because memory dump is disabled."
-        )
-        return {}
-
-    extracted_observations = result.output
-
-    # Store observations and strategies in memory with downstream dedup.
-    observation_dedup_stats = run_downstream_observation_dedup(
-        store,
-        extracted_observations.observations,
-        game_id,
-        sink=runtime.context.get("eval_sink"),
+    inputs = format_extraction_inputs({**state, "night_actions": full_records} if full_records else state)
+    case = ExtractionCase(
+        span_name=extraction_span_name(game_id),
+        game_id=game_id,
+        game_outcome=inputs["game_outcome"],
+        roles=state.get("roles", {}),
+        lineup=inputs["lineup"],
+        human_players=list(state.get("human_players") or []),
+        formatted_discussions=inputs["formatted_discussions"],
+        formatted_strategy_notes=inputs["formatted_strategy_notes"],
     )
-    strategy_dedup_stats = run_downstream_strategy_dedup(
-        store,
-        extracted_observations.strategy_points,
-        game_id,
-        sink=runtime.context.get("eval_sink"),
-    )
-    # Record the dedup outcomes on the live Metrics accumulator so they ride
-    # raw_metrics into the batch record (not just the ephemeral log) — per-game
-    # absorption is the store-saturation signal during seeding.
-    runtime.context["metrics"].dedup_stats = {
-        "observations": observation_dedup_stats.model_dump(mode="json"),
-        "strategy_points": strategy_dedup_stats.model_dump(mode="json"),
-    }
-    logger.info(
-        "Observation dedup: %s kept, %s discarded, %s failed, %s auto-kept, "
-        "%s auto-discarded | Strategy dedup: %s kept, %s discarded, %s failed, "
-        "%s auto-kept, %s auto-discarded",
-        observation_dedup_stats.kept, observation_dedup_stats.discarded,
-        observation_dedup_stats.failed, observation_dedup_stats.auto_kept,
-        observation_dedup_stats.auto_discarded,
-        strategy_dedup_stats.kept, strategy_dedup_stats.discarded,
-        strategy_dedup_stats.failed, strategy_dedup_stats.auto_kept,
-        strategy_dedup_stats.auto_discarded,
-    )
-
-    dump_memory_to_json_files_from_config(
-        memory_persistence_config,
-        target_store=store,
-    )
-
-    batch_dedup_report = run_batch_dedup_from_config(
-        memory_persistence_config,
-        target_store=store,
-    )
-    if batch_dedup_report:
-        total_merged = sum(s.get("merged", 0) for s in batch_dedup_report.get("stats", []))
-        total_discarded = sum(s.get("discarded", 0) for s in batch_dedup_report.get("stats", []))
-        logger.info(
-            "Batch dedup: %d merged, %d discarded",
-            total_merged, total_discarded,
-        )
-
-    logger.info(f"Post-game analysis completed and stored for game_id: {game_id}")
-
-
+    with langfuse.start_as_current_observation(as_type="span", name=case.span_name,
+                                               metadata={"eval_schema": case.schema_version}) as span:
+        payload = freeze_case(span, case, kind="extraction_input", case_key="extraction_case",
+                              sink=runtime.context.get("eval_sink"))
+        span.update(output={"extraction_case": payload})
+    try:
+        get_stream_writer()({"event": "extraction_input", "case": payload})
+    except RuntimeError:  # direct call outside a graph run (tests)
+        pass
+    return {}

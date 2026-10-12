@@ -506,3 +506,18 @@ def test_an_illusionist_that_carries_and_conceals_leaves_no_trace_at_that_door()
     # saved, nothing is concealed, so the carrier is seen as usual
     saved = resolve_night(choices + [NightChoice(h["healer"], "healer", "protect", h["investigator"])], st["roles"], 2)
     assert h["illusionist"] in visitors_of(saved, h["investigator"])
+
+
+def test_a_finished_game_saves_its_extraction_input_and_extracts_nothing(monkeypatch):
+    # Extraction is an offline batch (decisions §11): the game keeps only what it can teach.
+    sink = EvalCaseSink()
+    result, events, _ = _play(monkeypatch, {"lone_killer": "necromancer", "neutral": "fortune_teller"},
+                              seed=5, sink=sink)
+    [record] = [r for r in sink.records if r["kind"] == "extraction_input"]
+    case = record["output"]["extraction_case"]
+    assert case["roles"] == result["roles"] and case["lineup"] == result["lineup"]
+    assert case["game_outcome"] == result["winner"] and case["human_players"] == []
+    assert "=== Night Actions (exact, from the game engine) ===" in case["formatted_discussions"]
+    assert case["observations"] == [] and case["strategy_points"] == []
+    assert not any(r["kind"] in ("postgame_extraction", "dehalo") for r in sink.records)
+    assert "memory_extracted" not in {e.type for e in events}
