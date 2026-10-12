@@ -191,7 +191,7 @@ def test_known_facts_states_criticality_dims():
     schema = cell_situation_schema_for("villager", "day_discussion")
     facts = _known_board_facts(payload, schema)
     assert "leading evil faction can win: 1" in facts
-    assert "end within one more elimination: yes" in facts
+    assert "One more elimination could decide the game, for the town or an evil side: yes" in facts
     cell = _make_cell("villager", "day_discussion", distance_to_parity=9, is_swing=False)
     _override_deterministic_dims(cell, payload)
     assert cell.distance_to_parity == 1 and cell.is_swing is True

@@ -204,9 +204,14 @@ def _known_board_facts(payload: dict, cell_schema: type[BaseModel]) -> str:
             "(set distance_to_parity to exactly this)."
         )
     if "is_swing" in facts:
+        # Swing counts every side, the town included (board_clocks), and after a concealed death it is
+        # yes when any way the body's side could fall makes one elimination decisive: say both.
         yn = "yes" if facts["is_swing"] else "no"
+        maybe = (", under at least one way a concealed body's side could fall" if hidden and facts["is_swing"]
+                 else "")
         lines.append(
-            f"- The game can end within one more elimination: {yn}{bound} (set is_swing accordingly)."
+            f"- One more elimination could decide the game, for the town or an evil side: {yn}{maybe} "
+            "(set is_swing accordingly)."
         )
     return (
         "KNOWN BOARD FACTS (computed from the game state; use these values and derive the Stakes from "
