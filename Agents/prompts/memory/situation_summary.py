@@ -228,8 +228,12 @@ Today's public discussion:
 # + a v6 dimensional suffix mirroring the extraction dims. The per-cell situation schema is bound by
 # the caller (with_structured_output), so the model fills only the fields its cell has. Describes board
 # STATE only (Rule 2). Single prompt for all roles/phases; the schema does the tailoring.
-V6_SITUATION_SUMMARY_SUFFIX = """
-{epistemic_status_rule}
+# Laid out for the prompt cache (owner 2026-10-12: cache as much input as possible). The rules are the
+# system message, identical for every lookup of a game whatever the seat or phase. The instructions
+# for the cell come next, the same for every lookup of that role and phase, and end on a rule line,
+# where a Claude request is marked (llm_factory/claude.py). The game state, which changes on every
+# call, comes last. OpenAI and Gemini cache a repeated prefix by themselves, so the order serves them too.
+V6_SITUATION_SUMMARY_INSTRUCTIONS = """{epistemic_status_rule}
 
 Describe 1-2 distinct situations you are currently facing using the structured fields. Each is used as
 a semantic-search query to retrieve relevant past lessons, so describe GAME DYNAMICS, not just who said
@@ -238,14 +242,10 @@ conflict is one situation.
 
 {driver_horizon}
 
-{known_board_facts}
-
 RULES (describe board STATE, never prescription): every field is what is TRUE right now in your own
 epistemic voice — no plans or recommendations. State exact criticality numbers and phrase
-criticality_stakes as their implication, derived from them (use the KNOWN BOARD FACTS above verbatim
-where given — do not estimate a number you have been handed). For the direction enums
-(consensus_direction, divergence_sign), judge only from what you know/have expressed NOW (never
-hindsight); use no_clear_direction if there is no clear consensus.
+criticality_stakes as their implication, derived from them (use the KNOWN BOARD FACTS given with the
+game state verbatim where given — do not estimate a number you have been handed).
 
 {situation_quality}
 
@@ -258,10 +258,16 @@ how to fill them well):
 V6_SITUATION_SUMMARY = ChatPromptTemplate.from_messages(
     [
         (
+            "system",
+            "You are an AI agent playing Werewolf. The game's rules, exactly as every player is given "
+            "them:\n\n{preamble}",
+        ),
+        (
             "human",
-            """You are an AI agent playing Werewolf. The game's rules, exactly as every player is given them:
-
-{preamble}
+            V6_SITUATION_SUMMARY_INSTRUCTIONS
+            + """
+=========================
+The game as it stands.
 
 Current day: {current_day}
 
@@ -283,8 +289,9 @@ Wolf channel: {wolf_channel}
 
 Your current strategy note:
 {previous_strategy}
-"""
-            + V6_SITUATION_SUMMARY_SUFFIX,
-        )
+
+{known_board_facts}
+""",
+        ),
     ]
 )
