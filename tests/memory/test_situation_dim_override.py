@@ -167,6 +167,13 @@ def test_known_facts_states_bullets_and_villager_note_at_zero():
     assert "Vigilante shots you have left: 0" in spent and "regular villager" in spent
 
 
+def test_known_facts_states_uses_left():
+    # The investigator's night cell carries uses_left; the prompt states it as it states bullets.
+    schema = cell_situation_schema_for("investigator", "night_action")
+    facts = _known_board_facts({"surviving_players": ["p2", "p3"], "player_id": "p1", "uses_left": 1}, schema)
+    assert "Uses of your limited ability you have left: 1" in facts
+
+
 def test_known_facts_states_ally_revealed():
     payload = {"surviving_wolves": ["w1"], "surviving_villagers": ["v1", "v2"],
                "player_id": "w1", "initial_wolf_count": 2}

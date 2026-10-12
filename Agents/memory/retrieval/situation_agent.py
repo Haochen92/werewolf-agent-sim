@@ -169,6 +169,8 @@ def _known_board_facts(payload: dict, cell_schema: type[BaseModel]) -> str:
         b = facts["bullets_left"]
         tail = " — with none left you now play as a regular villager" if b == 0 else ""
         lines.append(f"- Vigilante shots you have left: {b}{tail} (set bullets_left to exactly this).")
+    if "uses_left" in facts:
+        lines.append(f"- Uses of your limited ability you have left: {facts['uses_left']} (set uses_left to exactly this).")
     if "ally_revealed" in facts:
         yn = "yes" if facts["ally_revealed"] else "no"
         lines.append(f"- A wolf partner has been revealed or eliminated: {yn} (set ally_revealed accordingly).")
