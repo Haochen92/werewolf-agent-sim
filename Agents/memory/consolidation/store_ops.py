@@ -237,7 +237,8 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Tick
 
     def _run(t):
         role, phase, live, items, tr, tr_keys = t
-        return t, synthesize_cluster_sps(role, phase, live, items, max_retries=1, track_record=tr)
+        return t, synthesize_cluster_sps(role, phase, live, items, max_retries=1, track_record=tr,
+                                         model=cfg.model)
 
     # Each synthesis call's input and output, one JSON line per call, beside the store: the record a
     # worked example of synthesis is shown from (the full cluster, not only the excerpts displayed).

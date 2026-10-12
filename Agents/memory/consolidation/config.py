@@ -15,7 +15,8 @@ from dataclasses import dataclass
 
 @dataclass
 class TickConfig:
-    model: str = "gemini-3.1-flash-lite"        # synthesis model (validated ≈ pro on this task)
+    model: str = "gemini-3.1-flash-lite"        # synthesis model (validated ≈ pro on this task); a claude-* model
+                                                # is called through the Anthropic SDK
     dedup_model: str = "gemini-3.1-flash-lite"  # KEEP/DISCARD dedup passes (merge-free => flash-lite safe)
     obs_fold_dedup: bool = True                 # freeze-old obs dedup after the fold (off only in LLM-free tests)
     credit: bool = True                         # False = a fold-only gen with no memory-on window to grade;
@@ -52,6 +53,8 @@ class TickConfig:
     def env(self) -> dict:
         """Env overrides pinning every paid model in a tick to the cheap tier — the pro-2.5 cost
         guard, carried over verbatim from the loop harness (extraction/synthesis/dedup fallbacks
-        all resolve through these variables)."""
-        return {"GOOGLE_GENAI_PRO_MODEL": self.model, "GOOGLE_GENAI_PRO_BACKUP_MODEL": self.model,
+        all resolve through these variables). A Claude synthesis model is called directly, so the
+        factory's pro model is pinned to the dedup model instead."""
+        pro = self.dedup_model if self.model.startswith("claude") else self.model
+        return {"GOOGLE_GENAI_PRO_MODEL": pro, "GOOGLE_GENAI_PRO_BACKUP_MODEL": pro,
                 "MEMORY_BATCH_DEDUP_MODEL": self.dedup_model}

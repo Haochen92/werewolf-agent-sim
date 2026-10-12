@@ -21,6 +21,7 @@ from langgraph.store.base import BaseStore
 from pydantic import BaseModel, Field, create_model
 
 from Agents.llm_factory import get_llm_pro, get_llm_pro_backup
+from Agents.memory.claude_structured import parse_with_claude
 from Agents.memory.batch_deduplication.clustering import (
     _build_clusters_for_items,
     _fetch_namespace_items,
@@ -138,9 +139,13 @@ def synthesize_cluster_sps(
     *,
     max_retries: int = 2,
     track_record: str = "",
+    model: str | None = None,
 ) -> list:
     """Synthesize 1-N strategy points from one observation cluster. Returns SP cell objects (their
     action_phase is set by the model within the cell's allowed phases).
+
+    `model` (``TickConfig.model``): a Claude model is called through the Anthropic SDK, retrying on
+    itself; anything else (or None) goes through the factory's pro model and its backup.
 
     `track_record` (default "" → canonical halo-weighted synthesis) is the v7 A/B's CREDIT-AWARE arm: a
     rendered realized-de-luck brief; when given, synthesis weights by it (not the per-obs outcome halo)
@@ -164,6 +169,14 @@ def synthesize_cluster_sps(
             dimension_menu=dimension_menu(sp_schema),
         )
     run = f"sp_synth_{role}_{action_phase}"
+    if model and model.startswith("claude"):
+        for attempt in range(max_retries + 1):
+            try:
+                res, _usage = parse_with_claude(prompt, container, model)
+                return list(res.strategy_points) if res is not None else []
+            except Exception as e:  # noqa: BLE001
+                logger.warning("%s %s attempt %s failed: %s", run, model, attempt + 1, e)
+        return []
     for label, llm in (("primary", get_llm_pro()), ("backup", get_llm_pro_backup())):
         chain = llm.with_structured_output(container)
         for attempt in range(max_retries + 1):
