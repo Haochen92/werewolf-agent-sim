@@ -518,3 +518,25 @@ games and the smoke game, from their backfilled inputs, the schema as text after
   Player ids in 18 (1.3%). De-halo revised 407 (29%).
 - **`uses_left`**, on the 5 games with local records (191 observations): 74% exact, some vs none wrong in
   5.8% (Flash: 89%, 4.4%).
+
+## 2026-10-12 — The 40-game store and its synthesis
+
+**Build** (`scripts/build_v8_store.py`, code at `c3815883`): the 40 games' extracted observations (19
+on 3.8 Flash, 21 on Sonnet 5.5) written into a fresh store as the post-game node did, each game's
+observations deduplicated against the store on the way in (flash-lite triage): 2,277 observations,
+2,008 kept, 269 merged, none failed (`memory_stores/v8_reextract`). Then `consolidate()` on a copy
+(`memory_stores/v8_reextract_synth`; Sonnet 5.5 as one Message Batch, the revised synthesis prompt;
+credit, prune and eviction off, since no v8 credit pass has run): 694 points, **605 after point dedup**,
+in all 36 cells. **$5.31** for synthesis; 4.7 hours in all, nearly all of it the dedup on write.
+
+| | ten_seat_v1 | v8_reextract_synth |
+|---|---|---|
+| Source games | 12 | 40 |
+| Points | 157 (176 before the rule flag) | 605 |
+| Points per cell | 1–12 | 5–35 |
+| Median / max action words | 66 / 102 | 68 / 112 |
+| Player ids | 0 | 0 |
+| Limited-use roles' points with `uses_left` | night cells only | 337 of 337 |
+
+The Sonnet-extracted games gave about 45% more observations each, so they weigh more in synthesis
+than the Flash games. Not yet screened for rule errors (`ten_seat_v1`'s screen flagged 11%).
