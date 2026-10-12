@@ -50,6 +50,7 @@ def enrich_payload_with_memory(
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
     action_phase: str,
+    lookup_scope: str = "",
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     # Lazy import breaks the tracing<->retrieval init cycle: tracing's import chain loads
     # Agents.memory (hence this module) before tracing finishes initializing, so a module-level
@@ -67,7 +68,7 @@ def enrich_payload_with_memory(
 
     # D4: a seat's day discussion and its night reuse one lookup (lookup_cache.py).
     game_id = str(((config or {}).get("configurable") or {}).get("game_id") or "")
-    cache_key = lookup_cache.lookup_key(game_id, payload, action_phase, plan.store_dir)
+    cache_key = lookup_cache.lookup_key(game_id, payload, action_phase, plan.store_dir, lookup_scope)
     kept = lookup_cache.get(cache_key, payload) if cache_key else None
     if kept is not None:
         return _with_lessons(enriched_payload, kept["observations"], kept["strategy_points"]), {

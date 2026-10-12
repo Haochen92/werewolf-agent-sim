@@ -41,9 +41,10 @@ def _line(player, claim="none", day=2):
     return {"day": day, "player": player, "claim": claim, "message": "..."}
 
 
-def _enrich(payload, phase, game_id="g1"):
+def _enrich(payload, phase, game_id="g1", scope=""):
     config = {"configurable": {"game_id": game_id}}
-    return pipeline.enrich_payload_with_memory(payload, config, SimpleNamespace(store=object()), phase)
+    return pipeline.enrich_payload_with_memory(payload, config, SimpleNamespace(store=object()), phase,
+                                               lookup_scope=scope)
 
 
 def test_a_days_discussion_reuses_its_first_lookup(calls):
@@ -68,11 +69,13 @@ def test_a_vote_always_looks_up_afresh(calls):
     assert len(calls) == 2
 
 
-def test_a_night_shares_one_lookup_and_the_next_night_does_not(calls):
-    for _ in range(3):  # the pack's chat rounds, the kill, the ability
-        _enrich(_payload(day=2), "night_action")
-    _enrich(_payload(day=3), "night_action")
-    assert len(calls) == 2
+def test_a_wolf_night_is_one_lookup_for_the_chat_and_one_for_the_kill_and_ability(calls):
+    for _ in range(3):  # the pack's chat rounds
+        _enrich(_payload(day=2), "night_action", scope="chat")
+    for _ in range(2):  # the kill, the ability
+        _enrich(_payload(day=2), "night_action", scope="act")
+    _enrich(_payload(day=3), "night_action", scope="chat")
+    assert len(calls) == 3
 
 
 def test_seats_and_games_do_not_share_a_lookup(calls):

@@ -392,6 +392,9 @@ def run_memory_informed_night_action(
             config,
             runtime,
             action_phase,
+            # The pack's chat shares one lookup a night; its kill and ability another, made once
+            # the talk has moved from candidates to a plan (D4, 2026-10-12).
+            lookup_scope="chat" if output_key == "wolf_channel" else "act",
         )
         enriched_payload = _with_game_id(enriched_payload, config)
         result = run_agent(

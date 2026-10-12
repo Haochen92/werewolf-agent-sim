@@ -3,7 +3,9 @@
 A lookup (the situation call and the search) ran on every decision: about 60 in the owner's first
 ten-seat game, 27 of them discussion turns. Now a seat's day discussion reuses its first lookup of the
 day until someone makes a new role claim that day, and every night decision of a seat (the pack's chat
-rounds, its kill, its ability) reuses the night's first lookup; a vote always looks up afresh.
+rounds, its kill, its ability) reuses the night's first lookup; a vote always looks up afresh. After
+review the same day, a wolf's night is two lookups: one for the pack's chat, one for its kill and its
+ability, since the talk moves from candidate targets to a plan the first lookup could not anticipate.
 
 What is kept is the lessons the lookup selected and its record, never the payload or a verdict: each
 decision still records its own verdicts. The cache lives in the process, so a server restart only
@@ -35,11 +37,13 @@ def claims_today(payload: dict[str, Any]) -> frozenset[tuple[str, str]]:
     return frozenset(claims)
 
 
-def lookup_key(game_id: str, payload: dict[str, Any], action_phase: str, store_dir: str) -> tuple | None:
-    """The key a lookup is kept under, or None when this decision always looks up afresh."""
+def lookup_key(game_id: str, payload: dict[str, Any], action_phase: str, store_dir: str,
+               scope: str = "") -> tuple | None:
+    """The key a lookup is kept under, or None when this decision always looks up afresh. ``scope``
+    splits a night: the pack's chat ("chat") and its kill and ability ("act") each keep their own."""
     if action_phase not in REUSED_PHASES or not game_id:
         return None
-    return (game_id, payload["player_id"], payload["current_day"], action_phase, store_dir)
+    return (game_id, payload["player_id"], payload["current_day"], action_phase, store_dir, scope)
 
 
 def get(key: tuple, payload: dict[str, Any]) -> dict[str, Any] | None:
