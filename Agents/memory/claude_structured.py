@@ -30,6 +30,8 @@ _MAX_TOKENS = 32000
 
 usage_totals: dict[str, int] = {"calls": 0, "batched_calls": 0, "input_tokens": 0, "output_tokens": 0,
                                 "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0}
+# The same tokens by (model, batched), so they can be priced: a batched call bills at the batch rate.
+usage_by_model: dict[tuple[str, bool], dict[str, int]] = {}
 _lock = threading.Lock()
 
 
@@ -63,7 +65,7 @@ def _content(prompt: str, cache_prefix: str | None) -> str | list[dict]:
             {"type": "text", "text": prompt[len(cache_prefix):]}]
 
 
-def _count(usage, batched: bool = False) -> dict:
+def _count(usage, batched: bool = False, model: str = "") -> dict:
     row = {"input_tokens": usage.input_tokens, "output_tokens": usage.output_tokens,
            "cache_read_input_tokens": getattr(usage, "cache_read_input_tokens", 0) or 0,
            "cache_creation_input_tokens": getattr(usage, "cache_creation_input_tokens", 0) or 0}
@@ -71,7 +73,33 @@ def _count(usage, batched: bool = False) -> dict:
         usage_totals["batched_calls" if batched else "calls"] += 1
         for k, v in row.items():
             usage_totals[k] += v
+        by_model = usage_by_model.setdefault((model, batched), dict.fromkeys(row, 0))
+        for k, v in row.items():
+            by_model[k] += v
     return row
+
+
+def usage_cost_usd() -> float | None:
+    """What this process's Claude calls cost, at the catalogue's prices for today, batched calls at
+    the batch rate; None if any model has no price. Anthropic's input_tokens excludes the cache read
+    and the cache write, so both are added back as input (a write is priced as plain input, a quarter
+    short of its 1.25x)."""
+    from datetime import datetime, timezone
+
+    from Agents.llm_factory.pricing import cost_usd
+
+    total = 0.0
+    with _lock:
+        rows = list(usage_by_model.items())
+    for (model, batched), u in rows:
+        cached = u["cache_read_input_tokens"]
+        cost = cost_usd(model, datetime.now(timezone.utc), batch=batched, cached=cached,
+                        input=u["input_tokens"] + cached + u["cache_creation_input_tokens"],
+                        output=u["output_tokens"])
+        if cost is None:
+            return None
+        total += cost
+    return total
 
 
 def parse_with_claude(prompt: str, schema: type[BaseModel], model: str, thinking_level: str | None = None,
@@ -80,7 +108,7 @@ def parse_with_claude(prompt: str, schema: type[BaseModel], model: str, thinking
     response = _client().messages.parse(
         model=model, max_tokens=_MAX_TOKENS, timeout=600, output_format=schema,
         messages=[{"role": "user", "content": _content(prompt, cache_prefix)}], **_thinking(thinking_level))
-    return response.parsed_output, _count(response.usage)
+    return response.parsed_output, _count(response.usage, model=model)
 
 
 def batch_parse(requests: dict[str, tuple[str, type[BaseModel]]], model: str, thinking_level: str | None = None,
@@ -111,7 +139,7 @@ def batch_parse(requests: dict[str, tuple[str, type[BaseModel]]], model: str, th
             logger.warning("Batch %s request %s: %s", batch.id, result.custom_id, result.result.type)
             continue
         message = result.result.message
-        _count(message.usage, batched=True)
+        _count(message.usage, batched=True, model=model)
         text = next((b.text for b in message.content if b.type == "text"), "")
         try:
             out[result.custom_id] = requests[result.custom_id][1].model_validate_json(text)

@@ -1,6 +1,8 @@
 """A model call is priced at the rates in force on its own date and hour (Agents/llm_factory/pricing.py)."""
 from datetime import datetime, timezone
 
+import pytest
+
 from Agents.llm_factory.pricing import cost_usd, is_deepseek_peak, price_at
 
 
@@ -41,3 +43,24 @@ def test_every_menu_model_has_a_price():
     from Agents.llm_factory.catalog import billed_name, seed
     for row in seed().menu():
         assert price_at(billed_name(row.model), _at(2026, 10, 12, 12)) is not None, row.model
+
+
+def test_a_batched_call_bills_at_half_the_rates():
+    at = datetime(2026, 10, 12, tzinfo=timezone.utc)
+    direct = cost_usd("claude-haiku-5-5", at, input=1_000_000, cached=200_000, output=100_000)
+    batched = cost_usd("claude-haiku-5-5", at, input=1_000_000, cached=200_000, output=100_000, batch=True)
+    assert direct == pytest.approx(0.8 * 0.10 + 0.2 * 0.01 + 0.1 * 0.50)
+    assert batched == pytest.approx(direct / 2)
+
+
+def test_claude_usage_is_priced_per_model_with_batches_at_the_batch_rate(monkeypatch):
+    from types import SimpleNamespace
+
+    import Agents.memory.claude_structured as cs
+
+    monkeypatch.setattr(cs, "usage_by_model", {})
+    usage = SimpleNamespace(input_tokens=600_000, output_tokens=100_000, cache_read_input_tokens=400_000,
+                            cache_creation_input_tokens=0)
+    cs._count(usage, batched=True, model="claude-haiku-5-5")
+    # Anthropic's input_tokens excludes the cache read: 600k uncached + 400k cached, all at half rate.
+    assert cs.usage_cost_usd() == pytest.approx((0.6 * 0.10 + 0.4 * 0.01 + 0.1 * 0.50) / 2)

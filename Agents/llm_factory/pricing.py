@@ -75,12 +75,21 @@ def price_at(model: str, at: datetime) -> tuple[Price, float] | None:
     return price, 2.0 if price.peak and is_deepseek_peak(at) else 1.0
 
 
-def cost_usd(model: str, at: datetime, *, input: int, cached: int, output: int) -> float | None:
+# A call sent through a provider's batch interface bills at half its standard rates (Anthropic's
+# Message Batches, Google's and OpenAI's batch APIs alike); the cache discount applies on top.
+BATCH_FACTOR = 0.5
+
+
+def cost_usd(model: str, at: datetime, *, input: int, cached: int, output: int,
+             batch: bool = False) -> float | None:
     """What these tokens cost at ``at``. ``input`` includes the cached part, as providers count
-    it; the cached part bills at the cached rate and the rest at the input rate."""
+    it; the cached part bills at the cached rate and the rest at the input rate. ``batch``: the
+    tokens went through a batch interface, at BATCH_FACTOR of the rates."""
     found = price_at(model, at)
     if found is None:
         return None
     price, factor = found
+    if batch:
+        factor *= BATCH_FACTOR
     cached = min(cached, input)
     return factor * ((input - cached) * price.input + cached * price.cached + output * price.output) / 1e6
