@@ -21,9 +21,9 @@
       "memory": "none"
     }
   ],
-  "recall_model": "gemini-3.1-flash-lite",
-  "precision_model": "gemini-3.5-flash",
-  "golden_model": "gemini-3.1-flash-lite",
+  "recall_model": "anthropic/claude-haiku-5-5",
+  "precision_model": "anthropic/claude-haiku-5-5",
+  "golden_model": "anthropic/claude-haiku-5-5",
   "slices": [
     "curated",
     "pinned",

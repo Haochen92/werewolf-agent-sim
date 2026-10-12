@@ -3,6 +3,6 @@
   "replay": "none",
   "judge": "pipeline",
   "max_samples": 40,
-  "judge_model": "gemini-2.5-pro",
+  "judge_model": "anthropic/claude-haiku-5-5",
   "sleep_seconds": 1.0
 }

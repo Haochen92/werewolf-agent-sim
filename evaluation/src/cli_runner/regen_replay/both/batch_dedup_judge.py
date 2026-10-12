@@ -106,7 +106,7 @@ def main() -> None:
                         help="Run two-pass eval (flash-lite triage -> 2.5-pro verify)")
     parser.add_argument("--triage-model", default="gemini-3.1-flash-lite")
     parser.add_argument("--triage-thinking", default="medium")
-    parser.add_argument("--verify-model", default="gemini-2.5-pro")
+    parser.add_argument("--verify-model", default="anthropic/claude-haiku-5-5")
     parser.add_argument("--verify-thinking", default=None)
     parser.add_argument("--source", type=Path, default=REPO_ROOT / "evaluation" / "frozen_eval_sets" / "batch_dedup_clusters_v4.json")
     parser.add_argument("--labels", type=Path, default=REPO_ROOT / "evaluation" / "frozen_eval_sets" / "batch_dedup_golden_labels.json")

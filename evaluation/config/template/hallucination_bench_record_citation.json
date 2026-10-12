@@ -20,9 +20,9 @@
       "resummarize": true
     }
   ],
-  "recall_model": "gemini-3.1-flash-lite",
-  "precision_model": "gemini-3.5-flash",
-  "golden_model": "gemini-3.1-flash-lite",
+  "recall_model": "anthropic/claude-haiku-5-5",
+  "precision_model": "anthropic/claude-haiku-5-5",
+  "golden_model": "anthropic/claude-haiku-5-5",
   "slices": ["curated", "pinned", "control"],
   "notes": "The record-citation rule (discussion_evidence.md §6.6). v4_votes = commit 0bab7fe (v4 + per-player vote history); its generations are the summary_v4_vote_history run's v4_votes arm, copied in (git worktree add ../ww-v4-votes 0bab7fe to regenerate). v4_votes_cite = main with the rule. Both use the same 104 cached v4 summaries (summaries_v4_votes.json copied as summaries_v4_votes_cite.json), and are judged together."
 }

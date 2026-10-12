@@ -36,7 +36,7 @@ from evaluation.src.core.settings import REPO_ROOT
 from evaluation.src.data.sources.batch_records import load_batch_records
 from evaluation.src.judges.config import get_judge_llm
 
-DEFAULT_READ_MODEL = "gemini-3.1-flash-lite"  # narrow grounded task; --golden gates fitness
+DEFAULT_READ_MODEL = "anthropic/claude-haiku-5-5"  # narrow grounded task; --golden gates fitness
 DEFAULT_CANDIDATES = "evidence/generation_prompt/validation/hallucination_candidates.jsonl"
 DEFAULT_OUT = "evidence/generation_prompt/validation/hallucination_verdicts.jsonl"
 DEFAULT_RECORDS_GLOB = "evidence/v7_final/runs/v2_full/gen*_o*.jsonl"

@@ -127,7 +127,7 @@ def main() -> None:
     )
     p.add_argument("--dataset", type=Path, required=True)
     p.add_argument("--output", type=Path, required=True)
-    p.add_argument("--model", type=str, default="gemini-2.5-pro")
+    p.add_argument("--model", type=str, default="anthropic/claude-haiku-5-5")
     p.add_argument("--rpm", type=float, default=None, help="Per-model requests/min rate limit.")
     p.add_argument(
         "--thinking-level", choices=["minimal", "low", "medium", "high"], default=None

@@ -90,7 +90,7 @@ def main() -> None:
                         help="Eval result JSON from batch_dedup_eval.py")
     parser.add_argument("--source", type=Path,
                         default=REPO_ROOT / "evaluation" / "frozen_eval_sets" / "batch_dedup_clusters_v4.json")
-    parser.add_argument("--judge-model", default="gemini-2.5-pro")
+    parser.add_argument("--judge-model", default="anthropic/claude-haiku-5-5")
     parser.add_argument("--output", type=Path, default=None)
     args = parser.parse_args()
 

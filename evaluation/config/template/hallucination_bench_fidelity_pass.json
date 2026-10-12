@@ -25,9 +25,9 @@
       "resummarize": true
     }
   ],
-  "recall_model": "gemini-3.1-flash-lite",
-  "precision_model": "gemini-3.5-flash",
-  "golden_model": "gemini-3.1-flash-lite",
+  "recall_model": "anthropic/claude-haiku-5-5",
+  "precision_model": "anthropic/claude-haiku-5-5",
+  "golden_model": "anthropic/claude-haiku-5-5",
   "slices": ["curated", "pinned", "control"],
   "notes": "The information-fidelity pass (audit 2026-10-03; discussion_evidence.md §6.4). before = a worktree at the fidelity-baseline tag (git worktree add ../ww-fidelity-baseline fidelity-baseline; symlink .env; its replay patched to judge reads on golden cases, as main does). after = main with the games' own summaries; after_resum = main with earlier days re-summarised by summary v3."
 }

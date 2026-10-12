@@ -29,7 +29,7 @@ from Agents.prompts.prompt_formatters import format_agent_action, format_day_cha
 from Agents.schemas.evaluation import EvalCase
 from evaluation.src.judges.case_inputs import eval_case_to_judge_inputs
 
-DEFAULT_ADHERENCE_JUDGE_MODEL = "gemini-2.5-pro"
+DEFAULT_ADHERENCE_JUDGE_MODEL = "anthropic/claude-haiku-5-5"
 
 
 class MemoryAdherence(BaseModel):
@@ -200,7 +200,7 @@ def judge_discussion_stance(
     player_id: str,
     day: int,
     *,
-    model: str = "gemini-2.5-flash",
+    model: str = "anthropic/claude-haiku-5-5",
     max_retries: int = 1,
 ) -> DiscussionStance | None:
     """Classify a regenerated discussion turn's assertiveness (outcome-blind)."""

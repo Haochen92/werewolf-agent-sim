@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 
 from evaluation.src.judges.config import get_judge_llm
 
-DEFAULT_GOLDEN_JUDGE_MODEL = "gemini-3.1-flash-lite"  # a narrow reading task
+DEFAULT_GOLDEN_JUDGE_MODEL = "anthropic/claude-haiku-5-5"  # a narrow reading task
 
 
 class GoldenVerdict(BaseModel):
