@@ -91,7 +91,7 @@ def seed_memory_from_json_files(
     strategy_points_path: str | Path | None = None,
     target_store: BaseStore = store,
     reuse_index: dict[tuple, tuple] | None = None,
-    batch_size: int = 1,
+    batch_size: int | None = None,
     retry_attempts: int = 5,
     retry_initial_delay: float = 1.0,
     retry_max_delay: float = 30.0,
@@ -149,6 +149,12 @@ def seed_memory_from_json_files(
                         put_ops.append(PutOp(namespace, key, value))
                     counts[count_key] += 1
 
+    if batch_size is None:
+        # An OpenRouter embedder takes many texts per call; a Gemini one is seeded a record at a
+        # time (gemini-embedding-2 collapses a batch into one vector). At ~1 s a call, 710 records
+        # one by one took 13 minutes on Qwen.
+        from Agents.llm_factory import DEFAULT_EMBEDDING_MODEL
+        batch_size = 64 if "/" in DEFAULT_EMBEDDING_MODEL else 1
     for start in range(0, len(put_ops), batch_size):
         _batch_with_retries(
             target_store,
