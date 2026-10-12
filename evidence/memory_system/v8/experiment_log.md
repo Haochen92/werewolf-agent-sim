@@ -251,3 +251,19 @@ Provenance (`source_observations`, `synthesis_log.jsonl`) is in the store.
 - **Found on the way, outside memory:** the agents' rules text says the pack's "carrier rotates
   unless the pack agrees otherwise", but `pack_carrier` only rotates by seat order. Two points
   follow the rules text.
+
+## 2026-10-12 — Synthesis on Claude Sonnet 5.5
+
+**Ruling (owner):** not flash-lite for synthesis. Sonnet 5.5 chosen (Claude credits; Gemini had
+$24.90 left). Built a Claude path for synthesis (`8bfc7995`) and, on the owner's word, batch mode for
+offline Claude runs (`c5a6ba0c`, `df2efb0b`: one Message Batch at half price, the opening lines and
+rules block cached; a two-request probe took 5.4 min and read the cache).
+
+**Run** (direct calls; batch was built during it): `memory_stores/v8_seed_synth_sonnet`, from the same
+merged store. 112 calls, 1.11M input and 180k output tokens, **$4.02** (about $1.65 batched and
+cached). 176 points, 164 after point dedup, all 36 cells, no player IDs.
+
+**Rule screen** (`data/seeding/rule_screen_sonnet.md`): 32 of 164 points (20%) state a wrong rule,
+against 14 of 150 (9%) for flash-lite. The points are about three times longer and more specific;
+stating more mechanics, they state more wrong ones. A stronger synthesis model alone does not fix
+it. The long points also lengthen every memory-on game prompt.
