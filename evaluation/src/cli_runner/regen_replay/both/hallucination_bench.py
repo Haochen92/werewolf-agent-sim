@@ -111,7 +111,9 @@ def judge_samples(samples: list[dict], cases: dict[str, dict], cfg: dict) -> Non
     from evaluation.src.audits.role_hallucination_screen import (
         anchors_for_text, claims_through, death_timeline,
     )
-    from evaluation.src.judges.golden_expectation import DEFAULT_GOLDEN_JUDGE_MODEL, judge_golden
+    from evaluation.src.judges.golden_expectation import (
+        DEFAULT_GOLDEN_JUDGE_MODEL, is_claude, judge_golden, judge_golden_batch,
+    )
     from evaluation.src.judges.role_fact_read import read_candidates
 
     records = {(cid, "bench"): c["facts"] for cid, c in cases.items()}
@@ -143,12 +145,15 @@ def judge_samples(samples: list[dict], cases: dict[str, dict], cfg: dict) -> Non
                 samples[c["_i"]]["unit_verdicts"][c["_j"]] = (c.get("read") or {}).get("verdict", "read_error")
     if golden_jobs:
         model = cfg.get("golden_model", DEFAULT_GOLDEN_JUDGE_MODEL)
-        with ThreadPoolExecutor(max_workers=8) as ex:
-            verdicts = list(ex.map(lambda job: judge_golden(job[2], job[3]["unit"], job[3]["text"], model),
-                                   golden_jobs))
+        if is_claude(model):  # a Claude judge runs as one Message Batch (offline judging, 2026-10-12)
+            verdicts = judge_golden_batch([(g, u["unit"], u["text"]) for _, _, g, u in golden_jobs], model)
+        else:
+            with ThreadPoolExecutor(max_workers=8) as ex:
+                verdicts = list(ex.map(lambda job: judge_golden(job[2], job[3]["unit"], job[3]["text"], model),
+                                       golden_jobs))
         for (i, j, _, _), v in zip(golden_jobs, verdicts):
-            samples[i]["unit_verdicts"][j] = "golden_" + v.verdict
-            samples[i].setdefault("golden_reasons", {})[j] = v.reason
+            samples[i]["unit_verdicts"][j] = "golden_" + (v.verdict if v else "unclear")
+            samples[i].setdefault("golden_reasons", {})[j] = v.reason if v else "no verdict"
     for s in samples:
         s["bad"] = any(v in ("hallucination", "golden_violates") for v in s["unit_verdicts"])
         s["deception"] = "deliberate_deception" in s["unit_verdicts"]

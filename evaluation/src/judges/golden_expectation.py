@@ -47,3 +47,24 @@ def judge_golden(golden: str, unit: str, text: str, model: str = DEFAULT_GOLDEN_
     unit_name = "private strategy note" if unit == "updated_strategy" else "public chat message"
     return llm.invoke([("system", SYSTEM),
                        ("human", USER_TEMPLATE.format(golden=golden, unit=unit_name, text=text))])
+
+
+def is_claude(model: str) -> bool:
+    return model.startswith(("anthropic/", "claude-"))
+
+
+def judge_golden_batch(jobs: list[tuple[str, str, str]], model: str) -> list[GoldenVerdict | None]:
+    """The verdicts of many (golden, unit, text) jobs on a Claude model, as one Message Batch (judging
+    is an offline run: half price, back within the hour). A job the batch lost is judged directly."""
+    from Agents.memory.claude_structured import batch_parse, parse_with_claude
+
+    model_id = model.removeprefix("anthropic/")
+    head = SYSTEM + "\n\n"
+    prompts = {str(i): head + USER_TEMPLATE.format(
+        golden=golden, unit="private strategy note" if unit == "updated_strategy" else "public chat message",
+        text=text) for i, (golden, unit, text) in enumerate(jobs)}
+    out = batch_parse({k: (p, GoldenVerdict) for k, p in prompts.items()}, model_id, cache_prefix=head)
+    for k, verdict in out.items():
+        if verdict is None:
+            out[k] = parse_with_claude(prompts[k], GoldenVerdict, model_id, cache_prefix=head)[0]
+    return [out[str(i)] for i in range(len(jobs))]
