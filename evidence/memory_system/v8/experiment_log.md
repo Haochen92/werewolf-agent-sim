@@ -355,3 +355,43 @@ replaying the same queries on both embeddings.
 
 **`ten_seat_v1` re-indexed on Qwen** (cache signature recorded); a healer-night query returned three
 on-target protection points in 0.8 s.
+
+## 2026-10-12 — The gate, part one: seven memory-on games, their cost, and a read of 96 lookups
+
+**Games.** Four on Claude Haiku 5.5 (one per lineup) and three on GPT-6 Luna, every seat AI, memory on
+for every role (strategy points only, `ten_seat_v1`, extraction off), on the code after the day's query
+fixes (`a0282a71`): the rules, dead roster and seat's exact state in the query, D4's lookup reuse with the
+wolf night split. All seven completed. The first Luna launch crashed every game on day 2's opening: a
+round turn's payload has no `current_round`, which the lookup's trace name read (fixed `bdb2ff76`; no
+live memory game since the rounds were built).
+
+**Cost** (Langfuse token counts priced from the catalogue; the Haiku runs shared a session per two games):
+Luna $0.155, $0.188, $0.217 a game, memory lookups 20–28% of it (30–61 lookups); Haiku about $0.15 and
+$0.21 a game, lookups about 40% (about 45–60 lookups). The Haiku turns' cached tokens did not reach
+Langfuse then (fixed `d9e346fd`) and the situation prompt was sent uncached (fixed `1ad07a81`), so the
+Haiku lookup share should fall well below that now.
+
+**The read** (`evaluation/experiments/v8_gate_lookups.py`; `data/gate/`): 352 lookups (517 decisions),
+a sample of 96 stratified by model, role and phase, read by four Claude Sonnet subagents against the
+rules texts with the games' true roles (`data/gate/read/`, a summary per part):
+
+- Lessons: 39 of 268 fit the decision (15%), 79 partly (29%), 150 do not (56%); 36 of 96 lookups had at
+  least one fitting lesson. Day phases worst (discussion 7% fit, vote 13%), night 19%; Luna 18%, Haiku 11%.
+- The pattern every reader reported: retrieval matches the role, not the game's stage. Lessons for an
+  exposed or dead partner, the last three or four players, night 1 or a pick already made were served
+  to seats on day 2 or 3 with seven to nine alive, and the similarity score did not track fit (one
+  healer lookup: the worst-fitting lesson scored 0.887, the best 0.829). Neither the lessons nor their
+  observations carry a stage field to filter on; the stage is only in the prose.
+- The seats mostly rejected the lessons that did not fit (seat verdicts sound in 65, mixed in 25, never
+  wrong outright), so the harm is cost and prompt room more than misplay; the mixed cases include a few
+  where a fitting lesson was dismissed or a lesson nudged a worse move.
+- Situations: 37 of 96 had at least one error. Eight were the query's own swing line ("the game can end
+  within one more elimination" beside a parity count of five or six), which counted the town's win and,
+  after a concealed death, any possible placement of the body (wording fixed `6c3d2329`). The rest are
+  the model's: the necromancer believing it is invisible to checks, a no-effect sigil read as clearing,
+  an empty follow read as clearing a body attacker, miscounts.
+- Leaks: no lesson names a player id; 17 lookups had lessons carrying one past game's detail ("in one
+  case ended the wolf faction outright"), mild. No situation stated a concealed role as fact.
+
+**Gate, relevance: not met.** One lesson in seven fits; the store is too small and too mixed in stage for
+a similarity search to choose well, which the outside review had predicted for its small cells.
