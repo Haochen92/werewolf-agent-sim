@@ -285,3 +285,25 @@ Sentinel night; Chanteuse discussion; Illusionist and Serial Killer vote; Specul
 - Implied synthesis-prompt changes: mechanics only as the rules block states them; one directive
   per point, about two sentences and its reason; advice about the cell's own action only; no game
   anecdotes.
+
+## 2026-10-12 — Re-synthesis with mechanics, phase and length rules (batched)
+
+**Prompt** (`ccb9b96a`): rely on mechanics only as the rules state them; prescribe only the cell's
+own phase; one move per point in at most three sentences. Anecdotes stay (owner). Conflicting points
+in a cell stay too: credit is meant to settle them once memory-on games exist (owner).
+
+**Run:** Sonnet 5.5 as one Message Batch (`TickConfig(batch=True)`), store
+`memory_stores/v8_seed_synth_sonnet2`. All 112 requests returned parsed, no retries; 350k uncached
+input, 583k cache reads, 199k cache writes, 170k output: **$1.51** (against $4.02 direct). 185
+points, 176 after dedup, all 36 cells, no player IDs.
+
+| | flash-lite | Sonnet | Sonnet, revised prompt |
+|---|---|---|---|
+| Points | 150 | 164 | 176 |
+| Words per action (median / max) | 33 / 53 | 109 / 178 | 66 / 102 |
+| Wrong rule (one read) | 9% | 20% | 11% |
+| Town night points giving day advice | — | most | 1 of 32 |
+
+The structure Sonnet brought (trigger, move, reason, exception) is kept at about half the length.
+Remaining errors cluster on the Sigilist's result, the lone killers' immunity to a sigil, and Day 1
+(`data/seeding/rule_screen_sonnet2.md`).
