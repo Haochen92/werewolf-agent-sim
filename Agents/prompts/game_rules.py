@@ -14,8 +14,8 @@ SIDES = {
         "heading": "Wolves (know each other and win as a team):",
         "rules": (
             "The wolves know each other and talk privately at night. Each night one of them, the carrier, "
-            "kills one player; the carrier rotates unless the pack agrees otherwise, and is the only wolf who "
-            "visits for the kill. Every wolf knows the pack's kill. A wolf may carry the kill and use its own "
+            "kills one player; the carrier rotates through the living wolves in seat order (a lone wolf always "
+            "carries), and is the only wolf who visits for the kill. Every wolf knows the pack's kill. A wolf may carry the kill and use its own "
             "ability on the same night. When an illusionist conceals the pack's victim, the carrier's visit to "
             "that victim is hidden as well: whoever watched the victim or followed the carrier does not see it. "
             "An illusionist that carries the kill itself and conceals that victim is not seen there at all."
