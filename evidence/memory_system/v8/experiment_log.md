@@ -307,3 +307,9 @@ points, 176 after dedup, all 36 cells, no player IDs.
 The structure Sonnet brought (trigger, move, reason, exception) is kept at about half the length.
 Remaining errors cluster on the Sigilist's result, the lone killers' immunity to a sigil, and Day 1
 (`data/seeding/rule_screen_sonnet2.md`).
+
+**Production candidate `memory_stores/ten_seat_v1`** (owner, 2026-10-12: keep the flagged points
+flagged, serve only the valid ones). The 19 points of `rule_screen_sonnet2.md` carry a `rule_flag`
+(screen, confidence, claim, rule) in `v8_seed_synth_sonnet2`; `ten_seat_v1` is that store without
+them: 157 points, at least one in every cell. Not yet loaded by a server: a fresh directory embeds
+its points on first load (gemini-embedding-2).

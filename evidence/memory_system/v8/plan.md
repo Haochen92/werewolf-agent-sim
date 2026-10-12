@@ -575,9 +575,10 @@ change. Anything larger goes to the report's limitations and future work (§9.4)
    retrieved cell from 5–12 games; no top-up needed.
 8. **Synthesize, review, publish** `ten_seat_v1`. The owner's review is v1's quality check (D5:
    credit as a diagnostic). Town day strategies are read for option A.
-   - Synthesized 2026-10-11 into `memory_stores/v8_seed_synth` (150 points, all 36 cells), not yet
-     published. Open for the review: 14 points state a wrong rule (`data/seeding/rule_screen.md`),
-     and the de-halo pass turned 26% of verdicts (mostly to unclear), a few over-corrected.
+   - Synthesized 2026-10-11 on flash-lite (150 points, 9% wrong rule), then 2026-10-12 on Sonnet
+     5.5 with a revised prompt (176 points, 11% wrong rule, `experiment_log.md`). Published as
+     `memory_stores/ten_seat_v1`: the Sonnet points without the 19 the rule screen flagged (157).
+     Open: the owner's read of the rest; the de-halo pass turned 26% of verdicts, a few over-corrected.
 9. **Retrieval cadence (D4)** and the situation-summary prompts for the new roles.
 10. **The gate** (§8.7), with existing tools only: coverage, the existing `eval-retrieval` judge
     updated for the ten-seat cast, leak checks, cost. Then deploy, with `WW_MEMORY_ENABLED` set and
