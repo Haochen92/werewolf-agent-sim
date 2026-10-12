@@ -416,13 +416,14 @@ class WithPublicPrivate(BaseModel):
 
 class WithBulletsLeft(BaseModel):
     bullets_left: int = Field(
-        description="How many vigilante shots remain (0 = plays as a regular villager)."
+        description="How many vigilante shots remain at this decision, before acting on it (0 = plays as a regular villager)."
     )
 
 
 class WithUsesLeft(BaseModel):
     uses_left: int = Field(
-        description="How many uses of the role's limited ability remain (checks, watches, sigils, conceals or self-bets)."
+        description="How many uses of the role's limited ability remain at this decision, before acting on it "
+        "(checks, watches, sigils, conceals, self-bets, or the speculator's one pick)."
     )
 
 
@@ -472,7 +473,7 @@ class HealerDayObservation(
 
 class InvestigatorDayObservation(
     BaseSituation, WithConsensus, WithHeat, WithTargetLandscape,
-    WithForwardExposure, WithPublicPrivate, CellObservationMixin,
+    WithForwardExposure, WithPublicPrivate, WithUsesLeft, CellObservationMixin,
 ):
     perspective: Literal["investigator"] = Field(description="The role this observation is for — investigator.")
     action_phase: _DAY_PHASES = Field(description="day_discussion or day_vote.")
@@ -580,7 +581,14 @@ class PowerDaySituationCell(
     BaseSituation, WithConsensus, WithHeat, WithTargetLandscape,
     WithForwardExposure, WithPublicPrivate, _SituationCell,
 ):
-    pass  # healer / investigator day (PowerRoleDay dims)
+    pass  # healer day (PowerRoleDay dims)
+
+
+class InvestigatorDaySituationCell(
+    BaseSituation, WithConsensus, WithHeat, WithTargetLandscape,
+    WithForwardExposure, WithPublicPrivate, WithUsesLeft, _SituationCell,
+):
+    pass  # the healer's day dims, plus the checks left (the stage filter compares some vs none)
 
 
 class VigilanteDaySituationCell(
@@ -628,7 +636,7 @@ _SITUATION_CELL_REGISTRY: dict[tuple[str, str], type[BaseModel]] = {}
 for _r, _cls in (
     ("villager", VillagerDaySituationCell),
     ("healer", PowerDaySituationCell),
-    ("investigator", PowerDaySituationCell),
+    ("investigator", InvestigatorDaySituationCell),
     ("vigilante", VigilanteDaySituationCell),
     ("wolf", WolfDaySituationCell),
     ("serial_killer", SerialKillerDaySituationCell),
@@ -705,7 +713,7 @@ class HealerDayStrategyPoint(
 
 class InvestigatorDayStrategyPoint(
     BaseSituation, WithConsensus, WithHeat, WithTargetLandscape,
-    WithForwardExposure, WithPublicPrivate, CellStrategyMixin,
+    WithForwardExposure, WithPublicPrivate, WithUsesLeft, CellStrategyMixin,
 ):
     perspective: Literal["investigator"] = Field(description="The role this strategy point is for — investigator.")
     action_phase: _DAY_PHASES = Field(description="day_discussion or day_vote.")
@@ -789,8 +797,10 @@ for _r, _cls in (
 
 # ── The ten-seat roles (plan 2026-10-11 §9, D3) ────────────────────────────────────────────
 # Each new role reuses the field groups of the old role it plays like, with a "uses left" group for
-# the roles with limited uses; no role gets fields of its own. Choices with no field (the
-# necromancer's body, the fortune teller's bet, the speculator's pick) stay in the free text. One
+# the roles with limited uses, day and night (retrieval leaves out a lesson learned with uses left
+# when the seat has none, and the reverse); the speculator's pick is its one use. No role gets fields
+# of its own: choices with no field (the necromancer's body, the fortune teller's bet) stay in the
+# free text. One
 # table, three generated classes per cell (observation, strategy point, live situation), so the
 # three can never disagree on a cell's fields.
 _DAY_POWER = (BaseSituation, WithConsensus, WithHeat, WithTargetLandscape, WithForwardExposure, WithPublicPrivate)
@@ -799,7 +809,7 @@ _NIGHT_TARGET = (BaseSituation, WithTargetLandscape)
 _NIGHT_EXPOSED = (BaseSituation, WithTargetLandscape, WithForwardExposure)
 
 TEN_SEAT_CELL_SHAPES: dict[tuple[str, str], tuple[type[BaseModel], ...]] = {
-    ("sentinel", "day"): _DAY_POWER,                                  # as the investigator
+    ("sentinel", "day"): (*_DAY_POWER, WithUsesLeft),                 # as the investigator
     ("sentinel", "night"): (*_NIGHT_TARGET, WithUsesLeft),
     ("trailseer", "day"): _DAY_POWER,                                 # as the investigator
     ("trailseer", "night"): _NIGHT_TARGET,
@@ -807,13 +817,13 @@ TEN_SEAT_CELL_SHAPES: dict[tuple[str, str], tuple[type[BaseModel], ...]] = {
     ("sigilist", "night"): (*_NIGHT_EXPOSED, WithUsesLeft),
     ("chanteuse", "day"): (*_DAY_POWER, WithAllyRevealed),            # as the old wolf
     ("chanteuse", "night"): _NIGHT_EXPOSED,
-    ("illusionist", "day"): (*_DAY_POWER, WithAllyRevealed),          # as the old wolf
+    ("illusionist", "day"): (*_DAY_POWER, WithAllyRevealed, WithUsesLeft),  # as the old wolf
     ("illusionist", "night"): (*_NIGHT_EXPOSED, WithUsesLeft),
     ("necromancer", "day"): _DAY_POWER,                               # as the serial killer
     ("necromancer", "night"): _NIGHT_EXPOSED,
-    ("speculator", "day"): _DAY_PLAIN,
-    ("speculator", "night"): _NIGHT_TARGET,
-    ("fortune_teller", "day"): _DAY_PLAIN,
+    ("speculator", "day"): (*_DAY_PLAIN, WithUsesLeft),
+    ("speculator", "night"): (*_NIGHT_TARGET, WithUsesLeft),
+    ("fortune_teller", "day"): (*_DAY_PLAIN, WithUsesLeft),
     ("fortune_teller", "night"): (*_NIGHT_TARGET, WithUsesLeft),
 }
 
