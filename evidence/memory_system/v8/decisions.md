@@ -177,3 +177,29 @@ case for the town rather than exact; the four labels used only by the switched-o
 are no longer asked for. Not built, by the owner's choice: a whole-cell shortcut for cells of three or
 fewer points (10 of the 24 cells retrieved in play), since more seeding will grow them; the offline
 check of 12 to 20 frozen situations against a show-the-whole-cell baseline is deferred.
+
+## 11. Extraction leaves the game: saved input, offline batch (owner, 2026-10-12)
+
+The gate's relevance read and its stage-filter replay (`experiment_log.md`, the gate parts one and two)
+showed the store needs more lessons per stage, so more source games, and that the lessons' `uses_left`
+must mean the count *before* the decision. The owner's rulings:
+
+- **Every game saves its extraction input when it ends** (roles, lineup, day discussion, wolf chat, the
+  exact night actions, each seat's strategy notes, the outcome), whether or not anything is extracted.
+  No model is called; the input is there for a later batch.
+- **Post-game extraction never runs during a live game.** It is an offline job: it collects the games
+  not yet extracted and submits them as one batch (a game's role calls together, sharing its cached
+  prefix), the de-halo pass included. Served games are no exception: a memory-on game's replay shows
+  its lessons once the job has extracted them, and until then says they are being written. Replays that
+  already carry lessons keep them.
+- **Batch route over online, for cost**; the model is decided by a two-game check of Claude Sonnet and
+  Haiku (batched) against 3.8 Flash's saved outputs. The remaining Gemini credit (about $20) may be used.
+- **Stage filter**: `uses_left` stays an exact count at extraction; retrieval compares some left (> 0)
+  against none left. It is added to the cells that lack it (the Speculator, whose pick is its one use,
+  and the limited-use roles' day cells) before re-extraction.
+
+Past games without a saved input are rebuilt from their records: the game record (discussion, night
+records, outcome) plus the decision cases (each seat's last note, the wolf chat in the wolf seats'
+context). Checked on the 12 seeding games against the input live extraction used: identical except one
+pack vote line on a game's last night, and 14 of 120 notes where the rebuild has the newer note of a
+seat that died that night (live state drops it, so live extraction never saw it).
