@@ -84,7 +84,7 @@ def enrich_payload_with_memory(
         as_type="retriever",
         name=(
             f"memory_retrieval_{payload['player_id']}"
-            f"_day_{payload['current_day']}_round_{payload['current_round']}"
+            f"_day_{payload['current_day']}_round_{payload.get('current_round', 0)}"
         ),
         input={"situations": situations},
         metadata={

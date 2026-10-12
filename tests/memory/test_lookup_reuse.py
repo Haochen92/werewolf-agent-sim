@@ -89,3 +89,12 @@ def test_no_game_id_means_no_reuse(calls):
     _enrich(_payload(), "day_discussion", game_id="")
     _enrich(_payload(), "day_discussion", game_id="")
     assert len(calls) == 2
+
+
+def test_a_round_turns_payload_without_a_round_number_still_looks_up(calls):
+    # The opening and closing rounds' payloads carry no current_round; the lookup's trace name read it
+    # and a memory-on ten-seat game crashed on day 2's opening (found 2026-10-12, the Luna cost run).
+    payload = _payload()
+    del payload["current_round"]
+    _enrich(payload, "day_vote")
+    assert len(calls) == 1
