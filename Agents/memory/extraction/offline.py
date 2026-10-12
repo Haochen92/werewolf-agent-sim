@@ -144,7 +144,9 @@ def input_from_event_log(game_id: str, events: list[dict], human_players: list |
 # game's calls share its prefix (the rules, the standards and the whole game record), marked for
 # Claude's cache. A batch runs in no set order, so each game's first call goes direct and writes the
 # prefix to the 1-hour cache; its other calls go in the batch and read it. Nothing is wasted: the
-# direct call's answer is kept. A call the batch loses or cannot parse is retried direct.
+# direct call's answer is kept. Each call has its own cell schema, and an enforced schema is part of
+# Claude's cache key, so the schema goes as text after the prefix (schema_in_prompt). A call the
+# batch loses, or whose reply does not validate, is retried direct with the schema enforced.
 
 def load_inputs(paths: list[str]) -> list[tuple[dict, Any]]:
     """(metadata, ExtractionCase) for each saved input in the given case files: records of kind
@@ -209,10 +211,11 @@ def extract_cases(cases: list, model: str, thinking_level: str | None = None,
         for ci, (role, phase, prompt, schema) in enumerate(calls):
             keyed[f"g{gi}_c{ci}"] = (game_id, role, phase, prompt, schema, prefix)
 
-    def direct(key: str):
+    def direct(key: str, schema_in_prompt: bool = True):
         _game, _role, _phase, prompt, schema, prefix = keyed[key]
         try:
-            return parse_with_claude(prompt, schema, model, thinking_level, cache_prefix=prefix, cache_ttl="1h")[0]
+            return parse_with_claude(prompt, schema, model, thinking_level, cache_prefix=prefix, cache_ttl="1h",
+                                     schema_in_prompt=schema_in_prompt)[0]
         except Exception as e:  # noqa: BLE001 — a lost cell is reported, never fatal
             logger.warning("Direct extraction call %s failed: %s", key, e)
             return None
@@ -222,10 +225,10 @@ def extract_cases(cases: list, model: str, thinking_level: str | None = None,
         parsed = dict(zip(leads, pool.map(direct, leads)))
     rest = {k: (v[3], v[4], v[5]) for k, v in keyed.items() if k not in parsed}
     if rest:
-        parsed.update(batch_parse(rest, model, thinking_level, cache_ttl="1h"))
+        parsed.update(batch_parse(rest, model, thinking_level, cache_ttl="1h", schema_in_prompt=True))
     lost = [k for k, v in parsed.items() if v is None]
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        parsed.update(zip(lost, pool.map(direct, lost)))
+        parsed.update(zip(lost, pool.map(lambda k: direct(k, schema_in_prompt=False), lost)))
 
     out = {g: {"observations": [], "missing": [], "model_used": model} for g in games}
     for key, result in parsed.items():

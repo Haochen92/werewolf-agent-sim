@@ -1,7 +1,8 @@
 """The offline extraction job's plumbing (decisions §11), with the model calls faked: each game's first
 call goes direct (it writes the game's prefix to the 1-hour cache), the rest go in one batch with
-their game's prefix marked, a call the batch loses is retried direct, and the de-halo pass rewrites
-the verdicts it judges."""
+their game's prefix marked and their cell schema as text after it (an enforced schema is part of
+Claude's cache key), a call the batch loses is retried direct with the schema enforced, and the
+de-halo pass rewrites the verdicts it judges."""
 
 from Agents.memory import claude_structured
 from Agents.memory.extraction import offline
@@ -29,11 +30,14 @@ def _answer(schema, n=1):
 def test_first_call_direct_rest_batched_lost_calls_retried(monkeypatch):
     direct, batched = [], {}
 
-    def fake_parse(prompt, schema, model, thinking_level=None, cache_prefix=None, cache_ttl=None):
-        direct.append((prompt, cache_prefix, cache_ttl))
+    def fake_parse(prompt, schema, model, thinking_level=None, cache_prefix=None, cache_ttl=None,
+                   schema_in_prompt=False):
+        direct.append((prompt, cache_prefix, cache_ttl, schema_in_prompt))
         return (Judgments(judgments=[]) if schema is Judgments else _answer(schema)), {}
 
-    def fake_batch(requests, model, thinking_level=None, cache_prefix=None, poll_seconds=30, cache_ttl=None):
+    def fake_batch(requests, model, thinking_level=None, cache_prefix=None, poll_seconds=30, cache_ttl=None,
+                   schema_in_prompt=False):
+        assert schema_in_prompt  # one cached prefix for every cell: the schema goes after it
         batched.update(requests)
         keys = sorted(requests)
         return {k: (None if k == keys[0] else _answer(requests[k][1])) for k in keys}  # one request lost
@@ -48,8 +52,9 @@ def test_first_call_direct_rest_batched_lost_calls_retried(monkeypatch):
     assert len(batched) == 2 * per_game - 2  # all but each game's lead call
     for prompt, _schema, prefix in batched.values():
         assert prompt.startswith(prefix) and "record of game-" in prefix
-    leads_and_retry = [d for d in direct]
-    assert len(leads_and_retry) == 3 and all(ttl == "1h" for _p, _pre, ttl in leads_and_retry)
+    assert len(direct) == 3 and all(ttl == "1h" for _p, _pre, ttl, _sip in direct)
+    # the two leads write the shared prefix with the schema as text; the lost call retries enforced
+    assert sorted(sip for *_x, sip in direct) == [False, True, True]
     assert all(len(out[g]["observations"]) == per_game and not out[g]["missing"] for g in ("game-a", "game-b"))
     phases = {o.action_phase for o in out["game-a"]["observations"]}
     assert phases == {"day_discussion", "day_vote", "night_action"}

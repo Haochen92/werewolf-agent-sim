@@ -471,3 +471,10 @@ input (its summaries said $1.68); fixed.
 **Reading.** Haiku is out for extraction: it writes player ids into half its observations, as Flash Lite
 did. Sonnet, with the cache fixed, costs about what 3.8 Flash does online. The owner's call: the job
 itself runs on 3.8 Flash while the Gemini credit lasts.
+
+**Fixed the same day** (`claude_structured`, ``schema_in_prompt``): the cell's schema goes as text
+after the cached prefix, the reply is validated in code, and one that does not validate is asked for
+again with the schema enforced. A probe on game `286816b0` (Haiku, three cells of different roles and
+phases): the first call wrote the 12.7k-token prefix, the next two read it, and all three replies
+validated ($0.006). The prefix is 3.6k tokens smaller than before because the enforced schema had
+added hidden text of its own. The extraction job uses this mode for Claude.

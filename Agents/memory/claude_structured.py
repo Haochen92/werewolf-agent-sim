@@ -10,10 +10,17 @@ Message Batch, at half price, back within the hour as a rule; for offline runs o
 a shared prompt prefix for caching: the text the model reads is the same, split into two blocks. A
 batch runs its requests in no set order, so a prefix shared within it is cached only once a request
 has written it; a caller can write it first with a direct call and the 1-hour cache (``cache_ttl``).
+
+The enforced output schema is part of Claude's cache key: calls that share a prefix under different
+schemas never read each other's cache (measured 2026-10-12, evidence/memory_system/v8/experiment_log.md).
+A fan-out with a schema per call passes ``schema_in_prompt``: the schema goes as text after the cached
+part, the reply is parsed and validated here, and a reply that does not validate is retried once with
+the schema enforced.
 """
 
 from __future__ import annotations
 
+import json
 import os
 import threading
 import time
@@ -30,7 +37,8 @@ _THINKING_OFF = {"minimal", "off", "none"}
 # own timeout.
 _MAX_TOKENS = 32000
 
-usage_totals: dict[str, int] = {"calls": 0, "batched_calls": 0, "input_tokens": 0, "output_tokens": 0,
+usage_totals: dict[str, int] = {"calls": 0, "batched_calls": 0, "unvalidated_replies": 0,
+                                "input_tokens": 0, "output_tokens": 0,
                                 "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0,
                                 "cache_creation_1h_input_tokens": 0}
 # A cache write bills above the input rate: 1.25x for the 5-minute cache, 2x for the 1-hour one.
@@ -74,6 +82,28 @@ def _content(prompt: str, cache_prefix: str | None, cache_ttl: str | None = None
     control = {"type": "ephemeral", **({"ttl": cache_ttl} if cache_ttl else {})}
     return [{"type": "text", "text": cache_prefix, "cache_control": control},
             {"type": "text", "text": prompt[len(cache_prefix):]}]
+
+
+_SCHEMA_INSTRUCTION = ("\n\nReply with only one JSON object that matches this JSON schema, with no other "
+                       "text before or after it:\n{schema}")
+
+
+def _with_schema(prompt: str, schema: type[BaseModel]) -> str:
+    """The prompt with the schema written after it, so it sits after any cached prefix."""
+    return prompt + _SCHEMA_INSTRUCTION.format(
+        schema=json.dumps(TypeAdapter(schema).json_schema(), separators=(",", ":")))
+
+
+def _validated(text: str, schema: type[BaseModel]) -> BaseModel | None:
+    """The reply as ``schema``, or None (and counted) when it is not one JSON object that validates.
+    A fenced block or text around the object is tolerated."""
+    start, end = text.find("{"), text.rfind("}")
+    try:
+        return schema.model_validate_json(text[start:end + 1])
+    except Exception:  # noqa: BLE001 — the caller retries with the schema enforced
+        with _lock:
+            usage_totals["unvalidated_replies"] += 1
+        return None
 
 
 def _count(usage, batched: bool = False, model: str = "") -> dict:
@@ -148,8 +178,20 @@ def usage_cost_usd() -> float | None:
 
 
 def parse_with_claude(prompt: str, schema: type[BaseModel], model: str, thinking_level: str | None = None,
-                      cache_prefix: str | None = None, cache_ttl: str | None = None) -> tuple[BaseModel | None, dict]:
-    """The parsed output and token usage of one call. Raises when there is no key."""
+                      cache_prefix: str | None = None, cache_ttl: str | None = None,
+                      schema_in_prompt: bool = False) -> tuple[BaseModel | None, dict]:
+    """The parsed output and token usage of one call. Raises when there is no key. With
+    ``schema_in_prompt``, a reply that does not validate is asked for again with the schema enforced
+    (the usage returned is the last call's)."""
+    if schema_in_prompt:
+        response = _client().messages.create(
+            model=model, max_tokens=_MAX_TOKENS, timeout=600,
+            messages=[{"role": "user", "content": _content(_with_schema(prompt, schema), cache_prefix, cache_ttl)}],
+            **_thinking(thinking_level, model))
+        usage = _count(response.usage, model=model)
+        parsed = _validated(next((b.text for b in response.content if b.type == "text"), ""), schema)
+        if parsed is not None:
+            return parsed, usage
     response = _client().messages.parse(
         model=model, max_tokens=_MAX_TOKENS, timeout=600, output_format=schema,
         messages=[{"role": "user", "content": _content(prompt, cache_prefix, cache_ttl)}],
@@ -159,11 +201,11 @@ def parse_with_claude(prompt: str, schema: type[BaseModel], model: str, thinking
 
 def batch_parse(requests: dict[str, tuple], model: str, thinking_level: str | None = None,
                 cache_prefix: str | None = None, poll_seconds: int = 30,
-                cache_ttl: str | None = None) -> dict[str, BaseModel | None]:
+                cache_ttl: str | None = None, schema_in_prompt: bool = False) -> dict[str, BaseModel | None]:
     """Each request's parsed output, by id, from one Message Batch ({id: (prompt, schema)}, or
     (prompt, schema, prefix) to mark that request's own cached prefix instead of ``cache_prefix``).
     Blocks until the batch ends; a request that errored, expired or did not parse maps to None, for
-    the caller to retry directly."""
+    the caller to retry directly (with ``schema_in_prompt``, best with the schema enforced)."""
     from anthropic.lib._parse._transform import transform_schema  # the schema transform parse() applies
 
     client = _client()
@@ -171,11 +213,13 @@ def batch_parse(requests: dict[str, tuple], model: str, thinking_level: str | No
     batch_requests = []
     for custom_id, (prompt, schema, *own_prefix) in requests.items():
         prefix = own_prefix[0] if own_prefix else cache_prefix
-        output_format = {"type": "json_schema", "schema": transform_schema(TypeAdapter(schema).json_schema())}
+        text = _with_schema(prompt, schema) if schema_in_prompt else prompt
         params: dict[str, Any] = {"model": model, "max_tokens": _MAX_TOKENS,
-                                  "messages": [{"role": "user", "content": _content(prompt, prefix, cache_ttl)}],
+                                  "messages": [{"role": "user", "content": _content(text, prefix, cache_ttl)}],
                                   **thinking}
-        params["output_config"] = {**params.get("output_config", {}), "format": output_format}
+        if not schema_in_prompt:
+            output_format = {"type": "json_schema", "schema": transform_schema(TypeAdapter(schema).json_schema())}
+            params["output_config"] = {**params.get("output_config", {}), "format": output_format}
         batch_requests.append({"custom_id": custom_id, "params": params})
     batch = client.messages.batches.create(requests=batch_requests)
     logger.info("Message batch %s: %d requests on %s", batch.id, len(batch_requests), model)
@@ -190,8 +234,12 @@ def batch_parse(requests: dict[str, tuple], model: str, thinking_level: str | No
         message = result.result.message
         _count(message.usage, batched=True, model=model)
         text = next((b.text for b in message.content if b.type == "text"), "")
+        schema = requests[result.custom_id][1]
+        if schema_in_prompt:
+            out[result.custom_id] = _validated(text, schema)
+            continue
         try:
-            out[result.custom_id] = requests[result.custom_id][1].model_validate_json(text)
+            out[result.custom_id] = schema.model_validate_json(text)
         except Exception as e:  # noqa: BLE001 — a reply that does not parse is retried by the caller
             logger.warning("Batch %s request %s did not parse (%s): %s", batch.id, result.custom_id,
                            message.stop_reason, e)
