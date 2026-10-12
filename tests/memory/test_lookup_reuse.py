@@ -33,7 +33,7 @@ def calls(monkeypatch):
 
 
 def _payload(day=2, channel=(), player="p1", role="chanteuse"):
-    return {"current_day": day, "current_round": 1, "player_id": player, "player_role": role,
+    return {"current_day": day, "current_round": 1, "day_round": "opening", "player_id": player, "player_role": role,
             "day_channel": list(channel), "strategy_points": []}
 
 
@@ -52,7 +52,7 @@ def test_a_days_discussion_reuses_its_first_lookup(calls):
     _, second = _enrich(_payload(channel=[_line("p4")]), "day_discussion")
     assert len(calls) == 1
     assert first["lookup_reused"] is False and second["lookup_reused"] is True
-    assert second["situations"] == first["situations"] and second["lookup_round"] == 1
+    assert second["situations"] == first["situations"] and second["lookup_round"] == "opening"
 
 
 def test_a_new_claim_refreshes_it_and_a_repeated_claim_does_not(calls):

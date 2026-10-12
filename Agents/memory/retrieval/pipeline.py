@@ -84,7 +84,7 @@ def enrich_payload_with_memory(
         as_type="retriever",
         name=(
             f"memory_retrieval_{payload['player_id']}"
-            f"_day_{payload['current_day']}_round_{payload.get('current_round', 0)}"
+            f"_day_{payload['current_day']}_round_{_round_label(payload)}"
         ),
         input={"situations": situations},
         metadata={
@@ -232,7 +232,7 @@ def enrich_payload_with_memory(
         # Where the lookup was made: a reused lookup's record keeps these, so a decision shown the
         # lessons of an earlier turn says which turn.
         "lookup_day": payload["current_day"],
-        "lookup_round": payload.get("current_round", 0),
+        "lookup_round": _round_label(payload),
         "lookup_reused": False,
     }
     if cache_key:
@@ -240,6 +240,12 @@ def enrich_payload_with_memory(
                                               "strategy_points": retrieved_strategy_points,
                                               "metadata": metadata})
     return enriched_payload, metadata
+
+
+def _round_label(payload: dict[str, Any]) -> str:
+    """Which round a turn belongs to: a day turn's named round (opening, discussion, proactive,
+    closing); a night turn's pack chat round number. Day turns carry no round number."""
+    return str(payload.get("day_round") or payload.get("current_round", 0))
 
 
 def _with_lessons(enriched_payload: dict[str, Any], observations: list, strategy_points: list) -> dict[str, Any]:
