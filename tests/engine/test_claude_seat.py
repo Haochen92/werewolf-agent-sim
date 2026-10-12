@@ -40,6 +40,7 @@ def test_claude_thinks_only_when_its_mode_does_not_force_the_tool_call(monkeypat
     schema = _build_chat_model("anthropic/claude-haiku-5-5", thinking_level="medium", structured_mode="json_schema")
     off = _build_chat_model("anthropic/claude-haiku-5-5", thinking_level="minimal", structured_mode="json_schema")
     assert forced.thinking == {"type": "disabled"} and off.thinking == {"type": "disabled"}
+    assert off.temperature is None  # Haiku 5.5 refuses a temperature
     assert schema.thinking == {"type": "adaptive"} and schema.reasoning_effort == "medium"
     assert schema.model == "claude-haiku-5-5"
 

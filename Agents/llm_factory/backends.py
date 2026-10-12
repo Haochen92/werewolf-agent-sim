@@ -214,6 +214,8 @@ def _build_openai_compat_chat_model(
 # temperature (and no forced tool call: its catalogue row's structured_mode).
 _CLAUDE_THINKING_OFF: dict[str, dict[str, Any]] = {
     "claude-sonnet-5-5": {"thinking": {"type": "between_tools"}},
+    # Haiku 5.5 takes "disabled" but answers a temperature with a 400 (2026-10-12, a judge's call).
+    "claude-haiku-5-5": {"thinking": {"type": "disabled"}},
 }
 
 
