@@ -65,7 +65,9 @@ def collect() -> list[dict]:
                             "true_roles": game["roles"], "player_id": case["player_id"],
                             "role": case["player_role"], "phase": case["action_phase"], "day": case["day"],
                             "situations": case["situations"],
-                            "lessons": [{"score": round(sp.get("score") or 0, 3),
+                            "query_dims": (case.get("situation_dimensions") or [{}])[0],
+                            "lessons": [{"key": sp.get("key"), "score": round(sp.get("score") or 0, 3),
+                                         "dimensions": sp["strategy_point"].get("dimensions") or {},
                                          "situation": sp["strategy_point"]["situation"],
                                          "action": sp["strategy_point"]["action"]}
                                         for sp in case["retrieved_strategy_points"]],
@@ -92,24 +94,29 @@ def _render(i: int, row: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
-def main() -> None:
-    rows = collect()
-    OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "lookups.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
+def sample(rows: list[dict]) -> dict[int, dict]:
+    """The read sample by lookup number (part N numbers from (N-1)*1000+1): PER_CELL lookups per
+    (model, role, phase), shuffled and dealt into PARTS."""
     by_cell: dict[tuple, list[dict]] = defaultdict(list)
     for r in rows:
         by_cell[(r["model"], r["role"], r["phase"])].append(r)
     rng = random.Random(SEED)
-    sample = [r for cell in sorted(by_cell) for r in rng.sample(by_cell[cell], min(PER_CELL, len(by_cell[cell])))]
-    rng.shuffle(sample)
+    picked = [r for cell in sorted(by_cell) for r in rng.sample(by_cell[cell], min(PER_CELL, len(by_cell[cell])))]
+    rng.shuffle(picked)
+    return {part * 1000 + 1 + i: r for part in range(PARTS) for i, r in enumerate(picked[part::PARTS])}
+
+
+def main() -> None:
+    rows = collect()
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "lookups.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
+    picked = sample(rows)
     (OUT / "sample").mkdir(exist_ok=True)
     for part in range(PARTS):
-        chunk = sample[part::PARTS]
-        start = part * 1000 + 1
-        (OUT / "sample" / f"part_{part + 1}.md").write_text(
-            "\n".join(_render(start + i, r) for i, r in enumerate(chunk)))
-    print(f"{len(rows)} lookups ({sum(len(r['decisions']) for r in rows)} decisions) in {len(by_cell)} cells; "
-          f"sample {len(sample)} in {PARTS} parts -> {OUT}")
+        chunk = [(n, r) for n, r in picked.items() if (n - 1) // 1000 == part]
+        (OUT / "sample" / f"part_{part + 1}.md").write_text("\n".join(_render(n, r) for n, r in chunk))
+    print(f"{len(rows)} lookups ({sum(len(r['decisions']) for r in rows)} decisions); "
+          f"sample {len(picked)} in {PARTS} parts -> {OUT}")
 
 
 if __name__ == "__main__":

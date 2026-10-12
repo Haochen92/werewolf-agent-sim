@@ -380,8 +380,9 @@ rules texts with the games' true roles (`data/gate/read/`, a summary per part):
 - The pattern every reader reported: retrieval matches the role, not the game's stage. Lessons for an
   exposed or dead partner, the last three or four players, night 1 or a pick already made were served
   to seats on day 2 or 3 with seven to nine alive, and the similarity score did not track fit (one
-  healer lookup: the worst-fitting lesson scored 0.887, the best 0.829). Neither the lessons nor their
-  observations carry a stage field to filter on; the stage is only in the prose.
+  healer lookup: the worst-fitting lesson scored 0.887, the best 0.829). Each lesson does store the board
+  it was learned on (players alive, partner revealed, uses left), but retrieval does not use it (this
+  entry first said no stage field existed; corrected in the next entry).
 - The seats mostly rejected the lessons that did not fit (seat verdicts sound in 65, mixed in 25, never
   wrong outright), so the harm is cost and prompt room more than misplay; the mixed cases include a few
   where a fitting lesson was dismissed or a lesson nudged a worse move.
@@ -395,3 +396,46 @@ rules texts with the games' true roles (`data/gate/read/`, a summary per part):
 
 **Gate, relevance: not met.** One lesson in seven fits; the store is too small and too mixed in stage for
 a similarity search to choose well, which the outside review had predicted for its small cells.
+
+## 2026-10-12 — The gate, part two: a stage filter on the stored boards
+
+**Question.** Every lesson stores the board it was learned on, from extraction through synthesis, and
+the seat's own board is computed exactly. Would leaving out lessons from another stage fix relevance?
+v7 already has a soft version (`dimension_gating.py`: a ±30% score tilt on the alive bucket and the swing
+flag, never a drop), off by default and off in the gate games.
+
+**Check 1: are the stored counts right?** (free, offline) The 196 extracted observations that carry
+uses left (or the vigilante's bullets) against the true count, replayed from each seeding game's nights
+with the engine's own spending rule (`resolution._spent`): 165 exact (84%), 29 give the count *after*
+the night's action rather than before it, 2 impossible (a vigilante with 3 shots). As some-left vs
+none-left, 7 of 196 are wrong, nearly all a last use written as 0, which would hide a "spend your last
+one" lesson from the seats it is for. The field's description does not say before or after; the
+seat's value is before.
+
+**Check 2: the replay** (`evaluation/experiments/v8_stage_filter_replay.py`; `data/gate/stage_filter/`).
+The 96 read lookups searched again from the situations the seats wrote (one embedding call each;
+the unfiltered top three reproduced what the seats were shown in 91 of 96), with a lesson left out when
+its alive bucket (8+, 5–7, 4 or fewer), partner-lost flag or uses-left (some vs none) differs from the
+seat's. The 28 lessons the filter promoted that the first read had not judged were read by one Sonnet
+subagent with the same rubric (`read.jsonl`).
+
+| Lessons shown | Lessons | Fit | Partly | Do not fit | Lookups with a fit | Empty lookups |
+|---|---|---|---|---|---|---|
+| As in the gate games | 264 | 15% | 30% | 55% | 36 | 0 |
+| Filtered, the gap left empty | 114 | 25% | 35% | 39% | 28 | 25 |
+| Filtered, the gap refilled from the cell | 143 | 22% | 36% | 43% | 30 | 18 |
+
+- The filter drops 69% of the misfits (101 of 146) and a quarter of the fitting lessons (10 of 39), all
+  of those on the alive bucket. A looser alive rule (within two players) keeps 6 more fitting lessons
+  but 32 more misfits.
+- Refilling from the cell mostly adds misfits: of the 28 promoted lessons, 2 fit. The cells hold few
+  lessons for any one stage, so a filtered lookup should show fewer lessons, not different ones.
+- Uses left never applied here: no sampled seat had run out, and no stored night lesson was learned at
+  zero uses. The Speculator's lessons that assume a pick already made (four lookups) are the case it
+  would catch, but the Speculator's cells have no uses field (the pick is its one use; `uses=1`).
+
+**Reading.** The stored board is a real stage signal: filtering on it lifts fit from 15% to 25% and
+removes most misfits, at a cost of a quarter of the fitting lessons and 25 lookups left with nothing
+(which also saves their prompt room). It does not reach a store where most lessons fit; that needs more
+lessons per stage (more source games) as well. Next (owner): uses left defined as before the action and
+added to the cells that lack it (the Speculator, the limited-use roles' day cells), then re-extraction.
