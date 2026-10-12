@@ -2,8 +2,8 @@
 
 The de-halo pass and (when configured) strategy synthesis call Claude directly through the
 Anthropic SDK rather than the game's model factory. The key is CLAUDE_API_KEY (or
-ANTHROPIC_API_KEY). These calls are not traced in Langfuse, so every call's tokens are added to
-``usage_totals`` for the caller to report.
+ANTHROPIC_API_KEY). These calls bypass LangChain, so each one is recorded in Langfuse here (``_trace``,
+with its cost, a batched call at the batch rate), and its tokens are added to ``usage_totals``.
 
 Two ways to call: ``parse_with_claude`` (one call, now) and ``batch_parse`` (many calls as one
 Message Batch, at half price, back within the hour as a rule; for offline runs only). Both can mark
@@ -76,7 +76,32 @@ def _count(usage, batched: bool = False, model: str = "") -> dict:
         by_model = usage_by_model.setdefault((model, batched), dict.fromkeys(row, 0))
         for k, v in row.items():
             by_model[k] += v
+    _trace(row, batched, model)
     return row
+
+
+def _trace(row: dict, batched: bool, model: str) -> None:
+    """Record the call in Langfuse as a generation (under the active trace, if any), with its tokens by
+    type and the cost worked out here, a batched call at the batch rate. These calls bypass LangChain,
+    so nothing else traces them. Never raises: tracing must not fail a call."""
+    try:
+        from datetime import datetime, timezone
+
+        from Agents.llm_factory.pricing import cost_usd
+        from Agents.tracing import langfuse
+
+        cached, written = row["cache_read_input_tokens"], row["cache_creation_input_tokens"]
+        usd = cost_usd(model, datetime.now(timezone.utc), batch=batched, cached=cached,
+                       input=row["input_tokens"] + cached + written, output=row["output_tokens"])
+        generation = langfuse.start_observation(
+            as_type="generation", name="claude_batch_call" if batched else "claude_call", model=model,
+            metadata={"batched": batched},
+            usage_details={"input": row["input_tokens"], "input_cache_read": cached,
+                           "input_cache_creation": written, "output": row["output_tokens"]},
+            cost_details={"total": usd} if usd is not None else None)
+        generation.end()
+    except Exception:  # noqa: BLE001
+        logger.debug("Langfuse trace of a Claude call failed", exc_info=True)
 
 
 def usage_cost_usd() -> float | None:

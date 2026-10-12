@@ -68,6 +68,16 @@ class ClaudeChat(ChatAnthropic):
                 last["content"] = marked
         return payload
 
+    def _format_output(self, data: Any, **kwargs: Any) -> Any:
+        # Langfuse's LangChain handler reads Anthropic's raw usage first, whose input_tokens leaves out
+        # the cache reads and writes, so a cached turn traced as ~1,000 input tokens of ~10,000. With
+        # the raw block kept under another key it reads the message's usage_metadata, which counts
+        # them, and records the reads and writes as their own token types.
+        result = super()._format_output(data, **kwargs)
+        if result.llm_output and "usage" in result.llm_output:
+            result.llm_output["anthropic_usage"] = result.llm_output.pop("usage")
+        return result
+
     def with_structured_output(self, schema: Any = None, **kwargs: Any) -> Any:
         if "method" in kwargs or not isinstance(schema, type):
             return super().with_structured_output(schema, **kwargs)
