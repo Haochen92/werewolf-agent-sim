@@ -237,6 +237,31 @@ def extract_cases(cases: list, model: str, thinking_level: str | None = None,
     return out
 
 
+def extract_cases_gemini(cases: list) -> tuple[dict[str, dict], dict]:
+    """Extract each case online on the game's extraction model (Gemini, ``DEFAULT_PRO_MODEL``) with
+    its explicit prefix cache, the live extractor's path; by game id as ``extract_cases``, and the
+    token usage by model. Gemini's cache holds the prompt text alone, so every cell reads it whatever
+    its schema; Gemini batch is not built (decisions §11)."""
+    from langchain_core.callbacks import get_usage_metadata_callback
+
+    from Agents.memory.extraction.extraction_agent import extract_postgame_per_cell
+    from Agents.memory.extraction.inputs import extraction_inputs_from_frozen_case
+
+    out = {}
+    with get_usage_metadata_callback() as cb:
+        for i, case in enumerate(cases, 1):
+            roles = tuple(dict.fromkeys(case.roles.values()))
+            result = extract_postgame_per_cell(extraction_inputs_from_frozen_case(case.model_dump()), roles=roles,
+                                               cache_prefix=True)
+            observations = list(result.output.observations) if result else []
+            missing = result.model_used.split("(missing: ", 1)[1].rstrip(")").split(",") if (
+                result and "(missing: " in result.model_used) else ([] if result else ["all"])
+            out[case.game_id] = {"observations": observations, "missing": missing,
+                                 "model_used": result.model_used if result else "failed"}
+            logger.info("Extracted %d of %d: %s, %d observations", i, len(cases), case.game_id[:8], len(observations))
+    return out, dict(cb.usage_metadata)
+
+
 def dehalo_cases(cases: list, extracted: dict[str, dict], config) -> dict[str, dict]:
     """The de-halo pass over each game's observations as one batch (``config``: DehaloConfig), the
     verdicts rewritten in place; by game id, the de-halo record."""

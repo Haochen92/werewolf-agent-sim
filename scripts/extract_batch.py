@@ -1,11 +1,12 @@
-"""Extract saved game inputs offline, in Claude Message Batches (decisions §11).
+"""Extract saved game inputs offline: in Claude Message Batches, or online on Gemini (decisions §11).
 
 Reads extraction inputs (the post-game node's ``extraction_input`` records in a run's case files, or
 a backfill file), extracts every dealt role's discussion, vote and night as one batch (each game's
 first call direct, to write its prefix to the cache), runs the de-halo pass as a second batch, and
 writes ``extracted.jsonl`` (extraction cases, the eval-case format), ``dehalo.jsonl`` and
-``summary.json`` (counts, tokens and cost at the catalogue's batch prices). Writing the lessons into
-a store or a served game's replay is a separate step.
+``summary.json`` (counts, tokens and cost at the catalogue's batch prices). A ``gemini-*`` model runs
+the live extractor's path instead, online, with its explicit prefix cache (Gemini batch is not
+built). Writing the lessons into a store or a served game's replay is a separate step.
 
   poetry run python scripts/extract_batch.py --inputs batch_results/extraction_inputs/backfill_2026-10-12.jsonl \\
       --games 286816b0 cc80ecdf --model claude-haiku-5-5 --thinking off --name check_haiku
@@ -20,7 +21,13 @@ import time
 from pathlib import Path
 
 from Agents.memory import claude_structured
-from Agents.memory.extraction.offline import cell_calls, dehalo_cases, extract_cases, load_inputs
+from Agents.memory.extraction.offline import (
+    cell_calls,
+    dehalo_cases,
+    extract_cases,
+    extract_cases_gemini,
+    load_inputs,
+)
 from Agents.memory.persistence.config import DehaloConfig
 
 OUT = Path("batch_results/extraction_runs")
@@ -35,6 +42,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--inputs", nargs="+", required=True, help="case files holding extraction inputs")
     parser.add_argument("--games", nargs="*", default=[], help="game id prefixes (default: every input)")
+    parser.add_argument("--sources", nargs="*", default=[],
+                        help="keep inputs whose recorded source contains one of these (e.g. v8_seed)")
     parser.add_argument("--model", default="claude-haiku-5-5")
     parser.add_argument("--thinking", default=None, help="off, or an effort level (low..max); default: the model's")
     parser.add_argument("--no-warm", action="store_true", help="send every call in the batch")
@@ -44,7 +53,8 @@ def main() -> None:
     args = parser.parse_args()
 
     loaded = [(m, c) for m, c in load_inputs(args.inputs)
-              if not args.games or any(c.game_id.startswith(g) for g in args.games)]
+              if (not args.games or any(c.game_id.startswith(g) for g in args.games))
+              and (not args.sources or any(src in m.get("source", "") for src in args.sources))]
     cases = [c for _m, c in loaded]
     calls = {c.game_id: cell_calls(c) for c in cases}
     n_calls = sum(len(v[1]) for v in calls.values())
@@ -56,7 +66,13 @@ def main() -> None:
         return
 
     started = time.time()
-    extracted = extract_cases(cases, args.model, args.thinking, warm=not args.no_warm)
+    gemini_usage = None
+    if args.model.startswith("gemini"):
+        import os
+        os.environ["GOOGLE_GENAI_PRO_MODEL"] = args.model
+        extracted, gemini_usage = extract_cases_gemini(cases)
+    else:
+        extracted = extract_cases(cases, args.model, args.thinking, warm=not args.no_warm)
     dehalo_config = DehaloConfig(enabled=not args.no_dehalo)
     dehalo = dehalo_cases(cases, extracted, dehalo_config)
 
@@ -80,6 +96,7 @@ def main() -> None:
         "observations": {c.game_id: len(extracted[c.game_id]["observations"]) for c in cases},
         "missing": {g: r["missing"] for g, r in extracted.items() if r["missing"]},
         "usage": {f"{m}{' (batch)' if b else ''}": u for (m, b), u in claude_structured.usage_by_model.items()},
+        "gemini_usage": gemini_usage,
         "cost_usd": claude_structured.usage_cost_usd(), "minutes": round((time.time() - started) / 60, 1),
     }
     (out / "summary.json").write_text(json.dumps(summary, indent=2))
