@@ -261,15 +261,21 @@ def main() -> None:
             spawn_arm(arm, cfg, gen_path)
         by_arm[arm["label"]] = _read_jsonl(gen_path)
 
+    # Every arm still to judge goes through one judging pass, so a batched judge sends one batch for
+    # the run rather than one per arm (each batch can take up to an hour).
+    to_judge = []
     for label, samples in by_arm.items():
         judged_path = out_dir / f"judged_{label}.jsonl"
         if not cfg.get("rejudge") and _reuse_verdicts(samples, judged_path):
             print(f"arm {label}: verdicts reused from {judged_path.name} (same samples; \"rejudge\": true to redo)")
             continue
-        print(f"arm {label}:")
-        judge_samples(samples, cases, cfg)
-        with open(judged_path, "w") as f:
-            f.writelines(json.dumps(s) + "\n" for s in samples)
+        to_judge.append(label)
+    if to_judge:
+        print(f"judging arms {', '.join(to_judge)}:")
+        judge_samples([s for label in to_judge for s in by_arm[label]], cases, cfg)
+        for label in to_judge:
+            with open(out_dir / f"judged_{label}.jsonl", "w") as f:
+                f.writelines(json.dumps(s) + "\n" for s in by_arm[label])
 
     result = {"label": cfg["label"], "run_at": datetime.now(timezone.utc).isoformat(), "config": cfg,
               "n_cases": len(cases), **summarize(by_arm, cases)}
