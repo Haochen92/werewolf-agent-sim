@@ -127,7 +127,8 @@ export interface SceneBeat {
   seat?: string;
   /** The seat the beat is about: the chip that fell, the card, the actor. */
   subject?: string;
-  /** The seats a round's beat is about: everyone writing an opening, or the seats that said nothing. */
+  /** The seats a round's beat is about: everyone writing an opening, or the seats that said
+   *  nothing; on a `day.pass`, the seats of a run of passes told as one beat. */
   subjects?: string[];
   /** The nth of a run: the nth chip counted. */
   ordinal?: number;

@@ -84,20 +84,18 @@ describe('beatsFor on the fixture (9369a5c1, memory on)', () => {
   });
 
   it('shows a pass to everyone: a turn that ends with no speech', () => {
-    // Day 1 of the fixture is three passes and nothing else.
+    // Day 1 of the fixture is three passes and nothing else: one beat, a run (2026-10-12).
     const day1 = pub.filter((b) => b.scene === 'day' && b.day === 1);
-    expect(day1.map((b) => [b.id, b.subject])).toEqual([
-      ['day.pass', 'player_1'],
-      ['day.pass', 'player_5'],
-      ['day.pass', 'player_4'],
+    expect(day1.map((b) => [b.id, b.subject, b.subjects])).toEqual([
+      ['day.pass', undefined, ['player_1', 'player_5', 'player_4']],
     ]);
-    // One derived pass per X-ray pass_marker, over the whole game.
-    expect(pub.filter((b) => b.id === 'day.pass').length).toBe(
-      xray.filter((b) => b.id === 'day.pass').length,
-    );
-    // A pass reveals the log up to, not including, what resolved it.
+    // Every X-ray pass_marker is a seat in a public pass or a run, over the whole game.
+    const seats = (b: SceneBeat) => b.subjects?.length ?? 1;
+    const told = pub.filter((b) => b.id === 'day.pass').reduce((n, b) => n + seats(b), 0);
+    expect(told).toBe(xray.filter((b) => b.id === 'day.pass').length);
+    // A pass reveals the log up to, not including, what resolved it (the moderator's line here).
     const first = day1[0];
-    expect(events[first.end].type).toMatch(/turn_started|phase_change/);
+    expect(events[first.end].type).toMatch(/turn_started|phase_change|gm_message/);
   });
 
   it('live, the puppet thinks on the stand until the turn resolves', () => {
@@ -432,6 +430,170 @@ describe('the rounds of the day, on a hand-built log (Phase 2)', () => {
     const passes = byId(beats, 'day.round-passes');
     expect(passes).toHaveLength(1);
     expect(passes[0].subjects).toEqual(['player_1', 'player_4']);
+  });
+});
+
+describe('a run of passes, and the prompt before its announcement (2026-10-12)', () => {
+  const ev = (seq: number, type: string, rest: Record<string, unknown> = {}) =>
+    ({ seq, day: 2, type, ...rest }) as unknown as DurableGameEvent;
+  const turn = (seq: number, player: string) => ev(seq, 'turn_started', { player });
+  const marker = (seq: number, player: string) =>
+    ev(seq, 'pass_marker', {
+      player,
+      channel_seq: seq,
+      pass_reason: 'voluntary',
+      gated: false,
+    });
+  const said = (seq: number, player: string) =>
+    ev(seq, 'speech', { player, channel_seq: seq, message: 'Seat 4 is quiet.' });
+  const ask = (seq: number, kind: string) =>
+    ev(seq, 'input_request', {
+      player: 'player_3',
+      action_kind: kind,
+      candidates: [],
+      deadline: null,
+    });
+  const told = (beats: SceneBeat[]) =>
+    beats
+      .filter((b) => b.scene === 'day' || b.scene === 'vote')
+      .map((b) => `${b.id} ${(b.subjects ?? [b.subject ?? b.seat]).join(',')}`);
+
+  // seat 1 speaks; seats 2, 4 and 5 pass; seat 6 speaks; seat 7 passes; the vote
+  const day: DurableGameEvent[] = [
+    ev(10, 'phase_change', { phase: 'day' }),
+    turn(11, 'player_1'),
+    said(12, 'player_1'),
+    turn(13, 'player_2'),
+    marker(14, 'player_2'),
+    turn(15, 'player_4'),
+    marker(16, 'player_4'),
+    turn(17, 'player_5'),
+    marker(18, 'player_5'),
+    turn(19, 'player_6'),
+    said(20, 'player_6'),
+    turn(21, 'player_7'),
+    marker(22, 'player_7'),
+    ev(23, 'day_summary', { summary: 'a quiet day' }),
+    ev(24, 'phase_change', { phase: 'voting' }),
+  ];
+
+  it('tells passes one after another as one beat, and a lone pass as before', () => {
+    expect(told(beatsFor(day, { xray: false }))).toEqual([
+      'day.speech player_1',
+      'day.pass player_2,player_4,player_5',
+      'day.speech player_6',
+      'day.pass player_7',
+      'vote.opens ',
+    ]);
+    const run = beatsFor(day, { xray: false }).find((b) => b.subjects);
+    // anchored on the run's first turn, showing the log up to what ended it
+    expect(run).toMatchObject({ seq: 13, end: 9, sees: 'public', holdMs: 4000 });
+    expect(run?.subject).toBeUndefined();
+  });
+
+  it('live, no seat of a run takes the stand; a lone pass keeps its thinking beat', () => {
+    expect(told(beatsFor(day, { xray: false, live: true }))).toEqual([
+      'day.turn-thinking player_1',
+      'day.speech player_1',
+      'day.pass player_2,player_4,player_5',
+      'day.turn-thinking player_6',
+      'day.speech player_6',
+      'day.turn-thinking player_7',
+      'day.pass player_7',
+      'vote.opens ',
+    ]);
+    // cut mid-run: the passes so far, then the seat on the stand
+    expect(told(beatsFor(day.slice(0, 8), { xray: false, live: true })).slice(-2)).toEqual([
+      'day.pass player_2,player_4',
+      'day.turn-thinking player_5',
+    ]);
+  });
+
+  it('the X-ray replay keeps each pass_marker, with its reason', () => {
+    const xray = beatsFor(day, { xray: true }).filter((b) => b.id === 'day.pass');
+    expect(xray.map((b) => [b.subject, b.sees])).toEqual([
+      ['player_2', 'xray'],
+      ['player_4', 'xray'],
+      ['player_5', 'xray'],
+      ['player_7', 'xray'],
+    ]);
+  });
+
+  it('a seat passing twice starts the next run; the moderator’s line ends one', () => {
+    const sweeps: DurableGameEvent[] = [
+      ev(10, 'phase_change', { phase: 'day' }),
+      turn(11, 'player_2'),
+      turn(13, 'player_4'),
+      turn(15, 'player_2'),
+      turn(17, 'player_4'),
+      ev(19, 'gm_message', { text: 'Before the vote…' }),
+      turn(20, 'player_5'),
+      turn(21, 'player_6'),
+      ev(22, 'phase_change', { phase: 'voting' }),
+    ];
+    expect(told(beatsFor(sweeps, { xray: false }))).toEqual([
+      'day.pass player_2,player_4',
+      'day.pass player_2,player_4',
+      'day.pass player_5,player_6',
+      'vote.opens ',
+    ]);
+  });
+
+  it('live, the seat’s own prompt ends a run, and its own pass starts the next', () => {
+    const mine: DurableGameEvent[] = [
+      ev(10, 'phase_change', { phase: 'day' }),
+      turn(11, 'player_2'),
+      turn(13, 'player_4'),
+      turn(15, 'player_3'),
+      ask(16, 'discuss'),
+      turn(17, 'player_5'),
+      turn(19, 'player_6'),
+      ev(21, 'phase_change', { phase: 'voting' }),
+    ];
+    expect(told(beatsFor(mine, { xray: false, me: 'player_3', live: true }))).toEqual([
+      'day.pass player_2,player_4',
+      'day.turn-thinking player_3',
+      'day.your-turn player_3',
+      'day.pass player_3,player_5,player_6',
+      'vote.opens ',
+    ]);
+  });
+
+  // live game 403f4dbc: the ballot is asked before the vote is announced (and a night act
+  // before the night, the opening before its round); the stage played it before the day's
+  // last pass and before "voting opens"
+  it('a prompt asked just before its announcement comes after it', () => {
+    const withBallot = [...day.slice(0, -1), ask(24, 'vote'), { ...day.at(-1)!, seq: 25 }];
+    const live = beatsFor(withBallot, { xray: false, me: 'player_3', live: true });
+    expect(told(live).slice(-4)).toEqual([
+      'day.turn-thinking player_7',
+      'day.pass player_7',
+      'vote.opens ',
+      'vote.your-ballot player_3',
+    ]);
+    // it shows the log through the announcement, so the list still reveals it in order
+    const ballot = live.at(-1)!;
+    expect(ballot).toMatchObject({ seq: 24, end: withBallot.length });
+    // a log cut at the ask (the announcement not in yet): the prompt is there at once
+    const cut = beatsFor(withBallot.slice(0, -1), {
+      xray: false,
+      me: 'player_3',
+      live: true,
+    });
+    expect(cut.at(-1)).toMatchObject({ id: 'vote.your-ballot', seq: 24 });
+    // the opening round's ask, sent before round_opened
+    const opening = beatsFor(
+      [
+        ev(10, 'phase_change', { phase: 'day' }),
+        { ...ask(11, 'discuss'), round: 'opening' } as DurableGameEvent,
+        ev(12, 'round_opened', { round: 'opening', players: ['player_2', 'player_3'] }),
+      ],
+      { xray: false, me: 'player_3', live: true },
+    );
+    expect(opening.map((b) => b.id).slice(-2)).toEqual([
+      'day.opening-prepares',
+      'day.your-turn',
+    ]);
   });
 });
 

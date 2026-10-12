@@ -3,35 +3,37 @@
  * workbench's default, `fixtures/replay-phase3.json`): the first speech (day 2, seq 128, seat
  * 3), a seated viewer's own line (seat 9's sweep line, day 2, seq 169), an X-ray pass (day 1,
  * seat 1, a turn that ended with no line), seat 10's line in the replay's frame (day 2, seq
- * 151), a public pass (day 2, seat 6), and a live game's thinking seat (seat 9 at the stand
- * before its line, `live=1`). The public indices count the rounds' notices, and a page per beat
- * for a speech told in pages. `strip=0` leaves the stage alone in a 1600×900 viewport, one unit
- * a pixel.
+ * 151), a public pass (day 3, seat 1), and a live game's thinking seat (seat 9 at the stand
+ * before its line, `live=1`). The public indices count the rounds' notices, a run of passes as
+ * one beat (2026-10-12), and a page per beat for a speech told in pages. `strip=0` leaves the
+ * stage alone in a 1600×900 viewport, one unit a pixel.
  */
 import { expect, test, type Page } from '@playwright/test';
 
 const SHOTS: [name: string, query: string][] = [
   ['day-speech-first', 'beat=3'],
-  ['day-speech-seat9-own', 'beat=19&viewer=seat:player_9'],
+  ['day-speech-seat9-own', 'beat=17&viewer=seat:player_9'],
   ['day-pass-xray', 'beat=1&viewer=xray'],
-  ['day-speech-replay', 'beat=13&hud=replay'],
-  ['day-pass-public', 'beat=11'],
-  ['day-thinking-live-seat9', 'beat=27&viewer=seat:player_9&live=1'],
+  ['day-speech-replay', 'beat=12&hud=replay'],
+  ['day-pass-public', 'beat=23'],
+  ['day-thinking-live-seat9', 'beat=21&viewer=seat:player_9&live=1'],
 ];
 
 /**
  * The rounds (beat sheet §2 rows 7-10), on the Phase 2 game (`game=phase2`, goldens
  * `phase2.public.txt`): day 1's opening being written and nobody having anything to say, day
  * 2's seats that said nothing (seat 2 is the viewer: "you and seats…"), and the first accused
- * called to answer with the moderator's line in the box. No puppet stands at a notice, so these
- * settle on the wing.
+ * called to answer with the moderator's line in the box; and, on the ten-seat game, day 2's
+ * run of passes told as one beat (seats 6 and 8, 2026-10-12). No puppet stands at a notice, so
+ * these settle on the wing.
  */
 const ROUND_SHOTS: [name: string, query: string, figures: number][] = [
-  // the day scene's own beat numbers (golden lines 3, 4, 14 and 35)
+  // the day scene's own beat numbers (golden lines 3, 4, 14 and 34)
   ['phase2-opening-prepares-day1', 'beat=0&game=phase2', 0],
   ['phase2-round-passes-everyone', 'beat=1&game=phase2', 0],
   ['phase2-round-passes-seat2-you', 'beat=4&game=phase2&viewer=seat:player_2', 0],
-  ['phase2-closing-called', 'beat=25&game=phase2', 1],
+  ['phase2-closing-called', 'beat=24&game=phase2', 1],
+  ['day-passes-run-d2', 'beat=11', 0],
 ];
 
 /** Wait until the frame is still: sprites decoded, fonts in, and Next's dev badge hidden. */
@@ -309,7 +311,7 @@ for (const [name, path, ready] of ENDING) {
  * it (lit, at the carried summary's beat).
  */
 const SLOT: [name: string, path: string, ready: string, click?: string][] = [
-  ['slot-day-speech-drawer', 'day?beat=13&hud=replay&slot=drawer', '[data-line="say-151"]'],
+  ['slot-day-speech-drawer', 'day?beat=12&hud=replay&slot=drawer', '[data-line="say-151"]'],
   ['slot-vote-line-drawer', 'vote?beat=22&slot=drawer', '[data-line="votes-3"]'],
   ['slot-ballot-drawer-rail', 'vote?beat=25&slot=drawer', '[data-drawer="rail"]'],
   [
@@ -347,12 +349,12 @@ const SLOT: [name: string, path: string, ready: string, click?: string][] = [
   ],
   [
     'slot-record-v4-ledger',
-    'day?beat=40&hud=replay&slot=film&summary=v4',
+    'day?beat=33&hud=replay&slot=film&summary=v4',
     '[data-film="record"] [data-claim="player_7"]',
   ],
   [
     'slot-record-no-ledger',
-    'day?beat=40&hud=replay&slot=film&summary=v4&ledger=off',
+    'day?beat=33&hud=replay&slot=film&summary=v4&ledger=off',
     '[data-film="record"] [data-claim="player_5"]',
   ],
   [
@@ -410,7 +412,7 @@ test('bleed: frame-iphone14-findings', async ({ page }) => {
 test('the stage’s File and Transcript tabs write the slot into the URL', async ({
   page,
 }) => {
-  await page.goto('/workbench/day?beat=16&strip=0', { waitUntil: 'networkidle' });
+  await page.goto('/workbench/day?beat=15&strip=0', { waitUntil: 'networkidle' });
   const file = page.getByRole('button', { name: 'File', exact: true });
   await page.getByRole('button', { name: 'Transcript' }).click();
   await expect(page).toHaveURL(/viewer=spect&motion=normal&slot=drawer/);
@@ -587,7 +589,7 @@ test('the seat rail: a seat’s own knowledge bands its cards, and nobody else�
   }
   // the nine-seat fixture's investigator at seat 4 read seat 1 on the first night
   await page.goto(
-    '/workbench/day?beat=3&viewer=seat:player_4&game=9369a5c1&animate=0&strip=0',
+    '/workbench/day?beat=1&viewer=seat:player_4&game=9369a5c1&animate=0&strip=0',
     {
       waitUntil: 'networkidle',
     },
@@ -697,7 +699,7 @@ const FRAMES: [name: string, path: string][] = [
     'day?beat=26&viewer=xray&hud=replay&slot=film&frame=568x320',
   ],
   // the transcript on a phone: the pane grows out into the right bleed as the wing does left
-  ['frame-iphone14-drawer', 'day?beat=13&hud=replay&slot=drawer&frame=iphone14'],
+  ['frame-iphone14-drawer', 'day?beat=12&hud=replay&slot=drawer&frame=iphone14'],
   // the epilogue's closing spread on a phone: the rows scroll in place
   ['frame-iphone14-epilogue', 'over?beat=5&game=9369a5c1&frame=iphone14'],
   // the morning roll on a small phone: a cause too long for its row goes under the name
@@ -742,7 +744,7 @@ test('the phone frame: the top strip’s buttons are drawn large enough to read 
 });
 
 test('the phone frame: a speech is drawn at a phone’s body size', async ({ page }) => {
-  await page.goto('/workbench/day?beat=19&viewer=seat:player_9&frame=iphone14&strip=0', {
+  await page.goto('/workbench/day?beat=17&viewer=seat:player_9&frame=iphone14&strip=0', {
     waitUntil: 'networkidle',
   });
   // the speech box's line: the div after its head

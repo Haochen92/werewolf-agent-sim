@@ -142,11 +142,12 @@ describe('a workbench frame on the nine-seat fixture', () => {
   it('points at the scene’s own beats, folded to the beat', () => {
     const f = workbenchFrame('day', NINE);
     expect(f.beats.every((b) => b.scene === 'day')).toBe(true);
-    // Day 1 opens with a pass everyone sees (a turn that ended with no speech).
+    // Day 1 opens with its three passes everyone sees (turns that ended with no speech), one beat.
     expect(f.beat?.id).toBe('day.pass');
-    expect(anchorLine(f.beat!)).toBe('day.pass · seq 13 · public → player_1 · 4000 ms');
-    // Folded up to, not including, the turn that resolved it.
-    expect(f.view?.lastSeq).toBeLessThan(18);
+    expect(f.beat?.subjects).toEqual(['player_1', 'player_5', 'player_4']);
+    expect(anchorLine(f.beat!)).toBe('day.pass · seq 13 · public · 4000 ms');
+    // Folded up to, not including, what ended the run: the moderator's line (seq 30).
+    expect(f.view?.lastSeq).toBe(29);
     expect(f.presentation.cast).toHaveLength(9);
   });
 

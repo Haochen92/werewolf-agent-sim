@@ -128,7 +128,7 @@ test('replay: two chapters on', async ({ page }) => {
 test('replay: the transport band beside the open drawer', async ({ page }) => {
   await open(page);
   // the fifth speech of day 3 (seat 8, seq 200), its first page, seeked to, so it lands still
-  await seek(page, 50);
+  await seek(page, 45);
   await expect(page.locator('[data-drawer="full"]')).toBeVisible();
   await expect(page.locator('[data-line="say-200"]')).toBeVisible();
   await settle(page);
@@ -139,7 +139,7 @@ test('replay: the transport band beside the open drawer', async ({ page }) => {
 
 test('replay: the X-ray on a day-3 speech, the file in the slot', async ({ page }) => {
   await open(page);
-  await seek(page, 50); // seat 8's speech (seq 200), its first page
+  await seek(page, 45); // seat 8's speech (seq 200), its first page
   // the File tab opens without the X-ray too, on the Record alone: the seats' files greyed
   const file = page.getByRole('button', { name: 'File', exact: true });
   await expect(reveal(page)).toHaveAttribute('aria-pressed', 'false');
@@ -427,15 +427,15 @@ test('replay: played fast, the cursor runs on at twice the pace', async ({ page 
   await expect(band(page).getByRole('button', { name: 'Fast' })).toBeVisible();
   await page.getByRole('button', { name: 'Play', exact: true }).click();
   await expect(theatre(page)).toHaveAttribute('data-playing', 'true');
-  // 20 s at fast reaches the night (beat 6, 15 s of holds, each new hold set at the end of a
-  // step); at normal it would still be on day 1's first pass (26 s of holds to beat 5)
+  // 20 s at fast reaches the morning (beat 6, 17 s of holds, each new hold set at the end of a
+  // step); at normal it would still be on day 1's passes, one beat (22 s of holds to beat 4)
   for (let t = 0; t < 40; t++) await page.clock.runFor(500);
   expect(Number(await theatre(page).getAttribute('data-beat-index'))).toBeGreaterThan(5);
 });
 
 test('replay: the transcript follows only while the reader is at now', async ({ page }) => {
   await open(page);
-  await seek(page, 50);
+  await seek(page, 45);
   const lines = page.locator('[data-drawer] [data-line]').first().locator('xpath=..');
   const back = page.getByRole('button', { name: /Back to now/ });
   await expect(back).toHaveCount(0);
@@ -443,7 +443,7 @@ test('replay: the transcript follows only while the reader is at now', async ({ 
   await lines.evaluate((el) => el.scrollTo({ top: 0 }));
   await expect(back).toBeVisible();
   await page.keyboard.press('ArrowRight');
-  await expect(theatre(page)).toHaveAttribute('data-beat-index', '51');
+  await expect(theatre(page)).toHaveAttribute('data-beat-index', '46');
   expect(await lines.evaluate((el) => el.scrollTop)).toBe(0);
   // the pill takes them back to the beat's line, and the drawer follows again
   await back.click();
@@ -455,7 +455,7 @@ test('replay: the transcript follows again once the reader scrolls to its foot',
   page,
 }) => {
   await open(page);
-  await seek(page, 50);
+  await seek(page, 45);
   const lines = page.locator('[data-drawer] [data-line]').first().locator('xpath=..');
   const back = page.getByRole('button', { name: /Back to now/ });
   const gap = () =>
@@ -466,7 +466,7 @@ test('replay: the transcript follows again once the reader scrolls to its foot',
   await lines.evaluate((el) => el.scrollTo({ top: el.scrollHeight }));
   await expect(back).toHaveCount(0);
   // the beats go on: held at the foot, the newest line showing
-  for (const i of [51, 52, 53]) {
+  for (const i of [46, 47, 48]) {
     await page.keyboard.press('ArrowRight');
     await expect(theatre(page)).toHaveAttribute('data-beat-index', String(i));
     await expect.poll(gap).toBeLessThanOrEqual(4);
@@ -477,7 +477,7 @@ test('replay: the transcript follows again once the reader scrolls to its foot',
   await lines.evaluate((el) => el.scrollTo({ top: 0 }));
   await expect(back).toBeVisible();
   await page.keyboard.press('ArrowRight');
-  await expect(theatre(page)).toHaveAttribute('data-beat-index', '54');
+  await expect(theatre(page)).toHaveAttribute('data-beat-index', '49');
   expect(await lines.evaluate((el) => el.scrollTop)).toBe(0);
 });
 
@@ -503,14 +503,14 @@ test('replay: the band fits a small phone on its side', async ({ page }) => {
 test('replay: a speech holds while the pointer rests on it', async ({ page }) => {
   await page.clock.install();
   await open(page);
-  await seek(page, 40); // day 3’s first speech, seat 2: its first page, a 7.3 s hold
+  await seek(page, 36); // day 3’s first speech, seat 2: its first page, a 7.3 s hold
   await page.getByRole('button', { name: 'Play', exact: true }).click();
   await page.locator('[data-speech]').hover();
   for (let t = 0; t < 20; t++) await page.clock.runFor(1000);
-  await expect(theatre(page)).toHaveAttribute('data-beat-index', '40');
+  await expect(theatre(page)).toHaveAttribute('data-beat-index', '36');
   await page.mouse.move(5, 5);
   for (let t = 0; t < 12; t++) await page.clock.runFor(1000);
-  await expect(theatre(page)).toHaveAttribute('data-beat-index', '41');
+  await expect(theatre(page)).toHaveAttribute('data-beat-index', '37');
 });
 
 test('replay: the keys step, jump chapters and play', async ({ page }) => {

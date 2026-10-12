@@ -157,6 +157,16 @@ the chunk, the replay and the sheet together when the carriage is near (`Feature
 `useNear`). Assert it the way it fails: count the requests before the scroll, not the DOM
 after it (`e2e/site.spec.ts`, "loads when scrolled to").
 
+**24. When a derived list folds items together, whatever holds a place in it needs a rule for
+the item it holds being folded.** The beat list is cut afresh from the log on every event, and
+since 2026-10-12 a run of passes is one beat: a pass on the stage can grow into a run, and a
+turn on the stage can be swallowed by one. Carried across by "the same item, else the next one
+at or after it", the stage would have skipped the run it was inside, or landed on it still and
+moved on at once. The rule: decide, for each kind of merge, where the cursor goes and whether it plays
+again (`live-state.ts` `runOf`), and test it with the list growing one event at a time. Its
+twin in tests: anything that names an item by its index (a workbench `?beat=N`, a seek to beat
+50) moves when the derivation changes; name it by what it is where the tool allows.
+
 ---
 
 ## Small things that cost an afternoon

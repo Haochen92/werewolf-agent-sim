@@ -530,6 +530,49 @@ samples at 390px showed page colour right up to the stage's edge.
 **Settled.** On phones the carriage stays inside the column, with 12px sides. The marquee's facts
 went into one sideways row, so the head is no longer half the stage's height.
 
+### 3.15 🟠 The ballot opened in the middle of the day's passes
+
+*(Added 2026-10-12, found by the owner in solo game 403f4dbc, seated at seat 3 with Claude Haiku
+at the other nine.)*
+
+**What happened.** Haiku passes a lot, so day 2 ended with a run of about twenty pass beats, and
+the stage, playing at reading pace, was far behind the server. The ballot came up while the
+stage was still playing passes; the owner voted, and after the vote the stage showed "Player 10
+passed". Another time an agent's turn flashed on the stand and was gone before it finished.
+
+**Why it happened.** Three things, each one reasonable alone:
+
+- **The server asks before it announces.** The seat's `input_request` for the vote arrives just
+  before `phase_change: voting` (the night act before the night falls, the opening before its
+  round, every time in this game). The beat cutter placed the ballot where the request sat. The
+  last turn of the day only turns into a pass beat when the phase change arrives, so that pass,
+  and "voting opens", landed after the ballot.
+- **The cut-short.** Since 2026-10-01 the dock never waited for the stage: once the seat's prompt
+  was seen further down the queue, the beat on stage lost the rest of its hold. That is the turn
+  that flashed. In a solo game nothing runs on a clock, so the cut bought the player nothing.
+- **One beat per pass.** Every pass was a thinking beat and a pass beat, six seconds a seat, so
+  a quiet table's discussion took minutes to watch.
+
+**What it cost.** The vote was cast before the player had seen the day finish, and the order on
+stage contradicted the log. No data was wrong; the stage told it out of order.
+
+**Settled** (owner's rulings, 2026-10-12; beat sheet §2 row 3 and §12):
+
+- A prompt that arrives just before its phase change or round opening is placed after it, so
+  the ballot comes after the day's last pass and after "voting opens"; a ballot or night act also
+  ends the turn on the stand. A catch-up lands on the prompt.
+- A request with no deadline (solo) waits for the stage: no cut, every beat before it plays its
+  whole hold. A request with a deadline (a room) keeps the cut, because its clock is running.
+- Passes one after another, with nothing shown between them and no seat twice, are one beat:
+  "Seats 4, 5, 7 and 10 passed." on the rounds' walnut notice. A lone pass is as before. The
+  X-ray replay still plays each `pass_marker` with its reason. Live, a pass the stage is on that
+  grows into a run, or a thinking turn it swallows, gives the stage the run, played afresh.
+
+Verified by unit tests (the 403f4dbc order as a regression test, runs, the deadline rule) and the
+e2e suite. The fixture's public cut is shorter, so the replay's seek indices, the featured window
+and the workbench's `?beat=` numbers moved with it. Two new goldens (a lone public pass, a run)
+and the transport band's ticks.
+
 ---
 
 ## 4. Design decisions and where the specs collided

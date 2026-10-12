@@ -172,7 +172,7 @@ read card (guess, how sure, why, the truth with ● ◐ ○), a paper index card
 |---|---|---|---|---|---|---|
 | 1 | `day.turn-thinking` | `turn_started` (first: 13) | P | the seat's puppet takes the stand in the thinking state, no clock; the speech box shows a "…" so the state reads as thinking, not idle (ruled 2026-09-25) | D: nothing yet | live: until the turn resolves · replay: folded into the resolving beat: the puppet rises thinking, holds **0.6 s**, then plays it (accepted 2026-09-25) |
 | 2 | `day.speech` (one per page, §0) | `speech` | P | talking state, the line in the speech box a page at a time, "1 / 2 ▼" at its foot while more follows; X: the box carries the aqua tags (who it answers, stance) and the plaque tags the role; the wing's verdigris edges from the turn's `player_reads` | D: the line, lit and scrolled to · F(X): the speaker's file | speech |
-| 3 | `day.pass` | public: a `turn_started` resolved by no speech (the next `turn_started` or the phase change), live and replay alike, since `turn_started` is public · X-ray: `pass_marker` instead (12 in the fixture), which carries the reason and the draft (ruled 2026-09-25: day 1 of the public replay is three passes, not an empty stand) | P · X | idle state, the box says "passes"; X adds the reason and the held-back draft. Reason wording (accepted 2026-09-25): `voluntary` "chose to pass" · `novelty_gated` "held back: nothing new to say" · `generation_failed` "no line came" | D(X): the pass with its reason and draft | 4.0 |
+| 3 | `day.pass` | public: a `turn_started` resolved by no speech (the next `turn_started`, the phase change, the moderator's line, or the seat's ballot or night act), live and replay alike, since `turn_started` is public · X-ray: `pass_marker` instead (12 in the fixture), which carries the reason and the draft (ruled 2026-09-25: day 1 of the public replay is three passes, not an empty stand) · **a run (owner, 2026-10-12):** passes one after another, nothing shown between them and no seat twice (a seat's second pass starts the next run), are one beat anchored on the first turn, `subjects` the seats in the order they passed; a lone pass is the row as before. Live, no seat of a run takes the stand thinking. The X-ray replay keeps a beat per `pass_marker` | P · X | idle state, the box says "passes"; X adds the reason and the held-back draft. Reason wording (accepted 2026-09-25): `voluntary` "chose to pass" · `novelty_gated` "held back: nothing new to say" · `generation_failed` "no line came". A run: the stand empty, the seats lit on the wing, the rounds' walnut notice (row 9) "Seats 4, 5, 7 and 10 passed." (the viewer's seat "You and seats 4 and 5 passed.") | D(X): the pass with its reason and draft | 4.0 |
 | 4 | `day.your-turn` | `input_request` `discuss` for me | S | my puppet at the stand, thinking; the dock carries the two minutes (`deadline`; null = no countdown; the car's wall clock is gone, ruled 2026-09-29); three plaques and no boxes (2026-10-01; §12): **Write your line** (**Edit your line** once there is one) opens the full-screen composer, which holds an optional steer for your agent + **Draft** / **Redraft this** (the seat's own agent's line, as it would say it, steered and revising the box's line when the field holds something; "Use my seat notes" sends the notebook along when ticked; three per turn, the returned `deadline` is the new countdown) and the box the draft lands in, editable; **Send** (live once there is a line) and **Pass**; the line previewed on one row under the head (no hand-over on this turn: the agent speaks only when the clock runs out); the drawer stops at the rail so the prompt keeps the full width | D: stops at the rail | until answered / deadline |
 | 5 | `day.your-line` | my `speech` after 4 | S (P sees a normal turn) | the puppet talks my line as any turn plays; a pass leaves it idle | D: my line | speech |
 | 6 | `day.agent-spoke-for-you` | my `speech` arriving with my request unanswered at its deadline (client-known) | S only | the puppet talks the agent's line; the plaque's tag and the box say "your seat's agent spoke for you" | D: the line with the tag | speech |
@@ -225,7 +225,7 @@ ephemeral: it paces the live drop and is not in the log.
 |---|---|---|---|---|---|---|
 | 1 | `vote.opens` | `phase_change: voting` (81, 220, 362). **Chapter mark: Vote N** | P | the puppet drops behind the stand, the stand goes; dusk; the shutter drops; the trap's leaves open and stand; the table rises on its lift with the jar; the lid's string comes down and the lid lifts. One move | D: the GM's line if any | 2.8 |
 | 2 | `vote.ballot-drops` | live only: each `phase_progress` increment | P | one anonymous chip from the flies into the jar; the pill "Ballots in, n of N" | — | real time |
-| 3 | `vote.your-ballot` | `input_request` `vote` for me | S | the prompt: a row of the candidates' chips, the empty plate = abstain; tap, confirm on the plate; my chip drops in face up on my screen only; after that I have the spectator's jar | — | until answered / deadline |
+| 3 | `vote.your-ballot` | `input_request` `vote` for me, placed after row 1 (§12, 2026-10-12) | S | the prompt: a row of the candidates' chips, the empty plate = abstain; tap, confirm on the plate; my chip drops in face up on my screen only; after that I have the spectator's jar | — | until answered / deadline |
 | 4 | `vote.ballots-drop` | replay only: the `vote_cast` batch (first: 109, 242, 378) | P | all the chips cascade together into the jar | — | 2.0 |
 | 5 | `vote.closes` | live: the pill full · replay: same beat as 4 | P | the lid comes down. **X-ray replay: the vote's stop** (§11): the play pauses here; the notice "7 ballots in. Tap a seat to read what it voted on." with **Count the votes ▶** (plays on); every wing card opens its file | — | 1.5 (a stop: waits) |
 | 6 | `vote.count-begins` | the `vote_cast` batch | P | the lid flies out; the shot pushes in; the jar tips to the back rail; plates along the front edge, one per seat with votes, abstain's an ordinary empty plate at the right, laid as the others, its place card reading "Abstain" (2026-09-30; it was an upturned saucer); every plate the painted plate (`SPRITES.props.plate`, 2026-09-30); place cards with head, seat, running number | F(X): the voters' consults and reads | 2.0 |
@@ -941,10 +941,27 @@ The time side of this section — when the server emits each event, what each vi
 does with it, and the lag between them, with the rulings on reading, jumping and the clock —
 is [`live_timing_sheet.md`](live_timing_sheet.md) (2026-10-01).
 
-- **The dock and the clock never wait for the stage.** When `input_request` arrives for me, the
-  dock opens at once and the countdown runs on real time from `deadline`; the beat on stage is
-  cut short once (its hold ends now) and the beats queued between it and the request play at
-  normal speed (ruled 2026-10-01; until then they drained at fast speed).
+- **A solo prompt waits for the stage; a room's does not (owner, 2026-10-12).** A request with
+  no `deadline` (a solo game) opens its dock only when the stage reaches it: every beat before it
+  plays its whole hold and nothing is cut. Found in solo game 403f4dbc (Claude Haiku at nine
+  seats): a day ended in some twenty passes, the ballot opened while the stage still played them,
+  and after the vote the stage said "Player 10 passed"; once a turn was cut mid-way. With nothing
+  on a clock, cutting bought the player nothing. A request **with** a `deadline` (a room, the
+  server's clock running) keeps the 2026-10-01 rule, since waiting would eat the player's time:
+  the countdown runs on real time from `deadline`, the beat on stage is cut short once (its hold
+  ends now) and the beats queued between it and the request play at normal speed (until
+  2026-10-01 they drained at fast speed).
+- **The prompt comes after its announcement (2026-10-12).** The server asks just before it
+  announces: the ballot before `phase_change: voting`, a night act before the night, the opening
+  before `round_opened`. A prompt whose next event is that announcement is placed after the
+  announcement's beat (showing the log through it), so "voting opens" and the day's last pass
+  play first; a ballot or night act also resolves the turn left on the stand. A prompt that is
+  the log's last event goes in at once and moves after its announcement when that lands (a
+  millisecond race that matters only to a stage that has caught up).
+- **A run of passes is one beat (owner, 2026-10-12; §2 row 3).** Live, a pass on the stage that
+  grows into a run, or a thinking turn on the stage that turns out to be part of one, gives the
+  stage the run's beat, played from its start (`live-state.ts` `runOf`); a run that grows inside
+  history lands still as any history does.
 - **No backlog is hurried (ruled 2026-10-01).** Every queued beat plays at its normal hold,
   however many are waiting: a solo game's agents play at machine speed, so the stage plays at
   reading pace and lags the server, and that is the design. Until 2026-10-01 a backlog of three or
@@ -953,7 +970,7 @@ is [`live_timing_sheet.md`](live_timing_sheet.md) (2026-10-01).
   drop is paced by `phase_progress`. A tap on the speech box ends the page's hold.
 - **The deal always plays at normal speed (ruled 2026-09-28).** The game start lands as one burst
   (`game_started`, `role_assigned`, the day's `phase_change`); every beat now keeps normal speed,
-  and the deal beat on stage is not cut short for my prompt (the dock still opens at once; a
+  and the deal beat on stage is not cut short for my prompt (a room's dock still opens at once; a
   prompt first seen during the deal cuts nothing, 2026-10-01).
 - **The deal after a departure (ruled 2026-10-01).** A page that watched its platform depart
   (§1a) lands on the deal's first beat when the curtain is down, whatever the history holds; the
@@ -969,7 +986,7 @@ is [`live_timing_sheet.md`](live_timing_sheet.md) (2026-10-01).
   from the first beat at normal speed, so the human sees their card. A reconnect later in the
   game lands still as before. A browser reconnect mid-game is a catch-up too: the store marks
   the boundary at reconnect and nothing before it plays.
-- Solo games: `deadline` null; the dock opens, the clock shows no ring.
+- Solo games: `deadline` null; the dock opens when the stage reaches it, the clock shows no ring.
 - The ending: `game_over` arrives before the backlog's `roles_assigned`, and the winners' stand
   needs the roles. The live queue holds `over.winners-stand` until the backlog has landed (the
   verdict beat covers the wait); `over.truth` then plays as written.
@@ -1002,9 +1019,10 @@ copy of what it wrote at its prompt, lands still (an agent's line for it plays);
 epilogue's sheet lands on the curtain still (2026-09-30).
 **The prompt:** open iff the status lists the seat (or the request is newer than the status),
 this client has not answered it, its deadline has not passed, the seat is alive and the game is
-not over. When first seen open further down the queue, the beat on stage is cut short once (a
-deal beat is not, and then nothing is), and the rest play at normal speed (live-state's rule;
-they drained fast until 2026-10-01). The clock runs on the request's `deadline` in server time
+not over. With a deadline (`LiveCtx.onClock`), when first seen open further down the queue, the
+beat on stage is cut short once (a deal beat is not, and then nothing is), and the rest play at
+normal speed (live-state's rule; they drained fast until 2026-10-01); with none, nothing is cut
+(2026-10-12). The clock runs on the request's `deadline` in server time
 (`serverNow()`); its whole is arrival → deadline, or 120 s when the request came as history; a
 draft's returned `deadline` replaces it. A request that runs out unanswered from here, or is
 handed over, is the agent's: my `speech` answering it carries, on my screen only, the plaque's

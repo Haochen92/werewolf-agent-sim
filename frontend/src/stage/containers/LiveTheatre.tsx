@@ -19,11 +19,12 @@
  * first beat whatever the log already held. The rules are in live-state.ts; this file runs the
  * timer and talks to the server.
  *
- * The seated human's turn never waits for the stage: the clock runs on the request's real
- * deadline from the moment it arrives, and the beat on the stage is cut short once (the rest
- * keep their pace up to the prompt). Answers go out from whichever scene took them (the dock,
- * the ballot, the shelf room, the pack's chat) to one place here, which picks the right body
- * for the request and says what the server said.
+ * A solo seat's turn (no deadline) waits for the stage: the dock opens once every beat before
+ * it has played (owner, 2026-10-12). A room's turn does not: the clock runs on the request's
+ * real deadline from the moment it arrives, and the beat on the stage is cut short once (the
+ * rest keep their pace up to the prompt). Answers go out from whichever scene took them (the
+ * dock, the ballot, the shelf room, the pack's chat) to one place here, which picks the right
+ * body for the request and says what the server said.
  * A turn that runs out is answered by the seat's agent; that seat's own screen is told so
  * when its line arrives.
  *
@@ -392,9 +393,11 @@ export function LiveTheatre({
   const rolesLanded = Object.keys(view.xray.roles).length > 0;
   const openPrompt = open ? pendingSeq : null;
   const byAgent = turn.byAgent;
+  // a room's prompt is on the clock and cuts the stage short; a solo one waits for it
+  const onClock = open && deadline !== null;
   const ctx = useMemo(
-    (): LiveCtx => ({ me, rolesLanded, openPrompt, byAgent }),
-    [me, rolesLanded, openPrompt, byAgent],
+    (): LiveCtx => ({ me, rolesLanded, openPrompt, byAgent, onClock }),
+    [me, rolesLanded, openPrompt, byAgent, onClock],
   );
   const ctxRef = useRef(ctx);
   useEffect(() => {

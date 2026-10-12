@@ -8,7 +8,8 @@
  *
  * - `day.speech`: the speaker talking, the line in the box, a page at a time (a beat per page).
  * - `day.pass`: the speaker idle, the box saying "passes.". Everyone sees a turn that ended
- *   with no line; with the X-ray on, the box also says why, and what was held back.
+ *   with no line; with the X-ray on, the box also says why, and what was held back. A run of
+ *   passes told as one beat (`subjects`) is the rounds' notice instead: "Seats 4, 5 and 7 passed."
  * - `day.turn-thinking` (live only): the seat has the stand and has not spoken yet, so the
  *   puppet stands thinking and the box holds a "…" until its line (or its pass) arrives.
  * - `day.your-turn` (live, the seated human's own turn): their puppet at the stand thinking,
@@ -61,9 +62,13 @@ export const continues = (was: SceneProps['beat'], now: SceneProps['beat']) =>
     now.subject === (was.subject ?? was.seat) &&
     now.day === was.day);
 
+/** A run of passes told as one beat: the seats, no speaker. */
+const isPassRun = (beat: SceneProps['beat']) =>
+  beat.id === 'day.pass' && (beat.subjects?.length ?? 0) > 1;
+
 /** The beats with nobody at the stand: a notice stands where the box would be. */
 const isNotice = (beat: SceneProps['beat']) =>
-  beat.id === 'day.opening-prepares' || beat.id === 'day.round-passes';
+  beat.id === 'day.opening-prepares' || beat.id === 'day.round-passes' || isPassRun(beat);
 
 /** "seats 2, 5 and 8", with the viewer's own seat as "you" (first). */
 function seatsPhrase(seats: readonly string[], me: string | null): string {
@@ -99,6 +104,12 @@ function passesLine(
   if (everyone) return 'Nobody had anything to put on the table.';
   const who = seatsPhrase(quiet, me);
   return `${who[0].toUpperCase()}${who.slice(1)} had nothing to put on the table.`;
+}
+
+/** The notice's line for a run of passes (beat sheet §2 row 3): "Seats 4, 5 and 7 passed." */
+function runLine(seats: readonly string[], me: string | null): string {
+  const who = seatsPhrase(seats, me);
+  return `${who[0].toUpperCase()}${who.slice(1)} passed.`;
 }
 
 /** The round a beat belongs to, as the fold recorded it (`round_opened`). */
@@ -323,12 +334,14 @@ function DayTurn({ view, beat, me, presentation, turn, onSay, onAct, onNext }: S
                   ? beat.day === 1
                     ? 'Everyone is writing their opening, before the first night.'
                     : 'Everyone is writing their opening.'
-                  : passesLine(
-                      roundOf(view, beat)?.round ?? null,
-                      beat.subjects ?? [],
-                      roundOf(view, beat)?.players ?? [],
-                      me,
-                    )
+                  : isPassRun(beat)
+                    ? runLine(beat.subjects ?? [], me)
+                    : passesLine(
+                        roundOf(view, beat)?.round ?? null,
+                        beat.subjects ?? [],
+                        roundOf(view, beat)?.players ?? [],
+                        me,
+                      )
               }
             />
           </NoticeZone>

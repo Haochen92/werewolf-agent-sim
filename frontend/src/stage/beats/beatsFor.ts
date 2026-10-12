@@ -179,9 +179,15 @@ export function beatsFor(
         return isWolf || (xrayCut && b.aqua === true);
     }
   };
+  const emit = (b: Draft) => {
+    out.push({ ...b, scene: b.id.split('.')[0] as SceneId, label: BEAT_LABELS[b.id] });
+  };
   const push = (b: Draft) => {
     if (!shows(b)) return;
-    out.push({ ...b, scene: b.id.split('.')[0] as SceneId, label: BEAT_LABELS[b.id] });
+    // anything the stage shows ends a run of passes, and comes after the turn on the stand
+    tellPasses();
+    showThinking();
+    emit(b);
   };
   const pub = (
     id: BeatId,
@@ -197,16 +203,65 @@ export function beatsFor(
   const reports = new Map<number, EventOf<'night_result'>>();
   let nightStart = -1;
   let over = false;
+  // the seat's prompt sent just before the announcement it belongs to (see `input_request`)
+  let heldPrompt: Draft | null = null;
 
   // The turn on the stand that has not spoken yet. `turn_started` is public, so a turn that
   // ends with no speech is a pass everyone can see; the X-ray's `pass_marker` carries the
-  // reason instead, so the derived pass is only cut without it.
+  // reason instead, so the derived pass is only cut without it. Live, the puppet stands
+  // thinking until the turn resolves; that beat goes in with the next beat shown (or at the
+  // log's end), so a turn that ends in a pass can join a run of passes instead.
   let thinking: EventOf<'turn_started'> | null = null;
+  let thinkingEnd = 0;
+  let thinkingShown = false;
+  const thinkingBeat = (t: EventOf<'turn_started'>, end: number): Draft => ({
+    id: 'day.turn-thinking',
+    day: t.day,
+    seq: t.seq,
+    end,
+    sees: 'public',
+    holdMs: HOLD.held,
+    subject: t.player,
+  });
+  const showThinking = () => {
+    if (!thinking || thinkingShown || !options.live) return;
+    thinkingShown = true;
+    emit(thinkingBeat(thinking, thinkingEnd));
+  };
+
+  // Passes one after another, nothing shown between them and no seat twice (a second pass is
+  // the next sweep), are told as one beat (owner, 2026-10-12: a quiet table's twenty passes
+  // were two minutes of stage). A run of one is the seat's own pass, as before.
+  type PassTurn = { turn: EventOf<'turn_started'>; end: number; shown: boolean };
+  let passes: { turns: PassTurn[]; end: number } | null = null;
+  const tellPasses = () => {
+    const run = passes;
+    passes = null;
+    if (!run) return;
+    const [first] = run.turns;
+    const pass: Draft = {
+      id: 'day.pass',
+      day: first.turn.day,
+      seq: first.turn.seq,
+      end: run.end,
+      sees: 'public',
+      holdMs: HOLD.pass,
+    };
+    if (run.turns.length === 1) {
+      if (options.live && !first.shown) emit(thinkingBeat(first.turn, first.end));
+      emit({ ...pass, subject: first.turn.player });
+    } else emit({ ...pass, subjects: run.turns.map((t) => t.turn.player) });
+  };
   const resolveTurn = (at: number) => {
-    if (thinking && !xrayCut) {
-      pub('day.pass', thinking, at, HOLD.pass, { subject: thinking.player });
+    const turn = thinking;
+    if (turn && !xrayCut) {
+      if (passes?.turns.some((t) => t.turn.player === turn.player)) tellPasses();
+      passes ??= { turns: [], end: at };
+      passes.turns.push({ turn, end: thinkingEnd, shown: thinkingShown });
+      passes.end = at;
     }
     thinking = null;
+    thinkingShown = false;
   };
 
   // A round in progress (Phase 2): its players, and who of them has spoken. The lines of a
@@ -260,10 +315,7 @@ export function beatsFor(
       case 'turn_started':
         resolveTurn(i);
         thinking = e;
-        if (options.live) {
-          // Live, the puppet takes the stand thinking until the speech (or the next turn) arrives.
-          pub('day.turn-thinking', e, next, HOLD.held, { subject: e.player });
-        }
+        thinkingEnd = next;
         break;
 
       case 'game_started':
@@ -345,15 +397,19 @@ export function beatsFor(
         break;
 
       case 'speech': {
-        if (thinking?.player === e.player) thinking = null;
         if (round) round.spoke.add(e.player);
         const pages = speechPages(e.message);
+        // the turn's thinking beat goes in before its first page
         pages.forEach((page, index) =>
           pub('day.speech', e, next, pageHold(page), {
             subject: e.player,
             ...(pages.length > 1 ? { page: { index, count: pages.length } } : {}),
           }),
         );
+        if (thinking?.player === e.player) {
+          thinking = null;
+          thinkingShown = false;
+        }
         break;
       }
 
@@ -381,7 +437,9 @@ export function beatsFor(
                   e.action_kind === 'wolf_vote' || e.action_kind === 'carrier_kill'
                   ? 'pack.vote'
                   : 'room.opens';
-        push({
+        // a ballot or a night act: the day's discussion is over, the last turn on the stand too
+        if (e.action_kind !== 'discuss') resolveTurn(i);
+        const prompt: Draft = {
           id,
           day: e.day,
           seq: e.seq,
@@ -390,9 +448,22 @@ export function beatsFor(
           seat: e.player,
           holdMs: 0,
           liveOnly: true,
-        });
+        };
+        // The server asks for a phase's (or a round's) turn just before it announces it (the
+        // ballot before "voting opens"): the prompt comes after the announcement, so the stage
+        // plays the phase's way in before it, and a catch-up lands on the prompt (2026-10-12).
+        const announces = events[next]?.type;
+        if (announces === 'phase_change' || announces === 'round_opened')
+          heldPrompt = prompt;
+        else push(prompt);
         break;
       }
+
+      case 'gm_message':
+        // the moderator speaking ends the turn on the stand, and a run of passes with it
+        resolveTurn(i);
+        tellPasses();
+        break;
 
       case 'vote_cast': {
         // Released as one batch at the tally: the drop is one beat, then a chip per ballot.
@@ -591,7 +662,14 @@ export function beatsFor(
       default:
         break;
     }
+    if (heldPrompt && e.type !== 'input_request') {
+      push({ ...heldPrompt, end: next });
+      heldPrompt = null;
+    }
   }
+  // the log's end (live): the passes told so far, then the turn still on the stand
+  tellPasses();
+  if (!over) showThinking();
   // a log cut mid-round (live): the round is still open, so nothing is told as a pass yet
   return out;
 }

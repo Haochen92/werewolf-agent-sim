@@ -167,10 +167,19 @@ class Session {
   }
 }
 
-/** A beat's identity: the same beat in any cut of the list. */
+/** A beat's identity: the same beat in any cut of the list (a run of passes that grew is new). */
 const idOf = (b: SceneBeat | undefined): string =>
   b
-    ? [b.id, b.seq, b.page?.index, b.subject, b.ordinal, b.spoke?.actor, b.spoke?.step]
+    ? [
+        b.id,
+        b.seq,
+        b.page?.index,
+        b.subject,
+        b.ordinal,
+        b.spoke?.actor,
+        b.spoke?.step,
+        b.subjects?.length,
+      ]
         .map((x) => x ?? '')
         .join('|')
     : '';
@@ -350,9 +359,9 @@ describe('the live stage: the deal on first connection, and a reconnect', () => 
     ]);
     expect(played).toEqual(s.state.beats.slice(0, played.length).map((b) => b.id));
     expect(s.state.cursor.index).toBe(s.state.beats.length - 1);
-    // day 1's first turns: each seat on the stand, thinking, then passing
-    expect(played.filter((id) => id === 'day.turn-thinking').length).toBe(3);
-    expect(played.filter((id) => id === 'day.pass').length).toBe(2);
+    // day 1's three turns, each a pass, told as one beat (the moderator's line ends the run)
+    expect(played.filter((id) => id === 'day.turn-thinking').length).toBe(0);
+    expect(played.filter((id) => id === 'day.pass').length).toBe(1);
     // without the departure the same history lands still on its latest beat
     const q = new Session();
     q.connectedAt = 30;
@@ -419,7 +428,54 @@ describe('the live stage: the seated human’s prompt', () => {
     expect(s.beat).toMatchObject({ id: 'day.speech', seq: 202, subject: ME });
   });
 
-  it('the dock never waits for the stage: the beat on stage is cut short once, the rest keep their pace', () => {
+  it('a prompt with no deadline waits for the stage: every beat before it plays its whole hold (2026-10-12)', () => {
+    const s = new Session().arrive(upTo(190), false);
+    s.arrive(
+      MINE.filter((e) => e.seq > 190 && e.seq <= 200),
+      true,
+    );
+    const holding = s.state.cursor.index;
+    expect(s.state.holding).toBe(true);
+    // a solo game's request: no clock
+    s.ctx = ctx({ openPrompt: 201 });
+    s.arrive([request(201, 'discuss')], true);
+    expect(s.state.cursor.index).toBe(holding);
+    expect(s.state.holding).toBe(true);
+    // each beat up to the prompt runs out its own hold, one at a time
+    const before = s.state.step;
+    let holds = 0;
+    while (s.beat.id !== 'day.your-turn') {
+      expect(s.state.holding).toBe(true);
+      s.held();
+      holds++;
+    }
+    expect(s.state.step - before).toBe(holds);
+    expect(s.beat.seq).toBe(201);
+  });
+
+  it('a catch-up lands on a solo prompt at once, the ballot after its announcement too', () => {
+    const s = new Session();
+    s.ctx = ctx({ openPrompt: 201 });
+    s.arrive([...upTo(200), request(201, 'discuss')], false);
+    expect(s.beat).toMatchObject({ id: 'day.your-turn', seq: 201 });
+    expect(s.state.cursor.animate).toBe(false);
+    // the ballot is asked before "voting opens": a refresh during the vote still lands on it
+    const vote = MINE.find((e) => e.type === 'phase_change' && e.phase === 'voting')!;
+    const q = new Session();
+    q.ctx = ctx({ openPrompt: vote.seq - 1 });
+    q.arrive(
+      [
+        ...MINE.filter((e) => e.seq < vote.seq - 1),
+        { ...request(vote.seq - 1, 'vote'), day: vote.day },
+        vote,
+      ],
+      false,
+    );
+    expect(q.beat).toMatchObject({ id: 'vote.your-ballot', seq: vote.seq - 1 });
+    expect(q.state.beats[q.state.cursor.index - 1].id).toBe('vote.opens');
+  });
+
+  it('a prompt on a room’s clock does not wait: the beat on stage is cut short once, the rest keep their pace', () => {
     const s = new Session().arrive(upTo(190), false);
     // three speeches arrive as news, then my request
     s.arrive(
@@ -428,7 +484,7 @@ describe('the live stage: the seated human’s prompt', () => {
     );
     const holding = s.state.cursor.index;
     expect(s.state.holding).toBe(true);
-    s.ctx = ctx({ openPrompt: 201 });
+    s.ctx = ctx({ openPrompt: 201, onClock: true });
     s.arrive([request(201, 'discuss')], true);
     // cut short once: the next beat is already on, at normal speed (2026-10-01; fast until then)
     expect(s.state.cursor.index).toBe(holding + 1);
@@ -451,8 +507,8 @@ describe('the live stage: the seated human’s prompt', () => {
     s.connectedAt = 12;
     s.arrive(upTo(12), false);
     expect(s.beat.id).toBe('deal.table-seated');
-    // the first turn is mine, and it is open while the deal plays
-    s.ctx = ctx({ openPrompt: 14 });
+    // the first turn is mine, and it is open (on a room's clock) while the deal plays
+    s.ctx = ctx({ openPrompt: 14, onClock: true });
     s.arrive(
       [...MINE.filter((e) => e.seq === 13), { ...request(14, 'discuss'), day: 1 }],
       true,
@@ -470,6 +526,121 @@ describe('the live stage: the seated human’s prompt', () => {
     }
     expect(s.beat).toMatchObject({ id: 'day.your-turn', seq: 14 });
     expect(s.state.step - before).toBe(holds);
+  });
+});
+
+describe('the live stage: a run of passes (2026-10-12)', () => {
+  // day 2: seat 1 speaks, then seats 2 and 4 pass, then seat 5 has the floor
+  const ev = (seq: number, type: string, rest: Record<string, unknown> = {}) =>
+    ({ seq, day: 2, type, ...rest }) as unknown as DurableGameEvent;
+  const said = ev(102, 'speech', { player: 'player_1', message: 'Seat 4 is quiet.' });
+  const log = [
+    ev(100, 'phase_change', { phase: 'day' }),
+    ev(101, 'turn_started', { player: 'player_1' }),
+    said,
+  ];
+  const turn = (seq: number, player: string) => ev(seq, 'turn_started', { player });
+
+  /** The stage caught up on seat 1's line, then seat 2's turn as news, all holds run out. */
+  function caughtUp() {
+    const s = new Session();
+    s.watch = new Watch();
+    s.arrive(log, false);
+    s.arrive([turn(103, 'player_2')], true).drain();
+    expect(s.beat).toMatchObject({ id: 'day.turn-thinking', subject: 'player_2' });
+    return s;
+  }
+
+  it('a thinking turn on the stage that turns out a pass after a pass gives the stage the run, played', () => {
+    const s = caughtUp();
+    s.arrive([turn(105, 'player_4')], true).drain(); // seat 2 passed: its pass, then seat 4 thinking
+    expect(s.beat).toMatchObject({ id: 'day.turn-thinking', subject: 'player_4' });
+    expect(s.watch!.played.map((id) => id.split('|')[0])).toEqual([
+      'day.turn-thinking',
+      'day.pass',
+      'day.turn-thinking',
+    ]);
+    // seat 4 passed too: the beat on the stage is swallowed by the run, which plays from its start
+    s.arrive([turn(107, 'player_5')], true);
+    expect(s.beat).toMatchObject({ id: 'day.pass', subjects: ['player_2', 'player_4'] });
+    expect(s.state.cursor.animate).toBe(true);
+    expect(s.state.holding).toBe(true);
+    s.held();
+    expect(s.beat).toMatchObject({ id: 'day.turn-thinking', subject: 'player_5' });
+  });
+
+  it('a pass on the stage that grows into a run plays again as the run', () => {
+    const s = caughtUp();
+    s.arrive([turn(105, 'player_4')], true); // seat 2's pass on the stage, holding
+    expect(s.beat).toMatchObject({ id: 'day.pass', subject: 'player_2' });
+    const step = s.state.step;
+    s.arrive([turn(107, 'player_5')], true);
+    expect(s.beat).toMatchObject({ id: 'day.pass', subjects: ['player_2', 'player_4'] });
+    expect(s.state.step).toBe(step + 1);
+    expect(s.state.holding).toBe(true);
+  });
+
+  // live game 403f4dbc, day 2 (owner, 2026-10-12): the ballot is asked before the vote is
+  // announced, and opened while the stage still played the day's passes; after the vote the
+  // stage said "Player 10 passed"
+  it('the ballot, asked before the vote opens, waits for the day’s passes and the opening', () => {
+    const s = new Session();
+    s.watch = new Watch();
+    s.arrive(log.slice(0, 2), false);
+    s.arrive([said], true);
+    const ballot = { ...request(112, 'vote'), day: 2 };
+    s.ctx = ctx({ openPrompt: 112 });
+    s.arrive(
+      [
+        turn(103, 'player_2'),
+        turn(105, 'player_4'),
+        turn(107, 'player_10'),
+        ev(110, 'day_summary', { summary: 'a quiet day' }),
+        ballot,
+        ev(113, 'phase_change', { phase: 'voting' }),
+      ],
+      true,
+    );
+    while (s.state.holding) s.held();
+    expect(s.watch.played.map((id) => id.split('|')[0])).toEqual([
+      'day.speech',
+      'day.pass', // seats 2, 4 and 10
+      'vote.opens',
+      'vote.your-ballot',
+    ]);
+    // answered: nothing of the day is left to play after the ballot
+    s.set({ openPrompt: null });
+    expect(s.beat.id).toBe('vote.your-ballot');
+    expect(s.state.holding).toBe(false);
+  });
+
+  it('a stage behind the table plays the run once, never each seat', () => {
+    const s = new Session();
+    s.watch = new Watch();
+    s.arrive(log.slice(0, 2), false);
+    // seat 1's line plays; the next four turns arrive while it is still being read
+    s.arrive([said], true);
+    s.arrive(
+      [
+        turn(103, 'player_2'),
+        turn(105, 'player_4'),
+        turn(107, 'player_5'),
+        turn(109, 'player_6'),
+      ],
+      true,
+    );
+    while (s.state.holding) s.held();
+    expect(s.watch.played.map((id) => id.split('|')[0])).toEqual([
+      'day.speech',
+      'day.pass', // seats 2, 4 and 5
+      'day.turn-thinking', // seat 6
+    ]);
+    expect(s.beat).toMatchObject({ id: 'day.turn-thinking', subject: 'player_6' });
+    expect(s.state.beats.find((b) => b.id === 'day.pass')?.subjects).toEqual([
+      'player_2',
+      'player_4',
+      'player_5',
+    ]);
   });
 });
 

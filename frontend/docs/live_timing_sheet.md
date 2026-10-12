@@ -44,7 +44,9 @@ entry 1 of the issues record). A human's own turn: whatever they take (night 1 h
 in this game 20–58 words, so 9–15 s and mostly the cap. A pass 4 s. Night shutter 6 s; a card
 read 4 s; your own card 8 s; your pack 6 s; the vote's opening 4 s, a chip 2.5 s, the lid 2.5 s,
 the verdict 6 s; the morning roll 6 s + 2 s a death; a room's mark 4 s. The dock opens the
-instant the prompt arrives (the beat on stage is cut short once, §12).
+instant the prompt arrives (the beat on stage is cut short once, §12). Since 2026-10-12 that is
+a room's prompt only (it has a deadline); a solo prompt waits for the stage, and a run of passes
+is one beat (beat sheet §12), so Scenario A's dock rows below are the old rule.
 
 **The gap that matters:** an agent speaks in ~6.4 s and is read in ~12–15 s. Between two human
 turns the stage loses ~6–9 s per agent turn.

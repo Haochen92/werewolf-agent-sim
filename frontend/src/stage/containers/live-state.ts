@@ -19,9 +19,13 @@
  *   2026-10-01). The stage lags the server; that is the design.
  * - A beat that waits for someone holds the stage until the wait is over: a prompt until it is
  *   answered (or gone), the epilogue until its sheet is closed, the curtain for good.
- * - The dock never waits for the stage. When the seated human's prompt is open further down the
- *   queue, the beat on the stage is cut short once (unless it is the deal, which then keeps its
- *   hold and nothing is cut) and the rest play at normal speed up to it.
+ * - A prompt with no deadline (a solo game) waits for the stage: every beat before it plays out
+ *   at its hold, and only then does the dock open (owner, 2026-10-12). A prompt on a room's clock
+ *   does not wait: its deadline runs from arrival, so when it is open further down the queue the
+ *   beat on the stage is cut short once (unless it is the deal, which then keeps its hold and
+ *   nothing is cut) and the rest play at normal speed up to it.
+ * - A pass on the stage that a run of passes swallows (the next seat passed too) gives the stage
+ *   the run's one beat, played from its start, and so does a run that grows while it is on.
  * - What the seat lived through at its own prompt (its line to the pack) lands still when the
  *   log's copy of it arrives, and the stage moves on: it is not played a second time.
  * - The winners' stand waits for the roles, which arrive just after `game_over`.
@@ -52,6 +56,8 @@ export interface LiveCtx extends LiveContext {
   openPrompt: number | null;
   /** The requests the seat's agent answered for the seated human (`TurnState.byAgent`). */
   byAgent?: readonly number[];
+  /** The open prompt has a deadline (a room's seat clock); a solo game's has none. */
+  onClock?: boolean;
 }
 
 export interface LiveState {
@@ -417,19 +423,43 @@ function sameBeat(a: SceneBeat | undefined, b: SceneBeat | undefined): boolean {
     a.subject === b.subject &&
     a.spoke?.actor === b.spoke?.actor &&
     a.spoke?.step === b.spoke?.step &&
-    a.page?.index === b.page?.index
+    a.page?.index === b.page?.index &&
+    a.subjects?.length === b.subjects?.length
   );
 }
 
-/** Where the cursor lands in a new cut of the list, and whether it is still on the same beat. */
+/**
+ * The run of passes that took in the pass (or the thinking turn before it) on the stage, when
+ * the next seat passed too: the run's index in the new cut, or -1.
+ */
+function runOf(to: readonly SceneBeat[], was: SceneBeat): number {
+  if (was.id !== 'day.pass' && was.id !== 'day.turn-thinking') return -1;
+  const seats = was.subjects ?? (was.subject ? [was.subject] : []);
+  return to.findIndex(
+    (b) =>
+      b.id === 'day.pass' &&
+      b.day === was.day &&
+      b.seq <= was.seq &&
+      b.end >= was.end &&
+      (b.subjects?.length ?? 0) > seats.length &&
+      seats.every((s) => b.subjects!.includes(s)),
+  );
+}
+
+/**
+ * Where the cursor lands in a new cut of the list, and whether it is still on the same beat
+ * (`run`: on a run of passes that took in the beat it was on, to be played afresh).
+ */
 function carry(
   from: readonly SceneBeat[],
   to: readonly SceneBeat[],
   cursor: Cursor,
-): { cursor: Cursor; same: boolean } {
+): { cursor: Cursor; same: boolean; run?: boolean } {
   if (cursor.index < 0) return { cursor, same: true };
   const was = from[cursor.index];
   if (sameBeat(to[cursor.index], was)) return { cursor, same: true };
+  const run = was ? runOf(to, was) : -1;
+  if (run !== -1) return { cursor: still(run), same: false, run: true };
   const moved = carryAcross(cursor, from, to);
   return sameBeat(to[moved.index], was)
     ? { cursor: { index: moved.index, animate: cursor.animate }, same: true }
@@ -481,10 +511,11 @@ function play(state: LiveState, index: number, speed: 'normal' | 'fast'): LiveSt
 
 /** Move on if the beat on the stage has had its moment and nothing it waits for is pending. */
 function advance(state: LiveState, ctx: LiveCtx): LiveState {
-  // the dock never waits for the stage: the beat on the stage when my prompt is first seen
-  // ahead is cut short, once per prompt (a deal beat keeps its hold, and nothing is cut)
+  // a prompt on a clock does not wait for the stage: the beat on the stage when it is first
+  // seen ahead is cut short, once per prompt (a deal beat keeps its hold, and nothing is cut).
+  // One with no deadline waits (owner, 2026-10-12): cutting it bought a solo seat nothing.
   const current = state.beats[state.cursor.index];
-  if (promptAhead(state, ctx) && state.hurried !== ctx.openPrompt) {
+  if (ctx.onClock && promptAhead(state, ctx) && state.hurried !== ctx.openPrompt) {
     const cut = state.holding && !current?.id.startsWith('deal.');
     state = { ...state, holding: cut ? false : state.holding, hurried: ctx.openPrompt };
   }
@@ -513,6 +544,10 @@ export function liveReducer(state: LiveState, action: LiveAction): LiveState {
         cursor: carried.cursor,
         holding: carried.same ? state.holding : false,
       };
+      // the pass on the stage grew into a run with news: the run's beat plays from its start
+      const run = carried.run ? beats[carried.cursor.index] : undefined;
+      if (run && (landing !== 'still' || run.end > action.historyEnd))
+        next = play(next, carried.cursor.index, 'normal');
       // the epilogue lands after the curtain is up (memory is extracted after game over): play it
       const at = next.cursor.index;
       if (
