@@ -2,32 +2,19 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Any
 
+from Agents.llm_factory.catalog import billed_name
+from Agents.llm_factory.pricing import cost_usd
 from evaluation.src.core.schemas import CostEstimate
 
 
-PRICING_VERSION = "google_genai_standard_2026_05_20"
+# Prices come from the model catalogue (the database's model_prices, read through
+# Agents/llm_factory/pricing.py), at the rate in force on the day of the call.
+PRICING_VERSION = "model_catalog"
 TOKEN_ESTIMATION_METHOD = "chars_per_token_4"
 USAGE_METADATA_METHOD = "langchain_usage_metadata"
-
-# Standard paid-tier text rates from the Gemini Developer API pricing page.
-# Values are USD per 1M tokens. Output pricing includes thinking tokens.
-DEFAULT_PRICING_PER_1M_USD: dict[str, tuple[float, float]] = {
-    # Gemini 3.1 Pro has separate rates above 200k prompt tokens.  This
-    # estimator uses the standard <=200k text rate, which is the expected range
-    # for these eval/game calls.
-    "gemini-3.1-pro": (2.00, 12.00),
-    "gemini-3.1-pro-preview": (2.00, 12.00),
-    "gemini-3.1-pro-preview-customtools": (2.00, 12.00),
-    "gemini-3.1-flash-lite": (0.25, 1.50),
-    "gemini-3.1-flash-lite-preview": (0.25, 1.50),
-    "gemini-2.5-flash": (0.30, 2.50),
-    "gemini-2.5-flash-preview": (0.30, 2.50),
-    "gemini-2.5-flash-lite": (0.10, 0.40),
-    "gemini-2.5-flash-lite-preview": (0.10, 0.40),
-    "gemini-2.5-pro": (1.25, 10.00),
-}
 
 
 def estimate_tokens(text: str) -> int:
@@ -40,16 +27,6 @@ def estimate_tokens(text: str) -> int:
     if not text:
         return 0
     return max(1, round(len(text) / 4))
-
-
-def _pricing_for_model(model: str) -> tuple[float, float] | None:
-    normalized = model.lower()
-    if normalized in DEFAULT_PRICING_PER_1M_USD:
-        return DEFAULT_PRICING_PER_1M_USD[normalized]
-    for prefix, pricing in DEFAULT_PRICING_PER_1M_USD.items():
-        if normalized.startswith(prefix):
-            return pricing
-    return None
 
 
 def estimate_cost(model: str, input_text: str, output_text: str) -> CostEstimate:
@@ -75,15 +52,11 @@ def cost_from_token_counts(
     cache_read_tokens: int,
     total_tokens: int,
     token_estimation_method: str,
+    batch: bool = False,
 ) -> CostEstimate:
-    pricing = _pricing_for_model(model)
-    estimated_cost_usd = None
-    if pricing:
-        input_price, output_price = pricing
-        estimated_cost_usd = (
-            (input_tokens / 1_000_000) * input_price
-            + (output_tokens / 1_000_000) * output_price
-        )
+    """``input_tokens`` includes the cached part; None when the catalogue has no price for the model."""
+    estimated_cost_usd = cost_usd(billed_name(model), datetime.now(timezone.utc), input=input_tokens,
+                                  cached=cache_read_tokens, output=output_tokens, batch=batch)
 
     return CostEstimate(
         input_tokens=input_tokens,

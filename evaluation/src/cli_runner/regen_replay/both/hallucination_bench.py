@@ -39,8 +39,8 @@ from pathlib import Path
 
 from evaluation.src.core.settings import REPO_ROOT
 
-DEFAULT_RECALL_MODEL = "gemini-3.1-flash-lite"
-DEFAULT_PRECISION_MODEL = "gemini-3.5-flash"
+DEFAULT_RECALL_MODEL = "anthropic/claude-haiku-5-5"
+DEFAULT_PRECISION_MODEL = "anthropic/claude-haiku-5-5"
 
 
 def _read_jsonl(path: Path) -> list[dict]:
@@ -277,8 +277,13 @@ def main() -> None:
             with open(out_dir / f"judged_{label}.jsonl", "w") as f:
                 f.writelines(json.dumps(s) + "\n" for s in by_arm[label])
 
+    from Agents.memory.claude_structured import usage_cost_usd, usage_totals
+
     result = {"label": cfg["label"], "run_at": datetime.now(timezone.utc).isoformat(), "config": cfg,
               "n_cases": len(cases), **summarize(by_arm, cases)}
+    if to_judge and (usage_totals["calls"] or usage_totals["batched_calls"]):
+        # A Claude judge's calls this run, priced from the model catalogue (a batch at its rate).
+        result["judge_usage"] = {**usage_totals, "cost_usd": usage_cost_usd()}
     (out_dir / "summary.json").write_text(json.dumps(result, indent=2))
     print(json.dumps({k: result[k] for k in ("arms", "paired_vs_first")}, indent=2))
 
