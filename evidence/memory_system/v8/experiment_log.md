@@ -478,3 +478,22 @@ again with the schema enforced. A probe on game `286816b0` (Haiku, three cells o
 phases): the first call wrote the 12.7k-token prefix, the next two read it, and all three replies
 validated ($0.006). The prefix is 3.6k tokens smaller than before because the enforced schema had
 added hidden text of its own. The extraction job uses this mode for Claude.
+
+## 2026-10-12 — Re-extraction on 3.8 Flash: the 12 seeding and 7 gate games
+
+**Run** (`scripts/extract_batch.py --model gemini-3.8-flash`, code at `cf63039f`;
+`batch_results/extraction_runs/flash_seed_gate_2026-10-12/`): the 19 games' backfilled inputs extracted
+online on the live extractor's path (explicit Vertex prefix cache, medium thinking), with the
+`uses_left` field now counted before the decision and present in every cell of a limited-use role;
+the de-halo pass as one Haiku batch. 570 calls, none lost, no backup model used, 57 minutes.
+
+- **Cost: $10.42** — $10.33 on 3.8 Flash at its promo prices (uncached input $0.93, cached $0.43,
+  output $8.97, of which thinking $7.35) and $0.09 de-halo. About $0.55 a game; thinking is 71% of it.
+- **872 observations** (39–56 a game): discussion 308, vote 238, night 326.
+- **Player ids:** 1 observation of 872.
+- **De-halo:** 220 of 872 verdicts revised (25%; the seeding pass revised 26%).
+- **`uses_left`** against the count replayed from the game records (527 observations carry it): 471 exact
+  (89%; 84% before the definition said "before"), 55 the count after the decision, 1 impossible. Some
+  vs none is wrong in 23 (4.4%), mostly a last use written as 0, so the definition alone did not fix
+  what the stage filter compares. The exact fix: the observation records the day of its decision and
+  the count is computed from the record, as the seat's own is.
