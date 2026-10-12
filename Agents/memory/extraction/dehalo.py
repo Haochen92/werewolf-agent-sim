@@ -61,23 +61,18 @@ def judge(prompt: str, config: DehaloConfig) -> tuple[Judgments | None, dict]:
     return _judge_with_factory(prompt, config)
 
 
-def dehalo_observations(observations: list, inputs: dict[str, Any], config: DehaloConfig) -> dict[str, Any] | None:
-    """Rewrite the observations' halo verdicts in place; return the de-halo record (every lesson's
-    original and revised verdict, the judge's reason, the model and its usage), or None when the
-    pass did not run."""
-    if not config.enabled or not observations:
-        return None
-    prompt = DEHALO_PROMPT.format(
+def dehalo_prompt(observations: list, inputs: dict[str, Any]) -> str:
+    """The judge's prompt for one game's lessons."""
+    return DEHALO_PROMPT.format(
         rules=rules_block(inputs.get("lineup") or []), record=inputs.get("formatted_discussions", ""),
         notes=inputs.get("formatted_strategy_notes", ""), outcome=inputs.get("game_outcome", "unknown"),
         lessons=_lessons(observations))
-    try:
-        judged, usage = judge(prompt, config)
-    except Exception as e:  # noqa: BLE001 — the pass must never break extraction
-        logger.warning("De-halo failed on %s (%s); verdicts left as extracted.", config.model, e)
-        return None
-    if judged is None:
-        return None
+
+
+def apply_judgments(observations: list, judged: Judgments, model: str, thinking_level: str | None,
+                    usage: dict) -> dict[str, Any]:
+    """Rewrite the observations' verdicts in place from the judge's; return the de-halo record (every
+    lesson's original and revised verdict, the judge's reason, the model and its usage)."""
     rows = []
     for j in judged.judgments:
         if not 1 <= j.index <= len(observations):
@@ -88,6 +83,21 @@ def dehalo_observations(observations: list, inputs: dict[str, Any], config: Deha
                      "revised_verdict": j.revised_verdict, "halo": j.halo, "reason": j.reason})
         o.net_verdict = j.revised_verdict
     changed = sum(r["original_verdict"] != r["revised_verdict"] for r in rows)
-    logger.info("De-halo (%s): %d of %d verdicts revised.", config.model, changed, len(observations))
-    return {"model": config.model, "thinking_level": config.thinking_level, "usage": usage,
+    logger.info("De-halo (%s): %d of %d verdicts revised.", model, changed, len(observations))
+    return {"model": model, "thinking_level": thinking_level, "usage": usage,
             "judged": len(rows), "revised": changed, "judgments": rows}
+
+
+def dehalo_observations(observations: list, inputs: dict[str, Any], config: DehaloConfig) -> dict[str, Any] | None:
+    """Rewrite the observations' halo verdicts in place; return the de-halo record, or None when the
+    pass did not run."""
+    if not config.enabled or not observations:
+        return None
+    try:
+        judged, usage = judge(dehalo_prompt(observations, inputs), config)
+    except Exception as e:  # noqa: BLE001 — the pass must never break extraction
+        logger.warning("De-halo failed on %s (%s); verdicts left as extracted.", config.model, e)
+        return None
+    if judged is None:
+        return None
+    return apply_judgments(observations, judged, config.model, config.thinking_level, usage)
