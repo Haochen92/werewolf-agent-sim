@@ -29,7 +29,7 @@ from Agents.prompts import (
 )
 from Agents.prompts.memory import V6_SITUATION_SUMMARY
 from Agents.schemas import SituationSummary
-from Agents.schemas.memory import cell_situation_schema_for
+from Agents.schemas.memory import _SituationCell, cell_situation_schema_for
 from Agents.state import DayActorState
 
 logger = getLogger(__name__)
@@ -42,6 +42,24 @@ _LEGACY_PROMPT_BY_ROLE = {
     "serial_killer": SERIAL_KILLER_SITUATION_SUMMARY,
     "vigilante": VIGILANTE_SITUATION_SUMMARY,
 }
+
+# Four coarse labels the live query no longer asks for: they fed only the retrieval-side dimension
+# gating, screened negative and left off (v7, −2%). The store keeps them, for its dedup gate.
+_UNUSED_QUERY_LABELS = ("consensus_direction", "divergence_sign", "info_landscape_class", "exposure_class")
+_QUERY_CELL_CACHE: dict[type, type[BaseModel]] = {}
+
+
+def _query_cell(cell_schema: type[BaseModel]) -> type[BaseModel]:
+    """The cell's live-query form: its fields less the unused labels. The embedded fields are kept as
+    they are, so the query still composes like the stored lessons."""
+    cached = _QUERY_CELL_CACHE.get(cell_schema)
+    if cached is None:
+        fields = {name: (field.annotation, field) for name, field in cell_schema.model_fields.items()
+                  if name not in _UNUSED_QUERY_LABELS}
+        cached = create_model(f"{cell_schema.__name__}Query", __base__=_SituationCell, **fields)
+        _QUERY_CELL_CACHE[cell_schema] = cached
+    return cached
+
 
 # Cache the per-cell summary containers (list[CellSituation], 1-2 items) so we build each once.
 _SUMMARY_CONTAINER_CACHE: dict[type, type[BaseModel]] = {}
@@ -174,20 +192,55 @@ def _known_board_facts(payload: dict, cell_schema: type[BaseModel]) -> str:
     if "ally_revealed" in facts:
         yn = "yes" if facts["ally_revealed"] else "no"
         lines.append(f"- A wolf partner has been revealed or eliminated: {yn} (set ally_revealed accordingly).")
+    # A concealed body's side is not public, so the counts below are then the worst case for the town
+    # over every side it could have come off (board_clocks.criticality_from_census), not known values.
+    hidden = sum(1 for d in payload.get("dead_roster") or []
+                 if (d.get("concealed") if isinstance(d, dict) else getattr(d, "concealed", False)))
+    bound = (", at worst for the town (a concealed body's side is unknown, so this is the closest it could "
+             "be)" if hidden else "")
     if "distance_to_parity" in facts:
         lines.append(
-            f"- Eliminations until the leading evil faction can win: {facts['distance_to_parity']} "
+            f"- Eliminations until the leading evil faction can win: {facts['distance_to_parity']}{bound} "
             "(set distance_to_parity to exactly this)."
         )
     if "is_swing" in facts:
         yn = "yes" if facts["is_swing"] else "no"
         lines.append(
-            f"- The game can end within one more elimination: {yn} (set is_swing accordingly)."
+            f"- The game can end within one more elimination: {yn}{bound} (set is_swing accordingly)."
         )
     return (
-        "KNOWN BOARD FACTS (authoritative — computed from the game state; use these EXACT values and "
-        "derive the Stakes from them, do not re-estimate):\n" + "\n".join(lines)
+        "KNOWN BOARD FACTS (computed from the game state; use these values and derive the Stakes from "
+        "them, do not re-estimate; where a count is a worst case, say so in the Stakes):\n" + "\n".join(lines)
     )
+
+
+# What each limited ability's uses are called on its card.
+_USES_NAME = {"investigator": "checks", "sentinel": "watches", "sigilist": "sigils", "vigilante": "shots",
+              "illusionist": "conceals", "fortune_teller": "self-bets"}
+
+
+def _private_state(payload: dict) -> str:
+    """The seat's own exact state that its turn prompt states and the record does not: its ability's
+    uses left, the bodies a necromancer can use and the conceals left on an illusionist's, a fortune
+    teller's points, a speculator's pick, the pack's carrier and target. Only what the payload carries,
+    so a field a role does not have is never shown (feedback 2026-10-12: a lesson can turn on these
+    values, and the query should not have to rebuild them from prose)."""
+    role = payload.get("player_role", "")
+    lines = [f"You are {payload.get('player_id', '')}, the {role}."]
+    if payload.get("uses_left") is not None and role in _USES_NAME:
+        lines.append(f"{_USES_NAME[role].capitalize()} left: {payload['uses_left']}.")
+    if "bodies" in payload:
+        bodies = ", ".join(payload["bodies"]) or "none"
+        lines.append(f"Bodies you can act through tonight: {bodies}; conceals left on an illusionist's "
+                     f"body: {payload.get('body_conceals', 0)}.")
+    if "fortune_points" in payload:
+        lines.append(f"Your points: {payload['fortune_points']} of 2.")
+    if "speculator_pick" in payload:
+        lines.append(f"Your pick: {payload['speculator_pick'] or 'not yet'}.")
+    if payload.get("carrier"):
+        lines.append(f"Tonight's carrier for the pack: {payload['carrier']}; the pack's target: "
+                     f"{payload.get('wolves_target') or 'not named yet'}.")
+    return "\n".join(lines)
 
 
 def _generate_situations_for_agent(
@@ -206,6 +259,8 @@ def _generate_situations_for_agent(
     run_name = f"situation_summary_{role}_{action_phase}_day_{current_day}_round_{current_round}"
 
     cell_schema = cell_situation_schema_for(role, action_phase)
+    if cell_schema is not None:
+        cell_schema = _query_cell(cell_schema)
     extra: dict = {}
     if cell_schema is not None:
         chain = V6_SITUATION_SUMMARY | get_llm().with_structured_output(
@@ -219,6 +274,7 @@ def _generate_situations_for_agent(
         # Hand the LLM the agent-knowable numbers so criticality_stakes is written FROM truth (the
         # override below still guarantees the exact numeric dims for gating). Empty when uncomputable.
         extra["known_board_facts"] = _known_board_facts(payload, cell_schema)
+        extra["private_state"] = _private_state(payload)
     else:
         prompt_template = _LEGACY_PROMPT_BY_ROLE.get(role, VILLAGER_SITUATION_SUMMARY)
         chain = prompt_template | get_llm().with_structured_output(SituationSummary)

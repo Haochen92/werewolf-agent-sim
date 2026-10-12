@@ -212,3 +212,12 @@ def test_known_facts_number_matches_the_override_value():
     cell = _make_cell("healer", "night_action", players_alive=9)
     _override_deterministic_dims(cell, payload)
     assert f"Players alive right now: {cell.players_alive}" in facts
+
+
+def test_a_count_after_a_concealed_death_is_stated_as_the_worst_case():
+    payload = {"surviving_players": ["p1", "p2", "p3", "p4"], "player_id": "p1", "cast_role_counts": dict(_CAST),
+               "dead_roster": [{"role": "", "concealed": True}, {"role": "villager"}]}
+    facts = _known_board_facts(payload, cell_situation_schema_for("villager", "day_discussion"))
+    assert "at worst for the town" in facts
+    clear = {**payload, "dead_roster": [{"role": "villager"}]}
+    assert "at worst" not in _known_board_facts(clear, cell_situation_schema_for("villager", "day_discussion"))

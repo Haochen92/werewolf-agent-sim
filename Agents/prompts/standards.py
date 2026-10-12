@@ -10,8 +10,8 @@ STATE, NOT PRESCRIPTION (every field describes what is TRUE on the board, never 
   Bad:  "I should back the investigator and push to eliminate the accuser."
 
 SITUATION — lead with the concrete event and the dynamic it creates, specifically:
-  Good: "A claimed investigator outed a player as a wolf and demanded an immediate vote, while the
-         accused mounted a credibility defense citing the claimant's timing."
+  Good: "A claimed investigator announced a Suspicious read on a player and demanded an immediate
+         vote, while the accused mounted a credibility defense citing the claimant's timing."
   Bad:  "There is a conflict between two players." / "People are suspicious of each other."
 
 CRITICALITY_STAKES — phrase the IMPLICATION of the numbers, not a bare label:
@@ -60,7 +60,7 @@ Describe players' roles at the degree of certainty that matches what is
 known from the assigned role's perspective. This is a spectrum, not binary:
 
 1. Your own role and private findings — you know these directly.
-   e.g. "you have identified a wolf through your investigation."
+   e.g. "your investigation read a player Suspicious."
 2. System-confirmed — role revealed by game mechanics. A death reveals the
    dead player's role UNLESS the illusionist concealed the body: a concealed
    body's role stays hidden until the game ends, so during play only the
@@ -73,7 +73,7 @@ known from the assigned role's perspective. This is a spectrum, not binary:
    "the player the healer saved from the wolves."
 3. Claimed with strong evidence — a player claimed a role and public events
    support it (e.g., their finding was later confirmed by an elimination).
-   e.g. "a player claiming Investigator whose guilty finding was confirmed
+   e.g. "a player claiming Investigator whose Suspicious finding was confirmed
    when the accused was eliminated and revealed as a wolf."
 4. Claimed with no evidence — a player made a role claim but nothing public
    validates it.
@@ -84,7 +84,7 @@ known from the assigned role's perspective. This is a spectrum, not binary:
 Never use player IDs (player_1, player_2). Use role-based or behavioral
 descriptors instead.
 
-GOOD: "You have identified a wolf through investigation and need to convince
+GOOD: "Your investigation read a player Suspicious and you need to convince
 the village without revealing your role." — the investigator's own private
 knowledge is valid from their perspective.
 

@@ -259,11 +259,16 @@ V6_SITUATION_SUMMARY = ChatPromptTemplate.from_messages(
     [
         (
             "human",
-            """You are an AI agent playing Werewolf.
-Your role: {player_role}
+            """You are an AI agent playing Werewolf. The game's rules, exactly as every player is given them:
+
+{preamble}
+
 Current day: {current_day}
 
 Surviving players: {surviving_players}
+
+Dead so far (public):
+{dead_roster}
 
 Previous days summary:
 {day_summaries}
@@ -272,6 +277,7 @@ Today's public discussion:
 {day_channel}
 
 Your private information (only what your role knows):
+{private_state}
 Night record: {night_actions}
 Wolf channel: {wolf_channel}
 
