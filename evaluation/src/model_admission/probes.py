@@ -23,8 +23,13 @@ MODE_ORDER = ("native", "forced_tool", "json_schema", "auto_tool", "json_mode")
 
 
 def modes_for(model: str) -> list[str]:
-    """The calling modes a model's protocol allows: Gemini only has its own constrained output."""
-    return ["native"] if "/" not in model else ["forced_tool", "json_schema", "auto_tool", "json_mode"]
+    """The calling modes a model's protocol allows: Gemini only has its own constrained output,
+    Claude has no JSON mode."""
+    if "/" not in model:
+        return ["native"]
+    if model.startswith("anthropic/"):
+        return ["forced_tool", "json_schema", "auto_tool"]
+    return ["forced_tool", "json_schema", "auto_tool", "json_mode"]
 
 
 def _llm(model: str, mode: str, thinking_level: str | None):

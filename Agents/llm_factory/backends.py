@@ -1,6 +1,6 @@
 """Chat-model construction across the five supported backends.
 
-vertex (default) / google (API-key) / nim / deepseek / mistral / openai / xai / openrouter — selected by ``LLM_BACKEND``
+vertex (default) / google (API-key) / nim / deepseek / mistral / openai / xai / openrouter / anthropic — selected by ``LLM_BACKEND``
 and the model prefix. Instances are memoised by construction args (building one is
 non-trivial: client + auth setup), so callers in hot loops reuse a shared,
 thread-safe instance. See the package docstring for backend selection rules.
@@ -132,6 +132,9 @@ STRUCTURED_MODE_BY_MODEL: dict[str, str] = {
     # Both refuse a forced tool call with reasoning on (admission 2026-10-04).
     "openai/gpt-6-luna": "json_schema",
     "openrouter/z-ai/glm-5.3-flash": "json_mode",
+    # A forced tool call turns Claude's thinking off; JSON-schema output kept it (admission
+    # 2026-10-11: 51/51, against 45/51 with the forced tool call).
+    "anthropic/claude-haiku-5-5": "json_schema",
 }
 
 
@@ -210,6 +213,26 @@ def _build_openai_compat_chat_model(
         temperature=temperature,
         **kwargs,
     )
+
+
+def _build_claude_chat_model(model: str, *, temperature: float, thinking_level: str | None,
+                             mode: str) -> Any:
+    """A Claude seat (claude.py). Thinking is adaptive, steered by the effort level; "minimal" or
+    none turns it off. A forced tool call cannot be combined with thinking, so in forced_tool mode
+    thinking stays off, as on DeepSeek. Claude takes no temperature while thinking."""
+    from .claude import ClaudeChat
+
+    api_key = _game_key_for("anthropic") or os.getenv("CLAUDE_API_KEY")
+    if not api_key:
+        raise ValueError("CLAUDE_API_KEY not set")
+    thinking = thinking_level not in (None, "minimal") and mode != "forced_tool"
+    if thinking_level not in (None, "minimal") and not thinking:
+        logger.info("Claude: thinking_level=%s ignored (forced tool calling is incompatible "
+                    "with thinking).", thinking_level)
+    extra: dict[str, Any] = (
+        {"thinking": {"type": "adaptive"}, "effort": thinking_level} if thinking
+        else {"thinking": {"type": "disabled"}, "temperature": temperature})
+    return ClaudeChat(model=model, api_key=api_key, max_tokens=16_000, structured_mode=mode, **extra)
 
 
 class MistralChatModel:
@@ -384,6 +407,10 @@ def _build_chat_model(
             model.removeprefix("xai/"), _XAI_BASE_URL, "XAI_API_KEY",
             temperature=temperature, structured_mode=mode,
             api_key_override=_game_key_for("xai"))
+
+    if model.startswith("anthropic/"):
+        return _build_claude_chat_model(model.removeprefix("anthropic/"), temperature=temperature,
+                                        thinking_level=thinking_level, mode=mode)
 
     build_kwargs: dict[str, Any] = {
         "model": model,

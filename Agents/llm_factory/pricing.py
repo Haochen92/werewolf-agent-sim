@@ -53,6 +53,11 @@ PRICES: dict[str, list[Price]] = {
     "gpt-6-luna": [Price(date(2026, 9, 1), 0.10, 0.01, 0.50)],
     # Z.AI's list rates after its launch promotion ended on 2026-09-09 (OpenRouter, pinned to Z.AI).
     "z-ai/glm-5.3-flash": [Price(date(2026, 9, 10), 0.15, 0.03, 0.50)],
+    # Anthropic's list rates (pricing page, 2026-10-11). A cache write bills at 1.25× input, which
+    # usage counts as plain input, so each written token is priced a quarter short. Haiku 5.5's
+    # rates hold for prompts under 100,000 tokens; a turn is about 10,000.
+    "claude-haiku-5-5": [Price(date(2026, 10, 7), 0.10, 0.01, 0.50)],
+    "claude-sonnet-5-5": [Price(date(2026, 9, 28), 2.00, 0.10, 10.00)],
 }
 
 
