@@ -580,6 +580,11 @@ change. Anything larger goes to the report's limitations and future work (§9.4)
      `memory_stores/ten_seat_v1`: the Sonnet points without the 19 the rule screen flagged (157).
      Open: the owner's read of the rest; the de-halo pass turned 26% of verdicts, a few over-corrected.
 9. **Retrieval cadence (D4)** and the situation-summary prompts for the new roles.
+   - Cadence built 2026-10-12 (`decisions.md` §10): one lookup per seat per day's discussion, refreshed
+     by a new role claim; a fresh one per vote; one per seat per night. About 60 lookups a game → 38.
+   - Situation prompts: every role and phase already has its cell and driver line (§9.2). One rendered on
+     a ten-seat state from the owner's game and read (the Chanteuse's day cell); the gate's pilot runs the
+     rest. One gap fixed: the query now states the uses left.
 10. **The gate** (§8.7), with existing tools only: coverage, the existing `eval-retrieval` judge
     updated for the ten-seat cast (on Claude Haiku 5.5, batched: about $0.20 for 200 cases on two
     embeddings; owner 2026-10-12), leak checks, cost. The store is embedded with Qwen3-Embedding-8B

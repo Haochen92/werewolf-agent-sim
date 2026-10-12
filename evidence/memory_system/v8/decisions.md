@@ -148,3 +148,21 @@ optional second example, only where records trace the exact transformation.
 
 The owner named everything from this iteration on **v8**. The seeding plan, log and data moved into
 `evidence/memory_system/v8/` with this record. The bulk seeding comes next (plan §9.5).
+
+## 10. How often a seat looks up its lessons (D4, 2026-10-12)
+
+Counted on the owner's first ten-seat game (`403f4dbc`, Haiku 5.5): with memory on, about 60 lookups (a
+situation call and a search each), 27 of them evil or neutral discussion turns, at 2 to 5 turns per seat
+a day. The owner ruled:
+
+- **Day discussion:** one lookup per seat per day, made at its first turn and reused for its later turns,
+  made afresh once someone makes a new role claim that day (a new player and role pair; a claimant
+  repeating its claim does not count, since one investigator claimed in four lines that game).
+- **Votes:** a fresh lookup for every vote, the day's largest decision, made after the whole discussion.
+- **Night:** one lookup per seat per night, shared by the pack's chat rounds, its kill and its ability.
+
+On that game about 60 lookups become about 38, plus one per new claim. What is kept is the lessons
+selected and the lookup's record, never the payload or a verdict: each decision records its own verdicts,
+and a reused lookup's record says it was reused and on which round it was made. The cache lives in the
+server process, so a restart only means a fresh lookup. Built in `Agents/memory/retrieval/lookup_cache.py`.
+A human's claim carries no claim field yet, so it does not refresh a lookup.
