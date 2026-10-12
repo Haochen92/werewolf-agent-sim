@@ -22,6 +22,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 
+from Agents.llm_factory import similarity_threshold
 from Agents.memory.consolidation.config import TickConfig
 from Agents.memory.consolidation.conversion import CONVERSION_CHANNEL, conversion_lift
 from Agents.memory.consolidation.credit import base_for, sp_lift
@@ -178,7 +179,8 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Tick
     # 0.65 ≡ 0.70 on -001 (below every real obs pair on both scales — the gate deliberately never
     # binds; neighbor ranking + the cluster cap do the selection). Remapped 2026-07-16 for
     # gemini-embedding-2's lower similarity scale.
-    cfgd = BatchDedupRunConfig(similarity_threshold=0.65, cluster_mode="bounded", max_cluster_size=15)
+    cfgd = BatchDedupRunConfig(similarity_threshold=similarity_threshold("synth_cluster"), cluster_mode="bounded",
+                               max_cluster_size=15)
     prev = prev_obs_counts or {}
     # "New obs since last synth" must count ARRIVALS (by first-seen tick), NOT the net count change:
     # net change cancels additions against obs DECAY, silently stalling synthesis once decay >=

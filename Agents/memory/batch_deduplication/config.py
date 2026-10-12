@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Literal
 
 from dotenv import load_dotenv
+from Agents.llm_factory import similarity_threshold
 from Agents.memory.persistence import DEFAULT_MEMORY_STORE_DIR
 from pydantic import BaseModel
 
@@ -29,7 +30,7 @@ DEFAULT_BATCH_EMBEDDING_MODEL = os.getenv(
     "gemini-embedding-001",
 )
 DEFAULT_BATCH_EMBEDDING_DIMS = int(os.getenv("MEMORY_BATCH_EMBEDDING_DIMS", "1536"))
-DEFAULT_BATCH_SIMILARITY_THRESHOLD = 0.70
+DEFAULT_BATCH_SIMILARITY_THRESHOLD = similarity_threshold("batch_cluster")
 DEFAULT_MAX_CLUSTER_SIZE = 15
 DEFAULT_MEMORY_STORE_RETRY_ATTEMPTS = 5
 DEFAULT_MEMORY_STORE_RETRY_INITIAL_DELAY = 1.0

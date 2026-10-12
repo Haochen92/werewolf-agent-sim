@@ -75,6 +75,7 @@ from .embeddings import (  # noqa: E402
     DEFAULT_EMBEDDING_DIMS,
     DEFAULT_EMBEDDING_MODEL,
     create_embeddings,
+    similarity_threshold,
 )
 
 __all__ = [
@@ -110,4 +111,5 @@ __all__ = [
     "DEFAULT_EMBEDDING_DIMS",
     "DEFAULT_EMBEDDING_MODEL",
     "create_embeddings",
+    "similarity_threshold",
 ]
