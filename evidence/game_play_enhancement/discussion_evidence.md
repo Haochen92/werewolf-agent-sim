@@ -1893,6 +1893,118 @@ stopped; flash-lite dropping a denial that sits beside other claims; human claim
 selector is the proposed fix, in the frontend pass); and the hallucination screen, never yet run on the
 ten-seat games (about $2 to $3 for a rate comparable to July's, invented facts only).
 
+### 8.6 The first Haiku 5.5 game: visits read backwards, replies that repeat, votes without reasons (2026-10-12)
+
+The owner played game `403f4dbc` on the live site as the Necromancer (seat 3), with Claude Haiku 5.5 (effort
+low) in the nine other seats, and won on day 6. Their notes after the game were read against the game's
+events and its LangGraph checkpoints. Three of them are discussion faults, one is the stage, and two
+turned out to be the rules working as ruled.
+
+**Visits read the wrong way round.** On day 3 the illusionist said "I visited nobody on night 2", a
+statement about where it went. The investigator answered twice "you say no one visited you, but the watch
+shows two visitors", and the sentinel once "your no-visit claim doesn't fit a watch that shows two
+visitors": both turned the statement round and set it against a watch, which shows only who came to the
+watched player. On day 5 the sentinel reported its night 4 watch on seat 3 as "no one visited them, so
+they did nothing that night", and on day 6 the vigilante cleared seat 3 on that report ("that makes
+player_3 unlikely"), the Necromancer it was then looking for. Another seat corrected it, but its own notes
+still said "player_3 visited nobody" when the game ended. This is §8.4's commonest player error (a watch
+that saw no one read as an empty house), now on a third model. The prompts state the
+rule correctly but only by implication: the shared rules define a visit in the passive ("a night action
+that is carried out on a player is a visit"), and the cards say what a watch or a follow learns, never
+what it cannot. A defined term with two ends and an unstated inverse invites the symmetric reading, and
+a smaller model collapses the direction more readily, the more so when the source is another player's
+loose phrasing. The fix states both ends and the inverse in the shared rules: "A visit goes one way,
+from the visitor to the player visited. A watch on a player shows who came to them, never where they
+went or whether they acted; a follow on a player shows whom they went to, never who came to them. 'I
+visited no one' and 'no one visited me' are different claims, and a watch that saw no one does not mean
+the watched player stayed home. When you speak of a visit, say which way it went: 'I went to X', 'X came
+to me'." The last sentence works on the source as well: a claim worded with its direction leaves the
+next reader less to turn round.
+
+**Replies that repeat.** Day 3 was a three-way exchange (the investigator, the sentinel and the accused
+illusionist) while five seats passed. The sentinel gave the same watch result four times and the
+illusionist asked twice more a question both had answered. The scheduler caps each directed pair at two
+obligations a day, but three players make six directed pairs, plus the two seats who asked them
+questions, and nearly every reply ended in a question back, which opened the next obligation. GPT-6
+Luna's games show the same restating between two claimants (its busiest day has both investigator
+claimants restate their results several times), but there other seats join with new angles, so the day
+moves on; here nobody else spoke. A word-overlap count did not find the repetition (0 to 10% of lines
+per game on every model): it is a restated point in new words, which needs reading, not string
+matching. The fix is one line in the reactive turn's brief, the per-turn instruction a player gets
+when it is answering someone: "Answer what is new in their latest message: if you already said it today,
+point back to it in a few words ('as I said, ...') instead of restating it, and do not ask again a
+question that has already been answered." It sits after the transcript, so the cached prefix is
+unchanged. A structural fix (a reply that only asks again opens no obligation) is deferred.
+
+**Silence, and votes without reasons.** All 69 passes in the game were the players' own; the echo gate
+held none. Haiku is simply quieter on the same prompts:
+
+| Model (games) | Turns passed after the opening round | Votes for a player cast by a seat silent that day |
+|---|---|---|
+| Haiku 5.5 (1) | 61% | 10 of 21 |
+| GPT-6 Luna (3) | 5 to 22% | 0 to 2 per game |
+| gemini-3.5-flash (3) | 12 to 34% | 0 to 2 per game |
+| gemini-3.5-flash-lite (5) | 21 to 36% | 2 to 5 per game |
+
+Some of that silence was evidence left unsaid. On day 3 seat 1 was the only player besides the
+illusionist to vote out the investigator; on day 4 four seats voted seat 1 out, correctly, without one of
+them saying why, and the vigilante's private read had the reason ("voted to eliminate investigator
+player_4 on day 3"). Haiku's notes repeat "speak only when I have something new", and the open floor
+ends "a pass costs nothing here". The fix, for town seats only and only on a voting day: "The vote
+follows this discussion. Decide now whom you would vote for if it were held now. If that is a player and
+you have not said why today, say it in a sentence or two instead of passing: a vote with no stated reason
+gives the town nothing to weigh. If you would abstain, you may pass." (the second wording; the replay below
+says why the first failed). The owner kept it from the evil and neutral seats, for whom silence can be the
+better play. This is §8.4's open item (votes with no public reasoning) met on the open floor, the turn
+where a player chooses to pass.
+
+**The stage played the discussion after the vote.** The stage plays beats at reading pace and, by the
+2026-10-01 ruling, never held the human's prompt for it. With Haiku's runs of passes about twenty beats
+behind, the owner's vote opened while the stage was still showing day 2's passes, and "player_10 passed"
+played after they had voted; another time a turn was cut short mid-beat. Ruled 2026-10-12: in a solo game
+the prompt waits for the stage to reach it, and a run of passes plays as one beat
+(`frontend/docs/beat_sheet.md` §12).
+
+**Two notes that were the rules working.** The Necromancer's night 4 notice ("Through player_6's body:
+player_7 died. They were a healer.") came from an Illusionist body whose two conceals were spent (one by
+the Illusionist on night 2, one through its body on night 3), so the attack landed and the role was
+announced, as the 2026-10-10 ruling says; the notice itself is the attack's result, not the conceal's.
+The vigilante held fire on nights 1 to 4 under its own rule ("shoot only on a verified contradiction"),
+suspected the real sentinel on day 5, and on night 5 shot seat 3 as a coin flip, but seat 3 had blocked it
+that night through the Chanteuse's body.
+
+**The replay** (`data/haiku_turn_replay/`, per-turn table in its README). Eighteen turns frozen from the
+game's own LangGraph checkpoints, each run five times on the code before the fixes and after, on Haiku 5.5
+at effort low, with a hand-written expectation judged by Claude Sonnet 5.5 (one Message Batch per arm;
+judging is an offline run, owner 2026-10-12). Each turn is also labelled by context: *origin* when no visit
+misreading is yet in the speaker's transcript, *cascade* when other players have already made it.
+
+- *Visits.* Public messages reading a visit the wrong way round: 16 of 35 before, 5 after (origin turns
+  5 → 2 of 15, cascade turns 11 → 3 of 20). The two control turns, whose original line had it right, went
+  from 5 bad of 10 to 1: the old prompts did not reliably produce the right reading either. Every visit
+  sample was read by hand before the verdicts came back (about 19 → 6), and agrees.
+- *Repeats.* 27 of 30 samples restated or asked again before, 23 after. Replies now open "As I said",
+  then restate the result anyway; a question already answered is asked again as often as before (the
+  illusionist's two turns: 9 of 10 before, 9 after; it is a wolf, and asking again may be its play). A
+  prompt line changed the framing, not the content: the reply loop needs the scheduler (a reply that only
+  asks again opening no obligation), not more wording.
+- *Vote reasons.* The first wording ("If you already lean toward voting a player out today and have not
+  said why, say it now") moved the open-floor passes from 24 of 25 to 23. The players' notes said why: no
+  lean had formed yet (it forms in the vote call), and their own earlier note said to stay quiet unless
+  addressed. The second wording, asking them to decide now, brought passes to 16 of 25; six of the nine
+  that spoke named a vote with its reason, among them the argument the game never heard ("On day 3
+  player_1 voted player_4 when the table was on player_6"). Day 5's vigilante still passed 5 of 5.
+- *Cascades.* A stated rule did more against a spreading misreading than the f02 replay (§8.4) found:
+  players speaking in the exchange mostly applied it (cascade messages 11 → 3 of 20). The players outside
+  the exchange did not: on day 3, after three messages had turned "I visited nobody" round, the silent
+  seats' private reads repeated it 8 of 10 times before and 9 of 10 after. The second vote wording makes
+  those seats speak, and five of their messages then said the misreading aloud: a reason was the point,
+  and it carried the cascade with it, where a peer can at least answer it.
+
+Limits: a replay is a regression check on known failures, not a rate; the origin turns are three, too few
+to measure the rule on its own; the judge made one wrong call in the verdicts read (it marked "the
+Illusionist was revealed as a wolf" false). Full games on the new prompts are the next check.
+
 ---
 
 ## 9. Open questions (as of 2026-10-03)
