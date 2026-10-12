@@ -24,7 +24,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from server.config import ServerSettings, server_settings
-from server.game.model_catalog import SUPPORTED_GAME_MODELS
+from server.game.model_catalog import game_model, house_models, menu_models
 from server.storage.game_repository import GameRepository
 from server.storage.settings_repository import SettingsRepository
 
@@ -33,9 +33,6 @@ logger = logging.getLogger(__name__)
 KEY_ENABLED = "house.enabled"
 KEY_DEFAULT_MODEL = "house.default_model"
 KEY_GAMES_PER_DAY = "house.games_per_day"
-
-HOUSE_MODELS = [m for m, row in SUPPORTED_GAME_MODELS.items() if row.house_funded]
-
 
 class ModelNeedsKey(Exception):
     """The chosen model is not house-funded, or the house will not fund it right now."""
@@ -96,11 +93,12 @@ class HousePolicy:
 
     def _default_model(self, knobs: dict[str, Any]) -> str:
         """The stored default if it is still a house-funded row, else the process default,
-        else the first house-funded row in the catalogue."""
+        else the first house-funded row in the catalogue ("" when the menu has none)."""
+        house = house_models()
         for candidate in (knobs.get(KEY_DEFAULT_MODEL), self._defaults.HOUSE_DEFAULT_MODEL):
-            if candidate in HOUSE_MODELS:
+            if candidate in house:
                 return candidate
-        return HOUSE_MODELS[0]
+        return house[0] if house else ""
 
     async def status(self, now: datetime | None = None) -> HouseStatus:
         knobs = await self._load()
@@ -116,8 +114,8 @@ class HousePolicy:
                      games_per_day: int | None = None) -> HouseStatus:
         """Change the knobs an operator may change. Takes effect at once in this process
         and is persisted when storage is on. ValueError on a bad value."""
-        if default_model is not None and default_model not in HOUSE_MODELS:
-            raise ValueError(f"default_model must be a house-funded row: {HOUSE_MODELS}")
+        if default_model is not None and default_model not in house_models():
+            raise ValueError(f"default_model must be a house-funded row: {house_models()}")
         if games_per_day is not None and games_per_day < 0:
             raise ValueError("games_per_day must be 0 or more")
         changes = {KEY_ENABLED: enabled, KEY_DEFAULT_MODEL: default_model,
@@ -144,10 +142,10 @@ class HousePolicy:
         the daily limit; a hard ceiling would need an atomic reservation at launch."""
         status = await self.status()
         model = model or status.default_model
-        row = SUPPORTED_GAME_MODELS.get(model)
+        row = game_model(model)
         if row is None:
             raise LookupError(
-                f"unsupported model; pick from GET /models: {sorted(SUPPORTED_GAME_MODELS)}")
+                f"unsupported model; pick from GET /models: {sorted(m.model for m in menu_models())}")
         if api_key:
             return model
         if not row.house_funded:

@@ -38,7 +38,6 @@ def test_an_unknown_model_or_date_has_no_price():
 
 def test_every_menu_model_has_a_price():
     # A model on the menu without a price would show every one of its games as costing nothing known.
-    from server.game.model_catalog import SUPPORTED_GAME_MODELS
-    for model in SUPPORTED_GAME_MODELS:
-        name = model.split("/", 1)[1] if model.startswith(("openai/", "openrouter/", "deepseek/", "anthropic/")) else model
-        assert price_at(name, _at(2026, 10, 12, 12)) is not None, model
+    from Agents.llm_factory.catalog import billed_name, seed
+    for row in seed().menu():
+        assert price_at(billed_name(row.model), _at(2026, 10, 12, 12)) is not None, row.model

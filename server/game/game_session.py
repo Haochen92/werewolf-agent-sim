@@ -21,7 +21,7 @@ suspended it counts as parked, so the sweeper gives it up after the same shelf l
 player who has died is not waited for, so the game runs to its end and its replay is
 saved. Games with several humans keep the AFK clocks instead (seat_clocks.py).
 
-Which model runs, and on whose key, is a choice from SUPPORTED_GAME_MODELS
+Which model runs, and on whose key, is a choice from the model menu
 (game/model_catalog.py: tested models only, each with its compatible rescue). It rides a
 ContextVar set inside the game's task; LangGraph copies the task context into its worker
 threads, so a player's key reaches only the chosen model's provider and never touches
@@ -74,7 +74,7 @@ from Agents.turn.human_turn import validate_human_response
 
 from server.game.cast import CastSeat, draw_cast
 from server.storage.game_repository import GameRepository
-from server.game.model_catalog import SUPPORTED_GAME_MODELS
+from server.game.model_catalog import game_model, menu_models
 from server.game.pacing import PacingTracker
 from server.schemas import events as ev
 from server.game.seat_clocks import SeatClocks
@@ -244,8 +244,8 @@ class GameSession:
         # Which model runs, and who pays.
         self._api_key = api_key
         if api_key and not model:
-            model = next(iter(SUPPORTED_GAME_MODELS))
-        row = SUPPORTED_GAME_MODELS.get(model)
+            model = menu_models()[0].model
+        row = game_model(model)
         self._llm_selection = GameLLM(
             api_key=api_key, model=model,
             rescue_model=row.rescue_model if row else None,
@@ -778,7 +778,7 @@ class GameSession:
     def take_key(self, api_key: str) -> None:
         """Take a player's key for the model this game runs on. Only meaningful while
         awaiting a key; the registry validates the key with the provider first."""
-        row = SUPPORTED_GAME_MODELS.get(self.model)
+        row = game_model(self.model)
         self._api_key = api_key
         self._llm_selection = GameLLM(
             api_key=api_key, model=self.model, rescue_model=row.rescue_model if row else None)

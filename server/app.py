@@ -17,6 +17,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from server.config import server_settings
+from server.housekeeping.catalog_refresh import catalog_dsn, refresh_catalog, run_catalog_refresh
 from server.housekeeping.recovery import recover_registry
 from server.resources import app_resources
 from server.routes.admin import router as admin_router
@@ -32,16 +33,23 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Compose resources, recover games, run the retention sweeper, then stop tasks
-    before closing storage."""
+    """Load the model catalogue, compose resources, recover games, run the retention sweeper
+    and the catalogue's refresh, then stop tasks before closing storage."""
+    dsn = catalog_dsn(server_settings.WW_POSTGRES_DSN)
+    if dsn:
+        await refresh_catalog(dsn)  # before recovery: a recovered game needs its rescue model
     async with app_resources() as resources:
         app.state.resources = resources
         await recover_registry(resources.games, resources.game_repository)
         sweeper = asyncio.create_task(run_sweeper(resources.games), name="park-sweeper")
+        refresher = (asyncio.create_task(run_catalog_refresh(dsn), name="catalog-refresh")
+                     if dsn else None)
         try:
             yield
         finally:
             sweeper.cancel()
+            if refresher is not None:
+                refresher.cancel()
             await resources.games.shutdown()
 
 

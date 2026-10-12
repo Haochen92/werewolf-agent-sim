@@ -1,13 +1,15 @@
 """How an OpenAI-protocol model is asked for a schema (Agents/llm_factory/backends.py, STRUCTURED_MODES),
 and when DeepSeek may think: its thinking mode rejects a forced tool call, so thinking is on only
 when the model's mode doesn't force one."""
+from dataclasses import replace
+
 import pytest
 from langchain_core.exceptions import OutputParserException
 from langchain_core.messages import AIMessage
 from langchain_core.runnables import RunnableLambda
 from pydantic import BaseModel
 
-from Agents.llm_factory import backends
+from Agents.llm_factory import backends, catalog
 from Agents.llm_factory.backends import _ToolCallStructuredChatOpenAI, _build_chat_model
 
 
@@ -59,7 +61,10 @@ def test_deepseek_thinks_only_when_its_mode_does_not_force_the_tool_call(monkeyp
 
 
 def test_the_catalogue_mode_applies_and_an_explicit_mode_overrides_it(monkeypatch):
-    monkeypatch.setitem(backends.STRUCTURED_MODE_BY_MODEL, "deepseek/deepseek-v4-pro", "auto_tool")
+    cat = catalog.seed()
+    rows = tuple(replace(m, structured_mode="auto_tool") if m.model == "deepseek/deepseek-v4-pro" else m
+                 for m in cat.models)
+    monkeypatch.setattr(catalog, "_installed", replace(cat, models=rows))
     assert _deepseek(monkeypatch).structured_mode == "auto_tool"
     assert _deepseek(monkeypatch, structured_mode="forced_tool").structured_mode == "forced_tool"
 

@@ -16,30 +16,17 @@ from __future__ import annotations
 
 import os
 
+from . import catalog
 from .backends import GAME_LLM, create_chat_model
 
 DEFAULT_GAME_MODEL = "gemini-3.5-flash-lite"
 # Different-backend rescue when a seat exhausts its structured-output retries (seen with
 # DeepSeek's unconstrained tool-calling): one shot on this model beats a random action.
 DEFAULT_GAME_FALLBACK_MODEL = "gemini-3.1-flash-lite"
+# A model's own turn and summary levels are catalogue rows (catalog.py, columns turn_thinking and
+# summary_thinking); a model with none takes these defaults. A rescued turn gets its rescue
+# model's level.
 DEFAULT_GAME_THINKING_LEVEL = "minimal"
-# Thinking per game model (2026-10-04, discussion_evidence.md §6.7). With structured output both
-# flash-lites reason for 0 tokens at "minimal", and 3.5 also at "low"; at these levels they reason,
-# and the hallucination bench's bad samples fell from 31% to 10% (3.5, medium) and 15% (3.1, low).
-# A rescued turn gets its rescue model's level. Other models keep DEFAULT_GAME_THINKING_LEVEL.
-GAME_THINKING_BY_MODEL = {
-    "gemini-3.5-flash-lite": "medium",
-    "gemini-3.1-flash-lite": "low",
-    # 2026-10-04 bench: Luna at medium 6% bad, at high 11% and 24 s a turn. 2026-10-11 Phase 3
-    # bench (phase3_luna_haiku): low 7% bad against medium's 4%, a tie case by case, at ~390
-    # reasoning tokens against ~1,260 and 8 s a turn against 16. GLM is played without thinking,
-    # which its full reasoning makes 34-55 s a call.
-    "openai/gpt-6-luna": "low",
-    # 2026-10-11 Phase 3 bench: Haiku 5.5 at effort low 10% and 16% bad over two runs (flash-lite
-    # 34-39%), ~1,250 reasoning tokens, 9.5 s a turn; at medium 16% and ~2,100 tokens.
-    "anthropic/claude-haiku-5-5": "low",
-    "openrouter/z-ai/glm-5.3-flash": "minimal",
-}
 # A game turn's request budget (2026-09-30): Vertex's shared pool for a new model can hold a
 # request for minutes before answering or bouncing it with 429, and the SDK then re-sent each
 # bounce up to five times, so one seat's turn took 2-5 minutes with nothing failing. Now a
@@ -50,11 +37,6 @@ DEFAULT_GAME_TIMEOUT_S = 30.0
 DEFAULT_GAME_ATTEMPTS = 2
 DEFAULT_SUMMARY_TIMEOUT_S = 90.0
 DEFAULT_SUMMARY_THINKING_LEVEL = "medium"
-# A model whose summary must not take the default level: GLM's full reasoning (what "medium"
-# turns on for it) runs 34-55 s even on short prompts, against the summary's 90 s budget.
-SUMMARY_THINKING_BY_MODEL = {
-    "openrouter/z-ai/glm-5.3-flash": "minimal",
-}
 # The post-game extraction model. gemini-3.8-flash since 2026-10-11: re-extracting two ten-seat pilot
 # games, it cost about $0.34 a game against 2.5-pro's $1.17 (promo price, $0.75/$3.75 per 1M to
 # 2026-12-31, then $1.50/$7.50), wrote fewer observations with no player IDs, and read as well
@@ -98,7 +80,8 @@ def game_thinking_level(model: str) -> str | None:
     """A game turn's thinking level on ``model``: GOOGLE_GENAI_THINKING_LEVEL when set (a bench arm
     pins it), else the model's own level, else the default."""
     return _thinking_level_from_env(
-        "GOOGLE_GENAI_THINKING_LEVEL", GAME_THINKING_BY_MODEL.get(model, DEFAULT_GAME_THINKING_LEVEL)
+        "GOOGLE_GENAI_THINKING_LEVEL",
+        (row.turn_thinking if (row := catalog.entry(model)) else None) or DEFAULT_GAME_THINKING_LEVEL,
     )
 
 
@@ -157,7 +140,8 @@ def get_llm_summary():
         temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
         thinking_level=_thinking_level_from_env(
             "GOOGLE_GENAI_SUMMARY_THINKING_LEVEL",
-            SUMMARY_THINKING_BY_MODEL.get(model, DEFAULT_SUMMARY_THINKING_LEVEL),
+            (row.summary_thinking if (row := catalog.entry(model)) else None)
+            or DEFAULT_SUMMARY_THINKING_LEVEL,
         ),
         **_request_budget("GAME_SUMMARY_TIMEOUT_S", DEFAULT_SUMMARY_TIMEOUT_S),
     )

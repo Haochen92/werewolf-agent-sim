@@ -3,7 +3,7 @@
 from fastapi import APIRouter
 
 from server.dependencies import House, ReplayServiceDep
-from server.game.model_catalog import SUPPORTED_GAME_MODELS
+from server.game.model_catalog import menu_models
 from server.schemas.requests import HouseFunding, ModelRow, ModelsMenu
 
 router = APIRouter(tags=["system"])
@@ -29,15 +29,15 @@ async def supported_models(house: House, replays: ReplayServiceDep) -> ModelsMen
     costs = await replays.average_costs()
     return ModelsMenu(
         models=[
-            ModelRow(model=model, label=row.display_name, rescue_model=row.rescue_model,
-                     house_funded=row.house_funded, is_default=(model == status.default_model),
+            ModelRow(model=row.model, label=row.display_name, rescue_model=row.rescue_model,
+                     house_funded=row.house_funded, is_default=(row.model == status.default_model),
                      needs_key=(not row.house_funded or not status.enabled
                                 or status.remaining <= 0),
-                     avg_cost_usd=costs.get((model, False), (None, 0))[0],
-                     priced_games=costs.get((model, False), (None, 0))[1],
-                     avg_cost_memory_usd=costs.get((model, True), (None, 0))[0],
-                     priced_memory_games=costs.get((model, True), (None, 0))[1])
-            for model, row in SUPPORTED_GAME_MODELS.items()
+                     avg_cost_usd=costs.get((row.model, False), (None, 0))[0],
+                     priced_games=costs.get((row.model, False), (None, 0))[1],
+                     avg_cost_memory_usd=costs.get((row.model, True), (None, 0))[0],
+                     priced_memory_games=costs.get((row.model, True), (None, 0))[1])
+            for row in menu_models()
         ],
         house=HouseFunding(enabled=status.enabled, games_per_day=status.games_per_day,
                            remaining=status.remaining, reset_at=status.reset_at.isoformat()),

@@ -22,6 +22,7 @@ from langchain_core.runnables import RunnableLambda
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 
+from . import catalog
 from .health import ModelHealth
 
 logger = logging.getLogger(__name__)
@@ -126,18 +127,9 @@ class _OpenAICompatResponse:
 # Probed on DeepSeek V4 Flash 2026-10-04 (one call each): thinking + forced or "required"
 # tool_choice → 400; thinking + auto → tool called; thinking + JSON mode → valid JSON.
 STRUCTURED_MODES = ("forced_tool", "json_schema", "auto_tool", "json_mode")
-# Per-model mode, chosen by the model admission run (eval-model-admission). Unlisted models
-# use forced_tool, which is what every OpenAI-protocol row has played on so far.
-STRUCTURED_MODE_BY_MODEL: dict[str, str] = {
-    # Both refuse a forced tool call with reasoning on (admission 2026-10-04).
-    "openai/gpt-6-luna": "json_schema",
-    "openrouter/z-ai/glm-5.3-flash": "json_mode",
-    # A forced tool call turns Claude's thinking off; JSON-schema output kept it (admission
-    # 2026-10-11: 51/51, against 45/51 with the forced tool call).
-    "anthropic/claude-haiku-5-5": "json_schema",
-    # Refuses tool_choice "tool" and "any" (2026-10-12).
-    "anthropic/claude-sonnet-5-5": "json_schema",
-}
+# A model's mode is its catalogue row's structured_mode (catalog.py), chosen by the model admission
+# run (eval-model-admission); a model with none uses forced_tool, which is what every
+# OpenAI-protocol row played on first.
 
 
 def _schema_instruction(schema: type) -> str:
@@ -219,7 +211,7 @@ def _build_openai_compat_chat_model(
 
 # A Claude model with thinking off, where the default request is refused (2026-10-12, Sonnet 5.5 as
 # the golden judge): it answers "thinking disabled" with a 400 asking for "between_tools", and takes no
-# temperature (and no forced tool call: STRUCTURED_MODE_BY_MODEL).
+# temperature (and no forced tool call: its catalogue row's structured_mode).
 _CLAUDE_THINKING_OFF: dict[str, dict[str, Any]] = {
     "claude-sonnet-5-5": {"thinking": {"type": "between_tools"}},
 }
@@ -311,7 +303,7 @@ def create_chat_model(
     **kwargs:
         Forwarded to ``ChatGoogleGenerativeAI`` (ignored for NIM/DeepSeek), except
         ``structured_mode``: one of ``STRUCTURED_MODES``, overriding
-        ``STRUCTURED_MODE_BY_MODEL`` for an OpenAI-protocol model.
+        the catalogue row's mode for an OpenAI-protocol or Claude model.
     """
     try:
         # The BYOK key in the cache key: a game must never be handed a client built with
@@ -354,7 +346,7 @@ def _build_chat_model(
         mode = os.getenv("LLM_STRUCTURED_MODE") or None
     if mode is not None and mode not in STRUCTURED_MODES:
         raise ValueError(f"structured_mode must be one of {STRUCTURED_MODES}, not {mode!r}")
-    mode = mode or STRUCTURED_MODE_BY_MODEL.get(model, "forced_tool")
+    mode = mode or (row.structured_mode if (row := catalog.entry(model)) else None) or "forced_tool"
 
     if model.startswith("nim/"):
         return _build_openai_compat_chat_model(

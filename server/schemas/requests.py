@@ -103,7 +103,7 @@ class NewSoloGame(BaseModel):
     Ephemeral pass-through — held in session memory for the run, never stored or
     recorded; empty = the server's configured backend pays."""
     model: str = ""
-    """Game model, from SUPPORTED_GAME_MODELS only (the tested list; GET /models).
+    """Game model, from the model menu only (the tested list; GET /models).
     House-funded rows may use the server backend; all other choices require api_key.
     Empty = the default model."""
     memory: bool = False
@@ -141,7 +141,7 @@ class NewRoom(BaseModel):
     """BYOK (optional): the creator's key funds the whole game. Same semantics as
     the instant-start door."""
     model: str = ""
-    """Game model from SUPPORTED_GAME_MODELS. House-funded rows need no api_key;
+    """Game model from the model menu (GET /models). House-funded rows need no api_key;
     all other choices require one. Empty = default."""
     memory: bool = False
     """AI memory (experimental), chosen by the host for the whole table. Same semantics

@@ -3,7 +3,8 @@
 Prices change (DeepSeek's V4 Pro rose 1.5–4.6× on 2026-08-13 and added peak hours), and a game
 must be priced at the rates of its own date. So nothing stores a cost: a game records its tokens
 by model and UTC hour (``server/game/usage.py``) and the cost is worked out here when it is read.
-Fixing a wrong price below corrects every game it applied to.
+Fixing a wrong price (a row in the database's model_prices, see catalog.py) corrects every game
+it applied to.
 
 Sources: the July rows are what was entered in Langfuse on 2026-07-26 (its models/prices tables);
 DeepSeek from 2026-08-13 is its official pricing page as read on 2026-10-04; Gemini cached rates
@@ -12,23 +13,14 @@ never apply in practice, since implicit caching returns no hits on our Vertex pa
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import date, datetime, timezone
 
+from Agents.schemas.model_catalog import Price
 
-@dataclass(frozen=True)
-class Price:
-    """USD per million tokens, in force from ``since`` until the model's next entry. ``peak``:
-    DeepSeek's peak hours bill at twice these (off-peak) rates."""
-
-    since: date
-    input: float
-    cached: float
-    output: float  # reasoning tokens are billed as output
-    peak: bool = False
-
-
-# Keyed by the model name the provider is called with (no factory prefix), oldest entry first.
+# The SEED price table: the database's starting rows (table model_prices, migration 0011) and
+# what a process without a database prices with. Live prices are the database's, read through
+# catalog.py; change them with scripts/model_catalog.py, not here. Keyed by the model name the
+# provider is called with (no factory prefix), oldest entry first.
 PRICES: dict[str, list[Price]] = {
     "gemini-3.1-flash-lite": [Price(date(2026, 1, 1), 0.25, 0.025, 1.50)],
     "gemini-3.5-flash-lite": [Price(date(2026, 7, 21), 0.30, 0.03, 2.50)],
@@ -74,7 +66,9 @@ def is_deepseek_peak(at: datetime) -> bool:
 def price_at(model: str, at: datetime) -> tuple[Price, float] | None:
     """The price in force for ``model`` at ``at`` and its multiplier (2 at DeepSeek peak), or
     None when the table has no price for that model on that date."""
-    entries = [p for p in PRICES.get(model.removeprefix("models/"), []) if p.since <= at.date()]
+    from .catalog import prices_for
+
+    entries = [p for p in prices_for(model.removeprefix("models/")) if p.since <= at.date()]
     if not entries:
         return None
     price = entries[-1]

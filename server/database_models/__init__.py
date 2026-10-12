@@ -7,6 +7,8 @@ owned by ``AsyncPostgresSaver`` and deliberately do not belong here.
 
 from server.database_models.cast import CharacterRow, GameCastRow
 from server.database_models.game import EventRow, GameRow
+from server.database_models.model_catalog import CatalogModelRow, ModelPriceRow
 from server.database_models.settings import SettingRow
 
-__all__ = ["CharacterRow", "EventRow", "GameCastRow", "GameRow", "SettingRow"]
+__all__ = ["CatalogModelRow", "CharacterRow", "EventRow", "GameCastRow", "GameRow", "ModelPriceRow",
+           "SettingRow"]

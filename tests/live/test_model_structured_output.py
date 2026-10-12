@@ -4,7 +4,7 @@ A seat's turn is one call: the model is bound to a Pydantic schema through the f
 tool-calling path and must come back with a fully populated object. A provider change
 (a new model, a renamed id, a tool-calling regression) breaks that silently until a real
 game fails mid-turn. This module is the regression gate: every row of
-SUPPORTED_GAME_MODELS is asked for every seat-facing schema once, with a short in-character
+the model menu is asked for every seat-facing schema once, with a short in-character
 prompt, and the reply must validate and fill the field the game acts on.
 
 Costs real money and needs credentials, so it is marked ``live`` and skipped by default.
@@ -36,7 +36,7 @@ import pytest
 from Agents.llm_factory.accessors import game_thinking_level
 from Agents.llm_factory.backends import create_chat_model
 from evaluation.src.model_admission.seat_schemas import SEAT_SCHEMAS, TABLE, reply_problem
-from server.game.model_catalog import SUPPORTED_GAME_MODELS
+from server.game.model_catalog import menu_models
 
 pytestmark = pytest.mark.live
 
@@ -59,7 +59,7 @@ def _credential_missing(model: str) -> str | None:
 
 @pytest.mark.parametrize("schema,role_line,acted_field,tokens", SEAT_SCHEMAS,
                          ids=[s.__name__ for s, *_ in SEAT_SCHEMAS])
-@pytest.mark.parametrize("model", list(SUPPORTED_GAME_MODELS))
+@pytest.mark.parametrize("model", [row.model for row in menu_models()])
 def test_model_returns_valid_structured_output(model, schema, role_line, acted_field, tokens):
     reason = _credential_missing(model)
     if reason:

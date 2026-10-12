@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 
 from server.game.lobby import MAX_HUMAN_SEATS
-from server.game.model_catalog import SUPPORTED_GAME_MODELS
+from server.game.model_catalog import menu_models
 from tests.fixtures.server import FakeGraph, HangingGraph
 
 GEMINI = "gemini-3.1-flash-lite"
@@ -52,7 +52,7 @@ def test_cors_allows_the_configured_frontend_origin(api_client):
 
 def test_models_menu_serves_the_registry(api_client):
     menu = api_client.get("/models").json()
-    assert [m["model"] for m in menu["models"]] == list(SUPPORTED_GAME_MODELS)
+    assert [m["model"] for m in menu["models"]] == [row.model for row in menu_models()]
     assert menu["models"][0]["rescue_model"]  # the default row carries its rescue
 
 

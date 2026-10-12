@@ -12,6 +12,9 @@ os.environ.setdefault("LANGFUSE_TRACING_ENABLED", "false")
 # Nor call a paid model from a game's post-game extraction: the de-halo pass is on by default in
 # production (Agents/memory/persistence/config.py). Its own tests turn it on with a stubbed judge.
 os.environ.setdefault("MEMORY_DEHALO_ENABLED", "false")
+# The model catalogue is rows in the database (Agents/llm_factory/catalog.py); the suite runs on
+# the seed in code, so a test never depends on what the live tables hold.
+os.environ.setdefault("WW_MODEL_CATALOG", "seed")
 
 pytest_plugins = [
     "tests.fixtures.stream",
