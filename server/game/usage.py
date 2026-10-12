@@ -14,6 +14,7 @@ every game it applied to. A game recorded before this existed has no counts and 
 
 from __future__ import annotations
 
+import logging
 import threading
 import time
 from datetime import datetime, timezone
@@ -22,7 +23,9 @@ from uuid import UUID
 
 from langchain_core.callbacks import BaseCallbackHandler
 
-from Agents.llm_factory.pricing import cost_usd
+from Agents.llm_factory.pricing import cost_usd, price_at
+
+logger = logging.getLogger(__name__)
 
 _FIELDS = ("calls", "failed", "input", "cached", "output", "reasoning", "seconds")
 
@@ -68,8 +71,13 @@ class UsageMeter(BaseCallbackHandler):
             self._add(started[0], 0.0, {}, failed=True)
 
     def _add(self, model: str, seconds: float, usage: dict, *, failed: bool) -> None:
-        key = (model, _hour(datetime.now(timezone.utc)))
+        now = datetime.now(timezone.utc)
+        key = (model, _hour(now))
         with self._lock:
+            if key not in self._buckets and price_at(model, now) is None:
+                # Its games would show no cost: add a price (scripts/model_catalog.py price).
+                logger.warning("usage: %s has no price for %s; its cost will show as unknown",
+                               model, now.date())
             b = self._buckets.setdefault(key, dict.fromkeys(_FIELDS, 0))
             if failed:  # no tokens come back; its time is left out of the average call time
                 b["failed"] += 1
