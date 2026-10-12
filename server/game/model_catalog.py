@@ -54,9 +54,9 @@ SUPPORTED_GAME_MODELS: dict[str, GameModel] = {
     # Admitted 2026-10-11 (eval-model-admission; the Phase 3 hallucination bench, five samples of
     # fourteen ten-seat turns): Claude Haiku 5.5 at effort low, json_schema output, 10-16% bad
     # samples against 3.5 flash-lite's 34-39%, ~9.5 s a turn. Paid from the owner's Anthropic
-    # credits; the rescue stays on the server's own Gemini backend.
-    "anthropic/claude-haiku-5-5": GameModel(
-        "gemini-3.5-flash-lite", "Claude Haiku 5.5", True),
+    # credits. No rescue (owner 2026-10-12): a rescue stays in the model's own class, and
+    # Anthropic's own API is not the shared Vertex pool that made rescues necessary.
+    "anthropic/claude-haiku-5-5": GameModel(None, "Claude Haiku 5.5", True),
     # GLM-5.3 Flash without thinking (its endpoint cannot turn reasoning fully off; effort low),
     # json_mode output: 32% bad samples, so a cheap option rather than a recommended one. With
     # thinking it took 34-55 s a call. An OpenRouter key, pinned to Z.AI's servers; no rescue.
