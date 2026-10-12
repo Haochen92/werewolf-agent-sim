@@ -161,7 +161,8 @@ class EvalCase(BaseModel):
 
 class ExtractionCase(BaseModel):
     """A frozen post-game extraction decision: the full-game inputs (discussions, strategy notes,
-    outcome) plus the observations/strategy points extracted from them, judgeable offline."""
+    outcome) plus the observations/strategy points extracted from them, judgeable offline. Saved
+    with no observations when a game ends (the extraction input); the offline job fills them."""
 
     schema_version: str = "extraction_case_v1"
     trace_id: str = ""
@@ -170,6 +171,10 @@ class ExtractionCase(BaseModel):
     game_id: str = ""
     game_outcome: str = ""
     roles: dict[str, str] = Field(default_factory=dict)
+    lineup: list[str] = Field(default_factory=list)
+    """The game's lineup (its rules block); empty on cases saved before 2026-10-12, rebuilt from roles."""
+    human_players: list[str] = Field(default_factory=list)
+    """The human seats: such a game may feed its replay but never teaches the store."""
     formatted_discussions: str = ""
     formatted_strategy_notes: str = ""
     observations: list[dict] = Field(default_factory=list)

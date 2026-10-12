@@ -1,8 +1,8 @@
 """A lesson's structured situation fields reach the wire, next to the one-line situation.
 
 The store keeps each v6 record's labelled parts (`dimensions`: the separate descriptions, the
-counts, and categories like info_starved / exposed). The replay shows them, so the two memory
-announces copy them onto the stream and the translator carries them into the wire events.
+counts, and categories like info_starved / exposed). The replay shows them, so the memory announce
+and the offline job's replay payload copy them onto the stream and the translator carries them into the wire events.
 Records stored before the parts were kept, and the legacy extraction models, give None. Nothing
 here touches what the model sees: the prompt golden (tests/engine/test_draft_preview.py) pins that.
 """
@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from Agents.nodes import orchestrator
+from Agents.memory.extraction.offline import memory_extracted_payload
 from Agents.schemas.memory import (
     HealerNightObservation,
     HealerNightStrategyPoint,
@@ -117,11 +117,9 @@ class _Output:
         self.observations, self.strategy_points = observations, strategy_points
 
 
-def test_extracted_v6_cells_carry_their_structured_fields(monkeypatch):
-    chunks = _written(monkeypatch, orchestrator)
+def test_extracted_v6_cells_carry_their_structured_fields():
     obs, sp = _v6_cells()
-    orchestrator._announce_memory_extracted(_Output([obs], [sp]), day=3)
-    event = _to_wire(chunks[0])
+    event = _to_wire(memory_extracted_payload(_Output([obs], [sp]), day=3))
     assert isinstance(event, ev.MemoryExtracted)
     # the same dump the store write keeps (store_ops: dimensions=model_dump)
     assert event.observations[0].dimensions == obs.model_dump(mode="json")
@@ -130,8 +128,7 @@ def test_extracted_v6_cells_carry_their_structured_fields(monkeypatch):
     assert event.strategy_points[0].dimensions["exposure_class"] == "safe"
 
 
-def test_extracted_legacy_models_give_none(monkeypatch):
-    chunks = _written(monkeypatch, orchestrator)
+def test_extracted_legacy_models_give_none():
     legacy = Observation(perspective="healer", action_phase="night_action", situation="s",
                          information_landscape="i", game_phase="early", consensus_texture=None,
                          agent_exposure=None, approach="a", impact_on_final_game_outcome="o",
@@ -139,7 +136,6 @@ def test_extracted_legacy_models_give_none(monkeypatch):
     legacy_sp = StrategyPoint(perspective="healer", action_phase="night_action", situation="s",
                               information_landscape="i", game_phase="early",
                               consensus_texture=None, agent_exposure=None, action="act")
-    orchestrator._announce_memory_extracted(_Output([legacy], [legacy_sp]), day=3)
-    event = _to_wire(chunks[0])
+    event = _to_wire(memory_extracted_payload(_Output([legacy], [legacy_sp]), day=3))
     assert event.observations[0].dimensions is None
     assert event.strategy_points[0].dimensions is None
