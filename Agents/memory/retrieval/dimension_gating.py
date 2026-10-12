@@ -55,6 +55,42 @@ def alignment(query_dims: dict[str, Any], stored_dims: dict[str, Any]) -> float:
     return sum(scores) / len(scores) if scores else 0.0
 
 
+def _uses(dims: dict[str, Any]) -> int | None:
+    value = dims.get("uses_left", dims.get("bullets_left"))
+    return None if value is None else int(value)
+
+
+def stage_mismatch(query_dims: dict[str, Any], stored_dims: dict[str, Any]) -> list[str]:
+    """The stage facts on which a stored lesson's board differs from the seat's: the alive bucket,
+    whether the pack has lost a partner, whether the limited ability has any use left (some vs
+    none). A fact either side lacks is not compared."""
+    out = []
+    qa, sa = query_dims.get("players_alive"), stored_dims.get("players_alive")
+    if qa is not None and sa is not None and _alive_bucket(qa) != _alive_bucket(sa):
+        out.append("alive")
+    qr, sr = query_dims.get("ally_revealed"), stored_dims.get("ally_revealed")
+    if qr is not None and sr is not None and bool(qr) != bool(sr):
+        out.append("partner")
+    qu, su = _uses(query_dims), _uses(stored_dims)
+    if qu is not None and su is not None and (qu > 0) != (su > 0):
+        out.append("uses")
+    return out
+
+
+def drop_other_stages(
+    items: list,
+    situation_to_query_dims: dict[str, dict[str, Any]],
+    get_stored_dims: Callable[[Any], dict[str, Any]],
+) -> list:
+    """The items whose stored board matches the stage of the situation each matched (the stage
+    filter, decisions §11). A HARD drop, after the cap and with no refill: the gate's replay found
+    that refilling from the cell mostly brought in misfits (2 of 28 fit), and dropping lifted fit
+    from 15% to 25% (evidence/memory_system/v8/experiment_log.md, the gate part two)."""
+    return [it for it in items
+            if not stage_mismatch(situation_to_query_dims.get(getattr(it, "matched_situation", None)) or {},
+                                  get_stored_dims(it) or {})]
+
+
 def reweight(
     items: list,
     situation_to_query_dims: dict[str, dict[str, Any]],

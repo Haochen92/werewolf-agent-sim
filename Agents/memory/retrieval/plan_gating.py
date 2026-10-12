@@ -55,6 +55,9 @@ class RetrievalPlan:
     SP-only, applied AT the cap. Default ON — inert on any store where an unproven never co-occurs with an
     all-proven kept set (fresh/off-arm stores have no proven SPs → identity), so ON is safe; an explicit
     ``sp_exploration_slot: False`` on the runnable config restores today's cap exactly."""
+    stage_filter: bool
+    """Whether to leave out retrieved memory learned at another stage of the game (alive bucket,
+    partner lost, uses left), after the cap, with no refill (decisions §11). Default off."""
     reranking: bool
     """Derived: observation_reranking or strategy_point_reranking."""
     needs_wide_retrieval: bool
@@ -101,6 +104,7 @@ def retrieval_plan(
         dimension_gating=dimension_gating,
         sp_proven_tiering=sp_proven_tiering,
         sp_exploration_slot=sp_exploration_slot,
+        stage_filter=bool((config.get("configurable", {}) if config else {}).get("stage_filter")),
         reranking=reranking,
         needs_wide_retrieval=reranking or filtering or dimension_gating,
     )

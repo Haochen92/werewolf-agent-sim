@@ -32,6 +32,7 @@ from Agents.memory.retrieval import (
     retrieve_strategy_points_for_agent,
 )
 from Agents.memory.retrieval import lookup_cache
+from Agents.memory.retrieval.dimension_gating import drop_other_stages
 from Agents.memory.retrieval.dimension_gating import reweight as _dimension_reweight
 from Agents.memory.vectors import embed_texts
 from Agents.memory.store import embeddings as memory_embeddings
@@ -168,6 +169,17 @@ def enrich_payload_with_memory(
             is_proven=_sp_is_proven if plan.sp_exploration_slot else None,
         )
 
+        stage_filtered = {"observations": 0, "strategy_points": 0}
+        if plan.stage_filter:
+            situation_to_dims = {s: d for s, d in zip(situations, situation_dimensions) if d}
+            kept_obs = drop_other_stages(retrieved_observations, situation_to_dims,
+                                         lambda it: it.observation.dimensions)
+            kept_sps = drop_other_stages(retrieved_strategy_points, situation_to_dims,
+                                         lambda it: it.strategy_point.dimensions)
+            stage_filtered = {"observations": len(retrieved_observations) - len(kept_obs),
+                              "strategy_points": len(retrieved_strategy_points) - len(kept_sps)}
+            retrieved_observations, retrieved_strategy_points = kept_obs, kept_sps
+
         # PROVEN-FIRST SP TIERING (§0.4): stable partition, proven SPs ahead of unproven, semantic order
         # kept within each tier — a track-record-blind read path otherwise ranks a 9-follow net-positive SP
         # identically to never-followed churn. SP-only (observations untouched). This changes live-game
@@ -202,6 +214,8 @@ def enrich_payload_with_memory(
                 "filtering_enabled": plan.filtering,
                 "pre_filter_candidates": pre_filter_counts,
                 "post_filter_candidates": post_filter_counts,
+                "stage_filter_enabled": plan.stage_filter,
+                "stage_filtered": stage_filtered,
                 "num_candidate_observations": len(candidate_observations_json),
                 "num_candidate_strategy_points": len(candidate_strategy_points_json),
             }
@@ -218,6 +232,8 @@ def enrich_payload_with_memory(
         "filtering_enabled": plan.filtering,
         "sp_proven_tiering_enabled": plan.sp_proven_tiering,
         "sp_exploration_slot_enabled": plan.sp_exploration_slot,
+        "stage_filter_enabled": plan.stage_filter,
+        "stage_filtered": stage_filtered,
         "situations": situations,
         "situation_dimensions": situation_dimensions,
         "retrieved_observations": retrieved_observations_json,
@@ -273,6 +289,8 @@ def _skipped_metadata(store_dir: str, skip_reason: str) -> dict[str, Any]:
         "filtering_enabled": False,
         "sp_proven_tiering_enabled": False,
         "sp_exploration_slot_enabled": False,
+        "stage_filter_enabled": False,
+        "stage_filtered": {"observations": 0, "strategy_points": 0},
         "num_situations": 0,
         "num_observations": 0,
         "num_strategy_points": 0,

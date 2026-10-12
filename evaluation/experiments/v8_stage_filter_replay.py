@@ -5,9 +5,10 @@ Record: evidence/memory_system/v8/experiment_log.md (the gate). The relevance re
 seven fit, mostly because the search matched the role and not the stage. Each lesson stores the board
 it was learned on, and the seat's own board is exact, so a lesson is left out when the two differ on:
 
-- the alive bucket (early 8+, mid 5-7, late 4 or fewer; ``dimension_gating._alive_bucket``);
+- the alive bucket (early 8+, mid 5-7, late 4 or fewer);
 - whether the pack has lost a partner (``ally_revealed``), where both carry it;
-- whether the limited ability has any use left (``uses_left`` or ``bullets_left``, some vs none).
+- whether the limited ability has any use left (``uses_left`` or ``bullets_left``, some vs none)
+(``dimension_gating.stage_mismatch``, the live filter's own test).
 
 Every lesson in the seat's cell is scored against the situation the seat wrote at the time (one
 embedding call per lookup; the store's vectors come from its cache), then the top three are kept as
@@ -26,33 +27,12 @@ from collections import Counter
 
 from Agents.memory.persistence.seed import seed_memory_from_config
 from Agents.memory.retrieval.accessors import RETRIEVAL_KEEP_PER_SITUATION
-from Agents.memory.retrieval.dimension_gating import _alive_bucket
+from Agents.memory.retrieval.dimension_gating import stage_mismatch
 from Agents.memory.store import store
 from evaluation.experiments.v8_gate_lookups import OUT as GATE, PARTS, sample
 
 STORE_DIR = "memory_stores/ten_seat_v1"
 OUT = GATE / "stage_filter"
-
-
-def _uses(dims: dict) -> int | None:
-    value = dims.get("uses_left", dims.get("bullets_left"))
-    return None if value is None else int(value)
-
-
-def stage_mismatch(query: dict, stored: dict) -> list[str]:
-    """The stage facts on which a lesson's board differs from the seat's; a fact either side lacks
-    is not compared."""
-    out = []
-    qa, sa = query.get("players_alive"), stored.get("players_alive")
-    if qa is not None and sa is not None and _alive_bucket(qa) != _alive_bucket(sa):
-        out.append("alive")
-    qr, sr = query.get("ally_revealed"), stored.get("ally_revealed")
-    if qr is not None and sr is not None and bool(qr) != bool(sr):
-        out.append("partner")
-    qu, su = _uses(query), _uses(stored)
-    if qu is not None and su is not None and (qu > 0) != (su > 0):
-        out.append("uses")
-    return out
 
 
 def _verdicts() -> dict[tuple[int, str], dict]:

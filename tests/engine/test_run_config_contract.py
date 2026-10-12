@@ -32,6 +32,7 @@ EXPECTED_CONFIGURABLE_KEYS = {
     "session_id",
     "sp_exploration_slot",
     "sp_proven_tiering",
+    "stage_filter",
     "thread_id",
 }
 

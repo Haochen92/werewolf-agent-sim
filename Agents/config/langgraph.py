@@ -66,6 +66,7 @@ def build_runnable_config(
             "retrieval_types_config": run.retrieval_types_config,
             "sp_proven_tiering": run.sp_proven_tiering,
             "sp_exploration_slot": run.sp_exploration_slot,
+            "stage_filter": run.stage_filter,
             "game_config": game_config_dict(run.game),
             "memory_persistence_config": run.memory_persistence.model_dump(mode="json"),
             "session_id": run.session_id,
