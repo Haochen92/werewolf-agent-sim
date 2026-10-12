@@ -439,3 +439,35 @@ removes most misfits, at a cost of a quarter of the fitting lessons and 25 looku
 (which also saves their prompt room). It does not reach a store where most lessons fit; that needs more
 lessons per stage (more source games) as well. Next (owner): uses left defined as before the action and
 added to the cells that lack it (the Speculator, the limited-use roles' day cells), then re-extraction.
+
+## 2026-10-12 — Offline extraction: a Claude batch check, for cost
+
+**Run** (`scripts/extract_batch.py`, code at `ba9cd549`; `batch_results/extraction_runs/check_*`): the two
+pilot games (`286816b0`, `cc80ecdf`) extracted from their backfilled inputs by Claude Haiku 5.5 and
+Sonnet 5.5, thinking off, 30 calls a game (every dealt role's discussion, vote and night), each game's
+first call direct to write its prefix to the 1-hour cache and the other 58 calls as one Message Batch;
+the de-halo pass (Haiku) as a second batch. No call was lost; both batches took about 10 minutes.
+
+**The cache did not work: no call read it.** A game's 30 calls share a 16.3k-token prefix, but each has
+its own output schema, and the schema is part of Claude's cache key (a probe: the same prefix under
+another schema wrote anew, under the same schema read it). So every call wrote the whole prefix, at
+the 1-hour rate (2x input). The fix is to give the schema as text after the prefix rather than as an
+enforced output format (a reply that does not parse is retried with the format).
+
+| | Haiku 5.5 | Sonnet 5.5 |
+|---|---|---|
+| Cost of the 2 games, as run | $0.135 | $2.55 (de-halo $0.01 of it) |
+| Per game, as run | $0.07 | $1.27 |
+| Per game, prefix cached (estimate) | ~$0.03 | ~$0.45, about 60% of it output |
+| Observations (2 games) | 146 | 136 |
+| With a player id in the text | 74 (51%) | 9 (7%) |
+| `uses_left` some-vs-none wrong | 3 of 77 | 2 of 73 |
+
+For comparison, 3.8 Flash with the day split cost about $0.50 a game online (the day-split entry) and
+wrote no player ids in its comparison games. The run cost $2.69 against an estimate of under $0.50: the
+estimate assumed the cache worked. `claude_structured` had also priced the 1-hour cache writes as plain
+input (its summaries said $1.68); fixed.
+
+**Reading.** Haiku is out for extraction: it writes player ids into half its observations, as Flash Lite
+did. Sonnet, with the cache fixed, costs about what 3.8 Flash does online. The owner's call: the job
+itself runs on 3.8 Flash while the Gemini credit lasts.

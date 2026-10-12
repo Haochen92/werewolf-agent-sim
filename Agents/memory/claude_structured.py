@@ -31,7 +31,10 @@ _THINKING_OFF = {"minimal", "off", "none"}
 _MAX_TOKENS = 32000
 
 usage_totals: dict[str, int] = {"calls": 0, "batched_calls": 0, "input_tokens": 0, "output_tokens": 0,
-                                "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0}
+                                "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0,
+                                "cache_creation_1h_input_tokens": 0}
+# A cache write bills above the input rate: 1.25x for the 5-minute cache, 2x for the 1-hour one.
+_WRITE_FACTOR_5M, _WRITE_FACTOR_1H = 1.25, 2.0
 # The same tokens by (model, batched), so they can be priced: a batched call bills at the batch rate.
 usage_by_model: dict[tuple[str, bool], dict[str, int]] = {}
 _lock = threading.Lock()
@@ -74,9 +77,11 @@ def _content(prompt: str, cache_prefix: str | None, cache_ttl: str | None = None
 
 
 def _count(usage, batched: bool = False, model: str = "") -> dict:
+    split = getattr(usage, "cache_creation", None)
     row = {"input_tokens": usage.input_tokens, "output_tokens": usage.output_tokens,
            "cache_read_input_tokens": getattr(usage, "cache_read_input_tokens", 0) or 0,
-           "cache_creation_input_tokens": getattr(usage, "cache_creation_input_tokens", 0) or 0}
+           "cache_creation_input_tokens": getattr(usage, "cache_creation_input_tokens", 0) or 0,
+           "cache_creation_1h_input_tokens": getattr(split, "ephemeral_1h_input_tokens", 0) or 0}
     with _lock:
         usage_totals["batched_calls" if batched else "calls"] += 1
         for k, v in row.items():
@@ -99,8 +104,7 @@ def _trace(row: dict, batched: bool, model: str) -> None:
         from Agents.tracing import langfuse
 
         cached, written = row["cache_read_input_tokens"], row["cache_creation_input_tokens"]
-        usd = cost_usd(model, datetime.now(timezone.utc), batch=batched, cached=cached,
-                       input=row["input_tokens"] + cached + written, output=row["output_tokens"])
+        usd = _cost(model, datetime.now(timezone.utc), batched, row)
         generation = langfuse.start_observation(
             as_type="generation", name="claude_batch_call" if batched else "claude_call", model=model,
             metadata={"batched": batched},
@@ -112,23 +116,31 @@ def _trace(row: dict, batched: bool, model: str) -> None:
         logger.debug("Langfuse trace of a Claude call failed", exc_info=True)
 
 
+def _cost(model: str, at, batched: bool, u: dict) -> float | None:
+    """What one usage row cost. Anthropic's input_tokens excludes the cache read and the cache write,
+    so both are added back as input; a write's premium over the input rate (a quarter for the
+    5-minute cache, as much again for the 1-hour one) is added on top."""
+    from Agents.llm_factory.pricing import cost_usd
+
+    cached, written = u["cache_read_input_tokens"], u["cache_creation_input_tokens"]
+    written_1h = u.get("cache_creation_1h_input_tokens", 0)
+    base = cost_usd(model, at, batch=batched, cached=cached, input=u["input_tokens"] + cached + written,
+                    output=u["output_tokens"])
+    premium = cost_usd(model, at, batch=batched, cached=0, output=0,
+                       input=round((written - written_1h) * (_WRITE_FACTOR_5M - 1) + written_1h * (_WRITE_FACTOR_1H - 1)))
+    return None if base is None or premium is None else base + premium
+
+
 def usage_cost_usd() -> float | None:
     """What this process's Claude calls cost, at the catalogue's prices for today, batched calls at
-    the batch rate; None if any model has no price. Anthropic's input_tokens excludes the cache read
-    and the cache write, so both are added back as input (a write is priced as plain input, a quarter
-    short of its 1.25x)."""
+    the batch rate, cache writes at their premium; None if any model has no price."""
     from datetime import datetime, timezone
-
-    from Agents.llm_factory.pricing import cost_usd
 
     total = 0.0
     with _lock:
         rows = list(usage_by_model.items())
     for (model, batched), u in rows:
-        cached = u["cache_read_input_tokens"]
-        cost = cost_usd(model, datetime.now(timezone.utc), batch=batched, cached=cached,
-                        input=u["input_tokens"] + cached + u["cache_creation_input_tokens"],
-                        output=u["output_tokens"])
+        cost = _cost(model, datetime.now(timezone.utc), batched, u)
         if cost is None:
             return None
         total += cost
