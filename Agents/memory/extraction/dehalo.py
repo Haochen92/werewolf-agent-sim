@@ -13,18 +13,16 @@ extraction: a missing key or a failed call leaves the observations as they were.
 
 from __future__ import annotations
 
-import os
 from logging import getLogger
 from typing import Any
 
+from Agents.memory.claude_structured import claude_api_key, parse_with_claude
 from Agents.memory.persistence.config import DehaloConfig
 from Agents.prompts.compose import rules_block
 from Agents.prompts.extraction.dehalo import DEHALO_PROMPT
 from Agents.schemas.dehalo import Judgments
 
 logger = getLogger(__name__)
-
-_CLAUDE_THINKING_OFF = {"minimal", "off", "none"}
 
 
 def _lessons(observations: list) -> str:
@@ -37,27 +35,10 @@ def _lessons(observations: list) -> str:
 
 
 def _judge_with_claude(prompt: str, config: DehaloConfig) -> tuple[Judgments | None, dict]:
-    import anthropic
-
-    api_key = os.getenv("CLAUDE_API_KEY") or os.getenv("ANTHROPIC_API_KEY")
-    if not api_key:
+    if not claude_api_key():
         logger.warning("De-halo skipped: no CLAUDE_API_KEY for %s.", config.model)
         return None, {}
-    kwargs: dict[str, Any] = {}
-    level = (config.thinking_level or "").lower()
-    if level in _CLAUDE_THINKING_OFF:
-        kwargs["thinking"] = {"type": "disabled"}
-    elif level:
-        kwargs["thinking"] = {"type": "adaptive"}
-        kwargs["output_config"] = {"effort": level}
-    # Haiku 5.5 thinks by default and thinking counts against max_tokens: a 46-lesson game used about
-    # 12k, so 16k cut a longer game's JSON short. Above about 21k the SDK requires streaming unless
-    # the call sets its own timeout.
-    response = anthropic.Anthropic(api_key=api_key).messages.parse(
-        model=config.model, max_tokens=32000, timeout=600, output_format=Judgments,
-        messages=[{"role": "user", "content": prompt}], **kwargs)
-    usage = {"input_tokens": response.usage.input_tokens, "output_tokens": response.usage.output_tokens}
-    return response.parsed_output, usage
+    return parse_with_claude(prompt, Judgments, config.model, config.thinking_level)
 
 
 def _judge_with_factory(prompt: str, config: DehaloConfig) -> tuple[Judgments | None, dict]:
