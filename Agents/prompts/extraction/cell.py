@@ -166,6 +166,13 @@ when this regime recurs. Emit none when the cluster supports no rule.
 - A strategy point is ALWAYS a positive prescription (something to DO). Never emit "don't do X".
 - Emit MORE than one only when the cluster genuinely teaches distinct moves (differing in direction or
   honesty). Do not pad.
+- MECHANICS: rely on game mechanics only as GAME RULES state them. Do not say what an ability shows,
+  announces, protects or costs beyond what the rules say; where an observation describes a mechanic
+  differently, the rules are right.
+- PHASE: prescribe only the {role}'s move in this phase ({phase}). Leave out what to do in other
+  phases (for a night phase, what to claim, share or vote by day), even when the observations
+  mention it.
+- LENGTH: one move per strategy point, in at most three sentences with its reason.
 - Fill the situation dimensions as a GENERALIZED situation representative of the whole cluster (not a
   copy of one observation), so the rule retrieves for the regime.
 

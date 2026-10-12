@@ -673,8 +673,9 @@ class CellStrategyMixin(BaseModel):
         "deceptive (e.g. a villager fake-claiming to bait a wolf, or claiming healer to draw the kill)."
     )
     action: str = Field(
-        description="The prescriptive move to take in this situation. Concrete and actionable; include "
-        "conditional branches inline if the situation implies different responses for different reads."
+        description="The prescriptive move to take in this situation. Concrete and actionable, in at most "
+        "three sentences; include a conditional branch inline if the situation implies different responses "
+        "for different reads."
     )
     sp_type: Literal["general", "concealment", "risk_policy"] = Field(
         default="general",  # default (not required) so pre-2026-07-13 stored SPs re-validate on load
