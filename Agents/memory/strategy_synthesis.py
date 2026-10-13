@@ -41,12 +41,23 @@ def fetch_observations_for_synth(store: BaseStore, namespace: tuple[str, str, st
     return _fetch_namespace_items(store, namespace)
 
 
+def synth_partition_key(value: Any) -> tuple:
+    """The synthesis partition: the gate key (swing, alive bucket, consensus) plus the stage facts the
+    live stage filter compares that it lacks, the pack's partner lost and the ability's uses (some or
+    none). A point written from lessons of mixed stage carries a stage label that holds for only some
+    of them: 24% of ten_seat_v2's partner-labelled points and 20% of its uses-labelled ones were
+    (evidence/memory_system/v8/experiment_log.md, 2026-10-13)."""
+    dims = (value.get("dimensions") if isinstance(value, dict) else getattr(value, "dimensions", None)) or {}
+    uses = dims.get("uses_left", dims.get("bullets_left"))
+    return (gate_key(value), dims.get("ally_revealed"), None if uses is None else int(uses) > 0)
+
+
 def cluster_observations_for_synth(
     store: BaseStore, namespace: tuple[str, str, str], config,
     items: dict[str, Any] | None = None, seed_keys: set[str] | None = None,
 ) -> tuple[dict[str, Any], list[list[str]]]:
-    """Observation clusters for SP synthesis: partition by gate_key (situation regime, verdict-agnostic
-    so a cluster spans mixed outcomes), then agglomerate within each partition with the shared
+    """Observation clusters for SP synthesis: partition by synth_partition_key (situation regime and
+    stage, verdict-agnostic so a cluster spans mixed outcomes), then agglomerate within each partition with the shared
     clustering primitives. Returns (items_by_key, clusters). `items` skips the refetch when the caller
     already fetched them (gate-before-cluster). `seed_keys` restricts which keys may SEED a cluster (the
     loop seeds from new arrivals only; old obs still join as neighbours)."""
@@ -54,7 +65,7 @@ def cluster_observations_for_synth(
         items = _fetch_namespace_items(store, namespace)
     partitions: dict[Any, dict[str, Any]] = defaultdict(dict)
     for key, item in items.items():
-        partitions[gate_key(item.value)][key] = item
+        partitions[synth_partition_key(item.value)][key] = item
     clusters: list[list[str]] = []
     for part in partitions.values():
         clusters.extend(_build_clusters_for_items(store, namespace, part, config, seed_keys=seed_keys))

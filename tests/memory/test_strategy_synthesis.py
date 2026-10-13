@@ -71,3 +71,23 @@ def test_synth_partition_is_gate_key_not_verdict(monkeypatch):
     # one partition holding BOTH the positive and negative obs
     assert {"pos", "neg"} in seen_partitions
     assert clusters == [["pos", "neg"]]
+
+
+def test_synthesis_never_clusters_lessons_of_a_different_stage(monkeypatch):
+    # A point written from mixed-stage lessons carries a stage label true for only some of them, and
+    # the live stage filter trusts that label: partner lost and uses left (some vs none) split too.
+    from types import SimpleNamespace
+
+    import Agents.memory.strategy_synthesis as synth
+
+    def obs(**dims):
+        return SimpleNamespace(value={"is_swing": False, "players_alive": 9, "consensus_direction": "none",
+                                      "dimensions": dims})
+
+    items = {"a": obs(uses_left=2), "b": obs(uses_left=1), "c": obs(uses_left=0),
+             "d": obs(ally_revealed=True, uses_left=1)}
+    monkeypatch.setattr(synth, "_build_clusters_for_items",
+                        lambda store, ns, part, config, seed_keys=None: [sorted(part)])
+    _, clusters = synth.cluster_observations_for_synth(None, ("observations", "illusionist", "night_action"),
+                                                       None, items=items)
+    assert sorted(clusters) == [["a", "b"], ["c"], ["d"]]
