@@ -260,19 +260,21 @@ are dumped to a file (restorable with one `pg_restore`; the store is also on dis
 `net_verdict` grading the result, not the decision, and named the test that would settle it: compare
 the judge's verdicts with deterministic grades on agent-only games. v8 kept the verdict and added the
 de-halo pass, which had only been spot-checked (one smoke game, four reader-flagged halos). With the
-ten-seat grader (§12) the test became free, and was run on 407 night and vote observations of 16 games:
-each verdict fitted against the deterministic grade of that role's decisions in that game and whether
-its side won. Preliminary: the grader had no tests yet, and the grade is per role per game because an
-observation does not say which decision it describes.
+ten-seat grader (§12, `Agents/memory/consolidation/grading.py`, tested row by row) the test became
+free, and was run on 482 night and vote observations of the 19 games with full records (12 seeding, 7
+gate; Gemini 3.8 Flash extraction): each verdict (positive +1, negative −1, mixed or unclear 0) fitted
+against the deterministic grade of that role's decisions in that game and whether its side won. The
+grade is per role per game, because an observation does not say which decision it describes. Runner:
+`evaluation/experiments/v8_verdict_halo.py`; record: `data/halo/` (each observation's row, the summary).
 
 | | weight on the grade | weight on the side winning |
 |---|---|---|
-| verdict as extracted | +0.36 | +0.72 |
-| after de-halo | +0.31 | +0.47 |
+| verdict as extracted | +0.33 | +0.74 |
+| after de-halo | +0.29 | +0.50 |
 
 The verdict follows the side's win about twice as strongly as the decision. De-halo removes about a
-third of that, and on one side only: the losing side's negatives fall from 53% to 26% (mostly to
-"unclear"), the winning side's positives barely move (56% → 52%). It rewrites the verdict word, not the
+third of that, and on one side only: the losing side's negatives fall from 53% to 27% (mostly to
+"unclear"), the winning side's positives barely move (57% → 54%). It rewrites the verdict word, not the
 judge's end-of-game effect text. The verdict reaches synthesis (each observation is shown tagged with it,
 and the prompt weights by the spread), dedup (different verdicts are never duplicates) and the replay's
 verdict stamp; never a seat, never credit.
