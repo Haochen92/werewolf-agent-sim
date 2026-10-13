@@ -686,6 +686,15 @@ The per-game metrics are ported (`e5763cd1`). Credit runs on per-decision grades
    scored follows before its track record enters synthesis, and 8 before it can be pruned.
 7. **Validate the thresholds** (prune at −0.15 with ≥8 follows, protect with ≥2) on the ten-seat
    game before credit gains authority.
+8. **One verdict per lesson per seat per day** (owner, 2026-10-13). A seat's day discussion reuses
+   one lookup (D4), so the same lessons get a verdict on every discussion turn; counted per turn, one
+   decision would weigh several times. Day discussion lessons are evil roles' only (town day is not
+   retrieved), so this binds there; a night already counts once per scope (chat; kill and ability).
+9. **Status (owner, 2026-10-13): not ported.** The report shows credit, promotion and pruning with
+   the v7 run; v8 ships the reviewed static store. Porting becomes worth it once served games play
+   with memory on and so supply memory-on games at no cost. Sizing, if an effect is ever measured:
+   on the July power table (nine-seat game-grain SD ~0.3), memory on vs off needs ~35 games per
+   arm for +0.20 and ~60 for +0.15; rerun the table on the ten-seat games after the port.
 
 Additional limitation, kept for the report: on Vertex, the cache discount and the batch discount do
 not stack (§9.4, batch extraction).
