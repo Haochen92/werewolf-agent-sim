@@ -279,6 +279,11 @@ judge's end-of-game effect text. The verdict reaches synthesis (each observation
 and the prompt weights by the spread), dedup (different verdicts are never duplicates) and the replay's
 verdict stamp; never a seat, never credit.
 
+Repeated per observation once each named its decision (tagged, then graded; `--grain observation`,
+`data/halo/observation_summary.json`): 1,472 graded observations of all 40 games, every phase, each
+verdict against its own decision's grade. Same picture: side won +0.80 against grade +0.40 as extracted,
++0.53 against +0.36 after de-halo; the vote and discussion verdicts follow the result most (+0.84 each).
+
 The owner's rulings:
 
 - **Every observation names the decision it describes.** Future extraction picks it from the seat's own

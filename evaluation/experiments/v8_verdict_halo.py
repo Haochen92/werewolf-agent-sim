@@ -9,6 +9,12 @@ scopes) and whether its side won. An observation does not say which decision it 
 is per role per game. No model calls.
 
   poetry run python evaluation/experiments/v8_verdict_halo.py
+
+``--grain observation`` (once observations name their decision: scripts/tag_observation_decisions.py,
+scripts/grade_observations.py) fits each verdict against the grade of the observation's own decision,
+over all 40 extracted games and every phase, instead of the role's mean grade in the game.
+
+  poetry run python evaluation/experiments/v8_verdict_halo.py --grain observation
 """
 
 from __future__ import annotations
@@ -55,7 +61,65 @@ def role_grades(g: dict) -> dict[tuple, float]:
     return {k: float(np.mean(vs)) for k, vs in acc.items()}
 
 
+def observation_rows() -> list[dict]:
+    """Per observation: its decision's own grade (null rows dropped), its side's result, and its
+    verdict as extracted and after de-halo."""
+    import sys
+    sys.path.insert(0, str(MAIN / "scripts"))
+    from grade_observations import batch_records, server_records
+
+    tags, grades, dehalo = {}, {}, {}
+    for run in glob.glob(str(MAIN / "batch_results/extraction_runs/*_2026-10-12")):
+        if not Path(run, "grades.jsonl").exists():
+            continue
+        for r in map(json.loads, open(Path(run, "decisions.jsonl"))):
+            tags[(r["game_id"], r["index"])] = r
+        for r in map(json.loads, open(Path(run, "grades.jsonl"))):
+            grades[(r["game_id"], r["index"])] = r["decision_grade"]
+        for line in open(Path(run, "dehalo.jsonl")):
+            r = json.loads(line)
+            for j in r["output"]["dehalo"]["judgments"]:
+                dehalo[(r["game_id"], j["index"])] = j
+    ids = {gid for gid, _ in tags}
+    records = batch_records(ids)
+    records.update(server_records(ids - set(records)))
+    rows = []
+    for key, t in tags.items():
+        grade, j = grades.get(key), dehalo.get(key)
+        if grade not in VALUE or j is None or key[0] not in records:
+            continue
+        rows.append({"game_id": key[0], "role": t["perspective"], "phase": t["action_phase"],
+                     "grade": VALUE[grade], "side_won": side_won(records[key[0]], t["perspective"]),
+                     "original": j["original_verdict"], "revised": j["revised_verdict"]})
+    return rows
+
+
+def fit(rows: list[dict]) -> dict:
+    X = np.c_[np.ones(len(rows)), [r["grade"] for r in rows], [r["side_won"] for r in rows]]
+    summary = {"games": len({r["game_id"] for r in rows}), "observations": len(rows)}
+    for name in ("original", "revised"):
+        b, *_ = np.linalg.lstsq(X, [VALUE.get(r[name], 0) for r in rows], rcond=None)
+        summary[name] = {"intercept": round(b[0], 3), "grade": round(b[1], 3), "side_won": round(b[2], 3)}
+    return summary
+
+
+def main_observation() -> None:
+    rows = observation_rows()
+    summary = {"all": fit(rows)}
+    for phase in ("night_action", "day_vote", "day_discussion"):
+        summary[phase] = fit([r for r in rows if r["phase"] == phase])
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "observation_rows.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
+    (OUT / "observation_summary.json").write_text(json.dumps(summary, indent=2))
+    print(json.dumps(summary, indent=2))
+
+
 def main() -> None:
+    import argparse
+    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap.add_argument("--grain", choices=("role", "observation"), default="role")
+    if ap.parse_args().grain == "observation":
+        return main_observation()
     games = {g["game_id"]: g for pattern in RECORDS for g in _iter_game_records(str(MAIN / pattern))}
     grades = {gid: role_grades(g) for gid, g in games.items()}
     rows = []

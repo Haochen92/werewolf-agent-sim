@@ -1,0 +1,58 @@
+{
+  "all": {
+    "games": 40,
+    "observations": 1472,
+    "original": {
+      "intercept": -0.415,
+      "grade": 0.404,
+      "side_won": 0.796
+    },
+    "revised": {
+      "intercept": -0.191,
+      "grade": 0.358,
+      "side_won": 0.53
+    }
+  },
+  "night_action": {
+    "games": 40,
+    "observations": 364,
+    "original": {
+      "intercept": -0.288,
+      "grade": 0.443,
+      "side_won": 0.664
+    },
+    "revised": {
+      "intercept": -0.119,
+      "grade": 0.379,
+      "side_won": 0.556
+    }
+  },
+  "day_vote": {
+    "games": 40,
+    "observations": 605,
+    "original": {
+      "intercept": -0.492,
+      "grade": 0.382,
+      "side_won": 0.842
+    },
+    "revised": {
+      "intercept": -0.179,
+      "grade": 0.375,
+      "side_won": 0.501
+    }
+  },
+  "day_discussion": {
+    "games": 40,
+    "observations": 503,
+    "original": {
+      "intercept": -0.419,
+      "grade": 0.4,
+      "side_won": 0.842
+    },
+    "revised": {
+      "intercept": -0.27,
+      "grade": 0.323,
+      "side_won": 0.577
+    }
+  }
+}
