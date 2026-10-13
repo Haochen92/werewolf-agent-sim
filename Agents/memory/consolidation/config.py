@@ -1,8 +1,9 @@
 """Production consolidation config — OPERATIONAL levers only, no credit-rule switches.
 
 The credit system itself is not configurable here by design (owner ruling 2026-07-21): production
-ships exactly one grading rule — deadlock-negative town abstains + the conversion channel — and it
-is hard-coded in ``credit_rules``/``credit``/``conversion``. The knobbed legacy-capable variants
+ships exactly one grading rule — the ten-seat table of plan §9.6 item 10 — and it is hard-coded in
+``grading``/``credit_rules``/``credit`` (the conversion channel was dropped with the port: it credited
+town day lookups, which no longer happen). The knobbed legacy-capable variants
 survive only in ``evaluation/src/loop/`` so the frozen research runs stay reproducible. What IS
 configurable is the machinery around the rule: prune/evict thresholds, synthesis cadence, decay
 windows, models — the held-out-validated production params that migrated from the loop harness.
@@ -22,10 +23,6 @@ class TickConfig:
     credit: bool = True                         # False = a fold-only gen with no memory-on window to grade;
                                                 # the counters carry over untouched instead of being zeroed
                                                 # against an empty ledger (window semantics in credit_apply)
-
-    # conversion channel (always applied; these bound WHEN it can prune, not WHETHER it runs)
-    conversion_window_days: int = 2             # a night-d find must convert by day d+1..d+window
-    conversion_min_n: int = 5                   # min tallies before the conversion term can prune
 
     # prune / evict (fast-cull: every tick)
     prune: bool = True

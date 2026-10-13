@@ -200,7 +200,8 @@ def export_snapshot(scratch_dir: str | Path, snapshot_dir: str | Path, manifest:
     snapshot_dir.mkdir(parents=True)
     # synthesis_log.jsonl: each synthesis call's input and output (store_ops.synthesize) — the scratch
     # dir is deleted after the tick, so the snapshot is where it survives.
-    for fname in ("observations.json", "strategy_points.json", "base_rates.json", "synthesis_log.jsonl"):
+    for fname in ("observations.json", "strategy_points.json", "base_rates.json", "synthesis_log.jsonl",
+                  "changes.json"):
         src = scratch_dir / fname
         if src.exists():
             shutil.copy2(src, snapshot_dir / fname)

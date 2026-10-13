@@ -159,7 +159,7 @@ def ten_seat_metrics(result: dict, metrics: Metrics) -> dict[str, Any]:
                 wasted += 1  # an immune target, nothing to cancel, or a teammate
                 continue
             real += 1
-            critical += _would_have_hurt_the_pack(blocked, n, side, pack_victim.get(night))
+            critical += would_have_hurt_the_pack(blocked, n, side, pack_victim.get(night))
         out["chanteuse_blocks"] = len(blocks)
         out["chanteuse_blocks_real"] = real
         out["chanteuse_blocks_critical"] = critical
@@ -210,7 +210,7 @@ def ten_seat_metrics(result: dict, metrics: Metrics) -> dict[str, Any]:
     return out
 
 
-def _would_have_hurt_the_pack(blocked: dict, night, side: dict[str, str | None], victim: str | None) -> bool:
+def would_have_hurt_the_pack(blocked: dict, night, side: dict[str, str | None], victim: str | None) -> bool:
     """Whether a blocked town action would have hurt the pack (fellow wolves only, not the lone
     killer, the wolves' rival): saved its victim, struck its carrier, shot or found a wolf, or shown
     a wolf's visit. Plan 2026-10-11 §8.3; "fellow wolves only" is proposed, not yet ruled."""

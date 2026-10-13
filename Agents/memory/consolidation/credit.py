@@ -1,35 +1,35 @@
 """Production CREDIT-APPLY: write realized de-luck credit into a store's strategy points.
 
-The graduated form of ``evaluation/src/loop/credit.py`` under the fixed grading rule (see
-``credit_rules`` — no rule switches exist in production). Each tick recomputes the ledger over the
-window's game records and SETS the positive/neutral/negative/follow counters on matching SPs —
-window semantics (recomputed, not accumulated), so stale credit ages out with the window.
+Ten-seat since the port of 2026-10-13 (plan §9.6). Each tick recomputes the ledger over the window's
+game records and SETS the positive/neutral/negative/follow counters on matching SPs — window
+semantics (recomputed, not accumulated), so stale credit ages out with the window.
 
-Channel map (one SP = one instrument): deterministic vote/night channels via ``credit_rules``;
-day_discussion via the vote-endpoint floor + move-grain refinement; concealment-typed deceiver SPs
-via the guarded concealment floor. Discussion credit is always on — it is part of the fixed system,
-not a knob. The de-luck OFF bases come from the paired OFF window through the SAME instruments
-(baseline coherence); ``base_for`` selects the right base family per SP.
+Channel map (one SP = one instrument): vote and night decisions via ``credit_rules`` (the grades are
+``grading``); day discussion by the day's lynch, refined by a landed accusation, once per seat per day;
+concealment-typed SPs of the evil seats by the accusation-heat floor. The memory-off bases come from
+the paired OFF window through the SAME instruments (baseline coherence). Each SP's base is the
+follow-weighted mean of its follows' channels (``credit_base``); a follow whose channel has no
+memory-off data leaves the SP unscored, never compared with 0.
 """
 
 from __future__ import annotations
 
 import json
-import os
 from collections import Counter, defaultdict
 from pathlib import Path
 
 from Agents.memory.consolidation.credit_rules import (
+    VERDICT_RANK,
     VERDICT_VALUE,
     SPCredit,
     _iter_game_records,
-    _vote_credit,
     build_ledger,
     compute_base_rates,
+    decision_scope,
+    followed_keys,
+    iter_eval_cases,
 )
-from Agents.memory.consolidation.decision_scoring import THREAT_ROLES
-
-DECEIVER_ROLES = frozenset({"wolf", "serial_killer"})
+from Agents.memory.consolidation.grading import EVIL, GameView, side
 
 # Concealment-floor verdict thresholds on the observed/expected heat ratio (expected = the day's
 # accusation volume spread uniformly over the living). Knobs, not findings — chosen wide so only a
@@ -38,62 +38,34 @@ CONCEAL_POS_MAX = 0.5   # drew at most half its uniform share of the day's accus
 CONCEAL_NEG_MIN = 2.0   # drew at least twice its uniform share
 
 
-def base_for(base_rates: dict, cell: str, sp_type: str | None = None) -> float:
-    """The de-luck base MEAN to grade an SP against, produced by the SAME grading function as its
-    counts (the baseline-coherence invariant): a concealment-typed SP differences against the
-    ``conceal/<cell>`` OFF base; every other SP against its plain ``<cell>`` base."""
+def base_for(base_rates: dict, cell: str, sp_type: str | None = None) -> float | None:
+    """The memory-off base MEAN of a cell (a concealment-typed SP: the ``conceal/<cell>`` base).
+    None when the window has no memory-off data for it: unscored, not 0."""
     key = f"conceal/{cell}" if sp_type == "concealment" else cell
     br = base_rates.get(key)
-    return br[0] if br else 0.0
+    return br[0] if br else None
+
+
+def sp_base(value: dict, base_rates: dict, cell: str) -> float | None:
+    """The base an SP's lift is measured against: its own follow-weighted base when credit wrote one
+    (``credit_base``, None = unscored), else its cell's (a store credited before the port)."""
+    if "credit_base" in value:
+        return value["credit_base"]
+    return base_for(base_rates, cell, value.get("sp_type"))
+
+
+def _is_evil(ec: dict) -> bool:
+    return side(ec.get("player_role")) in EVIL
 
 
 def _iter_disc_cases(dumps_glob: str):
-    """Yield (game_record, roles, day_res_by_day, eval_case) for every day_discussion eval case —
-    memory-ON and OFF alike; callers filter. Rides the teach-allowed record iterator (human guard)."""
+    """Yield (game_record, view, eval_case) for every day_discussion eval case — memory-ON and OFF
+    alike; callers filter. Rides the teach-allowed record iterator (human guard)."""
     for g in _iter_game_records(dumps_glob):
-        roles, path = g.get("roles"), g.get("eval_cases_path")
-        if not roles or not path or not os.path.exists(path):
-            continue
-        day_res = {dr.get("day"): dr for dr in g.get("day_resolutions", [])}
-        for cl in open(path):
-            if not cl.strip():
-                continue
-            ec = (json.loads(cl).get("output") or {}).get("eval_case") or {}
+        view = GameView(g)
+        for ec in iter_eval_cases(g):
             if ec.get("action_phase") == "day_discussion":
-                yield g, roles, day_res, ec
-
-
-def _move_grain_credit(ec: dict, lynched: str | None, roles: dict) -> str | None:
-    """The move-grain refinement: when THIS turn's stance-tagged accusation is where the day's
-    lynch landed, the instance is scored against the target's faction value instead of the day
-    smear. None => no accusation landed (fall back to the day-grain tick).
-
-    Deceivers: any landed push advances them (bussing-aware by construction). Town: landed x threat
-    credits; landed x town is the read-partition case — excluded from the SP ledger, the read
-    ledger carries the miss."""
-    if not lynched:
-        return None
-    msg = ec.get("agent_message") or {}
-    targets = {t.get("target") for t in (msg.get("addressed_targets") or [])
-               if t.get("stance") == "accusation"}
-    if lynched not in targets:
-        return None
-    if ec.get("player_role") in DECEIVER_ROLES:
-        return "positive"
-    return "positive" if roles.get(lynched) in THREAT_ROLES else "read_excluded"
-
-
-def _disc_case_verdict(ec: dict, day_res_by_day: dict, roles: dict) -> str:
-    """One discussion decision's endpoint verdict — the SAME instrument on both arms: the
-    self-lynch guard first, then the move-grain refinement, then the day-grain faction tick.
-    NOTE the day-grain tick here grades the day's LYNCH, not this speaker's abstain, so the fixed
-    abstain rule never enters this channel — day_res=None keeps the endpoint tick identical to the
-    eval-era instrument."""
-    lynched = (day_res_by_day.get(ec.get("day")) or {}).get("voted_player")
-    if lynched and lynched == ec.get("player_id"):
-        return "negative"
-    mg = _move_grain_credit(ec, lynched, roles)
-    return mg if mg is not None else _vote_credit(ec.get("player_role"), lynched, roles)
+                yield g, view, ec
 
 
 def _spoke(ec: dict) -> bool:
@@ -104,44 +76,61 @@ def _spoke(ec: dict) -> bool:
     return not msg.get("passed") and bool((msg.get("message") or "").strip())
 
 
+def _accused(ec: dict) -> set[str]:
+    """The players this turn accused (stance-tagged accusations)."""
+    msg = ec.get("agent_message") or {}
+    return {t.get("target") for t in (msg.get("addressed_targets") or []) if t.get("stance") == "accusation"}
+
+
 def _discussion_ledger(dumps_glob: str, conceal_keys: frozenset = frozenset()) -> tuple[dict, Counter]:
-    """The endpoint floor + move-grain refinement: credit day_discussion SPs the memory-ON agent
-    FOLLOWED, on SPOKEN turns only. Concealment-typed SPs are excluded — they are credited by their
-    own floor (one SP = one instrument). Returns ({sp_key: SPCredit}, skipped counter)."""
-    ledger: dict = defaultdict(SPCredit)
+    """Day-discussion SPs the memory-ON seat FOLLOWED on a spoken turn, credited once per seat per
+    day (``grading.discussion_grade``: its own lynch negative; an accusation of the lynched player on
+    a turn that followed the SP graded on the target; else the day's lynch under the seat's lens).
+    Concealment-typed SPs are left to their own floor (one SP = one instrument)."""
+    per_day: dict[tuple, dict[str, set]] = defaultdict(lambda: defaultdict(set))
+    meta: dict[tuple, tuple] = {}
     skipped: Counter = Counter()
-    for _g, roles, day_res, ec in _iter_disc_cases(dumps_glob):
+    for g, view, ec in _iter_disc_cases(dumps_glob):
         if not ec.get("memory_enabled") or not ec.get("strategy_verdicts"):
             continue
         if not _spoke(ec):
             skipped[f"passed_turn/{ec.get('player_role')}/day_discussion"] += 1
             continue
-        v = _disc_case_verdict(ec, day_res, roles)
-        if v == "read_excluded":
-            skipped[f"read_excluded/{ec.get('player_role')}/day_discussion"] += 1
-            continue
-        ch = f"{ec.get('player_role')}/day_discussion"
-        idx = ec.get("strategy_index_to_key") or {}
-        for sv in ec["strategy_verdicts"]:
-            if sv.get("verdict") == "follow":
-                key = idx.get(str(sv.get("strategy_index")))
-                if key and key not in conceal_keys:
-                    ledger[key].add(v, ch, 0.0)  # base irrelevant to the store write (counts only)
+        unit = (g.get("game_id"), ec.get("player_id"), ec.get("day"))
+        meta[unit] = (view, ec.get("player_role"))
+        for key in followed_keys(ec):
+            if key not in conceal_keys:
+                per_day[unit][key] |= _accused(ec)
+    ledger: dict = defaultdict(SPCredit)
+    for (gid, player, day), keys in per_day.items():
+        view, role = meta[(gid, player, day)]
+        for key, accused in keys.items():
+            v = view.discussion_grade(player, role, day, accused)
+            if v is None or v == "read_excluded":
+                skipped[f"{v or 'unscored'}/{role}/day_discussion"] += 1
+                continue
+            ledger[key].add(v, f"{role}/day_discussion")
     return dict(ledger), skipped
 
 
 def _discussion_off_base(off_dumps_glob: str) -> dict:
-    """Floor discussion base from the TRUE OFF arm: mean endpoint verdict of memory-OFF
-    day_discussion decisions per role channel — the SAME grading function as the ledger.
-    Returns channel -> (mean, n)."""
-    sums, ns = defaultdict(float), defaultdict(int)
-    for _g, roles, day_res, ec in _iter_disc_cases(off_dumps_glob):
+    """The discussion base from the memory-OFF arm: each seat-day's grade (the same function as the
+    ledger, the day's spoken accusations pooled). Returns channel -> (mean, n)."""
+    days: dict[tuple, set] = defaultdict(set)
+    meta: dict[tuple, tuple] = {}
+    for g, view, ec in _iter_disc_cases(off_dumps_glob):
         if ec.get("memory_enabled") or not _spoke(ec):
             continue
-        v = _disc_case_verdict(ec, day_res, roles)
+        unit = (g.get("game_id"), ec.get("player_id"), ec.get("day"))
+        meta[unit] = (view, ec.get("player_role"))
+        days[unit] |= _accused(ec)
+    sums, ns = defaultdict(float), defaultdict(int)
+    for (gid, player, day), accused in days.items():
+        view, role = meta[(gid, player, day)]
+        v = view.discussion_grade(player, role, day, accused)
         if v not in VERDICT_VALUE:
             continue
-        ch = f"{ec.get('player_role')}/day_discussion"
+        ch = f"{role}/day_discussion"
         sums[ch] += VERDICT_VALUE[v]
         ns[ch] += 1
     return {ch: (sums[ch] / ns[ch], ns[ch]) for ch in ns}
@@ -195,7 +184,7 @@ def _conceal_verdict(received: int, day_total: int, n_alive: int) -> str | None:
 
 
 def _concealment_ledger(dumps_glob: str, conceal_keys: frozenset) -> tuple[dict, Counter]:
-    """The concealment floor: per deceiver player-day, the accusation-heat verdict, credited ONCE
+    """The concealment floor: per evil player-day, the accusation-heat verdict, credited ONCE
     per day to each concealment-typed SP followed on any of that day's discussion turns. Guard 1:
     normalized by the day's accusation volume. Guard 2: the agent must have SPOKEN that day —
     silence cannot farm the credit. Channel key ``conceal/<role>/day_discussion``."""
@@ -203,17 +192,13 @@ def _concealment_ledger(dumps_glob: str, conceal_keys: frozenset) -> tuple[dict,
         return {}, Counter()
     per_day: dict[tuple, set] = defaultdict(set)
     stats_by_game: dict = {}
-    for g, _roles, _day_res, ec in _iter_disc_cases(dumps_glob):
-        if not ec.get("memory_enabled") or not ec.get("strategy_verdicts"):
-            continue
-        if ec.get("player_role") not in DECEIVER_ROLES:
+    for g, _view, ec in _iter_disc_cases(dumps_glob):
+        if not ec.get("memory_enabled") or not ec.get("strategy_verdicts") or not _is_evil(ec):
             continue
         gid = g.get("game_id")
         if gid not in stats_by_game:
             stats_by_game[gid] = _game_day_heat(g)
-        idx = ec.get("strategy_index_to_key") or {}
-        keys = {idx.get(str(sv.get("strategy_index"))) for sv in ec["strategy_verdicts"]
-                if sv.get("verdict") == "follow"} & conceal_keys
+        keys = set(followed_keys(ec)) & conceal_keys
         if keys:
             per_day[(gid, ec.get("day"), ec.get("player_id"), ec.get("player_role"))] |= keys
     ledger: dict = defaultdict(SPCredit)
@@ -228,18 +213,18 @@ def _concealment_ledger(dumps_glob: str, conceal_keys: frozenset) -> tuple[dict,
             skipped[f"conceal_no_opportunity/{role}"] += 1
             continue
         for k in keys:
-            ledger[k].add(v, f"conceal/{role}/day_discussion", 0.0)
+            ledger[k].add(v, f"conceal/{role}/day_discussion")
     return dict(ledger), skipped
 
 
 def _conceal_off_base(off_dumps_glob: str) -> dict:
-    """Ambient concealment verdict of memory-OFF deceiver player-days (same instrument: spoke-gated,
+    """Ambient concealment verdict of memory-OFF evil player-days (same instrument: spoke-gated,
     opportunity-normalized) — the ``conceal/<role>/day_discussion`` OFF base."""
     sums, ns = defaultdict(float), defaultdict(int)
     stats_by_game: dict = {}
     seen: set = set()
-    for g, _roles, _day_res, ec in _iter_disc_cases(off_dumps_glob):
-        if ec.get("memory_enabled") or ec.get("player_role") not in DECEIVER_ROLES:
+    for g, _view, ec in _iter_disc_cases(off_dumps_glob):
+        if ec.get("memory_enabled") or not _is_evil(ec):
             continue
         gid = g.get("game_id")
         key = (gid, ec.get("day"), ec.get("player_id"))
@@ -263,17 +248,11 @@ def _conceal_off_base(off_dumps_glob: str) -> dict:
 
 def _adoption_counts(dumps_glob: str) -> dict:
     """Per SP key over the window's memory-ON eval cases: retrieved / override / not_relevant
-    counts, SET from strategy_verdicts + strategy_index_to_key — the live-adoption half, recomputed
-    windowed so the scope-aware evict rule has signal."""
-    counts: dict = defaultdict(lambda: {"retrieved": 0, "override": 0, "not_relevant": 0})
+    counts, once per scope (the strongest verdict of the scope's turns: follow, then override), so
+    the evict rule is not inflated by a lesson shown on every turn of a day."""
+    per_scope: dict[tuple, str] = {}
     for g in _iter_game_records(dumps_glob):
-        roles, path = g.get("roles"), g.get("eval_cases_path")
-        if not roles or not path or not os.path.exists(path):
-            continue
-        for cl in open(path):
-            if not cl.strip():
-                continue
-            ec = (json.loads(cl).get("output") or {}).get("eval_case") or {}
+        for ec in iter_eval_cases(g):
             if not ec.get("memory_enabled"):
                 continue
             idx = ec.get("strategy_index_to_key") or {}
@@ -281,12 +260,15 @@ def _adoption_counts(dumps_glob: str) -> dict:
                 key = idx.get(str(sv.get("strategy_index")))
                 if not key:
                     continue
-                counts[key]["retrieved"] += 1
-                verd = sv.get("verdict")
-                if verd == "override":
-                    counts[key]["override"] += 1
-                elif verd == "not_relevant":
-                    counts[key]["not_relevant"] += 1
+                unit = (g.get("game_id"), decision_scope(ec), key)
+                verdict = sv.get("verdict")
+                if VERDICT_RANK.get(verdict, 0) >= VERDICT_RANK.get(per_scope.get(unit), 0):
+                    per_scope[unit] = verdict
+    counts: dict = defaultdict(lambda: {"retrieved": 0, "override": 0, "not_relevant": 0})
+    for (_gid, _scope, key), verdict in per_scope.items():
+        counts[key]["retrieved"] += 1
+        if verdict in ("override", "not_relevant"):
+            counts[key][verdict] += 1
     return dict(counts)
 
 
@@ -303,18 +285,18 @@ def _grading_of(cell: str) -> str:
 def credit_apply(store_sp_path: str | Path, dumps_glob: str,
                  base_rates: dict | None = None,
                  off_window: str | None = None) -> dict:
-    """Recompute the fixed-rule ledger over ``dumps_glob`` and SET the credit counters on matching
-    SPs in ``store_sp_path``; persist the per-cell de-luck baseline next to the store. base_rates
-    default = memory-off per-cell means from the same dumps; production passes the paired OFF
-    window's rates. ``off_window`` supplies the SAME-INSTRUMENT OFF baseline for the discussion +
-    concealment channels — without it those grade against 0 (level, not lift)."""
+    """Recompute the ledger over ``dumps_glob`` and SET the credit counters on matching SPs in
+    ``store_sp_path``, with each SP's base (``credit_base``); persist the per-channel bases next to
+    the store. base_rates default = memory-off means from the same dumps; production passes the paired
+    OFF window's. ``off_window`` supplies the same-instrument OFF bases for the discussion and
+    concealment channels — without it those SPs stay unscored."""
     store_sp_path = Path(store_sp_path)
     store = json.loads(store_sp_path.read_text())
     conceal_keys = frozenset(
         r["key"] for recs in store.get("namespaces", {}).values() for r in recs
         if r.get("value", {}).get("sp_type") == "concealment")
     base_rates = dict(base_rates if base_rates is not None else compute_base_rates(dumps_glob))
-    ledger, det_skipped = build_ledger(dumps_glob, base_rates)
+    ledger, det_skipped = build_ledger(dumps_glob)
     skipped = Counter({k: n for k, n in det_skipped.items() if k.startswith("read_excluded/")})
     disc_ledger, disc_skipped = _discussion_ledger(dumps_glob, conceal_keys)
     conceal_ledger, conceal_skipped = _concealment_ledger(dumps_glob, conceal_keys)
@@ -331,7 +313,7 @@ def credit_apply(store_sp_path: str | Path, dumps_glob: str,
     disc_credited = len(disc_ledger) + len(conceal_ledger)  # the engaged-guard signal
 
     adoption = _adoption_counts(dumps_glob)
-    matched = credited = total = 0
+    matched = credited = unscored = total = 0
     for recs in store.get("namespaces", {}).values():
         for r in recs:
             total += 1
@@ -340,6 +322,7 @@ def credit_apply(store_sp_path: str | Path, dumps_glob: str,
             # ledger, so an SP absent from the window stops carrying fossil credit.
             v["positive_count"] = v["neutral_count"] = v["negative_count"] = v["follow_count"] = 0
             v["retrieved_count"] = v["override_count"] = v["not_relevant_count"] = 0
+            v["credit_base"] = None
             a = adoption.get(r["key"])
             if a:
                 v["retrieved_count"] = a["retrieved"]
@@ -353,13 +336,15 @@ def credit_apply(store_sp_path: str | Path, dumps_glob: str,
             v["neutral_count"] = c.neutral
             v["negative_count"] = c.negative
             v["follow_count"] = c.follow
+            v["credit_base"] = c.base(base_rates)
+            unscored += v["credit_base"] is None
             credited += 1
     store_sp_path.write_text(json.dumps(store, indent=2))
     (store_sp_path.parent / "base_rates.json").write_text(
         json.dumps({k: list(v) for k, v in base_rates.items()}, indent=2))
     credited_channels = {ch: _grading_of(ch) for c in ledger.values() for ch in c.channels}
     return {"total_sps": total, "credited": credited, "ledger_keys": len(ledger), "matched": matched,
-            "disc_credited": disc_credited, "credited_channels": credited_channels,
+            "unscored": unscored, "disc_credited": disc_credited, "credited_channels": credited_channels,
             "read_excluded": sum(n for k, n in skipped.items() if k.startswith("read_excluded/")),
             "skipped": dict(skipped)}
 
@@ -385,7 +370,7 @@ def credit_distribution(store_sp_path: str | Path, min_follow: int = 8) -> dict:
                 n_followed += 1
             if f >= min_follow:
                 eligible += 1
-                lf = sp_lift(v, base_for(base_rates, cell, v.get("sp_type")))
+                lf = sp_lift(v, sp_base(v, base_rates, cell))
                 if lf is not None and lf < 0:
                     eligible_neg += 1
     follows.sort()
@@ -395,12 +380,12 @@ def credit_distribution(store_sp_path: str | Path, min_follow: int = 8) -> dict:
             "n_prune_eligible": eligible, "n_eligible_neg_lift": eligible_neg}
 
 
-def sp_lift(value: dict, base_mean: float = 0.0) -> float | None:
-    """De-luck shrunk-lift for a stored SP from its counts + the per-cell baseline. None if no
-    follows. utility = (positive - negative)/follow; lift = utility - base_mean; shrunk =
+def sp_lift(value: dict, base_mean: float | None = 0.0) -> float | None:
+    """De-luck shrunk-lift for a stored SP from its counts + its base. None if no follows or no base
+    (unscored). utility = (positive - negative)/follow; lift = utility - base_mean; shrunk =
     lift * follow/(follow+5)."""
     follow = value.get("follow_count", 0)
-    if not follow:
+    if not follow or base_mean is None:
         return None
     util = (value.get("positive_count", 0) - value.get("negative_count", 0)) / follow
     lift = util - base_mean

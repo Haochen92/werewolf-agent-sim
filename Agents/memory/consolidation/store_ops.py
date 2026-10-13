@@ -1,9 +1,8 @@
 """Consolidation store-ops: prune/evict by realized credit + credit-aware synthesis (production).
 
-Runs on a credited store (after ``credit.credit_apply`` + ``conversion.conversion_apply``):
-  PRUNE   drop SPs whose de-luck lift < tau with enough follows, OR whose conversion lift is as
-          negative with enough tallies (the concealment class the follow ledger can't reach —
-          always on in production, there is no conversion switch).
+Runs on a credited store (after ``credit.credit_apply``):
+  PRUNE   drop SPs whose de-luck lift < tau with enough follows (an SP with no base is unscored and
+          never pruned).
   EVICT   drop SPs surfaced >= R times but NEVER followed when override-dominant (rejected on the
           merits); not_relevant-dominant non-follows are spared (retrieval's fault, not content's).
   SYNTH   credit-aware synthesis (realized track record) for cells with NEW obs — adds fresh SPs;
@@ -24,8 +23,7 @@ from pathlib import Path
 
 from Agents.llm_factory import similarity_threshold
 from Agents.memory.consolidation.config import TickConfig
-from Agents.memory.consolidation.conversion import CONVERSION_CHANNEL, conversion_lift
-from Agents.memory.consolidation.credit import base_for, sp_lift
+from Agents.memory.consolidation.credit import sp_base, sp_lift
 
 
 def memory_store_paths_local(store_dir: Path):
@@ -41,7 +39,7 @@ def _is_proven(v: dict, base: float, cfg: TickConfig) -> bool:
     """PROVEN predicate: positive de-luck lift over the resolved OFF base with enough follows.
     Deliberately DIFFERS from the game-side raw-counter heuristic — this side has the base rates.
     Shared by prune_and_evict's exemption and synthesize's contested-lane cap so the two sites
-    can't drift. ``base`` is already resolved (base_for) by the caller."""
+    can't drift. ``base`` is already resolved (sp_base) by the caller; None = unscored."""
     lift = sp_lift(v, base)
     return lift is not None and lift > 0 and v.get("follow_count", 0) >= cfg.protect_min_follow
 
@@ -59,16 +57,28 @@ def _evict_ok(v: dict, cfg: TickConfig) -> bool:
 
 
 def prune_and_evict(sp_namespaces: dict, base_rates: dict, cfg: TickConfig) -> dict:
-    """Mutate sp_namespaces in place: drop harmful (follow-lift OR conversion-lift < tau at enough
-    evidence) + rejected-on-merits SPs. Never drops a positive-lift SP, nor one whose non-follow is
-    a retrieval mismatch. Returns {pruned, evicted, kept, spared}."""
-    pruned = evicted = kept = spared = 0
+    """Mutate sp_namespaces in place: drop harmful (follow-lift < tau at enough evidence) +
+    rejected-on-merits SPs. Never drops a positive-lift SP, nor one whose non-follow is a retrieval
+    mismatch. Returns {pruned, evicted, kept, spared, proven, changes}: ``changes`` lists every SP
+    pruned, evicted, spared or proven with its numbers, for review before a store is published."""
+    pruned = evicted = kept = spared = proven = 0
+    changes: list[dict] = []
+
+    def note(change: str, ns_key: str, r: dict, base, lift) -> None:
+        v = r["value"]
+        changes.append({"change": change, "key": r["key"], "cell": _cell_of(ns_key),
+                        "action": v.get("action", ""), "follow": v.get("follow_count", 0),
+                        "positive": v.get("positive_count", 0), "negative": v.get("negative_count", 0),
+                        "retrieved": v.get("retrieved_count", 0), "override": v.get("override_count", 0),
+                        "not_relevant": v.get("not_relevant_count", 0), "base": base,
+                        "lift": None if lift is None else round(lift, 3)})
+
     for ns_key, recs in list(sp_namespaces.items()):
         survivors = []
         for r in recs:
             v = r["value"]
-            # same-function OFF base, per SP: concealment-typed SPs difference against the conceal base
-            base = base_for(base_rates, _cell_of(ns_key), v.get("sp_type"))
+            # same-function OFF base, per SP (its follows' channels; None = unscored)
+            base = sp_base(v, base_rates, _cell_of(ns_key))
             lift = sp_lift(v, base)
             follow = v.get("follow_count", 0)
             retrieved = v.get("retrieved_count", 0)
@@ -78,28 +88,25 @@ def prune_and_evict(sp_namespaces: dict, base_rates: dict, cfg: TickConfig) -> d
             if _is_proven(v, base, cfg):
                 survivors.append(r)
                 kept += 1
+                proven += 1
+                note("proven", ns_key, r, base, lift)
                 continue
             if cfg.prune and lift is not None and lift < cfg.prune_tau and follow >= cfg.prune_min_follow:
                 pruned += 1
-                continue
-            # CONVERSION term (always on): an SP whose presence in investigator find-windows tracks
-            # failed conversions is prunable even at follow==0 — the concealment class the follow
-            # ledger structurally can't reach. Sits AFTER the proven exemption on purpose: a
-            # vote-proven SP is never deleted by the diffuse channel alone.
-            clift = conversion_lift(v, base_for(base_rates, CONVERSION_CHANNEL))
-            conv_n = v.get("conversion_pos_count", 0) + v.get("conversion_neg_count", 0)
-            if clift is not None and clift < cfg.prune_tau and conv_n >= cfg.conversion_min_n:
-                pruned += 1
+                note("pruned", ns_key, r, base, lift)
                 continue
             if cfg.evict and follow == 0 and retrieved >= cfg.evict_min_retrieved:
                 if _evict_ok(v, cfg):
                     evicted += 1
+                    note("evicted", ns_key, r, base, lift)
                     continue
                 spared += 1  # surfaced+unfollowed but not_relevant-dominant => retrieval's problem, keep
+                note("spared", ns_key, r, base, lift)
             survivors.append(r)
             kept += 1
         sp_namespaces[ns_key] = survivors
-    return {"pruned": pruned, "evicted": evicted, "kept": kept, "spared": spared}
+    return {"pruned": pruned, "evicted": evicted, "kept": kept, "spared": spared, "proven": proven,
+            "changes": changes}
 
 
 def evict_observations(obs_path: str | Path, obs_gen_map: dict, current_gen: int, cfg: TickConfig,
@@ -143,12 +150,12 @@ def _synth_cluster(live: list, depleted: bool, obs_gen_map: dict | None, synth_l
     return any(obs_gen_map.get(k, 0) > synth_lookback for k in live)
 
 
-def _track_record(sp_recs: list, base: float, min_follow: int = 5) -> tuple[str, list[str]]:
+def _track_record(sp_recs: list, base_rates: dict, cell: str, min_follow: int = 5) -> tuple[str, list[str]]:
     """Render the realized-credit track record for a cell AND return the keys of exactly the SPs
     whose rows it contains (lift known, followed >= min_follow) — the lineage a revised SP joins
-    back to via distilled_from."""
-    rows = [(sp_lift(r["value"], base), r["value"].get("follow_count", 0), r["value"].get("action", ""),
-             r.get("key", "")) for r in sp_recs]
+    back to via distilled_from. Each SP's lift is against its own base (``sp_base``)."""
+    rows = [(sp_lift(r["value"], sp_base(r["value"], base_rates, cell)), r["value"].get("follow_count", 0),
+             r["value"].get("action", ""), r.get("key", "")) for r in sp_recs]
     rows = [row for row in rows if row[0] is not None and row[1] >= min_follow]
     if not rows:
         return "", []
@@ -207,7 +214,7 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Tick
             # exemption). PROVEN SPs occupy earned slots outside the quota.
             unproven_count = sum(
                 1 for r in sp_recs
-                if not _is_proven(r["value"], base_for(base_rates, cell, r["value"].get("sp_type")), cfg))
+                if not _is_proven(r["value"], sp_base(r["value"], base_rates, cell), cfg))
             depleted = cur_sp_count < cfg.synth_replenish_floor  # replenish floor = TOTAL size (lane-agnostic)
             if cfg.incremental and new_obs < cfg.synth_min_new_obs and not depleted:
                 continue  # not enough fresh evidence AND the cell isn't depleted → skip (cost guard)
@@ -226,8 +233,7 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Tick
                          and not depleted else None)
             items, clusters = cluster_observations_for_synth(store, ("observations", role, phase), cfgd,
                                                              items=items, seed_keys=seed_keys)
-            tr, tr_keys = _track_record(sp_namespaces.get(f"strategy_points/{cell}", []),
-                                        base_for(base_rates, cell),
+            tr, tr_keys = _track_record(sp_namespaces.get(f"strategy_points/{cell}", []), base_rates, cell,
                                         min_follow=cfg.synth_track_min_follow)
             for cl in clusters:
                 live = [k for k in cl if k in items]
