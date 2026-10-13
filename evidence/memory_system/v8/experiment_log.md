@@ -574,3 +574,16 @@ cells, against the pool's rules block):
   because it compares embeddings of the situation only.
 - Without both: **498 points**, the smallest cell the Speculator's night (3).
 - The readers differ: one quarter flagged 4 rule errors, another 13.
+
+**Published `memory_stores/ten_seat_v2`** (`scripts/publish_v8_store.py`; owner, 2026-10-13): the
+40-game store's 605 points, without the 37 the rule screen flagged and the 78 duplicates, 498 points in
+all 36 cells (the smallest, the Speculator's night, 3). The working store keeps every point, the
+flagged ones marked `rule_flag` and the duplicates `duplicate_of` (with the point kept). The live stage
+filter now searches the whole cell and filters before the cap, which refills from same-stage lessons
+(`a123f0dd`); it stays off until memory is turned on with this store.
+
+**Why the point dedup missed the duplicates.** It splits a cell's points by the labels synthesis gives
+them (direction and honesty) before it compares any, so that rival moves never merge; the labels are
+noisy, and 37 of the readers' 65 groups crossed them, so those points were never compared. The other
+28 groups shared labels and were kept anyway (the run kept no record of why). Next: split by honesty
+only, and check on this store, as a dry run, how many of the readers' groups that catches.
