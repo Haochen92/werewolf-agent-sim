@@ -2,8 +2,9 @@
 definitions, so a trace's cost uses the same rates as the game's usage meter.
 
 Langfuse prices a generation by matching its model name to a model definition and multiplying each
-recorded token type by that definition's price: uncached input, cache reads, Anthropic's cache writes
-(1.25x input) and output, each under every name a provider's client records it as (USAGE_TYPES). One
+recorded token type by that definition's price: uncached input, cache reads, cache writes (at the
+model's write factor: 1.25x input on Claude and on OpenAI from GPT-5.6, plain input elsewhere) and
+output, each under every name a provider's client records it as (USAGE_TYPES). One
 definition per dated catalogue price, by the billed name; Langfuse applies the newest whose start date
 is before the call, at ingestion (a change prices new traces, not old ones). A definition cannot be edited, so a changed price is deleted and created again. DeepSeek's peak
 hours cannot be expressed and take the off-peak rates; batched calls carry their own cost.
@@ -20,10 +21,8 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
+from Agents.llm_factory.pricing import write_factor
 from Agents.schemas.model_catalog import Price
-
-# Anthropic bills a cache write at 1.25x the input rate (5-minute cache); other providers record none.
-CACHE_WRITE_FACTOR = 1.25
 
 # The names Langfuse records token counts under, by the rate they bill at. Its LangChain handler takes
 # reasoning and cached tokens out of "output" and "input" into their own types, and the providers' clients
@@ -65,10 +64,12 @@ def definitions(prices: dict[str, tuple[Price, ...]]) -> list[Definition]:
         for p in rows:
             rate = {"input": p.input, "cached": p.cached, "output": p.output}
             types = {name: _per_token(rate[kind]) for kind, names in USAGE_TYPES.items() for name in names}
+            # A cache write, priced for every model: an unpriced type counts as free, and OpenAI's
+            # writes (GPT-5.6 on) were once priced at nothing that way (caching log §11).
+            types["input_cache_creation"] = _per_token(p.input * write_factor(billed))
             if billed.startswith("claude-"):
-                # a cache write; recorded by its lifetime when Anthropic reports it (1h bills 2x input)
-                types["input_cache_creation"] = _per_token(p.input * CACHE_WRITE_FACTOR)
-                types["input_ephemeral_5m_input_tokens"] = _per_token(p.input * CACHE_WRITE_FACTOR)
+                # recorded by its lifetime when Anthropic reports it (1h bills 2x input)
+                types["input_ephemeral_5m_input_tokens"] = _per_token(p.input * write_factor(billed))
                 types["input_ephemeral_1h_input_tokens"] = _per_token(p.input * 2)
             start = datetime(p.since.year, p.since.month, p.since.day, tzinfo=timezone.utc)
             out.append(Definition(billed, start, tuple(sorted(types.items()))))

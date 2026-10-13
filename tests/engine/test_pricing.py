@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from Agents.llm_factory.pricing import cost_usd, is_deepseek_peak, price_at
+from Agents.llm_factory.pricing import cost_usd, is_deepseek_peak, price_at, write_factor
 
 
 def _at(*args):
@@ -64,3 +64,14 @@ def test_claude_usage_is_priced_per_model_with_batches_at_the_batch_rate(monkeyp
     cs._count(usage, batched=True, model="claude-haiku-5-5")
     # Anthropic's input_tokens excludes the cache read: 600k uncached + 400k cached, all at half rate.
     assert cs.usage_cost_usd() == pytest.approx((0.6 * 0.10 + 0.4 * 0.01 + 0.1 * 0.50) / 2)
+
+
+def test_a_cache_write_bills_at_the_model_write_premium():
+    # Claude and GPT-6 bill a write at 1.25x input; elsewhere a written token is plain input.
+    assert (write_factor("claude-haiku-5-5"), write_factor("gpt-6-luna"), write_factor("deepseek-v4-pro")) == (
+        1.25, 1.25, 1.0)
+    at = _at(2026, 10, 12, 12)
+    assert cost_usd("gpt-6-luna", at, input=1_000_000, cached=200_000, written=500_000, output=0) == pytest.approx(
+        0.3 * 0.10 + 0.2 * 0.01 + 0.5 * 0.125)
+    # written can never exceed the input left after the cached part
+    assert cost_usd("gpt-6-luna", at, input=100, cached=100, written=50, output=0) == pytest.approx(100 * 0.01 / 1e6)

@@ -1,8 +1,8 @@
 """How many tokens a game spent, and how long its model calls took.
 
 A ``UsageMeter`` rides along with the game's other callbacks and counts every model call the
-game makes: its input tokens (and the part the provider served from cache), its output tokens
-(and the part that was reasoning), and its wall time. Counts are kept per model and per UTC hour,
+game makes: its input tokens (and the parts the provider served from its cache and wrote to it),
+its output tokens (and the part that was reasoning), and its wall time. Counts are kept per model and per UTC hour,
 because that is what prices depend on: a model's price can change on a date, and DeepSeek bills
 peak hours at twice the off-peak rate. The session saves the counts on the game's row as it goes
 (``games.usage``), so a game resumed after a restart carries on from them.
@@ -27,7 +27,7 @@ from Agents.llm_factory.pricing import cost_usd, price_at
 
 logger = logging.getLogger(__name__)
 
-_FIELDS = ("calls", "failed", "input", "cached", "output", "reasoning", "seconds")
+_FIELDS = ("calls", "failed", "input", "cached", "written", "output", "reasoning", "seconds")
 
 
 def _hour(at: datetime) -> str:
@@ -85,7 +85,10 @@ class UsageMeter(BaseCallbackHandler):
                 b["calls"] += 1
                 b["seconds"] = round(b["seconds"] + seconds, 3)
                 b["input"] += usage.get("input_tokens", 0) or 0
-                b["cached"] += (usage.get("input_token_details") or {}).get("cache_read", 0) or 0
+                details = usage.get("input_token_details") or {}
+                b["cached"] += details.get("cache_read", 0) or 0
+                # Claude and OpenAI (GPT-5.6 on) bill a write above the input rate (pricing.write_factor).
+                b["written"] += details.get("cache_creation", 0) or 0
                 b["output"] += usage.get("output_tokens", 0) or 0
                 b["reasoning"] += (usage.get("output_token_details") or {}).get("reasoning", 0) or 0
             self.changed = True
@@ -106,7 +109,8 @@ def game_cost(usage: dict | None) -> float | None:
     total = 0.0
     for b in buckets:
         cost = cost_usd(b["model"], datetime.fromisoformat(b["hour"]),
-                        input=b["input"], cached=b["cached"], output=b["output"])
+                        input=b["input"], cached=b["cached"], output=b["output"],
+                        written=b.get("written", 0))
         if cost is None:
             return None
         total += cost

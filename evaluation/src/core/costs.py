@@ -53,16 +53,20 @@ def cost_from_token_counts(
     total_tokens: int,
     token_estimation_method: str,
     batch: bool = False,
+    cache_write_tokens: int = 0,
 ) -> CostEstimate:
-    """``input_tokens`` includes the cached part; None when the catalogue has no price for the model."""
+    """``input_tokens`` includes the cached and written parts; None when the catalogue has no price
+    for the model. A write bills at the model's write premium (pricing.write_factor)."""
     estimated_cost_usd = cost_usd(billed_name(model), datetime.now(timezone.utc), input=input_tokens,
-                                  cached=cache_read_tokens, output=output_tokens, batch=batch)
+                                  cached=cache_read_tokens, output=output_tokens, batch=batch,
+                                  written=cache_write_tokens)
 
     return CostEstimate(
         input_tokens=input_tokens,
         output_tokens=output_tokens,
         reasoning_tokens=reasoning_tokens,
         cache_read_tokens=cache_read_tokens,
+        cache_write_tokens=cache_write_tokens,
         total_tokens=total_tokens,
         estimated_cost_usd=estimated_cost_usd,
         pricing_version=PRICING_VERSION,
@@ -94,6 +98,7 @@ def estimate_cost_from_usage_metadata(
     total_tokens = int(usage_metadata.get("total_tokens") or 0)
     reasoning_tokens = int(output_details.get("reasoning") or 0)
     cache_read_tokens = int(input_details.get("cache_read") or 0)
+    cache_write_tokens = int(input_details.get("cache_creation") or 0)
 
     if total_tokens <= 0:
         total_tokens = input_tokens + output_tokens
@@ -104,6 +109,7 @@ def estimate_cost_from_usage_metadata(
         output_tokens=output_tokens,
         reasoning_tokens=reasoning_tokens,
         cache_read_tokens=cache_read_tokens,
+        cache_write_tokens=cache_write_tokens,
         total_tokens=total_tokens,
         token_estimation_method=USAGE_METADATA_METHOD,
     )

@@ -43,14 +43,12 @@ PRICES: dict[str, list[Price]] = {
         Price(date(2026, 9, 10), 0.15, 0.003, 0.60, peak=True),
     ],
     "deepseek-flash": [Price(date(2026, 9, 10), 0.15, 0.003, 0.60, peak=True)],
-    # OpenAI's list rates; its cache writes bill at $0.125, which usage does not separate out, so
-    # an uncached input token is priced $0.025 short.
+    # OpenAI's list rates; a cache write bills at 1.25x input (WRITE_FACTORS).
     "gpt-6-luna": [Price(date(2026, 9, 1), 0.10, 0.01, 0.50)],
     # Z.AI's list rates after its launch promotion ended on 2026-09-09 (OpenRouter, pinned to Z.AI).
     "z-ai/glm-5.3-flash": [Price(date(2026, 9, 10), 0.15, 0.03, 0.50)],
-    # Anthropic's list rates (pricing page, 2026-10-11). A cache write bills at 1.25× input, which
-    # usage counts as plain input, so each written token is priced a quarter short. Haiku 5.5's
-    # rates hold for prompts under 100,000 tokens; a turn is about 10,000.
+    # Anthropic's list rates (pricing page, 2026-10-11); a cache write bills at 1.25x input
+    # (WRITE_FACTORS). Haiku 5.5's rates hold for prompts under 100,000 tokens; a turn is about 10,000.
     "claude-haiku-5-5": [Price(date(2026, 10, 7), 0.10, 0.01, 0.50)],
     "claude-sonnet-5-5": [Price(date(2026, 9, 28), 2.00, 0.10, 10.00)],
 }
@@ -75,16 +73,31 @@ def price_at(model: str, at: datetime) -> tuple[Price, float] | None:
     return price, 2.0 if price.peak and is_deepseek_peak(at) else 1.0
 
 
+# What a token written to the provider's cache bills at, as a multiple of the input rate, by model-name
+# prefix. Anthropic: 1.25x on the 5-minute cache that seats use (its 1-hour cache, 2x, is priced in
+# providers/anthropic.py). OpenAI: 1.25x from GPT-5.6 on (prompt-caching guide, read 2026-10-13); add a
+# prefix when another such model joins the catalogue. Any other provider that reports written tokens
+# bills them as plain input.
+WRITE_FACTORS = (("claude-", 1.25), ("gpt-6", 1.25))
+
+
+def write_factor(model: str) -> float:
+    """The cache-write rate of ``model`` as a multiple of its input rate (1.0 when it charges no premium)."""
+    name = model.removeprefix("models/")
+    return next((f for prefix, f in WRITE_FACTORS if name.startswith(prefix)), 1.0)
+
+
 # A call sent through a provider's batch interface bills at half its standard rates (Anthropic's
 # Message Batches, Google's and OpenAI's batch APIs alike); the cache discount applies on top.
 BATCH_FACTOR = 0.5
 
 
 def cost_usd(model: str, at: datetime, *, input: int, cached: int, output: int,
-             batch: bool = False) -> float | None:
-    """What these tokens cost at ``at``. ``input`` includes the cached part, as providers count
-    it; the cached part bills at the cached rate and the rest at the input rate. ``batch``: the
-    tokens went through a batch interface, at BATCH_FACTOR of the rates."""
+             batch: bool = False, written: int = 0) -> float | None:
+    """What these tokens cost at ``at``. ``input`` includes the cached and the written parts, as
+    providers count it; the cached part bills at the cached rate, the part written to the cache at
+    the input rate times ``write_factor``, and the rest at the input rate. ``batch``: the tokens went
+    through a batch interface, at BATCH_FACTOR of the rates."""
     found = price_at(model, at)
     if found is None:
         return None
@@ -92,4 +105,7 @@ def cost_usd(model: str, at: datetime, *, input: int, cached: int, output: int,
     if batch:
         factor *= BATCH_FACTOR
     cached = min(cached, input)
-    return factor * ((input - cached) * price.input + cached * price.cached + output * price.output) / 1e6
+    written = min(written, input - cached)
+    plain = input - cached - written
+    return factor * (plain * price.input + cached * price.cached + written * price.input * write_factor(model)
+                     + output * price.output) / 1e6

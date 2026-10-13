@@ -11,14 +11,15 @@ from server.storage.replay_service import _summary
 from tests.fixtures.server import FakeGraph
 
 
-def _call(meter, model, input=1000, cached=0, output=200, reasoning=0, fail=False):
+def _call(meter, model, input=1000, cached=0, output=200, reasoning=0, fail=False, written=0):
     run = uuid4()
     meter.on_chat_model_start({}, [], run_id=run, metadata={"ls_model_name": model})
     if fail:
         meter.on_llm_error(RuntimeError("429"), run_id=run)
         return
     usage = {"input_tokens": input, "output_tokens": output, "total_tokens": input + output,
-             "input_token_details": {"cache_read": cached}, "output_token_details": {"reasoning": reasoning}}
+             "input_token_details": {"cache_read": cached, "cache_creation": written},
+             "output_token_details": {"reasoning": reasoning}}
     meter.on_llm_end(LLMResult(generations=[[ChatGeneration(message=AIMessage("ok", usage_metadata=usage))]]),
                      run_id=run)
 
@@ -35,6 +36,18 @@ def test_calls_are_counted_per_model_and_a_failed_call_adds_no_tokens():
         2, 1, 2000, 600, 400, 50)
     assert buckets["gemini-3.1-flash-lite"]["calls"] == 1
     assert not meter.changed  # a snapshot is what gets saved
+
+
+def test_cache_writes_are_counted_and_priced_at_the_write_premium():
+    # GPT-6 Luna: 1M input, of which 250k read from cache and 700k written; a write bills 1.25x input.
+    meter = UsageMeter()
+    _call(meter, "gpt-6-luna", input=1_000_000, cached=250_000, written=700_000, output=0)
+    (bucket,) = meter.snapshot()["buckets"]
+    assert (bucket["cached"], bucket["written"]) == (250_000, 700_000)
+    bucket["hour"] = "2026-10-12T12:00:00+00:00"
+    assert game_cost({"buckets": [bucket]}) == round(0.05 * 0.10 + 0.25 * 0.01 + 0.70 * 0.125, 4)
+    del bucket["written"]  # a game saved before writes were counted still prices, writes as plain input
+    assert game_cost({"buckets": [bucket]}) == round(0.75 * 0.10 + 0.25 * 0.01, 4)
 
 
 def test_a_restarted_game_carries_on_from_its_saved_counts():
