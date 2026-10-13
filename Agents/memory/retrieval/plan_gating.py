@@ -57,7 +57,8 @@ class RetrievalPlan:
     ``sp_exploration_slot: False`` on the runnable config restores today's cap exactly."""
     stage_filter: bool
     """Whether to leave out retrieved memory learned at another stage of the game (alive bucket,
-    partner lost, uses left), after the cap, with no refill (decisions §11). Default off."""
+    partner lost, uses left): the whole cell is searched and filtered before the cap, which refills
+    from same-stage lessons (decisions §11). Default off."""
     reranking: bool
     """Derived: observation_reranking or strategy_point_reranking."""
     needs_wide_retrieval: bool

@@ -32,7 +32,7 @@ from Agents.memory.retrieval import (
     retrieve_strategy_points_for_agent,
 )
 from Agents.memory.retrieval import lookup_cache
-from Agents.memory.retrieval.dimension_gating import drop_other_stages
+from Agents.memory.retrieval.dimension_gating import STAGE_FILTER_TOP_K, drop_other_stages
 from Agents.memory.retrieval.dimension_gating import reweight as _dimension_reweight
 from Agents.memory.vectors import embed_texts
 from Agents.memory.store import embeddings as memory_embeddings
@@ -79,7 +79,10 @@ def enrich_payload_with_memory(
     # Non-reranked cap = 5: the observations-only saturation point measured in
     # evidence/retrieval/capacity_limits (cap=7 regresses action quality below
     # cap=3). The wide/reranked path fetches RERANK_TOP_K, then reranks down.
-    retrieval_top_k = RERANK_TOP_K if plan.needs_wide_retrieval else 5
+    # The stage filter searches the whole cell (STAGE_FILTER_TOP_K) so the cap can refill with
+    # same-stage lessons.
+    retrieval_top_k = (STAGE_FILTER_TOP_K if plan.stage_filter
+                       else RERANK_TOP_K if plan.needs_wide_retrieval else 5)
 
     with langfuse.start_as_current_observation(
         as_type="retriever",
@@ -151,6 +154,19 @@ def enrich_payload_with_memory(
                 situation_dimensions,
             )
 
+        # The stage filter before the cap, over the whole cell: the cap then refills from same-stage
+        # lessons (decisions §11; the 40-game replay, 2026-10-13).
+        stage_filtered = {"observations": 0, "strategy_points": 0}
+        if plan.stage_filter:
+            situation_to_dims = {s: d for s, d in zip(situations, situation_dimensions) if d}
+            kept_obs = drop_other_stages(retrieved_observations, situation_to_dims,
+                                         lambda it: it.observation.dimensions)
+            kept_sps = drop_other_stages(retrieved_strategy_points, situation_to_dims,
+                                         lambda it: it.strategy_point.dimensions)
+            stage_filtered = {"observations": len(retrieved_observations) - len(kept_obs),
+                              "strategy_points": len(retrieved_strategy_points) - len(kept_sps)}
+            retrieved_observations, retrieved_strategy_points = kept_obs, kept_sps
+
         retrieved_observations = cap_per_situation(
             retrieved_observations,
             get_situation=lambda o: o.matched_situation,
@@ -168,17 +184,6 @@ def enrich_payload_with_memory(
             keep=RETRIEVAL_KEEP_PER_SITUATION,
             is_proven=_sp_is_proven if plan.sp_exploration_slot else None,
         )
-
-        stage_filtered = {"observations": 0, "strategy_points": 0}
-        if plan.stage_filter:
-            situation_to_dims = {s: d for s, d in zip(situations, situation_dimensions) if d}
-            kept_obs = drop_other_stages(retrieved_observations, situation_to_dims,
-                                         lambda it: it.observation.dimensions)
-            kept_sps = drop_other_stages(retrieved_strategy_points, situation_to_dims,
-                                         lambda it: it.strategy_point.dimensions)
-            stage_filtered = {"observations": len(retrieved_observations) - len(kept_obs),
-                              "strategy_points": len(retrieved_strategy_points) - len(kept_sps)}
-            retrieved_observations, retrieved_strategy_points = kept_obs, kept_sps
 
         # PROVEN-FIRST SP TIERING (§0.4): stable partition, proven SPs ahead of unproven, semantic order
         # kept within each tier — a track-record-blind read path otherwise ranks a 9-follow net-positive SP
