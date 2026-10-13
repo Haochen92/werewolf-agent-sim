@@ -725,5 +725,11 @@ The per-game metrics are ported (`e5763cd1`). Credit runs on per-decision grades
     tables (`memory_records`, `base_rates`, `obs_generations`, `tick_runs`; no foreign keys, read
     only by the tick) are dumped to a file and emptied (owner: dump and reset).
 
+11. **Order of work (owner, 2026-10-13; why: decisions.md §12–§13).** (1) the credit port and its
+    tests; (2) observations name their decision: the extraction schema field, and a tagging pass over the
+    40 extracted games; (3) each observation graded, a synthesis setting for which outcome it reads, and
+    the grade variant synthesized beside `ten_seat_v2`; (4) the demo run on `ten_seat_v2` (memory-on
+    games, offline extraction, the tick on the reset tables). The verdict-vs-grade comparison is later.
+
 Additional limitation, kept for the report: on Vertex, the cache discount and the batch discount do
 not stack (§9.4, batch extraction).

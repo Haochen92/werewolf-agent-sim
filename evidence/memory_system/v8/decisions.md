@@ -253,3 +253,39 @@ share the server's `werewolf` database with the games and events, but nothing li
 tick reads them. A ten-seat tick on top of the nine-seat rows would fold the two stores together, so they
 are dumped to a file (restorable with one `pg_restore`; the store is also on disk as
 `memory_stores/demo_snapshots/demo_gen1`) and emptied before the first ten-seat tick.
+
+## 13. The verdict halo measured; observations name their decision (owner, 2026-10-13)
+
+`evidence/case_studies/observation_extraction.md` (2026-07-26) showed the extraction judge's
+`net_verdict` grading the result, not the decision, and named the test that would settle it: compare
+the judge's verdicts with deterministic grades on agent-only games. v8 kept the verdict and added the
+de-halo pass, which had only been spot-checked (one smoke game, four reader-flagged halos). With the
+ten-seat grader (§12) the test became free, and was run on 407 night and vote observations of 16 games:
+each verdict fitted against the deterministic grade of that role's decisions in that game and whether
+its side won. Preliminary: the grader had no tests yet, and the grade is per role per game because an
+observation does not say which decision it describes.
+
+| | weight on the grade | weight on the side winning |
+|---|---|---|
+| verdict as extracted | +0.36 | +0.72 |
+| after de-halo | +0.31 | +0.47 |
+
+The verdict follows the side's win about twice as strongly as the decision. De-halo removes about a
+third of that, and on one side only: the losing side's negatives fall from 53% to 26% (mostly to
+"unclear"), the winning side's positives barely move (56% → 52%). It rewrites the verdict word, not the
+judge's end-of-game effect text. The verdict reaches synthesis (each observation is shown tagged with it,
+and the prompt weights by the spread), dedup (different verdicts are never duplicates) and the replay's
+verdict stamp; never a seat, never credit.
+
+The owner's rulings:
+
+- **Every observation names the decision it describes.** Future extraction picks it from the seat's own
+  decisions in the record (night and turn kind, or the day's vote or discussion) rather than writing a
+  free day number, so a decision cannot be invented. The 40 games already extracted are tagged by a model
+  pass that answers the same question with the game record.
+- **Keep both outcome signals.** Each observation stores the verdict and the deterministic grade of its
+  decision. Which one synthesis reads is a setting (a config flag, both kept in use): `ten_seat_v2` is the
+  verdict variant as built; a grade variant is synthesized next to it. Which writes better lessons is
+  not known and is to be measured later; the fair design is per-seat randomization inside the same games,
+  credit grading every followed lesson, and it needs on the order of 1,000 follows per variant.
+- **The demo run uses `ten_seat_v2` only**; the comparison is kept for the future.
