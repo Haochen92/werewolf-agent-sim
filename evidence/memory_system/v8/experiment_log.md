@@ -667,3 +667,20 @@ batched request per game with its saved input (`scripts/tag_observation_decision
   set (unmatched, or disagreeing with the text's day) agrees 24 of 25: the unmatched tags are mostly
   real declines, and the text check's disagreements mostly its own misreading of a day mentioned as
   background. The bar set beforehand was 90%.
+
+**Observations graded, and the grade variant** (`697b7fa7`, `e37fdb00`). Each tagged observation's
+decision graded by the table (`scripts/grade_observations.py`): the 24 batch games from their records,
+the 16 served games from records rebuilt from the server's event log (read only). A player is not told
+its result the night it dies, so the wire lacks that record; it is rebuilt where the public result
+decides it (a save, a check, a bet, a shot) and left ungraded otherwise. 1,711 of 2,277 observations
+graded; all 2,008 stored observations matched their tag, 85% with a grade. Per observation, against its
+own decision's grade, the halo holds (decisions §13): side won +0.80 vs grade +0.40, after de-halo +0.53
+vs +0.36.
+- Synthesis reads either signal (`TickConfig.synth_outcome`); in grade mode an observation shows its
+  grade or "not graded" and not the judge's end-of-game text.
+- **Grade variant** `memory_stores/v8_grade_synth`: the same 2,008 observations, Sonnet 5.5 batch, $4.75,
+  59 minutes; 568 points after the point dedup (the verdict variant before review: 605), direction and
+  honesty mix alike. Not reviewed: it carries rule errors of the kind the review flagged in `ten_seat_v2`
+  (one Chanteuse point tells the pack to choose its carrier, which rotates). Not comparable to
+  `ten_seat_v2` on outcome alone: that store was synthesized before the stage split; a fair comparison
+  rebuilds the verdict variant with the same code (about $5). The comparison itself is for later.
