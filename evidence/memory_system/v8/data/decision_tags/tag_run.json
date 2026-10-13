@@ -1,0 +1,25 @@
+{
+  "model": "claude-haiku-5-5",
+  "observations": 2277,
+  "status": {
+    "recorded": 2100,
+    "not_recorded": 151,
+    "several": 26
+  },
+  "night_action": {
+    "with_stated_day": 476,
+    "agree": 451,
+    "agree_rate": 0.947
+  },
+  "day_vote": {
+    "with_stated_day": 430,
+    "agree": 414,
+    "agree_rate": 0.963
+  },
+  "day_discussion": {
+    "with_stated_day": 469,
+    "agree": 454,
+    "agree_rate": 0.968
+  },
+  "cost_usd": 0.0818
+}

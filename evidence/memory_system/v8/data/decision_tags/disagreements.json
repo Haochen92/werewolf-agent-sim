@@ -1,0 +1,92 @@
+[
+  {
+    "set": "flagged",
+    "game_id": "b5cbadf6-476e-5745-930b-fb1482420cf1",
+    "index": 34,
+    "role": "healer",
+    "phase": "night_action",
+    "tag": [
+      0,
+      "none"
+    ],
+    "reader": [
+      3,
+      "none"
+    ],
+    "confidence": "medium",
+    "reader_note": "Night 3 and 4 protect player_7; night 3 report sigilist died, no attack on player_7.",
+    "approach": "Kept protecting the Trailseer on nights 3 and 4 instead of rotating to another power role, even after the Trailseer had already survived a double attack."
+  },
+  {
+    "set": "random",
+    "game_id": "dcb8016a-9b87-4ba4-8bd4-cdc1550ddda4",
+    "index": 29,
+    "role": "chanteuse",
+    "phase": "night_action",
+    "tag": [
+      1,
+      "several"
+    ],
+    "reader": [
+      1,
+      "skill"
+    ],
+    "confidence": "medium",
+    "reader_note": "Night 1 player_5 block player_8; kill on player_7 was player_3 carrier choice.",
+    "approach": "Targeted a quiet player with the roleblock without prior reads while deferring to the illusionist partner's pack kill on another quiet player."
+  },
+  {
+    "set": "random",
+    "game_id": "935dc47e-b452-4474-947f-06f0a2429bde",
+    "index": 43,
+    "role": "healer",
+    "phase": "night_action",
+    "tag": [
+      1,
+      "none"
+    ],
+    "reader": [
+      2,
+      "none"
+    ],
+    "confidence": "high",
+    "reader_note": "Night 2 player_9 protect player_7 (after day 2 abstain).",
+    "approach": "Protected the claimed trailseer to shield the town's only publicly declared investigative role from an expected night attack."
+  },
+  {
+    "set": "random",
+    "game_id": "c3cc134f-9191-5f87-bcff-73ba168e2900",
+    "index": 44,
+    "role": "chanteuse",
+    "phase": "night_action",
+    "tag": [
+      1,
+      "several"
+    ],
+    "reader": [
+      1,
+      "skill"
+    ],
+    "confidence": "high",
+    "reader_note": "Night 1: player_7 block player_9; kill on player_2 also carried.",
+    "approach": "On night 1, with no claims or reads on the board, you blocked the vigilante at random while also carrying the pack's kill on the fortune teller."
+  },
+  {
+    "set": "random",
+    "game_id": "c3cc134f-9191-5f87-bcff-73ba168e2900",
+    "index": 45,
+    "role": "chanteuse",
+    "phase": "night_action",
+    "tag": [
+      2,
+      "several"
+    ],
+    "reader": [
+      2,
+      "skill"
+    ],
+    "confidence": "medium",
+    "reader_note": "Night 2: player_7 block player_3 (kill on player_1 also mentioned).",
+    "approach": "On night 2, after the investigator and sentinel claimed publicly and the town verified a sentinel-healer visit, you blocked the sentinel while the pack, on the illusionist's suggestion, killed the claimed investigator and concealed the body."
+  }
+]

@@ -636,3 +636,34 @@ play is claimed: no memory-on games have been graded (the credit port is after l
 - `uses_left` from the record (the decision day on each lesson); a free correction for the 40 games.
 - The point dedup's judge (flash-lite caught 16 of 65 duplicates in the dry run); event-level matching
   to lift fit past about a quarter; the credit port.
+
+## 2026-10-13 — Reopened: the credit port, the verdict halo, and decision tags
+
+**Credit ported** (`d9141ce2`; table plan §9.6 item 10, why decisions §12). Each decision is graded by
+the owner's ideal / neutral / undesirable table (`Agents/memory/consolidation/grading.py`); credit
+counts one verdict per lesson per seat per scope, compares each lesson with the memory-off results of
+its own turn kinds, and leaves a lesson with no baseline unscored. On the 12 seeding games the
+memory-off means look as the rules predict (the Fortune Teller −0.60, most bets miss; the Sigilist
+−0.35, most sigils miss; the pack's kill +0.42); on the 7 gate games 49 lessons were credited, the
+most-followed 7 times (none prunable at 8).
+
+**The verdict halo measured** (decisions §13; `evaluation/experiments/v8_verdict_halo.py`, data
+`data/halo/`). 482 night and vote observations of 19 games: the extraction judge's verdict weights the
+side winning +0.74 against +0.33 for the decision's deterministic grade; after de-halo +0.50, the
+change one-sided (losers' negatives 53% → 27%, winners' positives 57% → 54%). Ruled: observations name
+their decision, both outcome signals are kept, and which one synthesis reads is a setting.
+
+**Decision tags.** Extraction now asks each observation for `decision_day` (and `pack_turn` on a wolf's
+night). The 2,277 observations of the 40 games already extracted were tagged by Claude Haiku 5.5, one
+batched request per game with its saved input (`scripts/tag_observation_decisions.py`; $0.08).
+- Free checks: 2,100 tags match a decision the saved input records, 151 match none (mostly limited-use
+  roles declining a night action, which leaves no line), 26 name a pattern over several; where the
+  observation's own text states one day, the tag agrees 95–97% by phase.
+- **Blind read** (`evaluation/experiments/v8_decision_tag_check.py`, data `data/decision_tags/`): six
+  games at random, 17 random observations each, one Sonnet reader per game naming each decision from
+  the record without seeing the tag. **98 of 102 agree (96.1% ± 3.8%)**; the day alone 101 of 102. Three
+  of the four are a wolf's night tagged "several" where the reader chose the skill (the lesson speaks of
+  the block and the pack's kill together); one is a Healer protection put a night early. The flagged
+  set (unmatched, or disagreeing with the text's day) agrees 24 of 25: the unmatched tags are mostly
+  real declines, and the text check's disagreements mostly its own misreading of a day mentioned as
+  background. The bar set beforehand was 90%.

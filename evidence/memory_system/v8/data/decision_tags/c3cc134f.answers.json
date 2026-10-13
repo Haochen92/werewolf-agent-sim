@@ -1,0 +1,191 @@
+[
+ {
+  "index": 3,
+  "decision_day": 2,
+  "pack_turn": "none",
+  "confidence": "high",
+  "note": "Day 2 vote: player_1 voted to eliminate player_5 (silent), with 4 votes vs 5 abstains."
+ },
+ {
+  "index": 9,
+  "decision_day": 3,
+  "pack_turn": "none",
+  "confidence": "high",
+  "note": "Day 3 sentinel line challenging healer after trailseer report."
+ },
+ {
+  "index": 16,
+  "decision_day": 3,
+  "pack_turn": "none",
+  "confidence": "high",
+  "note": "Night 3: player_3 watch player_6, no one visited."
+ },
+ {
+  "index": 18,
+  "decision_day": 3,
+  "pack_turn": "none",
+  "confidence": "high",
+  "note": "Day 3 trailseer lines reporting follow of player_8 and defending healer."
+ },
+ {
+  "index": 25,
+  "decision_day": 3,
+  "pack_turn": "none",
+  "confidence": "medium",
+  "note": "Necromancer (player_5) has no Day 3 line; Day 3 debate on sentinel vs healer."
+ },
+ {
+  "index": 37,
+  "decision_day": 4,
+  "pack_turn": "none",
+  "confidence": "medium",
+  "note": "Night 4: no sigilist line; player_6 killed by the wolves that night."
+ },
+ {
+  "index": 42,
+  "decision_day": 3,
+  "pack_turn": "none",
+  "confidence": "high",
+  "note": "Day 3 vote: player_7 voted to eliminate player_3."
+ },
+ {
+  "index": 44,
+  "decision_day": 1,
+  "pack_turn": "skill",
+  "confidence": "high",
+  "note": "Night 1: player_7 block player_9; kill on player_2 also carried."
+ },
+ {
+  "index": 45,
+  "decision_day": 2,
+  "pack_turn": "skill",
+  "confidence": "medium",
+  "note": "Night 2: player_7 block player_3 (kill on player_1 also mentioned)."
+ },
+ {
+  "index": 51,
+  "decision_day": 3,
+  "pack_turn": "none",
+  "confidence": "high",
+  "note": "Day 3 vote: player_8 voted to eliminate player_3."
+ },
+ {
+  "index": 53,
+  "decision_day": 1,
+  "pack_turn": "none",
+  "confidence": "high",
+  "note": "Night 1: player_8 protect player_4."
+ },
+ {
+  "index": 58,
+  "decision_day": 3,
+  "pack_turn": "none",
+  "confidence": "high",
+  "note": "Day 3 player_9 lines on roleblock and holding bullets."
+ },
+ {
+  "index": 60,
+  "decision_day": 2,
+  "pack_turn": "none",
+  "confidence": "high",
+  "note": "Day 2 vote: player_9 abstained."
+ },
+ {
+  "index": 62,
+  "decision_day": 4,
+  "pack_turn": "none",
+  "confidence": "high",
+  "note": "Day 4 vote: player_9 voted to eliminate player_7."
+ },
+ {
+  "index": 65,
+  "decision_day": 4,
+  "pack_turn": "none",
+  "confidence": "high",
+  "note": "Night 4: player_9 shoot player_10."
+ },
+ {
+  "index": 69,
+  "decision_day": 2,
+  "pack_turn": "none",
+  "confidence": "high",
+  "note": "Day 2 vote: player_10 voted to eliminate player_5."
+ },
+ {
+  "index": 73,
+  "decision_day": 3,
+  "pack_turn": "skill",
+  "confidence": "high",
+  "note": "Night 3: player_10 conceal on player_4 body."
+ },
+ {
+  "index": 5,
+  "decision_day": 1,
+  "pack_turn": "none",
+  "confidence": "medium",
+  "note": "Fortune teller died night 1; no Day 1 speech; day-1 only."
+ },
+ {
+  "index": 6,
+  "decision_day": 1,
+  "pack_turn": "none",
+  "confidence": "medium",
+  "note": "No vote on day 1; fortune teller dead after."
+ },
+ {
+  "index": 7,
+  "decision_day": 1,
+  "pack_turn": "none",
+  "confidence": "medium",
+  "note": "Night 1 FT bet; no FT line in record, night 1 only night alive."
+ },
+ {
+  "index": 23,
+  "decision_day": 3,
+  "pack_turn": "none",
+  "confidence": "high",
+  "note": "Night 3: wolves kill player_4; no trailseer action line."
+ },
+ {
+  "index": 24,
+  "decision_day": 2,
+  "pack_turn": "none",
+  "confidence": "high",
+  "note": "Day 2: player_5 has no discussion line; abstained."
+ },
+ {
+  "index": 28,
+  "decision_day": 2,
+  "pack_turn": "none",
+  "confidence": "high",
+  "note": "Night 2: no necromancer line."
+ },
+ {
+  "index": 29,
+  "decision_day": 3,
+  "pack_turn": "none",
+  "confidence": "high",
+  "note": "Night 3: no necromancer line."
+ },
+ {
+  "index": 32,
+  "decision_day": 3,
+  "pack_turn": "none",
+  "confidence": "high",
+  "note": "Day 3 vote: player_6 voted to eliminate player_5."
+ },
+ {
+  "index": 34,
+  "decision_day": 1,
+  "pack_turn": "none",
+  "confidence": "high",
+  "note": "Night 1: no sigilist line."
+ },
+ {
+  "index": 35,
+  "decision_day": 2,
+  "pack_turn": "none",
+  "confidence": "high",
+  "note": "Night 2: no sigilist line."
+ }
+]

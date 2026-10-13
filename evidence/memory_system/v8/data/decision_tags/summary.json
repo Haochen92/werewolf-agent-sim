@@ -1,0 +1,17 @@
+{
+  "random": {
+    "agree": 98,
+    "pack_turn": 3,
+    "day": 1,
+    "n": 102,
+    "agree_rate": 0.961,
+    "ci95": 0.038
+  },
+  "flagged": {
+    "agree": 24,
+    "day": 1,
+    "n": 25,
+    "agree_rate": 0.96,
+    "ci95": 0.077
+  }
+}
