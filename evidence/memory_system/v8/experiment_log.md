@@ -587,3 +587,25 @@ them (direction and honesty) before it compares any, so that rival moves never m
 noisy, and 37 of the readers' 65 groups crossed them, so those points were never compared. The other
 28 groups shared labels and were kept anyway (the run kept no record of why). Next: split by honesty
 only, and check on this store, as a dry run, how many of the readers' groups that catches.
+
+## 2026-10-13 — The point dedup, dry, against the readers' duplicates
+
+**Run** (`evaluation/experiments/v8_sp_dedup_dry_run.py`; `data/reextract/dedup_dry_run/`): the batch
+point dedup run without writing on the working store's 605 points, with the judge synthesis uses
+(gemini-3.1-flash-lite), under the current split (direction and honesty) and honesty only; the points
+it would drop compared with the readers' 65 groups (78 points).
+
+| Split | Groups | Points dropped | Readers' groups caught | Drops across stages |
+|---|---|---|---|---|
+| direction + honesty | 12 | 30 | 9 of 65 | 10 |
+| honesty only | 24 | 55 | 16 of 65 | 25 |
+
+- Loosening the split finds more, but the judge is the problem: it misses three quarters of the readers'
+  groups and merges points the readers kept apart. Of its 55 drops, 25 merge points whose stage differs
+  (alive bucket, partner lost, uses left), the distinction the stage filter now depends on, and others
+  merge different moves ("reveal the check as one data point" with "state the limits of a Not
+  suspicious result").
+- The judge could also rewrite the point it kept (it did once in 605 in the real run); it no longer can
+  (`2036f83a`).
+- **Reading:** split by honesty and by the stage facts (not by direction), and judge with a stronger
+  model, batched; `ten_seat_v2` already has the readers' groups applied.

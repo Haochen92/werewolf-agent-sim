@@ -1,0 +1,16 @@
+{
+  "direction_honesty": {
+    "groups": 12,
+    "points_dropped": 30,
+    "of_readers_78": 6,
+    "not_in_readers": 24,
+    "reader_groups_fully_caught": 9
+  },
+  "honesty": {
+    "groups": 24,
+    "points_dropped": 55,
+    "of_readers_78": 15,
+    "not_in_readers": 40,
+    "reader_groups_fully_caught": 16
+  }
+}
