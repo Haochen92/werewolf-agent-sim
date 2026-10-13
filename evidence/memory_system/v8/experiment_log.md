@@ -609,3 +609,30 @@ it would drop compared with the readers' 65 groups (78 points).
   (`2036f83a`).
 - **Reading:** split by honesty and by the stage facts (not by direction), and judge with a stronger
   model, batched; `ten_seat_v2` already has the readers' groups applied.
+
+**Synthesis split by stage** (`feef97cd`): in `ten_seat_v2`, 17 of the 72 points labelled with the pack's
+partner lost (24%) and 54 of the 270 labelled with uses left (20%) were written from source lessons
+that disagree on that fact (the alive bucket was already split: 0 of 498), so their label holds for
+only some of their sources. Synthesis clusters now split by both, so each point comes from one stage;
+the point dedup refuses to discard across stages (`08dea470`). `ten_seat_v2` is left as built (owner).
+
+## 2026-10-13 — Where v8 stands (closed for now, owner)
+
+**Built:** a game saves its extraction input and extracts nothing; an offline job extracts saved inputs
+(Gemini online with its prefix cache, or Claude batches with the schema after the cached prefix),
+de-halos them as a batch and builds a store; 40 ten-seat games extracted, synthesized and screened into
+`ten_seat_v2` (498 points); the seat's lookups reused within a day and a night; the stage filter in live
+retrieval (off by default) that refills the top three with same-stage lessons.
+
+**Measured:** fit of the lessons a seat is shown, 15% (12-game store, no filter) → 24–27% (40-game store,
+stage filter), with 52 of 96 lookups served a fitting lesson against 36; rule errors in synthesized
+points 6% (from 11%); extraction about $0.55 a game on 3.8 Flash, $0.95 on Sonnet as run. No effect on
+play is claimed: no memory-on games have been graded (the credit port is after launch, plan §9.6).
+
+**Open, by choice:**
+- Served games: the job's writing of a memory-on game's lessons into its replay, the replay's "lessons
+  being written" notice, and migration 0012 on the live database (none deployed; memory is off in
+  served games).
+- `uses_left` from the record (the decision day on each lesson); a free correction for the 40 games.
+- The point dedup's judge (flash-lite caught 16 of 65 duplicates in the dry run); event-level matching
+  to lift fit past about a quarter; the credit port.
