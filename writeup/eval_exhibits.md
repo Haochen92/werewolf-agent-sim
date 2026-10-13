@@ -196,7 +196,7 @@ the record is, and how it would be shown:
   run still cost twice its estimate, through a retry path that rewrote the cache; that is fixed too.
 - **Number:** per game, $1.27 as first run against about $0.45 with the cache read.
 - **Record:** `experiment_log.md` (the Claude batch check; the 21-game Sonnet run);
-  `Agents/memory/claude_structured.py`.
+  `Agents/llm_factory/providers/anthropic.py`.
 - **Show:** content (the probe's three usage lines).
 
 ### 16. A dedup gate built on model-written labels
