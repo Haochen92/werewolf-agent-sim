@@ -22,8 +22,10 @@ from pathlib import Path
 
 READ = ("input_cache_read", "cache_read_input_tokens", "input_cached_tokens", "prompt_cache_hit_tokens",
         "cached_content_token_count")
-WRITTEN = ("input_cache_creation", "cache_creation_input_tokens")
+WRITTEN = ("input_cache_creation", "cache_creation_input_tokens", "input_ephemeral_5m_input_tokens",
+           "input_ephemeral_1h_input_tokens")
 UNCACHED = ("input",)
+OUTPUT = ("output", "output_reasoning", "output_reasoning_tokens")
 
 
 def _session_ids(paths: list[str]) -> list[str]:
@@ -35,12 +37,15 @@ def _session_ids(paths: list[str]) -> list[str]:
     return ids
 
 
-def _observations(api, trace_id: str) -> list:
+def _generations(api, trace_id: str) -> list:
+    """The trace's model calls, with their token counts (filtered by type: an unfiltered listing of
+    a long game's trace is refused with a 422)."""
     from evaluation.src.data.sources.langfuse import _field
 
     out, page = [], 1
     while True:
-        data = _field(api.observations.get_many(trace_id=trace_id, page=page, limit=100), "data", [])
+        data = _field(api.observations.get_many(trace_id=trace_id, type="GENERATION", page=page, limit=100),
+                      "data", [])
         out += data
         if len(data) < 100:
             return out
@@ -68,39 +73,45 @@ def call_type(span: str) -> str:
 
 def session_share(session_id: str) -> dict:
     """Calls, input tokens and the read / written / neither split for one session, per model."""
-    from evaluation.src.data.sources.langfuse import (_field, _require_langfuse_api,
+    from evaluation.src.data.sources.langfuse import (_field, _require_langfuse_api, enumerate_observations,
                                                       fetch_trace_ids_for_session_id)
 
     api = _require_langfuse_api()
     by_model: dict[str, dict] = defaultdict(lambda: defaultdict(int))
     by_call: dict[tuple[str, str], dict] = defaultdict(lambda: defaultdict(int))
     for trace_id in fetch_trace_ids_for_session_id(session_id):
-        observations = _observations(api, trace_id)
-        names = {_field(o, "id"): _field(o, "name") or "" for o in observations}
-        for g in observations:
-            if _field(g, "type") != "GENERATION":
-                continue
+        # span names (for the call type) from the whole trace; token counts from the model calls
+        names = {o["id"]: o["name"] or "" for o in enumerate_observations(trace_id)}
+        for g in _generations(api, trace_id):
             model = _field(g, "model") or "?"
             kind_of_call = call_type(names.get(_field(g, "parent_observation_id"), ""))
             for row in (by_model[model], by_call[(model, kind_of_call)]):
                 row["calls"] += 1
             for name, n in (_field(g, "usage_details") or {}).items():
                 kind = "read" if name in READ else "written" if name in WRITTEN else \
-                    "neither" if name in UNCACHED else None
+                    "neither" if name in UNCACHED else "output" if name in OUTPUT else None
                 if kind:
                     by_model[model][kind] += int(n or 0)
                     by_call[(model, kind_of_call)][kind] += int(n or 0)
     out = {}
     for model, r in by_model.items():
-        out[model] = {**_split(r), "by_call": {
-            call: _split(c) for (m, call), c in sorted(by_call.items()) if m == model}}
+        out[model] = {**_split(r, model), "by_call": {
+            call: _split(c, model) for (m, call), c in sorted(by_call.items()) if m == model}}
     return out
 
 
-def _split(r: dict) -> dict:
+def _split(r: dict, model: str) -> dict:
+    """The counts, the input shares, and the cost at today's catalogue prices (a write at its premium)."""
+    from datetime import datetime, timezone
+
+    from Agents.llm_factory.pricing import cost_usd
+
     total = r["read"] + r["written"] + r["neither"]
-    return {"calls": r["calls"], "input": total, **{k: r[k] for k in ("read", "written", "neither")},
-            **{f"{k}_share": round(r[k] / total, 3) if total else None for k in ("read", "written", "neither")}}
+    usd = cost_usd(model, datetime.now(timezone.utc), input=total, cached=r["read"], written=r["written"],
+                   output=r["output"])
+    return {"calls": r["calls"], "input": total, **{k: r[k] for k in ("read", "written", "neither", "output")},
+            **{f"{k}_share": round(r[k] / total, 3) if total else None for k in ("read", "written", "neither")},
+            "cost_usd": round(usd, 4) if usd is not None else None}
 
 
 def main() -> int:
