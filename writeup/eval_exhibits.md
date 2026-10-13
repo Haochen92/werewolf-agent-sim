@@ -152,3 +152,60 @@ the record is, and how it would be shown:
   keep-or-discard call.
 - **Record:** `evidence/dedup/`.
 - **Show:** content (one pair of each kind with its cosine).
+
+## From the v8 memory gate and the offline re-extraction (2026-10-12 to 10-13)
+
+### 13. Testing a retrieval change on frozen lookups, without playing a game
+
+- **Question:** the seats were shown lessons that did not fit; would filtering by the stage of the game
+  help, and does a larger store help?
+- **Method:** 96 lookups from seven memory-on games, frozen with the situation each seat wrote, searched
+  again offline under each variant (no filter, filter after the cut to three, filter before it); every
+  lesson read for fit by Sonnet subagents given the games' true roles. `evaluation/experiments/
+  v8_gate_lookups.py`, `v8_stage_filter_replay.py`, `v8_reextract_reads.py`.
+- **Example:** a Chanteuse on day 2 with nine alive and her partner alive, shown three lessons that all
+  need a dead partner or three players left; the stored board of each lesson already said so.
+- **Number:** fit 15% → 25% with the filter on the 12-game store; on the 40-game store, lookups served a
+  fitting lesson 30 → 52 of 96. Embeddings only, a few cents a variant.
+- **Caveat:** fit stops near a quarter: the remaining misfits hinge on events (being named at a door, a
+  rival claim) that the stage fields do not record. Different readers across the two reads.
+- **Record:** `evidence/memory_system/v8/experiment_log.md` (the gate, parts one and two; the 40-game
+  read); `evidence/memory_system/v8/data/gate/`, `data/reextract/fit/`.
+- **Show:** content (the variant table and the Chanteuse example), or export (one lookup with its lesson
+  sets and verdicts under each variant).
+
+### 14. Checking a model-written field against the engine's own count
+
+- **Question:** the extractor writes how many uses of a limited ability a player had left. Is it right?
+- **Method:** each game's nights replayed through the engine's own spending rule (`resolution._spent`)
+  to get the true count, matched to each extracted observation.
+- **Number:** 84% exact; 15% gave the count after the night's action instead of before. Rewording the
+  field to "before this decision" raised exact matches to 89%, but some-left against none-left, the part
+  the filter uses, stayed wrong in about 4–6%, so the fix is structural: compute the count from the
+  record, as the seat's own already is.
+- **Record:** `experiment_log.md` (the gate part two; the Flash re-extraction).
+- **Show:** content.
+
+### 15. A cost estimate that missed, and the probe that found why
+
+- **Question:** what does batched Claude extraction cost?
+- **What happened:** a two-game check quoted at under $0.50 cost $2.69: no call read the prompt cache. A
+  three-call probe ($0.005) showed the enforced output schema is part of Claude's cache key, so a
+  fan-out with a schema per call never shares a prefix; the fix writes the schema as text after the
+  cached part. The same check found the cost summary priced 1-hour cache writes as plain input. A later
+  run still cost twice its estimate, through a retry path that rewrote the cache; that is fixed too.
+- **Number:** per game, $1.27 as first run against about $0.45 with the cache read.
+- **Record:** `experiment_log.md` (the Claude batch check; the 21-game Sonnet run);
+  `Agents/memory/claude_structured.py`.
+- **Show:** content (the probe's three usage lines).
+
+### 16. A dedup gate built on model-written labels
+
+- **Question:** the point dedup ran, yet readers found 65 duplicate groups (78 points) in 605. Why?
+- **Finding:** the dedup splits points by labels the synthesis model writes (direction, honesty) so that
+  rival moves never merge; the labels are noisy, and 37 of the 65 groups crossed them, so those points
+  were never compared. Complements exhibit 12: the candidate step, not only the judge, can hide
+  duplicates.
+- **Record:** `experiment_log.md` (the 40-game store read; the publish note);
+  `evidence/memory_system/v8/data/reextract/points/`.
+- **Show:** content (one duplicate pair with the two labels that kept it apart).
