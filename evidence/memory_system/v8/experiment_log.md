@@ -540,3 +540,37 @@ in all 36 cells. **$5.31** for synthesis; 4.7 hours in all, nearly all of it the
 
 The Sonnet-extracted games gave about 45% more observations each, so they weigh more in synthesis
 than the Flash games. Not yet screened for rule errors (`ten_seat_v1`'s screen flagged 11%).
+
+## 2026-10-13 — The 40-game store read: fit, rule errors and duplicates
+
+**Fit** (`evaluation/experiments/v8_stage_filter_replay.py --store memory_stores/v8_reextract_synth`,
+`v8_reextract_reads.py`; `data/gate/stage_filter_40games/`, `data/reextract/fit/`): the gate's 96 read
+lookups searched again, from the situations the seats wrote, against the 40-game store (cells of 5–35
+points, 15 on average, against about 4); the 412 lessons shown or kept read by four Sonnet subagents
+on the gate read's rubric. Different readers from the first read, so the comparison is approximate.
+
+| Lessons shown | ten_seat_v1 (12 games) | 40-game store |
+|---|---|---|
+| Top 3, no filter | 15% fit · 36 lookups with a fit | 19% · 41 |
+| Stage filter, the gap left empty | 25% · 28 (25 empty) | 27% · 33 (17 empty) |
+| Stage filter, the gap refilled from the cell | 22% · 30 (18 empty) | 24% · **52** (2 empty) |
+
+- Fit rises a little; the gain is coverage. With the cells three to four times larger, refilling after
+  the filter now finds a same-stage lesson for most lookups, so it beats leaving the gap empty.
+- By phase (refilled): discussion 20%, vote 16%, night 29%.
+- The readers name the remaining misfit the same way: lessons keyed to an event the seat does not have
+  (named at a victim's door, a rival claim, the room turning on the partner, a wolf just voted out).
+  The stage fields (alive bucket, partner lost, uses left) do not record events.
+
+**Rule errors and duplicates** (`data/reextract/points/`: four Sonnet subagents, each a quarter of the
+cells, against the pool's rules block):
+- **37 of 605 points state a wrong rule (6.1%; 9 high, 28 medium)**, against 11% for `ten_seat_v1`'s
+  screen. They cluster as before: the Sigilist's "no effect" (read as "protected" or as clearing the
+  target), who an "immune" result can be (the Necromancer is immune on night 1 too), the pack choosing
+  its carrier, a Day 1 vote. One reader asked whether a wolf-and-Serial-Killer attack on one victim is
+  announced; it is (the morning names each kind of attacker), so those points stand.
+- **65 duplicate groups, 78 points to drop** (13%) in the readers' judgement: the same move in the same
+  situation and stage; conflicting moves and different stages left apart. The point dedup missed them
+  because it compares embeddings of the situation only.
+- Without both: **498 points**, the smallest cell the Speculator's night (3).
+- The readers differ: one quarter flagged 4 rule errors, another 13.
