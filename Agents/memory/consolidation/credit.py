@@ -282,12 +282,36 @@ def _grading_of(cell: str) -> str:
     return "deterministic"
 
 
-def credit_apply(store_sp_path: str | Path, dumps_glob: str,
+def _merged_into(store: dict) -> dict[str, str]:
+    """Discarded duplicate key -> the key of the lesson that absorbed it (``merged_keys``)."""
+    return {merged: r["key"] for recs in store.get("namespaces", {}).values() for r in recs
+            for merged in r.get("value", {}).get("merged_keys") or []}
+
+
+def _fold_merged(ledger: dict, adoption: dict, alias: dict[str, str]) -> tuple[dict, dict]:
+    """Credit and adoption counts recorded against a merged duplicate's key, added to its survivor's."""
+    folded: dict = defaultdict(SPCredit)
+    for key, c in ledger.items():
+        f = folded[alias.get(key, key)]
+        f.follow += c.follow
+        f.positive += c.positive
+        f.neutral += c.neutral
+        f.negative += c.negative
+        f.channels.update(c.channels)
+    counts: dict = defaultdict(lambda: {"retrieved": 0, "override": 0, "not_relevant": 0})
+    for key, a in adoption.items():
+        for k, n in a.items():
+            counts[alias.get(key, key)][k] += n
+    return dict(folded), dict(counts)
+
+
+def credit_apply(store_sp_path: str | Path, dumps_glob,
                  base_rates: dict | None = None,
                  off_window: str | None = None) -> dict:
     """Recompute the ledger over ``dumps_glob`` and SET the credit counters on matching SPs in
     ``store_sp_path``, with each SP's base (``credit_base``); persist the per-channel bases next to
-    the store. base_rates default = memory-off means from the same dumps; production passes the paired
+    the store. ``dumps_glob``: a glob spec of batch-run dumps, or games already loaded
+    (``sources``). A lesson the point dedup merged into another keeps its credit there (decisions §14). base_rates default = memory-off means from the same dumps; production passes the paired
     OFF window's. ``off_window`` supplies the same-instrument OFF bases for the discussion and
     concealment channels — without it those SPs stay unscored."""
     store_sp_path = Path(store_sp_path)
@@ -313,6 +337,7 @@ def credit_apply(store_sp_path: str | Path, dumps_glob: str,
     disc_credited = len(disc_ledger) + len(conceal_ledger)  # the engaged-guard signal
 
     adoption = _adoption_counts(dumps_glob)
+    ledger, adoption = _fold_merged(ledger, adoption, _merged_into(store))
     matched = credited = unscored = total = 0
     for recs in store.get("namespaces", {}).values():
         for r in recs:

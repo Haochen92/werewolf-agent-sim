@@ -234,6 +234,14 @@ def _merged_metadata(
             meta[verdict_key] = sum(
                 int(value.get(verdict_key, 0)) for value in source_values
             )
+    # A strategy point the survivor absorbed keeps its credit: credit recomputes from the games by key,
+    # so the survivor lists every key merged into it (decisions §14).
+    if any("action" in value for value in source_values):
+        merged = set(survivor_value.get("merged_keys") or [])
+        for key in source_keys:
+            if key != survivor_key and key in items_by_key:
+                merged |= {key, *(items_by_key[key].value.get("merged_keys") or [])}
+        meta["merged_keys"] = sorted(merged - {survivor_key})
     return meta
 
 
