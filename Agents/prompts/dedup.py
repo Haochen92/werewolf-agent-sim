@@ -245,15 +245,8 @@ must use one of these action values: DISCARD, KEEP.
 DISCARD — Two or more entries express the same hypothesis. They describe the
 same situation and recommend the same action direction — an agent reading any
 one of them would do the same thing. Choose one survivor_key (the best-worded
-entry, by its number). The apply step will preserve that entry, sum
+entry, by its number). The apply step will preserve that entry as written, sum
 observation_counts from all source_keys, and delete absorbed entries.
-
-If the survivor_key entry is already well-written and covers the hypothesis
-adequately, do not provide merged fields — just output the survivor_key. Only
-provide merged_situation and merged_action when no single entry captures the
-full hypothesis on its own and elements across multiple entries could be
-combined into a stronger version. Use only details present in the source
-entries; only reorganize or clarify what is already stated.
 
 KEEP — Entries are genuinely distinct and need no changes. Use when entries in
 the cluster represent different hypotheses — different targets, different

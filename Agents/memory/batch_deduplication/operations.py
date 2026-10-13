@@ -44,14 +44,12 @@ def _apply_strategy_operation(
     if survivor_key is None:
         return "failed", 0
     survivor_value = items_by_key[survivor_key].value
-    # Reconcile, don't rebuild: start from the survivor so its structured fields
-    # (direction/honesty/dimensions, verdict counters) survive — only situation/action and the
-    # summed metadata are overridden. The gate guarantees every cluster member shares
-    # (direction, honesty), so carrying the survivor's values is correct by construction.
+    # Keep or discard only: the survivor keeps its own text and structured fields (direction/
+    # honesty/dimensions, verdict counters); only the summed metadata changes. Strategy points never
+    # merge, and the judge never rewrites one (a cheap judge rewrote one Sonnet point in 605 when it
+    # could, 2026-10-13).
     value = {
         **survivor_value,
-        "situation": operation.merged_situation or survivor_value.get("situation", ""),
-        "action": operation.merged_action or survivor_value.get("action", ""),
         **_merged_metadata(source_keys, items_by_key, survivor_key),
     }
     deleted = _commit_survivor(

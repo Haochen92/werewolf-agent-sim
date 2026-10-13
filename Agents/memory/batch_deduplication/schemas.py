@@ -30,20 +30,6 @@ class StrategyBatchOperation(BaseModel):
         default=None,
         description="Entry number to preserve for DISCARD",
     )
-    merged_situation: str | None = Field(
-        default=None,
-        description=(
-            "Optional improved situation text for the survivor. "
-            "Use only when combining elements from multiple entries."
-        ),
-    )
-    merged_action: str | None = Field(
-        default=None,
-        description=(
-            "Optional improved action text for the survivor. "
-            "Use only when combining elements from multiple entries."
-        ),
-    )
 
 
 class ObservationBatchOperation(BaseModel):
