@@ -72,16 +72,28 @@ def cluster_observations_for_synth(
     return items, clusters
 
 
-def _format_cluster(cluster_keys: list[str], items_by_key: dict[str, Any]) -> str:
+def _format_cluster(cluster_keys: list[str], items_by_key: dict[str, Any], outcome: str = "verdict") -> str:
     """Render a cluster's observations for the synthesis prompt — situation residual + approach +
     outcome, each tagged with its net_verdict so the LLM can weight by the outcome spread. The
     immediate effect and the end-of-game effect go on separate lines when both are stored, so a move
-    that cost something at once and paid off later is not read as one verdict."""
+    that cost something at once and paid off later is not read as one verdict.
+
+    ``outcome="grade"`` (decisions §13) tags each observation with its decision's deterministic grade
+    instead (``decision_grade``; "not graded" when it names no single decision), and leaves out the
+    judge's end-of-game effect, the halo's prose form; the immediate effect stays."""
     lines: list[str] = []
     for i, key in enumerate(cluster_keys, 1):
         v = items_by_key[key].value
         dims = v.get("dimensions", {})
         situation = situation_for_dedup(dims, v.get("situation", ""))
+        if outcome == "grade":
+            lines.append(f"[{i}] (graded: {v.get('decision_grade') or 'not graded'})")
+            lines.append(f"situation: {situation}")
+            lines.append(f"approach: {v.get('approach', '')}")
+            if dims.get("immediate_response"):
+                lines.append(f"immediate effect: {dims['immediate_response']}")
+            lines.append("")
+            continue
         lines.append(f"[{i}] (outcome: {v.get('net_verdict', '?')})")
         lines.append(f"situation: {situation}")
         lines.append(f"approach: {v.get('approach', '')}")
@@ -149,13 +161,28 @@ def synthesis_cache_prefix() -> str:
     return head + pool_rules_block()
 
 
+# The two lines of the canonical prompt that say how to weigh the observations' outcomes, and their
+# form when the observations carry deterministic grades (outcome="grade"; decisions §13).
+_VERDICT_WEIGHTING = """- Use the outcome SPREAD as weighting: a move that succeeded across many observations is a strong rule.
+- An "unclear" outcome says nothing about whether the move helped: use that observation's facts, not
+  its verdict."""
+_GRADE_WEIGHTING = """- Each observation is tagged with the GRADE of its decision: whether the move was a good one for the
+  role by a fixed table of mechanical results (a kill that landed, a watch that saw a visitor, a vote on
+  a player of the other side), not whether its side won the game. Use the grade SPREAD as weighting: a
+  move graded positive across many observations is a strong rule.
+- "not graded" says nothing about whether the move helped: use that observation's facts, not its tag."""
+assert _VERDICT_WEIGHTING in CELL_SP_SYNTHESIS_PROMPT
+GRADE_SP_SYNTHESIS_PROMPT = CELL_SP_SYNTHESIS_PROMPT.replace(_VERDICT_WEIGHTING, _GRADE_WEIGHTING)
+
+
 def synthesis_request(role: str, action_phase: str, cluster_keys: list[str], items_by_key: dict[str, Any],
-                      track_record: str = "") -> tuple[str, type[BaseModel]] | None:
+                      track_record: str = "", outcome: str = "verdict") -> tuple[str, type[BaseModel]] | None:
     """The prompt and output schema for one cluster's synthesis; None for a cell with no schema.
 
     `track_record` (default "" → canonical halo-weighted synthesis) is the v7 A/B's CREDIT-AWARE arm: a
     rendered realized-de-luck brief; when given, synthesis weights by it (not the per-obs outcome halo)
-    and is asked for a conditioned directive."""
+    and is asked for a conditioned directive. `outcome` (``TickConfig.synth_outcome``) is which outcome
+    each observation shows: the extraction judge's verdict, or its decision's deterministic grade."""
     sp_schema = cell_strategy_schema_for(role, action_phase)
     if sp_schema is None:
         return None
@@ -163,15 +190,16 @@ def synthesis_request(role: str, action_phase: str, cluster_keys: list[str], ite
     if track_record:
         prompt = CREDIT_SYNTH_PROMPT.format(
             role=role, phase=action_phase,
-            observations=_format_cluster(cluster_keys, items_by_key),
+            observations=_format_cluster(cluster_keys, items_by_key, outcome),
             track_record=track_record, dimension_menu=dimension_menu(sp_schema),
         )
     else:
-        prompt = CELL_SP_SYNTHESIS_PROMPT.format(
+        template = GRADE_SP_SYNTHESIS_PROMPT if outcome == "grade" else CELL_SP_SYNTHESIS_PROMPT
+        prompt = template.format(
             game_rules=pool_rules_block(),
             role=role,
             phase=action_phase,
-            observations=_format_cluster(cluster_keys, items_by_key),
+            observations=_format_cluster(cluster_keys, items_by_key, outcome),
             dimension_menu=dimension_menu(sp_schema),
         )
     return prompt, container
@@ -186,13 +214,14 @@ def synthesize_cluster_sps(
     max_retries: int = 2,
     track_record: str = "",
     model: str | None = None,
+    outcome: str = "verdict",
 ) -> list:
     """Synthesize 1-N strategy points from one observation cluster. Returns SP cell objects (their
     action_phase is set by the model within the cell's allowed phases).
 
     `model` (``TickConfig.model``): a Claude model is called through the Anthropic SDK, retrying on
     itself; anything else (or None) goes through the factory's pro model and its backup."""
-    request = synthesis_request(role, action_phase, cluster_keys, items_by_key, track_record)
+    request = synthesis_request(role, action_phase, cluster_keys, items_by_key, track_record, outcome)
     if request is None:
         return []
     prompt, container = request

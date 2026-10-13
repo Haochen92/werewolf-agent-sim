@@ -47,6 +47,9 @@ class TickConfig:
     synth_cell_unproven_cap: int = 12
     synth_track_min_follow: int = 5
     synth_every_k_gens: int = 2
+    synth_outcome: str = "verdict"              # which outcome each observation shows synthesis: the extraction
+                                                # judge's "verdict" or its decision's deterministic "grade"
+                                                # (decisions §13; both kept until measured)
     sp_dedup: bool = True
 
     def env(self) -> dict:

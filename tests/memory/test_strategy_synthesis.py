@@ -37,6 +37,23 @@ def test_format_cluster_shows_the_immediate_and_end_of_game_effects_apart():
     assert "\noutcome:" not in out
 
 
+def test_format_cluster_by_grade_shows_the_grade_and_hides_the_judges_verdict_and_end_of_game_text():
+    graded, ungraded = _obs("S1", "positive"), _obs("S2", "negative")
+    graded.value.update(decision_grade="negative", dimensions={
+        "immediate_response": "drew the night kill", "impact_on_final_game_outcome": "town won, so it helped"})
+    out = ss._format_cluster(["k1", "k2"], {"k1": graded, "k2": ungraded}, outcome="grade")
+    assert "(graded: negative)" in out and "(graded: not graded)" in out
+    assert "immediate effect: drew the night kill" in out
+    assert "outcome" not in out and "town won" not in out
+
+
+def test_the_grade_prompt_differs_only_in_how_outcomes_are_weighed():
+    request = ss.synthesis_request("healer", "night_action", ["k1"], {"k1": _obs("S1", "positive")}, outcome="grade")
+    assert "GRADE of its decision" in request[0] and "outcome SPREAD" not in request[0]
+    assert ss.CELL_SP_SYNTHESIS_PROMPT.replace(ss._VERDICT_WEIGHTING, "") == \
+        ss.GRADE_SP_SYNTHESIS_PROMPT.replace(ss._GRADE_WEIGHTING, "")
+
+
 def test_the_synthesis_prompt_carries_the_ten_seat_rules_and_no_opposite_rule():
     from Agents.prompts.compose import pool_rules_block
     from Agents.prompts.extraction import CELL_SP_SYNTHESIS_PROMPT

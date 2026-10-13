@@ -246,7 +246,7 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Tick
     def _run(t):
         role, phase, live, items, tr, tr_keys = t
         return t, synthesize_cluster_sps(role, phase, live, items, max_retries=1, track_record=tr,
-                                         model=cfg.model)
+                                         model=cfg.model, outcome=cfg.synth_outcome)
 
     # Each synthesis call's input and output, one JSON line per call, beside the store: the record a
     # worked example of synthesis is shown from (the full cluster, not only the excerpts displayed).
@@ -286,7 +286,7 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Tick
                     log.write(json.dumps({
                         "at": now.isoformat(), "role": role, "phase": phase,
                         "source_observations": live,
-                        "observations_text": _format_cluster(live, items),
+                        "observations_text": _format_cluster(live, items, cfg.synth_outcome),
                         "track_record": tr, "distilled_from": tr_keys,
                         "strategy_points": [{"key": k, "situation": sp.composed_situation, "action": sp.action}
                                             for k, sp in zip(new_keys, sps)],
@@ -304,7 +304,7 @@ def _batch_results(tasks: list, cfg: TickConfig, run_one, pool) -> list:
     from Agents.llm_factory.providers.anthropic import batch_parse
     from Agents.memory.strategy_synthesis import synthesis_cache_prefix, synthesis_request
 
-    requests = {f"t{i}": synthesis_request(role, phase, live, items, tr)
+    requests = {f"t{i}": synthesis_request(role, phase, live, items, tr, cfg.synth_outcome)
                 for i, (role, phase, live, items, tr, _keys) in enumerate(tasks)}
     parsed = batch_parse({k: v for k, v in requests.items() if v is not None}, cfg.model,
                          cache_prefix=synthesis_cache_prefix())

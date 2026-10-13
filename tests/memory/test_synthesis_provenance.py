@@ -41,7 +41,7 @@ def test_a_new_strategy_records_its_source_cluster_and_the_call_is_logged():
             patch.object(synth_mod, "cluster_observations_for_synth",
                          lambda store, nskey, cfgd, items=None, seed_keys=None: (_OBS, [["o1"]])), \
             patch.object(synth_mod, "synthesize_cluster_sps",
-                         lambda role, phase, live, items, max_retries=1, track_record="", model=None: [_FakeSP()]):
+                         lambda role, phase, live, items, max_retries=1, track_record="", model=None, outcome="verdict": [_FakeSP()]):
         store_ops.synthesize(Path(t), ns, {}, TickConfig(credit=False, incremental=False))
         log = [json.loads(line) for line in (Path(t) / "synthesis_log.jsonl").read_text().splitlines()]
 
