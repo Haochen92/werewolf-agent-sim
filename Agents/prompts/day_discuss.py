@@ -16,6 +16,7 @@ from Agents.prompts.common import (
     REASONING_DISCIPLINE,
     build_system_prompt,
 )
+from Agents.prompts.layout import BOARD, PUBLIC_RECORD, SHARED_SYSTEM, shared_prefix
 from Agents.prompts.memory import DAY_DISCUSSION_MEMORY_CONTEXT
 
 
@@ -188,6 +189,18 @@ def day_discuss_template(role: str) -> ChatPromptTemplate:
     """A dealt role's day discussion turn, from its card."""
     card = import_module(f"Agents.prompts.roles.{role}").CARD
     words = card.day_discuss
+    if shared_prefix():
+        # The public record first (layout.py); the role card, tone and format move out of the system
+        # message to after it, with everything else that differs by seat or call type.
+        human = (
+            PUBLIC_RECORD + BOARD
+            + build_system_prompt(card.playstyle, words.framing, TONE_INSTRUCTION, DAY_DISCUSS_RESPONSE_FORMAT)
+            + "\n" + "{tell_book}" + READS_COMMIT_INSTRUCTION
+            + _DISCUSS_HEADER + words.context + _DISCUSSION_STAGE_RULES
+            + words.trailer + _FIRING_BRIEF + DAY_DISCUSSION_MEMORY_CONTEXT
+            + DISCUSSION_SILENCE_RULE + ENGAGE_WITH_DISCUSSION_RULE
+        )
+        return ChatPromptTemplate.from_messages([("system", SHARED_SYSTEM), ("human", human)])
     system = build_system_prompt(
         "{preamble}", REASONING_DISCIPLINE, card.playstyle, words.framing, TONE_INSTRUCTION, DAY_DISCUSS_RESPONSE_FORMAT,
     )

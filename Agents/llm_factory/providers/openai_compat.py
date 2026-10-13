@@ -17,7 +17,7 @@ from langchain_core.messages import HumanMessage
 from langchain_core.runnables import RunnableLambda
 from langchain_openai import ChatOpenAI
 
-from .common import _first_tool_call, _parse_json_reply, _schema_instruction
+from .common import _first_tool_call, _parse_json_reply, _schema_instruction, split_at_transcript
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +44,42 @@ OPENROUTER_REASONING_SWITCH_ONLY = ("z-ai/",)
 
 PREFIXES = ("nim/", "deepseek/", "openai/", "openrouter/", "xai/")
 
+# OpenAI models that take explicit cache breakpoints (GPT-5.6 on; prompt-caching guide, read
+# 2026-10-13). In the shared-prefix prompt layout they get prompt_cache_options mode "explicit" and a
+# breakpoint on the system message and on each line of the public record: a later turn, or another
+# seat, then reads the record up to the earlier turn's last line (probe 2026-10-13: a seat's next
+# turn read 2,561 of 2,678 tokens, another seat 2,648 of 2,674), and the changing private part is
+# never written at the 1.25x write rate, as the implicit breakpoint writes it.
+EXPLICIT_CACHE_MODELS = ("gpt-6",)
+# OpenAI matches against the latest 80 breakpoints of a request and writes the latest four.
+_MAX_BREAKPOINTS = 80
+_BREAKPOINT = {"mode": "explicit"}
+
+
+def mark_explicit_breakpoints(payload: dict[str, Any]) -> None:
+    """Breakpoints on the system message and on the lines of the user message's public record (the
+    text before its transcript rule); the request switched to explicit-only caching. In place."""
+    for message in payload.get("messages") or []:
+        if message.get("role") == "system" and isinstance(message.get("content"), str):
+            message["content"] = [{"type": "text", "text": message["content"],
+                                   "prompt_cache_breakpoint": dict(_BREAKPOINT)}]
+            break
+    for message in reversed(payload.get("messages") or []):
+        content = message.get("content")
+        if message.get("role") != "user" or not isinstance(content, str):
+            continue
+        split = split_at_transcript(content)
+        if split is None:
+            continue
+        pieces, tail = split
+        for piece in pieces[-_MAX_BREAKPOINTS:]:
+            piece["prompt_cache_breakpoint"] = dict(_BREAKPOINT)
+        message["content"] = [*pieces, {"type": "text", "text": tail}]
+        break
+    extra = dict(payload.get("extra_body") or {})
+    extra["prompt_cache_options"] = {"mode": "explicit"}
+    payload["extra_body"] = extra
+
 
 class _ToolCallStructuredChatOpenAI(ChatOpenAI):
     """ChatOpenAI whose ``with_structured_output`` follows ``structured_mode`` (common.py).
@@ -55,6 +91,14 @@ class _ToolCallStructuredChatOpenAI(ChatOpenAI):
     """
 
     structured_mode: str = "forced_tool"
+
+    def _get_request_payload(self, input_: Any, *, stop: list[str] | None = None, **kwargs: Any) -> dict:
+        payload = super()._get_request_payload(input_, stop=stop, **kwargs)
+        from Agents.prompts.layout import shared_prefix
+
+        if shared_prefix() and self.model_name.startswith(EXPLICIT_CACHE_MODELS):
+            mark_explicit_breakpoints(payload)
+        return payload
 
     def with_structured_output(self, schema=None, **kwargs):
         if "method" in kwargs or self.structured_mode == "forced_tool" or not isinstance(schema, type):

@@ -16,6 +16,7 @@ from Agents.prompts.common import (
     build_system_prompt,
     json_contract,
 )
+from Agents.prompts.layout import BOARD, PUBLIC_RECORD, SHARED_SYSTEM, shared_prefix
 from Agents.prompts.memory import DAY_VOTE_MEMORY_CONTEXT
 from Agents.schemas.lineup_output import DayVoteOutput
 
@@ -61,6 +62,16 @@ def day_vote_template(role: str) -> ChatPromptTemplate:
     """A dealt role's day vote, from its card."""
     card = import_module(f"Agents.prompts.roles.{role}").CARD
     words = card.day_vote
+    if shared_prefix():
+        # The public record first (layout.py), then the role card, the voting rules and the contract.
+        human = (
+            PUBLIC_RECORD + BOARD
+            + build_system_prompt(card.playstyle, words.framing, words.guidance or _TOWN_GUIDANCE,
+                                  json_contract(DayVoteOutput))
+            + "\n" + "{tell_book}" + READS_COMMIT_INSTRUCTION
+            + _VOTE_HEADER + words.context.lstrip("\n") + DAY_VOTE_MEMORY_CONTEXT + words.closing
+        )
+        return ChatPromptTemplate.from_messages([("system", SHARED_SYSTEM), ("human", human)])
     system = build_system_prompt(
         "{preamble}", REASONING_DISCIPLINE, card.playstyle, words.framing,
         words.guidance or _TOWN_GUIDANCE, json_contract(DayVoteOutput),

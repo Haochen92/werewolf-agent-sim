@@ -510,7 +510,9 @@ class Translator:
     # The human seat's round turn goes through the uncached twin: same delta, same handling.
     node("round_turn_human", writes={"round_candidates", "agent_strategies"})(_round_turn)
 
-    @node("COLLECT_ROUND", writes={"day_channel"})
+    # In the shared-prefix prompt layout the round's kept notes are written here, not by the turns
+    # (Agents/nodes/day/flow.py collect_round), so this node can carry agent_strategies too.
+    @node("COLLECT_ROUND", writes={"day_channel", "agent_strategies"})
     def _collect_round(self, delta):
         return self._discuss(delta)
 

@@ -354,10 +354,12 @@ def collect_round(state: DayGraphState, config: RunnableConfig):
     # Only this round's candidates: round_candidates accumulates all day, so the opening's are
     # still in it when the closing is collected.
     by_player: dict[str, DayChannel] = {}
+    notes: dict[str, str] = {}
     for candidate in state.get("round_candidates", []):
         same_round = candidate.day == current_day and candidate.day_round == day_round
         if same_round:
             by_player[candidate.entry.player] = candidate.entry
+            notes[candidate.entry.player] = candidate.strategy
     if not by_player:
         return {}
 
@@ -376,7 +378,13 @@ def collect_round(state: DayGraphState, config: RunnableConfig):
     numbered: list[DayChannel] = []
     for offset, entry in enumerate(ordered):
         numbered.append(entry.model_copy(update={"seq": first_seq + offset}))
-    return {"day_channel": numbered}
+    update: dict = {"day_channel": numbered}
+    # Shared-prefix layout: a round turn's note was held back with its line (actors.round_turn); it is
+    # kept only for a line the filter let through.
+    kept = {e.player: notes[e.player] for e in ordered if not e.gated and notes.get(e.player)}
+    if kept:
+        update["agent_strategies"] = kept
+    return update
 
 
 def _filter_keeping_humans(ordered: list[DayChannel], state: DayGraphState, round_filter) -> list[DayChannel]:

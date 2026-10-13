@@ -138,6 +138,9 @@ class RoundCandidate(BaseModel):
     once a day, so (day, day_round) names a round."""
     entry: DayChannel
     """The turn's line or pass marker, with the seq it counted itself (overwritten on collection)."""
+    strategy: str = ""
+    """The turn's strategy note, in the shared-prefix layout only: written on collection unless the
+    round's filter held the line, so a seat never keeps a note about a line nobody heard."""
 
 
 class DaySummary(BaseModel):

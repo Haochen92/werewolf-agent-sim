@@ -295,3 +295,41 @@ Your current strategy note:
         ),
     ]
 )
+
+
+# The same lookup in the shared-prefix layout (Agents/prompts/layout.py): the seats' system message
+# and public record first, so a lookup shares its prefix with every seat turn of the game; the rest of
+# the game state, the private part and the cell's instructions after the boundary.
+_V6_SITUATION_SUMMARY_SHARED_STATE = """
+The game as it stands.
+
+Current day: {current_day}
+
+Surviving players: {surviving_players}
+
+Dead so far (public):
+{dead_roster}
+
+Your private information (only what your role knows):
+{private_state}
+Night record: {night_actions}
+Wolf channel: {wolf_channel}
+
+Your current strategy note:
+{previous_strategy}
+
+{known_board_facts}
+
+"""
+
+
+def situation_summary_template() -> ChatPromptTemplate:
+    """The live lookup's template in the layout the environment selects (layout.shared_prefix)."""
+    from Agents.prompts.layout import PUBLIC_RECORD, SHARED_SYSTEM, shared_prefix
+
+    if not shared_prefix():
+        return V6_SITUATION_SUMMARY
+    return ChatPromptTemplate.from_messages([
+        ("system", SHARED_SYSTEM),
+        ("human", PUBLIC_RECORD + _V6_SITUATION_SUMMARY_SHARED_STATE + V6_SITUATION_SUMMARY_INSTRUCTIONS),
+    ])
