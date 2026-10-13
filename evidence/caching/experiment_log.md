@@ -502,13 +502,129 @@ records under `evaluation/eval_results/model_admission/` with the same labels.
 
 ---
 
-## 13. Where it stands
+## 13. 2026-10-13 — The shared-prefix layout: built, checked, measured
+
+**Can OpenAI take explicit breakpoints through our client?** *Tests:* whether §12's missing piece exists
+for the Chat Completions API we use. The installed SDK has it: a request-level
+`prompt_cache_options: {"mode": "explicit"}` and a `prompt_cache_breakpoint` on text content parts; OpenAI
+matches against the latest 80 breakpoints of a request and writes the latest four. A three-call probe on
+GPT-6 Luna (rules in the system message, 40 transcript lines each marked, a private part unmarked):
+
+| Call | Read from cache | Written |
+|---|---|---|
+| Seat A | 0 of 2,590 | 0 reported |
+| Seat A's next turn, 3 lines longer | **2,561 of 2,678** | 87 (the 3 new lines) |
+| Seat B, same transcript | **2,648 of 2,674** | 0 |
+
+Both reuse paths that never worked on Luna (the growing transcript, and another seat) worked, and the
+changing private part was never written. The first call reported 0 written although the second read what
+it stored; that was not explained. LangChain passes both fields through unchanged.
+
+**The build** (behind `WW_PROMPT_LAYOUT=shared_prefix`, today's layout untouched without it). Every seat
+turn and memory lookup now opens with what all seats and call types share: a system message of the rules
+alone, then the public record (earlier days, today's transcript) ending on the user message's only
+transcript rule. The board, the role card, the call's instructions, private results, brief and memory come
+after it; night prompts move their memories and strategy note out of the system message. The transcript is
+published lines only, so a held-back turn's note is dropped (round turns keep theirs on the candidate until
+the round's filter has decided). Claude keeps its two marks; OpenAI gpt-6 models get explicit-only caching
+with breakpoints on the system message and the record's lines. A test renders every living seat's
+discussion, vote, night, pack and lookup prompt in one game and finds one identical prefix.
+
+**Smoke check: do both APIs accept it?** *Tests:* refused requests or broken output under the new layout.
+The 8 real ten-seat turns × 3 variants of §12, both models, both schema modes: 0 failures in 96 real turns,
+field order kept in all, and the share another seat read from cache rose from 0% (Haiku) and 29% (Luna)
+to 53–71%. A seat's own next turn fell on Haiku from 90% to 77% (enforced), as expected: its role card now
+sits after the transcript and is sent again each turn.
+
+**Bench: does the layout, or an unenforced schema on top of it, change message quality?** *Tests:* more
+factual errors. GPT-6 Luna, all 18 ten-seat discussion turns × 5 samples, judged by Claude Haiku 5.5
+against each case's golden:
+
+| Arm | Bad samples | Against today, per case (better / worse) |
+|---|---|---|
+| Today's layout, enforced | 11/90 (12%) | — |
+| Shared prefix, enforced | 13/90 (14%) | 4 / 5, p = 1.0 |
+| Shared prefix, unenforced | 10/90 (11%) | 4 / 2, p = 0.69 |
+
+No detected change at this power: 18 cases would show only a large regression (about ten points). It
+covers discussion turns only; the ten-seat frozen set has no votes or night turns.
+
+**Games: what does it save?** Two games per arm on the same two seeds and lineups, memory on (strategy
+points from `ten_seat_v2`), every call on the seat model. "After" means the new layout with the unenforced
+schema; for Haiku a third arm kept the schema enforced. Per call, because game length differed:
+
+| | Cost per 1,000 calls | Read / written: vote | Read / written: night | Discussion turns per game |
+|---|---|---|---|---|
+| Luna, today's layout | $0.89 | 0r / 100w | 0r / 100w | 70 |
+| **Luna, new layout** | **$0.64 (−28%)** | 64r / 0w | 60r / 0w | 72 |
+| Haiku, today's layout | $1.10 | 0r / 87w | 0r / 99w | 65 |
+| Haiku, new layout, unenforced | $1.10 | 63r / 1w | 56r / 0w | 87 |
+| Haiku, new layout, enforced | $1.07 | 0r / 78w | ~18r / 55w | 89 |
+
+- **On Luna the change pays:** input cost per call fell 36%, output 10%, and votes and night actions went
+  from never reading the cache to reading about 60% of their input.
+- **On Haiku the input saving was spent elsewhere.** Unenforced, Haiku reasoned more on seat turns (about
+  1.5× on discussion, 3–5× on votes, against both enforced arms). Enforced, its reasoning stayed near
+  today's, but the per-seat target lists kept votes and night from sharing the cache. A day-summary rise
+  first read as a schema effect appeared in the enforced games too; it was game-to-game variation.
+- **Haiku's games got longer under the new layout, in both schema modes:** about 88 discussion turns per
+  game against 65, so a Haiku game cost about 20–25% more. §14 explains why.
+
+*Provenance:* `evaluation/config/model_admission/smoke_shared_prefix_*_2026_10_13.json`,
+`evaluation/config/hallucination_bench_shared_prefix_luna.json`, `batch_results/cache_ab_2026_10_13/`
+(games), read with `evaluation/experiments/game_cache_share.py`; commits `0d936b08` (layout), `5e3c5f30`.
+
+---
+
+## 14. 2026-10-13 — An unexpected benefit: Haiku stops staying silent
+
+**The question.** Haiku's longer games could have been waste: wordier messages, or the same point made
+again. Reading the games turn by turn said otherwise.
+
+**What changed is how often a seat volunteers, not how much it says.** Messages ran 40–50 words in every
+arm. On turns where a seat may pass, Haiku in today's layout almost always did, consistently across six
+games (four gate games of 2026-10-12 and the two baseline games):
+
+| Spoke rather than passed, day 2 on | Openings | Proactive turns |
+|---|---|---|
+| Haiku, today's layout (6 games) | 7–8% | 20–35% |
+| Haiku, new layout (4 games, both schema modes) | 23–26% | 53–54% |
+| Luna, today's layout (5 games) | 28–43% | 58–72% |
+
+Each volunteered line invites answers, so reactive turns followed (13 before, 45–56 after). The new layout
+brings Haiku to about Luna's level of participation.
+
+**One seat can set a day.** Day 2 of game 1, same seed, same night: the Sentinel had watched player_8 and
+seen player_2 visit. In today's layout it passed its opening, noting "*Do not claim early*", every seat
+passed, and the day had 3 lines. In the new layout it opened with "*I'm the Sentinel. On night 1 I watched
+player_8, and player_2 came to them that night. Player_2, what were you doing at player_8's house?*",
+noting "*Share results early when they help town*"; the Chanteuse answered and the day ran to 11 lines.
+In game 2 of today's layout, day 2 had no lines at all.
+
+**One plausible reading.** The role cards tell information roles to be careful: the Sentinel's says
+"*revealing your role could mark you as a night target*", the Healer's "*don't draw fatal attention*". Today
+those lines sit in the system message; in the new layout they sit in the user message after the transcript,
+next to the opening rules ("*share new information from the night*"), the seat's own night results and the
+brief. The words are identical, only their position moved. Haiku seems to weigh the system message's
+caution heavily and hold back; Luna does not. The position effect is inferred, not isolated.
+
+**Decision (owner).** Today's Haiku is too quiet; the extra participation is kept as a benefit of the
+layout, not counted against it. The Phase 3 hand reads (batch 4, 2026-10-10) had already named
+"*information roles withholding results*" and "*thin, repetitive days*" as problems. Haiku's cost per game
+rises because its games now contain more discussion; its cost per call is unchanged.
+
+**Not measured:** whether Haiku plays better under the new layout (town win rate, bad claims). Two games
+per arm cannot say.
+
+---
+
+## 15. Where it stands
 
 Caching is a property of each provider: automatic on DeepSeek, boundary-based on OpenAI (implicit at the
-last eligible message, or explicit breakpoints), marked on Claude, a cache object on Gemini. A game reuses
-about a quarter of its input today (§11), mostly fixed instructions on OpenAI (§12). The next step is to
-put cache boundaries at the end of the shared part (explicit breakpoints on OpenAI, if the client can send
-them; Claude's marks), move changing content out of system messages, and order prompts shared-first,
-behind a flag. The unenforced schema is now usable on shape, order and reliability; its effect on message
-quality, and the new layout's, are what the hallucination bench must measure. Other open items (the
-lookup layout's effect, the June extraction reorder) are ranked in the report.
+last eligible message, or explicit breakpoints), marked on Claude, a cache object on Gemini. The
+shared-prefix layout (§13) makes votes, night actions and lookups share the day's transcript across seats
+on both Luna and Haiku. On Luna it cuts the cost per call by about 28% with no detected change in message
+quality; on Haiku it saves nothing per call but ends its habit of passing almost every free turn (§14).
+The layout is still a process-wide flag; choosing it per model means moving it into the model catalogue.
+Open: game quality under the new layout beyond factual errors, the bench's missing vote and night cases,
+the lookup layout's effect, and the June extraction reorder, ranked in the report.
