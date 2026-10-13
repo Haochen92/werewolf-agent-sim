@@ -296,3 +296,51 @@ def test_prune_and_evict_list_their_changes_and_never_prune_an_unscored_point():
     assert {c["key"]: c["change"] for c in stats["changes"]} == {"bad": "pruned", "rejected": "evicted",
                                                                  "good": "proven"}
     assert [r["key"] for r in ns[f"strategy_points/{cell}"]] == ["unscored", "good"]
+
+
+# --- a tagged observation's grade, and a served game's record rebuilt from its events ---
+
+def test_observation_grade_finds_the_named_decision():
+    lynch = {"day": 2, "voted_player": "p7", "vote_counts": {"p7": 5}, "votes": [{"voter": "p1", "votee": "p7"}]}
+    v = view(pack_night("killed", extra=[rec("p7", "block", "p4", "blocked"), rec("p1", "investigate", "p7", "suspicious")]),
+             days=[lynch])
+    assert v.observation_grade("investigator", "night_action", 2) == "positive"
+    assert v.observation_grade("chanteuse", "night_action", 2, "kill") == "positive"
+    assert v.observation_grade("chanteuse", "night_action", 2, "several") is None  # no single decision
+    assert v.observation_grade("illusionist", "night_action", 2, "skill") == "neutral"  # declined: no will
+    assert v.observation_grade("sentinel", "night_action", 2) == "neutral"  # no record: a declined watch
+    assert v.observation_grade("investigator", "day_vote", 2) == "positive"
+    assert v.observation_grade("investigator", "day_vote", 0) is None
+    assert v.observation_grade("investigator", "day_vote", -1) is None  # not tagged
+
+
+def test_record_from_event_log_rebuilds_what_the_grader_reads():
+    from Agents.memory.extraction.offline import record_from_event_log
+
+    roles = {"p1": "investigator", "p6": "healer", "p7": "chanteuse", "p8": "illusionist", "p9": "serial_killer"}
+    events = [
+        {"seq": 1, "day": 1, "type": "roles_assigned", "roles": roles},
+        {"seq": 2, "day": 1, "type": "night_action", "actor": "p6", "role": "healer", "target": "p1"},
+        {"seq": 3, "day": 1, "type": "night_action", "actor": "p1", "role": "investigator", "target": "p7"},
+        {"seq": 4, "day": 1, "type": "wolf_kill_decided", "carrier": "p8", "target": "p6"},
+        {"seq": 5, "day": 1, "type": "night_record", "actor": "wolves", "action": "kill", "target": "p6", "result": "killed"},
+        {"seq": 6, "day": 1, "type": "night_record", "actor": "p9", "action": "kill", "target": "p1", "result": "saved"},
+        {"seq": 7, "day": 1, "type": "night_record", "actor": "p1", "action": "investigate", "target": "p7",
+         "result": "suspicious", "seen": ["p7"]},
+        {"seq": 8, "day": 1, "type": "night_result", "deaths": [{"player": "p6", "concealed": False}],
+         "saves": [{"player": "p1"}]},
+        {"seq": 9, "day": 2, "type": "addressed_targets", "player": "p7", "targets": [{"stance": "accusation", "target": "p1"}]},
+        {"seq": 10, "day": 2, "type": "vote_cast", "voter": "p7", "votee": "p1"},
+        {"seq": 11, "day": 2, "type": "lynch_result", "player": "p1", "outcome": "lynched", "vote_counts": {"p1": 4}},
+        {"seq": 12, "day": 2, "type": "game_over", "winner": "wolves", "neutral_result": None},
+    ]
+    g = record_from_event_log("g1", events)
+    n = g["night_resolutions"][0]
+    assert {"actor": "p8", "kind": "kill", "role": "illusionist", "target": "p6"} in n["choices"]
+    assert sorted(n["outcome"]["attackers"]) == ["p8", "p9"]
+    healer = next(r for r in n["records"] if r["actor"] == "p6")  # killed that night, so never told
+    assert healer["untold"] and healer["result"] == "saved"
+    v = GameView(g)
+    assert v.observation_grade("healer", "night_action", 1) == "positive"
+    assert v.observation_grade("chanteuse", "day_discussion", 2) == "positive"  # a landed push
+    assert v.observation_grade("chanteuse", "day_vote", 2) == "positive"  # blended with the room

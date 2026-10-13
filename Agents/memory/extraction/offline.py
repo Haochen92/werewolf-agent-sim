@@ -139,6 +139,132 @@ def input_from_event_log(game_id: str, events: list[dict], human_players: list |
     return _case(game_id, roles, lineup, winner, state, human_players)
 
 
+
+_NOT_VISITS = ("pick", "bet", "hold_fire")
+
+
+def record_from_event_log(game_id: str, events: list[dict]) -> dict:
+    """A served game's record in the shape the batch runner writes and the credit grader reads
+    (consolidation/grading.py): roles, each night's records, choices, deaths and outcome (attackers,
+    attacks, conceals, visits), each day's votes and lynch, the day channel's accusations, and the
+    result. Rebuilt from the durable wire events; night choices come from the actors' own records
+    (a blocked action keeps its record), the pack's kill from its carrier.
+
+    A player is not told its result on the night it dies, so the wire has no record of its action that
+    night, only its choice (``night_action``). That record is rebuilt where the public result decides it
+    (a protection saved its target or not, a check reads by the target's side, a bet or a shot by the
+    deaths) and marked ``unknown`` where it does not (a watch, a follow, a block, a conceal), which the
+    grader leaves ungraded."""
+    from Agents.rules.night_record import PACK_ACTOR
+
+    roles, winner, neutral_result = {}, None, None
+    records: dict[int, dict] = {}
+    carriers: dict[int, str] = {}
+    night_deaths: dict[int, list] = {}
+    night_saves: dict[int, list] = {}
+    night_choices: dict[int, list] = {}
+    votes: dict[int, list] = {}
+    lynches: dict[int, dict] = {}
+    day_channel: list[dict] = []
+    for e in sorted(events, key=lambda e: e["seq"]):
+        t, day = e["type"], e.get("day")
+        if t == "roles_assigned":
+            roles = e["roles"]
+        elif t == "game_over":
+            winner, neutral_result = e.get("winner"), e.get("neutral_result")
+        elif t == "night_record":  # sent once per recipient; kept once
+            key = (e["actor"], e["action"], e.get("target"))
+            records.setdefault(day, {}).setdefault(key, {k: e.get(k) for k in (
+                "actor", "action", "target", "result", "outcome")} | {"day": day, "seen": e.get("seen") or []})
+        elif t == "wolf_kill_decided":
+            carriers[day] = e["carrier"]
+        elif t == "night_result":
+            night_deaths[day] = e.get("deaths") or []
+            night_saves[day] = [x["player"] for x in e.get("saves") or []]
+        elif t == "night_action":
+            night_choices.setdefault(day, []).append(e)
+        elif t == "vote_cast":
+            votes.setdefault(day, []).append({"voter": e["voter"], "votee": e["votee"]})
+        elif t == "lynch_result":
+            lynches[day] = e
+        elif t == "addressed_targets":
+            day_channel.append({"day": day, "player": e["player"], "passed": False,
+                                "addressed_targets": e.get("targets") or []})
+        elif t == "speech":
+            day_channel.append({"day": day, "player": e["player"], "passed": False, "addressed_targets": [],
+                                "message": e.get("message", "")})
+
+    nights = []
+    for day in sorted(set(records) | set(night_choices)):
+        deaths = night_deaths.get(day, [])
+        recs = list(records.get(day, {}).values()) + _untold_records(
+            day, night_choices.get(day, []), records.get(day, {}), roles,
+            [d["player"] for d in deaths], night_saves.get(day, []))
+        concealed = [d["player"] for d in deaths if d.get("concealed")]
+        choices, attackers, attacks_on, visits = [], [], {}, []
+        for r in recs:
+            went_ahead = r["result"] != "roleblocked"
+            if r["actor"] == PACK_ACTOR:
+                actor = carriers.get(day)
+                choices.append({"actor": actor, "kind": "kill", "role": roles.get(actor), "target": r["target"]})
+                if went_ahead and actor:
+                    attackers.append(actor)
+                    attacks_on.setdefault(r["target"], []).append({"attacker": actor, "attacker_type": "wolves"})
+                    if r["target"] not in concealed:  # a conceal hides the carrier's visit to its victim
+                        visits.append([actor, r["target"]])
+                continue
+            kind = {"shoot": "kill"}.get(r["action"], r["action"])
+            choices.append({"actor": r["actor"], "kind": kind, "role": roles.get(r["actor"]), "target": r["target"]})
+            if not went_ahead:
+                continue
+            if r["action"] in ("kill", "shoot"):
+                attackers.append(r["actor"])
+                attacks_on.setdefault(r["target"], []).append({"attacker": r["actor"]})
+            if r["action"] not in _NOT_VISITS and r["target"]:
+                visits.append([r["actor"], r["target"]])
+        nights.append({"day": day, "records": recs, "choices": choices, "deaths": [d["player"] for d in deaths],
+                       "outcome": {"attackers": attackers, "attacks_on": attacks_on, "concealed": concealed,
+                                   "visits": visits}})
+    days = []
+    for day in sorted(set(votes) | set(lynches)):
+        lynch = lynches.get(day, {})
+        days.append({"day": day, "votes": votes.get(day, []), "vote_counts": lynch.get("vote_counts") or {},
+                     "voted_player": lynch.get("player"), "no_vote": lynch.get("outcome") == "no_vote",
+                     "voted_player_role": lynch.get("role")})
+    return {"game_id": game_id, "roles": roles, "winner": winner, "neutral_result": neutral_result,
+            "night_resolutions": nights, "day_resolutions": days, "day_channel": day_channel}
+
+
+def _untold_records(day: int, choices: list[dict], records: dict, roles: dict, died: list[str],
+                    saved: list[str]) -> list[dict]:
+    """The records of actors who chose an action that night but were told nothing (they died): the
+    result where the public outcome decides it, else ``unknown``."""
+    from Agents.schemas.roles import ROLE_SPECS, WOLVES
+
+    told = {actor for actor, _action, _target in records}
+    rebuilt = []
+    for c in choices:
+        actor, role, target = c.get("actor"), c.get("role"), c.get("target")
+        if actor in told or role not in ROLE_SPECS or role == "necromancer":
+            continue
+        action = {"vigilante": "shoot"}.get(role, ROLE_SPECS[role].night_action)
+        if action == "protect":
+            result = "saved" if target in saved else "no_attack"
+        elif action == "investigate":
+            result = "suspicious" if ROLE_SPECS.get(roles.get(target, ""), None) and \
+                ROLE_SPECS[roles[target]].side == WOLVES else "not_suspicious"
+        elif action in ("kill", "shoot"):
+            result = "killed" if target in died else "saved" if target in saved else "immune"
+        elif action == "bet":
+            result = "self_bet" if target == actor else "scored_1" if target in died else "missed"
+        elif action == "pick":
+            result = "picked"
+        else:
+            result = "unknown"
+        rebuilt.append({"day": day, "actor": actor, "action": action, "target": target, "result": result,
+                        "outcome": "", "seen": [], "untold": True})
+    return rebuilt
+
 # --- The job: saved inputs extracted in Claude batches -----------------------------------------
 # One call per (game, dealt role, phase), as live extraction made them (cell_units.ROLE_UNITS): a
 # game's calls share its prefix (the rules, the standards and the whole game record), marked for

@@ -77,6 +77,12 @@ class GameView:
             for p in self.nights[night].get("deaths") or []:
                 self.died_night.setdefault(p, night)
         self.lynched_day = {d["voted_player"]: day for day, d in self.days.items() if d.get("voted_player")}
+        self.accused: dict[tuple[str, int], set[str]] = {}
+        """(player, day) -> the players it accused that day (stance-tagged), from the day channel."""
+        for m in g.get("day_channel") or []:
+            for t in m.get("addressed_targets") or []:
+                if t.get("stance") == "accusation" and t.get("target"):
+                    self.accused.setdefault((m.get("player"), m.get("day")), set()).add(t["target"])
         self.pick: tuple[int, str] | None = None
         for night in sorted(self.nights):
             for r in self.nights[night].get("records") or []:
@@ -180,6 +186,8 @@ class GameView:
         rec = self._own_record(night, player, action) if action else None
         if rec is None:
             return None
+        if rec.get("result") == "unknown":
+            return None  # a record rebuilt for a player who died that night, its result not public
         if rec.get("result") == "roleblocked":
             return "neutral"  # a blocked action spends nothing and was not the actor's choice
         grade = getattr(self, f"_grade_{role}", None)
@@ -333,6 +341,39 @@ class GameView:
                 return "positive"  # a landed push advances an evil or a betting player
             return "positive" if self.side.get(lynched) in EVIL else "read_excluded"
         return self.vote_grade(player, role, day, lynched)
+
+    def observation_grade(self, role: str, phase: str, day: int, pack_turn: str = "none") -> str | None:
+        """The grade of the decision an extracted observation names (its role, phase, and
+        ``decision_day``/``pack_turn``; decisions §13). None when the observation names no single
+        decision (day 0, untagged -1, a wolf's "several") or the record holds no such decision."""
+        holder = next((p for p, r in self.roles.items() if r == role), None)
+        if holder is None or day is None or day <= 0:
+            return None
+        if phase == "day_vote":
+            day_res = self.days.get(day) or {}
+            votee = next((v.get("votee") for v in day_res.get("votes") or [] if v.get("voter") == holder), None)
+            if votee is None:
+                return None
+            return self.vote_grade(holder, role, day, votee, majority=majority_vote(day_res), day_res=day_res)
+        if phase == "day_discussion":
+            grade = self.discussion_grade(holder, role, day, self.accused.get((holder, day), set()))
+            return None if grade == "read_excluded" else grade  # credit's exclusion, not a grade
+        if phase != "night_action" or day not in self.nights:
+            return None
+        if side(role) == WOLVES:
+            if pack_turn in ("chat", "kill"):
+                kind = pack_turn
+            elif pack_turn == "skill":
+                kind = ROLE_SPECS[role].night_action if self._own_record(
+                    day, holder, ROLE_SPECS[role].night_action) else "declined"
+            else:
+                return None
+        else:
+            own = next((r for r in self._records(day) if r.get("actor") == holder), None)
+            kind = "declined" if own is None else ("hold_fire" if own.get("action") == "hold_fire" else
+                                                   ROLE_SPECS[role].night_action)
+        return self.night_grade({"player_id": holder, "player_role": role, "day": day,
+                                 "agent_night_action": {"kind": kind}})
 
     def decision_grade(self, ec: dict) -> str | None:
         """The grade of one vote or night decision; None = not graded."""
