@@ -7,8 +7,8 @@ worked against its own side) before the observations are shown or stored. The or
 and the judge's reasons go into a de-halo record, so nothing is lost.
 
 Configured by ``ExtractionConfig.dehalo``: on/off, the model (a Claude model through the Anthropic
-SDK, anything else through the game's model factory) and its thinking level. It never breaks
-extraction: a missing key or a failed call leaves the observations as they were.
+SDK, anything else through the game's model factory: llm_factory/structured.py) and its thinking
+level. It never breaks extraction: a missing key or a failed call leaves the observations as they were.
 """
 
 from __future__ import annotations
@@ -16,7 +16,8 @@ from __future__ import annotations
 from logging import getLogger
 from typing import Any
 
-from Agents.memory.claude_structured import claude_api_key, parse_with_claude
+from Agents.llm_factory.providers.anthropic import claude_api_key
+from Agents.llm_factory.structured import is_claude, structured_call
 from Agents.memory.persistence.config import DehaloConfig
 from Agents.prompts.compose import rules_block
 from Agents.prompts.extraction.dehalo import DEHALO_PROMPT
@@ -34,31 +35,12 @@ def _lessons(observations: list) -> str:
     return "\n".join(rows)
 
 
-def _judge_with_claude(prompt: str, config: DehaloConfig) -> tuple[Judgments | None, dict]:
-    if not claude_api_key():
-        logger.warning("De-halo skipped: no CLAUDE_API_KEY for %s.", config.model)
-        return None, {}
-    return parse_with_claude(prompt, Judgments, config.model, config.thinking_level)
-
-
-def _judge_with_factory(prompt: str, config: DehaloConfig) -> tuple[Judgments | None, dict]:
-    from langchain_core.callbacks import get_usage_metadata_callback
-
-    from Agents.llm_factory.backends import create_chat_model
-
-    llm = create_chat_model(config.model, temperature=1.0, thinking_level=config.thinking_level)
-    with get_usage_metadata_callback() as cb:
-        result = llm.with_structured_output(Judgments).invoke(prompt)
-    if isinstance(result, dict):
-        result = Judgments.model_validate(result)
-    return result, dict(cb.usage_metadata)
-
-
 def judge(prompt: str, config: DehaloConfig) -> tuple[Judgments | None, dict]:
     """The judge's verdicts and token usage for one game's lessons."""
-    if config.model.startswith("claude"):
-        return _judge_with_claude(prompt, config)
-    return _judge_with_factory(prompt, config)
+    if is_claude(config.model) and not claude_api_key():
+        logger.warning("De-halo skipped: no CLAUDE_API_KEY for %s.", config.model)
+        return None, {}
+    return structured_call(prompt, Judgments, config.model, thinking_level=config.thinking_level)
 
 
 def dehalo_prompt(observations: list, inputs: dict[str, Any]) -> str:

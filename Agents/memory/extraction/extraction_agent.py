@@ -34,7 +34,7 @@ from .inputs import (
     build_cell_strategy_tail,
     build_role_extraction_tail,
 )
-from .prefix_cache import create_prefix_cache
+from Agents.llm_factory.providers.google import create_prefix_cache
 
 logger = getLogger(__name__)
 

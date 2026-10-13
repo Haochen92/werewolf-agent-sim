@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 from pydantic import BaseModel
 
-from Agents.memory import claude_structured as cs
+from Agents.llm_factory.providers import anthropic as cs
 
 
 class _Verdict(BaseModel):

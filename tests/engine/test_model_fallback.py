@@ -166,7 +166,7 @@ import pytest
 from google.genai import errors as genai_errors
 
 from Agents.llm_factory import health as health_mod
-from Agents.llm_factory.backends import GAME_LLM, GameLLM
+from Agents.llm_factory.chat import GAME_LLM, GameLLM
 from Agents.llm_factory.embeddings import is_transient_provider_error
 
 
@@ -324,7 +324,7 @@ def test_openai_and_xai_prefixes_build_openai_protocol_clients(monkeypatch):
     tool-calling ChatOpenAI pointed at the provider (no network at construction)."""
     import pytest
 
-    from Agents.llm_factory.backends import _build_chat_model
+    from Agents.llm_factory.chat import _build_chat_model
 
     for prefix, key, url in (("openai", "OPENAI_API_KEY", "api.openai.com"),
                              ("xai", "XAI_API_KEY", "api.x.ai")):

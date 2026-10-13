@@ -2,7 +2,7 @@
 in the batch with the instructions as the cached head, verdicts come back in job order, and a job the
 batch lost is judged directly."""
 
-import Agents.memory.claude_structured as cs
+import Agents.llm_factory.providers.anthropic as cs
 from evaluation.src.judges.golden_expectation import SYSTEM, GoldenVerdict, is_claude, judge_golden_batch
 
 

@@ -20,7 +20,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel
 
 from Agents.llm_factory import get_llm, get_llm_game_fallback
-from Agents.llm_factory.backends import GAME_LLM
+from Agents.llm_factory.chat import GAME_LLM
 from Agents.llm_factory.embeddings import is_transient_provider_error
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
 from Agents.schemas.game_events import (

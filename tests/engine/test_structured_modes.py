@@ -1,4 +1,4 @@
-"""How an OpenAI-protocol model is asked for a schema (Agents/llm_factory/backends.py, STRUCTURED_MODES),
+"""How an OpenAI-protocol model is asked for a schema (Agents/llm_factory/providers/common.py, STRUCTURED_MODES),
 and when DeepSeek may think: its thinking mode rejects a forced tool call, so thinking is on only
 when the model's mode doesn't force one."""
 from dataclasses import replace
@@ -9,8 +9,10 @@ from langchain_core.messages import AIMessage
 from langchain_core.runnables import RunnableLambda
 from pydantic import BaseModel
 
-from Agents.llm_factory import backends, catalog
-from Agents.llm_factory.backends import _ToolCallStructuredChatOpenAI, _build_chat_model
+from Agents.llm_factory import catalog
+from Agents.llm_factory.providers import common, openai_compat
+from Agents.llm_factory.chat import _build_chat_model
+from Agents.llm_factory.providers.openai_compat import _ToolCallStructuredChatOpenAI
 
 
 class Vote(BaseModel):
@@ -18,17 +20,17 @@ class Vote(BaseModel):
 
 
 def test_json_reply_is_validated_and_a_fence_is_tolerated():
-    assert backends._parse_json_reply(Vote, AIMessage('{"target": "Mia"}')) == Vote(target="Mia")
-    assert backends._parse_json_reply(Vote, AIMessage('```json\n{"target": "Mia"}\n```')) == Vote(target="Mia")
+    assert common._parse_json_reply(Vote, AIMessage('{"target": "Mia"}')) == Vote(target="Mia")
+    assert common._parse_json_reply(Vote, AIMessage('```json\n{"target": "Mia"}\n```')) == Vote(target="Mia")
     with pytest.raises(OutputParserException):
-        backends._parse_json_reply(Vote, AIMessage("I vote for Mia."))
+        common._parse_json_reply(Vote, AIMessage("I vote for Mia."))
 
 
 def test_auto_tool_reply_without_the_tool_call_is_a_parse_failure():
     called = AIMessage("", tool_calls=[{"name": "Vote", "args": {"target": "Omar"}, "id": "1"}])
-    assert backends._first_tool_call(Vote, called) == Vote(target="Omar")
+    assert common._first_tool_call(Vote, called) == Vote(target="Omar")
     with pytest.raises(OutputParserException):
-        backends._first_tool_call(Vote, AIMessage("Omar, obviously."))
+        common._first_tool_call(Vote, AIMessage("Omar, obviously."))
 
 
 def test_json_mode_appends_the_schema_last_and_turns_on_json_output(monkeypatch):
@@ -114,7 +116,7 @@ def test_json_schema_mode_asks_for_the_providers_strict_structured_output(monkey
         seen.update(kwargs)
         return "runnable"
 
-    monkeypatch.setattr(backends.ChatOpenAI, "with_structured_output", fake)
+    monkeypatch.setattr(openai_compat.ChatOpenAI, "with_structured_output", fake)
     llm = _ToolCallStructuredChatOpenAI(model="m", api_key="k", structured_mode="json_schema")
     assert llm.with_structured_output(Vote) == "runnable"
     assert seen == {"method": "json_schema", "strict": True}

@@ -14,7 +14,7 @@ from __future__ import annotations
 import asyncio
 
 from Agents.llm_factory import GAME_LLM, GameLLM, get_llm_game_fallback
-from Agents.llm_factory.backends import create_chat_model
+from Agents.llm_factory.chat import create_chat_model
 from server.game.model_catalog import game_model, menu_models
 
 GEMINI = "gemini-3.1-flash-lite"

@@ -21,7 +21,7 @@ from langgraph.store.base import BaseStore
 from pydantic import BaseModel, Field, create_model
 
 from Agents.llm_factory import get_llm_pro, get_llm_pro_backup
-from Agents.memory.claude_structured import parse_with_claude
+from Agents.llm_factory.providers.anthropic import parse_with_claude
 from Agents.memory.batch_deduplication.clustering import (
     _build_clusters_for_items,
     _fetch_namespace_items,

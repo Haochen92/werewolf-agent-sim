@@ -20,7 +20,7 @@ import json
 import time
 from pathlib import Path
 
-from Agents.memory import claude_structured
+from Agents.llm_factory.providers import anthropic as claude_structured
 from Agents.memory.extraction.offline import (
     cell_calls,
     dehalo_cases,

@@ -206,7 +206,7 @@ def extract_cases(cases: list, model: str, thinking_level: str | None = None,
     """Extract each case's observations; by game id: {"observations", "missing", "model_used"}."""
     from concurrent.futures import ThreadPoolExecutor
 
-    from Agents.memory.claude_structured import batch_parse, parse_with_claude
+    from Agents.llm_factory.providers.anthropic import batch_parse, parse_with_claude
 
     games = {case.game_id: cell_calls(case) for case in cases}
     keyed: dict[str, tuple[str, str, str, str, type, str]] = {}
@@ -276,7 +276,7 @@ def extract_cases_gemini(cases: list) -> tuple[dict[str, dict], dict]:
 def dehalo_cases(cases: list, extracted: dict[str, dict], config) -> dict[str, dict]:
     """The de-halo pass over each game's observations as one batch (``config``: DehaloConfig), the
     verdicts rewritten in place; by game id, the de-halo record."""
-    from Agents.memory.claude_structured import batch_parse, parse_with_claude
+    from Agents.llm_factory.providers.anthropic import batch_parse, parse_with_claude
     from Agents.memory.extraction.dehalo import apply_judgments, dehalo_prompt
     from Agents.memory.extraction.inputs import extraction_inputs_from_frozen_case
     from Agents.schemas.dehalo import Judgments

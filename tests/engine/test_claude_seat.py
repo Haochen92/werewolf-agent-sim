@@ -2,8 +2,8 @@
 seat may think (a forced tool call cannot be combined with thinking)."""
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from Agents.llm_factory.backends import _build_chat_model
-from Agents.llm_factory.claude import ClaudeChat, _marked_message
+from Agents.llm_factory.chat import _build_chat_model
+from Agents.llm_factory.providers.anthropic import ClaudeChat, _marked_message
 
 TRANSCRIPT = "== Dead ==\nnone\n\n== Today's discussion ==\nplayer_1: hi\nplayer_2: hello\n=========================\nYour turn."
 

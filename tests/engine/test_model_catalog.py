@@ -13,7 +13,8 @@ from pathlib import Path
 import pytest
 
 from Agents.llm_factory import accessors, catalog
-from Agents.llm_factory.backends import STRUCTURED_MODES, _build_chat_model
+from Agents.llm_factory.chat import _build_chat_model
+from Agents.llm_factory.providers.common import STRUCTURED_MODES
 from Agents.llm_factory.pricing import PRICES, price_at
 from Agents.schemas.model_catalog import Catalog, Price
 

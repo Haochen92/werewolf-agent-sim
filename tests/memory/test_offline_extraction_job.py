@@ -4,7 +4,7 @@ their game's prefix marked and their cell schema as text after it (an enforced s
 Claude's cache key), a call the batch loses is retried direct with the schema enforced, and the
 de-halo pass rewrites the verdicts it judges."""
 
-from Agents.memory import claude_structured
+from Agents.llm_factory.providers import anthropic as claude_structured
 from Agents.memory.extraction import offline
 from Agents.memory.persistence.config import DehaloConfig
 from Agents.schemas.dehalo import Judgment, Judgments

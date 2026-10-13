@@ -36,7 +36,8 @@ if str(REPO_ROOT) not in sys.path:
 from dotenv import load_dotenv  # noqa: E402
 
 from Agents.llm_factory.accessors import VALID_THINKING_LEVELS  # noqa: E402
-from Agents.llm_factory.backends import OPENROUTER_PROVIDER, STRUCTURED_MODES  # noqa: E402
+from Agents.llm_factory.providers.common import STRUCTURED_MODES  # noqa: E402
+from Agents.llm_factory.providers.openai_compat import OPENROUTER_PROVIDER  # noqa: E402
 from Agents.llm_factory.catalog import _sync_dsn, billed_name  # noqa: E402
 
 # The factory's prefixes (backends._build_chat_model); a bare id is a Gemini model.

@@ -1,35 +1,155 @@
-"""Structured-output calls to a Claude model, for the memory pipeline's Claude stages.
+"""Claude (``anthropic/`` models in the game factory; ``claude-*`` ids in direct calls).
 
-The de-halo pass and (when configured) strategy synthesis call Claude directly through the
-Anthropic SDK rather than the game's model factory. The key is CLAUDE_API_KEY (or
-ANTHROPIC_API_KEY). These calls bypass LangChain, so each one is recorded in Langfuse here (``_trace``,
-with its cost, a batched call at the batch rate), and its tokens are added to ``usage_totals``.
+Two halves. **Seats** (LangChain, live): ``ClaudeChat`` and ``build_chat_model``. **Direct calls**
+(the Anthropic SDK, offline): ``parse_with_claude`` (one call, now) and ``batch_parse`` (many calls as
+one Message Batch, at half price, back within the hour as a rule), with cache marks, in-prompt
+schemas, usage totals and cost. The key is CLAUDE_API_KEY (or ANTHROPIC_API_KEY for direct calls).
 
-Two ways to call: ``parse_with_claude`` (one call, now) and ``batch_parse`` (many calls as one
-Message Batch, at half price, back within the hour as a rule; for offline runs only). Both can mark
-a shared prompt prefix for caching: the text the model reads is the same, split into two blocks. A
-batch runs its requests in no set order, so a prefix shared within it is cached only once a request
-has written it; a caller can write it first with a direct call and the 1-hour cache (``cache_ttl``).
+Seats. Two things differ from the OpenAI-protocol rows. Structured output: a forced tool call cannot
+be combined with thinking, so a thinking seat answers through Claude's own JSON-schema output.
+Caching: Claude caches only where a request marks a cache point, and a later request reuses a cached
+prefix only when that prefix ends on a piece boundary of its own prompt, at most 20 pieces back from
+its mark. A turn's prompt is a fixed system message and one message holding the transcript, which
+grows from turn to turn, then the turn's brief. So the system message is marked, and the message is
+sent one line per piece with a mark on the transcript's last line: the seat's next turn, its
+transcript a few lines longer, finds the previous turn's mark among its pieces.
 
-The enforced output schema is part of Claude's cache key: calls that share a prefix under different
-schemas never read each other's cache (measured 2026-10-12, evidence/memory_system/v8/experiment_log.md).
-A fan-out with a schema per call passes ``schema_in_prompt``: the schema goes as text after the cached
-part, the reply is parsed and validated here, and a reply that does not validate is retried once with
-the schema enforced.
+Direct calls bypass LangChain, so each one is recorded in Langfuse here (``_trace``, with its cost, a
+batched call at the batch rate), and its tokens are added to ``usage_totals``. Both ways of calling
+can mark a shared prompt prefix for caching: the text the model reads is the same, split into two
+blocks. A batch runs its requests in no set order, so a prefix shared within it is cached only once a
+request has written it; a caller can write it first with a direct call and the 1-hour cache
+(``cache_ttl``). The enforced output schema is part of Claude's cache key: calls that share a prefix
+under different schemas never read each other's cache (measured 2026-10-12,
+evidence/memory_system/v8/experiment_log.md). A fan-out with a schema per call passes
+``schema_in_prompt``: the schema goes as text after the cached part and the reply is validated
+here; ``parse_with_claude`` then asks again with the schema enforced, and a batch's caller retries.
 """
 
 from __future__ import annotations
 
 import json
+import logging
 import os
+import re
 import threading
 import time
-from logging import getLogger
 from typing import Any
 
+from langchain_anthropic import ChatAnthropic
+from langchain_core.runnables import RunnableLambda
 from pydantic import BaseModel, TypeAdapter
 
-logger = getLogger(__name__)
+from .common import _first_tool_call
+
+logger = logging.getLogger(__name__)
+
+
+# --- Seats (LangChain) -------------------------------------------------------------------------
+
+_MARK = {"type": "ephemeral"}
+# The rule under every prompt's transcript (day_discuss, day_vote, night).
+_TRANSCRIPT_RULE = re.compile(r"^={20,}$", re.MULTILINE)
+
+
+def _line_pieces(text: str) -> list[dict[str, Any]]:
+    """The text one line per piece; a blank line rides with the line before it (the API refuses a
+    piece of whitespace). The same text is always cut the same way, so a longer transcript keeps
+    the pieces of the shorter one."""
+    pieces: list[str] = []
+    for line in text.splitlines(keepends=True):
+        if pieces and not line.strip():
+            pieces[-1] += line
+        else:
+            pieces.append(line)
+    return [{"type": "text", "text": p} for p in pieces]
+
+
+def _marked_message(text: str) -> list[dict[str, Any]] | None:
+    """The message as line pieces, marked on the transcript's last line; None with no transcript."""
+    rules = list(_TRANSCRIPT_RULE.finditer(text))
+    if not rules:
+        return None
+    head, tail = text[: rules[-1].start()], text[rules[-1].start():]
+    if not head.strip():
+        return None
+    pieces = _line_pieces(head)
+    pieces[-1]["cache_control"] = _MARK
+    return [*pieces, {"type": "text", "text": tail}]
+
+
+class ClaudeChat(ChatAnthropic):
+    """ChatAnthropic with the cache marks above and ``structured_mode`` (common.STRUCTURED_MODES):
+    forced_tool, json_schema and auto_tool; Claude has no JSON mode."""
+
+    structured_mode: str = "forced_tool"
+
+    def _get_request_payload(self, input_: Any, *, stop: list[str] | None = None, **kwargs: Any) -> dict:
+        payload = super()._get_request_payload(input_, stop=stop, **kwargs)
+        system = payload.get("system")
+        if isinstance(system, str) and system:
+            payload["system"] = [{"type": "text", "text": system, "cache_control": _MARK}]
+        elif isinstance(system, list) and system:
+            system[-1]["cache_control"] = _MARK
+        last = payload["messages"][-1] if payload.get("messages") else None
+        if last and last["role"] == "user" and isinstance(last["content"], str):
+            if (marked := _marked_message(last["content"])) is not None:
+                last["content"] = marked
+        return payload
+
+    def _format_output(self, data: Any, **kwargs: Any) -> Any:
+        # Langfuse's LangChain handler reads Anthropic's raw usage first, whose input_tokens leaves out
+        # the cache reads and writes, so a cached turn traced as ~1,000 input tokens of ~10,000. With
+        # the raw block kept under another key it reads the message's usage_metadata, which counts
+        # them, and records the reads and writes as their own token types.
+        result = super()._format_output(data, **kwargs)
+        if result.llm_output and "usage" in result.llm_output:
+            result.llm_output["anthropic_usage"] = result.llm_output.pop("usage")
+        return result
+
+    def with_structured_output(self, schema: Any = None, **kwargs: Any) -> Any:
+        if "method" in kwargs or not isinstance(schema, type):
+            return super().with_structured_output(schema, **kwargs)
+        if self.structured_mode == "json_schema":
+            return super().with_structured_output(schema, method="json_schema", **kwargs)
+        if self.structured_mode == "auto_tool":
+            bound = self.bind_tools([schema], tool_choice="auto")
+            return bound | RunnableLambda(lambda m: _first_tool_call(schema, m))
+        if self.structured_mode == "json_mode":
+            raise ValueError("Claude has no JSON mode: use json_schema")
+        return super().with_structured_output(schema, method="function_calling", **kwargs)
+
+
+# A Claude model with thinking off, where the default request is refused (2026-10-12, Sonnet 5.5 as
+# the golden judge): it answers "thinking disabled" with a 400 asking for "between_tools", and takes no
+# temperature (and no forced tool call: its catalogue row's structured_mode).
+_CLAUDE_THINKING_OFF: dict[str, dict[str, Any]] = {
+    "claude-sonnet-5-5": {"thinking": {"type": "between_tools"}},
+    # Haiku 5.5 takes "disabled" but answers a temperature with a 400 (2026-10-12, a judge's call).
+    "claude-haiku-5-5": {"thinking": {"type": "disabled"}},
+}
+
+
+def build_chat_model(model: str, *, temperature: float, thinking_level: str | None, mode: str,
+                     game_key: str) -> ClaudeChat:
+    """A Claude seat. Thinking is adaptive, steered by the effort level; "minimal" or none turns it
+    off. A forced tool call cannot be combined with thinking, so in forced_tool mode thinking stays
+    off, as on DeepSeek. Claude takes no temperature while thinking. ``game_key`` is the game's own
+    key, or empty."""
+    api_key = game_key or os.getenv("CLAUDE_API_KEY")
+    if not api_key:
+        raise ValueError("CLAUDE_API_KEY not set")
+    thinking = thinking_level not in (None, "minimal") and mode != "forced_tool"
+    if thinking_level not in (None, "minimal") and not thinking:
+        logger.info("Claude: thinking_level=%s ignored (forced tool calling is incompatible "
+                    "with thinking).", thinking_level)
+    extra: dict[str, Any] = (
+        {"thinking": {"type": "adaptive"}, "effort": thinking_level} if thinking
+        else _CLAUDE_THINKING_OFF.get(model) or {"thinking": {"type": "disabled"}, "temperature": temperature})
+    return ClaudeChat(model=model, api_key=api_key, max_tokens=16_000, structured_mode=mode, **extra)
+
+
+# --- Direct calls (the Anthropic SDK) ----------------------------------------------------------
 
 _THINKING_OFF = {"minimal", "off", "none"}
 # Claude models think by default and thinking counts against max_tokens (a 46-lesson de-halo used
@@ -62,11 +182,9 @@ def _client():
 
 
 def _thinking(thinking_level: str | None, model: str = "") -> dict[str, Any]:
-    from Agents.llm_factory.backends import _CLAUDE_THINKING_OFF
-
     level = (thinking_level or "").lower()
     if level in _THINKING_OFF:
-        # Sonnet 5.5 refuses "disabled"; its off is "between_tools" (backends). No temperature here.
+        # Sonnet 5.5 refuses "disabled"; its off is "between_tools" (above). No temperature here.
         off = _CLAUDE_THINKING_OFF.get(model, {"thinking": {"type": "disabled"}})
         return {"thinking": off["thinking"]}
     if level:

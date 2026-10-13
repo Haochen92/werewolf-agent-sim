@@ -3,7 +3,7 @@
 Three tests, all short calls rather than games (``eval-model-admission``):
 
 1. Structured output: every seat schema, several samples, under each calling mode the model's
-   protocol allows (``Agents/llm_factory/backends.py`` STRUCTURED_MODES; Gemini has only its own).
+   protocol allows (``Agents/llm_factory/providers/common.py`` STRUCTURED_MODES; Gemini has only its own).
 2. Caching: the provider's smallest cacheable prompt, found by sending identical prompts of
    growing size twice; then real game prompts (the same seat's next turn, and another seat at the
    same moment) to see how much of an actual turn the provider serves from cache.

@@ -82,7 +82,7 @@ def main() -> None:
     started = time.time()
     summary = {"build": build(args.extracted, args.out)}
     if args.synthesize:
-        from Agents.memory import claude_structured
+        from Agents.llm_factory.providers import anthropic as claude_structured
 
         summary["synthesis"] = synthesize(args.out, args.synth_out or args.out.with_name(args.out.name + "_synth"),
                                           args.model)

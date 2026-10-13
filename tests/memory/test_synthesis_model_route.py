@@ -37,7 +37,7 @@ def test_a_claude_tick_pins_the_factory_to_the_dedup_model():
 
 def test_a_batched_tick_sends_every_cluster_in_one_batch_and_retries_the_misses_directly():
     from Agents.memory.consolidation import store_ops
-    import Agents.memory.claude_structured as cs
+    import Agents.llm_factory.providers.anthropic as cs
 
     tasks = [("sentinel", "night_action", ["o1"], _OBS, "", []) for _ in range(3)]
     sent = {}

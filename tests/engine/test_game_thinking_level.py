@@ -1,7 +1,7 @@
 """Each flash-lite game turn reasons at the level that makes it reason (discussion_evidence.md §6.7):
 with structured output both flash-lites reason for 0 tokens at "minimal", and 3.5 also at "low"."""
 from Agents.llm_factory import accessors
-from Agents.llm_factory.backends import GAME_LLM, GameLLM
+from Agents.llm_factory.chat import GAME_LLM, GameLLM
 
 
 def _levels(monkeypatch, **override):

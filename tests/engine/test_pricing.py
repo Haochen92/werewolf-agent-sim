@@ -56,7 +56,7 @@ def test_a_batched_call_bills_at_half_the_rates():
 def test_claude_usage_is_priced_per_model_with_batches_at_the_batch_rate(monkeypatch):
     from types import SimpleNamespace
 
-    import Agents.memory.claude_structured as cs
+    import Agents.llm_factory.providers.anthropic as cs
 
     monkeypatch.setattr(cs, "usage_by_model", {})
     usage = SimpleNamespace(input_tokens=600_000, output_tokens=100_000, cache_read_input_tokens=400_000,

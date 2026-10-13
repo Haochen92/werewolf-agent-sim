@@ -56,7 +56,7 @@ def is_claude(model: str) -> bool:
 def judge_golden_batch(jobs: list[tuple[str, str, str]], model: str) -> list[GoldenVerdict | None]:
     """The verdicts of many (golden, unit, text) jobs on a Claude model, as one Message Batch (judging
     is an offline run: half price, back within the hour). A job the batch lost is judged directly."""
-    from Agents.memory.claude_structured import batch_parse, parse_with_claude
+    from Agents.llm_factory.providers.anthropic import batch_parse, parse_with_claude
 
     model_id = model.removeprefix("anthropic/")
     head = SYSTEM + "\n\n"

@@ -34,7 +34,7 @@ from pathlib import Path
 import pytest
 
 from Agents.llm_factory.accessors import game_thinking_level
-from Agents.llm_factory.backends import create_chat_model
+from Agents.llm_factory.chat import create_chat_model
 from evaluation.src.model_admission.seat_schemas import SEAT_SCHEMAS, TABLE, reply_problem
 from server.game.model_catalog import menu_models
 

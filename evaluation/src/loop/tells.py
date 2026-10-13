@@ -225,7 +225,7 @@ class PlayerDetections(BaseModel):
 
 
 def _make_llm(cached_content: str | None = None, thinking: str = "low"):
-    from Agents.llm_factory.backends import create_chat_model
+    from Agents.llm_factory.chat import create_chat_model
 
     kwargs = {"cached_content": cached_content} if cached_content else {}
     return (create_chat_model(DETECTOR_MODEL, temperature=0.0,
@@ -237,7 +237,8 @@ def _create_prefix_cache(prefix: str) -> str | None:
     """Best-effort Vertex context cache for one (game, channel, view) prefix — the 9 per-player calls
     share a byte-identical rules+transcript+checklist prefix (the standing CACHED config, golden-parity
     verified 2026-07-13). Any failure returns None and the call falls back to uncached."""
-    from Agents.llm_factory.backends import _use_vertex, create_chat_model
+    from Agents.llm_factory.chat import create_chat_model
+    from Agents.llm_factory.providers.google import _use_vertex
 
     if not _use_vertex() or len(prefix) / 4 < CACHE_MIN_TOKENS * 1.1:
         return None
@@ -298,7 +299,7 @@ def _detect_pass(games: list[dict], checklist: dict, version: str, split_view: b
     """One detector pass over (game × player × channel). Returns (rows, scanned denominators)."""
     from concurrent.futures import ThreadPoolExecutor, as_completed
 
-    from Agents.llm_factory.backends import create_chat_model
+    from Agents.llm_factory.chat import create_chat_model
 
     template = (PROMPTS_DIR / f"{version}.txt").read_text()
     valid_ids = {ch: {t["tell_id"] for t in checklist[ch]} for ch in checklist}

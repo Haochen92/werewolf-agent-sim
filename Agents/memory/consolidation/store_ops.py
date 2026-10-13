@@ -295,7 +295,7 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Tick
 def _batch_results(tasks: list, cfg: TickConfig, run_one, pool) -> list:
     """Every task's strategy points from one Message Batch (offline runs, ``TickConfig.batch``); a
     request the batch did not return parsed is retried as a direct call."""
-    from Agents.memory.claude_structured import batch_parse
+    from Agents.llm_factory.providers.anthropic import batch_parse
     from Agents.memory.strategy_synthesis import synthesis_cache_prefix, synthesis_request
 
     requests = {f"t{i}": synthesis_request(role, phase, live, items, tr)

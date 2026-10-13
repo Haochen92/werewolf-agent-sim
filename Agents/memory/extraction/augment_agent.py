@@ -29,7 +29,7 @@ from Agents.schemas.roles import VALID_ACTION_PHASES_BY_ROLE
 
 from .extraction_agent import ExtractionResult, _invoke_attempts
 from .inputs import build_role_phase_extraction_tail
-from .prefix_cache import create_prefix_cache
+from Agents.llm_factory.providers.google import create_prefix_cache
 
 logger = getLogger(__name__)
 

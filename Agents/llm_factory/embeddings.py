@@ -18,7 +18,7 @@ from typing import Any, Callable
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_openai import OpenAIEmbeddings
 
-from .backends import _DEFAULT_VERTEX_LOCATION, _use_vertex
+from .providers.google import _DEFAULT_VERTEX_LOCATION, _use_vertex
 
 logger = logging.getLogger(__name__)
 

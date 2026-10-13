@@ -17,7 +17,7 @@ from __future__ import annotations
 import os
 
 from . import catalog
-from .backends import GAME_LLM, create_chat_model
+from .chat import GAME_LLM, create_chat_model
 
 DEFAULT_GAME_MODEL = "gemini-3.5-flash-lite"
 # Different-backend rescue when a seat exhausts its structured-output retries (seen with

@@ -277,7 +277,7 @@ def main() -> None:
             with open(out_dir / f"judged_{label}.jsonl", "w") as f:
                 f.writelines(json.dumps(s) + "\n" for s in by_arm[label])
 
-    from Agents.memory.claude_structured import usage_cost_usd, usage_totals
+    from Agents.llm_factory.providers.anthropic import usage_cost_usd, usage_totals
 
     result = {"label": cfg["label"], "run_at": datetime.now(timezone.utc).isoformat(), "config": cfg,
               "n_cases": len(cases), **summarize(by_arm, cases)}
