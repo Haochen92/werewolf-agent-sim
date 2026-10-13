@@ -315,10 +315,21 @@ def extracted_games(paths: list[str]) -> list[tuple[str, list]]:
             case = json.loads(line)["output"]["extraction_case"]
             if case.get("human_players"):
                 continue
-            observations = [cell_observation_schema_for(o["perspective"], o["action_phase"]).model_validate(o)
-                            for o in case["observations"]]
+            observations = [cell_observation_schema_for(o["perspective"], o["action_phase"]).model_validate(
+                _with_decision_fields(o)) for o in case["observations"]]
             games.append((case["game_id"], observations))
     return games
+
+
+def _with_decision_fields(observation: dict) -> dict:
+    """An observation extracted before it named its decision (2026-10-13) loads with decision_day -1
+    (not tagged) and, on a wolf's night, pack_turn "several"; the tagging pass supplies the real ones."""
+    from Agents.schemas.memory import PACK_NIGHT_ROLES
+
+    filled = {"decision_day": -1, **observation}
+    if observation.get("action_phase") == "night_action" and observation.get("perspective") in PACK_NIGHT_ROLES:
+        filled.setdefault("pack_turn", "several")
+    return filled
 
 
 def write_extracted_store(paths: list[str], out) -> dict:

@@ -435,6 +435,10 @@ class WithAllyRevealed(BaseModel):
 
 class CellObservationMixin(BaseModel):
     approach: str = Field(description="What the agent did in that situation.")
+    decision_day: int = Field(
+        description="The number of the one decision this observation is about: N for day N's discussion "
+        "or vote, N for night N (the night after day N). 0 when it is about a pattern over several decisions."
+    )
     impact_on_final_game_outcome: str = Field(
         description="The NET effect on this role's win condition, judged from game end, with what in the "
         "record links it to the approach; 'unclear' when nothing does."
@@ -827,6 +831,10 @@ TEN_SEAT_CELL_SHAPES: dict[tuple[str, str], tuple[type[BaseModel], ...]] = {
     ("fortune_teller", "night"): (*_NIGHT_TARGET, WithUsesLeft),
 }
 
+# A wolf's night is three turns in one cell (the pack's chat, the carrier's kill, its own skill), each
+# graded on its own (consolidation/grading.py), so its observations say which one they are about.
+PACK_NIGHT_ROLES = ("chanteuse", "illusionist")
+
 _CELL_KINDS = {
     "observation": (CellObservationMixin, "Observation", "observation"),
     "strategy": (CellStrategyMixin, "StrategyPoint", "strategy point"),
@@ -844,6 +852,10 @@ def _ten_seat_cell(role: str, group: str, kind: str) -> type[BaseModel]:
             Literal["night_action"], "night_action.")
         fields["perspective"] = (Literal[role], Field(description=f"The role this {noun} is for — {role}."))
         fields["action_phase"] = (phase[0], Field(description=phase[1]))
+    if kind == "observation" and group == "night" and role in PACK_NIGHT_ROLES:
+        fields["pack_turn"] = (Literal["chat", "kill", "skill", "several"], Field(
+            description="Which of the pack's turns that night the decision was: chat (the wolves' talk), kill "
+            "(the carrier naming the victim), skill (your own block or conceal), or several."))
     name = "".join(w.title() for w in role.split("_")) + group.title() + suffix
     return create_model(name, __base__=(*TEN_SEAT_CELL_SHAPES[(role, group)], payload), **fields)
 

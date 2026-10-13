@@ -105,7 +105,7 @@ def _v6_cells() -> tuple[HealerNightObservation, HealerNightStrategyPoint]:
     obs = HealerNightObservation(
         **_SITUATION, perspective="healer", action_phase="night_action",
         approach="Protected the claimant.", impact_on_final_game_outcome="Positive.",
-        immediate_response="The kill failed.", net_verdict="positive")
+        immediate_response="The kill failed.", net_verdict="positive", decision_day=2)
     sp = HealerNightStrategyPoint(
         **_SITUATION, perspective="healer", action_phase="night_action",
         direction="defensive", honesty="honest", action="Protect the loud claimant.")
@@ -132,7 +132,7 @@ def test_extracted_legacy_models_give_none():
     legacy = Observation(perspective="healer", action_phase="night_action", situation="s",
                          information_landscape="i", game_phase="early", consensus_texture=None,
                          agent_exposure=None, approach="a", impact_on_final_game_outcome="o",
-                         immediate_response="r", net_verdict="unclear")
+                         immediate_response="r", net_verdict="unclear", decision_day=2)
     legacy_sp = StrategyPoint(perspective="healer", action_phase="night_action", situation="s",
                               information_landscape="i", game_phase="early",
                               consensus_texture=None, agent_exposure=None, action="act")

@@ -30,10 +30,10 @@ _SAMPLE = dict(
     forward_exposure="acting now would expose my hand", public_private_text="my finding clashes with the public read",
     divergence_sign="contradicts", bullets_left=4, uses_left=2, ally_revealed=False,
     approach="voted the accused", impact_on_final_game_outcome="NET POSITIVE removed a threat",
-    immediate_response="the room followed", net_verdict="positive",
+    immediate_response="the room followed", net_verdict="positive", decision_day=53, pack_turn="skill",
 )
 # distinctive tokens belonging to non-embed (reranker-only) fields — must never be in the embed
-_FORBIDDEN = ["61", "37", "opposes_my_read", "contradicts", "bullets", "ally_revealed", "info_starved"]
+_FORBIDDEN = ["61", "37", "53", "opposes_my_read", "contradicts", "bullets", "ally_revealed", "info_starved"]
 
 
 def _cells():
