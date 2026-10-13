@@ -1,9 +1,10 @@
-"""Structured output shared by more than one provider: the modes a model can be asked for a
-schema-shaped answer in, and the parsers of a JSON reply and of a tool call."""
+"""Shared by more than one provider: the modes a model can be asked for a schema-shaped answer in,
+the parsers of a JSON reply and of a tool call, and how a prompt is cut for cache marks."""
 
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 from langchain_core.exceptions import OutputParserException
@@ -68,3 +69,35 @@ def _first_tool_call(schema: type, message: Any) -> Any:
             return schema.model_validate(call.get("args") or {})
     raise OutputParserException(f"the model answered without calling {schema.__name__}",
                                 llm_output=str(message.content)[:500])
+
+
+# --- Cache marks (Claude's cache_control, OpenAI's explicit breakpoints) ---
+
+# The rule under every prompt's transcript (day_discuss, day_vote, night, the lookup): the one line of
+# twenty or more "=" in a user message, where the reusable part ends.
+TRANSCRIPT_RULE = re.compile(r"^={20,}$", re.MULTILINE)
+
+
+def line_pieces(text: str) -> list[dict[str, Any]]:
+    """The text one line per piece; a blank line rides with the line before it (the APIs refuse a
+    piece of whitespace). The same text is always cut the same way, so a longer transcript keeps
+    the pieces of the shorter one, and a later request finds an earlier one's boundary among them."""
+    pieces: list[str] = []
+    for line in text.splitlines(keepends=True):
+        if pieces and not line.strip():
+            pieces[-1] += line
+        else:
+            pieces.append(line)
+    return [{"type": "text", "text": p} for p in pieces]
+
+
+def split_at_transcript(text: str) -> tuple[list[dict[str, Any]], str] | None:
+    """The text before the transcript's closing rule as line pieces, and the rest from the rule on;
+    None when the text has no rule or nothing before it."""
+    rules = list(TRANSCRIPT_RULE.finditer(text))
+    if not rules:
+        return None
+    head, tail = text[: rules[-1].start()], text[rules[-1].start():]
+    if not head.strip():
+        return None
+    return line_pieces(head), tail

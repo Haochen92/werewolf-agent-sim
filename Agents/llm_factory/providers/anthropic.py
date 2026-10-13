@@ -31,7 +31,6 @@ from __future__ import annotations
 import json
 import logging
 import os
-import re
 import threading
 import time
 from typing import Any
@@ -41,7 +40,7 @@ from langchain_core.messages import HumanMessage
 from langchain_core.runnables import RunnableLambda
 from pydantic import BaseModel, TypeAdapter
 
-from .common import _first_tool_call, _parse_json_reply, _schema_instruction
+from .common import _first_tool_call, _parse_json_reply, _schema_instruction, split_at_transcript
 
 logger = logging.getLogger(__name__)
 
@@ -49,32 +48,14 @@ logger = logging.getLogger(__name__)
 # --- Seats (LangChain) -------------------------------------------------------------------------
 
 _MARK = {"type": "ephemeral"}
-# The rule under every prompt's transcript (day_discuss, day_vote, night).
-_TRANSCRIPT_RULE = re.compile(r"^={20,}$", re.MULTILINE)
-
-
-def _line_pieces(text: str) -> list[dict[str, Any]]:
-    """The text one line per piece; a blank line rides with the line before it (the API refuses a
-    piece of whitespace). The same text is always cut the same way, so a longer transcript keeps
-    the pieces of the shorter one."""
-    pieces: list[str] = []
-    for line in text.splitlines(keepends=True):
-        if pieces and not line.strip():
-            pieces[-1] += line
-        else:
-            pieces.append(line)
-    return [{"type": "text", "text": p} for p in pieces]
 
 
 def _marked_message(text: str) -> list[dict[str, Any]] | None:
     """The message as line pieces, marked on the transcript's last line; None with no transcript."""
-    rules = list(_TRANSCRIPT_RULE.finditer(text))
-    if not rules:
+    split = split_at_transcript(text)
+    if split is None:
         return None
-    head, tail = text[: rules[-1].start()], text[rules[-1].start():]
-    if not head.strip():
-        return None
-    pieces = _line_pieces(head)
+    pieces, tail = split
     pieces[-1]["cache_control"] = _MARK
     return [*pieces, {"type": "text", "text": tail}]
 
