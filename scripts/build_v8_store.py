@@ -18,44 +18,11 @@ import shutil
 import time
 from pathlib import Path
 
-from langgraph.store.memory import InMemoryStore
-
-from Agents.memory.store import store as indexed_store
-from Agents.schemas.memory import cell_observation_schema_for
-
-
-def _games(paths: list[str]) -> list[tuple[str, list]]:
-    """(game id, observations as cell models) per extracted game, human-seat games left out."""
-    games = []
-    for path in paths:
-        for line in Path(path).read_text().splitlines():
-            case = json.loads(line)["output"]["extraction_case"]
-            if case.get("human_players"):
-                continue
-            observations = [cell_observation_schema_for(o["perspective"], o["action_phase"]).model_validate(o)
-                            for o in case["observations"]]
-            games.append((case["game_id"], observations))
-    return games
-
 
 def build(paths: list[str], out: Path) -> dict:
-    from Agents.memory.deduplication import run_downstream_observation_dedup
-    from Agents.memory.persistence.config import memory_store_paths
-    from Agents.memory.persistence.dump import dump_memory_to_json_files
+    from Agents.memory.extraction.offline import write_extracted_store
 
-    target = InMemoryStore(index=indexed_store.index_config)
-    stats = {"games": 0, "observations": 0, "kept": 0, "discarded": 0, "failed": 0}
-    for i, (game_id, observations) in enumerate(_games(paths), 1):
-        s = run_downstream_observation_dedup(target, observations, game_id)
-        stats["games"] += 1
-        stats["observations"] += len(observations)
-        for k in ("kept", "discarded", "failed"):
-            stats[k] += getattr(s, k)
-        print(f"{i:3} {game_id[:8]}: {len(observations)} observations, kept {s.kept}, discarded {s.discarded}")
-    out.mkdir(parents=True, exist_ok=True)
-    obs_path, sp_path = memory_store_paths(out)
-    dump_memory_to_json_files(obs_path, sp_path, target_store=target)
-    return stats
+    return write_extracted_store(paths, out)
 
 
 def synthesize(store_dir: Path, synth_dir: Path, model: str) -> dict:

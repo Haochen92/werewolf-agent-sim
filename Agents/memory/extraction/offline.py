@@ -299,3 +299,52 @@ def dehalo_cases(cases: list, extracted: dict[str, dict], config) -> dict[str, d
             records[game_id] = apply_judgments(extracted[game_id]["observations"], result, config.model,
                                                config.thinking_level, {"batched": True})
     return records
+
+
+def extracted_games(paths: list[str]) -> list[tuple[str, list]]:
+    """(game id, observations as cell models) per game in the job's ``extracted.jsonl`` files, games
+    with a human seat left out (they never teach the store)."""
+    import json
+    from pathlib import Path
+
+    from Agents.schemas.memory import cell_observation_schema_for
+
+    games = []
+    for path in paths:
+        for line in Path(path).read_text().splitlines():
+            case = json.loads(line)["output"]["extraction_case"]
+            if case.get("human_players"):
+                continue
+            observations = [cell_observation_schema_for(o["perspective"], o["action_phase"]).model_validate(o)
+                            for o in case["observations"]]
+            games.append((case["game_id"], observations))
+    return games
+
+
+def write_extracted_store(paths: list[str], out) -> dict:
+    """Write the job's extracted observations into a fresh store at ``out`` the way the post-game
+    node did: each game's observations deduplicated against the store as they go in, then dumped."""
+    from pathlib import Path
+
+    from langgraph.store.memory import InMemoryStore
+
+    from Agents.memory.deduplication import run_downstream_observation_dedup
+    from Agents.memory.persistence.config import memory_store_paths
+    from Agents.memory.persistence.dump import dump_memory_to_json_files
+    from Agents.memory.store import store as indexed_store
+
+    target = InMemoryStore(index=indexed_store.index_config)
+    stats = {"games": 0, "observations": 0, "kept": 0, "discarded": 0, "failed": 0}
+    for i, (game_id, observations) in enumerate(extracted_games(paths), 1):
+        s = run_downstream_observation_dedup(target, observations, game_id)
+        stats["games"] += 1
+        stats["observations"] += len(observations)
+        for k in ("kept", "discarded", "failed"):
+            stats[k] += getattr(s, k)
+        logger.info("%3d %s: %d observations, kept %d, discarded %d", i, game_id[:8], len(observations),
+                    s.kept, s.discarded)
+    out = Path(out)
+    out.mkdir(parents=True, exist_ok=True)
+    obs_path, sp_path = memory_store_paths(out)
+    dump_memory_to_json_files(obs_path, sp_path, target_store=target)
+    return stats
