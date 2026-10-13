@@ -50,3 +50,49 @@ def test_sonnet_5_5_with_thinking_off_asks_for_between_tools_and_sends_no_temper
     llm = _build_chat_model("anthropic/claude-sonnet-5-5", thinking_level=None)
     assert llm.thinking == {"type": "between_tools"} and llm.temperature is None
     assert llm.structured_mode == "json_schema"
+
+
+def test_json_mode_puts_the_schema_after_the_transcripts_mark_and_validates_in_code(monkeypatch):
+    # Claude counts an enforced schema in its cache key; json_mode sends none and appends the schema to
+    # the last user message, so the transcript's mark survives and the schema sits after it.
+    from typing import Literal
+
+    from langchain_core.messages import AIMessage
+    from pydantic import BaseModel
+
+    class Vote(BaseModel):
+        target: Literal["player_1", "player_2"]
+
+    llm = ClaudeChat(model="claude-haiku-5-5", api_key="k", structured_mode="json_mode")
+    sent = {}
+
+    def fake_generate(self, messages, *args, **kwargs):
+        from langchain_core.outputs import ChatGeneration, ChatResult
+        sent["payload"] = self._get_request_payload(messages)
+        thinking = {"type": "thinking", "thinking": "", "signature": "s"}
+        return ChatResult(generations=[ChatGeneration(message=AIMessage(
+            content=[thinking, {"type": "text", "text": 'Here: {"target": "player_2"}'}]))])
+
+    monkeypatch.setattr(ClaudeChat, "_generate", fake_generate)
+    out = llm.with_structured_output(Vote).invoke([SystemMessage("the rules"), HumanMessage(TRANSCRIPT)])
+    assert out.target == "player_2"  # thinking block skipped, the sentence around the object tolerated
+    pieces = sent["payload"]["messages"][-1]["content"]
+    assert [p["text"] for p in pieces if "cache_control" in p] == ["player_2: hello\n"]
+    assert '"player_1"' in pieces[-1]["text"] and "output_config" not in sent["payload"]
+
+
+def test_json_mode_rejects_a_target_outside_the_schema():
+    import pytest
+    from typing import Literal
+
+    from langchain_core.exceptions import OutputParserException
+    from langchain_core.messages import AIMessage
+    from pydantic import BaseModel
+
+    from Agents.llm_factory.providers.common import _parse_json_reply
+
+    class Vote(BaseModel):
+        target: Literal["player_1", "player_2"]
+
+    with pytest.raises(OutputParserException):
+        _parse_json_reply(Vote, AIMessage('{"target": "player_9"}'))

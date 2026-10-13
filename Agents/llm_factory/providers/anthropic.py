@@ -37,10 +37,11 @@ import time
 from typing import Any
 
 from langchain_anthropic import ChatAnthropic
+from langchain_core.messages import HumanMessage
 from langchain_core.runnables import RunnableLambda
 from pydantic import BaseModel, TypeAdapter
 
-from .common import _first_tool_call
+from .common import _first_tool_call, _parse_json_reply, _schema_instruction
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +81,8 @@ def _marked_message(text: str) -> list[dict[str, Any]] | None:
 
 class ClaudeChat(ChatAnthropic):
     """ChatAnthropic with the cache marks above and ``structured_mode`` (common.STRUCTURED_MODES):
-    forced_tool, json_schema and auto_tool; Claude has no JSON mode."""
+    forced_tool, json_schema, auto_tool, and json_mode, which on Claude is the schema as text with
+    no output switch (Claude has no JSON mode)."""
 
     structured_mode: str = "forced_tool"
 
@@ -116,7 +118,22 @@ class ClaudeChat(ChatAnthropic):
             bound = self.bind_tools([schema], tool_choice="auto")
             return bound | RunnableLambda(lambda m: _first_tool_call(schema, m))
         if self.structured_mode == "json_mode":
-            raise ValueError("Claude has no JSON mode: use json_schema")
+            # An enforced schema is part of Claude's cache key, so one that differs per seat or per call
+            # type stops calls sharing a prefix. Here the schema rides as text at the end of the last user
+            # message, after the cache marks (a separate message would be merged into it and lose the
+            # transcript's mark), and the reply is validated in code against the same schema.
+            instruction = _schema_instruction(schema)
+
+            def with_instruction(prompt: Any) -> list:
+                messages = list(self._convert_input(prompt).to_messages())
+                last = messages[-1] if messages else None
+                if isinstance(last, HumanMessage) and isinstance(last.content, str):
+                    messages[-1] = HumanMessage(last.content + "\n\n" + instruction)
+                else:
+                    messages.append(HumanMessage(instruction))
+                return messages
+
+            return RunnableLambda(with_instruction) | self | RunnableLambda(lambda m: _parse_json_reply(schema, m))
         return super().with_structured_output(schema, method="function_calling", **kwargs)
 
 

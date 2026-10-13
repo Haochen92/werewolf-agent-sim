@@ -19,7 +19,9 @@ from langchain_core.exceptions import OutputParserException
 #   auto_tool    the schema as a tool the model may call. Works with thinking on; a reply
 #                that answers in prose instead is a parse failure, which the seat retries.
 #   json_mode    no tool: a trailing instruction carries the JSON schema, the provider's JSON
-#                output mode is on, and the reply is validated here. Also works with thinking.
+#                output mode is on (Claude has none: the instruction alone), and the reply is
+#                validated here, against the same schema, so a target list it carries is still
+#                enforced in code. Also works with thinking, and leaves the cached prefix alone.
 # Probed on DeepSeek V4 Flash 2026-10-04 (one call each): thinking + forced or "required"
 # tool_choice → 400; thinking + auto → tool called; thinking + JSON mode → valid JSON.
 STRUCTURED_MODES = ("forced_tool", "json_schema", "auto_tool", "json_mode")
@@ -33,14 +35,29 @@ def _schema_instruction(schema: type) -> str:
             "schema:\n" + json.dumps(schema.model_json_schema(), separators=(",", ":")))
 
 
+def _reply_text(message: Any) -> str:
+    """The reply's text: a thinking model's content is a list of blocks, of which only text counts."""
+    content = message.content
+    if isinstance(content, str):
+        return content
+    return "".join(b.get("text", "") for b in content if isinstance(b, dict) and b.get("type") == "text")
+
+
 def _parse_json_reply(schema: type, message: Any) -> Any:
-    """The reply's JSON validated against the schema; a parse failure raises, so the seat retries."""
-    text = (message.content if isinstance(message.content, str) else str(message.content)).strip()
-    if text.startswith("```"):  # tolerated even though asked against: it carries no ambiguity
+    """The reply's JSON validated against the schema; a parse failure raises, so the seat retries.
+    A code fence or a sentence around the object is tolerated: it carries no ambiguity."""
+    text = _reply_text(message).strip()
+    if text.startswith("```"):
         text = text.strip("`").removeprefix("json").strip()
     try:
         return schema.model_validate_json(text)
     except ValueError as e:
+        start, end = text.find("{"), text.rfind("}")
+        if 0 <= start < end and (start, end) != (0, len(text) - 1):
+            try:
+                return schema.model_validate_json(text[start:end + 1])
+            except ValueError:
+                pass
         raise OutputParserException(f"reply is not a valid {schema.__name__}: {e}", llm_output=text) from e
 
 
