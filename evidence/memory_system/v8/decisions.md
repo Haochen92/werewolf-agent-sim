@@ -296,3 +296,22 @@ The owner's rulings:
   not known and is to be measured later; the fair design is per-seat randomization inside the same games,
   credit grading every followed lesson, and it needs on the order of 1,000 follows per variant.
 - **The demo run uses `ten_seat_v2` only**; the comparison is kept for the future.
+
+## 14. Credit runs on its own; prune and evict apply themselves (owner, 2026-10-13)
+
+The v7 tick ran credit, prune, evict, the observation fold and synthesis as one step on a timer. The
+first three need nothing but the games: each memory-on game's record and the verdicts its seats gave
+the lessons they were shown. Extraction and synthesis are paid and run offline in batches (§11). The
+owner's rulings:
+
+- **Two steps.** A credit pass (deterministic, free) recomputes every lesson's labels from all the
+  memory-on games since it was added, then prunes and evicts; it can run after every memory-on game. The
+  learning step (the extraction batch, the fold, synthesis and the point dedup) runs every N games and
+  reads the labels as they stand, for the track record.
+- **Prune and evict apply automatically**, as v7's tick did, at v7's thresholds (labelled unvalidated for
+  ten seats). This replaces §12's "changes reviewed before a store is published" for prune and evict;
+  every change is still listed with its numbers.
+- **One game source, two readers**: batch-run games from their files, served games from the database (the
+  record rebuilt from its events, the verdicts from its `memory_consulted` events), so credit reads both.
+- **A merged duplicate's credit follows its survivor**: when the point dedup discards a lesson as a
+  duplicate, the follows recorded against its key count for the lesson kept.
