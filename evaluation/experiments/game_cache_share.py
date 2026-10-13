@@ -8,7 +8,9 @@ mapped to one of the three (Anthropic's raw names appear on Claude seats traced 
   poetry run python evaluation/experiments/game_cache_share.py batch_results/v8_luna_memory/run2/game_*.jsonl
   poetry run python evaluation/experiments/game_cache_share.py --session v8_gate_haiku_0_all_enabled
 
-Games that share a session (two per session in some batch runs) come out as one row.
+Games that share a session (two per session in some batch runs) come out as one row. Each row is also
+split by call type (discussion, vote, night, lookup, the day summary, the echo gate and opening filter),
+read from the name of the span each model call sits under.
 """
 
 from __future__ import annotations
@@ -33,17 +35,35 @@ def _session_ids(paths: list[str]) -> list[str]:
     return ids
 
 
-def _generations(api, trace_id: str):
+def _observations(api, trace_id: str) -> list:
     from evaluation.src.data.sources.langfuse import _field
 
-    page = 1
+    out, page = [], 1
     while True:
-        data = _field(api.observations.get_many(trace_id=trace_id, type="GENERATION", page=page, limit=100),
-                      "data", [])
-        yield from data
+        data = _field(api.observations.get_many(trace_id=trace_id, page=page, limit=100), "data", [])
+        out += data
         if len(data) < 100:
-            break
+            return out
         page += 1
+
+
+def call_type(span: str) -> str:
+    """The kind of call a model call was, from the name of the span it sits under (the turn's span is
+    named after its output channel and player; a lookup's after the situation summary)."""
+    if span.startswith("situation_summary"):
+        return "lookup"
+    if span.startswith("day_channel"):
+        return "discussion"
+    if span.startswith("day_votes"):
+        return "vote"
+    if span.startswith(("wolf_channel", "kill_target")) or span.endswith("_target") \
+            or span in ("conceal", "speculator_pick") or "_target_player" in span:
+        return "night"
+    if span.startswith(("echo_gate", "opening_filter")):
+        return "gate/filter"
+    if span == "RunnableSequence":
+        return "day summary"
+    return "other"
 
 
 def session_share(session_id: str) -> dict:
@@ -53,22 +73,34 @@ def session_share(session_id: str) -> dict:
 
     api = _require_langfuse_api()
     by_model: dict[str, dict] = defaultdict(lambda: defaultdict(int))
+    by_call: dict[tuple[str, str], dict] = defaultdict(lambda: defaultdict(int))
     for trace_id in fetch_trace_ids_for_session_id(session_id):
-        for g in _generations(api, trace_id):
-            row = by_model[_field(g, "model") or "?"]
-            row["calls"] += 1
+        observations = _observations(api, trace_id)
+        names = {_field(o, "id"): _field(o, "name") or "" for o in observations}
+        for g in observations:
+            if _field(g, "type") != "GENERATION":
+                continue
+            model = _field(g, "model") or "?"
+            kind_of_call = call_type(names.get(_field(g, "parent_observation_id"), ""))
+            for row in (by_model[model], by_call[(model, kind_of_call)]):
+                row["calls"] += 1
             for name, n in (_field(g, "usage_details") or {}).items():
                 kind = "read" if name in READ else "written" if name in WRITTEN else \
                     "neither" if name in UNCACHED else None
                 if kind:
-                    row[kind] += int(n or 0)
+                    by_model[model][kind] += int(n or 0)
+                    by_call[(model, kind_of_call)][kind] += int(n or 0)
     out = {}
     for model, r in by_model.items():
-        total = r["read"] + r["written"] + r["neither"]
-        out[model] = {"calls": r["calls"], "input": total, **{
-            k: r[k] for k in ("read", "written", "neither")},
-            **{f"{k}_share": round(r[k] / total, 3) if total else None for k in ("read", "written", "neither")}}
+        out[model] = {**_split(r), "by_call": {
+            call: _split(c) for (m, call), c in sorted(by_call.items()) if m == model}}
     return out
+
+
+def _split(r: dict) -> dict:
+    total = r["read"] + r["written"] + r["neither"]
+    return {"calls": r["calls"], "input": total, **{k: r[k] for k in ("read", "written", "neither")},
+            **{f"{k}_share": round(r[k] / total, 3) if total else None for k in ("read", "written", "neither")}}
 
 
 def main() -> int:
