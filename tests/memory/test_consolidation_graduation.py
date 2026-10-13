@@ -138,7 +138,7 @@ def test_db_roundtrip_in_temp_schema():
 def test_tick_end_to_end_llm_free(tmp_path):
     import psycopg
 
-    from Agents.memory.consolidation.tick import run_tick
+    from Agents.memory.consolidation.tick import run_credit_pass, run_tick
 
     # a throwaway database so the tick can exercise the REAL path (own connection, real tables)
     dbname = f"ww_tick_test_{uuid.uuid4().hex[:10]}"
@@ -159,16 +159,22 @@ def test_tick_end_to_end_llm_free(tmp_path):
             "observations/sentinel/day_vote": [{"key": "obs_new", "value": {
                 "observation_count": 1, "situation": "s", "observation": "o"}}]}}))
 
-        cfg = TickConfig(synthesize=False, sp_dedup=False, obs_fold_dedup=False)
-        stats = run_tick(on, off, [str(game_store)], snapshot_root=tmp_path / "snaps",
-                         bootstrap_store=boot, cfg=cfg, dsn=test_dsn)
+        # the credit pass: labels from the games, then prune and evict, recorded in credit_runs
+        credit = run_credit_pass(on, off, dsn=test_dsn, bootstrap_store=boot)
+        assert credit["games"] == 1 and credit["credit"]["credited"] == 2
+        with psycopg.connect(test_dsn) as conn:
+            assert conn.execute("SELECT count(*) FROM credit_runs").fetchone()[0] == 1
 
+        # the learning tick folds and freezes; it reads the labels the pass left and never prunes
+        cfg = TickConfig(synthesize=False, sp_dedup=False, obs_fold_dedup=False)
+        stats = run_tick([str(game_store)], snapshot_root=tmp_path / "snaps",
+                         bootstrap_store=boot, cfg=cfg, dsn=test_dsn)
         assert stats["gen"] == 1 and stats["fold"]["new_obs"] == 1
-        assert stats["credit"]["credited"] == 2
+        assert stats["consolidate"]["prune_evict"] == {}
         snap = Path(stats["snapshot_dir"])
         assert snap.name == "demo_gen1" and (snap / "manifest.json").exists()
         manifest = json.loads((snap / "manifest.json").read_text())
-        assert "hard-coded" in manifest["credit_rule"] and (snap / "changes.json").exists()
+        assert "hard-coded" in manifest["credit_rule"]
         sp = json.loads((snap / "strategy_points.json").read_text())
         by_key = {r["key"]: r["value"] for recs in sp["namespaces"].values() for r in recs}
         assert by_key["k_abstain"]["negative_count"] == 2   # both abstain follows on the no-lynch day
@@ -176,8 +182,7 @@ def test_tick_end_to_end_llm_free(tmp_path):
         obs = json.loads((snap / "observations.json").read_text())
         assert [r["key"] for r in obs["namespaces"]["observations/sentinel/day_vote"]] == ["obs_new"]
 
-        stats2 = run_tick(on, off, [], snapshot_root=tmp_path / "snaps",
-                          bootstrap_store=boot, cfg=cfg, dsn=test_dsn)
+        stats2 = run_tick([], snapshot_root=tmp_path / "snaps", bootstrap_store=boot, cfg=cfg, dsn=test_dsn)
         assert stats2["gen"] == 2 and Path(stats2["snapshot_dir"]).name == "demo_gen2"
     finally:
         admin.execute(f'DROP DATABASE IF EXISTS "{dbname}" WITH (FORCE)')

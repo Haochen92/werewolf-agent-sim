@@ -44,6 +44,13 @@ CREATE TABLE IF NOT EXISTS obs_generations (
     last_reinforced integer NOT NULL,
     count           integer NOT NULL
 );
+CREATE TABLE IF NOT EXISTS credit_runs (
+    id      serial PRIMARY KEY,
+    ran_at  timestamptz NOT NULL DEFAULT now(),
+    stats   jsonb,
+    changes jsonb,
+    games   jsonb
+);
 CREATE TABLE IF NOT EXISTS tick_runs (
     gen          integer PRIMARY KEY,
     ran_at       timestamptz NOT NULL DEFAULT now(),
@@ -145,6 +152,14 @@ def record_tick(conn: psycopg.Connection, gen: int, stats: dict, window_spec: di
     conn.execute(
         "INSERT INTO tick_runs (gen, stats, window_spec, snapshot_dir) VALUES (%s, %s, %s, %s)",
         (gen, Jsonb(stats), Jsonb(window_spec), snapshot_dir))
+    conn.commit()
+
+
+def record_credit_run(conn: psycopg.Connection, stats: dict, changes: list, games: list[str]) -> None:
+    """One credit pass (decisions §14): its counts, every lesson it pruned, evicted, spared or found
+    proven, and the games it read."""
+    conn.execute("INSERT INTO credit_runs (stats, changes, games) VALUES (%s, %s, %s)",
+                 (Jsonb(stats), Jsonb(changes), Jsonb(games)))
     conn.commit()
 
 

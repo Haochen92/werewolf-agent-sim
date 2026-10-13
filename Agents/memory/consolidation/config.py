@@ -20,11 +20,8 @@ class TickConfig:
                                                 # is called through the Anthropic SDK
     dedup_model: str = "gemini-3.1-flash-lite"  # KEEP/DISCARD dedup passes (merge-free => flash-lite safe)
     obs_fold_dedup: bool = True                 # freeze-old obs dedup after the fold (off only in LLM-free tests)
-    credit: bool = True                         # False = a fold-only gen with no memory-on window to grade;
-                                                # the counters carry over untouched instead of being zeroed
-                                                # against an empty ledger (window semantics in credit_apply)
 
-    # prune / evict (fast-cull: every tick)
+    # prune / evict (the credit pass's, every pass; decisions §14)
     prune: bool = True
     prune_tau: float = -0.15
     prune_min_follow: int = 8

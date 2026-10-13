@@ -71,7 +71,7 @@ def synthesize(store_dir: Path, synth_dir: Path, model: str, outcome: str = "ver
     if synth_dir.exists():
         raise SystemExit(f"{synth_dir} exists; synthesis writes a fresh copy")
     shutil.copytree(store_dir, synth_dir, ignore=shutil.ignore_patterns("indexed_cache.pkl"))
-    cfg = TickConfig(model=model, batch=model.startswith("claude"), credit=False, prune=False, evict=False,
+    cfg = TickConfig(model=model, batch=model.startswith("claude"), prune=False, evict=False,
                      evict_observations=False, synth_outcome=outcome)
     result = consolidate(synth_dir, cfg)
     return {k: v for k, v in result.items() if k != "obs_counts"}
