@@ -44,6 +44,17 @@ def _apply_strategy_operation(
     if survivor_key is None:
         return "failed", 0
     survivor_value = items_by_key[survivor_key].value
+    # Never across stages, whatever the judge says: a point learned at another stage of the game
+    # (alive bucket, partner lost, uses left) stays, since the live stage filter serves it to seats the
+    # survivor does not reach. Deterministic, the filter's own check (the flash-lite dry run of
+    # 2026-10-13 merged across stages in 10 of 30 drops).
+    from Agents.memory.retrieval.dimension_gating import stage_mismatch
+
+    survivor_dims = survivor_value.get("dimensions") or {}
+    source_keys = [k for k in source_keys if k == survivor_key
+                   or not stage_mismatch(survivor_dims, items_by_key[k].value.get("dimensions") or {})]
+    if len(source_keys) < 2:
+        return "kept", 0
     # Keep or discard only: the survivor keeps its own text and structured fields (direction/
     # honesty/dimensions, verdict counters); only the summed metadata changes. Strategy points never
     # merge, and the judge never rewrites one (a cheap judge rewrote one Sonnet point in 605 when it
