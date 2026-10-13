@@ -20,14 +20,12 @@ several times; the first scored decision of the scope that followed the lesson i
 
 from __future__ import annotations
 
-import glob
 import json
-import os
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
-from pathlib import Path
 
 from Agents.memory.consolidation.grading import EVIL, TOWN, GameView, night_channel, night_scope, side
+from Agents.memory.consolidation.sources import games_from_files
 
 VERDICT_VALUE = {"positive": 1.0, "neutral": 0.0, "negative": -1.0}
 SHRINK_K = 5  # low-follow SPs pull toward 0 lift: shrunk = lift * follow/(follow+K)
@@ -35,44 +33,28 @@ VERDICT_RANK = {"follow": 3, "override": 2, "not_relevant": 1}
 """A lesson's verdict over a scope's turns: follow on any turn wins, then override."""
 
 
-def _expand_dumps(dumps_glob: str) -> list[str]:
-    """Expand a dumps spec that is EITHER a single glob pattern OR a whitespace-joined list of
-    paths/patterns (the rolling window passes the latter). Plain ``glob.glob`` treats the whole
-    space-separated string as ONE pattern and matches nothing — silently emptying the ledger."""
-    return sorted(f for pat in dumps_glob.split() for f in glob.glob(pat))
-
-
-def _resolve_cases_path(path: str | None, dump: str) -> str | None:
-    """The eval-case sidecar of a record. Records store it relative to where the batch ran, so a
-    batch folder moved afterwards leaves a stale path; it is then found by name under the dump's
-    folder."""
-    if not path:
-        return None
-    if os.path.exists(path):
-        return path
-    found = sorted(glob.glob(str(Path(dump).parent / "**" / Path(path).name), recursive=True))
-    return found[0] if found else None
-
-
-def _iter_game_records(dumps_glob: str):
+def _iter_game_records(window):
     """Every game record in the window that is allowed to TEACH: the human-seat guard lives here,
     once, so every ledger and base in this package inherits it. A record with a truthy
-    ``human_player`` is a human-involved game — replayable, never mined (the poisoning rule)."""
-    for dump in _expand_dumps(dumps_glob):
-        for line in open(dump):
-            if not line.strip():
-                continue
-            g = json.loads(line)
-            if g.get("human_player"):
-                continue
-            g["eval_cases_path"] = _resolve_cases_path(g.get("eval_cases_path"), dump)
+    ``human_player`` is a human-involved game — replayable, never mined (the poisoning rule).
+    ``window``: a glob spec of batch-run dumps, or games already loaded (``sources``: files and the
+    served games' database, decisions §14)."""
+    games = games_from_files(window) if isinstance(window, str) else window
+    for g in games:
+        if not g.get("human_player"):
             yield g
 
 
 def iter_eval_cases(g: dict):
-    """The game's agent-action eval cases, in the order they were played."""
+    """The game's agent-action eval cases, in the order they were played: inline for a served game
+    (``eval_cases``), else from the batch run's sidecar."""
+    if not g.get("roles"):
+        return
+    if "eval_cases" in g:
+        yield from g["eval_cases"]
+        return
     path = g.get("eval_cases_path")
-    if not g.get("roles") or not path:
+    if not path:
         return
     for cl in open(path):
         if not cl.strip():

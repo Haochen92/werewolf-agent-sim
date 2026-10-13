@@ -43,7 +43,7 @@ def server_records(game_ids: set[str]) -> dict[str, dict]:
     from dotenv import dotenv_values
     from psycopg.rows import dict_row
 
-    from Agents.memory.extraction.offline import record_from_event_log
+    from Agents.memory.consolidation.sources import record_from_event_log
 
     out = {}
     with psycopg.connect(dotenv_values(".env")["WW_POSTGRES_DSN"], autocommit=True, row_factory=dict_row,

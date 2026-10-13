@@ -315,7 +315,7 @@ def test_observation_grade_finds_the_named_decision():
 
 
 def test_record_from_event_log_rebuilds_what_the_grader_reads():
-    from Agents.memory.extraction.offline import record_from_event_log
+    from Agents.memory.consolidation.sources import record_from_event_log
 
     roles = {"p1": "investigator", "p6": "healer", "p7": "chanteuse", "p8": "illusionist", "p9": "serial_killer"}
     events = [
@@ -344,3 +344,54 @@ def test_record_from_event_log_rebuilds_what_the_grader_reads():
     assert v.observation_grade("healer", "night_action", 1) == "positive"
     assert v.observation_grade("chanteuse", "day_discussion", 2) == "positive"  # a landed push
     assert v.observation_grade("chanteuse", "day_vote", 2) == "positive"  # blended with the room
+
+
+def test_a_served_games_decisions_come_from_its_memory_consulted_events():
+    from Agents.memory.consolidation.sources import eval_cases_from_events, record_from_event_log
+
+    roles = {"p1": "investigator", "p7": "chanteuse", "p8": "illusionist"}
+    lesson = [{"index": 1, "key": "k1", "situation": "s", "action": "a"}]
+    events = [
+        {"seq": 1, "day": 1, "type": "roles_assigned", "roles": roles},
+        {"seq": 2, "day": 1, "type": "wolf_kill_decided", "carrier": "p8", "target": "p1"},
+        {"seq": 3, "day": 1, "type": "night_record", "actor": "wolves", "action": "kill", "target": "p1", "result": "killed"},
+        {"seq": 4, "day": 1, "type": "memory_consulted", "player": "p7", "role": "chanteuse", "round": 2,
+         "action_phase": "night_action", "lessons": lesson, "verdicts": [{"strategy_index": 1, "verdict": "follow"}]},
+        {"seq": 5, "day": 1, "type": "memory_consulted", "player": "p7", "role": "chanteuse", "round": 2,
+         "action_phase": "night_action", "lessons": lesson, "verdicts": [{"strategy_index": 1, "verdict": "follow"}]},
+        {"seq": 6, "day": 1, "type": "memory_consulted", "player": "p7", "role": "chanteuse", "round": 5,
+         "action_phase": "night_action", "lessons": lesson, "verdicts": [{"strategy_index": 1, "verdict": "override"}]},
+        {"seq": 7, "day": 2, "type": "vote_cast", "voter": "p7", "votee": "p8"},
+        {"seq": 8, "day": 2, "type": "memory_consulted", "player": "p7", "role": "chanteuse", "round": 0,
+         "action_phase": "day_vote", "lessons": lesson, "verdicts": [{"strategy_index": 1, "verdict": "follow"}]},
+    ]
+    record = record_from_event_log("g1", events)
+    cases = eval_cases_from_events(events, record)
+    assert len(cases) == 3  # the re-fired chat event is kept once
+    chat, skill, vote = cases
+    assert chat["agent_night_action"]["kind"] == "chat" and chat["strategy_index_to_key"] == {"1": "k1"}
+    assert skill["agent_night_action"]["kind"] == "declined"  # round 5 with no block of its own
+    assert vote["agent_vote"] == {"votee": "p8"} and vote["memory_enabled"]
+
+
+def test_a_merged_duplicates_credit_counts_for_its_survivor(tmp_path):
+    turns = [_followed(night_case("p7", 2, "chat"), "gone")]
+    on = _window(tmp_path, turns, {"night_resolutions": [pack_night("killed")], "day_resolutions": []})
+    sp = tmp_path / "strategy_points.json"
+    sp.write_text(json.dumps({"namespaces": {"strategy_points/chanteuse/night_action": [
+        strategy_point("kept", cell="chanteuse/night_action", merged_keys=["gone"])]}}))
+    credit_apply(sp, on, base_rates={"chanteuse/night_action/chat": [0.0, 5]})
+    v = json.loads(sp.read_text())["namespaces"]["strategy_points/chanteuse/night_action"][0]["value"]
+    assert (v["follow_count"], v["positive_count"], v["retrieved_count"]) == (1, 1, 1)
+
+
+def test_the_point_dedup_records_the_keys_its_survivor_absorbed():
+    from types import SimpleNamespace
+
+    from Agents.memory.batch_deduplication.operations import _merged_metadata
+
+    items = {"a": SimpleNamespace(value={"action": "x", "merged_keys": ["old"]}),
+             "b": SimpleNamespace(value={"action": "y", "merged_keys": ["older"]})}
+    assert _merged_metadata(["a", "b"], items, "a")["merged_keys"] == ["b", "old", "older"]
+    obs = {"o1": SimpleNamespace(value={"situation": "s"}), "o2": SimpleNamespace(value={"situation": "t"})}
+    assert "merged_keys" not in _merged_metadata(["o1", "o2"], obs, "o1")  # observations carry no credit
