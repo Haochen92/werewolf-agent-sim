@@ -14,7 +14,7 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
-from langchain_core.callbacks import UsageMetadataCallbackHandler
+from langchain_core.callbacks import BaseCallbackHandler, UsageMetadataCallbackHandler
 
 from Agents.llm_factory import create_chat_model
 from evaluation.src.model_admission.seat_schemas import SEAT_SCHEMAS, TABLE, reply_problem
@@ -23,12 +23,12 @@ MODE_ORDER = ("native", "forced_tool", "json_schema", "auto_tool", "json_mode")
 
 
 def modes_for(model: str) -> list[str]:
-    """The calling modes a model's protocol allows: Gemini only has its own constrained output,
-    Claude has no JSON mode."""
+    """The calling modes a model's protocol allows: Gemini only has its own constrained output;
+    Claude's json_mode is the schema as text alone (it has no JSON output switch)."""
     if "/" not in model:
         return ["native"]
     if model.startswith("anthropic/"):
-        return ["forced_tool", "json_schema", "auto_tool"]
+        return ["forced_tool", "json_schema", "auto_tool", "json_mode"]
     return ["forced_tool", "json_schema", "auto_tool", "json_mode"]
 
 
@@ -47,6 +47,44 @@ def _usage(handler: UsageMetadataCallbackHandler, seconds: float) -> dict[str, f
     return {**totals, "seconds": round(seconds, 2)}
 
 
+class _RawReply(BaseCallbackHandler):
+    """The text of the call's last reply, as the model wrote it (before any parsing)."""
+
+    def __init__(self) -> None:
+        self.text = ""
+
+    def on_llm_end(self, response: Any, **kwargs: Any) -> None:
+        from Agents.llm_factory.providers.common import _reply_text
+
+        for generations in response.generations or []:
+            for g in generations:
+                message = getattr(g, "message", None)
+                if message is not None:
+                    self.text = _reply_text(message)
+
+
+def reply_keys(text: str) -> list[str] | None:
+    """The top-level fields of the reply's JSON object in the order written; None when there is none."""
+    import json
+
+    start, end = text.find("{"), text.rfind("}")
+    if not 0 <= start < end:
+        return None
+    try:
+        return list(json.loads(text[start:end + 1]))
+    except ValueError:
+        return None
+
+
+def field_order(schema: type, text: str) -> bool | None:
+    """Whether the reply's top-level fields came in the schema's order; None when the reply holds no
+    JSON object (a tool call's reply is not text). A reordered reply still validates, so this is
+    checked apart: the schemas order fields so the model commits before it speaks (reads before the
+    message, a reason before the target)."""
+    keys = reply_keys(text)
+    return None if keys is None else keys == [f for f in schema.model_fields if f in keys]
+
+
 def _mean(rows: list[dict], key: str) -> float:
     return round(sum(r[key] for r in rows) / len(rows), 1) if rows else 0.0
 
@@ -60,24 +98,31 @@ def probe_structured(model: str, mode: str, thinking_level: str | None, samples:
 
     def one(job: tuple) -> dict[str, Any]:
         (schema, role_line, field, tokens), i = job
-        usage, started = UsageMetadataCallbackHandler(), time.monotonic()
+        usage, raw, started = UsageMetadataCallbackHandler(), _RawReply(), time.monotonic()
         try:
-            out = llm.with_structured_output(schema).invoke(TABLE + role_line, config={"callbacks": [usage]})
+            out = llm.with_structured_output(schema).invoke(TABLE + role_line, config={"callbacks": [usage, raw]})
             problem = reply_problem(schema, out, field, tokens)
         except Exception as e:  # a 400 or a parse failure: the mode failed this call
             problem = f"{type(e).__name__}: {str(e)[:240]}"
-        return {"schema": schema.__name__, "sample": i, "problem": problem,
+        in_order = field_order(schema, raw.text)
+        return {"schema": schema.__name__, "sample": i, "problem": problem, "in_order": in_order,
+                "keys": reply_keys(raw.text) if in_order is False else None,
                 **_usage(usage, time.monotonic() - started)}
 
     jobs = [(row, i) for row in SEAT_SCHEMAS for i in range(samples)]
     with ThreadPoolExecutor(max_workers=workers) as ex:
         calls = list(ex.map(one, jobs))
     failures = [c for c in calls if c["problem"]]
+    ordered = [c for c in calls if c["in_order"] is not None]
     return {
         "mode": mode,
         "passed": f"{len(calls) - len(failures)}/{len(calls)}",
         "all_passed": not failures,
         "failures": [{"schema": c["schema"], "problem": c["problem"]} for c in failures],
+        # replies written as text (not a tool call) whose fields came in the schema's order, and the
+        # order actually written where they did not
+        "in_schema_order": f"{sum(c['in_order'] for c in ordered)}/{len(ordered)}" if ordered else None,
+        "out_of_order": [{"schema": c["schema"], "keys": c["keys"]} for c in ordered if not c["in_order"]],
         "mean_per_call": {k: _mean(calls, k) for k in ("input", "cached", "output", "reasoning", "seconds")},
     }
 
@@ -206,13 +251,16 @@ def probe_real_prompts(model: str, mode: str, thinking_level: str | None, case: 
     for k, (name, (template, schema, prompt_input)) in enumerate(rendered.items()):
         if k:
             time.sleep(wait_s)
-        usage, started = UsageMetadataCallbackHandler(), time.monotonic()
+        usage, raw, started = UsageMetadataCallbackHandler(), _RawReply(), time.monotonic()
         error = None
         try:
-            (template | llm.with_structured_output(schema)).invoke(prompt_input, config={"callbacks": [usage]})
+            (template | llm.with_structured_output(schema)).invoke(prompt_input, config={"callbacks": [usage, raw]})
         except Exception as e:  # tokens were still billed; the call is kept for its usage
             error = f"{type(e).__name__}: {str(e)[:200]}"
-        out[name] = {**_usage(usage, time.monotonic() - started), "error": error}
+        in_order = field_order(schema, raw.text)
+        out[name] = {**_usage(usage, time.monotonic() - started), "error": error, "in_order": in_order,
+                     "keys": reply_keys(raw.text) if in_order is False else None,
+                     "schema_keys": list(schema.model_fields) if in_order is False else None}
     tokens_per_char = out["first"]["input"] / max(1, len(texts["first"]))
     for name in ("next_turn", "other_seat"):
         out[name]["shared_prefix_est"] = round(_shared_prefix(texts["first"], texts[name]) * tokens_per_char)

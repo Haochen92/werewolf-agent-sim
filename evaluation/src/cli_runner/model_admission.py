@@ -12,7 +12,8 @@ Config keys: ``label``; ``models``; ``thinking_level`` (omit for each model's ga
 ``Agents/llm_factory/accessors.py`` game_thinking_level); ``modes`` (omit for every mode the
 model's protocol allows); ``samples_per_schema`` (default 3); ``workers`` (default 4);
 ``caching``: ``floor_sizes`` (target prompt tokens), ``wait_s``, ``dataset`` (a hallucination
-bench frozen set), ``cases`` (how many of its discussion cases to replay).
+bench frozen set), ``cases`` (how many of its discussion cases to replay), ``real_prompt_mode``
+(the mode the real turns are played in; default the recommended mode).
 """
 
 from __future__ import annotations
@@ -55,9 +56,10 @@ def admit(model: str, cfg: dict) -> dict:
     floor_rows = probes.probe_cache_floor(model, caching_cfg.get("floor_sizes", [256, 512, 1024, 2048, 4096, 8192]), wait_s)
     floor = next((r["target_tokens"] for r in floor_rows if r["cached_tokens"]), None)
     real = []
+    real_mode = caching_cfg.get("real_prompt_mode") or mode or probes.best_mode(structured)
     for case in _cases(REPO_ROOT / caching_cfg.get("dataset", DEFAULT_DATASET), caching_cfg.get("cases", 2)):
         print(f"  {model}: real prompts, case {case['case_id']} ...", flush=True)
-        real.append(probes.probe_real_prompts(model, mode or probes.best_mode(structured), thinking, case, wait_s))
+        real.append(probes.probe_real_prompts(model, real_mode, thinking, case, wait_s))
 
     # The short probes can pass while real turns fail (DeepSeek V4 Pro, auto_tool, 2026-10-04: 27/27
     # probes, 3 of 6 real turns answered in prose), so real-turn failures qualify the recommendation.
@@ -79,8 +81,12 @@ def admit(model: str, cfg: dict) -> dict:
         "recommended_mode": mode,
         "recommended_mode_why": why,
         "cache_floor": {"floor_tokens": floor, "sizes": floor_rows},
+        "real_prompt_mode": real_mode,
         "real_prompts": real,
         "real_prompt_failures": f"{real_failed}/{len(real_calls)}",
+        "real_prompts_in_schema_order": (
+            f"{sum(1 for c in real_calls if c.get('in_order'))}/{sum(1 for c in real_calls if c.get('in_order') is not None)}"
+            if any(c.get("in_order") is not None for c in real_calls) else None),
         "cached_share": {"next_turn": share("next_turn"), "other_seat": share("other_seat")},
     }
 

@@ -61,3 +61,18 @@ def test_the_caching_probe_renders_a_next_turn_that_extends_the_first_and_anothe
     other = probes._shared_prefix(texts["first"], texts["other_seat"])
     assert same > other > 0
     assert "I want to hear from everyone" in texts["next_turn"]
+
+
+def test_field_order_is_read_from_the_raw_reply():
+    # An unenforced reply that validates may still have reordered the fields the schema orders on purpose.
+    from pydantic import BaseModel
+
+    from evaluation.src.model_admission.probes import field_order
+
+    class Turn(BaseModel):
+        reads: list[str]
+        message: str
+
+    assert field_order(Turn, 'Sure: {"reads": [], "message": "hi"}') is True
+    assert field_order(Turn, '{"message": "hi", "reads": []}') is False
+    assert field_order(Turn, "no json here") is None
