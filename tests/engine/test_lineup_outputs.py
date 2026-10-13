@@ -18,7 +18,9 @@ from Agents.schemas.roles import ALL_LINEUPS, lineup
 
 SK_SPECULATOR = lineup("serial_killer", "speculator")
 NECRO_FORTUNE = lineup("necromancer", "fortune_teller")
-TESTED_ORDER = ["strategy_verdicts", "memory_applicability", "reads", "updated_strategy"]
+# Reads before the strategy note and the action is the tested commitment lever (T1c, 2026-07); reads
+# moved ahead of the verdicts on 2026-10-13 so the schema agrees with the prompt's opening line.
+TESTED_ORDER = ["reads", "strategy_verdicts", "memory_applicability", "updated_strategy"]
 
 
 def _enum(model, field, nested=None):

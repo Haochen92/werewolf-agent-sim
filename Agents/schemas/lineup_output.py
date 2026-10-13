@@ -70,6 +70,11 @@ class PlayerRead(LineupModel, Generic[ReadRole]):
 
 
 class TurnOutput(LineupModel, Generic[ReadRole]):
+    # Field order is the order a seat commits in: reads first, as the prompt's opening line asks, then
+    # the verdicts on any lessons shown, then the note, and only then the decision. With the verdicts
+    # first, an unenforced Claude reply followed the prompt over the schema in 9 of 24 real turns
+    # (evidence/caching/experiment_log.md, 2026-10-13).
+    reads: list[PlayerRead[ReadRole]] = Field(description="One read per living player other than yourself.")
     strategy_verdicts: list[StrategyVerdict] = Field(
         default_factory=list,
         description="One verdict per numbered strategy point shown, in order; empty list if none shown.",
@@ -78,7 +83,6 @@ class TurnOutput(LineupModel, Generic[ReadRole]):
         default_factory=list,
         description="One verdict per numbered observation shown, in order; empty list if none shown.",
     )
-    reads: list[PlayerRead[ReadRole]] = Field(description="One read per living player other than yourself.")
     updated_strategy: str
 
 

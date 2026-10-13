@@ -2,7 +2,8 @@
 
 A validated decision-replay A/B promoted a reads bundle into the live pipeline: an "alive roles" line
 + a forced per-player suspicion list emitted in the structured output BEFORE the free-text strategy
-note (verdicts -> reads -> strategy -> action). These tests pin the load-bearing surfaces: (1) the
+note (verdicts -> reads -> strategy -> action; reads -> verdicts -> strategy -> action since 2026-10-13).
+These tests pin the load-bearing surfaces: (1) the
 schema field ORDER (the tested commitment lever); (2) legacy EvalCase records without reads still
 load; (3) the dynamic target-enum rewrite preserves the required reads field; (4) the alive-roles
 formatter (subtraction, fixed order, no pluralization, empty/none edges); (5) the derived
@@ -49,11 +50,13 @@ _FULL_CAST = {
 
 # --- (1) schema field order = the tested commitment lever -------------------
 
-def test_field_order_reads_between_verdicts_and_strategy():
+def test_field_order_reads_first_then_verdicts_then_strategy():
+    # Reads before the strategy note is the tested lever; reads also precede the verdicts since
+    # 2026-10-13, as the prompt's opening line asks (an unenforced reply followed the prompt).
     fields = list(DayDiscussOutput.model_fields)
     core = [f for f in fields if f in {
         "strategy_verdicts", "memory_applicability", "reads", "updated_strategy"}]
-    assert core == ["strategy_verdicts", "memory_applicability", "reads", "updated_strategy"]
+    assert core == ["reads", "strategy_verdicts", "memory_applicability", "updated_strategy"]
     # Action fields come AFTER the strategy note.
     assert fields.index("updated_strategy") < fields.index("pass_turn")
     assert fields.index("updated_strategy") < fields.index("message")
@@ -61,8 +64,8 @@ def test_field_order_reads_between_verdicts_and_strategy():
 
 def test_field_order_on_healer_output():
     fields = list(HealerOutput.model_fields)
-    assert fields.index("memory_applicability") < fields.index("reads")
-    assert fields.index("reads") < fields.index("updated_strategy")
+    assert fields.index("reads") < fields.index("memory_applicability")
+    assert fields.index("memory_applicability") < fields.index("updated_strategy")
     assert fields.index("updated_strategy") < fields.index("healer_target")
 
 
