@@ -203,3 +203,53 @@ records, outcome) plus the decision cases (each seat's last note, the wolf chat 
 context). Checked on the 12 seeding games against the input live extraction used: identical except one
 pack vote line on a game's last night, and 14 of 120 notes where the rebuild has the newer note of a
 seat that died that night (live state drops it, so live extraction never saw it).
+
+## 12. Credit comes to ten seats, and how a night is graded (owner, 2026-10-13)
+
+The table itself is plan §9.6 item 10; this section keeps why.
+
+**Why port now.** v8 closed with a reviewed static store, and that is a step back from v7: a lesson that
+hurts play is retrieved again every game because nothing can prune it, and one that works is never
+promoted. v7's credit was built to close exactly that gap, so a v8 story that stops at a static store
+leaves the regression standing. The port is followed by a small demo run of memory-on games that shows
+the loop on v8's own data: grading, credit, promotion into synthesis, prune and evict. It demonstrates
+the mechanism; it measures no benefit (that needs ~35–60 games per arm, §9.6 item 9).
+
+**How a turn is graded.** For each role's turn the owner asked three questions: what outcome is ideal,
+what is neutral, and what is undesirable (a wasted turn, a limited use spent for nothing, a foreseeable
+failure, exposing oneself). Four principles came out of applying it role by role:
+
+- **Grade what the actor controls.** A sigil striking the pack's carrier is the Sigilist's choice, so it
+  does not count against the kill. A Vigilante shot on an evil player is good even when the Healer saved
+  the target or the target was immune: the choice was right, and the "immune" result outs the Serial
+  Killer.
+- **A predictable failure is the actor's.** A kill on a target the Healer saved is bad, not luck: the
+  killers cannot decline to kill, so the skill at night is choosing the target, and attacking someone the
+  Healer is likely to cover wastes the night. The same holds for an immune target.
+- **Exposure is a cost.** A kill seen by a Sentinel at the victim's door or by a Trailseer following the
+  killer is bad, for the Serial Killer and the pack's carrier alike; the pack can lower that risk with a
+  conceal, the Serial Killer cannot.
+- **A limited use spent for nothing is bad**: a watch that saw no one, a sigil on someone who did not
+  attack, a self-bet on a quiet night, a conceal on a body with no record. An Investigator's check on the
+  Serial Killer is bad as well: it spends a check and gives the town a false clear (10-11 had ruled only
+  that it is not a find).
+
+Harsh "bad" grades do not bias credit. A lesson is credited by lift: its followed outcomes against the
+memory-off outcomes of the same turn kind (the 12 seeding games, graded by the same table). A role whose
+turns are mostly "bad" simply has a low baseline.
+
+**Left unscored.** The Necromancer: its borrowed actions interact in ways one grade cannot capture (a
+borrowed block on the Vigilante, say, may be what kept it alive), and rewarding its kills alone would
+push it to kill every night (10-11). The Illusionist is graded but marked hard to gauge: whether a
+conceal mattered depends on what the victim's will would have said.
+
+**Authority and thresholds.** None of the nine-seat validations carry over, so v7's thresholds (prune at
+lift < −0.15 with ≥8 follows, protect with ≥2, evict at ≥8 retrievals) are kept and labelled unvalidated
+for ten seats. Credit, prune and evict run on a copy; every change is listed with its numbers and reviewed
+before a store is published.
+
+**The database.** The tick's four tables (`memory_records`, `base_rates`, `obs_generations`, `tick_runs`)
+share the server's `werewolf` database with the games and events, but nothing links to them and only the
+tick reads them. A ten-seat tick on top of the nine-seat rows would fold the two stores together, so they
+are dumped to a file (restorable with one `pg_restore`; the store is also on disk as
+`memory_stores/demo_snapshots/demo_gen1`) and emptied before the first ten-seat tick.

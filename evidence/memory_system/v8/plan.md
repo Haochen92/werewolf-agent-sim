@@ -679,8 +679,8 @@ The per-game metrics are ported (`e5763cd1`). Credit runs on per-decision grades
 4. **A missing baseline reads unscored, not 0.** The seeding games, graded by the same new rules,
    serve as the memory-off baseline.
 5. **The tick on its own database.** The Postgres in `WW_POSTGRES_DSN` holds the nine-seat
-   `demo_gen1` store at generation 1 (723 records); a ten-seat tick would fold onto it. Use a
-   separate database (`--dsn`) or archive and reset. Point `--bootstrap-store` at the ten-seat store,
+   `demo_gen1` store at generation 1 (723 records); a ten-seat tick would fold onto it. Ruled:
+   dump and reset (item 10). Point `--bootstrap-store` at the ten-seat store,
    not the default `v7_fixed`.
 6. **Data:** AI-only games with memory on (retrieval on, extraction off). A strategy needs 5
    scored follows before its track record enters synthesis, and 8 before it can be pruned.
@@ -690,11 +690,40 @@ The per-game metrics are ported (`e5763cd1`). Credit runs on per-decision grades
    one lookup (D4), so the same lessons get a verdict on every discussion turn; counted per turn, one
    decision would weigh several times. Day discussion lessons are evil roles' only (town day is not
    retrieved), so this binds there; a night already counts once per scope (chat; kill and ability).
-9. **Status (owner, 2026-10-13): not ported.** The report shows credit, promotion and pruning with
-   the v7 run; v8 ships the reviewed static store. Porting becomes worth it once served games play
-   with memory on and so supply memory-on games at no cost. Sizing, if an effect is ever measured:
+9. **Status (owner, 2026-10-13): not ported** — superseded the same day by item 10: the port goes
+   ahead, followed by a demo run of memory-on games to show the whole loop on v8's own data (a
+   demonstration of the mechanism, not a measured benefit). Sizing, if an effect is ever measured:
    on the July power table (nine-seat game-grain SD ~0.3), memory on vs off needs ~35 games per
    arm for +0.20 and ~60 for +0.15; rerun the table on the ten-seat games after the port.
+10. **The night grading table (owner, 2026-10-13; why: decisions.md §12).** Each turn asks: what outcome is ideal for the
+    role, what is neutral, what is undesirable (a wasted turn, a spent use for nothing, a foreseeable
+    failure). Grade the choice where the result is the opponent's (a sigil on the carrier is the
+    Sigilist's choice, not the pack's), the result where it was foreseeable. Credit is lift against
+    the memory-off baseline of the same turn kind, so a role whose turns are mostly "bad" just has a
+    low baseline.
+
+    | Turn | Good | Neutral | Bad |
+    |---|---|---|---|
+    | Pack kill (carrier); pack chat takes the night's kill grade | landed on a town role, or on the Necromancer from night 2 | landed on a neutral | saved by the Healer (a target the Healer would cover is a wasted kill); target immune (Serial Killer, Necromancer night 1, Fortune Teller self-bet); the carrier seen by a Sentinel (watching the victim) or a Trailseer (following the carrier). A sigil striking the carrier is not counted against the kill |
+    | Chanteuse block | critical block (§8.3 list) | cancelled a town action that changed nothing; "did not take" (lone killer or neutral) | target had no action that night |
+    | Illusionist conceal (tried; hard to gauge) | hid a body whose will would read out a record, above all one naming a wolf | victim saved or immune (use kept); declined while the will was harmless | spent on a body with no record; declined while the victim's will named a wolf |
+    | Serial Killer kill | landed on a non-neutral | landed on a neutral | target immune or healed; the kill seen by a Sentinel (watching the victim) or a Trailseer (following the killer) |
+    | Necromancer | unscored (borrowed actions interact too much to grade: e.g. a borrowed block on the Vigilante shooting it) | | |
+    | Investigator | delivered Suspicious | Not suspicious on town or a neutral; declined; blocked | checked the Serial Killer (a false clear and a spent check) |
+    | Sentinel | saw an evil visitor (a borrowed body included) | town visitors only; declined; blocked | saw no one (a watch spent) |
+    | Trailseer | followed an evil player and saw its visit | followed a town player who visited | followed someone who went nowhere |
+    | Healer | saved a town player | no attack on the target; blocked | saved an evil player (a sigil retaliation included) |
+    | Vigilante | shot an evil player (immune or saved included: the choice was right) | held fire; shot a neutral | shot a town player |
+    | Sigilist | sigil on an attacker (struck, saved, or the immune Serial Killer) | | sigil on the Vigilante who then shot; a miss on a non-attacker |
+    | Speculator pick | picked side won | "not yet" | picked side lost; died unpicked (its last "not yet") |
+    | Fortune Teller bet | scored 1 or 2 points; a self-bet on a night it was attacked | | a miss; a self-bet with no attack on it |
+
+    Day votes as item 1; evil day discussion keeps the concealment rule (a day drawing twice its
+    share of accusations, or its own lynch, is bad). Credit, prune and evict act on a copy; their
+    changes are listed for review before any store is published. v7's thresholds are kept and
+    labelled unvalidated for ten seats. The tick runs on the server's database after the four tick
+    tables (`memory_records`, `base_rates`, `obs_generations`, `tick_runs`; no foreign keys, read
+    only by the tick) are dumped to a file and emptied (owner: dump and reset).
 
 Additional limitation, kept for the report: on Vertex, the cache discount and the batch discount do
 not stack (§9.4, batch extraction).
