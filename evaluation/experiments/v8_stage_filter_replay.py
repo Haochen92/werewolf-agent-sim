@@ -17,13 +17,18 @@ the seat was shown, a check on the replay. Writes ``data/gate/stage_filter/``: `
 lookup: both lesson sets, the read's verdict where the lesson was read) and ``to_read.md`` (the kept
 lessons the read has not judged, for a reader with the same rubric).
 
-  poetry run python evaluation/experiments/v8_stage_filter_replay.py
+With ``--store`` the same lookups search another store (the 40-game re-extraction, 2026-10-13); none of
+its lessons has a verdict, so every lesson shown or kept is written out to be read.
+
+  poetry run python evaluation/experiments/v8_stage_filter_replay.py [--store DIR --out DIR]
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 from collections import Counter
+from pathlib import Path
 
 from Agents.memory.persistence.seed import seed_memory_from_config
 from Agents.memory.retrieval.accessors import RETRIEVAL_KEEP_PER_SITUATION
@@ -46,10 +51,14 @@ def _verdicts() -> dict[tuple[int, str], dict]:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--store", default=STORE_DIR)
+    parser.add_argument("--out", type=Path, default=OUT)
+    args = parser.parse_args()
     rows = [json.loads(line) for line in (GATE / "lookups.jsonl").read_text().splitlines()]
     picked = sample(rows)
     target = store
-    seed_memory_from_config({"seed_enabled": True, "seed_store_dir": STORE_DIR}, target_store=target)
+    seed_memory_from_config({"seed_enabled": True, "seed_store_dir": args.store}, target_store=target)
     read = _verdicts()
     verdict_by_key: dict[tuple[int, str], dict] = {}
     for n, r in picked.items():
@@ -73,15 +82,15 @@ def main() -> None:
                      "fit": v["fit"] if v else None, "why": v["why"] if v else None,
                      "situation": it.value["situation"], "action": it.value["action"]}
             lessons.append(entry)
-            if entry["kept"] and v is None:
+            if (entry["kept"] or entry["shown"]) and v is None:
                 to_read.append((n, r, entry))
         out_rows.append({"lookup": n, "model": r["model"], "role": r["role"], "phase": r["phase"],
                          "day": r["day"], "query_dims": query, "cell_size": len(scored), "lessons": lessons})
 
-    OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "replay.jsonl").write_text("".join(json.dumps(r) + "\n" for r in out_rows))
-    (OUT / "to_read.md").write_text(_render_to_read(to_read))
-    print(dict(tally), f"{len(to_read)} kept lessons unread -> {OUT}")
+    args.out.mkdir(parents=True, exist_ok=True)
+    (args.out / "replay.jsonl").write_text("".join(json.dumps(r) + "\n" for r in out_rows))
+    (args.out / "to_read.md").write_text(_render_to_read(to_read))
+    print(dict(tally), f"{len(to_read)} lessons shown or kept, unread -> {args.out}")
 
 
 def _render_to_read(items: list[tuple[int, dict, dict]]) -> str:
