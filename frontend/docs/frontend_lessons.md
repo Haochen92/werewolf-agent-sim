@@ -189,3 +189,7 @@ twin in tests: anything that names an item by its index (a workbench `?beat=N`, 
 - Headless Chromium here reports no `LayerTree` events, headed under Xvfb included. Read layer
   memory on a device (Safari's Layers tab); headless can still count paints and raster time
   from a trace (`browser.startTracing`), though `Paint` clip areas are layer-space and do not sum.
+- `next dev` drops a `next/dynamic` chunk's stylesheet on a hot reload and never loads it back
+  (2026-10: the landing's lazily loaded theatre lost its styles when a stage file was saved). The
+  stage then draws unclipped at full size, with no HUD, which looks like a framing bug. A
+  production build keeps every sheet. Hard-reload before you chase it.
