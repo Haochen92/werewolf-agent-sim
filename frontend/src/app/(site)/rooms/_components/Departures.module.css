@@ -384,14 +384,15 @@
   }
 }
 
-/* a phone: the doors hang flat (HangTag's own rule), one under the other, without the rail */
+/* a phone: the doors are stubs (HangTag's own rule), side by side, without the rail */
 @media (max-width: 700px) {
   .rail {
     display: none;
   }
   .doors {
     width: 100%;
-    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 10px;
     padding-top: 0;
   }
   /* thirteen tiles fit the board's face */

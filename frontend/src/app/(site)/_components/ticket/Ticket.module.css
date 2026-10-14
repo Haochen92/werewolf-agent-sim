@@ -861,10 +861,12 @@
   .rail {
     display: none;
   }
+  /* the two kinds as stubs side by side (HangTag) */
   .kinds {
     padding-top: 0;
     width: 100%;
-    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 10px;
   }
   .cards {
     display: none;

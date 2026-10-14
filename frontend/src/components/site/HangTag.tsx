@@ -4,7 +4,10 @@
  * landing and rooms pages, and as a choice (a pressed button). A door to the page you are on
  * takes `current`, and is ringed like a chosen tag (the ticket office's two kinds).
  *
- * Tags tilt alternately while hung; below 700px they hang flat, full width, string hidden.
+ * Tags tilt alternately while hung. At 700px and under a tag is its own torn-off stub
+ * (owner, 2026-10-14): the kicker and title on a strip of the same paper with a perforated left
+ * edge, the way in at its right, two stubs side by side; the line and the footer are left on the
+ * tag, and `note` (a live line such as the tables boarding) rides under the title instead.
  */
 import Link from 'next/link';
 import type { ReactNode } from 'react';
@@ -18,6 +21,8 @@ interface HangTagBase {
   children?: ReactNode;
   /** The ruled footer: left and right. */
   foot?: [ReactNode, ReactNode?];
+  /** A short line shown only on the stub (a phone), under the title. */
+  note?: ReactNode;
   className?: string;
 }
 
@@ -32,6 +37,7 @@ export function HangTag({
   title,
   children,
   foot,
+  note,
   className,
   ...action
 }: HangTagProps) {
@@ -49,6 +55,12 @@ export function HangTag({
             {foot[1] !== undefined ? (
               <span className={classes.footRight}>{foot[1]}</span>
             ) : null}
+          </span>
+        ) : null}
+        {note ? <span className={classes.note}>{note}</span> : null}
+        {action.href !== undefined ? (
+          <span className={classes.go} aria-hidden="true">
+            &rarr;
           </span>
         ) : null}
       </span>

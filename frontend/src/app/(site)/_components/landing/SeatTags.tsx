@@ -5,13 +5,8 @@
  * others at the departures hall, which is also where a table is opened. The party tag says how
  * many tables are boarding right now, from `GET /rooms` (a room that is neither locked nor
  * full); until the server answers, or if it cannot, it says nothing rather than a number it
- * would have to guess.
- *
- * `stubs` is the same two doors as ticket stubs, the torn-off end of each tag: the "Take a seat"
- * reminder after the roles, a third the size, so it reads as the page's close rather than a
- * second copy of the hero.
+ * would have to guess. On a phone each tag is its stub (HangTag), the count under its title.
  */
-import Link from 'next/link';
 import { HangTag } from '@/components/site';
 import { useBoarding } from '@/hooks/useBoarding';
 import classes from './Landing.module.css';
@@ -21,29 +16,8 @@ function boardingLine(n: number): string {
   return n === 1 ? '1 table boarding' : `${n} tables boarding`;
 }
 
-export function SeatTags({ stubs = false }: { stubs?: boolean }) {
+export function SeatTags() {
   const boarding = useBoarding();
-
-  if (stubs)
-    return (
-      <nav className={classes.stubs} aria-label="Take a seat">
-        <Link href="/play" className={classes.stub}>
-          <span className={classes.stubKicker}>Admit one</span>
-          <span className={classes.stubTitle}>Play solo</span>
-          <span className={classes.stubGo} aria-hidden="true">
-            &rarr;
-          </span>
-        </Link>
-        <Link href="/rooms" className={classes.stub}>
-          <span className={classes.stubKicker}>Admit a party</span>
-          <span className={classes.stubTitle}>Play with others</span>
-          <span className={classes.stubGo}>
-            {boarding === undefined ? null : <small>{boardingLine(boarding)}</small>}
-            <span aria-hidden="true">&rarr;</span>
-          </span>
-        </Link>
-      </nav>
-    );
 
   return (
     <div className={classes.seatRail}>
@@ -61,6 +35,7 @@ export function SeatTags({ stubs = false }: { stubs?: boolean }) {
         kicker="Admit a party"
         title="Play with others"
         foot={['Browse tables', boarding === undefined ? '→' : boardingLine(boarding)]}
+        note={boarding === undefined ? undefined : boardingLine(boarding)}
       >
         Board a table with friends, or open your own and send the link.
       </HangTag>
