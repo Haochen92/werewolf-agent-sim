@@ -1,6 +1,6 @@
-/* The landing (landing mockup): the hero and its hung tags, the sections' rhythm, the roles'
-   grid and "How a game goes", the latest games' way into the archive. The carriage is
-   Carriage.module.css; the three features are Features.module.css. */
+/* The landing (landing mockup): the hero and its hung tags, the section heads, the "Take a seat"
+   stubs, the latest games' way into the archive. The carriage is Carriage.module.css; the rooms
+   under it are Rooms.module.css; the three features are Features.module.css. */
 
 .landing {
   padding-bottom: 8px;
@@ -92,12 +92,10 @@
   );
 }
 
-/* ---------- the sections: one gap between them, two sizes ---------- */
+/* ---------- the sections: the carriage, then the rooms (Rooms.module.css) under it ---------- */
 .first {
   padding-top: 22px;
-}
-.section {
-  padding-top: 120px;
+  padding-bottom: 72px;
 }
 .secHead {
   max-width: 60ch;
@@ -120,7 +118,6 @@
 
 /* ---------- the ending: what the project is, and the visitor's key ---------- */
 .closing {
-  margin-top: 120px;
   text-align: center;
 }
 .closing h2 {
@@ -169,22 +166,6 @@
 .centred {
   margin-inline: auto;
   text-align: center;
-}
-.again {
-  margin-top: 96px;
-  text-align: center;
-}
-.again h3 {
-  margin: 0 0 4px;
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--text);
-}
-.again > p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 15.5px;
 }
 
 /* the "Take a seat" doors as ticket stubs: the tags' paper, torn off along a perforated left
@@ -288,11 +269,8 @@
   .rail {
     display: none;
   }
-  .section {
-    padding-top: 72px;
-  }
-  .closing {
-    margin-top: 80px;
+  .first {
+    padding-bottom: 48px;
   }
   .closing h2 {
     font-size: 25px;
@@ -302,9 +280,6 @@
   }
   .secHead p {
     font-size: 16px;
-  }
-  .again {
-    margin-top: 64px;
   }
   .stubs {
     flex-direction: column;

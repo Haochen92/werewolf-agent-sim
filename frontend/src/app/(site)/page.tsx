@@ -9,6 +9,8 @@ import { PlatformBackdrop } from './_components/landing/PlatformBackdrop';
 import platform from './_components/landing/PlatformBackdrop.module.css';
 import { Features } from './_components/landing/Features';
 import { RoleHand } from './_components/landing/RoleHand';
+import { BankerLamp, Pendant } from './_components/landing/RoomLamps';
+import rooms from './_components/landing/Rooms.module.css';
 import classes from './_components/landing/Landing.module.css';
 import pageClasses from './page.module.css';
 
@@ -18,6 +20,9 @@ import pageClasses from './page.module.css';
  * live on `/guide`), the latest games, and a closing word on the project and the visitor's
  * API key. A recruiter with no context sees the product
  * working before reading a word, and reaches a whole replay in one click from the carriage.
+ *
+ * Under the carriage each section is a room of the station (Rooms.module.css), dark but for a
+ * banker's lamp in the reading room and a pendant over the latest games.
  *
  * The two playing doors carry the house's purse (HouseDoorNote): whether a visitor needs their
  * own API key is live state, and the door is the honest place to say it.
@@ -49,7 +54,13 @@ export default function HomePage() {
         </Suspense>
       </section>
 
-      <section className={classes.section} aria-labelledby="features-head">
+      {/* the station's rooms (Rooms.module.css): one dark room per section, a threshold between */}
+      <div className={rooms.threshold} aria-hidden="true" />
+      <section
+        className={`${rooms.room} ${rooms.lit} ${rooms.study}`}
+        aria-labelledby="features-head"
+      >
+        <BankerLamp />
         <div className={classes.secHead}>
           <h2 id="features-head">What makes it different</h2>
           <p>
@@ -60,7 +71,8 @@ export default function HomePage() {
         <Features />
       </section>
 
-      <section className={classes.section} aria-labelledby="roles-head">
+      <div className={rooms.threshold} aria-hidden="true" />
+      <section className={rooms.room} aria-labelledby="roles-head">
         <div className={`${classes.secHead} ${classes.centred}`}>
           <h2 id="roles-head">The roles</h2>
           <p>
@@ -68,15 +80,24 @@ export default function HomePage() {
             card is the briefing its agent is given.
           </p>
         </div>
-        <RoleHand />
-        <div className={classes.again}>
-          <h3>Take a seat</h3>
-          <p>Play one seat against the agents, or fill a room with friends.</p>
-          <SeatTags stubs />
+        <div className={rooms.baize}>
+          <RoleHand />
         </div>
       </section>
 
-      <section className={classes.section} aria-labelledby="latest-head">
+      <div className={rooms.threshold} aria-hidden="true" />
+      <section className={`${rooms.room} ${rooms.seat}`} aria-labelledby="seat-head">
+        <h2 id="seat-head">Take a seat</h2>
+        <p>Play one seat against the agents, or fill a room with friends.</p>
+        <SeatTags stubs />
+      </section>
+
+      <div className={rooms.threshold} aria-hidden="true" />
+      <section
+        className={`${rooms.room} ${rooms.lit} ${rooms.records}`}
+        aria-labelledby="latest-head"
+      >
+        <Pendant />
         <div className={classes.secHead}>
           <h2 id="latest-head">Latest games</h2>
           <p>
@@ -95,8 +116,12 @@ export default function HomePage() {
         </Link>
       </section>
 
+      <div className={rooms.threshold} aria-hidden="true" />
       {/* the page's ending (the mockup's closing block), where the research line lives */}
-      <section className={classes.closing} aria-labelledby="closing-head">
+      <section
+        className={`${rooms.room} ${classes.closing}`}
+        aria-labelledby="closing-head"
+      >
         <h2 id="closing-head">Built in the open, and still being built.</h2>
         <p>
           It began as a research project on whether LLM agents can carry useful memory from

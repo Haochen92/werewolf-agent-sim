@@ -1,0 +1,190 @@
+/* The station's rooms under the carriage (rooms bench, station-rooms-v3, owner 2026-10-14): each
+   section of the landing is a dark room, parted from the next by a brass threshold. Only two have
+   a light, each its own source: the reading room's banker's lamp beside "What makes it
+   different", and a pendant over the latest games. The card room (the roles) is unlit, its baize
+   in shadow; "Take a seat" and the closing word are plain dark rooms.
+
+   Performance (frontend_lessons, "Rendering"): everything here is still and painted once with the
+   page. The walls span the screen from pseudo-elements behind the section (z-index -1 inside the
+   section's own stacking context), so they never cover what is in it. The light is gradients
+   laid over the wall, darkest away from the lamp, never a mask or a filter. Rooms with no light
+   paint no wall at all: in the dark it would not show. */
+
+/* ---------- a room: the section, with its padding ---------- */
+.room {
+  position: relative;
+  isolation: isolate;
+  padding: 96px 0 110px;
+}
+/* the wall and the light span the screen, past the column (html clips sideways, Landing.module.css) */
+.lit::before,
+.lit::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(50% - 50vw);
+  right: calc(50% - 50vw);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* the brass threshold between two rooms: a sill with a bright line along it, its shadow below */
+.threshold {
+  position: relative;
+  z-index: 1;
+  height: 12px;
+  margin-inline: calc(50% - 50vw);
+  background:
+    linear-gradient(
+        90deg,
+        transparent,
+        rgba(240, 197, 115, 0.5) 20%,
+        rgba(240, 197, 115, 0.5) 80%,
+        transparent
+      )
+      0 4px / 100% 2px no-repeat,
+    linear-gradient(180deg, #0a0705, #1a120a 40%, #0a0705);
+  box-shadow:
+    inset 0 1px 0 rgba(201, 150, 63, 0.55),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.8),
+    0 6px 14px rgba(0, 0, 0, 0.6);
+}
+
+/* ---------- the reading room: framed panelling, a banker's lamp low on the left ---------- */
+/* --bx/--by: the lamp's shade. On a screen wide enough the lamp stands in the gutter beside the
+   column; narrower, it is not drawn and its light comes from the left edge. */
+.study {
+  --bx: max(22px, calc(50% - 630px));
+  --by: 372px;
+}
+.study::before {
+  background: url('../../../../assets/site/panel-tile.svg') center top / 240px 300px repeat;
+}
+/* top to bottom: the lamp's warm pool, the green of its shade, the room's vignette, and the dark
+   that hides the panelling away from the lamp (what the bench did with a mask) */
+.study::after {
+  background:
+    radial-gradient(
+      ellipse 760px 600px at var(--bx) calc(var(--by) + 30px),
+      rgba(255, 206, 130, 0.19),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 200px 120px at var(--bx) calc(var(--by) - 6px),
+      rgba(110, 200, 140, 0.18),
+      transparent 70%
+    ),
+    radial-gradient(ellipse 120% 100% at 40% 40%, transparent 50%, rgba(0, 0, 0, 0.72)),
+    radial-gradient(
+      ellipse 900px 760px at var(--bx) var(--by),
+      transparent,
+      rgba(12, 10, 7, 0.65) 50%,
+      var(--bg) 80%
+    );
+}
+.banker {
+  display: none;
+  position: absolute;
+  left: calc(50% - 630px - 64px);
+  top: calc(372px - 44px);
+  width: 128px;
+  height: 132px;
+}
+/* the lamp and its shelf need the gutter clear of the column (column edge at 50% - 552px) */
+@media (min-width: 1400px) {
+  .banker {
+    display: block;
+  }
+}
+
+/* ---------- the card room: the roles on a baize table, unlit ---------- */
+/* the baize reaches a little past the column, to 1240px; its colours are the lit table's at a
+   little over half the light (darker colours, not a filter) */
+.baize {
+  margin-inline: calc((min(1240px, 100vw - 24px) - 100%) / -2);
+  padding: 34px max(12px, calc((min(1240px, 100vw - 24px) - 100%) / 2 + 8px)) 40px;
+  border-radius: 26px;
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.007) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse 60% 70% at 50% 40%, #1a271d, #101a13 70%, #0c140f);
+  box-shadow:
+    0 0 0 10px #20140a,
+    0 0 0 11px #0e0804,
+    inset 0 0 40px rgba(0, 0, 0, 0.5),
+    0 0 0 12px rgba(110, 82, 35, 0.35),
+    0 24px 50px rgba(0, 0, 0, 0.6);
+}
+
+/* ---------- the records room: pigeonholes, a pendant over the latest games ---------- */
+.records::before {
+  background: url('../../../../assets/site/pigeonhole-tile.svg') center top / 300px 160px
+    repeat;
+}
+/* the pendant's light down the room and its pool on the slates, the vignette, the dark */
+.records::after {
+  background:
+    radial-gradient(
+      ellipse 560px 360px at 50% 60px,
+      rgba(255, 206, 130, 0.12),
+      transparent 70%
+    ),
+    radial-gradient(ellipse 50% 45% at 50% 62%, rgba(255, 214, 150, 0.1), transparent 70%),
+    radial-gradient(ellipse 110% 90% at 50% 45%, transparent 45%, rgba(0, 0, 0, 0.8)),
+    radial-gradient(
+      ellipse 620px 420px at 50% 40px,
+      transparent,
+      rgba(12, 10, 7, 0.75) 55%,
+      var(--bg) 80%
+    );
+}
+.pendant {
+  position: absolute;
+  left: calc(50% - 30px);
+  top: 0;
+  width: 60px;
+  height: 96px;
+}
+
+/* ---------- "Take a seat": a dark room with the two stubs ---------- */
+.seat {
+  text-align: center;
+}
+.seat h2 {
+  margin: 0 0 6px;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: var(--text);
+}
+.seat > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 17px;
+}
+
+/* ---------- a phone ---------- */
+@media (max-width: 860px) {
+  .room {
+    padding: 104px 0 76px;
+  }
+  .study {
+    --by: 300px;
+  }
+  .baize {
+    padding: 24px 12px 30px;
+    border-radius: 16px;
+  }
+  .pendant {
+    left: calc(50% - 24px);
+    width: 48px;
+    height: 77px;
+  }
+  .seat h2 {
+    font-size: 28px;
+  }
+  .seat > p {
+    font-size: 16px;
+  }
+}
