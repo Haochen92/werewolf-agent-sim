@@ -684,3 +684,47 @@ vs +0.36.
   (one Chanteuse point tells the pack to choose its carrier, which rotates). Not comparable to
   `ten_seat_v2` on outcome alone: that store was synthesized before the stage split; a fair comparison
   rebuilds the verdict variant with the same code (about $5). The comparison itself is for later.
+
+## 2026-10-14 — The demo run: twenty memory-on games and the credit pass
+
+A demonstration of the mechanism on v8's own lessons, not a measured benefit (plan §9.6 item 11, step 4).
+The owner ruled credit only: the run stops at credit, prune and evict, and the write-up's diagram carries
+the loop on to extraction and synthesis by pointing at the 40-game build of `ten_seat_v2`. Baselines are
+the twelve seeding games' memory-off decisions, read as the same prompt and model (owner: a demo, not a
+research result).
+
+**Games** (`batch_results/v8_demo/`, gitignored): 20 AI-only games, Claude Haiku 5.5 (effort low, the
+unenforced schema the production catalogue set that day), memory on for every role from `ten_seat_v2`
+(strategy points, stage filter on: `run_batch --stage-filter`, `f1307de6`), the four lineups five times
+each, two processes (four hit Anthropic's concurrent-request limit). About $0.23 a game. Every game
+finished; no seat fell back to a random or no-action move. The unenforced schema broke 74 seat replies
+(a read keyed by the player's name, an invented verdict word, a cut-off object); each retried, six went
+to the rescue model. One lookup fell back to the generic "Day N as role" query. Three fixes followed the
+same day, deployed: a broken unenforced reply is asked again with the schema enforced, in seat turns
+(`7f508c4d`) and in the lookup and the day summary (`68cef8b0`); and a turn shown no lessons gets no
+verdict field or example (`a1e47ad6`), after Haiku copied the example's lesson-1 "follow" onto 426 turns
+shown nothing (town day turns and day 1; credit ignored them, no lesson keys).
+
+**Credit pass** (`tick credit --files batch_results/v8_demo/games_*.jsonl --off
+batch_results/v8_seed_*/games/*.jsonl`; no model call; output `batch_results/v8_demo/credit/`). The four
+nine-seat tick tables were dumped and emptied first (plan §9.6 item 5); the pass loaded `ten_seat_v2`
+into them. Of 498 lessons, 148 were followed and credited (42 of them discussion lessons, graded on the
+evil sides' concealment floor); one negative was excluded as the seat's own wrong high-confidence read.
+Prune and evict applied themselves at v7's thresholds (unvalidated for ten seats): **4 pruned, 4
+evicted, 50 proven, 42 spared**; 490 lessons remain. The 100 changes, each with its counts, base and
+lift, are in `credit_runs` row 1 (with the 20 game ids) and in `credit_pass.json`.
+
+| Removed | Cell | Follows (good / bad) | Base | Lift |
+|---|---|---|---|---|
+| Pruned | illusionist day discussion: one neutral question at most, or silence | 8 (2 / 6) | −0.07 | −0.27 |
+| Pruned | illusionist night: spend a conceal only on an unclaimed victim | 24 (9 / 10) | +0.16 | −0.17 |
+| Pruned | necromancer day vote: abstain with an abstaining room | 8 (0 / 0) | +0.83 | −0.51 |
+| Pruned | trailseer night: follow a quiet unconfirmed player late | 14 (4 / 8) | −0.06 | −0.17 |
+| Evicted | fortune teller day vote; two necromancer nights; speculator day vote | 0 follows in 8–11 showings, mostly overridden | — | — |
+
+How to read them: the necromancer vote was pruned on neutral grades alone. An abstention grades neutral,
+and memory-off necromancers' named votes graded well (+0.83), so the lesson falls short of its base;
+that is the grading table working as ruled, and the reason a lift, not a raw rate, decides. The proven end
+is led by votes with the room or abstaining for the evil sides (illusionist day vote, 10 follows, all
+good, lift +0.78; chanteuse day vote, 16 follows, lift +0.68). Twenty games give at most a few dozen
+follows per lesson, so these are a demonstration of the pass, not estimates.
