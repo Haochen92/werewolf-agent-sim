@@ -1,217 +1,268 @@
-/* The carriage (landing mockup, `.tframe[data-frame="carriage"]`, chosen in landing v5): the
-   dining car's own walnut and brass around the stage, so it reads as the stage's frame rather
-   than a new object. A low felt roof whose underside is the marquee, the brass rule and rivets,
-   the bogies and the rails. `--wood` is the stage's walnut, set by the component. */
+/* The carriage at the platform (redesign handoff 2026-10-14 §3; FeaturedReplay.tsx).
 
-.figure {
-  margin: 0;
-}
+   Everything here is still: drawn once, nothing animates, no filters or blends. Nothing
+   decorative is painted over the game's window (an overlay above a moving stage is lifted onto
+   layers with it, phone_lessons 2), and the stage is clipped by a plain rectangle (a rounded
+   clip round a moving layer costs a mask the window's size); the 6px corner is the frame's.
 
-.carriage {
+   The carriage itself is a CSS stand-in. Each part takes its picture from one variable, the
+   stand-in being the fallback, so the painted pieces (cut from the room page's train) can drop
+   in without new markup: --bay (the window band), --roof-tile, --lower-tile, --under-tile,
+   --end-cap (the bellows), --bogie, --door. */
+
+/* ---------- the depot: the figure spans the screen, past the column ---------- */
+.depot {
+  /* the whole carriage on a desktop: end · door · the game's window · door · end */
+  --end: 24px;
+  --dw: 88px;
+  --pier: 22px;
+  --cw: min(1400px, 100vw - 48px);
+  --gw: calc(var(--cw) - 2 * (var(--end) + var(--dw) + 2 * var(--pier)));
+  --gh: calc(var(--gw) * 9 / 16);
+  /* the toplights and their gap above the window line */
+  --top: 44px;
+  --cream1: #c4b08a;
+  --cream2: #ad9873;
+  --umber1: #3d2516;
+  --umber2: #2a190e;
+  --gold: #c9963f;
+
   position: relative;
-  margin: 66px 0 56px;
-  padding: 0 26px 30px;
-  border-radius: 0 0 12px 12px;
-  background:
-    linear-gradient(180deg, rgba(22, 14, 8, 0.48), rgba(14, 9, 5, 0.7)),
-    var(--wood, none) 0 0 / 520px auto,
-    #3a2415;
-  box-shadow:
-    inset 0 0 0 1px rgba(0, 0, 0, 0.55),
-    inset 0 -24px 40px rgba(0, 0, 0, 0.35),
-    0 34px 60px -30px rgba(0, 0, 0, 0.95);
-}
-/* the brass rule inside the walnut, open at the top where the roof sits */
-.carriage::before {
-  content: '';
-  position: absolute;
-  left: 11px;
-  right: 11px;
-  top: 0;
-  bottom: 11px;
-  pointer-events: none;
-  border: 2px solid rgba(176, 138, 74, 0.75);
-  border-top: 0;
-  border-radius: 0 0 7px 7px;
-}
-/* the rivets along the sill */
-.carriage::after {
-  content: '';
-  position: absolute;
-  left: 24px;
-  right: 24px;
-  bottom: 15px;
-  height: 8px;
-  pointer-events: none;
-  background: radial-gradient(circle, #e6c98e 0 1.8px, #7d5f2e 2.4px, transparent 3px) 0
-    50% / 30px 8px repeat-x;
-  opacity: 0.8;
+  margin: 110px calc(50% - 50vw) 0;
 }
 
-.roof {
-  position: absolute;
-  left: -8px;
-  right: -8px;
-  top: -24px;
-  height: 26px;
-  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-  background: linear-gradient(180deg, #2a2019, #1b130b);
-  box-shadow: inset 0 1px 0 rgba(255, 220, 170, 0.07);
-  pointer-events: none;
+.car {
+  position: relative;
+  width: var(--cw);
+  margin: 0 auto;
 }
+
+/* ---------- the roof board: in the flow, so it stays on the roof at any height ---------- */
+.rbwrap {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  padding: 0 12px 16px;
+}
+.rboard {
+  composes: board from '../../../../components/site/Board.module.css';
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 26px;
+  max-width: 100%;
+  padding: 12px 30px 13px;
+  border-radius: 8px;
+}
+/* brackets running down into the roof's deck, with foot plates */
+.rboard::before,
+.rboard::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  width: 7px;
+  height: 17px;
+  background: linear-gradient(90deg, #22180b, #a87a38 50%, #22180b);
+  box-shadow:
+    -5px 15px 0 -1px #6b4a1c,
+    5px 15px 0 -1px #6b4a1c,
+    0 15px 0 0 #8a6630;
+}
+.rboard::before {
+  left: 14%;
+}
+.rboard::after {
+  right: 14%;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.fieldModel {
+  padding-bottom: 4px;
+}
+.lab {
+  display: block;
+  margin-bottom: 6px;
+  font-family: var(--font-serif);
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: #b99c66;
+}
+.flaps {
+  display: flex;
+  gap: 3px;
+}
+.t {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 36px;
+  border-radius: 3px;
+  font: 600 21px/1 var(--font-sans);
+  color: var(--amber);
+  white-space: pre;
+  background: linear-gradient(180deg, #1d1610 0 49.5%, #000 49.5% 50.5%, #16110b 50.5%);
+  box-shadow:
+    inset 0 0 0 1px rgba(224, 166, 58, 0.25),
+    0 1px 0 rgba(255, 228, 180, 0.08);
+}
+.mdv {
+  font-family: var(--font-garamond);
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 1.1;
+  color: #dcc9a0;
+  white-space: nowrap;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
+}
+
+/* ---------- the clerestory roof, seen from the side ---------- */
+.roof {
+  position: relative;
+  height: 46px;
+}
+/* the raised deck with its vents; its top edge catches the lamplight, so the board attaches */
+.roof::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 18px;
+  background: var(
+    --roof-tile,
+    linear-gradient(90deg, rgba(255, 200, 120, 0.14), transparent 25%, transparent 75%, rgba(255, 200, 120, 0.14)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='18'%3E%3Crect x='40' y='6' width='16' height='6' rx='1' fill='%23090604' fill-opacity='.85'/%3E%3Crect x='40' y='12' width='16' height='1' fill='%23ffe6be' fill-opacity='.08'/%3E%3C/svg%3E") center top / 96px 18px repeat-x,
+    linear-gradient(180deg, #2e261d, #211a13)
+  );
+  box-shadow: inset 0 1.5px 0 rgba(255, 230, 190, 0.32);
+}
+/* the main roof, its rain strip, and the eaves */
 .roof::after {
   content: '';
   position: absolute;
-  left: 14px;
-  right: 14px;
-  bottom: -1px;
-  height: 2px;
-  background: rgba(176, 138, 74, 0.7);
+  left: 0;
+  right: 0;
+  top: 18px;
+  height: 28px;
+  background:
+    linear-gradient(180deg, transparent 0 7px, rgba(255, 230, 190, 0.16) 7px 8px, rgba(0, 0, 0, 0.4) 8px 9px, transparent 9px),
+    linear-gradient(180deg, #3b3026, #2b231b 60%, #1a140e 88%, #0f0b07);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 230, 190, 0.2),
+    0 6px 10px rgba(0, 0, 0, 0.55);
 }
 
-/* the marquee: the "now showing" board under the eaves, one dark piece with the roof. Its brass
-   hairline is the stage's own side line carried up and round, so sign and stage read as one
-   framed window; a second, fainter line inside it holds the bulbs. */
-.marquee {
+/* ---------- the body: cantrail, the window band, the lower panel ---------- */
+.body {
   position: relative;
-  padding: 24px 26px 22px;
-  background: linear-gradient(180deg, #1b130b, #0e0905);
-  box-shadow:
-    inset 0 0 0 1px rgba(176, 138, 74, 0.45),
-    inset 0 0 0 5px #0c0805,
-    inset 0 0 0 6px rgba(176, 138, 74, 0.18);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
 }
-.bulbs {
+.cantrail {
+  height: 14px;
+  background: linear-gradient(180deg, var(--umber2), var(--umber1));
+  box-shadow:
+    inset 0 6px 8px -3px rgba(0, 0, 0, 0.65),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.3);
+}
+.band {
+  position: relative;
+  padding: var(--top) 0 18px;
+  background: var(
+    --bay,
+    linear-gradient(180deg, var(--gold) 0 1.5px, rgba(0, 0, 0, 0.35) 1.5px 2.5px, transparent 2.5px) 0 4px / 100% 6px no-repeat,
+    linear-gradient(180deg, transparent calc(100% - 6px), var(--gold) calc(100% - 6px) calc(100% - 4.5px), transparent calc(100% - 4.5px)),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.28), transparent 26px),
+    linear-gradient(180deg, var(--cream2), var(--cream1) 30%, var(--cream1) 80%, var(--cream2))
+  );
+}
+.lower {
+  position: relative;
+  height: 70px;
+  background: var(--lower-tile, linear-gradient(180deg, var(--umber1), var(--umber2)));
+}
+/* the gold lining on the lower panel, under the window */
+.lower::before {
+  content: '';
   position: absolute;
-  left: 16px;
-  right: 16px;
-  top: 9px;
-  height: 6px;
-  pointer-events: none;
-  background: radial-gradient(
-      circle,
-      #ffe2a0 0 1.7px,
-      rgba(255, 190, 90, 0.35) 2.6px,
-      transparent 3.4px
-    )
-    0 0 / 15px 6px repeat-x;
-}
-.bulbsLow {
-  top: auto;
-  bottom: 9px;
-}
-/* the label over the title, the plates under it; the way to the whole game in a column of its
-   own at the right, level with the title */
-.mqBody {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  column-gap: 24px;
-}
-.nowShowing {
-  grid-column: 1;
-  font: 600 11px/1 var(--font-sans);
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--amber);
-  text-shadow: 0 0 8px rgba(224, 166, 58, 0.65);
-}
-.mqTitle {
-  grid-column: 1;
-  margin-top: 7px;
-  font: 700 20px/1.15 var(--font-sans);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #f6ecd6;
-  text-shadow: 0 0 12px rgba(255, 220, 160, 0.25);
-}
-/* a lit sign's button: amber letters on the board, ruled in amber, not the page's filled pill */
-.mqAct {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  align-self: end;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 36px;
-  padding: 0 16px;
-  border: 1px solid rgba(224, 166, 58, 0.6);
+  left: calc(50% - var(--gw) / 2 - 6px);
+  right: calc(50% - var(--gw) / 2 - 6px);
+  top: 10px;
+  bottom: 12px;
+  border: 1.5px solid rgba(201, 150, 63, 0.7);
   border-radius: 6px;
-  background: rgba(224, 166, 58, 0.07);
-  color: var(--amber);
-  font: 600 14px/1 var(--font-sans);
-  letter-spacing: 0.02em;
-  text-decoration: none;
-  white-space: nowrap;
-  transition:
-    background 0.16s ease,
-    border-color 0.16s ease,
-    color 0.16s ease;
 }
-.mqAct:hover {
-  background: rgba(224, 166, 58, 0.16);
-  border-color: var(--amber);
-  color: #f0b94a;
-}
-.mqAct:focus-visible {
-  outline: 2px solid var(--amber);
-  outline-offset: 3px;
-}
-.short {
-  display: none;
-}
-/* the facts as small brass plates, the platform's ledge brass a shade older: the marquee is a
-   fitting of the car, like the Departures plate, not something handed to you (that is paper) */
-.tiles {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 16px 0 0;
-  padding: 0;
-  list-style: none;
-}
-.tile {
-  flex: none;
-  padding: 5px 11px 6px;
-  border-radius: 4px;
-  background: linear-gradient(#dcb86a, #ad8540 50%, #86632b);
-  color: #2a1a08;
-  font: 400 15px/1 var(--font-serif);
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-  text-shadow: 0 1px 0 rgba(255, 236, 190, 0.45);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.4),
-    inset 0 -1.5px 0 rgba(0, 0, 0, 0.22),
-    0 1.5px 0 #4a3210,
-    0 3px 6px rgba(0, 0, 0, 0.45);
+/* lamplight on the body's ends, darkness toward the middle; under the window, never over it */
+.body::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 26% 80% at var(--lx) 45%, rgba(255, 196, 110, 0.2), transparent 70%),
+    radial-gradient(ellipse 26% 80% at var(--rx) 45%, rgba(255, 196, 110, 0.2), transparent 70%),
+    linear-gradient(180deg, rgba(10, 7, 4, 0.25), transparent 30%, transparent 70%, rgba(10, 7, 4, 0.35)),
+    linear-gradient(90deg, rgba(10, 7, 4, 0.55), transparent 18%, transparent 82%, rgba(10, 7, 4, 0.55));
 }
 
-/* the stage's window: 16:9, the theatre fills it exactly (no bars, no bleed shown) */
-.screen {
+/* ---------- the game's window ---------- */
+.gwin {
   position: relative;
-  aspect-ratio: 16 / 9;
+  z-index: 3;
+  width: var(--gw);
+  height: var(--gh);
+  margin: 0 auto;
+}
+/* a row of small leaded panes above the window: a faint diamond lattice on frosted glass */
+.lights {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 10px);
+  height: 20px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 6px;
+}
+.lights i {
+  border-radius: 3px;
+  box-shadow:
+    inset 0 0 0 2px #4a2e1a,
+    inset 0 0 0 3px rgba(201, 150, 63, 0.45),
+    inset 0 4px 6px rgba(255, 240, 210, 0.12);
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9'%3E%3Cpath d='M0 4.5 L4.5 0 L9 4.5 L4.5 9 Z' fill='none' stroke='%233a2614' stroke-opacity='.22' stroke-width='.8'/%3E%3C/svg%3E") center / 9px 9px,
+    radial-gradient(ellipse 70% 120% at 50% 100%, #e2c48c, #c39c62 60%, #a47c46);
+}
+/* the frame, drawn round the glass (a 6px corner, so the game's own corners are never cut) */
+.glass {
+  position: relative;
+  height: 100%;
+  border-radius: 6px;
+  background: #000;
+  box-shadow:
+    0 0 0 2px var(--gold),
+    0 0 0 3px rgba(0, 0, 0, 0.5),
+    0 0 0 9px #4a2e1a,
+    0 0 0 10px rgba(0, 0, 0, 0.4);
+}
+/* the stage, clipped by a plain rectangle */
+.screen {
+  position: absolute;
+  inset: 0;
   overflow: hidden;
-  background: #0c0a07;
-  border: 1px solid rgba(176, 138, 74, 0.45);
-  border-top: 0;
-  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.9);
 }
 .screen > [data-beat-index] {
   position: absolute;
   inset: 0;
-}
-/* the marquee's lines before the game arrives: their room, nothing drawn */
-.ghost {
-  visibility: hidden;
-}
-/* the controls' room under an upright phone's stage (CarriageUnder.module.css: 10 + 44 + 10 +
-   40 + 10 + 300 + 4), held while it is empty, before the preview is up */
-@media (max-width: 699.98px) {
-  .underHold:empty {
-    height: 418px;
-  }
 }
 .wait {
   position: absolute;
@@ -225,148 +276,485 @@
   text-align: center;
 }
 
-/* under the car: the bogies and the rails */
-.chassis {
+/* ---------- the doors and their grab rails, beside the window ---------- */
+.door {
+  position: absolute;
+  top: -14px;
+  bottom: -70px;
+  z-index: 1;
+  width: var(--dw);
+  background: var(--door, none);
+  box-shadow:
+    inset 0 0 0 2px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 3px rgba(255, 235, 200, 0.1);
+}
+.doorL {
+  right: calc(50% + var(--gw) / 2 + var(--pier));
+}
+.doorR {
+  left: calc(50% + var(--gw) / 2 + var(--pier));
+}
+.drop {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: calc(14px + var(--top));
+  height: calc(var(--gh) * 0.62);
+  border-radius: 5px;
+  background:
+    linear-gradient(118deg, transparent 30%, rgba(255, 255, 255, 0.07) 31%, rgba(255, 255, 255, 0.07) 40%, transparent 41%),
+    radial-gradient(ellipse 70% 60% at 50% 60%, #e0a85a, #8a5524 70%, #3a2414);
+  box-shadow:
+    0 0 0 2px var(--gold),
+    0 0 0 6px #4a2e1a;
+}
+.strap {
+  position: absolute;
+  left: 50%;
+  top: calc(14px + var(--top) + var(--gh) * 0.62 + 6px);
+  width: 12px;
+  height: 74px;
+  margin-left: -6px;
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(90deg, #3a1d10, #6b3a20 50%, #3a1d10);
+}
+.strap::after {
+  content: '';
+  position: absolute;
+  left: -2px;
+  right: -2px;
+  top: 22px;
+  height: 7px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #f0c573, #8a6630);
+}
+.handle {
+  position: absolute;
+  right: 12px;
+  bottom: 50px;
+  width: 18px;
+  height: 5px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #f0c573, #8a6630);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+.crest {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-left: -14px;
+  border-radius: 50%;
+  font-family: var(--font-garamond);
+  font-size: 17px;
+  color: #2a1a08;
+  background: radial-gradient(circle at 35% 30%, #f6d58a, #c9902f 55%, #7b5418);
+  box-shadow:
+    0 0 0 2px var(--umber2),
+    0 0 0 3px rgba(224, 166, 58, 0.5);
+}
+.step {
+  position: absolute;
+  left: -6px;
+  right: -6px;
+  bottom: -40px;
+  height: 8px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #4a3a28, #1a130c);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.6);
+}
+.step::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 8px;
+  height: 32px;
+  background: linear-gradient(90deg, #1a130c, #0c0906);
+}
+.grab {
+  position: absolute;
+  bottom: -50px;
+  z-index: 1;
+  width: 4px;
+  height: 140px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #8a6630, #f0c573, #8a6630);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+.grabL1 {
+  right: calc(50% + var(--gw) / 2 + var(--pier) - 14px);
+}
+.grabL2 {
+  right: calc(50% + var(--gw) / 2 + var(--pier) + var(--dw) + 10px);
+}
+.grabR1 {
+  left: calc(50% + var(--gw) / 2 + var(--pier) - 14px);
+}
+.grabR2 {
+  left: calc(50% + var(--gw) / 2 + var(--pier) + var(--dw) + 10px);
+}
+
+/* ---------- the underframe: solebar, truss rods, battery box, bogies ---------- */
+.under {
+  position: relative;
+  height: 66px;
+}
+.under::before {
+  content: '';
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -56px;
-  height: 60px;
-  pointer-events: none;
+  top: 0;
+  height: 16px;
+  background: var(--under-tile, linear-gradient(180deg, #120d08, #1e1710 50%, #0c0906));
+}
+.under svg {
+  position: absolute;
+  left: 50%;
+  top: 14px;
+  width: calc(var(--gw) + 360px);
+  height: 46px;
+  transform: translateX(-50%);
 }
 .bogie {
   position: absolute;
-  bottom: 14px;
-  width: 150px;
-  height: 46px;
-  opacity: 0.9;
+  top: 12px;
+  width: 170px;
+  height: 54px;
+  background: var(--bogie, none) center / contain no-repeat;
+}
+.bogie::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  top: 6px;
+  height: 14px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #3a2c1e, #15100a);
+  box-shadow: inset 0 1px 0 rgba(255, 220, 170, 0.08);
+}
+.bogie::after {
+  content: '';
+  position: absolute;
+  left: 62px;
+  width: 46px;
+  top: 2px;
+  height: 22px;
+  border-radius: 2px;
+  background: repeating-linear-gradient(180deg, #4a3a28 0 3px, #1a130c 3px 5px);
+}
+.bogie i {
+  position: absolute;
+  top: 10px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, #7a6648 0 4px, #1a140d 4.5px 6px, transparent 6.5px),
+    repeating-conic-gradient(from 0deg, #5a4632 0 7deg, transparent 7deg 30deg),
+    radial-gradient(circle, transparent 0 16px, #5a4632 16.5px 20px, #0d0906 20.5px);
+}
+.bogie i:first-child {
+  left: 12px;
+}
+.bogie i:last-child {
+  right: 12px;
 }
 .bogieL {
-  left: 9%;
+  left: calc(50% - var(--gw) / 2 - 168px);
 }
 .bogieR {
-  right: 9%;
+  left: calc(50% + var(--gw) / 2 - 2px);
 }
-.rails {
-  position: absolute;
-  bottom: 0;
-  left: -60px;
-  right: -60px;
-  height: 16px;
-  opacity: 0.7;
+
+/* ---------- the platform's edge in front: stone, a painted amber stripe, the lamps' pools ---------- */
+.platform {
+  position: relative;
+  z-index: 2;
+  margin-top: -30px;
+  height: 150px;
   background:
-    linear-gradient(
-      180deg,
-      transparent 0 3px,
-      #6b5a48 3px 6px,
-      #2a2019 6px 7px,
-      transparent 7px
-    ),
-    repeating-linear-gradient(90deg, #1e1712 0 14px, transparent 14px 34px);
-  background-size:
-    100% 100%,
-    100% 9px;
-  background-position:
-    0 0,
-    0 7px;
-  background-repeat: no-repeat, repeat-x;
+    radial-gradient(ellipse 230px 70px at var(--lx) 24px, rgba(255, 190, 100, 0.2), transparent 70%),
+    radial-gradient(ellipse 230px 70px at var(--rx) 24px, rgba(255, 190, 100, 0.2), transparent 70%),
+    linear-gradient(180deg, rgba(255, 220, 160, 0.18) 0 2px, transparent 2px),
+    linear-gradient(180deg, transparent 0 10px, rgba(224, 166, 58, 0.55) 10px 16px, transparent 16px),
+    repeating-linear-gradient(90deg, transparent 0 158px, rgba(0, 0, 0, 0.45) 158px 160px),
+    linear-gradient(180deg, #2b2117, #1a140d 40%, var(--bg));
+  box-shadow: 0 -14px 30px rgba(0, 0, 0, 0.55);
 }
 
-/* a narrow screen short of a phone: the date's plate would sit on a line of its own */
-@media (max-width: 960px) {
-  .tile:nth-child(n + 6) {
-    display: none;
-  }
+/* ---------- below the platform: the game's details and the way to it whole ---------- */
+.below {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  width: min(var(--gw), 100% - 32px);
+  margin: -58px auto 0;
+}
+/* the details: a wrapped line never starts with a separator (each item carries its dot before
+   it; the line is pulled left by one dot's width and clipped) */
+.meta {
+  margin: 0;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.in {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -1.4em;
+}
+.in > span {
+  white-space: nowrap;
+}
+.in > span::before {
+  content: '·';
+  display: inline-block;
+  width: 1.4em;
+  text-align: center;
+  color: #6b5a3f;
+}
+.go {
+  composes: plate from '../../../../components/site/Board.module.css';
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 7px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow:
+    inset 0 0 0 1px var(--plate-edge),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.12),
+    0 3px 8px rgba(0, 0, 0, 0.4);
+  transition: transform 0.15s;
+}
+.go:hover {
+  transform: translateY(-1px);
 }
 
-@media (max-width: 700px) {
-  /* inside the column: the landing clips at its edge (so the rails never scroll it sideways),
-     and a carriage reaching past it lost its walnut sides there */
-  .carriage {
-    padding: 0 12px 22px;
-    margin: 38px 0 46px;
+/* ---------- a desktop: the whole carriage, both ends in view ---------- */
+@media (min-width: 861px) {
+  .body {
+    border-radius: 12px 12px 3px 3px;
   }
-  .carriage::before {
-    left: 5px;
-    right: 5px;
-    bottom: 5px;
-    border-width: 1.5px;
+  .cantrail {
+    border-radius: 12px 12px 0 0;
   }
-  /* the label with the way in beside it, the title the whole width under them, two plates
-     under that (the model and the memory; the rest are on the replay's own page) */
-  .mqBody {
-    column-gap: 12px;
-  }
-  .nowShowing {
-    font-size: 10px;
-    letter-spacing: 0.2em;
-  }
-  .mqTitle {
-    grid-column: 1 / -1;
-    margin-top: 8px;
-    font-size: 16px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .mqAct {
-    grid-row: 1;
-    align-self: center;
-    gap: 6px;
-    height: 30px;
-    padding: 0 11px;
-    font-size: 12.5px;
-  }
-  .long {
-    display: none;
-  }
-  .short {
-    display: inline;
-  }
-  .tiles {
-    gap: 6px;
-    margin-top: 12px;
-  }
-  .tile {
-    padding: 4px 9px 5px;
-    font-size: 14px;
-  }
-  .tile:nth-child(n + 3) {
-    display: none;
-  }
-  .carriage::after {
-    left: 12px;
-    right: 12px;
-    bottom: 7px;
-    background-size: 22px 8px;
-  }
+  /* the roof overhangs the body and rounds off at each end; the raised centre stops short */
   .roof {
-    top: -16px;
-    height: 18px;
-    left: 0;
+    margin: 0 -8px;
+    border-radius: 26px 26px 0 0;
+    overflow: hidden;
+  }
+  .roof::before {
+    left: 70px;
+    right: 70px;
+    border-radius: 9px 9px 0 0;
+  }
+  /* the body darkens toward its own ends rather than the page's edges */
+  .body::after {
+    background:
+      radial-gradient(ellipse 30% 80% at 0 45%, rgba(255, 196, 110, 0.22), transparent 70%),
+      radial-gradient(ellipse 30% 80% at 100% 45%, rgba(255, 196, 110, 0.22), transparent 70%),
+      linear-gradient(180deg, rgba(10, 7, 4, 0.25), transparent 30%, transparent 70%, rgba(10, 7, 4, 0.35)),
+      linear-gradient(90deg, rgba(10, 7, 4, 0.35), transparent 10%, transparent 90%, rgba(10, 7, 4, 0.35));
+  }
+  /* the gangway bellows at each end */
+  .gang {
+    position: absolute;
+    top: 34px;
+    bottom: 44px;
+    z-index: 0;
+    width: 20px;
+    border-radius: 5px;
+    background: var(--end-cap, repeating-linear-gradient(90deg, #1a130c 0 3px, #4a3a2a 3px 5px, #2a2016 5px 7px));
+    box-shadow:
+      inset 0 10px 14px -6px rgba(0, 0, 0, 0.7),
+      inset 0 -10px 14px -6px rgba(0, 0, 0, 0.7);
+  }
+  .gang::after {
+    content: '';
+    position: absolute;
+    top: -6px;
+    bottom: -6px;
+    width: 5px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #2a2016, #4a3a28, #1a140d);
+  }
+  .gangL {
+    left: -19px;
+  }
+  .gangL::after {
+    left: -4px;
+  }
+  .gangR {
+    right: -19px;
+  }
+  .gangR::after {
+    right: -4px;
+  }
+  /* the buffers at the underframe's ends */
+  .buf {
+    position: absolute;
+    top: 2px;
+    width: 30px;
+    height: 12px;
+  }
+  .buf::before {
+    content: '';
+    position: absolute;
+    top: 3px;
+    width: 16px;
+    height: 6px;
+    background: linear-gradient(180deg, #3a2c1e, #15100a);
+  }
+  .buf::after {
+    content: '';
+    position: absolute;
+    top: -4px;
+    width: 8px;
+    height: 20px;
+    border-radius: 4px;
+    background: radial-gradient(ellipse at 30% 40%, #8a7656, #3a2c1e 60%, #15100a);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
+  }
+  .bufL {
+    left: -30px;
+  }
+  .bufL::before {
     right: 0;
   }
-  .marquee {
-    padding: 20px 14px 19px;
+  .bufL::after {
+    left: 4px;
   }
-  .bulbs {
-    left: 10px;
-    right: 10px;
-    top: 7px;
+  .bufR {
+    right: -30px;
   }
-  .bulbsLow {
-    top: auto;
-    bottom: 7px;
+  .bufR::before {
+    left: 0;
   }
-  .chassis {
-    bottom: -46px;
+  .bufR::after {
+    right: 4px;
+  }
+  .under {
+    margin: 0 4px;
+  }
+  .under svg {
+    width: calc(var(--gw) + 300px);
+  }
+}
+
+/* ---------- a phone: the window edge to edge, the rest off the screen ---------- */
+@media (max-width: 860px) {
+  .depot {
+    --gw: calc(100vw - 24px);
+    --gh: calc(var(--gw) * 9 / 16);
+    --pier: 12px;
+    --top: 34px;
+    --cw: 100vw;
+  }
+  .car {
+    overflow: hidden;
+  }
+  .gang,
+  .buf {
+    display: none;
+  }
+  .lights {
+    height: 16px;
+    bottom: calc(100% + 8px);
+  }
+  .glass {
+    border-radius: 5px;
+  }
+  .lower {
+    height: 60px;
   }
   .bogie {
-    width: 96px;
-    height: 30px;
+    transform: scale(0.7);
+    transform-origin: top center;
   }
-  .rails {
-    left: -16px;
-    right: -16px;
+  .bogieL {
+    left: calc(50% - var(--gw) / 2 - 20px);
   }
+  .bogieR {
+    left: calc(50% + var(--gw) / 2 - 150px);
+  }
+  .under svg {
+    width: var(--gw);
+  }
+  .platform {
+    height: 64px;
+  }
+  .below {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    width: auto;
+    margin: 14px 12px 0;
+  }
+  .meta {
+    margin: 0 4px;
+  }
+  .go {
+    justify-content: center;
+  }
+}
+
+/* the roof board stacks, centred */
+@media (max-width: 480px) {
+  .rboard {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px 12px;
+  }
+  .field {
+    align-items: center;
+  }
+  .fieldModel {
+    padding: 0;
+  }
+  .lab {
+    font-size: 10px;
+    letter-spacing: 0.22em;
+  }
+  .t {
+    width: 23px;
+    height: 31px;
+    font-size: 18px;
+  }
+  .mdv {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .go {
+    transition: none;
+  }
+}
+
+/* ---------- the phone's controls under the carriage (CarriageUnder draws into it) ---------- */
+.mui {
+  position: relative;
+  z-index: 3;
+  margin: -30px 12px 0;
+}
+/* its room, held while it is empty, before the preview is up (CarriageUnder.module.css) */
+.underHold:empty {
+  height: 536px;
 }

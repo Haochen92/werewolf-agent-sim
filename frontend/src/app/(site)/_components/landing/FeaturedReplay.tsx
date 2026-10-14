@@ -1,27 +1,31 @@
 'use client';
 
 /**
- * The carriage on the landing (review §F7, B17): a game from the archive playing in the dining
- * car's own walnut and brass, under a marquee that says what is showing and links the whole
- * game. It is the replay theatre itself in its mini mode, playing one window round and round:
- * day 3's vote through the lynched seat's card going to the wing (`featuredWindow`). No
- * second engine.
+ * The carriage on the landing (redesign handoff 2026-10-14 §3): a game from the archive
+ * playing in the big window of a railway carriage standing at the platform. It is the replay
+ * theatre itself in its mini mode, playing one window round and round: day 3's vote through the
+ * lynched seat's card going to the wing (`featuredWindow`). No second engine.
  *
- * The controls are the replay's own (owner, 2026-09-27; the mockup's featured mode): on a
- * screen at least 700px wide the strip's X-ray and Transcript, the side slot and the band sit
- * on the stage, the band over the window only; on an upright phone, where the stage is a
- * quarter of its size, they sit under it at reading size (`CarriageUnder`).
+ * On a desktop (over 860px) the whole carriage stands centred, both ends in view: end, door,
+ * the game's window, door, end, under a roof board that names the game (its ID in split-flap
+ * tiles) and its model, and the replay's own controls sit on the stage. On a phone the window
+ * runs edge to edge and the controls leave the stage for the platform under it, at reading size
+ * (`CarriageUnder`). Below the platform: the game's details and the way to the whole game.
+ * Nothing on the carriage's body is interactive.
+ *
+ * The carriage is drawn in CSS as a stand-in (Carriage.module.css); each of its parts takes its
+ * picture from a CSS variable, so the painted pieces can drop in later without new markup.
  *
  * The game is `SITE.featuredReplay`; if the archive no longer has it, the newest game plays
  * instead, with its own window. It plays while it is on screen; it rests on the window's first
  * beat for a viewer who asked for reduced motion, and with `?still=1` (the goldens).
  *
  * The carriage sits below the fold, so nothing of the preview is fetched at load (audit
- * 2026-10-11 §2): the frame is drawn at its full size, the marquee's lines and the controls'
- * room held empty, and the theatre's code (a chunk of its own), the replay and the stage's
- * pictures come only once the window is on screen, or within a screen of it after the visitor
- * has scrolled (`useNear`). Once up it stays up; scrolled away it pauses, and so does a hidden
- * page (the theatre's own clock).
+ * 2026-10-11 §2): the carriage is drawn at its full size, the board's tiles and the details
+ * held empty, and the theatre's code (a chunk of its own), the replay and the stage's pictures
+ * come only once the window is on screen, or within a screen of it after the visitor has
+ * scrolled (`useNear`). Once up it stays up; scrolled away it pauses, and so does a hidden page
+ * (the theatre's own clock).
  */
 import {
   useCallback,
@@ -29,7 +33,6 @@ import {
   useMemo,
   useRef,
   useState,
-  type CSSProperties,
   type RefObject,
 } from 'react';
 import dynamic from 'next/dynamic';
@@ -37,7 +40,6 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useMediaQuery } from '@mantine/hooks';
-import { SPRITES } from '@/assets/manifest';
 import { useModelLabels } from '@/hooks/useModelLabels';
 import { getReplay, listReplaysWithTotal } from '@/lib/api';
 import { featuredWindow } from '@/lib/featured-window';
@@ -71,11 +73,10 @@ const WON: Record<WinnerKey, string> = {
   draw: 'A draw',
 };
 
-/** The marquee's tiles: the game's facts, as the archive's slates say them. A phone shows the first two. */
-function tilesOf(game: ReplayGame, modelName: (id: string) => string): string[] {
+/** The game's details under the platform, as the archive's slates say them (the model is on the roof board). */
+function detailsOf(game: ReplayGame): string[] {
   const humans = game.n_humans;
   return [
-    game.model ? modelName(game.model) : 'Model unrecorded',
     game.memory ? 'Memory on' : 'Memory off',
     humans ? `${humans} human${humans > 1 ? 's' : ''} at the table` : 'All agents',
     `${game.days} ${game.days === 1 ? 'day' : 'days'}`,
@@ -178,40 +179,10 @@ function useNear(ref: RefObject<Element | null>) {
   return near;
 }
 
-/** Bogie: the carriage's wheels, drawn once (the mockup's `frames` script). */
-function Bogie({ className }: { className: string }) {
-  const spokes = [0, 45, 90, 135].map((a) => {
-    const dx = (14 * Math.cos((a * Math.PI) / 180)).toFixed(1);
-    const dy = (14 * Math.sin((a * Math.PI) / 180)).toFixed(1);
-    return { a, dx, dy };
-  });
-  return (
-    <svg className={className} viewBox="0 0 150 46" aria-hidden="true">
-      <rect x="10" y="4" width="130" height="12" rx="3" fill="#1c1510" />
-      <rect x="18" y="0" width="114" height="6" rx="2" fill="#2e241c" />
-      {[38, 112].map((cx) => (
-        <g key={cx}>
-          <circle cx={cx} cy="28" r="17" fill="#15100c" stroke="#6b5a3e" strokeWidth="3" />
-          <circle cx={cx} cy="28" r="4" fill="#8a7a66" />
-          {spokes.map(({ a, dx, dy }) => (
-            <path
-              key={a}
-              d={`M${cx},28 l${dx},${dy} M${cx},28 l${-dx},${-dy}`}
-              stroke="#4a3d30"
-              strokeWidth="2"
-            />
-          ))}
-        </g>
-      ))}
-      <rect x="56" y="18" width="38" height="8" rx="2" fill="#2e241c" />
-    </svg>
-  );
-}
-
 export function FeaturedReplay() {
   const still = useSearchParams().get('still') === '1';
   const modelName = useModelLabels();
-  const wide = useMediaQuery('(min-width: 700px)');
+  const wide = useMediaQuery('(min-width: 861px)');
   const [screenRef, onScreen] = useOnScreen<HTMLDivElement>();
   const near = useNear(screenRef);
   const { game, failed } = useShownGame(near);
@@ -230,84 +201,137 @@ export function FeaturedReplay() {
   const href = id ? `/replays/${id}?from=home` : '/replays';
   const what = cut?.day != null ? `Day ${cut.day}` : 'The opening';
 
+  const model = game ? (game.model ? modelName(game.model) : 'Model unrecorded') : null;
+  // the ID's tiles, held blank until the game arrives so nothing on the board moves
+  const tiles = record || '       ';
+
   return (
-    <figure className={classes.figure} aria-label="A game from the archive, playing">
-      <div
-        className={classes.carriage}
-        data-frame="carriage"
-        style={{ '--wood': `url(${SPRITES.wood.src})` } as CSSProperties}
-      >
-        <span className={classes.roof} aria-hidden="true" />
-        <div className={classes.marquee}>
-          <span className={classes.bulbs} aria-hidden="true" />
-          <div className={classes.mqBody}>
-            <span className={classes.nowShowing}>Now showing</span>
-            {game ? (
-              <>
-                <span className={classes.mqTitle}>
-                  {what} of game {record}
-                </span>
-                <Link href={href} className={classes.mqAct}>
-                  <span className={classes.long}>Watch the whole game</span>
-                  <span className={classes.short}>Whole game</span>
-                  <span aria-hidden="true">&rarr;</span>
-                </Link>
-                <ul className={classes.tiles} aria-label="About this game">
-                  {tilesOf(game, modelName).map((t) => (
-                    <li key={t} className={classes.tile}>
-                      {t}
-                    </li>
-                  ))}
-                </ul>
-              </>
-            ) : failed ? null : (
-              // the lines' room, held until the game arrives so nothing under them moves
-              <>
-                <span className={`${classes.mqTitle} ${classes.ghost}`} aria-hidden="true">
-                  Day 3 of game
-                </span>
-                <span className={`${classes.mqAct} ${classes.ghost}`} aria-hidden="true">
-                  Whole game
-                </span>
-                <span className={`${classes.tiles} ${classes.ghost}`} aria-hidden="true">
-                  <span className={classes.tile}>Model</span>
-                </span>
-              </>
-            )}
+    <figure
+      className={classes.depot}
+      data-frame="carriage"
+      aria-label={game ? `Replay of ${what.toLowerCase()} of game ${record}` : undefined}
+    >
+      <div className={classes.car}>
+        <div className={classes.rbwrap}>
+          <div className={classes.rboard}>
+            <div className={classes.field}>
+              <span className={classes.lab}>Game ID</span>
+              <span
+                className={classes.flaps}
+                role={game ? 'img' : undefined}
+                aria-label={game ? record : undefined}
+                aria-hidden={game ? undefined : true}
+              >
+                {[...tiles].map((c, i) => (
+                  <span key={i} className={classes.t}>
+                    {c}
+                  </span>
+                ))}
+              </span>
+            </div>
+            <div className={`${classes.field} ${classes.fieldModel}`}>
+              <span className={classes.lab}>Model</span>
+              <span className={classes.mdv}>{model ?? '\u00a0'}</span>
+            </div>
           </div>
-          <span className={`${classes.bulbs} ${classes.bulbsLow}`} aria-hidden="true" />
         </div>
-        <div ref={screenRef} className={`${classes.screen} ${stageFonts}`}>
-          {game && cut ? (
-            <ReplayTheatre
-              key={game.game_id}
-              game={game}
-              mini={{
-                from: cut.from,
-                to: cut.to,
-                autoplay: onScreen && !still,
-                controls: wide ? 'stage' : 'under',
-                under,
-                underEl,
-              }}
-            />
+        <div className={classes.roof} aria-hidden="true" />
+        <div className={classes.body}>
+          <span className={`${classes.gang} ${classes.gangL}`} aria-hidden="true" />
+          <span className={`${classes.gang} ${classes.gangR}`} aria-hidden="true" />
+          <div className={classes.cantrail} aria-hidden="true" />
+          <div className={classes.band}>
+            <div className={classes.gwin}>
+              <div className={classes.lights} aria-hidden="true">
+                {Array.from({ length: 7 }, (_, i) => (
+                  <i key={i} />
+                ))}
+              </div>
+              <div className={classes.glass}>
+                <div ref={screenRef} className={`${classes.screen} ${stageFonts}`}>
+                  {game && cut ? (
+                    <ReplayTheatre
+                      key={game.game_id}
+                      game={game}
+                      mini={{
+                        from: cut.from,
+                        to: cut.to,
+                        autoplay: onScreen && !still,
+                        controls: wide ? 'stage' : 'under',
+                        under,
+                        underEl,
+                      }}
+                    />
+                  ) : (
+                    <p className={classes.wait}>
+                      {failed ? 'The archive is resting; the replays are a click away.' : ' '}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div aria-hidden="true">
+              {(['L', 'R'] as const).map((side) => (
+                <div key={side} className={`${classes.door} ${classes[`door${side}`]}`}>
+                  <span className={classes.drop} />
+                  <span className={classes.strap} />
+                  <span className={classes.handle} />
+                  <span className={classes.crest}>9</span>
+                  <span className={classes.step} />
+                </div>
+              ))}
+              {(['L1', 'L2', 'R1', 'R2'] as const).map((g) => (
+                <span key={g} className={`${classes.grab} ${classes[`grab${g}`]}`} />
+              ))}
+            </div>
+          </div>
+          <div className={classes.lower} aria-hidden="true" />
+        </div>
+        <div className={classes.under} aria-hidden="true">
+          <svg viewBox="0 0 1280 46" preserveAspectRatio="none">
+            <g fill="none" stroke="#3a2c1e" strokeWidth="3">
+              <path d="M150 4 L420 36 H860 L1130 4" />
+            </g>
+            <g fill="#2a2016">
+              <rect x="440" y="30" width="16" height="10" />
+              <rect x="824" y="30" width="16" height="10" />
+            </g>
+            <rect x="540" y="4" width="200" height="26" rx="2" fill="#1d160f" stroke="#3a2c1e" />
+          </svg>
+          <span className={`${classes.buf} ${classes.bufL}`} />
+          <span className={`${classes.buf} ${classes.bufR}`} />
+          <span className={`${classes.bogie} ${classes.bogieL}`}>
+            <i />
+            <i />
+          </span>
+          <span className={`${classes.bogie} ${classes.bogieR}`}>
+            <i />
+            <i />
+          </span>
+        </div>
+      </div>
+      <div className={classes.platform} aria-hidden="true" />
+      {wide ? null : (
+        <div
+          ref={setUnderEl}
+          className={failed ? `${stageFonts} ${classes.mui}` : `${stageFonts} ${classes.mui} ${classes.underHold}`}
+        />
+      )}
+      <div className={classes.below}>
+        <p className={classes.meta}>
+          {game ? (
+            <span className={classes.in}>
+              {detailsOf(game).map((t) => (
+                <span key={t}>{t}</span>
+              ))}
+            </span>
           ) : (
-            <p className={classes.wait}>
-              {failed ? 'The archive is resting; the replays are a click away.' : ' '}
-            </p>
+            '\u00a0'
           )}
-        </div>
-        {wide ? null : (
-          <div
-            ref={setUnderEl}
-            className={failed ? stageFonts : `${stageFonts} ${classes.underHold}`}
-          />
-        )}
-        <span className={classes.chassis} aria-hidden="true">
-          <Bogie className={`${classes.bogie} ${classes.bogieL}`} />
-          <Bogie className={`${classes.bogie} ${classes.bogieR}`} />
-          <span className={classes.rails} />
-        </span>
+        </p>
+        <Link href={href} className={classes.go}>
+          Watch the whole game <span aria-hidden="true">&rarr;</span>
+        </Link>
       </div>
     </figure>
   );

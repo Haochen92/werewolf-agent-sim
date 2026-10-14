@@ -641,7 +641,7 @@ test('landing: the carriage plays day 3 of the featured game, with the replay’
   await expect(carriage(page).locator('[data-layer="paint"]').first()).toBeAttached();
   await expect(carriage(page).locator('[data-layer="hud"] [data-seat]')).toHaveCount(9);
   await expect(carriage(page).locator('[data-transport]')).toBeVisible();
-  // no way back to the replay list from inside the landing: the marquee links the game
+  // no way back to the replay list from inside the landing: the carriage links the game
   await expect(carriage(page).getByRole('link', { name: 'Replays' })).toHaveCount(0);
 
   // it starts on day 3's vote and plays (the window is 48..66 of the public cut)
@@ -678,8 +678,10 @@ test('landing: the carriage plays day 3 of the featured game, with the replay’
   await carriage(page).getByRole('button', { name: 'Transcript', exact: true }).click();
   await expect(carriage(page).locator('[data-drawer]')).toBeVisible();
 
-  // the marquee names the game, goes to it whole, and says its facts
-  await expect(carriage(page)).toContainText('Day 3 of game 9369A5C');
+  // the roof board names the game (its ID read once, not tile by tile) and its model; under
+  // the platform, the way to it whole and its details
+  await expect(carriage(page)).toHaveAttribute('aria-label', 'Replay of day 3 of game 9369A5C');
+  await expect(carriage(page).getByRole('img', { name: '9369A5C' })).toBeVisible();
   await expect(
     carriage(page).getByRole('link', { name: 'Watch the whole game' }),
   ).toHaveAttribute('href', `/replays/${GAME}?from=home`);
@@ -731,7 +733,7 @@ test('landing: on an upright phone the controls sit under the stage, at reading 
   const file = carriage(page).getByRole('complementary', { name: /^Case file/ });
   await expect(file).toBeVisible();
   await expect(file).toContainText(/Seat 8\s*wolf/);
-  await expect(carriage(page).getByRole('link', { name: 'Whole game' })).toHaveAttribute(
+  await expect(carriage(page).getByRole('link', { name: 'Watch the whole game' })).toHaveAttribute(
     'href',
     `/replays/${GAME}?from=home`,
   );
@@ -743,14 +745,14 @@ test('landing: on an upright phone the controls sit under the stage, at reading 
  * The preview's lifecycle and its backdrop's density (audit 2026-10-11 §1, §2): nothing of it
  * is fetched while the carriage is under the fold; scrolled to, one backdrop sheet comes, the
  * smallest whose pixels cover the stage's width × the screen's density × the camera's 1.32
- * push-in (`pickScale`). The carriage's stage is 334 css px wide on a 390 phone and 1052 on a
- * 1440 desktop.
+ * push-in (`pickScale`). The carriage's stage is 366 css px wide on a 390 phone (the screen
+ * less 24px) and 1080 on a 1440 desktop (the carriage less its ends and doors).
  */
 const SHEET = /\/car-[a-z]+-[a-z]+-[a-z]+@([\d.]+)x\.[^/]*\.webp/;
 for (const { name, viewport, dpr, sheet, px } of [
-  // 334 × 3 × 1.32 ≈ 1323 px: the 2200 sheet (the old pick, by density alone, was the 3300)
+  // 366 × 3 × 1.32 ≈ 1449 px: the 2200 sheet (the old pick, by density alone, was the 3300)
   { name: 'phone', viewport: { width: 390, height: 844 }, dpr: 3, sheet: '1', px: 2200 },
-  // 1052 × 2 × 1.32 ≈ 2777 px: the 3300 sheet
+  // 1080 × 2 × 1.32 ≈ 2851 px: the 3300 sheet
   {
     name: 'desktop',
     viewport: { width: 1440, height: 900 },
