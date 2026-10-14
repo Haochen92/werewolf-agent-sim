@@ -618,13 +618,33 @@ per arm cannot say.
 
 ---
 
-## 15. Where it stands
+## 15. 2026-10-14 — The old layout retires; the new one goes live
+
+**Decision (owner): retire, not keep both.** The project's rule for design variants decides between a
+config flag (variants that stay in production and are compared repeatedly) and a git tag (a variant
+compared once and then deleted). The old layout was neither kept in production nor due another comparison:
+the new one was better on Luna, and on Haiku its change counted as a benefit (§14). So the last commit with
+the old layout as the default is tagged `prompt-layout-baseline` (runnable again with
+`git worktree add ../ww-prompt-layout prompt-layout-baseline`), and the flag, the old template branches and
+the author-only held-back drafts are gone from main (`d41b1c0c`). A held-back turn's note is always
+dropped, a round turn's note always waits for the round's filter, and OpenAI gpt-6 requests always get
+explicit breakpoints. The exact-prompt golden was regenerated on purpose: a new prompt epoch.
+
+**Untested models.** The layout now also applies to models it was never measured on: DeepSeek, GLM, and
+the Gemini seats, including the site's default (`gemini-3.5-flash-lite`). On cost they can only gain or
+stay level; how their play changes was not measured. A smoke check on the default model was offered and
+skipped in favour of a live game.
+
+**Deployed** to wolf.liuhaochen.com on 2026-10-14 at `d41b1c0c`, together with everything else on the
+branch since the previous server build (deploy record: `frontend/docs/build_plan.md`).
+
+## 16. Where it stands
 
 Caching is a property of each provider: automatic on DeepSeek, boundary-based on OpenAI (implicit at the
 last eligible message, or explicit breakpoints), marked on Claude, a cache object on Gemini. The
-shared-prefix layout (§13) makes votes, night actions and lookups share the day's transcript across seats
-on both Luna and Haiku. On Luna it cuts the cost per call by about 28% with no detected change in message
-quality; on Haiku it saves nothing per call but ends its habit of passing almost every free turn (§14).
-The layout is still a process-wide flag; choosing it per model means moving it into the model catalogue.
-Open: game quality under the new layout beyond factual errors, the bench's missing vote and night cases,
-the lookup layout's effect, and the June extraction reorder, ranked in the report.
+shared-prefix layout (§13), now the only layout and live (§15), makes votes, night actions and lookups
+share the day's transcript across seats. On Luna it cuts the cost per call by about 28% with no detected
+change in message quality; on Haiku it saves nothing per call but ends its habit of passing almost every
+free turn (§14). Open: game quality under the layout beyond factual errors, its effect on the models
+never measured, the bench's missing vote and night cases, and the June extraction reorder, ranked in the
+report.
