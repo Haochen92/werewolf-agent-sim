@@ -179,3 +179,13 @@ twin in tests: anything that names an item by its index (a workbench `?beat=N`, 
   remount); the orange band is memory, not CPU; its charts interpolate sparse samples.
 - A dev server's numbers are not a production build's; compare production against production
   (the preview on 3118 is a production build of the working tree).
+- A `z-index: -1` backdrop vanishes when both `html` and `body` set a background: `body` is an
+  in-flow block, and its background paints over negative-z children of the root context. Make the
+  backdrop's own section a stacking context (`isolation: isolate`) instead.
+- `overflow-x: clip` on `html` keeps a desktop from scrolling sideways, but `scrollWidth` still
+  counts the overflow and an iPad can still pan to it. Clip the wide element itself.
+- A rounded `overflow: hidden` round an animating layer costs a mask the size of the clip. Clip
+  moving content with a plain rectangle and draw the rounded corner on the frame around it.
+- Headless Chromium here reports no `LayerTree` events, headed under Xvfb included. Read layer
+  memory on a device (Safari's Layers tab); headless can still count paints and raster time
+  from a trace (`browser.startTracing`), though `Paint` clip areas are layer-space and do not sum.
