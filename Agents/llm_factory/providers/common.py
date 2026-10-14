@@ -31,6 +31,13 @@ STRUCTURED_MODES = ("forced_tool", "json_schema", "auto_tool", "json_mode")
 # OpenAI-protocol row played on first.
 
 
+def enforced_output(llm: Any, schema: type) -> Any | None:
+    """``llm`` bound to ``schema`` enforced, for the retry after a json_mode reply broke it (Claude,
+    OpenAI); None where the first attempt was enforced already or the model has no enforced schema."""
+    enforce = getattr(llm, "enforced_structured_output", None)
+    return enforce(schema) if enforce is not None else None
+
+
 def _schema_instruction(schema: type) -> str:
     return ("Answer with only a JSON object, no prose and no code fence, that matches this JSON "
             "schema:\n" + json.dumps(schema.model_json_schema(), separators=(",", ":")))

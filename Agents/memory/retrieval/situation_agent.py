@@ -15,6 +15,7 @@ from pydantic import BaseModel, Field, create_model
 
 from Agents.rules.board_clocks import criticality_from_census
 from Agents.llm_factory import get_llm
+from Agents.llm_factory.providers.common import enforced_output
 from Agents.prompts.prompt_inputs import (
     build_agent_prompt_input,
     compose_cell_guidance,
@@ -267,10 +268,9 @@ def _generate_situations_for_agent(
     if cell_schema is not None:
         cell_schema = _query_cell(cell_schema)
     extra: dict = {}
+    llm = get_llm()
     if cell_schema is not None:
-        chain = V6_SITUATION_SUMMARY | get_llm().with_structured_output(
-            _summary_container(cell_schema)
-        )
+        template, schema = V6_SITUATION_SUMMARY, _summary_container(cell_schema)
         compose = lambda r: (  # noqa: E731
             [s.composed_situation for s in r.situations],
             [s.model_dump(mode="json") for s in r.situations],
@@ -281,10 +281,12 @@ def _generate_situations_for_agent(
         extra["known_board_facts"] = _known_board_facts(payload, cell_schema)
         extra["private_state"] = _private_state(payload)
     else:
-        prompt_template = _LEGACY_PROMPT_BY_ROLE.get(role, VILLAGER_SITUATION_SUMMARY)
-        chain = prompt_template | get_llm().with_structured_output(SituationSummary)
+        template = _LEGACY_PROMPT_BY_ROLE.get(role, VILLAGER_SITUATION_SUMMARY)
+        schema = SituationSummary
         compose = lambda r: (r.composed_situations, [])  # noqa: E731
+    chain = template | llm.with_structured_output(schema)
 
+    enforced = False
     for attempt in range(max_retries + 1):
         try:
             result = chain.invoke(
@@ -299,6 +301,10 @@ def _generate_situations_for_agent(
         except Exception as e:
             logger.warning(f"Situation summary LLM call failed for {player_id}: {e}")
             if attempt < max_retries:
+                # A json_mode reply that broke the schema is asked again with it enforced.
+                strict = None if enforced else enforced_output(llm, schema)
+                if strict is not None:
+                    chain, enforced = template | strict, True
                 continue
             break
 

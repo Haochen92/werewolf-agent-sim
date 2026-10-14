@@ -10,6 +10,7 @@ from logging import getLogger
 
 from Agents.prompts.prompt_formatters import format_claims_on_record, format_day_channel
 from Agents.llm_factory import get_llm_summary
+from Agents.llm_factory.providers.common import enforced_output
 from Agents.prompts import DAY_SUMMARY_PROMPT
 from Agents.prompts.compose import rules_block
 from Agents.rules.claim_ledger import PLAN_VERBS, ClaimedAction, action_text
@@ -68,7 +69,10 @@ def run_day_summary_agent(
     for attempt in range(max_retries + 1):
         try:
             llm = get_llm_summary()
-            result = llm.with_structured_output(_SUMMARY_SCHEMA).invoke(prompt)
+            # After a json_mode reply that broke the schema, the retry has it enforced.
+            bound = ((enforced_output(llm, _SUMMARY_SCHEMA) if attempt else None)
+                     or llm.with_structured_output(_SUMMARY_SCHEMA))
+            result = bound.invoke(prompt)
             return _serialize_day_summary(result), getattr(llm, "model", "") or "", result.model_dump()
         except Exception as exc:
             logger.warning(f"Day discussion summary failed for day {current_day}: {exc}")

@@ -22,6 +22,7 @@ from pydantic import BaseModel
 from Agents.llm_factory import get_llm, get_llm_game_fallback
 from Agents.llm_factory.chat import GAME_LLM
 from Agents.llm_factory.embeddings import is_transient_provider_error
+from Agents.llm_factory.providers.common import enforced_output
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
 from Agents.schemas.game_events import (
     DayChannel,
@@ -100,7 +101,7 @@ def run_agent(
         if result is None:
             # A json_mode reply that broke the schema is asked again with it enforced (Claude,
             # OpenAI): the same model, and a reply that cannot break it (owner, 2026-10-14).
-            strict = None if enforced else _enforced_output(llm, schema)
+            strict = None if enforced else enforced_output(llm, schema)
             if strict is not None:
                 chain, enforced = prompt_template | strict, True
                 logger.info(f"{player_id} asked again with the schema enforced on {output_key}")
@@ -196,11 +197,6 @@ def run_agent(
 # What _generate returns when the provider was slow or full rather than the answer wrong.
 _STALLED = object()
 
-
-def _enforced_output(llm: Any, schema: type[BaseModel]) -> Any | None:
-    """The model bound to ``schema`` enforced, where its first attempt was not; else None."""
-    enforce = getattr(llm, "enforced_structured_output", None)
-    return enforce(schema) if enforce is not None else None
 
 
 def _generate(chain: Any, prompt_input: dict, output_key: str, player_id: str):
