@@ -135,10 +135,16 @@ def test_db_roundtrip_in_temp_schema():
 
 
 @needs_db
-def test_tick_end_to_end_llm_free(tmp_path):
+def test_tick_end_to_end_llm_free(tmp_path, monkeypatch):
     import psycopg
 
     from Agents.memory.consolidation.tick import run_credit_pass, run_tick
+    from Agents.memory.persistence import postgres as pg
+
+    # the publish step at the end of each pass embeds what changed; a fake embedder keeps the
+    # test LLM-free while the served game's index is still built in the throwaway database
+    monkeypatch.setattr(pg, "index_config", lambda: {
+        "dims": 4, "embed": lambda texts: [[1.0, 0.0, 0.0, 0.0] for _ in texts], "fields": ["situation"]})
 
     # a throwaway database so the tick can exercise the REAL path (own connection, real tables)
     dbname = f"ww_tick_test_{uuid.uuid4().hex[:10]}"
