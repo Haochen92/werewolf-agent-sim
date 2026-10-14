@@ -1,5 +1,6 @@
 """HTTP policies shared by the game-creation and room routers."""
 
+import asyncio
 from datetime import datetime, timezone
 
 from fastapi import HTTPException, Response
@@ -8,6 +9,7 @@ from server.config import server_settings
 from server.dependencies import seat_cookie_name
 from server.game.game_session import GameSession
 from server.game.lobby import MAX_HUMAN_SEATS, GameLobby
+from server.graph_runtime import GraphRuntime
 from server.house import HouseClosed, HousePolicy, ModelNeedsKey
 from server.schemas.requests import GameStatus
 
@@ -46,14 +48,24 @@ def clear_seat_cookie(response: Response, game_id: str) -> None:
     )
 
 
-def require_memory_available(memory: bool) -> None:
-    """Refuse a memory-on game with 409 while the server has no lessons for the current cast
-    (``WW_MEMORY_ENABLED`` off). The page's switch is disabled too; this stops a direct call."""
-    if memory and not server_settings.WW_MEMORY_ENABLED:
-        raise HTTPException(
-            status_code=409,
-            detail="memory is not available yet: lessons for the current cast are still being built",
-        )
+async def memory_unavailable(runtime: GraphRuntime) -> str | None:
+    """Why a new game may not switch memory on right now, or None when it may: the
+    deployment's switch (``WW_MEMORY_ENABLED``) is off, or the database's lesson store is
+    missing, unpublished, or embedded by another model. GET /models tells the page the
+    answer, so its switch is held off for the same reasons a request is refused."""
+    if not server_settings.WW_MEMORY_ENABLED:
+        return "lessons for the current cast are still being built"
+    return await asyncio.to_thread(runtime.memory_unavailable_reason)
+
+
+async def require_memory_available(memory: bool, runtime: GraphRuntime) -> None:
+    """Refuse a memory-on game with 409 while ``memory_unavailable`` has a reason. The page's
+    switch is held off too; this stops a direct call."""
+    if not memory:
+        return
+    reason = await memory_unavailable(runtime)
+    if reason:
+        raise HTTPException(status_code=409, detail=f"memory is not available: {reason}")
 
 
 async def authorize_model(house: HousePolicy, api_key: str, model: str) -> str:

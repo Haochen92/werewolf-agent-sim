@@ -1,7 +1,7 @@
 """Server-layer fixtures, by test level (the dota2pred hierarchy, scaled to one domain):
 
 1. RUNTIME TESTS (the session machine): use `quiet_session` — a factory for a real
-   GameSession over an injected fake graph (zero LLM), memory seeding silenced.
+   GameSession over an injected fake graph (zero LLM).
    Example: session = quiet_session(FakeGraph(parts))
 2. API-LAYER TESTS (routing, validation, serialization): use `api_client` — a
    TestClient over the real create_app() (real lifespan, real registry). Inject
@@ -64,8 +64,7 @@ def _no_real_replay_db():
 
 @pytest.fixture
 def quiet_session(monkeypatch):
-    """GameSession factory with the memory-seeding side effect silenced."""
-    monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
+    """GameSession factory over a fake graph."""
 
     def make(graph, api_key: str = "", model: str = "",
              human_players: list[str] | None = None, **kw) -> GameSession:

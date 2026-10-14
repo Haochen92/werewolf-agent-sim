@@ -34,7 +34,7 @@ export interface paths {
      *     default right now, and what a finished game on it has cost on average (memory off and
      *     memory on apart); plus the house's
      *     purse for today, so the client can say "house pays, 3 left" or "your key needed" before
-     *     the player submits.
+     *     the player submits; and whether a new game may switch memory on.
      */
     get: operations['supported_models_models_get'];
     put?: never;
@@ -1169,6 +1169,8 @@ export interface components {
       /** Models */
       models: components['schemas']['ModelRow'][];
       house: components['schemas']['HouseFunding'];
+      /** Memory Available */
+      memory_available: boolean;
     };
     /**
      * NewRoom

@@ -262,7 +262,6 @@ def _row(**over):
 
 
 async def _recover(monkeypatch, rows, graph, check_key=None):
-    monkeypatch.setattr("server.game.game_session.seed_memory_from_config", lambda *a, **k: None)
     repository = RecordingGameRepository(rows=rows)
     extra = {"check_key": check_key} if check_key is not None else {}
     games = LiveGameRegistry(repository, SimpleNamespace(graph=graph), **extra)
@@ -370,7 +369,6 @@ async def test_a_rebuilt_game_gets_its_cast_and_its_picks_back(monkeypatch):
     row = _row(seats=[{"name": "hao", "token": "tok-1", "character": "whale"}])
     stored = [CastSeat(f"player_{i}", c, c == "whale") for i, c in enumerate(
         ["owl", "hare", "whale", "cat", "badger", "cyclops", "dragon", "onion", "shade"], 1)]
-    monkeypatch.setattr("server.game.game_session.seed_memory_from_config", lambda *a, **k: None)
     repository = RecordingGameRepository(rows=[row])
     repository.stored_cast = stored
     games = LiveGameRegistry(repository, SimpleNamespace(graph=FakeDurableGraph(state)))

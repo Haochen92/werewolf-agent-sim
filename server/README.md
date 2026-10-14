@@ -105,11 +105,13 @@ curl -H "X-Admin-Token: $ADMIN_TOKEN" -X PUT localhost:8001/admin/house \
      -H 'content-type: application/json' -d '{"games_per_day": 5}'   # live, no restart
 ```
 
-`WW_MEMORY_STORE_DIR` names the folder of past-game lessons a memory-on game reads
-(a frozen snapshot under `memory_stores/`, e.g. `memory_stores/demo_snapshots/demo_gen1`;
-empty = the engine's default store). Build its embedding cache on the host before
-pointing the container at it — the mount is read-only, and without `indexed_cache.pkl`
-every start re-embeds the store.
+A memory-on game reads its lessons from the database (`WW_POSTGRES_DSN`): the graph is
+compiled over LangGraph's Postgres store, which holds the records and their vectors, so
+nothing is seeded into the process and no file is mounted. The memory tick fills that store
+at the end of each pass (`poetry run python -m Agents.memory.consolidation.tick publish`
+re-publishes by hand, `--force` after an embedder change). `WW_MEMORY_ENABLED=true` lets a
+new game switch memory on; while the store is unpublished or was embedded by another model,
+`GET /models` says `memory_available: false` and a memory-on request is refused with 409.
 
 Production is `docker compose build wolf-server && docker compose up -d wolf-server`; the
 container logs at `LOG_LEVEL` (default INFO) show recovery, clocks, the sweep, and every

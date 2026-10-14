@@ -1,5 +1,6 @@
-"""The served game's engine config: the memory switch reaches every role, the store the
-deployment names is the one seeded, and a served game never writes the store back."""
+"""The served game's engine config: the memory switch reaches every role, nothing is seeded
+into the process (the graph is compiled over the database's store), and a served game never
+writes the store back."""
 from __future__ import annotations
 
 from Agents.schemas.roles import roles
@@ -22,16 +23,13 @@ def test_a_served_game_retrieves_strategy_points_only():
         assert run.retrieval_types_config == {"observations": False, "strategy_points": True}
 
 
-def test_a_served_game_never_dumps_and_seeds_from_the_named_store(monkeypatch):
-    from server.config import server_settings
-
-    on = game_run_config(memory=True, human_player=0).memory_persistence
-    assert on.dump_enabled is False
-
-    monkeypatch.setattr(server_settings, "WW_MEMORY_STORE_DIR", "memory_stores/demo_gen1")
-    run = game_run_config(memory=True, human_player=0)
-    assert str(run.memory_persistence.seed_store_dir) == "memory_stores/demo_gen1"
-    assert run.memory_persistence.dump_enabled is False
+def test_a_served_game_never_dumps_and_never_seeds_a_file_store():
+    for memory in (True, False):
+        persistence = game_run_config(memory=memory, human_player=0).memory_persistence
+        assert persistence.dump_enabled is False
+        assert persistence.seed_enabled is False
+        # The store's name on the game's retrieval metadata: the runtime's database store.
+        assert str(persistence.seed_store_dir) == "postgres"
 
 
 def test_a_room_carries_the_hosts_choice_into_its_config():

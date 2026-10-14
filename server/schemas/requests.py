@@ -69,6 +69,10 @@ class ModelsMenu(BaseModel):
 
     models: list[ModelRow]
     house: HouseFunding
+    memory_available: bool
+    """Whether a new game may switch memory on: the deployment allows it and the database's
+    lesson store is published for this server's embedder. The page holds its switch off
+    otherwise, and a request with memory on is refused (409) for the same reasons."""
 
 
 # --- the puppets: the catalogue a player picks from -----------------------------------

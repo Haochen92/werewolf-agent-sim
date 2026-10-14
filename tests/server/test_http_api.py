@@ -54,6 +54,7 @@ def test_models_menu_serves_the_registry(api_client):
     menu = api_client.get("/models").json()
     assert [m["model"] for m in menu["models"]] == [row.model for row in menu_models()]
     assert menu["models"][0]["rescue_model"]  # the default row carries its rescue
+    assert menu["memory_available"] is False  # no database in tests: no lessons to read
 
 
 # ---- POST /games: the registry gate (BYOK v1.5) -----------------------------------------
@@ -160,7 +161,6 @@ def test_lobby_lifecycle_create_join_start(api_client, monkeypatch):
     import server.game.live_game_registry as registry_module
     from server.game import game_session as rt
 
-    monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
     launched = []
 
     class FakeSession(rt.GameSession):
@@ -234,13 +234,29 @@ def test_memory_on_is_refused_until_the_server_has_lessons_for_the_cast(api_clie
     monkeypatch.setattr(server_settings, "WW_MEMORY_ENABLED", False)
     for path in ("/rooms", "/games"):
         r = api_client.post(path, json={"memory": True})
-        assert r.status_code == 409 and "memory is not available" in r.json()["detail"]
+        assert r.status_code == 409 and "still being built" in r.json()["detail"]
     assert api_client.post("/rooms", json={}).status_code == 200
+
+
+def test_memory_on_is_refused_while_the_database_store_is_not_ready(api_client, monkeypatch):
+    # The deployment's switch is on, but this process has no database: the store's own answer.
+    from server.config import server_settings
+    monkeypatch.setattr(server_settings, "WW_MEMORY_ENABLED", True)
+    r = api_client.post("/games", json={"memory": True})
+    assert r.status_code == 409 and "no database" in r.json()["detail"]
+    assert api_client.get("/models").json()["memory_available"] is False
+    runtime = api_client.app.state.resources.graph_runtime
+    monkeypatch.setattr(runtime, "memory_unavailable_reason", lambda: "no lessons have been published")
+    assert "published" in api_client.post("/rooms", json={"memory": True}).json()["detail"]
+    monkeypatch.setattr(runtime, "memory_unavailable_reason", lambda: None)
+    assert api_client.get("/models").json()["memory_available"] is True
 
 
 def test_the_host_chooses_memory_for_the_whole_room(api_client, monkeypatch):
     from server.config import server_settings
     monkeypatch.setattr(server_settings, "WW_MEMORY_ENABLED", True)
+    monkeypatch.setattr(api_client.app.state.resources.graph_runtime,
+                        "memory_unavailable_reason", lambda: None)
     body = api_client.post("/rooms", json={"memory": True}).json()
     room = api_client.app.state.resources.games.get(body["game_id"])
     assert room.memory is True
@@ -300,7 +316,6 @@ def test_players_pick_their_puppet_first_come_first_served(api_client, monkeypat
     import server.game.live_game_registry as registry_module
     from server.game import game_session as rt
 
-    monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
     launched = []
 
     class FakeSession(rt.GameSession):
@@ -340,7 +355,6 @@ def test_the_solo_door_takes_a_puppet_too(api_client, monkeypatch):
     import server.game.live_game_registry as registry_module
     from server.game import game_session as rt
 
-    monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
     launched = []
 
     class FakeSession(rt.GameSession):
@@ -584,7 +598,6 @@ def test_solo_door_mints_the_same_seat_identity(api_client, monkeypatch):
     import server.game.live_game_registry as registry_module
     from server.game import game_session as rt
 
-    monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
     launched = []
 
     class FakeSession(rt.GameSession):
@@ -614,7 +627,6 @@ def test_start_without_joiners_runs_an_llm_only_game(api_client, monkeypatch):
     import server.game.live_game_registry as registry_module
     from server.game import game_session as rt
 
-    monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
     launched = []
 
     class FakeSession(rt.GameSession):
@@ -635,7 +647,6 @@ def test_lobby_carries_byok_to_the_session(api_client, monkeypatch):
     import server.game.live_game_registry as registry_module
     from server.game import game_session as rt
 
-    monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
     seen = {}
 
     class FakeSession(rt.GameSession):

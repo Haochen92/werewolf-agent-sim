@@ -2,8 +2,9 @@
 
 Three doors start a game — the solo door, a room's host, and recovery after a restart —
 and they must agree on the same rules: the memory system follows the player's choice for
-every role at once, lessons are read from the store the deployment names, and a game
-played over the server is never mined into that store. Building the config here keeps a
+every role at once, lessons are read from the database's published store (the graph is
+compiled over it; nothing is seeded into the process), and a game played over the server
+is never mined into that store. Building the config here keeps a
 game that is rebuilt after a restart identical to the one that was started.
 """
 
@@ -11,7 +12,6 @@ from __future__ import annotations
 
 from Agents.config import RunConfig
 from Agents.schemas.roles import roles
-from server.config import server_settings
 
 
 def game_run_config(*, memory: bool, human_player: int, human_role: str | None = None,
@@ -26,9 +26,9 @@ def game_run_config(*, memory: bool, human_player: int, human_role: str | None =
     A served game retrieves strategy points only: the town half of the store never had
     observations, so retrieving them would give the two factions different memory, and
     the strategy points are the lessons the replay shows being weighed."""
-    persistence: dict = {"dump_enabled": False}
-    if server_settings.WW_MEMORY_STORE_DIR:
-        persistence["seed_store_dir"] = server_settings.WW_MEMORY_STORE_DIR
+    # The store's name on the game's retrieval metadata (and in the lookup cache key); the
+    # store itself is the runtime's, so no file is seeded.
+    persistence: dict = {"dump_enabled": False, "seed_enabled": False, "seed_store_dir": "postgres"}
     return RunConfig(
         game_id=game_id,
         human_player=human_player,

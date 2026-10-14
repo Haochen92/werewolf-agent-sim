@@ -34,7 +34,7 @@
           "system"
         ],
         "summary": "The served-game model menu (tested models only), and what the house will pay for",
-        "description": "Every tested model with its rescue, whether the house pays for it, which one is the\ndefault right now, and what a finished game on it has cost on average (memory off and\nmemory on apart); plus the house's\npurse for today, so the client can say \"house pays, 3 left\" or \"your key needed\" before\nthe player submits.",
+        "description": "Every tested model with its rescue, whether the house pays for it, which one is the\ndefault right now, and what a finished game on it has cost on average (memory off and\nmemory on apart); plus the house's\npurse for today, so the client can say \"house pays, 3 left\" or \"your key needed\" before\nthe player submits; and whether a new game may switch memory on.",
         "operationId": "supported_models_models_get",
         "responses": {
           "200": {
@@ -2527,12 +2527,17 @@
           },
           "house": {
             "$ref": "#/components/schemas/HouseFunding"
+          },
+          "memory_available": {
+            "type": "boolean",
+            "title": "Memory Available"
           }
         },
         "type": "object",
         "required": [
           "models",
-          "house"
+          "house",
+          "memory_available"
         ],
         "title": "ModelsMenu",
         "description": "GET /models response: the menu, and what the house will pay for right now."

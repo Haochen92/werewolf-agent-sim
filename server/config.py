@@ -27,18 +27,12 @@ class ServerSettings(BaseSettings):
     one container; split into a dedicated var only the day the deploy splits DBs).
     Empty = archiving disabled (games still run; /replays answers 503)."""
 
-    WW_MEMORY_STORE_DIR: str = ""
-    """The folder of past-game lessons a memory-on game reads from (a frozen snapshot
-    under ``memory_stores/``, mounted read-only in the container). Empty = the engine's
-    own default store. Every game seeds from it at start, memory on or off; only a
-    memory-on game actually consults it."""
-
     WW_MEMORY_ENABLED: bool = False
-    """Whether a new game may switch memory on. Off by default: the only stores built so
-    far hold lessons from the older nine-seat game, and a ten-seat game must not be fed
-    them. Turn it on together with pointing ``WW_MEMORY_STORE_DIR`` at a store built for
-    the current cast. While off, a request to start a game or room with memory on is
-    refused; games already running are not affected."""
+    """Whether a new game may switch memory on. The lessons come from the database's
+    published store (``WW_POSTGRES_DSN``; the tick publishes after each pass), and a
+    memory-on game is refused while that store is unpublished or was embedded by another
+    model, whatever this says. Off = refused regardless: the deployment's own switch.
+    Games already running are not affected."""
 
     SEAT_COOKIE_SECURE: bool = False
     """Send the seat cookie with the ``Secure`` flag (HTTPS-only). Off by default so

@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, Response
 
 from server.config import server_settings
 from server.database_models.game import GameRow
-from server.dependencies import GamesRegistry, House, Room, SeatToken, ended_detail
+from server.dependencies import GamesRegistry, GraphRuntimeDep, House, Room, SeatToken, ended_detail
 from server.game.lobby import MAX_HUMAN_SEATS, GameLobby
 from server.schemas.requests import (
     ChooseCharacter,
@@ -32,14 +32,15 @@ router = APIRouter(tags=["rooms"])
     response_model=RoomCreated,
     summary="Create a multiplayer waiting room (humans join via /join)",
 )
-async def create_room(body: NewRoom, games: GamesRegistry, house: House) -> RoomCreated:
+async def create_room(body: NewRoom, games: GamesRegistry, house: House,
+                      runtime: GraphRuntimeDep) -> RoomCreated:
     """Create a lobby whose identifier remains stable when the game starts.
 
     Humans enter only through ``/join`` and roles remain random. The model is resolved
     and the house consulted here so the host learns early; the cap is checked again at
     start, which is when the game actually costs anything.
     """
-    require_memory_available(body.memory)
+    await require_memory_available(body.memory, runtime)
     model = await authorize_model(house, body.api_key, body.model)
     room = await games.open_room(api_key=body.api_key, model=model, name=body.name,
                                  memory=body.memory)

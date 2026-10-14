@@ -60,8 +60,6 @@ from pydantic_core import to_jsonable_python
 
 from Agents.config import RunConfig, build_runnable_config, normalize_run_config
 from Agents.llm_factory import GAME_LLM, GameLLM
-from Agents.memory import store
-from Agents.memory.persistence import seed_memory_from_config
 from Agents.nodes.day.actors import preview_discuss
 from Agents.observability import EvalCaseSink
 from Agents.graphs.parent import parent_graph_compiled
@@ -150,8 +148,6 @@ class GameSession:
       _repository   the database gateway; None means nothing is written down.
       _context      runtime context handed to every node: metrics and the eval-case
                     sink.
-      Building the config also seeds the process-wide memory store the graph reads.
-      That is a side effect of construction, not part of this object's state.
 
     What travels to the browsers.
       translator    turns each engine chunk into zero or more typed events. Stateful:
@@ -253,7 +249,6 @@ class GameSession:
 
         # Engine bootstrap.
         run = normalize_run_config(run_config)
-        seed_memory_from_config(run.memory_persistence, target_store=store)
         self.config = build_runnable_config(run)
         self.game_id: str = self.config["configurable"]["game_id"]
         self._session_id = run.session_id or self.game_id

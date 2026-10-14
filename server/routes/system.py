@@ -2,9 +2,11 @@
 
 from fastapi import APIRouter
 
-from server.dependencies import House, ReplayServiceDep
+from server.dependencies import GraphRuntimeDep, House, ReplayServiceDep
 from server.game.model_catalog import menu_models
 from server.schemas.requests import HouseFunding, ModelRow, ModelsMenu
+
+from ._shared import memory_unavailable
 
 router = APIRouter(tags=["system"])
 
@@ -19,12 +21,13 @@ async def health_check() -> dict:
     response_model=ModelsMenu,
     summary="The served-game model menu (tested models only), and what the house will pay for",
 )
-async def supported_models(house: House, replays: ReplayServiceDep) -> ModelsMenu:
+async def supported_models(house: House, replays: ReplayServiceDep,
+                           runtime: GraphRuntimeDep) -> ModelsMenu:
     """Every tested model with its rescue, whether the house pays for it, which one is the
     default right now, and what a finished game on it has cost on average (memory off and
     memory on apart); plus the house's
     purse for today, so the client can say "house pays, 3 left" or "your key needed" before
-    the player submits."""
+    the player submits; and whether a new game may switch memory on."""
     status = await house.status()
     costs = await replays.average_costs()
     return ModelsMenu(
@@ -41,4 +44,5 @@ async def supported_models(house: House, replays: ReplayServiceDep) -> ModelsMen
         ],
         house=HouseFunding(enabled=status.enabled, games_per_day=status.games_per_day,
                            remaining=status.remaining, reset_at=status.reset_at.isoformat()),
+        memory_available=(await memory_unavailable(runtime)) is None,
     )

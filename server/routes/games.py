@@ -12,7 +12,7 @@ from fastapi import APIRouter, Header, HTTPException, Response
 from fastapi.responses import StreamingResponse
 
 from Agents.turn.human_turn import HumanTurnContractError
-from server.dependencies import GameRepositoryDep, House, Game, GamesRegistry, Room, SeatToken
+from server.dependencies import GameRepositoryDep, GraphRuntimeDep, House, Game, GamesRegistry, Room, SeatToken
 from server.database_models.game import COMPLETED, GameRow
 from server.game.cast import is_pickable
 from server.game.entitlement import entitled
@@ -42,9 +42,10 @@ async def create_game(
     body: NewSoloGame,
     games: GamesRegistry,
     house: House,
+    runtime: GraphRuntimeDep,
     response: Response,
 ) -> GameCreated:
-    require_memory_available(body.memory)
+    await require_memory_available(body.memory, runtime)
     model = await authorize_model(house, body.api_key, body.model)
     if body.character is not None and not is_pickable(body.character):
         raise HTTPException(status_code=422, detail=f"no such character: {body.character}")
