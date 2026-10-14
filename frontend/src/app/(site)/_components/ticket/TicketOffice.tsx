@@ -288,8 +288,8 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
                 {!memoryReady
                   ? 'Memory for the new cast is being built; the switch returns when it ships.'
                   : memory
-                    ? 'From day 2, before each decision, the agents look up lessons from past games, and the replay’s X-ray shows which ones they weighed. One extra model call per agent decision.'
-                    : 'Every agent plays from the rules and its role alone. Switch it on to have them consult lessons from past games; the replay’s X-ray then shows which ones they weighed.'}
+                    ? 'From day 2, before each decision, the agents look up lessons from past games, and the replay’s Reveal shows which ones they weighed. One extra model call per agent decision.'
+                    : 'Every agent plays from the rules and its role alone. Switch it on to have them consult lessons from past games; the replay’s Reveal then shows which ones they weighed.'}
               </p>
             </div>
           </div>

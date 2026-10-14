@@ -93,7 +93,7 @@ export function ArchiveClient() {
       <div className={classes.empty}>
         <h3 className={classes.emptyTitle}>Nothing in the archive yet</h3>
         <p className={classes.emptyText}>
-          Every game that finishes lands here, with the X-ray open. Play one and it will be
+          Every game that finishes lands here, with Reveal on. Play one and it will be
           the first.
         </p>
         <Button component={Link} href="/play" variant="primary">

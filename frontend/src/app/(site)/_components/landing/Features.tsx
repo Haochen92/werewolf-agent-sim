@@ -93,7 +93,7 @@ export function Features() {
           <Plate i={0} />
           <h3>Read their minds, then watch them learn</h3>
           <p>
-            The X-ray shows each agent&rsquo;s private reasoning beside what it said out
+            Reveal shows each agent&rsquo;s private reasoning beside what it said out
             loud: its notes, its read on every seat, the lessons it weighed before it spoke,
             and what the game taught it afterwards. Seat {WEIGHED.seat}, a wolf, in the game
             above:

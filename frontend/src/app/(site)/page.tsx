@@ -36,7 +36,7 @@ export default function HomePage() {
         </h1>
         <p className={classes.lede}>
           Take a seat at their table, alone or with friends. Find the liars, or be one. When
-          the game ends, the X-ray opens every agent&rsquo;s private reasoning, next to what
+          the game ends, Reveal opens every agent&rsquo;s private reasoning, next to what
           it said out loud.
         </p>
         <SeatTags />
@@ -81,7 +81,7 @@ export default function HomePage() {
           <h2 id="latest-head">Latest games</h2>
           <p>
             Every finished game is archived with its full event log, and can be replayed
-            with the X-ray.
+            with Reveal on.
           </p>
         </div>
         {/* two rows of two; one column of two where the grid goes single file */}
