@@ -183,11 +183,12 @@
     url('../../../../assets/site/oxblood-band.svg') center 128px / 120px 64px repeat-x,
     url('../../../../assets/site/wall-tile.svg') center top / 120px 64px repeat;
 }
-/* the rise out of the dark, the pendant's light down the room and its pool on the slates, the
+/* the rise out of the dark, the sink back into it at the wall's foot (to the page's ground: the
+   vignette is darker), the pendant's light down the room and its pool on the slates, the
    vignette, the dark */
 .records::after {
   background:
-    var(--fade-in),
+    var(--fade-in), linear-gradient(180deg, transparent calc(100% - 160px), var(--bg) 100%),
     radial-gradient(
       ellipse 560px 360px at 50% 60px,
       rgba(255, 206, 130, 0.12),
