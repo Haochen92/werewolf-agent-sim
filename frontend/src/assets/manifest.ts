@@ -113,6 +113,13 @@ import stationPost from './sprites/station/post.webp';
 import stationLamp from './sprites/station/lamp.webp';
 import stationTrain from './sprites/station/train.webp';
 import stationBlind from './sprites/station/blind.webp';
+import carriageRoof from './sprites/carriage/roof.webp';
+import carriageRail from './sprites/carriage/rail.webp';
+import carriageTeak from './sprites/carriage/teak.webp';
+import carriageFrame from './sprites/carriage/frame.webp';
+import carriageBogie from './sprites/carriage/bogie.webp';
+import carriageSolebar from './sprites/carriage/solebar.webp';
+import carriageBellows from './sprites/carriage/bellows.webp';
 import windowDayFar from './sprites/window/day-far.webp';
 import windowDayNear from './sprites/window/day-near.webp';
 import windowDuskFar from './sprites/window/dusk-far.webp';
@@ -388,6 +395,14 @@ export type KitName =
 export type StationPicture = 'sky' | 'floor' | 'post' | 'lamp' | 'train' | 'blind';
 
 /**
+ * The landing carriage's pieces, cut from the waiting room's train (scripts/cut-carriage.mjs),
+ * each at the painting's own pixels and shown at half size: the roof's bay, the brass rail, a
+ * seamless teak tile, the window's brass rim (a 9-slice), a bogie, the solebar and the bellows.
+ */
+export type CarriagePicture =
+  'roof' | 'rail' | 'teak' | 'frame' | 'bogie' | 'solebar' | 'bellows';
+
+/**
  * The country behind the dining car's window (FeltWindow): per hour, the far sky and hills, and
  * the near row of pines, fence and pole that scrolls past (alpha). Recipe: stage_architecture §4.
  */
@@ -478,6 +493,7 @@ export const SPRITES: {
   kits: Record<KitName, StaticImageData>;
   wood: StaticImageData;
   station: Record<StationPicture, StaticImageData>;
+  carriage: Record<CarriagePicture, StaticImageData>;
   window: Record<WindowHour, Record<WindowPicture, StaticImageData>>;
   props: Record<PropPicture, StaticImageData>;
   car: Record<CarPicture, StaticImageData>;
@@ -615,6 +631,15 @@ export const SPRITES: {
     lamp: stationLamp,
     train: stationTrain,
     blind: stationBlind,
+  },
+  carriage: {
+    roof: carriageRoof,
+    rail: carriageRail,
+    teak: carriageTeak,
+    frame: carriageFrame,
+    bogie: carriageBogie,
+    solebar: carriageSolebar,
+    bellows: carriageBellows,
   },
   window: {
     day: { far: windowDayFar, near: windowDayNear },
