@@ -83,9 +83,15 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   it (`CarriageUnder`: a playback board whose sleepers seek, Transcript and Reveal plates, the
   transcript on ruled paper). A roof board names the game (its ID as split-flap tiles, read once as
   `role="img"`) and its model; under the platform, the details and "Watch the whole game".
-- The carriage is a CSS stand-in. Each part takes its picture from one variable (`--bay`,
-  `--roof-tile`, `--lower-tile`, `--under-tile`, `--end-cap`, `--bogie`, `--door`), so the painted
-  pieces cut from the room page's train can replace it without new markup.
+- The carriage is painted with pieces cut from the waiting room's train (`scripts/cut-carriage.mjs`
+  → `SPRITES.carriage`): the snowy roof's bay, the brass rail, a mirrored seamless teak tile, the
+  window's brass rim (a 9-slice laid round the glass with `border-image-outset`, so it never paints
+  over the game; its rivets repeat), a bogie, the solebar and the bellows. Each shows at half its
+  painted size (sharp on a 2× screen; the painting is only 700px tall, so nothing is enlarged).
+  They arrive with the theatre when the carriage comes near (`data-art` and `--art-*` on the
+  figure), over a CSS stand-in drawn until then. The doors stay drawn in CSS over the teak: the
+  painting's doors are a third of the height this carriage needs; sharper doors, ends and bogies
+  for a desktop want a larger source.
 - Performance rules it keeps: nothing decorative is painted over the game's window (an overlay above
   a moving stage is lifted onto layers with it), and the stage is clipped by a plain rectangle (a
   rounded clip round moving layers costs a mask the window's size); the 6px corner is the frame's.

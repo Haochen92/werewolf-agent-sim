@@ -13,8 +13,8 @@
  * (`CarriageUnder`). Below the platform: the game's details and the way to the whole game.
  * Nothing on the carriage's body is interactive.
  *
- * The carriage is drawn in CSS as a stand-in (Carriage.module.css); each of its parts takes its
- * picture from a CSS variable, so the painted pieces can drop in later without new markup.
+ * The carriage is painted with pieces cut from the waiting room's train (`SPRITES.carriage`,
+ * scripts/cut-carriage.mjs), laid over a CSS stand-in once the carriage comes near.
  *
  * The game is `SITE.featuredReplay`; if the archive no longer has it, the newest game plays
  * instead, with its own window. It plays while it is on screen; it rests on the window's first
@@ -27,12 +27,21 @@
  * scrolled (`useNear`). Once up it stays up; scrolled away it pauses, and so does a hidden page
  * (the theatre's own clock).
  */
-import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type RefObject,
+} from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useMediaQuery } from '@mantine/hooks';
+import { SPRITES } from '@/assets/manifest';
 import { useModelLabels } from '@/hooks/useModelLabels';
 import { getReplay, listReplaysWithTotal } from '@/lib/api';
 import { featuredWindow } from '@/lib/featured-window';
@@ -57,6 +66,11 @@ const CarriageUnder = dynamic(
   () => import('./CarriageUnder').then((m) => m.CarriageUnder),
   { ssr: false },
 );
+
+/** The painted pieces' URLs, for Carriage.module.css's `[data-art]` rules. */
+const ART = Object.fromEntries(
+  Object.entries(SPRITES.carriage).map(([k, img]) => [`--art-${k}`, `url(${img.src})`]),
+) as CSSProperties;
 
 const WON: Record<WinnerKey, string> = {
   villagers: 'Town won',
@@ -201,6 +215,9 @@ export function FeaturedReplay() {
   return (
     <figure
       className={classes.depot}
+      // the painted pieces come with the theatre, when the carriage is near
+      data-art={near || undefined}
+      style={near ? ART : undefined}
       data-frame="carriage"
       aria-label={game ? `Replay of ${what.toLowerCase()} of game ${record}` : undefined}
     >

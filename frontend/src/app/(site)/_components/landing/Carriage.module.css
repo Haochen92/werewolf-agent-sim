@@ -5,10 +5,9 @@
    layers with it, phone_lessons 2), and the stage is clipped by a plain rectangle (a rounded
    clip round a moving layer costs a mask the window's size); the 6px corner is the frame's.
 
-   The carriage itself is a CSS stand-in. Each part takes its picture from one variable, the
-   stand-in being the fallback, so the painted pieces (cut from the room page's train) can drop
-   in without new markup: --bay (the window band), --roof-tile, --lower-tile, --under-tile,
-   --end-cap (the bellows), --bogie, --door. */
+   The carriage is drawn twice: a CSS stand-in, and the painted pieces cut from the waiting
+   room's train (scripts/cut-carriage.mjs), laid over it once the carriage comes near
+   (`[data-art]`, the last section). */
 
 /* ---------- the depot: the figure spans the screen, past the column ---------- */
 .depot {
@@ -138,8 +137,7 @@
   right: 0;
   top: 0;
   height: 18px;
-  background: var(
-    --roof-tile,
+  background:
     linear-gradient(
       90deg,
       rgba(255, 200, 120, 0.14),
@@ -149,8 +147,7 @@
     ),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='18'%3E%3Crect x='40' y='6' width='16' height='6' rx='1' fill='%23090604' fill-opacity='.85'/%3E%3Crect x='40' y='12' width='16' height='1' fill='%23ffe6be' fill-opacity='.08'/%3E%3C/svg%3E")
       center top / 96px 18px repeat-x,
-    linear-gradient(180deg, #2e261d, #211a13)
-  );
+    linear-gradient(180deg, #2e261d, #211a13);
   box-shadow: inset 0 1.5px 0 rgba(255, 230, 190, 0.32);
 }
 /* the main roof, its rain strip, and the eaves */
@@ -190,8 +187,7 @@
 .band {
   position: relative;
   padding: var(--top) 0 18px;
-  background: var(
-    --bay,
+  background:
     linear-gradient(
         180deg,
         var(--gold) 0 1.5px,
@@ -212,13 +208,12 @@
       var(--cream1) 30%,
       var(--cream1) 80%,
       var(--cream2)
-    )
-  );
+    );
 }
 .lower {
   position: relative;
   height: 70px;
-  background: var(--lower-tile, linear-gradient(180deg, var(--umber1), var(--umber2)));
+  background: linear-gradient(180deg, var(--umber1), var(--umber2));
 }
 /* the gold lining on the lower panel, under the window */
 .lower::before {
@@ -337,7 +332,6 @@
   bottom: -70px;
   z-index: 1;
   width: var(--dw);
-  background: var(--door, none);
   box-shadow:
     inset 0 0 0 2px rgba(0, 0, 0, 0.55),
     inset 0 0 0 3px rgba(255, 235, 200, 0.1);
@@ -470,7 +464,7 @@
   right: 0;
   top: 0;
   height: 16px;
-  background: var(--under-tile, linear-gradient(180deg, #120d08, #1e1710 50%, #0c0906));
+  background: linear-gradient(180deg, #120d08, #1e1710 50%, #0c0906);
 }
 .under svg {
   position: absolute;
@@ -485,7 +479,6 @@
   top: 12px;
   width: 170px;
   height: 54px;
-  background: var(--bogie, none) center / contain no-repeat;
 }
 .bogie::before {
   content: '';
@@ -669,9 +662,11 @@
     z-index: 0;
     width: 20px;
     border-radius: 5px;
-    background: var(
-      --end-cap,
-      repeating-linear-gradient(90deg, #1a130c 0 3px, #4a3a2a 3px 5px, #2a2016 5px 7px)
+    background: repeating-linear-gradient(
+      90deg,
+      #1a130c 0 3px,
+      #4a3a2a 3px 5px,
+      #2a2016 5px 7px
     );
     box-shadow:
       inset 0 10px 14px -6px rgba(0, 0, 0, 0.7),
@@ -849,4 +844,67 @@
 /* its room, held while it is empty, before the preview is up (CarriageUnder.module.css) */
 .underHold:empty {
   height: 536px;
+}
+
+/* ---------- the painted carriage (scripts/cut-carriage.mjs) ----------
+   FeaturedReplay sets `data-art` and the pieces' URLs (`--art-*`) as the carriage comes near
+   (the moment the theatre itself loads), so a visitor who never scrolls fetches none of them.
+   Every piece shows at half its painted size, sharp on a 2× screen; the stand-in stays under
+   it until the pictures arrive. The doors keep their drawing, over the teak. */
+.depot[data-art] .roof {
+  height: 65px;
+}
+.depot[data-art] .roof::before {
+  left: 0;
+  right: 0;
+  height: 100%;
+  border-radius: 0;
+  background: var(--art-roof) 0 0 / 60px 65px repeat-x;
+  box-shadow: none;
+}
+.depot[data-art] .roof::after {
+  display: none;
+}
+.depot[data-art] .cantrail {
+  height: 11px;
+  background: var(--art-rail) 0 0 / 60px 11px repeat-x;
+  box-shadow: none;
+}
+.depot[data-art] .band,
+.depot[data-art] .lower,
+.depot[data-art] .door {
+  background: var(--art-teak) 0 0 / 300px 88px repeat;
+}
+/* the brass rail under the windows, along the band's foot */
+.depot[data-art] .band {
+  background:
+    var(--art-rail) 0 100% / 60px 11px repeat-x,
+    var(--art-teak) 0 0 / 300px 88px repeat;
+}
+/* the window's brass rim, a 9-slice laid round the glass from outside (border-image-outset), so
+   it never paints over the game; its rivets repeat along the sides */
+.depot[data-art] .glass {
+  border: 0 solid transparent;
+  border-image: var(--art-frame) 30 / 15px / 15px round;
+  box-shadow: 0 0 0 15px rgba(0, 0, 0, 0.25);
+}
+.depot[data-art] .lights {
+  bottom: calc(100% + 22px);
+}
+.depot[data-art] .under::before {
+  height: 15px;
+  background: var(--art-solebar) 0 0 / 100px 15px repeat-x;
+}
+/* raised so the wheels' upper half clears the platform's edge (the painted wheels sit low) */
+.depot[data-art] .bogie {
+  top: -6px;
+  background: var(--art-bogie) center top / 126px 58px no-repeat;
+}
+.depot[data-art] .bogie::before,
+.depot[data-art] .bogie::after,
+.depot[data-art] .bogie i {
+  display: none;
+}
+.depot[data-art] .gang {
+  background: var(--art-bellows) center 0 / 24px 100px repeat-y;
 }
