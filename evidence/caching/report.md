@@ -191,9 +191,10 @@ and Haiku 5.5, and each failure costs one retry. Their fields came in a differen
 schemas were changed to put the player's reads first, matching the prompt's opening line; after that, all
 24 real turns kept the schema's order.
 
-Both modes remain available per model. In production, Luna and Haiku currently use the enforced schema,
-which keeps the layout's sharing for discussion turns but not for votes and night actions. The paired
-games in section 4.3 measured the unenforced mode, which is where Luna's saving came from.
+Both modes remain available per model, set in the model catalogue. Since 2026-10-14, Luna and Haiku use
+the unenforced schema in production (owner's decision), so their votes and night actions share the cache
+too. That is the configuration the paired games in section 4.3 measured; for Haiku it costs the same per
+call as the enforced schema, with more reasoning.
 
 ### 3.6 Combine offline batching with shared input
 
@@ -414,8 +415,6 @@ cache designs that were considered but not implemented.
 
 ## 6. Open questions
 
-- **The schema mode in production.** Luna's 28% saving was measured with the unenforced schema, but
-  production runs Luna enforced, so its votes and night actions do not yet share the cache.
 - **Models never measured under the current layout.** DeepSeek, GLM and the Gemini players, including the
   site's default, use the layout too. On cost they can only gain or stay level; their play was not tested.
 - **Play quality beyond factual errors.** The bench checks misstatements on discussion turns. Whether

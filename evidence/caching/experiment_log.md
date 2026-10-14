@@ -636,7 +636,9 @@ stay level; how their play changes was not measured. A smoke check on the defaul
 skipped in favour of a live game.
 
 **Deployed** to wolf.liuhaochen.com on 2026-10-14 at `d41b1c0c`, together with everything else on the
-branch since the previous server build (deploy record: `frontend/docs/build_plan.md`).
+branch since the previous server build (deploy record: `frontend/docs/build_plan.md`). The same day, Luna
+and Haiku were switched to the unenforced schema in the model catalogue (owner), the configuration the
+paired games measured; the deploy had left both on the enforced one.
 
 ## 16. Where it stands
 
