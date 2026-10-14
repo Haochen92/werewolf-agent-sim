@@ -20,6 +20,8 @@ class TickConfig:
                                                 # is called through the Anthropic SDK
     dedup_model: str = "gemini-3.1-flash-lite"  # KEEP/DISCARD dedup passes (merge-free => flash-lite safe)
     obs_fold_dedup: bool = True                 # freeze-old obs dedup after the fold (off only in LLM-free tests)
+    publish: bool = True                        # after a pass, mirror the records into the served game's
+                                                # index (persistence/postgres.py); off = records only
 
     # prune / evict (the credit pass's, every pass; decisions §14)
     prune: bool = True

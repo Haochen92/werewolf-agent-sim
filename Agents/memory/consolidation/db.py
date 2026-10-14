@@ -61,11 +61,15 @@ CREATE TABLE IF NOT EXISTS tick_runs (
 """
 
 
-def connect(dsn: str | None = None) -> psycopg.Connection:
+def resolve_dsn(dsn: str | None = None) -> str:
     dsn = dsn or os.environ.get("WW_POSTGRES_DSN")
     if not dsn:
         raise RuntimeError("no DSN: pass one or set WW_POSTGRES_DSN")
-    return psycopg.connect(dsn)
+    return dsn
+
+
+def connect(dsn: str | None = None) -> psycopg.Connection:
+    return psycopg.connect(resolve_dsn(dsn))
 
 
 def setup(conn: psycopg.Connection) -> None:

@@ -20,10 +20,16 @@ offline extraction job's output (``--extracted``) skips its human-seat games its
 Ten-seat since 2026-10-13: the store bootstraps from ``ten_seat_v2`` and its snapshots go to their own
 folder (the nine-seat ``demo_snapshots`` are left as they are).
 
+Both passes end by publishing the records into the served game's index (``publish.py``: the
+LangGraph store tables in the same database, the vectors included), so the next memory-on game
+reads what the pass left. ``publish`` alone re-publishes (``--force`` re-embeds everything, e.g.
+after an embedder change); ``--no-publish`` leaves the index as it is.
+
     poetry run python -m Agents.memory.consolidation.tick credit \
         --files "batch_results/demo_on/games_*.jsonl" --db --off "batch_results/v8_seed_*/games/*.jsonl"
     poetry run python -m Agents.memory.consolidation.tick learn \
         --extracted "batch_results/extraction_runs/demo_on_*/extracted.jsonl" --model claude-sonnet-5-5 --batch
+    poetry run python -m Agents.memory.consolidation.tick publish
 """
 
 from __future__ import annotations
@@ -41,6 +47,7 @@ from Agents.memory.consolidation.config import TickConfig
 from Agents.memory.consolidation.credit import credit_apply, credit_distribution
 from Agents.memory.consolidation.credit_rules import compute_base_rates
 from Agents.memory.consolidation.obs_fold import merge_new_obs
+from Agents.memory.consolidation.publish import publish_from_db
 from Agents.memory.consolidation.store_ops import consolidate, prune_and_evict
 
 DEFAULT_BOOTSTRAP_STORE = "memory_stores/ten_seat_v2"
@@ -98,6 +105,8 @@ def run_credit_pass(window, off_window: str, cfg: TickConfig | None = None, dsn:
             db.ingest(conn, scratch)
             stats = {"games": len(games), "credit": cstats, "credit_distribution": cdist, "prune_evict": pe}
             db.record_credit_run(conn, stats, changes, [g.get("game_id") for g in games])
+            if cfg.publish:
+                stats["publish"] = publish_from_db(conn, dsn, source={"step": "credit", "games": len(games)})
             return {**stats, "changes": changes}
         finally:
             shutil.rmtree(scratch, ignore_errors=True)
@@ -156,6 +165,8 @@ def run_tick(game_store_dirs: list[str] | None = None,
             db.ingest(conn, scratch)
             db.record_tick(conn, gen, stats, window_spec, str(snapshot_dir))
             stats["snapshot_dir"] = str(snapshot_dir)
+            if cfg.publish:
+                stats["publish"] = publish_from_db(conn, dsn, source={"step": "learn", "gen": gen})
             return stats
         finally:
             shutil.rmtree(scratch, ignore_errors=True)
@@ -184,11 +195,21 @@ def main() -> int:
     learn.add_argument("--synth-every", type=int, default=None,
                        help="override TickConfig.synth_every_k_gens (1 = synthesize this gen)")
     learn.add_argument("--snapshot-root", default=DEFAULT_SNAPSHOT_ROOT)
+    pub = sub.add_parser("publish", help="mirror the records into the served game's index (embeds what changed)")
+    pub.add_argument("--force", action="store_true", help="re-embed every record")
     for p in (credit, learn):
         p.add_argument("--bootstrap-store", default=DEFAULT_BOOTSTRAP_STORE)
+        p.add_argument("--no-publish", action="store_true", help="leave the served game's index as it is")
+    for p in (credit, learn, pub):
         p.add_argument("--dsn", default=None, help="Postgres DSN (default: WW_POSTGRES_DSN)")
     args = ap.parse_args()
     cfg = TickConfig()
+    if args.step == "publish":
+        with db.connect(args.dsn) as conn:
+            stats = publish_from_db(conn, args.dsn, force=args.force, source={"step": "publish"})
+        print(json.dumps(stats, indent=2, default=str))
+        return 0
+    cfg.publish = not args.no_publish
     if args.step == "credit":
         from Agents.memory.consolidation.sources import games_from_db, games_from_files
 
