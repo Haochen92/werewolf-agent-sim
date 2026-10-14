@@ -4,7 +4,7 @@
  * The dining car as one set across the scenes played in it: the deal, the day, the vote, the
  * lynch, the night's lobby, the morning, the game over and the replay's night. Each of those
  * used to be its own component, so a change of scene unmounted the car and built it again: the
- * wing, the house light, the shutter, the valance, every picture decoded afresh, which on a
+ * wing, the house light, the shutter, every picture decoded afresh, which on a
  * phone was a burst of script and paint at the first beat of every scene (build log §8.9), on
  * top of the per-beat rebuilds the keyed scenes paid.
  *
@@ -140,7 +140,6 @@ function CarSetSheet({ spec, ...props }: SceneProps & { spec: CarSet }) {
           view={view}
           cast={cast}
           me={me}
-          hud={hud}
           width={g.wingN}
           notes={notebookGame(presentation, me)}
           edit={slotInput?.notebook}

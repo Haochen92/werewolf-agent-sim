@@ -241,7 +241,7 @@ for (const [name, path, ready] of TRAP) {
 }
 
 /**
- * The last two scenes at rest, in the replay's frame (the top drape) where the bench drew them
+ * The last two scenes at rest, in the replay's frame where the bench drew them
  * so, on the ten-seat game: the X-ray night's spokes in the actor's own room (owner,
  * 2026-09-29), the investigator's check on night 1 (the pin through seat 6's photo, the lens on
  * it) and the pack's room on night 1 at its second line (the chat), and night 2 whole, all with

@@ -4,7 +4,6 @@ import { describe, expect, it } from 'vitest';
 import { BLEED, geometry, STAGE_W, WING_N, type Hud } from '../units';
 import { bleed } from './bleed';
 import { CAR_PICTURE, diningCarPlan } from './dining-car';
-import { drape } from './drape';
 import { light, lightHoles, type LightOpts } from './light';
 import { PHASES_IN_ORDER } from './materials';
 import { photoTwine, roomChoice, roomLight, roomPlan, ROOMS } from './compartment';
@@ -64,8 +63,6 @@ const CASES: [string, (id: string) => string][] = [
         ] as [string, (id: string) => string],
     ),
   ),
-  ['drape', (id: string) => drape({ id })],
-  ['drape bleed', (id: string) => drape({ id, bleed: BLEED })],
   ['bleed station', (id: string) => bleed({ id, room: 'station' })],
   ...HUDS.flatMap((hud) => [
     [`stationBack ${hud}`, (id: string) => stationBack({ id, hud, sky: '/sky.webp' })] as [
@@ -323,9 +320,8 @@ describe('bleed', () => {
     expect(station).toContain('stop-opacity="0.85"');
   });
 
-  it('leaves the light and the drape as they were without it', () => {
+  it('leaves the light as it was without it', () => {
     expect(light({ id: 'k', bleed: 0 })).toBe(light({ id: 'k' }));
-    expect(drape({ id: 'k', bleed: 0 })).toBe(drape({ id: 'k' }));
     expect(roomLight({ id: 'k', room: 'healer', bleed: 0 })).toBe(
       roomLight({ id: 'k', room: 'healer' }),
     );

@@ -3,18 +3,17 @@
 /**
  * The backdrop bench: the paint generators on their own, with no scene over them. The dining
  * car at each hour, the healer's night compartment and its candle light, the shutter open or
- * closed, the replay's drape, under each HUD mode, and guide lines for the frozen HUD geometry,
+ * closed, under each HUD mode, and guide lines for the frozen HUD geometry,
  * to check the numbers against a bench by eye. Every option is in the URL:
  *
  *   /workbench/paint?phase=day|dusk|night|dawn&room=car|compartment&shutter=open|closed
- *                   &drape=0|1&hud=none|live|replay&guides=0|1&chosen=0..7&strip=0
+ *                   &hud=none|live|replay&guides=0|1&chosen=0..7&strip=0
  */
 import { SPRITES } from '@/assets/manifest';
 import { Layer, Paint } from '@/stage/Stage';
 import { Compartment } from '@/stage/instruments/Compartment';
 import { CarPaint } from '@/stage/scenes/DiningCarParts';
 import { diningCarPlan } from '@/stage/paint/dining-car';
-import { drape } from '@/stage/paint/drape';
 import { light } from '@/stage/paint/light';
 import { PHASES_IN_ORDER, type Phase } from '@/stage/paint/materials';
 import { roomChoice, roomLight } from '@/stage/paint/compartment';
@@ -33,7 +32,6 @@ function readPaint(params: URLSearchParams) {
     room: pick(params.get('room'), ['car', 'compartment'] as const, 'car'),
     shutter: pick<ShutterState>(params.get('shutter'), ['open', 'closed'], 'open'),
     hud: pick<Hud>(params.get('hud'), ['none', 'live', 'replay'], 'live'),
-    drape: params.get('drape') === '1',
     guides: params.get('guides') === '1',
     chosen: chosenRaw == null ? undefined : Number(chosenRaw),
   };
@@ -108,7 +106,6 @@ export function PaintBench({ params }: { params: URLSearchParams }) {
         )}
       </Layer>
       <Layer name="hud">
-        {o.drape ? <Paint of={drape} opts={{ src: SPRITES.props.valance.src }} /> : null}
         {o.guides ? <Guides hud={o.hud} /> : null}
       </Layer>
     </>
@@ -160,12 +157,6 @@ export function PaintControls({
         options={['none', 'live', 'replay'] as const}
         value={o.hud}
         onChange={(v) => set('hud', v)}
-      />
-      <Seg
-        label="drape"
-        options={['0', '1'] as const}
-        value={o.drape ? '1' : '0'}
-        onChange={(v) => set('drape', v)}
       />
       <Seg
         label="guides"

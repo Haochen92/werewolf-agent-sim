@@ -232,7 +232,7 @@ anything that shows state is drawn over the sprite in vector, never baked in.
     ink, the case file's stamp mask, a white tile whose alpha is the ink: scripts/make-stamp-ink.mjs)
   src/assets/sprites/station/{sky,floor,post,lamp,train,blind}.webp
   src/assets/sprites/window/{day,dusk,night,dawn}-{far,near}.webp
-  src/assets/sprites/props/{jar-glass,jar-lid,stand-front,vote-table,plate,valance,shutter}.webp
+  src/assets/sprites/props/{jar-glass,jar-lid,stand-front,vote-table,plate,shutter}.webp
   src/assets/sprites/car/{day,night}.webp
   src/assets/sprites/rooms/{healer,investigator,vigilante,serial_killer,wolf}.webp
   src/assets/sprites/roles/{villager,wolf,investigator,vigilante,healer,serial_killer,
@@ -354,12 +354,9 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   - **The late three (2026-09-30), the owner's rasters, delivered as WebP:** `plate` (900×270,
     already squashed to ry = 0.3 rx) is each count plate's body, an SVG `<image>` over the spot's
     box (2rx × 2ry; `VoteTable.tsx` `Plate`), abstain's too, under the chips and over the vector
-    contact shadow. `valance` (2000×395, red velvet swags, a braided gold hem and a fringe, alpha
-    below) is the replay's top edge (`paint/drape.ts`): the world's width in one piece, squashed
-    to half its height (1600 × 158 units, the folds read as tighter gathers; owner, 2026-09-30),
-    its fringe's tips (px 385) at 0.085 H, so the whole red swags, the braid and the fringe show
-    under the strip's plaques and the plain velvet at its top hangs off the stage; its ends do not meet, so the bleed mirrors it about each edge (`scale(-1,1)`) and
-    fades it as before. `shutter` (1640×615, three louvred sections with brass hinges) is the
+    contact shadow. `valance` (2000×395, red velvet swags) was
+    the replay's top edge (`paint/drape.ts`) until 2026-10-14, when the owner dropped the curtain
+    from every replay; git keeps the generator and the picture. `shutter` (1640×615, three louvred sections with brass hinges) is the
     window shutter's panel stretched over the frame (window + 10 units, ~818 × 316: a light
     stretch), and the folded stack under the pelmet is three 7-unit strips of its rails (px rows
     0, 182, 372, 34 tall; `paint/window.ts` `shutterParts(…, picture)`), drawn alike by the paint's
@@ -455,7 +452,7 @@ anything that shows state is drawn over the sprite in vector, never baked in.
     nothing uses it: the valance was one walnut board with a brass hem, vector only (`drape.ts`,
     the owner's ruling that the velvet and the dark scalloped border in front read as two
     layers), and since 2026-09-30 it is the painted velvet valance (`SPRITES.props.valance`,
-    "The painted props" above), not this tile.
+    "The painted props" above), not this tile; that went too on 2026-10-14.
   - **The method: the pattern is inside the paint's SVG**, not a DOM layer under it, so the
     paint's own tints and glows reach it. The paints take the textures' URLs (`walnut`, `velvet`
     options; without them they draw the kit's flat colours). The fading car's SVG was once made
@@ -596,7 +593,7 @@ anything that shows state is drawn over the sprite in vector, never baked in.
 Two kinds, by whether they carry state:
 
 - **Paint** — the dining car's plan (its walls, frame and floor are a painting, §4), the night
-  rooms' photo line, the drape, the shutter's geometry, the station cloth. Pure functions of `(phase, units)`, no state, no
+  rooms' photo line, the shutter's geometry, the station cloth. Pure functions of `(phase, units)`, no state, no
   children, no event handlers. **Ported as string generators** (the kits' style, typed) under
   `src/stage/paint/`, rendered by one memoised `<Paint html={…} />` per layer via
   `dangerouslySetInnerHTML`. Porting these to JSX buys nothing. Every `<filter>`, `<clipPath>`,
@@ -667,8 +664,8 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   and helper holes over the overlap bring it near the product, never clearer than it was. A
   straight fade is a hole too: a far, tall ellipse whose rim runs straight down the stage
   (`roomChoice`'s card side). A shape a mask only clipped is a `clipPath` (the pelmet's shadow),
-  and a fade to the bleed is a gradient of the house's dark laid over it (the drape's mirrored
-  ends). The only masks left are glyph-sized: the sigil's 52×52 glyph mask and the rubber
+  and a fade to the bleed is a gradient of the house's dark laid over it (as the replay's drape's
+  mirrored ends were, until 2026-10-14). The only masks left are glyph-sized: the sigil's 52×52 glyph mask and the rubber
   stamps' worn ink (`.stamp` in `instruments/Ledger.module.css` and `film/Film.module.css`).
   `paint.test.ts` fails on an SVG `<mask`/`mask=`, or a CSS `mask:`/`mask-image`/
   `-webkit-mask-image` in any stage stylesheet or inline style, anywhere else under `src/stage`.
@@ -716,7 +713,7 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   the Web Animations API, so nothing is promoted), which keeps the rest and the move at the same
   memory. If a move still stutters, the next notch is `will-change: transform` on the box for the
   move's duration: the GPU then slides it, at the price of the box's own bitmap plus every stage
-  layer painted above it (the light's sheet, the replay's drape) for that second. The workbench
+  layer painted above it (the light's sheet) for that second. The workbench
   word `?gpu=lift` turns that on for every `data-moves` box, to read the price in the Layers
   panel before paying it in the build (build log §8.4).
 - **On a phone the camera cuts, and the figures cast no filtered shadow.** The camera has no
@@ -887,7 +884,7 @@ src/stage/
 ├── Atmosphere.tsx           # the key light, haze, shadows, vignette and grain (§3 "Atmosphere")
 ├── countdown.ts             # a prompt's `m:ss` and the share left (the dock, the ballot, the plate)
 ├── textures.ts              # the room's surface pictures by URL (WOOD, VELVET), for the paints
-├── paint/                   # string generators: station, window, shutter, drape, light —
+├── paint/                   # string generators: station, window, shutter, light —
 │                            #   (phase, units) → svg string; dining-car.ts: the car's plan
 │                            #   (diningCarPlan: the painting's place, its glass, glows, specials);
 │                            #   texture.ts: the surfaces' SVG patterns (walnut, boards, velvet);

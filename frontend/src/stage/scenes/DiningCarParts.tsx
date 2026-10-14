@@ -21,7 +21,6 @@ import { Wing, type WingTileProps } from '../instruments/Wing';
 import { useMotionScale } from '../motion';
 import { beam, type Special } from '../paint/draw';
 import { diningCarPlan } from '../paint/dining-car';
-import { drape } from '../paint/drape';
 import { light, type Pool } from '../paint/light';
 import type { Phase } from '../paint/materials';
 import { ROLE_NAME, factionOf, knownRoles, seatNumber } from '../roles';
@@ -155,12 +154,11 @@ export interface WingSeatOptions {
   read?: (seat: string) => WingTileProps['read'];
 }
 
-/** The wing, with the replay's drape above it when the HUD is the replay's. */
+/** The wing. */
 export function TableWing({
   view,
   cast,
   me,
-  hud,
   width,
   notes = null,
   edit,
@@ -169,7 +167,6 @@ export function TableWing({
   view: GameView;
   cast: readonly Character[];
   me: string | null;
-  hud: Hud;
   width: number;
   /** The game whose notebook the seated player keeps (`notebookGame`); null: none. */
   notes?: string | null;
@@ -181,9 +178,6 @@ export function TableWing({
   const known = opts.known === false ? null : knownRoles(me, view.me);
   return (
     <>
-      {hud === 'replay' ? (
-        <Paint of={drape} opts={{ bleed: BLEED, src: SPRITES.props.valance.src }} />
-      ) : null}
       <Wing
         width={width}
         notes={notes}
