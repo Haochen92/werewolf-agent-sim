@@ -80,8 +80,10 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
 - `FeaturedReplay` is the replay theatre's mini mode in the big window of a carriage standing at the
   platform. Over 860px the whole carriage (end, door, window, door, end) with the replay's controls
   on the stage; at 860px and under, the window edge to edge and the controls on the platform beneath
-  it (`CarriageUnder`: a playback board whose sleepers seek, Transcript and Reveal plates, the
-  transcript on ruled paper). A roof board names the game (its ID as split-flap tiles, read once as
+  it (`CarriageUnder`: one playback board whose sleepers seek). The phone preview has no
+  transcript or Reveal pane (owner, 2026-10-14: they did not fit beside the carriage, and the
+  Reveal pane drew a second stage); the whole replay has both, and the gameplay guide explains
+  them. A roof board names the game (its ID as split-flap tiles, read once as
   `role="img"`) and its model; under the platform, the details and "Watch the whole game".
 - The carriage is painted with pieces cut from the waiting room's train (`scripts/cut-carriage.mjs`
   → `SPRITES.carriage`): the snowy roof's bay, the brass rail, a mirrored seamless teak tile, the

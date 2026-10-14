@@ -742,20 +742,13 @@ test('landing: on an upright phone the controls sit under the stage, at reading 
   await pips.nth(0).click();
   await expect(mini(page)).toHaveAttribute('data-beat-index', '48');
 
-  // the transcript is the drawer's own lines: the day's talk, the vote's line not yet
-  const lines = carriage(page).getByLabel('Transcript', { exact: true });
-  await expect(lines).toContainText('Seat 8');
-  await expect(lines).not.toContainText('The table votes');
-  // and the vote's line arrives with the result
-  await pips.nth(18).click();
-  await expect(lines).toContainText('The table votes');
-
-  // Reveal swaps the pane for the stage's own case file, the hidden roles shown: at the
-  // lynch, who had them right, seat 8 among them a wolf
-  await carriage(page).getByRole('button', { name: 'Reveal', exact: true }).click();
-  const file = carriage(page).getByRole('complementary', { name: /^Case file/ });
-  await expect(file).toBeVisible();
-  await expect(file).toContainText(/Seat 8\s*wolf/);
+  // the preview stops at the board on a phone (owner, 2026-10-14): no transcript, no Reveal
+  // pane (the whole replay has them), and the carriage, the board and the way to the whole game
+  // fit one screen
+  await expect(carriage(page).getByRole('button', { name: 'Reveal' })).toHaveCount(0);
+  await expect(carriage(page).getByLabel('Transcript', { exact: true })).toHaveCount(0);
+  const tall = (await carriage(page).boundingBox())!.height;
+  expect(tall).toBeLessThan(844);
   await expect(
     carriage(page).getByRole('link', { name: 'Watch the whole game' }),
   ).toHaveAttribute('href', `/replays/${GAME}?from=home`);

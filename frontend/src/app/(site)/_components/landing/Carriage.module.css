@@ -843,7 +843,7 @@
 }
 /* its room, held while it is empty, before the preview is up (CarriageUnder.module.css) */
 .underHold:empty {
-  height: 536px;
+  height: 70px;
 }
 
 /* ---------- the painted carriage (scripts/cut-carriage.mjs) ----------
