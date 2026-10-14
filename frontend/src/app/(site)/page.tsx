@@ -9,7 +9,7 @@ import { PlatformBackdrop } from './_components/landing/PlatformBackdrop';
 import platform from './_components/landing/PlatformBackdrop.module.css';
 import { Features } from './_components/landing/Features';
 import { RoleHand } from './_components/landing/RoleHand';
-import { BankerLamp, Pendant } from './_components/landing/RoomLamps';
+import { Pendant, WallLight } from './_components/landing/RoomLamps';
 import rooms from './_components/landing/Rooms.module.css';
 import classes from './_components/landing/Landing.module.css';
 import pageClasses from './page.module.css';
@@ -21,8 +21,9 @@ import pageClasses from './page.module.css';
  * API key. A recruiter with no context sees the product
  * working before reading a word, and reaches a whole replay in one click from the carriage.
  *
- * Under the carriage each section is a room of the station (Rooms.module.css), dark but for a
- * banker's lamp in the reading room and a pendant over the latest games.
+ * Under the carriage each section is a room of the station (Rooms.module.css), one running into
+ * the next through the dark: granite under a caged wall light, the roles against a band of green
+ * tile, the latest games under a pendant. The way to play is the hero's tags and the nav.
  *
  * The two playing doors carry the house's purse (HouseDoorNote): whether a visitor needs their
  * own API key is live state, and the door is the honest place to say it.
@@ -54,13 +55,12 @@ export default function HomePage() {
         </Suspense>
       </section>
 
-      {/* the station's rooms (Rooms.module.css): one dark room per section, a threshold between */}
-      <div className={rooms.threshold} aria-hidden="true" />
+      {/* the station's rooms (Rooms.module.css): each fades into the next through the dark */}
       <section
         className={`${rooms.room} ${rooms.lit} ${rooms.study}`}
         aria-labelledby="features-head"
       >
-        <BankerLamp />
+        <WallLight />
         <div className={classes.secHead}>
           <h2 id="features-head">What makes it different</h2>
           <p>
@@ -71,7 +71,6 @@ export default function HomePage() {
         <Features />
       </section>
 
-      <div className={rooms.threshold} aria-hidden="true" />
       <section className={rooms.room} aria-labelledby="roles-head">
         <div className={`${classes.secHead} ${classes.centred}`}>
           <h2 id="roles-head">The roles</h2>
@@ -80,19 +79,11 @@ export default function HomePage() {
             card is the briefing its agent is given.
           </p>
         </div>
-        <div className={rooms.baize}>
+        <div className={rooms.band}>
           <RoleHand />
         </div>
       </section>
 
-      <div className={rooms.threshold} aria-hidden="true" />
-      <section className={`${rooms.room} ${rooms.seat}`} aria-labelledby="seat-head">
-        <h2 id="seat-head">Take a seat</h2>
-        <p>Play one seat against the agents, or fill a room with friends.</p>
-        <SeatTags stubs />
-      </section>
-
-      <div className={rooms.threshold} aria-hidden="true" />
       <section
         className={`${rooms.room} ${rooms.lit} ${rooms.records}`}
         aria-labelledby="latest-head"
@@ -116,6 +107,7 @@ export default function HomePage() {
         </Link>
       </section>
 
+      {/* the one threshold left: the page's ending is out of the rooms */}
       <div className={rooms.threshold} aria-hidden="true" />
       {/* the page's ending (the mockup's closing block), where the research line lives */}
       <section

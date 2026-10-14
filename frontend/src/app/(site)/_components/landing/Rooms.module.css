@@ -1,14 +1,17 @@
-/* The station's rooms under the carriage (rooms bench, station-rooms-v3, owner 2026-10-14): each
-   section of the landing is a dark room, parted from the next by a brass threshold. Only two have
-   a light, each its own source: the reading room's banker's lamp beside "What makes it
-   different", and a pendant over the latest games. The card room (the roles) is unlit, its baize
-   in shadow; "Take a seat" and the closing word are plain dark rooms.
+/* The station's rooms under the carriage (rooms bench station-rooms-v3, then the comparison
+   bench, owner 2026-10-14): each section of the landing is a room of the station, and each fades
+   into the next through the dark, with no threshold between them; the one brass threshold left
+   parts the rooms from the page's closing word. The reading room is dark granite under a caged
+   wall light; the roles stand against a band of green glazed tile, unlit; the latest games are
+   under a pendant, on the platform's own tile with an oxblood band near the ceiling (each room
+   its own colour, as old stations had).
 
    Performance (frontend_lessons, "Rendering"): everything here is still and painted once with the
    page. The walls span the screen from pseudo-elements behind the section (z-index -1 inside the
    section's own stacking context), so they never cover what is in it. The light is gradients
-   laid over the wall, darkest away from the lamp, never a mask or a filter. Rooms with no light
-   paint no wall at all: in the dark it would not show. */
+   laid over the wall, darkest away from the lamp, never a mask or a filter; the fades between
+   rooms are more of the same layers. The granite is one small baked picture, repeated
+   (scripts/bake-granite.mjs), never a noise filter. */
 
 /* ---------- a room: the section, with its padding ---------- */
 .room {
@@ -29,7 +32,19 @@
   pointer-events: none;
 }
 
-/* the brass threshold between two rooms: a sill with a bright line along it, its shadow below */
+/* the top of a lit room rises out of the dark, so nothing marks where the room above ended */
+.lit {
+  --fade-in: linear-gradient(
+    180deg,
+    var(--bg) 0,
+    rgba(12, 10, 7, 0.82) 50px,
+    rgba(12, 10, 7, 0.5) 110px,
+    rgba(12, 10, 7, 0.2) 170px,
+    transparent 230px
+  );
+}
+
+/* the brass threshold before the closing word: a sill with a bright line along it, its shadow below */
 .threshold {
   position: relative;
   z-index: 1;
@@ -51,28 +66,47 @@
     0 6px 14px rgba(0, 0, 0, 0.6);
 }
 
-/* ---------- the reading room: framed panelling, a banker's lamp low on the left ---------- */
-/* --bx/--by: the lamp's shade. On a screen wide enough the lamp stands in the gutter beside the
+/* ---------- the reading room: granite blocks, a caged wall light low on the left ---------- */
+/* --bx/--by: the light's glass. On a screen wide enough it hangs in the gutter beside the
    column; narrower, it is not drawn and its light comes from the left edge. */
 .study {
-  --bx: max(22px, calc(50% - 630px));
+  --bx: max(22px, calc(50% - 600px));
   --by: 372px;
 }
-.study::before {
-  background: url('../../../../assets/site/panel-tile.svg') center top / 240px 300px repeat;
+/* the light is gone 1000px down (the dark's ellipse below), so the wall and its light stop there
+   and the page's own ground goes on: a third of the area to raster on a long room */
+.study::before,
+.study::after {
+  bottom: auto;
+  height: 1000px;
 }
-/* top to bottom: the lamp's warm pool, the green of its shade, the room's vignette, and the dark
-   that hides the panelling away from the lamp (what the bench did with a mask) */
+.study::before {
+  background:
+    url('../../../../assets/site/granite-joints.svg') center top / 512px 512px repeat,
+    url('../../../../assets/site/granite.webp') center top / 512px 512px repeat;
+}
+/* top to bottom: the rise out of the dark, the sink back into it at the wall's foot,
+   the light's glow round its glass and its warm fall down the wall, the room's vignette, and the
+   dark that hides the stone away from the light */
 .study::after {
   background:
+    var(--fade-in),
+    linear-gradient(
+      180deg,
+      transparent calc(100% - 360px),
+      rgba(12, 10, 7, 0.35) calc(100% - 270px),
+      rgba(12, 10, 7, 0.65) calc(100% - 180px),
+      rgba(12, 10, 7, 0.88) calc(100% - 90px),
+      var(--bg) 100%
+    ),
     radial-gradient(
-      ellipse 760px 600px at var(--bx) calc(var(--by) + 30px),
-      rgba(255, 206, 130, 0.19),
+      ellipse 140px 140px at var(--bx) var(--by),
+      rgba(255, 220, 160, 0.3),
       transparent 70%
     ),
     radial-gradient(
-      ellipse 200px 120px at var(--bx) calc(var(--by) - 6px),
-      rgba(110, 200, 140, 0.18),
+      ellipse 700px 620px at var(--bx) calc(var(--by) + 40px),
+      rgba(255, 206, 140, 0.17),
       transparent 70%
     ),
     radial-gradient(ellipse 120% 100% at 40% 40%, transparent 50%, rgba(0, 0, 0, 0.72)),
@@ -83,47 +117,77 @@
       var(--bg) 80%
     );
 }
-.banker {
+.wallLight {
   display: none;
   position: absolute;
-  left: calc(50% - 630px - 64px);
-  top: calc(372px - 44px);
-  width: 128px;
-  height: 132px;
+  /* the section's own 50% is the screen's centre, as the full-width light's is */
+  left: calc(50% - 600px - 28px);
+  top: calc(var(--by) - 36px);
+  width: 56px;
+  height: 72px;
 }
-/* the lamp and its shelf need the gutter clear of the column (column edge at 50% - 552px) */
-@media (min-width: 1400px) {
-  .banker {
+/* the light needs the gutter clear of the column (column edge at 50% - 552px) */
+@media (min-width: 1300px) {
+  .wallLight {
     display: block;
   }
 }
 
-/* ---------- the card room: the roles on a baize table, unlit ---------- */
-/* the baize reaches a little past the column, to 1240px; its colours are the lit table's at a
-   little over half the light (darker colours, not a filter) */
-.baize {
-  margin-inline: calc((min(1240px, 100vw - 24px) - 100%) / -2);
-  padding: 34px max(12px, calc((min(1240px, 100vw - 24px) - 100%) / 2 + 8px)) 40px;
-  border-radius: 26px;
+/* ---------- the card room: the roles against a band of green tile, unlit ---------- */
+/* the band spans the screen behind the hand, rising out of the dark at its top (where the
+   reading room sank into it) and trimmed in brass at its foot; a vignette keeps it unlit */
+.band {
+  position: relative;
+  padding: 28px 0 36px;
+}
+.band::before,
+.band::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(50% - 50vw);
+  right: calc(50% - 50vw);
+  z-index: -1;
+  pointer-events: none;
+}
+.band::before {
+  background: url('../../../../assets/site/green-tile.svg') center top / 120px 64px repeat;
+  border-bottom: 2px solid rgba(201, 150, 63, 0.35);
+}
+.band::after {
   background:
-    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.007) 0 1px, transparent 1px 3px),
-    radial-gradient(ellipse 60% 70% at 50% 40%, #1a271d, #101a13 70%, #0c140f);
-  box-shadow:
-    0 0 0 10px #20140a,
-    0 0 0 11px #0e0804,
-    inset 0 0 40px rgba(0, 0, 0, 0.5),
-    0 0 0 12px rgba(110, 82, 35, 0.35),
-    0 24px 50px rgba(0, 0, 0, 0.6);
+    linear-gradient(180deg, var(--bg) 0, rgba(12, 10, 7, 0.6) 70px, transparent 150px),
+    radial-gradient(
+      ellipse 70% 80% at 50% 50%,
+      rgba(12, 10, 7, 0.25),
+      rgba(12, 10, 7, 0.75) 70%,
+      var(--bg) 100%
+    );
 }
 
-/* ---------- the records room: pigeonholes, a pendant over the latest games ---------- */
-.records::before {
-  background: url('../../../../assets/site/pigeonhole-tile.svg') center top / 300px 160px
-    repeat;
+/* ---------- the records room: the platform's tile, an oxblood band, a pendant ---------- */
+/* the band is two courses of the same bond at 128px, so its joints run on from the wall's */
+/* the pendant's light is gone 520px down, so the wall stops there (as the reading room's does) */
+.records::before,
+.records::after {
+  bottom: auto;
+  height: 520px;
 }
-/* the pendant's light down the room and its pool on the slates, the vignette, the dark */
+.records::before {
+  background:
+    linear-gradient(rgba(201, 150, 63, 0.3), rgba(201, 150, 63, 0.3)) 0 127px / 100% 1px
+      no-repeat,
+    linear-gradient(rgba(201, 150, 63, 0.3), rgba(201, 150, 63, 0.3)) 0 192px / 100% 1px
+      no-repeat,
+    url('../../../../assets/site/oxblood-band.svg') center 128px / 120px 64px repeat-x,
+    url('../../../../assets/site/wall-tile.svg') center top / 120px 64px repeat;
+}
+/* the rise out of the dark, the pendant's light down the room and its pool on the slates, the
+   vignette, the dark */
 .records::after {
   background:
+    var(--fade-in),
     radial-gradient(
       ellipse 560px 360px at 50% 60px,
       rgba(255, 206, 130, 0.12),
@@ -146,24 +210,6 @@
   height: 96px;
 }
 
-/* ---------- "Take a seat": a dark room with the two stubs ---------- */
-.seat {
-  text-align: center;
-}
-.seat h2 {
-  margin: 0 0 6px;
-  font-size: 34px;
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  line-height: 1.1;
-  color: var(--text);
-}
-.seat > p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 17px;
-}
-
 /* ---------- a phone ---------- */
 @media (max-width: 860px) {
   .room {
@@ -172,19 +218,13 @@
   .study {
     --by: 300px;
   }
-  .baize {
-    padding: 24px 12px 30px;
-    border-radius: 16px;
+  .study::before,
+  .study::after {
+    height: 920px;
   }
   .pendant {
     left: calc(50% - 24px);
     width: 48px;
     height: 77px;
-  }
-  .seat h2 {
-    font-size: 28px;
-  }
-  .seat > p {
-    font-size: 16px;
   }
 }
