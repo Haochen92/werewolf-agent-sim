@@ -29,6 +29,9 @@
 
   position: relative;
   margin: 110px calc(50% - 50vw) 0;
+  /* the buffers reach a little past a narrow desktop's edge: clipped here, so a touch screen
+     (an iPad, where the page's own clip does not stop a sideways pan) never scrolls sideways */
+  overflow-x: clip;
 }
 
 .car {
