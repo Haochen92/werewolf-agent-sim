@@ -11,7 +11,10 @@ mockups (`claude_artifacts/design/pages/*.html`, with `landing.html` as the styl
 
 `src/app/(site)/` is a route group. The parentheses keep it out of the URL, so the pages keep their
 paths. Its `layout.tsx` wraps every site page in the shell: `IconSprite`, `TopNav`, the page, and
-`SiteFooter`. The theatre's routes sit outside the group and get no nav. `/replays` (the archive,
+`SiteFooter`, in the column, inside `.station`: the screen's width and the page's height,
+positioned and `overflow: clip`, so a page's wall is placed against it from the very top and cut
+off at the page's foot (a wall taller than a short page never lengthens it; sticky pieces still
+stick, as clip makes no scroll box). The theatre's routes sit outside the group and get no nav. `/replays` (the archive,
 inside the group) and `/replays/[id]` (the theatre, outside it) share a URL segment but not a layout,
 which Next allows because the two resolve to different paths.
 
@@ -57,8 +60,9 @@ own part (`'Rooms'`). `/` gets the default, `The Ninth Express`.
 
 | Component | What it is |
 |---|---|
-| `TopNav` | The station's signboard (redesign 2026-10-14 §1): the headlamp mark and the name in EB Garamond, and Play · Rooms · Replays as recessed wells on a board hung from two brass rods; the current page is the cream plate (`aria-current`). Rooms carries a split-flap count of the tables boarding (`hooks/useBoarding`, the same query as the departures board). Once the board scrolls away a slim strip of it pins to the top (`inert` while hidden); its name drops cleanly when the doors need the room. On a phone the doors share a second row. |
-| `Board.module.css` | The signage's materials, composed by every board on the site: `board` (wood in a brass frame: what you operate), `rivets`, `well` (a recessed button; `aria-current`/`-pressed`/`-selected` make it the cream plate), `plate` (the primary action) and `flap` (one split-flap tile). Paper carries what you read; brass is for lines and hardware, never a small flat fill. |
+| `TopNav` | The station's signboard (redesign 2026-10-14 §1): the headlamp mark and the name in EB Garamond, and Play · Rooms · Replays as recessed wells on a board hung from two brass rods; the current page is the cream plate (`aria-current`). Rooms carries a split-flap count of the tables boarding (`hooks/useBoarding`, the same query as the departures board). The guide is not a fourth door but an enamel sign (`SITE.guide`, owner 2026-10-14): after the doors and a brass line, an open book and "Guide"; the book alone under 1060px; on a phone the book at the end of the name's row (the board is a grid there, so the sign never falls onto a row of its own, and the name shrinks to leave it room). Once the board scrolls away a slim strip of it pins to the top (`inert` while hidden); its name drops cleanly when the doors need the room; on a phone the strip leaves the sign out. On a phone the doors share a second row. |
+| `Board.module.css` | The signage's materials, composed by every board on the site: `board` (wood in a brass frame: what you operate), `rivets`, `well` (a recessed button; `aria-current`/`-pressed`/`-selected` make it the cream plate), `plate` (the primary action), `enamel` (a navy sign screwed to a board: somewhere to read, not a door) and `flap` (one split-flap tile). Paper carries what you read; brass is for lines and hardware, never a small flat fill. |
+| `StationWall` | A page's wall: the landing's rooms behind the other pages (owner 2026-10-14). `records` (the archive: platform tile, oxblood band, pendant) and `granite` (the ticket office: granite under the caged wall light, `StationLamps`); the departures hall stands on the landing's `PlatformBackdrop`. Placed against `.station` from the page's top, under the page's own stacking context (`wallPage` on its `<main>`), capped where its light runs out, its foot faded to the page's ground. The guide's wall (the roles' green tile) waits for the guide's own work to land. |
 | `SiteFooter` | The GitHub link with its icon, the other links, and the credit line, whose "N games archived" is live (`GamesArchived`, the archive's `X-Total-Count`). |
 | `Button` | Mantine Button narrowed to three variants: `ghost` (the default), `primary` (amber) and `brass` (a scene control on the page side; inside the stage box, use `ActPlate`). Polymorphic. |
 | `HangTag` | The hung paper tag. With `href` it is a link (a door); with `onClick` and `pressed` it is a choice. On a phone it is a stub, two to a row (below). |
@@ -127,6 +131,16 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
 - Paint census (production build, scrolling the rooms, animations still, median of three):
   the rooms add about 190 ms of one-off raster on a 3× phone and 480 ms on a 2× desktop, against
   130 / 700 ms for the rooms they replaced, measured the same way (frontend_lessons §25).
+
+## The other pages' walls
+
+Each site page stands in one of the landing's rooms (`StationWall`, above): the archive in the
+latest games' room, the ticket office (`/play`, `/rooms/new`) in the reading room, the departures
+hall on the platform. Paint census (production, scrolling the first 1400px, animations still,
+median of three, wall on against off): the archive +44 ms on a 3× phone / +177 ms on a 2×
+desktop, the ticket office within noise / +135 ms, the departures hall +416 / +1085 ms. The
+departures hall's is the landing's platform as it stands (a masked tile layer 1250px tall), the
+heaviest of the three.
 
 ## The tags on a phone
 

@@ -182,6 +182,12 @@ page's own ground is the same colour and costs nothing (`Rooms.module.css`, the 
 
 ## Small things that cost an afternoon
 
+- A wall capped short of its box ends in an edge if any layer over it is darker than the page's
+  ground (a black vignette is): the page's own colour below the cap shows lighter. Fade the foot
+  to the ground as the topmost layer (`StationWall.module.css`, `Rooms.module.css`).
+- An absolutely placed wall taller than a short page lengthens the page past its footer. Place it
+  against a positioned wrapper with `overflow: clip` (the site layout's `.station`): clip cuts it
+  at the page's foot and, unlike `hidden`, makes no scroll box, so sticky menus still stick.
 - `pgrep -f pattern` matches the shell that is running the loop containing the pattern, so a
   "wait until it finishes" loop never ends. Use `grep -c '[p]attern'`.
 - A percentage move (`y: '115%'`) is relative to the moving element; shrink the element and the
