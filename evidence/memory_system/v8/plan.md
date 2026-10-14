@@ -723,7 +723,12 @@ The per-game metrics are ported (`e5763cd1`). Credit runs on per-decision grades
     changes are listed for review before any store is published. v7's thresholds are kept and
     labelled unvalidated for ten seats. The tick runs on the server's database after the four tick
     tables (`memory_records`, `base_rates`, `obs_generations`, `tick_runs`; no foreign keys, read
-    only by the tick) are dumped to a file and emptied (owner: dump and reset).
+    only by the tick) are dumped to a file and emptied (owner: dump and reset). Done 2026-10-14: the
+    nine-seat tables (723 records, 20 base rates, 463 generations, 1 tick run, the 2026-09-17 tick of
+    `demo_gen1`) are in `memory_stores/db_dumps/nine_seat_tick_tables_2026-10-14.dump`, checked by
+    restoring it into a scratch database; the same store is also on disk as
+    `memory_stores/demo_snapshots/demo_gen1/`. To restore: empty the four tables, then
+    `docker exec -i ww-postgres pg_restore -U werewolf -d werewolf --data-only < <the dump>`.
 
 11. **Order of work (owner, 2026-10-13; why: decisions.md §12–§13).** (1) the credit port and its
     tests; (2) observations name their decision: the extraction schema field, and a tagging pass over the
