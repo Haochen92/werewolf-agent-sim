@@ -1,0 +1,102 @@
+/* The night platform behind the landing's hero (PlatformBackdrop.tsx). Every layer is still and
+   capped to the hero (1250px), never the page's height. */
+
+/* set on the landing itself: where the lamps hang, so the wall's light, the lamps and the
+   carriage's platform all follow them. On a desktop just outside the content column; on a phone
+   half tucked behind the screen's edges, level with the headline. */
+/* (its own stacking context, so the wall under it paints above the body's ground) */
+.scene {
+  isolation: isolate;
+  --lx: max(6%, calc(50% - 650px));
+  --rx: min(94%, calc(50% + 650px));
+  --ly: 410px;
+}
+@media (max-width: 860px) {
+  .scene {
+    --lx: 14px;
+    --rx: calc(100% - 14px);
+    --ly: 322px;
+  }
+}
+
+/* under the landing's content, from the very top of the page (behind the nav's board) */
+.backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: -1;
+  height: 1250px;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+
+/* one tile layer, lit by a single mask: under the sign, round the doors, down each lamp */
+.tiles {
+  position: absolute;
+  inset: 0;
+  background: url('../../../../assets/site/wall-tile.svg') center top / 120px 64px repeat;
+  -webkit-mask-image:
+    radial-gradient(ellipse 560px 280px at 50% 70px, #000, transparent 72%),
+    radial-gradient(ellipse 470px 330px at 50% 680px, #000, transparent 72%),
+    radial-gradient(ellipse 260px 520px at var(--lx) calc(var(--ly) + 110px), #000, transparent 72%),
+    radial-gradient(ellipse 260px 520px at var(--rx) calc(var(--ly) + 110px), #000, transparent 72%);
+  mask-image:
+    radial-gradient(ellipse 560px 280px at 50% 70px, #000, transparent 72%),
+    radial-gradient(ellipse 470px 330px at 50% 680px, #000, transparent 72%),
+    radial-gradient(ellipse 260px 520px at var(--lx) calc(var(--ly) + 110px), #000, transparent 72%),
+    radial-gradient(ellipse 260px 520px at var(--rx) calc(var(--ly) + 110px), #000, transparent 72%);
+}
+
+/* the light itself: under the sign, each lamp's glass and its fall down the wall, and the dark
+   at the edges. The pool on the doors is the hero's own candle glow (Landing.module.css). */
+.light {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 480px 190px at 50% 110px, rgba(255, 206, 130, 0.1), transparent 70%),
+    radial-gradient(ellipse 120px 120px at var(--lx) var(--ly), rgba(255, 214, 140, 0.35), transparent 70%),
+    radial-gradient(ellipse 120px 120px at var(--rx) var(--ly), rgba(255, 214, 140, 0.35), transparent 70%),
+    radial-gradient(ellipse 210px 440px at var(--lx) calc(var(--ly) + 150px), rgba(255, 190, 100, 0.17), transparent 72%),
+    radial-gradient(ellipse 210px 440px at var(--rx) calc(var(--ly) + 150px), rgba(255, 190, 100, 0.17), transparent 72%),
+    radial-gradient(ellipse 130% 90% at 50% 40%, transparent 50%, rgba(0, 0, 0, 0.8) 100%);
+}
+
+/* faint iron trusses at the top */
+.roof {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 300px;
+}
+
+/* the wall lamps, their glass at (--lx | --rx, --ly) */
+.lamp {
+  position: absolute;
+  top: calc(var(--ly) - 80px);
+  width: 84px;
+  height: 150px;
+}
+.l {
+  left: calc(var(--lx) - 22px);
+}
+.r {
+  left: calc(var(--rx) - 62px);
+  transform: scaleX(-1);
+}
+
+@media (max-width: 860px) {
+  .lamp {
+    top: calc(var(--ly) - 46px);
+    width: 50px;
+    height: 90px;
+  }
+  .l {
+    left: -12px;
+  }
+  .r {
+    left: calc(100% - 38px);
+  }
+}

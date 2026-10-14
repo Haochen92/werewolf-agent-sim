@@ -5,6 +5,8 @@ import { ReplayListClient } from './replays/_components/ReplayListClient';
 import { HouseDoorNote } from './_components/HouseDoorNote';
 import { SeatTags } from './_components/landing/SeatTags';
 import { FeaturedReplay } from './_components/landing/FeaturedReplay';
+import { PlatformBackdrop } from './_components/landing/PlatformBackdrop';
+import platform from './_components/landing/PlatformBackdrop.module.css';
 import { Features } from './_components/landing/Features';
 import { RoleHand } from './_components/landing/RoleHand';
 import classes from './_components/landing/Landing.module.css';
@@ -22,7 +24,8 @@ import pageClasses from './page.module.css';
  */
 export default function HomePage() {
   return (
-    <main className={classes.landing}>
+    <main className={`${classes.landing} ${platform.scene}`}>
+      <PlatformBackdrop />
       <header className={classes.hero}>
         <p className={classes.kicker}>
           <b>Werewolf, played by AI agents.</b> Every private thought recorded.

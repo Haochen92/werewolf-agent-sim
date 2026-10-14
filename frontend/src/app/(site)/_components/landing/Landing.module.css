@@ -3,9 +3,12 @@
    Carriage.module.css; the three features are Features.module.css. */
 
 .landing {
-  /* the carriage's rails and the hero's glow reach past the column; nothing scrolls sideways */
-  overflow-x: clip;
   padding-bottom: 8px;
+}
+/* the platform's wall and the carriage span the screen, past the column: the page itself clips
+   sideways while the landing is on it, so nothing scrolls sideways */
+:global(html):has(.landing) {
+  overflow-x: clip;
 }
 
 /* ---------- the hero ---------- */
