@@ -17,6 +17,8 @@ export const SITE = {
     { label: 'Rooms', href: '/rooms', match: '/rooms' },
     { label: 'Replays', href: '/replays', match: '/replays' },
   ],
+  /** The guide: a sign on the board, not a fourth door (owner, 2026-10-14). */
+  guide: { label: 'Guide', href: '/guide', match: '/guide' },
 
   /**
    * The footer's other exits. An entry with `href: null` is not rendered, so a link appears
