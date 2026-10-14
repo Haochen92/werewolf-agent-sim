@@ -167,6 +167,17 @@ again (`live-state.ts` `runOf`), and test it with the list growing one event at 
 twin in tests: anything that names an item by its index (a workbench `?beat=N`, a seek to beat
 50) moves when the derivation changes; name it by what it is where the tool allows.
 
+**25. A census compares two builds under one script, in one sitting, with nothing animating.**
+The landing's rooms (2026-10-14) first measured "+100 ms on a phone, nothing on a desktop"; a
+later script, scrolling the same rooms, found +440 / +1560 ms for the same commit. Neither
+number means anything beside the other. Two things moved them: the scroll path, and the
+latest games' loading shimmer (`background-position`, so a repaint every frame), which with
+no API answering kept re-rastering the room's wall under it, about half the "cost" of the
+wall. So: build the baseline (HEAD) and the change, run the same script against both, keep
+animations still (`reducedMotion: 'reduce'`, or answer the data), and report the difference
+of differences. And stop a painted wall where its light runs out: past the lamp's reach the
+page's own ground is the same colour and costs nothing (`Rooms.module.css`, the capped walls).
+
 ---
 
 ## Small things that cost an afternoon

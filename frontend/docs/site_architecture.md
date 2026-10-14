@@ -61,7 +61,7 @@ own part (`'Rooms'`). `/` gets the default, `The Ninth Express`.
 | `Board.module.css` | The signage's materials, composed by every board on the site: `board` (wood in a brass frame: what you operate), `rivets`, `well` (a recessed button; `aria-current`/`-pressed`/`-selected` make it the cream plate), `plate` (the primary action) and `flap` (one split-flap tile). Paper carries what you read; brass is for lines and hardware, never a small flat fill. |
 | `SiteFooter` | The GitHub link with its icon, the other links, and the credit line, whose "N games archived" is live (`GamesArchived`, the archive's `X-Total-Count`). |
 | `Button` | Mantine Button narrowed to three variants: `ghost` (the default), `primary` (amber) and `brass` (a scene control on the page side; inside the stage box, use `ActPlate`). Polymorphic. |
-| `HangTag` | The hung paper tag. With `href` it is a link (a door); with `onClick` and `pressed` it is a choice. |
+| `HangTag` | The hung paper tag. With `href` it is a link (a door); with `onClick` and `pressed` it is a choice. On a phone it is a stub, two to a row (below). |
 | `Paper` | The paper surface for things inside the fiction. Polymorphic Box. |
 | `Flapword` | Split-flap tiles for one word, with `tone` `hot` or `dim`. |
 | `Icon` / `IconSprite` | One `<symbol>` sprite, rendered once by the site layout. It holds `i-*` (the mockups' icons plus `i-lock-open`, `i-ticket` and `i-github`) and `sg-*`, whose paths are the stage's `Sigil`. |
@@ -101,22 +101,41 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   (`margin-inline: calc(50% - 50vw)`) and clips its own sideways overflow; the page clips too while
   the landing is on it (`html:has(.landing)`).
 
-## The landing's rooms (rooms bench `station-rooms-v3`, owner 2026-10-14)
+## The landing's rooms (rooms benches, owner 2026-10-14)
 
-- Under the carriage each section is a dark room of the station (`Rooms.module.css`), parted from
-  the next by a brass threshold. Two have a light, each its own source: "What makes it different"
-  is a reading room (framed panelling, `assets/site/panel-tile.svg`) with a banker's lamp on a wall
-  shelf, and "Latest games" is a records room (pigeonholes, `assets/site/pigeonhole-tile.svg`)
-  under a hanging pendant, a screening room for the archive (`RoomLamps.tsx`). The roles sit on a
-  baize table in shadow; "Take a seat" and the closing word are plain dark rooms.
-- The walls and the light span the screen from the section's `::before`/`::after` (`.lit`), behind
-  its content. The light is gradients over the wall, darkest away from the lamp; the bench's masks,
-  `filter: brightness` (the unlit baize: darker colours instead) and drop shadows (owner: none on
-  section pictures) are not used. Rooms with no light paint no wall, which would not show.
-- The banker's lamp stands only where the gutter is clear of the column (1400px and over); narrower,
-  its light comes from the left edge without it. Paint census (production build, scrolling the
-  rooms): about +100 ms raster on a 3× phone, nothing measurable on a 2× desktop, paid once since
-  nothing moves.
+- Under the carriage each section is a room of the station (`Rooms.module.css`), and each fades
+  into the next through the dark: no threshold between them, only one brass threshold left before
+  the closing word. Chosen on the comparison bench (`station-rooms-compare`) over panelling, felt
+  and pigeonholes, which lost the station: "What makes it different" is dark granite in dressed
+  blocks under a caged wall light (`WallLight` in `RoomLamps.tsx`); the roles stand against a
+  band of green glazed tile, unlit, rising out of the dark and trimmed in brass at its foot;
+  "Latest games" is the platform's own tile (`wall-tile.svg`) with an oxblood band near the
+  ceiling, under a pendant (`Pendant`). Each tiled room has its own band colour, as old stations
+  did. "Take a seat" is gone: the hero's tags and the nav's Play and Rooms are the way in.
+- The walls and the light span the screen from the section's `::before`/`::after` (`.lit`, and
+  `.band` for the roles), behind its content. The light is gradients over the wall, darkest away
+  from the lamp; a lit room rises out of the dark at its top (`--fade-in`) and its wall stops
+  where its light runs out (1000px for the reading room, 520px under the pendant), so the page's
+  own ground carries on below. No masks, no filters, no drop shadows.
+- The granite is one 512px seamless square (`assets/site/granite.webp`, 59 KB, about 1 MB
+  decoded), baked once from SVG noise by `scripts/bake-granite.mjs`, with its joints a separate
+  SVG over it; a noise filter on the wall itself is what it replaces. No phone copy: the square
+  is small and a smaller one would coarsen the grain.
+- The wall light stands in the gutter from 1300px up (the section's own 50% is the screen's
+  centre, so it is placed from there, not from `--bx`, which only the full-width light reads);
+  narrower, its light comes in from the left edge without it.
+- Paint census (production build, scrolling the rooms, animations still, median of three):
+  the rooms add about 190 ms of one-off raster on a 3× phone and 480 ms on a 2× desktop, against
+  130 / 700 ms for the rooms they replaced, measured the same way (frontend_lessons §25).
+
+## The tags on a phone
+
+At 700px and under a `HangTag` is its torn-off stub (owner, 2026-10-14): a strip of the tag's
+paper with a perforated left edge, the kicker and title at its left and an arrow at its right;
+the line and the footer stay on the tag, and `note` (the tables boarding, on the landing) sits
+under the title. Two stubs share a row on the landing, the ticket office and the departures
+hall. The current page's stub keeps its ring inside the paper (the perforation's mask would cut
+one outside) and loses its arrow.
 
 ## Tests
 
