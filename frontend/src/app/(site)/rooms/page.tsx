@@ -1,4 +1,6 @@
 import { HangTag } from '@/components/site';
+import { PlatformBackdrop } from '../_components/landing/PlatformBackdrop';
+import platform from '../_components/landing/PlatformBackdrop.module.css';
 import { DeparturesBoard } from './_components/DeparturesBoard';
 import classes from './_components/Departures.module.css';
 
@@ -7,11 +9,13 @@ export const metadata = { title: 'Rooms' };
 /**
  * The lobby: the list of rooms (rooms mockup, review §A3), an ordinary responsive page. The
  * title beside two doors (open a table of your own, or play solo), hung from a hairline as the
- * ticket office's are, then the departures board.
+ * ticket office's are, then the departures board. It stands on the landing's platform
+ * (`PlatformBackdrop`, its lamps just outside the column).
  */
 export default function RoomsPage() {
   return (
-    <main className={classes.hall}>
+    <main className={`${classes.hall} ${platform.scene}`}>
+      <PlatformBackdrop />
       <header className={classes.head}>
         <div>
           <h1 className={classes.title}>The departures hall</h1>

@@ -30,7 +30,7 @@ import { createGame, createRoom, getModels } from '@/lib/api';
 import { formatCost } from '@/lib/format';
 import { hostKey, seatToken } from '@/lib/storage';
 import { queryKeys } from '@/lib/queryKeys';
-import { Button, HangTag, Icon, Paper } from '@/components/site';
+import { Button, HangTag, Icon, Paper, StationWall, wallPage } from '@/components/site';
 import { PuppetPicker } from '@/components/PuppetPicker';
 import { useCharacters } from '@/hooks/useCharacters';
 import { CARD_TEXT } from '@/stage/card-text';
@@ -149,7 +149,8 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
     cards.find((c) => c.id === character)?.display_name ?? 'Drawn by the house';
 
   return (
-    <main className={classes.office}>
+    <main className={`${classes.office} ${wallPage}`}>
+      <StationWall kind="granite" />
       <div className={classes.intro}>
         <div>
           <h1 className={classes.title}>The ticket office</h1>

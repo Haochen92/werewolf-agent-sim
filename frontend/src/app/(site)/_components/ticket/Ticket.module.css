@@ -8,14 +8,9 @@
  * selectors go through `.ticket` to outrank the site theme's dark input (`theme/components`).
  */
 
+/* not positioned: the station's wall behind it is placed from the page's top (StationWall) */
 .office {
-  position: relative;
   padding: 18px 0 8px;
-  background: radial-gradient(
-    ellipse 70% 38% at 50% 0,
-    rgba(224, 166, 58, 0.07),
-    transparent 70%
-  );
 }
 
 .intro {
