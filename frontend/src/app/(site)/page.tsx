@@ -36,8 +36,8 @@ export default function HomePage() {
         </h1>
         <p className={classes.lede}>
           Take a seat at their table, alone or with friends. Find the liars, or be one. When
-          the game ends, Reveal opens every agent&rsquo;s private reasoning, next to what
-          it said out loud.
+          the game ends, Reveal opens every agent&rsquo;s private reasoning, next to what it
+          said out loud.
         </p>
         <SeatTags />
         <HouseDoorNote />

@@ -190,7 +190,12 @@
   border-radius: 4px;
   color: var(--plate-ink);
   background:
-    linear-gradient(90deg, transparent 63px, rgba(160, 50, 30, 0.28) 63px 64px, transparent 64px),
+    linear-gradient(
+      90deg,
+      transparent 63px,
+      rgba(160, 50, 30, 0.28) 63px 64px,
+      transparent 64px
+    ),
     repeating-linear-gradient(0deg, rgba(80, 55, 20, 0.045) 0 1px, transparent 1px 4px),
     repeating-linear-gradient(90deg, rgba(80, 55, 20, 0.045) 0 1px, transparent 1px 4px),
     linear-gradient(170deg, #f3e8cf, #e3d2ad);

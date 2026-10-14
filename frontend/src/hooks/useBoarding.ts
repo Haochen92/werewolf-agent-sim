@@ -17,5 +17,7 @@ export function useBoarding(): number | undefined {
     staleTime: 30_000,
     retry: false,
   });
-  return rooms.data?.filter((r) => rowFace(r).joinable).length;
+  // the nav is on every page: an answer that is not a list says nothing, never breaks the page
+  if (!Array.isArray(rooms.data)) return undefined;
+  return rooms.data.filter((r) => rowFace(r).joinable).length;
 }

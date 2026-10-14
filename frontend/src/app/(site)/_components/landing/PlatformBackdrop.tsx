@@ -16,7 +16,11 @@ function Lamp({ side }: { side: 'l' | 'r' }) {
   const glow = `lampGlow-${side}`;
   const iron = `lampIron-${side}`;
   return (
-    <svg className={`${classes.lamp} ${classes[side]}`} viewBox="0 0 84 150" aria-hidden="true">
+    <svg
+      className={`${classes.lamp} ${classes[side]}`}
+      viewBox="0 0 84 150"
+      aria-hidden="true"
+    >
       <defs>
         <radialGradient id={glow}>
           <stop offset="0" stopColor="#fff3d2" />
@@ -30,7 +34,12 @@ function Lamp({ side }: { side: 'l' | 'r' }) {
         </linearGradient>
       </defs>
       <path d="M4 20 V60" stroke={`url(#${iron})`} strokeWidth="6" strokeLinecap="round" />
-      <path d="M4 30 H52 M4 30 Q30 30 30 52" fill="none" stroke={`url(#${iron})`} strokeWidth="3" />
+      <path
+        d="M4 30 H52 M4 30 Q30 30 30 52"
+        fill="none"
+        stroke={`url(#${iron})`}
+        strokeWidth="3"
+      />
       <circle cx="18" cy="38" r="5" fill="none" stroke="#8a6630" strokeWidth="2" />
       <path d="M52 30 V42" stroke={`url(#${iron})`} strokeWidth="3" />
       <path d="M38 42 h28 l-4 10 h-20 z" fill={`url(#${iron})`} />

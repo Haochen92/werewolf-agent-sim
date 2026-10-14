@@ -137,8 +137,15 @@
   height: 18px;
   background: var(
     --roof-tile,
-    linear-gradient(90deg, rgba(255, 200, 120, 0.14), transparent 25%, transparent 75%, rgba(255, 200, 120, 0.14)),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='18'%3E%3Crect x='40' y='6' width='16' height='6' rx='1' fill='%23090604' fill-opacity='.85'/%3E%3Crect x='40' y='12' width='16' height='1' fill='%23ffe6be' fill-opacity='.08'/%3E%3C/svg%3E") center top / 96px 18px repeat-x,
+    linear-gradient(
+      90deg,
+      rgba(255, 200, 120, 0.14),
+      transparent 25%,
+      transparent 75%,
+      rgba(255, 200, 120, 0.14)
+    ),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='18'%3E%3Crect x='40' y='6' width='16' height='6' rx='1' fill='%23090604' fill-opacity='.85'/%3E%3Crect x='40' y='12' width='16' height='1' fill='%23ffe6be' fill-opacity='.08'/%3E%3C/svg%3E")
+      center top / 96px 18px repeat-x,
     linear-gradient(180deg, #2e261d, #211a13)
   );
   box-shadow: inset 0 1.5px 0 rgba(255, 230, 190, 0.32);
@@ -152,7 +159,13 @@
   top: 18px;
   height: 28px;
   background:
-    linear-gradient(180deg, transparent 0 7px, rgba(255, 230, 190, 0.16) 7px 8px, rgba(0, 0, 0, 0.4) 8px 9px, transparent 9px),
+    linear-gradient(
+      180deg,
+      transparent 0 7px,
+      rgba(255, 230, 190, 0.16) 7px 8px,
+      rgba(0, 0, 0, 0.4) 8px 9px,
+      transparent 9px
+    ),
     linear-gradient(180deg, #3b3026, #2b231b 60%, #1a140e 88%, #0f0b07);
   box-shadow:
     inset 0 1px 0 rgba(255, 230, 190, 0.2),
@@ -176,10 +189,27 @@
   padding: var(--top) 0 18px;
   background: var(
     --bay,
-    linear-gradient(180deg, var(--gold) 0 1.5px, rgba(0, 0, 0, 0.35) 1.5px 2.5px, transparent 2.5px) 0 4px / 100% 6px no-repeat,
-    linear-gradient(180deg, transparent calc(100% - 6px), var(--gold) calc(100% - 6px) calc(100% - 4.5px), transparent calc(100% - 4.5px)),
+    linear-gradient(
+        180deg,
+        var(--gold) 0 1.5px,
+        rgba(0, 0, 0, 0.35) 1.5px 2.5px,
+        transparent 2.5px
+      )
+      0 4px / 100% 6px no-repeat,
+    linear-gradient(
+      180deg,
+      transparent calc(100% - 6px),
+      var(--gold) calc(100% - 6px) calc(100% - 4.5px),
+      transparent calc(100% - 4.5px)
+    ),
     linear-gradient(180deg, rgba(0, 0, 0, 0.28), transparent 26px),
-    linear-gradient(180deg, var(--cream2), var(--cream1) 30%, var(--cream1) 80%, var(--cream2))
+    linear-gradient(
+      180deg,
+      var(--cream2),
+      var(--cream1) 30%,
+      var(--cream1) 80%,
+      var(--cream2)
+    )
   );
 }
 .lower {
@@ -206,10 +236,30 @@
   z-index: 2;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 26% 80% at var(--lx) 45%, rgba(255, 196, 110, 0.2), transparent 70%),
-    radial-gradient(ellipse 26% 80% at var(--rx) 45%, rgba(255, 196, 110, 0.2), transparent 70%),
-    linear-gradient(180deg, rgba(10, 7, 4, 0.25), transparent 30%, transparent 70%, rgba(10, 7, 4, 0.35)),
-    linear-gradient(90deg, rgba(10, 7, 4, 0.55), transparent 18%, transparent 82%, rgba(10, 7, 4, 0.55));
+    radial-gradient(
+      ellipse 26% 80% at var(--lx) 45%,
+      rgba(255, 196, 110, 0.2),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 26% 80% at var(--rx) 45%,
+      rgba(255, 196, 110, 0.2),
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(10, 7, 4, 0.25),
+      transparent 30%,
+      transparent 70%,
+      rgba(10, 7, 4, 0.35)
+    ),
+    linear-gradient(
+      90deg,
+      rgba(10, 7, 4, 0.55),
+      transparent 18%,
+      transparent 82%,
+      rgba(10, 7, 4, 0.55)
+    );
 }
 
 /* ---------- the game's window ---------- */
@@ -239,7 +289,8 @@
     inset 0 0 0 3px rgba(201, 150, 63, 0.45),
     inset 0 4px 6px rgba(255, 240, 210, 0.12);
   background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9'%3E%3Cpath d='M0 4.5 L4.5 0 L9 4.5 L4.5 9 Z' fill='none' stroke='%233a2614' stroke-opacity='.22' stroke-width='.8'/%3E%3C/svg%3E") center / 9px 9px,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9'%3E%3Cpath d='M0 4.5 L4.5 0 L9 4.5 L4.5 9 Z' fill='none' stroke='%233a2614' stroke-opacity='.22' stroke-width='.8'/%3E%3C/svg%3E")
+      center / 9px 9px,
     radial-gradient(ellipse 70% 120% at 50% 100%, #e2c48c, #c39c62 60%, #a47c46);
 }
 /* the frame, drawn round the glass (a 6px corner, so the game's own corners are never cut) */
@@ -302,7 +353,13 @@
   height: calc(var(--gh) * 0.62);
   border-radius: 5px;
   background:
-    linear-gradient(118deg, transparent 30%, rgba(255, 255, 255, 0.07) 31%, rgba(255, 255, 255, 0.07) 40%, transparent 41%),
+    linear-gradient(
+      118deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.07) 31%,
+      rgba(255, 255, 255, 0.07) 40%,
+      transparent 41%
+    ),
     radial-gradient(ellipse 70% 60% at 50% 60%, #e0a85a, #8a5524 70%, #3a2414);
   box-shadow:
     0 0 0 2px var(--gold),
@@ -479,10 +536,23 @@
   margin-top: -30px;
   height: 150px;
   background:
-    radial-gradient(ellipse 230px 70px at var(--lx) 24px, rgba(255, 190, 100, 0.2), transparent 70%),
-    radial-gradient(ellipse 230px 70px at var(--rx) 24px, rgba(255, 190, 100, 0.2), transparent 70%),
+    radial-gradient(
+      ellipse 230px 70px at var(--lx) 24px,
+      rgba(255, 190, 100, 0.2),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 230px 70px at var(--rx) 24px,
+      rgba(255, 190, 100, 0.2),
+      transparent 70%
+    ),
     linear-gradient(180deg, rgba(255, 220, 160, 0.18) 0 2px, transparent 2px),
-    linear-gradient(180deg, transparent 0 10px, rgba(224, 166, 58, 0.55) 10px 16px, transparent 16px),
+    linear-gradient(
+      180deg,
+      transparent 0 10px,
+      rgba(224, 166, 58, 0.55) 10px 16px,
+      transparent 16px
+    ),
     repeating-linear-gradient(90deg, transparent 0 158px, rgba(0, 0, 0, 0.45) 158px 160px),
     linear-gradient(180deg, #2b2117, #1a140d 40%, var(--bg));
   box-shadow: 0 -14px 30px rgba(0, 0, 0, 0.55);
@@ -568,9 +638,25 @@
   .body::after {
     background:
       radial-gradient(ellipse 30% 80% at 0 45%, rgba(255, 196, 110, 0.22), transparent 70%),
-      radial-gradient(ellipse 30% 80% at 100% 45%, rgba(255, 196, 110, 0.22), transparent 70%),
-      linear-gradient(180deg, rgba(10, 7, 4, 0.25), transparent 30%, transparent 70%, rgba(10, 7, 4, 0.35)),
-      linear-gradient(90deg, rgba(10, 7, 4, 0.35), transparent 10%, transparent 90%, rgba(10, 7, 4, 0.35));
+      radial-gradient(
+        ellipse 30% 80% at 100% 45%,
+        rgba(255, 196, 110, 0.22),
+        transparent 70%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(10, 7, 4, 0.25),
+        transparent 30%,
+        transparent 70%,
+        rgba(10, 7, 4, 0.35)
+      ),
+      linear-gradient(
+        90deg,
+        rgba(10, 7, 4, 0.35),
+        transparent 10%,
+        transparent 90%,
+        rgba(10, 7, 4, 0.35)
+      );
   }
   /* the gangway bellows at each end */
   .gang {
@@ -580,7 +666,10 @@
     z-index: 0;
     width: 20px;
     border-radius: 5px;
-    background: var(--end-cap, repeating-linear-gradient(90deg, #1a130c 0 3px, #4a3a2a 3px 5px, #2a2016 5px 7px));
+    background: var(
+      --end-cap,
+      repeating-linear-gradient(90deg, #1a130c 0 3px, #4a3a2a 3px 5px, #2a2016 5px 7px)
+    );
     box-shadow:
       inset 0 10px 14px -6px rgba(0, 0, 0, 0.7),
       inset 0 -10px 14px -6px rgba(0, 0, 0, 0.7);

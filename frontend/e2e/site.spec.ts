@@ -297,7 +297,9 @@ test('ticket: the house pays, so /play asks for no key', async ({ page }) => {
 
   // the role cards: a radio group, nothing chosen deals at random, one chosen at a time, the
   // stub shows the role held; a second click on it deals at random again
-  const roles = page.getByRole('radiogroup', { name: /Your role/ }).filter({ visible: true });
+  const roles = page
+    .getByRole('radiogroup', { name: /Your role/ })
+    .filter({ visible: true });
   const stub = page.locator('[data-place="stub"]');
   await expect(stub).toContainText('Dealt at random');
   await roles.getByRole('radio', { name: 'Chanteuse, Wolves' }).click();
@@ -366,6 +368,14 @@ test('ticket: /rooms/new opens a room and goes to it', async ({ page }) => {
       'access-control-allow-headers': 'content-type',
     };
     if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors });
+    // the nav's Rooms counter lists the rooms: none boarding
+    if (req.method() === 'GET')
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        headers: cors,
+        body: '[]',
+      });
     sent = req.postDataJSON() as Record<string, unknown>;
     await route.fulfill({
       status: 200,
@@ -680,7 +690,10 @@ test('landing: the carriage plays day 3 of the featured game, with the replay’
 
   // the roof board names the game (its ID read once, not tile by tile) and its model; under
   // the platform, the way to it whole and its details
-  await expect(carriage(page)).toHaveAttribute('aria-label', 'Replay of day 3 of game 9369A5C');
+  await expect(carriage(page)).toHaveAttribute(
+    'aria-label',
+    'Replay of day 3 of game 9369A5C',
+  );
   await expect(carriage(page).getByRole('img', { name: '9369A5C' })).toBeVisible();
   await expect(
     carriage(page).getByRole('link', { name: 'Watch the whole game' }),
@@ -733,10 +746,9 @@ test('landing: on an upright phone the controls sit under the stage, at reading 
   const file = carriage(page).getByRole('complementary', { name: /^Case file/ });
   await expect(file).toBeVisible();
   await expect(file).toContainText(/Seat 8\s*wolf/);
-  await expect(carriage(page).getByRole('link', { name: 'Watch the whole game' })).toHaveAttribute(
-    'href',
-    `/replays/${GAME}?from=home`,
-  );
+  await expect(
+    carriage(page).getByRole('link', { name: 'Watch the whole game' }),
+  ).toHaveAttribute('href', `/replays/${GAME}?from=home`);
   // nothing reaches past the phone's edge
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
 });

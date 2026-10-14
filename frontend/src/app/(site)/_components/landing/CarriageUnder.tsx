@@ -99,7 +99,12 @@ export function CarriageUnder(u: MiniUnder) {
           >
             Transcript
           </button>
-          <button type="button" className={classes.tab} aria-pressed={film} onClick={u.onXray}>
+          <button
+            type="button"
+            className={classes.tab}
+            aria-pressed={film}
+            onClick={u.onXray}
+          >
             Reveal
           </button>
         </div>

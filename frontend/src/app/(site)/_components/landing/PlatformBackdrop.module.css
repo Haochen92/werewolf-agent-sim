@@ -40,13 +40,29 @@
   -webkit-mask-image:
     radial-gradient(ellipse 560px 280px at 50% 70px, #000, transparent 72%),
     radial-gradient(ellipse 470px 330px at 50% 680px, #000, transparent 72%),
-    radial-gradient(ellipse 260px 520px at var(--lx) calc(var(--ly) + 110px), #000, transparent 72%),
-    radial-gradient(ellipse 260px 520px at var(--rx) calc(var(--ly) + 110px), #000, transparent 72%);
+    radial-gradient(
+      ellipse 260px 520px at var(--lx) calc(var(--ly) + 110px),
+      #000,
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 260px 520px at var(--rx) calc(var(--ly) + 110px),
+      #000,
+      transparent 72%
+    );
   mask-image:
     radial-gradient(ellipse 560px 280px at 50% 70px, #000, transparent 72%),
     radial-gradient(ellipse 470px 330px at 50% 680px, #000, transparent 72%),
-    radial-gradient(ellipse 260px 520px at var(--lx) calc(var(--ly) + 110px), #000, transparent 72%),
-    radial-gradient(ellipse 260px 520px at var(--rx) calc(var(--ly) + 110px), #000, transparent 72%);
+    radial-gradient(
+      ellipse 260px 520px at var(--lx) calc(var(--ly) + 110px),
+      #000,
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 260px 520px at var(--rx) calc(var(--ly) + 110px),
+      #000,
+      transparent 72%
+    );
 }
 
 /* the light itself: under the sign, each lamp's glass and its fall down the wall, and the dark
@@ -55,11 +71,31 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 480px 190px at 50% 110px, rgba(255, 206, 130, 0.1), transparent 70%),
-    radial-gradient(ellipse 120px 120px at var(--lx) var(--ly), rgba(255, 214, 140, 0.35), transparent 70%),
-    radial-gradient(ellipse 120px 120px at var(--rx) var(--ly), rgba(255, 214, 140, 0.35), transparent 70%),
-    radial-gradient(ellipse 210px 440px at var(--lx) calc(var(--ly) + 150px), rgba(255, 190, 100, 0.17), transparent 72%),
-    radial-gradient(ellipse 210px 440px at var(--rx) calc(var(--ly) + 150px), rgba(255, 190, 100, 0.17), transparent 72%),
+    radial-gradient(
+      ellipse 480px 190px at 50% 110px,
+      rgba(255, 206, 130, 0.1),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 120px 120px at var(--lx) var(--ly),
+      rgba(255, 214, 140, 0.35),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 120px 120px at var(--rx) var(--ly),
+      rgba(255, 214, 140, 0.35),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 210px 440px at var(--lx) calc(var(--ly) + 150px),
+      rgba(255, 190, 100, 0.17),
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 210px 440px at var(--rx) calc(var(--ly) + 150px),
+      rgba(255, 190, 100, 0.17),
+      transparent 72%
+    ),
     radial-gradient(ellipse 130% 90% at 50% 40%, transparent 50%, rgba(0, 0, 0, 0.8) 100%);
 }
 

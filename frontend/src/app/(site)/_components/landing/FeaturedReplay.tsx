@@ -27,14 +27,7 @@
  * scrolled (`useNear`). Once up it stays up; scrolled away it pauses, and so does a hidden page
  * (the theatre's own clock).
  */
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type RefObject,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -264,7 +257,9 @@ export function FeaturedReplay() {
                     />
                   ) : (
                     <p className={classes.wait}>
-                      {failed ? 'The archive is resting; the replays are a click away.' : ' '}
+                      {failed
+                        ? 'The archive is resting; the replays are a click away.'
+                        : ' '}
                     </p>
                   )}
                 </div>
@@ -296,7 +291,15 @@ export function FeaturedReplay() {
               <rect x="440" y="30" width="16" height="10" />
               <rect x="824" y="30" width="16" height="10" />
             </g>
-            <rect x="540" y="4" width="200" height="26" rx="2" fill="#1d160f" stroke="#3a2c1e" />
+            <rect
+              x="540"
+              y="4"
+              width="200"
+              height="26"
+              rx="2"
+              fill="#1d160f"
+              stroke="#3a2c1e"
+            />
           </svg>
           <span className={`${classes.buf} ${classes.bufL}`} />
           <span className={`${classes.buf} ${classes.bufR}`} />
@@ -314,7 +317,11 @@ export function FeaturedReplay() {
       {wide ? null : (
         <div
           ref={setUnderEl}
-          className={failed ? `${stageFonts} ${classes.mui}` : `${stageFonts} ${classes.mui} ${classes.underHold}`}
+          className={
+            failed
+              ? `${stageFonts} ${classes.mui}`
+              : `${stageFonts} ${classes.mui} ${classes.underHold}`
+          }
         />
       )}
       <div className={classes.below}>
