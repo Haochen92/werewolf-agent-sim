@@ -12,11 +12,8 @@
  * second copy of the hero.
  */
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
 import { HangTag } from '@/components/site';
-import { listRooms } from '@/lib/api';
-import { queryKeys } from '@/lib/queryKeys';
-import { rowFace } from '../../rooms/_components/boarding';
+import { useBoarding } from '@/hooks/useBoarding';
 import classes from './Landing.module.css';
 
 function boardingLine(n: number): string {
@@ -25,13 +22,7 @@ function boardingLine(n: number): string {
 }
 
 export function SeatTags({ stubs = false }: { stubs?: boolean }) {
-  const rooms = useQuery({
-    queryKey: queryKeys.rooms.list(),
-    queryFn: listRooms,
-    staleTime: 30_000,
-    retry: false,
-  });
-  const boarding = rooms.data?.filter((r) => rowFace(r).joinable).length;
+  const boarding = useBoarding();
 
   if (stubs)
     return (

@@ -1,0 +1,102 @@
+/* The signage's materials (redesign handoff 2026-10-14, "Material rules"), one copy for every
+   board on the site: compose these, never restate them.
+
+   - `board`: dark wood in a brass frame, for anything you operate (the nav, the roof board, the
+     replay's controls). Frame, outside in: a top highlight, 2px of brass, a 3px dark gap, a faint
+     brass line; outside it a black outline and a dark halo so the edge parts from the wall.
+   - `rivets`: brass dots in the board's four corners (add to `board`).
+   - `well`: a recessed button on a board. `aria-current` or `aria-selected` / `aria-pressed`
+     true turns it into the cream plate: the current or primary choice.
+   - `plate`: the cream plate itself, for a primary action (a button that is always the choice).
+   - `flap`: one split-flap tile (amber digit, hairline across the middle). */
+
+.board {
+  border-radius: 10px;
+  background: linear-gradient(180deg, var(--board-top), var(--board-bot));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 228, 180, 0.22),
+    inset 0 0 0 2px var(--brass-line),
+    inset 0 0 0 5px #1d140b,
+    inset 0 0 0 6px rgba(224, 166, 58, 0.38),
+    0 0 0 1px rgba(0, 0, 0, 0.85),
+    0 0 0 4px rgba(12, 10, 7, 0.6),
+    0 24px 40px rgba(0, 0, 0, 0.75);
+}
+
+.rivets {
+  background:
+    radial-gradient(circle at 12px 12px, var(--brass-hi) 0 2px, rgba(0, 0, 0, 0.5) 2.6px, transparent 3.2px),
+    radial-gradient(circle at calc(100% - 12px) 12px, var(--brass-hi) 0 2px, rgba(0, 0, 0, 0.5) 2.6px, transparent 3.2px),
+    radial-gradient(circle at 12px calc(100% - 12px), var(--brass-hi) 0 2px, rgba(0, 0, 0, 0.5) 2.6px, transparent 3.2px),
+    radial-gradient(circle at calc(100% - 12px) calc(100% - 12px), var(--brass-hi) 0 2px, rgba(0, 0, 0, 0.5) 2.6px, transparent 3.2px),
+    linear-gradient(180deg, var(--board-top), var(--board-bot));
+}
+
+.well {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 7px;
+  color: var(--well-text);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  background: linear-gradient(180deg, #1a120a, #120c07);
+  box-shadow:
+    inset 0 0 0 1px rgba(224, 166, 58, 0.35),
+    inset 0 2px 6px rgba(0, 0, 0, 0.6),
+    0 1px 0 rgba(255, 228, 180, 0.08);
+  transition:
+    color 0.2s,
+    box-shadow 0.2s;
+}
+.well:hover {
+  color: var(--sign-text);
+  box-shadow:
+    inset 0 0 0 1px rgba(224, 166, 58, 0.6),
+    inset 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+.well[aria-current],
+.well[aria-selected='true'],
+.well[aria-pressed='true'],
+.plate {
+  color: var(--plate-ink);
+  font-weight: 600;
+  background: linear-gradient(180deg, var(--plate-top), var(--plate-bot));
+  box-shadow:
+    inset 0 0 0 1px var(--plate-edge),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.12);
+}
+.well:focus-visible,
+.plate:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+}
+
+.flap {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 26px;
+  padding: 0 4px;
+  border-radius: 3px;
+  letter-spacing: 0;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--amber);
+  background: linear-gradient(180deg, #1d1610 0 49%, #000 49% 51%, #16110b 51%);
+  box-shadow: inset 0 0 0 1px rgba(224, 166, 58, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .well {
+    transition: none;
+  }
+}

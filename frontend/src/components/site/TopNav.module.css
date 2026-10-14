@@ -1,37 +1,69 @@
-/* The top bar (the landing mockup's `nav`), over a brass hairline: the footer's one rule,
-   mirrored at the top of the column. */
-.nav {
+/* The signboard (handoff 2026-10-14 §1) and its pinned strip. The board's material is
+   Board.module.css; this file is the board's layout, its rods, the brand and the doors. */
+
+/* two brass rods, 15% in from each side, hanging the board from above the page */
+.hang {
+  position: relative;
+  z-index: 3;
+  padding-top: 34px;
+}
+.hang::before,
+.hang::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 3px;
+  height: 40px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #3a2a14, #b48a44, #3a2a14);
+}
+.hang::before {
+  left: 15%;
+}
+.hang::after {
+  right: 15%;
+}
+
+.board {
+  composes: board rivets from './Board.module.css';
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 18px 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--brass) 26%, transparent);
+  gap: 24px;
+  min-height: 76px;
+  padding: 12px 14px 12px 22px;
 }
 
-/* the name in the paper serif, in the mark's brass: an engraved plate, not a heading */
+/* ---------- the brand ---------- */
 .brand {
   display: flex;
   align-items: center;
-  gap: 11px;
-  color: color-mix(in srgb, var(--brass) 72%, var(--bone));
-  font-family: var(--font-serif);
-  font-weight: 400;
-  font-size: 23px;
-  letter-spacing: 0.01em;
+  gap: 14px;
+  min-width: 0;
+  color: var(--sign-text);
   text-decoration: none;
-  white-space: nowrap;
 }
-.brand:hover {
-  color: var(--bone);
+.wordmark {
+  font-family: var(--font-garamond);
+  font-weight: 500;
+  font-size: 26px;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.8),
+    0 -1px 0 rgba(255, 230, 180, 0.12);
+}
+.brand:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 4px;
+  border-radius: 6px;
 }
 
 /* the mark, with its lamp turned up laid over it and shown while the brand is pointed at */
 .mark {
   display: grid;
   flex: none;
-  width: 28px;
-  height: 28px;
 }
 .mark > img {
   grid-area: 1 / 1;
@@ -44,77 +76,123 @@
 .brand:focus-visible .lamp {
   opacity: 1;
 }
+
+/* ---------- the doors: recessed wells; the current page is the cream plate ---------- */
+.doors {
+  display: flex;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.door {
+  composes: well from './Board.module.css';
+  height: 46px;
+  padding: 0 18px;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+}
+.flap {
+  composes: flap from './Board.module.css';
+}
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- the pinned strip ---------- */
+.strip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  padding: 0 16px;
+  /* off the top by its own height and its shadow's reach */
+  transform: translateY(calc(-100% - 48px));
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.strip[data-on] {
+  transform: none;
+}
+.stripRow {
+  composes: board rivets from './Board.module.css';
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: var(--site-max);
+  margin: 8px auto 0;
+  padding: 8px 10px 8px 18px;
+}
+/* the name stays while it fits whole: a box one mark high, the wordmark wrapping onto a hidden
+   second line the moment the doors need its room */
+.stripRow .brand {
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  min-width: 28px;
+  height: 28px;
+  overflow: hidden;
+  row-gap: 0;
+}
+.stripRow .wordmark {
+  font-size: 21px;
+  line-height: 28px;
+}
+.stripRow .doors {
+  flex: none;
+}
+.stripRow .door {
+  height: 38px;
+  padding: 0 14px;
+  font-size: 12px;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .strip,
   .mark > .lamp {
     transition: none;
   }
 }
 
-/* the doors as station signage: small caps, spaced */
-.links {
-  display: flex;
-  align-items: center;
-  gap: 28px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-size: 12.5px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.link {
-  color: var(--muted);
-  text-decoration: none;
-  white-space: nowrap;
-  transition: color 0.16s ease;
-}
-
-.link:hover {
-  color: var(--text);
-}
-
-.link[aria-current='page'] {
-  color: var(--text);
-  border-bottom: 1px solid color-mix(in srgb, var(--town) 60%, transparent);
-  padding-bottom: 4px;
-}
-
-.link:focus-visible,
-.brand:focus-visible {
-  outline: 2px solid var(--town);
-  outline-offset: 3px;
-}
-
-@media (max-width: 480px) {
-  .nav {
-    padding: 14px 0;
-    gap: 10px;
-  }
-  .brand {
-    font-size: 17px;
-    gap: 7px;
-  }
-  .links {
-    gap: 11px;
-    font-size: 11px;
-    letter-spacing: 0.06em;
-  }
-}
-
-/* the narrowest phones: a smaller name, and the doors drop to a row of their own if they must */
-@media (max-width: 374px) {
-  .nav {
+/* ---------- a phone: the brand on the first row, the doors share the second ---------- */
+@media (max-width: 860px) {
+  .board {
     flex-wrap: wrap;
-    row-gap: 8px;
+    gap: 12px;
+    padding: 14px;
   }
-  .brand {
-    font-size: 15.5px;
+  .board .doors {
+    width: 100%;
+  }
+  .board .doors li {
+    flex: 1;
+  }
+  .board .door {
+    width: 100%;
+    padding: 0 10px;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+  }
+  .stripRow .wordmark {
+    font-size: 18px;
+  }
+  .stripRow .door {
+    padding: 0 9px;
+    letter-spacing: 0.08em;
+  }
+}
+@media (max-width: 380px) {
+  .wordmark {
+    font-size: 22px;
+  }
+  .board .door {
     gap: 6px;
-  }
-  .links {
-    gap: 9px;
-    font-size: 10.5px;
+    letter-spacing: 0.06em;
   }
 }

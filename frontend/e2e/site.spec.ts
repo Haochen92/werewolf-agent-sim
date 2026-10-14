@@ -16,8 +16,9 @@ for (const path of ['/', '/replays', '/rooms', '/play', '/rooms/new']) {
 
     const nav = page.getByRole('navigation', { name: 'Site' });
     await expect(nav.getByRole('link', { name: 'The Ninth Express' })).toBeVisible();
-    for (const door of ['Play', 'Rooms', 'Replays']) {
-      await expect(nav.getByRole('link', { name: door, exact: true })).toBeVisible();
+    // the Rooms door also says how many tables are boarding, once the server has answered
+    for (const door of [/^Play$/, /^Rooms( \d+ boarding)?$/, /^Replays$/]) {
+      await expect(nav.getByRole('link', { name: door })).toBeVisible();
     }
 
     const footer = page.getByRole('contentinfo');
