@@ -1,22 +1,17 @@
 """Day-discussion prompt templates, built from the role cards (Agents/prompts/roles/).
 
-Every role's template is the same scaffold — the rules block, the role's identity and discussion
-framing, the discussion tone/response-format, and a shared transcript block (previous-day
-summaries + today's discussion) — around the card's framing and context. The discussion-only
-tone/silence/response-format blocks live here (not in common) since only the discuss phase uses
-them.
+Every role's template is the same scaffold in the shared-prefix layout (layout.py): the rules as the
+system message, the public record, then the role's identity and discussion framing, the discussion
+tone/response-format, and the card's context. The discussion-only tone/silence/response-format blocks
+live here (not in common) since only the discuss phase uses them.
 """
 
 from importlib import import_module
 
 from langchain_core.prompts import ChatPromptTemplate
 
-from Agents.prompts.common import (
-    READS_COMMIT_INSTRUCTION,
-    REASONING_DISCIPLINE,
-    build_system_prompt,
-)
-from Agents.prompts.layout import BOARD, PUBLIC_RECORD, SHARED_SYSTEM, shared_prefix
+from Agents.prompts.common import READS_COMMIT_INSTRUCTION, build_system_prompt
+from Agents.prompts.layout import BOARD, PUBLIC_RECORD, SHARED_SYSTEM
 from Agents.prompts.memory import DAY_DISCUSSION_MEMORY_CONTEXT
 
 
@@ -134,22 +129,6 @@ _DISCUSSION_STAGE_RULES = """
 {discussion_stage_rules}
 """
 
-_DISCUSS_TRANSCRIPT = """
-== Dead so far (public) ==
-{dead_roster}
-
-== Roles still in play (fixed cast minus revealed deaths) ==
-{alive_roles}
-
-== Previous days ==
-{day_summaries}
-
-== Today's discussion ==
-{day_channel}
-=========================
-"""
-
-
 # --- The ten-seat discussion ---
 # The rules block arrives as the {preamble} input, composed per game from the dealt lineup
 # (compose.preamble).
@@ -189,25 +168,14 @@ def day_discuss_template(role: str) -> ChatPromptTemplate:
     """A dealt role's day discussion turn, from its card."""
     card = import_module(f"Agents.prompts.roles.{role}").CARD
     words = card.day_discuss
-    if shared_prefix():
-        # The public record first (layout.py); the role card, tone and format move out of the system
-        # message to after it, with everything else that differs by seat or call type.
-        human = (
-            PUBLIC_RECORD + BOARD
-            + build_system_prompt(card.playstyle, words.framing, TONE_INSTRUCTION, DAY_DISCUSS_RESPONSE_FORMAT)
-            + "\n" + "{tell_book}" + READS_COMMIT_INSTRUCTION
-            + _DISCUSS_HEADER + words.context + _DISCUSSION_STAGE_RULES
-            + words.trailer + _FIRING_BRIEF + DAY_DISCUSSION_MEMORY_CONTEXT
-            + DISCUSSION_SILENCE_RULE + ENGAGE_WITH_DISCUSSION_RULE
-        )
-        return ChatPromptTemplate.from_messages([("system", SHARED_SYSTEM), ("human", human)])
-    system = build_system_prompt(
-        "{preamble}", REASONING_DISCIPLINE, card.playstyle, words.framing, TONE_INSTRUCTION, DAY_DISCUSS_RESPONSE_FORMAT,
-    )
+    # The public record first (layout.py); the role card, tone and format come after it, with
+    # everything else that differs by seat or call type.
     human = (
-        "{tell_book}" + READS_COMMIT_INSTRUCTION
-        + _DISCUSS_HEADER + words.context + _DISCUSS_TRANSCRIPT + _DISCUSSION_STAGE_RULES
+        PUBLIC_RECORD + BOARD
+        + build_system_prompt(card.playstyle, words.framing, TONE_INSTRUCTION, DAY_DISCUSS_RESPONSE_FORMAT)
+        + "\n" + "{tell_book}" + READS_COMMIT_INSTRUCTION
+        + _DISCUSS_HEADER + words.context + _DISCUSSION_STAGE_RULES
         + words.trailer + _FIRING_BRIEF + DAY_DISCUSSION_MEMORY_CONTEXT
         + DISCUSSION_SILENCE_RULE + ENGAGE_WITH_DISCUSSION_RULE
     )
-    return ChatPromptTemplate.from_messages([("system", system), ("human", human)])
+    return ChatPromptTemplate.from_messages([("system", SHARED_SYSTEM), ("human", human)])

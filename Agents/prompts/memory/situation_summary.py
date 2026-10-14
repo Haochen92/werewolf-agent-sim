@@ -4,6 +4,8 @@ the legacy v5 fallbacks for any (role, phase) without a v6 cell."""
 
 from langchain_core.prompts import ChatPromptTemplate
 
+from Agents.prompts.layout import PUBLIC_RECORD, SHARED_SYSTEM
+
 
 SITUATION_ROLE_LENS = {
     "wolf": "Also note: which other player is most dangerous to leave alive — whether a strong villager or the serial killer as a rival faction competing for the win — and whether the pressure on your team could be redirected.",
@@ -228,11 +230,9 @@ Today's public discussion:
 # + a v6 dimensional suffix mirroring the extraction dims. The per-cell situation schema is bound by
 # the caller (with_structured_output), so the model fills only the fields its cell has. Describes board
 # STATE only (Rule 2). Single prompt for all roles/phases; the schema does the tailoring.
-# Laid out for the prompt cache (owner 2026-10-12: cache as much input as possible). The rules are the
-# system message, identical for every lookup of a game whatever the seat or phase. The instructions
-# for the cell come next, the same for every lookup of that role and phase, and end on a rule line,
-# where a Claude request is marked (llm_factory/claude.py). The game state, which changes on every
-# call, comes last. OpenAI and Gemini cache a repeated prefix by themselves, so the order serves them too.
+# Laid out for the prompt cache in the shared-prefix layout (Agents/prompts/layout.py): the seats' system
+# message and public record first, so a lookup shares its prefix with every seat turn of the game; the
+# rest of the game state, the private part and these instructions after the boundary.
 V6_SITUATION_SUMMARY_INSTRUCTIONS = """{epistemic_status_rule}
 
 Describe 1-2 distinct situations you are currently facing using the structured fields. Each is used as
@@ -255,52 +255,7 @@ how to fill them well):
 """
 
 
-V6_SITUATION_SUMMARY = ChatPromptTemplate.from_messages(
-    [
-        (
-            "system",
-            "You are an AI agent playing Werewolf. The game's rules, exactly as every player is given "
-            "them:\n\n{preamble}",
-        ),
-        (
-            "human",
-            V6_SITUATION_SUMMARY_INSTRUCTIONS
-            + """
-=========================
-The game as it stands.
-
-Current day: {current_day}
-
-Surviving players: {surviving_players}
-
-Dead so far (public):
-{dead_roster}
-
-Previous days summary:
-{day_summaries}
-
-Today's public discussion:
-{day_channel}
-
-Your private information (only what your role knows):
-{private_state}
-Night record: {night_actions}
-Wolf channel: {wolf_channel}
-
-Your current strategy note:
-{previous_strategy}
-
-{known_board_facts}
-""",
-        ),
-    ]
-)
-
-
-# The same lookup in the shared-prefix layout (Agents/prompts/layout.py): the seats' system message
-# and public record first, so a lookup shares its prefix with every seat turn of the game; the rest of
-# the game state, the private part and the cell's instructions after the boundary.
-_V6_SITUATION_SUMMARY_SHARED_STATE = """
+_V6_SITUATION_STATE = """
 The game as it stands.
 
 Current day: {current_day}
@@ -322,14 +277,7 @@ Your current strategy note:
 
 """
 
-
-def situation_summary_template() -> ChatPromptTemplate:
-    """The live lookup's template in the layout the environment selects (layout.shared_prefix)."""
-    from Agents.prompts.layout import PUBLIC_RECORD, SHARED_SYSTEM, shared_prefix
-
-    if not shared_prefix():
-        return V6_SITUATION_SUMMARY
-    return ChatPromptTemplate.from_messages([
-        ("system", SHARED_SYSTEM),
-        ("human", PUBLIC_RECORD + _V6_SITUATION_SUMMARY_SHARED_STATE + V6_SITUATION_SUMMARY_INSTRUCTIONS),
-    ])
+V6_SITUATION_SUMMARY = ChatPromptTemplate.from_messages([
+    ("system", SHARED_SYSTEM),
+    ("human", PUBLIC_RECORD + _V6_SITUATION_STATE + V6_SITUATION_SUMMARY_INSTRUCTIONS),
+])

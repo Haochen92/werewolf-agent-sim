@@ -19,7 +19,6 @@ from typing import Any
 from pydantic import BaseModel
 
 from Agents.prompts.compose import preamble
-from Agents.prompts.layout import shared_prefix
 from Agents.schemas.game_events import DayRound
 from Agents.schemas.roles import ROLE_SPECS, TOWN
 from Agents.prompts.cell_prompt import cell_driver_horizon, dimension_menu
@@ -264,14 +263,9 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
             )
             if p != payload.get("player_id")
         ),
-        # The speaker also sees its own held-back drafts, marked as unseen by anyone else; in the
-        # shared-prefix layout the transcript is published lines only, identical for every seat
-        # (a held-back turn's note is discarded instead: Agents/nodes/day/actors.py).
-        "day_channel": format_day_channel_for_day(
-            payload.get("day_channel", []),
-            payload.get("current_day", 1),
-            viewer=None if shared_prefix() else (payload.get("player_id") or None),
-        ),
+        # Published lines only, identical for every seat (the shared prefix); a held-back turn's note
+        # is discarded instead (Agents/nodes/day/actors.py).
+        "day_channel": format_day_channel_for_day(payload.get("day_channel", []), payload.get("current_day", 1)),
         "day_summaries": format_day_summaries(
             payload.get("day_summaries", []),
             before_day=payload.get("current_day", 1),

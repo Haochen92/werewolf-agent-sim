@@ -1,5 +1,6 @@
 """The ten-seat day templates, built from the role cards: every dealt role's discussion and vote turns
-render, ask for the reads first, carry their schema's fields, and name no undealt role."""
+render in the shared-prefix layout (the public record first), ask for the reads, carry their schema's
+fields, and name no undealt role."""
 from __future__ import annotations
 
 from importlib import import_module
@@ -32,9 +33,10 @@ def _turns(cast):
 def test_every_turn_renders_with_the_reads_first(cast):
     for role, template, schema in _turns(cast):
         system, human = (m.content for m in _messages(template, cast))
-        assert human.startswith("<tell_book>\nBefore your decision, record your current read"), role
+        assert human.startswith("== Previous days ==") and "Core Strategy" not in system, role
+        assert "<tell_book>\nBefore your decision, record your current read" in human, role
         for field in schema.model_fields:
-            assert f'"{field}"' in system, (role, field)
+            assert f'"{field}"' in human, (role, field)
 
 
 @pytest.mark.parametrize("cast", ALL_LINEUPS)
@@ -50,21 +52,21 @@ def test_the_examples_name_no_seat_and_no_role():
     # A seat or a role named in a JSON example gets copied (discussion_evidence.md section 7.5).
     for role in POOL:
         for template in (day_discuss_template(role), day_vote_template(role)):
-            system = template.format_messages(**{n: f"<{n}>" for n in template.input_variables})[0].content
-            contract = system[system.index("You must respond with a valid JSON"):]
+            human = template.format_messages(**{n: f"<{n}>" for n in template.input_variables})[1].content
+            contract = human[human.index("You must respond with a valid JSON"):]
             assert "player_2" not in contract and '"suspected_role": "wolf"' not in contract, role
 
 
 def test_town_roles_take_the_shared_vote_rules_and_the_others_their_own():
     for role in POOL:
         card = import_module(f"Agents.prompts.roles.{role}").CARD
-        system = day_vote_template(role).format_messages(
-            **{n: f"<{n}>" for n in day_vote_template(role).input_variables})[0].content
-        shared = "a threat to the town — a wolf or the lone killer" in system
+        human = day_vote_template(role).format_messages(
+            **{n: f"<{n}>" for n in day_vote_template(role).input_variables})[1].content
+        shared = "a threat to the town — a wolf or the lone killer" in human
         assert shared == (card.side == "town"), role
 
 
 def test_the_wolves_keep_their_channel_and_cover_reminder():
     system, human = (m.content for m in _messages(day_discuss_template("illusionist"), ALL_LINEUPS[0]))
     assert "Your private wolf channel" in human and "try to speak like a town player" in human
-    assert "## ILLUSIONIST" in system
+    assert "## ILLUSIONIST" in human and "## ILLUSIONIST" not in system

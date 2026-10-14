@@ -142,17 +142,15 @@ def test_a_sweep_turn_payload_passes_the_standing_leak_checks():
 
 # --- held lines -----------------------------------------------------------------------------
 
-def test_a_held_line_reaches_its_author_and_nobody_else():
+def test_a_held_line_reaches_nobody_not_even_its_author():
+    # The transcript is the same for every seat (the shared-prefix layout); the author's note from the
+    # held turn is dropped instead (Agents/nodes/day/actors.py).
     log = prompt_log_for(round_payloads("closing", ["player_3", "player_6"]))
     log.extend(prompt_log_for(round_payloads("opening", SEATS)))
 
-    author_prompts = []
+    assert any(entry["player_id"] == "player_3" for entry in log)
     for entry in log:
-        if entry["player_id"] == "player_3":
-            author_prompts.append(entry)
-    assert author_prompts
-    for entry in author_prompts:
-        assert HELD_TEXT in entry["prompt_input"]["day_channel"]
+        assert HELD_TEXT not in entry["prompt_input"]["day_channel"]
 
     assert check_held_lines_reach_only_their_author(log, [("player_3", HELD_TEXT)]) == []
 

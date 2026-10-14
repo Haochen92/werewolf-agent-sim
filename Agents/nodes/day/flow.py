@@ -379,8 +379,8 @@ def collect_round(state: DayGraphState, config: RunnableConfig):
     for offset, entry in enumerate(ordered):
         numbered.append(entry.model_copy(update={"seq": first_seq + offset}))
     update: dict = {"day_channel": numbered}
-    # Shared-prefix layout: a round turn's note was held back with its line (actors.round_turn); it is
-    # kept only for a line the filter let through.
+    # A round turn's note waits on its candidate (actors.round_turn); it is kept only for a line the
+    # filter let through.
     kept = {e.player: notes[e.player] for e in ordered if not e.gated and notes.get(e.player)}
     if kept:
         update["agent_strategies"] = kept

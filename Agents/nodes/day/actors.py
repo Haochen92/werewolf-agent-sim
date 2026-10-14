@@ -8,7 +8,6 @@ from Agents.turn import run_memory_informed_action
 from Agents.turn.pipeline import preview_agent_action
 from Agents.prompts.day_discuss import day_discuss_template
 from Agents.prompts.day_vote import day_vote_template
-from Agents.prompts.layout import shared_prefix
 from typing import TypedDict
 
 from Agents.schemas import DayChannel, DayVote, RoundCandidate, day_discuss_output, day_vote_output
@@ -81,10 +80,10 @@ def discuss(
     if turn.entry is not None:
         # DayGraphState.day_channel is an append-reduced list; this invocation contributes one entry.
         updates["day_channel"] = [turn.entry]
-    # In the shared-prefix layout the transcript never shows a held line to its author, so the note
-    # written with it is dropped too: the turn becomes a pass for the seat (the 2026-10-03 audit's
-    # finding 2: a line nobody heard must not survive as a belief that it was said).
-    held = shared_prefix() and turn.entry is not None and turn.entry.gated
+    # The transcript never shows a held line, not even to its author, so the note written with it is
+    # dropped too: the turn becomes a pass for the seat (the 2026-10-03 audit's finding 2: a line
+    # nobody heard must not survive as a belief that it was said).
+    held = turn.entry is not None and turn.entry.gated
     if turn.effects.strategy and not held:
         updates["agent_strategies"] = {
             payload["player_id"]: turn.effects.strategy,
@@ -116,9 +115,9 @@ def round_turn(
         raise TypeError(f"round turn resolved to unexpected turn: {turn.kind}")
 
     updates: RoundDelta = {}
-    # In the shared-prefix layout the note waits on the candidate: the round's filter may still hold
-    # the line, and collect_round writes the note only for a line that was kept.
-    deferred = shared_prefix() and turn.entry is not None
+    # The note waits on the candidate: the round's filter may still hold the line, and collect_round
+    # writes the note only for a line that was kept.
+    deferred = turn.entry is not None
     if turn.entry is not None:
         updates["round_candidates"] = [
             RoundCandidate(day=payload["current_day"], day_round=payload["day_round"],

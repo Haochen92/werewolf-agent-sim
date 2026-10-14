@@ -27,7 +27,7 @@ from Agents.prompts import (
     VILLAGER_SITUATION_SUMMARY,
     WOLF_SITUATION_SUMMARY,
 )
-from Agents.prompts.memory.situation_summary import situation_summary_template
+from Agents.prompts.memory import V6_SITUATION_SUMMARY
 from Agents.schemas import SituationSummary
 from Agents.schemas.memory import _SituationCell, cell_situation_schema_for
 from Agents.state import DayActorState
@@ -268,7 +268,7 @@ def _generate_situations_for_agent(
         cell_schema = _query_cell(cell_schema)
     extra: dict = {}
     if cell_schema is not None:
-        chain = situation_summary_template() | get_llm().with_structured_output(
+        chain = V6_SITUATION_SUMMARY | get_llm().with_structured_output(
             _summary_container(cell_schema)
         )
         compose = lambda r: (  # noqa: E731

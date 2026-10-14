@@ -45,8 +45,8 @@ OPENROUTER_REASONING_SWITCH_ONLY = ("z-ai/",)
 PREFIXES = ("nim/", "deepseek/", "openai/", "openrouter/", "xai/")
 
 # OpenAI models that take explicit cache breakpoints (GPT-5.6 on; prompt-caching guide, read
-# 2026-10-13). In the shared-prefix prompt layout they get prompt_cache_options mode "explicit" and a
-# breakpoint on the system message and on each line of the public record: a later turn, or another
+# 2026-10-13). They get prompt_cache_options mode "explicit" and a breakpoint on the system message and
+# on each line of the public record (Agents/prompts/layout.py): a later turn, or another
 # seat, then reads the record up to the earlier turn's last line (probe 2026-10-13: a seat's next
 # turn read 2,561 of 2,678 tokens, another seat 2,648 of 2,674), and the changing private part is
 # never written at the 1.25x write rate, as the implicit breakpoint writes it.
@@ -94,9 +94,7 @@ class _ToolCallStructuredChatOpenAI(ChatOpenAI):
 
     def _get_request_payload(self, input_: Any, *, stop: list[str] | None = None, **kwargs: Any) -> dict:
         payload = super()._get_request_payload(input_, stop=stop, **kwargs)
-        from Agents.prompts.layout import shared_prefix
-
-        if shared_prefix() and self.model_name.startswith(EXPLICIT_CACHE_MODELS):
+        if self.model_name.startswith(EXPLICIT_CACHE_MODELS):
             mark_explicit_breakpoints(payload)
         return payload
 

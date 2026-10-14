@@ -71,4 +71,4 @@ def test_memory_off_payloads_render_without_book(monkeypatch):
                                    "surviving_players": ["p1", "p2"]})
     assert pi["tell_book"] == ""
     human = day_vote_template("healer").format_messages(**pi)[-1].content
-    assert human.startswith("\nBefore your decision")   # the empty slot leaves the prompt unchanged
+    assert "\n\nBefore your decision" in human   # the empty slot leaves nothing before the reads line

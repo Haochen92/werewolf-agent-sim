@@ -159,16 +159,15 @@ def test_the_carriers_kill_turn_gets_the_census_and_the_packs_record():
     assert "Surviving non-wolf players" in text
 
 
-def test_a_held_back_draft_is_shown_to_its_author_and_nobody_else():
+def test_a_held_back_draft_reaches_no_transcript_not_even_its_authors():
+    # Since the shared-prefix layout the transcript is the same for every seat; the author's note from a
+    # held turn is dropped instead (tests/engine/test_shared_prefix_layout.py).
     channel = [
         DayChannel(day=2, seq=0, player="t0", message="I think w1 is lying."),
         DayChannel(day=2, seq=1, player="h", message="", passed=True, gated=True,
                    pass_reason=DiscussionPassReason.NOVELTY_GATED, gated_candidate="I revealed my role."),
     ]
-    assert "I revealed my role." not in format_day_channel(channel)
-    assert "I revealed my role." not in format_day_channel(channel, viewer="t0")
-    mine = format_day_channel(channel, viewer="h")
-    assert "held back" in mine and "no one else saw it" in mine and "I revealed my role." in mine
+    assert format_day_channel(channel) == "t0: I think w1 is lying."
 
 
 def test_previous_days_put_the_game_masters_record_above_claims_and_accusations():

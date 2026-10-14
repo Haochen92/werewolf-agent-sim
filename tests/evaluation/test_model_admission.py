@@ -56,10 +56,11 @@ def test_the_caching_probe_renders_a_next_turn_that_extends_the_first_and_anothe
     texts = {name: probes._text(*probes._render(c)[::2]) for name, c in variants.items()}
     assert variants["other_seat"]["speaker"] != case["speaker"]
     assert len(texts["next_turn"]) > len(texts["first"])
-    # The same seat's next prompt shares most of the first; another seat shares less of it.
+    # In the shared-prefix layout another seat shares the whole public record and the board; the same
+    # seat's next prompt shares it only up to the message added to the transcript.
     same = probes._shared_prefix(texts["first"], texts["next_turn"])
     other = probes._shared_prefix(texts["first"], texts["other_seat"])
-    assert same > other > 0
+    assert other > same > 0
     assert "I want to hear from everyone" in texts["next_turn"]
 
 

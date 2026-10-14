@@ -14,7 +14,6 @@ from Agents.rules.claim_ledger import format_claim_ledger, revealed_tag
 from Agents.schemas import RetrievedObservation, RetrievedStrategyPoint
 from Agents.schemas.game_events import (
     DayChannel,
-    DiscussionPassReason,
     DaySummary,
     DayVote,
     DeathRecord,
@@ -75,29 +74,16 @@ def format_alive_roles(cast_role_counts: dict[str, int], roster: list[DeathRecor
     return line
 
 
-def format_day_channel(messages: list[DayChannel], viewer: str | None = None) -> str:
-    """The public transcript. Passes are hidden. `viewer` also sees its own held-back drafts,
-    marked as never seen by anyone: without the mark, an agent whose message the novelty gate
-    withheld could go on believing (and noting) that it had said it (audit 2026-10-03, finding 2)."""
-    lines = []
-    for m in messages:
-        if not m.passed:
-            lines.append(f"{m.player}: {m.message}")
-        elif viewer and m.player == viewer and m.gated and m.gated_candidate:
-            if m.pass_reason == DiscussionPassReason.ROUND_ECHO:
-                reason = ("another player made the same point in the same round, so only theirs "
-                          "was kept and no one saw yours")
-            elif m.pass_reason == DiscussionPassReason.OPENING_FILTERED:
-                reason = ("an opening may hold only a role claim, your own night action or a "
-                          "challenge to a claim, so no one saw it; say it in the discussion")
-            else:
-                reason = "it repeated what had already been said, so no one else saw it"
-            lines.append(f"[{viewer}, held back: you tried to say this, but {reason}] {m.gated_candidate}")
+def format_day_channel(messages: list[DayChannel]) -> str:
+    """The public transcript: published lines only, the same for every reader. Passes are hidden,
+    held-back drafts included; a held-back turn's note is dropped instead (audit 2026-10-03, finding
+    2: a line nobody heard must not survive as a belief that it was said)."""
+    lines = [f"{m.player}: {m.message}" for m in messages if not m.passed]
     return "\n".join(lines) if lines else "No messages yet."
 
 
-def format_day_channel_for_day(messages: list[DayChannel], current_day: int, viewer: str | None = None) -> str:
-    return format_day_channel([m for m in messages if m.day == current_day], viewer)
+def format_day_channel_for_day(messages: list[DayChannel], current_day: int) -> str:
+    return format_day_channel([m for m in messages if m.day == current_day])
 
 
 def format_day_summaries(summaries: list[DaySummary], before_day: int | None = None,

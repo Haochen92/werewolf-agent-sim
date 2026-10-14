@@ -1,32 +1,25 @@
-"""The shared-prefix prompt layout (Agents/prompts/layout.py, WW_PROMPT_LAYOUT=shared_prefix): every
-seat turn and memory lookup opens with the same system message and public record, the record ends on
-the user message's only transcript rule (where Claude marks and OpenAI breaks), a held-back draft never
-reaches a prompt and its note is dropped, and OpenAI requests get explicit breakpoints. With the flag
-unset, today's templates are untouched (the exact-prompt golden pins them)."""
+"""The shared-prefix prompt layout (Agents/prompts/layout.py): every seat turn and memory lookup opens with
+the same system message and public record, the record ends on the user message's only transcript rule
+(where Claude marks and OpenAI breaks), a held-back draft never reaches a prompt and its note is dropped,
+and OpenAI gpt-6 requests get explicit breakpoints."""
 from __future__ import annotations
 
-import pytest
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from Agents.llm_factory.providers.common import TRANSCRIPT_RULE
-from Agents.prompts.layout import LAYOUT_ENV, PUBLIC_RECORD, SHARED_SYSTEM
+from Agents.prompts.layout import PUBLIC_RECORD, SHARED_SYSTEM
 from Agents.schemas import DayChannel
 from Agents.schemas.roles import ROLE_SPECS
 from tests.fixtures.day_discuss_prompt_golden import ROLES, _seat, speaker_payload
 
 
-@pytest.fixture
-def shared(monkeypatch):
-    monkeypatch.setenv(LAYOUT_ENV, "shared_prefix")
-
-
 def _templates():
     from Agents.prompts.day_discuss import day_discuss_template
     from Agents.prompts.day_vote import day_vote_template
-    from Agents.prompts.memory.situation_summary import situation_summary_template
+    from Agents.prompts.memory import V6_SITUATION_SUMMARY
     from Agents.prompts.night import carrier_template, night_template, wolf_chat_template
 
-    out = {"lookup": situation_summary_template()}
+    out = {"lookup": V6_SITUATION_SUMMARY}
     for role in ROLES:
         out[f"discuss:{role}"] = day_discuss_template(role)
         out[f"vote:{role}"] = day_vote_template(role)
@@ -50,7 +43,7 @@ def _prefix(messages: list[tuple[str, str]]) -> str:
     return system + "\n" + human[: rule.end()]
 
 
-def test_every_template_opens_with_the_shared_system_and_public_record(shared):
+def test_every_template_opens_with_the_shared_system_and_public_record():
     for name, template in _templates().items():
         system, human = (m.prompt.template for m in template.messages)
         assert system == SHARED_SYSTEM, name
@@ -58,7 +51,7 @@ def test_every_template_opens_with_the_shared_system_and_public_record(shared):
         assert len(TRANSCRIPT_RULE.findall(human)) == 1, name  # the only boundary in the message
 
 
-def test_the_rendered_prefix_is_the_same_for_every_seat_and_call_type(shared):
+def test_the_rendered_prefix_is_the_same_for_every_seat_and_call_type():
     # One game (the fixture's board for a healer speaker, where the trailseer and the sigilist are
     # dead), every living seat's payload, every call type's template: one prefix.
     from Agents.nodes.day.flow import build_speaker_send
@@ -78,7 +71,7 @@ def test_the_rendered_prefix_is_the_same_for_every_seat_and_call_type(shared):
     assert "player_4: player_2, why abstain?" in prefixes.pop()  # the real transcript, not a placeholder
 
 
-def test_a_held_back_draft_reaches_no_prompt_in_the_shared_layout(monkeypatch):
+def test_a_held_back_draft_reaches_no_prompt_not_even_its_authors():
     from Agents.prompts.day_discuss import day_discuss_template
     from Agents.prompts.prompt_inputs import build_agent_prompt_input
 
@@ -87,22 +80,11 @@ def test_a_held_back_draft_reaches_no_prompt_in_the_shared_layout(monkeypatch):
     payload["day_channel"] = [*payload["day_channel"], DayChannel(
         day=payload["current_day"], seq=99, player=_seat(role), message="", passed=True, gated=True,
         gated_candidate="my secret draft")]
-    today = _render(day_discuss_template(role), build_agent_prompt_input(payload))
-    assert "my secret draft" in today[1][1]  # today's layout shows it to its author
-    monkeypatch.setenv(LAYOUT_ENV, "shared_prefix")
-    shared_layout = _render(day_discuss_template(role), build_agent_prompt_input(payload))
-    assert "my secret draft" not in shared_layout[1][1]
+    rendered = _render(day_discuss_template(role), build_agent_prompt_input(payload))
+    assert "my secret draft" not in rendered[1][1]
 
 
-def test_without_the_flag_the_role_card_stays_in_the_system_message(monkeypatch):
-    monkeypatch.delenv(LAYOUT_ENV, raising=False)
-    from Agents.prompts.day_discuss import day_discuss_template
-
-    system = day_discuss_template(ROLES[0]).messages[0].prompt.template
-    assert system != SHARED_SYSTEM and "Core Strategy" in system
-
-
-def test_a_round_turns_note_is_kept_only_for_a_line_the_filter_let_through(shared, monkeypatch):
+def test_a_round_turns_note_is_kept_only_for_a_line_the_filter_let_through(monkeypatch):
     from Agents.nodes.day import flow
     from Agents.schemas import RoundCandidate
 
@@ -131,7 +113,7 @@ def _openai_payload(model: str) -> dict:
     return llm._get_request_payload([SystemMessage("the rules"), HumanMessage(text)])
 
 
-def test_openai_gets_explicit_breakpoints_on_the_rules_and_the_public_record(shared):
+def test_openai_gets_explicit_breakpoints_on_the_rules_and_the_public_record():
     payload = _openai_payload("gpt-6-luna")
     assert payload["extra_body"]["prompt_cache_options"] == {"mode": "explicit"}
     system, user = payload["messages"]
@@ -142,9 +124,6 @@ def test_openai_gets_explicit_breakpoints_on_the_rules_and_the_public_record(sha
     assert user["content"][-1]["text"].startswith("=====")
 
 
-def test_openai_breakpoints_only_for_models_that_take_them_and_only_in_the_shared_layout(monkeypatch):
-    monkeypatch.setenv(LAYOUT_ENV, "shared_prefix")
-    assert "extra_body" not in _openai_payload("deepseek-v4-pro")
-    monkeypatch.delenv(LAYOUT_ENV)
-    payload = _openai_payload("gpt-6-luna")
+def test_openai_breakpoints_only_for_models_that_take_them():
+    payload = _openai_payload("deepseek-v4-pro")
     assert "extra_body" not in payload and isinstance(payload["messages"][1]["content"], str)
