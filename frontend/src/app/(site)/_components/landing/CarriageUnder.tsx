@@ -1,17 +1,26 @@
 'use client';
 
 /**
- * The carriage's controls on an upright phone (landing mockup, "narrow"): there the stage is
- * a quarter of its size and its words cannot be read, so they leave it and sit under it at
- * reading size. A bar (play or pause, where we are, one pip per beat of the window), a switch
- * between the transcript and the X-ray, and one pane holding whichever is chosen.
+ * The carriage's controls on a phone (redesign handoff 2026-10-14 §4): there the stage is a
+ * quarter of its size and its words cannot be read, so they leave it for the platform under
+ * the carriage, at reading size. A board with the play plate, the step's caption and the
+ * window's steps as a stretch of line (a sleeper per step, brass rails behind you, a cream
+ * marker where you are; each sleeper seeks), a board with the Transcript and Reveal plates,
+ * and one pane holding whichever is chosen: the transcript on ruled paper, or the case file.
  *
  * Nothing here decides what a viewer may see. The transcript's lines are the drawer's own
  * (`drawerLines`), so the vote's result and the lynch's line wait exactly as long as they do
- * in the drawer; the X-ray pane is the stage's own film, drawn by a small stage of its own
- * that shows only the film's corner. The replay theatre holds the state and hands it here.
+ * in the drawer; the Reveal pane is the stage's own case file, drawn by a small stage of its
+ * own that shows only the file's corner. The replay theatre holds the state and hands it here.
  */
-import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import {
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import type { Character } from '@/assets/manifest';
 import { ChipSprite } from '@/stage/cast/ChipSprite';
 import type { MiniUnder } from '@/stage/containers/ReplayTheatre';
@@ -38,9 +47,12 @@ const PASS_REASON: Record<string, string> = {
 
 export function CarriageUnder(u: MiniUnder) {
   const film = u.pane === 'film';
+  const n = u.beats.length;
+  // the marker and the rails behind it sit at the middle of the current step's sleeper
+  const at = n ? `${((u.index + 0.5) / n) * 100}%` : '0%';
   return (
     <div className={classes.under}>
-      <div className={classes.bar}>
+      <div className={classes.ctrl}>
         <button
           type="button"
           className={classes.play}
@@ -52,30 +64,45 @@ export function CarriageUnder(u: MiniUnder) {
             <path d={u.playing ? 'M4 3h3v10H4zm5 0h3v10H9z' : 'M5 3l9 5-9 5z'} />
           </svg>
         </button>
-        {/* the beat's own name: the marquee already says which day and vote this is */}
-        <span className={classes.label} title={u.label}>
-          {u.beat.label}
-        </span>
-        <span className={classes.pips} role="group" aria-label="Beats">
-          {u.beats.map((b, i) => (
-            <button
-              key={i}
-              type="button"
-              aria-label={b.label}
-              aria-current={i === u.index ? 'step' : undefined}
-              className={i < u.index ? classes.done : undefined}
-              onClick={() => u.onSeek(i)}
-            />
-          ))}
-        </span>
+        <div className={classes.ctrlText}>
+          {/* the step's own name: the window already shows which day and vote this is */}
+          <span className={classes.cap} title={u.label}>
+            {u.beat.label}
+          </span>
+          <div
+            className={classes.track}
+            role="group"
+            aria-label="Beats"
+            style={{ '--at': at } as CSSProperties}
+          >
+            <span className={classes.done} aria-hidden="true" />
+            <span className={classes.pos} aria-hidden="true" />
+            {u.beats.map((b, i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={`Step ${i + 1} of ${n}: ${b.label}`}
+                aria-current={i === u.index ? 'step' : undefined}
+                onClick={() => u.onSeek(i)}
+              />
+            ))}
+          </div>
+        </div>
       </div>
-      <div className={classes.switch} role="group" aria-label="Under the stage">
-        <button type="button" aria-pressed={!film} onClick={u.onTranscript}>
-          Transcript
-        </button>
-        <button type="button" className={classes.xr} aria-pressed={film} onClick={u.onXray}>
-          X-ray
-        </button>
+      <div className={classes.tabs} role="group" aria-label="Under the stage">
+        <div className={classes.tabRail}>
+          <button
+            type="button"
+            className={classes.tab}
+            aria-pressed={!film}
+            onClick={u.onTranscript}
+          >
+            Transcript
+          </button>
+          <button type="button" className={classes.tab} aria-pressed={film} onClick={u.onXray}>
+            Reveal
+          </button>
+        </div>
       </div>
       {film ? <FilmPane {...u} /> : <Transcript {...u} />}
     </div>
@@ -171,7 +198,7 @@ function Transcript({ view, beat, xray, cast, index }: MiniUnder) {
     <div
       ref={scroller}
       className={classes.lines}
-      aria-label={xray ? 'Transcript, with the X-ray’s lines' : 'Transcript'}
+      aria-label={xray ? 'Transcript, with what Reveal shows' : 'Transcript'}
     >
       {shown.length ? (
         shown.map((l) => (
@@ -285,7 +312,7 @@ function Line({
       );
     case 'record':
       // the day's summary is the case file's Record now; the stage's drawer points to it
-      return row('public', `Day ${l.day}’s record is in the X-ray’s file`);
+      return row('public', `Day ${l.day}’s record is in the case file`);
     case 'over':
       return row('public', WINNER_TEXT[l.winner] ?? l.winner);
   }

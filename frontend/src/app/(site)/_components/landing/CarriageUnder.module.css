@@ -1,117 +1,178 @@
-/* The carriage's controls on an upright phone (landing mockup `#miniunder`): the bar, the
-   switch, and one pane at reading size, set into the carriage's walnut under the stage. */
+/* The carriage's controls on a phone (handoff 2026-10-14 §4), on the platform under the
+   carriage: what you operate is on boards (Board.module.css), what you read is on paper.
+   Height when up, for the hold in Carriage.module.css: 70 + 12 + 62 + 12 + 380 = 536. */
 
 .under {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 10px 0 4px;
+  display: grid;
+  gap: 12px;
 }
 
-/* the bar: play or pause, where we are, a pip per beat of the window */
-.bar {
+/* ---------- the playback board ---------- */
+.ctrl {
+  composes: board from '../../../../components/site/Board.module.css';
   display: flex;
   align-items: center;
-  gap: 10px;
-  height: 44px;
-  padding: 0 12px 0 5px;
-  border-radius: 999px;
-  background: rgba(14, 9, 6, 0.92);
-  border: 1px solid #3a2c20;
-  color: var(--bone);
-  font-size: 13px;
+  gap: 14px;
+  min-height: 70px;
+  padding: 12px 16px 12px 12px;
 }
 .play {
   flex: none;
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: 46px;
+  height: 46px;
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: var(--bone);
-  color: #24180c;
   cursor: pointer;
+  color: var(--plate-ink);
+  background: radial-gradient(circle at 40% 30%, #f6ecd2, var(--plate-bot) 70%);
+  box-shadow:
+    inset 0 0 0 1px var(--plate-edge),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.12),
+    0 0 0 3px #1d140b,
+    0 0 0 4px rgba(224, 166, 58, 0.4);
 }
 .play svg {
   width: 14px;
-  height: 14px;
+  height: 16px;
   fill: currentColor;
 }
-.label {
-  flex: 0 1 10em;
+.ctrlText {
+  flex: 1;
   min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+.cap {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  font-family: var(--font-garamond);
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 1.2;
+  color: var(--sign-text);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.7);
 }
-.pips {
-  flex: 1 1 auto;
+
+/* the window's steps as a stretch of line: two rails, a sleeper per step (each a button that
+   seeks), brass rails over the part already played, a cream marker at the current step.
+   `--at` is the current step's middle. The buttons are taller than the rail, to be pressed. */
+.track {
+  position: relative;
   display: flex;
-  gap: 3px;
-  min-width: 60px;
+  height: 24px;
 }
-.pips button {
+.track::before,
+.track::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(203, 185, 146, 0.25);
+}
+.track::before {
+  top: 8px;
+}
+.track::after {
+  bottom: 8px;
+}
+.done {
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  z-index: 1;
+  width: var(--at);
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    var(--brass-hi) 0 2px,
+    transparent 2px calc(100% - 2px),
+    var(--brass-hi) calc(100% - 2px)
+  );
+  opacity: 0.85;
+}
+.pos {
+  position: absolute;
+  top: 50%;
+  left: var(--at);
+  z-index: 2;
+  width: 22px;
+  height: 14px;
+  margin: -7px 0 0 -11px;
+  border-radius: 3px;
+  pointer-events: none;
+  background: linear-gradient(180deg, var(--plate-top), var(--plate-bot));
+  box-shadow:
+    inset 0 0 0 1px var(--plate-edge),
+    0 0 0 2px #1d140b,
+    0 2px 4px rgba(0, 0, 0, 0.5);
+}
+.track button {
+  position: relative;
   flex: 1;
   min-width: 0;
-  height: 16px;
-  padding: 5px 0;
+  height: 100%;
+  padding: 0;
   border: 0;
   background: none;
   cursor: pointer;
 }
-.pips button::before {
+.track button::before {
   content: '';
-  display: block;
-  height: 6px;
-  border-radius: 99px;
-  background: #3a2c20;
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  margin-left: -1px;
+  background: rgba(203, 185, 146, 0.28);
 }
-.pips button.done::before {
-  background: #8a7a66;
+
+/* ---------- the tabs: two plates on one recessed rail ---------- */
+.tabs {
+  composes: board from '../../../../components/site/Board.module.css';
+  padding: 6px;
 }
-.pips button[aria-current]::before {
-  background: var(--amber);
+.tabRail {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 4px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #140d07, #0e0905);
+  box-shadow:
+    inset 0 0 0 1px var(--brass-line),
+    inset 0 2px 6px rgba(0, 0, 0, 0.6);
 }
+.tab {
+  composes: well from '../../../../components/site/Board.module.css';
+  height: 42px;
+  border-radius: 6px;
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  background: transparent;
+  box-shadow: none;
+}
+
 .play:focus-visible,
-.pips button:focus-visible,
-.switch button:focus-visible {
+.track button:focus-visible {
   outline: 2px solid var(--amber);
   outline-offset: 2px;
 }
 
-/* the switch: the transcript, or the X-ray's film */
-.switch {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  height: 40px;
-  border: 1px solid #3a2c20;
-  border-radius: 10px;
-  overflow: hidden;
-}
-.switch button {
-  border: 0;
-  background: rgba(14, 9, 6, 0.92);
-  color: var(--bone2, #d9cba9);
-  font: 500 14px var(--font-sans);
-  cursor: pointer;
-}
-.switch button[aria-pressed='true'] {
-  background: var(--bone);
-  color: #24180c;
-}
-.switch button.xr[aria-pressed='true'] {
-  background: #7fdcf2;
-  color: #0b191f;
-}
-
-/* the film's pane: a small stage showing only the film's corner */
+/* ---------- the Reveal pane: a small stage showing only the case file's corner ---------- */
 .filmPane {
   position: relative;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: 4px;
   background: #0c0a07;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    0 14px 28px rgba(0, 0, 0, 0.55);
 }
 .filmStage {
   position: absolute;
@@ -119,90 +180,114 @@
   top: 0;
 }
 
-/* the transcript: the day on stage, the beat's own line lit */
+/* ---------- the transcript: the carriage's log, ruled paper, dark ink ---------- */
 .lines {
-  height: 300px;
+  position: relative;
+  height: 380px;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 4px 12px 12px;
-  border-radius: 8px;
-  background: #120d07;
-  box-shadow: inset 0 1px 0 rgba(255, 235, 200, 0.05);
-  font-size: 14.5px;
+  padding: 4px 16px 8px;
+  border-radius: 4px;
+  color: var(--plate-ink);
+  background:
+    linear-gradient(90deg, transparent 63px, rgba(160, 50, 30, 0.28) 63px 64px, transparent 64px),
+    repeating-linear-gradient(0deg, rgba(80, 55, 20, 0.045) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(90deg, rgba(80, 55, 20, 0.045) 0 1px, transparent 1px 4px),
+    linear-gradient(170deg, #f3e8cf, #e3d2ad);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    0 14px 28px rgba(0, 0, 0, 0.55);
+  font-family: var(--font-garamond);
+  font-size: 17px;
   line-height: 1.45;
 }
 .rule {
-  margin: 12px 0 4px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  margin: 14px 0 4px 66px;
+  font-family: var(--font-serif);
+  font-size: 12px;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: #6d5a3d;
 }
 .line {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr);
-  gap: 1px 10px;
-  padding: 8px 6px;
-  border-bottom: 1px solid rgba(255, 235, 200, 0.07);
-  border-radius: 6px;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 0 18px;
+  padding: 14px 0;
+  border-bottom: 1px dashed rgba(42, 26, 8, 0.22);
 }
+.line:last-child {
+  border-bottom: 0;
+}
+/* the step's own line: a wash of lamplight on the paper */
 .line[data-lit] {
-  background: rgba(224, 166, 58, 0.1);
+  margin: 0 -16px;
+  padding-inline: 16px;
+  background: rgba(224, 166, 58, 0.16);
 }
+/* what only Reveal shows: in the case file's verdigris */
 .line[data-tier='xray'] {
-  color: #9fd8e6;
+  color: #2e5f5a;
 }
 .chip {
   grid-row: 1 / span 2;
-  width: 28px;
-  height: 28px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   overflow: hidden;
-  background: rgba(255, 235, 200, 0.06);
+  background: rgba(42, 26, 8, 0.08);
+  box-shadow:
+    0 0 0 2px #f3e8cf,
+    0 0 0 3px rgba(42, 26, 8, 0.35);
 }
 .who {
+  margin: 2px 0;
   font-weight: 600;
-  color: var(--bone);
+  color: var(--plate-ink);
 }
 .line[data-tier='xray'] .who {
-  color: #7fdcf2;
+  color: #24504b;
 }
 .who i {
-  font-weight: 400;
-  font-style: normal;
-  color: var(--muted);
+  font-weight: 500;
+  font-style: italic;
+  color: #6d5a3d;
 }
 .role {
   margin-left: 6px;
-  font-weight: 400;
-  font-size: 12.5px;
-  color: var(--town);
+  font-weight: 500;
+  font-style: italic;
+  font-size: 15px;
+  color: #8a5a12;
 }
 .role[data-faction='wolves'] {
-  color: var(--wolf);
+  color: #a8321f;
 }
 .role[data-faction='serial_killer'] {
-  color: #d9774a;
+  color: #6b3fa0;
 }
 .role[data-faction='neutral_benign'] {
-  color: var(--benign);
+  color: #4a5560;
 }
 .txt {
   grid-column: 2;
-  color: #e6dcc4;
+  color: #3a2814;
+}
+.line[data-tier='xray'] .txt {
+  color: #2e5f5a;
 }
 .txt s {
-  text-decoration-color: #e68a7c;
+  text-decoration-color: #a8321f;
 }
 .pairs {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 12px;
   font-variant-numeric: tabular-nums;
-  color: var(--muted);
+  color: #6d5a3d;
 }
 .empty {
-  margin: 16px 0;
-  color: var(--muted);
+  margin: 16px 0 16px 66px;
+  font-style: italic;
+  color: #6d5a3d;
 }

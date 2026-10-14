@@ -711,7 +711,7 @@ test('landing: on an upright phone the controls sit under the stage, at reading 
   await expect(carriage(page).locator('[data-layer="hud"] [data-seat]')).toHaveCount(0);
   await expect(mini(page)).toHaveAttribute('data-playing', 'true');
 
-  // the bar: pause, and a pip per beat of the window
+  // the board: pause, and a sleeper per beat of the window, each one seeking
   await carriage(page).getByRole('button', { name: 'Pause' }).click();
   await expect(mini(page)).toHaveAttribute('data-playing', 'false');
   const pips = carriage(page).getByRole('group', { name: 'Beats' }).getByRole('button');
@@ -727,9 +727,9 @@ test('landing: on an upright phone the controls sit under the stage, at reading 
   await pips.nth(18).click();
   await expect(lines).toContainText('The table votes');
 
-  // the X-ray swaps the pane for the stage's own case file, the hidden roles shown: at the
+  // Reveal swaps the pane for the stage's own case file, the hidden roles shown: at the
   // lynch, who had them right, seat 8 among them a wolf
-  await carriage(page).getByRole('button', { name: 'X-ray', exact: true }).click();
+  await carriage(page).getByRole('button', { name: 'Reveal', exact: true }).click();
   const file = carriage(page).getByRole('complementary', { name: /^Case file/ });
   await expect(file).toBeVisible();
   await expect(file).toContainText(/Seat 8\s*wolf/);
