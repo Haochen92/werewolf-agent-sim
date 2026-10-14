@@ -273,6 +273,11 @@ def parse_args() -> argparse.Namespace:
         help="With --cycle-lineups, start the cycle this many lineups in (e.g. 2 to deal the third first).",
     )
     parser.add_argument(
+        "--stage-filter",
+        action="store_true",
+        help="Leave out retrieved lessons learned at another stage of the game (RunConfig.stage_filter).",
+    )
+    parser.add_argument(
         "--skip-embedding-canary",
         action="store_true",
         help=(
@@ -542,6 +547,7 @@ def run_batch(args: argparse.Namespace) -> int:
             "filtering_config": filtering_config,
             "retrieval_types": args.retrieval_types,
             "retrieval_types_config": retrieval_types_config,
+            "stage_filter": args.stage_filter,
             "memory_persistence_config": memory_persistence_config,
             "game_config": game_config,
         }
@@ -599,6 +605,7 @@ def run_batch(args: argparse.Namespace) -> int:
                     reranking_config=reranking_config,
                     filtering_config=filtering_config,
                     retrieval_types_config=retrieval_types_config,
+                    stage_filter=args.stage_filter,
                     game_id=game_id,
                 )
             )
