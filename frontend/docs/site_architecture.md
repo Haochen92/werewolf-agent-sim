@@ -101,6 +101,23 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   (`margin-inline: calc(50% - 50vw)`) and clips its own sideways overflow; the page clips too while
   the landing is on it (`html:has(.landing)`).
 
+## The landing's rooms (rooms bench `station-rooms-v3`, owner 2026-10-14)
+
+- Under the carriage each section is a dark room of the station (`Rooms.module.css`), parted from
+  the next by a brass threshold. Two have a light, each its own source: "What makes it different"
+  is a reading room (framed panelling, `assets/site/panel-tile.svg`) with a banker's lamp on a wall
+  shelf, and "Latest games" is a records room (pigeonholes, `assets/site/pigeonhole-tile.svg`)
+  under a hanging pendant, a screening room for the archive (`RoomLamps.tsx`). The roles sit on a
+  baize table in shadow; "Take a seat" and the closing word are plain dark rooms.
+- The walls and the light span the screen from the section's `::before`/`::after` (`.lit`), behind
+  its content. The light is gradients over the wall, darkest away from the lamp; the bench's masks,
+  `filter: brightness` (the unlit baize: darker colours instead) and drop shadows (owner: none on
+  section pictures) are not used. Rooms with no light paint no wall, which would not show.
+- The banker's lamp stands only where the gutter is clear of the column (1400px and over); narrower,
+  its light comes from the left edge without it. Paint census (production build, scrolling the
+  rooms): about +100 ms raster on a 3× phone, nothing measurable on a 2× desktop, paid once since
+  nothing moves.
+
 ## Tests
 
 - `src/theme/tokens.test.ts` (vitest) checks the token bridge.
