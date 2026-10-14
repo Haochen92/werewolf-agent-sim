@@ -62,8 +62,32 @@
 
 /* the mark, with its lamp turned up laid over it and shown while the brand is pointed at */
 .mark {
+  position: relative;
+  isolation: isolate;
   display: grid;
   flex: none;
+}
+/* the light the lit lamp throws onto the board round the whole mark: a plain gradient (no
+   filter), shown only while the brand is pointed at */
+.mark::before {
+  content: '';
+  position: absolute;
+  inset: -55%;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 226, 160, 0.9),
+    rgba(255, 190, 100, 0.35) 55%,
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.brand:hover .mark::before,
+.brand:focus-visible .mark::before {
+  opacity: 1;
 }
 .mark > img {
   grid-area: 1 / 1;
@@ -130,15 +154,20 @@
   padding: 8px 10px 8px 18px;
 }
 /* the name stays while it fits whole: a box one mark high, the wordmark wrapping onto a hidden
-   second line the moment the doors need its room */
+   second line the moment the doors need its room. The box reaches 16px past the mark on every
+   side but the right (the padding, taken back by the margins) so the lamp's light is not cut
+   off square, and the hidden line starts past that reach (the row gap). */
 .stripRow .brand {
   flex: 1 1 auto;
   flex-wrap: wrap;
   align-content: flex-start;
-  min-width: 28px;
-  height: 28px;
+  box-sizing: border-box;
+  min-width: 44px;
+  height: 60px;
+  margin: -16px 0 -16px -16px;
+  padding: 16px 0 16px 16px;
   overflow: hidden;
-  row-gap: 0;
+  row-gap: 24px;
 }
 .stripRow .wordmark {
   font-size: 21px;
@@ -155,6 +184,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .strip,
+  .mark::before,
   .mark > .lamp {
     transition: none;
   }
@@ -194,5 +224,19 @@
   .board .door {
     gap: 6px;
     letter-spacing: 0.06em;
+  }
+  /* the strip's doors, tighter, so all three stay on the board on the smallest phones */
+  .stripRow {
+    gap: 8px;
+    padding-right: 8px;
+  }
+  .stripRow .doors {
+    gap: 6px;
+  }
+  .stripRow .door {
+    gap: 6px;
+    padding: 0 7px;
+    font-size: 11px;
+    letter-spacing: 0.04em;
   }
 }

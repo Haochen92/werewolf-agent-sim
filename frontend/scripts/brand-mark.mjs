@@ -12,7 +12,9 @@
  *   and the 9 as large as the lens allows
  *
  * and the lamp turned up for the first two (`mark-lamp*.svg`), which the nav shows while the
- * brand is pointed at: the lens burns whiter and the moon's glow spreads.
+ * brand is pointed at: the whole lens burns near white, the brass bezel catches it, the iron
+ * warms and the moon's glow spreads; the 9 stays dark, a keyhole against the light. The light
+ * thrown round the lamp onto the board is the nav's own (a gradient behind the mark, TopNav).
  *
  * The output is committed; rerun this after changing the lamp.
  * Run from frontend/: `node scripts/brand-mark.mjs`
@@ -47,10 +49,10 @@ const BOWL = { cx: 50, cy: 41, r: 19.5 };
 const TAIL = 'M 69 41 C 69 60, 62 71, 42 78.5';
 const TAIL_W = 12.5;
 
-/** The lens: warm light falling off to the bezel; turned up, it burns whiter further out. */
+/** The lens: warm light falling off to the bezel; turned up, it burns near white to its edge. */
 function lensStops(on) {
   return on
-    ? '<stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#fff1c2"/><stop offset=".8" stop-color="#f6c865"/><stop offset="1" stop-color="#c78a2e"/>'
+    ? '<stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#fff7de"/><stop offset=".85" stop-color="#fbdc8c"/><stop offset="1" stop-color="#e3a748"/>'
     : '<stop offset="0" stop-color="#fff6d8"/><stop offset=".55" stop-color="#f1cf7c"/><stop offset="1" stop-color="#9c6a22"/>';
 }
 
@@ -58,7 +60,8 @@ function mark({ detail, on = false }) {
   const full = detail === 'full';
   const small = detail === 'small';
   const defs = [
-    `<linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${C.rimHi}"/><stop offset=".45" stop-color="${C.rim}"/><stop offset="1" stop-color="${C.rimLo}"/></linearGradient>`,
+    // the bezel's brass; with the lamp turned up, catching its light
+    `<linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${on ? '#fff4cf' : C.rimHi}"/><stop offset=".45" stop-color="${on ? '#e2b65e' : C.rim}"/><stop offset="1" stop-color="${on ? '#8a6224' : C.rimLo}"/></linearGradient>`,
     // the housing's iron; with the lamp turned up, warmed by its own light
     `<linearGradient id="iron" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${on ? '#9a7a45' : C.ironHi}"/><stop offset=".5" stop-color="${on ? '#5a4220' : C.iron}"/><stop offset="1" stop-color="${on ? '#2a1c0a' : C.ironLo}"/></linearGradient>`,
     `<radialGradient id="lens" cx=".5" cy=".5" r=".5">${lensStops(on)}</radialGradient>`,
