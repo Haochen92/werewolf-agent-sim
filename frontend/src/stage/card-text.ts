@@ -48,7 +48,7 @@ export const CARD_TEXT: Record<string, CardText> = {
     line: 'Takes the law into their own hands,\none bullet at a time.',
     day: 'Vote like any town player, and watch who deserves one of your few bullets. A target who survives your shot tells you something.',
     night:
-      "You may shoot one player. Bullets are never reloaded, and a shot can't kill the serial killer.",
+      "Shoot one player, two bullets in the game. A shot can't kill the serial killer.",
     win: 'With the town, when both the wolves and the lone killer are gone.',
   },
   wolf: {
