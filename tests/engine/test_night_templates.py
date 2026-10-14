@@ -6,6 +6,7 @@ from importlib import import_module
 
 import pytest
 
+from Agents.prompts.common import memory_verdict_example
 from Agents.prompts.compose import preamble
 from Agents.prompts.night import carrier_template, night_template, wolf_chat_template
 from Agents.schemas import carrier_output, night_output, wolf_chat_output
@@ -19,6 +20,8 @@ NAMES = {role: import_module(f"Agents.prompts.roles.{role}").CARD.name for role 
 def _render(template, cast) -> str:
     values = {name: f"<{name}>" for name in template.input_variables}
     values["preamble"] = preamble(cast)
+    # The verdict slot as a turn shown lessons and observations fills it (prompt_inputs.py).
+    values["memory_verdict_example"] = memory_verdict_example(["strategy_verdicts", "memory_applicability"])
     return "\n".join(m.content for m in template.format_messages(**values))
 
 

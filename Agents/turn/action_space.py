@@ -16,6 +16,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, create_model
 
+from Agents.schemas.lineup_output import LineupModel
 from Agents.schemas.roles import PICKABLE_SIDES, ROLE_SPECS, role_for_field
 
 # The pack's kill: the carrier names a non-wolf.
@@ -107,4 +108,22 @@ def output_schema_with_legal_targets(
         f"{output_schema.__name__}_{output_key}_TargetEnum",
         __base__=output_schema,
         **{target_field: (target_literal, original_target)},
+    )
+
+
+# Each verdict field, and the payload list of what it gives verdicts on.
+_VERDICT_FIELDS = {"strategy_verdicts": "strategy_points", "memory_applicability": "retrieved_observations"}
+
+
+def output_schema_for_memory_shown(output_schema: type[BaseModel], payload: dict[str, Any]) -> type[BaseModel]:
+    """Rebuild ``output_schema`` without each verdict field whose memory this turn was not shown, so a
+    turn shown no lessons has no verdict to invent (owner, 2026-10-14; the prompt's example follows
+    the same rule, prompts/common.py). The field order is kept."""
+    drop = {f for f, shown in _VERDICT_FIELDS.items() if f in output_schema.model_fields and not payload.get(shown)}
+    if not drop:
+        return output_schema
+    return create_model(
+        output_schema.__name__,
+        __base__=LineupModel,
+        **{name: (field.annotation, field) for name, field in output_schema.model_fields.items() if name not in drop},
     )

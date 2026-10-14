@@ -42,6 +42,7 @@ from Agents.schemas.turn import (
 from Agents.turn.action_space import (
     KILL_TARGET,
     valid_targets_for_action,
+    output_schema_for_memory_shown,
     output_schema_with_legal_targets,
 )
 from Agents.turn.eval import log_prompt, record_reads
@@ -74,6 +75,8 @@ def run_agent(
 
     # Constrain: bind the model to the legal-targets schema; build + log the prompt once.
     schema = output_schema_with_legal_targets(output_schema, output_key, valid_targets)
+    # No verdict field for memory this turn was not shown (the reply example drops it too).
+    schema = output_schema_for_memory_shown(schema, payload)
     # A primary that stalled on the last turns (a timeout, a 429) is skipped for a while and
     # the turn starts on the rescue model; the game's health object keeps that count.
     health = GAME_LLM.get().health

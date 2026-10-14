@@ -33,8 +33,6 @@ own private notes. Never say the Game Master announced something it did not.
 # lineup_output.py) so the fields cannot drift. The shared fields show a fixed example; the example
 # read names no player and no role, since a named one gets copied.
 _CONTRACT_EXAMPLES = {
-    "strategy_verdicts": [{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}],
-    "memory_applicability": [{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}],
     "reads": [{"player": "<exact player_id>", "why": "pushed the only counted lynch with no evidence",
                "suspected_role": "<a role from the line-up, or unclear>", "confidence": "low"}],
     "updated_strategy": "your updated private strategy note for future turns",
@@ -44,10 +42,36 @@ _CONTRACT_EXAMPLES = {
 """The example value of each shared field; any other field shows its own description."""
 
 
+# The verdict fields' examples ride the {memory_verdict_example} variable instead: a turn shown no
+# lessons sees no "strategy_index": 1 to copy, and its schema has no verdict field (owner, 2026-10-14;
+# turn/action_space.output_schema_for_memory_shown).
+VERDICT_EXAMPLES = {
+    "strategy_verdicts": [{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}],
+    "memory_applicability": [{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}],
+}
+VERDICT_EXAMPLES_PASS = {
+    "strategy_verdicts": [{"strategy_index": 1, "verdict": "not_relevant", "why": "short reason vs your current board"}],
+    "memory_applicability": [{"memory_index": 1, "verdict": "does_not_apply", "why": "short reason vs your current board"}],
+}
+MEMORY_VERDICT_SLOT = "{memory_verdict_example}"
+
+
+def memory_verdict_example(fields: list[str], examples: dict = VERDICT_EXAMPLES, indent: str = "") -> str:
+    """The verdict fields' example for the memory this turn was shown ("" when none), each as
+    ``"name": value,`` on one line after ``indent`` (a one-line contract: no indent)."""
+    sep = "\n" if indent else " "
+    return "".join(f"{indent}{json.dumps(f)}: {json.dumps(examples[f], ensure_ascii=False)},{sep}" for f in fields)
+
+
 def json_contract(schema: type[BaseModel]) -> str:
-    """The "respond with" line: one example value per field, in the schema's order."""
-    example = {}
+    """The "respond with" line: one example value per field, in the schema's order, the verdict
+    fields as the {memory_verdict_example} slot."""
+    parts, slot = [], ""
     for name, field in schema.model_fields.items():
-        example[name] = _CONTRACT_EXAMPLES.get(name, field.description)
-    text = json.dumps(example, ensure_ascii=False)
-    return "You must respond with a valid JSON:\n" + text.replace("{", "{{").replace("}", "}}")
+        if name in VERDICT_EXAMPLES:
+            slot = MEMORY_VERDICT_SLOT  # placed once, before the next field
+            continue
+        item = json.dumps({name: _CONTRACT_EXAMPLES.get(name, field.description)}, ensure_ascii=False)[1:-1]
+        parts.append(slot + item.replace("{", "{{").replace("}", "}}"))
+        slot = ""
+    return "You must respond with a valid JSON:\n{{" + ", ".join(parts) + "}}"

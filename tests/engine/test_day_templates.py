@@ -7,6 +7,7 @@ from importlib import import_module
 
 import pytest
 
+from Agents.prompts.common import VERDICT_EXAMPLES_PASS, memory_verdict_example
 from Agents.prompts.compose import preamble
 from Agents.prompts.day_discuss import day_discuss_template
 from Agents.prompts.day_vote import day_vote_template
@@ -17,10 +18,14 @@ POOL = sorted({role for cast in ALL_LINEUPS for role in cast})
 NAMES = {role: import_module(f"Agents.prompts.roles.{role}").CARD.name for role in POOL}
 
 
-def _messages(template, cast):
+def _messages(template, cast, shown=("strategy_verdicts", "memory_applicability")):
     values = {name: f"<{name}>" for name in template.input_variables}
     values["preamble"] = preamble(cast)
-    return template.format_messages(**values)
+    # The verdict slots as a turn shown ``shown`` fills them (prompt_inputs.build_agent_prompt_input).
+    values["discuss_verdict_example"] = memory_verdict_example(list(shown), indent="    ")
+    values["discuss_verdict_example_pass"] = memory_verdict_example(list(shown), VERDICT_EXAMPLES_PASS, indent="    ")
+    values["memory_verdict_example"] = memory_verdict_example(list(shown))
+    return template.format_messages(**{k: v for k, v in values.items() if k in template.input_variables})
 
 
 def _turns(cast):
@@ -37,6 +42,15 @@ def test_every_turn_renders_with_the_reads_first(cast):
         assert "<tell_book>\nBefore your decision, record your current read" in human, role
         for field in schema.model_fields:
             assert f'"{field}"' in human, (role, field)
+
+
+def test_a_turn_shown_no_memory_has_no_verdict_example_to_copy():
+    # Haiku copied the example's "strategy_index": 1 on turns shown no lessons (2026-10-14).
+    cast = ALL_LINEUPS[0]
+    for role, template, _ in _turns(cast):
+        human = _messages(template, cast, shown=())[-1].content
+        assert '"strategy_verdicts"' not in human and '"memory_applicability"' not in human, role
+        assert '"updated_strategy"' in human, role
 
 
 @pytest.mark.parametrize("cast", ALL_LINEUPS)

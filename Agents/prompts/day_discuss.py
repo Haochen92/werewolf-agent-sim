@@ -133,7 +133,8 @@ _DISCUSSION_STAGE_RULES = """
 # The rules block arrives as the {preamble} input, composed per game from the dealt lineup
 # (compose.preamble).
 
-# The two examples, in the schema's field order. The example read and the example claim name no
+# The two examples, in the schema's field order; the verdict lines are slots, empty on a turn shown no
+# memory (prompts/common.py, VERDICT_EXAMPLES). The example read and the example claim name no
 # role and no seat, since a named one gets copied (discussion_evidence.md section 7.5).
 DAY_DISCUSS_RESPONSE_FORMAT = """
 You must respond with a valid JSON.
@@ -141,9 +142,7 @@ You must respond with a valid JSON.
 When speaking:
 {{
     "reads": [{{"player": "<exact player_id>", "why": "pushed the only counted lynch with no evidence", "suspected_role": "<a role from the line-up, or unclear>", "confidence": "low"}}],
-    "strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}],
-    "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}],
-    "updated_strategy": "your updated private strategy note for future turns",
+{discuss_verdict_example}    "updated_strategy": "your updated private strategy note for future turns",
     "pass_turn": false,
     "message": "your discussion message",
     "claim": "<the role this message claims you hold, or none>",
@@ -153,9 +152,7 @@ When speaking:
 When declining to speak (only if you were NOT directly addressed):
 {{
     "reads": [{{"player": "<exact player_id>", "why": "unchanged", "suspected_role": "unclear", "confidence": "low"}}],
-    "strategy_verdicts": [{{"strategy_index": 1, "verdict": "not_relevant", "why": "short reason vs your current board"}}],
-    "memory_applicability": [{{"memory_index": 1, "verdict": "does_not_apply", "why": "short reason vs your current board"}}],
-    "updated_strategy": "your updated private strategy note for future turns",
+{discuss_verdict_example_pass}    "updated_strategy": "your updated private strategy note for future turns",
     "pass_turn": true,
     "message": "",
     "claim": "none",

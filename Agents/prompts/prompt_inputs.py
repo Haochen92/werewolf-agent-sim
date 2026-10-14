@@ -19,6 +19,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from Agents.prompts.compose import preamble
+from Agents.prompts.common import VERDICT_EXAMPLES_PASS, memory_verdict_example
 from Agents.schemas.game_events import DayRound
 from Agents.schemas.roles import ROLE_SPECS, TOWN
 from Agents.prompts.cell_prompt import cell_driver_horizon, dimension_menu
@@ -189,6 +190,8 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
     role = payload.get("player_role", "")
     retrieved_observations = payload.get("retrieved_observations", [])
     strategy_points = payload.get("strategy_points", [])
+    verdict_fields = ([f for f, shown in (("strategy_verdicts", strategy_points),
+                                          ("memory_applicability", retrieved_observations)) if shown])
     # Synergy instruction fires ONLY when BOTH memory types are actually present (the combined "both"
     # arm) — data-driven, so obs-only / sp-only arms get "" and need no config flag.
     synergy_instruction = (
@@ -294,6 +297,10 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
                                          synergy_instruction=synergy_instruction)
             if _retrieved_present(strategy_points) else ""
         ),
+        # The reply example's verdict lines, only for the memory this turn was shown (common.py).
+        "memory_verdict_example": memory_verdict_example(verdict_fields),
+        "discuss_verdict_example": memory_verdict_example(verdict_fields, indent="    "),
+        "discuss_verdict_example_pass": memory_verdict_example(verdict_fields, VERDICT_EXAMPLES_PASS, indent="    "),
         "situation_standards": SITUATION_STANDARDS,
         "epistemic_status_rule": EPISTEMIC_STATUS_RULE,
         "role_lens": SITUATION_ROLE_LENS.get(role, ""),
