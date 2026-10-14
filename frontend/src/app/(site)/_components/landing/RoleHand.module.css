@@ -1,337 +1,142 @@
-/* The roles on the landing (the mockup's `#table .rolepick` and `.hand .seat`): the pool's twelve
-   sigils on paper discs as the picker, in two rows, one card below that turns over. `--rc-ink` is
-   the card's ink, its side's dark tone (town, wolf, killer, neutral), as the kit prints it. */
+/* The landing's roles (RoleHand): the twelve sigils in one row of four sides, each under its felt
+   mark with a rule in its colour, then the card, then the switch and the way to the guide; all
+   centred. A disc's ring is its side's bright colour (`--band`), its sigil its side's ink. On a
+   phone the sides sit on one six-column grid: the town across the top, the three pairs below. */
 
 .hand {
-  --rc-ink: var(--town-ink);
-}
-.hand [data-faction='wolves'] {
-  --rc-ink: var(--wolf-ink);
-}
-.hand [data-faction='serial_killer'] {
-  --rc-ink: var(--sk-ink);
-}
-.hand [data-faction='neutral_benign'] {
-  --rc-ink: var(--benign-ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-/* ---------- the picker ---------- */
 .pick {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0 8px;
-  margin: 0 0 18px;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 0 24px;
+  margin: 0 0 40px;
 }
-/* the town's six on the first row, the other sides on the second; the break is the rows' gap */
-.rowBreak {
-  flex-basis: 100%;
-  height: 10px;
+.side {
+  --band: var(--town);
+  --ink-f: var(--town-ink);
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  justify-items: center;
+  gap: 12px;
 }
-.pickSlot {
-  display: contents;
+.side[data-faction='villagers'] {
+  grid-template-columns: repeat(6, auto);
 }
-.gap {
-  width: 1px;
-  height: 30px;
-  margin: 0 4px;
-  background: rgba(255, 235, 200, 0.16);
+.side[data-faction='wolves'] {
+  --band: var(--wolf);
+  --ink-f: var(--wolf-ink);
 }
-.sigilButton {
+.side[data-faction='serial_killer'] {
+  --band: var(--sk);
+  --ink-f: var(--sk-ink);
+}
+.side[data-faction='neutral_benign'] {
+  --band: var(--benign);
+  --ink-f: var(--benign-ink);
+}
+
+/* the side's felt mark over its group, on a rule as wide as the group */
+.mark {
+  grid-column: 1 / -1;
+  justify-self: stretch;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 8px;
+  border-bottom: 1.5px solid color-mix(in srgb, var(--band) 55%, transparent);
+}
+.mark svg {
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+
+.disc {
   display: grid;
   place-items: center;
-  flex: none;
-  width: 46px;
-  height: 46px;
-  padding: 0;
+  width: 50px;
+  height: 50px;
+  padding: 12px;
   border: 0;
   border-radius: 50%;
   background: var(--paper);
-  color: var(--rc-ink);
+  color: var(--ink-f);
   cursor: pointer;
-  opacity: 0.6;
-  box-shadow:
-    0 0 0 2px var(--paper-dk),
-    0 0 0 3px color-mix(in srgb, var(--rc-ink) 55%, transparent);
+  opacity: 0.84;
+  box-shadow: 0 0 0 3px var(--band);
   transition:
     opacity 0.2s,
     box-shadow 0.2s;
 }
-.sigilButton[aria-checked='true'] {
+.disc:hover {
+  opacity: 1;
+}
+/* the chosen disc: a cream ring outside the side's, so it never reads as the town's amber */
+.disc[aria-checked='true'] {
   opacity: 1;
   box-shadow:
-    0 0 0 2px var(--paper-dk),
-    0 0 0 4px var(--rc-ink),
-    0 0 0 7px rgba(224, 166, 58, 0.55);
+    0 0 0 3px var(--band),
+    0 0 0 6px var(--bg),
+    0 0 0 8px var(--text);
 }
-.sigilButton:focus-visible {
+.disc:focus-visible {
   outline: 2px solid var(--amber);
-  outline-offset: 4px;
+  outline-offset: 7px;
 }
-.pickSigil {
+.discSigil {
   width: 26px;
   height: 26px;
 }
 
-/* ---------- the card ---------- */
 .card {
-  position: relative;
-  display: block;
-  width: 100%;
-  max-width: 340px;
-  aspect-ratio: 5 / 7;
-  padding: 0;
-  border: 0;
-  background: none;
-  font: inherit;
-  text-align: left;
-  color: var(--rc-ink);
-  cursor: pointer;
-  perspective: 1600px;
-}
-.card:focus-visible {
-  outline: none;
-}
-.card:focus-visible .front,
-.card:focus-visible .back {
-  box-shadow:
-    0 0 0 2px var(--paper-dk),
-    0 0 0 4px var(--rc-ink),
-    0 0 0 8px rgba(224, 166, 58, 0.6),
-    var(--shadow);
-}
-.face {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  padding: 22px 22px 20px;
-  border-radius: 14px;
-  background: var(--paper);
-  background-image:
-    repeating-linear-gradient(115deg, rgba(60, 40, 20, 0.05) 0 1px, transparent 1px 6px),
-    radial-gradient(ellipse at 15% 5%, rgba(255, 255, 255, 0.35), transparent 55%),
-    radial-gradient(ellipse at 85% 95%, rgba(120, 90, 50, 0.22), transparent 50%),
-    radial-gradient(circle at 70% 30%, rgba(120, 90, 50, 0.1), transparent 25%);
-  box-shadow:
-    0 0 0 2px var(--paper-dk),
-    0 0 0 4px var(--rc-ink),
-    var(--shadow),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  backface-visibility: hidden;
-  transition: transform 0.6s cubic-bezier(0.4, 0.1, 0.2, 1);
-}
-.back {
-  transform: rotateY(180deg);
-}
-.card[data-turned] .front {
-  transform: rotateY(-180deg);
-}
-.card[data-turned] .back {
-  transform: rotateY(0deg);
-}
-.card:not([data-turned]):hover .front {
-  transform: translateY(-6px);
+  width: min(360px, 100%);
 }
 
-/* the printed ink wobbles a little (the site sprite's `#inkwobble` filter) */
-.frame,
-.hdr,
-.desc,
-.brief,
-.fac {
-  filter: url(#inkwobble);
-}
-.frame {
-  position: absolute;
-  inset: 10px;
-  border: 1.5px solid var(--rc-ink);
-  border-radius: 9px;
-  opacity: 0.75;
-  pointer-events: none;
-  transform: rotate(-0.15deg);
-}
-.hdr {
+.under {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid var(--rc-ink);
-}
-.name {
-  font-family: var(--font-serif);
-  font-size: 36px;
-  line-height: 0.95;
-}
-.back .hdr {
-  align-items: baseline;
-  padding-bottom: 10px;
-}
-.back .name {
-  font-size: 24px;
-  line-height: 1;
-}
-.kind {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 14px;
-  opacity: 0.75;
-}
-.sigil {
-  flex: none;
-  width: 38px;
-  height: 38px;
-}
-.portrait {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  place-items: center;
-  padding: 14px 0 8px;
-}
-.portrait svg {
-  display: block;
-  width: auto;
-  height: 100%;
-  max-width: 82%;
-  max-height: 250px;
-  filter: drop-shadow(0 8px 5px rgba(60, 40, 20, 0.25));
-}
-.desc {
-  min-height: 2.7em;
-  padding: 0 6px;
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 17px;
-  line-height: 1.35;
-  text-align: center;
-  opacity: 0.9;
-}
-.fac {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 2px solid var(--rc-ink);
-  font-family: var(--font-serif);
-  font-size: 14px;
-  letter-spacing: 0.08em;
-}
-.back .fac {
-  margin-top: 10px;
-  padding-top: 10px;
-  font-size: 12.5px;
-  font-style: italic;
-  letter-spacing: 0.04em;
-  opacity: 0.85;
-}
-/* the side's felt badge, small (under 26px: no stitching) */
-.seal {
-  flex: none;
-  width: 20px;
-  height: 20px;
-}
-.brief {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  gap: 8px;
-  padding: 12px 2px 4px;
-  font-family: var(--font-serif);
-  font-size: 15.8px;
-  line-height: 1.34;
-}
-.para {
-  display: block;
-  padding-bottom: 10px;
-  border-bottom: 1px dashed color-mix(in srgb, var(--rc-ink) 35%, transparent);
-}
-.para:last-child {
-  padding-bottom: 0;
-  border-bottom: 0;
-}
-.para em {
-  display: block;
-  margin-bottom: 3px;
-  font-style: italic;
-  font-size: 0.9em;
-  letter-spacing: 0.02em;
-  opacity: 0.72;
-}
-.hint {
-  position: absolute;
-  left: 50%;
-  bottom: 52px;
-  padding: 5px 11px;
-  border-radius: 999px;
-  background: var(--rc-ink);
-  color: var(--paper);
-  font-family: var(--font-sans);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateX(-50%);
-  transition: opacity 0.18s;
-}
-.card:hover .hint,
-.card:focus-visible .hint {
-  opacity: 0.92;
-}
-.turnHint {
-  margin: 12px 0 0;
-  font-size: 13.5px;
-  color: var(--muted);
+  gap: 12px 14px;
+  margin-top: 26px;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 640px) {
   .pick {
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 18px 0;
+    width: 100%;
+  }
+  .side {
+    grid-template-columns: subgrid;
+    grid-column: span 2;
+    column-gap: 0;
+    row-gap: 10px;
+  }
+  .side[data-faction='villagers'] {
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
+  }
+  .mark {
+    margin: 0 6px;
+  }
+  .disc {
+    width: 44px;
+    height: 44px;
+    padding: 10px;
   }
   .card {
-    margin: 0 auto;
-  }
-  .turnHint {
-    text-align: center;
+    width: min(320px, 100%);
   }
 }
-@media (max-width: 600px) {
-  .brief {
-    font-size: 14.5px;
-    gap: 6px;
-  }
-  .name {
-    font-size: 30px;
-  }
-  .desc {
-    font-size: 15px;
-  }
-  .back .name {
-    font-size: 21px;
-  }
-}
-@media (max-width: 420px) {
-  .pick {
-    column-gap: 6px;
-  }
-  .sigilButton {
-    width: 42px;
-    height: 42px;
-  }
-  .brief {
-    font-size: 13.5px;
-  }
-}
+
 @media (prefers-reduced-motion: reduce) {
-  .face,
-  .sigilButton,
-  .hint {
+  .disc {
     transition: none;
   }
 }

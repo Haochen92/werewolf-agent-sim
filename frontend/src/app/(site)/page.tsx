@@ -7,14 +7,13 @@ import { SeatTags } from './_components/landing/SeatTags';
 import { FeaturedReplay } from './_components/landing/FeaturedReplay';
 import { Features } from './_components/landing/Features';
 import { RoleHand } from './_components/landing/RoleHand';
-import { GameLoop } from './_components/landing/GameLoop';
 import classes from './_components/landing/Landing.module.css';
 import pageClasses from './page.module.css';
 
 /**
  * The landing (landing mockup, review §A1, rulings §F7): the hero with its two hung tags, a
- * game from the archive playing in the carriage, what makes it different, the roles
- * and how a game goes, the latest games, and a closing word on the project and the visitor's
+ * game from the archive playing in the carriage, what makes it different, the roles (the rules
+ * live on `/guide`), the latest games, and a closing word on the project and the visitor's
  * API key. A recruiter with no context sees the product
  * working before reading a word, and reaches a whole replay in one click from the carriage.
  *
@@ -58,19 +57,15 @@ export default function HomePage() {
         <Features />
       </section>
 
-      <section className={classes.section} aria-labelledby="table-head">
-        <div className={classes.secHead}>
-          <h2 id="table-head">Who&rsquo;s at the table</h2>
+      <section className={classes.section} aria-labelledby="roles-head">
+        <div className={`${classes.secHead} ${classes.centred}`}>
+          <h2 id="roles-head">The roles</h2>
           <p>
-            Four sides, ten seats. Every seat is dealt a secret role: eight roles every
-            game, and a lone killer and a neutral each drawn from two. Its card is the
-            briefing its agent is given, down to how its side wins.
+            Ten seats, four sides. Every seat is dealt one of these cards in secret, and the
+            card is the briefing its agent is given.
           </p>
         </div>
-        <div className={classes.tableGrid}>
-          <RoleHand />
-          <GameLoop />
-        </div>
+        <RoleHand />
         <div className={classes.again}>
           <h3>Take a seat</h3>
           <p>Play one seat against the agents, or fill a room with friends.</p>
