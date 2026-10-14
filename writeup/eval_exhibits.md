@@ -209,3 +209,33 @@ the record is, and how it would be shown:
 - **Record:** `experiment_log.md` (the 40-game store read; the publish note);
   `evidence/memory_system/v8/data/reextract/points/`.
 - **Show:** content (one duplicate pair with the two labels that kept it apart).
+
+## From the v8 demo run (2026-10-14)
+
+### 17. A lesson removed on neutral grades: lift, not a raw score, decides
+
+- **Question:** after twenty memory-on games, which stored lessons should the credit pass remove?
+- **Method:** every decision a seat said it followed a lesson on was graded by the fixed table (no model
+  call), and each lesson's mean grade compared with memory-off decisions on the same channel. Lessons
+  with at least eight follows and a lift below −0.15 were pruned; lessons shown at least eight times,
+  never followed and mostly overridden were evicted.
+- **Example:** "abstain with an abstaining room" for the Necromancer: eight follows, none graded good or
+  bad, yet pruned. An abstention grades neutral, and memory-off Necromancers' named votes averaged
+  +0.83, so following the lesson cost the seat its vote's usual value (lift −0.51). A raw rate would have
+  read it as harmless.
+- **Number:** of 498 lessons, 148 followed; 4 pruned, 4 evicted, 50 proven. A demonstration of the pass:
+  twenty games give each lesson a handful of follows.
+- **Record:** `evidence/memory_system/v8/experiment_log.md` ("The demo run"); `decisions.md` §12 (the
+  grading table), §14 (the credit pass); the `credit_runs` table, row 1.
+- **Show:** content (the removals table), or export (the run's change list with counts, base and lift).
+
+### 18. The model copied the format example onto turns with nothing to judge
+
+- **Question:** why did seats shown no lessons return verdicts on lessons?
+- **Finding:** 426 such turns answered "lesson 1: follow", the line the reply example showed on every
+  turn; with the schema unenforced, Haiku filled the field it saw. The same bias as the night-one seat
+  choice (models pick the first or the example-named option). The fix makes the example's verdict lines
+  a slot, filled only for the memory a turn was shown, and drops the field from that turn's schema.
+- **Record:** `evidence/caching/experiment_log.md` §16; `Agents/prompts/common.py` (`VERDICT_EXAMPLES`);
+  `tests/engine/test_day_templates.py`.
+- **Show:** content (one turn's reply with the phantom verdict, beside the example line it copied).

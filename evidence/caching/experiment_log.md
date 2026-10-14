@@ -640,7 +640,33 @@ branch since the previous server build (deploy record: `frontend/docs/build_plan
 and Haiku were switched to the unenforced schema in the model catalogue (owner), the configuration the
 paired games measured; the deploy had left both on the enforced one.
 
-## 16. Where it stands
+## 16. 2026-10-14 — The unenforced schema over twenty games, and the retry that enforces it
+
+**What twenty games showed.** The v8 demo run (`evidence/memory_system/v8/experiment_log.md`, "The demo
+run") played 20 Haiku games in the unenforced mode §15 switched on: 3,118 seat decisions. 74 seat replies
+broke the schema (about one decision in forty): a read keyed by the player's name instead of a `player`
+field, a verdict word outside the three (`partly_applies`), JSON cut off or malformed. The seat's plain
+retry repeated the same unenforced call; six turns failed it as well and went to the rescue model (Gemini
+Flash-Lite), none to a random move. The lookup's situation summary broke five times and once fell back to
+a generic query, so that seat was shown lessons for "Day N as role" instead of its situation.
+
+**A second effect: copied verdicts.** 426 turns that were shown no lessons (a town seat's day turns, which
+skip the lookup, and day 1) still returned verdicts, typically "lesson 1: follow". The reply example
+showed exactly that line on every turn, and with no enforced schema the model filled the field it saw.
+Credit was unaffected (those turns carry no lesson keys); the records were not.
+
+**Fixes, deployed the same day.**
+- A json_mode reply that breaks the schema is asked again with the schema enforced, on the same model:
+  Claude's JSON-schema output, OpenAI's strict schema; GLM and DeepSeek keep the plain retry, having no
+  enforced schema here. Seats `7f508c4d`; the lookup and the day summary `68cef8b0`. The enforced call is
+  not cached (its schema is in the key), one call per failure.
+- A turn shown no lessons gets no verdict field and no verdict example (`a1e47ad6`): the example's verdict
+  lines are a slot filled only for the memory the turn was shown, and the turn's schema drops the fields
+  it was not. Both sit after the cache boundary; the cached prefix is unchanged. A prompt change.
+
+Not yet measured: how often the enforced retry fires and holds in live games (no game has run since).
+
+## 17. Where it stands
 
 Caching is a property of each provider: automatic on DeepSeek, boundary-based on OpenAI (implicit at the
 last eligible message, or explicit breakpoints), marked on Claude, a cache object on Gemini. The
