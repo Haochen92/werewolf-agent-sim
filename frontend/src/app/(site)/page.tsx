@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { Icon } from '@/components/site';
+import { Pendant, WallLight } from '@/components/site/StationLamps';
 import { ReplayListClient } from './replays/_components/ReplayListClient';
 import { HouseDoorNote } from './_components/HouseDoorNote';
 import { SeatTags } from './_components/landing/SeatTags';
@@ -9,7 +10,6 @@ import { PlatformBackdrop } from './_components/landing/PlatformBackdrop';
 import platform from './_components/landing/PlatformBackdrop.module.css';
 import { Features } from './_components/landing/Features';
 import { RoleHand } from './_components/landing/RoleHand';
-import { Pendant, WallLight } from './_components/landing/RoomLamps';
 import rooms from './_components/landing/Rooms.module.css';
 import classes from './_components/landing/Landing.module.css';
 import pageClasses from './page.module.css';
@@ -60,7 +60,7 @@ export default function HomePage() {
         className={`${rooms.room} ${rooms.lit} ${rooms.study}`}
         aria-labelledby="features-head"
       >
-        <WallLight />
+        <WallLight className={rooms.wallLight} />
         <div className={classes.secHead}>
           <h2 id="features-head">What makes it different</h2>
           <p>
@@ -88,7 +88,7 @@ export default function HomePage() {
         className={`${rooms.room} ${rooms.lit} ${rooms.records}`}
         aria-labelledby="latest-head"
       >
-        <Pendant />
+        <Pendant className={rooms.pendant} />
         <div className={classes.secHead}>
           <h2 id="latest-head">Latest games</h2>
           <p>

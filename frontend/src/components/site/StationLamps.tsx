@@ -1,14 +1,14 @@
 /**
- * The two lamps of the landing's rooms (Rooms.module.css): the reading room's caged wall light,
- * a station fitting, and the pendant hung over the latest games. Plain SVG, still; their light is
- * the room's own gradient, not part of the drawing. Decoration only, so hidden from readers.
+ * The station's two lamps: the caged wall light (the landing's reading room, the ticket office)
+ * and the pendant (the latest games, the archive). Plain SVG, still; their light is the room's
+ * own gradient, not part of the drawing, and where they stand is the room's (`className`).
+ * Decoration only, so hidden from readers.
  */
-import classes from './Rooms.module.css';
 
 /** A caged bulkhead light on the wall: an iron rim, the lit glass, two bars and a stile over it. */
-export function WallLight() {
+export function WallLight({ className }: { className?: string }) {
   return (
-    <svg className={classes.wallLight} viewBox="0 0 56 72" aria-hidden="true">
+    <svg className={className} viewBox="0 0 56 72" aria-hidden="true">
       <defs>
         <radialGradient id="wl-glow">
           <stop offset="0" stopColor="#fff6dc" />
@@ -48,9 +48,9 @@ export function WallLight() {
 }
 
 /** A brass pendant shade on its cord, hung from the top of the room. */
-export function Pendant() {
+export function Pendant({ className }: { className?: string }) {
   return (
-    <svg className={classes.pendant} viewBox="0 0 60 96" aria-hidden="true">
+    <svg className={className} viewBox="0 0 60 96" aria-hidden="true">
       <defs>
         <radialGradient id="pd-glow">
           <stop offset="0" stopColor="#fff2cf" />

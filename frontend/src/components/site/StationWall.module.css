@@ -1,0 +1,129 @@
+/* A page's wall (StationWall.tsx): the landing's rooms (Rooms.module.css) behind a whole page.
+   One still box from the page's top, as wide as the screen, capped where its light runs out;
+   the light is gradients over the wall, never a mask or a filter. */
+
+/* the page's own stacking context, so the wall under it paints above the body's ground */
+.page {
+  isolation: isolate;
+}
+
+/* against the station round the page (the site layout's `.station`), so from the very top,
+   behind the nav, and cut off at the page's foot */
+.wall {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+.wall::before,
+.wall::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+/* ---------- the archive: the latest games' room ---------- */
+/* the platform's tile with two courses of oxblood under the nav, the pendant's light from just
+   below the board, and the dark that closes in from every side well before the box ends (its
+   vignette is black, so the foot fades to the page's own ground on top of everything, or the
+   box's end would show as an edge) */
+.records {
+  height: 760px;
+}
+.records::before {
+  background:
+    linear-gradient(rgba(201, 150, 63, 0.3), rgba(201, 150, 63, 0.3)) 0 127px / 100% 1px
+      no-repeat,
+    linear-gradient(rgba(201, 150, 63, 0.3), rgba(201, 150, 63, 0.3)) 0 192px / 100% 1px
+      no-repeat,
+    url('../../assets/site/oxblood-band.svg') center 128px / 120px 64px repeat-x,
+    url('../../assets/site/wall-tile.svg') center top / 120px 64px repeat;
+}
+.records::after {
+  background:
+    linear-gradient(180deg, transparent calc(100% - 220px), var(--bg) 100%),
+    radial-gradient(
+      ellipse 560px 360px at 50% 140px,
+      rgba(255, 206, 130, 0.13),
+      transparent 70%
+    ),
+    radial-gradient(ellipse 110% 90% at 50% 30%, transparent 45%, rgba(0, 0, 0, 0.8)),
+    radial-gradient(
+      ellipse 760px 560px at 50% 110px,
+      transparent,
+      rgba(12, 10, 7, 0.75) 55%,
+      var(--bg) 80%
+    );
+}
+/* the shade just under the board, its cord hanging behind it */
+.pendant {
+  position: absolute;
+  left: calc(50% - 30px);
+  top: 54px;
+  width: 60px;
+  height: 96px;
+}
+
+/* ---------- the ticket office: the reading room ---------- */
+/* --bx/--by: the light's glass, in the gutter beside the column when there is room for it */
+.granite {
+  --bx: max(22px, calc(50% - 600px));
+  --by: 300px;
+  height: 1000px;
+}
+.granite::before {
+  background:
+    url('../../assets/site/granite-joints.svg') center top / 512px 512px repeat,
+    url('../../assets/site/granite.webp') center top / 512px 512px repeat;
+}
+/* the sink into the dark at the box's foot, the light's glow and its fall down the wall, the
+   vignette, and the dark away from the light */
+.granite::after {
+  background:
+    linear-gradient(180deg, transparent calc(100% - 300px), var(--bg) 100%),
+    radial-gradient(
+      ellipse 140px 140px at var(--bx) var(--by),
+      rgba(255, 220, 160, 0.3),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 700px 620px at var(--bx) calc(var(--by) + 40px),
+      rgba(255, 206, 140, 0.17),
+      transparent 70%
+    ),
+    radial-gradient(ellipse 120% 100% at 40% 40%, transparent 50%, rgba(0, 0, 0, 0.72)),
+    radial-gradient(
+      ellipse 900px 760px at var(--bx) var(--by),
+      transparent,
+      rgba(12, 10, 7, 0.65) 50%,
+      var(--bg) 80%
+    );
+}
+.wallLight {
+  display: none;
+  position: absolute;
+  left: calc(50% - 600px - 28px);
+  top: calc(var(--by) - 36px);
+  width: 56px;
+  height: 72px;
+}
+/* the light needs the gutter clear of the column */
+@media (min-width: 1300px) {
+  .wallLight {
+    display: block;
+  }
+}
+
+/* a phone: the board is taller, so the pendant would hang behind it; its light stays */
+@media (max-width: 860px) {
+  .pendant {
+    display: none;
+  }
+  .granite {
+    --by: 260px;
+  }
+}
