@@ -37,7 +37,7 @@ import { CARD_TEXT } from '@/stage/card-text';
 import type { PoolRole } from '@/types/contracts';
 import { defaultRow, modelGroups, needsKey } from './house';
 import { KeyRow } from './KeyRow';
-import { RoleCards } from './RoleCards';
+import { RoleCards, RolePreview } from './RoleCards';
 import classes from './Ticket.module.css';
 
 export type TicketKind = 'solo' | 'room';
@@ -46,7 +46,7 @@ const COPY = {
   solo: {
     kicker: 'Admit one',
     heading: 'One seat, the rest agents',
-    lede: 'No waiting: the cards are dealt as soon as you punch the ticket.',
+    lede: null,
     submit: 'Start the game',
     fine: 'Straight to the deal.',
     failed: 'The game could not be started',
@@ -144,7 +144,7 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
   };
 
   const paidBy = required || apiKey.trim() ? 'Your key' : menu ? 'The house' : null;
-  const roleLabel = role ? `${CARD_TEXT[role].name}, chosen` : 'Dealt at random';
+  const roleLabel = role ? CARD_TEXT[role].name : 'Dealt at random';
   const puppetLabel =
     cards.find((c) => c.id === character)?.display_name ?? 'Drawn by the house';
 
@@ -153,7 +153,6 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
       <div className={classes.intro}>
         <div>
           <h1 className={classes.title}>The ticket office</h1>
-          <p className={classes.lede}>Choose a ticket, fill it in, and punch it.</p>
         </div>
         <nav className={classes.kinds} aria-label="Kind of game">
           <span className={classes.rail} aria-hidden="true" />
@@ -190,13 +189,16 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
           <h2 id={`${ids}-heading`} className={classes.heading}>
             {copy.heading}
           </h2>
-          <p className={classes.ticketLede}>{copy.lede}</p>
+          {copy.lede ? <p className={classes.ticketLede}>{copy.lede}</p> : null}
 
           {kind === 'solo' ? (
             <>
               <div className={`${classes.fld} ${classes.wide}`}>
                 <div className={classes.lab} id={`${ids}-role`}>
-                  Your role <small>optional; the table never knows you chose</small>
+                  Your role{' '}
+                  <small>
+                    optional; if you don&rsquo;t pick one, your role is dealt at random
+                  </small>
                 </div>
                 <div className={classes.ctl}>
                   <RoleCards value={role} onChange={setRole} labelledBy={`${ids}-role`} />
@@ -426,6 +428,9 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
               </>
             ) : null}
           </dl>
+          {kind === 'solo' ? (
+            <RolePreview role={role} onClear={() => setRole(null)} place="stub" />
+          ) : null}
 
           <div className={classes.go}>
             {create.error ? (

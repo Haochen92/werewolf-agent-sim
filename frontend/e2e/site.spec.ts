@@ -294,20 +294,25 @@ test('ticket: the house pays, so /play asks for no key', async ({ page }) => {
   await expect(page.getByText(/Memory for the new cast is being built/)).toBeVisible();
   await expect(page.getByText('You and 9 agents')).toBeVisible();
 
-  // the role cards: a radio group, one chosen at a time, and the stub says which
-  const roles = page.getByRole('radiogroup', { name: /Your role/ });
-  await roles.getByRole('radio', { name: 'Chanteuse' }).click();
-  await expect(roles.getByRole('radio', { name: 'Chanteuse' })).toBeChecked();
-  await expect(page.getByText('Chanteuse, chosen')).toBeVisible();
-  await expect(page.getByText(/Your packmate will be an agent\./)).toBeVisible();
-  // the arrow keys move the choice and the focus; a drawn role says so in its name
+  // the role cards: a radio group, nothing chosen deals at random, one chosen at a time, the
+  // stub shows the role held; a second click on it deals at random again
+  const roles = page.getByRole('radiogroup', { name: /Your role/ }).filter({ visible: true });
+  const stub = page.locator('[data-place="stub"]');
+  await expect(stub).toContainText('Dealt at random');
+  await roles.getByRole('radio', { name: 'Chanteuse, Wolves' }).click();
+  await expect(roles.getByRole('radio', { name: 'Chanteuse, Wolves' })).toBeChecked();
+  await expect(stub).toContainText('Chanteuse');
+  await expect(stub).toContainText('Your packmate will be an agent.');
+  // the arrow keys move the choice and the focus
   await page.keyboard.press('ArrowRight');
-  await expect(roles.getByRole('radio', { name: 'Illusionist' })).toBeFocused();
+  await expect(roles.getByRole('radio', { name: 'Illusionist, Wolves' })).toBeFocused();
   await page.keyboard.press('ArrowRight');
-  const killer = roles.getByRole('radio', { name: 'Serial killer, a drawn seat' });
+  const killer = roles.getByRole('radio', { name: 'Serial killer, Lone killer' });
   await expect(killer).toBeChecked();
   await expect(killer).toBeFocused();
-  await expect(page.getByText(/the draw follows you/)).toBeVisible();
+  await killer.click();
+  await expect(killer).not.toBeChecked();
+  await expect(stub).toContainText('Dealt at random');
 });
 
 test('ticket: the model menu groups the house rows and shows what a game costs', async ({
