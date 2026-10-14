@@ -66,10 +66,6 @@ const COPY = {
 // count.
 const TABLE_PLACES = 10;
 
-// Memory stays off for the ten-seat game until a store of lessons exists for its cast
-// (ten_seat_pass.md §1): the switch shows, held off, and the request still says `memory: false`.
-const MEMORY_READY = false;
-
 const KEY_NEEDED = 'Paste an API key: the house is not paying for this model right now.';
 
 export function TicketOffice({ kind }: { kind: TicketKind }) {
@@ -103,6 +99,10 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
 
   const required = needsKey(menu, model);
   const row = menu?.models.find((r) => r.model === model);
+  // The server says whether a game may switch memory on (`memory_available`: the deployment
+  // allows it and its store of lessons is published). Until it does, the switch shows, held off,
+  // and the request still says `memory: false`.
+  const memoryReady = menu?.memory_available ?? false;
 
   const create = useMutation({
     mutationFn: async (): Promise<string> => {
@@ -266,7 +266,7 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
             <div className={classes.ctl}>
               <Switch
                 checked={memory}
-                disabled={!MEMORY_READY}
+                disabled={!memoryReady}
                 onChange={(e) => setMemory(e.currentTarget.checked)}
                 label={
                   memory ? 'On: lessons from past games' : 'Off: every agent plays fresh'
@@ -283,7 +283,7 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
                 })}
               />
               <p className={classes.note}>
-                {!MEMORY_READY
+                {!memoryReady
                   ? 'Memory for the new cast is being built; the switch returns when it ships.'
                   : memory
                     ? 'From day 2, before each decision, the agents look up lessons from past games, and the replay’s X-ray shows which ones they weighed. One extra model call per agent decision.'
