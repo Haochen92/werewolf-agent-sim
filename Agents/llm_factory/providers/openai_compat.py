@@ -91,6 +91,9 @@ class _ToolCallStructuredChatOpenAI(ChatOpenAI):
     """
 
     structured_mode: str = "forced_tool"
+    strict_schema_retry: bool = False
+    """Whether a json_mode reply that fails to validate is asked again with the strict schema: OpenAI's
+    own servers only, where strict json_schema is the mode GPT-6 Luna was admitted on."""
 
     def _get_request_payload(self, input_: Any, *, stop: list[str] | None = None, **kwargs: Any) -> dict:
         payload = super()._get_request_payload(input_, stop=stop, **kwargs)
@@ -115,6 +118,13 @@ class _ToolCallStructuredChatOpenAI(ChatOpenAI):
 
         bound = self.bind(response_format={"type": "json_object"})
         return RunnableLambda(with_instruction) | bound | RunnableLambda(lambda m: _parse_json_reply(schema, m))
+
+    def enforced_structured_output(self, schema: type) -> Any | None:
+        """The schema enforced, for the retry after a json_mode reply failed to validate; None where the
+        first attempt was enforced already or the provider has no strict schema here."""
+        if self.structured_mode != "json_mode" or not self.strict_schema_retry:
+            return None
+        return self.with_structured_output(schema, method="json_schema", strict=True)
 
 
 def _build_openai_compat_chat_model(
@@ -174,7 +184,8 @@ def build_chat_model(model: str, *, temperature: float, thinking_level: str | No
                   if thinking_level else {})
         return _build_openai_compat_chat_model(
             model.removeprefix("openai/"), _OPENAI_BASE_URL, "OPENAI_API_KEY",
-            temperature=temperature, structured_mode=mode, api_key_override=game_key, **effort)
+            temperature=temperature, structured_mode=mode, api_key_override=game_key,
+            strict_schema_retry=True, **effort)
 
     if model.startswith("openrouter/"):
         routed = model.removeprefix("openrouter/")

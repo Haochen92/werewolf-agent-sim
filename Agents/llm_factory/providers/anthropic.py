@@ -117,6 +117,13 @@ class ClaudeChat(ChatAnthropic):
             return RunnableLambda(with_instruction) | self | RunnableLambda(lambda m: _parse_json_reply(schema, m))
         return super().with_structured_output(schema, method="function_calling", **kwargs)
 
+    def enforced_structured_output(self, schema: type) -> Any | None:
+        """The schema enforced, for the retry after a json_mode reply failed to validate (that one call
+        does not share the cache). None in any other mode: its first attempt was enforced already."""
+        if self.structured_mode != "json_mode":
+            return None
+        return self.with_structured_output(schema, method="json_schema")
+
 
 # A Claude model with thinking off, where the default request is refused (2026-10-12, Sonnet 5.5 as
 # the golden judge): it answers "thinking disabled" with a 400 asking for "between_tools", and takes no

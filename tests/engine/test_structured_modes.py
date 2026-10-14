@@ -120,3 +120,20 @@ def test_json_schema_mode_asks_for_the_providers_strict_structured_output(monkey
     llm = _ToolCallStructuredChatOpenAI(model="m", api_key="k", structured_mode="json_schema")
     assert llm.with_structured_output(Vote) == "runnable"
     assert seen == {"method": "json_schema", "strict": True}
+
+
+def test_only_a_json_mode_model_on_openais_servers_retries_with_the_strict_schema(monkeypatch):
+    seen = {}
+
+    def fake(self, schema=None, **kwargs):
+        seen.update(kwargs)
+        return "runnable"
+
+    monkeypatch.setattr(openai_compat.ChatOpenAI, "with_structured_output", fake)
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    luna = _build_chat_model("openai/gpt-6-luna", structured_mode="json_mode")
+    assert luna.enforced_structured_output(Vote) == "runnable"
+    assert seen == {"method": "json_schema", "strict": True}
+    assert _build_chat_model("openai/gpt-6-luna", structured_mode="json_schema").enforced_structured_output(Vote) is None
+    # Another provider's json_mode (GLM on OpenRouter, DeepSeek) has no strict schema here.
+    assert _deepseek(monkeypatch, structured_mode="json_mode").enforced_structured_output(Vote) is None

@@ -353,3 +353,34 @@ def test_an_exhausted_round_turn_keeps_its_round_on_the_technical_pass(monkeypat
 
     assert out.entry.pass_reason == DiscussionPassReason.GENERATION_FAILED
     assert out.entry.day_round == "closing"
+
+
+class _JsonModeLLM:
+    """Breaks the schema unenforced, answers when the schema is enforced (a json_mode seat)."""
+
+    def __init__(self, result):
+        self._result, self.enforced_calls = result, 0
+
+    def with_structured_output(self, _schema):
+        def _boom(_input):
+            raise ValueError("off-schema output")
+        return RunnableLambda(_boom)
+
+    def enforced_structured_output(self, _schema):
+        def _answer(_input):
+            self.enforced_calls += 1
+            return self._result
+        return RunnableLambda(_answer)
+
+
+def test_a_json_mode_seat_is_asked_again_with_the_schema_enforced(monkeypatch, caplog):
+    # The retry stays on the seat's own model, enforced, so the rescue model is never needed.
+    primary = _JsonModeLLM(_result())
+    monkeypatch.setattr(agent_mod, "get_llm", lambda: primary)
+    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: _BrokenLLM())
+    with caplog.at_level("INFO"):
+        out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
+    assert out.entry == PROTECT_3
+    assert primary.enforced_calls == 1
+    assert any("schema enforced" in r.message for r in caplog.records)
+    assert not any("rescued by the fallback model" in r.message for r in caplog.records)

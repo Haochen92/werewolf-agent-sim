@@ -88,6 +88,7 @@ def run_agent(
     prompt_input = build_agent_prompt_input(payload)
     log_prompt(payload, output_key, prompt_input)
 
+    enforced = False
     for _ in range(max_retries + 1):
         result = _generate(chain, prompt_input, output_key, player_id)
         if result is _STALLED:
@@ -97,6 +98,12 @@ def run_agent(
                 health.note_stall()
             break
         if result is None:
+            # A json_mode reply that broke the schema is asked again with it enforced (Claude,
+            # OpenAI): the same model, and a reply that cannot break it (owner, 2026-10-14).
+            strict = None if enforced else _enforced_output(llm, schema)
+            if strict is not None:
+                chain, enforced = prompt_template | strict, True
+                logger.info(f"{player_id} asked again with the schema enforced on {output_key}")
             continue
         reasoning = extract_agent_reasoning(result)
         record_reads(reasoning["reads"], payload, output_key, output_schema)
@@ -188,6 +195,12 @@ def run_agent(
 
 # What _generate returns when the provider was slow or full rather than the answer wrong.
 _STALLED = object()
+
+
+def _enforced_output(llm: Any, schema: type[BaseModel]) -> Any | None:
+    """The model bound to ``schema`` enforced, where its first attempt was not; else None."""
+    enforce = getattr(llm, "enforced_structured_output", None)
+    return enforce(schema) if enforce is not None else None
 
 
 def _generate(chain: Any, prompt_input: dict, output_key: str, player_id: str):

@@ -96,3 +96,24 @@ def test_json_mode_rejects_a_target_outside_the_schema():
 
     with pytest.raises(OutputParserException):
         _parse_json_reply(Vote, AIMessage('{"target": "player_9"}'))
+
+
+def test_a_json_mode_seat_retries_with_claudes_enforced_schema(monkeypatch):
+    from pydantic import BaseModel
+
+    class Vote(BaseModel):
+        target: str
+
+    seen = {}
+
+    def fake(self, schema=None, **kwargs):
+        seen.update(kwargs)
+        return "runnable"
+
+    from langchain_anthropic import ChatAnthropic
+    monkeypatch.setattr(ChatAnthropic, "with_structured_output", fake)
+    llm = ClaudeChat(model="claude-haiku-5-5", api_key="k", structured_mode="json_mode")
+    assert llm.enforced_structured_output(Vote) == "runnable"
+    assert seen == {"method": "json_schema"}
+    enforced = ClaudeChat(model="claude-haiku-5-5", api_key="k", structured_mode="json_schema")
+    assert enforced.enforced_structured_output(Vote) is None
