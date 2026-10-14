@@ -175,6 +175,22 @@ function api(body: unknown, headers: Record<string, string> = {}) {
   };
 }
 
+/**
+ * The chrome's own reads, answered so a picture never depends on a running API: the nav's Rooms
+ * counter (`GET /rooms`, none boarding) and the footer's archive total. Anything else on those
+ * paths falls through to the routes a test set before.
+ */
+async function routeChrome(page: Page) {
+  const rooms = api([]);
+  await page.route('**/rooms', (route) =>
+    route.request().method() === 'GET' ? rooms(route) : route.fallback(),
+  );
+  await page.route(
+    (url) => url.pathname.endsWith('/replays'),
+    api([], { 'X-Total-Count': '212' }),
+  );
+}
+
 async function openArchive(page: Page) {
   await page.addInitScript((id) => localStorage.setItem(`seat_${id}`, 'tok'), MINE);
   await page.route('**/replays*', api(REPLAYS, { 'X-Total-Count': '212' }));
@@ -271,6 +287,7 @@ const menuWithPurse = (remaining: number) => ({
 });
 
 async function openTicket(page: Page, path: string, remaining: number) {
+  await routeChrome(page);
   await page.route('**/models', api(menuWithPurse(remaining)));
   await page.goto(path, { waitUntil: 'networkidle' });
   await expect(page.getByRole('heading', { name: 'The ticket office' })).toBeVisible();
@@ -368,14 +385,6 @@ test('ticket: /rooms/new opens a room and goes to it', async ({ page }) => {
       'access-control-allow-headers': 'content-type',
     };
     if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors });
-    // the nav's Rooms counter lists the rooms: none boarding
-    if (req.method() === 'GET')
-      return route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        headers: cors,
-        body: '[]',
-      });
     sent = req.postDataJSON() as Record<string, unknown>;
     await route.fulfill({
       status: 200,
@@ -457,6 +466,7 @@ const ROOMS = [
 
 async function openBoard(page: Page, rooms: unknown[] = ROOMS) {
   await page.clock.setFixedTime(NOW);
+  await routeChrome(page);
   await page.route('**/rooms', api(rooms));
   await page.goto('/rooms', { waitUntil: 'networkidle' });
   await expect(page.getByRole('heading', { name: 'The departures hall' })).toBeVisible();
