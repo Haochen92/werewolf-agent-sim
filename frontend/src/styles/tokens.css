@@ -32,6 +32,19 @@
   --shadow: 0 24px 44px -22px rgba(0, 0, 0, 0.9);
   --site-max: 1160px;
   --gutter: 28px;
+  /* the signage: board (what you operate), cream plate (the current choice), brass (lines) */
+  --brass-line: #c9963f;
+  --brass-hi: #f0c573;
+  --brass-lo: #4e340e;
+  --board-top: #3d2c1a;
+  --board-bot: #2a1d11;
+  --plate-top: #f4e8cc;
+  --plate-bot: #dccaa2;
+  --plate-edge: #a8813f;
+  --plate-ink: #2a1a08;
+  --sign-text: #f3e7cc;
+  --sign-muted: #a99a7e;
+  --well-text: #d8c59c;
 
   /* --- shared with the theatre: its names, its values -------------------- */
   --ink: #24180c;
@@ -56,6 +69,7 @@
   /* --- type (the --font-site-* variables come from theme/fonts.ts) ------- */
   --font-sans: var(--font-site-sans, Outfit), 'Helvetica Neue', Arial, sans-serif;
   --font-serif: var(--font-site-serif, 'IM Fell English'), Georgia, serif;
+  --font-garamond: var(--font-site-garamond, 'EB Garamond'), Georgia, serif;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────

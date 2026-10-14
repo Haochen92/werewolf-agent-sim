@@ -31,6 +31,21 @@ export const SITE_TOKENS = {
   '--shadow': '0 24px 44px -22px rgba(0, 0, 0, 0.9)',
   '--site-max': '1160px',
   '--gutter': '28px',
+  // the Ninth Express's signage (handoff 2026-10-14): a board (dark wood in a brass frame)
+  // carries what you operate, a cream plate marks the current or primary choice on it, and
+  // brass is for lines and hardware, never a small flat fill
+  '--brass-line': '#c9963f',
+  '--brass-hi': '#f0c573',
+  '--brass-lo': '#4e340e',
+  '--board-top': '#3d2c1a',
+  '--board-bot': '#2a1d11',
+  '--plate-top': '#f4e8cc',
+  '--plate-bot': '#dccaa2',
+  '--plate-edge': '#a8813f',
+  '--plate-ink': '#2a1a08',
+  '--sign-text': '#f3e7cc',
+  '--sign-muted': '#a99a7e',
+  '--well-text': '#d8c59c',
 } as const satisfies Record<CssVar, string>;
 
 /**
