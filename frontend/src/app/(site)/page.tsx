@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
-import { Icon } from '@/components/site';
+import { GuideSign, Icon } from '@/components/site';
 import { Pendant, WallLight } from '@/components/site/StationLamps';
 import { ReplayListClient } from './replays/_components/ReplayListClient';
 import { HouseDoorNote } from './_components/HouseDoorNote';
@@ -47,6 +47,8 @@ export default function HomePage() {
         </p>
         <SeatTags />
         <HouseDoorNote />
+        {/* the guide is something to read, so its sign and not a third tag (owner, 2026-10-15) */}
+        <GuideSign className={classes.heroGuide} />
       </header>
 
       <section className={classes.first} aria-label="A game from the archive, playing">

@@ -175,6 +175,10 @@
     display: none;
   }
 }
+.heroGuide {
+  margin-top: 18px;
+}
+
 .allGames {
   display: inline-block;
   margin-top: 22px;
