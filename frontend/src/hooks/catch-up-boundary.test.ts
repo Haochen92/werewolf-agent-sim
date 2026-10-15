@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { catchUpBoundary, reopenNow } from './catch-up-boundary';
+import { describe, expect, it, vi } from 'vitest';
+import { CATCH_UP_GATHER_MS, catchUpBatch, catchUpBoundary, reopenNow } from './catch-up-boundary';
 
 describe('the catch-up boundary', () => {
   it('on the first connection, history is everything up to the status’s last seq', () => {
@@ -40,5 +40,30 @@ describe('reopening the stream when the page comes back', () => {
     expect(reopenNow(1, false)).toBe(false);
     expect(reopenNow(0, true)).toBe(false);
     expect(reopenNow(2, true)).toBe(false);
+  });
+});
+
+describe('the catch-up block', () => {
+  it('hands on the frames that arrive together as one block, and news flushes it first', () => {
+    vi.useFakeTimers();
+    const blocks: number[][] = [];
+    const batch = catchUpBatch<number>((b) => blocks.push(b));
+    for (let seq = 1; seq <= 300; seq++) batch.add(seq);
+    expect(blocks).toEqual([]);
+    vi.advanceTimersByTime(CATCH_UP_GATHER_MS);
+    expect(blocks).toHaveLength(1);
+    expect(blocks[0]).toHaveLength(300);
+    // more history, then news: the history goes on at once, before the news is applied
+    batch.add(301);
+    batch.flush();
+    expect(blocks.at(-1)).toEqual([301]);
+    batch.flush();
+    expect(blocks).toHaveLength(2);
+    // a closed stream's held frames go nowhere
+    batch.add(302);
+    batch.drop();
+    vi.advanceTimersByTime(CATCH_UP_GATHER_MS);
+    expect(blocks).toHaveLength(2);
+    vi.useRealTimers();
   });
 });

@@ -48,3 +48,49 @@ export function catchUpBoundary(connectedAt: number): CatchUpBoundary {
 export function reopenNow(readyState: number, hidden: boolean): boolean {
   return !hidden && readyState !== 1;
 }
+
+/** How long the first held catch-up frame waits for those arriving behind it, in ms. */
+export const CATCH_UP_GATHER_MS = 50;
+
+export interface CatchUpBatch<E> {
+  /** Hold one catch-up frame; the block goes on once the frames stop coming together. */
+  add: (event: E) => void;
+  /** Hand on what is held now: before news, so it never lands ahead of the history under it. */
+  flush: () => void;
+  /** Forget what is held (the stream is closed for good). */
+  drop: () => void;
+}
+
+/**
+ * Gathers the catch-up frames that arrive together and hands them on as one block. The stream
+ * sends a game's history a frame at a time, and each frame on its own was a store write and a
+ * render over the whole log so far: work that grows with the square of the game's length, so
+ * a phone rejoining a long game froze. In blocks it is a handful of renders, each over the log.
+ */
+export function catchUpBatch<E>(
+  apply: (events: E[]) => void,
+  wait = CATCH_UP_GATHER_MS,
+): CatchUpBatch<E> {
+  let held: E[] = [];
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  const flush = () => {
+    if (timer) clearTimeout(timer);
+    timer = null;
+    if (held.length === 0) return;
+    const block = held;
+    held = [];
+    apply(block);
+  };
+  return {
+    add: (event) => {
+      held.push(event);
+      timer ??= setTimeout(flush, wait);
+    },
+    flush,
+    drop: () => {
+      if (timer) clearTimeout(timer);
+      timer = null;
+      held = [];
+    },
+  };
+}

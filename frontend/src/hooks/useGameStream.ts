@@ -13,8 +13,8 @@
  * The load-bearing subtlety is the catch-up boundary. The stream replays the log from the
  * client's cursor before going live, and on a first connection that cursor is 0 — so the
  * entire history arrives through the same socket as the future. Everything at or below the
- * snapshot's `last_seq` is folded as HISTORY; only what is above it counts as news and can
- * fire a beat. Without that split, every refresh would replay the role reveal and the
+ * snapshot's `last_seq` is folded as HISTORY, in blocks of the frames that arrive together
+ * (`catchUpBatch`); only what is above it counts as news and can fire a beat. Without that split, every refresh would replay the role reveal and the
  * game-over takeover for events that happened an hour ago (ux_journeys §0, D23). A reconnect
  * moves the boundary on to what it caught up on (catch-up-boundary.ts).
  *
@@ -28,7 +28,7 @@ import { apiUrl } from '@/lib/config';
 import { getGameStatus } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { useGameSession } from '@/game/store';
-import { catchUpBoundary, reopenNow } from './catch-up-boundary';
+import { catchUpBatch, catchUpBoundary, reopenNow } from './catch-up-boundary';
 import { recordServerClock } from './useCountdown';
 import type {
   DurableGameEvent,
@@ -98,6 +98,7 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
 
     // Frozen at connect time; every seq at or below it is history, not news (until a reconnect).
     const boundary = catchUpBoundary(status.last_seq ?? 0);
+    const history = catchUpBatch(applyCatchUp);
     hydrate([], { gameId, mySeat: status.you ?? null });
     setConnection('connecting');
 
@@ -123,8 +124,11 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
           const event = JSON.parse(
             (message as MessageEvent<string>).data,
           ) as DurableGameEvent;
-          if (boundary.isHistory(event.seq)) applyCatchUp(event);
-          else applyLive(event);
+          if (boundary.isHistory(event.seq)) history.add(event);
+          else {
+            history.flush();
+            applyLive(event);
+          }
         } catch {
           // A frame we cannot parse is a wire problem, not a render problem. Dropping it
           // keeps the session alive; the status poll remains the authority on game state.
@@ -159,6 +163,7 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
     const reopen = () => {
       if (!reopenNow(source.readyState, document.hidden)) return;
       source.close();
+      history.flush();
       boundary.dropped();
       setConnection('reconnecting');
       const at = useGameSession.getState().view.lastSeq;
@@ -171,6 +176,7 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
       document.removeEventListener('visibilitychange', reopen);
       window.removeEventListener('online', reopen);
       source.close();
+      history.drop();
       setConnection('idle');
     };
     // Reconnect when seat identity changes. Rejoin sets a NEW cookie, but an EventSource's
