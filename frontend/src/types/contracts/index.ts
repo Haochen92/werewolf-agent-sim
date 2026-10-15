@@ -90,7 +90,7 @@ export type LynchOutcome = LynchResult['outcome'];
 export interface PhaseProgress {
   type: 'phase_progress';
   day: number;
-  stage: 'night' | 'day_vote';
+  stage: 'night' | 'day_vote' | 'opening' | 'closing';
   done: number;
   total: number;
 }

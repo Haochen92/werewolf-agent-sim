@@ -134,6 +134,11 @@ export function workbenchFrame(
       // a live cut keeps a seated viewer's notebook, as a live game would
       game: q.live ? WORKBENCH_GAME : undefined,
     },
+    // a round's live count (`written`): of the round's players, as the server counts it
+    turn:
+      q.written !== undefined && beat
+        ? { progress: { n: q.written, total: beat.subjects?.length ?? 0 } }
+        : undefined,
   };
 }
 

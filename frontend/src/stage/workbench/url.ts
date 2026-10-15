@@ -82,6 +82,11 @@ export interface WorkbenchQuery {
   noLedger?: boolean;
   /** Draw the stage in a phone-sized box; absent = fill the window. */
   frame?: DeviceFrame;
+  /**
+   * How many of the round have written their line so far (the live `phase_progress` count),
+   * for a round's beat; absent = no count, as in a replay.
+   */
+  written?: number;
 }
 
 /** A landscape screen's size in CSS px, to draw the stage at. */
@@ -125,6 +130,7 @@ export const QUERY_KEYS = [
   'game',
   'ledger',
   'frame',
+  'written',
 ] as const;
 
 const pick = <T extends string>(v: string | null, all: readonly T[], dflt: T): T =>
@@ -162,6 +168,7 @@ export function parseQuery(params: URLSearchParams): WorkbenchQuery {
         ? 'fast'
         : pick<MotionSpeed>(motionRaw, ['normal', 'fast'], DEFAULT_QUERY.motion);
   const frame = parseFrame(params.get('frame'));
+  const written = Number(params.get('written') ?? NaN);
   return {
     beat: Number.isInteger(beat) && beat >= 0 ? beat : DEFAULT_QUERY.beat,
     viewer: parseViewer(params.get('viewer')),
@@ -178,11 +185,12 @@ export function parseQuery(params: URLSearchParams): WorkbenchQuery {
       : {}),
     ...(params.get('ledger') === 'off' ? { noLedger: true } : {}),
     ...(frame ? { frame } : {}),
+    ...(Number.isInteger(written) && written >= 0 ? { written } : {}),
   };
 }
 
 /**
- * The query string for `q`: the six keys in canonical form (then `live`, `memory`, `summary`, `game`, `ledger` and `frame`, when
+ * The query string for `q`: the six keys in canonical form (then `live`, `memory`, `summary`, `game`, `ledger`, `frame` and `written`, when
  * set), then any other keys `rest` carries (the paint bench's options, `strip=0`), untouched
  * and in their own order.
  */
@@ -201,6 +209,7 @@ export function writeQuery(q: WorkbenchQuery, rest?: URLSearchParams): string {
   if (q.game) out.set('game', q.game);
   if (q.noLedger) out.set('ledger', 'off');
   if (q.frame) out.set('frame', q.frame.id);
+  if (q.written !== undefined) out.set('written', String(q.written));
   rest?.forEach((v, k) => {
     if (!(QUERY_KEYS as readonly string[]).includes(k)) out.append(k, v);
   });

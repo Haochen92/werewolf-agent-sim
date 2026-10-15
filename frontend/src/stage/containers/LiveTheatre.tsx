@@ -162,9 +162,17 @@ function progressFor(
   beat: SceneBeat,
   pacing: Record<string, PacingBar>,
 ): TurnInput['progress'] {
-  // the night's count also reaches the seat's own room and the pack's, once their act is in
+  // the night's count also reaches the seat's own room and the pack's, once their act is in;
+  // the opening's lines written, while the round is being written (the placard over the stand)
   const night = beat.scene === 'night' || beat.scene === 'room' || beat.scene === 'pack';
-  const stage = beat.scene === 'vote' ? 'day_vote' : night ? 'night' : null;
+  const stage =
+    beat.scene === 'vote'
+      ? 'day_vote'
+      : night
+        ? 'night'
+        : beat.id === 'day.opening-prepares'
+          ? 'opening'
+          : null;
   const bar = stage ? pacing[`${beat.day}:${stage}`] : undefined;
   return bar ? { n: bar.done, total: bar.total } : undefined;
 }
