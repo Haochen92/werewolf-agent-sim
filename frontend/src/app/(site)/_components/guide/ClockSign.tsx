@@ -118,8 +118,8 @@ export function ClockSign() {
       <div>
         <h3>Rooms run on a clock</h3>
         <p>
-          With other people at the table, every turn has <b>two minutes</b>. If yours runs
-          out, <b>your agent speaks or votes for you</b>.
+          With more than one person playing, every turn has <b>two minutes</b>. If yours
+          runs out, <b>an AI player takes your turn</b>.
         </p>
         <p className={classes.solo}>Solo games have no clock: take as long as you like.</p>
       </div>

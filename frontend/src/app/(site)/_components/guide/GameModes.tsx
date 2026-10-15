@@ -12,43 +12,52 @@ import guide from './Guide.module.css';
 import classes from './GameModes.module.css';
 
 const SOLO: [ReactNode, string][] = [
-  ['Take the solo ticket', 'One seat is yours. The other nine are played by agents.'],
   [
-    'Pick your cast',
-    'Choose a role, or leave it and it’s dealt at random like everyone else’s. Choose the puppet you play as; it hints at no role.',
+    'Start a solo game',
+    'Select Play solo. You take one seat; AI players take the other nine.',
+  ],
+  [
+    'Choose your role and appearance',
+    'Pick a role, or leave it to be dealt at random. Choose your puppet\u2019s appearance; it doesn\u2019t affect or reveal your role.',
   ],
   [
     <>
       Agents&rsquo; memory <em>experimental</em>
     </>,
-    'Switch it on and the agents bring lessons learned in past games to the table. It’s off by default.',
+    'Off by default: every AI player starts fresh. When it\u2019s available, switch it on and they bring lessons from past games.',
   ],
   [
     'Choose the model',
-    'The model the agents run on. The house pays for some; for the others, paste your own API key. Your key is used for this game only and never stored.',
+    'The AI model the players run on. Some are free to play, up to a daily limit; for the others, paste your own API key. Your key is used for this game only and never stored.',
   ],
 ];
 
 const HOST: [ReactNode, string][] = [
   [
     'Open a room',
-    'Name it if you like. Choose the agents’ memory and the model, as for solo.',
+    'Name it if you like, choose Agents\u2019 memory and the model as for solo, then select Open the room.',
   ],
-  ['Board', 'Give your name and pick your puppet on the boarding pass.'],
-  ['Invite', 'Send the room’s link, or let people find it in Rooms.'],
+  [
+    'Board',
+    'Fill in the boarding pass with your name and puppet, then select Step onto the platform.',
+  ],
+  ['Invite', 'Send the room\u2019s link, or let people find it on the Rooms page.'],
   [
     'Depart',
-    'Lock the room if you want no one else to join, then press Depart. Agents take any empty places.',
+    'Select Lock if you want no one else to join. Select Depart to start the game; AI players fill any empty seats.',
   ],
 ];
 
 const JOIN: [ReactNode, string][] = [
-  ['Open Rooms', 'Every room still boarding is listed there.'],
-  ['Pick a room', 'Choose an open one and press Board, or follow the link you were sent.'],
-  ['Board', 'Give your name and pick your puppet.'],
+  ['Open Rooms', 'The Rooms page lists every room still boarding.'],
+  ['Pick a room', 'Select Board on an open room, or follow the link you were sent.'],
+  [
+    'Board',
+    'Fill in the boarding pass with your name and puppet, then select Step onto the platform.',
+  ],
   [
     'Wait for the host',
-    'Seats and roles are dealt at random when the train departs. If the room is full, you can still watch.',
+    'Seats and roles are dealt at random when the host selects Depart. If a room is full or locked, select Watch instead.',
   ],
 ];
 
@@ -79,7 +88,7 @@ export function GameModes() {
       <div className={`${guide.stack} ${classes.modes}`}>
         <div className={classes.mode} {...mode.panel('solo')}>
           <div className={classes.head}>
-            <p>You against nine agents.</p>
+            <p>Play with nine AI players. Your role decides who your teammates are.</p>
             <Button component={Link} href="/play" variant="primary">
               Play solo &rarr;
             </Button>

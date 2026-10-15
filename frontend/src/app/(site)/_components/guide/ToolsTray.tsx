@@ -52,12 +52,15 @@ export function ToolsTray() {
       <div className={`${guide.stack} ${classes.cards}`}>
         <div className={classes.card} {...t.panel('cards')}>
           <Tool
-            title="Notes on every seat"
+            title="Notes on every player"
             demo={<SeatCardsDemo />}
             how={[
-              ['Tap a card', 'write a note on that seat'],
-              ['Guess their role', 'it shows on their card'],
-              ['Kept on this device', 'your notes go nowhere else'],
+              ['Select a player\u2019s card', 'write a note, or guess their role'],
+              ['Your guess shows on their card', 'only you can see it'],
+              [
+                'Saved in this browser',
+                'shared only with a draft, if Use my seat notes is ticked',
+              ],
             ]}
           />
         </div>
@@ -66,11 +69,12 @@ export function ToolsTray() {
             title="Draft with your agent"
             demo={<ComposerDemo />}
             how={[
-              ['Prompt it, or leave it blank', 'your agent drafts a line for you'],
-              ['Write your own', 'your agent revises it'],
+              ['Select Draft', 'leave Your agent blank, or say what you want'],
+              ['Or write your own', 'then Redraft this to have it revised'],
+              ['Edit, then Send', 'nothing is sent until you do; three drafts a turn'],
               [
                 <>Tick &ldquo;Use my seat notes&rdquo;</>,
-                'your agent weighs your notes in its draft',
+                'your notes go with the draft request',
               ],
             ]}
           />

@@ -338,7 +338,7 @@ export function DiscussionDemo() {
   );
 }
 
-/** The last word: the moderator's call, then the accused's answer. */
+/** The last word: the game master's call, then the accused's answer. */
 export function LastWordDemo() {
   const [answered, setAnswered] = useState(false);
   return (
@@ -356,7 +356,7 @@ export function LastWordDemo() {
                 ? 'I’m the investigator. I checked seat 7 last night: a wolf. Vote seat 7, not me.'
                 : 'Before the vote: seat 4 has been accused by seat 2, seat 3 and seat 7. Seat 4 gets a last word.'
             }
-            tag={answered ? undefined : { text: 'the moderator' }}
+            tag={answered ? undefined : { text: 'the game master' }}
             onNext={() => setAnswered((a) => !a)}
           />
         }
@@ -398,7 +398,8 @@ export function OpeningDemo() {
     <div className={`${classes.openingDemo} ${stageFonts}`} style={vars()}>
       {sent ? (
         <p className={classes.sentNote}>
-          Your opening is in. Once every seat has written, they are read out in seat order.{' '}
+          Your opening is in. Once everyone has written, the statements are read out in seat
+          order.{' '}
           <button
             type="button"
             className={classes.retry}

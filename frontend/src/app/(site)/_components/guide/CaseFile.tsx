@@ -109,13 +109,17 @@ export function CaseFile() {
             <Paperclip />
           </div>
           <IndexCard title="The replay">
-            <li>Open it from the end screen, or find its slate in the archive.</li>
             <li>
-              Until it is filed the end screen says <b>Winding the reels&hellip;</b>: come
-              back in a few minutes.
+              Select <b>Watch the replay</b> on the end screen, or find the game on the
+              Replays page.
             </li>
             <li>
-              Jump a chapter, step a beat, or play it through, at normal or fast speed.
+              It is ready moments after the game ends; until then the end screen says{' '}
+              <b>Winding the reels&hellip;</b>
+            </li>
+            <li>
+              Jump a chapter, step through one moment at a time, or play it at normal or
+              fast speed.
             </li>
           </IndexCard>
           <div className={`${classes.clip} ${classes.band}`}>
@@ -129,15 +133,16 @@ export function CaseFile() {
           </div>
           <IndexCard title="Reveal and the case file">
             <li>
-              <b>Reveal</b> shows what was hidden: every role, the night acts, the
-              wolves&rsquo; talk, why a seat passed.
+              <b>Reveal</b> shows what was hidden: every role, the night actions, the
+              wolves&rsquo; chat, and why a player passed.
             </li>
             <li>
-              Tap a seat for its case file: <b>Notes</b>, its private plan page by page;{' '}
-              <b>Reads</b>, who it suspected, checked against the truth.
+              Select a player for their case file. <b>Notes</b>: their private plan, page by
+              page. <b>Reads</b>: their guess at every other player&rsquo;s role, how sure
+              they were and why, marked against the truth.
             </li>
             <li>
-              Without Reveal, the case file shows the record: each morning&rsquo;s
+              With Reveal off, the case file shows the public record: each day&rsquo;s
               accusations and claims.
             </li>
           </IndexCard>
@@ -149,12 +154,15 @@ export function CaseFile() {
             <Paperclip />
           </div>
           <IndexCard title="The transcript">
-            <li>Everything said, under a heading per day.</li>
+            <li>Everything said, under a heading for each day.</li>
             <li>
-              Filter by day or by seat. A seated player, or anyone with Reveal on, can show
-              the private lines.
+              Filter by day or by player. A seated player, or anyone with Reveal on, can
+              include the private lines.
             </li>
-            <li>In a replay it stops where you are: nothing is spoiled.</li>
+            <li>
+              In a replay it stops at the moment you&rsquo;re watching: nothing ahead is
+              spoiled.
+            </li>
           </IndexCard>
         </article>
 
@@ -165,17 +173,16 @@ export function CaseFile() {
           </div>
           <IndexCard title="Memory-on games" stamp="Memory on">
             <li>
-              <b>Agents&rsquo; memory</b> on the ticket, when the house allows it. Off by
-              default: every agent plays fresh.
+              Switch on <b>Agents&rsquo; memory</b> when you start a game, if it&rsquo;s
+              available. It&rsquo;s off by default: every AI player starts fresh.
             </li>
             <li>
-              A seat&rsquo;s <b>Lessons</b> tab: the lesson it looked up, stamped Followed,
-              Overrode or Doesn&rsquo;t apply, with why.
+              <b>Lessons</b>: the lessons from past games a player looked up, each marked
+              Followed, Overrode or Doesn&rsquo;t apply, with why.
             </li>
             <li>
-              Its <b>Findings</b> tab: each role&rsquo;s account of its play, written after
-              the game, offline. Until then the end screen says the lessons are being
-              written.
+              <b>Findings</b>: what the game taught each role, added once the game has been
+              analysed.
             </li>
           </IndexCard>
         </article>

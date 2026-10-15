@@ -285,6 +285,33 @@
   border-radius: 4px;
 }
 
+/* the deduction's first rule, set apart on the signage's cream plate */
+/* under the line: the claims note, then the clock (ClockSign) */
+.claims {
+  margin-top: 20px;
+  padding: 18px 22px 20px;
+  border-radius: 12px;
+  color: var(--plate-ink);
+  background: linear-gradient(var(--plate-top), var(--plate-bot));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 0 0 1px var(--plate-edge),
+    0 2px 0 #4a3210;
+}
+.claims h3 {
+  margin: 0 0 6px;
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 400;
+  color: #7d4e10;
+}
+.claims p {
+  margin: 0;
+  max-width: 70ch;
+  font-size: 15.5px;
+  line-height: 1.55;
+}
+
 @media (max-width: 760px) {
   .route {
     padding-top: 30px;

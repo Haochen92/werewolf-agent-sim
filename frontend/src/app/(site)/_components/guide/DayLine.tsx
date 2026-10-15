@@ -5,7 +5,7 @@
  * night blue and back, the end of the game its terminus. A small engine runs to the stop
  * picked; the stop's card is the site's walnut signboard, with the phase's own instrument
  * working in one fixed slot (so stepping along the line moves no edge), and your part on a cream
- * plate. Under the line, the clock's enamel sign.
+ * plate. Under the line, that a claim is not proof, and the clock's enamel sign.
  */
 import type { ComponentType, CSSProperties, ReactNode } from 'react';
 import { DiscGlyph } from '@/stage/instruments/TopStrip';
@@ -38,23 +38,23 @@ const STOPS: {
     name: 'Opening round',
     disc: 'sun',
     Demo: OpeningDemo,
-    text: 'Every living seat writes an opening at the same time; then they are read out in seat order. On day 1 this is the only round.',
-    you: 'claim a role, share what you learned last night, challenge someone, or pass.',
+    text: 'Each day opens with opening statements: everyone still in the game writes one at the same time, then they are read out in seat order. On Day 1 that is the whole day, and night follows. Discussion and voting start on Day 2.',
+    you: 'claim a role, share what you learned at night, challenge someone, or pass.',
   },
   {
     id: 'discussion',
     name: 'Discussion',
     disc: 'sun',
     Demo: DiscussionDemo,
-    text: 'Anyone asked a question or accused answers first. Then the floor goes, in seat order, to the seats that have not spoken today.',
-    you: 'write your line and send it, or pass.',
+    text: 'Players speak one at a time, when the game gives them the turn; nobody can speak out of turn. Anyone asked a question or accused answers first. Then the turn goes, in seat order, to anyone who hasn’t spoken today.',
+    you: 'write your message when it’s your turn and select Send, or Pass.',
   },
   {
     id: 'lastword',
     name: 'Last word',
     disc: 'sun',
     Demo: LastWordDemo,
-    text: 'Before the vote, any seat accused by two or more others gets a last word: at most two seats, written at the same time.',
+    text: 'Before the vote, anyone accused by at least two different players gets a last word. If more than two qualify, the two with the most accusers speak. Both write at the same time.',
     you: <>make your case, if it&rsquo;s you.</>,
   },
   {
@@ -62,30 +62,30 @@ const STOPS: {
     name: 'Vote',
     disc: 'sun',
     Demo: VoteDemo,
-    text: 'Everyone votes at once, in secret. The seat with the most votes is out and its card is turned; a tie sends nobody out. After two days in a row with nobody out, abstaining is off.',
-    you: <>tap a seat&rsquo;s chip, or the empty plate to abstain.</>,
+    text: 'Everyone votes at the same time; when voting closes, every vote is shown. The player with the most votes is eliminated and their role revealed. A tie at the top, or most votes for Abstain, eliminates nobody. After two days in a row with nobody out (Day 1 counts), Abstain is off the ballot until someone is voted out.',
+    you: <>tap a player&rsquo;s chip, or the empty plate to abstain, then confirm.</>,
   },
   {
     id: 'night',
     name: 'Night',
     disc: 'moon',
     Demo: NightDemo,
-    text: 'Each role acts alone, in its own room. The wolves talk in private; one names the kill, then each uses its own skill.',
-    you: 'pick a photo on the wall and confirm. Your card says what your role does.',
+    text: 'Each role acts alone, at the same time. The wolves first talk in private, then one of them chooses the kill, and each wolf uses its own ability.',
+    you: 'pick a player’s photo on the wall and confirm. Your role card says what your ability does.',
   },
   {
     id: 'morning',
     name: 'Morning',
     disc: 'sun',
     Demo: MorningDemo,
-    text: 'The morning roll names who died in the night, what killed them, and their role, and anyone attacked and saved. A concealed victim’s role stays hidden. Then the next day opens, and so on until one side has won.',
+    text: 'The game master announces who died in the night, what killed them and their role, unless an illusionist hid it, and anyone who was attacked but saved. Then the next day begins, and so on until one side has won.',
   },
   {
     id: 'end',
     name: 'End game',
     disc: 'end',
     Demo: EndingDemo,
-    text: 'The game ends the moment one side has won: after a vote, or at a morning. Every card turns face up, and the box tells you who won, and how you did.',
+    text: 'The game ends as soon as one side has won: after a vote, or after a night. Every role is revealed, and the end screen shows who won and how you did.',
     you: 'watch the replay, or go back to the lobby.',
   },
 ];
@@ -191,6 +191,15 @@ export function DayLine() {
           );
         })}
       </div>
+
+      <aside className={classes.claims}>
+        <h3>A claim isn&rsquo;t proof</h3>
+        <p>
+          Anyone can lie about their role or what they saw at night. A claim is only what
+          someone says happened. Check it against other players&rsquo; accounts, the votes,
+          which are shown once voting closes, and the game master&rsquo;s announcements.
+        </p>
+      </aside>
 
       <ClockSign />
     </>
