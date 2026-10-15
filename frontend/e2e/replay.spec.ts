@@ -51,7 +51,7 @@ async function settle(page: Page) {
 
 async function open(page: Page) {
   await mockApi(page);
-  await page.goto(`/replays/${GAME}`, { waitUntil: 'networkidle' });
+  await page.goto(`/replays/${GAME}?still=1`, { waitUntil: 'networkidle' });
   await expect(page.locator('[data-transport]')).toBeVisible();
   await expect(page.locator('[data-beat-index="0"]')).toBeAttached();
 }
@@ -76,9 +76,19 @@ async function seek(page: Page, i: number) {
   await expect(theatre(page)).toHaveAttribute('data-beat-index', String(i));
 }
 
-test('replay: while the log is on its way the page is the empty platform, then the stage', async ({
+test('replay: the way in is the train leaving; the curtain holds for the log, then lifts off the stage', async ({
   page,
 }) => {
+  // the departure's moment, not its seven seconds
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.addInitScript(() => {
+    const seen: string[] = [];
+    (window as unknown as { departure: string[] }).departure = seen;
+    new MutationObserver(() => {
+      const at = document.querySelector('[data-departure]')?.getAttribute('data-departure');
+      if (at && seen.at(-1) !== at) seen.push(at);
+    }).observe(document, { subtree: true, attributes: true, childList: true });
+  });
   await mockApi(page);
   // hold the log until the picture is taken
   let release = () => {};
@@ -90,14 +100,19 @@ test('replay: while the log is on its way the page is the empty platform, then t
     await route.fallback();
   });
   await page.goto(`/replays/${GAME}`);
-  const still = page.locator('[data-loading="replay"]');
-  await expect(still).toBeVisible();
-  await expect(still.getByRole('status')).toHaveText('Rewinding the reels…');
+  const platform = page.locator('[data-departure]');
+  await expect(platform).toHaveAttribute('data-departure', 'down', { timeout: 15_000 });
+  await expect(platform.getByRole('status')).toHaveText('Rewinding the reels…');
+  await expect(page.locator('[data-transport]')).toHaveCount(0);
   await settle(page);
   await expect(page).toHaveScreenshot('loading-replay.png');
   release();
-  await expect(page.locator('[data-transport]')).toBeVisible();
-  await expect(still).toHaveCount(0);
+  await expect(page.locator('[data-transport]')).toBeVisible({ timeout: 10_000 });
+  await expect(platform).toHaveCount(0, { timeout: 5_000 });
+  const order = await page.evaluate(
+    () => (window as unknown as { departure: string[] }).departure,
+  );
+  expect(order).toEqual(['boarding', 'departing', 'closing', 'down', 'lifting']);
 });
 
 test('replay: the first beat', async ({ page }) => {
@@ -250,7 +265,7 @@ test('replay: a ten-seat wolf’s card plays its own skill’s room, then the pa
     });
   });
   await page.clock.install();
-  await page.goto(`/replays/${id}`, { waitUntil: 'networkidle' });
+  await page.goto(`/replays/${id}?still=1`, { waitUntil: 'networkidle' });
   await expect(page.locator('[data-transport]')).toBeVisible();
   await reveal(page).click();
   const next = page.getByRole('button', { name: 'Next chapter' });
@@ -595,7 +610,7 @@ test('replay: a game over but not yet filed winds its reels, then plays', async 
 }) => {
   let filed = false;
   await mockUnfiled(page, () => filed, OVER);
-  await page.goto(`/replays/${GAME}`);
+  await page.goto(`/replays/${GAME}?still=1`);
   const still = page.locator('[data-loading="replay"]');
   await expect(still.getByRole('status')).toHaveText('Winding the reels…');
   await expect(page.getByText('No such replay.')).toHaveCount(0);

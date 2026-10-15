@@ -3,8 +3,16 @@
 /**
  * The replay page: fetches the finished game's whole log once and hands it to the replay
  * theatre, which plays it on the stage beat by beat (src/stage/containers/ReplayTheatre).
- * The page itself only waits for the log (on the empty platform, `StationStill`) and says so
- * if it cannot have it.
+ * The page itself only waits for the log and says so if it cannot have it.
+ *
+ * The way in is the train's departure (owner, 2026-10-15; `StationDeparture`): it plays whole
+ * from the moment the page opens, the curtain falls, and it holds until the log is here, so the
+ * page is never quicker than the departure, cached replay or not. The log is fetched meanwhile,
+ * and the theatre is mounted under the platform as soon as it comes (out of sight and inert),
+ * so its code has run and its pictures are on their way before it is seen;
+ * then the curtain lifts off it. What the page cannot have is said at once, departure or not.
+ * With `?still=1` (the tests and goldens) there is no departure: the empty platform while the
+ * log is on its way (`StationStill`), then the theatre at once.
  *
  * A game is filed as a replay when its run ends, which with memory on is after the lessons are
  * written, a minute or more after `game_over`: a viewer who comes from the live curtain can be
@@ -27,7 +35,7 @@
 import Link from 'next/link';
 import { Anchor } from '@mantine/core';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { FILED_POLL_MS } from '@/hooks/useReplayFiled';
 import { getGameStatus, getReplay } from '@/lib/api';
@@ -35,11 +43,45 @@ import { queryKeys } from '@/lib/queryKeys';
 import { ApiError } from '@/lib/request';
 import { OrientationGuard } from '@/stage/OrientationGuard';
 import { ReplayTheatre } from '@/stage/containers/ReplayTheatre';
+import { StationDeparture } from '@/stage/scenes/StationDeparture';
 import { StationStill } from '@/stage/scenes/StationStill';
+import { CURTAIN } from '@/stage/scenes/station';
 import type { GameStatus } from '@/types/contracts';
 import classes from './TheaterClient.module.css';
 
 const HOME = { href: '/', label: 'Home' };
+
+/** The theatre under the platform: laid out, so it measures and fetches, but never painted. */
+const UNDER: CSSProperties = { visibility: 'hidden' };
+
+/** How long the curtain waits on the theatre's pictures before it lifts without them. */
+const PICTURES_CAP_MS = 4000;
+
+/**
+ * Every picture the theatre has put on the page (its `<img>`s and its drawings' `<image>`s),
+ * loaded and decoded, or `PICTURES_CAP_MS`: what the curtain waits on, so the theatre is never
+ * seen half drawn, and the decoding is done behind the curtain, not in its lift.
+ */
+async function picturesOf(el: HTMLElement): Promise<unknown> {
+  // a theatre mounted this moment places its pictures over its next renders (the stage measures
+  // first, the scene then describes its backdrop): two frames, and they are all on the page
+  await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+  const srcs = new Set<string>();
+  el.querySelectorAll('img').forEach((img) => img.currentSrc && srcs.add(img.currentSrc));
+  el.querySelectorAll('image').forEach((img) => {
+    const href = img.getAttribute('href');
+    if (href) srcs.add(href);
+  });
+  const all = [...srcs].map((src) => {
+    const img = new Image();
+    img.src = src;
+    return img.decode().catch(() => {});
+  });
+  return Promise.race([
+    Promise.all(all),
+    new Promise((done) => setTimeout(done, PICTURES_CAP_MS)),
+  ]);
+}
 
 /**
  * The still's line while a finished game's replay is being filed (the curtain's plaque's): a
@@ -53,7 +95,9 @@ function windingOn(s: GameStatus | undefined): boolean {
 }
 
 export function TheaterClient({ gameId }: { gameId: string }) {
-  const fromHome = useSearchParams().get('from') === 'home';
+  const params = useSearchParams();
+  const fromHome = params.get('from') === 'home';
+  const still = params.get('still') === '1';
   // the game's status, asked only when the replay is not there (see `winding`, below)
   const [asked, setAsked] = useState(false);
   const status = useQuery({
@@ -88,9 +132,76 @@ export function TheaterClient({ gameId }: { gameId: string }) {
 
   const statusPending = missing && (!asked || status.isPending);
   const retrying = filedSince || (missing && retried && isFetching);
-  if (isPending || statusPending || retrying)
-    return <StationStill what="replay" hud="replay" line="Rewinding the reels…" />;
-  if (missing && winding) return <StationStill what="replay" hud="replay" line={WINDING} />;
+  const waiting = isPending || statusPending || retrying || (missing && winding);
+
+  // the departure's curtain is down and the log is here: the theatre is drawn behind it, and
+  // once its pictures are in, the curtain lifts off it
+  const [down, setDown] = useState(false);
+  const onDown = useCallback(() => setDown(true), []);
+  const shown = down && !!data;
+  const theatre = useRef<HTMLElement>(null);
+  const [lifting, setLifting] = useState(false);
+  useEffect(() => {
+    if (!shown || !theatre.current) return;
+    let live = true;
+    void picturesOf(theatre.current).then(() => {
+      if (live) setLifting(true);
+    });
+    return () => {
+      live = false;
+    };
+  }, [shown]);
+  const [lifted, setLifted] = useState(false);
+  useEffect(() => {
+    if (!lifting) return;
+    const t = setTimeout(() => setLifted(true), CURTAIN.open * 1000);
+    return () => clearTimeout(t);
+  }, [lifting]);
+
+  if (still && waiting)
+    return (
+      <StationStill
+        what="replay"
+        hud="replay"
+        line={missing && winding ? WINDING : 'Rewinding the reels…'}
+      />
+    );
+  if (still && data)
+    return (
+      <OrientationGuard>
+        <main className={classes.page}>
+          <ReplayTheatre game={data} back={fromHome ? HOME : undefined} />
+        </main>
+      </OrientationGuard>
+    );
+  if (data || waiting)
+    return (
+      <OrientationGuard>
+        {data ? (
+          <main
+            ref={theatre}
+            className={classes.page}
+            style={shown ? undefined : UNDER}
+            inert={!lifting}
+            aria-hidden={lifting ? undefined : true}
+          >
+            <ReplayTheatre
+              game={data}
+              back={fromHome ? HOME : undefined}
+              waiting={!lifting}
+            />
+          </main>
+        ) : null}
+        {lifted ? null : (
+          <StationDeparture
+            gameId={gameId}
+            line={missing && winding ? WINDING : 'Rewinding the reels…'}
+            onDown={onDown}
+            lifting={lifting}
+          />
+        )}
+      </OrientationGuard>
+    );
   if (missing && (status.data?.state === 'dropped' || live?.error))
     return (
       <p role="alert" className={classes.meta}>
@@ -119,13 +230,5 @@ export function TheaterClient({ gameId }: { gameId: string }) {
       </p>
     );
   }
-  if (!data) return null;
-
-  return (
-    <OrientationGuard>
-      <main className={classes.page}>
-        <ReplayTheatre game={data} back={fromHome ? HOME : undefined} />
-      </main>
-    </OrientationGuard>
-  );
+  return null;
 }

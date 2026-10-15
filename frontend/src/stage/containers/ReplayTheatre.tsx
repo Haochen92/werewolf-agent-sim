@@ -90,6 +90,11 @@ export interface ReplayTheatreProps {
     under?: (u: MiniUnder) => ReactNode;
     underEl?: HTMLElement | null;
   };
+  /**
+   * The theatre waits out of sight under the replay page's departure (TheaterClient), its
+   * pictures on their way: its keys wait too.
+   */
+  waiting?: boolean;
 }
 
 /** What a preview's controls below the stage draw from, and what their presses do. */
@@ -151,7 +156,12 @@ const isSpeech = (el: EventTarget | null) =>
 
 const TO_LIST = { href: '/replays', label: 'Replays' };
 
-export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps) {
+export function ReplayTheatre({
+  game,
+  mini,
+  back = TO_LIST,
+  waiting = false,
+}: ReplayTheatreProps) {
   const events = game.events as readonly DurableGameEvent[];
   const cast = useMemo(
     () => resolveCast(game.cast, game.game_id, rosterSize(events)),
@@ -324,9 +334,10 @@ export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps
     setHeld(root.current?.querySelector('[data-speech]:hover') != null);
   }, [index, state.xray]);
 
-  // the keys: arrows step, space plays or pauses, the brackets jump chapters (not a preview's)
+  // the keys: arrows step, space plays or pauses, the brackets jump chapters (not a preview's,
+  // nor a theatre still waiting under the departure, out of sight)
   useEffect(() => {
-    if (isMini) return;
+    if (isMini || waiting) return;
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null;
       if (t && (/^(INPUT|SELECT|TEXTAREA)$/.test(t.tagName) || t.isContentEditable)) return;
@@ -358,7 +369,7 @@ export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('keyup', onKeyUp);
     };
-  }, [isMini]);
+  }, [isMini, waiting]);
 
   // with the controls under the stage, the slot's choice is the pane's, not the stage's
   const presentation = useMemo(
