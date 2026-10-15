@@ -137,13 +137,21 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   into the next through the dark: no threshold between them, only one brass threshold left before
   the closing word. Chosen on the comparison bench (`station-rooms-compare`) over panelling, felt
   and pigeonholes, which lost the station: "What makes it different" is dark granite in dressed
-  blocks under a caged wall light (`WallLight` in `RoomLamps.tsx`); the roles stand against a
-  band of green glazed tile, unlit, rising out of the dark and trimmed in brass at its foot;
-  "Latest games" is the platform's own tile (`wall-tile.svg`) with an oxblood band near the
-  ceiling, under a pendant (`Pendant`). Each tiled room has its own band colour, as old stations
-  did. "Take a seat" is gone: the hero's tags and the nav's Play and Rooms are the way in.
-- The walls and the light span the screen from the section's `::before`/`::after` (`.lit`, and
-  `.band` for the roles), behind its content. The light is gradients over the wall, darkest away
+  blocks under a caged wall light (`WallLight` in `RoomLamps.tsx`); the replay section ("At the
+  end of the line, the secrets come out", then "Latest games") is the platform's own tile
+  (`wall-tile.svg`) with an oxblood band near the ceiling, under a pendant (`Pendant`). Each
+  tiled room has its own band colour, as old stations did. "Take a seat" is gone: the hero's
+  tags and the nav's Play and Rooms are the way in. The roles' green-tile room left the landing
+  with the roles (owner, 2026-10-15); the green tile is the guide's now.
+- The landing's words (owner, 2026-10-15): every quoted agent line is a real one, verbatim, at
+  the seq `landing/features.ts` names. The memory card's slip is game 2f19d908's Sigilist
+  following a lesson; the replay section's moment is game 68c26e83's Chanteuse claiming the
+  Investigator (also the carriage's game, day 2); the draft card's notes are the one thing
+  written for the demo, and its caption says so. The closing states the research result as it
+  stands: the pipeline is built, and controlled tests on the current version have not shown a
+  reliable gain in wins.
+- The walls and the light span the screen from the section's `::before`/`::after` (`.lit`),
+  behind its content. The light is gradients over the wall, darkest away
   from the lamp; a lit room rises out of the dark at its top (`--fade-in`) and its wall stops
   where its light runs out (1000px for the reading room, 520px under the pendant), so the page's
   own ground carries on below. No masks, no filters, no drop shadows.
