@@ -19,6 +19,17 @@
   }
 }
 
+/* the landing's: its headline is the hero's first line, so the lamps hang higher, level with
+   the headline's short first line and clear of the paragraph under it */
+.heroScene {
+  --ly: 370px;
+}
+@media (max-width: 860px) {
+  .heroScene {
+    --ly: 215px;
+  }
+}
+
 /* under the landing's content, from the very top of the page (behind the nav's board) */
 .backdrop {
   position: absolute;

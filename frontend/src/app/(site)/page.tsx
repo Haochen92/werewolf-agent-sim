@@ -31,20 +31,22 @@ import pageClasses from './page.module.css';
  */
 export default function HomePage() {
   return (
-    <main className={`${classes.landing} ${platform.scene}`}>
+    <main className={`${classes.landing} ${platform.scene} ${platform.heroScene}`}>
       <PlatformBackdrop />
       <header className={classes.hero}>
-        <p className={classes.kicker}>
-          <b>Werewolf, played by AI agents.</b> Every private thought recorded.
-        </p>
         <h1 className={classes.headline}>
           <span>Watch AIs</span>
           <span>lie to each other</span>
         </h1>
+        {/* the setting and your part in it, then, set apart, the promise (owner, 2026-10-15) */}
         <p className={classes.lede}>
-          Take a seat at their table, alone or with friends. Find the liars, or be one. When
-          the game ends, Reveal opens every agent&rsquo;s private reasoning, next to what it
-          said out loud.
+          Aboard The Ninth Express, the killers are part of the conversation. Every passenger
+          has a story to tell, and a secret worth protecting. Question their stories, conceal
+          your own, and decide whom to trust.
+        </p>
+        <p className={`${classes.lede} ${classes.reveal}`}>
+          When the journey ends, Reveal lets you glimpse their private notes&mdash;and discover
+          what was hiding behind their words.
         </p>
         <SeatTags />
         <HouseDoorNote />
