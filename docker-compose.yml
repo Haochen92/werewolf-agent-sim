@@ -53,6 +53,10 @@ services:
         NEXT_PUBLIC_API_BASE_URL: /api
     container_name: wolf-frontend
     restart: unless-stopped
+    environment:
+      # The API by its address on the private network, for a page rendered with its data in
+      # it (the replay archive). Read at run time, on the server only; the browser keeps /api.
+      API_INTERNAL_URL: http://wolf-server:8000
     depends_on:
       wolf-server:
         condition: service_healthy

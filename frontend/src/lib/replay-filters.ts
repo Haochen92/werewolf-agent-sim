@@ -1,3 +1,7 @@
+/** The archive's one fetch of the list. Past this, the count says only the newest are loaded
+ *  (review §E4). */
+export const ARCHIVE_LIMIT = 500;
+
 /**
  * The archive's filters and sort (review §F6: they run in the browser, over the one fetch of
  * `GET /replays`). Pure functions over `ReplaySummary` rows, so the page only holds state and

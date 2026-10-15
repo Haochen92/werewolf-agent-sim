@@ -12,10 +12,11 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { SegmentedControl, Select, Skeleton } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
-import { listReplaysWithTotal } from '@/lib/api';
+import { listReplaysWithTotal, type ReplayPage } from '@/lib/api';
 import { ApiError } from '@/lib/request';
 import { queryKeys } from '@/lib/queryKeys';
 import {
+  ARCHIVE_LIMIT,
   NO_FILTERS,
   activeFilters,
   applyFilters,
@@ -31,8 +32,6 @@ import { FilterRail } from './FilterRail';
 import { ArchiveTable } from './ArchiveTable';
 import classes from './Archive.module.css';
 
-/** The one fetch. Past this, the count says only the newest are loaded (review §E4). */
-const LIMIT = 500;
 /** Slates (or rows) shown before "Show more games". */
 const PAGE = 12;
 const NONE: ReplaySummary[] = [];
@@ -44,10 +43,13 @@ const SORTS: { value: ReplaySort; label: string }[] = [
   { value: 'short', label: 'Shortest first' },
 ];
 
-export function ArchiveClient() {
+export function ArchiveClient({ initial }: { initial?: ReplayPage | null }) {
+  // the page brings the list in its HTML when it can (page.tsx): the slates are drawn with the
+  // first paint, not after the page's code has loaded; the list is asked for again from here
   const archive = useQuery({
-    queryKey: queryKeys.replays.archive(LIMIT),
-    queryFn: () => listReplaysWithTotal({ limit: LIMIT }),
+    queryKey: queryKeys.replays.archive(ARCHIVE_LIMIT),
+    queryFn: () => listReplaysWithTotal({ limit: ARCHIVE_LIMIT }),
+    initialData: initial ?? undefined,
   });
   const modelName = useModelLabels();
   const mine = usePlayedHere();
@@ -93,8 +95,8 @@ export function ArchiveClient() {
       <div className={classes.empty}>
         <h3 className={classes.emptyTitle}>Nothing in the archive yet</h3>
         <p className={classes.emptyText}>
-          Every game that finishes lands here, with Reveal on. Play one and it will be
-          the first.
+          Every game that finishes lands here, with Reveal on. Play one and it will be the
+          first.
         </p>
         <Button component={Link} href="/play" variant="plate">
           Take a seat
