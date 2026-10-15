@@ -73,6 +73,12 @@ export interface TurnDockProps {
    * the dock's place): the dock and an open composer, which come back as they were.
    */
   hidden?: boolean;
+  /**
+   * Only the composer, open for good and in the page's flow (the guide's demo, owner
+   * 2026-10-14): no dock, no dark around it, the focus left where it is, nothing that closes it.
+   * Its height is the page's (`--composer-h`).
+   */
+  pinned?: boolean;
 }
 
 /**
@@ -106,6 +112,7 @@ export function TurnDock({
   onPass,
   arrive = false,
   hidden = false,
+  pinned = false,
 }: TurnDockProps) {
   const k = useMotionScale();
   const c = dockControls(dock);
@@ -128,6 +135,20 @@ export function TurnDock({
     expand.current?.focus();
   };
   const board = { '--board': `url(${SPRITES.textures.walnut.src})` } as CSSProperties;
+  if (pinned)
+    return (
+      <Composer
+        dock={dock}
+        c={c}
+        clock={clock}
+        board={board}
+        say={say}
+        draft={draft}
+        onPass={onPass}
+        onClose={() => {}}
+        pinned
+      />
+    );
   return (
     <motion.div
       className={styles.dock}
@@ -273,6 +294,7 @@ function Composer({
   draft,
   onPass,
   onClose,
+  pinned = false,
 }: {
   dock: DockInput;
   c: DockControls;
@@ -282,6 +304,8 @@ function Composer({
   draft: () => void;
   onPass?: () => void;
   onClose: () => void;
+  /** In the page's flow for good (`TurnDock`'s `pinned`). */
+  pinned?: boolean;
 }) {
   const heading = dockHeading(dock.round);
   const id = useId();
@@ -290,21 +314,23 @@ function Composer({
   // opened, the writing goes on where it was: the caret at the end of the line
   useEffect(() => {
     const el = line.current;
-    if (!el) return;
+    // pinned, it is there from the page's first paint: the focus stays where the reader has it
+    if (!el || pinned) return;
     el.focus();
     el.setSelectionRange(el.value.length, el.value.length);
-  }, []);
+  }, [pinned]);
   // Esc closes it wherever the focus is (a pressed Draft is disabled while it works, and the
   // focus falls back to the page)
   const shut = useRef(onClose);
   shut.current = onClose;
   useEffect(() => {
+    if (pinned) return;
     const esc = (e: globalThis.KeyboardEvent) => {
       if (e.key === 'Escape') shut.current();
     };
     window.addEventListener('keydown', esc);
     return () => window.removeEventListener('keydown', esc);
-  }, []);
+  }, [pinned]);
   const onKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
@@ -313,15 +339,15 @@ function Composer({
   };
   return (
     <div
-      className={styles.composer}
-      style={area ?? undefined}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Your line, full screen"
+      className={pinned ? `${styles.composer} ${styles.pinned}` : styles.composer}
+      style={pinned ? undefined : (area ?? undefined)}
+      role={pinned ? 'group' : 'dialog'}
+      aria-modal={pinned ? undefined : true}
+      aria-label={pinned ? 'The composer' : 'Your line, full screen'}
       data-composer
       // a tap on the dark around the sheet closes it too (the line stays)
       onPointerDown={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (!pinned && e.target === e.currentTarget) onClose();
       }}
     >
       <div className={`${styles.dock} ${styles.sheet}`} style={board}>
@@ -336,17 +362,19 @@ function Composer({
               <CountText clock={clock} />
             </span>
           ) : null}
-          <button
-            type="button"
-            className={styles.close}
-            aria-label="Close"
-            title="Close (Esc). The line stays in the box."
-            onClick={onClose}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M6 6 L18 18 M18 6 L6 18" />
-            </svg>
-          </button>
+          {pinned ? null : (
+            <button
+              type="button"
+              className={styles.close}
+              aria-label="Close"
+              title="Close (Esc). The line stays in the box."
+              onClick={onClose}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 6 L18 18 M18 6 L6 18" />
+              </svg>
+            </button>
+          )}
         </header>
         {c.hasDraft ? (
           <AgentRow id={`${id}-notes`} dock={dock} c={c} draft={draft} />

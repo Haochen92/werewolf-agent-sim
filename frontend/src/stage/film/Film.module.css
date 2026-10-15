@@ -6,6 +6,8 @@
    the stamps' worn ink is a still mask tile (scripts/make-stamp-ink.mjs). On a phone (the stage's
    `data-small`) the cover and the tabs share one row. */
 .folder {
+  /* a page that shows the file on its own (the guide) caps its height */
+  max-height: var(--side-max, none);
   position: absolute;
   z-index: 3;
   box-sizing: border-box;

@@ -41,10 +41,12 @@ import {
   useEffect,
   useId,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
+  type RefObject,
 } from 'react';
 import { SPRITES, type Character } from '@/assets/manifest';
 import { ChipSprite } from '../cast/ChipSprite';
@@ -136,6 +138,7 @@ export function Wing({
   notes = null,
   castCounts,
   edit,
+  pinned,
 }: {
   width: number;
   /** The seats, in order. */
@@ -149,11 +152,28 @@ export function Wing({
    * without it the wing holds it itself, until it is remounted.
    */
   edit?: { editing: NoteEdit | null; onEdit: (edit: NoteEdit | null) => void };
+  /**
+   * The seat whose notes stay open beside the rail, inline (the guide's demo, owner 2026-10-14):
+   * no scrim, the focus left where it is, nothing that closes them; a tap on the card goes to
+   * the paper.
+   */
+  pinned?: number;
 }) {
   const book = useNotebook(notes);
   const [own, setOwn] = useState<NoteEdit | null>(null);
-  const editing = edit ? edit.editing : own;
-  const setEditing = edit ? edit.onEdit : setOwn;
+  const paper = useRef<HTMLTextAreaElement | null>(null);
+  const pin = pinned !== undefined ? tiles.find((t) => t.seat === pinned) : undefined;
+  const pinSeat = pin?.seat;
+  const pinDead = !!pin?.dead;
+  const editing = useMemo(
+    () =>
+      pinSeat !== undefined ? { seat: pinSeat, dead: pinDead } : edit ? edit.editing : own,
+    [pinSeat, pinDead, edit, own],
+  );
+  const setEditing = useMemo(
+    () => (pinSeat !== undefined ? () => {} : edit ? edit.onEdit : setOwn),
+    [pinSeat, edit],
+  );
   const opener = useRef<HTMLElement | null>(null);
   const bySeat = new Map(tiles.map((t) => [t.seat, t]));
   const editable = (t: WingTileProps) =>
@@ -180,6 +200,10 @@ export function Wing({
     '--cork': `url(${SPRITES.textures.cork.src})`,
   } as CSSProperties;
   const open = (seat: number, el: HTMLElement) => {
+    if (pin) {
+      paper.current?.focus();
+      return;
+    }
     opener.current = el;
     carried = null;
     book?.dismissHint();
@@ -191,7 +215,7 @@ export function Wing({
     // the card that opened it, if this wing still holds it (a remounted wing does not)
     if (opener.current?.isConnected) opener.current.focus();
   };
-  const hint = !!book && !book.hinted && tiles.some(editable);
+  const hint = !pin && !!book && !book.hinted && tiles.some(editable);
   return (
     <>
       <div className={styles.bleed} style={rail} aria-hidden="true" />
@@ -230,6 +254,8 @@ export function Wing({
           )}
           onClose={close}
           style={rail}
+          pinned={!!pin}
+          paperRef={paper}
         />
       ) : null}
     </>
@@ -600,6 +626,8 @@ function NoteEditor({
   choices,
   onClose,
   style,
+  pinned = false,
+  paperRef,
 }: {
   seat: number;
   character: Character;
@@ -609,13 +637,19 @@ function NoteEditor({
   choices: readonly { role: string; left: number }[];
   onClose: () => void;
   style: CSSProperties;
+  /** Open for good, inline (`Wing`'s `pinned`): no scrim, no focus taken, no Done. */
+  pinned?: boolean;
+  /** Handed the writing area, for a tap on the pinned seat's card. */
+  paperRef?: RefObject<HTMLTextAreaElement | null>;
 }) {
   const id = useId();
   const area = useRef<HTMLTextAreaElement>(null);
   const board = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const el = area.current;
-    if (!el) return;
+    if (paperRef) paperRef.current = el;
+    // pinned, it is there from the page's first paint: the focus stays where the reader has it
+    if (!el || pinned) return;
     // the wing was remounted under an open editor: the focus goes back where it was (the
     // listbox refocuses itself); opened afresh, it goes to the end of the note
     const back = carried?.seat === seat ? carried : null;
@@ -629,7 +663,7 @@ function NoteEditor({
       carried = { seat, at: 'paper', start: el.selectionStart, end: el.selectionEnd };
     } else if (back.at !== 'list' && back.at)
       board.current?.querySelector<HTMLElement>(`[data-at="${back.at}"]`)?.focus();
-  }, [seat]);
+  }, [seat, pinned, paperRef]);
   // where the focus is, and the caret, for the editor that comes back after a remount
   const keep = (at: EditorAt | null) => {
     const el = area.current;
@@ -641,7 +675,7 @@ function NoteEditor({
     };
   };
   const onKey = (e: ReactKeyboardEvent) => {
-    if (e.key === 'Escape') {
+    if (e.key === 'Escape' && !pinned) {
       e.stopPropagation();
       onClose();
     }
@@ -651,13 +685,15 @@ function NoteEditor({
     : 'Alive';
   return (
     <>
-      <div className={styles.scrim} onClick={onClose} aria-hidden="true" />
+      {pinned ? null : (
+        <div className={styles.scrim} onClick={onClose} aria-hidden="true" />
+      )}
       <div
         ref={board}
         className={styles.editor}
         style={style}
-        role="dialog"
-        aria-modal="true"
+        role={pinned ? 'group' : 'dialog'}
+        aria-modal={pinned ? undefined : true}
         aria-labelledby={`${id}-h`}
         onKeyDown={onKey}
         onFocus={(e) =>
@@ -708,11 +744,13 @@ function NoteEditor({
             onGuess={(role) => book.setGuess(seat, role)}
           />
         ) : null}
-        <div className={styles.editorFoot}>
-          <button type="button" className={styles.done} data-at="done" onClick={onClose}>
-            Done
-          </button>
-        </div>
+        {pinned ? null : (
+          <div className={styles.editorFoot}>
+            <button type="button" className={styles.done} data-at="done" onClick={onClose}>
+              Done
+            </button>
+          </div>
+        )}
       </div>
     </>
   );

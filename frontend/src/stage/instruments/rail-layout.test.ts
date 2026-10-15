@@ -28,6 +28,11 @@ describe('railLayout', () => {
     }
   });
 
+  it('one card alone takes the whole rail', () => {
+    expect(railLayout(1)).toMatchObject({ cols: 1, rows: 1 });
+    expect(railLayout(2).cols).toBe(2);
+  });
+
   it('nine seats: the numbers the stage is drawn with', () => {
     const L = railLayout(9);
     expect(L).toMatchObject({ cols: 2, rows: 5 });

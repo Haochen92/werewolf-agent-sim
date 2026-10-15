@@ -43,7 +43,8 @@ export function railLayout(
   n: number,
   { height = STAGE_H, width = WING_N } = {},
 ): RailLayout {
-  const cols = Math.max(2, Math.ceil(n / RAIL_MAX_ROWS));
+  // one card alone (the guide's demo) takes the rail's width
+  const cols = Math.max(Math.min(n, 2), Math.ceil(n / RAIL_MAX_ROWS));
   const rows = Math.max(1, Math.ceil(n / cols));
   const cardH = (height - 2 * RAIL_PAD - (rows - 1) * RAIL_GAP) / rows;
   const across = (w: number) => (w - 2 * RAIL_PAD - (cols - 1) * RAIL_GAP) / cols;

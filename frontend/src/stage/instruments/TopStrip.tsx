@@ -206,30 +206,34 @@ function Reveal({ on, onPress, locked = false }: NonNullable<TopStripProps['reve
 function Disc({ kind }: { kind: 'sun' | 'moon' }) {
   return (
     <span className={styles.disc} data-disc={kind} aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}>
-        {kind === 'sun' ? (
-          <>
-            <circle cx={12} cy={12} r={3.6} />
-            {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => (
-              <line
-                key={a}
-                x1={12}
-                y1={5.4}
-                x2={12}
-                y2={3.4}
-                strokeLinecap="round"
-                transform={`rotate(${a} 12 12)`}
-              />
-            ))}
-          </>
-        ) : (
-          <path
-            d="M15.6 5.2a7 7 0 1 0 3.2 11.7A6 6 0 0 1 15.6 5.2Z"
-            strokeLinejoin="round"
-          />
-        )}
-      </svg>
+      <DiscGlyph kind={kind} />
     </span>
+  );
+}
+
+/** The disc's drawing alone (the guide's day line wears it too). */
+export function DiscGlyph({ kind }: { kind: 'sun' | 'moon' }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}>
+      {kind === 'sun' ? (
+        <>
+          <circle cx={12} cy={12} r={3.6} />
+          {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => (
+            <line
+              key={a}
+              x1={12}
+              y1={5.4}
+              x2={12}
+              y2={3.4}
+              strokeLinecap="round"
+              transform={`rotate(${a} 12 12)`}
+            />
+          ))}
+        </>
+      ) : (
+        <path d="M15.6 5.2a7 7 0 1 0 3.2 11.7A6 6 0 0 1 15.6 5.2Z" strokeLinejoin="round" />
+      )}
+    </svg>
   );
 }
 

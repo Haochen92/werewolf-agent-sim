@@ -706,7 +706,8 @@
   display: block;
   box-sizing: content-box;
   width: calc(100% - 1em);
-  height: 6em;
+  /* a page that shows the notes pinned open (the guide) gives them more paper */
+  height: var(--note-paper-h, 6em);
   margin: 0;
   padding: 0.1em 0.5em 0;
   border: 0;
@@ -815,7 +816,8 @@
   top: 50%;
   translate: 0 -50%;
   min-width: calc(250px * var(--legible-ui));
-  max-height: 860px;
+  /* a page that shows the rail in a short frame (the guide) caps it to that frame */
+  max-height: var(--guess-max, 860px);
   overflow-y: auto;
   box-sizing: border-box;
   margin: 0;

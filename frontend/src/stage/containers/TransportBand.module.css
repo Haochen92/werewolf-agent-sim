@@ -5,6 +5,8 @@
 .band {
   position: absolute;
   bottom: 0;
+  /* a page that shows the band on its own (the guide) caps its length */
+  max-width: var(--band-max, none);
   z-index: 4;
   display: flex;
   align-items: center;

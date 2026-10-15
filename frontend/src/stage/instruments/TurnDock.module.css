@@ -355,6 +355,15 @@
     --said: 18px;
   }
 }
+/* pinned in a page (the guide's demo): in the flow, as tall as the page says, nothing around it */
+.composer.pinned {
+  position: relative;
+  inset: auto;
+  z-index: auto;
+  height: var(--composer-h, 360px);
+  padding: 0;
+  background: none;
+}
 .sheet {
   place-self: center;
   width: 100%;
@@ -423,6 +432,25 @@
 .sheet .foot .pri {
   flex: none;
   min-width: 6.5em;
+}
+/* pinned in a narrower page (the guide): the label and the steer on one row, Draft, the count
+   and the tick under them; on a phone's width the tick takes a row of its own */
+@container (max-width: 700px) {
+  .pinned .agent {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    justify-items: start;
+    row-gap: calc(8px * var(--legible-ui));
+  }
+  .pinned .agent input:not([type='checkbox']) {
+    grid-column: 2 / -1;
+    justify-self: stretch;
+  }
+}
+@container (max-width: 420px) {
+  .pinned .agent .share {
+    grid-column: 1 / -1;
+  }
 }
 /* a short sheet (a phone with the soft keyboard up): the words close up so the box keeps its
    room and Send stays in view */

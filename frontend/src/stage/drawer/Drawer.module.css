@@ -5,7 +5,8 @@
   position: absolute;
   z-index: 3;
   top: 0;
-  height: var(--drawer-h);
+  /* a page that shows the transcript on its own (the guide) caps its height */
+  height: min(var(--drawer-h), var(--side-max, 100000px));
   box-sizing: border-box;
   display: flex;
   flex-direction: column;

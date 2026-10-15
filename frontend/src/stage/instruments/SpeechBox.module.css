@@ -17,8 +17,10 @@
 .box {
   /* the measure: ems of text a line holds. PAGE_CHARS (beats/pages.ts) fits in three of them,
      and because it is in ems the count is the same on every screen */
-  --measure: 30;
-  --lines: 3;
+  --measure: var(--speech-measure, 30);
+  --lines: var(--speech-lines, 3);
+  /* (a page that shows the board on its own, the guide, sets a shorter measure over more lines,
+     for its short lines) */
   /* the board's size is the words' size: a speech at full size a little over the phone's
      growth (the board reads at the room's scale), stepped down only where the room is too
      narrow for the measure (the box beside the drawer, on a phone) */
