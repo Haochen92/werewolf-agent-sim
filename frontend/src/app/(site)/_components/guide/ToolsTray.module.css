@@ -21,54 +21,7 @@
 }
 
 .tabs {
-  display: inline-flex;
-  gap: 10px;
-}
-.tabs button {
-  position: relative;
-  min-height: 40px;
-  padding: 6px 16px 7px;
-  border: 0;
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.45);
-  box-shadow: inset 0 0 0 1px rgba(255, 220, 160, 0.1);
-  color: var(--bone);
-  font-family: var(--font-serif);
-  font-size: 19px;
-  line-height: 1;
-  cursor: pointer;
-}
-.tabs button[aria-selected='true'] {
-  padding-inline: 22px;
-  border-radius: 6px;
-  color: var(--plate-ink);
-  background: linear-gradient(#e6c47a, #b8893a 55%, #9c7128);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.4),
-    0 2px 0 #4a3210,
-    0 0 0 1px #5e421a;
-}
-/* the plate's two screws */
-.tabs button[aria-selected='true']::before,
-.tabs button[aria-selected='true']::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  width: 6px;
-  height: 6px;
-  margin-top: -3px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #fff3cf, #7d5f2e 70%);
-}
-.tabs button[aria-selected='true']::before {
-  left: 6px;
-}
-.tabs button[aria-selected='true']::after {
-  right: 6px;
-}
-.tabs button:focus-visible {
-  outline: 2px solid var(--amber);
-  outline-offset: 2px;
+  composes: tabs from '../../../../components/site/PlateTabs.module.css';
 }
 
 .cards {
