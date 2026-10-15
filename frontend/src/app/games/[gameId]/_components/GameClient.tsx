@@ -84,9 +84,13 @@ export function GameClient({ gameId }: { gameId: string }) {
       .then(() =>
         queryClient.invalidateQueries({ queryKey: queryKeys.games.status(gameId) }),
       )
-      .catch(() => {
-        // The token no longer resolves (game gone, or a different device's seat).
-        seatToken.clear(gameId);
+      .catch((err) => {
+        // The token no longer resolves (game gone, or a different device's seat): forget it.
+        // Anything else (no network, a server restarting) says nothing about the token: keep
+        // it and try again shortly. Cleared on any failure, a blip left the friend a spectator
+        // for the rest of the game (multiplayer audit, 2026-10-15).
+        if (err instanceof ApiError && err.refusesToken) seatToken.clear(gameId);
+        else setTimeout(() => setRejoinTried(false), 5000);
       })
       .finally(() => setRejoining(false));
   }, [gameId, status, statusError, rejoinTried, queryClient]);

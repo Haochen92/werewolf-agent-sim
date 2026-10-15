@@ -213,7 +213,9 @@ async function asSeat<T>(gameId: string, call: () => Promise<T>): Promise<T> {
     try {
       await rejoinGame(gameId, token);
     } catch (rejoinError) {
-      seatToken.clear(gameId);
+      // forgotten only when the server refuses it; a blip says nothing about the token
+      if (rejoinError instanceof ApiError && rejoinError.refusesToken)
+        seatToken.clear(gameId);
       throw rejoinError;
     }
     return call();

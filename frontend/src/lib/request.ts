@@ -22,6 +22,13 @@ export class ApiError extends Error {
   get isSeatLost(): boolean {
     return this.status === 403;
   }
+  /**
+   * The server will never take this seat token: unknown (403), the game gone (404) or over
+   * (410). Anything else (a network failure, a 5xx) says nothing about the token.
+   */
+  get refusesToken(): boolean {
+    return this.status === 403 || this.status === 404 || this.status === 410;
+  }
   get isConflict(): boolean {
     return this.status === 409;
   }
