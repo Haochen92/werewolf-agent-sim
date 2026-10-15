@@ -372,28 +372,6 @@
   --ci: var(--benign-ink);
 }
 
-/* the suspect's wax seal, pressed over the photo's lower corner */
-.seal {
-  position: absolute;
-  z-index: 2;
-  right: 2.4px;
-  top: calc(4.8px + min(120cqw, 60cqh) - min(26cqw, 25.6px) * 0.7);
-  width: min(26cqw, 25.6px);
-  aspect-ratio: 1;
-  border-radius: 46% 54% 50% 48%;
-  background: radial-gradient(circle at 38% 34%, #d9594c, #a32219 48%, #6b120c 100%);
-  box-shadow:
-    0 1.6px 3px rgba(0, 0, 0, 0.6),
-    inset 0 0 0 1.6px rgba(80, 10, 6, 0.45);
-}
-.seal::after {
-  content: '';
-  position: absolute;
-  inset: 24%;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 190, 170, 0.4);
-}
-
 /* lit, a packmate, a read: a ring round the card, light only (its opacity fades, nothing moves) */
 .tile::before,
 .tile::after {
@@ -621,106 +599,6 @@
 .empty .picture,
 .empty .num {
   visibility: hidden;
-}
-
-/* ---- the suspect slot: an empty space pencilled on the cork (the grid's spare cell, or a
-   strip across the rail's foot), filled by the suspect's card tacked into it ---- */
-.suspect {
-  position: relative;
-  min-width: 0;
-  min-height: 0;
-  box-sizing: border-box;
-  margin: 0;
-  padding: 4.8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  container-type: size;
-  border: 1.6px dashed rgba(46, 28, 12, 0.6);
-  border-radius: 4px;
-  background: none;
-  font: inherit;
-  color: #2e1c0c;
-  text-align: center;
-}
-button.suspect {
-  cursor: pointer;
-}
-button.suspect:focus-visible {
-  outline: 2.4px solid var(--amber);
-  outline-offset: 3.2px;
-}
-.strip {
-  grid-column: 1 / -1;
-  flex-direction: row;
-  gap: 9.6px;
-}
-.suspectLabel {
-  font-family: var(--font-display);
-  font-size: min(calc(var(--meta) * 0.85), 22cqw);
-  line-height: 1.1;
-  text-shadow: 0 0 3px rgba(236, 200, 150, 0.5);
-}
-.suspectNone {
-  font-style: italic;
-  font-size: min(calc(var(--meta) * 0.72), 18cqw);
-  line-height: 1.15;
-  opacity: 0.75;
-}
-/* the suspect's card, tacked into the space: the same stock, the head and the seat */
-.suspectCard {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2.4px;
-  padding: 4px 4px 3.2px;
-  border-radius: 2.4px;
-  background: #ece2c8;
-  box-shadow:
-    1px 1.6px 1.6px rgba(30, 15, 5, 0.5),
-    3.2px 5.6px 7px rgba(30, 15, 5, 0.45);
-}
-.strip .suspectCard {
-  flex-direction: row;
-  gap: 6.4px;
-  padding: 3.2px 8px 3.2px 4px;
-}
-.suspectHead {
-  display: block;
-  width: min(72cqw, 50cqh);
-  aspect-ratio: 1;
-  border-radius: 1.6px;
-  overflow: hidden;
-  background: radial-gradient(circle at 50% 40%, #8a8378, #4d463d);
-}
-.strip .suspectHead {
-  width: auto;
-  height: 62cqh;
-}
-.suspectSeat {
-  font-family: var(--font-display);
-  font-size: min(calc(var(--meta) * 0.85), 20cqw);
-  line-height: 1.1;
-  color: #2a1d10;
-}
-.suspectCard .seal {
-  top: auto;
-  bottom: 22%;
-  right: -4px;
-}
-/* the strip's card is a row, so the seal at its edge sat on the seat's number ("Sec 10"): it is
-   pressed over the head's lower corner instead, as in the cell, at the head's scale */
-.strip .suspectHead {
-  flex: none;
-}
-.strip .suspectCard .seal {
-  right: auto;
-  bottom: -3.2px;
-  left: calc(4px + 62cqh * 0.62);
-  width: calc(62cqh * 0.56);
 }
 
 /* ---- the first-time hint, a paper slip beside the rail ---- */
@@ -1012,11 +890,10 @@ button.suspect:focus-visible {
 .editorFoot {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 9.6px;
 }
-/* the two presses: slim on the board, their tap area a phone's 44 css px (--grown) */
-.mark,
+/* Done: slim on the board, its tap area a phone's 44 css px (--grown) */
 .done {
   position: relative;
   display: inline-flex;
@@ -1029,30 +906,10 @@ button.suspect:focus-visible {
   font-size: var(--meta);
   cursor: pointer;
 }
-.mark::after,
 .done::after {
   content: '';
   position: absolute;
   inset: calc(-28px * var(--grown)) calc(-4px * var(--grown));
-}
-.mark {
-  color: var(--cream);
-  background: rgba(10, 6, 3, 0.4);
-  border: 1.5px solid rgba(201, 164, 92, 0.6);
-}
-.mark[aria-pressed='true'] {
-  background: rgba(142, 27, 18, 0.45);
-  border-color: #c0392b;
-}
-.markSeal {
-  width: 0.95em;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  border: 1.5px dashed rgba(236, 208, 142, 0.6);
-}
-.mark[aria-pressed='true'] .markSeal {
-  border: 0;
-  background: radial-gradient(circle at 38% 34%, #d9594c, #a32219 48%, #6b120c 100%);
 }
 .done {
   font-family: var(--font-display);
@@ -1060,7 +917,6 @@ button.suspect:focus-visible {
   background: linear-gradient(180deg, var(--hud-brass-hi), var(--hud-brass));
   border: 1.5px solid var(--hud-brass-lo);
 }
-.mark:focus-visible,
 .done:focus-visible {
   outline: 2.4px solid var(--amber);
   outline-offset: 2.4px;

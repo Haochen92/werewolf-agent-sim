@@ -181,12 +181,12 @@ describe('the dock’s three plaques and the line’s preview (2026-10-01)', () 
 });
 
 describe('“Use my seat notes”: the notebook goes with a draft only when ticked', () => {
-  const book = { notes: { 5: '  jumped on 3’s slip  ', 8: '   ' }, suspect: 5 };
+  const book = { notes: { 5: '  jumped on 3’s slip  ', 8: '   ' } };
 
-  it('is shown only when the notebook holds a note or a suspect', () => {
+  it('is shown only when the notebook holds a note or a guess', () => {
     expect(notebookForAgent(null)).toBeNull();
-    expect(notebookForAgent({ notes: {}, suspect: null })).toBeNull();
-    expect(notebookForAgent({ notes: { 4: '  ' }, suspect: null })).toBeNull();
+    expect(notebookForAgent({ notes: {} })).toBeNull();
+    expect(notebookForAgent({ notes: { 4: '  ' } })).toBeNull();
     expect(dockControls(dock()).hasNotebook).toBe(false);
     const on = { shared: true, onShared: () => {} };
     expect(dockControls(dock({ notebook: on })).hasNotebook).toBe(true);
@@ -196,16 +196,11 @@ describe('“Use my seat notes”: the notebook goes with a draft only when tick
     );
   });
 
-  it('names seats as the agents do, and drops a dead seat’s suspect mark', () => {
+  it('names seats as the agents do', () => {
     expect(notebookForAgent(book)).toEqual({
       seat_notes: { player_5: 'jumped on 3’s slip' },
-      suspect: 'player_5',
     });
-    expect(notebookForAgent(book, (n) => n === 5)).toEqual({
-      seat_notes: { player_5: 'jumped on 3’s slip' },
-      suspect: '',
-    });
-    const long = notebookForAgent({ notes: { 2: 'x'.repeat(600) }, suspect: null });
+    const long = notebookForAgent({ notes: { 2: 'x'.repeat(600) } });
     expect(long?.seat_notes.player_2).toHaveLength(300); // the server's cap
   });
 
@@ -216,7 +211,6 @@ describe('“Use my seat notes”: the notebook goes with a draft only when tick
       notes: 'softer',
       current: 'Seat 5 is odd.',
       seat_notes: { player_5: 'jumped on 3’s slip' },
-      suspect: 'player_5',
     });
     expect(draftRequest('softer', 'Seat 5 is odd.', shared, false)).toEqual({
       notes: 'softer',
@@ -251,11 +245,10 @@ describe('the notebook’s role guess (2026-09-30)', () => {
     ]);
   });
 
-  it('keeps a guess in the notebook; an old notebook without one still reads', () => {
+  it('keeps a guess in the notebook; an old notebook (no guesses, a suspect) still reads', () => {
     expect(parseNotebook({ notes: { 5: 'quiet' }, suspect: 5, hinted: true })).toEqual({
       notes: { 5: 'quiet' },
       guesses: {},
-      suspect: 5,
       hinted: true,
     });
     expect(
@@ -268,14 +261,12 @@ describe('the notebook’s role guess (2026-09-30)', () => {
     const book = {
       notes: { 3: 'pushed hard on day 2', 6: '  ' },
       guesses: { 3: 'wolf', 6: 'serial_killer', 7: 'healer' },
-      suspect: 3,
     };
     expect(notebookForAgent(book, (n) => n === 7)).toEqual({
       seat_notes: {
         player_3: '(I think: wolf) pushed hard on day 2',
         player_6: '(I think: serial killer)',
       },
-      suspect: 'player_3',
     });
   });
 });

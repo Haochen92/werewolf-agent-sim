@@ -358,7 +358,7 @@ export function LiveTheatre({
   const onDelegate = useCallback(() => answer({ delegate: true }), [answer]);
 
   // The seat notebook goes with a draft only while "Use my seat notes" is ticked; a dead
-  // seat's suspect mark is dropped, as the rail drops it.
+  // seat's role guess is dropped, as the rail drops it.
   const book = useNotebook(me ? gameId : null);
   const notebook = useMemo(
     () => notebookForAgent(book, (n) => !view.alive.includes(`player_${n}`)),

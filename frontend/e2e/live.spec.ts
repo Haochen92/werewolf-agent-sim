@@ -769,6 +769,7 @@ test('live: the seat notes go with a draft while ticked; Redraft this revises th
     (game) =>
       localStorage.setItem(
         `notes_${game}`,
+        // kept before 2026-10-14: its suspect mark is no longer read, and not sent
         JSON.stringify({ notes: { 5: 'jumped on the slip fast', 8: 'quiet' }, suspect: 5 }),
       ),
     GAME,
@@ -813,7 +814,6 @@ test('live: the seat notes go with a draft while ticked; Redraft this revises th
         notes: '',
         current: '',
         seat_notes: { player_5: 'jumped on the slip fast', player_8: 'quiet' },
-        suspect: 'player_5',
       },
     },
     {
@@ -1515,11 +1515,6 @@ test('live: a seat’s notes stay open while the beats and scenes go by, until t
   await page.keyboard.press('Enter');
   await expect(list).toHaveCount(0);
   await expect(editor.locator('[data-seat-guess="5"]')).toContainText('Villager');
-  // and the suspect mark, after another beat
-  const at2 = seen.length;
-  while (seen.length === at2) await step();
-  await editor.getByRole('button', { name: 'Mark as suspect' }).click();
-  await expect(editor.getByRole('button', { name: 'Marked as suspect' })).toBeVisible();
   // the morning tells seat 5's death: the notes close; what was written is on its card
   for (let t = 0; t < 120 && (await editor.count()) > 0; t++) await step();
   await expect(editor).toHaveCount(0);

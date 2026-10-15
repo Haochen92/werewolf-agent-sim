@@ -475,12 +475,12 @@ test('the phone frame draws the stage at the phone’s size', async ({ page }) =
 
 /**
  * The seat rail's notebook (beat sheet §0, HUD pass 2): a seated player (a live cut, seat 9 on
- * day 2 of the ten-seat game) taps another seat's card to write a note, guess its role (the
- * roles still possible, with how many are left) and mark a suspect; the note and the guess show
- * on the card, the suspect's head in the slot, and all come back after a reload (this device
- * only). A dead seat has no suspect toggle and no guess. The replay's cut shows the cards only.
+ * day 2 of the ten-seat game) taps another seat's card to write a note and guess its role (the
+ * roles still possible, with how many are left); the note and the guess show on the card, and
+ * both come back after a reload (this device only). A dead seat has no guess. The replay's cut
+ * shows the cards only.
  */
-test('the seat rail: notes and a suspect for a seated player, none in a replay', async ({
+test('the seat rail: notes and guesses for a seated player, none in a replay', async ({
   page,
 }) => {
   const live = '/workbench/day?live=1&viewer=seat:player_9&animate=0&strip=0';
@@ -495,7 +495,6 @@ test('the seat rail: notes and a suspect for a seated player, none in a replay',
   await expect(dialog).toContainText('Alive');
   await expect(hint).toHaveCount(0);
   await page.keyboard.type('Jumped on the slip');
-  await dialog.getByRole('button', { name: 'Mark as suspect' }).click();
   // the role guess: only the roles that could still be alive (the night's three dead were told:
   // healer, chanteuse, investigator), with how many are left, "not sure" first, in a panel over
   // the notebook; the arrows move and Enter picks
@@ -535,17 +534,15 @@ test('the seat rail: notes and a suspect for a seated player, none in a replay',
   const card = page.locator('[data-layer="hud"] [data-seat="10"]');
   await expect(card).toContainText('Jumped on the slip');
   await expect(card.locator('[data-guess="serial_killer"]')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Suspect: seat 10, notes' })).toBeVisible();
 
   // kept on the device: a later beat still has it, and the hint stays dismissed
   await page.goto(`${live}&beat=14`, { waitUntil: 'networkidle' });
   await expect(card).toContainText('Jumped on the slip');
   await expect(card.locator('[data-guess="serial_killer"]')).toBeVisible();
   await expect(hint).toHaveCount(0);
-  // a dead seat: its note may be written, it cannot be marked; Escape closes
+  // a dead seat: its note may be written, its role is not guessed; Escape closes
   await page.getByRole('button', { name: 'Seat 5, notes' }).click();
   await expect(dialog).toContainText('Dead · Chanteuse');
-  await expect(dialog.getByRole('button', { name: /suspect/ })).toHaveCount(0);
   await expect(dialog.getByRole('button', { name: /I think they are…/ })).toHaveCount(0);
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);

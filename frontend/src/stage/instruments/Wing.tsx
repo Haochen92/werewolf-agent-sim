@@ -5,8 +5,8 @@
  * always in view while one seat has the stand. HUD pass 2 (owner, 2026-09-29, "B on photo
  * stock"): each card is printed as the same head-portrait photo the night rooms pin up, so a
  * player is the same object by day and by night, and the cards are tacked in two columns to a
- * cork board in a walnut frame with a brass edge. How many rows, and where the suspect slot goes, comes from
- * the number of seats (`railLayout`), never from nine.
+ * cork board in a walnut frame with a brass edge. How many rows comes from the number of seats
+ * (`railLayout`), never from nine.
  *
  * A card the player may write on has faint ruled lines on its foot, their note's first words on
  * them, never under 11 css px: on a phone the words give way to a pencil scribble.
@@ -23,12 +23,11 @@
  * breathes a slow glow while it can be tapped, and flashes once when that read is new or changed
  * since the speaker's previous reads (opacity only, still for reduced motion).
  *
- * The notebook: a seated player (live) can tap any other seat's card to write a note on it,
+ * The notebook: a seated player (live) can tap any other seat's card to write a note on it and
  * guess its role (only roles that could still be alive, with how many are left; the guess
- * shows as a small pencilled sigil on the card), and
- * mark one seat as the suspect (a wax seal on its card, its head in the suspect slot). The
- * notes stay on this device (notebook.ts), reaching the server only with a speech draft sent
- * with "Use my seat notes" ticked; the suspect never preselects a ballot. In a replay, and for an observer, the cards are only shown.
+ * shows as a small pencilled sigil on the card). The notes stay on this device (notebook.ts),
+ * reaching the server only with a speech draft sent with "Use my seat notes" ticked. In a
+ * replay, and for an observer, the cards are only shown.
  * The open editor is the container's (`edit`, 2026-10-01): the wing is remounted with every turn
  * and scene, and the editor with it, open on the same seat, the focus and the caret where they
  * were. It closes on Done, Escape or a tap outside, or when its seat dies or can no longer be
@@ -57,7 +56,7 @@ import {
   type Notebook,
 } from '../notebook';
 import { ROLE_NAME, factionOf, type KnownRole } from '../roles';
-import { RAIL_GAP, RAIL_PAD, RAIL_STRIP, railLayout } from './rail-layout';
+import { RAIL_GAP, RAIL_PAD, railLayout } from './rail-layout';
 import { FactionMark } from './FactionMark';
 import { Sigil } from './Sigil';
 import styles from './Wing.module.css';
@@ -127,7 +126,7 @@ export interface WingTileProps {
  * and the editor that comes back puts the focus where it was (`at` null: it had left the
  * editor). Cleared when the editor closes, or opens on a seat afresh.
  */
-type EditorAt = 'paper' | 'guess' | 'list' | 'mark' | 'done';
+type EditorAt = 'paper' | 'guess' | 'list' | 'done';
 let carried: { seat: number; at: EditorAt | null; start: number; end: number } | null =
   null;
 
@@ -169,19 +168,17 @@ export function Wing({
     }
   }, [editing, stays, setEditing]);
   if (width <= 0) return null;
-  const L = railLayout(tiles.length, { suspect: !!book });
+  const L = railLayout(tiles.length);
   const rail = {
     '--wing': `${width}px`,
     '--reach-max': `${L.reach}px`,
     gridTemplateColumns: `repeat(${L.cols}, minmax(0, 1fr))`,
-    gridTemplateRows: `repeat(${L.rows}, minmax(0, 1fr))${L.suspect?.kind === 'strip' ? ` ${RAIL_STRIP}px` : ''}`,
+    gridTemplateRows: `repeat(${L.rows}, minmax(0, 1fr))`,
     '--rail-pad': `${RAIL_PAD}px`,
     '--rail-gap': `${RAIL_GAP}px`,
     '--board': `url(${SPRITES.textures.walnut.src})`,
     '--cork': `url(${SPRITES.textures.cork.src})`,
   } as CSSProperties;
-  // the suspect is a living seat's mark: once that seat dies, the slot is empty again
-  const suspect = book?.suspect && !bySeat.get(book.suspect)?.dead ? book.suspect : null;
   const open = (seat: number, el: HTMLElement) => {
     opener.current = el;
     carried = null;
@@ -211,18 +208,9 @@ export function Wing({
             {...t}
             note={book?.notes[t.seat]}
             guess={t.dead ? undefined : book?.guesses[t.seat]}
-            suspect={suspect === t.seat}
             onOpen={editable(t) ? (el) => open(t.seat, el) : undefined}
           />
         ))}
-        {L.suspect && book ? (
-          <SuspectSlot
-            strip={L.suspect.kind === 'strip'}
-            seat={suspect}
-            character={suspect ? bySeat.get(suspect)?.character : undefined}
-            onOpen={suspect ? (el) => open(suspect, el) : undefined}
-          />
-        ) : null}
       </div>
       {hint ? (
         <p className={styles.hint} style={rail} aria-hidden="true">
@@ -240,7 +228,6 @@ export function Wing({
             castCounts ?? {},
             tiles.map((t) => t.dead?.role ?? null),
           )}
-          suspect={suspect === edited.seat}
           onClose={close}
           style={rail}
         />
@@ -254,8 +241,6 @@ interface CardProps extends WingTileProps {
   note?: string;
   /** The role the player thinks this seat holds: a small pencilled sigil on the photo. */
   guess?: string;
-  /** Marked as the suspect: the wax seal. */
-  suspect?: boolean;
   /** Tapping the card opens its note editor (a seated player, another seat). */
   onOpen?: (card: HTMLElement) => void;
 }
@@ -277,7 +262,6 @@ function WingTile({
   file,
   note,
   guess,
-  suspect,
   onOpen,
 }: CardProps) {
   // a concealed body's role is hidden (`dead.role` null) unless this viewer holds the truth
@@ -399,7 +383,6 @@ function WingTile({
       {read?.onRead && read.fresh ? (
         <span key={read.fresh} className={styles.flash} aria-hidden="true" />
       ) : null}
-      {suspect ? <span className={styles.seal} aria-hidden="true" /> : null}
       {character ? <span className={styles.tack} aria-hidden="true" /> : null}
     </>
   );
@@ -604,54 +587,9 @@ function Scribble() {
   );
 }
 
-/** The suspect slot: the grid's spare cell, or a strip at the rail's foot. */
-function SuspectSlot({
-  strip,
-  seat,
-  character,
-  onOpen,
-}: {
-  strip: boolean;
-  seat: number | null;
-  character?: Character;
-  onOpen?: (el: HTMLElement) => void;
-}) {
-  const cls = `${styles.suspect} ${strip ? styles.strip : ''} ${seat ? styles.marked : ''}`;
-  const body = (
-    <>
-      <span className={styles.suspectLabel}>Suspect</span>
-      {seat && character ? (
-        <span className={styles.suspectCard}>
-          <span className={styles.suspectHead}>
-            <ChipSprite character={character} />
-          </span>
-          <span className={styles.suspectSeat}>Seat {seat}</span>
-          <span className={styles.seal} aria-hidden="true" />
-          <span className={styles.tack} aria-hidden="true" />
-        </span>
-      ) : (
-        <span className={styles.suspectNone}>none marked</span>
-      )}
-    </>
-  );
-  return onOpen && seat ? (
-    <button
-      type="button"
-      className={cls}
-      aria-label={`Suspect: seat ${seat}, notes`}
-      aria-haspopup="dialog"
-      onClick={(e) => onOpen(e.currentTarget)}
-    >
-      {body}
-    </button>
-  ) : (
-    <div className={cls}>{body}</div>
-  );
-}
-
 /**
  * The note editor for one seat: its head, number and whether it lives; a ruled writing area;
- * "Mark as suspect" (not for the dead); Done. Escape, Done or a tap outside closes it; what is
+ * the role guess (not for the dead); Done. Escape, Done or a tap outside closes it; what is
  * written is kept as it is typed.
  */
 function NoteEditor({
@@ -660,7 +598,6 @@ function NoteEditor({
   dead,
   book,
   choices,
-  suspect,
   onClose,
   style,
 }: {
@@ -670,7 +607,6 @@ function NoteEditor({
   book: Notebook;
   /** The roles a living seat could still hold, with how many are left. */
   choices: readonly { role: string; left: number }[];
-  suspect: boolean;
   onClose: () => void;
   style: CSSProperties;
 }) {
@@ -773,20 +709,6 @@ function NoteEditor({
           />
         ) : null}
         <div className={styles.editorFoot}>
-          {!dead ? (
-            <button
-              type="button"
-              className={styles.mark}
-              data-at="mark"
-              aria-pressed={suspect}
-              onClick={() => book.setSuspect(suspect ? null : seat)}
-            >
-              <span className={styles.markSeal} aria-hidden="true" />
-              {suspect ? 'Marked as suspect' : 'Mark as suspect'}
-            </button>
-          ) : (
-            <span />
-          )}
           <button type="button" className={styles.done} data-at="done" onClick={onClose}>
             Done
           </button>

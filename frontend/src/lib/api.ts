@@ -190,7 +190,7 @@ export function submitTurn(gameId: string, payload: TurnPayload): Promise<TurnAc
  * Ask the seat's own agent what it would say on the discussion turn it owes (D25): the line it
  * would speak if handed the turn, with nothing said and nothing kept. All of the body is
  * optional: `notes` steer it (up to 500 chars), `current` is the line in the box for the notes
- * to revise, and `seat_notes`/`suspect` share the player's notebook (by `player_N`) for this
+ * to revise, and `seat_notes` shares the player's notebook (by `player_N`) for this
  * one draft. The line goes back into the box and is sent with `submitTurn` like any typed
  * line; an empty `draft` means the agent would pass. 409 = no turn or no drafts left; 422 =
  * something refused (too long, a seat not at the table); 503 = the model failed.

@@ -42,7 +42,7 @@ export interface Presentation {
   animate: boolean;
   /**
    * The game being played, handed down only by a live game's container: the seated player's
-   * notebook (the seat rail's notes and suspect) is kept on this device under it. A replay has
+   * notebook (the seat rail's notes and role guesses) is kept on this device under it. A replay has
    * none, so its cards are only shown.
    */
   game?: string;
@@ -284,7 +284,7 @@ export interface DockInput {
   onDraft?: (notes: string, current: string) => void;
   /**
    * "Use my seat notes": whether a draft takes the seat notebook along. Handed in only when
-   * the notebook holds a note or a suspect; absent, there is no box to tick.
+   * the notebook holds a note or a guess; absent, there is no box to tick.
    */
   notebook?: { shared: boolean; onShared: (shared: boolean) => void };
   /** Drafts left this turn (three per turn). */

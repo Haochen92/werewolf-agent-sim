@@ -2,8 +2,9 @@
 
 /**
  * The seated player's notebook for one game: a note on any other seat, a guess at its role
- * ("I think they are…", owner 2026-09-30), the one seat they suspect, and whether they have
- * seen the rail's "Tap a card to write notes" hint.
+ * ("I think they are…", owner 2026-09-30), and whether they have seen the rail's "Tap a card
+ * to write notes" hint. (A single "suspect" mark went 2026-10-14, owner: the guess says who and
+ * of what, on as many seats as the player likes; a notebook kept before then still loads.)
  *
  * It lives on this device only (localStorage, `notes_{gameId}`), and every scene that draws
  * the seat rail reads the same copy, so a note written in the day is on the card at night.
@@ -12,8 +13,7 @@
  * Storage may be missing or refuse a write (a private window): the notebook then lasts as
  * long as the page, and nothing breaks. It reaches the server only when the player asks their
  * agent for a draft with "Use my seat notes" ticked (`notebookForAgent`), for that one draft,
- * a guess folded into its seat's note ("(I think: wolf) …") so the request keeps its shape;
- * the suspect is the player's own mark, never a preselected ballot.
+ * a guess folded into its seat's note ("(I think: wolf) …") so the request keeps its shape.
  */
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react';
 import { seatNotes } from '@/lib/storage';
@@ -24,8 +24,6 @@ export interface NotebookState {
   notes: Readonly<Record<number, string>>;
   /** The role the player thinks a seat holds, per seat number (a role id); none: not sure. */
   guesses: Readonly<Record<number, string>>;
-  /** The seat marked as the suspect, or null. */
-  suspect: number | null;
   /** The rail's hint has been dismissed (by a first tap on a card). */
   hinted: boolean;
 }
@@ -34,12 +32,10 @@ export interface Notebook extends NotebookState {
   setNote: (seat: number, text: string) => void;
   /** "I think they are…": a role id, or null for "not sure". */
   setGuess: (seat: number, role: string | null) => void;
-  /** Mark a seat as the suspect (replacing any other), or clear it with null. */
-  setSuspect: (seat: number | null) => void;
   dismissHint: () => void;
 }
 
-const EMPTY: NotebookState = { notes: {}, guesses: {}, suspect: null, hinted: false };
+const EMPTY: NotebookState = { notes: {}, guesses: {}, hinted: false };
 /** What the server renders: no notes, and no hint (it appears once the page is live). */
 const SERVER: NotebookState = { ...EMPTY, hinted: true };
 
@@ -57,9 +53,8 @@ export function parseNotebook(raw: unknown): NotebookState {
     for (const [k, v] of Object.entries(r.guesses as Record<string, unknown>))
       if (typeof v === 'string' && v in ROLE_NAME && Number.isInteger(Number(k)))
         guesses[Number(k)] = v;
-  const suspect =
-    typeof r.suspect === 'number' && Number.isInteger(r.suspect) ? r.suspect : null;
-  return { notes, guesses, suspect, hinted: r.hinted === true };
+  // a `suspect` kept before 2026-10-14 is not read, and goes with the next write
+  return { notes, guesses, hinted: r.hinted === true };
 }
 
 /** The roles in the order the cast is read out (the cast plate's), for the guess's choices. */
@@ -140,7 +135,6 @@ export function useNotebook(gameId: string | null): Notebook | null {
           else delete guesses[seat];
           return { ...b, guesses };
         }),
-      setSuspect: (seat) => updateNotebook(gameId, (b) => ({ ...b, suspect: seat })),
       dismissHint: () =>
         updateNotebook(gameId, (b) => (b.hinted ? b : { ...b, hinted: true })),
     };
@@ -152,16 +146,14 @@ const SHARED_NOTE_MAX = 300;
 
 /**
  * What the notebook gives the seat's agent with a draft, by the seat ids the agents use
- * (`player_5`), or null when it holds nothing to give. `dead` drops the suspect mark of a seat
- * that has died, as the rail does. A seat's role guess goes in front of its note, in words
- * ("(I think: serial killer) …"), so the request's shape is the server's as it was.
+ * (`player_5`), or null when it holds nothing to give. A seat's role guess goes in front of its
+ * note, in words ("(I think: serial killer) …"), so the request's shape is the server's as it
+ * was; `dead` drops the guess on a seat that has died, as the rail does.
  */
 export function notebookForAgent(
-  book:
-    | (Pick<NotebookState, 'notes' | 'suspect'> & Partial<Pick<NotebookState, 'guesses'>>)
-    | null,
+  book: (Pick<NotebookState, 'notes'> & Partial<Pick<NotebookState, 'guesses'>>) | null,
   dead: (seat: number) => boolean = () => false,
-): { seat_notes: Record<string, string>; suspect: string } | null {
+): { seat_notes: Record<string, string> } | null {
   if (!book) return null;
   const seatNotes: Record<string, string> = {};
   const guesses = book.guesses ?? {};
@@ -174,11 +166,7 @@ export function notebookForAgent(
     const note = [said, text].filter(Boolean).join(' ').slice(0, SHARED_NOTE_MAX);
     if (note) seatNotes[`player_${seat}`] = note;
   }
-  const suspect =
-    book.suspect !== null && !dead(book.suspect) ? `player_${book.suspect}` : '';
-  return Object.keys(seatNotes).length || suspect
-    ? { seat_notes: seatNotes, suspect }
-    : null;
+  return Object.keys(seatNotes).length ? { seat_notes: seatNotes } : null;
 }
 
 /** The game whose notebook this viewer keeps: a seated human in a live game, else none. */

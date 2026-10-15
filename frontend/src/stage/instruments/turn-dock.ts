@@ -146,7 +146,7 @@ export function dockControls(dock: DockInput): DockControls {
 export function draftRequest(
   notes: string,
   current: string,
-  notebook: Pick<DraftRequest, 'seat_notes' | 'suspect'> | null,
+  notebook: Pick<DraftRequest, 'seat_notes'> | null,
   share: boolean,
 ): DraftRequest {
   return {
