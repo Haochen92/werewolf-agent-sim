@@ -41,9 +41,9 @@ own part (`'Rooms'`). `/` gets the default, `The Ninth Express`.
   `primaryColor` is amber. `dark` is a warm scale from `--text` down to `--bg`. The radii are
   `xs` 8px, `sm`/`md`/`lg` = `--r-s`/`--r-m`/`--r-l`, and `xl` = the pill. The page is always dark
   (`forceColorScheme="dark"` plus `data-mantine-color-scheme="dark"` on `<html>`).
-- Themed components (`theme/components/*.module.css`): Button, Input/TextInput/Select, Switch,
-  Tabs (pills), Modal, Notification, Table, Title and Alert. Anything else renders as stock Mantine over
-  the warm scale.
+- Themed components (`theme/components/*.module.css`): Button, Anchor, Input/TextInput/Select,
+  SegmentedControl, Chip, Switch, Modal, Notification, Table, Title and Alert. Anything else renders
+  as stock Mantine over the warm scale.
 
 ## Fonts
 
@@ -60,15 +60,41 @@ own part (`'Rooms'`). `/` gets the default, `The Ninth Express`.
 
 | Component | What it is |
 |---|---|
-| `TopNav` | The station's signboard (redesign 2026-10-14 §1): the headlamp mark and the name in EB Garamond, and Play · Rooms · Replays as recessed wells on a board hung from two brass rods; the current page is the cream plate (`aria-current`). Rooms carries a split-flap count of the tables boarding (`hooks/useBoarding`, the same query as the departures board). The guide is not a fourth door but an enamel sign (`SITE.guide`, owner 2026-10-14): after the doors and a brass line, an open book and "Guide"; the book alone under 1060px; on a phone the book at the end of the name's row (the board is a grid there, so the sign never falls onto a row of its own, and the name shrinks to leave it room). Once the board scrolls away a slim strip of it pins to the top (`inert` while hidden); its name drops cleanly when the doors need the room; on a phone the strip leaves the sign out. On a phone the doors share a second row. |
+| `TopNav` | The station's signboard (redesign 2026-10-14 §1): the headlamp mark and the name in EB Garamond, and Play · Rooms · Replays as recessed wells on a board hung from two brass rods; the current page is the cream plate (`aria-current`). Rooms carries a split-flap count of the tables boarding (`hooks/useBoarding`, the same query as the departures board). The guide is not a fourth door but an enamel sign (`SITE.guide`, owner 2026-10-14): after the doors and a brass line, an open book and "Guide"; the book alone under 1060px; on a phone the book at the end of the name's row (the board is a grid there, so the sign never falls onto a row of its own, and the name shrinks to leave it room). Once the board scrolls away a slim strip of it pins to the top (`inert` while hidden); its name drops cleanly when the doors need the room; on a phone the strip keeps the book at its right end (owner 2026-10-15). On a phone the doors share a second row. |
 | `Board.module.css` | The signage's materials, composed by every board on the site: `board` (wood in a brass frame: what you operate), `rivets`, `well` (a recessed button; `aria-current`/`-pressed`/`-selected` make it the cream plate), `plate` (the primary action), `enamel` (a navy sign screwed to a board: somewhere to read, not a door) and `flap` (one split-flap tile). Paper carries what you read; brass is for lines and hardware, never a small flat fill. |
 | `StationWall` | A page's wall: the landing's rooms behind the other pages (owner 2026-10-14). `records` (the archive: platform tile, oxblood band, pendant) and `granite` (the ticket office: granite under the caged wall light, `StationLamps`); the departures hall stands on the landing's `PlatformBackdrop`. Placed against `.station` from the page's top, under the page's own stacking context (`wallPage` on its `<main>`), capped where its light runs out, its foot faded to the page's ground. The guide's wall (the roles' green tile) waits for the guide's own work to land. |
 | `SiteFooter` | The GitHub link with its icon, the other links, and the credit line, whose "N games archived" is live (`GamesArchived`, the archive's `X-Total-Count`). |
-| `Button` | Mantine Button narrowed to three variants: `ghost` (the default), `primary` (amber) and `brass` (a scene control on the page side; inside the stage box, use `ActPlate`). Polymorphic. |
+| `Button` | Mantine Button narrowed to the kit's three variants (below): `well` (the default), `brass` and `text`. Polymorphic. |
+| `GuideSign` | The guide's one look wherever a page points at it: the navy enamel and the open book (`Book`, which the nav's sign draws too), a size up for a page: under the hero's tags, under the roles. |
+| `PlateTabs.module.css` | The site's plain tabs, composed by any tab set that is not itself a picture: dark tabs, the chosen one a brass plate; `small` inside a panel. |
 | `HangTag` | The hung paper tag. With `href` it is a link (a door); with `onClick` and `pressed` it is a choice. On a phone it is a stub, two to a row (below). |
 | `Paper` | The paper surface for things inside the fiction. Polymorphic Box. |
 | `Flapword` | Split-flap tiles for one word, with `tone` `hot` or `dim`. |
 | `Icon` / `IconSprite` | One `<symbol>` sprite, rendered once by the site layout. It holds `i-*` (the mockups' icons plus `i-lock-open`, `i-ticket` and `i-github`) and `sg-*`, whose paths are the stage's `Sigil`. |
+
+## The controls kit (owner 2026-10-15)
+
+Every clickable thing on the site pages is one of three kinds (the census and sort are on the
+bench https://claude.ai/artifact/XktnahYzDTKqxhG61TrqBe):
+
+- **Station objects** carry a meaning, so they keep their own look and are one component each,
+  used wherever that meaning appears: the paper tag (a way to play), the slate (a game), the
+  enamel sign (the guide), the signboard's doors, the role card and sigil disc, the puppet head,
+  the guide's railway stops and folder tabs, the features' brass plates, the carriage's player.
+  They are built on Mantine's behaviour (UnstyledButton, Radio) where they need it.
+- **Everyday controls** are Mantine components with our variants, and take their colours from
+  the surface under them. `Button`: `brass` is the one main action of a view, `well` every other
+  button (a way to another page included), `text` a word that acts. Links are Mantine's
+  `Anchor`, always underlined. One switch, one select, one chip, one set of plain tabs
+  (`PlateTabs`).
+- **Surfaces** set `--ctl-*` (`styles/tokens.css`) and the controls read them: the dark is the
+  default (amber text and links, the recessed well), and `data-surface="paper"` turns them to ink
+  (`Paper` sets it; so does any paper card with a control on it). A control never picks its own
+  colours, so a new background needs a surface block, not a new button.
+
+A new one-off look for a job that already has one is the thing to avoid: reach for a variant, or
+add one to the kit. The stage keeps its own controls (`ActPlate`, the placards) and never imports
+these.
 
 The facts the chrome shows (name, author, GitHub, nav, footer links, year, and the landing's featured
 replay) live in `src/lib/site.ts`, with TODOs for the owner. Characters and chips come from `src/assets/manifest.ts`
