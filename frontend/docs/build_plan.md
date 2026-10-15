@@ -241,6 +241,7 @@ never reads any of it; one `lib/storage.ts` module owns the key names):
 | `byok_key` | remembered API key — **opt-in only** | "remember on this device" checked | the "clear saved key" button; also never written unless opted in |
 | `ghost_{gameId}` | ghost-mode guesses keyed by phase | guess widget (ruling 7) | never (it's the user's history) |
 | `notes_{gameId}` | the seated player's notes per seat, the one suspect, whether the rail's hint was seen | the seat rail's note editor (HUD pass 2, 2026-09-29) | never (it's the user's own record) |
+| `music` | `on` or `off`, the viewer's last choice of music; absent = never chosen (the game plays it, the guide does not) | the sound button (the stage's strip, the guide) | never |
 | `told_{gameId}_{seat}` (**sessionStorage**) | the seat has been told of its own death that came in while the page was away, or watched it live | the live theatre's "While you were away" notice, dismissed; a live `night_result`/`lynch_result` naming the seat (2026-10-11) | with the tab |
 
 BYOK-remember explicitly needs ZERO additional server support: the key's only wire appearance

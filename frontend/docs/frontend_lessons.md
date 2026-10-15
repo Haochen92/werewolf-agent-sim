@@ -182,6 +182,14 @@ page's own ground is the same colour and costs nothing (`Rooms.module.css`, the 
 
 ## Small things that cost an afternoon
 
+- Two rules for one class name in a CSS module are one class: a `.head` for a page's header and a
+  `.head` for a 2px playhead further down the same file merged, and the header became a 2px
+  absolute strip. Name each part for what it is (`.playhead`).
+- A browser starts sound only after the viewer has pressed something on the page; Safari only
+  inside the press's own handler. Make or resume the `AudioContext` in a press listener, not in
+  an effect that runs after it (`src/music/music.ts`). Fade with gain nodes: an iPhone ignores
+  an audio element's `volume`.
+
 - `--update-snapshots` rewrites only the goldens that fail, and a golden fails only past its
   tolerance (`maxDiffPixelRatio` 0.005 here), so a deliberate change to a few lines of text (a
   colour, a size) passes against the old golden and is never written: the golden keeps the old

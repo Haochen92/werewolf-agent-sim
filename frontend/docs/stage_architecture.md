@@ -1015,3 +1015,42 @@ Done 2026-09-25 (step 7): all deleted, with the v1 scrubber's `useFilterState`; 
 | 5 | scenes, one task each, in the handoff's order, each checked against its bench | Opus · main loop reviews |
 | 6 | containers: replay (transport, chapters, slot) · live (queue, dock + draft, rooms, orientation) | main loop |
 | 7 | tag, delete v1, landing after | Opus |
+
+## 12. Music (owner, 2026-10-15)
+
+The score is sixteen MP3s in `public/music`, each named with its version (`lobby-bossa.v1.mp3`;
+a new take is a new name), so the browser and the CDN keep them for good (`next.config.mjs`).
+`src/music/` holds all of it:
+
+- **`cues.ts`, the cue sheet:** what plays under each beat, a pure function of the beat on the
+  stage, never of the stream (the stage plays behind the server). A *bed* plays underneath until
+  the next bed differs (same `key`, same music):
+  - the platform: the lobby's three in turn, from one picked for the visit;
+  - the deal and day 1: the parlour's discussion; then the parlour on odd days, the masked
+    accusations on even days;
+  - the vote, the night (every night scene), and each morning's dawn, held on its loop if the
+    morning outlasts it; the day's music comes in at "The day begins";
+  - silence through the lynch and where the ending starts;
+  - from the winner's hour, the elders' music; the guide's is the same, opt-in.
+
+  A *sting* is a one-shot on a moment: the psalm from the lynch's start (its hit lands on the
+  truth), the short sting on "Voted out" on Fast (the psalm would be cut short), and the
+  winner's sting on their hour (the lone killers share one).
+- **`player.ts`:** one Web Audio context per page, each track decoded once and played from a
+  buffer, so a loop is exact to the sample and every fade is a gain ramp on the audio thread (an
+  iPhone ignores a media element's volume). A bed starts once the stage has stayed on it 400 ms,
+  so a scrub fetches nothing on its way; it waits for a sting to go quiet (the stings are in E,
+  the beds after them are not). A playlist's next track is fetched 20 s before the current one
+  ends and crossfades in. A hidden page suspends the context; an idle one is suspended after a
+  few seconds.
+- **`music.ts`:** the viewer's choice (`musicPref`, `lib/storage`): `off` silences everything;
+  never chosen, the game plays and the guide does not. `MusicDirector` (in the providers) hears
+  the first press: browsers start sound only after one, and Safari only inside it, so on a page
+  with music the context is made in the press itself. `useStageMusic` is what the theatres call.
+
+The containers own the rules for when a moment counts as played: live, a beat that arrives
+(`cursor.animate`), never what a refresh lands on; the replay, a beat played on, never a jump or a
+scrub, and a jump cuts a sting still sounding. The landing's preview and the guide's demos play
+nothing. The switch is `SoundButton`: on the strip (`SlotInput.sound`, the game and the full
+replay; the workbench has none, so its goldens are untouched) and beside the guide's title.
+`/workbench/music` auditions the files against the scenes' beats.
