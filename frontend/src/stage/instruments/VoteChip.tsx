@@ -104,10 +104,7 @@ export function ChipFace({ x, y, r, seat, character, you, sw = 1 }: ChipFaceProp
       </clipPath>
       <g clipPath={`url(#${clip})`}>
         <rect x={x - r} y={y - r} width={2 * r} height={2 * r} fill="#e4d5b3" />
-        <image
-          href={heads[character].head.src}
-          {...headRect(character, x, y, r * 1.68)}
-        />
+        <image href={heads[character].head.src} {...headRect(character, x, y, r * 1.68)} />
       </g>
       <circle cx={bx} cy={by} r={br} fill={K2} stroke={CHIP.face} strokeWidth={1.2 * sw} />
       <text

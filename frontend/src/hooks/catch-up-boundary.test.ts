@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { CATCH_UP_GATHER_MS, catchUpBatch, catchUpBoundary, reopenNow } from './catch-up-boundary';
+import {
+  CATCH_UP_GATHER_MS,
+  catchUpBatch,
+  catchUpBoundary,
+  reopenNow,
+} from './catch-up-boundary';
 
 describe('the catch-up boundary', () => {
   it('on the first connection, history is everything up to the status’s last seq', () => {
