@@ -4,17 +4,20 @@
  * these decide what it shows.
  */
 import type { ReplaySummary } from '@/types/contracts';
-import { winnerKey, type WinnerKey } from '@/stage/roles';
+import { neutralWinner, winnerKey, type NeutralRole, type WinnerKey } from '@/stage/roles';
 
 export type EndedPhase = NonNullable<ReplaySummary['ended_phase']>;
+
+/** Who won: a winner (or a draw), or a neutral that won beside it. */
+export type WonBy = WinnerKey | NeutralRole;
 
 export interface ReplayFilters {
   /** Part of a game id, any case. */
   q: string;
   /** Only games this browser holds a seat in. */
   mine: boolean;
-  /** Won by any of these (`draw`: no one); empty = any winner. */
-  winners: WinnerKey[];
+  /** Won by any of these (`draw`: no one; a neutral: it won, whoever else did); empty = any. */
+  winners: WonBy[];
   memory: 'any' | 'on' | 'off';
   /** `people`: at least one human seat; `agents`: agents in every seat. */
   table: 'any' | 'people' | 'agents';
@@ -48,7 +51,14 @@ export function matchesReplay(
   const q = f.q.trim().toLowerCase();
   if (q && !r.game_id.toLowerCase().includes(q)) return false;
   if (f.mine && !mine.has(r.game_id)) return false;
-  if (f.winners.length && !f.winners.includes(winnerKey(r.winner))) return false;
+  if (f.winners.length) {
+    const neutral = neutralWinner(r.cast_role_counts, r.neutral_result);
+    if (
+      !f.winners.includes(winnerKey(r.winner)) &&
+      !(neutral && f.winners.includes(neutral))
+    )
+      return false;
+  }
   if (f.memory === 'on' && !r.memory) return false;
   if (f.memory === 'off' && r.memory) return false;
   if (f.table === 'people' && r.n_humans === 0) return false;
@@ -111,11 +121,13 @@ export function distinctModels(rows: readonly ReplaySummary[]): string[] {
   return ids.has('') ? [...named, ''] : named;
 }
 
-export const WINNER_NAME: Record<WinnerKey, string> = {
+export const WINNER_NAME: Record<WonBy, string> = {
   villagers: 'the town',
   wolves: 'the wolves',
   serial_killer: 'the serial killer',
   necromancer: 'the necromancer',
+  speculator: 'the speculator',
+  fortune_teller: 'the fortune teller',
   draw: 'no one',
 };
 

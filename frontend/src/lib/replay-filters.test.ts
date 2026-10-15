@@ -62,6 +62,26 @@ const ROWS: ReplaySummary[] = [
   }),
 ];
 
+/** Ten-seat games: the neutral's result beside the winner. */
+const NEUTRAL_ROWS: ReplaySummary[] = [
+  row({
+    game_id: 'eeee5555',
+    winner: 'wolves',
+    days: 4,
+    finished_at: '2026-08-10T10:00:00Z',
+    cast_role_counts: { speculator: 1, necromancer: 1 },
+    neutral_result: 'won',
+  }),
+  row({
+    game_id: 'ffff6666',
+    winner: 'villagers',
+    days: 4,
+    finished_at: '2026-08-05T10:00:00Z',
+    cast_role_counts: { fortune_teller: 1, serial_killer: 1 },
+    neutral_result: 'lost (1 points)',
+  }),
+];
+
 const ids = (rows: ReplaySummary[]) => rows.map((r) => r.game_id);
 const none = new Set<string>();
 const run = (f: Partial<ReplayFilters>, mine: ReadonlySet<string> = none) =>
@@ -78,6 +98,17 @@ describe('archive filters', () => {
       'bbbb2222',
       'cccc3333',
     ]);
+  });
+
+  it('winner: a neutral matches the games it won beside the winner, and only those', () => {
+    const runAll = (winners: ReplayFilters['winners']) =>
+      ids(
+        applyFilters([...ROWS, ...NEUTRAL_ROWS], { ...NO_FILTERS, winners }, 'new', none),
+      );
+    expect(runAll(['speculator'])).toEqual(['eeee5555']);
+    expect(runAll(['fortune_teller'])).toEqual([]); // it lost
+    expect(runAll(['wolves'])).toEqual(['aaaa1111', 'dddd4444', 'eeee5555']);
+    expect(runAll(['speculator', 'serial_killer'])).toEqual(['cccc3333', 'eeee5555']);
   });
 
   it('ending phase: exact, and an unrecorded phase matches only "any"', () => {

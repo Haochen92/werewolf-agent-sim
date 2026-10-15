@@ -153,6 +153,23 @@ export function isLoneKiller(role: string | null | undefined): boolean {
   return !!role && (LONE_KILLER_ROLES as readonly string[]).includes(role);
 }
 
+/** The neutral seat: one of the two is dealt, and it wins or loses beside the winner. */
+export const NEUTRAL_ROLES = ['speculator', 'fortune_teller'] as const;
+
+export type NeutralRole = (typeof NEUTRAL_ROLES)[number];
+
+/**
+ * The game's neutral if it won, from the roles dealt and its result (`won`, `won (2 points)`);
+ * null when it lost, or in a nine-seat game, which dealt none.
+ */
+export function neutralWinner(
+  castRoleCounts: Record<string, number>,
+  neutralResult: string | null | undefined,
+): NeutralRole | null {
+  if (!neutralResult?.startsWith('won')) return null;
+  return NEUTRAL_ROLES.find((role) => castRoleCounts[role]) ?? null;
+}
+
 /**
  * The roles with a night of their own, each a turn that ticks the night's pace once; the pack's
  * turn is one more (server/game/pacing.py `_SOLO_NIGHT_ROLES`).

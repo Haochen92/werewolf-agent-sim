@@ -1,7 +1,7 @@
 'use client';
 /**
  * The archive's filter rail (replays mockup `.rail`): an id search, "played on this device",
- * who won, where it ended, memory, who sat at the table, the model, and the finishing dates.
+ * who won (a side by its mark, a lone killer or a neutral by its role's sigil), where it ended, memory, who sat at the table, the model, and the finishing dates.
  * Sticky beside the results on a wide screen; on a narrow one it folds behind a "Filters" bar
  * so the games are not pushed a screen down.
  */
@@ -9,19 +9,43 @@ import { useId, useState } from 'react';
 import { Chip, SegmentedControl, Select, Switch, TextInput } from '@mantine/core';
 import { Button, Icon } from '@/components/site';
 import { FactionMark } from '@/stage/instruments/FactionMark';
-import { winnerFaction, type WinnerKey } from '@/stage/roles';
-import { NO_FILTERS, type ReplayFilters } from '@/lib/replay-filters';
+import { Sigil } from '@/stage/instruments/Sigil';
+import { NO_FILTERS, type ReplayFilters, type WonBy } from '@/lib/replay-filters';
 import classes from './Archive.module.css';
 
 /** The model dropdown's stand-ins: Mantine's Select has no empty-string or null option. */
 const ANY_MODEL = '__any__';
 const NO_MODEL = '__none__';
 
-const WINNERS: { value: WinnerKey; label: string; hue: string }[] = [
-  { value: 'villagers', label: 'The town', hue: 'var(--town)' },
-  { value: 'wolves', label: 'The wolves', hue: 'var(--wolf)' },
-  { value: 'serial_killer', label: 'The serial killer', hue: 'var(--sk)' },
-  { value: 'necromancer', label: 'The necromancer', hue: 'var(--sk)' },
+/** Each chip's mark: a side's (`side`), or a role's sigil (`role`); a draw has none. */
+const WINNERS: {
+  value: WonBy;
+  label: string;
+  hue: string;
+  side?: 'villagers' | 'wolves';
+  role?: string;
+}[] = [
+  { value: 'villagers', label: 'The town', hue: 'var(--town)', side: 'villagers' },
+  { value: 'wolves', label: 'The wolves', hue: 'var(--wolf)', side: 'wolves' },
+  {
+    value: 'serial_killer',
+    label: 'The serial killer',
+    hue: 'var(--sk)',
+    role: 'serial_killer',
+  },
+  { value: 'necromancer', label: 'The necromancer', hue: 'var(--sk)', role: 'necromancer' },
+  {
+    value: 'speculator',
+    label: 'The speculator',
+    hue: 'var(--benign)',
+    role: 'speculator',
+  },
+  {
+    value: 'fortune_teller',
+    label: 'The fortune teller',
+    hue: 'var(--benign)',
+    role: 'fortune_teller',
+  },
   { value: 'draw', label: 'A draw', hue: 'var(--muted)' },
 ];
 
@@ -70,7 +94,12 @@ export function FilterRail({
           {activeCount ? <span className={classes.railCount}>{activeCount}</span> : null}
         </Button>
         {activeCount ? (
-          <Button type="button" variant="text" size="sm" onClick={() => onChange(NO_FILTERS)}>
+          <Button
+            type="button"
+            variant="text"
+            size="sm"
+            onClick={() => onChange(NO_FILTERS)}
+          >
             Clear all
           </Button>
         ) : null}
@@ -102,27 +131,31 @@ export function FilterRail({
           <Chip.Group
             multiple
             value={filters.winners}
-            onChange={(v) => set({ winners: v as WinnerKey[] })}
+            onChange={(v) => set({ winners: v as WonBy[] })}
           >
             <div className={classes.fchips}>
-              {WINNERS.map((w) => {
-                const side = winnerFaction(w.value);
-                return (
-                  <Chip key={w.value} value={w.value}>
-                    {side ? (
-                      <FactionMark
-                        faction={side}
-                        format="mark"
-                        variant="stamp"
-                        small
-                        className={classes.fchipSigil}
-                        style={{ color: w.hue }}
-                      />
-                    ) : null}
-                    {w.label}
-                  </Chip>
-                );
-              })}
+              {WINNERS.map((w) => (
+                <Chip key={w.value} value={w.value}>
+                  {w.side ? (
+                    <FactionMark
+                      faction={w.side}
+                      format="mark"
+                      variant="stamp"
+                      small
+                      className={classes.fchipSigil}
+                      style={{ color: w.hue }}
+                    />
+                  ) : w.role ? (
+                    <Sigil
+                      role={w.role}
+                      small
+                      className={classes.fchipSigil}
+                      style={{ color: w.hue }}
+                    />
+                  ) : null}
+                  {w.label}
+                </Chip>
+              ))}
             </div>
           </Chip.Group>
         </fieldset>
