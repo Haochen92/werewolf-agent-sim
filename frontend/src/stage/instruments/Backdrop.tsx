@@ -32,7 +32,7 @@ import { SETS, type SetScale } from '@/assets/sets';
 import { useMotionScale } from '../motion';
 import { BackdropContext, useSmall, useStageWidth, type BackdropSpec } from '../set';
 import type { Phase } from '../paint/materials';
-import { BLEED, CAMERA_ZOOM_MAX, STAGE_H, STAGE_W, type Hud } from '../units';
+import { BLEED, CAMERA_ZOOM_MAX, STAGE_H, STAGE_W, geometry, type Hud } from '../units';
 
 const SCALES: readonly SetScale[] = ['1', '1.5', '2'];
 /** The 1× sheet's width in pixels: one pixel per unit across the world and both bleeds. */
@@ -131,14 +131,18 @@ export function Backdrop({
 export function BackdropSheet({ phase, hud, side, from, fadeDelay, k }: BackdropSpec) {
   const { scale, narrow } = useScreen();
   const cut = useCut(narrow ? from : null, phase, fadeDelay * k);
-  // the bench's "no HUD" draws the car as the live HUD does (geometry(hud) treats them alike)
+  // no HUD (the landing's carriage on a phone) has no sheets of its own: it takes the live HUD's,
+  // slid by the wing the live layout keeps (its room is centred 96 units further left, 136.5 with
+  // the side slot open; the car follows the puppet's centre line, so a slide is exact), or the
+  // shutter, drawn from geometry('none'), falls short of the painted window's right side
   const h = hud === 'replay' ? 'replay' : 'live';
+  const dx = hud === 'none' ? geometry('none', side).cx - geometry('live', side).cx : 0;
   if (!scale) return null;
   const at = (p: Phase) => SETS.car[p][h][side ? 'side' : 'full'][scale];
   const sheet = {
     position: 'absolute',
     top: 0,
-    left: -BLEED,
+    left: -BLEED + dx,
     width: STAGE_W + 2 * BLEED,
     height: STAGE_H,
     display: 'block',
