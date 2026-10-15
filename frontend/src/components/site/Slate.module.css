@@ -282,31 +282,64 @@
   opacity: 0.85;
 }
 
-/* the puppets, seat 1 first: the heads from the kit, on a bone ring */
+/*
+ * The roles dealt, one disc per seat, in one even row: the role picker's disc (SigilDisc), a
+ * paper disc ringed in the side's colour with the sigil in its ink. A neutral that won beside
+ * the winner takes the picker's chosen ring, past a gap of paper, in the slate's ink.
+ */
 .cast {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
-  margin: 14px 0 0 3px;
+  margin: 15px 0 2px 3px;
 }
 
-.chip {
-  display: block;
-  width: 24px;
-  height: 24px;
+.role {
+  --band: var(--town);
+  --ink-f: var(--town-ink);
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 4.5px;
   border-radius: 50%;
-  overflow: hidden;
-  background: #e9dcc0;
+  background: #f3e9d2;
+  color: var(--ink-f);
   box-shadow:
-    0 0 0 2px var(--bone),
-    0 0 0 3px #3a2a18,
-    0 3px 8px rgba(0, 0, 0, 0.45);
+    0 0 0 2px var(--band),
+    0 2px 4px rgba(40, 25, 10, 0.35);
+}
+.role[data-faction='wolves'] {
+  --band: var(--wolf);
+  --ink-f: var(--wolf-ink);
+}
+.role[data-faction='serial_killer'] {
+  --band: var(--sk);
+  --ink-f: var(--sk-ink);
+}
+/* the neutrals' pale band, deepened to hold its edge on the paper */
+.role[data-faction='neutral_benign'] {
+  --band: color-mix(in srgb, var(--benign) 70%, var(--benign-ink));
+  --ink-f: var(--benign-ink);
+}
+.role[data-won] {
+  background: #fffaf0;
+  box-shadow:
+    0 0 0 2px var(--band),
+    0 0 0 4px var(--paper),
+    0 0 0 5.5px var(--slate-ink);
+}
+
+.role svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .fields {
   margin: 14px 0 0;
   display: grid;
-  grid-template-columns: 1.25fr 0.75fr 1fr;
+  grid-template-columns: 0.95fr 1.05fr 1.5fr;
   border-top: 1.5px solid var(--slate-ink);
 }
 
@@ -316,7 +349,7 @@
   min-width: 0;
 }
 
-.f:last-child {
+.f:nth-child(3) {
   border-right: 0;
 }
 
@@ -344,29 +377,52 @@
   opacity: 0.72;
 }
 
-.mono {
-  display: block;
-  font-family: var(--font-sans);
-  font-size: 10px;
-  opacity: 0.6;
-  letter-spacing: 0.01em;
-  margin-top: 2px;
+/* the run's figures under the fields, each label on its value's baseline, then the date */
+.run {
+  grid-column: 1 / -1;
+  border-top: 1.5px solid var(--slate-ink);
+  padding: 9px 10px 8px;
+  display: grid;
+  gap: 4px;
 }
 
-.wide {
-  grid-column: 1 / -1;
-  border-right: 0;
-  border-top: 1.5px solid var(--slate-ink);
+.figs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 22px;
+}
+
+.fig {
   display: flex;
   align-items: baseline;
-  gap: 10px;
+  gap: 9px;
 }
 
-.wide dt {
+.fields .fig dt {
   margin-bottom: 0;
 }
 
+.fields .fig dd {
+  font-size: 17px;
+}
+
+.mono {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  opacity: 0.62;
+  letter-spacing: 0.01em;
+}
+
 @media (max-width: 520px) {
+  .role {
+    width: 23px;
+    height: 23px;
+    padding: 4px;
+  }
+  .cast {
+    gap: 6px;
+  }
   .fields {
     grid-template-columns: 1fr 1fr;
   }

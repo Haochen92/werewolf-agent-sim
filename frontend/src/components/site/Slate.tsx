@@ -3,22 +3,25 @@
  * linking into the theatre at `/replays/[id]`. The winning side colours the frame, inks the
  * paper and is watermarked on it as its badge; the header says who won, and the printed line
  * under it is stamped for human seats, memory and "you played" (or, with nothing to stamp,
- * prints the table's default); the
- * puppets are the game's own cast, one per seat (the same hash the theatre uses); the fields are the
- * record id, the days, the phase it ended in, and the model, with what the game cost and how long
- * an AI call took on average when the server recorded them (games from 2026-10-04 on).
+ * prints the table's default); then the roles dealt, one disc per seat, town to neutral (a
+ * neutral that won beside the winner is ringed); the fields are the record id, the phase it
+ * ended in and the model, and under them what the game cost and how long an AI call took on
+ * average when the server recorded them (games from 2026-10-04 on), then the date.
  *
  * Pure: the page passes the model's display name (from `GET /models`) and whether this browser
  * sat in the game, so the slate itself never fetches.
  */
 import Link from 'next/link';
 import type { ReplaySummary } from '@/types/contracts';
-import { castForGame } from '@/stage/cast/castForGame';
-import { ChipSprite } from '@/stage/cast/ChipSprite';
 import { FactionMark } from '@/stage/instruments/FactionMark';
+import { Sigil } from '@/stage/instruments/Sigil';
 import {
   DRAW_NAME,
+  ROLE_NAME,
+  ROLE_ORDER,
   WINNER_NAME,
+  factionOf,
+  neutralWinner,
   winnerFaction,
   winnerKey,
   type WinnerKey,
@@ -44,6 +47,10 @@ const NUMBER_WORDS = [
   'Ten',
 ];
 const numberWord = (n: number) => NUMBER_WORDS[n] ?? String(n);
+
+/** The roles dealt, one per seat, in the role sheet's order (town, the pack, lone killer, neutral). */
+const rolesDealt = (r: ReplaySummary) =>
+  ROLE_ORDER.flatMap((role) => Array<string>(r.cast_role_counts[role] ?? 0).fill(role));
 
 /**
  * The pre-printed table line for a game that departs from nothing: all agents, memory off. A
@@ -83,16 +90,14 @@ export function Slate({ replay, modelLabel, mine = false, from }: SlateProps) {
   const model = replay.model ? (modelLabel ?? replay.model) : null;
   const cost = formatCost(replay.cost_usd);
   const callTime = formatCallSeconds(replay.avg_call_seconds);
-  // Under the model's name: the game's cost and AI call time when recorded, then the date.
-  const modelLine = [cost, callTime && `${callTime} per AI call`, date]
-    .filter(Boolean)
-    .join(' · ');
   const humans = replay.n_humans;
+  const neutralWon = neutralWinner(replay.cast_role_counts, replay.neutral_result);
 
   const aria = [
     `Replay: ${faction.name.toLowerCase()} ${faction.verb}`.trim(),
     `${replay.days} ${replay.days === 1 ? 'day' : 'days'}`,
     ended ? `ended ${ended.toLowerCase()}` : null,
+    neutralWon ? `the ${ROLE_NAME[neutralWon].toLowerCase()} won too` : null,
     model ?? 'model unrecorded',
     cost ? `cost ${cost}` : null,
     mine ? 'you played' : null,
@@ -149,9 +154,16 @@ export function Slate({ replay, modelLabel, mine = false, from }: SlateProps) {
             )}
           </div>
           <div className={classes.cast} aria-hidden="true">
-            {castForGame(replay.game_id, seatCount(replay)).map((character, seat) => (
-              <span key={seat} className={classes.chip}>
-                <ChipSprite character={character} />
+            {rolesDealt(replay).map((role, seat) => (
+              <span
+                key={seat}
+                className={classes.role}
+                data-role={role}
+                data-faction={factionOf(role) ?? undefined}
+                data-won={role === neutralWon || undefined}
+                title={`${ROLE_NAME[role] ?? role}${role === neutralWon ? ', won' : ''}`}
+              >
+                <Sigil role={role} small />
               </span>
             ))}
           </div>
@@ -161,28 +173,25 @@ export function Slate({ replay, modelLabel, mine = false, from }: SlateProps) {
               <dd>{replay.game_id.slice(0, 7).toUpperCase()}</dd>
             </div>
             <div className={classes.f}>
-              <dt>Days</dt>
-              <dd>{replay.days}</dd>
-            </div>
-            <div className={classes.f}>
               <dt>Ended</dt>
               <dd className={ended ? undefined : classes.none}>{ended ?? 'Unrecorded'}</dd>
             </div>
-            <div className={`${classes.f} ${classes.wide}`}>
+            <div className={classes.f}>
               <dt>Model</dt>
-              {model ? (
-                <dd>
-                  {model}
-                  {modelLine ? <span className={classes.mono}>{modelLine}</span> : null}
-                </dd>
-              ) : (
-                <dd className={classes.none}>
-                  Unrecorded
-                  <span className={classes.mono}>
-                    column added later{date ? ` · archived ${date}` : ''}
-                  </span>
-                </dd>
-              )}
+              <dd className={model ? undefined : classes.none}>{model ?? 'Unrecorded'}</dd>
+            </div>
+            <div className={classes.run}>
+              <div className={classes.figs}>
+                <div className={classes.fig}>
+                  <dt>Cost</dt>
+                  <dd className={cost ? undefined : classes.none}>{cost || '—'}</dd>
+                </div>
+                <div className={classes.fig}>
+                  <dt>Per AI call</dt>
+                  <dd className={callTime ? undefined : classes.none}>{callTime || '—'}</dd>
+                </div>
+              </div>
+              {date ? <span className={classes.mono}>{date}</span> : null}
             </div>
           </dl>
         </div>

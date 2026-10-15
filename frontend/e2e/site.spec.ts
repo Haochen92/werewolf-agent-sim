@@ -212,7 +212,9 @@ async function settle(page: Page) {
   });
 }
 
-test('archive: slates say the model by name and where the game ended', async ({ page }) => {
+test('archive: slates say the model by name, where the game ended and the roles dealt', async ({
+  page,
+}) => {
   await openArchive(page);
   await expect(page.getByRole('heading', { name: 'The archive' })).toBeVisible();
   await expect(page.getByText('Showing 4 of 212 games')).toBeVisible();
@@ -224,13 +226,15 @@ test('archive: slates say the model by name and where the game ended', async ({ 
   await expect(fixture).not.toContainText('gemini-3.5-flash-lite'); // the name, not the raw id twice
   await expect(fixture).toContainText('Night 4');
   await expect(fixture).toHaveAttribute('aria-label', /ended night 4/);
-  await expect(fixture.locator('img')).toHaveCount(9);
+  // the roles dealt, one disc per seat: the fixture is a nine-seat game
+  await expect(fixture.locator('[data-role]')).toHaveCount(9);
+  await expect(fixture.locator('[data-role="wolf"]')).toHaveCount(2);
 
   await expect(page.locator(`[data-game="${MINE}"]`)).toContainText('Day 3 vote');
   // a game that recorded its tokens says what it cost and how long an AI call took
-  await expect(page.locator(`[data-game="${MINE}"]`)).toContainText(
-    '$0.27 · 4.1 s per AI call',
-  );
+  const mine = page.locator(`[data-game="${MINE}"]`);
+  await expect(mine.locator('dd', { hasText: '$0.27' })).toBeVisible();
+  await expect(mine.locator('dd', { hasText: '4.1 s' })).toBeVisible();
   await expect(page.locator(`[data-game="${MINE}"]`)).toContainText('played');
   await expect(page.locator('[data-game="seed-chunk-catalogue"]')).toContainText(
     'Unrecorded',
