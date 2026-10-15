@@ -350,4 +350,11 @@ export interface RoomInput {
    * platform; `opening`, only the curtain is left, lifting off the deal's first beat below.
    */
   curtain?: 'closing' | 'opening' | null;
+  /**
+   * A departure with no room behind it (a replay's opening, a game for one): the sign is the
+   * line's own, not a table's, and nobody can press anything.
+   */
+  bare?: boolean;
+  /** Under the curtain's words while it holds for the game: what the wait is. */
+  curtainLine?: string | null;
 }

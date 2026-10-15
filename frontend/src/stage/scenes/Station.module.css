@@ -643,6 +643,18 @@
   font-size: calc(35.2px * var(--legible-ui));
   color: var(--bone2);
 }
+/* what the wait is, while the curtain holds: under its words, out of the grid, so they never move */
+.curtainLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(50% + 40px * var(--legible-ui));
+  text-align: center;
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  font-size: calc(22.4px * var(--legible-ui));
+  color: var(--bone2);
+  opacity: 0.7;
+}
 
 /*
  * The paper everything on the platform is printed on: the site's paper (components/site/Paper,

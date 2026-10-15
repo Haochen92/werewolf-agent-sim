@@ -24,6 +24,14 @@ export const DEPART = { pullAt: 2.4, pull: 4.6, total: 7.0 } as const;
 /** The curtain between the platform and the deal: falling, then lifting off the deal's first beat. */
 export const CURTAIN = { close: 1.2, open: 1.0 } as const;
 
+/** The departure's length: the whole of it, or a moment for a viewer who asked for less motion. */
+export function departMs(): number {
+  const reduce =
+    typeof window !== 'undefined' &&
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  return reduce ? 600 : DEPART.total * 1000;
+}
+
 export type StationBeatId = 'station.waiting' | 'station.locked' | 'station.departing';
 
 /** The beat the room is on: departing once the host has pressed (or the game has begun). */
@@ -76,7 +84,7 @@ export function ledgeLine(
   room: RoomInput,
   departing = false,
 ): { head: string; sub: string } {
-  if (departing)
+  if (departing || room.bare)
     return { head: 'All aboard', sub: 'The cards are dealt in the dining car.' };
   const n = room.aboard.length;
   const open = Math.max(room.places - n, 0);

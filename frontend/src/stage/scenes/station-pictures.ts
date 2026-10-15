@@ -10,7 +10,7 @@
  * sharp one. So upright the pick is made for the stage the turned screen will draw. A pick is
  * traded up and never down: a lighter copy after a sharper one is a second download for nothing.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { StaticImageData } from 'next/image';
 import { SPRITES } from '@/assets/manifest';
 import { useStageWidth } from '../set';
@@ -31,6 +31,38 @@ function turnedWidth(stageW: number): number {
   const { innerWidth: w, innerHeight: h } = window;
   if (h <= w) return stageW;
   return Math.max(stageW, Math.min(h, (w * 16) / 9));
+}
+
+/** How long a departure waits for its pictures before it leaves without them. */
+const READY_CAP_MS = 6000;
+
+/**
+ * Says once the train and the country this stage draws are loaded and decoded (or after
+ * `READY_CAP_MS`), so a departure never pulls out before its train is there: on a page opened
+ * for the departure, the replay's and a game for one's, the platform is new. Mounted inside the
+ * Stage, beside the platform, for its measured pick.
+ */
+export function StationReady({ onReady }: { onReady: () => void }) {
+  const { train, sky } = useStationPictures();
+  useEffect(() => {
+    let live = true;
+    const done = () => {
+      if (live) onReady();
+    };
+    const cap = setTimeout(done, READY_CAP_MS);
+    void Promise.all(
+      [train.src, sky.src].map((src) => {
+        const img = new Image();
+        img.src = src;
+        return img.decode().catch(() => {});
+      }),
+    ).then(done);
+    return () => {
+      live = false;
+      clearTimeout(cap);
+    };
+  }, [train.src, sky.src, onReady]);
+  return null;
 }
 
 export function useStationPictures(): StationPictures {

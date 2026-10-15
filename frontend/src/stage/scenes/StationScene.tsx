@@ -42,7 +42,8 @@ import { Wing } from '../instruments/Wing';
 import { StageMotion, useMotionScale } from '../motion';
 import { stationBack, stationFront, stationPlan } from '../paint/station';
 import { STAGE_H, geometry, type StageGeometry } from '../units';
-import { CURTAIN, DEPART, canDepart, ledgeLine } from './station';
+import { Curtain } from './Curtain';
+import { DEPART, canDepart, ledgeLine } from './station';
 import { useStationPictures } from './station-pictures';
 import type { RoomInput, SceneProps } from './types';
 import styles from './Station.module.css';
@@ -93,24 +94,9 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
   // a part that leaves at departure starts from the waiting picture only when it is played
   const from = <V,>(v: V): V | false => (animate && departing ? v : false);
 
-  const curtain = (
-    <Layer name="hud">
-      {room.curtain ? (
-        <motion.div
-          className={styles.curtain}
-          data-curtain={room.curtain}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: room.curtain === 'closing' ? 1 : 0 }}
-          transition={{
-            duration: (room.curtain === 'closing' ? CURTAIN.close : CURTAIN.open) * k,
-            ease: 'easeInOut',
-          }}
-        >
-          <p>The deal begins in the dining car</p>
-        </motion.div>
-      ) : null}
-    </Layer>
-  );
+  const curtain = room.curtain ? (
+    <Curtain state={room.curtain} line={room.curtainLine} />
+  ) : null;
   // lifting off the deal: only the curtain is left of the platform
   if (opening) return curtain;
 
@@ -179,14 +165,16 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
             >
               {S.places.map((_, i) => {
                 const name = i < n ? aboard[i] : null;
+                // with no room behind the train, nobody else is coming: the places are agents'
+                const agent = departing || room.bare;
                 const cls = name
                   ? styles.plate
-                  : departing
+                  : agent
                     ? styles.plateAgent
                     : styles.plateOpen;
                 return (
                   <span key={i} className={cls} style={{ left: (i + 0.5) * S.pitch }}>
-                    {name ?? (departing ? 'agent' : 'open')}
+                    {name ?? (agent ? 'agent' : 'open')}
                   </span>
                 );
               })}
@@ -221,7 +209,7 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
             className={i < n ? styles.mark : styles.markOpen}
             style={{ left: x, top: S.feetY, x: '-50%', y: '-50%' }}
             initial={from({ opacity: 1 })}
-            animate={{ opacity: departing ? 0 : 1 }}
+            animate={{ opacity: departing || (room.bare && i >= n) ? 0 : 1 }}
             transition={T(0.3)}
           />
         ))}
@@ -273,8 +261,14 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
             <i />
           </span>
           <span className={styles.board}>
-            <b>{room.name || 'Unnamed table'}</b>
-            <small>{room.host ? `hosted by ${room.host}` : 'nobody aboard yet'}</small>
+            {room.bare ? (
+              <b>The Ninth Express</b>
+            ) : (
+              <>
+                <b>{room.name || 'Unnamed table'}</b>
+                <small>{room.host ? `hosted by ${room.host}` : 'nobody aboard yet'}</small>
+              </>
+            )}
           </span>
           {room.locked ? (
             <span className={styles.lockPlate} data-locked>
@@ -298,13 +292,16 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
             you: i < n && i === you,
           }))}
         />
-        <HangTags
-          room={room}
-          left={g.wingN + 112}
-          departing={departing}
-          T={T}
-          from={from}
-        />
+        {/* a departure with no room behind it has nobody to invite and no terms */}
+        {room.bare ? null : (
+          <HangTags
+            room={room}
+            left={g.wingN + 112}
+            departing={departing}
+            T={T}
+            from={from}
+          />
+        )}
         <motion.div
           className={styles.ledge}
           role="group"
@@ -367,7 +364,7 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
                 {room.busy === 'depart' ? 'Departing…' : 'Depart'}
               </button>
             </>
-          ) : !departing ? (
+          ) : !departing && !room.bare ? (
             <button
               type="button"
               className={`${styles.brass} ${styles.brassSmall}`}
