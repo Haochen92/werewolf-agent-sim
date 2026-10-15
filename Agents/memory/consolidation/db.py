@@ -44,6 +44,13 @@ CREATE TABLE IF NOT EXISTS obs_generations (
     last_reinforced integer NOT NULL,
     count           integer NOT NULL
 );
+CREATE TABLE IF NOT EXISTS credit_runs (
+    id      serial PRIMARY KEY,
+    ran_at  timestamptz NOT NULL DEFAULT now(),
+    stats   jsonb,
+    changes jsonb,
+    games   jsonb
+);
 CREATE TABLE IF NOT EXISTS tick_runs (
     gen          integer PRIMARY KEY,
     ran_at       timestamptz NOT NULL DEFAULT now(),
@@ -54,11 +61,15 @@ CREATE TABLE IF NOT EXISTS tick_runs (
 """
 
 
-def connect(dsn: str | None = None) -> psycopg.Connection:
+def resolve_dsn(dsn: str | None = None) -> str:
     dsn = dsn or os.environ.get("WW_POSTGRES_DSN")
     if not dsn:
         raise RuntimeError("no DSN: pass one or set WW_POSTGRES_DSN")
-    return psycopg.connect(dsn)
+    return dsn
+
+
+def connect(dsn: str | None = None) -> psycopg.Connection:
+    return psycopg.connect(resolve_dsn(dsn))
 
 
 def setup(conn: psycopg.Connection) -> None:
@@ -148,6 +159,14 @@ def record_tick(conn: psycopg.Connection, gen: int, stats: dict, window_spec: di
     conn.commit()
 
 
+def record_credit_run(conn: psycopg.Connection, stats: dict, changes: list, games: list[str]) -> None:
+    """One credit pass (decisions §14): its counts, every lesson it pruned, evicted, spared or found
+    proven, and the games it read."""
+    conn.execute("INSERT INTO credit_runs (stats, changes, games) VALUES (%s, %s, %s)",
+                 (Jsonb(stats), Jsonb(changes), Jsonb(games)))
+    conn.commit()
+
+
 def bootstrap_from_dir(conn: psycopg.Connection, store_dir: str | Path) -> dict:
     """Seed an EMPTY database from a promoted store artifact (memory_stores/v7_fixed): SP +
     observation records and base rates. Refuses to overwrite a non-empty store — bootstrap is a
@@ -198,7 +217,10 @@ def export_snapshot(scratch_dir: str | Path, snapshot_dir: str | Path, manifest:
     if snapshot_dir.exists():
         raise RuntimeError(f"snapshot dir already exists: {snapshot_dir} (snapshots are immutable)")
     snapshot_dir.mkdir(parents=True)
-    for fname in ("observations.json", "strategy_points.json", "base_rates.json"):
+    # synthesis_log.jsonl: each synthesis call's input and output (store_ops.synthesize) — the scratch
+    # dir is deleted after the tick, so the snapshot is where it survives.
+    for fname in ("observations.json", "strategy_points.json", "base_rates.json", "synthesis_log.jsonl",
+                  "changes.json"):
         src = scratch_dir / fname
         if src.exists():
             shutil.copy2(src, snapshot_dir / fname)

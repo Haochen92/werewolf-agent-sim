@@ -2,16 +2,16 @@
 
 API-layer tests in the dota2pred sense — the app is real (factory, lifespan, registry,
 middleware), the game engine is not involved. Sessions are injected into
-app.state.games pre-built (never started via POST /games, which would launch the real
-graph); the runtime machine itself is pinned in test_server_runtime.py.
+app.state.resources.games pre-built (never started via POST /games, which would launch the real
+graph); the runtime machine itself is pinned in test_game_session.py.
 """
 from __future__ import annotations
 
 import pytest
 
-from server.lobby import MAX_HUMAN_SEATS
-from server.runtime import SUPPORTED_GAME_MODELS
-from tests.fixtures.server import FakeGraph
+from server.game.lobby import MAX_HUMAN_SEATS
+from server.game.model_catalog import menu_models
+from tests.fixtures.server import FakeGraph, HangingGraph
 
 GEMINI = "gemini-3.1-flash-lite"
 
@@ -23,7 +23,7 @@ def seated_session(api_client, quiet_session):
     joiner is in mid-game. Returns (session, token)."""
     session = quiet_session(FakeGraph([]), seat_tokens=["tok-1"])
     session.human_players = ["player_3"]  # what INITIALIZE_GAME would set
-    api_client.app.state.games[session.game_id] = session
+    api_client.app.state.resources.games._register(session)
     api_client.cookies.set(f"seat_{session.game_id}", "tok-1")
     return session, "tok-1"
 
@@ -32,7 +32,11 @@ def seated_session(api_client, quiet_session):
 
 def test_health_and_lifespan_registry(api_client):
     assert api_client.get("/health").json() == {"status": "healthy"}
-    assert api_client.app.state.games == {}  # the lifespan created the registry
+    resources = api_client.app.state.resources
+    assert len(resources.games) == 0  # lifespan-owned registry
+    # All storage services share the one app-owned database, never hidden singletons.
+    assert resources.game_repository._database is resources.database
+    assert resources.replays._database is resources.database
 
 
 def test_cors_allows_the_configured_frontend_origin(api_client):
@@ -48,17 +52,33 @@ def test_cors_allows_the_configured_frontend_origin(api_client):
 
 def test_models_menu_serves_the_registry(api_client):
     menu = api_client.get("/models").json()
-    assert [m["model"] for m in menu["models"]] == list(SUPPORTED_GAME_MODELS)
+    assert [m["model"] for m in menu["models"]] == [row.model for row in menu_models()]
     assert menu["models"][0]["rescue_model"]  # the default row carries its rescue
+    assert menu["memory_available"] is False  # no database in tests: no lessons to read
 
 
 # ---- POST /games: the registry gate (BYOK v1.5) -----------------------------------------
 
-def test_model_selection_without_a_key_is_rejected_at_both_doors(api_client):
+def test_byok_only_model_selection_without_a_key_is_rejected_at_both_doors(api_client):
     for door in ("/games", "/rooms"):
-        r = api_client.post(door, json={"model": GEMINI})
+        r = api_client.post(door, json={"model": "gemini-2.5-pro"})
         assert r.status_code == 422
         assert "requires api_key" in r.json()["detail"]
+
+
+def test_the_menu_says_who_pays_and_which_row_is_default(api_client):
+    menu = api_client.get("/models").json()
+    by_model = {row["model"]: row for row in menu["models"]}
+    house = {m for m, row in by_model.items() if row["house_funded"]}
+    assert house == {"gemini-3.1-flash-lite", "gemini-3.5-flash-lite", "gemini-3.6-flash",
+                     "anthropic/claude-haiku-5-5"}
+    assert [m for m, row in by_model.items() if row["is_default"]] == ["gemini-3.5-flash-lite"]
+    # Storage is off in tests, so the purse is the process defaults: on, nothing used yet.
+    assert menu["house"]["enabled"] is True
+    # The house is open, so its rows need no key and every other row does.
+    assert {m for m, row in by_model.items() if not row["needs_key"]} == house
+    assert menu["house"]["remaining"] == menu["house"]["games_per_day"] > 0
+    assert menu["house"]["reset_at"].endswith("+00:00")
 
 
 def test_untested_models_are_rejected(api_client):
@@ -79,23 +99,59 @@ def test_unknown_game_is_404_everywhere(api_client):
 
 def test_status_snapshot_of_a_fresh_session(api_client, quiet_session):
     session = quiet_session(FakeGraph([]))  # built, deliberately never started
-    api_client.app.state.games[session.game_id] = session
+    api_client.app.state.resources.games._register(session)
 
     body = api_client.get(f"/games/{session.game_id}").json()
+    assert body.pop("server_time").endswith("+00:00")
     assert body == {
-        "game_id": session.game_id, "state": "running", "players": [], "max_seats": 0,
-        "human_players": [], "you": None, "pending_input": False, "pending_seats": [],
+        "game_id": session.game_id, "state": "running", "players": [], "host": None, "max_seats": 0,
+        "human_players": [], "you": None, "you_aboard": None, "pending_input": False, "pending_seats": [],
         "deadlines": {}, "game_over": False, "last_seq": 0, "alive_role_counts": {},
-        "error": None, "name": "", "locked": False,
+        "error": None, "name": "", "locked": False, "winner": None, "archived": False,
+        "awaiting_key": False, "cast": [], "characters": [],
     }
 
 
+def test_the_status_snapshot_lists_the_cast_in_seat_order(api_client, seated_session):
+    from server.game.cast import DRAW_POOL, CastSeat
+
+    session, _ = seated_session
+    seats = [f"player_{i}" for i in range(1, 10)]
+    session.cast = [CastSeat(s, c, False) for s, c in zip(seats, DRAW_POOL)]
+    assert api_client.get(f"/games/{session.game_id}").json()["cast"] == list(DRAW_POOL[:9])
+
+
+def test_an_archived_snapshot_reads_the_cast_from_the_table(api_client, monkeypatch):
+    from server.database_models.game import COMPLETED, GameRow
+    from server.game.cast import CastSeat
+
+    resources = api_client.app.state.resources
+    row = GameRow(game_id="g-old", status=COMPLETED, seats=[], human_players=[], winner="wolves")
+
+    async def load_game(game_id):
+        return row if game_id == "g-old" else None
+
+    async def load_cast(game_id):  # the repository hands the cast over in seat order
+        return [CastSeat("player_1", "cat", True), CastSeat("player_2", "owl", False)]
+
+    monkeypatch.setattr(resources.game_repository, "load_game", load_game)
+    monkeypatch.setattr(resources.game_repository, "load_cast", load_cast)
+    body = api_client.get("/games/g-old").json()
+    assert body["archived"] and body["cast"] == ["cat", "owl"]
+
+
 def test_turn_without_a_pending_request_is_409(api_client, seated_session):
+    from tests.factories.builders import human_turn_request
+
     session, _ = seated_session
 
     r = api_client.post(f"/games/{session.game_id}/turns", json={"message": "hi"})
     assert r.status_code == 409
     assert "no pending input_request" in r.json()["detail"]
+    # another seat owing a turn (a human night actor choosing) changes nothing in the answer
+    session.pending_requests["player_5"] = human_turn_request(player_id="player_5")
+    again = api_client.post(f"/games/{session.game_id}/turns", json={"message": "hi"})
+    assert (again.status_code, again.json()) == (r.status_code, r.json())
 
 
 # ---- the lobby: create -> join -> start (slice 2) ----------------------------------------
@@ -108,18 +164,18 @@ def _make_room(api_client, **extra):
 def test_lobby_lifecycle_create_join_start(api_client, monkeypatch):
     """The happy path end to end, with the real GameSession swapped for one on a
     FakeGraph (starting the real graph would call an LLM)."""
-    import server.app as app_mod
-    from server import runtime as rt
+    import server.game.live_game_registry as registry_module
+    from server.game import game_session as rt
 
-    monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
     launched = []
 
-    def fake_session(run, **kw):
-        launched.append(run)
-        kw.pop("graph", None)  # routes pass the durable graph (None in tests)
-        return rt.GameSession(run, graph=FakeGraph([]), **kw)
+    class FakeSession(rt.GameSession):
+        def __init__(self, run, **kw):
+            launched.append(run)
+            kw.pop("graph", None)  # routes pass the durable graph (None in tests)
+            super().__init__(run, graph=HangingGraph(), **kw)
 
-    monkeypatch.setattr(app_mod, "GameSession", fake_session)
+    monkeypatch.setattr(registry_module, "GameSession", FakeSession)
 
     game_id, host_key = _make_room(api_client)
     assert host_key  # the create response is the ONLY carrier of the host credential
@@ -130,7 +186,7 @@ def test_lobby_lifecycle_create_join_start(api_client, monkeypatch):
 
     r = api_client.post(f"/games/{game_id}/join", json={"name": "hao"})
     seat_token = r.json()["token"]
-    assert r.json() == {"position": 1, "token": seat_token}
+    assert r.json() == {"token": seat_token}
 
     status = api_client.get(f"/games/{game_id}")
     assert status.json()["players"] == ["hao"]
@@ -156,8 +212,10 @@ def test_lobby_seat_cap(api_client):
     game_id, _ = _make_room(api_client)
 
     for i in range(MAX_HUMAN_SEATS):
+        api_client.cookies.clear()  # each joiner is a browser of its own
         assert api_client.post(f"/games/{game_id}/join",
                                json={"name": f"p{i}"}).status_code == 200
+    api_client.cookies.clear()
     r = api_client.post(f"/games/{game_id}/join", json={"name": "late"})
     assert r.status_code == 409 and "seats are taken" in r.json()["detail"]
 
@@ -177,6 +235,43 @@ def test_room_contract_has_no_human_fields(api_client):
     assert api_client.post("/rooms", json={"human_role": "wolf"}).status_code == 422
 
 
+def test_memory_on_is_refused_until_the_server_has_lessons_for_the_cast(api_client, monkeypatch):
+    from server.config import server_settings
+    monkeypatch.setattr(server_settings, "WW_MEMORY_ENABLED", False)
+    for path in ("/rooms", "/games"):
+        r = api_client.post(path, json={"memory": True})
+        assert r.status_code == 409 and "still being built" in r.json()["detail"]
+    assert api_client.post("/rooms", json={}).status_code == 200
+
+
+def test_memory_on_is_refused_while_the_database_store_is_not_ready(api_client, monkeypatch):
+    # The deployment's switch is on, but this process has no database: the store's own answer.
+    from server.config import server_settings
+    monkeypatch.setattr(server_settings, "WW_MEMORY_ENABLED", True)
+    r = api_client.post("/games", json={"memory": True})
+    assert r.status_code == 409 and "no database" in r.json()["detail"]
+    assert api_client.get("/models").json()["memory_available"] is False
+    runtime = api_client.app.state.resources.graph_runtime
+    monkeypatch.setattr(runtime, "memory_unavailable_reason", lambda: "no lessons have been published")
+    assert "published" in api_client.post("/rooms", json={"memory": True}).json()["detail"]
+    monkeypatch.setattr(runtime, "memory_unavailable_reason", lambda: None)
+    assert api_client.get("/models").json()["memory_available"] is True
+
+
+def test_the_host_chooses_memory_for_the_whole_room(api_client, monkeypatch):
+    from server.config import server_settings
+    monkeypatch.setattr(server_settings, "WW_MEMORY_ENABLED", True)
+    monkeypatch.setattr(api_client.app.state.resources.graph_runtime,
+                        "memory_unavailable_reason", lambda: None)
+    body = api_client.post("/rooms", json={"memory": True}).json()
+    room = api_client.app.state.resources.games.get(body["game_id"])
+    assert room.memory is True
+    assert all(room.run_config().memory_config.values())
+    # Off by default: a memory-on game costs an extra model call per AI decision.
+    body = api_client.post("/rooms", json={}).json()
+    assert api_client.app.state.resources.games.get(body["game_id"]).memory is False
+
+
 # ---- seat tokens: proof of ownership (slice 3) -------------------------------------------
 
 def test_join_sets_an_httponly_seat_cookie_matching_the_body_token(api_client):
@@ -191,6 +286,140 @@ def test_join_sets_an_httponly_seat_cookie_matching_the_body_token(api_client):
     assert "SameSite=lax" in set_cookie
 
 
+def test_joining_again_hands_back_the_seat_you_already_hold(api_client):
+    game_id, _ = _make_room(api_client)
+    first = api_client.post(f"/games/{game_id}/join", json={"name": "hao"}).json()["token"]
+
+    # The same browser boards again (the lobby's Board, the invite link): same seat.
+    again = api_client.post(f"/games/{game_id}/join", json={"name": "hao 2"}).json()["token"]
+    assert again == first
+    assert api_client.get(f"/games/{game_id}").json()["players"] == ["hao"]
+
+    # A different browser (no cookie) still gets a seat of its own.
+    api_client.cookies.clear()
+    other = api_client.post(f"/games/{game_id}/join", json={"name": "mira"}).json()["token"]
+    assert other != first
+
+
+def test_a_waiting_room_tells_you_where_you_stand_on_the_roster(api_client):
+    game_id, _ = _make_room(api_client)
+    api_client.post(f"/games/{game_id}/join", json={"name": "hao"})
+    assert api_client.get(f"/games/{game_id}").json()["you_aboard"] == 0
+
+    # Same name, different browser: the place, not the name, tells them apart.
+    api_client.cookies.clear()
+    api_client.post(f"/games/{game_id}/join", json={"name": "hao"})
+    status = api_client.get(f"/games/{game_id}").json()
+    assert status["players"] == ["hao", "hao"] and status["you_aboard"] == 1
+
+    api_client.cookies.clear()  # a spectator stands nowhere
+    assert api_client.get(f"/games/{game_id}").json()["you_aboard"] is None
+
+
+def test_players_pick_their_puppet_first_come_first_served(api_client, monkeypatch):
+    """A pick is public like a name, lands on whichever seat the engine deals that
+    player, and can be given up; a taken puppet is refused, an unknown one is a 422."""
+    import server.game.live_game_registry as registry_module
+    from server.game import game_session as rt
+
+    launched = []
+
+    class FakeSession(rt.GameSession):
+        def __init__(self, run, **kw):
+            launched.append(kw)
+            kw.pop("graph", None)
+            super().__init__(run, graph=HangingGraph(), **kw)
+
+    monkeypatch.setattr(registry_module, "GameSession", FakeSession)
+
+    game_id, host_key = _make_room(api_client)
+    assert api_client.post(f"/games/{game_id}/character",
+                           json={"character": "whale"}).status_code == 403  # no seat
+    api_client.post(f"/games/{game_id}/join", json={"name": "hao"})
+    r = api_client.post(f"/games/{game_id}/character", json={"character": "whale"})
+    assert r.status_code == 200 and r.json()["characters"] == ["whale"]
+    assert api_client.post(f"/games/{game_id}/character",
+                           json={"character": "wolfman"}).status_code == 422
+
+    api_client.cookies.clear()
+    api_client.post(f"/games/{game_id}/join", json={"name": "li"})
+    r = api_client.post(f"/games/{game_id}/character", json={"character": "whale"})
+    assert r.status_code == 409 and "already stands" in r.json()["detail"]
+    r = api_client.post(f"/games/{game_id}/character", json={"character": "cat"})
+    assert r.json()["characters"] == ["whale", "cat"]
+    r = api_client.post(f"/games/{game_id}/character", json={"character": None})
+    assert r.json()["characters"] == ["whale", None]  # given up: open to anyone again
+    assert api_client.get(f"/games/{game_id}").json()["characters"] == ["whale", None]
+
+    api_client.post(f"/games/{game_id}/start?host_key={host_key}")
+    assert launched[0]["picks"] == ["whale", None]  # join order, like the tokens
+    assert api_client.post(f"/games/{game_id}/character",
+                           json={"character": "cat"}).status_code == 409  # started
+
+
+def test_the_solo_door_takes_a_puppet_too(api_client, monkeypatch):
+    import server.game.live_game_registry as registry_module
+    from server.game import game_session as rt
+
+    launched = []
+
+    class FakeSession(rt.GameSession):
+        def __init__(self, run, **kw):
+            launched.append(kw)
+            kw.pop("graph", None)
+            super().__init__(run, graph=HangingGraph(), **kw)
+
+    monkeypatch.setattr(registry_module, "GameSession", FakeSession)
+
+    r = api_client.post("/games", json={"human": True, "character": "wolfman"})
+    assert r.status_code == 422 and launched == []
+    r = api_client.post("/games", json={"human": True, "character": "owl"})
+    assert r.status_code == 200 and launched[0]["picks"] == ["owl"]
+    r = api_client.post("/games", json={"character": "owl"})  # all-AI: nobody to stand
+    assert r.status_code == 200 and launched[1]["picks"] == []
+
+
+def test_a_name_is_short_printable_and_tidied(api_client):
+    game_id, _ = _make_room(api_client)
+    join = lambda name: api_client.post(f"/games/{game_id}/join", json={"name": name})
+
+    for bad in ["", "   ", "a" * 13, "hao🐺", "<b>hao</b>", "hao\u200bchen"]:
+        api_client.cookies.clear()
+        assert join(bad).status_code == 422, bad
+    for good in ["Liu Haochen", "刘浩晨", "Zoë", "O'Brien", "J.-P. 2", "a" * 12]:
+        api_client.cookies.clear()
+        assert join(good).status_code == 200, good
+    api_client.cookies.clear()
+    join("  kei   mori ")
+    assert api_client.get(f"/games/{game_id}").json()["players"][-1] == "kei mori"
+
+
+def test_seat_cookie_secure_flag_is_an_env_knob(api_client, monkeypatch):
+    from server.config import server_settings
+
+    # Default off: plain-HTTP dev must keep working.
+    game_id, _ = _make_room(api_client)
+    r = api_client.post(f"/games/{game_id}/join", json={"name": "hao"})
+    assert "Secure" not in r.headers["set-cookie"]
+
+    # SEAT_COOKIE_SECURE=true (the TLS deploy): the flag rides the cookie.
+    monkeypatch.setattr(server_settings, "SEAT_COOKIE_SECURE", True)
+    game_id, _ = _make_room(api_client)
+    r = api_client.post(f"/games/{game_id}/join", json={"name": "hao"})
+    assert "Secure" in r.headers["set-cookie"]
+
+
+def test_seat_cookie_path_prefix_is_an_env_knob(api_client, monkeypatch):
+    from server.config import server_settings
+
+    # Caddy exposes /api/games/... to the browser, then strips /api upstream.
+    # The cookie Path must describe the browser-visible URL, not FastAPI's URL.
+    monkeypatch.setattr(server_settings, "SEAT_COOKIE_PATH_PREFIX", "/api/")
+    game_id, _ = _make_room(api_client)
+    r = api_client.post(f"/games/{game_id}/join", json={"name": "hao"})
+    assert f"Path=/api/games/{game_id}" in r.headers["set-cookie"]
+
+
 def test_turns_demand_a_proven_seat(api_client, seated_session):
     session, _ = seated_session
     url = f"/games/{session.game_id}/turns"
@@ -202,6 +431,106 @@ def test_turns_demand_a_proven_seat(api_client, seated_session):
     api_client.cookies.set(f"seat_{session.game_id}", "forged")
     r = api_client.post(url, json={"message": "hi"})
     assert r.status_code == 403 and "unknown seat token" in r.json()["detail"]
+
+
+def test_draft_previews_the_seats_own_turn(api_client, seated_session, monkeypatch):
+    """The draft route needs a proven seat that owes a discussion turn; it returns the line
+    the seat's agent would say without entering the game, and counts the drafts a turn
+    allows. The player's notes, draft and notebook reach the agent as one direction block."""
+    from server.game import game_session as rt
+    from server.schemas import events as ev
+    from tests.factories.builders import human_turn_request
+
+    session, _ = seated_session
+    session.log.append(ev.GameStarted(seq=0, day=1, seats=["player_3", "player_5"],
+                                      cast_role_counts={"villager": 2}))
+    seen = []
+
+    def preview(payload, config, runtime, direction):
+        seen.append(direction)
+        return f"{payload['player_id']} says it"
+
+    async def turn_payload(seat):
+        return {"player_id": seat}
+
+    monkeypatch.setattr(rt, "preview_discuss", preview)
+    monkeypatch.setattr(session, "_turn_payload", turn_payload)
+    url = f"/games/{session.game_id}/draft"
+
+    r = api_client.post(url, json={"notes": "4 dodging"})
+    assert r.status_code == 409 and "no pending input_request" in r.json()["detail"]
+
+    session.pending_requests["player_3"] = human_turn_request(player_id="player_3")  # a vote
+    r = api_client.post(url, json={"notes": "4 dodging"})
+    assert r.status_code == 409 and "discussion turn" in r.json()["detail"]
+
+    session.pending_requests["player_3"] = human_turn_request(
+        player_id="player_3", phase="day_channel", valid_targets=[])
+    r = api_client.post(url, json={})  # nothing: the agent's own line, prompt as is
+    assert r.json() == {"draft": "player_3 says it", "drafts_left": 2,
+                        "deadline": None}  # solo: no clock, no countdown
+    assert seen == [""]
+    assert session.pending_requests["player_3"].phase == "day_channel"  # still owed
+    r = api_client.post(url, json={"notes": "softer", "current": "5 is a wolf",
+                                   "seat_notes": {"player_5": "quiet"}, "suspect": "player_5"})
+    assert r.json()["drafts_left"] == 1
+    assert "softer" in seen[1] and "5 is a wolf" in seen[1]
+    assert "player_5: quiet" in seen[1] and "They suspect player_5." in seen[1]
+
+    # refused before the model is asked, and not charged
+    assert api_client.post(url, json={"notes": "x" * 501}).status_code == 422
+    assert api_client.post(url, json={"current": "x" * 1001}).status_code == 422
+    assert api_client.post(url, json={"seat_notes": {"player_5": "x" * 301}}).status_code == 422
+    too_many = {f"player_{i}": "n" for i in range(17)}
+    assert api_client.post(url, json={"seat_notes": too_many}).status_code == 422
+    r = api_client.post(url, json={"suspect": "player_9"})
+    assert r.status_code == 422 and "player_9" in r.json()["detail"]
+    r = api_client.post(url, json={"seat_notes": {"player_8": "hm"}})
+    assert r.status_code == 422 and "player_8" in r.json()["detail"]
+    assert api_client.post(url, json={}).json()["drafts_left"] == 0
+
+    api_client.cookies.clear()
+    assert api_client.post(url, json={"notes": "4 dodging"}).status_code == 403
+
+
+def test_draft_on_the_pack_talk_still_rewrites_the_notes(api_client, seated_session,
+                                                          monkeypatch):
+    from server.game import game_session as rt
+    from tests.factories.builders import human_turn_request
+
+    session, _ = seated_session
+    monkeypatch.setattr(rt, "draft_from_notes",
+                        lambda request, notes: f"{request.player_id} to the pack: {notes}")
+    session.pending_requests["player_3"] = human_turn_request(
+        player_id="player_3", phase="wolf_channel", valid_targets=[])
+    r = api_client.post(f"/games/{session.game_id}/draft", json={"notes": "go for 5"})
+    assert r.json()["draft"] == "player_3 to the pack: go for 5"
+
+
+def test_draft_failure_tells_the_player_to_type(api_client, seated_session, monkeypatch):
+    from server.game import game_session as rt
+    from tests.factories.builders import human_turn_request
+
+    session, _ = seated_session
+
+    def broken(payload, config, runtime, direction):
+        raise RuntimeError("the agent produced no line")
+
+    async def turn_payload(seat):
+        return {"player_id": seat}
+
+    monkeypatch.setattr(rt, "preview_discuss", broken)
+    monkeypatch.setattr(session, "_turn_payload", turn_payload)
+    session.pending_requests["player_3"] = human_turn_request(
+        player_id="player_3", phase="day_channel", valid_targets=[])
+    r = api_client.post(f"/games/{session.game_id}/draft", json={"notes": "4 dodging"})
+    assert r.status_code == 503 and "type it instead" in r.json()["detail"]
+    # taken before the model was asked, the failed draft is given back
+    assert session._drafts_used == {"player_3": 0} and session._drafting == set()
+    # a turn the checkpoint cannot show (a fake graph has none) fails the same way
+    monkeypatch.setattr(session, "_turn_payload", rt.GameSession._turn_payload.__get__(session))
+    r = api_client.post(f"/games/{session.game_id}/draft", json={})
+    assert r.status_code == 503
 
 
 def test_events_and_status_reject_a_forged_cookie(api_client, seated_session):
@@ -220,6 +549,57 @@ def test_status_resolves_you_from_the_cookie(api_client, seated_session):
     assert api_client.get(f"/games/{session.game_id}").json()["you"] is None
 
 
+@pytest.mark.parametrize("phase", ["day_votes", "healer_target"])
+def test_status_only_exposes_the_viewers_own_pending_turn(api_client, quiet_session, phase):
+    from tests.factories.builders import human_turn_request
+
+    session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2", "t3"],
+                            human_players=["player_3", "player_5", "player_6"])
+    session.pending_requests.update({
+        seat: human_turn_request(player_id=seat, phase=phase)
+        for seat in ("player_3", "player_5")})
+    session.clocks.deadlines = {seat: "2026-09-17T12:00:00+00:00"
+                               for seat in session.pending_requests}
+    api_client.app.state.resources.games._register(session)
+    url = f"/games/{session.game_id}"
+    for token, visible in (("", []), ("t1", ["player_3"]), ("t2", ["player_5"]), ("t3", [])):
+        api_client.cookies.clear()
+        if token:
+            api_client.cookies.set(f"seat_{session.game_id}", token)
+        status = api_client.get(url).json()
+        assert status["pending_seats"] == visible
+        assert status["pending_input"] is bool(visible)
+        assert set(status["deadlines"]) == set(visible)
+
+    session.game_over = True  # the same observer unlock as the event stream
+    api_client.cookies.clear()
+    status = api_client.get(url).json()
+    assert status["pending_seats"] == ["player_3", "player_5"]
+    assert status["pending_input"] is True
+    assert set(status["deadlines"]) == {"player_3", "player_5"}
+
+
+def test_status_last_seq_counts_only_what_the_viewer_may_see(api_client, quiet_session):
+    """A night action written at night moves no viewer's last_seq but the game's end: polled,
+    the log's own count ticked once per hidden act (multiplayer audit, 2026-10-15)."""
+    from server.schemas import events as ev
+
+    session = quiet_session(FakeGraph([]), seat_tokens=["t1"], human_players=["player_3"])
+    session.log = [ev.PhaseChange(seq=1, day=1, phase="night"),
+                   ev.NightAction(seq=2, day=1, actor="player_5", role="healer",
+                                  target="player_1")]
+    api_client.app.state.resources.games._register(session)
+    url = f"/games/{session.game_id}"
+    for token in ("", "t1"):
+        api_client.cookies.clear()
+        if token:
+            api_client.cookies.set(f"seat_{session.game_id}", token)
+        assert api_client.get(url).json()["last_seq"] == 1
+    session.game_over = True  # everything unlocks at the end, as on the stream
+    api_client.cookies.clear()
+    assert api_client.get(url).json()["last_seq"] == 2
+
+
 def test_rejoin_restores_a_lost_cookie_in_both_phases(api_client, seated_session):
     # Waiting room: the stashed body-copy token re-proves the seat.
     game_id, _ = _make_room(api_client)
@@ -227,35 +607,35 @@ def test_rejoin_restores_a_lost_cookie_in_both_phases(api_client, seated_session
     api_client.cookies.clear()  # the "new device" moment
 
     r = api_client.post(f"/games/{game_id}/rejoin", json={"token": token})
-    assert r.json() == {"position": 1, "token": token}
+    assert r.json() == {"token": token}
     assert api_client.cookies.get(f"seat_{game_id}") == token
 
     assert api_client.post(f"/games/{game_id}/rejoin",
                            json={"token": "forged"}).status_code == 403
 
-    # Running game: same door, served by GameSession.position_of.
+    # Running game: same door, served by GameSession.owns.
     session, seat_token = seated_session
     api_client.cookies.clear()
     r = api_client.post(f"/games/{session.game_id}/rejoin", json={"token": seat_token})
-    assert r.json() == {"position": 1, "token": seat_token}
+    assert r.json() == {"token": seat_token}
     assert api_client.get(f"/games/{session.game_id}").json()["you"] == "player_3"
 
 
 def test_solo_door_mints_the_same_seat_identity(api_client, monkeypatch):
     """POST /games {human} gets a token + cookie exactly like a room joiner (one
     identity mechanism at both doors); an LLM-only game mints nothing."""
-    import server.app as app_mod
-    from server import runtime as rt
+    import server.game.live_game_registry as registry_module
+    from server.game import game_session as rt
 
-    monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
     launched = []
 
-    def fake_session(run, **kw):
-        launched.append((run, kw))
-        kw.pop("graph", None)  # routes pass the durable graph (None in tests)
-        return rt.GameSession(run, graph=FakeGraph([]), **kw)
+    class FakeSession(rt.GameSession):
+        def __init__(self, run, **kw):
+            launched.append((run, kw))
+            kw.pop("graph", None)  # routes pass the durable graph (None in tests)
+            super().__init__(run, graph=HangingGraph(), **kw)
 
-    monkeypatch.setattr(app_mod, "GameSession", fake_session)
+    monkeypatch.setattr(registry_module, "GameSession", FakeSession)
 
     r = api_client.post("/games", json={"human": True})
     body = r.json()
@@ -273,18 +653,18 @@ def test_solo_door_mints_the_same_seat_identity(api_client, monkeypatch):
 
 def test_start_without_joiners_runs_an_llm_only_game(api_client, monkeypatch):
     """An empty room may start: the host runs an all-LLM exhibition game to watch."""
-    import server.app as app_mod
-    from server import runtime as rt
+    import server.game.live_game_registry as registry_module
+    from server.game import game_session as rt
 
-    monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
     launched = []
 
-    def fake_session(run, **kw):
-        launched.append(run)
-        kw.pop("graph", None)  # routes pass the durable graph (None in tests)
-        return rt.GameSession(run, graph=FakeGraph([]), **kw)
+    class FakeSession(rt.GameSession):
+        def __init__(self, run, **kw):
+            launched.append(run)
+            kw.pop("graph", None)  # routes pass the durable graph (None in tests)
+            super().__init__(run, graph=HangingGraph(), **kw)
 
-    monkeypatch.setattr(app_mod, "GameSession", fake_session)
+    monkeypatch.setattr(registry_module, "GameSession", FakeSession)
 
     game_id, host_key = _make_room(api_client)
     assert api_client.post(f"/games/{game_id}/start?host_key={host_key}").status_code == 200
@@ -293,18 +673,18 @@ def test_start_without_joiners_runs_an_llm_only_game(api_client, monkeypatch):
 
 def test_lobby_carries_byok_to_the_session(api_client, monkeypatch):
     """The creator's key/model, given at create time, funds the started game."""
-    import server.app as app_mod
-    from server import runtime as rt
+    import server.game.live_game_registry as registry_module
+    from server.game import game_session as rt
 
-    monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
     seen = {}
 
-    def fake_session(run, *, api_key="", model="", **kw):
-        seen.update(api_key=api_key, model=model)
-        kw.pop("graph", None)  # routes pass the durable graph (None in tests)
-        return rt.GameSession(run, graph=FakeGraph([]), **kw)
+    class FakeSession(rt.GameSession):
+        def __init__(self, run, *, api_key="", model="", **kw):
+            seen.update(api_key=api_key, model=model)
+            kw.pop("graph", None)  # routes pass the durable graph (None in tests)
+            super().__init__(run, graph=HangingGraph(), api_key=api_key, model=model, **kw)
 
-    monkeypatch.setattr(app_mod, "GameSession", fake_session)
+    monkeypatch.setattr(registry_module, "GameSession", FakeSession)
 
     game_id, host_key = _make_room(api_client, api_key="sk-room", model=GEMINI)
     api_client.post(f"/games/{game_id}/start?host_key={host_key}")
@@ -327,9 +707,71 @@ def test_room_browser_lists_waiting_rooms_newest_first(api_client, seated_sessio
                for row in rows)
     assert "host_key" not in r.text and "token" not in r.text  # public face only
 
+    assert all(row["host"] is None for row in rows)  # nobody seated yet
+
     api_client.post(f"/games/{a}/join", json={"name": "hao"})
+    api_client.cookies.clear()  # mira boards from her own browser
+    api_client.post(f"/games/{a}/join", json={"name": "mira"})
     listed = {row["game_id"]: row for row in api_client.get("/rooms").json()}
-    assert listed[a]["players"] == ["hao"]
+    assert listed[a]["players"] == ["hao", "mira"]
+    assert listed[a]["host"] is None  # neither boarded with the host key
+
+
+def test_the_host_is_the_seat_that_boarded_with_the_host_key(api_client):
+    game_id, host_key = _make_room(api_client)
+    api_client.post(f"/games/{game_id}/join", json={"name": "mira"})  # a guest boards first
+    api_client.cookies.clear()
+    api_client.post(f"/games/{game_id}/join?host_key={host_key}", json={"name": "hao"})
+    status = api_client.get(f"/games/{game_id}").json()
+    assert status["players"] == ["mira", "hao"] and status["host"] == "hao"
+
+    # the creator may board their own locked room; nobody else may
+    locked, key = _make_room(api_client)
+    api_client.post(f"/games/{locked}/lock?host_key={key}&locked=true")
+    api_client.cookies.clear()
+    assert api_client.post(f"/games/{locked}/join", json={"name": "x"}).status_code == 409
+    assert api_client.post(f"/games/{locked}/join?host_key={key}",
+                           json={"name": "hao"}).status_code == 200
+
+
+def test_a_guest_leaves_and_the_place_opens_again(api_client):
+    game_id, host_key = _make_room(api_client)
+    api_client.post(f"/games/{game_id}/join?host_key={host_key}", json={"name": "hao"})
+    assert api_client.post(f"/games/{game_id}/leave").status_code == 409  # the host closes
+    api_client.cookies.clear()
+    api_client.post(f"/games/{game_id}/join", json={"name": "mira"})
+
+    r = api_client.post(f"/games/{game_id}/leave")
+    assert r.status_code == 204
+    assert f"seat_{game_id}" in r.headers["set-cookie"]  # the cookie is cleared
+    assert api_client.get(f"/games/{game_id}").json()["players"] == ["hao"]
+    # gone now: leaving again, or with no seat at all, is refused
+    assert api_client.post(f"/games/{game_id}/leave").status_code == 403
+
+
+def test_the_host_closes_the_room_and_its_url_says_so(api_client):
+    game_id, host_key = _make_room(api_client)
+    assert api_client.post(f"/games/{game_id}/close?host_key=wrong").status_code == 403
+    assert api_client.post(f"/games/{game_id}/close?host_key={host_key}").status_code == 204
+
+    r = api_client.get(f"/games/{game_id}")
+    assert r.status_code == 410 and "host closed" in r.json()["detail"]
+    assert game_id not in [row["game_id"] for row in api_client.get("/rooms").json()]
+    assert api_client.post(f"/games/{game_id}/join", json={"name": "x"}).status_code == 410
+
+
+def test_a_room_nobody_departed_is_closed_after_its_shelf_life(api_client):
+    from datetime import datetime, timedelta, timezone
+
+    games = api_client.app.state.resources.games
+    old, _ = _make_room(api_client)
+    fresh, _ = _make_room(api_client)
+    games.get(old).created_at -= timedelta(hours=3)
+
+    assert games.expire_rooms(7200, datetime.now(timezone.utc)) == [old]
+    assert games.get(fresh) is not None
+    r = api_client.get(f"/games/{old}")
+    assert r.status_code == 410 and "within 2 hours" in r.json()["detail"]
 
 
 def test_room_name_is_capped(api_client):
@@ -343,7 +785,7 @@ def test_stale_rooms_hide_from_the_list_but_keep_their_url(api_client):
     from server.config import server_settings
 
     game_id, _ = _make_room(api_client, name="abandoned")
-    room = api_client.app.state.games[game_id]
+    room = api_client.app.state.resources.games.get(game_id)
     room.created_at -= timedelta(seconds=server_settings.ROOM_LIST_TTL_SECONDS + 1)
 
     assert api_client.get("/rooms").json() == []  # a browse filter...
@@ -367,3 +809,105 @@ def test_lock_bounces_joins_until_the_host_unlocks(api_client):
     api_client.post(f"/games/{game_id}/lock?host_key={host_key}&locked=false")
     assert api_client.post(f"/games/{game_id}/join",
                            json={"name": "ontime"}).status_code == 200
+
+
+# ---- ended games: the row answers once the live registry has let go --------------------
+
+def _archive(api_client, monkeypatch, row):
+    """Make the repository answer with this row for its id (storage is off in tests)."""
+    from server.database_models.game import GameRow
+
+    async def load_game(game_id):
+        return row if game_id == row.game_id else None
+
+    repository = api_client.app.state.resources.game_repository
+    monkeypatch.setattr(repository, "load_game", load_game)
+    assert isinstance(row, GameRow)
+
+
+def test_finished_game_answers_from_its_row_and_points_at_the_replay(api_client, monkeypatch):
+    from server.database_models.game import COMPLETED, GameRow
+
+    row = GameRow(game_id="done-1", status=COMPLETED, winner="villagers",
+                  seats=[{"name": "hao", "token": "tok-1"}], human_players=["player_3"])
+    _archive(api_client, monkeypatch, row)
+
+    body = api_client.get("/games/done-1").json()
+    assert (body["state"], body["archived"], body["game_over"]) == ("finished", True, True)
+    assert body["winner"] == "villagers" and body["you"] is None
+
+    # The seat cookie a player still holds names the seat they played, and never 403s.
+    api_client.cookies.set("seat_done-1", "tok-1")
+    assert api_client.get("/games/done-1").json()["you"] == "player_3"
+    api_client.cookies.set("seat_done-1", "stale")
+    assert api_client.get("/games/done-1").status_code == 200
+
+    # There is no live object, so every door that needs one says so, with the replay path.
+    for r in (api_client.get("/games/done-1/events"),
+              api_client.post("/games/done-1/turns", json={}),
+              api_client.post("/games/done-1/join", json={"name": "x"}),
+              api_client.post("/games/done-1/rejoin", json={"token": "tok-1"}),
+              api_client.post("/games/done-1/start")):
+        assert r.status_code == 410, r.text
+        assert "/replays/done-1" in r.json()["detail"]
+
+
+def test_dropped_game_answers_from_its_row_with_the_reason(api_client, monkeypatch):
+    from server.database_models.game import DROPPED, GameRow
+
+    _archive(api_client, monkeypatch,
+             GameRow(game_id="gone-1", status=DROPPED, error="abandoned: parked for 61 min"))
+    body = api_client.get("/games/gone-1").json()
+    assert (body["state"], body["archived"], body["game_over"]) == ("dropped", True, False)
+    assert body["error"].startswith("abandoned:")
+    r = api_client.get("/games/gone-1/events")
+    assert r.status_code == 410 and "abandoned" in r.json()["detail"]
+
+
+def test_a_row_still_marked_running_is_not_served_from_the_archive(api_client, monkeypatch):
+    # Only ended rows fall through; a live-status row missing from the table is unknown.
+    from server.database_models.game import RUNNING, GameRow
+
+    _archive(api_client, monkeypatch, GameRow(game_id="odd-1", status=RUNNING))
+    assert api_client.get("/games/odd-1").status_code == 404
+
+
+# ---- POST /games/{id}/key: a seat holder refunds a game that lost its key ----------------
+
+def test_a_seat_holder_may_fund_a_waiting_game_and_nobody_else(api_client, seated_session,
+                                                              monkeypatch):
+    session, seat_token = seated_session
+    games = api_client.app.state.resources.games
+    probed = []
+
+    async def check_key(model, api_key):
+        probed.append(api_key)
+        if api_key == "sk-bad":
+            raise ValueError("the provider rejected this key: 401")
+
+    async def resume(entry, *, parked_since):
+        return entry  # the checkpoint machinery is tested in test_durability
+
+    monkeypatch.setattr(games, "_check_key", check_key)
+    monkeypatch.setattr(games, "_resume_from_checkpoint", resume)
+
+    # Not waiting: 409, whoever asks.
+    r = api_client.post(f"/games/{session.game_id}/key", json={"api_key": "sk-1"})
+    assert r.status_code == 409
+    session.awaiting_key = True
+    assert api_client.get(f"/games/{session.game_id}").json()["awaiting_key"] is True
+
+    # A spectator (no cookie) may not; a seat holder may.
+    api_client.cookies.clear()
+    assert api_client.post(f"/games/{session.game_id}/key",
+                           json={"api_key": "sk-1"}).status_code == 403
+    api_client.cookies.set(f"seat_{session.game_id}", seat_token)
+    r = api_client.post(f"/games/{session.game_id}/key", json={"api_key": "sk-bad"})
+    assert r.status_code == 422 and "rejected" in r.json()["detail"]
+    assert session.awaiting_key  # still waiting after a refused key
+    r = api_client.post(f"/games/{session.game_id}/key", json={"api_key": "sk-good"})
+    assert r.status_code == 200, r.text
+    assert r.json()["awaiting_key"] is False and not session.awaiting_key
+    assert probed == ["sk-bad", "sk-good"]
+    assert api_client.post(f"/games/{session.game_id}/key",
+                           json={"api_key": ""}).status_code == 422  # an empty key is no key

@@ -1,1 +1,1 @@
-"""Per-role night sub-graphs."""
+"""The pack's night subgraph; the solo roles' nights are nodes of the parent graph."""

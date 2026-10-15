@@ -1,0 +1,292 @@
+"""eval-hallucination-bench: replay frozen hallucination cases under arms (model × prompt version),
+judge every output, and compare the arms.
+
+Each arm runs in its own process, because the seat model is chosen by an env variable read at import
+(``GOOGLE_GENAI_MODEL``); the prompt-version flags that once joined it were retired on 2026-10-07.
+A worker regenerates every case ``n`` times (``replay/hallucination_bench.py``) and writes its
+samples; the parent then judges them all the same way:
+
+- fact-sheet cascade (cases without a golden): every unit is screened for the checkable facts it
+  touches (``audits/role_hallucination_screen.anchors_for_text``); anchored units are read by the
+  cheap census reader, and its positives re-read by the stronger one (``judges/role_fact_read``).
+  A unit is bad on a ``hallucination`` verdict. ``deliberate_deception`` (misstating one's own
+  private knowledge) is counted separately, as the census did.
+- golden (cases with a hand-written expectation): ``judges/golden_expectation``; bad on ``violates``.
+
+An arm with ``"resummarize": true`` first rewrites every earlier day's discussion summary with the
+checked-out summariser (one pass per game, cached beside the generations), so it tests the
+summariser too; without it, cases keep the summaries their games were played with.
+
+A sample is bad if any of its units is. Per arm: bad rate over all samples, over positives and over
+controls, and per phase / role. Every later arm is compared with the first, case by case: a sign
+test over the cases whose bad rate differs between the two.
+
+  poetry run eval-hallucination-bench --config evaluation/config/template/hallucination_bench_example.json
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import subprocess
+import sys
+from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
+from math import comb
+from pathlib import Path
+
+from evaluation.src.core.settings import REPO_ROOT
+
+DEFAULT_RECALL_MODEL = "anthropic/claude-haiku-5-5"
+DEFAULT_PRECISION_MODEL = "anthropic/claude-haiku-5-5"
+
+
+def _read_jsonl(path: Path) -> list[dict]:
+    return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+
+
+# --- worker: one arm, one process ------------------------------------------------
+
+def run_worker(dataset: Path, out: Path, n: int, memory: str, workers: int, limit: int | None,
+               slices: list[str] | None = None, resummarize: bool = False) -> None:
+    """Generate ``n`` valid samples per case. An existing file is topped up: its valid samples are
+    kept and only the missing ones (invalid or never generated) are regenerated."""
+    from evaluation.src.replay.hallucination_bench import generate
+    from evaluation.src.replay.hallucination_bench import resummarize as rewrite_summaries
+
+    cases = [c for c in _read_jsonl(dataset) if not slices or c.get("slice") in slices]
+    cases = cases[:limit] if limit else cases
+    summaries = None
+    if resummarize:
+        cache_path = out.with_name(out.name.replace("generations_", "summaries_").replace(".jsonl", ".json"))
+        summaries = json.loads(cache_path.read_text()) if cache_path.exists() else {}
+        by_game: dict[str, list[dict]] = defaultdict(list)
+        for c in cases:
+            by_game[f"{c['game_id']}|{c.get('game_arm', '')}"].append(c)
+        with ThreadPoolExecutor(max_workers=workers) as ex:  # games in parallel, days in order
+            list(ex.map(lambda group: rewrite_summaries(group, summaries), by_game.values()))
+        cache_path.write_text(json.dumps(summaries, indent=1))
+        print(f"  {len(summaries)} day summaries rewritten (cached in {cache_path.name})")
+    kept: dict[str, list[dict]] = defaultdict(list)
+    if out.exists():
+        for s in _read_jsonl(out):
+            if s["valid"]:
+                kept[s["case_id"]].append(s)
+    todo = [(c, n - len(kept[c["case_id"]])) for c in cases if len(kept[c["case_id"]]) < n]
+    print(f"  {sum(k for _, k in todo)} samples to generate over {len(todo)} cases")
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        results = list(ex.map(lambda ck: (ck[0], generate(ck[0], ck[1], memory, summaries)), todo))
+    for case, samples in results:
+        kept[case["case_id"]] += samples
+    with open(out, "w") as f:
+        for case in cases:
+            for i, s in enumerate(kept[case["case_id"]]):
+                f.write(json.dumps({"case_id": case["case_id"], **s, "sample": i}) + "\n")
+
+
+def spawn_arm(arm: dict, cfg: dict, out: Path) -> None:
+    """Run one arm's worker. ``arm["checkout"]``: generate from another checkout of the repo (a git
+    worktree on a baseline tag), so the arm runs that commit's engine and prompts; judging stays here."""
+    env = {**os.environ, **{k: str(v) for k, v in (arm.get("env") or {}).items()}}
+    env["GOOGLE_GENAI_MODEL"] = arm["model"]
+    cmd = [sys.executable, "-m", "evaluation.src.cli_runner.regen_replay.both.hallucination_bench",
+           "--worker", "--dataset", str(REPO_ROOT / cfg["dataset"]), "--out", str(out),
+           "--n", str(cfg.get("n", 3)), "--memory", arm.get("memory", "none"),
+           "--workers", str(cfg.get("workers", 3))]
+    if cfg.get("limit"):
+        cmd += ["--limit", str(cfg["limit"])]
+    if cfg.get("slices"):
+        cmd += ["--slices", *cfg["slices"]]
+    if arm.get("resummarize"):
+        cmd += ["--resummarize"]
+    subprocess.run(cmd, cwd=arm.get("checkout") or REPO_ROOT, env=env, check=True)
+
+
+# --- judging ------------------------------------------------------------------
+
+def judge_samples(samples: list[dict], cases: dict[str, dict], cfg: dict) -> None:
+    """Mark every sample with its unit verdicts and ``bad`` (in place)."""
+    from evaluation.src.audits.role_hallucination_screen import (
+        anchors_for_text, claims_through, death_timeline,
+    )
+    from evaluation.src.judges.golden_expectation import (
+        DEFAULT_GOLDEN_JUDGE_MODEL, is_claude, judge_golden, judge_golden_batch,
+    )
+    from evaluation.src.judges.role_fact_read import read_candidates
+
+    records = {(cid, "bench"): c["facts"] for cid, c in cases.items()}
+    cands, golden_jobs = [], []
+    for i, s in enumerate(samples):
+        case = cases[s["case_id"]]
+        s["unit_verdicts"] = ["no_anchor"] * len(s["units"])
+        for j, u in enumerate(s["units"]):
+            if case["golden"]:
+                golden_jobs.append((i, j, case["golden"], u))
+                continue
+            facts = case["facts"]
+            anchors = anchors_for_text(u["text"], roles=facts["roles"], dead_from=death_timeline(facts),
+                                       day=case["day"], speaker=case["speaker"],
+                                       claims=claims_through(facts, case["day"]))
+            if anchors:
+                cands.append({"game_id": s["case_id"], "arm": "bench", "day": case["day"], "seq": None,
+                              "phase": case["phase"], "speaker": case["speaker"],
+                              "speaker_role": case["role"], "unit": u["unit"], "text": u["text"],
+                              "anchors": anchors, "_i": i, "_j": j})
+    print(f"  judging: {len(cands)} anchored units (fact sheet), {len(golden_jobs)} units (golden)")
+    if cands:
+        lite = read_candidates(cands, records, cfg.get("recall_model", DEFAULT_RECALL_MODEL))
+        for c in lite:
+            samples[c["_i"]]["unit_verdicts"][c["_j"]] = (c.get("read") or {}).get("verdict", "read_error")
+        pos = [c for c in lite if (c.get("read") or {}).get("verdict") in ("hallucination", "deliberate_deception")]
+        if pos:
+            for c in read_candidates(pos, records, cfg.get("precision_model", DEFAULT_PRECISION_MODEL)):
+                samples[c["_i"]]["unit_verdicts"][c["_j"]] = (c.get("read") or {}).get("verdict", "read_error")
+    if golden_jobs:
+        model = cfg.get("golden_model", DEFAULT_GOLDEN_JUDGE_MODEL)
+        if is_claude(model):  # a Claude judge runs as one Message Batch (offline judging, 2026-10-12)
+            verdicts = judge_golden_batch([(g, u["unit"], u["text"]) for _, _, g, u in golden_jobs], model)
+        else:
+            with ThreadPoolExecutor(max_workers=8) as ex:
+                verdicts = list(ex.map(lambda job: judge_golden(job[2], job[3]["unit"], job[3]["text"], model),
+                                       golden_jobs))
+        for (i, j, _, _), v in zip(golden_jobs, verdicts):
+            samples[i]["unit_verdicts"][j] = "golden_" + (v.verdict if v else "unclear")
+            samples[i].setdefault("golden_reasons", {})[j] = v.reason if v else "no verdict"
+    for s in samples:
+        s["bad"] = any(v in ("hallucination", "golden_violates") for v in s["unit_verdicts"])
+        s["deception"] = "deliberate_deception" in s["unit_verdicts"]
+
+
+# --- summary --------------------------------------------------------------------
+
+def _rate(rows: list[dict]) -> str:
+    valid = [r for r in rows if r["valid"]]
+    bad = sum(r["bad"] for r in valid)
+    return f"{bad}/{len(valid)} ({bad / len(valid):.0%})" if valid else "0/0"
+
+
+def _generation_usage(rows: list[dict]) -> dict:
+    """The arm's generation tokens and time per valid sample, when its samples recorded them (runs
+    from 2026-10-04 on); judging and re-summarising are not included."""
+    used = [r["usage"] for r in rows if r["valid"] and r.get("usage")]
+    if not used:
+        return {}
+    mean = lambda k: round(sum(u.get(k, 0) for u in used) / len(used), 1)  # older samples have no "cached"
+    return {"generation_per_sample": {k: mean(k) for k in ("input", "cached", "output", "reasoning", "seconds")},
+            "generation_samples_measured": len(used)}
+
+
+def _reuse_verdicts(samples: list[dict], judged_path: Path) -> bool:
+    """Copy an earlier judging of exactly these samples onto them (in place), so adding an arm to a
+    run doesn't pay to judge the others again. False when there is none or any sample differs."""
+    if not judged_path.exists():
+        return False
+    judged = {(j["case_id"], j["sample"]): j for j in _read_jsonl(judged_path)}
+    key = lambda s: (s["case_id"], s["sample"])
+    if len(judged) != len(samples) or any(
+            key(s) not in judged or judged[key(s)]["units"] != s["units"] for s in samples):
+        return False
+    for s in samples:
+        j = judged[key(s)]
+        s.update({k: j[k] for k in ("unit_verdicts", "bad", "deception") if k in j})
+    return True
+
+
+def summarize(by_arm: dict[str, list[dict]], cases: dict[str, dict]) -> dict:
+    summary: dict = {"arms": {}, "paired_vs_first": {}}
+    case_rate: dict[str, dict[str, float]] = {}
+    for label, rows in by_arm.items():
+        groups: dict[str, list[dict]] = defaultdict(list)
+        per_case: dict[str, list[bool]] = defaultdict(list)
+        for r in rows:
+            c = cases[r["case_id"]]
+            for g in ("all", f"slice:{c.get('slice', c['kind'])}", f"phase:{c['phase']}",
+                      f"role:{c['role']}", f"source:{c['source']}"):
+                groups[g].append(r)
+            if r["valid"]:
+                per_case[r["case_id"]].append(r["bad"])
+        summary["arms"][label] = {
+            "bad": {g: _rate(rs) for g, rs in sorted(groups.items())},
+            "deception": sum(r.get("deception", False) for r in rows),
+            "invalid": sum(not r["valid"] for r in rows),
+            **_generation_usage(rows),
+        }
+        case_rate[label] = {cid: sum(v) / len(v) for cid, v in per_case.items()}
+    labels = list(by_arm)
+    for label in labels[1:]:
+        base, other = case_rate[labels[0]], case_rate[label]
+        shared = set(base) & set(other)
+        better = sum(other[c] < base[c] for c in shared)  # fewer bad samples than the first arm
+        worse = sum(other[c] > base[c] for c in shared)
+        k, m = min(better, worse), better + worse
+        p = min(1.0, 2 * sum(comb(m, i) for i in range(k + 1)) / 2 ** m) if m else 1.0
+        summary["paired_vs_first"][label] = {"cases": len(shared), "better": better, "worse": worse,
+                                            "two_sided_sign_p": round(p, 4)}
+    return summary
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap.add_argument("--config")
+    ap.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
+    ap.add_argument("--dataset"), ap.add_argument("--out")
+    ap.add_argument("--n", type=int, default=3), ap.add_argument("--memory", default="none")
+    ap.add_argument("--workers", type=int, default=8), ap.add_argument("--limit", type=int)
+    ap.add_argument("--slices", nargs="*", help="only cases in these slices (curated, random, control, pinned)")
+    ap.add_argument("--resummarize", action="store_true", help=argparse.SUPPRESS)
+    args = ap.parse_args()
+    if args.worker:
+        run_worker(REPO_ROOT / args.dataset, Path(args.out), args.n, args.memory, args.workers, args.limit,
+                   args.slices, args.resummarize)
+        return
+
+    cfg = json.loads(Path(args.config).read_text())
+    out_dir = REPO_ROOT / cfg.get("output_dir", "evaluation/eval_results/hallucination_bench") / cfg["label"]
+    out_dir.mkdir(parents=True, exist_ok=True)
+    cases = {c["case_id"]: c for c in _read_jsonl(REPO_ROOT / cfg["dataset"])
+             if not cfg.get("slices") or c.get("slice") in cfg["slices"]}
+
+    by_arm: dict[str, list[dict]] = {}
+    for arm in cfg["arms"]:
+        gen_path = out_dir / f"generations_{arm['label']}.jsonl"
+        valid_per_case: dict[str, int] = defaultdict(int)
+        for s in _read_jsonl(gen_path) if gen_path.exists() else []:
+            valid_per_case[s["case_id"]] += s["valid"]
+        wanted = list(cases)[: cfg["limit"]] if cfg.get("limit") else list(cases)
+        if any(valid_per_case[cid] < cfg.get("n", 3) for cid in wanted):
+            # a rerun keeps an arm's valid samples and tops up the rest; delete the file to redo it
+            print(f"arm {arm['label']}: generating ({arm['model']}, env {arm.get('env') or {}})")
+            spawn_arm(arm, cfg, gen_path)
+        by_arm[arm["label"]] = _read_jsonl(gen_path)
+
+    # Every arm still to judge goes through one judging pass, so a batched judge sends one batch for
+    # the run rather than one per arm (each batch can take up to an hour).
+    to_judge = []
+    for label, samples in by_arm.items():
+        judged_path = out_dir / f"judged_{label}.jsonl"
+        if not cfg.get("rejudge") and _reuse_verdicts(samples, judged_path):
+            print(f"arm {label}: verdicts reused from {judged_path.name} (same samples; \"rejudge\": true to redo)")
+            continue
+        to_judge.append(label)
+    if to_judge:
+        print(f"judging arms {', '.join(to_judge)}:")
+        judge_samples([s for label in to_judge for s in by_arm[label]], cases, cfg)
+        for label in to_judge:
+            with open(out_dir / f"judged_{label}.jsonl", "w") as f:
+                f.writelines(json.dumps(s) + "\n" for s in by_arm[label])
+
+    from Agents.llm_factory.providers.anthropic import usage_cost_usd, usage_totals
+
+    result = {"label": cfg["label"], "run_at": datetime.now(timezone.utc).isoformat(), "config": cfg,
+              "n_cases": len(cases), **summarize(by_arm, cases)}
+    if to_judge and (usage_totals["calls"] or usage_totals["batched_calls"]):
+        # A Claude judge's calls this run, priced from the model catalogue (a batch at its rate).
+        result["judge_usage"] = {**usage_totals, "cost_usd": usage_cost_usd()}
+    (out_dir / "summary.json").write_text(json.dumps(result, indent=2))
+    print(json.dumps({k: result[k] for k in ("arms", "paired_vs_first")}, indent=2))
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,31 @@
+/**
+ * TanStack query-key factory. dota2pred lacked one and paid for it: keys were spelled
+ * inline at each call site, so invalidation after a mutation silently missed half the
+ * caches it meant to hit. Every key in the app comes from here.
+ */
+export const queryKeys = {
+  replays: {
+    all: ['replays'] as const,
+    list: (params: { limit?: number; offset?: number } = {}) =>
+      ['replays', 'list', params.limit ?? null, params.offset ?? null] as const,
+    /** The archive's one fetch: the rows plus the total from the header. */
+    archive: (limit: number) => ['replays', 'archive', limit] as const,
+    detail: (gameId: string) => ['replays', 'detail', gameId] as const,
+    /** The archive's total alone (the footer's count): a one-row page, for its header. */
+    total: () => ['replays', 'total'] as const,
+  },
+  games: {
+    all: ['games'] as const,
+    status: (gameId: string) => ['games', 'status', gameId] as const,
+    /** The claim ledger as of a morning (live: a new morning is a new key); `final` for a replay. */
+    ledger: (gameId: string, morning: number | 'final') =>
+      ['games', 'ledger', gameId, morning] as const,
+  },
+  rooms: {
+    all: ['rooms'] as const,
+    list: () => ['rooms', 'list'] as const,
+  },
+  models: () => ['models'] as const,
+  /** The puppet catalogue (`GET /characters`): static between deploys. */
+  characters: () => ['characters'] as const,
+} as const;

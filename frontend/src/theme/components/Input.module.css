@@ -1,0 +1,44 @@
+/*
+ * Text inputs and selects on dark: the replays mockup's filter controls. The colours are
+ * declared on the input element itself, which beats the values Mantine's wrapper passes down.
+ */
+.input {
+  --input-bg: #120d08;
+  --input-bd: var(--cloak2);
+  --input-bd-focus: var(--amber);
+  --input-color: var(--bone);
+  --input-placeholder-color: var(--bone3);
+  --input-disabled-bg: #0d0906;
+  --input-disabled-color: var(--bone3);
+}
+
+[data-error] .input,
+.input[data-error] {
+  --input-bd: var(--wolf);
+  --input-bd-focus: var(--wolf);
+}
+
+.label {
+  color: var(--bone2);
+  font-weight: 500;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.description {
+  color: var(--muted);
+}
+
+.error {
+  color: var(--wolf);
+}
+
+.dropdown {
+  background: linear-gradient(180deg, rgba(33, 27, 20, 0.98), rgba(14, 9, 6, 0.98));
+  border: 1px solid var(--cloak2);
+}
+
+.option[data-combobox-selected] {
+  background: var(--panel-2);
+  color: var(--text);
+}

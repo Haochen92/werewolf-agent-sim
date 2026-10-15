@@ -24,12 +24,10 @@ from Agents.memory.persistence.config import (
 )
 
 # --- Pipeline arm defaults (memory OFF baseline) --------------------------------------
-DEFAULT_MEMORY_CONFIG = {
-    "wolf": False,
-    "villager": False,
-    "healer": False,
-    "investigator": False,
-}
+# Empty: retrieval reads a role that is not listed as off, and the post-game extraction reads it as on,
+# so the default is memory off for every role while a game that extracts covers every dealt role.
+# (Listing the nine-seat roles as False here silently skipped the healer's and investigator's cells.)
+DEFAULT_MEMORY_CONFIG: dict[str, bool] = {}
 
 DEFAULT_RERANKING_CONFIG = {
     "observations": {"wolf": False, "villager": False, "healer": False, "investigator": False},
@@ -57,6 +55,10 @@ DEFAULT_SP_PROVEN_TIERING = True
 # all-proven with an unproven candidate. Explicit False is the A/B off-arm; recorded for the same
 # distinguishability reason.
 DEFAULT_SP_EXPLORATION_SLOT = True
+# Stage filter (decisions §11): leave out a retrieved lesson learned at another stage of the game
+# (alive bucket, partner lost, uses left), the cap refilling from same-stage ones. Off until the
+# owner turns it on with the re-extracted store.
+DEFAULT_STAGE_FILTER = False
 
 
 class RunConfig(BaseModel):
@@ -80,6 +82,7 @@ class RunConfig(BaseModel):
     )
     sp_proven_tiering: bool = DEFAULT_SP_PROVEN_TIERING
     sp_exploration_slot: bool = DEFAULT_SP_EXPLORATION_SLOT
+    stage_filter: bool = DEFAULT_STAGE_FILTER
     game_id: str = ""
     session_id: str | None = None
     human_player: int = 0

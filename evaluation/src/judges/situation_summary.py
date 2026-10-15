@@ -21,7 +21,7 @@ from evaluation.src.judges.prompts import (
 
 # Overrides the package default (config.DEFAULT_JUDGE_MODEL) — the summary judge
 # runs on a stronger model.
-DEFAULT_SUMMARY_JUDGE_MODEL = "gemini-3.1-pro-preview"
+DEFAULT_SUMMARY_JUDGE_MODEL = "anthropic/claude-haiku-5-5"
 
 
 def _build_judge_prompt(case: EvalCase, situations: list[str]) -> str:

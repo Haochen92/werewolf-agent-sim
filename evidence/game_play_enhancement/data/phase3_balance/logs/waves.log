@@ -1,0 +1,21 @@
+wave 1 start 12:21:18
+b02 exit 1 12:22:56
+b04 exit 0 12:28:29
+b01 exit 0 12:29:04
+b05 exit 0 12:30:51
+b03 exit 0 12:35:03
+wave 2 start 12:35:03
+b08 exit 1 12:36:51
+b10 exit 1 12:37:20
+b07 exit 1 12:37:21
+b09 exit 1 12:37:22
+b06 exit 1 12:37:22
+done 12:37:22
+rerun (two at a time, rescue-stall fix applied) start 12:38:35
+b07 exit 0 12:43:39
+b02 exit 0 12:45:54
+b08 exit 0 12:53:49
+b06 exit 0 13:00:50
+b09 exit 0 13:06:38
+b10 exit 0 13:16:29
+rerun done 13:16:29

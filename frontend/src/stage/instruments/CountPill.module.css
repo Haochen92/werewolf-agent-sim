@@ -1,0 +1,42 @@
+/* The count pill, as benches 64 and 67 draw it (`.tallypill`), at the top centre of the room. */
+.pill {
+  position: absolute;
+  top: 17.6px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 9.6px;
+  padding: 5.6px 14.4px;
+  border-radius: 32px;
+  background: rgba(14, 9, 6, 0.88);
+  border: 1px solid var(--cloak2);
+  font-size: var(--meta);
+  line-height: 1.5;
+  color: var(--bone2);
+  white-space: nowrap;
+}
+.pill b {
+  color: var(--bone);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.dots {
+  display: flex;
+  gap: 4.8px;
+}
+.dots i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-sizing: border-box;
+  border: 1px solid var(--bone3);
+  transition: background-color 0.3s;
+}
+.dots i.in {
+  background: var(--bone);
+  border-color: var(--bone);
+}
+.dots i.mine {
+  background: var(--amber);
+  border-color: var(--amber);
+}

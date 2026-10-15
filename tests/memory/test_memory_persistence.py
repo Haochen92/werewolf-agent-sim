@@ -115,6 +115,7 @@ class MemoryPersistenceTests(unittest.TestCase):
                 observations_path=observations_path,
                 strategy_points_path=strategy_points_path,
                 target_store=store,  # type: ignore[arg-type]
+                batch_size=1,
                 retry_attempts=2,
                 retry_initial_delay=0,
             )

@@ -1,0 +1,597 @@
+/* The night room's objects: the photos on their line, the card on the table, the plate, as the
+   shelf bench (rev 70) and the pack bench (rev 71) drew them, moved into the painted rooms
+   (2026-09-28). Every size is in units (1cqw on the benches = 16 units here). */
+
+/* ---- the painted room (Compartment.tsx) ---- */
+.room {
+  position: absolute;
+  top: 0;
+  pointer-events: none;
+}
+.room img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+/* the empty room under everything you can tap (NightRoom's `onEmpty`): a tap on it resets the
+   room; it covers the bleed past the sides too */
+.emptyTap {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(-1 * var(--bleed));
+  right: calc(-1 * var(--bleed));
+}
+
+/* ---- the photos on their line ---- */
+.photo {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: default;
+  overflow: visible;
+}
+button.photo {
+  cursor: pointer;
+}
+button.photo:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 6px;
+  border-radius: 4px;
+}
+.hang {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+/* the print: a cream border yellowed at its edges, its shadow on the wall down and to the right */
+.print {
+  position: absolute;
+  inset: 0;
+  display: block;
+  border-radius: 1.6px;
+  background:
+    radial-gradient(
+      ellipse at 50% 45%,
+      rgba(255, 250, 238, 0) 55%,
+      rgba(150, 110, 60, 0.28) 100%
+    ),
+    #ece2c8;
+  box-shadow:
+    inset 0 0 0 0.8px rgba(90, 60, 30, 0.35),
+    3px 5px 7px rgba(8, 5, 3, 0.55);
+}
+/* the picture: square, inset in the border, on a faded studio ground, toned a little with age */
+.picture {
+  position: absolute;
+  left: 7.5%;
+  right: 7.5%;
+  top: 6%;
+  aspect-ratio: 1;
+  display: block;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 40%, #8a8378, #4d463d);
+}
+.picture::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(150, 100, 40, 0.14);
+  box-shadow: inset 0 0 6px rgba(40, 25, 10, 0.55);
+  pointer-events: none;
+}
+/* the seat written on the border's foot, in ink */
+.photoNumeral {
+  position: absolute;
+  left: 10%;
+  width: 80%;
+  bottom: 2%;
+  height: 22%;
+  overflow: visible;
+  pointer-events: none;
+}
+.photoNumeral text {
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+}
+.glow {
+  position: absolute;
+  inset: 0;
+  display: block;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse at 40% 35%,
+    rgba(255, 222, 170, 0.26),
+    rgba(255, 200, 130, 0.1) 70%
+  );
+  box-shadow: 0 0 18px 4px rgba(255, 190, 110, 0.28);
+  pointer-events: none;
+}
+.dim {
+  position: absolute;
+  inset: 0;
+  display: block;
+  border-radius: inherit;
+  background: #0a0604;
+  pointer-events: none;
+}
+.peg,
+.string {
+  position: absolute;
+  overflow: visible;
+  pointer-events: none;
+}
+.string {
+  left: calc(50% - 2px);
+  width: 4px;
+}
+/* the marks over a photo (the teeth): half as large again as on a doll, on the picture's lower half */
+.bite {
+  position: absolute;
+  left: -25%;
+  top: 12%;
+  width: 150%;
+  height: 150%;
+  pointer-events: none;
+}
+
+/* ---- the tooth: one pack vote landing on a photo ---- */
+.tooth {
+  position: absolute;
+  left: 0;
+  top: -4%;
+  width: 100%;
+  height: 60%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* where the card meets the table: a soft dark ellipse, a touch right */
+.contact {
+  position: absolute;
+  pointer-events: none;
+  background: radial-gradient(
+    closest-side,
+    rgba(12, 7, 4, 0.62),
+    rgba(12, 7, 4, 0.3) 55%,
+    rgba(12, 7, 4, 0)
+  );
+}
+/* the pin in the chosen photo: a zero box on the picture, placed by Pin's `at` */
+.pin {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* ---- the framed card on the table ---- */
+.framed {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  background: #4a2c18;
+  border-radius: 6.4px;
+  box-shadow:
+    0 0 0 4px #2a1a0c,
+    0 0 0 7.2px #c9a25e,
+    0 0 0 9.6px #24180c,
+    7px 8px 16px rgba(12, 7, 4, 0.6);
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  color: var(--ink);
+  text-align: center;
+}
+.framed:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 12px;
+}
+.framedIn {
+  position: absolute;
+  inset: 5.6px;
+  background: var(--paper);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 9.6px 9.6px 6.4px;
+  box-shadow: inset 0 0 0 calc(3 * var(--u)) #cbb992;
+  overflow: hidden;
+}
+.framedIn::before,
+.framedIn::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: calc(9 * var(--u));
+  background: var(--rc);
+}
+.framedIn::before {
+  top: 0;
+}
+.framedIn::after {
+  bottom: 0;
+}
+.framedHead {
+  display: flex;
+  align-items: center;
+  gap: 6.4px;
+  font-size: calc(26 * var(--u));
+  line-height: 1;
+  margin: calc(10 * var(--u)) 0 calc(4 * var(--u));
+}
+.framedHead[data-long] {
+  font-size: calc(20 * var(--u));
+  white-space: nowrap;
+}
+.framedHead svg,
+.cardHead svg {
+  width: calc(22 * var(--u));
+  height: calc(22 * var(--u));
+  color: var(--rc);
+  stroke-width: 3;
+}
+.framedFig,
+.cardFig {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 58%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rc);
+}
+.framedFig svg,
+.cardFig svg {
+  width: 100%;
+  height: 100%;
+}
+.framedLine {
+  font-family: var(--font-stage-sans, Outfit), system-ui, sans-serif;
+  font-size: calc(13.5 * var(--u));
+  line-height: 1.3;
+  margin: calc(4 * var(--u)) 0 calc(10 * var(--u));
+  color: #3a2a1a;
+}
+/* the vigilante's caps left, under the night line */
+.framedCount {
+  font-family: var(--font-stage-sans, Outfit), system-ui, sans-serif;
+  font-size: calc(13.5 * var(--u));
+  font-weight: 600;
+  line-height: 1.2;
+  margin: calc(-6 * var(--u)) 0 calc(10 * var(--u));
+  color: var(--ink);
+}
+.framed em {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(-25.6px * var(--legible-ui));
+  font-family: var(--font-stage-sans, Outfit), system-ui, sans-serif;
+  font-style: normal;
+  font-size: calc(var(--meta) * 0.95);
+  color: var(--paper);
+  opacity: 0.75;
+}
+.villagers {
+  --rc: var(--town);
+}
+.wolves {
+  --rc: var(--wolf);
+}
+.serial_killer {
+  --rc: var(--sk);
+}
+.neutral_benign {
+  --rc: var(--benign);
+}
+
+/* ---- the full card, opened over the room ---- */
+.veil {
+  position: absolute;
+  /* over the bleed past the sides too; the card stays centred on the stage */
+  inset: 0 calc(-1 * var(--bleed));
+  background: rgba(8, 5, 2, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  z-index: 5;
+}
+.card {
+  position: relative;
+  width: 416px;
+  height: 608px;
+  /* read on a phone: the whole card larger, about its centre (it still fits the stage) */
+  scale: min(var(--legible), 1.45);
+  background: var(--paper);
+  border: calc(3 * var(--u)) solid var(--ink);
+  border-radius: calc(10 * var(--u));
+  color: var(--ink);
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  overflow: hidden;
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.8),
+    inset 0 0 0 calc(4 * var(--u)) #cbb992;
+}
+.card::before,
+.card::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: calc(12 * var(--u));
+  background: var(--rc);
+}
+.card::before {
+  top: 0;
+}
+.card::after {
+  bottom: 0;
+}
+.cardIn {
+  position: absolute;
+  inset: calc(20 * var(--u)) calc(16 * var(--u));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: calc(10 * var(--u));
+  font-size: calc(36 * var(--u));
+  line-height: 1;
+  margin: calc(4 * var(--u)) 0 calc(8 * var(--u));
+}
+.cardHead[data-long] {
+  font-size: calc(26 * var(--u));
+  white-space: nowrap;
+}
+.cardHead svg {
+  width: calc(32 * var(--u));
+  height: calc(32 * var(--u));
+}
+.cardFig {
+  width: 72%;
+  /* the figure gives way to a long night text (the fortune teller's), so the foot stays on */
+  min-height: 22%;
+}
+.cardNight {
+  font-family: var(--font-stage-sans, Outfit), system-ui, sans-serif;
+  font-size: calc(15 * var(--u));
+  line-height: 1.35;
+  margin: calc(8 * var(--u)) 0 0;
+  color: #3a2a1a;
+}
+.cardNight[data-long] {
+  font-size: calc(13 * var(--u));
+}
+.cardNight b {
+  font-weight: 600;
+  color: var(--ink);
+}
+/* the vigilante's caps left, under the night text */
+.cardCount {
+  font-family: var(--font-stage-sans, Outfit), system-ui, sans-serif;
+  font-size: calc(15 * var(--u));
+  font-weight: 600;
+  line-height: 1.35;
+  margin: calc(6 * var(--u)) 0 0;
+  color: var(--ink);
+}
+.cardFoot {
+  font-family: var(--font-stage-sans, Outfit), system-ui, sans-serif;
+  font-size: calc(15 * var(--u));
+  color: #6e4a2a;
+  margin-top: auto;
+}
+
+/* ---- the plate: the act's name, and the confirm (bench 70 `.hud .plate`) ---- */
+.plate {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 11.2px;
+  align-items: center;
+  z-index: 2;
+}
+.plate.left {
+  transform: none;
+  bottom: 41.6px;
+}
+.plate.inline {
+  position: static;
+  transform: none;
+}
+.plate button {
+  font: inherit;
+  font-size: calc(22.4px * 1.3 * var(--legible-ui));
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: calc(12px * var(--legible-ui)) calc(28.8px * var(--legible-ui));
+  border-radius: 8px;
+  border: 2.9px solid #24180c;
+  background: linear-gradient(#5a4632, #3a2a1a);
+  color: var(--paper);
+  box-shadow:
+    0 4px 0 #5a3a12,
+    0 8px 16px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.plate button.pri {
+  background: linear-gradient(#e9c27a, #b8862f);
+  color: #2a1a08;
+}
+.plate button:disabled {
+  cursor: default;
+}
+.plate button.pri:disabled {
+  opacity: 0.5;
+}
+/* the countdown on the plate (the room has no clock): the day dock's figures, red at the end */
+.plate .count {
+  font-size: calc(22.4px * 1.05 * var(--legible-ui));
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--paper);
+  opacity: 0.85;
+  padding: calc(6.4px * var(--legible-ui)) calc(11.2px * var(--legible-ui));
+  border-radius: 8px;
+  background: rgba(12, 8, 5, 0.78);
+  border: 1px solid rgba(255, 179, 92, 0.22);
+}
+.plate .count[data-urgent] {
+  color: #e3503f;
+  opacity: 1;
+}
+/* the time left as a bar along the plate's top edge, eased over the live clock's 250 ms tick */
+.plate .bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(-11.2px * var(--legible-ui));
+  height: 3.2px;
+  border-radius: 1.6px;
+  background: rgba(239, 228, 203, 0.14);
+  overflow: hidden;
+  pointer-events: none;
+}
+.plate .bar i {
+  position: absolute;
+  inset: 0;
+  background: #c9a25e;
+  transform-origin: left center;
+  transition: transform 0.25s linear;
+}
+.plate .bar[data-urgent] i {
+  background: #e3503f;
+}
+/* a quiet line over the plate: the choice can still change, or why the last press failed */
+.plate .note {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  margin: 0 0 calc(19.2px * var(--legible-ui));
+  white-space: nowrap;
+  font-size: calc(var(--meta) * 1.1);
+  color: var(--paper);
+  opacity: 0.75;
+  pointer-events: none;
+}
+.plate .noteError {
+  color: #f08a7a;
+  opacity: 1;
+}
+/* the act is in: a sealed label, not a button (nothing left to press) */
+.plate .sealed {
+  display: flex;
+  align-items: center;
+  gap: calc(11.2px * var(--legible-ui));
+  margin: 0;
+  font-size: calc(22.4px * 1.15 * var(--legible-ui));
+  font-weight: 500;
+  white-space: nowrap;
+  padding: calc(10.4px * var(--legible-ui)) calc(24px * var(--legible-ui));
+  border-radius: 8px;
+  border: 1.6px solid rgba(201, 162, 94, 0.7);
+  background: rgba(16, 10, 6, 0.88);
+  color: #efd9a8;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45);
+}
+/* the seal: a wax drop in the acting side's colour */
+.plate .sealed i {
+  flex: none;
+  width: 0.62em;
+  height: 0.62em;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 -2px 0 rgba(0, 0, 0, 0.3),
+    0 0 0 1.6px rgba(20, 12, 6, 0.9);
+}
+
+/* ---- a necromancer's bodies: the tag under their line ("act through") ---- */
+.lineTag {
+  position: absolute;
+  margin: 0;
+  white-space: nowrap;
+  font-size: calc(var(--meta) * 1.1);
+  color: var(--paper);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+/* ---- plates to choose from, over the plate: the speculator's sides, the fortune teller's
+   roles (ten-seat pass §2); the plate's own buttons, a size down, the chosen one lit ---- */
+.choices {
+  position: absolute;
+  left: 50%;
+  bottom: calc(8px + 132px * var(--legible-ui));
+  transform: translateX(-50%);
+  /* its own width, not what is left right of `left`: the row wraps only past its max-width */
+  width: max-content;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(8px * var(--legible-ui));
+  z-index: 2;
+}
+.choicesCaption {
+  margin: 0;
+  white-space: nowrap;
+  font-size: calc(var(--meta) * 1.1);
+  color: var(--paper);
+  opacity: 0.75;
+}
+.choicesRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: calc(9.6px * var(--legible-ui));
+  /* the plates grow with --legible-ui on a phone; the row's measure grows with them */
+  max-width: calc(760px * var(--legible-ui));
+}
+.choices button {
+  font: inherit;
+  font-size: calc(22.4px * 1.05 * var(--legible-ui));
+  font-weight: 600;
+  padding: calc(9.6px * var(--legible-ui)) calc(20px * var(--legible-ui));
+  border-radius: 8px;
+  border: 2.9px solid #24180c;
+  background: linear-gradient(#5a4632, #3a2a1a);
+  color: var(--paper);
+  box-shadow:
+    0 4px 0 #5a3a12,
+    0 8px 16px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.choices button[aria-pressed='true'] {
+  background: linear-gradient(#efd9a8, #c9a25e);
+  color: #2a1a08;
+  box-shadow:
+    0 4px 0 #5a3a12,
+    0 0 18px 4px rgba(255, 190, 110, 0.35);
+}
+.choices button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+/* a role's sigil in place of words */
+.choices button.sigil {
+  padding: calc(6.4px * var(--legible-ui));
+  line-height: 0;
+}
+.choices button.sigil svg {
+  width: calc(36px * var(--legible-ui));
+  height: calc(36px * var(--legible-ui));
+}

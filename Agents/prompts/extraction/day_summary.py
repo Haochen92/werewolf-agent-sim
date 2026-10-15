@@ -1,26 +1,48 @@
-"""In-game day-summary extraction prompt (run DURING play by summary_agent)."""
+"""In-game day-summary extraction prompt (run DURING play by summary_agent).
+
+v3 (2026-10-03): the summary is the only account of a past day that agents ever see, so it is
+written as attributed claims checked against the game master's record, never as narration. It is
+given the record and the claims already on record; it no longer gets the situation-description
+standards, which told it never to use player IDs, against its own rule to use them.
+
+v4 (2026-10-04): the summariser only transcribes: the day's accusations, and each role claim with its
+claimed night actions in fixed words. Checking claims against the record moved to code
+(Agents/rules/claim_ledger.py), and alliances and village dynamics are gone (discussion_evidence.md §6.6).
+A plan for a coming night is not a claimed action, and a vague result is not_said (2026-10-04: a
+decoy "I'll check player_2 tonight" was logged as a night-2 investigation). Plans are recorded on
+their own (planned_actions), so the ledger can set them beside what the player later says they did.
+Each written accusation field is capped at 30 words.
+"""
 
 
-DAY_SUMMARY_PROMPT = """You are a game analyst for a Werewolf game. Extract a structured summary of today's public discussion.
+DAY_SUMMARY_PROMPT = """You are a game analyst for a Werewolf game. Record today's public discussion in the structured fields. On later days the players read your record instead of the discussion itself, so it must be exact about who said what.
 
 GAME CONTEXT:
 {game_rules}
 
-{situation_standards}
+THE GAME MASTER'S RECORD SO FAR (exact announcements: night outcomes, healer saves, votes, revealed roles):
+{public_record}
+
+CLAIMS MADE IN EARLIER DAY DISCUSSIONS (with the game master's checks):
+{claims_on_record}
 
 DAY {current_day} PUBLIC DISCUSSION ONLY:
 {day_channel}
 
-Extract all strategically important information from the discussion into the structured fields. Be exhaustive — every distinct accusation should be a separate entry with ALL participating accusers listed.
-
 Rules:
-- Do not include the formal vote tally or night event outcomes (these are recorded separately). However, DO include when players reference past votes or declare current voting intentions during discussion — both voting history and vote declarations are strategically critical.
+- Attribute everything. Write every statement about the game as something a named player said or argued ("player_8 claimed that player_2 survived an attack"). Never state a player's claim as fact, including the premise an accusation rests on.
+- Accusations: every distinct accusation is a separate entry with ALL participating accusers listed. Record the target's defence, and who else argued against it and why. Keep each written field to at most 30 words.
+- The game master's record above is the only source of fact. If an accusation rests on a public event the record contradicts, or one the game master would have announced but did not (a death, a healer save, a vote), say so in record_check and cite the record. Private night results (investigations, protections, a held shot) are never announced, and nor is an attack on a player who cannot be killed at night, so their absence from the record is not a conflict. An accusation repeated by several players is still a claim.
+- Role claims: list every role claim made today, including a player repeating an earlier claim, and mark a withdrawn claim as retracted. Record each night action the player claimed (investigate, protect, shoot, kill, watch, follow, sigil, block) with its night, target and result, using only the allowed result words; for a watch or follow, the player_ids they say they saw go in seen. Transcribe what they said; do not judge whether it is true.
+- A night action is one the player says already happened. A plan for tonight ("I'll check player_2 tonight") is not a night action: record it in planned_actions. If the player gave no result, or only a vague one ("got nothing useful"), the result is not_said.
+- A player who states a night plan without claiming a role is claiming the role that does that action: record the claim with the plan.
+- Being roleblocked is not a denial: a player who says they were roleblocked tried to act. Record the action they say they tried (with its target if they name one) with the result roleblocked, never as no_action.
+- A denial is a claim too: a player saying they did not act or visited no one on a night ("I held my fire", "I kept my second watch", "I didn't visit anyone last night", "I didn't visit player_7") is a night action no_action for that night, with the player they say they did not visit as the target if they name one. Record it under role_claims, with claimed_role none if they claim no role.
+- Keep every rebuttal: whoever argued against an accusation goes in disputed_by with their argument. Never keep an accusation and drop the reply to it.
+- Something done TO a player is not a claim by them: "I was roleblocked", "I was protected", "someone visited me" claims no role. Record a role claim only when the player says they are that role or describes doing its action themselves.
+- Do not include the formal vote tally or night event outcomes (these are recorded separately). However, DO include when players reference past votes or declare current voting intentions during discussion.
 - Use player IDs (player_1, player_2, etc.), not role names, since roles are generally unknown during the game.
-- When a player claims a role, distinguish the certainty level in the evidence field:
-  - Confirmed by death reveal: eliminated players' roles are publicly revealed — reference to a dead player's known role is a confirmed fact, NOT a claim. Do not list confirmed-dead roles as role_claims.
-  - Claimed with public corroboration (e.g., "accusation confirmed by subsequent elimination")
-  - Claimed without evidence (write "unverified")
-  - A healer save announced by the Game Master confirms the player is not a wolf, but does NOT confirm their specific role.
-  - Do not treat unverified claims as fact.
+- A dead player's role, revealed by the game master, is a fact, not a claim: do not list it as a role claim.
+- A healer save announced by the game master shows the player was attacked and protected. It does NOT clear them: a wolf can be attacked by the serial killer or the vigilante and saved. Only the attacker type the game master names is fact.
 - Be specific about what was said and claimed, not vague summaries.
 """

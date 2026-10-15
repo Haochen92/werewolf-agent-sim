@@ -66,6 +66,7 @@ def build_runnable_config(
             "retrieval_types_config": run.retrieval_types_config,
             "sp_proven_tiering": run.sp_proven_tiering,
             "sp_exploration_slot": run.sp_exploration_slot,
+            "stage_filter": run.stage_filter,
             "game_config": game_config_dict(run.game),
             "memory_persistence_config": run.memory_persistence.model_dump(mode="json"),
             "session_id": run.session_id,
@@ -113,13 +114,19 @@ def game_config_from_runnable(config: dict[str, Any] | None) -> GameConfig:
 
 
 def discussion_recursion_limit(game: GameConfig, num_survivors: int) -> int:
-    """LangGraph recursion_limit for the day SCHEDULE self-loop.
+    """LangGraph recursion_limit for the day subgraph.
 
-    Each cycle = 2 super-steps (SCHEDULE node + role node). A cycle may be a real utterance OR a
-    pass marker: passes consume super-steps but do NOT count toward the cap, and up to
-    proactive_budget-1 passes can occur between real utterances before a trailing-pass run
-    terminates the day. Worst case is therefore ~proactive_budget cycles per utterance slot, so size
-    the limit at 2 * proactive_budget * cap (+headroom) to guarantee the graceful cap /
-    trailing-pass termination always fires before an ungraceful GraphRecursionError.
+    Each discussion cycle = 2 super-steps (SCHEDULE node + the speaker's node). A real utterance
+    counts toward the cap; a pass marker does not, so allow one pass per utterance slot, plus a
+    pass for every sweep turn (each sweep asks each survivor at most once, and a sweep turn that
+    passes or is held by the echo gate consumes no cap). Once the cap is reached the day drains
+    the debts already open, at most one more turn per survivor. The two rounds (the opening, the
+    closing) add three super-steps each (entry node, the parallel turns, the collect node), plus
+    the summary and the vote's three. Sized so the graceful cap always fires before an ungraceful
+    GraphRecursionError.
     """
-    return 2 * game.proactive_budget * game.utterance_cap(num_survivors) + 10
+    discussion_steps = 2 * 2 * game.utterance_cap(num_survivors)
+    sweep_pass_steps = 2 * game.max_proactive_sweeps * num_survivors
+    drain_steps = 2 * num_survivors  # after the cap, each debtor answers at most once more
+    round_steps = 3 * 2
+    return discussion_steps + sweep_pass_steps + drain_steps + round_steps + 10

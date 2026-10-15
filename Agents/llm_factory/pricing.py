@@ -1,0 +1,111 @@
+"""What a model call cost: a dated price table per model, priced from recorded token counts.
+
+Prices change (DeepSeek's V4 Pro rose 1.5–4.6× on 2026-08-13 and added peak hours), and a game
+must be priced at the rates of its own date. So nothing stores a cost: a game records its tokens
+by model and UTC hour (``server/game/usage.py``) and the cost is worked out here when it is read.
+Fixing a wrong price (a row in the database's model_prices, see catalog.py) corrects every game
+it applied to.
+
+Sources: the July rows are what was entered in Langfuse on 2026-07-26 (its models/prices tables);
+DeepSeek from 2026-08-13 is its official pricing page as read on 2026-10-04; Gemini cached rates
+never apply in practice, since implicit caching returns no hits on our Vertex path.
+"""
+
+from __future__ import annotations
+
+from datetime import date, datetime, timezone
+
+from Agents.schemas.model_catalog import Price
+
+# The SEED price table: the database's starting rows (table model_prices, migration 0011) and
+# what a process without a database prices with. Live prices are the database's, read through
+# catalog.py; change them with scripts/model_catalog.py, not here. Keyed by the model name the
+# provider is called with (no factory prefix), oldest entry first.
+PRICES: dict[str, list[Price]] = {
+    "gemini-3.1-flash-lite": [Price(date(2026, 1, 1), 0.25, 0.025, 1.50)],
+    "gemini-3.5-flash-lite": [Price(date(2026, 7, 21), 0.30, 0.03, 2.50)],
+    "gemini-3.6-flash": [Price(date(2026, 7, 21), 1.50, 0.15, 7.50)],
+    # Vertex AI's pricing page, global endpoint (read 2026-10-12); the Gemini API has deprecated
+    # it and routes it to 3.6 Flash, but Vertex still serves gemini-3.5-flash itself.
+    "gemini-3.5-flash": [Price(date(2026, 5, 19), 1.50, 0.15, 9.00)],
+    # Not in the Langfuse table (it used its built-in price); list rates, cached rate unverified.
+    "gemini-2.5-pro": [Price(date(2025, 6, 1), 1.25, 0.3125, 10.00)],
+    "deepseek-v4-pro": [
+        Price(date(2026, 7, 1), 0.435, 0.003625, 0.87),
+        Price(date(2026, 8, 13), 0.66, 0.022, 1.98, peak=True),
+    ],
+    # The 2026-08-13 row is a third-party listing of V4 Flash's August rates, dated from when
+    # DeepSeek added peak hours; the exact day V4 Flash's price changed is not known.
+    # From 2026-09-10 the name routes to V4.1 Flash and bills at its rates.
+    "deepseek-v4-flash": [
+        Price(date(2026, 7, 1), 0.14, 0.0028, 0.28),
+        Price(date(2026, 8, 13), 0.22, 0.007, 0.66, peak=True),
+        Price(date(2026, 9, 10), 0.15, 0.003, 0.60, peak=True),
+    ],
+    "deepseek-flash": [Price(date(2026, 9, 10), 0.15, 0.003, 0.60, peak=True)],
+    # OpenAI's list rates; a cache write bills at 1.25x input (WRITE_FACTORS).
+    "gpt-6-luna": [Price(date(2026, 9, 1), 0.10, 0.01, 0.50)],
+    # Z.AI's list rates after its launch promotion ended on 2026-09-09 (OpenRouter, pinned to Z.AI).
+    "z-ai/glm-5.3-flash": [Price(date(2026, 9, 10), 0.15, 0.03, 0.50)],
+    # Anthropic's list rates (pricing page, 2026-10-11); a cache write bills at 1.25x input
+    # (WRITE_FACTORS). Haiku 5.5's rates hold for prompts under 100,000 tokens; a turn is about 10,000.
+    "claude-haiku-5-5": [Price(date(2026, 10, 7), 0.10, 0.01, 0.50)],
+    "claude-sonnet-5-5": [Price(date(2026, 9, 28), 2.00, 0.10, 10.00)],
+}
+
+
+def is_deepseek_peak(at: datetime) -> bool:
+    """DeepSeek's peak hours: 01:00–04:00 and 06:00–10:00 UTC, Monday to Friday. (Chinese public
+    holidays are off-peak too; they are not modelled, so a holiday game is priced at peak.)"""
+    at = at.astimezone(timezone.utc)
+    return at.weekday() < 5 and (1 <= at.hour < 4 or 6 <= at.hour < 10)
+
+
+def price_at(model: str, at: datetime) -> tuple[Price, float] | None:
+    """The price in force for ``model`` at ``at`` and its multiplier (2 at DeepSeek peak), or
+    None when the table has no price for that model on that date."""
+    from .catalog import prices_for
+
+    entries = [p for p in prices_for(model.removeprefix("models/")) if p.since <= at.date()]
+    if not entries:
+        return None
+    price = entries[-1]
+    return price, 2.0 if price.peak and is_deepseek_peak(at) else 1.0
+
+
+# What a token written to the provider's cache bills at, as a multiple of the input rate, by model-name
+# prefix. Anthropic: 1.25x on the 5-minute cache that seats use (its 1-hour cache, 2x, is priced in
+# providers/anthropic.py). OpenAI: 1.25x from GPT-5.6 on (prompt-caching guide, read 2026-10-13); add a
+# prefix when another such model joins the catalogue. Any other provider that reports written tokens
+# bills them as plain input.
+WRITE_FACTORS = (("claude-", 1.25), ("gpt-6", 1.25))
+
+
+def write_factor(model: str) -> float:
+    """The cache-write rate of ``model`` as a multiple of its input rate (1.0 when it charges no premium)."""
+    name = model.removeprefix("models/")
+    return next((f for prefix, f in WRITE_FACTORS if name.startswith(prefix)), 1.0)
+
+
+# A call sent through a provider's batch interface bills at half its standard rates (Anthropic's
+# Message Batches, Google's and OpenAI's batch APIs alike); the cache discount applies on top.
+BATCH_FACTOR = 0.5
+
+
+def cost_usd(model: str, at: datetime, *, input: int, cached: int, output: int,
+             batch: bool = False, written: int = 0) -> float | None:
+    """What these tokens cost at ``at``. ``input`` includes the cached and the written parts, as
+    providers count it; the cached part bills at the cached rate, the part written to the cache at
+    the input rate times ``write_factor``, and the rest at the input rate. ``batch``: the tokens went
+    through a batch interface, at BATCH_FACTOR of the rates."""
+    found = price_at(model, at)
+    if found is None:
+        return None
+    price, factor = found
+    if batch:
+        factor *= BATCH_FACTOR
+    cached = min(cached, input)
+    written = min(written, input - cached)
+    plain = input - cached - written
+    return factor * (plain * price.input + cached * price.cached + written * price.input * write_factor(model)
+                     + output * price.output) / 1e6

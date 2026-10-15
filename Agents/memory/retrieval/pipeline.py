@@ -31,17 +31,14 @@ from Agents.memory.retrieval import (
     retrieve_observations_for_agent,
     retrieve_strategy_points_for_agent,
 )
+from Agents.memory.retrieval import lookup_cache
+from Agents.memory.retrieval.dimension_gating import STAGE_FILTER_TOP_K, drop_other_stages
 from Agents.memory.retrieval.dimension_gating import reweight as _dimension_reweight
 from Agents.memory.vectors import embed_texts
 from Agents.memory.store import embeddings as memory_embeddings
 from Agents.memory.retrieval.plan_gating import retrieval_plan
 from Agents.memory.retrieval.situation_agent import _generate_situations_for_agent
-from Agents.state import (
-    HealerDayState,
-    InvestigatorDayState,
-    VillagerDayState,
-    WolfDayState,
-)
+from Agents.state import DayActorState
 
 if TYPE_CHECKING:
     from Agents.tracing import GraphContext
@@ -50,10 +47,11 @@ logger = getLogger(__name__)
 
 
 def enrich_payload_with_memory(
-    payload: VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState,
+    payload: DayActorState,
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
     action_phase: str,
+    lookup_scope: str = "",
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     # Lazy import breaks the tracing<->retrieval init cycle: tracing's import chain loads
     # Agents.memory (hence this module) before tracing finishes initializing, so a module-level
@@ -62,31 +60,42 @@ def enrich_payload_with_memory(
 
     enriched_payload = dict(payload)
     active_store = runtime.store
-    plan = retrieval_plan(config, payload, active_store)
+    plan = retrieval_plan(config, payload, active_store, action_phase)
 
     if plan.skip_reason:
         enriched_payload["retrieved_observations"] = []
         enriched_payload["strategy_points"] = payload.get("strategy_points", [])
         return enriched_payload, _skipped_metadata(plan.store_dir, plan.skip_reason)
 
+    # D4: a seat's day discussion and its night reuse one lookup (lookup_cache.py).
+    game_id = str(((config or {}).get("configurable") or {}).get("game_id") or "")
+    cache_key = lookup_cache.lookup_key(game_id, payload, action_phase, plan.store_dir, lookup_scope)
+    kept = lookup_cache.get(cache_key, payload) if cache_key else None
+    if kept is not None:
+        return _with_lessons(enriched_payload, kept["observations"], kept["strategy_points"]), {
+            **kept["metadata"], "lookup_reused": True}
+
     situations, situation_dimensions = _generate_situations_for_agent(payload, action_phase)
     # Non-reranked cap = 5: the observations-only saturation point measured in
     # evidence/retrieval/capacity_limits (cap=7 regresses action quality below
     # cap=3). The wide/reranked path fetches RERANK_TOP_K, then reranks down.
-    retrieval_top_k = RERANK_TOP_K if plan.needs_wide_retrieval else 5
+    # The stage filter searches the whole cell (STAGE_FILTER_TOP_K) so the cap can refill with
+    # same-stage lessons.
+    retrieval_top_k = (STAGE_FILTER_TOP_K if plan.stage_filter
+                       else RERANK_TOP_K if plan.needs_wide_retrieval else 5)
 
     with langfuse.start_as_current_observation(
         as_type="retriever",
         name=(
             f"memory_retrieval_{payload['player_id']}"
-            f"_day_{payload['current_day']}_round_{payload['current_round']}"
+            f"_day_{payload['current_day']}_round_{_round_label(payload)}"
         ),
         input={"situations": situations},
         metadata={
             "player_id": payload["player_id"],
             "player_role": payload["player_role"],
             "current_day": payload["current_day"],
-            "current_round": payload["current_round"],
+            "current_round": payload.get("current_round", 0),
             "action_phase": action_phase,
             "retrieve_observations": plan.retrieve_observations,
             "retrieve_strategy_points": plan.retrieve_strategy,
@@ -145,6 +154,19 @@ def enrich_payload_with_memory(
                 situation_dimensions,
             )
 
+        # The stage filter before the cap, over the whole cell: the cap then refills from same-stage
+        # lessons (decisions §11; the 40-game replay, 2026-10-13).
+        stage_filtered = {"observations": 0, "strategy_points": 0}
+        if plan.stage_filter:
+            situation_to_dims = {s: d for s, d in zip(situations, situation_dimensions) if d}
+            kept_obs = drop_other_stages(retrieved_observations, situation_to_dims,
+                                         lambda it: it.observation.dimensions)
+            kept_sps = drop_other_stages(retrieved_strategy_points, situation_to_dims,
+                                         lambda it: it.strategy_point.dimensions)
+            stage_filtered = {"observations": len(retrieved_observations) - len(kept_obs),
+                              "strategy_points": len(retrieved_strategy_points) - len(kept_sps)}
+            retrieved_observations, retrieved_strategy_points = kept_obs, kept_sps
+
         retrieved_observations = cap_per_situation(
             retrieved_observations,
             get_situation=lambda o: o.matched_situation,
@@ -197,18 +219,16 @@ def enrich_payload_with_memory(
                 "filtering_enabled": plan.filtering,
                 "pre_filter_candidates": pre_filter_counts,
                 "post_filter_candidates": post_filter_counts,
+                "stage_filter_enabled": plan.stage_filter,
+                "stage_filtered": stage_filtered,
                 "num_candidate_observations": len(candidate_observations_json),
                 "num_candidate_strategy_points": len(candidate_strategy_points_json),
             }
         )
 
-    enriched_payload["retrieved_observations"] = retrieved_observations
-    enriched_payload["strategy_points"] = retrieved_strategy_points
-    strategy_point_index_map = {
-        i + 1: sp.key for i, sp in enumerate(retrieved_strategy_points)
-    }
-    enriched_payload["strategy_point_index_map"] = strategy_point_index_map
-    return enriched_payload, {
+    enriched_payload = _with_lessons(enriched_payload, retrieved_observations, retrieved_strategy_points)
+    strategy_point_index_map = enriched_payload["strategy_point_index_map"]
+    metadata = {
         "memory_enabled": True,
         "retrieval_skipped_reason": None,
         "reranking_enabled": plan.reranking,
@@ -217,6 +237,8 @@ def enrich_payload_with_memory(
         "filtering_enabled": plan.filtering,
         "sp_proven_tiering_enabled": plan.sp_proven_tiering,
         "sp_exploration_slot_enabled": plan.sp_exploration_slot,
+        "stage_filter_enabled": plan.stage_filter,
+        "stage_filtered": stage_filtered,
         "situations": situations,
         "situation_dimensions": situation_dimensions,
         "retrieved_observations": retrieved_observations_json,
@@ -228,7 +250,32 @@ def enrich_payload_with_memory(
         "num_situations": len(situations),
         "num_observations": len(retrieved_observations),
         "num_strategy_points": len(retrieved_strategy_points),
+        # Where the lookup was made: a reused lookup's record keeps these, so a decision shown the
+        # lessons of an earlier turn says which turn.
+        "lookup_day": payload["current_day"],
+        "lookup_round": _round_label(payload),
+        "lookup_reused": False,
     }
+    if cache_key:
+        lookup_cache.put(cache_key, payload, {"observations": retrieved_observations,
+                                              "strategy_points": retrieved_strategy_points,
+                                              "metadata": metadata})
+    return enriched_payload, metadata
+
+
+def _round_label(payload: dict[str, Any]) -> str:
+    """Which round a turn belongs to: a day turn's named round (opening, discussion, proactive,
+    closing); a night turn's pack chat round number. Day turns carry no round number."""
+    return str(payload.get("day_round") or payload.get("current_round", 0))
+
+
+def _with_lessons(enriched_payload: dict[str, Any], observations: list, strategy_points: list) -> dict[str, Any]:
+    """The payload with the selected lessons on it, and the strategy points' 1-based index map the
+    agent's verdicts refer to."""
+    enriched_payload["retrieved_observations"] = list(observations)
+    enriched_payload["strategy_points"] = list(strategy_points)
+    enriched_payload["strategy_point_index_map"] = {i + 1: sp.key for i, sp in enumerate(strategy_points)}
+    return enriched_payload
 
 
 def _skipped_metadata(store_dir: str, skip_reason: str) -> dict[str, Any]:
@@ -247,6 +294,8 @@ def _skipped_metadata(store_dir: str, skip_reason: str) -> dict[str, Any]:
         "filtering_enabled": False,
         "sp_proven_tiering_enabled": False,
         "sp_exploration_slot_enabled": False,
+        "stage_filter_enabled": False,
+        "stage_filtered": {"observations": 0, "strategy_points": 0},
         "num_situations": 0,
         "num_observations": 0,
         "num_strategy_points": 0,
@@ -255,7 +304,7 @@ def _skipped_metadata(store_dir: str, skip_reason: str) -> dict[str, Any]:
 
 def _retrieve(
     active_store: Any,
-    payload: VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState,
+    payload: DayActorState,
     action_phase: str,
     situations: list[str],
     retrieval_top_k: int,

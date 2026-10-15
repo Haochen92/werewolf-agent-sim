@@ -25,7 +25,7 @@ def human_turn_request(**over) -> HumanTurnRequest:
         player_id="p1", role="villager", phase="day_votes", day=1, instruction="",
         valid_targets=["p2", "p3"], can_pass=False, dialogue="", day_summaries="",
         surviving_players=["p1", "p2", "p3"], dead_roster="", alive_roles="", firing_brief="",
-        wolf_channel="", investigator_results="", vigilante_results="", previous_strategy="",
+        wolf_channel="", previous_strategy="",
     )
     base.update(over)
     return HumanTurnRequest(**base)

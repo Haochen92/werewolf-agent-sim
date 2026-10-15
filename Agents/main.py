@@ -16,6 +16,7 @@ from Agents.graphs.parent import parent_graph_compiled
 
 from Agents.turn import prompt_log, reads_log
 from Agents.compute_metrics import compute_game_metrics, push_scores_to_langfuse
+from Agents.schemas.roles import ROLE_SPECS
 from Agents.config import RunConfig, build_runnable_config, normalize_run_config
 from Agents.memory import store
 from Agents.memory.persistence import seed_memory_from_config
@@ -43,9 +44,7 @@ _LEGACY_RUN_GAME_OPTION_MAP = {
     "retrieval_types_config": "retrieval_types_config",
     "game_id": "game_id",
 }
-_LEGACY_MEMORY_ROLE_KEYS = frozenset(
-    {"wolf", "villager", "healer", "investigator", "serial_killer", "vigilante"}
-)
+_LEGACY_MEMORY_ROLE_KEYS = frozenset(ROLE_SPECS)
 
 
 def run_game(

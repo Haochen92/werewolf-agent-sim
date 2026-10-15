@@ -1,0 +1,902 @@
+[
+ {
+  "key": "9a884dca-800d-49ce-a226-c6d0367f9a8e",
+  "cell": "chanteuse/day_discussion",
+  "action": "When parity is near and suspicion is high, immediately pivot from a defensive stance to an offensive one by targeting the loudest accuser; use any available third-party (e.g., a neutral or unconfirmed player) to build a counter-voting coalition based on framing the accuser as misinformed or manipulative.",
+  "situation": "Late-game scenario where the wolf is under direct investigation but still has a path to force a majority or tie. Information landscape: Information-rich or highly contested, focused on past voting records and player behavior. Stakes: The vote determines immediate win/loss; failure means elimination, success brings the game to a 1v1 state. Consensus: The room is fractured between your defense and the accuser's case. My position: driving Heat: High, usually due to concrete voting records or role interactions tying you to eliminated partners. Forward exposure: High risk of total exposure if the coalition fails to materialize; irreversible once the vote begins. Target landscape: Vocal accuser vs. unconfirmed or neutral players whose votes determine the outcome. Public vs private: Privately knowing your wolf identity while publicly championing a false narrative of town-loyalty to discredit the primary accuser."
+ },
+ {
+  "key": "a58b86ad-cc7f-4907-93c9-b941449f203f",
+  "cell": "chanteuse/day_discussion",
+  "action": "When identified as a candidate by the remaining town power roles (like a vigilante), deflect heat by highlighting past actions (like killing the lone killer) as proof of alignment, while simultaneously creating confusion or division among the remaining players to prevent a unified elimination vote.",
+  "situation": "3-player final day scenario where a town power role is attempting to identify the final wolf. Information landscape: High certainty on mechanics, but high ambiguity on the wolf's identity. Stakes: Immediate game end; the wolf must avoid being the primary target at the vote to survive the night. Consensus: High uncertainty as town power roles struggle to reach a consensus between multiple targets. My position: holding out Heat: Extremely high; the town suspect is actively narrowing down the wolf. Forward exposure: Minimal, as this move aims to create a tie or deadlock in the final stages of the game. Target landscape: Known town power roles vs. unaligned or neutral players who can be manipulated to abstain or split the vote. Public vs private: Privately knowing the power role is blocked or soon to be killed, while publicly acting as an innocent victim of groundless suspicion."
+ },
+ {
+  "key": "256082ea-fa93-409f-ab11-6501d44f17c8",
+  "cell": "chanteuse/day_discussion",
+  "action": "When a wolf partner is publicly caught or under heavy suspicion, prioritize self-preservation by remaining silent or distancing yourself from the partner rather than mounting an emotional or unevidenced defense.",
+  "situation": "A wolf partner is facing an elimination push based on credible investigative findings. Information landscape: Information-rich: investigators and verified checks dominate the discussion. Stakes: The survival of the wolf faction relies on the chanteuse maintaining a clean town identity while the partner is sacrificed. Consensus: The village is forming a consensus to eliminate the partner based on investigative findings. My position: holding out Heat: Low; the chanteuse is not yet a target of the main inquiry. Forward exposure: Active defense links the agent to the partner; remaining silent preserves the chanteuse's separate, potentially safe, persona. Target landscape: The partner under suspicion versus the accusing town force. Public vs private: Publicly maintaining neutrality while privately knowing the partner is a wolf under genuine suspicion."
+ },
+ {
+  "key": "4dc495ad-fb1d-4bc5-a7cf-2252deaa0cac",
+  "cell": "chanteuse/day_discussion",
+  "action": "Capitalize on confusion regarding your own roleblock by framing a targeted town player's logical inconsistencies or semantic slips as proof of their misalignment, effectively steering the consensus toward their mis-elimination while you remain in the background.",
+  "situation": "A post-partner-death phase where the wolf must deflect heat while the town is focused on analyzing night-action anomalies. Information landscape: Information-rich: multiple night results, confirmed roles, and active claims are on the table. Stakes: Critical; a mis-elimination provides the necessary buffer to reach wolf parity. Consensus: The village is seeking a target based on night-action discrepancies and conflicting reports. My position: driving Heat: Low; the goal is to keep the spotlight on the target to avoid any inquiry into the chanteuse's own block history. Forward exposure: Committing to an accusation carries risk of future scrutiny if the target flips town, so focus the argument on their verbal or logical errors rather than pinning your own role claim to their guilt. Target landscape: Players currently under investigation or those offering unclear night-action accounts; targets with low defensive credibility. Public vs private: Publicly label a player's behavior as suspicious or mechanically impossible, while privately knowing your own night action (the block) actually caused the very situation they are trying to explain."
+ },
+ {
+  "key": "89fbeff8-3dc5-419a-939e-0bf2ea4674b7",
+  "cell": "chanteuse/day_discussion",
+  "action": "Align with established town reads or confirmed roles to build rapport, while publicly encouraging the village to analyze the 'mystery' of a roleblocked action that you privately know you caused.",
+  "situation": "A period of high town activity where the wolf needs to blend in and deflect suspicion toward other unverified players. Information landscape: Information-rich: night results and deaths confirm roles, creating a clear but busy logic puzzle. Stakes: High; maintaining a 'safe' reputation is vital to survive the final days. Consensus: The room is coalescing around the confirmed town roles as the primary drivers of inquiry. My position: with_majority Heat: Low to moderate; no direct link between the chanteuse and the current night's events has been established. Forward exposure: Low-risk; supports the town's current momentum on other players, minimizing your own profile. Target landscape: Confirmed town roles vs. unconfirmed players; use the confirmed roles to validate your own participation. Public vs private: Echoing the consensus on other targets while obfuscating the identity of the roleblocked target to keep the town chasing ghosts."
+ },
+ {
+  "key": "2cb4e5d9-6669-450a-8547-c8530aea8b0a",
+  "cell": "chanteuse/day_discussion",
+  "action": "Maintain a policy of non-intervention and silence when caught in a divergence, as active fabrication under pressure creates irreversible exposure; only interject if the conversation turns toward your specific night-visit target to offer a benign, unverifiable alternative explanation.",
+  "situation": "A tracking or watching report has been released that either reveals the agent's movement or forces a discussion on visit mechanics. Information landscape: The room is shifting between information-starved and information-rich as various roles claim results. Stakes: The survival of the pack depends on avoiding early discovery through excessive noise or contradictory claims. Consensus: The village is generally aligned toward analysis of night activity and information-gathering claims. My position: holding out Heat: Variable; ranging from zero suspicion to high, based on whether the agent has been publicly implicated by a tracker. Forward exposure: Publicly speaking risks committing to a false narrative that tracker/watcher reports may later invalidate; silence maintains the status quo with no new exposure. Target landscape: The room is focused on tracking reports and mechanical verification of night actions. Public vs private: The agent possesses private knowledge of their own night visit or block that contradicts the public perception or tracker report."
+ },
+ {
+  "key": "6fafa426-35f3-4c94-acea-b3b772b0f3d7",
+  "cell": "chanteuse/day_vote",
+  "action": "Abstain from voting when the village consensus is to abstain; if the village is forced to pick, vote with the majority rather than attempting to force a rogue elimination that leaves a permanent, incriminating record.",
+  "situation": "A day-vote period where the village is information-starved and trending toward a neutral abstain. Information landscape: Information-starved; evidence consists only of unverified claims and potential concealed night activity. Stakes: A mis-elimination or rogue vote carries low immediate reward but high long-term risk of exposure. Consensus: The village prefers to avoid an elimination to allow investigative roles to operate without fear of mis-execution. My position: holding out Heat: Low heat; the agent is currently safe but risks immediate exposure by creating a unique voting pattern. Forward exposure: Voting against the grain creates an indelible public record that associates the agent with any subsequent wolf flips or investigations. Target landscape: The room is divided between abstaining to gather data or targeting an unpressured player without evidence. Public vs private: The agent privately knows of wolf-led kills or hidden roles while the village lacks sufficient information to form a solid case."
+ },
+ {
+  "key": "5cc23cb1-472e-40ba-a1db-4b6af829c2e1",
+  "cell": "chanteuse/day_vote",
+  "action": "When a wolf partner is under extreme pressure, perform a tactical bussing of the partner if their position is clearly lost, rather than casting a desperate, isolated vote to save them which confirms the alliance.",
+  "situation": "A high-stakes binary conflict where an exposed wolf partner is the likely candidate for elimination. Information landscape: Information-rich; investigative claims or night-watch data have pinned the partner. Stakes: Protecting a lost partner leads to the quick elimination of the second wolf; bussing maintains self-preservation. Consensus: The room is coalescing against an identified suspicious player or a verified role-claim conflict. My position: holding out Heat: Low heat; the focus is almost entirely on the partner's conflicting claims or evidence. Forward exposure: Defending a doomed partner acts as a suicide pact, turning the agent's voting record into a confirmation of their own guilt. Target landscape: A binary choice between bussing a partner or attempting a losing, high-exposure defense. Public vs private: Privately knowing the partner is a wolf while the public is gathering evidence to execute them."
+ },
+ {
+  "key": "961e6670-db99-4d0e-9281-8a60efeb6d79",
+  "cell": "chanteuse/night_action",
+  "action": "Coordinate to separate the wolf kill and the chanteuse block: task the partner illusionist to carry the kill on the primary investigative threat while the chanteuse blocks the most credible protective or investigative role likely to interact with the target or the pack.",
+  "situation": "Managing pack night visits to minimize investigative tracking while suppressing town protective and investigative capabilities. Information landscape: Information-rich environment where town has established tracking/watch logs that need systematic disruption. Stakes: Critical failure point: poor coordination leads to immediate tracking of pack members, turning game momentum back to town. Forward exposure: Splitting visits minimizes the diagnostic footprint at any single location, preventing a single Sentinel or Trailseer result from identifying both wolf activities. Target landscape: Town roles with active night interactions (Investigator, Trailseer, Sentinel) are prioritized over unrevealed townies who pose lower immediate investigative risks."
+ },
+ {
+  "key": "3a27800a-424e-41dd-b4b9-ef5c365f27a8",
+  "cell": "chanteuse/night_action",
+  "action": "Prioritize blocking the most active participants from the Day 1 discussion, as these players are statistically most likely to be town investigative or protective roles capable of identifying wolves early.",
+  "situation": "Initial night action phase with no prior night data, requiring the Chanteuse to select a block target to mitigate early town information-gathering. Information landscape: Information-starved; zero public claims, deaths, or recorded night results exist to guide targeting. Stakes: Early disruption of town power roles is critical to preventing the wolves from being exposed by investigative feedback on Day 2. Forward exposure: The block is a visit and will be seen by a trailseer or sentinel, creating a trail directly to the target; it is irreversible once committed. Target landscape: The room is full of unconfirmed players; choice is based on behavioral activity levels observed during the opening day round."
+ },
+ {
+  "key": "25595c53-b078-4369-9cce-969a2de02227",
+  "cell": "chanteuse/night_action",
+  "action": "Avoid roleblocking the primary kill target or any player potentially serving as the pack's target for investigation, instead spreading the block to a player who has remained quiet to minimize overlapping visits that could be caught by watchers.",
+  "situation": "Wolves must coordinate night kills and blocks without any verified information, creating a risk of visiting immune targets or being tracked by town. Information landscape: Information-starved; entirely speculative targeting based on behavioral patterns. Stakes: High; premature exposure of the Chanteuse or the wolf pack leads to rapid information loss for the evil faction. Forward exposure: Visits create movement trails; excessive visits on one target increase the likelihood of being tracked, while spreading them preserves anonymity. Target landscape: All other players are unknown; target selection is based on balancing kill coordination and block utility."
+ },
+ {
+  "key": "f63ac2f4-2539-419d-9c9f-5541d35970b8",
+  "cell": "chanteuse/night_action",
+  "action": "Use the block on the most lethal Town role (Vigilante) when that role is the target of the pack kill to ensure the elimination while preventing retaliatory night actions.",
+  "situation": "Mid-to-late game where the pack must neutralize specific Town threats while managing a shrinking player count. Information landscape: Information-rich: confirmed roles identified through night reports and daytime voting patterns. Stakes: High: eliminating lethal roles is necessary to prevent wolf death and reach parity. Forward exposure: Confirms the existence of a Chanteuse in the game but avoids direct attribution to a specific player. Target landscape: Town power roles with lethal (Vigilante) or investigative (Trailseer) capabilities."
+ },
+ {
+  "key": "5c77e06f-cac2-493b-98ce-24af9ddc49a4",
+  "cell": "chanteuse/night_action",
+  "action": "Prioritize blocking the Trailseer when the pack is executing a kill that requires concealment or needs to avoid being linked to specific night visits.",
+  "situation": "Protecting the pack's operational security while executing a high-value elimination. Information landscape: Information-rich: known investigative roles actively tracking night activity. Stakes: Critical: preventing information flow is essential to maintain the secrecy of wolf kills. Forward exposure: Signals roleblock presence; does not reveal identity. Target landscape: Information-gathering roles (Trailseer) that could potentially link wolf visits to victims."
+ },
+ {
+  "key": "ecca3bf4-1b7a-45e0-a004-ac721bb5536c",
+  "cell": "chanteuse/night_action",
+  "action": "In a 3-player endgame where a wolf win is achievable through parity, target the player capable of direct retaliation (Vigilante or Sigilist) with the roleblock, while simultaneously assigning the pack kill to the remaining threat.",
+  "situation": "3-player endgame where wolf parity is achievable through a single night's cycle. Information landscape: Information-rich: player roles and remaining ability counts are known through prior claims and confirmed deaths. Stakes: The difference between an immediate win and continued exposure to potential town retaliation. Forward exposure: Absolute: the game ends instantly upon execution, making reversibility irrelevant. Target landscape: The two non-wolf players, prioritizing the one with an active ability that could neutralize the kill or punish the attacker."
+ },
+ {
+  "key": "ac4828b1-d7ad-468e-bc0a-6698654961e8",
+  "cell": "fortune_teller/day_discussion",
+  "action": "Adopt an analytical, meta-commentary role on the mechanical implications of claims (e.g., how illusionists or trackers work) without taking a side in the specific accusation to remain neutral and avoid drawing night attention.",
+  "situation": "Day discussion where players are debating conflicting night action reports and mechanical roles. Information landscape: Variable; ranging from information-starved early game to info-rich investigative results. Stakes: The role must avoid unnecessary exposure while ensuring it survives to meet win conditions. Consensus: The village is typically split or focused on a single conflict between two players. My position: with majority Heat: None; the agent is currently an unnoticed participant. Target landscape: Players engaged in high-stakes claim/counter-claim conflicts or investigative reporting."
+ },
+ {
+  "key": "ace15d6b-c021-4395-86fd-028cfd059490",
+  "cell": "fortune_teller/day_vote",
+  "action": "When the town narrows suspicion to a binary choice between yourself and another unverified player, vote to eliminate the other player rather than abstaining to break the stalemate.",
+  "situation": "Daytime vote with parity imminent and the fortune teller isolated as an unverified neutral. Information landscape: Info-rich; confirmed power roles have corroborated their status, isolating the unverified players. Stakes: Elimination here directly results in the loss of the game and end of role progression. Consensus: The village is highly aligned on narrowing the field to the remaining unverified players. My position: holding out Heat: Extreme; the agent is a primary target of the village consensus. Target landscape: The fortune teller versus one other unverified player who also lacks corroborated role evidence."
+ },
+ {
+  "key": "de698d19-a436-4787-9c07-0e56f62746d4",
+  "cell": "fortune_teller/day_vote",
+  "action": "Prior to voting, demand the role claim of any player proposed for elimination, especially if that player is quiet or unvetted, to assess the risk of creating a lethal corpse that the necromancer could exploit.",
+  "situation": "Daytime vote with high potential for unintended negative consequences (creating necromancer food) via the elimination of town power roles. Information landscape: Information-starved regarding the targets; players are making decisions based on behavior rather than mechanical proof. Stakes: The vote determines whether town maintains parity or hands a power-granting corpse to the necromancer. Consensus: A reactive, sudden alignment of the village to eliminate an unconfirmed player to gain information. My position: With majority, but risking an uninformed endorsement of a lethal elimination. Heat: Low to negligible; the agent is generally perceived as a neutral observer. Target landscape: Unvetted candidates being pushed by the majority based on behavioral cues or incomplete track records."
+ },
+ {
+  "key": "57d1150a-6c4c-421a-920a-840832eb4770",
+  "cell": "fortune_teller/night_action",
+  "action": "Prioritize betting on players currently subject to public confrontation or high-pressure investigative claims, as these individuals face the highest mathematical probability of being targeted by aggressive factions to secure tactical advantages or remove threats.",
+  "situation": "Night action phase following a day of active conflict or role disclosure where evil factions are incentivized to eliminate high-visibility targets to regain momentum. Information landscape: Variable; high-predictability follows from open mechanical conflict or exposed roles, while low-predictability exists in early-game quiet phases. Stakes: Early-to-mid game state where identifying the kill priority is more reliable than guessing random noise; failure to bet correctly resets progress toward win conditions. Target landscape: Candidates identified through public mechanical conflict, claimed power roles, or targets of significant daytime voting pressure, rather than quiet or unverified players."
+ },
+ {
+  "key": "66b94b04-f66d-4003-b1cb-7c24630c4cc5",
+  "cell": "fortune_teller/night_action",
+  "action": "Reserve self-protection bets for later stages of the game where your role as a neutral has been narrowed down or you become an unintended target of elimination, rather than spending them early while you remain hidden.",
+  "situation": "The fortune_teller seeking to accumulate points while managing the risk of being targeted by night kills. Information landscape: Generally information-starved regarding the specific night kill choice if no obvious, high-priority public targets exist. Stakes: Managing limited resources (self-bets) to ensure both win-condition points are met without being removed by night kills. Target landscape: Any player with a high likelihood of being targeted by an attack versus holding the bet for future self-protection."
+ },
+ {
+  "key": "173d2be0-b659-40c3-97ef-4cdc317c775a",
+  "cell": "fortune_teller/night_action",
+  "action": "If the game is in a final three-player endgame, prioritize betting on the player most likely to be targeted for a night kill based on confirmed roles and threat levels, specifying their role to maximize point gain for the victory condition.",
+  "situation": "Endgame state where the Fortune Teller is within 1 point of the win condition and the kill target is highly predictable due to confirmed roles. Information landscape: High predictability regarding which player acts as the primary kill target for the remaining aggressive faction. Stakes: The Fortune Teller must secure the final points to win before the surviving evil faction eliminates all remaining players. Target landscape: Candidates consist of confirmed power roles who are natural wolf or lone killer targets, vs potential threats or oneself."
+ },
+ {
+  "key": "17097d96-c2e3-4e85-82c1-dd4a7fb0a001",
+  "cell": "fortune_teller/night_action",
+  "action": "Use a self-bet if there is no high-confidence kill target available or if the Fortune Teller is the most likely target for a lone killer to reach their own win condition.",
+  "situation": "Three-player endgame where the Fortune Teller is vulnerable to being the next target, potentially ending the game before the two-point threshold is met. Information landscape: Unclear kill intent from a lone killer where the Fortune Teller is a potential strategic target. Stakes: Survival is necessary to reach the point threshold, making self-preservation superior to risky prediction if the kill target is ambiguous. Target landscape: The Fortune Teller vs the most likely killer in an endgame scenario."
+ },
+ {
+  "key": "683e250e-ce14-4789-ad9e-38949c8c4b48",
+  "cell": "fortune_teller/night_action",
+  "action": "Prioritize betting on high-profile, non-protected players who represent the most immediate threat to the remaining evil faction, rather than betting on targets that are either publicly shielded by a confirmed healer or are the primary instigators of the evil faction's current demise.",
+  "situation": "Information-rich late-game environment where the fortune teller needs to secure points before the game ends due to town victory or elimination of all threats. Information landscape: Information-rich with established role claims, tracker/investigator reports, and clear kill targets. Stakes: Game-deciding stakes; the fortune teller must secure points rapidly before the game terminates through town victory or loss of target. Target landscape: Players categorized by their threat level to the remaining killers and their status as protected/exposed targets."
+ },
+ {
+  "key": "6e0e6a8c-5fe8-4004-9884-794b4ab2435d",
+  "cell": "healer/day_discussion",
+  "action": "Publicly confirm your role and the successful protection only when it directly enables a secondary tracker or utility role to narrow the suspect pool for a final elimination, rather than as a general status update.",
+  "situation": "A protected player has survived an attack, and the healer's claim is needed to solidify town consensus against the remaining lone killer or necromancer. Information landscape: Information-rich; the presence of confirmed roles and successful saves provides high-confidence evidence. Stakes: The protection of the investigator or other vital roles is the primary deterrent, but the healer is now a high-priority kill target. Consensus: High alignment; the village is consolidating around confirmed town roles and systematically clearing the remaining player list. My position: driving Heat: Low; healer is viewed as confirmed town following the protection notification. Forward exposure: Irreversibly exposes the healer as a priority target; must be timed to ensure the payoff (e.g., tracker intel) outweighs the loss of future protection. Target landscape: Remaining unconfirmed players against a pool of confirmed town roles; targets are identified by elimination logic. Public vs private: The public record of a saved target is established; the healer privately manages the protection sequence to lure or expose the remaining killer."
+ },
+ {
+  "key": "12bd920e-2115-48b3-ae52-501de798bc3b",
+  "cell": "healer/day_discussion",
+  "action": "Prioritize maintaining role concealment over explicit confirmation of protected targets; if pressed, validate the protection indirectly by endorsing the protected player's claims or results without linking them to your specific night action.",
+  "situation": "A night action has confirmed a protection, and the healer faces pressure to explain their visibility or validate a target. Information landscape: High information density regarding who was protected, but low knowledge on the healer's identity. Stakes: High, as the healer is the only reliable defense against the pack's night kill. Consensus: The village is debating mechanical interactions and behavioral leads among multiple claimants. My position: driving Heat: Low to neutral; exposure arises only if linked to a high-profile night visit. Forward exposure: Maintaining the bluff avoids committing the role to a target for the wolves; revealing it is irreversible and fatal. Target landscape: The room is split between multiple claimants and behavioral suspects; the target remains the healer's own identity. Public vs private: Publicly, the protection is an anonymous event; privately, the healer confirms the validity of the protected target."
+ },
+ {
+  "key": "6e1ba1c5-7850-4d2d-890d-6fa13a098267",
+  "cell": "healer/day_discussion",
+  "action": "If caught visiting a high-profile target and faced with immediate elimination, reveal the healer role only to force a stalemate or pivot, accepting that this trade-off effectively ends the healer's late-game utility to save the current day.",
+  "situation": "The healer is identified through night watch reports and faces imminent voting pressure. Information landscape: Information-rich due to sentinel reports of visitors. Stakes: Critical; the vote outcome determines the immediate survival of the healer and shifts the factional balance. Consensus: The room is focused on identified visitors to key players. My position: holding out Heat: High, due to observed night visits linked to investigator or sentinel claims. Forward exposure: Maximum and irreversible; forces the wolves to target the healer next, but secures the current day's survival. Target landscape: The healer faces potential elimination due to being seen at a night visit site. Public vs private: The public sees the visit to a target; the healer's revelation validates the visit as protective."
+ },
+ {
+  "key": "4f85c71a-2180-4208-b352-ce27e9b50bf9",
+  "cell": "healer/day_discussion",
+  "action": "Prioritize maintaining absolute anonymity by remaining silent and letting the village organize around established investigative evidence, provided the village consensus is already aligning with town-aligned outcomes.",
+  "situation": "Information-rich day discussion where investigative results are driving the elimination of known threats, leaving the healer no strategic need to reveal their identity. Information landscape: Information-rich with confirmed night results or investigative checks anchoring the village. Stakes: Stability is maintained by hard evidence; exposing the healer adds unnecessary risk to a non-swing situation. Consensus: The village is coalescing around hard evidence like investigative reports or night results. My position: with majority Heat: None; healer is currently undetected. Forward exposure: Maintaining silence preserves the anonymity of the protector, keeping the role hidden from wolf targeters and preventing premature neutralization by the chanteuse. Target landscape: The room focus is on established investigative leads (e.g., guilty checks or visit catches); the healer remains an unpressured, non-target background participant. Public vs private: Publicly no role is known; privately the healer has confirmed their successful protection, which allows them to track evil intent without revealing their vulnerability to blockers."
+ },
+ {
+  "key": "3f4c212d-ecc9-4832-b2c1-bea189a234cd",
+  "cell": "healer/day_discussion",
+  "action": "Reveal the healer role and confirm a specific night protection only when the village is paralyzed by conflicting, high-stakes claims and requires a definitive, verifiable anchor to proceed.",
+  "situation": "Stalled deliberation caused by contradictory claims; village needs a verified event to break the deadlock. Information landscape: High-information but fragmented, where night outcomes (saves) are known but unverified as to origin. Stakes: The vote determines the next elimination; failure to resolve the stalemate risks a town misfire. Consensus: The village is divided by competing claims and cannot reach a majority without proof. My position: driving Heat: Low; the agent is currently trusted or unexamined. Forward exposure: Claiming reveals the healer identity to the pack and chanteuse, trading future survivability for immediate, high-impact village cohesion. Target landscape: Conflicting role claims (e.g., two investigators or role-counterclaims) requiring verification to resolve. Public vs private: Publicly the room is in doubt between competing claims; privately the healer holds the definitive proof that validates one claim through confirmed night protection."
+ },
+ {
+  "key": "4b99d936-6ab4-489b-9bd3-377a4c1934e4",
+  "cell": "healer/day_discussion",
+  "action": "Maintain role concealment when another player falsely claims your role, but immediately counter-claim the following day if the village moves to accept the false claim as fact, preventing the entrenchment of the deceptive player.",
+  "situation": "A false claimant is attempting to co-opt the Healer role following a night where the actual Healer performed a successful save. Information landscape: Information-rich: night results are known, but the attribution of the protection is the core conflict. Stakes: Allows an evil player to control the village's perception of protector roles, leading to a loss of town power. Consensus: The village is evaluating conflicting night reports and is prone to accepting the most confident or first-offered role claim. My position: holding out Heat: Low to moderate; suspicion exists only if the agent was seen at the victim's door. Forward exposure: Commits to revealing identity, but mitigates the risk of a false claimant gaining unassailable village trust. Target landscape: The false claimant posing as Healer vs. the actual Healer holding the secret. Public vs private: Privately know you performed the actual protection, while publicly letting the room resolve, until the point where the false claim risks becoming the permanent consensus."
+ },
+ {
+  "key": "191b1d7b-6f62-457b-8b00-98626ee23194",
+  "cell": "healer/day_vote",
+  "action": "Prioritize voting with the emerging majority against the most likely suspect rather than attempting to split the vote or target outliers, especially when the healer is under suspicion or holds pivotal but unverified information.",
+  "situation": "A day vote with fragmented support where the healer's personal knowledge of night events conflicts with the room's prevailing narrative. Information landscape: Information-rich with specific, though contested, night reports and role claims available. Stakes: A tied vote or mis-elimination directly empowers the lone killer or wolf pack, significantly reducing the probability of a town win. Consensus: Fragmented consensus with players split across multiple wagons. My position: holding out Heat: High heat due to misaligned information or defensive role claims being questioned by the room. Forward exposure: Committing to the majority vote provides safety in numbers and minimizes the chance of a deadlock that benefits the opposing factions. Target landscape: Multiple candidates split between confirmed threats and suspected liars, driven by conflicting night report claims. Public vs private: Privately held information regarding roleblock or protection history contradicts public suspicions, creating a high-stakes gap."
+ },
+ {
+  "key": "b934aaa5-067f-4da9-b84c-6433c807b42f",
+  "cell": "healer/day_vote",
+  "action": "Prioritize voting against players identified by hard evidence such as tracking or investigative results over protecting one's own role identity when parity is threatened.",
+  "situation": "Mid-to-late game vote where evidence points to a specific threat, and the town is close to parity. Information landscape: Information-rich: clear tracks, established kills, or confirmed role identities allow for high-confidence voting. Stakes: A correct vote here prevents the wolves from gaining the numerical advantage needed to win the game. Consensus: The room is actively analyzing evidence-based links and looking to eliminate players connected to night-one wolf activity. My position: with majority Heat: Low to neutral; by following the evidence, you blend into the majority and avoid drawing unnecessary attention. Forward exposure: Committing to the consensus vote carries minimal exposure if the evidence is strong, as it aligns with the town's logical progression. Target landscape: Focus on identified suspects with verified negative evidence against them, prioritizing their elimination over unconfirmed suspicious players. Public vs private: Publicly align with clear evidence-based suspects while privately holding your healer role to maintain protection utility for the remaining town core."
+ },
+ {
+  "key": "c91d00df-d61c-4be4-b9fb-f1768e43ed89",
+  "cell": "healer/day_vote",
+  "action": "If facing a fatal wagon late-game, vote to eliminate the primary opposing accuser to break the deadlock and secure town victory, even if it forces a risky public stand.",
+  "situation": "Late-game survival deadlock where the healer is under fire from the last remaining wolf or lone killer. Information landscape: Information-rich: roles and player counts are known, making the final target identifiable through elimination of possibilities. Stakes: Failure to eliminate the evil role results in the town's immediate defeat by parity. Consensus: The village is divided, with the remaining evil role seeding doubt about the healer's integrity. My position: driving Heat: Critical; two or more votes already locked against you. Forward exposure: High exposure: taking a clear side in a binary survival conflict forces the remaining killer to target you if you survive the day. Target landscape: The choice is between the healer (you) and the leading accuser, who is an confirmed evil threat (e.g., Necromancer). Public vs private: Publicly defend your claim and attack the opposing accuser, leveraging your private knowledge that the accuser is the lone evil threat."
+ },
+ {
+  "key": "05054c0c-75a4-4c80-a04a-378217e65e72",
+  "cell": "healer/night_action",
+  "action": "Prioritize protection on high-value, active town assets like the investigator or remaining utility roles instead of players with exhausted abilities; if multiple high-value targets exist, rotate protection between them to complicate killer targeting.",
+  "situation": "The healer must decide which town role to protect when the lone attacker or remaining wolves are actively hunting high-impact, confirmed town information or utility roles. Information landscape: Information-rich: confirmed roles are known, and the killer's pressure on high-value targets is evident from recent night outcomes. Stakes: A successful save preserves a key investigator or utility role and keeps town in control of the voting and information flow; a failed save allows the evil faction to degrade town's coordination and potentially force parity. Target landscape: Candidates include confirmed investigators, active utility roles, or unconfirmed players who are central to town's current strategy, evaluated by their ongoing impact on game state."
+ },
+ {
+  "key": "d078ac9d-27f8-4e08-b02a-936db47fd4a6",
+  "cell": "healer/night_action",
+  "action": "Avoid publicly telegraphing your protection target during the day, even when claiming your role, to prevent the killer from bypassing your protection or targeting the healer directly.",
+  "situation": "The healer faces the risk of being specifically hunted by the lone killer or remaining wolves if they disclose who they intend to protect, allowing the enemy to strike elsewhere. Information landscape: Information-rich: town has strong leads, making the healer and their protection a target of strategic analysis by the enemy. Stakes: Telegraphing targets allows killers to evade protection, leading to the loss of key town roles or the healer themselves; keeping targets private preserves the 'unknown' factor that discourages optimal play from the enemy. Target landscape: The room-at-large; the decision hinges on whether to be transparent to gain trust versus being opaque to maintain the efficacy of the protection."
+ },
+ {
+  "key": "f95657e7-1e7d-4301-884b-dc2bd24c8cf6",
+  "cell": "healer/night_action",
+  "action": "Rotate protection to secondary Town power roles when the primary is already safe, or when a secondary role's survival provides the only remaining chance for an offensive trade (e.g., a Sigilist with charges).",
+  "situation": "Managing multiple potential targets for the final remaining wolf or lone killer. Information landscape: Information-rich, tracking roles and potential for reactive kills. Stakes: A single death is a win for the final evil player; protection must enable a successful town trade or survival. Target landscape: Competing Town roles (e.g., Sentinel, Sigilist) based on their remaining utility and the risk of the current night's attack."
+ },
+ {
+  "key": "724d1885-d5b5-4639-b283-de6fd09bbc93",
+  "cell": "healer/night_action",
+  "action": "On Night 1, prioritize protecting players who showed high initiative or town-aligned utility during the opening discussion, even if they have not claimed, as blind protection of 'neutral' or 'quiet' players provides no investigative or strategic leverage.",
+  "situation": "Initial night cycle with no established leads or kill history. Information landscape: Information-starved, as no votes have occurred and no roles are confirmed. Stakes: Early game protection serves to prolong town-aligned life expectancy rather than securing a specific win condition. Target landscape: Nine other living players; zero confirmed roles; basis is entirely behavioral analysis of Day 1 opening remarks."
+ },
+ {
+  "key": "4983291a-eaa2-4c1f-a448-ba2fc6bf25c6",
+  "cell": "healer/night_action",
+  "action": "In late-game scenarios with confirmed roles, prioritize protecting the most valuable town utility role (e.g., Trailseer or Sentinel) even if that player was successfully protected in the previous night cycle, to negate the highest-probability targets of the lone killer or remaining wolves.",
+  "situation": "Post-elimination landscape where roles are confirmed and the necromancer or wolves are actively targeting key town assets. Information landscape: Information-rich, relying on confirmed role interactions and revealed voting or kill records. Stakes: The survival of the healer's target directly dictates the probability of identifying the final evil actors. Target landscape: Confirmed town roles with high utility vs. unconfirmed or low-utility players."
+ },
+ {
+  "key": "e036e409-1e55-4031-ac37-560175ec5acd",
+  "cell": "illusionist/day_discussion",
+  "action": "When identified as a visitor by a tracker or sentinel, acknowledge the visit as a benign action (e.g., a check-in or attempt to verify a player) without committing to a specific role claim, and pivot the discussion to the anomaly of multiple overlapping visits.",
+  "situation": "Being identified as a visitor during the day's discussion. Information landscape: Information-starved regarding alignments, but potentially rich in night visit data. Stakes: Daytime scrutiny is high due to potential role verification; maintaining a low profile is essential for pack longevity. Consensus: The village is generally uncertain and gravitating toward an abstain. My position: with majority Heat: Low to moderate depending on whether the visit was flagged by a tracker. Forward exposure: Commits the player to having visited, which necessitates a plausible role explanation later, but neutralizes immediate pressure. Target landscape: The player being tracked and the other visitors. Public vs private: Publicly frames visits as routine town behavior while privately hiding the pack's tactical movements."
+ },
+ {
+  "key": "fd118812-d19d-4952-a09e-2b14c1475c1b",
+  "cell": "illusionist/day_discussion",
+  "action": "Endorse credible-sounding town information (like sentinel reports or investigator results) that clears others or identifies clear third-party enemies to build social capital.",
+  "situation": "Building social standing while the town parses night results. Information landscape: Information-rich when evidence is solid; sparse when discussion is based on speculation. Stakes: The illusionist must remain above suspicion to execute long-term concealment strategies. Consensus: The room is seeking consensus on whom to scrutinize. My position: with majority Heat: None; actively positioning oneself as a helpful village voice. Forward exposure: High reversibility; aligning with verified town data makes the agent appear town-aligned without requiring a specific role claim. Target landscape: Suspects flagged by the village versus the general desire to abstain. Public vs private: Publicly supports the village's evidence gathering while privately knowing which parts of that evidence are flawed or misaligned with pack goals."
+ },
+ {
+  "key": "d66052e3-ef5d-4ff5-a4ec-4129cade57a9",
+  "cell": "illusionist/day_discussion",
+  "action": "When caught at a crime scene by a role-reporting observer, perform an immediate, high-confidence fake-claim as a protective role (e.g., Healer or Sigilist) to reinterpret your presence as an act of duty rather than aggression.",
+  "situation": "Caught performing a visit at a location where a kill occurred and the victim's status is known. Information landscape: Information-rich: tracking/watch results are active and present. Stakes: Immediate risk of execution if the visit is not explained by a plausible, high-priority town role. Consensus: The village is evaluating the reliability of conflicting reports and claims. My position: driving Heat: High, due to direct mechanical evidence of presence. Forward exposure: Commits to a specific role claim that must be maintained until the role is eliminated or the game ends. Target landscape: The observer reporting the visit, the target of the visit, and the agent's own role. Public vs private: I claim to have performed a protective service while privately I performed an attack."
+ },
+ {
+  "key": "7cefd3f2-22d3-4821-9cf8-f3a3ef3439fd",
+  "cell": "illusionist/day_discussion",
+  "action": "When facing direct mechanical evidence (tracking/watch), pivot the village's attention toward an existing mechanical conflict between other players to force a consensus on a secondary target.",
+  "situation": "Facing direct incriminating evidence while the village is already engaged in a separate, intense mechanical dispute. Information landscape: Information-rich: multiple investigators have conflicting data. Stakes: High, but mitigated by the presence of other urgent threats to town. Consensus: The village is locked into a binary choice between two other suspicious actors. My position: with_majority Heat: High, but distributed across the room due to other scandals. Forward exposure: Maintains the status quo by delaying scrutiny but leaves the mechanical evidence unresolved. Target landscape: Multiple players caught in conflicting claims or evidence. Public vs private: I treat the direct evidence against me as an error or fabrication while ignoring my own role culpability."
+ },
+ {
+  "key": "543a3d6c-9c5b-471a-acd1-e18fbc602b12",
+  "cell": "illusionist/day_discussion",
+  "action": "Avoid directly contradicting investigators when voting history is public; instead, pivot consensus toward a third-party target, such as the lone killer, by emphasizing the necessity of removing neutral threats to the village's safety.",
+  "situation": "Post-partner-death defense against voting scrutiny. Information landscape: Information-rich with voting logs and revealed roles. Stakes: Elimination of a known wolf partner makes the illusionist the primary target; diverting the town's focus is required for survival. Consensus: Village is looking for remaining threats after a wolf death. My position: holding_out Heat: High due to voting records. Forward exposure: Redirecting heat to the serial killer or other neutral roles requires alignment with town, effectively signaling loyalty to the town's goals. Target landscape: The Illusionist vs a suspected neutral/lone killer candidate. Public vs private: The village assumes you are associated with the dead partner; you must reframe the narrative by highlighting shared enemies."
+ },
+ {
+  "key": "4125c626-3471-4694-9f2c-1aa13fd5e655",
+  "cell": "illusionist/day_discussion",
+  "action": "Engage in the discussion by offering a plausible, low-stakes analysis of the room's current investigative claims rather than remaining silent. When pressed on your own night activity or lack thereof, provide a non-specific claim that aligns with a town-aligned role's typical behavior to avoid appearing as an outlier.",
+  "situation": "A period of intense town investigative role claiming where total silence draws high visibility and suspicion. Information landscape: Information-rich environment where town roles are cross-referencing activity logs. Stakes: The game state is currently stable; survival depends on avoiding individual calls for accountability by appearing engaged. Consensus: The village is coalescing around verifying the reliability of active investigative claimers and managing the vote. My position: holding out Heat: Low; currently only under scrutiny due to perceived inactivity or lack of participation in the consensus. Forward exposure: Committing to a fake claim creates potential for contradiction if other roles present conflicting logs, but provides immediate cover against suspicion for lurking. Target landscape: The room is focused on verifying investigative roles and identifying inactive players; no one is currently being targeted for execution. Public vs private: Public view assumes no knowledge of the wolves' failed kill on an immune target; I hold private awareness of the pack's failed attack."
+ },
+ {
+  "key": "e9f1e0f8-57de-4fe7-86fc-7d6cddbf5c10",
+  "cell": "illusionist/day_discussion",
+  "action": "Avoid binary counter-claims against confirmed information roles; instead, pivot by offering a plausible third-party suspect or creating a complex web of doubt regarding the role's limitations rather than denying the role's truth.",
+  "situation": "Caught in a direct credibility duel against a town investigator or trailseer with high-quality evidence. Information landscape: Information-rich with concrete reports from town roles. Stakes: Elimination here confirms the illusionist's role and significantly impacts the wolf pack's remaining resources. Consensus: The village is coalescing around a specific evidence-backed accusation. My position: holding out against a forming majority. Heat: High and critical, based on specific investigative results or tracking data. Forward exposure: High; direct denials often fail and force a binary choice that eliminates the illusionist. Target landscape: The information role holding the evidence against the illusionist and the broader village consensus. Public vs private: Privately knows the evidence is accurate and incriminating, while publicly pushing a narrative that disputes the reliability or intent of the source."
+ },
+ {
+  "key": "92caa3d0-416f-44a8-b76c-4101b7716b91",
+  "cell": "illusionist/day_discussion",
+  "action": "When under specific evidentiary pressure such as a tracking report or voting record linked to a revealed partner, pivot immediately to offensive accusation against a non-confirmed player rather than defending against the technical accusation, as technical defenses only anchor the village to the existing evidence.",
+  "situation": "Agent is under direct suspicion due to hard investigative or voting evidence after a partner's elimination. Information landscape: Information-rich; established records or reports define the room's consensus. Stakes: Elimination of the Illusionist here results in the immediate collapse of the wolf faction's remaining influence. Consensus: Village is highly aligned against the agent due to concrete night-action reports or voting patterns. My position: holding out Heat: Critical, tied to revealed partner or dead trailseer's findings. Forward exposure: High risk of total exposure; requires a hard pivot that forces the village to re-evaluate the entire board rather than focusing on the agent's record. Target landscape: The agent is the primary target; must select an unconfirmed player to redirect the focus onto. Public vs private: Public suspicion is anchored to hard evidence (trackings/voting records) while private knowledge concerns concealed bodies or hidden roles."
+ },
+ {
+  "key": "760c60c6-f0b7-4715-8090-0984be30ee8b",
+  "cell": "illusionist/day_discussion",
+  "action": "Avoid acknowledging or validating past voting records that implicate you; instead, actively pivot the conversation toward the lone killer or the neutral player as the only remaining threat to the town's survival.",
+  "situation": "Late-game scenario with four players remaining where the illusionist is under immediate pressure from confirmed town roles. Information landscape: Information-rich; previous night actions and revealed wills are known. Stakes: The survival of the illusionist is the determining factor for the wolf team winning. Consensus: The remaining town members are focused on eliminating the perceived remaining evil players. My position: holding out Heat: High; the illusionist is a primary target due to past voting patterns. Forward exposure: Irreversible; any direct defensive engagement that confirms suspicion is fatal, so must pivot to external threats. Target landscape: The Illusionist and a neutral/lone killer candidate. Public vs private: Publicly feign innocence while privately managing the elimination of the remaining lone killer to force a win condition."
+ },
+ {
+  "key": "ff662b9e-0901-46e1-9f2f-e0563f060830",
+  "cell": "illusionist/day_vote",
+  "action": "Prioritize aligning with village consensus or neutral targets if under suspicion, avoiding direct confrontation with confirmed town roles unless an elimination is certain and necessary for immediate survival.",
+  "situation": "The agent is facing significant suspicion or a 1v1 credibility duel due to night-action tracking or counter-claims. Information landscape: Information-rich environment involving tracking and investigative reports. Stakes: The vote determines if the agent remains viable to influence the remaining game or is eliminated immediately. Consensus: The village is consolidated around eliminating suspected evil players based on evidence. My position: holding out Heat: High to critical suspicion levels based on night-action tracking or role claims. Forward exposure: A direct counter-vote against a town claimant creates an irreversible link, exposing the agent and partner if the vote fails. Target landscape: High-credibility town claimants versus secondary targets or neutral candidates. Public vs private: The agent must hide its alignment while the village relies on conflicting claims or data that potentially unmask the agent."
+ },
+ {
+  "key": "4ce42380-a0b0-407c-8c00-9e448eb7499d",
+  "cell": "illusionist/day_vote",
+  "action": "Avoid casting rogue votes that diverge from village consensus in information-starved phases; such moves uniquely identify the agent as a threat to both town and other factions.",
+  "situation": "A low-information day where the village chooses caution, risking exposure for the agent if they act independently. Information landscape: Information-starved environment with no verified leads. Stakes: High risk of unnecessary exposure versus potential to steer the game. Consensus: The room is leaning toward cautious play or abstinence due to lack of evidence. My position: holding out Heat: Low heat; the village is mostly uninformed about the game state. Forward exposure: Isolated voting leaves a permanent, irreversible record that draws attention without the protection of consensus. Target landscape: Targets identified through private knowledge (e.g., failed attacks on immune players). Public vs private: The agent is aware of immune targets or specific threats that the village is currently blind to."
+ },
+ {
+  "key": "0824598b-c6d9-4b39-a24a-64cd0f7f64f1",
+  "cell": "illusionist/day_vote",
+  "action": "When the village consensus moves to abstain on a low-information day, mirror the abstain vote regardless of any perceived pressure to act, thereby preventing the creation of a public voting record that ties you to your partner.",
+  "situation": "Early game day vote with no clear guilty evidence and high village inclination to abstain. Information landscape: Information-starved, relying purely on behavioral reads and lack of hard leads. Stakes: A premature or outlier vote provides a permanent record that serves as conclusive evidence if a partner is later outed. Consensus: The room is information-starved and naturally gravitates toward abstention to avoid mis-elimination. My position: holding out Heat: None; the agent is currently maintaining a neutral profile. Forward exposure: Voting to abstain keeps the record clean and avoids marking the agent's voting history with an anomalous, partner-aligned outlier. Target landscape: The consensus abstain vs. any minority push; abstain is the safest play to avoid exposure. Public vs private: The agent knows they are wolves while the village perceives a standard low-information day with no reason to risk a misfire."
+ },
+ {
+  "key": "42cfee78-b075-4827-8029-11fc1605fef8",
+  "cell": "illusionist/day_vote",
+  "action": "Prioritize building a secondary voting bloc around an alternative, high-suspicion non-wolf candidate rather than casting a lonely protest vote against your own accuser, to force the room to weigh competing threats.",
+  "situation": "The illusionist faces an unstoppable elimination wagon triggered by an exposed partner and irrefutable tracking evidence. Information landscape: Information-rich with established voting links and tracking reports. Stakes: Elimination here likely results in the loss of the wolf faction; the agent must disrupt consensus at all costs. Consensus: The room is highly unified against the agent based on past voting history and exposed partner ties. My position: holding out Heat: Critical; the agent is the primary target due to voting records and tracking. Forward exposure: Commits the agent to a specific target; irreversible if it fails to sway the room but essential for survival. Target landscape: The current accuser versus a third-party, non-wolf target with low-to-moderate existing suspicion. Public vs private: The agent knows they are the primary target due to past associations, while the public sees only a chain of evidence; the agent must leverage the ambiguity of other players to redirect the heat."
+ },
+ {
+  "key": "1a76a4a0-a38c-45de-ad7e-262a0cdadf08",
+  "cell": "illusionist/night_action",
+  "action": "Prioritize killing the most active information-gatherer (Investigator/Sentinel/Trailseer) while using the illusionist conceal only if the kill is likely to be investigated by a protective role or tracker to prevent confirmation of the wolf's identity.",
+  "situation": "The illusionist is the final surviving member of the wolf pack attempting to neutralize the town's primary information-gathering roles to prevent them from solidifying their suspect pool. Information landscape: The information landscape is highly constrained and rich, with active investigators and sentinel logs defining the board state, making every kill high-stakes for the wolf's exposure. Stakes: The game is at a terminal threshold where any misplay or discovery leads to an immediate town victory via vote or defensive strike. Forward exposure: Committing the final concealment exhausts the illusionist's unique defensive utility, making the role entirely dependent on social survival and misdirection in the final days. Target landscape: The candidates comprise confirmed town roles (Investigator, Sentinel, Sigilist) based on their proven night results, rather than unconfirmed or quiet players who pose less immediate threat to the wolf's survival."
+ },
+ {
+  "key": "70cfc8b0-27e3-4222-bc42-c506b90c0f1c",
+  "cell": "illusionist/night_action",
+  "action": "Avoid carrying the kill personally if the target is likely protected by a sigilist or healer, instead delegating the kill to a reanimated entity if possible or stalling the kill to verify for traps.",
+  "situation": "The illusionist faces a high risk of retribution from defensive town roles (specifically the Sigilist) who have signaled or placed traps on potential targets. Information landscape: Evidence is clear regarding the presence of defensive roles; failure to account for confirmed defensive trap-layers results in immediate elimination. Stakes: The wolf is the primary suspect and must avoid self-exposure to survive the night and reach parity through strategic maneuvering. Forward exposure: A direct attack on a protected or trapped target forces a reveal of the attacker's identity and causes immediate death, negating any strategic gains from the concealment. Target landscape: Targets are assessed based on their potential for trap placement (Sigilist) or protection (Healer) rather than their investigative status to ensure the safety of the assassin."
+ },
+ {
+  "key": "46b9d27e-a0a3-467e-8859-9eb4b9fa606b",
+  "cell": "illusionist/night_action",
+  "action": "Prioritize carrying the pack kill yourself while using an illusionist charge to conceal the victim; this action is safest because it masks the carrier's visit entirely from Sentinel/Trailseer roles and prevents the role reveal, providing the illusionist with private, actionable intelligence on the victim's identity.",
+  "situation": "Initial wolf night action where the illusionist must decide between preserving charges or suppressing town information. Information landscape: Information-starved; no public claims or voting patterns exist. Stakes: High initial impact on town morale and early investigative momentum. Forward exposure: Commits one charge to secure the kill trace; the exposure is zero since the carrier's visit is erased. Target landscape: Unclaimed players in an information-starved opening; selecting quiet targets minimizes defensive resistance."
+ },
+ {
+  "key": "163395b5-a1bc-4b5b-a657-b365b05b638f",
+  "cell": "illusionist/night_action",
+  "action": "If the pack's night kill fails due to target night-immunity, do not use the conceal charge; the lack of a death announcement preserves the ability and privately identifies the Lone Killer, allowing the pack to frame the target during the next day phase.",
+  "situation": "The pack strike encounters an immune target, shifting the information balance in the wolf pack's favor. Information landscape: Information-starved regime before claims are established. Stakes: Allows discovery of the Lone Killer without spending limited wolf resources. Forward exposure: Preserves both charges for later game-swinging moments; keeps the illusionist's identity hidden while gaining strategic leverage. Target landscape: Unknown targets, one of whom potentially possesses night-immunity (the Lone Killer)."
+ },
+ {
+  "key": "7d457aad-1f2f-4539-bb91-85034bab7898",
+  "cell": "illusionist/night_action",
+  "action": "Prioritize concealment only when the target is high-threat to the pack; if the target is likely protected by a healer, hold the charge to avoid revealing the illusionist's presence through an unnecessary visit.",
+  "situation": "Managing limited concealment charges under the risk of healer protection or potential lone killer interference. Information landscape: Info-rich environment where town power roles have exposed their identities. Stakes: Misusing concealment on protected targets wastes a finite resource while exposing the illusionist to potential tracker investigations. Forward exposure: Concealment usage is only visible if the kill succeeds; if the healer saves the target, the charge is preserved and no evidence of the illusionist's visit is revealed. Target landscape: Active town power roles versus unconfirmed/useless targets; evidence is based on public claims and night visit data."
+ },
+ {
+  "key": "ae9d5331-8095-4b0d-a9fc-851e9eec123f",
+  "cell": "investigator/day_discussion",
+  "action": "Publicly claim investigator and present hard evidence (guilty checks or logical contradictions) to drive a binary confrontation, specifically focusing on players whose claims conflict with mechanical realities of the setup.",
+  "situation": "Day discussion where investigator results or logical deductions can immediately resolve ambiguity or counter false claims. Information landscape: Information-rich, characterized by confirmed healer saves or impossible role claims. Stakes: High impact; early reveal forces the wolves into defensive or aggressive play, potentially wasting their kill on a role they can no longer hide from. Consensus: The village is often searching for a lead and ready to align behind credible, evidence-backed roles. My position: driving Heat: Low to moderate; heat is typically neutralized by the immediate strength of the evidence presented. Forward exposure: Irrevocably exposes your identity as the investigator, committing your role to the room and likely marking you as the primary target for night attacks. Target landscape: The player under investigation or the player presenting a conflicting claim/impossible information. Public vs private: Privately held unique investigation result or mechanical deduction that directly disproved a public claim or suspicious behavior."
+ },
+ {
+  "key": "56082b30-7bcf-4195-b5a2-b1b43bae289e",
+  "cell": "investigator/day_discussion",
+  "action": "If you hold a clear result, announce it early to build a verified town core, providing a stable anchor for the village to coordinate their voting against more suspicious players.",
+  "situation": "Early game discussion where the village is splintered on who to target, and an investigator can bridge the gap between competing reads. Information landscape: Information-rich; presence of clear confirmed events (like sentinel reports) allows for synergistic confirmation. Stakes: Critical; establishing trust in your results creates a reliable foundation for subsequent days. Consensus: The room is actively debating suspects and looking for confirmation of truth. My position: with_majority Heat: Low; you are perceived as a helpful, transparent information source. Forward exposure: Reveals your role early, trading future safety for immediate influence over the room's consensus. Target landscape: Unchecked players and those currently under suspicion by others. Public vs private: Publicly shared clearing results to stabilize the village's perspective when multiple accusations are flying."
+ },
+ {
+  "key": "54454a4b-b1d5-4c8c-a9ca-41c9d8caceae",
+  "cell": "investigator/day_discussion",
+  "action": "When holding non-guilty investigative results in an information-starved early game, withhold role disclosure and instead contribute analytical mechanical insights to the room's discourse to maintain invisibility while staying aligned with the consensus.",
+  "situation": "Early game day discussion with no significant investigative leads, where revealing roles prematurely grants evil factions a high-priority kill target. Information landscape: Information-starved; data consists of unverified tracking claims and unknown deaths. Stakes: Early survival is paramount for the investigator to secure multiple checks; outing early exposes the role to an immediate night kill by the wolves. Consensus: The town is largely unaligned or leaning toward abstention due to a lack of concrete evidence. My position: with majority Heat: Low; the agent is perceived as a helpful town participant without drawing attention to their specific investigative capacity. Forward exposure: Low exposure; maintaining anonymity keeps the role as a protected asset for later, higher-value information gathering. Target landscape: The general player pool, focusing on silent or suspicious players based on behavioral patterns rather than forced role reveals. Public vs private: Privately hold confirmed town checks or null results while publicly mirroring the room's baseline caution."
+ },
+ {
+  "key": "983313e1-a1fd-4a90-879d-866d133ab3c9",
+  "cell": "investigator/day_discussion",
+  "action": "Publicly consolidate the state of confirmed roles and established night reports to create a verified 'anchor' for the village; if you have no new information, use the existing verified role claims to frame the remaining search as a forced-choice binary between unconfirmed players.",
+  "situation": "A late-game scenario where the town must eliminate a lone wolf or killer from a limited pool of candidates. Information landscape: Information-rich: relies on established role claims and morning report data (attacks/saves). Stakes: The investigator must narrow the candidate pool to ensure the town hits a non-town role before parity is reached. Consensus: The village is seeking direction from informed roles after recent night events. My position: driving Heat: Low to moderate; acting from a position of established or emerging trust. Forward exposure: Commits the investigator to a leadership role, making them a high-priority target for night kills. Target landscape: Focuses the room on unclaimed or unverified players by establishing the boundary of 'cleared' utility roles. Public vs private: The agent leverages private knowledge of their own confirmed status and others' revealed roles to shape public consensus."
+ },
+ {
+  "key": "4eeebf9b-77e8-4994-97c7-c4e1a31be79d",
+  "cell": "investigator/day_discussion",
+  "action": "When accused of fabrication, immediately pivot to a counter-accusation by linking the skeptic to established voting patterns or behavioral discrepancies involving a confirmed evil player.",
+  "situation": "A vocal player attempts to discredit the investigator's claim to protect themselves or an ally. Information landscape: Information-rich: utilizes voting records and confirmed evil reveals. Stakes: Failing to neutralize the skeptic risks the investigator being eliminated or the town losing momentum. Consensus: The village is divided or passive, awaiting evidence to form a target for elimination. My position: driving Heat: Moderate to high; the investigator is under active suspicion. Forward exposure: Directly exposes the investigator's role identity, accepting the risk of being targeted in exchange for immediate offensive utility. Target landscape: Targets the skeptic or vocal dissenter who is actively trying to undermine the investigator's claim. Public vs private: The investigator reveals a guilty check publicly to neutralize the skepticism of a vocal dissenter."
+ },
+ {
+  "key": "c1885a4f-009b-4e1f-bba6-643ed0ffdc1f",
+  "cell": "investigator/day_discussion",
+  "action": "When revealing your investigator role, prioritize sharing checks that provide new, actionable information on living suspects rather than confirming information already public (e.g., dead players), and explicitly specify that a 'not suspicious' result identifies a non-wolf but does not exclude the serial killer.",
+  "situation": "Information-rich day discussion where investigative results are needed to narrow down an active wolf pack and a lone killer. Information landscape: Information-rich; game-confirmed deaths and role interactions define the current pool of suspects. Stakes: Elimination of the wrong player allows the remaining wolf or lone killer to reach parity rapidly. Consensus: The village is seeking to filter suspects by aggregating claims; a credible investigator claim helps anchor this consensus. My position: driving Heat: Low, assuming the claim is timely and supported by the internal logic of the game state. Forward exposure: Commits the investigator to a public role, guaranteeing that wolves will identify and target the player for elimination or concealment in the coming nights. Target landscape: Unconfirmed players who have not been vetted by the investigator, excluding those already eliminated or publicly confirmed. Public vs private: Publicly clarifying the scope of a 'not suspicious' read (it only covers the wolf faction) keeps the town from prematurely clearing players who could still be the serial killer."
+ },
+ {
+  "key": "17d84048-25c2-4e2e-a285-158284309dd5",
+  "cell": "investigator/day_vote",
+  "action": "Prioritize voting for players whose public voting history aligns with known wolves, even if you lack a specific investigative check on them; verify candidates against confirmed voting records rather than relying solely on unverified behavioral suspicion or silent players.",
+  "situation": "Daytime vote with multiple unverified players and a need to narrow the field using evidence-backed deduction. Information landscape: info-rich voting records allow for logical elimination of suspicious clusters. Stakes: Eliminating town power roles significantly increases lone killer and wolf win odds by providing bodies for reanimation or reducing defensive numbers. Consensus: Village looks for behavioral cues or lurkers in the absence of hard evidence. My position: driving Heat: Low; investigator has established credibility through confirmed findings. Forward exposure: Commits the investigator to a public stance on voting patterns, marking them as an enemy to remaining evil players. Target landscape: Candidates with suspicious voting alignment versus unconfirmed, quiet, or neutral players. Public vs private: Publicly use confirmed evil players to force voting accountability on their associates, keeping private investigation findings in reserve for when the suspect pool is smaller."
+ },
+ {
+  "key": "670e8131-e6d3-496e-9154-e3525e26241b",
+  "cell": "investigator/day_vote",
+  "action": "Avoid directing the lynch toward players who have remained quiet or abstained if they have not demonstrated antagonistic voting patterns, as such targets are frequently high-value town roles like the vigilante.",
+  "situation": "Impulse to eliminate non-contributors during day vote. Information landscape: Information-starved regarding quiet individuals; risk of targeting town power is extreme. Stakes: A single mislynch of a town power role often creates a win condition for the necromancer via reanimation. Consensus: Village is prone to selecting low-engagement players as easy lynch targets. My position: holding out Heat: Low; status as a confirmed role provides safety. Forward exposure: Saves the town from an unintentional mislynch that empowers the necromancer or removes town utility. Target landscape: Quiet players or abstainers versus players with active, suspicious voting logs. Public vs private: Privately know that your investigation checks are depleted or limited; publicly signal caution against voting on behavioral hunches."
+ },
+ {
+  "key": "41fc2d87-fed6-4461-915b-194fa8a316ee",
+  "cell": "investigator/day_vote",
+  "action": "If the Investigator possesses corroborated evidence (e.g., Trailseer or Sentinel reports) that contradicts the town's majority consensus, cast the vote for the evidence-backed target regardless of room alignment. Prioritize verifiable visit records over popular claims to force the elimination of identified threats.",
+  "situation": "A disputed role claim where room consensus actively ignores cross-role verification evidence. Information landscape: Information-rich: existence of specific role interaction data (e.g., Trailseer reports) that allows for factual deduction. Stakes: Eliminating the wrong person effectively hands the game to the wolves by depleting protected town power. Consensus: The town is heavily aligned behind a single, potentially false, claim based on speed and narrative. My position: holding out Heat: Minimal; established town credibility allows the investigator to dissent without immediate scrutiny. Forward exposure: Commits the investigator to an unpopular position that risks appearing obstructive if the evidence is not immediately accepted. Target landscape: Multiple competing claimants where one is supported by cross-role verified movement evidence and the other is based on unsubstantiated initial claims. Public vs private: Publicly aligns with the town's consensus on targets, but privately holds evidence that challenges the legitimacy of the currently pushed player."
+ },
+ {
+  "key": "172bd922-8ec0-4a33-b597-7c1e1c314187",
+  "cell": "investigator/day_vote",
+  "action": "Upon obtaining a suspicious investigation result on a player, immediately pivot to lead an offensive voting campaign against them, providing the investigation result as the anchor to build town consensus despite potential pushback.",
+  "situation": "A confirmed suspicious investigation result against a player is available during a voting phase where town is looking for direction. Information landscape: The availability of a hard, verifiable investigative lead shifts the game from speculation to information-rich decision making. Stakes: The vote determines which faction controls the mid-game trajectory; a successful elimination confirms town role integrity and removes an opponent. Consensus: The village is typically waiting for definitive information, making a strong, evidence-backed lead highly effective at shifting momentum. My position: driving Heat: Moderate to high; the accused player or their allies will typically challenge the legitimacy of the check. Forward exposure: Commits the investigator to the accuracy of their check; if the target is found town, the investigator will be highly exposed as the primary suspect for the following day. Target landscape: The suspected player with the suspicious result vs. general suspicion/behavioral noise from other players. Public vs private: Privately hold a verified investigation check result that the public currently lacks, creating a necessary information asymmetry to drive town action."
+ },
+ {
+  "key": "ff8b2459-1691-4a27-9800-df768f24d11a",
+  "cell": "investigator/day_vote",
+  "action": "In a 1v1 counter-claim situation for the unique investigator role, immediately force a binary vote to eliminate the rival, prioritizing the role's preservation and integrity over gradual information gathering.",
+  "situation": "A direct confrontation with a player falsely claiming the investigator role. Information landscape: A closed-setup game dictates exactly one investigator, making the false claim a hard fact to be exploited for an easy elimination. Stakes: Losing this 1v1 would lead to the loss of the investigator, providing wolves with a critical advantage and near-parity. Consensus: The room is polarized by the conflict of the two claims, requiring immediate resolution to restore town coherence. My position: driving Heat: Extremely high; the counter-claimant will focus suspicion on you, and the village will view you as the day's primary pivot point. Forward exposure: Eliminates ambiguity but forces you to be the primary target for night attacks from the wolf pack. Target landscape: A binary choice between you and the false claimant, eliminating the need to evaluate other neutral or town players. Public vs private: Privately know you are the legitimate role holder while the public is undecided, necessitating a forced reveal to win the credibility battle."
+ },
+ {
+  "key": "83a1b961-947c-44a3-8e1b-7e7de906d497",
+  "cell": "investigator/night_action",
+  "action": "On Night 1, prioritize investigating players who display behavioral anomalies or aggressive voting patterns in early discussion rather than testing random players; if no such player exists, conserve the check for the next night to improve the signal-to-noise ratio.",
+  "situation": "Early game investigator decision-making under information-starved conditions. Information landscape: Information-starved, relying on behavioral nuance rather than hard evidence. Stakes: Early resource management is high-stakes; burning checks on random targets risks false negatives or death before reporting. Target landscape: Unconfirmed players with varying levels of discussion contribution; prioritize those with outlier behaviors."
+ },
+ {
+  "key": "04b4a3ff-73f9-4b9f-a6cb-f9afa08377a2",
+  "cell": "investigator/night_action",
+  "action": "If exposed as an investigator, use your final check to verify the alignment of a high-contributing, analytical player who has supported town-aligned moves; a confirmed innocent ally is critical for late-game coordination when the investigator is a primary kill target.",
+  "situation": "Late-game investigator survival and consensus building while under threat. Information landscape: Moderately informed, with established claims and some known roles. Stakes: High; the investigator is an exposed, high-value target and must maximize the utility of the final check before potential elimination. Target landscape: Analytical and proactive town-aligned players who have publicly validated town consensus."
+ },
+ {
+  "key": "f69fd752-56ca-413f-abfb-b70e9c199049",
+  "cell": "investigator/night_action",
+  "action": "If a player has been identified by other power roles (Trailseer/Sentinel) or was the opponent in a failed counter-claim, prioritize them for your remaining investigation check to finalize their alignment.",
+  "situation": "A player is under suspicion due to external night visit data or conflicting role claims, requiring verification to resolve the ambiguity. Information landscape: Information-rich: tracking results and contradictory claims provide a clear focal point. Stakes: Verification of a high-profile suspect can solidify town consensus and force a lynch, preventing further misinformation. Target landscape: Players highlighted by other role investigations or contradictory claims versus unvetted quiet players."
+ },
+ {
+  "key": "4b1ddb26-3551-4fdc-bee2-bf2f9f640fec",
+  "cell": "investigator/night_action",
+  "action": "If the game state is information-starved and no clear leads exist, check an active, vocal participant who has not claimed a role to build a verified town anchor.",
+  "situation": "Multiple claims are unverified and the town lacks a clear direction, necessitating the establishment of a trusted baseline. Information landscape: Information-starved: speculative claims and no confirmed role interactions. Stakes: Building trust is necessary to move the village toward collective action when no hard leads are present. Target landscape: Active participants versus quiet/unvetted players in a game lacking confirmed roles."
+ },
+ {
+  "key": "ff3c0f10-22f9-4a6e-b019-90e95feba1d1",
+  "cell": "investigator/night_action",
+  "action": "Use the final investigation check to verify the alignment of the most vocal outlier or the primary instigator of a suspicious voting block identified during the previous day cycle.",
+  "situation": "Targeting high-heat players who diverge from the town consensus or actively defend revealed evils in an information-rich environment. Information landscape: Information-rich: voting patterns and role reveals provide concrete anchors for verification. Stakes: A confirmed suspicious result at this stage provides the necessary leverage to secure an elimination and reach parity or break the evil faction's voting power. Target landscape: Outliers or aggressive accusers identified through public voting records or counter-lynch behavior against confirmed evil roles."
+ },
+ {
+  "key": "b2a498a4-e94d-4056-8612-8f51c8da9f54",
+  "cell": "necromancer/day_discussion",
+  "action": "Avoid providing specific night-action results that imply access to roles you have not explicitly claimed. If you intend to influence the room with reanimated information, frame it as behavioral suspicion rather than analytical 'result' evidence to avoid triggering mechanical scrutiny.",
+  "situation": "The Necromancer possesses powerful, role-specific information that cannot be shared without revealing the source (a dead role's ability). Information landscape: Information-rich; all night results and deaths are highly scrutinized. Stakes: Moderate; the immediate risk is social elimination due to mechanical inconsistency. Consensus: The village is hyper-focused on role-based evidence and consistency. My position: holding out Heat: Rising; providing information impossible for a town role triggers immediate mechanical investigation. Forward exposure: Revealing data that requires a specific role's death or ability to acquire immediately outs the Necromancer if that role is already confirmed dead. Target landscape: Town players with conflicting reports versus the Necromancer's own interests. Public vs private: Publicly presenting as a standard participant while privately holding and using precise data from a reanimated role."
+ },
+ {
+  "key": "e19f6dae-9646-4777-a1ac-dad68b1d6c85",
+  "cell": "necromancer/day_discussion",
+  "action": "When facing high-stakes role claims in an information-rich endgame, prioritize offering a plausible, low-conflict role claim rather than refusing to claim or aggressively challenging verified town roles; ensure the fake claim is mechanically consistent with the night history.",
+  "situation": "Endgame role verification where the necromancer is being forced to claim against established town roles. Information landscape: Information-rich: previous deaths and revealed roles have narrowed the game state, making unsubstantiated claims easily disproven. Stakes: The vote is binary; failure to provide a coherent defense results in an immediate loss. Consensus: The village is coalescing around verifying remaining players through role claims and night activity cross-referencing. My position: holding out Heat: Critical; the agent is under direct pressure to provide a role or face an immediate, likely elimination vote. Forward exposure: Committing to a role claim creates a permanent, high-exposure record that will be cross-referenced by other players' night actions. Target landscape: The acting necromancer vs. verified or highly credible town roles claiming power positions. Public vs private: Publicly maintaining a fake role status while privately holding the lone killer role."
+ },
+ {
+  "key": "fb4ee5da-5e02-4e35-a47c-1dc038999f33",
+  "cell": "necromancer/day_vote",
+  "action": "Claim a verifiable or utility-based town role immediately when pressed, rather than remaining unaligned or silent, to create a competing narrative against other town claimants.",
+  "situation": "Endgame voting phase where the Necromancer is under pressure and forced to defend their position against town-led elimination. Information landscape: Information-rich environment where past roles are known and lies are easily detected. Stakes: A vote failure or direct accusation leads to immediate defeat and game end. Consensus: Strongly aligned town voting bloc identifying and eliminating outliers. My position: holding out Heat: High; critical pressure from town players to justify survival. Forward exposure: Commits to a specific role claim which can be disproven by counter-claims or night-action contradictions later. Target landscape: Town players with active roles (Sentinel, Vigilante) versus unclaimed players. Public vs private: Publicly feigning a town role while privately hiding the necromancer identity and reanimation capability."
+ },
+ {
+  "key": "a459e85b-5e1c-47a7-8062-3b339c045d99",
+  "cell": "necromancer/day_vote",
+  "action": "Focus on dividing existing town consensus by supporting one of two conflicting town claimants to sow distrust, rather than directly attacking the most credible town leader.",
+  "situation": "Late-game pressure where town players are actively comparing night results to trap the lone killer. Information landscape: Information-rich with clear records of visits and deaths. Stakes: The vote determines the game winner as there are no alternative ways to survive the day. Consensus: Town consensus is centered on verifying claims through tracking or night results. My position: holding out Heat: Maximum; suspicion is focused on the agent due to lack of role contribution. Forward exposure: Risks double-elimination if the town coalition is strong enough to ignore the divide-and-conquer attempt. Target landscape: Two town players in conflict, providing an opportunity to pick a side that aligns with the agent's survival. Public vs private: Publicly framing one town player as unreliable to shift the focus from the agent's own role identity."
+ },
+ {
+  "key": "8b68d252-4c3b-467c-a1d1-ae9e8975f803",
+  "cell": "necromancer/day_vote",
+  "action": "When identified as a suspected actor, avoid retaliatory lone voting against major claimants; instead, redirect the vote onto secondary targets or noise-makers to dissipate heat and prevent immediate consolidated village action against your position.",
+  "situation": "Being forced to defend against an investigative role claiming to have uncovered the necromancer's mechanics. Information landscape: Information-rich: the game state has progressed enough that role mechanics are becoming verifiable. Stakes: Critical; exposed Necromancer is targeted for immediate elimination by the town coalition. Consensus: The village moves to eliminate perceived threats based on revealed contradictions. My position: holding out Heat: High, usually resulting from discovered mechanical impossibilities in role reports. Forward exposure: Retaliatory voting acts as a death warrant; redirecting allows the necromancer to hide in the noise of the room. Target landscape: The room favors the most vocal claimants; the necromancer must steer the vote away from the primary investigative nodes. Public vs private: Privately holding knowledge of night actions via reanimation while publicly acting as a participant in the mechanical debate."
+ },
+ {
+  "key": "8a85d0e0-2d77-49ce-8ed2-5c0b9a3c0af8",
+  "cell": "necromancer/day_vote",
+  "action": "Prioritize supporting the elimination of confirmed hostile roles even when it places you on a minority voting record, provided it secures an essential reanimation body; leverage technical arguments to sow doubt about investigative results to maintain a cover of neutrality.",
+  "situation": "Navigating the elimination vote involving a conflict between town roles where one is a necessary target for the Necromancer's goal. Information landscape: Information-rich with active claims and counter-claims. Stakes: Medium; the move prioritizes long-term resource acquisition over immediate short-term survival. Consensus: The room is focused on eliminating specific claimed roles based on conflicting night data. My position: with majority Heat: Low; achieved by mirroring typical town suspicion patterns. Forward exposure: Voting on the losing side is safer than voting alone on a winner; it creates a record of being wrong rather than a record of being malicious. Target landscape: Choosing between established role claimants and their targets to manipulate the outcome of the day's elimination. Public vs private: Privately calculating the value of a dead body for future night actions while publicly feigning an analytical position on role mechanics."
+ },
+ {
+  "key": "77bf9429-4438-46e5-b5f5-40d5c8c01e47",
+  "cell": "necromancer/night_action",
+  "action": "Prioritize reanimating and using bodies that provide concealment (Illusionist) to eliminate key information-gathering roles (Sentinel/Trailseer) only when the act effectively hides the role flip, thereby preventing the town from confirming the Necromancer's presence through death reports.",
+  "situation": "Necromancer possesses a usable body (e.g., Illusionist) in a high-information game where investigative roles have established credibility. Information landscape: Information-rich: town has established roles and confirmed graveyard flips. Stakes: The move is a high-risk investment intended to suppress town information flow while preserving the lone killer's anonymity. Forward exposure: Commits the Necromancer to a specific target; risk of being watched or tracked by remaining investigative roles is high. Target landscape: High-priority power roles with active information-gathering abilities; status is confirmed through public claims or behavior."
+ },
+ {
+  "key": "3da5f01a-9f5d-4874-ae29-2324831d83a4",
+  "cell": "necromancer/night_action",
+  "action": "If under heavy suspicion, prioritize holding the night action rather than reanimating a body for a public-facing task (like roleblocking or attacking) that will trigger a system-announced reanimated ability signature.",
+  "situation": "Necromancer is currently a primary target for elimination and any reveal of active necromancy would confirm their status to the village. Information landscape: Information-rich: the village is actively tracking roles and interpreting morning reports. Stakes: Survival is critical; the Necromancer must avoid giving the town any concrete evidence of their role to escape the next voting cycle. Forward exposure: Holding the action preserves the Necromancer's anonymity and avoids creating a public signal of a reanimated ability in the morning report. Target landscape: N/A - the action is withheld to avoid revealing the player's status as a threat."
+ },
+ {
+  "key": "2521b71c-0627-4432-95c3-1a982a7d3f87",
+  "cell": "necromancer/night_action",
+  "action": "Prioritize the elimination of the Healer using the most potent available offensive corpse to break the town's protection cycle, rather than targeting the Investigator directly if they are confirmed to be under protection.",
+  "situation": "Mid-to-late game phase where the Necromancer possesses an offensive corpse and the town relies on a stable, confirmed Healer-Investigator defensive loop. Information landscape: Information-rich environment where roles and protection links are known via public announcements or sustained morning report patterns. Stakes: Eliminating the Healer removes the persistent shield for town leadership, preventing further stalemate and enabling an end-game path. Forward exposure: Signals the use of a specific reanimated role; identifying the weapon used can narrow down the potential reanimated pool, but effectively neutralizes the primary defensive threat. Target landscape: High-value town targets including the Healer (confirmed via claim/behavior) versus protected targets like the Investigator, or secondary investigative roles."
+ },
+ {
+  "key": "56e26146-6248-402b-ae9f-d3bf801a3fd0",
+  "cell": "necromancer/night_action",
+  "action": "Target the Sentinel or other investigative roles when the town's information gathering becomes the primary obstacle to survival, using the most lethal available body to force a shift in the game's intelligence landscape.",
+  "situation": "A late-stage game where surviving town investigative roles are actively tracking night visits and narrowing down the pool of potential culprits. Information landscape: Information-rich board with confirmed investigative activity and known visit history. Stakes: Critical move to blind the town and prevent their ability to coordinate or verify the identity of the remaining threat. Forward exposure: Visible removal of investigative utility; confirms the reanimated capability and risks drawing focus to the Necromancer's specific body usage. Target landscape: Active town informational roles like the Sentinel or Trailseer who are confirming visits and potentially exposing the lone killer."
+ },
+ {
+  "key": "d2aaf88e-a5e5-446c-b074-8b0b7831ab30",
+  "cell": "necromancer/night_action",
+  "action": "When at the winning threshold, use the most direct kill method (e.g., reanimated Vigilante) to reduce the population and force an immediate game end before the town can coordinate a final counter-vote.",
+  "situation": "Final night where the necromancer can secure the win condition by reaching a two-player state. Information landscape: Information-rich; all roles are identified, and the game state is static. Stakes: Total win or loss based on a single night's success. Forward exposure: Zero exposure risk; the action concludes the game immediately. Target landscape: Remaining players; choice is based on eliminating the player least likely to be protected."
+ },
+ {
+  "key": "f3bc4f00-0646-4666-97a0-e24742757bad",
+  "cell": "sentinel/day_discussion",
+  "action": "Use the Sentinel role to provide mechanical corroboration for town deaths or established role claims when no immediate elimination target exists, focusing on validating legitimate interactions to build town consensus.",
+  "situation": "Early game discussion where multiple claims are presented but concrete evidence is missing. Information landscape: Information-starved; requires mechanical validation to differentiate between town roles and wolf misdirection. Stakes: Building trust and information networks is the primary goal for early town survivability. Consensus: The room is seeking consensus on which claims to trust and how to proceed on non-voting days. My position: with_majority Heat: None; the information is received as credible mechanical proof. Forward exposure: Discloses the role and spends limited watch capacity; makes the Sentinel a known factor for future night actions. Target landscape: Unconfirmed players whose night activities need verification to establish a trusted town core. Public vs private: Publicly confirm visits that support the integrity of claimed town roles or explain the actions of the deceased."
+ },
+ {
+  "key": "5e646c05-c108-4e0d-8c6a-1b51270fdd11",
+  "cell": "sentinel/day_discussion",
+  "action": "Publicly disclose watch reports immediately when they catch a visitor in an unexplained location, specifically naming them to force their role claim or expose a contradiction if they lie.",
+  "situation": "Sentinel possesses watch data revealing visitors at the scene of an attack or death, creating a clear opportunity to challenge a player's narrative. Information landscape: Information-rich: night results and death/save reports provide a factual basis for challenging claims. Stakes: High impact: forcing a liar or evil actor into a corner early shifts the vote and prevents them from establishing a stable fake claim. Consensus: The village is seeking answers for night deaths or attacks and is receptive to concrete leads. My position: driving Heat: Minimal; the sentinel acts as a credible, neutral provider of hard evidence. Forward exposure: Commits the sentinel to an identity claim and a public investigation stance, which is irreversible once stated. Target landscape: The visitor caught at the scene vs. the town's current understanding of that player's role claim. Public vs private: Publicly align the watch data with the night's events, forcing others to bridge the gap between their private activities and the observed visit."
+ },
+ {
+  "key": "7f51d8cc-6a44-496a-b05a-65170780fd0c",
+  "cell": "sentinel/day_discussion",
+  "action": "Publicly disclose mechanical limitations or exhaustion of charges immediately when questioned or pooled as a suspect by other town roles to clear suspicion through logical deduction rather than behavior.",
+  "situation": "Being placed in a suspicion pool by an investigator due to perceived lack of participation or results while having already used all role charges. Information landscape: Information-rich with investigator clears existing; sentinel is the bottleneck of proof. Stakes: Critical; failure to clarify role status often leads to a mis-elimination of a town role by the consensus. Consensus: The village is prioritizing the elimination of unverified roles to shrink the suspect pool. My position: holding_out Heat: High heat due to investigators grouping silent players into potential wolf categories. Forward exposure: Exposes the role as having no further protective or investigative utility, making the player a less valuable kill target for wolves, but also a candidate for elimination if town needs to clear pool space. Target landscape: The sentinel vs. other unverified players within a narrow suspicion pool defined by investigative leads. Public vs private: Public suspicion often assumes a role remains active; private knowledge of spent charges is the definitive proof of innocence."
+ },
+ {
+  "key": "a9b57b48-cc41-4f7f-a41b-d1938aa27105",
+  "cell": "sentinel/day_discussion",
+  "action": "Prioritize building an explicit, verifiable consensus with confirmed town-aligned roles (like the Vigilante) before the final vote; in a parity situation, abandon personal suspicions if they conflict with the majority and instead anchor your vote to the most credible available evidence to avoid splitting town power.",
+  "situation": "Endgame parity with four players and competing evil threats, where town must unify to survive. Information landscape: Information-rich with confirmed histories but high stakes. Stakes: A split vote or incorrect elimination allows the remaining evil faction to achieve parity or win immediately. Consensus: The room is fractured and prone to splitting votes between competing evil leads. My position: driving Heat: Low to moderate, depending on whether your role is confirmed or merely claimed. Forward exposure: Committing to a group consensus limits individual flexibility but minimizes the risk of a fractured, losing vote. Target landscape: Remaining unclaimed or suspicious players in a small-group endgame. Public vs private: Publicly acknowledge the limit of your exhausted watch results while privately reconciling them with the broader, confirmed evidence from the rest of the town."
+ },
+ {
+  "key": "50a222eb-1f7c-4c84-9ffd-a1100a2f424f",
+  "cell": "sentinel/day_discussion",
+  "action": "If challenged, rely strictly on documented game mechanics for role validation; immediately concede any mechanical error in your claims rather than fabricating rules, as a false mechanical claim is instantly disqualifying to experienced players.",
+  "situation": "Credibility dispute between two claimants regarding their nighttime actions. Information landscape: High-information, where factual accuracy regarding role mechanics is the deciding factor. Stakes: The sentinel must maintain credibility to survive the vote; mechanical inaccuracies are fatal. Consensus: The room is actively scrutinizing the veracity of claims to resolve the conflict. My position: holding_out Heat: High due to direct conflict with a rival claim. Forward exposure: Correcting a mechanical misconception early prevents total credibility collapse at the expense of temporary suspicion. Target landscape: The sentinel vs a rival claimant; credibility is the primary evidence. Public vs private: Public knowledge of the sentinel's mechanical limitations must be strictly accurate; any attempt to misrepresent how watching functions will be exposed as a lie."
+ },
+ {
+  "key": "359e291f-ee79-4161-bab4-88b58b99dcab",
+  "cell": "sentinel/day_discussion",
+  "action": "Maintain a balanced profile during early-game discussion: participate enough to establish a town-aligned presence to avoid being an easy, low-information kill target, while withholding role identity to protect the Sentinel's night utility.",
+  "situation": "Early-game discussion phase (Day 1-2) with no significant night data or role claims available. Information landscape: Information-starved; zero confirmed night actions or roles beyond initial setup. Stakes: High reliance on surviving the early nights to provide value; losing the role early results in complete loss of information capabilities. Consensus: The village is largely passive or disorganized, with no clear consensus or major accusations. My position: with majority Heat: Low; no suspicion has been generated, but the lack of engagement risks being perceived as an easy target. Forward exposure: Retains complete role secrecy and avoids early-game target identification by evil factions; irreversible once revealed. Target landscape: The room is largely unknown; candidates for interaction are selected based on behavioral engagement rather than information-based reads. Public vs private: Privately hold the Sentinel role to maximize night watch efficacy; publicly present as a standard town-aligned player contributing to the discussion without revealing role."
+ },
+ {
+  "key": "6facd909-df62-4937-86de-ce7c7663345f",
+  "cell": "sentinel/day_vote",
+  "action": "Prioritize voting against players who show direct, verifiable contradictions to your private watch results, but hold your vote if an accused player's primary offense is merely inconsistent mechanical explanation or non-role-specific behavioral confusion.",
+  "situation": "Sentinel must decide whether to cast a vote against a primary suspect based on hard evidence or perceived behavioral inconsistencies during the day vote. Information landscape: Information-rich environment where past night actions or role claims are known, allowing for validation of assertions. Stakes: A mislynch of town power roles significantly narrows the room for error, while correctly identifying the lone killer can secure a winning trajectory for town. Consensus: The village is typically forming a consensus based on shared suspicions, often driven by the information revealed in previous morning reports. My position: driving Heat: Generally low to moderate, as the Sentinel's status is often protected by their contribution to the room's knowledge. Forward exposure: Voting forces public commitment to your watch data, which is irreversible and makes you a high-value night target for remaining evil factions. Target landscape: Candidates range from players caught in verifiable lies regarding their visits to players making suspect or confused claims about game mechanics. Public vs private: The agent holds private data from watch results that can either directly invalidate a player's claims or fail to provide conclusive evidence of their alignment."
+ },
+ {
+  "key": "716a75f4-0d9b-461b-8d82-cbd63febe13f",
+  "cell": "sentinel/day_vote",
+  "action": "At parity or near-parity, prioritize voting for the most dangerous evil faction member over a neutral or secondary threat, even if this requires explicitly challenging an established town consensus or vigilante target to prevent an immediate game loss.",
+  "situation": "Endgame voting when evil parity is imminent, forcing a choice between a high-threat wolf and a lower-threat target. Information landscape: Information-rich with voting history and role claims available for review. Stakes: A wrong vote here directly hands the win to the wolves or lone killer at night. Consensus: The village is typically unified behind a single target to avoid a tie, often favoring an easy kill over a tactical one. My position: holding out Heat: Low to moderate, but increasing if the sentinel's vote breaks the room's consensus. Forward exposure: Commits the sentinel to an open disagreement with the room's consensus, which is irreversible once the vote is cast. Target landscape: Candidates consist of suspected wolves (high-parity threat) and other non-town roles (lower immediate threat). Public vs private: Publicly align votes with the highest win-probability threat rather than following the majority consensus if that consensus ignores the critical wolf parity threshold."
+ },
+ {
+  "key": "1a07dab4-c05c-4bb6-92cd-680f2990516b",
+  "cell": "sentinel/day_vote",
+  "action": "Prioritize the village consensus when your private watch data is ambiguous or susceptible to multiple interpretations, particularly during a high-stakes role counter-claim.",
+  "situation": "A hard role counter-claim where the Sentinel's private observational data leads to an erroneous read that conflicts with the town's deductive consensus. Information landscape: Information-rich: the village possesses enough data (role counts, visitor records, death reports) to make a definitive judgment. Stakes: A wrong vote here directly wastes an elimination on a confirmed town member, potentially handing the win to the wolf faction. Consensus: The town is united on a suspect, having cross-verified night activities and role claims to isolate a wolf. My position: holding out Heat: Low; the Sentinel is trusted, making the decision to break from the room particularly damaging to their own credibility. Forward exposure: Voting against a strong village consensus carries high reputational cost; it is effectively irreversible and marks the agent as an outlier or potential collaborator if the consensus is correct. Target landscape: Two claimants for a single role, one of whom the village consensus has already successfully analyzed as a wolf. Public vs private: The sentinel holds private visit data that they misinterpret as validation for a claim, while the village consensus correctly identifies the wolf role through logic and elimination."
+ },
+ {
+  "key": "0e2d975d-2b50-4c7c-84b6-c0970204fd57",
+  "cell": "sentinel/night_action",
+  "action": "Conserve all watches during the initial information-starved phase; prioritize using them only after a primary night kill or a credible role claim has occurred to ensure the watch target has a high probability of being involved in a night interaction.",
+  "situation": "Initial night phase with no prior night results, deaths, or public claims to guide surveillance targets. Information landscape: Completely information-starved; no mechanical leads or established behaviors to isolate suspicious actors. Stakes: High wastage risk; random monitoring in the absence of game-state markers has a low yield and burns non-renewable resources prematurely. Target landscape: The entire living player pool with no confirmed roles, voting patterns, or behavioral signals to distinguish threats from town."
+ },
+ {
+  "key": "95a7d3fd-8f7e-49ae-bacf-cc199e9dd887",
+  "cell": "sentinel/night_action",
+  "action": "If forced to deploy a watch in an information-starved state, target players exhibiting high-frequency verbal engagement during the previous day, rather than quiet players, to capture potential lone-killer or wolf-carrier activity.",
+  "situation": "Early game surveillance where no mechanical data exists and reliance on behavioral indicators is the only proxy for identifying targets. Information landscape: Speculative; no concrete information, forcing reliance on behavioral noise as a proxy for alignment. Stakes: Baseline intelligence gathering; using limited charges on inactive players results in high null-result rates. Target landscape: All living players; selecting targets based on conversational prominence vs. silence to maximize the likelihood of catching active night-acting roles."
+ },
+ {
+  "key": "55694d47-263f-4c41-9651-f0debdadb89a",
+  "cell": "sentinel/night_action",
+  "action": "Prioritize watching highly contested players or those accused of lying during the most recent day phase, specifically when those players are at the center of conflicting claims between town power roles.",
+  "situation": "Resolving informational conflicts between claimed town roles during the night phase. Information landscape: Information-rich environment with ongoing debates about night actions and role legitimacy. Stakes: The sentinel's limited watches represent the only way to independently verify or catch lying claims before town mis-eliminates a power role. Target landscape: Players involved in contradictory role claims or high-heat accusations based on reported visit records."
+ },
+ {
+  "key": "b65ac71b-5b6a-4734-8eb3-4e073e037c06",
+  "cell": "sentinel/night_action",
+  "action": "Avoid watching players who are already known town-cleared or low-threat individuals; reserve the final watch to either monitor high-priority targets for the wolves (like the healer or investigators) or to confirm suspicious behavior from active antagonists.",
+  "situation": "Deployment of the final surveillance capability to maximize probability of catching evil activity. Information landscape: Information-rich context where previous investigative leads have created a clear distinction between confirmed and unconfirmed players. Stakes: Wasting the final watch on a known clear or a low-value target effectively removes the sentinel's utility for the remainder of the game. Target landscape: The pool of candidates includes high-priority town targets and high-activity suspects; excludes players previously verified by clear evidence."
+ },
+ {
+  "key": "f736d99e-3288-49e8-86a2-976069436a9d",
+  "cell": "serial_killer/day_discussion",
+  "action": "Avoid binary role-claims when caught in a visit, as they create a hard-to-verify conflict that invites immediate counter-claims from genuine town roles; instead, offer a non-role-specific behavioral explanation if a visit must be accounted for.",
+  "situation": "Caught visit on a victim by a role that tracks visitors. Information landscape: High-information environment where visit logs are being used to narrow the pool of suspects. Stakes: A failed defense at this stage typically leads to an immediate elimination. Consensus: The village is coalescing around the hard evidence provided by a town role against the accused. My position: holding out Heat: High, usually resulting from direct investigative findings (sentinel or trailseer) confirming a visit. Forward exposure: Commits the player to a single, easily disprovable role identity, making the position non-reversible. Target landscape: The acting role versus the genuine role holder, usually backed by hard mechanical evidence. Public vs private: The public claim is a fabrication of a specific town role, while the private reality is the act of the serial killer kill."
+ },
+ {
+  "key": "6a4ab5db-6e14-4dd9-8398-7db691996683",
+  "cell": "serial_killer/day_discussion",
+  "action": "Upon being accused based on mechanical proof or strong evidence, pivot immediately to a structured, fake role-claim that accounts for the discrepancies in your play rather than dismissing the evidence as a lie, which leaves no room to maneuver.",
+  "situation": "Serial killer identified through mechanical feedback (immunity) or strong behavioral links (wolf interaction). Information landscape: Information-rich: hard mechanical results or confirmed death records are defining the room's logic. Stakes: Elimination here likely ends the game; survival is required to reach parity. Consensus: Room is coalescing against the agent based on mechanical evidence or voting patterns. My position: holding out Heat: High; direct accusation or mechanical proof against the serial killer. Forward exposure: Committing to a fake role identity; irreversible once the room tests it. Target landscape: The accuser (vigilante/sigilist) and the general room consensus. Public vs private: Privately holding immunity; publicly claiming a role that explains away the targetting or justifies survival."
+ },
+ {
+  "key": "60110892-638f-42b4-8fd7-ceca6da3f1f3",
+  "cell": "serial_killer/day_discussion",
+  "action": "Actively steer the discussion toward secondary suspects (e.g., the remaining wolf) by providing a credible, aggressive case rather than remaining passive; passivity in high-information regimes serves to mark the serial killer for elimination.",
+  "situation": "Post-wolf-death landscape where the serial killer must integrate into the town/wolf binary to survive. Information landscape: Information-rich: clear role reveals make it possible to identify valid alternative targets. Stakes: The window for avoiding scrutiny by blending into the room is closing. Consensus: Room is searching for the remaining non-town entities. My position: driving Heat: Moderate to high; agent is under scrutiny for passivity. Forward exposure: High; public accusation of a player commits the agent to a team-based narrative. Target landscape: The surviving wolf vs the town suspects. Public vs private: Privately shielding own identity; publicly driving consensus toward another player."
+ },
+ {
+  "key": "348d7ce4-27f7-4a7a-a241-41f3c88dafe6",
+  "cell": "serial_killer/day_vote",
+  "action": "Prioritize diffusing the specific investigative claim by questioning its provenance (e.g., claiming a glitch, misinterpretation, or frame-up) rather than engaging in a direct vote-based power struggle against the accuser.",
+  "situation": "Caught by an investigative role's result that aligns with the night's kill, leading to a vote that threatens immediate elimination. Information landscape: Information-rich: a direct conflict between an objective night-visit record and a defensive claim. Stakes: The vote determines immediate survival; failure results in near-certain elimination as the consensus is locked. Consensus: The room is coalescing around the accuser's information, viewing the agent as the only logical culprit. My position: holding out Heat: Critical heat due to direct evidence of a night visit to a victim. Forward exposure: Attempting to discredit an investigator risks total alienation but is often the only remaining option when caught in an info-rich scenario. Target landscape: The accuser is a confirmed or credible informational role, whereas the agent is the primary subject of a hard-evidence accusation. Public vs private: I privately know the investigative result is accurate, but I must publicly frame it as a malicious fabrication to survive."
+ },
+ {
+  "key": "e1ccf79a-7180-4c46-80b5-0e403bdcdc30",
+  "cell": "serial_killer/night_action",
+  "action": "Prioritize targets who have publicly acted against you or are targets of confirmed town-investigative scrutiny; use kills to validate town investigators or neutralize players who represent a direct voting threat, effectively leveraging the night kill to control the daytime narrative.",
+  "situation": "Navigating night kills while managing public heat, balancing the need to win against the risk of being identified by the village. Information landscape: Information-rich: Utilizing established voting records and public claims to identify targets whose removal benefits your standing. Stakes: A successful kill can remove a primary detractor or validate a town role to divert heat from yourself, turning potential exposure into a net positive. Forward exposure: Elimination of a threat provides immediate board benefit but marks you as an active killing force; this cannot be reversed and risks drawing attention to your pattern of behavior. Target landscape: The candidate pool shifts from random targets to high-profile players: specifically, those who have cast votes against you or those currently being scrutinized by investigative roles."
+ },
+ {
+  "key": "fb7a1bb3-4564-401b-88d5-3aff420888c8",
+  "cell": "serial_killer/night_action",
+  "action": "Avoid targeting high-utility town roles (like Sentinel or Trailseer) when the game state is unknown; focus instead on secondary targets or wait for clear indicators to minimize the risk of being caught by monitoring roles.",
+  "situation": "Early-game target selection under information-starved conditions where investigative roles are likely to be active. Information landscape: Information-starved: Lack of role claims or voting records makes any kill a blind shot with high exposure risk. Stakes: Survival in the early game is critical; taking low-information risks that expose your presence leads to immediate defeat. Forward exposure: Early-game kills are inherently high-risk due to the presence of investigative roles whose results will eventually map to your activities. Target landscape: Initially wide, narrowing as roles are revealed or suspicious behavior manifests."
+ },
+ {
+  "key": "7e0540c4-68ce-4035-bc0d-b3387313529e",
+  "cell": "serial_killer/night_action",
+  "action": "Prioritize targets who lack verified healer protection histories, bypassing high-profile roles that have been publicly attacked and saved, as their protection status remains essentially permanent and effectively immune to your nightly kills.",
+  "situation": "Serial Killer attempting to maximize effectiveness while avoiding the healer-protected 'investigator' anchor point. Information landscape: Info-rich environment where past healer protection patterns are known, making obvious high-value targets traps for the lone killer. Stakes: The survival of high-value town roles maintains their voting and investigative leverage, making a failed attack a game-losing momentum shift. Forward exposure: Attacking an unverified or less-defended player reduces the risk of hitting a 'wasted' morning announcement that confirms your failure and reinforces the protection on your target. Target landscape: Avoid high-profile, confirmed-town roles (especially those with recorded saves) in favor of quieter, unconfirmed players who are less likely to be protected by the healer."
+ },
+ {
+  "key": "174bf3cd-9226-4267-ad77-3e325d9ab712",
+  "cell": "sigilist/day_discussion",
+  "action": "Maintain anonymity while sigils remain to deter wolf targeting, but use the role's mechanical knowledge to confirm or clarify the night activity of other town roles when village consensus stalls.",
+  "situation": "Day discussion where village claims conflict or require corroboration from visit history. Information landscape: Information-rich: utilizing past night results to validate or invalidate public claims. Stakes: High, as mechanical confirmation can prevent the elimination of key town roles. Consensus: The room is focused on resolving mechanical discrepancies or identifying a primary suspect. My position: with majority Heat: Low; role hidden or integrated into village consensus. Forward exposure: Low; disclosing mechanical truths without revealing specific targets preserves safety while building credibility. Target landscape: Ambiguous candidates or conflicting investigator/healer claims where sigilist knowledge of visit outcomes can settle disputes. Public vs private: Publicly silent or partially revealed, while privately tracking sigil availability to inform strategic contributions."
+ },
+ {
+  "key": "c505c875-a666-4c8e-9594-3835cced0516",
+  "cell": "sigilist/day_discussion",
+  "action": "Once all sigils are expended, pivot to full disclosure to drive consensus against suspicious players, leveraging the completed trail of spent actions to solidify credibility.",
+  "situation": "Day discussion involving direct counter-claims or suspicious behavior that needs immediate resolution. Information landscape: Information-rich: using the total absence of remaining sigils to prove a lack of ulterior motives in pushing for an elimination. Stakes: Critical; the final reveal is necessary to secure an essential elimination and ensure town alignment. Consensus: Town is divided over contradictory claims and needs a decisive vote. My position: driving Heat: Low; role survival is no longer critical for town utility. Forward exposure: High; irreversible reveal of role and actions to force a definitive village action. Target landscape: Players whose claims contradict known mechanical outcomes or investigative results. Public vs private: Full alignment between private knowledge and public discourse after utility is exhausted."
+ },
+ {
+  "key": "ea4107c0-b2d2-4dbf-a633-a0cf22aa3d2e",
+  "cell": "sigilist/day_discussion",
+  "action": "If a role-claiming investigative core exists and you are not under direct suspicion, validate the public consensus by sharing your sigil results (whether successful or not) to establish credibility while withholding your remaining sigils until a high-probability threat is identified.",
+  "situation": "Early to mid-game investigation where the Sigilist acts to solidify town cohesion. Information landscape: Intersection of multiple night-visit claims providing verification. Stakes: Preserving the Sigilist for late-game impact is more critical than aggressive early-day plays. Consensus: The village is coalescing around shared night data rather than aggressive lynching. My position: with majority Heat: Low Forward exposure: Commits to a role reveal to integrate into the investigative core, which increases target priority for wolves but secures village trust. Target landscape: Investigative claims (Sentinel, Trailseer) and the targets of their night actions. Public vs private: Publicly sharing a sigil result validates your presence in the investigative network without necessarily confirming your alignment or depleting all utility."
+ },
+ {
+  "key": "e7423408-c9e9-4a6a-b5a8-99f1539231f6",
+  "cell": "sigilist/day_discussion",
+  "action": "If your night action was blocked or failed and you are under minimal scrutiny, prioritize confirming the reports of other investigative roles (like the Trailseer) rather than revealing your specific role and blocked status, thereby maintaining the flexibility to act as a hidden threat.",
+  "situation": "Early game uncertainty where investigative claims are nascent and the Sigilist is unverified. Information landscape: Limited data points following a night with no confirmed guilty results. Stakes: High initial uncertainty; survival is prioritized over early-day utility disclosure. Consensus: The room is looking for any hard evidence or cleared players to avoid mislynching. My position: with majority Heat: Zero Forward exposure: Maintains a neutral player profile, avoiding both wolf attention and town skepticism. Target landscape: Unverified players and role claimants within the town. Public vs private: Publicly confirms others' reports to build social capital while privately hiding the Sigilist role and the fact of being roleblocked."
+ },
+ {
+  "key": "c49e1722-4cfc-4fff-9005-5c96ea7de836",
+  "cell": "sigilist/day_discussion",
+  "action": "Publicly announce all sigil results, specifically clarifying that a non-triggering sigil does not exonerate the target, to prevent wolves from leveraging mechanic ambiguity as evidence of innocence.",
+  "situation": "Sigil result is being used by an accused player to argue their innocence after an inactive night. Information landscape: Information-rich environment where tracking/investigative reports are being cross-referenced with recent night outcomes. Stakes: Critical decision phase where a failed interpretation of sigil mechanics leads to a fatal mis-elimination of town or missed wolf. Consensus: Village is aligning toward eliminating a suspect based on tracking or investigative evidence. My position: with majority Heat: Low, established through confirmed role status or prior town consensus. Forward exposure: Committing the role to a public record of results which increases target priority for wolves while providing town with concrete data. Target landscape: Suspects with active or passive night actions whose role alignment is being debated based on behavioral records. Public vs private: Privately knowing the mechanical failure of a sigil while the public attempts to interpret that failure as proof of player innocence."
+ },
+ {
+  "key": "f8846b34-101d-46f1-a92b-13b6a40e7d11",
+  "cell": "sigilist/day_discussion",
+  "action": "Openly claim the Sigilist role and disclose specific night results (sigil placement, success, or lack of trigger) to provide concrete evidence of alignment when under suspicion.",
+  "situation": "Being placed under pressure to account for lack of contribution or voting history while holding a powerful, unspent utility role. Information landscape: Information-rich environment where other town power roles can corroborate claims. Stakes: A misplay results in an unnecessary loss of a power role or the wrong lynch, accelerating evil faction victory. Consensus: The village is seeking to identify and eliminate non-confirmed roles to reach town parity. My position: driving Heat: Moderate or high due to lack of claims or perceived quietness. Forward exposure: Commits the agent to being a primary target for night kills in exchange for immediate daylight safety and credibility. Target landscape: Unconfirmed or suspect players identified through voting patterns or lack of town-aligned behavior. Public vs private: The gap between holding private knowledge of sigil outcomes and the public needing verification of one's role status."
+ },
+ {
+  "key": "447f909b-be07-4012-a83e-0f6e495724c4",
+  "cell": "sigilist/day_discussion",
+  "action": "When parity is reached and a suspect claims immunity or innocence based on a sigil's lack of effect, explicitly clarify the mechanical interaction to the group: confirm that night immunity hides a sigil strike, and use this to dismantle their defense against the trailseer's or investigator's findings.",
+  "situation": "Parity endgame where a suspect uses the sigilist's 'no effect' result as proof of innocence. Information landscape: Information-rich, relying on mechanical rules to resolve contradictions. Stakes: Decisive vote; the game ends if the wrong player is eliminated. Consensus: The village is indecisive between the suspect's claim and the evidence provided by other roles. My position: driving Heat: None; role status as sigilist is established as Town. Forward exposure: Commitment is total; if the explanation fails, you lose the game. Target landscape: Candidates are confirmed Town vs. the suspected lone killer or wolf. Public vs private: Public view is confused by the sigilist's silence; private view confirms the suspect's behavior aligns with role-specific immunity."
+ },
+ {
+  "key": "83cb62bb-e2e2-48a9-b6e6-90799fa91406",
+  "cell": "sigilist/day_discussion",
+  "action": "Use the fact that your sigils are expended to provide a definitive 'all-clear' or 'confirmed inactive' report for players who were not struck, acting as a secondary witness to validate findings from the trailseer or investigator.",
+  "situation": "Late-game alignment check where roles need verification to finalize the lynch. Information landscape: Information-rich, utilizing established wills and exhausted abilities. Stakes: Final elimination for game win. Consensus: Room is seeking validation to eliminate the remaining threats. My position: driving Heat: None; established as confirmed Town. Forward exposure: Public commitment to specific player statuses; irreversible. Target landscape: Players whose night activity or lack thereof determines the remaining evil roles. Public vs private: Private certainty that no sigils remain to catch further attacks; public status relies on this reliability to force consensus."
+ },
+ {
+  "key": "de763f2c-9006-4e58-85c1-6997a297e0ac",
+  "cell": "sigilist/day_vote",
+  "action": "Prioritize evaluating and protecting high-impact town roles like the Vigilante or Tracker over participating in consensus eliminations of quiet, unconfirmed players. If a quiet player is a candidate, perform a risk assessment of their potential value as a hidden town role before committing the vote.",
+  "situation": "Day vote with remaining sigils where the village risks eliminating high-value town power through process-of-elimination tactics. Information landscape: Information-rich regarding confirmed roles, but information-starved regarding the alignment of inactive players. Stakes: Eliminating a hidden town role like the Vigilante or Healer drastically shifts parity toward the Necromancer or Serial Killer by removing the only active deterrents. Consensus: The village is highly aligned on eliminating low-contribution players based on lack of engagement rather than investigative evidence. My position: with_majority Heat: Minimal; the sigilist is generally treated as confirmed town due to previous successful night actions. Forward exposure: Committing to the majority vote consumes a limited town resource (an elimination) and risks removing a high-utility town role that is not yet revealed. Target landscape: The choice is between an unconfirmed quiet player whose silence is ambiguous and other players with higher, more vocal profiles. Public vs private: The agent knows their remaining night power but lacks definitive role information on the quiet candidate, while the room operates on behavioral suspicion."
+ },
+ {
+  "key": "70ca60d4-961f-4ca4-a483-c567661346ae",
+  "cell": "sigilist/day_vote",
+  "action": "When a direct role counterclaim arises and your private knowledge (such as a previous night's sigil result or roleblock status) proves your claim, prioritize the elimination of the counter-claimant. Do not defer to secondary suspicion when a hard contradiction exists between two players claiming your specific role.",
+  "situation": "A direct role counterclaim where one party is confirmed as a false claimant through mechanical contradiction. Information landscape: Information-rich: Sentinel or Trailseer records often accompany role clashes. Stakes: Elimination of the false claimant resolves the identity conflict and secures the role; failing to do so invites lynch-pressure on the genuine player. Consensus: The room is focused on resolving the role clash to clear the suspicion generated by the contradiction. My position: driving Heat: High, as role clashes generate intense scrutiny. Forward exposure: Commits the agent to being the sole claim; high stakes as it validates or invalidates one's own identity. Target landscape: Two players claiming the same unique role; one is a false claimant, the other is the genuine role holder. Public vs private: Publicly conflicting role claims conceal the private truth (e.g., sigil result or night action record) that distinguishes the genuine role holder from the pretender."
+ },
+ {
+  "key": "2a592143-380a-4232-9a22-507dae0292f0",
+  "cell": "sigilist/day_vote",
+  "action": "Prioritize voting targets based on historical voting patterns that align with known wolf behavior rather than relying exclusively on unverified historical reads or secondary player claims.",
+  "situation": "Decision at match point with limited candidates to identify the remaining evil. Information landscape: Information-rich with historical voting records and role reveals available. Stakes: A wrong vote results in an immediate loss to the lone killer or remaining wolf. Consensus: Room is split on candidates but seeking a definitive consolidation. My position: driving Heat: Zero; role is confirmed town. Forward exposure: Irreversible elimination at match point commits the town to a single path. Target landscape: Unconfirmed players categorized by voting record, alignment with confirmed town, and previous claims. Public vs private: Public alignment is established; private information is exhausted."
+ },
+ {
+  "key": "7fe3513f-5eba-4c80-8c1c-76cf8f9081ce",
+  "cell": "sigilist/day_vote",
+  "action": "Integrate private Sigilist mechanical evidence (e.g., failed sigil indicating night immunity) with public tracking results to force a high-confidence elimination of lone killers.",
+  "situation": "Final decision phase where mechanical proof is available. Information landscape: Information-rich: mechanical evidence and tracking data combined. Stakes: Decisive play to clear the final evil threat. Consensus: Consensus aligns behind the most accused player. My position: driving Heat: Zero; role is confirmed. Forward exposure: Final elimination closes the game with no remaining nights to play. Target landscape: The primary suspect identified by both tracking and mechanical evidence. Public vs private: Private evidence of night immunity confirms the target's identity beyond public suspicion."
+ },
+ {
+  "key": "f1207ff1-cfc1-4822-91b5-234a9e203760",
+  "cell": "sigilist/night_action",
+  "action": "Place a sigil on the highest-probability attacker only when they are a primary suspect for a standard night kill; do not waste charges on targets likely to use bodies or roles with night immunity, as sigils cannot punish reanimated attacks.",
+  "situation": "Managing limited sigil charges against a late-game lone killer or active wolf threat when the town's parity is fragile. Information landscape: Utilize existing trailseer or investigator data to isolate targets; recognize that 'no effect' results can be used as evidence of target night immunity. Stakes: High: wasting the final charge on an immune or non-attacking target significantly degrades town defensive capability. Forward exposure: Spending the final charge commits the role to a single high-impact intervention, trading remaining utility for a potential shutdown of the lone killer. Target landscape: Focus on unverified players with active voting records or suspicious travel patterns; avoid targeting players whose role mechanics or status as a reanimator would nullify a sigil strike."
+ },
+ {
+  "key": "0dd9fe48-fcc1-4137-8470-7990b10cbe16",
+  "cell": "sigilist/night_action",
+  "action": "Conserve sigils during the opening nights (Night 1-2) when the information landscape is starved, prioritizing the retention of charges for nights where a specific suspect has been identified through voting records or corroborated role claims.",
+  "situation": "Early game phase with high uncertainty and absence of confirmed killing factions or reliable behavioral leads. Information landscape: Information-starved; lack of confirmed roles or verified night visit histories prevents accurate target prioritization. Stakes: Resource preservation is critical because limited charges represent the sigilist's primary utility; blind usage effectively removes the role's strategic impact without gaining information. Forward exposure: Holding sigils maintains the ability's full potential and avoids revealing the sigilist's identity via visit-tracking, while usage commits the role to a target and risks depletion. Target landscape: Multiple players with unknown alignments and no established threat patterns, requiring higher evidence thresholds for engagement."
+ },
+ {
+  "key": "3240103b-78cb-409d-ba56-f2948710658b",
+  "cell": "sigilist/night_action",
+  "action": "Deploy a sigil only on players identified as aggressive, suspicious by public voting, or those who have been consistently linked to nocturnal visits by trailseers or sentinels.",
+  "situation": "Targeting phase following the establishment of at least one strong suspicion or confirmed role claim to ensure the sigil is placed on a potential attacker. Information landscape: Transitioning to information-rich through voting patterns and cross-referencing of claims. Stakes: The final charge is a high-leverage defensive tool that must be saved for clear threats to maximize the chance of stopping a kill or punishing a lone killer. Forward exposure: Placement commits to a visit, which may reveal the sigilist to sentinels or trackers if the target is high-profile; this is an irreversible expenditure of the final charge. Target landscape: Targets identified through specific day-time voting records or corroboration from information roles, moving away from speculative, unconfirmed choices."
+ },
+ {
+  "key": "749c092f-de92-46a6-af99-696de8f14017",
+  "cell": "speculator/day_discussion",
+  "action": "When identified as an unknown in a late-game scenario, immediately align with confirmed town roles by validating their posthumous or revealed evidence; use this collaborative credibility to shift focus toward the voting records of other unconfirmed players.",
+  "situation": "Endgame town consensus formation requiring identification of the last remaining wolf among limited suspects. Information landscape: Information-rich: confirmed roles and voting history are available for logical deduction. Stakes: Correct identification is required to ensure the town win for the Speculator's chosen faction; miselimination results in a loss. Consensus: The room is actively narrowing down candidates to identify the final wolf or neutral threat. My position: driving Heat: High heat from being an unconfirmed player in a small-player-count endgame. Target landscape: Unconfirmed players whose suspicious behavior can be contrasted against the established facts provided by confirmed, dead town roles."
+ },
+ {
+  "key": "e37eb14f-7575-458a-aa23-b8d7a39498c7",
+  "cell": "speculator/day_discussion",
+  "action": "Correct factual errors in the public record such as voting histories or claimed investigator results rather than challenging the credibility of active players or their claims.",
+  "situation": "Villagers are debating Day 2/3 voting records and conflicting role claims during a high-information day phase. Information landscape: Information-rich; public records of votes and confirmed deaths exist. Stakes: High; errors in interpreting the record lead to town mis-elimination and loss of leverage against the lone killer. Consensus: The room is actively trying to build a consensus based on past voting data and role claims. My position: with majority Heat: Low; agent is an observer/contributor. Target landscape: The room is sorting through claims and voting records; candidates are unverified players versus those with circumstantial alignment."
+ },
+ {
+  "key": "75336851-3e5f-4cd1-81d2-6d4bc67689c0",
+  "cell": "speculator/day_discussion",
+  "action": "Amplify and anchor the discussion on publicly verified information (e.g., GM-announced saves or deaths) while remaining neutral in disputes between unverified role-claimants.",
+  "situation": "Heated disagreement between players regarding night actions and roles, with potential deceivers exploiting uncertainty. Information landscape: Evidence-rich environment where concrete GM announcements exist alongside subjective player claims. Stakes: The village is sorting through noise; reinforcing verified facts limits the impact of deception without exposing the agent. Consensus: The village is actively debating contradictory claims or mysterious reports, looking for a clear narrative. My position: with_majority Heat: None; the agent is currently ignored or trusted due to early game information or lack of conflict. Target landscape: The room includes competing claimants for roles (investigator, healer) and unverified reports of visits, contrasted with verifiable GM reports."
+ },
+ {
+  "key": "4967a018-6c74-4f8e-88ba-e69328674df6",
+  "cell": "speculator/day_vote",
+  "action": "Prioritize identifying the final remaining evil player by cross-referencing public night-action claims against known role mechanics; when a clear, evidence-based contradiction exists, align with the consensus to force an elimination, provided the move eliminates the last threat to your chosen win-side.",
+  "situation": "End-game phase with 4 players remaining, where the agent must identify the final threat to secure their predicted faction's win. Information landscape: Information-rich: critical roles have died, wills are public, and mechanical contradictions are available as evidence. Stakes: The vote determines whether the chosen faction wins or loses; a misfire eliminates Town numbers and risks immediate defeat. Consensus: High alignment once a specific, contradictory claim provides a clear target for elimination. My position: with_majority Heat: Variable, depending on whether the agent has been quiet or actively participating in consensus formation. Target landscape: Remaining unverified players evaluated through contradictory night-action claims and role-specific mechanics (e.g., visit-counting logic vs. observed outcomes)."
+ },
+ {
+  "key": "5ca959fc-1970-4613-8bd7-c9e2eb94a7ff",
+  "cell": "speculator/day_vote",
+  "action": "When parity is reached or imminent, abandon isolated voting strategies; prioritize joining the majority or forcing a tie to prevent a single-elimination win for the lone killer or the last wolf, even if the consensus target is not your preferred suspect.",
+  "situation": "Late-game parity crisis where the speculator's survival or the correct elimination of an evil role is necessary to secure the speculator's chosen win condition. Information landscape: Information-rich: confirmed deaths, wills, and established voting patterns are known. Stakes: The vote determines whether the speculator's chosen side maintains viability or suffers an immediate loss. Consensus: The room is largely unified on a single target, often driven by a vocal player or a faulty interpretation of past evidence. My position: holding out Heat: High; the agent is either being actively targeted or has attracted negative attention through outlier behavior. Target landscape: The room-wide consensus candidate versus alternative suspicious players identified by voting records or night-visit contradictions."
+ },
+ {
+  "key": "3e231903-fbbd-4e08-9323-566846eff47d",
+  "cell": "speculator/day_vote",
+  "action": "When the town is fractured and multiple candidates face elimination, prioritize votes that prevent the removal of confirmed or high-value power roles (Healer/Investigator/Vigilante) to maintain structural integrity, even if it requires creating a tie to stop a momentum-based lynch.",
+  "situation": "Day vote in a chaotic late-game environment where town cohesion is threatened. Information landscape: Moderate; mixed signals from roles and conflicting claims. Stakes: Critical; losing a protective or investigative role at this stage often leads to an unrecoverable town collapse. Consensus: Fragmented; town lacks a singular target and is prone to mis-lynching due to confusion. My position: with majority Heat: Low to neutral; agent is not the primary focus of discussion. Target landscape: Multiple suspects; some are power role claimants, others are behavioral outliers or counter-accusers."
+ },
+ {
+  "key": "0d37c357-98da-41b0-8143-671f04a1ba18",
+  "cell": "speculator/day_vote",
+  "action": "In a deadlocked endgame, use your vote to break the tie by targeting the suspect linked to the most credible evidence (e.g., prior wolf votes or night-action contradictions) to consolidate town consensus behind an identified threat.",
+  "situation": "Day vote where the agent's swing vote determines the removal of a lethal third party or wolf. Information landscape: Rich; established voting patterns and death outcomes allow for high-confidence identification. Stakes: Game-deciding; eliminating a non-town entity stabilizes the board for a win condition. Consensus: Divided; the board is split between two evil-aligned candidates. My position: driving Heat: Low; agent has maintained high credibility by correcting facts. Target landscape: Two primary suspects identified as potential threats; one supported by historical voting or night-trace evidence."
+ },
+ {
+  "key": "b64c8ac7-7f63-4686-9109-05ffac5e748d",
+  "cell": "speculator/night_action",
+  "action": "Prioritize holding the Speculator pick through the initial game stages while information remains scarce, committing only once at least one major evil role (wolf or lone killer) has been system-confirmed eliminated to ensure the chosen side has a measurable advantage.",
+  "situation": "Managing the Speculator's one-time prediction under dynamic game conditions where early commitment is prone to failure if the chosen faction experiences a mid-game collapse. Information landscape: Information-starved during early game; becomes information-rich once key roles are eliminated and confirmed by the moderator. Stakes: The choice is a single-use high-leverage decision that can either secure victory or lock the role into an eventually losing faction, requiring high confirmation before use. Target landscape: Town, Wolves, Lone Killer, or Self; choices are contingent on factional momentum verified by night report outcomes or daytime role reveals."
+ },
+ {
+  "key": "6da29929-8101-478b-9d89-ce668621f07b",
+  "cell": "trailseer/day_discussion",
+  "action": "Publicly disclose specific tracking results or confirmed roleblock status to resolve mechanical contradictions, such as exposing impossible visitor claims or debunking false role claims when town info is stalled.",
+  "situation": "Mechanical contradictions in role claims or night reports creating potential for deception. Information landscape: Information-rich: previous night results and established roles provide a baseline for verification. Stakes: Eliminating a confirmed threat resets the town's tactical advantage and neutralizes specific evil utility. Consensus: The village is seeking mechanical resolution to conflicting claims or unexplained night events. My position: driving Heat: Low; the role is utilized as an authoritative source of truth. Forward exposure: Commits the Trailseer to a high-profile role, making them a priority target for night actions, but secures immediate cooperation from the room. Target landscape: Conflicts between legitimate town information and opportunistic wolf/third-party counter-claims. Public vs private: Privately held tracking data or block status is used to force a binary choice on suspects or false claimants, aligning the room with hard information."
+ },
+ {
+  "key": "361f75a5-1eb4-42fb-87a9-a884c6fbac73",
+  "cell": "trailseer/day_discussion",
+  "action": "Use precise tracking data to isolate a specific player's inactivity or visit as a mechanical proof of guilt when town consensus is fractured and a decisive vote is required.",
+  "situation": "A late-game stalemate where a Trailseer's unique knowledge is needed to break a cycle of circular accusations. Information landscape: Information-rich: previous night events and role claims are largely available for cross-referencing. Stakes: Final vote for the town's survival; failure to identify the killer results in a parity loss. Consensus: The room is split or uncertain, requiring a nudge from an information-role to reach a resolution. My position: driving Heat: High, as the agent is actively challenging the dominant or competing narrative. Forward exposure: Commits the agent to a definitive binary choice, exposing the agent if the evidence is misinterpreted or countered. Target landscape: The suspects involved in an active, contested accusation, evaluated against objective, recorded tracking results. Public vs private: Privately held mechanical evidence (e.g., zero visits on a specific night) is weaponized to directly refute an opponent's suspect narrative."
+ },
+ {
+  "key": "9890c172-e43a-47a5-b546-d93df56f4796",
+  "cell": "trailseer/day_discussion",
+  "action": "Directly translate specific night-action logs into a demand for voting-record analysis rather than relying on speculative behavior or secondary claims.",
+  "situation": "At near-parity, when town ignores concrete evidence in favor of noise, forcing a redirection toward objective voting history. Information landscape: Information-rich: past voting records and graveyard reveals are fully exposed. Stakes: Must force an objective consensus; otherwise, the town risks being manipulated by the surviving wolf into a bad vote. Consensus: The room is caught in behavioral bickering rather than structural analysis. My position: driving Heat: None, as the Trailseer is viewed as town-aligned and authoritative. Forward exposure: Commits the agent to a specific analytical framework (voting records), which the agent must defend for the remainder of the day. Target landscape: Suspects whose roles and alignment are primarily deduced from historical voting patterns and prior day events. Public vs private: Agent holds concrete evidence but publicly downplays the ongoing debate in favor of structural evidence like past voting logs."
+ },
+ {
+  "key": "0ca390f9-0b7a-4206-a2e1-f3ec6c981bd9",
+  "cell": "trailseer/day_vote",
+  "action": "Prioritize voting against players who are direct targets of your verified tracking data rather than splitting votes on secondary suspects or defensive claims.",
+  "situation": "Information-rich endgame where tracking data exists but the room is focused on distracting behavioral narratives. Information landscape: High; tracking data identifies potential perpetrators directly. Stakes: A misdirected vote or failure to eliminate allows evil to retain momentum and potentially eliminate key information roles. Consensus: Room is typically fragmented with competing theories or stalled by defensive claims. My position: holding out Heat: Low to moderate; Trailseer is typically a trusted role until their specific reads clash with the room. Forward exposure: Committing to an elimination based on tracking data is irreversible but necessary for town progress when parity is approaching. Target landscape: Multiple unconfirmed suspects; players with suspicious visit histories vs. players with unsubstantiated behavioral claims. Public vs private: Public debate often fixates on behavioral noise; the Trailseer must use private visit data to ground the consensus in evidence."
+ },
+ {
+  "key": "8856c8a6-aaf1-481e-a936-829d5e5bef8e",
+  "cell": "trailseer/day_vote",
+  "action": "Use private night-tracking data to definitively identify and vote against the final hostile threat during high-stakes endgame, treating tracking results as primary evidence over public claims.",
+  "situation": "Endgame scenarios (3-4 players left) where the trailseer's night-tracking results can confirm or refute specific role claims to force a game-ending vote. Information landscape: Highly specific night-visit traces confirming or eliminating suspect roles. Stakes: Final elimination determines game victory; error risks immediate loss. Consensus: Room is often divided or stalled due to counter-claims; the trailseer must act as the primary engine to break the deadlock. My position: driving Heat: Low to moderate, as the agent is primarily focused on driving the final vote based on hard evidence. Forward exposure: The vote is irreversible and commits the agent to a 'win-or-lose' outcome; it is the final mechanism of the game. Target landscape: Limited to 3-4 players; identifying the last hostile role among remaining candidates. Public vs private: The agent holds definitive proof of a hostile visit or lack thereof, which publicly serves as the primary leverage to resolve the game's final conflict."
+ },
+ {
+  "key": "e8778fb0-771f-48db-ac29-34947021d747",
+  "cell": "trailseer/day_vote",
+  "action": "When day 2 or 3 discussion remains inconclusive with no hard, verifiable evidence against a specific player, vote to abstain to avoid mis-eliminating a town player and to gain one additional night of tracking data.",
+  "situation": "Mid-game day vote phase where tracking evidence is insufficient to justify a confident elimination. Information landscape: Information-starved, relying on unverified night action claims and incomplete trailseer reports. Stakes: The lack of clear evidence makes an erroneous elimination more damaging to town than waiting another cycle. Consensus: Village is undecided and risk-averse, generally leaning toward preserving parity until better evidence arrives. My position: with majority Heat: Low suspicion; Trailseer role is identified but not currently a primary lynch target. Forward exposure: Abstaining commits the trailseer to the room's consensus and avoids the risk of pushing an incorrect lynch, while preserving the role's anonymity. Target landscape: No confirmed evil candidates; village debating between multiple unverified players or non-elimination. Public vs private: Public tracking results provided to the village are aligned with private knowledge to maintain credibility."
+ },
+ {
+  "key": "45e4eea6-520d-41cf-a76e-1e73bbd9a81c",
+  "cell": "trailseer/night_action",
+  "action": "Prioritize tracking players who have exhibited suspicious behavioral patterns or defended eliminated evil roles, as these targets are likely to be performing nocturnal visits associated with the wolf or killer factions.",
+  "situation": "Identifying high-priority nocturnal visitors to provide actionable evidence for the town during the subsequent day phase. Information landscape: info_rich Stakes: High, as tracking results must differentiate between legitimate roles and hostile visitors to prevent further town casualties. Target landscape: Active suspects or vocal defenders of known evils versus neutral/unverified players."
+ },
+ {
+  "key": "41e70866-143e-41c8-86e6-ba47fac2455e",
+  "cell": "trailseer/night_action",
+  "action": "Shadow validated information roles or players suspected of being targets for attack, as this captures critical data if they are eliminated or provides visibility on their potential interactors.",
+  "situation": "Protecting the integrity of investigative leads by monitoring key town roles vulnerable to nighttime elimination. Information landscape: info_rich Stakes: Extreme, as tracking a vulnerable role can verify their final actions before death. Target landscape: Confirmed information roles under threat and their potential visiting contacts."
+ },
+ {
+  "key": "6ee49435-6983-4a1f-a25b-943172958220",
+  "cell": "trailseer/night_action",
+  "action": "Select a target with moderate conversational engagement rather than the most quiet or the most assertive player to minimize the chance of targeting the night-kill carrier or drawing unnecessary attention to your tracking result.",
+  "situation": "Initial Night 1 tracking action with zero prior game intelligence or evidence. Information landscape: Information-starved environment with no public claims, records, or game-state development. Stakes: Foundation building; the result establishes baseline reliability but does not immediately shift the game state. Target landscape: Nine unrevealed players; candidates differentiated only by Day 1 conversational behavior as no roles or votes are public."
+ },
+ {
+  "key": "0020fe3c-e0b9-4a0a-8ce6-bc18ebab0ea8",
+  "cell": "trailseer/night_action",
+  "action": "Follow the player whose claimed role requires frequent visits (e.g., vigilante or sigilist) when they are under suspicion, using the result to confirm or refute their consistency against the night's death or attack report.",
+  "situation": "Using the trailseer's ability to verify the night-action claims of key suspects to drive a definitive vote or identify a lone killer. Information landscape: Information-rich environment where role claims and night reports provide specific constraints for validation. Stakes: High: incorrect verification wastes a night and potentially misdirects the town's final elimination chances. Target landscape: Unverified claimants whose role abilities involve night visits, evaluated against known death/save reports."
+ },
+ {
+  "key": "6d5054e7-62b7-4e8e-abc1-e9a2b0f7256b",
+  "cell": "vigilante/day_discussion",
+  "action": "Drive consensus toward players with clear behavioral anomalies, such as voting record inconsistencies or abstentions, while keeping vigilante bullets reserved and hidden to avoid unnecessary exposure.",
+  "situation": "Mid-game phase where the village is evaluating candidates to eliminate to reduce evil faction numbers. Information landscape: The room has a mix of confirmed info and behavioral cues, allowing for moderate deductive confidence. Stakes: The town must maintain numbers; wasting daytime eliminations on suspected roles without hard proof is high-risk. Consensus: The village is actively seeking targets among the pool of unverified players, typically aligned by investigator or sentinel findings. My position: driving Heat: Low suspicion; the agent is perceived as a constructive town voice. Forward exposure: Commits the player to a behavioral scumhunt line; low risk of revealing the vigilante role if the argument remains focused on public voting behavior. Target landscape: Players with identifiable behavioral gaps (e.g., abstentions, voting record) rather than relying on unverified claims or purely speculative contradictions. Public vs private: I privately hold vigilante bullets while the public discussion centers on available behavioral leads; my private status and public read are aligned."
+ },
+ {
+  "key": "62d76760-3ff6-45e5-90d0-a229e26d6bbf",
+  "cell": "vigilante/day_discussion",
+  "action": "When identified as a primary suspect in a narrowed pool of players by town, perform an honest role reveal as Vigilante to redirect scrutiny and prevent elimination, as silence or unclaimed status under pressure is treated as de facto guilt.",
+  "situation": "Vigilante is caught in a shrinking pool of unverified players while town consensus demands a claim. Information landscape: Information-rich: town roles are mostly verified, making remaining unidentified players the only targets. Stakes: Vigilante elimination hands the factional enemy a weapon, directly enabling their victory condition. Consensus: The town is highly aligned to eliminate all unverified players until the lone killer is found. My position: holding_out Heat: High, as the village is actively pruning the remaining unknown pool. Forward exposure: Revealing role commits the player to full scrutiny but prevents immediate elimination by town vote. Target landscape: Narrowed suspect pool of 3-4 players created by town role-clearing. Public vs private: Privately know role is town, but publicly act as an unidentified player under suspicion."
+ },
+ {
+  "key": "2c2331d6-75c5-4368-9f76-a5c03051b977",
+  "cell": "vigilante/day_discussion",
+  "action": "Maintain role obscurity by providing logical, town-aligned analysis while keeping vigilante status and bullet count hidden; support confirmed town investigators or cleared roles to cement your own safety.",
+  "situation": "A high-information phase where town power roles are confirmed by night reports and the vigilante acts to bolster the consensus without revealing their lethal capability. Information landscape: Information-rich: confirmed healer saves and investigator checks provide a solid foundation for town voting. Stakes: The town has a lead; maintaining that lead through group consensus is safer than individual heroics. Consensus: The village is coalescing around validated information from town power roles. My position: with_majority Heat: None; viewed as an objective contributor. Forward exposure: Committing to a specific role claim is irreversible and attracts wolves; remaining a general townie keeps exposure low. Target landscape: The room-wide consensus is shifting toward verified townies; the vigilante aligns with these to deflect attention. Public vs private: Privately hold kill-capable roles while appearing as a helpful, non-role-revealing town contributor."
+ },
+ {
+  "key": "76e74636-5c67-4b28-8f84-1bd5290611d0",
+  "cell": "vigilante/day_discussion",
+  "action": "Use personal knowledge to validate the reliability of other town power roles (like sigilists or investigators) without revealing your own role; confirm their mechanical findings (e.g., null sigil results) if they target you.",
+  "situation": "A period of counter-claims where validating honest roles is required to isolate and remove deceivers. Information landscape: Information-rich with conflicting night visit reports. Stakes: Correct validation of power roles is critical to determining the primary target for the day's vote. Consensus: The room is focusing on discrepancies in role claims or suspicious behavior. My position: with_majority Heat: Minimal; cleared by the reported outcome. Forward exposure: Confirming another player's report links your credibility to theirs; this is safe if the report is factually verifiable and town-aligned. Target landscape: The room is split between credible town roles and suspicious counter-claimants. Public vs private: Privately confirm mechanical reports against your own history without disclosing the offensive nature of your own visits."
+ },
+ {
+  "key": "b92b8f36-bcd0-45f4-b49d-efe2bac9e40a",
+  "cell": "vigilante/day_discussion",
+  "action": "Upon obtaining hard mechanical evidence (night shot immunity or target confirmation), publicly reveal the vigilante role and the specific mechanical finding to drive the village vote toward the identified suspect.",
+  "situation": "A late-game scenario where the vigilante has hard information (immunity or kill confirmation) that can isolate the lone killer or remaining threat. Information landscape: Rich with information from night action feedback, allowing the vigilante to direct the vote with near certainty. Stakes: The vote or action is decisive in eliminating the final threat to town victory. Consensus: The village is seeking concrete leads to eliminate the remaining threats in the late game. My position: driving Heat: Low; status is secured by the alignment of the revealed action with town win goals. Forward exposure: Commits the vigilante to target status for the night, but secures town consensus by providing actionable, non-speculative information. Target landscape: The suspect identified via night action vs other unverified players, prioritized by the mechanical certainty of the vigilante result. Public vs private: The agent holds private proof of a target's immunity or specific role, while the public remains unaware of the target's true nature."
+ },
+ {
+  "key": "8d57f166-7772-4e3f-a1d1-49f8eee3a59f",
+  "cell": "vigilante/day_discussion",
+  "action": "Maintain a hidden identity if you are already considered cleared or low-heat by the consensus. Use your town-aligned status to drive the vote toward suspicious targets without revealing your role, preserving the threat of a night-shot as a deterrent or final contingency.",
+  "situation": "Four players remain at a high-stakes parity point where the agent is trusted by the remaining town. Information landscape: Information-rich: confirmed town roles and wills exist to guide the vote. Stakes: Critical; the vote must resolve the threat or the agent must act at night. Consensus: The village is unified on a baseline of trust for the agent, allowing the agent to influence the target selection. My position: driving Heat: Low; the agent is perceived as a reliable town member. Forward exposure: Non-existent; keeping the role hidden allows you to contribute to the vote without becoming a specific target for a wolf's night action. Target landscape: Unverified or suspicious players whose records conflict with confirmed town evidence. Public vs private: Publicly known as a trusted, non-suspicious player; privately hold a lethal threat that can be deployed if the primary elimination fails."
+ },
+ {
+  "key": "0640d4b1-eb8c-4992-b5b4-50aee5351a78",
+  "cell": "vigilante/day_discussion",
+  "action": "If forced to claim to secure a crucial elimination, do not reveal the exact number of remaining bullets. Claim the role to focus the village on the correct target, but imply limited utility or uncertainty to minimize your attractiveness as a priority night-kill for the remaining wolf.",
+  "situation": "Critical parity situation with multiple unverified players remaining. Information landscape: Information-rich: previous roles and wills define the board. Stakes: Critical; one wrong elimination loses the game for the town. Consensus: The village is split or searching for a clear leader to avoid parity. My position: driving Heat: Moderate; the agent is under pressure to produce results. Forward exposure: High; revealing the role confirms you as the only player capable of changing the parity through non-voting means. Target landscape: Unclaimed or suspicious players under moderate heat. Public vs private: Publicly act as a decisive force but withhold the private fact that you are an active threat (the vigilante)."
+ },
+ {
+  "key": "4e5de30e-445d-43ac-87d4-5b69e03e7794",
+  "cell": "vigilante/day_vote",
+  "action": "If identified as a top suspect by town consensus while holding unspent ammunition, prioritize revealing your role and the status of your ammunition to the village to shift the target elsewhere; holding out while under suspicion is more likely to result in an inefficient elimination that grants your weapon to an evil faction.",
+  "situation": "Day vote with high suspicion on the vigilante and a risk of being eliminated while holding active bullets. Information landscape: Information-rich environment where utility roles are narrowing the suspect pool. Stakes: Elimination of a town power role while holding ammunition grants a major advantage to evil roles, specifically the necromancer. Consensus: The village is consolidating on unverified roles to eliminate remaining threats. My position: holding out Heat: High; you are a primary target for the daily vote. Forward exposure: Claiming role reveals your identity and ends concealment but prevents the risk of your elimination and subsequent reanimation or weapon theft by the necromancer. Target landscape: The room is focused on a small pool of unverified players, with you as the primary suspect despite being town. Public vs private: Public town suspicion of you as an evil role contradicts your private knowledge as town vigilante."
+ },
+ {
+  "key": "992facd0-f1e8-4cde-847e-e55713da8860",
+  "cell": "vigilante/day_vote",
+  "action": "Prioritize voting against players who make objectively false claims regarding game mechanics (e.g., visit counts or roles) rather than prioritizing threats based solely on behavioral suspicions or alignment with other players.",
+  "situation": "End-game phase (4 players remaining) with an active lone killer or wolf threat requiring a correct elimination to prevent parity. Information landscape: Information-rich environment characterized by confirmed dead wills and night records, but obscured by active deception. Stakes: A single mis-elimination directly leads to a loss as the remaining evil role gains the ability to force parity or kill the vigilante. Consensus: The village is typically divided or searching for the final wolf, often oscillating between two competing narratives. My position: driving Heat: Moderate to high; the vigilante is under pressure to identify the threat to avoid parity. Forward exposure: Committing a vote reveals the vigilante's stance and often their role, which is irreversible and increases the risk of being targeted at night. Target landscape: Multiple players claiming roles or making mechanical assertions, with evidence based on contradictory logs rather than confirmed role reveals. Public vs private: The vigilante knows their own status and role, but faces public uncertainty regarding the veracity of conflicting claims from others."
+ },
+ {
+  "key": "ab89dc3f-1600-4519-b40c-6a9b283dd4b0",
+  "cell": "vigilante/day_vote",
+  "action": "When the game is at parity (distance 0), consolidate votes only on targets supported by verifiable evidence like investigator wills or tracker results, rather than attempting to split votes or pivot to players based on defensive gameplay.",
+  "situation": "Down to four players where a final wolf is hidden among the remaining, making an accurate day-vote the sole path to victory. Information landscape: Evidence-heavy; roles and wills are public, leaving only the identification of the remaining wolf. Stakes: The vote determines the game outcome; any failure to hit the final evil player grants them the win. Consensus: The village is coalescing around the remaining unverified players to end the game. My position: with majority Heat: Low; the vigilante is recognized as town-aligned due to confirmation. Forward exposure: A vote here is the final game action; there is no recovery from a mis-elimination, making full transparency of the town-aligned vote mandatory. Target landscape: A small pool of remaining players, clearly divided into confirmed town and unverified suspects. Public vs private: The vigilante possesses private certainty (due to confirmed results) that may not yet be universally accepted by the table."
+ },
+ {
+  "key": "34501f49-3252-4bfa-8a81-0b452561da32",
+  "cell": "vigilante/day_vote",
+  "action": "If under sudden, unprovoked heat as the vigilante, prioritize survival over independent voting; align with the majority vote to avoid elimination and prevent your role from falling to the necromancer.",
+  "situation": "A vigilante under sudden suspicion faces an elimination vote while the necromancer is active. Information landscape: Information-rich: confirmed roles exist but the room is being manipulated. Stakes: Elimination of the vigilante grants the necromancer a kill/role-abuse tool, effectively deciding the game. Consensus: The room is fractured; the majority is currently pushing an irrational execution bloc. My position: holding_out Heat: Extremely high, unprompted targeting by a subset of players. Forward exposure: High; public votes commit you to a candidate, potentially drawing further scrutiny if that candidate is later cleared. Target landscape: The room is split between the agent and an unverified suspect; evidence is rich but misdirected by the pack. Public vs private: Publicly accused without cause, while privately holding high-value lethal assets."
+ },
+ {
+  "key": "94e83148-f082-40d7-9a71-757e3f7275ce",
+  "cell": "vigilante/day_vote",
+  "action": "When heat is low and you are cleared as Not Suspicious by an investigator, use your vote to support the investigator's target if it aligns with logic, rather than splitting the vote against the consensus.",
+  "situation": "Vigilante with a remaining shot navigating a vote when the town is split. Information landscape: Information-rich: roles revealed, investigator checks available. Stakes: Correctly identifying and voting out the lone killer or wolf is necessary to prevent loss of town parity. Consensus: The town is actively searching for the serial killer; consensus is forming around suspicious activity. My position: with_majority Heat: Low; public clearance redirects attention. Forward exposure: Moderate; voting with the investigator confirms an alliance but keeps the vigilante role concealed. Target landscape: The room focuses on quiet players or those who opposed deceased town assets. Public vs private: The investigator has publicly vouched for you, hiding the fact that you possess a lethal vigilante shot."
+ },
+ {
+  "key": "6c72c975-7756-4e2e-82f0-8eb84ccb096e",
+  "cell": "vigilante/night_action",
+  "action": "If no viable, high-probability target exists among the remaining unvetted players, prioritize holding ammunition to preserve a claim as a threat against potential late-game threats.",
+  "situation": "Early-to-mid game state where the benefit of eliminating a potential false lead is outweighed by the loss of the vigilante's threat potential. Information landscape: Primarily information-starved; requires more observational data. Stakes: No immediate loss condition; preserve utility for higher-certainty windows. Forward exposure: Maintains secrecy but risks being perceived as a non-contributor; easily reversible if a strong target emerges. Target landscape: The pool of unconfirmed players; choose to act only when the target is statistically linked to a bad actor."
+ },
+ {
+  "key": "9760bb31-80af-4b9f-ae7e-fb339fc18668",
+  "cell": "vigilante/night_action",
+  "action": "Execute a vigilante kill on a player whose claim has been objectively disproven by a system-confirmed role reveal or whose defensive narrative is mechanically invalidated by a town-confirmed night result.",
+  "situation": "A high-certainty conflict where a player's defensive claim has been objectively dismantled by verified information from previous day or night events. Information landscape: Information-rich: relies on proven facts like death reveals or trackable night visits that contradict a suspect's defense. Stakes: High: The target is a known threat or confirmed liar; failing to remove them facilitates an enemy win, while killing them likely secures the town's survival. Forward exposure: Irreversibly consumes a limited bullet and confirms the existence of a vigilante in the current game to all players, though the user's specific identity remains hidden. Target landscape: Focus on players actively lying about their role or those caught in an impossible contradiction regarding night visits as established by confirmed town sources."
+ },
+ {
+  "key": "411ae5d7-8664-480d-80af-339362bdd99e",
+  "cell": "vigilante/night_action",
+  "action": "In a parity-critical endgame (3-4 players), if an unambiguous lone killer or last remaining enemy is identified through process of elimination or hard evidence, expend the final bullet immediately to secure victory, rather than holding fire which risks parity loss due to night kills.",
+  "situation": "Endgame transition where wolf or lone killer parity is imminent. Information landscape: Information-rich environment where graveyard records and voting history provide clear candidates. Stakes: A single shot decides the win/loss outcome for the town. Forward exposure: Commits the vigilante to their final shot; irreversible and terminal to the game state. Target landscape: Remaining players narrowed down by vote records and role claims; typically involving non-confirmed, quiet, or contradictory actors."
+ },
+ {
+  "key": "66039b71-97fa-4f14-b391-aff452e4b1e4",
+  "cell": "vigilante/night_action",
+  "action": "Hold fire on all nights where information is strictly behavioral or speculative to preserve ammunition and avoid friendly fire; reserve bullets exclusively for instances where a target is confirmed as evil through mechanical verification (investigator/trailseer/sentinel results) or a guaranteed elimination consensus is unreachable through voting alone.",
+  "situation": "The vigilante faces night phases with limited ammunition and high uncertainty, where the cost of a missed shot (killing a town power role) outweighs the pressure of early game aggressive play. Information landscape: Primarily information-starved or emerging evidence; speculative leads dominate until mechanical proofs are established. Stakes: A missed shot significantly damages the town's mechanical advantage, while conserving shots preserves town strength for late-game swing moments. Forward exposure: Holding fire keeps the role hidden and reversible, whereas firing commits to a target and exposes the vigilante to retaliation or reveals role presence. Target landscape: Candidates range from unknown players to suspected evildoers; currently lacks mechanical confirmation."
+ }
+]

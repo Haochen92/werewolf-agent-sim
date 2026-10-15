@@ -1,9 +1,8 @@
 """Consolidation store-ops: prune/evict by realized credit + credit-aware synthesis (production).
 
-Runs on a credited store (after ``credit.credit_apply`` + ``conversion.conversion_apply``):
-  PRUNE   drop SPs whose de-luck lift < tau with enough follows, OR whose conversion lift is as
-          negative with enough tallies (the concealment class the follow ledger can't reach —
-          always on in production, there is no conversion switch).
+Runs on a credited store (after ``credit.credit_apply``):
+  PRUNE   drop SPs whose de-luck lift < tau with enough follows (an SP with no base is unscored and
+          never pruned).
   EVICT   drop SPs surfaced >= R times but NEVER followed when override-dominant (rejected on the
           merits); not_relevant-dominant non-follows are spared (retrieval's fault, not content's).
   SYNTH   credit-aware synthesis (realized track record) for cells with NEW obs — adds fresh SPs;
@@ -22,9 +21,9 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 
+from Agents.llm_factory import similarity_threshold
 from Agents.memory.consolidation.config import TickConfig
-from Agents.memory.consolidation.conversion import CONVERSION_CHANNEL, conversion_lift
-from Agents.memory.consolidation.credit import base_for, sp_lift
+from Agents.memory.consolidation.credit import sp_base, sp_lift
 
 
 def memory_store_paths_local(store_dir: Path):
@@ -40,7 +39,7 @@ def _is_proven(v: dict, base: float, cfg: TickConfig) -> bool:
     """PROVEN predicate: positive de-luck lift over the resolved OFF base with enough follows.
     Deliberately DIFFERS from the game-side raw-counter heuristic — this side has the base rates.
     Shared by prune_and_evict's exemption and synthesize's contested-lane cap so the two sites
-    can't drift. ``base`` is already resolved (base_for) by the caller."""
+    can't drift. ``base`` is already resolved (sp_base) by the caller; None = unscored."""
     lift = sp_lift(v, base)
     return lift is not None and lift > 0 and v.get("follow_count", 0) >= cfg.protect_min_follow
 
@@ -58,16 +57,28 @@ def _evict_ok(v: dict, cfg: TickConfig) -> bool:
 
 
 def prune_and_evict(sp_namespaces: dict, base_rates: dict, cfg: TickConfig) -> dict:
-    """Mutate sp_namespaces in place: drop harmful (follow-lift OR conversion-lift < tau at enough
-    evidence) + rejected-on-merits SPs. Never drops a positive-lift SP, nor one whose non-follow is
-    a retrieval mismatch. Returns {pruned, evicted, kept, spared}."""
-    pruned = evicted = kept = spared = 0
+    """Mutate sp_namespaces in place: drop harmful (follow-lift < tau at enough evidence) +
+    rejected-on-merits SPs. Never drops a positive-lift SP, nor one whose non-follow is a retrieval
+    mismatch. Returns {pruned, evicted, kept, spared, proven, changes}: ``changes`` lists every SP
+    pruned, evicted, spared or proven with its numbers, for review before a store is published."""
+    pruned = evicted = kept = spared = proven = 0
+    changes: list[dict] = []
+
+    def note(change: str, ns_key: str, r: dict, base, lift) -> None:
+        v = r["value"]
+        changes.append({"change": change, "key": r["key"], "cell": _cell_of(ns_key),
+                        "action": v.get("action", ""), "follow": v.get("follow_count", 0),
+                        "positive": v.get("positive_count", 0), "negative": v.get("negative_count", 0),
+                        "retrieved": v.get("retrieved_count", 0), "override": v.get("override_count", 0),
+                        "not_relevant": v.get("not_relevant_count", 0), "base": base,
+                        "lift": None if lift is None else round(lift, 3)})
+
     for ns_key, recs in list(sp_namespaces.items()):
         survivors = []
         for r in recs:
             v = r["value"]
-            # same-function OFF base, per SP: concealment-typed SPs difference against the conceal base
-            base = base_for(base_rates, _cell_of(ns_key), v.get("sp_type"))
+            # same-function OFF base, per SP (its follows' channels; None = unscored)
+            base = sp_base(v, base_rates, _cell_of(ns_key))
             lift = sp_lift(v, base)
             follow = v.get("follow_count", 0)
             retrieved = v.get("retrieved_count", 0)
@@ -77,28 +88,25 @@ def prune_and_evict(sp_namespaces: dict, base_rates: dict, cfg: TickConfig) -> d
             if _is_proven(v, base, cfg):
                 survivors.append(r)
                 kept += 1
+                proven += 1
+                note("proven", ns_key, r, base, lift)
                 continue
             if cfg.prune and lift is not None and lift < cfg.prune_tau and follow >= cfg.prune_min_follow:
                 pruned += 1
-                continue
-            # CONVERSION term (always on): an SP whose presence in investigator find-windows tracks
-            # failed conversions is prunable even at follow==0 — the concealment class the follow
-            # ledger structurally can't reach. Sits AFTER the proven exemption on purpose: a
-            # vote-proven SP is never deleted by the diffuse channel alone.
-            clift = conversion_lift(v, base_for(base_rates, CONVERSION_CHANNEL))
-            conv_n = v.get("conversion_pos_count", 0) + v.get("conversion_neg_count", 0)
-            if clift is not None and clift < cfg.prune_tau and conv_n >= cfg.conversion_min_n:
-                pruned += 1
+                note("pruned", ns_key, r, base, lift)
                 continue
             if cfg.evict and follow == 0 and retrieved >= cfg.evict_min_retrieved:
                 if _evict_ok(v, cfg):
                     evicted += 1
+                    note("evicted", ns_key, r, base, lift)
                     continue
                 spared += 1  # surfaced+unfollowed but not_relevant-dominant => retrieval's problem, keep
+                note("spared", ns_key, r, base, lift)
             survivors.append(r)
             kept += 1
         sp_namespaces[ns_key] = survivors
-    return {"pruned": pruned, "evicted": evicted, "kept": kept, "spared": spared}
+    return {"pruned": pruned, "evicted": evicted, "kept": kept, "spared": spared, "proven": proven,
+            "changes": changes}
 
 
 def evict_observations(obs_path: str | Path, obs_gen_map: dict, current_gen: int, cfg: TickConfig,
@@ -142,12 +150,12 @@ def _synth_cluster(live: list, depleted: bool, obs_gen_map: dict | None, synth_l
     return any(obs_gen_map.get(k, 0) > synth_lookback for k in live)
 
 
-def _track_record(sp_recs: list, base: float, min_follow: int = 5) -> tuple[str, list[str]]:
+def _track_record(sp_recs: list, base_rates: dict, cell: str, min_follow: int = 5) -> tuple[str, list[str]]:
     """Render the realized-credit track record for a cell AND return the keys of exactly the SPs
     whose rows it contains (lift known, followed >= min_follow) — the lineage a revised SP joins
-    back to via distilled_from."""
-    rows = [(sp_lift(r["value"], base), r["value"].get("follow_count", 0), r["value"].get("action", ""),
-             r.get("key", "")) for r in sp_recs]
+    back to via distilled_from. Each SP's lift is against its own base (``sp_base``)."""
+    rows = [(sp_lift(r["value"], sp_base(r["value"], base_rates, cell)), r["value"].get("follow_count", 0),
+             r["value"].get("action", ""), r.get("key", "")) for r in sp_recs]
     rows = [row for row in rows if row[0] is not None and row[1] >= min_follow]
     if not rows:
         return "", []
@@ -168,7 +176,7 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Tick
     from Agents.memory.batch_deduplication.config import BatchDedupRunConfig
     from Agents.memory.persistence import memory_store_paths, seed_memory_from_json_files_cached
     from Agents.memory.store import store
-    from Agents.memory.strategy_synthesis import (cluster_observations_for_synth,
+    from Agents.memory.strategy_synthesis import (_format_cluster, cluster_observations_for_synth,
                                                    fetch_observations_for_synth, synthesize_cluster_sps)
     from Agents.schemas.roles import VALID_ACTION_PHASES_BY_ROLE, roles as ALL_ROLES
 
@@ -178,7 +186,8 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Tick
     # 0.65 ≡ 0.70 on -001 (below every real obs pair on both scales — the gate deliberately never
     # binds; neighbor ranking + the cluster cap do the selection). Remapped 2026-07-16 for
     # gemini-embedding-2's lower similarity scale.
-    cfgd = BatchDedupRunConfig(similarity_threshold=0.65, cluster_mode="bounded", max_cluster_size=15)
+    cfgd = BatchDedupRunConfig(similarity_threshold=similarity_threshold("synth_cluster"), cluster_mode="bounded",
+                               max_cluster_size=15)
     prev = prev_obs_counts or {}
     # "New obs since last synth" must count ARRIVALS (by first-seen tick), NOT the net count change:
     # net change cancels additions against obs DECAY, silently stalling synthesis once decay >=
@@ -205,7 +214,7 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Tick
             # exemption). PROVEN SPs occupy earned slots outside the quota.
             unproven_count = sum(
                 1 for r in sp_recs
-                if not _is_proven(r["value"], base_for(base_rates, cell, r["value"].get("sp_type")), cfg))
+                if not _is_proven(r["value"], sp_base(r["value"], base_rates, cell), cfg))
             depleted = cur_sp_count < cfg.synth_replenish_floor  # replenish floor = TOTAL size (lane-agnostic)
             if cfg.incremental and new_obs < cfg.synth_min_new_obs and not depleted:
                 continue  # not enough fresh evidence AND the cell isn't depleted → skip (cost guard)
@@ -224,8 +233,7 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Tick
                          and not depleted else None)
             items, clusters = cluster_observations_for_synth(store, ("observations", role, phase), cfgd,
                                                              items=items, seed_keys=seed_keys)
-            tr, tr_keys = _track_record(sp_namespaces.get(f"strategy_points/{cell}", []),
-                                        base_for(base_rates, cell),
+            tr, tr_keys = _track_record(sp_namespaces.get(f"strategy_points/{cell}", []), base_rates, cell,
                                         min_follow=cfg.synth_track_min_follow)
             for cl in clusters:
                 live = [k for k in cl if k in items]
@@ -237,15 +245,23 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Tick
 
     def _run(t):
         role, phase, live, items, tr, tr_keys = t
-        return role, tr_keys, synthesize_cluster_sps(role, phase, live, items, max_retries=1, track_record=tr)
+        return t, synthesize_cluster_sps(role, phase, live, items, max_retries=1, track_record=tr,
+                                         model=cfg.model, outcome=cfg.synth_outcome)
 
+    # Each synthesis call's input and output, one JSON line per call, beside the store: the record a
+    # worked example of synthesis is shown from (the full cluster, not only the excerpts displayed).
+    log_path = Path(store_dir) / "synthesis_log.jsonl"
     if tasks:
         with ThreadPoolExecutor(max_workers=12) as pool:
-            for role, tr_keys, sps in pool.map(_run, tasks):
+            results = (_batch_results(tasks, cfg, _run, pool) if cfg.batch and cfg.model.startswith("claude")
+                       else pool.map(_run, tasks))
+            for (role, phase, live, items, tr, tr_keys), sps in results:
+                new_keys = []
                 for sp in sps:
                     ns = f"strategy_points/{role}/{sp.action_phase}"
+                    new_keys.append(str(uuid.uuid4()))
                     sp_namespaces.setdefault(ns, []).append({
-                        "created_at": now.isoformat(), "key": str(uuid.uuid4()),
+                        "created_at": now.isoformat(), "key": new_keys[-1],
                         "namespace": ["strategy_points", role, sp.action_phase],
                         "updated_at": now.isoformat(),
                         # distilled_from: keys of the SPs whose track record was fed into synthesis
@@ -259,14 +275,50 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Tick
                                   "follow_count": 0, "retrieved_count": 0, "positive_count": 0,
                                   "neutral_count": 0, "negative_count": 0,
                                   "distilled_from": tr_keys,
+                                  # source_observations: the cluster this SP was synthesized from —
+                                  # inert provenance (agents never see it); kept only on the SP as
+                                  # written, a dedup survivor does not absorb a discarded SP's list.
+                                  "source_observations": live,
                                   "dimensions": sp.model_dump(mode="json")},
                     })
                     added += 1
+                with log_path.open("a", encoding="utf-8") as log:
+                    log.write(json.dumps({
+                        "at": now.isoformat(), "role": role, "phase": phase,
+                        "source_observations": live,
+                        "observations_text": _format_cluster(live, items, cfg.synth_outcome),
+                        "track_record": tr, "distilled_from": tr_keys,
+                        "strategy_points": [{"key": k, "situation": sp.composed_situation, "action": sp.action}
+                                            for k, sp in zip(new_keys, sps)],
+                    }) + "\n")
     # with_track_record = cells synthesized using a realized-credit track record (the credit-AWARE
     # path) — makes the mechanism observable per tick instead of hoped.
     with_tr = len({(r, p) for r, p, _live, _items, tr, _keys in tasks if tr})
     return ({"added": added, "cells_synthed": len({(r, p) for r, p, *_ in tasks}),
              "with_track_record": with_tr, "cells_capped": cells_capped}, obs_counts)
+
+
+def _batch_results(tasks: list, cfg: TickConfig, run_one, pool) -> list:
+    """Every task's strategy points from one Message Batch (offline runs, ``TickConfig.batch``); a
+    request the batch did not return parsed is retried as a direct call."""
+    from Agents.llm_factory.providers.anthropic import batch_parse
+    from Agents.memory.strategy_synthesis import synthesis_cache_prefix, synthesis_request
+
+    requests = {f"t{i}": synthesis_request(role, phase, live, items, tr, cfg.synth_outcome)
+                for i, (role, phase, live, items, tr, _keys) in enumerate(tasks)}
+    parsed = batch_parse({k: v for k, v in requests.items() if v is not None}, cfg.model,
+                         cache_prefix=synthesis_cache_prefix())
+    retry = [i for i, k in enumerate(requests) if requests[k] is not None and parsed.get(k) is None]
+    retried = dict(zip(retry, pool.map(lambda i: run_one(tasks[i])[1], retry)))
+    results = []
+    for i, task in enumerate(tasks):
+        if i in retried:
+            sps = retried[i]
+        else:
+            res = parsed.get(f"t{i}")
+            sps = list(res.strategy_points) if res is not None else []
+        results.append((task, sps))
+    return results
 
 
 def _dedup_strategy_points(store_dir: Path, model: str) -> dict:

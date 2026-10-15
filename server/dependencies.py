@@ -15,38 +15,104 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request
 
-from server.lobby import GameLobby
-from server.runtime import GameSession
-
-Entry = GameSession | GameLobby
-
-
-def get_games(request: Request) -> dict[str, Entry]:
-    """The app's registry of every waiting room and running game, keyed by game_id.
-
-    One plain dict on app.state — created empty by the lifespan at startup, torn
-    down by it at shutdown (running game tasks get cancelled). In-memory only: a
-    server restart forgets all games. Inject this (rather than the id-resolving
-    providers below) when a route must ADD or SWAP an entry: POST /games,
-    POST /rooms, and /start's lobby-for-session swap."""
-    return request.app.state.games
+from server.database_models.game import COMPLETED, ENDED_STATUSES, GameRow
+from server.game.lobby import GameLobby
+from server.house import HousePolicy
+from server.game.live_game_registry import Entry, LiveGameRegistry
+from server.game.game_session import GameSession
+from server.graph_runtime import GraphRuntime
+from server.resources import AppResources
+from server.storage.game_repository import GameRepository
+from server.storage.replay_service import ReplayService
 
 
-def get_room(game_id: str, request: Request) -> Entry:
-    """Resolve the ``{game_id}`` path parameter to its registry entry, or 404."""
-    entry = request.app.state.games.get(game_id)
-    if entry is None:
-        raise HTTPException(status_code=404, detail="unknown game")
-    return entry
+def get_resources(request: Request) -> AppResources:
+    """The one process-lifetime container created by the FastAPI lifespan."""
+    return request.app.state.resources
 
 
-def get_game(game_id: str, request: Request) -> GameSession:
-    """Like get_room, but the caller needs a RUNNING game: a lobby is 409."""
-    entry = get_room(game_id, request)
-    if isinstance(entry, GameLobby):
+Resources = Annotated[AppResources, Depends(get_resources)]
+
+
+def get_games(resources: Resources) -> LiveGameRegistry:
+    """The app's registry of every waiting room and running game (game/live_game_registry.py).
+
+    It belongs to ``AppResources``: empty at boot, rehydrated by recovery, its tasks
+    stopped at shutdown. Inject this (rather than the id-resolving providers below)
+    when a route performs a lifecycle TRANSITION: POST /games, POST /rooms, join,
+    lock, and /start."""
+    return resources.games
+
+
+GamesRegistry = Annotated[LiveGameRegistry, Depends(get_games)]
+
+
+def get_game_repository(resources: Resources) -> GameRepository:
+    return resources.game_repository
+
+
+GameRepositoryDep = Annotated[GameRepository, Depends(get_game_repository)]
+
+
+def get_graph_runtime(resources: Resources) -> GraphRuntime:
+    return resources.graph_runtime
+
+
+GraphRuntimeDep = Annotated[GraphRuntime, Depends(get_graph_runtime)]
+
+
+def get_replay_service(resources: Resources) -> ReplayService:
+    """Return the app-owned replay reader without creating a storage client."""
+    return resources.replays
+
+
+ReplayServiceDep = Annotated[ReplayService, Depends(get_replay_service)]
+
+
+def get_house(resources: Resources) -> HousePolicy:
+    """The house's purse: who pays for a new game and which model it runs on."""
+    return resources.house
+
+
+House = Annotated[HousePolicy, Depends(get_house)]
+
+
+async def get_room(game_id: str, resources: Resources) -> Entry | GameRow:
+    """Resolve the ``{game_id}`` path parameter. A waiting room or a running game comes
+    from the live registry. A game that has ended is no longer there, so its database
+    row answers instead: enough to say how it ended, and where its replay is. An id
+    neither knows is 404."""
+    entry = resources.games.get(game_id)
+    if entry is not None:
+        return entry
+    closed = resources.games.closed_reason(game_id)
+    if closed is not None:  # a room closed before it departed has no row to answer
+        raise HTTPException(status_code=410, detail=closed)
+    row = await resources.game_repository.load_game(game_id)
+    if row is not None and row.status in ENDED_STATUSES:
+        return row
+    raise HTTPException(status_code=404, detail="unknown game")
+
+
+def ended_detail(row: GameRow) -> str:
+    """The one-line explanation an endpoint gives when asked to act on an ended game."""
+    if row.status == COMPLETED:
+        return f"this game has finished; its replay is at /replays/{row.game_id}"
+    return f"this game was dropped: {row.error or 'no reason recorded'}"
+
+
+Room = Annotated[Entry | GameRow, Depends(get_room)]
+
+
+def get_game(room: Room) -> GameSession:
+    """Like get_room, but the caller needs a RUNNING game: a lobby is 409 and an ended
+    game is 410."""
+    if isinstance(room, GameRow):
+        raise HTTPException(status_code=410, detail=ended_detail(room))
+    if isinstance(room, GameLobby):
         raise HTTPException(status_code=409,
                             detail="game not started yet (waiting room)")
-    return entry
+    return room
 
 
 def seat_cookie_name(game_id: str) -> str:
@@ -61,11 +127,9 @@ def get_seat_token(game_id: str, request: Request) -> str:
     HttpOnly cookie plus a one-time body copy, and rides back automatically on every
     same-game request — including SSE, which cannot set headers but does send cookies.
     Extraction only: whether the token is KNOWN is the session's call
-    (seat_for_token / position_of), made in the routes."""
+    (seat_for_token / owns), made in the routes."""
     return request.cookies.get(seat_cookie_name(game_id), "")
 
 
-GamesRegistry = Annotated[dict[str, Entry], Depends(get_games)]
-Room = Annotated[Entry, Depends(get_room)]
 Game = Annotated[GameSession, Depends(get_game)]
 SeatToken = Annotated[str, Depends(get_seat_token)]

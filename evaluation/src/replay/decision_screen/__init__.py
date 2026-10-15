@@ -31,8 +31,8 @@ from evaluation.src.replay.decision_screen.cases import (
     load_game_index,
 )
 from evaluation.src.replay.decision_screen.replay import (
-    NIGHT_SPECS,
     _replay_night,
+    night_spec,
     _replay_vote,
     _replay_vote_structured,
 )
@@ -81,7 +81,7 @@ __all__ = [
     "_find_case",
     "_find_endgame_plant",
     # replay
-    "NIGHT_SPECS",
+    "night_spec",
     "_replay_vote",
     "_replay_night",
     "_replay_vote_structured",

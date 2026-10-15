@@ -3,12 +3,15 @@
 ``run_memory_informed_action`` and ``run_memory_informed_night_action`` are the two entry points:
 each enriches the payload with retrieved memory, routes the decision through the LLM runner, and
 records the result (EvalCase snapshot + strategy-adoption write-back). enrich → decide → record.
+``preview_agent_action`` is enrich → decide alone: the turn a seat's agent would take, for show.
 """
 from logging import getLogger
 from typing import Any
 
+from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableConfig
+from langgraph.config import get_stream_writer
 from langgraph.runtime import Runtime
 from pydantic import BaseModel
 
@@ -18,7 +21,6 @@ from Agents.tracing import GraphContext, langfuse
 from Agents.prompts.prompt_formatters import (
     format_day_channel,
     format_day_summaries,
-    format_investigator_results,
     format_wolf_channel,
 )
 from Agents.memory.retrieval import enrich_payload_with_memory
@@ -35,20 +37,11 @@ from Agents.schemas.game_events import (
 from Agents.schemas.turn import (
     ResolvedDayDiscussion,
     ResolvedDayVote,
-    ResolvedHealerTarget,
-    ResolvedInvestigatorTarget,
-    ResolvedSerialKillerTarget,
+    ResolvedNightChoice,
     ResolvedTurn,
-    ResolvedVigilanteTarget,
     ResolvedWolfDiscussion,
-    ResolvedWolfVote,
 )
-from Agents.state import (
-    HealerDayState,
-    InvestigatorDayState,
-    VillagerDayState,
-    WolfDayState,
-)
+from Agents.state import DayActorState
 from Agents.turn.agent_player import run_agent
 from Agents.turn.human_turn import run_human_decision
 from Agents.turn.adoption import process_strategy_adoption
@@ -57,8 +50,86 @@ from Agents.turn.eval import build_eval_private_context
 logger = getLogger(__name__)
 
 
+
+def _with_game_id(enriched_payload: dict[str, Any], config: RunnableConfig) -> dict[str, Any]:
+    """The game id on the prompt payload: the seed of each agent's own order of the player
+    lists (prompt_inputs.prompt_order). Public information; "" when a bare test has none."""
+    configurable = config.get("configurable", {}) if config else {}
+    enriched_payload["game_id"] = str(configurable.get("game_id") or "")
+    return enriched_payload
+
+def _announce_memory_consulted(
+    *,
+    player_id: str,
+    role: str,
+    day: int,
+    round_num: int,
+    action_phase: str,
+    enriched_payload: dict[str, Any],
+    retrieval_meta: dict[str, Any],
+    effects,
+) -> None:
+    """Stream what this decision weighed from past games, for the replay's X-ray: the
+    lessons and observations retrieved, and the agent's verdict on each. Fires only when
+    retrieval ran. A custom chunk, never graph state — the verdicts are kept out of state
+    on purpose (resolve._turn_effects). A re-run node fires it again; the server's
+    translator sends it once."""
+    if not retrieval_meta["memory_enabled"] or effects is None:
+        return
+    # dimensions: the record's structured situation fields, verbatim from the store (None on
+    # legacy records, whose dict is empty) — for the replay only, never the prompt.
+    lessons = [
+        {"index": i, "key": sp.key, "situation": sp.strategy_point.situation,
+         "action": sp.strategy_point.action,
+         "dimensions": sp.strategy_point.dimensions or None}
+        for i, sp in enumerate(enriched_payload.get("strategy_points") or [], 1)
+    ]
+    observations = [
+        {"index": i, "key": ob.key, "situation": ob.observation.situation,
+         "outcome": ob.observation.outcome,
+         "dimensions": ob.observation.dimensions or None}
+        for i, ob in enumerate(enriched_payload.get("retrieved_observations") or [], 1)
+    ]
+    try:
+        get_stream_writer()({
+            "event": "memory_consulted", "player": player_id, "role": role, "day": day,
+            "round": round_num, "action_phase": action_phase,
+            "lessons": lessons,
+            "verdicts": [v.model_dump(mode="json") for v in effects.strategy_verdicts],
+            "observations": observations,
+            "applicability": [v.model_dump(mode="json") for v in effects.memory_verdicts],
+        })
+    except RuntimeError:  # direct call outside a graph run (tests)
+        pass
+
+
+def _announce_reads(
+    *,
+    player_id: str,
+    role: str,
+    day: int,
+    round_num: int,
+    action_phase: str,
+    effects,
+) -> None:
+    """Stream the agent's per-player suspicions for the replay's X-ray: who it reads as
+    what, how sure, and why. Every decision that produced reads, memory on or off. A custom
+    chunk, never graph state (the reads are kept out of state on purpose, like the
+    verdicts). A re-run node fires it again; the server's translator sends it once."""
+    if effects is None or not effects.reads:
+        return
+    try:
+        get_stream_writer()({
+            "event": "player_reads", "player": player_id, "role": role, "day": day,
+            "round": round_num, "action_phase": action_phase,
+            "reads": [r.model_dump(mode="json") for r in effects.reads],
+        })
+    except RuntimeError:  # direct call outside a graph run (tests)
+        pass
+
+
 def run_memory_informed_action(
-    payload: VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState,
+    payload: DayActorState,
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
     action_phase: str,
@@ -83,7 +154,7 @@ def run_memory_informed_action(
     player_id = payload["player_id"]
     role = payload["player_role"]
     day = payload["current_day"]
-    round_num = payload["current_round"]
+    round_num = payload.get("current_round", 0)  # night turns carry the pack's talk round; day turns none
     prompt_payload = dict(payload)
 
     recent_messages = [message for message in payload["day_channel"] if message.day == day]
@@ -108,11 +179,11 @@ def run_memory_informed_action(
             "day_summaries": format_day_summaries(
                 payload.get("day_summaries", []),
                 before_day=day,
+                dead_roster=payload.get("dead_roster", []),
+                cast_role_counts=payload.get("cast_role_counts", {}),
+                messages=payload.get("day_channel", []),
             ),
             "wolf_channel": format_wolf_channel(payload.get("wolf_channel", [])),
-            "investigator_results": format_investigator_results(
-                payload.get("investigator_results", [])
-            ),
             "surviving_players": payload.get("surviving_players", []),
             "surviving_wolves": payload.get("surviving_wolves", []),
             "surviving_villagers": payload.get("surviving_villagers", []),
@@ -128,6 +199,7 @@ def run_memory_informed_action(
             runtime,
             action_phase,
         )
+        enriched_payload = _with_game_id(enriched_payload, config)
         result = run_agent(
             enriched_payload,
             prompt_template,
@@ -216,8 +288,48 @@ def run_memory_informed_action(
                 "adopted_count": len(adopted_store_keys),
             },
         )
+        # Day turns carry no round, and the translator sends one of each event per (player, day,
+        # round, phase), so every turn after a player's first of the day was dropped. Every turn
+        # adds an entry to the day's channel (passes too), so its length before the turn tells a
+        # player's turns apart, and stays the same when the node re-runs.
+        wire_round = len(recent_messages)
+        _announce_memory_consulted(
+            player_id=player_id, role=role, day=day, round_num=wire_round,
+            action_phase=action_phase, enriched_payload=enriched_payload,
+            retrieval_meta=retrieval_meta, effects=effects,
+        )
+        _announce_reads(player_id=player_id, role=role, day=day, round_num=wire_round,
+                        action_phase=action_phase, effects=effects)
 
     return result
+
+
+def preview_agent_action(
+    payload: dict[str, Any],
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+    action_phase: str,
+    prompt_template: ChatPromptTemplate,
+    output_schema: type[BaseModel],
+    output_key: str,
+    direction: str = "",
+) -> ResolvedTurn | None:
+    """The turn this seat's agent would take on ``payload``, taken for show only.
+
+    It is the agent path of ``run_memory_informed_action`` (what a human seat that hands its
+    turn over runs): the same memory retrieval, prompt, model, retries and resolution. What it
+    leaves out is everything that records a turn: no eval span or EvalCase, no strategy-adoption
+    write-back to the memory store, no X-ray events. The caller commits nothing, so the turn's
+    updated strategy note and reads are dropped with the result.
+
+    ``direction`` is one extra message after the prompt (a human player's steer for the line);
+    empty, the model is sent exactly what the real turn would send.
+    """
+    enriched_payload, _ = enrich_payload_with_memory(dict(payload), config, runtime, action_phase)
+    enriched_payload = _with_game_id(enriched_payload, config)
+    if direction:
+        prompt_template = prompt_template + HumanMessage(content=direction)
+    return run_agent(enriched_payload, prompt_template, output_schema, output_key)
 
 
 def run_memory_informed_night_action(
@@ -263,12 +375,11 @@ def run_memory_informed_night_action(
             "day_summaries": format_day_summaries(
                 payload.get("day_summaries", []),
                 before_day=day,
+                dead_roster=payload.get("dead_roster", []),
+                cast_role_counts=payload.get("cast_role_counts", {}),
+                messages=payload.get("day_channel", []),
             ),
             "wolf_channel": format_wolf_channel(payload.get("wolf_channel", [])),
-            "investigator_results": format_investigator_results(
-                payload.get("investigator_results", [])
-            ),
-            "vigilante_results": payload.get("vigilante_results", []),
             "surviving_players": payload.get("surviving_players", []),
         },
         metadata={
@@ -281,7 +392,11 @@ def run_memory_informed_night_action(
             config,
             runtime,
             action_phase,
+            # The pack's chat shares one lookup a night; its kill and ability another, made once
+            # the talk has moved from candidates to a plan (D4, 2026-10-12).
+            lookup_scope="chat" if output_key == "wolf_channel" else "act",
         )
+        enriched_payload = _with_game_id(enriched_payload, config)
         result = run_agent(
             enriched_payload,
             prompt_template,
@@ -303,22 +418,16 @@ def run_memory_informed_night_action(
             round_num=round_num,
         )
 
-        target: str | None = None
+        night_action = NightAction(role=role)
         updated_strategy = (effects.strategy or "") if effects else ""
-        if isinstance(result, ResolvedWolfVote):
-            target = result.entry.vote
-        elif isinstance(
-            result,
-            (
-                ResolvedHealerTarget,
-                ResolvedInvestigatorTarget,
-                ResolvedSerialKillerTarget,
-                ResolvedVigilanteTarget,
-            ),
-        ):
-            target = result.entry
+        if isinstance(result, ResolvedNightChoice) and result.entry is not None:
+            entry = result.entry
+            night_action = NightAction(role=role, target=entry.target, kind=entry.kind,
+                                       via=entry.via, role_named=entry.role_named)
+        elif isinstance(result, ResolvedNightChoice):
+            night_action = NightAction(role=role, kind="declined")
         elif isinstance(result, ResolvedWolfDiscussion):
-            target = None
+            night_action = NightAction(role=role, kind="chat")
         eval_case = EvalCase(
             span_name=span_name,
             player_id=player_id,
@@ -341,7 +450,7 @@ def run_memory_informed_night_action(
                 reranking_enabled=retrieval_meta["reranking_enabled"],
                 filtering_enabled=retrieval_meta["filtering_enabled"],
             ),
-            agent_night_action=NightAction(role=role, target=target),
+            agent_night_action=night_action,
             updated_strategy=updated_strategy,
             adopted_strategy_keys=raw_adopted_indices,
             adopted_strategy_store_keys=adopted_store_keys,
@@ -375,5 +484,12 @@ def run_memory_informed_night_action(
                 "adopted_count": len(adopted_store_keys),
             },
         )
+        _announce_memory_consulted(
+            player_id=player_id, role=role, day=day, round_num=round_num,
+            action_phase=action_phase, enriched_payload=enriched_payload,
+            retrieval_meta=retrieval_meta, effects=effects,
+        )
+        _announce_reads(player_id=player_id, role=role, day=day, round_num=round_num,
+                        action_phase=action_phase, effects=effects)
 
     return result

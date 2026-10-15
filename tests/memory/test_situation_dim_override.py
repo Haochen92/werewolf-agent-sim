@@ -167,6 +167,13 @@ def test_known_facts_states_bullets_and_villager_note_at_zero():
     assert "Vigilante shots you have left: 0" in spent and "regular villager" in spent
 
 
+def test_known_facts_states_uses_left():
+    # The investigator's night cell carries uses_left; the prompt states it as it states bullets.
+    schema = cell_situation_schema_for("investigator", "night_action")
+    facts = _known_board_facts({"surviving_players": ["p2", "p3"], "player_id": "p1", "uses_left": 1}, schema)
+    assert "Uses of your limited ability you have left: 1" in facts
+
+
 def test_known_facts_states_ally_revealed():
     payload = {"surviving_wolves": ["w1"], "surviving_villagers": ["v1", "v2"],
                "player_id": "w1", "initial_wolf_count": 2}
@@ -184,7 +191,7 @@ def test_known_facts_states_criticality_dims():
     schema = cell_situation_schema_for("villager", "day_discussion")
     facts = _known_board_facts(payload, schema)
     assert "leading evil faction can win: 1" in facts
-    assert "end within one more elimination: yes" in facts
+    assert "One more elimination could decide the game, for the town or an evil side: yes" in facts
     cell = _make_cell("villager", "day_discussion", distance_to_parity=9, is_swing=False)
     _override_deterministic_dims(cell, payload)
     assert cell.distance_to_parity == 1 and cell.is_swing is True
@@ -205,3 +212,12 @@ def test_known_facts_number_matches_the_override_value():
     cell = _make_cell("healer", "night_action", players_alive=9)
     _override_deterministic_dims(cell, payload)
     assert f"Players alive right now: {cell.players_alive}" in facts
+
+
+def test_a_count_after_a_concealed_death_is_stated_as_the_worst_case():
+    payload = {"surviving_players": ["p1", "p2", "p3", "p4"], "player_id": "p1", "cast_role_counts": dict(_CAST),
+               "dead_roster": [{"role": "", "concealed": True}, {"role": "villager"}]}
+    facts = _known_board_facts(payload, cell_situation_schema_for("villager", "day_discussion"))
+    assert "at worst for the town" in facts
+    clear = {**payload, "dead_roster": [{"role": "villager"}]}
+    assert "at worst" not in _known_board_facts(clear, cell_situation_schema_for("villager", "day_discussion"))

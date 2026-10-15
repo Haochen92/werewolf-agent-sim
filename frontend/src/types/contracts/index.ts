@@ -1,0 +1,125 @@
+/**
+ * The hand façade over generated `api.ts` — the ONLY contracts module app code imports.
+ *
+ * Everything here is an alias or a narrowing, never a redefinition: a regenerated `api.ts`
+ * must break this file (loudly, at compile time) rather than leak a renamed shape into a
+ * hundred components. The one exception is `PhaseProgress`, which is SSE-only and so never
+ * reaches /openapi.json — it is transcribed from `server/schemas/events.py` and marked below.
+ */
+import type { components } from './api';
+
+type S = components['schemas'];
+
+// --- replay archive ---------------------------------------------------------
+
+export type ReplaySummary = S['ReplayBase'];
+export type ReplayGame = S['ReplayGame'];
+
+// --- durable event union ----------------------------------------------------
+
+/**
+ * Derived from ReplayGame rather than re-listed: the union is 27 members and the server
+ * owns its membership. Deriving means a new event type on the wire appears here for free
+ * and the reducer's exhaustive switch fails to compile until it is handled.
+ */
+export type DurableGameEvent = ReplayGame['events'][number];
+
+export type EventType = DurableGameEvent['type'];
+
+/** Narrow the union by its `type` tag: `EventOf<'speech'>` → Speech. */
+export type EventOf<T extends EventType> = Extract<DurableGameEvent, { type: T }>;
+
+export type GameStarted = EventOf<'game_started'>;
+export type RoleAssigned = EventOf<'role_assigned'>;
+export type RolesAssigned = EventOf<'roles_assigned'>;
+export type PhaseChange = EventOf<'phase_change'>;
+export type GameOver = EventOf<'game_over'>;
+export type TurnStarted = EventOf<'turn_started'>;
+export type RoundOpened = EventOf<'round_opened'>;
+export type Speech = EventOf<'speech'>;
+export type PassMarker = EventOf<'pass_marker'>;
+export type FiringReason = EventOf<'firing_reason'>;
+export type AddressedTargets = EventOf<'addressed_targets'>;
+export type StrategyUpdate = EventOf<'strategy_update'>;
+export type MemoryConsulted = EventOf<'memory_consulted'>;
+export type MemoryExtracted = EventOf<'memory_extracted'>;
+export type PlayerReads = EventOf<'player_reads'>;
+export type InputRequest = EventOf<'input_request'>;
+export type DaySummary = EventOf<'day_summary'>;
+export type VoteCast = EventOf<'vote_cast'>;
+export type GmMessage = EventOf<'gm_message'>;
+export type LynchResult = EventOf<'lynch_result'>;
+export type RosterUpdate = EventOf<'roster_update'>;
+export type PackRosterUpdate = EventOf<'pack_roster_update'>;
+export type NightAction = EventOf<'night_action'>;
+export type WolfMessage = EventOf<'wolf_message'>;
+export type WolfVote = EventOf<'wolf_vote'>;
+export type WolfKillDecided = EventOf<'wolf_kill_decided'>;
+export type NightResult = EventOf<'night_result'>;
+export type InvestigationResult = EventOf<'investigation_result'>;
+export type VigilanteConfirmation = EventOf<'vigilante_confirmation'>;
+export type BulletsRemaining = EventOf<'bullets_remaining'>;
+export type UsesRemaining = EventOf<'uses_remaining'>;
+export type NightRecord = EventOf<'night_record'>;
+
+// `day_summary_structured` is deliberately NOT aliased: its `data` is a bare object the
+// summarizer owns, read defensively by the reducer. (It was schema-only when this façade
+// was written; games since 2026-09 emit one per day — four in the 9369a5c1 fixture.)
+
+export type NightDeath = S['NightDeath'];
+export type NightSave = S['NightSave'];
+export type AddressedTarget = S['WireAddressedTarget'];
+export type Winner = GameOver['winner'];
+export type Role = RoleAssigned['role'];
+/** The roles a solo human may ask for: the deal's pool (villager and wolf are not in it). */
+export type PoolRole = NonNullable<S['NewSoloGame']['human_role']>;
+export type Phase = PhaseChange['phase'];
+export type ActionKind = InputRequest['action_kind'];
+export type DayRound = NonNullable<InputRequest['round']>;
+export type PassReason = NonNullable<PassMarker['pass_reason']>;
+export type AttackerType = NightDeath['attacker_types'][number];
+export type LynchOutcome = LynchResult['outcome'];
+
+// --- ephemeral (SSE-only, absent from OpenAPI) -------------------------------
+
+/**
+ * Transcribed by hand from `server/schemas/events.py::PhaseProgress`. Ephemeral events ride
+ * the `pacing` SSE channel and never enter the durable log, so codegen cannot see them.
+ * Snapshot semantics — the store applies monotonic-max, duplicates are harmless.
+ */
+export interface PhaseProgress {
+  type: 'phase_progress';
+  day: number;
+  stage: 'night' | 'day_vote' | 'opening' | 'closing';
+  done: number;
+  total: number;
+}
+
+// --- live game / rooms (P2–P3 surfaces; typed now so the wire layer is complete) ---
+
+export type GameStatus = S['GameStatus'];
+export type GameState = GameStatus['state'];
+export type GameCreated = S['GameCreated'];
+export type SeatJoined = S['SeatJoined'];
+export type RoomSummary = S['RoomSummary'];
+export type RoomCreated = S['RoomCreated'];
+export type NewSoloGame = S['NewSoloGame'];
+export type NewRoom = S['NewRoom'];
+export type JoinGame = S['JoinGame'];
+export type RejoinGame = S['RejoinGame'];
+export type TurnAccepted = S['TurnAccepted'];
+/** Every field has a server default: send only what the draft needs. */
+export type DraftRequest = Partial<S['DraftRequest']>;
+export type DraftResponse = S['DraftResponse'];
+export type ModelsMenu = S['ModelsMenu'];
+export type ModelRow = S['ModelRow'];
+export type CharacterCard = S['CharacterCard'];
+export type ChooseCharacter = S['ChooseCharacter'];
+
+// --- the claim ledger (`GET /games/{id}/ledger`): each morning's claims, checked by code ---
+
+export type LedgerDay = S['LedgerDay'];
+export type LedgerPlayer = S['LedgerPlayerView'];
+export type LedgerEntry = S['LedgerEntryView'];
+export type LedgerCheck = S['LedgerCheck'];
+export type LedgerRole = S['LedgerRole'];

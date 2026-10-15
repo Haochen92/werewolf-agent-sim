@@ -5,29 +5,20 @@ from Agents.tracing import GraphContext
 
 # Day actor nodes (thin wrappers over the shared runtime engine).
 from Agents.turn import run_memory_informed_action
-from Agents.prompts import (
-    HEALER_DAY_DISCUSS,
-    HEALER_DAY_VOTE,
-    INVESTIGATOR_DAY_DISCUSS,
-    INVESTIGATOR_DAY_VOTE,
-    SERIAL_KILLER_DAY_DISCUSS,
-    SERIAL_KILLER_DAY_VOTE,
-    VIGILANTE_DAY_DISCUSS,
-    VIGILANTE_DAY_VOTE,
-    VILLAGER_DAY_DISCUSS,
-    VILLAGER_DAY_VOTE,
-    WOLF_DAY_DISCUSS,
-    WOLF_DAY_VOTE,
-)
+from Agents.turn.pipeline import preview_agent_action
+from Agents.prompts.day_discuss import day_discuss_template
+from Agents.prompts.day_vote import day_vote_template
 from typing import TypedDict
 
-from Agents.schemas import DayChannel, DayDiscussOutput, DayVote, DayVoteOutput
+from Agents.schemas import DayChannel, DayVote, RoundCandidate, day_discuss_output, day_vote_output
+from Agents.schemas.game_events import DiscussionPassReason
+from Agents.schemas.roles import roles
 from Agents.schemas.turn import ResolvedDayDiscussion, ResolvedDayVote
-from Agents.state import HealerDayState, InvestigatorDayState, VillagerDayState, WolfDayState
+from Agents.state import DayActorState
 
-# The Send-payload shape: one of the role-gated payload TypedDicts built by flow.py's
-# builders (documentation-only — Send payloads are not runtime-validated; see state/day.py).
-DayActorPayload = VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState
+# The Send-payload shape, built by flow.py's builders (documentation-only — Send payloads are
+# not runtime-validated; see state/day.py).
+DayActorPayload = DayActorState
 
 
 # The commit contracts: exactly what a turn's superstep can fold into graph state.
@@ -40,6 +31,13 @@ class DiscussDelta(TypedDict, total=False):
     """{player_id: updated strategy note} — present only when the strategy changed."""
 
 
+class RoundDelta(TypedDict, total=False):
+    round_candidates: list[RoundCandidate]
+    """One entry: this player's opening or closing line (or pass), held for collect_round."""
+    agent_strategies: dict[str, str]
+    """{player_id: updated strategy note} — present only when the strategy changed."""
+
+
 class VoteDelta(TypedDict, total=False):
     day_votes: list[DayVote]
     """One vote (random-target fallback if every retry failed)."""
@@ -48,27 +46,13 @@ class VoteDelta(TypedDict, total=False):
 
 
 # Every role's day-discuss / day-vote turn makes the identical call into the shared
-# engine — only the prompt differs. So the graph registers ONE generic node per phase
-# and the role rides the Send payload (player_role, already attached by the role-gated
-# payload builders in flow.py). Role-specific behaviour is data (the prompt tables),
-# not code: adding a role = one prompt entry per phase.
-DISCUSS_PROMPTS: dict[str, str] = {
-    "villager": VILLAGER_DAY_DISCUSS,
-    "healer": HEALER_DAY_DISCUSS,
-    "wolf": WOLF_DAY_DISCUSS,
-    "investigator": INVESTIGATOR_DAY_DISCUSS,
-    "serial_killer": SERIAL_KILLER_DAY_DISCUSS,
-    "vigilante": VIGILANTE_DAY_DISCUSS,
-}
-
-VOTE_PROMPTS: dict[str, str] = {
-    "villager": VILLAGER_DAY_VOTE,
-    "healer": HEALER_DAY_VOTE,
-    "wolf": WOLF_DAY_VOTE,
-    "investigator": INVESTIGATOR_DAY_VOTE,
-    "serial_killer": SERIAL_KILLER_DAY_VOTE,
-    "vigilante": VIGILANTE_DAY_VOTE,
-}
+# engine — only the prompt differs, and it is built once per role from the role's card.
+# So the graph registers ONE generic node per phase and the role rides the Send payload
+# (player_role, already attached by the payload builders in flow.py). The output schema
+# depends on the dealt lineup (the roles a read or a claim may name), so it is looked up
+# per payload.
+DISCUSS_PROMPTS = {role: day_discuss_template(role) for role in roles}
+VOTE_PROMPTS = {role: day_vote_template(role) for role in roles}
 
 
 # The payload is the explicitly-built dict from build_speaker_send / fan_out_day (role-gated
@@ -84,7 +68,7 @@ def discuss(
         runtime,
         "day_discussion",
         DISCUSS_PROMPTS[payload["player_role"]],
-        DayDiscussOutput,
+        day_discuss_output(payload["lineup"]),
         "day_channel",
     )
     if turn is None:
@@ -96,11 +80,83 @@ def discuss(
     if turn.entry is not None:
         # DayGraphState.day_channel is an append-reduced list; this invocation contributes one entry.
         updates["day_channel"] = [turn.entry]
-    if turn.effects.strategy:
+    # The transcript never shows a held line, not even to its author, so the note written with it is
+    # dropped too: the turn becomes a pass for the seat (the 2026-10-03 audit's finding 2: a line
+    # nobody heard must not survive as a belief that it was said).
+    held = turn.entry is not None and turn.entry.gated
+    if turn.effects.strategy and not held:
         updates["agent_strategies"] = {
             payload["player_id"]: turn.effects.strategy,
         }
     return updates or None
+
+
+def round_turn(
+    payload: DayActorPayload,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+) -> RoundDelta | None:
+    """An opening or closing turn: the same engine call as ``discuss`` (the prompt picks its
+    rules block from the payload's ``day_round``), but the line goes to ``round_candidates``
+    instead of ``day_channel``, because the round's turns run in parallel and only
+    ``collect_round`` may number them into the transcript."""
+    turn = run_memory_informed_action(
+        payload,
+        config,
+        runtime,
+        "day_discussion",
+        DISCUSS_PROMPTS[payload["player_role"]],
+        day_discuss_output(payload["lineup"]),
+        "day_channel",
+    )
+    if turn is None:
+        return None
+    if not isinstance(turn, ResolvedDayDiscussion):
+        raise TypeError(f"round turn resolved to unexpected turn: {turn.kind}")
+
+    updates: RoundDelta = {}
+    # The note waits on the candidate: the round's filter may still hold the line, and collect_round
+    # writes the note only for a line that was kept.
+    deferred = turn.entry is not None
+    if turn.entry is not None:
+        updates["round_candidates"] = [
+            RoundCandidate(day=payload["current_day"], day_round=payload["day_round"],
+                           entry=turn.entry, strategy=(turn.effects.strategy or "") if deferred else "")
+        ]
+    if turn.effects.strategy and not deferred:
+        updates["agent_strategies"] = {
+            payload["player_id"]: turn.effects.strategy,
+        }
+    return updates or None
+
+
+def preview_discuss(
+    payload: DayActorPayload,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+    direction: str = "",
+) -> str:
+    """What this seat's agent would say on the discussion turn in ``payload``, said nowhere.
+
+    The same agent, prompt and context as ``discuss`` when the seat's human hands the turn
+    over (see ``preview_agent_action``), but nothing is committed: no line, no strategy note.
+    ``direction`` is the human's steer, sent after the prompt; empty = the prompt as is.
+    Returns the line, or "" when the agent would pass. RuntimeError when every attempt failed.
+    """
+    turn = preview_agent_action(
+        payload,
+        config,
+        runtime,
+        "day_discussion",
+        DISCUSS_PROMPTS[payload["player_role"]],
+        day_discuss_output(payload["lineup"]),
+        "day_channel",
+        direction,
+    )
+    entry = turn.entry if isinstance(turn, ResolvedDayDiscussion) else None
+    if entry is not None and entry.pass_reason == DiscussionPassReason.GENERATION_FAILED:
+        raise RuntimeError("the agent produced no line")
+    return entry.message if entry is not None else ""
 
 
 def vote(
@@ -114,7 +170,7 @@ def vote(
         runtime,
         "day_vote",
         VOTE_PROMPTS[payload["player_role"]],
-        DayVoteOutput,
+        day_vote_output(payload["lineup"]),
         "day_votes",
     )
     if turn is None:

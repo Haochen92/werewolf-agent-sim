@@ -1,0 +1,162 @@
+'use client';
+
+/**
+ * The role cards: the paper card a role is dealt on, in three forms, and the pack mate's.
+ *
+ * - `CardBack`: face down. Paper, the stitched ring and the star, and no faction colour
+ *   anywhere, not even the edge bands (the card-back rule: a face-down card tells nobody
+ *   anything).
+ * - `SmallCard`: the one hung under each chip at the deal. Face up it is the role's name over
+ *   its felt figure, the big card's art (owner, 2026-09-30; it was the sigil alone), the sigil
+ *   small by the seat at its foot.
+ * - `PackCard`: a pack mate's small card at the deal, the pack's side mark and "Your pack"
+ *   (a mate's role is not on the wire).
+ * - `RoleCard`: the full face, shown large (your card at the deal, a dead seat's at the
+ *   morning, the lynch's on the lift): name and sigil, the felt figure, the front line, the
+ *   seat with the side's pennant and name at the foot, and the faction's colour on the edge
+ *   bands.
+ *
+ * A card fills the box it is put in (a `StringDrop`, usually) and sizes its print from `w`,
+ * its width in units, so a card reads the same small or large. `turn` plays it over from its
+ * back to its face.
+ */
+import type { CSSProperties } from 'react';
+import { SPRITES, type RoleSprite } from '@/assets/manifest';
+import { FACTION_NAME, factionOf } from '../roles';
+import { CARD_TEXT, cardTextFor } from '../card-text';
+import { roleFigure } from '../paint/role-kit';
+import { useSmall } from '../set';
+import { BackArt } from './CardBackArt';
+import { FactionMark } from './FactionMark';
+import { Flip } from './Flip';
+import { Sigil } from './Sigil';
+import styles from './Card.module.css';
+
+const cardVars = (w: number) => ({ '--u': `${w / 340}px` }) as CSSProperties;
+
+export function CardBack({ w, big }: { w: number; big?: boolean }) {
+  return (
+    <div className={big ? `${styles.card} ${styles.big}` : styles.card} style={cardVars(w)}>
+      <div className={styles.back}>
+        <BackArt />
+      </div>
+    </div>
+  );
+}
+
+interface FaceProps {
+  /** The role on the face, or null for a card this viewer may only see the back of. */
+  role: string | null;
+  seat: number;
+  /** The card's width in units: its print scales from it. */
+  w: number;
+  /** Play the turn from the back to the face. */
+  turn?: boolean;
+  turnDelay?: number;
+  /** An archived nine-seat game: the face reads that game's rules (`isNineSeat`). */
+  legacy?: boolean;
+}
+
+const faceClass = (role: string, ...more: string[]) => {
+  const f = factionOf(role);
+  return [styles.card, f ? styles[`f-${f}`] : '', ...more].filter(Boolean).join(' ');
+};
+
+export function SmallCard({ role, seat, w, turn = false, turnDelay }: FaceProps) {
+  const small = useSmall();
+  if (!role) return <CardBack w={w} />;
+  // on a phone the figure is a thumbnail: the tile copy (the big card keeps the full picture)
+  const tile =
+    small && Object.hasOwn(SPRITES.small.roleTiles, role)
+      ? SPRITES.small.roleTiles[role as RoleSprite].src
+      : undefined;
+  const face = (
+    <div className={faceClass(role, styles.small)} style={cardVars(w)}>
+      <div className={styles.in}>
+        <header>
+          <span>{CARD_TEXT[role]?.name ?? role}</span>
+        </header>
+        <div
+          className={styles.fig}
+          dangerouslySetInnerHTML={{ __html: roleFigure(role, tile) }}
+        />
+        <footer>
+          {/* felt on the card's paper; small below 26 units (the sigil is 28 card units) */}
+          <Sigil
+            role={role}
+            variant="felt"
+            small={(28 * w) / 340 < 26}
+            className={styles.sg}
+          />
+          Seat {seat}
+        </footer>
+      </div>
+    </div>
+  );
+  return <Flip back={<CardBack w={w} />} face={face} turn={turn} delay={turnDelay} />;
+}
+
+/**
+ * A pack mate's small card at the deal: the wire lists the pack's seats, never a mate's role,
+ * so the face is the pack's side mark and "Your pack" on the wolves' bands, not a role.
+ */
+export function PackCard({ seat, w, turn = false, turnDelay }: Omit<FaceProps, 'role'>) {
+  const face = (
+    <div className={faceClass('wolf', styles.small)} style={cardVars(w)} data-pack-card>
+      <div className={styles.in}>
+        <header>
+          <span>Your pack</span>
+        </header>
+        <div className={styles.fig}>
+          <FactionMark faction="wolves" format="badge" small={false} />
+        </div>
+        <footer>Seat {seat}</footer>
+      </div>
+    </div>
+  );
+  return <Flip back={<CardBack w={w} />} face={face} turn={turn} delay={turnDelay} />;
+}
+
+export function RoleCard({ role, seat, w, turn = false, turnDelay, legacy }: FaceProps) {
+  if (!role) return <CardBack w={w} big />;
+  const text = cardTextFor(role, legacy);
+  const faction = factionOf(role);
+  const face = (
+    <div className={faceClass(role, styles.big)} style={cardVars(w)}>
+      <div className={styles.in}>
+        <header>
+          <span>{text?.name ?? role}</span>
+          <Sigil
+            role={role}
+            variant="felt"
+            small={(32 * w) / 340 < 26}
+            className={styles.sg}
+          />
+        </header>
+        <div
+          className={styles.fig}
+          dangerouslySetInnerHTML={{ __html: roleFigure(role) }}
+        />
+        <p className={styles.line}>
+          {text?.line.split('\n').map((l, i) => (
+            <span key={i}>
+              {i ? <br /> : null}
+              {l}
+            </span>
+          ))}
+        </p>
+        <footer className={styles.foot}>
+          <span>Seat {seat}</span>
+          {faction ? (
+            <span className={styles.side}>
+              {/* the side's pennant, small below 26 units (the pennant is 22 card units) */}
+              <FactionMark faction={faction} format="pennant" small={(22 * w) / 340 < 26} />
+              {FACTION_NAME[faction]}
+            </span>
+          ) : null}
+        </footer>
+      </div>
+    </div>
+  );
+  return <Flip back={<CardBack w={w} big />} face={face} turn={turn} delay={turnDelay} />;
+}

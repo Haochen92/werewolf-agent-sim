@@ -1,0 +1,96 @@
+{
+  "source": {
+    "server": "https://wolf.liuhaochen.com/api",
+    "game_ids": [
+      "500b5167-0f7a-45c3-ab05-4bf3363181cd",
+      "965b8148-25a9-4150-88b4-0890a286a296",
+      "ff26faff-fd49-4c78-9d1f-3ac1c256b8a9"
+    ]
+  },
+  "structural": {
+    "games": 3,
+    "human_seats": 3,
+    "agent_messages": 117,
+    "messages_per_day": 13.0,
+    "passes": {
+      "voluntary": 10,
+      "novelty_gated": 26
+    },
+    "words_mean": 43.2,
+    "words_median": 42,
+    "words_p90": 56,
+    "town_wins": 2
+  },
+  "model": "gemini-2.5-pro",
+  "judge": {
+    "messages_read": 117,
+    "read_errors": 0,
+    "share_of_messages_using": {
+      "speech_content": "74/117 (63%)",
+      "role_claim": "72/117 (62%)",
+      "night_events": "52/117 (44%)",
+      "voting_record": "47/117 (40%)",
+      "reveal_timing": "19/117 (16%)",
+      "own_night_result": "18/117 (15%)",
+      "turn_taking": "7/117 (6%)",
+      "manner": "6/117 (5%)"
+    },
+    "accusing_messages": 78,
+    "share_of_accusing_messages_using": {
+      "role_claim": "54/78 (69%)",
+      "speech_content": "47/78 (60%)",
+      "night_events": "33/78 (42%)",
+      "voting_record": "32/78 (41%)",
+      "reveal_timing": "17/78 (22%)",
+      "own_night_result": "16/78 (21%)",
+      "manner": "5/78 (6%)"
+    },
+    "town_accusations_on_evil_by_basis": {
+      "own_night_result": "14/17",
+      "reveal_timing": "9/9",
+      "role_claim": "32/37",
+      "manner": "3/3",
+      "speech_content": "24/31",
+      "night_events": "14/20",
+      "voting_record": "8/18"
+    },
+    "self_claims": [
+      {
+        "game_id": "500b5167-0f7a-45c3-ab05-4bf3363181cd",
+        "day": 2,
+        "speaker": "player_3",
+        "claimed": "villager",
+        "actual": "villager"
+      },
+      {
+        "game_id": "500b5167-0f7a-45c3-ab05-4bf3363181cd",
+        "day": 3,
+        "speaker": "player_5",
+        "claimed": "investigator",
+        "actual": "investigator"
+      },
+      {
+        "game_id": "500b5167-0f7a-45c3-ab05-4bf3363181cd",
+        "day": 4,
+        "speaker": "player_7",
+        "claimed": "villager",
+        "actual": "healer"
+      },
+      {
+        "game_id": "965b8148-25a9-4150-88b4-0890a286a296",
+        "day": 2,
+        "speaker": "player_2",
+        "claimed": "investigator",
+        "actual": "investigator"
+      },
+      {
+        "game_id": "ff26faff-fd49-4c78-9d1f-3ac1c256b8a9",
+        "day": 2,
+        "speaker": "player_5",
+        "claimed": "investigator",
+        "actual": "investigator"
+      }
+    ],
+    "fake_claims_by_evil": 0
+  }
+}

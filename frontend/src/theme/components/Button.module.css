@@ -1,0 +1,115 @@
+/*
+ * The site's buttons (the controls kit, owner 2026-10-15): three variants on Mantine's Button,
+ * set through `data-variant` (theme/components.ts makes `well` the default):
+ *   plate — the riveted cream plate (the brass plate's make in cream, owner 2026-10-15): the
+ *           one main action of a view (Start the game, Join, Watch the whole game). The stage's
+ *           own plate is `ActPlate`; this is the page-side twin, never used inside the stage box.
+ *   well  — the recessed well of the nav's doors: every other button, a way to another page
+ *           included.
+ *   text  — a word that acts: small actions beside a field or under a demo.
+ * The well and the text read their colours from the surface they sit on (`--ctl-*`,
+ * styles/tokens.css): the dark by default, ink on paper (`data-surface="paper"`).
+ */
+.root {
+  --button-radius: 999px;
+  --button-height-sm: 36px;
+  --button-height-md: 44px;
+  --button-height-lg: 52px;
+  --button-padding-x-sm: 16px;
+  --button-padding-x-md: 24px;
+  --button-padding-x-lg: 26px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    background-color 0.16s ease,
+    filter 0.16s ease;
+}
+
+.root[data-size='sm'] {
+  font-size: 14px;
+}
+.root[data-size='md'] {
+  font-size: 15px;
+}
+.root[data-size='lg'] {
+  font-size: 16px;
+}
+
+.root[data-variant='well'] {
+  --button-radius: 7px;
+  --button-bg: var(--ctl-well-bg);
+  --button-hover: var(--ctl-well-bg);
+  --button-color: var(--ctl-well-ink);
+  --button-hover-color: var(--ctl-well-ink-hi);
+  --button-bd: 0;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  box-shadow:
+    inset 0 0 0 1px var(--ctl-well-edge),
+    var(--ctl-well-depth);
+  transition:
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.root[data-variant='well'][data-size='sm'] {
+  font-size: 12px;
+}
+.root[data-variant='well'][data-size='md'] {
+  font-size: 13px;
+}
+.root[data-variant='well'][data-size='lg'] {
+  font-size: 14px;
+}
+.root[data-variant='well']:hover {
+  box-shadow:
+    inset 0 0 0 1px var(--ctl-well-edge-hi),
+    var(--ctl-well-depth);
+}
+
+.root[data-variant='text'] {
+  --button-bg: transparent;
+  --button-hover: transparent;
+  --button-color: var(--ctl-accent);
+  --button-hover-color: var(--ctl-accent-hi);
+  --button-bd: 0;
+  height: auto;
+  padding: 0;
+  font-weight: 500;
+  text-underline-offset: 3px;
+}
+.root[data-variant='text']:hover {
+  text-decoration: underline;
+}
+
+.root[data-variant='plate'] {
+  --button-radius: 6px;
+  --button-bd: 0;
+  --button-color: #2a1a08;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  text-shadow: 0 1px 0 rgba(255, 250, 235, 0.7);
+  background:
+    radial-gradient(circle at 10% 18%, #9a7a46 3px, transparent 3.5px),
+    radial-gradient(circle at 90% 18%, #9a7a46 3px, transparent 3.5px),
+    radial-gradient(circle at 10% 82%, #9a7a46 3px, transparent 3.5px),
+    radial-gradient(circle at 90% 82%, #9a7a46 3px, transparent 3.5px),
+    linear-gradient(#fbf3df, #ecdcb8 48%, #d6c094);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.18),
+    0 3px 0 #8a6a3a,
+    0 6px 12px rgba(0, 0, 0, 0.45);
+}
+.root[data-variant='plate']:hover {
+  filter: brightness(1.04);
+}
+.root[data-variant='plate']:active {
+  transform: translateY(1px);
+}
+
+.root:disabled,
+.root[data-disabled] {
+  opacity: 0.42;
+  cursor: not-allowed;
+}

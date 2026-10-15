@@ -11,6 +11,7 @@ from typing import Callable, TypeVar
 from numpy.typing import NDArray
 import numpy as np
 
+from Agents.llm_factory import similarity_threshold as _similarity_threshold
 from Agents.memory.vectors import cosine_similarity
 
 T = TypeVar("T")
@@ -132,8 +133,12 @@ def partition_proven_first(
 def dedup_gate(
     items: list[T],
     embeddings: list[NDArray[np.float64]],
-    similarity_threshold: float = 0.87,  # ≡ 0.92 on -001 (p96 of real obs-pair sims), remapped for gemini-embedding-2's lower similarity scale — 2026-07-16 percentile check
+    similarity_threshold: float | None = None,
 ) -> list[T]:
+    # Default: the configured embedding model's retrieval_dedup_gate (on gemini-embedding-2, 0.87 ≡ 0.92
+    # on -001, the p96 of real obs-pair sims; 2026-07-16 percentile check).
+    if similarity_threshold is None:
+        similarity_threshold = _similarity_threshold("retrieval_dedup_gate")
     if len(items) <= 1:
         return list(items)
 

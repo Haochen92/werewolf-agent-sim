@@ -1,0 +1,20 @@
+[25] 20 s ()
+[50] 29 s ('PACK_NIGHT_PHASE:0e024ae9-f3c8-8036-69e5-27f4c7aa6508',)
+[75] 63 s ('DAY_PHASE:19c64d6b-be37-f55b-6941-9f69674e4a4d',)
+[100] 90 s ('DAY_PHASE:19c64d6b-be37-f55b-6941-9f69674e4a4d',)
+[125] 157 s ('DAY_PHASE:19c64d6b-be37-f55b-6941-9f69674e4a4d',)
+[150] 184 s ()
+[175] 211 s ('PACK_NIGHT_PHASE:2e22dca4-7338-ced4-cb45-b3bfef347ffd',)
+[200] 261 s ('DAY_PHASE:41cf1670-feaf-d015-858d-4dff61ec4160',)
+[225] 330 s ('DAY_PHASE:41cf1670-feaf-d015-858d-4dff61ec4160',)
+[250] 376 s ('PACK_NIGHT_PHASE:895be036-268d-d6fc-5a7c-25890bcb0bf5',)
+[275] 409 s ('PACK_NIGHT_PHASE:895be036-268d-d6fc-5a7c-25890bcb0bf5',)
+[300] 442 s ('DAY_PHASE:e21732ef-e44f-821b-9226-fe87dd570b95',)
+[325] 472 s ('PACK_NIGHT_PHASE:4eb9da8e-af0f-d9ea-19c5-6c935d4e3f2e',)
+LLM call stalled for player_6 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+LLM call stalled for player_6 (slow or full): Error calling model 'gemini-3.1-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_6 failed all decision attempts on wolf_channel; recording technical pass
+[350] 569 s ('PACK_NIGHT_PHASE:4eb9da8e-af0f-d9ea-19c5-6c935d4e3f2e',)
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+phase3-c01-469b9a3c: winner serial_killer, day 4, 569.2 s, 137 calls, cost 0.6371

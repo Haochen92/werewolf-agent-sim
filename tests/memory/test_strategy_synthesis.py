@@ -27,6 +27,46 @@ def test_format_cluster_tags_each_obs_with_verdict():
     assert "situation: S1" in out and "approach:" in out
 
 
+def test_format_cluster_shows_the_immediate_and_end_of_game_effects_apart():
+    obs = _obs("S1", "mixed")
+    obs.value["dimensions"] = {"immediate_response": "drew the night kill",
+                               "impact_on_final_game_outcome": "the town lynched a wolf next day"}
+    out = ss._format_cluster(["k1"], {"k1": obs})
+    assert "immediate effect: drew the night kill" in out
+    assert "end-of-game effect: the town lynched a wolf next day" in out
+    assert "\noutcome:" not in out
+
+
+def test_format_cluster_by_grade_shows_the_grade_and_hides_the_judges_verdict_and_end_of_game_text():
+    graded, ungraded = _obs("S1", "positive"), _obs("S2", "negative")
+    graded.value.update(decision_grade="negative", dimensions={
+        "immediate_response": "drew the night kill", "impact_on_final_game_outcome": "town won, so it helped"})
+    out = ss._format_cluster(["k1", "k2"], {"k1": graded, "k2": ungraded}, outcome="grade")
+    assert "(graded: negative)" in out and "(graded: not graded)" in out
+    assert "immediate effect: drew the night kill" in out
+    assert "outcome" not in out and "town won" not in out
+
+
+def test_the_grade_prompt_differs_only_in_how_outcomes_are_weighed():
+    request = ss.synthesis_request("healer", "night_action", ["k1"], {"k1": _obs("S1", "positive")}, outcome="grade")
+    assert "GRADE of its decision" in request[0] and "outcome SPREAD" not in request[0]
+    assert ss.CELL_SP_SYNTHESIS_PROMPT.replace(ss._VERDICT_WEIGHTING, "") == \
+        ss.GRADE_SP_SYNTHESIS_PROMPT.replace(ss._GRADE_WEIGHTING, "")
+
+
+def test_the_synthesis_prompt_carries_the_ten_seat_rules_and_no_opposite_rule():
+    from Agents.prompts.compose import pool_rules_block
+    from Agents.prompts.extraction import CELL_SP_SYNTHESIS_PROMPT
+
+    rules = pool_rules_block()
+    assert rules.startswith("Team composition (10 players, four sides):")
+    assert "Necromancer" in rules and "Fortune Teller" in rules and "Villager" not in rules
+    prompt = CELL_SP_SYNTHESIS_PROMPT.format(game_rules=rules, role="sentinel", phase="night_action",
+                                             observations="[1]", dimension_menu="- x")
+    assert "Emit 0-3 strategy points" in prompt
+    assert "corrective/opposite" not in prompt
+
+
 def test_synth_partition_is_gate_key_not_verdict(monkeypatch):
     # Two obs share the situation regime (gate_key) but DIFFER on net_verdict. The SP-synth partition
     # uses gate_key only, so they must land in ONE partition (mixed verdicts together) — unlike the
@@ -48,3 +88,23 @@ def test_synth_partition_is_gate_key_not_verdict(monkeypatch):
     # one partition holding BOTH the positive and negative obs
     assert {"pos", "neg"} in seen_partitions
     assert clusters == [["pos", "neg"]]
+
+
+def test_synthesis_never_clusters_lessons_of_a_different_stage(monkeypatch):
+    # A point written from mixed-stage lessons carries a stage label true for only some of them, and
+    # the live stage filter trusts that label: partner lost and uses left (some vs none) split too.
+    from types import SimpleNamespace
+
+    import Agents.memory.strategy_synthesis as synth
+
+    def obs(**dims):
+        return SimpleNamespace(value={"is_swing": False, "players_alive": 9, "consensus_direction": "none",
+                                      "dimensions": dims})
+
+    items = {"a": obs(uses_left=2), "b": obs(uses_left=1), "c": obs(uses_left=0),
+             "d": obs(ally_revealed=True, uses_left=1)}
+    monkeypatch.setattr(synth, "_build_clusters_for_items",
+                        lambda store, ns, part, config, seed_keys=None: [sorted(part)])
+    _, clusters = synth.cluster_observations_for_synth(None, ("observations", "illusionist", "night_action"),
+                                                       None, items=items)
+    assert sorted(clusters) == [["a", "b"], ["c"], ["d"]]

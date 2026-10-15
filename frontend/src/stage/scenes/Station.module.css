@@ -1,0 +1,686 @@
+/* The platform (the waiting room), from the waiting-room mockup (review 2026-09-26 §A5). Every
+   size is in units of the 1600x900 world (1cqw = 16 units, 1cqh = 9 units in the mockup's terms). */
+
+.fill {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---- the train: one picture, pinned to its own layer so the pull-out is a compositor slide ---- */
+.world {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1600px;
+  height: 900px;
+  overflow: hidden;
+}
+.train {
+  position: absolute;
+  will-change: transform;
+}
+/* on a phone (Stage.tsx `data-small`) the train keeps no layer at rest (build log §8.7) */
+[data-small] .train {
+  will-change: auto;
+}
+.glass {
+  position: absolute;
+  border-radius: 22.4px;
+  overflow: hidden;
+}
+.inWindow {
+  position: absolute;
+}
+.blind {
+  position: absolute;
+  filter: drop-shadow(0 2.7px 3.6px rgba(0, 0, 0, 0.4));
+}
+/* the agent's shadow cast on the blind */
+.shadow {
+  position: absolute;
+  mix-blend-mode: multiply;
+}
+.shadow img {
+  filter: brightness(0) blur(2.2px);
+}
+.plates {
+  position: absolute;
+  height: 18px;
+}
+.plate,
+.plateOpen,
+.plateAgent {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  padding: 0.3px 8px 1.3px;
+  border-radius: 3.2px;
+  white-space: nowrap;
+  font-size: calc(13.8px * var(--legible-ui));
+  line-height: 1.25;
+}
+.plate {
+  background: linear-gradient(#ecc877, #a8803a);
+  color: #2a1a08;
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  box-shadow: 0 2.4px 4.8px rgba(0, 0, 0, 0.5);
+}
+.plateOpen,
+.plateAgent {
+  background: rgba(14, 9, 6, 0.8);
+}
+.plateOpen {
+  color: var(--amber);
+  box-shadow: inset 0 0 0 1px var(--amber);
+}
+.plateAgent {
+  color: var(--bone2);
+  box-shadow: inset 0 0 0 1px #4a3a26;
+}
+
+/* ---- the paving: the stone tile laid in perspective under the platform's edge ---- */
+.paving {
+  position: absolute;
+  left: 0;
+  width: 1600px;
+  overflow: hidden;
+  background: #3b4046;
+}
+.tile {
+  position: absolute;
+  left: -640px;
+  right: -640px;
+  top: 0;
+  height: 150%;
+  background-size: 240px;
+  filter: brightness(0.78) saturate(0.8) contrast(1.05);
+  transform: perspective(1120px) rotateX(58deg);
+  transform-origin: 50% 0;
+}
+
+/* ---- the platform's marks: where each person stands; a dashed amber ring for an open place ---- */
+.mark,
+.markOpen {
+  position: absolute;
+  width: 99.2px;
+  height: 24px;
+  border-radius: 50%;
+}
+.mark {
+  background: rgba(20, 22, 28, 0.35);
+  box-shadow: inset 0 0 0 1.9px rgba(239, 228, 203, 0.45);
+}
+.markOpen {
+  background: rgba(224, 166, 58, 0.12);
+  border: 2.9px dashed var(--amber);
+}
+
+/* the people: rising from below the platform's line, as a puppet rises into the stand */
+.clip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1600px;
+  overflow: hidden;
+  pointer-events: none !important;
+}
+
+/*
+ * The phone floor: `--legible-ui` stops at 1.3, which leaves the platform's small words ~8 css px
+ * on a phone. Each piece below (a name tag, the sign, a hang tag, the ledge, a panel) takes a `--k`
+ * that brings its smallest words to 12 css px on the device and grows the whole piece by it, box
+ * and words together; `--k` is 1 at full size, so the desktop is unchanged.
+ */
+
+/* the name tag at each person's feet; never wider than its place */
+.tag {
+  --k: max(1, calc(12 / (var(--stage-scale, 1) * 13.8 * var(--legible-ui))));
+  scale: var(--k);
+  transform-origin: 50% 0;
+  max-width: calc(116px / var(--k));
+  text-align: center;
+  position: absolute;
+  padding: 1.9px 8.8px 2.6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  font-size: calc(13.8px * var(--legible-ui));
+  line-height: 1.15;
+  color: var(--ink);
+  box-shadow: 0 3.2px 8px rgba(0, 0, 0, 0.5);
+}
+.tag i {
+  font-size: 0.85em;
+  color: #5e4a33;
+}
+/* the name clips here, not the tag, so the crown can sit above the tag's edge */
+.tagName {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* the host's crown, astride the tag's top edge */
+.crown {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 19.2px;
+  height: 13.1px;
+  transform: translate(-50%, -72%);
+  fill: #e0b85e;
+  stroke: #5e431a;
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 1.6px 1.6px rgba(0, 0, 0, 0.45));
+}
+/* on a phone the grown tag keeps to its place: "you" goes under the name */
+:global([data-small]) .tag i {
+  display: block;
+  line-height: 1;
+}
+
+/* ---- the station sign: the room's name, and the brass Locked plate under it ---- */
+.sign {
+  --k: max(1, calc(12 / (var(--stage-scale, 1) * 13.8 * var(--legible-ui))));
+  scale: var(--k);
+  transform-origin: 50% 0;
+  position: absolute;
+  top: 50.4px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1;
+}
+.chains {
+  display: flex;
+  gap: 192px;
+}
+.chains i {
+  width: 2.9px;
+  height: 19.2px;
+  background: #8a6a34;
+}
+.board {
+  padding: 7.2px 32px 8.8px;
+  border-radius: 6.4px;
+  color: var(--ink);
+  text-align: center;
+  box-shadow:
+    inset 0 0 0 4px #3a2a18,
+    inset 0 0 0 7.2px #c9a25e,
+    0 9.6px 19.2px rgba(0, 0, 0, 0.6);
+}
+.board b {
+  display: block;
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  font-weight: 400;
+  font-size: calc(30.4px * var(--legible-ui));
+  line-height: 1;
+}
+.board small {
+  display: block;
+  margin-top: 3.2px;
+  font-size: calc(13.8px * var(--legible-ui));
+  color: #5e4a33;
+}
+.lockPlate {
+  display: flex;
+  align-items: center;
+  gap: 4.8px;
+  margin-top: 4.8px;
+  padding: 1.6px 9.6px;
+  border-radius: 4.8px;
+  background: linear-gradient(#ecc877, #a8803a);
+  color: #2a1a08;
+  font-size: calc(13.8px * var(--legible-ui));
+  font-weight: 500;
+  box-shadow: 0 3.2px 6.4px rgba(0, 0, 0, 0.5);
+}
+.lockPlate svg {
+  width: 1em;
+  height: 1em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+}
+
+/* ---- the snow: CSS-only, a transform on each flake; still for reduced motion and at skip ---- */
+.snow {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.snow i {
+  position: absolute;
+  top: -18px;
+  border-radius: 50%;
+  background: #f4f6ff;
+  animation: fall linear infinite;
+}
+@keyframes fall {
+  to {
+    transform: translate(var(--dx), 936px);
+  }
+}
+.still i {
+  animation: none;
+}
+/* on a phone (Stage.tsx `data-small`) no snow falls: seventy flakes each animating at rest
+   are seventy GPU layers and whatever is drawn over them (build log §8.6) */
+[data-small] .snow i {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .snow i {
+    animation: none;
+  }
+}
+
+/* ---- the hang tags: paper tags on strings from the canopy, Invite and Ticket ---- */
+.hang {
+  position: absolute;
+  top: 0;
+  z-index: 2;
+}
+.hangButton {
+  /* from the phone's subtitle size (17.6, below), so the tag grows ~1.2x rather than ~1.7x */
+  --k: max(1, calc(12 / (var(--stage-scale, 1) * 17.6 * var(--legible-ui))));
+  scale: var(--k);
+  transform-origin: 50% 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--ink);
+  font: inherit;
+}
+.string {
+  width: 2.6px;
+  height: 48.6px;
+  background: linear-gradient(#8a6a34, #c9a25e);
+}
+.hangFace {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.4px;
+  width: 160px;
+  padding: 32px 9.6px 14.4px;
+  border-radius: 5.6px 5.6px 8px 8px;
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  box-shadow: 0 16px 30px -14px rgba(0, 0, 0, 0.95);
+  transform: rotate(var(--tilt, 0deg));
+  transform-origin: 50% 0;
+  clip-path: polygon(22% 0, 78% 0, 100% 16%, 100% 100%, 0 100%, 0 16%);
+  transition: filter 0.2s;
+}
+.hangButton:hover .hangFace,
+.hangButton:focus-visible .hangFace {
+  filter: brightness(1.08) drop-shadow(0 0 12.8px rgba(255, 200, 120, 0.55));
+}
+.hangButton[aria-expanded='true'] .hangFace {
+  filter: drop-shadow(0 0 14.4px rgba(224, 166, 58, 0.95));
+}
+.hangButton:focus-visible {
+  outline: none;
+}
+.hangButton:focus-visible .hangFace {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+}
+.eye {
+  position: absolute;
+  top: 8.8px;
+  left: 50%;
+  width: 17.6px;
+  height: 17.6px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: #1a120b;
+  box-shadow: 0 0 0 2.9px #b8893a;
+}
+.hangFace svg {
+  width: 38.4px;
+  height: 38.4px;
+  fill: none;
+  stroke: #5e4a33;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.hangFace b {
+  font-weight: 400;
+  font-size: calc(30.4px * var(--legible-ui));
+  line-height: 1;
+}
+.hangFace small {
+  font-size: calc(12.8px * var(--legible-ui));
+  font-style: italic;
+  color: #5e4a33;
+}
+:global([data-small]) .hangFace small {
+  font-size: calc(17.6px * var(--legible-ui));
+}
+
+/* ---- the panels the tags open, on paper beneath them ---- */
+.panel {
+  --k: max(1, calc(12 / (var(--stage-scale, 1) * 14.4 * var(--legible-ui))));
+  scale: var(--k);
+  transform-origin: 0 0;
+  position: absolute;
+  top: 225px;
+  width: 400px;
+  z-index: 3;
+  padding: 17.6px 19.2px 19.2px;
+  border-radius: 16px;
+  color: var(--ink);
+  background: radial-gradient(130% 100% at 25% 15%, #f4e9d0, #e8d8b6 62%, #dcc9a2);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+  font-size: var(--meta);
+}
+.panel h3 {
+  margin: 0 0 9.6px;
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  font-weight: 400;
+  font-size: calc(var(--meta) * 1.5);
+}
+.panel p {
+  margin: 0;
+  color: #5e4a33;
+  font-size: calc(var(--meta) * 0.9);
+  line-height: 1.4;
+}
+.linkRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 11.2px;
+}
+.linkRow output {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 8px 11.2px;
+  border-radius: 9.6px;
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(36, 24, 12, 0.3);
+  font-size: calc(var(--meta) * 0.9);
+}
+.linkRow button {
+  font: inherit;
+  font-weight: 600;
+  padding: calc(8px * var(--legible-ui)) calc(16px * var(--legible-ui));
+  border: 0;
+  border-radius: 999px;
+  background: var(--town);
+  color: #1c1200;
+  cursor: pointer;
+}
+.ticket {
+  transform-origin: 100% 0;
+  right: 25.6px;
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+}
+.ticketKind {
+  font-style: italic;
+  color: #5e4a33;
+}
+.ticket h3 {
+  margin: 1.6px 0 9.6px;
+  font-size: calc(var(--meta) * 1.6);
+}
+.ticket dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 16px;
+  margin: 0;
+}
+.ticket dt {
+  color: #5e4a33;
+}
+.ticket dd {
+  margin: 0;
+  text-align: right;
+}
+
+/* ---- the ledge: the station master's walnut ledge along the foot, a notice and the plates ---- */
+.ledge {
+  /* from the phone's notice size (20.8, below): the ledge grows ~1.07x and clears the name tags */
+  --k: max(1, calc(12 / (var(--stage-scale, 1) * 20.8 * var(--legible-ui))));
+  scale: var(--k);
+  transform-origin: 50% 100%;
+  position: absolute;
+  bottom: 0;
+  z-index: 2;
+  /* its own width, not what is left right of its centre line */
+  width: max-content;
+  max-width: 1380px;
+  display: flex;
+  align-items: center;
+  gap: 17.6px;
+  padding: 10px 22.4px 11.7px;
+  border-radius: 19.2px 19.2px 0 0;
+  white-space: nowrap;
+  background-size: 256px;
+  box-shadow:
+    inset 0 4px 0 #c9a25e,
+    inset 0 6.3px 0 rgba(0, 0, 0, 0.35),
+    inset 0 -9px 12.6px rgba(0, 0, 0, 0.45),
+    0 -9px 21.6px rgba(0, 0, 0, 0.55);
+}
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 14.4px;
+  padding: 9.6px 20.8px 9.6px 12.8px;
+  border-radius: 4.8px;
+  transform: rotate(-0.6deg);
+  color: var(--ink);
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  box-shadow: 0 2.7px 7.2px rgba(0, 0, 0, 0.45);
+  white-space: normal;
+  max-width: 760px;
+}
+/* on a phone the grown words need the width: one line, so the ledge stays short of the name tags */
+:global([data-small]) .notice {
+  max-width: 1080px;
+}
+.notice b {
+  display: block;
+  font-weight: 400;
+  font-size: calc(24.8px * var(--legible-ui));
+  line-height: 1.1;
+}
+.notice em {
+  display: block;
+  font-size: calc(16.8px * var(--legible-ui));
+  color: #5e4a33;
+}
+:global([data-small]) .notice em {
+  font-size: calc(20.8px * var(--legible-ui));
+}
+.notice em.error {
+  color: #9a2a1c;
+  font-style: normal;
+}
+.noticeChip {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #e9dcc0;
+  box-shadow:
+    0 0 0 2.4px #efe4cb,
+    0 0 0 4.8px #3a2a18;
+}
+
+/* the ledge's two brass rivets, at its top corners */
+.ledge::before,
+.ledge::after {
+  content: '';
+  position: absolute;
+  top: 9.9px;
+  width: 11.2px;
+  height: 11.2px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f6dc96, #9c7430);
+}
+.ledge::before {
+  left: 9.6px;
+}
+.ledge::after {
+  right: 9.6px;
+}
+
+/* the host's brass plates on the ledge (the mockup's `.brass`): a rivet in each corner, engraved */
+.brass {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #2a1a08;
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  background:
+    radial-gradient(circle at 10% 18%, #7a5a26 3.5px, transparent 4.2px),
+    radial-gradient(circle at 90% 18%, #7a5a26 3.5px, transparent 4.2px),
+    radial-gradient(circle at 10% 82%, #7a5a26 3.5px, transparent 4.2px),
+    radial-gradient(circle at 90% 82%, #7a5a26 3.5px, transparent 4.2px),
+    linear-gradient(#f2d185, #c99a44 48%, #9c7430);
+  box-shadow:
+    inset 0 2.4px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -3.2px 0 rgba(0, 0, 0, 0.25),
+    0 2.7px 0 #4a3210,
+    0 5.4px 10.8px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1.2px 0 rgba(255, 236, 190, 0.6);
+}
+.brass:hover:not(:disabled) {
+  filter: brightness(1.07);
+}
+.brass:active:not(:disabled) {
+  box-shadow:
+    inset 0 2.4px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1.6px 0 rgba(0, 0, 0, 0.2),
+    0 0.9px 0 #4a3210,
+    0 2.7px 5.4px rgba(0, 0, 0, 0.5);
+}
+.brass:disabled {
+  cursor: default;
+  filter: saturate(0.55) brightness(0.8);
+}
+.brass:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+}
+/* locked: the plate sits deeper, a darker brass */
+.brass[aria-pressed='true'] {
+  background:
+    radial-gradient(circle at 10% 18%, #5e431a 3.5px, transparent 4.2px),
+    radial-gradient(circle at 90% 18%, #5e431a 3.5px, transparent 4.2px),
+    radial-gradient(circle at 10% 82%, #5e431a 3.5px, transparent 4.2px),
+    radial-gradient(circle at 90% 82%, #5e431a 3.5px, transparent 4.2px),
+    linear-gradient(#d9b060, #a8803a 48%, #7a5a26);
+}
+/* Close, asking "for everyone?": the same brass, ringed and lettered in a warning red */
+.brass[data-asking] {
+  color: #7a1c10;
+  box-shadow:
+    inset 0 0 0 2.4px #9a2a1c,
+    inset 0 2.4px 0 rgba(255, 255, 255, 0.55),
+    0 2.7px 0 #4a3210,
+    0 5.4px 10.8px rgba(0, 0, 0, 0.5);
+}
+.brass svg {
+  width: 1.2em;
+  height: 1.2em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+}
+.brassBig {
+  min-height: 50.4px;
+  padding: 0 calc(41.6px * var(--legible-ui));
+  font-size: calc(33.6px * var(--legible-ui));
+}
+.brassSmall {
+  min-height: 39.6px;
+  padding: 0 calc(20.8px * var(--legible-ui));
+  font-size: calc(20.8px * var(--legible-ui));
+}
+
+/* ---- the curtain between the platform and the deal: a plain dark sheet, over everything ---- */
+.curtain {
+  position: absolute;
+  left: calc(-1 * var(--bleed));
+  right: calc(-1 * var(--bleed));
+  top: 0;
+  bottom: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  background: #07060a;
+  pointer-events: none !important;
+}
+.curtain p {
+  margin: 0;
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  font-style: italic;
+  font-size: calc(35.2px * var(--legible-ui));
+  color: var(--bone2);
+}
+/* what the wait is, while the curtain holds: under its words, out of the grid, so they never move */
+.curtainLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(50% + 40px * var(--legible-ui));
+  text-align: center;
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  font-size: calc(22.4px * var(--legible-ui));
+  color: var(--bone2);
+  opacity: 0.7;
+}
+
+/*
+ * The paper everything on the platform is printed on: the site's paper (components/site/Paper,
+ * the mockups' `.paper`), so a tag on the stage matches a card on the landing. The grain is
+ * 1 screen px every 3, whatever the stage's size: its units are divided by the stage's scale
+ * and by the piece's own `--k` (see the phone floor above). The Invite panel keeps its own
+ * lighter paper, as the mockup has it.
+ */
+.hangFace,
+.notice,
+.board,
+.tag,
+.ticket {
+  --grain: calc(1px / (var(--stage-scale, 1) * var(--k, 1)));
+  background-color: var(--paper);
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(60, 40, 20, 0.045) 0 var(--grain),
+      transparent var(--grain) calc(var(--grain) * 3)
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(60, 40, 20, 0.045) 0 var(--grain),
+      transparent var(--grain) calc(var(--grain) * 3)
+    ),
+    radial-gradient(ellipse at 10% 8%, rgba(255, 255, 255, 0.35), transparent 46%),
+    radial-gradient(ellipse at 92% 94%, rgba(120, 90, 50, 0.2), transparent 50%);
+}

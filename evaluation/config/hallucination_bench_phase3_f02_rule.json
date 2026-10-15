@@ -1,0 +1,17 @@
+{
+  "label": "phase3_f02_rule",
+  "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+  "n": 5,
+  "workers": 3,
+  "slices": ["f02_rule"],
+  "arms": [
+    {"label": "flash_before", "model": "gemini-3.5-flash", "env": {}, "memory": "none", "checkout": "/home/ubuntu/projects/ww-pre-illusionist-rule"},
+    {"label": "flash_after", "model": "gemini-3.5-flash", "env": {}, "memory": "none"},
+    {"label": "flashlite_before", "model": "gemini-3.5-flash-lite", "env": {}, "memory": "none", "checkout": "/home/ubuntu/projects/ww-pre-illusionist-rule"},
+    {"label": "flashlite_after", "model": "gemini-3.5-flash-lite", "env": {}, "memory": "none"}
+  ],
+  "recall_model": "gemini-3.1-flash-lite",
+  "precision_model": "gemini-3.5-flash",
+  "golden_model": "gemini-3.5-flash",
+  "note": "Does the sentence that an illusionist carrying its own kill is invisible at that door stop the f02 misreading? before = fb193104 (a worktree at ../ww-pre-illusionist-rule: git worktree add ../ww-pre-illusionist-rule fb193104, link .env), after = the working tree with the sentence (and the cover-note rewrite, which these non-wolf turns do not read)."
+}

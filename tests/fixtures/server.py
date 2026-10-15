@@ -1,23 +1,25 @@
 """Server-layer fixtures, by test level (the dota2pred hierarchy, scaled to one domain):
 
 1. RUNTIME TESTS (the session machine): use `quiet_session` — a factory for a real
-   GameSession over an injected fake graph (zero LLM), memory seeding silenced.
+   GameSession over an injected fake graph (zero LLM).
    Example: session = quiet_session(FakeGraph(parts))
 2. API-LAYER TESTS (routing, validation, serialization): use `api_client` — a
    TestClient over the real create_app() (real lifespan, real registry). Inject
-   prepared sessions via `api_client.app.state.games[id] = session`; never POST
+   prepared sessions via `api_client.app.state.resources.games._register(session)`; never POST
    /games for a success path here — that would launch the real graph.
 """
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 from starlette.testclient import TestClient
 
 from Agents.config import RunConfig
-from server import runtime as rt
+from server.game import game_session as rt
 from server.app import create_app
-from server.runtime import GameSession
+from server.game.game_session import GameSession
 
 
 class FakeGraph:
@@ -32,6 +34,10 @@ class FakeGraph:
         self.calls.append(payload)
         for part in self.phases[len(self.calls) - 1]:
             yield part
+
+    async def aget_state(self, config):
+        """The final state a finished game's capture is saved with; a fake game has none."""
+        return SimpleNamespace(values={})
 
 
 class HangingGraph:
@@ -51,29 +57,28 @@ def _no_real_replay_db():
     hook — without this, tests would write real rows. Force the archive layer
     unconfigured everywhere; a test that wants a database opts in explicitly.
 
-    Deliberately NOT via the monkeypatch fixture: an autouse dependency on it changes
-    fixture teardown order so the api_client lifespan would exit while a test's own
-    GameSession patch is still applied (isinstance TypeError at shutdown)."""
-    from server import db
+    Save and restore directly so this guard does not change the teardown order of a
+    test's own patches. Session replacements must remain classes: the registry checks
+    their type during normal release as well as shutdown."""
+    from server.config import server_settings
 
-    old = db.server_settings.WW_POSTGRES_DSN
-    db.server_settings.WW_POSTGRES_DSN = ""
-    db._engine = None
-    db._sessions = None
+    old = server_settings.WW_POSTGRES_DSN
+    server_settings.WW_POSTGRES_DSN = ""
     yield
-    db.server_settings.WW_POSTGRES_DSN = old
-    db._engine = None
-    db._sessions = None
+    server_settings.WW_POSTGRES_DSN = old
 
 
 @pytest.fixture
 def quiet_session(monkeypatch):
-    """GameSession factory with the memory-seeding side effect silenced."""
-    monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
+    """GameSession factory over a fake graph."""
 
-    def make(graph, api_key: str = "", model: str = "", **kw) -> GameSession:
-        return GameSession(RunConfig(memory_persistence={"dump_enabled": False}),
-                           api_key=api_key, model=model, graph=graph, **kw)
+    def make(graph, api_key: str = "", model: str = "",
+             human_players: list[str] | None = None, **kw) -> GameSession:
+        session = GameSession(RunConfig(memory_persistence={"dump_enabled": False}),
+                              api_key=api_key, model=model, graph=graph, **kw)
+        if human_players is not None:  # the seats the engine would deal, token i -> seat i
+            session.human_players = list(human_players)
+        return session
 
     return make
 

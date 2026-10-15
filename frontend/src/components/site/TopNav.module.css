@@ -1,0 +1,322 @@
+/* The signboard (handoff 2026-10-14 §1) and its pinned strip. The board's material is
+   Board.module.css; this file is the board's layout, its rods, the brand and the doors. */
+
+/* two brass rods, 15% in from each side, hanging the board from above the page */
+.hang {
+  position: relative;
+  z-index: 3;
+  padding-top: 34px;
+}
+.hang::before,
+.hang::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 3px;
+  height: 40px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #3a2a14, #b48a44, #3a2a14);
+}
+.hang::before {
+  left: 15%;
+}
+.hang::after {
+  right: 15%;
+}
+
+.board {
+  composes: board rivets from './Board.module.css';
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  min-height: 76px;
+  padding: 12px 14px 12px 22px;
+}
+
+/* ---------- the brand ---------- */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  color: var(--sign-text);
+  text-decoration: none;
+}
+.wordmark {
+  font-family: var(--font-garamond);
+  font-weight: 500;
+  font-size: 26px;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.8),
+    0 -1px 0 rgba(255, 230, 180, 0.12);
+}
+.brand:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+/* the mark, with its lamp turned up laid over it and shown while the brand is pointed at */
+.mark {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  flex: none;
+}
+/* the light the lit lamp throws onto the board round the whole mark: a plain gradient (no
+   filter), shown only while the brand is pointed at */
+.mark::before {
+  content: '';
+  position: absolute;
+  inset: -55%;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 226, 160, 0.9),
+    rgba(255, 190, 100, 0.35) 55%,
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.brand:hover .mark::before,
+.brand:focus-visible .mark::before {
+  opacity: 1;
+}
+.mark > img {
+  grid-area: 1 / 1;
+}
+.mark > .lamp {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.brand:hover .lamp,
+.brand:focus-visible .lamp {
+  opacity: 1;
+}
+
+/* ---------- the doors: recessed wells; the current page is the cream plate ---------- */
+.doors {
+  display: flex;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.board .doors {
+  margin-left: auto;
+}
+.door {
+  composes: well from './Board.module.css';
+  height: 46px;
+  padding: 0 18px;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+}
+.flap {
+  composes: flap from './Board.module.css';
+}
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- the guide: an enamel sign after the doors, past a thin brass line ---------- */
+.divider {
+  flex: none;
+  width: 1px;
+  height: 34px;
+  margin: 0 -6px;
+  background: linear-gradient(180deg, transparent, rgba(224, 166, 58, 0.55), transparent);
+}
+.guide {
+  composes: enamel from './Board.module.css';
+  flex: none;
+  height: 34px;
+  margin: 0 8px;
+  padding: 0 14px 0 10px;
+  font-size: 16px;
+}
+.book {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+
+/* ---------- the pinned strip ---------- */
+.strip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  padding: 0 16px;
+  /* off the top by its own height and its shadow's reach */
+  transform: translateY(calc(-100% - 48px));
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.strip[data-on] {
+  transform: none;
+}
+/* a page with its own bar in the strip's place on a phone (SiteStrip): the strip stays away */
+@media (max-width: 760px) {
+  .strip[data-replaced] {
+    display: none;
+  }
+}
+.stripRow {
+  composes: board rivets from './Board.module.css';
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: var(--site-max);
+  margin: 8px auto 0;
+  padding: 8px 10px 8px 18px;
+}
+/* the name stays while it fits whole: a box one mark high, the wordmark wrapping onto a hidden
+   second line the moment the doors need its room. The box reaches 16px past the mark on every
+   side but the right (the padding, taken back by the margins) so the lamp's light is not cut
+   off square, and the hidden line starts past that reach (the row gap). */
+.stripRow .brand {
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  box-sizing: border-box;
+  min-width: 44px;
+  height: 60px;
+  margin: -16px 0 -16px -16px;
+  padding: 16px 0 16px 16px;
+  overflow: hidden;
+  row-gap: 24px;
+}
+.stripRow .wordmark {
+  font-size: 21px;
+  line-height: 28px;
+}
+.stripRow .doors {
+  flex: none;
+}
+.stripRow .door {
+  height: 38px;
+  padding: 0 14px;
+  font-size: 12px;
+}
+.stripRow .guide {
+  height: 30px;
+  font-size: 15px;
+}
+.stripRow .divider {
+  height: 28px;
+}
+
+/* a narrow desktop: the name, three doors and the word do not all fit one row, so the sign is
+   the book alone */
+@media (max-width: 1060px) {
+  .guide {
+    width: 34px;
+    padding: 0;
+  }
+  /* the word is still the sign's name to a screen reader */
+  .guideWord {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .strip,
+  .mark::before,
+  .mark > .lamp {
+    transition: none;
+  }
+}
+
+/* ---------- a phone: the brand and the sign on the first row, the doors share the second ----
+   (a grid, so the sign can never fall onto a row of its own; the name shrinks to leave it room) */
+@media (max-width: 860px) {
+  .board {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px 10px;
+    padding: 14px;
+  }
+  .board .wordmark {
+    font-size: clamp(18px, calc((100vw - 160px) / 8.2), 26px);
+  }
+  .board .guide {
+    grid-row: 1;
+    grid-column: 2;
+    height: 32px;
+    margin: 0 8px 0 0;
+  }
+  .board .divider,
+  .stripRow .divider {
+    display: none;
+  }
+  /* the strip's book at its right end, its screw clear of the frame; the row closes up for it */
+  .stripRow {
+    gap: 10px;
+  }
+  .stripRow .guide {
+    width: 30px;
+    margin: 0 6px 0 0;
+  }
+  .board .doors {
+    grid-row: 2;
+    grid-column: 1 / -1;
+    margin: 0;
+  }
+  .board .doors li {
+    flex: 1;
+  }
+  .board .door {
+    width: 100%;
+    padding: 0 10px;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+  }
+  .stripRow .wordmark {
+    font-size: 18px;
+  }
+  .stripRow .door {
+    padding: 0 9px;
+    letter-spacing: 0.08em;
+  }
+}
+@media (max-width: 380px) {
+  .wordmark {
+    font-size: 22px;
+  }
+  .board .door {
+    gap: 6px;
+    letter-spacing: 0.06em;
+  }
+  /* the strip's doors, tighter, so all three stay on the board on the smallest phones */
+  .stripRow {
+    gap: 8px;
+    padding-right: 8px;
+  }
+  .stripRow .doors {
+    gap: 6px;
+  }
+  .stripRow .door {
+    gap: 6px;
+    padding: 0 7px;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+  }
+}

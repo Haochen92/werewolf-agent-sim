@@ -18,6 +18,23 @@ from types import SimpleNamespace
 import pytest
 
 import Agents.memory.deduplication as dedup
+from Agents.llm_factory.embeddings import SIMILARITY_THRESHOLDS
+
+# The values the prefilter runs on, per embedding model. Pinned here so a threshold never moves
+# by accident; the boundary tests below read the configured model's values.
+PINNED = {
+    "gemini-embedding-2": {"sp_action_discard": 0.93, "sp_action_keep": 0.81,
+                           "obs_content_discard": 0.96, "obs_content_keep": 0.935},
+    "qwen/qwen3-embedding-8b": {"sp_action_discard": 0.88, "sp_action_keep": 0.61,
+                                "obs_content_discard": 0.94, "obs_content_keep": 0.72},
+}
+SP_D, SP_K = dedup.SP_ACTION_DISCARD_THRESHOLD, dedup.SP_ACTION_KEEP_THRESHOLD
+OBS_D, OBS_K = dedup.OBS_CONTENT_DISCARD_THRESHOLD, dedup.OBS_CONTENT_KEEP_THRESHOLD
+
+
+@pytest.mark.parametrize("model", sorted(PINNED))
+def test_the_prefilter_thresholds_are_pinned(model):
+    assert {k: SIMILARITY_THRESHOLDS[model][k] for k in PINNED[model]} == PINNED[model]
 
 
 def patch_sims(monkeypatch, sims):
@@ -50,15 +67,15 @@ def obs(monkeypatch, sims):
     return dedup._embedding_prefilter_observation(observation, obs_candidates(len(sims)))
 
 
-# --- strategy point: discard >= 0.93, keep < 0.81, else None (->LLM) --------
+# --- strategy point: discard >= SP_D, keep < SP_K, else None (->LLM) --------
 
 @pytest.mark.parametrize("sim,expected", [
-    (0.95, "discard"),
-    (0.93, "discard"),   # boundary is inclusive (>=)
-    (0.92, None),        # the LLM-decides band
-    (0.81, None),        # boundary is exclusive on the keep side (< 0.81)
-    (0.8099, "keep"),
-    (0.50, "keep"),
+    (SP_D + 0.02, "discard"),
+    (SP_D, "discard"),          # boundary is inclusive (>=)
+    (SP_D - 0.01, None),        # the LLM-decides band
+    (SP_K, None),               # boundary is exclusive on the keep side
+    (SP_K - 0.0001, "keep"),
+    (SP_K - 0.10, "keep"),
 ])
 def test_sp_single_candidate_thresholds(monkeypatch, sim, expected):
     decision, _ = sp(monkeypatch, [sim])
@@ -66,26 +83,26 @@ def test_sp_single_candidate_thresholds(monkeypatch, sim, expected):
 
 
 def test_sp_uses_max_over_candidates(monkeypatch):
-    # max(0.5, 0.94) = 0.94 >= 0.93 -> discard.
-    decision, scores = sp(monkeypatch, [0.5, 0.94])
+    # the max over candidates decides: one low, one above the discard line -> discard.
+    decision, scores = sp(monkeypatch, [SP_K - 0.10, SP_D + 0.01])
     assert decision == "discard"
-    assert scores["max_action_sim"] == 0.94
+    assert scores["max_action_sim"] == round(SP_D + 0.01, 4)
 
 
 def test_sp_all_low_keeps(monkeypatch):
-    decision, _ = sp(monkeypatch, [0.5, 0.70])
+    decision, _ = sp(monkeypatch, [SP_K - 0.10, SP_K - 0.05])
     assert decision == "keep"
 
 
-# --- observation: discard >= 0.96, keep < 0.935, else None ------------------
+# --- observation: discard >= OBS_D, keep < OBS_K, else None ------------------
 
 @pytest.mark.parametrize("sim,expected", [
-    (0.97, "discard"),
-    (0.96, "discard"),   # inclusive
-    (0.95, None),        # the LLM-decides band
-    (0.935, None),       # exclusive on the keep side (< 0.935)
-    (0.934, "keep"),
-    (0.50, "keep"),
+    (OBS_D + 0.01, "discard"),
+    (OBS_D, "discard"),         # inclusive
+    (OBS_D - 0.01, None),       # the LLM-decides band
+    (OBS_K, None),              # exclusive on the keep side
+    (OBS_K - 0.001, "keep"),
+    (OBS_K - 0.10, "keep"),
 ])
 def test_obs_single_candidate_thresholds(monkeypatch, sim, expected):
     decision, _ = obs(monkeypatch, [sim])
@@ -93,9 +110,9 @@ def test_obs_single_candidate_thresholds(monkeypatch, sim, expected):
 
 
 def test_obs_uses_max_over_candidates():
-    decision, scores = obs(pytest.MonkeyPatch(), [0.5, 0.965])
+    decision, scores = obs(pytest.MonkeyPatch(), [OBS_K - 0.10, OBS_D + 0.005])
     assert decision == "discard"
-    assert scores["max_content_sim"] == 0.965
+    assert scores["max_content_sim"] == round(OBS_D + 0.005, 4)
 
 
 # --- fall-through safety: no candidates / embedding failure -> None ----------

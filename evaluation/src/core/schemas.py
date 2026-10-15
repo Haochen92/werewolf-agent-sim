@@ -67,6 +67,7 @@ class CostEstimate(BaseModel):
     output_tokens: int
     reasoning_tokens: int = 0
     cache_read_tokens: int = 0
+    cache_write_tokens: int = 0
     total_tokens: int
     estimated_cost_usd: float | None = None
     pricing_version: str

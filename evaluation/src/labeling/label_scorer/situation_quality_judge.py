@@ -58,7 +58,7 @@ def main() -> None:
     parser.add_argument(
         "--judge-model",
         type=str,
-        default="gemini-2.5-pro",
+        default="anthropic/claude-haiku-5-5",
         help="Model for pairwise judge",
     )
     parser.add_argument(

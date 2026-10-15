@@ -1,0 +1,214 @@
+{
+ "game_id": "phase3-l02-a5ded711",
+ "label": "l02",
+ "git": "fb193104a6bf1baf956c6efa7e890d313f335742",
+ "git_dirty_paths": [
+  " M .gitignore",
+  " M Agents/prompts/extraction/day_summary.py",
+  " M Agents/prompts/game_rules.py",
+  " M Agents/prompts/goldens/rules_necromancer_fortune_teller.txt",
+  " M Agents/prompts/goldens/rules_serial_killer_speculator.txt",
+  " M Agents/prompts/roles/illusionist.py",
+  " M Agents/prompts/roles/pack.py",
+  " M Agents/prompts/roles/serial_killer.py",
+  " M Agents/rules/claim_ledger.py",
+  " M Agents/schemas/output.py",
+  " M evaluation/experiments/phase3_turn_cases.py",
+  " M evaluation/experiments/summary_claim_replay.py",
+  " M evidence/game_play_enhancement/data/phase3_reads/README.md",
+  " M evidence/game_play_enhancement/data/phase3_summary_replay/README.md",
+  " M evidence/game_play_enhancement/data/phase3_turn_replay/README.md",
+  " M evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+  " M evidence/game_play_enhancement/discussion_evidence.md",
+  " M evidence/game_play_enhancement/role_sheet.md",
+  " M tests/engine/test_claim_ledger.py",
+  " M tests/engine/test_ten_seat_game.py",
+  " M tests/fixtures/day_discuss_prompt_golden.json",
+  "?? LICENSE",
+  "?? evaluation/config/hallucination_bench_phase3_f02_hierarchy.json",
+  "?? evaluation/config/hallucination_bench_phase3_f02_rule.json",
+  "?? evidence/game_play_enhancement/data/phase3_flash_games/",
+  "?? evidence/game_play_enhancement/data/phase3_luna_games/",
+  "?? evidence/game_play_enhancement/data/phase3_reads/transcripts/b05.md",
+  "?? evidence/game_play_enhancement/data/phase3_reads/transcripts/b10.md",
+  "?? evidence/game_play_enhancement/data/phase3_reads/transcripts/c02.md",
+  "?? evidence/game_play_enhancement/data/phase3_reads/transcripts/c04.md",
+  "?? evidence/game_play_enhancement/data/phase3_reads/transcripts/c05.md",
+  "?? evidence/game_play_enhancement/data/phase3_reads/transcripts/d02.md",
+  "?? evidence/game_play_enhancement/data/phase3_reads/transcripts/d05.md",
+  "?? evidence/game_play_enhancement/data/phase3_reads/transcripts/e01.md",
+  "?? evidence/game_play_enhancement/data/phase3_reads/transcripts/e03.md",
+  "?? evidence/game_play_enhancement/data/phase3_reads/transcripts/e05.md",
+  "?? evidence/game_play_enhancement/data/phase3_reads/transcripts/f01.md",
+  "?? evidence/game_play_enhancement/data/phase3_reads/transcripts/f02.md",
+  "?? evidence/game_play_enhancement/data/phase3_reads/transcripts/f03.md",
+  "?? evidence/game_play_enhancement/data/phase3_reads/transcripts/f04.md",
+  "?? evidence/game_play_enhancement/data/phase3_reads/transcripts/f05.md",
+  "?? evidence/game_play_enhancement/data/phase3_reads/transcripts/f06.md",
+  "?? evidence/game_play_enhancement/data/phase3_reads/votes/",
+  "?? evidence/game_play_enhancement/data/phase3_summary_replay/generations_fixed_flash_summariser.jsonl",
+  "?? evidence/game_play_enhancement/data/phase3_summary_replay/generations_retention_committed.jsonl",
+  "?? evidence/game_play_enhancement/data/phase3_summary_replay/generations_retention_fixed.jsonl",
+  "?? evidence/game_play_enhancement/data/phase3_summary_replay/generations_retention_fixed_flash.jsonl",
+  "?? evidence/game_play_enhancement/data/phase3_summary_replay/run_flash.log",
+  "?? evidence/game_play_enhancement/data/phase3_summary_replay/run_retention.log",
+  "?? evidence/game_play_enhancement/data/phase3_turn_replay/bench_summary_f02_hierarchy.json",
+  "?? evidence/game_play_enhancement/data/phase3_turn_replay/bench_summary_f02_rule.json",
+  "?? frontend/docs/rendering-audit-2026-10-02.md",
+  "?? frontend/src/assets/LICENSE",
+  "?? frontend/undefined/",
+  "?? notebooks/hitl_durability_spike.ipynb",
+  "?? notebooks/hitl_spike_test.ipynb"
+ ],
+ "runtime_fingerprint": {
+  "git_commit": "fb193104a6bf1baf956c6efa7e890d313f335742",
+  "git_dirty": true,
+  "prompt_bundle_hash": "25944b69a570b855",
+  "llm_backend": "vertex",
+  "game_model": "openai/gpt-6-luna",
+  "temperature": 1.0,
+  "game_thinking_level": "medium",
+  "summary_thinking_level": "medium",
+  "judge_thinking_level": "minimal",
+  "pro_model": "gemini-2.5-pro",
+  "pro_backup_model": "gemini-3.5-flash",
+  "embedding_model": "gemini-embedding-2",
+  "embedding_dims": 1536,
+  "vertex_location": "global"
+ },
+ "langgraph": "1.1.10",
+ "model": "openai/gpt-6-luna",
+ "thinking_level": "medium",
+ "memory": "off (memory_config all False, dump off)",
+ "run_config": {
+  "game": {
+   "lone_killer": "necromancer",
+   "neutral": "fortune_teller",
+   "player_id_prefix": "player",
+   "starting_day": 1,
+   "first_voting_day": 2,
+   "vigilante_bullets": 2,
+   "sigils": 2,
+   "conceals": 2,
+   "investigator_checks": 2,
+   "sentinel_watches": 2,
+   "self_bets": 2,
+   "fortune_points_to_win": 2,
+   "abstain_enabled": true,
+   "no_lynch_force_after": 2,
+   "max_days": 12,
+   "discussion_utterance_multiplier": 3.0,
+   "min_discussion_utterances": 6,
+   "per_pair_reengagement_cap": 2,
+   "reengagement_cooldown_multiplier": 1.0,
+   "max_proactive_sweeps": 2
+  },
+  "memory_config": {
+   "wolf": false,
+   "villager": false,
+   "healer": false,
+   "investigator": false
+  },
+  "reranking_config": {
+   "observations": {
+    "wolf": false,
+    "villager": false,
+    "healer": false,
+    "investigator": false
+   },
+   "strategy_points": {
+    "wolf": false,
+    "villager": false,
+    "healer": false,
+    "investigator": false
+   }
+  },
+  "filtering_config": {
+   "wolf": false,
+   "villager": false,
+   "healer": false,
+   "investigator": false
+  },
+  "retrieval_types_config": {
+   "observations": true,
+   "strategy_points": true
+  },
+  "memory_persistence": {
+   "seed_enabled": true,
+   "dump_enabled": false,
+   "seed_store_dir": "/home/ubuntu/projects/werewolf-agent-sim/memory_stores/v6_1",
+   "dump_store_dir": "/home/ubuntu/projects/werewolf-agent-sim/memory_stores/v6_1",
+   "batch_dedup": {
+    "enabled": false,
+    "two_pass": true,
+    "triage_model": "gemini-3.1-flash-lite",
+    "triage_thinking_level": "medium",
+    "verify_model": "gemini-2.5-pro",
+    "verify_thinking_level": null,
+    "prompt_variant": "default"
+   },
+   "extraction": {
+    "per_role": true,
+    "cache_prefix": true,
+    "max_workers": 6,
+    "extract_without_dump": false
+   }
+  },
+  "sp_proven_tiering": true,
+  "sp_exploration_slot": true,
+  "game_id": "phase3-l02-a5ded711",
+  "session_id": null,
+  "human_player": 0,
+  "human_role": null
+ },
+ "stream": {
+  "stream_mode": [
+   "updates",
+   "custom"
+  ],
+  "subgraphs": true,
+  "version": "v2"
+ },
+ "started_at": "2026-10-10T05:29:15.345488+00:00",
+ "ended_at": "2026-10-10T05:53:26.302223+00:00",
+ "duration_seconds": 1449.8,
+ "chunks": 506,
+ "winner": "villagers",
+ "neutral_result": "won (4 points)",
+ "lineup": [
+  "investigator",
+  "sentinel",
+  "trailseer",
+  "vigilante",
+  "sigilist",
+  "healer",
+  "chanteuse",
+  "illusionist",
+  "necromancer",
+  "fortune_teller"
+ ],
+ "days": 7,
+ "model_calls": 192,
+ "usage": {
+  "buckets": [
+   {
+    "model": "gpt-6-luna",
+    "hour": "2026-10-10T05:00:00+00:00",
+    "calls": 192,
+    "failed": 0,
+    "input": 1079743,
+    "cached": 385777,
+    "output": 226506,
+    "reasoning": 155432,
+    "seconds": 2419.818
+   }
+  ]
+ },
+ "cost_usd": 0.1865,
+ "leak_check_passed": true,
+ "files": {
+  "chunks": "l02.chunks.jsonl",
+  "record": "l02.record.json",
+  "calls": "l02.calls.json"
+ }
+}

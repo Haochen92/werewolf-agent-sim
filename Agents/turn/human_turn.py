@@ -16,15 +16,40 @@ resolution/validation of what it returns stays in resolve.py.
 from types import SimpleNamespace
 from typing import Any
 
+from langgraph.config import get_stream_writer
 from langgraph.types import interrupt
 
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
 from Agents.schemas.game_events import AddressedTarget
 from Agents.schemas.human_player import HumanTurnRequest, HumanTurnResponse
 from Agents.schemas.turn import ResolvedTurn
-from Agents.turn.action_space import TARGET_FIELD_BY_OUTPUT_KEY, valid_targets_for_action
+from Agents.schemas.roles import ROLE_SPECS, role_for_field
+from Agents.turn.action_space import KILL_TARGET, target_field_of, valid_targets_for_action
 from Agents.turn.addressing_agent import extract_addressed_targets
 from Agents.turn.resolve import RETRY, extract_agent_reasoning, resolve_decision
+
+
+def announce_human_turn(player_id: str, role: str, phase: str, day: int,
+                        valid_targets: list[str], *, day_round: str | None = None,
+                        bodies: list[str] = ()) -> None:
+    """Tell the server a human's turn is coming, before the step it sits in has ended.
+
+    A vote or a night action runs in one parallel step with the agents' siblings, and LangGraph
+    surfaces an ``interrupt()`` only when the whole step is done, so the human's prompt used to
+    arrive after the agents had acted. Written from the routing edge that fans the step out, this
+    reaches the server at once; the server opens the prompt and holds the answer until the
+    interrupt arrives, which stays the point where the answer is taken (the checkpoint, recovery
+    and the CLI driver know nothing of this). Routers run again on a resume, so the server dedupes
+    by (player, day, phase). ``day_round`` names the round of a discussion turn (a round's
+    turns are the announced ones), so the browser can label the ask. ``bodies`` are the dead
+    players a necromancer may act through tonight, checked like the targets. A no-op outside a
+    graph run (tests)."""
+    try:
+        get_stream_writer()({"event": "human_turn_opened", "player": player_id, "role": role,
+                             "phase": phase, "day": day, "valid_targets": list(valid_targets),
+                             "day_round": day_round, "bodies": list(bodies)})
+    except RuntimeError:  # direct call outside a graph run
+        pass
 
 
 def run_human_decision(payload: dict[str, Any], output_key: str) -> ResolvedTurn | None:
@@ -52,17 +77,35 @@ def run_human_decision(payload: dict[str, Any], output_key: str) -> ResolvedTurn
     return outcome
 
 
-def validate_human_response(request: HumanTurnRequest, raw_response: Any) -> HumanTurnResponse:
-    """Validate a raw resume payload against the exact pending request. Pure — no side effects — so
-    the resume driver can call it to gate ``Command(resume=...)`` and the node can re-check defensively.
+# The longest line a human may say, in characters: about 85 words, a little over the 40-80 words the
+# agents are asked for, so a seat can't feed the table (and every agent's prompt) an essay.
+MAX_LINE_CHARS = 500
 
-    Discussion (day_channel): a pass needs ``can_pass``; otherwise a non-empty message is required and
-    no target may be set. Wolf-night talk (wolf_channel) is message-only: no pass, no target. Every
-    other phase (votes incl. wolf_vote, night actions): no pass, and the target must be one of the
-    request's ``valid_targets`` (which already includes the abstain / hold_fire sentinels).
-    A bare ``delegate`` is legal for EVERY phase — it hands the turn to the agent path, so the
-    phase rules apply to what the agent produces, not to this response."""
+
+def validate_human_response(request: HumanTurnRequest, raw_response: Any) -> HumanTurnResponse:
+    """Check a human's answer against the question they were asked, and return it typed.
+    Pure, no side effects: the server calls it before resuming the engine, and the node
+    re-checks defensively.
+
+    What counts as a legal answer depends on the request's phase:
+    - ``day_channel`` (discussion): a message, or a pass when the request allows one.
+      No target.
+    - ``wolf_channel`` (wolf night talk): a message. No pass, no target.
+    - every other phase (votes, wolf vote, night actions): a target from the request's
+      ``valid_targets``, which already lists the abstain / hold_fire choices. No pass.
+    - ``delegate`` alone is legal in every phase: it hands the turn to the seat's agent,
+      and the phase rules then apply to what the agent produces.
+
+    Raises HumanTurnContractError with a player-facing message when the answer breaks
+    those rules (the server serves it as 422), and pydantic's ValidationError when the
+    payload is not even the right shape. A message longer than MAX_LINE_CHARS is refused
+    the same way, whatever the phase."""
     response = HumanTurnResponse.model_validate(raw_response)
+    if response.message and len(response.message) > MAX_LINE_CHARS:
+        raise HumanTurnContractError(
+            f"Keep your line under {MAX_LINE_CHARS} characters "
+            f"(yours is {len(response.message)})."
+        )
 
     if response.delegate:
         if response.pass_turn or response.message or response.target is not None:
@@ -72,23 +115,25 @@ def validate_human_response(request: HumanTurnRequest, raw_response: Any) -> Hum
     if request.phase == "day_channel":
         if response.pass_turn:
             if not request.can_pass:
-                raise HumanTurnContractError("You must respond on this reactive turn.")
+                raise HumanTurnContractError("This turn cannot be passed.")
         elif not (response.message and response.message.strip()):
             raise HumanTurnContractError("Enter a message or choose pass.")
         if response.target is not None:
             raise HumanTurnContractError("A discussion turn cannot include a target.")
     elif request.phase == "wolf_channel":
-        if response.pass_turn:
-            raise HumanTurnContractError("Wolf night talk cannot be passed.")
-        if not (response.message and response.message.strip()):
-            raise HumanTurnContractError("Enter a message to your pack.")
+        if not response.pass_turn and not (response.message and response.message.strip()):
+            raise HumanTurnContractError("Enter a message to your pack, or pass.")
         if response.target is not None:
-            raise HumanTurnContractError("The talk turn takes no target — the vote comes after.")
+            raise HumanTurnContractError("The chat turn takes no target — the carrier names the kill after.")
     else:
         if response.pass_turn:
             raise HumanTurnContractError(f"{request.phase} cannot be passed.")
         if response.target not in request.valid_targets:
             raise HumanTurnContractError(f"Invalid target: {response.target!r}")
+        role = role_for_field(request.phase)
+        if role == "necromancer" and response.target != ROLE_SPECS[role].no_action:
+            if response.body not in request.bodies:
+                raise HumanTurnContractError(f"Choose a body to act through: {response.body!r} is not one.")
 
     return response
 
@@ -104,13 +149,40 @@ class HumanTurnContractError(ValueError):
 _PHASE_INSTRUCTION = {
     "day_channel": "Your turn in the day discussion — speak, or pass if you have nothing to add.",
     "day_votes": "Cast your vote for who to eliminate today.",
-    "wolf_channel": "Wolf night talk — message your pack (the binding vote comes after the discussion).",
-    "wolf_vote": "Wolf night — cast your binding kill vote.",
+    "wolf_channel": "Wolf night chat — message your pack, or pass (the carrier names the kill after the chat).",
+    KILL_TARGET: "You carry the pack's kill tonight — name the target.",
     "healer_target": "Choose a player to protect tonight.",
-    "investigator_target": "Choose a player to investigate tonight.",
+    "investigator_target": "Choose a player to check tonight, or keep your checks.",
+    "sentinel_target": "Choose a player to watch tonight, or keep your watches.",
+    "trailseer_target": "Choose a player to follow tonight.",
     "serial_killer_target": "Choose a player to kill tonight.",
     "vigilante_target": "Choose a player to shoot tonight, or hold your fire.",
+    "sigil_target": "Choose a player to place a sigil on tonight, or keep your sigils.",
+    "block_target": "Choose a player to block tonight.",
+    "conceal": "Hide the role of the pack's victim tonight, or keep your uses.",
+    "necromancer_target": "Choose a body to act through and a target, or stay put.",
+    "speculator_pick": "Pick the side you expect to win, or wait.",
+    "bet_target": "Bet on who dies tonight (name a role too for two points), or bet on yourself.",
 }
+
+
+# The ask for a round turn (Phase 2): a discussion turn with a narrower brief.
+_ROUND_INSTRUCTION = {
+    "opening": "Anything to put on the table before the talk starts? A role claim, something from "
+               "last night, or a challenge to a claim. Keep it short, or pass.",
+    "proactive": "The floor is open. One point, and what it rests on, or pass.",
+    "closing": "The village has its eye on you. Say your piece before the vote.",
+}
+
+
+def _instruction_for(payload: dict[str, Any], output_key: str) -> str:
+    """The human-readable ask: the round's own brief for an opening or closing turn, else the
+    phase's."""
+    if output_key == "day_channel":
+        day_round = payload.get("day_round", "discussion")
+        if day_round in _ROUND_INSTRUCTION:
+            return _ROUND_INSTRUCTION[day_round]
+    return _PHASE_INSTRUCTION.get(output_key, "Make your move.")
 
 
 def _human_player_action(
@@ -138,16 +210,21 @@ def _build_human_request(
     """The interrupt request: the same board the LLM sees (role-filtered upstream), curated to what a
     human needs to decide, plus the legal choices and whether a pass is allowed this turn."""
     ctx = build_agent_prompt_input(payload)
+    day_round = None
+    if output_key == "day_channel":
+        day_round = payload.get("day_round", "discussion")
     return HumanTurnRequest(
         player_id=payload.get("player_id", ""),
         role=payload.get("player_role", ""),
         phase=output_key,
         day=payload.get("current_day", 1),
-        instruction=_PHASE_INSTRUCTION.get(output_key, "Make your move."),
+        day_round=day_round,
+        instruction=_instruction_for(payload, output_key),
         valid_targets=valid_targets,
         # A human may decline ANY discussion turn, reactive included — a mention isn't a demand;
-        # resolve_decision discharges the reactive obligation on a human pass.
-        can_pass=(output_key == "day_channel"),
+        # resolve_decision discharges the reactive obligation on a human pass. A chat round may
+        # be passed too.
+        can_pass=(output_key in ("day_channel", "wolf_channel")),
         dialogue=ctx["day_channel"],
         day_summaries=ctx["day_summaries"],
         surviving_players=payload.get("surviving_players")
@@ -163,8 +240,9 @@ def _build_human_request(
         ),
         wolf_channel=ctx["wolf_channel"],
         pack=ctx["surviving_wolves"],
-        investigator_results=ctx["investigator_results"],
-        vigilante_results=ctx["vigilante_results"],
+        night_actions=ctx["night_actions"] if payload.get("night_actions") is not None else "",
+        uses_left=payload.get("uses_left"),
+        bodies=list(payload.get("bodies", [])),
         previous_strategy=ctx["previous_strategy"],
     )
 
@@ -180,8 +258,10 @@ def _human_result_shaped(
         message=response.message,
         pass_turn=response.pass_turn,
         addressed_targets=addressed,
+        body=response.body,
+        bet_role=response.role_named or "none",
     )
-    target_field = TARGET_FIELD_BY_OUTPUT_KEY.get(output_key)
+    target_field = target_field_of(output_key)
     if target_field:
         setattr(result, target_field, response.target)
     return result

@@ -21,12 +21,14 @@ from langgraph.store.base import BaseStore
 from pydantic import BaseModel, Field, create_model
 
 from Agents.llm_factory import get_llm_pro, get_llm_pro_backup
+from Agents.llm_factory.providers.anthropic import parse_with_claude
 from Agents.memory.batch_deduplication.clustering import (
     _build_clusters_for_items,
     _fetch_namespace_items,
 )
 from Agents.memory.dedup_gate import gate_key, situation_for_dedup
 from Agents.prompts.cell_prompt import dimension_menu
+from Agents.prompts.compose import pool_rules_block
 from Agents.prompts.extraction import CELL_SP_SYNTHESIS_PROMPT
 from Agents.schemas.memory import cell_strategy_schema_for
 
@@ -39,12 +41,23 @@ def fetch_observations_for_synth(store: BaseStore, namespace: tuple[str, str, st
     return _fetch_namespace_items(store, namespace)
 
 
+def synth_partition_key(value: Any) -> tuple:
+    """The synthesis partition: the gate key (swing, alive bucket, consensus) plus the stage facts the
+    live stage filter compares that it lacks, the pack's partner lost and the ability's uses (some or
+    none). A point written from lessons of mixed stage carries a stage label that holds for only some
+    of them: 24% of ten_seat_v2's partner-labelled points and 20% of its uses-labelled ones were
+    (evidence/memory_system/v8/experiment_log.md, 2026-10-13)."""
+    dims = (value.get("dimensions") if isinstance(value, dict) else getattr(value, "dimensions", None)) or {}
+    uses = dims.get("uses_left", dims.get("bullets_left"))
+    return (gate_key(value), dims.get("ally_revealed"), None if uses is None else int(uses) > 0)
+
+
 def cluster_observations_for_synth(
     store: BaseStore, namespace: tuple[str, str, str], config,
     items: dict[str, Any] | None = None, seed_keys: set[str] | None = None,
 ) -> tuple[dict[str, Any], list[list[str]]]:
-    """Observation clusters for SP synthesis: partition by gate_key (situation regime, verdict-agnostic
-    so a cluster spans mixed outcomes), then agglomerate within each partition with the shared
+    """Observation clusters for SP synthesis: partition by synth_partition_key (situation regime and
+    stage, verdict-agnostic so a cluster spans mixed outcomes), then agglomerate within each partition with the shared
     clustering primitives. Returns (items_by_key, clusters). `items` skips the refetch when the caller
     already fetched them (gate-before-cluster). `seed_keys` restricts which keys may SEED a cluster (the
     loop seeds from new arrivals only; old obs still join as neighbours)."""
@@ -52,24 +65,43 @@ def cluster_observations_for_synth(
         items = _fetch_namespace_items(store, namespace)
     partitions: dict[Any, dict[str, Any]] = defaultdict(dict)
     for key, item in items.items():
-        partitions[gate_key(item.value)][key] = item
+        partitions[synth_partition_key(item.value)][key] = item
     clusters: list[list[str]] = []
     for part in partitions.values():
         clusters.extend(_build_clusters_for_items(store, namespace, part, config, seed_keys=seed_keys))
     return items, clusters
 
 
-def _format_cluster(cluster_keys: list[str], items_by_key: dict[str, Any]) -> str:
+def _format_cluster(cluster_keys: list[str], items_by_key: dict[str, Any], outcome: str = "verdict") -> str:
     """Render a cluster's observations for the synthesis prompt — situation residual + approach +
-    outcome, each tagged with its net_verdict so the LLM can weight by the outcome spread."""
+    outcome, each tagged with its net_verdict so the LLM can weight by the outcome spread. The
+    immediate effect and the end-of-game effect go on separate lines when both are stored, so a move
+    that cost something at once and paid off later is not read as one verdict.
+
+    ``outcome="grade"`` (decisions §13) tags each observation with its decision's deterministic grade
+    instead (``decision_grade``; "not graded" when it names no single decision), and leaves out the
+    judge's end-of-game effect, the halo's prose form; the immediate effect stays."""
     lines: list[str] = []
     for i, key in enumerate(cluster_keys, 1):
         v = items_by_key[key].value
-        situation = situation_for_dedup(v.get("dimensions", {}), v.get("situation", ""))
+        dims = v.get("dimensions", {})
+        situation = situation_for_dedup(dims, v.get("situation", ""))
+        if outcome == "grade":
+            lines.append(f"[{i}] (graded: {v.get('decision_grade') or 'not graded'})")
+            lines.append(f"situation: {situation}")
+            lines.append(f"approach: {v.get('approach', '')}")
+            if dims.get("immediate_response"):
+                lines.append(f"immediate effect: {dims['immediate_response']}")
+            lines.append("")
+            continue
         lines.append(f"[{i}] (outcome: {v.get('net_verdict', '?')})")
         lines.append(f"situation: {situation}")
         lines.append(f"approach: {v.get('approach', '')}")
-        lines.append(f"outcome: {v.get('outcome', '')}")
+        if dims.get("immediate_response") or dims.get("impact_on_final_game_outcome"):
+            lines.append(f"immediate effect: {dims.get('immediate_response', '')}")
+            lines.append(f"end-of-game effect: {dims.get('impact_on_final_game_outcome', '')}")
+        else:
+            lines.append(f"outcome: {v.get('outcome', '')}")
         lines.append("")
     return "\n".join(lines).strip()
 
@@ -122,6 +154,57 @@ def _sp_container(sp_schema: type[BaseModel]) -> type[BaseModel]:
     )
 
 
+def synthesis_cache_prefix() -> str:
+    """The start every canonical synthesis prompt shares (the opening lines and the rules block),
+    marked for caching on a Claude model."""
+    head = CELL_SP_SYNTHESIS_PROMPT[:CELL_SP_SYNTHESIS_PROMPT.index("{game_rules}")]
+    return head + pool_rules_block()
+
+
+# The two lines of the canonical prompt that say how to weigh the observations' outcomes, and their
+# form when the observations carry deterministic grades (outcome="grade"; decisions §13).
+_VERDICT_WEIGHTING = """- Use the outcome SPREAD as weighting: a move that succeeded across many observations is a strong rule.
+- An "unclear" outcome says nothing about whether the move helped: use that observation's facts, not
+  its verdict."""
+_GRADE_WEIGHTING = """- Each observation is tagged with the GRADE of its decision: whether the move was a good one for the
+  role by a fixed table of mechanical results (a kill that landed, a watch that saw a visitor, a vote on
+  a player of the other side), not whether its side won the game. Use the grade SPREAD as weighting: a
+  move graded positive across many observations is a strong rule.
+- "not graded" says nothing about whether the move helped: use that observation's facts, not its tag."""
+assert _VERDICT_WEIGHTING in CELL_SP_SYNTHESIS_PROMPT
+GRADE_SP_SYNTHESIS_PROMPT = CELL_SP_SYNTHESIS_PROMPT.replace(_VERDICT_WEIGHTING, _GRADE_WEIGHTING)
+
+
+def synthesis_request(role: str, action_phase: str, cluster_keys: list[str], items_by_key: dict[str, Any],
+                      track_record: str = "", outcome: str = "verdict") -> tuple[str, type[BaseModel]] | None:
+    """The prompt and output schema for one cluster's synthesis; None for a cell with no schema.
+
+    `track_record` (default "" → canonical halo-weighted synthesis) is the v7 A/B's CREDIT-AWARE arm: a
+    rendered realized-de-luck brief; when given, synthesis weights by it (not the per-obs outcome halo)
+    and is asked for a conditioned directive. `outcome` (``TickConfig.synth_outcome``) is which outcome
+    each observation shows: the extraction judge's verdict, or its decision's deterministic grade."""
+    sp_schema = cell_strategy_schema_for(role, action_phase)
+    if sp_schema is None:
+        return None
+    container = _sp_container(sp_schema)
+    if track_record:
+        prompt = CREDIT_SYNTH_PROMPT.format(
+            role=role, phase=action_phase,
+            observations=_format_cluster(cluster_keys, items_by_key, outcome),
+            track_record=track_record, dimension_menu=dimension_menu(sp_schema),
+        )
+    else:
+        template = GRADE_SP_SYNTHESIS_PROMPT if outcome == "grade" else CELL_SP_SYNTHESIS_PROMPT
+        prompt = template.format(
+            game_rules=pool_rules_block(),
+            role=role,
+            phase=action_phase,
+            observations=_format_cluster(cluster_keys, items_by_key, outcome),
+            dimension_menu=dimension_menu(sp_schema),
+        )
+    return prompt, container
+
+
 def synthesize_cluster_sps(
     role: str,
     action_phase: str,
@@ -130,31 +213,27 @@ def synthesize_cluster_sps(
     *,
     max_retries: int = 2,
     track_record: str = "",
+    model: str | None = None,
+    outcome: str = "verdict",
 ) -> list:
     """Synthesize 1-N strategy points from one observation cluster. Returns SP cell objects (their
     action_phase is set by the model within the cell's allowed phases).
 
-    `track_record` (default "" → canonical halo-weighted synthesis) is the v7 A/B's CREDIT-AWARE arm: a
-    rendered realized-de-luck brief; when given, synthesis weights by it (not the per-obs outcome halo)
-    and is asked for a conditioned directive."""
-    sp_schema = cell_strategy_schema_for(role, action_phase)
-    if sp_schema is None:
+    `model` (``TickConfig.model``): a Claude model is called through the Anthropic SDK, retrying on
+    itself; anything else (or None) goes through the factory's pro model and its backup."""
+    request = synthesis_request(role, action_phase, cluster_keys, items_by_key, track_record, outcome)
+    if request is None:
         return []
-    container = _sp_container(sp_schema)
-    if track_record:
-        prompt = CREDIT_SYNTH_PROMPT.format(
-            role=role, phase=action_phase,
-            observations=_format_cluster(cluster_keys, items_by_key),
-            track_record=track_record, dimension_menu=dimension_menu(sp_schema),
-        )
-    else:
-        prompt = CELL_SP_SYNTHESIS_PROMPT.format(
-            role=role,
-            phase=action_phase,
-            observations=_format_cluster(cluster_keys, items_by_key),
-            dimension_menu=dimension_menu(sp_schema),
-        )
+    prompt, container = request
     run = f"sp_synth_{role}_{action_phase}"
+    if model and model.startswith("claude"):
+        for attempt in range(max_retries + 1):
+            try:
+                res, _usage = parse_with_claude(prompt, container, model, cache_prefix=synthesis_cache_prefix())
+                return list(res.strategy_points) if res is not None else []
+            except Exception as e:  # noqa: BLE001
+                logger.warning("%s %s attempt %s failed: %s", run, model, attempt + 1, e)
+        return []
     for label, llm in (("primary", get_llm_pro()), ("backup", get_llm_pro_backup())):
         chain = llm.with_structured_output(container)
         for attempt in range(max_retries + 1):

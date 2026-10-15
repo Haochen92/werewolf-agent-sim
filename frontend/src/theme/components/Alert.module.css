@@ -1,0 +1,34 @@
+/*
+ * The site's alert: a server's refusal or a failed request, said on a walnut slip with a
+ * wolf-red rule down its side, in the site's sans even on paper. The mockups draw no alert, so
+ * it borrows the rail's panel. Selectors go through `.root` to outrank Mantine's variant rules.
+ */
+.root {
+  /* set outright: Mantine passes its variant colours as inline custom properties */
+  background-color: #1a130c;
+  color: var(--text);
+  font-family: var(--font-sans);
+  border: 1px solid var(--cloak2);
+  border-left: 3px solid var(--wolf);
+  box-shadow: 0 10px 22px -12px rgba(0, 0, 0, 0.9);
+}
+
+.root .title {
+  color: var(--bone);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.root .message {
+  color: var(--bone2);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.root .icon {
+  color: var(--wolf);
+}
+
+.root .closeButton {
+  color: var(--bone2);
+}

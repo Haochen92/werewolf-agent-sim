@@ -9,40 +9,29 @@ from __future__ import annotations
 
 from typing import Any
 
-from Agents.prompts import (
-    HEALER_NIGHT,
-    INVESTIGATOR_NIGHT,
-    SERIAL_KILLER_NIGHT,
-    VIGILANTE_NIGHT,
-    WOLF_NIGHT_VOTE,
-)
-from Agents.schemas.output import (
-    HealerOutput,
-    InvestigatorOutput,
-    SerialKillerOutput,
-    VigilanteOutput,
-    WolfNightVoteOutput,
-)
+from Agents.prompts import night_template
+from Agents.schemas.lineup_output import night_output
+from Agents.schemas.roles import ROLE_SPECS
 from Agents.schemas.evaluation import EvalCase
 from Agents.llm_factory import get_llm
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
 from Agents.turn import run_agent
 from Agents.turn.action_space import valid_targets_for_action, output_schema_with_legal_targets
 from evaluation.src.replay.turn_action import action_spec_for
-from evaluation.src.replay.situation_summary import eval_case_to_agent_payload
+from evaluation.src.replay.situation_summary import case_lineup, eval_case_to_agent_payload
 from evaluation.src.replay.decision_screen.schemas import DayVoteOutputStructuredApplicability
 
-# Night-action spec map (role -> prompt, output schema, output_key) mirroring
-# application.ACTION_SPECS for the day. run_agent already handles these night
-# output_keys; the wolf kill is the wolf_vote turn (2026-07-26: wolf night split
-# into sequential talk + parallel vote — replays regenerate the VOTE decision).
-NIGHT_SPECS: dict[str, tuple[Any, Any, str]] = {
-    "wolf": (WOLF_NIGHT_VOTE, WolfNightVoteOutput, "wolf_vote"),
-    "serial_killer": (SERIAL_KILLER_NIGHT, SerialKillerOutput, "serial_killer_target"),
-    "healer": (HEALER_NIGHT, HealerOutput, "healer_target"),
-    "investigator": (INVESTIGATOR_NIGHT, InvestigatorOutput, "investigator_target"),
-    "vigilante": (VIGILANTE_NIGHT, VigilanteOutput, "vigilante_target"),
-}
+def night_spec(case: EvalCase) -> tuple[Any, Any, str]:
+    """A ten-seat role's night turn (prompt, output schema, output_key), mirroring
+    turn_action.action_spec_for for the day: built from the role's card and the case's
+    lineup. A wolf's own night turn is its skill; the pack's kill is the carrier's turn and is
+    not replayed here. The nine-seat roles (the wolf's pack vote) are refused."""
+    role = case.player_role
+    lineup = case_lineup(case)
+    spec = ROLE_SPECS.get(role)
+    if spec is None or spec.retired or role not in lineup:
+        raise ValueError(f"Unsupported night replay role: {role!r}")
+    return night_template(role), night_output(role, lineup), spec.target_field
 
 
 def _replay_vote(
@@ -74,10 +63,8 @@ def _replay_vote(
     )
     if not result:
         return None, ""
-    votes = result.get("day_votes", [])
-    votee = votes[0].votee if votes else None
-    updated = (result.get("agent_strategies") or {}).get(case.player_id, "")
-    return votee, updated
+    # run_agent returns a resolved turn: the vote is its entry.
+    return result.entry.votee, result.effects.strategy or ""
 
 
 def _replay_night(
@@ -86,21 +73,22 @@ def _replay_night(
     prompt_template: Any | None = None,
     strategy_points: list[Any] | None = None,
 ) -> str | None:
-    """Regenerate one night target with a swapped memory block. The wolf kill
-    is regenerated as a wolf_vote turn; other roles return their *_target directly.
+    """Regenerate one night target with a swapped memory block: the role's target, its
+    no-action word when it declined ("hold_fire", "keep_sigil", ...), the kind for a choice with
+    no target ("conceal"), None on a dropped call.
     strategy_points swaps the injected SP block (defaults to none — the
     observations-only screen convention; the checkpoint sweep passes snapshot SPs)."""
     payload = eval_case_to_agent_payload(case)
     payload["retrieved_observations"] = retrieved_observations
     payload["strategy_points"] = strategy_points or []
-    prompt, schema, output_key = NIGHT_SPECS[case.player_role]
+    prompt, schema, output_key = night_spec(case)
     result = run_agent(payload, prompt_template or prompt, schema, output_key)
     if not result:
         return None
-    if output_key == "wolf_vote":
-        wc = result.get("wolf_channel", [])
-        return wc[0].vote if wc else None
-    return result.get(output_key)
+    choice = result.entry  # None when the role declined; hold_fire and conceal carry no target
+    if choice is None:
+        return ROLE_SPECS[case.player_role].no_action or None
+    return choice.target or choice.kind
 
 
 def _replay_vote_structured(

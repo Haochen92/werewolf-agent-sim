@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Literal
 
 from dotenv import load_dotenv
+from Agents.llm_factory import DEFAULT_EMBEDDING_MODEL, similarity_threshold
 from Agents.memory.persistence import DEFAULT_MEMORY_STORE_DIR
 from pydantic import BaseModel
 
@@ -22,20 +23,19 @@ load_dotenv()
 ClusterMode = Literal["bounded", "connected", "agglomerative"]
 LinkageMethod = Literal["complete", "average"]
 
-DEFAULT_BATCH_MODEL = os.getenv("MEMORY_BATCH_DEDUP_MODEL", "gemini-2.5-pro")
+DEFAULT_BATCH_MODEL = os.getenv("MEMORY_BATCH_DEDUP_MODEL", "anthropic/claude-sonnet-5-5")
 DEFAULT_BATCH_THINKING_LEVEL = os.getenv("MEMORY_BATCH_DEDUP_THINKING_LEVEL", "")
-DEFAULT_BATCH_EMBEDDING_MODEL = os.getenv(
-    "MEMORY_BATCH_EMBEDDING_MODEL",
-    "gemini-embedding-001",
-)
+# the project's embedder (Qwen3 through OpenRouter since 2026-10-12), whose thresholds the cluster
+# line below is read from; it was gemini-embedding-001 until the Gemini credits ran out (2026-10-15)
+DEFAULT_BATCH_EMBEDDING_MODEL = os.getenv("MEMORY_BATCH_EMBEDDING_MODEL", DEFAULT_EMBEDDING_MODEL)
 DEFAULT_BATCH_EMBEDDING_DIMS = int(os.getenv("MEMORY_BATCH_EMBEDDING_DIMS", "1536"))
-DEFAULT_BATCH_SIMILARITY_THRESHOLD = 0.70
+DEFAULT_BATCH_SIMILARITY_THRESHOLD = similarity_threshold("batch_cluster")
 DEFAULT_MAX_CLUSTER_SIZE = 15
 DEFAULT_MEMORY_STORE_RETRY_ATTEMPTS = 5
 DEFAULT_MEMORY_STORE_RETRY_INITIAL_DELAY = 1.0
 DEFAULT_MEMORY_STORE_RETRY_MAX_DELAY = 30.0
 
-DEFAULT_TRIAGE_MODEL = "gemini-3.1-flash-lite"
+DEFAULT_TRIAGE_MODEL = "anthropic/claude-haiku-5-5"
 DEFAULT_TRIAGE_THINKING_LEVEL = "low"
 
 DEDUP_TIMESTAMP_FILE = ".last_dedup_at"

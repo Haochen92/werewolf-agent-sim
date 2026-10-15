@@ -1,0 +1,340 @@
+/* A day as a line: the stops on a brass track (--n of them, the engine at --at), then the stop's
+   walnut signboard: its disc and name over the phase's instrument and the words beside it. */
+
+.route {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+  margin: 0 0 20px;
+  padding-top: 34px;
+}
+/* dawn gold through the day, night blue, the morning's pink, the terminus's iron */
+.track {
+  position: absolute;
+  left: calc(50% / var(--n));
+  right: calc(50% / var(--n));
+  top: 50px;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--brass-hi),
+    var(--amber) 40%,
+    #b07a3a 55%,
+    #3f4f86 68%,
+    #e9a77a 82%,
+    #8a8f99
+  );
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.5),
+    0 0 14px rgba(240, 197, 115, 0.18);
+}
+.engine {
+  position: absolute;
+  z-index: 1;
+  top: -2px;
+  left: calc((var(--at) + 0.5) / var(--n) * 100%);
+  width: 46px;
+  height: 27px;
+  translate: -50% 0;
+  transition: left 0.55s cubic-bezier(0.4, 0.1, 0.2, 1);
+}
+.engine svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: scaleX(-1);
+  fill: #e6c47a;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.6));
+}
+.engine .dark {
+  fill: var(--board-bot);
+}
+
+.route button {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 0 2px 4px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+.route button:hover,
+.route button[aria-selected='true'] {
+  color: var(--text);
+}
+.route button:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+.dot {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  color: var(--ink);
+  background: var(--bone2);
+  box-shadow:
+    0 0 0 3px var(--board-bot),
+    0 0 0 4.5px #8a6526;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
+}
+.dot[data-disc='moon'] {
+  background: #c9cdea;
+  box-shadow:
+    0 0 0 3px var(--board-bot),
+    0 0 0 4.5px #6d74a8;
+}
+.dot[data-disc='end'] {
+  background: var(--board-bot);
+  color: #e6c47a;
+  box-shadow:
+    0 0 0 3px var(--board-bot),
+    0 0 0 4.5px #8a8f99;
+}
+[aria-selected='true'] > .dot {
+  background: #f4dc9c;
+  box-shadow:
+    0 0 0 3px var(--board-bot),
+    0 0 0 4.5px var(--brass-hi),
+    0 0 18px 4px rgba(240, 197, 115, 0.45);
+}
+[aria-selected='true'] > .dot[data-disc='moon'] {
+  background: #e3e6fb;
+  box-shadow:
+    0 0 0 3px var(--board-bot),
+    0 0 0 4.5px #aab3ee,
+    0 0 18px 4px rgba(150, 165, 240, 0.45);
+}
+[aria-selected='true'] > .dot[data-disc='end'] {
+  background: var(--board-top);
+}
+.dot .buffer {
+  width: 20px;
+  height: 20px;
+}
+.buffer {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.name {
+  font-size: 14px;
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* ---------- the stop ---------- */
+.stop {
+  /* every stop's instrument in one fixed slot, so stepping along the line moves no edge */
+  --slot-h: 290px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  grid-template-areas:
+    'head head'
+    'live words';
+  gap: 24px;
+  align-items: center;
+  padding: 24px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, var(--board-top), var(--board-bot));
+  box-shadow:
+    inset 0 0 0 1px var(--brass-lo),
+    inset 0 0 0 3px rgba(0, 0, 0, 0.35),
+    inset 0 0 0 4px rgba(201, 150, 63, 0.35),
+    var(--shadow);
+}
+.head {
+  grid-area: head;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(201, 150, 63, 0.3);
+}
+.head h3 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 34px;
+  line-height: 1;
+  color: var(--sign-text);
+}
+.of {
+  margin-left: auto;
+  color: var(--sign-muted);
+  font-size: 14px;
+}
+/* the live game's day plaque disc */
+.disc {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1.5px solid #c9a45c;
+  box-shadow: inset 0 0 0 2px rgba(22, 13, 7, 0.9);
+}
+.disc svg {
+  width: 66%;
+  height: 66%;
+}
+.disc[data-disc='sun'] {
+  color: var(--brass-hi);
+  background: radial-gradient(
+    circle at 50% 40%,
+    rgba(240, 197, 115, 0.3),
+    rgba(120, 70, 10, 0.25) 70%
+  );
+}
+.disc[data-disc='moon'] {
+  color: #d9dcef;
+  border-color: #8f96c4;
+  background: radial-gradient(
+    circle at 50% 40%,
+    rgba(150, 165, 230, 0.3),
+    rgba(30, 40, 90, 0.4) 70%
+  );
+}
+.disc[data-disc='end'] {
+  color: #e6c47a;
+  border-color: #8a8f99;
+  background: radial-gradient(
+    circle at 50% 40%,
+    rgba(200, 205, 215, 0.18),
+    rgba(20, 20, 25, 0.4) 70%
+  );
+}
+.disc[data-disc='end'] svg {
+  width: 60%;
+  height: 60%;
+}
+
+.live {
+  grid-area: live;
+  display: grid;
+  align-content: center;
+  height: var(--slot-h);
+}
+.live > * {
+  min-width: 0;
+}
+.words {
+  grid-area: words;
+}
+.words p {
+  margin: 10px 0 0;
+  color: var(--well-text);
+  font-size: 16px;
+  line-height: 1.55;
+}
+.words > p:first-child {
+  margin-top: 0;
+}
+/* your part, on the signage's cream plate */
+.words .you {
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  color: var(--plate-ink);
+  font-size: 15.5px;
+  background: linear-gradient(var(--plate-top), var(--plate-bot));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 0 0 1px var(--plate-edge),
+    0 2px 0 #4a3210;
+}
+.you b {
+  margin-right: 4px;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 18px;
+  color: #7d4e10;
+}
+.next {
+  margin-top: 16px;
+}
+
+/* the deduction's first rule, set apart on the signage's cream plate */
+/* under the line: the claims note, then the clock (ClockSign) */
+.claims {
+  margin-top: 20px;
+  padding: 18px 22px 20px;
+  border-radius: 12px;
+  color: var(--plate-ink);
+  background: linear-gradient(var(--plate-top), var(--plate-bot));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 0 0 1px var(--plate-edge),
+    0 2px 0 #4a3210;
+}
+.claims h3 {
+  margin: 0 0 6px;
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 400;
+  color: #7d4e10;
+}
+.claims p {
+  margin: 0;
+  max-width: 70ch;
+  font-size: 15.5px;
+  line-height: 1.55;
+}
+
+@media (max-width: 760px) {
+  .route {
+    padding-top: 30px;
+  }
+  .track {
+    top: 46px;
+  }
+  .name {
+    display: none;
+  }
+  .dot {
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
+  }
+  .dot .buffer {
+    width: 17px;
+    height: 17px;
+  }
+  .stop {
+    --slot-h: 250px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'head'
+      'live'
+      'words';
+    gap: 16px;
+    padding: 16px;
+  }
+  .head h3 {
+    font-size: 28px;
+  }
+  .disc {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .engine {
+    transition: none;
+  }
+}

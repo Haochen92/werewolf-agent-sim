@@ -1,0 +1,969 @@
+/**
+ * The site shell (app/(site)/layout.tsx): every site page wears the top nav with the product
+ * name and the footer with the GitHub link, and the theatre's routes wear neither. No API is
+ * running for these; the pages' own data may fail to load, the chrome must not care.
+ */
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { expect, test, type Page, type Route } from '@playwright/test';
+
+const GITHUB = 'https://github.com/Haochen92/werewolf-agent-sim';
+
+for (const path of ['/', '/replays', '/rooms', '/play', '/rooms/new', '/guide']) {
+  test(`site shell: ${path}`, async ({ page }) => {
+    await page.goto(path);
+    await expect(page).toHaveTitle(/^The Ninth Express/);
+
+    const nav = page.getByRole('navigation', { name: 'Site' });
+    await expect(nav.getByRole('link', { name: 'The Ninth Express' })).toBeVisible();
+    // the Rooms door also says how many tables are boarding, once the server has answered
+    for (const door of [/^Play$/, /^Rooms( \d+ boarding)?$/, /^Replays$/]) {
+      await expect(nav.getByRole('link', { name: door })).toBeVisible();
+    }
+
+    const footer = page.getByRole('contentinfo');
+    await expect(footer.getByRole('link', { name: 'GitHub', exact: true })).toHaveAttribute(
+      'href',
+      GITHUB,
+    );
+    await expect(footer).toContainText('Liu Haochen');
+  });
+}
+
+test('the theatre wears no site chrome: /workbench/day', async ({ page }) => {
+  await page.goto('/workbench/day?beat=6&animate=0&strip=0', { waitUntil: 'networkidle' });
+  // the stage rendered (the speaker's figure is up), and around it there is no nav or footer
+  await expect(page.locator('[data-layer="figures"] img')).toHaveCount(1);
+  await expect(page.getByRole('navigation', { name: 'Site' })).toHaveCount(0);
+  await expect(page.getByText('The Ninth Express', { exact: true })).toHaveCount(0);
+  await expect(page.locator(`a[href="${GITHUB}"]`)).toHaveCount(0);
+});
+
+test('a URL with no page answers 404 inside the site shell, with the way home', async ({
+  page,
+}) => {
+  const res = await page.goto('/no-such-page');
+  expect(res?.status()).toBe(404);
+  await expect(page).toHaveTitle('The Ninth Express · Not found');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'This page isn’t on the train',
+  );
+  await expect(page.getByRole('navigation', { name: 'Site' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Back to the platform' })).toHaveAttribute(
+    'href',
+    '/',
+  );
+  await expect(page.getByRole('contentinfo')).toContainText('Liu Haochen');
+});
+
+/**
+ * The archive (`/replays`) over a mocked `GET /replays`: the bundled fixture game's summary plus
+ * three invented rows, and a `GET /models` menu for the display names. One of the invented games
+ * holds a seat token, so its slate carries the "you played" stamp.
+ */
+const GAME = '9369a5c1-3c28-42ce-86a1-9d594dfa4804';
+const MINE = 'c41e07b2-5a3f-4d1e-9b7a-2f6c8e0d1a34';
+const FIXTURE = JSON.parse(
+  readFileSync(join(__dirname, '../src/stage/fixtures/replay-9369a5c1.json'), 'utf8'),
+) as Record<string, unknown>;
+const summary = (over: Record<string, unknown>) => ({
+  n_events: 380,
+  cast_role_counts: FIXTURE.cast_role_counts,
+  ...over,
+});
+const REPLAYS = [
+  // the fixture's own summary fields (its log ends on night 4), then three invented rows
+  summary({
+    game_id: FIXTURE.game_id,
+    finished_at: FIXTURE.finished_at,
+    winner: FIXTURE.winner,
+    days: FIXTURE.days,
+    ended_phase: 'night',
+    n_events: FIXTURE.n_events,
+    n_humans: FIXTURE.n_humans,
+    model: FIXTURE.model,
+    memory: FIXTURE.memory,
+  }),
+  summary({
+    game_id: MINE,
+    finished_at: '2026-09-24T19:02:11Z',
+    winner: 'villagers',
+    days: 3,
+    ended_phase: 'voting',
+    n_humans: 1,
+    model: 'gemini-3.6-flash',
+    memory: false,
+    cost_usd: 0.2671,
+    avg_call_seconds: 4.06,
+  }),
+  summary({
+    game_id: '7f2a9d10-8c4b-4e2f-a1d3-6b5e9f0c2d87',
+    finished_at: '2026-09-23T11:40:00Z',
+    winner: 'serial_killer',
+    days: 5,
+    ended_phase: 'night',
+    n_humans: 3,
+    model: 'gemini-3.6-flash',
+    memory: false,
+  }),
+  summary({
+    game_id: 'seed-chunk-catalogue',
+    finished_at: '2026-08-21T09:15:00Z',
+    winner: 'wolves',
+    days: 5,
+    ended_phase: null,
+    n_humans: 0,
+    model: '',
+    memory: false,
+  }),
+];
+const MODELS = {
+  models: [
+    {
+      model: 'gemini-3.5-flash-lite',
+      label: 'Gemini 3.5 Flash-Lite',
+      rescue_model: null,
+      house_funded: true,
+      is_default: true,
+      needs_key: false,
+      avg_cost_usd: 0.2671,
+      priced_games: 12,
+    },
+    {
+      model: 'gemini-3.6-flash',
+      label: 'Gemini 3.6 Flash',
+      rescue_model: null,
+      house_funded: true,
+      is_default: false,
+      needs_key: false,
+      priced_games: 0,
+    },
+    {
+      model: 'deepseek/deepseek-v4-pro',
+      label: 'DeepSeek V4 Pro',
+      rescue_model: null,
+      house_funded: false,
+      is_default: false,
+      needs_key: true,
+      priced_games: 0,
+    },
+  ],
+  house: {
+    enabled: true,
+    games_per_day: 20,
+    remaining: 12,
+    reset_at: '2026-09-27T00:00:00Z',
+  },
+};
+
+/** The API's own requests (not the page's document or its RSC fetches, which share the path). */
+function api(body: unknown, headers: Record<string, string> = {}) {
+  return async (route: Route) => {
+    const req = route.request();
+    if (req.resourceType() === 'document' || req.headers()['rsc']) return route.fallback();
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: {
+        'access-control-allow-origin': req.headers()['origin'] ?? '*',
+        'access-control-allow-credentials': 'true',
+        'access-control-expose-headers': 'X-Total-Count',
+        ...headers,
+      },
+      body: JSON.stringify(body),
+    });
+  };
+}
+
+/**
+ * The chrome's own reads, answered so a picture never depends on a running API: the nav's Rooms
+ * counter (`GET /rooms`, none boarding) and the footer's archive total. Anything else on those
+ * paths falls through to the routes a test set before.
+ */
+async function routeChrome(page: Page) {
+  const rooms = api([]);
+  await page.route('**/rooms', (route) =>
+    route.request().method() === 'GET' ? rooms(route) : route.fallback(),
+  );
+  await page.route(
+    (url) => url.pathname.endsWith('/replays'),
+    api([], { 'X-Total-Count': '212' }),
+  );
+}
+
+async function openArchive(page: Page) {
+  await page.addInitScript((id) => localStorage.setItem(`seat_${id}`, 'tok'), MINE);
+  await page.route('**/replays*', api(REPLAYS, { 'X-Total-Count': '212' }));
+  await page.route('**/models', api(MODELS));
+  await page.goto('/replays', { waitUntil: 'networkidle' });
+  await expect(page.locator('[data-game]')).toHaveCount(4);
+}
+
+/** Fonts in and the visible chips decoded, so the picture is the settled page. */
+async function settle(page: Page) {
+  await page.waitForLoadState('networkidle');
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    await Promise.all(
+      [...document.images].map((img) =>
+        img.complete ? img.decode().catch(() => null) : null,
+      ),
+    );
+  });
+}
+
+test('archive: slates say the model by name, where the game ended and the roles dealt', async ({
+  page,
+}) => {
+  await openArchive(page);
+  await expect(page.getByRole('heading', { name: 'The archive' })).toBeVisible();
+  await expect(page.getByText('Showing 4 of 212 games')).toBeVisible();
+
+  const fixture = page.locator(`[data-game="${GAME}"]`);
+  await expect(fixture).toHaveAttribute('href', `/replays/${GAME}`);
+  await expect(fixture).toContainText('Wolves');
+  await expect(fixture).toContainText('Gemini 3.5 Flash-Lite');
+  await expect(fixture).not.toContainText('gemini-3.5-flash-lite'); // the name, not the raw id twice
+  await expect(fixture).toContainText('Night 4');
+  await expect(fixture).toHaveAttribute('aria-label', /ended night 4/);
+  // the roles dealt, one disc per seat: the fixture is a nine-seat game
+  await expect(fixture.locator('[data-role]')).toHaveCount(9);
+  await expect(fixture.locator('[data-role="wolf"]')).toHaveCount(2);
+
+  await expect(page.locator(`[data-game="${MINE}"]`)).toContainText('Day 3 vote');
+  // a game that recorded its tokens says what it cost and how long an AI call took
+  const mine = page.locator(`[data-game="${MINE}"]`);
+  await expect(mine.locator('dd', { hasText: '$0.27' })).toBeVisible();
+  await expect(mine.locator('dd', { hasText: '4.1 s' })).toBeVisible();
+  await expect(page.locator(`[data-game="${MINE}"]`)).toContainText('played');
+  await expect(page.locator('[data-game="seed-chunk-catalogue"]')).toContainText(
+    'Unrecorded',
+  );
+});
+
+test('archive: a filter narrows the list, and its chip takes it off', async ({ page }) => {
+  await openArchive(page);
+  const rail = page.getByRole('complementary', { name: 'Filters' });
+
+  await rail.getByText('The wolves').click();
+  await expect(page.locator('[data-game]')).toHaveCount(2);
+  await expect(page.getByText('Showing 2 of 212 games')).toBeVisible();
+
+  await rail.getByText('Night', { exact: true }).click();
+  await expect(page.locator('[data-game]')).toHaveCount(1);
+  await expect(page.locator(`[data-game="${GAME}"]`)).toBeVisible();
+
+  await rail.getByRole('switch', { name: 'Played on this device' }).click();
+  await expect(page.getByText('No game matches these filters')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Clear filters' }).click();
+  await expect(page.locator('[data-game]')).toHaveCount(4);
+
+  await rail.getByRole('switch', { name: 'Played on this device' }).click();
+  await expect(page.locator('[data-game]')).toHaveCount(1);
+  await page.getByRole('button', { name: /On this device/ }).click();
+  await expect(page.locator('[data-game]')).toHaveCount(4);
+});
+
+for (const [name, viewport] of [
+  ['replays-1440', { width: 1440, height: 900 }],
+  ['replays-390', { width: 390, height: 844 }],
+] as const) {
+  test(`archive: ${name}`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await openArchive(page);
+    await settle(page);
+    await expect(page).toHaveScreenshot(`${name}.png`);
+  });
+}
+
+/**
+ * The ticket office (`/play`, `/rooms/new`) over a mocked `GET /models`. Whether the key field
+ * shows is the house's call: a purse that covers the default model folds it away, a spent purse
+ * (the server flips `needs_key`) opens it and holds the ticket until a key is typed.
+ */
+const menuWithPurse = (remaining: number) => ({
+  models: MODELS.models.map((row) => ({
+    ...row,
+    needs_key: remaining <= 0,
+  })),
+  house: { enabled: true, games_per_day: 20, remaining, reset_at: '2026-09-27T00:00:00Z' },
+});
+
+async function openTicket(page: Page, path: string, remaining: number) {
+  await routeChrome(page);
+  await page.route('**/models', api(menuWithPurse(remaining)));
+  await page.goto(path, { waitUntil: 'networkidle' });
+  await expect(page.getByRole('heading', { name: 'The ticket office' })).toBeVisible();
+  // the default model is preselected: its display name in the select, the raw id underneath
+  await expect(page.getByLabel('Model', { exact: true })).toHaveValue(
+    'Gemini 3.5 Flash-Lite',
+  );
+  await expect(page.getByRole('code')).toHaveText('gemini-3.5-flash-lite');
+}
+
+test('ticket: the house pays, so /play asks for no key', async ({ page }) => {
+  await openTicket(page, '/play', 3);
+  await expect(
+    page.getByText('The house pays for this model: 3 of 20 games left today.'),
+  ).toBeVisible();
+  await expect(page.getByLabel('Your key')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Use my own key instead' })).toBeVisible();
+  // memory is held off for the ten-seat cast until its store ships
+  const memory = page.getByRole('switch', { name: 'Agents’ memory' });
+  await expect(memory).not.toBeChecked();
+  await expect(memory).toBeDisabled();
+  await expect(page.getByText(/Memory for the new cast is being built/)).toBeVisible();
+  await expect(page.getByText('You and 9 agents')).toBeVisible();
+
+  // the role cards: a radio group, nothing chosen deals at random, one chosen at a time, the
+  // stub shows the role held; a second click on it deals at random again
+  const roles = page
+    .getByRole('radiogroup', { name: /Your role/ })
+    .filter({ visible: true });
+  const stub = page.locator('[data-place="stub"]');
+  await expect(stub).toContainText('Dealt at random');
+  await roles.getByRole('radio', { name: 'Chanteuse, Wolves' }).click();
+  await expect(roles.getByRole('radio', { name: 'Chanteuse, Wolves' })).toBeChecked();
+  await expect(stub).toContainText('Chanteuse');
+  await expect(stub).toContainText('Your packmate will be an agent.');
+  // the arrow keys move the choice and the focus
+  await page.keyboard.press('ArrowRight');
+  await expect(roles.getByRole('radio', { name: 'Illusionist, Wolves' })).toBeFocused();
+  await page.keyboard.press('ArrowRight');
+  const killer = roles.getByRole('radio', { name: 'Serial killer, Lone killer' });
+  await expect(killer).toBeChecked();
+  await expect(killer).toBeFocused();
+  await killer.click();
+  await expect(killer).not.toBeChecked();
+  await expect(stub).toContainText('Dealt at random');
+});
+
+test('ticket: the model menu groups the house rows and shows what a game costs', async ({
+  page,
+}) => {
+  await openTicket(page, '/play', 3);
+  await page.getByLabel('Model', { exact: true }).click();
+  const menu = page.getByRole('listbox');
+  await expect(menu.getByText('Recommended')).toBeVisible();
+  await expect(menu.getByText('With your own key')).toBeVisible();
+  const lite = menu.getByRole('option', { name: /Gemini 3\.5 Flash-Lite/ });
+  await expect(lite).toContainText('≈ $0.27 a game');
+  await expect(lite).toContainText('house pays');
+  await expect(lite).toContainText('default');
+  await expect(menu.getByRole('option', { name: /DeepSeek V4 Pro/ })).toContainText(
+    'your key',
+  );
+  await expect(menu.getByRole('option', { name: /Gemini 3\.6 Flash/ })).not.toContainText(
+    'a game',
+  );
+});
+
+test('ticket: a spent purse opens the key field and holds the ticket', async ({ page }) => {
+  let posted = false;
+  await page.route('**/games', async (route) => {
+    posted = true;
+    await route.abort();
+  });
+  await openTicket(page, '/play', 0);
+  await expect(page.getByText(/The house has funded its 20 games for today/)).toBeVisible();
+  const key = page.getByLabel('Your key');
+  await expect(key).toBeVisible();
+
+  await page.getByRole('button', { name: 'Start the game' }).click();
+  await expect(page.getByText('Paste an API key: the house is not paying')).toBeVisible();
+  await expect(key).toBeFocused();
+  expect(posted).toBe(false);
+});
+
+test('ticket: /rooms/new opens a room and goes to it', async ({ page }) => {
+  const ROOM = 'b7d1c0de-0000-4000-8000-00000000abcd';
+  let sent: Record<string, unknown> | null = null;
+  await page.route('**/rooms', async (route) => {
+    const req = route.request();
+    if (req.resourceType() === 'document' || req.headers()['rsc']) return route.fallback();
+    const cors = {
+      'access-control-allow-origin': req.headers()['origin'] ?? '*',
+      'access-control-allow-credentials': 'true',
+      'access-control-allow-methods': 'POST, OPTIONS',
+      'access-control-allow-headers': 'content-type',
+    };
+    if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors });
+    sent = req.postDataJSON() as Record<string, unknown>;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: cors,
+      body: JSON.stringify({ game_id: ROOM, host_key: 'hk-1' }),
+    });
+  });
+  await openTicket(page, '/rooms/new', 3);
+  await expect(page.getByText('Up to 10 people')).toBeVisible();
+
+  await page.getByLabel('Room name').fill('Night shift');
+  await expect(page.getByText('Night shift', { exact: true })).toBeVisible(); // the stub
+  await page.getByRole('button', { name: 'Open the room' }).click();
+
+  await page.waitForURL(`**/games/${ROOM}`);
+  expect(sent).toEqual({
+    name: 'Night shift',
+    model: 'gemini-3.5-flash-lite',
+    api_key: '',
+    memory: false,
+  });
+  expect(await page.evaluate((id) => localStorage.getItem(`host_${id}`), ROOM)).toBe(
+    'hk-1',
+  );
+});
+
+for (const [name, path, viewport] of [
+  ['play-1440', '/play', { width: 1440, height: 900 }],
+  ['play-390', '/play', { width: 390, height: 844 }],
+  ['rooms-new-1440', '/rooms/new', { width: 1440, height: 900 }],
+] as const) {
+  test(`ticket: ${name}`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await openTicket(page, path, 3);
+    await settle(page);
+    await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true });
+  });
+}
+
+/**
+ * The departures board (`/rooms`) over a mocked `GET /rooms`: one room boarding, one locked and
+ * one full. The clock is pinned so "opened … ago" is the same on every run. Board opens the
+ * strip; Join posts the name and goes to the room with the seat token kept on this device.
+ */
+const NOW = new Date('2026-09-26T12:00:00Z');
+const BOARDING = 'a1b2c3d4-0000-4000-8000-000000000001';
+const LOCKED = 'a1b2c3d4-0000-4000-8000-000000000002';
+const FULL = 'a1b2c3d4-0000-4000-8000-000000000003';
+const ROOMS = [
+  {
+    game_id: BOARDING,
+    name: 'Night shift',
+    players: ['mira', 'sol', 'ana'],
+    host: 'mira',
+    max_seats: 9,
+    locked: false,
+    created_at: '2026-09-26T11:56:00Z',
+  },
+  {
+    game_id: LOCKED,
+    name: 'Seminar room B',
+    players: ['prof_lee', 'kei'],
+    host: 'prof_lee',
+    max_seats: 9,
+    locked: true,
+    created_at: '2026-09-26T11:48:00Z',
+  },
+  {
+    game_id: FULL,
+    name: 'Full cast',
+    players: ['june', 'oskar', 'tomas', 'ana', 'ivy', 'bo', 'cy', 'dee', 'eli'],
+    host: 'june',
+    max_seats: 9,
+    locked: false,
+    created_at: '2026-09-26T11:20:00Z',
+  },
+];
+
+async function openBoard(page: Page, rooms: unknown[] = ROOMS) {
+  await page.clock.setFixedTime(NOW);
+  await routeChrome(page);
+  await page.route('**/rooms', api(rooms));
+  await page.goto('/rooms', { waitUntil: 'networkidle' });
+  await expect(page.getByRole('heading', { name: 'The departures hall' })).toBeVisible();
+}
+
+/** `POST /games/{id}/join` answered with `status` and `body`, preflight included. */
+async function mockJoin(page: Page, status: number, body: unknown) {
+  const sent: { url: string; body: unknown }[] = [];
+  await page.route('**/games/*/join', async (route) => {
+    const req = route.request();
+    const cors = {
+      'access-control-allow-origin': req.headers()['origin'] ?? '*',
+      'access-control-allow-credentials': 'true',
+      'access-control-allow-methods': 'POST, OPTIONS',
+      'access-control-allow-headers': 'content-type',
+    };
+    if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors });
+    sent.push({ url: req.url(), body: req.postDataJSON() });
+    await route.fulfill({
+      status,
+      contentType: 'application/json',
+      headers: cors,
+      body: JSON.stringify(body),
+    });
+  });
+  return sent;
+}
+
+test('rooms: the board says boarding, locked and full, and why', async ({ page }) => {
+  await openBoard(page);
+  await expect(page.locator('[data-room]')).toHaveCount(3);
+
+  const boarding = page.locator(`[data-room="${BOARDING}"]`);
+  await expect(boarding).toHaveAttribute('data-state', 'boarding');
+  await expect(boarding).toContainText('BOARDING');
+  await expect(boarding).toContainText('Night shift');
+  await expect(boarding).toContainText('hosted by mira');
+  await expect(boarding).toContainText('opened 4 minutes ago');
+  await expect(boarding).toContainText('3 of 9 aboard, 6 places open');
+  await expect(boarding.getByRole('button', { name: 'Board' })).toBeEnabled();
+
+  const locked = page.locator(`[data-room="${LOCKED}"]`);
+  await expect(locked).toContainText('LOCKED');
+  await expect(locked.getByRole('img', { name: 'Locked' })).toBeVisible();
+  const lockedButton = locked.getByRole('button', { name: 'Locked' });
+  await expect(lockedButton).toBeDisabled();
+  await expect(lockedButton).toHaveAccessibleDescription(
+    /Locked — ask the host to unlock it\./,
+  );
+
+  const full = page.locator(`[data-room="${FULL}"]`);
+  await expect(full).toContainText('FULL');
+  await expect(full).toContainText('9 of 9 aboard');
+  const fullButton = full.getByRole('button', { name: 'Full' });
+  await expect(fullButton).toBeDisabled();
+  await expect(fullButton).toHaveAccessibleDescription(
+    /every place at this table is taken/,
+  );
+
+  await expect(page.getByRole('link', { name: /Open a table/ })).toHaveAttribute(
+    'href',
+    '/rooms/new',
+  );
+});
+
+test('rooms: Join posts the name and goes to the room', async ({ page }) => {
+  const sent = await mockJoin(page, 200, { token: 'seat-tok-1' });
+  await openBoard(page);
+
+  const row = page.locator(`[data-room="${BOARDING}"]`);
+  await row.getByRole('button', { name: 'Board' }).click();
+  await row.getByLabel('Your name on the manifest').fill('sol');
+  await row.getByRole('button', { name: 'Join' }).click();
+
+  await page.waitForURL(`**/games/${BOARDING}`);
+  expect(sent).toHaveLength(1);
+  expect(sent[0].url).toMatch(new RegExp(`/games/${BOARDING}/join$`));
+  expect(sent[0].body).toEqual({ name: 'sol' });
+  expect(await page.evaluate((id) => localStorage.getItem(`seat_${id}`), BOARDING)).toBe(
+    'seat-tok-1',
+  );
+});
+
+test('rooms: a refused join says the server’s words in the row', async ({ page }) => {
+  await mockJoin(page, 409, { detail: 'room is locked — ask the host to unlock it' });
+  await openBoard(page);
+
+  const row = page.locator(`[data-room="${BOARDING}"]`);
+  await row.getByRole('button', { name: 'Board' }).click();
+  await row.getByLabel('Your name on the manifest').fill('sol'); // Join stays off without a name
+  await row.getByRole('button', { name: 'Join' }).click();
+  await expect(row.getByRole('alert')).toContainText(
+    'room is locked — ask the host to unlock it',
+  );
+  await expect(page).toHaveURL(/\/rooms$/);
+});
+
+test('rooms: an empty board says so, and the doors beside the title stay', async ({
+  page,
+}) => {
+  await openBoard(page, []);
+  await expect(page.getByText('NO DEPARTURES')).toBeVisible();
+  await expect(page.getByText('No tables open right now.', { exact: false })).toBeVisible();
+  // the board no longer repeats the doors: they hang beside the title, rooms or not
+  await expect(
+    page.getByRole('region', { name: 'Departures' }).getByRole('link'),
+  ).toHaveCount(0);
+  const doors = page.getByRole('navigation', { name: 'Other ways aboard' });
+  await expect(doors.getByRole('link', { name: /Open a table/ })).toHaveAttribute(
+    'href',
+    '/rooms/new',
+  );
+  await expect(doors.getByRole('link', { name: /Play solo/ })).toHaveAttribute(
+    'href',
+    '/play',
+  );
+});
+
+for (const [name, viewport] of [
+  ['rooms-1440', { width: 1440, height: 900 }],
+  ['rooms-390', { width: 390, height: 844 }],
+] as const) {
+  test(`rooms: ${name}`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await openBoard(page);
+    await expect(page.locator('[data-room]')).toHaveCount(3);
+    await settle(page);
+    await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true });
+  });
+}
+
+/**
+ * The landing (`/`) over mocked `GET /replays/{featured}` (the bundled fixture), `GET /replays`
+ * (the latest games and the archive's total), `GET /rooms` (two tables boarding) and
+ * `GET /models`. The carriage is the replay theatre in its mini mode, playing day 2's vote on
+ * a loop with the replay's own controls; on an upright phone they sit under the stage.
+ */
+const FIXTURE_BODY = readFileSync(
+  join(__dirname, '../src/stage/fixtures/replay-68c26e83.json'),
+);
+/** The landing's featured game (`SITE.featuredReplay`), served from the fixture above. */
+const FEATURED = '68c26e83-f5c9-50d5-92b7-3589312a0cb9';
+const TWO_ROOMS = [
+  ROOMS[0],
+  { ...ROOMS[0], game_id: FULL.replace(/3$/, '4'), name: 'Late car' },
+];
+
+/** The landing's API, mocked; nothing loaded yet. */
+async function routeLanding(page: Page) {
+  await page.route(
+    (url) => url.pathname.endsWith('/replays'),
+    api(REPLAYS.slice(0, 3), { 'X-Total-Count': '212' }),
+  );
+  await page.route(`**/replays/${FEATURED}*`, async (route) => {
+    const req = route.request();
+    if (req.resourceType() === 'document' || req.headers()['rsc']) return route.fallback();
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: {
+        'access-control-allow-origin': req.headers()['origin'] ?? '*',
+        'access-control-allow-credentials': 'true',
+      },
+      body: FIXTURE_BODY,
+    });
+  });
+  await page.route('**/rooms', api(TWO_ROOMS));
+  await page.route('**/models', api(MODELS));
+}
+
+/**
+ * The landing with its preview up: the carriage is scrolled to (it loads only when near),
+ * then the page goes back to its top.
+ */
+async function openLanding(page: Page, query = '') {
+  await routeLanding(page);
+  await page.goto(`/${query}`, { waitUntil: 'networkidle' });
+  await page.locator('[data-frame="carriage"]').scrollIntoViewIfNeeded();
+  await expect(page.locator('[data-frame="carriage"] [data-mini]')).toBeAttached();
+  await page.evaluate(() => window.scrollTo(0, 0));
+}
+
+const carriage = (page: Page) => page.locator('[data-frame="carriage"]');
+const mini = (page: Page) => carriage(page).locator('[data-mini]');
+
+test('landing: the carriage plays day 2 of the featured game, with the replay’s controls', async ({
+  page,
+}) => {
+  test.slow(); // it presses through the band, and each press redraws the stage
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openLanding(page);
+
+  // the stage is drawn in the frame with its wing, strip and band
+  await expect(carriage(page).locator('[data-layer="paint"]').first()).toBeAttached();
+  await expect(carriage(page).locator('[data-layer="hud"] [data-seat]')).toHaveCount(10);
+  await expect(carriage(page).locator('[data-transport]')).toBeVisible();
+  // no way back to the replay list from inside the landing: the carriage links the game
+  await expect(carriage(page).getByRole('link', { name: 'Replays' })).toHaveCount(0);
+
+  // it starts on day 2's vote and plays (the window is 55..75 of the public cut)
+  await carriage(page).scrollIntoViewIfNeeded();
+  await expect(mini(page)).toHaveAttribute('data-playing', 'true');
+  await expect(mini(page)).not.toHaveAttribute('data-beat-index', '55', { timeout: 6000 });
+  const at = Number(await mini(page).getAttribute('data-beat-index'));
+  expect(at).toBeGreaterThan(55);
+  expect(at).toBeLessThanOrEqual(75);
+
+  // the band sees the window only, and its buttons stay in it
+  const band = carriage(page).locator('[data-transport]');
+  await band.getByRole('button', { name: 'Pause' }).click();
+  await expect(mini(page)).toHaveAttribute('data-playing', 'false');
+  await expect(band.getByRole('slider', { name: 'Seek' })).toHaveAttribute(
+    'aria-valuemax',
+    '21',
+  );
+  await band.getByRole('slider', { name: 'Seek' }).click({ position: { x: 1, y: 4 } });
+  await expect(mini(page)).toHaveAttribute('data-beat-index', '55');
+  await band.getByRole('button', { name: 'Back a beat' }).click();
+  await expect(mini(page)).toHaveAttribute('data-beat-index', '55');
+
+  // the strip's Reveal shows the hidden roles: seat 10's band names its role, the Chanteuse
+  // (who claimed the Investigator); File brings the case file beside the stage, Transcript the
+  // drawer
+  const seat10 = carriage(page).locator('[data-layer="hud"] [data-seat="10"]');
+  await expect(seat10).not.toContainText('Chanteuse');
+  await carriage(page).getByRole('button', { name: 'Reveal', exact: true }).click();
+  await expect(seat10).toContainText('Chanteuse');
+  await carriage(page).getByRole('button', { name: 'File', exact: true }).click();
+  await expect(
+    carriage(page).getByRole('complementary', { name: /^Case file/ }),
+  ).toBeVisible();
+  await carriage(page).getByRole('button', { name: 'Transcript', exact: true }).click();
+  await expect(carriage(page).locator('[data-drawer]')).toBeVisible();
+
+  // the roof board names the game (its ID read once, not tile by tile) and its model; under
+  // the platform, the way to it whole and its details
+  await expect(carriage(page)).toHaveAttribute(
+    'aria-label',
+    'Replay of day 2 of game 68C26E8',
+  );
+  await expect(carriage(page).getByRole('img', { name: '68C26E8' })).toBeVisible();
+  await expect(
+    carriage(page).getByRole('link', { name: 'Watch the whole game' }),
+  ).toHaveAttribute('href', `/replays/${FEATURED}?from=home`);
+  await expect(carriage(page)).toContainText('Gemini 3.5 Flash-Lite');
+  await expect(carriage(page)).toContainText('Town won');
+
+  // the doors, the rooms boarding, the latest games and the archive's count in the footer
+  await expect(page.getByRole('link', { name: /Play solo/ }).first()).toHaveAttribute(
+    'href',
+    '/play',
+  );
+  const party = page.getByRole('link', { name: /Play with others/ }).first();
+  await expect(party).toHaveAttribute('href', '/rooms');
+  await expect(party).toContainText('2 tables boarding');
+  await expect(page.locator('[data-game]')).toHaveCount(3);
+  await expect(page.getByRole('contentinfo')).toContainText('212 games archived');
+});
+
+test('landing: on an upright phone the controls sit under the stage, at reading size', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openLanding(page);
+  await carriage(page).scrollIntoViewIfNeeded();
+  // nothing on the stage itself: its words would be a quarter size
+  await expect(carriage(page).locator('[data-transport]')).toHaveCount(0);
+  await expect(carriage(page).locator('[data-layer="hud"] [data-seat]')).toHaveCount(0);
+  await expect(mini(page)).toHaveAttribute('data-playing', 'true');
+
+  // the board: pause, and a sleeper per beat of the window, each one seeking
+  await carriage(page).getByRole('button', { name: 'Pause' }).click();
+  await expect(mini(page)).toHaveAttribute('data-playing', 'false');
+  const pips = carriage(page).getByRole('group', { name: 'Beats' }).getByRole('button');
+  await expect(pips).toHaveCount(21);
+  await pips.nth(0).click();
+  await expect(mini(page)).toHaveAttribute('data-beat-index', '55');
+
+  // the preview stops at the board on a phone (owner, 2026-10-14): no transcript, no Reveal
+  // pane (the whole replay has them), and the carriage, the board and the way to the whole game
+  // fit one screen
+  await expect(carriage(page).getByRole('button', { name: 'Reveal' })).toHaveCount(0);
+  await expect(carriage(page).getByLabel('Transcript', { exact: true })).toHaveCount(0);
+  const tall = (await carriage(page).boundingBox())!.height;
+  expect(tall).toBeLessThan(844);
+  await expect(
+    carriage(page).getByRole('link', { name: 'Watch the whole game' }),
+  ).toHaveAttribute('href', `/replays/${FEATURED}?from=home`);
+  // nothing reaches past the phone's edge
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+});
+
+/**
+ * The preview's lifecycle and its backdrop's density (audit 2026-10-11 §1, §2): nothing of it
+ * is fetched while the carriage is under the fold; scrolled to, one backdrop sheet comes, the
+ * smallest whose pixels cover the stage's width × the screen's density × the camera's 1.32
+ * push-in (`pickScale`). The carriage's stage is 366 css px wide on a 390 phone (the screen
+ * less 24px) and 1080 on a 1440 desktop (the carriage less its ends and doors).
+ */
+const SHEET = /\/car-[a-z]+-[a-z]+-[a-z]+@([\d.]+)x\.[^/]*\.webp/;
+for (const { name, viewport, dpr, sheet, px } of [
+  // 366 × 3 × 1.32 ≈ 1449 px: the 2200 sheet (the old pick, by density alone, was the 3300)
+  { name: 'phone', viewport: { width: 390, height: 844 }, dpr: 3, sheet: '1', px: 2200 },
+  // 1080 × 2 × 1.32 ≈ 2851 px: the 3300 sheet
+  {
+    name: 'desktop',
+    viewport: { width: 1440, height: 900 },
+    dpr: 2,
+    sheet: '1.5',
+    px: 3300,
+  },
+]) {
+  test.describe(`landing preview on a ${name} at density ${dpr}`, () => {
+    test.use({ viewport, deviceScaleFactor: dpr });
+    test('loads when scrolled to, with one backdrop sheet of the size it needs', async ({
+      page,
+    }) => {
+      const sheets: string[] = [];
+      let replays = 0;
+      page.on('request', (req) => {
+        const url = req.url();
+        const m = SHEET.exec(url);
+        if (m) sheets.push(m[1]);
+        // the game's log from the API; not the page itself, nor Next's prefetch of the "Watch the
+        // whole game" page (production only, an `rsc` request for the page's shell, no game data)
+        if (
+          url.includes(`/replays/${FEATURED}`) &&
+          req.resourceType() !== 'document' &&
+          !req.headers()['rsc']
+        )
+          replays++;
+      });
+      await routeLanding(page);
+      await page.goto('/', { waitUntil: 'networkidle' });
+      // under the fold: the frame is drawn, nothing of the preview asked for
+      await expect(carriage(page)).toBeAttached();
+      await expect(mini(page)).toHaveCount(0);
+      expect(sheets).toEqual([]);
+      expect(replays).toBe(0);
+
+      await carriage(page).scrollIntoViewIfNeeded();
+      await expect(mini(page)).toBeAttached();
+      const img = carriage(page).locator('[data-backdrop] img');
+      await expect(img).toHaveJSProperty('complete', true);
+      expect(await img.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBe(px);
+      await page.waitForLoadState('networkidle');
+      expect(sheets).toEqual([sheet]);
+      expect(replays).toBe(1);
+    });
+  });
+}
+
+test('landing: the preview stops its clock while the page is hidden, and goes on from there', async ({
+  page,
+}) => {
+  test.slow(); // it waits out a beat's hold with the page hidden
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openLanding(page);
+  await carriage(page).scrollIntoViewIfNeeded();
+  const band = carriage(page).locator('[data-transport]');
+  await band.getByRole('button', { name: 'Pause' }).click();
+  await band.getByRole('slider', { name: 'Seek' }).click({ position: { x: 1, y: 4 } });
+  await expect(mini(page)).toHaveAttribute('data-beat-index', '55');
+
+  const hidden = (on: boolean) =>
+    page.evaluate((h) => {
+      Object.defineProperty(document, 'visibilityState', {
+        configurable: true,
+        get: () => (h ? 'hidden' : 'visible'),
+      });
+      document.dispatchEvent(new Event('visibilitychange'));
+    }, on);
+  await hidden(true);
+  await band.getByRole('button', { name: 'Play' }).click();
+  await expect(mini(page)).toHaveAttribute('data-playing', 'true');
+  // longer than the beat's hold (the first test sees it end inside six seconds)
+  await page.waitForTimeout(7000);
+  await expect(mini(page)).toHaveAttribute('data-beat-index', '55');
+  await hidden(false);
+  await expect(mini(page)).not.toHaveAttribute('data-beat-index', '55', { timeout: 6000 });
+});
+
+for (const [name, viewport] of [
+  ['landing-1440', { width: 1440, height: 900 }],
+  ['landing-390', { width: 390, height: 844 }],
+] as const) {
+  test(`landing: ${name}`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    // at rest on the window's first beat: reduced motion stops the play, and so does ?still=1
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await openLanding(page, '?still=1');
+    await expect(mini(page)).toHaveAttribute('data-beat-index', '55');
+    await expect(page.locator('[data-game]')).toHaveCount(3);
+    await expect(page.getByRole('contentinfo')).toContainText('212 games archived');
+    await settle(page);
+    // the whole landing is over 5,000px tall: two captures in a row, which the check needs to
+    // call a page settled, take longer than the default five seconds on the dev server
+    await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true, timeout: 20_000 });
+  });
+}
+
+/** The guide's tab sets, by the section they sit in: each panel stacked in one cell. */
+const GUIDE_TABS = [
+  ['modes', 2],
+  ['day', 7],
+  ['after', 4],
+  ['tools', 2],
+] as const;
+
+test('guide: no tab set moves the page, whichever tab is shown', async ({ page }) => {
+  await page.goto('/guide');
+  await settle(page);
+  const height = (id: string) =>
+    page.evaluate((id) => document.getElementById(id)!.getBoundingClientRect().height, id);
+  for (const [id, n] of GUIDE_TABS) {
+    const tabs = page.locator(`#${id} [role=tablist]`).first().getByRole('tab');
+    await expect(tabs).toHaveCount(n);
+    const first = await height(id);
+    for (let i = 0; i < n; i++) {
+      await tabs.nth(i).click();
+      await expect(tabs.nth(i)).toHaveAttribute('aria-selected', 'true');
+      expect(await height(id)).toBe(first);
+    }
+  }
+});
+
+test('guide: the day line steps by the arrows and by its next-stop button', async ({
+  page,
+}) => {
+  await page.goto('/guide');
+  const line = page.getByRole('tablist', { name: 'The stops of a day' });
+  await line.getByRole('tab', { name: /Opening round/ }).click();
+  await page.keyboard.press('ArrowRight');
+  await expect(line.getByRole('tab', { name: /Discussion/ })).toBeFocused();
+  await expect(page.getByRole('tabpanel', { name: /Discussion/ })).toBeVisible();
+  await page.getByRole('button', { name: 'Next stop: Last word →' }).click();
+  await expect(line.getByRole('tab', { name: /Last word/ })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  );
+  // the terminus has no number, and from it the line goes back to the start
+  await page.keyboard.press('End');
+  await expect(page.getByRole('tabpanel', { name: 'End game' })).toContainText(
+    'End of the line',
+  );
+  await page.getByRole('button', { name: 'Back to the first stop →' }).click();
+  await expect(page.getByRole('tabpanel', { name: /Opening round/ })).toBeVisible();
+});
+
+test('guide: the case file loads its recorded games when opened', async ({ page }) => {
+  await page.goto('/guide');
+  const file = page.getByRole('tablist', { name: 'The end of the line' });
+  await file.getByRole('tab', { name: 'Reveal' }).click();
+  await expect(page.locator('#after [data-film]').first()).toBeVisible();
+  await file.getByRole('tab', { name: 'Transcript' }).click();
+  await expect(page.locator('#after [data-drawer]')).toBeVisible();
+});
+
+test('guide: on a phone its own bar stands in for the strip, and Top goes back to the nav', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/guide');
+  // inert while it is up, so it is looked up with the hidden
+  const bar = page.getByRole('button', { name: /^Guide sections:/, includeHidden: true });
+  const strip = page.getByRole('navigation', { name: 'Pinned' });
+  // at the top, the nav board and no bar
+  await expect(bar).not.toBeInViewport();
+  await page.getByRole('heading', { name: 'The end of the line' }).scrollIntoViewIfNeeded();
+  await expect(bar).toBeInViewport();
+  await expect(strip).toBeHidden();
+  await page.getByRole('button', { name: 'Top', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+  await expect(
+    page.getByRole('navigation', { name: 'Site' }).getByRole('link').first(),
+  ).toBeFocused();
+  // every other page keeps the strip
+  await page.goto('/play');
+  await page.mouse.wheel(0, 900);
+  await expect(strip).toBeVisible();
+});
+
+for (const [name, viewport] of [
+  ['guide-1440', { width: 1440, height: 900 }],
+  ['guide-390', { width: 390, height: 844 }],
+] as const) {
+  test(`guide: ${name}`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/guide');
+    // the case file's recorded games arrive in their own chunk
+    await expect(page.locator('#after [data-film]')).toHaveCount(2, { timeout: 15_000 });
+    await settle(page);
+    await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true, timeout: 20_000 });
+  });
+}

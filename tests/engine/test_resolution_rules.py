@@ -1,55 +1,70 @@
-"""The shared resolution kernel (Agents.rules.resolution).
+"""The shared resolution rules: the night layer (Agents.rules.night) and the day vote
+(Agents.rules.resolution).
 
 These rules are consumed by BOTH the engine nodes and the wire translator — the whole point
-of the module is that there is exactly one implementation of night precedence and day-vote
-classification. The tests pin the rules themselves; node-level behavior (announcements,
-roster edits) stays covered by the resolution/orchestrator test files.
+is that there is exactly one implementation of night precedence and day-vote classification.
+The tests pin the rules themselves; node-level behavior (announcements, roster edits) stays
+covered by the resolution/orchestrator test files.
 """
 from __future__ import annotations
 
-from Agents.rules.resolution import collect_attacks, resolve_attacks, tally_day_vote
+from Agents.rules.night import resolve_night
+from Agents.schemas.night import NightChoice
+from Agents.rules.resolution import tally_day_vote
+
+ROLES = {"w0": "wolf", "sk": "serial_killer", "v": "vigilante", "h": "healer",
+         "t0": "villager", "t1": "villager"}
 
 
-# ---- collect_attacks -------------------------------------------------------------------
+def _attacker_types(outcome) -> dict[str, list[str]]:
+    return {t: [a.attacker_type for a in attacks] for t, attacks in outcome.attacks_on.items()}
+
+
+def _kill(actor: str, target: str) -> NightChoice:
+    return NightChoice(actor, ROLES[actor], "kill", target)
+
+
+# ---- attacks are collected per target ------------------------------------------------------
 
 def test_collects_each_killer_and_skips_absent_ones():
-    attacks = collect_attacks("t0", None, "t1")
-    assert attacks == {"t0": ["wolves"], "t1": ["vigilante"]}
+    outcome = resolve_night([_kill("w0", "t0"), _kill("v", "t1")], ROLES, 1)
+    assert _attacker_types(outcome) == {"t0": ["wolves"], "t1": ["vigilante"]}
 
 
 def test_multiple_killers_on_one_target_stack():
-    attacks = collect_attacks("t0", "t0", "t0")
-    assert attacks == {"t0": ["wolves", "serial_killer", "vigilante"]}
+    outcome = resolve_night([_kill("w0", "t0"), _kill("sk", "t0"), _kill("v", "t0")], ROLES, 1)
+    assert _attacker_types(outcome) == {"t0": ["wolves", "serial_killer", "vigilante"]}
 
 
 def test_no_killers_no_attacks():
-    assert collect_attacks(None, None, None) == {}
+    assert resolve_night([], ROLES, 1).attacks_on == {}
 
 
-# ---- resolve_attacks: precedence = immune > saved > killed -----------------------------
+# ---- verdicts: precedence = immune > saved > killed ------------------------------------------
 
 def test_plain_attack_kills():
-    verdicts = resolve_attacks({"t0": ["wolves"]}, healer_target=None, serial_killer_player="sk")
-    assert verdicts == {"t0": "killed"}
+    outcome = resolve_night([_kill("w0", "t0")], ROLES, 1)
+    assert outcome.verdicts == {"t0": "killed"}
+    assert outcome.deaths == ["t0"]
 
 
 def test_heal_saves_the_target():
-    verdicts = resolve_attacks({"t0": ["wolves"]}, healer_target="t0", serial_killer_player="sk")
-    assert verdicts == {"t0": "saved"}
+    outcome = resolve_night([_kill("w0", "t0"), NightChoice("h", "healer", "protect", "t0")], ROLES, 1)
+    assert outcome.verdicts == {"t0": "saved"}
+    assert outcome.deaths == []
 
 
 def test_sk_is_immune_even_when_healed():
-    # The gate is identity, not heal state: immunity outranks the heal (matches the node's
+    # The gate is the role, not heal state: immunity outranks the heal (matches the node's
     # defensive test — a healed SK is still "immune", so the whiff note still fires).
-    verdicts = resolve_attacks({"sk": ["wolves"]}, healer_target="sk", serial_killer_player="sk")
-    assert verdicts == {"sk": "immune"}
+    outcome = resolve_night([_kill("w0", "sk"), NightChoice("h", "healer", "protect", "sk")], ROLES, 1)
+    assert outcome.verdicts == {"sk": "immune"}
 
 
 def test_multi_killer_target_resolves_exactly_once():
-    verdicts = resolve_attacks(
-        {"t0": ["wolves", "vigilante"]}, healer_target=None, serial_killer_player=None
-    )
-    assert verdicts == {"t0": "killed"}
+    outcome = resolve_night([_kill("w0", "t0"), _kill("v", "t0")], ROLES, 1)
+    assert outcome.verdicts == {"t0": "killed"}
+    assert outcome.deaths == ["t0"]
 
 
 # ---- tally_day_vote --------------------------------------------------------------------

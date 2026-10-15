@@ -43,14 +43,14 @@ def collect_new_obs(snapshot_dir: str | Path, temp_dirs: list) -> dict:
 
 
 def merge_new_obs(store_dir: str | Path, snapshot_dir: str | Path, temp_dirs: list,
-                  dedup: bool = True, dedup_model: str = "gemini-3.1-flash-lite",
+                  dedup: bool = True, dedup_model: str = "anthropic/claude-haiku-5-5",
                   no_merge: bool = True) -> dict:
     """Append the parallel games' new obs into store_dir (which equals the snapshot at call time), then
     freeze-old dedup. Returns {"new_obs": n, "deduped": bool, "no_merge": bool}. The dedup self-advances
     last_dedup_at, so each generation's new obs are the 'new' set and the prior store is frozen (cold
     gen-1 dedups all).
 
-    no_merge=True (default) runs the dedup TRIAGE-ONLY (pass 1 on `dedup_model`, flash-lite): KEEP/DISCARD
+    no_merge=True (default) runs the dedup TRIAGE-ONLY (pass 1 on `dedup_model`, a cheap model): KEEP/DISCARD
     collapse exact dups + bump observation_count, but near-dups are kept SEPARATE (no merge text, no
     pro-2.5). Merge writes are the only step flash-lite does poorly and the only pro-2.5 cost — skipping
     it is the cheap, nuance-safe default. no_merge=False = single-pass dedup on dedup_model (can merge)."""

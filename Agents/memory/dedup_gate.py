@@ -81,6 +81,7 @@ _SITUATION_HIDE = frozenset({
     "info_landscape_class", "exposure_class",  # coarse gate enums — the gate decides them
     "criticality_stakes", "consensus_text", "perspective", "action_phase",
     "approach", "impact_on_final_game_outcome", "immediate_response", "outcome",
+    "decision_day", "pack_turn",  # which decision, not what the situation was
 })
 _V6_MARKERS = ("information_landscape", "my_position", "target_landscape", "heat_now", "forward_exposure")
 

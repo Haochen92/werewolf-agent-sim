@@ -16,7 +16,16 @@ from typing import Literal, get_origin
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from Agents.schemas.game_events import AddressedTarget
-from Agents.schemas.roles import READ_ROLE_ENUM
+from Agents.schemas.roles import roles
+
+# The day summary's vocabulary (v4): the roles a player may claim, and the fixed result words a
+# claimed night action is transcribed into, so code can check a claim against the engine's record
+# (Agents/rules/claim_ledger.py). Every role of the pool, dealt or not: the summariser transcribes
+# claims and a player may claim anything.
+NIGHT_RESULT_WORDS = ("not_a_wolf", "suspicious", "not_suspicious", "saved_from_attack", "no_attack", "died", "survived",
+                      "no_visitors", "no_effect", "roleblocked", "not_said")
+CLAIMED_ROLE_ENUM = Literal[tuple(roles)]
+CLAIMED_RESULT_ENUM = Literal[(*roles, *NIGHT_RESULT_WORDS)]
 
 
 def _expects_structure(annotation) -> bool:
@@ -93,7 +102,7 @@ class StrategyVerdict(LenientToolCallModel):
 class PlayerRead(LenientToolCallModel):
     player: str = Field(description="A living player's ID (never your own).")
     why: str = Field(description="One line of evidence for this read; write 'unchanged' if your read has not moved.")
-    suspected_role: READ_ROLE_ENUM = Field(description="Your best guess of this player's role; 'unclear' if you cannot tell.")
+    suspected_role: Literal[("unclear", *roles)] = Field(description="Your best guess of this player's role; 'unclear' if you cannot tell.")
     confidence: Literal["low", "high"] = Field(description="How sure you are.")
 
     # Tool-calling backends (DeepSeek) describe the enum but don't constrain generation to it,
@@ -105,70 +114,6 @@ class PlayerRead(LenientToolCallModel):
         if isinstance(value, str) and value.strip().lower() == "medium":
             return "low"
         return value
-
-
-class WolfNightDiscussOutput(LenientToolCallModel):
-    strategy_verdicts: list[StrategyVerdict] = Field(
-        default_factory=list,
-        description="One verdict per numbered strategy point shown, in order; empty list if none shown.",
-    )
-    memory_applicability: list[MemoryVerdict] = Field(
-        default_factory=list,
-        description="One verdict per numbered observation shown, in order; empty list if none shown.",
-    )
-    updated_strategy: str
-    message: str
-
-
-class WolfNightVoteOutput(LenientToolCallModel):
-    strategy_verdicts: list[StrategyVerdict] = Field(
-        default_factory=list,
-        description="One verdict per numbered strategy point shown, in order; empty list if none shown.",
-    )
-    memory_applicability: list[MemoryVerdict] = Field(
-        default_factory=list,
-        description="One verdict per numbered observation shown, in order; empty list if none shown.",
-    )
-    updated_strategy: str
-    vote_target: str
-
-
-class DayDiscussOutput(LenientToolCallModel):
-    strategy_verdicts: list[StrategyVerdict] = Field(
-        default_factory=list,
-        description="One verdict per numbered strategy point shown, in order; empty list if none shown.",
-    )
-    memory_applicability: list[MemoryVerdict] = Field(
-        default_factory=list,
-        description="One verdict per numbered observation shown, in order; empty list if none shown.",
-    )
-    reads: list[PlayerRead] = Field(
-        description="One read per living player other than yourself.",
-    )
-    updated_strategy: str
-    pass_turn: bool = Field(
-        description="True only if you have nothing new to add and decline to speak. False when answering/defending.",
-    )
-    message: str
-    addressed_targets: list[AddressedTarget] = Field(
-        description="List of targets addressed in the discussion. Empty list if none.",
-    )
-
-
-class DayVoteOutput(LenientToolCallModel):
-    strategy_verdicts: list[StrategyVerdict] = Field(
-        default_factory=list,
-        description="One verdict per numbered strategy point shown, in order; empty list if none shown.",
-    )
-    memory_applicability: list[MemoryVerdict] = Field(
-        default_factory=list,
-        description="One verdict per numbered observation shown, in order; empty list if none shown.",
-    )
-    reads: list[PlayerRead] = Field(
-        description="One read per living player other than yourself.",
-    )
-    updated_strategy: str
-    vote_target: str
 
 
 class Accusation(LenientToolCallModel):
@@ -241,68 +186,207 @@ class DaySummaryOutput(LenientToolCallModel):
     village_dynamics: VillageDynamics
 
 
-class HealerOutput(LenientToolCallModel):
-    strategy_verdicts: list[StrategyVerdict] = Field(
-        default_factory=list,
-        description="One verdict per numbered strategy point shown, in order; empty list if none shown.",
+# The discussion-evidence pass (P2): the summary stops asking who stayed quiet — its answer fed the
+# next day's prompts. Same keys as the originals, so stored summaries read the same downstream.
+# Model-visible: no class docstring.
+class VillageDynamicsV2(VillageDynamics):
+    drivers: str = Field(
+        description=(
+            "Who is driving the discussion, and what evidence are they using? "
+            "Name specific player IDs. 1-2 sentences."
+        ),
     )
-    memory_applicability: list[MemoryVerdict] = Field(
-        default_factory=list,
-        description="One verdict per numbered observation shown, in order; empty list if none shown.",
-    )
-    reads: list[PlayerRead] = Field(
-        description="One read per living player other than yourself.",
-    )
-    updated_strategy: str
-    healer_target: str
 
 
-class InvestigatorOutput(LenientToolCallModel):
-    strategy_verdicts: list[StrategyVerdict] = Field(
-        default_factory=list,
-        description="One verdict per numbered strategy point shown, in order; empty list if none shown.",
-    )
-    memory_applicability: list[MemoryVerdict] = Field(
-        default_factory=list,
-        description="One verdict per numbered observation shown, in order; empty list if none shown.",
-    )
-    reads: list[PlayerRead] = Field(
-        description="One read per living player other than yourself.",
-    )
-    updated_strategy: str
-    investigator_target: str
+class DaySummaryOutputV2(DaySummaryOutput):
+    village_dynamics: VillageDynamicsV2
 
 
-class SerialKillerOutput(LenientToolCallModel):
-    strategy_verdicts: list[StrategyVerdict] = Field(
-        default_factory=list,
-        description="One verdict per numbered strategy point shown, in order; empty list if none shown.",
+# Day summary v3 (audit 2026-10-03; discussion_evidence.md §6.4): every claim attributed to whoever
+# made it and checked against the game master's record, with claimed results as fields so code can
+# keep a running claim record across days. Keeps v1's four top-level keys and their sub-fields, so
+# stored summaries and the frontend read it unchanged. Model-visible: no class docstrings.
+class AccusationV3(Accusation):
+    reasoning: str = Field(
+        description=(
+            "The accusers' stated reasoning, written as what they argued (e.g. 'player_8 argued "
+            "that player_2 survived an attack'), never as fact. 1-2 sentences."
+        ),
     )
-    memory_applicability: list[MemoryVerdict] = Field(
-        default_factory=list,
-        description="One verdict per numbered observation shown, in order; empty list if none shown.",
+    disputed_by: str = Field(
+        description=(
+            "Who, besides the target, disputed this accusation and why, in one sentence. "
+            "Empty string if no one did."
+        ),
     )
-    reads: list[PlayerRead] = Field(
-        description="One read per living player other than yourself.",
+    record_check: str = Field(
+        description=(
+            "If the accusation rests on an event that the game master's record contradicts or never "
+            "announced, say so and cite the record (e.g. 'no attack on player_2 was ever announced'). "
+            "Empty string otherwise."
+        ),
     )
-    updated_strategy: str
-    serial_killer_target: str
 
 
-class VigilanteOutput(LenientToolCallModel):
-    strategy_verdicts: list[StrategyVerdict] = Field(
+class ClaimedResult(LenientToolCallModel):
+    night: int = Field(description="The night the claimed action happened; 0 if the player did not say")
+    target: str = Field(description="Player ID the claimed action was on")
+    result: str = Field(
+        description=(
+            "What the player says happened, in a few words (e.g. 'is a wolf', 'protected, was "
+            "attacked', 'shot, survived')"
+        ),
+    )
+
+
+class RoleClaimV3(RoleClaim):
+    evidence: str = Field(
+        description=(
+            "The claim checked against the game master's record: 'supported: ...' or "
+            "'contradicted: ...' citing the record, or 'unverified' if the record says nothing either way"
+        ),
+    )
+    claimed_results: list[ClaimedResult] = Field(
         default_factory=list,
-        description="One verdict per numbered strategy point shown, in order; empty list if none shown.",
+        description=(
+            "Every result this player claimed today (investigations, protections, shots), one entry "
+            "each. Empty list if none."
+        ),
     )
-    memory_applicability: list[MemoryVerdict] = Field(
+    status: Literal["new", "repeated", "changed", "retracted"] = Field(
+        description=(
+            "new = the player's first claim; repeated = the same claim as on record; changed = a "
+            "different role or different results from what is on record; retracted = withdrawn"
+        ),
+    )
+
+
+class DaySummaryOutputV3(LenientToolCallModel):
+    accusations: list[AccusationV3] = Field(
         default_factory=list,
-        description="One verdict per numbered observation shown, in order; empty list if none shown.",
+        description="All distinct accusations from the discussion. List every accusation separately.",
     )
-    reads: list[PlayerRead] = Field(
-        description="One read per living player other than yourself.",
+    role_claims: list[RoleClaimV3] = Field(
+        default_factory=list,
+        description="Any role claims made during discussion, including repeated ones. Empty list if none.",
     )
-    updated_strategy: str
-    vigilante_target: str
+    alliances: list[Alliance] = Field(
+        default_factory=list,
+        description="Any alliances or voting blocs that formed. Empty list if none.",
+    )
+    village_dynamics: VillageDynamicsV2
+
+
+# Day summary v4 (2026-10-04; discussion_evidence.md §6.6): the summariser only transcribes. It records
+# the day's accusations and each role claim with its claimed night actions in fixed words; code folds
+# the claims into the running ledger and checks them against the engine's record. Alliances, village
+# dynamics and the summariser's own verdict on a claim are gone. Keeps the `accusations` and
+# `role_claims` keys (with `player` / `claimed_role`), which the frontend and the tagger read.
+# Model-visible: no class docstrings.
+class ClaimedNightAction(LenientToolCallModel):
+    night: int = Field(description="The night the action happened; 0 if the player did not say")
+    action: Literal["investigate", "protect", "shoot", "kill", "watch", "follow", "sigil", "block", "conceal", "bet", "pick", "no_action"] = Field(
+        description=(
+            "What the player says they already did that night (not a plan for a coming night); no_action "
+            "when they say they did not act or visited no one that night (held fire, kept a watch or a "
+            "sigil, stayed home, did not visit someone)"
+        ),
+    )
+    target: str = Field(description="Player ID the action was on; for no_action, the player they say they did not visit, or empty string")
+    result: CLAIMED_RESULT_ENUM = Field(
+        description=(
+            "What the player says came of it. investigate: suspicious or not_suspicious (or the role "
+            "they say they found). protect: saved_from_attack or no_attack. shoot / kill: died or "
+            "survived. watch: no_visitors if they say no one visited; follow: no_visitors if they say the "
+            "player visited no one. sigil: no_effect if they say it had no effect. Any action: roleblocked "
+            "if they say they were blocked and it was not carried out. not_said if they did not say, or said "
+            "it only vaguely."
+        ),
+    )
+    reason: str = Field(
+        description=(
+            "If this differs from a plan the player stated earlier for that night (see the claims "
+            "already on record), the reason they gave for the difference, briefly in their words. "
+            "Empty string if it does not differ or they gave none."
+        ),
+    )
+    seen: list[str] = Field(
+        default_factory=list,
+        description=(
+            "watch / follow only: the exact player_ids the player says they saw (visitors of the watched "
+            "player, or where the followed player went). Empty list otherwise, or if they say they saw no one."
+        ),
+    )
+
+
+class PlannedNightAction(LenientToolCallModel):
+    action: Literal["investigate", "protect", "shoot", "kill", "watch", "follow", "sigil", "block", "conceal", "bet", "pick"] = Field(
+        description="What the player says they will do tonight",
+    )
+    target: str = Field(description="Player ID they say they will do it on")
+
+
+class RoleClaimV4(LenientToolCallModel):
+    player: str = Field(description="Player ID who made the claim")
+    claimed_role: Literal[(*roles, "none")] = Field(
+        description='The role claimed (or withdrawn); "none" when the player claims no role but says what they did or did not do at night',
+    )
+    kind: Literal["claimed", "retracted"] = Field(
+        description="claimed = the player claims this role today (also when repeating it); retracted = they withdrew it",
+    )
+    night_actions: list[ClaimedNightAction] = Field(
+        default_factory=list,
+        description="Every night action this player claimed today, one entry each. Empty list if none.",
+    )
+    planned_actions: list[PlannedNightAction] = Field(
+        default_factory=list,
+        description=(
+            "What the player said they will do tonight, one entry per action; if they changed it "
+            "during the day, only their final word. Empty list if none."
+        ),
+    )
+
+
+class AccusationV4(AccusationV3):
+    # Every written field is capped at 30 words (2026-10-04): DeepSeek wrote a median of 40 and up to
+    # 92 per field, and agents read all of it every day. 3.5 flash-lite already writes about 20.
+    reasoning: str = Field(
+        description=(
+            "The accusers' stated reasoning, written as what they argued (e.g. 'player_8 argued "
+            "that player_2 survived an attack'), never as fact. At most 30 words."
+        ),
+    )
+    defense: str = Field(
+        description="How the target responded, at most 30 words. Empty string if no defense given.",
+    )
+    disputed_by: str = Field(
+        description=(
+            "Who, besides the target, disputed this accusation and why, at most 30 words. "
+            "Empty string if no one did."
+        ),
+    )
+    # v3's record_check flagged a claimed investigation as "never announced", but private night results
+    # never are: only an event the game master would have announced counts.
+    record_check: str = Field(
+        description=(
+            "If the accusation rests on a public event that the game master's record contradicts, or one "
+            "the game master would have announced but did not (a death, a healer save, a vote), say so and "
+            "cite the record, at most 30 words. Investigation results, protections and other private night "
+            "actions are never announced, and nor is an attack on a player who cannot be killed at night, so "
+            "their absence is not a conflict. Empty string otherwise."
+        ),
+    )
+
+
+class DaySummaryOutputV4(LenientToolCallModel):
+    accusations: list[AccusationV4] = Field(
+        default_factory=list,
+        description="All distinct accusations from the discussion. List every accusation separately.",
+    )
+    role_claims: list[RoleClaimV4] = Field(
+        default_factory=list,
+        description="Every role claim made today, including repeats of earlier ones. Empty list if none.",
+    )
 
 
 class SituationEntry(LenientToolCallModel):
@@ -381,12 +465,49 @@ class AddressingExtraction(LenientToolCallModel):
     )
 
 
-class NoveltyJudgment(LenientToolCallModel):
-    novel: bool = Field(
+# The echo gate's verdict on one new line against the day so far (Phase 2). Model-visible: field
+# descriptions only, every field required (flash-lite fails on optional fields).
+class LineEchoVerdict(LenientToolCallModel):
+    new_point: str = Field(
+        description="The new line's point in one sentence: what it says about the game.",
+    )
+    adds: str = Field(
         description=(
-            "True if the message adds a new argument, observation, piece of evidence, "
-            "a changed suspicion, or a direct response to a specific player. False if it "
-            "merely restates or agrees with points already made (echo/reinforcement)."
+            "What the new line says that no earlier line said: a reason, a fact, a name, a conclusion, "
+            "a next step, a question put to a player, an answer to a player. Crediting an earlier "
+            "speaker and then adding to their point counts as adding. Write exactly 'nothing' only if "
+            "every part of the new line's point was already said by an earlier line."
         ),
     )
-    reason: str = Field(description="One-sentence justification.")
+    same_point_as: str = Field(
+        description=(
+            "Empty string unless adds is 'nothing'. Then the player id of the FIRST earlier line that "
+            "already made the whole point: the same observation, the same suspicion of the same player "
+            "for the same reason, or the same proposal."
+        ),
+    )
+
+
+# The opening filter's verdict on one opening line (Phase 2). Model-visible: field descriptions
+# only, every field required.
+class OpeningVerdict(LenientToolCallModel):
+    player: str = Field(description="The player id whose line this verdict is about.")
+    kind: Literal["claim", "night_action", "challenge", "repeat", "other"] = Field(
+        description=(
+            "claim = the speaker claims a role for themselves, or claims a role someone else claimed "
+            "(a counterclaim); night_action = the speaker states their OWN night action or its result "
+            "(whom they protected, investigated, shot, or that they held fire, and what they learned); "
+            "challenge = the speaker disputes a claim made on an earlier day, giving a reason; "
+            "repeat = the line only repeats an earlier line in this list that is not a claim; "
+            "other = anything else: a deduction, a suspicion, advice, a general remark."
+        ),
+    )
+    why: str = Field(description="One sentence: what the line does.")
+
+
+class OpeningVerdicts(LenientToolCallModel):
+    verdicts: list[OpeningVerdict] = Field(
+        description="Exactly one verdict per line in the list, in the same order.",
+    )
+
+

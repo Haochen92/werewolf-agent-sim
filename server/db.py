@@ -1,17 +1,15 @@
-"""Async engine/session factory for server-owned Postgres tables.
+"""App-owned SQLAlchemy resources for the server's Postgres tables.
 
-The replay archive today; live-session durability later — this module is the Postgres
-beachhead those slices share. Pattern adopted from dota2pred's DatabaseManager, minus the
-class ceremony: a module-level lazily-created singleton engine, DSN from
-``server_settings.WW_POSTGRES_DSN`` (shared with the memory tick's database — server
-tables are alembic-managed, the tick's raw-psycopg tables are not; ``alembic/env.py``
-scopes itself to SQLModel metadata so the two never collide).
-
-No DSN = no engine: the server runs fine without Postgres (dev), archiving no-ops and
-the /replays endpoints answer 503. Nothing in this module raises at import time.
+``Database`` owns exactly one async engine and session factory. It is created by
+the FastAPI lifespan, injected into the services that need it, and closed from the
+same composition root. No connection is opened at import time, and an empty URL
+keeps the server's database-backed features disabled.
 """
 
 from __future__ import annotations
+
+from contextlib import asynccontextmanager
+from typing import AsyncIterator
 
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -20,40 +18,52 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-from server.config import server_settings
 
-_engine: AsyncEngine | None = None
-_sessions: async_sessionmaker[AsyncSession] | None = None
+class Database:
+    """One explicitly-owned async engine and its per-operation sessions."""
+
+    def __init__(self, database_url: str) -> None:
+        self._database_url = database_url
+        self._engine: AsyncEngine | None = None
+        self._session_factory: async_sessionmaker[AsyncSession] | None = None
+
+    @property
+    def configured(self) -> bool:
+        return bool(self._database_url)
+
+    @property
+    def engine(self) -> AsyncEngine | None:
+        return self._engine
+
+    async def startup(self) -> None:
+        """Create the pool once. SQLAlchemy opens physical connections on demand."""
+        if not self.configured or self._engine is not None:
+            return
+        self._engine = create_async_engine(self._database_url, pool_pre_ping=True)
+        self._session_factory = async_sessionmaker(
+            self._engine, class_=AsyncSession, expire_on_commit=False,
+        )
+
+    def session(self) -> AsyncSession:
+        """Return one unit-of-work session, or fail loudly when unconfigured."""
+        if self._session_factory is None:
+            raise RuntimeError("WW_POSTGRES_DSN is not set")
+        return self._session_factory()
+
+    async def close(self) -> None:
+        """Dispose the pool. Safe after partial startup and safe to call twice."""
+        if self._engine is not None:
+            await self._engine.dispose()
+        self._engine = None
+        self._session_factory = None
 
 
-def configured() -> bool:
-    return bool(server_settings.WW_POSTGRES_DSN)
-
-
-def engine() -> AsyncEngine | None:
-    """The process-wide engine, created on first use; None when no DSN is set."""
-    global _engine, _sessions
-    if _engine is None and configured():
-        _engine = create_async_engine(server_settings.replay_database_url,
-                                      pool_pre_ping=True)
-        _sessions = async_sessionmaker(_engine, class_=AsyncSession,
-                                       expire_on_commit=False)
-    return _engine
-
-
-def session() -> AsyncSession:
-    """One unit-of-work session. Raises when unconfigured — callers gate on
-    configured()/engine() first (routes answer 503, the archive hook no-ops)."""
-    if engine() is None:
-        raise RuntimeError("WW_POSTGRES_DSN is not set")
-    assert _sessions is not None
-    return _sessions()
-
-
-async def dispose() -> None:
-    """Close the pool (lifespan shutdown). Safe when never configured."""
-    global _engine, _sessions
-    if _engine is not None:
-        await _engine.dispose()
-        _engine = None
-        _sessions = None
+@asynccontextmanager
+async def database_resource(database_url: str) -> AsyncIterator[Database]:
+    """Lifespan adapter: start and close one ``Database`` instance."""
+    database = Database(database_url)
+    try:
+        await database.startup()
+        yield database
+    finally:
+        await database.close()

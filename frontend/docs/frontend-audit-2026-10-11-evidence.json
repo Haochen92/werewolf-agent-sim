@@ -1,0 +1,603 @@
+{
+  "sourceRevision": "dda7cdcf45893c490109b05b925d2e47bc3c8571",
+  "workingTree": "Snapshot includes pre-existing uncommitted workbench changes; see audit report.",
+  "limitations": [
+    "Headless software environment, not physical iOS.",
+    "Layer trees stale; layer counts intentionally excluded.",
+    "rAF unreliable in portions of WebKit run; no FPS conclusion.",
+    "Heap excludes decoded image and GPU memory.",
+    "Image pixel buffer estimates are width*height*4, not measured allocation."
+  ],
+  "browsers": [
+    {
+      "engine": "chromium",
+      "version": "153.0.8010.12",
+      "generatedAt": "2026-10-11T03:06:17.573Z",
+      "errors": [],
+      "samples": [
+        {
+          "name": "landing-before-scroll",
+          "viewport": [
+            390,
+            844
+          ],
+          "dpr": 3,
+          "elements": 1036,
+          "svgElements": 443,
+          "imgElements": 26,
+          "mini": {
+            "top": 995.53125,
+            "playing": "false"
+          },
+          "beat": "vote.opens",
+          "backdrop": {
+            "src": "car-dusk-live-full@1.5x.bbad5824.webp",
+            "w": 3300,
+            "h": 1350,
+            "cssW": 456.5,
+            "cssH": 186.75,
+            "rgbaMiB": 16.994476318359375
+          },
+          "afterGc": {
+            "Documents": 3,
+            "JSEventListeners": 1395,
+            "Nodes": 1410,
+            "JSHeapUsedSize": 8730484
+          }
+        },
+        {
+          "name": "landing-preview-visible",
+          "viewport": [
+            390,
+            844
+          ],
+          "dpr": 3,
+          "elements": 1078,
+          "svgElements": 485,
+          "imgElements": 26,
+          "mini": {
+            "top": 328.53125,
+            "playing": "true"
+          },
+          "beat": "vote.closes",
+          "backdrop": {
+            "src": "car-dusk-live-full@1.5x.bbad5824.webp",
+            "w": 3300,
+            "h": 1350,
+            "cssW": 456.5,
+            "cssH": 186.75,
+            "rgbaMiB": 16.994476318359375
+          },
+          "afterGc": {
+            "Documents": 3,
+            "JSEventListeners": 1408,
+            "Nodes": 1452,
+            "JSHeapUsedSize": 9706204
+          }
+        },
+        {
+          "name": "landing-after-scroll-away",
+          "viewport": [
+            390,
+            844
+          ],
+          "dpr": 3,
+          "elements": 1078,
+          "svgElements": 485,
+          "imgElements": 26,
+          "mini": {
+            "top": 995.53125,
+            "playing": "false"
+          },
+          "beat": "vote.closes",
+          "backdrop": {
+            "src": "car-dusk-live-full@1.5x.bbad5824.webp",
+            "w": 3300,
+            "h": 1350,
+            "cssW": 456.5,
+            "cssH": 186.75,
+            "rgbaMiB": 16.994476318359375
+          },
+          "afterGc": {
+            "Documents": 3,
+            "JSEventListeners": 1408,
+            "Nodes": 1452,
+            "JSHeapUsedSize": 9783888
+          }
+        },
+        {
+          "name": "day-transition-1",
+          "viewport": [
+            844,
+            390
+          ],
+          "dpr": 3,
+          "elements": 409,
+          "svgElements": 112,
+          "imgElements": 12,
+          "mini": null,
+          "backdrop": {
+            "src": "car-day-replay-full@1.5x.d028a22e.webp",
+            "w": 3300,
+            "h": 1350,
+            "cssW": 953.326171875,
+            "cssH": 389.9970703125,
+            "rgbaMiB": 16.994476318359375
+          },
+          "afterGc": {
+            "Documents": 1,
+            "JSEventListeners": 1216,
+            "Nodes": 625,
+            "JSHeapUsedSize": 9226612
+          }
+        },
+        {
+          "name": "day-transition-2",
+          "viewport": [
+            844,
+            390
+          ],
+          "dpr": 3,
+          "elements": 411,
+          "svgElements": 112,
+          "imgElements": 12,
+          "mini": null,
+          "backdrop": {
+            "src": "car-day-replay-full@1.5x.d028a22e.webp",
+            "w": 3300,
+            "h": 1350,
+            "cssW": 953.326171875,
+            "cssH": 389.9970703125,
+            "rgbaMiB": 16.994476318359375
+          },
+          "afterGc": {
+            "Documents": 1,
+            "JSEventListeners": 1220,
+            "Nodes": 627,
+            "JSHeapUsedSize": 9416840
+          }
+        },
+        {
+          "name": "vote-transition-1",
+          "viewport": [
+            844,
+            390
+          ],
+          "dpr": 3,
+          "elements": 603,
+          "svgElements": 297,
+          "imgElements": 10,
+          "mini": null,
+          "backdrop": {
+            "src": "car-dusk-replay-full@1.5x.4927c8dc.webp",
+            "w": 3300,
+            "h": 1350,
+            "cssW": 953.326171875,
+            "cssH": 389.9970703125,
+            "rgbaMiB": 16.994476318359375
+          },
+          "afterGc": {
+            "Documents": 1,
+            "JSEventListeners": 1490,
+            "Nodes": 818,
+            "JSHeapUsedSize": 9589472
+          }
+        },
+        {
+          "name": "vote-transition-2",
+          "viewport": [
+            844,
+            390
+          ],
+          "dpr": 3,
+          "elements": 540,
+          "svgElements": 234,
+          "imgElements": 10,
+          "mini": null,
+          "backdrop": {
+            "src": "car-dusk-replay-full@1.5x.4927c8dc.webp",
+            "w": 3300,
+            "h": 1350,
+            "cssW": 953.326171875,
+            "cssH": 389.9970703125,
+            "rgbaMiB": 16.994476318359375
+          },
+          "afterGc": {
+            "Documents": 1,
+            "JSEventListeners": 1490,
+            "Nodes": 755,
+            "JSHeapUsedSize": 9619440
+          }
+        },
+        {
+          "name": "pack-transition-1",
+          "viewport": [
+            844,
+            390
+          ],
+          "dpr": 3,
+          "elements": 663,
+          "svgElements": 227,
+          "imgElements": 24,
+          "mini": null,
+          "afterGc": {
+            "Documents": 1,
+            "JSEventListeners": 1510,
+            "Nodes": 931,
+            "JSHeapUsedSize": 9388620
+          }
+        },
+        {
+          "name": "pack-transition-2",
+          "viewport": [
+            844,
+            390
+          ],
+          "dpr": 3,
+          "elements": 710,
+          "svgElements": 253,
+          "imgElements": 26,
+          "mini": null,
+          "afterGc": {
+            "Documents": 1,
+            "JSEventListeners": 1521,
+            "Nodes": 980,
+            "JSHeapUsedSize": 9537748
+          }
+        },
+        {
+          "name": "replay-start",
+          "viewport": [
+            844,
+            390
+          ],
+          "dpr": 3,
+          "elements": 544,
+          "svgElements": 241,
+          "imgElements": 10,
+          "mini": null,
+          "beat": "deal.table-seated",
+          "backdrop": {
+            "src": "car-dawn-replay-full@1.5x.4ab7ae31.webp",
+            "w": 3300,
+            "h": 1350,
+            "cssW": 953.326171875,
+            "cssH": 389.9970703125,
+            "rgbaMiB": 16.994476318359375
+          },
+          "afterGc": {
+            "Documents": 1,
+            "JSEventListeners": 1077,
+            "Nodes": 658,
+            "JSHeapUsedSize": 7554880
+          }
+        },
+        {
+          "name": "replay-end-cycle-1",
+          "viewport": [
+            844,
+            390
+          ],
+          "dpr": 3,
+          "elements": 489,
+          "svgElements": 184,
+          "imgElements": 12,
+          "mini": null,
+          "beat": "over.curtain",
+          "backdrop": {
+            "src": "car-night-replay-full@1.5x.afff60fe.webp",
+            "w": 3300,
+            "h": 1350,
+            "cssW": 953.326171875,
+            "cssH": 389.9970703125,
+            "rgbaMiB": 16.994476318359375
+          },
+          "afterGc": {
+            "Documents": 1,
+            "JSEventListeners": 1521,
+            "Nodes": 611,
+            "JSHeapUsedSize": 9837844
+          }
+        },
+        {
+          "name": "replay-end-cycle-2",
+          "viewport": [
+            844,
+            390
+          ],
+          "dpr": 3,
+          "elements": 497,
+          "svgElements": 184,
+          "imgElements": 12,
+          "mini": null,
+          "beat": "over.curtain",
+          "backdrop": {
+            "src": "car-night-replay-full@1.5x.afff60fe.webp",
+            "w": 3300,
+            "h": 1350,
+            "cssW": 953.326171875,
+            "cssH": 389.9970703125,
+            "rgbaMiB": 16.994476318359375
+          },
+          "afterGc": {
+            "Documents": 1,
+            "JSEventListeners": 1536,
+            "Nodes": 619,
+            "JSHeapUsedSize": 10465732
+          }
+        }
+      ]
+    },
+    {
+      "engine": "webkit",
+      "version": "26.6",
+      "generatedAt": "2026-10-11T03:11:49.382Z",
+      "errors": [],
+      "samples": [
+        {
+          "name": "landing-before-scroll",
+          "viewport": [
+            390,
+            844
+          ],
+          "dpr": 3,
+          "elements": 1055,
+          "svgElements": 443,
+          "imgElements": 26,
+          "mini": {
+            "top": 970.03125,
+            "playing": "false"
+          },
+          "beat": "vote.opens",
+          "backdrop": {
+            "src": "car-dusk-live-full@1.5x.bbad5824.webp",
+            "w": 3300,
+            "h": 1350,
+            "cssW": 456.5,
+            "cssH": 186.75,
+            "rgbaMiB": 16.994476318359375
+          }
+        },
+        {
+          "name": "landing-preview-visible",
+          "viewport": [
+            390,
+            844
+          ],
+          "dpr": 3,
+          "elements": 1097,
+          "svgElements": 485,
+          "imgElements": 26,
+          "mini": {
+            "top": 328.03125,
+            "playing": "true"
+          },
+          "beat": "vote.closes",
+          "backdrop": {
+            "src": "car-dusk-live-full@1.5x.bbad5824.webp",
+            "w": 3300,
+            "h": 1350,
+            "cssW": 456.5,
+            "cssH": 186.75,
+            "rgbaMiB": 16.994476318359375
+          }
+        },
+        {
+          "name": "landing-after-scroll-away",
+          "viewport": [
+            390,
+            844
+          ],
+          "dpr": 3,
+          "elements": 1174,
+          "svgElements": 564,
+          "imgElements": 26,
+          "mini": {
+            "top": 970.03125,
+            "playing": "true"
+          },
+          "beat": "vote.count-begins",
+          "backdrop": {
+            "src": "car-dusk-live-full@1.5x.bbad5824.webp",
+            "w": 3300,
+            "h": 1350,
+            "cssW": 456.5,
+            "cssH": 186.75,
+            "rgbaMiB": 16.994476318359375
+          }
+        },
+        {
+          "name": "day-transition-1",
+          "viewport": [
+            844,
+            390
+          ],
+          "dpr": 3,
+          "elements": 417,
+          "svgElements": 112,
+          "imgElements": 12,
+          "mini": null,
+          "backdrop": {
+            "src": "car-day-replay-full@1.5x.d028a22e.webp",
+            "w": 3300,
+            "h": 1350,
+            "cssW": 953.326171875,
+            "cssH": 389.9970703125,
+            "rgbaMiB": 16.994476318359375
+          }
+        },
+        {
+          "name": "day-transition-2",
+          "viewport": [
+            844,
+            390
+          ],
+          "dpr": 3,
+          "elements": 418,
+          "svgElements": 112,
+          "imgElements": 12,
+          "mini": null,
+          "backdrop": {
+            "src": "car-day-replay-full@1.5x.d028a22e.webp",
+            "w": 3300,
+            "h": 1350,
+            "cssW": 953.326171875,
+            "cssH": 389.9970703125,
+            "rgbaMiB": 16.994476318359375
+          }
+        },
+        {
+          "name": "vote-transition-1",
+          "viewport": [
+            844,
+            390
+          ],
+          "dpr": 3,
+          "elements": 608,
+          "svgElements": 297,
+          "imgElements": 10,
+          "mini": null,
+          "backdrop": {
+            "src": "car-dusk-replay-full@1.5x.4927c8dc.webp",
+            "w": 3300,
+            "h": 1350,
+            "cssW": 953.326171875,
+            "cssH": 389.9970703125,
+            "rgbaMiB": 16.994476318359375
+          }
+        },
+        {
+          "name": "vote-transition-2",
+          "viewport": [
+            844,
+            390
+          ],
+          "dpr": 3,
+          "elements": 545,
+          "svgElements": 234,
+          "imgElements": 10,
+          "mini": null,
+          "backdrop": {
+            "src": "car-dusk-replay-full@1.5x.4927c8dc.webp",
+            "w": 3300,
+            "h": 1350,
+            "cssW": 953.326171875,
+            "cssH": 389.9970703125,
+            "rgbaMiB": 16.994476318359375
+          }
+        },
+        {
+          "name": "pack-transition-1",
+          "viewport": [
+            844,
+            390
+          ],
+          "dpr": 3,
+          "elements": 681,
+          "svgElements": 227,
+          "imgElements": 24,
+          "mini": null
+        },
+        {
+          "name": "pack-transition-2",
+          "viewport": [
+            844,
+            390
+          ],
+          "dpr": 3,
+          "elements": 728,
+          "svgElements": 253,
+          "imgElements": 26,
+          "mini": null
+        },
+        {
+          "name": "replay-start",
+          "viewport": [
+            844,
+            390
+          ],
+          "dpr": 3,
+          "elements": 561,
+          "svgElements": 241,
+          "imgElements": 10,
+          "mini": null,
+          "beat": "deal.table-seated",
+          "backdrop": {
+            "src": "car-dawn-replay-full@1.5x.4ab7ae31.webp",
+            "w": 3300,
+            "h": 1350,
+            "cssW": 953.326171875,
+            "cssH": 389.9970703125,
+            "rgbaMiB": 16.994476318359375
+          }
+        },
+        {
+          "name": "replay-end-cycle-1",
+          "viewport": [
+            844,
+            390
+          ],
+          "dpr": 3,
+          "elements": 508,
+          "svgElements": 184,
+          "imgElements": 12,
+          "mini": null,
+          "beat": "over.curtain",
+          "backdrop": {
+            "src": "car-night-replay-full@1.5x.afff60fe.webp",
+            "w": 3300,
+            "h": 1350,
+            "cssW": 1258.390625,
+            "cssH": 514.796142578125,
+            "rgbaMiB": 16.994476318359375
+          }
+        },
+        {
+          "name": "replay-end-cycle-2",
+          "viewport": [
+            844,
+            390
+          ],
+          "dpr": 3,
+          "elements": 516,
+          "svgElements": 184,
+          "imgElements": 12,
+          "mini": null,
+          "beat": "over.curtain",
+          "backdrop": {
+            "src": "car-night-replay-full@1.5x.afff60fe.webp",
+            "w": 3300,
+            "h": 1350,
+            "cssW": 953.326171875,
+            "cssH": 389.9970703125,
+            "rgbaMiB": 16.994476318359375
+          }
+        }
+      ]
+    }
+  ],
+  "nodeMicrobench": {
+    "method": "3 warmups, 15 samples; milliseconds; no React/network/browser work",
+    "events": 407,
+    "fold": {
+      "median": 0.757885999999985,
+      "max": 1.202009999999973
+    },
+    "beats": {
+      "median": 0.9798080000000482,
+      "max": 2.78622299999995
+    },
+    "light": {
+      "median": 17.365264000000025,
+      "max": 26.204136999999946
+    },
+    "catchUp": {
+      "median": 14.63060100000007,
+      "max": 17.72142699999995
+    },
+    "hydrate": {
+      "median": 0.5812849999999798,
+      "max": 1.1058490000000347
+    }
+  }
+}

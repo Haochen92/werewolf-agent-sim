@@ -22,16 +22,74 @@ class ServerSettings(BaseSettings):
     JSON-decodes list-typed fields)."""
 
     WW_POSTGRES_DSN: str = ""
-    """Postgres for server-owned tables (the replay archive; live-session durability
-    later) — the SAME var/database the memory tick uses (ruled 2026-08-20: one knob,
+    """Postgres for server-owned tables (unified games, events, checkpoints)
+    — the SAME var/database the memory tick uses (ruled 2026-08-20: one knob,
     one container; split into a dedicated var only the day the deploy splits DBs).
     Empty = archiving disabled (games still run; /replays answers 503)."""
 
+    WW_MEMORY_ENABLED: bool = False
+    """Whether a new game may switch memory on. The lessons come from the database's
+    published store (``WW_POSTGRES_DSN``; the tick publishes after each pass), and a
+    memory-on game is refused while that store is unpublished or was embedded by another
+    model, whatever this says. Off = refused regardless: the deployment's own switch.
+    Games already running are not affected."""
+
+    SEAT_COOKIE_SECURE: bool = False
+    """Send the seat cookie with the ``Secure`` flag (HTTPS-only). Off by default so
+    plain-HTTP dev (localhost) keeps working; the production deploy behind Caddy/TLS
+    sets it — without it the seat credential rides any accidental http:// request."""
+
+    SEAT_COOKIE_PATH_PREFIX: str = ""
+    """Browser-visible prefix in front of the API's ``/games`` routes.
+
+    Caddy strips ``/api`` before proxying production requests, but browsers match a
+    cookie's Path against the original, unstripped URL. Development calls FastAPI
+    directly and therefore keeps the empty default; production sets this to ``/api``.
+    """
+
     ROOM_LIST_TTL_SECONDS: int = 7200
-    """How long a waiting room stays visible in GET /rooms (default 2h). A browse
-    filter, not expiry: the direct room URL keeps working past the TTL. Needed
-    because durability revives waiting rooms across restarts — without a cutoff,
-    abandoned rooms would accumulate in the public list forever."""
+    """How long a waiting room may wait without departing (default 2h). Past it the
+    room leaves GET /rooms at once, and the sweeper's next pass closes it (its URL then
+    answers 410 with the reason), so abandoned rooms do not sit in memory. A restart also
+    closes rooms; only games that have started are recovered."""
+
+    SOLO_PARK_TTL_SECONDS: int = 3600
+    """A solo game parked on its human's question with nobody connected is swept to
+    ``dropped`` after this long (default 1 h). Solo games arm no turn timer, so this is
+    the only way an abandoned one ever ends (seat_continuity.md §7)."""
+
+    MULTI_PARK_TTL_SECONDS: int = 86400
+    """The same shelf life for a multi-human table that parked because every human
+    left (default 1 day). While parked it costs nothing; the sweep just stops recovery
+    reviving it forever."""
+
+    SWEEP_INTERVAL_SECONDS: int = 60
+    """How often the retention sweeper looks for parked games past their shelf life."""
+
+    HOUSE_FUNDED_ENABLED: bool = True
+    """Whether the server pays for games on house-funded models at all. The kill switch:
+    off means every model needs the player's own key. Overridden live by the settings
+    table (PUT /admin/house); this is the value when nothing is stored."""
+
+    HOUSE_DEFAULT_MODEL: str = ""
+    """The model a game runs on when the player picks none. Must be a house-funded row of
+    the catalogue; empty means the first house-funded row. Overridden live by the settings
+    table."""
+
+    HOUSE_GAMES_PER_DAY: int = 10
+    """Best-effort limit on house-funded starts per UTC day. Counted from the games
+    table (rows with byok=false, created today); concurrent starts can exceed it, and
+    storage must be configured to count them. A player bringing a key is never counted.
+    Overridden live by the settings table."""
+
+    ADMIN_TOKEN: str = ""
+    """The secret the /admin endpoints require in the X-Admin-Token header. Empty
+    disables them (they answer 404)."""
+
+    LOG_LEVEL: str = "INFO"
+    """Level for the server's own loggers (recovery, AFK clocks, sweep, stream open/close).
+    Uvicorn configures only its own loggers; without this the app's INFO lines never
+    reach the container log and presence — now load-bearing — is invisible in ops."""
 
     @property
     def cors_allowed_origins(self) -> list[str]:
@@ -45,6 +103,12 @@ class ServerSettings(BaseSettings):
             if self.WW_POSTGRES_DSN.startswith(prefix):
                 return self.WW_POSTGRES_DSN.replace(prefix, "postgresql+psycopg://", 1)
         return self.WW_POSTGRES_DSN
+
+    @property
+    def seat_cookie_path_prefix(self) -> str:
+        """Return the configured prefix as either ``""`` or ``/one/path``."""
+        prefix = self.SEAT_COOKIE_PATH_PREFIX.strip().strip("/")
+        return f"/{prefix}" if prefix else ""
 
 
 server_settings = ServerSettings()

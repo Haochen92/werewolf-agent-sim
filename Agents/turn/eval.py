@@ -6,9 +6,12 @@ belongs in the registered actor node. Split out so the decision path holds only 
 
 ``prompt_log`` / ``reads_log`` are the leak-test capture points (tests/leak_test.py): every prompt
 sent and read emitted is recorded so the boundary tests can assert no private state reached another
-agent. Both are cleared at game start (Agents/main.py).
+agent. Both are cleared at game start (Agents/main.py). They are the default ``TURN_CAPTURE``; a
+process running several games at once (the server) sets its own capture per game instead.
 """
 
+from contextvars import ContextVar
+from dataclasses import dataclass, field
 from logging import getLogger
 from typing import Any
 
@@ -24,9 +27,25 @@ prompt_log: list[dict] = []
 reads_log: list[dict] = []
 
 
+@dataclass
+class TurnCapture:
+    """Where one game's prompts and reads are recorded for the leak checks."""
+
+    prompts: list[dict] = field(default_factory=list)
+    reads: list[dict] = field(default_factory=list)
+
+
+# The capture of the game this turn belongs to, set like GAME_LLM (Agents/llm_factory/chat.py): the
+# server's GameSession sets its own inside the game's task, so concurrent games never share a list.
+# The default is the process globals above, which one-game-at-a-time callers read after run_game.
+TURN_CAPTURE: ContextVar[TurnCapture] = ContextVar(
+    "TURN_CAPTURE", default=TurnCapture(prompt_log, reads_log)
+)
+
+
 def log_prompt(payload: dict[str, Any], output_key: str, prompt_input: dict) -> None:
     """Record the prompt an agent was sent, for the leak check (a snapshot copy of prompt_input)."""
-    prompt_log.append({
+    TURN_CAPTURE.get().prompts.append({
         "player_id": payload.get("player_id", ""),
         "player_role": payload.get("player_role", ""),
         "output_key": output_key,
@@ -49,7 +68,7 @@ def record_reads(
                 payload.get("player_id", ""), output_key, coverage * 100, missing,
             )
     if reads:
-        reads_log.append({
+        TURN_CAPTURE.get().reads.append({
             "player_id": payload.get("player_id", ""),
             "day": payload.get("current_day", 1),
             "output_key": output_key,
@@ -83,8 +102,7 @@ def build_eval_private_context(
     """Snapshot the private context an agent acted on, for the eval case.
 
     Reads everything via ``.get`` so it works for both day payloads (which carry
-    faction-split survivor lists) and night payloads (flat ``surviving_players``,
-    plus ``vigilante_results`` for the vigilante).
+    faction-split survivor lists) and night payloads (flat ``surviving_players``).
     """
     return EvalPrivateContext(
         previous_strategy=payload.get("previous_strategy", "") or "",
@@ -94,8 +112,7 @@ def build_eval_private_context(
             if summary.day < day
         ],
         wolf_channel=payload.get("wolf_channel", []),
-        investigator_results=payload.get("investigator_results", []),
-        vigilante_results=payload.get("vigilante_results", []),
+        night_actions=payload.get("night_actions", []),
         surviving_players=payload.get("surviving_players", []),
         surviving_wolves=payload.get("surviving_wolves", []),
         surviving_villagers=payload.get("surviving_villagers", []),

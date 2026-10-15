@@ -1,0 +1,39 @@
+"""The one place a served game's engine config is built.
+
+Three doors start a game — the solo door, a room's host, and recovery after a restart —
+and they must agree on the same rules: the memory system follows the player's choice for
+every role at once, lessons are read from the database's published store (the graph is
+compiled over it; nothing is seeded into the process), and a game played over the server
+is never mined into that store. Building the config here keeps a
+game that is rebuilt after a restart identical to the one that was started.
+"""
+
+from __future__ import annotations
+
+from Agents.config import RunConfig
+from Agents.schemas.roles import roles
+
+
+def game_run_config(*, memory: bool, human_player: int, human_role: str | None = None,
+                    game_id: str | None = None) -> RunConfig:
+    """Build the config a served game runs on.
+
+    ``memory`` is the player's switch: on, every AI seat retrieves lessons from past
+    games before each decision; off, none does. Every game keeps what it can teach when it
+    ends, and an offline job later extracts a memory-on game's lessons for the replay to
+    show (never during the game, and never into the live store).
+
+    A served game retrieves strategy points only: the town half of the store never had
+    observations, so retrieving them would give the two factions different memory, and
+    the strategy points are the lessons the replay shows being weighed."""
+    # The store's name on the game's retrieval metadata (and in the lookup cache key); the
+    # store itself is the runtime's, so no file is seeded.
+    persistence: dict = {"dump_enabled": False, "seed_enabled": False, "seed_store_dir": "postgres"}
+    return RunConfig(
+        game_id=game_id,
+        human_player=human_player,
+        human_role=human_role,
+        memory_config={role: memory for role in roles},
+        retrieval_types_config={"observations": False, "strategy_points": True},
+        memory_persistence=persistence,
+    )

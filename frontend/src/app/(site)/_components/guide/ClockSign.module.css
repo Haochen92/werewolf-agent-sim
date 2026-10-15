@@ -1,0 +1,101 @@
+/* An enamel station sign: cream on a bottle-green edge, two brass screws, the watch at its left. */
+
+.sign {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-top: 20px;
+  padding: 22px 30px 22px 26px;
+  border-radius: 14px;
+  color: #1f2a22;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.55), transparent 55%),
+    linear-gradient(180deg, #f3ead2, #e3d4b0);
+  box-shadow:
+    inset 0 0 0 3px #1f3a2e,
+    inset 0 0 0 6px #f3ead2,
+    inset 0 0 0 7.5px #1f3a2e,
+    0 2px 0 #0f1d17,
+    0 18px 30px -16px rgba(0, 0, 0, 0.9);
+}
+.sign::before,
+.sign::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  margin-top: -4.5px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff3cf, #9c7128 70%);
+  box-shadow: inset 0 0 0 1px rgba(60, 35, 5, 0.5);
+}
+.sign::before {
+  left: 14px;
+}
+.sign::after {
+  right: 14px;
+}
+.sign h3 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 26px;
+  color: #1f3a2e;
+}
+.sign p {
+  margin: 6px 0 0;
+  color: #3a3a2c;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.sign b {
+  color: #8a2a1d;
+  font-weight: 600;
+}
+.sign .solo {
+  color: #5d5a48;
+  font-size: 14.5px;
+}
+
+.watch {
+  flex: none;
+  width: 108px;
+  height: auto;
+  margin-left: 10px;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55));
+}
+.twelve {
+  font-family: var(--font-serif);
+  font-size: 9px;
+  fill: #2a1a08;
+}
+.second {
+  transform-origin: 50px 56px;
+  animation: tick 60s steps(60) infinite;
+}
+@keyframes tick {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 760px) {
+  .sign {
+    gap: 16px;
+    padding: 18px 22px 18px 20px;
+  }
+  .watch {
+    width: 78px;
+  }
+  .sign h3 {
+    font-size: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .second {
+    animation: none;
+  }
+}

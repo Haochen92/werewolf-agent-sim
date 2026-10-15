@@ -23,7 +23,10 @@ load_dotenv(REPO_ROOT / ".env")
 from evaluation.src.data import batch_layout
 
 
-ROLES = ("wolf", "villager", "healer", "investigator", "serial_killer", "vigilante")
+from Agents.schemas.roles import (  # the pool
+    ALL_LINEUPS, LONE_KILLER, LONE_KILLER_ROLES, NEUTRAL, NEUTRAL_ROLES, ROLE_SPECS, TOWN, WOLVES,
+    roles as ROLES,
+)
 
 
 def role_config(*enabled_roles: str) -> dict[str, bool]:
@@ -45,13 +48,19 @@ def reranking_config(
 MEMORY_CONFIGS = {
     "all_disabled": role_config(),
     "all_enabled": role_config(*ROLES),
-    "wolf_only": role_config("wolf"),
+    "wolves_only": role_config(*[r for r in ROLES if ROLE_SPECS[r].side == WOLVES]),
     "serial_killer_only": role_config("serial_killer"),
-    "villager_only": role_config("villager"),
     "healer_only": role_config("healer"),
     "investigator_only": role_config("investigator"),
-    "town_only": role_config("villager", "healer", "investigator", "vigilante"),
+    "town_only": role_config(*[r for r in ROLES if ROLE_SPECS[r].side == TOWN]),
     "specials_only": role_config("healer", "investigator"),
+    # Mining arm: retrieval off for everyone, extraction for wolf + serial_killer only. The two
+    # gates read the dict differently — retrieval treats an absent role as off, extraction treats
+    # it as on — so listing only the town roles (False) is what selects the evil cells.
+    "extract_evil_only": {r: False for r in ROLES if ROLE_SPECS[r].side == TOWN},
+    # Seeding arm: retrieval off for every role, extraction for every role the game dealt (an
+    # absent role reads as off to retrieval and on to extraction).
+    "extract_only": {},
 }
 
 RERANKING_CONFIGS = {
@@ -249,6 +258,26 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--cycle-lineups",
+        action="store_true",
+        help=(
+            "Deal the four lineups in turn (game 1 the first lineup, game 2 the second, ...) "
+            "instead of drawing each game's lone killer and neutral at random, so every role "
+            "is dealt evenly."
+        ),
+    )
+    parser.add_argument(
+        "--lineup-offset",
+        type=int,
+        default=0,
+        help="With --cycle-lineups, start the cycle this many lineups in (e.g. 2 to deal the third first).",
+    )
+    parser.add_argument(
+        "--stage-filter",
+        action="store_true",
+        help="Leave out retrieved lessons learned at another stage of the game (RunConfig.stage_filter).",
+    )
+    parser.add_argument(
         "--skip-embedding-canary",
         action="store_true",
         help=(
@@ -410,12 +439,14 @@ def faction_survivors(result: dict[str, Any]) -> dict[str, list[str]]:
     never has to know that quirk: wolves / town (non-wolf, non-SK) / serial_killer.
     """
     roles = result.get("roles") or {}
-    non_wolf = result.get("surviving_villagers") or []
-    return {
-        "wolves": list(result.get("surviving_wolves") or []),
-        "town": [p for p in non_wolf if roles.get(p) != "serial_killer"],
-        "serial_killer": [p for p in non_wolf if roles.get(p) == "serial_killer"],
-    }
+    survivors = [*(result.get("surviving_wolves") or []), *(result.get("surviving_villagers") or [])]
+    by_side = {TOWN: [], WOLVES: [], LONE_KILLER: [], NEUTRAL: []}
+    for p in survivors:
+        spec = ROLE_SPECS.get(roles.get(p, ""))
+        if spec is not None:
+            by_side[spec.side].append(p)
+    return {"wolves": by_side[WOLVES], "town": by_side[TOWN], "serial_killer": by_side[LONE_KILLER],
+            "lone_killer": by_side[LONE_KILLER], "neutral": by_side[NEUTRAL]}
 
 
 def run_batch(args: argparse.Namespace) -> int:
@@ -482,7 +513,7 @@ def run_batch(args: argparse.Namespace) -> int:
     from Agents.turn import prompt_log, reads_log
     from Agents.main import run_game
     from Agents.run_fingerprint import runtime_fingerprint
-    from tests.leak_test import run_leak_tests
+    from tests.leak_test import leak_inputs, run_leak_tests
 
     # Resolved once per batch: code/prompt versions, model IDs, params, backend.
     # Makes each JSONL record self-describing — a record is only comparable to
@@ -516,6 +547,7 @@ def run_batch(args: argparse.Namespace) -> int:
             "filtering_config": filtering_config,
             "retrieval_types": args.retrieval_types,
             "retrieval_types_config": retrieval_types_config,
+            "stage_filter": args.stage_filter,
             "memory_persistence_config": memory_persistence_config,
             "game_config": game_config,
         }
@@ -556,16 +588,24 @@ def run_batch(args: argparse.Namespace) -> int:
         print(f"Running {current_run_id} in session {session_id}")
 
         game_id = game_ids[run_index - 1] if game_ids else None
+        run_game_config = game_config
+        if args.cycle_lineups:
+            dealt = ALL_LINEUPS[(run_index - 1 + args.lineup_offset) % len(ALL_LINEUPS)]
+            run_game_config = {
+                "lone_killer": next(r for r in dealt if r in LONE_KILLER_ROLES),
+                "neutral": next(r for r in dealt if r in NEUTRAL_ROLES),
+            }
         try:
             outcome = run_game(
                 RunConfig(
                     memory_config=memory_config,
                     session_id=session_id,
-                    game=game_config,
+                    game=run_game_config,
                     memory_persistence=memory_persistence_config,
                     reranking_config=reranking_config,
                     filtering_config=filtering_config,
                     retrieval_types_config=retrieval_types_config,
+                    stage_filter=args.stage_filter,
                     game_id=game_id,
                 )
             )
@@ -585,6 +625,7 @@ def run_batch(args: argparse.Namespace) -> int:
                 result.get("roles") or {},
                 reads_log=reads_log,
                 public_text=public_text,
+                **leak_inputs(result),
             )
             if leaks:
                 leak_games += 1
@@ -603,7 +644,7 @@ def run_batch(args: argparse.Namespace) -> int:
                 "reranking_config": reranking_config,
                 "filtering_config": filtering_config,
                 "retrieval_types_config": retrieval_types_config,
-                "game_config": game_config,
+                "game_config": run_game_config,
                 "run_index": run_index,
                 "run_id": current_run_id,
                 "session_id": session_id,
@@ -618,7 +659,8 @@ def run_batch(args: argparse.Namespace) -> int:
                 # Unambiguous marker-derived split (surviving_villagers = non-wolf bucket incl. SK).
                 "faction_survivors": faction_survivors(result),
                 "roles": result.get("roles"),
-                "investigator_results": result.get("investigator_results"),
+                "lineup": result.get("lineup"),
+                "neutral_result": result.get("neutral_result"),
                 "day_channel": result.get("day_channel"),
                 "day_summaries": result.get("day_summaries"),
                 "computed_metrics": outcome.game_metrics.model_dump(mode="json"),
@@ -658,7 +700,7 @@ def run_batch(args: argparse.Namespace) -> int:
                 "reranking_config": reranking_config,
                 "filtering_config": filtering_config,
                 "retrieval_types_config": retrieval_types_config,
-                "game_config": game_config,
+                "game_config": run_game_config,
                 "run_index": run_index,
                 "run_id": current_run_id,
                 "session_id": session_id,

@@ -1,0 +1,59 @@
+/* The home-screen line: a small plaque over the top of the stage, clear of the notch, in the
+   house's materials; its × is a thumb's size. Gone in portrait (the turn card covers the page)
+   and when the page is already opened from the Home Screen. */
+.tip {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(92vw, 560px);
+  padding: 6px 6px 6px 14px;
+  border: 1px solid var(--cloak2, #4d3824);
+  border-radius: 12px;
+  background: rgba(14, 9, 6, 0.94);
+  color: var(--bone, #efe4cb);
+  font-family: var(--font-stage-sans, Outfit), system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.35;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+}
+.tip svg {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--amber, #e0a63a);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.tip b {
+  font-weight: 600;
+  color: var(--amber, #e0a63a);
+}
+.tip button {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  appearance: none;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--bone, #efe4cb);
+  font: inherit;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+.tip button:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+@media (orientation: portrait), (display-mode: standalone) {
+  .tip {
+    display: none;
+  }
+}

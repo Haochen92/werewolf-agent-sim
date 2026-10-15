@@ -72,6 +72,24 @@ NULLABLE_NUMERIC_METRICS = [
     "investigator_found_wolf_day",
     "wolf_killed_healer_day",
     "wolf_killed_investigator_day",
+    # The ten-seat roles (Agents/ten_seat_metrics.py): None when the game did not deal the role.
+    "lone_killer_lynched",
+    "chanteuse_blocks",
+    "chanteuse_blocks_real",
+    "chanteuse_blocks_critical",
+    "chanteuse_blocks_wasted",
+    "illusionist_conceals",
+    "illusionist_conceals_hid_record",
+    "necromancer_nights_survived",
+    "speculator_pick_night",
+    "speculator_won",
+    "fortune_teller_points",
+    "sentinel_watches",
+    "sentinel_watches_naming_evil",
+    "trailseer_follows",
+    "trailseer_follows_naming_evil",
+    "sigilist_sigils",
+    "sigilist_hits",
 ]
 
 CATEGORICAL_METRICS = [

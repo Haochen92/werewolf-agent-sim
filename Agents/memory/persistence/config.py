@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 # Repo-root data directory (sibling of models/, batch_results/, evaluation/), NOT
 # inside the Agents/ code package. Anchored to the repo root (parents[3] =
@@ -50,11 +51,32 @@ class IncrementalDedupConfig(BaseModel):
 
     enabled: bool = False
     two_pass: bool = True
-    triage_model: str = "gemini-3.1-flash-lite"
+    triage_model: str = "anthropic/claude-haiku-5-5"
     triage_thinking_level: str | None = "medium"
-    verify_model: str = "gemini-2.5-pro"
+    verify_model: str = "anthropic/claude-sonnet-5-5"
     verify_thinking_level: str | None = None
     prompt_variant: str = "default"
+
+
+def _env_flag(name: str, default: bool) -> bool:
+    value = os.getenv(name)
+    return default if value is None else value.strip().lower() not in ("0", "false", "no", "off", "")
+
+
+class DehaloConfig(BaseModel):
+    """The de-halo pass after extraction (Agents/memory/extraction/dehalo.py): a second model
+    rewrites verdicts the game record does not support. Each field defaults from the environment,
+    so a deployment or a batch can change it without code; a run's config records what was used."""
+
+    enabled: bool = Field(default_factory=lambda: _env_flag("MEMORY_DEHALO_ENABLED", True))
+    """On by default (v8, 2026-10-11). MEMORY_DEHALO_ENABLED=0 turns it off."""
+    model: str = Field(default_factory=lambda: os.getenv("MEMORY_DEHALO_MODEL") or "claude-haiku-5-5")
+    """A claude-* model goes through the Anthropic SDK (CLAUDE_API_KEY); any other through the
+    game's model factory. claude-haiku-5-5 was the most precise judge on the v8 smoke game, at about
+    $0.006 a game."""
+    thinking_level: str | None = Field(default_factory=lambda: os.getenv("MEMORY_DEHALO_THINKING_LEVEL") or None)
+    """None = the model's default. On Claude: minimal/off disables thinking, low..max sets adaptive
+    thinking at that effort. On other models: the factory's thinking level."""
 
 
 class ExtractionConfig(BaseModel):
@@ -75,7 +97,9 @@ class ExtractionConfig(BaseModel):
     extract_without_dump: bool = False
     # When dump is OFF, normally extraction is skipped (wasted cost). Set this to run +
     # trace extraction anyway WITHOUT persisting — for measuring per-role fan-out + cache
-    # cost on a throwaway game.
+    # cost on a throwaway game, and for a served memory-on game, whose replay shows what
+    # the game taught (the memory_extracted stream chunk) without ever writing the store.
+    dehalo: DehaloConfig = Field(default_factory=DehaloConfig)
 
 
 class MemoryPersistenceConfig(BaseModel):

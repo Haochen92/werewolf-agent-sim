@@ -28,15 +28,25 @@ GAME RULES:
 {epistemic_status_rule}
 
 NAMING RULE: Never use player IDs (player_1, player_2, etc.) in ANY field — including when the lesson
-is about WHICH player was targeted at night. Always refer to players by their role (the wolf, the
-investigator, a villager, the healer); when disambiguating multiple players of the same role, use
-behavioral descriptors, at the certainty the epistemic rule allows.
+is about WHICH player was targeted at night. Always refer to players by their role (the chanteuse,
+the investigator, the sentinel, the healer); when disambiguating, use behavioral descriptors, at the
+certainty the epistemic rule allows.
 
-Good: "the wolf who led the early accusation", "the quiet villager you investigated", "the surviving wolf"
-Bad:  "player_2", "you investigated player_5", "a villager (player_3)"
+Good: "the illusionist who led the early accusation", "the quiet player you watched", "the surviving wolf"
+Bad:  "player_2", "you investigated player_5", "the sentinel (player_3)"
 
 EXTRACTION GUIDELINES (apply to every observation):
-- Look for multi-day patterns — causal chains and strategic sequences, not just single-day events.
+- Look for multi-day patterns and strategic sequences, not just single-day events.
+- EVIDENCE: include only observations with a supported, strategically relevant takeaway. When a
+  lesson depends on a cause-and-effect link the record does not establish, leave that lesson out.
+  Sequence alone is not evidence of cause: "revealed, then died" does not show the reveal caused the
+  death. A link IS supported when the record shows it, e.g. the wolves' chat names the reveal as their
+  reason for the kill. Even then, a supported explanation of what happened is not proof that a
+  different move would have done better.
+- OUTCOME IS NOT CREDIT: a side's win does not make each member's move positive, and a side's loss
+  does not make each move negative. Judge a move only by what the record shows it did. A vote, an
+  abstain, a held shot or a check that merely came before a good or bad night is 'unclear', however
+  the game ended.
 - Keep each field concise (1-2 sentences).
 - QUALITY BAR: EXCLUDE common-sense fundamentals the base strategy already covers (e.g. "vote with the
   majority", "protect important players", "eliminate suspicious players"); EXCLUDE vague situations
@@ -80,16 +90,15 @@ CELL_OBSERVATION_TAIL = """
 ASSIGNED CELL — extract observations for: role = {role}, phase = {phase}.
 
 Apply everything above EXCLUSIVELY to the {role} for the {phase} phase. Write every field from the
-{role}'s own perspective: approach = what the {role} DID or FAILED TO DO, never what the opposing side
-did; if the lesson is about something that happened TO the {role}, reframe it as what the {role} did
-that led there. For day cells, tag each observation by WHEN the lesson applies: day_discussion (what to
-say, how to argue, reading others, managing suspicion) vs day_vote (vote target, timing, voting to
-preserve cover).
+{role}'s own perspective: approach = what the {role} DID, never what the opposing side did, and never a
+move the {role} did not make. Something that happened TO the {role} belongs here only when the record
+connects it to what the {role} did.{phase_rule}
 
 {driver_horizon}
 
-TASK: Extract 6-12 {role} observations from the game's pivotal {phase} moments (a phase with few
-decisions may yield fewer; never pad with near-restatements). Cover DISTINCT situations — different
+TASK: Extract the {role}'s observations from the game's pivotal {phase} moments: usually a few, fewer
+or none when no {phase} decision of the {role} mattered; never pad with near-restatements. Cover DISTINCT
+situations — different
 criticality regimes (early/many-alive vs late/near-parity), and different target/consensus/exposure
 textures — not minor variations of one moment. Span the days the game ran. Fill EVERY field below.
 
@@ -108,8 +117,8 @@ CELL_STRATEGY_TAIL = """
 
 STRATEGY POINTS — derive for: role = {role}, phase = {phase}.
 
-From the {role} observations above, derive 3-8 reusable PRESCRIPTIVE strategy points for the {phase}
-phase — generalized IF-situation -> THEN-action rules. The right grain is a RECURRING TACTICAL PATTERN:
+From the {role} observations above, derive up to 8 reusable PRESCRIPTIVE strategy points for the
+{phase} phase (none when the observations support no rule) — generalized IF-situation -> THEN-action rules. The right grain is a RECURRING TACTICAL PATTERN:
 - NOT a single-game retelling (that is an observation),
 - NOT an overall game/day stance (that is base strategy the agent already has).
 
@@ -136,6 +145,9 @@ RULES:
 CELL_SP_SYNTHESIS_PROMPT = """
 You are distilling reusable strategy from a completed-game memory store for a Werewolf agent.
 
+GAME RULES (the game these observations come from; it differs from classic Werewolf):
+{game_rules}
+
 Below is a CLUSTER of observations that all share the same situation regime for role = {role},
 phase = {phase}. They are post-game facts (omniscient) with varied outcomes — some moves helped, some
 hurt. Your job: synthesize the GENERALIZED prescriptive rule(s) this cluster teaches.
@@ -143,14 +155,24 @@ hurt. Your job: synthesize the GENERALIZED prescriptive rule(s) this cluster tea
 OBSERVATIONS IN THIS CLUSTER:
 {observations}
 
-TASK: Emit 1-3 strategy points — generalized IF-situation -> THEN-action rules a {role} could apply
-when this regime recurs.
-- Use the outcome SPREAD as weighting: a move that succeeded across many observations is a strong rule;
-  if the cluster mostly shows a move BACKFIRING, the rule is the corrective/opposite (still a positive
-  "do"), not a restatement of the failure.
+TASK: Emit 0-3 strategy points — generalized IF-situation -> THEN-action rules a {role} could apply
+when this regime recurs. Emit none when the cluster supports no rule.
+- Use the outcome SPREAD as weighting: a move that succeeded across many observations is a strong rule.
+- An "unclear" outcome says nothing about whether the move helped: use that observation's facts, not
+  its verdict.
+- Do not infer that the opposite of an unsuccessful move is beneficial. When the cluster mostly shows a
+  move backfiring, emit a corrective only when the observations or the game's mechanics support it;
+  otherwise emit nothing for that move.
 - A strategy point is ALWAYS a positive prescription (something to DO). Never emit "don't do X".
 - Emit MORE than one only when the cluster genuinely teaches distinct moves (differing in direction or
-  honesty); a tight single-lesson cluster yields exactly one. Do not pad.
+  honesty). Do not pad.
+- MECHANICS: rely on game mechanics only as GAME RULES state them. Do not say what an ability shows,
+  announces, protects or costs beyond what the rules say; where an observation describes a mechanic
+  differently, the rules are right.
+- PHASE: prescribe only the {role}'s move in this phase ({phase}). Leave out what to do in other
+  phases (for a night phase, what to claim, share or vote by day), even when the observations
+  mention it.
+- LENGTH: one move per strategy point, in at most three sentences with its reason.
 - Fill the situation dimensions as a GENERALIZED situation representative of the whole cluster (not a
   copy of one observation), so the rule retrieves for the regime.
 

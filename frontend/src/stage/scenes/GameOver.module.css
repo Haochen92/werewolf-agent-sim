@@ -1,0 +1,123 @@
+/* The ending's box, as bench 73 draws it (`.box.end`): the result in the card's serif in the
+   winning side's colour, the survivors' chips, and for a seated human whether they won. It is
+   the house's printed paper (owner, 2026-10-15), so the sides' colours are their inks. */
+.title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4.8px 19.2px;
+}
+/* the winning side's felt pennant, the height of the result's line, hung before it */
+.pennant {
+  align-self: center;
+  width: calc(22.4px * 1.6 * var(--legible-ui) * 1.25);
+  height: calc(22.4px * 1.6 * var(--legible-ui) * 1.25);
+  margin-right: -9.6px;
+}
+.result {
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  font-weight: 400;
+  font-size: calc(22.4px * 1.6 * var(--legible-ui));
+  line-height: 1.1;
+  color: var(--c, var(--paper-ink, #2a1d11));
+}
+.you {
+  font-size: calc(22.4px * var(--legible-ui));
+  font-weight: 400;
+  color: var(--paper-ink, #2a1d11);
+}
+.you b {
+  font-weight: 600;
+  color: #8a4b0e;
+}
+.lost b {
+  color: var(--paper-soft, #6b5638);
+}
+.winners {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9.6px;
+  margin: 4.8px 0 3.2px;
+  font-size: var(--meta);
+  line-height: 1.4;
+  color: var(--paper-soft, #6b5638);
+}
+.chip {
+  width: calc(var(--chip) * 0.9);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  line-height: 0;
+  flex: 0 0 auto;
+}
+.acts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  padding-left: 16px;
+}
+.acts button,
+.acts a {
+  font: inherit;
+  text-decoration: none;
+  font-size: var(--meta);
+  line-height: 1.5;
+  color: var(--bone);
+  background: rgba(14, 9, 6, 0.85);
+  border: 1px solid var(--cloak2);
+  border-radius: 9.6px;
+  padding: calc(7.2px * var(--legible-ui)) calc(14.4px * var(--legible-ui));
+  cursor: pointer;
+  white-space: nowrap;
+}
+/* The way to the replay: until it is filed, a quiet plaque that cannot be pressed ("Winding
+   the reels…") in the link's place. Both lie in one cell and the plaque stays, unseen, once the
+   link is in, so the link comes in where it stood and nothing moves (2026-10-01). */
+.toReplay {
+  display: grid;
+  align-items: center;
+  justify-items: end;
+}
+.toReplay > * {
+  grid-area: 1 / 1;
+}
+.winding {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1.6px;
+  font-size: var(--meta);
+  line-height: 1.35;
+  text-align: right;
+  color: var(--bone2);
+  background: rgba(14, 9, 6, 0.45);
+  border: 1px dashed var(--cloak2);
+  border-radius: 9.6px;
+  padding: calc(7.2px * var(--legible-ui)) calc(14.4px * var(--legible-ui));
+  cursor: default;
+  white-space: nowrap;
+  visibility: hidden;
+}
+.winding[data-winding] {
+  visibility: visible;
+}
+.sub {
+  font-size: var(--meta);
+  line-height: 1.4;
+  color: var(--paper-soft, #6b5638);
+}
+
+.c-villagers {
+  --c: var(--town-ink);
+}
+.c-wolves {
+  --c: var(--wolf-ink);
+}
+.c-serial_killer {
+  --c: var(--sk-ink);
+}
+.c-neutral_benign {
+  --c: var(--benign-ink);
+}

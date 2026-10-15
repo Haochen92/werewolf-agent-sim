@@ -1,0 +1,12 @@
+{
+  "eval_set_id": "hallucination_bench_v2",
+  "output": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+  "overwrite": false,
+  "extend": {
+    "from_dataset": "evaluation/frozen_eval_sets/hallucination_bench_v1.jsonl",
+    "add": "evaluation/eval_results/hallucination_bench/candidates_live_46355b89.jsonl",
+    "slice": "pinned"
+  },
+  "scope": "shared",
+  "notes": "v1 plus four pinned cases from live game 46355b89 (2026-10-03, discussion_evidence.md §6.4): a wolf citing its private failed attack as public record, two day-4 misreadings of the vote record, and the healer's vote turn calling a true statement a lie."
+}

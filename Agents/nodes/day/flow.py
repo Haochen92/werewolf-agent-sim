@@ -1,11 +1,16 @@
-"""Day-phase control flow: scheduling speakers, fanning out votes, summarizing the day.
+"""Day-phase control flow: the rounds, scheduling speakers, fanning out votes, summarizing.
 
-Discussion is sequential — route_speaker is the scheduler hop that picks the next
-speaker (or ends discussion) and the graph self-loops back through day_scheduler.
-Voting is concurrent — fan_out_vote dispatches every survivor's vote node at once.
+A day opens with a round (every survivor's opening at once: start_opening / fan_out_round /
+collect_round), then on voting days the discussion — route_speaker is the scheduler hop that
+fires the next speaker and the graph self-loops back through day_scheduler: whoever owes an
+answer first, then the sweep gives the floor to the players who have not spoken, one at a time
+(Agents/turn/scheduler.py) — then, when anyone has two accusers, the closing round
+(start_closing), then the summary and the concurrent vote (fan_out_vote). Day 1 is the opening
+and the summary only. route_after_discussion holds the day's branching after the discussion.
 The per-role actor nodes these dispatch to (via Send) live in day/actors.py.
 """
 
+from collections.abc import Iterable
 from logging import getLogger as _getLogger
 from typing import Literal
 
@@ -15,9 +20,12 @@ from langgraph.graph import END
 from langgraph.runtime import Runtime
 from langgraph.types import Send
 
-from Agents.game_config import game_config_from_runnable
-from Agents.schemas import DaySummary, FiringReason
-from Agents.schemas.roles import cast_role_counts
+from Agents.game_config import GameConfig, game_config_from_runnable
+from Agents.schemas import DayChannel, DayRound, DaySummary, FiringReason, RoundCandidate
+from Agents.rules.closing import closing_announcement, closing_speakers
+from Agents.rules.night_record import own_night_actions
+from Agents.rules.seats import seat_order
+from Agents.schemas.roles import ROLE_SPECS, WOLVES, cast_role_counts, side_of
 from Agents.state import (
     DayGraphState,
 )
@@ -26,7 +34,10 @@ from Agents.schemas import DaySummaryCase
 
 from Agents.nodes.day.summary_agent import run_day_summary_agent
 from Agents.observability import day_summary_span_name, freeze_case
-from Agents.turn.scheduler import cycle_seed, select_next_speaker
+from Agents.turn.action_space import valid_targets_for_action
+from Agents.turn.human_turn import announce_human_turn
+from Agents.turn.round_filter import filter_openings
+from Agents.turn.scheduler import select_next_speaker
 
 from Agents.tracing import (
     GraphContext,
@@ -42,14 +53,16 @@ def day_scheduler(state: DayGraphState):
     return {}
 
 
-def route_speaker(state: DayGraphState, config: RunnableConfig) -> Send | Literal["SUMMARIZE_DAY_DISCUSSION"]:
-    """The scheduler hop: pick the next speaker from the day so far, or end discussion.
+def route_speaker(
+    state: DayGraphState, config: RunnableConfig
+) -> Send | Literal["START_CLOSING", "SUMMARIZE_DAY_DISCUSSION"]:
+    """The scheduler hop: the next speaker speaks, or the discussion is over.
 
-    Recomputes from day_channel (the scheduler is stateless), applies a lighter
-    one-round cap on pre-voting days, seeds the speaker choice deterministically
-    (game_id, day, utterances-so-far) and delegates ranking to select_next_speaker.
-    Returns SUMMARIZE_DAY_DISCUSSION on terminate, else a Send to the chosen
-    speaker's role node.
+    Recomputes from day_channel (the scheduler is stateless) and delegates to
+    select_next_speaker: the player who owes an answer, else the sweep's next silent player.
+    When neither is left (or the cap is reached) route_after_discussion decides what the day
+    does next. Only voting days reach this hop: day 1 is the opening round alone
+    (route_after_round).
     """
     game_config = game_config_from_runnable(config)
     current_day = state.get("current_day", 1)
@@ -59,18 +72,10 @@ def route_speaker(state: DayGraphState, config: RunnableConfig) -> Send | Litera
         if m.day == current_day and m.player != "game_master"
     ]
 
-    # Pre-voting days get a lighter cap (~one round = N); regular days use the config cap.
-    num_survivors = len(surviving_players)
-    cap = num_survivors if current_day < game_config.first_voting_day else game_config.utterance_cap(num_survivors)
-    game_id = (config.get("configurable", {}) if config else {}).get("game_id", "")
-    seed = cycle_seed(game_id, current_day, len(current_day_discussion))
-
     route_decision = select_next_speaker(
         day_channel=current_day_discussion,
         surviving_players=surviving_players,
         game_config=game_config,
-        seed=seed,
-        utterance_cap=cap,
     )
 
     seq = len(current_day_discussion)
@@ -78,12 +83,12 @@ def route_speaker(state: DayGraphState, config: RunnableConfig) -> Send | Litera
         logger.info(
             "[schedule] day=%d seq=%d terminate=%s", current_day, seq, route_decision.terminate_reason,
         )
-        return "SUMMARIZE_DAY_DISCUSSION"
+        return route_after_discussion(state, config, route_decision.terminate_reason == "cap")
 
     fr = route_decision.firing_reason
     logger.info(
-        "[schedule] day=%d seq=%d tier=%s speaker=%s owes=%s",
-        current_day, seq, fr.tier, route_decision.speaker, fr.owes,
+        "[schedule] day=%d seq=%d tier=%s sweep=%d speaker=%s owes=%s",
+        current_day, seq, fr.tier, fr.sweep, route_decision.speaker, fr.owes,
     )
     role = state["roles"][route_decision.speaker]
     # turn_started for the "X is thinking" UI. Emitted from the edge, not the node: resume
@@ -94,15 +99,57 @@ def route_speaker(state: DayGraphState, config: RunnableConfig) -> Send | Litera
         )
     except RuntimeError:  # direct call outside a graph run (tests)
         pass
-    return build_speaker_send(state, route_decision.speaker, role, fr, game_config.opener_floor)
+    return build_speaker_send(state, route_decision.speaker, role, fr)
 
+
+def route_after_discussion(
+    state: DayGraphState, config: RunnableConfig, capped: bool
+) -> Literal["START_CLOSING", "SUMMARIZE_DAY_DISCUSSION"]:
+    """What the day does once the discussion is over (nobody owes an answer and the sweeps are
+    done, or the cap was reached and drained): the closing defence when anyone has two
+    accusers, else the summary. ``capped`` is kept for the trace; both ends lead here."""
+    current_day = state["current_day"]
+    surviving_players = state["surviving_villagers"] + state["surviving_wolves"]
+    accused = closing_speakers(state.get("day_channel", []), current_day, surviving_players)
+    if accused:
+        return "START_CLOSING"
+    return "SUMMARIZE_DAY_DISCUSSION"
 
 
 def _initial_wolf_count(state: DayGraphState) -> int:
     """How many wolves the game was CAST with (from the true role map). Used only to fill the wolf
     day cell's deterministic `ally_revealed` — a scalar count, so no wolf identity rides the payload
     (the leak-boundary invariant is about names, not the count the wolf already knows)."""
-    return sum(1 for r in state.get("roles", {}).values() if r == "wolf")
+    return sum(1 for r in state.get("roles", {}).values() if r in ROLE_SPECS and side_of(r) == WOLVES)
+
+
+def _private_fields(state: DayGraphState, player: str, role: str) -> dict:
+    """The private fields of one player's day payload, by role: the leak boundary. The pack's
+    rosters and chat go to a wolf; every night actor gets its own record; a limited ability its
+    uses left; the neutrals their pick or score."""
+    spec = ROLE_SPECS[role]
+    fields: dict = {}
+    if spec.pack:
+        fields["surviving_wolves"] = state["surviving_wolves"]
+        fields["surviving_villagers"] = state["surviving_villagers"]
+        # Wolves carry their own night coordination + GM notes into day discuss/vote (their own
+        # information; gated to wolves only — see check_wolf_channel_isolation).
+        fields["wolf_channel"] = state.get("wolf_channel", [])
+        # Deterministic ally_revealed fill (situation_agent): how many wolves were cast, so a live
+        # query can compute "a partner is gone" from surviving_wolves without trusting the LLM.
+        fields["initial_wolf_count"] = _initial_wolf_count(state)
+    if spec.night_action:
+        # The speaker's own night record only (and the pack's kills, for a wolf).
+        fields["night_actions"] = own_night_actions(state.get("night_actions", []), player, role)
+    if spec.uses is not None:
+        fields["uses_left"] = state.get("uses_left", {}).get(role, 0)
+    if role == "vigilante":
+        fields["vigilante_bullets"] = state.get("uses_left", {}).get(role, 0)
+    if role == "speculator":
+        fields["speculator_pick"] = state.get("speculator_pick") or "not yet"
+    if role == "fortune_teller":
+        fields["fortune_points"] = state.get("fortune_points", 0)
+    return fields
 
 
 def build_speaker_send(
@@ -110,7 +157,8 @@ def build_speaker_send(
     speaker_id: str,
     role: str,
     firing_reason: FiringReason,
-    opener_floor: int = 0,
+    *,
+    voting_available: bool = True,
 ) -> Send:
     """Dispatch the discuss node for one speaker with a common payload + role-gated private fields.
 
@@ -121,7 +169,7 @@ def build_speaker_send(
     one template edit away from leaking (tests/leak_test.py guards this invariant).
     This replaces the old per-role fan-out branching.
     """
-    surviving_players = state["surviving_villagers"] + state["surviving_wolves"]
+    surviving_players = seat_order(state["surviving_villagers"] + state["surviving_wolves"])
     payload = {
         "human_player": speaker_id in state["human_players"],
         "day_channel": state["day_channel"],
@@ -132,59 +180,42 @@ def build_speaker_send(
         # Public fixed-cast census (counts only, no identities) — feeds the alive-roles line
         # (cast minus revealed deaths). Same no-leak rationale as dead_roster.
         "cast_role_counts": cast_role_counts(state.get("roles", {})),
+        "lineup": state.get("lineup", []),
         "surviving_players": surviving_players,
         "player_id": speaker_id,
         "player_role": role,
         "current_day": state["current_day"],
-        "current_round": 0,  # vestigial until Stage 5 removes round-based prompts
-        "opener_floor": opener_floor,  # day's first N real utterances bypass the novelty gate
+        "voting_available": voting_available,
+        # A sweep turn is the open floor (the prompt's rules block and the human's ask follow
+        # day_round); a reactive turn is the discussion. The opening and closing rounds are
+        # fanned out by fan_out_day (Phase 2).
+        "day_round": "proactive" if firing_reason.tier == "proactive" else "discussion",
         "previous_strategy": state.get("agent_strategies", {}).get(speaker_id, ""),
         "strategy_points": "",
         "firing_reason": firing_reason,
     }
-    if role == "wolf":
-        payload["surviving_wolves"] = state["surviving_wolves"]
-        payload["surviving_villagers"] = state["surviving_villagers"]
-        # Wolves carry their own night coordination + GM whiff notes into day discuss/vote (their own
-        # information; gated to wolves only — see check_wolf_channel_isolation).
-        payload["wolf_channel"] = state.get("wolf_channel", [])
-        # Deterministic ally_revealed fill (situation_agent): how many wolves were cast, so a live
-        # query can compute "a partner is gone" from surviving_wolves without trusting the LLM.
-        payload["initial_wolf_count"] = _initial_wolf_count(state)
-    elif role == "investigator":
-        payload["investigator_results"] = state.get("investigator_results", [])
-    elif role == "vigilante":
-        payload["vigilante_results"] = state.get("vigilante_results", [])
-        # Deterministic bullets_left fill (situation_agent): the vigilante day cell carries
-        # bullets_left, but VillagerDayState otherwise drops the counter — thread it explicitly.
-        payload["vigilante_bullets"] = state.get("vigilante_bullets", 0)
+    payload.update(_private_fields(state, speaker_id, role))
     return Send("discuss", payload)
-
-
-# Roles with day discuss/vote nodes registered in the day graph.
-_DAY_ACTING_ROLES = {
-    "villager",
-    "wolf",
-    "healer",
-    "investigator",
-    "serial_killer",
-    "vigilante",
-}
 
 
 def fan_out_day(
     state: DayGraphState,
-    phase: Literal["discuss", "vote"],
+    phase: Literal["discuss", "vote", "round_turn"],
     allow_abstain: bool = False,
+    day_round: DayRound = "discussion",
+    players: Iterable[str] | None = None,
 ):
     """Build a concurrent Send to the generic {phase} node for every surviving acting player.
 
-    The shared fan-out used for voting (discussion now goes one speaker at a time
-    via route_speaker). Same role-gated private-field rule as build_speaker_send:
-    wolf roster / investigator / vigilante results attach only to their own role.
+    The shared fan-out used for voting and for the opening and closing rounds (discussion
+    goes one speaker at a time via route_speaker). ``players`` narrows the fan-out to a
+    subset of the survivors (the closing round's accused); None means everyone. Same
+    role-gated private-field rule as build_speaker_send: wolf roster / investigator /
+    vigilante results attach only to their own role.
     """
     concurrent_nodes = []
-    surviving_players = state["surviving_villagers"] + state["surviving_wolves"]
+    surviving_players = seat_order(state["surviving_villagers"] + state["surviving_wolves"])
+    chosen = None if players is None else set(players)
     strategies = state.get("agent_strategies", {})
 
     def base_payload(player: str, role: str, is_human: bool) -> dict:
@@ -196,35 +227,27 @@ def fan_out_day(
             "dead_roster": state.get("dead_roster", []),
             # Public fixed-cast census feeding the alive-roles line (see build_speaker_send).
             "cast_role_counts": cast_role_counts(state.get("roles", {})),
+            "lineup": state.get("lineup", []),
             "surviving_players": surviving_players,
             "player_id": player,
             "player_role": role,
-            "current_round": state["current_round"],
             "current_day": state["current_day"],
             "previous_strategy": strategies.get(player, ""),
             "strategy_points": "",
             "allow_abstain": allow_abstain,
+            # Which round of the day this turn belongs to (opening / closing here); the prompt
+            # picks its rules block by it. Votes carry it too, unused.
+            "day_round": day_round,
         }
 
     for player in surviving_players:
         role = state["roles"][player]
         is_human = player in state["human_players"]
-        if role not in _DAY_ACTING_ROLES:
+        if chosen is not None and player not in chosen:
             continue
 
         payload = base_payload(player, role, is_human)
-        if role == "wolf":
-            payload["surviving_wolves"] = state["surviving_wolves"]
-            payload["surviving_villagers"] = state["surviving_villagers"]
-            # Wolves carry their own night coordination + GM whiff notes into the vote too
-            # (gated to wolves only — see check_wolf_channel_isolation).
-            payload["wolf_channel"] = state.get("wolf_channel", [])
-            payload["initial_wolf_count"] = _initial_wolf_count(state)
-        elif role == "investigator":
-            payload["investigator_results"] = state["investigator_results"]
-        elif role == "vigilante":
-            payload["vigilante_results"] = state.get("vigilante_results", [])
-            payload["vigilante_bullets"] = state.get("vigilante_bullets", 0)
+        payload.update(_private_fields(state, player, role))
 
         # Humans go to the UNCACHED twin node: a human resume aborts and re-runs this
         # superstep, and the cached LLM nodes then replay their results instead of
@@ -236,13 +259,158 @@ def fan_out_day(
 
 def fan_out_vote(state: DayGraphState, config: RunnableConfig):
     """Router from START_VOTING: fan every survivor out to their vote node. Abstain is
-    offered only while abstain is enabled and the no-lynch streak is under the force cap."""
+    offered only while abstain is enabled and the no-lynch streak is under the force cap.
+    A human's vote is announced here, so their ballot opens as the agents start voting
+    rather than after the step ends (2026-10-06; see announce_human_turn)."""
     game_config = game_config_from_runnable(config)
     allow_abstain = (
         game_config.abstain_enabled
         and state.get("no_lynch_streak", 0) < game_config.no_lynch_force_after
     )
-    return fan_out_day(state, "vote", allow_abstain)
+    sends = fan_out_day(state, "vote", allow_abstain)
+    for send in sends:
+        if send.node == "vote_human":
+            announce_human_turn(send.arg["player_id"], send.arg["player_role"], "day_votes",
+                                send.arg["current_day"],
+                                valid_targets_for_action(send.arg, "day_votes"))
+    return sends
+
+
+# ---- The opening and closing rounds (Phase 2, discussion_evidence.md §7.2) -------------------
+#
+# A round sends several players their turn at once, on the vote's pattern: an entry node, a
+# fan-out edge to the per-seat turn node (round_turn, with an uncached twin for a human), and a
+# collecting node. The turns return their lines as round_candidates; collect_round orders and
+# numbers them into day_channel, because parallel turns each count the same seq from the
+# transcript they were given.
+
+
+def _todays_entry_count(state: DayGraphState) -> int:
+    """How many entries today's transcript already has: the next entry's seq."""
+    current_day = state["current_day"]
+    return sum(1 for entry in state.get("day_channel", []) if entry.day == current_day)
+
+
+def start_opening(state: DayGraphState):
+    """Entry node of the opening round: every living player gets a turn at once, their lines
+    played in seat order."""
+    surviving_players = state["surviving_villagers"] + state["surviving_wolves"]
+    players = seat_order(surviving_players)
+    return {"day_round": "opening", "round_players": players}
+
+
+def start_closing(state: DayGraphState, config: RunnableConfig):
+    """Entry node of the closing defence: the moderator names who is on trial and who is
+    pressing, from the accusation tags alone (no model call), so the accused, the summary and
+    the replay all see the same line. route_speaker only routes here when someone qualifies."""
+    current_day = state["current_day"]
+    surviving_players = state["surviving_villagers"] + state["surviving_wolves"]
+    accused = closing_speakers(state.get("day_channel", []), current_day, surviving_players)
+    if not accused:
+        raise RuntimeError("start_closing ran with nobody accused by two players")
+
+    announcement = DayChannel(
+        day=current_day,
+        seq=_todays_entry_count(state),
+        player="game_master",
+        message=closing_announcement(accused),
+        day_round="closing",
+    )
+    players = []
+    for trial in accused:
+        players.append(trial.player)
+    return {"day_round": "closing", "day_channel": [announcement], "round_players": players}
+
+
+def fan_out_round(state: DayGraphState, config: RunnableConfig):
+    """Router out of start_opening / start_closing: one round turn per player in the round, as
+    the entry node listed them in round_players. A human's turn is announced here so the seat's
+    prompt opens as the round starts (see announce_human_turn)."""
+    day_round = state["day_round"]
+    players = state["round_players"]
+    sends = fan_out_day(state, "round_turn", day_round=day_round, players=players)
+    for send in sends:
+        if send.node == "round_turn_human":
+            announce_human_turn(send.arg["player_id"], send.arg["player_role"], "day_channel",
+                                send.arg["current_day"],
+                                valid_targets_for_action(send.arg, "day_channel"),
+                                day_round=day_round)
+    return sends
+
+
+def _round_order(state: DayGraphState) -> list[str]:
+    """The order a round's lines are played in: the order the entry node listed the round's
+    players (seat order for the opening, since nobody saw anyone else's line; the accused as
+    they were called, most accused first, for the closing)."""
+    return list(state["round_players"])
+
+
+def collect_round(state: DayGraphState, config: RunnableConfig):
+    """Barrier node after the round's turns: order the round's lines, run the opening's filter
+    (humans exempt), number them, and write them into day_channel in sequence."""
+    current_day = state["current_day"]
+    day_round = state["day_round"]
+
+    # Only this round's candidates: round_candidates accumulates all day, so the opening's are
+    # still in it when the closing is collected.
+    by_player: dict[str, DayChannel] = {}
+    notes: dict[str, str] = {}
+    for candidate in state.get("round_candidates", []):
+        same_round = candidate.day == current_day and candidate.day_round == day_round
+        if same_round:
+            by_player[candidate.entry.player] = candidate.entry
+            notes[candidate.entry.player] = candidate.strategy
+    if not by_player:
+        return {}
+
+    ordered: list[DayChannel] = []
+    for player in _round_order(state):
+        if player in by_player:
+            ordered.append(by_player.pop(player))
+    # Defensive: a candidate from a player the order did not name (should not happen) still lands.
+    for player in seat_order(by_player):
+        ordered.append(by_player[player])
+
+    if day_round == "opening":
+        ordered = _filter_keeping_humans(ordered, state, filter_openings)
+
+    first_seq = _todays_entry_count(state)
+    numbered: list[DayChannel] = []
+    for offset, entry in enumerate(ordered):
+        numbered.append(entry.model_copy(update={"seq": first_seq + offset}))
+    update: dict = {"day_channel": numbered}
+    # A round turn's note waits on its candidate (actors.round_turn); it is kept only for a line the
+    # filter let through.
+    kept = {e.player: notes[e.player] for e in ordered if not e.gated and notes.get(e.player)}
+    if kept:
+        update["agent_strategies"] = kept
+    return update
+
+
+def _filter_keeping_humans(ordered: list[DayChannel], state: DayGraphState, round_filter) -> list[DayChannel]:
+    """A round filter over the round's lines, with a human's line never held: the judge sees
+    every line, but a verdict against a human's own line is undone."""
+    filtered = round_filter(ordered)
+    humans = set(state.get("human_players", []))
+    restored: list[DayChannel] = []
+    for before, after in zip(ordered, filtered):
+        if before.player in humans and after.passed and not before.passed:
+            restored.append(before)
+        else:
+            restored.append(after)
+    return restored
+
+
+def route_after_round(
+    state: DayGraphState, config: RunnableConfig
+) -> Literal["SCHEDULE", "SUMMARIZE_DAY_DISCUSSION"]:
+    """Router after a round is collected. An opening on a voting day hands over to the
+    scheduler for the discussion; an opening on day 1 (no vote, no discussion) and a closing
+    (nobody replies) go straight to the summary."""
+    game_config = game_config_from_runnable(config)
+    if state["day_round"] == "opening" and state["current_day"] >= game_config.first_voting_day:
+        return "SCHEDULE"
+    return "SUMMARIZE_DAY_DISCUSSION"
 
 
 def summarize_day_discussion(
@@ -290,6 +458,11 @@ def summarize_day_discussion(
     ) as summary_span:
         summary, model_used, structured = run_day_summary_agent(
             current_day, current_day_messages, max_retries,
+            day_summaries=state.get("day_summaries", []),
+            dead_roster=state.get("dead_roster", []),
+            cast_role_counts=cast_role_counts(state.get("roles", {})),
+            lineup=state.get("lineup", []),
+            earlier_messages=[m for m in state.get("day_channel", []) if m.day < current_day],
         )
 
         day_summary_case = DaySummaryCase(
@@ -341,7 +514,5 @@ def start_voting(state: DayGraphState):
 def collect_votes(state: DayGraphState):
     """No-op barrier node where the fanned-out vote nodes rejoin before day resolution."""
     return {}
-
-
 
 

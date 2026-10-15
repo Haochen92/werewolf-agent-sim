@@ -1,0 +1,154 @@
+/* The replay's transport band, as bench 73 draws it (`.transport`, `.seek`), in stage units:
+   the buttons 46.4 × 40 (2.9cqw × 2.5cqw), 9.6 off the foot, the seek bar 6.4 tall on the
+   cloak with the amber fill. The caption, the chapter marks and the speed toggle are ours
+   (beat sheet §11, "As built"); the X-ray's switch is the top strip's Reveal. */
+.band {
+  position: absolute;
+  bottom: 0;
+  /* a page that shows the band on its own (the guide) caps its length */
+  max-width: var(--band-max, none);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 12.8px;
+  padding-bottom: 9.6px;
+  padding-top: 9.6px;
+  box-sizing: border-box;
+  /* the band's height is the stage's geometry; its controls grow with the labels
+     (--legible-ui): taller buttons sit on the band's foot and rise into the gap under the
+     speech box, never into it */
+  --k: var(--legible-ui);
+  font-size: calc(var(--meta) * 0.9);
+  line-height: 1.2;
+  color: var(--bone);
+  /* the band itself never catches a click meant for the stage; its controls do */
+  pointer-events: none !important;
+}
+.band > * {
+  pointer-events: auto;
+}
+
+.buttons {
+  display: flex;
+  gap: 6.4px;
+  flex: 0 0 auto;
+  align-self: flex-end;
+}
+.buttons button,
+.speed {
+  appearance: none;
+  font: inherit;
+  color: var(--bone);
+  background: rgba(14, 9, 6, 0.92);
+  border: 1px solid var(--cloak2);
+  cursor: pointer;
+}
+.buttons button {
+  width: calc(46.4px * var(--k));
+  height: calc(40px * var(--k));
+  border-radius: 11.2px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+.buttons svg {
+  width: calc(16px * var(--k));
+  height: calc(16px * var(--k));
+  fill: currentColor;
+}
+.buttons button[aria-pressed='true'] {
+  color: var(--amber);
+  border-color: var(--amber);
+}
+.buttons button:hover,
+.speed:hover {
+  border-color: var(--bone3);
+}
+.band button:focus-visible {
+  outline: 2px solid var(--film-ink);
+  outline-offset: 2px;
+}
+/* on a phone (Stage.tsx `data-small`) the stage is drawn at under half size and a button would
+   be about 25 css px, under a thumb's 44: the band's controls grow until a button is 44 css px
+   tall (40 units × k = 44px / scale), rising into the gap under the speech box as the band's
+   geometry allows; the icons and the speed toggle grow with them */
+[data-small] .band {
+  --k: max(var(--legible-ui), calc(1.1 / max(var(--stage-scale), 0.01)));
+}
+
+/* where we are: the beat's name over the bar */
+.where {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4.8px;
+}
+.caption {
+  display: flex;
+  gap: 12.8px;
+  align-items: baseline;
+  text-shadow: 0 1px 3px #000;
+}
+.label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* the click target is taller than the bar it draws */
+.seek {
+  height: 17.6px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.track {
+  position: relative;
+  width: 100%;
+  height: 6.4px;
+  border-radius: 4.8px;
+  background: var(--cloak1);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+}
+.track i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--amber);
+  border-radius: 4.8px;
+}
+/* a chapter's mark: a tick across the bar */
+.track b {
+  position: absolute;
+  top: -3.2px;
+  width: 3.2px;
+  height: 12.8px;
+  margin-left: -1.6px;
+  border-radius: 1.6px;
+  background: var(--bone3);
+}
+.track b.passed {
+  background: var(--bone);
+}
+
+/* the speed: one toggle that says what it plays at; Fast in bone, as a pressed tab */
+.speed {
+  flex: 0 0 auto;
+  align-self: flex-end;
+  height: calc(40px * var(--k));
+  /* wide enough for either word, so the band does not shift when it flips */
+  min-width: calc(5.4em + 22.4px * var(--k));
+  padding: 0 calc(11.2px * var(--k));
+  border-radius: 11.2px;
+  color: var(--bone2);
+  white-space: nowrap;
+}
+.speed[data-speed='fast'] {
+  background: var(--bone);
+  border-color: var(--bone);
+  color: var(--ink);
+}

@@ -4,6 +4,8 @@ the legacy v5 fallbacks for any (role, phase) without a v6 cell."""
 
 from langchain_core.prompts import ChatPromptTemplate
 
+from Agents.prompts.layout import PUBLIC_RECORD, SHARED_SYSTEM
+
 
 SITUATION_ROLE_LENS = {
     "wolf": "Also note: which other player is most dangerous to leave alive — whether a strong villager or the serial killer as a rival faction competing for the win — and whether the pressure on your team could be redirected.",
@@ -139,7 +141,7 @@ Current day: {current_day}
 
 Surviving players: {surviving_players}
 Your private investigation results:
-{investigator_results}
+{night_actions}
 
 Previous days summary:
 {day_summaries}
@@ -228,8 +230,10 @@ Today's public discussion:
 # + a v6 dimensional suffix mirroring the extraction dims. The per-cell situation schema is bound by
 # the caller (with_structured_output), so the model fills only the fields its cell has. Describes board
 # STATE only (Rule 2). Single prompt for all roles/phases; the schema does the tailoring.
-V6_SITUATION_SUMMARY_SUFFIX = """
-{epistemic_status_rule}
+# Laid out for the prompt cache in the shared-prefix layout (Agents/prompts/layout.py): the seats' system
+# message and public record first, so a lookup shares its prefix with every seat turn of the game; the
+# rest of the game state, the private part and these instructions after the boundary.
+V6_SITUATION_SUMMARY_INSTRUCTIONS = """{epistemic_status_rule}
 
 Describe 1-2 distinct situations you are currently facing using the structured fields. Each is used as
 a semantic-search query to retrieve relevant past lessons, so describe GAME DYNAMICS, not just who said
@@ -238,14 +242,10 @@ conflict is one situation.
 
 {driver_horizon}
 
-{known_board_facts}
-
 RULES (describe board STATE, never prescription): every field is what is TRUE right now in your own
 epistemic voice — no plans or recommendations. State exact criticality numbers and phrase
-criticality_stakes as their implication, derived from them (use the KNOWN BOARD FACTS above verbatim
-where given — do not estimate a number you have been handed). For the direction enums
-(consensus_direction, divergence_sign), judge only from what you know/have expressed NOW (never
-hindsight); use no_clear_direction if there is no clear consensus.
+criticality_stakes as their implication, derived from them (use the KNOWN BOARD FACTS given with the
+game state verbatim where given — do not estimate a number you have been handed).
 
 {situation_quality}
 
@@ -255,31 +255,29 @@ how to fill them well):
 """
 
 
-V6_SITUATION_SUMMARY = ChatPromptTemplate.from_messages(
-    [
-        (
-            "human",
-            """You are an AI agent playing Werewolf.
-Your role: {player_role}
+_V6_SITUATION_STATE = """
+The game as it stands.
+
 Current day: {current_day}
 
 Surviving players: {surviving_players}
 
-Previous days summary:
-{day_summaries}
-
-Today's public discussion:
-{day_channel}
+Dead so far (public):
+{dead_roster}
 
 Your private information (only what your role knows):
-Investigation results: {investigator_results}
+{private_state}
+Night record: {night_actions}
 Wolf channel: {wolf_channel}
-Vigilante results: {vigilante_results}
 
 Your current strategy note:
 {previous_strategy}
+
+{known_board_facts}
+
 """
-            + V6_SITUATION_SUMMARY_SUFFIX,
-        )
-    ]
-)
+
+V6_SITUATION_SUMMARY = ChatPromptTemplate.from_messages([
+    ("system", SHARED_SYSTEM),
+    ("human", PUBLIC_RECORD + _V6_SITUATION_STATE + V6_SITUATION_SUMMARY_INSTRUCTIONS),
+])

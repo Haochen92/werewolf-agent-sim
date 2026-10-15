@@ -118,12 +118,12 @@ def test_legacy_positional_memory_config_still_works(monkeypatch):
 
     with pytest.warns(DeprecationWarning, match="pass RunConfig"):
         main.run_game(
-            {"wolf": True, "villager": False},
+            {"chanteuse": True, "healer": False},
             session_id="legacy-positional",
         )
 
     configurable = captured["runnable_config"]["configurable"]
-    assert configurable["memory_config"] == {"wolf": True, "villager": False}
+    assert configurable["memory_config"] == {"chanteuse": True, "healer": False}
     assert configurable["session_id"] == "legacy-positional"
 
 

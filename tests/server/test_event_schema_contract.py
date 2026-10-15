@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from server.app import _frame
+from server.routes.games import _frame
 from server.schemas import events as ev
 from tests.factories.events import durable_event_types, event_factory
 

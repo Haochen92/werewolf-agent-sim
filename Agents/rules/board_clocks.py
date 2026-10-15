@@ -10,6 +10,11 @@ countdown clock — eliminations until that faction's win condition is met:
   other survivor left. Absent while no SK is alive.
 - town clock = wolves + SK — town wins when both threat factions are gone.
 
+"SK" is the lone killer's seat (the serial killer or the necromancer) and "wolves" every role on the
+wolves' side, read from the role registry; "town" is everyone else, the neutral included (it is
+never a member of a side but counts as a body in both evil win conditions). A nine-seat census
+(wolf, villager) reads the same way: its retired roles are still in the registry.
+
 Every clock is read by all three factions at once (zero-sum: one faction's win clock is the
 others' danger clock). ``distance_to_parity`` = min of the two EVIL clocks — "the leading
 remaining evil faction", the model-facing field definition; ``is_swing`` = min of ALL THREE
@@ -26,13 +31,26 @@ the true role map: the two must agree wherever the census exists.
 """
 
 from collections.abc import Iterable, Mapping
+from itertools import product
 
-THREAT_ROLE_NAMES = ("wolf", "serial_killer")
+from Agents.schemas.roles import LONE_KILLER, ROLE_SPECS, WOLVES
+
+
+def _threat_side(role: str) -> str | None:
+    """The threat side a role counts on (wolves or the lone killer); None for town, the neutral,
+    or a role the registry does not know."""
+    spec = ROLE_SPECS.get(role)
+    return spec.side if spec is not None and spec.side in (WOLVES, LONE_KILLER) else None
 
 
 def _role_of(death) -> str | None:
     """A DeathRecord's revealed role, tolerant of dict-shaped records (replayed/JSON payloads)."""
     return death.get("role") if isinstance(death, Mapping) else getattr(death, "role", None)
+
+
+def _is_concealed(death) -> bool:
+    """Whether the illusionist concealed this body (its role is not public until game end)."""
+    return bool(death.get("concealed") if isinstance(death, Mapping) else getattr(death, "concealed", False))
 
 
 def alive_role_counts(
@@ -69,10 +87,25 @@ def criticality_from_census(
     back to the LLM's own fill."""
     if not cast_role_counts:
         return None
-    remaining = alive_role_counts(cast_role_counts, dead_roster or [])
-    wolves = max(0, remaining.get("wolf", 0))
-    sk = max(0, remaining.get("serial_killer", 0))
-    town = sum(
-        max(0, count) for role, count in remaining.items() if role not in THREAT_ROLE_NAMES
-    )
-    return criticality_from_counts(wolves, sk, town)
+    dead_roster = list(dead_roster or [])
+    remaining = alive_role_counts(cast_role_counts, dead_roster)
+    by_side = {WOLVES: 0, LONE_KILLER: 0, None: 0}
+    for role, count in remaining.items():
+        by_side[_threat_side(role)] += max(0, count)
+    hidden = sum(1 for death in dead_roster if _is_concealed(death))
+    if not hidden:
+        return criticality_from_counts(by_side[WOLVES], by_side[LONE_KILLER], by_side[None])
+    # A concealed body subtracts nothing above, and its side is not public: it may have come off any
+    # side the census still shows. Take every way the hidden bodies could be spread over the sides and
+    # report the one most dangerous to town: the nearest evil win, and a swing if any spread is one.
+    # The living count is exact either way.
+    readings = []
+    for sides in product((WOLVES, LONE_KILLER, None), repeat=hidden):
+        counts = dict(by_side)
+        for side in sides:
+            counts[side] -= 1
+        if min(counts.values()) >= 0:
+            readings.append(criticality_from_counts(counts[WOLVES], counts[LONE_KILLER], counts[None]))
+    if not readings:  # an inconsistent roster: fall back to the census as it stands
+        return criticality_from_counts(by_side[WOLVES], by_side[LONE_KILLER], by_side[None])
+    return readings[0][0], min(r[1] for r in readings), any(r[2] for r in readings)

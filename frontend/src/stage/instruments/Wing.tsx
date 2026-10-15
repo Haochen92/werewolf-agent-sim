@@ -1,0 +1,757 @@
+'use client';
+
+/**
+ * The seat rail (the wing): every seat down the left edge as a card, so the whole table is
+ * always in view while one seat has the stand. HUD pass 2 (owner, 2026-09-29, "B on photo
+ * stock"): each card is printed as the same head-portrait photo the night rooms pin up, so a
+ * player is the same object by day and by night, and the cards are tacked in two columns to a
+ * cork board in a walnut frame with a brass edge. How many rows comes from the number of seats
+ * (`railLayout`), never from nine.
+ *
+ * A card the player may write on has faint ruled lines on its foot, their note's first words on
+ * them, never under 11 css px: on a phone the words give way to a pencil scribble.
+ *
+ * One card stock for every state. The seat on the stand is edged in brass; a dead seat is the
+ * same photo gone grey with its role on an ink band (deaths reveal the role on the wire, so
+ * everyone may see it) and a black mourning ribbon across the photo's corner; your own seat wears an amber "You" band; with the X-ray on, a living
+ * seat wears its faction's band and a sigil badge, the truth only the observer tier holds.
+ * With the X-ray on at a beat where nobody speaks, a card opens that seat's case file, and says
+ * so with a steady verdigris edge and a small keyhole badge (the Reveal switch's) on its corner
+ * (no breathing: nine cards pulsing would be noise). Only the replay's night stop breathes: the
+ * seats that acted glow until their room has been visited, then keep a steady mark.
+ * Lit and dimmed are light only, never a move or a resize. A card that opens the speaker's read
+ * breathes a slow glow while it can be tapped, and flashes once when that read is new or changed
+ * since the speaker's previous reads (opacity only, still for reduced motion).
+ *
+ * The notebook: a seated player (live) can tap any other seat's card to write a note on it and
+ * guess its role (only roles that could still be alive, with how many are left; the guess
+ * shows as a small pencilled sigil on the card). The notes stay on this device (notebook.ts),
+ * reaching the server only with a speech draft sent with "Use my seat notes" ticked. In a
+ * replay, and for an observer, the cards are only shown.
+ * The open editor is the container's (`edit`, 2026-10-01): the wing is remounted with every turn
+ * and scene, and the editor with it, open on the same seat, the focus and the caret where they
+ * were. It closes on Done, Escape or a tap outside, or when its seat dies or can no longer be
+ * written on; the focus goes back to the card that opened it if that card is still there.
+ *
+ * Its width: `width` inside the world, and on a screen wider than 16:9 it grows out into the
+ * bleed (the stage's `--spare`) up to the layout's `reach`, so a phone's letterbox holds most of
+ * a wider rail and the room keeps its place.
+ */
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type RefObject,
+} from 'react';
+import { SPRITES, type Character } from '@/assets/manifest';
+import { ChipSprite } from '../cast/ChipSprite';
+import {
+  editorStays,
+  guessChoices,
+  useNotebook,
+  type NoteEdit,
+  type Notebook,
+} from '../notebook';
+import { ROLE_NAME, factionOf, type KnownRole } from '../roles';
+import { RAIL_GAP, RAIL_PAD, railLayout } from './rail-layout';
+import { FactionMark } from './FactionMark';
+import { Sigil } from './Sigil';
+import styles from './Wing.module.css';
+
+/** The role names too wide for a desk card's band at full size: they take a step smaller. */
+const LONG_BAND = new Set(['Necromancer', 'Fortune teller']);
+
+export interface WingTileProps {
+  /** The numeral. */
+  seat: number;
+  /** The seat's player; none for a place nobody has taken yet (the platform). */
+  character?: Character;
+  /** Dead: the photo goes grey and carries this role on an ink band. */
+  dead?: { role: string | null };
+  /** The role this viewer is entitled to see on a living seat (the X-ray's truth). */
+  truth?: string | null;
+  /** On the stand now. */
+  lit?: boolean;
+  /** Dimmed: out of the scene's focus (the losers at the end, say). */
+  dim?: boolean;
+  /** This viewer's own seat. */
+  you?: boolean;
+  /** A packmate, as a wolf sees it: the red edge. */
+  pack?: boolean;
+  /**
+   * What this seat already knows of that one from its own view (`knownRoles`): the band in
+   * brass, "Your pack" or "Seen · Wolf", with the role's sigil. A dead seat's role, "You" and
+   * the X-ray's truth take the band first.
+   */
+  known?: KnownRole;
+  /** The X-ray night's lamp: this seat acts tonight. */
+  lamp?: boolean;
+  /**
+   * The replay's night stop: `acted`, this seat acted tonight and its room is a tap away (a
+   * breathing verdigris glow); `visited`, its room has been seen (a steady, quieter mark).
+   */
+  glow?: 'acted' | 'visited';
+  /**
+   * The replay's night (owner, 2026-09-30): the word on the cream between the photo and the band
+   * that says what a tap does, "Visit ▸" (an actor's room is a tap away) or "Seen" (visited).
+   */
+  word?: 'visit' | 'seen';
+  /**
+   * The X-ray's read on this seat by the seat at the stand: a verdigris edge, brighter for a sure
+   * read. `onRead` makes the card a button that opens the read card (handing over the card, so
+   * the read can sit level with it); `open` while its card is out. `fresh`: the read is new or
+   * changed since the speaker's previous reads, and the card flashes once (a new key, a new
+   * flash).
+   */
+  read?: {
+    sure: boolean;
+    open?: boolean;
+    onRead?: (tile: HTMLElement) => void;
+    fresh?: string | null;
+  };
+  /**
+   * With the X-ray on, at a beat with no speaker: a tap opens this seat's case file (at the
+   * night hub, an actor's card jumps to its night instead). A thin steady verdigris edge says
+   * so; `label` names what the tap does.
+   */
+  file?: { onTap: () => void; label: string };
+}
+
+/**
+ * Where the focus was in the open editor (which control, and the caret in the paper), kept
+ * outside the wing: the wing, and the editor with it, is remounted with every turn and scene,
+ * and the editor that comes back puts the focus where it was (`at` null: it had left the
+ * editor). Cleared when the editor closes, or opens on a seat afresh.
+ */
+type EditorAt = 'paper' | 'guess' | 'list' | 'done';
+let carried: { seat: number; at: EditorAt | null; start: number; end: number } | null =
+  null;
+
+export function Wing({
+  width,
+  tiles,
+  notes = null,
+  castCounts,
+  edit,
+  pinned,
+}: {
+  width: number;
+  /** The seats, in order. */
+  tiles: readonly WingTileProps[];
+  /** The game whose notebook the seated player keeps here; null: the cards are only shown. */
+  notes?: string | null;
+  /** The cast's role counts (`view.castRoleCounts`): what the notebook's role guess offers. */
+  castCounts?: Readonly<Record<string, number>>;
+  /**
+   * The open editor, held by the container so it outlives this wing (`SlotInput.notebook`);
+   * without it the wing holds it itself, until it is remounted.
+   */
+  edit?: { editing: NoteEdit | null; onEdit: (edit: NoteEdit | null) => void };
+  /**
+   * The seat whose notes stay open beside the rail, inline (the guide's demo, owner 2026-10-14):
+   * no scrim, the focus left where it is, nothing that closes them; a tap on the card goes to
+   * the paper.
+   */
+  pinned?: number;
+}) {
+  const book = useNotebook(notes);
+  const [own, setOwn] = useState<NoteEdit | null>(null);
+  const paper = useRef<HTMLTextAreaElement | null>(null);
+  const pin = pinned !== undefined ? tiles.find((t) => t.seat === pinned) : undefined;
+  const pinSeat = pin?.seat;
+  const pinDead = !!pin?.dead;
+  const editing = useMemo(
+    () =>
+      pinSeat !== undefined ? { seat: pinSeat, dead: pinDead } : edit ? edit.editing : own,
+    [pinSeat, pinDead, edit, own],
+  );
+  const setEditing = useMemo(
+    () => (pinSeat !== undefined ? () => {} : edit ? edit.onEdit : setOwn),
+    [pinSeat, edit],
+  );
+  const opener = useRef<HTMLElement | null>(null);
+  const bySeat = new Map(tiles.map((t) => [t.seat, t]));
+  const editable = (t: WingTileProps) =>
+    !!book && !!t.character && !t.you && !t.read && !t.file;
+  const edited = editing ? bySeat.get(editing.seat) : undefined;
+  // the seat died, or can no longer be written on, since its notes were opened: they close
+  const stays = editorStays(editing, edited, !!edited && editable(edited));
+  useEffect(() => {
+    if (editing && !stays) {
+      carried = null;
+      setEditing(null);
+    }
+  }, [editing, stays, setEditing]);
+  if (width <= 0) return null;
+  const L = railLayout(tiles.length);
+  const rail = {
+    '--wing': `${width}px`,
+    '--reach-max': `${L.reach}px`,
+    gridTemplateColumns: `repeat(${L.cols}, minmax(0, 1fr))`,
+    gridTemplateRows: `repeat(${L.rows}, minmax(0, 1fr))`,
+    '--rail-pad': `${RAIL_PAD}px`,
+    '--rail-gap': `${RAIL_GAP}px`,
+    '--board': `url(${SPRITES.textures.walnut.src})`,
+    '--cork': `url(${SPRITES.textures.cork.src})`,
+  } as CSSProperties;
+  const open = (seat: number, el: HTMLElement) => {
+    if (pin) {
+      paper.current?.focus();
+      return;
+    }
+    opener.current = el;
+    carried = null;
+    book?.dismissHint();
+    setEditing({ seat, dead: !!bySeat.get(seat)?.dead });
+  };
+  const close = () => {
+    carried = null;
+    setEditing(null);
+    // the card that opened it, if this wing still holds it (a remounted wing does not)
+    if (opener.current?.isConnected) opener.current.focus();
+  };
+  const hint = !pin && !!book && !book.hinted && tiles.some(editable);
+  return (
+    <>
+      <div className={styles.bleed} style={rail} aria-hidden="true" />
+      <div
+        className={styles.wing}
+        style={rail}
+        data-cols={L.cols}
+        role="group"
+        aria-label="The seats"
+      >
+        {tiles.map((t) => (
+          <WingTile
+            key={t.seat}
+            {...t}
+            note={book?.notes[t.seat]}
+            guess={t.dead ? undefined : book?.guesses[t.seat]}
+            onOpen={editable(t) ? (el) => open(t.seat, el) : undefined}
+          />
+        ))}
+      </div>
+      {hint ? (
+        <p className={styles.hint} style={rail} aria-hidden="true">
+          Tap a card to write notes
+        </p>
+      ) : null}
+      {book && stays && edited?.character ? (
+        <NoteEditor
+          key={edited.seat}
+          seat={edited.seat}
+          character={edited.character}
+          dead={edited.dead}
+          book={book}
+          choices={guessChoices(
+            castCounts ?? {},
+            tiles.map((t) => t.dead?.role ?? null),
+          )}
+          onClose={close}
+          style={rail}
+          pinned={!!pin}
+          paperRef={paper}
+        />
+      ) : null}
+    </>
+  );
+}
+
+interface CardProps extends WingTileProps {
+  /** The seated player's note on this seat. */
+  note?: string;
+  /** The role the player thinks this seat holds: a small pencilled sigil on the photo. */
+  guess?: string;
+  /** Tapping the card opens its note editor (a seated player, another seat). */
+  onOpen?: (card: HTMLElement) => void;
+}
+
+function WingTile({
+  seat,
+  character,
+  dead,
+  truth,
+  lit,
+  dim,
+  you,
+  pack,
+  known,
+  lamp,
+  glow,
+  word,
+  read,
+  file,
+  note,
+  guess,
+  onOpen,
+}: CardProps) {
+  // a concealed body's role is hidden (`dead.role` null) unless this viewer holds the truth
+  const role = dead ? (dead.role ?? truth ?? null) : (truth ?? null);
+  const hidden = !!dead && !role;
+  const faction = factionOf(role);
+  const band = you
+    ? 'You'
+    : role
+      ? (ROLE_NAME[role] ?? role)
+      : hidden
+        ? 'Role hidden'
+        : null;
+  const knew = !band && known ? known : null;
+  const cls = [
+    band || knew ? styles.banded : '',
+    styles.tile,
+    faction ? styles[`c-${faction}`] : '',
+    !character ? styles.empty : '',
+    dead ? styles.dead : '',
+    lit ? styles.lit : '',
+    dim ? styles.dim : '',
+    pack ? styles.pack : '',
+    read ? styles.read : '',
+    read?.sure ? styles.sure : '',
+    read?.open ? styles.open : '',
+    file && !read ? styles.file : '',
+    glow ? styles[glow] : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const tap = read?.onRead ?? (file ? () => file.onTap() : onOpen);
+  const label = read?.onRead
+    ? `The speaker's read of seat ${seat}`
+    : file
+      ? file.label
+      : `Seat ${seat}, notes`;
+  const face = (
+    <>
+      <span className={styles.picture}>
+        {character ? <ChipSprite character={character} /> : null}
+        {truth && !dead ? (
+          <span className={styles.badge}>
+            {/* the X-ray's truth: a felt badge on paper; the guess below stays a pencilled stamp */}
+            <Sigil role={truth} variant="felt" small />
+          </span>
+        ) : null}
+        {lamp ? <span className={styles.lamp} /> : null}
+        {guess ? (
+          <span
+            className={`${styles.guess} ${styles[`c-${factionOf(guess)}`] ?? ''}`}
+            title={`You think: ${ROLE_NAME[guess] ?? guess}`}
+            data-guess={guess}
+          >
+            <Sigil role={guess} small />
+          </span>
+        ) : null}
+        {dead ? <span className={styles.ribbon} aria-hidden="true" /> : null}
+      </span>
+      <b className={styles.num}>{seat}</b>
+      <span
+        className={
+          note || (onOpen && !dead) ? `${styles.foot} ${styles.ruled}` : styles.foot
+        }
+      >
+        {note ? (
+          <>
+            <span className={styles.note}>{note}</span>
+            <Scribble />
+          </>
+        ) : null}
+        {word ? (
+          <span className={`${styles.word} ${word === 'seen' ? styles.seen : ''}`}>
+            {word === 'seen' ? 'Seen' : 'Visit ▸'}
+          </span>
+        ) : null}
+      </span>
+      {band ? (
+        <span
+          className={`${styles.band} ${you ? styles.youBand : ''}`}
+          data-hidden={hidden && !you ? true : undefined}
+          data-long={LONG_BAND.has(band) ? true : undefined}
+        >
+          {band}
+        </span>
+      ) : null}
+      {knew ? (
+        <span
+          className={`${styles.band} ${styles.knownBand} ${knew.how === 'seen' && (ROLE_NAME[knew.role] ?? knew.role).length > 6 ? styles.knownLong : ''}`}
+          data-known={knew.how}
+          title={
+            knew.how === 'pack'
+              ? 'Your pack'
+              : `Seen · ${ROLE_NAME[knew.role] ?? knew.role}`
+          }
+        >
+          {/* a pack mate's role is not on the wire: the pack's side mark, never a role's sigil */}
+          {knew.how === 'pack' ? (
+            <FactionMark faction="wolves" small />
+          ) : (
+            <Sigil role={knew.role} variant="felt" small />
+          )}
+          <span className={styles.knownWords}>
+            {knew.how === 'pack' ? (
+              'Your pack'
+            ) : (
+              <>
+                <span className={styles.knownSeen}>Seen · </span>
+                {ROLE_NAME[knew.role] ?? knew.role}
+              </>
+            )}
+          </span>
+        </span>
+      ) : null}
+      {read?.onRead ? <span className={styles.breathe} aria-hidden="true" /> : null}
+      {glow === 'acted' ? <span className={styles.glow} aria-hidden="true" /> : null}
+      {/* a card that opens a file wears the Reveal switch's keyhole; an actor's opens its room */}
+      {file && !read && !word && glow !== 'acted' ? <Keyhole /> : null}
+      {read?.onRead && read.fresh ? (
+        <span key={read.fresh} className={styles.flash} aria-hidden="true" />
+      ) : null}
+      {character ? <span className={styles.tack} aria-hidden="true" /> : null}
+    </>
+  );
+  if (!tap)
+    return (
+      <div className={cls} data-seat={seat} data-glow={glow} data-word={word}>
+        {face}
+      </div>
+    );
+  return (
+    <button
+      type="button"
+      className={`${cls} ${styles.tap}`}
+      data-seat={seat}
+      data-glow={glow}
+      data-word={word}
+      aria-label={label}
+      aria-expanded={read?.onRead ? !!read.open : undefined}
+      aria-haspopup={read?.onRead || file ? undefined : 'dialog'}
+      onClick={(e) => tap(e.currentTarget)}
+    >
+      {face}
+    </button>
+  );
+}
+
+/** The Reveal switch's keyhole, lit in verdigris on a small walnut disc: this card opens a file. */
+function Keyhole() {
+  return (
+    <span className={styles.keyhole} aria-hidden="true">
+      <svg viewBox="0 0 16 16">
+        <path d="M8 3.6a2.3 2.3 0 0 0-1.2 4.3L6 12.4h4l-.8-4.5A2.3 2.3 0 0 0 8 3.6Z" />
+      </svg>
+    </span>
+  );
+}
+
+/**
+ * "I think they are…": the roles a living seat could still hold, as the table knows it (the
+ * cast less the roles the dead have shown), with how many are left, and "not sure". A guess
+ * kept from before its role ran out stays listed, marked so.
+ *
+ * A walnut plaque showing the guess, which opens a small panel over the notebook: a row per
+ * choice, the role's felt sigil, its name and how many are left (owner, 2026-09-30: the native
+ * select looked foreign to the stage). The panel is a listbox: the arrows move, Enter picks,
+ * Escape closes it and keeps the notebook open. Its rows keep 38 css px on a phone.
+ */
+function GuessSelect({
+  id,
+  seat,
+  guess,
+  choices,
+  onGuess,
+}: {
+  id: string;
+  seat: number;
+  guess: string | null;
+  choices: readonly { role: string; left: number }[];
+  onGuess: (role: string | null) => void;
+}) {
+  const stale = guess && !choices.some((c) => c.role === guess);
+  const rows: { role: string | null; left: number }[] = [
+    { role: null, left: 0 },
+    ...choices,
+    ...(stale ? [{ role: guess, left: 0 }] : []),
+  ];
+  const chosen = Math.max(
+    0,
+    rows.findIndex((r) => r.role === guess),
+  );
+  // reopened as it was when the wing was remounted under it
+  const [open, setOpen] = useState(() => carried?.seat === seat && carried.at === 'list');
+  const [active, setActive] = useState(chosen);
+  const button = useRef<HTMLButtonElement>(null);
+  const list = useRef<HTMLUListElement>(null);
+  useEffect(() => {
+    if (open) list.current?.focus();
+  }, [open]);
+  const show = () => {
+    setActive(chosen);
+    setOpen(true);
+  };
+  const close = () => {
+    setOpen(false);
+    button.current?.focus();
+  };
+  const pick = (i: number) => {
+    onGuess(rows[i].role);
+    close();
+  };
+  const onButtonKey = (e: ReactKeyboardEvent) => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      show();
+    }
+  };
+  const onListKey = (e: ReactKeyboardEvent) => {
+    const to = (i: number) => {
+      e.preventDefault();
+      setActive(Math.min(rows.length - 1, Math.max(0, i)));
+    };
+    if (e.key === 'ArrowDown') to(active + 1);
+    else if (e.key === 'ArrowUp') to(active - 1);
+    else if (e.key === 'Home') to(0);
+    else if (e.key === 'End') to(rows.length - 1);
+    else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      pick(active);
+    } else if (e.key === 'Escape') {
+      // the notebook stays open: only the panel closes
+      e.stopPropagation();
+      close();
+    } else if (e.key === 'Tab') setOpen(false);
+  };
+  const name = (role: string | null) => (role ? (ROLE_NAME[role] ?? role) : 'not sure');
+  const current = rows[chosen];
+  return (
+    <div className={styles.guessRow}>
+      <span id={`${id}-l`}>I think they are…</span>
+      <button
+        ref={button}
+        type="button"
+        id={id}
+        className={styles.guessButton}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={open ? `${id}-list` : undefined}
+        aria-labelledby={`${id}-l ${id}`}
+        data-seat-guess={seat}
+        data-at="guess"
+        onClick={() => (open ? close() : show())}
+        onKeyDown={onButtonKey}
+      >
+        {current.role ? <Sigil role={current.role} variant="felt" small /> : null}
+        <span className={current.role ? styles.guessName : styles.guessUnsure}>
+          {name(current.role)}
+        </span>
+        <svg className={styles.caret} viewBox="0 0 12 12" aria-hidden="true">
+          <path d="M2.5 4.5 6 8l3.5-3.5" />
+        </svg>
+      </button>
+      {open ? (
+        <ul
+          ref={list}
+          id={`${id}-list`}
+          className={styles.guessList}
+          role="listbox"
+          data-at="list"
+          tabIndex={-1}
+          aria-labelledby={`${id}-l`}
+          aria-activedescendant={`${id}-o${active}`}
+          onKeyDown={onListKey}
+          onBlur={(e) => {
+            // a tap outside the panel closes it (a tap on the plaque toggles it on its own)
+            if (
+              !e.currentTarget.contains(e.relatedTarget) &&
+              e.relatedTarget !== button.current
+            )
+              setOpen(false);
+          }}
+        >
+          {rows.map((r, i) => (
+            <li
+              key={r.role ?? ''}
+              id={`${id}-o${i}`}
+              role="option"
+              aria-selected={r.role === guess || (!r.role && !guess)}
+              data-active={i === active || undefined}
+              data-role={r.role ?? 'unsure'}
+              className={styles.guessOption}
+              // a pointer that moves over a row lights it (the panel opening under a still
+              // pointer does not, so the keys keep their place)
+              onPointerMove={(e) => (e.movementX || e.movementY) && setActive(i)}
+              onClick={() => pick(i)}
+            >
+              <span className={styles.guessSigil}>
+                {r.role ? <Sigil role={r.role} variant="felt" small /> : null}
+              </span>
+              <span className={r.role ? styles.guessName : styles.guessUnsure}>
+                {name(r.role)}
+              </span>
+              {r.role ? (
+                <span className={styles.guessLeft}>
+                  {r.left ? `${r.left} left` : 'none left'}
+                </span>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
+/** A note too small to read here (a phone): two short pencil strokes; a tap reads it. */
+function Scribble() {
+  return (
+    <svg className={styles.scribble} viewBox="0 0 40 16" aria-hidden="true">
+      <path d="M2 5 C7 1.5 11 7.5 16 4 S26 2 31 5 S36 4.5 38 3.5" />
+      <path d="M2 12 C6 9 10 14 15 11 S22 9.5 27 11.5" />
+    </svg>
+  );
+}
+
+/**
+ * The note editor for one seat: its head, number and whether it lives; a ruled writing area;
+ * the role guess (not for the dead); Done. Escape, Done or a tap outside closes it; what is
+ * written is kept as it is typed.
+ */
+function NoteEditor({
+  seat,
+  character,
+  dead,
+  book,
+  choices,
+  onClose,
+  style,
+  pinned = false,
+  paperRef,
+}: {
+  seat: number;
+  character: Character;
+  dead?: { role: string | null };
+  book: Notebook;
+  /** The roles a living seat could still hold, with how many are left. */
+  choices: readonly { role: string; left: number }[];
+  onClose: () => void;
+  style: CSSProperties;
+  /** Open for good, inline (`Wing`'s `pinned`): no scrim, no focus taken, no Done. */
+  pinned?: boolean;
+  /** Handed the writing area, for a tap on the pinned seat's card. */
+  paperRef?: RefObject<HTMLTextAreaElement | null>;
+}) {
+  const id = useId();
+  const area = useRef<HTMLTextAreaElement>(null);
+  const board = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const el = area.current;
+    if (paperRef) paperRef.current = el;
+    // pinned, it is there from the page's first paint: the focus stays where the reader has it
+    if (!el || pinned) return;
+    // the wing was remounted under an open editor: the focus goes back where it was (the
+    // listbox refocuses itself); opened afresh, it goes to the end of the note
+    const back = carried?.seat === seat ? carried : null;
+    if (!back || back.at === 'paper') {
+      el.focus();
+      const end = el.value.length;
+      el.setSelectionRange(
+        Math.min(back?.start ?? end, end),
+        Math.min(back?.end ?? end, end),
+      );
+      carried = { seat, at: 'paper', start: el.selectionStart, end: el.selectionEnd };
+    } else if (back.at !== 'list' && back.at)
+      board.current?.querySelector<HTMLElement>(`[data-at="${back.at}"]`)?.focus();
+  }, [seat, pinned, paperRef]);
+  // where the focus is, and the caret, for the editor that comes back after a remount
+  const keep = (at: EditorAt | null) => {
+    const el = area.current;
+    carried = {
+      seat,
+      at,
+      start: el?.selectionStart ?? 0,
+      end: el?.selectionEnd ?? 0,
+    };
+  };
+  const onKey = (e: ReactKeyboardEvent) => {
+    if (e.key === 'Escape' && !pinned) {
+      e.stopPropagation();
+      onClose();
+    }
+  };
+  const status = dead
+    ? `Dead · ${dead.role ? (ROLE_NAME[dead.role] ?? dead.role) : 'role hidden'}`
+    : 'Alive';
+  return (
+    <>
+      {pinned ? null : (
+        <div className={styles.scrim} onClick={onClose} aria-hidden="true" />
+      )}
+      <div
+        ref={board}
+        className={styles.editor}
+        style={style}
+        role={pinned ? 'group' : 'dialog'}
+        aria-modal={pinned ? undefined : true}
+        aria-labelledby={`${id}-h`}
+        onKeyDown={onKey}
+        onFocus={(e) =>
+          keep(
+            ((e.target as HTMLElement).closest('[data-at]')?.getAttribute('data-at') ??
+              null) as EditorAt | null,
+          )
+        }
+        onBlur={(e) => {
+          // the focus left the editor (not a remount, which takes the editor with it)
+          if (e.currentTarget.isConnected && !e.currentTarget.contains(e.relatedTarget))
+            keep(null);
+        }}
+      >
+        <div className={styles.editorHead}>
+          <span className={`${styles.editorFace} ${dead ? styles.dead : ''}`}>
+            <ChipSprite character={character} />
+          </span>
+          <span className={styles.editorWho}>
+            <strong id={`${id}-h`}>Seat {seat}</strong>
+            <small>{status}</small>
+          </span>
+        </div>
+        <label className={styles.srOnly} htmlFor={`${id}-t`}>
+          Your notes on seat {seat}
+        </label>
+        <textarea
+          id={`${id}-t`}
+          ref={area}
+          data-at="paper"
+          className={styles.paper}
+          value={book.notes[seat] ?? ''}
+          placeholder="What have they said? Who did they vote for?"
+          onChange={(e) => {
+            book.setNote(seat, e.target.value);
+            keep('paper');
+          }}
+          onSelect={() => keep('paper')}
+          rows={4}
+          maxLength={600}
+        />
+        {!dead ? (
+          <GuessSelect
+            id={`${id}-g`}
+            seat={seat}
+            guess={book.guesses[seat] ?? null}
+            choices={choices}
+            onGuess={(role) => book.setGuess(seat, role)}
+          />
+        ) : null}
+        {pinned ? null : (
+          <div className={styles.editorFoot}>
+            <button type="button" className={styles.done} data-at="done" onClick={onClose}>
+              Done
+            </button>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}

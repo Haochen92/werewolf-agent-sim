@@ -13,6 +13,8 @@ Design constraints (read/tactic design record §3):
   every scanned cell is a denominator entry by construction.
 - Deterministic post-screens are STRUCTURAL only (role words, player ids, quote-not-in-record) — the
   semantic-eval-≠-string-parse rule; flagged rows never feed lift (tell_credit drops them).
+
+Reads nine-seat records; the prompts' rules block renders only for a ten-seat lineup (``_game_rules``).
 """
 
 from __future__ import annotations
@@ -95,7 +97,7 @@ def _strip_vote_blocks(day_text: str) -> str:
     return "\n".join(
         line for line in day_text.splitlines()
         if not (line.startswith("Votes: ") or "vote result for day" in line
-                or (line.startswith("  ") and " voted for " in line))
+                or (line.startswith("  ") and (" voted for " in line or " voted to " in line)))
     )
 
 
@@ -134,16 +136,26 @@ def screen_tell(tell: dict, day_text: str) -> list[str]:
     return flags
 
 
+def _game_rules(rec: dict) -> str:
+    """The rules block of the record's dealt lineup. The loop's records are nine-seat, whose rules
+    block is retired: a record of a retired role raises ValueError (the day-call's failure path)."""
+    from Agents.prompts import rules_block
+    from Agents.schemas.roles import ROLE_SPECS
+
+    cast = rec.get("lineup") or list(rec["roles"].values())
+    if any(role not in ROLE_SPECS or ROLE_SPECS[role].retired for role in cast):
+        raise ValueError(f"{rec.get('game_id', '')}: a nine-seat record has no rules block to render")
+    return rules_block(cast)
+
+
 def _mine_day(llm, prompt_template: str, rec: dict, day: int, days: list[int], version: str,
               channel: str) -> list[dict]:
-    from Agents.prompts.common import GAME_RULES
-
     roles_line = ", ".join(f"{p} = {r}" for p, r in sorted(rec["roles"].items()))
     prior = "\n\n".join(_render_day(rec, d) for d in days if d < day) or "(game start)"
     # discussion-layer call excludes the focus day's vote block: temporally the vote hasn't happened
     day_text = _render_day(rec, day, include_votes=(channel != "discussion"))
     prompt = prompt_template.format(
-        game_rules=GAME_RULES, roles_line=roles_line,
+        game_rules=_game_rules(rec), roles_line=roles_line,
         prior_days=prior, focus_day=day, day_record=day_text,
     )
     result = llm.invoke(prompt)
@@ -213,7 +225,7 @@ class PlayerDetections(BaseModel):
 
 
 def _make_llm(cached_content: str | None = None, thinking: str = "low"):
-    from Agents.llm_factory.backends import create_chat_model
+    from Agents.llm_factory.chat import create_chat_model
 
     kwargs = {"cached_content": cached_content} if cached_content else {}
     return (create_chat_model(DETECTOR_MODEL, temperature=0.0,
@@ -225,7 +237,8 @@ def _create_prefix_cache(prefix: str) -> str | None:
     """Best-effort Vertex context cache for one (game, channel, view) prefix — the 9 per-player calls
     share a byte-identical rules+transcript+checklist prefix (the standing CACHED config, golden-parity
     verified 2026-07-13). Any failure returns None and the call falls back to uncached."""
-    from Agents.llm_factory.backends import _use_vertex, create_chat_model
+    from Agents.llm_factory.chat import create_chat_model
+    from Agents.llm_factory.providers.google import _use_vertex
 
     if not _use_vertex() or len(prefix) / 4 < CACHE_MIN_TOKENS * 1.1:
         return None
@@ -246,15 +259,13 @@ def _render_checklist(items: list[dict]) -> str:
 
 def _build_prompt_parts(template: str, rec: dict, channel: str, checklist: dict,
                         split_view: bool) -> tuple[str, str]:
-    from Agents.prompts.common import GAME_RULES
-
     days = _game_days(rec)
     if split_view and channel == "discussion":
         transcript = "\n\n".join(_strip_vote_blocks(_render_day(rec, d)) for d in days)
     else:
         transcript = "\n\n".join(_render_day(rec, d) for d in days)
     prefix_tpl, tail_tpl = template.split("FOCUS PLAYER:", 1)
-    prefix = prefix_tpl.format(game_rules=GAME_RULES, transcript=transcript,
+    prefix = prefix_tpl.format(game_rules=_game_rules(rec), transcript=transcript,
                                channel=channel.upper(),
                                checklist=_render_checklist(checklist[channel]))
     return prefix, "FOCUS PLAYER:" + tail_tpl
@@ -288,7 +299,7 @@ def _detect_pass(games: list[dict], checklist: dict, version: str, split_view: b
     """One detector pass over (game × player × channel). Returns (rows, scanned denominators)."""
     from concurrent.futures import ThreadPoolExecutor, as_completed
 
-    from Agents.llm_factory.backends import create_chat_model
+    from Agents.llm_factory.chat import create_chat_model
 
     template = (PROMPTS_DIR / f"{version}.txt").read_text()
     valid_ids = {ch: {t["tell_id"] for t in checklist[ch]} for ch in checklist}

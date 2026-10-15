@@ -1,4 +1,78 @@
 services:
+  # ══════════════════════════════════════════════════════════════════════
+  # The app — wolf.liuhaochen.com
+  #
+  # Same shape as dota2pred: each service joins BOTH a private network and the
+  # external shared-caddy-network, and Caddy addresses them by container name.
+  # Caddy's site block routes /api/* to wolf-server (path prefix stripped) and
+  # everything else to wolf-frontend, which is what makes the app same-origin —
+  # a hard requirement, not a preference: the seat cookie is HttpOnly and
+  # SameSite=Lax. Production also sets SEAT_COOKIE_PATH_PREFIX=/api so its Path
+  # matches the browser-visible URL even though Caddy strips /api upstream.
+  #
+  # The replay archive lives in the pre-existing standalone `ww-postgres`
+  # container, which is deliberately NOT redefined here — it holds live data
+  # (archive + memory store) and must never be recreated by a compose up. It is
+  # attached to this network out-of-band instead:
+  #     docker network connect werewolf ww-postgres
+  # ══════════════════════════════════════════════════════════════════════
+
+  wolf-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wolf-server
+    restart: unless-stopped
+    env_file: ./.env.production
+    volumes:
+      # Vertex ADC, read-only. The engine's embeddings factory initialises eagerly at
+      # import, so the server cannot start without credentials even on the replay-only
+      # path. Mounted rather than baked in — a credential never belongs in an image.
+      # The container user is uid 1001, which is the host `ubuntu` uid that owns this
+      # file, so the 0600 permissions carry over unchanged and nothing is loosened.
+      - ~/.config/gcloud/application_default_credentials.json:/home/werewolf/.config/gcloud/application_default_credentials.json:ro
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks:
+      - werewolf
+      - shared-caddy-network
+      # The compose default network, where the Langfuse stack lives: lets the server
+      # reach it as http://langfuse-web:3000 for tracing. The other two stay as they were.
+      - default
+
+  wolf-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Baked into the client bundle at build time — same-origin behind Caddy.
+        NEXT_PUBLIC_API_BASE_URL: /api
+    container_name: wolf-frontend
+    restart: unless-stopped
+    depends_on:
+      wolf-server:
+        condition: service_healthy
+    healthcheck:
+      # 127.0.0.1, NOT localhost: Next's standalone server binds IPv4 only, while
+      # `localhost` resolves to ::1 first inside this image — so the check failed with
+      # "connection refused" against a container that was serving perfectly.
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - werewolf
+      - shared-caddy-network
+
+  # ══════════════════════════════════════════════════════════════════════
+  # Observability (Langfuse) — pre-existing, untouched by the app services
+  # ══════════════════════════════════════════════════════════════════════
+
   langfuse-worker:
     image: docker.io/langfuse/langfuse-worker:3
     restart: unless-stopped
@@ -157,6 +231,14 @@ services:
       timeout: 5s
       retries: 5
       start_period: 1s
+
+networks:
+  werewolf:
+    name: werewolf
+    driver: bridge
+  shared-caddy-network:
+    # Created and owned by ~/projects/caddy — this project only joins it.
+    external: true
 
 volumes:
   langfuse_postgres_data:

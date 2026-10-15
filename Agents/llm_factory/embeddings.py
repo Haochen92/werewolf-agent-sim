@@ -16,8 +16,9 @@ import time
 from typing import Any, Callable
 
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 
-from .backends import _DEFAULT_VERTEX_LOCATION, _use_vertex
+from .providers.google import _DEFAULT_VERTEX_LOCATION, _use_vertex
 
 logger = logging.getLogger(__name__)
 
@@ -31,14 +32,57 @@ logger = logging.getLogger(__name__)
 # (percentile-remapped: retrieval dedup_gate + tell PREFILTER_THRESHOLD; clustering 0.70 binds on
 # neither scale). Canary re-pinned same day — the legitimate re-pin case (intentional model change,
 # cold-start run so no store rebuild owed).
-DEFAULT_EMBEDDING_MODEL = "gemini-embedding-2"
+# A model id with a slash (``qwen/qwen3-embedding-8b``) is served through OpenRouter; anything else
+# is a Gemini model. Selected by MEMORY_EMBEDDING_MODEL: a store, its cache and the thresholds below
+# all belong to one model.
+DEFAULT_EMBEDDING_MODEL = os.getenv("MEMORY_EMBEDDING_MODEL", "qwen/qwen3-embedding-8b")
 DEFAULT_EMBEDDING_DIMS = 1536
+
+# OpenRouter routes a model to several hosts, and their vectors for one text differ slightly (Qwen3
+# on Nebius vs DeepInfra: cosine ~0.998), so a store's vectors are pinned to these hosts in order and
+# never fall back elsewhere (SiliconFlow serves Qwen3 in fp8).
+OPENROUTER_EMBEDDING_PROVIDERS = ["Nebius", "DeepInfra"]
+
+# Cosine thresholds by embedding model: each model has its own similarity scale, so a threshold is
+# only meaningful for the model it was set on. A new model's values are percentile-remapped from the
+# old model's over the same text pairs (evidence/memory_system/v8, embedder migration).
+SIMILARITY_THRESHOLDS: dict[str, dict[str, float]] = {
+    "gemini-embedding-2": {
+        "dedup_candidate": 0.55,        # online dedup: a store hit worth an LLM look (situation)
+        "obs_content_keep": 0.935,      # online dedup prefilter: below this, keep without an LLM
+        "obs_content_discard": 0.96,    # ... at or above this, discard without an LLM
+        "sp_action_keep": 0.81,         # the same pair for strategy-point actions
+        "sp_action_discard": 0.93,
+        "batch_cluster": 0.70,          # batch dedup clustering (situation)
+        "synth_cluster": 0.65,          # synthesis clustering (situation)
+        "retrieval_dedup_gate": 0.87,   # near-duplicate filter on retrieved items (situation)
+    },
+    # 2026-10-12, from gemini-embedding-2 over within-cell pairs of the v8 seed store, and the
+    # dedup_v2 golden labels for the prefilter (zero errors; gemini-embedding-2's own values above
+    # were set on -001 and make errors on those labels). The candidate and clustering thresholds bind
+    # on almost no pair on either model; they keep their distance below each model's lowest pair.
+    "qwen/qwen3-embedding-8b": {
+        "dedup_candidate": 0.36,
+        "obs_content_keep": 0.72,
+        "obs_content_discard": 0.94,
+        "sp_action_keep": 0.61,
+        "sp_action_discard": 0.88,
+        "batch_cluster": 0.50,
+        "synth_cluster": 0.46,
+        "retrieval_dedup_gate": 0.80,   # p68 of within-cell situation pairs, as 0.87 is on Gemini
+    },
+}
+
+
+def similarity_threshold(name: str, model: str | None = None) -> float:
+    """The cosine threshold `name` on the scale of `model` (the configured embedding model)."""
+    return SIMILARITY_THRESHOLDS[model or DEFAULT_EMBEDDING_MODEL][name]
 
 _EMBED_TRANSIENT_STATUS_CODES = {408, 429, 500, 502, 503, 504}
 _EMBED_TRANSIENT_MARKERS = (
     "429", "resource_exhausted", "rate limit", "quota",
     "500", "502", "503", "504", "deadline", "unavailable",
-    "connection reset", "bad gateway", "timeout",
+    "connection reset", "bad gateway", "timeout", "timed out",
 )
 
 
@@ -47,6 +91,8 @@ def _embed_error_is_transient(exc: BaseException) -> bool:
     current: BaseException | None = exc
     while current is not None and id(current) not in seen:
         seen.add(id(current))
+        if isinstance(current, TimeoutError) or "timeout" in type(current).__name__.lower():
+            return True
         if getattr(current, "status_code", None) in _EMBED_TRANSIENT_STATUS_CODES:
             return True
         response = getattr(current, "response", None)
@@ -57,6 +103,12 @@ def _embed_error_is_transient(exc: BaseException) -> bool:
             return True
         current = current.__cause__ or current.__context__
     return False
+
+
+# The same question for a chat call: is this the provider being slow or full (a timeout, a
+# 429 or 5xx, a dropped connection) rather than the request being wrong? A game turn that
+# fails this way goes to its rescue model instead of asking the same model again.
+is_transient_provider_error = _embed_error_is_transient
 
 
 def _embed_with_retries(call: Callable[[], Any], *, op: str) -> Any:
@@ -126,12 +178,44 @@ class _RetryingGoogleGenerativeAIEmbeddings(GoogleGenerativeAIEmbeddings):
         )
 
 
+class _RetryingOpenRouterEmbeddings(OpenAIEmbeddings):
+    """An OpenRouter-served embedding model (OpenAI-compatible API) with the same transient-error
+    backoff as the Gemini one. Accepts and ignores Gemini's ``task_type``."""
+
+    def embed_documents(self, texts, *args, **kwargs):
+        kwargs.pop("task_type", None)
+        return _embed_with_retries(
+            lambda: super(_RetryingOpenRouterEmbeddings, self).embed_documents(texts, *args, **kwargs),
+            op="embed_documents",
+        )
+
+    def embed_query(self, text, *args, **kwargs):
+        kwargs.pop("task_type", None)
+        return _embed_with_retries(
+            lambda: super(_RetryingOpenRouterEmbeddings, self).embed_query(text, *args, **kwargs),
+            op="embed_query",
+        )
+
+
+def _create_openrouter_embeddings(model: str, output_dimensionality: int | None) -> OpenAIEmbeddings:
+    return _RetryingOpenRouterEmbeddings(
+        model=model, base_url="https://openrouter.ai/api/v1", api_key=os.getenv("OPENROUTER_API_KEY"),
+        dimensions=output_dimensionality,
+        # Not an OpenAI model: send raw text, not tiktoken ids.
+        check_embedding_ctx_length=False,
+        model_kwargs={"extra_body": {"provider": {"order": OPENROUTER_EMBEDDING_PROVIDERS,
+                                                  "allow_fallbacks": False}}},
+    )
+
+
 def create_embeddings(
     model: str = DEFAULT_EMBEDDING_MODEL,
     *,
     output_dimensionality: int | None = None,
-) -> GoogleGenerativeAIEmbeddings:
+) -> GoogleGenerativeAIEmbeddings | OpenAIEmbeddings:
     """Create an embeddings model (with transient-error retry) for the configured backend."""
+    if "/" in model:
+        return _create_openrouter_embeddings(model, output_dimensionality)
     kwargs: dict[str, Any] = {"model": model}
     if output_dimensionality is not None:
         kwargs["output_dimensionality"] = output_dimensionality

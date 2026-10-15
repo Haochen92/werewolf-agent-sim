@@ -1,0 +1,46 @@
+{
+  "games": 19,
+  "observations": 482,
+  "original": {
+    "intercept": -0.383,
+    "grade": 0.327,
+    "side_won": 0.741,
+    "mix": {
+      "won": {
+        "positive": 0.573,
+        "negative": 0.136,
+        "mixed": 0.108,
+        "unclear": 0.183,
+        "n": 213
+      },
+      "lost": {
+        "positive": 0.16,
+        "negative": 0.532,
+        "mixed": 0.123,
+        "unclear": 0.186,
+        "n": 269
+      }
+    }
+  },
+  "revised": {
+    "intercept": -0.129,
+    "grade": 0.29,
+    "side_won": 0.5,
+    "mix": {
+      "won": {
+        "positive": 0.535,
+        "negative": 0.094,
+        "mixed": 0.056,
+        "unclear": 0.315,
+        "n": 213
+      },
+      "lost": {
+        "positive": 0.152,
+        "negative": 0.271,
+        "mixed": 0.1,
+        "unclear": 0.476,
+        "n": 269
+      }
+    }
+  }
+}

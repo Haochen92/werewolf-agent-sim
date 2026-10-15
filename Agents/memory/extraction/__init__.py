@@ -31,7 +31,7 @@ from .augment_agent import (
     augment_game_over_targets,
     augment_namespace_for_game,
 )
-from .prefix_cache import PrefixCache, create_prefix_cache
+from Agents.llm_factory.providers.google import PrefixCache, create_prefix_cache
 
 __all__ = [
     "EXTRACTION_ROLES",

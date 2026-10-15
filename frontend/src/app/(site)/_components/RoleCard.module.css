@@ -1,0 +1,216 @@
+/* A role card (RoleCard): paper faces on a 5:7 card, sized by the card's own width (cqi), so
+   one card reads the same at the landing's 340px and the guide's narrower carousel. `--rc-ink`
+   is the card's ink, its side's dark tone. */
+
+.card {
+  --rc-ink: var(--town-ink);
+  container-type: inline-size;
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  color: var(--rc-ink);
+  cursor: pointer;
+  perspective: 1600px;
+}
+.card[data-faction='wolves'] {
+  --rc-ink: var(--wolf-ink);
+}
+.card[data-faction='serial_killer'] {
+  --rc-ink: var(--sk-ink);
+}
+.card[data-faction='neutral_benign'] {
+  --rc-ink: var(--benign-ink);
+}
+.card:focus-visible {
+  outline: none;
+}
+.card:focus-visible .face {
+  box-shadow:
+    0 0 0 2px var(--paper-dk),
+    0 0 0 4px var(--rc-ink),
+    0 0 0 8px rgba(224, 166, 58, 0.6),
+    var(--shadow);
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 6.5cqi 6.5cqi 6cqi;
+  border-radius: 4cqi;
+  background: var(--paper);
+  background-image:
+    repeating-linear-gradient(115deg, rgba(60, 40, 20, 0.05) 0 1px, transparent 1px 6px),
+    radial-gradient(ellipse at 15% 5%, rgba(255, 255, 255, 0.35), transparent 55%),
+    radial-gradient(ellipse at 85% 95%, rgba(120, 90, 50, 0.22), transparent 50%),
+    radial-gradient(circle at 70% 30%, rgba(120, 90, 50, 0.1), transparent 25%);
+  box-shadow:
+    0 0 0 2px var(--paper-dk),
+    0 0 0 4px var(--rc-ink),
+    var(--shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  backface-visibility: hidden;
+  transition: transform 0.6s cubic-bezier(0.4, 0.1, 0.2, 1) var(--turn-delay, 0ms);
+}
+.back {
+  transform: rotateY(180deg);
+}
+.card[data-turned] .front {
+  transform: rotateY(-180deg);
+}
+.card[data-turned] .back {
+  transform: rotateY(0deg);
+}
+/* a mouse tilts the card to show it turns; not once it has just been turned */
+@media (hover: hover) and (pointer: fine) {
+  .card:not([data-turned]):not([data-settled]):hover .front {
+    transform: rotateY(-16deg) translateY(-4px);
+  }
+}
+
+/* clean ink, no `#inkwobble` (the slate keeps it): its turbulence filters, ten to a card, made
+   the guide's carousel stutter in scrolling and turning on every screen (2026-10-15) */
+.frame {
+  position: absolute;
+  inset: 3cqi;
+  border: 1.5px solid var(--rc-ink);
+  border-radius: 2.6cqi;
+  opacity: 0.75;
+  pointer-events: none;
+  transform: rotate(-0.15deg);
+}
+.hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3cqi;
+  padding-bottom: 3.5cqi;
+  border-bottom: 2px solid var(--rc-ink);
+}
+.name {
+  font-family: var(--font-serif);
+  font-size: 10.6cqi;
+  line-height: 0.95;
+}
+.back .hdr {
+  align-items: baseline;
+  padding-bottom: 3cqi;
+}
+.back .name {
+  font-size: 7cqi;
+  line-height: 1;
+}
+.kind {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 4.1cqi;
+  opacity: 0.75;
+}
+.sigil {
+  flex: none;
+  width: 11cqi;
+  height: 11cqi;
+}
+.portrait {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin: 4cqi 0 2cqi;
+  container-type: size;
+}
+/* the figure's shadow on the paper, painted, not a drop-shadow filter (the same cost as the
+   wobble's); sized to the figure as drawn, its 3:4 fitted in this box */
+.portrait::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: calc(min(100cqw, 75cqh) * 0.66);
+  height: calc(min(100cqw, 75cqh) * 0.08);
+  translate: -50% 45%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(60, 40, 20, 0.34), rgba(60, 40, 20, 0));
+}
+.portrait svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.desc {
+  min-height: 2.7em;
+  padding: 0 2cqi;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 5cqi;
+  line-height: 1.35;
+  text-align: center;
+  opacity: 0.9;
+}
+.fac {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 3.5cqi;
+  padding-top: 3.5cqi;
+  border-top: 2px solid var(--rc-ink);
+  font-family: var(--font-serif);
+  font-size: 4.1cqi;
+  letter-spacing: 0.08em;
+}
+/* the side's felt badge, small (under 26px: no stitching) */
+.seal {
+  flex: none;
+  width: 6cqi;
+  height: 6cqi;
+}
+/* the rules: two parts (three for a wolf), the type as large as the words allow (--brief) */
+.brief {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 1.6cqi;
+  padding: 3cqi 0.4cqi 0.4cqi;
+  font-family: var(--font-serif);
+  font-size: var(--brief, 4.3cqi);
+  line-height: 1.3;
+}
+.para {
+  display: block;
+  padding-bottom: 2cqi;
+  border-bottom: 1px dashed color-mix(in srgb, var(--rc-ink) 35%, transparent);
+}
+.para:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+.p {
+  display: block;
+}
+.p + .p {
+  margin-top: 0.45em;
+}
+.para em {
+  display: block;
+  margin-bottom: 0.4cqi;
+  font-style: italic;
+  font-size: 0.9em;
+  letter-spacing: 0.02em;
+  opacity: 0.72;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .face {
+    transition: none;
+  }
+}

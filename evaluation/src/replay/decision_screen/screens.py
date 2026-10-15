@@ -357,7 +357,7 @@ def run_discussion_causal(
     batch_path,
     n: int = 60,
     roles: frozenset[str] = REPLAYABLE_TOWN_ROLES,
-    judge_model: str = "gemini-2.5-flash",
+    judge_model: str = "anthropic/claude-haiku-5-5",
     max_workers: int = 6,
 ) -> dict[str, Any]:
     """Discussion screen: replay each town day_discussion turn memory-off vs
@@ -736,7 +736,7 @@ def run_coherence_test(
     n: int = 40,
     min_day: int = 3,
     roles: frozenset[str] = REPLAYABLE_TOWN_ROLES,
-    judge_model: str = "gemini-2.5-flash",
+    judge_model: str = "anthropic/claude-haiku-5-5",
     max_workers: int = 6,
 ) -> dict[str, Any]:
     """Does reordering SYNCHRONIZE the vote with the reasoning? Replay each decision

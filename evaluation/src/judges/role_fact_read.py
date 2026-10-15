@@ -36,7 +36,7 @@ from evaluation.src.core.settings import REPO_ROOT
 from evaluation.src.data.sources.batch_records import load_batch_records
 from evaluation.src.judges.config import get_judge_llm
 
-DEFAULT_READ_MODEL = "gemini-3.1-flash-lite"  # narrow grounded task; --golden gates fitness
+DEFAULT_READ_MODEL = "anthropic/claude-haiku-5-5"  # narrow grounded task; --golden gates fitness
 DEFAULT_CANDIDATES = "evidence/generation_prompt/validation/hallucination_candidates.jsonl"
 DEFAULT_OUT = "evidence/generation_prompt/validation/hallucination_verdicts.jsonl"
 DEFAULT_RECORDS_GLOB = "evidence/v7_final/runs/v2_full/gen*_o*.jsonl"
@@ -90,13 +90,17 @@ First-hand knowledge: {knowledge}
 
 
 def _attacker(nr: dict, victim: str) -> str:
+    """Every attacker whose kill landed on the victim: a player can be hit by two at once (the wolves
+    and the serial killer on the same target), and naming only one made a true "killed by both"
+    read as a hallucination."""
+    hits = []
     if nr.get("wolves_target") == victim and nr.get("kill_successful"):
-        return "the wolves"
+        hits.append("the wolves")
     if nr.get("serial_killer_target") == victim and nr.get("serial_killer_kill_landed", True):
-        return "the serial killer"
+        hits.append("the serial killer")
     if nr.get("vigilante_target") == victim and nr.get("vigilante_kill_landed", True):
-        return "the vigilante"
-    return "unknown"
+        hits.append("the vigilante")
+    return " and ".join(hits) or "unknown"
 
 
 def build_fact_sheet(record: dict, cand: dict) -> dict:

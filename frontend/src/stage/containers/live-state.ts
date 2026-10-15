@@ -1,0 +1,895 @@
+/**
+ * The live game's stage, the pure half: which beat is on the stage and whether it has had its
+ * moment yet, and the seated human's open turn (what is typed, the drafts, what was sent). No
+ * timers and no network here: the live theatre runs the clock and the requests and hands the
+ * results in as actions, so a test can feed a game in one event at a time.
+ *
+ * How a beat gets on the stage (beat sheet §12, handoff §6):
+ *
+ * - History (whatever the log already held when the page connected) lands still, on the latest
+ *   beat. Nothing plays; a refresh mid-game is silent. So is what a reconnect catches up on.
+ * - Except the deal: a new game's first connection finds the deal already dealt (it happens
+ *   before the page connects), so while the history holds no turn yet it plays from the first
+ *   beat at normal speed, instead of landing on "the day begins". A page that watched its
+ *   waiting room depart plays the deal from its first beat whatever the history holds, and the
+ *   beats after it play on as a queue (2026-10-01): a solo game's agents are turns ahead by the
+ *   time the curtain is down, and this viewer has seen none of it.
+ * - News plays. Each new beat animates in and holds for its time at normal speed, then the next
+ *   one plays, however many are waiting (live-queue.ts; the backlog drained fast until
+ *   2026-10-01). The stage lags the server; that is the design.
+ * - A beat that waits for someone holds the stage until the wait is over: a prompt until it is
+ *   answered (or gone), the epilogue until its sheet is closed, the curtain for good.
+ * - A prompt with no deadline (a solo game) waits for the stage: every beat before it plays out
+ *   at its hold, and only then does the dock open (owner, 2026-10-12). A prompt on a room's clock
+ *   does not wait: its deadline runs from arrival, so when it is open further down the queue the
+ *   beat on the stage is cut short once (unless it is the deal, which then keeps its hold and
+ *   nothing is cut) and the rest play at normal speed up to it.
+ * - A pass on the stage that a run of passes swallows (the next seat passed too) gives the stage
+ *   the run's one beat, played from its start, and so does a run that grows while it is on.
+ * - What the seat lived through at its own prompt (its line to the pack) lands still when the
+ *   log's copy of it arrives, and the stage moves on: it is not played a second time.
+ * - The winners' stand waits for the roles, which arrive just after `game_over`.
+ * - The X-ray is everyone's once the game is over, but the viewer sees it only when the stage
+ *   has reached the ending (`seesXray`): the stage may still be playing the last night.
+ *
+ * The beat list is cut again every time the log grows (and when `game_over` turns the X-ray
+ * on), so the stage is carried across by which beat it was on, not by its position.
+ */
+import { isTextTurn, type TurnPayload } from '@/lib/api';
+import type { DeathRecord, GameView, MeView } from '@/game/types';
+import { NO_ACTION, noActionWord } from '@/game/turn-words';
+import type { SceneBeat } from '@/stage/beats/types';
+import type { TurnClock } from '@/stage/countdown';
+import { BY, DIED } from '@/stage/instruments/MorningRoll';
+import { ROLE_NAME, seatNumber } from '@/stage/roles';
+import { sealedLabel } from '@/stage/scenes/ShelfRoomScene';
+import type { ActMore, Presentation } from '@/stage/scenes/types';
+import { pressFile, pressTranscript, showFile, showRecord } from '@/stage/slot';
+import type { DurableGameEvent, EventOf, GameStatus, Phase } from '@/types/contracts';
+import { nextLiveStep, type LiveContext } from './live-queue';
+import { carryAcross, holdFor, still, type Cursor } from './transport';
+
+// --- the stage ----------------------------------------------------------------
+
+export interface LiveCtx extends LiveContext {
+  /** The seq of the seated human's request while it is theirs to answer, else null. */
+  openPrompt: number | null;
+  /** The requests the seat's agent answered for the seated human (`TurnState.byAgent`). */
+  byAgent?: readonly number[];
+  /** The open prompt has a deadline (a room's seat clock); a solo game's has none. */
+  onClock?: boolean;
+}
+
+export interface LiveState {
+  /** The beat list the cursor points into (the last one the theatre handed in). */
+  beats: readonly SceneBeat[];
+  /** The beat on the stage; -1 before anything is. */
+  cursor: Cursor;
+  /** How the beat on the stage was played. */
+  speed: 'normal' | 'fast';
+  /** The beat on the stage is still having its moment (its hold has not run out). */
+  holding: boolean;
+  /** Counts every step, so the theatre's timer can tell a new hold from an old one. */
+  step: number;
+  /** The prompt the stage has already hurried toward (so it is hurried once). */
+  hurried: number | null;
+  slot: Presentation['slot'];
+}
+
+/**
+ * How the history lands: still (the default), played from the deal (a new game's first
+ * connection, or a page that watched its platform depart), or not yet (the history is still
+ * arriving and holds no turn yet).
+ */
+export type Landing = 'still' | 'deal' | 'pending';
+
+export type LiveAction =
+  /** The log changed: a new beat list, and how much of the log is history. */
+  | {
+      type: 'recut';
+      beats: readonly SceneBeat[];
+      /** `events.slice(0, historyEnd)` arrived as history, not as news. */
+      historyEnd: number;
+      /** How that history lands; see `historyLanding`. Absent = still. */
+      landing?: Landing;
+      ctx: LiveCtx;
+    }
+  /** The hold of step `step` ran out. */
+  | { type: 'held'; step: number; ctx: LiveCtx }
+  /** The viewer closed the epilogue's sheet. */
+  | { type: 'dismiss'; ctx: LiveCtx }
+  | { type: 'transcript' }
+  /** The strip's File tab: the case file comes and goes; before the game's end it holds only
+   *  the Record (the X-ray is everyone's after game over: the game's end is its switch). */
+  | { type: 'file' }
+  /** A seat tapped on the stage after the game: its file comes to the pane. */
+  | { type: 'show-file'; xray: boolean }
+  /** The transcript's pointer: the case file comes to the pane on the Record, any time. */
+  | { type: 'show-record' };
+
+export function initialLiveState(slot: Presentation['slot'] = null): LiveState {
+  return {
+    beats: [],
+    cursor: still(-1),
+    speed: 'normal',
+    holding: false,
+    step: 0,
+    hurried: null,
+    slot,
+  };
+}
+
+/**
+ * How many events at the head of the log count as history: everything before the first news,
+ * or, after a reconnect, everything up to the newest seq it caught up on (`caughtUpTo`, from
+ * the store), since what was missed while away is not played either.
+ */
+export function historyEnd(
+  events: readonly DurableGameEvent[],
+  liveSeqs: ReadonlySet<number>,
+  caughtUpTo = 0,
+): number {
+  const i = events.findIndex((e) => liveSeqs.has(e.seq));
+  const firstNews = i === -1 ? events.length : i;
+  const caught = events.findIndex((e) => e.seq > caughtUpTo);
+  return Math.max(firstNews, caught === -1 ? events.length : caught);
+}
+
+/**
+ * Whether the history is only the deal (beat sheet §12, "the deal on first connection"). The
+ * history is all in once news has come after it or it reaches the seq the status reported at
+ * connect (`connectedAt`); until then, with no turn in it yet, it is too early to say.
+ *
+ * A page that watched the platform depart (`departed`) plays from the deal whatever the
+ * history holds (beat sheet §1a): the viewer saw none of it. Only what a reconnect later
+ * catches up on (past `connectedAt`) lands still, as anywhere.
+ */
+export function historyLanding(
+  events: readonly DurableGameEvent[],
+  historyEnd: number,
+  connectedAt: number,
+  departed = false,
+): Landing {
+  const history = events.slice(0, historyEnd);
+  if (departed && (history.at(-1)?.seq ?? 0) <= connectedAt) return 'deal';
+  if (history.some((e) => e.type === 'turn_started')) return 'still';
+  const allIn = historyEnd < events.length || (history.at(-1)?.seq ?? 0) >= connectedAt;
+  return allIn ? 'deal' : 'pending';
+}
+
+/**
+ * Whether the viewer sees the X-ray: the game is over (`over`, the log's `game_over`) and the
+ * stage has reached its ending, the first `over.*` beat. Until then the Reveal switch stays
+ * locked, the case file on the Record and the wing without the truth, though the log holds it:
+ * `game_over` can land while the stage is still playing the last night (2026-10-01).
+ */
+export function seesXray(state: LiveState, over: boolean): boolean {
+  if (!over) return false;
+  const ending = state.beats.findIndex((b) => b.id.startsWith('over.'));
+  return ending !== -1 && state.cursor.index >= ending;
+}
+
+// --- what went by while the viewer was away -------------------------------------
+
+/**
+ * What the page knows of how this viewer has watched the game, for `missedEvents`.
+ */
+export interface AwayOptions {
+  /** The newest seq this tab saw live before this connection (the store's `liveBefore`). */
+  liveBefore: number | null;
+  /** The viewer holds a seat. */
+  seated: boolean;
+  /** How far this tab has told it already (`awayTold`): nothing up to it is told again. */
+  told: number;
+  /** This page watched the platform depart: what followed played from the deal, not missed. */
+  departed?: boolean;
+}
+
+/**
+ * The events that went by while the viewer was away (owner, 2026-10-11): what came in as
+ * catch-up, not as news, above the newest seq this tab had seen live. A drop and its reopen, a
+ * phone asleep, a reload, the game opened again in the same tab: the stage lands still on the
+ * latest beat (the catch-up rule), and these are what the "You're back" notice tells.
+ *
+ * A tab that never saw the game live (a new tab on a game already running) is a late arrival:
+ * a seat's whole history went by without it (unless that history is only the deal, which then
+ * plays, or the page watched its platform depart, after which everything played); a spectator
+ * arriving late has missed nothing (D23 "late link"), only what a drop later costs it.
+ */
+export function missedEvents(
+  events: readonly DurableGameEvent[],
+  liveSeqs: ReadonlySet<number>,
+  o: AwayOptions,
+): DurableGameEvent[] {
+  const caught = events.filter((e) => !liveSeqs.has(e.seq));
+  let after: number;
+  // a page that watched its platform depart played what followed from the deal
+  if (o.liveBefore !== null && !o.departed) after = o.liveBefore;
+  else {
+    const firstLive = Math.min(...liveSeqs);
+    const history = caught.filter((e) => e.seq < firstLive);
+    if (o.seated && !o.departed && history.some((e) => e.type === 'turn_started'))
+      after = 0;
+    else if (firstLive === Infinity) return [];
+    else after = firstLive;
+  }
+  after = Math.max(after, o.told);
+  return caught.filter((e) => e.seq > after);
+}
+
+/**
+ * The death in the morning roll's words, the how and, quieter under it, the card: "You were
+ * killed by the wolves on night 2." / "Your role was hidden."
+ */
+export function deathWords(death: DeathRecord): AwayLine {
+  const attacks = death.causes.filter((c) => c !== 'lynch');
+  const how =
+    attacks.length === 0
+      ? `You were voted out on day ${death.day}.`
+      : attacks.length === 1
+        ? `You were ${DIED[attacks[0]]} on night ${death.day}.`
+        : `You were attacked by ${attacks.map((c) => BY[c]).join(' and ')} on night ${death.day}, and fell.`;
+  const card =
+    death.role === null
+      ? 'Your role was hidden.'
+      : `The table saw your card: ${ROLE_NAME[death.role] ?? death.role}.`;
+  return { text: how, quiet: card };
+}
+
+/** For a seat that is out, the notice's last line; its buttons say watch on or leave. */
+export const GOES_ON = 'The game goes on without you.';
+export const YOUR_TURN = 'It’s your turn.';
+
+/**
+ * The chapters the span went through, in one sentence of the game's own words: "Night 2 and
+ * day 3 went by while you were away." / "Day 3’s discussion went on while you were away." /
+ * "The vote on day 3 was held while you were away." At most two are named, "and more" past
+ * that; a day's vote goes with its day. Null when the span touched no chapter (only the deal).
+ */
+export function chapterLine(
+  timeline: GameView['timeline'],
+  missed: readonly DurableGameEvent[],
+): string | null {
+  if (!missed.length) return null;
+  const first = missed[0].seq;
+  const inSpan = new Set(missed.map((e) => e.seq));
+  // the chapter the span began in, then each one it entered
+  const start = timeline.filter((t) => t.seq <= first).at(-1);
+  const entered = timeline.filter((t) => t.seq > first && inSpan.has(t.seq));
+  const chapters: { phase: Phase; day: number; vote: boolean }[] = [];
+  for (const t of start ? [start, ...entered] : entered) {
+    const prev = chapters.at(-1);
+    if (t.phase === 'voting' && prev?.phase === 'day' && prev.day === t.day)
+      prev.vote = true;
+    else chapters.push({ phase: t.phase, day: t.day, vote: false });
+  }
+  const held = (type: 'lynch_result' | 'night_result', day: number) =>
+    missed.some((e) => e.type === type && e.day === day);
+  const AWAY = 'while you were away.';
+  if (!chapters.length) return null;
+  if (chapters.length === 1) {
+    const { phase, day, vote } = chapters[0];
+    if (phase === 'night')
+      return `Night ${day} ${held('night_result', day) ? 'went by' : 'went on'} ${AWAY}`;
+    if (phase === 'voting')
+      return `The vote on day ${day} ${held('lynch_result', day) ? 'was held' : 'went on'} ${AWAY}`;
+    if (!vote) return `Day ${day}’s discussion went on ${AWAY}`;
+    return held('lynch_result', day)
+      ? `Day ${day}’s discussion and vote went by ${AWAY}`
+      : `Day ${day}’s discussion went by and the vote began ${AWAY}`;
+  }
+  const name = (c: (typeof chapters)[number]) =>
+    c.phase === 'voting' ? `the vote on day ${c.day}` : `${c.phase} ${c.day}`;
+  const [a, b] = chapters.map(name);
+  const lead = a.charAt(0).toUpperCase() + a.slice(1);
+  return chapters.length === 2
+    ? `${lead} and ${b} went by ${AWAY}`
+    : `${lead}, ${b} and more went by ${AWAY}`;
+}
+
+/**
+ * Whether the span is a late arrival's history (this tab never saw the game live before it),
+ * rather than what a return missed: no turn in it was anyone's to answer from here.
+ */
+export function lateSpan(
+  missed: readonly DurableGameEvent[],
+  liveSeqs: ReadonlySet<number>,
+  liveBefore: number | null,
+): boolean {
+  return liveBefore === null && missed.length > 0 && missed[0].seq < Math.min(...liveSeqs);
+}
+
+/**
+ * The seat's own turns its agent played while it was away (a room's clock hands an unanswered
+ * turn to the seat's agent; a request with a deadline is on that clock, a solo game's has none
+ * and waits): the requests in the span the log shows answered since. One line:
+ * "Your agent played your turn: it voted seat 4 on day 3." in the ballot's and the plates'
+ * words, or "Your agent played 2 of your turns." Null when it played none.
+ */
+export function agentLine(
+  events: readonly DurableGameEvent[],
+  missed: readonly DurableGameEvent[],
+  me: string,
+): string | null {
+  const asked = missed.filter(
+    (e): e is EventOf<'input_request'> =>
+      e.type === 'input_request' && e.player === me && !!e.deadline,
+  );
+  const played = asked.flatMap((r) => {
+    // what the log holds of this turn, up to my next request
+    const after = events.filter((e) => e.seq > r.seq);
+    const nextAsk = after.findIndex((e) => e.type === 'input_request' && e.player === me);
+    const turn = nextAsk === -1 ? after : after.slice(0, nextAsk);
+    const mine = turn.find(
+      (e) =>
+        (e.type === 'speech' && e.player === me) ||
+        (e.type === 'wolf_message' && e.wolf === me) ||
+        (e.type === 'vote_cast' && e.voter === me) ||
+        (e.type === 'wolf_vote' && e.wolf === me) ||
+        (e.type === 'wolf_kill_decided' && r.action_kind === 'carrier_kill'),
+    );
+    // answered: my answer is in, the next request came, or the phase moved on
+    const over = !!mine || nextAsk !== -1 || turn.some((e) => e.type === 'phase_change');
+    return over ? [{ r, mine }] : [];
+  });
+  if (!played.length) return null;
+  if (played.length > 1) return `Your agent played ${played.length} of your turns.`;
+  const { r, mine } = played[0];
+  const night = ` on night ${r.day}`;
+  const plate = (target: string) =>
+    sealedLabel(r.action_kind, target, { me }).replace(/ tonight$/, '') + night;
+  const what =
+    r.action_kind === 'discuss'
+      ? `${mine ? 'it spoke for you' : 'it passed'} on day ${r.day}`
+      : r.action_kind === 'wolf_discuss'
+        ? mine?.type === 'wolf_message' && !mine.passed
+          ? `it spoke to the pack${night}`
+          : `it kept quiet in the pack${night}`
+        : mine?.type === 'vote_cast'
+          ? mine.votee === 'abstain'
+            ? `it abstained on day ${r.day}`
+            : `it voted seat ${seatNumber(mine.votee)} on day ${r.day}`
+          : mine?.type === 'wolf_vote'
+            ? plate(mine.votee)
+            : mine?.type === 'wolf_kill_decided'
+              ? plate(mine.target)
+              : `it took your night’s act${night}`;
+  const said = what.charAt(0).toLowerCase() + what.slice(1);
+  return `Your agent played your turn: ${said}.`;
+}
+
+/**
+ * One of the notice's short lines, each a block of its own; `quiet` is a smaller, dimmer
+ * sentence under it (the death's card).
+ */
+export interface AwayLine {
+  text: string;
+  quiet?: string;
+}
+
+/** The "You're back" notice: its lines, and the span it tells (`first` for the transcript). */
+export interface AwayNotice {
+  lines: AwayLine[];
+  /** The seat's own death, when it is in the span: the notice keeps "Leave the table". */
+  death: DeathRecord | null;
+  /** The first missed seq: "See what happened" opens the transcript there. */
+  first: number;
+  /** The last missed seq: telling the notice marks the span told up to it. */
+  last: number;
+}
+
+/**
+ * What the notice says of the span (owner, 2026-10-11): the seat's own death first, in the
+ * existing words; the chapters that went by; turns its agent played; "It's your turn." when
+ * one is open; and, for a seat that is out, that the game goes on. A spectator (no seat) gets
+ * the chapters alone. Null for a span with nothing to tell, and once the game is over (its
+ * ending tells everything).
+ */
+export function awayNotice(
+  view: Pick<GameView, 'dead' | 'over' | 'me' | 'timeline'>,
+  events: readonly DurableGameEvent[],
+  missed: readonly DurableGameEvent[],
+  o: {
+    /** The seat's turn is open (the dock, a ballot, a night act): "It's your turn." */
+    turnOpen?: boolean;
+    /** A late arrival's history (`lateSpan`): its turns were not played while away from here. */
+    late?: boolean;
+  } = {},
+): AwayNotice | null {
+  if (view.over || !missed.length) return null;
+  const me = view.me.seat;
+  const inSpan = new Set(missed.map((e) => e.seq));
+  const death = (me && view.dead.find((d) => d.player === me && inSpan.has(d.seq))) || null;
+  const chapters = chapterLine(view.timeline, missed);
+  const agent = me && !o.late ? agentLine(events, missed, me) : null;
+  const turn = me && o.turnOpen && !death ? YOUR_TURN : null;
+  if (!death && !chapters && !agent && !turn) return null;
+  const lines = [
+    death ? deathWords(death) : null,
+    ...[chapters, agent, turn, death ? GOES_ON : null].map((text) =>
+      text === null ? null : { text },
+    ),
+  ].filter((l): l is AwayLine => l !== null);
+  return { lines, death, first: missed[0].seq, last: missed.at(-1)!.seq };
+}
+
+function sameBeat(a: SceneBeat | undefined, b: SceneBeat | undefined): boolean {
+  return (
+    !!a &&
+    !!b &&
+    a.id === b.id &&
+    a.seq === b.seq &&
+    a.ordinal === b.ordinal &&
+    a.subject === b.subject &&
+    a.spoke?.actor === b.spoke?.actor &&
+    a.spoke?.step === b.spoke?.step &&
+    a.page?.index === b.page?.index &&
+    a.subjects?.length === b.subjects?.length
+  );
+}
+
+/**
+ * The run of passes that took in the pass (or the thinking turn before it) on the stage, when
+ * the next seat passed too: the run's index in the new cut, or -1.
+ */
+function runOf(to: readonly SceneBeat[], was: SceneBeat): number {
+  if (was.id !== 'day.pass' && was.id !== 'day.turn-thinking') return -1;
+  const seats = was.subjects ?? (was.subject ? [was.subject] : []);
+  return to.findIndex(
+    (b) =>
+      b.id === 'day.pass' &&
+      b.day === was.day &&
+      b.seq <= was.seq &&
+      b.end >= was.end &&
+      (b.subjects?.length ?? 0) > seats.length &&
+      seats.every((s) => b.subjects!.includes(s)),
+  );
+}
+
+/**
+ * Where the cursor lands in a new cut of the list, and whether it is still on the same beat
+ * (`run`: on a run of passes that took in the beat it was on, to be played afresh).
+ */
+function carry(
+  from: readonly SceneBeat[],
+  to: readonly SceneBeat[],
+  cursor: Cursor,
+): { cursor: Cursor; same: boolean; run?: boolean } {
+  if (cursor.index < 0) return { cursor, same: true };
+  const was = from[cursor.index];
+  if (sameBeat(to[cursor.index], was)) return { cursor, same: true };
+  const run = was ? runOf(to, was) : -1;
+  if (run !== -1) return { cursor: still(run), same: false, run: true };
+  const moved = carryAcross(cursor, from, to);
+  return sameBeat(to[moved.index], was)
+    ? { cursor: { index: moved.index, animate: cursor.animate }, same: true }
+    : { cursor: moved, same: false };
+}
+
+/** A beat that holds the stage until something happens, rather than for a time. */
+function waitsHere(beat: SceneBeat, ctx: LiveCtx): boolean {
+  if (holdFor(beat, 'normal') !== null) return false;
+  if (beat.liveOnly) return ctx.openPrompt === beat.seq; // answered or gone: on with the game
+  return true; // the epilogue until its sheet is closed; the curtain
+}
+
+/** Where the seat's open prompt is in the list, when it is still ahead of the stage; else -1. */
+function promptAt(state: LiveState, ctx: LiveCtx): number {
+  if (ctx.openPrompt === null) return -1;
+  return state.beats.findIndex(
+    (b, i) =>
+      i > state.cursor.index && b.liveOnly && b.seat === ctx.me && b.seq === ctx.openPrompt,
+  );
+}
+
+/**
+ * How far behind its own turn a stage may read on a room's clock, in the holds still to play
+ * before the turn: past it the stage lands still just before the turn, and the turn plays (the
+ * lines skipped are in the transcript). A friend whose phone was in a pocket came back to a
+ * queue of reading, and the clock ran out before the turn was ever on the screen (multiplayer
+ * audit, 2026-10-15; the timing sheet's ruling 3, for the seat's own turn only).
+ */
+export const TURN_JUMP_MS = 30_000;
+
+/** The holds of the beats between the one on the stage and `before`, played at normal pace. */
+function holdsUntil(state: LiveState, before: number): number {
+  let ms = 0;
+  for (let i = state.cursor.index + 1; i < before; i++)
+    ms += holdFor(state.beats[i], 'normal') ?? 0;
+  return ms;
+}
+
+/**
+ * The seat's own line to the pack, written on this screen at its prompt (`pack.your-line`): the
+ * seat lived it as it wrote it, so the log's copy of it lands still instead of playing again. A
+ * line the seat's agent said for it (the prompt ran out, or was handed over) is news, and plays.
+ */
+function livedThrough(beats: readonly SceneBeat[], index: number, ctx: LiveCtx): boolean {
+  const beat = beats[index];
+  if (beat?.id !== 'pack.line' || !ctx.me || beat.subject !== ctx.me) return false;
+  for (let i = index - 1; i >= 0; i--) {
+    const b = beats[i];
+    if (b.id === 'pack.line' && b.subject === ctx.me) return false; // that prompt's line came already
+    if (b.id === 'pack.your-line' && b.seat === ctx.me)
+      return !(ctx.byAgent ?? []).includes(b.seq);
+  }
+  return false;
+}
+
+function play(state: LiveState, index: number, speed: 'normal' | 'fast'): LiveState {
+  const beat = state.beats[index];
+  return {
+    ...state,
+    cursor: { index, animate: true },
+    speed,
+    holding: holdFor(beat, speed) !== null,
+    step: state.step + 1,
+  };
+}
+
+/** Move on if the beat on the stage has had its moment and nothing it waits for is pending. */
+function advance(state: LiveState, ctx: LiveCtx): LiveState {
+  // a prompt on a clock does not wait for the stage: the beat on the stage when it is first
+  // seen ahead is cut short, once per prompt (a deal beat keeps its hold, and nothing is cut).
+  // One with no deadline waits (owner, 2026-10-12): cutting it bought a solo seat nothing.
+  // Further behind than TURN_JUMP_MS, the stage lands still just before the turn instead.
+  const current = state.beats[state.cursor.index];
+  const turn = ctx.onClock ? promptAt(state, ctx) : -1;
+  if (turn !== -1 && state.hurried !== ctx.openPrompt) {
+    const dealing = !!current?.id.startsWith('deal.');
+    if (!dealing && holdsUntil(state, turn) > TURN_JUMP_MS)
+      state = {
+        ...state,
+        cursor: still(turn - 1),
+        holding: false,
+        hurried: ctx.openPrompt,
+        step: state.step + 1,
+      };
+    else {
+      const cut = state.holding && !dealing;
+      state = { ...state, holding: cut ? false : state.holding, hurried: ctx.openPrompt };
+    }
+  }
+  if (state.holding) return state;
+  if (current && waitsHere(current, ctx)) return state;
+  const next = nextLiveStep(state.beats, state.cursor.index, ctx);
+  if (!next) return state;
+  // what the seat already lived through lands still, and the stage moves on
+  if (livedThrough(state.beats, next.index, ctx))
+    return advance(
+      { ...state, cursor: still(next.index), holding: false, step: state.step + 1 },
+      ctx,
+    );
+  return play(state, next.index, next.speed);
+}
+
+/**
+ * The new cut, with each beat that is the same as the old one's at its place kept as the old
+ * object (and the old list, when every beat is): an event that changes nothing on the stage
+ * leaves the beat on it, and everything worked out from it, as it was. Beats are plain data.
+ */
+export function keepSame(
+  was: readonly SceneBeat[],
+  cut: readonly SceneBeat[],
+): readonly SceneBeat[] {
+  let all = was.length === cut.length;
+  const kept = cut.map((beat, i) => {
+    const old = was[i];
+    if (old && (old === beat || JSON.stringify(old) === JSON.stringify(beat))) return old;
+    all = false;
+    return beat;
+  });
+  return all ? was : kept;
+}
+
+export function liveReducer(state: LiveState, action: LiveAction): LiveState {
+  switch (action.type) {
+    case 'recut': {
+      const { ctx } = action;
+      const beats = keepSame(state.beats, action.beats);
+      const carried = carry(state.beats, beats, state.cursor);
+      const landing = action.landing ?? 'still';
+      let next: LiveState = {
+        ...state,
+        beats,
+        cursor: carried.cursor,
+        holding: carried.same ? state.holding : false,
+      };
+      // the pass on the stage grew into a run with news: the run's beat plays from its start
+      const run = carried.run ? beats[carried.cursor.index] : undefined;
+      if (run && (landing !== 'still' || run.end > action.historyEnd))
+        next = play(next, carried.cursor.index, 'normal');
+      // the epilogue lands after the curtain is up (memory is extracted after game over): play it
+      const at = next.cursor.index;
+      if (
+        beats[at]?.id === 'over.curtain' &&
+        beats[at - 1]?.id === 'over.epilogue' &&
+        beats[at - 1].end > action.historyEnd &&
+        !state.beats.some((b) => b.id === 'over.epilogue')
+      ) {
+        next = play(next, at - 1, 'normal');
+      }
+      // too early to say whether this is a new game's deal: wait for the rest of the history
+      if (landing === 'pending') return next;
+      // history lands still, on the latest beat it reaches; nothing of it plays (the deal, and
+      // after a departure here what followed it, play from the first beat)
+      let floor = -1;
+      if (landing === 'still')
+        for (let i = 0; i < beats.length; i++)
+          if (beats[i].end <= action.historyEnd) floor = i;
+      if (floor > next.cursor.index)
+        next = { ...next, cursor: still(floor), holding: false, step: next.step + 1 };
+      return advance(next, ctx);
+    }
+    case 'held':
+      if (action.step !== state.step || !state.holding) return state;
+      return advance({ ...state, holding: false }, action.ctx);
+    case 'dismiss': {
+      if (state.beats[state.cursor.index]?.id !== 'over.epilogue') return state;
+      const next = nextLiveStep(state.beats, state.cursor.index, action.ctx);
+      // the curtain was down under the sheet (it is usually up before the memory lands): it is
+      // there when the sheet is closed, not played again
+      return next
+        ? { ...state, cursor: still(next.index), holding: false, step: state.step + 1 }
+        : state;
+    }
+    case 'transcript':
+      return { ...state, slot: pressTranscript({ slot: state.slot, xray: false }).slot };
+    case 'file':
+      return { ...state, slot: pressFile({ slot: state.slot, xray: false }).slot };
+    case 'show-file':
+      return { ...state, slot: showFile({ slot: state.slot, xray: action.xray }).slot };
+    case 'show-record':
+      return { ...state, slot: showRecord({ slot: state.slot, xray: false }).slot };
+  }
+}
+
+// --- the seated human's turn -----------------------------------------------------
+
+/** The server's cap on drafts per turn (ux_journeys D25). */
+export const DRAFTS_PER_TURN = 3;
+
+export interface TurnState {
+  /** The request all of this belongs to; a new request starts afresh. */
+  seq: number | null;
+  /**
+   * The line a draft put in the box (empty before one). What is typed is the dock's own state
+   * (`TurnDock`), so a keystroke redraws the dock alone, not the stage around it; the box takes
+   * this line each time `landed` moves on.
+   */
+  text: string;
+  /** Drafts landed in the box this turn. */
+  landed: number;
+  /** Whether a draft takes the seat notebook along ("Use my seat notes"; ticked to start). */
+  shareNotebook: boolean;
+  draftsLeft: number;
+  /** The deadline a draft came back with (the wait credited back); undefined = none yet. */
+  deadline?: string | null;
+  drafting: boolean;
+  sending: boolean;
+  /** What went wrong, in words the dock shows as they are. */
+  error: string | null;
+  /** This client answered the request, or learned it was already answered. */
+  answered: boolean;
+  /** Requests the seat's agent answered: run out unanswered, or handed over. Kept all game. */
+  byAgent: readonly number[];
+}
+
+export type TurnAction =
+  | { type: 'open'; seq: number }
+  | { type: 'share-notebook'; share: boolean }
+  | { type: 'drafting'; seq: number }
+  | {
+      type: 'drafted';
+      seq: number;
+      draft: string;
+      draftsLeft: number;
+      deadline: string | null;
+    }
+  | { type: 'draft-failed'; seq: number; status: number; message: string }
+  | { type: 'sending'; seq: number }
+  | { type: 'sent'; seq: number; delegated: boolean }
+  | { type: 'send-failed'; seq: number; status: number; message: string }
+  /** The request's deadline passed and this client had not answered it. */
+  | { type: 'expired'; seq: number };
+
+export const initialTurnState: TurnState = {
+  seq: null,
+  text: '',
+  landed: 0,
+  shareNotebook: true,
+  draftsLeft: DRAFTS_PER_TURN,
+  drafting: false,
+  sending: false,
+  error: null,
+  answered: false,
+  byAgent: [],
+};
+
+export const ALREADY_ANSWERED = 'That turn was already answered.';
+export const DRAFT_FAILED = 'Could not draft the line; type it instead.';
+export const AGENT_WOULD_PASS = 'Your agent would pass here. Pass, or tell it what to say.';
+
+export function turnReducer(state: TurnState, action: TurnAction): TurnState {
+  if (action.type === 'open') {
+    if (action.seq === state.seq) return state;
+    return { ...initialTurnState, seq: action.seq, byAgent: state.byAgent };
+  }
+  if (action.type === 'share-notebook') return { ...state, shareNotebook: action.share };
+  // everything below answers a request: an answer to an older one is dropped
+  if (action.seq !== state.seq) return state;
+  switch (action.type) {
+    case 'drafting':
+      return { ...state, drafting: true, error: null };
+    case 'drafted':
+      // an empty draft: the agent would pass, and the box keeps what it had
+      return {
+        ...state,
+        drafting: false,
+        ...(action.draft ? { text: action.draft, landed: state.landed + 1 } : {}),
+        draftsLeft: action.draftsLeft,
+        deadline: action.deadline,
+        error: action.draft ? null : AGENT_WOULD_PASS,
+      };
+    case 'draft-failed':
+      // 409: the turn is gone or its drafts are used up; 422: the notes refused (too long).
+      // The server's words say which. Anything else (503, no helper, no network): type it.
+      return action.status === 409
+        ? { ...state, drafting: false, draftsLeft: 0, error: action.message }
+        : {
+            ...state,
+            drafting: false,
+            error: action.status === 422 ? action.message : DRAFT_FAILED,
+          };
+    case 'sending':
+      return { ...state, sending: true, error: null };
+    case 'sent':
+      return {
+        ...state,
+        sending: false,
+        answered: true,
+        byAgent: action.delegated ? [...state.byAgent, action.seq] : state.byAgent,
+      };
+    case 'send-failed':
+      // 409: someone (the agent, on the deadline) already answered; 422: the engine's words
+      return action.status === 409
+        ? { ...state, sending: false, answered: true, error: ALREADY_ANSWERED }
+        : { ...state, sending: false, error: action.message };
+    case 'expired':
+      if (state.answered || state.sending) return state;
+      return { ...state, answered: true, byAgent: [...state.byAgent, action.seq] };
+  }
+}
+
+/**
+ * Where a night act or pack vote stands, for the plate: in (from here, or the seat's agent),
+ * refused as already answered (409), or open with the last send's failure to show.
+ */
+export function actSent(t: TurnState): {
+  sent: 'you' | 'agent' | 'closed' | null;
+  sendError: string | null;
+} {
+  if (t.sending) return { sent: 'you', sendError: null };
+  if (t.answered)
+    return t.error
+      ? { sent: 'closed', sendError: t.error }
+      : { sent: t.byAgent.includes(t.seq ?? -1) ? 'agent' : 'you', sendError: null };
+  return { sent: null, sendError: t.error };
+}
+
+// --- answering -------------------------------------------------------------------
+
+/**
+ * What a scene reports: a line, a target (null = the act that names no one), or the agent. A
+ * target is a seat, or one of the server's words for the kinds that choose no seat (a side the
+ * speculator picks, `conceal`); a necromancer's also names a body, a fortune teller's may name a
+ * role.
+ */
+export type Answer =
+  { say: string } | ({ act: string | null } & ActMore) | { delegate: true };
+
+/**
+ * The turn's body for the answer, by the request's kind (build_plan §5, ten-seat pass §2), or
+ * null when the answer does not fit it (an empty line; a target the server did not offer; a
+ * necromancer's seat without a listed body).
+ *
+ *   discuss, wolf_discuss → `{message}`, or `{pass_turn: true}` for a pass
+ *   necromancer_target    → `{target, body}`; staying put is `{target}` alone
+ *   bet_target            → `{target}`, with `role_named` when a role was named
+ *   the rest              → `{target}` from `candidates` (a seat, a side, `conceal`); "no one"
+ *                           is the request's listed no-action word
+ *   any kind              → `{delegate: true}`, the seat's agent answers
+ */
+export function payloadFor(
+  pending: Pick<NonNullable<MeView['pending']>, 'actionKind' | 'candidates'> & {
+    bodies?: readonly string[];
+  },
+  answer: Answer,
+): TurnPayload | null {
+  if ('delegate' in answer) return { delegate: true };
+  const kind = pending.actionKind;
+  if ('say' in answer) {
+    const message = answer.say.trim();
+    return isTextTurn(kind) && message ? { message } : null;
+  }
+  if (isTextTurn(kind)) return answer.act === null ? { pass_turn: true } : null;
+  const target = answer.act ?? noActionWord(pending.candidates);
+  if (target === null || !pending.candidates.includes(target)) return null;
+  const none = (NO_ACTION as readonly string[]).includes(target);
+  if (kind === 'necromancer_target' && !none) {
+    const body = answer.body;
+    return body && (pending.bodies ?? []).includes(body) ? { target, body } : null;
+  }
+  if (kind === 'bet_target' && answer.roleNamed)
+    return { target, role_named: answer.roleNamed };
+  return { target };
+}
+
+/**
+ * The v1 rule for whether the folded request is still this seat's to answer: the status says
+ * so, or the request arrived after the status was taken (the poll has not caught up yet).
+ */
+export function requestIsActive(
+  pending: MeView['pending'],
+  me: string | null,
+  status: Pick<GameStatus, 'pending_seats' | 'last_seq'> | undefined,
+): boolean {
+  return Boolean(
+    pending &&
+    me &&
+    ((status?.pending_seats ?? []).includes(me) || pending.seq > (status?.last_seq ?? 0)),
+  );
+}
+
+/** The allowance assumed when the request's arrival is unknown (it came as history). */
+export const DEFAULT_TURN_MS = 120_000;
+
+/**
+ * The clock for a request: its deadline and the whole allowance, in server time. Null with no
+ * deadline (a solo game: no ring). The whole is from the request's arrival to its deadline. The
+ * time left is not in it: the piece that shows the count reads it, so nothing above it ticks.
+ */
+export function turnClock(
+  deadline: string | null,
+  arrivedAt: number | null,
+): TurnClock | null {
+  if (!deadline) return null;
+  const end = Date.parse(deadline);
+  if (Number.isNaN(end)) return null;
+  const whole = arrivedAt !== null && end > arrivedAt ? end - arrivedAt : DEFAULT_TURN_MS;
+  return { deadline, totalMs: whole };
+}
+
+/**
+ * The request a line of mine answered: my last `input_request` before it, as long as no
+ * earlier line of mine answered that one already. Null for a line nobody asked me for.
+ */
+export function requestBefore(
+  events: readonly DurableGameEvent[],
+  seq: number,
+  me: string | null,
+): number | null {
+  if (!me) return null;
+  for (let i = events.length - 1; i >= 0; i--) {
+    const e = events[i];
+    if (e.seq >= seq) continue;
+    if (e.type === 'input_request' && e.player === me) return e.seq;
+    if (e.type === 'speech' && e.player === me) return null;
+  }
+  return null;
+}
+
+/**
+ * The curtain's way to the replay (beat sheet §10, 2026-10-01). The replay is filed when the
+ * engine's run ends, moments after `game_over` (a game's lessons are written offline, later,
+ * never at its end: 2026-10-12); a link before then finds nothing. It is filed once the archive
+ * answers for it (`answered`) or the status comes from the game's row (`archived`; a game
+ * leaves the live registry only when nobody is watching it, so a page at the curtain learns it
+ * from the archive). Until then there is no link but the plaque.
+ */
+export function curtainReplay(
+  gameId: string,
+  a: { archived: boolean; answered: boolean },
+): { replay: string | null } {
+  return { replay: a.archived || a.answered ? `/replays/${gameId}` : null };
+}

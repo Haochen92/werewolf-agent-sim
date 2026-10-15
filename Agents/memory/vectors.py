@@ -11,7 +11,7 @@ from logging import getLogger
 import numpy as np
 from numpy.typing import NDArray
 
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_core.embeddings import Embeddings
 
 logger = getLogger(__name__)
 
@@ -21,7 +21,7 @@ RETRY_DELAY_SECONDS = 5
 
 def embed_texts(
     texts: list[str],
-    embedding_model: GoogleGenerativeAIEmbeddings,
+    embedding_model: Embeddings,
     task_type: str | None = None,
 ) -> list[NDArray[np.float64]]:
     for attempt in range(1, RETRY_ATTEMPTS + 1):

@@ -1,0 +1,18 @@
+{
+  "label": "unenforced_field_order_2026_10_13",
+  "models": [
+    "openai/gpt-6-luna",
+    "anthropic/claude-haiku-5-5"
+  ],
+  "modes": ["json_mode"],
+  "samples_per_schema": 10,
+  "workers": 4,
+  "caching": {
+    "floor_sizes": [1024],
+    "wait_s": 5,
+    "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+    "cases": 8,
+    "real_prompt_mode": "json_mode"
+  },
+  "notes": "Repeat of the unenforced half of unenforced_schema_trial_2026_10_13 with the field-order check: whether an unenforced reply's top-level fields come in the schema's order (reads before the message, a reason before the target). A reordered reply still validates, so the trial's pass counts cannot show it."
+}

@@ -1,0 +1,450 @@
+/*
+ * The slate (the landing mockup's `.game/.slate`, which the replays mockup copies). Its local
+ * colours are renamed from the mockup's `--ink`/`--sk` (review §B3), which are the theatre's
+ * names for paper ink and the killer: `--slate-hue` is the winning side's colour (the frame),
+ * `--slate-ink` its dark ink (the print on the paper).
+ */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+@media (max-width: 820px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.game {
+  --slate-hue: var(--town);
+  --slate-ink: var(--town-ink);
+  position: relative;
+  display: block;
+  overflow: hidden;
+  color: var(--text);
+  text-decoration: none;
+  border-radius: var(--r-m);
+  background: var(--panel);
+  border: 1px solid color-mix(in srgb, var(--slate-hue) 12%, var(--line));
+  box-shadow:
+    var(--shadow),
+    inset 0 1px 0 rgba(255, 235, 200, 0.06);
+  padding: 11px;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.town {
+  --slate-hue: var(--town);
+  --slate-ink: var(--town-ink);
+}
+.wolf {
+  --slate-hue: var(--wolf);
+  --slate-ink: var(--wolf-ink);
+}
+.sk {
+  --slate-hue: var(--sk);
+  --slate-ink: var(--sk-ink);
+}
+/* a draw: no side won, so no side's colour */
+.draw {
+  --slate-hue: var(--muted);
+  --slate-ink: var(--ink);
+}
+
+.game:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--slate-hue) 50%, transparent);
+}
+
+.game:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+}
+
+.slate {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--paper);
+  color: var(--slate-ink);
+  background-image:
+    repeating-linear-gradient(0deg, rgba(60, 40, 20, 0.04) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(60, 40, 20, 0.04) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at 8% 6%, rgba(255, 255, 255, 0.4), transparent 42%),
+    radial-gradient(ellipse at 94% 96%, rgba(120, 90, 50, 0.2), transparent 52%);
+  box-shadow: 0 14px 24px -14px rgba(0, 0, 0, 0.95);
+}
+
+/* the clapper: diagonal stripes in the winner's ink, with the printed Replay plaque */
+.band {
+  height: 28px;
+  position: relative;
+  background-image: repeating-linear-gradient(
+    64deg,
+    var(--slate-ink) 0 19px,
+    var(--paper) 19px 38px
+  );
+  box-shadow: inset 0 0 0 1.5px var(--slate-ink);
+  transform-origin: left bottom;
+}
+
+.band::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1.5px;
+  background: var(--slate-ink);
+  opacity: 0.8;
+}
+
+.plaque {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--paper);
+  border-radius: 999px;
+  padding: 3px 11px 3px 4px;
+  box-shadow: 0 0 0 1.6px var(--slate-ink);
+  transition: transform 0.18s ease;
+}
+
+.dot {
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--slate-ink);
+}
+
+.dot svg {
+  width: 8px;
+  height: 8px;
+  fill: var(--paper);
+  margin-left: 1.5px;
+  display: block;
+}
+
+.plaqueText {
+  font-family: var(--font-serif);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.game:hover .plaque {
+  transform: translateY(-50%) scale(1.05);
+}
+
+.game:hover .band {
+  animation: clap 0.42s cubic-bezier(0.35, 0.9, 0.4, 1) 1;
+}
+
+@keyframes clap {
+  0% {
+    transform: rotate(0);
+  }
+  38% {
+    transform: rotate(-7deg);
+  }
+  62% {
+    transform: rotate(1.2deg);
+  }
+  80% {
+    transform: rotate(-0.6deg);
+  }
+  100% {
+    transform: rotate(0);
+  }
+}
+
+.in {
+  position: relative;
+  padding: 16px 18px;
+  /* the verdict's size reads the paper's width (`cqi`), so a long one never breaks its line */
+  container-type: inline-size;
+}
+
+/* the print wobbles a little, as ink on paper does (the filter lives in the site's IconSprite) */
+.watermark,
+.hd,
+.fields {
+  filter: url(#inkwobble);
+}
+
+.watermark {
+  position: absolute;
+  right: -38px;
+  bottom: -40px;
+  width: 172px;
+  height: 172px;
+  pointer-events: none;
+  opacity: 0.055;
+}
+
+.watermark svg {
+  width: 100%;
+  height: 100%;
+  stroke: var(--slate-ink);
+  stroke-width: 1.9;
+}
+
+.hd,
+.cast,
+.fields {
+  position: relative;
+}
+
+/*
+ * The header is two rows, each held to one line: the verdict, then the table line — stamps when
+ * there is something to stamp, the printed default when there is not — so the row is never
+ * empty and every slate in a grid row stands the same height.
+ */
+.hd {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px;
+}
+
+.verdict {
+  font-family: var(--font-serif);
+  font-size: clamp(22px, 11cqi, 31px);
+  line-height: 0.94;
+  white-space: nowrap;
+}
+
+.verdict small {
+  font-size: 0.58em;
+  font-style: italic;
+  opacity: 0.85;
+  margin-left: 0.3em;
+}
+
+/* the table line's one row, the stamps' height even when the printed default stands in it */
+.stamps,
+.printed {
+  min-height: 22px;
+  display: flex;
+  align-items: center;
+}
+
+.stamps {
+  flex-wrap: nowrap;
+  gap: 6px;
+  padding-left: 2px;
+}
+
+.stamp {
+  flex: 0 0 auto;
+  transform: rotate(-3deg);
+  border: 1.8px solid var(--slate-ink);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-family: var(--font-serif);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  opacity: 0.72;
+  text-align: center;
+  line-height: 1.05;
+  white-space: nowrap;
+}
+
+.printed {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  opacity: 0.58;
+  white-space: nowrap;
+}
+
+.stampTilt {
+  transform: rotate(2deg);
+}
+
+/* the visitor's own game: the same stamp, inked solid */
+.stampYou {
+  transform: rotate(-1.5deg);
+  background: var(--slate-ink);
+  color: var(--paper);
+  opacity: 0.85;
+}
+
+/*
+ * The roles dealt, one disc per seat, in one even row: the role picker's disc (SigilDisc), a
+ * paper disc ringed in the side's colour with the sigil in its ink. A neutral that won beside
+ * the winner takes the picker's chosen ring, past a gap of paper, in the slate's ink.
+ */
+.cast {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 15px 0 2px 3px;
+}
+
+.role {
+  --band: var(--town);
+  --ink-f: var(--town-ink);
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 4.5px;
+  border-radius: 50%;
+  background: #f3e9d2;
+  color: var(--ink-f);
+  box-shadow:
+    0 0 0 2px var(--band),
+    0 2px 4px rgba(40, 25, 10, 0.35);
+}
+.role[data-faction='wolves'] {
+  --band: var(--wolf);
+  --ink-f: var(--wolf-ink);
+}
+.role[data-faction='serial_killer'] {
+  --band: var(--sk);
+  --ink-f: var(--sk-ink);
+}
+/* the neutrals' pale band, deepened to hold its edge on the paper */
+.role[data-faction='neutral_benign'] {
+  --band: color-mix(in srgb, var(--benign) 70%, var(--benign-ink));
+  --ink-f: var(--benign-ink);
+}
+.role[data-won] {
+  background: #fffaf0;
+  box-shadow:
+    0 0 0 2px var(--band),
+    0 0 0 4px var(--paper),
+    0 0 0 5.5px var(--slate-ink);
+}
+
+.role svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.fields {
+  margin: 14px 0 0;
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr 1.5fr;
+  border-top: 1.5px solid var(--slate-ink);
+}
+
+.f {
+  padding: 8px 10px 7px;
+  border-right: 1.5px solid var(--slate-ink);
+  min-width: 0;
+}
+
+.f:nth-child(3) {
+  border-right: 0;
+}
+
+.fields dt {
+  font-family: var(--font-serif);
+  font-size: 9px;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  opacity: 0.62;
+  margin-bottom: 3px;
+}
+
+.fields dd {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 15px;
+  line-height: 1.08;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fields dd.none {
+  font-style: italic;
+  opacity: 0.72;
+}
+
+/* the run's figures under the fields, each label on its value's baseline, then the date */
+.run {
+  grid-column: 1 / -1;
+  border-top: 1.5px solid var(--slate-ink);
+  padding: 9px 10px 8px;
+  display: grid;
+  gap: 4px;
+}
+
+.figs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 22px;
+}
+
+.fig {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+}
+
+.fields .fig dt {
+  margin-bottom: 0;
+}
+
+.fields .fig dd {
+  font-size: 17px;
+}
+
+.mono {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  opacity: 0.62;
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 520px) {
+  .role {
+    width: 23px;
+    height: 23px;
+    padding: 4px;
+  }
+  .cast {
+    gap: 6px;
+  }
+  .fields {
+    grid-template-columns: 1fr 1fr;
+  }
+  .f:nth-child(2) {
+    border-right: 0;
+  }
+  .f:nth-child(3) {
+    grid-column: 1 / -1;
+    border-right: 0;
+    border-top: 1.5px solid var(--slate-ink);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game,
+  .plaque {
+    transition: none;
+  }
+  .game:hover {
+    transform: none;
+  }
+  .game:hover .band {
+    animation: none;
+  }
+}

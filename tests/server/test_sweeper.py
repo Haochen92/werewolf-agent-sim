@@ -1,0 +1,130 @@
+"""Retention sweeper (seat_continuity.md §7): a parked game nobody is watching has a
+shelf life; everything else is left alone."""
+
+from __future__ import annotations
+
+import asyncio
+from datetime import datetime, timedelta, timezone
+from types import SimpleNamespace
+
+from server.config import ServerSettings
+from server.game.live_game_registry import LiveGameRegistry
+from server.housekeeping.sweeper import is_expired, sweep_parked_games
+from tests.factories.builders import human_turn_request
+from tests.fixtures.server import HangingGraph
+
+SETTINGS = ServerSettings(_env_file=None, SOLO_PARK_TTL_SECONDS=3600,
+                          MULTI_PARK_TTL_SECONDS=86400)
+
+
+class Repo:
+    def __init__(self):
+        self.updates = []
+
+    async def update_game(self, game_id, **fields):
+        self.updates.append((game_id, fields))
+
+
+async def _parked(quiet_session, *, seats, idle: timedelta):
+    """A started session parked on one human question for `idle`."""
+    session = quiet_session(HangingGraph(), seat_tokens=seats)
+    session.start()
+    await asyncio.sleep(0)
+    session.pending_requests["p1"] = human_turn_request(player_id="p1")
+    session.parked_since = datetime.now(timezone.utc) - idle
+    return session
+
+
+async def test_solo_past_an_hour_is_expired_before_it_is_not(quiet_session):
+    old = await _parked(quiet_session, seats=["t1"], idle=timedelta(minutes=61))
+    young = await _parked(quiet_session, seats=["t1"], idle=timedelta(minutes=59))
+    assert is_expired(old, SETTINGS) and not is_expired(young, SETTINGS)
+    await old.suspend()
+    await young.suspend()
+
+
+async def test_multi_uses_the_day_window(quiet_session):
+    old = await _parked(quiet_session, seats=["t1", "t2"], idle=timedelta(hours=25))
+    young = await _parked(quiet_session, seats=["t1", "t2"], idle=timedelta(hours=2))
+    assert is_expired(old, SETTINGS) and not is_expired(young, SETTINGS)
+    await old.suspend()
+    await young.suspend()
+
+
+async def test_a_watched_or_settled_game_is_never_expired(quiet_session):
+    watched = await _parked(quiet_session, seats=["t1"], idle=timedelta(hours=5))
+    watched.human_players = ["p1"]
+    watched.subscribe("t1")
+    assert not is_expired(watched, SETTINGS)
+    running = await _parked(quiet_session, seats=["t1"], idle=timedelta(hours=5))
+    running.pending_requests.clear()  # the graph is driving, not parked
+    assert not is_expired(running, SETTINGS)
+    over = await _parked(quiet_session, seats=["t1"], idle=timedelta(hours=5))
+    over.game_over = True
+    assert not is_expired(over, SETTINGS)
+    for s in (watched, running, over):
+        await s.suspend()
+
+
+async def test_sweep_drops_only_the_expired_and_is_idempotent(quiet_session):
+    expired = await _parked(quiet_session, seats=["t1"], idle=timedelta(hours=2))
+    fresh = await _parked(quiet_session, seats=["t1"], idle=timedelta(minutes=1))
+    repo = Repo()
+    games = LiveGameRegistry(repo, SimpleNamespace(graph=None))
+    for session in (expired, fresh):
+        games._register(session)
+    await games.open_room(name="x")  # a waiting room must be left alone by the sweep
+
+    assert await sweep_parked_games(games, SETTINGS) == [expired.game_id]
+    assert expired.error.startswith("abandoned:") and expired.ended
+    assert repo.updates == [(expired.game_id, {"status": "dropped", "error": expired.error})]
+    assert fresh.error is None
+    assert games.get(expired.game_id) is None  # ended and unwatched: the row answers now
+
+    assert await sweep_parked_games(games, SETTINGS) == []  # nothing left to do
+    await fresh.suspend()
+
+
+async def test_a_game_waiting_for_its_key_has_the_same_shelf_life(quiet_session):
+    from tests.fixtures.server import FakeGraph
+
+    session = quiet_session(FakeGraph([]), seat_tokens=["t1"], human_players=["player_3"])
+    session.awaiting_key = True
+    session.parked_since = datetime.now(timezone.utc) - timedelta(hours=2)
+    assert is_expired(session, SETTINGS)  # solo: an hour is enough
+    q = session.subscribe("t1")
+    assert not is_expired(session, SETTINGS)  # its player is here, looking at the card
+    session.unsubscribe(q)
+    session.awaiting_key = False
+    assert not is_expired(session, SETTINGS)  # neither parked nor waiting: nothing to sweep
+
+
+
+async def test_a_suspended_solo_game_has_the_same_shelf_life(quiet_session):
+    """A solo game suspended with its player away counts as parked: it is dropped after
+    the solo shelf life, not before, never while its player is connected, and the reason
+    says it was suspended."""
+    from tests.fixtures.server import FakeGraph
+
+    silent = {"type": "updates", "ns": [], "data": {"DAY_PHASE": {}}}
+    session = quiet_session(FakeGraph([silent, silent]), seat_tokens=["t1"],
+                            human_players=["player_3"])
+    session.start()
+    while session.suspended_since is None:
+        await asyncio.sleep(0.01)
+    assert not session.pending_requests and session.parked_since is None
+
+    session.suspended_since = datetime.now(timezone.utc) - timedelta(minutes=59)
+    assert not is_expired(session, SETTINGS)
+    session.suspended_since = datetime.now(timezone.utc) - timedelta(minutes=61)
+    assert is_expired(session, SETTINGS)
+    spectator = session.subscribe()
+    assert is_expired(session, SETTINGS)  # a spectator does not count
+    session.unsubscribe(spectator)
+
+    repo = Repo()
+    games = LiveGameRegistry(repo, SimpleNamespace(graph=None))
+    games._register(session)
+    assert await sweep_parked_games(games, SETTINGS) == [session.game_id]
+    assert session.error == "abandoned: suspended with its player away for 61 min"
+    assert session.ended and session.suspended_since is None

@@ -1,0 +1,206 @@
+[
+ {
+  "game_id": "d60fde92-810c-4adb-86dd-89a854739bdb",
+  "process": "v8_seed_a",
+  "lone_killer": "serial_killer",
+  "neutral": "speculator",
+  "winner": "villagers",
+  "days": 4,
+  "dehalo": {
+   "judged": 40,
+   "revised": 14,
+   "backfilled": false,
+   "usage": {
+    "input_tokens": 17061,
+    "output_tokens": 13044
+   }
+  }
+ },
+ {
+  "game_id": "f649bc3a-e506-44d5-9585-e2918c4d45e9",
+  "process": "v8_seed_a",
+  "lone_killer": "serial_killer",
+  "neutral": "fortune_teller",
+  "winner": "wolves",
+  "days": 6,
+  "dehalo": {
+   "judged": 51,
+   "revised": 14,
+   "backfilled": true,
+   "usage": {
+    "input_tokens": 23374,
+    "output_tokens": 16186
+   }
+  }
+ },
+ {
+  "game_id": "6c6899e6-1408-4c15-85f2-5f34b56e4fc2",
+  "process": "v8_seed_a",
+  "lone_killer": "necromancer",
+  "neutral": "speculator",
+  "winner": "wolves",
+  "days": 6,
+  "dehalo": {
+   "judged": 44,
+   "revised": 5,
+   "backfilled": false,
+   "usage": {
+    "input_tokens": 22420,
+    "output_tokens": 15228
+   }
+  }
+ },
+ {
+  "game_id": "23921724-025a-4bc7-90d6-bd0e2e6062e7",
+  "process": "v8_seed_a",
+  "lone_killer": "necromancer",
+  "neutral": "fortune_teller",
+  "winner": "villagers",
+  "days": 6,
+  "dehalo": {
+   "judged": 51,
+   "revised": 15,
+   "backfilled": true,
+   "usage": {
+    "input_tokens": 23958,
+    "output_tokens": 14417
+   }
+  }
+ },
+ {
+  "game_id": "518b978d-cb26-439a-af56-0695b2f9105c",
+  "process": "v8_seed_b",
+  "lone_killer": "serial_killer",
+  "neutral": "speculator",
+  "winner": "serial_killer",
+  "days": 4,
+  "dehalo": {
+   "judged": 41,
+   "revised": 6,
+   "backfilled": false,
+   "usage": {
+    "input_tokens": 15980,
+    "output_tokens": 11961
+   }
+  }
+ },
+ {
+  "game_id": "b457a80f-277a-4fbf-afb6-ff38fd845e4c",
+  "process": "v8_seed_b",
+  "lone_killer": "serial_killer",
+  "neutral": "fortune_teller",
+  "winner": "villagers",
+  "days": 3,
+  "dehalo": {
+   "judged": 39,
+   "revised": 10,
+   "backfilled": false,
+   "usage": {
+    "input_tokens": 16389,
+    "output_tokens": 10348
+   }
+  }
+ },
+ {
+  "game_id": "75fc8525-85e2-4a49-bce6-fd1705047e84",
+  "process": "v8_seed_b",
+  "lone_killer": "necromancer",
+  "neutral": "speculator",
+  "winner": "wolves",
+  "days": 6,
+  "dehalo": {
+   "judged": 53,
+   "revised": 11,
+   "backfilled": false,
+   "usage": {
+    "input_tokens": 23792,
+    "output_tokens": 14856
+   }
+  }
+ },
+ {
+  "game_id": "17b286f7-179b-4f32-b89e-4fc72c3b4b2e",
+  "process": "v8_seed_b",
+  "lone_killer": "necromancer",
+  "neutral": "fortune_teller",
+  "winner": "wolves",
+  "days": 6,
+  "dehalo": {
+   "judged": 55,
+   "revised": 19,
+   "backfilled": true,
+   "usage": {
+    "input_tokens": 26272,
+    "output_tokens": 16798
+   }
+  }
+ },
+ {
+  "game_id": "9e586de3-00af-4183-acaf-ab0fd92648d2",
+  "process": "v8_seed_c",
+  "lone_killer": "serial_killer",
+  "neutral": "speculator",
+  "winner": "villagers",
+  "days": 4,
+  "dehalo": {
+   "judged": 45,
+   "revised": 12,
+   "backfilled": false,
+   "usage": {
+    "input_tokens": 18037,
+    "output_tokens": 15620
+   }
+  }
+ },
+ {
+  "game_id": "935dc47e-b452-4474-947f-06f0a2429bde",
+  "process": "v8_seed_c",
+  "lone_killer": "serial_killer",
+  "neutral": "fortune_teller",
+  "winner": "villagers",
+  "days": 5,
+  "dehalo": {
+   "judged": 46,
+   "revised": 9,
+   "backfilled": false,
+   "usage": {
+    "input_tokens": 18988,
+    "output_tokens": 11819
+   }
+  }
+ },
+ {
+  "game_id": "6276f2d8-36a0-4e93-8063-8333b1310560",
+  "process": "v8_seed_c",
+  "lone_killer": "necromancer",
+  "neutral": "speculator",
+  "winner": "villagers",
+  "days": 5,
+  "dehalo": {
+   "judged": 55,
+   "revised": 13,
+   "backfilled": true,
+   "usage": {
+    "input_tokens": 22355,
+    "output_tokens": 17813
+   }
+  }
+ },
+ {
+  "game_id": "94cc23f9-561b-4067-924a-f41c863f4fa0",
+  "process": "v8_seed_d",
+  "lone_killer": "necromancer",
+  "neutral": "fortune_teller",
+  "winner": "necromancer",
+  "days": 4,
+  "dehalo": {
+   "judged": 47,
+   "revised": 18,
+   "backfilled": false,
+   "usage": {
+    "input_tokens": 18227,
+    "output_tokens": 11552
+   }
+  }
+ }
+]

@@ -1,0 +1,8 @@
+{
+  "source": "golden_situations from evidence/extraction/situation_summary/staging/case_1.json and case_0.json: situations written with the older stores' labels (Game phase, Consensus texture, Agent exposure)",
+  "old": [
+    "The village's first vote is approaching with no prior voting records or eliminations. Information landscape: Information-starved — the only concrete data is a publicly announced healer save; all suspicion is driven by communication style analysis and perceived evasion. Consensus texture: A fragile consensus is forming against one player for deflection, while that player and an ally argue for patience — the split is tone-based, not evidence-based. Game phase: Early mid-game, first elimination pending.",
+    "The healer whose night-1 save was publicly announced must now cast a vote without revealing their identity. Agent exposure: Low — the healer has maintained a low profile through discussion but must now take a visible stance. Information landscape: The saved player is leading the village push and is a likely wolf target again tonight. Game phase: First vote, where the healer's voting choice and tonight's protection target are both critical.",
+    "The village eliminated a wolf with a near-unanimous vote, but one player voted against the consensus, targeting a different villager instead. Information landscape: The voting record is the strongest available evidence, and this lone dissenting vote is the primary lead for identifying the remaining wolf. Game phase: Mid-game, with the village needing to determine whether the dissent was wolf-aligned or an honest disagreement."
+  ]
+}

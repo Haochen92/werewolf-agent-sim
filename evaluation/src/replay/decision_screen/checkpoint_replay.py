@@ -101,6 +101,9 @@ gen1..gen10) ≈ 1100 flash-lite decision calls ≈ $3–4, plus the retrieval e
 calls (each arm's store is embedded once at load; each case's frozen situations are
 embedded per arm). Tests stub both the decision LLM and retrieval — the paid sweep
 runs later on user sign-off.
+
+Reads nine-seat records (the v7 loop's games): the ten-seat prompts refuse their villager and
+wolf turns, so a paid rerun on those games runs from a nine-seat checkout (tag phase2-baseline).
 """
 
 from __future__ import annotations

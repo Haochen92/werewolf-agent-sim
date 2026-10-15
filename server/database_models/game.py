@@ -1,0 +1,148 @@
+"""SQLModel mappings for the unified game lifecycle and its event log."""
+
+from datetime import datetime
+from typing import Literal
+
+from sqlalchemy import (
+    TIMESTAMP,
+    CheckConstraint,
+    Column,
+    ForeignKey,
+    Index,
+    String,
+    Text,
+    func,
+    text,
+)
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlmodel import Field, SQLModel
+
+GameStatus = Literal["waiting", "running", "completed", "dropped"]
+
+WAITING: GameStatus = "waiting"  # legacy only: never written since rooms left the table
+RUNNING: GameStatus = "running"
+COMPLETED: GameStatus = "completed"
+DROPPED: GameStatus = "dropped"
+# Only running games are rebuilt at boot. Waiting rooms live in memory and have no row
+# (ruled 2026-09-12); a waiting row can only be a leftover from before that ruling.
+RECOVERABLE_STATUSES: tuple[GameStatus, ...] = (RUNNING,)
+# A game in one of these states has left the live registry; only its row answers for it.
+ENDED_STATUSES: tuple[GameStatus, GameStatus] = (COMPLETED, DROPPED)
+
+
+class GameRow(SQLModel, table=True):
+    """One game identity from waiting room through permanent completed replay."""
+
+    __tablename__ = "games"
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('waiting', 'running', 'completed', 'dropped')",
+            name="games_status_check",
+        ),
+        Index("games_status_idx", "status"),
+        # Partial index for completed-game listing; live/dropped rows do not enter it.
+        Index(
+            "games_completed_at_idx",
+            text("finished_at DESC"),
+            postgresql_where=text("status = 'completed'"),
+        ),
+    )
+
+    game_id: str = Field(sa_column=Column(Text, primary_key=True))
+    status: GameStatus = Field(sa_column=Column(String, nullable=False))
+
+    # Operational/recovery fields. They remain private because public DTOs never
+    # expose them; the provider API key itself is never stored here.
+    host_key: str = ""
+    model: str = ""
+    byok: bool = False
+    memory: bool = False
+    """The AI-memory switch the game was started with. Read back by recovery so a
+    restart rebuilds the same game, and shown on the replay."""
+    seats: list[dict] = Field(
+        default_factory=list,
+        sa_column=Column(
+            JSONB,
+            nullable=False,
+            server_default=text("'[]'::jsonb"),
+        ),
+    )
+    human_players: list[str] = Field(default_factory=list,
+                                     sa_column=Column(
+                                         JSONB,
+                                         nullable=False,
+                                         server_default=text("'[]'::jsonb"),
+                                     ))
+    room_name: str = Field(
+        default="",
+        sa_column=Column(Text, nullable=False, server_default=""),
+    )
+    locked: bool = False
+    error: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
+
+    created_at: datetime | None = Field(
+        default=None,
+        sa_column=Column(TIMESTAMP(timezone=True), nullable=False,
+                         server_default=func.now()),
+    )
+    updated_at: datetime | None = Field(
+        default=None,
+        sa_column=Column(TIMESTAMP(timezone=True), nullable=False,
+                         server_default=func.now()),
+    )
+
+    # Completion metadata. Null while waiting/running/dropped; populated in the
+    # same operation that transitions a clean game to ``completed``.
+    finished_at: datetime | None = Field(
+        default=None,
+        sa_column=Column(TIMESTAMP(timezone=True), nullable=True),
+    )
+    winner: str | None = None
+    days: int | None = None
+    ended_phase: str | None = None
+    """The part of the day the game ended in ("day", "voting" or "night"): the phase of
+    the last phase change before the game ended. Written when the game completes, so the
+    replay list can say "ended on night 5" without reading any events."""
+    neutral_result: str | None = None
+    """How the game's neutral fared, beside the winner ("won", "lost", "won (2 points)"), as
+    its game-over event says it; null for a nine-seat game, which dealt no neutral."""
+    n_events: int | None = None
+    n_humans: int | None = None
+    cast_role_counts: dict[str, int] | None = Field(
+        default=None,
+        sa_column=Column(JSONB, nullable=True),
+    )
+    usage: dict | None = Field(
+        default=None,
+        sa_column=Column(JSONB, nullable=True),
+    )
+    """The tokens the game spent and its model calls' time, per model and UTC hour
+    (server/game/usage.py). Saved as the game runs; the replay's cost is worked out from it.
+    Null for games recorded before the column existed."""
+    extraction_input: dict | None = Field(
+        default=None,
+        sa_column=Column(JSONB, nullable=True),
+    )
+    """What the game can teach, kept for the offline extraction job: the roles, the day talk,
+    the wolf chat, the exact night actions, each player's notes and the outcome. Saved when the
+    game completes; no AI reads it during the game. Null for games before the column existed."""
+    lessons_extracted_at: datetime | None = Field(
+        default=None,
+        sa_column=Column(TIMESTAMP(timezone=True), nullable=True),
+    )
+    """When the offline job extracted this game's lessons. Null until then; a memory-on game's
+    replay says its lessons are still being written."""
+
+
+class EventRow(SQLModel, table=True):
+    """One durable wire event in a game's ordered, permanent event log."""
+
+    __tablename__ = "events"
+
+    game_id: str = Field(sa_column=Column(
+        Text,
+        ForeignKey("games.game_id", ondelete="CASCADE"),
+        primary_key=True,
+    ))
+    seq: int = Field(primary_key=True)
+    payload: dict = Field(sa_column=Column(JSONB, nullable=False))

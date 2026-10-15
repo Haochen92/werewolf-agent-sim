@@ -1,0 +1,485 @@
+/* What the stage says in words when nobody is at the stand, in the speech box's foot zone with
+   the "your card" button beside it (rev 67, 75). Two materials (owner, 2026-10-15): a stage
+   direction is a placard held up from below the stage on one pole, the stand's walnut round a
+   paper face; what the house tells is printed paper under a ruled head, with a stamp for a
+   death. The dark glass stays for the pack's chat. */
+.zone {
+  position: absolute;
+  /* --aside on a phone only (NoticeZone's `aside`) */
+  right: calc(var(--right) + (var(--aside, var(--right)) - var(--right)) * var(--grown));
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--gap);
+}
+
+.box {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  max-width: 1024px;
+  flex: 0 1 auto;
+  color: var(--paper-ink);
+  --paper-ink: #2a1d11;
+  --paper-soft: #6b5638;
+  --paper-xray: #2c6b61;
+}
+.glass {
+  color: var(--bone);
+  background: linear-gradient(180deg, var(--glass-top), var(--glass-bot));
+  border: 1px solid var(--cloak2);
+  padding: 14.4px 25.6px;
+  border-radius: 17.6px;
+}
+
+/* ---------- the placard: a stage direction ---------- */
+/* the frame is the stand's own walnut, lit from the top left; the face is paper, held in it by
+   two brass tacks; one pole runs from its foot down out of the stage (the stage cuts it) */
+.placard {
+  padding: 9px;
+  border-radius: 6px;
+  background:
+    linear-gradient(
+      160deg,
+      rgba(255, 220, 170, 0.22),
+      rgba(0, 0, 0, 0) 40%,
+      rgba(0, 0, 0, 0.45)
+    ),
+    var(--board) center / 160px 160px,
+    var(--walnut-bot);
+  box-shadow:
+    8px 18px 28px rgba(0, 0, 0, 0.6),
+    0 1px 3px rgba(0, 0, 0, 0.5);
+}
+.placard::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 100%;
+  left: calc(50% - 9px);
+  width: 18px;
+  height: calc(var(--foot, 40px) + 8px);
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255, 220, 170, 0.28),
+      rgba(255, 220, 170, 0) 35%,
+      rgba(0, 0, 0, 0.55)
+    ),
+    var(--board) center / 130px 130px,
+    var(--walnut-bot);
+  box-shadow: 5px 0 10px rgba(0, 0, 0, 0.45);
+}
+.face {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 14.4px 28px 13px;
+  border-radius: 3px;
+  background-color: #efe3c8;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(60, 40, 20, 0.04) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(60, 40, 20, 0.03) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at 18% 12%, rgba(255, 250, 235, 0.55), transparent 55%),
+    radial-gradient(ellipse at 85% 95%, rgba(110, 80, 40, 0.3), transparent 60%);
+  box-shadow: inset 0 0 20px rgba(110, 80, 40, 0.28);
+}
+.face::before,
+.face::after {
+  content: '';
+  position: absolute;
+  top: 7px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #f6d48a, #7a5520 75%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+.face::before {
+  left: 9px;
+}
+.face::after {
+  right: 9px;
+}
+.face .head {
+  justify-content: center;
+}
+.face .actions {
+  justify-content: center;
+}
+
+/* ---------- the placard held over the empty stand (HeldPlacard) ---------- */
+/* placed by its foot above the stand's rail; tilted on its foot; its words in puppet units,
+   grown to the stage's spoken size where that is larger (a phone) */
+.held {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+  /* the pole runs from the placard's foot to below the rail, where the stand covers it */
+  --foot: calc(170 * var(--u));
+}
+.held .placard {
+  width: max-content;
+  max-width: calc(560 * var(--u));
+  transform: rotate(-2.5deg);
+  transform-origin: 50% 100%;
+}
+.held .head {
+  margin-bottom: 0;
+}
+.held .head strong {
+  font-size: max(calc(24 * var(--u)), var(--said));
+  line-height: 1.25;
+}
+/* the round's count: "3 of 9 written" */
+.count {
+  margin-top: 4px;
+  font-family: var(--font-display);
+  font-size: max(calc(34 * var(--u)), calc(var(--said) * 1.4));
+  line-height: 1.1;
+  color: var(--paper-ink);
+}
+.count small {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 0.45em;
+  color: var(--paper-soft);
+}
+
+/* ---------- the paper: what the house tells ---------- */
+.paper {
+  padding: 13px 25.6px 14.4px;
+  border-radius: 4px;
+  background-color: #efe3c8;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(60, 40, 20, 0.035) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at 12% 10%, rgba(255, 255, 255, 0.4), transparent 50%),
+    radial-gradient(ellipse at 92% 96%, rgba(120, 90, 50, 0.22), transparent 55%);
+  box-shadow:
+    inset 0 0 0 1px #d9c7a0,
+    0 6px 18px rgba(0, 0, 0, 0.6);
+}
+/* the printed head over the words: "Dawn 2 · The report", ruled off */
+.ruled {
+  display: block;
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+  border-bottom: 3px double rgba(42, 29, 17, 0.45);
+  font-family: var(--font-body);
+  /* the meta size, or half the words' where they have grown (a phone) */
+  font-size: max(calc(var(--meta) * 0.8), calc(var(--said) * 0.5));
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--paper-soft);
+}
+/* the stamp: a death's word in red ink, struck at a slant over the paper's right */
+.stamp {
+  position: absolute;
+  right: 22px;
+  top: 50%;
+  transform: translateY(-20%) rotate(-8deg);
+  padding: 2px 10px;
+  border: 2.5px solid currentColor;
+  border-radius: 4px;
+  color: #a8322a;
+  font-family: var(--font-body);
+  font-size: max(calc(var(--meta) * 0.9), calc(var(--said) * 0.6));
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  pointer-events: none;
+}
+.stamped {
+  padding-right: max(calc(var(--meta) * 9), calc(var(--said) * 6));
+}
+/* on paper the chip and the words keep one line, the words wrapping beside the chip */
+.paper .head {
+  flex-wrap: nowrap;
+}
+.paper .head strong {
+  min-width: 0;
+}
+.wide {
+  flex: 1 1 auto;
+}
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4.8px 11.2px;
+  font-size: var(--meta);
+  color: var(--paper-soft);
+  margin-bottom: 4.8px;
+}
+/* the heading, in the stage's display face; it grows on a phone as the words do */
+.head strong {
+  font-family: var(--font-display);
+  font-weight: 400;
+  color: var(--paper-ink);
+  font-size: calc(var(--said) * 1.1);
+}
+.body {
+  font-family: var(--font-body);
+  font-size: var(--said);
+  line-height: 1.4;
+  color: var(--paper-ink);
+}
+.glass .head {
+  color: var(--bone2);
+}
+.glass .head strong {
+  font-family: inherit;
+  font-weight: 500;
+  color: var(--bone);
+  font-size: calc(var(--meta) * 1.5);
+}
+.glass .body {
+  font-family: inherit;
+  font-size: calc(var(--said) * 1.45);
+  color: var(--bone);
+}
+.chip {
+  width: calc(var(--chip) * 0.85);
+  aspect-ratio: 1;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  overflow: hidden;
+  line-height: 0;
+  display: inline-block;
+}
+.sigil {
+  display: inline-block;
+  width: calc(var(--chip) * 0.7);
+  height: calc(var(--chip) * 0.7);
+  color: var(--c, var(--paper-ink));
+  stroke-width: 3;
+}
+/* the X-ray's words: "Only seat 4", in the X-ray's verdigris (a deeper one on paper) */
+.aqua {
+  color: var(--paper-xray);
+  border: 1px solid currentColor;
+  border-radius: 16px;
+  padding: 0 9.6px;
+}
+
+.c-villagers {
+  --c: var(--town);
+}
+.c-wolves {
+  --c: var(--wolf);
+}
+.c-serial_killer {
+  --c: var(--sk);
+}
+.c-neutral_benign {
+  --c: var(--benign);
+}
+
+/* the cast counts: "3 villagers · 1 healer · …" with the sigils */
+.cast {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14.4px;
+  margin-top: 4.8px;
+}
+.cast span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4.8px;
+  font-family: var(--font-body);
+  font-size: var(--said);
+  color: var(--paper-ink);
+}
+.face .cast {
+  justify-content: center;
+}
+.cast b {
+  font-weight: 600;
+}
+.cast svg {
+  width: calc(24px * var(--legible));
+  height: calc(24px * var(--legible));
+  color: var(--c);
+  stroke-width: 3;
+}
+
+/* the vigilante's caps: "Two caps in the popgun" and one red cap each */
+.caps {
+  display: flex;
+  gap: 4.8px;
+  align-items: center;
+  margin-top: 4.8px;
+  font-size: var(--said);
+  color: var(--paper-ink);
+}
+.caps i {
+  width: calc(11.2px * var(--legible));
+  height: calc(20.8px * var(--legible));
+  border-radius: 2.4px 2.4px 5.6px 5.6px;
+  background: #e3503f;
+  border: 1px solid var(--ink);
+  display: inline-block;
+}
+
+/* your card at rest beside the box: the head-and-shoulders crop and "your card" */
+.card {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 3.2px;
+  padding: 5.6px 5.6px 4.8px;
+  width: 118.4px;
+  box-sizing: border-box;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--bone3);
+  border-radius: 9.6px;
+  font: inherit;
+  cursor: pointer;
+  box-shadow:
+    0 0 0 1.9px #cbb992,
+    0 0 0 3.5px var(--rink, #24180c);
+}
+.card .av {
+  display: block;
+  aspect-ratio: 92 / 96;
+  border-radius: 5.6px;
+  overflow: hidden;
+  background: #e4d5b3;
+}
+.card .av svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.card em {
+  display: block;
+  text-align: center;
+  font-style: normal;
+  font-size: calc(var(--meta) * 0.85);
+  color: #6e4a2a;
+}
+/* out of the game: the card has gone to the wing */
+.card.gone {
+  opacity: 0.72;
+  filter: saturate(0.5);
+}
+.r-villagers {
+  --rink: var(--town-ink);
+}
+.r-wolves {
+  --rink: var(--wolf-ink);
+}
+.r-serial_killer {
+  --rink: var(--sk-ink);
+}
+.r-neutral_benign {
+  --rink: var(--benign-ink);
+}
+
+/* the pack chat, opened at the deal for a wolf (a placeholder until the chat is built); the
+   speech box's size, not the result box's */
+.pack {
+  padding: 11.2px 19.2px;
+  border-radius: 14.4px;
+  border-color: #6a2a22;
+  box-shadow: inset 4px 0 0 var(--wolf);
+}
+.pk {
+  font-size: calc(var(--meta) * 0.8);
+  color: var(--wolf);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid var(--wolf);
+  border-radius: 16px;
+  padding: 0 8px;
+}
+.pack .head strong {
+  font-size: calc(var(--meta) * 1.15);
+}
+.pack .body {
+  font-size: var(--said);
+  display: flex;
+  flex-direction: column;
+  gap: 5.6px;
+}
+.line {
+  display: flex;
+  gap: 9.6px;
+  align-items: baseline;
+}
+.line b {
+  font-weight: 500;
+  color: var(--bone2);
+  font-size: var(--meta);
+  white-space: nowrap;
+}
+.line .chip {
+  width: calc(var(--chip) * 0.6);
+  vertical-align: middle;
+}
+.input {
+  font: inherit;
+  font-size: var(--said);
+  color: var(--bone2);
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--cloak2);
+  border-radius: 9.6px;
+  padding: calc(6.4px * var(--legible)) calc(11.2px * var(--legible));
+}
+
+/* the ways on, under the words (the replay's stops, owner 2026-09-30): on the placard's face */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(9.6px * var(--legible-ui));
+  margin-top: calc(9.6px * var(--legible-ui));
+}
+/* a way on: a small walnut plaque with a brass edge (the strip's), the words in cream */
+.go {
+  position: relative;
+  font: inherit;
+  font-family: var(--font-display);
+  font-size: calc(var(--meta) * 1.1);
+  line-height: 1.3;
+  color: var(--cream2);
+  padding: calc(7.2px * var(--legible-ui)) calc(16px * var(--legible-ui));
+  border-radius: 8px;
+  cursor: pointer;
+  background: linear-gradient(180deg, var(--walnut-top), var(--walnut-bot));
+  border: 1.5px solid rgba(201, 164, 92, 0.6);
+  box-shadow:
+    inset 0 0 0 2px rgba(22, 13, 7, 0.9),
+    0 3px 8px rgba(0, 0, 0, 0.45);
+  white-space: nowrap;
+}
+/* on a phone the plaque stays slim, its tap area a finger's (--grown, as the note editor's) */
+.go::after {
+  content: '';
+  position: absolute;
+  inset: calc(-12px * var(--grown)) calc(-3px * var(--grown));
+}
+.go:hover,
+.go:focus-visible {
+  color: var(--cream);
+  border-color: var(--hud-brass-hi);
+}
+.go:focus-visible {
+  outline: 2px solid var(--hud-brass-hi);
+  outline-offset: 2px;
+}
+/* the one the notice leads with: the full brass edge, the words bright */
+.lead {
+  color: var(--cream);
+  border-color: var(--hud-brass);
+  box-shadow:
+    inset 0 0 0 2px rgba(22, 13, 7, 0.9),
+    inset 0 0 0 3px rgba(201, 164, 92, 0.3),
+    0 3px 8px rgba(0, 0, 0, 0.45);
+}

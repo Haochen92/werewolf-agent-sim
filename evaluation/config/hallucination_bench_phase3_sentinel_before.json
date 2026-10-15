@@ -1,0 +1,11 @@
+{
+  "label": "phase3_sentinel_before",
+  "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+  "n": 5, "workers": 3, "slices": ["sentinel_rule"],
+  "arms": [
+    {"label": "luna", "model": "openai/gpt-6-luna", "env": {}, "memory": "none"},
+    {"label": "flashlite", "model": "gemini-3.5-flash-lite", "env": {}, "memory": "none"}
+  ],
+  "recall_model": "gemini-3.1-flash-lite", "precision_model": "gemini-3.5-flash", "golden_model": "gemini-3.5-flash",
+  "note": "The sentinel self-visit turns from the Luna games, on the card before it states that the sentinel is not among its own visitors."
+}

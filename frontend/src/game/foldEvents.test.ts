@@ -1,0 +1,972 @@
+/**
+ * Reducer tests, against the REAL archived game — `seed-chunk-catalogue`, 593 events,
+ * fetched verbatim from `GET /replays/{id}` (build_plan ruling 8: fixtures are real
+ * archived-game JSON, not hand-written stubs).
+ *
+ * The fixture is a genuine served flash-lite game and covers 25 of the 30 durable event
+ * types. The five it lacks cannot occur in it: `input_request` needs a human seat
+ * (`n_humans: 0`), `day_summary_structured` was not sent until 2026-09-15, after the
+ * seed was captured, `memory_consulted` / `memory_extracted` need a memory-on game and
+ * `player_reads` was not sent until 2026-09-17. All are covered by synthetic cases at the
+ * bottom.
+ *
+ * Several assertions below encode facts about the wire that were VERIFIED against this data
+ * rather than assumed — they are regression tests on the reducer AND a tripwire on the
+ * server's event semantics.
+ */
+import { describe, expect, it } from 'vitest';
+import type { DurableGameEvent, ReplayGame } from '@/types/contracts';
+import { emptyGameView, foldEvent, foldEvents } from './foldEvents';
+import type { PassSlot, SpeechSlot } from './types';
+import fixture from './__fixtures__/seed-chunk-catalogue.json';
+import phase3Fixture from '@/stage/fixtures/replay-phase3.json';
+import phase3NecroFixture from '@/stage/fixtures/replay-phase3-necro.json';
+
+const replay = fixture as unknown as ReplayGame;
+const events = replay.events as DurableGameEvent[];
+const view = foldEvents(events);
+
+describe('the fixture itself', () => {
+  it('is the archived game we think it is', () => {
+    expect(replay.game_id).toBe('seed-chunk-catalogue');
+    expect(events).toHaveLength(593);
+    expect(replay.winner).toBe('wolves');
+    expect(replay.days).toBe(5);
+    expect(replay.n_humans).toBe(0);
+  });
+
+  it('covers 25 of the 30 durable event types', () => {
+    const present = new Set(events.map((e) => e.type));
+    expect(present.size).toBe(25);
+    expect(present.has('input_request')).toBe(false);
+    expect(present.has('day_summary_structured')).toBe(false);
+    expect(present.has('memory_consulted')).toBe(false);
+    expect(present.has('memory_extracted')).toBe(false);
+    expect(present.has('player_reads')).toBe(false);
+  });
+
+  it('carries observer-tier content — the X-ray half is exercised, not stubbed', () => {
+    const count = (t: string) => events.filter((e) => e.type === t).length;
+    expect(count('strategy_update')).toBe(139);
+    expect(count('firing_reason')).toBe(85);
+    expect(count('addressed_targets')).toBe(64);
+    expect(count('pass_marker')).toBe(18);
+  });
+});
+
+describe('full-game fold', () => {
+  it('seats the table from game_started', () => {
+    expect(view.seats).toHaveLength(9);
+    expect(view.castRoleCounts).toEqual({
+      wolf: 2,
+      healer: 1,
+      villager: 3,
+      vigilante: 1,
+      investigator: 1,
+      serial_killer: 1,
+    });
+  });
+
+  it('lands on the winner and the final seq', () => {
+    expect(view.winner).toBe('wolves');
+    expect(view.lastSeq).toBe(593);
+  });
+
+  it('leaves nothing thinking at the end of a finished game', () => {
+    expect(view.thinking).toBeNull();
+  });
+
+  it('drops nothing it was not told to drop', () => {
+    expect(view.droppedEventTypes).toEqual([]);
+  });
+
+  it('ends with the roster the server last published', () => {
+    // Final roster_update (seq 590) — two survivors, both on the winning side.
+    expect(view.alive).toEqual(['player_8', 'player_9']);
+    expect(view.packRoster).toEqual(['player_9']);
+  });
+
+  it('accounts for every death exactly once, with cause and revealed role', () => {
+    expect(view.dead).toHaveLength(7);
+    expect(view.alive.length + view.dead.length).toBe(view.seats.length);
+    const byPlayer = Object.fromEntries(view.dead.map((d) => [d.player, d]));
+    expect(byPlayer['player_5'].causes).toEqual(['wolves']);
+    expect(byPlayer['player_6'].causes).toEqual(['wolves']);
+    expect(byPlayer['player_6'].role).toBe('villager');
+    // Every dead seat has a revealed role: deaths are role-revealing in both directions.
+    expect(view.dead.every((d) => d.role !== null)).toBe(true);
+  });
+});
+
+describe('day pagination', () => {
+  it('produces exactly the five days the archive claims', () => {
+    expect(
+      Object.keys(view.days)
+        .map(Number)
+        .sort((a, b) => a - b),
+    ).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it('keeps each day channel dense and in order — the annotation join depends on it', () => {
+    for (const day of Object.values(view.days)) {
+      const seqs = day.slots.map((s) => s.channelSeq);
+      expect(seqs).toEqual([...seqs].sort((a, b) => a - b));
+      expect(new Set(seqs).size).toBe(seqs.length);
+      expect(seqs).toEqual(seqs.map((_, i) => i)); // dense: 0..n-1
+    }
+  });
+
+  it('mixes speech, pass and GM into ONE per-day channel counter', () => {
+    // Day 1 is the proof: three passes then two GM lines, slots 0..4, no speeches at all.
+    const day1 = view.days[1];
+    expect(day1.slots.map((s) => s.kind)).toEqual(['pass', 'pass', 'pass', 'gm', 'gm']);
+    expect(day1.slots.filter((s) => s.kind === 'speech')).toHaveLength(0);
+  });
+
+  it('records only the phases a day actually entered', () => {
+    // Day 1 never enters `voting` — it goes straight from day to night after three passes.
+    expect(view.days[1].phases).toEqual(['day', 'night']);
+    expect(view.days[2].phases).toEqual(['day', 'voting', 'night']);
+  });
+
+  it('builds the scrubber timeline from real phase changes (14, not 15)', () => {
+    expect(view.timeline).toHaveLength(14);
+    expect(view.timeline[0]).toEqual({ day: 1, phase: 'day', seq: 12 });
+    expect(view.timeline.at(-1)).toEqual({ day: 5, phase: 'night', seq: 584 });
+  });
+
+  it('files each day_summary on the day that emitted it (the view renders it next morning)', () => {
+    for (const day of [1, 2, 3, 4, 5]) {
+      expect(view.days[day].summary).toBeTruthy();
+    }
+  });
+});
+
+describe('the vote block', () => {
+  it('collects the batch and its result on the same day', () => {
+    const day2 = view.days[2].vote;
+    expect(day2.outcome).toBe('lynched');
+    expect(day2.lynched).toBeTruthy();
+    expect(day2.ballots.length).toBeGreaterThan(0);
+    expect(Object.keys(day2.voteCounts).length).toBeGreaterThan(0);
+  });
+
+  it('handles a day that voted nobody out', () => {
+    // Day 1: no ballots at all (everyone passed), outcome no_vote.
+    expect(view.days[1].vote.outcome).toBe('no_vote');
+    expect(view.days[1].vote.ballots).toHaveLength(0);
+    expect(view.days[1].vote.lynched).toBeNull();
+    // Day 3 tied.
+    expect(view.days[3].vote.outcome).toBe('tie');
+    expect(view.days[3].vote.lynched).toBeNull();
+  });
+
+  it('ballots reconcile with the tally the server computed', () => {
+    for (const day of Object.values(view.days)) {
+      if (day.vote.ballots.length === 0) continue;
+      const derived: Record<string, number> = {};
+      for (const b of day.vote.ballots) derived[b.votee] = (derived[b.votee] ?? 0) + 1;
+      // The vote matrix (D16) is derived from ballots; it must agree with vote_counts.
+      expect(derived).toEqual(day.vote.voteCounts);
+    }
+  });
+});
+
+describe('nights', () => {
+  it('keys a night on its own day, not the following dawn', () => {
+    expect(view.days[1].night?.day).toBe(1);
+    expect(view.days[1].night?.resolved).toBe(true);
+  });
+
+  it('captures the wolf channel, the pack vote and the decision', () => {
+    const night1 = view.days[1].night!;
+    expect(night1.wolfChannel.length).toBeGreaterThan(0);
+    expect(night1.wolfVotes.length).toBeGreaterThan(0);
+    expect(night1.wolfKill).toBeTruthy();
+    expect(night1.actions.length).toBeGreaterThan(0);
+  });
+
+  it('distinguishes a save from a quiet night from a kill', () => {
+    expect(view.days[1].night!.deaths).toHaveLength(0);
+    expect(view.days[1].night!.save?.player).toBe('player_1');
+    expect(view.days[4].night!.deaths.map((d) => d.player)).toEqual([
+      'player_1',
+      'player_4',
+    ]);
+    expect(view.days[5].night!.save).toBeNull();
+  });
+
+  it('every night the game reached is resolved', () => {
+    for (const day of [1, 2, 3, 4, 5]) {
+      expect(view.days[day].night?.resolved).toBe(true);
+    }
+  });
+});
+
+describe('X-ray annotations', () => {
+  it('reports observer data as available for a finished replay', () => {
+    expect(view.xray.available).toBe(true);
+  });
+
+  it('knows every seat’s role', () => {
+    expect(Object.keys(view.xray.roles).sort()).toEqual(view.seats.slice().sort());
+  });
+
+  it('joins every annotation onto a real slot — none orphaned', () => {
+    let annotatedSlots = 0;
+    let withFiring = 0;
+    let withAddressed = 0;
+    for (const day of Object.values(view.days)) {
+      const slotSeqs = new Set(day.slots.map((s) => s.channelSeq));
+      for (const [key, annotation] of Object.entries(day.annotations)) {
+        expect(slotSeqs.has(Number(key))).toBe(true);
+        annotatedSlots += 1;
+        if (annotation.firing) withFiring += 1;
+        if (annotation.addressed.length > 0) withAddressed += 1;
+      }
+    }
+    // The 149 annotation EVENTS land on 85 distinct slots: every one of the 85 turns
+    // carries a firing_reason, and 64 of them (the ones that produced speech) also carry
+    // addressed_targets. Orphans would show up as a slotSeqs miss above.
+    expect(annotatedSlots).toBe(85);
+    expect(withFiring).toBe(85);
+    expect(withAddressed).toBe(64);
+  });
+
+  it('annotates PASSES as well as speeches — the join is on the slot, not the speech', () => {
+    let annotatedPasses = 0;
+    for (const day of Object.values(view.days)) {
+      for (const slot of day.slots) {
+        if (slot.kind === 'pass' && day.annotations[slot.channelSeq]?.firing)
+          annotatedPasses += 1;
+      }
+    }
+    expect(annotatedPasses).toBe(18); // every pass in the game is annotated
+  });
+
+  it('preserves the vetoed speeches — the differentiator', () => {
+    const gated = Object.values(view.days)
+      .flatMap((d) => d.slots)
+      .filter((s): s is PassSlot => s.kind === 'pass' && s.gated);
+    expect(gated).toHaveLength(11);
+    expect(gated.every((s) => s.passReason === 'novelty_gated')).toBe(true);
+    expect(gated.every((s) => (s.gatedCandidate?.length ?? 0) > 0)).toBe(true);
+  });
+
+  it('builds a per-agent strategy timeline in emission order', () => {
+    const total = Object.values(view.xray.agents).reduce(
+      (n, a) => n + a.strategy.length,
+      0,
+    );
+    expect(total).toBe(139);
+    for (const agent of Object.values(view.xray.agents)) {
+      const seqs = agent.strategy.map((s) => s.seq);
+      expect(seqs).toEqual([...seqs].sort((a, b) => a - b));
+    }
+  });
+
+  it('carries firing tier and owes onto the annotated slot', () => {
+    const withFiring = Object.values(view.days)
+      .flatMap((d) => Object.values(d.annotations))
+      .filter((a) => a.firing);
+    expect(withFiring).toHaveLength(85);
+    expect(
+      withFiring.every(
+        (a) => a.firing!.tier === 'reactive' || a.firing!.tier === 'proactive',
+      ),
+    ).toBe(true);
+  });
+});
+
+describe('turn markers', () => {
+  it('resolves each turn_started into the slot it produced', () => {
+    const markers = Object.values(view.days).flatMap((d) => d.turnMarkers);
+    expect(markers).toHaveLength(85); // one per turn_started in the log
+    expect(markers.every((m) => m.resolvedChannelSeq !== null)).toBe(true);
+  });
+
+  it('links the marker back to a slot by the same player', () => {
+    for (const day of Object.values(view.days)) {
+      for (const marker of day.turnMarkers) {
+        const slot = day.slots.find((s) => s.channelSeq === marker.resolvedChannelSeq);
+        expect(slot).toBeDefined();
+        expect((slot as SpeechSlot | PassSlot).player).toBe(marker.player);
+      }
+    }
+  });
+});
+
+describe('seat identity', () => {
+  it('never guesses "me" from role_assigned — a replay deals every seat a card', () => {
+    expect(view.me.seat).toBeNull();
+    expect(view.me.role).toBeNull();
+    expect(view.me.privateResults).toHaveLength(0);
+    expect(Object.values(view.xray.privateResults).flat()).toHaveLength(4);
+  });
+
+  it('resolves the role card when the caller names a seat', () => {
+    const seated = foldEvents(events, { mySeat: 'player_9' });
+    expect(seated.me.seat).toBe('player_9');
+    expect(seated.me.role).not.toBeNull();
+    expect(seated.me.role!.role).toBe(view.xray.roles['player_9']);
+  });
+
+  it('files private results under their recipient and gives me only my own cards', () => {
+    const vigilante = foldEvents(events, { mySeat: 'player_1' });
+    expect(vigilante.me.privateResults).toHaveLength(3);
+    expect(
+      vigilante.me.privateResults.every((result) => result.player === 'player_1'),
+    ).toBe(true);
+    expect(view.xray.privateResults['player_3']).toHaveLength(1);
+  });
+
+  it('tracks whether my seat is still alive', () => {
+    const survivor = foldEvents(events, { mySeat: 'player_9' });
+    expect(survivor.me.alive).toBe(true);
+    const casualty = foldEvents(events, { mySeat: 'player_6' });
+    expect(casualty.me.alive).toBe(false);
+  });
+
+  it('keeps the vigilante’s bullet count current on the role card', () => {
+    const bullets = events.filter((e) => e.type === 'bullets_remaining');
+    const seat = (bullets[0] as { player: string }).player;
+    const vig = foldEvents(events, { mySeat: seat });
+    const last = bullets.at(-1) as { count: number };
+    expect(vig.me.role!.bullets).toBe(last.count);
+  });
+});
+
+describe('incremental folding equals whole-log folding', () => {
+  it('gives an identical view whether folded at once or event by event', () => {
+    const incremental = events.reduce((v, e) => foldEvent(v, e), emptyGameView());
+    expect(incremental).toEqual(view);
+  });
+
+  it('changes day object identity when that day is written to — memoised views must re-render', () => {
+    const upTo = (seq: number) => foldEvents(events.filter((e) => e.seq <= seq));
+    const before = upTo(55); // day 2, before the first speech (seq 56)
+    const after = upTo(56);
+    expect(after.days[2]).not.toBe(before.days[2]);
+    expect(after.days[1]).toEqual(before.days[1]);
+  });
+
+  it('is a pure function — folding does not mutate the input view', () => {
+    const start = foldEvents(events.slice(0, 100));
+    const snapshot = structuredClone(start);
+    foldEvent(start, events[100]);
+    expect(start).toEqual(snapshot);
+  });
+});
+
+describe('partial and out-of-order logs', () => {
+  it('folds a prefix without inventing anything', () => {
+    const partial = foldEvents(events.filter((e) => e.seq <= 48));
+    expect(partial.winner).toBeNull();
+    expect(partial.days[2]).toBeUndefined();
+    expect(partial.days[1].night!.resolved).toBe(true);
+    expect(partial.lastSeq).toBe(48);
+  });
+
+  it('leaves a thinking marker when the log ends mid-turn (D12’s live tail)', () => {
+    const midTurn = foldEvents(events.filter((e) => e.seq <= 55)); // turn_started, no slot yet
+    expect(midTurn.thinking).toEqual({ seq: 55, day: 2, player: expect.any(String) });
+  });
+
+  it('survives a public-tier-only log — the live spectator is not a degraded case', () => {
+    // D24: a live spectator receives the PUBLIC tier and nothing else — no observer
+    // annotations, no faction wolf channel, no seat-private cards. The server withholds
+    // them, so the reducer simply never sees them; this is the shape it must still fold.
+    const PUBLIC_TIER = new Set([
+      'game_started',
+      'phase_change',
+      'game_over',
+      'turn_started',
+      'speech',
+      'day_summary',
+      'day_summary_structured',
+      'vote_cast',
+      'gm_message',
+      'lynch_result',
+      'roster_update',
+      'night_result',
+    ]);
+    const live = foldEvents(events.filter((e) => PUBLIC_TIER.has(e.type)));
+    expect(live.xray.available).toBe(false);
+    expect(live.xray.roles).toEqual({});
+    expect(live.xray.agents).toEqual({});
+    expect(live.xray.privateResults).toEqual({});
+    expect(live.winner).toBe('wolves');
+    expect(live.alive).toEqual(['player_8', 'player_9']);
+    expect(live.dead).toHaveLength(7); // public deaths are fully knowable
+    expect(live.days[1].night!.wolfChannel).toHaveLength(0);
+    // The transcript stays ORDERED but is no longer dense: the withheld passes leave gaps
+    // in the channel counter. Nothing may assume 0..n-1 outside a full-tier replay.
+    const day2 = live.days[2].slots.map((s) => s.channelSeq);
+    expect(day2).toEqual([...day2].sort((a, b) => a - b));
+    expect(day2.length).toBeLessThan(view.days[2].slots.length);
+  });
+
+  it('a seated wolf sees its own card but no observer role map', () => {
+    // The faction/seat tiers a live wolf actually receives, plus public.
+    const wolfSeat = 'player_9';
+    const visible = events.filter(
+      (e) =>
+        ![
+          'roles_assigned',
+          'pass_marker',
+          'firing_reason',
+          'addressed_targets',
+          'strategy_update',
+          'night_action',
+        ].includes(e.type) &&
+        !(
+          'player' in e &&
+          typeof e.player === 'string' &&
+          [
+            'role_assigned',
+            'investigation_result',
+            'vigilante_confirmation',
+            'bullets_remaining',
+          ].includes(e.type) &&
+          e.player !== wolfSeat
+        ),
+    );
+    const wolf = foldEvents(visible, { mySeat: wolfSeat });
+    expect(wolf.me.role!.role).toBe('wolf');
+    expect(wolf.me.role!.pack).not.toBeNull();
+    expect(wolf.xray.roles).toEqual({}); // own card is NOT observer knowledge
+    expect(wolf.xray.available).toBe(false);
+    expect(wolf.days[1].night!.wolfChannel.length).toBeGreaterThan(0); // faction tier arrives
+    expect(wolf.days[5].night!.packRoster).toEqual(['player_9']);
+  });
+
+  it('R7 re-fold: replaying the full log over a public-only view reaches the same place', () => {
+    // The post-game unlock is not a special case — the same fold absorbs the backlog.
+    const full = foldEvents(events);
+    expect(full.xray.available).toBe(true);
+    expect(full.winner).toBe('wolves');
+  });
+});
+
+describe('synthetic cases the fixture cannot contain', () => {
+  const base = { seq: 900, day: 3 } as const;
+
+  it('files a pending input_request for the dock', () => {
+    const withInput = foldEvent(emptyGameView({ mySeat: 'player_1' }), {
+      ...base,
+      type: 'input_request',
+      player: 'player_1',
+      action_kind: 'vote',
+      candidates: ['player_2', 'player_3'],
+      deadline: '2026-08-21T10:00:00Z',
+    } as DurableGameEvent);
+    expect(withInput.me.pending).toEqual({
+      seq: 900,
+      day: 3,
+      actionKind: 'vote',
+      candidates: ['player_2', 'player_3'],
+      deadline: '2026-08-21T10:00:00Z',
+      // a vote has no round; a discuss ask carries its own (opening, discussion, proactive, closing)
+      round: null,
+      bodies: [],
+    });
+  });
+
+  it('files day_summary_structured on its day in the typed shape, a public event (no O-tier arrival)', () => {
+    const folded = foldEvent(emptyGameView(), {
+      ...base,
+      type: 'day_summary_structured',
+      data: {
+        accusations: [
+          {
+            accusers: ['player_1', 'player_3'],
+            target: 'player_4',
+            reasoning: 'player_1 and player_3 accuse player_4 of hypocrisy.',
+            evidence_type: 'voting_record',
+            defense: 'player_4 calls it self-preservation.',
+          },
+        ],
+        role_claims: [
+          { player: 'player_2', claimed_role: 'Investigator', evidence: 'unverified' },
+        ],
+        alliances: [
+          { players: ['player_1', 'player_3'], basis: 'Joint defense of their votes.' },
+        ],
+        village_dynamics: {
+          information_landscape: 'Information-rich.',
+          consensus: 'Split into camps.',
+          drivers: 'player_4 drives.',
+        },
+      },
+    } as unknown as DurableGameEvent);
+    expect(folded.droppedEventTypes).toEqual([]);
+    expect(folded.days[base.day].summaryStructured).toEqual({
+      accusations: [
+        {
+          accusers: ['player_1', 'player_3'],
+          target: 'player_4',
+          reasoning: 'player_1 and player_3 accuse player_4 of hypocrisy.',
+          evidenceType: 'voting_record',
+          defense: 'player_4 calls it self-preservation.',
+          disputedBy: '',
+          recordCheck: '',
+        },
+      ],
+      roleClaims: [
+        {
+          player: 'player_2',
+          claimedRole: 'Investigator',
+          evidence: 'unverified',
+          retracted: false,
+          nightActions: [],
+        },
+      ],
+      blocs: [
+        { players: ['player_1', 'player_3'], basis: 'Joint defense of their votes.' },
+      ],
+      dynamics: {
+        landscape: 'Information-rich.',
+        consensus: 'Split into camps.',
+        drivers: 'player_4 drives.',
+      },
+    });
+    expect(folded.xray.available).toBe(false);
+  });
+
+  it('reads an empty or malformed structured summary as absent, never as a crash', () => {
+    const empty = foldEvent(emptyGameView(), {
+      ...base,
+      type: 'day_summary_structured',
+      data: {},
+    } as unknown as DurableGameEvent);
+    expect(empty.days[base.day].summaryStructured).toBeNull();
+    const odd = foldEvent(emptyGameView(), {
+      ...base,
+      type: 'day_summary_structured',
+      data: { accusations: 'nope', village_dynamics: { consensus: 'Split.' } },
+    } as unknown as DurableGameEvent);
+    expect(odd.days[base.day].summaryStructured).toEqual({
+      accusations: [],
+      roleClaims: [],
+      blocs: null,
+      dynamics: { landscape: '', consensus: 'Split.', drivers: '' },
+    });
+  });
+
+  it('reads a v4 summary (2026-10-04): disputes, record checks, claimed night actions, no blocs or mood', () => {
+    const folded = foldEvent(emptyGameView(), {
+      ...base,
+      type: 'day_summary_structured',
+      data: {
+        accusations: [
+          {
+            accusers: ['player_8'],
+            target: 'player_2',
+            reasoning: 'player_8 argued player_2 survived an attack.',
+            evidence_type: 'concrete_claim',
+            defense: 'player_2 denied it.',
+            disputed_by: 'player_6 said survival proves nothing.',
+            record_check: 'No attack on player_2 was announced.',
+          },
+        ],
+        role_claims: [
+          {
+            player: 'player_3',
+            claimed_role: 'investigator',
+            kind: 'claimed',
+            night_actions: [
+              { night: 1, action: 'investigate', target: 'player_7', result: 'wolf' },
+            ],
+          },
+          {
+            player: 'player_6',
+            claimed_role: 'vigilante',
+            kind: 'retracted',
+            night_actions: [],
+          },
+        ],
+      },
+    } as unknown as DurableGameEvent);
+    const s = folded.days[base.day].summaryStructured!;
+    expect(s.blocs).toBeNull();
+    expect(s.dynamics).toBeNull();
+    expect(s.accusations[0]).toMatchObject({
+      disputedBy: 'player_6 said survival proves nothing.',
+      recordCheck: 'No attack on player_2 was announced.',
+    });
+    expect(s.roleClaims).toEqual([
+      {
+        player: 'player_3',
+        claimedRole: 'investigator',
+        evidence: '',
+        retracted: false,
+        nightActions: [
+          { night: 1, action: 'investigate', target: 'player_7', result: 'wolf' },
+        ],
+      },
+      {
+        player: 'player_6',
+        claimedRole: 'vigilante',
+        evidence: '',
+        retracted: true,
+        nightActions: [],
+      },
+    ]);
+  });
+
+  it('handles an unresolved turn_started followed by another', () => {
+    let v = emptyGameView();
+    v = foldEvent(v, {
+      seq: 1,
+      day: 1,
+      type: 'turn_started',
+      player: 'a',
+    } as DurableGameEvent);
+    v = foldEvent(v, {
+      seq: 2,
+      day: 1,
+      type: 'turn_started',
+      player: 'b',
+    } as DurableGameEvent);
+    expect(v.thinking!.player).toBe('b');
+    expect(v.days[1].turnMarkers).toEqual([
+      { seq: 1, day: 1, player: 'a', resolvedChannelSeq: null },
+    ]);
+  });
+
+  it('files what a decision weighed under its agent, and what the game taught at the end', () => {
+    const consulted = {
+      seq: 1,
+      day: 2,
+      type: 'memory_consulted',
+      player: 'a',
+      role: 'healer',
+      round: 0,
+      action_phase: 'night_action',
+      lessons: [
+        {
+          index: 1,
+          key: 'sp-1',
+          situation: 'When the loud one claims',
+          action: 'Guard them.',
+        },
+      ],
+      verdicts: [{ strategy_index: 1, verdict: 'follow', why: 'b claimed today' }],
+      observations: [],
+      applicability: [],
+    } as DurableGameEvent;
+    const extracted = {
+      seq: 2,
+      day: 3,
+      type: 'memory_extracted',
+      observations: [],
+      strategy_points: [
+        {
+          perspective: 'wolf',
+          action_phase: 'day_vote',
+          situation: 'When …',
+          action: 'Bus.',
+        },
+      ],
+    } as DurableGameEvent;
+    const reads = {
+      seq: 3,
+      day: 2,
+      type: 'player_reads',
+      player: 'a',
+      role: 'healer',
+      round: 0,
+      action_phase: 'day_vote',
+      reads: [
+        {
+          player: 'b',
+          suspected_role: 'wolf',
+          confidence: 'high',
+          why: 'pushed the lynch',
+        },
+      ],
+    } as DurableGameEvent;
+    let v = emptyGameView();
+    expect(v.xray.available).toBe(false);
+    v = foldEvent(v, consulted);
+    v = foldEvent(v, extracted);
+    v = foldEvent(v, reads);
+    expect(v.xray.available).toBe(true); // all three are observer-tier
+    expect(v.xray.agents.a.consulted).toEqual([consulted]);
+    expect(v.xray.agents.a.reads).toEqual([reads]);
+    expect(v.xray.agents.a.strategy).toEqual([]); // the timeline is untouched
+    expect(v.xray.extracted).toBe(extracted);
+  });
+});
+
+describe('the rounds of the day (Phase 2)', () => {
+  it('records each round_opened on its day, in order, with its players', () => {
+    const opening = {
+      seq: 11,
+      day: 2,
+      type: 'round_opened',
+      round: 'opening',
+      players: ['player_1', 'player_2', 'player_3'],
+    } as DurableGameEvent;
+    const closing = {
+      seq: 40,
+      day: 2,
+      type: 'round_opened',
+      round: 'closing',
+      players: ['player_3'],
+    } as DurableGameEvent;
+
+    let v = emptyGameView();
+    v = foldEvent(v, opening);
+    v = foldEvent(v, closing);
+
+    expect(v.droppedEventTypes).toEqual([]);
+    expect(v.days[2].rounds).toEqual([
+      { seq: 11, round: 'opening', players: ['player_1', 'player_2', 'player_3'] },
+      { seq: 40, round: 'closing', players: ['player_3'] },
+    ]);
+  });
+
+  it('starts every day with no rounds', () => {
+    const speech = {
+      seq: 5,
+      day: 1,
+      type: 'speech',
+      channel_seq: 0,
+      player: 'player_1',
+      message: 'hello',
+    } as DurableGameEvent;
+
+    const v = foldEvent(emptyGameView(), speech);
+
+    expect(v.days[1].rounds).toEqual([]);
+  });
+
+  it('files a discuss ask with its round, and an older ask with none', () => {
+    const ask = {
+      seq: 12,
+      day: 2,
+      type: 'input_request',
+      player: 'player_1',
+      action_kind: 'discuss',
+      candidates: [],
+      deadline: null,
+      round: 'closing',
+    } as DurableGameEvent;
+    const olderAsk = {
+      seq: 13,
+      day: 2,
+      type: 'input_request',
+      player: 'player_1',
+      action_kind: 'discuss',
+      candidates: [],
+      deadline: null,
+    } as unknown as DurableGameEvent;
+
+    const withRound = foldEvent(emptyGameView({ mySeat: 'player_1' }), ask);
+    expect(withRound.me.pending?.round).toBe('closing');
+    expect(withRound.me.pending?.actionKind).toBe('discuss');
+
+    const withoutRound = foldEvent(emptyGameView({ mySeat: 'player_1' }), olderAsk);
+    expect(withoutRound.me.pending?.round).toBeNull();
+  });
+});
+
+/**
+ * The ten-seat wire (Phase 3), against the translator's golden wrapped as a replay
+ * (`stage/fixtures/replay-phase3.json`: serial killer and fortune teller drawn, a sigil kill,
+ * a concealed body on night 2, the fortune teller's win at game over) and batch game e04
+ * (`replay-phase3-necro.json`: necromancer and speculator drawn, a save, the speculator's pick).
+ */
+describe('the ten-seat game', () => {
+  const p3 = (phase3Fixture as unknown as ReplayGame).events as DurableGameEvent[];
+  const necro = (phase3NecroFixture as unknown as ReplayGame).events as DurableGameEvent[];
+
+  it('folds both ten-seat fixtures with no dropped event types', () => {
+    expect(foldEvents(p3).droppedEventTypes).toEqual([]);
+    expect(foldEvents(necro).droppedEventTypes).toEqual([]);
+  });
+
+  it('seats ten from the roster and keeps the lineup', () => {
+    const v = foldEvents(p3);
+    expect(v.seats).toHaveLength(10);
+    expect(v.lineup).toContain('fortune_teller');
+    expect(v.lineup).toHaveLength(10);
+    // an old game has no lineup
+    expect(view.lineup).toEqual([]);
+  });
+
+  it('keeps the roster and a prompt’s candidates in seat order, not the wire’s text order', () => {
+    // the server's roster_update sorts its ids as text: player_10 straight after player_1
+    const at = p3.findIndex((e) => e.type === 'roster_update');
+    const raw = p3[at] as Extract<DurableGameEvent, { type: 'roster_update' }>;
+    expect(raw.surviving_players.slice(0, 2)).toEqual(['player_1', 'player_10']);
+    const v = foldEvents(p3.slice(0, at + 1));
+    expect(v.alive).toEqual([
+      'player_1',
+      'player_3',
+      'player_4',
+      'player_6',
+      'player_8',
+      'player_9',
+      'player_10',
+    ]);
+    const asked = foldEvents(
+      [
+        ...p3.slice(0, at + 1),
+        {
+          type: 'input_request',
+          seq: raw.seq + 1,
+          day: raw.day,
+          player: 'player_9',
+          action_kind: 'vote',
+          candidates: ['player_1', 'player_10', 'player_6', 'abstain'],
+        } as DurableGameEvent,
+      ],
+      { mySeat: 'player_9' },
+    );
+    expect(asked.me.pending?.candidates).toEqual([
+      'player_1',
+      'player_6',
+      'player_10',
+      'abstain',
+    ]);
+  });
+
+  it('ends over with the winner and the neutral’s result as a second line', () => {
+    const v = foldEvents(p3);
+    expect(v.over).toBe(true);
+    expect(v.winner).toBe('villagers');
+    expect(v.neutralResult).toBe('won (2 points)');
+    expect(view.over).toBe(true);
+    expect(view.neutralResult).toBeNull();
+    expect(foldEvents(p3.slice(0, -1)).over).toBe(false);
+  });
+
+  it('a draw is over with no winner', () => {
+    const drawn = foldEvent(emptyGameView(), {
+      seq: 5,
+      day: 4,
+      type: 'game_over',
+      winner: null,
+      neutral_result: null,
+    } as DurableGameEvent);
+    expect(drawn.over).toBe(true);
+    expect(drawn.winner).toBeNull();
+  });
+
+  it('keeps a concealed body’s role hidden: role null, concealed true, in the night and the dead', () => {
+    const v = foldEvents(p3);
+    expect(v.days[2].night!.deaths).toEqual([
+      {
+        player: 'player_3',
+        role: null,
+        attacker_types: ['wolves', 'serial_killer'],
+        concealed: true,
+      },
+    ]);
+    expect(v.dead.find((d) => d.player === 'player_3')?.role).toBeNull();
+    // an open body keeps its role
+    expect(v.days[1].night!.deaths.map((d) => [d.role, d.concealed])).toContainEqual([
+      'chanteuse',
+      false,
+    ]);
+    expect(v.dead.some((d) => d.role === '')).toBe(false);
+  });
+
+  it('carries the carrier, the passes, every save and the pick', () => {
+    const v = foldEvents(p3);
+    expect(v.days[1].night!.carrier).toBe('player_5');
+    expect(v.days[1].night!.wolfKill).toBe('player_7');
+    const entries = Object.values(v.days).flatMap((d) => d.night?.wolfChannel ?? []);
+    expect(entries.filter((e) => e.passed)).toHaveLength(2);
+    expect(entries.filter((e) => e.passed).every((e) => e.message === '')).toBe(true);
+
+    const n = foldEvents(necro).days[2].night!;
+    expect(n.saves).toEqual([{ player: 'player_1', attacker_types: ['wolves'] }]);
+    expect(n.save).toEqual(n.saves[0]);
+    expect(n.pick).toBe('wolves');
+    expect(foldEvents(necro).days[1].night!.pick).toBeNull();
+  });
+
+  it('files a night_record as a private result for its own seat only', () => {
+    const mine = foldEvents(p3, { mySeat: 'player_9' });
+    const records = mine.me.privateResults.filter((r) => r.kind === 'night_record');
+    expect(records).toHaveLength(3);
+    expect(records.every((r) => r.player === 'player_9')).toBe(true);
+    expect(records[0]).toEqual({
+      kind: 'night_record',
+      player: 'player_9',
+      seq: 100,
+      day: 1,
+      actor: 'player_9',
+      action: 'watch',
+      target: 'player_5',
+      result: 'seen',
+      outcome: 'Tonight player_5 was visited by player_3 and player_4.',
+      seen: ['player_3', 'player_4'],
+    });
+    // the X-ray files every seat's under its own seat; the pack's kill reaches each wolf
+    expect(mine.xray.privateResults.player_8?.some((r) => r.kind === 'night_record')).toBe(
+      true,
+    );
+    expect(
+      mine.xray.privateResults.player_6?.some(
+        (r) => r.kind === 'night_record' && r.actor === 'wolves',
+      ),
+    ).toBe(true);
+  });
+
+  it('counts uses down on my card from uses_remaining, and the vigilante’s bullets too', () => {
+    const sigilist = foldEvents(
+      p3.filter((e) => e.seq <= 106),
+      { mySeat: 'player_4' },
+    );
+    expect(sigilist.me.role).toMatchObject({ role: 'sigilist', uses: 1, bullets: null });
+    expect(sigilist.me.privateResults.at(-1)).toEqual({
+      kind: 'uses',
+      player: 'player_4',
+      seq: 106,
+      day: 1,
+      role: 'sigilist',
+      count: 1,
+    });
+    // the deal fills uses before the first night
+    const dealt = foldEvents(p3.slice(0, 12), { mySeat: 'player_4' });
+    expect(dealt.me.role?.uses).toBe(2);
+
+    const vigilante = foldEvent(foldEvents(p3.slice(0, 12), { mySeat: 'player_1' }), {
+      seq: 900,
+      day: 2,
+      type: 'uses_remaining',
+      player: 'player_1',
+      role: 'vigilante',
+      count: 1,
+    } as DurableGameEvent);
+    expect(vigilante.me.role).toMatchObject({ uses: 1, bullets: 1 });
+  });
+
+  it('puts a necromancer’s bodies on the pending ask, and [] on an ask without them', () => {
+    const ask = foldEvent(emptyGameView({ mySeat: 'player_9' }), {
+      seq: 300,
+      day: 2,
+      type: 'input_request',
+      player: 'player_9',
+      action_kind: 'necromancer_target',
+      candidates: ['player_1', 'player_5', 'stay_put'],
+      bodies: ['player_4'],
+      deadline: null,
+    } as DurableGameEvent);
+    expect(ask.me.pending?.bodies).toEqual(['player_4']);
+    const old = foldEvent(emptyGameView({ mySeat: 'player_1' }), {
+      seq: 12,
+      day: 2,
+      type: 'input_request',
+      player: 'player_1',
+      action_kind: 'vote',
+      candidates: ['player_2'],
+      deadline: null,
+    } as unknown as DurableGameEvent);
+    expect(old.me.pending?.bodies).toEqual([]);
+  });
+});

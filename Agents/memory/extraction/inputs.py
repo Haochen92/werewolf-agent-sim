@@ -9,21 +9,21 @@ from __future__ import annotations
 from logging import getLogger
 
 from Agents.prompts.prompt_formatters import (
+    format_night_actions_postgame,
     format_day_channel_postgame,
-    format_investigator_results,
     format_roles,
     format_strategy_notes_postgame,
     format_wolf_channel,
 )
 from Agents.prompts import (
     EPISTEMIC_STATUS_RULE,
-    GAME_RULES,
     POSTGAME_EXTRACTION_PROMPT,
     ROLE_EXTRACTION_PREFIX,
     ROLE_EXTRACTION_TAIL,
     ROLE_PHASE_EXTRACTION_TAIL,
     SITUATION_STANDARDS,
 )
+from Agents.prompts.compose import rules_block
 from Agents.prompts.extraction.cell import (
     CELL_EXTRACTION_PREFIX,
     CELL_OBSERVATION_TAIL,
@@ -61,6 +61,11 @@ _PHASE_DEFINITIONS: dict[str, str] = {
 }
 
 
+def _field(record, name: str):
+    """A field of a DeathRecord, or of its dict form."""
+    return record.get(name) if isinstance(record, dict) else getattr(record, name, None)
+
+
 def format_extraction_inputs(state: OrchestratorGraph) -> dict[str, str]:
     """Format game state into the strings needed for the extraction prompt.
 
@@ -76,8 +81,15 @@ def format_extraction_inputs(state: OrchestratorGraph) -> dict[str, str]:
         )
         + "\n\n=== Wolf Night Discussions ===\n"
         + format_wolf_channel(state.get("wolf_channel", []))
-        + "\n\n=== Investigator Results ===\n"
-        + format_investigator_results(state.get("investigator_results", []))
+        # Every night actor's exact actions and outcomes (post-game, so the full record is
+        # allowed): without it the extractor inferred night tactics from prose notes (audit
+        # 2026-10-03, finding 12).
+        + "\n\n=== Night Actions (exact, from the game engine) ===\n"
+        + format_night_actions_postgame(
+            state.get("night_actions", []), state.get("roles", {}),
+            {(_field(d, "player"), _field(d, "day")) for d in state.get("dead_roster", [])
+             if _field(d, "phase") == "night"},
+        )
     )
 
     formatted_strategy_notes = format_strategy_notes_postgame(
@@ -86,6 +98,7 @@ def format_extraction_inputs(state: OrchestratorGraph) -> dict[str, str]:
 
     return {
         "formatted_roles": formatted_roles,
+        "lineup": list(state.get("lineup", [])),
         "formatted_discussions": formatted_discussions,
         "formatted_strategy_notes": formatted_strategy_notes,
         "formatted_previous_strategies": (
@@ -100,7 +113,7 @@ def build_extraction_prompt(inputs: dict[str, str]) -> str:
     return POSTGAME_EXTRACTION_PROMPT.format(
         situation_standards=SITUATION_STANDARDS,
         epistemic_status_rule=EPISTEMIC_STATUS_RULE,
-        game_rules=GAME_RULES,
+        game_rules=rules_block(inputs.get("lineup") or []),
         **inputs,
     )
 
@@ -112,7 +125,7 @@ def build_role_extraction_prefix(inputs: dict[str, str]) -> str:
     return ROLE_EXTRACTION_PREFIX.format(
         situation_standards=SITUATION_STANDARDS,
         epistemic_status_rule=EPISTEMIC_STATUS_RULE,
-        game_rules=GAME_RULES,
+        game_rules=rules_block(inputs.get("lineup") or []),
         **inputs,
     )
 
@@ -140,8 +153,15 @@ def extraction_inputs_from_frozen_case(case: dict) -> dict[str, str]:
     The frozen extraction set carries the same pre-formatted game data the live
     extraction node produced (roles, discussions, strategy notes, outcome), so a
     finished game can be re-mined offline with no transcript or Langfuse access.
-    Mirrors the dict shape of `format_extraction_inputs`."""
+    Mirrors the dict shape of `format_extraction_inputs`. A case saved before 2026-10-12 carries no
+    lineup, so it is rebuilt from the roles; without it the rules block would come out empty."""
+    from Agents.schemas.roles import LONE_KILLER_ROLES, NEUTRAL_ROLES, lineup
+
+    dealt = list(case.get("roles", {}).values())
+    killer = next((r for r in dealt if r in LONE_KILLER_ROLES), None)
+    neutral = next((r for r in dealt if r in NEUTRAL_ROLES), None)
     return {
+        "lineup": case.get("lineup") or (lineup(killer, neutral) if killer and neutral else dealt),
         "formatted_roles": format_roles(case.get("roles", {})),
         "formatted_discussions": case.get("formatted_discussions", ""),
         "formatted_strategy_notes": case.get("formatted_strategy_notes", ""),
@@ -167,7 +187,7 @@ def build_cell_extraction_prefix(inputs: dict[str, str]) -> str:
     return CELL_EXTRACTION_PREFIX.format(
         situation_quality=SITUATION_QUALITY_STANDARDS,
         epistemic_status_rule=EPISTEMIC_STATUS_RULE,
-        game_rules=GAME_RULES,
+        game_rules=rules_block(inputs.get("lineup") or []),
         **inputs,
     )
 
@@ -186,6 +206,22 @@ _CELL_AMPLIFY_OVERRIDE = (
 )
 
 
+# The discussion and the vote are extracted in separate calls; each is told what belongs to the other.
+_DAY_PHASE_RULES = {
+    "day_discussion": (
+        " This cell is the DISCUSSION only: what the {role} said, claimed, argued or kept back, how it "
+        "read others and how it managed suspicion. A lesson about whom to vote for belongs to the separate "
+        "vote cell, even when the discussion led to the vote. Tag every observation day_discussion."
+    ),
+    "day_vote": (
+        " This cell is the VOTE only: whom the {role} voted for, or abstained, and when. A lesson about "
+        "what to say belongs to the separate discussion cell. Skip a vote that simply joined an "
+        "evidence-backed majority or a majority abstain, unless the vote decided the outcome or went "
+        "against the room. Tag every observation day_vote."
+    ),
+}
+
+
 def build_cell_observation_tail(role: str, phase: str, action_phase: str, schema, anchor: str = "",
                                 amplify: bool = False) -> str:
     """Per-cell observation lock appended after the cached prefix: role + phase + driver/horizon + the
@@ -199,6 +235,7 @@ def build_cell_observation_tail(role: str, phase: str, action_phase: str, schema
     return CELL_OBSERVATION_TAIL.format(
         role=role,
         phase=phase,
+        phase_rule=_DAY_PHASE_RULES.get(action_phase, "").format(role=role),
         driver_horizon=guidance["driver_horizon"],
         dimension_menu=guidance["dimension_menu"],
     ) + amp + anchor

@@ -1,0 +1,121 @@
+/* The workbench's control strip: plain controls above the stage, in the house's bone and ink. */
+.strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px 18px;
+  padding: 8px 12px;
+  background: #17130e;
+  border-bottom: 1px solid #4d3824;
+  color: #efe4cb;
+  font:
+    13px/1.4 system-ui,
+    sans-serif;
+}
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.label {
+  font-size: 11px;
+  color: #a8977a;
+  text-transform: lowercase;
+}
+.seg {
+  display: flex;
+  flex-wrap: wrap;
+  border: 1px solid #4d3824;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #211b14;
+}
+.seg button {
+  font: inherit;
+  padding: 3px 9px;
+  border: 0;
+  border-right: 1px solid #4d3824;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.seg button:last-child {
+  border-right: 0;
+}
+.seg button[aria-pressed='true'] {
+  background: #e0a63a;
+  color: #24180c;
+}
+.seg button.unbuilt {
+  color: #8d7a55;
+}
+.seg button.unbuilt[aria-pressed='true'] {
+  color: #24180c;
+}
+.select,
+.num {
+  font: inherit;
+  padding: 3px 6px;
+  border: 1px solid #4d3824;
+  border-radius: 6px;
+  background: #211b14;
+  color: inherit;
+}
+.num {
+  width: 4.5em;
+}
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.stepper button {
+  font: inherit;
+  padding: 3px 10px;
+  border: 1px solid #4d3824;
+  border-radius: 6px;
+  background: #211b14;
+  color: inherit;
+  cursor: pointer;
+}
+.stepper button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.of {
+  color: #a8977a;
+  font-variant-numeric: tabular-nums;
+}
+.caption {
+  display: flex;
+  flex-direction: column;
+  min-width: 18em;
+}
+.caption b {
+  font-weight: 600;
+}
+.anchor,
+.url {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: #a8977a;
+}
+.wide {
+  flex: 1 1 24em;
+  min-width: 0;
+}
+.url {
+  display: block;
+  white-space: nowrap;
+  overflow-x: auto;
+  padding: 3px 6px;
+  border: 1px solid #4d3824;
+  border-radius: 6px;
+  background: #0c0a07;
+}
+.strip button:focus-visible,
+.strip select:focus-visible,
+.strip input:focus-visible {
+  outline: 2px solid #e0a63a;
+  outline-offset: 1px;
+}

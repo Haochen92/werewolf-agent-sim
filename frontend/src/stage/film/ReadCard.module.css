@@ -1,0 +1,126 @@
+/* The read card beside its seat on the wing: a small paper index card, a leaf of the speaker's
+   case file (Film.module.css): cream stock with a red rule under its head, the labels typed,
+   the guess and the why in Literata, the truth in its faction's stamp ink. Upright. */
+.card {
+  position: absolute;
+  z-index: 7;
+  box-sizing: border-box;
+  width: calc(304px * var(--legible-ui));
+  /* the seat's level, held on the stage at the card's height as drawn: near enough 250 units at
+     full size, grown with the type on a phone */
+  top: max(8px, min(var(--top), calc(900px - 250px * var(--legible-ui))));
+  padding: 11.2px 16px 12.8px;
+  border-radius: 3.2px;
+  background: var(--card);
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.06),
+    0 9.6px 22.4px rgba(0, 0, 0, 0.45);
+  color: var(--type);
+  font-family: var(--font-body);
+  font-size: var(--meta);
+  --f-type: var(--font-stage-type, 'Courier Prime'), 'Courier New', monospace;
+}
+.card header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4.8px 6.4px;
+  padding-bottom: 6.4px;
+  /* the index card's red rule */
+  border-bottom: 1.6px solid rgba(179, 64, 47, 0.55);
+}
+.card header strong {
+  font-family: var(--f-type);
+  font-weight: 700;
+  color: var(--type);
+  white-space: nowrap;
+}
+/* two faces and two names in one line: the heads a little smaller than a lone one */
+.card header .chip {
+  width: calc(var(--chip) * 0.5);
+}
+/* "Seat 2's read on" typed between the two faces */
+.card header > span:not(.chip) {
+  font-family: var(--f-type);
+  color: var(--type-label);
+  white-space: nowrap;
+}
+.chip {
+  flex: 0 0 auto;
+  display: inline-block;
+  width: calc(var(--chip) * 0.6);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  line-height: 0;
+  background: #ecdfc3;
+  box-shadow: 0 0 0 1.5px var(--manila-edge);
+}
+.guess {
+  display: flex;
+  align-items: baseline;
+  gap: 9.6px;
+  margin: 8px 0 3.2px;
+  font-size: calc(22.4px * 1.1 * var(--legible-ui));
+}
+.guess b {
+  font-weight: 600;
+  color: var(--type);
+}
+.guess b.sure {
+  font-weight: 700;
+}
+.guess span {
+  font-family: var(--f-type);
+  color: var(--type-mut);
+  font-size: var(--meta);
+}
+.card p {
+  margin: 0 0 8px;
+  line-height: 1.45;
+}
+.card footer {
+  display: flex;
+  align-items: center;
+  gap: 6.4px;
+  padding-top: 6.4px;
+  border-top: 1px solid rgba(90, 70, 40, 0.22);
+  font-family: var(--f-type);
+  color: var(--type-mut);
+}
+.truth {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--c);
+  font-weight: 700;
+}
+.truth svg {
+  width: calc(20.8px * var(--legible-ui));
+  height: calc(20.8px * var(--legible-ui));
+  stroke-width: 3;
+}
+.mk {
+  margin-left: auto;
+  font-size: calc(22.4px * 1.1 * var(--legible-ui));
+  color: rgba(90, 70, 40, 0.45);
+}
+/* the role itself in green ink, the side in the town's amber ink (as in the file's Reads) */
+.m-role {
+  color: var(--ink-follow);
+}
+.m-side {
+  color: var(--ink-town);
+}
+.c-villagers {
+  --c: var(--ink-town);
+}
+.c-wolves {
+  --c: var(--ink-wolf);
+}
+.c-serial_killer {
+  --c: var(--ink-sk);
+}
+.c-neutral_benign {
+  --c: var(--ink-benign);
+}

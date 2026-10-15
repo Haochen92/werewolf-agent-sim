@@ -20,6 +20,7 @@ from logging import getLogger
 from Agents.llm_factory import DEFAULT_PRO_MODEL, get_llm_pro, get_llm_pro_backup
 from Agents.observability import extraction_role_run_name
 from Agents.schemas import GameStrategyOutput
+from Agents.schemas.roles import roles
 from Agents.schemas.memory import (
     cell_dual_extraction_schema,
     cell_observation_schema_for,
@@ -33,20 +34,15 @@ from .inputs import (
     build_cell_strategy_tail,
     build_role_extraction_tail,
 )
-from .prefix_cache import create_prefix_cache
+from Agents.llm_factory.providers.google import create_prefix_cache
 
 logger = getLogger(__name__)
 
 # Fixed 9-player casting → every game contains all six role types, so the fan-out
 # always covers the full set (no need to read which roles are present).
-EXTRACTION_ROLES: tuple[str, ...] = (
-    "villager",
-    "wolf",
-    "investigator",
-    "healer",
-    "serial_killer",
-    "vigilante",
-)
+# Every role of the pool; a role with no memory cells (ROLE_UNITS) extracts nothing, and the
+# retired roles are not in the pool.
+EXTRACTION_ROLES: tuple[str, ...] = tuple(roles)
 
 
 @dataclass
@@ -277,7 +273,11 @@ def _extract_one_cell(
                 if isinstance(result, dict):
                     result = schema.model_validate(result)
                 sps = list(result.strategy_points) if with_strategy_points else []
-                return list(result.observations), sps, label
+                observations = list(result.observations)
+                if rep_phase in ("day_discussion", "day_vote"):  # one phase per call: the tag is the call's
+                    for o in observations:
+                        o.action_phase = rep_phase
+                return observations, sps, label
             except Exception as e:
                 logger.warning(
                     "cell %s/%s failed with %s model on attempt %s: %s",

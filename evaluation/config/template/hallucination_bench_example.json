@@ -1,0 +1,33 @@
+{
+  "label": "example_flashlite35_v1_vs_v2",
+  "dataset": "evaluation/frozen_eval_sets/hallucination_bench_v1.jsonl",
+  "n": 3,
+  "workers": 3,
+  "arms": [
+    {
+      "label": "v1",
+      "model": "gemini-3.5-flash-lite",
+      "env": {
+        "WW_DISCUSSION_PROMPT": ""
+      },
+      "memory": "none"
+    },
+    {
+      "label": "v2",
+      "model": "gemini-3.5-flash-lite",
+      "env": {
+        "WW_DISCUSSION_PROMPT": "v2"
+      },
+      "memory": "none"
+    }
+  ],
+  "recall_model": "anthropic/claude-haiku-5-5",
+  "precision_model": "anthropic/claude-haiku-5-5",
+  "golden_model": "anthropic/claude-haiku-5-5",
+  "slices": [
+    "curated",
+    "pinned",
+    "control"
+  ],
+  "note": "prompt changes: curated + pinned (+ control for false alarms); model comparisons: random + control"
+}

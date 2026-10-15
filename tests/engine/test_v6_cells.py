@@ -1,7 +1,11 @@
 """Full v6 mixin-DAG cells (step 4A). Guards the invariants across all 11 concrete cells: the
 registry covers exactly the valid (role, action_phase) combinations, every cell is all-required
 (flash-lite), the criticality numbers + direction enums stay OUT of the embedding string, and the
-`_Embed` marker never reaches a model. See evidence/extraction/situation_dimensions/dimension_schema_build_spec.md §2."""
+`_Embed` marker never reaches a model. See evidence/extraction/situation_dimensions/dimension_schema_build_spec.md §2.
+
+The cells were built for the nine-seat roles (v6 is default-off, and the ten-seat roles have no
+cells yet), so the registry is checked over those six roles; the retired villager and wolf are
+still in the role registry for exactly this kind of record."""
 
 import json
 import typing
@@ -9,7 +13,10 @@ import typing
 import pytest
 
 from Agents.schemas import memory as M
-from Agents.schemas.roles import VALID_ACTION_PHASES_BY_ROLE, roles
+from Agents.schemas.roles import VALID_ACTION_PHASES_BY_ROLE
+
+# The roles the v6 cells were built for: the nine-seat game's.
+roles = ["villager", "wolf", "healer", "investigator", "vigilante", "serial_killer"]
 
 _SAMPLE = dict(
     situation="Aardvark accused Badger and demanded a vote.",
@@ -21,12 +28,12 @@ _SAMPLE = dict(
     consensus_direction="opposes_my_read", heat_now="no pressure on me",
     target_landscape="two candidates remain, cases purely behavioral",
     forward_exposure="acting now would expose my hand", public_private_text="my finding clashes with the public read",
-    divergence_sign="contradicts", bullets_left=4, ally_revealed=False,
+    divergence_sign="contradicts", bullets_left=4, uses_left=2, ally_revealed=False,
     approach="voted the accused", impact_on_final_game_outcome="NET POSITIVE removed a threat",
-    immediate_response="the room followed", net_verdict="positive",
+    immediate_response="the room followed", net_verdict="positive", decision_day=53, pack_turn="skill",
 )
 # distinctive tokens belonging to non-embed (reranker-only) fields — must never be in the embed
-_FORBIDDEN = ["61", "37", "opposes_my_read", "contradicts", "bullets", "ally_revealed", "info_starved"]
+_FORBIDDEN = ["61", "37", "53", "opposes_my_read", "contradicts", "bullets", "ally_revealed", "info_starved"]
 
 
 def _cells():

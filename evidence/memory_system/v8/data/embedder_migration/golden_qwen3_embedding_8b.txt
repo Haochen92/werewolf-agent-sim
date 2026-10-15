@@ -1,0 +1,6 @@
+THRESHOLD SWEEP — STRATEGY POINTS (action similarity)
+BEST ZERO-ERROR: discard≥0.88  keep<0.61  auto_rate=16.0%  (3D + 1K auto, 21 LLM)
+BEST ≤1-ERROR:   discard≥0.83  keep<0.61  auto_rate=32.0%  errors=1 (1D_wrong + 0K_wrong)
+THRESHOLD SWEEP — OBSERVATIONS (content sim, keep=content)
+BEST ZERO-ERROR: discard≥0.94  keep<0.72  auto_rate=7.5%  (2D + 1K auto, 37 LLM)
+BEST ≤1-ERROR:   discard≥0.91  keep<0.72  auto_rate=30.0%  errors=1 (1D_wrong + 0K_wrong)

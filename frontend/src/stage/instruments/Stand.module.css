@@ -1,0 +1,145 @@
+/* The stand, as the stage kit draws it (kits/stage-kit.js `stand()` and its CSS). Every size
+   is in puppet units (--u), so the stand grows and shrinks with the puppet box. */
+
+/* the dark below the rail, the whole width of the stage: it gathers from nothing at the rail,
+   so the car's painted floor and tables run on under it without a seam */
+.pit {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: visible;
+  background: linear-gradient(
+    180deg,
+    rgba(12, 10, 7, 0),
+    rgba(12, 10, 7, 0.5) 40%,
+    rgba(12, 10, 7, 0.78)
+  );
+}
+
+/* the box itself: it places the footlights and the plaque; the picture below is its front */
+.box {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+/* the painted front (props/stand-front.webp) as a 9-slice: the gallery, the rail, the marquetry
+   corners and the bottom rail keep their size, the flame panel and the plain border stretch; a
+   pixel is 0.407682u (605u over the body's 1484 px); the rail's top is on the box's top */
+.box::before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  left: calc(-8.561 * var(--u));
+  right: calc(-8.154 * var(--u));
+  top: calc(-11.823 * var(--u));
+  bottom: calc(-1.631 * var(--u));
+  box-sizing: border-box;
+  border-style: solid;
+  border-width: calc(71.752 * var(--u)) calc(85.613 * var(--u)) calc(52.591 * var(--u))
+    calc(85.613 * var(--u));
+  border-image: var(--front) 176 210 129 210 fill stretch;
+}
+
+/* the key light's shadow (the rooms' atmosphere): off the box's right side, over the boards
+   behind it and down its flank, under the painted front */
+.cast {
+  position: absolute;
+  left: calc(100% - 60 * var(--u));
+  top: calc(-70 * var(--u));
+  width: calc(220 * var(--u));
+  height: calc(300 * var(--u));
+  /* closest-side keeps the ellipse inside the box, so no edge of it shows */
+  background: radial-gradient(
+    closest-side at 45% 40%,
+    rgba(12, 7, 4, 0.55),
+    rgba(12, 7, 4, 0.25) 55%,
+    rgba(12, 7, 4, 0)
+  );
+  pointer-events: none;
+}
+
+/* the two footlights: brass domes on the rail, glowing when the stand is lit */
+.foot {
+  position: absolute;
+  z-index: 2;
+  top: calc(-16 * var(--u));
+  width: calc(40 * var(--u));
+  height: calc(20 * var(--u));
+  box-sizing: border-box;
+  border-radius: calc(20 * var(--u)) calc(20 * var(--u)) 0 0;
+  background: var(--bone3);
+  border: calc(3 * var(--u)) solid var(--ink);
+  border-bottom: 0;
+  transition:
+    background-color 0.3s,
+    box-shadow 0.3s;
+}
+.foot.on {
+  background: var(--bone);
+  box-shadow: 0 calc(-4 * var(--u)) calc(22 * var(--u)) rgba(255, 179, 92, 0.55);
+}
+
+.plaque {
+  position: absolute;
+  left: 50%;
+  top: calc(3 * var(--u));
+  z-index: 3;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.45em;
+  align-items: center;
+  white-space: nowrap;
+  font-size: max(var(--meta), calc(17 * var(--u)));
+  height: 1.9em;
+  box-sizing: border-box;
+  padding: 0 0.7em;
+  /* a small brass plate: a brushed gradient, a dark bevel under a bright top edge, and the
+     numeral cut into it (dark, with the light catching the cut's lower lip) */
+  font-family: var(--font-display);
+  font-weight: 400;
+  color: #3a2610;
+  text-shadow: 0 1px 0 rgba(255, 236, 190, 0.55);
+  background: linear-gradient(
+    180deg,
+    var(--hud-brass-hi) 0%,
+    var(--hud-brass) 45%,
+    #a9823f 70%,
+    var(--hud-brass) 100%
+  );
+  border: 1px solid #4a3317;
+  border-radius: calc(4 * var(--u));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 244, 214, 0.7),
+    inset 0 -1px 0 rgba(74, 51, 23, 0.6),
+    0 calc(3 * var(--u)) calc(6 * var(--u)) rgba(0, 0, 0, 0.45);
+}
+/* with the speech box over the stand's front, where the box rises past the rail the plate is
+   pinned to the box's top edge (Stand.tsx measures it: the box's height is its words') */
+.tag {
+  font-family: var(--font-body);
+  font-size: 0.8em;
+  font-weight: 500;
+  padding: 0 0.5em;
+  border-radius: 3.2px;
+  color: var(--cream);
+  text-shadow: none;
+}
+.t-villagers {
+  background: var(--town);
+  color: var(--town-ink);
+}
+.t-wolves {
+  background: var(--wolf);
+}
+.t-serial_killer {
+  background: var(--sk);
+}
+.t-neutral_benign {
+  background: var(--benign);
+  color: var(--benign-ink);
+}
+/* said on the seat's own screen: its agent spoke, or it was voted out */
+.t-agent {
+  background: #8a2a24;
+}

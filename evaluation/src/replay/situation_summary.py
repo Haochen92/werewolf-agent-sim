@@ -20,6 +20,7 @@ from Agents.prompts import (
 )
 from Agents.schemas.evaluation import EvalCase
 from Agents.schemas.output import SituationSummary
+from Agents.schemas.roles import ROLE_SPECS
 from evaluation.src.core.config_schema import VariantConfig
 from evaluation.src.core.costs import estimate_cost_from_usage_metadata
 from evaluation.src.core.schemas import CostEstimate
@@ -44,6 +45,15 @@ def make_google_llm(config: VariantConfig | Any):
     )
 
 
+def case_lineup(case: EvalCase) -> list[str]:
+    """The case's dealt ten-seat lineup, from its public cast census, in the pool's order. Empty
+    before the census was captured and for a nine-seat case (its retired roles have no card)."""
+    counts = case.private_context.cast_role_counts
+    if any(role not in ROLE_SPECS or ROLE_SPECS[role].retired for role in counts):
+        return []
+    return [role for role in ROLE_SPECS if role in counts for _ in range(counts[role])]
+
+
 def eval_case_to_agent_payload(case: EvalCase) -> dict[str, Any]:
     """Reconstruct the agent payload shape consumed by the live prompt builder.
 
@@ -55,6 +65,7 @@ def eval_case_to_agent_payload(case: EvalCase) -> dict[str, Any]:
     return {
         "player_id": case.player_id,
         "player_role": case.player_role,
+        "lineup": case_lineup(case),
         "current_day": case.day,
         "current_round": case.round,
         "day_channel": case.visible_discussion,

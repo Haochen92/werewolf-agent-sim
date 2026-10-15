@@ -1,0 +1,255 @@
+/**
+ * Site tokens (The Ninth Express), as CSS custom properties for CSS modules.
+ *
+ * The first block is the site's palette, from the landing mockup, and mirrors
+ * `src/theme/tokens.ts` one for one (`tokens.test.ts` holds the two together). Site-only roles
+ * keep the landing's names; materials shared with the theatre (`--ink`, `--bone*`, `--paper`,
+ * the faction colours) carry the THEATRE's values from `stage/paint/materials.ts`, because the
+ * theatre wins wherever the two share a name. The stage sets the same names on its own box, so
+ * inside the stage these are never read.
+ *
+ * The second block is the August palette ("hi-bit pixel × séance noir", ux_baseline §1), kept
+ * only for the pages not yet rebuilt from the mockups (review §B3: it goes when its consumers
+ * go). New code uses the first block.
+ */
+
+:root {
+  /* --- site: the landing mockup's roles --------------------------------- */
+  --bg: #0c0a07;
+  --panel: #17130e;
+  --panel-2: #211b14;
+  --line: rgba(255, 235, 200, 0.08);
+  --text: #f1e8d6;
+  --muted: #a3947c;
+  --paper-dk: #cbb992;
+  --ink2: #5e4a33;
+  --brass: #c9a25e;
+  --red: #c8392b;
+  --amber-hi: #f0b94a; /* the amber pill's hover */
+  --r-s: 12px;
+  --r-m: 20px;
+  --r-l: 28px;
+  --shadow: 0 24px 44px -22px rgba(0, 0, 0, 0.9);
+  --site-max: 1160px;
+  --gutter: 28px;
+  /* the signage: board (what you operate), cream plate (the current choice), brass (lines) */
+  --brass-line: #c9963f;
+  --brass-hi: #f0c573;
+  --brass-lo: #4e340e;
+  --board-top: #3d2c1a;
+  --board-bot: #2a1d11;
+  --plate-top: #f4e8cc;
+  --plate-bot: #dccaa2;
+  --plate-edge: #a8813f;
+  --plate-ink: #2a1a08;
+  --sign-text: #f3e7cc;
+  --sign-muted: #a99a7e;
+  --well-text: #d8c59c;
+
+  /* --- shared with the theatre: its names, its values -------------------- */
+  --ink: #24180c;
+  --bone: #efe4cb;
+  --bone2: #cdbb93;
+  --bone3: #8d7a55;
+  --cloak1: #241910;
+  --cloak2: #4d3824;
+  --paper: #ecdfc3;
+  --amber: #e0a63a;
+  --town: #e0a63a;
+  --wolf: #e3503f;
+  --sk: #9d7cff;
+  --town-ink: #4a2e0a;
+  --wolf-ink: #4a120c;
+  --sk-ink: #241548;
+  --benign: #d5dce4;
+  --benign-ink: #262c35;
+  --film: #0b191f;
+  --sure: #7fdcf2;
+
+  /* --- type (the --font-site-* variables come from theme/fonts.ts) ------- */
+  --font-sans: var(--font-site-sans, Outfit), 'Helvetica Neue', Arial, sans-serif;
+  --font-serif: var(--font-site-serif, 'IM Fell English'), Georgia, serif;
+  --font-garamond: var(--font-site-garamond, 'EB Garamond'), Georgia, serif;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Legacy: the August palette, for the pages not yet rebuilt.
+ *
+ * - Story world (table, transcript, lobby): deep warm ink, one amber accent.
+ * - Machine world (X-ray panes, inspector): colder, flatter, monospace, cyan.
+ * - Night: a blue-black wash over the story world.
+ * ───────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* --- story world: warm ink surfaces ----------------------------------- */
+  --ink-900: #0b0908; /* page ground */
+  --ink-850: #100d0c;
+  --ink-800: #16120f; /* raised surface: cards, bubbles */
+  --ink-700: #1e1815; /* hover / secondary surface */
+  --ink-600: #2a221e; /* borders on raised surfaces */
+  --ink-500: #3a2f29; /* hairline dividers */
+
+  /* --- ink on ink: text ------------------------------------------------- */
+  --text-dim: #a4948a; /* secondary, GM narration */
+  --text-faint: #8a7d75; /* metadata, timestamps, disabled — 5.1:1 on ink-800, AA */
+
+  /* --- the one accent: amber, as pooled lamplight ----------------------- */
+  --amber-bright: #f5bf62; /* hover / focus only */
+  --amber-dim: #8a6526; /* borders, underlines */
+  --amber-wash: rgba(224, 163, 63, 0.09); /* own-message tint, selected rows */
+
+  /* --- machine world: the instrument panel ------------------------------ */
+  --machine-bg: #07090a;
+  --machine-surface: #0c1114;
+  --machine-border: #1c2a2e;
+  --cyan: #58c6d1;
+  --cyan-dim: #2c6067;
+  --cyan-wash: rgba(88, 198, 209, 0.07);
+
+  /* --- night wash ------------------------------------------------------- */
+  --night-bg: #070a11;
+  --night-surface: #0c111c;
+  --night-border: #1a2334;
+  --night-text-dim: #8c97ad;
+
+  /* --- factions (winner chips, role edges, pack tint) ------------------- */
+  --faction-villagers: #7d9e83; /* muted verdigris — the town, alive and dull */
+  --faction-wolves: #a83c3c; /* crimson */
+  --faction-serial-killer: #7c5aa6; /* violet — the third thing nobody expects */
+  --wolf-wash: rgba(168, 60, 60, 0.08); /* wolf-channel tint */
+
+  /* --- death ------------------------------------------------------------ */
+  --death-desaturate: grayscale(0.85) brightness(0.62);
+  --death-border: #4a2020;
+
+  /* --- geometry: crisp, not soft ---------------------------------------- */
+  --radius: 2px;
+  --radius-lg: 3px;
+  --hairline: 1px;
+  --reading-measure: 64ch; /* the transcript column — this is a reading app */
+
+  /* --- rhythm ----------------------------------------------------------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+}
+
+/**
+ * Night phase. Applied as a class on the phase wrapper, driven by the fold's phase — the
+ * variables above are re-pointed rather than overridden per-component, so every nested
+ * element shifts together with no component knowing night exists.
+ */
+.nightPhase {
+  --ink-900: var(--night-bg);
+  --ink-850: #090d16;
+  --ink-800: var(--night-surface);
+  --ink-700: #111828;
+  --ink-600: var(--night-border);
+  --ink-500: #202a3d;
+  --text-dim: var(--night-text-dim);
+}
+
+/* ---------- the controls kit (owner, 2026-10-15): what a surface tells the controls on it ----
+   A control never picks its own colours: the surface under it sets these, and the site's
+   Button (well, text), its links (Anchor) and the board's wells read them. The dark is the
+   default; a paper surface says `data-surface="paper"` and they turn to ink. */
+:root {
+  --ctl-ground: var(--bg);
+  --ctl-ink: var(--text);
+  --ctl-accent: var(--amber);
+  --ctl-accent-hi: var(--amber-hi);
+  --ctl-well-ink: var(--well-text);
+  --ctl-well-ink-hi: var(--sign-text);
+  --ctl-well-bg: linear-gradient(180deg, #1a120a, #120c07);
+  --ctl-well-edge: rgba(224, 166, 58, 0.35);
+  --ctl-well-edge-hi: rgba(224, 166, 58, 0.6);
+  --ctl-well-depth: inset 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+[data-surface='paper'] {
+  --ctl-ground: var(--paper);
+  --ctl-ink: var(--ink);
+  --ctl-accent: #7a4f10;
+  --ctl-accent-hi: #4a2e0a;
+  --ctl-well-ink: var(--plate-ink);
+  --ctl-well-ink-hi: var(--plate-ink);
+  --ctl-well-bg: linear-gradient(180deg, rgba(60, 40, 20, 0.07), rgba(60, 40, 20, 0.02));
+  --ctl-well-edge: rgba(42, 26, 8, 0.5);
+  --ctl-well-edge-hi: rgba(42, 26, 8, 0.85);
+  --ctl-well-depth: inset 0 1px 3px rgba(60, 40, 20, 0.2);
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* The reading app's baseline: generous leading, comfortable measure. */
+body {
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Keep the amber focus ring visible against ink — accessibility, not decoration. */
+:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Motion.
+ *
+ * ux_baseline §6 parks micro-animation as later polish; this is that pass,
+ * unparked deliberately (2026-08-21) because the built replay read as static.
+ * The discipline it keeps: motion is for STATE CHANGE the reader caused
+ * (opening a pass, stepping a day, toggling the X-ray) or for the arrival of
+ * a page. It is never used to dramatise an event during a fold — ux_journeys
+ * §0 reserves beats for live arrival, and a replay must render settled.
+ * ───────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur: 200ms;
+  --dur-slow: 420ms;
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/*
+ * One global off-switch. Every animated rule below sits inside a class, and this kills
+ * all of them at once — a reader who asked their OS for less motion gets a page that is
+ * merely instant, never one that is subtly broken.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

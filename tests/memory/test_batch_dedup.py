@@ -249,6 +249,45 @@ def test_strategy_discard_keeps_survivor_and_sums_counts():
     assert "k1" not in items                       # and dropped from the working set
 
 
+def test_a_strategy_judge_cannot_rewrite_the_survivor():
+    # Strategy points never merge: a judge reply carrying rewritten text keeps the survivor as written
+    # (a cheap judge rewrote one Sonnet point of 605 when the schema allowed it, 2026-10-13).
+    store = FakeStore()
+    items = {"k1": _item("k1", situation="s1", action="a1"), "k2": _item("k2", situation="s2", action="a2")}
+    operation = StrategyBatchOperation.model_validate({
+        "action": "DISCARD", "reasoning": "dup", "source_keys": ["k1", "k2"], "survivor_key": "k2",
+        "merged_situation": "a judge's own words", "merged_action": "a judge's own advice"})
+
+    _apply_strategy_operation(store, NS, operation, {"k1", "k2"}, items, apply=True)
+
+    survivor = store.data[(NS, "k2")]
+    assert (survivor["situation"], survivor["action"]) == ("s2", "a2")
+    assert "merged_action" not in StrategyBatchOperation.model_json_schema()["properties"]
+
+
+def test_a_strategy_point_from_another_stage_is_never_discarded():
+    # Whatever the judge says: the late-game point stays, the same-stage one is absorbed.
+    store = FakeStore()
+    items = {
+        "keep": _item("keep", situation="s", action="a", dimensions={"players_alive": 9, "uses_left": 2}),
+        "same": _item("same", situation="s2", action="a2", dimensions={"players_alive": 8, "uses_left": 1}),
+        "late": _item("late", situation="s3", action="a3", dimensions={"players_alive": 4, "uses_left": 1}),
+        "spent": _item("spent", situation="s4", action="a4", dimensions={"players_alive": 9, "uses_left": 0}),
+    }
+    operation = StrategyBatchOperation(action="DISCARD", reasoning="dup",
+                                       source_keys=["keep", "same", "late", "spent"], survivor_key="keep")
+
+    status, deleted = _apply_strategy_operation(store, NS, operation, set(items), items, apply=True)
+
+    assert (status, deleted) == ("discarded", 1)
+    assert (NS, "same") in store.deleted and (NS, "late") not in store.deleted and (NS, "spent") not in store.deleted
+    assert store.data[(NS, "keep")]["observation_count"] == 2   # only the same-stage point's count absorbed
+
+    only_other_stages = StrategyBatchOperation(action="DISCARD", reasoning="dup", source_keys=["keep", "late"],
+                                               survivor_key="keep")
+    assert _apply_strategy_operation(store, NS, only_other_stages, set(items), items, apply=True) == ("kept", 0)
+
+
 def test_strategy_discard_preserves_survivor_structured_fields():
     # Regression: the survivor rewrite used to whitelist situation/action/metadata only, silently
     # dropping direction/honesty/dimensions + verdict counters on every absorbed survivor.

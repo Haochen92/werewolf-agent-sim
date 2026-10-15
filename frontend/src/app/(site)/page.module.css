@@ -1,0 +1,60 @@
+/* The landing's leftovers that other components still read: the latest games' loading and
+   empty states (ReplayListClient) and the house's purse under the hero's tags (HouseDoorNote).
+   The landing itself is `_components/landing/*.module.css`. */
+
+.doors {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+  margin-bottom: var(--space-7);
+}
+
+@media (min-width: 48em) {
+  .doors {
+    /* the latest games' placeholders while the list loads (ReplayListClient) */
+    grid-template-columns: 1.6fr 1fr 1fr;
+  }
+}
+
+/* The purse, under the hero's doors. Dim by default: "bring a key" is a condition, not a boast —
+   only the free case earns the amber. */
+.doorNote {
+  min-height: 1.5em;
+  margin: 26px 0 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.doorNoteFree {
+  color: var(--town);
+}
+
+.note {
+  color: var(--text-faint);
+  font-size: 0.85rem;
+}
+
+.skeletonCard {
+  height: 120px;
+  border: var(--hairline) solid var(--ink-600);
+  border-radius: var(--radius);
+  background: linear-gradient(90deg, var(--ink-800), var(--ink-700), var(--ink-800));
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeletonCard {
+    animation: none;
+  }
+}

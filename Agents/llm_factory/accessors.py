@@ -16,26 +16,52 @@ from __future__ import annotations
 
 import os
 
-from .backends import GAME_LLM, create_chat_model
+from . import catalog
+from .chat import GAME_LLM, create_chat_model
 
-DEFAULT_GAME_MODEL = "gemini-3.1-flash-lite"
-# Different-backend rescue when a seat exhausts its structured-output retries (seen with
+# Claude since 2026-10-15 (owner): the Gemini credits ran out, so every default that a batch run or
+# an offline memory job falls back on is a Claude model; a Gemini model still runs when named.
+DEFAULT_GAME_MODEL = "anthropic/claude-haiku-5-5"
+# Different-model rescue when a seat exhausts its structured-output retries (seen with
 # DeepSeek's unconstrained tool-calling): one shot on this model beats a random action.
-DEFAULT_GAME_FALLBACK_MODEL = "gemini-3.5-flash-lite"
+DEFAULT_GAME_FALLBACK_MODEL = "anthropic/claude-sonnet-5-5"
+# A model's own turn and summary levels are catalogue rows (catalog.py, columns turn_thinking and
+# summary_thinking); a model with none takes these defaults. A rescued turn gets its rescue
+# model's level.
 DEFAULT_GAME_THINKING_LEVEL = "minimal"
+# A game turn's request budget (2026-09-30): Vertex's shared pool for a new model can hold a
+# request for minutes before answering or bouncing it with 429, and the SDK then re-sent each
+# bounce up to five times, so one seat's turn took 2-5 minutes with nothing failing. Now a
+# request waits GAME_LLM_TIMEOUT_S, is sent GAME_LLM_ATTEMPTS times in all, and then fails,
+# which hands the turn to the rescue model (agent_player.run_agent) within about a minute.
+# The day summary gets a longer wait: its failure path is the raw transcript.
+DEFAULT_GAME_TIMEOUT_S = 30.0
+DEFAULT_GAME_ATTEMPTS = 2
+DEFAULT_SUMMARY_TIMEOUT_S = 90.0
 DEFAULT_SUMMARY_THINKING_LEVEL = "medium"
-DEFAULT_PRO_MODEL = "gemini-2.5-pro"
-# Pinned (was the floating alias "gemini-pro-latest", which Google retargets
-# silently — a reproducibility hazard for the extraction pipeline that
-# conditions gold labels). gemini-3.5-flash: stable GA, pro-comparable quality,
-# and a different model family/quota pool than the primary, so it remains a
-# genuine fallback. (3.1-pro-preview rejected: preview tier = no SLA +
-# retirement risk.)
-DEFAULT_PRO_BACKUP_MODEL = "gemini-3.5-flash"
+# The post-game extraction model. gemini-3.8-flash since 2026-10-11: re-extracting two ten-seat pilot
+# games, it cost about $0.34 a game against 2.5-pro's $1.17 (promo price, $0.75/$3.75 per 1M to
+# 2026-12-31, then $1.50/$7.50), wrote fewer observations with no player IDs, and read as well
+# grounded (evidence/memory_system/v8/experiment_log.md). 3.5-flash-lite was cheaper
+# still but leaked player IDs into 41% of one game's observations.
+# Since 2026-10-15 Claude Sonnet 5.5, the model the offline batch extracted 21 of the 40 ten-seat
+# games on (about $0.95 a game as run, against 3.8 Flash's $0.55).
+DEFAULT_PRO_MODEL = "anthropic/claude-sonnet-5-5"
+# Pinned, never a floating alias (a provider can retarget those silently — a reproducibility
+# hazard). The backup only runs when the primary fails, so it is a different model: Haiku 5.5.
+DEFAULT_PRO_BACKUP_MODEL = "anthropic/claude-haiku-5-5"
 # Per-item downstream dedup — fixed cheap model (overridable via DEDUP_MODEL env).
-DEFAULT_DEDUP_MODEL = "gemini-3.1-flash-lite"
+DEFAULT_DEDUP_MODEL = "anthropic/claude-haiku-5-5"
 DEFAULT_DEDUP_THINKING_LEVEL = "low"
 VALID_THINKING_LEVELS = {"minimal", "low", "medium", "high"}
+
+
+def _offline_mode(model: str) -> dict[str, str]:
+    """A Claude model in an offline job answers with the schema as text after the prompt, checked in
+    code (`json_mode`), whatever its menu row says: an enforced schema is part of Claude's cache key,
+    so the jobs that fan out over one shared prefix with a schema per role or per cell would never
+    read each other's cache (measured 2026-10-12, evidence/caching/experiment_log.md §9)."""
+    return {"structured_mode": "json_mode"} if model.startswith("anthropic/") else {}
 
 
 def _game_model() -> str:
@@ -61,23 +87,40 @@ def _thinking_level_from_env(
     return normalized
 
 
+def game_thinking_level(model: str) -> str | None:
+    """A game turn's thinking level on ``model``: GOOGLE_GENAI_THINKING_LEVEL when set (a bench arm
+    pins it), else the model's own level, else the default."""
+    return _thinking_level_from_env(
+        "GOOGLE_GENAI_THINKING_LEVEL",
+        (row.turn_thinking if (row := catalog.entry(model)) else None) or DEFAULT_GAME_THINKING_LEVEL,
+    )
+
+
+def _request_budget(timeout_env: str, default_timeout: float) -> dict[str, float | int]:
+    """The client's per-request timeout (seconds) and attempts, both counted by the SDK:
+    ``max_retries`` here is the SDK's attempt count, so 1 means a single request."""
+    return {
+        "timeout": float(os.getenv(timeout_env, default_timeout)),
+        "max_retries": max(1, int(os.getenv("GAME_LLM_ATTEMPTS", DEFAULT_GAME_ATTEMPTS))),
+    }
+
+
 def get_llm():
+    model = _game_model()
     return create_chat_model(
-        _game_model(),
+        model,
         temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
-        thinking_level=_thinking_level_from_env(
-            "GOOGLE_GENAI_THINKING_LEVEL",
-            DEFAULT_GAME_THINKING_LEVEL,
-        ),
+        thinking_level=game_thinking_level(model),
+        **_request_budget("GAME_LLM_TIMEOUT_S", DEFAULT_GAME_TIMEOUT_S),
     )
 
 
 def get_llm_game_fallback():
     """The retry-exhaustion rescue seat model, or None when no rescue applies.
 
-    A served (BYOK) game uses its registry-assigned rescue — same credential as the primary
-    by construction, so the rescue bills the player, never the server; None = no tested
-    same-credential rescue exists, and the typed technical-pass path absorbs failures.
+    A served game uses its registry-assigned rescue on the same credential path as the
+    primary: house-funded stays on the server backend and BYOK stays on the player's key.
+    None = no tested compatible rescue, so the typed technical-pass path absorbs failures.
     Otherwise the env pair (``GAME_FALLBACK_MODEL``), or None when it would equal the
     primary — a re-roll on the identical model isn't a rescue."""
     override = GAME_LLM.get()
@@ -87,10 +130,8 @@ def get_llm_game_fallback():
         return create_chat_model(
             override.rescue_model,
             temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
-            thinking_level=_thinking_level_from_env(
-                "GOOGLE_GENAI_THINKING_LEVEL",
-                DEFAULT_GAME_THINKING_LEVEL,
-            ),
+            thinking_level=game_thinking_level(override.rescue_model),
+            **_request_budget("GAME_LLM_TIMEOUT_S", DEFAULT_GAME_TIMEOUT_S),
         )
     model = os.getenv("GAME_FALLBACK_MODEL", DEFAULT_GAME_FALLBACK_MODEL)
     if model == os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL):
@@ -98,21 +139,22 @@ def get_llm_game_fallback():
     return create_chat_model(
         model,
         temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
-        thinking_level=_thinking_level_from_env(
-            "GOOGLE_GENAI_THINKING_LEVEL",
-            DEFAULT_GAME_THINKING_LEVEL,
-        ),
+        thinking_level=game_thinking_level(model),
+        **_request_budget("GAME_LLM_TIMEOUT_S", DEFAULT_GAME_TIMEOUT_S),
     )
 
 
 def get_llm_summary():
+    model = _game_model()
     return create_chat_model(
-        _game_model(),
+        model,
         temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
         thinking_level=_thinking_level_from_env(
             "GOOGLE_GENAI_SUMMARY_THINKING_LEVEL",
-            DEFAULT_SUMMARY_THINKING_LEVEL,
+            (row.summary_thinking if (row := catalog.entry(model)) else None)
+            or DEFAULT_SUMMARY_THINKING_LEVEL,
         ),
+        **_request_budget("GAME_SUMMARY_TIMEOUT_S", DEFAULT_SUMMARY_TIMEOUT_S),
     )
 
 
@@ -143,31 +185,37 @@ def get_llm_extractor():
 
 
 def get_llm_pro():
+    model = os.getenv("GOOGLE_GENAI_PRO_MODEL", DEFAULT_PRO_MODEL)
     return create_chat_model(
-        os.getenv("GOOGLE_GENAI_PRO_MODEL", DEFAULT_PRO_MODEL),
+        model,
         temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
+        **_offline_mode(model),
     )
 
 
 def get_llm_pro_backup():
+    model = os.getenv("GOOGLE_GENAI_PRO_BACKUP_MODEL", DEFAULT_PRO_BACKUP_MODEL)
     return create_chat_model(
-        os.getenv("GOOGLE_GENAI_PRO_BACKUP_MODEL", DEFAULT_PRO_BACKUP_MODEL),
+        model,
         temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
         thinking_level=_thinking_level_from_env(
             "GOOGLE_GENAI_PRO_BACKUP_THINKING_LEVEL",
         ),
+        **_offline_mode(model),
     )
 
 
 def get_llm_dedup():
     """Cheap, deterministic model for the per-item downstream dedup agent."""
+    model = os.getenv("DEDUP_MODEL", DEFAULT_DEDUP_MODEL)
     return create_chat_model(
-        os.getenv("DEDUP_MODEL", DEFAULT_DEDUP_MODEL),
+        model,
         temperature=0.0,
         thinking_level=_thinking_level_from_env(
             "DEDUP_THINKING_LEVEL",
             DEFAULT_DEDUP_THINKING_LEVEL,
         ),
+        **_offline_mode(model),
     )
 
 
@@ -179,4 +227,5 @@ def get_llm_batch_dedup(model: str, thinking_level: str | None):
         model,
         temperature=0.0,
         thinking_level=thinking_level,
+        **_offline_mode(model),
     )

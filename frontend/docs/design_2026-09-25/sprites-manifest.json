@@ -1,0 +1,445 @@
+{
+ "day": {
+  "cat": {
+   "base": {
+    "w": 413,
+    "h": 600,
+    "file": "sprites/day/cat/base.png"
+   },
+   "talking": {
+    "w": 464,
+    "h": 600,
+    "file": "sprites/day/cat/talking.png"
+   },
+   "thinking": {
+    "w": 415,
+    "h": 600,
+    "file": "sprites/day/cat/thinking.png"
+   },
+   "out": {
+    "w": 427,
+    "h": 600,
+    "file": "sprites/day/cat/out.png"
+   },
+   "chip": {
+    "w": 200,
+    "h": 200,
+    "file": "sprites/day/cat/chip.png"
+   },
+   "body": {
+    "top": 0.058,
+    "body": 0.942
+   }
+  },
+  "hare": {
+   "base": {
+    "w": 372,
+    "h": 600,
+    "file": "sprites/day/hare/base.png"
+   },
+   "talking": {
+    "w": 392,
+    "h": 600,
+    "file": "sprites/day/hare/talking.png"
+   },
+   "thinking": {
+    "w": 372,
+    "h": 600,
+    "file": "sprites/day/hare/thinking.png"
+   },
+   "out": {
+    "w": 378,
+    "h": 600,
+    "file": "sprites/day/hare/out.png"
+   },
+   "chip": {
+    "w": 200,
+    "h": 200,
+    "file": "sprites/day/hare/chip.png"
+   },
+   "body": {
+    "top": 0.086,
+    "body": 0.914
+   }
+  },
+  "owl": {
+   "base": {
+    "w": 430,
+    "h": 600,
+    "file": "sprites/day/owl/base.png"
+   },
+   "talking": {
+    "w": 466,
+    "h": 600,
+    "file": "sprites/day/owl/talking.png"
+   },
+   "thinking": {
+    "w": 456,
+    "h": 600,
+    "file": "sprites/day/owl/thinking.png"
+   },
+   "out": {
+    "w": 433,
+    "h": 600,
+    "file": "sprites/day/owl/out.png"
+   },
+   "chip": {
+    "w": 200,
+    "h": 200,
+    "file": "sprites/day/owl/chip.png"
+   },
+   "body": {
+    "top": 0.07,
+    "body": 0.93
+   }
+  },
+  "shade": {
+   "base": {
+    "w": 436,
+    "h": 600,
+    "file": "sprites/day/shade/base.png"
+   },
+   "talking": {
+    "w": 458,
+    "h": 600,
+    "file": "sprites/day/shade/talking.png"
+   },
+   "thinking": {
+    "w": 443,
+    "h": 600,
+    "file": "sprites/day/shade/thinking.png"
+   },
+   "out": {
+    "w": 438,
+    "h": 600,
+    "file": "sprites/day/shade/out.png"
+   },
+   "chip": {
+    "w": 200,
+    "h": 200,
+    "file": "sprites/day/shade/chip.png"
+   },
+   "body": {
+    "top": 0.147,
+    "body": 0.853
+   }
+  },
+  "polarBear": {
+   "base": {
+    "w": 459,
+    "h": 600,
+    "file": "sprites/day/polarBear/base.png"
+   },
+   "talking": {
+    "w": 476,
+    "h": 600,
+    "file": "sprites/day/polarBear/talking.png"
+   },
+   "thinking": {
+    "w": 414,
+    "h": 600,
+    "file": "sprites/day/polarBear/thinking.png"
+   },
+   "out": {
+    "w": 433,
+    "h": 600,
+    "file": "sprites/day/polarBear/out.png"
+   },
+   "chip": {
+    "w": 200,
+    "h": 200,
+    "file": "sprites/day/polarBear/chip.png"
+   },
+   "body": {
+    "top": 0.051,
+    "body": 0.949
+   }
+  },
+  "whale": {
+   "base": {
+    "w": 470,
+    "h": 600,
+    "file": "sprites/day/whale/base.png"
+   },
+   "talking": {
+    "w": 490,
+    "h": 600,
+    "file": "sprites/day/whale/talking.png"
+   },
+   "thinking": {
+    "w": 457,
+    "h": 600,
+    "file": "sprites/day/whale/thinking.png"
+   },
+   "out": {
+    "w": 467,
+    "h": 600,
+    "file": "sprites/day/whale/out.png"
+   },
+   "chip": {
+    "w": 200,
+    "h": 200,
+    "file": "sprites/day/whale/chip.png"
+   },
+   "body": {
+    "top": 0.104,
+    "body": 0.896
+   }
+  },
+  "onion": {
+   "base": {
+    "w": 449,
+    "h": 600,
+    "file": "sprites/day/onion/base.png"
+   },
+   "talking": {
+    "w": 479,
+    "h": 600,
+    "file": "sprites/day/onion/talking.png"
+   },
+   "thinking": {
+    "w": 443,
+    "h": 600,
+    "file": "sprites/day/onion/thinking.png"
+   },
+   "out": {
+    "w": 437,
+    "h": 600,
+    "file": "sprites/day/onion/out.png"
+   },
+   "chip": {
+    "w": 200,
+    "h": 200,
+    "file": "sprites/day/onion/chip.png"
+   },
+   "body": {
+    "top": 0.131,
+    "body": 0.869
+   }
+  },
+  "dragon": {
+   "base": {
+    "w": 456,
+    "h": 600,
+    "file": "sprites/day/dragon/base.png"
+   },
+   "talking": {
+    "w": 461,
+    "h": 600,
+    "file": "sprites/day/dragon/talking.png"
+   },
+   "thinking": {
+    "w": 443,
+    "h": 600,
+    "file": "sprites/day/dragon/thinking.png"
+   },
+   "out": {
+    "w": 436,
+    "h": 600,
+    "file": "sprites/day/dragon/out.png"
+   },
+   "chip": {
+    "w": 200,
+    "h": 200,
+    "file": "sprites/day/dragon/chip.png"
+   },
+   "body": {
+    "top": 0.087,
+    "body": 0.913
+   }
+  },
+  "threeEyes": {
+   "base": {
+    "w": 391,
+    "h": 600,
+    "file": "sprites/day/threeEyes/base.png"
+   },
+   "talking": {
+    "w": 423,
+    "h": 600,
+    "file": "sprites/day/threeEyes/talking.png"
+   },
+   "thinking": {
+    "w": 386,
+    "h": 600,
+    "file": "sprites/day/threeEyes/thinking.png"
+   },
+   "out": {
+    "w": 401,
+    "h": 600,
+    "file": "sprites/day/threeEyes/out.png"
+   },
+   "chip": {
+    "w": 200,
+    "h": 200,
+    "file": "sprites/day/threeEyes/chip.png"
+   },
+   "body": {
+    "top": 0.276,
+    "body": 0.724
+   }
+  },
+  "cyclops": {
+   "base": {
+    "w": 397,
+    "h": 600,
+    "file": "sprites/day/cyclops/base.png"
+   },
+   "talking": {
+    "w": 449,
+    "h": 600,
+    "file": "sprites/day/cyclops/talking.png"
+   },
+   "thinking": {
+    "w": 389,
+    "h": 600,
+    "file": "sprites/day/cyclops/thinking.png"
+   },
+   "out": {
+    "w": 386,
+    "h": 600,
+    "file": "sprites/day/cyclops/out.png"
+   },
+   "chip": {
+    "w": 200,
+    "h": 200,
+    "file": "sprites/day/cyclops/chip.png"
+   },
+   "body": {
+    "top": 0.103,
+    "body": 0.897
+   }
+  },
+  "badger": {
+   "base": {
+    "w": 375,
+    "h": 600,
+    "file": "sprites/day/badger/base.png"
+   },
+   "talking": {
+    "w": 416,
+    "h": 600,
+    "file": "sprites/day/badger/talking.png"
+   },
+   "thinking": {
+    "w": 361,
+    "h": 600,
+    "file": "sprites/day/badger/thinking.png"
+   },
+   "out": {
+    "w": 374,
+    "h": 600,
+    "file": "sprites/day/badger/out.png"
+   },
+   "chip": {
+    "w": 200,
+    "h": 200,
+    "file": "sprites/day/badger/chip.png"
+   },
+   "body": {
+    "top": 0.15,
+    "body": 0.85
+   }
+  }
+ },
+ "plush": {
+  "owl": {
+   "w": 392,
+   "h": 560,
+   "file": "sprites/plush/owl.png"
+  },
+  "hare": {
+   "w": 371,
+   "h": 560,
+   "file": "sprites/plush/hare.png"
+  },
+  "cat": {
+   "w": 451,
+   "h": 560,
+   "file": "sprites/plush/cat.png"
+  },
+  "badger": {
+   "w": 390,
+   "h": 560,
+   "file": "sprites/plush/badger.png"
+  },
+  "cyclops": {
+   "w": 413,
+   "h": 560,
+   "file": "sprites/plush/cyclops.png"
+  },
+  "threeEyes": {
+   "w": 339,
+   "h": 560,
+   "file": "sprites/plush/threeEyes.png"
+  },
+  "dragon": {
+   "w": 468,
+   "h": 560,
+   "file": "sprites/plush/dragon.png"
+  },
+  "onion": {
+   "w": 437,
+   "h": 560,
+   "file": "sprites/plush/onion.png"
+  },
+  "whale": {
+   "w": 437,
+   "h": 560,
+   "file": "sprites/plush/whale.png"
+  },
+  "polarBear": {
+   "w": 413,
+   "h": 560,
+   "file": "sprites/plush/polarBear.png"
+  },
+  "shade": {
+   "w": 425,
+   "h": 560,
+   "file": "sprites/plush/shade.png"
+  }
+ },
+ "kits": {
+  "healer": {
+   "w": 443,
+   "h": 359,
+   "file": "sprites/kits/healer.png"
+  },
+  "investigator": {
+   "w": 413,
+   "h": 375,
+   "file": "sprites/kits/investigator.png"
+  },
+  "vigilante": {
+   "w": 409,
+   "h": 343,
+   "file": "sprites/kits/vigilante.png"
+  },
+  "serial_killer": {
+   "w": 356,
+   "h": 362,
+   "file": "sprites/kits/serial_killer.png"
+  },
+  "wolf": {
+   "w": 466,
+   "h": 350,
+   "file": "sprites/kits/wolf.png"
+  },
+  "villager": {
+   "w": 398,
+   "h": 357,
+   "file": "sprites/kits/villager.png"
+  },
+  "clock": {
+   "w": 240,
+   "h": 364,
+   "file": "sprites/kits/clock.png"
+  },
+  "lamp": {
+   "w": 522,
+   "h": 362,
+   "file": "sprites/kits/lamp.png"
+  }
+ },
+ "plush_scale": "{\"owl\": 1.011, \"hare\": 1.043, \"cat\": 0.98, \"badger\": 1.014, \"cyclops\": 0.974, \"threeEyes\": 1.163, \"dragon\": 0.946, \"onion\": 1.027, \"whale\": 1.0, \"polarBear\": 0.964, \"shade\": 0.994}"
+}

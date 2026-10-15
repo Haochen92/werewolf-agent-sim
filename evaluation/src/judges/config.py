@@ -12,7 +12,7 @@ from Agents.llm_factory import create_chat_model
 
 # The standard judge model. Judge modules import this as their default; the few
 # that diverge set their own ``DEFAULT_*_JUDGE_MODEL`` to a different literal.
-DEFAULT_JUDGE_MODEL = "gemini-2.5-pro"
+DEFAULT_JUDGE_MODEL = "anthropic/claude-haiku-5-5"  # owner 2026-10-12: every judge on Haiku 5.5 for now (Gemini is retiring)
 
 
 def get_judge_llm(model: str = DEFAULT_JUDGE_MODEL, **kwargs):

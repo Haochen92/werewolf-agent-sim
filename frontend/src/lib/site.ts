@@ -1,0 +1,51 @@
+/**
+ * The site's own facts in one place: the product name, the nav, and the footer's credits and
+ * links. The chrome (`components/site/TopNav`, `SiteFooter`) reads only this, so the owner
+ * edits one file to change what every page says about the project.
+ */
+
+export const SITE = {
+  // the mark (the train's headlamp, a keyhole 9 in its glass, `scripts/brand-mark.mjs`) is
+  // drawn for this name
+  name: 'The Ninth Express',
+  author: 'Liu Haochen',
+  github: 'https://github.com/Haochen92/werewolf-agent-sim',
+  /**
+   * Where the landing's closing sends a reader for the research. Until the case study is
+   * published, the memory research's own history in the repo, the fullest account there is.
+   */
+  // TODO(owner): the case study, once it is published
+  caseStudy:
+    'https://github.com/Haochen92/werewolf-agent-sim/blob/main/evidence/memory_system/store_progression.md',
+
+  /** The top nav, in order. `match` is the path prefix that marks the link as the current page. */
+  nav: [
+    { label: 'Play', href: '/play', match: '/play' },
+    { label: 'Rooms', href: '/rooms', match: '/rooms' },
+    { label: 'Replays', href: '/replays', match: '/replays' },
+  ],
+  /** The guide: a sign on the board, not a fourth door (owner, 2026-10-14). */
+  guide: { label: 'Guide', href: '/guide', match: '/guide' },
+
+  /**
+   * The footer's other exits. An entry with `href: null` is not rendered, so a link appears
+   * the moment it has somewhere to go.
+   */
+  footerLinks: [
+    // TODO(owner): no route yet; point at the write-up once it is published
+    { label: "Read how it's built", href: null },
+    // TODO(owner): no route yet; a privacy / data-handling page
+    { label: 'Privacy & data handling', href: null },
+    // TODO(owner): a contact address or page
+    { label: 'Contact', href: null },
+  ] as { label: string; href: string | null }[],
+
+  /**
+   * The game the landing's carriage plays (review §F7), day 2's vote in the public cut. If the
+   * archive no longer has it, the landing plays the newest game instead.
+   */
+  featuredReplay: '68c26e83-f5c9-50d5-92b7-3589312a0cb9',
+
+  // TODO(owner): the year the footer prints
+  year: 2026,
+} as const;

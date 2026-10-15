@@ -1,0 +1,129 @@
+{
+  "label": "phase3_turns",
+  "run_at": "2026-10-10T02:40:20.839348+00:00",
+  "config": {
+    "label": "phase3_turns",
+    "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+    "n": 5,
+    "workers": 3,
+    "arms": [
+      {
+        "label": "flashlite_committed",
+        "model": "gemini-3.5-flash-lite",
+        "env": {},
+        "memory": "none",
+        "checkout": "/tmp/claude-1001/-home-ubuntu-projects-werewolf-agent-sim/714c3a81-d7cb-4640-9388-68d628041c2e/scratchpad/ww-head"
+      },
+      {
+        "label": "flashlite_fixed",
+        "model": "gemini-3.5-flash-lite",
+        "env": {},
+        "memory": "none"
+      },
+      {
+        "label": "flash_fixed",
+        "model": "gemini-3.5-flash",
+        "env": {},
+        "memory": "none"
+      }
+    ],
+    "recall_model": "gemini-3.1-flash-lite",
+    "precision_model": "gemini-3.5-flash",
+    "golden_model": "gemini-3.5-flash",
+    "slices": [
+      "pinned",
+      "control"
+    ],
+    "note": "Phase 3 reasoning failures frozen from the captured games (evaluation/experiments/phase3_turn_cases.py). flashlite_committed runs the committed code (a worktree at 56b21471; the claim-ledger fix changes what the e06 cases see); flashlite_fixed vs flash_fixed on the working tree is the capability test.",
+    "rejudge": true
+  },
+  "n_cases": 10,
+  "arms": {
+    "flashlite_committed": {
+      "bad": {
+        "all": "24/50 (48%)",
+        "phase:day_discussion": "24/50 (48%)",
+        "role:investigator": "5/10 (50%)",
+        "role:sentinel": "6/15 (40%)",
+        "role:sigilist": "5/5 (100%)",
+        "role:speculator": "1/5 (20%)",
+        "role:trailseer": "7/15 (47%)",
+        "slice:control": "6/10 (60%)",
+        "slice:pinned": "18/40 (45%)",
+        "source:phase3_capture": "24/50 (48%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 6627.5,
+        "cached": 3608.1,
+        "output": 1989.1,
+        "reasoning": 1514.7,
+        "seconds": 8.0
+      },
+      "generation_samples_measured": 50
+    },
+    "flashlite_fixed": {
+      "bad": {
+        "all": "14/50 (28%)",
+        "phase:day_discussion": "14/50 (28%)",
+        "role:investigator": "0/10 (0%)",
+        "role:sentinel": "7/15 (47%)",
+        "role:sigilist": "0/5 (0%)",
+        "role:speculator": "0/5 (0%)",
+        "role:trailseer": "7/15 (47%)",
+        "slice:control": "7/10 (70%)",
+        "slice:pinned": "7/40 (18%)",
+        "source:phase3_capture": "14/50 (28%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 6622.7,
+        "cached": 4209.9,
+        "output": 1930.8,
+        "reasoning": 1444.9,
+        "seconds": 8.0
+      },
+      "generation_samples_measured": 50
+    },
+    "flash_fixed": {
+      "bad": {
+        "all": "3/50 (6%)",
+        "phase:day_discussion": "3/50 (6%)",
+        "role:investigator": "0/10 (0%)",
+        "role:sentinel": "0/15 (0%)",
+        "role:sigilist": "0/5 (0%)",
+        "role:speculator": "1/5 (20%)",
+        "role:trailseer": "2/15 (13%)",
+        "slice:control": "0/10 (0%)",
+        "slice:pinned": "3/40 (8%)",
+        "source:phase3_capture": "3/50 (6%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 6622.7,
+        "cached": 4322.4,
+        "output": 1186.4,
+        "reasoning": 665.9,
+        "seconds": 7.5
+      },
+      "generation_samples_measured": 50
+    }
+  },
+  "paired_vs_first": {
+    "flashlite_fixed": {
+      "cases": 10,
+      "better": 3,
+      "worse": 1,
+      "two_sided_sign_p": 0.625
+    },
+    "flash_fixed": {
+      "cases": 10,
+      "better": 6,
+      "worse": 0,
+      "two_sided_sign_p": 0.0312
+    }
+  }
+}

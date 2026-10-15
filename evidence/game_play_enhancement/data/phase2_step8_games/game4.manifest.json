@@ -1,0 +1,210 @@
+{
+ "game_id": "phase2-step8-game4-e2eb516d",
+ "label": "game4",
+ "git": "d9e9aee91a9491613f0e7f8af7c9bde058e55061",
+ "git_dirty_paths": [
+  " M .gitignore",
+  " M evidence/game_play_enhancement/discussion_evidence.md",
+  " M frontend/docs/beat_sheet.md",
+  " M frontend/docs/stage_architecture.md",
+  " M frontend/e2e/workbench.spec.ts",
+  " M frontend/src/game/foldEvents.test.ts",
+  " M frontend/src/game/foldEvents.ts",
+  " M frontend/src/game/types.ts",
+  " M frontend/src/stage/beats/beatsFor.test.ts",
+  " M frontend/src/stage/beats/beatsFor.ts",
+  " M frontend/src/stage/beats/pages.test.ts",
+  " M frontend/src/stage/beats/types.ts",
+  " M frontend/src/stage/containers/LiveTheatre.tsx",
+  " M frontend/src/stage/containers/live-state.test.ts",
+  " M frontend/src/stage/instruments/TurnDock.tsx",
+  " M frontend/src/stage/roles.test.ts",
+  " M frontend/src/stage/roles.ts",
+  " M frontend/src/stage/scenes/DayScene.tsx",
+  " M frontend/src/stage/scenes/types.ts",
+  " M frontend/src/stage/workbench/fixture.ts",
+  " M frontend/src/stage/workbench/frame.ts",
+  " M frontend/src/stage/workbench/synthetic.ts",
+  " M frontend/src/stage/workbench/url.ts",
+  " M tests/engine/test_day_discussion_engagement.py",
+  " M tests/engine/test_human_turn_announced.py",
+  " M tests/leak_test.py",
+  " M tests/server/test_translator.py",
+  "?? LICENSE",
+  "?? evaluation/experiments/phase2_step8_capture.py",
+  "?? evaluation/experiments/phase2_step8_counts.py",
+  "?? evidence/game_play_enhancement/data/phase2_step8_games/",
+  "?? evidence/game_play_enhancement/role_sheet.md",
+  "?? frontend/docs/rendering-audit-2026-10-02.md",
+  "?? frontend/e2e/__screenshots__/phase2-closing-called.png",
+  "?? frontend/e2e/__screenshots__/phase2-opening-prepares-day1.png",
+  "?? frontend/e2e/__screenshots__/phase2-round-passes-everyone.png",
+  "?? frontend/e2e/__screenshots__/phase2-round-passes-seat2-you.png",
+  "?? frontend/src/assets/LICENSE",
+  "?? frontend/src/stage/beats/__goldens__/phase2.public.txt",
+  "?? frontend/src/stage/beats/__goldens__/phase2.xray.txt",
+  "?? frontend/src/stage/fixtures/replay-phase2.json",
+  "?? frontend/src/stage/instruments/turn-dock-heading.test.ts",
+  "?? frontend/undefined/",
+  "?? notebooks/hitl_durability_spike.ipynb",
+  "?? notebooks/hitl_spike_test.ipynb",
+  "?? tests/engine/test_closing.py",
+  "?? tests/engine/test_day_rounds.py",
+  "?? tests/engine/test_echo_gate.py",
+  "?? tests/engine/test_opening_filter.py",
+  "?? tests/engine/test_round_payload_leaks.py",
+  "?? tests/engine/test_sweep.py"
+ ],
+ "runtime_fingerprint": {
+  "git_commit": "d9e9aee91a9491613f0e7f8af7c9bde058e55061",
+  "git_dirty": true,
+  "prompt_bundle_hash": "513151608cb3028f",
+  "llm_backend": "vertex",
+  "game_model": "gemini-3.5-flash-lite",
+  "temperature": 1.0,
+  "game_thinking_level": "medium",
+  "summary_thinking_level": "medium",
+  "judge_thinking_level": "minimal",
+  "pro_model": "gemini-2.5-pro",
+  "pro_backup_model": "gemini-3.5-flash",
+  "embedding_model": "gemini-embedding-2",
+  "embedding_dims": 1536,
+  "vertex_location": "global"
+ },
+ "langgraph": "1.1.10",
+ "model": "gemini-3.5-flash-lite",
+ "thinking_level": "medium",
+ "memory": "off (memory_config all False, dump off)",
+ "run_config": {
+  "game": {
+   "initial_roles": [
+    "villager",
+    "villager",
+    "villager",
+    "wolf",
+    "wolf",
+    "healer",
+    "investigator",
+    "vigilante",
+    "serial_killer"
+   ],
+   "player_id_prefix": "player",
+   "starting_day": 1,
+   "first_voting_day": 2,
+   "vigilante_bullets": 2,
+   "abstain_enabled": true,
+   "no_lynch_force_after": 2,
+   "max_days": 12,
+   "discussion_utterance_multiplier": 3.0,
+   "min_discussion_utterances": 6,
+   "per_pair_reengagement_cap": 2,
+   "reengagement_cooldown_multiplier": 1.0,
+   "max_proactive_sweeps": 2
+  },
+  "memory_config": {
+   "wolf": false,
+   "villager": false,
+   "healer": false,
+   "investigator": false
+  },
+  "reranking_config": {
+   "observations": {
+    "wolf": false,
+    "villager": false,
+    "healer": false,
+    "investigator": false
+   },
+   "strategy_points": {
+    "wolf": false,
+    "villager": false,
+    "healer": false,
+    "investigator": false
+   }
+  },
+  "filtering_config": {
+   "wolf": false,
+   "villager": false,
+   "healer": false,
+   "investigator": false
+  },
+  "retrieval_types_config": {
+   "observations": true,
+   "strategy_points": true
+  },
+  "memory_persistence": {
+   "seed_enabled": true,
+   "dump_enabled": false,
+   "seed_store_dir": "/home/ubuntu/projects/werewolf-agent-sim/memory_stores/v6_1",
+   "dump_store_dir": "/home/ubuntu/projects/werewolf-agent-sim/memory_stores/v6_1",
+   "batch_dedup": {
+    "enabled": false,
+    "two_pass": true,
+    "triage_model": "gemini-3.1-flash-lite",
+    "triage_thinking_level": "medium",
+    "verify_model": "gemini-2.5-pro",
+    "verify_thinking_level": null,
+    "prompt_variant": "default"
+   },
+   "extraction": {
+    "per_role": true,
+    "cache_prefix": true,
+    "max_workers": 6,
+    "extract_without_dump": false
+   }
+  },
+  "sp_proven_tiering": true,
+  "sp_exploration_slot": true,
+  "game_id": "phase2-step8-game4-e2eb516d",
+  "session_id": null,
+  "human_player": 0,
+  "human_role": null
+ },
+ "stream": {
+  "stream_mode": [
+   "updates",
+   "custom"
+  ],
+  "subgraphs": true,
+  "version": "v2"
+ },
+ "started_at": "2026-10-07T08:47:25.390072+00:00",
+ "ended_at": "2026-10-07T08:55:39.882076+00:00",
+ "duration_seconds": 494.2,
+ "chunks": 354,
+ "winner": "villagers",
+ "days": 4,
+ "model_calls": 137,
+ "usage": {
+  "buckets": [
+   {
+    "model": "gemini-3.1-flash-lite",
+    "hour": "2026-10-07T08:00:00+00:00",
+    "calls": 1,
+    "failed": 0,
+    "input": 4586,
+    "cached": 0,
+    "output": 1148,
+    "reasoning": 521,
+    "seconds": 7.84
+   },
+   {
+    "model": "gemini-3.5-flash-lite",
+    "hour": "2026-10-07T08:00:00+00:00",
+    "calls": 135,
+    "failed": 1,
+    "input": 495815,
+    "cached": 0,
+    "output": 158240,
+    "reasoning": 113333,
+    "seconds": 748.454
+   }
+  ]
+ },
+ "cost_usd": 0.5472,
+ "leak_check_passed": false,
+ "files": {
+  "chunks": "game4.chunks.jsonl",
+  "record": "game4.record.json",
+  "calls": "game4.calls.json"
+ }
+}

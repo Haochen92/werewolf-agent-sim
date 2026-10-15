@@ -28,3 +28,8 @@ detail lives in code docstrings and package READMEs (e.g.
    layer's mechanism + rationale doc is
    [`../evidence/credit/report.md`](../evidence/credit/report.md).
 5. **Running it** — playing a single game, running a batch, running the loop.
+6. **Encountered issues, serving the agents in production** — the model stall on Vertex's
+   shared pool and the time-as-failure rescue; the research-era issues stay in their evidence
+   folders. [`agentic_ai_encountered_issues.md`](agentic_ai_encountered_issues.md). The server's
+   and the frontend's own logs: [`../frontend/docs/server_encountered_challenges.md`](../frontend/docs/server_encountered_challenges.md),
+   [`../frontend/docs/build_log.md`](../frontend/docs/build_log.md).

@@ -1,7 +1,7 @@
 """Create the replay archive table.
 
 Hand-written first revision (no live DB needed to author it); later revisions may use
---autogenerate against server.replays models — env.py's include_object keeps the shared
+--autogenerate against server.database_models — env.py's include_object keeps the shared
 database's other tables (memory tick, LangGraph checkpoints) out of alembic's reach.
 
 Revision ID: 0001

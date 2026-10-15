@@ -11,6 +11,7 @@ lives in ``eval.py``; ``run_agent`` calls ``log_prompt`` / ``record_reads`` as s
 never touch the returned delta.
 """
 from logging import getLogger
+from types import SimpleNamespace
 from typing import Any
 import random
 
@@ -19,6 +20,9 @@ from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel
 
 from Agents.llm_factory import get_llm, get_llm_game_fallback
+from Agents.llm_factory.chat import GAME_LLM
+from Agents.llm_factory.embeddings import is_transient_provider_error
+from Agents.llm_factory.providers.common import enforced_output
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
 from Agents.schemas.game_events import (
     DayChannel,
@@ -26,26 +30,26 @@ from Agents.schemas.game_events import (
     DiscussionPassReason,
     WolfChannel,
 )
+from Agents.schemas.night import NightChoice
+from Agents.schemas.roles import ROLE_SPECS, role_for_field
 from Agents.schemas.turn import (
     ResolvedDayDiscussion,
     ResolvedDayVote,
-    ResolvedHealerTarget,
-    ResolvedInvestigatorTarget,
-    ResolvedSerialKillerTarget,
+    ResolvedNightChoice,
     ResolvedTurn,
-    ResolvedVigilanteTarget,
     ResolvedWolfDiscussion,
-    ResolvedWolfVote,
 )
 from Agents.turn.action_space import (
+    KILL_TARGET,
     valid_targets_for_action,
+    output_schema_for_memory_shown,
     output_schema_with_legal_targets,
 )
 from Agents.turn.eval import log_prompt, record_reads
 from Agents.turn.resolve import (
-    NIGHT_TARGET_KEYS,
     RETRY,
     extract_agent_reasoning,
+    night_choice,
     resolve_decision,
 )
 
@@ -71,28 +75,57 @@ def run_agent(
 
     # Constrain: bind the model to the legal-targets schema; build + log the prompt once.
     schema = output_schema_with_legal_targets(output_schema, output_key, valid_targets)
-    chain = prompt_template | get_llm().with_structured_output(schema)
+    # No verdict field for memory this turn was not shown (the reply example drops it too).
+    schema = output_schema_for_memory_shown(schema, payload)
+    # A primary that stalled on the last turns (a timeout, a 429) is skipped for a while and
+    # the turn starts on the rescue model; the game's health object keeps that count.
+    health = GAME_LLM.get().health
+    fallback_llm = get_llm_game_fallback()
+    on_rescue = fallback_llm is not None and health.prefer_rescue()
+    if on_rescue:
+        logger.warning(
+            "%s starts on the rescue model for %s: the primary stalled %d turns in a row",
+            player_id, output_key, health.stalls,
+        )
+    llm = fallback_llm if on_rescue else get_llm()
+    chain = prompt_template | llm.with_structured_output(schema)
     prompt_input = build_agent_prompt_input(payload)
     log_prompt(payload, output_key, prompt_input)
 
+    enforced = False
     for _ in range(max_retries + 1):
         result = _generate(chain, prompt_input, output_key, player_id)
+        if result is _STALLED:
+            # Slow or full is not asked again: the rescue takes the turn, and the count
+            # decides whether the next turns skip the primary altogether.
+            if not on_rescue:
+                health.note_stall()
+            break
         if result is None:
+            # A json_mode reply that broke the schema is asked again with it enforced (Claude,
+            # OpenAI): the same model, and a reply that cannot break it (owner, 2026-10-14).
+            strict = None if enforced else enforced_output(llm, schema)
+            if strict is not None:
+                chain, enforced = prompt_template | strict, True
+                logger.info(f"{player_id} asked again with the schema enforced on {output_key}")
             continue
         reasoning = extract_agent_reasoning(result)
         record_reads(reasoning["reads"], payload, output_key, output_schema)
         outcome = resolve_decision(result, reasoning, output_key, payload, valid_targets)
         if outcome is not RETRY:
+            if not on_rescue:
+                health.note_ok()
             return outcome
 
     # Exhausted on the primary model: one shot on the fallback backend before resorting to a
     # random action — a different provider fails differently (DeepSeek's unconstrained
     # tool-calling emits off-schema output that Gemini's constrained decoding cannot).
-    fallback_llm = get_llm_game_fallback()
-    if fallback_llm is not None:
+    if fallback_llm is not None and not on_rescue:
         fallback_chain = prompt_template | fallback_llm.with_structured_output(schema)
         result = _generate(fallback_chain, prompt_input, output_key, player_id)
-        if result is not None:
+        # The rescue can stall too (both models bounced under load, 2026-10-09): then the turn
+        # falls to the typed fallback below, never to the resolver.
+        if result is not None and result is not _STALLED:
             reasoning = extract_agent_reasoning(result)
             record_reads(reasoning["reads"], payload, output_key, output_schema)
             outcome = resolve_decision(result, reasoning, output_key, payload, valid_targets)
@@ -124,6 +157,7 @@ def run_agent(
                 passed=True,
                 pass_reason=DiscussionPassReason.GENERATION_FAILED,
                 firing_reason=payload.get("firing_reason"),
+                day_round=payload.get("day_round", "discussion"),
             )
         )
     if output_key == "wolf_channel":
@@ -149,34 +183,33 @@ def run_agent(
         return ResolvedDayVote(
             entry=DayVote(voter=player_id, votee=random.choice(valid_targets))
         )
-    if output_key in NIGHT_TARGET_KEYS:
-        result_type = _NIGHT_RESULT_BY_KEY[output_key]
-        return result_type(entry=random.choice(valid_targets))
-    if output_key == "wolf_vote":
-        return ResolvedWolfVote(
-            entry=WolfChannel(
-                day=payload.get("current_day", 1),
-                round=payload.get("current_round", 1),
-                wolf=player_id,
-                message="",
-                vote=random.choice(valid_targets),
-            )
-        )
+    if output_key == KILL_TARGET:
+        return ResolvedNightChoice(entry=NightChoice(
+            player_id, payload.get("player_role", ""), "kill", random.choice(valid_targets)))
+    role = role_for_field(output_key)
+    if role is not None:
+        # The role's no-action word when it has one (a random shot or sigil is worse play than
+        # none); a random legal choice otherwise. A necromancer stays put.
+        spec = ROLE_SPECS[role]
+        fallback = SimpleNamespace(**{output_key: spec.no_action or random.choice(valid_targets), "body": None, "bet_role": "none"})
+        choice = night_choice(role, player_id, fallback, payload, valid_targets)
+        return ResolvedNightChoice(entry=None if choice is RETRY else choice)
     return None
 
 
+# What _generate returns when the provider was slow or full rather than the answer wrong.
+_STALLED = object()
+
+
+
 def _generate(chain: Any, prompt_input: dict, output_key: str, player_id: str):
-    """One structured LLM call. Returns the parsed decision, or None on an API/parse error."""
+    """One structured LLM call. Returns the parsed decision; None on a parse or request error;
+    ``_STALLED`` when the provider timed out or bounced the call (429, 5xx, dropped)."""
     try:
         return chain.invoke(prompt_input, config={"run_name": f"{output_key}_{player_id}"})
     except Exception as e:
+        if is_transient_provider_error(e):
+            logger.warning(f"LLM call stalled for {player_id} (slow or full): {e}")
+            return _STALLED
         logger.warning(f"LLM call failed for {player_id}: {e}")
         return None
-
-
-_NIGHT_RESULT_BY_KEY = {
-    "healer_target": ResolvedHealerTarget,
-    "investigator_target": ResolvedInvestigatorTarget,
-    "serial_killer_target": ResolvedSerialKillerTarget,
-    "vigilante_target": ResolvedVigilanteTarget,
-}

@@ -40,11 +40,20 @@ class NightResolutionMetric(BaseModel):
     day: int
     wolves_target: str | None
     wolf_target_role: str | None
-    healer_target: str | None
-    investigator_target: str | None
-    investigator_target_role: str | None
     kill_successful: bool
-    healer_saved: bool
+    choices: list[dict] = Field(default_factory=list)
+    # Every choice of the night (Agents/schemas/night.NightChoice as dicts): the ten-seat record.
+    outcome: dict = Field(default_factory=dict)
+    # What the rules made of the choices (Agents/schemas/night.NightOutcome as a dict): blocks,
+    # visits, attacks, verdicts, conceals, Suspicious reads, picks and settled bets.
+    records: list[dict] = Field(default_factory=list)
+    # Every actor's private record of the night (NightActionRecord dicts), including actors who
+    # died that night and so were never told it: what the engine decided, not what was delivered.
+    # The per-role fields below are the nine-seat game's and stay for its stored metrics.
+    healer_target: str | None = None
+    investigator_target: str | None = None
+    investigator_target_role: str | None = None
+    healer_saved: bool = False
     serial_killer_target: str | None = None
     serial_killer_target_role: str | None = None
     vigilante_target: str | None = None
@@ -246,43 +255,63 @@ class ComputedGameMetrics(DerivedGameMetrics):
     game_length: int
     # Town
     mislynches: int                  # town-member lynches (count)
-    serial_killer_lynched: int
+    serial_killer_lynched: int | None
     tie_count: int
     no_vote_count: int
     # Healer
-    healer_save_count: int
+    healer_save_count: int | None
     healer_exit_method: str
     # Investigator
     investigator_exit_method: str
-    investigator_wolves_found: int
+    investigator_wolves_found: int | None
     investigator_found_wolf_day: int | None = None
-    investigator_finds_total: int = 0      # conversion denominator (filter low-sample games)
-    investigator_finds_lynched: int = 0
+    investigator_finds_total: int | None = 0      # conversion denominator (filter low-sample games)
+    investigator_finds_lynched: int | None = 0
     # Wolves
     power_roles_killed_by_wolves: int
-    power_roles_killed_by_evil: int
+    power_roles_killed_by_evil: int | None
     wolf_killed_healer_day: int | None = None
     wolf_killed_investigator_day: int | None = None
-    wolf_blend_votes_aligned: int = 0   # numerator of wolf_unconditioned_blending_rate
-    wolf_blend_votes_total: int = 0      # denominator (0 -> rate is None); carry it to filter low-sample games
+    wolf_blend_votes_aligned: int | None = 0   # numerator of wolf_unconditioned_blending_rate
+    wolf_blend_votes_total: int | None = 0      # denominator (0 -> rate is None); carry it to filter low-sample games
     wolf_skconfirms_total: int = 0       # conversion denominator (filter low-sample games)
     wolf_skconfirms_lynched: int = 0
     # Serial killer
-    sk_nights_survived: int
+    sk_nights_survived: int | None
     sk_exit_method: str
-    sk_kills_landed: int
-    sk_power_roles_killed: int = 0
-    sk_wolf_kills: int = 0
-    sk_blend_votes_total: int = 0     # denominator for sk blending (filter low-sample games)
+    sk_kills_landed: int | None
+    sk_power_roles_killed: int | None = 0
+    sk_wolf_kills: int | None = 0
+    sk_blend_votes_total: int | None = 0     # denominator for sk blending (filter low-sample games)
     # Vigilante
-    vigilante_shots_taken: int
-    vigilante_evil_shots: int
-    vigilante_wolf_kills: int
-    vigilante_skconfirms_total: int = 0    # conversion denominator (filter low-sample games)
-    vigilante_skconfirms_lynched: int = 0
-    vigilante_friendly_fire_shots: int
-    vigilante_bullets_unused: int
+    vigilante_shots_taken: int | None
+    vigilante_evil_shots: int | None
+    vigilante_wolf_kills: int | None
+    vigilante_skconfirms_total: int | None = 0    # conversion denominator (filter low-sample games)
+    vigilante_skconfirms_lynched: int | None = 0
+    vigilante_friendly_fire_shots: int | None
+    vigilante_bullets_unused: int | None
     vigilante_exit_method: str
+    # The ten-seat roles (Agents/ten_seat_metrics.py; plan 2026-10-11 §8.3). None when the game did
+    # not deal the role, or on a record from before nights kept their full outcome. Unvalidated.
+    lone_killer_lynched: int | None = None          # 0/1: the serial killer or the necromancer voted out
+    chanteuse_blocks: int | None = None
+    chanteuse_blocks_real: int | None = None        # cancelled a town player's action
+    chanteuse_blocks_critical: int | None = None    # ... one that would have hurt the pack
+    chanteuse_blocks_wasted: int | None = None      # an unblockable target, nothing to cancel, or a teammate
+    illusionist_conceals: int | None = None         # conceals that hid a body
+    illusionist_conceals_hid_record: int | None = None  # ... of a town role with an earlier night record
+    necromancer_nights_survived: int | None = None
+    speculator_pick_night: int | None = None        # None = never picked
+    speculator_pick_side: str | None = None         # "none" = never picked
+    speculator_won: int | None = None               # 0/1
+    fortune_teller_points: int | None = None
+    sentinel_watches: int | None = None
+    sentinel_watches_naming_evil: int | None = None  # a watch that named a wolf or the lone killer
+    trailseer_follows: int | None = None
+    trailseer_follows_naming_evil: int | None = None  # a follow that showed an evil player's visit
+    sigilist_sigils: int | None = None
+    sigilist_hits: int | None = None
     # Diagnostic-tier denominators (carried so a reader can filter low-sample games without
     # re-deriving; the rates themselves live on DerivedGameMetrics above).
     power_role_alive_nights: int = 0       # wolf_power_kill_rate denominator

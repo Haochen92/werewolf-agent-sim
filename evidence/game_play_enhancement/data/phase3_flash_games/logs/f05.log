@@ -1,0 +1,25 @@
+[25] 21 s ()
+[50] 29 s ('PACK_NIGHT_PHASE:63b2c5cd-1fdb-2521-63c2-cfe73a5aa1d7',)
+[75] 47 s ('DAY_PHASE:8da1e0e1-1ccf-f274-d40b-72fefc935c7d',)
+[100] 65 s ('DAY_PHASE:8da1e0e1-1ccf-f274-d40b-72fefc935c7d',)
+[125] 103 s ('DAY_PHASE:8da1e0e1-1ccf-f274-d40b-72fefc935c7d',)
+[150] 143 s ('DAY_PHASE:8da1e0e1-1ccf-f274-d40b-72fefc935c7d',)
+LLM call failed for player_4: Error calling model 'gemini-3.5-flash' (CANCELLED): 499 CANCELLED. {'error': {'code': 499, 'message': 'The operation was cancelled.', 'status': 'CANCELLED'}}
+[175] 182 s ()
+LLM call stalled for player_8 (slow or full): Error calling model 'gemini-3.5-flash' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_8 rescued by the fallback model on wolf_channel
+[200] 229 s ('PACK_NIGHT_PHASE:ccad16ab-731c-ffac-8da6-c451a5144ca2',)
+[225] 247 s ('DAY_PHASE:861a2f99-a2b9-502d-10fb-2b14d199b3da',)
+[250] 320 s ('DAY_PHASE:861a2f99-a2b9-502d-10fb-2b14d199b3da',)
+LLM call stalled for player_3 (slow or full): Error calling model 'gemini-3.5-flash' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_3 rescued by the fallback model on day_channel
+[275] 387 s ('DAY_PHASE:861a2f99-a2b9-502d-10fb-2b14d199b3da',)
+[300] 465 s ('DAY_PHASE:861a2f99-a2b9-502d-10fb-2b14d199b3da',)
+[325] 541 s ('DAY_PHASE:861a2f99-a2b9-502d-10fb-2b14d199b3da',)
+[350] 553 s ()
+[375] 568 s ('DAY_PHASE:c135e970-1db0-6325-ad83-bd94390c28c2',)
+[400] 630 s ('DAY_PHASE:c135e970-1db0-6325-ad83-bd94390c28c2',)
+[425] 663 s ('DAY_PHASE:c135e970-1db0-6325-ad83-bd94390c28c2',)
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+phase3-f05-a4bad12f: winner villagers, day 4, 699.1 s, 165 calls, cost None

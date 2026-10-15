@@ -1,0 +1,51 @@
+"""DTOs returned by the public replay API."""
+
+from datetime import datetime
+from typing import Literal
+
+from pydantic import BaseModel, ConfigDict
+
+from server.schemas import events as ev
+from server.schemas.events import Winner
+
+
+class ReplayBase(BaseModel):
+    """One row returned by ``GET /replays``."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    game_id: str
+    finished_at: datetime | None = None
+    winner: Winner
+    neutral_result: str | None = None
+    """How the neutral fared, beside the winner ("won", "lost", "won (2 points)"); None for a
+    nine-seat game, which dealt no neutral."""
+    days: int
+    ended_phase: Literal["day", "voting", "night"] | None = None
+    """The part of the day the game ended in: read with ``days``, "night" means the game
+    ended on night ``days``. None for a game with no phase change on record."""
+    n_events: int
+    n_humans: int
+    cast_role_counts: dict[str, int]
+    model: str = ""
+    """The model id the game was played on, as the catalogue names it. Empty for games
+    recorded before the column existed."""
+    memory: bool = False
+    """Whether the AI seats consulted past-game lessons. False for games recorded
+    before the column existed (they all ran memory-off)."""
+    cost_usd: float | None = None
+    """What the game's model calls cost in USD, worked out from its recorded tokens and the
+    price table in force on its date (Agents/llm_factory/pricing.py). None for games recorded
+    before tokens were, or when a model in it has no price on record."""
+    avg_call_seconds: float | None = None
+    """Mean wall time of one model call on the game's model (seat turns and summaries). None
+    for games recorded before call times were."""
+
+
+class ReplayGame(ReplayBase):
+    """One complete replay with every stored event revalidated for the wire."""
+
+    events: list[ev.DurableGameEvent]
+    cast: list[str] = []
+    """Which puppet stood at each seat, in seat order, by character id: the same
+    puppets the live game showed. Empty for games recorded before casts were stored."""

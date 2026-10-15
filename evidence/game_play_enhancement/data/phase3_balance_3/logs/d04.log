@@ -1,0 +1,22 @@
+[25] 18 s ()
+[50] 27 s ('PACK_NIGHT_PHASE:d0a4ba68-351f-487c-1049-9212eeccb0cf',)
+[75] 59 s ('DAY_PHASE:fd43f7ef-66f6-e431-141d-0e10d0f83854',)
+[100] 85 s ('DAY_PHASE:fd43f7ef-66f6-e431-141d-0e10d0f83854',)
+[125] 146 s ('DAY_PHASE:fd43f7ef-66f6-e431-141d-0e10d0f83854',)
+[150] 199 s ('DAY_PHASE:fd43f7ef-66f6-e431-141d-0e10d0f83854',)
+[175] 223 s ()
+LLM call stalled for player_10 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+LLM call stalled for player_1 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_10 rescued by the fallback model on day_channel
+player_1 rescued by the fallback model on day_channel
+[200] 254 s ('DAY_PHASE:262cbb7b-039b-a051-a4b4-76fc39a3e516',)
+[225] 305 s ('DAY_PHASE:262cbb7b-039b-a051-a4b4-76fc39a3e516',)
+LLM call stalled for player_3 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_3 rescued by the fallback model on day_channel
+[250] 374 s ('DAY_PHASE:262cbb7b-039b-a051-a4b4-76fc39a3e516',)
+LLM call stalled for player_9 (slow or full): Error calling model 'gemini-3.5-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_9 rescued by the fallback model on day_votes
+[275] 411 s ()
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+phase3-d04-594942d3: winner villagers, day 3, 410.6 s, 113 calls, cost 0.5604

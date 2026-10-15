@@ -18,30 +18,24 @@ from Agents.schemas.game_events import (
     DiscussionPassReason,
     WolfChannel,
 )
+from Agents.schemas.night import NightChoice
+from Agents.schemas.output import PlayerRead
+from Agents.schemas.roles import ROLE_SPECS, role_for_field
 from Agents.schemas.turn import (
     ResolvedDayDiscussion,
     ResolvedDayVote,
-    ResolvedHealerTarget,
-    ResolvedInvestigatorTarget,
-    ResolvedSerialKillerTarget,
-    ResolvedVigilanteTarget,
+    ResolvedNightChoice,
     ResolvedWolfDiscussion,
-    ResolvedWolfVote,
     TurnEffects,
 )
-from Agents.turn.action_space import validate_target
-from Agents.turn.novelty_agent import judge_proactive_novelty
+from Agents.rules.night import borrowed_kind
+from Agents.turn.action_space import KILL_TARGET, WORD_CHOICES, validate_target
+from Agents.turn.echo_gate import line_echo_of
 
 logger = getLogger(__name__)
 
 # resolve_decision sentinel: the decision was rejected (invalid target) — re-generate.
 RETRY = object()
-NIGHT_TARGET_KEYS = (
-    "healer_target",
-    "investigator_target",
-    "serial_killer_target",
-    "vigilante_target",
-)
 
 
 def resolve_decision(
@@ -54,7 +48,7 @@ def resolve_decision(
     """Resolve a player's decision into a legal, typed domain action.
 
     The decision states an intent — speak, vote, or target a player. Resolution applies pass
-    handling, the proactive novelty gate, and target validation, then returns a ``Resolved*`` turn.
+    handling, the sweep turns' echo gate, and target validation, then returns a ``Resolved*`` turn.
     Returns RETRY when a target is illegal; the agent caller regenerates and the human caller raises.
     """
     player_id = payload.get("player_id", "")
@@ -64,6 +58,7 @@ def resolve_decision(
         current_day = payload.get("current_day", 1)
         firing_reason = payload.get("firing_reason")  # scheduler trace; rides the Send
         seq = sum(1 for m in payload.get("day_channel", []) if m.day == current_day)
+        day_round = payload.get("day_round", "discussion")  # which round of the day this turn is
 
         # Reactive picks must answer — an agent's bare pass wouldn't discharge the obligation, so
         # it falls through to message handling. The human seat MAY decline (a mention isn't a
@@ -76,6 +71,7 @@ def resolve_decision(
                     day=current_day,
                     seq=seq,
                     player=player_id,
+                    day_round=day_round,
                     message="",
                     passed=True,
                     pass_reason=DiscussionPassReason.VOLUNTARY,
@@ -96,6 +92,7 @@ def resolve_decision(
                     day=current_day,
                     seq=seq,
                     player=player_id,
+                    day_round=day_round,
                     message="",
                     passed=True,
                     pass_reason=DiscussionPassReason.VOLUNTARY,
@@ -105,48 +102,68 @@ def resolve_decision(
                 )
                 return ResolvedDayDiscussion(entry=entry, effects=effects)
 
+        is_proactive = firing_reason is not None and firing_reason.tier == "proactive"
         message = result.message.strip() if result.message else None
         if not message or message.lower() == "null":
+            if is_proactive:
+                # A sweep turn that came back empty is recorded as a pass, or the stateless
+                # scheduler would give the same player the floor again at once.
+                entry = DayChannel(
+                    day=current_day,
+                    seq=seq,
+                    player=player_id,
+                    day_round=day_round,
+                    message="",
+                    passed=True,
+                    pass_reason=DiscussionPassReason.VOLUNTARY,
+                    firing_reason=firing_reason,
+                    gated=False,
+                )
+                return ResolvedDayDiscussion(entry=entry, effects=effects)
             return ResolvedDayDiscussion(entry=None, effects=effects)
 
-        # Proactive novelty gate: an echo/restatement proactive turn becomes a hidden pass. Reactive
-        # turns are never gated; the day's first opener_floor real utterances bypass the gate so every
-        # day opens substantively before echo-gating engages. A human seat is never gated.
-        is_proactive = firing_reason is not None and firing_reason.tier == "proactive"
-        today_real = sum(
-            1
-            for m in payload.get("day_channel", [])
-            if m.day == current_day
-            and m.player != "game_master"
-            and not getattr(m, "passed", False)
+        addressed_targets = getattr(result, "addressed_targets", [])
+
+        # The echo gate: a sweep turn that makes a point already made today is held, not
+        # published. Reactive turns are never gated (the answer is owed), nor is a human seat,
+        # nor a player answering someone who named them (the ruling that a player confirming or
+        # denying what was said about themselves is never a duplicate, decided from the tags, so
+        # it holds even when the judge misses it; seen 2026-10-07, a mention tagged neutral left
+        # the named player no reactive turn and the gate then held their denial).
+        # The held marker keeps the text for its author; its tags stay for records only.
+        if is_proactive and not payload.get("human_player"):
+            earlier_today = [m for m in payload.get("day_channel", []) if m.day == current_day]
+            if _answers_someone_who_named_me(addressed_targets, player_id, earlier_today):
+                echo_of = ""
+            else:
+                echo_of = line_echo_of(message, player_id, earlier_today)
+            if echo_of:
+                logger.info("[echo gate] day=%d %s held: same point as %s", current_day, player_id, echo_of)
+                entry = DayChannel(
+                    day=current_day,
+                    seq=seq,
+                    player=player_id,
+                    day_round=day_round,
+                    message="",
+                    addressed_targets=addressed_targets,
+                    passed=True,
+                    pass_reason=DiscussionPassReason.NOVELTY_GATED,
+                    firing_reason=firing_reason,
+                    gated=True,
+                    gated_candidate=message,
+                )
+                return ResolvedDayDiscussion(entry=entry, effects=effects)
+
+        entry = DayChannel(
+            day=current_day,
+            seq=seq,
+            player=player_id,
+            day_round=day_round,
+            message=message,
+            addressed_targets=addressed_targets,
+            claim=_claim_of(result),  # a held line's claim was never heard, so only a spoken one
+            firing_reason=firing_reason,
         )
-        if (
-            is_proactive
-            and today_real >= payload.get("opener_floor", 0)
-            and not payload.get("human_player")
-            and not judge_proactive_novelty(message, payload, current_day)
-        ):
-            # gated_candidate is persisted for selectivity audits but hidden by prompt formatters.
-            entry = DayChannel(
-                day=current_day,
-                seq=seq,
-                player=player_id,
-                message="",
-                passed=True,
-                pass_reason=DiscussionPassReason.NOVELTY_GATED,
-                firing_reason=firing_reason,
-                gated=True,
-                gated_candidate=message,
-            )
-        else:
-            entry = DayChannel(
-                day=current_day,
-                seq=seq,
-                player=player_id,
-                message=message,
-                addressed_targets=getattr(result, "addressed_targets", []),
-                firing_reason=firing_reason,
-            )
         return ResolvedDayDiscussion(entry=entry, effects=effects)
 
     if output_key == "day_votes":
@@ -160,44 +177,101 @@ def resolve_decision(
         )
 
     if output_key == "wolf_channel":
-        # Sequential talk turn: message-only, no target to validate.
+        # A chat turn: a message, or a pass with nothing to add. Reads are kept (every turn
+        # records them).
+        passed = bool(getattr(result, "pass_turn", False)) or not (result.message or "").strip()
         return ResolvedWolfDiscussion(
             entry=WolfChannel(
                 day=payload.get("current_day", 1),
                 round=payload.get("current_round", 1),
                 wolf=player_id,
-                message=result.message,
+                message="" if passed else result.message.strip(),
                 vote="",
+                passed=passed,
+                pass_reason=DiscussionPassReason.VOLUNTARY if passed else None,
             ),
-            effects=_turn_effects(reasoning, include_reads=False),
+            effects=_turn_effects(reasoning),
         )
 
-    if output_key == "wolf_vote":
-        validated = validate_target(result.vote_target, valid_targets, player_id)
-        if not validated:
-            logger.warning(f"{player_id} voted for invalid target: {result.vote_target}")
-            return RETRY
-        return ResolvedWolfVote(
-            entry=WolfChannel(
-                day=payload.get("current_day", 1),
-                round=payload.get("current_round", 1),
-                wolf=player_id,
-                message="",
-                vote=validated,
-            ),
-            effects=_turn_effects(reasoning, include_reads=False),
-        )
-
-    if output_key in NIGHT_TARGET_KEYS:
-        target = getattr(result, output_key)
+    if output_key == KILL_TARGET:
+        # The carrier names the pack's target: a kill in the carrier's own name.
+        target = getattr(result, KILL_TARGET)
         validated = validate_target(target, valid_targets, player_id)
         if not validated:
-            logger.warning(f"{player_id} chose invalid {output_key}: {target}")
+            logger.warning(f"{player_id} named an invalid pack target: {target}")
             return RETRY
-        result_type = _NIGHT_RESULT_BY_KEY[output_key]
-        return result_type(entry=validated, effects=_turn_effects(reasoning))
+        choice = NightChoice(player_id, payload.get("player_role", ""), "kill", validated)
+        return ResolvedNightChoice(entry=choice, effects=_turn_effects(reasoning))
+
+    role = role_for_field(output_key)
+    if role is not None:
+        choice = night_choice(role, player_id, result, payload, valid_targets)
+        if choice is RETRY:
+            return RETRY
+        return ResolvedNightChoice(entry=choice, effects=_turn_effects(reasoning))
 
     return None
+
+
+def _claim_of(result: BaseModel) -> str:
+    return getattr(result, "claim", None) or "none"
+
+
+def night_choice(role: str, actor: str, result: Any, payload: dict[str, Any], valid_targets: list[str]):
+    """A role's night decision as the choice the night layer resolves, or RETRY when illegal.
+    None means the role declined (its no-action word), except the vigilante's hold_fire, which is
+    a choice of its own kind (it is recorded)."""
+    spec = ROLE_SPECS[role]
+    answer = getattr(result, spec.target_field, None)
+    if answer not in valid_targets:
+        logger.warning(f"{actor} chose invalid {spec.target_field}: {answer}")
+        return RETRY
+    if answer == spec.no_action:
+        if role == "vigilante":
+            return NightChoice(actor, role, "hold_fire", None)
+        return None
+    if role == "speculator":
+        return NightChoice(actor, role, "pick", answer)
+    if role == "illusionist":
+        return NightChoice(actor, role, "conceal", None)
+    if role == "fortune_teller":
+        role_named = getattr(result, "bet_role", None) or None
+        if role_named == "none":
+            role_named = None
+        return NightChoice(actor, role, "bet", answer, role_named=role_named)
+    if role == "necromancer":
+        body = getattr(result, "body", None)
+        bodies = payload.get("bodies", [])
+        if body not in bodies:
+            logger.warning(f"{actor} chose an invalid body: {body} (bodies: {bodies})")
+            return RETRY
+        body_role = next((d.get("role") if isinstance(d, dict) else d.role
+                          for d in payload.get("dead_roster", [])
+                          if (d.get("player") if isinstance(d, dict) else d.player) == body), None)
+        kind = borrowed_kind(body_role or "")
+        if kind is None:
+            logger.warning(f"{actor} chose a body with nothing to give: {body}")
+            return RETRY
+        return NightChoice(actor, role, kind, answer, via=body)
+    return NightChoice(actor, role, spec.night_action, answer)
+
+
+def _answers_someone_who_named_me(
+    addressed_targets: list[AddressedTarget], player_id: str, earlier_today: list[DayChannel]
+) -> bool:
+    """Whether the line is tagged as a response to a player whose earlier spoken line today
+    named the speaker: the speaker is answering something said about them."""
+    named_me: set[str] = set()
+    for entry in earlier_today:
+        if entry.passed or entry.player == "game_master":
+            continue
+        for tag in entry.addressed_targets:
+            if tag.target == player_id:
+                named_me.add(entry.player)
+    for tag in addressed_targets:
+        if tag.addressed_form == "response" and tag.target in named_me:
+            return True
+    return False
 
 
 def extract_agent_reasoning(result: BaseModel) -> dict[str, Any]:
@@ -220,17 +294,12 @@ def _turn_effects(
     These values never share a dictionary with graph state, so private reads and verdicts cannot
     reach a state channel through an unknown-key filtering convention.
     """
+    # A read comes from the lineup's own read class (its role guess narrowed to the dealt roles);
+    # the effects keep the pool-wide PlayerRead, so each is rebuilt from its values.
+    reads = [PlayerRead.model_validate(r.model_dump()) for r in reasoning["reads"]] if include_reads else []
     return TurnEffects(
         strategy=reasoning["strategy"] or None,
         strategy_verdicts=reasoning["strategy_verdicts"],
         memory_verdicts=reasoning["memory_verdicts"],
-        reads=reasoning["reads"] if include_reads else [],
+        reads=reads,
     )
-
-
-_NIGHT_RESULT_BY_KEY = {
-    "healer_target": ResolvedHealerTarget,
-    "investigator_target": ResolvedInvestigatorTarget,
-    "serial_killer_target": ResolvedSerialKillerTarget,
-    "vigilante_target": ResolvedVigilanteTarget,
-}

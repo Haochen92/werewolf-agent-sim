@@ -1,0 +1,32 @@
+{
+  "eval_set_id": "hallucination_bench_candidates_v1",
+  "output": "evaluation/eval_results/hallucination_bench/candidates_v1.jsonl",
+  "overwrite": false,
+  "census": {
+    "runs_glob": "evidence/v7_final/runs/v2_full/gen*_o*.jsonl",
+    "sidecars": "batch_results/v2_full/eval_cases",
+    "stage1": "evidence/generation_prompt/validation/hallucination_verdicts.jsonl",
+    "stage2": "evidence/generation_prompt/validation/hallucination_verdicts_stage2.jsonl",
+    "n_positive": null,
+    "n_control": 40,
+    "seed": 11
+  },
+  "checkpoint_cases": [
+    {
+      "game_id": "832404e9-a5f2-434e-8484-5bb953718a8f",
+      "phase": "day_discussion",
+      "day": 4,
+      "speaker": "player_7",
+      "channel_seq": 8,
+      "golden": "It is now day 4, so night 3 was last night. The speaker is the investigator. Its only investigations so far: night 1, player_1 (a wolf); night 2, player_4 (a villager); night 3, last night, player_5 (the healer). A statement that claims any other investigation, or a different result for one of these, violates this. Suspicions about other players are fine.",
+      "original": [
+        {
+          "unit": "message",
+          "text": "I investigated player_9 last night, and they are the remaining wolf. Their abstention yesterday was a clear attempt to dodge a vote and protect themselves.",
+          "error_class": "invented_check"
+        }
+      ]
+    }
+  ],
+  "scope": "candidates (screened into hallucination_bench_v1; not tracked)"
+}

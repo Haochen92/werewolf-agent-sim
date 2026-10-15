@@ -1,0 +1,98 @@
+{
+  "label": "haiku_game_403f",
+  "run_at": "2026-10-12T07:31:22.909555+00:00",
+  "config": {
+    "label": "haiku_game_403f",
+    "dataset": "evidence/game_play_enhancement/data/haiku_turn_replay/cases.jsonl",
+    "n": 5,
+    "workers": 3,
+    "arms": [
+      {
+        "label": "haiku_committed",
+        "model": "anthropic/claude-haiku-5-5",
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "low",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "memory": "none",
+        "checkout": "/home/ubuntu/projects/ww-pre-haiku-fixes"
+      },
+      {
+        "label": "haiku_fixed",
+        "model": "anthropic/claude-haiku-5-5",
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "low",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "memory": "none"
+      }
+    ],
+    "golden_model": "anthropic/claude-sonnet-5-5",
+    "note": "The owner's first Haiku 5.5 game (403f4dbc, 2026-10-12): 18 turns frozen from its checkpoints (evaluation/experiments/haiku_game_turn_cases.py), slices visit / repeat / vote_reason. haiku_committed runs the code before the three fixes (a worktree at 746197c4: git worktree add ../ww-pre-haiku-fixes 746197c4, .env linked; remove after); haiku_fixed the working tree with the visit-direction rule, the reactive answer-what-is-new line and the town vote-reason line. The golden judge is Sonnet 5.5, batched. The vote_reason slice is read for pass rate and spoken reasons; its golden only guards the facts."
+  },
+  "n_cases": 18,
+  "arms": {
+    "haiku_committed": {
+      "bad": {
+        "all": "56/90 (62%)",
+        "phase:day_discussion": "56/90 (62%)",
+        "role:healer": "5/10 (50%)",
+        "role:illusionist": "9/10 (90%)",
+        "role:investigator": "11/15 (73%)",
+        "role:sentinel": "20/25 (80%)",
+        "role:sigilist": "4/5 (80%)",
+        "role:speculator": "7/10 (70%)",
+        "role:vigilante": "0/15 (0%)",
+        "slice:repeat": "27/30 (90%)",
+        "slice:visit": "20/35 (57%)",
+        "slice:vote_reason": "9/25 (36%)",
+        "source:live_checkpoint": "56/90 (62%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 10300.4,
+        "cached": 8434.8,
+        "output": 1560.6,
+        "reasoning": 953.9,
+        "seconds": 8.1
+      },
+      "generation_samples_measured": 90
+    },
+    "haiku_fixed": {
+      "bad": {
+        "all": "43/90 (48%)",
+        "phase:day_discussion": "43/90 (48%)",
+        "role:healer": "5/10 (50%)",
+        "role:illusionist": "9/10 (90%)",
+        "role:investigator": "8/15 (53%)",
+        "role:sentinel": "13/25 (52%)",
+        "role:sigilist": "5/5 (100%)",
+        "role:speculator": "2/10 (20%)",
+        "role:vigilante": "1/15 (7%)",
+        "slice:repeat": "23/30 (77%)",
+        "slice:visit": "9/35 (26%)",
+        "slice:vote_reason": "11/25 (44%)",
+        "source:live_checkpoint": "43/90 (48%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 10499.1,
+        "cached": 8564.2,
+        "output": 1585.2,
+        "reasoning": 976.9,
+        "seconds": 8.2
+      },
+      "generation_samples_measured": 90
+    }
+  },
+  "paired_vs_first": {
+    "haiku_fixed": {
+      "cases": 18,
+      "better": 8,
+      "worse": 3,
+      "two_sided_sign_p": 0.2266
+    }
+  }
+}

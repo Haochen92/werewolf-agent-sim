@@ -1,0 +1,1364 @@
+# Frontend v1 — build log: decisions, failures, and what they cost
+
+> Written 2026-08-21, at the end of the P0→P3 build (branch `feature-frontend-v1`, 24 commits,
+> tag `frontend-v1-headless` at the pre-visual fork point). Deployed at
+> **wolf.liuhaochen.com**.
+>
+> **Purpose: review.** This is the honest record of what was decided, what broke, and why —
+> organised by *kind of problem* rather than chronologically, because the categories are what
+> generalise. Every claim here was verified against a running system; where something is
+> unverified it says so.
+>
+> **Amended 2026-08-21 after the independent handoff review.** Sections 3.8–3.12 record the
+> cross-layer defects that review found, the fixes, and the regression line added for each.
+> Those amendments are verified locally but are not committed, deployed, or live-played yet.
+>
+> The specs are [`build_plan.md`](build_plan.md) (architecture), [`ux_baseline.md`](ux_baseline.md)
+> (visual), [`ux_journeys.md`](ux_journeys.md) (screen-by-screen). This document does not repeat
+> them — it records where reality disagreed with them.
+
+---
+
+## 0. How to read this
+
+Each entry follows the same shape:
+
+- **What happened** — in plain terms.
+- **Why it happened** — the actual mechanism, named precisely.
+- **What it cost / would have cost** — the real consequence, not a hypothetical.
+- **How it was settled.**
+
+Severity is marked where it matters:
+**🔴 would have shipped broken** · **🟠 caught late, cheap to fix** · **🟡 friction only**
+
+---
+
+## 1. Infrastructure and environment
+
+### 1.1 🟡 Port 8000 was already taken — by a different project
+
+**What happened.** The build plan says the API runs on `localhost:8000`. It answered, and it
+answered with a valid OpenAPI document — so it looked correct. It was a *different
+application*: another project's `api-service` container, running since July, whose paths were
+`/inference/predict` and `/heroes/get_image_urls`.
+
+**Why.** Docker port bindings are first-come on a shared host. Nothing warns you that the
+service answering is not the service you meant.
+
+**Cost.** Would have generated the entire TypeScript client from the wrong OpenAPI schema.
+Caught in the first five minutes only because the route list was checked rather than assumed.
+
+**Settled.** The werewolf server runs on **8001** in dev; `NEXT_PUBLIC_API_BASE_URL` points
+there. The server's CORS default already allowed `localhost:3000`, so nothing else moved.
+The other project's container was not touched.
+
+**Generalises to:** a health check that returns 200 proves *something* is listening, not that
+it is yours. Check an identifying route.
+
+### 1.2 🟠 The credential the app needs is not the credential you expect
+
+**What happened.** The containerised server crashed on boot with
+`DefaultCredentialsError`, even though the only thing it was being asked to do was serve
+finished games out of a database.
+
+**Why.** The game engine's embeddings factory (`Agents/llm_factory/embeddings.py`) builds its
+client **eagerly at import time**, not lazily on first use. Importing `server.app` therefore
+requires Google credentials, regardless of what the process will go on to do.
+
+**Cost.** Roughly an hour of deploy time, and a genuinely confusing failure — "why does the
+replay archive need an LLM key?"
+
+**Settled.** Application Default Credentials are mounted read-only into the container rather
+than baked into the image. A convenient accident made this clean: the container user is uid
+1001, which is also the host `ubuntu` user's uid, so the credential's `0600` permissions carry
+over unchanged and nothing had to be loosened.
+
+### 1.3 🔴 The container was missing data the engine reads at game creation
+
+**What happened.** `POST /games` returned **500** in production while working perfectly in
+dev. Traceback ended at
+`FileNotFoundError: '/app/memory_stores/v6_1/observations.json'`.
+
+**Why.** A served game is created with `memory_persistence={"dump_enabled": False}` — so
+nothing is ever *written back* to the memory store. But the engine still **seeds retrieval**
+from that store when the game is constructed. "Dump disabled" and "memory off" are not the
+same thing, and the deployment assumed they were.
+
+**Cost.** Live play was completely broken in production while every local test passed. This is
+the classic works-on-my-machine failure: the code was identical, the *data* was not.
+
+**Settled.** `memory_stores/` is mounted read-only. Not copied into the image: it is 37 MB and
+**not tracked in git**, so a `COPY` would have worked on this machine and failed on any clean
+checkout — a latent trap rather than a fix. Read-only so a container can never corrupt the
+store it reads.
+
+**Generalises to:** an image built from a git checkout only contains what git tracks. Anything
+the app reads from disk that is *not* in git must be mounted, and its absence must be a loud
+failure rather than a silent degradation.
+
+### 1.4 🔴 Cloudflare silently buffered the live event stream
+
+**The most consequential issue in the build.**
+
+**What happened.** After deploying, live play appeared to hang forever. The browser would
+connect and then receive nothing — no events, no errors. Meanwhile the game was running
+perfectly behind it: the server's own status endpoint showed the game advancing normally.
+
+**Why.** The app pushes live updates using **Server-Sent Events** — one long-lived HTTP
+response that stays open and dribbles out events as they happen. Any proxy in the path that
+decides to *buffer* that response, waiting for it to "finish" before passing it on, converts a
+live stream into a response that arrives when the game ends. Cloudflare was doing exactly
+that.
+
+What made it hard: **everything else was already correct.**
+
+- The origin sent `content-type: text/event-stream`, `cache-control: no-cache`, and
+  `x-accel-buffering: no`.
+- Caddy had `flush_interval -1` set — and this was confirmed *in its running configuration*
+  via the admin API, not merely in the file on disk.
+
+**How it was isolated.** Three measurements, narrowing the path each time:
+
+| Path | Result |
+|---|---|
+| Direct from the server container (`localhost:8000`) | frames immediately |
+| Through Caddy, bypassing Cloudflare (`curl --resolve` to the origin IP) | headers + first frame in ~20 ms |
+| Through Cloudflare (the public URL) | **not even the response headers within 25 s** |
+
+That middle row is what identified the culprit: it proves Caddy is innocent, because the only
+difference between rows two and three is Cloudflare.
+
+**Settled.** `header_down Cache-Control "no-cache, no-transform"` on the `/api` block.
+`no-transform` is the documented instruction to Cloudflare to leave a response alone — no
+compression, no optimisation — and *transforming is what its buffering hangs off*. After the
+change: **first frame at 0.02 s**, and a complete game's ~400 events streamed live.
+
+**Cost.** Would have shipped a multiplayer game that looked permanently frozen to every user,
+with no error anywhere and a perfectly healthy backend. Nothing in the application would have
+indicated a fault.
+
+**Generalises to:** streaming responses have a *path*, not just an endpoint. Every hop can
+buffer. Test through the real public URL, never only against the origin — and when it fails,
+bisect the path rather than guessing at the code.
+
+### 1.5 🟡 The project's compose file did not contain the deployment
+
+**What happened.** The instruction was "everything you need to host should be on the docker
+compose file in this project." It wasn't: `docker-compose.yml` held only the Langfuse
+observability stack (Postgres, ClickHouse, Redis, MinIO). No web server, no app, no reverse
+proxy.
+
+**Why.** The reverse proxy is a *separate project* (`~/projects/caddy`) that owns a shared
+Docker network (`shared-caddy-network`) and the Cloudflare origin certificates, and fronts six
+other domains. Services join that network and Caddy addresses them by container name.
+
+**Settled.** The app services were added to this project's compose (where they were expected),
+joined to both a private network and the shared one — copying the pattern of the sibling
+project, whose `dota.liuhaochen.com` block is structurally identical to what this app needed.
+
+### 1.6 🟠 A database that must never be recreated
+
+**What happened.** The replay archive and memory store live in a standalone `ww-postgres`
+container that predates this work and holds real data.
+
+**Why it mattered.** Declaring it in the compose file would have been tidier and would have
+meant `docker compose up` could recreate it — destroying data.
+
+**Settled.** Deliberately **not** in the compose file; attached to the app network
+out-of-band with `docker network connect werewolf ww-postgres`. This is written into the
+compose file as a comment, because it is exactly the kind of invisible dependency that breaks
+six months later. **If that container is ever recreated, the connect command must be re-run.**
+
+### 1.7 🟡 Shell and tooling friction (grouped — no lasting impact)
+
+| Issue | Mechanism | Resolution |
+|---|---|---|
+| A test fixture landed in the repo root instead of `frontend/` | the shell's working directory had drifted between commands; relative paths resolved elsewhere | moved; later commands used absolute paths |
+| `pkill -f "next start"` killed its own shell | the pattern matched the command string of the very process running it | killed by PID, identified via the port it held |
+| Wrong server kept serving an old build | several `next-server` processes on the host from other projects; the one restarted was not the one on port 3000 | identified the owner of port 3000 explicitly; left the others alone |
+| A verification "hang" that wasn't | Python's `requests.iter_lines` buffers to 512 bytes before yielding, so a slow stream looks stalled | re-verified with `curl -N`, which does not buffer |
+| A spurious `403` while testing | each `curl` invocation is a fresh session, so the seat cookie was lost between calls | used a cookie jar; the 403 was correct behaviour |
+| `.env` templates refused by git | the repo root ignores `.env.*` (correct for the Python side) | a scoped un-ignore in `frontend/.gitignore` for the two files that hold only a public URL |
+
+**Generalises to:** most "the system is broken" moments during verification were *the
+measuring instrument* being broken. Confirm the tool before believing the reading.
+
+---
+
+## 2. Server contract: what the wire actually said
+
+None of these are server bugs. They are places where **the documentation and the data
+disagreed**, and the data won. All were found by inspecting a real 593-event archived game
+before writing the code that depended on them.
+
+### 2.1 🔴 The transcript is a shared slot counter, not a list of speeches
+
+**What the docs implied.** Observer-tier annotations ("why did this agent speak?", "who were
+they addressing?") join to a speech via `about_channel_seq`.
+
+**What the data showed.** `channel_seq` is a single per-day counter shared by **three**
+different event types: speeches, passes, and narrator lines. It is dense (0…N, no gaps, no
+duplicates). So a day's transcript is a list of **slots**, each occupied by one of the three,
+and an annotation attaches to *whatever occupied that slot*.
+
+**Why this matters enormously.** Of the seeded game's 149 annotations, **18 attach to passes,
+not speeches**. A data model built around "annotations decorate speeches" would have silently
+dropped every explanation of *why an agent chose not to speak* — which is precisely the
+content that makes the X-ray feature worth building.
+
+**Settled.** `GameView` models a day as ordered slots; annotations live in a side map keyed by
+`channel_seq`, which also makes the join order-independent by construction.
+
+### 2.2 🟠 Nights belong to the day before them
+
+`night_result` for night N is tagged `day: N`, and the narrator's description of that night's
+deaths occupies a slot in **day N's** channel.
+
+The two design documents disagree about where this renders: `ux_journeys` D19 puts the night
+section on the current day's page; D20 says the night *result* opens the *next* day's page.
+The data settles it — splitting them would place a day-5 narrator line on a day-6 page that
+does not exist.
+
+**Settled.** Night N renders at the bottom of day N. The one thing that *does* cross the day
+boundary is `day_summary`, because the wire's own docstring says "shown next morning."
+
+### 2.3 🟠 Not every day has every phase
+
+Day 1 of the seeded game goes **day → night** with no voting phase at all: three agents
+passed, nobody spoke, and the day ended with `no_vote`.
+
+**Cost avoided.** A scrubber built as "days × 3 phases" would have shown a phase that never
+happened. The timeline is built from the `phase_change` events that actually occurred.
+
+**Side effect worth knowing:** the seeded game's day 1 legitimately looks almost empty with
+the X-ray off. That is the real game, not a rendering bug.
+
+### 2.4 🟠 A field the UI spec assumed is not on the wire
+
+`ux_baseline` specifies a pass button "where `can_pass`". `InputRequest` carries no `can_pass`
+field — only `action_kind`, `candidates`, and `deadline`.
+
+**Settled.** Pass is offered on every discussion turn and **the server decides**: on a turn
+that must be answered it returns `422` with its own wording ("You must respond on this
+reactive turn."), which the dock renders verbatim. An honest rejection beats a button hidden
+on a client-side guess.
+
+**Flagged for review:** this is the one place the client cannot pre-validate what the server
+will accept. Adding `can_pass` to the wire would close it.
+
+### 2.5 🟡 The turn endpoint has no schema
+
+`POST /turns` accepts an untyped dictionary; validation is delegated to the engine's
+`validate_human_response`. So the accepted shapes are **not** discoverable from the API
+schema.
+
+**Settled.** The four payload shapes were read out of the engine source and written down at
+the client's call site: `{delegate: true}` alone (legal in every phase); `{message}` or
+`{pass_turn: true}` for discussion; `{message}` only for wolf talk; `{target}` for everything
+else, drawn from the server's own candidate list.
+
+### 2.6 🟡 Smaller contract facts, each of which would have caused a bug
+
+| Fact | Consequence if missed |
+|---|---|
+| `host_key` is a **query parameter** on `/start` and `/lock`, not a body field | host actions silently unauthorised |
+| `GameStatus.state` is a bare string, not an enum | no compile-time safety on the three-state route |
+| `PhaseProgress` never appears in the API schema (it is stream-only) | the pacing type had to be hand-transcribed from the server source, and is marked as such |
+| `day_summary_structured` exists in the schema but is never emitted | building the inspector on it would have produced a permanently empty panel — `build_plan` warns about this and `ux_journeys` §8 still lists it; the warning was followed |
+| Stream frames are named `game` and `pacing`, with the event id carrying the sequence number | wrong listener names receive nothing, with no error |
+
+---
+
+## 3. Client bugs I introduced and caught
+
+Recorded because they are the honest part: several of these were caught only by testing
+against real data or a running system, not by types or review.
+
+### 3.1 🔴 Seat recovery would never have fired
+
+**What happened.** If a player's session cookie is lost (cleared data, new browser session),
+the app is supposed to silently reclaim their seat using a token kept in local storage. I
+wired that recovery to trigger *when the status request failed*.
+
+**Why it was wrong.** `GET /games/{id}` is a **public** endpoint. A lost cookie does not make
+it fail — it succeeds and simply reports `you: null`. The trigger condition would never have
+been true.
+
+**Cost.** Seat loss would have been permanently unrecoverable, and it would have looked like a
+rare, unreproducible bug.
+
+**Settled.** The real signal is "this device holds a seat token for this game, yet the server
+says we are nobody." Verified end-to-end against a live game: rejoin returns 200 and the next
+status comes back with the seat resolved.
+
+### 3.2 🔴 Every refresh would have replayed the whole game's drama
+
+**What happened.** The design has exactly two full-screen moments — the role reveal and the
+game-over banner — and both must fire **only when the event arrives live**.
+
+The problem: the stream *replays history* before going live. On a first connection it replays
+from sequence zero, so an hour-old role deal and a finished game's ending arrive through the
+same channel as genuine news.
+
+**Settled.** The status snapshot taken at connect time provides `last_seq`. Everything at or
+below it is history; everything above is news. The store records which sequence numbers
+arrived live, and the beat layer asks it before firing.
+
+This also required adding two fields to the view model (`me.roleSeq`, `winnerSeq`), because
+"we have a role now" is *also* true after a reload — the question is which event carried it.
+
+**Generalises to:** "is this new?" is not answerable from state. It needs a boundary recorded
+at connect time.
+
+### 3.3 🟠 A test that was wrong in a useful way
+
+A test asserted that 149 annotations would produce 149 annotated slots. It produced 85.
+
+The test was wrong, not the code: all 85 turns carry a firing reason, and 64 of those *also*
+carry addressing tags — two annotation types landing on one slot. Fixing the assertion forced
+the actual invariant to be stated properly.
+
+A second test failure was more valuable: a "public tier only" filter didn't exclude
+`role_assigned`, which exposed a real design muddle — I had been filing every seat's private
+role card into the observer-tier role map. For a live player that would have produced a
+one-entry "X-ray" containing only their own card. Now the observer map comes solely from
+observer-tier data, and your own role lives on your own view.
+
+### 3.4 🟠 Container reported unhealthy while serving perfectly
+
+**What happened.** The frontend container showed `(unhealthy)` in Docker while responding
+correctly to every request.
+
+**Why.** The health check used `localhost:3000`. Inside that image `localhost` resolves to the
+IPv6 loopback `::1` first, and Next's standalone server binds **IPv4 only** — so the check got
+"connection refused" from a healthy application.
+
+**Cost.** Cosmetic today, but `depends_on: service_healthy` would have blocked anything placed
+behind the frontend later, and a permanently-unhealthy container is exactly the sort of thing
+that gets believed during a real outage.
+
+### 3.5 🟠 A white flash on a dark-only app
+
+Mantine's SSR helper hard-codes `data-mantine-color-scheme="light"` and relies on the client
+to correct it after hydration. That default assumes an app with both schemes; this one has
+only the dark palette, so every first paint flashed white — worst on the replay theater, the
+page people are sent links to.
+
+**Caught by** reading the served HTML, not by reasoning. The build, the type checker and the
+component render tests were all perfectly happy with it.
+
+### 3.6 🟠 A visual feature that shipped as nothing
+
+The day/night shift — which `ux_baseline` calls "the single most atmospheric thing tokens can
+do" — was implemented as a class that re-points colour variables. It was invisible.
+
+**Why.** The class re-pointed the general surface variables, but every element inside the
+night section reached for *explicit* night-specific colours instead. The re-pointing had
+nothing to act on, and the section had no surface of its own to tint.
+
+**Caught by** grepping the *built* CSS and reasoning about what actually consumed those
+variables. The rule was present and correct in both source and output — and still did nothing.
+
+**Generalises to:** "the CSS is in the bundle" is not "the CSS has an effect."
+
+### 3.7 🟡 Self-inflicted, quick to fix
+
+- A CSS comment containing `--night-*/--wolf-*` — the `*/` **closed the comment early**, and
+  the formatter then mangled the rest of the file into nonsense.
+- Referenced two view-model fields that didn't exist yet; the type checker caught it, and the
+  right fix was to add them to the reducer properly rather than fake them at the call site.
+- A leftover no-op expression (`className={classes.nightPhase ? '' : ''}`) from an edit.
+- The Docker build failed on a missing `public/` directory — reserved by the layout for later
+  share-card work, never created.
+- `@eslint/eslintrc` was needed for the flat ESLint config and wasn't installed.
+
+### 3.8 🔴 The live post-game X-ray threw away its own backlog
+
+**What happened.** The store treated `view.lastSeq` as both a high-water mark and a dedupe
+ledger: any arriving event at or below it was rejected. That is valid for an ordinary append
+stream and wrong for the server's deliberate R7 ordering.
+
+**Why.** At game end the server sends the high-sequence `game_over` event first, then flushes
+every previously withheld observer event in sequence order. Those held events have lower
+sequence numbers than `game_over`, but they are new to this viewer. Folding `game_over`
+advanced `lastSeq`; the following X-ray backlog was therefore mistaken for reconnect
+duplicates and dropped. The winner takeover worked, but its “See what really happened” button
+landed on a view with nothing new to see until refresh.
+
+**Settled.** Dedupe is now membership-based (`events` already contains this exact `seq`), not
+high-water-based. A true append still folds incrementally. An unseen lower sequence is inserted
+into the sorted durable log and the view is re-folded, preserving the seat hint and live-seq
+ledger. A store regression reproduces the server exactly: all public events through
+`game_over`, then the lower-sequence held backlog; the resulting view must equal a whole-log
+fold and retain the live winner beat.
+
+**Generalises to:** event identity and event recency are different facts. A monotonic maximum
+cannot deduplicate a stream that intentionally releases withheld history.
+
+### 3.9 🔴 An answered turn stayed actionable forever
+
+**What happened.** `input_request` set `me.pending`, but no reducer event cleared it. A success
+or 409 invalidated the status query without reconciling the returned `pending_seats`; refresh
+was worse, because folding history restored the last request even when it had been answered
+hours ago.
+
+**Cost.** The dock remained after submission, stale refreshes offered expired actions, and a
+second click bounced with 409. AFK delegation had the same residue.
+
+**Settled.** The responsibilities are now explicit: `input_request` owns the form shape;
+`GameStatus.pending_seats` owns whether it is current. Accepted and already-answered submits
+clear immediately, while every status snapshot reconciles the store and refreshes its deadline.
+The reconciliation is sequence-aware: a status request can race SSE, so a snapshot may clear
+only requests at or below its own `last_seq`; it cannot erase a newer request that arrived
+after the snapshot was taken. Tests pin both stale-history clearing and that race.
+
+### 3.10 🔴 The server delivered faction/private information that the UI hid
+
+**What happened.** Wolf messages and votes were folded, but `DayTranscript` rendered the whole
+wolf channel only when the observer X-ray toggle was on. A live wolf cannot enable that toggle,
+so the faction stream arrived and disappeared. Investigation results, vigilante confirmations,
+and ammunition updates were also folded, but the specified `PrivateResultCard` had no render
+consumer at all. `pack_roster_update` was kept globally and never shown.
+
+**Why.** “X-ray” had accidentally become a client permission gate, even though the design's
+security boundary is the wire. The replay requirement (hide machine-world detail while X-ray
+is off) was applied to the live entitled view as well.
+
+**Settled.** Replay still uses the X-ray as an arrangement control. Live mode separately says
+“render entitled machine data”: a spectator receives none, while a wolf receives and now sees
+the current pack, pack talk, binding votes, and chosen kill. Seat-private events are filed by
+recipient: the active player gets inline machine-world cards, and the finished-game agent
+inspector shows the archived cards for that seat. Pack rosters are also stored per night so
+scrubbing an early day never shows the final survivors. Server-rendered component tests prove
+both halves: replay-off hides the data; an entitled live render and the inspector expose it.
+
+### 3.11 🔴 Rejoin restored the cookie but not the open stream
+
+**What happened.** On a refresh with a missing cookie, the anonymous status request opened a
+spectator EventSource. The rejoin call then restored the HttpOnly cookie and status identity,
+but the already-open SSE request kept the credential it began with.
+
+**Why.** The server re-resolves `token → seat` for each event, but `token` itself is captured
+from the EventSource HTTP request. Changing browser cookies cannot mutate an in-flight request.
+The status could therefore say “you are player_4” while role, input, and faction events stayed
+on the public tier.
+
+**Settled.** Stream lifetime is keyed to seat identity as well as game identity. When rejoin
+changes `you: null` to a seat, the anonymous source closes, the store re-hydrates silently at a
+fresh snapshot boundary, and a new credentialled source catches up. A 403 from turn submission
+also performs the promised one-time local-token rejoin and retries the unchanged payload once;
+failed tokens are cleared. Waiting lobbies no longer open an events endpoint that can only 409.
+
+### 3.12 🟠 The smaller review findings, closed together
+
+- **Status fetch failures were invisible.** `useGameStream` discarded the query error, leaving
+  unknown games on an empty “waiting” table. It now surfaces 404/403/network failures; a 404
+  offers the archived replay URL, and a 403 participates in the recovery attempt above.
+- **The corrected AFK clock was fictional.** `recordServerClock` existed but had no caller, and
+  status carried no server clock. `GameStatus.server_time` is now a required generated-contract
+  field sampled in UTC; every snapshot records the offset before a deadline renders.
+- **Pacing leaked across stages and games.** Hydration now clears ephemeral bars, the live view
+  selects the bar matching the current phase rather than the first bar for that day, and width
+  clamps at 100%.
+- **D22 landed on the wrong page.** Dismissing the live winner takeover now selects day 1 as
+  specified. Death styling is filtered through the selected day, so a future casualty is not
+  desaturated while scrubbing earlier history.
+- **The Docker context was over 1 GB.** With no `frontend/.dockerignore`, host `node_modules`
+  (~800 MB), `.next` (~230 MB), and `.env.local` entered the context; `COPY . .` could overwrite
+  Alpine's clean `npm ci` dependencies with host artifacts. The new ignore file excludes all
+  three classes while keeping the explicit production build arg as the API authority.
+
+### 3.13 🔴 Coming back to your own room made you a second passenger
+
+*(Added 2026-09-27, found by the owner while clicking through the new pages.)*
+
+**What happened.** The owner opened a room, boarded it, pressed back to the room list and
+pressed Board on the same room. The room asked for a name again and put a second passenger on
+the manifest. The owner's first seat, the one shown as the host, now belonged to nobody. Back
+on the platform, the owner was not marked as "you" at all.
+
+**Why it happened.** Three gaps, each harmless alone:
+
+- **The room list never checked this device.** Its Board button did not look at the seat
+  token and host key this browser already keeps for the room, so it offered every room as a
+  fresh join.
+- **The server minted a seat for every join.** A second join from a browser already aboard
+  got a new seat, and its cookie replaced the first one's. The first seat stayed on the
+  manifest with nobody holding it; once the game started, the stand-in agent would have played
+  it.
+- **The platform recognised you by name, from page memory.** "You" was the name typed on the
+  boarding pass, kept only while the page stayed open and matched against the roster by name.
+  Leaving the page or reloading lost it, and two passengers with the same name could not be
+  told apart. The server knew which seat was yours (the cookie), but the waiting-room status
+  never said so.
+
+**What it would have cost.** Any player who left the page and came back through the room list
+would have split into two passengers, with the first one's seat abandoned. The host would have
+seen the room "hosted by" a name that was no longer them.
+
+**Settled.** Fixed where each gap was:
+
+- `POST /games/{id}/join` hands back the seat the browser already holds when its cookie rides
+  the request (`GameLobby.join(name, held)`), so joining twice is harmless from any door.
+- The waiting-room status carries `you_aboard`, the viewer's place on the roster, from the
+  seat cookie (`GameLobby.place_of`). `useRoom` marks "you" from it; the name matching is gone.
+- The room list shows **Return to your seat** (or **Return to your room**, for a host who has
+  not boarded) instead of Board on any room this device is in, full or locked alike.
+
+Verified by server tests (joining twice returns the same token; two players both named "hao"
+each get their own place; a spectator gets none) and in the running app: board, leave, come
+back through the room list → the row says Return to your seat, the roster still holds one
+name, and the platform marks "hao · you · host" with Depart and Lock.
+
+**Still open.** The host shown is still "whoever boarded first", not the room's creator: the
+room never learns who created it, only that someone holds the host key. It is only wrong when
+someone else boards before the creator does.
+
+### 3.14 🟡 On a phone the carriage lost its walnut sides
+
+*(Added 2026-09-27, found by the owner: "a floating head on top of the screen".)*
+
+**What happened.** On the landing at phone width, the carriage's roof and marquee sat on a bare
+stage, with no wood or brass rule down its sides, so the marquee read as a separate sign.
+
+**Why it happened.** Two rules, each right alone. The landing's `main` clips anything past its
+column (`overflow-x: clip`), so the carriage's rails cannot scroll the page sideways. The
+carriage, on phones, pulled itself 10px past the column on each side (`margin: 0 -10px`) to win
+back stage width. Its sides were 9px of walnut, so all of them fell outside the clip. Pixel
+samples at 390px showed page colour right up to the stage's edge.
+
+**Settled.** On phones the carriage stays inside the column, with 12px sides. The marquee's facts
+went into one sideways row, so the head is no longer half the stage's height.
+
+### 3.15 🟠 The ballot opened in the middle of the day's passes
+
+*(Added 2026-10-12, found by the owner in solo game 403f4dbc, seated at seat 3 with Claude Haiku
+at the other nine.)*
+
+**What happened.** Haiku passes a lot, so day 2 ended with a run of about twenty pass beats, and
+the stage, playing at reading pace, was far behind the server. The ballot came up while the
+stage was still playing passes; the owner voted, and after the vote the stage showed "Player 10
+passed". Another time an agent's turn flashed on the stand and was gone before it finished.
+
+**Why it happened.** Three things, each one reasonable alone:
+
+- **The server asks before it announces.** The seat's `input_request` for the vote arrives just
+  before `phase_change: voting` (the night act before the night falls, the opening before its
+  round, every time in this game). The beat cutter placed the ballot where the request sat. The
+  last turn of the day only turns into a pass beat when the phase change arrives, so that pass,
+  and "voting opens", landed after the ballot.
+- **The cut-short.** Since 2026-10-01 the dock never waited for the stage: once the seat's prompt
+  was seen further down the queue, the beat on stage lost the rest of its hold. That is the turn
+  that flashed. In a solo game nothing runs on a clock, so the cut bought the player nothing.
+- **One beat per pass.** Every pass was a thinking beat and a pass beat, six seconds a seat, so
+  a quiet table's discussion took minutes to watch.
+
+**What it cost.** The vote was cast before the player had seen the day finish, and the order on
+stage contradicted the log. No data was wrong; the stage told it out of order.
+
+**Settled** (owner's rulings, 2026-10-12; beat sheet §2 row 3 and §12):
+
+- A prompt that arrives just before its phase change or round opening is placed after it, so
+  the ballot comes after the day's last pass and after "voting opens"; a ballot or night act also
+  ends the turn on the stand. A catch-up lands on the prompt.
+- A request with no deadline (solo) waits for the stage: no cut, every beat before it plays its
+  whole hold. A request with a deadline (a room) keeps the cut, because its clock is running.
+- Passes one after another, with nothing shown between them and no seat twice, are one beat:
+  "Seats 4, 5, 7 and 10 passed." on the rounds' walnut notice. A lone pass is as before. The
+  X-ray replay still plays each `pass_marker` with its reason. Live, a pass the stage is on that
+  grows into a run, or a thinking turn it swallows, gives the stage the run, played afresh.
+
+Verified by unit tests (the 403f4dbc order as a regression test, runs, the deadline rule) and the
+e2e suite. The fixture's public cut is shorter, so the replay's seek indices, the featured window
+and the workbench's `?beat=` numbers moved with it. Two new goldens (a lone public pass, a run)
+and the transport band's ticks.
+
+---
+
+## 4. Design decisions and where the specs collided
+
+These are judgement calls, recorded so they can be overruled knowingly.
+
+### 4.1 The reducer knows nothing about time
+
+One pure function folds the event log into a view model, and it serves **all three** surfaces:
+replay (fold once), live (fold incrementally), and the post-game reveal (the same fold
+absorbing the withheld backlog).
+
+It deliberately does **not** know whether an event is live or historical. That belongs to the
+store. Keeping the reducer ignorant is what lets replay-scrubbing and refresh-mid-game share
+one code path instead of two that drift apart.
+
+### 4.2 "Who am I?" is passed in, never inferred
+
+A replay contains **every** seat's private role card. Inferring "my role" from those events
+would have made the viewer whichever seat happened to be dealt last. The seat identity comes
+from the server's status response, and when it arrives late the log is re-folded rather than
+patched — because several fields derive from it.
+
+### 4.3 The X-ray is arrangement, never permission
+
+The client never hides data it received. Tier filtering is the server's job, and withheld
+events simply never arrive. The toggle decides what is shown *at once*; it disables itself
+when a log carries no observer data, because there would be nothing behind it — never because
+the client decided to withhold.
+
+### 4.4 Two takeovers, and no more
+
+Full-screen moments are reserved for the role reveal and the game-over banner. Deaths — the
+obvious third candidate — stay in the transcript flow as full-width banners. Overlay inflation
+is how game interfaces become noisy, and the scarcity is what makes the two that remain land.
+
+The replay's ending is therefore a *card at the foot of the final day*, not a takeover: a
+replay viewer is by definition arriving at history.
+
+### 4.5 Documented deviations
+
+| Spec | What was built | Why |
+|---|---|---|
+| D20: night results open the next day's page | night renders at the foot of its own day | the data groups them that way (§2.2) |
+| §8 row 6: turn markers visible in X-ray | not built | every speech already shows *why* the turn fired; a marker per turn was pure noise |
+| §8 row 14: structured summaries in the inspector | not built | the engine never emits them (§2.6) |
+| §6: micro-animation is parked | built, on request | the delivered replay read as static; motion is tied to reader actions only, never to game events, so the "render settled during catch-up" rule holds |
+
+### 4.6 🟠 Two scope items I missed and later closed
+
+- **The Dockerfile was in P0's scope** and I did not build it in the first pass. Closed during
+  deployment.
+- **Role icons were specified** in `ux_baseline` and never implemented; roles rendered as bare
+  text until the visual pass.
+
+Both were found by re-reading the spec against what existed, not by noticing during the build.
+
+---
+
+## 5. Blocked, and why
+
+### 5.1 Portrait generation — Google access blocker resolved in-agent
+
+The asset task called for generating ~24 seat portraits with Imagen. The script is written,
+two-phase (generate candidates → owner curates → post-process picks), with a single fixed
+style prompt so the set coheres.
+
+It cannot run here. Credentials authenticate and resolve the project correctly, but **no image
+model is reachable on it**:
+
+| Model | Result |
+|---|---|
+| `imagen-4.0-generate-001`, `imagen-4.0-fast-generate-001` | 404 — "project does not have access" |
+| `imagen-3.0-generate-002`, `imagen-3.0-fast-generate-001` | 404 |
+| `imagegeneration@006` | 404 |
+| `gemini-2.5-flash-image` | 400 FAILED_PRECONDITION via the Vertex predict path |
+
+**Impact was contained by design.** While blocked, the empty asset manifest made every seat
+fall back to initials on a deterministic per-seat colour — the degradation `ux_baseline`
+asked to be designed in.
+
+**Resolved 2026-08-22.** The owner selected the compact game-avatar direction represented by
+Sample E. The coding agent's built-in image generator produced twelve distinct adult seat
+avatars directly, without Google Cloud, API credentials, or the legacy Imagen script. One
+approved style reference and one fixed prompt scaffold held pixel density, framing, palette,
+lighting and background constant while the persona descriptor varied. The selected PNGs were
+nearest-neighbour downscaled to 512px WebP (20–28KB each), committed under
+`src/assets/portraits/`, and statically imported through the sole asset manifest. The avatar CSS
+uses `image-rendering: pixelated` so the 22px/34px render sizes preserve crisp edges.
+
+This also exposed and closed a design/implementation mismatch: the original aesthetic ruling
+assumed large dialogue portraits, while v1 only renders these assets inside `SeatChip`. The
+binding UX baseline now rules compact seat avatars for v1 and reserves any future large
+dialogue or role-reveal portrait as a separate higher-detail asset tier.
+
+---
+
+## 6. What verification actually caught
+
+Worth reviewing, because the *cheap* checks caught almost nothing.
+
+| Method | What it caught |
+|---|---|
+| TypeScript / ESLint / build | the two invented field names — and **nothing else** in this list |
+| Reducer tests against a **real** archived game | the annotation-join model, the shared slot counter, the missing voting phase, the observer-map muddle |
+| Rendering components through `react-dom/server` with real data | that every day and both X-ray modes render without throwing |
+| **Reading the served HTML and built CSS** | the white flash, the invisible night tint — both invisible to every check above |
+| **Driving the real API** (create, stream, submit, rejoin, spectate) | the seat-recovery logic error, confirmation of 409/403 handling |
+| **Testing through the public URL** | the Cloudflare buffering — invisible from every other vantage point |
+| **Independent cross-layer review + exact-order regressions** | the R7 high-water bug, stale input dock, spectator rejoin stream, and rendered-vs-folded private-data gap |
+
+The pattern is stark: **the further the check was from the real running system, the less it
+found.** The build's most serious defects were all invisible to the type checker and the test
+suite, and were caught by looking at bytes actually served over the wire.
+
+### 6.1 Unified game persistence — duplicate archive removed (2026-08-22)
+
+**Issue.** Live durability used `sessions` plus normalized `events`, while replay archival
+copied the same event log into a second `replays.events` JSONB value. A clean finish therefore
+had two parent lifecycle records and two copies of every event to keep consistent. It also left
+operational rows and archive rows with independent retention behavior.
+
+**Solution.** `GameRow.game_id` is now the single identity for the full lifecycle, with status
+`waiting | running | completed | dropped`, and `EventRow(game_id, seq)` is its one-to-many event
+log. Completion updates result metadata and status on the parent; replay reads the already
+persisted child rows instead of copying them. Public replay responses are constructed through
+`ReplayBase`/`ReplayGame` DTOs, so retained recovery fields such as host and seat credentials do
+not enter the API contract. Migration `0004` preserves session rows, replay-only rows, overlapping
+event logs and orphaned event logs before dropping the redundant replay table.
+
+**Verification find and fix.** The unit suite passed, but the optional real-PostgreSQL replay
+round-trip found that the SQLModel table definition lacked the JSON/room-name server defaults
+already present in Alembic migrations. Tables created directly from metadata could consequently
+reject a minimal upsert with a not-null violation. The database model now declares the same
+defaults as the migration. The real round-trip, migration upgrade/downgrade fixture, Alembic
+schema check, focused server tests and full test suite all pass. Automatic deletion remains
+deferred until a retention window is explicitly ruled; no destructive cleanup was smuggled into
+the normalization refactor.
+
+### 6.2 Durability resource split — abstract bundle removed (2026-08-22)
+
+**Issue.** `DurablePlane` mixed two independent responsibilities: SQLAlchemy repository methods
+for game/event rows, and LangGraph infrastructure lifecycle for the Psycopg checkpoint pool,
+saver and compiled graph. Its name explained neither dependency clearly, and a `GameSession`
+received the whole bundle even though it only needed persistence methods plus a graph.
+
+**Solution.** `GameRepository(Database)` now owns game/event reads and writes;
+`GraphRuntime(checkpoint_dsn)` owns checkpoint and graph startup/shutdown; the already separate
+`ReplayService(Database)` remains the replay read boundary. `AppResources` constructs all three
+explicitly, and routes/recovery pass each consumer only what it needs. This is an ownership-only
+refactor: the HTTP contract and database schema are unchanged.
+
+### 6.3 HTTP router split — mixed layering removed (2026-08-22)
+
+**Issue.** `app.py` contained almost the whole API, while `replays.py` was a one-off vertical
+slice containing its router, dependency provider and database service. The result was neither a
+single small API module nor a consistent multi-router design; replay query logic also raised
+FastAPI `HTTPException` directly.
+
+**Solution.** `app.py` is now the composition root only: lifespan, middleware and router
+registration. System, running-game/SSE, room and replay endpoints live under `server/routes/`;
+all request-to-resource providers live in `dependencies.py`; replay reads live in the
+framework-independent `replay_service.py`. Replay application errors are translated back to the
+same HTTP responses at the route boundary. Every public method, path and wire model remains
+unchanged. Focused server tests, OpenAPI route enumeration, Ruff and the full suite verify the
+move.
+
+### Standing gap
+
+No browser exists in this environment, so **nobody has visually confirmed the rendered
+pages.** Layout, spacing, contrast and the story/machine-world separation are unverified by
+eye. Component *structure* is verified; component *appearance* is not. That review is
+outstanding, and `ux_journeys` §0 reserves it for the owner against the running app anyway.
+
+---
+
+## 7. If someone picks this up next
+
+1. **The Cloudflare `no-transform` rule is load-bearing.** Any future subdomain that streams
+   needs it, and the failure mode is silent.
+2. **`docker network connect werewolf ww-postgres`** must be re-run if that container is ever
+   recreated.
+3. **The reducer is the thing to protect.** Every visual component is a function of its output;
+   if it is right, the visual layer is thin and low-risk. Its test suite doubles as a tripwire
+   on server event semantics — if the server changes how the day channel is numbered, those
+   tests fail before any user sees a misplaced annotation.
+4. **`can_pass` on the wire** would remove the one place the client cannot pre-validate.
+5. **Portraits are landed.** The twelve-asset WebP set is wired through the manifest; future
+   replacement remains an asset-only swap at that import boundary.
+6. **Absence, disconnection and recovery have one map:** [`seat_continuity.md`](seat_continuity.md)
+   (2026-09-09). Read it before touching the AFK timer, rejoin, or recovery.
+
+## 8. The stage on a phone (2026-10-01)
+
+> The plain-words version of this section, one lesson per entry with how to see each on the
+> phone, is `phone_lessons.md`. This section keeps the dated record and the numbers.
+
+> Added after the Playhouse redesign (2026-09-28) met its first iPhone. Same shape as the
+> sections above: what happened, the mechanism, what it cost, how it was settled, and an honest
+> reading of where the art pipeline stands against production practice.
+
+### 8.1 🔴 iPhone Safari killed every stage page
+
+**What happened.** On an iPhone, every page with a stage — a live game, a replay, the landing's
+carriage, a workbench scene — died at once with "A problem repeatedly occurred". Pages without a
+stage (the ticket office, the rooms list) were fine. Desktop Chrome and desktop WebKit (Playwright's
+Linux build, iPhone profile) never crashed, so headless testing could not have found it.
+
+**The mechanism.** "A problem repeatedly occurred" is the WebKit content process being killed,
+not a JavaScript error. A subtraction probe found the cause in eight taps on the phone:
+`styles/gpu-probe.css` gives the workbench a `?gpu=` switch whose words remove one kind of GPU work
+each (`nofilter`, `noblend`, `nomask`, `noshadow`, `nosvg`, `noimg`, a layer at a time). Only two
+words made the page survive, `nomask` and `nosvg`, and nothing else did. The stage had five
+full-stage SVG `<mask>` elements: the house light (a dark sheet with soft holes cut by a mask whose
+shapes carried a blur filter), the atmosphere's veil and frame shadow, the night room's candle
+light, and the drape's fade into the bleed. iOS renders a masked SVG through a software path with
+intermediate buffers at three times the CSS resolution; five of them at 1600×900 is more than it
+allows one tab. It is a platform limit on one technique, not a general fault.
+
+**What it cost.** The site was unusable on an iPhone from the redesign's deploy on 2026-09-28
+until the fix, and nobody knew for three days because every check ran on a desktop.
+
+**How it was settled.** The five masks became plain vector sheets: one path with
+`fill-rule="evenodd"` cutting the holes, each hole softened from inside by a radial-gradient shape
+of the sheet's own dark. No mask, no new filter. A guard test keeps `<mask` out of the stage; the
+probe stays as the instrument for next time; the rule is in `stage_architecture.md` §6.
+
+**Who did what.** The owner found the crash on his phone, reported that it predated the day's
+deploy, ran the eight probe links and read the result; the subtraction method itself was the
+agent's proposal, following the A/B-by-subtraction the owner had run on his Chrome on
+2026-09-25 (§6's GPU rules came from that); the mask replacement was built by an agent to a
+brief and reviewed on the goldens and on the phone.
+
+### 8.2 Where the art pipeline stands (an honest reading)
+
+Not the cause, and worth saying so: JavaScript is not the bottleneck (the scene's JS heap is about
+10 MB and nothing is computed per frame; motion runs on the compositor), and image size is not
+either (the whole sprite set is 12 MB of WebP; a day scene decodes about 18 MB).
+
+Where it is below production grade:
+
+- **No per-scene GPU budget and no device testing.** The GPU rules of §6 were tuned on one
+  Chrome. A studio has a device matrix and a memory budget per scene before art ships.
+- **One sprite size for every screen.** A puppet is 900×1300 and is drawn at about 300 CSS px on
+  a phone, which at the phone's 3× density is 900 device px: the size we ship, so the phone is
+  not oversupplied (a 1× or 2× desktop is). The station's train is 5990×700 (16 MB decoded) for
+  a scene that lasts seconds. Production practice is two or three sizes per sprite through
+  `srcset`, which `next/image` would do but `unoptimized` bypasses. (Corrected 2026-10-01: an
+  earlier reading here said the phone decoded four times what it shows; that counted CSS px.)
+- **Effects are live rather than baked.** Puppets and chips carry live `drop-shadow` filters, the
+  light has two blend-mode layers, and the stage CSS holds 172 box-shadows. Cheap alone, all paid
+  at device resolution whenever something moves. Studios bake shadows into the sprite and keep
+  live filters for the one thing that animates.
+- **Painted layers are live SVG, never cached as bitmaps.** Generating the set as SVG strings keeps
+  it deterministic and testable, which is a real virtue; the cost is that nothing is rasterised
+  once per scene. §6's own rule ("a backdrop that fades is a picture") is the direction.
+
+What would close the gap, in order of payoff: (1) the mask removal and the probe as a regression
+tool; (2) sprites at two sizes and a decoded-pixel budget per scene written into the beat sheet;
+(3) baked puppet and chip shadows instead of filters; (4) one recording of Safari's Web Inspector
+memory timeline on the phone across a day and a night, with the numbers kept beside the budget.
+None of it needs canvas or WebGL: a DOM stage of ten composited layers is a sound choice at this
+scale, provided each layer is a bitmap or simple vector and a real device is in the loop.
+
+### 8.3 🔴 Fast beats killed the page: the set was rebuilt every beat (2026-10-01)
+
+**Symptom.** With the masks gone (§8.1), every stage page stayed up on the owner's iPhone at one
+beat a second and died at two to three, stepping the workbench: the day, the night room and the
+morning alike. A second crash, with a different shape: rate-dependent, not first-paint.
+
+**Mechanism.** Every scene was written as `<XBeat key={beat.id:seq} />`: the whole scene keyed
+per beat, so that a beat's arrival replays from the start. That key makes React throw the
+scene away and build it again, and the scene is the car's picture (1600×900, 5.8 MB decoded),
+the shutter (4 MB), the valance (3.2 MB), the light sheets, the wing's nine heads and the
+puppet with its live drop-shadow, each a layer with a pixel buffer at device resolution. The
+browser frees the last beat's layers a few frames after the new ones are up, not at once. At
+one beat a second it keeps pace; at three, two or three beats' worth of layers overlap, the tab
+crosses the phone's memory cap, and iOS kills it. Chromium shows the same rise and the same
+clean-up (live nodes 1088 → 1468 mid-run → 693 three seconds later, nothing more freed by a
+forced GC): transient pressure, not a leak, which a desktop's slack hides and a phone's cap
+catches.
+
+Not the cause, measured: sprite size (a puppet is 901×1285 and is drawn at about 300 CSS px,
+which at 3× is 900 device px, 1:1); the paint sheets (6 KB of SVG each, no pictures); the JS
+heap (10 MB throughout).
+
+**Fix.** The set and the beat are split: a scene is a stable set (`DaySet`, `MorningSet`: the
+atmosphere, the car's paint, the shutter, the house light, the wing, the strip) that updates in
+place, and a keyed part (`DayTurn`, `MorningBeat`: the puppet, the figures, the box) that
+remounts so its arrival plays again. The shutter snaps to its state when not played, since it
+now stays mounted while the state changes under it. Rule recorded in stage_architecture §6.
+
+What a beat step rebuilds, Chromium, 30 steps at 330 ms (`.churn` probe, MutationObserver):
+
+| per step                 | day before | day after | morning before | morning after |
+|--------------------------|-----------:|----------:|---------------:|--------------:|
+| DOM nodes added          |        343 |       194 |            321 |           234 |
+| pictures (`img`/`image`) |       15.1 |       6.0 |           15.1 |           6.6 |
+| paint sheets regenerated |        2.0 |       0.0 |            2.1 |           0.1 |
+
+**The probe.** `?auto=<ms>` on the workbench steps a beat every `<ms>` round the scene's beats
+(stage_architecture §6). The workbench's URL writes went to the browser's history API at the
+same time: a Next `router.replace` refetches the page from the server on every search-param
+change, which over the internet capped the probe at about three beats a second, the very rate
+in question. The phone’s reading, before the split (iPhone, Safari, the day scene on a loop): the page died at `auto=1000`, `500` and `330` alike, so the cost is cumulative as well as rate-bound: the loop walks every speaker’s puppet and the decoded pictures pile up on top of the rebuilds. After the split: _[pending the owner’s reading]_.
+
+**The bake (same day, after the phone's reading on the split).** The split did not move the
+floor: the loop still died at one beat a second, and the subtraction probe on the loop said
+why. No single culprit this time: hiding any one of the paint layer, the figures layer, the haze
+layer or the light layer bought enough room for the loop (the paint and the figures the most),
+hiding all pictures, all filters or all blends alone did not, and the clip-path on the shadows
+was innocent. The page simply sits near the cap with its set up, and the set is a stack of five
+full-stage sheets, each its own bitmap at 3×. So the car's set is now baked: the bake bench
+draws the paint and the haze alone, `scripts/bake-sets.mjs` photographs it for every hour, HUD
+and side at three scales, and `Backdrop` shows one picture where the day and the morning drew
+five sheets (stage_architecture §6).
+
+| sheet                 | pixels      | file (WebP q88) | decoded |
+|-----------------------|-------------|----------------:|--------:|
+| 1× (desktop, goldens) | 2200×900    |      ~100 KB    |  7.9 MB |
+| 1.5× (a phone's cap)  | 3300×1350   |      ~190 KB    | 17.8 MB |
+| 2× (a 2× desktop)     | 4400×1800   |      ~270 KB    | 31.7 MB |
+
+48 sheets, 8.8 MB in the repo, one loaded per scene. The phone's reading on the baked day and
+morning: the day's loop held at one beat a second; the morning died on its wrap to its first
+beat (the shutter down over the window with nine chips rising, 162 figure nodes against about
+20 on any other beat) until the phone's version of "the day begins" became a cut instead of a
+crossfade and the returning stand stopped fading (two full-stage fading layers on one beat);
+after that the whole morning loop held too. The replay end to end still died.
+
+**The inspector's numbers (2026-10-02, the owner's iPhone over Safari's Web Inspector,
+Layers panel, the replay at "before day 1", at rest).** This is the reading everything above
+was guessing at:
+
+| layer                         | paints | memory   |
+|-------------------------------|-------:|---------:|
+| `div.Stage_layer` (×6)        | 48–80  | 54–92 MB each |
+| `div.Stage_camera`            | 76     | 73 MB    |
+| an `svg` sheet                | 43     | 52 MB    |
+| `svg.FeltWindow_far`          | **26,217** | 11 MB |
+| the document, the page root   | 7      | 11 MB each |
+
+About 530 MB of layers before a beat had played. One full-stage layer costs this phone about
+54 MB (71 MB when its content reaches into the bleed, 92 MB for the widest), and six stage
+layers plus the camera were each one. What made them so: the felt country scrolling past the
+car's window is an infinite CSS animation with `will-change` (the 26,217 paints), so it has a
+layer of its own, and every stage layer painted above an animating layer must then have its own
+too, to be stacked in order on the GPU. One scrolling window promoted the whole stage. The
+baked day has no live window, which is why its loop held; "before day 1" is the deal scene,
+which still drew the car live, as did the vote, the lynch, the night lobby, the game over and
+the replay night. All six now stand in front of the backdrop.
+
+**After** (the same panel, the same page, 2026-10-02, with every car scene on the backdrop and
+the camera off its layer on phones): one stage layer, the world, at 92 MB (its content reaches
+into the bleed), the document and the page root at 11 MB each. Seventeen layers and 534 MB
+became one and 114 MB. The world's own `will-change` is the last resting layer; it stays, since
+a stable root for the blends and the zoom is worth 92 MB inside a budget of about a gigabyte.
+
+The rule the numbers prove, recorded in stage_architecture §6: **nothing animates at rest
+inside the camera**, and while a figure moves, every full-stage layer above it is paid for at
+full resolution for the duration, so the fewer of those the better. The remaining full-stage
+layers above the figures are the light's sheet, the grade and the HUD's container; the next
+reading with the same panel open on the baked day, at rest and during a rise, says whether the
+light and the grade are worth moving beneath the figures on a phone.
+
+**What to take from it** (the whole of it, in four sentences): the browser turns the page into
+layers, and anything with a transform animation, a filter, a mask or a blend gets its own
+pixel buffer; a picture costs width × height × 4 bytes however it is compressed on the wire;
+a phone gives one tab a fixed budget for all of it and kills the tab at the line, where a
+desktop just gets slower; and so what is rebuilt per beat, not what is on the page, is the
+number that matters at speed.
+
+**Open.** The other scenes (the vote, the lynch, the night lobby, the deal, the game over, the
+replay night, the shelf room, the pack) are still keyed whole per beat; the same split applies
+if the floor says it is needed. The replay's step button could also coalesce presses faster
+than a quarter second, and the arrow key could ignore auto-repeat, as a guard that holds
+whatever the scenes do.
+
+### 8.4 The jar's tip and the shutter's slide stuttered on the phone (2026-10-02)
+
+**Seen.** With the set baked and the page steady at 114 MB, two moves still stuttered on the
+iPhone: the ballot jar going over for the count, and the shutter coming down over the window.
+Both were pictures (`SPRITES.props.jarGlass`, `SPRITES.props.shutter`) carried by an SVG
+`<image>` inside a full-stage drawing, moved by an SVG `transform` on their group (`Tween`
+writing the attribute each frame; `motion.g` for the shutter).
+
+**Why.** An SVG transform attribute change is an SVG layout change: the browser relays out the
+group and repaints the drawing around it every frame, and resamples the big picture through the
+new transform on the CPU each time. An HTML element moved by a CSS transform skips the layout:
+the browser repaints one finished picture through the transform, which is what the puppets'
+rises already do, and those were smooth on the same phone.
+
+**Done.** The jar's glass with its chips (`Jar`) and the shutter's panel (`Shutter`) each sit in
+an HTML box of the picture's size with a small `<svg>` of their own inside (its `viewBox` the
+box, in stage units), and motion moves the box: the tip is `x`/`y`/`rotate`/`scale` about the
+base's centre (the same pose `about()` wrote, since a uniform scale and a rotation commute), the
+slide is `y` inside an `overflow: hidden` box at the clip's rectangle under the pelmet. The chips
+dropping in (`JarFallers`), the lid, the shadow, the folded stack and the pelmet stay in the
+drawing, in their old paint order. At rest every golden is unchanged (65 workbench, the replay
+and live specs). No memory moves: motion drives independent transforms in JavaScript (its
+accelerated set is `opacity`, `clipPath`, `filter`, the `transform` string and
+`backgroundColor`), so nothing is promoted to a layer and the Layers panel reads as before,
+during the move too.
+
+**If it still stutters.** The move can go to the GPU with `will-change: transform` on the box for
+its duration. On a phone that costs the box's own bitmap (the jar about 4 MB, the shutter about
+11 MB at the owner's phone) plus a full-resolution bitmap for every stage layer painted above it
+and overlapping it for that second: the light's sheet (about 54 MB) and, in the replay, the
+drape (another full-stage sheet), and the HUD's boxes. Expect +60 MB for the jar and +70–130 MB
+for the shutter, back to rest when the move ends. The workbench word `?gpu=lift` puts
+`will-change: transform` on every `data-moves` box so the price can be read in the Layers panel
+first: `/workbench/vote?beat=18&animate=1&gpu=lift` and `/workbench/morning?beat=5&animate=1&gpu=lift`.
+
+### 8.5 Scene changes still stuttered and sometimes crashed: the camera's move (2026-10-02)
+
+**Seen.** With the set baked and the jar and shutter on their boxes, three end-to-end replays
+on the iPhone crashed twice, always at a change of phase: the last speech into the vote, the
+vote into the count, the count into the night, the night into the day; and those changes were
+the laggy ones.
+
+**Measured.** A Chromium trace per transition beat, in the phone frame
+(`frame=iphone14`, so `data-small` applies) with the CPU throttled 4×, over the beat's first
+4.5 s on the production build, raster time being the number a per-frame repaint shows up in:
+
+| beat | raster ms | note |
+| --- | ---: | --- |
+| vote.count-begins | 3555 | the camera's push-in |
+| lynch.stand-returns | 2230 | the camera's pull-back |
+| day.pass | 2065 | a puppet's rise |
+| lynch.drop | 1997 | a puppet's fall |
+| vote.table-down | 1879 | the pull-back as night falls |
+| vote.opens | 1123 | the table up, the stand leaving |
+| morning.shutter-down | 1133 | the slide (620 small paints) |
+| lynch.named, vote.result | 393–1071 | nothing full-stage moves |
+
+**Why.** On a phone the camera keeps no layer of its own (§8.3: a layer there made the grade and
+the HUD layers too), so a camera move is a JavaScript-driven transform on a plain element and
+the browser repaints everything inside it every frame: the whole world, at the phone's
+resolution, double-buffered, for the move's second. That is the lag, and the churn of a
+full-stage bitmap a frame is what tips a page already near its budget. The puppets' rises are
+the next tier: the figure's contact shadow is a CSS `drop-shadow`, a blur recomputed every frame
+the figure moves.
+
+**Done.** On `data-small` a `Camera` shot cuts: `Stage.tsx` sets the move's duration to 0 and
+keeps its delay, so the count is pushed in where the push-in would have started, and the
+pull-backs likewise. The figure's `drop-shadow` is off on a phone (`Puppet.module.css`); the
+wall shadow, a picture, still rises with it. Desktop keeps both moves as designed.
+
+**Open.** The remaining per-frame costs on a phone are the figures' rises and falls themselves
+(a picture through a transform, the same class as the jar now) and the light's sheet, redrawn
+once per beat where the pool or a special changes. If a change of phase still crashes, the next
+reading is the Memory timeline at the change, not the Layers panel: the suspects are then the
+decode of the new scene's pictures while the old scene's are still held, which a short overlap
+of unmount and mount would answer.
+
+### 8.6 Crashes at random places with the X-ray on: three things still animated at rest (2026-10-02)
+
+**Seen.** After §8.5 the replay still died on the iPhone at places with no change of phase: in
+the night with Reveal on, and halfway through opening a seat's file.
+
+**Measured.** The pictures held are small at every step of that sequence (a Chromium census on
+the production build, phone size: 23 pictures and 39 MB decoded at the first beat, 14 and 22 MB
+in a night room), the DOM is modest, and the JS heap sits at 13–21 MB; none of that is a
+gigabyte. Chromium's layer tree is no longer readable over the protocol (the Layers panel is
+gone from DevTools), so the layers were found by census instead: every `animation:`,
+`will-change`, filter, blend, mask and scroller in the stage's css.
+
+**Found.** Three things still animated at rest, each the §8.3 mechanism (a layer of its own,
+and every stage layer painted over it promoted with it):
+- the night room's felt country: `FeltWindow` is baked into the car's sheets, but the
+  compartment (`Compartment.tsx`) still mounts it live, its near row scrolling under
+  `will-change: transform`; every seat's room visited with the X-ray, and the seated player's
+  own night live;
+- the wing's glows: a read that can be opened breathes on every day beat with the X-ray on, and
+  at the replay's night stop every seat that acted breathes;
+- the station's snow: seventy flakes, each on its own infinite transform animation, the live
+  game's first screen.
+
+**Done.** On `data-small` all three stand still: the near row keeps no layer, the glows hold a
+middle opacity, no snow falls. Desktop keeps them. Goldens unchanged (the snapshot runner
+already froze animations).
+
+**To read on the phone.** The Layers panel at the replay's night hub with Reveal on, and again
+with a seat's room open: at rest it should show the world alone, as the day does. If it does and
+the page still dies, the next instrument is the Memory timeline over the file's opening, where
+the suspects are the side sheet's decode next to the full one and the pane's mount.
+
+### 8.7 The rule as a gate, and the sweep's list (2026-10-02)
+
+**Why.** Four rounds (§8.3–8.6) each fixed one more instance of one rule, found after the next
+crash; the owner called it whack-a-mole, rightly. The rule is now a test, `e2e/phone-rule.spec.ts`
+(stage_architecture §6), run over every scene and beat in the phone frame with the X-ray on
+where it matters, about three hundred beats, and the sweep's whole list was fixed in one batch.
+
+**What the sweep found.** Beyond §8.6's three (already fixed when it ran):
+- the painted kit's idle life in the night rooms: the compartment's window still carried the
+  kit's falling snow (`.sk-snw`), and the kit's clock sway and lantern flicker (`.sk-hang`,
+  `.sk-flk`) are in the same stylesheet; infinite animations at rest, in every seat's room and
+  the pack's;
+- the lift (`Lift.tsx`): while the table or the card rode it, its load, a full-stage box, held
+  `will-change: transform` for the whole beat (voting opens, the table down, the card up): a
+  full-stage layer at rest plus the light, the grade and the HUD, for four to six seconds, at
+  exactly the changes of phase that crashed in §8.5;
+- the station's train, `will-change` at rest in the live game's first screen;
+- the ledger at the epilogue, three-quarters of the stage fading and sliding in;
+- and a disagreement about what a phone is: the backdrop's cut and the stand's arrival read the
+  window's width (`useNarrow`, under 1000 css px) while every css rule reads the stage's size
+  (`data-small`, under three-quarter scale), so the gate's phone frame saw the desktop's
+  crossfade at night fall. One flag now: `useSmall()` from the Stage, the same measurement as
+  `data-small`, and `screen.ts` is gone.
+On a phone (`data-small`) all of these now stand still, arrive at once or keep no layer; desktop
+is unchanged.
+What the sweep lists and the rule allows (a mover under three-fifths of the stage): the
+puppets' rises paint a quarter to two-fifths of the stage on a phone and the station's train
+half (a picture through a transform, no layer), the notices arrive once, the lift's table is
+redrawn as it moves. The scrollers it lists (the ledger's rows,
+the pack's chat, the drawer) are the open question for a Layers panel reading, not the gate's.
+
+**How it measures.** Each beat is stepped with the arrow key under `animate=1` and watched for
+3.2 s: a `MutationObserver` on the stage counts style writes per element (motion drives its
+moves by writing `style`), `document.getAnimations()` gives the CSS and Web Animations still
+running, and every element's computed `will-change` and mask are read. A mover's size is its
+painted area, the union of its pictures', drawn svg children's, backgrounds' and text's boxes,
+clipped to the stage; a full-stage wrapper round one figure counts as the figure.
+
+**Also in this batch.** At the replay's night stop a card of the acting seat opened nothing
+(it replayed the room already open; in the pack's room that was every wolf's card); it now
+opens the seat's file like any card that is not a visit.
+
+### 8.8 A black frame between beats: the backdrop remounted (2026-10-02)
+
+**Seen.** With the crashes mostly gone, the owner saw the screen flash black for an instant
+between beats on the iPhone, which they rated above the staccato.
+
+**Found.** A Chromium probe stepping beats on production and marking the backdrop's `<img>`:
+the day and the morning keep their image across beats (their set is mounted once, §8.3), but
+the vote, the lynch, the night lobby, the deal, the game over and the replay night are still
+keyed whole per beat, so every beat there unmounts the scene and mounts a fresh backdrop
+`<img>`. iPhone Safari paints a fresh image only once its asynchronous decode lands (next/image
+sets `decoding="async"`), so for a frame the house's dark shows through the empty picture, and
+the 18 MB sheet is decoded again each beat, which also feeds the stutter. Chromium keeps the
+decoded picture and shows no flash, which is why the goldens never saw it.
+
+**Done.** The Stage draws one backdrop (`BackdropSheet`) at the foot of the paint layer, in a
+box of its own present from the first render, from a description the scene registers through
+`BackdropContext` (set.ts; `Backdrop` in a scene is now only the registrar, as `Camera` is for
+the shot). The description's clearing and the next one's landing fall in the same commit, so the
+sheet outlives a beat and a change of scene; a change of scene changes only its `src`, and the
+browser keeps the old picture until the new one is ready, so no blank there either. The
+small-screen flag moved to set.ts with it (the instruments and the Stage share no cycle);
+`useSmall` is still exported from the Stage. Goldens unchanged.
+
+The same mechanism, one layer up: at the vote's count the wing flickered once per chip on the
+phone (owner). The scene remounts the wing per beat, and its heads are next/image pictures,
+which decode asynchronously by default (`decoding="async"`), so each remount paints nothing
+for a frame. Every next/image in the stage now carries `decoding="sync"`: a remounted picture
+whose bytes are cached paints at once, at the cost of its decode on the main thread, which for
+the heads is a millisecond or two per card and for a night room's picture some tens; the
+set/beat split for the scenes still keyed whole (§8.3, open) is what removes the remount, and
+with it that cost.
+
+**Open.** The scenes keyed whole per beat still rebuild everything else per beat (the light's
+sheet, the wing, the strip); the set/beat split (§8.3) remains the fuller answer for them, and
+the persistent backdrop now takes the heaviest part of it off the table.
+
+**A flake found on the way, not fixed.** `live-curtain.png` and `curtain-winding.png` (live.spec,
+the ending to its curtain) fail about two runs in three on the committed code as much as with
+this change: the transcript drawer is sometimes a few lines short of its foot at the screenshot
+("Back to now" showing) and the window's snow differs from the pre-bake golden. Timing under the
+fake clock on a loaded dev server; the goldens predate the bake. To re-record once the ending is
+read on a quiet machine.
+
+
+### 8.9 The stutter that was left: the scene rebuilt per beat, and the CPU painting every frame (2026-10-02)
+
+**Seen.** With the crashes and the black frames gone, the owner read the phone's own
+timeline (Safari Web Inspector over the cable): a burst of main-thread work at the start of
+every counted chip, every lynch beat and every new speaker (one beat of 318 ms, half script
+and half paint), a blue Composite record and a memory sawtooth per chip, and slow frames
+through every move; Energy "High" at 42–46% average CPU through the count. The layer count
+stayed at three through all of it, so this was time, not memory.
+
+**Found.** Three costs, read apart.
+- *The rebuild.* The vote, the lynch, the night's lobby, the deal, the ending and the replay's
+  night were keyed whole per beat (§8.8 open): every chip and every chat line unmounted the
+  scene and built it again, the wing, the light's sheet, the table, the valance, with their
+  pictures decoded afresh; and every change of scene did it once more, since each scene was its
+  own component. On production, in the phone frame with the CPU throttled four times, a counted
+  chip cost 1.0–1.8 s of raster and 0.2–0.5 s of script; forty-one vote steps cost 67 s of
+  raster and 14 s of script between them.
+- *The paint under a mover.* A figure, a chip or a card moving with no GPU layer is repainted
+  by the CPU every frame, and inside that rectangle the light's gradient holes are recomputed
+  and its two full-stage `mix-blend-mode: screen` sheets rendered through a surface and blended.
+  Removing the light layer (`gpu=nolight`) doubled the frames drawn during a rise (20 → 42 on the
+  day, 86 → 138 at a chip) for a tenth to a fifth less raster: the light was the frame-time cost.
+- *The GPU route, measured and refused.* The owner opened the vote on the phone with `gpu=lift`
+  (a layer for the jar's box and the shutter's panel): the Layers panel read nine stage layers of
+  52–74 MB, about 670 MB, and the tab died. A layer lifts every stage layer painted above it
+  (§8.1's cascade), and the light and the HUD are above every mover.
+- *A census of pictures against the pixels they are drawn at* (phone frame, 140 beats): the
+  jar's glass 2.4× its drawn size, its lid 3.7×, the plate 2.4×, the deal's small role cards
+  5–8×, the day figures 1.3× (right on a desktop), the night window 1.3–1.6×; the sheets, the
+  valance, the shutter and the table right. 197 MB of decoded pictures touched, 70 MB of them
+  never shown, and decoded again at every beat that remounted them.
+
+**Done, as one batch.**
+- One host for every scene played in the car (`scenes/CarScene.tsx`): a scene is a body that
+  describes its set with `<CarSetSpec>`; the host keeps the set from beat to beat and from scene
+  to scene and updates it in place. The vote, the lynch, the lobby and a night room stay mounted
+  across their beats (the live ballot remounts on its choice; a ballot line and the notices are
+  keyed; the lynch's wait for the card and a room's pin are keyed on the beat's `seq`).
+- On a phone every move steps at 24 frames a second (`useSteps`, `stepped` in motion.tsx): the
+  mover's curve sampled 24 times a second over its duration, through the puppet's rise, the
+  lift, the shutter's panel, the jar's tip, every `Tween`, the string drops, the pin, the tooth,
+  the photo, the marks, the lynch's drop and the card's flight, the vote's leaving puppet.
+- The light's two screened sheets boxed to their gradients (same pixels; `paint.test.ts` now
+  compares the glow's geometry to the kit's, not its markup).
+- Phone copies of the oversized pictures (`SPRITES.small`, 55 files, `scripts/small-sprites.mjs`),
+  picked by `useSmall()` in the jar, the plate, the small cards, the night window, the puppet
+  and the platform's figures. Desktop untouched.
+- The next speaker's two poses decoded a turn ahead in the replay (`cast/DecodeAhead.tsx`).
+- The gate marks the set before each step and fails a beat that remounts it within its scene
+  (the deal, the ending and the platform listed, not failed, until they are split; the live
+  rooms were listed too until §8.10).
+
+**A second pass from the readings, the same day.** Another agent's audit of the old snapshot
+(`docs/rendering-audit-2026-10-02.md`, its own measurements) and one more subtraction trace
+agreed on three more costs, taken in the same batch:
+- *The grade.* Hiding the grade layer (`gpu=nograde`) raised the frames drawn during a move by
+  60–90% (day 19 → 31, a chip 43 → 82; light and grade both off: 41 and 137). Its grain tile,
+  blended at 16% over the whole stage, is under a pixel at a phone's scale and gone from the
+  eye, yet repainted under every moving figure: off under `data-small`; the vignette stays.
+- *A night room's choice.* The target's darkness faded in over 0.6 s as a full-stage opacity
+  animation: a GPU layer for its length and every layer over it, in the room that crashed with
+  the X-ray on (§8.6), and a move the gate could not see because it only read what was still
+  running at the window's end. On a phone it cuts; the gate now samples animations through the
+  window and fails a large element seen animating in two samples or more.
+- *The light's holes.* Tracing them (paint/holes.ts) takes 60–110 ms of script each time a
+  beat's light differs from the last; `Paint` now remembers a generator's markup across
+  instances and beats (48 drawings per generator), so a configuration seen before is free.
+Still on the list from that audit: the lift, the lynch's drop and the vote's leaving puppet move
+a full-stage wrapper (`position: absolute; inset: 0`) round a smaller load, and the browser
+invalidates the box, not the figure; a bounded mover is the next experiment, with a reading of
+the paint rectangles per frame.
+
+**Found on the way.** With the car's set kept across scenes, the live game's notes editor closed
+at the morning's first beat: the host had drawn the set once from the new beat's view under the
+old scene's description (the night's wing holds no death back), which told the wing the seat
+had died. The set is now drawn from the description and the props it was registered with,
+never the host's current props. The transcript drawer also stays mounted now, so its lazy chips
+far up the scroll never load, and the live suite's settle waited on them forever; it waits for
+pictures in the window only.
+
+**Read on production, before and after** (`a3d6404` against `fbaef8c`; Chromium in the phone
+frame, CPU throttled four times, every beat stepped under a trace; sums over the scene):
+
+| Scene, steps | Raster ms | Script ms | Paint ms | Frames drawn |
+|---|---|---|---|---|
+| The vote, 41 | 67,480 → 23,064 | 14,117 → 5,424 | 5,270 → 1,458 | 1,238 → 1,560 |
+| The day, 7 | 15,177 → 10,026 | 1,953 → 976 | 341 → 184 | 271 → 379 |
+| The lynch, 11 | 21,722 → 10,802 | 4,905 → 1,685 | 1,167 → 436 | 310 → 387 |
+
+A counted chip went from 1.0–1.8 s of raster to 0.34–0.49 s. A walk of the production replay
+through thirteen changes of scene kept the wing, the light, the shutter and the backdrop every
+time. The phone's own reading is the owner's.
+
+**Verified.** Goldens 65/65 unchanged at the desktop (the day's shutter is now the instrument
+at rest, which draws the paint's markup; the host's portal order is the old JSX order), the
+replay suite 18/18, the live suite 22/23 (the game-over-in-the-night test fails under three
+parallel workers and passes twice alone: fake-clock timing under load, not chased), the unit
+tests 996/996 (the paint test's glow comparison changed as above), the gate's remount check
+across every scene in the phone frame, and a walk of the fixture replay through every change of
+scene: the wing, the light, the shutter and the backdrop keep their identity from the deal to
+the ending; only the chip a beat is about is remounted.
+
+### 8.10 The box, not the figure: bounded movers, the ending held still, the rooms kept (2026-10-02)
+
+**Seen.** With `a3d6404` on the phone the owner read fewer high-CPU runs on the timeline and
+the moves smoother, and three things left: the later days (day 4 on) felt a little heavier per
+screen than the early ones; the winners rising together at the ending lagged; and the
+epilogue's sheet, "What the game taught", had no way to close on a phone, where it covers the
+stage. Another agent's audit of the same snapshot asked, in its order, for the live night rooms
+kept across beats, the light's cache keyed by geometry rather than by instance, the live
+countdown's tick kept out of the scene, the movers' boxes cut to their loads, and pictures
+sized by displayed pixels.
+
+**Found.** A walk of the production replay in the phone frame with a trace on every one of its
+208 beats (`day-drift.mjs`): a day-4 speech beat costs what a day-2 one costs (a new speaker
+1.5–1.9 s of raster, a page 0.2 s, on both days), and the count of grey dead tiles in the wing
+made no difference to it. A second walk sampling the page every 20 beats (`mem-walk.mjs`):
+heap 11–13 MB, listeners 1,440–1,730, nodes by scene, nothing growing over 230 beats. So no
+beat of a later day is dearer on the page. What every move was paying, early or late, was the
+box it moved in: the lift's load, the lynch's drop, the vote's leaving figure, the stands'
+fades and the winners' rises were each a `position: absolute; inset: 0` wrapper, 1600 × 900,
+round a figure a third of that width, and a browser repaints the moving box, not the figure:
+the wing (its dead tiles the same photos through a `grayscale` filter) and the light's
+gradients under the whole rectangle, every frame. The painted bounds, measured in the phone
+frame: the vote's table with its plates, jar and the lid's string from above the frame, x
+305–1487; the lynch's card, 722–1070 × 87–639; a figure, about 630–1290 × 30–890 with its
+shadow; the stands' pit, the full width from the rail down. The wing ends at x = 192.
+
+**Done.**
+- `instruments/Bounded.tsx`: a mover's box is its load's bounds plus a pad, clipped, with the
+  stage's coordinates put back inside, so a figure placed in stage units rides it unchanged.
+  Moves given in percent are of the box now and were given in units (the drop: 1.15 × the
+  stage's height, as before). The lift takes a `box` the same way (its clip to the lip stays).
+  Boxed: the vote's table (`cx ± 0.7 tw`, from above the frame to the hole's foot), the
+  lynch's card and its shadow's throw, the dropped figure (its column down to the stage's
+  foot), the leaving figure (its box and the drop below it), every stand's fade (the pit's
+  band from 100 units above the rail), each winner's rise.
+- On a phone the ending's winners are simply there: no rise, no stand fading in; the board
+  still goes up and the result still arrives.
+- The epilogue's sheet takes a close button (its head, after the count): closed, the winners
+  are at the stand under it with the result in the box; a step reopens it.
+- The live night rooms (the pack's and the shelf's) keep their room across beats and across the
+  viewer's choice (an Opus agent's pass): `useSeeded(seed, init)` in `ShelfRoomScene.tsx` holds
+  the state that belongs to one request (the choice, the sent vote, the open card) and starts
+  it over when its seed (the beat, the viewer, the seeded choice, the open card) changes, while
+  the room stays up; the teeth that came with a beat are keyed on it so they still land; a
+  re-seeded pin or darkness is simply there (`NightRoom`'s `seed` keys its presences). The gate
+  now fails `room` and `pack` for a rebuilt set; its walk: 0 findings on both. Two things to
+  know: a card the player opened still closes on the next pack line (an open card is per-beat
+  state, as the old key had it); and in the workbench a re-seeded choice's photo now rises and
+  glows in place rather than appearing lit, because the photos stay mounted (live never seeds
+  a choice). The live suite has no test that drives a night room; the agent walked both in a
+  throwaway spec (choice, seal, card, the teeth) and the goldens for the rooms are unchanged.
+- The live countdown ticks in its own display, not the theatre (an Opus agent's pass): the
+  theatre's `useCountdown` answers only `expired`, looked for on a timer and rendered once when
+  it comes; the count is a leaf, `instruments/CountText.tsx`, over `useTimeLeft(deadline)`, in
+  the dock, the ballot and the pack's line; `turn.clock` carries the deadline and the whole
+  allowance, not a precomputed remainder (the workbench's frames hold theirs still with `at`).
+  The stand's plate re-places on its own, the box's or the speech box's resize, and its
+  observers are made once per subscription, not per render. Left as is: the theatre still
+  hands the bodies a fresh `turnInput` each render, so a keystroke in the composer re-renders
+  the day's body (the dock is in it, so it must); the set sheet is re-registered with it.
+- The general practice behind all of §8, for the owner and the next project:
+  `frontend_lessons.md` (twenty entries: keys and re-rendering, paint rectangles and layers,
+  the method).
+
+**Not done, and why.** The light's cache keyed by geometry rather than instance: with the car's
+host the light is one instance from the deal to the ending, so the instance key rarely misses;
+not worth its own pass now. Pictures sized by displayed pixels: the phone copies were cut to
+the phone's displayed size already (§8.9's census); the wing's heads are small files. Rendering
+only the transcript rows in view: after everything above. The deal and the ending still key
+their figures per beat: three and seven beats, once each, their set the host's.
+
+**Read before and after** (production `a3d6404` against this build on the preview, both
+production builds; Chromium in the phone frame, CPU throttled four times, each beat stepped
+under a trace; raster and paint in ms, paint records counted):
+
+| Beat | Raster | Paint records | Paint ms |
+|---|---|---|---|
+| The lynch's drop | 1,302 → 973 | 7 → 7 | 12 → 13 |
+| The card up | 1,700 → 1,473 | 65 → 67 | 74 → 67 |
+| The stand returns | 1,841 → 1,624 | 62 → 59 | 51 → 44 |
+| The lynch, 11 steps | 12,235 → 10,891 | | 410 → 389 |
+| Voting opens (the table up, the figure leaving) | 1,426 → 1,284 | 81 → 32 | 79 → 39 |
+| The table down | 1,782 → 1,837 | 88 → 22 | 126 → 34 |
+| The vote, 15 steps | 10,489 → 10,341 | | 523 → 387 |
+
+Chromium rasters in tiles, so a smaller paint rectangle shows there mostly as fewer paint
+records (the table's sink: a quarter as many); a phone's Safari paints the rectangle itself,
+and the phone's reading is the owner's. The count's chips, already boxed, are unchanged.
+
+**Found on the way.** The two live tests that failed under three workers and passed alone
+were not races in the app: the page reads its catch-up frames before Playwright can read
+anything from it (about 85 ms a frame in the dev build; the game-over-in-the-night test
+streams 406 frames, 33 s), and a 30 s wait for the first beat and a 5 s wait for the dock gave
+up first. The suite's waits are sized to the stream each page is served (`landsOn`, 10 s plus
+200 ms a frame), the waiting-room tests pause the fake clock while the platform idles, and
+the suite passes three times at three workers. The same reading names a cost for live play:
+each catch-up frame commits a full stage render, so a refresh late in a game freezes the page
+for the whole catch-up; grouping the catch-up's frames into a few renders in `useGameStream`
+is on the list below.
+
+**Verified.** Goldens 65/65 unchanged (the boxed movers clip nothing at rest), the replay
+suite 18/18, the phone gate 15 walks with 0 findings (the live rooms now held to the rule),
+the live suite 23/23 three times at three workers, the unit tests 998/998, `tsc` and lint
+clean. Mid-move screenshots in the phone frame of the drop, the table's rise and the
+ending's third beat (the winner simply there, the board gone, the result in the box). The
+phone's reading is the owner's: in the Safari timeline a move's paint records should be the
+figure's width, and day 4 should feel like day 2 when jumped to cold.
+
+**Next, by the readings.** Group a live game's catch-up frames into a few renders
+(`useGameStream`), measured on a production build first. The theatre's `turnInput` fresh each
+render, and the set re-registered with it, if live typing shows on a phone's timeline. The
+light's cache keyed by geometry, if a remount ever shows the holes' 60–110 ms again. The deal
+and the ending's figures per beat, if their beats ever show. Transcript rows in view only,
+for very long games.

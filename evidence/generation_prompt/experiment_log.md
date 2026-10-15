@@ -402,6 +402,8 @@ post-ship re-measure. Pre-registration: [validation_plan.md](validation_plan.md)
 [validation/t1c_outputs.jsonl](validation/t1c_outputs.jsonl) and
 [validation/t1c2_outputs.jsonl](validation/t1c2_outputs.jsonl).
 
+*Graduated 2026-10-03: the ship test's method (regenerate error-prone frozen turns under prompt arms, judge with the census reader) is now the standing `eval-hallucination-bench` in `evaluation/` (README, *Hallucination bench*). The script here stays as the dated record of this run.*
+
 **Shipped (2026-07-09).** The confirmed bundle went into the live pipeline the next day, exactly on
 the tested surface: day discussion, day vote, and the four single-actor night roles — wolf-night
 turns stay on the old prompt, because the test never covered them. The T4 harness checks shipped

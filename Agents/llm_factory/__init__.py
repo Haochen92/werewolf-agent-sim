@@ -1,31 +1,20 @@
-"""Centralized factory for LLM chat models and embeddings.
+"""Centralized factory for LLM chat models, offline structured calls and embeddings.
 
-All LLM instantiation across the project should go through this package.
-Supports five backends:
+All LLM instantiation across the project goes through this package, in two layers:
 
-- **vertex** (default): Uses Vertex AI via Application Default Credentials
-  on the ``global`` endpoint.  Active when ``LLM_BACKEND=vertex`` or when
-  no ``GOOGLE_API_KEY`` is set.
-- **google** (legacy): Uses the Google Generative AI Developer API with an
-  API key.  Set by ``LLM_BACKEND=google`` (requires ``GOOGLE_API_KEY``).
-- **nim**: Uses NVIDIA NIM via the OpenAI-compatible API.
-  Set model prefix ``nim/`` (e.g. ``"nim/deepseek-ai/deepseek-v4-flash"``).
-  Requires ``NVIDIA_API_KEY``.
-- **deepseek**: Uses the official DeepSeek API (OpenAI-compatible).
-  Set model prefix ``deepseek/`` (e.g. ``"deepseek/deepseek-v4-flash"``).
-  Requires ``DEEPSEEK_API_KEY``.
-- **mistral**: Uses the Mistral API (OpenAI-compatible).
-  Set model prefix ``mistral/`` (e.g. ``"mistral/mistral-small-2506"``).
-  Requires ``MISTRAL_API_KEY``.
+- **Live** (``chat``): ``create_chat_model`` builds the LangChain chat model for a model id, every
+  game call's one entry. ``accessors`` names which model does which job (``get_llm`` for a seat,
+  ``get_llm_judge``, ``get_llm_extractor``...).
+- **Offline** (``structured``): ``structured_call`` and ``batch_structured`` for jobs outside a game,
+  provider-neutral; a Claude model goes through the Anthropic SDK (cache marks, Message Batches).
 
-On Vertex AI, ``thinking_level`` is translated to ``thinking_budget`` (token
-count) because the 2.x model series does not support the string-based
-``thinking_level`` parameter.
-
-Split into three modules — ``backends`` (chat-model construction across the four
-backends), ``accessors`` (the ``get_llm*`` family + model-config constants), and
-``embeddings`` (the embedding factory + transient retry). Their full surface is
-re-exported here, so ``from Agents.llm_factory import X`` keeps resolving.
+Each provider family has one module under ``providers/``, holding both its LangChain build and its
+direct calls where it has them: ``google`` (Gemini on Vertex, the default, or the Developer API with
+``LLM_BACKEND=google``; Vertex's explicit prefix cache), ``anthropic`` (``anthropic/`` seats and
+``claude-*`` direct calls), ``openai_compat`` (``nim/``, ``deepseek/``, ``openai/``, ``openrouter/``,
+``xai/``), ``mistral`` (``mistral/``); ``common`` holds the structured-output modes they share.
+``catalog`` and ``pricing`` hold the model catalogue and its prices; ``embeddings`` the embedders.
+The live layer's surface is re-exported here, so ``from Agents.llm_factory import X`` keeps resolving.
 """
 
 from __future__ import annotations
@@ -39,19 +28,19 @@ from dotenv import load_dotenv
 # relying on each caller (e.g. the labeling engine) to have done so first.
 load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env")
 
-from .backends import (  # noqa: E402
-    GAME_LLM,
-    GameLLM,
-    MistralChatModel,
+from .chat import GAME_LLM, GameLLM, create_chat_model  # noqa: E402
+from .providers.common import STRUCTURED_MODES  # noqa: E402
+from .providers.google import (  # noqa: E402
     THINKING_LEVEL_TO_BUDGET,
     _use_vertex as _use_vertex,  # private but imported externally; re-export
-    create_chat_model,
 )
+from .providers.mistral import MistralChatModel  # noqa: E402
 from .accessors import (  # noqa: E402
     DEFAULT_DEDUP_MODEL,
     DEFAULT_DEDUP_THINKING_LEVEL,
     DEFAULT_GAME_MODEL,
     DEFAULT_GAME_THINKING_LEVEL,
+    game_thinking_level,
     DEFAULT_PRO_BACKUP_MODEL,
     DEFAULT_PRO_MODEL,
     DEFAULT_SUMMARY_THINKING_LEVEL,
@@ -71,13 +60,15 @@ from .embeddings import (  # noqa: E402
     DEFAULT_EMBEDDING_DIMS,
     DEFAULT_EMBEDDING_MODEL,
     create_embeddings,
+    similarity_threshold,
 )
 
 __all__ = [
-    # backends
+    # chat and providers
     "GAME_LLM",
     "GameLLM",
     "MistralChatModel",
+    "STRUCTURED_MODES",
     "THINKING_LEVEL_TO_BUDGET",
     "create_chat_model",
     # accessors
@@ -85,6 +76,7 @@ __all__ = [
     "DEFAULT_DEDUP_THINKING_LEVEL",
     "DEFAULT_GAME_MODEL",
     "DEFAULT_GAME_THINKING_LEVEL",
+    "game_thinking_level",
     "DEFAULT_PRO_BACKUP_MODEL",
     "DEFAULT_PRO_MODEL",
     "DEFAULT_SUMMARY_THINKING_LEVEL",
@@ -102,4 +94,5 @@ __all__ = [
     "DEFAULT_EMBEDDING_DIMS",
     "DEFAULT_EMBEDDING_MODEL",
     "create_embeddings",
+    "similarity_threshold",
 ]

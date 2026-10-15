@@ -19,6 +19,7 @@ from Agents.schemas.game_events import (
     DayVote,
     DeathRecord,
     InvestigatorResult,
+    NightActionRecord,
     WolfChannel,
 )
 from Agents.schemas.memory import RetrievedObservation, RetrievedStrategyPoint
@@ -34,6 +35,9 @@ class EvalPrivateContext(BaseModel):
     wolf_channel: list[WolfChannel] = Field(default_factory=list)
     investigator_results: list[InvestigatorResult] = Field(default_factory=list)
     vigilante_results: list[str] = Field(default_factory=list)
+    night_actions: list[NightActionRecord] = Field(default_factory=list)
+    """The actor's own private night record (healer / vigilante / serial killer; the pack's for a
+    wolf). Empty before 2026-10-03."""
     surviving_players: list[str] = Field(default_factory=list)
     surviving_wolves: list[str] = Field(default_factory=list)
     surviving_villagers: list[str] = Field(default_factory=list)
@@ -58,6 +62,14 @@ class NightAction(BaseModel):
 
     role: str
     target: str | None = None
+    kind: str | None = None
+    """What the turn decided: the night kind for a choice (kill, block, conceal, ...), "chat" for
+    a pack chat turn, "declined" when the role took no action. The night_action phase tag alone
+    cannot tell a carrier's kill from its skill. None on cases from before 2026-10-11."""
+    via: str | None = None
+    """The dead body a necromancer acted through."""
+    role_named: str | None = None
+    """The role a fortune teller named on its bet."""
 
 
 class EvalProvenance(BaseModel):
@@ -149,7 +161,8 @@ class EvalCase(BaseModel):
 
 class ExtractionCase(BaseModel):
     """A frozen post-game extraction decision: the full-game inputs (discussions, strategy notes,
-    outcome) plus the observations/strategy points extracted from them, judgeable offline."""
+    outcome) plus the observations/strategy points extracted from them, judgeable offline. Saved
+    with no observations when a game ends (the extraction input); the offline job fills them."""
 
     schema_version: str = "extraction_case_v1"
     trace_id: str = ""
@@ -158,6 +171,10 @@ class ExtractionCase(BaseModel):
     game_id: str = ""
     game_outcome: str = ""
     roles: dict[str, str] = Field(default_factory=dict)
+    lineup: list[str] = Field(default_factory=list)
+    """The game's lineup (its rules block); empty on cases saved before 2026-10-12, rebuilt from roles."""
+    human_players: list[str] = Field(default_factory=list)
+    """The human seats: such a game may feed its replay but never teaches the store."""
     formatted_discussions: str = ""
     formatted_strategy_notes: str = ""
     observations: list[dict] = Field(default_factory=list)

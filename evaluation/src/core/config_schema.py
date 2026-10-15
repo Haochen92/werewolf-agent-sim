@@ -38,7 +38,7 @@ class VariantConfig(BaseModel):
 class JudgeConfig(BaseModel):
     """Model settings for an LLM judge."""
 
-    model: str = "gemini-2.5-pro"
+    model: str = "anthropic/claude-haiku-5-5"
     prompt_id: str = "pairwise_summary_v1"
     temperature: float = 0.0
 
@@ -147,7 +147,7 @@ class RetrievalExperimentConfig(_DescribedConfig):
     output: Path | None = None
     max_samples: int = Field(default=0, ge=0)
     judge: bool = False
-    judge_model: str = "gemini-2.5-flash"
+    judge_model: str = "anthropic/claude-haiku-5-5"
     judge_thinking_level: str | None = None
     sleep_seconds: float = Field(default=1.0, ge=0)
 
@@ -173,7 +173,7 @@ class TurnEvalConfig(_DescribedConfig):
     output: Path | None = None
     max_samples: int = Field(default=0, ge=0)
     judge: Literal["off", "application", "pipeline"] = "application"
-    judge_model: str = "gemini-2.5-pro"
+    judge_model: str = "anthropic/claude-haiku-5-5"
     sleep_seconds: float = Field(default=1.0, ge=0)
 
     @model_validator(mode="after")
@@ -207,7 +207,7 @@ class SummaryExperimentConfig(_DescribedConfig):
     output: Path | None = None
     max_samples: int = Field(default=0, ge=0)
     judge: bool = True
-    judge_model: str = "gemini-3.1-pro-preview"
+    judge_model: str = "anthropic/claude-haiku-5-5"
     sleep_seconds: float = Field(default=1.0, ge=0)
 
     @model_validator(mode="after")
@@ -244,7 +244,7 @@ class ExtractionExperimentConfig(_DescribedConfig):
     output: Path | None = None
     max_samples: int = Field(default=0, ge=0)
     judge: bool = True
-    judge_model: str = "gemini-2.5-pro"
+    judge_model: str = "anthropic/claude-haiku-5-5"
     sleep_seconds: float = Field(default=1.0, ge=0)
 
 
@@ -255,7 +255,7 @@ class DedupExperimentConfig(_DescribedConfig):
     output: Path | None = None
     max_samples: int = Field(default=0, ge=0)
     judge: bool = True
-    judge_model: str = "gemini-2.5-pro"
+    judge_model: str = "anthropic/claude-haiku-5-5"
     filter_auto: bool = False
     sleep_seconds: float = Field(default=1.0, ge=0)
 

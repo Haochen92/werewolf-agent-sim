@@ -1,0 +1,21 @@
+/* The station: the whole width and the page's height, holding the walls (positioned) and
+   cutting off whatever runs past the page's foot or sides (clip, so nothing scrolls inside it
+   and sticky pieces still stick). */
+.station {
+  position: relative;
+  overflow: clip;
+}
+
+/* The shell's column: the landing's `.wrap` (1160px, 28px gutters; 16px on a phone). */
+.site {
+  max-width: var(--site-max);
+  margin: 0 auto;
+  padding-inline: var(--gutter);
+  font-family: var(--font-sans);
+}
+
+@media (max-width: 480px) {
+  .site {
+    padding-inline: 16px;
+  }
+}

@@ -1,0 +1,134 @@
+/* The carriage's controls on a phone (handoff 2026-10-14 §4): one board on the platform under
+   the carriage (Board.module.css). Its height, 70px, is the room Carriage.module.css holds for it
+   before the preview is up. */
+/* ---------- the playback board ---------- */
+.ctrl {
+  composes: board from '../../../../components/site/Board.module.css';
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 70px;
+  padding: 12px 16px 12px 12px;
+}
+.play {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--plate-ink);
+  background: radial-gradient(circle at 40% 30%, #f6ecd2, var(--plate-bot) 70%);
+  box-shadow:
+    inset 0 0 0 1px var(--plate-edge),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.12),
+    0 0 0 3px #1d140b,
+    0 0 0 4px rgba(224, 166, 58, 0.4);
+}
+.play svg {
+  width: 14px;
+  height: 16px;
+  fill: currentColor;
+}
+.ctrlText {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+.cap {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-family: var(--font-garamond);
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 1.2;
+  color: var(--sign-text);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.7);
+}
+
+/* the window's steps as a stretch of line: two rails, a sleeper per step (each a button that
+   seeks), brass rails over the part already played, a cream marker at the current step.
+   `--at` is the current step's middle. The buttons are taller than the rail, to be pressed. */
+.track {
+  position: relative;
+  display: flex;
+  height: 24px;
+}
+.track::before,
+.track::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(203, 185, 146, 0.25);
+}
+.track::before {
+  top: 8px;
+}
+.track::after {
+  bottom: 8px;
+}
+.done {
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  z-index: 1;
+  width: var(--at);
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    var(--brass-hi) 0 2px,
+    transparent 2px calc(100% - 2px),
+    var(--brass-hi) calc(100% - 2px)
+  );
+  opacity: 0.85;
+}
+.pos {
+  position: absolute;
+  top: 50%;
+  left: var(--at);
+  z-index: 2;
+  width: 22px;
+  height: 14px;
+  margin: -7px 0 0 -11px;
+  border-radius: 3px;
+  pointer-events: none;
+  background: linear-gradient(180deg, var(--plate-top), var(--plate-bot));
+  box-shadow:
+    inset 0 0 0 1px var(--plate-edge),
+    0 0 0 2px #1d140b,
+    0 2px 4px rgba(0, 0, 0, 0.5);
+}
+.track button {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.track button::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  margin-left: -1px;
+  background: rgba(203, 185, 146, 0.28);
+}
+
+.play:focus-visible,
+.track button:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}

@@ -1,0 +1,39 @@
+[25] 19 s ()
+[50] 29 s ()
+[75] 50 s ('DAY_PHASE:a09336f5-6473-f091-18c1-44cb781a8f33',)
+[100] 75 s ('DAY_PHASE:a09336f5-6473-f091-18c1-44cb781a8f33',)
+[125] 115 s ('DAY_PHASE:a09336f5-6473-f091-18c1-44cb781a8f33',)
+[150] 153 s ('DAY_PHASE:a09336f5-6473-f091-18c1-44cb781a8f33',)
+[175] 189 s ()
+[200] 211 s ('PACK_NIGHT_PHASE:5f7285be-3aae-801a-3611-a042dc47b68a',)
+[225] 231 s ('DAY_PHASE:e77ca374-0dd6-5019-9410-e91d315600ff',)
+[250] 305 s ('DAY_PHASE:e77ca374-0dd6-5019-9410-e91d315600ff',)
+[275] 357 s ('DAY_PHASE:e77ca374-0dd6-5019-9410-e91d315600ff',)
+[300] 462 s ('DAY_PHASE:e77ca374-0dd6-5019-9410-e91d315600ff',)
+LLM call stalled for player_2 (slow or full): 504 DEADLINE_EXCEEDED. {'error': {'code': 504, 'message': 'Deadline expired before operation could complete.', 'status': 'DEADLINE_EXCEEDED'}}
+player_2 rescued by the fallback model on day_votes
+[325] 527 s ()
+[350] 570 s ('PACK_NIGHT_PHASE:7bf10911-fe90-4bed-cfca-630080aeb35f',)
+reads under-covered: player=player_2 phase=day_channel coverage=83% missing=['player_9']
+[375] 587 s ('DAY_PHASE:e9487d8f-79b4-3967-5d1a-81f242f9f0db',)
+reads under-covered: player=player_2 phase=day_channel coverage=83% missing=['player_9']
+LLM call stalled for player_10 (slow or full): Error calling model 'gemini-3.5-flash' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_10 rescued by the fallback model on day_channel
+[400] 645 s ('DAY_PHASE:e9487d8f-79b4-3967-5d1a-81f242f9f0db',)
+[425] 729 s ('DAY_PHASE:e9487d8f-79b4-3967-5d1a-81f242f9f0db',)
+reads under-covered: player=player_2 phase=day_votes coverage=83% missing=['player_9']
+[450] 748 s ()
+[475] 774 s ('DAY_PHASE:484005b6-82df-e981-a291-8c392d013349',)
+LLM call stalled for player_6 (slow or full): Error calling model 'gemini-3.5-flash' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_6 rescued by the fallback model on day_channel
+LLM call stalled for player_6 (slow or full): Error calling model 'gemini-3.5-flash' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_6 rescued by the fallback model on day_channel
+[500] 834 s ('DAY_PHASE:484005b6-82df-e981-a291-8c392d013349',)
+LLM call stalled for player_6 (slow or full): Error calling model 'gemini-3.5-flash' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_6 rescued by the fallback model on day_channel
+[525] 977 s ('DAY_PHASE:484005b6-82df-e981-a291-8c392d013349',)
+LLM call stalled for player_2 (slow or full): Error calling model 'gemini-3.5-flash' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_2 rescued by the fallback model on kill_target
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+phase3-f03-0d98a05a: winner villagers, day 5, 995.5 s, 206 calls, cost None

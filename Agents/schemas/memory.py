@@ -16,7 +16,7 @@ from typing import Annotated, Any, Literal, Optional
 
 from pydantic import BaseModel, Field, computed_field, create_model, field_validator, model_validator
 
-from Agents.schemas.roles import ActionPhase, VALID_ACTION_PHASES_BY_ROLE, roles
+from Agents.schemas.roles import ROLE_SPECS, ActionPhase, VALID_ACTION_PHASES_BY_ROLE, roles
 
 
 def _compose_situation(
@@ -86,8 +86,9 @@ def compose_situation_embed(obj: BaseModel) -> str:
 class Observation(BaseModel):
     perspective: str = Field(
         description=(
-            "The role this observation is most useful for: wolf, villager, "
-            "healer, investigator, vigilante, or serial_killer"
+            "The role this observation is most useful for: investigator, sentinel, trailseer, "
+            "vigilante, sigilist, healer, chanteuse, illusionist, serial_killer, necromancer, "
+            "speculator, or fortune_teller"
         )
     )
     action_phase: ActionPhase = Field(
@@ -185,7 +186,7 @@ class Observation(BaseModel):
 
     @field_validator("perspective")
     def validate_perspective(cls, value: str) -> str:
-        if value not in roles:
+        if value not in ROLE_SPECS:  # the pool, and the nine-seat roles of old records
             raise ValueError(
                 f"{value} is not a valid role. Perspective must be one of {roles}"
             )
@@ -205,8 +206,9 @@ class Observation(BaseModel):
 class StrategyPoint(BaseModel):
     perspective: str = Field(
         description=(
-            "The role this strategy point is most useful for: wolf, villager, "
-            "healer, investigator, vigilante, or serial_killer"
+            "The role this strategy point is most useful for: investigator, sentinel, trailseer, "
+            "vigilante, sigilist, healer, chanteuse, illusionist, serial_killer, necromancer, "
+            "speculator, or fortune_teller"
         )
     )
     action_phase: ActionPhase = Field(
@@ -278,7 +280,7 @@ class StrategyPoint(BaseModel):
 
     @field_validator("perspective")
     def validate_perspective(cls, value: str) -> str:
-        if value not in roles:
+        if value not in ROLE_SPECS:  # the pool, and the nine-seat roles of old records
             raise ValueError(
                 f"{value} is not a valid role. Perspective must be one of {roles}"
             )
@@ -414,7 +416,14 @@ class WithPublicPrivate(BaseModel):
 
 class WithBulletsLeft(BaseModel):
     bullets_left: int = Field(
-        description="How many vigilante shots remain (0 = plays as a regular villager)."
+        description="How many vigilante shots remain at this decision, before acting on it (0 = plays as a regular villager)."
+    )
+
+
+class WithUsesLeft(BaseModel):
+    uses_left: int = Field(
+        description="How many uses of the role's limited ability remain at this decision, before acting on it "
+        "(checks, watches, sigils, conceals, self-bets, or the speculator's one pick)."
     )
 
 
@@ -425,9 +434,14 @@ class WithAllyRevealed(BaseModel):
 
 
 class CellObservationMixin(BaseModel):
-    approach: str = Field(description="What the agent did or failed to do in that situation.")
+    approach: str = Field(description="What the agent did in that situation.")
+    decision_day: int = Field(
+        description="The number of the one decision this observation is about: N for day N's discussion "
+        "or vote, N for night N (the night after day N). 0 when it is about a pattern over several decisions."
+    )
     impact_on_final_game_outcome: str = Field(
-        description="The NET effect on this role's win condition, judged from game end ('unclear' if untraceable)."
+        description="The NET effect on this role's win condition, judged from game end, with what in the "
+        "record links it to the approach; 'unclear' when nothing does."
     )
     immediate_response: str = Field(description="The immediate, in-the-moment effect, before the longer-term consequence.")
     net_verdict: Literal["positive", "negative", "mixed", "unclear"] = Field(
@@ -463,7 +477,7 @@ class HealerDayObservation(
 
 class InvestigatorDayObservation(
     BaseSituation, WithConsensus, WithHeat, WithTargetLandscape,
-    WithForwardExposure, WithPublicPrivate, CellObservationMixin,
+    WithForwardExposure, WithPublicPrivate, WithUsesLeft, CellObservationMixin,
 ):
     perspective: Literal["investigator"] = Field(description="The role this observation is for — investigator.")
     action_phase: _DAY_PHASES = Field(description="day_discussion or day_vote.")
@@ -498,7 +512,7 @@ class HealerNightObservation(BaseSituation, WithTargetLandscape, CellObservation
     action_phase: Literal["night_action"] = Field(description="night_action.")
 
 
-class InvestigatorNightObservation(BaseSituation, WithTargetLandscape, CellObservationMixin):
+class InvestigatorNightObservation(BaseSituation, WithTargetLandscape, WithUsesLeft, CellObservationMixin):
     perspective: Literal["investigator"] = Field(description="The role this observation is for — investigator.")
     action_phase: Literal["night_action"] = Field(description="night_action.")
 
@@ -571,7 +585,14 @@ class PowerDaySituationCell(
     BaseSituation, WithConsensus, WithHeat, WithTargetLandscape,
     WithForwardExposure, WithPublicPrivate, _SituationCell,
 ):
-    pass  # healer / investigator day (PowerRoleDay dims)
+    pass  # healer day (PowerRoleDay dims)
+
+
+class InvestigatorDaySituationCell(
+    BaseSituation, WithConsensus, WithHeat, WithTargetLandscape,
+    WithForwardExposure, WithPublicPrivate, WithUsesLeft, _SituationCell,
+):
+    pass  # the healer's day dims, plus the checks left (the stage filter compares some vs none)
 
 
 class VigilanteDaySituationCell(
@@ -599,6 +620,10 @@ class PowerNightSituationCell(BaseSituation, WithTargetLandscape, _SituationCell
     pass  # healer / investigator night (criticality + target)
 
 
+class UsesNightSituationCell(BaseSituation, WithTargetLandscape, WithUsesLeft, _SituationCell):
+    pass  # investigator night (limited checks)
+
+
 class VigilanteNightSituationCell(
     BaseSituation, WithTargetLandscape, WithForwardExposure, WithBulletsLeft, _SituationCell
 ):
@@ -615,7 +640,7 @@ _SITUATION_CELL_REGISTRY: dict[tuple[str, str], type[BaseModel]] = {}
 for _r, _cls in (
     ("villager", VillagerDaySituationCell),
     ("healer", PowerDaySituationCell),
-    ("investigator", PowerDaySituationCell),
+    ("investigator", InvestigatorDaySituationCell),
     ("vigilante", VigilanteDaySituationCell),
     ("wolf", WolfDaySituationCell),
     ("serial_killer", SerialKillerDaySituationCell),
@@ -624,7 +649,7 @@ for _r, _cls in (
     _SITUATION_CELL_REGISTRY[(_r, "day_vote")] = _cls
 for _r, _cls in (
     ("healer", PowerNightSituationCell),
-    ("investigator", PowerNightSituationCell),
+    ("investigator", UsesNightSituationCell),
     ("vigilante", VigilanteNightSituationCell),
     ("wolf", DeceiverNightSituationCell),
     ("serial_killer", DeceiverNightSituationCell),
@@ -660,8 +685,9 @@ class CellStrategyMixin(BaseModel):
         "deceptive (e.g. a villager fake-claiming to bait a wolf, or claiming healer to draw the kill)."
     )
     action: str = Field(
-        description="The prescriptive move to take in this situation. Concrete and actionable; include "
-        "conditional branches inline if the situation implies different responses for different reads."
+        description="The prescriptive move to take in this situation. Concrete and actionable, in at most "
+        "three sentences; include a conditional branch inline if the situation implies different responses "
+        "for different reads."
     )
     sp_type: Literal["general", "concealment", "risk_policy"] = Field(
         default="general",  # default (not required) so pre-2026-07-13 stored SPs re-validate on load
@@ -691,7 +717,7 @@ class HealerDayStrategyPoint(
 
 class InvestigatorDayStrategyPoint(
     BaseSituation, WithConsensus, WithHeat, WithTargetLandscape,
-    WithForwardExposure, WithPublicPrivate, CellStrategyMixin,
+    WithForwardExposure, WithPublicPrivate, WithUsesLeft, CellStrategyMixin,
 ):
     perspective: Literal["investigator"] = Field(description="The role this strategy point is for — investigator.")
     action_phase: _DAY_PHASES = Field(description="day_discussion or day_vote.")
@@ -726,7 +752,7 @@ class HealerNightStrategyPoint(BaseSituation, WithTargetLandscape, CellStrategyM
     action_phase: Literal["night_action"] = Field(description="night_action.")
 
 
-class InvestigatorNightStrategyPoint(BaseSituation, WithTargetLandscape, CellStrategyMixin):
+class InvestigatorNightStrategyPoint(BaseSituation, WithTargetLandscape, WithUsesLeft, CellStrategyMixin):
     perspective: Literal["investigator"] = Field(description="The role this strategy point is for — investigator.")
     action_phase: Literal["night_action"] = Field(description="night_action.")
 
@@ -771,6 +797,76 @@ for _r, _cls in (
     ("serial_killer", SerialKillerNightStrategyPoint),
 ):
     _STRATEGY_CELL_REGISTRY[(_r, "night_action")] = _cls
+
+
+# ── The ten-seat roles (plan 2026-10-11 §9, D3) ────────────────────────────────────────────
+# Each new role reuses the field groups of the old role it plays like, with a "uses left" group for
+# the roles with limited uses, day and night (retrieval leaves out a lesson learned with uses left
+# when the seat has none, and the reverse); the speculator's pick is its one use. No role gets fields
+# of its own: choices with no field (the necromancer's body, the fortune teller's bet) stay in the
+# free text. One
+# table, three generated classes per cell (observation, strategy point, live situation), so the
+# three can never disagree on a cell's fields.
+_DAY_POWER = (BaseSituation, WithConsensus, WithHeat, WithTargetLandscape, WithForwardExposure, WithPublicPrivate)
+_DAY_PLAIN = (BaseSituation, WithConsensus, WithHeat, WithTargetLandscape)  # the old villager day
+_NIGHT_TARGET = (BaseSituation, WithTargetLandscape)
+_NIGHT_EXPOSED = (BaseSituation, WithTargetLandscape, WithForwardExposure)
+
+TEN_SEAT_CELL_SHAPES: dict[tuple[str, str], tuple[type[BaseModel], ...]] = {
+    ("sentinel", "day"): (*_DAY_POWER, WithUsesLeft),                 # as the investigator
+    ("sentinel", "night"): (*_NIGHT_TARGET, WithUsesLeft),
+    ("trailseer", "day"): _DAY_POWER,                                 # as the investigator
+    ("trailseer", "night"): _NIGHT_TARGET,
+    ("sigilist", "day"): (*_DAY_POWER, WithUsesLeft),                 # as the vigilante
+    ("sigilist", "night"): (*_NIGHT_EXPOSED, WithUsesLeft),
+    ("chanteuse", "day"): (*_DAY_POWER, WithAllyRevealed),            # as the old wolf
+    ("chanteuse", "night"): _NIGHT_EXPOSED,
+    ("illusionist", "day"): (*_DAY_POWER, WithAllyRevealed, WithUsesLeft),  # as the old wolf
+    ("illusionist", "night"): (*_NIGHT_EXPOSED, WithUsesLeft),
+    ("necromancer", "day"): _DAY_POWER,                               # as the serial killer
+    ("necromancer", "night"): _NIGHT_EXPOSED,
+    ("speculator", "day"): (*_DAY_PLAIN, WithUsesLeft),
+    ("speculator", "night"): (*_NIGHT_TARGET, WithUsesLeft),
+    ("fortune_teller", "day"): (*_DAY_PLAIN, WithUsesLeft),
+    ("fortune_teller", "night"): (*_NIGHT_TARGET, WithUsesLeft),
+}
+
+# A wolf's night is three turns in one cell (the pack's chat, the carrier's kill, its own skill), each
+# graded on its own (consolidation/grading.py), so its observations say which one they are about.
+PACK_NIGHT_ROLES = ("chanteuse", "illusionist")
+
+_CELL_KINDS = {
+    "observation": (CellObservationMixin, "Observation", "observation"),
+    "strategy": (CellStrategyMixin, "StrategyPoint", "strategy point"),
+    "situation": (_SituationCell, "SituationCell", ""),
+}
+
+
+def _ten_seat_cell(role: str, group: str, kind: str) -> type[BaseModel]:
+    """One generated cell class: the role's field groups plus the kind's payload. The observation and
+    strategy cells also carry the role and phase tags the explicit cells declare."""
+    payload, suffix, noun = _CELL_KINDS[kind]
+    fields: dict[str, Any] = {}
+    if noun:
+        phase = (_DAY_PHASES, "day_discussion or day_vote.") if group == "day" else (
+            Literal["night_action"], "night_action.")
+        fields["perspective"] = (Literal[role], Field(description=f"The role this {noun} is for — {role}."))
+        fields["action_phase"] = (phase[0], Field(description=phase[1]))
+    if kind == "observation" and group == "night" and role in PACK_NIGHT_ROLES:
+        fields["pack_turn"] = (Literal["chat", "kill", "skill", "several"], Field(
+            description="Which of the pack's turns that night the decision was: chat (the wolves' talk), kill "
+            "(the carrier naming the victim), skill (your own block or conceal), or several."))
+    name = "".join(w.title() for w in role.split("_")) + group.title() + suffix
+    return create_model(name, __base__=(*TEN_SEAT_CELL_SHAPES[(role, group)], payload), **fields)
+
+
+for (_r, _group), _shape in TEN_SEAT_CELL_SHAPES.items():
+    _phases = ("day_discussion", "day_vote") if _group == "day" else ("night_action",)
+    _obs, _sp, _sit = (_ten_seat_cell(_r, _group, k) for k in ("observation", "strategy", "situation"))
+    for _phase in _phases:
+        _CELL_REGISTRY[(_r, _phase)] = _obs
+        _STRATEGY_CELL_REGISTRY[(_r, _phase)] = _sp
+        _SITUATION_CELL_REGISTRY[(_r, _phase)] = _sit
 
 
 def cell_strategy_schema_for(role: str, action_phase: str) -> type[BaseModel] | None:

@@ -1,0 +1,4 @@
+.next/
+node_modules/
+docs/
+src/game/__fixtures__/

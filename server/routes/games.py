@@ -1,0 +1,322 @@
+"""Running-game creation, status, turns, and SSE transport."""
+
+from __future__ import annotations
+
+import asyncio
+import logging
+from datetime import datetime, timezone
+from typing import Annotated, AsyncIterator
+from uuid import uuid4
+
+from fastapi import APIRouter, Header, HTTPException, Response
+from fastapi.responses import StreamingResponse
+
+from Agents.turn.human_turn import HumanTurnContractError
+from server.dependencies import GameRepositoryDep, GraphRuntimeDep, House, Game, GamesRegistry, Room, SeatToken
+from server.database_models.game import COMPLETED, GameRow
+from server.game.cast import is_pickable
+from server.game.entitlement import entitled
+from server.game.game_session import GameSession
+from server.game.ledger import ledger_days
+from server.game.run_config import game_run_config
+from server.schemas.ledger import LedgerDay
+from server.schemas.requests import (
+    DraftRequest, DraftResponse, FundGame, GameCreated, GameStatus, NewSoloGame, TurnAccepted,
+)
+
+from ._shared import authorize_model, live_status, require_memory_available, set_seat_cookie
+
+logger = logging.getLogger(__name__)
+
+_HEARTBEAT_SECONDS = 15.0
+# A heartbeat the page can hear: a named event, not an SSE comment, which no script sees. The
+# page reopens a stream that has been silent for longer than a few of these (a phone woken
+# from sleep can hold a dead connection open), so a quiet game must still say something.
+_PING = "event: ping\ndata: {}\n\n"
+
+router = APIRouter(tags=["games"])
+
+
+@router.post(
+    "/games",
+    response_model=GameCreated,
+    summary="Instant start: solo human (role choice) or LLM-only",
+)
+async def create_game(
+    body: NewSoloGame,
+    games: GamesRegistry,
+    house: House,
+    runtime: GraphRuntimeDep,
+    response: Response,
+) -> GameCreated:
+    await require_memory_available(body.memory, runtime)
+    model = await authorize_model(house, body.api_key, body.model)
+    if body.character is not None and not is_pickable(body.character):
+        raise HTTPException(status_code=422, detail=f"no such character: {body.character}")
+    seat_tokens = [str(uuid4())] if body.human or body.human_role is not None else []
+    session = await games.start_instant(
+        game_run_config(memory=body.memory, human_player=len(seat_tokens),
+                        human_role=body.human_role),
+        api_key=body.api_key,
+        model=model,
+        seat_tokens=seat_tokens,
+        memory=body.memory,
+        character=body.character if seat_tokens else None,
+    )
+    if seat_tokens:
+        set_seat_cookie(response, session.game_id, seat_tokens[0])
+    return GameCreated(
+        game_id=session.game_id,
+        seat_token=seat_tokens[0] if seat_tokens else None,
+    )
+
+
+@router.get("/games/{game_id}", response_model=GameStatus, summary="Status snapshot")
+async def game_status(session: Room, token: SeatToken,
+                      repository: GameRepositoryDep) -> GameStatus:
+    if isinstance(session, GameRow):
+        return _archived_status(
+            session, token, [c.character for c in await repository.load_cast(session.game_id)])
+    return live_status(session, token)
+
+
+@router.get("/games/{game_id}/ledger", response_model=list[LedgerDay],
+            summary="The claim ledger the agents read each morning")
+async def game_ledger(session: Room, repository: GameRepositoryDep) -> list[LedgerDay]:
+    """Each morning's claim ledger, rebuilt from the game's public events: running or ended,
+    for anyone. A waiting room has none yet."""
+    if isinstance(session, GameRow):
+        return ledger_days(await repository.load_events(session.game_id))
+    if isinstance(session, GameSession):
+        return ledger_days(list(session.log))
+    return []
+
+
+def _archived_status(row: GameRow, token: str, cast: list[str]) -> GameStatus:
+    """The snapshot of a game that has ended and left the live registry: the row says how
+    it ended, and the cast table which puppets stood where. A stale seat cookie is not an
+    error here; it just names the seat you held."""
+    tokens = [seat.get("token", "") for seat in row.seats]
+    you = None
+    if token and token in tokens:
+        i = tokens.index(token)
+        you = row.human_players[i] if i < len(row.human_players) else None
+    finished = row.status == COMPLETED
+    return GameStatus(
+        game_id=row.game_id,
+        state="finished" if finished else "dropped",
+        server_time=datetime.now(timezone.utc).isoformat(),
+        human_players=list(row.human_players),
+        you=you,
+        game_over=finished,
+        winner=row.winner,
+        cast=cast,
+        error=row.error,
+        archived=True,
+    )
+
+
+@router.post(
+    "/games/{game_id}/key",
+    response_model=GameStatus,
+    summary="Resume a key-funded game after a restart by supplying the key again",
+)
+async def fund_game(session: Game, body: FundGame, token: SeatToken,
+                    games: GamesRegistry) -> GameStatus:
+    """Any seat holder may fund the resume; spectators may not. The key is tried on the
+    provider first (422 with its complaint), then the game continues from its checkpoint.
+    409 when the game is not waiting for a key."""
+    if not token or not session.owns(token):
+        raise HTTPException(status_code=403, detail="only a seat holder may fund this game")
+    try:
+        await games.resume_with_key(session.game_id, body.api_key)
+    except LookupError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return live_status(session, token)
+
+
+@router.post(
+    "/games/{game_id}/turns",
+    response_model=TurnAccepted,
+    summary="Submit the human seat's action",
+)
+async def submit_turn(session: Game, body: dict, token: SeatToken) -> TurnAccepted:
+    seat = _proven_seat(session, token)
+    try:
+        session.submit_turn(body, seat=seat)
+    except LookupError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except HumanTurnContractError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return TurnAccepted()
+
+
+@router.post(
+    "/games/{game_id}/draft",
+    response_model=DraftResponse,
+    summary="Draft the seat's line with its own agent",
+)
+async def draft_turn(session: Game, body: DraftRequest, token: SeatToken) -> DraftResponse:
+    """Ask the seat's own agent what it would say on the discussion turn the seat owes.
+
+    The agent is the one that would speak if the player handed the turn over or let the
+    clock run out: the same instructions, and everything it knows about this game. It
+    writes its line, and nothing more happens: the line is not said, the game does not
+    move, and whatever the agent noted for itself along the way is thrown away. The player
+    sends the line with POST /turns, edited or not, or types their own.
+
+    Sent with nothing, the agent writes its own line. With `notes`, the player's words on
+    what the line should do are added to the agent's instructions for this draft only;
+    with `current` as well, the line in the player's box, which the agent then revises.
+    `seat_notes` and `suspect` share the player's notebook the same way. None of it is
+    stored; it travels in this one model call, which is traced like any other. An empty
+    `draft` means the agent would pass. On the wolves' night talk the notes are turned
+    into a line to the pack instead.
+
+    Three drafts a turn, and the wait for each is given back to the seat's clock. 409 when
+    the seat owes no discussion turn or has used its drafts; 422 when the notebook names a
+    seat not at the table; 503 when the model could not answer."""
+    seat = _proven_seat(session, token)
+    try:
+        draft, drafts_left = await session.draft_line(
+            seat, body.notes, body.current, body.seat_notes, body.suspect)
+    except LookupError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(
+            status_code=503, detail="could not draft the line; type it instead") from exc
+    return DraftResponse(draft=draft, drafts_left=drafts_left,
+                         deadline=session.turn_deadlines.get(seat))
+
+
+def _proven_seat(session: GameSession, token: str) -> str:
+    """The seat this cookie proves, for the routes that act as a seat. 403 without a
+    cookie or with one the game does not know; 409 while seats are not dealt yet."""
+    if not token:
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "turns require a seat cookie — claim a seat via POST /join "
+                "(or restore a lost cookie via POST /rejoin)"
+            ),
+        )
+    seat = session.seat_for_token(token)
+    if seat is None:
+        raise HTTPException(status_code=403, detail="unknown seat token")
+    if not seat:
+        raise HTTPException(status_code=409, detail="seats not dealt yet")
+    return seat
+
+
+@router.get("/games/{game_id}/events", summary="SSE event stream")
+async def event_stream(
+    session: Game,
+    token: SeatToken,
+    last_seq: int = 0,
+    last_event_id: Annotated[str | None, Header()] = None,
+) -> StreamingResponse:
+    """Stream entitled durable events plus public ephemeral pacing frames.
+
+    ``last_seq`` is the cursor frozen into the original URL. On automatic browser
+    reconnection, ``Last-Event-ID`` carries the live cursor and therefore wins when
+    valid. Pacing frames have no ID, so they never advance that durable cursor.
+    """
+    if token and session.seat_for_token(token) is None:
+        raise HTTPException(status_code=403, detail="unknown seat token")
+    if last_event_id is not None:
+        try:
+            last_seq = int(last_event_id)
+        except ValueError:
+            pass
+
+    return StreamingResponse(
+        _sse(session, token, last_seq),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+def _frame(kind: str, event) -> str:
+    """Format one durable or ephemeral event as an SSE protocol frame."""
+    seq = getattr(event, "seq", None)
+    id_line = f"id: {seq}\n" if seq is not None else ""
+    return f"{id_line}event: {kind}\ndata: {event.model_dump_json()}\n\n"
+
+
+async def _sse(
+    session: GameSession,
+    token: str,
+    last_seq: int,
+) -> AsyncIterator[str]:
+    """Subscribe before replaying the log, deduplicate overlap, then stream live.
+
+    Subscribe-first ensures each event reaches either the snapshot or queue; the
+    overlap can duplicate, and ``sent`` removes that safely. Snapshot iteration uses
+    a list because this generator suspends at every yield while the game appends.
+    Entitlement and token-to-seat resolution are evaluated per delivery because
+    roles may be dealt after connection and observer-only events unlock at game over.
+    The cursor is also entitlement-aware: it cannot claim an event the viewer was
+    not allowed to receive while the game was live. Heartbeats (a ping as the stream
+    opens, then one each quiet interval) keep proxy connections alive and tell the page
+    the stream is alive; they do not impose a player turn timeout.
+    """
+    q = session.subscribe(token)  # also the presence signal for a human seat
+
+    def viewer_seat() -> str:  # re-read per event: seats are dealt after streams open
+        return session.seat_of_viewer(token)
+
+    sent: set[int] = set()
+    logger.info(
+        "game %s: viewer connected (seat=%r, cursor=%d)",
+        session.game_id,
+        viewer_seat(),
+        last_seq,
+    )
+
+    def may_see(event) -> bool:
+        return entitled(event, viewer_seat(), session.translator.roles, session.game_over)
+
+    def cursor_skips(event) -> bool:
+        return event.seq <= last_seq and entitled(
+            event, viewer_seat(), session.translator.roles, False
+        )
+
+    try:
+        yield _PING
+        for event in list(session.log):
+            if not cursor_skips(event) and may_see(event):
+                sent.add(event.seq)
+                yield _frame("game", event)
+
+        while True:
+            try:
+                kind, event = await asyncio.wait_for(
+                    q.get(), timeout=_HEARTBEAT_SECONDS
+                )
+            except asyncio.TimeoutError:
+                yield _PING
+                continue
+            if kind == "pacing":
+                yield _frame("pacing", event)
+                continue
+            if event.seq in sent or cursor_skips(event):
+                continue
+            if may_see(event):
+                sent.add(event.seq)
+                yield _frame("game", event)
+            if event.type == "game_over":
+                for held in list(session.log):
+                    if held.seq not in sent and not cursor_skips(held):
+                        sent.add(held.seq)
+                        yield _frame("game", held)
+    finally:
+        session.unsubscribe(q)
+        logger.info(
+            "game %s: viewer disconnected (seat=%r)",
+            session.game_id,
+            viewer_seat(),
+        )

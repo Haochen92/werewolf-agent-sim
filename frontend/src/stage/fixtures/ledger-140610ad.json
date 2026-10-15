@@ -1,0 +1,76 @@
+[
+  {
+    "day": 2,
+    "players": []
+  },
+  {
+    "day": 3,
+    "players": [
+      {
+        "player": "player_6",
+        "history": "claimed investigator (day 2)",
+        "roles": [
+          {
+            "day": 2,
+            "role": "investigator",
+            "kind": "claimed"
+          }
+        ],
+        "checks": [],
+        "entries": [
+          {
+            "night": 1,
+            "action": "investigate",
+            "target": "player_5",
+            "result": "wolf",
+            "said_on_day": 2,
+            "reported": true,
+            "earlier": [],
+            "also": [],
+            "planned": null,
+            "reason": "",
+            "text": "Night 1: investigated player_5, result: wolf.",
+            "checks": [
+              {
+                "text": "Record: player_5 was revealed as wolf, as claimed.",
+                "fits": true
+              }
+            ]
+          },
+          {
+            "night": 2,
+            "action": "investigate",
+            "target": "player_2",
+            "result": "not_said",
+            "said_on_day": 2,
+            "reported": true,
+            "earlier": [],
+            "also": [],
+            "planned": null,
+            "reason": "",
+            "text": "Night 2: investigated player_2.",
+            "checks": []
+          }
+        ]
+      },
+      {
+        "player": "player_5",
+        "history": "claimed villager (day 2)",
+        "roles": [
+          {
+            "day": 2,
+            "role": "villager",
+            "kind": "claimed"
+          }
+        ],
+        "checks": [
+          {
+            "text": "Record: revealed as wolf when they were voted out on day 2, not villager.",
+            "fits": false
+          }
+        ],
+        "entries": []
+      }
+    ]
+  }
+]

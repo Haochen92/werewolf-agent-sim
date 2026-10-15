@@ -1,0 +1,693 @@
+[
+ {
+  "day": 2,
+  "survivors": [
+   "player_2",
+   "player_3",
+   "player_4",
+   "player_6",
+   "player_7",
+   "player_9",
+   "player_5",
+   "player_8"
+  ],
+  "roles": {
+   "player_1": "healer",
+   "player_2": "villager",
+   "player_3": "vigilante",
+   "player_4": "investigator",
+   "player_5": "wolf",
+   "player_6": "villager",
+   "player_7": "villager",
+   "player_8": "wolf",
+   "player_9": "serial_killer"
+  },
+  "seconds": 121,
+  "cap": 24,
+  "day_channel": [
+   {
+    "day": 2,
+    "seq": 0,
+    "player": "player_2",
+    "message": "",
+    "addressed_targets": [],
+    "day_round": "opening",
+    "passed": true,
+    "pass_reason": "voluntary",
+    "firing_reason": null,
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   },
+   {
+    "day": 2,
+    "seq": 1,
+    "player": "player_3",
+    "message": "",
+    "addressed_targets": [],
+    "day_round": "opening",
+    "passed": true,
+    "pass_reason": "voluntary",
+    "firing_reason": null,
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   },
+   {
+    "day": 2,
+    "seq": 2,
+    "player": "player_4",
+    "message": "On night 1, I investigated player_1 and learned they were the healer.",
+    "addressed_targets": [],
+    "day_round": "opening",
+    "passed": false,
+    "pass_reason": null,
+    "firing_reason": null,
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": "night_action"
+   },
+   {
+    "day": 2,
+    "seq": 3,
+    "player": "player_5",
+    "message": "",
+    "addressed_targets": [],
+    "day_round": "opening",
+    "passed": true,
+    "pass_reason": "voluntary",
+    "firing_reason": null,
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   },
+   {
+    "day": 2,
+    "seq": 4,
+    "player": "player_6",
+    "message": "",
+    "addressed_targets": [],
+    "day_round": "opening",
+    "passed": true,
+    "pass_reason": "voluntary",
+    "firing_reason": null,
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   },
+   {
+    "day": 2,
+    "seq": 5,
+    "player": "player_7",
+    "message": "",
+    "addressed_targets": [],
+    "day_round": "opening",
+    "passed": true,
+    "pass_reason": "voluntary",
+    "firing_reason": null,
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   },
+   {
+    "day": 2,
+    "seq": 6,
+    "player": "player_8",
+    "message": "",
+    "addressed_targets": [],
+    "day_round": "opening",
+    "passed": true,
+    "pass_reason": "voluntary",
+    "firing_reason": null,
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   },
+   {
+    "day": 2,
+    "seq": 7,
+    "player": "player_9",
+    "message": "",
+    "addressed_targets": [],
+    "day_round": "opening",
+    "passed": true,
+    "pass_reason": "voluntary",
+    "firing_reason": null,
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   },
+   {
+    "day": 2,
+    "seq": 8,
+    "player": "player_2",
+    "message": "player_4, you claim you investigated player_1, but their role was already public knowledge after they died. That looks like a safe claim on a dead target.",
+    "addressed_targets": [
+     {
+      "target": "player_4",
+      "addressed_form": "response",
+      "stance": "accusation"
+     }
+    ],
+    "day_round": "proactive",
+    "passed": false,
+    "pass_reason": null,
+    "firing_reason": {
+     "tier": "proactive",
+     "owes": [],
+     "sweep": 1
+    },
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   },
+   {
+    "day": 2,
+    "seq": 9,
+    "player": "player_4",
+    "message": "I checked player_1 on night one before the morning announcements, which is the whole point of getting an early read. Dropping it now establishes my role so we actually have a confirmed starting point instead of guessing in the dark.",
+    "addressed_targets": [
+     {
+      "target": "player_2",
+      "addressed_form": "response",
+      "stance": "defense"
+     }
+    ],
+    "day_round": "discussion",
+    "passed": false,
+    "pass_reason": null,
+    "firing_reason": {
+     "tier": "reactive",
+     "owes": [
+      "player_2"
+     ],
+     "sweep": 0
+    },
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   },
+   {
+    "day": 2,
+    "seq": 10,
+    "player": "player_3",
+    "message": "Claiming to check a dead player is essentially unverifiable and doesn't help us find wolves, player 4. If you really are the investigator, start providing results on living players that actually narrow down our suspects rather than wasting time on a role that is already dead.",
+    "addressed_targets": [
+     {
+      "target": "player_4",
+      "addressed_form": "response",
+      "stance": "accusation"
+     }
+    ],
+    "day_round": "proactive",
+    "passed": false,
+    "pass_reason": null,
+    "firing_reason": {
+     "tier": "proactive",
+     "owes": [],
+     "sweep": 1
+    },
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   },
+   {
+    "day": 2,
+    "seq": 11,
+    "player": "player_4",
+    "message": "I understand the frustration, but establishing my role was meant to prevent someone else from claiming it to sow chaos. I hear you, though\u2014who would you suggest I investigate next to prove my worth? If my claim is as useless as you say, suggest a target that would actually help us narrow down the wolves.",
+    "addressed_targets": [
+     {
+      "target": "player_3",
+      "addressed_form": "response",
+      "stance": "defense"
+     }
+    ],
+    "day_round": "discussion",
+    "passed": false,
+    "pass_reason": null,
+    "firing_reason": {
+     "tier": "reactive",
+     "owes": [
+      "player_3"
+     ],
+     "sweep": 0
+    },
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   },
+   {
+    "day": 2,
+    "seq": 12,
+    "player": "player_5",
+    "message": "",
+    "addressed_targets": [
+     {
+      "target": "player_4",
+      "addressed_form": "response",
+      "stance": "accusation"
+     }
+    ],
+    "day_round": "proactive",
+    "passed": true,
+    "pass_reason": "novelty_gated",
+    "firing_reason": {
+     "tier": "proactive",
+     "owes": [],
+     "sweep": 1
+    },
+    "gated": true,
+    "gated_candidate": "Player 4, claiming the dead player as your target is convenient, but it doesn't help us find living threats. If you truly have that role, you need to provide a result on a live player tomorrow to gain our trust. Let's see if you can actually narrow down our list instead of just telling us what we already know.",
+    "opening_kind": ""
+   },
+   {
+    "day": 2,
+    "seq": 13,
+    "player": "player_6",
+    "message": "Player 4, your point about establishing your role is noted, but claiming an investigation on a dead player doesn't help us find the wolves. If you are the investigator, you need to prove it by investigating someone who hasn't spoken much today, like player 5 or 8, and sharing the result tomorrow. If you don't produce a lead that we can actually work with, we should treat your claim with extreme skepticism.",
+    "addressed_targets": [
+     {
+      "target": "player_4",
+      "addressed_form": "response",
+      "stance": "neutral"
+     }
+    ],
+    "day_round": "proactive",
+    "passed": false,
+    "pass_reason": null,
+    "firing_reason": {
+     "tier": "proactive",
+     "owes": [],
+     "sweep": 1
+    },
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   },
+   {
+    "day": 2,
+    "seq": 14,
+    "player": "player_7",
+    "message": "Player 4, agreeing to follow through on the suggestion from player 6 is the only way to move past this stalemate. If you are the investigator, committing to a live target tonight is the only way to prove your role; we will evaluate your credibility based on the accuracy and utility of your report tomorrow.",
+    "addressed_targets": [
+     {
+      "target": "player_4",
+      "addressed_form": "response",
+      "stance": "neutral"
+     },
+     {
+      "target": "player_6",
+      "addressed_form": "mention",
+      "stance": "agreement"
+     }
+    ],
+    "day_round": "proactive",
+    "passed": false,
+    "pass_reason": null,
+    "firing_reason": {
+     "tier": "proactive",
+     "owes": [],
+     "sweep": 1
+    },
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   },
+   {
+    "day": 2,
+    "seq": 15,
+    "player": "player_8",
+    "message": "",
+    "addressed_targets": [
+     {
+      "target": "player_4",
+      "addressed_form": "response",
+      "stance": "accusation"
+     },
+     {
+      "target": "player_9",
+      "addressed_form": "mention",
+      "stance": "neutral"
+     }
+    ],
+    "day_round": "proactive",
+    "passed": true,
+    "pass_reason": "novelty_gated",
+    "firing_reason": {
+     "tier": "proactive",
+     "owes": [],
+     "sweep": 1
+    },
+    "gated": true,
+    "gated_candidate": "Player 4, your claim doesn't provide the town with any forward momentum. If you really are the investigator, focusing on players who have been completely silent, like player 9, would be a much better use of your action than re-checking those of us already participating in the discussion.",
+    "opening_kind": ""
+   },
+   {
+    "day": 2,
+    "seq": 16,
+    "player": "player_9",
+    "message": "",
+    "addressed_targets": [
+     {
+      "target": "player_4",
+      "addressed_form": "mention",
+      "stance": "neutral"
+     },
+     {
+      "target": "player_6",
+      "addressed_form": "mention",
+      "stance": "agreement"
+     },
+     {
+      "target": "player_7",
+      "addressed_form": "mention",
+      "stance": "agreement"
+     }
+    ],
+    "day_round": "proactive",
+    "passed": true,
+    "pass_reason": "novelty_gated",
+    "firing_reason": {
+     "tier": "proactive",
+     "owes": [],
+     "sweep": 1
+    },
+    "gated": true,
+    "gated_candidate": "If player_4 really is the investigator, the benefit of an early, unverifiable result on a dead player is limited. However, I agree with player_6 and player_7 that if they fail to provide a useful lead on a live player by tomorrow, we have to assume the claim was meant to act as a shield rather than a tool for the village.",
+    "opening_kind": ""
+   },
+   {
+    "day": 2,
+    "seq": 17,
+    "player": "game_master",
+    "message": "Before the vote: player_4 has been accused by player_2, player_3, player_5 and player_8. player_4 gets a last word.",
+    "addressed_targets": [],
+    "day_round": "closing",
+    "passed": false,
+    "pass_reason": null,
+    "firing_reason": null,
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   },
+   {
+    "day": 2,
+    "seq": 18,
+    "player": "player_4",
+    "message": "My claim on player 1 was simply meant to establish my role early so the village knows I'm a power role, not to deceive you. I understand the need for a live lead, which is why I am committing now to investigate player 5 tonight as suggested. Please let me prove my value through my next report rather than eliminating the only player confirmed to have a useful information role.",
+    "addressed_targets": [
+     {
+      "target": "player_2",
+      "addressed_form": "response",
+      "stance": "defense"
+     },
+     {
+      "target": "player_3",
+      "addressed_form": "response",
+      "stance": "defense"
+     },
+     {
+      "target": "player_5",
+      "addressed_form": "mention",
+      "stance": "defense"
+     },
+     {
+      "target": "player_8",
+      "addressed_form": "mention",
+      "stance": "defense"
+     },
+     {
+      "target": "player_6",
+      "addressed_form": "response",
+      "stance": "agreement"
+     }
+    ],
+    "day_round": "closing",
+    "passed": false,
+    "pass_reason": null,
+    "firing_reason": null,
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   }
+  ],
+  "summary": "Key accusations and defenses: player_2 \u2192 player_4: player_2 argued that player_4's claim of investigating player_1 was a safe claim on a target whose role was already public knowledge. (evidence type: concrete_claim) Defense: player_4 argued they checked player_1 before morning announcements to establish their role and prevent others from taking it. | player_3 \u2192 player_4: player_3 argued that claiming to check a dead player is unverifiable and wastes time instead of finding wolves. (evidence type: behavioral_pattern) Defense: player_4 asked for suggestions on who to investigate next to prove their worth. | player_6 \u2192 player_4: player_6 argued that claiming an investigation on a dead player doesn't help find wolves and requires skepticism. (evidence type: behavioral_pattern) Defense: player_4 agreed to investigate player 5 tonight as suggested to prove their value.\nRole claims: player_4 claimed investigator \u2014 Night 1: investigated player_1, result: healer, plans to investigate player_5 tonight"
+ },
+ {
+  "day": 3,
+  "survivors": [
+   "player_6",
+   "player_7",
+   "player_9",
+   "player_5",
+   "player_8"
+  ],
+  "roles": {
+   "player_1": "healer",
+   "player_2": "villager",
+   "player_3": "vigilante",
+   "player_4": "investigator",
+   "player_5": "wolf",
+   "player_6": "villager",
+   "player_7": "villager",
+   "player_8": "wolf",
+   "player_9": "serial_killer"
+  },
+  "seconds": 57,
+  "cap": 15,
+  "day_channel": [
+   {
+    "day": 3,
+    "seq": 0,
+    "player": "player_5",
+    "message": "",
+    "addressed_targets": [],
+    "day_round": "opening",
+    "passed": true,
+    "pass_reason": "voluntary",
+    "firing_reason": null,
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   },
+   {
+    "day": 3,
+    "seq": 1,
+    "player": "player_6",
+    "message": "",
+    "addressed_targets": [],
+    "day_round": "opening",
+    "passed": true,
+    "pass_reason": "voluntary",
+    "firing_reason": null,
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   },
+   {
+    "day": 3,
+    "seq": 2,
+    "player": "player_7",
+    "message": "I am a villager with no special abilities. We all made a massive mistake voting for the investigator yesterday; we need to analyze who pushed that narrative to identify the wolves among us.",
+    "addressed_targets": [],
+    "day_round": "opening",
+    "passed": false,
+    "pass_reason": null,
+    "firing_reason": null,
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": "claim"
+   },
+   {
+    "day": 3,
+    "seq": 3,
+    "player": "player_8",
+    "message": "",
+    "addressed_targets": [],
+    "day_round": "opening",
+    "passed": true,
+    "pass_reason": "voluntary",
+    "firing_reason": null,
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   },
+   {
+    "day": 3,
+    "seq": 4,
+    "player": "player_9",
+    "message": "",
+    "addressed_targets": [],
+    "day_round": "opening",
+    "passed": true,
+    "pass_reason": "voluntary",
+    "firing_reason": null,
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   },
+   {
+    "day": 3,
+    "seq": 5,
+    "player": "player_5",
+    "message": "It is a bit late to talk about who pushed the narrative on player_4 when every single one of us voted to eliminate them. Since we all fell for that mistake, I am more interested in figuring out who the serial killer is among us. player_7, do you have any specific reasons to suspect anyone of being the killer, or are we just revisiting the past?",
+    "addressed_targets": [
+     {
+      "target": "player_7",
+      "addressed_form": "question",
+      "stance": "accusation"
+     }
+    ],
+    "day_round": "proactive",
+    "passed": false,
+    "pass_reason": null,
+    "firing_reason": {
+     "tier": "proactive",
+     "owes": [],
+     "sweep": 1
+    },
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   },
+   {
+    "day": 3,
+    "seq": 6,
+    "player": "player_7",
+    "message": "You're right that we all fell for it, and that makes it harder to point fingers based on the vote alone. If we can't use the vote to identify the wolves, let's look at who was most aggressive in pushing the narrative against them. Does anyone have a theory on why the killer or wolves would want the investigator out so early?",
+    "addressed_targets": [
+     {
+      "target": "player_5",
+      "addressed_form": "response",
+      "stance": "neutral"
+     }
+    ],
+    "day_round": "discussion",
+    "passed": false,
+    "pass_reason": null,
+    "firing_reason": {
+     "tier": "reactive",
+     "owes": [
+      "player_5"
+     ],
+     "sweep": 0
+    },
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   },
+   {
+    "day": 3,
+    "seq": 7,
+    "player": "player_6",
+    "message": "player_5, you are right that we are all equally responsible for the vote against the investigator, but pivoting immediately to the serial killer feels like a strategic distraction. Why are you prioritizing the killer over the wolf pack, especially given the two wolves remaining in this small pool?",
+    "addressed_targets": [
+     {
+      "target": "player_5",
+      "addressed_form": "response",
+      "stance": "accusation"
+     }
+    ],
+    "day_round": "proactive",
+    "passed": false,
+    "pass_reason": null,
+    "firing_reason": {
+     "tier": "proactive",
+     "owes": [],
+     "sweep": 1
+    },
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   },
+   {
+    "day": 3,
+    "seq": 8,
+    "player": "player_5",
+    "message": "It is not a distraction, player_6. We only have a few of us left, and the serial killer has been just as deadly as the wolves each night. If we ignore them, we risk being picked off one by one, and we definitely cannot afford a stalemate while the killer is still in play.",
+    "addressed_targets": [
+     {
+      "target": "player_6",
+      "addressed_form": "response",
+      "stance": "defense"
+     }
+    ],
+    "day_round": "discussion",
+    "passed": false,
+    "pass_reason": null,
+    "firing_reason": {
+     "tier": "reactive",
+     "owes": [
+      "player_6"
+     ],
+     "sweep": 0
+    },
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   },
+   {
+    "day": 3,
+    "seq": 9,
+    "player": "player_8",
+    "message": "Since the investigator lynch was unanimous, we are all equally responsible for that mistake. Instead of rehashing the past, we should focus on who is currently trying to control the narrative. Player_9, you have been quiet so far\u2014what is your take on these accusations flying between player_5 and player_6?",
+    "addressed_targets": [
+     {
+      "target": "player_9",
+      "addressed_form": "question",
+      "stance": "neutral"
+     },
+     {
+      "target": "player_5",
+      "addressed_form": "mention",
+      "stance": "defense"
+     },
+     {
+      "target": "player_6",
+      "addressed_form": "mention",
+      "stance": "neutral"
+     }
+    ],
+    "day_round": "proactive",
+    "passed": false,
+    "pass_reason": null,
+    "firing_reason": {
+     "tier": "proactive",
+     "owes": [],
+     "sweep": 1
+    },
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   },
+   {
+    "day": 3,
+    "seq": 10,
+    "player": "player_9",
+    "message": "The bickering between player 5 and player 6 feels like a distraction. Since our day two vote was unanimous, rehashing that doesn't help us identify the wolves. We need to stop looking for scapegoats and focus on who is actually trying to push us toward a breakthrough instead of just fueling drama.",
+    "addressed_targets": [
+     {
+      "target": "player_8",
+      "addressed_form": "response",
+      "stance": "neutral"
+     }
+    ],
+    "day_round": "discussion",
+    "passed": false,
+    "pass_reason": null,
+    "firing_reason": {
+     "tier": "reactive",
+     "owes": [
+      "player_8"
+     ],
+     "sweep": 0
+    },
+    "gated": false,
+    "gated_candidate": "",
+    "opening_kind": ""
+   }
+  ],
+  "summary": "Key accusations and defenses: player_6 \u2192 player_5: player_6 argued that player_5 pivoting to the serial killer is a strategic distraction from the wolf pack. (evidence type: behavioral_pattern) Defense: player_5 argued it is not a distraction because the serial killer is as deadly as the wolves. Disputed: player_9 argued that the bickering between them is a distraction.\nRole claims: player_7 claimed villager"
+ }
+]

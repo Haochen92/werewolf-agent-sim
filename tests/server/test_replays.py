@@ -1,25 +1,27 @@
-"""The replay archive: metadata derivation, the clean-finish-only hook, the read API.
+"""Completed-game replay DTOs and the normalized read API.
 
 Hermetic by construction: the autouse guard in tests/fixtures/server.py blanks
 WW_POSTGRES_DSN, so nothing here can touch the live tick database. The hook tests
-monkeypatch server.runtime.archive_game (the seam the session calls); the endpoint
+inject a small archive fake (the seam the session calls); the endpoint
 tests run against the real router with the unconfigured-503 path, plus a recorded
 fake for the storage calls. Real-Postgres coverage is one integration test gated on
 WW_REPLAY_TEST_DSN — an explicitly separate opt-in var, never the live DSN.
 """
 from __future__ import annotations
 
-import asyncio
 import os
 
 import pytest
+from sqlmodel import select
 
-from server import replays
+from datetime import datetime, timezone
+
+from server.database_models.game import COMPLETED, DROPPED, RUNNING, EventRow, GameRow
+from server.db import Database
+from server.storage.game_repository import GameRepository
+from server.storage.replay_service import IncompleteReplay, ReplayNotFound, ReplayService
 from server.schemas import events as ev
-from tests.fixtures.server import FakeGraph
-
-# ---- metadata derivation ------------------------------------------------------------------
-
+from server.schemas.replays import ReplayBase, ReplayGame
 
 def _log(*, with_over=True):
     events: list[ev.DurableEvent] = [
@@ -31,70 +33,6 @@ def _log(*, with_over=True):
         events.append(ev.GameOver(seq=3, day=3, winner="wolves"))
     return events
 
-
-def test_metadata_is_lifted_from_the_log():
-    meta = replays.derive_metadata(_log())
-    assert meta == {"winner": "wolves", "days": 3, "n_events": 3,
-                    "cast_role_counts": {"wolf": 1, "villager": 1}}
-
-
-def test_no_game_over_means_not_archivable():
-    assert replays.derive_metadata(_log(with_over=False)) is None
-    assert replays.derive_metadata([]) is None
-
-
-# ---- the hook: clean finishes archive, errors never do -------------------------------------
-
-
-async def test_clean_finish_archives_once(quiet_session, monkeypatch, fixture_parts):
-    calls = []
-
-    async def record(game_id, log, n_humans):
-        calls.append((game_id, len(log), n_humans))
-
-    monkeypatch.setattr("server.runtime.archive_game", record)
-    session = quiet_session(FakeGraph(fixture_parts))
-    session.start()
-    await asyncio.wait_for(session.wait_finished(), timeout=30)
-
-    assert session.game_over and session.error is None
-    assert calls == [(session.game_id, len(session.log), 0)]
-
-
-async def test_died_game_is_never_archived(quiet_session, monkeypatch):
-    calls = []
-
-    async def record(*a):
-        calls.append(a)
-
-    class ExplodingGraph:
-        async def astream(self, payload, **_):
-            raise RuntimeError("provider died")
-            yield  # pragma: no cover
-
-    monkeypatch.setattr("server.runtime.archive_game", record)
-    session = quiet_session(ExplodingGraph())
-    session.start()
-    await asyncio.wait_for(session.wait_finished(), timeout=10)
-
-    assert session.error is not None
-    assert calls == []
-
-
-async def test_archive_failure_never_touches_the_game(quiet_session, monkeypatch,
-                                                      fixture_parts):
-    # The real archive_game swallows its own failures; here the seam itself explodes
-    # to pin the stronger claim: even a raising archiver must not mark the game dead...
-    # it would, and that is why archive_game guarantees no-raise. Pin THAT guarantee:
-    # a broken engine inside archive_game surfaces as a log line, never an exception.
-    async def broken_session():
-        raise RuntimeError("pool exploded")
-
-    monkeypatch.setattr("server.db.engine", lambda: object())  # configured...
-    monkeypatch.setattr("server.db.session", broken_session)   # ...but broken
-    await replays.archive_game("g1", _log(), 0)  # must not raise
-
-
 # ---- the read API ---------------------------------------------------------------------------
 
 
@@ -104,28 +42,236 @@ def test_replays_answer_503_when_unconfigured(api_client):
     assert api_client.get("/replays/some-id").status_code == 503
 
 
+def test_replay_router_translates_service_errors(api_client):
+    """Application errors become HTTP responses only at the route boundary."""
+
+    class MissingReplayService:
+        async def get_replay(self, game_id: str):
+            raise ReplayNotFound(game_id)
+
+    api_client.app.state.resources.replays = MissingReplayService()
+    response = api_client.get("/replays/missing")
+    assert response.status_code == 404
+    assert response.json()["detail"] == "unknown replay"
+
+    class IncompleteReplayService:
+        async def get_replay(self, game_id: str):
+            raise IncompleteReplay(game_id)
+
+    api_client.app.state.resources.replays = IncompleteReplayService()
+    response = api_client.get("/replays/broken")
+    assert response.status_code == 500
+    assert response.json()["detail"] == "incomplete replay event log"
+
+
+def test_replay_list_carries_the_ending_phase_and_the_total(api_client):
+    """The body stays a plain list (one page); the total across every page rides in the
+    X-Total-Count header, which the CORS setup lets a browser on the frontend read."""
+    from server.config import server_settings
+
+    page = [ReplayBase(game_id="g2", winner="wolves", days=5, ended_phase="night",
+                       n_events=9, n_humans=1, cast_role_counts={"wolf": 1})]
+
+    class TwoPageArchive:
+        async def list_replays(self, *, limit: int, offset: int):
+            assert (limit, offset) == (1, 1)
+            return page
+
+        async def count_replays(self):
+            return 2
+
+    api_client.app.state.resources.replays = TwoPageArchive()
+    origin = server_settings.cors_allowed_origins[0]
+    response = api_client.get("/replays?limit=1&offset=1", headers={"Origin": origin})
+    assert response.status_code == 200
+    assert [row["ended_phase"] for row in response.json()] == ["night"]
+    assert response.headers["x-total-count"] == "2"
+    assert "x-total-count" in response.headers["access-control-expose-headers"].lower()
+
+
+# ---- the wire model: typed events (ruled 2026-08-20, the frontend codegen contract) --------
+
+
+def test_replay_game_parses_stored_dicts_into_typed_events():
+    # EventRow keeps one payload dict; the wire model re-validates the collected
+    # payloads through the discriminated union before they cross the API boundary.
+    raw = [e.model_dump(mode="json") for e in _log()]
+    game = ReplayGame(game_id="g", winner="wolves", days=3, n_events=3,
+                      n_humans=0, cast_role_counts={"wolf": 1}, events=raw)
+    assert isinstance(game.events[0], ev.GameStarted)
+    assert isinstance(game.events[-1], ev.GameOver)
+
+    with pytest.raises(Exception):  # unknown discriminator = drifted row, never served
+        ReplayGame(game_id="g", winner="wolves", days=1, n_events=1,
+                   n_humans=0, cast_role_counts={},
+                           events=[{"type": "not_an_event", "seq": 1, "day": 1}])
+
+
+def test_replay_dto_drops_private_game_row_fields():
+    row = GameRow(
+        game_id="g",
+        status=COMPLETED,
+        host_key="private-host-key",
+        seats=[{"name": "hao", "token": "private-seat-token"}],
+        model="gemini-2.5-pro",
+        winner="wolves",
+        days=3,
+        n_events=3,
+        n_humans=1,
+        cast_role_counts={"wolf": 1},
+    )
+    dto = ReplayBase.model_validate(row)
+    assert dto.model_dump() == {
+        "game_id": "g",
+        "finished_at": None,
+        "winner": "wolves",
+        "neutral_result": None,
+        "days": 3,
+        "ended_phase": None,
+        "n_events": 3,
+        "n_humans": 1,
+        "cast_role_counts": {"wolf": 1},
+        "model": "gemini-2.5-pro",  # the two operational columns a replay does show
+        "memory": False,
+        "cost_usd": None,  # worked out from the usage column, which itself stays private
+        "avg_call_seconds": None,
+    }
+
+
+def test_database_metadata_has_one_game_table_and_normalized_events():
+    from sqlmodel import SQLModel
+
+    assert set(SQLModel.metadata.tables) == {
+        "games", "events", "settings", "characters", "game_cast", "models", "model_prices",
+        "prompt_captures"}
+    assert "replays" not in SQLModel.metadata.tables
+    event_fk = next(iter(SQLModel.metadata.tables["events"].foreign_keys))
+    assert event_fk.target_fullname == "games.game_id"
+    assert event_fk.ondelete == "CASCADE"
+    # A game's cast goes with the game, and names only characters the catalogue knows.
+    cast_fks = {fk.target_fullname: fk.ondelete
+                for fk in SQLModel.metadata.tables["game_cast"].foreign_keys}
+    assert cast_fks == {"games.game_id": "CASCADE", "characters.id": None}
+    # So does its prompt capture, kept for the leak audit.
+    capture_fk = next(iter(SQLModel.metadata.tables["prompt_captures"].foreign_keys))
+    assert (capture_fk.target_fullname, capture_fk.ondelete) == ("games.game_id", "CASCADE")
+
+
+def test_event_union_reaches_openapi():
+    # The whole point of the typed field: the frontend's TS event types are generated
+    # from /openapi.json, so every union member must appear there as a oneOf ref.
+    from typing import get_args
+
+    from server.app import create_app
+
+    items = (create_app().openapi()["components"]["schemas"]
+             ["ReplayGame"]["properties"]["events"]["items"])
+    n_members = len(get_args(get_args(ev.DurableGameEvent)[0]))
+    assert len(items["oneOf"]) == n_members
+
+
+# ---- write acknowledgements ---------------------------------------------------------------
+
+
+async def test_disabled_storage_acknowledges_noop_writes():
+    repository = GameRepository(Database(""))
+    assert await repository.create_game("g", status=RUNNING)
+    assert await repository.update_game("g", human_players=["player_3"])
+    assert await repository.record_events("g", _log())
+
+
+async def test_storage_failure_does_not_acknowledge_writes(monkeypatch):
+    database = Database("postgresql+psycopg://unused")
+
+    def unavailable():
+        raise ConnectionError("test: database unavailable")
+
+    monkeypatch.setattr(database, "session", unavailable)
+    repository = GameRepository(database)
+    assert not await repository.create_game("g", status=RUNNING)
+    assert not await repository.update_game("g", human_players=["player_3"])
+    assert not await repository.record_events("g", _log())
+
+
 # ---- optional integration (explicit opt-in var; NEVER the live DSN) -------------------------
 
 
 @pytest.mark.skipif(not os.getenv("WW_REPLAY_TEST_DSN"),
                     reason="set WW_REPLAY_TEST_DSN to run the real-Postgres round-trip")
-async def test_postgres_round_trip(monkeypatch):
-    from server import db
-
-    monkeypatch.setattr(db.server_settings, "WW_POSTGRES_DSN",
-                        os.environ["WW_REPLAY_TEST_DSN"])
-    monkeypatch.setattr(db, "_engine", None)
-    monkeypatch.setattr(db, "_sessions", None)
+async def test_postgres_round_trip():
+    from server.config import ServerSettings
 
     from sqlmodel import SQLModel
 
-    async with db.engine().begin() as conn:  # test-only convenience; prod uses alembic
+    settings = ServerSettings(WW_POSTGRES_DSN=os.environ["WW_REPLAY_TEST_DSN"])
+    database = Database(settings.replay_database_url)
+    await database.startup()
+    repository = GameRepository(database)
+    replay_service = ReplayService(database)
+    assert database.engine is not None
+    async with database.engine.begin() as conn:  # test-only; prod uses alembic
         await conn.run_sync(SQLModel.metadata.create_all)
 
-    await replays.archive_game("itest-game", _log(), n_humans=2)
-    await replays.archive_game("itest-game", _log(), n_humans=2)  # idempotent
+    assert await repository.create_game(
+        "itest-game", status=RUNNING, model="test-model", seats=[{"token": "test-seat"}])
+    # A partial write must update the existing row without needing its required status.
+    assert await repository.update_game("itest-game", human_players=["player_3"])
+    row = await repository.load_game("itest-game")
+    assert row.status == RUNNING and row.human_players == ["player_3"]
+    assert row.model == "test-model" and row.seats == [{"token": "test-seat"}]
+    assert not await repository.update_game("missing-game", human_players=["player_3"])
+    assert await repository.load_game("missing-game") is None
+    assert await repository.record_events("itest-game", _log())
+    assert await repository.record_events("itest-game", _log())  # retry cannot duplicate rows
+    # The cast goes with the game: written once, listed in seat order, and the
+    # constraints refuse a puppet standing twice or one the catalogue never issued.
+    from sqlalchemy.exc import IntegrityError
 
-    async with db.session() as sess:
-        row = await sess.get(replays.Replay, "itest-game")
-    assert row is not None and row.winner == "wolves" and len(row.events) == 3
-    await db.dispose()
+    from server.game.cast import CastSeat
+
+    cast = [CastSeat("player_2", "owl", False), CastSeat("player_1", "whale", True)]
+    assert await repository.record_cast("itest-game", cast)
+    assert await repository.record_cast("itest-game", cast)  # retry cannot duplicate rows
+    assert await repository.load_cast("itest-game") == [cast[1], cast[0]]
+    assert not await repository.record_cast(
+        "itest-game", [CastSeat("player_3", "owl", False)])  # owl stands at player_2
+    assert not await repository.record_cast(
+        "itest-game", [CastSeat("player_3", "nobody", False)])  # not in the catalogue
+    await repository.complete_game("itest-game", _log(), n_humans=2)
+    await repository.complete_game("itest-game", _log(), n_humans=2)  # idempotent
+
+    summary = await replay_service.list_replays(limit=50, offset=0)
+    game = await replay_service.get_replay("itest-game")
+    assert game.cast == ["whale", "owl"]
+    assert any(item.game_id == "itest-game" for item in summary)
+    assert await replay_service.count_replays() >= 1
+    assert game.winner == "wolves" and len(game.events) == 3
+
+    async with database.session() as sess:
+        row = await sess.get(GameRow, "itest-game")
+        event_rows = (await sess.execute(
+            select(EventRow).where(EventRow.game_id == "itest-game")
+        )).scalars().all()
+    assert row is not None and row.status == COMPLETED and row.winner == "wolves"
+    assert len(event_rows) == 3
+
+    # A batch was lost during play: completion marks the game dropped, not completed.
+    await repository.create_game("itest-short", status=RUNNING)
+    await repository.record_events("itest-short", _log()[:2])
+    await repository.complete_game("itest-short", _log(), n_humans=0)
+    async with database.session() as sess:
+        short = await sess.get(GameRow, "itest-short")
+    assert short is not None and short.status == DROPPED
+    assert short.error == "event log incomplete: 2 of 3 events stored, last seq 2"
+    with pytest.raises(ReplayNotFound):
+        await replay_service.get_replay("itest-short")
+
+    # A row completed before the write-side check, with a hole: the read side refuses.
+    full = _log()
+    await repository.create_game(
+        "itest-holed", status=COMPLETED, finished_at=datetime.now(timezone.utc),
+        winner="wolves", days=3, n_events=2, n_humans=0, cast_role_counts={"wolf": 1})
+    await repository.record_events("itest-holed", [full[0], full[2]])
+    with pytest.raises(IncompleteReplay):
+        await replay_service.get_replay("itest-holed")
+    await database.close()

@@ -1,0 +1,703 @@
+/* The gameplay guide: a side nav beside the page on a desktop; on a phone one sticky line that
+   names the section in view and opens the list. The sections keep one rhythm down the page:
+   96 between them (64 on a phone), 20 from a heading to what it heads (16), or 8 to its lede
+   and 22 on. The sections' own furniture is in their modules (GameModes, DayLine, CaseFile,
+   ToolsTray); here are the page, the working demos inside them, and the roles' rows (SideRow). */
+
+.guide {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 56px;
+  padding: 40px 0 96px;
+  --line-2: rgba(255, 235, 200, 0.16);
+}
+
+/* ---------- the nav ---------- */
+/* the sticky nav stays under the site's pinned strip while it is down (TopNav sets
+   --site-strip), and moves with it as it slides */
+.nav {
+  transition: top 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.nav {
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + var(--site-strip, 0px) + 24px);
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 12px;
+  border-radius: 9px;
+  color: var(--muted);
+  font-size: 15px;
+  text-decoration: none;
+}
+.navLink:hover {
+  color: var(--text);
+  background: var(--panel);
+}
+.navLink[aria-current] {
+  color: var(--text);
+  background: var(--panel-2);
+}
+.navLink:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+/* the sides, and after them the replay, each after a rule */
+.navLink[data-ruled] {
+  margin-top: 9px;
+  position: relative;
+}
+.navLink[data-ruled]::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -6px;
+  border-top: 1px solid var(--line);
+}
+.navIcon {
+  flex: none;
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+.lineIcon {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mobileNav {
+  display: none;
+}
+/* the phone's bar: a board of the nav's own, its Top button one of the nav's wells (composes
+   may not sit in a media query; the bar only shows on a phone) */
+.mobileBar {
+  composes: board from '../../../../components/site/Board.module.css';
+}
+.toTop {
+  composes: well from '../../../../components/site/Board.module.css';
+}
+
+/* ---------- the page ---------- */
+.main {
+  min-width: 0;
+}
+.title {
+  margin: 0;
+  color: var(--text);
+  font-weight: 800;
+  font-size: clamp(38px, 5vw, 60px);
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+/* the title, and at its right the music's switch: off until the reader turns it on, the
+   brass plate while it plays (the well's pressed look) */
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.music {
+  composes: well from '../../../../components/site/Board.module.css';
+  height: 38px;
+  padding: 0 14px;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+}
+.music svg {
+  width: 18px;
+  height: 18px;
+}
+.section {
+  padding-top: 96px;
+}
+.section > h2 {
+  margin: 0 0 20px;
+  color: var(--text);
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+}
+.section > h2:has(+ .sub) {
+  margin-bottom: 8px;
+}
+.sub {
+  max-width: 62ch;
+  margin: 0 0 22px;
+  color: var(--muted);
+  font-size: 16.5px;
+  line-height: 1.5;
+}
+/* the first side's row starts at the lede, as any section's content does */
+.sub + .side {
+  padding-top: 0;
+}
+
+/* a tab set's panels in one cell: the box is as tall as the tallest, so a switch never moves
+   the page; the idle ones hidden (useTabs marks them, and makes them inert) */
+.stack {
+  display: grid;
+}
+.stack > * {
+  grid-area: 1 / 1;
+}
+.stack > [data-off] {
+  visibility: hidden;
+}
+/* an anchor lands its heading 16 under the pinned strip (on a phone, under the sticky line),
+   where the nav counts it as the section being read: the strip's whole height, as a jump down
+   brings it in, less the space above the heading (a section's 96, a side's 37, the first
+   side's 3) */
+.section {
+  scroll-margin-top: calc(var(--site-strip-reach, 0px) - 80px);
+}
+.side {
+  scroll-margin-top: calc(var(--site-strip-reach, 0px) - 21px);
+}
+.sub + .side {
+  scroll-margin-top: calc(var(--site-strip-reach, 0px) + 13px);
+}
+
+/* ---------- the working demos ---------- */
+
+/* The seat card's stage is cropped to its top-left corner: one seat card and its notes, pinned open beside
+   it. The sizes are world units, set by the demo (--crop-*); drawn small (a crop under 0.75 of
+   its width in css px, 548 here) the notes grow with the type, so the crop takes in more of the
+   world. */
+.demo {
+  container-type: inline-size;
+}
+.demoCrop {
+  --w: var(--crop-w);
+  --h: var(--crop-h);
+  /* the pinned notes stand about three quarters of the card's height */
+  --note-paper-h: var(--paper-h);
+  /* the guess's list scrolls inside the crop (Wing.module.css) */
+  --guess-max: calc(var(--h) * 1px - 16px);
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: var(--w) / var(--h);
+}
+@container (max-width: 547px) {
+  .demoCrop {
+    --w: var(--crop-small-w);
+    --h: var(--crop-small-h);
+    --paper-h: var(--paper-small-h);
+  }
+}
+.demoWorld {
+  width: calc(100cqi * 1600 / var(--w));
+}
+/* the world's width, so the notes beside the rail have room to lay out */
+.demoBox {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: calc(var(--h) * 1px);
+}
+/* the page itself behind the cards (or the panel they sit on: --demo-ground) */
+.demoGround {
+  position: absolute;
+  inset: 0;
+  background: var(--demo-ground, var(--bg));
+}
+
+/* the composer, pinned open in the page (TurnDock's `pinned`), and under it what was said */
+.composerDemo {
+  --composer-h: 400px;
+  min-width: 0;
+}
+@media (max-width: 760px) {
+  .composerDemo {
+    --composer-h: 330px;
+  }
+}
+.said {
+  min-height: 1.5em;
+  margin: 10px 2px 0;
+  color: var(--said-ink, var(--muted));
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+/* the stops where you act (StopDemos): a small stage cropped to the instrument, framed as the
+   guide's pictures are, its ground the dark of the car at night */
+.stopDemo {
+  container-type: inline-size;
+  --demo-ground: #120c07;
+  /* the speech box, cropped to itself: a short measure over more lines, so its words read at
+     the column's size (SpeechBox.module.css) */
+  --speech-measure: 20;
+  --speech-lines: 4;
+}
+@media (max-width: 760px) {
+  .stopDemo {
+    --speech-measure: 15;
+    --speech-lines: 5;
+  }
+}
+.stopDemoCrop {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: var(--sw) / var(--sh);
+  border-radius: 6px;
+  box-shadow:
+    0 0 0 3px #120c06,
+    0 0 0 5px #3a2716,
+    0 0 0 6px rgba(201, 162, 94, 0.55);
+}
+.stopDemoWorld {
+  width: calc(100cqi * 1600 / var(--sw));
+}
+/* focused: the world shifted so the instrument's place on the stage is the crop's corner */
+.stopDemoShift {
+  margin-left: calc(var(--sx) * -100cqi / var(--sw));
+  margin-top: calc(var(--sy) * -100cqi / var(--sw));
+}
+/* the opening's composer, in the page's flow like the tools' */
+.openingDemo {
+  --composer-h: var(--slot-h, 360px);
+  min-width: 0;
+}
+.sentNote {
+  margin: 0;
+  padding: 18px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  color: #d8c59c;
+  font-size: 15.5px;
+  line-height: 1.5;
+}
+/* fitted: the instrument's own panel is the frame */
+.stopDemoFit .stopDemoCrop {
+  box-shadow: none;
+}
+.stopDemoFit .stopDemoBox {
+  height: auto;
+  padding: 0;
+  align-items: flex-start;
+}
+/* the instrument takes the crop's width, whichever state it shows (the ballot in, too) */
+.stopDemoFit .stopDemoBox > * {
+  flex: 1 1 auto;
+}
+.stopDemoBox {
+  position: absolute;
+  left: 0;
+  top: 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  width: calc(var(--sw) * 1px);
+  height: calc(var(--sh) * 1px);
+  padding: 16px;
+}
+.twine {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 700px;
+  height: 40px;
+  fill: none;
+  stroke: #a88a66;
+  stroke-opacity: 0.7;
+  stroke-width: 2;
+}
+.tapCue {
+  margin: 10px 0 0;
+  color: #a99a7e;
+  font-size: 14px;
+}
+/* the replay's panels, capped to read at the column's size (Drawer/Film `--side-max`); on a
+   phone the stage is drawn small and the type grows, so the panel may stand taller */
+.sidePanel {
+  --side-max: 560px;
+}
+@media (max-width: 760px) {
+  .sidePanel {
+    --side-max: 820px;
+  }
+}
+.retry {
+  margin-top: 12px;
+  align-self: flex-start;
+}
+
+/* ---------- a side's row ---------- */
+/* banner and pager on one line over the cards; on a phone the pager drops under them */
+.side {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'head pager'
+    'view view';
+  align-items: center;
+  column-gap: 16px;
+  padding-top: 34px;
+  position: relative;
+}
+/* the side's wall (owner, 2026-10-15, option C): the station's tile in its side's colour, the
+   screen's width (cut off by the site layout's `.station`), shaded round the row and fading to
+   the ground above and below, so each side stands in a room of its own */
+.side::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: -40px;
+  bottom: -64px;
+  left: -100vw;
+  right: -100vw;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      180deg,
+      var(--bg) 0,
+      transparent 90px,
+      transparent calc(100% - 90px),
+      var(--bg) 100%
+    ),
+    radial-gradient(
+      ellipse 70vw 80% at 50% 50%,
+      rgba(12, 10, 7, 0.3),
+      rgba(12, 10, 7, 0.78) 70%,
+      var(--bg) 100%
+    ),
+    var(--side-tile) center top / 120px 64px repeat;
+}
+.side[data-faction='villagers'] {
+  --side-tile: url('../../../../assets/site/ochre-tile.svg');
+}
+.side[data-faction='wolves'] {
+  --side-tile: url('../../../../assets/site/oxblood-tile.svg');
+}
+.side[data-faction='serial_killer'] {
+  --side-tile: url('../../../../assets/site/aubergine-tile.svg');
+}
+.side[data-faction='neutral_benign'] {
+  --side-tile: url('../../../../assets/site/slate-tile.svg');
+}
+.sideHead {
+  grid-area: head;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 14px;
+}
+.sideHead h3 {
+  margin: 0 6px 0 0;
+  color: var(--text);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.badge {
+  flex: none;
+  width: 46px;
+  height: 46px;
+}
+.pager {
+  grid-area: pager;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.arrow {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--panel);
+  box-shadow: inset 0 0 0 1px rgba(255, 235, 200, 0.16);
+  color: var(--text);
+  cursor: pointer;
+}
+.arrow:hover:not(:disabled) {
+  background: var(--panel-2);
+}
+.arrow:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.arrow:focus-visible,
+.dot:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+}
+.arrow svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.dots {
+  display: flex;
+  gap: 7px;
+}
+.dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 235, 200, 0.16);
+  cursor: pointer;
+}
+.dot[aria-current='true'] {
+  background: var(--amber);
+}
+
+/* the carousel: the view clips; padding leaves room for the cards' rings and shadows */
+.view {
+  grid-area: view;
+  min-width: 0;
+  overflow: hidden;
+  margin: 0 -16px;
+  padding: 18px 16px 30px;
+  touch-action: pan-y;
+}
+.track {
+  display: flex;
+  transition: transform 0.5s cubic-bezier(0.3, 0.1, 0.2, 1);
+}
+.slot {
+  flex: none;
+}
+
+/* ---------- narrower ---------- */
+@media (max-width: 1100px) {
+  .demo {
+    max-width: 600px;
+  }
+}
+
+@media (max-width: 760px) {
+  .guide {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    padding-top: 0;
+  }
+  .nav {
+    display: none;
+  }
+  /* in the site strip's place (SiteStrip), sliding as it does: down once the nav has
+     scrolled away, up at the page's top */
+  .mobileNav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 60;
+    display: block;
+    padding: calc(env(safe-area-inset-top, 0px) + 8px) 16px 0;
+    transform: translateY(calc(-100% - 48px));
+    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .mobileNav[data-on] {
+    transform: none;
+  }
+  .mobileBar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 7px 14px 15px 7px;
+  }
+  .toTop {
+    flex: none;
+    flex-direction: column;
+    gap: 2px;
+    width: 52px;
+    height: 40px;
+    padding: 0;
+    color: var(--brass-hi);
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    line-height: 1;
+  }
+  .toTop svg {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .barRule {
+    flex: none;
+    align-self: stretch;
+    width: 1px;
+    margin: 2px 12px;
+    background: linear-gradient(transparent, rgba(224, 166, 58, 0.6), transparent);
+  }
+  .mobileButton {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-radius: 6px;
+    color: var(--sign-text);
+    font-family: var(--font-serif);
+    font-size: 19px;
+  }
+  .mobileButton:focus-visible {
+    outline: 2px solid var(--amber);
+    outline-offset: 3px;
+  }
+  .mobileButton .lineIcon {
+    color: var(--brass-hi);
+  }
+  /* how far through the guide: a brass track filled to the section being read (--done) */
+  .progress {
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 7px;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(224, 166, 58, 0.25);
+  }
+  .progress::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: calc(var(--done) * 100%);
+    border-radius: inherit;
+    background: var(--brass-hi);
+    transition: width 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .mobileHere {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .chevron {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    margin-left: auto;
+    fill: none;
+    stroke: var(--brass-hi);
+    stroke-width: 2;
+    stroke-linecap: round;
+    transition: transform 0.2s;
+  }
+  .mobileButton[aria-expanded='true'] .chevron {
+    transform: rotate(180deg);
+  }
+  .title {
+    padding-top: 24px;
+  }
+  .section {
+    padding-top: 64px;
+  }
+  .section > h2 {
+    margin-bottom: 16px;
+    font-size: 27px;
+  }
+  .section > h2:has(+ .sub) {
+    margin-bottom: 6px;
+  }
+  .sub {
+    margin-bottom: 18px;
+  }
+  /* the same under the phone's bar (73px; the strip stays away), a section's space above its
+     heading 64 */
+  .section {
+    scroll-margin-top: 25px;
+  }
+  .side {
+    scroll-margin-top: 52px;
+  }
+  .sub + .side {
+    scroll-margin-top: 86px;
+  }
+  .sideHead .badge {
+    width: 40px;
+    height: 40px;
+  }
+  .sideHead h3 {
+    font-size: 21px;
+  }
+  /* the pager moves under the cards; the switch takes the banner's far end */
+  .side {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'head'
+      'view'
+      'pager';
+  }
+  /* This column is centred on a phone. Bleed only to the screen's edges, rather than
+     painting nearly three screen widths of tile and gradients behind every row. */
+  .side::before {
+    left: calc((100% - 100vw) / 2);
+    right: calc((100% - 100vw) / 2);
+  }
+  .sideHead > :last-child {
+    margin-left: auto;
+  }
+  .pager {
+    justify-self: center;
+    margin-top: -10px;
+  }
+}
+
+/* the phone's list of sections: the site's panel colours on Mantine's Menu */
+.menu {
+  padding: 6px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--panel-2);
+  box-shadow:
+    0 0 0 1px rgba(255, 235, 200, 0.16),
+    var(--shadow);
+}
+.menuItem {
+  padding: 11px 12px;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 15px;
+}
+.menuItem[data-hovered],
+.menuItem[data-current] {
+  color: var(--text);
+  background: var(--panel);
+}
+.menuLabel {
+  padding: 10px 12px 4px;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav,
+  .mobileNav,
+  .track,
+  .progress::before,
+  .chevron {
+    transition: none;
+  }
+}

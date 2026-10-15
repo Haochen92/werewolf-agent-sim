@@ -1,26 +1,18 @@
-"""Day-discussion prompt templates: each surviving role's discuss ChatPromptTemplate.
+"""Day-discussion prompt templates, built from the role cards (Agents/prompts/roles/).
 
-Every template is the same scaffold — GAME_PREAMBLE, the role's CORE_STRATEGY, the discussion
-tone/response-format, and a shared transcript block (previous-day summaries + today's discussion) —
-wrapped around two role-specific pieces: a framing paragraph and the one info line that role is given
-(its private results, or the wolf rosters). The `_discuss_template` factory holds the shared text once
-so each role is a one-line table entry. Wolf is the structural outlier: roster framing + a cover
-reminder. The discussion-only tone/silence/response-format blocks live here (not in common) since only
-the discuss phase uses them.
+Every role's template is the same scaffold in the shared-prefix layout (layout.py): the rules as the
+system message, the public record, then the role's identity and discussion framing, the discussion
+tone/response-format, and the card's context. The discussion-only tone/silence/response-format blocks
+live here (not in common) since only the discuss phase uses them.
 """
+
+from importlib import import_module
 
 from langchain_core.prompts import ChatPromptTemplate
 
-from Agents.prompts.common import GAME_PREAMBLE, READS_COMMIT_INSTRUCTION, build_system_prompt
+from Agents.prompts.common import READS_COMMIT_INSTRUCTION, build_system_prompt
+from Agents.prompts.layout import BOARD, PUBLIC_RECORD, SHARED_SYSTEM
 from Agents.prompts.memory import DAY_DISCUSSION_MEMORY_CONTEXT
-from Agents.prompts.roles import (
-    HEALER_CORE_STRATEGY,
-    INVESTIGATOR_CORE_STRATEGY,
-    SERIAL_KILLER_CORE_STRATEGY,
-    VIGILANTE_CORE_STRATEGY,
-    VILLAGER_CORE_STRATEGY,
-    WOLF_CORE_STRATEGY,
-)
 
 
 TONE_INSTRUCTION = """
@@ -32,7 +24,8 @@ Avoid canned openers and filler — don't start with "I agree with X that...", "
 "good point", "classic wolf move", and don't mirror the structure of the message before yours.
 A short reaction is fine; not every turn needs a full paragraph. If you agree with someone, add
 a new reason or a new piece of information rather than just seconding what they said.
-Keep your message under about 120 words: state your strongest, most important points.
+Keep your message short: usually 2-3 sentences, about 40-80 words. Make one main point, with
+the evidence needed to understand it.
 """
 
 
@@ -66,30 +59,53 @@ saying the same thing wastes the day. When you speak, do exactly one of:
 """
 
 
-DAY_DISCUSS_RESPONSE_FORMAT = """
-You must respond with a valid JSON.
+OPENING_ROUND_RULES = """
+== Opening round ==
+Prepare your opening speech for the start of a day. Every living player will get a chance to speak, without 
+knowing what others had made in their opening speech. 
+The speech should only include any one of the following 3 scenarios: 
+1. Claim your role, if the town does not already know it, or counterclaim another player's claim to the same role. 
+2. Share new information from the night that the town does not yet have: the night, whom you targeted, what you learned. A result the morning report already made public, such as a dead player's role, is not news.
+3. Challenge a claim made on an earlier day, with a reason.
 
-When speaking:
-{{
-    "strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}],
-    "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}],
-    "reads": [{{"player": "player_2", "why": "pushed the only counted lynch with no evidence", "suspected_role": "wolf", "confidence": "low"}}],
-    "pass_turn": false,
-    "message": "your discussion message",
-    "updated_strategy": "your updated private strategy note for future turns",
-    "addressed_targets": [{{"target": "player_2", "addressed_form": "response", "stance": "defense"}}]
-}}
+Deductions, suspicions, advice and general comments wait for the discussion, where they can answer
+today's claims. If none of the three applies to you, set pass_turn=true: passing is the normal
+answer here, and a statement of another kind is removed before anyone reads it.
+Length: one or two sentences, not the usual message length.
+"""
 
-When declining to speak (only if you were NOT directly addressed):
-{{
-    "strategy_verdicts": [{{"strategy_index": 1, "verdict": "not_relevant", "why": "short reason vs your current board"}}],
-    "memory_applicability": [{{"memory_index": 1, "verdict": "does_not_apply", "why": "short reason vs your current board"}}],
-    "reads": [{{"player": "player_2", "why": "unchanged", "suspected_role": "unclear", "confidence": "low"}}],
-    "pass_turn": true,
-    "message": "",
-    "updated_strategy": "your updated private strategy note for future turns",
-    "addressed_targets": []
-}}
+# Day 1 has no vote; appended to the opening block on that day.
+DAY_ONE_NO_VOTE_RULES = """
+== Day 1: no vote ==
+Today is the first day. There is little public information, and no elimination vote will be held
+today. You are not required to manufacture a read or commitment; passing is equally valid.
+"""
+
+PROACTIVE_ROUND_RULES = """
+== Open floor ==
+You have the floor because you have not spoken since the day began (or since the floor last went
+round). Make one or two useful points: a concrete observation or read with the evidence it rests
+on, a contradiction you noticed, or a proposal for what to test. Build on what is already in the
+transcript rather than repeating it: a point the table has already heard is held back and nobody
+hears it. If you have nothing new to add, set pass_turn=true; a pass costs nothing here.
+"""
+
+# Town only, on a voting day, after the open-floor block (owner, 2026-10-12: in the first Haiku game
+# half the votes came from players who had not spoken that day). Not for evil seats, for whom
+# silence can be the better play.
+TOWN_VOTE_REASON_RULE = """
+The vote follows this discussion. Decide now whom you would vote for if it were held now. If that is
+a player and you have not said why today, say it in a sentence or two instead of passing: a vote
+with no stated reason gives the town nothing to weigh. If you would abstain, you may pass.
+"""
+
+CLOSING_ROUND_RULES = """
+== Closing defence ==
+The discussion is over, and you have been called to give a last word before the vote: the
+moderator's line above names who accused you. Answer the case against you — explain, correct, or
+point to what your accusers have overlooked. Do not open a new accusation. Nobody replies to this
+turn; the vote follows at once.
+Length: two to four sentences.
 """
 
 
@@ -109,145 +125,54 @@ _FIRING_BRIEF = """
 {firing_brief}
 """
 
-_DISCUSS_TRANSCRIPT = """
-== Dead so far (public) ==
-{dead_roster}
+_DISCUSSION_STAGE_RULES = """
+{discussion_stage_rules}
+"""
 
-== Roles still in play (fixed cast minus revealed deaths) ==
-{alive_roles}
+# --- The ten-seat discussion ---
+# The rules block arrives as the {preamble} input, composed per game from the dealt lineup
+# (compose.preamble).
 
-== Previous days summary ==
-{day_summaries}
+# The two examples, in the schema's field order; the verdict lines are slots, empty on a turn shown no
+# memory (prompts/common.py, VERDICT_EXAMPLES). The example read and the example claim name no
+# role and no seat, since a named one gets copied (discussion_evidence.md section 7.5).
+DAY_DISCUSS_RESPONSE_FORMAT = """
+You must respond with a valid JSON.
 
-== Today's discussion ==
-{day_channel}
-=========================
+When speaking:
+{{
+    "reads": [{{"player": "<exact player_id>", "why": "pushed the only counted lynch with no evidence", "suspected_role": "<a role from the line-up, or unclear>", "confidence": "low"}}],
+{discuss_verdict_example}    "updated_strategy": "your updated private strategy note for future turns",
+    "pass_turn": false,
+    "message": "your discussion message",
+    "claim": "<the role this message claims you hold, or none>",
+    "addressed_targets": [{{"target": "<exact player_id>", "addressed_form": "response", "stance": "defense"}}]
+}}
+
+When declining to speak (only if you were NOT directly addressed):
+{{
+    "reads": [{{"player": "<exact player_id>", "why": "unchanged", "suspected_role": "unclear", "confidence": "low"}}],
+{discuss_verdict_example_pass}    "updated_strategy": "your updated private strategy note for future turns",
+    "pass_turn": true,
+    "message": "",
+    "claim": "none",
+    "addressed_targets": []
+}}
 """
 
 
-# --- Factory ---
-
-def _discuss_template(core_strategy, framing, context, *, trailer=""):
-    """Build a day-discussion template from the shared scaffold.
-
-    `framing` is the role's identity/goal paragraph, `context` the info line(s) it gets
-    (surviving players + any private results), `trailer` an optional reminder after the
-    transcript (only the wolf uses it, for the speak-like-a-villager cover note).
-    """
-    return ChatPromptTemplate.from_messages(
-        [
-            (
-                "system",
-                build_system_prompt(
-                    GAME_PREAMBLE,
-                    core_strategy,
-                    framing,
-                    TONE_INSTRUCTION,
-                    DAY_DISCUSS_RESPONSE_FORMAT,
-                ),
-            ),
-            (
-                "human",
-                # {tell_book}: above the reads instruction (evidence before belief); empty unless the
-                # arm configures a book (Agents/memory/tell_book.py).
-                "{tell_book}"
-                + READS_COMMIT_INSTRUCTION
-                + _DISCUSS_HEADER
-                + context
-                + _DISCUSS_TRANSCRIPT
-                + trailer
-                + _FIRING_BRIEF
-                + DAY_DISCUSSION_MEMORY_CONTEXT
-                + DISCUSSION_SILENCE_RULE
-                + ENGAGE_WITH_DISCUSSION_RULE,
-            ),
-        ]
+def day_discuss_template(role: str) -> ChatPromptTemplate:
+    """A dealt role's day discussion turn, from its card."""
+    card = import_module(f"Agents.prompts.roles.{role}").CARD
+    words = card.day_discuss
+    # The public record first (layout.py); the role card, tone and format come after it, with
+    # everything else that differs by seat or call type.
+    human = (
+        PUBLIC_RECORD + BOARD
+        + build_system_prompt(card.playstyle, words.framing, TONE_INSTRUCTION, DAY_DISCUSS_RESPONSE_FORMAT)
+        + "\n" + "{tell_book}" + READS_COMMIT_INSTRUCTION
+        + _DISCUSS_HEADER + words.context + _DISCUSSION_STAGE_RULES
+        + words.trailer + _FIRING_BRIEF + DAY_DISCUSSION_MEMORY_CONTEXT
+        + DISCUSSION_SILENCE_RULE + ENGAGE_WITH_DISCUSSION_RULE
     )
-
-
-# --- Discussion templates ---
-
-VILLAGER_DAY_DISCUSS = _discuss_template(
-    VILLAGER_CORE_STRATEGY,
-    """
-You are {player_id}, a {player_role}.
-""",
-    """
-Surviving players: {surviving_players}
-""",
-)
-
-
-HEALER_DAY_DISCUSS = _discuss_template(
-    HEALER_CORE_STRATEGY,
-    """
-You are {player_id}, the {player_role}.
-During the day, speak as a normal villager while protecting your cover.
-""",
-    """
-Surviving players: {surviving_players}
-""",
-)
-
-
-INVESTIGATOR_DAY_DISCUSS = _discuss_template(
-    INVESTIGATOR_CORE_STRATEGY,
-    """
-You are {player_id}, the {player_role}.
-As the investigator, you can use your investigation result to guide your decision.
-""",
-    """
-Surviving players: {surviving_players}
-Investigation results: {investigator_results}
-""",
-)
-
-
-WOLF_DAY_DISCUSS = _discuss_template(
-    WOLF_CORE_STRATEGY,
-    """
-You are {player_id}, the {player_role}.
-As the wolf, conceal your real identity and convince everyone else that you are a villager.
-If any of your fellow wolf allies are suspected, try to convince the villagers otherwise
-without revealing your own identity.
-""",
-    """Surviving villagers: {surviving_villagers}.
-Surviving allies: {surviving_wolves}.
-
-Your private wolf channel (night coordination + game-master notes):
-{wolf_channel}
-This channel is private to the wolves. Never quote, reference, or hint at its contents in public discussion — parroting night coordination outs you.
-""",
-    trailer="""Based on the discussion, try to speak like a villager. Do NOT reveal your allies identities.
-""",
-)
-
-
-SERIAL_KILLER_DAY_DISCUSS = _discuss_template(
-    SERIAL_KILLER_CORE_STRATEGY,
-    """
-You are {player_id}, the {player_role}.
-You are playing alone against everyone. During the day, pose as an ordinary villager:
-join the village's hunt for the threats, deflect suspicion from yourself, and never reveal that you
-are the serial killer. You can be voted out, so blending in is survival.
-""",
-    """
-Surviving players: {surviving_players}
-""",
-)
-
-
-VIGILANTE_DAY_DISCUSS = _discuss_template(
-    VIGILANTE_CORE_STRATEGY,
-    """
-You are {player_id}, the {player_role}.
-You are on the village's side. Whether to stay hidden as an ordinary villager or to claim your role
-is your own decision and can change with the situation: staying hidden keeps you safe, while
-claiming — or hinting at what your shots have taught you — can lend weight to your reads but
-paints a target on you (both the wolves and the serial killer gain from removing you).
-""",
-    """
-Surviving players: {surviving_players}
-What you have learned from your shots: {vigilante_results}
-""",
-)
+    return ChatPromptTemplate.from_messages([("system", SHARED_SYSTEM), ("human", human)])

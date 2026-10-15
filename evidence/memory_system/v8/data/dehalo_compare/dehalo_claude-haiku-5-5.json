@@ -1,0 +1,251 @@
+{
+ "model": "claude-haiku-5-5",
+ "stop_reason": "end_turn",
+ "usage": {
+  "input_tokens": 17266,
+  "output_tokens": 8072
+ },
+ "cost_usd": 0.0057626000000000005,
+ "judgments": [
+  {
+   "index": 1,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The sentinel's watch on player_9 caught player_1's visit at the victim's door, and that result was used as the basis for the day 3 vote that eliminated player_1."
+  },
+  {
+   "index": 2,
+   "halo": false,
+   "revised_verdict": "mixed",
+   "reason": "The Not suspicious result on player_1 was openly used as cover by the serial killer, and it was later cited when the tracking evidence was weighed."
+  },
+  {
+   "index": 3,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "The investigator's check was roleblocked and produced no result, so no link to any outcome is shown."
+  },
+  {
+   "index": 4,
+   "halo": true,
+   "revised_verdict": "mixed",
+   "reason": "The record links the public claim to the night-two roleblock, but the sigilist's sigil on the chanteuse followed from that player's day vote, not from the investigator's claim, and the healer's protection was the healer's own choice."
+  },
+  {
+   "index": 5,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The clarification that the Not suspicious check does not clear player_1 was followed by other players continuing the accusation, so it is tied to the consolidated vote."
+  },
+  {
+   "index": 6,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The sentinel voted to eliminate player_1, who was then revealed as the serial killer, a town vote against an evil player."
+  },
+  {
+   "index": 7,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "The trailseer claim and questioning did not connect to any elimination or night result, and the day ended in abstain."
+  },
+  {
+   "index": 8,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The trailseer's argument that the sentinel's sighting implicated player_1 was the basis for the village vote that eliminated the serial killer."
+  },
+  {
+   "index": 9,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "The trailseer's follow of the quiet player produced a null result that did not alter any outcome."
+  },
+  {
+   "index": 10,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The trailseer's follow showed player_9 visiting player_2, which confirmed the sentinel's watch and was cited in the case against player_1."
+  },
+  {
+   "index": 11,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The investigator voted to eliminate player_1, who was then revealed as the serial killer, a town vote against an evil player."
+  },
+  {
+   "index": 12,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The trailseer voted to eliminate player_1, who was then revealed as the serial killer."
+  },
+  {
+   "index": 13,
+   "halo": false,
+   "revised_verdict": "mixed",
+   "reason": "The sigilist's open claim is tied to the wolf's pushback, the wolf's vote against the sigilist, and the sigil that later struck that wolf."
+  },
+  {
+   "index": 14,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "The record shows no link between the sentinel's silence and the night-two watch or the town win, since the sentinel was not targeted and the watch was an independent action."
+  },
+  {
+   "index": 15,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The sentinel's public claim revealed the watch result that placed the serial killer at the victim's door, and the trailseer's confirmation followed from it."
+  },
+  {
+   "index": 16,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The vigilante's public argument backed the tracking evidence against player_1, and the town rallied behind it in the day 3 vote."
+  },
+  {
+   "index": 17,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "Holding fire had no recorded link to the sigil strike on the chanteuse, the healer's save, or the sentinel's watch, which were other players' independent actions."
+  },
+  {
+   "index": 18,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "The sigilist's vote failed in an abstain majority, and the record shows no link between this vote and the later sigil strike."
+  },
+  {
+   "index": 19,
+   "halo": false,
+   "revised_verdict": "negative",
+   "reason": "The chanteuse voted to eliminate a town player, and the sigilist's later sigil on the chanteuse is tied to the votes against them in the strategy notes."
+  },
+  {
+   "index": 20,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The healer's protection on the investigator directly prevented a wolf kill, as announced in the morning save report."
+  },
+  {
+   "index": 21,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "The chanteuse's discussion comment did not connect to any vote or night outcome in the record."
+  },
+  {
+   "index": 22,
+   "halo": false,
+   "revised_verdict": "negative",
+   "reason": "The sigil was placed on a player who did not attack and was spent with no effect, a direct cost to the town player's remaining sigils."
+  },
+  {
+   "index": 23,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The sigil struck the chanteuse when it carried the wolf kill, a direct mechanical result of the placement."
+  },
+  {
+   "index": 24,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "Staying concealed had no recorded link to the healer's protection, which was an independent night action."
+  },
+  {
+   "index": 25,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The healer's public claim was confirmed by the investigator's save, which corroborated the morning report."
+  },
+  {
+   "index": 26,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "The abstain outcome was a group result, and the record does not connect the vigilante's abstain to the sigilist's later action or to preventing a mis-elimination."
+  },
+  {
+   "index": 27,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The vigilante voted to eliminate player_1, who was then revealed as the serial killer, a town vote against an evil player."
+  },
+  {
+   "index": 28,
+   "halo": false,
+   "revised_verdict": "negative",
+   "reason": "The chanteuse's attack targeted a night-immune player, so the pack's kill yielded nothing, a direct consequence of this move."
+  },
+  {
+   "index": 29,
+   "halo": false,
+   "revised_verdict": "negative",
+   "reason": "The attack on the investigator was saved, and the chanteuse was struck by the sigil when carrying the kill, a direct mechanical consequence of the chanteuse's night action."
+  },
+  {
+   "index": 30,
+   "halo": false,
+   "revised_verdict": "positive",
+   "reason": "The healer voted to eliminate player_1, who was then revealed as the serial killer, a town vote against an evil player."
+  },
+  {
+   "index": 31,
+   "halo": false,
+   "revised_verdict": "negative",
+   "reason": "The illusionist's pack attack on the night-immune serial killer produced no kill and no concealment, a direct result of the illusionist's night action."
+  },
+  {
+   "index": 32,
+   "halo": true,
+   "revised_verdict": "unclear",
+   "reason": "The record does not link the serial killer's public welcome of the investigator's result to the day 2 abstain vote, which was decided by other players."
+  },
+  {
+   "index": 33,
+   "halo": false,
+   "revised_verdict": "negative",
+   "reason": "The serial killer's flat denials were rejected by the room, and the record ties this rejection to the unanimous day 3 vote."
+  },
+  {
+   "index": 34,
+   "halo": false,
+   "revised_verdict": "mixed",
+   "reason": "The kill removed the illusionist, a directly recorded death, but the claim about accelerating the timeline is not shown in the record."
+  },
+  {
+   "index": 35,
+   "halo": false,
+   "revised_verdict": "negative",
+   "reason": "The sentinel's watch on the sigilist directly caught the serial killer's visit, and that result led to the day 3 elimination."
+  },
+  {
+   "index": 36,
+   "halo": false,
+   "revised_verdict": "negative",
+   "reason": "The speculator never made a pick, and under the rules a player who has not picked loses, so the withheld pick directly ties to the loss."
+  },
+  {
+   "index": 37,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "The speculator's vote was one of a large majority, and the record shows the vote had no bearing on the outcome."
+  },
+  {
+   "index": 38,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "The speculator's discussion did not connect to any outcome, and the lesson itself says it had no causal connection."
+  },
+  {
+   "index": 39,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "The serial killer's vote was one of several in a failed abstain-majority day, and the record does not tie it to any later outcome."
+  },
+  {
+   "index": 40,
+   "halo": false,
+   "revised_verdict": "unclear",
+   "reason": "The serial killer's vote had no mathematical effect on the six-vote elimination, so the outcome is not connected to it."
+  }
+ ]
+}

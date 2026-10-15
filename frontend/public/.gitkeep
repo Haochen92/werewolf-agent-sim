@@ -1,0 +1,8 @@
+# public/ is reserved for OG share cards (build_plan §3, P4): they need stable URLs for
+# generateMetadata, which is the one thing static imports cannot give.
+#
+# NOTHING ELSE belongs here. All other art ships through src/assets/manifest.ts + next/image
+# for content-hashed URLs, inferred dimensions and automatic optimisation; public/ serves
+# files verbatim with none of that. Favicons use Next's app/icon.png convention.
+#
+# This placeholder exists so the Docker build's COPY of public/ has something to copy.

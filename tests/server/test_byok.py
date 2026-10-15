@@ -14,8 +14,8 @@ from __future__ import annotations
 import asyncio
 
 from Agents.llm_factory import GAME_LLM, GameLLM, get_llm_game_fallback
-from Agents.llm_factory.backends import create_chat_model
-from server.runtime import SUPPORTED_GAME_MODELS
+from Agents.llm_factory.chat import create_chat_model
+from server.game.model_catalog import game_model, menu_models
 
 GEMINI = "gemini-3.1-flash-lite"
 DEEPSEEK = "deepseek/deepseek-v4-pro"
@@ -56,6 +56,18 @@ def test_deepseek_selection_routes_the_key_to_deepseek():
     assert "deepseek" in str(client.openai_api_base)
 
 
+def test_openai_and_openrouter_selections_route_the_key_to_their_provider(monkeypatch):
+    # The server's own keys are set too: a player's game must never fall back to them.
+    monkeypatch.setenv("OPENAI_API_KEY", "server-openai-key")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "server-openrouter-key")
+    for model, base in (("openai/gpt-6-luna", "api.openai.com"),
+                        ("openrouter/z-ai/glm-5.3-flash", "openrouter.ai")):
+        client = _with_override(GameLLM(api_key="player-key", model=model),
+                                lambda: create_chat_model(model, temperature=0.42))
+        assert client.openai_api_key.get_secret_value() == "player-key", model
+        assert base in str(client.openai_api_base)
+
+
 def test_off_family_models_never_receive_the_game_key():
     # A DeepSeek game's key must not leak into a Gemini-family client (e.g. the pro
     # extraction models) — those fall back to server credentials.
@@ -72,17 +84,21 @@ def test_off_family_models_never_receive_the_game_key():
 def test_rescue_follows_the_registry_row():
     gemini_rescue = _with_override(
         GameLLM(api_key="k", model=GEMINI,
-                rescue_model=SUPPORTED_GAME_MODELS[GEMINI].rescue),
+                rescue_model=game_model(GEMINI).rescue_model),
         get_llm_game_fallback)
     assert gemini_rescue is not None
-    assert gemini_rescue.model == SUPPORTED_GAME_MODELS[GEMINI].rescue
+    assert gemini_rescue.model == game_model(GEMINI).rescue_model
     assert gemini_rescue.google_api_key.get_secret_value() == "k"  # same credential
 
     deepseek_rescue = _with_override(
         GameLLM(api_key="k", model=DEEPSEEK,
-                rescue_model=SUPPORTED_GAME_MODELS[DEEPSEEK].rescue),
+                rescue_model=game_model(DEEPSEEK).rescue_model),
         get_llm_game_fallback)
-    assert deepseek_rescue is None  # no tested same-credential rescue -> no rescue
+    # The two DeepSeek models share one key, so each rescues the other on that same key.
+    assert deepseek_rescue is not None
+    # The factory strips the "deepseek/" backend prefix before it reaches the client.
+    assert "deepseek/" + deepseek_rescue.model_name == game_model(DEEPSEEK).rescue_model
+    assert deepseek_rescue.openai_api_key.get_secret_value() == "k"
 
 
 # ---- session: the selection is set task-locally, invisible outside -----------------------
@@ -106,7 +122,7 @@ async def test_session_sets_the_selection_inside_its_own_task_only(quiet_session
     await asyncio.wait_for(session.wait_finished(), timeout=10)
 
     assert graph.seen == GameLLM(api_key="sk-player-123", model=DEEPSEEK,
-                                 rescue_model=None)
+                                 rescue_model=game_model(DEEPSEEK).rescue_model)
     assert GAME_LLM.get() == GameLLM()  # task-local: the caller's context is untouched
 
 
@@ -116,8 +132,19 @@ async def test_bare_key_runs_the_default_registry_model(quiet_session):
     session.start()
     await asyncio.wait_for(session.wait_finished(), timeout=10)
 
-    assert graph.seen.model == next(iter(SUPPORTED_GAME_MODELS))
-    assert graph.seen.rescue_model == SUPPORTED_GAME_MODELS[graph.seen.model].rescue
+    assert graph.seen.model == menu_models()[0].model
+    assert graph.seen.rescue_model == game_model(graph.seen.model).rescue_model
+
+
+async def test_house_model_selection_uses_server_credentials(quiet_session):
+    graph = _SelectionEchoGraph()
+    model = "gemini-3.6-flash"
+    session = quiet_session(graph, model=model)
+    session.start()
+    await asyncio.wait_for(session.wait_finished(), timeout=10)
+
+    assert graph.seen == GameLLM(
+        model=model, rescue_model=game_model(model).rescue_model)
 
 
 # ---- failure: surfaced, but redacted ------------------------------------------------------

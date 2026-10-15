@@ -1,0 +1,92 @@
+/**
+ * The hung paper tag (the mockups' `.hang`): a luggage tag on a string, a punched hole, a
+ * printed kicker, title and line, and a rule with a footer. Used as a door (a link) on the
+ * landing and rooms pages, and as a choice (a pressed button). A door to the page you are on
+ * takes `current`, and is ringed like a chosen tag (the ticket office's two kinds).
+ *
+ * Tags tilt alternately while hung. At 700px and under a tag is its own torn-off stub
+ * (owner, 2026-10-14): the kicker and title on a strip of the same paper with a perforated left
+ * edge, the way in at its right, two stubs side by side; the line and the footer are left on the
+ * tag, and `note` (a live line such as the tables boarding) rides under the title instead.
+ */
+import Link from 'next/link';
+import type { ReactNode } from 'react';
+import classes from './HangTag.module.css';
+
+interface HangTagBase {
+  /** The small printed line above the title, e.g. "Admit one". */
+  kicker: ReactNode;
+  title: ReactNode;
+  /** The italic line under the title. */
+  children?: ReactNode;
+  /** The ruled footer: left and right. */
+  foot?: [ReactNode, ReactNode?];
+  /** A short line shown only on the stub (a phone), under the title. */
+  note?: ReactNode;
+  className?: string;
+}
+
+type HangTagProps = HangTagBase &
+  (
+    | { href: string; current?: boolean; onClick?: never; pressed?: never }
+    | { href?: never; current?: never; onClick: () => void; pressed?: boolean }
+  );
+
+export function HangTag({
+  kicker,
+  title,
+  children,
+  foot,
+  note,
+  className,
+  ...action
+}: HangTagProps) {
+  const face = (
+    <>
+      <span className={classes.string} aria-hidden="true" />
+      <span className={classes.hole} aria-hidden="true" />
+      <span className={classes.face}>
+        <span className={classes.kicker}>{kicker}</span>
+        <span className={classes.title}>{title}</span>
+        {children ? <span className={classes.line}>{children}</span> : null}
+        {foot ? (
+          <span className={classes.foot}>
+            <span>{foot[0]}</span>
+            {foot[1] !== undefined ? (
+              <span className={classes.footRight}>{foot[1]}</span>
+            ) : null}
+          </span>
+        ) : null}
+        {note ? <span className={classes.note}>{note}</span> : null}
+        {action.href !== undefined ? (
+          <span className={classes.go} aria-hidden="true">
+            &rarr;
+          </span>
+        ) : null}
+      </span>
+    </>
+  );
+  const cls = className ? `${classes.hang} ${className}` : classes.hang;
+
+  if (action.href !== undefined) {
+    return (
+      <Link
+        href={action.href}
+        className={cls}
+        aria-current={action.current ? 'page' : undefined}
+      >
+        {face}
+      </Link>
+    );
+  }
+  return (
+    <button
+      type="button"
+      className={cls}
+      onClick={action.onClick}
+      aria-pressed={action.pressed}
+    >
+      {face}
+    </button>
+  );
+}

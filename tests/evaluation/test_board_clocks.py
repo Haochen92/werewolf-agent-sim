@@ -8,6 +8,7 @@ from Agents.rules.board_clocks import (
     criticality_from_census,
     criticality_from_counts,
 )
+from Agents.schemas.roles import lineup
 from evaluation.src.loop.decision_scoring import query_criticality
 
 
@@ -44,6 +45,25 @@ def test_census_criticality_equals_role_map_criticality():
     assert criticality_from_census(cast, roster) == query_criticality(list(roles), roles)
 
 
+def test_ten_seat_census_reads_the_sides_from_the_registry():
+    # Both wolves' roles count as wolves, the necromancer as the lone killer, the neutral as a body.
+    cast = {role: 1 for role in lineup("necromancer", "fortune_teller")}
+    roster = [{"role": "chanteuse"}, {"role": "healer"}]
+    # 8 alive: the illusionist, the necromancer, five town and the fortune teller.
+    assert criticality_from_census(cast, roster) == criticality_from_counts(wolves=1, sk=1, town=6)
+    assert criticality_from_counts(wolves=1, sk=1, town=6) == (8, 6, False)
+
+
 def test_census_criticality_none_without_census():
     assert criticality_from_census({}, []) is None
     assert criticality_from_census(None, None) is None
+
+
+def test_a_concealed_body_is_dead_but_its_side_unknown():
+    cast = {r: lineup("serial_killer", "speculator").count(r) for r in lineup("serial_killer", "speculator")}
+    nobody = criticality_from_census(cast, [])
+    hidden = criticality_from_census(cast, [{"role": "", "concealed": True}])
+    revealed_town = criticality_from_census(cast, [{"role": "healer"}])
+    # One fewer alive, and the reading most dangerous to town: the hidden body taken as a town player.
+    assert hidden[0] == nobody[0] - 1
+    assert hidden == revealed_town

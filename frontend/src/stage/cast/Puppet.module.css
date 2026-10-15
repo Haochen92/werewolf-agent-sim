@@ -1,0 +1,28 @@
+.pup {
+  position: absolute;
+}
+/* the felt figure's shadow on the wall behind it (the benches' .8cqw blur) */
+.sprite {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 8px 12.8px rgba(0, 0, 0, 0.45));
+}
+/* with the rooms' key light (the atmosphere), its contact shadow falls to the lower right too */
+.keyLit {
+  filter: drop-shadow(5px 8px 12.8px rgba(0, 0, 0, 0.45));
+}
+.numeral {
+  position: absolute;
+  overflow: visible;
+}
+.numeral text {
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+}
+
+/* On a phone (Stage.tsx `data-small`) the figure casts no contact shadow: a CSS filter is
+   recomputed every frame the figure rises, the heaviest per-frame cost left on a day beat
+   (build log §8.5); the wall shadow (CastShadow, a picture) still rises with it. */
+[data-small] .sprite {
+  filter: none;
+}

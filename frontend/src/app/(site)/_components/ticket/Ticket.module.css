@@ -1,0 +1,829 @@
+/*
+ * The ticket office (ticket-office mockup): the title beside the two tags, hung from a hairline
+ * rail as the landing's are (the mockup's grille and lamp are gone, 2026-09-27), then the ticket: a paper form with its fields ruled in dotted lines
+ * on the left and the stub, torn along a dashed line, on the right. Below 980px the stub drops
+ * under the fields; below 700px the tags hang flat (HangTag's own rule).
+ *
+ * The inputs are Mantine's, re-dressed for paper: an ink underline instead of a walnut box. The
+ * selectors go through `.ticket` to outrank the site theme's dark input (`theme/components`).
+ */
+
+/* not positioned: the station's wall behind it is placed from the page's top (StationWall) */
+.office {
+  padding: 18px 0 8px;
+}
+
+.intro {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 30px;
+  flex-wrap: wrap;
+  margin: 10px 0 34px;
+}
+
+.title {
+  margin: 0;
+  color: var(--text);
+  font-weight: 800;
+  font-size: clamp(34px, 5vw, 50px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+}
+
+.kinds {
+  position: relative;
+  display: flex;
+  gap: 22px;
+  padding-top: 32px;
+}
+/* the hairline the tags hang from (the landing's `.rail`) */
+.rail {
+  position: absolute;
+  left: -24px;
+  right: -24px;
+  top: 22px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 235, 200, 0.22) 18%,
+    rgba(255, 235, 200, 0.22) 82%,
+    transparent
+  );
+}
+
+/* the door to the other kind of ticket: dimmed like an unchosen tag, lit on hover */
+.otherDoor {
+  filter: brightness(0.55) saturate(0.8);
+}
+.otherDoor:hover,
+.otherDoor:focus-visible {
+  filter: brightness(0.85) saturate(0.95);
+}
+
+/* ---------- the ticket ---------- */
+
+.ticket {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  position: relative;
+  border-radius: 14px;
+}
+
+.body {
+  min-width: 0;
+  padding: 30px 40px 34px;
+}
+
+.heading {
+  margin: 0 0 4px;
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 1.1;
+}
+
+/* a ticket with no lede (the solo one) still clears its first field's rule */
+.heading + .fld {
+  margin-top: 14px;
+}
+
+.ticketLede {
+  margin: 0 0 18px;
+  color: var(--ink2);
+  font-size: 17px;
+}
+
+.fld {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+  padding: 18px 0;
+  border-top: 1.5px dotted rgba(36, 24, 12, 0.3);
+}
+
+.lab {
+  padding-top: 4px;
+  font-size: 19px;
+}
+
+.lab small {
+  display: block;
+  margin-top: 2px;
+  color: var(--ink2);
+  font-size: 14.5px;
+  font-style: italic;
+  line-height: 1.3;
+}
+
+.wide {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+.wide .lab {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 12px;
+  padding-top: 0;
+}
+
+.wide .lab small {
+  display: inline;
+  margin: 0;
+}
+
+.ctl {
+  min-width: 0;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+}
+
+.note {
+  max-width: 64ch;
+  margin: 8px 0 0;
+  color: var(--ink2);
+  font-size: 14.5px;
+  line-height: 1.4;
+}
+
+/* ---------- inputs on paper ---------- */
+
+.lineRoot {
+  width: min(100%, 420px);
+}
+
+.ticket .line {
+  --input-bg: transparent;
+  --input-bd: #8a7250;
+  --input-bd-focus: var(--ink);
+  --input-color: var(--ink);
+  --input-placeholder-color: rgba(36, 24, 12, 0.42);
+  --input-section-color: var(--ink);
+  --input-disabled-bg: transparent;
+  --input-disabled-color: var(--ink2);
+  height: auto;
+  min-height: 44px;
+  padding: 4px 2px 6px;
+  border: 0;
+  border-bottom: 1.5px solid var(--input-bd);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: 22px;
+}
+
+.ticket .line:focus {
+  border-bottom-color: var(--input-bd-focus);
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
+.ticket .line[data-error] {
+  --input-bd: #7a2a1c;
+  --input-bd-focus: #7a2a1c;
+  color: var(--ink);
+}
+
+.ticket .selectInput {
+  padding-right: 30px;
+  font-size: 19px;
+  cursor: pointer;
+}
+
+.ticket .keyInput {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  letter-spacing: 0.08em;
+}
+
+.lineSection {
+  color: var(--ink);
+}
+
+.lineError {
+  margin-top: 6px;
+  color: #7a2a1c;
+  font-size: 14px;
+  font-family: var(--font-sans);
+}
+
+.rawId {
+  display: block;
+  margin-top: 6px;
+  color: var(--ink2);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+}
+
+/* The model menu's rows (the dropdown is a portal on the theme's dark panel): the name with the
+   mean price of a game on the right, then the raw id and pill tags for who pays and the default. */
+.optionRow {
+  padding: 9px 12px;
+}
+
+.option {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.optionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.optionName {
+  color: var(--bone);
+  font-size: 15px;
+}
+
+.optionPrice {
+  color: var(--amber);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.optionMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.optionMeta code {
+  margin-right: 2px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.optionTag {
+  padding: 0 7px;
+  border: 1px solid var(--cloak2);
+  border-radius: 999px;
+  color: var(--bone2);
+  font-size: 11px;
+  line-height: 17px;
+}
+
+.optionTagDefault {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
+.groupLabel {
+  padding: 10px 12px 4px;
+  color: var(--bone3);
+  font-size: 11px;
+  font-variant: small-caps;
+  letter-spacing: 0.12em;
+  text-transform: lowercase;
+}
+
+/* the switch on paper: an ink-ringed track that fills amber, an ink thumb */
+.ticket .paperSwitch .track {
+  background-color: rgba(36, 24, 12, 0.16);
+  border: 1.5px solid var(--ink);
+}
+
+.ticket .paperSwitch input:checked + .track {
+  background-color: #c8922e;
+  border-color: var(--ink);
+}
+
+.ticket .paperSwitch .thumb {
+  --switch-thumb-bg: var(--ink);
+  background-color: var(--ink);
+  border: 0;
+}
+
+.ticket .paperSwitch input:checked + * > .thumb {
+  --switch-thumb-bg: var(--ink);
+  background-color: var(--ink);
+}
+
+.ticket .switchLabel {
+  color: var(--ink);
+  font-size: 15.5px;
+  font-weight: 500;
+}
+
+.textButton {
+  min-height: 36px;
+  margin-top: 6px;
+  align-self: flex-start;
+}
+
+/* ---------- the key row ---------- */
+
+.house {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  max-width: 64ch;
+  margin: 2px 0 0;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.house svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
+.house[data-pays='house'] {
+  color: #4a2e0a;
+}
+
+.house[data-pays='key'] {
+  color: #7a2a1c;
+}
+
+.keyRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 4px 18px;
+  margin: 8px 0 12px;
+}
+
+/* ---------- the room's rows ---------- */
+
+.nameInput {
+  font-size: 22px;
+}
+
+.seats {
+  display: flex;
+  gap: 6px;
+  margin: 0 0 8px;
+}
+
+.seats i {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px #a88445;
+}
+
+.seats i[data-first] {
+  background: #3a2a18;
+  box-shadow:
+    inset 0 0 0 2px var(--ink),
+    0 0 0 2px var(--bone);
+}
+
+.seats + .note {
+  margin-top: 0;
+}
+
+.lockLine {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 2px 0 0;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.lockLine svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
+/* ---------- the role (RoleCards) ---------- */
+
+/* a desktop: the cards on one six-column grid, the town's six over the other sides' six */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+  max-width: 640px;
+}
+
+.card {
+  --rc: var(--town);
+  position: relative;
+  width: 100%;
+  aspect-ratio: 96 / 136;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid var(--ink);
+  border-radius: 9px;
+  background: #f3e9d2;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  cursor: pointer;
+  transition:
+    opacity 0.2s,
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.card::before,
+.card::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: var(--rc);
+}
+.card::before {
+  top: 0;
+}
+.card::after {
+  bottom: 0;
+}
+
+.card[data-faction='wolves'] {
+  --rc: var(--wolf);
+}
+.card[data-faction='serial_killer'] {
+  --rc: var(--sk);
+}
+.card[data-faction='neutral_benign'] {
+  --rc: var(--benign);
+}
+
+.card:hover,
+.card[aria-checked='true'] {
+  transform: translateY(-3px);
+}
+.card[aria-checked='true'] {
+  box-shadow:
+    0 0 0 3px var(--amber),
+    0 8px 20px rgba(60, 35, 5, 0.35);
+}
+/* once a role is chosen the others step back a little */
+.cards[data-chosen] .card:not([aria-checked='true']):not(:hover) {
+  opacity: 0.82;
+}
+.card:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 4px;
+}
+
+.cardIn {
+  position: absolute;
+  inset: 11px 5px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* the sigil over the name, which may take two lines ("Fortune / teller") on a narrow card */
+.cardHead {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  font-size: 14px;
+  line-height: 1.05;
+  text-align: center;
+  letter-spacing: -0.01em;
+}
+
+.cardSigil {
+  flex: 0 0 auto;
+  width: 15px;
+  height: 15px;
+  color: var(--rc);
+}
+
+.cardFig {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 86%;
+  margin-top: 4px;
+}
+
+.cardFig svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* a phone: sigils under their sides' badges, on one six-column grid (the landing's picker) */
+.sigils {
+  display: none;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 18px 0;
+}
+.sigilSide {
+  --band: var(--town);
+  --ink-f: var(--town-ink);
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: span 2;
+  justify-items: center;
+  row-gap: 10px;
+}
+.sigilSide[data-faction='villagers'] {
+  grid-column: 1 / -1;
+}
+.sigilSide[data-faction='wolves'] {
+  --band: var(--wolf);
+  --ink-f: var(--wolf-ink);
+}
+.sigilSide[data-faction='serial_killer'] {
+  --band: var(--sk);
+  --ink-f: var(--sk-ink);
+}
+.sigilSide[data-faction='neutral_benign'] {
+  --band: var(--benign);
+  --ink-f: var(--benign-ink);
+}
+.sigilBadge {
+  grid-column: 1 / -1;
+  justify-self: stretch;
+  height: 32px;
+  padding-bottom: 8px;
+  margin: 0 6px;
+  border-bottom: 1px solid rgba(36, 24, 12, 0.16);
+  box-sizing: content-box;
+}
+.sigilDisc {
+  composes: disc from '../../../../components/site/SigilDisc.module.css';
+  --disc: 42px;
+}
+
+/* the role being held (RolePreview): on the stub on a desktop, under the sigils on a phone */
+.preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: var(--font-serif);
+  text-align: center;
+}
+.preview[data-place='stub'] {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1.5px dotted rgba(36, 24, 12, 0.3);
+}
+.preview[data-place='field'] {
+  display: none;
+  margin-top: 20px;
+}
+.previewDoll {
+  position: relative;
+  width: 100%;
+  height: 200px;
+}
+.previewFigure,
+.blankDoll {
+  position: absolute;
+  inset: 0;
+  animation: arrive 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.previewFigure svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 10px 7px rgba(60, 40, 20, 0.3));
+}
+.blankDoll {
+  top: 6%;
+  width: 100%;
+  height: 94%;
+  fill: #96805a;
+  opacity: 0.42;
+  animation-name: arrive-blank;
+}
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+@keyframes arrive-blank {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 0.42;
+  }
+}
+.previewHead {
+  --ink-f: var(--town-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+  color: var(--ink-f);
+}
+.previewHead[data-faction='wolves'] {
+  --ink-f: var(--wolf-ink);
+}
+.previewHead[data-faction='serial_killer'] {
+  --ink-f: var(--sk-ink);
+}
+.previewHead[data-faction='neutral_benign'] {
+  --ink-f: var(--benign-ink);
+}
+.previewMark,
+.previewSigil {
+  flex: none;
+  width: 24px;
+  height: 24px;
+}
+.previewName {
+  color: var(--ink);
+  font-size: 28px;
+  line-height: 1;
+}
+.previewLine {
+  margin-top: 10px;
+  color: var(--ink);
+  font-size: 16.5px;
+  line-height: 1.38;
+}
+.previewClear {
+  margin-top: 10px;
+  align-self: flex-start;
+}
+
+/* ---------- the stub ---------- */
+
+.stub {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 28px 30px 30px;
+  border-left: 2.5px dashed rgba(36, 24, 12, 0.38);
+  border-radius: 0 14px 14px 0;
+  background: rgba(80, 55, 20, 0.07);
+}
+
+/* the notches where the stub tears off */
+.stub::before,
+.stub::after {
+  content: '';
+  position: absolute;
+  left: -14px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--bg);
+}
+.stub::before {
+  top: -13px;
+}
+.stub::after {
+  bottom: -13px;
+}
+
+.punch {
+  position: absolute;
+  right: 26px;
+  top: 28px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bg);
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.8);
+}
+
+.stubKicker {
+  color: var(--ink2);
+  font-size: 16px;
+  font-style: italic;
+}
+
+.stubTitle {
+  margin: 2px 0 14px;
+  padding-right: 24px;
+  font-size: 34px;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.terms {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 14px;
+  margin: 0;
+  font-size: 17px;
+}
+
+.terms dt {
+  color: var(--ink2);
+}
+
+.terms dd {
+  margin: 0;
+  text-align: right;
+}
+
+.go {
+  margin-top: auto;
+  padding-top: 24px;
+}
+
+.go button[type='submit'] {
+  min-height: 54px;
+  font-size: 17px;
+}
+
+.alert {
+  margin-bottom: 14px;
+}
+
+.fine {
+  margin: 12px 0 0;
+  color: var(--ink2);
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+/* ---------- narrow ---------- */
+
+@media (max-width: 980px) {
+  .ticket {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .body {
+    padding: 24px 18px;
+  }
+  .fld {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .stub {
+    border-left: 0;
+    border-top: 2.5px dashed rgba(36, 24, 12, 0.38);
+    border-radius: 0 0 14px 14px;
+    padding: 24px 18px 26px;
+  }
+  .stub::before,
+  .stub::after {
+    display: none;
+  }
+  .punch {
+    right: 18px;
+    top: 24px;
+  }
+  /* the stub drops under the fields, far from the role: the role shows under its picker */
+  .preview[data-place='stub'] {
+    display: none;
+  }
+  .preview[data-place='field'] {
+    display: flex;
+  }
+  .kinds {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 700px) {
+  .rail {
+    display: none;
+  }
+  /* the two kinds as stubs side by side (HangTag) */
+  .kinds {
+    padding-top: 0;
+    width: 100%;
+    flex-wrap: nowrap;
+    gap: 10px;
+  }
+  .cards {
+    display: none;
+  }
+  .sigils {
+    display: grid;
+  }
+  .previewDoll {
+    height: 150px;
+  }
+  .previewName {
+    font-size: 25px;
+  }
+  .previewLine {
+    font-size: 15.5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+  .previewFigure,
+  .blankDoll {
+    animation: none;
+  }
+}

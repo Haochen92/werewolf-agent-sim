@@ -5,6 +5,18 @@
 
 > **One-line claim set (read this first, then the rest qualifies it):** Static episodic memory measurably improves town play (**paired same-epoch A/B, N=30 on the frozen v5_0 store: the town decision-quality basket is significant — correct-elim p=0.028, healer-save p=0.005, mislynch-rate p=0.036 — with a +17→+33pp win lift across arms; win-rate itself reaches p=0.013 only on the reranked arm, +33pp**) — more than market sims, which are stateless. The agents **demonstrably learn across games** (a self-consolidating credit→synthesize→prune loop that updates the store from outcomes). Whether that *compounding* further improves play is **still open**: the loop run built to test it accidentally enabled memory for *all* factions (not the intended town-only), confounding the town signal in an arms race — though it does, by accident, show a **tentative positive compounding signal for *wolf* memory**. The durable deliverable is the **eval instrument plus the rigor around it**: it caught **two** invalid runs (a distorted baseline, then a config slip) and a halo in my own first-pass analysis — honest negatives and retracted claims beat fragile positives.
 
+> **Scope addendum (2026-10-04): the agents in these games did not reason.** Game turns ran on
+> `gemini-3.1-flash-lite` at thinking level "minimal", a 128-token budget on Vertex. A later probe found
+> that this model, asked for the game's structured output at that budget, reasons for 0 tokens. The
+> runtime fingerprints confirm "minimal" on every game record behind this report: the June static A/B
+> (398 records) and all v7 loop runs (222), and also the v7 endpoint run after it (60). Both arms always
+> ran at the same level, so each ON−OFF comparison is still fair. What changes is the scope. Every memory
+> result here, positive or negative, is a result for a player that does not reason, and none of these
+> runs says what memory does for one that does. We never considered this while designing the runs: the
+> fingerprint recorded the setting, and nobody checked whether it produced any reasoning. Detail, the
+> run-by-run table and the untested hypotheses are in `evidence/credit/blindspot_fix/experiment_log.md`
+> §⑦.
+
 ---
 
 ## 1. Motivation

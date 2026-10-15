@@ -1,0 +1,122 @@
+/* The 16:9 box. Its width comes from the parent; its height from the aspect ratio. */
+.box {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #0c0a07;
+  color: var(--bone);
+  /* 0 until the box has been measured: nothing shows at the wrong size, even for a frame */
+  --stage-scale: 0;
+  /* how much of the bleed shows left of the world, in units (Stage.tsx): the seat rail's room */
+  --spare: 0px;
+  /* and right of it (the box is centred, so the same): the side slot grows out into it as the
+     rail does on the left, up to the rail's own reach for nine seats (310 − 192 units; units.ts
+     SLOT_REACH), so the wing and the pane stand alike on a phone (2026-09-30) */
+  --slot-reach: min(var(--spare), 118px);
+}
+
+/* fit: 'contain' — the box sits in a wrapper that fills the parent and takes whichever of
+   the parent's width or height binds first */
+.fit {
+  width: 100%;
+  height: 100%;
+  container-type: size;
+  display: grid;
+  place-items: center;
+}
+/* The house: the box's height, as wide as the parent up to 21:9, clipping. The world draws
+   past its own edges into it (the bleed, stage_architecture.md §3); beyond 21:9 the parent's
+   bars return. Its cq units are the .fit's, so the box inside sizes exactly as before. */
+.house {
+  position: relative;
+  width: min(100cqw, 100cqh * 21 / 9);
+  height: min(100cqh, 100cqw * 9 / 16);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: #0c0a07;
+}
+.house > .box {
+  width: min(100cqw, 100cqh * 16 / 9);
+  overflow: visible;
+}
+
+/* The world: 1600x900 px, scaled once. Inside it, every px is a unit. */
+.world {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1600px;
+  height: 900px;
+  transform: scale(var(--stage-scale));
+  transform-origin: 0 0;
+  /* Keep the scaled stage on a stable compositor layer while descendants move and
+     crossfade. All scene lighting still blends inside this shared world. */
+  will-change: transform;
+  /* how much the words people read grow when the stage is drawn small (a phone): 1 at
+     full size, up to 1.8 (stage_architecture.md §3 "Legibility"); the guard keeps the scale's
+     0 before the first measure from dividing by zero */
+  --legible: clamp(1, calc(0.75 / max(var(--stage-scale, 1), 0.01)), 1.8);
+  /* the second tier: labels, captions, headings and buttons grow less than the words people
+     read (--said, --note), so on a phone the text grows and the chrome around it stays slim */
+  --legible-ui: min(var(--legible), 1.3);
+  /* 0 at full size, 1 once the type has grown: what a box does only on a phone */
+  --grown: clamp(0, calc((var(--legible) - 1) * 1000), 1);
+  /* the HUD's type and chip sizes, the benches' container units (1cqw = 16 units) */
+  /* the words people read land at 17–18 css px on a phone (0.75 × 23.5; owner, 2026-09-29) */
+  --said: calc(23.5px * var(--legible));
+  --note: calc(18.4px * var(--legible));
+  --meta: calc(16px * var(--legible-ui));
+  --chip: 60.8px;
+  --gap: 12.8px;
+  /* the bleed past each side, and where it reaches the house's dark: keep equal to units.ts
+     BLEED and BLEED_DARK (the paint strips read those; the wing and drawer read these) */
+  --bleed: 300px;
+  --bleed-dark: 250px;
+  /* the HUD's two voices (fonts.ts): the body for what is said and read, the display for what
+     is engraved or announced */
+  --font-body: var(--font-stage-body, Literata), Georgia, serif;
+  --font-display: var(--font-stage-display, 'Young Serif'), Georgia, serif;
+  font-family: var(--font-body);
+}
+
+/* The camera: every layer but the HUD, scaled together about the world's top-left (the
+   scale-about-a-point is written as a translate plus this). */
+.camera {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+  /* The wide shot resolves to transform:none. Retain its compositing/stacking
+     boundary there too, rather than rebuilding it at either end of a zoom. */
+  will-change: transform;
+  pointer-events: none;
+}
+/* On a phone (Stage.tsx `data-small`) the camera is not kept on a layer: a layer of its own
+   makes the grade and the HUD, drawn after it, layers too, about 70 MB each at the phone's
+   resolution (Safari's Layers panel, build log §8.3). A zoom there builds its layer as it
+   starts, which is the lesser cost. `will-change` also made the camera a stacking context,
+   which keeps the stand's and the rooms' own z-indexes under the HUD: `isolation` keeps that
+   without the layer. */
+[data-small] .camera {
+  will-change: auto;
+  isolation: isolate;
+}
+
+/* Each layer fills the world. Layers stack by document order and deliberately create no
+   stacking context of their own, so the light's blend modes reach the paint beneath. */
+.layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+/* A layer never catches clicks itself (it covers the whole stage); what is in it can. */
+.layer > * {
+  pointer-events: auto;
+}
+.layer[data-layer='paint'] > *,
+.layer[data-layer='haze'] > *,
+.layer[data-layer='light'] > *,
+.layer[data-layer='grade'] > * {
+  pointer-events: none;
+}

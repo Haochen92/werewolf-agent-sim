@@ -12,14 +12,14 @@ from typing import Any
 
 from langchain_core.runnables import RunnableConfig
 
-from Agents.state import (
-    HealerDayState,
-    InvestigatorDayState,
-    VillagerDayState,
-    WolfDayState,
-)
+from Agents.schemas.roles import ROLE_SPECS, TOWN
+from Agents.state import DayActorState
 
-_DayPayload = VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState
+# Town's day lessons are extracted and synthesized for the owner to review, never retrieved in play
+# (plan 2026-10-11 §9.1): advice the owner approves becomes fixed role-prompt text instead.
+TOWN_DAY_PHASES = frozenset({"day_discussion", "day_vote"})
+
+_DayPayload = DayActorState
 
 
 @dataclass(frozen=True)
@@ -55,6 +55,10 @@ class RetrievalPlan:
     SP-only, applied AT the cap. Default ON — inert on any store where an unproven never co-occurs with an
     all-proven kept set (fresh/off-arm stores have no proven SPs → identity), so ON is safe; an explicit
     ``sp_exploration_slot: False`` on the runnable config restores today's cap exactly."""
+    stage_filter: bool
+    """Whether to leave out retrieved memory learned at another stage of the game (alive bucket,
+    partner lost, uses left): the whole cell is searched and filtered before the cap, which refills
+    from same-stage lessons (decisions §11). Default off."""
     reranking: bool
     """Derived: observation_reranking or strategy_point_reranking."""
     needs_wide_retrieval: bool
@@ -66,6 +70,7 @@ def retrieval_plan(
     config: RunnableConfig,
     payload: _DayPayload,
     active_store: Any,
+    action_phase: str | None = None,
 ) -> RetrievalPlan:
     """Read the runnable config + payload state into a concrete retrieval policy for this turn."""
     role = payload["player_role"]
@@ -76,6 +81,8 @@ def retrieval_plan(
         skip_reason = "no_store"
     elif not _memory_enabled_for_role(config, role):
         skip_reason = "memory_disabled_for_role"
+    elif action_phase in TOWN_DAY_PHASES and ROLE_SPECS.get(role) and ROLE_SPECS[role].side == TOWN:
+        skip_reason = "town_day"
     else:
         skip_reason = None
 
@@ -98,6 +105,7 @@ def retrieval_plan(
         dimension_gating=dimension_gating,
         sp_proven_tiering=sp_proven_tiering,
         sp_exploration_slot=sp_exploration_slot,
+        stage_filter=bool((config.get("configurable", {}) if config else {}).get("stage_filter")),
         reranking=reranking,
         needs_wide_retrieval=reranking or filtering or dimension_gating,
     )

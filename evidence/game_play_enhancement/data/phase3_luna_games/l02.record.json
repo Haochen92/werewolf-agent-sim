@@ -1,0 +1,3879 @@
+{
+ "game_id": "phase3-l02-a5ded711",
+ "winner": "villagers",
+ "current_day": 7,
+ "duration_seconds": 1449.8,
+ "roles": {
+  "player_1": "trailseer",
+  "player_2": "sentinel",
+  "player_3": "sigilist",
+  "player_4": "fortune_teller",
+  "player_5": "investigator",
+  "player_6": "chanteuse",
+  "player_7": "necromancer",
+  "player_8": "vigilante",
+  "player_9": "illusionist",
+  "player_10": "healer"
+ },
+ "lineup": [
+  "investigator",
+  "sentinel",
+  "trailseer",
+  "vigilante",
+  "sigilist",
+  "healer",
+  "chanteuse",
+  "illusionist",
+  "necromancer",
+  "fortune_teller"
+ ],
+ "neutral_result": "won (4 points)",
+ "speculator_pick": null,
+ "fortune_points": 4,
+ "uses_left": {
+  "investigator": 0,
+  "sentinel": 0,
+  "vigilante": 2,
+  "sigilist": 0,
+  "illusionist": 0,
+  "fortune_teller": 0
+ },
+ "night_actions": [
+  {
+   "day": 1,
+   "actor": "player_4",
+   "action": "bet",
+   "target": "player_1",
+   "outcome": "player_1 did not die tonight: no points.",
+   "result": "missed",
+   "seen": []
+  },
+  {
+   "day": 1,
+   "actor": "player_10",
+   "action": "protect",
+   "target": "player_1",
+   "outcome": "No attack on player_1 was announced.",
+   "result": "no_attack",
+   "seen": []
+  },
+  {
+   "day": 1,
+   "actor": "player_5",
+   "action": "investigate",
+   "target": "player_9",
+   "outcome": "player_9 reads Suspicious.",
+   "result": "suspicious",
+   "seen": [
+    "player_9"
+   ]
+  },
+  {
+   "day": 1,
+   "actor": "wolves",
+   "action": "kill",
+   "target": "player_8",
+   "outcome": "player_8 died. Their role was concealed.",
+   "result": "killed",
+   "seen": []
+  },
+  {
+   "day": 1,
+   "actor": "player_6",
+   "action": "block",
+   "target": "player_1",
+   "outcome": "player_1 was roleblocked tonight.",
+   "result": "blocked",
+   "seen": []
+  },
+  {
+   "day": 1,
+   "actor": "player_9",
+   "action": "conceal",
+   "target": null,
+   "outcome": "You concealed player_8's body. They were a vigilante.",
+   "result": "concealed",
+   "seen": [
+    "vigilante"
+   ]
+  },
+  {
+   "day": 1,
+   "actor": "player_2",
+   "action": "watch",
+   "target": "player_7",
+   "outcome": "No one visited player_7 tonight.",
+   "result": "seen",
+   "seen": []
+  },
+  {
+   "day": 1,
+   "actor": "player_1",
+   "action": "follow",
+   "target": "player_6",
+   "outcome": "You were roleblocked: your action was not carried out and you learned nothing tonight.",
+   "result": "roleblocked",
+   "seen": []
+  },
+  {
+   "day": 2,
+   "actor": "player_4",
+   "action": "bet",
+   "target": "player_5",
+   "outcome": "player_5 did not die tonight: no points.",
+   "result": "missed",
+   "seen": []
+  },
+  {
+   "day": 2,
+   "actor": "player_10",
+   "action": "protect",
+   "target": "player_5",
+   "outcome": "player_5 was attacked by a reanimated wolf and the wolves, and your protection saved them.",
+   "result": "saved",
+   "seen": []
+  },
+  {
+   "day": 2,
+   "actor": "player_5",
+   "action": "investigate",
+   "target": "player_6",
+   "outcome": "player_6 reads Suspicious.",
+   "result": "suspicious",
+   "seen": [
+    "player_6"
+   ]
+  },
+  {
+   "day": 2,
+   "actor": "player_7",
+   "action": "kill",
+   "target": "player_5",
+   "outcome": "Through player_9's body: player_5 survived: the healer saved them.",
+   "result": "saved",
+   "seen": [
+    "player_9"
+   ]
+  },
+  {
+   "day": 2,
+   "actor": "wolves",
+   "action": "kill",
+   "target": "player_5",
+   "outcome": "player_5 survived: the healer saved them.",
+   "result": "saved",
+   "seen": []
+  },
+  {
+   "day": 2,
+   "actor": "player_6",
+   "action": "block",
+   "target": "player_2",
+   "outcome": "player_2 was roleblocked tonight.",
+   "result": "blocked",
+   "seen": []
+  },
+  {
+   "day": 2,
+   "actor": "player_2",
+   "action": "watch",
+   "target": "player_4",
+   "outcome": "You were roleblocked: your action was not carried out and you learned nothing tonight.",
+   "result": "roleblocked",
+   "seen": []
+  },
+  {
+   "day": 2,
+   "actor": "player_1",
+   "action": "follow",
+   "target": "player_2",
+   "outcome": "player_2 visited no one tonight.",
+   "result": "seen",
+   "seen": []
+  },
+  {
+   "day": 3,
+   "actor": "player_4",
+   "action": "bet",
+   "target": "player_10",
+   "outcome": "player_10 died and was a healer: two points.",
+   "result": "scored_2",
+   "seen": []
+  },
+  {
+   "day": 3,
+   "actor": "player_7",
+   "action": "kill",
+   "target": "player_10",
+   "outcome": "Through player_9's body: player_10 died, and you hid their role: they were a healer.",
+   "result": "killed",
+   "seen": [
+    "player_9",
+    "player_10"
+   ]
+  },
+  {
+   "day": 3,
+   "actor": "player_2",
+   "action": "watch",
+   "target": "player_5",
+   "outcome": "Tonight player_5 was visited by player_3 and player_10.",
+   "result": "seen",
+   "seen": [
+    "player_3",
+    "player_10"
+   ]
+  },
+  {
+   "day": 3,
+   "actor": "player_3",
+   "action": "sigil",
+   "target": "player_5",
+   "outcome": "Your sigil had no effect.",
+   "result": "miss",
+   "seen": []
+  },
+  {
+   "day": 3,
+   "actor": "player_1",
+   "action": "follow",
+   "target": "player_2",
+   "outcome": "Tonight player_2 visited player_5.",
+   "result": "seen",
+   "seen": [
+    "player_5"
+   ]
+  },
+  {
+   "day": 4,
+   "actor": "player_4",
+   "action": "bet",
+   "target": "player_4",
+   "outcome": "You bet on yourself: an attack on you tonight fails, and nothing is scored.",
+   "result": "self_bet",
+   "seen": []
+  },
+  {
+   "day": 4,
+   "actor": "player_7",
+   "action": "kill",
+   "target": "player_1",
+   "outcome": "Through player_9's body: player_1 died. They were a trailseer.",
+   "result": "killed",
+   "seen": [
+    "player_9"
+   ]
+  },
+  {
+   "day": 5,
+   "actor": "player_4",
+   "action": "bet",
+   "target": "player_4",
+   "outcome": "You bet on yourself: an attack on you tonight fails, and nothing is scored.",
+   "result": "self_bet",
+   "seen": []
+  },
+  {
+   "day": 5,
+   "actor": "player_7",
+   "action": "kill",
+   "target": "player_4",
+   "outcome": "Through player_9's body: player_4 was unharmed: immune to night kills tonight. The public was told nothing about this attack.",
+   "result": "immune",
+   "seen": [
+    "player_9"
+   ]
+  },
+  {
+   "day": 6,
+   "actor": "player_4",
+   "action": "bet",
+   "target": "player_5",
+   "outcome": "player_5 died and was a investigator: two points.",
+   "result": "scored_2",
+   "seen": []
+  },
+  {
+   "day": 6,
+   "actor": "player_7",
+   "action": "kill",
+   "target": "player_5",
+   "outcome": "Through player_9's body: player_5 died. They were a investigator.",
+   "result": "killed",
+   "seen": [
+    "player_9"
+   ]
+  },
+  {
+   "day": 6,
+   "actor": "player_3",
+   "action": "sigil",
+   "target": "player_4",
+   "outcome": "Your sigil had no effect.",
+   "result": "miss",
+   "seen": []
+  }
+ ],
+ "day_channel": [
+  {
+   "day": 1,
+   "seq": 0,
+   "player": "player_1",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 1,
+   "seq": 1,
+   "player": "player_2",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 1,
+   "seq": 2,
+   "player": "player_3",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 1,
+   "seq": 3,
+   "player": "player_4",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 1,
+   "seq": 4,
+   "player": "player_5",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 1,
+   "seq": 5,
+   "player": "player_6",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 1,
+   "seq": 6,
+   "player": "player_7",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 1,
+   "seq": 7,
+   "player": "player_8",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 1,
+   "seq": 8,
+   "player": "player_9",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 1,
+   "seq": 9,
+   "player": "player_10",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 1,
+   "seq": 10,
+   "player": "game_master",
+   "message": "\nThere is no vote on day 1, so no one voted and no one is eliminated.",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 1,
+   "seq": 11,
+   "player": "game_master",
+   "message": "Night of day 1: player_8 was killed by the wolves last night. Their role is hidden by an illusionist.",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 0,
+   "player": "player_1",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 1,
+   "player": "player_2",
+   "message": "I\u2019m the Sentinel. I watched player_7 last night, and no one visited them.",
+   "addressed_targets": [],
+   "claim": "sentinel",
+   "day_round": "opening",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": "night_action"
+  },
+  {
+   "day": 2,
+   "seq": 2,
+   "player": "player_3",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 3,
+   "player": "player_4",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 4,
+   "player": "player_5",
+   "message": "I\u2019m the Investigator. I checked player_9 last night and got Suspicious, so they\u2019re a wolf; we should take that result seriously when deciding today\u2019s vote.",
+   "addressed_targets": [],
+   "claim": "investigator",
+   "day_round": "opening",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": "night_action"
+  },
+  {
+   "day": 2,
+   "seq": 5,
+   "player": "player_6",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 6,
+   "player": "player_7",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 7,
+   "player": "player_9",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 8,
+   "player": "player_10",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 9,
+   "player": "player_1",
+   "message": "I was roleblocked last night, so at least one action was stopped. Player_5\u2019s check could still be valid, but it\u2019s a claim, not confirmation; player_9, can you respond directly to the Suspicious result before we decide on a vote?",
+   "addressed_targets": [
+    {
+     "target": "player_9",
+     "addressed_form": "question",
+     "stance": "neutral"
+    }
+   ],
+   "claim": "none",
+   "day_round": "proactive",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 1
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 10,
+   "player": "player_9",
+   "message": "player_1, I deny being a wolf. I\u2019m the Investigator, and I checked player_5 last night: Not suspicious. That\u2019s a direct counterclaim, so don\u2019t treat either result as confirmed yet. player_5, why spend your first check on me? We should compare both claims before deciding today\u2019s vote.",
+   "addressed_targets": [
+    {
+     "target": "player_1",
+     "addressed_form": "response",
+     "stance": "defense"
+    },
+    {
+     "target": "player_5",
+     "addressed_form": "question",
+     "stance": "accusation"
+    }
+   ],
+   "claim": "investigator",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_1"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 11,
+   "player": "player_5",
+   "message": "I chose you because I had no results yet and needed a first target; your answer doesn\u2019t change what I learned. I\u2019m the Investigator, and my actual check on you was Suspicious. Since I\u2019m the Investigator, your claim to be one too is false\u2014your claimed Not suspicious result on me isn\u2019t a reason to spare you. Vote player_9.",
+   "addressed_targets": [
+    {
+     "target": "player_9",
+     "addressed_form": "response",
+     "stance": "accusation"
+    }
+   ],
+   "claim": "investigator",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_9"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 12,
+   "player": "player_9",
+   "message": "I picked you as a blind first check; there wasn\u2019t a lead to prioritize. There\u2019s only one Investigator, so this is a direct claim conflict, and the result I got on you was Not suspicious. Your accusation doesn\u2019t independently verify your result, so I don\u2019t think we should treat it as settled just because you stated it confidently.",
+   "addressed_targets": [
+    {
+     "target": "player_5",
+     "addressed_form": "response",
+     "stance": "defense"
+    }
+   ],
+   "claim": "investigator",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_5"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 13,
+   "player": "player_3",
+   "message": "P9\u2019s claimed Not suspicious result only rebuts P5\u2019s Suspicious result if P9 is actually the Investigator; it doesn\u2019t independently clear P5. I\u2019d lean toward voting player_9, since P5\u2019s claim at least offers a direct wolf check, while keeping in mind that the claim itself is still unverified.",
+   "addressed_targets": [
+    {
+     "target": "player_9",
+     "addressed_form": "mention",
+     "stance": "accusation"
+    },
+    {
+     "target": "player_5",
+     "addressed_form": "mention",
+     "stance": "defense"
+    }
+   ],
+   "claim": "none",
+   "day_round": "proactive",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 1
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 14,
+   "player": "player_9",
+   "message": "player_3, that distinction is fair: my result only rebuts player_5 if I\u2019m actually the Investigator. But player_5\u2019s Suspicious result also depends on their claim being true, and my check on them was Not suspicious. We have a direct claim conflict, not a confirmed wolf result, so voting me means choosing which unverified claim to trust.",
+   "addressed_targets": [
+    {
+     "target": "player_3",
+     "addressed_form": "response",
+     "stance": "defense"
+    },
+    {
+     "target": "player_5",
+     "addressed_form": "mention",
+     "stance": "accusation"
+    }
+   ],
+   "claim": "investigator",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_3"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 15,
+   "player": "player_5",
+   "message": "I checked you first because I had no leads yet; it was a blind check, not a special suspicion. But the result was Suspicious, and with me holding the only Investigator role, your claimed check on me cannot be genuine\u2014please don't use it as a reason to clear yourself.",
+   "addressed_targets": [
+    {
+     "target": "player_9",
+     "addressed_form": "response",
+     "stance": "defense"
+    }
+   ],
+   "claim": "investigator",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_9"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 16,
+   "player": "player_4",
+   "message": "One important wrinkle: player_8\u2019s role is hidden, so the Investigator could already be dead. That means neither player_5\u2019s nor player_9\u2019s claim is guaranteed to be genuine; I\u2019d weigh the reported Suspicious result as evidence, but not treat the claim conflict as proof by itself.",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "proactive",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 1
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 17,
+   "player": "player_6",
+   "message": "Building on player_4\u2019s point, the hidden role means we can\u2019t assume either Investigator claim is genuine. player_2\u2019s watch on player_7 doesn\u2019t intersect either claimed check, so it doesn\u2019t corroborate one over the other; if both claims stay in play, have them check the same target next night so we can compare the results.",
+   "addressed_targets": [
+    {
+     "target": "player_4",
+     "addressed_form": "mention",
+     "stance": "agreement"
+    }
+   ],
+   "claim": "none",
+   "day_round": "proactive",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 1
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 18,
+   "player": "player_7",
+   "message": "Player_6\u2019s same-target test might catch a changing story, but matching announced results still wouldn\u2019t verify either Investigator claim\u2014the results are private. If they commit to next night\u2019s targets now, we can at least compare those claims with any actual visit evidence rather than treating a reported color as proof.",
+   "addressed_targets": [
+    {
+     "target": "player_6",
+     "addressed_form": "mention",
+     "stance": "neutral"
+    }
+   ],
+   "claim": "none",
+   "day_round": "proactive",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 1
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 19,
+   "player": "player_10",
+   "message": "Building on player_7\u2019s visit-evidence idea, have player_5 and player_9 commit to checking the same target tonight, and ask player_2 to watch that target if they still have a watch. That could show whether either claimant actually visited, though it still wouldn\u2019t prove what result they got.",
+   "addressed_targets": [
+    {
+     "target": "player_5",
+     "addressed_form": "question",
+     "stance": "neutral"
+    },
+    {
+     "target": "player_9",
+     "addressed_form": "question",
+     "stance": "neutral"
+    },
+    {
+     "target": "player_2",
+     "addressed_form": "question",
+     "stance": "neutral"
+    }
+   ],
+   "claim": "none",
+   "day_round": "proactive",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 1
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 20,
+   "player": "player_5",
+   "message": "Player_10, having player_2 watch a shared target could confirm a visit, but it still wouldn\u2019t tell us either check\u2019s result. My check on player_9 was Suspicious, which means wolf under these rules; waiting for another night gives them time to kill. I\u2019m voting player_9 today.",
+   "addressed_targets": [
+    {
+     "target": "player_10",
+     "addressed_form": "response",
+     "stance": "neutral"
+    },
+    {
+     "target": "player_9",
+     "addressed_form": "mention",
+     "stance": "accusation"
+    }
+   ],
+   "claim": "investigator",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_10"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 21,
+   "player": "player_9",
+   "message": "Player_5, I stand by my check: Not suspicious. Your result is still a claim, not an independently verified fact. Player_10, let\u2019s make your visit test specific: we can both commit to checking player_4 tonight, with player_2 watching player_4 if they\u2019re willing to spend their remaining watch. A seen visit can test whether the checks were carried out, though it can\u2019t prove either result.",
+   "addressed_targets": [
+    {
+     "target": "player_5",
+     "addressed_form": "response",
+     "stance": "defense"
+    },
+    {
+     "target": "player_10",
+     "addressed_form": "response",
+     "stance": "agreement"
+    }
+   ],
+   "claim": "investigator",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_5",
+     "player_10"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 22,
+   "player": "player_2",
+   "message": "I have one watch left, and I\u2019ll watch player_4 tonight if player_5 and player_9 both commit to checking them. That can confirm a visit, not a check result; if player_4 is the concealed wolf-kill target, the carrier\u2019s visit may be hidden, so no visitor wouldn\u2019t settle the dispute.",
+   "addressed_targets": [
+    {
+     "target": "player_10",
+     "addressed_form": "response",
+     "stance": "neutral"
+    },
+    {
+     "target": "player_9",
+     "addressed_form": "response",
+     "stance": "neutral"
+    }
+   ],
+   "claim": "sentinel",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_10"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 23,
+   "player": "game_master",
+   "message": "Before the vote: player_9 has been accused by player_5 and player_3. player_9 gets a last word.",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "closing",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 24,
+   "player": "player_9",
+   "message": "Player_5\u2019s result is a claim, just like mine; the fact that it says Suspicious doesn\u2019t make it independently confirmed. My check on player_5 came back Not suspicious, so we have conflicting claims, not a verified result that settles this. Player_3, I understand why you lean that way, but voting me means choosing which of two unverified claims to trust.",
+   "addressed_targets": [
+    {
+     "target": "player_5",
+     "addressed_form": "response",
+     "stance": "defense"
+    },
+    {
+     "target": "player_3",
+     "addressed_form": "response",
+     "stance": "defense"
+    }
+   ],
+   "claim": "investigator",
+   "day_round": "closing",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 25,
+   "player": "game_master",
+   "message": "\nHere's the vote result for day 2:\n  player_1 voted to eliminate player_9\n  player_2 voted to eliminate player_9\n  player_3 voted to eliminate player_9\n  player_4 voted to eliminate player_9\n  player_5 voted to eliminate player_9\n  player_6 voted to eliminate player_9\n  player_7 voted to eliminate player_9\n  player_9 voted to eliminate player_5\n  player_10 voted to eliminate player_9\nPlayer player_9 has been voted out and was a illusionist.\n",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 2,
+   "seq": 26,
+   "player": "game_master",
+   "message": "Night of day 2: player_5 was attacked by a reanimated wolf and the wolves but was saved by the healer!",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 0,
+   "player": "player_1",
+   "message": "I followed player_2 last night, and they visited no one.",
+   "addressed_targets": [
+    {
+     "target": "player_2",
+     "addressed_form": "mention",
+     "stance": "neutral"
+    }
+   ],
+   "claim": "trailseer",
+   "day_round": "opening",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": "night_action"
+  },
+  {
+   "day": 3,
+   "seq": 1,
+   "player": "player_2",
+   "message": "I was roleblocked last night, so my planned watch on player_4 produced no visitor list.",
+   "addressed_targets": [],
+   "claim": "sentinel",
+   "day_round": "opening",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": "night_action"
+  },
+  {
+   "day": 3,
+   "seq": 2,
+   "player": "player_3",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 3,
+   "player": "player_4",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 4,
+   "player": "player_5",
+   "message": "I\u2019m the Investigator, and my Night 2 check on player_6 came back Suspicious. That points to a wolf, though the reanimated wolf attack means an attacking Necromancer could also read Suspicious.",
+   "addressed_targets": [],
+   "claim": "investigator",
+   "day_round": "opening",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": "claim"
+  },
+  {
+   "day": 3,
+   "seq": 5,
+   "player": "player_6",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 6,
+   "player": "player_7",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 7,
+   "player": "player_10",
+   "message": "I'm the Healer. I protected player_5 last night, which matches the public report that they were saved.",
+   "addressed_targets": [],
+   "claim": "healer",
+   "day_round": "opening",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": "claim"
+  },
+  {
+   "day": 3,
+   "seq": 8,
+   "player": "player_3",
+   "message": "player_5's result makes player_6 a strong vote today: it could mean a wolf, or an attacking Necromancer, so it doesn't tell us which threat they are. Either way, player_6 is the clearest target we have right now.",
+   "addressed_targets": [
+    {
+     "target": "player_5",
+     "addressed_form": "mention",
+     "stance": "agreement"
+    },
+    {
+     "target": "player_6",
+     "addressed_form": "mention",
+     "stance": "accusation"
+    }
+   ],
+   "claim": "none",
+   "day_round": "proactive",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 1
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 9,
+   "player": "player_6",
+   "message": "player_3, the result doesn\u2019t distinguish me from the Necromancer, and last night\u2019s public report confirms a reanimated-wolf attack. Before voting, ask player_5 what evidence separates those possibilities; otherwise we\u2019re treating a claimed check as confirmed when it only narrows things to two threats.",
+   "addressed_targets": [
+    {
+     "target": "player_3",
+     "addressed_form": "response",
+     "stance": "defense"
+    }
+   ],
+   "claim": "none",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_3"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 10,
+   "player": "player_4",
+   "message": "One clarification: player_1 following player_2 and seeing no visit is consistent with a blocked action, but it doesn't show who blocked them or verify the Sentinel claim. The block itself is a visit to player_2; following player_2 only reveals whom player_2 visited.",
+   "addressed_targets": [
+    {
+     "target": "player_1",
+     "addressed_form": "mention",
+     "stance": "neutral"
+    },
+    {
+     "target": "player_2",
+     "addressed_form": "mention",
+     "stance": "neutral"
+    }
+   ],
+   "claim": "none",
+   "day_round": "proactive",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 1
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 11,
+   "player": "player_7",
+   "message": "One thing that strengthens player_5's claim is that their Night 1 Suspicious result on player_9 matches the role the Game Master revealed. That makes today's check worth taking seriously, though it still doesn't distinguish a wolf from an attacking Necromancer.",
+   "addressed_targets": [
+    {
+     "target": "player_5",
+     "addressed_form": "mention",
+     "stance": "defense"
+    },
+    {
+     "target": "player_6",
+     "addressed_form": "mention",
+     "stance": "accusation"
+    }
+   ],
+   "claim": "none",
+   "day_round": "proactive",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 1
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 12,
+   "player": "player_6",
+   "message": "player_7, that first result is real support for player_5\u2019s Investigator claim, since player_9 was revealed as a wolf. It still doesn\u2019t settle what I am: the check reads Suspicious for either a wolf or a Necromancer attacking that night, and the public report confirms a reanimated-wolf attack occurred.",
+   "addressed_targets": [
+    {
+     "target": "player_7",
+     "addressed_form": "response",
+     "stance": "defense"
+    }
+   ],
+   "claim": "none",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_7"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 13,
+   "player": "player_1",
+   "message": "One detail sharpens player_6\u2019s alternative: the reanimated-wolf attack means the Necromancer acted last night, and player_9\u2019s revealed role was available to use; player_8\u2019s hidden role wasn\u2019t. So player_5\u2019s Suspicious result could fit an attacking Necromancer, not just a wolf, though it doesn\u2019t tell us which player the Necromancer is.",
+   "addressed_targets": [
+    {
+     "target": "player_5",
+     "addressed_form": "mention",
+     "stance": "neutral"
+    },
+    {
+     "target": "player_6",
+     "addressed_form": "mention",
+     "stance": "neutral"
+    }
+   ],
+   "claim": "none",
+   "day_round": "proactive",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 2
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 14,
+   "player": "player_2",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "proactive",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 2
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 15,
+   "player": "player_5",
+   "message": "I can\u2019t separate those possibilities: my check only tells us player_6 was Suspicious, which fits either a wolf or an attacking Necromancer. player_1\u2019s point establishes that the Necromancer could use player_9\u2019s revealed body, but not that player_6 is the one who did it. I still think player_6 is a defensible vote because either role is an enemy, but we shouldn\u2019t call them a confirmed wolf.",
+   "addressed_targets": [
+    {
+     "target": "player_6",
+     "addressed_form": "response",
+     "stance": "neutral"
+    },
+    {
+     "target": "player_1",
+     "addressed_form": "mention",
+     "stance": "agreement"
+    }
+   ],
+   "claim": "investigator",
+   "day_round": "proactive",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 2
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 16,
+   "player": "player_10",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "proactive",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 2
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 17,
+   "player": "game_master",
+   "message": "Before the vote: player_6 has been accused by player_3 and player_7. player_6 gets a last word.",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "closing",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 18,
+   "player": "player_6",
+   "message": "Player_3 and player_7, the reanimated-wolf attack confirms the Necromancer acted, but it doesn't show that I was the one using that body. Player_5 has said their check can't distinguish that possibility from a wolf, so this result narrows the possibilities without proving which one I am.",
+   "addressed_targets": [
+    {
+     "target": "player_3",
+     "addressed_form": "response",
+     "stance": "defense"
+    },
+    {
+     "target": "player_7",
+     "addressed_form": "response",
+     "stance": "defense"
+    }
+   ],
+   "claim": "none",
+   "day_round": "closing",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 19,
+   "player": "game_master",
+   "message": "\nHere's the vote result for day 3:\n  player_1 voted to eliminate player_6\n  player_2 voted to eliminate player_6\n  player_3 voted to eliminate player_6\n  player_4 voted to eliminate player_6\n  player_5 voted to eliminate player_6\n  player_6 voted to eliminate player_5\n  player_7 voted to eliminate player_6\n  player_10 voted to eliminate player_6\nPlayer player_6 has been voted out and was a chanteuse.\n",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 3,
+   "seq": 20,
+   "player": "game_master",
+   "message": "Night of day 3: player_10 was killed by a reanimated wolf last night. Their role is hidden by a reanimated illusionist.",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 4,
+   "seq": 0,
+   "player": "player_1",
+   "message": "I followed player_2 last night, and they visited player_5. That fits player_2's Sentinel claim, though it doesn't confirm what action they took.",
+   "addressed_targets": [
+    {
+     "target": "player_2",
+     "addressed_form": "mention",
+     "stance": "neutral"
+    },
+    {
+     "target": "player_5",
+     "addressed_form": "mention",
+     "stance": "neutral"
+    }
+   ],
+   "claim": "trailseer",
+   "day_round": "opening",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": "night_action"
+  },
+  {
+   "day": 4,
+   "seq": 1,
+   "player": "player_2",
+   "message": "I watched player_5 last night; player_3 and player_10 visited them. That tells us who went there, not what either of them did.",
+   "addressed_targets": [
+    {
+     "target": "player_3",
+     "addressed_form": "mention",
+     "stance": "neutral"
+    },
+    {
+     "target": "player_5",
+     "addressed_form": "mention",
+     "stance": "neutral"
+    },
+    {
+     "target": "player_10",
+     "addressed_form": "mention",
+     "stance": "neutral"
+    }
+   ],
+   "claim": "sentinel",
+   "day_round": "opening",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": "night_action"
+  },
+  {
+   "day": 4,
+   "seq": 2,
+   "player": "player_3",
+   "message": "I\u2019m the Sigilist. I placed a sigil on player_5 last night, and it had no effect; that doesn\u2019t tell us whether they didn\u2019t attack or were protected by night immunity.",
+   "addressed_targets": [
+    {
+     "target": "player_5",
+     "addressed_form": "mention",
+     "stance": "neutral"
+    }
+   ],
+   "claim": "sigilist",
+   "day_round": "opening",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": "claim"
+  },
+  {
+   "day": 4,
+   "seq": 3,
+   "player": "player_4",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 4,
+   "seq": 4,
+   "player": "player_5",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 4,
+   "seq": 5,
+   "player": "player_7",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 4,
+   "seq": 6,
+   "player": "player_4",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "proactive",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 1
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 4,
+   "seq": 7,
+   "player": "player_5",
+   "message": "Player_3, I had no attack last night\u2014my checks are spent\u2014so your sigil having no effect is exactly what I\u2019d expect, though it doesn\u2019t verify the claim. I\u2019d treat player_1 and player_2\u2019s matching accounts as support for the visit reports, not proof of their roles.",
+   "addressed_targets": [
+    {
+     "target": "player_3",
+     "addressed_form": "response",
+     "stance": "neutral"
+    },
+    {
+     "target": "player_1",
+     "addressed_form": "mention",
+     "stance": "neutral"
+    },
+    {
+     "target": "player_2",
+     "addressed_form": "mention",
+     "stance": "neutral"
+    }
+   ],
+   "claim": "investigator",
+   "day_round": "proactive",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 1
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 4,
+   "seq": 8,
+   "player": "player_7",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "proactive",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 1
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 4,
+   "seq": 9,
+   "player": "player_1",
+   "message": "player_2, my follow confirms you visited player_5, but your watch report listed only player_3 and player_10. Does your Sentinel result exclude your own visit? If it should include everyone, that omission needs explaining before we rely on the report.",
+   "addressed_targets": [
+    {
+     "target": "player_2",
+     "addressed_form": "question",
+     "stance": "neutral"
+    }
+   ],
+   "claim": "none",
+   "day_round": "proactive",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 2
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 4,
+   "seq": 10,
+   "player": "player_2",
+   "message": "You\u2019re right: under the rules, my own watch should count as a visit, so my list was incomplete. I can\u2019t explain that omission, and you shouldn\u2019t treat my report as a fully reliable Sentinel result; the names I reported were player_3 and player_10.",
+   "addressed_targets": [
+    {
+     "target": "player_1",
+     "addressed_form": "response",
+     "stance": "neutral"
+    }
+   ],
+   "claim": "sentinel",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_1"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 4,
+   "seq": 11,
+   "player": "player_3",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "proactive",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 2
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 4,
+   "seq": 12,
+   "player": "player_4",
+   "message": "Since player_2\u2019s watch list was incomplete, I wouldn\u2019t use player_3 and player_10 appearing on it as evidence against either of them. Their visits have plausible explanations from their claims; the concrete issue is that player_2\u2019s result can\u2019t reliably support or clear anyone.",
+   "addressed_targets": [
+    {
+     "target": "player_2",
+     "addressed_form": "mention",
+     "stance": "accusation"
+    }
+   ],
+   "claim": "none",
+   "day_round": "proactive",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 2
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 4,
+   "seq": 13,
+   "player": "player_2",
+   "message": "Player_4, I won\u2019t use that incomplete list to accuse or clear player_3 or player_10. Player_1\u2019s follow confirms I went to player_5, but doesn\u2019t verify the other names on my result. Separately, the night 3 reanimated-wolf attack and concealment confirm the Necromancer is active, so we should focus on narrowing down who used that body.",
+   "addressed_targets": [
+    {
+     "target": "player_4",
+     "addressed_form": "response",
+     "stance": "agreement"
+    }
+   ],
+   "claim": "sentinel",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_4"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 4,
+   "seq": 14,
+   "player": "player_7",
+   "message": "The omission is especially awkward because the missing visitor is player_2 themself: that visit is independently confirmed, and a Sentinel watch should have included it. The other names in the report fit player_3\u2019s sigil claim and player_10\u2019s healer claim, so I wouldn\u2019t throw the whole list out\u2014but player_2 still needs to explain why their own visit vanished.",
+   "addressed_targets": [
+    {
+     "target": "player_2",
+     "addressed_form": "mention",
+     "stance": "accusation"
+    }
+   ],
+   "claim": "none",
+   "day_round": "proactive",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 2
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 4,
+   "seq": 15,
+   "player": "player_2",
+   "message": "I can't explain the omission: my own watch was a visit, so my list was incomplete and shouldn't be treated as a full record. One new piece of information: on Night 1 I watched you and saw no visitors; that doesn't identify your role, but it's my actual result.",
+   "addressed_targets": [
+    {
+     "target": "player_7",
+     "addressed_form": "response",
+     "stance": "defense"
+    }
+   ],
+   "claim": "sentinel",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_7"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 4,
+   "seq": 16,
+   "player": "game_master",
+   "message": "Before the vote: player_2 has been accused by player_4 and player_7. player_2 gets a last word.",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "closing",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 4,
+   "seq": 17,
+   "player": "player_2",
+   "message": "The omission is real, and I don\u2019t have a credible explanation for why my own visit was missing. Player_1 independently confirms I went to player_5, but that doesn\u2019t make the rest of my watch result complete or reliable. I should have flagged that limitation clearly, and neither of you should treat the names I gave as proof against or in favor of anyone.",
+   "addressed_targets": [
+    {
+     "target": "player_4",
+     "addressed_form": "response",
+     "stance": "defense"
+    },
+    {
+     "target": "player_7",
+     "addressed_form": "response",
+     "stance": "defense"
+    }
+   ],
+   "claim": "sentinel",
+   "day_round": "closing",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 4,
+   "seq": 18,
+   "player": "game_master",
+   "message": "\nHere's the vote result for day 4:\n  player_1 voted to eliminate player_4\n  player_2 voted to eliminate player_3\n  player_3 voted to eliminate player_2\n  player_4 voted to eliminate player_2\n  player_5 voted to eliminate player_2\n  player_7 voted to eliminate player_2\nPlayer player_2 has been voted out and was a sentinel.\nThe record of player_2, the sentinel: night 1, watched player_7; saw no one; night 2, was roleblocked; night 3, watched player_5; saw player_3 and player_10 visit them.\n",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 4,
+   "seq": 19,
+   "player": "game_master",
+   "message": "Night of day 4: player_1 was killed by a reanimated wolf last night. They were a trailseer. The record of player_1, the trailseer: night 1, was roleblocked; night 2, followed player_2; they visited no one; night 3, followed player_2; they visited player_5.",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 5,
+   "seq": 0,
+   "player": "player_3",
+   "message": "Night 3, I placed my sigil on player_5 and it had no effect. That doesn't tell us why; it only means the sigil didn't strike.",
+   "addressed_targets": [
+    {
+     "target": "player_5",
+     "addressed_form": "mention",
+     "stance": "neutral"
+    }
+   ],
+   "claim": "sigilist",
+   "day_round": "opening",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": "night_action"
+  },
+  {
+   "day": 5,
+   "seq": 1,
+   "player": "player_4",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 5,
+   "seq": 2,
+   "player": "player_5",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 5,
+   "seq": 3,
+   "player": "player_7",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 5,
+   "seq": 4,
+   "player": "player_4",
+   "message": "The night 4 reanimated-wolf attack means the Necromancer is still alive, so they must be one of 3, 5, or 7. Can each of you give your night actions? The claims and visits we have so far don't pin down who used the dead wolf's ability.",
+   "addressed_targets": [
+    {
+     "target": "player_3",
+     "addressed_form": "question",
+     "stance": "neutral"
+    },
+    {
+     "target": "player_5",
+     "addressed_form": "question",
+     "stance": "neutral"
+    },
+    {
+     "target": "player_7",
+     "addressed_form": "question",
+     "stance": "neutral"
+    }
+   ],
+   "claim": "none",
+   "day_round": "proactive",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "proactive",
+    "owes": [],
+    "sweep": 1
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 5,
+   "seq": 5,
+   "player": "player_3",
+   "message": "My Night 3 action was placing a sigil on player_5; it had no effect. That doesn\u2019t identify the Necromancer: a sigil also can\u2019t punish an attack made through a dead role, so the result doesn\u2019t rule out that kind of attack.",
+   "addressed_targets": [
+    {
+     "target": "player_4",
+     "addressed_form": "response",
+     "stance": "neutral"
+    }
+   ],
+   "claim": "sigilist",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_4"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 5,
+   "seq": 6,
+   "player": "player_5",
+   "message": "My Night 1 check on player_9 was Suspicious, and my Night 2 check on player_6 was Suspicious; both were later revealed as wolves. I had no checks left after that, so I took no action on nights 3 or 4. I\u2019m the Investigator, but I can\u2019t locate the Necromancer from my results.",
+   "addressed_targets": [
+    {
+     "target": "player_4",
+     "addressed_form": "response",
+     "stance": "neutral"
+    }
+   ],
+   "claim": "investigator",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_4"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 5,
+   "seq": 7,
+   "player": "player_7",
+   "message": "I\u2019m the Fortune Teller. I bet on player_5 on nights 1 and 2, then player_10 on night 3 and player_1 on night 4; I didn\u2019t name roles. That gives me two points, but it doesn\u2019t tell us who made those attacks or narrow down the Necromancer.",
+   "addressed_targets": [
+    {
+     "target": "player_4",
+     "addressed_form": "response",
+     "stance": "neutral"
+    }
+   ],
+   "claim": "fortune_teller",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_4"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 5,
+   "seq": 8,
+   "player": "game_master",
+   "message": "\nHere's the vote result for day 5:\n  player_3 voted to eliminate player_7\n  player_4 voted to eliminate player_7\n  player_5 voted to eliminate player_4\n  player_7 voted to eliminate player_4\nIt's a tie between ['player_7', 'player_4']. No one is voted out this day.",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 5,
+   "seq": 9,
+   "player": "game_master",
+   "message": "Night of day 5: No one died last night.",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 6,
+   "seq": 0,
+   "player": "player_3",
+   "message": "I\u2019m the Sigilist. On night 3 I placed my sigil on player_5; it had no effect.",
+   "addressed_targets": [
+    {
+     "target": "player_5",
+     "addressed_form": "mention",
+     "stance": "neutral"
+    }
+   ],
+   "claim": "sigilist",
+   "day_round": "opening",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": "night_action"
+  },
+  {
+   "day": 6,
+   "seq": 1,
+   "player": "player_4",
+   "message": "I'm the Fortune Teller, so player_7's earlier Fortune Teller claim is false.",
+   "addressed_targets": [
+    {
+     "target": "player_7",
+     "addressed_form": "mention",
+     "stance": "accusation"
+    }
+   ],
+   "claim": "fortune_teller",
+   "day_round": "opening",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": "claim"
+  },
+  {
+   "day": 6,
+   "seq": 2,
+   "player": "player_5",
+   "message": "Player_4, you said the Necromancer had to be player_3, player_5, or player_7, but you gave no reason to exclude yourself. That reanimated-wolf attack only tells us the Necromancer acted, not which living player it is.",
+   "addressed_targets": [
+    {
+     "target": "player_4",
+     "addressed_form": "mention",
+     "stance": "accusation"
+    }
+   ],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": "challenge"
+  },
+  {
+   "day": 6,
+   "seq": 3,
+   "player": "player_7",
+   "message": "",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "opening",
+   "passed": true,
+   "pass_reason": "voluntary",
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 6,
+   "seq": 4,
+   "player": "player_4",
+   "message": "I should have said plainly that I exclude myself because I know I\u2019m the Fortune Teller; my Night 3 bet on player_10 scored me two points. That doesn\u2019t prove which of player_3 or player_7 is the Necromancer, but player_7\u2019s Fortune Teller claim is false, so they\u2019re still my strongest suspect.",
+   "addressed_targets": [
+    {
+     "target": "player_5",
+     "addressed_form": "response",
+     "stance": "defense"
+    },
+    {
+     "target": "player_7",
+     "addressed_form": "mention",
+     "stance": "accusation"
+    }
+   ],
+   "claim": "fortune_teller",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_5"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 6,
+   "seq": 5,
+   "player": "player_7",
+   "message": "Player_5's point applies to you too: saying you know you're the Fortune Teller is a claim, not a reason to remove yourself from the suspect pool. Your bet on player_10 can't be verified, and their healer claim was already public; I maintain my claim, but neither one should settle the vote.",
+   "addressed_targets": [
+    {
+     "target": "player_4",
+     "addressed_form": "response",
+     "stance": "defense"
+    },
+    {
+     "target": "player_5",
+     "addressed_form": "mention",
+     "stance": "agreement"
+    }
+   ],
+   "claim": "fortune_teller",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_4"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 6,
+   "seq": 6,
+   "player": "game_master",
+   "message": "\nHere's the vote result for day 6:\n  player_3 voted to eliminate player_7\n  player_4 voted to eliminate player_7\n  player_5 voted to eliminate player_4\n  player_7 voted to eliminate player_4\nIt's a tie between ['player_7', 'player_4']. No one is voted out this day.",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 6,
+   "seq": 7,
+   "player": "game_master",
+   "message": "Night of day 6: player_5 was killed by a reanimated wolf last night. They were a investigator. The record of player_5, the investigator: night 1, checked player_9: Suspicious; night 2, checked player_6: Suspicious.",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 7,
+   "seq": 0,
+   "player": "player_3",
+   "message": "I used my last sigil on player_4 last night, and it had no effect. That doesn't tell us whether they attacked; it only means the sigil didn't strike.",
+   "addressed_targets": [
+    {
+     "target": "player_4",
+     "addressed_form": "mention",
+     "stance": "neutral"
+    }
+   ],
+   "claim": "sigilist",
+   "day_round": "opening",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": "night_action"
+  },
+  {
+   "day": 7,
+   "seq": 1,
+   "player": "player_4",
+   "message": "I\u2019m the Fortune Teller, and my bets have already scored four points. That means player_7\u2019s Fortune Teller claim is false, though it doesn\u2019t by itself tell us what role they are.",
+   "addressed_targets": [
+    {
+     "target": "player_7",
+     "addressed_form": "mention",
+     "stance": "accusation"
+    }
+   ],
+   "claim": "fortune_teller",
+   "day_round": "opening",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": "claim"
+  },
+  {
+   "day": 7,
+   "seq": 2,
+   "player": "player_7",
+   "message": "I'm still claiming Fortune Teller, and I counterclaim player_4. My earlier bets on player_10 and player_1 both landed on deaths that night; those are the results behind my claim.",
+   "addressed_targets": [
+    {
+     "target": "player_4",
+     "addressed_form": "mention",
+     "stance": "accusation"
+    }
+   ],
+   "claim": "fortune_teller",
+   "day_round": "opening",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": "claim"
+  },
+  {
+   "day": 7,
+   "seq": 3,
+   "player": "player_4",
+   "message": "Those deaths match the bets you claim, but nobody else can verify when you placed them. I know my own bets settled for four points, so I\u2019m the Fortune Teller; your counterclaim is false, and you\u2019re my strongest Necromancer suspect.",
+   "addressed_targets": [
+    {
+     "target": "player_7",
+     "addressed_form": "response",
+     "stance": "accusation"
+    }
+   ],
+   "claim": "fortune_teller",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_7"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 7,
+   "seq": 4,
+   "player": "player_7",
+   "message": "You named player_10 as a bet, but you haven't said what role you named or explained the rest of the bets behind those four points. My claimed targets include player_10 and player_1, both of whom died on those nights; that's not proof, but your private score isn't proof either. Player_3, don't let player_4's confidence alone make me the Necromancer.",
+   "addressed_targets": [
+    {
+     "target": "player_4",
+     "addressed_form": "response",
+     "stance": "accusation"
+    },
+    {
+     "target": "player_3",
+     "addressed_form": "mention",
+     "stance": "neutral"
+    }
+   ],
+   "claim": "fortune_teller",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_4"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 7,
+   "seq": 5,
+   "player": "player_4",
+   "message": "I named player_10 as healer on Night 3 and player_5 as investigator on Night 6; those were my two scoring bets. Nights 1 and 2 were player_1 and player_5, neither died, and I bet on myself on Nights 4 and 5, so those scored nothing. You\u2019re right that my private record isn\u2019t independently verifiable, but that is the full answer to what I bet.",
+   "addressed_targets": [
+    {
+     "target": "player_7",
+     "addressed_form": "response",
+     "stance": "defense"
+    }
+   ],
+   "claim": "fortune_teller",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": {
+    "tier": "reactive",
+    "owes": [
+     "player_7"
+    ],
+    "sweep": 0
+   },
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 7,
+   "seq": 6,
+   "player": "game_master",
+   "message": "\nHere's the vote result for day 7:\n  player_3 voted to eliminate player_7\n  player_4 voted to eliminate player_7\n  player_7 voted to eliminate player_4\nPlayer player_7 has been voted out and was a necromancer.\n",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  },
+  {
+   "day": 7,
+   "seq": 7,
+   "player": "game_master",
+   "message": "Game over! The town has won! The fortune teller won (4 points).",
+   "addressed_targets": [],
+   "claim": "none",
+   "day_round": "discussion",
+   "passed": false,
+   "pass_reason": null,
+   "firing_reason": null,
+   "gated": false,
+   "gated_candidate": "",
+   "opening_kind": ""
+  }
+ ],
+ "day_summaries": [
+  {
+   "day": 1,
+   "summary": "Key accusations and defenses: None.\nRole claims: None.",
+   "source": "discussion",
+   "structured": {
+    "accusations": [],
+    "role_claims": []
+   }
+  },
+  {
+   "day": 1,
+   "summary": "\nThere is no vote on day 1, so no one voted and no one is eliminated.",
+   "source": "game_master",
+   "structured": {}
+  },
+  {
+   "day": 1,
+   "summary": "Night of day 1: player_8 was killed by the wolves last night. Their role is hidden by an illusionist.",
+   "source": "game_master",
+   "structured": {}
+  },
+  {
+   "day": 2,
+   "summary": "Key accusations and defenses: player_5, player_3 \u2192 player_9: player_5 argued their claimed Suspicious check made player_9 a wolf and their competing Investigator claim false; player_3 leaned toward voting player_9 based on that claimed result. (evidence type: concrete_claim) Defense: player_9 denied being a wolf, said they were the Investigator and had checked player_5 as Not suspicious, and argued the conflicting claims were unverified. Disputed: player_1 cautioned the claim was unconfirmed; player_4 and player_6 said either Investigator claim could be false; player_7 said reported results were not verified.\nRole claims: player_2 claimed sentinel \u2014 Night 1: watched player_7, plans to watch player_4 tonight; player_5 claimed investigator \u2014 Night 1: checked player_9, says they read Suspicious; player_9 claimed investigator \u2014 Night 1: checked player_5, says they read Not suspicious, plans to check player_4 tonight",
+   "source": "discussion",
+   "structured": {
+    "accusations": [
+     {
+      "accusers": [
+       "player_5",
+       "player_3"
+      ],
+      "target": "player_9",
+      "reasoning": "player_5 argued their claimed Suspicious check made player_9 a wolf and their competing Investigator claim false; player_3 leaned toward voting player_9 based on that claimed result.",
+      "evidence_type": "concrete_claim",
+      "defense": "player_9 denied being a wolf, said they were the Investigator and had checked player_5 as Not suspicious, and argued the conflicting claims were unverified.",
+      "disputed_by": "player_1 cautioned the claim was unconfirmed; player_4 and player_6 said either Investigator claim could be false; player_7 said reported results were not verified.",
+      "record_check": ""
+     }
+    ],
+    "role_claims": [
+     {
+      "player": "player_2",
+      "claimed_role": "sentinel",
+      "kind": "claimed",
+      "night_actions": [
+       {
+        "night": 1,
+        "action": "watch",
+        "target": "player_7",
+        "result": "not_said",
+        "reason": "",
+        "seen": []
+       }
+      ],
+      "planned_actions": [
+       {
+        "action": "watch",
+        "target": "player_4"
+       }
+      ]
+     },
+     {
+      "player": "player_5",
+      "claimed_role": "investigator",
+      "kind": "claimed",
+      "night_actions": [
+       {
+        "night": 1,
+        "action": "investigate",
+        "target": "player_9",
+        "result": "suspicious",
+        "reason": "",
+        "seen": []
+       }
+      ],
+      "planned_actions": []
+     },
+     {
+      "player": "player_9",
+      "claimed_role": "investigator",
+      "kind": "claimed",
+      "night_actions": [
+       {
+        "night": 1,
+        "action": "investigate",
+        "target": "player_5",
+        "result": "not_suspicious",
+        "reason": "",
+        "seen": []
+       }
+      ],
+      "planned_actions": [
+       {
+        "action": "investigate",
+        "target": "player_4"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "day": 2,
+   "summary": "\nHere's the vote result for day 2:\n  player_1 voted to eliminate player_9\n  player_2 voted to eliminate player_9\n  player_3 voted to eliminate player_9\n  player_4 voted to eliminate player_9\n  player_5 voted to eliminate player_9\n  player_6 voted to eliminate player_9\n  player_7 voted to eliminate player_9\n  player_9 voted to eliminate player_5\n  player_10 voted to eliminate player_9\nPlayer player_9 has been voted out and was a illusionist.\n",
+   "source": "game_master",
+   "structured": {}
+  },
+  {
+   "day": 2,
+   "summary": "Night of day 2: player_5 was attacked by a reanimated wolf and the wolves but was saved by the healer!",
+   "source": "game_master",
+   "structured": {}
+  },
+  {
+   "day": 3,
+   "summary": "Key accusations and defenses: player_5, player_3, player_7 \u2192 player_6: player_5 argued their check found player_6 Suspicious, consistent with a wolf or an attacking Necromancer; player_3 called player_6 the clearest vote, and player_7 said the check was worth taking seriously. (evidence type: concrete_claim) Defense: player_6 argued the check cannot distinguish a wolf from an attacking Necromancer and the reanimated-wolf attack does not show player_6 used that body. Disputed: player_1 argued the reanimated-wolf attack could fit an attacking Necromancer, so player_5's result points to a wolf or Necromancer, not specifically a wolf.\nRole claims: player_1 claimed trailseer \u2014 Night 2: followed player_2; player_2 claimed sentinel \u2014 Night 2: says they did not visit player_4; player_5 claimed investigator \u2014 Night 2: checked player_6, says they read Suspicious; player_10 claimed healer \u2014 Night 2: protected player_5, says they saved them from an attack",
+   "source": "discussion",
+   "structured": {
+    "accusations": [
+     {
+      "accusers": [
+       "player_5",
+       "player_3",
+       "player_7"
+      ],
+      "target": "player_6",
+      "reasoning": "player_5 argued their check found player_6 Suspicious, consistent with a wolf or an attacking Necromancer; player_3 called player_6 the clearest vote, and player_7 said the check was worth taking seriously.",
+      "evidence_type": "concrete_claim",
+      "defense": "player_6 argued the check cannot distinguish a wolf from an attacking Necromancer and the reanimated-wolf attack does not show player_6 used that body.",
+      "disputed_by": "player_1 argued the reanimated-wolf attack could fit an attacking Necromancer, so player_5's result points to a wolf or Necromancer, not specifically a wolf.",
+      "record_check": ""
+     }
+    ],
+    "role_claims": [
+     {
+      "player": "player_1",
+      "claimed_role": "trailseer",
+      "kind": "claimed",
+      "night_actions": [
+       {
+        "night": 2,
+        "action": "follow",
+        "target": "player_2",
+        "result": "not_said",
+        "reason": "",
+        "seen": []
+       }
+      ],
+      "planned_actions": []
+     },
+     {
+      "player": "player_2",
+      "claimed_role": "sentinel",
+      "kind": "claimed",
+      "night_actions": [
+       {
+        "night": 2,
+        "action": "no_action",
+        "target": "player_4",
+        "result": "not_said",
+        "reason": "I was roleblocked.",
+        "seen": []
+       }
+      ],
+      "planned_actions": []
+     },
+     {
+      "player": "player_5",
+      "claimed_role": "investigator",
+      "kind": "claimed",
+      "night_actions": [
+       {
+        "night": 2,
+        "action": "investigate",
+        "target": "player_6",
+        "result": "suspicious",
+        "reason": "",
+        "seen": []
+       }
+      ],
+      "planned_actions": []
+     },
+     {
+      "player": "player_10",
+      "claimed_role": "healer",
+      "kind": "claimed",
+      "night_actions": [
+       {
+        "night": 2,
+        "action": "protect",
+        "target": "player_5",
+        "result": "saved_from_attack",
+        "reason": "",
+        "seen": []
+       }
+      ],
+      "planned_actions": []
+     }
+    ]
+   }
+  },
+  {
+   "day": 3,
+   "summary": "\nHere's the vote result for day 3:\n  player_1 voted to eliminate player_6\n  player_2 voted to eliminate player_6\n  player_3 voted to eliminate player_6\n  player_4 voted to eliminate player_6\n  player_5 voted to eliminate player_6\n  player_6 voted to eliminate player_5\n  player_7 voted to eliminate player_6\n  player_10 voted to eliminate player_6\nPlayer player_6 has been voted out and was a chanteuse.\n",
+   "source": "game_master",
+   "structured": {}
+  },
+  {
+   "day": 3,
+   "summary": "Night of day 3: player_10 was killed by a reanimated wolf last night. Their role is hidden by a reanimated illusionist.",
+   "source": "game_master",
+   "structured": {}
+  },
+  {
+   "day": 4,
+   "summary": "Key accusations and defenses: player_1, player_4, player_7 \u2192 player_2: They argued that player_2's watch report was incomplete because it omitted player_2's independently confirmed visit, making the reported list unreliable. (evidence type: concrete_claim) Defense: player_2 admitted the list was incomplete, said they could not explain the omission, and cautioned that the reported names were not proof.\nRole claims: player_1 claimed trailseer \u2014 Night 3: followed player_2; player_2 claimed sentinel \u2014 Night 3: watched player_5, Night 1: watched player_7; player_3 claimed sigilist \u2014 Night 3: set a sigil on player_5; player_5 claimed investigator",
+   "source": "discussion",
+   "structured": {
+    "accusations": [
+     {
+      "accusers": [
+       "player_1",
+       "player_4",
+       "player_7"
+      ],
+      "target": "player_2",
+      "reasoning": "They argued that player_2's watch report was incomplete because it omitted player_2's independently confirmed visit, making the reported list unreliable.",
+      "evidence_type": "concrete_claim",
+      "defense": "player_2 admitted the list was incomplete, said they could not explain the omission, and cautioned that the reported names were not proof.",
+      "disputed_by": "",
+      "record_check": ""
+     }
+    ],
+    "role_claims": [
+     {
+      "player": "player_1",
+      "claimed_role": "trailseer",
+      "kind": "claimed",
+      "night_actions": [
+       {
+        "night": 3,
+        "action": "follow",
+        "target": "player_2",
+        "result": "not_said",
+        "reason": "",
+        "seen": [
+         "player_5"
+        ]
+       }
+      ],
+      "planned_actions": []
+     },
+     {
+      "player": "player_2",
+      "claimed_role": "sentinel",
+      "kind": "claimed",
+      "night_actions": [
+       {
+        "night": 3,
+        "action": "watch",
+        "target": "player_5",
+        "result": "not_said",
+        "reason": "",
+        "seen": [
+         "player_3",
+         "player_10"
+        ]
+       },
+       {
+        "night": 1,
+        "action": "watch",
+        "target": "player_7",
+        "result": "not_said",
+        "reason": "",
+        "seen": []
+       }
+      ],
+      "planned_actions": []
+     },
+     {
+      "player": "player_3",
+      "claimed_role": "sigilist",
+      "kind": "claimed",
+      "night_actions": [
+       {
+        "night": 3,
+        "action": "sigil",
+        "target": "player_5",
+        "result": "not_said",
+        "reason": "",
+        "seen": []
+       }
+      ],
+      "planned_actions": []
+     },
+     {
+      "player": "player_5",
+      "claimed_role": "investigator",
+      "kind": "claimed",
+      "night_actions": [],
+      "planned_actions": []
+     }
+    ]
+   }
+  },
+  {
+   "day": 4,
+   "summary": "\nHere's the vote result for day 4:\n  player_1 voted to eliminate player_4\n  player_2 voted to eliminate player_3\n  player_3 voted to eliminate player_2\n  player_4 voted to eliminate player_2\n  player_5 voted to eliminate player_2\n  player_7 voted to eliminate player_2\nPlayer player_2 has been voted out and was a sentinel.\nThe record of player_2, the sentinel: night 1, watched player_7; saw no one; night 2, was roleblocked; night 3, watched player_5; saw player_3 and player_10 visit them.\n",
+   "source": "game_master",
+   "structured": {}
+  },
+  {
+   "day": 4,
+   "summary": "Night of day 4: player_1 was killed by a reanimated wolf last night. They were a trailseer. The record of player_1, the trailseer: night 1, was roleblocked; night 2, followed player_2; they visited no one; night 3, followed player_2; they visited player_5.",
+   "source": "game_master",
+   "structured": {}
+  },
+  {
+   "day": 5,
+   "summary": "Key accusations and defenses: player_4 \u2192 player_3: player_4 argued the Necromancer must be one of player_3, player_5, or player_7, citing the Night 4 reanimated-wolf attack. (evidence type: concrete_claim) Defense: player_3 said their Night 3 sigil result did not identify the Necromancer and could not rule out an attack through a dead role. Disputed: player_5 said their results could not locate the Necromancer; player_7 said their bets did not narrow it down. | player_4 \u2192 player_5: player_4 argued the Necromancer must be one of player_3, player_5, or player_7, citing the Night 4 reanimated-wolf attack. (evidence type: concrete_claim) Defense: player_5 said their first two checks found suspicious players, but they had no checks left and could not locate the Necromancer. Disputed: player_3 said the sigil result did not identify the Necromancer; player_7 said their bets did not narrow it down. | player_4 \u2192 player_7: player_4 argued the Necromancer must be one of player_3, player_5, or player_7, citing the Night 4 reanimated-wolf attack. (evidence type: concrete_claim) Defense: player_7 said their bets scored two points but did not identify the attackers or narrow down the Necromancer. Disputed: player_3 said the sigil result did not identify the Necromancer; player_5 said their results could not locate it.\nRole claims: player_3 claimed sigilist \u2014 Night 3: set a sigil on player_5; player_5 claimed investigator \u2014 Night 1: checked player_9, says they read Suspicious, Night 2: checked player_6, says they read Suspicious, Night 3: says they did not act, Night 4: says they did not act; player_7 claimed fortune_teller \u2014 Night 1: bet on player_5, Night 2: bet on player_5, Night 3: bet on player_10, Night 4: bet on player_1",
+   "source": "discussion",
+   "structured": {
+    "accusations": [
+     {
+      "accusers": [
+       "player_4"
+      ],
+      "target": "player_3",
+      "reasoning": "player_4 argued the Necromancer must be one of player_3, player_5, or player_7, citing the Night 4 reanimated-wolf attack.",
+      "evidence_type": "concrete_claim",
+      "defense": "player_3 said their Night 3 sigil result did not identify the Necromancer and could not rule out an attack through a dead role.",
+      "disputed_by": "player_5 said their results could not locate the Necromancer; player_7 said their bets did not narrow it down.",
+      "record_check": ""
+     },
+     {
+      "accusers": [
+       "player_4"
+      ],
+      "target": "player_5",
+      "reasoning": "player_4 argued the Necromancer must be one of player_3, player_5, or player_7, citing the Night 4 reanimated-wolf attack.",
+      "evidence_type": "concrete_claim",
+      "defense": "player_5 said their first two checks found suspicious players, but they had no checks left and could not locate the Necromancer.",
+      "disputed_by": "player_3 said the sigil result did not identify the Necromancer; player_7 said their bets did not narrow it down.",
+      "record_check": ""
+     },
+     {
+      "accusers": [
+       "player_4"
+      ],
+      "target": "player_7",
+      "reasoning": "player_4 argued the Necromancer must be one of player_3, player_5, or player_7, citing the Night 4 reanimated-wolf attack.",
+      "evidence_type": "concrete_claim",
+      "defense": "player_7 said their bets scored two points but did not identify the attackers or narrow down the Necromancer.",
+      "disputed_by": "player_3 said the sigil result did not identify the Necromancer; player_5 said their results could not locate it.",
+      "record_check": ""
+     }
+    ],
+    "role_claims": [
+     {
+      "player": "player_3",
+      "claimed_role": "sigilist",
+      "kind": "claimed",
+      "night_actions": [
+       {
+        "night": 3,
+        "action": "sigil",
+        "target": "player_5",
+        "result": "not_said",
+        "reason": "",
+        "seen": []
+       }
+      ],
+      "planned_actions": []
+     },
+     {
+      "player": "player_5",
+      "claimed_role": "investigator",
+      "kind": "claimed",
+      "night_actions": [
+       {
+        "night": 1,
+        "action": "investigate",
+        "target": "player_9",
+        "result": "suspicious",
+        "reason": "",
+        "seen": []
+       },
+       {
+        "night": 2,
+        "action": "investigate",
+        "target": "player_6",
+        "result": "suspicious",
+        "reason": "",
+        "seen": []
+       },
+       {
+        "night": 3,
+        "action": "no_action",
+        "target": "",
+        "result": "not_said",
+        "reason": "",
+        "seen": []
+       },
+       {
+        "night": 4,
+        "action": "no_action",
+        "target": "",
+        "result": "not_said",
+        "reason": "",
+        "seen": []
+       }
+      ],
+      "planned_actions": []
+     },
+     {
+      "player": "player_7",
+      "claimed_role": "fortune_teller",
+      "kind": "claimed",
+      "night_actions": [
+       {
+        "night": 1,
+        "action": "bet",
+        "target": "player_5",
+        "result": "not_said",
+        "reason": "",
+        "seen": []
+       },
+       {
+        "night": 2,
+        "action": "bet",
+        "target": "player_5",
+        "result": "not_said",
+        "reason": "",
+        "seen": []
+       },
+       {
+        "night": 3,
+        "action": "bet",
+        "target": "player_10",
+        "result": "not_said",
+        "reason": "",
+        "seen": []
+       },
+       {
+        "night": 4,
+        "action": "bet",
+        "target": "player_1",
+        "result": "not_said",
+        "reason": "",
+        "seen": []
+       }
+      ],
+      "planned_actions": []
+     }
+    ]
+   }
+  },
+  {
+   "day": 5,
+   "summary": "\nHere's the vote result for day 5:\n  player_3 voted to eliminate player_7\n  player_4 voted to eliminate player_7\n  player_5 voted to eliminate player_4\n  player_7 voted to eliminate player_4\nIt's a tie between ['player_7', 'player_4']. No one is voted out this day.",
+   "source": "game_master",
+   "structured": {}
+  },
+  {
+   "day": 5,
+   "summary": "Night of day 5: No one died last night.",
+   "source": "game_master",
+   "structured": {}
+  },
+  {
+   "day": 6,
+   "summary": "Key accusations and defenses: player_4 \u2192 player_7: player_4 argued that player_7's earlier Fortune Teller claim was false. (evidence type: concrete_claim) Defense: player_7 maintained the Fortune Teller claim and argued that player_4's own claim and bet could not settle the vote. Disputed: player_7 argued that player_4's claim to know their role was also just a claim, and their bet could not be verified. | player_4 \u2192 player_7: player_4 called player_7 the strongest Necromancer suspect because their Fortune Teller claim was false. (evidence type: concrete_claim) Defense: player_7 maintained their Fortune Teller claim and argued that player_4's unverifiable bet should not settle the vote. Disputed: player_5 argued the reanimated-wolf attack only showed the Necromancer acted, not who it was; player_7 said neither claim should settle the vote.\nRole claims: player_3 claimed sigilist \u2014 Night 3: set a sigil on player_5; player_4 claimed fortune_teller \u2014 Night 3: bet on player_10; player_7 claimed fortune_teller",
+   "source": "discussion",
+   "structured": {
+    "accusations": [
+     {
+      "accusers": [
+       "player_4"
+      ],
+      "target": "player_7",
+      "reasoning": "player_4 argued that player_7's earlier Fortune Teller claim was false.",
+      "evidence_type": "concrete_claim",
+      "defense": "player_7 maintained the Fortune Teller claim and argued that player_4's own claim and bet could not settle the vote.",
+      "disputed_by": "player_7 argued that player_4's claim to know their role was also just a claim, and their bet could not be verified.",
+      "record_check": ""
+     },
+     {
+      "accusers": [
+       "player_4"
+      ],
+      "target": "player_7",
+      "reasoning": "player_4 called player_7 the strongest Necromancer suspect because their Fortune Teller claim was false.",
+      "evidence_type": "concrete_claim",
+      "defense": "player_7 maintained their Fortune Teller claim and argued that player_4's unverifiable bet should not settle the vote.",
+      "disputed_by": "player_5 argued the reanimated-wolf attack only showed the Necromancer acted, not who it was; player_7 said neither claim should settle the vote.",
+      "record_check": ""
+     }
+    ],
+    "role_claims": [
+     {
+      "player": "player_3",
+      "claimed_role": "sigilist",
+      "kind": "claimed",
+      "night_actions": [
+       {
+        "night": 3,
+        "action": "sigil",
+        "target": "player_5",
+        "result": "not_said",
+        "reason": "",
+        "seen": []
+       }
+      ],
+      "planned_actions": []
+     },
+     {
+      "player": "player_4",
+      "claimed_role": "fortune_teller",
+      "kind": "claimed",
+      "night_actions": [
+       {
+        "night": 3,
+        "action": "bet",
+        "target": "player_10",
+        "result": "not_said",
+        "reason": "",
+        "seen": []
+       }
+      ],
+      "planned_actions": []
+     },
+     {
+      "player": "player_7",
+      "claimed_role": "fortune_teller",
+      "kind": "claimed",
+      "night_actions": [],
+      "planned_actions": []
+     }
+    ]
+   }
+  },
+  {
+   "day": 6,
+   "summary": "\nHere's the vote result for day 6:\n  player_3 voted to eliminate player_7\n  player_4 voted to eliminate player_7\n  player_5 voted to eliminate player_4\n  player_7 voted to eliminate player_4\nIt's a tie between ['player_7', 'player_4']. No one is voted out this day.",
+   "source": "game_master",
+   "structured": {}
+  },
+  {
+   "day": 6,
+   "summary": "Night of day 6: player_5 was killed by a reanimated wolf last night. They were a investigator. The record of player_5, the investigator: night 1, checked player_9: Suspicious; night 2, checked player_6: Suspicious.",
+   "source": "game_master",
+   "structured": {}
+  },
+  {
+   "day": 7,
+   "summary": "Key accusations and defenses: player_4 \u2192 player_7: player_4 argued that their claimed Fortune Teller score meant player_7's Fortune Teller claim was false. (evidence type: concrete_claim) Defense: player_7 counterclaimed player_4 and said their claimed bets on player_10 and player_1 both landed on deaths; they said that was not proof, but neither was player_4's private score. | player_7 \u2192 player_4: player_7 counterclaimed player_4, arguing their own claimed bets on players who died supported their claim, while player_4's private score could not be verified. (evidence type: concrete_claim) Defense: player_4 said they had scored four points from bets naming player_10 as healer and player_5 as investigator, and gave details of their other bets. | player_4 \u2192 player_7: player_4 called player_7 their strongest Necromancer suspect after disputing player_7's Fortune Teller claim. (evidence type: concrete_claim) Defense: player_7 argued that player_4's confidence alone should not make them the Necromancer, and that neither player's private betting record was proof.\nRole claims: player_3 claimed sigilist \u2014 Night 6: set a sigil on player_4; player_4 claimed fortune_teller \u2014 Night 1: bet on player_1, says they survived, Night 2: bet on player_5, says they survived, Night 3: bet on player_10, says they died, Night 4: bet on player_4, Night 5: bet on player_4, Night 6: bet on player_5, says they died; player_7 claimed fortune_teller \u2014 Night 3: bet on player_10, says they died, Night 4: bet on player_1, says they died",
+   "source": "discussion",
+   "structured": {
+    "accusations": [
+     {
+      "accusers": [
+       "player_4"
+      ],
+      "target": "player_7",
+      "reasoning": "player_4 argued that their claimed Fortune Teller score meant player_7's Fortune Teller claim was false.",
+      "evidence_type": "concrete_claim",
+      "defense": "player_7 counterclaimed player_4 and said their claimed bets on player_10 and player_1 both landed on deaths; they said that was not proof, but neither was player_4's private score.",
+      "disputed_by": "",
+      "record_check": ""
+     },
+     {
+      "accusers": [
+       "player_7"
+      ],
+      "target": "player_4",
+      "reasoning": "player_7 counterclaimed player_4, arguing their own claimed bets on players who died supported their claim, while player_4's private score could not be verified.",
+      "evidence_type": "concrete_claim",
+      "defense": "player_4 said they had scored four points from bets naming player_10 as healer and player_5 as investigator, and gave details of their other bets.",
+      "disputed_by": "",
+      "record_check": ""
+     },
+     {
+      "accusers": [
+       "player_4"
+      ],
+      "target": "player_7",
+      "reasoning": "player_4 called player_7 their strongest Necromancer suspect after disputing player_7's Fortune Teller claim.",
+      "evidence_type": "concrete_claim",
+      "defense": "player_7 argued that player_4's confidence alone should not make them the Necromancer, and that neither player's private betting record was proof.",
+      "disputed_by": "",
+      "record_check": ""
+     }
+    ],
+    "role_claims": [
+     {
+      "player": "player_3",
+      "claimed_role": "sigilist",
+      "kind": "claimed",
+      "night_actions": [
+       {
+        "night": 6,
+        "action": "sigil",
+        "target": "player_4",
+        "result": "not_said",
+        "reason": "",
+        "seen": []
+       }
+      ],
+      "planned_actions": []
+     },
+     {
+      "player": "player_4",
+      "claimed_role": "fortune_teller",
+      "kind": "claimed",
+      "night_actions": [
+       {
+        "night": 1,
+        "action": "bet",
+        "target": "player_1",
+        "result": "survived",
+        "reason": "",
+        "seen": []
+       },
+       {
+        "night": 2,
+        "action": "bet",
+        "target": "player_5",
+        "result": "survived",
+        "reason": "",
+        "seen": []
+       },
+       {
+        "night": 3,
+        "action": "bet",
+        "target": "player_10",
+        "result": "died",
+        "reason": "",
+        "seen": []
+       },
+       {
+        "night": 4,
+        "action": "bet",
+        "target": "player_4",
+        "result": "not_said",
+        "reason": "",
+        "seen": []
+       },
+       {
+        "night": 5,
+        "action": "bet",
+        "target": "player_4",
+        "result": "not_said",
+        "reason": "",
+        "seen": []
+       },
+       {
+        "night": 6,
+        "action": "bet",
+        "target": "player_5",
+        "result": "died",
+        "reason": "",
+        "seen": []
+       }
+      ],
+      "planned_actions": []
+     },
+     {
+      "player": "player_7",
+      "claimed_role": "fortune_teller",
+      "kind": "claimed",
+      "night_actions": [
+       {
+        "night": 3,
+        "action": "bet",
+        "target": "player_10",
+        "result": "died",
+        "reason": "",
+        "seen": []
+       },
+       {
+        "night": 4,
+        "action": "bet",
+        "target": "player_1",
+        "result": "died",
+        "reason": "",
+        "seen": []
+       }
+      ],
+      "planned_actions": []
+     }
+    ]
+   }
+  },
+  {
+   "day": 7,
+   "summary": "\nHere's the vote result for day 7:\n  player_3 voted to eliminate player_7\n  player_4 voted to eliminate player_7\n  player_7 voted to eliminate player_4\nPlayer player_7 has been voted out and was a necromancer.\n",
+   "source": "game_master",
+   "structured": {}
+  }
+ ],
+ "day_resolutions": [
+  {
+   "day": 1,
+   "votes": [],
+   "voted_player": null,
+   "voted_player_role": null,
+   "vote_counts": {},
+   "tied_players": [],
+   "no_vote": true
+  },
+  {
+   "day": 2,
+   "votes": [
+    {
+     "voter": "player_1",
+     "votee": "player_9"
+    },
+    {
+     "voter": "player_2",
+     "votee": "player_9"
+    },
+    {
+     "voter": "player_3",
+     "votee": "player_9"
+    },
+    {
+     "voter": "player_4",
+     "votee": "player_9"
+    },
+    {
+     "voter": "player_5",
+     "votee": "player_9"
+    },
+    {
+     "voter": "player_6",
+     "votee": "player_9"
+    },
+    {
+     "voter": "player_7",
+     "votee": "player_9"
+    },
+    {
+     "voter": "player_9",
+     "votee": "player_5"
+    },
+    {
+     "voter": "player_10",
+     "votee": "player_9"
+    }
+   ],
+   "voted_player": "player_9",
+   "voted_player_role": "illusionist",
+   "vote_counts": {
+    "player_9": 8,
+    "player_5": 1
+   },
+   "tied_players": [],
+   "no_vote": false
+  },
+  {
+   "day": 3,
+   "votes": [
+    {
+     "voter": "player_1",
+     "votee": "player_6"
+    },
+    {
+     "voter": "player_2",
+     "votee": "player_6"
+    },
+    {
+     "voter": "player_3",
+     "votee": "player_6"
+    },
+    {
+     "voter": "player_4",
+     "votee": "player_6"
+    },
+    {
+     "voter": "player_5",
+     "votee": "player_6"
+    },
+    {
+     "voter": "player_6",
+     "votee": "player_5"
+    },
+    {
+     "voter": "player_7",
+     "votee": "player_6"
+    },
+    {
+     "voter": "player_10",
+     "votee": "player_6"
+    }
+   ],
+   "voted_player": "player_6",
+   "voted_player_role": "chanteuse",
+   "vote_counts": {
+    "player_6": 7,
+    "player_5": 1
+   },
+   "tied_players": [],
+   "no_vote": false
+  },
+  {
+   "day": 4,
+   "votes": [
+    {
+     "voter": "player_1",
+     "votee": "player_4"
+    },
+    {
+     "voter": "player_2",
+     "votee": "player_3"
+    },
+    {
+     "voter": "player_3",
+     "votee": "player_2"
+    },
+    {
+     "voter": "player_4",
+     "votee": "player_2"
+    },
+    {
+     "voter": "player_5",
+     "votee": "player_2"
+    },
+    {
+     "voter": "player_7",
+     "votee": "player_2"
+    }
+   ],
+   "voted_player": "player_2",
+   "voted_player_role": "sentinel",
+   "vote_counts": {
+    "player_4": 1,
+    "player_3": 1,
+    "player_2": 4
+   },
+   "tied_players": [],
+   "no_vote": false
+  },
+  {
+   "day": 5,
+   "votes": [
+    {
+     "voter": "player_3",
+     "votee": "player_7"
+    },
+    {
+     "voter": "player_4",
+     "votee": "player_7"
+    },
+    {
+     "voter": "player_5",
+     "votee": "player_4"
+    },
+    {
+     "voter": "player_7",
+     "votee": "player_4"
+    }
+   ],
+   "voted_player": null,
+   "voted_player_role": null,
+   "vote_counts": {
+    "player_7": 2,
+    "player_4": 2
+   },
+   "tied_players": [
+    "player_7",
+    "player_4"
+   ],
+   "no_vote": false
+  },
+  {
+   "day": 6,
+   "votes": [
+    {
+     "voter": "player_3",
+     "votee": "player_7"
+    },
+    {
+     "voter": "player_4",
+     "votee": "player_7"
+    },
+    {
+     "voter": "player_5",
+     "votee": "player_4"
+    },
+    {
+     "voter": "player_7",
+     "votee": "player_4"
+    }
+   ],
+   "voted_player": null,
+   "voted_player_role": null,
+   "vote_counts": {
+    "player_7": 2,
+    "player_4": 2
+   },
+   "tied_players": [
+    "player_7",
+    "player_4"
+   ],
+   "no_vote": false
+  },
+  {
+   "day": 7,
+   "votes": [
+    {
+     "voter": "player_3",
+     "votee": "player_7"
+    },
+    {
+     "voter": "player_4",
+     "votee": "player_7"
+    },
+    {
+     "voter": "player_7",
+     "votee": "player_4"
+    }
+   ],
+   "voted_player": "player_7",
+   "voted_player_role": "necromancer",
+   "vote_counts": {
+    "player_7": 2,
+    "player_4": 1
+   },
+   "tied_players": [],
+   "no_vote": false
+  }
+ ],
+ "night_resolutions": [
+  {
+   "day": 1,
+   "wolves_target": "player_8",
+   "wolf_target_role": "vigilante",
+   "kill_successful": true,
+   "choices": [
+    {
+     "actor": "player_4",
+     "role": "fortune_teller",
+     "kind": "bet",
+     "target": "player_1",
+     "via": null,
+     "role_named": "investigator"
+    },
+    {
+     "actor": "player_10",
+     "role": "healer",
+     "kind": "protect",
+     "target": "player_1",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_5",
+     "role": "investigator",
+     "kind": "investigate",
+     "target": "player_9",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_6",
+     "role": "chanteuse",
+     "kind": "kill",
+     "target": "player_8",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_6",
+     "role": "chanteuse",
+     "kind": "block",
+     "target": "player_1",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_9",
+     "role": "illusionist",
+     "kind": "conceal",
+     "target": null,
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_2",
+     "role": "sentinel",
+     "kind": "watch",
+     "target": "player_7",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_1",
+     "role": "trailseer",
+     "kind": "follow",
+     "target": "player_6",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_8",
+     "role": "vigilante",
+     "kind": "hold_fire",
+     "target": null,
+     "via": null,
+     "role_named": null
+    }
+   ],
+   "healer_target": null,
+   "investigator_target": null,
+   "investigator_target_role": null,
+   "healer_saved": false,
+   "serial_killer_target": null,
+   "serial_killer_target_role": null,
+   "vigilante_target": null,
+   "vigilante_target_role": null,
+   "serial_killer_kill_landed": false,
+   "vigilante_kill_landed": false,
+   "deaths": [
+    "player_8"
+   ],
+   "wolves_before": 2,
+   "town_before": 6,
+   "sk_before": 1
+  },
+  {
+   "day": 2,
+   "wolves_target": "player_5",
+   "wolf_target_role": "investigator",
+   "kill_successful": false,
+   "choices": [
+    {
+     "actor": "player_4",
+     "role": "fortune_teller",
+     "kind": "bet",
+     "target": "player_5",
+     "via": null,
+     "role_named": "investigator"
+    },
+    {
+     "actor": "player_10",
+     "role": "healer",
+     "kind": "protect",
+     "target": "player_5",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_5",
+     "role": "investigator",
+     "kind": "investigate",
+     "target": "player_6",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_7",
+     "role": "necromancer",
+     "kind": "kill",
+     "target": "player_5",
+     "via": "player_9",
+     "role_named": null
+    },
+    {
+     "actor": "player_6",
+     "role": "chanteuse",
+     "kind": "kill",
+     "target": "player_5",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_6",
+     "role": "chanteuse",
+     "kind": "block",
+     "target": "player_2",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_2",
+     "role": "sentinel",
+     "kind": "watch",
+     "target": "player_4",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_1",
+     "role": "trailseer",
+     "kind": "follow",
+     "target": "player_2",
+     "via": null,
+     "role_named": null
+    }
+   ],
+   "healer_target": null,
+   "investigator_target": null,
+   "investigator_target_role": null,
+   "healer_saved": false,
+   "serial_killer_target": null,
+   "serial_killer_target_role": null,
+   "vigilante_target": null,
+   "vigilante_target_role": null,
+   "serial_killer_kill_landed": false,
+   "vigilante_kill_landed": false,
+   "deaths": [],
+   "wolves_before": 1,
+   "town_before": 5,
+   "sk_before": 1
+  },
+  {
+   "day": 3,
+   "wolves_target": null,
+   "wolf_target_role": null,
+   "kill_successful": false,
+   "choices": [
+    {
+     "actor": "player_4",
+     "role": "fortune_teller",
+     "kind": "bet",
+     "target": "player_10",
+     "via": null,
+     "role_named": "healer"
+    },
+    {
+     "actor": "player_10",
+     "role": "healer",
+     "kind": "protect",
+     "target": "player_5",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_7",
+     "role": "necromancer",
+     "kind": "kill",
+     "target": "player_10",
+     "via": "player_9",
+     "role_named": null
+    },
+    {
+     "actor": "player_2",
+     "role": "sentinel",
+     "kind": "watch",
+     "target": "player_5",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_3",
+     "role": "sigilist",
+     "kind": "sigil",
+     "target": "player_5",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_1",
+     "role": "trailseer",
+     "kind": "follow",
+     "target": "player_2",
+     "via": null,
+     "role_named": null
+    }
+   ],
+   "healer_target": null,
+   "investigator_target": null,
+   "investigator_target_role": null,
+   "healer_saved": false,
+   "serial_killer_target": null,
+   "serial_killer_target_role": null,
+   "vigilante_target": null,
+   "vigilante_target_role": null,
+   "serial_killer_kill_landed": false,
+   "vigilante_kill_landed": false,
+   "deaths": [
+    "player_10"
+   ],
+   "wolves_before": 0,
+   "town_before": 5,
+   "sk_before": 1
+  },
+  {
+   "day": 4,
+   "wolves_target": null,
+   "wolf_target_role": null,
+   "kill_successful": false,
+   "choices": [
+    {
+     "actor": "player_4",
+     "role": "fortune_teller",
+     "kind": "bet",
+     "target": "player_4",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_7",
+     "role": "necromancer",
+     "kind": "kill",
+     "target": "player_1",
+     "via": "player_9",
+     "role_named": null
+    },
+    {
+     "actor": "player_1",
+     "role": "trailseer",
+     "kind": "follow",
+     "target": "player_4",
+     "via": null,
+     "role_named": null
+    }
+   ],
+   "healer_target": null,
+   "investigator_target": null,
+   "investigator_target_role": null,
+   "healer_saved": false,
+   "serial_killer_target": null,
+   "serial_killer_target_role": null,
+   "vigilante_target": null,
+   "vigilante_target_role": null,
+   "serial_killer_kill_landed": false,
+   "vigilante_kill_landed": false,
+   "deaths": [
+    "player_1"
+   ],
+   "wolves_before": 0,
+   "town_before": 3,
+   "sk_before": 1
+  },
+  {
+   "day": 5,
+   "wolves_target": null,
+   "wolf_target_role": null,
+   "kill_successful": false,
+   "choices": [
+    {
+     "actor": "player_4",
+     "role": "fortune_teller",
+     "kind": "bet",
+     "target": "player_4",
+     "via": null,
+     "role_named": null
+    },
+    {
+     "actor": "player_7",
+     "role": "necromancer",
+     "kind": "kill",
+     "target": "player_4",
+     "via": "player_9",
+     "role_named": null
+    }
+   ],
+   "healer_target": null,
+   "investigator_target": null,
+   "investigator_target_role": null,
+   "healer_saved": false,
+   "serial_killer_target": null,
+   "serial_killer_target_role": null,
+   "vigilante_target": null,
+   "vigilante_target_role": null,
+   "serial_killer_kill_landed": false,
+   "vigilante_kill_landed": false,
+   "deaths": [],
+   "wolves_before": 0,
+   "town_before": 2,
+   "sk_before": 1
+  },
+  {
+   "day": 6,
+   "wolves_target": null,
+   "wolf_target_role": null,
+   "kill_successful": false,
+   "choices": [
+    {
+     "actor": "player_4",
+     "role": "fortune_teller",
+     "kind": "bet",
+     "target": "player_5",
+     "via": null,
+     "role_named": "investigator"
+    },
+    {
+     "actor": "player_7",
+     "role": "necromancer",
+     "kind": "kill",
+     "target": "player_5",
+     "via": "player_9",
+     "role_named": null
+    },
+    {
+     "actor": "player_3",
+     "role": "sigilist",
+     "kind": "sigil",
+     "target": "player_4",
+     "via": null,
+     "role_named": null
+    }
+   ],
+   "healer_target": null,
+   "investigator_target": null,
+   "investigator_target_role": null,
+   "healer_saved": false,
+   "serial_killer_target": null,
+   "serial_killer_target_role": null,
+   "vigilante_target": null,
+   "vigilante_target_role": null,
+   "serial_killer_kill_landed": false,
+   "vigilante_kill_landed": false,
+   "deaths": [
+    "player_5"
+   ],
+   "wolves_before": 0,
+   "town_before": 2,
+   "sk_before": 1
+  }
+ ],
+ "humans": [],
+ "leak_check": {
+  "passed": true,
+  "leaks": []
+ }
+}

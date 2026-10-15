@@ -1,11 +1,11 @@
 """The graduated production pipeline (Agents/memory/consolidation/) — the properties that gate go-live.
 
-(a) FIXED RULE, HARD-CODED — production grades town abstains deadlock-negative and applies the
-    conversion channel with NO keyword, flag, or config anywhere on the call path (owner ruling
-    2026-07-21: the knobbed variants are eval-only).
-(b) PARITY — the production grader is byte-equal to the eval grader pinned to the fixed settings
-    on the same window (the lift changed homes, not semantics).
-(c) POISONING GUARD — a game record with a human seat teaches nothing (ledger, base, conversion).
+(a) FIXED RULE, HARD-CODED — production grades town abstains deadlock-negative with NO keyword,
+    flag, or config anywhere on the call path (owner ruling 2026-07-21: the knobbed variants are
+    eval-only). The conversion channel was dropped with the ten-seat port (plan §9.6 item 3), and with
+    it the parity test against the eval grader, which stays nine-seat for the frozen runs; the
+    ten-seat table is tested in test_ten_seat_grading.py.
+(c) POISONING GUARD — a game record with a human seat teaches nothing (ledger, base).
 (d) DB IS THE RECORD — Postgres roundtrips the store/sidecars exactly; the tick runs end-to-end
     against a throwaway database and freezes a demo_gen{k} snapshot. Skipped when WW_POSTGRES_DSN
     is absent (the DB tests need the ww-postgres container).
@@ -22,16 +22,9 @@ import pytest
 from dotenv import load_dotenv
 
 from Agents.memory.consolidation.config import TickConfig
-from Agents.memory.consolidation.conversion import conversion_apply as prod_conversion_apply
 from Agents.memory.consolidation.credit import credit_apply as prod_credit_apply
-from Agents.memory.consolidation.credit_rules import (
-    _vote_credit as prod_vote_credit,
-    compute_base_rates as prod_base_rates,
-)
-from Agents.memory.consolidation.store_ops import prune_and_evict as prod_prune_and_evict
-from evaluation.src.loop.conversion_credit import conversion_apply as eval_conversion_apply
-from evaluation.src.loop.credit import credit_apply as eval_credit_apply
-from evaluation.src.loop.credit_backfill import compute_base_rates as eval_base_rates
+from Agents.memory.consolidation.credit_rules import compute_base_rates as prod_base_rates
+from Agents.memory.consolidation.grading import GameView
 from tests.factories.builders import (day_vote_case as _vote_case,
                                       eval_case_part as _ec,
                                       strategy_point as _sp)
@@ -40,11 +33,11 @@ load_dotenv()
 DSN = os.environ.get("WW_POSTGRES_DSN")
 needs_db = pytest.mark.skipif(not DSN, reason="WW_POSTGRES_DSN not set (ww-postgres container)")
 
-ROLES = {"player_1": "villager", "player_2": "wolf", "player_3": "villager",
+ROLES = {"player_1": "sentinel", "player_2": "chanteuse", "player_3": "trailseer",
          "player_4": "investigator", "player_5": "serial_killer"}
 NO_LYNCH = {"day": 2, "no_vote": True, "voted_player": None, "vote_counts": {}}
 LYNCHED_THREAT = {"day": 2, "no_vote": False, "voted_player": "player_2",
-                  "voted_player_role": "wolf", "vote_counts": {"player_2": 4}}
+                  "voted_player_role": "chanteuse", "vote_counts": {"player_2": 4}}
 
 
 def _game(tmp: Path, name: str, cases: list, *, roles: dict = ROLES, day_res=None, night_res=None,
@@ -72,79 +65,45 @@ def _sp_store(tmp: Path, name: str, sps: dict) -> Path:
 # --- (a) the fixed rule is the ONLY rule ------------------------------------------------------------
 
 def test_production_abstain_rule_needs_no_switch():
-    assert prod_vote_credit("villager", "abstain", ROLES, day_res=NO_LYNCH) == "negative"
-    assert prod_vote_credit("villager", "abstain", ROLES, day_res=LYNCHED_THREAT) == "neutral"
-    assert prod_vote_credit("villager", "abstain", ROLES) == "neutral"  # missing row: degrade
-    # deceivers keep their own abstain semantics under the town rule
-    assert prod_vote_credit("serial_killer", "abstain", ROLES, day_res=NO_LYNCH) == "neutral"
-    assert prod_vote_credit("wolf", "abstain", ROLES, majority="abstain", day_res=NO_LYNCH) == "positive"
+    view = GameView({"roles": ROLES})
+    assert view.vote_grade("player_1", "sentinel", 2, "abstain", day_res=NO_LYNCH) == "negative"
+    assert view.vote_grade("player_1", "sentinel", 2, "abstain", day_res=LYNCHED_THREAT) == "neutral"
+    assert view.vote_grade("player_1", "sentinel", 2, "abstain") == "neutral"  # missing row: degrade
+    # evil seats keep their own abstain semantics under the town rule
+    assert view.vote_grade("player_5", "serial_killer", 2, "abstain", day_res=NO_LYNCH) == "neutral"
+    assert view.vote_grade("player_2", "chanteuse", 2, "abstain", majority="abstain", day_res=NO_LYNCH) == "positive"
     import inspect
-    assert "abstain_rule" not in inspect.signature(prod_vote_credit).parameters
+    assert "abstain_rule" not in inspect.signature(view.vote_grade).parameters
     assert "abstain_rule" not in inspect.signature(prod_credit_apply).parameters
+    assert not hasattr(TickConfig(), "conversion_window_days")
 
 
-def test_production_prune_applies_conversion_term_unconditionally(tmp_path):
-    ns = {"strategy_points/investigator/day_vote": [
-        _sp("k_silence", cell="investigator/day_vote", conversion_neg_count=5),
-        _sp("k_proven", cell="investigator/day_vote", follow_count=8, positive_count=8,
-            conversion_neg_count=5),
-    ]}
-    stats = prod_prune_and_evict(ns, {"investigator/day_vote": [0.0, 4]}, TickConfig())
-    assert stats["pruned"] == 1  # no flag to turn on — the channel is part of the system
-    assert [r["key"] for r in ns["strategy_points/investigator/day_vote"]] == ["k_proven"]
-    import inspect
-    assert not hasattr(TickConfig(), "conversion_credit")
-    assert not hasattr(TickConfig(), "abstain_credit")
-    del inspect
-
-
-# --- (b) parity with the eval grader pinned to the fixed settings -----------------------------------
+# --- the window the tick test grades ---------------------------------------------------------------
 
 def _window(tmp: Path) -> tuple[str, str]:
     on_cases = [
-        _vote_case("villager", "player_1", "abstain", key="k_abstain"),
-        _vote_case("villager", "player_3", "player_2", key="k_push"),
+        _vote_case("sentinel", "player_1", "abstain", key="k_abstain"),
+        _vote_case("trailseer", "player_3", "player_2", key="k_push"),
         _vote_case("investigator", "player_4", "abstain", key="k_abstain"),
     ]
     off_cases = [
-        _vote_case("villager", "player_1", "abstain", mem=False),
-        _vote_case("villager", "player_3", "player_2", mem=False),
+        _vote_case("sentinel", "player_1", "abstain", mem=False),
+        _vote_case("trailseer", "player_3", "player_2", mem=False),
     ]
     on = _game(tmp, "on", on_cases, day_res=[NO_LYNCH], night_res=[])
     off = _game(tmp, "off", off_cases, day_res=[NO_LYNCH], night_res=[])
     return on, off
 
 
-def test_credit_parity_with_pinned_eval_grader(tmp_path):
-    sps = {"strategy_points/villager/day_vote": [_sp("k_abstain"), _sp("k_push")],
-           "strategy_points/investigator/day_vote": [_sp("k_abstain", cell="investigator/day_vote")]}
-    on, off = _window(tmp_path)
-    prod_dir, eval_dir = tmp_path / "prod", tmp_path / "eval"
-    prod_dir.mkdir(), eval_dir.mkdir()
-    p_sp = _sp_store(prod_dir, "strategy_points.json", sps)
-    e_sp = _sp_store(eval_dir, "strategy_points.json", sps)
-
-    prod_credit_apply(p_sp, on, base_rates=prod_base_rates(off), off_window=off)
-    eval_credit_apply(e_sp, on, base_rates=eval_base_rates(off, abstain_rule="deadlock_negative"),
-                      off_window=off, abstain_rule="deadlock_negative")
-    assert json.loads(p_sp.read_text()) == json.loads(e_sp.read_text())
-    assert (json.loads((prod_dir / "base_rates.json").read_text())
-            == json.loads((eval_dir / "base_rates.json").read_text()))
-
-    prod_conversion_apply(p_sp, on, off_window=off, window_days=2)
-    eval_conversion_apply(e_sp, on, off_window=off, window_days=2)
-    assert json.loads(p_sp.read_text()) == json.loads(e_sp.read_text())
-
-
 # --- (c) the poisoning guard ------------------------------------------------------------------------
 
 def test_human_involved_games_teach_nothing(tmp_path):
-    cases_on = [_vote_case("villager", "player_3", "player_2", key="k_push")]
-    cases_off = [_vote_case("villager", "player_1", "abstain", mem=False)]
+    cases_on = [_vote_case("trailseer", "player_3", "player_2", key="k_push")]
+    cases_off = [_vote_case("sentinel", "player_1", "abstain", mem=False)]
     human_on = _game(tmp_path, "hon", cases_on, day_res=[NO_LYNCH], human_player="player_1")
     human_off = _game(tmp_path, "hoff", cases_off, day_res=[NO_LYNCH], human_player="player_1")
     sp = _sp_store(tmp_path, "strategy_points.json", {
-        "strategy_points/villager/day_vote": [_sp("k_push")]})
+        "strategy_points/trailseer/day_vote": [_sp("k_push", cell="trailseer/day_vote")]})
     assert prod_base_rates(human_off) == {}
     stats = prod_credit_apply(sp, human_on, base_rates={}, off_window=None)
     assert stats["ledger_keys"] == 0 and stats["credited"] == 0
@@ -176,10 +135,16 @@ def test_db_roundtrip_in_temp_schema():
 
 
 @needs_db
-def test_tick_end_to_end_llm_free(tmp_path):
+def test_tick_end_to_end_llm_free(tmp_path, monkeypatch):
     import psycopg
 
-    from Agents.memory.consolidation.tick import run_tick
+    from Agents.memory.consolidation.tick import run_credit_pass, run_tick
+    from Agents.memory.persistence import postgres as pg
+
+    # the publish step at the end of each pass embeds what changed; a fake embedder keeps the
+    # test LLM-free while the served game's index is still built in the throwaway database
+    monkeypatch.setattr(pg, "index_config", lambda: {
+        "dims": 4, "embed": lambda texts: [[1.0, 0.0, 0.0, 0.0] for _ in texts], "fields": ["situation"]})
 
     # a throwaway database so the tick can exercise the REAL path (own connection, real tables)
     dbname = f"ww_tick_test_{uuid.uuid4().hex[:10]}"
@@ -190,21 +155,28 @@ def test_tick_end_to_end_llm_free(tmp_path):
         boot = tmp_path / "boot_store"
         boot.mkdir()
         (boot / "strategy_points.json").write_text(json.dumps({"namespaces": {
-            "strategy_points/villager/day_vote": [_sp("k_abstain"), _sp("k_push")]}}))
+            "strategy_points/sentinel/day_vote": [_sp("k_abstain", cell="sentinel/day_vote")],
+            "strategy_points/trailseer/day_vote": [_sp("k_push", cell="trailseer/day_vote")]}}))
         (boot / "observations.json").write_text(json.dumps({"namespaces": {}}))
         on, off = _window(tmp_path)
         game_store = tmp_path / "game1_store"
         game_store.mkdir()
         (game_store / "observations.json").write_text(json.dumps({"namespaces": {
-            "observations/villager/day_vote": [{"key": "obs_new", "value": {
+            "observations/sentinel/day_vote": [{"key": "obs_new", "value": {
                 "observation_count": 1, "situation": "s", "observation": "o"}}]}}))
 
-        cfg = TickConfig(synthesize=False, sp_dedup=False, obs_fold_dedup=False)
-        stats = run_tick(on, off, [str(game_store)], snapshot_root=tmp_path / "snaps",
-                         bootstrap_store=boot, cfg=cfg, dsn=test_dsn)
+        # the credit pass: labels from the games, then prune and evict, recorded in credit_runs
+        credit = run_credit_pass(on, off, dsn=test_dsn, bootstrap_store=boot)
+        assert credit["games"] == 1 and credit["credit"]["credited"] == 2
+        with psycopg.connect(test_dsn) as conn:
+            assert conn.execute("SELECT count(*) FROM credit_runs").fetchone()[0] == 1
 
+        # the learning tick folds and freezes; it reads the labels the pass left and never prunes
+        cfg = TickConfig(synthesize=False, sp_dedup=False, obs_fold_dedup=False)
+        stats = run_tick([str(game_store)], snapshot_root=tmp_path / "snaps",
+                         bootstrap_store=boot, cfg=cfg, dsn=test_dsn)
         assert stats["gen"] == 1 and stats["fold"]["new_obs"] == 1
-        assert stats["credit"]["credited"] == 2
+        assert stats["consolidate"]["prune_evict"] == {}
         snap = Path(stats["snapshot_dir"])
         assert snap.name == "demo_gen1" and (snap / "manifest.json").exists()
         manifest = json.loads((snap / "manifest.json").read_text())
@@ -214,10 +186,9 @@ def test_tick_end_to_end_llm_free(tmp_path):
         assert by_key["k_abstain"]["negative_count"] == 2   # both abstain follows on the no-lynch day
         assert by_key["k_push"]["positive_count"] == 1
         obs = json.loads((snap / "observations.json").read_text())
-        assert [r["key"] for r in obs["namespaces"]["observations/villager/day_vote"]] == ["obs_new"]
+        assert [r["key"] for r in obs["namespaces"]["observations/sentinel/day_vote"]] == ["obs_new"]
 
-        stats2 = run_tick(on, off, [], snapshot_root=tmp_path / "snaps",
-                          bootstrap_store=boot, cfg=cfg, dsn=test_dsn)
+        stats2 = run_tick([], snapshot_root=tmp_path / "snaps", bootstrap_store=boot, cfg=cfg, dsn=test_dsn)
         assert stats2["gen"] == 2 and Path(stats2["snapshot_dir"]).name == "demo_gen2"
     finally:
         admin.execute(f'DROP DATABASE IF EXISTS "{dbname}" WITH (FORCE)')
