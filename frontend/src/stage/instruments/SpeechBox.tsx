@@ -1,10 +1,12 @@
 'use client';
 
 /**
- * The speech box: what the seat at the stand says, on a walnut board edged in brass at the
- * foot of the stage, with a brass nameplate on its top-left corner (the seat's chip and
- * "Seat n"). A pass is the same board saying "passes."; with the X-ray on, a pass also says
- * why, and what the agent held back, in the X-ray's verdigris.
+ * The speech box: what the seat at the stand says, on a patch of cream felt stitched round its
+ * edge at the foot of the stage, under a red felt label on its top-left corner (the seat's chip
+ * and "Seat n"): the cast are felt, and a seat's words are its own (owner, 2026-10-15; the
+ * house's notices are printed paper, the stage directions placards). A pass is the same patch
+ * saying "passes."; with the X-ray on, a pass also says why, and what the agent held back, in
+ * the X-ray's verdigris.
  *
  * The board is a fixed size: three lines (owner, 2026-09-29). A longer line is told a page at
  * a time, each page a beat of its own (beats/pages.ts); the board shows the beat's page and,
@@ -19,7 +21,7 @@
  */
 import { motion } from 'motion/react';
 import type { CSSProperties } from 'react';
-import { SPRITES, type Character } from '@/assets/manifest';
+import type { Character } from '@/assets/manifest';
 import { speechPages } from '../beats/pages';
 import { ChipSprite } from '../cast/ChipSprite';
 import { useMotionScale } from '../motion';
@@ -104,7 +106,6 @@ export function SpeechBox({
         className={[styles.box, side && styles.side, onNext && styles.tap]
           .filter(Boolean)
           .join(' ')}
-        style={{ '--board': `url(${SPRITES.textures.walnut.src})` } as CSSProperties}
         initial={arrive ? { opacity: 0 } : false}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4 * k }}

@@ -1,6 +1,8 @@
-/* The speech box: the band from the benches (rev 72 `.zone`), the board from the HUD pass
-   (owner, 2026-09-29, the "Young Serif + Literata" board). Sizes in the board are ems, so the
-   whole board scales with its words. */
+/* The speech box: the band from the benches (rev 72 `.zone`), the type from the HUD pass
+   (owner, 2026-09-29, "Young Serif + Literata"), the material a felt patch (owner, 2026-10-15):
+   what a seat says is cream felt stitched round its edge, under a red felt label naming the
+   seat, as the plush cast are felt; the house's notices are paper and the stage directions
+   placards (Notice). Sizes in the patch are ems, so it scales with its words. */
 
 /* the band along the foot of the stage the box is centred in, clear of the wing */
 .zone {
@@ -29,20 +31,30 @@
   width: calc((var(--measure) + 2) * 1em);
   flex: 0 0 auto;
   box-sizing: border-box;
-  padding: 0.78em 1em 0.72em;
-  border-radius: 0.42em;
-  color: var(--cream);
-  /* deep walnut, its grain a still whisper under the stain; a thin brass edge with a dark
-     reveal and a fainter inner line, as on the room's picture frames */
-  background:
-    linear-gradient(180deg, rgba(50, 32, 19, 0.9), rgba(27, 17, 10, 0.95)),
-    var(--board) 0 0 / 320px 320px repeat,
-    var(--walnut-bot);
-  border: 1.5px solid var(--hud-brass);
+  padding: 0.85em 1.1em 0.78em;
+  border-radius: 0.6em;
+  color: var(--felt-ink);
+  /* cream felt: a fine weave both ways, a soft light from the top left, a little thickness
+     at the foot */
+  background-color: #eee2c6;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(80, 60, 30, 0.035) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at 15% 10%, rgba(255, 255, 255, 0.35), transparent 55%);
   box-shadow:
-    inset 0 0 0 3px rgba(22, 13, 7, 0.9),
-    inset 0 0 0 4px rgba(201, 164, 92, 0.32),
+    inset 0 -0.12em 0 rgba(120, 90, 50, 0.18),
     0 6px 18px rgba(0, 0, 0, 0.55);
+  --felt-ink: #2a1d11;
+  --felt-xray: #2c6b61;
+}
+/* the stitching, set in from the edge */
+.box::before {
+  content: '';
+  position: absolute;
+  inset: 0.28em;
+  border: 0.06em dashed rgba(122, 92, 52, 0.75);
+  border-radius: 0.4em;
+  pointer-events: none;
 }
 /* beside the drawer: at full size the room holds the measure, and nothing changes; on a phone
    (--grown) it does not, so the page is set on a shorter measure in four lines, the words a
@@ -57,7 +69,7 @@
   cursor: pointer;
 }
 
-/* the nameplate: a brass-edged tab on the board's top-left corner */
+/* the label: a red felt tab stitched to the patch's top-left corner, the seat's chip and name */
 .head {
   position: absolute;
   left: 0.9em;
@@ -70,25 +82,33 @@
   white-space: nowrap;
   font-size: 0.78em;
   line-height: 1.2;
-  padding: 0.16em 0.55em 0.16em 0.2em;
+  padding: 0.2em 0.6em 0.2em 0.24em;
+  border-radius: 0.4em;
+  color: #f8ecd6;
+  background: #a8322a;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+}
+/* its stitching */
+.head::after {
+  content: '';
+  position: absolute;
+  inset: 0.14em;
+  border: 0.07em dashed rgba(248, 236, 214, 0.8);
   border-radius: 0.3em;
-  color: var(--cream2);
-  background: linear-gradient(180deg, var(--walnut-top), var(--walnut-bot));
-  border: 1.5px solid var(--hud-brass);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
 }
 .head strong {
   font-family: var(--font-display);
   font-weight: 400;
-  color: var(--cream);
+  color: #fbf2e0;
   font-size: 1.05em;
 }
 .chip {
   width: 1.45em;
   aspect-ratio: 1;
   flex: 0 0 auto;
-  border-radius: 0.2em;
-  border: 1px solid var(--hud-brass-lo);
+  border-radius: 50%;
+  border: 1px solid rgba(248, 236, 214, 0.7);
   overflow: hidden;
   line-height: 0;
   display: inline-block;
@@ -102,7 +122,7 @@
   text-overflow: ellipsis;
 }
 .agent {
-  color: var(--amber);
+  color: #ffd38a;
 }
 
 /* three lines, always: the board never grows with the words (the pages keep them to three) */
@@ -116,16 +136,16 @@
 .body > span {
   display: block;
 }
-/* the X-ray's words in the box: verdigris */
+/* the X-ray's words: verdigris, light on the red label */
 .xr {
-  color: var(--xray);
+  color: #c8eee4;
 }
 /* what the agent held back, under "passes.": the board's two other lines */
 .draft {
   margin-top: calc(-2 * 1.35em);
   font-size: 0.82em;
   line-height: 1.35;
-  color: var(--xray);
+  color: var(--felt-xray);
   font-style: italic;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -142,13 +162,13 @@
   font-family: var(--font-display);
   font-size: 0.64em;
   line-height: 1;
-  color: var(--cream2);
+  color: #6b5638;
   display: inline-flex;
   align-items: center;
   gap: 0.4em;
 }
 .pager i {
   font-style: normal;
-  color: var(--hud-brass);
+  color: #a8322a;
   font-size: 0.85em;
 }
