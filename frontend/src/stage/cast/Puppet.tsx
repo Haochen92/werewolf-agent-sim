@@ -15,6 +15,7 @@
  * `arrive` plays the puppet rising into the stand from behind it; without it the puppet is
  * simply there, at rest, which is how every seek and refresh lands.
  */
+import { useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'motion/react';
 import { BODY, SPRITES, type Character, type DayState } from '@/assets/manifest';
@@ -111,6 +112,12 @@ export function Puppet({
     nw = nh / box.aspect;
   const ntop = b.top * 100 + b.body * 100 * 0.62 - nh / 2;
   const place = { left: box.left, top: box.top, width: box.w, height: box.h };
+  // the rise is a transform set from script on every frame: on a layer of its own while it plays
+  // the compositor only moves the picture, where off one the figure and its shadow were painted
+  // and rastered again at the screen's density each frame (a phone's rise ran at half its frame
+  // rate, 2026-10-15). Only while it rises: a layer is a bitmap held for as long as it lasts.
+  const [rising, setRising] = useState(arrive !== false);
+  const lift = rising ? { ...place, willChange: 'transform' } : place;
   const rise = {
     initial: arrive === false ? (false as const) : { y: '100%' },
     animate: { y: 0 },
@@ -133,7 +140,7 @@ export function Puppet({
             clipPath: glass ? offGlass(g) : undefined,
           }}
         >
-          <motion.div className={styles.pup} style={place} {...rise}>
+          <motion.div className={styles.pup} style={lift} {...rise}>
             <CastShadow
               src={SPRITES.shadow.day[character][state]}
               w={box.w}
@@ -145,9 +152,12 @@ export function Puppet({
       ) : null}
       <motion.div
         className={styles.pup}
-        style={place}
+        style={lift}
         {...rise}
-        onAnimationComplete={onArrived}
+        onAnimationComplete={() => {
+          setRising(false);
+          onArrived?.();
+        }}
       >
         <Image
           decoding="sync"
