@@ -368,7 +368,6 @@ function VoteBeat({
           {/* the replay's stop (the X-ray on): the ballots are in, each seat's file a tap away */}
           {stop && id === VOTE_STOP && ballots.length ? (
             <Notice
-              walnut
               title={`${ballots.length} ballots in.`}
               arrive={animate}
               delay={0.6}
@@ -383,6 +382,8 @@ function VoteBeat({
           ) : null}
           {words ? (
             <Notice
+              kind="paper"
+              head={`Day ${day} · The vote`}
               chip={lynched ? cast[seatNumber(lynched) - 1] : null}
               title={lynched === me && lynched ? `${words.title} (you)` : words.title}
               arrive={animate && id === 'vote.result'}

@@ -306,7 +306,13 @@ function DealWords({
       if (!myRole) return null;
       const bullets = view.me.role?.bullets ?? null;
       return (
-        <Notice sigil={myRole} title={`You are ${ROLE_ARTICLE[myRole] ?? myRole}`} {...t}>
+        <Notice
+          kind="paper"
+          head="Your card"
+          sigil={myRole}
+          title={`You are ${ROLE_ARTICLE[myRole] ?? myRole}`}
+          {...t}
+        >
           {cardTextFor(myRole, isNineSeat(view))?.night}
           {myRole === 'vigilante' && bullets !== null ? <Caps n={bullets} /> : null}
         </Notice>

@@ -1,4 +1,4 @@
-/* The morning roll on the walnut notice: a row per seat, the chip, who, and how it went. On a
+/* The morning roll on the house's printed paper (Notice `paper`): a row per seat, the chip, who, and how it went. On a
    phone a cause too long for the row goes under the name, and wraps there; nothing is clipped. */
 .roll {
   list-style: none;
@@ -13,7 +13,7 @@
   align-items: center;
   gap: calc(12.8px * var(--legible-ui));
   padding-top: calc(6.4px * var(--legible-ui));
-  border-top: 1px solid rgba(201, 164, 92, 0.22);
+  border-top: 1px solid rgba(42, 29, 17, 0.18);
 }
 .row:first-child {
   border-top: 0;
@@ -39,7 +39,7 @@
 }
 .who {
   font-family: var(--font-display);
-  color: var(--cream);
+  color: var(--paper-ink, #2a1d11);
   white-space: nowrap;
 }
 .cause {
@@ -48,7 +48,7 @@
   display: flex;
   align-items: center;
   gap: calc(6.4px * var(--legible-ui));
-  color: var(--cream2);
+  color: var(--paper-soft, #6b5638);
 }
 .cause > span {
   min-width: 0;

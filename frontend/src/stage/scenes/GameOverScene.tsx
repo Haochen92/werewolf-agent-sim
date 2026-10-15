@@ -281,12 +281,24 @@ function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
               <CardButton role={myRole} gone={myDead} onOpen={turn?.onCard} />
             ) : null}
             {step === 0 && ended === 'lynch' ? (
-              <Notice title="The vote’s end" arrive={animate} delay={0.7}>
+              <Notice
+                kind="paper"
+                head="Game over"
+                title="The vote’s end"
+                arrive={animate}
+                delay={0.7}
+              >
                 {endingLine(view)}
               </Notice>
             ) : step === 0 ? (
               // a morning's end: the morning's roll, now with the roles (every card is down)
-              <Notice title="The morning roll" walnut arrive={animate} delay={0.7}>
+              <Notice
+                kind="paper"
+                head="Game over"
+                title="The morning roll"
+                arrive={animate}
+                delay={0.7}
+              >
                 <MorningRoll
                   rows={reportOf(view.days[view.day]?.night ?? null)}
                   cast={cast}
@@ -385,6 +397,8 @@ export function EndBox({
     );
   return (
     <Notice
+      kind="paper"
+      head="Game over"
       title={
         <span className={`${styles.title} ${side ? styles[`c-${side}`] : ''}`}>
           {/* a draw has no side, so no pennant and no side's colour */}

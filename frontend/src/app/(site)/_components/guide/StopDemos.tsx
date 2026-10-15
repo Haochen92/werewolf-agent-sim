@@ -374,7 +374,7 @@ export function LastWordDemo() {
 export function MorningDemo() {
   return (
     <Crop w={720} h={300} fit>
-      <Notice title="The morning roll" walnut>
+      <Notice kind="paper" head="Dawn 2 · The report" title="The morning roll">
         <MorningRoll
           rows={[
             { kind: 'death', player: 'player_6', role: 'sigilist', types: ['wolves'] },

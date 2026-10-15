@@ -309,7 +309,6 @@ export function LeaveConfirm({
         data-leave-confirm
       >
         <Notice
-          walnut
           title="Leave the table?"
           actions={
             <>
@@ -381,7 +380,6 @@ export function AwayNotice({
         data-away-notice
       >
         <Notice
-          walnut
           title="You’re back"
           actions={
             <>

@@ -250,7 +250,6 @@ function LobbyBeat({
             hidden={presentation.footHidden}
           >
             <Notice
-              walnut
               // rooms, as the pill counts them (the pack's two wolves are one)
               title={`Night ${beat.day} · ${new Set([...acted.values()].flat()).size} acted.`}
               arrive={animate}

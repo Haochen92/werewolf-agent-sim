@@ -288,6 +288,8 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
           ) : null}
           {step < 2 ? (
             <Notice
+              kind="paper"
+              head={`Day ${day} · The vote`}
               chip={mine ? null : character}
               title={mine ? 'You are voted out' : `Seat ${n}`}
               arrive={animate && id === 'lynch.named'}
@@ -299,6 +301,8 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
             </Notice>
           ) : (
             <Notice
+              kind="paper"
+              head={`Day ${day} · The vote`}
               sigil={role}
               title={mine ? `You were ${article}` : `Seat ${n} was ${article}`}
               arrive={animate && id === 'lynch.card-up'}

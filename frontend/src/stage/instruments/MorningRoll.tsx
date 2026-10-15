@@ -1,8 +1,8 @@
 'use client';
 
 /**
- * The morning roll (owner, 2026-09-30): what the night did, read as a list on the walnut
- * notice rather than as sentences in a box. One row per death, the seat's chip, "Seat 1 ·
+ * The morning roll (owner, 2026-09-30): what the night did, read as a list on the house's
+ * printed paper (owner, 2026-10-15) rather than as sentences in a box. One row per death, the seat's chip, "Seat 1 ·
  * Villager" and how it went, each attacker's felt sigil before the words; a seat that
  * survived an attack gets a row too (each of the healer's saves, which the log names), the
  * speculator's pick is a last row in the game master's words, and a quiet night is the one

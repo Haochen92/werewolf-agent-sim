@@ -520,6 +520,7 @@ function MorningBeat(props: SceneProps) {
             {myCard ? <CardButton role={myCard} onOpen={turn?.onCard} /> : null}
             <MorningWords
               id={id}
+              day={nightDay + 1}
               report={report}
               pick={night?.pick ?? null}
               told={told}
@@ -539,6 +540,7 @@ function MorningBeat(props: SceneProps) {
 /** The box at the foot for each beat of the morning. */
 function MorningWords({
   id,
+  day,
   report,
   pick,
   told,
@@ -549,6 +551,8 @@ function MorningWords({
   arrive,
 }: {
   id: SceneBeat['id'];
+  /** The dawn this is, as the strip names it (the night's day + 1): the paper's head, "Dawn 2 · The report". */
+  day: number;
   /** The seats the night touched (deaths and saves). */
   report: SeatTold[];
   /** The side a speculator picked tonight, a fact the roll (or the quiet night) tells last. */
@@ -561,6 +565,8 @@ function MorningWords({
   arrive: boolean;
 }) {
   const t = { arrive, delay: 0.7 };
+  // the house's report: printed paper under its head (owner, 2026-10-15)
+  const printed = { kind: 'paper', head: `Dawn ${day} · The report` } as const;
   const chipOf = (seat: string) => cast[seatNumber(seat) - 1];
   const seatName = (seat: string) =>
     `Seat ${seatNumber(seat)}${seat === me ? ' (you)' : ''}`;
@@ -569,7 +575,7 @@ function MorningWords({
       // only how many the night touched: the names wait for the chips, the roll for the end
       const n = report.length;
       return (
-        <Notice title="The morning" walnut {...t}>
+        <Notice title="The morning" {...printed} {...t}>
           {n
             ? `${COUNT[n] ?? n} ${n === 1 ? 'seat was' : 'seats were'} touched in the night.`
             : null}
@@ -579,7 +585,7 @@ function MorningWords({
     case 'morning.roll':
       // the roll: the whole night at a glance, once it has been told a chip at a time
       return (
-        <Notice title="The morning roll" walnut {...t}>
+        <Notice title="The morning roll" {...printed} {...t}>
           <MorningRoll
             rows={pick ? [...report, { kind: 'pick', pick }] : report}
             cast={cast}
@@ -591,7 +597,13 @@ function MorningWords({
     case 'morning.chip-attacked':
       if (!told) return null;
       return (
-        <Notice chip={chipOf(told.player)} title={seatName(told.player)} {...t}>
+        <Notice
+          chip={chipOf(told.player)}
+          title={seatName(told.player)}
+          {...printed}
+          stamp="Attacked"
+          {...t}
+        >
           was attacked in the night.
         </Notice>
       );
@@ -605,6 +617,8 @@ function MorningWords({
         <Notice
           chip={chipOf(told.player)}
           title={`${seatName(told.player)} ${how}`}
+          {...printed}
+          stamp="Dead"
           {...t}
         />
       );
@@ -620,6 +634,7 @@ function MorningWords({
               ? `Seat ${seatNumber(told.player)}’s role was hidden`
               : `Seat ${seatNumber(told.player)} was ${ROLE_ARTICLE[told.role] ?? told.role}`
           }
+          {...printed}
           {...t}
         >
           {told.player === me ? 'You stay at the table as a spectator.' : null}
@@ -631,6 +646,7 @@ function MorningWords({
         <Notice
           chip={chipOf(told.player)}
           title={`${seatName(told.player)} was attacked by ${told.types.map((x) => BY[x]).join(' and ')}`}
+          {...printed}
           {...t}
         >
           And saved by the healer.
@@ -638,7 +654,7 @@ function MorningWords({
       );
     case 'morning.quiet':
       return (
-        <Notice title="A quiet night" {...t}>
+        <Notice title="A quiet night" {...printed} {...t}>
           No one died.{pick ? ` ${pickLine(pick)}` : ''}
         </Notice>
       );
@@ -649,6 +665,8 @@ function MorningWords({
         const yours = mine.pack ? !!view.me.role?.pack && !!me : mine.seat === me;
         return (
           <Notice
+            kind="paper"
+            head={`Dawn ${day} · Private`}
             title={yours ? 'What only you learn' : 'What only they learn'}
             aqua={
               yours
@@ -688,6 +706,8 @@ function MorningWords({
             : `${yours ? 'Your' : "The pack's"} kill on seat ${target} failed. Seat ${target} survived.`;
       return (
         <Notice
+          kind="paper"
+          head={`Dawn ${day} · Private`}
           title={yours ? 'What only you learn' : 'What only they learn'}
           aqua={aqua}
           {...t}

@@ -2,9 +2,12 @@
 
 /**
  * What the stage says in words when nobody is at the stand: "Nine at the table", "Seat 3 was
- * attacked in the night", "You are the healer". A dark glass box at the foot of the stage, in
- * the speech box's place, with the seat's chip or the role's sigil in its header; and, for a
- * seated human, their card at rest beside it ("your card").
+ * attacked in the night", "You are the healer". At the foot of the stage, in the speech box's
+ * place, with the seat's chip or the role's sigil in its header; and, for a seated human, their
+ * card at rest beside it ("your card"). Two kinds (owner, 2026-10-15): a stage direction, what
+ * is happening or what to do, is a placard held up from below the stage on one pole (`placard`,
+ * the default); what the house tells, a fact of the game, is printed paper under a ruled head,
+ * a death stamped in red (`paper`). A seat's own words are the speech box's felt.
  *
  * Every line here is the client's: nothing on the wire narrates the deal or reads the morning
  * aloud. `arrive` fades the box in when a beat plays forward; at rest it is simply there.
@@ -17,7 +20,7 @@ import { useMotionScale } from '../motion';
 import { CARD_TEXT } from '../card-text';
 import { roleAvatar } from '../paint/role-kit';
 import { ROLE_ORDER, ROLE_PLURAL, factionOf } from '../roles';
-import { bandFoot, geometry, type Hud } from '../units';
+import { bandFoot, geometry, type Hud, type StageGeometry } from '../units';
 import { Sigil } from './Sigil';
 import styles from './Notice.module.css';
 
@@ -55,6 +58,8 @@ export function NoticeZone({
           bottom: bandFoot(hud, 19.2),
           '--right': `${right}px`,
           '--aside': aside ? `${1600 - s.wingN - s.room + inset}px` : undefined,
+          // how far the zone stands off the stage's foot: the placard's pole runs down it
+          '--foot': `${bandFoot(hud, 19.2)}px`,
           visibility: hidden ? 'hidden' : undefined,
         } as CSSProperties
       }
@@ -65,6 +70,12 @@ export function NoticeZone({
 }
 
 export interface NoticeProps {
+  /** A stage direction (`placard`, the default) or what the house tells (`paper`). */
+  kind?: 'placard' | 'paper';
+  /** The paper's printed head, ruled off over the words: "Dawn 2 · The report". */
+  head?: ReactNode;
+  /** The paper's stamp, struck over its right: "Killed". */
+  stamp?: string | null;
   /** The header's lead: a seat's chip, or a role's sigil. */
   chip?: Character | null;
   sigil?: string | null;
@@ -78,16 +89,14 @@ export interface NoticeProps {
   arrive?: boolean;
   /** Arrival delay, seconds. */
   delay?: number;
-  /**
-   * The HUD's walnut board (the speech box's material) in place of the glass: a notice the
-   * viewer answers, the replay's stops (owner, 2026-09-30).
-   */
-  walnut?: boolean;
   /** The ways on, under the words: `NoticeButton`s. */
   actions?: ReactNode;
 }
 
 export function Notice({
+  kind = 'placard',
+  head,
+  stamp,
   chip,
   sigil,
   title,
@@ -97,31 +106,22 @@ export function Notice({
   wide,
   arrive = false,
   delay = 0,
-  walnut = false,
   actions,
 }: NoticeProps) {
   const k = useMotionScale();
   const f = factionOf(sigil);
+  const paper = kind === 'paper';
   const cls = [
     styles.box,
+    paper ? styles.paper : styles.placard,
+    paper && stamp ? styles.stamped : '',
     wide ? styles.wide : '',
-    aqua ? styles.xr : '',
-    walnut ? styles.walnut : '',
   ]
     .filter(Boolean)
     .join(' ');
-  return (
-    <motion.div
-      className={cls}
-      style={
-        walnut
-          ? ({ '--board': `url(${SPRITES.textures.walnut.src})` } as CSSProperties)
-          : undefined
-      }
-      initial={arrive ? { opacity: 0 } : false}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.4 * k, delay: delay * k }}
-    >
+  const words = (
+    <>
+      {paper && head ? <span className={styles.ruled}>{head}</span> : null}
       <header className={styles.head}>
         {chip ? (
           <span className={styles.chip}>
@@ -141,7 +141,76 @@ export function Notice({
       </header>
       {children ? <div className={styles.body}>{children}</div> : null}
       {actions ? <div className={styles.actions}>{actions}</div> : null}
+      {paper && stamp ? <span className={styles.stamp}>{stamp}</span> : null}
+    </>
+  );
+  return (
+    <motion.div
+      className={cls}
+      style={
+        paper
+          ? undefined
+          : ({ '--board': `url(${SPRITES.textures.walnut.src})` } as CSSProperties)
+      }
+      initial={arrive ? { opacity: 0 } : false}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 * k, delay: delay * k }}
+    >
+      {paper ? words : <div className={styles.face}>{words}</div>}
     </motion.div>
+  );
+}
+
+/**
+ * A stage direction while the stand is empty in the day (owner, 2026-10-15): the placard held
+ * up over the stand, tilted, its pole running down behind it as if someone below the rail held
+ * it, where the speaker would be. It belongs to the figures layer, so the stand's front covers
+ * the pole. `count` is the round's lines written so far ("3 of 9 written"), live only: the hand
+ * steps as each comes in, and nothing moves in between.
+ */
+export function HeldPlacard({
+  g,
+  count,
+  arrive = false,
+  children,
+}: {
+  g: StageGeometry;
+  count?: { n: number; total: number } | null;
+  arrive?: boolean;
+  children: ReactNode;
+}) {
+  const k = useMotionScale();
+  return (
+    <div
+      className={styles.held}
+      style={
+        {
+          left: g.cx,
+          top: g.railY - 60 * g.u,
+          '--u': `${g.u}px`,
+          '--board': `url(${SPRITES.textures.walnut.src})`,
+        } as CSSProperties
+      }
+      aria-live="polite"
+    >
+      <motion.div
+        className={`${styles.box} ${styles.placard}`}
+        initial={arrive ? { opacity: 0, y: 40 * g.u } : false}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45 * k, delay: 0.2 * k }}
+      >
+        <div className={styles.face}>
+          <header className={styles.head}>
+            <strong>{children}</strong>
+          </header>
+          {count && count.total > 0 ? (
+            <span className={styles.count}>
+              {count.n} <small>of</small> {count.total} <small>written</small>
+            </span>
+          ) : null}
+        </div>
+      </motion.div>
+    </div>
   );
 }
 
@@ -257,7 +326,7 @@ export function PackChat({
   const k = useMotionScale();
   return (
     <motion.div
-      className={`${styles.box} ${styles.wide} ${styles.pack}`}
+      className={`${styles.box} ${styles.glass} ${styles.wide} ${styles.pack}`}
       initial={arrive ? { opacity: 0 } : false}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 * k, delay: 0.7 * k }}

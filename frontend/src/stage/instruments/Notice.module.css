@@ -1,5 +1,8 @@
-/* What the stage says in words when nobody is at the stand: the benches' `.box.glass.result.big`
-   in the same foot zone as the speech box, with the "your card" button beside it (rev 67, 75). */
+/* What the stage says in words when nobody is at the stand, in the speech box's foot zone with
+   the "your card" button beside it (rev 67, 75). Two materials (owner, 2026-10-15): a stage
+   direction is a placard held up from below the stage on one pole, the stand's walnut round a
+   paper face; what the house tells is printed paper under a ruled head, with a stamp for a
+   death. The dark glass stays for the pack's chat. */
 .zone {
   position: absolute;
   /* --aside on a phone only (NoticeZone's `aside`) */
@@ -11,16 +14,195 @@
 }
 
 .box {
+  position: relative;
   min-width: 0;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   max-width: 1024px;
   flex: 0 1 auto;
+  color: var(--paper-ink);
+  --paper-ink: #2a1d11;
+  --paper-soft: #6b5638;
+  --paper-xray: #2c6b61;
+}
+.glass {
+  color: var(--bone);
   background: linear-gradient(180deg, var(--glass-top), var(--glass-bot));
   border: 1px solid var(--cloak2);
   padding: 14.4px 25.6px;
   border-radius: 17.6px;
+}
+
+/* ---------- the placard: a stage direction ---------- */
+/* the frame is the stand's own walnut, lit from the top left; the face is paper, held in it by
+   two brass tacks; one pole runs from its foot down out of the stage (the stage cuts it) */
+.placard {
+  padding: 9px;
+  border-radius: 6px;
+  background:
+    linear-gradient(
+      160deg,
+      rgba(255, 220, 170, 0.22),
+      rgba(0, 0, 0, 0) 40%,
+      rgba(0, 0, 0, 0.45)
+    ),
+    var(--board) center / 160px 160px,
+    var(--walnut-bot);
+  box-shadow:
+    8px 18px 28px rgba(0, 0, 0, 0.6),
+    0 1px 3px rgba(0, 0, 0, 0.5);
+}
+.placard::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 100%;
+  left: calc(50% - 9px);
+  width: 18px;
+  height: calc(var(--foot, 40px) + 8px);
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255, 220, 170, 0.28),
+      rgba(255, 220, 170, 0) 35%,
+      rgba(0, 0, 0, 0.55)
+    ),
+    var(--board) center / 130px 130px,
+    var(--walnut-bot);
+  box-shadow: 5px 0 10px rgba(0, 0, 0, 0.45);
+}
+.face {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 14.4px 28px 13px;
+  border-radius: 3px;
+  background-color: #efe3c8;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(60, 40, 20, 0.04) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(60, 40, 20, 0.03) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at 18% 12%, rgba(255, 250, 235, 0.55), transparent 55%),
+    radial-gradient(ellipse at 85% 95%, rgba(110, 80, 40, 0.3), transparent 60%);
+  box-shadow: inset 0 0 20px rgba(110, 80, 40, 0.28);
+}
+.face::before,
+.face::after {
+  content: '';
+  position: absolute;
+  top: 7px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #f6d48a, #7a5520 75%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+.face::before {
+  left: 9px;
+}
+.face::after {
+  right: 9px;
+}
+.face .head {
+  justify-content: center;
+}
+.face .actions {
+  justify-content: center;
+}
+
+/* ---------- the placard held over the empty stand (HeldPlacard) ---------- */
+/* placed by its foot above the stand's rail; tilted on its foot; its words in puppet units,
+   grown to the stage's spoken size where that is larger (a phone) */
+.held {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+  /* the pole runs from the placard's foot to below the rail, where the stand covers it */
+  --foot: calc(170 * var(--u));
+}
+.held .placard {
+  width: max-content;
+  max-width: calc(560 * var(--u));
+  transform: rotate(-2.5deg);
+  transform-origin: 50% 100%;
+}
+.held .head {
+  margin-bottom: 0;
+}
+.held .head strong {
+  font-size: max(calc(24 * var(--u)), var(--said));
+  line-height: 1.25;
+}
+/* the round's count: "3 of 9 written" */
+.count {
+  margin-top: 4px;
+  font-family: var(--font-display);
+  font-size: max(calc(34 * var(--u)), calc(var(--said) * 1.4));
+  line-height: 1.1;
+  color: var(--paper-ink);
+}
+.count small {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 0.45em;
+  color: var(--paper-soft);
+}
+
+/* ---------- the paper: what the house tells ---------- */
+.paper {
+  padding: 13px 25.6px 14.4px;
+  border-radius: 4px;
+  background-color: #efe3c8;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(60, 40, 20, 0.035) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at 12% 10%, rgba(255, 255, 255, 0.4), transparent 50%),
+    radial-gradient(ellipse at 92% 96%, rgba(120, 90, 50, 0.22), transparent 55%);
+  box-shadow:
+    inset 0 0 0 1px #d9c7a0,
+    0 6px 18px rgba(0, 0, 0, 0.6);
+}
+/* the printed head over the words: "Dawn 2 · The report", ruled off */
+.ruled {
+  display: block;
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+  border-bottom: 3px double rgba(42, 29, 17, 0.45);
+  font-family: var(--font-body);
+  /* the meta size, or half the words' where they have grown (a phone) */
+  font-size: max(calc(var(--meta) * 0.8), calc(var(--said) * 0.5));
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--paper-soft);
+}
+/* the stamp: a death's word in red ink, struck at a slant over the paper's right */
+.stamp {
+  position: absolute;
+  right: 22px;
+  top: 50%;
+  transform: translateY(-20%) rotate(-8deg);
+  padding: 2px 10px;
+  border: 2.5px solid currentColor;
+  border-radius: 4px;
+  color: #a8322a;
+  font-family: var(--font-body);
+  font-size: max(calc(var(--meta) * 0.9), calc(var(--said) * 0.6));
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  pointer-events: none;
+}
+.stamped {
+  padding-right: max(calc(var(--meta) * 9), calc(var(--said) * 6));
+}
+/* on paper the chip and the words keep one line, the words wrapping beside the chip */
+.paper .head {
+  flex-wrap: nowrap;
+}
+.paper .head strong {
+  min-width: 0;
 }
 .wide {
   flex: 1 1 auto;
@@ -31,17 +213,34 @@
   align-items: center;
   gap: 4.8px 11.2px;
   font-size: var(--meta);
-  color: var(--bone2);
+  color: var(--paper-soft);
   margin-bottom: 4.8px;
 }
+/* the heading, in the stage's display face; it grows on a phone as the words do */
 .head strong {
+  font-family: var(--font-display);
+  font-weight: 400;
+  color: var(--paper-ink);
+  font-size: calc(var(--said) * 1.1);
+}
+.body {
+  font-family: var(--font-body);
+  font-size: var(--said);
+  line-height: 1.4;
+  color: var(--paper-ink);
+}
+.glass .head {
+  color: var(--bone2);
+}
+.glass .head strong {
+  font-family: inherit;
   font-weight: 500;
   color: var(--bone);
   font-size: calc(var(--meta) * 1.5);
 }
-.body {
+.glass .body {
+  font-family: inherit;
   font-size: calc(var(--said) * 1.45);
-  line-height: 1.4;
   color: var(--bone);
 }
 .chip {
@@ -57,19 +256,15 @@
   display: inline-block;
   width: calc(var(--chip) * 0.7);
   height: calc(var(--chip) * 0.7);
-  color: var(--c, var(--bone));
+  color: var(--c, var(--paper-ink));
   stroke-width: 3;
 }
-/* the X-ray's words: "Only seat 4", in the X-ray's verdigris */
+/* the X-ray's words: "Only seat 4", in the X-ray's verdigris (a deeper one on paper) */
 .aqua {
-  color: var(--xray);
+  color: var(--paper-xray);
   border: 1px solid currentColor;
   border-radius: 16px;
   padding: 0 9.6px;
-}
-.xr {
-  border-color: var(--xray-line);
-  box-shadow: inset 0 0 0 1px rgba(134, 176, 160, 0.15);
 }
 
 .c-villagers {
@@ -96,8 +291,12 @@
   display: inline-flex;
   align-items: center;
   gap: 4.8px;
+  font-family: var(--font-body);
   font-size: var(--said);
-  color: var(--bone);
+  color: var(--paper-ink);
+}
+.face .cast {
+  justify-content: center;
 }
 .cast b {
   font-weight: 600;
@@ -116,7 +315,7 @@
   align-items: center;
   margin-top: 4.8px;
   font-size: var(--said);
-  color: var(--bone);
+  color: var(--paper-ink);
 }
 .caps i {
   width: calc(11.2px * var(--legible));
@@ -235,32 +434,7 @@
   padding: calc(6.4px * var(--legible)) calc(11.2px * var(--legible));
 }
 
-/* a notice the viewer answers (the replay's stops): the speech box's walnut board and brass
-   edge in place of the glass, the ways on under the words (owner, 2026-09-30) */
-.walnut {
-  border-radius: 12px;
-  background:
-    linear-gradient(180deg, rgba(50, 32, 19, 0.9), rgba(27, 17, 10, 0.95)),
-    var(--board) 0 0 / 320px 320px repeat,
-    var(--walnut-bot);
-  border: 1.5px solid var(--hud-brass);
-  box-shadow:
-    inset 0 0 0 3px rgba(22, 13, 7, 0.9),
-    inset 0 0 0 4px rgba(201, 164, 92, 0.32),
-    0 6px 18px rgba(0, 0, 0, 0.55);
-}
-.walnut .head strong {
-  font-family: var(--font-display);
-  font-weight: 400;
-  color: var(--cream);
-  /* a heading over the words: it grows on a phone as they do */
-  font-size: calc(var(--said) * 1.1);
-}
-.walnut .body {
-  font-family: var(--font-body);
-  font-size: var(--said);
-  color: var(--cream2);
-}
+/* the ways on, under the words (the replay's stops, owner 2026-09-30): on the placard's face */
 .actions {
   display: flex;
   flex-wrap: wrap;

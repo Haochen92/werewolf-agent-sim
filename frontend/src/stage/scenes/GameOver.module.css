@@ -1,5 +1,6 @@
 /* The ending's box, as bench 73 draws it (`.box.end`): the result in the card's serif in the
-   winning side's colour, the survivors' chips, and for a seated human whether they won. */
+   winning side's colour, the survivors' chips, and for a seated human whether they won. It is
+   the house's printed paper (owner, 2026-10-15), so the sides' colours are their inks. */
 .title {
   display: flex;
   flex-wrap: wrap;
@@ -18,19 +19,19 @@
   font-weight: 400;
   font-size: calc(22.4px * 1.6 * var(--legible-ui));
   line-height: 1.1;
-  color: var(--c, var(--bone));
+  color: var(--c, var(--paper-ink, #2a1d11));
 }
 .you {
   font-size: calc(22.4px * var(--legible-ui));
   font-weight: 400;
-  color: var(--bone);
+  color: var(--paper-ink, #2a1d11);
 }
 .you b {
   font-weight: 600;
-  color: var(--warm, #ffb35c);
+  color: #8a4b0e;
 }
 .lost b {
-  color: var(--bone2);
+  color: var(--paper-soft, #6b5638);
 }
 .winners {
   display: flex;
@@ -40,7 +41,7 @@
   margin: 4.8px 0 3.2px;
   font-size: var(--meta);
   line-height: 1.4;
-  color: var(--bone2);
+  color: var(--paper-soft, #6b5638);
 }
 .chip {
   width: calc(var(--chip) * 0.9);
@@ -109,18 +110,18 @@
 .sub {
   font-size: var(--meta);
   line-height: 1.4;
-  color: var(--bone2);
+  color: var(--paper-soft, #6b5638);
 }
 
 .c-villagers {
-  --c: var(--town);
+  --c: var(--town-ink);
 }
 .c-wolves {
-  --c: var(--wolf);
+  --c: var(--wolf-ink);
 }
 .c-serial_killer {
-  --c: var(--sk);
+  --c: var(--sk-ink);
 }
 .c-neutral_benign {
-  --c: var(--benign);
+  --c: var(--benign-ink);
 }

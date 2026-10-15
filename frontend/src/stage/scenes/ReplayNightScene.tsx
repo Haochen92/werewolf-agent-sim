@@ -275,7 +275,6 @@ function SpokeRoom({
             aqua={(ROLE_NAME[cur.role] ?? cur.role).toLowerCase()}
             arrive={animate}
             delay={0.7}
-            walnut={!!back}
             actions={back}
           >
             {actLine(cur.role, cur.target)}
