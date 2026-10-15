@@ -16,9 +16,10 @@ from dataclasses import dataclass
 
 @dataclass
 class TickConfig:
-    model: str = "gemini-3.1-flash-lite"        # synthesis model (validated ≈ pro on this task); a claude-* model
-                                                # is called through the Anthropic SDK
-    dedup_model: str = "gemini-3.1-flash-lite"  # KEEP/DISCARD dedup passes (merge-free => flash-lite safe)
+    model: str = "claude-sonnet-5-5"            # synthesis model (Sonnet 5.5, owner 2026-10-12; Claude since the
+                                                # Gemini credits ran out, 2026-10-15); a claude-* model is called
+                                                # through the Anthropic SDK
+    dedup_model: str = "anthropic/claude-haiku-5-5"  # KEEP/DISCARD dedup passes (merge-free => a cheap model is safe)
     obs_fold_dedup: bool = True                 # freeze-old obs dedup after the fold (off only in LLM-free tests)
     publish: bool = True                        # after a pass, mirror the records into the served game's
                                                 # index (persistence/postgres.py); off = records only

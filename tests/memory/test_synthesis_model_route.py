@@ -31,8 +31,9 @@ def test_a_claude_model_is_called_through_the_sdk_helper():
 
 def test_a_claude_tick_pins_the_factory_to_the_dedup_model():
     env = TickConfig(model="claude-sonnet-5-5").env()
-    assert env["GOOGLE_GENAI_PRO_MODEL"] == env["GOOGLE_GENAI_PRO_BACKUP_MODEL"] == "gemini-3.1-flash-lite"
-    assert TickConfig().env()["GOOGLE_GENAI_PRO_MODEL"] == "gemini-3.1-flash-lite"
+    assert env["GOOGLE_GENAI_PRO_MODEL"] == env["GOOGLE_GENAI_PRO_BACKUP_MODEL"] == TickConfig().dedup_model
+    # the default tick synthesizes on Claude too (Gemini's credits ran out, 2026-10-15)
+    assert TickConfig().env()["GOOGLE_GENAI_PRO_MODEL"] == TickConfig().dedup_model
 
 
 def test_a_batched_tick_sends_every_cluster_in_one_batch_and_retries_the_misses_directly():

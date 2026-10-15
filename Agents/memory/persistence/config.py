@@ -51,9 +51,9 @@ class IncrementalDedupConfig(BaseModel):
 
     enabled: bool = False
     two_pass: bool = True
-    triage_model: str = "gemini-3.1-flash-lite"
+    triage_model: str = "anthropic/claude-haiku-5-5"
     triage_thinking_level: str | None = "medium"
-    verify_model: str = "gemini-2.5-pro"
+    verify_model: str = "anthropic/claude-sonnet-5-5"
     verify_thinking_level: str | None = None
     prompt_variant: str = "default"
 

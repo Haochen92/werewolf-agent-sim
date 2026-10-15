@@ -19,10 +19,12 @@ import os
 from . import catalog
 from .chat import GAME_LLM, create_chat_model
 
-DEFAULT_GAME_MODEL = "gemini-3.5-flash-lite"
-# Different-backend rescue when a seat exhausts its structured-output retries (seen with
+# Claude since 2026-10-15 (owner): the Gemini credits ran out, so every default that a batch run or
+# an offline memory job falls back on is a Claude model; a Gemini model still runs when named.
+DEFAULT_GAME_MODEL = "anthropic/claude-haiku-5-5"
+# Different-model rescue when a seat exhausts its structured-output retries (seen with
 # DeepSeek's unconstrained tool-calling): one shot on this model beats a random action.
-DEFAULT_GAME_FALLBACK_MODEL = "gemini-3.1-flash-lite"
+DEFAULT_GAME_FALLBACK_MODEL = "anthropic/claude-sonnet-5-5"
 # A model's own turn and summary levels are catalogue rows (catalog.py, columns turn_thinking and
 # summary_thinking); a model with none takes these defaults. A rescued turn gets its rescue
 # model's level.
@@ -42,15 +44,24 @@ DEFAULT_SUMMARY_THINKING_LEVEL = "medium"
 # 2026-12-31, then $1.50/$7.50), wrote fewer observations with no player IDs, and read as well
 # grounded (evidence/memory_system/v8/experiment_log.md). 3.5-flash-lite was cheaper
 # still but leaked player IDs into 41% of one game's observations.
-DEFAULT_PRO_MODEL = "gemini-3.8-flash"
-# Pinned, never a floating alias (Google retargets those silently — a reproducibility hazard). The
-# backup only runs when the primary fails, so it is chosen for being a different model family and
-# quota pool, a genuine fallback: gemini-2.5-pro, the extraction model before 2026-10-11.
-DEFAULT_PRO_BACKUP_MODEL = "gemini-2.5-pro"
+# Since 2026-10-15 Claude Sonnet 5.5, the model the offline batch extracted 21 of the 40 ten-seat
+# games on (about $0.95 a game as run, against 3.8 Flash's $0.55).
+DEFAULT_PRO_MODEL = "anthropic/claude-sonnet-5-5"
+# Pinned, never a floating alias (a provider can retarget those silently — a reproducibility
+# hazard). The backup only runs when the primary fails, so it is a different model: Haiku 5.5.
+DEFAULT_PRO_BACKUP_MODEL = "anthropic/claude-haiku-5-5"
 # Per-item downstream dedup — fixed cheap model (overridable via DEDUP_MODEL env).
-DEFAULT_DEDUP_MODEL = "gemini-3.1-flash-lite"
+DEFAULT_DEDUP_MODEL = "anthropic/claude-haiku-5-5"
 DEFAULT_DEDUP_THINKING_LEVEL = "low"
 VALID_THINKING_LEVELS = {"minimal", "low", "medium", "high"}
+
+
+def _offline_mode(model: str) -> dict[str, str]:
+    """A Claude model in an offline job answers with the schema as text after the prompt, checked in
+    code (`json_mode`), whatever its menu row says: an enforced schema is part of Claude's cache key,
+    so the jobs that fan out over one shared prefix with a schema per role or per cell would never
+    read each other's cache (measured 2026-10-12, evidence/caching/experiment_log.md §9)."""
+    return {"structured_mode": "json_mode"} if model.startswith("anthropic/") else {}
 
 
 def _game_model() -> str:
@@ -174,31 +185,37 @@ def get_llm_extractor():
 
 
 def get_llm_pro():
+    model = os.getenv("GOOGLE_GENAI_PRO_MODEL", DEFAULT_PRO_MODEL)
     return create_chat_model(
-        os.getenv("GOOGLE_GENAI_PRO_MODEL", DEFAULT_PRO_MODEL),
+        model,
         temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
+        **_offline_mode(model),
     )
 
 
 def get_llm_pro_backup():
+    model = os.getenv("GOOGLE_GENAI_PRO_BACKUP_MODEL", DEFAULT_PRO_BACKUP_MODEL)
     return create_chat_model(
-        os.getenv("GOOGLE_GENAI_PRO_BACKUP_MODEL", DEFAULT_PRO_BACKUP_MODEL),
+        model,
         temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
         thinking_level=_thinking_level_from_env(
             "GOOGLE_GENAI_PRO_BACKUP_THINKING_LEVEL",
         ),
+        **_offline_mode(model),
     )
 
 
 def get_llm_dedup():
     """Cheap, deterministic model for the per-item downstream dedup agent."""
+    model = os.getenv("DEDUP_MODEL", DEFAULT_DEDUP_MODEL)
     return create_chat_model(
-        os.getenv("DEDUP_MODEL", DEFAULT_DEDUP_MODEL),
+        model,
         temperature=0.0,
         thinking_level=_thinking_level_from_env(
             "DEDUP_THINKING_LEVEL",
             DEFAULT_DEDUP_THINKING_LEVEL,
         ),
+        **_offline_mode(model),
     )
 
 
@@ -210,4 +227,5 @@ def get_llm_batch_dedup(model: str, thinking_level: str | None):
         model,
         temperature=0.0,
         thinking_level=thinking_level,
+        **_offline_mode(model),
     )
