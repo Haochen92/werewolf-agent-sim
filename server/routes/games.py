@@ -29,6 +29,10 @@ from ._shared import authorize_model, live_status, require_memory_available, set
 logger = logging.getLogger(__name__)
 
 _HEARTBEAT_SECONDS = 15.0
+# A heartbeat the page can hear: a named event, not an SSE comment, which no script sees. The
+# page reopens a stream that has been silent for longer than a few of these (a phone woken
+# from sleep can hold a dead connection open), so a quiet game must still say something.
+_PING = "event: ping\ndata: {}\n\n"
 
 router = APIRouter(tags=["games"])
 
@@ -256,8 +260,9 @@ async def _sse(
     Entitlement and token-to-seat resolution are evaluated per delivery because
     roles may be dealt after connection and observer-only events unlock at game over.
     The cursor is also entitlement-aware: it cannot claim an event the viewer was
-    not allowed to receive while the game was live. Heartbeats keep proxy connections
-    alive; they do not impose a player turn timeout.
+    not allowed to receive while the game was live. Heartbeats (a ping as the stream
+    opens, then one each quiet interval) keep proxy connections alive and tell the page
+    the stream is alive; they do not impose a player turn timeout.
     """
     q = session.subscribe(token)  # also the presence signal for a human seat
 
@@ -281,6 +286,7 @@ async def _sse(
         )
 
     try:
+        yield _PING
         for event in list(session.log):
             if not cursor_skips(event) and may_see(event):
                 sent.add(event.seq)
@@ -292,7 +298,7 @@ async def _sse(
                     q.get(), timeout=_HEARTBEAT_SECONDS
                 )
             except asyncio.TimeoutError:
-                yield ": keep-alive\n\n"
+                yield _PING
                 continue
             if kind == "pacing":
                 yield _frame("pacing", event)

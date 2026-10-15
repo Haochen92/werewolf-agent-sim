@@ -164,6 +164,8 @@ async def test_sse_replays_the_whole_log_after_game_over(quiet_session, fixture_
     frames = []
     gen = _sse(session, "", last_seq=0)
     async for frame in gen:
+        if frame.startswith("event: ping"):  # the stream's heartbeat, no event
+            continue
         frames.append(frame)
         if len(frames) == len(session.log):
             break
@@ -222,6 +224,8 @@ async def test_postgame_reconnect_cursor_does_not_skip_the_withheld_backlog(
     frames = []
     gen = _sse(session, "", last_seq=cursor)
     async for frame in gen:
+        if frame.startswith("event: ping"):  # the stream's heartbeat, no event
+            continue
         frames.append(frame)
         if len(frames) == len(withheld):
             break
@@ -251,6 +255,8 @@ async def test_reconnect_header_overrides_the_frozen_query_cursor(
     frames = []
     gen = response.body_iterator
     async for frame in gen:
+        if frame.startswith("event: ping"):  # the stream's heartbeat, no event
+            continue
         frames.append(frame)
         if len(frames) == len(withheld):
             break
@@ -845,7 +851,9 @@ async def test_sse_registers_the_seat_for_its_lifetime(quiet_session, monkeypatc
     monkeypatch.setattr("server.routes.games._HEARTBEAT_SECONDS", 0.01)
     session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2"], human_players=["p1", "p2"])
     stream = _sse(session, "t1", 0)
-    assert (await stream.__anext__()).startswith(": keep-alive")
+    # a ping as the stream opens, then one each quiet interval: named, so the page hears it
+    assert (await stream.__anext__()).startswith("event: ping")
+    assert (await stream.__anext__()).startswith("event: ping")
     assert session.connected_seats == {"p1"}
     await stream.aclose()
     assert session.connected_seats == set()
