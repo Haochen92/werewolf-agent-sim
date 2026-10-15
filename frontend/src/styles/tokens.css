@@ -153,6 +153,31 @@
   --text-dim: var(--night-text-dim);
 }
 
+/* ---------- the controls kit (owner, 2026-10-15): what a surface tells the controls on it ----
+   A control never picks its own colours: the surface under it sets these, and the site's
+   Button (well, text), its links (Anchor) and the board's wells read them. The dark is the
+   default; a paper surface says `data-surface="paper"` and they turn to ink. */
+:root {
+  --ctl-accent: var(--amber);
+  --ctl-accent-hi: var(--amber-hi);
+  --ctl-well-ink: var(--well-text);
+  --ctl-well-ink-hi: var(--sign-text);
+  --ctl-well-bg: linear-gradient(180deg, #1a120a, #120c07);
+  --ctl-well-edge: rgba(224, 166, 58, 0.35);
+  --ctl-well-edge-hi: rgba(224, 166, 58, 0.6);
+  --ctl-well-depth: inset 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+[data-surface='paper'] {
+  --ctl-accent: #7a4f10;
+  --ctl-accent-hi: #4a2e0a;
+  --ctl-well-ink: var(--plate-ink);
+  --ctl-well-ink-hi: var(--plate-ink);
+  --ctl-well-bg: linear-gradient(180deg, rgba(60, 40, 20, 0.07), rgba(60, 40, 20, 0.02));
+  --ctl-well-edge: rgba(42, 26, 8, 0.5);
+  --ctl-well-edge-hi: rgba(42, 26, 8, 0.85);
+  --ctl-well-depth: inset 0 1px 3px rgba(60, 40, 20, 0.2);
+}
+
 html,
 body {
   background: var(--bg);

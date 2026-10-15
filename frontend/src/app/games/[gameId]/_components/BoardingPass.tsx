@@ -110,7 +110,6 @@ export function PassPuppets({
       {lost ? (
         <Button
           type="button"
-          variant="ghost"
           size="sm"
           className={classes.house}
           disabled={busy}
@@ -252,7 +251,7 @@ export function BoardingPass({
             >
               Step onto the platform
             </Button>
-            <Button type="button" variant="ghost" onClick={onWatch}>
+            <Button type="button" onClick={onWatch}>
               Just watch
             </Button>
           </div>

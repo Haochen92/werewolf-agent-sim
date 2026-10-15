@@ -1,12 +1,15 @@
 /**
- * The site's button: Mantine's Button with the landing mockup's API. The look lives in the
- * theme (`theme/components/Button.module.css`); this wrapper only narrows the choices to the
- * three the design has, so a page cannot reach for a stock Mantine variant by accident.
+ * The site's button: Mantine's Button narrowed to the controls kit's three variants (owner,
+ * 2026-10-15), so a page cannot reach for a stock Mantine variant by accident. The look lives
+ * in the theme (`theme/components/Button.module.css`).
  *
- * - `ghost` (default): the quiet pill on a panel.
- * - `primary`: the amber pill; at most one per view.
- * - `brass`: the engraved brass plate, for controls that belong to a scene's fiction (the
- *   waiting room's Lock and Depart). Page-side only; inside the stage box use `ActPlate`.
+ * - `well` (default): the recessed well of the nav's doors; every button that is not the main
+ *   action, a way to another page included.
+ * - `brass`: the engraved brass plate; the one main action of a view. Page-side only; inside
+ *   the stage box use `ActPlate`.
+ * - `text`: a word that acts, for small actions.
+ *
+ * The well and the text take their colours from the surface under them (`data-surface`).
  *
  * Polymorphic like Mantine's own: `<Button component={Link} href="/play">` renders a link.
  */
@@ -18,8 +21,8 @@ import {
 } from '@mantine/core';
 
 export interface ButtonProps extends Omit<MantineButtonProps, 'variant' | 'size'> {
-  variant?: 'ghost' | 'primary' | 'brass';
-  /** `sm` 36px, `md` 44px (default), `lg` 52px: the mockups' three heights. */
+  variant?: 'well' | 'brass' | 'text';
+  /** `sm` 36px, `md` 44px (default), `lg` 52px; a `text` button is as tall as its words. */
   size?: 'sm' | 'md' | 'lg';
 }
 

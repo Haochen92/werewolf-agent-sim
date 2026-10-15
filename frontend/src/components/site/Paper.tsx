@@ -17,6 +17,8 @@ const SitePaper = forwardRef<HTMLDivElement, PaperProps>(function Paper(
     <Box
       ref={ref}
       className={className ? `${classes.paper} ${className}` : classes.paper}
+      // the controls on it turn to ink (the controls kit's surfaces, styles/tokens.css)
+      data-surface="paper"
       {...rest}
     />
   );

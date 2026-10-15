@@ -1,0 +1,13 @@
+/* The site's link (the controls kit, owner 2026-10-15): the surface's accent (`--ctl-*`,
+   styles/tokens.css), amber on the dark and ink on paper, always underlined so it reads as a
+   link in running text. */
+.root {
+  color: var(--ctl-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: color 0.16s ease;
+}
+.root:hover {
+  color: var(--ctl-accent-hi);
+}

@@ -5,6 +5,7 @@
  */
 import {
   Alert,
+  Anchor,
   Button,
   Chip,
   Input,
@@ -14,12 +15,12 @@ import {
   Select,
   Switch,
   Table,
-  Tabs,
   TextInput,
   Title,
   createTheme,
 } from '@mantine/core';
 import alertClasses from './components/Alert.module.css';
+import anchorClasses from './components/Anchor.module.css';
 import buttonClasses from './components/Button.module.css';
 import chipClasses from './components/Chip.module.css';
 import inputClasses from './components/Input.module.css';
@@ -27,16 +28,17 @@ import overlayClasses from './components/Overlay.module.css';
 import segmentedClasses from './components/SegmentedControl.module.css';
 import switchClasses from './components/Switch.module.css';
 import tableClasses from './components/Table.module.css';
-import tabsClasses from './components/Tabs.module.css';
 import titleClasses from './components/Title.module.css';
 
 export const componentsTheme = createTheme({
   components: {
-    // `ghost` is the quiet default; `primary` and `brass` are the other two (Button.module.css)
+    // `well` is the default; `brass` is the main action, `text` a word that acts (Button.module.css)
     Button: Button.extend({
-      defaultProps: { variant: 'ghost', size: 'md' },
+      defaultProps: { variant: 'well', size: 'md' },
       classNames: buttonClasses,
     }),
+    // the site's link: the surface's accent, always underlined (Anchor.module.css)
+    Anchor: Anchor.extend({ defaultProps: { underline: 'always' }, classNames: anchorClasses }),
     Input: Input.extend({ defaultProps: { radius: 'xs' }, classNames: inputClasses }),
     TextInput: TextInput.extend({
       defaultProps: { radius: 'xs' },
@@ -53,7 +55,6 @@ export const componentsTheme = createTheme({
       classNames: chipClasses,
     }),
     Switch: Switch.extend({ defaultProps: { radius: 'xl' }, classNames: switchClasses }),
-    Tabs: Tabs.extend({ defaultProps: { variant: 'pills' }, classNames: tabsClasses }),
     Modal: Modal.extend({ defaultProps: { radius: 'sm' }, classNames: overlayClasses }),
     Notification: Notification.extend({
       defaultProps: { radius: 'sm', color: 'amber' },

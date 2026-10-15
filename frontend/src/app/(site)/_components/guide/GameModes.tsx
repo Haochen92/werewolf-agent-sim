@@ -89,7 +89,7 @@ export function GameModes() {
         <div className={classes.mode} {...mode.panel('solo')}>
           <div className={classes.head}>
             <p>Play with nine AI players. Your role decides who your teammates are.</p>
-            <Button component={Link} href="/play" variant="primary">
+            <Button component={Link} href="/play" variant="brass">
               Play solo &rarr;
             </Button>
           </div>
@@ -107,7 +107,7 @@ export function GameModes() {
               <Button
                 component={Link}
                 href="/rooms/new"
-                variant="primary"
+                variant="brass"
                 {...path.with('host')}
               >
                 Open a room &rarr;
@@ -115,7 +115,7 @@ export function GameModes() {
               <Button
                 component={Link}
                 href="/rooms"
-                variant="primary"
+                variant="brass"
                 {...path.with('join')}
               >
                 Find a room &rarr;

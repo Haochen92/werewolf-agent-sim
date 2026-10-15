@@ -106,14 +106,13 @@ export function BoardRow({ room }: { room: RoomSummary }) {
           <Button
             component={Link}
             href={`/games/${room.game_id}`}
-            variant="primary"
+            variant="brass"
             size="sm"
           >
             {seated ? 'Return to your seat' : 'Return to your room'}
           </Button>
         ) : face.joinable ? (
           <Button
-            variant={open ? 'ghost' : 'primary'}
             size="sm"
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
@@ -155,7 +154,7 @@ export function BoardRow({ room }: { room: RoomSummary }) {
           />
           <Button
             type="submit"
-            variant="primary"
+            variant="brass"
             size="sm"
             loading={join.isPending}
             disabled={!face.joinable || Boolean(problem)}
