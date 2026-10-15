@@ -17,6 +17,9 @@ class ReplayBase(BaseModel):
     game_id: str
     finished_at: datetime | None = None
     winner: Winner
+    neutral_result: str | None = None
+    """How the neutral fared, beside the winner ("won", "lost", "won (2 points)"); None for a
+    nine-seat game, which dealt no neutral."""
     days: int
     ended_phase: Literal["day", "voting", "night"] | None = None
     """The part of the day the game ended in: read with ``days``, "night" means the game

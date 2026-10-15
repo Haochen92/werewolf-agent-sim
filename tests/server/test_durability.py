@@ -463,10 +463,11 @@ def test_completion_metadata_is_lifted_from_the_event_log():
         ev.PhaseChange(seq=2, day=2, phase="day"),
         ev.GmMessage(seq=3, day=2, channel_seq=0, text="dawn"),
         ev.PhaseChange(seq=4, day=3, phase="night"),
-        ev.GameOver(seq=5, day=3, winner="wolves"),
+        ev.GameOver(seq=5, day=3, winner="wolves", neutral_result="won"),
     ]
     assert derive_completion_metadata(log) == {
         "winner": "wolves",
+        "neutral_result": "won",  # the neutral's own result, beside the winner
         "days": 3,
         "ended_phase": "night",  # the last phase change before the end
         "n_events": 5,

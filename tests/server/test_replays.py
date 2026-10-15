@@ -125,6 +125,7 @@ def test_replay_dto_drops_private_game_row_fields():
         "game_id": "g",
         "finished_at": None,
         "winner": "wolves",
+        "neutral_result": None,
         "days": 3,
         "ended_phase": None,
         "n_events": 3,

@@ -3141,6 +3141,17 @@
             ],
             "title": "Winner"
           },
+          "neutral_result": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Neutral Result"
+          },
           "days": {
             "type": "integer",
             "title": "Days"
@@ -3248,6 +3259,17 @@
               "necromancer"
             ],
             "title": "Winner"
+          },
+          "neutral_result": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Neutral Result"
           },
           "days": {
             "type": "integer",

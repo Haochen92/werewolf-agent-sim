@@ -1520,6 +1520,8 @@ export interface components {
        * @enum {string}
        */
       winner: 'villagers' | 'wolves' | 'serial_killer' | 'necromancer';
+      /** Neutral Result */
+      neutral_result?: string | null;
       /** Days */
       days: number;
       /** Ended Phase */
@@ -1561,6 +1563,8 @@ export interface components {
        * @enum {string}
        */
       winner: 'villagers' | 'wolves' | 'serial_killer' | 'necromancer';
+      /** Neutral Result */
+      neutral_result?: string | null;
       /** Days */
       days: number;
       /** Ended Phase */

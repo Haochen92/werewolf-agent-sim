@@ -103,6 +103,9 @@ class GameRow(SQLModel, table=True):
     """The part of the day the game ended in ("day", "voting" or "night"): the phase of
     the last phase change before the game ended. Written when the game completes, so the
     replay list can say "ended on night 5" without reading any events."""
+    neutral_result: str | None = None
+    """How the game's neutral fared, beside the winner ("won", "lost", "won (2 points)"), as
+    its game-over event says it; null for a nine-seat game, which dealt no neutral."""
     n_events: int | None = None
     n_humans: int | None = None
     cast_role_counts: dict[str, int] | None = Field(
