@@ -4,6 +4,7 @@ import { Anchor } from '@mantine/core';
 import { Button, GuideSign } from '@/components/site';
 import { Pendant, WallLight } from '@/components/site/StationLamps';
 import { SITE } from '@/lib/site';
+import { PageMusic } from '@/music/PageMusic';
 import { ReplayListClient } from './replays/_components/ReplayListClient';
 import { HouseDoorNote } from './_components/HouseDoorNote';
 import { SeatTags } from './_components/landing/SeatTags';
@@ -35,6 +36,8 @@ export default function HomePage() {
   return (
     <main className={`${classes.landing} ${platform.scene} ${platform.heroScene}`}>
       <PlatformBackdrop />
+      {/* the guide's piece, for a viewer who turns it on (the nav's switch) */}
+      <PageMusic bed="guide" />
       <header className={classes.hero}>
         <h1 className={classes.headline}>
           <span>Watch AIs</span>

@@ -82,8 +82,15 @@ export const lobbyBed = (start: number): Bed => ({
   start,
 });
 
-/** The guide, for a reader who asked for music. */
+/** The guide and the landing, for a reader who asked for music. */
 export const GUIDE_BED: Bed = { ...loop('guide', TRACKS.elders), optIn: true };
+
+/** The archive and the rooms' list, the platform's pages, for a reader who asked for music. */
+export const siteLobbyBed = (start: number): Bed => ({
+  ...lobbyBed(start),
+  key: 'site-lobby',
+  optIn: true,
+});
 
 /** After the winner's sting, back on the platform: the lobby's three in turn, until they leave. */
 const ENDING_BED: Bed = { ...lobbyBed(0), key: 'ending' };

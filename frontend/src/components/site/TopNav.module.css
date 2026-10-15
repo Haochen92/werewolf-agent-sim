@@ -151,6 +151,18 @@
   width: 18px;
   height: 18px;
 }
+/* the music's switch: a speaker in a well beside the sign, the brass plate while it plays */
+.music {
+  composes: well from './Board.module.css';
+  flex: none;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+}
+.music svg {
+  width: 18px;
+  height: 18px;
+}
 
 /* ---------- the pinned strip ---------- */
 .strip {
@@ -218,6 +230,10 @@
 .stripRow .divider {
   height: 28px;
 }
+.stripRow .music {
+  width: 30px;
+  height: 30px;
+}
 
 /* a narrow desktop: the name, three doors and the word do not all fit one row, so the sign is
    the book alone */
@@ -263,6 +279,19 @@
     height: 32px;
     margin: 0 8px 0 0;
   }
+  /* the music's switch beside the sign, on the first row; the name shrinks for it too */
+  .board:has(.music) {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+  .board:has(.music) .wordmark {
+    font-size: clamp(15px, calc((100vw - 206px) / 8.2), 26px);
+  }
+  .board .music {
+    grid-row: 1;
+    grid-column: 3;
+    width: 32px;
+    height: 32px;
+  }
   .board .divider,
   .stripRow .divider {
     display: none;
@@ -296,6 +325,17 @@
     padding: 0 9px;
     letter-spacing: 0.08em;
   }
+  /* with the music's switch as well, the strip closes up again so all four stay on it */
+  .stripRow:has(.music) {
+    gap: 6px;
+  }
+  .stripRow:has(.music) .doors {
+    gap: 6px;
+  }
+  .stripRow:has(.music) .door {
+    padding: 0 6px;
+    letter-spacing: 0.05em;
+  }
 }
 @media (max-width: 380px) {
   .wordmark {
@@ -313,10 +353,31 @@
   .stripRow .doors {
     gap: 6px;
   }
+  .stripRow .music {
+    width: 28px;
+    height: 28px;
+  }
+  .stripRow:has(.music) {
+    gap: 5px;
+  }
+  .stripRow:has(.music) .doors {
+    gap: 4px;
+  }
+  .stripRow:has(.music) .door {
+    padding: 0 4px;
+    letter-spacing: 0.02em;
+  }
   .stripRow .door {
     gap: 6px;
     padding: 0 7px;
     font-size: 11px;
     letter-spacing: 0.04em;
+  }
+}
+/* the smallest phones (320 px): with the music's switch too, the strip leaves out its mark (the
+   board at the page's top keeps it) */
+@media (max-width: 340px) {
+  .stripRow:has(.music) .brand {
+    display: none;
   }
 }

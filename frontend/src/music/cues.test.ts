@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { SceneBeat } from '@/stage/beats/types';
-import { GUIDE_BED, TRACKS, bedFor, lobbyBed, stingFor, type Moment } from './cues';
+import {
+  GUIDE_BED,
+  TRACKS,
+  bedFor,
+  lobbyBed,
+  siteLobbyBed,
+  stingFor,
+  type Moment,
+} from './cues';
 
 const at = (
   id: SceneBeat['id'],
@@ -65,6 +73,7 @@ describe('the bed under each beat', () => {
     expect(bedFor(at('station.waiting', 'station'))).toBeNull();
     expect(lobbyBed(2)).toMatchObject({ mode: 'cycle', start: 2, tracks: TRACKS.lobby });
     expect(GUIDE_BED.optIn).toBe(true);
+    expect(siteLobbyBed(1)).toMatchObject({ mode: 'cycle', start: 1, optIn: true });
     expect(bedFor({ beat: null, winner: null, fast: false, alive: 0 })).toBeNull();
   });
 });

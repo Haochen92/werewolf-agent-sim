@@ -598,6 +598,11 @@ for (const [name, viewport] of [
     await openBoard(page);
     await expect(page.locator('[data-room]')).toHaveCount(3);
     await settle(page);
+    // the pinned strip is a scrolled page's, and a full-page capture of this short page pinned it
+    // or not by timing (the golden flaked on it): it is left out of the picture
+    await page.addStyleTag({
+      content: 'div:has(> nav[aria-label="Pinned"]) { display: none !important; }',
+    });
     await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true });
   });
 }

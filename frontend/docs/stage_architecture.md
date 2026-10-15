@@ -1028,12 +1028,17 @@ a new take is a new name), so the browser and the CDN keep them for good (`next.
   stage, never of the stream (the stage plays behind the server). A *bed* plays underneath until
   the next bed differs (same `key`, same music):
   - the platform: the lobby's three in turn, from one picked for the visit;
-  - the deal and day 1: the parlour's discussion; then the parlour on odd days, the masked
-    accusations on even days;
+  - the discussion, from the deal on: the parlour's, until the table is down to four alive or
+    fewer, then the masked accusations', sadder, whatever day that falls on (owner, 2026-10-15;
+    they had alternated by day, and the masked accusations were too gloomy for a day 2);
   - the vote, the night (every night scene), and each morning's dawn, held on its loop if the
     morning outlasts it; the day's music comes in at "The day begins";
   - silence through the lynch and where the ending starts;
-  - from the winner's hour, the elders' music; the guide's is the same, opt-in.
+  - from the winner's hour, back on the platform: the lobby's three in turn, until the viewer
+    leaves (owner, 2026-10-15; it had been the elders' music, which is now the guide's alone).
+
+  The site's pages have music too, opt-in (off until the viewer turns it on, `PageMusic`): the
+  elders' on the guide and the landing, the lobby's three on the archive and the rooms' list.
 
   A *sting* is a one-shot on a moment: the psalm from the lynch's start (its hit lands on the
   truth), the short sting on "Voted out" on Fast (the psalm would be cut short), and the
@@ -1046,13 +1051,18 @@ a new take is a new name), so the browser and the CDN keep them for good (`next.
   ends and crossfades in. A hidden page suspends the context; an idle one is suspended after a
   few seconds.
 - **`music.ts`:** the viewer's choice (`musicPref`, `lib/storage`): `off` silences everything;
-  never chosen, the game plays and the guide does not. `MusicDirector` (in the providers) hears
-  the first press: browsers start sound only after one, and Safari only inside it, so on a page
-  with music the context is made in the press itself. `useStageMusic` is what the theatres call.
+  never chosen, the game plays and the site's pages do not. `MusicDirector` (in the providers)
+  hears the first press: browsers start sound only after one, and Safari only inside it, so on a
+  page with music the context is made in the press itself. A finger's press counts only as it
+  lifts (`pointerup`), a mouse's as it goes down, so it listens for both. On an iPhone the page
+  says it is a player (`navigator.audioSession.type = 'playback'`, Safari 17+), or the silent
+  switch mutes it. `useStageMusic` is what the theatres call.
 
 The containers own the rules for when a moment counts as played: live, a beat that arrives
 (`cursor.animate`), never what a refresh lands on; the replay, a beat played on, never a jump or a
 scrub, and a jump cuts a sting still sounding. The landing's preview and the guide's demos play
 nothing. The switch is `SoundButton`: on the strip (`SlotInput.sound`, the game and the full
-replay; the workbench has none, so its goldens are untouched) and beside the guide's title.
+replay; the workbench has none, so its goldens are untouched) and, on a site page with music,
+in the nav after the guide's sign, a speaker alone so it fits the phone's pinned strip
+(`TopNav` `Music`, shown while a page's opt-in bed is mounted: `optInPages`).
 `/workbench/music` auditions the files against the scenes' beats.

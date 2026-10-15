@@ -1,4 +1,5 @@
 import { StationWall, wallPage } from '@/components/site';
+import { PageMusic } from '@/music/PageMusic';
 import { ArchiveClient } from './_components/ArchiveClient';
 import classes from './_components/Archive.module.css';
 
@@ -12,6 +13,7 @@ export default function ReplaysPage() {
   return (
     <main className={`${classes.archive} ${wallPage}`}>
       <StationWall kind="records" />
+      <PageMusic bed="lobby" />
       <header className={classes.head}>
         <h1 className={classes.title}>The archive</h1>
         <p className={classes.lede}>

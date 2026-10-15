@@ -83,7 +83,8 @@
 .mobileBar {
   composes: board from '../../../../components/site/Board.module.css';
 }
-.toTop {
+.toTop,
+.barMusic {
   composes: well from '../../../../components/site/Board.module.css';
 }
 
@@ -98,26 +99,6 @@
   font-size: clamp(38px, 5vw, 60px);
   line-height: 1;
   letter-spacing: -0.035em;
-}
-/* the title, and at its right the music's switch: off until the reader turns it on, the
-   brass plate while it plays (the well's pressed look) */
-.titleRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-.music {
-  composes: well from '../../../../components/site/Board.module.css';
-  height: 38px;
-  padding: 0 14px;
-  font-size: 13px;
-  letter-spacing: 0.14em;
-}
-.music svg {
-  width: 18px;
-  height: 18px;
 }
 .section {
   padding-top: 96px;
@@ -540,6 +521,17 @@
     stroke-width: 1.8;
     stroke-linecap: round;
     stroke-linejoin: round;
+  }
+  .barMusic {
+    flex: none;
+    width: 40px;
+    height: 40px;
+    margin-left: 10px;
+    padding: 0;
+  }
+  .barMusic svg {
+    width: 18px;
+    height: 18px;
   }
   .barRule {
     flex: none;

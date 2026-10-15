@@ -11,6 +11,9 @@
  * an open book; on a phone the book alone, at the end of the name's row, so the board keeps two
  * rows. On a phone the brand and the sign take the first row and the doors share the second.
  * The pinned strip keeps the book on a phone too, at its right end (owner, 2026-10-15).
+ * On a page whose music is the viewer's to turn on (the landing, the guide, the archive, the
+ * rooms), the music's switch follows the sign: a speaker alone, so it fits the phone's strip
+ * (owner, 2026-10-15).
  *
  * Once the board has scrolled out of view, a slim strip of the same board slides down and pins
  * to the top (an IntersectionObserver on the board; hidden, the strip is `inert`). In the strip
@@ -33,6 +36,8 @@ import mark from '@/assets/brand/mark-md.svg';
 import markLamp from '@/assets/brand/mark-lamp-md.svg';
 import { useBoarding } from '@/hooks/useBoarding';
 import { SITE } from '@/lib/site';
+import { useMusicState } from '@/music/music';
+import { SoundButton } from '@/music/SoundButton';
 import { Book } from './GuideSign';
 import { useSiteStrip } from './SiteStrip';
 import classes from './TopNav.module.css';
@@ -63,6 +68,12 @@ function GuideSign({ path }: { path: string }) {
       </Link>
     </>
   );
+}
+
+/** The music's switch, on a page with music of its own (`useMusicBed`, an opt-in bed). */
+function Music() {
+  const here = useMusicState((s) => s.optInPages > 0);
+  return here ? <SoundButton optIn className={classes.music} /> : null;
 }
 
 function Doors({ path, boarding }: { path: string; boarding: number | undefined }) {
@@ -137,6 +148,7 @@ export function TopNav() {
           <Brand size={34} />
           <Doors path={path} boarding={boarding} />
           <GuideSign path={path} />
+          <Music />
         </nav>
       </div>
       <div
@@ -151,6 +163,7 @@ export function TopNav() {
           <Brand size={28} />
           <Doors path={path} boarding={boarding} />
           <GuideSign path={path} />
+          <Music />
         </nav>
       </div>
     </>
