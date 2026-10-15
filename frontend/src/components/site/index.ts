@@ -1,6 +1,7 @@
 /** The site chrome's shared pieces. The theatre (`src/stage`) never imports these. */
 export { Button, type ButtonProps } from './Button';
 export { Flapword } from './Flapword';
+export { Book, GuideSign } from './GuideSign';
 export { HangTag } from './HangTag';
 export { Icon } from './Icon';
 export { IconSprite, type IconName } from './IconSprite';

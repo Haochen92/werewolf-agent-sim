@@ -1,0 +1,27 @@
+/* The guide's sign on a page (GuideSign): the nav's enamel, a size up. */
+.sign {
+  composes: enamel from './Board.module.css';
+  height: 42px;
+  padding: 0 18px 0 14px;
+  font-size: 18px;
+  gap: 9px;
+}
+.book {
+  flex: none;
+  width: 22px;
+  height: 22px;
+}
+
+/* a phone: a size down, so under the roles it keeps its row beside the Briefings switch */
+@media (max-width: 640px) {
+  .sign {
+    height: 38px;
+    padding: 0 14px 0 11px;
+    font-size: 16px;
+    gap: 8px;
+  }
+  .book {
+    width: 20px;
+    height: 20px;
+  }
+}

@@ -264,9 +264,16 @@
     margin: 0 8px 0 0;
   }
   .board .divider,
-  .stripRow .divider,
-  .stripRow .guide {
+  .stripRow .divider {
     display: none;
+  }
+  /* the strip's book at its right end, its screw clear of the frame; the row closes up for it */
+  .stripRow {
+    gap: 10px;
+  }
+  .stripRow .guide {
+    width: 30px;
+    margin: 0 6px 0 0;
   }
   .board .doors {
     grid-row: 2;

@@ -10,7 +10,7 @@
  * screwed to the board (owner, 2026-10-14): after the doors on a desktop, reading "Guide" beside
  * an open book; on a phone the book alone, at the end of the name's row, so the board keeps two
  * rows. On a phone the brand and the sign take the first row and the doors share the second.
- * The pinned strip leaves the sign out on a phone.
+ * The pinned strip keeps the book on a phone too, at its right end (owner, 2026-10-15).
  *
  * Once the board has scrolled out of view, a slim strip of the same board slides down and pins
  * to the top (an IntersectionObserver on the board; hidden, the strip is `inert`). In the strip
@@ -33,6 +33,7 @@ import mark from '@/assets/brand/mark-md.svg';
 import markLamp from '@/assets/brand/mark-lamp-md.svg';
 import { useBoarding } from '@/hooks/useBoarding';
 import { SITE } from '@/lib/site';
+import { Book } from './GuideSign';
 import { useSiteStrip } from './SiteStrip';
 import classes from './TopNav.module.css';
 
@@ -48,25 +49,6 @@ function Brand({ size }: { size: number }) {
   );
 }
 
-/** An open book, the sign's picture. */
-function Book() {
-  return (
-    <svg className={classes.book} viewBox="0 0 16 16" aria-hidden="true">
-      <path
-        d="M1.5 3.6c2.2-1 4.4-.9 6.5.6 2.1-1.5 4.3-1.6 6.5-.6v9c-2.2-1-4.4-.9-6.5.6-2.1-1.5-4.3-1.6-6.5-.6z"
-        fill="#f2ead6"
-      />
-      <path d="M8 4.3v9" stroke="#16243f" strokeWidth="1.1" />
-      <path
-        d="M3.3 6h3M3.3 8h3M3.3 10h3M9.7 6h3M9.7 8h3M9.7 10h3"
-        stroke="#16243f"
-        strokeWidth=".7"
-        strokeOpacity=".55"
-      />
-    </svg>
-  );
-}
-
 function GuideSign({ path }: { path: string }) {
   return (
     <>
@@ -76,7 +58,7 @@ function GuideSign({ path }: { path: string }) {
         className={classes.guide}
         aria-current={path.startsWith(SITE.guide.match) ? 'page' : undefined}
       >
-        <Book />
+        <Book className={classes.book} />
         <span className={classes.guideWord}>{SITE.guide.label}</span>
       </Link>
     </>
