@@ -17,8 +17,15 @@
  * the name stays while it fits whole: the brand is a one-line-high box that wraps the name onto
  * a hidden second line the moment the doors need the room, so it goes cleanly with no
  * breakpoint, leaving the mark.
+ *
+ * A page may put its own bar in the strip's place on a phone (SiteStrip: the guide's section
+ * bar); the strip then stays up there, and the page's bar comes down instead.
+ *
+ * The strip says how tall it is on the page's root, for what a page pins to the top under it
+ * (the guide's section line, its side nav): `--site-strip` while it is down (0 while it is up),
+ * `--site-strip-reach` always (where an anchor must land clear of it).
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -26,6 +33,7 @@ import mark from '@/assets/brand/mark-md.svg';
 import markLamp from '@/assets/brand/mark-lamp-md.svg';
 import { useBoarding } from '@/hooks/useBoarding';
 import { SITE } from '@/lib/site';
+import { useSiteStrip } from './SiteStrip';
 import classes from './TopNav.module.css';
 
 function Brand({ size }: { size: number }) {
@@ -108,8 +116,8 @@ function Doors({ path, boarding }: { path: string; boarding: number | undefined 
 export function TopNav() {
   const path = usePathname() ?? '/';
   const boarding = useBoarding();
-  const board = useRef<HTMLElement>(null);
-  const [pinned, setPinned] = useState(false);
+  const { pinned, setPinned, replaced, board } = useSiteStrip();
+  const strip = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const el = board.current;
@@ -119,7 +127,26 @@ export function TopNav() {
     });
     io.observe(el);
     return () => io.disconnect();
-  }, []);
+  }, [board, setPinned]);
+
+  useEffect(() => {
+    const el = strip.current;
+    if (!el) return;
+    const root = document.documentElement.style;
+    // its layout height: the slide is a transform, so this is the height it has when down
+    const set = () => {
+      root.setProperty('--site-strip-reach', `${el.offsetHeight}px`);
+      root.setProperty('--site-strip', pinned ? `${el.offsetHeight}px` : '0px');
+    };
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      root.removeProperty('--site-strip');
+      root.removeProperty('--site-strip-reach');
+    };
+  }, [pinned]);
 
   return (
     <>
@@ -131,8 +158,10 @@ export function TopNav() {
         </nav>
       </div>
       <div
+        ref={strip}
         className={classes.strip}
         data-on={pinned || undefined}
+        data-replaced={replaced || undefined}
         inert={!pinned}
         aria-hidden={!pinned}
       >

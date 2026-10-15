@@ -167,6 +167,12 @@
 .strip[data-on] {
   transform: none;
 }
+/* a page with its own bar in the strip's place on a phone (SiteStrip): the strip stays away */
+@media (max-width: 760px) {
+  .strip[data-replaced] {
+    display: none;
+  }
+}
 .stripRow {
   composes: board rivets from './Board.module.css';
   display: flex;

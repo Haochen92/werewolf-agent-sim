@@ -922,6 +922,30 @@ test('guide: the case file loads its recorded games when opened', async ({ page 
   await expect(page.locator('#after [data-drawer]')).toBeVisible();
 });
 
+test('guide: on a phone its own bar stands in for the strip, and Top goes back to the nav', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/guide');
+  // inert while it is up, so it is looked up with the hidden
+  const bar = page.getByRole('button', { name: /^Guide sections:/, includeHidden: true });
+  const strip = page.getByRole('navigation', { name: 'Pinned' });
+  // at the top, the nav board and no bar
+  await expect(bar).not.toBeInViewport();
+  await page.getByRole('heading', { name: 'After the game' }).scrollIntoViewIfNeeded();
+  await expect(bar).toBeInViewport();
+  await expect(strip).toBeHidden();
+  await page.getByRole('button', { name: 'Top', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+  await expect(
+    page.getByRole('navigation', { name: 'Site' }).getByRole('link').first(),
+  ).toBeFocused();
+  // every other page keeps the strip
+  await page.goto('/play');
+  await page.mouse.wheel(0, 900);
+  await expect(strip).toBeVisible();
+});
+
 for (const [name, viewport] of [
   ['guide-1440', { width: 1440, height: 900 }],
   ['guide-390', { width: 390, height: 844 }],
@@ -931,7 +955,7 @@ for (const [name, viewport] of [
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/guide');
     // the case file's recorded games arrive in their own chunk
-    await expect(page.locator('#after [data-film]')).toHaveCount(2);
+    await expect(page.locator('#after [data-film]')).toHaveCount(2, { timeout: 15_000 });
     await settle(page);
     await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true, timeout: 20_000 });
   });

@@ -13,9 +13,14 @@
 }
 
 /* ---------- the nav ---------- */
+/* the sticky nav stays under the site's pinned strip while it is down (TopNav sets
+   --site-strip), and moves with it as it slides */
+.nav {
+  transition: top 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
 .nav {
   position: sticky;
-  top: calc(env(safe-area-inset-top, 0px) + 24px);
+  top: calc(env(safe-area-inset-top, 0px) + var(--site-strip, 0px) + 24px);
   align-self: start;
   display: flex;
   flex-direction: column;
@@ -73,6 +78,14 @@
 .mobileNav {
   display: none;
 }
+/* the phone's bar: a board of the nav's own, its Top button one of the nav's wells (composes
+   may not sit in a media query; the bar only shows on a phone) */
+.mobileBar {
+  composes: board from '../../../../components/site/Board.module.css';
+}
+.toTop {
+  composes: well from '../../../../components/site/Board.module.css';
+}
 
 /* ---------- the page ---------- */
 .main {
@@ -123,10 +136,18 @@
 .stack > [data-off] {
   visibility: hidden;
 }
-/* anchors land clear of the top edge (and, on a phone, of the sticky line) */
-.section,
+/* an anchor lands its heading 16 under the pinned strip (on a phone, under the sticky line),
+   where the nav counts it as the section being read: the strip's whole height, as a jump down
+   brings it in, less the space above the heading (a section's 96, a side's 37, the first
+   side's 3) */
+.section {
+  scroll-margin-top: calc(var(--site-strip-reach, 0px) - 80px);
+}
 .side {
-  scroll-margin-top: 24px;
+  scroll-margin-top: calc(var(--site-strip-reach, 0px) - 21px);
+}
+.sub + .side {
+  scroll-margin-top: calc(var(--site-strip-reach, 0px) + 13px);
 }
 
 /* ---------- the working demos ---------- */
@@ -421,29 +442,94 @@
   .nav {
     display: none;
   }
+  /* in the site strip's place (SiteStrip), sliding as it does: down once the nav has
+     scrolled away, up at the page's top */
   .mobileNav {
-    position: sticky;
-    top: env(safe-area-inset-top, 0px);
-    z-index: 5;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 60;
     display: block;
-    margin: 0 calc(-1 * var(--gutter));
-    padding: 10px var(--gutter);
-    background: color-mix(in srgb, var(--bg) 94%, transparent);
-    backdrop-filter: blur(6px);
-    border-bottom: 1px solid var(--line);
+    padding: calc(env(safe-area-inset-top, 0px) + 8px) 16px 0;
+    transform: translateY(calc(-100% - 48px));
+    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
-  .mobileButton {
+  .mobileNav[data-on] {
+    transform: none;
+  }
+  .mobileBar {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 9px;
-    width: 100%;
-    padding: 9px 12px;
-    border-radius: 10px;
-    background: var(--panel);
-    box-shadow: inset 0 0 0 1px rgba(255, 235, 200, 0.16);
-    color: var(--text);
-    font-size: 15px;
-    font-weight: 500;
+    padding: 7px 14px 15px 7px;
+  }
+  .toTop {
+    flex: none;
+    flex-direction: column;
+    gap: 2px;
+    width: 52px;
+    height: 40px;
+    padding: 0;
+    color: var(--brass-hi);
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    line-height: 1;
+  }
+  .toTop svg {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .barRule {
+    flex: none;
+    align-self: stretch;
+    width: 1px;
+    margin: 2px 12px;
+    background: linear-gradient(transparent, rgba(224, 166, 58, 0.6), transparent);
+  }
+  .mobileButton {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-radius: 6px;
+    color: var(--sign-text);
+    font-family: var(--font-serif);
+    font-size: 19px;
+  }
+  .mobileButton:focus-visible {
+    outline: 2px solid var(--amber);
+    outline-offset: 3px;
+  }
+  .mobileButton .lineIcon {
+    color: var(--brass-hi);
+  }
+  /* how far through the guide: a brass track filled to the section being read (--done) */
+  .progress {
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 7px;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(224, 166, 58, 0.25);
+  }
+  .progress::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: calc(var(--done) * 100%);
+    border-radius: inherit;
+    background: var(--brass-hi);
+    transition: width 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
   .mobileHere {
     min-width: 0;
@@ -457,7 +543,7 @@
     height: 18px;
     margin-left: auto;
     fill: none;
-    stroke: var(--muted);
+    stroke: var(--brass-hi);
     stroke-width: 2;
     stroke-linecap: round;
     transition: transform 0.2s;
@@ -481,9 +567,16 @@
   .sub {
     margin-bottom: 18px;
   }
-  .section,
+  /* the same under the phone's bar (73px; the strip stays away), a section's space above its
+     heading 64 */
+  .section {
+    scroll-margin-top: 25px;
+  }
   .side {
-    scroll-margin-top: 76px;
+    scroll-margin-top: 52px;
+  }
+  .sub + .side {
+    scroll-margin-top: 86px;
   }
   .sideHead .badge {
     width: 40px;
@@ -506,13 +599,6 @@
   .pager {
     justify-self: center;
     margin-top: -10px;
-  }
-}
-
-@media (max-width: 480px) {
-  .mobileNav {
-    margin: 0 -16px;
-    padding: 10px 16px;
   }
 }
 
@@ -546,7 +632,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .nav,
+  .mobileNav,
   .track,
+  .progress::before,
   .chevron {
     transition: none;
   }
