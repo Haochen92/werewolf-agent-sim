@@ -49,6 +49,27 @@ export function reopenNow(readyState: number, hidden: boolean): boolean {
   return !hidden && readyState !== 1;
 }
 
+/** Silence after which an open stream is taken for dead: the server pings every 15 s. */
+export const STREAM_SILENT_MS = 40_000;
+/** How often a stream the browser gave up on (closed) is tried again. */
+export const STREAM_RETRY_MS = 10_000;
+
+/**
+ * Whether the page should reopen its stream now, though the browser has not: it has heard
+ * nothing for `silentMs` (the server pings every 15 s, so an open stream that says nothing for
+ * longer is a dead connection a phone held through its sleep), or the browser has closed it
+ * for good (a 502 or 403 on reopening, which it never retries) and the last try was a while
+ * ago. Never while the page is hidden. `readyState` is the EventSource's.
+ */
+export function streamStalled(
+  readyState: number,
+  silentMs: number,
+  hidden: boolean,
+): boolean {
+  if (hidden) return false;
+  return silentMs > STREAM_SILENT_MS || (readyState === 2 && silentMs > STREAM_RETRY_MS);
+}
+
 /** How long the first held catch-up frame waits for those arriving behind it, in ms. */
 export const CATCH_UP_GATHER_MS = 50;
 

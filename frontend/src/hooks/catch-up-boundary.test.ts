@@ -4,6 +4,9 @@ import {
   catchUpBatch,
   catchUpBoundary,
   reopenNow,
+  STREAM_RETRY_MS,
+  STREAM_SILENT_MS,
+  streamStalled,
 } from './catch-up-boundary';
 
 describe('the catch-up boundary', () => {
@@ -70,5 +73,19 @@ describe('the catch-up block', () => {
     vi.advanceTimersByTime(CATCH_UP_GATHER_MS);
     expect(blocks).toHaveLength(2);
     vi.useRealTimers();
+  });
+});
+
+describe('a stalled stream', () => {
+  it('is an open stream that has said nothing past a few pings, or a closed one, retried', () => {
+    // open and pinging: alive
+    expect(streamStalled(1, 15_000, false)).toBe(false);
+    // open and silent past the pings: a dead connection held open (a phone's sleep)
+    expect(streamStalled(1, STREAM_SILENT_MS + 1, false)).toBe(true);
+    // closed for good by the browser: tried again, but not more than every few seconds
+    expect(streamStalled(2, STREAM_RETRY_MS - 1, false)).toBe(false);
+    expect(streamStalled(2, STREAM_RETRY_MS + 1, false)).toBe(true);
+    // never while the page is hidden
+    expect(streamStalled(2, STREAM_SILENT_MS * 10, true)).toBe(false);
   });
 });

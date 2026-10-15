@@ -20,7 +20,10 @@
  *
  * When the page comes back (shown again, or back online) and the stream is not open, it is
  * reopened at once from where the page has got to, instead of waiting on the browser's own
- * retry; what it then sends is a reconnect's catch-up like any other (2026-10-11).
+ * retry; what it then sends is a reconnect's catch-up like any other (2026-10-11). A watch
+ * reopens it too when it has been silent past the server's pings (a dead connection a phone
+ * held through its sleep), or when the browser closed it for good (2026-10-15: a stream that
+ * died either way left the stage frozen, and the seat's agent played its turns unseen).
  */
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -28,7 +31,12 @@ import { apiUrl } from '@/lib/config';
 import { getGameStatus } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { useGameSession } from '@/game/store';
-import { catchUpBatch, catchUpBoundary, reopenNow } from './catch-up-boundary';
+import {
+  catchUpBatch,
+  catchUpBoundary,
+  reopenNow,
+  streamStalled,
+} from './catch-up-boundary';
 import { recordServerClock } from './useCountdown';
 import type {
   DurableGameEvent,
@@ -116,9 +124,16 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
     // verbatim and carries its real position in Last-Event-ID, which the server prefers.
     // A reopen of our own (below) carries the page's position in the URL instead.
     const url = apiUrl(`/games/${encodeURIComponent(gameId)}/events`);
+    // when the stream last said anything: an event, a pace, the server's ping, or opening
+    let heard = Date.now();
+    const hear = () => {
+      heard = Date.now();
+    };
     const connect = (at: string): EventSource => {
       const source = new EventSource(at, { withCredentials: true });
+      source.addEventListener('ping', hear);
       source.addEventListener('open', () => {
+        hear();
         setConnection('open');
         // back after a drop: ask how far the log has got; up to there is catch-up, not news
         if (boundary.resuming())
@@ -129,6 +144,7 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
       });
 
       source.addEventListener('game', (message) => {
+        hear();
         try {
           const event = JSON.parse(
             (message as MessageEvent<string>).data,
@@ -145,6 +161,7 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
       });
 
       source.addEventListener('pacing', (message) => {
+        hear();
         try {
           applyPacing(JSON.parse((message as MessageEvent<string>).data) as PhaseProgress);
         } catch {
@@ -168,9 +185,11 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
 
     // Back from a sleep or a dropped network: reopen now, from the newest seq folded, rather
     // than wait for the browser's retry. Until a fresh status says how far the log has got,
-    // what the new stream sends is catch-up, as after any drop. An open stream is left be.
-    const reopen = () => {
-      if (!reopenNow(source.readyState, document.hidden)) return;
+    // what the new stream sends is catch-up, as after any drop. An open stream is left be,
+    // unless the watch below finds it silent.
+    const reopen = (force = false) => {
+      if (!force && !reopenNow(source.readyState, document.hidden)) return;
+      hear();
       source.close();
       history.flush();
       boundary.dropped();
@@ -178,12 +197,18 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
       const at = useGameSession.getState().view.lastSeq;
       source = connect(at > 0 ? `${url}?last_seq=${at}` : url);
     };
-    document.addEventListener('visibilitychange', reopen);
-    window.addEventListener('online', reopen);
+    const onBack = () => reopen();
+    document.addEventListener('visibilitychange', onBack);
+    window.addEventListener('online', onBack);
+    const watch = setInterval(() => {
+      if (streamStalled(source.readyState, Date.now() - heard, document.hidden))
+        reopen(true);
+    }, 5000);
 
     return () => {
-      document.removeEventListener('visibilitychange', reopen);
-      window.removeEventListener('online', reopen);
+      document.removeEventListener('visibilitychange', onBack);
+      window.removeEventListener('online', onBack);
+      clearInterval(watch);
       source.close();
       history.drop();
       setConnection('idle');
