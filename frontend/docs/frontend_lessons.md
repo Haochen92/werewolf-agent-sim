@@ -203,6 +203,16 @@ zero (a page still settling, not a loop); measure the thing only once the page h
 on a shared machine interleave old and new runs and take the median of three (single runs here
 swung from 15 to 45 fps with the machine's load). Relates to 25.
 
+**29. A baked copy of something computed must cover everything the computation reads, or be
+tested against the live result.** The car's backdrop is baked (`scripts/bake-sets.mjs`) at two
+layouts, while the shutter over its window is placed live from the layout's geometry. The
+no-HUD layout got no sheets and reused the live HUD's, on a comment that the two were alike.
+They had differed since the seat rail took 192 units (2026-09-29), so on the one screen that
+used no HUD, the landing's carriage on an upright phone (from 2026-10-14), the shutter fell 96
+units short of the window. One invariant now holds them: for every layout, the glass's centre
+is the shutter's (`instruments/backdrop.test.ts`, `sheetFor`). When a shortcut maps one case
+onto another, write the test that says they agree, not a comment.
+
 **29. A dynamic component's code starts loading at its first render, not when you decide you
 want it.** The carriage was meant to start its code, its replay and its pictures together
 (23), but it rendered `ReplayTheatre` only once the replay had arrived, so the three ran one
