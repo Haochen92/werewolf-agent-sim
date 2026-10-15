@@ -44,8 +44,10 @@ still move; an ended game is answered by its database row, and a finished one by
 | `storage/game_repository.py` | write side + recovery reads of the game lifecycle | design notes §8 |
 | `storage/replay_service.py` | the public read side (the feature is `routes/replays.py`) | design notes §9 |
 | `storage/settings_repository.py` | the settings table: knobs an operator changes without a restart | design notes §13 |
+| `storage/prompt_captures.py` | a finished game's prompts, private reads and final state, gzip-packed into `prompt_captures` for the leak audit; the audit's reads and verdicts | `evidence/agent_boundaries/report.md` §3, §5 |
 | `housekeeping/recovery.py` | boot: hand every running row to `registry.revive` (a key-funded one waits for its key) | design notes §5c, §13; seat_continuity §6 |
 | `housekeeping/sweeper.py` | timer: drop parked games nobody is watching | seat_continuity §7 |
+| `housekeeping/leak_audit.py` | nightly, out of process (cron on the host): the batch runner's leak checks over each finished game's saved prompts | `evidence/agent_boundaries/report.md` §3, §5 |
 
 Decision records live in `frontend/docs/`: `server_client_transport.md` (the wire),
 `server_design_notes.md` (server rulings, dated), `seat_continuity.md` (absence and recovery),
@@ -103,6 +105,14 @@ poetry run pytest tests/server -q                 # ~170 tests, no network, no L
 poetry run alembic upgrade head                   # WW_POSTGRES_DSN from .env
 curl -H "X-Admin-Token: $ADMIN_TOKEN" -X PUT localhost:8001/admin/house \
      -H 'content-type: application/json' -d '{"games_per_day": 5}'   # live, no restart
+poetry run python -m server.housekeeping.leak_audit   # leak-check every game not audited yet
+```
+
+The leak audit runs on the host, from this checkout (its checks live in `tests/leak_test.py`,
+which the image leaves out). Nightly, from `crontab -e`; it exits 1 when a game leaked:
+
+```
+15 4 * * * cd /home/ubuntu/projects/werewolf-agent-sim && /home/ubuntu/.local/bin/poetry run python -m server.housekeeping.leak_audit >> /home/ubuntu/leak_audit.log 2>&1
 ```
 
 A memory-on game reads its lessons from the database (`WW_POSTGRES_DSN`): the graph is

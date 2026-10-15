@@ -34,6 +34,7 @@ dependencies = [
 werewolf-game = "Agents.main:main"
 memory-batch-dedup = "Agents.memory.batch_deduplication:main"
 memory-tick = "Agents.memory.consolidation.tick:main"
+leak-audit = "server.housekeeping.leak_audit:main"
 eval-build-dataset = "evaluation.src.data.builders.agent_decision:main"
 eval-summary = "evaluation.src.cli_runner.regen_replay.both.situation_summary_pairwise:main"
 eval-summary-rubric = "evaluation.src.cli_runner.regen_replay.both.situation_summary_rubric:main"
