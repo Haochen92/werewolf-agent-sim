@@ -124,6 +124,9 @@ export function Stage({
   const [small, setSmall] = useState(false);
   // the box's drawn width in css px, for the pictures' density (set.ts `useStageWidth`)
   const [width, setWidth] = useState(0);
+  // the scene waits for the first measure (before the first paint): drawn before it, a phone's
+  // stage took itself for a desktop's and fetched the full-size poses beside the small ones
+  const [measured, setMeasured] = useState(false);
   // the scene's backdrop, drawn here so it outlives the scene's beats (set.ts)
   const [backdrop, setBackdrop] = useState<BackdropSpec | null>(null);
   // The layer divs, once mounted, so `<Layer>` can portal into them. Set during the commit,
@@ -157,6 +160,7 @@ export function Stage({
       el.toggleAttribute('data-small', sm);
       setSmall(sm);
       setWidth(w);
+      setMeasured(true);
       // the bleed a screen wider than 16:9 shows beside the world, in units: the seat rail
       // grows out into it (Wing.tsx), so on a phone the letterbox holds the rail, not the room
       const spare =
@@ -239,7 +243,7 @@ export function Stage({
               <BoxContext.Provider value={boxNode}>
                 <CameraContext.Provider value={setShot}>
                   <BackdropContext.Provider value={setBackdrop}>
-                    {children}
+                    {measured ? children : null}
                   </BackdropContext.Provider>
                 </CameraContext.Provider>
               </BoxContext.Provider>
