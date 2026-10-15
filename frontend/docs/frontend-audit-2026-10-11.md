@@ -369,3 +369,78 @@ and test discovery after their owner’s ongoing work is finished.
 
 Each change should include before/after measurements at the same fixture and transition,
 visual comparison, and an explicit preservation of seek, input, Reveal and catch-up semantics.
+
+## Follow-up, 2026-10-15
+
+A survey of this audit against the code four days on (code reading, no device), the fixes that
+came of it, and what is still open. The general lessons are in `frontend_lessons.md` 32–37.
+
+### Measured before and after
+
+The live page, dev build, warm, seat 7 rejoining at seq 200, then 41 letters typed into the
+composer. Renders are counted by component from a stand-in React DevTools hook (lesson 33).
+
+| | Before (`cab002e2`) | After |
+| --- | ---: | ---: |
+| Rejoin: load to the stage on the turn | 6.3 s | 2.5 s |
+| Rejoin: live page renders | 100 | 7 |
+| Rejoin: the car's set / seat tiles / transcript rows | 138 / 1,251 / 1,085 | 2 / 27 / 17 |
+| 41 letters: what renders | the whole stage (set and side slot twice per letter; 738 tiles, 1,394 rows) | the dock and its composer, 41 each |
+
+### The items above, now
+
+| Item | Status |
+| --- | --- |
+| 1. Artwork by drawn pixels | Done. Backdrops by stage width (`pickScale`); the stage measures before it draws (`fec8cf40`); the heads have a 224 px phone copy (`1381f3d3`, a census found none drawn over about 234 physical px on a phone); the platform's train and country have 1× copies and the lamp's glow is baked (`363628e1`). |
+| 2. Landing preview lifecycle | Mostly done. It mounts near the viewport, its code comes with the replay, and it pauses offscreen and when the page is hidden. Open: once up it never unmounts, and the replay still works out the X-ray beats and the whole game's fold (`ahead`) eagerly (1–3 ms). |
+| 3. Lighting cache keyed by `useId` | Done (`f30d4496`): drawn under a stand-in id and kept by its options. |
+| 4. Filters | Partly. Phones drop most of them. Still live: Wing's grayscale heads, RailInstrument's drop shadow (no phone gate), the desktop puppet's drop shadow, and the house light above the movers. The vote chip's flight still writes SVG attributes each frame; owner, 2026-10-15: keep the chip flights as they are. |
+| 5. Live ingestion | Done. The store takes catch-up as a block and appends past its head (`6f0bb7fc`); the stream gathers catch-up frames (`88f491a7`); the folds grow with the log and unchanged beats keep their objects (this batch). |
+| 6. Retention | Partly. Folds are bounded at 96; the music's decoded tracks are three at most and freed when the last page with music is left (`25790733`). Open: the session store is not reset when a game is left; at game over the full replay is fetched into the query cache beside the store's log. |
+
+### Found in the survey
+
+- **Typing redrew the whole stage.** The composer's text was the live theatre's state. Fixed:
+  the dock holds what is typed (`TurnDock` `useTyped`), and the theatre puts a draft in with a
+  counter (`DockInput.landed`).
+- **Every change rendered the car's set and the side slot twice.** `CarSetSpec` re-registers
+  after each render, which renders the host again. Fixed by `memo` on the host, the set and the
+  side slot, with the scene's props kept as the same objects.
+- **A stream left half-open by a phone's sleep may never be noticed** (suspected). The server's
+  heartbeat is an SSE comment, which no script sees, and the page reopens only a stream that
+  is not open. Open. The fix: a named heartbeat event, and a reopen after about 30 s of
+  silence. It needs a device to confirm.
+- **The landing preloads six stage fonts, about 135 KB.** Deferred to the font change (owner).
+  Turning preload off would flash a fallback face on the game pages, where the stage is the
+  page. So the fix is to load them with the carriage instead.
+- **The guide's case file bundles a 469 KB game and folds it twice on load.** Left as it is
+  (owner). If it comes back: a cut fixture with only the lessons the panel shows, and the
+  panel mounted when its tab opens.
+- **Smaller, open:**
+  - The full Mantine stylesheet (33 KB gzipped) blocks render on every page.
+  - Blur placeholders fill the asset manifest's chunk (about 32 KB gzipped).
+  - The slates on `/replays` carry three turbulence filters each; measure on a phone.
+  - Two walnut textures exist.
+  - The 12 s status poll re-renders the live theatre itself, which now stops at the memoised
+    host.
+
+### Questions settled along the way
+
+- **Why the stage rebuilt its beats from the whole log.** A new event can change earlier beats:
+  a pass grows into a run, game over turns Reveal on, the backlog lands mid-game. So the beats
+  are cut from the whole log, and a recut keeps the cursor on its beat. That is cheap at one
+  event every few seconds. It was quadratic only because catch-up delivered hundreds of events
+  one render each, and batching ends that.
+- **Whether "in order" can be told exactly.** Yes. Every event has its seq and the log is kept
+  sorted, so an event past the last seq is an append; anything else (the R7 backlog) takes the
+  insert path.
+- **Controlled or uncontrolled input.** Controlled, held in the dock. An uncontrolled box would
+  need the draft written into the DOM by hand, and the word count, preview and Send would stop
+  following it.
+- **Whether the dock can lose its text mid-turn.** A live game has no seeking. The transcript,
+  the case file, the role card and the "You're back" notice leave the dock mounted, and it goes
+  only when the turn ends (or on a rejoin, which restarts the stream). So the line needs no
+  copy outside the dock.
+- **Whether 115–175 MB of music could crash a phone.** That is decoded memory, not file size: a
+  track is held as raw samples so it loops exactly. It is not a crash alone, but it is a large
+  share next to the stage's pictures, hence the cap and the release.

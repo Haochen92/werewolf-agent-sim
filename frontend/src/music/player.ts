@@ -1,7 +1,7 @@
 /**
  * The score's player: one per page, on the Web Audio clock. Each track is fetched and decoded
  * once (a few at a time are kept, and none once the viewer leaves the pages with music: an
- * 87 s track decoded is about 33 MB, ten times its file) and played from a buffer,
+ * 87 s track decoded is about 33 MB, sixteen times its file) and played from a buffer,
  * so a loop is exact to the sample, and every fade is a gain ramp the audio thread runs: no
  * JavaScript per frame, and an iPhone, which ignores a media element's volume, fades too.
  *

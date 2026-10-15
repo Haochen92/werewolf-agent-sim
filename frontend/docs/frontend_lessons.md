@@ -269,6 +269,69 @@ compressed (31). Steps:
 
 The two frontend commits are not deployed yet.
 
+**32. History replayed down a live socket arrives one message at a time, and each message is a
+render.** The live stream sends the whole log before the news, one SSE message per event. Each
+message is its own task, and a store read through `useSyncExternalStore` (zustand) renders at
+the end of each, so the page rendered once per past event. Each render also re-sorted the log
+and recut the beats over everything so far, so the work grew with the square of the game's
+length. Now the frames that arrive together go to the store as one block
+(`hooks/catch-up-boundary.ts` `catchUpBatch`), and news flushes the block first. On a 200-event
+rejoin (dev build) the page rendered 7 times instead of 100, and landed in 2.5 s instead of
+6.3 s. The general rule: when a stream carries a backlog, batch it before it reaches the store.
+
+**33. A rule written down is kept only by a measurement.** Lessons 5 and 6 were already here, and
+the live page still broke both. The composer's text lived in the live theatre's state, and the
+props the theatre handed the scene were rebuilt on every render. So 41 typed letters drew the
+dining car's set 82 times, 738 seat tiles and 1,394 transcript rows. The doubling came from
+`CarSetSpec`, a child that re-registers its description after every render (lesson 4), which
+renders the host a second time. The census that found this is a hook, not a profiler: a stand-in
+`__REACT_DEVTOOLS_GLOBAL_HOOK__` installed before React loads (a page init script) counts the
+fibers that did work in each commit, by component name. A fiber counts when it is not an object
+seen in the previous commit and its `flags & 1` (PerformedWork) is set. It runs on a dev build,
+where names survive. Fixes:
+- The text moved into the dock (lesson 34).
+- The props handed to the scene keep their identity (`useMemo`/`useCallback`: the dock, the turn,
+  `onNext`, `wayOut`).
+- The host, the set and the side slot are `memo`. The side slot is handed only the props it
+  reads, not a spread.
+
+After: the 41 letters render the dock and its composer, 41 times each, and nothing else.
+
+**34. The state a hand types into lives in the leaf it is typed into.** The parent needs the line
+twice, when it is sent and when a draft is put in. It reads the line as an argument of Send.
+It puts a draft in as a prop, with a counter (`DockInput.landed`), because two drafts can be the
+same string. The leaf takes the prop when it changes, by "adjusting state when a prop
+changes", not by an effect. Key the leaf on the request (`key={beat.seq}`), so a new turn starts
+empty. A controlled input is still right: an uncontrolled one would need the draft written
+into the DOM by hand, and the word count, the preview and Send's state would stop updating.
+
+**35. A cache derived from a growing log should grow with it, and what has not changed should
+keep its identity.** The stage's folds (the game at each beat) were thrown away on every event
+and rebuilt from the first event, so the view on the stage was a new object each time, and so
+was every beat. Now:
+- The cache takes the longer log when it only adds to the end (`fold-cache.ts` `grow`). The log
+  is sorted and its event objects are never copied, so one comparison at the old end tells an
+  append from an insertion.
+- A recut keeps each beat that is equal to the old one at its place (`live-state.ts`
+  `keepSame`).
+- Both are bounded: 96 folds.
+
+Downstream `memo` works only because of this.
+
+**36. A cache meant to outlive an instance must not be keyed on the instance.** The paint cache
+(`Stage.tsx` `drawn`) was keyed on `useId` plus the options. A part that mounted again got a new
+id, missed the cache and traced the house light again, 60–110 ms on a phone, on the morning's
+busiest beat. Now it draws under a stand-in id, keeps the drawing by the options alone, and
+writes each instance's id in on the way out. A test checks that every generator's markup is the
+same either way.
+
+**37. Count decoded bytes, not file bytes.** A picture decodes to width × height × 4 bytes, a
+sound to seconds × sample rate × channels × 4. The music's longest track is a 2 MB file and
+about 33 MB decoded, and the player kept six such tracks for as long as the tab was open. Keep only
+the few in play, and free decoded media when the last page that uses it is left
+(`music/player.ts`). The same check sized the heads: a census of every head drawn found none
+over about 234 physical px on a phone, so the phone's copy is 224 px (lesson 22).
+
 ---
 
 ## Small things that cost an afternoon
@@ -319,6 +382,18 @@ The two frontend commits are not deployed yet.
   (2026-10: the landing's lazily loaded theatre lost its styles when a stage file was saved). The
   stage then draws unclipped at full size, with no HUD, which looks like a framing bug. A
   production build keeps every sheet. Hard-reload before you chase it.
+- A component rendered by a server component that starts calling a client hook needs
+  `'use client'`. Neither `tsc` nor lint notices; only `next build` fails, at prerender:
+  "Attempted to call useSmall() from the server". `ChipSprite` was imported by the landing's
+  server-rendered cards.
+- Two things with the same `z-index` in one layer are ordered by where they sit in the page,
+  and with portals that is the order they happened to be added in. The card's veil and the
+  notes hint were both 5, and the veil covered the hint only because the hint mounted first.
+  Making renders less frequent (lesson 33) changed the order, and the hint came out above the
+  veil. Give anything that must cover something else a higher number; never rely on a tie.
+- A full-page screenshot of a page whose sections mount as they come near (`useNear`) can be
+  taken before they have mounted: the guide's golden came back with its demos blank. Scroll
+  each one into view and wait for it before the whole-page shot.
 - A Playwright run proves nothing until you know whose server answered on its port: another
   session's build held 3121 (2026-10-15), mine failed to start, and the suite ran against theirs.
   Check the port's process first (`ss -ltnp`, then `readlink /proc/<pid>/cwd`).

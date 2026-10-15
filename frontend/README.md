@@ -84,6 +84,7 @@ The default fixture can change independently of that historical replay’s beat 
 
 ## Documentation
 
+- [How the frontend is tested](docs/testing.md): the test layers, how a browser run is done, and what none of them covers.
 - [Performance and ownership audit, 2026-10-11](docs/frontend-audit-2026-10-11.md): current findings, priorities and proposed tests.
 - [Stage architecture](docs/stage_architecture.md): detailed renderer and design contracts.
 - [Site architecture](docs/site_architecture.md): routes, site components and styling.
