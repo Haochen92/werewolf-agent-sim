@@ -2,8 +2,8 @@
 
 /**
  * One side's row in the guide: its badge and name, a Briefings switch that turns the whole row,
- * and its cards in a carousel that pages (three to a page on a desktop, two on a tablet, one on a
- * phone with its neighbours peeking, centred). The pages move by transform; cards off the page
+ * and its cards in a carousel that pages (two to a page on a desktop or a tablet, so the briefing
+ * reads at size, owner 2026-10-15; one on a phone with its neighbours peeking, centred). The pages move by transform; cards off the page
  * are inert, so the keyboard never reaches a card nobody can see. A swipe pages on touch.
  */
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
@@ -21,9 +21,8 @@ const STAGGER_MS = 60;
 
 /** Cards to a page for the row's width, and each card's width (a phone's leaves room to peek). */
 function layout(width: number) {
-  if (width >= 760) return { per: 3, card: (width - 2 * GAP) / 3 };
   if (width >= 480) return { per: 2, card: (width - GAP) / 2 };
-  return { per: 1, card: width * 0.8 };
+  return { per: 1, card: width * 0.85 };
 }
 
 export function SideRow({
