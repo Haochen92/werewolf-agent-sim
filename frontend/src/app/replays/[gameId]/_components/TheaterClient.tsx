@@ -25,6 +25,7 @@
  * `?from=home`; anything else (the archive, a live game's end, a shared link) goes to the list.
  */
 import Link from 'next/link';
+import { Anchor } from '@mantine/core';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -90,21 +91,27 @@ export function TheaterClient({ gameId }: { gameId: string }) {
   if (missing && (status.data?.state === 'dropped' || live?.error))
     return (
       <p role="alert" className={classes.meta}>
-        This game was dropped. <Link href="/rooms">Back to the lobby</Link>
+        This game was dropped. <Anchor component={Link} href="/rooms">
+          Back to the lobby
+        </Anchor>
       </p>
     );
   if (missing && live)
     return (
       <p role="alert" className={classes.meta}>
         This game is still being played.{' '}
-        <Link href={`/games/${encodeURIComponent(gameId)}`}>Watch it live</Link>
+        <Anchor component={Link} href={`/games/${encodeURIComponent(gameId)}`}>
+          Watch it live
+        </Anchor>
       </p>
     );
   if (error && !data) {
     return (
       <p role="alert" className={classes.meta}>
         {missing ? 'No such replay.' : `Could not load this replay: ${error.message}`}{' '}
-        <Link href="/replays">Back to the replays</Link>
+        <Anchor component={Link} href="/replays">
+          Back to the replays
+        </Anchor>
       </p>
     );
   }

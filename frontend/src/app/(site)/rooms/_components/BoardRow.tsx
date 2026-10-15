@@ -17,7 +17,7 @@ import { useId, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
-import { Alert, TextInput } from '@mantine/core';
+import { Alert, Anchor, TextInput } from '@mantine/core';
 import { joinGame } from '@/lib/api';
 import { MAX_NAME, nameProblem, tidyName } from '@/lib/names';
 import { hostKey, seatToken } from '@/lib/storage';
@@ -53,9 +53,9 @@ export function BoardRow({ room }: { room: RoomSummary }) {
   };
 
   const watch = (
-    <Link href={`/games/${room.game_id}`} className={classes.watch}>
+    <Anchor component={Link} href={`/games/${room.game_id}`} className={classes.watch}>
       Watch instead
-    </Link>
+    </Anchor>
   );
 
   return (

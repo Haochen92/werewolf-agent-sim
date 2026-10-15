@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
+import { Anchor } from '@mantine/core';
 import { GuideSign, Icon } from '@/components/site';
 import { Pendant, WallLight } from '@/components/site/StationLamps';
 import { ReplayListClient } from './replays/_components/ReplayListClient';
@@ -104,9 +105,9 @@ export default function HomePage() {
             <ReplayListClient limit={4} />
           </Suspense>
         </div>
-        <Link href="/replays" className={classes.allGames}>
+        <Anchor component={Link} href="/replays" className={classes.allGames}>
           All replays &rarr;
-        </Link>
+        </Anchor>
       </section>
 
       {/* the one threshold left: the page's ending is out of the rooms */}

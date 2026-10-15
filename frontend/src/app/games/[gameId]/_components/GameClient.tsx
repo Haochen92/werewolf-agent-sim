@@ -25,6 +25,7 @@
  */
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { Anchor } from '@mantine/core';
 import { useQueryClient } from '@tanstack/react-query';
 import { useGameStream } from '@/hooks/useGameStream';
 import { queryKeys } from '@/lib/queryKeys';
@@ -103,7 +104,9 @@ export function GameClient({ gameId }: { gameId: string }) {
           {why.charAt(0).toUpperCase() + why.slice(1)}.
         </p>
         <p className={classes.meta}>
-          <Link href="/rooms">Find another room →</Link>
+          <Anchor component={Link} href="/rooms">
+            Find another room →
+          </Anchor>
         </p>
       </div>
     );
@@ -125,7 +128,9 @@ export function GameClient({ gameId }: { gameId: string }) {
               : statusError.message}
         </p>
         <p className={classes.meta}>
-          <Link href="/">Back to the start →</Link>
+          <Anchor component={Link} href="/">
+            Back to the start →
+          </Anchor>
         </p>
       </div>
     );

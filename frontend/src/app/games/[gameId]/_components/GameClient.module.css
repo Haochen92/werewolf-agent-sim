@@ -23,10 +23,6 @@
   font-size: 0.9rem;
   padding: var(--space-4, 16px);
 }
-.meta a {
-  color: inherit;
-}
-
 /* while a theatre page is up the document itself never pulls down to refresh (Safari 16+) */
 :global(html):has(.page) {
   overscroll-behavior: none;

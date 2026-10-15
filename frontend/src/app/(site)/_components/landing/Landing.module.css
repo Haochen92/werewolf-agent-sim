@@ -183,12 +183,6 @@
   display: inline-block;
   margin-top: 22px;
   font-size: 15px;
-  color: var(--town);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.allGames:hover {
-  color: var(--amber-hi);
 }
 
 @media (max-width: 700px) {
