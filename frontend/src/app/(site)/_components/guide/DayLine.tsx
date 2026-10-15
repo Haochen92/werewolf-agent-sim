@@ -7,7 +7,7 @@
  * working in one fixed slot (so stepping along the line moves no edge), and your part on a cream
  * plate. Under the line, that a claim is not proof, and the clock's enamel sign.
  */
-import type { ComponentType, CSSProperties, ReactNode } from 'react';
+import { useRef, type ComponentType, type CSSProperties, type ReactNode } from 'react';
 import { DiscGlyph } from '@/stage/instruments/TopStrip';
 import { ClockSign } from './ClockSign';
 import {
@@ -19,6 +19,7 @@ import {
   OpeningDemo,
   VoteDemo,
 } from './StopDemos';
+import { useNear } from './useNear';
 import { useTabs } from './useTabs';
 import guide from './Guide.module.css';
 import { Button } from '@/components/site';
@@ -131,6 +132,8 @@ function Engine() {
 
 export function DayLine() {
   const t = useTabs(IDS);
+  const stack = useRef<HTMLDivElement>(null);
+  const near = useNear(stack);
   return (
     <>
       <div
@@ -153,7 +156,7 @@ export function DayLine() {
         ))}
       </div>
 
-      <div className={guide.stack}>
+      <div ref={stack} className={guide.stack}>
         {STOPS.map((s, i) => {
           const next = STOPS[(i + 1) % STOPS.length];
           return (
@@ -167,9 +170,7 @@ export function DayLine() {
                   {s.disc === 'end' ? 'End of the line' : `${i + 1} of ${NUMBERED}`}
                 </span>
               </header>
-              <div className={classes.live}>
-                <s.Demo />
-              </div>
+              <div className={classes.live}>{near ? <s.Demo /> : null}</div>
               <div className={classes.words}>
                 <p>{s.text}</p>
                 {s.you && (
