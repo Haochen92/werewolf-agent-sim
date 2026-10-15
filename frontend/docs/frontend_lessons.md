@@ -178,6 +178,31 @@ animations still (`reducedMotion: 'reduce'`, or answer the data), and report the
 of differences. And stop a painted wall where its light runs out: past the lamp's reach the
 page's own ground is the same colour and costs nothing (`Rooms.module.css`, the capped walls).
 
+**26. A filter is drawn on the CPU over its whole box, every time the box is drawn: its cost is
+area × count × how often.** The guide's role cards carried ten `#inkwobble` filters each (noise
+displacing the ink) and a `drop-shadow` on the figure. Harmless at 270 px wide; once the cards
+grew to 417 px (2026-10-15) the carousel stuttered: 18 fps scrolling the rows and 12 fps turning
+one, at 4× CPU throttle. Clean ink and a painted shadow (a radial gradient under the figure,
+`RoleCard.module.css` `.portrait::before`) gave 42 and 48. Keep texture filters to a few small,
+still things (the slates), and measure a filtered element again whenever it grows. Relates to 11.
+
+**27. Deferring a mount is safe only where its box already has its final size.** The guide's
+eleven demo stages were all built on load and kept a phone-speed CPU busy for about 9 s after
+it, so whatever the reader scrolled to stuttered. Mounting them near the view
+(`guide/useNear.ts`) was right for the day line, whose slot is a fixed height, and wrong for the
+tools and the case file, which grew 50–430 px when their demos arrived: a section growing a
+screen away is invisible while scrolling, but it moves an anchor jump's target in mid-flight.
+The test that caught it measures a section, then clicks its tabs (`e2e/site.spec.ts`, "no tab set
+moves the page"). Reserve the box, or mount at load. Relates to 23.
+
+**28. Find out what the main thread is doing before blaming the paint.** The first throttled
+run said the cards were slow with or without their filters. A trace showed size observers and
+layout, not painting, and wrapping `ResizeObserver` to log its targets named the demo stages,
+not the cards. Three checks: count the work with nothing moving, in 3 s windows until it reaches
+zero (a page still settling, not a loop); measure the thing only once the page has settled; and
+on a shared machine interleave old and new runs and take the median of three (single runs here
+swung from 15 to 45 fps with the machine's load). Relates to 25.
+
 ---
 
 ## Small things that cost an afternoon
@@ -228,3 +253,6 @@ page's own ground is the same colour and costs nothing (`Rooms.module.css`, the 
   (2026-10: the landing's lazily loaded theatre lost its styles when a stage file was saved). The
   stage then draws unclipped at full size, with no HUD, which looks like a framing bug. A
   production build keeps every sheet. Hard-reload before you chase it.
+- A Playwright run proves nothing until you know whose server answered on its port: another
+  session's build held 3121 (2026-10-15), mine failed to start, and the suite ran against theirs.
+  Check the port's process first (`ss -ltnp`, then `readlink /proc/<pid>/cwd`).
