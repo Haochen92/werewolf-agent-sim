@@ -9,6 +9,10 @@
  * viewport from the very top, behind the nav's board. Its light follows the lamps through three
  * variables set on the landing (`.scene` in the module): `--lx`/`--rx` for the lamps' x and
  * `--ly` for their glass; the carriage's platform reads the same three.
+ *
+ * `short` is the departures hall's (owner, 2026-10-14): the hall's page is short, so the wall
+ * stops at 820px and fades to the ground there instead of running the hero's 1250px, about a
+ * third less to raster for the same lamps.
  */
 import classes from './PlatformBackdrop.module.css';
 
@@ -62,9 +66,12 @@ function Lamp({ side }: { side: 'l' | 'r' }) {
   );
 }
 
-export function PlatformBackdrop() {
+export function PlatformBackdrop({ short = false }: { short?: boolean }) {
   return (
-    <div className={classes.backdrop} aria-hidden="true">
+    <div
+      className={short ? `${classes.backdrop} ${classes.short}` : classes.backdrop}
+      aria-hidden="true"
+    >
       <div className={classes.tiles} />
       <div className={classes.light} />
       <svg

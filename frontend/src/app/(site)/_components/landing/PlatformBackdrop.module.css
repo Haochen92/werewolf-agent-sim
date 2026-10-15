@@ -32,6 +32,18 @@
   contain: strict;
 }
 
+/* the departures hall's: shorter, its foot faded to the page's ground over everything (the
+   vignette is darker than the ground, so a plain cut would show as an edge) */
+.short {
+  height: 820px;
+}
+.short::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent calc(100% - 260px), var(--bg) 100%);
+}
+
 /* one tile layer, lit by a single mask: under the sign, round the doors, down each lamp */
 .tiles {
   position: absolute;

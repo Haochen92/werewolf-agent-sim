@@ -10,12 +10,12 @@ export const metadata = { title: 'Rooms' };
  * The lobby: the list of rooms (rooms mockup, review §A3), an ordinary responsive page. The
  * title beside two doors (open a table of your own, or play solo), hung from a hairline as the
  * ticket office's are, then the departures board. It stands on the landing's platform
- * (`PlatformBackdrop`, its lamps just outside the column).
+ * (`PlatformBackdrop`, its lamps just outside the column), cut short for a short page.
  */
 export default function RoomsPage() {
   return (
     <main className={`${classes.hall} ${platform.scene}`}>
-      <PlatformBackdrop />
+      <PlatformBackdrop short />
       <header className={classes.head}>
         <div>
           <h1 className={classes.title}>The departures hall</h1>

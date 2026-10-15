@@ -138,9 +138,10 @@ Each site page stands in one of the landing's rooms (`StationWall`, above): the 
 latest games' room, the ticket office (`/play`, `/rooms/new`) in the reading room, the departures
 hall on the platform. Paint census (production, scrolling the first 1400px, animations still,
 median of three, wall on against off): the archive +44 ms on a 3× phone / +177 ms on a 2×
-desktop, the ticket office within noise / +135 ms, the departures hall +416 / +1085 ms. The
-departures hall's is the landing's platform as it stands (a masked tile layer 1250px tall), the
-heaviest of the three.
+desktop, the ticket office within noise / +135 ms, the departures hall +234 / +445 ms. The
+departures hall stands on the landing's platform cut short (`PlatformBackdrop short`: 820px, its
+foot faded to the ground), since its page is short; the full 1250px platform cost it +416 /
++1085 ms.
 
 ## The tags on a phone
 
