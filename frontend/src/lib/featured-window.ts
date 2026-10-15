@@ -1,5 +1,5 @@
 /**
- * Which stretch of a game the landing's carriage plays (review §F7): day 3's vote through the
+ * Which stretch of a game the landing's carriage plays (review §F7): the featured day's vote through the
  * lynched seat's card going to the wing, in the public cut. Found by the beats' ids and days,
  * never by fixed numbers, so the fallback game (the newest, when the featured one is gone) gets
  * its own window: its first vote through that vote's end (the card to the wing after a lynch,
@@ -15,8 +15,9 @@ export interface FeaturedWindow {
   day: number | null;
 }
 
-/** The featured day: the owner's pick for game 9369a5c1 (a wolf voted out, the truth shown). */
-export const FEATURED_DAY = 3;
+/** The featured day: the owner's pick for game 68c26e83 (2026-10-15): the Chanteuse claims the
+ *  Investigator, and the table votes out the real one. */
+export const FEATURED_DAY = 2;
 
 /** How many beats the last-resort window plays, from the top. */
 const OPENING = 31;

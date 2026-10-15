@@ -601,12 +601,14 @@ for (const [name, viewport] of [
 /**
  * The landing (`/`) over mocked `GET /replays/{featured}` (the bundled fixture), `GET /replays`
  * (the latest games and the archive's total), `GET /rooms` (two tables boarding) and
- * `GET /models`. The carriage is the replay theatre in its mini mode, playing day 3's vote on
+ * `GET /models`. The carriage is the replay theatre in its mini mode, playing day 2's vote on
  * a loop with the replay's own controls; on an upright phone they sit under the stage.
  */
 const FIXTURE_BODY = readFileSync(
-  join(__dirname, '../src/stage/fixtures/replay-9369a5c1.json'),
+  join(__dirname, '../src/stage/fixtures/replay-68c26e83.json'),
 );
+/** The landing's featured game (`SITE.featuredReplay`), served from the fixture above. */
+const FEATURED = '68c26e83-f5c9-50d5-92b7-3589312a0cb9';
 const TWO_ROOMS = [
   ROOMS[0],
   { ...ROOMS[0], game_id: FULL.replace(/3$/, '4'), name: 'Late car' },
@@ -618,7 +620,7 @@ async function routeLanding(page: Page) {
     (url) => url.pathname.endsWith('/replays'),
     api(REPLAYS.slice(0, 3), { 'X-Total-Count': '212' }),
   );
-  await page.route(`**/replays/${GAME}*`, async (route) => {
+  await page.route(`**/replays/${FEATURED}*`, async (route) => {
     const req = route.request();
     if (req.resourceType() === 'document' || req.headers()['rsc']) return route.fallback();
     await route.fulfill({
@@ -650,7 +652,7 @@ async function openLanding(page: Page, query = '') {
 const carriage = (page: Page) => page.locator('[data-frame="carriage"]');
 const mini = (page: Page) => carriage(page).locator('[data-mini]');
 
-test('landing: the carriage plays day 3 of the featured game, with the replay’s controls', async ({
+test('landing: the carriage plays day 2 of the featured game, with the replay’s controls', async ({
   page,
 }) => {
   test.slow(); // it presses through the band, and each press redraws the stage
@@ -659,18 +661,18 @@ test('landing: the carriage plays day 3 of the featured game, with the replay’
 
   // the stage is drawn in the frame with its wing, strip and band
   await expect(carriage(page).locator('[data-layer="paint"]').first()).toBeAttached();
-  await expect(carriage(page).locator('[data-layer="hud"] [data-seat]')).toHaveCount(9);
+  await expect(carriage(page).locator('[data-layer="hud"] [data-seat]')).toHaveCount(10);
   await expect(carriage(page).locator('[data-transport]')).toBeVisible();
   // no way back to the replay list from inside the landing: the carriage links the game
   await expect(carriage(page).getByRole('link', { name: 'Replays' })).toHaveCount(0);
 
-  // it starts on day 3's vote and plays (the window is 48..66 of the public cut)
+  // it starts on day 2's vote and plays (the window is 55..75 of the public cut)
   await carriage(page).scrollIntoViewIfNeeded();
   await expect(mini(page)).toHaveAttribute('data-playing', 'true');
-  await expect(mini(page)).not.toHaveAttribute('data-beat-index', '48', { timeout: 6000 });
+  await expect(mini(page)).not.toHaveAttribute('data-beat-index', '55', { timeout: 6000 });
   const at = Number(await mini(page).getAttribute('data-beat-index'));
-  expect(at).toBeGreaterThan(48);
-  expect(at).toBeLessThanOrEqual(66);
+  expect(at).toBeGreaterThan(55);
+  expect(at).toBeLessThanOrEqual(75);
 
   // the band sees the window only, and its buttons stay in it
   const band = carriage(page).locator('[data-transport]');
@@ -678,19 +680,20 @@ test('landing: the carriage plays day 3 of the featured game, with the replay’
   await expect(mini(page)).toHaveAttribute('data-playing', 'false');
   await expect(band.getByRole('slider', { name: 'Seek' })).toHaveAttribute(
     'aria-valuemax',
-    '19',
+    '21',
   );
   await band.getByRole('slider', { name: 'Seek' }).click({ position: { x: 1, y: 4 } });
-  await expect(mini(page)).toHaveAttribute('data-beat-index', '48');
+  await expect(mini(page)).toHaveAttribute('data-beat-index', '55');
   await band.getByRole('button', { name: 'Back a beat' }).click();
-  await expect(mini(page)).toHaveAttribute('data-beat-index', '48');
+  await expect(mini(page)).toHaveAttribute('data-beat-index', '55');
 
-  // the strip's Reveal shows the hidden roles: seat 8's band names its role, a wolf; File
-  // brings the case file beside the stage, Transcript the drawer
-  const seat8 = carriage(page).locator('[data-layer="hud"] [data-seat="8"]');
-  await expect(seat8).not.toContainText('Wolf');
+  // the strip's Reveal shows the hidden roles: seat 10's band names its role, the Chanteuse
+  // (who claimed the Investigator); File brings the case file beside the stage, Transcript the
+  // drawer
+  const seat10 = carriage(page).locator('[data-layer="hud"] [data-seat="10"]');
+  await expect(seat10).not.toContainText('Chanteuse');
   await carriage(page).getByRole('button', { name: 'Reveal', exact: true }).click();
-  await expect(seat8).toContainText('Wolf');
+  await expect(seat10).toContainText('Chanteuse');
   await carriage(page).getByRole('button', { name: 'File', exact: true }).click();
   await expect(
     carriage(page).getByRole('complementary', { name: /^Case file/ }),
@@ -702,14 +705,14 @@ test('landing: the carriage plays day 3 of the featured game, with the replay’
   // the platform, the way to it whole and its details
   await expect(carriage(page)).toHaveAttribute(
     'aria-label',
-    'Replay of day 3 of game 9369A5C',
+    'Replay of day 2 of game 68C26E8',
   );
-  await expect(carriage(page).getByRole('img', { name: '9369A5C' })).toBeVisible();
+  await expect(carriage(page).getByRole('img', { name: '68C26E8' })).toBeVisible();
   await expect(
     carriage(page).getByRole('link', { name: 'Watch the whole game' }),
-  ).toHaveAttribute('href', `/replays/${GAME}?from=home`);
+  ).toHaveAttribute('href', `/replays/${FEATURED}?from=home`);
   await expect(carriage(page)).toContainText('Gemini 3.5 Flash-Lite');
-  await expect(carriage(page)).toContainText('Wolves won');
+  await expect(carriage(page)).toContainText('Town won');
 
   // the doors, the rooms boarding, the latest games and the archive's count in the footer
   await expect(page.getByRole('link', { name: /Play solo/ }).first()).toHaveAttribute(
@@ -738,9 +741,9 @@ test('landing: on an upright phone the controls sit under the stage, at reading 
   await carriage(page).getByRole('button', { name: 'Pause' }).click();
   await expect(mini(page)).toHaveAttribute('data-playing', 'false');
   const pips = carriage(page).getByRole('group', { name: 'Beats' }).getByRole('button');
-  await expect(pips).toHaveCount(19);
+  await expect(pips).toHaveCount(21);
   await pips.nth(0).click();
-  await expect(mini(page)).toHaveAttribute('data-beat-index', '48');
+  await expect(mini(page)).toHaveAttribute('data-beat-index', '55');
 
   // the preview stops at the board on a phone (owner, 2026-10-14): no transcript, no Reveal
   // pane (the whole replay has them), and the carriage, the board and the way to the whole game
@@ -751,7 +754,7 @@ test('landing: on an upright phone the controls sit under the stage, at reading 
   expect(tall).toBeLessThan(844);
   await expect(
     carriage(page).getByRole('link', { name: 'Watch the whole game' }),
-  ).toHaveAttribute('href', `/replays/${GAME}?from=home`);
+  ).toHaveAttribute('href', `/replays/${FEATURED}?from=home`);
   // nothing reaches past the phone's edge
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
 });
@@ -790,7 +793,7 @@ for (const { name, viewport, dpr, sheet, px } of [
         // the game's log from the API; not the page itself, nor Next's prefetch of the "Watch the
         // whole game" page (production only, an `rsc` request for the page's shell, no game data)
         if (
-          url.includes(`/replays/${GAME}`) &&
+          url.includes(`/replays/${FEATURED}`) &&
           req.resourceType() !== 'document' &&
           !req.headers()['rsc']
         )
@@ -826,7 +829,7 @@ test('landing: the preview stops its clock while the page is hidden, and goes on
   const band = carriage(page).locator('[data-transport]');
   await band.getByRole('button', { name: 'Pause' }).click();
   await band.getByRole('slider', { name: 'Seek' }).click({ position: { x: 1, y: 4 } });
-  await expect(mini(page)).toHaveAttribute('data-beat-index', '48');
+  await expect(mini(page)).toHaveAttribute('data-beat-index', '55');
 
   const hidden = (on: boolean) =>
     page.evaluate((h) => {
@@ -841,9 +844,9 @@ test('landing: the preview stops its clock while the page is hidden, and goes on
   await expect(mini(page)).toHaveAttribute('data-playing', 'true');
   // longer than the beat's hold (the first test sees it end inside six seconds)
   await page.waitForTimeout(7000);
-  await expect(mini(page)).toHaveAttribute('data-beat-index', '48');
+  await expect(mini(page)).toHaveAttribute('data-beat-index', '55');
   await hidden(false);
-  await expect(mini(page)).not.toHaveAttribute('data-beat-index', '48', { timeout: 6000 });
+  await expect(mini(page)).not.toHaveAttribute('data-beat-index', '55', { timeout: 6000 });
 });
 
 for (const [name, viewport] of [
@@ -855,7 +858,7 @@ for (const [name, viewport] of [
     // at rest on the window's first beat: reduced motion stops the play, and so does ?still=1
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await openLanding(page, '?still=1');
-    await expect(mini(page)).toHaveAttribute('data-beat-index', '48');
+    await expect(mini(page)).toHaveAttribute('data-beat-index', '55');
     await expect(page.locator('[data-game]')).toHaveCount(3);
     await expect(page.getByRole('contentinfo')).toContainText('212 games archived');
     await settle(page);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { DurableGameEvent } from '@/types/contracts';
-import fixture from '@/stage/fixtures/replay-9369a5c1.json';
+import fixture from '@/stage/fixtures/replay-68c26e83.json';
 import { beatsFor } from '@/stage/beats/beatsFor';
 import type { SceneBeat } from '@/stage/beats/types';
 import { featuredWindow } from './featured-window';
@@ -22,12 +22,11 @@ const cut = (...spec: [SceneBeat['id'], number][]): SceneBeat[] =>
   }));
 
 describe('the featured window', () => {
-  it('is day 3’s vote through the lynched card going to the wing, in the fixture', () => {
+  it('is day 2’s vote through the lynched card going to the wing, in the featured game', () => {
     const w = featuredWindow(beats);
-    // the public golden (beats/__goldens__/9369a5c1.public.txt): lines 48 and 66
-    expect(w).toEqual({ from: 48, to: 66, day: 3 });
-    expect([beats[w.from].id, beats[w.from].day]).toEqual(['vote.opens', 3]);
-    expect([beats[w.to].id, beats[w.to].day]).toEqual(['lynch.card-to-wing', 3]);
+    expect(w).toEqual({ from: 55, to: 75, day: 2 });
+    expect([beats[w.from].id, beats[w.from].day]).toEqual(['vote.opens', 2]);
+    expect([beats[w.to].id, beats[w.to].day]).toEqual(['lynch.card-to-wing', 2]);
   });
 
   it('falls back to the first vote when the game has no day-3 vote', () => {
