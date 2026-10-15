@@ -1,9 +1,9 @@
 /*
  * The site's buttons (the controls kit, owner 2026-10-15): three variants on Mantine's Button,
  * set through `data-variant` (theme/components.ts makes `well` the default):
- *   brass — the engraved brass plate: the one main action of a view (Start the game, Join,
- *           Step onto the platform). The stage's own plate is `ActPlate`; this is the page-side
- *           twin, never used inside the stage box.
+ *   plate — the riveted cream plate (the brass plate's make in cream, owner 2026-10-15): the
+ *           one main action of a view (Start the game, Join, Watch the whole game). The stage's
+ *           own plate is `ActPlate`; this is the page-side twin, never used inside the stage box.
  *   well  — the recessed well of the nav's doors: every other button, a way to another page
  *           included.
  *   text  — a word that acts: small actions beside a field or under a demo.
@@ -82,29 +82,29 @@
   text-decoration: underline;
 }
 
-.root[data-variant='brass'] {
+.root[data-variant='plate'] {
   --button-radius: 6px;
   --button-bd: 0;
   --button-color: #2a1a08;
   font-family: var(--font-serif);
   font-weight: 400;
-  text-shadow: 0 1px 0 rgba(255, 236, 190, 0.6);
+  text-shadow: 0 1px 0 rgba(255, 250, 235, 0.7);
   background:
-    radial-gradient(circle at 10% 18%, #7a5a26 3px, transparent 3.5px),
-    radial-gradient(circle at 90% 18%, #7a5a26 3px, transparent 3.5px),
-    radial-gradient(circle at 10% 82%, #7a5a26 3px, transparent 3.5px),
-    radial-gradient(circle at 90% 82%, #7a5a26 3px, transparent 3.5px),
-    linear-gradient(#f2d185, #c99a44 48%, #9c7430);
+    radial-gradient(circle at 10% 18%, #9a7a46 3px, transparent 3.5px),
+    radial-gradient(circle at 90% 18%, #9a7a46 3px, transparent 3.5px),
+    radial-gradient(circle at 10% 82%, #9a7a46 3px, transparent 3.5px),
+    radial-gradient(circle at 90% 82%, #9a7a46 3px, transparent 3.5px),
+    linear-gradient(#fbf3df, #ecdcb8 48%, #d6c094);
   box-shadow:
     inset 0 2px 0 rgba(255, 255, 255, 0.55),
-    inset 0 -3px 0 rgba(0, 0, 0, 0.25),
-    0 3px 0 #4a3210,
-    0 6px 12px rgba(0, 0, 0, 0.5);
+    inset 0 -3px 0 rgba(0, 0, 0, 0.18),
+    0 3px 0 #8a6a3a,
+    0 6px 12px rgba(0, 0, 0, 0.45);
 }
-.root[data-variant='brass']:hover {
-  filter: brightness(1.07);
+.root[data-variant='plate']:hover {
+  filter: brightness(1.04);
 }
-.root[data-variant='brass']:active {
+.root[data-variant='plate']:active {
   transform: translateY(1px);
 }
 

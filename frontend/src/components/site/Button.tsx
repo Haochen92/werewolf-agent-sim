@@ -5,7 +5,7 @@
  *
  * - `well` (default): the recessed well of the nav's doors; every button that is not the main
  *   action, a way to another page included.
- * - `brass`: the engraved brass plate; the one main action of a view. Page-side only; inside
+ * - `plate`: the riveted cream plate; the one main action of a view. Page-side only; inside
  *   the stage box use `ActPlate`.
  * - `text`: a word that acts, for small actions.
  *
@@ -21,7 +21,7 @@ import {
 } from '@mantine/core';
 
 export interface ButtonProps extends Omit<MantineButtonProps, 'variant' | 'size'> {
-  variant?: 'well' | 'brass' | 'text';
+  variant?: 'well' | 'plate' | 'text';
   /** `sm` 36px, `md` 44px (default), `lg` 52px; a `text` button is as tall as its words. */
   size?: 'sm' | 'md' | 'lg';
 }

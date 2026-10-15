@@ -357,7 +357,7 @@ export function FeaturedReplay() {
         <Button
           component={Link}
           href={href}
-          variant="brass"
+          variant="plate"
           className={classes.go}
           rightSection={<span aria-hidden="true">&rarr;</span>}
         >

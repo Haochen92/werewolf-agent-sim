@@ -31,7 +31,7 @@ export function GameEndedCard({ gameId, status }: { gameId: string; status: Game
         <div className={classes.ways}>
           {finished ? (
             <>
-              <Button component={Link} href={`/replays/${gameId}`} variant="brass">
+              <Button component={Link} href={`/replays/${gameId}`} variant="plate">
                 Watch the replay
               </Button>
               <Anchor component={Link} href="/">
@@ -39,7 +39,7 @@ export function GameEndedCard({ gameId, status }: { gameId: string; status: Game
               </Anchor>
             </>
           ) : (
-            <Button component={Link} href="/" variant="brass">
+            <Button component={Link} href="/" variant="plate">
               Back to the start
             </Button>
           )}

@@ -106,7 +106,7 @@ export function BoardRow({ room }: { room: RoomSummary }) {
           <Button
             component={Link}
             href={`/games/${room.game_id}`}
-            variant="brass"
+            variant="plate"
             size="sm"
           >
             {seated ? 'Return to your seat' : 'Return to your room'}
@@ -154,7 +154,7 @@ export function BoardRow({ room }: { room: RoomSummary }) {
           />
           <Button
             type="submit"
-            variant="brass"
+            variant="plate"
             size="sm"
             loading={join.isPending}
             disabled={!face.joinable || Boolean(problem)}

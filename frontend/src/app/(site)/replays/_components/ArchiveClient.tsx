@@ -96,7 +96,7 @@ export function ArchiveClient() {
           Every game that finishes lands here, with Reveal on. Play one and it will be
           the first.
         </p>
-        <Button component={Link} href="/play" variant="brass">
+        <Button component={Link} href="/play" variant="plate">
           Take a seat
         </Button>
       </div>
@@ -181,7 +181,7 @@ export function ArchiveClient() {
             <p className={classes.emptyText}>
               Loosen one of them, or clear them all to see the whole archive.
             </p>
-            <Button variant="brass" onClick={() => refilter(NO_FILTERS)}>
+            <Button variant="plate" onClick={() => refilter(NO_FILTERS)}>
               Clear filters
             </Button>
           </div>

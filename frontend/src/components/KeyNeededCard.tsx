@@ -47,7 +47,7 @@ export function KeyNeededCard({ gameId, status }: { gameId: string; status: Game
             <div className={classes.ways}>
               <Button
                 type="button"
-                variant="brass"
+                variant="plate"
                 onClick={() => fund.mutate()}
                 disabled={fund.isPending || !apiKey.trim()}
               >

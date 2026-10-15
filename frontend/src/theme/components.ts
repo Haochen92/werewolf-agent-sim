@@ -32,7 +32,7 @@ import titleClasses from './components/Title.module.css';
 
 export const componentsTheme = createTheme({
   components: {
-    // `well` is the default; `brass` is the main action, `text` a word that acts (Button.module.css)
+    // `well` is the default; `plate` is the main action, `text` a word that acts (Button.module.css)
     Button: Button.extend({
       defaultProps: { variant: 'well', size: 'md' },
       classNames: buttonClasses,

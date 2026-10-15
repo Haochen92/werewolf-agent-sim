@@ -64,7 +64,7 @@ own part (`'Rooms'`). `/` gets the default, `The Ninth Express`.
 | `Board.module.css` | The signage's materials, composed by every board on the site: `board` (wood in a brass frame: what you operate), `rivets`, `well` (a recessed button; `aria-current`/`-pressed`/`-selected` make it the cream plate), `plate` (the primary action), `enamel` (a navy sign screwed to a board: somewhere to read, not a door) and `flap` (one split-flap tile). Paper carries what you read; brass is for lines and hardware, never a small flat fill. |
 | `StationWall` | A page's wall: the landing's rooms behind the other pages (owner 2026-10-14). `records` (the archive: platform tile, oxblood band, pendant) and `granite` (the ticket office: granite under the caged wall light, `StationLamps`); the departures hall stands on the landing's `PlatformBackdrop`. Placed against `.station` from the page's top, under the page's own stacking context (`wallPage` on its `<main>`), capped where its light runs out, its foot faded to the page's ground. `cards` is the guide's: the roles' green tile, lit from over the board. Further down, each side of the guide's roles stands on the same tile in its own colour (ochre, oxblood, aubergine, slate; `Guide.module.css` `.side::before`, owner 2026-10-15). |
 | `SiteFooter` | The GitHub link with its icon, the other links, and the credit line, whose "N games archived" is live (`GamesArchived`, the archive's `X-Total-Count`). |
-| `Button` | Mantine Button narrowed to the kit's three variants (below): `well` (the default), `brass` and `text`. Polymorphic. |
+| `Button` | Mantine Button narrowed to the kit's three variants (below): `well` (the default), `plate` and `text`. Polymorphic. |
 | `GuideSign` | The guide's one look wherever a page points at it: the navy enamel and the open book (`Book`, which the nav's sign draws too), a size up for a page: under the hero's tags, under the roles. |
 | `PlateTabs.module.css` | The site's plain tabs, composed by any tab set that is not itself a picture: dark tabs, the chosen one a brass plate; `small` inside a panel. |
 | `HangTag` | The hung paper tag. With `href` it is a link (a door); with `onClick` and `pressed` it is a choice. On a phone it is a stub, two to a row (below). |
@@ -83,7 +83,7 @@ bench https://claude.ai/artifact/XktnahYzDTKqxhG61TrqBe):
   the guide's railway stops and folder tabs, the features' brass plates, the carriage's player.
   They are built on Mantine's behaviour (UnstyledButton, Radio) where they need it.
 - **Everyday controls** are Mantine components with our variants, and take their colours from
-  the surface under them. `Button`: `brass` is the one main action of a view, `well` every other
+  the surface under them. `Button`: `plate` (the riveted cream plate, owner 2026-10-15) is the one main action of a view, `well` every other
   button (a way to another page included), `text` a word that acts. Links are Mantine's
   `Anchor`, always underlined. One switch, one select, one chip, one set of plain tabs
   (`PlateTabs`).

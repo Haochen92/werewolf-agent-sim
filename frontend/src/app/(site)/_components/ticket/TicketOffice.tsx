@@ -448,7 +448,7 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
             ) : null}
             <Button
               type="submit"
-              variant="brass"
+              variant="plate"
               size="lg"
               fullWidth
               loading={create.isPending}

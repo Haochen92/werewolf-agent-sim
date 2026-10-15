@@ -245,7 +245,7 @@ export function BoardingPass({
           <div className={classes.actions}>
             <Button
               type="submit"
-              variant="brass"
+              variant="plate"
               loading={join.isPending}
               disabled={Boolean(problem) || lost !== null}
             >

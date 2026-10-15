@@ -20,7 +20,7 @@ export default function NotFound() {
         <h1 className={classes.title}>This page isn&rsquo;t on the train</h1>
         <p className={classes.lede}>The link may be mistyped, or the page has moved on.</p>
         <div className={classes.ways}>
-          <Button component={Link} href="/" variant="brass">
+          <Button component={Link} href="/" variant="plate">
             Back to the platform
           </Button>
           <Button component={Link} href="/replays">

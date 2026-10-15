@@ -22,7 +22,7 @@ export function TerminalError({ message, byok }: { message: string; byok?: boole
           </p>
         ) : null}
         <div className={classes.ways}>
-          <Button component={Link} href="/" variant="brass">
+          <Button component={Link} href="/" variant="plate">
             Back to the start
           </Button>
         </div>
