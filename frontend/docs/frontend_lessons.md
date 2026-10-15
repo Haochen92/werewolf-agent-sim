@@ -182,6 +182,12 @@ page's own ground is the same colour and costs nothing (`Rooms.module.css`, the 
 
 ## Small things that cost an afternoon
 
+- `--update-snapshots` rewrites only the goldens that fail, and a golden fails only past its
+  tolerance (`maxDiffPixelRatio` 0.005 here), so a deliberate change to a few lines of text (a
+  colour, a size) passes against the old golden and is never written: the golden keeps the old
+  look. After a deliberate change run `--update-snapshots=all` on the build that has it, then put
+  back every golden whose pixels did not really move (a page you did not touch re-renders with
+  sub-pixel noise), comparing each against HEAD.
 - A production build prefetches every `<Link>` that scrolls into view (the dev server does not),
   as a `fetch` with an `rsc: 1` header to the page's own path. A test counting requests by path
   (`/replays/<id>`) counts the prefetch too and fails on production only; filter on the header.

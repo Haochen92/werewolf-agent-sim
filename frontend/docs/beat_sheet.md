@@ -172,7 +172,7 @@ read card (guess, how sure, why, the truth with ● ◐ ○), a paper index card
 |---|---|---|---|---|---|---|
 | 1 | `day.turn-thinking` | `turn_started` (first: 13) | P | the seat's puppet takes the stand in the thinking state, no clock; the speech box shows a "…" so the state reads as thinking, not idle (ruled 2026-09-25) | D: nothing yet | live: until the turn resolves · replay: folded into the resolving beat: the puppet rises thinking, holds **0.6 s**, then plays it (accepted 2026-09-25) |
 | 2 | `day.speech` (one per page, §0) | `speech` | P | talking state, the line in the speech box a page at a time, "1 / 2 ▼" at its foot while more follows; X: the box carries the aqua tags (who it answers, stance) and the plaque tags the role; the wing's verdigris edges from the turn's `player_reads` | D: the line, lit and scrolled to · F(X): the speaker's file | speech |
-| 3 | `day.pass` | public: a `turn_started` resolved by no speech (the next `turn_started`, the phase change, the moderator's line, or the seat's ballot or night act), live and replay alike, since `turn_started` is public · X-ray: `pass_marker` instead (12 in the fixture), which carries the reason and the draft (ruled 2026-09-25: day 1 of the public replay is three passes, not an empty stand) · **a run (owner, 2026-10-12):** passes one after another, nothing shown between them and no seat twice (a seat's second pass starts the next run), are one beat anchored on the first turn, `subjects` the seats in the order they passed; a lone pass is the row as before. Live, no seat of a run takes the stand thinking. The X-ray replay keeps a beat per `pass_marker` | P · X | idle state, the box says "passes"; X adds the reason and the held-back draft. Reason wording (accepted 2026-09-25): `voluntary` "chose to pass" · `novelty_gated` "held back: nothing new to say" · `generation_failed` "no line came". A run: the stand empty, the seats lit on the wing, the rounds' walnut notice (row 9) "Seats 4, 5, 7 and 10 passed." (the viewer's seat "You and seats 4 and 5 passed.") | D(X): the pass with its reason and draft | 4.0 |
+| 3 | `day.pass` | public: a `turn_started` resolved by no speech (the next `turn_started`, the phase change, the moderator's line, or the seat's ballot or night act), live and replay alike, since `turn_started` is public · X-ray: `pass_marker` instead (12 in the fixture), which carries the reason and the draft (ruled 2026-09-25: day 1 of the public replay is three passes, not an empty stand) · **a run (owner, 2026-10-12):** passes one after another, nothing shown between them and no seat twice (a seat's second pass starts the next run), are one beat anchored on the first turn, `subjects` the seats in the order they passed; a lone pass is the row as before. Live, no seat of a run takes the stand thinking. The X-ray replay keeps a beat per `pass_marker` | P · X | idle state, the box says "passes"; X adds the reason and the held-back draft. Reason wording (accepted 2026-09-25): `voluntary` "chose to pass" · `novelty_gated` "held back: nothing new to say" · `generation_failed` "no line came". A run: the stand empty, the seats lit on the wing, the rounds' placard over the stand (row 9) "Seats 4, 5, 7 and 10 passed." (the viewer's seat "You and seats 4 and 5 passed.") | D(X): the pass with its reason and draft | 4.0 |
 | 4 | `day.your-turn` | `input_request` `discuss` for me | S | my puppet at the stand, thinking; the dock carries the two minutes (`deadline`; null = no countdown; the car's wall clock is gone, ruled 2026-09-29); three plaques and no boxes (2026-10-01; §12): **Write your line** (**Edit your line** once there is one) opens the full-screen composer, which holds an optional steer for your agent + **Draft** / **Redraft this** (the seat's own agent's line, as it would say it, steered and revising the box's line when the field holds something; "Use my seat notes" sends the notebook along when ticked; three per turn, the returned `deadline` is the new countdown) and the box the draft lands in, editable; **Send** (live once there is a line) and **Pass**; the line previewed on one row under the head (no hand-over on this turn: the agent speaks only when the clock runs out); the drawer stops at the rail so the prompt keeps the full width | D: stops at the rail | until answered / deadline |
 | 5 | `day.your-line` | my `speech` after 4 | S (P sees a normal turn) | the puppet talks my line as any turn plays; a pass leaves it idle | D: my line | speech |
 | 6 | `day.agent-spoke-for-you` | my `speech` arriving with my request unanswered at its deadline (client-known) | S only | the puppet talks the agent's line; the plaque's tag and the box say "your seat's agent spoke for you" | D: the line with the tag | speech |
@@ -190,17 +190,18 @@ rows is the Phase 2 game (`fixtures/replay-phase2.json`, memory off; goldens `ph
 
 | # | Beat | Anchor | Sees | Stage | Slot | Hold |
 |---|---|---|---|---|---|---|
-| 7 | `day.opening-prepares` | `round_opened` `opening` | P | the stand empty, every seat of the round lit on the wing, a walnut notice where the box would be: "Everyone is writing their opening." (day 1: "…before the first night", since nothing has happened yet) | D: the notice line | live: until the round's first line (or the next beat) · replay: **4.0** |
+| 7 | `day.opening-prepares` | `round_opened` `opening` | P | the stand empty, every seat of the round lit on the wing, a placard held up over the stand, tilted (owner, 2026-10-15): "Everyone is writing their opening." (day 1: "…before the first night", since nothing has happened yet), live with the lines written so far under it ("3 of 9 written", `phase_progress` stage `opening`) | D: the notice line | live: until the round's first line (or the next beat) · replay: **4.0** |
 | 8 | `day.speech` | each `speech` of the round | P | as row 2; the puppet rises for each opening in turn (seat order) | D: the line | speech |
 | 9 | `day.round-passes` | the round's end: the first event after its lines that is not one of them (`turn_started`, the next `round_opened`, `day_summary`, a phase change), when any player of the round has no speech | P (the X-ray plays each `pass_marker` as row 3 instead, with its reason and draft) | the stand empty, the passing seats lit on the wing, the notice: "Seats 2, 5 and 8 had nothing to put on the table." (one seat: "Seat 2 had…"; everyone: "Nobody had anything to put on the table.") | D: the notice line | **4.0** |
-| 10 | `day.closing-called` | `round_opened` `closing` (the moderator's `gm_message` is the event before it) | P | the first accused takes the stand thinking; the box shows the moderator's line under a "the moderator" tag: "Before the vote: seat 4 has been accused by seats 2, 3 and 6. Seat 4 gets a last word."; the accused lit on the wing | D: the moderator's line | **4.0**, then the accused's lines as row 2 without rising again (one puppet per accused) |
+| 10 | `day.closing-called` | `round_opened` `closing` (the moderator's `gm_message` is the event before it) | P | the first accused takes the stand thinking; the house's printed paper at the foot carries the moderator's line under "Day 2 · The closing" and the seat's chip (owner, 2026-10-15; it was the speech box under a "the moderator" tag): "Before the vote: seat 4 has been accused by seats 2, 3 and 6. Seat 4 gets a last word."; the accused lit on the wing | D: the moderator's line | **4.0**, then the accused's lines as row 2 without rising again (one puppet per accused) |
 | 11 | `day.your-turn`, labelled | `input_request` `discuss` with `round` | S | as row 4, with the dock's head by the round: `opening` **Your opening** "A role claim, something from last night, or a challenge. Or pass." · `proactive` **The floor is yours** "One or two useful points, or pass." · `closing` **Your last word** "The village has its eye on you." · `discussion` (and a record without the field) **Your turn to speak** as before | — | as row 4 |
 
-As built 2026-10-07 (benches `phase2-*` in `e2e/workbench.spec.ts`): the round's notices use the
-speech box's board without a nameplate, and the wing lights every seat the notice is about. A seat
+As built 2026-10-07 (benches `phase2-*` in `e2e/workbench.spec.ts`), restyled 2026-10-15: the
+round's notices are the placard held over the empty stand, and the wing lights every seat the
+notice is about. A seat
 of the round that is the viewer's own appears in the notice as "you" ("You and seats 3, 5 and 6
-had nothing to put on the table."). The called seat's box carries the moderator's line under a
-"the moderator" tag on its nameplate, the puppet thinking (no "…" in the box). Day 1 of the Phase
+had nothing to put on the table."). The called seat thinks at the stand while the house's paper
+carries the moderator's line. Day 1 of the Phase
 2 fixture is rows 7 and 9 and nothing else. The seat rewrite capitalises a seat that starts a
 sentence ("…and seat 7. Seat 4 gets a last word."), for the moderator's line and any other.
 
@@ -490,7 +491,7 @@ has been seen keeps a steady, quieter verdigris edge and its lamp goes out. **Th
 (2026-09-30; the glow alone did not read as lit):** on the cream between each actor's photo and its
 band, "Visit ▸" in the typewriter, bold, in the paper's verdigris ink (`--ink-follow`), and
 "Seen" in a muted grey once its room has been visited; the glow is secondary. The notice at the
-foot (the walnut board with a brass edge, the speech box's material, in the Notice zone): "Night
+foot (a placard held up from below, in the Notice zone; the walnut board until 2026-10-15): "Night
 2 · 5 acted." (rooms, as the pill counts them: the pack's two wolves are one) "Tap a lit seat to
 visit its room." and two buttons, **Watch them all ▶** (the play goes on through every room in
 order, seen or not, then the whole, then on) and **End the night →** (to the first beat after
@@ -746,9 +747,9 @@ brass edge on a lamp's warmth. One column at every width (at the desktop's 530-o
 columns would not hold a speech). The controls are the strip's plaque tabs: the seat filter's
 "All" and Show in walnut with a thin brass edge, a pressed seat's head ringed in brass, the day
 tabs a walnut plaque along the foot split by brass rules; pressed is the dark inset well, the
-label in cream over a short brass underline. **The speech box (ruled 2026-09-29, the HUD's look):** a
-walnut board with a thin brass edge and a still grain, the seat's nameplate (chip and "Seat n" in
-Young Serif) on a brass-edged tab at its top-left corner, the words in Literata, lamp-glow cream.
+label in cream over a short brass underline. **The speech box (ruled 2026-09-29, the HUD's look; the felt
+patch since 2026-10-15):** cream felt stitched round its edge, the seat's label (chip and "Seat n"
+in Young Serif) a red felt tab stitched to its top-left corner, the words in Literata in ink.
 A fixed size: three lines of a 30-em measure, the same count on every screen; paging replaces
 overflow and ellipsis (§0), "1 / 2 ▼" at its foot while more follows, and a tap on the board
 turns the page (the replay steps, live ends the page's hold). The transcript still holds the

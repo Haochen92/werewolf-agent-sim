@@ -118,12 +118,26 @@ the X-ray until 2026-10-04, when it began opening on the Record alone, the seats
 instead; since 2026-09-29 they only choose the pane, the X-ray being one switch, **Reveal**, a brass
 keyhole on its own plaque just left of the tabs (beat sheet §11);
 the pressed tab, File or Transcript alike, sits in a darker engraved walnut well, its label bright cream over a short
-brass underline), the **speech box** (a fixed board of three lines with a nameplate tab, paged; beat
-sheet §0, §11), and the **stand plate** (the seat engraved on brass, "No. 2", on the stand's
+brass underline), the **speech box** (a fixed patch of three lines under a seat label, paged; beat
+sheet §0, §11), the **notices** (`Notice`, below), and the **stand plate** (the seat engraved on brass, "No. 2", on the stand's
 rail; wherever the speech box rises past the rail, a phone or the drawer's narrower board, it is
 pinned to the box's top edge, placed by measuring the box, `Stand.tsx`, 2026-09-30; it was a CSS
 estimate that left it at the puppet's chest on phones). Where a plate names the seat the puppet's
-belly numeral is not drawn. In the
+belly numeral is not drawn. **What the stage says in words is one of three materials (owner,
+2026-10-15; bench `stage-messages`):** a seat's own words are the speech box's **felt patch**
+(cream felt stitched round its edge, the seat on a red felt label: the cast are felt); what the
+house tells, a fact of the game, is **printed paper** (`Notice kind="paper"`: a ruled head such
+as "Dawn 2 · The report", the seat's chip and the words, a death stamped in red; the morning, the
+vote's result and the lynch, the moderator calling the accused, game over, your card, what only
+you learn); a stage direction, what is happening or what to do, is a **placard** (`Notice`'s
+default: the stand's walnut round a paper face, held up from below the stage on one pole, level,
+its buttons on its face). While the stand is empty in the day (the opening being written, a
+round's passes, a run of passes) the placard is held over the stand instead, tilted, its pole
+running down behind it (`HeldPlacard`, in the figures layer so the stand covers the pole); the
+opening's carries the live count of lines written ("3 of 9 written", `phase_progress` stage
+`opening`; the workbench fakes it with `written=N`). A card nobody may read shows the ticket
+office's plain felt doll inside its ring (`CardBackArt`). The pack's chat keeps the dark glass.
+In the
 replay a **way-out plaque** ("← Replays", or "← Home" from the landing) stands before the day
 plaque in the same material, and the count pill joins their row (beat sheet §11). A modal overlay (the full card, the epilogue's sheet, the
 portrait interstitial) sits above the box in normal page flow. `grade` and `hud` sit outside the
@@ -953,7 +967,7 @@ that has just arrived on a stop pauses the play) and keeps the visit (a tapped r
 last step, 2026-09-30) and the rooms seen, so a
 test can press through it without timers. The container hands the scenes `SceneProps.stop`
 (`StopInput`: the rooms seen that night, visit, play, end the night, back), which the hub, the
-rooms and the vote draw as a walnut notice with its buttons (`Notice` `walnut`, `NoticeButton`),
+rooms and the vote draw as a placard with its buttons on its face (`Notice`, `NoticeButton`),
 the wing as "Visit ▸"/"Seen" words and taps (at the hub and in the rooms), and the file's night
 sheet as its "Visit a room" row (`SideSlot`);
 the workbench hands in the same for the X-ray's cut in the replay's frame ("End the night" is
