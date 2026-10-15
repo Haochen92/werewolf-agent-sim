@@ -111,12 +111,13 @@
 }
 
 /* ---------- the ending: the research question behind the game ---------- */
+/* a quiet reading column: centred on the page, its text set left (as the replay's pitch is) */
 .closing {
-  text-align: center;
+  max-width: 64ch;
+  margin-inline: auto;
 }
 .closing h2 {
-  max-width: 36ch;
-  margin: 0 auto 12px;
+  margin: 0 0 18px;
   text-wrap: balance;
   font-size: 30px;
   font-weight: 800;
@@ -124,13 +125,26 @@
   line-height: 1.16;
   color: var(--text);
 }
-.closing > p {
-  max-width: 62ch;
+.closing p {
   text-wrap: pretty;
-  margin: 0 auto 14px;
+  margin: 0 0 16px;
   color: var(--muted);
-  font-size: 16.5px;
-  line-height: 1.5;
+  font-size: 16px;
+  line-height: 1.6;
+}
+/* the turn from building the system to judging it: the one sentence in the text's own colour */
+.pivot {
+  font-weight: 500;
+  color: var(--text);
+}
+/* where the work stands, under a fine brass rule, with the way to its evidence */
+.standing {
+  margin-top: 30px;
+  padding-top: 26px;
+  border-top: 1px solid rgba(201, 150, 63, 0.35);
+}
+.standing p {
+  margin-bottom: 22px;
 }
 
 /* ---------- latest games ---------- */

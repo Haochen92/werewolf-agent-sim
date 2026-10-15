@@ -10,6 +10,13 @@ export const SITE = {
   name: 'The Ninth Express',
   author: 'Liu Haochen',
   github: 'https://github.com/Haochen92/werewolf-agent-sim',
+  /**
+   * Where the landing's closing sends a reader for the research. Until the case study is
+   * published, the memory research's own history in the repo, the fullest account there is.
+   */
+  // TODO(owner): the case study, once it is published
+  caseStudy:
+    'https://github.com/Haochen92/werewolf-agent-sim/blob/main/evidence/memory_system/store_progression.md',
 
   /** The top nav, in order. `match` is the path prefix that marks the link as the current page. */
   nav: [
