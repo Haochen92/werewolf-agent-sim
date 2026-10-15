@@ -92,7 +92,7 @@ export function CaseFile() {
   const t = useTabs(TABS.map(([id]) => id));
   return (
     <div className={classes.folder}>
-      <div className={classes.tabs} role="tablist" aria-label="After the game">
+      <div className={classes.tabs} role="tablist" aria-label="The end of the line">
         {TABS.map(([id, name]) => (
           <button key={id} {...t.tab(id)}>
             {name}

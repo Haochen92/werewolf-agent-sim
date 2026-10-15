@@ -80,7 +80,7 @@ const RULES: Entry[] = [
 /** After the roles: once a game is played, its replay. */
 const AFTER: Entry = {
   id: 'after',
-  label: 'After the game',
+  label: 'The end of the line',
   icon: <path d="M8 5v14l11-7z" />,
 };
 
@@ -307,7 +307,7 @@ export function Guide() {
         </section>
 
         <section id="after" className={classes.section} aria-labelledby="after-head">
-          <h2 id="after-head">After the game</h2>
+          <h2 id="after-head">The end of the line</h2>
           <p className={classes.sub}>
             Rewatch a finished game to see how it unfolded. Turn on Reveal to see the hidden
             roles, the night actions and the wolves&rsquo; private chat.

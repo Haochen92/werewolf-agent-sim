@@ -915,7 +915,7 @@ test('guide: the day line steps by the arrows and by its next-stop button', asyn
 
 test('guide: the case file loads its recorded games when opened', async ({ page }) => {
   await page.goto('/guide');
-  const file = page.getByRole('tablist', { name: 'After the game' });
+  const file = page.getByRole('tablist', { name: 'The end of the line' });
   await file.getByRole('tab', { name: 'Reveal' }).click();
   await expect(page.locator('#after [data-film]').first()).toBeVisible();
   await file.getByRole('tab', { name: 'Transcript' }).click();
@@ -932,7 +932,7 @@ test('guide: on a phone its own bar stands in for the strip, and Top goes back t
   const strip = page.getByRole('navigation', { name: 'Pinned' });
   // at the top, the nav board and no bar
   await expect(bar).not.toBeInViewport();
-  await page.getByRole('heading', { name: 'After the game' }).scrollIntoViewIfNeeded();
+  await page.getByRole('heading', { name: 'The end of the line' }).scrollIntoViewIfNeeded();
   await expect(bar).toBeInViewport();
   await expect(strip).toBeHidden();
   await page.getByRole('button', { name: 'Top', exact: true }).click();
