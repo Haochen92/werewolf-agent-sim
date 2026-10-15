@@ -41,8 +41,11 @@ import classes from './TheaterClient.module.css';
 
 const HOME = { href: '/', label: 'Home' };
 
-/** The still's line while a finished game's replay is being filed (the curtain's plaque's). */
-const WINDING = 'Winding the reels… come back in a few minutes';
+/**
+ * The still's line while a finished game's replay is being filed (the curtain's plaque's): a
+ * matter of moments, and the page asks again every five seconds and plays it when it comes.
+ */
+const WINDING = 'Winding the reels…';
 
 /** Over, still live (not yet from its row), its run not dead: the replay is on its way. */
 function windingOn(s: GameStatus | undefined): boolean {
@@ -91,7 +94,8 @@ export function TheaterClient({ gameId }: { gameId: string }) {
   if (missing && (status.data?.state === 'dropped' || live?.error))
     return (
       <p role="alert" className={classes.meta}>
-        This game was dropped. <Anchor component={Link} href="/rooms">
+        This game was dropped.{' '}
+        <Anchor component={Link} href="/rooms">
           Back to the lobby
         </Anchor>
       </p>

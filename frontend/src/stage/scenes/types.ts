@@ -91,14 +91,11 @@ export interface SceneProps {
    */
   wayOut?: {
     /**
-     * The replay, once it is filed; null until then (the run ends after the game does: with
-     * memory on, after the lessons are written), and a plaque, "Winding the reels… come back
-     * in a few minutes", stands where the link will be.
+     * The replay, once it is filed; null until then (moments, as the run ends after the game
+     * does), and a plaque, "Winding the reels…", stands where the link will be.
      */
     replay: string | null;
     lobby: string;
-    /** While the replay is not filed: the seats' lessons are still being written. */
-    lessons?: boolean;
   };
   /**
    * The replay (and the workbench): move the playhead to the first beat `find` accepts, as a

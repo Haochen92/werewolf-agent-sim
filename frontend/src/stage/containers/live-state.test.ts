@@ -1260,28 +1260,14 @@ describe('the turn’s clock and whose line it was', () => {
 describe('the curtain’s way to the replay waits for it to be filed', () => {
   const G = 'g1';
   const at = (over: Partial<Parameters<typeof curtainReplay>[1]> = {}) =>
-    curtainReplay(G, {
-      archived: false,
-      answered: false,
-      memory: false,
-      taught: false,
-      ...over,
-    });
+    curtainReplay(G, { archived: false, answered: false, ...over });
 
   it('the game is over, its run is not: the plaque, no link', () => {
-    expect(at()).toEqual({ replay: null, lessons: false });
-  });
-
-  it('with memory on, until the lessons come in, the plaque says they are being written', () => {
-    expect(at({ memory: true })).toEqual({ replay: null, lessons: true });
-    expect(at({ memory: true, taught: true })).toEqual({ replay: null, lessons: false });
+    expect(at()).toEqual({ replay: null });
   });
 
   it('the archive answers for the replay, or the status comes from its row: the link', () => {
-    expect(at({ answered: true, memory: true })).toEqual({
-      replay: '/replays/g1',
-      lessons: false,
-    });
-    expect(at({ archived: true })).toEqual({ replay: '/replays/g1', lessons: false });
+    expect(at({ answered: true })).toEqual({ replay: '/replays/g1' });
+    expect(at({ archived: true })).toEqual({ replay: '/replays/g1' });
   });
 });

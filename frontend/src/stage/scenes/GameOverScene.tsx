@@ -19,9 +19,9 @@
  *   lists the deal and how each seat went.
  * - `over.epilogue`: the ledger over the whole stage.
  * - `over.curtain`: the winners at the stand, the result in the box, and (live) the way out:
- *   "Watch the replay" once the replay is filed (the run ends after the game: with memory on,
- *   after the lessons are written), until then a plaque, "Winding the reels… come back in a
- *   few minutes", in its place; and "Back to the lobby".
+ *   "Watch the replay" once the replay is filed (moments after the game: the run ends just
+ *   after it), until then a plaque, "Winding the reels…", in its place; and "Back to the
+ *   lobby".
  *
  * Arrived at, each beat is simply there; played, it moves from the beat before. On a phone the
  * winners' hour is simply there too: no rise, no stand fading in (owner, 2026-10-02: the rise
@@ -443,14 +443,7 @@ export function EndBox({
                 role="status"
                 data-winding={way.replay ? undefined : true}
               >
-                <span>Winding the reels… come back in a few minutes</span>
-                {way.lessons && !way.replay ? (
-                  <span className={styles.lessons}>
-                    {me
-                      ? 'Your seat’s lessons are being written.'
-                      : 'The seats’ lessons are being written.'}
-                  </span>
-                ) : null}
+                <span>Winding the reels…</span>
               </span>
               {way.replay ? <Link href={way.replay}>Watch the replay</Link> : null}
             </span>

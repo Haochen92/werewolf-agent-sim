@@ -1533,7 +1533,7 @@ test('live: the curtain waits for the replay to be filed, then the link comes in
   await page.clock.install({ time: T0 });
   const over = ALL.find((e) => e.type === 'game_over')!;
   const backlog = ALL.filter((e) => e.seq < over.seq && !seen(e));
-  // the game is over; its run is not (the lessons are still being written): no replay yet
+  // the game is over; its run is not yet (it ends moments later): no replay yet
   const mock: Mock = {
     status: status(405),
     stream: [...upTo(405), over, ...backlog],
@@ -1547,9 +1547,7 @@ test('live: the curtain waits for the replay to be filed, then the link comes in
   }
   await expect(theatre(page)).toHaveAttribute('data-beat', 'over.curtain');
   const plaque = page.getByRole('status').filter({ hasText: 'Winding the reels' });
-  await expect(plaque).toHaveText(
-    /Winding the reels… come back in a few minutes\s*Your seat’s lessons are being written\./,
-  );
+  await expect(plaque).toHaveText('Winding the reels…');
   await expect(page.getByRole('link', { name: 'Watch the replay' })).toHaveCount(0);
   await expect(page.getByRole('link', { name: 'Back to the lobby' })).toBeVisible();
   await page.clock.runFor(5000);

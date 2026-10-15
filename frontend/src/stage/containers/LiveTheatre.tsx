@@ -32,9 +32,8 @@
  * the moment the stage reaches the ending (its first `over.*` beat; `game_over` can land while
  * the stage is still playing the last night, 2026-10-01): then the wing takes the truth, Reveal
  * and the seats' files unlock, and the ending plays to its curtain, whose way out goes to the
- * replay or back to the lobby. The replay is filed only when the engine's run ends (with
- * memory on, after the lessons are written, a minute or more after `game_over`): until the
- * archive answers for it, the curtain says "Winding the reels… come back in a few minutes"
+ * replay or back to the lobby. The replay is filed only when the engine's run ends, moments
+ * after `game_over`: until the archive answers for it, the curtain says "Winding the reels…"
  * where the link will be (`useReplayFiled`, 2026-10-01). Before the ending a seated player's
  * way out is the strip's door, which asks first ("Leave the table?") and goes to the lobby;
  * in a room their agent plays on, a solo game waits for them. A viewer back from being away (a
@@ -113,7 +112,7 @@ import {
   type LiveCtx,
 } from './live-state';
 import { holdFor } from './transport';
-import { memoryOn, type FileChoice } from '../film/case-file';
+import type { FileChoice } from '../film/case-file';
 import type { RecordPick } from '../film/record-model';
 import styles from './LiveTheatre.module.css';
 
@@ -501,16 +500,11 @@ export function LiveTheatre({
     () => (xrayShown ? folds.at(events.length) : null),
     [xrayShown, folds, events.length],
   );
-  // the replay is filed when the run ends (with memory on, after the lessons): until the
-  // archive answers for it, the curtain's way to it is a plaque
+  // the replay is filed when the run ends: until the archive answers for it, the curtain's way
+  // to it is a plaque
   const archived = !!status?.archived;
   const answered = useReplayFiled(gameId, xray && !archived);
-  const toReplay = curtainReplay(gameId, {
-    archived,
-    answered,
-    memory: memoryOn(view),
-    taught: view.xray.extracted !== null,
-  });
+  const toReplay = curtainReplay(gameId, { archived, answered });
   const slotInput = useMemo(
     (): SlotInput => ({
       filters: drawer.filters,

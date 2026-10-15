@@ -103,10 +103,6 @@
 .winding[data-winding] {
   visibility: visible;
 }
-.lessons {
-  font-style: italic;
-  opacity: 0.85;
-}
 .sub {
   font-size: var(--meta);
   line-height: 1.4;
