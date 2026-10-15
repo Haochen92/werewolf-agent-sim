@@ -1,9 +1,14 @@
-# Memory Store Progression: `old_strateg_archive` → v7
+# Memory Store Progression: `old_strateg_archive` → v8
 
 A cross-experiment synthesis of how the episodic-memory store evolved across ~8 versions, grouped into
 **five eras**. This is a **portfolio progression piece**, not a new experiment: every number here is
 sourced from a dated evidence folder (cited inline), and the value is the *narrative that connects
 them*. If you read one thing, read the arc below — it turns eight store versions into a single story.
+
+> **Addendum (2026-10-15).** This synthesis was written on 2026-06-22 and ends at v7. v8, the memory
+> system rebuilt for the ten-seat game, is [Era 6](#era-6--the-ten-seat-game-v8-addendum-2026-10-15)
+> at the end, with a scope note on the results of Eras 3–5 found since. v8 has not been tested for
+> its effect on play.
 
 ## The arc: the bottleneck kept moving
 
@@ -321,3 +326,70 @@ surviving to a $65 null. Honest negatives and a retracted claim beat a fragile p
 - Where this synthesis restates a statistic (e.g. 70%→97% p=0.012; v7 town +17→+33pp win, reranked +33pp p=0.013), the figure is
   quoted from those folders, not recomputed here; the effectiveness A/B and v5 pilot figures were
   independently re-verified against the raw JSONLs during this synthesis.
+
+---
+
+## Era 6 — The ten-seat game (v8, addendum 2026-10-15)
+
+*Added after this synthesis was written. The eras above are left as they were; this section says
+what has changed since. The record is `v8/` (`plan.md`, `decisions.md`, `experiment_log.md`).*
+
+### A scope note on Eras 3–5, found afterwards
+
+Every memory game behind Eras 3–5 (the June A/B, the v7 loop runs and its endpoint games) played on
+`gemini-3.1-flash-lite` at thinking level "minimal", which with the game's structured output gives
+zero reasoning tokens. The arms were matched, so each memory-on against memory-off comparison still
+stands on its own terms. But every result above, the +17→+33pp town gain and the v7 null alike, is
+a result for players that did not reason.
+
+*Source: `game_play_enhancement/discussion_evidence.md` §6.7; `v7_final/report.md`, scope addendum.*
+
+### v8 — memory rebuilt for the ten-seat game
+
+**What changed.** The game changed underneath memory: ten seats dealt from twelve roles, with new
+night mechanics (a pack of two with its own skills, blocks, conceals, sigils, limited uses). Every
+stage of memory was rebuilt for it, and several of the changes answer what Eras 3–5 found:
+
+- **Verdicts that follow the winner.** An observation's verdict leaned on which side won the game,
+  the halo v7's de-lucked credit was built against. Extraction now asks for the evidence behind a
+  verdict; a separate pass (Claude Haiku 5.5) re-reads each verdict for that lean; and each
+  observation names the decision it is about, graded by a fixed per-role table of ideal, neutral and
+  undesirable outcomes. Synthesis can read either the verdict or the grade.
+- **Lessons served by role, not by stage.** Retrieval matched a seat's role and ignored where the
+  game stood, so a seat on day 2 with nine alive could be shown a lesson for the last three players.
+  Each lesson keeps the board it was learned on, and a stage filter (off by default) uses it.
+- **Strategies that state a wrong rule.** Synthesis moved to Claude Sonnet 5.5, and its points are
+  screened against the rules; flagged points and duplicates are left out of the store.
+- **The loop, carried over.** v7's credit, prune and evict were ported to ten seats and the new
+  grading.
+- **Extraction leaves the game.** A game saves its extraction input, and extraction runs offline as
+  a batch.
+- **Players that reason.** The twelve seeding games played on Gemini 3.5 Flash-Lite at medium
+  thinking, the lowest level at which it reasons.
+
+**Measured: the mechanism, not play.**
+
+| What | Before | v8 |
+|---|---|---|
+| Lessons shown that fit the decision (96 lookups, read by four Sonnet readers) | 15% (12-game store, no filter) | 24–27% (40-game store, stage filter) |
+| Lookups shown at least one fitting lesson | 36 of 96 | 52 of 96 |
+| Synthesized points that state a wrong rule | 11% | 6.1% |
+| Weight of the side winning in a verdict, against the decision's own grade | +0.74 against +0.33 | +0.50 after the re-read (one-sided: losers' negatives 53% → 27%) |
+| Observations tagged with the right decision (blind read, bar set at 90%) | — | 96.1% |
+
+A demonstration run of 20 memory-on games then took the loop through one credit pass: 148 of 498
+lessons were followed and credited, 4 pruned, 4 evicted and 50 proven. Twenty games give a few dozen
+follows per lesson at most, so these show the pass working; they are not estimates.
+
+**Not measured: whether v8's memory improves play.** No controlled run of memory on against memory
+off has been made on v8; one needs about 35–60 games per arm (`v8/plan.md` §9.6 item 9). The question
+the progression ends on is therefore open for the current system, not answered: v8 changed most of
+what v7 was tested on, including whether the players reason.
+
+**Where the bottleneck sits.** Still content, now with its next step named. Most lessons a seat is
+shown still do not fit its decision, and the readers name the remaining misfit the same way: lessons
+keyed to an event the seat does not have (a rival claim, a victim's door, the room turning on a
+partner). The stage fields record the board, not events.
+
+*Source: `v8/experiment_log.md` (2026-10-13, "The 40-game store read" and "Where v8 stands";
+2026-10-14, "The demo run"); `v8/decisions.md` §12–14.*
