@@ -1,5 +1,5 @@
 /* The introduction: the story beside the carriage (above it on a phone), the four sides two by
-   two with their marks in their own colours, and the day and night pair. */
+   two on the role cards' paper in their own ink, and the day and night pair. */
 
 .opening {
   display: grid;
@@ -44,33 +44,55 @@
 .sides {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: 18px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 .side {
-  --ink: var(--town);
-  padding: 16px 18px 18px;
-  border-radius: 14px;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  box-shadow: inset 0 3px 0 var(--ink);
+  --side-ink: var(--town-ink);
+  position: relative;
+  padding: 20px 22px 22px;
+  border-radius: 12px;
+  color: var(--side-ink);
+  /* the role cards' paper and their ink edge (RoleCard.module.css), so these panels read as the
+     sides of the cards further down */
+  background: var(--paper);
+  background-image:
+    repeating-linear-gradient(115deg, rgba(60, 40, 20, 0.05) 0 1px, transparent 1px 6px),
+    radial-gradient(ellipse at 15% 5%, rgba(255, 255, 255, 0.35), transparent 55%),
+    radial-gradient(ellipse at 85% 95%, rgba(120, 90, 50, 0.22), transparent 50%);
+  /* the edge drawn inside, so the panel's edge is the column's */
+  box-shadow:
+    inset 0 0 0 2px var(--side-ink),
+    inset 0 0 0 4px var(--paper-dk);
+}
+/* the card's printed inner frame */
+.side::after {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border: 1.5px solid var(--side-ink);
+  border-radius: 8px;
+  opacity: 0.75;
+  pointer-events: none;
 }
 .side[data-faction='wolves'] {
-  --ink: var(--wolf);
+  --side-ink: var(--wolf-ink);
 }
 .side[data-faction='serial_killer'] {
-  --ink: var(--sk);
+  --side-ink: var(--sk-ink);
 }
 .side[data-faction='neutral_benign'] {
-  --ink: var(--benign);
+  --side-ink: var(--benign-ink);
 }
 .sideHead {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1.5px solid var(--side-ink);
 }
 .mark {
   flex: none;
@@ -78,22 +100,21 @@
   height: 28px;
 }
 .sideHead b {
-  color: var(--text);
-  font-size: 18px;
-  font-weight: 700;
+  font-family: var(--font-serif);
+  font-size: 23px;
+  font-weight: 400;
+  line-height: 1.1;
 }
 .count {
   margin-left: auto;
-  padding: 2px 9px;
+  padding: 2px 10px;
   border-radius: 99px;
-  border: 1px solid var(--line-2);
-  color: var(--muted);
+  border: 1px solid color-mix(in srgb, var(--side-ink) 40%, transparent);
   font-size: 13px;
   white-space: nowrap;
 }
 .side p {
   margin: 0;
-  color: var(--muted);
   font-size: 15px;
   line-height: 1.5;
 }
