@@ -75,14 +75,8 @@
   }
 }
 
-/* the printed ink wobbles a little (the site sprite's `#inkwobble` filter) */
-.frame,
-.hdr,
-.desc,
-.brief,
-.fac {
-  filter: url(#inkwobble);
-}
+/* clean ink, no `#inkwobble` (the slate keeps it): its turbulence filters, ten to a card, made
+   the guide's carousel stutter in scrolling and turning on every screen (2026-10-15) */
 .frame {
   position: absolute;
   inset: 3cqi;
@@ -129,6 +123,20 @@
   flex: 1;
   min-height: 0;
   margin: 4cqi 0 2cqi;
+  container-type: size;
+}
+/* the figure's shadow on the paper, painted, not a drop-shadow filter (the same cost as the
+   wobble's); sized to the figure as drawn, its 3:4 fitted in this box */
+.portrait::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: calc(min(100cqw, 75cqh) * 0.66);
+  height: calc(min(100cqw, 75cqh) * 0.08);
+  translate: -50% 45%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(60, 40, 20, 0.34), rgba(60, 40, 20, 0));
 }
 .portrait svg {
   position: absolute;
@@ -136,7 +144,6 @@
   display: block;
   width: 100%;
   height: 100%;
-  filter: drop-shadow(0 8px 5px rgba(60, 40, 20, 0.25));
 }
 .desc {
   min-height: 2.7em;
