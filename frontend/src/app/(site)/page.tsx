@@ -1,8 +1,9 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { Anchor } from '@mantine/core';
-import { GuideSign, Icon } from '@/components/site';
+import { Button, GuideSign } from '@/components/site';
 import { Pendant, WallLight } from '@/components/site/StationLamps';
+import { SITE } from '@/lib/site';
 import { ReplayListClient } from './replays/_components/ReplayListClient';
 import { HouseDoorNote } from './_components/HouseDoorNote';
 import { SeatTags } from './_components/landing/SeatTags';
@@ -10,21 +11,22 @@ import { FeaturedReplay } from './_components/landing/FeaturedReplay';
 import { PlatformBackdrop } from './_components/landing/PlatformBackdrop';
 import platform from './_components/landing/PlatformBackdrop.module.css';
 import { Features } from './_components/landing/Features';
-import { RoleHand } from './_components/landing/RoleHand';
+import { ReplayMoment } from './_components/landing/ReplayMoment';
+import { BLUFF } from './_components/landing/features';
 import rooms from './_components/landing/Rooms.module.css';
 import classes from './_components/landing/Landing.module.css';
 import pageClasses from './page.module.css';
 
 /**
- * The landing (landing mockup, review §A1, rulings §F7): the hero with its two hung tags, a
- * game from the archive playing in the carriage, what makes it different, the roles (the rules
- * live on `/guide`), the latest games, and a closing word on the project and the visitor's
- * API key. A recruiter with no context sees the product
- * working before reading a word, and reaches a whole replay in one click from the carriage.
+ * The landing (landing mockup, review §A1, rulings §F7; reworked with the owner 2026-10-15): the
+ * hero with its two hung tags, a game from the archive playing in the carriage, what makes it
+ * different, the replay (one real moment of a bluff, then the latest games), and a closing on
+ * the research behind it. A recruiter with no context sees the product working before reading
+ * a word, and reaches a whole replay in one click from the carriage. The roles live on `/guide`.
  *
  * Under the carriage each section is a room of the station (Rooms.module.css), one running into
- * the next through the dark: granite under a caged wall light, the roles against a band of green
- * tile, the latest games under a pendant. The way to play is the hero's tags and the nav.
+ * the next through the dark: granite under a caged wall light, then the platform's tile under a
+ * pendant. The way to play is the hero's tags and the nav.
  *
  * The two playing doors carry the house's purse (HouseDoorNote): whether a visitor needs their
  * own API key is live state, and the door is the honest place to say it.
@@ -68,39 +70,34 @@ export default function HomePage() {
         <WallLight className={rooms.wallLight} />
         <div className={classes.secHead}>
           <h2 id="features-head">What makes it different</h2>
-          <p>
-            You can read the agents&rsquo; minds, borrow one when you&rsquo;re stuck, and
-            bring friends to beat them.
-          </p>
         </div>
         <Features />
       </section>
 
-      <section className={rooms.room} aria-labelledby="roles-head">
-        <div className={`${classes.secHead} ${classes.centred}`}>
-          <h2 id="roles-head">The roles</h2>
-          <p>
-            Ten seats, four sides. Every seat is dealt one of these cards in secret, and the
-            card is the briefing its agent is given.
-          </p>
-        </div>
-        <div className={rooms.band}>
-          <RoleHand />
-        </div>
-      </section>
-
       <section
         className={`${rooms.room} ${rooms.lit} ${rooms.records}`}
-        aria-labelledby="latest-head"
+        aria-labelledby="replay-head"
       >
         <Pendant className={rooms.pendant} />
-        <div className={classes.secHead}>
-          <h2 id="latest-head">Latest games</h2>
-          <p>
-            Every finished game is archived with its full event log, and can be replayed
-            with Reveal on.
-          </p>
+        {/* the reveal the hero promises, shown: one real moment, then the games to open */}
+        <div className={classes.replay}>
+          <div className={classes.pitch}>
+            <h2 id="replay-head">At the end of the line, the secrets come out</h2>
+            <p>
+              Was that accusation an honest suspicion or a deliberate bluff? Open a replay and
+              follow each agent&rsquo;s private reasoning as the game unfolds, next to what it
+              told the table.
+            </p>
+            <p>Read its suspicions, its plans, and the lessons it weighed from past games.</p>
+            <Button component={Link} href={`/replays/${BLUFF.game}?from=home`} variant="plate">
+              Explore this replay &rarr;
+            </Button>
+          </div>
+          <ReplayMoment />
         </div>
+        <h3 id="latest-head" className={classes.latestHead}>
+          Latest games
+        </h3>
         {/* two rows of two; one column of two where the grid goes single file */}
         <div className={classes.latest}>
           <Suspense fallback={<div className={pageClasses.skeletonCard} />}>
@@ -119,19 +116,27 @@ export default function HomePage() {
         className={`${rooms.room} ${classes.closing}`}
         aria-labelledby="closing-head"
       >
-        <h2 id="closing-head">Built in the open, and still being built.</h2>
+        <h2 id="closing-head">Can agents learn to play a better game?</h2>
         <p>
-          It began as a research project on whether LLM agents can carry useful memory from
-          one game to the next, and the replay theatre is the instrument that made their
-          behaviour legible. Models, rules and prompts change as the work continues, and the
-          archive keeps every game.
+          Werewolf puts memory and reasoning under pressure: agents must act on incomplete
+          information while other players deliberately mislead them.
         </p>
-        <p className={classes.keyline}>
-          <Icon name="i-lock" size={17} />
-          <span>
-            <b>Your API key is never stored.</b> A game holds your key in memory for that
-            game only; it is never written to the archive or the database.
-          </span>
+        <p>
+          Behind the game is a memory pipeline that turns past games into strategies. It
+          extracts observations from each game, consolidates them into strategies, scores every
+          strategy against the games that follow, and prunes the ones that keep doing badly;
+          new games retrieve the strategies that fit their situation. Recorded decisions, replay
+          tools and controlled evaluations make it possible to test how those strategies change
+          play.
+        </p>
+        <p>
+          The pipeline is built. On the current version, controlled tests haven&rsquo;t shown a
+          reliable gain in wins; finding out why is the work that continues.
+        </p>
+        <p>
+          <Anchor href={SITE.github} target="_blank" rel="noreferrer">
+            Explore the code &rarr;
+          </Anchor>
         </p>
       </section>
     </main>

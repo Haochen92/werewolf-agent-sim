@@ -110,7 +110,7 @@
   line-height: 1.5;
 }
 
-/* ---------- the ending: what the project is, and the visitor's key ---------- */
+/* ---------- the ending: the research question behind the game ---------- */
 .closing {
   text-align: center;
 }
@@ -125,41 +125,12 @@
   color: var(--text);
 }
 .closing > p {
-  max-width: 56ch;
-  text-wrap: balance;
-  margin: 0 auto;
+  max-width: 62ch;
+  text-wrap: pretty;
+  margin: 0 auto 14px;
   color: var(--muted);
   font-size: 16.5px;
   line-height: 1.5;
-}
-.closing .keyline {
-  display: flex;
-  align-items: flex-start;
-  gap: 11px;
-  max-width: 62ch;
-  margin-top: 26px;
-  padding: 14px 18px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: rgba(255, 235, 200, 0.02);
-  text-align: left;
-  font-size: 14.5px;
-}
-.keyline svg {
-  flex: none;
-  margin-top: 2px;
-  color: var(--town);
-}
-.keyline b {
-  color: var(--text);
-  font-weight: 500;
-}
-
-/* ---------- who's at the table: the roles, and how a game goes ---------- */
-/* a section head over a centred section (the roles) */
-.centred {
-  margin-inline: auto;
-  text-align: center;
 }
 
 /* ---------- latest games ---------- */
@@ -169,6 +140,45 @@
     display: none;
   }
 }
+/* ---------- the replay: the pitch beside one real moment, then the latest games ---------- */
+.replay {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 32px 48px;
+  align-items: start;
+  margin-bottom: 56px;
+}
+.pitch h2 {
+  margin: 0 0 14px;
+  text-wrap: balance;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: var(--text);
+}
+.pitch p {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.5;
+}
+.pitch a {
+  margin-top: 8px;
+}
+.latestHead {
+  margin: 0 0 18px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+@media (max-width: 900px) {
+  .replay {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .heroGuide {
   margin-top: 18px;
 }

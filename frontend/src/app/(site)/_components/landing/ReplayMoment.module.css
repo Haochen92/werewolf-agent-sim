@@ -1,0 +1,106 @@
+/* The replay section's exhibit (ReplayMoment.tsx): the stage's felt speech patch (SpeechBox)
+   and the Reveal's ruled note, drawn for the page. */
+.moment {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  min-width: 0;
+}
+.when {
+  color: var(--brass-hi);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* what it said: cream felt stitched round its edge under a red felt label */
+.felt {
+  position: relative;
+  margin: 8px 0 0;
+  padding: 30px 22px 20px;
+  border-radius: 10px;
+  color: #2a1d10;
+  font-size: 17px;
+  line-height: 1.5;
+  background:
+    repeating-linear-gradient(45deg, rgba(120, 90, 50, 0.06) 0 2px, transparent 2px 4px),
+    repeating-linear-gradient(-45deg, rgba(120, 90, 50, 0.06) 0 2px, transparent 2px 4px),
+    #eee2c6;
+  box-shadow: 0 12px 24px -12px rgba(0, 0, 0, 0.8);
+}
+.felt::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1.5px dashed rgba(120, 90, 50, 0.45);
+  border-radius: 7px;
+  pointer-events: none;
+}
+.head {
+  position: absolute;
+  top: -14px;
+  left: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 12px 3px 4px;
+  border-radius: 6px;
+  background: #a8322a;
+  color: #fbeedd;
+  font-size: 13px;
+  font-weight: 600;
+}
+.chip {
+  display: block;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+/* what it wrote down: typed on the Reveal's ruled paper */
+.note {
+  position: relative;
+  margin: 0;
+  padding: 34px 22px 18px;
+  color: #1d2b28;
+  font-family: ui-monospace, 'Courier New', monospace;
+  font-size: 15px;
+  line-height: 24px;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 23px, rgba(44, 107, 97, 0.18) 23px 24px) 0
+      10px,
+    #f2ecdc;
+  box-shadow: 0 12px 24px -12px rgba(0, 0, 0, 0.8);
+}
+.noteHead {
+  position: absolute;
+  top: 10px;
+  left: 22px;
+  color: #2c6b61;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.after {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+.after b {
+  color: var(--text);
+  font-weight: 500;
+}
+
+@media (max-width: 640px) {
+  .felt {
+    font-size: 16px;
+  }
+  .note {
+    font-size: 14px;
+  }
+}

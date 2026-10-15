@@ -2,9 +2,9 @@
    bench, owner 2026-10-14): each section of the landing is a room of the station, and each fades
    into the next through the dark, with no threshold between them; the one brass threshold left
    parts the rooms from the page's closing word. The reading room is dark granite under a caged
-   wall light; the roles stand against a band of green glazed tile, unlit; the latest games are
-   under a pendant, on the platform's own tile with an oxblood band near the ceiling (each room
-   its own colour, as old stations had).
+   wall light; the replay and the latest games are under a pendant, on the platform's own tile
+   with an oxblood band near the ceiling (each room its own colour, as old stations had). The
+   roles' green-tile room left with the roles, for the guide (owner, 2026-10-15).
 
    Performance (frontend_lessons, "Rendering"): everything here is still and painted once with the
    page. The walls span the screen from pseudo-elements behind the section (z-index -1 inside the
@@ -131,39 +131,6 @@
   .wallLight {
     display: block;
   }
-}
-
-/* ---------- the card room: the roles against a band of green tile, unlit ---------- */
-/* the band spans the screen behind the hand, rising out of the dark at its top (where the
-   reading room sank into it) and trimmed in brass at its foot; a vignette keeps it unlit */
-.band {
-  position: relative;
-  padding: 28px 0 36px;
-}
-.band::before,
-.band::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: calc(50% - 50vw);
-  right: calc(50% - 50vw);
-  z-index: -1;
-  pointer-events: none;
-}
-.band::before {
-  background: url('../../../../assets/site/green-tile.svg') center top / 120px 64px repeat;
-  border-bottom: 2px solid rgba(201, 150, 63, 0.35);
-}
-.band::after {
-  background:
-    linear-gradient(180deg, var(--bg) 0, rgba(12, 10, 7, 0.6) 70px, transparent 150px),
-    radial-gradient(
-      ellipse 70% 80% at 50% 50%,
-      rgba(12, 10, 7, 0.25),
-      rgba(12, 10, 7, 0.75) 70%,
-      var(--bg) 100%
-    );
 }
 
 /* ---------- the records room: the platform's tile, an oxblood band, a pendant ---------- */
