@@ -267,7 +267,13 @@ compressed (31). Steps:
 - Caddy, live 2026-10-15: the replay is 20.9 KB on the wire instead of 142 KB. The previous
   Caddyfile is kept beside it as `Caddyfile.bak.20261015-113614`.
 
-The two frontend commits are not deployed yet.
+Deployed 2026-10-15 at `323e853e`. The same throttled phone (iPhone 13 profile, cache off, the
+carriage scrolled to after the landing has loaded), three runs: the replay is 20.9 KB and in by
+1.0–1.1 s; the code starts beside it (the same millisecond) and is in by 1.7–3.4 s, when the first
+beat is on the stage; no full-size `talking`/`thinking` is fetched. The first window's pictures,
+ten files and about 850 KB, start with the stage and are in by 6.4–8.5 s. That is now the cost
+that is left: 850 KB at 1.6 Mbps is over 4 s of transfer alone, and they cannot start before the
+stage that names them has mounted.
 
 **32. History replayed down a live socket arrives one message at a time, and each message is a
 render.** The live stream sends the whole log before the news, one SSE message per event. Each
@@ -331,6 +337,74 @@ about 33 MB decoded, and the player kept six such tracks for as long as the tab 
 the few in play, and free decoded media when the last page that uses it is left
 (`music/player.ts`). The same check sized the heads: a census of every head drawn found none
 over about 234 physical px on a phone, so the phone's copy is 224 px (lesson 22).
+
+**38. A deploy empties the CDN of every file it renamed, and the first visitor at each of its
+locations pays for all of them.** Next names its code and pictures by their content
+(`/_next/static/…/train@1x.b57accb5.webp`), so a build that changes a file gives it a new
+name, and Cloudflare has never seen the new name. Cloudflare keeps a copy per location (a
+`cf-ray` ending in `SIN` is Singapore), and only after someone there has asked for it once: the
+first request is a `MISS` and goes all the way to the server; the ones after it are a `HIT`
+from nearby, with an `age` header. Pages, `/api` and `/_next/image` are never kept at all
+(`DYNAMIC`).
+
+On 2026-10-15 the owner opened the site on a desktop for the first time after the 14:28
+deploy. The landing's carriage stayed black for more than 10 s, and the guide took long. The
+same pages on the phone a little later were quick. Measured from the server's own machine on a
+throttled desktop (10 Mbps, 100 ms, 3× CPU, cache off): the landing's load event took 12.9 s
+in the first run after the deploy, and 1.6–2.1 s in three runs later; `train@1x`, new that
+day, was still a `MISS`. So the probable cause is a cold edge. It is not proven: nobody timed
+the owner's own browser. To confirm it after the next deploy, open DevTools' Network tab on the
+first visit and read the `cf-cache-status` of the slow requests.
+
+What it shows: a CDN's value is not visible in a test from next to the server, where a `MISS`
+costs a few milliseconds, but to a visitor far from it, where each `MISS` is a full round trip
+to the server. Two things would soften it. First, fewer renamed files per deploy (content
+hashing already keeps an unchanged picture's name; the code's chunks churn more). Second,
+Cloudflare's Tiered Cache, which makes a location ask a bigger nearby one before the server.
+Warming it from this machine would not help, because its requests go out through other
+locations (`SIN`, `CDG` and `MXP` in three requests) than a visitor's.
+
+**39. A wait the viewer can see must say it is waiting, until the thing is drawn, not until
+its data come.** The carriage's window, while the replay loaded, held a single space: kept
+blank on purpose so that nothing moved. Then, once the replay was in, the stage mounted and
+painted its dark ground at once, and its pictures only as they came. On a cold edge (38) that
+was more than 10 s of black glass, and the owner took it for a bug. A blank or dark box reads
+as broken after a second or two, however correct the code behind it. The fix
+(`FeaturedReplay.tsx` `painted`): "Rewinding the reels…", the replay page's own line, stays over
+the stage until its pictures are decoded or 8 s have passed. The stage is laid out but
+hidden under it, and the replay starts playing only then. The wait for the pictures
+(`stage/pictures-of.ts`) is the one the replay page's curtain already used, now shared. The
+general check: for every place the viewer waits, ask what they see at each step (nothing, a
+dark ground, half the pictures), not only whether the data have arrived. Not deployed yet.
+
+**40. A transform set from script moves a picture only if it has a layer of its own; otherwise
+every frame repaints it.** The owner saw a speaker's puppet rise into the stand at a low frame
+rate on a phone, while every other motion was smooth. Measured on the live replay (an emulated
+phone at 3×, CPU 4× slower, 2026-10-15), the first 0.8 s of each speech ran at about 34 fps with
+5–7 frames of 50–150 ms. The felt speech box was the obvious suspect, and taking its texture
+off changed nothing. The trace showed where the work was: the raster threads were idle before
+the speech, then busy flat out (about 200 ms of raster per 100 ms) for exactly the rise's
+0.1–0.9 s. The rise is Motion setting `transform` from script each frame, and Chrome promotes
+an element to its own layer for a CSS or Web Animations animation, not for a style written from
+script. So the figure and its wall shadow, large pictures at the screen's density, were painted
+and rastered again on every frame. With `will-change: transform` on both while they rise
+(`Puppet.tsx` `rising`), raster per speech fell from about 1.5 s to 0.3 s and the long frames
+from 4 to 1. Only while they rise: a layer is a bitmap held for as long as it lasts (10). Two
+notes on method. Under Chrome's CPU throttling, the main thread's tasks are padded with idle
+time, so their length says nothing about real work: read the raster threads and the paint
+rectangles. And subtract one suspect at a time (15): the clip on the shadow, which looked
+guilty (a 10,000-unit box), changed nothing either.
+
+**41. Whatever a scene says was on the stage must come from what the stage showed, not from the
+log.** As voting opens, the vote scene drops "the day's last speaker" behind the stand. It took
+that seat from the folded log. Since 2026-10-12 a run of passes plays as one beat with the stand
+empty, so a day ending in passes showed an empty stand, and then a puppet that had never been on
+the stage flashed up for half a second as the table rose. Live it was worse: a seat never folds
+the passes (they are observer-tier), so the log's last turn was a speaker from several turns
+earlier. Only the beat cutter knows what each viewer was shown, so the cutter now stamps
+`vote.opens` with the seat at the stand (`beatsFor.ts` `atStand`, nobody under a notice), and
+the scene draws that. The rule for a transition that carries something over from the scene
+before: hand it over from the previous beat, never rebuild it from the data.
 
 ---
 
