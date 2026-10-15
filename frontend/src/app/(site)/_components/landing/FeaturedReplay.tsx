@@ -58,15 +58,17 @@ import type { DurableGameEvent, ReplayGame } from '@/types/contracts';
 import classes from './Carriage.module.css';
 
 // the stage and the controls under it load when the carriage comes near (`useNear`), not with
-// the landing: they are the whole theatre, and most of the page's script
-const ReplayTheatre = dynamic(
-  () => import('@/stage/containers/ReplayTheatre').then((m) => m.ReplayTheatre),
-  { ssr: false },
-);
-const CarriageUnder = dynamic(
-  () => import('./CarriageUnder').then((m) => m.CarriageUnder),
-  { ssr: false },
-);
+// the landing: they are the whole theatre, and most of the page's script. Asked for beside the
+// replay, not after it: a component's import starts only at its first render, which waits on
+// the replay, and on a slow phone that chain put the stage's pictures 3.4 s after the scroll
+const theatreCode = () => import('@/stage/containers/ReplayTheatre');
+const underCode = () => import('./CarriageUnder');
+const ReplayTheatre = dynamic(() => theatreCode().then((m) => m.ReplayTheatre), {
+  ssr: false,
+});
+const CarriageUnder = dynamic(() => underCode().then((m) => m.CarriageUnder), {
+  ssr: false,
+});
 
 /** The painted pieces' URLs, for Carriage.module.css's `[data-art]` rules. */
 const ART = Object.fromEntries(
@@ -194,6 +196,11 @@ export function FeaturedReplay() {
   const [screenRef, onScreen] = useOnScreen<HTMLDivElement>();
   const near = useNear(screenRef);
   const { game, failed } = useShownGame(near);
+  useEffect(() => {
+    if (!near) return;
+    void theatreCode();
+    if (!wide) void underCode();
+  }, [near, wide]);
   const [underEl, setUnderEl] = useState<HTMLDivElement | null>(null);
   const under = useCallback((u: MiniUnder) => <CarriageUnder {...u} />, []);
 
