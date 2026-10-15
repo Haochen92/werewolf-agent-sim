@@ -1,6 +1,7 @@
 /**
  * The score's player: one per page, on the Web Audio clock. Each track is fetched and decoded
- * once (a few at a time are kept: an 87 s track decoded is about 30 MB) and played from a buffer,
+ * once (a few at a time are kept, and none once the viewer leaves the pages with music: an
+ * 87 s track decoded is about 33 MB, ten times its file) and played from a buffer,
  * so a loop is exact to the sample, and every fade is a gain ramp the audio thread runs: no
  * JavaScript per frame, and an iPhone, which ignores a media element's volume, fades too.
  *
@@ -15,8 +16,9 @@ import type { Bed } from './cues';
 const XFADE = 1.5;
 /** How long before a playlist's track ends its next one is fetched. */
 const PRELOAD = 20;
-/** Decoded tracks kept beyond those playing. */
-const KEEP = 4;
+/** Decoded tracks kept: the bed, the one it turns to, a sting (one still playing holds its
+ *  own until it stops). Fetching one again is the browser's cache; decoding it again is cheap. */
+const KEEP = 3;
 /** The music sits under reading: the master level. */
 const LEVEL = 0.55;
 /** A bed starts once the stage has stayed on it this long: a scrub or a run of chapter jumps
@@ -71,11 +73,17 @@ export class MusicPlayer {
     this.wake();
   }
 
-  /** A page with music is mounted; the returned call is its leaving. */
+  /**
+   * A page with music is mounted; the returned call is its leaving. Leaving the last one cuts
+   * a one-shot still sounding and lets go of every decoded track, so the next page (the
+   * landing, with its own stage to draw) does not carry the game's music in memory.
+   */
   enter(): () => void {
     this.pages++;
     return () => {
-      this.pages--;
+      if (--this.pages > 0) return;
+      this.cutStings();
+      this.buffers.clear();
     };
   }
 
@@ -301,7 +309,7 @@ export class MusicPlayer {
       .then((bytes) => ctx.decodeAudioData(bytes));
     got.catch(() => this.buffers.delete(url));
     this.buffers.set(url, got);
-    while (this.buffers.size > KEEP + 2) {
+    while (this.buffers.size > KEEP) {
       const oldest = this.buffers.keys().next().value as string;
       this.buffers.delete(oldest);
     }
