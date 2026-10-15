@@ -621,10 +621,14 @@ export const DRAFTS_PER_TURN = 3;
 export interface TurnState {
   /** The request all of this belongs to; a new request starts afresh. */
   seq: number | null;
-  /** The line in the box. */
+  /**
+   * The line a draft put in the box (empty before one). What is typed is the dock's own state
+   * (`TurnDock`), so a keystroke redraws the dock alone, not the stage around it; the box takes
+   * this line each time `landed` moves on.
+   */
   text: string;
-  /** The steer a draft is written with; empty = the agent writes its own line. */
-  notes: string;
+  /** Drafts landed in the box this turn. */
+  landed: number;
   /** Whether a draft takes the seat notebook along ("Use my seat notes"; ticked to start). */
   shareNotebook: boolean;
   draftsLeft: number;
@@ -642,8 +646,6 @@ export interface TurnState {
 
 export type TurnAction =
   | { type: 'open'; seq: number }
-  | { type: 'text'; text: string }
-  | { type: 'notes'; notes: string }
   | { type: 'share-notebook'; share: boolean }
   | { type: 'drafting'; seq: number }
   | {
@@ -663,7 +665,7 @@ export type TurnAction =
 export const initialTurnState: TurnState = {
   seq: null,
   text: '',
-  notes: '',
+  landed: 0,
   shareNotebook: true,
   draftsLeft: DRAFTS_PER_TURN,
   drafting: false,
@@ -682,8 +684,6 @@ export function turnReducer(state: TurnState, action: TurnAction): TurnState {
     if (action.seq === state.seq) return state;
     return { ...initialTurnState, seq: action.seq, byAgent: state.byAgent };
   }
-  if (action.type === 'text') return { ...state, text: action.text };
-  if (action.type === 'notes') return { ...state, notes: action.notes };
   if (action.type === 'share-notebook') return { ...state, shareNotebook: action.share };
   // everything below answers a request: an answer to an older one is dropped
   if (action.seq !== state.seq) return state;
@@ -695,7 +695,7 @@ export function turnReducer(state: TurnState, action: TurnAction): TurnState {
       return {
         ...state,
         drafting: false,
-        text: action.draft || state.text,
+        ...(action.draft ? { text: action.draft, landed: state.landed + 1 } : {}),
         draftsLeft: action.draftsLeft,
         deadline: action.deadline,
         error: action.draft ? null : AGENT_WOULD_PASS,

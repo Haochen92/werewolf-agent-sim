@@ -316,6 +316,8 @@ export function ReplayTheatre({
   );
 
   // playing: the beat's hold, paused while the speech is held or the page is hidden
+  // the scene host is memoised: a hover (`held`) redraws this page, not the stage under it
+  const turnPage = useCallback(() => dispatch({ type: 'step', dir: 1 }), []);
   const [held, setHeld] = useState(false);
   const visible = usePageVisible();
   const tick = useCallback(() => dispatch({ type: 'tick' }), []);
@@ -416,9 +418,7 @@ export function ReplayTheatre({
               onSeek={controls === 'stage' ? onSeek : undefined}
               stop={stopInput}
               // a tap on the speech box turns the page (a preview's box is only read)
-              onNext={
-                controls === 'stage' ? () => dispatch({ type: 'step', dir: 1 }) : undefined
-              }
+              onNext={controls === 'stage' ? turnPage : undefined}
             />
           </StageMotion>
         ) : null}

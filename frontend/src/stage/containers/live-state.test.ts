@@ -1106,8 +1106,7 @@ describe('the turn’s state: the line, the drafts, the answer', () => {
   const opened = turnReducer(initialTurnState, { type: 'open', seq: 201 });
 
   it('a draft lands in the box, counts down the drafts and brings the new deadline', () => {
-    let t = turnReducer(opened, { type: 'notes', notes: '8 dodging' });
-    t = turnReducer(t, { type: 'drafting', seq: 201 });
+    let t = turnReducer(opened, { type: 'drafting', seq: 201 });
     expect(t.drafting).toBe(true);
     t = turnReducer(t, {
       type: 'drafted',
@@ -1119,7 +1118,7 @@ describe('the turn’s state: the line, the drafts, the answer', () => {
     expect(t).toMatchObject({
       drafting: false,
       text: 'Seat 8 keeps dodging the question.',
-      notes: '8 dodging',
+      landed: 1,
       draftsLeft: 2,
       deadline: '2026-09-25T10:02:10Z',
     });
@@ -1153,10 +1152,15 @@ describe('the turn’s state: the line, the drafts, the answer', () => {
       error: 'no drafts left this turn: send what you have',
     });
     const failed = turnReducer(
-      { ...opened, notes: 'keep me' },
+      { ...opened, text: 'keep me', landed: 1 },
       { type: 'draft-failed', seq: 201, status: 503, message: 'x' },
     );
-    expect(failed).toMatchObject({ error: DRAFT_FAILED, notes: 'keep me', draftsLeft: 3 });
+    expect(failed).toMatchObject({
+      error: DRAFT_FAILED,
+      text: 'keep me',
+      landed: 1,
+      draftsLeft: 3,
+    });
     // a server without the helper (404), or no network, reads the same
     expect(
       turnReducer(opened, {

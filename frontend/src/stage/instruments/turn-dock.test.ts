@@ -85,12 +85,12 @@ describe('the speaking turn’s composer: one Draft button', () => {
       deadline: null,
     });
     expect(t).toMatchObject({
-      notes: '',
       text: 'Why did seat 5 vote before anyone spoke?',
+      landed: 1,
     });
-    t = turnReducer(t, { type: 'text', text: 'Why did seat 5 vote so fast?' });
+    // edited in the box (the dock's own line)
     const c = dockControls(
-      dock({ text: t.text, notes: t.notes, draftsLeft: t.draftsLeft }),
+      dock({ text: 'Why did seat 5 vote so fast?', draftsLeft: t.draftsLeft }),
     );
     expect(c).toMatchObject({
       line: 'Why did seat 5 vote so fast?',
@@ -102,7 +102,6 @@ describe('the speaking turn’s composer: one Draft button', () => {
 
   it('an empty draft means the agent would pass: the box keeps its line, and says so', () => {
     let t = turnReducer(initialTurnState, { type: 'open', seq: 201 });
-    t = turnReducer(t, { type: 'text', text: 'my own line' });
     t = turnReducer(t, { type: 'drafting', seq: 201 });
     t = turnReducer(t, {
       type: 'drafted',
@@ -111,8 +110,10 @@ describe('the speaking turn’s composer: one Draft button', () => {
       draftsLeft: 2,
       deadline: null,
     });
+    // nothing is put in the box: what was typed there stays
     expect(t).toMatchObject({
-      text: 'my own line',
+      text: '',
+      landed: 0,
       draftsLeft: 2,
       error: AGENT_WOULD_PASS,
     });
@@ -124,7 +125,7 @@ describe('the speaking turn’s composer: one Draft button', () => {
       draftsLeft: 1,
       deadline: null,
     });
-    expect(t).toMatchObject({ text: 'x', error: null });
+    expect(t).toMatchObject({ text: 'x', landed: 1, error: null });
   });
 });
 

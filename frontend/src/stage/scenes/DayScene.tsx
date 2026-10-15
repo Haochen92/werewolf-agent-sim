@@ -337,6 +337,8 @@ function DayTurn({ view, beat, me, presentation, turn, onSay, onAct, onNext }: S
               <CardButton role={view.me.role.role} onOpen={turn?.onCard} />
             ) : null}
             <TurnDock
+              // one request's line: the next turn starts with an empty box
+              key={beat.seq}
               dock={dock}
               clock={turn?.clock ?? null}
               onSay={onSay}

@@ -29,9 +29,11 @@
  * here, so it lasts across the scene's recuts within the turn; it shuts when the turn closes.
  *
  * Nothing is said until Send. If the clock runs out first, the seat's agent speaks on its own
- * (the live theatre sees to that; there is no hand-over button on this turn). The dock only
- * draws what it is handed and reports the presses; the live theatre holds the words and talks
- * to the server.
+ * (the live theatre sees to that; there is no hand-over button on this turn). The dock holds
+ * what is typed, the line and the steer, so a keystroke redraws the dock and not the stage
+ * around it (2026-10-15: it was the live theatre's, and every letter redrew the whole stage);
+ * the live theatre puts a draft in (`DockInput.text`), takes the line on Send and talks to
+ * the server. The dock is mounted for one request and is gone when the turn closes.
  */
 import { AnimatePresence, motion } from 'motion/react';
 import {
@@ -106,7 +108,7 @@ export function dockHeading(round: DayRound | null | undefined): {
 }
 
 export function TurnDock({
-  dock,
+  dock: given,
   clock,
   onSay,
   onPass,
@@ -115,6 +117,7 @@ export function TurnDock({
   pinned = false,
 }: TurnDockProps) {
   const k = useMotionScale();
+  const dock = useTyped(given);
   const c = dockControls(dock);
   const heading = dockHeading(dock.round);
   const say = () => {
@@ -228,6 +231,40 @@ export function TurnDock({
       ) : null}
     </motion.div>
   );
+}
+
+/**
+ * The dock as typed in: the line and the steer held here, each taking what is put in from
+ * outside (`text`, `notes`) when that changes or `landed` moves on, and passed on to a
+ * caller that keeps its own (`onText`, `onNotes`: the guide's demos).
+ */
+function useTyped(dock: DockInput): DockInput {
+  const [line, setLine] = useState(dock.text);
+  const [notes, setNotes] = useState(dock.notes ?? '');
+  const [put, setPut] = useState({
+    text: dock.text,
+    notes: dock.notes,
+    landed: dock.landed,
+  });
+  if (put.text !== dock.text || put.landed !== dock.landed || put.notes !== dock.notes) {
+    setPut({ text: dock.text, notes: dock.notes, landed: dock.landed });
+    if (put.text !== dock.text || put.landed !== dock.landed) setLine(dock.text);
+    if (put.notes !== dock.notes) setNotes(dock.notes ?? '');
+  }
+  const { onText, onNotes } = dock;
+  return {
+    ...dock,
+    text: line,
+    notes,
+    onText: (text) => {
+      setLine(text);
+      onText?.(text);
+    },
+    onNotes: (text) => {
+      setNotes(text);
+      onNotes?.(text);
+    },
+  };
 }
 
 /**

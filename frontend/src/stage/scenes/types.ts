@@ -264,8 +264,14 @@ export interface TurnInput {
  * turn: the seat's agent speaks only when the clock runs out.
  */
 export interface DockInput {
-  /** The line in the box. */
+  /**
+   * The line put in the box from outside: a draft, or a demo's own line. What is typed is the
+   * dock's own (`TurnDock`), reported through `onText`; the box takes this line when it changes
+   * or when `landed` moves on.
+   */
   text: string;
+  /** Bumped each time `text` is put in (two drafts can be the same line). */
+  landed?: number;
   /**
    * The ask's round (`input_request.round`): an opening, the open floor (`proactive`), a last
    * word (`closing`), or the discussion; null on a record from before the rounds. The dock's
@@ -273,7 +279,8 @@ export interface DockInput {
    */
   round?: DayRound | null;
   onText?: (text: string) => void;
-  /** The player's optional steer for the seat's agent ("push on seat 5", "softer"). */
+  /** The player's optional steer for the seat's agent ("push on seat 5", "softer"): put in
+   *  from outside as `text` is; what is typed is the dock's own. */
   notes?: string;
   onNotes?: (notes: string) => void;
   /**

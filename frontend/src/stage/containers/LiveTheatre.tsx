@@ -52,7 +52,15 @@
  */
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 import { useGameSession, type PacingBar } from '@/game/store';
 import { serverNow, useCountdown } from '@/hooks/useCountdown';
 import { useLedger } from '@/hooks/useLedger';
@@ -627,29 +635,40 @@ export function LiveTheatre({
   );
 
   const sceneView = useMemo(() => (beat ? folds.at(beat.end) : null), [folds, beat]);
-  const clock = open && pending ? turnClock(deadline, arrivedAt) : null;
-  const dock: DockInput | undefined =
-    beat?.id === 'day.your-turn'
-      ? {
-          text: turn.text,
-          round: pending?.round ?? null,
-          onText: (text) => turnDispatch({ type: 'text', text }),
-          notes: turn.notes,
-          onNotes: (notes) => turnDispatch({ type: 'notes', notes }),
-          onDraft,
-          notebook: notebook
-            ? {
-                shared: turn.shareNotebook,
-                onShared: (share) => turnDispatch({ type: 'share-notebook', share }),
-              }
-            : undefined,
-          draftsLeft: turn.draftsLeft,
-          drafting: turn.drafting,
-          sending: turn.sending,
-          error: turn.error,
-          closed: !(open && beat.seq === pendingSeq),
-        }
-      : undefined;
+  // What the scene is handed is kept as the same object while what it says is the same: the
+  // scene host and its set are memoised, so an event, a status poll or a keystroke that changes
+  // nothing on the stage redraws none of it (2026-10-15).
+  const hasPending = !!pending;
+  const clock = useMemo(
+    () => (open && hasPending ? turnClock(deadline, arrivedAt) : null),
+    [open, hasPending, deadline, arrivedAt],
+  );
+  const onShared = useCallback(
+    (share: boolean) => turnDispatch({ type: 'share-notebook', share }),
+    [],
+  );
+  const yourTurn = beat?.id === 'day.your-turn';
+  const closed = !(open && beat?.seq === pendingSeq);
+  const round = pending?.round ?? null;
+  const hasNotebook = !!notebook;
+  const dock = useMemo(
+    (): DockInput | undefined =>
+      yourTurn
+        ? {
+            text: turn.text,
+            landed: turn.landed,
+            round,
+            onDraft,
+            notebook: hasNotebook ? { shared: turn.shareNotebook, onShared } : undefined,
+            draftsLeft: turn.draftsLeft,
+            drafting: turn.drafting,
+            sending: turn.sending,
+            error: turn.error,
+            closed,
+          }
+        : undefined,
+    [yourTurn, turn, round, onDraft, hasNotebook, onShared, closed],
+  );
   const agentSpoke =
     beat?.id === 'day.speech' && beat.subject === me && me !== null
       ? turn.byAgent.includes(requestBefore(events, beat.seq, me) ?? -1)
@@ -665,24 +684,42 @@ export function LiveTheatre({
         (e.action_kind === 'wolf_vote' || e.action_kind === 'carrier_kill') &&
         e.day === beat.day,
     );
-  const turnInput: TurnInput | undefined = beat
-    ? {
-        clock: beat.liveOnly && beat.seq === pendingSeq ? clock : null,
-        // the night room's plate seals once its act is in, and reopens if the send failed
-        ...(beat.liveOnly && beat.seq === turn.seq ? actSent(turn) : {}),
-        ...(votedTonight ? { sent: actSent(turn).sent } : {}),
-        progress: progressFor(beat, pacing),
-        agentSpoke,
-        dock,
-        onCard: () => setCardOpen(true),
-      }
-    : undefined;
+  const onCard = useCallback(() => setCardOpen(true), []);
+  const turnInput = useMemo(
+    (): TurnInput | undefined =>
+      beat
+        ? {
+            clock: beat.liveOnly && beat.seq === pendingSeq ? clock : null,
+            // the night room's plate seals once its act is in, and reopens if the send failed
+            ...(beat.liveOnly && beat.seq === turn.seq ? actSent(turn) : {}),
+            ...(votedTonight ? { sent: actSent(turn).sent } : {}),
+            progress: progressFor(beat, pacing),
+            agentSpoke,
+            dock,
+            onCard,
+          }
+        : undefined,
+    [beat, pendingSeq, clock, turn, votedTonight, pacing, agentSpoke, dock, onCard],
+  );
   const myRole = me ? (view.me.role?.role ?? null) : null;
 
   // the curtain is down and the deal's first beat is on the stage under it: lift it
   useEffect(() => {
     if (platform === 'closing' && curtainDown && beat) setPlatform('opening');
   }, [platform, curtainDown, beat]);
+
+  // the step the tap answers, current before the frame is painted: a tap can never carry the
+  // step before (the reducer drops a stale one)
+  const stepNow = useRef(state.step);
+  useLayoutEffect(() => {
+    stepNow.current = state.step;
+  }, [state.step]);
+  const onNext = useCallback(
+    () => dispatch({ type: 'held', step: stepNow.current, ctx: ctxRef.current }),
+    [],
+  );
+  const replayAt = toReplay.replay;
+  const wayOut = useMemo(() => ({ replay: replayAt, lobby: LOBBY }), [replayAt]);
 
   const Scene = beat ? SCENES[beat.scene] : null;
   const platformOn = platform !== 'off' && heldRoom !== undefined;
@@ -745,10 +782,8 @@ export function LiveTheatre({
               onAct={onAct}
               onSay={onSay}
               // a tap on the speech box: this page is read, end its hold
-              onNext={() =>
-                dispatch({ type: 'held', step: state.step, ctx: ctxRef.current })
-              }
-              wayOut={{ ...toReplay, lobby: LOBBY }}
+              onNext={onNext}
+              wayOut={wayOut}
             />
           </StageMotion>
         ) : null}

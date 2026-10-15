@@ -19,6 +19,12 @@
  * card) paints over the wing and the strip as it always did. The first time the set comes up
  * the body is mounted again under it, in the same commit, so its pieces land after the set's.
  *
+ * The host, the set and the side slot are memoised (2026-10-15): the page hands the host the
+ * same objects while nothing on the stage changes, so an event, a status poll or a keystroke
+ * elsewhere redraws none of it. A description landing re-renders the host, and only the set
+ * redraws then; before, the set and the side slot (the transcript, the case file) drew twice
+ * for every change.
+ *
  * The set is drawn from the description *and the scene props the body described it with*,
  * never from the host's current props: on a change of beat the host renders once before the
  * body's new description lands, and a set drawn from the new view under the old description
@@ -91,7 +97,10 @@ export function CarSetSpec(spec: CarSet) {
 }
 
 /** The set itself, drawn by the host from the body's description. */
-function CarSetSheet({ spec, ...props }: SceneProps & { spec: CarSet }) {
+const CarSetSheet = memo(function CarSetSheet({
+  spec,
+  ...props
+}: SceneProps & { spec: CarSet }) {
   const { view, me, presentation, slot: slotInput } = props;
   const { hud, cast } = presentation;
   const side = sideOpen(presentation);
@@ -149,13 +158,13 @@ function CarSetSheet({ spec, ...props }: SceneProps & { spec: CarSet }) {
       </Layer>
     </>
   );
-}
+});
 
 const memoised = new Map<ComponentType<SceneProps>, ComponentType<SceneProps>>();
 
 /** The host for a car scene's body: `bodies` names the body for each scene it plays. */
 export function carScene(bodies: Partial<Record<SceneId, ComponentType<SceneProps>>>) {
-  return function CarScene(props: SceneProps) {
+  return memo(function CarScene(props: SceneProps) {
     const [described, setDescribed] = useState<Described | null>(null);
     // the set drawn first: when it comes up, the body mounts again under it in the same commit
     const [epoch, setEpoch] = useState(0);
@@ -177,8 +186,15 @@ export function carScene(bodies: Partial<Record<SceneId, ComponentType<SceneProp
             <Body key={epoch} {...props} />
           </BodyProps.Provider>
         </CarSetContext.Provider>
-        <SideSlot {...props} />
+        <SideSlot
+          view={props.view}
+          beat={props.beat}
+          me={props.me}
+          presentation={props.presentation}
+          slot={props.slot}
+          stop={props.stop}
+        />
       </StageMotion>
     );
-  };
+  });
 }

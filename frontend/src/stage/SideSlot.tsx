@@ -10,7 +10,7 @@
  * slot keeps its own, so a scene still draws a working slot on its own. The transcript's
  * pointer to a day's record opens the file on the Record at that morning, through here.
  */
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { Layer } from './Stage';
 import { Drawer } from './drawer/Drawer';
 import { useDrawerFilters } from './drawer/use-drawer-filters';
@@ -21,7 +21,15 @@ import type { SceneProps } from './scenes/types';
 import { atRail, railHolds, slotOf, tapsOpenFiles } from './slot';
 import { actedTonight, nightBranchesOf } from './scenes/replay-night';
 
-export function SideSlot({ view, beat, me, presentation, slot, stop }: SceneProps) {
+/** Memoised: it redraws when the beat, the view or what the page hands the slot changes. */
+export const SideSlot = memo(function SideSlot({
+  view,
+  beat,
+  me,
+  presentation,
+  slot,
+  stop,
+}: SceneProps) {
   const own = useDrawerFilters();
   const [ownTab, setOwnTab] = useState('notes');
   const [ownSeat, setOwnSeat] = useState<FileChoice | null>(null);
@@ -109,4 +117,4 @@ export function SideSlot({ view, beat, me, presentation, slot, stop }: SceneProp
       )}
     </Layer>
   );
-}
+});

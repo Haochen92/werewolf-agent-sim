@@ -604,7 +604,8 @@
 /* ---- the first-time hint, a paper slip beside the rail ---- */
 .hint {
   position: absolute;
-  z-index: 5;
+  /* under the card's veil (z 5): with the same z, whichever the page added last was on top */
+  z-index: 4;
   left: calc(var(--wing) + 16px);
   top: 480px;
   margin: 0;
