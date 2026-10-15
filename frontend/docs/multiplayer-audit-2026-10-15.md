@@ -103,8 +103,7 @@ the reason it made sense when it was built), **the fix**, and **how it is now**.
   every quiet 15 s. The page notes when it last heard anything. It reopens a stream silent for
   more than 40 s, and retries a closed one every 10 s, never while hidden (`streamStalled`).
 - **How it is now.** A dead stream is reopened within about 45 s; a reopen is a catch-up,
-  with the "You're back" notice for what went by. Server commit `f44028d8`; page: this batch's
-  stream commit. Deploy both together: a new page on an old server would take a quiet game
+  with the "You're back" notice for what went by. Server commit `f44028d8`; page `a0fa2e44`. Deploy both together: a new page on an old server would take a quiet game
   for a dead stream and reopen it every 40 s, harmlessly.
 
 ### An older status gave a new turn the old turn's deadline (finding 8)
@@ -121,7 +120,7 @@ the reason it made sense when it was built), **the fix**, and **how it is now**.
   that request, so it moves nothing about it (`store.ts` `syncPending`).
 - **How it is now.** Tested both ways: an older status leaves the deadline, a newer one moves
   it. This relies on the status counting the viewer's own events (finding 1), and a seat's own
-  request is always one of them. Page: this batch's store commit.
+  request is always one of them. Commit `53e7b0be`.
 
 ### Opening a game's page again used a cached status (finding 9)
 
@@ -136,7 +135,7 @@ the reason it made sense when it was built), **the fix**, and **how it is now**.
   (`refetchOnMount: 'always'`), and not used until this visit's answer is in
   (`isFetchedAfterMount`).
 - **How it is now.** Coming back to a game shows the loading platform for one status round
-  trip, then lands as a first visit does. Page: this batch's stream commit.
+  trip, then lands as a first visit does. Commit `bb15b5cd`.
 
 ### A friend's clock ran out while their stage read toward the turn (finding 10)
 
@@ -152,7 +151,7 @@ the reason it made sense when it was built), **the fix**, and **how it is now**.
   `TURN_JUMP_MS`). The skipped lines are in the transcript. Under 30 s, the old cut stays.
 - **How it is now.** Tested both ways. No notice is shown for the jump yet. The general jump
   (any queue past about 45 s, with the "Caught up to the table" strip) is still unbuilt
-  (`live_timing_sheet.md` ruling 3). Page: this batch's live-state commit.
+  (`live_timing_sheet.md` ruling 3). Commit `e27497bd`.
 
 ### A network blip during a rejoin cost the seat (finding 11)
 
@@ -164,7 +163,7 @@ the reason it made sense when it was built), **the fix**, and **how it is now**.
 - **The fix.** The key is deleted only when the server refuses it (403, 404, 410:
   `ApiError.refusesToken`). On anything else it is kept, and the game page tries again after
   5 s.
-- **How it is now.** Tested on the rule. Page: this batch's rejoin commit.
+- **How it is now.** Tested on the rule. Commit `5b4186d2`.
 
 ## Accepted or left
 
