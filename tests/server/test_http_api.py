@@ -141,11 +141,17 @@ def test_an_archived_snapshot_reads_the_cast_from_the_table(api_client, monkeypa
 
 
 def test_turn_without_a_pending_request_is_409(api_client, seated_session):
+    from tests.factories.builders import human_turn_request
+
     session, _ = seated_session
 
     r = api_client.post(f"/games/{session.game_id}/turns", json={"message": "hi"})
     assert r.status_code == 409
     assert "no pending input_request" in r.json()["detail"]
+    # another seat owing a turn (a human night actor choosing) changes nothing in the answer
+    session.pending_requests["player_5"] = human_turn_request(player_id="player_5")
+    again = api_client.post(f"/games/{session.game_id}/turns", json={"message": "hi"})
+    assert (again.status_code, again.json()) == (r.status_code, r.json())
 
 
 # ---- the lobby: create -> join -> start (slice 2) ----------------------------------------

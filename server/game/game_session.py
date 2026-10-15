@@ -648,9 +648,9 @@ class GameSession:
         """Take one seat's answer and validate it against the question that seat was
         asked (the same rules as the CLI game). Raises HumanTurnContractError on an
         illegal move, LookupError when the seat owes nothing."""
-        if not self.pending_requests:
-            raise LookupError("no pending input_request for this game")
         request = self.pending_requests.get(seat)
+        # one answer whether or not another seat owes a turn: which one would tell a villager
+        # at night that a human night actor is choosing (multiplayer audit, 2026-10-15)
         if request is None:
             raise LookupError(f"no pending input_request for seat {seat!r}")
         response = validate_human_response(request, body)
