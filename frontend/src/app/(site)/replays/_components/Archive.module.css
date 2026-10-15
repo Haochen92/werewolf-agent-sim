@@ -22,10 +22,10 @@
   color: var(--text);
 }
 
+/* one line across the column on a wide screen */
 .lede {
   color: var(--muted);
-  font-size: 17px;
-  max-width: 58ch;
+  font-size: 19px;
   margin: 10px 0 0;
 }
 

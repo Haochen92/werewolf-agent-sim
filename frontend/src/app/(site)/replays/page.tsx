@@ -15,9 +15,8 @@ export default function ReplaysPage() {
       <header className={classes.head}>
         <h1 className={classes.title}>The archive</h1>
         <p className={classes.lede}>
-          Every finished game, with Reveal on: every role from the first minute, the
-          wolves&rsquo; private talk, and what each agent was thinking. Pick one to watch it
-          in the theatre.
+          Every finished game with Reveal on: every role, the wolves&rsquo; private talk, each
+          agent&rsquo;s thinking. Pick one to watch.
         </p>
       </header>
       <ArchiveClient />
