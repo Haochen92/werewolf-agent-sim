@@ -127,18 +127,30 @@ export function Backdrop({
   return null;
 }
 
+/**
+ * The baked layout a HUD's sheet was made at, and how far it slides. No HUD (the landing's
+ * carriage on an upright phone) has no sheets of its own: it takes the live HUD's, slid by the
+ * wing the live layout keeps (its room is centred 96 units further left, 136.5 with the side
+ * slot open; the car follows the puppet's centre line, so a slide is exact). Unslid, the
+ * shutter, drawn from geometry('none'), fell short of the painted window's right side
+ * (2026-10-15); `backdrop.test.ts` holds the two centres equal for every layout.
+ */
+export function sheetFor(
+  hud: Hud,
+  side: boolean,
+): { layout: 'live' | 'replay'; dx: number } {
+  if (hud === 'replay') return { layout: 'replay', dx: 0 };
+  const dx = hud === 'none' ? geometry('none', side).cx - geometry('live', side).cx : 0;
+  return { layout: 'live', dx };
+}
+
 /** The sheet itself, drawn by the Stage from the scene's description. */
 export function BackdropSheet({ phase, hud, side, from, fadeDelay, k }: BackdropSpec) {
   const { scale, narrow } = useScreen();
   const cut = useCut(narrow ? from : null, phase, fadeDelay * k);
-  // no HUD (the landing's carriage on a phone) has no sheets of its own: it takes the live HUD's,
-  // slid by the wing the live layout keeps (its room is centred 96 units further left, 136.5 with
-  // the side slot open; the car follows the puppet's centre line, so a slide is exact), or the
-  // shutter, drawn from geometry('none'), falls short of the painted window's right side
-  const h = hud === 'replay' ? 'replay' : 'live';
-  const dx = hud === 'none' ? geometry('none', side).cx - geometry('live', side).cx : 0;
+  const { layout, dx } = sheetFor(hud, side);
   if (!scale) return null;
-  const at = (p: Phase) => SETS.car[p][h][side ? 'side' : 'full'][scale];
+  const at = (p: Phase) => SETS.car[p][layout][side ? 'side' : 'full'][scale];
   const sheet = {
     position: 'absolute',
     top: 0,

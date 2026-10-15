@@ -5,7 +5,10 @@
  * (docs/frontend-audit-2026-10-11.md §1).
  */
 import { describe, expect, it } from 'vitest';
-import { pickScale } from './Backdrop';
+import { diningCarPlan } from '../paint/dining-car';
+import { shutterGeometry } from '../paint/window';
+import { geometry, type Hud } from '../units';
+import { pickScale, sheetFor } from './Backdrop';
 
 const PHONE_CAP = 1.5;
 const DESK_CAP = 2;
@@ -51,4 +54,25 @@ describe('pickScale', () => {
     // a desktop stage shrunk to a phone's size: the 4400 sheet goes at once
     expect(pickScale(1100, 3, PHONE_CAP, '2')).toBe('1.5');
   });
+});
+
+/**
+ * The window is placed twice: the shutter live from the layout's geometry, the glass baked into
+ * a sheet made at one of two layouts. A layout without sheets of its own (no HUD) once took the
+ * live HUD's unslid, and the shutter fell 96 units short of the glass's right side (2026-10-15).
+ */
+describe('sheetFor', () => {
+  const layouts: [Hud, boolean][] = (['none', 'live', 'replay'] as const).flatMap((hud) =>
+    [false, true].map((side): [Hud, boolean] => [hud, side]),
+  );
+
+  it.each(layouts)(
+    'puts the painted glass under the shutter (hud %s, side %s)',
+    (hud, side) => {
+      const { layout, dx } = sheetFor(hud, side);
+      const glass = diningCarPlan({ phase: 'day', hud: layout, side }).glass;
+      const shutter = shutterGeometry(geometry(hud, side)).f;
+      expect(glass.x + glass.w / 2 + dx).toBeCloseTo(shutter.cx, 0);
+    },
+  );
 });
