@@ -67,7 +67,7 @@ interface SessionState {
   /** Fold one event that just arrived on the wire. Marks it live — beats may fire. */
   applyLive: (event: DurableGameEvent) => void;
   /**
-   * Fold one event that arrived as CATCH-UP, not as news. Marks nothing live.
+   * Fold a block of events that arrived as CATCH-UP, not as news. Marks nothing live.
    *
    * The SSE stream replays the log from the client's cursor before going live, and on a
    * first connection that cursor is 0 — so the entire history arrives through the same
@@ -75,8 +75,12 @@ interface SessionState {
    * reveal and the game-over takeover for events that happened an hour ago, which is
    * exactly what ux_journeys §0 forbids. The boundary is the `last_seq` from the status
    * snapshot taken at connect time: at or below it is history, above it is news.
+   *
+   * A block, not one event: the stream gathers the catch-up frames that arrive together and
+   * hands them in at once (`useGameStream`), so a long game's history is one store write and
+   * one render instead of one per event, each over the whole log so far.
    */
-  applyCatchUp: (event: DurableGameEvent) => void;
+  applyCatchUp: (events: readonly DurableGameEvent[]) => void;
   /** Ephemeral pacing snapshot; duplicates and stale values are harmless by design. */
   applyPacing: (progress: PhaseProgress) => void;
   /** Reconcile the folded request with the status snapshot, which owns whether it is active. */
@@ -104,22 +108,45 @@ function normaliseEvents(events: readonly DurableGameEvent[]): DurableGameEvent[
   return [...bySeq.values()].sort((a, b) => a.seq - b.seq);
 }
 
-function appendDurable(
+/** Whether a log sorted by seq holds `seq` (a binary search: the log can run to a thousand). */
+function holds(events: readonly DurableGameEvent[], seq: number): boolean {
+  let lo = 0;
+  let hi = events.length - 1;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    const at = events[mid].seq;
+    if (at === seq) return true;
+    if (at < seq) lo = mid + 1;
+    else hi = mid - 1;
+  }
+  return false;
+}
+
+/**
+ * The log and the view with `arrived` added; null when every one of them was already there.
+ * Every event has its seq, and the log is kept sorted by it, so whether an event belongs at
+ * the end is a comparison, not a guess.
+ */
+function addDurable(
   view: GameView,
   events: DurableGameEvent[],
-  event: DurableGameEvent,
+  arrived: readonly DurableGameEvent[],
 ): { events: DurableGameEvent[]; view: GameView } | null {
-  if (events.some((known) => known.seq === event.seq)) return null;
-
-  const nextEvents = normaliseEvents([...events, event]);
+  const fresh = normaliseEvents(arrived).filter((event) => !holds(events, event.seq));
+  if (fresh.length === 0) return null;
+  const options = { mySeat: view.me.seat };
+  // the usual case, live or catch-up: past the head, so the log grows at its end and the view
+  // folds on from where it was
+  if (fresh[0].seq > view.lastSeq) {
+    let next = view;
+    for (const event of fresh) next = foldEvent(next, event, options);
+    return { events: events.concat(fresh), view: next };
+  }
   // R7 deliberately breaks arrival order: `game_over` arrives first, then the server flushes
   // withheld observer events with older seqs. Incremental folding is valid only for an append;
   // an insertion must re-fold the sorted log or the reveal is either dropped or misordered.
-  const nextView =
-    event.seq <= view.lastSeq
-      ? foldEvents(nextEvents, { mySeat: view.me.seat })
-      : foldEvent(view, event, { mySeat: view.me.seat });
-  return { events: nextEvents, view: nextView };
+  const nextEvents = normaliseEvents([...events, ...fresh]);
+  return { events: nextEvents, view: foldEvents(nextEvents, options) };
 }
 
 const initial = {
@@ -156,17 +183,19 @@ export const useGameSession = create<SessionState>((set, get) => ({
     });
   },
 
-  applyCatchUp: (event) => {
+  applyCatchUp: (arrived) => {
     const { view, events } = get();
-    const next = appendDurable(view, events, event);
+    const next = addDurable(view, events, arrived);
     if (!next) return;
-    // liveSeqs untouched: this event is history that arrived late.
-    set(event.seq > view.lastSeq ? { ...next, caughtUpTo: event.seq } : next);
+    // liveSeqs untouched: this is history that arrived late. Where it ends, if it went past
+    // the head (one at a time, the last to pass the head would be the newest: the same seq).
+    const newest = next.view.lastSeq;
+    set(newest > view.lastSeq ? { ...next, caughtUpTo: newest } : next);
   },
 
   applyLive: (event) => {
     const { view, events, liveSeqs } = get();
-    const next = appendDurable(view, events, event);
+    const next = addDurable(view, events, [event]);
     // The server may re-send across a reconnect. Dedupe by membership, NOT by the current
     // high-water mark: the R7 reveal legitimately sends unseen lower seqs after game_over.
     if (!next) return;

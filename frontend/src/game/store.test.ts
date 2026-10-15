@@ -72,18 +72,48 @@ describe('reconnect safety', () => {
 
   it('remembers where a reconnect’s catch-up ends, but not a late insert behind the head', () => {
     const store = useGameSession.getState();
-    for (const e of events.filter((x) => x.seq <= 50)) store.applyCatchUp(e);
+    for (const e of events.filter((x) => x.seq <= 50)) store.applyCatchUp([e]);
     expect(useGameSession.getState().caughtUpTo).toBe(50);
     store.applyLive(events.find((e) => e.seq === 51)!);
     // the connection drops; what was missed comes back as catch-up at the log's end
-    for (const e of events.filter((x) => x.seq > 51 && x.seq <= 60)) store.applyCatchUp(e);
+    store.applyCatchUp(events.filter((x) => x.seq > 51 && x.seq <= 60));
     expect(useGameSession.getState().caughtUpTo).toBe(60);
     expect(useGameSession.getState().isLive(60)).toBe(false);
     // an older seq inserted behind the head (the backlog after game over) moves nothing
     const inserted = events.filter((x) => x.seq > 60 && x.seq <= 70);
     store.applyLive(inserted.at(-1)!);
-    store.applyCatchUp(inserted[0]);
+    store.applyCatchUp([inserted[0]]);
     expect(useGameSession.getState().caughtUpTo).toBe(60);
+  });
+
+  it('folds a catch-up block as it folds the same events one at a time', () => {
+    const store = useGameSession.getState();
+    store.hydrate([], { mySeat: 'player_3' });
+    // a block out of order and with repeats, as a reopened stream may resend
+    const block = [...events.filter((x) => x.seq <= 120)].reverse();
+    store.applyCatchUp([...block, ...block.slice(0, 10)]);
+    const one = useGameSession.getState();
+    expect(one.events.map((e) => e.seq)).toEqual(
+      events.filter((x) => x.seq <= 120).map((e) => e.seq),
+    );
+    expect(one.view).toEqual(
+      foldEvents(
+        events.filter((x) => x.seq <= 120),
+        { mySeat: 'player_3' },
+      ),
+    );
+    expect(one.caughtUpTo).toBe(120);
+    expect(one.liveSeqs.size).toBe(0);
+    // the rest, half live and half caught up, appended past the head
+    for (const e of events.filter((x) => x.seq > 120 && x.seq <= 200))
+      if (e.seq % 2) store.applyLive(e);
+      else store.applyCatchUp([e]);
+    expect(useGameSession.getState().view).toEqual(
+      foldEvents(
+        events.filter((x) => x.seq <= 200),
+        { mySeat: 'player_3' },
+      ),
+    );
   });
 
   it('absorbs the exact R7 order: game_over first, then unseen lower-seq backlog', () => {
@@ -272,10 +302,11 @@ describe('what went by while the viewer was away (live game ab44887a, seat 3)', 
     for (const e of seatEvents.filter((x) => x.seq >= from && x.seq <= to))
       useGameSession.getState().applyLive(e);
   };
-  const caughtUp = (from: number, to = Infinity) => {
-    for (const e of seatEvents.filter((x) => x.seq >= from && x.seq <= to))
-      useGameSession.getState().applyCatchUp(e);
-  };
+  // the stream hands catch-up in as one block
+  const caughtUp = (from: number, to = Infinity) =>
+    useGameSession
+      .getState()
+      .applyCatchUp(seatEvents.filter((x) => x.seq >= from && x.seq <= to));
   /** What the theatre asks after each fold: what was missed, and what the notice says of it. */
   const told = (turnOpen = false) => {
     const s = useGameSession.getState();
