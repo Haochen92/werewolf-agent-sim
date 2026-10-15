@@ -20,7 +20,7 @@ import {
 import { Menu, UnstyledButton } from '@mantine/core';
 import { FACTION_NAME, type Faction } from '@/stage/roles';
 import { FactionMark } from '@/stage/instruments/FactionMark';
-import { useReplaceSiteStrip } from '@/components/site';
+import { StationWall, useReplaceSiteStrip, wallPage } from '@/components/site';
 import { stageFonts } from '@/stage/fonts';
 import { SIDES } from '../sides';
 import { CaseFile } from './CaseFile';
@@ -164,7 +164,8 @@ export function Guide() {
   const here = SECTIONS.find((s) => s.id === current) ?? SECTIONS[0];
 
   return (
-    <main className={`${classes.guide} ${stageFonts}`}>
+    <main className={`${classes.guide} ${stageFonts} ${wallPage}`}>
+      <StationWall kind="cards" />
       <nav className={classes.nav} aria-label="Guide sections">
         {SECTIONS.map((s, i) => (
           <a
