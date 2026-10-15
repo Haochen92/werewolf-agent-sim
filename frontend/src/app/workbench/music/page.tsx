@@ -1,8 +1,8 @@
 /**
- * The music bench (`/workbench/music`): every candidate in `public/game_music`, one folder per
- * cue, to audition side by side, hear each loop's seam, and play the lynch, the morning and the
- * ending against their beats. The folder is read on each request, so a new candidate shows on a
- * reload; a build without the folder shows the bench empty.
+ * The music bench (`/workbench/music`): the score's tracks in `public/music`, by cue, to audition
+ * side by side, hear each loop's seam, and play the lynch, the morning and the ending against
+ * their beats. A file's cue is the start of its name (`night-…`, `win-…`); the folder is read on
+ * each request, so a candidate dropped in shows on a reload.
  */
 import { readdir } from 'node:fs/promises';
 import path from 'node:path';
@@ -10,49 +10,37 @@ import { MusicBench, type Cue } from './_components/MusicBench';
 
 export const dynamic = 'force-dynamic';
 
-const ROOT = path.join(process.cwd(), 'public', 'game_music');
+const ROOT = path.join(process.cwd(), 'public', 'music');
 
-/** The cues in the order the game reaches them; a folder matches the first key its name holds. */
-const ORDER: [key: string, name: string][] = [
-  ['lobby', 'Lobby'],
-  ['discussion', 'Discussion'],
-  ['vote', 'Vote'],
-  ['lynch', 'Lynch'],
-  ['night', 'Night'],
-  ['morning', 'Morning'],
-  ['victory', 'Victory'],
+/** The cues in the order the game reaches them, with the name prefix that files them. */
+const ORDER: [id: string, prefix: string, name: string][] = [
+  ['lobby', 'lobby', 'Lobby'],
+  ['discussion', 'day', 'Discussion'],
+  ['vote', 'vote', 'Vote'],
+  ['lynch', 'lynch', 'Lynch'],
+  ['night', 'night', 'Night'],
+  ['morning', 'dawn', 'Morning'],
+  ['victory', 'win', 'Victory'],
+  ['ending', 'elders', 'Guide and ending'],
 ];
 
 async function cues(): Promise<Cue[]> {
-  let dirs: string[];
+  let files: string[];
   try {
-    dirs = (await readdir(ROOT, { withFileTypes: true }))
-      .filter((d) => d.isDirectory())
-      .map((d) => d.name);
+    files = (await readdir(ROOT)).filter((f) => /\.(mp3|m4a|ogg|wav)$/i.test(f)).sort();
   } catch {
     return [];
   }
-  const found = await Promise.all(
-    dirs.map(async (dir) => {
-      const files = (await readdir(path.join(ROOT, dir)))
-        .filter((f) => /\.(mp3|m4a|ogg|wav)$/i.test(f))
-        .sort();
-      const rank = ORDER.findIndex(([key]) => dir.toLowerCase().includes(key));
-      return {
-        id: ORDER[rank]?.[0] ?? dir.trim(),
-        name: ORDER[rank]?.[1] ?? dir.trim(),
-        rank: rank === -1 ? ORDER.length : rank,
-        files: files.map((f) => ({
-          name: f.replace(/\.[^.]+$/, ''),
-          url: `/game_music/${encodeURIComponent(dir)}/${encodeURIComponent(f)}`,
-        })),
-      };
-    }),
-  );
-  return found
-    .filter((c) => c.files.length > 0)
-    .sort((a, b) => a.rank - b.rank)
-    .map(({ id, name, files }) => ({ id, name, files }));
+  return ORDER.map(([id, prefix, name]) => ({
+    id,
+    name,
+    files: files
+      .filter((f) => f.startsWith(`${prefix}-`))
+      .map((f) => ({
+        name: f.replace(/\.[^.]+$/, ''),
+        url: `/music/${encodeURIComponent(f)}`,
+      })),
+  })).filter((c) => c.files.length > 0);
 }
 
 export default async function MusicBenchPage() {

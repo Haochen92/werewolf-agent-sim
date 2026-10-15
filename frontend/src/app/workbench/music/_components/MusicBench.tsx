@@ -239,7 +239,7 @@ export function MusicBench({ cues }: { cues: Cue[] }) {
         />
         <EndingRun
           stings={byCue.victory ?? []}
-          loops={[...(byCue.lobby ?? []), ...(byCue.discussion ?? [])]}
+          loops={[...(byCue.ending ?? []), ...(byCue.lobby ?? [])]}
           speed={speed}
           load={load}
           start={startRun}
@@ -475,7 +475,7 @@ function EndingRun({
   player,
 }: RunProps & { stings: Track[]; loops: Track[] }) {
   const [sting, setSting] = useState(() => first(stings, 'town'));
-  const [loop, setLoop] = useState(() => first(loops, 'lobby'));
+  const [loop, setLoop] = useState(() => first(loops, 'elders'));
   const [hand, setHand] = useState<'after' | 'overlap'>('after');
   const go = () =>
     start('The ending', async () => {
