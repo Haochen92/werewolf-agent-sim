@@ -42,6 +42,7 @@ import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useMediaQuery } from '@mantine/hooks';
 import { SPRITES } from '@/assets/manifest';
+import { Button } from '@/components/site';
 import { useModelLabels } from '@/hooks/useModelLabels';
 import { getReplay, listReplaysWithTotal } from '@/lib/api';
 import { featuredWindow } from '@/lib/featured-window';
@@ -353,9 +354,15 @@ export function FeaturedReplay() {
             '\u00a0'
           )}
         </p>
-        <Link href={href} className={classes.go}>
-          Watch the whole game <span aria-hidden="true">&rarr;</span>
-        </Link>
+        <Button
+          component={Link}
+          href={href}
+          variant="brass"
+          className={classes.go}
+          rightSection={<span aria-hidden="true">&rarr;</span>}
+        >
+          Watch the whole game
+        </Button>
       </div>
     </figure>
   );
