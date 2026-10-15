@@ -494,9 +494,9 @@ describe('the live stage: the seated human’s prompt', () => {
 
   it('a prompt on a room’s clock does not wait: the beat on stage is cut short once, the rest keep their pace', () => {
     const s = new Session().arrive(upTo(190), false);
-    // three speeches arrive as news, then my request
+    // a turn and a speech arrive as news (about 20 s of reading), then my request
     s.arrive(
-      MINE.filter((e) => e.seq > 190 && e.seq <= 200),
+      MINE.filter((e) => e.seq > 190 && e.seq <= 196),
       true,
     );
     const holding = s.state.cursor.index;
@@ -517,6 +517,22 @@ describe('the live stage: the seated human’s prompt', () => {
       s.held();
     }
     expect(s.beat.seq).toBe(201);
+  });
+
+  it('a stage further behind its turn than TURN_JUMP_MS lands still before it, and the turn plays (2026-10-15)', () => {
+    const s = new Session().arrive(upTo(190), false);
+    // two speeches and their turns arrive as news: about 34 s of reading, then my request
+    s.arrive(
+      MINE.filter((e) => e.seq > 190 && e.seq <= 200),
+      true,
+    );
+    expect(s.state.holding).toBe(true);
+    s.ctx = ctx({ openPrompt: 201, onClock: true });
+    s.arrive([request(201, 'discuss')], true);
+    // the reading is skipped (it is in the transcript): my turn is on the stage, played
+    expect(s.beat).toMatchObject({ id: 'day.your-turn', seq: 201 });
+    expect(s.state.cursor.animate).toBe(true);
+    expect(s.state.beats[s.state.cursor.index - 1]).toMatchObject({ seq: 200 });
   });
 
   it('a prompt first seen while the deal is on the stage cuts nothing', () => {

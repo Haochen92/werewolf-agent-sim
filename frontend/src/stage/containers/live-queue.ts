@@ -9,7 +9,8 @@
  * - A solo seat's prompt (no deadline) waits for the stage: every beat before it plays out
  *   (owner, 2026-10-12). A room's prompt (a deadline) does not wait, but the stage does not
  *   hurry for it either: when it is further down the queue, the beat on stage is cut short once
- *   (that is live-state.ts's business), and the rest play at normal speed.
+ *   (that is live-state.ts's business), and the rest play at normal speed; when more than
+ *   `TURN_JUMP_MS` of reading is queued before it, the stage lands still just before it.
  * - The winners' stand needs the roles, which arrive in the backlog after `game_over`, so that
  *   beat waits until they have landed. The verdict covers the wait.
  * - A catch-up (refresh, reconnect) shows the latest beat still and plays nothing.

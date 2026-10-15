@@ -162,7 +162,10 @@ the turn at reading pace (see the ruling below for the jump).
    latest beat: one fold, no beats replayed, no trimmed holds (they flicker), with a strip notice
    "Caught up to the table · n lines in the transcript" that opens the drawer. The transcript is
    the catch-up; a replay of the missed beats inside the live game was considered and rejected.
-   Solo games never jump. **Not built yet** (this sheet comes first).
+   Solo games never jump. **Built 2026-10-15 for the seat's own turn only:** on a room's clock,
+   when more than 30 s of reading is queued before the seat's prompt, the stage lands still just
+   before it and the turn plays (`live-state.ts` `TURN_JUMP_MS`); no notice yet, the lines are in
+   the transcript. The general jump (any queue past ~45 s, with the strip notice) is not built.
 4. **The server clock is authoritative** and starts when the prompt is released. A browser never
    holds the server's clock, for itself or for others; the seat's agent takes the turn at the
    deadline. A browser cursor acknowledgement, and a pull model (the browser asks for the next

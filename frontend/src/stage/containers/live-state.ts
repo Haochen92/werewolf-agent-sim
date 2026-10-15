@@ -473,12 +473,30 @@ function waitsHere(beat: SceneBeat, ctx: LiveCtx): boolean {
   return true; // the epilogue until its sheet is closed; the curtain
 }
 
-function promptAhead(state: LiveState, ctx: LiveCtx): boolean {
-  if (ctx.openPrompt === null) return false;
-  return state.beats.some(
+/** Where the seat's open prompt is in the list, when it is still ahead of the stage; else -1. */
+function promptAt(state: LiveState, ctx: LiveCtx): number {
+  if (ctx.openPrompt === null) return -1;
+  return state.beats.findIndex(
     (b, i) =>
       i > state.cursor.index && b.liveOnly && b.seat === ctx.me && b.seq === ctx.openPrompt,
   );
+}
+
+/**
+ * How far behind its own turn a stage may read on a room's clock, in the holds still to play
+ * before the turn: past it the stage lands still just before the turn, and the turn plays (the
+ * lines skipped are in the transcript). A friend whose phone was in a pocket came back to a
+ * queue of reading, and the clock ran out before the turn was ever on the screen (multiplayer
+ * audit, 2026-10-15; the timing sheet's ruling 3, for the seat's own turn only).
+ */
+export const TURN_JUMP_MS = 30_000;
+
+/** The holds of the beats between the one on the stage and `before`, played at normal pace. */
+function holdsUntil(state: LiveState, before: number): number {
+  let ms = 0;
+  for (let i = state.cursor.index + 1; i < before; i++)
+    ms += holdFor(state.beats[i], 'normal') ?? 0;
+  return ms;
 }
 
 /**
@@ -514,10 +532,23 @@ function advance(state: LiveState, ctx: LiveCtx): LiveState {
   // a prompt on a clock does not wait for the stage: the beat on the stage when it is first
   // seen ahead is cut short, once per prompt (a deal beat keeps its hold, and nothing is cut).
   // One with no deadline waits (owner, 2026-10-12): cutting it bought a solo seat nothing.
+  // Further behind than TURN_JUMP_MS, the stage lands still just before the turn instead.
   const current = state.beats[state.cursor.index];
-  if (ctx.onClock && promptAhead(state, ctx) && state.hurried !== ctx.openPrompt) {
-    const cut = state.holding && !current?.id.startsWith('deal.');
-    state = { ...state, holding: cut ? false : state.holding, hurried: ctx.openPrompt };
+  const turn = ctx.onClock ? promptAt(state, ctx) : -1;
+  if (turn !== -1 && state.hurried !== ctx.openPrompt) {
+    const dealing = !!current?.id.startsWith('deal.');
+    if (!dealing && holdsUntil(state, turn) > TURN_JUMP_MS)
+      state = {
+        ...state,
+        cursor: still(turn - 1),
+        holding: false,
+        hurried: ctx.openPrompt,
+        step: state.step + 1,
+      };
+    else {
+      const cut = state.holding && !dealing;
+      state = { ...state, holding: cut ? false : state.holding, hurried: ctx.openPrompt };
+    }
   }
   if (state.holding) return state;
   if (current && waitsHere(current, ctx)) return state;
