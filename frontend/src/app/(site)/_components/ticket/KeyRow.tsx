@@ -17,7 +17,7 @@ import { forwardRef, useState } from 'react';
 import { Switch, TextInput } from '@mantine/core';
 import { useRememberedKey } from '@/hooks/useRememberedKey';
 import type { ModelsMenu } from '@/types/contracts';
-import { Icon } from '@/components/site';
+import { Button, Icon } from '@/components/site';
 import { houseLine } from './house';
 import type { TicketKind } from './TicketOffice';
 import classes from './Ticket.module.css';
@@ -89,13 +89,15 @@ export const KeyRow = forwardRef<HTMLInputElement, KeyRowProps>(function KeyRow(
                 }}
               />
               {key.loadedFromStorage ? (
-                <button
+                <Button
                   type="button"
+                  variant="text"
+                  size="sm"
                   className={classes.textButton}
                   onClick={key.clearSaved}
                 >
                   Forget the saved key
-                </button>
+                </Button>
               ) : null}
             </div>
             <Switch
@@ -126,8 +128,10 @@ export const KeyRow = forwardRef<HTMLInputElement, KeyRowProps>(function KeyRow(
               again.
             </p>
             {!required && menu ? (
-              <button
+              <Button
                 type="button"
+                variant="text"
+                size="sm"
                 className={classes.textButton}
                 onClick={() => {
                   setOwnKey(false);
@@ -135,17 +139,19 @@ export const KeyRow = forwardRef<HTMLInputElement, KeyRowProps>(function KeyRow(
                 }}
               >
                 Let the house pay instead
-              </button>
+              </Button>
             ) : null}
           </>
         ) : (
-          <button
+          <Button
             type="button"
+            variant="text"
+            size="sm"
             className={classes.textButton}
             onClick={() => setOwnKey(true)}
           >
             Use my own key instead
-          </button>
+          </Button>
         )}
       </div>
     </div>

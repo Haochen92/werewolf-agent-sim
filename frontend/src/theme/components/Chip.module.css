@@ -28,10 +28,29 @@
 }
 
 .root .label[data-checked],
-.root .label[data-checked]:hover {
+.root .label[data-checked]:hover,
+.removable {
   background-color: #2a1f14;
   border-color: var(--brass);
   color: var(--bone);
+}
+
+/* a chosen filter shown on its own, which a click takes away (the archive's active filters):
+   the chosen chip's look on a plain button, composed by the page (`composes: removable`) */
+.removable {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 10px 0 12px;
+  border: 1px solid var(--brass);
+  border-radius: 999px;
+  font: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+.removable svg {
+  color: var(--bone2);
 }
 
 .root .input:focus-visible + .label {

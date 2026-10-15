@@ -436,21 +436,6 @@
 .open {
   align-self: flex-start;
   margin-top: auto;
-  padding: 8px 16px;
-  border: 1.5px solid #8a3a2a;
-  border-radius: 6px;
-  color: #8a3a2a;
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: background 0.16s ease;
-}
-.open:hover {
-  background: rgba(138, 58, 42, 0.08);
-}
-.open:focus-visible {
-  outline: 2px solid var(--amber);
-  outline-offset: 3px;
 }
 
 /* the plates as tabs: narrow only */

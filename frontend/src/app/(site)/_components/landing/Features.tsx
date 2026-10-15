@@ -14,6 +14,7 @@
 import Link from 'next/link';
 import { useId, useState, type CSSProperties } from 'react';
 import { SPRITES } from '@/assets/manifest';
+import { Button } from '@/components/site';
 import { castForGame } from '@/stage/cast/castForGame';
 import { ChipSprite } from '@/stage/cast/ChipSprite';
 import { stageFonts } from '@/stage/fonts';
@@ -180,7 +181,7 @@ export function Features() {
           </p>
         </article>
 
-        <article className={`${classes.blk} ${classes.bRoom} ${sel(2)}`}>
+        <article className={`${classes.blk} ${classes.bRoom} ${sel(2)}`} data-surface="paper">
           <Plate i={2} />
           <h3>Bring your friends. Beat the machines</h3>
           <p>
@@ -211,9 +212,9 @@ export function Features() {
             If someone goes quiet, their clock runs out and their own agent takes the turn,
             so the table never stalls.
           </p>
-          <Link href="/rooms/new" className={classes.open}>
+          <Button component={Link} href="/rooms/new" size="sm" className={classes.open}>
             Open a table &rarr;
-          </Link>
+          </Button>
         </article>
       </div>
     </div>

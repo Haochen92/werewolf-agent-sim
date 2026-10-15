@@ -312,13 +312,7 @@
 }
 .retry {
   margin-top: 12px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--amber);
-  font: inherit;
-  font-size: 15px;
-  cursor: pointer;
+  align-self: flex-start;
 }
 
 /* ---------- a side's row ---------- */

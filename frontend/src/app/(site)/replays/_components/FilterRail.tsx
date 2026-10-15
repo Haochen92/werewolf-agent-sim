@@ -7,7 +7,7 @@
  */
 import { useId, useState } from 'react';
 import { Chip, SegmentedControl, Select, Switch, TextInput } from '@mantine/core';
-import { Icon } from '@/components/site';
+import { Button, Icon } from '@/components/site';
 import { FactionMark } from '@/stage/instruments/FactionMark';
 import { winnerFaction, type WinnerKey } from '@/stage/roles';
 import { NO_FILTERS, type ReplayFilters } from '@/lib/replay-filters';
@@ -57,25 +57,22 @@ export function FilterRail({
     <aside className={classes.rail} aria-label="Filters" data-open={open || undefined}>
       <div className={classes.railHead}>
         <h2 className={classes.railTitle}>Filters</h2>
-        <button
+        <Button
           type="button"
+          size="sm"
           className={classes.railToggle}
           aria-expanded={open}
           aria-controls={bodyId}
           onClick={() => setOpen((o) => !o)}
+          rightSection={<Icon name={open ? 'i-minus' : 'i-plus'} size={16} />}
         >
           Filters
           {activeCount ? <span className={classes.railCount}>{activeCount}</span> : null}
-          <Icon name={open ? 'i-minus' : 'i-plus'} size={16} />
-        </button>
+        </Button>
         {activeCount ? (
-          <button
-            type="button"
-            className={classes.clearAll}
-            onClick={() => onChange(NO_FILTERS)}
-          >
+          <Button type="button" variant="text" size="sm" onClick={() => onChange(NO_FILTERS)}>
             Clear all
-          </button>
+          </Button>
         ) : null}
       </div>
 

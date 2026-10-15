@@ -68,16 +68,6 @@
 
 .railToggle {
   display: none;
-  align-items: center;
-  gap: 8px;
-  border: 0;
-  background: none;
-  padding: 6px 0;
-  color: var(--text);
-  font: inherit;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
 }
 
 .railCount {
@@ -87,16 +77,6 @@
   font-size: 11px;
   font-weight: 700;
   padding: 1px 7px;
-}
-
-.clearAll {
-  border: 0;
-  background: none;
-  color: var(--amber);
-  cursor: pointer;
-  font: inherit;
-  font-size: 13.5px;
-  padding: 6px 0;
 }
 
 .fs {
@@ -176,22 +156,7 @@
 }
 
 .activeChip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 32px;
-  padding: 0 10px 0 12px;
-  border-radius: 999px;
-  border: 1px solid var(--brass);
-  background: #2a1f14;
-  color: var(--bone);
-  cursor: pointer;
-  font: inherit;
-  font-size: 13.5px;
-}
-
-.activeChip svg {
-  color: var(--bone2);
+  composes: removable from '../../../../theme/components/Chip.module.css';
 }
 
 .spacer {

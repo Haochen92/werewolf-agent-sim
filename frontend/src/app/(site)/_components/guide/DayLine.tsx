@@ -21,6 +21,7 @@ import {
 } from './StopDemos';
 import { useTabs } from './useTabs';
 import guide from './Guide.module.css';
+import { Button } from '@/components/site';
 import classes from './DayLine.module.css';
 
 type Disc = 'sun' | 'moon' | 'end';
@@ -176,8 +177,9 @@ export function DayLine() {
                     <b>You</b> {s.you}
                   </p>
                 )}
-                <button
+                <Button
                   type="button"
+                  variant="text"
                   className={classes.next}
                   onClick={() => t.pick(next.id, true)}
                 >
@@ -185,7 +187,7 @@ export function DayLine() {
                     ? 'Back to the first stop'
                     : `Next stop: ${next.name}`}{' '}
                   &rarr;
-                </button>
+                </Button>
               </div>
             </article>
           );

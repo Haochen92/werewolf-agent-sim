@@ -318,22 +318,9 @@
 }
 
 .textButton {
-  display: inline-block;
   min-height: 36px;
   margin-top: 6px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: #7a4f10;
-  font: inherit;
-  font-size: 14.5px;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  cursor: pointer;
-}
-
-.textButton:hover {
-  color: var(--ink);
+  align-self: flex-start;
 }
 
 /* ---------- the key row ---------- */
@@ -697,25 +684,7 @@
 }
 .previewClear {
   margin-top: 10px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--ink2);
-  font-family: var(--font-serif);
-  font-size: 16px;
-  font-style: italic;
-  text-decoration: underline;
-  text-decoration-color: rgba(36, 24, 12, 0.35);
-  text-underline-offset: 4px;
-  cursor: pointer;
-}
-.previewClear:hover {
-  color: var(--ink);
-  text-decoration-color: currentColor;
-}
-.previewClear:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 3px;
+  align-self: flex-start;
 }
 
 /* ---------- the stub ---------- */

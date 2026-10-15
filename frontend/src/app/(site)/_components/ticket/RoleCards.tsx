@@ -15,6 +15,7 @@
  */
 import type { KeyboardEvent } from 'react';
 import { VisuallyHidden } from '@mantine/core';
+import { Button } from '@/components/site';
 import { CARD_TEXT } from '@/stage/card-text';
 import { roleFigure } from '@/stage/paint/role-kit';
 import { FACTION_NAME, factionOf } from '@/stage/roles';
@@ -95,9 +96,15 @@ export function RolePreview({
             <VisuallyHidden>, {FACTION_NAME[faction]}</VisuallyHidden>
           </span>
           <span className={classes.previewLine}>{TICKET_LINE[role]}</span>
-          <button type="button" className={classes.previewClear} onClick={onClear}>
+          <Button
+            type="button"
+            variant="text"
+            size="sm"
+            className={classes.previewClear}
+            onClick={onClear}
+          >
             Deal at random instead
-          </button>
+          </Button>
         </>
       ) : (
         <>

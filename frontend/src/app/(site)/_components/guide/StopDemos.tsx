@@ -41,6 +41,7 @@ import type { DockInput, MotionSpeed } from '@/stage/scenes/types';
 import { Photo } from '@/stage/instruments/Photo';
 import { Pin, pinColour } from '@/stage/instruments/Pin';
 import { PHOTO_H } from '@/stage/paint/compartment';
+import { Button } from '@/components/site';
 import classes from './Guide.module.css';
 
 const CAST = CHARACTERS.slice(0, 10);
@@ -128,8 +129,9 @@ export function VoteDemo() {
         />
       </Crop>
       {sent ? (
-        <button
+        <Button
           type="button"
+          variant="text"
           className={classes.retry}
           onClick={() => {
             setSent(false);
@@ -137,7 +139,7 @@ export function VoteDemo() {
           }}
         >
           Vote again
-        </button>
+        </Button>
       ) : null}
     </div>
   );
@@ -189,8 +191,9 @@ export function NightDemo() {
         />
       </Crop>
       {sent ? (
-        <button
+        <Button
           type="button"
+          variant="text"
           className={classes.retry}
           onClick={() => {
             setSent(false);
@@ -198,7 +201,7 @@ export function NightDemo() {
           }}
         >
           Try again
-        </button>
+        </Button>
       ) : null}
     </div>
   );
@@ -400,8 +403,9 @@ export function OpeningDemo() {
         <p className={classes.sentNote}>
           Your opening is in. Once everyone has written, the statements are read out in seat
           order.{' '}
-          <button
+          <Button
             type="button"
+            variant="text"
             className={classes.retry}
             onClick={() => {
               setSent(false);
@@ -409,7 +413,7 @@ export function OpeningDemo() {
             }}
           >
             Write another
-          </button>
+          </Button>
         </p>
       ) : (
         <TurnDock
