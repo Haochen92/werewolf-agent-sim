@@ -147,9 +147,11 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   the seq `landing/features.ts` names. The memory card's slip is game 2f19d908's Sigilist
   following a lesson; the replay section's moment is game 68c26e83's Chanteuse claiming the
   Investigator (also the carriage's game, day 2); the draft card's notes are the one thing
-  written for the demo, and its caption says so. The closing states the research result as it
-  stands: the pipeline is built, and controlled tests on the current version have not shown a
-  reliable gain in wins.
+  written for the demo, and its caption says so. The closing states the research as it stands:
+  the pipeline is built, earlier versions were tested (gains and failures), and the current
+  version (v8) has not been tested at scale, so whether it improves play is open. Its "Read the
+  case study" plate goes to `SITE.caseStudy`, for now the memory research's history in the repo
+  (`evidence/memory_system/store_progression.md` on `main`).
 - The walls and the light span the screen from the section's `::before`/`::after` (`.lit`),
   behind its content. The light is gradients over the wall, darkest away
   from the lamp; a lit room rises out of the dark at its top (`--fade-in`) and its wall stops
