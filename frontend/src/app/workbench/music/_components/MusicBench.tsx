@@ -68,6 +68,8 @@ export function MusicBench({ cues }: { cues: Cue[] }) {
   const [volume, setVolume] = useState(0.8);
   const [keep, setKeep] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
+  /** What is downloading: a file's url, or a scene run's name. */
+  const [loading, setLoading] = useState<string | null>(null);
 
   const byCue = useMemo(() => Object.fromEntries(cues.map((c) => [c.id, c.files])), [cues]);
 
@@ -127,6 +129,7 @@ export function MusicBench({ cues }: { cues: Cue[] }) {
   const play = async (url: string, seam: boolean) => {
     stop();
     setError(null);
+    setLoading(url);
     try {
       const { buffer, m } = await load(url);
       const loop = isLoop(m);
@@ -137,16 +140,21 @@ export function MusicBench({ cues }: { cues: Cue[] }) {
       setPlaying({ url, voice, seam });
     } catch (e) {
       setError(String(e));
+    } finally {
+      setLoading(null);
     }
   };
 
   const startRun = async (scene: string, build: () => Promise<Omit<Run, 'scene'>>) => {
     stop();
     setError(null);
+    setLoading(scene);
     try {
       setRun({ scene, ...(await build()) });
     } catch (e) {
       setError(String(e));
+    } finally {
+      setLoading(null);
     }
   };
 
@@ -189,6 +197,9 @@ export function MusicBench({ cues }: { cues: Cue[] }) {
           </button>
         </div>
         {error && <p className={styles.error}>{error}</p>}
+        {loading && !loading.startsWith('/') && (
+          <p>Loading the music for {loading.toLowerCase()}…</p>
+        )}
         {cues.length === 0 && (
           <p className={styles.error}>No music in public/game_music.</p>
         )}
@@ -268,7 +279,7 @@ export function MusicBench({ cues }: { cues: Cue[] }) {
                       type="button"
                       onClick={() => (on && !on.seam ? stop() : play(f.url, false))}
                     >
-                      {on && !on.seam ? 'Stop' : 'Play'}
+                      {loading === f.url ? 'Loading…' : on && !on.seam ? 'Stop' : 'Play'}
                     </button>
                     {(!m || isLoop(m)) && (
                       <button
