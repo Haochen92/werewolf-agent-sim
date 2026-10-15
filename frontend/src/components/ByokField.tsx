@@ -12,6 +12,8 @@
  * All of that is said in the UI, not just implemented. A key input that does not explain
  * itself is a key input people rightly refuse to use.
  */
+import { Switch } from '@mantine/core';
+import { Button } from '@/components/site';
 import { useRememberedKey } from '@/hooks/useRememberedKey';
 import classes from './Lobby.module.css';
 
@@ -42,20 +44,18 @@ export function ByokField({
           spellCheck={false}
         />
         {key.loadedFromStorage ? (
-          <button type="button" className={classes.secondary} onClick={key.clearSaved}>
-            clear saved key
-          </button>
+          <Button type="button" variant="text" size="sm" onClick={key.clearSaved}>
+            Forget the saved key
+          </Button>
         ) : null}
       </div>
 
-      <label className={classes.checkRow}>
-        <input
-          type="checkbox"
-          checked={key.remember}
-          onChange={(e) => key.setRemember(e.target.checked)}
-        />
-        Remember on this device
-      </label>
+      <Switch
+        className={classes.checkRow}
+        checked={key.remember}
+        onChange={(e) => key.setRemember(e.currentTarget.checked)}
+        label="Remember on this device"
+      />
 
       <p className={classes.fine}>
         The key is sent once, with the request that starts the game, and is never stored on

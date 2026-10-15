@@ -5,6 +5,7 @@
  * old lobby card when the waiting room became a stage scene (the platform); unchanged.
  */
 import Link from 'next/link';
+import { Button } from '@/components/site';
 import classes from './Lobby.module.css';
 
 /** D23: the game task died. No retry affordance — the server holds no way back. */
@@ -20,9 +21,11 @@ export function TerminalError({ message, byok }: { message: string; byok?: boole
             never stored, which is exactly why.
           </p>
         ) : null}
-        <Link href="/" className={classes.primary}>
-          Back to the start
-        </Link>
+        <div className={classes.ways}>
+          <Button component={Link} href="/" variant="brass">
+            Back to the start
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -14,6 +14,15 @@
   animation: riseIn var(--dur) var(--ease) both;
 }
 
+/* a card's ways on: its buttons and links in one wrapping row */
+.ways {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+  margin-top: var(--space-4);
+}
+
 .terminal {
   border-color: var(--death-border);
   border-left: 3px solid var(--faction-wolves);
@@ -134,54 +143,10 @@
   flex-wrap: wrap;
 }
 
-.primary {
-  display: inline-block;
-  background: var(--amber);
-  border: none;
-  border-radius: var(--radius);
-  color: var(--ink-900);
-  font-family: var(--font-sans);
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
-  padding: var(--space-3) var(--space-4);
-  cursor: pointer;
-  text-decoration: none;
-  transition: background var(--dur-fast) var(--ease);
-}
-
-.primary:hover:not(:disabled) {
-  background: var(--amber-bright);
-}
-
-.primary:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.secondary {
-  background: none;
-  border: var(--hairline) solid var(--ink-600);
-  border-radius: var(--radius);
-  color: var(--text-dim);
-  font: inherit;
-  font-size: 0.8rem;
-  padding: var(--space-2) var(--space-3);
-  cursor: pointer;
-}
-
-.secondary:hover:not(:disabled) {
-  border-color: var(--amber-dim);
-  color: var(--text);
-}
-
 .note {
   color: var(--text-faint);
   font-size: 0.82rem;
   margin: var(--space-2) 0 0;
-}
-
-.inlineLink {
-  color: var(--amber);
 }
 
 .error {

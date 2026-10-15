@@ -9,9 +9,11 @@
  */
 import { useState } from 'react';
 import Link from 'next/link';
+import { Anchor } from '@mantine/core';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { fundGame } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
+import { Button } from '@/components/site';
 import type { GameStatus } from '@/types/contracts';
 import { ByokField } from './ByokField';
 import classes from './Lobby.module.css';
@@ -42,14 +44,16 @@ export function KeyNeededCard({ gameId, status }: { gameId: string; status: Game
         {seated ? (
           <>
             <ByokField value={apiKey} onChange={setApiKey} />
-            <button
-              type="button"
-              className={classes.primary}
-              onClick={() => fund.mutate()}
-              disabled={fund.isPending || !apiKey.trim()}
-            >
-              {fund.isPending ? 'Checking the key…' : 'Resume with this key'}
-            </button>
+            <div className={classes.ways}>
+              <Button
+                type="button"
+                variant="brass"
+                onClick={() => fund.mutate()}
+                disabled={fund.isPending || !apiKey.trim()}
+              >
+                {fund.isPending ? 'Checking the key…' : 'Resume with this key'}
+              </Button>
+            </div>
             {error ? (
               <p className={classes.error} role="alert">
                 {error}
@@ -61,9 +65,11 @@ export function KeyNeededCard({ gameId, status }: { gameId: string; status: Game
             You’re watching. One of the players can resume it from their seat.
           </p>
         )}
-        <Link href="/" className={classes.inlineLink}>
-          Back to the start
-        </Link>
+        <div className={classes.ways}>
+          <Anchor component={Link} href="/">
+            Back to the start
+          </Anchor>
+        </div>
       </div>
     </div>
   );

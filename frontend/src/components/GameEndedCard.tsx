@@ -8,6 +8,8 @@
  * who followed a link should see where they landed and why.
  */
 import Link from 'next/link';
+import { Anchor } from '@mantine/core';
+import { Button } from '@/components/site';
 import type { GameStatus } from '@/types/contracts';
 import { humanise } from '@/lib/format';
 import { WINNER_NAME } from '@/stage/roles';
@@ -26,14 +28,22 @@ export function GameEndedCard({ gameId, status }: { gameId: string; status: Game
         ) : null}
         {status.you ? <p className={classes.note}>You played as {humanise(status.you)}.</p> : null}
         {!finished && status.error ? <p className={classes.note}>{status.error}</p> : null}
-        {finished ? (
-          <Link href={`/replays/${gameId}`} className={classes.primary}>
-            Watch the replay
-          </Link>
-        ) : null}
-        <Link href="/" className={finished ? classes.inlineLink : classes.primary}>
-          Back to the start
-        </Link>
+        <div className={classes.ways}>
+          {finished ? (
+            <>
+              <Button component={Link} href={`/replays/${gameId}`} variant="brass">
+                Watch the replay
+              </Button>
+              <Anchor component={Link} href="/">
+                Back to the start
+              </Anchor>
+            </>
+          ) : (
+            <Button component={Link} href="/" variant="brass">
+              Back to the start
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
