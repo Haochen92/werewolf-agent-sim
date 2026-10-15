@@ -27,6 +27,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Alert, Select, Switch, TextInput } from '@mantine/core';
 import { createGame, createRoom, getModels } from '@/lib/api';
+import { departures } from '@/lib/departures';
 import { formatCost } from '@/lib/format';
 import { hostKey, seatToken } from '@/lib/storage';
 import { queryKeys } from '@/lib/queryKeys';
@@ -118,6 +119,8 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
         // The seat token comes back exactly once: stash it before navigating, or a cookie
         // loss later has nothing to rejoin with.
         if (game.seat_token) seatToken.set(game.game_id, game.seat_token);
+        // the game's page opens on the train leaving with this one person aboard
+        departures.mark(game.game_id, character);
         return game.game_id;
       }
       const room = await createRoom({ name: name.trim(), model, api_key: apiKey, memory });

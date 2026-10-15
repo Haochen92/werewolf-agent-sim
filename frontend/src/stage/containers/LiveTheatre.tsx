@@ -79,7 +79,8 @@ import { isPackRole, seatNumber, winnerKey } from '../roles';
 import { SCENES } from '../scenes';
 import { usesNote } from '../scenes/ShelfRoomScene';
 import { StationScene } from '../scenes/StationScene';
-import { CURTAIN, DEPART, stationBeat, stationBeatId } from '../scenes/station';
+import { StationReady } from '../scenes/station-pictures';
+import { CURTAIN, departMs, stationBeat, stationBeatId } from '../scenes/station';
 import type {
   ActMore,
   DockInput,
@@ -129,6 +130,12 @@ export interface LiveTheatreProps {
   departed?: boolean;
   /** The host's presses on the platform's ledge. */
   onRoomAct?: (act: RoomAct) => void;
+  /**
+   * A game for one this tab just created (`lib/departures`): it has no room, but the page opens
+   * on its platform departing with the one person aboard, wearing the ticket's puppet (null:
+   * the house's, known once the seat is dealt), and the deal follows as a room's does.
+   */
+  solo?: { character: string | null };
 }
 
 /**
@@ -141,12 +148,21 @@ type Platform = 'off' | 'waiting' | 'departing' | 'closing' | 'opening';
 const NO_EVENTS: readonly DurableGameEvent[] = [];
 const EMPTY_VIEW = foldEvents([]);
 
-/** The departure's length: the whole of it, or a moment for a viewer who asked for less motion. */
-function departMs(): number {
-  const reduce =
-    typeof window !== 'undefined' &&
-    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  return reduce ? 600 : DEPART.total * 1000;
+/** A game for one's platform: no room behind it, its one person aboard, the rest agents. */
+function soloPlatform(places: number): RoomInput {
+  return {
+    name: '',
+    aboard: ['You'],
+    places,
+    host: null,
+    locked: false,
+    isHost: false,
+    seated: true,
+    you: null,
+    minAboard: 1,
+    link: '',
+    bare: true,
+  };
 }
 
 /** The lobby: where the curtain's "Back to the lobby" and the strip's door go. */
@@ -208,6 +224,7 @@ export function LiveTheatre({
   room,
   departed = false,
   onRoomAct,
+  solo,
 }: LiveTheatreProps) {
   const queryClient = useQueryClient();
   const storeGame = useGameSession((s) => s.gameId);
@@ -221,10 +238,16 @@ export function LiveTheatre({
   const clearPending = useGameSession((s) => s.clearPending);
 
   // --- the waiting room, and its hand-off to the deal -------------------------------
-  const [platform, setPlatform] = useState<Platform>(() => (room ? 'waiting' : 'off'));
+  // a game for one is begun already, so its platform departs at once (`begun`, below)
+  const [soloRoom] = useState(() =>
+    solo && !room ? soloPlatform(status?.cast?.length || 10) : undefined,
+  );
+  const [platform, setPlatform] = useState<Platform>(() =>
+    room || soloRoom ? 'waiting' : 'off',
+  );
   const [curtainDown, setCurtainDown] = useState(false);
   // the room as it last was: the train leaves with the people who were aboard
-  const [heldRoom, setHeldRoom] = useState(room);
+  const [heldRoom, setHeldRoom] = useState(room ?? soloRoom);
   useEffect(() => {
     if (room) setHeldRoom(room);
   }, [room]);
@@ -237,9 +260,13 @@ export function LiveTheatre({
     if (platform === 'departing') setDepartedHere(true);
   }, [platform]);
   const begun = status !== undefined && status.state !== 'waiting';
+  // the train leaves once its picture is there: a game for one's platform is new to the page
+  const [stationReady, setStationReady] = useState(false);
+  const onStationReady = useCallback(() => setStationReady(true), []);
   useEffect(() => {
-    if (platform === 'waiting' && (departed || begun)) setPlatform('departing');
-  }, [platform, departed, begun]);
+    if (platform === 'waiting' && (departed || begun) && stationReady)
+      setPlatform('departing');
+  }, [platform, departed, begun, stationReady]);
   useEffect(() => {
     const after = (ms: number, then: () => void) => {
       const t = setTimeout(then, ms);
@@ -651,12 +678,19 @@ export function LiveTheatre({
   const Scene = beat ? SCENES[beat.scene] : null;
   const platformOn = platform !== 'off' && heldRoom !== undefined;
   const stationId = stationBeatId(heldRoom ?? { locked: false }, platform !== 'waiting');
+  // a game for one boards its person at the first place, in the seat's puppet once it is known
+  const youAt = status?.you ? seatNumber(status.you) - 1 : -1;
+  const boardWith = solo?.character ?? (youAt >= 0 ? (cast[youAt] ?? null) : null);
+  const stationCast = useMemo(
+    () => (heldRoom?.bare ? castForRoom([boardWith], gameId, heldRoom.places) : cast),
+    [heldRoom, boardWith, gameId, cast],
+  );
   const stationPresentation: Presentation = {
     xray: false,
     slot: null,
     motion: 'normal',
     hud: 'live',
-    cast,
+    cast: stationCast,
     animate: platformSeen,
   };
   // a prompt that is not the day's dock (the ballot, a night act, the pack): the agent can take it
@@ -671,6 +705,7 @@ export function LiveTheatre({
       data-open-prompt={openPrompt ?? undefined}
     >
       <Stage fit="contain">
+        {platformOn ? <StationReady onReady={onStationReady} /> : null}
         {platformOn ? (
           <StationScene
             view={EMPTY_VIEW}

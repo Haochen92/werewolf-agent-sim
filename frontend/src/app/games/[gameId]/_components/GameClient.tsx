@@ -30,6 +30,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useGameStream } from '@/hooks/useGameStream';
 import { queryKeys } from '@/lib/queryKeys';
 import { rejoinGame } from '@/lib/api';
+import { departures } from '@/lib/departures';
 import { ApiError } from '@/lib/request';
 import { hostKey, seatToken } from '@/lib/storage';
 import { GameEndedCard } from '@/components/GameEndedCard';
@@ -46,6 +47,9 @@ export function GameClient({ gameId }: { gameId: string }) {
   const queryClient = useQueryClient();
   const { status, state, error, statusError, isPending } = useGameStream(gameId);
   const { room, departed, onRoomAct, boarded } = useRoom(gameId, status);
+  // a game for one this tab just bought a ticket for: its page opens on the train leaving
+  const [solo] = useState(() => departures.get(gameId));
+  useEffect(() => departures.forget(gameId), [gameId]);
   // "Just watch" on the boarding pass: the platform without a seat
   const [watching, setWatching] = useState(false);
   // aboard, but the pick on the pass was lost: the pass stays up until it is settled
@@ -171,6 +175,7 @@ export function GameClient({ gameId }: { gameId: string }) {
           room={room}
           departed={departed}
           onRoomAct={onRoomAct}
+          solo={solo}
         />
       </main>
     </OrientationGuard>
