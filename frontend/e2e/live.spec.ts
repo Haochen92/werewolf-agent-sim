@@ -1336,7 +1336,7 @@ test('live: back from a dropped stream the page reopens it at once, says what we
   ]);
   await expect(told.getByRole('button', { name: 'Carry on' })).toBeVisible();
   await expect(told.getByRole('button', { name: 'Leave the table' })).toBeVisible();
-  // the buttons in one row under the words, from the words' left edge
+  // the buttons in one row under the words, centred under them on the placard's face
   const [p0, p2, ...bs] = await Promise.all(
     [said.first(), said.last(), ...(await told.getByRole('button').all())].map(
       async (el) => (await el.boundingBox())!,
@@ -1347,7 +1347,8 @@ test('live: back from a dropped stream the page reopens it at once, says what we
     expect(b.y).toBeGreaterThanOrEqual(p2.y + p2.height);
     expect(Math.abs(b.y - bs[0].y)).toBeLessThan(1);
   }
-  expect(Math.abs(bs[0].x - p0.x)).toBeLessThan(1);
+  const row = (bs[0].x + bs[bs.length - 1].x + bs[bs.length - 1].width) / 2;
+  expect(Math.abs(row - (p0.x + p0.width / 2))).toBeLessThan(1.5);
   // it stands alone at the foot: the speech box is not drawn while it does, and is back after
   const speech = page.locator('[data-speech]');
   await expect(speech).toBeHidden();
