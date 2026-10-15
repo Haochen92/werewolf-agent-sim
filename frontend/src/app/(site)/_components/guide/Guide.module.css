@@ -326,6 +326,47 @@
   align-items: center;
   column-gap: 16px;
   padding-top: 34px;
+  position: relative;
+}
+/* the side's wall (owner, 2026-10-15, option C): the station's tile in its side's colour, the
+   screen's width (cut off by the site layout's `.station`), shaded round the row and fading to
+   the ground above and below, so each side stands in a room of its own */
+.side::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: -40px;
+  bottom: -64px;
+  left: -100vw;
+  right: -100vw;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      180deg,
+      var(--bg) 0,
+      transparent 90px,
+      transparent calc(100% - 90px),
+      var(--bg) 100%
+    ),
+    radial-gradient(
+      ellipse 70vw 80% at 50% 50%,
+      rgba(12, 10, 7, 0.3),
+      rgba(12, 10, 7, 0.78) 70%,
+      var(--bg) 100%
+    ),
+    var(--side-tile) center top / 120px 64px repeat;
+}
+.side[data-faction='villagers'] {
+  --side-tile: url('../../../../assets/site/ochre-tile.svg');
+}
+.side[data-faction='wolves'] {
+  --side-tile: url('../../../../assets/site/oxblood-tile.svg');
+}
+.side[data-faction='serial_killer'] {
+  --side-tile: url('../../../../assets/site/aubergine-tile.svg');
+}
+.side[data-faction='neutral_benign'] {
+  --side-tile: url('../../../../assets/site/slate-tile.svg');
 }
 .sideHead {
   grid-area: head;

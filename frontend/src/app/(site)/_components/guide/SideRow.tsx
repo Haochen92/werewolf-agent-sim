@@ -68,6 +68,7 @@ export function SideRow({
     <section
       className={classes.side}
       id={`side-${faction}`}
+      data-faction={faction}
       aria-labelledby={`side-${faction}-head`}
     >
       <div className={classes.sideHead}>
