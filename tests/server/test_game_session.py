@@ -1009,6 +1009,45 @@ async def test_pacing_vote_stage_counts_ballots_against_survivors():
     assert snapshots[-1].done == 2
 
 
+async def test_pacing_a_round_counts_lines_against_its_players_and_closes_full_when_collected():
+    """The opening: every player writes at once; the bar counts lines written (an AI's or a
+    human's), extra finishes never push it past the total, and the round's collection closes
+    it full."""
+    snapshots = []
+    tracker = PacingTracker(snapshots.append)
+    tracker.on_event(_ev(ev.RoundOpened, round="opening", players=["p1", "p2", "p3", "p4"]))
+    assert snapshots[-1] == ev.PhaseProgress(day=1, stage="opening", done=0, total=4)
+
+    tracker.on_chunk("DAY_PHASE", ["round_turn"])
+    tracker.on_chunk("DAY_PHASE", ["round_turn_human"])
+    tracker.on_chunk("root", ["round_turn"])  # not the day phase's: ignored
+    assert snapshots[-1].done == 2
+    for _ in range(5):  # more finishes than players: capped
+        tracker.on_chunk("DAY_PHASE", ["round_turn"])
+    assert snapshots[-1].done == 4
+
+    tracker.on_chunk("DAY_PHASE", ["COLLECT_ROUND"])
+    assert snapshots[-1] == ev.PhaseProgress(day=1, stage="opening", done=4, total=4)
+    assert tracker.current_frame is None
+    sent = len(snapshots)
+    tracker.on_chunk("DAY_PHASE", ["round_turn"])  # no bar showing: nothing sent
+    assert len(snapshots) == sent
+
+
+async def test_pacing_the_closing_is_its_own_bar_with_the_accused_as_its_total():
+    """The closing is keyed apart from the opening (the client keeps the max per day and
+    stage), so the accused's count starts from nothing."""
+    snapshots = []
+    tracker = PacingTracker(snapshots.append)
+    tracker.on_event(_ev(ev.RoundOpened, round="opening", players=["p1", "p2", "p3"]))
+    tracker.on_chunk("DAY_PHASE", ["round_turn", "round_turn", "round_turn"])
+    tracker.on_chunk("DAY_PHASE", ["COLLECT_ROUND"])
+    tracker.on_event(_ev(ev.RoundOpened, round="closing", players=["p2"]))
+    assert snapshots[-1] == ev.PhaseProgress(day=1, stage="closing", done=0, total=1)
+    tracker.on_chunk("DAY_PHASE", ["round_turn"])
+    assert snapshots[-1].done == 1
+
+
 async def test_an_announced_necromancer_turn_takes_a_body_after_the_interrupt(quiet_session):
     """The announcement parks the bodies with the targets; the interrupt adopts that question,
     so the body check runs against the announced bodies (review 2026-10-09, point 2)."""

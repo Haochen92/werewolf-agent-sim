@@ -5,8 +5,10 @@ others' progress. A player who finishes their turn early has no idea how much lo
 wait for the rest. The PacingTracker here draws a progress bar for such stages: it ticks
 when a player finishes and shows how many are still on their turn, "3 of 5 done", without
 revealing anything about what is being done. Today that is the night (secret actions,
-revealed at dawn) and the day vote (sealed ballots, revealed at the tally). A future
-stage where players act in parallel and out of each other's sight can use the same bar.
+revealed at dawn), the day vote (sealed ballots, revealed at the tally) and the day's
+rounds, the opening and the closing (every player of the round writes their line at once;
+the lines are played once all are in). A future stage where players act in parallel and
+out of each other's sight can use the same bar.
 
 The bar must not leak what the silence protects. Each leak has its own device:
   - Which roles are alive, and which still have uses left. The total is the number of
@@ -22,6 +24,9 @@ The bar must not leak what the silence protects. Each leak has its own device:
     and timers together never overshoot.
   - The size of the pack. The pack finishing is one tick, however many wolves.
   - Who has voted. The vote bar is an anonymous count against the same roster total.
+  - Nothing, for a round: who is in it is public (round_opened names them) and every line
+    is played afterwards, so its bar counts lines written against the round's players,
+    unpadded.
 
 What the bar still shows: before the first timer fires, every tick is a real one, so the
 count in those first 20 seconds is how many night turns have already finished, and so a
@@ -59,24 +64,26 @@ class PacingTracker:
                   nothing else and a test can pass a list's append. Frames are absolute
                   done/total snapshots, never increments, on the separate pacing channel:
                   not stored, not replayed.
-      on_event    every durable event as it is delivered. Five types matter: game_started
+      on_event    every durable event as it is delivered. Six types matter: game_started
                   and roster_update set the alive count; phase_change opens the night or
                   vote bar or clears one; night_result closes the night bar; vote_cast,
                   which only ever arrives as the post-tally batch, closes the vote bar
-                  (the live ticks come from on_chunk).
+                  (the live ticks come from on_chunk); round_opened opens a round's bar.
       on_chunk    the source graph and node names of every stream chunk. A night turn
                   finishing at the root adds one to the night bar; a vote node finishing
-                  in the day phase adds one ballot.
+                  in the day phase adds one ballot; a round turn finishing adds one line;
+                  the round's collection closes its bar.
 
     Attributes, by job.
       _alive          how many players are publicly alive; the total of both bars.
       _day            stamped on every frame; from the last phase_change.
     One bar's worth of scratch, wiped together by _reset_stage():
-      _stage            "night" | "day_vote" | None (no bar showing).
+      _stage            "night" | "day_vote" | "opening" | "closing" | None (no bar showing).
       _stage_total      the denominator.
       _night_done       night numerator; real ticks and timers both add one, capped at
                         the total.
       _ballots          vote numerator; anonymous ticks, so a plain counter.
+      _lines            a round's numerator: lines written, capped at the round's players.
       _padding_timers   the night timers, cancelled when a stage ends before they fire.
       _last_frame       the frame most recently published, or None with no bar showing;
                         what a viewer who connects mid-stage is handed first.
@@ -90,6 +97,7 @@ class PacingTracker:
         self._stage_total = 0
         self._night_done = 0
         self._ballots = 0
+        self._lines = 0
         self._padding_timers: list[asyncio.TimerHandle] = []
         self._last_frame: ev.PhaseProgress | None = None
 
@@ -121,18 +129,25 @@ class PacingTracker:
                 self._reset_stage()
         elif event.type == "vote_cast":
             self._finish_stage()  # result announced: the vote bar is over
+        elif event.type == "round_opened":
+            self._start_round(event.round, len(event.players))
 
     # -- chunk-level ticks (via GameSession) -----------------------------------------------
 
     def on_chunk(self, scope: str, nodes: Iterable[str]) -> None:
         """Take the source graph and node names of one stream chunk, contents unseen. A
         night turn finishing at the root adds one to the night bar; a vote node finishing
-        inside the day phase adds one ballot. Anything else is ignored."""
+        inside the day phase adds one ballot; a round turn finishing there adds one line,
+        and the round's collection closes its bar. Anything else is ignored."""
         for node in nodes:
             if scope == "root" and node in BRANCH_UNITS:
                 self.on_branch_done()
             elif scope == "DAY_PHASE" and node in ("vote", "vote_human"):
                 self.on_ballot()
+            elif scope == "DAY_PHASE" and node in ("round_turn", "round_turn_human"):
+                self.on_line()
+            elif scope == "DAY_PHASE" and node == "COLLECT_ROUND":
+                self._finish_stage()
 
     def on_branch_done(self) -> None:
         """Count one finished night turn (a solo role's or the pack's), capped at the
@@ -145,6 +160,13 @@ class PacingTracker:
         if self._stage == "day_vote":
             self._ballots = min(self._ballots + 1, self._stage_total)
             self._publish_snapshot(self._ballots)
+
+    def on_line(self) -> None:
+        """Count one line written in the round, capped at the round's players as the vote
+        is, and publish. No-op outside a round's bar."""
+        if self._stage in ("opening", "closing"):
+            self._lines = min(self._lines + 1, self._stage_total)
+            self._publish_snapshot(self._lines)
 
     # -- internals ------------------------------------------------------------------------
 
@@ -168,6 +190,12 @@ class PacingTracker:
         self._stage, self._stage_total, self._ballots = "day_vote", self._alive, 0
         self._publish_snapshot(0)
 
+    def _start_round(self, round_name: str, players: int) -> None:
+        """Open a round's bar with its players as the total. Publishes 0/total."""
+        self._reset_stage()
+        self._stage, self._stage_total, self._lines = round_name, players, 0
+        self._publish_snapshot(0)
+
     def _complete_unit(self) -> None:
         """Add one to the night count and publish it. Real ticks and padding timers both
         land here; once the count reaches the total, further ones are no-ops."""
@@ -187,11 +215,11 @@ class PacingTracker:
         self._publish(frame)
 
     def _finish_stage(self) -> None:
-        """Close the bar because its result went public: publish it full (night) or at
-        its count (vote), then clear the stage."""
+        """Close the bar because its result went public: publish it full (night, a round:
+        every line is in once collected) or at its count (vote), then clear the stage."""
         if self._stage is not None:
             self._publish_snapshot(
-                self._stage_total if self._stage == "night" else self._ballots)
+                self._ballots if self._stage == "day_vote" else self._stage_total)
         self._reset_stage()
 
     def _reset_stage(self) -> None:
@@ -200,4 +228,5 @@ class PacingTracker:
             timer.cancel()  # a dawn that beats the timers must not leave callbacks pending
         self._padding_timers.clear()
         self._stage, self._stage_total, self._night_done, self._ballots = None, 0, 0, 0
+        self._lines = 0
         self._last_frame = None
