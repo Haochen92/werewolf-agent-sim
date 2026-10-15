@@ -205,18 +205,23 @@ export function Drawer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lit, shown, animate, seek]);
   useEffect(() => () => clearTimeout(settle.current), []);
+  // our scroll at rest: read where it stopped (the reader may have taken the scrollbar meanwhile)
+  const rested = () => {
+    ours.current = false;
+    const at = (memo.foot && foot()) || atNow();
+    if (at !== memo.following) follow(at);
+  };
   const onScroll = () => {
     const el = scroller.current;
     if (!el) return;
     memo.top = el.scrollTop;
     clearTimeout(settle.current);
-    // ours: wait for it to come to rest, then read where it stopped
+    // ours: wait for it to come to rest. The browser's scrollend says so where it has one; a
+    // timer since the last scroll event is only the fallback, as it fires mid-scroll when a
+    // frame stalls longer (game over's render on a phone; a test's fake clock, always), and the
+    // drawer then took itself for scrolled away and stopped following
     if (ours.current) {
-      settle.current = setTimeout(() => {
-        ours.current = false;
-        const at = (memo.foot && foot()) || atNow();
-        if (at !== memo.following) follow(at);
-      }, 160);
+      if (!('onscrollend' in window)) settle.current = setTimeout(rested, 160);
       return;
     }
     memo.foot = foot();
@@ -339,6 +344,7 @@ export function Drawer({
           className={styles.lines}
           ref={scroller}
           onScroll={onScroll}
+          onScrollEnd={() => ours.current && rested()}
           onWheel={reader}
           onTouchStart={reader}
           onPointerDown={reader}
