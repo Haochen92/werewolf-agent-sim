@@ -40,8 +40,11 @@ import { createPortal } from 'react-dom';
 import type { Character } from '@/assets/manifest';
 import type { GameView } from '@/game/types';
 import { useLedger } from '@/hooks/useLedger';
+import { bedFor, stingFor, type Moment } from '@/music/cues';
+import { useStageMusic } from '@/music/music';
 import { usePageVisible } from '@/hooks/usePageVisible';
 import { resolveCast, rosterSize } from '../cast/castForGame';
+import { winnerKey } from '../roles';
 import { DecodeAhead } from '../cast/DecodeAhead';
 import { beatsFor } from '../beats/beatsFor';
 import { useDrawerFilters } from '../drawer/use-drawer-filters';
@@ -193,6 +196,22 @@ export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps
   const beat = beats[index];
   const view = useMemo(() => (beat ? folds.at(beat.end) : null), [folds, beat]);
 
+  // the music (src/music/cues.ts), the full replay's only: it follows the beat while the replay
+  // plays and rests while it is paused; a moment's one-shot plays only as its beat plays on,
+  // never on a jump or a scrub, and the lynch's on Fast is the short one
+  const moment: Moment = {
+    beat: beat ?? null,
+    winner: ahead.over ? winnerKey(ahead.winner) : null,
+    fast: state.speed === 'fast',
+  };
+  useStageMusic({
+    bed: state.playing ? bedFor(moment) : null,
+    sting: stingFor(moment),
+    beat: beat ? `${index}:${beat.id}` : null,
+    played: state.playing && state.cursor.animate,
+    active: !isMini,
+  });
+
   // the side slot's state that outlives a beat
   const drawer = useDrawerFilters();
   const [filmTab, setFilmTab] = useState('notes');
@@ -238,6 +257,8 @@ export function ReplayTheatre({ game, mini, back = TO_LIST }: ReplayTheatreProps
       onReveal: onXray,
       // a preview's way to the whole game is the caller's
       back: isMini ? undefined : back,
+      // a preview plays no music, so it has no switch
+      sound: !isMini,
     }),
     [
       drawer.filters,

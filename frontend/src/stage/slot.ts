@@ -79,6 +79,7 @@ export function stripButtons(p: Pick<Presentation, 'slot' | 'xray'>, slot?: Slot
     back: slot?.back,
     reveal,
     leave: slot?.onLeave,
+    sound: slot?.sound,
   };
 }
 

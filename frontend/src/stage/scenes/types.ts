@@ -176,6 +176,8 @@ export interface SlotInput {
    * table (`LeaveConfirm`, held by the container so it outlives the beat). The replay has none.
    */
   onLeave?: () => void;
+  /** The game and the full replay: the strip's music switch (`SoundButton`). A preview has none. */
+  sound?: boolean;
   /** Where the drawer was scrolled, and whether it follows the beat, kept across scenes. */
   drawerScroll?: DrawerScroll;
   /**

@@ -62,6 +62,8 @@ import { queryKeys } from '@/lib/queryKeys';
 import { ApiError } from '@/lib/request';
 import { awayTold, seatToken } from '@/lib/storage';
 import { foldEvents } from '@/game/foldEvents';
+import { TRACKS, bedFor, lobbyBed, stingFor, type Moment } from '@/music/cues';
+import { useStageMusic } from '@/music/music';
 import type { DurableGameEvent, GameStatus } from '@/types/contracts';
 import { isNineSeat } from '../card-text';
 import { castForRoom, resolveCast } from '../cast/castForGame';
@@ -73,7 +75,7 @@ import { notebookForAgent, useNotebook, useNoteEditing } from '../notebook';
 import { CardOverlay } from '../instruments/FramedCard';
 import { AwayNotice, LeaveConfirm } from '../instruments/TopStrip';
 import { draftRequest } from '../instruments/turn-dock';
-import { isPackRole, seatNumber } from '../roles';
+import { isPackRole, seatNumber, winnerKey } from '../roles';
 import { SCENES } from '../scenes';
 import { usesNote } from '../scenes/ShelfRoomScene';
 import { StationScene } from '../scenes/StationScene';
@@ -535,6 +537,7 @@ export function LiveTheatre({
       revealLocked: !xrayShown,
       // a seated player's way out, until the game's end brings the curtain's
       onLeave: me && !xrayShown ? () => setLeaving(true) : undefined,
+      sound: true,
     }),
     [
       drawer.filters,
@@ -555,6 +558,23 @@ export function LiveTheatre({
 
   // the "You're back" notice stands at the foot: the boxes there are not drawn meanwhile
   const liveOn = platform === 'off' || platform === 'opening';
+
+  // --- the music (src/music/cues.ts) ----------------------------------------------
+  // the waiting room plays the lobby's three in turn, from one picked for this visit; it fades
+  // as the train pulls out, and from the deal on the music follows the beat on the stage
+  const [lobbyStart] = useState(() => Math.floor(Math.random() * TRACKS.lobby.length));
+  const moment: Moment = {
+    beat: liveOn ? (beat ?? null) : null,
+    winner: view.over ? winnerKey(view.winner) : null,
+    fast: state.speed === 'fast',
+  };
+  // a moment's one-shot only as its beat plays: history landing still plays none
+  useStageMusic({
+    bed: platform === 'waiting' && heldRoom ? lobbyBed(lobbyStart) : bedFor(moment),
+    sting: stingFor(moment),
+    beat: liveOn && beat ? `${index}:${beat.id}` : null,
+    played: state.cursor.animate,
+  });
   const awayShown = liveOn && !!beat && !!away && !leaving && !xrayShown;
   const presentation = useMemo(
     (): Presentation => ({
