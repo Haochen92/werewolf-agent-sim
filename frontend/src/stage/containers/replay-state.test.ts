@@ -41,6 +41,26 @@ describe('the fold cache', () => {
     expect(cache.at(150)).toEqual(foldEvents(events.slice(0, 150)));
     expect(cache.at(events.length + 10)).toEqual(foldEvents(events));
   });
+
+  it('grows with a log that only adds to its end, and keeps the folds it made', () => {
+    const cache = createFoldCache(events.slice(0, 200));
+    const a = cache.at(150);
+    expect(cache.grow(events.slice(0, 250))).toBe(true);
+    expect(cache.at(150)).toBe(a);
+    expect(cache.at(250)).toEqual(foldEvents(events.slice(0, 250)));
+    expect(cache.folded).toBe(250);
+    // an event inserted before the end, or a log begun again: not this cache's
+    const inserted = [...events.slice(0, 100), events[260], ...events.slice(100, 250)];
+    expect(cache.grow(inserted)).toBe(false);
+    expect(cache.grow(events.slice(0, 10))).toBe(false);
+    expect(cache.at(250)).toEqual(foldEvents(events.slice(0, 250)));
+  });
+
+  it('keeps a few dozen folds, and folds again the ones it let go', () => {
+    const cache = createFoldCache(events);
+    for (let end = 1; end <= 120; end++) cache.at(end);
+    expect(cache.at(5)).toEqual(foldEvents(events.slice(0, 5)));
+  });
 });
 
 describe('the replay reducer', () => {

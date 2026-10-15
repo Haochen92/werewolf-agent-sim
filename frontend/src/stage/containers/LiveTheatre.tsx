@@ -93,7 +93,7 @@ import type {
 import { sideOpen } from '../slot';
 import { Layer, Stage } from '../Stage';
 import { geometry } from '../units';
-import { createFoldCache } from './fold-cache';
+import { createFoldCache, type FoldCache } from './fold-cache';
 import {
   actSent,
   awayNotice,
@@ -320,7 +320,16 @@ export function LiveTheatre({
         : historyLanding(events, historyEnd, connectedAt, departedHere),
     [events, historyEnd, connectedAt, departedHere],
   );
-  const folds = useMemo(() => createFoldCache(events, { mySeat: me }), [events, me]);
+  // one cache while the log only grows at its end: the folds made, and the view on the stage,
+  // stay as they are when an event arrives (a new cache for an insertion or another seat)
+  const foldsFor = useRef<{ cache: FoldCache; me: string | null } | null>(null);
+  const folds = useMemo(() => {
+    const was = foldsFor.current;
+    if (was && was.me === me && was.cache.grow(events)) return was.cache;
+    const cache = createFoldCache(events, { mySeat: me });
+    foldsFor.current = { cache, me };
+    return cache;
+  }, [events, me]);
 
   // --- the seated human's turn ---------------------------------------------------
   const pending = view.me.pending;

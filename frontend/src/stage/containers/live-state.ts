@@ -532,10 +532,30 @@ function advance(state: LiveState, ctx: LiveCtx): LiveState {
   return play(state, next.index, next.speed);
 }
 
+/**
+ * The new cut, with each beat that is the same as the old one's at its place kept as the old
+ * object (and the old list, when every beat is): an event that changes nothing on the stage
+ * leaves the beat on it, and everything worked out from it, as it was. Beats are plain data.
+ */
+export function keepSame(
+  was: readonly SceneBeat[],
+  cut: readonly SceneBeat[],
+): readonly SceneBeat[] {
+  let all = was.length === cut.length;
+  const kept = cut.map((beat, i) => {
+    const old = was[i];
+    if (old && (old === beat || JSON.stringify(old) === JSON.stringify(beat))) return old;
+    all = false;
+    return beat;
+  });
+  return all ? was : kept;
+}
+
 export function liveReducer(state: LiveState, action: LiveAction): LiveState {
   switch (action.type) {
     case 'recut': {
-      const { beats, ctx } = action;
+      const { ctx } = action;
+      const beats = keepSame(state.beats, action.beats);
       const carried = carry(state.beats, beats, state.cursor);
       const landing = action.landing ?? 'still';
       let next: LiveState = {

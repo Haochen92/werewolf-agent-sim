@@ -21,6 +21,7 @@ import {
   historyLanding,
   initialLiveState,
   initialTurnState,
+  keepSame,
   liveReducer,
   payloadFor,
   requestBefore,
@@ -208,6 +209,22 @@ class Watch {
     this.step = state.step;
   }
 }
+
+describe('the live stage: a recut keeps what did not change', () => {
+  const events = fixture.events as unknown as DurableGameEvent[];
+  it('keeps the old beat objects, and the old list when nothing changed', () => {
+    const a = beatsFor(events.slice(0, 300), { xray: false, me: null, live: true });
+    const again = beatsFor(events.slice(0, 300), { xray: false, me: null, live: true });
+    expect(keepSame(a, again)).toBe(a);
+    // more of the log: the beats before the news are the old objects; the list is new
+    const b = beatsFor(events.slice(0, 340), { xray: false, me: null, live: true });
+    const kept = keepSame(a, b);
+    expect(kept).not.toBe(a);
+    expect(kept).toEqual(b);
+    const same = kept.filter((beat, i) => beat === a[i]).length;
+    expect(same).toBeGreaterThan(a.length - 5);
+  });
+});
 
 describe('the live stage: history and news', () => {
   it('lands history still on the latest beat and plays none of it', () => {
