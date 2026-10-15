@@ -154,7 +154,7 @@ wait.** `next/dynamic` moves the code out of the first load, but a dynamic compo
 at once still loads at once, and a query enabled at once still fetches. The landing's preview
 now holds its frame (and the marquee's and the controls' room, so nothing shifts) and starts
 the chunk, the replay and the sheet together when the carriage is near (`FeaturedReplay.tsx`
-`useNear`). Assert it the way it fails: count the requests before the scroll, not the DOM
+`useNear`); the chunk only since 2026-10-15, see 29. Assert it the way it fails: count the requests before the scroll, not the DOM
 after it (`e2e/site.spec.ts`, "loads when scrolled to").
 
 **24. When a derived list folds items together, whatever holds a place in it needs a rule for
@@ -202,6 +202,62 @@ not the cards. Three checks: count the work with nothing moving, in 3 s windows 
 zero (a page still settling, not a loop); measure the thing only once the page has settled; and
 on a shared machine interleave old and new runs and take the median of three (single runs here
 swung from 15 to 45 fps with the machine's load). Relates to 25.
+
+**29. A dynamic component's code starts loading at its first render, not when you decide you
+want it.** The carriage was meant to start its code, its replay and its pictures together
+(23), but it rendered `ReplayTheatre` only once the replay had arrived, so the three ran one
+after another. On a throttled phone (1.6 Mbps, 150 ms, 4× CPU, live site, 2026-10-15), after
+the scroll: the replay JSON 0.1–1.3 s, the theatre's code 1.5–2.2 s, the stage's pictures
+3.4–9.1 s, the stage painted at about 6 s. A desktop on a fast line ran the same chain in 2 s,
+which is why nobody saw it. The fix is to call the same `import()` the `dynamic()` uses in the
+effect that enables the query (`FeaturedReplay.tsx` `theatreCode`): the code request now
+starts 7 ms after the replay's. To find this kind of chain, list each request's start time
+after the trigger: a request that starts only when another one finishes is waiting on it.
+
+**30. A size measured after mount is a guess on the first render, and the guess fetches.**
+The stage learns it is phone-small (`SmallContext`) in a layout effect, and it started as
+`false`. Its scenes rendered once as a desktop's before the re-render, and that was enough
+for the puppet's `priority` image and `DecodeAhead`'s `new Image()` to ask for the full-size
+poses. Every phone fetched both sizes: in the carriage's first window, the full
+`talking.webp` and `thinking.webp` (235 KB) beside their `@small` copies. Lesson 22 had fixed
+this for the backdrop alone. Now the Stage renders its scene only once it has measured itself
+(`Stage.tsx` `measured`), still before the first paint, so every stage gets the fix: live,
+replay, the guide's demos, the carriage, the workbench. The general rule: a value that picks
+which file to fetch must be known before the first render that uses it, or that render
+waits for it.
+
+**31. A response header set for one route travels with every response in its block.**
+`Cache-Control: no-transform` tells any middleman, Cloudflare here, to deliver a response
+exactly as sent, and that includes not compressing it. It was added to wolf's `/api` to fix
+the live game's event stream, which through Cloudflare was held so long that not even the
+headers arrived within 25 s. Because it was set on the whole `/api` block in the Caddyfile,
+every JSON response lost compression too: the replay went out at 142 KB where gzip makes
+21 KB. Since 2026-10-15 the header is on the stream's route only
+(`/api/games/{id}/events`), and the rest of `/api` is compressed.
+
+*Why compression and streams are kept apart.* A compressor needs a run of text to work
+well. A JSON body arrives whole, so it is compressed in one go. A stream arrives a few bytes
+at a time, with gaps between, and a middleman that wants a bigger chunk to compress, or to
+send, may hold the small pieces until more come. A held event is a frozen-looking stream.
+Wolf's stream is the worst case for that: it sends nothing until the first game event, then
+irregular gaps. Dota2pred's stream, behind the same Cloudflare without `no-transform`, sends
+`: connected` at once and a heartbeat every 30 s of quiet, and it flows; Cloudflare did not
+compress it at all (no `Content-Encoding`). So the exact mechanism behind wolf's old hold is
+a guess. `no-transform` stays on the stream because its events are tiny, compressing them
+would save almost nothing, and a stream that seems frozen is the failure already seen once.
+To test whether it is still needed, send an opening comment and heartbeats, as dota does,
+then try the stream without the header.
+
+**The carriage case, 2026-10-15** (29–31): the cause was mostly not the size of the event
+log. Of about 6 s to a painted stage on the throttled phone, the replay JSON was 1.2 s. The
+rest was the chain (29), 1.2 MB of pictures, 235 KB of them fetched twice (30), and nothing
+compressed (31). Steps:
+- Commit `a4411355`: the code is requested beside the replay.
+- Commit `fec8cf40`: the stage measures before it draws.
+- Caddy, live 2026-10-15: the replay is 20.9 KB on the wire instead of 142 KB. The previous
+  Caddyfile is kept beside it as `Caddyfile.bak.20261015-113614`.
+
+The two frontend commits are not deployed yet.
 
 ---
 
