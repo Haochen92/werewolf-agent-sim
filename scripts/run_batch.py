@@ -513,7 +513,7 @@ def run_batch(args: argparse.Namespace) -> int:
     from Agents.turn import prompt_log, reads_log
     from Agents.main import run_game
     from Agents.run_fingerprint import runtime_fingerprint
-    from tests.leak_test import run_leak_tests
+    from tests.leak_test import leak_inputs, run_leak_tests
 
     # Resolved once per batch: code/prompt versions, model IDs, params, backend.
     # Makes each JSONL record self-describing — a record is only comparable to
@@ -625,6 +625,7 @@ def run_batch(args: argparse.Namespace) -> int:
                 result.get("roles") or {},
                 reads_log=reads_log,
                 public_text=public_text,
+                **leak_inputs(result),
             )
             if leaks:
                 leak_games += 1

@@ -3,10 +3,12 @@
 NOT pytest unit tests: these checkers need a live game's ``prompt_log``
 (the global populated in ``Agents.nodes``) plus the role assignment, and
 they return leak lists instead of asserting. Drive them through
-``run_leak_tests(prompt_log, roles)`` after ``run_game(...)`` — see
-``exercise_7_minimal.ipynb``. Functions are named ``check_*`` (not
-``test_*``) precisely so pytest's collector skips them; renaming them back
-re-breaks the full suite with fixture errors.
+``run_leak_tests(prompt_log, roles, **leak_inputs(result))`` after ``run_game(...)``:
+``leak_inputs`` lifts the dead roster, the held lines and the night records out of the
+final game state, so every checker that needs more than the prompt log is fed (before
+2026-10-14 the batch runner passed none of them, and those checkers were no-ops on live
+games). Functions are named ``check_*`` (not ``test_*``) precisely so pytest's collector
+skips them; renaming them back re-breaks the full suite with fixture errors.
 """
 
 from __future__ import annotations
@@ -277,31 +279,36 @@ def check_reads_isolation(
     return leaks
 
 
+# A prompt whose output key is not a day turn is a night turn: the pack's chat and kill, and every
+# role's own night field.
+_DAY_OUTPUT_KEYS = frozenset({"day_channel", "day_votes"})
+
+
 def check_eliminated_players_excluded(
-    prompt_log: list[dict[str, Any]], eliminated_players: Iterable[str]
+    prompt_log: list[dict[str, Any]], deaths: Iterable[Any]
 ) -> list[str]:
-    """Eliminated players should receive no prompts after their elimination day."""
+    """A dead player gets no prompt after its death. ``deaths`` is the game's dead roster
+    (DeathRecord objects or their dicts): a player lynched on day D may not be prompted that night
+    or later; a player killed on night D may not be prompted from day D+1 on. (Before 2026-10-14
+    this check read the elimination day out of the game master's prose, which the ten-seat game
+    no longer writes in that form.)"""
     leaks: list[str] = []
-    elimination_day_by_player: dict[str, int] = {}
-
-    for player in eliminated_players:
+    for death in deaths:
+        player = death["player"] if isinstance(death, dict) else death.player
+        day = death["day"] if isinstance(death, dict) else death.day
+        phase = death["phase"] if isinstance(death, dict) else death.phase
         for entry in prompt_log:
-            day_channel = entry["prompt_input"]["day_channel"]
-            if f"Player {player} has been voted out" in day_channel or (
-                f"{player} was killed by the wolves last night" in day_channel
-            ):
-                elimination_day_by_player[player] = entry["day"]
-                break
-
-    for entry in prompt_log:
-        player = entry["player_id"]
-        elimination_day = elimination_day_by_player.get(player)
-        if elimination_day is not None and entry["day"] > elimination_day:
-            _record_leak(
-                leaks,
-                f"LEAK: eliminated player {player} received prompt on day {entry['day']}",
+            if entry["player_id"] != player:
+                continue
+            after_death = entry["day"] > day or (
+                phase == "day" and entry["day"] == day and entry["output_key"] not in _DAY_OUTPUT_KEYS
             )
-
+            if after_death:
+                _record_leak(
+                    leaks,
+                    f"LEAK: dead player {player} ({phase} {day}) received a prompt on day "
+                    f"{entry['day']} ({entry['output_key']})",
+                )
     return leaks
 
 
@@ -346,10 +353,26 @@ def check_round_players_are_seat_ids(
     return leaks
 
 
+def leak_inputs(result: dict[str, Any]) -> dict[str, Any]:
+    """The checker inputs a finished game's state holds: the dead roster, the text of every held
+    line (a gated or filtered pass marker's candidate), and the night records. Pass as
+    ``run_leak_tests(prompt_log, roles, **leak_inputs(result))``."""
+    held = []
+    for entry in result.get("day_channel") or []:
+        candidate = entry["gated_candidate"] if isinstance(entry, dict) else entry.gated_candidate
+        if candidate and candidate.strip():
+            held.append(candidate)
+    return {
+        "deaths": result.get("dead_roster") or [],
+        "gated_candidates": held,
+        "night_records": result.get("night_actions") or [],
+    }
+
+
 def run_leak_tests(
     prompt_log: list[dict[str, Any]],
     roles: dict[str, str],
-    eliminated_players: Iterable[str] = (),
+    deaths: Iterable[Any] = (),
     gated_candidates: Iterable[str] = (),
     reads_log: Iterable[dict[str, Any]] = (),
     public_text: str = "",
@@ -363,7 +386,7 @@ def run_leak_tests(
         *check_vigilante_results_isolation(prompt_log),
         *check_night_record_isolation(prompt_log, night_records, roles),
         *check_healer_target_absent(prompt_log),
-        *check_eliminated_players_excluded(prompt_log, eliminated_players),
+        *check_eliminated_players_excluded(prompt_log, deaths),
         *check_gated_candidate_isolation(prompt_log, gated_candidates),
         *check_reads_isolation(prompt_log, reads_log, public_text),
     ]
