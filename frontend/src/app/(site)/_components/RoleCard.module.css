@@ -165,7 +165,7 @@
   width: 6cqi;
   height: 6cqi;
 }
-/* the briefing: the longest backs (the chanteuse's, the fortune teller's) fit at 4.3cqi */
+/* the rules: two parts (three for a wolf), the type as large as the words allow (--brief) */
 .brief {
   flex: 1;
   min-height: 0;
@@ -175,7 +175,7 @@
   gap: 1.6cqi;
   padding: 3cqi 0.4cqi 0.4cqi;
   font-family: var(--font-serif);
-  font-size: 4.3cqi;
+  font-size: var(--brief, 4.3cqi);
   line-height: 1.3;
 }
 .para {
@@ -186,6 +186,12 @@
 .para:last-child {
   padding-bottom: 0;
   border-bottom: 0;
+}
+.p {
+  display: block;
+}
+.p + .p {
+  margin-top: 0.45em;
 }
 .para em {
   display: block;

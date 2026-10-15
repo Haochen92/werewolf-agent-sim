@@ -2,8 +2,9 @@
 
 /**
  * A role's card, the briefing its agent is given: the front is the role (its sigil, felt figure,
- * line and side), the back is the briefing (by day, at night, how you win), in the card's own
- * words (`CARD_TEXT`), inked in its side's colour. The landing shows one, the guide a row per
+ * line and side), the back is the rules (its ability, a wolf's pack ability first, and when it
+ * wins; owner, 2026-10-15: rules, not advice), in the card's own words (`CARD_TEXT`), inked in
+ * its side's colour. The back's type is as large as its words let it be (`backSize`). The landing shows one, the guide a row per
  * side. The card is the only place a role is written up, so it turns over rather than laying the
  * briefing out beside it.
  *
@@ -29,6 +30,24 @@ function Lines({ text }: { text: string }) {
       {i < parts.length - 1 ? <br /> : null}
     </span>
   ));
+}
+
+/** Paragraphs: the rules' own breaks kept. */
+function Paras({ text }: { text: string }) {
+  return text.split('\n').map((p, i) => (
+    <span key={i} className={classes.p}>
+      {p}
+    </span>
+  ));
+}
+
+/**
+ * How large the back's type can be, in cqi of the card's width (so one size holds at every
+ * width): the largest that fits falls with the square root of the words (measured on all twelve
+ * backs, 2026-10-15), set just under it, and capped so the shortest backs don't shout.
+ */
+export function backSize(chars: number): number {
+  return Math.max(4.3, Math.min(6.2, 98 / Math.sqrt(chars)));
 }
 
 export function RoleCard({
@@ -89,18 +108,27 @@ export function RoleCard({
           <span className={classes.name}>{text.name}</span>
           <span className={classes.kind}>the briefing</span>
         </span>
-        <span className={classes.brief}>
+        <span
+          className={classes.brief}
+          style={
+            {
+              '--brief': `${backSize((text.pack ?? '').length + text.ability.length + text.win.length)}cqi`,
+            } as CSSProperties
+          }
+        >
+          {text.pack ? (
+            <span className={classes.para}>
+              <em>Pack ability</em>
+              <Paras text={text.pack} />
+            </span>
+          ) : null}
           <span className={classes.para}>
-            <em>By day</em>
-            {text.day}
+            <em>{text.pack ? 'Your ability' : 'Ability'}</em>
+            <Paras text={text.ability} />
           </span>
           <span className={classes.para}>
-            <em>At night</em>
-            {text.night}
-          </span>
-          <span className={classes.para}>
-            <em>How you win</em>
-            {text.win}
+            <em>You win when</em>
+            <Paras text={text.win} />
           </span>
         </span>
         <span className={classes.fac}>

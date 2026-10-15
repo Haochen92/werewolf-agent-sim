@@ -43,7 +43,7 @@ describe('card words by the game’s rules', () => {
       expect(out).toContain('Not suspicious');
       expect(out).not.toContain('exact role');
     }
-    expect(face).toContain('when it counts.');
+    expect(face).toContain('they look for the loose thread.');
   });
 
   it('keeps the names, so a name read from the pool reads right in any game', () => {
