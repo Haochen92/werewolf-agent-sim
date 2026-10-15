@@ -26,7 +26,8 @@ function line(b: SceneBeat, i: number): string {
     ? ` {${b.subjects.map((s) => s.replace('player_', '')).join(',')}}`
     : '';
   const chapter = b.chapter ? `  [${b.chapter.kind} ${b.chapter.n}]` : '';
-  return `${String(i).padStart(3)}  ${b.id.padEnd(24)} d${b.day} seq${String(b.seq).padStart(3)} end${String(b.end).padStart(3)}  ${b.sees}${who}${about}${seats}${nth}${spoke}${page}  ${b.holdMs}ms${chapter}`;
+  const stand = b.stand ? ` stand ${b.stand.replace('player_', '')}` : '';
+  return `${String(i).padStart(3)}  ${b.id.padEnd(24)} d${b.day} seq${String(b.seq).padStart(3)} end${String(b.end).padStart(3)}  ${b.sees}${who}${about}${seats}${nth}${spoke}${page}${stand}  ${b.holdMs}ms${chapter}`;
 }
 
 const dump = (beats: SceneBeat[]) => beats.map(line).join('\n') + '\n';
@@ -507,6 +508,34 @@ describe('a run of passes, and the prompt before its announcement (2026-10-12)',
       'day.pass player_2,player_4',
       'day.turn-thinking player_5',
     ]);
+  });
+
+  // the vote opens on whoever the stage last had at the stand (2026-10-15): it had taken the
+  // log's last turn, which a run of passes never put on the stage, and that seat flashed up
+  it('the vote opens on the seat last at the stand, and on nobody after a run', () => {
+    const stand = (beats: SceneBeat[]) => beats.find((b) => b.id === 'vote.opens')?.stand;
+    expect(stand(beatsFor(day, { xray: false }))).toBe('player_7');
+    expect(stand(beatsFor(day, { xray: false, live: true }))).toBe('player_7');
+    // live folds no pass_marker (observer tier): still the seat the stage showed last
+    const heard = day.filter((e) => e.type !== 'pass_marker');
+    expect(stand(beatsFor(heard, { xray: false, live: true }))).toBe('player_7');
+    // the day ends on a run: the stand is empty in the replay and live, its last passer only
+    // stands in the X-ray, which plays each pass on its own
+    const quiet = [...day.slice(0, 7), ev(17, 'phase_change', { phase: 'voting' })];
+    expect(told(beatsFor(quiet, { xray: false })).slice(-2)).toEqual([
+      'day.pass player_2,player_4',
+      'vote.opens ',
+    ]);
+    expect(stand(beatsFor(quiet, { xray: false }))).toBeUndefined();
+    expect(
+      stand(
+        beatsFor(
+          quiet.filter((e) => e.type !== 'pass_marker'),
+          { xray: false, live: true },
+        ),
+      ),
+    ).toBeUndefined();
+    expect(stand(beatsFor(quiet, { xray: true }))).toBe('player_4');
   });
 
   it('the X-ray replay keeps each pass_marker, with its reason', () => {

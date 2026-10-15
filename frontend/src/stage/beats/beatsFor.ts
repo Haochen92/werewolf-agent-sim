@@ -71,6 +71,20 @@ function speechHold(text: string): number {
 
 type Draft = Omit<SceneBeat, 'scene' | 'label'>;
 
+/** A run of passes told as one beat: the seats, no speaker. */
+export const isPassRun = (beat: Pick<SceneBeat, 'id' | 'subjects'>): boolean =>
+  beat.id === 'day.pass' && (beat.subjects?.length ?? 0) > 1;
+
+/** The day's beats with nobody at the stand: a notice stands where the box would be. */
+export const isNotice = (beat: Pick<SceneBeat, 'id' | 'subjects'>): boolean =>
+  beat.id === 'day.opening-prepares' || beat.id === 'day.round-passes' || isPassRun(beat);
+
+/** Who a day beat has at the stand (DayScene draws that seat's puppet), or nobody. */
+export function atStand(beat: SceneBeat | undefined): string | undefined {
+  if (!beat || beat.scene !== 'day' || isNotice(beat)) return undefined;
+  return beat.subject ?? (beat.id === 'day.your-turn' ? beat.seat : undefined);
+}
+
 /** What a night's actors did, gathered from the events between "night falls" and the result. */
 interface Branch {
   actor: string;
@@ -187,7 +201,9 @@ export function beatsFor(
     // anything the stage shows ends a run of passes, and comes after the turn on the stand
     tellPasses();
     showThinking();
-    emit(b);
+    // the vote opens on whoever this viewer last saw at the stand, not the log's last turn: a
+    // run of passes left it empty, and its last passer flashed up as the table rose (2026-10-15)
+    emit(b.id === 'vote.opens' ? { ...b, stand: atStand(out.at(-1)) } : b);
   };
   const pub = (
     id: BeatId,

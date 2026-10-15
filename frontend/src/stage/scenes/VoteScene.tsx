@@ -62,16 +62,6 @@ export function VoteBody(props: SceneProps) {
   return <VoteBeat key={`${me ?? ''}:${turn?.chosen ?? ''}`} {...props} />;
 }
 
-/** The last turn of the day before the vote: whose puppet leaves the stand as voting opens. */
-function lastTurn(view: GameView, day: number): string | null {
-  const slots = view.days[day]?.slots ?? [];
-  for (let i = slots.length - 1; i >= 0; i--) {
-    const s = slots[i];
-    if (s.kind !== 'gm') return s.player;
-  }
-  return null;
-}
-
 /** The game master's line about the vote (the last line of its tally message), seatified. */
 function gmVoteLine(view: GameView, day: number): string | null {
   const gm = (view.days[day]?.slots ?? []).filter((s) => s.kind === 'gm').at(-1);
@@ -187,8 +177,9 @@ function VoteBeat({
   const litSeat = newest ? newest.voter : resolved ? lynched : null;
   const untold = new Set(lynched ? [lynched] : []);
 
-  // the stand leaving as voting opens: the day's last turn drops behind it
-  const leaving = animate && id === 'vote.opens' ? lastTurn(view, day) : null;
+  // the stand leaving as voting opens: whoever the day last had at it drops behind it (the cutter
+  // says who: `stand`)
+  const leaving = animate && id === 'vote.opens' ? (beat.stand ?? null) : null;
   const ln = leaving ? seatNumber(leaving) : 0;
   const leavingChar = ln ? cast[ln - 1] : null;
 

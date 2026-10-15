@@ -26,7 +26,7 @@
  25  day.pass                 d2 seq 64 end 64  xray →player_2  4000ms
  26  day.pass                 d2 seq 70 end 70  xray →player_7  4000ms
  27  day.pass                 d2 seq 76 end 76  xray →player_9  4000ms
- 28  vote.opens               d2 seq 81 end 81  public  4000ms  [vote 2]
+ 28  vote.opens               d2 seq 81 end 81  public stand 9  4000ms  [vote 2]
  29  vote.ballots-drop        d2 seq109 end117  public  2500ms
  30  vote.closes              d2 seq109 end117  public  2500ms
  31  vote.count-begins        d2 seq109 end117  public  2000ms
@@ -77,7 +77,7 @@
  76  day.pass                 d3 seq207 end207  xray →player_6  4000ms
  77  day.pass                 d3 seq211 end211  xray →player_2  4000ms
  78  day.pass                 d3 seq215 end215  xray →player_1  4000ms
- 79  vote.opens               d3 seq220 end220  public  4000ms  [vote 3]
+ 79  vote.opens               d3 seq220 end220  public stand 1  4000ms  [vote 3]
  80  vote.ballots-drop        d3 seq242 end248  public  2500ms
  81  vote.closes              d3 seq242 end248  public  2500ms
  82  vote.count-begins        d3 seq242 end248  public  2000ms
@@ -147,7 +147,7 @@
 146  day.speech               d4 seq356 end356  public →player_7 p1/3  5000ms
 147  day.speech               d4 seq356 end356  public →player_7 p2/3  11250ms
 148  day.speech               d4 seq356 end356  public →player_7 p3/3  5000ms
-149  vote.opens               d4 seq362 end362  public  4000ms  [vote 4]
+149  vote.opens               d4 seq362 end362  public stand 7  4000ms  [vote 4]
 150  vote.ballots-drop        d4 seq378 end382  public  2500ms
 151  vote.closes              d4 seq378 end382  public  2500ms
 152  vote.count-begins        d4 seq378 end382  public  2000ms

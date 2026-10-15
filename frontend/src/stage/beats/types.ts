@@ -150,6 +150,12 @@ export interface SceneBeat {
    * Only the cutter can know it (the view at this beat has no `game_over` yet).
    */
   endsGame?: boolean;
+  /**
+   * On `vote.opens`: the seat the day's last beat had at the stand, whose puppet drops behind
+   * it as voting opens; absent when the stand was empty (a run of passes, a round's notice).
+   * Only the cutter knows what it showed: the log's last turn may never have been on the stage.
+   */
+  stand?: string;
 }
 
 export interface BeatOptions {

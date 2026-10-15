@@ -31,6 +31,7 @@ import { useEffect, useState } from 'react';
 import { type DayState } from '@/assets/manifest';
 import type { GameView, PassSlot, SpeechSlot } from '@/game/types';
 import { Layer } from '../Stage';
+import { isNotice, isPassRun } from '../beats/beatsFor';
 import { Puppet } from '../cast/Puppet';
 import { ReadCard } from '../film/ReadCard';
 import { freshReads, turnReads } from '../film/film-model';
@@ -62,14 +63,6 @@ export const continues = (was: SceneProps['beat'], now: SceneProps['beat']) =>
     (now.id === 'day.speech' || now.id === 'day.pass') &&
     now.subject === (was.subject ?? was.seat) &&
     now.day === was.day);
-
-/** A run of passes told as one beat: the seats, no speaker. */
-const isPassRun = (beat: SceneProps['beat']) =>
-  beat.id === 'day.pass' && (beat.subjects?.length ?? 0) > 1;
-
-/** The beats with nobody at the stand: a notice stands where the box would be. */
-const isNotice = (beat: SceneProps['beat']) =>
-  beat.id === 'day.opening-prepares' || beat.id === 'day.round-passes' || isPassRun(beat);
 
 /** "seats 2, 5 and 8", with the viewer's own seat as "you" (first). */
 function seatsPhrase(seats: readonly string[], me: string | null): string {

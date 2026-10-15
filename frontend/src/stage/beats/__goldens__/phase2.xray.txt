@@ -65,7 +65,7 @@
  64  day.speech               d2 seq159 end159  public →player_4 p2/4  5833ms
  65  day.speech               d2 seq159 end159  public →player_4 p3/4  6667ms
  66  day.speech               d2 seq159 end159  public →player_4 p4/4  8750ms
- 67  vote.opens               d2 seq163 end163  public  4000ms  [vote 2]
+ 67  vote.opens               d2 seq163 end163  public stand 4  4000ms  [vote 2]
  68  vote.ballots-drop        d2 seq180 end187  public  2500ms
  69  vote.closes              d2 seq180 end187  public  2500ms
  70  vote.count-begins        d2 seq180 end187  public  2000ms
@@ -129,7 +129,7 @@
 128  day.closing-called       d3 seq279 end279  public →player_5 {5}  4000ms
 129  day.speech               d3 seq281 end281  public →player_5 p1/2  9167ms
 130  day.speech               d3 seq281 end281  public →player_5 p2/2  10417ms
-131  vote.opens               d3 seq285 end285  public  4000ms  [vote 3]
+131  vote.opens               d3 seq285 end285  public stand 5  4000ms  [vote 3]
 132  vote.ballots-drop        d3 seq296 end300  public  2500ms
 133  vote.closes              d3 seq296 end300  public  2500ms
 134  vote.count-begins        d3 seq296 end300  public  2000ms
