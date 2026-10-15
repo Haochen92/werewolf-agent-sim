@@ -246,6 +246,10 @@ export const useGameSession = create<SessionState>((set, get) => ({
       return;
     }
     if (!pending) return; // the matching input_request supplies action_kind + candidates
+    // A status taken before this request was asked speaks for the one before it: its deadline
+    // (passed) set on this one made the page call the turn expired while the server still
+    // waited (multiplayer audit, 2026-10-15). Such a status cannot have seen this seq.
+    if (pending.seq > snapshotLastSeq) return;
     const deadline = deadlines[seat] ?? pending.deadline;
     if (deadline !== pending.deadline) {
       set({

@@ -183,6 +183,20 @@ describe('pending input reconciliation', () => {
     store.syncPending('player_1', [], {}, 0);
     expect(useGameSession.getState().view.me.pending?.seq).toBe(1);
   });
+
+  it('does not let an older status response give a newer request its passed deadline', () => {
+    const store = useGameSession.getState();
+    store.applyLive(request);
+    const asked = useGameSession.getState().view.me.pending?.deadline;
+    // taken before the request (its last seq is 0): the seat owed the turn before, then due
+    store.syncPending('player_1', ['player_1'], { player_1: '2020-01-01T00:00:00Z' }, 0);
+    expect(useGameSession.getState().view.me.pending?.deadline).toBe(asked);
+    // a status that has seen it does move it
+    store.syncPending('player_1', ['player_1'], { player_1: '2030-01-01T00:00:00Z' }, 1);
+    expect(useGameSession.getState().view.me.pending?.deadline).toBe(
+      '2030-01-01T00:00:00Z',
+    );
+  });
 });
 
 describe('pacing', () => {
