@@ -787,7 +787,13 @@ for (const { name, viewport, dpr, sheet, px } of [
         const url = req.url();
         const m = SHEET.exec(url);
         if (m) sheets.push(m[1]);
-        if (url.includes(`/replays/${GAME}`) && req.resourceType() !== 'document')
+        // the game's log from the API; not the page itself, nor Next's prefetch of the "Watch the
+        // whole game" page (production only, an `rsc` request for the page's shell, no game data)
+        if (
+          url.includes(`/replays/${GAME}`) &&
+          req.resourceType() !== 'document' &&
+          !req.headers()['rsc']
+        )
           replays++;
       });
       await routeLanding(page);

@@ -182,6 +182,10 @@ page's own ground is the same colour and costs nothing (`Rooms.module.css`, the 
 
 ## Small things that cost an afternoon
 
+- A production build prefetches every `<Link>` that scrolls into view (the dev server does not),
+  as a `fetch` with an `rsc: 1` header to the page's own path. A test counting requests by path
+  (`/replays/<id>`) counts the prefetch too and fails on production only; filter on the header.
+  For a dynamic route with a `loading.tsx` the prefetch is only the page's shell, no data.
 - A wall capped short of its box ends in an edge if any layer over it is darker than the page's
   ground (a black vignette is): the page's own colour below the cap shows lighter. Fade the foot
   to the ground as the topmost layer (`StationWall.module.css`, `Rooms.module.css`).
