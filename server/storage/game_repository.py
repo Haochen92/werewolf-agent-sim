@@ -13,10 +13,11 @@ from datetime import datetime
 import logging
 from typing import Any, Sequence
 
-from sqlalchemy import func
+from sqlalchemy import func, null
 from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import select, update
 
+from server.database_models.capture import PromptCaptureRow
 from server.database_models.cast import GameCastRow
 from server.database_models.game import (
     COMPLETED,
@@ -86,6 +87,11 @@ class GameRepository:
                 of work.
         """
         self._database = database
+
+    @property
+    def configured(self) -> bool:
+        """Whether there is a database to write to; with none, every write is a no-op."""
+        return self._database.configured
 
     async def create_game(self, game_id: str, *, status: GameStatus, **fields: Any) -> bool:
         """Write a game's first row, including its required status. Rooms have no row;
@@ -190,6 +196,27 @@ class GameRepository:
             return True
         except Exception:
             logger.exception("game %s: cast persistence failed (game unaffected)", game_id)
+            return False
+
+    async def record_capture(self, game_id: str, capture: bytes, *, n_prompts: int,
+                             partial: bool) -> bool:
+        """Keep a finished game's compressed prompts for the offline leak audit
+        (server/storage/prompt_captures.py packs them). Written once, when the game ends; a
+        second write replaces the first and clears any verdict, since it covers more. True
+        after commit or when storage is off; False on a logged failure."""
+        if not self._database.configured:
+            return True
+        try:
+            values = {"capture": capture, "n_prompts": n_prompts, "partial": partial}
+            stmt = insert(PromptCaptureRow).values(game_id=game_id, **values).on_conflict_do_update(
+                index_elements=["game_id"],
+                set_={**values, "captured_at": func.now(), "audited_at": None, "leaks": null()})
+            async with self._database.session() as session:
+                await session.execute(stmt)
+                await session.commit()
+            return True
+        except Exception:
+            logger.exception("game %s: prompt capture not saved (game unaffected)", game_id)
             return False
 
     async def load_cast(self, game_id: str) -> list[CastSeat]:

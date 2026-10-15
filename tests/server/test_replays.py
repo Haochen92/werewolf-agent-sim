@@ -141,7 +141,8 @@ def test_database_metadata_has_one_game_table_and_normalized_events():
     from sqlmodel import SQLModel
 
     assert set(SQLModel.metadata.tables) == {
-        "games", "events", "settings", "characters", "game_cast", "models", "model_prices"}
+        "games", "events", "settings", "characters", "game_cast", "models", "model_prices",
+        "prompt_captures"}
     assert "replays" not in SQLModel.metadata.tables
     event_fk = next(iter(SQLModel.metadata.tables["events"].foreign_keys))
     assert event_fk.target_fullname == "games.game_id"
@@ -150,6 +151,9 @@ def test_database_metadata_has_one_game_table_and_normalized_events():
     cast_fks = {fk.target_fullname: fk.ondelete
                 for fk in SQLModel.metadata.tables["game_cast"].foreign_keys}
     assert cast_fks == {"games.game_id": "CASCADE", "characters.id": None}
+    # So does its prompt capture, kept for the leak audit.
+    capture_fk = next(iter(SQLModel.metadata.tables["prompt_captures"].foreign_keys))
+    assert (capture_fk.target_fullname, capture_fk.ondelete) == ("games.game_id", "CASCADE")
 
 
 def test_event_union_reaches_openapi():

@@ -169,12 +169,15 @@ class FakeDurableGraph:
 class RecordingGameRepository:
     """The runtime's narrow persistence contract, with no database or globals."""
 
+    configured = True
+
     def __init__(self, rows=()) -> None:
         self.rows = list(rows)
         self.events = []
         self.completions = []
         self.updates = []
         self.update_calls = []
+        self.captures = {}
 
     async def record_events(self, game_id, events):
         self.events.extend(events)
@@ -187,6 +190,10 @@ class RecordingGameRepository:
 
     async def complete_game(self, game_id, log, n_humans, extraction_input=None):
         self.completions.append((game_id, len(log), n_humans))
+
+    async def record_capture(self, game_id, capture, *, n_prompts, partial):
+        self.captures[game_id] = (capture, n_prompts, partial)
+        return True
 
     async def load_recoverable_games(self):
         return self.rows

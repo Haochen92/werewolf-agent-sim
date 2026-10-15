@@ -11,6 +11,8 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 from starlette.testclient import TestClient
 
@@ -32,6 +34,10 @@ class FakeGraph:
         self.calls.append(payload)
         for part in self.phases[len(self.calls) - 1]:
             yield part
+
+    async def aget_state(self, config):
+        """The final state a finished game's capture is saved with; a fake game has none."""
+        return SimpleNamespace(values={})
 
 
 class HangingGraph:

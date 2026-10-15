@@ -68,10 +68,12 @@ from Agents.schemas.human_player import HumanTurnRequest
 from Agents.state import fresh_game_state
 from Agents.tracing import Metrics, create_langfuse_handler, flush, langfuse
 from Agents.turn.drafting_agent import draft_from_notes, player_direction
+from Agents.turn.eval import TURN_CAPTURE, TurnCapture
 from Agents.turn.human_turn import validate_human_response
 
 from server.game.cast import CastSeat, draw_cast
 from server.storage.game_repository import GameRepository
+from server.storage.prompt_captures import build_capture, encode_capture
 from server.game.model_catalog import game_model, menu_models
 from server.game.pacing import PacingTracker
 from server.schemas import events as ev
@@ -82,6 +84,8 @@ from server.game.usage import UsageMeter
 logger = logging.getLogger(__name__)
 
 _USAGE_SAVE_EVERY_S = 30.0
+# The most a finished game waits to write its prompts down for the leak audit before giving up.
+_CAPTURE_SAVE_TIMEOUT_S = 60.0
 
 # How many times one question may be drafted. The wait for each draft is
 # credited back to the seat's clock, so without a cap an unhappy drafter could keep the
@@ -148,6 +152,12 @@ class GameSession:
       _repository   the database gateway; None means nothing is written down.
       _context      runtime context handed to every node: metrics and the eval-case
                     sink.
+      capture       every prompt this game's AI players were sent and every private read
+                    they made. Set on the TURN_CAPTURE ContextVar beside GAME_LLM, so two
+                    games running at once never write into each other's lists. Saved when
+                    the game ends, for the offline leak audit (housekeeping/leak_audit.py).
+      _capture_partial  True once the game has been resumed after a restart: what was
+                    captured before the restart died with the old process.
 
     What travels to the browsers.
       translator    turns each engine chunk into zero or more typed events. Stateful:
@@ -255,6 +265,8 @@ class GameSession:
         self._graph = graph if graph is not None else parent_graph_compiled
         self._repository = repository
         self._context = {"metrics": Metrics(), "eval_sink": EvalCaseSink()}
+        self.capture = TurnCapture()
+        self._capture_partial = False
         # Tokens and call time per model, saved on the row as the game goes (server/game/usage.py).
         self.usage_meter = UsageMeter()
         self._usage_saved_at = 0.0
@@ -307,7 +319,9 @@ class GameSession:
     async def _run(self, graph_input: Any, waiting_on_humans: bool = False) -> None:
         if self._llm_selection is not None:
             GAME_LLM.set(self._llm_selection)
+        TURN_CAPTURE.set(self.capture)
         recovered = graph_input is None
+        self._capture_partial = self._capture_partial or recovered
         trace_input = {"game_id": self.game_id, "recovered": recovered}
         # One trace per run of the task, grouped by the game id as the session. A game
         # resumed after a restart is a second trace in the same session. (Seeding the trace
@@ -411,6 +425,26 @@ class GameSession:
             await self._repository.complete_game(
                 self.game_id, self.log, len(self.human_players),
                 extraction_input=self.translator.extraction_input)
+            await self._save_capture()
+
+    async def _save_capture(self) -> None:
+        """Write down what this game's AI players were sent, so the nightly leak audit can
+        check that no private information reached the wrong player. The game is already over
+        and saved; a failure here is logged, and waiting on it is capped, so it never holds
+        the game up."""
+        async def write() -> None:
+            if not self._repository.configured:
+                return  # no database: nothing is written down, and no checkpoint to read
+            final = await self._graph.aget_state(self.config)
+            blob = await asyncio.to_thread(lambda: encode_capture(build_capture(
+                self.capture, final.values, partial=self._capture_partial)))
+            await self._repository.record_capture(
+                self.game_id, blob, n_prompts=len(self.capture.prompts),
+                partial=self._capture_partial)
+        try:
+            await asyncio.wait_for(write(), timeout=_CAPTURE_SAVE_TIMEOUT_S)
+        except Exception:
+            logger.exception("game %s: prompt capture not saved (game unaffected)", self.game_id)
 
     async def _wait_for_absent_player(self) -> None:
         """If this is a solo game and its player is away, wait here until they are back.
@@ -706,8 +740,10 @@ class GameSession:
     def _preview_line(self, seat: str, payload: dict[str, Any], direction: str) -> str:
         # Runs in a worker thread, so the game's model and key are set here, as in _draft.
         # Traced as its own trace in the game's session, with the model calls under it.
+        # The preview's prompt is recorded with the game's own, like any agent turn.
         if self._llm_selection is not None:
             GAME_LLM.set(self._llm_selection)
+        TURN_CAPTURE.set(self.capture)
         runtime = Runtime(context=self._context, store=getattr(self._graph, "store", None))
         with langfuse.start_as_current_observation(
             as_type="span", name=f"draft_preview_{seat}", input={"direction": direction},
