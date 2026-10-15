@@ -10,6 +10,7 @@ import { photoTwine, roomChoice, roomLight, roomPlan, ROOMS } from './compartmen
 import { stationBack, stationFront, stationPlan } from './station';
 import { darkness, softHoles } from './holes';
 import { shutter } from './window';
+import { ANY_ID } from '../Stage';
 
 const HUDS: Hud[] = ['none', 'live', 'replay'];
 const ROOM_NAMES = Object.keys(ROOMS) as (keyof typeof ROOMS)[];
@@ -122,6 +123,11 @@ describe.each(CASES)('%s', (_label, draw) => {
   it('only references ids it defines', () => {
     const defined = new Set(idsOf(a));
     for (const ref of refsOf(a)) expect(defined.has(ref)).toBe(true);
+  });
+
+  // Paint keeps one drawing per options under a stand-in id and writes each instance's in
+  it('is the drawing under another id once the stand-in is renamed', () => {
+    expect(draw(ANY_ID).replaceAll(ANY_ID, 'stB')).toBe(b);
   });
 
   // iPhone Safari kills a page that masks the stage (2026-10-01, stage_architecture.md §6)

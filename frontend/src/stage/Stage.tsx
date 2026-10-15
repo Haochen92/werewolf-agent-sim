@@ -309,28 +309,36 @@ export function usePaintId(): string {
   return 'p' + useId().replace(/[^A-Za-z0-9_-]/g, '');
 }
 
-/* A generator's markup for an id and options, kept across instances and beats: the house
-   light's holes take 60–110 ms to trace (paint/holes.ts) and a beat's light often repeats an
-   earlier one (the count's, the morning's). A few dozen drawings per generator, oldest out. */
+/* A generator's markup for its options, kept across instances and beats: the house light's
+   holes take 60–110 ms to trace (paint/holes.ts) and a beat's light often repeats an earlier
+   one (the count's, the morning's). Drawn under a stand-in id and kept by the options alone, so
+   a part that mounts again (the dining car after a night, with a new `useId`) finds its
+   drawing; each instance's own id is written in on the way out. A few dozen per generator. */
 const DRAWN = new WeakMap<(o: never) => string, Map<string, string>>();
 const KEEP = 48;
+/** The stand-in: an id's characters (`usePaintId`), and in no generator's own markup. */
+export const ANY_ID = 'pPaintIdZq';
 function drawn<O extends { id: string }>(of: (o: O) => string, id: string, key: string) {
   let m = DRAWN.get(of as (o: never) => string);
   if (!m) DRAWN.set(of as (o: never) => string, (m = new Map()));
-  const k = id + '\0' + key;
-  const hit = m.get(k);
-  if (hit !== undefined) return hit;
-  const html = of({ ...JSON.parse(key), id } as O);
-  if (m.size >= KEEP) m.delete(m.keys().next().value as string);
-  m.set(k, html);
-  return html;
+  let html = m.get(key);
+  if (html === undefined) {
+    html = of({ ...JSON.parse(key), id: ANY_ID } as O);
+    if (m.size >= KEEP) m.delete(m.keys().next().value as string);
+    m.set(key, html);
+  } else {
+    // most recently used last, so the oldest go first
+    m.delete(key);
+    m.set(key, html);
+  }
+  return html.replaceAll(ANY_ID, id);
 }
 
 /**
  * One paint generator's output, drawn once and kept until its options change (and remembered
- * across instances, see `drawn`). `of` is a generator from `src/stage/paint/`; `opts` its
- * options minus `id`, which comes from `useId()` so two stages on one page never share a
- * gradient or a mask.
+ * across instances and remounts, see `drawn`). `of` is a generator from `src/stage/paint/`;
+ * `opts` its options minus `id`, which comes from `useId()` so two stages on one page never
+ * share a gradient or a mask.
  */
 export function Paint<O extends { id: string }>({
   of,
