@@ -26,14 +26,29 @@ import { SIDES } from '../sides';
 import { CaseFile } from './CaseFile';
 import { DayLine } from './DayLine';
 import { GameModes } from './GameModes';
+import { Introduction } from './Introduction';
 import { SideRow } from './SideRow';
 import { ToolsTray } from './ToolsTray';
 import classes from './Guide.module.css';
 
-const RULES: { id: string; label: string; icon: ReactNode }[] = [
+type Entry = { id: string; label: string; icon: ReactNode };
+
+/** The sections before the roles: the story and goal, starting, the day, the tools. */
+const RULES: Entry[] = [
+  {
+    id: 'intro',
+    label: 'Introduction',
+    // a carriage: its windows, its wheels
+    icon: (
+      <>
+        <rect x="3" y="5" width="18" height="12" rx="2" />
+        <path d="M6.5 9.5h3M11 9.5h2M14.5 9.5h3M7 20l1.5-3M17 20l-1.5-3" />
+      </>
+    ),
+  },
   {
     id: 'modes',
-    label: 'Game modes',
+    label: 'Take your seat',
     // a ticket, its stub torn along the dashes
     icon: (
       <>
@@ -50,7 +65,6 @@ const RULES: { id: string; label: string; icon: ReactNode }[] = [
       <path d="M3 17h18M6.5 17a5.5 5.5 0 0 1 11 0M12 5v3M5.2 8.7l1.9 1.9M18.8 8.7l-1.9 1.9" />
     ),
   },
-  { id: 'after', label: 'After the game', icon: <path d="M8 5v14l11-7z" /> },
   {
     id: 'tools',
     label: 'Tools',
@@ -63,6 +77,13 @@ const RULES: { id: string; label: string; icon: ReactNode }[] = [
   },
 ];
 
+/** After the roles: once a game is played, its replay. */
+const AFTER: Entry = {
+  id: 'after',
+  label: 'After the game',
+  icon: <path d="M8 5v14l11-7z" />,
+};
+
 const SECTIONS: { id: string; label: string; icon?: ReactNode; faction?: Faction }[] = [
   ...RULES,
   ...SIDES.map((s) => ({
@@ -70,7 +91,10 @@ const SECTIONS: { id: string; label: string; icon?: ReactNode; faction?: Faction
     label: FACTION_NAME[s.faction],
     faction: s.faction,
   })),
+  AFTER,
 ];
+/** Where the nav draws a rule: before the roles, and after them. */
+const RULED = new Set([RULES.length, RULES.length + SIDES.length]);
 
 function SectionIcon({ faction, icon }: { faction?: Faction; icon?: ReactNode }) {
   return faction ? (
@@ -148,7 +172,7 @@ export function Guide() {
             href={`#${s.id}`}
             className={classes.navLink}
             aria-current={s.id === current ? 'location' : undefined}
-            data-first-side={i === RULES.length || undefined}
+            data-ruled={RULED.has(i) || undefined}
           >
             <SectionIcon faction={s.faction} icon={s.icon} />
             {s.label}
@@ -205,7 +229,7 @@ export function Guide() {
                   </Menu.Item>
                 ))}
                 <Menu.Label>Roles</Menu.Label>
-                {SECTIONS.slice(RULES.length).map((s) => (
+                {SECTIONS.slice(RULES.length, RULES.length + SIDES.length).map((s) => (
                   <Menu.Item
                     key={s.id}
                     component="a"
@@ -216,6 +240,15 @@ export function Guide() {
                     {s.label}
                   </Menu.Item>
                 ))}
+                <Menu.Divider />
+                <Menu.Item
+                  component="a"
+                  href={`#${AFTER.id}`}
+                  leftSection={<SectionIcon icon={AFTER.icon} />}
+                  data-current={AFTER.id === current || undefined}
+                >
+                  {AFTER.label}
+                </Menu.Item>
               </Menu.Dropdown>
             </Menu>
             <span
@@ -232,10 +265,16 @@ export function Guide() {
 
         <h1 className={classes.title}>Gameplay guide</h1>
 
+        <section id="intro" className={classes.section} aria-labelledby="intro-head">
+          <h2 id="intro-head">Aboard the Ninth Express</h2>
+          <Introduction />
+        </section>
+
         <section id="modes" className={classes.section} aria-labelledby="modes-head">
-          <h2 id="modes-head">Game modes</h2>
+          <h2 id="modes-head">Take your seat</h2>
           <p className={classes.sub}>
-            Play alone against the agents, or bring friends to the table.
+            Play solo with nine AI players, or invite friends and let AI players fill the
+            empty seats.
           </p>
           <GameModes />
         </section>
@@ -245,16 +284,11 @@ export function Guide() {
           <DayLine />
         </section>
 
-        <section id="after" className={classes.section} aria-labelledby="after-head">
-          <h2 id="after-head">After the game</h2>
-          <CaseFile />
-        </section>
-
         <section id="tools" className={classes.section} aria-labelledby="tools-head">
           <h2 id="tools-head">Tools</h2>
           <p className={classes.sub}>
-            Two aids for your seat at the table: notes to keep track of everyone, and your
-            own agent to help you write your turn.
+            Two aids while you play: notes on the other players, and your own agent to help
+            write your messages.
           </p>
           <ToolsTray />
         </section>
@@ -262,12 +296,22 @@ export function Guide() {
         <section className={classes.section} aria-labelledby="roles-head">
           <h2 id="roles-head">Roles</h2>
           <p className={classes.sub}>
-            Ten seats, four sides. Every seat is dealt one of these cards in secret, and the
-            card is the briefing its agent is given.
+            All twelve role cards, by side. Select a card to turn it over for its briefing,
+            the same one its AI player is given, or switch on Briefings to turn a whole
+            side.
           </p>
           {SIDES.map((s) => (
             <SideRow key={s.faction} faction={s.faction} roles={s.roles} />
           ))}
+        </section>
+
+        <section id="after" className={classes.section} aria-labelledby="after-head">
+          <h2 id="after-head">After the game</h2>
+          <p className={classes.sub}>
+            Rewatch a finished game to see how it unfolded. Turn on Reveal to see the hidden
+            roles, the night actions and the wolves&rsquo; private chat.
+          </p>
+          <CaseFile />
         </section>
       </div>
     </main>

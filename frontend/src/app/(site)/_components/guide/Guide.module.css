@@ -48,12 +48,12 @@
   outline: 2px solid var(--amber);
   outline-offset: 2px;
 }
-/* the sides follow the rules after a rule of their own */
-.navLink[data-first-side] {
+/* the sides, and after them the replay, each after a rule */
+.navLink[data-ruled] {
   margin-top: 9px;
   position: relative;
 }
-.navLink[data-first-side]::before {
+.navLink[data-ruled]::before {
   content: '';
   position: absolute;
   left: 0;
