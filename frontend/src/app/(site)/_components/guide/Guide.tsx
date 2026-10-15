@@ -22,6 +22,9 @@ import { FACTION_NAME, type Faction } from '@/stage/roles';
 import { FactionMark } from '@/stage/instruments/FactionMark';
 import { StationWall, useReplaceSiteStrip, wallPage } from '@/components/site';
 import { stageFonts } from '@/stage/fonts';
+import { GUIDE_BED } from '@/music/cues';
+import { useMusicBed } from '@/music/music';
+import { SoundButton } from '@/music/SoundButton';
 import { SIDES } from '../sides';
 import { CaseFile } from './CaseFile';
 import { DayLine } from './DayLine';
@@ -162,6 +165,8 @@ export function Guide() {
   const { pinned, backToTop } = useReplaceSiteStrip();
   const current = useSectionInView(IDS, line);
   const here = SECTIONS.find((s) => s.id === current) ?? SECTIONS[0];
+  // the guide's music plays only for a reader who turns it on (the switch by the title)
+  useMusicBed(GUIDE_BED);
 
   return (
     <main className={`${classes.guide} ${stageFonts} ${wallPage}`}>
@@ -264,7 +269,12 @@ export function Guide() {
           </div>
         </div>
 
-        <h1 className={classes.title}>Gameplay guide</h1>
+        <div className={classes.titleRow}>
+          <h1 className={classes.title}>Gameplay guide</h1>
+          <SoundButton optIn className={classes.music}>
+            Music
+          </SoundButton>
+        </div>
 
         <section id="intro" className={classes.section} aria-labelledby="intro-head">
           <h2 id="intro-head">Aboard the Ninth Express</h2>
