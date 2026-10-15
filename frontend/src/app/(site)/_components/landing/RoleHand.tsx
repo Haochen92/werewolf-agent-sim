@@ -8,8 +8,7 @@
  * visitor who turned it can read briefing after briefing.
  */
 import { useState } from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/site';
+import { GuideSign } from '@/components/site';
 import { CARD_TEXT } from '@/stage/card-text';
 import { FACTION_NAME } from '@/stage/roles';
 import { FactionMark } from '@/stage/instruments/FactionMark';
@@ -71,9 +70,7 @@ export function RoleHand() {
 
       <div className={classes.under}>
         <BriefingsSwitch checked={turned} onChange={setTurned} />
-        <Button component={Link} href="/guide" size="sm">
-          Gameplay guide &rarr;
-        </Button>
+        <GuideSign />
       </div>
     </div>
   );
