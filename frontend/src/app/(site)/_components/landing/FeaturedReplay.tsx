@@ -53,6 +53,7 @@ import { SITE } from '@/lib/site';
 import { beatsFor } from '@/stage/beats/beatsFor';
 import type { MiniUnder } from '@/stage/containers/ReplayTheatre';
 import { stageFonts } from '@/stage/fonts';
+import { picturesOf } from '@/stage/pictures-of';
 import { winnerKey, type WinnerKey } from '@/stage/roles';
 import type { DurableGameEvent, ReplayGame } from '@/types/contracts';
 import classes from './Carriage.module.css';
@@ -63,6 +64,8 @@ import classes from './Carriage.module.css';
 // the replay, and on a slow phone that chain put the stage's pictures 3.4 s after the scroll
 const theatreCode = () => import('@/stage/containers/ReplayTheatre');
 const underCode = () => import('./CarriageUnder');
+/** How long the line waits on the stage's pictures before the replay plays without them. */
+const PAINT_CAP_MS = 8000;
 const ReplayTheatre = dynamic(() => theatreCode().then((m) => m.ReplayTheatre), {
   ssr: false,
 });
@@ -210,6 +213,23 @@ export function FeaturedReplay() {
     [events],
   );
 
+  // the stage paints its dark ground at once and its pictures as they come: the line stays over
+  // it until they are in, and the replay plays from then (a first visit after a deploy, every
+  // file new to Cloudflare, showed a dark window for 10 s and more, and read as broken)
+  const [painted, setPainted] = useState(false);
+  const loaded = !!(game && cut);
+  useEffect(() => {
+    const el = screenRef.current;
+    if (!loaded || !el) return;
+    let live = true;
+    void picturesOf(el, PAINT_CAP_MS).then(() => {
+      if (live) setPainted(true);
+    });
+    return () => {
+      live = false;
+    };
+  }, [loaded, screenRef]);
+
   const id = game?.game_id ?? null;
   const record = id ? id.slice(0, 7).toUpperCase() : '';
   // the theatre's way out comes back here (`from=home`, TheaterClient)
@@ -266,7 +286,11 @@ export function FeaturedReplay() {
                 ))}
               </div>
               <div className={classes.glass}>
-                <div ref={screenRef} className={`${classes.screen} ${stageFonts}`}>
+                <div
+                  ref={screenRef}
+                  className={`${classes.screen} ${stageFonts}`}
+                  data-painted={painted || undefined}
+                >
                   {game && cut ? (
                     <ReplayTheatre
                       key={game.game_id}
@@ -274,17 +298,18 @@ export function FeaturedReplay() {
                       mini={{
                         from: cut.from,
                         to: cut.to,
-                        autoplay: onScreen && !still,
+                        autoplay: onScreen && !still && painted,
                         controls: wide ? 'stage' : 'under',
                         under,
                         underEl,
                       }}
                     />
-                  ) : (
-                    <p className={classes.wait}>
+                  ) : null}
+                  {painted ? null : (
+                    <p className={classes.wait} role="status">
                       {failed
                         ? 'The archive is resting; the replays are a click away.'
-                        : ' '}
+                        : 'Rewinding the reels…'}
                     </p>
                   )}
                 </div>

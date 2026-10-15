@@ -42,6 +42,7 @@ import { getGameStatus, getReplay } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { ApiError } from '@/lib/request';
 import { OrientationGuard } from '@/stage/OrientationGuard';
+import { picturesOf } from '@/stage/pictures-of';
 import { ReplayTheatre } from '@/stage/containers/ReplayTheatre';
 import { StationDeparture } from '@/stage/scenes/StationDeparture';
 import { StationStill } from '@/stage/scenes/StationStill';
@@ -56,32 +57,6 @@ const UNDER: CSSProperties = { visibility: 'hidden' };
 
 /** How long the curtain waits on the theatre's pictures before it lifts without them. */
 const PICTURES_CAP_MS = 4000;
-
-/**
- * Every picture the theatre has put on the page (its `<img>`s and its drawings' `<image>`s),
- * loaded and decoded, or `PICTURES_CAP_MS`: what the curtain waits on, so the theatre is never
- * seen half drawn, and the decoding is done behind the curtain, not in its lift.
- */
-async function picturesOf(el: HTMLElement): Promise<unknown> {
-  // a theatre mounted this moment places its pictures over its next renders (the stage measures
-  // first, the scene then describes its backdrop): two frames, and they are all on the page
-  await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
-  const srcs = new Set<string>();
-  el.querySelectorAll('img').forEach((img) => img.currentSrc && srcs.add(img.currentSrc));
-  el.querySelectorAll('image').forEach((img) => {
-    const href = img.getAttribute('href');
-    if (href) srcs.add(href);
-  });
-  const all = [...srcs].map((src) => {
-    const img = new Image();
-    img.src = src;
-    return img.decode().catch(() => {});
-  });
-  return Promise.race([
-    Promise.all(all),
-    new Promise((done) => setTimeout(done, PICTURES_CAP_MS)),
-  ]);
-}
 
 /**
  * The still's line while a finished game's replay is being filed (the curtain's plaque's): a
@@ -144,7 +119,7 @@ export function TheaterClient({ gameId }: { gameId: string }) {
   useEffect(() => {
     if (!shown || !theatre.current) return;
     let live = true;
-    void picturesOf(theatre.current).then(() => {
+    void picturesOf(theatre.current, PICTURES_CAP_MS).then(() => {
       if (live) setLifting(true);
     });
     return () => {

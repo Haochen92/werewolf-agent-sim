@@ -313,6 +313,10 @@
   position: absolute;
   inset: 0;
 }
+/* the stage under its line until its pictures are in (FeaturedReplay's `painted`) */
+.screen:not([data-painted]) > [data-beat-index] {
+  visibility: hidden;
+}
 .wait {
   position: absolute;
   inset: 0;
