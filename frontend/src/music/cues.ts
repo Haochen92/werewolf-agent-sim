@@ -53,15 +53,26 @@ export interface Moment {
   beat: Pick<SceneBeat, 'id' | 'scene' | 'day'> | null;
   /** The game's winner, once it is over. */
   winner: WinnerKey | null;
+  /** How many seats are alive at the beat (0 before the table is dealt). */
+  alive: number;
   /** The replay's Fast halves every hold: the lynch's psalm would be cut short. */
   fast: boolean;
 }
 
 const loop = (key: string, url: string): Bed => ({ key, tracks: [url], mode: 'loop' });
 
-/** Day 1's discussion is the parlour's, day 2's the masked accusations', and so on. */
-const discussion = (day: number): Bed =>
-  day % 2 === 1 ? loop('day-odd', TRACKS.dayOdd) : loop('day-even', TRACKS.dayEven);
+/** The table is down to its endgame: this many alive or fewer. */
+export const ENDGAME_ALIVE = 4;
+
+/**
+ * The discussion is the parlour's until the endgame, then the masked accusations', sadder,
+ * whatever day that falls on (owner, 2026-10-15: it had alternated by day, and the masked
+ * accusations sounded too gloomy for a day 2).
+ */
+const discussion = (alive: number): Bed =>
+  alive > 0 && alive <= ENDGAME_ALIVE
+    ? loop('day-endgame', TRACKS.dayEven)
+    : loop('day', TRACKS.dayOdd);
 
 /** The waiting room: the lobby's three in turn, from one picked for this visit. */
 export const lobbyBed = (start: number): Bed => ({
@@ -74,17 +85,20 @@ export const lobbyBed = (start: number): Bed => ({
 /** The guide, for a reader who asked for music. */
 export const GUIDE_BED: Bed = { ...loop('guide', TRACKS.elders), optIn: true };
 
+/** After the winner's sting, back on the platform: the lobby's three in turn, until they leave. */
+const ENDING_BED: Bed = { ...lobbyBed(0), key: 'ending' };
+
 /** What plays under a beat; null is silence (the lynch, and the ending before its sting). */
-export function bedFor({ beat }: Moment): Bed | null {
+export function bedFor({ beat, alive }: Moment): Bed | null {
   if (!beat) return null;
   switch (beat.scene) {
     case 'station':
       return null; // the container plays the lobby's own bed (`lobbyBed`)
     case 'deal':
       // the opening runs on into day 1
-      return discussion(1);
+      return discussion(alive);
     case 'day':
-      return discussion(beat.day);
+      return discussion(alive);
     case 'vote':
       return loop('vote', TRACKS.vote);
     case 'lynch':
@@ -96,7 +110,7 @@ export function bedFor({ beat }: Moment): Bed | null {
       return loop('night', TRACKS.night);
     case 'morning':
       // the day's music comes in as the day begins
-      if (beat.id === 'morning.day-begins') return discussion(beat.day);
+      if (beat.id === 'morning.day-begins') return discussion(alive);
       // each morning its own dawn, held low on the loop if the morning outlasts it
       return {
         key: `morning-${beat.day}`,
@@ -104,7 +118,7 @@ export function bedFor({ beat }: Moment): Bed | null {
         mode: 'sequence',
       };
     case 'over':
-      return beat.id === 'over.where-it-ended' ? null : loop('ending', TRACKS.elders);
+      return beat.id === 'over.where-it-ended' ? null : ENDING_BED;
   }
 }
 

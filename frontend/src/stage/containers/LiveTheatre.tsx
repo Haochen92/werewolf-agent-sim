@@ -613,6 +613,8 @@ export function LiveTheatre({
     beat: liveOn ? (beat ?? null) : null,
     winner: view.over ? winnerKey(view.winner) : null,
     fast: state.speed === 'fast',
+    // the table at the beat on the stage, not the wire's: the music follows the stage
+    alive: liveOn && beat ? folds.at(beat.end).alive.length : 0,
   };
   // a moment's one-shot only as its beat plays: history landing still plays none
   useStageMusic({

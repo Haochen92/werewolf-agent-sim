@@ -7,16 +7,31 @@ const at = (
   scene: SceneBeat['scene'],
   day = 1,
   more: Partial<Moment> = {},
-): Moment => ({ beat: { id, scene, day }, winner: null, fast: false, ...more });
+): Moment => ({ beat: { id, scene, day }, winner: null, fast: false, alive: 10, ...more });
 
 describe('the bed under each beat', () => {
-  it('alternates the discussion by day, from the deal into day 1', () => {
+  it('plays the parlour from the deal on, and the masked accusations once four or fewer are left', () => {
     expect(bedFor(at('deal.cards-dealt', 'deal'))?.tracks).toEqual([TRACKS.dayOdd]);
     expect(bedFor(at('day.speech', 'day', 1))?.key).toBe(
       bedFor(at('deal.face-up', 'deal'))?.key,
     );
-    expect(bedFor(at('day.speech', 'day', 2))?.tracks).toEqual([TRACKS.dayEven]);
-    expect(bedFor(at('day.speech', 'day', 3))?.tracks).toEqual([TRACKS.dayOdd]);
+    // the day no longer chooses: day 2 with seven alive is still the parlour
+    expect(bedFor(at('day.speech', 'day', 2, { alive: 7 }))?.tracks).toEqual([
+      TRACKS.dayOdd,
+    ]);
+    expect(bedFor(at('day.speech', 'day', 4, { alive: 5 }))?.tracks).toEqual([
+      TRACKS.dayOdd,
+    ]);
+    expect(bedFor(at('day.speech', 'day', 3, { alive: 4 }))?.tracks).toEqual([
+      TRACKS.dayEven,
+    ]);
+    expect(bedFor(at('morning.day-begins', 'morning', 5, { alive: 3 }))?.tracks).toEqual([
+      TRACKS.dayEven,
+    ]);
+    // before the table is dealt nobody is counted alive, which is not an endgame
+    expect(bedFor(at('deal.cards-dealt', 'deal', 1, { alive: 0 }))?.tracks).toEqual([
+      TRACKS.dayOdd,
+    ]);
   });
 
   it('plays the vote, rests through the lynch, and plays the night in every night scene', () => {
@@ -34,13 +49,15 @@ describe('the bed under each beat', () => {
     });
     expect(bedFor(at('morning.roll', 'morning', 2))?.key).toBe(morning?.key);
     expect(bedFor(at('morning.shutter-down', 'morning', 3))?.key).not.toBe(morning?.key);
-    // "the day begins" carries the new day: day 3's discussion is the parlour's
     expect(bedFor(at('morning.day-begins', 'morning', 3))?.tracks).toEqual([TRACKS.dayOdd]);
   });
 
-  it("is silent where the ending starts, then the elders' music from the winner's hour", () => {
+  it("is silent where the ending starts, then the platform's lobby from the winner's hour", () => {
     expect(bedFor(at('over.where-it-ended', 'over', 3))).toBeNull();
-    expect(bedFor(at('over.winners-hour', 'over', 3))?.tracks).toEqual([TRACKS.elders]);
+    expect(bedFor(at('over.winners-hour', 'over', 3))).toMatchObject({
+      mode: 'cycle',
+      tracks: TRACKS.lobby,
+    });
     expect(bedFor(at('over.curtain', 'over', 3))?.key).toBe('ending');
   });
 
@@ -48,7 +65,7 @@ describe('the bed under each beat', () => {
     expect(bedFor(at('station.waiting', 'station'))).toBeNull();
     expect(lobbyBed(2)).toMatchObject({ mode: 'cycle', start: 2, tracks: TRACKS.lobby });
     expect(GUIDE_BED.optIn).toBe(true);
-    expect(bedFor({ beat: null, winner: null, fast: false })).toBeNull();
+    expect(bedFor({ beat: null, winner: null, fast: false, alive: 0 })).toBeNull();
   });
 });
 

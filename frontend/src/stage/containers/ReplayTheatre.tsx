@@ -213,6 +213,7 @@ export function ReplayTheatre({
     beat: beat ?? null,
     winner: ahead.over ? winnerKey(ahead.winner) : null,
     fast: state.speed === 'fast',
+    alive: view?.alive.length ?? 0,
   };
   useStageMusic({
     bed: state.playing ? bedFor(moment) : null,
