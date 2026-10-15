@@ -15,6 +15,7 @@ const KEYS = {
   notes: (gameId: string) => `notes_${gameId}`,
   live: (gameId: string) => `live_${gameId}`,
   away: (gameId: string) => `away_${gameId}`,
+  music: 'music',
 } as const;
 
 function read(key: string): string | null {
@@ -82,6 +83,18 @@ export const byokKey = {
   get: () => read(KEYS.byok),
   set: (key: string) => write(KEYS.byok, key),
   clear: () => remove(KEYS.byok),
+};
+
+/**
+ * Whether the viewer wants the music: `on` or `off` as they last chose, null if they never
+ * chose (the game plays it by default; the guide only for a viewer who chose `on`).
+ */
+export const musicPref = {
+  get: (): 'on' | 'off' | null => {
+    const v = read(KEYS.music);
+    return v === 'on' || v === 'off' ? v : null;
+  },
+  set: (v: 'on' | 'off') => write(KEYS.music, v),
 };
 
 /** Ghost-mode guesses, keyed by phase within a game. Never cleared — it is the player's own record. */

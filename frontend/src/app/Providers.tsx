@@ -4,6 +4,7 @@ import { useState, type ReactNode } from 'react';
 import { MantineProvider } from '@mantine/core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ApiError } from '@/lib/request';
+import { MusicDirector } from '@/music/music';
 import { theme } from '@/theme';
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -30,6 +31,8 @@ export function Providers({ children }: { children: ReactNode }) {
     <QueryClientProvider client={queryClient}>
       {/* forced, not default: there is no light theme to switch to (see layout.tsx) */}
       <MantineProvider theme={theme} forceColorScheme="dark">
+        {/* the score's one player for the page: it outlives a page change (src/music) */}
+        <MusicDirector />
         {children}
       </MantineProvider>
     </QueryClientProvider>
