@@ -737,6 +737,31 @@ async def test_stream_drop_starts_the_grace_and_a_return_lifts_it(quiet_session,
     assert session.turn_deadlines["p1"] == thinking
 
 
+async def test_a_seat_that_left_hands_its_turns_over_at_once_until_it_returns(
+        quiet_session, monkeypatch):
+    """Two turns in a row played by its agent while the seat had no connection: it is taken
+    to have left, and its next question goes to the agent at once instead of after the
+    grace. Connecting again ends that."""
+    monkeypatch.setattr("server.game.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
+    monkeypatch.setattr("server.game.seat_clocks.ABSENCE_GRACE_SECONDS", 0.5)
+    session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2"], human_players=["p1", "p2"])
+    session.subscribe("t2")  # the friend still at the table
+    for _ in range(2):
+        _park(session)
+        assert 0.4 < _seconds_left(session, "p1") <= 0.5  # the grace
+        await asyncio.sleep(0.6)
+        assert "p1" not in session.pending_requests  # played by p1's agent
+    _park(session)
+    assert _seconds_left(session, "p1") <= 0.01  # gone: no grace
+    await asyncio.sleep(0.05)
+    assert "p1" not in session.pending_requests
+
+    q = session.subscribe("t1")  # p1 is back
+    session.unsubscribe(q)
+    _park(session)
+    assert 0.4 < _seconds_left(session, "p1") <= 0.5  # the grace again
+
+
 async def test_returning_seat_unparks_and_the_others_get_the_grace(quiet_session, monkeypatch):
     """A parked table (two absent seats). One human comes back: their own question gets
     a fresh thinking window; the other absent seat gets the grace, and at ITS expiry

@@ -10,6 +10,10 @@ that seat's turn is played by the seat's own AI so the rest of the table can car
 nobody is connected, the game parks: it just waits, nothing is spent, and the question is
 still there when someone comes back.
 
+A seat whose AI has played two turns in a row while it had no connection is taken to have
+left: from then on its questions go to its AI at once, rather than holding the table for
+30 seconds each, until the seat connects again.
+
 Only games with more than one human seat use these clocks. A solo player may think for as
 long as they like, and when they leave the game does not play on without them: it
 suspends until they come back (GameSession). This file holds the timing and nothing
@@ -34,6 +38,10 @@ AFK_TIMEOUT_SECONDS = 120.0
 # How long a waiting seat with no connection open has to come back. Measured 2026-09-09:
 # a closed connection is noticed within 1-10 s, so 30 s still leaves room for a retry.
 ABSENCE_GRACE_SECONDS = 30.0
+# After this many turns in a row played by its AI while the seat had no connection, a seat
+# is taken to have left, and its next questions go to its AI at once until it reconnects
+# (multiplayer audit, 2026-10-15: a friend who had gone held every turn of theirs for 30 s).
+GONE_AFTER_TURNS = 2
 
 
 def _now() -> datetime:
@@ -59,7 +67,9 @@ class SeatClocks:
                   refreshed only when the table unparks; the absence window is always
                   computed against it, never stored.
       _tasks      seat -> the one asyncio task sleeping until its deadline. A seat is
-                  "running" while it has one; a restart cancels the old task first."""
+                  "running" while it has one; a restart cancels the old task first.
+      _missed     seat -> turns in a row its AI played while it had no connection; gone
+                  once it reaches GONE_AFTER_TURNS, cleared when the seat connects."""
 
     def __init__(self, game_id: str, pending: dict[str, HumanTurnRequest], *,
                  enabled: bool,
@@ -75,6 +85,7 @@ class SeatClocks:
         self.deadlines: dict[str, str] = {}
         self._thinking: dict[str, datetime] = {}
         self._tasks: dict[str, asyncio.Task] = {}
+        self._missed: dict[str, int] = {}
 
     # -- the clocks -----------------------------------------------------------------------
 
@@ -95,7 +106,9 @@ class SeatClocks:
         deadline the players are shown is the one actually in use."""
         deadline = self._thinking[seat]
         if not self._seat_present(seat):
-            deadline = min(deadline, _now() + timedelta(seconds=ABSENCE_GRACE_SECONDS))
+            gone = self._missed.get(seat, 0) >= GONE_AFTER_TURNS
+            grace = 0.0 if gone else ABSENCE_GRACE_SECONDS
+            deadline = min(deadline, _now() + timedelta(seconds=grace))
         self.deadlines[seat] = deadline.isoformat()
         stale = self._tasks.pop(seat, None)
         if stale is not None:
@@ -131,6 +144,8 @@ class SeatClocks:
             return
         logger.info("game %s: seat %s AFK on %s — delegating the turn to its agent",
                     self._game_id, seat, request.phase)
+        if not self._seat_present(seat):
+            self._missed[seat] = self._missed.get(seat, 0) + 1
         try:
             self._delegate(seat)
         except Exception:  # a failed default must be loud, never a vanished task error
@@ -174,7 +189,8 @@ class SeatClocks:
         it was parked: the returning seat runs on the full window, the seats still absent
         drop to the 30-second one, and when one of those runs out there is now someone
         connected, so that turn goes to the seat's AI. Seats whose clocks were already
-        running are left alone."""
+        running are left alone. A seat taken to have left is back."""
+        self._missed.pop(seat, None)
         if not self._enabled or not self._pending:
             return
         for pending_seat, request in list(self._pending.items()):
