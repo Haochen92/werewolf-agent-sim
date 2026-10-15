@@ -22,6 +22,7 @@ import { Wing } from '../instruments/Wing';
 import { stationBack, stationFront, stationPlan } from '../paint/station';
 import { STAGE_H, geometry, type Hud } from '../units';
 import { Snow } from './StationScene';
+import { useStationPictures } from './station-pictures';
 import styles from './Station.module.css';
 import own from './StationStill.module.css';
 
@@ -46,50 +47,7 @@ export function StationStill({
     <OrientationGuard>
       <main className={own.page} data-loading={what}>
         <Stage fit="contain">
-          <Layer name="paint">
-            <Bleed room="station" />
-            <Paint of={stationBack} opts={{ hud, sky: SPRITES.station.sky.src }} />
-            <div className={styles.world}>
-              <div
-                className={styles.train}
-                style={{
-                  left: S.train.x,
-                  top: S.train.y,
-                  width: S.train.w,
-                  height: S.train.h,
-                }}
-              >
-                <Image
-                  decoding="sync"
-                  src={SPRITES.station.train}
-                  alt=""
-                  unoptimized
-                  priority
-                  draggable={false}
-                  className={styles.fill}
-                />
-              </div>
-            </div>
-            <div
-              className={styles.paving}
-              style={{ top: S.floorY, height: STAGE_H - S.floorY }}
-            >
-              <div
-                className={styles.tile}
-                style={{ backgroundImage: `url(${SPRITES.station.floor.src})` }}
-              />
-            </div>
-            <Paint
-              of={stationFront}
-              opts={{
-                hud,
-                post: SPRITES.station.post.src,
-                lamp: SPRITES.station.lamp.src,
-                wood: SPRITES.wood.src,
-                stone: SPRITES.station.floor.src,
-              }}
-            />
-          </Layer>
+          <StillPaint hud={hud} />
           <Layer name="instruments">
             <div className={styles.sign} style={{ left: S.cx }}>
               <span className={styles.chains} aria-hidden="true">
@@ -122,5 +80,54 @@ export function StationStill({
         </Stage>
       </main>
     </OrientationGuard>
+  );
+}
+
+/** The platform's paint, inside the Stage: the train and the country are picked by its measured width. */
+function StillPaint({ hud }: { hud: Exclude<Hud, 'none'> }) {
+  const S = stationPlan(hud);
+  const pics = useStationPictures();
+  return (
+    <Layer name="paint">
+      <Bleed room="station" />
+      <Paint of={stationBack} opts={{ hud, sky: pics.sky.src }} />
+      <div className={styles.world}>
+        <div
+          className={styles.train}
+          style={{
+            left: S.train.x,
+            top: S.train.y,
+            width: S.train.w,
+            height: S.train.h,
+          }}
+        >
+          <Image
+            decoding="sync"
+            src={pics.train}
+            alt=""
+            unoptimized
+            priority
+            draggable={false}
+            className={styles.fill}
+          />
+        </div>
+      </div>
+      <div className={styles.paving} style={{ top: S.floorY, height: STAGE_H - S.floorY }}>
+        <div
+          className={styles.tile}
+          style={{ backgroundImage: `url(${SPRITES.station.floor.src})` }}
+        />
+      </div>
+      <Paint
+        of={stationFront}
+        opts={{
+          hud,
+          post: SPRITES.station.post.src,
+          lamp: SPRITES.station.lamp.src,
+          wood: SPRITES.wood.src,
+          stone: SPRITES.station.floor.src,
+        }}
+      />
+    </Layer>
   );
 }

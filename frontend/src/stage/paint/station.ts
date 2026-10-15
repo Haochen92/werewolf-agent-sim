@@ -44,6 +44,11 @@ const SNOW_Y = 144;
 /** The post and lamp pictures' proportions (width / height). */
 const POST_ASPECT = 489 / 1024;
 const LAMP_ASPECT = 569 / 1008;
+/**
+ * The room round the lantern in its picture (`lamp-lit.webp`), in units: its glow is baked in
+ * there (scripts/station-sizes.mjs), not drawn live by a filter over four times its box.
+ */
+const LAMP_GLOW_PAD = 60;
 
 /** A box in units. */
 export interface Box {
@@ -141,7 +146,7 @@ export interface StationOpts {
   hud?: Hud;
   /** The painted country behind the track (`SPRITES.station.sky.src`); without it, flat sky. */
   sky?: string;
-  /** The lamp post and the lantern; without them, neither is drawn. */
+  /** The lamp post and the lantern (its glow baked in); without them, neither is drawn. */
   post?: string;
   lamp?: string;
   /** The beam's walnut (`SPRITES.wood.src`) and the edge's stone (`SPRITES.station.floor.src`); without them, flat. */
@@ -209,7 +214,6 @@ export function stationFront(o: StationOpts): string {
   d += `<linearGradient id="${P}beamShade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${STATION.beamShadeTop}" stop-opacity=".25"/><stop offset="1" stop-color="${STATION.beamShadeBot}" stop-opacity=".55"/></linearGradient>`;
   d += `<linearGradient id="${P}lip" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${STATION.lipTop}"/><stop offset="1" stop-color="${STATION.lipBot}"/></linearGradient>`;
   d += `<filter id="${P}postsh" x="-20%" y="-5%" width="140%" height="110%"><feDropShadow dx="6.4" dy="0" stdDeviation="4.8" flood-color="#000" flood-opacity=".45"/></filter>`;
-  d += `<filter id="${P}glow" x="-150%" y="-80%" width="400%" height="260%"><feDropShadow dx="0" dy="0" stdDeviation="19.2" flood-color="${STATION.lamp}" flood-opacity=".55"/></filter>`;
   d += `</defs>`;
   // the edge: its shadow on the paving, the stone lit from above, its dark foot, the drift on it
   d += `<rect x="0" y="${f(y + eh)}" width="${W}" height="12" fill="url(#${P}shade)"/>`;
@@ -234,7 +238,8 @@ export function stationFront(o: StationOpts): string {
   if (o.lamp)
     for (const lx of S.lamps) {
       const { top, h, w } = S.lamp;
-      d += `<image href="${o.lamp}" x="${f(lx - w / 2)}" y="${f(top)}" width="${f(w)}" height="${f(h)}" preserveAspectRatio="none" filter="url(#${P}glow)"/>`;
+      const p = LAMP_GLOW_PAD;
+      d += `<image href="${o.lamp}" x="${f(lx - w / 2 - p)}" y="${f(top - p)}" width="${f(w + 2 * p)}" height="${f(h + 2 * p)}" preserveAspectRatio="none"/>`;
     }
   // the beam: its shadow on the scene, the walnut darkened, a dark line over the brass trim at
   // its foot, and the snow on top, thinning towards the ends

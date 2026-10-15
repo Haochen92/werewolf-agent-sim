@@ -110,8 +110,10 @@ import walnut from './sprites/wood/walnut.webp';
 import stationSky from './sprites/station/sky.webp';
 import stationFloor from './sprites/station/floor.webp';
 import stationPost from './sprites/station/post.webp';
-import stationLamp from './sprites/station/lamp.webp';
+import stationLampLit from './sprites/station/lamp-lit.webp';
 import stationTrain from './sprites/station/train.webp';
+import stationSky1x from './sprites/station/sky@1x.webp';
+import stationTrain1x from './sprites/station/train@1x.webp';
 import stationBlind from './sprites/station/blind.webp';
 import carriageRoof from './sprites/carriage/roof.webp';
 import carriageRail from './sprites/carriage/rail.webp';
@@ -493,6 +495,8 @@ export const SPRITES: {
   kits: Record<KitName, StaticImageData>;
   wood: StaticImageData;
   station: Record<StationPicture, StaticImageData>;
+  /** The train and the country at one pixel per unit; `station`'s are about 1.5 (scenes/station-pictures.ts). */
+  stationAt1x: Record<'sky' | 'train', StaticImageData>;
   carriage: Record<CarriagePicture, StaticImageData>;
   window: Record<WindowHour, Record<WindowPicture, StaticImageData>>;
   props: Record<PropPicture, StaticImageData>;
@@ -628,10 +632,11 @@ export const SPRITES: {
     sky: stationSky,
     floor: stationFloor,
     post: stationPost,
-    lamp: stationLamp,
+    lamp: stationLampLit,
     train: stationTrain,
     blind: stationBlind,
   },
+  stationAt1x: { sky: stationSky1x, train: stationTrain1x },
   carriage: {
     roof: carriageRoof,
     rail: carriageRail,

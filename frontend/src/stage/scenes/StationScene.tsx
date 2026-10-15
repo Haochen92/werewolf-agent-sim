@@ -43,6 +43,7 @@ import { StageMotion, useMotionScale } from '../motion';
 import { stationBack, stationFront, stationPlan } from '../paint/station';
 import { STAGE_H, geometry, type StageGeometry } from '../units';
 import { CURTAIN, DEPART, canDepart, ledgeLine } from './station';
+import { useStationPictures } from './station-pictures';
 import type { RoomInput, SceneProps } from './types';
 import styles from './Station.module.css';
 
@@ -67,6 +68,7 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
   const departing = beat.id === 'station.departing';
   const opening = room?.curtain === 'opening';
   const S = stationPlan(hud, room?.places);
+  const pics = useStationPictures();
   const g = geometry(hud);
   const small = useSmall();
 
@@ -122,7 +124,7 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
     <>
       <Layer name="paint">
         <Bleed room="station" />
-        <Paint of={stationBack} opts={{ hud, sky: SPRITES.station.sky.src }} />
+        <Paint of={stationBack} opts={{ hud, sky: pics.sky.src }} />
         {/* the train stays inside the world: past its sides the bleed's dark takes over */}
         <div className={styles.world}>
           <motion.div
@@ -135,7 +137,7 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
           >
             <Image
               decoding="sync"
-              src={SPRITES.station.train}
+              src={pics.train}
               alt=""
               unoptimized
               priority
