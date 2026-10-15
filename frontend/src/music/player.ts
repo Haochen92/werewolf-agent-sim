@@ -95,6 +95,10 @@ export class MusicPlayer {
       return;
     }
     if (!this.ctx) {
+      // the page is a player, not a sound effect: an iPhone on silent mutes Web Audio otherwise
+      // (Safari 17+; elsewhere there is no audioSession)
+      const session = (navigator as { audioSession?: { type: string } }).audioSession;
+      if (session) session.type = 'playback';
       this.ctx = new AudioContext();
       this.master = this.ctx.createGain();
       this.master.gain.value = LEVEL;

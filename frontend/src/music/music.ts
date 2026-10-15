@@ -54,11 +54,15 @@ export function MusicDirector() {
       if (!useMusicState.getState().pressed) useMusicState.setState({ pressed: true });
     };
     const onVisibility = () => music().setVisible(document.visibilityState === 'visible');
+    // a finger's press counts as the viewer's say-so only as it lifts (pointerup): an iPhone
+    // let no touch start the sound when it was taken on pointerdown alone; a mouse's, as it goes down
     window.addEventListener('pointerdown', onPress, true);
+    window.addEventListener('pointerup', onPress, true);
     window.addEventListener('keydown', onPress, true);
     document.addEventListener('visibilitychange', onVisibility);
     return () => {
       window.removeEventListener('pointerdown', onPress, true);
+      window.removeEventListener('pointerup', onPress, true);
       window.removeEventListener('keydown', onPress, true);
       document.removeEventListener('visibilitychange', onVisibility);
     };
