@@ -289,6 +289,7 @@ class GameSession:
         self._pending_ids: dict[str, str] = {}
         self._pending_answers: dict[str, asyncio.Future] = {}
         self._drafts_used: dict[str, int] = {}
+        self._drafting: set[str] = set()  # seats with a draft on its way
         self.clocks = SeatClocks(
             self.game_id, self.pending_requests, enabled=len(self._seat_tokens) > 1,
             seat_present=self.seat_present, anyone_present=lambda: self.humans_present,
@@ -694,15 +695,30 @@ class GameSession:
         used = self._drafts_used.get(seat, 0)
         if used >= DRAFTS_PER_TURN:
             raise LookupError("no drafts left this turn: send what you have")
+        if seat in self._drafting:
+            raise LookupError("a draft is already on its way")
+        # Taken before the model is asked, and given back if it fails: counted after it
+        # answered, drafts sent together all passed the cap, each a paid call adding up to
+        # the credit cap to the seat's clock (multiplayer audit, 2026-10-15).
+        self._drafts_used[seat] = used + 1
+        self._drafting.add(seat)
         started = time.monotonic()
-        if request.phase == "day_channel":
-            payload = await self._turn_payload(seat)
-            direction = player_direction(notes, current, seat_notes, suspect)
-            line = await asyncio.to_thread(self._preview_line, seat, payload, direction)
-        else:
-            line = await asyncio.to_thread(self._draft, request, notes)
-        self.clocks.extend(seat, min(time.monotonic() - started, DRAFT_CREDIT_CAP_S))
-        self._drafts_used[seat] = used + 1  # a failed draft is not charged
+        try:
+            if request.phase == "day_channel":
+                payload = await self._turn_payload(seat)
+                direction = player_direction(notes, current, seat_notes, suspect)
+                line = await asyncio.to_thread(self._preview_line, seat, payload, direction)
+            else:
+                line = await asyncio.to_thread(self._draft, request, notes)
+        except BaseException:
+            if self.pending_requests.get(seat) is request:  # a failed draft is not charged
+                self._drafts_used[seat] = used
+            raise
+        finally:
+            self._drafting.discard(seat)
+        # the wait goes back to this question's clock only: a new one has its own
+        if self.pending_requests.get(seat) is request:
+            self.clocks.extend(seat, min(time.monotonic() - started, DRAFT_CREDIT_CAP_S))
         return line, DRAFTS_PER_TURN - used - 1
 
     @property

@@ -628,7 +628,14 @@ async def test_drafting_credits_the_wait_and_caps_the_turn(quiet_session, monkey
     assert after - before >= timedelta(seconds=0.05)  # the wait, credited back
     assert sorted(session.pending_requests) == ["player_3"]  # nothing was sent
 
-    await session.draft_line("player_3", "again")
+    # two at once (two tabs, a script): the second is refused while the first is on its way,
+    # and only the one that ran is counted
+    both = await asyncio.gather(session.draft_line("player_3", "again"),
+                                session.draft_line("player_3", "and again"),
+                                return_exceptions=True)
+    assert [r[1] for r in both if not isinstance(r, Exception)] == [1]
+    assert [str(r) for r in both if isinstance(r, Exception)] == [
+        "a draft is already on its way"]
     await session.draft_line("player_3", "")  # no notes: a free draft counts the same
     with pytest.raises(LookupError, match="no drafts left"):
         await session.draft_line("player_3", "one more")

@@ -525,6 +525,8 @@ def test_draft_failure_tells_the_player_to_type(api_client, seated_session, monk
         player_id="player_3", phase="day_channel", valid_targets=[])
     r = api_client.post(f"/games/{session.game_id}/draft", json={"notes": "4 dodging"})
     assert r.status_code == 503 and "type it instead" in r.json()["detail"]
+    # taken before the model was asked, the failed draft is given back
+    assert session._drafts_used == {"player_3": 0} and session._drafting == set()
     # a turn the checkpoint cannot show (a fake graph has none) fails the same way
     monkeypatch.setattr(session, "_turn_payload", rt.GameSession._turn_payload.__get__(session))
     r = api_client.post(f"/games/{session.game_id}/draft", json={})
