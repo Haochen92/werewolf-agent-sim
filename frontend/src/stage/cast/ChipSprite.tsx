@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * A seat's chip: the character's head portrait, framed so every face fills its circle at the
  * same size (`HEAD_FRAME`), as the wing's tiles and the speech box's header show it. Just the
@@ -8,18 +10,26 @@
  *
  * `unoptimized`: the sprites are already WebP at their final size, so re-encoding them through
  * the image optimiser would only add artefacts.
+ *
+ * On a small stage (`useSmall`) the portrait is the phone's 224 px copy, not the 384 px one; a
+ * chip off the stage that is small everywhere (the landing's) asks for it with `small`.
  */
 import Image from 'next/image';
 import { HEAD_FRAME, SPRITES, type Character } from '@/assets/manifest';
+import { useSmall } from '../set';
 
 export function ChipSprite({
   character,
   className,
+  small,
 }: {
   character: Character;
   className?: string;
+  /** Draw the phone's copy wherever it is: the chip is never drawn large. */
+  small?: boolean;
 }) {
   const { s, x, y } = HEAD_FRAME[character];
+  const heads = useSmall() || small ? SPRITES.small.day : SPRITES.day;
   return (
     <span
       className={className}
@@ -34,7 +44,7 @@ export function ChipSprite({
     >
       <Image
         decoding="sync"
-        src={SPRITES.day[character].head}
+        src={heads[character].head}
         alt=""
         unoptimized
         draggable={false}

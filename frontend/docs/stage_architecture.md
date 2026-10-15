@@ -820,12 +820,14 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
 - **On a phone the grade keeps its vignette and loses its grain, and a night room's choice
   cuts.** The grain tile is under a pixel at a phone's scale and was blended again under every
   mover; the choice's 0.6 s full-stage fade was a layer and its cascade (build log §8.9).
-- **A paint generator's markup is remembered across instances** (`Paint`'s `drawn`): the
-  light's holes cost 60–110 ms to trace, and a beat's light often repeats an earlier one.
+- **A paint generator's markup is remembered across instances and remounts** (`Paint`'s
+  `drawn`, kept by its options under a stand-in id): the light's holes cost 60–110 ms to trace,
+  and a beat's light often repeats an earlier one.
 - **A phone draws its own copies of the pictures it draws small** (`SPRITES.small`, made by
   `scripts/small-sprites.mjs`): the jar's glass and lid, the plate, the deal's small cards, the
-  night window, the day figures, each picked by `useSmall()`. A census in the phone frame found
-  70 MB of decoded pixels the phone never showed, decoded again at every beat that remounted them.
+  night window, the day figures and the heads (224 px; the landing's chips ask for it with
+  `small`), each picked by `useSmall()`. A census in the phone frame found 70 MB of decoded
+  pixels the phone never showed, decoded again at every beat that remounted them.
 - **The next speaker's poses are decoded a turn ahead** (`cast/DecodeAhead.tsx`, in the replay,
   which knows the beats ahead): iPhone Safari decodes a figure's picture when it is first
   painted, in the same frames as the rise.

@@ -9,7 +9,12 @@
  * 82, method 6), since near-lossless on a resampled figure came out near 3× its source's bytes.
  * Rerun whenever a source on the list is re-exported.
  *
- * Run from frontend/: `node scripts/small-sprites.mjs`
+ * The heads (the seats' chips) are 224 px, from 384: the largest a phone draws one is about 230
+ * physical px (the vote's chips, the night photo; a census on the replay, landing and benches at
+ * 844×390 ×3, 2026-10-15), and most are under 120.
+ *
+ * Run from frontend/: `node scripts/small-sprites.mjs`, or `… head` for only the files whose
+ * path has `head` in it (the others are left as they are).
  */
 import { readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
@@ -50,6 +55,11 @@ for (const character of (await readdir(path.join(DIR, 'day'))).sort())
     const rel = `day/${character}/${state}.webp`;
     if (await stat(path.join(DIR, rel)).catch(() => null)) LIST.push([rel, 0.8]);
   }
+for (const character of (await readdir(path.join(DIR, 'day'))).sort()) {
+  const rel = `day/${character}/head.webp`;
+  if (await stat(path.join(DIR, rel)).catch(() => null)) LIST.push([rel, 224 / 384]);
+}
+const only = process.argv[2];
 
 function optionsFor(rel) {
   if (rel.split('/')[0] === 'day') return { quality: 82, alphaQuality: 100, effort: 6 };
@@ -62,6 +72,7 @@ let before = 0;
 let after = 0;
 
 for (const [rel, scale] of LIST) {
+  if (only && !rel.includes(only)) continue;
   const src = path.join(DIR, rel);
   const dest = src.replace(/\.webp$/, '@small.webp');
   const { width, height } = await sharp(src).metadata();

@@ -289,6 +289,21 @@ import automatonBaseSmall from './sprites/day/automaton/base@small.webp';
 import automatonTalkingSmall from './sprites/day/automaton/talking@small.webp';
 import automatonThinkingSmall from './sprites/day/automaton/thinking@small.webp';
 import automatonOutSmall from './sprites/day/automaton/out@small.webp';
+import owlHeadSmall from './sprites/day/owl/head@small.webp';
+import hareHeadSmall from './sprites/day/hare/head@small.webp';
+import catHeadSmall from './sprites/day/cat/head@small.webp';
+import badgerHeadSmall from './sprites/day/badger/head@small.webp';
+import cyclopsHeadSmall from './sprites/day/cyclops/head@small.webp';
+import threeEyesHeadSmall from './sprites/day/threeEyes/head@small.webp';
+import dragonHeadSmall from './sprites/day/dragon/head@small.webp';
+import onionHeadSmall from './sprites/day/onion/head@small.webp';
+import whaleHeadSmall from './sprites/day/whale/head@small.webp';
+import polarBearHeadSmall from './sprites/day/polarBear/head@small.webp';
+import shadeHeadSmall from './sprites/day/shade/head@small.webp';
+import kitsuneHeadSmall from './sprites/day/kitsune/head@small.webp';
+import mushroomHeadSmall from './sprites/day/mushroom/head@small.webp';
+import lionCubHeadSmall from './sprites/day/lionCub/head@small.webp';
+import automatonHeadSmall from './sprites/day/automaton/head@small.webp';
 import propJarGlassSmall from './sprites/props/jar-glass@small.webp';
 import propJarLidSmall from './sprites/props/jar-lid@small.webp';
 import propPlateSmall from './sprites/props/plate@small.webp';
@@ -484,7 +499,7 @@ export type TexturePicture = 'walnut' | 'boards' | 'velvet' | 'cork' | 'ink';
  * cards only; `window` holds only the night, the one hour drawn live (a night room's glass).
  */
 export interface SmallSprites {
-  day: Record<Character, Record<DayState, StaticImageData>>;
+  day: Record<Character, Record<DayState | 'head', StaticImageData>>;
   props: Record<'jarGlass' | 'jarLid' | 'plate', StaticImageData>;
   roleTiles: Record<RoleSprite, StaticImageData>;
   window: { night: Record<WindowPicture, StaticImageData> };
@@ -799,90 +814,105 @@ export const SPRITES: {
         talking: owlTalkingSmall,
         thinking: owlThinkingSmall,
         out: owlOutSmall,
+        head: owlHeadSmall,
       },
       hare: {
         base: hareBaseSmall,
         talking: hareTalkingSmall,
         thinking: hareThinkingSmall,
         out: hareOutSmall,
+        head: hareHeadSmall,
       },
       cat: {
         base: catBaseSmall,
         talking: catTalkingSmall,
         thinking: catThinkingSmall,
         out: catOutSmall,
+        head: catHeadSmall,
       },
       badger: {
         base: badgerBaseSmall,
         talking: badgerTalkingSmall,
         thinking: badgerThinkingSmall,
         out: badgerOutSmall,
+        head: badgerHeadSmall,
       },
       cyclops: {
         base: cyclopsBaseSmall,
         talking: cyclopsTalkingSmall,
         thinking: cyclopsThinkingSmall,
         out: cyclopsOutSmall,
+        head: cyclopsHeadSmall,
       },
       threeEyes: {
         base: threeEyesBaseSmall,
         talking: threeEyesTalkingSmall,
         thinking: threeEyesThinkingSmall,
         out: threeEyesOutSmall,
+        head: threeEyesHeadSmall,
       },
       dragon: {
         base: dragonBaseSmall,
         talking: dragonTalkingSmall,
         thinking: dragonThinkingSmall,
         out: dragonOutSmall,
+        head: dragonHeadSmall,
       },
       onion: {
         base: onionBaseSmall,
         talking: onionTalkingSmall,
         thinking: onionThinkingSmall,
         out: onionOutSmall,
+        head: onionHeadSmall,
       },
       whale: {
         base: whaleBaseSmall,
         talking: whaleTalkingSmall,
         thinking: whaleThinkingSmall,
         out: whaleOutSmall,
+        head: whaleHeadSmall,
       },
       polarBear: {
         base: polarBearBaseSmall,
         talking: polarBearTalkingSmall,
         thinking: polarBearThinkingSmall,
         out: polarBearOutSmall,
+        head: polarBearHeadSmall,
       },
       shade: {
         base: shadeBaseSmall,
         talking: shadeTalkingSmall,
         thinking: shadeThinkingSmall,
         out: shadeOutSmall,
+        head: shadeHeadSmall,
       },
       kitsune: {
         base: kitsuneBaseSmall,
         talking: kitsuneTalkingSmall,
         thinking: kitsuneThinkingSmall,
         out: kitsuneOutSmall,
+        head: kitsuneHeadSmall,
       },
       mushroom: {
         base: mushroomBaseSmall,
         talking: mushroomTalkingSmall,
         thinking: mushroomThinkingSmall,
         out: mushroomOutSmall,
+        head: mushroomHeadSmall,
       },
       lionCub: {
         base: lionCubBaseSmall,
         talking: lionCubTalkingSmall,
         thinking: lionCubThinkingSmall,
         out: lionCubOutSmall,
+        head: lionCubHeadSmall,
       },
       automaton: {
         base: automatonBaseSmall,
         talking: automatonTalkingSmall,
         thinking: automatonThinkingSmall,
         out: automatonOutSmall,
+        head: automatonHeadSmall,
       },
     },
     props: { jarGlass: propJarGlassSmall, jarLid: propJarLidSmall, plate: propPlateSmall },

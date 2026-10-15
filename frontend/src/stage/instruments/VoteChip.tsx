@@ -15,6 +15,7 @@ import { SPRITES, type Character } from '@/assets/manifest';
 import { headRect } from '../cast/ChipSprite';
 import { stitch } from '../paint/draw';
 import { K2 } from '../paint/materials';
+import { useSmall } from '../set';
 
 export const CHIP = {
   back: '#3a4660',
@@ -65,6 +66,7 @@ export interface ChipFaceProps {
 /** A chip seen face-on, face showing: the head and the seat's numeral, or the empty ring. */
 export function ChipFace({ x, y, r, seat, character, you, sw = 1 }: ChipFaceProps) {
   const clip = 'vc' + useId().replace(/[^A-Za-z0-9_-]/g, '');
+  const heads = useSmall() ? SPRITES.small.day : SPRITES.day;
   const rim = (
     <circle
       cx={x}
@@ -103,7 +105,7 @@ export function ChipFace({ x, y, r, seat, character, you, sw = 1 }: ChipFaceProp
       <g clipPath={`url(#${clip})`}>
         <rect x={x - r} y={y - r} width={2 * r} height={2 * r} fill="#e4d5b3" />
         <image
-          href={SPRITES.day[character].head.src}
+          href={heads[character].head.src}
           {...headRect(character, x, y, r * 1.68)}
         />
       </g>

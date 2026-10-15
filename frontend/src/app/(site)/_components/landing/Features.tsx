@@ -29,7 +29,7 @@ const ROOM_CAST = castForGame(SITE.featuredReplay, 10);
 function Chip({ character, className }: { character: Character; className?: string }) {
   return (
     <span className={className ?? classes.chip}>
-      <ChipSprite character={character} />
+      <ChipSprite character={character} small />
     </span>
   );
 }

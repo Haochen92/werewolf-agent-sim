@@ -23,7 +23,7 @@ export function ReplayMoment() {
       <blockquote className={classes.felt}>
         <span className={classes.head}>
           <span className={classes.chip}>
-            <ChipSprite character={CAST[BLUFF.seat - 1]} />
+            <ChipSprite character={CAST[BLUFF.seat - 1]} small />
           </span>
           Out loud
         </span>

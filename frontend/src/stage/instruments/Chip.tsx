@@ -20,6 +20,7 @@ import { useId } from 'react';
 import { SPRITES, type Character } from '@/assets/manifest';
 import { offGlass } from '../cast/CastShadow';
 import { headRect } from '../cast/ChipSprite';
+import { useSmall } from '../set';
 import type { StageGeometry } from '../units';
 import { MATERIALS } from '../paint/materials';
 import { factionOf, type Faction } from '../roles';
@@ -79,6 +80,7 @@ function Face({
   you?: boolean;
 }) {
   const clip = 'cf' + useId().replace(/[^A-Za-z0-9_-]/g, '');
+  const heads = useSmall() ? SPRITES.small.day : SPRITES.day;
   const cx = r,
     cy = 4 + r;
   const bx = cx + r * 0.7,
@@ -100,7 +102,7 @@ function Face({
       <g clipPath={`url(#${clip})`}>
         <rect x={cx - r} y={cy - r} width={2 * r} height={2 * r} fill="#e4d5b3" />
         <image
-          href={SPRITES.day[character].head.src}
+          href={heads[character].head.src}
           {...headRect(character, cx, cy, r * 1.68)}
         />
       </g>
