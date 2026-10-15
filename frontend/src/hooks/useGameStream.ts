@@ -57,13 +57,19 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
   const setMySeat = useGameSession((s) => s.setMySeat);
 
   const {
-    data: status,
-    isPending,
+    data,
+    isPending: loading,
+    isFetchedAfterMount,
     error: statusError,
   } = useQuery({
     queryKey: queryKeys.games.status(gameId),
     queryFn: () => getGameStatus(gameId),
     enabled,
+    // The page reads its catch-up boundary (`last_seq`) and the server's clock from the first
+    // status it holds, so that must be this visit's: a status kept from a visit a few seconds
+    // ago (the cache keeps it 30 s) made everything since then play as news, at reading pace,
+    // with no "You're back" (2026-10-15). Always asked again, and not used until it answers.
+    refetchOnMount: 'always',
     // A waiting room has no stream, so this poll is how joiners see the roster fill and
     // the host press start: keep it quick. Once running the stream carries the game and
     // the poll is only the dead-game detector and the deadline refresh, so it can relax.
@@ -73,6 +79,9 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
       return state === 'running' ? 12_000 : false;
     },
   });
+
+  const status = isFetchedAfterMount ? data : undefined;
+  const isPending = loading || (!isFetchedAfterMount && !statusError);
 
   // `you` arrives with the status, often after events have already folded.
   useEffect(() => {
