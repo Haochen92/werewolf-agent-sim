@@ -577,6 +577,27 @@ def test_status_only_exposes_the_viewers_own_pending_turn(api_client, quiet_sess
     assert set(status["deadlines"]) == {"player_3", "player_5"}
 
 
+def test_status_last_seq_counts_only_what_the_viewer_may_see(api_client, quiet_session):
+    """A night action written at night moves no viewer's last_seq but the game's end: polled,
+    the log's own count ticked once per hidden act (multiplayer audit, 2026-10-15)."""
+    from server.schemas import events as ev
+
+    session = quiet_session(FakeGraph([]), seat_tokens=["t1"], human_players=["player_3"])
+    session.log = [ev.PhaseChange(seq=1, day=1, phase="night"),
+                   ev.NightAction(seq=2, day=1, actor="player_5", role="healer",
+                                  target="player_1")]
+    api_client.app.state.resources.games._register(session)
+    url = f"/games/{session.game_id}"
+    for token in ("", "t1"):
+        api_client.cookies.clear()
+        if token:
+            api_client.cookies.set(f"seat_{session.game_id}", token)
+        assert api_client.get(url).json()["last_seq"] == 1
+    session.game_over = True  # everything unlocks at the end, as on the stream
+    api_client.cookies.clear()
+    assert api_client.get(url).json()["last_seq"] == 2
+
+
 def test_rejoin_restores_a_lost_cookie_in_both_phases(api_client, seated_session):
     # Waiting room: the stashed body-copy token re-proves the seat.
     game_id, _ = _make_room(api_client)

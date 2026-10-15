@@ -7,6 +7,7 @@ from fastapi import HTTPException, Response
 
 from server.config import server_settings
 from server.dependencies import seat_cookie_name
+from server.game.entitlement import entitled
 from server.game.game_session import GameSession
 from server.game.lobby import MAX_HUMAN_SEATS, GameLobby
 from server.graph_runtime import GraphRuntime
@@ -107,6 +108,12 @@ def live_status(session: GameLobby | GameSession, token: str) -> GameStatus:
     # Match the input_request audience: one's own seat until game over, then everyone.
     pending = sorted(seat for seat in session.pending_requests
                      if session.game_over or seat == you)
+    # The newest event this viewer may see, not the log's: a count of every event, private
+    # ones included, ticked once per night action as it was written, and anyone could poll it
+    # (multiplayer audit, 2026-10-15). The page's catch-up line needs only its own events.
+    seat = session.seat_of_viewer(token)
+    last_seq = next((event.seq for event in reversed(session.log)
+                     if entitled(event, seat, session.translator.roles, session.game_over)), 0)
     return GameStatus(
         game_id=session.game_id,
         state="finished" if session.game_over else "running",
@@ -119,7 +126,7 @@ def live_status(session: GameLobby | GameSession, token: str) -> GameStatus:
         deadlines={seat: session.turn_deadlines[seat] for seat in pending
                    if seat in session.turn_deadlines},
         game_over=session.game_over,
-        last_seq=session.log[-1].seq if session.log else 0,
+        last_seq=last_seq,
         alive_role_counts=session.public_alive_counts,
         cast=[c.character for c in session.cast],
         error=session.error,
