@@ -9,7 +9,7 @@ import { expect, test, type Page, type Route } from '@playwright/test';
 
 const GITHUB = 'https://github.com/Haochen92/werewolf-agent-sim';
 
-for (const path of ['/', '/replays', '/rooms', '/play', '/rooms/new']) {
+for (const path of ['/', '/replays', '/rooms', '/play', '/rooms/new', '/guide']) {
   test(`site shell: ${path}`, async ({ page }) => {
     await page.goto(path);
     await expect(page).toHaveTitle(/^The Ninth Express/);
@@ -861,6 +861,78 @@ for (const [name, viewport] of [
     await settle(page);
     // the whole landing is over 5,000px tall: two captures in a row, which the check needs to
     // call a page settled, take longer than the default five seconds on the dev server
+    await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true, timeout: 20_000 });
+  });
+}
+
+/** The guide's tab sets, by the section they sit in: each panel stacked in one cell. */
+const GUIDE_TABS = [
+  ['modes', 2],
+  ['day', 7],
+  ['after', 4],
+  ['tools', 2],
+] as const;
+
+test('guide: no tab set moves the page, whichever tab is shown', async ({ page }) => {
+  await page.goto('/guide');
+  await settle(page);
+  const height = (id: string) =>
+    page.evaluate((id) => document.getElementById(id)!.getBoundingClientRect().height, id);
+  for (const [id, n] of GUIDE_TABS) {
+    const tabs = page.locator(`#${id} [role=tablist]`).first().getByRole('tab');
+    await expect(tabs).toHaveCount(n);
+    const first = await height(id);
+    for (let i = 0; i < n; i++) {
+      await tabs.nth(i).click();
+      await expect(tabs.nth(i)).toHaveAttribute('aria-selected', 'true');
+      expect(await height(id)).toBe(first);
+    }
+  }
+});
+
+test('guide: the day line steps by the arrows and by its next-stop button', async ({
+  page,
+}) => {
+  await page.goto('/guide');
+  const line = page.getByRole('tablist', { name: 'The stops of a day' });
+  await line.getByRole('tab', { name: /Opening round/ }).click();
+  await page.keyboard.press('ArrowRight');
+  await expect(line.getByRole('tab', { name: /Discussion/ })).toBeFocused();
+  await expect(page.getByRole('tabpanel', { name: /Discussion/ })).toBeVisible();
+  await page.getByRole('button', { name: 'Next stop: Last word →' }).click();
+  await expect(line.getByRole('tab', { name: /Last word/ })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  );
+  // the terminus has no number, and from it the line goes back to the start
+  await page.keyboard.press('End');
+  await expect(page.getByRole('tabpanel', { name: 'End game' })).toContainText(
+    'End of the line',
+  );
+  await page.getByRole('button', { name: 'Back to the first stop →' }).click();
+  await expect(page.getByRole('tabpanel', { name: /Opening round/ })).toBeVisible();
+});
+
+test('guide: the case file loads its recorded games when opened', async ({ page }) => {
+  await page.goto('/guide');
+  const file = page.getByRole('tablist', { name: 'After the game' });
+  await file.getByRole('tab', { name: 'Reveal' }).click();
+  await expect(page.locator('#after [data-film]').first()).toBeVisible();
+  await file.getByRole('tab', { name: 'Transcript' }).click();
+  await expect(page.locator('#after [data-drawer]')).toBeVisible();
+});
+
+for (const [name, viewport] of [
+  ['guide-1440', { width: 1440, height: 900 }],
+  ['guide-390', { width: 390, height: 844 }],
+] as const) {
+  test(`guide: ${name}`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/guide');
+    // the case file's recorded games arrive in their own chunk
+    await expect(page.locator('#after [data-film]')).toHaveCount(2);
+    await settle(page);
     await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true, timeout: 20_000 });
   });
 }

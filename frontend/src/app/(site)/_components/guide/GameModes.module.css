@@ -1,0 +1,196 @@
+/* Game modes: a pill switch over one panel; each mode its line and button, then four numbered
+   steps in a row (two, then one, as the column narrows). */
+
+.tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 99px;
+  background: var(--panel);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+}
+.tabs button {
+  padding: 9px 20px;
+  border: 0;
+  border-radius: 99px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.tabs button:hover {
+  color: var(--text);
+}
+.tabs button[aria-selected='true'] {
+  background: var(--paper);
+  color: var(--ink);
+}
+.tabs button:focus-visible,
+.subtabs button:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
+.modes {
+  margin-top: 16px;
+}
+.mode {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  border-radius: 18px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 14px;
+  min-height: 44px;
+  margin-bottom: 16px;
+}
+.head p {
+  flex: 1 1 200px;
+  margin: 0;
+  color: var(--text);
+  font-size: 16.5px;
+  line-height: 1.45;
+}
+/* the friends' button: Open a room or Find a room, in one cell */
+.go {
+  display: inline-grid;
+  justify-items: end;
+}
+
+.subtabs {
+  display: inline-flex;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 99px;
+  background: var(--bg);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+}
+.subtabs button {
+  padding: 6px 16px;
+  border: 0;
+  border-radius: 99px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.subtabs button:hover {
+  color: var(--text);
+}
+.subtabs button[aria-selected='true'] {
+  background: var(--panel-2);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+}
+
+.paths {
+  flex: 1;
+}
+.path {
+  display: flex;
+  flex-direction: column;
+}
+
+.steps {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-content: start;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+  border-top: 1px solid var(--line);
+}
+.steps li {
+  padding: 16px 18px 6px 0;
+  counter-increment: step;
+}
+.steps li + li {
+  padding-left: 18px;
+  border-left: 1px solid var(--line);
+}
+.steps li::before {
+  content: counter(step);
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin: 0 8px 8px 0;
+  border-radius: 50%;
+  background: var(--panel-2);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  color: var(--amber);
+  font-size: 12px;
+  font-weight: 600;
+  vertical-align: middle;
+}
+.steps b {
+  color: var(--text);
+  font-size: 15.5px;
+  font-weight: 600;
+}
+.steps em {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 7px;
+  border-radius: 99px;
+  border: 1px solid var(--line-2);
+  color: var(--muted);
+  font-size: 11.5px;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  vertical-align: 2px;
+}
+.steps span {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+@media (max-width: 1000px) {
+  .steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .steps li:nth-child(3) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .steps li:nth-child(n + 3) {
+    border-top: 1px solid var(--line);
+  }
+}
+
+@media (max-width: 760px) {
+  .mode {
+    padding: 16px;
+  }
+  .go {
+    justify-items: start;
+  }
+  .steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .steps li,
+  .steps li + li {
+    padding: 14px 0 6px;
+    border-left: 0;
+  }
+  .steps li + li {
+    border-top: 1px solid var(--line);
+  }
+}

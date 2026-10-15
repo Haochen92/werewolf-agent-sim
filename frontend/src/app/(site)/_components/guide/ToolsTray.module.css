@@ -1,0 +1,182 @@
+/* The tools' tray: the platform's boards in less light; brass plate tabs (the rooms' plate for
+   the tool shown, a dark tab for the other); the tool on the landing's paper card, flat, so the
+   demo's ground matches it. */
+
+.tray {
+  display: grid;
+  gap: 14px;
+  justify-items: start;
+  padding: 24px 24px 40px;
+  border-radius: 18px;
+  background:
+    radial-gradient(ellipse 90% 80% at 50% 40%, transparent 0, rgba(8, 5, 3, 0.4) 100%),
+    linear-gradient(rgba(20, 12, 6, 0.12), rgba(20, 12, 6, 0.12)),
+    var(--boards) 0 0 / 420px auto repeat,
+    #3a2616;
+  /* the boards take the walnut's hue: their grain, in its brown */
+  background-blend-mode: normal, normal, saturation, normal;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 220, 170, 0.08),
+    0 24px 50px -20px rgba(0, 0, 0, 0.9);
+}
+
+.tabs {
+  display: inline-flex;
+  gap: 10px;
+}
+.tabs button {
+  position: relative;
+  min-height: 40px;
+  padding: 6px 16px 7px;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.45);
+  box-shadow: inset 0 0 0 1px rgba(255, 220, 160, 0.1);
+  color: var(--bone);
+  font-family: var(--font-serif);
+  font-size: 19px;
+  line-height: 1;
+  cursor: pointer;
+}
+.tabs button[aria-selected='true'] {
+  padding-inline: 22px;
+  border-radius: 6px;
+  color: var(--plate-ink);
+  background: linear-gradient(#e6c47a, #b8893a 55%, #9c7128);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 2px 0 #4a3210,
+    0 0 0 1px #5e421a;
+}
+/* the plate's two screws */
+.tabs button[aria-selected='true']::before,
+.tabs button[aria-selected='true']::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff3cf, #7d5f2e 70%);
+}
+.tabs button[aria-selected='true']::before {
+  left: 6px;
+}
+.tabs button[aria-selected='true']::after {
+  right: 6px;
+}
+.tabs button:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
+.cards {
+  justify-self: stretch;
+}
+/* the card fits what it holds; the tray is as tall as the taller */
+.card {
+  --demo-ground: #efe2c2;
+  --said-ink: #6b5638;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 24px;
+  border-radius: 3px;
+  color: #3a2a18;
+  background: #efe2c2;
+  box-shadow:
+    0 12px 20px -8px rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+
+.tool {
+  display: grid;
+  grid-template-columns: minmax(0, 560px) minmax(0, 1fr);
+  gap: 16px 32px;
+  align-items: center;
+}
+.tool h3 {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 26px;
+  color: var(--ink);
+}
+.demo {
+  min-width: 0;
+}
+
+/* how to use it: three steps, each a brass coin, a line in the serif and the gist in pencil */
+.how {
+  display: grid;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: how;
+}
+.how li {
+  counter-increment: how;
+  position: relative;
+  display: grid;
+  align-content: center;
+  min-height: 36px;
+  padding-left: 50px;
+}
+.how li::before {
+  content: counter(how);
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-family: var(--font-serif);
+  font-size: 21px;
+  line-height: 1;
+  color: var(--plate-ink);
+  background: radial-gradient(circle at 35% 30%, #f4dc9c, #c9a04e 55%, #8a6526);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 250, 220, 0.7),
+    inset 0 -2px 3px rgba(60, 35, 5, 0.35),
+    0 2px 4px rgba(60, 35, 5, 0.45);
+}
+.how b {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 23px;
+  line-height: 1.1;
+  color: var(--ink);
+}
+.how span {
+  margin-top: 2px;
+  font-family: var(--font-stage-hand), 'Patrick Hand', cursive;
+  font-size: 19px;
+  line-height: 1.2;
+  color: #5d5246;
+}
+
+@media (max-width: 1100px) {
+  .tool {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .tray {
+    padding: 16px 16px 28px;
+  }
+  .card {
+    justify-content: flex-start;
+    padding: 16px;
+  }
+  .tool {
+    gap: 16px;
+    align-items: start;
+  }
+}

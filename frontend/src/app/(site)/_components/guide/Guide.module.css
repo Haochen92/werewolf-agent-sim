@@ -1,12 +1,15 @@
 /* The gameplay guide: a side nav beside the page on a desktop; on a phone one sticky line that
-   names the section in view and opens the list. Then the rules as four step panels, and the
-   roles as one row per side, each a carousel of cards (SideRow). */
+   names the section in view and opens the list. The sections keep one rhythm down the page:
+   96 between them (64 on a phone), 20 from a heading to what it heads (16), or 8 to its lede
+   and 22 on. The sections' own furniture is in their modules (GameModes, DayLine, CaseFile,
+   ToolsTray); here are the page, the working demos inside them, and the roles' rows (SideRow). */
 
 .guide {
   display: grid;
   grid-template-columns: 190px minmax(0, 1fr);
   gap: 56px;
   padding: 40px 0 96px;
+  --line-2: rgba(255, 235, 200, 0.16);
 }
 
 /* ---------- the nav ---------- */
@@ -84,21 +87,41 @@
   letter-spacing: -0.035em;
 }
 .section {
-  padding-top: 52px;
+  padding-top: 96px;
 }
-.section h2 {
-  margin: 0 0 18px;
+.section > h2 {
+  margin: 0 0 20px;
   color: var(--text);
   font-size: 30px;
   font-weight: 800;
+  line-height: 1.15;
   letter-spacing: -0.025em;
 }
+.section > h2:has(+ .sub) {
+  margin-bottom: 8px;
+}
 .sub {
-  max-width: 60ch;
-  margin: -8px 0 8px;
+  max-width: 62ch;
+  margin: 0 0 22px;
   color: var(--muted);
   font-size: 16.5px;
   line-height: 1.5;
+}
+/* the first side's row starts at the lede, as any section's content does */
+.sub + .side {
+  padding-top: 0;
+}
+
+/* a tab set's panels in one cell: the box is as tall as the tallest, so a switch never moves
+   the page; the idle ones hidden (useTabs marks them, and makes them inert) */
+.stack {
+  display: grid;
+}
+.stack > * {
+  grid-area: 1 / 1;
+}
+.stack > [data-off] {
+  visibility: hidden;
 }
 /* anchors land clear of the top edge (and, on a phone, of the sticky line) */
 .section,
@@ -106,72 +129,175 @@
   scroll-margin-top: 24px;
 }
 
-.steps {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+/* ---------- the working demos ---------- */
+
+/* The seat card's stage is cropped to its top-left corner: one seat card and its notes, pinned open beside
+   it. The sizes are world units, set by the demo (--crop-*); drawn small (a crop under 0.75 of
+   its width in css px, 548 here) the notes grow with the type, so the crop takes in more of the
+   world. */
+.demo {
+  container-type: inline-size;
 }
-.steps li {
-  padding: 18px;
-  border-radius: var(--r-m);
-  background: var(--panel);
-  border: 1px solid var(--line);
+.demoCrop {
+  --w: var(--crop-w);
+  --h: var(--crop-h);
+  /* the pinned notes stand about three quarters of the card's height */
+  --note-paper-h: var(--paper-h);
+  /* the guess's list scrolls inside the crop (Wing.module.css) */
+  --guess-max: calc(var(--h) * 1px - 16px);
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: var(--w) / var(--h);
 }
-.stepIcon {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  margin-bottom: 12px;
-  border-radius: 50%;
-  background: var(--panel-2);
-  box-shadow: inset 0 0 0 1.5px rgba(255, 235, 200, 0.16);
+@container (max-width: 547px) {
+  .demoCrop {
+    --w: var(--crop-small-w);
+    --h: var(--crop-small-h);
+    --paper-h: var(--paper-small-h);
+  }
 }
-.stepIcon svg {
-  width: 22px;
-  height: 22px;
-  fill: none;
-  stroke: var(--paper-dk);
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.demoWorld {
+  width: calc(100cqi * 1600 / var(--w));
 }
-.steps b {
-  display: block;
-  margin-bottom: 6px;
-  color: var(--text);
-  font-size: 17px;
-  font-weight: 600;
+/* the world's width, so the notes beside the rail have room to lay out */
+.demoBox {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: calc(var(--h) * 1px);
 }
-.steps p {
-  margin: 0;
-  color: var(--muted);
+/* the page itself behind the cards (or the panel they sit on: --demo-ground) */
+.demoGround {
+  position: absolute;
+  inset: 0;
+  background: var(--demo-ground, var(--bg));
+}
+
+/* the composer, pinned open in the page (TurnDock's `pinned`), and under it what was said */
+.composerDemo {
+  --composer-h: 400px;
+  min-width: 0;
+}
+@media (max-width: 760px) {
+  .composerDemo {
+    --composer-h: 330px;
+  }
+}
+.said {
+  min-height: 1.5em;
+  margin: 10px 2px 0;
+  color: var(--said-ink, var(--muted));
   font-size: 14.5px;
   line-height: 1.5;
 }
-.again {
+/* the stops where you act (StopDemos): a small stage cropped to the instrument, framed as the
+   guide's pictures are, its ground the dark of the car at night */
+.stopDemo {
+  container-type: inline-size;
+  --demo-ground: #120c07;
+  /* the speech box, cropped to itself: a short measure over more lines, so its words read at
+     the column's size (SpeechBox.module.css) */
+  --speech-measure: 20;
+  --speech-lines: 4;
+}
+@media (max-width: 760px) {
+  .stopDemo {
+    --speech-measure: 15;
+    --speech-lines: 5;
+  }
+}
+.stopDemoCrop {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: var(--sw) / var(--sh);
+  border-radius: 6px;
+  box-shadow:
+    0 0 0 3px #120c06,
+    0 0 0 5px #3a2716,
+    0 0 0 6px rgba(201, 162, 94, 0.55);
+}
+.stopDemoWorld {
+  width: calc(100cqi * 1600 / var(--sw));
+}
+/* focused: the world shifted so the instrument's place on the stage is the crop's corner */
+.stopDemoShift {
+  margin-left: calc(var(--sx) * -100cqi / var(--sw));
+  margin-top: calc(var(--sy) * -100cqi / var(--sw));
+}
+/* the opening's composer, in the page's flow like the tools' */
+.openingDemo {
+  --composer-h: var(--slot-h, 360px);
+  min-width: 0;
+}
+.sentNote {
+  margin: 0;
+  padding: 18px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  color: #d8c59c;
+  font-size: 15.5px;
+  line-height: 1.5;
+}
+/* fitted: the instrument's own panel is the frame */
+.stopDemoFit .stopDemoCrop {
+  box-shadow: none;
+}
+.stopDemoFit .stopDemoBox {
+  height: auto;
+  padding: 0;
+  align-items: flex-start;
+}
+/* the instrument takes the crop's width, whichever state it shows (the ballot in, too) */
+.stopDemoFit .stopDemoBox > * {
+  flex: 1 1 auto;
+}
+.stopDemoBox {
+  position: absolute;
+  left: 0;
+  top: 0;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin: 16px 0 0;
-  color: var(--muted);
-  font-size: 15px;
+  width: calc(var(--sw) * 1px);
+  height: calc(var(--sh) * 1px);
+  padding: 16px;
 }
-.again b {
-  color: var(--text);
-  font-weight: 600;
-}
-.again svg {
-  flex: none;
-  width: 20px;
-  height: 20px;
+.twine {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 700px;
+  height: 40px;
   fill: none;
-  stroke: var(--amber);
-  stroke-width: 1.8;
-  stroke-linecap: round;
+  stroke: #a88a66;
+  stroke-opacity: 0.7;
+  stroke-width: 2;
+}
+.tapCue {
+  margin: 10px 0 0;
+  color: #a99a7e;
+  font-size: 14px;
+}
+/* the replay's panels, capped to read at the column's size (Drawer/Film `--side-max`); on a
+   phone the stage is drawn small and the type grows, so the panel may stand taller */
+.sidePanel {
+  --side-max: 560px;
+}
+@media (max-width: 760px) {
+  .sidePanel {
+    --side-max: 820px;
+  }
+}
+.retry {
+  margin-top: 12px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--amber);
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
 }
 
 /* ---------- a side's row ---------- */
@@ -281,8 +407,8 @@
 
 /* ---------- narrower ---------- */
 @media (max-width: 1100px) {
-  .steps {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .demo {
+    max-width: 600px;
   }
 }
 
@@ -342,12 +468,22 @@
   .title {
     padding-top: 24px;
   }
+  .section {
+    padding-top: 64px;
+  }
+  .section > h2 {
+    margin-bottom: 16px;
+    font-size: 27px;
+  }
+  .section > h2:has(+ .sub) {
+    margin-bottom: 6px;
+  }
+  .sub {
+    margin-bottom: 18px;
+  }
   .section,
   .side {
     scroll-margin-top: 76px;
-  }
-  .steps {
-    grid-template-columns: minmax(0, 1fr);
   }
   .sideHead .badge {
     width: 40px;

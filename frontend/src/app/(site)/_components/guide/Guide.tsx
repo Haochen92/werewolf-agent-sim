@@ -1,22 +1,60 @@
 'use client';
 
 /**
- * The gameplay guide (`/guide`): how a game goes, then the roles, one row per side. A desktop
- * gets a side nav that stays in view; a phone gets one sticky line naming the section in view,
- * which opens the list of sections (Mantine's Menu). Both track the section in view, so the nav
- * always says where the reader is.
+ * The gameplay guide (`/guide`): the game modes, a day phase by phase (a railway line, each stop
+ * working), after the game (the case file), the tools (working), then the roles, one row per
+ * side. A desktop gets a side nav that stays in view; a phone gets one sticky line naming the
+ * section in view, which opens the list of sections (Mantine's Menu). Both track the section in
+ * view, so the nav always says where the reader is.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Menu, UnstyledButton } from '@mantine/core';
 import { FACTION_NAME, type Faction } from '@/stage/roles';
 import { FactionMark } from '@/stage/instruments/FactionMark';
+import { stageFonts } from '@/stage/fonts';
 import { SIDES } from '../sides';
+import { CaseFile } from './CaseFile';
+import { DayLine } from './DayLine';
+import { GameModes } from './GameModes';
 import { SideRow } from './SideRow';
-import { STEPS, STEP_ICON } from './steps';
+import { ToolsTray } from './ToolsTray';
 import classes from './Guide.module.css';
 
-const SECTIONS: { id: string; label: string; faction?: Faction }[] = [
-  { id: 'how', label: 'How a game goes' },
+const RULES: { id: string; label: string; icon: ReactNode }[] = [
+  {
+    id: 'modes',
+    label: 'Game modes',
+    // a ticket, its stub torn along the dashes
+    icon: (
+      <>
+        <rect x="4" y="6" width="16" height="12" rx="2" />
+        <path d="M15 6v12" strokeDasharray="2 2" />
+      </>
+    ),
+  },
+  {
+    id: 'day',
+    label: 'A day, phase by phase',
+    // the sun on the horizon
+    icon: (
+      <path d="M3 17h18M6.5 17a5.5 5.5 0 0 1 11 0M12 5v3M5.2 8.7l1.9 1.9M18.8 8.7l-1.9 1.9" />
+    ),
+  },
+  { id: 'after', label: 'After the game', icon: <path d="M8 5v14l11-7z" /> },
+  {
+    id: 'tools',
+    label: 'Tools',
+    icon: (
+      <>
+        <path d="M4 20l4-1 11-11-3-3L5 16z" />
+        <path d="M14 6l3 3" />
+      </>
+    ),
+  },
+];
+
+const SECTIONS: { id: string; label: string; icon?: ReactNode; faction?: Faction }[] = [
+  ...RULES,
   ...SIDES.map((s) => ({
     id: `side-${s.faction}`,
     label: FACTION_NAME[s.faction],
@@ -24,7 +62,7 @@ const SECTIONS: { id: string; label: string; faction?: Faction }[] = [
   })),
 ];
 
-function SectionIcon({ faction }: { faction?: Faction }) {
+function SectionIcon({ faction, icon }: { faction?: Faction; icon?: ReactNode }) {
   return faction ? (
     <FactionMark faction={faction} format="mark" className={classes.navIcon} />
   ) : (
@@ -33,7 +71,7 @@ function SectionIcon({ faction }: { faction?: Faction }) {
       viewBox="0 0 24 24"
       aria-hidden="true"
     >
-      {STEP_ICON.dawn}
+      {icon}
     </svg>
   );
 }
@@ -64,7 +102,7 @@ export function Guide() {
   const here = SECTIONS.find((s) => s.id === current) ?? SECTIONS[0];
 
   return (
-    <main className={classes.guide}>
+    <main className={`${classes.guide} ${stageFonts}`}>
       <nav className={classes.nav} aria-label="Guide sections">
         {SECTIONS.map((s, i) => (
           <a
@@ -72,9 +110,9 @@ export function Guide() {
             href={`#${s.id}`}
             className={classes.navLink}
             aria-current={s.id === current ? 'location' : undefined}
-            data-first-side={i === 1 || undefined}
+            data-first-side={i === RULES.length || undefined}
           >
-            <SectionIcon faction={s.faction} />
+            <SectionIcon faction={s.faction} icon={s.icon} />
             {s.label}
           </a>
         ))}
@@ -96,7 +134,7 @@ export function Guide() {
                 className={classes.mobileButton}
                 aria-label={`Guide sections: ${here.label}`}
               >
-                <SectionIcon faction={here.faction} />
+                <SectionIcon faction={here.faction} icon={here.icon} />
                 <span className={classes.mobileHere}>{here.label}</span>
                 <svg className={classes.chevron} viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M6 9l6 6 6-6" />
@@ -104,11 +142,19 @@ export function Guide() {
               </UnstyledButton>
             </Menu.Target>
             <Menu.Dropdown>
-              <Menu.Item component="a" href="#how" leftSection={<SectionIcon />}>
-                How a game goes
-              </Menu.Item>
+              {RULES.map((s) => (
+                <Menu.Item
+                  key={s.id}
+                  component="a"
+                  href={`#${s.id}`}
+                  leftSection={<SectionIcon icon={s.icon} />}
+                  data-current={s.id === current || undefined}
+                >
+                  {s.label}
+                </Menu.Item>
+              ))}
               <Menu.Label>Roles</Menu.Label>
-              {SECTIONS.slice(1).map((s) => (
+              {SECTIONS.slice(RULES.length).map((s) => (
                 <Menu.Item
                   key={s.id}
                   component="a"
@@ -125,28 +171,31 @@ export function Guide() {
 
         <h1 className={classes.title}>Gameplay guide</h1>
 
-        <section id="how" className={classes.section} aria-labelledby="how-head">
-          <h2 id="how-head">How a game goes</h2>
-          <ol className={classes.steps}>
-            {STEPS.map((s) => (
-              <li key={s.title}>
-                <span className={classes.stepIcon} aria-hidden="true">
-                  <svg viewBox="0 0 24 24">{STEP_ICON[s.icon]}</svg>
-                </span>
-                <b>{s.title}</b>
-                <p>{s.text}</p>
-              </li>
-            ))}
-          </ol>
-          <p className={classes.again}>
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M20 7v5h-5" />
-              <path d="M19.5 12A7.5 7.5 0 1 1 17 6.5" />
-            </svg>
-            <span>
-              <b>Then the next day begins.</b> The game goes on until one side has won.
-            </span>
+        <section id="modes" className={classes.section} aria-labelledby="modes-head">
+          <h2 id="modes-head">Game modes</h2>
+          <p className={classes.sub}>
+            Play alone against the agents, or bring friends to the table.
           </p>
+          <GameModes />
+        </section>
+
+        <section id="day" className={classes.section} aria-labelledby="day-head">
+          <h2 id="day-head">A day, phase by phase</h2>
+          <DayLine />
+        </section>
+
+        <section id="after" className={classes.section} aria-labelledby="after-head">
+          <h2 id="after-head">After the game</h2>
+          <CaseFile />
+        </section>
+
+        <section id="tools" className={classes.section} aria-labelledby="tools-head">
+          <h2 id="tools-head">Tools</h2>
+          <p className={classes.sub}>
+            Two aids for your seat at the table: notes to keep track of everyone, and your
+            own agent to help you write your turn.
+          </p>
+          <ToolsTray />
         </section>
 
         <section className={classes.section} aria-labelledby="roles-head">
