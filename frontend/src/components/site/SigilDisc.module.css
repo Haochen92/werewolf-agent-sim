@@ -1,0 +1,48 @@
+/* A role's sigil on a paper disc, ringed in its side's colour (`--band`, the sigil in `--ink-f`):
+   the role picker on the landing and on the ticket (the controls kit, owner 2026-10-15). One
+   look in any size (`--disc`, 50px by default); the chosen disc adds a ring of the surface's
+   own ink past a gap of its ground (`--ctl-*`), so it reads on the dark and on paper alike. */
+.disc {
+  --disc: 50px;
+  display: grid;
+  place-items: center;
+  width: var(--disc);
+  height: var(--disc);
+  padding: calc(var(--disc) * 0.24);
+  border: 0;
+  border-radius: 50%;
+  background: #f3e9d2;
+  color: var(--ink-f);
+  cursor: pointer;
+  opacity: 0.84;
+  box-shadow: 0 0 0 3px var(--band);
+  transition:
+    opacity 0.2s,
+    box-shadow 0.2s;
+}
+.disc svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.disc:hover {
+  opacity: 1;
+}
+.disc[aria-checked='true'] {
+  opacity: 1;
+  background: #fffaf0;
+  box-shadow:
+    0 0 0 3px var(--band),
+    0 0 0 6px var(--ctl-ground),
+    0 0 0 8px var(--ctl-ink);
+}
+.disc:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 9px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .disc {
+    transition: none;
+  }
+}

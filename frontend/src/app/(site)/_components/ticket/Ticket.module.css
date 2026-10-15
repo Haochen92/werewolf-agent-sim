@@ -555,39 +555,8 @@
   box-sizing: content-box;
 }
 .sigilDisc {
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  padding: 10px;
-  border: 0;
-  border-radius: 50%;
-  background: #f3e9d2;
-  color: var(--ink-f);
-  cursor: pointer;
-  box-shadow: 0 0 0 3px var(--band);
-  transition:
-    opacity 0.15s,
-    box-shadow 0.15s;
-}
-.sigilDisc svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-.sigilDisc[aria-checked='true'] {
-  background: #fffaf0;
-  box-shadow:
-    0 0 0 3px var(--band),
-    0 0 0 5px var(--paper),
-    0 0 0 7px var(--ink);
-}
-.sigils[data-chosen] .sigilDisc:not([aria-checked='true']) {
-  opacity: 0.72;
-}
-.sigilDisc:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 7px;
+  composes: disc from '../../../../components/site/SigilDisc.module.css';
+  --disc: 42px;
 }
 
 /* the role being held (RolePreview): on the stub on a desktop, under the sigils on a phone */
@@ -850,8 +819,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .card,
-  .sigilDisc {
+  .card {
     transition: none;
   }
   .previewFigure,

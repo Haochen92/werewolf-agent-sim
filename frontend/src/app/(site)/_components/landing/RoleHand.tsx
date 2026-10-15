@@ -57,7 +57,7 @@ export function RoleHand() {
                 className={classes.disc}
                 onClick={() => setRole(r)}
               >
-                <Sigil role={r} strokeWidth={2.6} className={classes.discSigil} />
+                <Sigil role={r} strokeWidth={2.6} />
               </button>
             ))}
           </div>

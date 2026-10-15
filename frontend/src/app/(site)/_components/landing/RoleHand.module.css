@@ -56,40 +56,7 @@
 }
 
 .disc {
-  display: grid;
-  place-items: center;
-  width: 50px;
-  height: 50px;
-  padding: 12px;
-  border: 0;
-  border-radius: 50%;
-  background: var(--paper);
-  color: var(--ink-f);
-  cursor: pointer;
-  opacity: 0.84;
-  box-shadow: 0 0 0 3px var(--band);
-  transition:
-    opacity 0.2s,
-    box-shadow 0.2s;
-}
-.disc:hover {
-  opacity: 1;
-}
-/* the chosen disc: a cream ring outside the side's, so it never reads as the town's amber */
-.disc[aria-checked='true'] {
-  opacity: 1;
-  box-shadow:
-    0 0 0 3px var(--band),
-    0 0 0 6px var(--bg),
-    0 0 0 8px var(--text);
-}
-.disc:focus-visible {
-  outline: 2px solid var(--amber);
-  outline-offset: 7px;
-}
-.discSigil {
-  width: 26px;
-  height: 26px;
+  composes: disc from '../../../../components/site/SigilDisc.module.css';
 }
 
 .card {
@@ -126,17 +93,9 @@
     margin: 0 6px;
   }
   .disc {
-    width: 44px;
-    height: 44px;
-    padding: 10px;
+    --disc: 44px;
   }
   .card {
     width: min(320px, 100%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .disc {
-    transition: none;
   }
 }

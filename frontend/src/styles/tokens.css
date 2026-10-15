@@ -158,6 +158,8 @@
    Button (well, text), its links (Anchor) and the board's wells read them. The dark is the
    default; a paper surface says `data-surface="paper"` and they turn to ink. */
 :root {
+  --ctl-ground: var(--bg);
+  --ctl-ink: var(--text);
   --ctl-accent: var(--amber);
   --ctl-accent-hi: var(--amber-hi);
   --ctl-well-ink: var(--well-text);
@@ -168,6 +170,8 @@
   --ctl-well-depth: inset 0 2px 6px rgba(0, 0, 0, 0.6);
 }
 [data-surface='paper'] {
+  --ctl-ground: var(--paper);
+  --ctl-ink: var(--ink);
   --ctl-accent: #7a4f10;
   --ctl-accent-hi: #4a2e0a;
   --ctl-well-ink: var(--plate-ink);
