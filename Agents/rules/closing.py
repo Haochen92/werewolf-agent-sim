@@ -4,9 +4,11 @@ When the discussion would end, the one or two players accused by the most differ
 today get one closing turn (discussion_evidence.md §7.2 S2). The accused are picked from the
 accusation tags each speaker puts on its own message, and only from them: the agents' private
 suspicion reads would leak what they secretly think, and a model-written case summary in the
-moderator's voice would turn any mistake into a "fact". Counting the tags costs nothing and
-cannot misstate anything; it can miss an accuser the tags missed, which the census (§7.1) puts at
-about one message in eight.
+moderator's voice would turn any mistake into a "fact". Counting the tags costs nothing; it can
+miss an accuser the tags missed, which the census (§7.1) puts at about one message in eight.
+The moderator's line names only who speaks, never the accusers: a tag can be wrong (a question
+tagged as an accusation) or out of date (an accuser who later said the story checks out), and a
+named count in the moderator's voice is read as fact (game 2f19d908, owner 2026-10-16).
 """
 
 from __future__ import annotations
@@ -79,27 +81,17 @@ def closing_speakers(
 
 
 def closing_announcement(accused: list[Accused]) -> str:
-    """The moderator's call, written by code: who is on trial and who is pressing, e.g.
-    "Before the vote: player_5 has been accused by player_2, player_4 and player_7; player_8 by
-    player_1 and player_3. Each gets a last word." The reasons are already in the transcript."""
+    """The moderator's call, written by code: who gets a last word, e.g. "Before the vote:
+    player_5 and player_8 each get a last word." Who accused them, and why, is in the transcript.
+    In 2f19d908 "accused by player_2, player_5 and player_4" counted a withdrawn accuser and a
+    question, and a voter cited "accused by three players" for the town healer."""
     if not accused:
         raise ValueError("no closing announcement without an accused player")
 
-    clauses: list[str] = []
-    for position, trial in enumerate(accused):
-        who_accused = _names(trial.accusers)
-        if position == 0:
-            clauses.append(f"{trial.player} has been accused by {who_accused}")
-        else:
-            clauses.append(f"{trial.player} by {who_accused}")
-    charges = "; ".join(clauses)
-
-    if len(accused) == 1:
-        last_word = f"{accused[0].player} gets a last word."
-    else:
-        last_word = "Each gets a last word."
-
-    return f"Before the vote: {charges}. {last_word}"
+    players = tuple(trial.player for trial in accused)
+    if len(players) == 1:
+        return f"Before the vote: {players[0]} gets a last word."
+    return f"Before the vote: {_names(players)} each get a last word."
 
 
 def _names(players: tuple[str, ...]) -> str:
