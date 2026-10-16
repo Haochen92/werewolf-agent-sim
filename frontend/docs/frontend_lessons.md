@@ -10,6 +10,30 @@ The one sentence version: **the cost of a frontend is not the size of its JSX bu
 browser has to redo when something changes: which subtrees React rebuilds, which rectangles get
 repainted, which layers get held, and how often any of it happens.**
 
+## Two mechanisms the lessons lean on
+
+**Re-render and remount are different things.** A *re-render* is React running a component
+again and comparing what it returns with last time. It then changes the existing page elements
+in place: the same `<img>` stays, with a new `src` if that changed. A *remount* throws the
+element away and makes a new one. It happens when the element's `key` changes, or when its
+place in the tree changes (a different parent, or a different component at that spot). On an
+iPhone a brand-new `<img>` paints nothing until its picture is decoded, so a remount shows a
+blank frame even for a picture already downloaded; a re-render does not. `memo` and `useMemo`
+only skip re-renders, to save CPU: a memoised component inside a subtree whose key changes is
+remounted all the same. So "the picture flashes" asks *what remounted it* (lessons 1, 2, 13),
+and "the page is slow to respond" asks *what re-renders too often* (4 to 6).
+
+**A frame is drawn in three steps, and only the last is cheap.** *Layout* works out where every
+box goes. *Paint and raster* turn the boxes into bitmaps of pixels; for a large picture on a
+phone's 3× screen that is a lot of pixels. *Composite* has the GPU stack those bitmaps on the
+screen at their positions. A *layer* is one of those bitmaps. An element on a layer of its own
+can be moved or faded by the compositor alone, every frame, without painting it again; an
+element painted into a bigger layer has to be painted and rastered again whenever it moves. The
+browser gives an element its own layer for a CSS or Web Animations animation of its transform
+or opacity, and when told in advance (`will-change: transform`), but not for a style a script
+writes each frame. The price of a layer is its bitmap, held in memory for as long as it lasts.
+So a mover gets a layer while it moves and gives it up when it stops (lessons 8 to 10, 40).
+
 ---
 
 ## React: identity and re-rendering
@@ -67,7 +91,9 @@ smooth as a CSS `transform` on a box and a stutter as an SVG `transform` attribu
 inside a full-stage drawing (the drawing is re-laid-out every frame). See §8.4 and
 `phone_lessons.md` lesson 6.
 
-**10. Any animated property makes a compositor layer, and a layer is a bitmap.** Opacity too.
+**10. An animated property makes a compositor layer, and a layer is a bitmap.** Opacity too,
+for a CSS or Web Animations animation; a style a script writes each frame gets no layer unless
+it is asked for (`will-change`, lesson 40, found 2026-10-15).
 A layer costs its area × 4 bytes × device scale, for as long as the animation runs, and
 everything painted *above* it in stacking order is lifted onto layers with it (the cascade).
 A looping idle animation at rest holds that forever. Rules: nothing animates at rest; what
