@@ -206,16 +206,23 @@ export function marksAt(branches: readonly NightBranch[], spoke: Spoke | null): 
 }
 
 /**
- * How many of the night's units are in at a spoke (the pill): the branches told
- * so far, counting this one once its mark has landed. The night whole is all of them.
+ * How many of the night's units are in at a spoke (the pill): the seats whose rooms have all
+ * been told, counting this one's once its mark has landed. `night` is the whole night's
+ * branches (read from the log ahead), so a seat with two rooms (a ten-seat wolf's skill and the
+ * pack's) counts at the later and the pill stays short of full until the last room. The night
+ * whole is all of them.
  */
 export function actedAt(
-  branches: readonly NightBranch[],
+  night: readonly NightBranch[],
   spoke: Spoke | null,
   total: number,
 ): number {
   if (spoke === null) return total;
-  return Math.min(total, spoke.rank + (endsBranch(spoke, branches[spoke.rank]) ? 1 : 0));
+  const told = spoke.rank + (endsBranch(spoke, night[spoke.rank]) ? 1 : 0);
+  const lastRoom = new Map<string, number>();
+  night.forEach((b, rank) => b.seats.forEach((s) => lastRoom.set(s, rank)));
+  const done = [...lastRoom.values()].filter((rank) => rank < told).length;
+  return Math.min(total, done);
 }
 
 /**

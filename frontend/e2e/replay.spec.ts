@@ -178,8 +178,8 @@ test('replay: the night stops at its hub; a lit card plays that actor’s room a
   // the stop: arrived at, paused, the actors lit, the notice with the ways on
   await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.hub');
   await expect(theatre(page)).toHaveAttribute('data-playing', 'false');
-  // five rooms (the vigilante's held fire is one; the pack's two wolves are one), six seats lit
-  await expect(page.getByText('Night 1 · 5 acted.')).toBeVisible();
+  // six seats acted (the vigilante's held fire is one), in five rooms (the pack's two wolves share one)
+  await expect(page.getByText('Night 1 · 6 acted.')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Watch them all ▶' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'End the night →' })).toBeVisible();
   await expect(page.locator('[data-glow="acted"]')).toHaveCount(6);
@@ -260,7 +260,7 @@ test('replay: a ten-seat wolf’s card plays its own skill’s room, then the pa
   }
   await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.hub');
   const back = page.getByRole('button', { name: '← Back to the night' });
-  // nine seats acted, in ten rooms: the pack's kill, and the chanteuse's block its own
+  // ten seats acted, in ten rooms: the pack's two wolves share the kill's, and the chanteuse's block is its own
   await expect(page.getByText('Night 1 · 10 acted.')).toBeVisible();
   // the chanteuse's card: her block first
   await expect(card(page, 5)).toHaveAttribute('data-word', 'visit');

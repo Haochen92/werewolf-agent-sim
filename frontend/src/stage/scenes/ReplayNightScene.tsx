@@ -146,7 +146,7 @@ function SpokeRoom({
   const markStep = !!spoke && isMarkStep(spoke, cur);
   const ends = !!spoke && endsBranch(spoke, cur);
   const total = nightUnits(view);
-  const acted = actedAt(branches, spoke, total);
+  const acted = actedAt(nightBranchesOf(slotInput?.ahead ?? view, day), spoke, total);
   const pack = cur?.actor === 'pack';
   const role = cur?.role ?? 'villager';
   const seats = cur?.seats ?? [];

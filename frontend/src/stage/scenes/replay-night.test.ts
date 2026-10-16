@@ -5,7 +5,14 @@ import type { DurableGameEvent } from '@/types/contracts';
 import phase3 from '@/stage/fixtures/replay-phase3.json';
 import necro from '@/stage/fixtures/replay-phase3-necro.json';
 import { FIXTURE_EVENTS } from '../workbench/fixture';
-import { actLine, actedAt, isHeld, marksAt, nightBranchesOf } from './replay-night';
+import {
+  actLine,
+  actedAt,
+  isHeld,
+  marksAt,
+  nightBranchesOf,
+  type NightBranch,
+} from './replay-night';
 
 const beats = beatsFor(FIXTURE_EVENTS, { xray: true });
 const viewAt = (end: number) => foldEvents(FIXTURE_EVENTS.slice(0, end));
@@ -109,6 +116,30 @@ describe('the ten-seat X-ray night: the carrier’s kill is the pack’s', () =>
     expect(n1.filter((b) => b.actor === 'player_5')).toEqual([
       expect.objectContaining({ role: 'chanteuse', target: 'player_1', lastSeq: 94 }),
     ]);
+  });
+
+  it('counts a wolf with a room of its own and the pack’s once, at the later room', () => {
+    const room = (actor: string, seats = [actor], role = 'healer'): NightBranch => ({
+      actor,
+      role,
+      seats,
+      target: 'player_1',
+      lines: 0,
+      lastSeq: 0,
+    });
+    // five seats in six rooms: wolf 4 blocks before the kill, wolf 5 conceals after it
+    const night = [
+      room('player_1'),
+      room('player_2'),
+      room('player_3'),
+      room('player_4', ['player_4'], 'chanteuse'),
+      room('pack', ['player_4', 'player_5'], 'wolf'),
+      room('player_5', ['player_5'], 'illusionist'),
+    ];
+    const end = (rank: number) => ({ actor: night[rank].actor, rank, step: 0, steps: 1 });
+    expect(actedAt(night, end(3), 5)).toBe(3);
+    expect(actedAt(night, end(4), 5)).toBe(4);
+    expect(actedAt(night, end(5), 5)).toBe(5);
   });
 
   it('gives a carrier with no skill that night no branch of its own, and a conceal no mark', () => {
