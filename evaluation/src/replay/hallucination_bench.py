@@ -263,7 +263,7 @@ def generate(case: dict[str, Any], n: int, memory: str = "none",
             units.append({"unit": "reads", "text": "\n".join(
                 f"{r.player}: {r.suspected_role} ({r.confidence}): {r.why}" for r in out.reads)})
         samples.append({"sample": i, "valid": True, "units": units,
-                        "vote": getattr(out, "vote_target", None),
+                        "vote": getattr(out, "vote_target", None), "claim": getattr(out, "claim", None),
                         "usage": _usage_totals(usage, time.monotonic() - started)})
     return samples
 

@@ -1,0 +1,15 @@
+{
+  "label": "healer_silence",
+  "dataset": "evidence/reasoning_failures/data/deduction_injection/silence_cases.jsonl",
+  "n": 10,
+  "workers": 3,
+  "arms": [
+    {"label": "card_as_is", "model": "anthropic/claude-haiku-5-5",
+     "env": {"GOOGLE_GENAI_THINKING_LEVEL": "low", "LLM_STRUCTURED_MODE": "json_schema"}, "memory": "none"},
+    {"label": "card_no_survival", "model": "anthropic/claude-haiku-5-5",
+     "env": {"GOOGLE_GENAI_THINKING_LEVEL": "low", "LLM_STRUCTURED_MODE": "json_schema"}, "memory": "none",
+     "checkout": "/home/ubuntu/projects/ww-healer-card"}
+  ],
+  "golden_model": "anthropic/claude-sonnet-5-5",
+  "note": "Case R1 follow-up (evidence/reasoning_failures/experiment_log.md): why the healer stays silent once it knows the Chanteuse visited it. The injected turn after player_7's admission (2f19d908 day 2, entry 16), 2x2: the healer's own note as played ('Stay quiet on day 2 unless addressed ... do not reveal my role without need') or neutral (same facts, no stance), by the healer card as is or without its survival sentence ('Staying alive matters a great deal ...'; worktree ../ww-healer-card at fea44f57 with healer.py edited, remove after). Thinking low (live), memory off. Measures as R1: spoke, claimed healer, read of player_7, message names player_7 as the blocker."
+}

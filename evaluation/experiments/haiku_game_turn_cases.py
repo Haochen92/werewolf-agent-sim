@@ -147,8 +147,8 @@ def _plain(value):
     return value
 
 
-def day_states() -> list[dict]:
-    """Every day-phase checkpoint of the game, as JSON states."""
+def day_states(game: str = GAME) -> list[dict]:
+    """Every day-phase checkpoint of ``game``, as JSON states."""
     import psycopg
     from dotenv import dotenv_values
     from langgraph.checkpoint.postgres import PostgresSaver
@@ -163,9 +163,9 @@ def day_states() -> list[dict]:
         saver = PostgresSaver(conn, serde=durable_serde())
         namespaces = [r["checkpoint_ns"] for r in conn.execute(
             "select distinct checkpoint_ns from checkpoints where thread_id=%s "
-            "and checkpoint_ns like 'DAY_PHASE:%%'", (GAME,)).fetchall()]
+            "and checkpoint_ns like 'DAY_PHASE:%%'", (game,)).fetchall()]
         for ns in namespaces:
-            for t in saver.list({"configurable": {"thread_id": GAME, "checkpoint_ns": ns}}):
+            for t in saver.list({"configurable": {"thread_id": game, "checkpoint_ns": ns}}):
                 values = t.checkpoint["channel_values"]
                 states.append({k: _plain(values[k]) for k in _KEEP if k in values})
     return states
