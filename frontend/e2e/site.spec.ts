@@ -882,7 +882,7 @@ const GUIDE_TABS = [
   ['modes', 2],
   ['day', 7],
   ['after', 4],
-  ['tools', 2],
+  ['tools', 3],
 ] as const;
 
 test('guide: no tab set moves the page, whichever tab is shown', async ({ page }) => {
@@ -900,6 +900,37 @@ test('guide: no tab set moves the page, whichever tab is shown', async ({ page }
       expect(await height(id)).toBe(first);
     }
   }
+});
+
+test('guide: your role card opens from the day’s button and from the night’s table, with its uses left', async ({
+  page,
+}) => {
+  await page.goto('/guide');
+  await page
+    .getByRole('tablist', { name: 'Tools' })
+    .getByRole('tab', { name: 'Your card' })
+    .click();
+  const demo = page.locator('[data-role-demo]');
+  await expect(demo).toHaveAttribute('data-role-demo', 'day');
+  await page.getByRole('button', { name: 'Your card: Sigilist', exact: true }).click();
+  const card = page.getByRole('dialog', { name: 'Sigilist' });
+  await expect(card).toContainText('Place a sigil on one player.');
+  await expect(card).toContainText('2 sigils left');
+  await page.getByRole('button', { name: 'Close your card' }).click();
+  await expect(card).toBeHidden();
+  // at night the card stands on the table; switching closes an open card
+  await page
+    .getByRole('tablist', { name: 'Day or night' })
+    .getByRole('tab', { name: 'Night' })
+    .click();
+  await expect(demo).toHaveAttribute('data-role-demo', 'night');
+  await page.getByRole('button', { name: 'Your card: Sigilist. Tap to read' }).click();
+  await expect(card).toContainText('2 sigils left');
+  await page
+    .getByRole('tablist', { name: 'Day or night' })
+    .getByRole('tab', { name: 'Day' })
+    .click();
+  await expect(card).toBeHidden();
 });
 
 test('guide: the day line steps by the arrows and by its next-stop button', async ({

@@ -295,8 +295,8 @@ export function Guide() {
         <section id="tools" className={classes.section} aria-labelledby="tools-head">
           <h2 id="tools-head">Tools</h2>
           <p className={classes.sub}>
-            Two aids while you play: notes on the other players, and your own agent to help
-            write your messages.
+            Three aids while you play: notes on the other players, your own agent to help
+            write your messages, and your role card.
           </p>
           <ToolsTray />
         </section>

@@ -1,0 +1,26 @@
+/* the role card's demo: the day/night switch over the stage's crop */
+.demo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.switch {
+  composes: tabs small from '../../../../components/site/PlateTabs.module.css';
+  align-self: center;
+}
+/* the crop's own width, so the card on the table and the opened card centre in it */
+.box {
+  right: auto;
+  width: calc(var(--w) * 1px);
+}
+/* by day the card is the button at the foot of the stage, drawn larger here: alone on the
+   page at the stage's size it read as a speck */
+.foot {
+  position: absolute;
+  left: 50%;
+  bottom: 22%;
+  translate: -50% 0;
+  scale: 1.8;
+  transform-origin: 50% 100%;
+}
