@@ -1,12 +1,13 @@
 /**
- * The stage's faces. The HUD speaks in two voices (owner, 2026-09-29): Young Serif for what is
- * engraved or announced (the day plaque, the nameplates, the tabs, the seat numerals on brass)
- * and Literata for what people say and read (the speeches, the transcript, the dock). IM Fell
- * English (the old serif) stays for what is printed on paper, like the seat numerals on the
- * puppets and the case file's titles; Patrick Hand for pencil (the case file's margin notes);
- * Courier Prime, the case file's typewriter, for its labels, tabs and stamps only (its long
- * text is Literata); Outfit (the sans) for the few plates that still ask for it by name.
- * Loaded with next/font so they are self-hosted and never flash in late.
+ * The stage's faces (docs/typography.md, owner 2026-10-16): EB Garamond for the signs and
+ * headings (the day plaque, the nameplates, the seat tab, the drawer's titles) and Literata for
+ * everything said and read, and at 600 for the small text and the controls (the tabs, the
+ * buttons, the seat numbers). IM Fell English stays for what is printed on paper, like the seat
+ * numerals on the puppets and the case file's titles; Patrick Hand for pencil (the case file's
+ * margin notes); Courier Prime, the case file's typewriter, for its labels, tabs and stamps only
+ * (its long text is Literata); Outfit (the sans) for the few plates that still ask for it by
+ * name. Young Serif, the engraved voice until 2026-10-16, is gone. Loaded with next/font so they
+ * are self-hosted and never flash in late.
  *
  * Kept out of Stage.tsx on purpose: next/font only works inside a Next build, and the stage's
  * components are also imported by the unit tests. A page that shows a stage puts
@@ -14,11 +15,11 @@
  */
 import {
   Courier_Prime,
+  EB_Garamond,
   IM_Fell_English,
   Literata,
   Outfit,
   Patrick_Hand,
-  Young_Serif,
 } from 'next/font/google';
 
 const sans = Outfit({
@@ -43,8 +44,8 @@ const hand = Patrick_Hand({
   display: 'swap',
 });
 
-const display = Young_Serif({
-  weight: '400',
+const display = EB_Garamond({
+  weight: '600',
   subsets: ['latin'],
   variable: '--font-stage-display',
   display: 'swap',

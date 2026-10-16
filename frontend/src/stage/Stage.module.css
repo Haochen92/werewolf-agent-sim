@@ -74,10 +74,11 @@
      BLEED and BLEED_DARK (the paint strips read those; the wing and drawer read these) */
   --bleed: 300px;
   --bleed-dark: 250px;
-  /* the HUD's two voices (fonts.ts): the body for what is said and read, the display for what
-     is engraved or announced */
+  /* the HUD's faces (docs/typography.md): the body for what is said and read, the display for
+     the signs and headings, and the body again at 600 for the small text and the controls */
   --font-body: var(--font-stage-body, Literata), Georgia, serif;
-  --font-display: var(--font-stage-display, 'Young Serif'), Georgia, serif;
+  --font-display: var(--font-stage-display, 'EB Garamond'), Georgia, serif;
+  --font-ui: var(--font-stage-body, Literata), Georgia, serif;
   font-family: var(--font-body);
 }
 

@@ -50,7 +50,8 @@
 }
 .where b {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   font-size: calc(28.8px * var(--legible-ui));
   line-height: 1.05;
 }
@@ -105,7 +106,9 @@
 .btn {
   position: relative;
   font: inherit;
-  font-family: var(--font-display);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   font-size: calc(var(--meta) * 1.08);
   line-height: 1.4;
   /* unpressed: the words in a muted brass, as on the reference plaque */
@@ -157,7 +160,9 @@
   gap: calc(7.2px * var(--legible-ui));
   padding: 0 calc(16px * var(--legible-ui)) 0 calc(12.8px * var(--legible-ui));
   border-radius: 8px;
-  font-family: var(--font-display);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   font-size: calc(var(--meta) * 1.15);
   line-height: 1.2;
   color: var(--cream);
@@ -187,7 +192,9 @@
   padding: 0 calc(12.8px * var(--legible-ui)) 0 calc(8px * var(--legible-ui));
   border-radius: 8px;
   font: inherit;
-  font-family: var(--font-display);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   font-size: calc(var(--meta) * 1.08);
   line-height: 1.4;
   color: var(--cream2);

@@ -97,7 +97,8 @@
   /* a small brass plate: a brushed gradient, a dark bevel under a bright top edge, and the
      numeral cut into it (dark, with the light catching the cut's lower lip) */
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   color: #3a2610;
   text-shadow: 0 1px 0 rgba(255, 236, 190, 0.55);
   background: linear-gradient(

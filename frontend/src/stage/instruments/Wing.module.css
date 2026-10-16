@@ -165,8 +165,9 @@
   padding: 1.6px 4.8px 2.4px 3.2px;
   border-bottom-right-radius: 4.8px;
   background: #ece2c8;
-  font-family: var(--font-display);
-  font-weight: 400;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   font-size: calc(var(--meta) * 1.05);
   line-height: 1;
   color: #2a1d10;
@@ -245,7 +246,9 @@
   overflow: hidden;
   white-space: nowrap;
   border-radius: 0 0 3.2px 3.2px;
-  font-family: var(--font-display);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   font-size: min(calc(var(--meta) * 0.78), 19cqw);
   letter-spacing: -0.01em;
   line-height: 1;
@@ -693,7 +696,8 @@
 }
 .editorWho strong {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   font-size: calc(26px * var(--legible-ui));
   line-height: 1.1;
 }
@@ -798,7 +802,9 @@
   outline-offset: 2.4px;
 }
 .guessName {
-  font-family: var(--font-display);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   line-height: 1.2;
 }
 .guessUnsure {
@@ -915,7 +921,9 @@
   inset: calc(-28px * var(--grown)) calc(-4px * var(--grown));
 }
 .done {
-  font-family: var(--font-display);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   color: #24180c;
   background: linear-gradient(180deg, var(--hud-brass-hi), var(--hud-brass));
   border: 1.5px solid var(--hud-brass-lo);
