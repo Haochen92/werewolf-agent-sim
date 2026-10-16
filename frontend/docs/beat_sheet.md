@@ -501,7 +501,8 @@ has been seen keeps a steady, quieter verdigris edge and its lamp goes out. **Th
 band, "Visit ▸" in the typewriter, bold, in the paper's verdigris ink (`--ink-follow`), and
 "Seen" in a muted grey once its room has been visited; the glow is secondary. The notice at the
 foot (a placard held up from below, in the Notice zone; the walnut board until 2026-10-15): "Night
-2 · 5 acted." (rooms, as the pill counts them: the pack's two wolves are one) "Tap a lit seat to
+2 · 6 acted." (seats, as the pill counts them: the pack's two wolves are two, a wolf with a room of
+its own and the pack's is one; ten_seat_pass §11) "Tap a lit seat to
 visit its room." and two buttons, **Watch them all ▶** (the play goes on through every room in
 order, seen or not, then the whole, then on) and **End the night →** (to the first beat after
 `rnight.whole`, playing). A lit seat's tap plays that actor's room from its first step (a
@@ -561,7 +562,8 @@ the stand ×1.36 (the winners' grammar of §10; bench 67 put them ±0.46 on the 
 seat 2." (protects · checks · shoots · marks, bench 67's verbs). The pack's chat is headed "The
 pack · seats 3 and 8" / "Seat 8 hunts alone"; a line step shows the lines so far, the mark step
 adds the votes and "The pack chooses seat 4 · both teeth", and one bite lands. "Acted n of N"
-counts the spokes whose mark has landed (N of N at the whole). The lamps: lit on this actor and those still to come;
+counts the seats whose every spoke has landed (a wolf with its own room and the pack's at the
+later; N of N at the whole). The lamps: lit on this actor and those still to come;
 this one's goes out at 1.6 s of its mark step (at rest, already out); a seat with no spoke (a
 vigilante holding fire) loses its lamp after the hub. Played: a new actor rises at 0.2 s (+0.22 s
 for the second wolf), its instrument fades in 0.5 s after 0.6 s, the mark pops at 0.9 s, the box
