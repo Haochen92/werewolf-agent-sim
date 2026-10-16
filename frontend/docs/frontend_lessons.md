@@ -406,6 +406,21 @@ earlier. Only the beat cutter knows what each viewer was shown, so the cutter no
 the scene draws that. The rule for a transition that carries something over from the scene
 before: hand it over from the previous beat, never rebuild it from the data.
 
+**42. A loading boundary splits hydration in two, and a request the outer part starts can answer
+before the inner part hydrates.** Adding the site's loader (`(site)/loading.tsx`, 2026-10-16)
+put every site page inside a Suspense boundary. React hydrates the shell around a boundary first
+and the page inside it a moment later. The nav, in the shell, asks for the rooms list to count
+the tables boarding, and the departures board, inside the page, reads the same cached request.
+With the answer quick (the tests' mocks), it arrived in between, so the board hydrated with
+three rows where the server's HTML had the pending "·". React logged "Hydration failed" and drew
+the board again. Nobody would see it on the page; the dev overlay's "1 Issue" badge showed up in
+the rooms-390 golden. Before the boundary, the whole page hydrated in one pass, before any
+answer could come, so the mismatch could not happen. The fix (`hooks/useHydrated.ts`):
+`useSyncExternalStore` returns the server snapshot (false) during hydration and the client one
+(true) after it, and the board and `useBoarding` treat the list as still pending until then. The
+rule: a part that reads data the server did not have must draw what the server drew until it
+has hydrated, and adding a Suspense or loading boundary is a moment to look for reads like it.
+
 ---
 
 ## Small things that cost an afternoon
