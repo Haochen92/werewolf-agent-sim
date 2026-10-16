@@ -176,13 +176,9 @@
   container-type: inline-size;
 }
 
-/* the print wobbles a little, as ink on paper does (the filter lives in the site's IconSprite) */
-.watermark,
-.hd,
-.fields {
-  filter: url(#inkwobble);
-}
-
+/* clean print, no ink wobble (owner, 2026-10-16): a turbulence filter on the watermark, the head
+   and the fields of every slate was drawn on the CPU (Safari draws SVG filters in software), about
+   40% of the archive's raster in a scroll, and the slates came up after the rest of the page */
 .watermark {
   position: absolute;
   right: -38px;

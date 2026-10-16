@@ -75,8 +75,8 @@
   }
 }
 
-/* clean ink, no `#inkwobble` (the slate keeps it): its turbulence filters, ten to a card, made
-   the guide's carousel stutter in scrolling and turning on every screen (2026-10-15) */
+/* clean ink, no ink wobble (a turbulence filter): ten to a card, it made the guide's carousel
+   stutter in scrolling and turning on every screen (2026-10-15); the slates dropped it too */
 .frame {
   position: absolute;
   inset: 3cqi;
