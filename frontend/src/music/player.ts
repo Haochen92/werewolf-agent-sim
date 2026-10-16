@@ -70,7 +70,7 @@ export class MusicPlayer {
    */
   unlock() {
     this.pressed = true;
-    this.wake();
+    this.wake(true);
   }
 
   /**
@@ -88,12 +88,15 @@ export class MusicPlayer {
   }
 
   /** Make the context on a music page once the viewer has pressed, and resume it. */
-  private wake() {
+  private wake(press = false) {
     if (typeof window === 'undefined' || typeof AudioContext === 'undefined') return;
     if (!this.pressed || this.pages === 0) {
       this.apply();
       return;
     }
+    // Safari leaves a context the phone took away (another app, a call) `interrupted`, and a
+    // resume may not bring it back for a while: the press makes a new one instead
+    if (press && this.ctx && (this.ctx.state as string) === 'interrupted') this.rebuild();
     if (!this.ctx) {
       // the page is a player, not a sound effect: an iPhone on silent mutes Web Audio otherwise
       // (Safari 17+; elsewhere there is no audioSession)
@@ -105,10 +108,24 @@ export class MusicPlayer {
       this.master.connect(this.ctx.destination);
       this.ticker = setInterval(() => this.tick(), 1000);
     }
-    if (this.ctx.state === 'suspended' && document.visibilityState === 'visible')
-      void this.ctx.resume();
+    if (this.ctx.state !== 'running' && document.visibilityState === 'visible')
+      this.ctx.resume().catch(() => {});
     this.idle = 0;
     this.apply();
+  }
+
+  /** Let go of the context and what played on it; `wake` makes the next, and the bed starts
+   *  again from its track's top. Its decoded tracks go too, as they were decoded by the old one. */
+  private rebuild() {
+    if (this.ticker) clearInterval(this.ticker);
+    this.ticker = null;
+    this.ctx?.close().catch(() => {});
+    this.ctx = null;
+    this.master = null;
+    this.lane = null;
+    this.stings.clear();
+    this.stingEnds = 0;
+    this.buffers.clear();
   }
 
   /** The viewer's choice of music; turning it off fades out what plays. */
@@ -179,11 +196,12 @@ export class MusicPlayer {
     this.apply();
   }
 
-  /** The page is hidden or shown: the clock stops with it. */
+  /** The page is hidden or shown: the clock stops with it. On an iPhone the resume may be
+   *  refused (the context was interrupted); the next press then makes a new one (`wake`). */
   setVisible(visible: boolean) {
     if (!this.ctx) return;
-    if (visible) void this.ctx.resume();
-    else void this.ctx.suspend();
+    if (visible) this.ctx.resume().catch(() => {});
+    else this.ctx.suspend().catch(() => {});
   }
 
   dispose() {
