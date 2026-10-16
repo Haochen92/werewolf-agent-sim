@@ -52,7 +52,7 @@
   font-family: var(--font-display);
   font-weight: 600;
   font-variant-numeric: lining-nums tabular-nums;
-  font-size: calc(28.8px * var(--legible-ui));
+  font-size: calc(28.8px * var(--legible-ui) * var(--display-scale, 1.08));
   line-height: 1.05;
 }
 .where small {

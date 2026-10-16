@@ -54,7 +54,7 @@
   font-family: var(--font-display);
   font-weight: 600;
   font-variant-numeric: lining-nums tabular-nums;
-  font-size: calc(22.4px * 1.15 * var(--legible-ui));
+  font-size: calc(22.4px * 1.15 * var(--legible-ui) * var(--display-scale, 1.08));
 }
 .ttl small {
   font-family: var(--font-body);
@@ -285,7 +285,7 @@
   font-family: var(--font-display);
   font-weight: 600;
   font-variant-numeric: lining-nums tabular-nums;
-  font-size: calc(var(--said) * 1.45);
+  font-size: calc(var(--said) * 1.45 * var(--display-scale, 1.08));
   line-height: 1.1;
   color: var(--cream);
 }
@@ -305,7 +305,7 @@
   font-family: var(--font-display);
   font-weight: 600;
   font-variant-numeric: lining-nums tabular-nums;
-  font-size: calc(var(--said) * 1.1);
+  font-size: calc(var(--said) * 1.1 * var(--display-scale, 1.08));
   line-height: 1.15;
   color: var(--cream);
 }

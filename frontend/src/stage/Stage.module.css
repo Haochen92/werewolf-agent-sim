@@ -79,6 +79,9 @@
   --font-body: var(--font-stage-body, Literata), Georgia, serif;
   --font-display: var(--font-stage-display, 'EB Garamond'), Georgia, serif;
   --font-ui: var(--font-stage-body, Literata), Georgia, serif;
+  /* Garamond's small lowercase reads about 8% smaller than Young Serif did at the same size, so
+     the signs set in it are scaled up by this (owner, 2026-10-16) */
+  --display-scale: 1.08;
   font-family: var(--font-body);
 }
 

@@ -141,7 +141,7 @@
   font-family: var(--font-display);
   font-weight: 600;
   font-variant-numeric: lining-nums tabular-nums;
-  font-size: max(calc(34 * var(--u)), calc(var(--said) * 1.4));
+  font-size: calc(max(calc(34 * var(--u)), calc(var(--said) * 1.4)) * var(--display-scale, 1.08));
   line-height: 1.1;
   color: var(--paper-ink);
 }
@@ -224,7 +224,7 @@
   font-weight: 600;
   font-variant-numeric: lining-nums tabular-nums;
   color: var(--paper-ink);
-  font-size: calc(var(--said) * 1.1);
+  font-size: calc(var(--said) * 1.1 * var(--display-scale, 1.08));
 }
 .body {
   font-family: var(--font-body);

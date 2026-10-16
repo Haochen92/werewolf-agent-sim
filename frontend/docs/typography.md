@@ -54,7 +54,8 @@ plate still names it.
 - Small uppercase labels ("Day 2 · Seat 10", "Its private notes", "Your notes", "Followed") share
   one style: Outfit 600, 11px, 0.14em tracking. Each keeps its own colour.
 - Garamond's lowercase is small: set it a touch larger than Outfit at the same job, and never on
-  brass below the theatre's big signs.
+  brass below the theatre's big signs. The theatre's signs are scaled by `--display-scale`
+  (1.08, Stage.module.css), so they keep the presence Young Serif had at the same size.
 - Headings wrap with `text-wrap: balance`, paragraphs with `text-wrap: pretty`, so no line ends
   on one word.
 - Hero text stays muted and centred: under the title, not competing with it.
