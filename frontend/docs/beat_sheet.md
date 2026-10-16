@@ -199,11 +199,25 @@ rows is the Phase 2 game (`fixtures/replay-phase2.json`, memory off; goldens `ph
 
 | # | Beat | Anchor | Sees | Stage | Slot | Hold |
 |---|---|---|---|---|---|---|
-| 7 | `day.opening-prepares` | `round_opened` `opening` | P | the stand empty, every seat of the round lit on the wing, a placard held up over the stand, tilted (owner, 2026-10-15): "Everyone is writing their opening." (day 1: "…before the first night", since nothing has happened yet), live with the lines written so far under it ("3 of 9 written", `phase_progress` stage `opening`) | D: the notice line | live: until the round's first line (or the next beat) · replay: **4.0** |
+| 7 | `day.opening-prepares` | `round_opened` `opening` | P | the stand empty, every seat of the round lit on the wing, a placard held up over the stand, tilted (owner, 2026-10-15): "Everyone is writing their opening." (day 1: "…before the first night", since nothing has happened yet), live with the lines written so far under it ("3 of 9 written", `phase_progress` stage `opening`). **X-ray replay: the opening's stop** (below) | D: the notice line | live: until the round's first line (or the next beat) · replay: **4.0** · X-ray: a stop (waits) |
 | 8 | `day.speech` | each `speech` of the round | P | as row 2; the puppet rises for each opening in turn (seat order) | D: the line | speech |
-| 9 | `day.round-passes` | the round's end: the first event after its lines that is not one of them (`turn_started`, the next `round_opened`, `day_summary`, a phase change), when any player of the round has no speech | P (the X-ray plays each `pass_marker` as row 3 instead, with its reason and draft) | the stand empty, the passing seats lit on the wing, the notice: "Seats 2, 5 and 8 had nothing to put on the table." (one seat: "Seat 2 had…"; everyone: "Nobody had anything to put on the table.") | D: the notice line | **4.0** |
-| 10 | `day.closing-called` | `round_opened` `closing` (the moderator's `gm_message` is the event before it) | P | the first accused takes the stand thinking; the house's printed paper at the foot carries the moderator's line under "Day 2 · The closing" and the seat's chip (owner, 2026-10-15; it was the speech box under a "the moderator" tag): "Before the vote: seat 4 has been accused by seats 2, 3 and 6. Seat 4 gets a last word."; the accused lit on the wing | D: the moderator's line | **4.0**, then the accused's lines as row 2 without rising again (one puppet per accused) |
+| 9 | `day.round-passes` | the round's end: the first event after its lines that is not one of them (`turn_started`, the next `round_opened`, `day_summary`, a phase change), when any player of the round has no speech | P · X alike (since 2026-10-16 the X-ray tells a round's passes as this one placard too, its reasons and drafts in the seats' files; it played each `pass_marker` as row 3) | the stand empty, the passing seats lit on the wing, the notice: "Seats 2, 5 and 8 had nothing to put on the table." (one seat: "Seat 2 had…"; everyone: "Nobody had anything to put on the table.") | D: the notice line | **4.0** |
+| 10 | `day.closing-called` | `round_opened` `closing` (the moderator's `gm_message` is the event before it) | P | the first accused takes the stand thinking; the house's printed paper at the foot carries the moderator's line under "Day 2 · The closing" and the seat's chip (owner, 2026-10-15; it was the speech box under a "the moderator" tag): "Before the vote: seat 4 gets a last word." (the accusers are not named since 2026-10-16: game 2f19d908 counted a withdrawn accuser); the accused lit on the wing | D: the moderator's line | **4.0**, then the accused's lines as row 2 without rising again (one puppet per accused) |
 | 11 | `day.your-turn`, labelled | `input_request` `discuss` with `round` | S | as row 4, with the dock's head by the round: `opening` **Your opening** "A role claim, something from last night, or a challenge. Or pass." · `proactive` **The floor is yours** "One or two useful points, or pass." · `closing` **Your last word** "The village has its eye on you." · `discussion` (and a record without the field) **Your turn to speak** as before | — | as row 4 |
+
+**The opening's stop (X-ray on; owner, 2026-10-16).** The opening is written by every seat at
+once and played afterwards, as the night's acts and the ballots are, so it gets their stop: with
+ten passes each told on its own beat, a quiet opening was forty seconds of passes. The play
+pauses on row 7, however the cursor got there (`containers/stops.ts`). The placard stays over the
+stand; the notice at the foot: "Day 1 · 3 spoke, 7 passed." (counted from the log ahead; "All 9
+passed." or "All 9 spoke." when the round went one way), "Tap a seat to read what it wrote.", with **Play the opening ▶** (on through its lines and its passes' placard, as the public
+replay plays them) and **Skip the opening →** (to the first beat after the round, playing). Every
+wing card of the round opens its file (the keyhole, as at the vote's stop), and the file leads
+with the seat's entry, read from the log ahead: "At the opening", then its line; or "Passed",
+the reason (row 3's wording) and, when it held one back, "What it held back" with the draft. The
+rest of the file is as at the playhead; the no-seat sheet is "The opening", its seats' faces the
+call to action. The closing is a round too, but of the accused only, its
+lines played straight after the moderator's call: no stop; its passes, if any, are row 9's placard.
 
 As built 2026-10-07 (benches `phase2-*` in `e2e/workbench.spec.ts`), restyled 2026-10-15: the
 round's notices are the placard held over the empty stand, and the wing lights every seat the
@@ -914,14 +928,16 @@ short of it; otherwise (the film, a prompt, the epilogue) 22.4 from the right ed
 timer on `holdFor`; a beat that waits (the epilogue, the curtain) and the last beat stop the play;
 play at the end starts from the first beat, play on a waiting beat steps on at once; stepping or
 seeking while playing plays on from there. **The stops (2026-09-30, `containers/stops.ts`):** with
-the X-ray on, the night hub (§9) and the ballots in (`vote.closes`, §3) pause the play however
+the X-ray on, the night hub (§9), the ballots in (`vote.closes`, §3) and the opening
+(`day.opening-prepares`, §2, 2026-10-16) pause the play however
 the cursor got there (a tick, a step, a seek, a chapter jump), at either speed; play (the
 notice's ▶) steps on from a stop at once, as from a beat that waits. The reducer also keeps the
 visit (the room tapped at the hub or from another room, `day:actor`: its last step's tick
 pauses the play there, 2026-09-30, it returned to the hub until then; the visit ends as soon as
 the cursor leaves that room, or on play, which then goes on linearly) and the rooms seen (the
 wing's "Seen" and steady marks); "End the
-night" seeks to the first beat after the night whole and plays; "Back to the night" seeks to the
+night" seeks to the first beat after the night whole and plays, "Skip the opening" to the first
+beat after the round; "Back to the night" seeks to the
 hub. A preview's loop has no stops. Nothing is persisted. The hold pauses while a pointer or a touch rests on a
 `[data-speech]` (the speech box, the pack's chat) and resumes with what was left; a new beat or a
 new speed starts a fresh hold. Keys: ← → step, space plays/pauses, [ ] jump chapters (not while
