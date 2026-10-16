@@ -223,8 +223,7 @@ def test_the_v4_summary_writes_two_headings_and_transcribes_claims_in_fixed_word
         "accusations": [{"accusers": ["player_8"], "target": "player_2",
                          "reasoning": "player_8 argued that player_2 survived an attack.",
                          "evidence_type": "concrete_claim", "defense": "player_2 denied being attacked.",
-                         "disputed_by": "player_6 said survival proves nothing.",
-                         "record_check": "No attack on player_2 was ever announced."}],
+                         "disputed_by": "player_6 said survival proves nothing."}],
         "role_claims": [{"player": "player_3", "claimed_role": "investigator", "kind": "claimed",
                          "night_actions": [{"night": 1, "action": "investigate", "target": "player_1", "result": "vigilante",
                                             "reason": ""}],
@@ -233,7 +232,8 @@ def test_the_v4_summary_writes_two_headings_and_transcribes_claims_in_fixed_word
     })
     text = _serialize_day_summary(out)
     assert [line.split(":")[0] for line in text.splitlines()] == ["Key accusations and defenses", "Role claims"]
-    assert "Disputed: player_6" in text and "Against the record: No attack on player_2" in text
+    assert "Disputed: player_6" in text and "Against the record" not in text
+    assert "record_check" not in out.model_json_schema()["$defs"]["AccusationV4"]["properties"]
     assert ("player_3 claimed investigator — Night 1: checked player_1, result: vigilante, "
             "plans to check player_5 tonight") in text
     assert "player_4 retracted healer" in text

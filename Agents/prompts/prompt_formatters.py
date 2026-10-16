@@ -150,8 +150,6 @@ def format_accusations(discussion: list[DaySummary], dead_roster: list[DeathReco
                 entry += f" Defense: {a['defense']}"
             if a.get("disputed_by"):
                 entry += f" Disputed: {a['disputed_by']}"
-            if a.get("record_check"):
-                entry += f" Summariser's check against the record: {a['record_check']}"
             lines.append(entry)
     return "\n".join(lines)
 

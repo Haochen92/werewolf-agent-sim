@@ -215,8 +215,9 @@ def test_accusations_tag_revealed_players_and_drop_the_retold_sections():
     text = format_day_summaries([old], before_day=4,
                                 dead_roster=[DeathRecord(player="p8", role="chanteuse", day=3, phase="day")])
     assert ("[Day 3] p8 (revealed chanteuse, voted out day 3), p1 → p2: p8 argued p2 survived an attack. "
-            "Defense: p2 denied it. Disputed: p6 disagreed. Summariser's check against the record: "
-            "No attack on p2 was announced.") in text
+            "Defense: p2 denied it. Disputed: p6 disagreed.") in text
+    # an older summary's record_check is not shown: the summariser's checks were wrong (2026-10-16)
+    assert "No attack on p2 was announced" not in text
     assert "a story" not in text and "pushing p2" not in text and "concrete_claim" not in text
     assert "Claims made in the day discussion" not in text  # nobody claimed: no block
 

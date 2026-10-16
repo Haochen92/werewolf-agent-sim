@@ -347,7 +347,10 @@ class RoleClaimV4(LenientToolCallModel):
     )
 
 
-class AccusationV4(AccusationV3):
+# Built on the base Accusation, not v3, so it carries no record_check (2026-10-16): the summariser's
+# check against the record was wrong in all 27 it wrote across 36 replayed summaries
+# (evidence/reasoning_failures/experiment_log.md §3); the claim ledger checks claims in code.
+class AccusationV4(Accusation):
     # Every written field is capped at 30 words (2026-10-04): DeepSeek wrote a median of 40 and up to
     # 92 per field, and agents read all of it every day. 3.5 flash-lite already writes about 20.
     reasoning: str = Field(
@@ -363,17 +366,6 @@ class AccusationV4(AccusationV3):
         description=(
             "Who, besides the target, disputed this accusation and why, at most 30 words. "
             "Empty string if no one did."
-        ),
-    )
-    # v3's record_check flagged a claimed investigation as "never announced", but private night results
-    # never are: only an event the game master would have announced counts.
-    record_check: str = Field(
-        description=(
-            "If the accusation rests on a public event that the game master's record contradicts, or one "
-            "the game master would have announced but did not (a death, a healer save, a vote), say so and "
-            "cite the record, at most 30 words. Investigation results, protections and other private night "
-            "actions are never announced, and nor is an attack on a player who cannot be killed at night, so "
-            "their absence is not a conflict. Empty string otherwise."
         ),
     )
 
