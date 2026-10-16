@@ -6,8 +6,8 @@ from Agents.schemas.role_card import NightWords, RoleCard
 RULES = """
 Each night the Chanteuse also blocks one player's night action; the same player may be blocked
 again on later nights. A blocked player is told "You were roleblocked", does nothing that night
-and makes no visit. The block works on Town players and on wolves; the lone killer and the
-neutral cannot be blocked, and the Chanteuse is told when a block did not take. Blocking is a
+and makes no visit. Her block works on Town players (she cannot block her own pack); the lone
+killer and the neutral cannot be blocked, and the Chanteuse is told when a block did not take. Blocking is a
 visit.
 """
 

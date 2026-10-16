@@ -23,7 +23,8 @@ How each side and role works:
     Watching is a visit, but the Sentinel is not among the visitors it is told of: its own watch never
     appears in its result.
 - Trailseer: Each night the Trailseer follows one player and privately learns whom they visited that
-    night, or that they visited no one. Following is a visit.
+    night, or that they visited no one. "Visited no one" means only that no visit was made in their name
+    that night, not that they did nothing. Following is a visit.
 - Vigilante: The Vigilante has a few bullets for the whole game and cannot reload. At night it may shoot
     one player or hold its fire; a shot is an attack and a visit, and spends a bullet even if it does
     not kill. A shot at a player who cannot be killed at night does not kill them, but the Vigilante is
@@ -49,8 +50,9 @@ How each side and role works:
     victim is not seen there at all.
 - Chanteuse: Each night the Chanteuse also blocks one player's night action; the same player may be
     blocked again on later nights. A blocked player is told "You were roleblocked", does nothing that
-    night and makes no visit. The block works on Town players and on wolves; the lone killer and the
-    neutral cannot be blocked, and the Chanteuse is told when a block did not take. Blocking is a visit.
+    night and makes no visit. Her block works on Town players (she cannot block her own pack); the lone
+    killer and the neutral cannot be blocked, and the Chanteuse is told when a block did not take.
+    Blocking is a visit.
 - Illusionist: Twice per game the Illusionist may hide the role of the player the wolves killed that
     night. The morning report then says "Their role is hidden by an illusionist" instead of the role,
     that player has no will, and the Illusionist privately learns the role. Hiding the body also hides
@@ -64,17 +66,19 @@ How each side and role works:
     second, it may pick a dead player whose role was announced and use that role's night ability on a
     target, or stay put. The same body may be used night after night; a body whose role was hidden
     cannot be used. Through a dead wolf it attacks (an Illusionist's body) or blocks (a Chanteuse's
-    body); an attack through the Illusionist's body also hides the victim's role if they die, and the
-    Necromancer learns it, while the Illusionist has conceals left (the two it started with, less those
-    it spent); through a dead Vigilante it shoots with no penalty for a miss; through a dead Healer it
-    protects; through a dead Sigilist it places a sigil; through a dead Investigator, Sentinel or
-    Trailseer it learns what that role would have learned. The dead player's name, not the
+    body; such a block works on wolves too); an attack through the Illusionist's body also hides the
+    victim's role if they die, and the Necromancer learns it, while the Illusionist has conceals left
+    (the two it started with, less those it spent); through a dead Vigilante it shoots; through a dead
+    Healer it protects; through a dead Sigilist it places a sigil; through a dead Investigator, Sentinel
+    or Trailseer it learns what that role would have learned. The dead player's name, not the
     Necromancer's, is what a Sentinel or Trailseer sees at the door, and a sigil cannot punish an attack
     made through a body. The morning names an attack made through a body by the body's kind, reanimated
     ("killed by a reanimated wolf", "shot by a reanimated vigilante", "struck down by a reanimated
-    sigil"), so the town learns a Necromancer struck, though not who. On a night it attacks, it reads
-    Suspicious to the Investigator; on other nights, Not suspicious. It cannot be blocked, and it can be
-    removed by a daytime vote or, from the second night, by a night attack.
+    sigil"), so the town learns a Necromancer struck, though not who; a save through a dead Healer's
+    body is announced as made by a reanimated healer. On a night it kills through a body, it reads
+    Suspicious to the Investigator; on any other night (a block, protection, sigil or check through a
+    body, or staying put), Not suspicious. It cannot be blocked, and it can be removed by a daytime vote
+    or, from the second night, by a night attack.
 - Fortune Teller: The Fortune Teller has no side: it never counts as a member of any side, but it is a
     living player who votes. Every night it places a bet on who will die that night, by any cause,
     naming the player and, if it wishes, their role: one point if that player dies, two if the named
