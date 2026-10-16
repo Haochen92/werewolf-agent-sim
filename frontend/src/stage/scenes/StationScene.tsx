@@ -84,13 +84,15 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
   preload(SPRITES.station.blind.src, { as: 'image' });
   for (const c of cast.slice(0, S.places.length))
     preload((small ? SPRITES.small.day : SPRITES.day)[c].base.src, { as: 'image' });
+  // the departure is drawn at seven seconds and played quicker (`DEPART.pace`)
+  const pace = departing ? k * DEPART.pace : k;
   // played forward, a change moves; arrived at, it is simply there
   const T = (
     duration: number,
     delay = 0,
     ease: Transition['ease'] = 'easeInOut',
   ): Transition =>
-    animate ? { duration: duration * k, delay: delay * k, ease } : { duration: 0 };
+    animate ? { duration: duration * pace, delay: delay * pace, ease } : { duration: 0 };
   // a part that leaves at departure starts from the waiting picture only when it is played
   const from = <V,>(v: V): V | false => (animate && departing ? v : false);
 

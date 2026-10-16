@@ -136,7 +136,7 @@ fading in after 0.3 s with "Boarding…", "Reclaiming your seat…" or "Rewindin
 |---|---|---|---|---|---|---|
 | 1 | `station.waiting` | status `waiting`, not `locked` | P | the platform at night: the train at the platform with the dining car's window over the nine places; each person aboard on the platform under their place (their name on a paper tag at their feet and on a brass plate under the window; "you", "host" on the tag); open places a dashed amber mark and an "open" plate; their chips on the wing; the station sign with the room's name and "hosted by …"; the Invite and Ticket tags hung from the canopy; the ledge: "3 of 9 aboard · waiting for the host" (the host: "· ready when you are", with the Lock and Depart plates) | — (no drawer, no film) | until the room changes |
 | 2 | `station.locked` | status `waiting`, `locked` | P | as 1, with the brass "Locked" plate under the sign; the ledge's line leads "Locked: nobody new can board."; the host's plate reads Unlock | — | until the room changes |
-| 3 | `station.departing` | the host's Depart went through (`POST /start`), or the status left `waiting` | P | the ledge reads "All aboard"; the people step off the platform into their places in the window; the blinds unroll on the agents' places with their shadows on them, the plates turn to "agent"; the tags draw up into the canopy; the ledge sinks; the train pulls out to the right; then a curtain falls on the empty platform ("The deal begins in the dining car") and lifts on §1 row 1 | — | 7.0 s, then the curtain 1.2 s down and 1.0 s up |
+| 3 | `station.departing` | the host's Depart went through (`POST /start`), or the status left `waiting` | P | the ledge reads "All aboard"; the people step off the platform into their places in the window; the blinds unroll on the agents' places with their shadows on them, the plates turn to "agent"; the tags draw up into the canopy; the ledge sinks; the train pulls out to the right; then a curtain falls on the empty platform ("The deal begins in the dining car") and lifts on §1 row 1 | — | 4.55 s (drawn at 7.0 s, played at 0.65, 2026-10-16), then the curtain 1.2 s down and 1.0 s up |
 
 As built 2026-09-26 (the mockup `claude_artifacts/design/pages/waiting-room.html` gives the
 picture and the departure's order; the timings are the build's, change here first). A person who
@@ -145,7 +145,8 @@ in after 0.6 s; what was there when the page opened is simply there. The departu
 off the platform in 0.45 s and appear in the window (fade and rise, 0.8 s after 0.3 s); the agents'
 blinds unroll 0.9 s each from 0.5 s, 0.16 s apart, their shadows 0.6 s from 1.2 s; the tags draw up
 0.9 s; the ledge sinks 1.0 s and the train pulls out 4.6 s, both from 2.4 s (the train on the
-mockup's ease-in, clipped at the world's edges). A viewer who asked for reduced motion gets a
+mockup's ease-in, clipped at the world's edges). All of it plays at 0.65 of these (`DEPART.pace`,
+owner 2026-10-16: seven seconds was long to wait), 4.55 s in all. A viewer who asked for reduced motion gets a
 0.6 s departure. The hand-off (`LiveTheatre`): the game's events are held back from the stage until
 the curtain is down, then the deal plays from its first beat at normal speed whether it arrived as
 history or as news (`live-state.ts`), and the curtain lifts off it; one `<Stage>` throughout.
