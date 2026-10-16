@@ -2,8 +2,8 @@
  * The house's loading picture (owner, 2026-10-16): the Ninth Express in cream silhouette, its
  * engine's wheels turning and steam blowing back, "The Ninth Express" under the rails, snow
  * falling past. Shown where a wait cannot be helped: a page of the site whose code is still on
- * its way (`(site)/loading.tsx`), the way into a replay (`ReplayCover`), and a live departure's
- * platform whose pictures are not in yet.
+ * its way (`(site)/loading.tsx`), the way into a replay (`ReplayCover`), a live departure's
+ * platform whose pictures are not in yet, and the landing carriage's window (`FeaturedReplay`).
  *
  * It needs nothing to load: the train is drawn here and the snow is two small pictures inside
  * its stylesheet. It comes up only after 0.3 s, so a quick wait never shows it (`atOnce`: from

@@ -43,6 +43,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useMediaQuery } from '@mantine/hooks';
 import { SPRITES } from '@/assets/manifest';
 import { Button } from '@/components/site';
+import { TrainLoader } from '@/components/TrainLoader';
 import { useModelLabels } from '@/hooks/useModelLabels';
 import { getReplay, listReplaysWithTotal } from '@/lib/api';
 import { featuredWindow } from '@/lib/featured-window';
@@ -66,6 +67,8 @@ const theatreCode = () => import('@/stage/containers/ReplayTheatre');
 const underCode = () => import('./CarriageUnder');
 /** How long the line waits on the stage's pictures before the replay plays without them. */
 const PAINT_CAP_MS = 8000;
+/** The loader's fade off the window (TrainLoader.module.css, `.veil`). */
+const LIFT_MS = 400;
 const ReplayTheatre = dynamic(() => theatreCode().then((m) => m.ReplayTheatre), {
   ssr: false,
 });
@@ -213,10 +216,13 @@ export function FeaturedReplay() {
     [events],
   );
 
-  // the stage paints its dark ground at once and its pictures as they come: the line stays over
-  // it until they are in, and the replay plays from then (a first visit after a deploy, every
-  // file new to Cloudflare, showed a dark window for 10 s and more, and read as broken)
+  // the stage paints its dark ground at once and its pictures as they come: the house's loading
+  // picture stays over it until they are in, and the replay plays from then (a first visit after
+  // a deploy, every file new to Cloudflare, showed a dark window for 10 s and more, and read as
+  // broken). The picture is up from when the carriage comes near (owner, 2026-10-16: the train,
+  // not "Rewinding the reels…"), then fades off the stage
   const [painted, setPainted] = useState(false);
+  const [lifted, setLifted] = useState(false);
   const loaded = !!(game && cut);
   useEffect(() => {
     const el = screenRef.current;
@@ -229,6 +235,11 @@ export function FeaturedReplay() {
       live = false;
     };
   }, [loaded, screenRef]);
+  useEffect(() => {
+    if (!painted) return;
+    const t = setTimeout(() => setLifted(true), LIFT_MS);
+    return () => clearTimeout(t);
+  }, [painted]);
 
   const id = game?.game_id ?? null;
   const record = id ? id.slice(0, 7).toUpperCase() : '';
@@ -305,13 +316,13 @@ export function FeaturedReplay() {
                       }}
                     />
                   ) : null}
-                  {painted ? null : (
+                  {failed && !painted ? (
                     <p className={classes.wait} role="status">
-                      {failed
-                        ? 'The archive is resting; the replays are a click away.'
-                        : 'Rewinding the reels…'}
+                      The archive is resting; the replays are a click away.
                     </p>
-                  )}
+                  ) : near && !lifted ? (
+                    <TrainLoader atOnce leaving={painted} />
+                  ) : null}
                 </div>
               </div>
             </div>

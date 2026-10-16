@@ -396,8 +396,9 @@ blank on purpose so that nothing moved. Then, once the replay was in, the stage 
 painted its dark ground at once, and its pictures only as they came. On a cold edge (38) that
 was more than 10 s of black glass, and the owner took it for a bug. A blank or dark box reads
 as broken after a second or two, however correct the code behind it. The fix
-(`FeaturedReplay.tsx` `painted`): "Rewinding the reels…", the replay page's own line, stays over
-the stage until its pictures are decoded or 8 s have passed. The stage is laid out but
+(`FeaturedReplay.tsx` `painted`): a wait that is seen stays over
+the stage (first the replay page's line, "Rewinding the reels…"; since 2026-10-16 the house's
+loading picture, `TrainLoader`) until its pictures are decoded or 8 s have passed. The stage is laid out but
 hidden under it, and the replay starts playing only then. The wait for the pictures
 (`stage/pictures-of.ts`) is the one the replay page's curtain already used, now shared. The
 general check: for every place the viewer waits, ask what they see at each step (nothing, a
