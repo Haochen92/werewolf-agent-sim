@@ -5,6 +5,9 @@ import type { MemoryConsulted } from '@/types/contracts';
 import { beatsFor } from '../beats/beatsFor';
 import type { SceneBeat } from '../beats/types';
 import { FIXTURE_EVENTS } from '../workbench/fixture';
+import phase2 from '@/stage/fixtures/replay-phase2.json';
+import type { DurableGameEvent } from '@/types/contracts';
+import { openingCount } from '../scenes/DayScene';
 import OLD from './__fixtures__/old-situations.json';
 // a real store record (memory_stores/v6_1), its composed situation and its fields, verbatim
 import REC from './__fixtures__/lesson-dimensions.json';
@@ -17,6 +20,7 @@ import {
   marginNote,
   notePages,
   openTab,
+  openingEntries,
   parseSituation,
   seatFile,
   shortForm,
@@ -439,5 +443,37 @@ describe('the situation from the record’s fields (dimensions), else the string
     ]);
     expect([s.exact, s.notes, s.count]).toEqual([{}, {}, null]);
     expect(tagsOf(null)).toBeNull();
+  });
+});
+
+describe('the opening’s stop: what each seat wrote', () => {
+  const log = phase2.events as unknown as DurableGameEvent[];
+  const ahead = foldEvents(log);
+  const opening = beatsFor(log, { xray: true }).find(
+    (b) => b.id === 'day.opening-prepares' && b.day === 2,
+  )!;
+
+  it('reads each seat’s line or pass from the log ahead, up to the round’s end', () => {
+    const entries = openingEntries(ahead, opening)!;
+    expect(entries.size).toBe(8);
+    expect(entries.get('player_4')).toMatchObject({ kind: 'line' });
+    // seat 2 passed in the round; its line at seq 102 is the discussion's, not the opening's
+    expect(entries.get('player_2')).toEqual({
+      kind: 'pass',
+      reason: 'voluntary',
+      draft: null,
+    });
+    expect([...entries.values()].filter((e) => e.kind === 'pass')).toHaveLength(7);
+  });
+
+  it('is only the opening’s', () => {
+    const speech = beatsFor(log, { xray: true }).find((b) => b.id === 'day.speech')!;
+    expect(openingEntries(ahead, speech)).toBeNull();
+  });
+
+  it('counts the round for the stop’s notice', () => {
+    expect(openingCount(1, 7)).toBe('1 spoke, 7 passed.');
+    expect(openingCount(0, 9)).toBe('All 9 passed.');
+    expect(openingCount(9, 0)).toBe('All 9 spoke.');
   });
 });

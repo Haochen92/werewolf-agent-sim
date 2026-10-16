@@ -18,7 +18,7 @@
 import type { SceneBeat } from '@/stage/beats/types';
 import type { MotionSpeed, Presentation } from '@/stage/scenes/types';
 import { pressFile, pressTranscript, pressXray, showFile, showRecord } from '@/stage/slot';
-import { afterNight, branchOf, endsRoom, hubOf, isStop } from './stops';
+import { afterNight, afterRound, branchOf, endsRoom, hubOf, isStop } from './stops';
 import {
   carryAcross,
   holdFor,
@@ -74,6 +74,8 @@ export type ReplayAction =
   | { type: 'visit'; index: number }
   /** The night hub's "End the night": on to the first beat after the night whole, playing. */
   | { type: 'end-night' }
+  /** The opening's "Skip the opening": on to the first beat after the round, playing. */
+  | { type: 'end-round' }
   /** A room's "Back to the night": that night's hub, still. */
   | { type: 'to-hub' };
 
@@ -240,6 +242,11 @@ export function replayReducer(all: ReplayBeats) {
         const next = b ? afterNight(beats, b.day) : -1;
         if (next < 0 || state.loop) return state;
         return landed({ ...state, cursor: still(next), playing: true, visit: null }, beats);
+      }
+      case 'end-round': {
+        const next = afterRound(beats, state.cursor.index);
+        if (next < 0 || state.loop) return state;
+        return landed({ ...state, cursor: still(next), playing: true }, beats);
       }
       case 'to-hub': {
         const b = beats[state.cursor.index];

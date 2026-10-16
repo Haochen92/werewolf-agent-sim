@@ -341,14 +341,17 @@ describe('the rounds of the day, on a hand-built log (Phase 2)', () => {
     ]);
   });
 
-  it('in the X-ray plays each pass marker instead of the grouped beat', () => {
+  it('in the X-ray groups the round’s passes too, and marks where the round ends', () => {
     const beats = beatsFor(openingRound, { xray: true });
 
-    expect(byId(beats, 'day.round-passes')).toHaveLength(0);
-    const passed: string[] = [];
-    for (const beat of byId(beats, 'day.pass')) passed.push(beat.subject ?? '');
-    expect(passed).toEqual(['player_1', 'player_3', 'player_4']);
-    expect(byId(beats, 'day.opening-prepares')).toHaveLength(1);
+    // the reasons are in the seats' files at the opening's stop (owner, 2026-10-16)
+    expect(byId(beats, 'day.pass')).toHaveLength(0);
+    const passes = byId(beats, 'day.round-passes');
+    expect(passes).toHaveLength(1);
+    expect(passes[0].subjects).toEqual(['player_1', 'player_3', 'player_4']);
+    const [opening] = byId(beats, 'day.opening-prepares');
+    const after = openingRound.find((e) => e.seq > 16 && e.type !== 'pass_marker');
+    expect(opening.roundUntil).toBe(after?.seq);
   });
 
   it('live with the X-ray on (game over) keeps the grouped beat, as the game played it', () => {

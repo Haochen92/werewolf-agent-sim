@@ -334,5 +334,8 @@ export function docketFor(view: GameView, beat: SceneBeat): DocketModel | null {
   // the night's hub holds nothing yet, but the sheet is the night's (2026-09-30)
   if (beat.id === 'rnight.hub')
     return { kind: 'empty', label: beat.label, title: 'The night' };
+  // the opening's stop: its lines are a seat's tap away
+  if (beat.id === 'day.opening-prepares')
+    return { kind: 'empty', label: beat.label, title: 'The opening' };
   return { kind: 'empty', label: beat.label };
 }

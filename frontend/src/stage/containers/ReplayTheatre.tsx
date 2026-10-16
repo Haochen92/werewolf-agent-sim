@@ -311,6 +311,7 @@ export function ReplayTheatre({
             },
             onPlay: () => dispatch({ type: 'play' }),
             onEndNight: () => dispatch({ type: 'end-night' }),
+            onEndRound: () => dispatch({ type: 'end-round' }),
             onBack: () => dispatch({ type: 'to-hub' }),
           },
     [controls, state.xray, state.loop, state.visited, beat, beats],

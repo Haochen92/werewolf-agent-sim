@@ -97,7 +97,9 @@ export function tapsOpenFiles(beat: Pick<SceneBeat, 'scene' | 'id'>): boolean {
   return (
     ['vote', 'lynch', 'morning'].includes(beat.scene) ||
     beat.id === 'rnight.hub' ||
-    beat.id === 'rnight.whole'
+    beat.id === 'rnight.whole' ||
+    // the opening's stop: each seat's file leads with what it wrote (2026-10-16)
+    beat.id === 'day.opening-prepares'
   );
 }
 

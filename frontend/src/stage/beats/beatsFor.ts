@@ -283,10 +283,17 @@ export function beatsFor(
   // A round in progress (Phase 2): its players, and who of them has spoken. The lines of a
   // round arrive as plain speech events right after `round_opened`; the first event that is
   // not one of them (or an annotation of one) ends the round, and the players with no speech
-  // are told as one beat, "nothing to add". The X-ray plays each `pass_marker` instead.
-  let round: { opened: EventOf<'round_opened'>; spoke: Set<string> } | null = null;
+  // are told as one beat, "nothing to add": the X-ray's too, its reasons in the seats' files
+  // at the opening's stop (owner, 2026-10-16: ten passes on a beat each were forty seconds).
+  let round: {
+    opened: EventOf<'round_opened'>;
+    spoke: Set<string>;
+    /** The opening's beat, told where the round ends once it does. */
+    beat: SceneBeat | null;
+  } | null = null;
   const resolveRound = (at: number) => {
-    if (round && !xrayCut) {
+    if (round?.beat && at < events.length) round.beat.roundUntil = events[at].seq;
+    if (round) {
       const quiet: string[] = [];
       for (const player of round.opened.players) {
         if (!round.spoke.has(player)) quiet.push(player);
@@ -318,6 +325,9 @@ export function beatsFor(
         resolveTurn(i);
         if (e.round === 'opening') {
           pub('day.opening-prepares', e, next, HOLD.open, { subjects: [...e.players] });
+          const told = out.at(-1);
+          round = { opened: e, spoke: new Set(), beat: told?.seq === e.seq ? told : null };
+          break;
         } else {
           // the moderator's line is the event before this one; the first accused takes the stand
           pub('day.closing-called', e, next, HOLD.open, {
@@ -325,7 +335,7 @@ export function beatsFor(
             subjects: [...e.players],
           });
         }
-        round = { opened: e, spoke: new Set() };
+        round = { opened: e, spoke: new Set(), beat: null };
         break;
 
       case 'turn_started':
@@ -430,6 +440,8 @@ export function beatsFor(
       }
 
       case 'pass_marker':
+        // a round's passes are its one placard (resolveRound)
+        if (round) break;
         push({
           id: 'day.pass',
           day: e.day,

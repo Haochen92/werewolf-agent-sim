@@ -130,6 +130,11 @@ export interface SceneBeat {
   /** The seats a round's beat is about: everyone writing an opening, or the seats that said
    *  nothing; on a `day.pass`, the seats of a run of passes told as one beat. */
   subjects?: string[];
+  /**
+   * On a round's opening beat: the seq of the first event after the round's lines, so its
+   * stop can skip the round and its file can find each seat's line; absent while it is written.
+   */
+  roundUntil?: number;
   /** The nth of a run: the nth chip counted. */
   ordinal?: number;
   spoke?: Spoke;

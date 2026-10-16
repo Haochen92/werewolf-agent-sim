@@ -231,6 +231,7 @@ export function Workbench({ scene }: { scene: string }) {
       },
       onPlay: () => index < beats.length - 1 && go({ beat: index + 1 }),
       onEndNight: () => console.info('[workbench] end the night'),
+      onEndRound: () => console.info('[workbench] skip the opening'),
       onBack: () => hub >= 0 && go({ beat: hub }),
     };
   }, [frame, go, q.live, q.hud]);

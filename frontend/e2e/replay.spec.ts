@@ -4,7 +4,8 @@
  * band beside the open drawer, the X-ray's file on a day-3 speech (turned on by the strip's
  * Reveal), the X-ray's night stop (the hub paused with its notice, a lit card playing that
  * actor's room and coming back, "Back to the night"), a voter's file opened from the wing at the
- * count, the vote's stop with the ballots in, and the strip with Reveal on a small phone. Then tests
+ * count, the vote's stop with the ballots in, the opening's stop (a seat's file leading with what
+ * it wrote), and the strip with Reveal on a small phone. Then tests
  * that are not pictures: played fast, the cursor runs on at twice the pace; the drawer stays
  * where a reader scrolled it; the band fits a small phone on its side. A game over but not yet
  * filed winds its reels until the replay comes; a dropped game says so, an unknown id has none.
@@ -625,4 +626,53 @@ test('replay: a dropped game says so; an id nobody knows has no replay', async (
   await mockUnfiled(page, () => false, null);
   await page.goto(`/replays/${GAME}`);
   await expect(page.getByText('No such replay.')).toBeVisible();
+});
+
+test('replay: the opening’s stop: a seat’s file leads with what it wrote, and the opening plays or is skipped', async ({
+  page,
+}) => {
+  // the Phase 2 game: on day 1 all nine passed the opening
+  const id = 'phase2-chunk-catalogue-2026-10-07';
+  const body = readFileSync(join(__dirname, '../src/stage/fixtures/replay-phase2.json'));
+  await page.route(`**/replays/${id}*`, async (route) => {
+    const req = route.request();
+    if (req.resourceType() === 'document' || req.headers()['rsc']) return route.fallback();
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: {
+        'access-control-allow-origin': req.headers()['origin'] ?? '*',
+        'access-control-allow-credentials': 'true',
+      },
+      body,
+    });
+  });
+  await page.clock.install();
+  await page.goto(`/replays/${id}?still=1`, { waitUntil: 'networkidle' });
+  await expect(page.locator('[data-transport]')).toBeVisible();
+  await reveal(page).click();
+  const next = page.getByRole('button', { name: 'Next chapter' });
+  await next.click();
+  await page.keyboard.press('ArrowRight');
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'day.opening-prepares');
+  await expect(page.getByText('Day 1 · All 9 passed.')).toBeVisible();
+  await expect(page.getByText('Tap a seat to read what it wrote.')).toBeVisible();
+  // a seat's card opens its file, the opening on top
+  await card(page, 3).click();
+  const file = page.locator('[data-film="file"]');
+  await expect(file).toHaveAttribute('data-file-seat', 'player_3');
+  await expect(file.locator('[data-opening="pass"]')).toContainText('At the opening');
+  await expect(file.locator('[data-opening="pass"]')).toContainText(
+    'Passed · chose to pass',
+  );
+  await settle(page);
+  await expect(page).toHaveScreenshot('replay-opening-stop.png');
+  // played: the round's passes are one placard, not a beat a seat
+  await page.getByRole('button', { name: 'Play the opening ▶' }).click();
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'day.round-passes');
+  // back at the stop, skipped: past the round, to the night (itself a stop)
+  await page.keyboard.press('ArrowLeft');
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'day.opening-prepares');
+  await page.getByRole('button', { name: 'Skip the opening →' }).click();
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.hub');
 });

@@ -109,7 +109,8 @@ export interface SceneProps {
 
 /**
  * The replay's stops (owner, 2026-09-30; containers/stops.ts): with the X-ray on the play
- * pauses at the night hub and with the ballots in, and the stage's notice offers the ways on.
+ * pauses at the night hub, with the ballots in and at the opening, and the stage's notice offers
+ * the ways on.
  * Handed down by the replay's container (and the workbench); without it the stage draws no
  * stop notice and the hub's lit seats only seek.
  */
@@ -122,6 +123,8 @@ export interface StopInput {
   onPlay: () => void;
   /** "End the night": on to the first beat after the night whole. */
   onEndNight: () => void;
+  /** "Skip the opening": on to the first beat after the round. */
+  onEndRound: () => void;
   /** A room's "Back to the night": the hub. */
   onBack: () => void;
 }

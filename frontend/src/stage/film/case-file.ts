@@ -472,6 +472,39 @@ export function ballotCut(
   return view.days[beat.day]?.vote.ballots[0]?.seq ?? null;
 }
 
+/** What a seat wrote at the opening: its line, or its pass with why and what it held back. */
+export type OpeningEntry =
+  | { kind: 'line'; line: string }
+  | { kind: 'pass'; reason: string | null; draft: string | null };
+
+/**
+ * At the opening's stop (the X-ray's `day.opening-prepares`), every seat of the round's entry,
+ * read from `ahead` (the whole log: the lines come after the beat). Null at any other beat.
+ */
+export function openingEntries(
+  ahead: GameView,
+  beat: Pick<SceneBeat, 'id' | 'day' | 'seq' | 'subjects' | 'roundUntil'>,
+): Map<string, OpeningEntry> | null {
+  if (beat.id !== 'day.opening-prepares') return null;
+  const players = beat.subjects ?? [];
+  const out = new Map<string, OpeningEntry>();
+  for (const s of ahead.days[beat.day]?.slots ?? []) {
+    if (s.seq <= beat.seq || (beat.roundUntil !== undefined && s.seq >= beat.roundUntil))
+      continue;
+    if (s.kind === 'gm' || !players.includes(s.player) || out.has(s.player)) continue;
+    out.set(
+      s.player,
+      s.kind === 'speech'
+        ? { kind: 'line', line: s.message }
+        : { kind: 'pass', reason: s.passReason, draft: s.gatedCandidate },
+    );
+  }
+  // a seat of the round with nothing in the log passed (a round has no pass event of its own)
+  for (const p of players)
+    if (!out.has(p)) out.set(p, { kind: 'pass', reason: null, draft: null });
+  return out;
+}
+
 /** One seat's file at the view's end (its reads and consult before `cut`, when given: `ballotCut`); `ahead` (the log past the beat) only says whether memory was on and brings the game's lessons once it is over. */
 export function seatFile(
   view: GameView,
