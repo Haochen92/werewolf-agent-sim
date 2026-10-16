@@ -96,7 +96,7 @@ The first scene of a match. Nothing on the wire narrates it; every line is the c
 |---|---|---|---|---|---|---|
 | 1 | `deal.table-seated` | `game_started` (seq 1) | P | dining car at dawn, shutter up, room empty; nine chips come down from the flies in seat order as the seated table | D: nothing (no wire line) | 3.0 |
 | 2 | `deal.cards-dealt` | `game_started.cast_role_counts` | P | nine face-down cards come down on the same strings, one under each chip; the plate reads the cast counts | — | 3.0 |
-| 3 | `deal.your-card` | my `role_assigned` (seq 2–10) | S | my card comes down large, centred, on its own string, and turns face up; the box: who I am, my night action; the vigilante counts two caps; the card button appears | D: dashed "Only you" line | 6.0 |
+| 3 | `deal.your-card` | my `role_assigned` (seq 2–10) | S | my card comes down large, centred, on its own string, and turns face up; the box: who I am, my night action, and a limited ability's uses line ("2 sigils left"; a nine-seat vigilante counts two caps); the card button appears | D: dashed "Only you" line | 6.0 |
 | 4 | `deal.your-pack` | my `role_assigned.pack` | F | the packmate's chip takes the red edge, its small card turns to the pack card (`PackCard`: the wolves' bands, their badge and "Your pack", since the wire lists the pack's seats, never a mate's role; 2026-10-10, it was "turns to the wolf"); the pack chat opens with the client's game-master line and stays open for the night | D: the pack chat's opening line | 4.0 |
 | 5 | `deal.face-up` | `roles_assigned` (seq 11) | X | all nine small cards turn at once; the wing's cards take their bands and badges | F: the deal listed | 2.6 |
 | 6 | `deal.day-begins` | `phase_change: day` (seq 12) | P | cards and chips go up, the paint goes to day, the stand returns with the first speaker. **Chapter mark: Day 1** | — | 3.0 |
@@ -337,7 +337,7 @@ reads "You sleep" with the reason in place of the card's night line, derived on 
 what the seat knows, mirroring the engine's `acts_tonight` (`noAskLine`): the necromancer on night
 1 "Your power wakes on night 2."; from night 2 with no revealed body whose role gives an ability
 (`BORROWED_ROLES` in `roles.ts`, the engine's `BORROWED_ABILITY`) "No body you can use tonight.";
-a spent limited ability "No checks left." / "No watches left." / "No caps left." / "No sigils
+a spent limited ability "No checks left." / "No watches left." / "No bullets left." / "No sigils
 left.", the speculator after its pick "You have made your pick." Otherwise the night line stays
 (an ask may still come), and an ask that has come wins. Live testing found the necromancer's
 night 1 saying nothing of why it had no room.
@@ -386,9 +386,13 @@ stands on the table's clear spot by the candle, 200 units tall, a soft contact s
 **The caps** (vigilante) are on the card, under its night line, on the table and opened: "2 caps
 left" / "your last cap" (ruled 2026-09-28; the plate's quiet line keeps only "tap another photo
 to change"). Ten-seat (2026-10-10): every limited ability counts the same way from
-`role_assigned.uses` / `uses_remaining`, in its own word: checks, watches, caps, sigils,
-conceals, self-bets ("2 checks left" / "your last check"); the speculator's one pick has no
-count; a nine-seat game keeps `bullets`. **The card opened** in the room (and the pack's) drops the front line: the name,
+`role_assigned.uses` / `uses_remaining`, in its own word: checks, watches, bullets (caps until
+2026-10-16), sigils, conceals, self-bets ("2 checks left" / "your last check"); the speculator's
+one pick has no count; a nine-seat game keeps `bullets`. **The uses line is the standard (owner,
+2026-10-16):** the count is never in the card's night text (shortened that day), only in this
+line, on every card the game shows: the deal's "Your card" box, the card on the table, the card
+opened, and the replay's rooms, where the actor's card says what it had left going into that
+night (`usesTonight`: its last `uses_remaining` before the night fell, else its dealt count). **The card opened** in the room (and the pack's) drops the front line: the name,
 the figure, what you do at night (ruled 2026-09-28; the deal, the lobby and the game over keep
 it). A name over ten letters (Illusionist, Necromancer, Investigator, Serial killer, Fortune
 teller) is a step smaller in the head, framed and opened, so it and its sigil stay on the card

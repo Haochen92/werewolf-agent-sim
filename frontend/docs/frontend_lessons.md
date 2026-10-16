@@ -421,6 +421,18 @@ answer could come, so the mismatch could not happen. The fix (`hooks/useHydrated
 rule: a part that reads data the server did not have must draw what the server drew until it
 has hydrated, and adding a Suspense or loading boundary is a moment to look for reads like it.
 
+**43. Decode ahead every picture the next beat will show, including the one it changes into
+halfway.** With Reveal on, a replay's passes popped in: the box, then its words, then the
+puppet, late and differently for each seat. The decode-ahead (13) was already there, but it
+held the next speaker's thinking and talking poses, and a pass rises thinking and then rests
+(`base`) 0.6 s in. The rest pose was never fetched before that moment. Probed on production
+(2026-10-16), each pass's rest pose was first requested 1.4 s into its beat, as the puppet
+changed into it; with the pair chosen by the beat (`cast/ahead.ts`: thinking and base for a
+pass, thinking and talking for a line), 4 to 6 s before, in the previous turn. The rule: list
+what a beat shows from its first frame to its last, not what it opens with, and still hold only
+that one beat's pictures (a pose decodes to about 4 MB, 37). The probe that settles it: record
+each picture's first request against the time its beat began.
+
 ---
 
 ## Small things that cost an afternoon
