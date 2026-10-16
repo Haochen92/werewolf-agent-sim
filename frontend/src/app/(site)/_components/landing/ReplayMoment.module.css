@@ -8,8 +8,8 @@
 }
 .when {
   color: var(--brass-hi);
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
@@ -21,8 +21,9 @@
   padding: 30px 22px 20px;
   border-radius: 10px;
   color: #2a1d10;
-  font-size: 17px;
-  line-height: 1.5;
+  font-family: var(--font-stage-body, Literata), Georgia, serif;
+  font-size: 16px;
+  line-height: 1.55;
   background:
     repeating-linear-gradient(45deg, rgba(120, 90, 50, 0.06) 0 2px, transparent 2px 4px),
     repeating-linear-gradient(-45deg, rgba(120, 90, 50, 0.06) 0 2px, transparent 2px 4px),
@@ -48,6 +49,7 @@
   border-radius: 6px;
   background: #a8322a;
   color: #fbeedd;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
 }
@@ -65,7 +67,7 @@
   margin: 0;
   padding: 34px 22px 18px;
   color: #1d2b28;
-  font-family: ui-monospace, 'Courier New', monospace;
+  font-family: var(--font-stage-type, 'Courier Prime'), 'Courier New', monospace;
   font-size: 15px;
   line-height: 24px;
   background:
@@ -80,9 +82,9 @@
   left: 22px;
   color: #2c6b61;
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
@@ -98,7 +100,7 @@
 
 @media (max-width: 640px) {
   .felt {
-    font-size: 16px;
+    font-size: 15px;
   }
   .note {
     font-size: 14px;
