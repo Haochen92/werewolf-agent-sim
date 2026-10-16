@@ -15,7 +15,9 @@
 .hero {
   position: relative;
   isolation: isolate;
-  padding: 64px 0 0;
+  /* the room under the nav: the title is a sign in the middle of the wall (owner, 2026-10-16),
+     and the lamps hang from the same number (PlatformBackdrop.module.css .heroScene) */
+  padding: var(--hero-top) 0 0;
   text-align: center;
 }
 /* candle glow behind the tags */
@@ -37,27 +39,25 @@
     transparent 70%
   );
 }
-.headline {
-  max-width: 14ch;
-  margin: 0 auto 26px;
-  font-weight: 800;
-  font-size: clamp(46px, 8.2vw, 98px);
-  line-height: 0.96;
-  letter-spacing: -0.035em;
+/* the game's name as the station's sign, and the hook under it (docs/typography.md) */
+.name {
+  margin: 0;
+  font-family: var(--font-garamond);
+  font-weight: 600;
+  font-size: var(--name-size);
+  line-height: 1.02;
+  letter-spacing: 0.005em;
+  text-wrap: balance;
   color: var(--text);
 }
-.headline span {
-  display: block;
-}
-.lede {
-  max-width: 52ch;
-  margin: 0 auto;
-  color: var(--muted);
-  font-size: 19px;
-  line-height: 1.5;
-}
-.reveal {
-  margin-top: 18px;
+.tagline {
+  margin: 12px auto 30px;
+  font-family: var(--font-garamond);
+  font-weight: 600;
+  font-size: clamp(22px, 3.9vw, 40px);
+  line-height: 1.15;
+  text-wrap: balance;
+  color: var(--text);
 }
 /* the doors, hung from a rail on a wide screen, flat and stacked on a phone */
 .seatRail {
@@ -110,6 +110,31 @@
   color: var(--muted);
   font-size: 17px;
   line-height: 1.5;
+}
+
+/* ---------- the story: at the top of the reading room, on the wall, in the world's voice ---------- */
+.prologue {
+  max-width: 60ch;
+  margin: 0 auto 110px;
+}
+.tale {
+  margin: 0 0 18px;
+  font-family: var(--font-stage-body, Literata), Georgia, serif;
+  font-size: 19px;
+  line-height: 1.7;
+  text-wrap: pretty;
+  color: var(--text);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+/* the promise, in the site's voice (Reveal is a button, not part of the story) */
+.promise {
+  max-width: 52ch;
+  margin: 32px auto 0;
+  text-align: center;
+  text-wrap: balance;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.55;
 }
 
 /* ---------- the ending: the research question behind the game ---------- */
@@ -208,11 +233,14 @@
 }
 
 @media (max-width: 700px) {
-  .hero {
-    padding-top: 40px;
-  }
-  .lede {
+  .tale {
     font-size: 17px;
+  }
+  .promise {
+    font-size: 15px;
+  }
+  .prologue {
+    margin-bottom: 80px;
   }
   /* the two stubs side by side (HangTag), as tall as each other */
   .seatRail {

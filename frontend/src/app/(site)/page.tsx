@@ -5,6 +5,7 @@ import { Button, GuideSign } from '@/components/site';
 import { Pendant, WallLight } from '@/components/site/StationLamps';
 import { SITE } from '@/lib/site';
 import { PageMusic } from '@/music/PageMusic';
+import { stageFonts } from '@/stage/fonts';
 import { ReplayListClient } from './replays/_components/ReplayListClient';
 import { HouseDoorNote } from './_components/HouseDoorNote';
 import { SeatTags } from './_components/landing/SeatTags';
@@ -19,9 +20,9 @@ import classes from './_components/landing/Landing.module.css';
 import pageClasses from './page.module.css';
 
 /**
- * The landing (landing mockup, review §A1, rulings §F7; reworked with the owner 2026-10-15): the
- * hero with its two hung tags, a game from the archive playing in the carriage, what makes it
- * different, the replay (one real moment of a bluff, then the latest games), and a closing on
+ * The landing (landing mockup, review §A1, rulings §F7; reworked with the owner 2026-10-15 and
+ * 2026-10-16): the hero (the game's name as its sign, the hook, the two hung tags), a game from
+ * the archive playing in the carriage, the story and then what makes it different, the replay (one real moment of a bluff, then the latest games), and a closing on
  * the research behind it. A recruiter with no context sees the product working before reading
  * a word, and reaches a whole replay in one click from the carriage. The roles live on `/guide`.
  *
@@ -39,20 +40,9 @@ export default function HomePage() {
       {/* the guide's piece, for a viewer who turns it on (the nav's switch) */}
       <PageMusic bed="guide" />
       <header className={classes.hero}>
-        <h1 className={classes.headline}>
-          <span>Watch AIs</span>
-          <span>lie to each other</span>
-        </h1>
-        {/* the setting and your part in it, then, set apart, the promise (owner, 2026-10-15) */}
-        <p className={classes.lede}>
-          Aboard The Ninth Express, the killers are part of the conversation. Every
-          passenger has a story to tell, and a secret worth protecting. Question their
-          stories, conceal your own, and decide whom to trust.
-        </p>
-        <p className={`${classes.lede} ${classes.reveal}`}>
-          When the journey ends, Reveal lets you glimpse their private notes&mdash;and
-          discover what was hiding behind their words.
-        </p>
+        {/* the game's name is the sign, the hook its tagline (owner, 2026-10-16) */}
+        <h1 className={classes.name}>The Ninth Express</h1>
+        <p className={classes.tagline}>Watch AIs lie to each other</p>
         <SeatTags />
         <HouseDoorNote />
         {/* the guide is something to read, so its sign and not a third tag (owner, 2026-10-15) */}
@@ -70,11 +60,31 @@ export default function HomePage() {
         className={`${rooms.room} ${rooms.lit} ${rooms.study}`}
         aria-labelledby="features-head"
       >
-        <WallLight className={rooms.wallLight} />
-        <div className={classes.secHead}>
-          <h2 id="features-head">What makes it different</h2>
+        {/* the story, told inside the train in its voice, then, set apart in the site's, the
+            promise (owner, 2026-10-15; out of the hero into this room, 2026-10-16) */}
+        <div className={`${classes.prologue} ${stageFonts}`}>
+          <p className={classes.tale}>
+            Aboard The Ninth Express, the killers are part of the conversation. Ten puppets
+            share a carriage, but not a destination. Wolves sit among the passengers, a lone
+            killer watches for an opening, and someone has a wager of their own.
+          </p>
+          <p className={classes.tale}>
+            Every passenger has a story to tell, and a secret worth protecting. Question
+            their stories, conceal your own, and decide whom to trust.
+          </p>
+          <p className={classes.promise}>
+            When the journey ends, Reveal lets you glimpse their private notes&mdash;and
+            discover what was hiding behind their words.
+          </p>
         </div>
-        <Features />
+        {/* the room's one light hangs by the start of the features (Rooms.module.css) */}
+        <div className={rooms.lamplit}>
+          <WallLight className={rooms.wallLight} />
+          <div className={classes.secHead}>
+            <h2 id="features-head">What makes it different</h2>
+          </div>
+          <Features />
+        </div>
       </section>
 
       <section
@@ -82,7 +92,7 @@ export default function HomePage() {
         aria-labelledby="replay-head"
       >
         <Pendant className={rooms.pendant} />
-        {/* the reveal the hero promises, shown: one real moment, then the games to open */}
+        {/* the reveal the story promises, shown: one real moment, then the games to open */}
         <div className={classes.replay}>
           <div className={classes.pitch}>
             <h2 id="replay-head">At the end of the line, the secrets come out</h2>

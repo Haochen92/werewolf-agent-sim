@@ -110,6 +110,12 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   still box, capped at 1250px, under the landing's own stacking context (`isolation: isolate`: the
   body's ground would otherwise paint over a `z-index: -1` layer). `--lx`/`--rx`/`--ly` on the
   landing place the lamps and their light; the carriage's platform reads them too.
+- The hero is a poster (owner, 2026-10-16, docs/typography.md): the game's name as the sign
+  (`h1`, Garamond 600, `--name-size`), the hook "Watch AIs lie to each other" as its tagline, then
+  the tags. `--hero-top` is the room under the nav (150px wide, 64px on a phone), and the lamps
+  are worked out from the numbers that place the name (`.heroScene`: the nav board's foot,
+  `--hero-top`, half the name's line), so moving the name moves them. The wall's light round the
+  doors (`--doors-y`) follows the lamps. The story is no longer in the hero (the rooms, below).
 - `FeaturedReplay` is the replay theatre's mini mode in the big window of a carriage standing at the
   platform. Over 860px the whole carriage (end, door, window, door, end) with the replay's controls
   on the stage; at 860px and under, the window edge to edge and the controls on the platform beneath
@@ -140,7 +146,9 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   into the next through the dark: no threshold between them, only one brass threshold left before
   the closing word. Chosen on the comparison bench (`station-rooms-compare`) over panelling, felt
   and pigeonholes, which lost the station: "What makes it different" is dark granite in dressed
-  blocks under a caged wall light (`WallLight` in `RoomLamps.tsx`); the replay section ("At the
+  blocks under a caged wall light (`WallLight` in `RoomLamps.tsx`), and it opens with the
+  story (owner, 2026-10-16): on the wall, no paper, in Literata, with the Reveal line set apart
+  under it in the site's sans; the replay section ("At the
   end of the line, the secrets come out", then "Latest games") is the platform's own tile
   (`wall-tile.svg`) with an oxblood band near the ceiling, under a pendant (`Pendant`). Each
   tiled room has its own band colour, as old stations did. "Take a seat" is gone: the hero's
@@ -157,9 +165,13 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   (`evidence/memory_system/store_progression.md` on `main`).
 - The walls and the light span the screen from the section's `::before`/`::after` (`.lit`),
   behind its content. The light is gradients over the wall, darkest away
-  from the lamp; a lit room rises out of the dark at its top (`--fade-in`) and its wall stops
-  where its light runs out (1000px for the reading room, 520px under the pendant), so the page's
-  own ground carries on below. No masks, no filters, no drop shadows.
+  from the lamp; a lit room rises out of the dark at its top (`--fade-in`) and the pendant's wall
+  stops where its light runs out (520px), so the page's own ground carries on below. The reading
+  room has one light for the story and the features, hung level with "What makes it different":
+  it is drawn from the features' own box (`.lamplit::before`, reaching 1000px up over the story),
+  so however the story wraps the lamp stays by the heading, and the room clips its height
+  (`overflow: visible clip`) so the light never reaches the carriage above. Its wall spans the
+  whole room. No masks, no filters, no drop shadows.
 - The granite is one 512px seamless square (`assets/site/granite.webp`, 59 KB, about 1 MB
   decoded), baked once from SVG noise by `scripts/bake-granite.mjs`, with its joints a separate
   SVG over it; a noise filter on the wall itself is what it replaces. No phone copy: the square
