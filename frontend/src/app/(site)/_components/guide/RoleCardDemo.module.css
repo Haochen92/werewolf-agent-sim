@@ -1,26 +1,20 @@
-/* the role card's demo: the day/night switch over the stage's crop */
-.demo {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  min-width: 0;
+/* the night room's crop: the room's dark under it until its picture is in */
+.crop {
+  border-radius: 6px;
+  background: #1c120a;
 }
-.switch {
-  composes: tabs small from '../../../../components/site/PlateTabs.module.css';
-  align-self: center;
+/* the baked room, filling the crop in stage units */
+.room {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(var(--w) * 1px);
+  height: calc(var(--h) * 1px);
 }
-/* the crop's own width, so the card on the table and the opened card centre in it */
+/* the crop's own width, so the card opened centres in it; shorter than the stage, so the
+   opened card grows less on a phone (NightRoom.module.css `--card-max`) */
 .box {
   right: auto;
   width: calc(var(--w) * 1px);
-}
-/* by day the card is the button at the foot of the stage, drawn larger here: alone on the
-   page at the stage's size it read as a speck */
-.foot {
-  position: absolute;
-  left: 50%;
-  bottom: 22%;
-  translate: -50% 0;
-  scale: 1.8;
-  transform-origin: 50% 100%;
+  --card-max: 1.1;
 }

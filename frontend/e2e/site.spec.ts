@@ -902,34 +902,23 @@ test('guide: no tab set moves the page, whichever tab is shown', async ({ page }
   }
 });
 
-test('guide: your role card opens from the day’s button and from the night’s table, with its uses left', async ({
+test('guide: your role card stands in your night room, drawn when its tab is first shown, and opens with its uses left', async ({
   page,
 }) => {
   await page.goto('/guide');
+  const demo = page.locator('[data-role-demo]');
+  // the room is not drawn until its tab is shown
+  await expect(demo.locator('img')).toHaveCount(0);
   await page
     .getByRole('tablist', { name: 'Tools' })
     .getByRole('tab', { name: 'Your card' })
     .click();
-  const demo = page.locator('[data-role-demo]');
-  await expect(demo).toHaveAttribute('data-role-demo', 'day');
-  await page.getByRole('button', { name: 'Your card: Sigilist', exact: true }).click();
+  await expect(demo.locator('img').first()).toBeVisible();
+  await page.getByRole('button', { name: 'Your card: Sigilist. Tap to read' }).click();
   const card = page.getByRole('dialog', { name: 'Sigilist' });
   await expect(card).toContainText('Place a sigil on one player.');
   await expect(card).toContainText('2 sigils left');
   await page.getByRole('button', { name: 'Close your card' }).click();
-  await expect(card).toBeHidden();
-  // at night the card stands on the table; switching closes an open card
-  await page
-    .getByRole('tablist', { name: 'Day or night' })
-    .getByRole('tab', { name: 'Night' })
-    .click();
-  await expect(demo).toHaveAttribute('data-role-demo', 'night');
-  await page.getByRole('button', { name: 'Your card: Sigilist. Tap to read' }).click();
-  await expect(card).toContainText('2 sigils left');
-  await page
-    .getByRole('tablist', { name: 'Day or night' })
-    .getByRole('tab', { name: 'Day' })
-    .click();
   await expect(card).toBeHidden();
 });
 

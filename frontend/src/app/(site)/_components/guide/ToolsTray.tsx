@@ -84,7 +84,7 @@ export function ToolsTray() {
         <div className={classes.card} {...t.panel('role')}>
           <Tool
             title="Your role card"
-            demo={<RoleCardDemo />}
+            demo={<RoleCardDemo shown={t.at === 'role'} />}
             how={[
               ['By day, select Your card', 'at the foot of the stage'],
               ['At night it stands on your table', 'select it to read it full size'],
