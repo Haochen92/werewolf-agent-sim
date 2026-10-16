@@ -4,9 +4,7 @@ Ruled with the owner on 2026-10-16 (the type review, worked out on a mock with a
 change: https://claude.ai/artifact/XomZwHAP9xuq5ahhWcsWuC). One set of faces serves the site and
 the theatre. This file is the rule; `src/theme/fonts.ts` and `src/stage/fonts.ts` load the faces.
 
-**Status: ruled, not yet built.** Until the build lands, the code still has Young Serif on the
-stage, Outfit in the landing's speech samples, system mono in two typed notes, and the story in
-the hero. The build order is at the end.
+**Status: built 2026-10-16** (the four steps at the end), not yet deployed.
 
 ## The six faces
 
@@ -67,7 +65,7 @@ Signs and controls in the theatre (seat numbers, the clock, counts, "Day 3", "No
 width, so seats 6 and 9 sit level and the clock does not shift as it counts. Numbers inside
 sentences (a speech's "seat 5") keep the face's own figures, which sit with the lowercase.
 
-## The build
+## The build (done 2026-10-16)
 
 1. This file, and the pointers to it in site_architecture.md and stage_architecture.md §5.
 2. The faces: Young Serif out of `stage/fonts.ts` and Garamond in; Literata and Courier Prime

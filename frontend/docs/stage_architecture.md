@@ -632,12 +632,14 @@ Faction colour appears on a card only once it is face up (the handoff's card-bac
 
 The design's materials (`StageKit.vars()`: walnut, brass, felt, paper, the faction inks) become
 CSS custom properties on the stage box, alongside the existing [tokens.css](../src/styles/tokens.css).
-**Superseded 2026-10-16 by [typography.md](typography.md)** (Young Serif retired: the big signs go
-to Garamond, the small text to Literata 600); what follows is the 2026-09-29 state, until the
-build lands. Fonts via `next/font` (`src/stage/fonts.ts`): the HUD's two voices (ruled 2026-09-29) are
-`Young Serif` (`--font-display`: the day plaque, nameplates, tabs, seat numerals on brass and on
-the wing) and `Literata` (`--font-body`, the stage's default face: speeches, the transcript, the
-dock), no extra letter-spacing on body text; `IM Fell English` stays on paper (and the case
+Fonts via `next/font` (`src/stage/fonts.ts`), by [typography.md](typography.md) (2026-10-16,
+which retired the 2026-09-29 Young Serif): `EB Garamond` 600 (`--font-display`, scaled by
+`--display-scale`) for the signs and headings (the day plaque, the nameplate, the seat tab, the
+dock's and the drawer's heads, the notices) and `Literata` for the rest: `--font-body`, the
+stage's default face, for speeches, the transcript and the dock's fields, and `--font-ui`, the
+same face at 600, for the small text and the controls (the strip's buttons, the seat numbers and
+role bands, the tabs, the clock); signs and controls set even, same-width digits. No extra
+letter-spacing on body text; `IM Fell English` stays on paper (and the case
 file's titles), `Patrick Hand` for pencil (the case file's margin line and pencilled facets),
 `Courier Prime` (`--font-stage-type`, 2026-09-29) the case file's typewriter for its labels, tabs
 and stamps only, and the sans (Outfit) only where a plate still names it. The case file's paper
