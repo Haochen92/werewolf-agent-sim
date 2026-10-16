@@ -432,6 +432,10 @@ has hydrated, and adding a Suspense or loading boundary is a moment to look for 
   inside the press's own handler. Make or resume the `AudioContext` in a press listener, not in
   an effect that runs after it (`src/music/music.ts`). Fade with gain nodes: an iPhone ignores
   an audio element's `volume`.
+- iPhone Safari gives an `AudioContext` a state the standard does not have: `interrupted`, when
+  the viewer switches app or takes a call. A resume on returning to the page may be refused, and
+  a check for `'suspended'` never matches it, so the music came back only when Safari got round
+  to it. On a press, close an interrupted context and make a new one (`src/music/player.ts`).
 
 - `--update-snapshots` rewrites only the goldens that fail, and a golden fails only past its
   tolerance (`maxDiffPixelRatio` 0.005 here), so a deliberate change to a few lines of text (a
