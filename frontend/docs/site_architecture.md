@@ -47,6 +47,9 @@ own part (`'Rooms'`). `/` gets the default, `The Ninth Express`.
 
 ## Fonts
 
+Which face goes where (three voices, three props) is ruled in [typography.md](typography.md)
+(2026-10-16); this section is how they load.
+
 - `src/theme/fonts.ts` loads the mockups' faces through next/font: Outfit (300 to 800) as
   `--font-site-sans`, IM Fell English (roman and italic) as `--font-site-serif`, and EB Garamond
   (500, 600) as `--font-site-garamond`, for names on the signage (the wordmark, the model on the

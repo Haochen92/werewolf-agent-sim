@@ -632,7 +632,9 @@ Faction colour appears on a card only once it is face up (the handoff's card-bac
 
 The design's materials (`StageKit.vars()`: walnut, brass, felt, paper, the faction inks) become
 CSS custom properties on the stage box, alongside the existing [tokens.css](../src/styles/tokens.css).
-Fonts via `next/font` (`src/stage/fonts.ts`): the HUD's two voices (ruled 2026-09-29) are
+**Superseded 2026-10-16 by [typography.md](typography.md)** (Young Serif retired: the big signs go
+to Garamond, the small text to Literata 600); what follows is the 2026-09-29 state, until the
+build lands. Fonts via `next/font` (`src/stage/fonts.ts`): the HUD's two voices (ruled 2026-09-29) are
 `Young Serif` (`--font-display`: the day plaque, nameplates, tabs, seat numerals on brass and on
 the wing) and `Literata` (`--font-body`, the stage's default face: speeches, the transcript, the
 dock), no extra letter-spacing on body text; `IM Fell English` stays on paper (and the case
