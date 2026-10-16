@@ -188,7 +188,7 @@ export const SIDE_CHANGE_NOTE = 'tap another side to change';
 const USE_WORDS: Record<string, [string, string]> = {
   investigator: ['check', 'checks'],
   sentinel: ['watch', 'watches'],
-  vigilante: ['cap', 'caps'],
+  vigilante: ['bullet', 'bullets'],
   sigilist: ['sigil', 'sigils'],
   illusionist: ['conceal', 'conceals'],
   fortune_teller: ['self-bet', 'self-bets'],

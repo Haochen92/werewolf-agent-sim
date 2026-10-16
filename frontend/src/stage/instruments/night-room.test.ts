@@ -98,9 +98,9 @@ describe('the card’s count', () => {
     expect(usesNote('sigilist', 1)).toBe('your last sigil');
     expect(usesNote('illusionist', 2)).toBe('2 conceals left');
     expect(usesNote('fortune_teller', 2)).toBe('2 self-bets left');
-    expect(usesNote('vigilante', 2)).toBe('2 caps left');
+    expect(usesNote('vigilante', 2)).toBe('2 bullets left');
     // the nine-seat vigilante counts its bullets
-    expect(usesNote('vigilante', null, 1)).toBe('your last cap');
+    expect(usesNote('vigilante', null, 1)).toBe('your last bullet');
     // none left, no count (the speculator's one pick), or no limit: no line
     expect(usesNote('sentinel', 0)).toBeUndefined();
     expect(usesNote('speculator', 1)).toBeUndefined();

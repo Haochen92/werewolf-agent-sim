@@ -16,7 +16,10 @@ export interface CardText {
   ability: string;
   /** A wolf's back opens with the pack's shared rules ("Pack ability"). */
   pack?: string;
-  /** What the role does at night, short, as the game's own card says it ("At night"). */
+  /**
+   * What the role does at night, short, as the game's own card says it ("At night"; owner,
+   * 2026-10-16: shortened). A limited ability's count is not in it: the card's uses line says it.
+   */
   night: string;
   /** The back's "You win when". */
   win: string;
@@ -46,7 +49,7 @@ export const CARD_TEXT: Record<string, CardText> = {
     ability:
       'On up to two nights, check one player. You privately learn whether they are Suspicious or Not suspicious. Wolves are Suspicious, as is the Necromancer on nights it attacks. Everyone else—including the Serial killer—is Not suspicious.',
     night:
-      'Check one player, two checks in the game. Wolves read Suspicious, and so does the necromancer on a night it attacks; everyone else, the serial killer included, reads Not suspicious. Only you see the result.',
+      'Check one player. Wolves read Suspicious, and so does the necromancer on a night it attacks. Everyone else reads Not suspicious.',
     win: 'All wolves and the lone killer are eliminated, with at least one Town player still alive.',
   },
   vigilante: {
@@ -54,8 +57,7 @@ export const CARD_TEXT: Record<string, CardText> = {
     line: 'Packed a pistol, hoping they wouldn’t need it.',
     ability:
       'Each night, shoot one player or hold your fire. You have two bullets for the whole game. Protection and immunity can stop your shot. A shot uses a bullet even if the target survives, unless your action is blocked.',
-    night:
-      "Shoot one player, two bullets in the game. A shot can't kill the serial killer.",
+    night: "Shoot one player. A shot can't kill the serial killer.",
     win: 'All wolves and the lone killer are eliminated, with at least one Town player still alive.',
   },
   wolf: {
@@ -82,8 +84,7 @@ export const CARD_TEXT: Record<string, CardText> = {
     line: 'Keeps a candle burning and an eye on the compartment door.',
     ability:
       'On up to two nights, watch one player. You privately learn who visited them that night, excluding yourself. This shows who came to them, not where they went. Visits hidden by concealment do not appear.',
-    night:
-      'Watch one player, two watches in the game. In the morning you learn the names of everyone who visited them.',
+    night: 'Watch one player. In the morning you learn who visited them.',
     win: 'All wolves and the lone killer are eliminated, with at least one Town player still alive.',
   },
   trailseer: {
@@ -100,7 +101,7 @@ export const CARD_TEXT: Record<string, CardText> = {
     ability:
       'Place a sigil on one player, or save it for later. You have two sigils. If your target attacks that night, the sigil attacks them in return without stopping their original attack. Protection and immunity can stop the retaliation; attacks through a Necromancer’s borrowed body do not trigger it. A placed sigil is spent even if nothing happens, unless your action is blocked.',
     night:
-      'Place a sigil on one player, two in the game. If they attack anyone tonight, your sigil strikes them back afterwards; it does not stop their attack. The serial killer survives it, and you learn only that your sigil had no effect.',
+      'Place a sigil on one player. If they attack tonight, they are struck in return. Some roles are immune.',
     win: 'All wolves and the lone killer are eliminated, with at least one Town player still alive.',
   },
   chanteuse: {
@@ -110,9 +111,9 @@ export const CARD_TEXT: Record<string, CardText> = {
       'Each night, block one player’s night action. The lone killer and neutral player cannot be blocked; you are told if your block fails. You can block on the same night you carry out the pack’s attack.',
     pack: 'You know your fellow wolf and can talk privately at night. The pack attacks one player each night. Surviving wolves take turns choosing and carrying out the attack.',
     night:
-      'Talk with your packmate and choose the kill. Then keep one player at your table all night: their act comes to nothing, and they learn they were held, not by whom. The lone killer and the neutral are never held, and you are told so.',
+      'Discuss who to kill tonight. Also enchant one player: their night action has no effect. Some roles are immune.',
     nightAlone:
-      'Choose one player to kill, then keep one player at your table; only a town player is held. You hunt alone now.',
+      'Choose one player to kill, and enchant one player: their night action has no effect. You hunt alone now.',
     win: 'The lone killer is eliminated and the surviving wolves equal or outnumber all other living players combined.',
   },
   illusionist: {
@@ -122,9 +123,9 @@ export const CARD_TEXT: Record<string, CardText> = {
       'Twice per game, conceal the pack’s victim’s role and learn it yourself. This also hides the attacking wolf’s visit. Your own concealment visit remains visible unless you carried out the attack yourself. A use is spent only if the victim dies.',
     pack: 'You know your fellow wolf and can talk privately at night. The pack attacks one player each night. Surviving wolves take turns choosing and carrying out the attack.',
     night:
-      "Talk with your packmate and choose the kill. Twice in the game you may conceal the victim's role from the morning report; you learn it yourself.",
+      "Discuss who to kill tonight. You may also conceal the victim's role and information from the morning report and learn it yourself.",
     nightAlone:
-      'Choose one player to kill, and conceal if you still can. You hunt alone now.',
+      'Choose one player to kill. You may also conceal their role and information from the morning report and learn it yourself. You hunt alone now.',
     win: 'The lone killer is eliminated and the surviving wolves equal or outnumber all other living players combined.',
   },
   necromancer: {
@@ -133,7 +134,7 @@ export const CARD_TEXT: Record<string, CardText> = {
     ability:
       'On Night 1, you take no action and cannot be killed. From Night 2, use an eligible dead player’s ability on a target, or take no action. You can reuse the same body; concealed bodies cannot be used.\nThe body appears as the visitor instead of you. You cannot be blocked, but from Night 2 you can be killed. The Investigator sees you as Suspicious on nights you attack.',
     night:
-      'Night 1: nothing, and nothing can kill you. From Night 2: pick a dead, unconcealed player and use their night ability on one target.',
+      "From Night 2, use a dead player's night ability on one target; with no such body, you do nothing that night. On Night 1 you do nothing, and can't be killed.",
     win: 'You are alive with no more than one other player remaining.',
   },
   speculator: {
@@ -142,7 +143,7 @@ export const CARD_TEXT: Record<string, CardText> = {
     ability:
       'On any night, back Town, the Wolves, the lone killer or yourself. You choose only once and cannot change your choice. It is announced the next morning, but your identity stays hidden. You may wait, but you lose if you die, or the game ends, before you choose.',
     night:
-      'Pick the side you think will win, or yourself, on any night you like; there is no deadline, but dying unpicked loses. The next morning announces the pick, not your name.',
+      'Bet once on the side that will win, or on yourself, on any night you like. Die before you bet and you lose.',
     win: 'Your chosen side wins, even if you have died. If you chose yourself, you must be the only player left alive.',
   },
   fortune_teller: {
@@ -151,7 +152,7 @@ export const CARD_TEXT: Record<string, CardText> = {
     ability:
       'Each night, predict which player will die that night. A correct prediction earns one point, or two if you also name their role correctly. A wrong role still earns one point if the player dies.\nTwice per game, you may instead choose yourself: you earn no points, but cannot be killed that night. Your ability cannot be blocked.',
     night:
-      'As the night begins, bet on who dies tonight: one point for the player, two for the player and their role. Or, twice in the game, bet on yourself, which scores nothing but helps you live through the night. You learn how the bet went once the night is over.',
+      "Predict who dies tonight: a point for the player, two with their role. Or bet on yourself: no points, but you can't be killed tonight.",
     win: 'You earn two points. Your win is kept if you die, and the game continues for the other players.',
   },
 };

@@ -297,6 +297,11 @@ export function CastLine({ counts }: { counts: Record<string, number> }) {
 
 const WORDS = ['No', 'One', 'Two', 'Three', 'Four', 'Five'];
 
+/** A limited ability's uses left on the dealt card ("2 sigils left"), on the caps' line. */
+export function UsesLeft({ text }: { text: string }) {
+  return <div className={styles.caps}>{text}</div>;
+}
+
 /** The vigilante's caps: one red cap per bullet left. */
 export function Caps({ n }: { n: number }) {
   return (

@@ -7,7 +7,7 @@
  * the role's felt figure and the night line. Tapped open it reads in full (name, sigil, the
  * figure, what you do at night); the front line is left to the deal and the lobby, since at night
  * the card is there for the act. A tap on the card closes it; a tap past it (`onOutside`) also
- * lets the room clear an unsent choice. The vigilante's caps left sit under the night line.
+ * lets the room clear an unsent choice. A limited ability's uses left sit under the night line.
  * The replay's rooms stand the actor's card there and open it the same way (`owner`).
  *
  * The faction's colour is on the card because the card is face up: it is your own.
@@ -40,7 +40,7 @@ export interface FramedCardProps {
   u: number;
   /** A lone wolf reads "You hunt alone now". */
   alone?: boolean;
-  /** A quiet line under the night line (the vigilante's caps left). */
+  /** A quiet line under the night line (a limited ability's uses left: "2 sigils left"). */
   note?: string;
   /** Not yours: whose card it is ("Seat 4", "The pack"), for its label. */
   owner?: string;
@@ -125,7 +125,7 @@ export interface CardOverlayProps {
   /** One card unit, in stage units (bench 70: 1.6 puppet units). */
   u: number;
   alone?: boolean;
-  /** A quiet line under the night text (the vigilante's caps left). */
+  /** A quiet line under the night text (a limited ability's uses left: "2 sigils left"). */
   note?: string;
   /** Any tap closes the card. */
   onClose?: () => void;

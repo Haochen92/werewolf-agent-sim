@@ -29,6 +29,7 @@ import {
   Notice,
   NoticeZone,
   PackChat,
+  UsesLeft,
 } from '../instruments/Notice';
 import { StringDrop } from '../instruments/StringDrop';
 import { bigCard, chipRow, rowX, smallCards } from '../instruments/flies';
@@ -40,6 +41,7 @@ import { seatNumber } from '../roles';
 import { bandNarrows, sideOpen } from '../slot';
 import { STAGE_H, geometry } from '../units';
 import { StandReturns } from './DiningCarParts';
+import { usesNote } from './ShelfRoomScene';
 import { CarSetSpec } from './CarScene';
 import type { SceneProps } from './types';
 
@@ -305,6 +307,7 @@ function DealWords({
     case 'deal.your-card': {
       if (!myRole) return null;
       const bullets = view.me.role?.bullets ?? null;
+      const uses = usesNote(myRole, view.me.role?.uses ?? null);
       return (
         <Notice
           kind="paper"
@@ -314,7 +317,12 @@ function DealWords({
           {...t}
         >
           {cardTextFor(myRole, isNineSeat(view))?.night}
-          {myRole === 'vigilante' && bullets !== null ? <Caps n={bullets} /> : null}
+          {/* a nine-seat vigilante's caps; any other limited ability, its uses left */}
+          {myRole === 'vigilante' && bullets !== null ? (
+            <Caps n={bullets} />
+          ) : uses ? (
+            <UsesLeft text={uses} />
+          ) : null}
         </Notice>
       );
     }
