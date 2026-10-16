@@ -20,6 +20,7 @@ from pydantic import BaseModel
 
 from Agents.prompts.compose import preamble
 from Agents.prompts.common import VERDICT_EXAMPLES_PASS, memory_verdict_example
+from Agents.deduction import deduction_mode_for, own_result_lines, seat_view_from_payload
 from Agents.schemas.game_events import DayRound
 from Agents.schemas.roles import ROLE_SPECS, TOWN
 from Agents.prompts.cell_prompt import cell_driver_horizon, dimension_menu
@@ -278,7 +279,8 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         ),
         "wolf_channel": format_wolf_channel(payload.get("wolf_channel", [])),
         # The actor's own engine-written night record (only night actors' payloads carry it).
-        "night_actions": format_night_actions(payload.get("night_actions", []), payload.get("current_day")),
+        "night_actions": format_night_actions(payload.get("night_actions", []), payload.get("current_day"),
+                                              _own_result_lines(payload)),
         "previous_strategy": payload.get("previous_strategy", ""),
         "strategy_points": strategy_points_text,
         "retrieved_observations": observations_text,
@@ -313,6 +315,14 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
             payload.get("dead_roster", []), payload.get("cast_role_counts", {})
         ),
     }
+
+def _own_result_lines(payload: dict[str, Any]):
+    """What the seat's own night records imply (level 1 of the deduction engine), or None when the
+    game's deduction mode is "off" or the seat is a human's (Agents/deduction/seat_view.py)."""
+    if deduction_mode_for(payload) == "off":
+        return None
+    return own_result_lines(seat_view_from_payload(payload))
+
 
 def _tell_book_block():
     from Agents.memory.tell_book import tell_book_block

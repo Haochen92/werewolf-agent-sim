@@ -12,6 +12,7 @@ from Agents.rules.board_clocks import alive_role_counts
 from Agents.schemas.roles import ROLE_SPECS, roles
 from Agents.rules.claim_ledger import format_claim_ledger, revealed_tag
 from Agents.schemas import RetrievedObservation, RetrievedStrategyPoint
+from Agents.schemas.deduction import OwnResultLine
 from Agents.schemas.game_events import (
     DayChannel,
     DaySummary,
@@ -154,28 +155,35 @@ def format_accusations(discussion: list[DaySummary], dead_roster: list[DeathReco
     return "\n".join(lines)
 
 
-def format_night_actions(records: list[NightActionRecord], current_day: int | None = None) -> str:
-    """The actor's own night record, one line per night, written by the engine."""
+def format_night_actions(records: list[NightActionRecord], current_day: int | None = None,
+                         implications: list[OwnResultLine | None] | None = None) -> str:
+    """The actor's own night record, one line per night, written by the engine. `implications`
+    (Agents/deduction/own_results/, one entry per record) adds what each result implies, or
+    replaces the record's prose where the line says so (the roleblock)."""
     if not records:
         return "Nothing yet."
     verbs = {"protect": "you protected", "shoot": "you shot", "kill": "you attacked",
              "investigate": "you checked", "watch": "you watched", "follow": "you followed",
              "sigil": "you set a sigil on", "block": "you blocked", "bet": "you bet on"}
     lines = []
-    for r in records:
+    for i, r in enumerate(records):
         night = f"Night {r.day}" + (" (last night)" if current_day is not None and r.day == current_day - 1 else "")
+        implied = implications[i] if implications else None
+        outcome = r.outcome
+        if implied is not None:
+            outcome = implied.text if implied.replaces_outcome else f"{r.outcome} {implied.text}"
         if r.result == "roleblocked":
-            lines.append(f"{night}: {r.outcome}")
+            lines.append(f"{night}: {outcome}")
             continue
         if r.action == "hold_fire":
             lines.append(f"{night}: you held your fire.")
             continue
         if r.action in ("conceal", "pick"):
             # No player target of its own: the outcome says what was hidden, or picked.
-            lines.append(f"{night}: {r.outcome}")
+            lines.append(f"{night}: {outcome}")
             continue
         verb = "your pack attacked" if r.actor == "wolves" else verbs.get(r.action, f"you {r.action}")
-        lines.append(f"{night}: {verb} {r.target}. {r.outcome}")
+        lines.append(f"{night}: {verb} {r.target}. {outcome}")
     return "\n".join(lines)
 
 

@@ -58,6 +58,16 @@ def _with_game_id(enriched_payload: dict[str, Any], config: RunnableConfig) -> d
     enriched_payload["game_id"] = str(configurable.get("game_id") or "")
     return enriched_payload
 
+def _with_deduction_mode(enriched_payload: dict[str, Any], config: RunnableConfig) -> dict[str, Any]:
+    """The game's deduction mode on the prompt payload (RunConfig.deduction_mode), read where the
+    prompt is built (Agents/deduction/seat_view.py). A bare test with no config gets the default."""
+    configurable = config.get("configurable", {}) if config else {}
+    mode = configurable.get("deduction_mode")
+    if mode:
+        enriched_payload["deduction_mode"] = mode
+    return enriched_payload
+
+
 def _announce_memory_consulted(
     *,
     player_id: str,
@@ -200,6 +210,7 @@ def run_memory_informed_action(
             action_phase,
         )
         enriched_payload = _with_game_id(enriched_payload, config)
+        enriched_payload = _with_deduction_mode(enriched_payload, config)
         result = run_agent(
             enriched_payload,
             prompt_template,
@@ -327,6 +338,7 @@ def preview_agent_action(
     """
     enriched_payload, _ = enrich_payload_with_memory(dict(payload), config, runtime, action_phase)
     enriched_payload = _with_game_id(enriched_payload, config)
+    enriched_payload = _with_deduction_mode(enriched_payload, config)
     if direction:
         prompt_template = prompt_template + HumanMessage(content=direction)
     return run_agent(enriched_payload, prompt_template, output_schema, output_key)
@@ -397,6 +409,7 @@ def run_memory_informed_night_action(
             lookup_scope="chat" if output_key == "wolf_channel" else "act",
         )
         enriched_payload = _with_game_id(enriched_payload, config)
+        enriched_payload = _with_deduction_mode(enriched_payload, config)
         result = run_agent(
             enriched_payload,
             prompt_template,

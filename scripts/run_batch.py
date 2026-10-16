@@ -278,6 +278,12 @@ def parse_args() -> argparse.Namespace:
         help="Leave out retrieved lessons learned at another stage of the game (RunConfig.stage_filter).",
     )
     parser.add_argument(
+        "--deductions",
+        choices=("off", "record", "full"),
+        default="full",
+        help="How much of the deduction engine the AI seats get (RunConfig.deduction_mode).",
+    )
+    parser.add_argument(
         "--skip-embedding-canary",
         action="store_true",
         help=(
@@ -548,6 +554,7 @@ def run_batch(args: argparse.Namespace) -> int:
             "retrieval_types": args.retrieval_types,
             "retrieval_types_config": retrieval_types_config,
             "stage_filter": args.stage_filter,
+            "deduction_mode": args.deductions,
             "memory_persistence_config": memory_persistence_config,
             "game_config": game_config,
         }
@@ -606,6 +613,7 @@ def run_batch(args: argparse.Namespace) -> int:
                     filtering_config=filtering_config,
                     retrieval_types_config=retrieval_types_config,
                     stage_filter=args.stage_filter,
+                    deduction_mode=args.deductions,
                     game_id=game_id,
                 )
             )

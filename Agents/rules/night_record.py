@@ -236,7 +236,9 @@ def night_action_records(
             action = "shoot" if (choice.kind == "kill" and choice.role == "vigilante") else choice.kind
             records.append(NightActionRecord(
                 day=outcome.night, actor=_record_actor(choice), action=action, target=choice.target,
-                outcome="You were roleblocked: your action was not carried out and you learned nothing tonight.",
+                # "and you learned nothing tonight" was cut (owner, R4, 2026-10-16): false, since a
+                # block is the Chanteuse's visit. What the block implies is the deduction layer's.
+                outcome="You were roleblocked: your action was not carried out.",
                 result="roleblocked", seen=[],
             ))
             continue
