@@ -50,14 +50,16 @@
   text-wrap: balance;
   color: var(--text);
 }
+/* lighter and lamplit, so it reads as the line under the sign, not a second title (owner, 2026-10-16) */
 .tagline {
   margin: 12px auto 30px;
   font-family: var(--font-garamond);
-  font-weight: 600;
+  font-weight: 500;
   font-size: clamp(22px, 3.9vw, 40px);
   line-height: 1.15;
+  letter-spacing: 0.02em;
   text-wrap: balance;
-  color: var(--text);
+  color: var(--sign-hook);
 }
 /* the doors, hung from a rail on a wide screen, flat and stacked on a phone */
 .seatRail {
@@ -132,9 +134,10 @@
   margin: 32px auto 0;
   text-align: center;
   text-wrap: balance;
-  color: var(--muted);
-  font-size: 16px;
+  color: var(--bone2);
+  font-size: 18px;
   line-height: 1.55;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
 }
 
 /* ---------- the ending: the research question behind the game ---------- */
@@ -237,7 +240,7 @@
     font-size: 17px;
   }
   .promise {
-    font-size: 15px;
+    font-size: 16px;
   }
   .prologue {
     margin-bottom: 80px;
