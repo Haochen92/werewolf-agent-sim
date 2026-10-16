@@ -17,6 +17,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Alert, Skeleton } from '@mantine/core';
 import { listRooms } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
+import { useHydrated } from '@/hooks/useHydrated';
 import { SPRITES } from '@/assets/manifest';
 import { Button, Flapword, Icon } from '@/components/site';
 import { BoardRow } from './BoardRow';
@@ -31,10 +32,14 @@ export function DeparturesBoard() {
     refetchInterval: REFRESH_MS, // rooms fill up while you look at them
     staleTime: 0, // coming back (e.g. from a room you just opened) asks again at once
   });
-  const rows = rooms.data;
+  // the nav asks for the same list, and its answer can be here before the board is hydrated: the
+  // board shows what the server drew, its pending face, until it is (`useHydrated`)
+  const hydrated = useHydrated();
+  const pending = rooms.isPending || !hydrated;
+  const rows = hydrated ? rooms.data : undefined;
 
   let face;
-  if (rooms.isPending) {
+  if (pending) {
     face = (
       <>
         <ColHead />
@@ -111,7 +116,7 @@ export function DeparturesBoard() {
           Boarding <span className={classes.n}>{rows ? rows.length : '·'}</span>
         </span>
       </div>
-      <div className={classes.face} aria-busy={rooms.isPending}>
+      <div className={classes.face} aria-busy={pending}>
         {face}
       </div>
       <div className={classes.bfoot}>

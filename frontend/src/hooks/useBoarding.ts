@@ -9,6 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { rowFace } from '@/app/(site)/rooms/_components/boarding';
 import { listRooms } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
+import { useHydrated } from './useHydrated';
 
 export function useBoarding(): number | undefined {
   const rooms = useQuery({
@@ -17,7 +18,9 @@ export function useBoarding(): number | undefined {
     staleTime: 30_000,
     retry: false,
   });
+  // what the server drew (nothing) until the part is hydrated (`useHydrated`)
+  const hydrated = useHydrated();
   // the nav is on every page: an answer that is not a list says nothing, never breaks the page
-  if (!Array.isArray(rooms.data)) return undefined;
+  if (!hydrated || !Array.isArray(rooms.data)) return undefined;
   return rooms.data.filter((r) => rowFace(r).joinable).length;
 }
