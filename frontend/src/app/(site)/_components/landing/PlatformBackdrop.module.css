@@ -10,8 +10,9 @@
   --lx: max(6%, calc(50% - 650px));
   --rx: min(94%, calc(50% + 650px));
   --ly: 410px;
-  /* where the wall is lit round the doors (the hung tags) */
+  /* where the wall is lit round the doors (the hung tags), and how far */
   --doors-y: 680px;
+  --doors-r: 470px 330px;
 }
 @media (max-width: 860px) {
   .scene {
@@ -36,7 +37,14 @@
 @media (max-width: 860px) {
   .heroScene {
     --nav-foot: 154px;
-    --doors-y: calc(var(--ly) + 140px);
+    /* on a phone the hero is short, so the doors' light sits under the tags and smaller,
+       leaving the wall under the name to the lamps (owner, 2026-10-16: it read too bright) */
+    --doors-y: calc(var(--ly) + 210px);
+    --doors-r: 360px 230px;
+  }
+  /* and the wall a shade darker, so the lamps read as the light again */
+  .heroScene .tiles {
+    opacity: 0.7;
   }
 }
 
@@ -72,7 +80,7 @@
   background: url('../../../../assets/site/wall-tile.svg') center top / 120px 64px repeat;
   -webkit-mask-image:
     radial-gradient(ellipse 560px 280px at 50% 70px, #000, transparent 72%),
-    radial-gradient(ellipse 470px 330px at 50% var(--doors-y), #000, transparent 72%),
+    radial-gradient(ellipse var(--doors-r) at 50% var(--doors-y), #000, transparent 72%),
     radial-gradient(
       ellipse 260px 520px at var(--lx) calc(var(--ly) + 110px),
       #000,
@@ -85,7 +93,7 @@
     );
   mask-image:
     radial-gradient(ellipse 560px 280px at 50% 70px, #000, transparent 72%),
-    radial-gradient(ellipse 470px 330px at 50% var(--doors-y), #000, transparent 72%),
+    radial-gradient(ellipse var(--doors-r) at 50% var(--doors-y), #000, transparent 72%),
     radial-gradient(
       ellipse 260px 520px at var(--lx) calc(var(--ly) + 110px),
       #000,

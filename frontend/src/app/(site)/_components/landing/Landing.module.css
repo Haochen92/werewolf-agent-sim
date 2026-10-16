@@ -235,6 +235,13 @@
   font-size: 15px;
 }
 
+/* on a phone the hero is short and the glow behind the tags reached the name: half of it there
+   (owner, 2026-10-16: the hero read too bright) */
+@media (max-width: 860px) {
+  .hero::after {
+    opacity: 0.5;
+  }
+}
 @media (max-width: 700px) {
   .tale {
     font-size: 17px;
