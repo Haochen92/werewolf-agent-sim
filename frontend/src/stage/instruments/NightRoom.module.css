@@ -306,8 +306,9 @@ button.photo:focus-visible {
   position: relative;
   width: 416px;
   height: 608px;
-  /* read on a phone: the whole card larger, about its centre (it still fits the stage) */
-  scale: min(var(--legible), 1.45);
+  /* read on a phone: the whole card larger, about its centre (it still fits the stage); a box
+     shorter than the stage caps it (`--card-max`: the guide's night room) */
+  scale: min(var(--legible), var(--card-max, 1.45));
   background: var(--paper);
   border: calc(3 * var(--u)) solid var(--ink);
   border-radius: calc(10 * var(--u));
