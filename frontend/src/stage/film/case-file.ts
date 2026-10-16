@@ -557,6 +557,17 @@ export function seatFile(
   };
 }
 
+/**
+ * A seat's file at the opening's stop: as it stood once every opening was written (owner,
+ * 2026-10-16: at the round's start its notes, reads and lessons were still empty), read from
+ * `ahead` up to the round's end. The stage stays at the round's start; only the file is cut later.
+ */
+export function openingFile(ahead: GameView, seat: string, until: number): SeatFile {
+  const f = seatFile(ahead, seat, ahead, until);
+  // nothing past the round: no later notes, and no findings (`ahead` is the game over)
+  return { ...f, pages: f.pages.filter((p) => p.seq < until), findings: null };
+}
+
 export interface TabState {
   id: FileTab;
   label: string;

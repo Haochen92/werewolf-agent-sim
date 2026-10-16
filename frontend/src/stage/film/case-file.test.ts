@@ -21,6 +21,7 @@ import {
   notePages,
   openTab,
   openingEntries,
+  openingFile,
   parseSituation,
   seatFile,
   shortForm,
@@ -469,6 +470,17 @@ describe('the opening’s stop: what each seat wrote', () => {
   it('is only the opening’s', () => {
     const speech = beatsFor(log, { xray: true }).find((b) => b.id === 'day.speech')!;
     expect(openingEntries(ahead, speech)).toBeNull();
+  });
+
+  it('reads the file as of the round’s end, not its start', () => {
+    // seat 4 read the table (seq 91) and wrote a note (seq 92) while writing its opening
+    const at = openingFile(ahead, 'player_4', opening.roundUntil!);
+    expect(at.pages.map((p) => p.seq)).toEqual([17, 55, 92]);
+    expect(at.reads?.rows.length).toBeGreaterThan(0);
+    expect(at.findings).toBeNull();
+    // at the playhead (the round's start) the note and the reads were not yet written
+    const start = foldEvents(log.slice(0, opening.end));
+    expect(seatFile(start, 'player_4', ahead).pages.map((p) => p.seq)).toEqual([17, 55]);
   });
 
   it('counts the round for the stop’s notice', () => {

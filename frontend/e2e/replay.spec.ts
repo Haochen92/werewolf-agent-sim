@@ -665,6 +665,9 @@ test('replay: the opening’s stop: a seat’s file leads with what it wrote, an
   await expect(file.locator('[data-opening="pass"]')).toContainText(
     'Passed · chose to pass',
   );
+  // and reads as of the round's end: the note and the reads it wrote with its opening
+  await expect(file).not.toContainText('No note written yet.');
+  await expect(file.getByRole('tab', { name: /^Reads/ })).toBeEnabled();
   await settle(page);
   await expect(page).toHaveScreenshot('replay-opening-stop.png');
   // played: the round's passes are one placard, not a beat a seat

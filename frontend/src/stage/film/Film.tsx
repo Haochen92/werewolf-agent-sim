@@ -68,6 +68,7 @@ import {
   marginNote,
   openTab,
   openingEntries,
+  openingFile,
   recordPicked,
   situationOf,
   tagsOf,
@@ -213,9 +214,15 @@ export function Film({
     shown && focus && focus.seats.length > 1 && focus.seats.includes(shown)
       ? focus.seats.find((s) => s !== shown)!
       : null;
-  const file = shown ? seatFile(view, shown, ahead, ballotCut(view, beat)) : null;
-  // at the opening's stop the file leads with what the seat wrote (read from the log ahead)
+  // at the opening's stop the file leads with what the seat wrote, and reads as of the
+  // round's end (both from the log ahead); anywhere else it reads to the playhead
   const entry = shown && xray ? openingEntries(ahead ?? view, beat)?.get(shown) : undefined;
+  const until = entry && ahead ? beat.roundUntil : undefined;
+  const file = !shown
+    ? null
+    : until !== undefined
+      ? openingFile(ahead!, shown, until)
+      : seatFile(view, shown, ahead, ballotCut(view, beat));
   const nudge =
     replay && view.over ? (
       <p className={styles.nudge} data-nudge>
