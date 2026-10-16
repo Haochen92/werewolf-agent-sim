@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { MantineProvider } from '@mantine/core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ApiError } from '@/lib/request';
 import { MusicDirector } from '@/music/music';
+import { keepInstallPrompt } from '@/stage/fullscreen';
 import { theme } from '@/theme';
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -26,6 +27,8 @@ export function Providers({ children }: { children: ReactNode }) {
         },
       }),
   );
+  // Chrome's offer to install the house, kept for the stage's full-screen switch to make
+  useEffect(() => keepInstallPrompt(), []);
 
   return (
     <QueryClientProvider client={queryClient}>

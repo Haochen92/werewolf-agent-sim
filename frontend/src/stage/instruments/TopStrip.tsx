@@ -18,11 +18,13 @@
  * instead, at the strip's far right past Transcript, which asks first (`LeaveConfirm`): in a room
  * their seat's agent plays on for them, a solo game waits for them (2026-10-11), and the lobby
  * leads back while the game lasts (2026-09-30). Between the tabs and the door, in the game and
- * the full replay, the music's speaker (`SoundButton`, 2026-10-15), on a plaque like the door's.
+ * the full replay, the music's speaker (`SoundButton`, 2026-10-15), on a plaque like the door's,
+ * and after it the full-screen switch (`FullScreenButton`, 2026-10-16), where there is one.
  */
 import Link from 'next/link';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { SoundButton } from '@/music/SoundButton';
+import { FullScreenButton } from '../FullScreenButton';
 import { geometry, type Hud } from '../units';
 import { Notice, NoticeButton, NoticeZone } from './Notice';
 import styles from './TopStrip.module.css';
@@ -60,7 +62,7 @@ export interface TopStripProps {
   reveal?: { on: boolean; onPress?: () => void; locked?: boolean };
   /** Live only: the door at the far right, "Leave the table"; the container asks first. */
   leave?: () => void;
-  /** The music's switch, before the door (the game and the full replay). */
+  /** The music's switch and the full-screen one, before the door (the game and the full replay). */
   sound?: boolean;
 }
 
@@ -88,7 +90,7 @@ export function TopStrip({
   const door = !!leave && hud === 'live';
   // with the slot closed the room runs under the right's plaques: the row stops short of them
   // (they grow with the labels), and a count that does not fit wraps under the plaques
-  const reserve = side ? 0 : (reveal ? 380 : 220) + (door ? 64 : 0) + (sound ? 64 : 0);
+  const reserve = side ? 0 : (reveal ? 380 : 220) + (door ? 64 : 0) + (sound ? 128 : 0);
   return (
     <>
       <div
@@ -144,6 +146,7 @@ export function TopStrip({
           </button>
         </div>
         {sound ? <SoundButton className={styles.door} /> : null}
+        {sound ? <FullScreenButton className={styles.door} /> : null}
         {door ? (
           <button
             type="button"

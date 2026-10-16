@@ -90,7 +90,12 @@ The stage is a `16 / 9` box. Every position, size, radius and path in every scen
 - Sprites are placed in units too; their source pixel size only affects sharpness (§4).
 - Orientation: request fullscreen and `screen.orientation.lock("landscape")` where allowed
   (Android Chrome); where not (iOS Safari), a portrait interstitial ("turn your phone"). There is
-  no portrait layout. The interstitial is the room's, not the stage's.
+  no portrait layout. The interstitial is the room's, not the stage's. The whole screen also has
+  a switch on the top strip, after the speaker (`FullScreenButton`, 2026-10-16): where the page
+  may take it, a press does and a second gives it back; on an iPhone in Safari, which may not, it
+  shows the Home Screen line again (`HomeScreenTip`); where Chrome will install the house on a
+  phone, the press also offers the install (the same line, with an Install button; Chrome's own
+  bar is held back for it, `keepInstallPrompt` from the providers).
 
 **Layers** inside the box, bottom to top (each a positioned `div` filling the box):
 
