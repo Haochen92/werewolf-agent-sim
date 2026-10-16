@@ -12,6 +12,7 @@ import {
   marksAt,
   nightBranchesOf,
   type NightBranch,
+  usesTonight,
 } from './replay-night';
 
 const beats = beatsFor(FIXTURE_EVENTS, { xray: true });
@@ -140,6 +141,14 @@ describe('the ten-seat X-ray night: the carrier’s kill is the pack’s', () =>
     expect(actedAt(night, end(3), 5)).toBe(3);
     expect(actedAt(night, end(4), 5)).toBe(4);
     expect(actedAt(night, end(5), 5)).toBe(5);
+  });
+
+  it('says what each limited seat had left going into the night, from the deal on', () => {
+    const v = foldEvents(p3);
+    // the sigilist (seat 4) placed one on night 1; the illusionist (seat 6) concealed twice by night 2
+    expect([1, 2].map((d) => usesTonight(v, 'player_4', d))).toEqual([2, 1]);
+    expect([1, 2, 3].map((d) => usesTonight(v, 'player_6', d))).toEqual([2, 2, 0]);
+    expect(usesTonight(v, 'player_2', 1)).toBeNull(); // the healer has no limit
   });
 
   it('gives a carrier with no skill that night no branch of its own, and a conceal no mark', () => {

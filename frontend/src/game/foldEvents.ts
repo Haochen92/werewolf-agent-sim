@@ -100,7 +100,14 @@ export function emptyGameView(options: FoldOptions = {}): GameView {
       privateResults: [],
       alive: true,
     },
-    xray: { available: false, roles: {}, agents: {}, privateResults: {}, extracted: null },
+    xray: {
+      available: false,
+      roles: {},
+      agents: {},
+      privateResults: {},
+      dealt: {},
+      extracted: null,
+    },
     lastSeq: 0,
     droppedEventTypes: [],
   };
@@ -334,6 +341,13 @@ export function foldEvent(
       // `role_assigned` — its own — and mixing that in would leave `xray.roles`
       // half-populated with a single entry that isn't observer knowledge at all. Your
       // own role lives on `me.role`; the view reads that for your own badge.
+      // the count as dealt, for the replay's rooms (not a role: `xray.roles` stays observer truth)
+      const dealt = event.uses ?? event.bullets;
+      if (dealt !== null && dealt !== undefined)
+        next = {
+          ...next,
+          xray: { ...next.xray, dealt: { ...next.xray.dealt, [event.player]: dealt } },
+        };
       if (event.player === mySeat) {
         next = { ...next, me: { ...next.me, role: card, roleSeq: event.seq } };
         if (event.pack) next = { ...next, packRoster: event.pack };
@@ -399,7 +413,10 @@ export function foldEvent(
     case 'round_opened': {
       return withDay(next, event.day, (d) => ({
         ...d,
-        rounds: [...d.rounds, { seq: event.seq, round: event.round, players: [...event.players] }],
+        rounds: [
+          ...d.rounds,
+          { seq: event.seq, round: event.round, players: [...event.players] },
+        ],
       }));
     }
 

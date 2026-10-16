@@ -41,6 +41,7 @@ import { CarSetSpec } from './CarScene';
 import { LobbyBody, nightUnits, roomsToTry, spokeOf } from './NightLobbyScene';
 import { NightRoom, ROOM_OF } from './NightRoom';
 import { packEntries } from './PackScene';
+import { usesNote } from './ShelfRoomScene';
 import {
   ACT_MARK,
   actedAt,
@@ -50,6 +51,7 @@ import {
   isMarkStep,
   marksAt,
   nightBranchesOf,
+  usesTonight,
   type NightBranch,
   type RowMark,
 } from './replay-night';
@@ -247,6 +249,10 @@ function SpokeRoom({
       // the actor's card opens as a seated player's does, the play going on under it
       cardOpen={cardOpen}
       onCard={onCard}
+      // what the actor had left going into the night ("2 sigils left"); the pack's card has none
+      cardNote={
+        cur && !pack ? usesNote(role, usesTonight(view, cur.actor, day)) : undefined
+      }
       cardOwner={
         pack && seats.length > 1
           ? `Seats ${seats.map(seatNumber).join(' and ')}`

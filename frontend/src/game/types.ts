@@ -361,6 +361,11 @@ export interface XrayView {
   /** Seat-private results, filed by recipient so the finished-game inspector can show them. */
   privateResults: Record<string, PrivateResult[]>;
   /**
+   * Each seat's limited ability as dealt (its `role_assigned` uses, or a nine-seat vigilante's
+   * bullets), so the replay's rooms can say what was left on night 1, before any `uses_remaining`.
+   */
+  dealt: Record<string, number>;
+  /**
    * What the finished game taught, as extracted — raw, before any dedup against the
    * store. Memory-on games only; arrives after game_over. Null until then.
    */

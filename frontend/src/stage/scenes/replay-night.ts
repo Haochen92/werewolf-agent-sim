@@ -163,6 +163,21 @@ export function nightBranchesOf(view: GameView, day: number): NightBranch[] {
     .sort((a, b) => a.lastSeq - b.lastSeq);
 }
 
+/**
+ * What a seat had left of its limited ability going into night `day` (owner, 2026-10-16: the
+ * replay's room says it on the actor's card): its last count reported before the night fell,
+ * or, before any, the count it was dealt. Null for a seat without a limit.
+ */
+export function usesTonight(view: GameView, seat: string, day: number): number | null {
+  const fell =
+    view.timeline.find((t) => t.day === day && t.phase === 'night')?.seq ?? Infinity;
+  const last = (view.xray.privateResults[seat] ?? [])
+    .filter((p) => (p.kind === 'uses' || p.kind === 'bullets') && p.seq < fell)
+    .at(-1);
+  if (last && 'count' in last) return last.count;
+  return view.xray.dealt[seat] ?? null;
+}
+
 /** The branch chose no one: a seat that held (the vigilante holding fire). */
 export function isHeld(branch: NightBranch | undefined): boolean {
   return (
