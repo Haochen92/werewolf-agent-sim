@@ -29,6 +29,8 @@ from Agents.schemas.roles import ROLE_SPECS, WOLVES, roles as ROLES
 
 # The engine's own announcement wording (night_resolution): a save, and the night it belongs to.
 _SAVE = re.compile(r"(\S+) was attacked by [^!.]*? but was saved by the healer")
+# A save through the dead healer's body (owner, 2026-10-16): the necromancer's, not a living healer's.
+_REANIMATED_SAVE = re.compile(r"(\S+) was attacked by [^!.]*? but was saved by a reanimated healer")
 _NIGHT = re.compile(r"^Night of day (\d+):")
 
 _VERBS = {"no_action": "did not act", "investigate": "checked", "protect": "protected", "shoot": "shot", "kill": "attacked",
@@ -99,17 +101,21 @@ class RecordFacts:
     """Nights whose outcome has been announced."""
     role_counts: dict[str, int]
     """The public cast census; {} when unknown (then no claim is checked against it)."""
+    reanimated_saves: set[tuple[int, str]] = frozenset()
+    """(night, player) for every save announced as made by a reanimated healer."""
 
 
 def record_facts(summaries: list[DaySummary], dead_roster=(), cast_role_counts=None) -> RecordFacts:
-    saves, nights = set(), set()
+    saves, reanimated, nights = set(), set(), set()
     for s in summaries:
         if s.source != "game_master" or not (m := _NIGHT.match(s.summary.strip())):
             continue
         night = int(m.group(1))
         nights.add(night)
         saves |= {(night, p) for p in _SAVE.findall(s.summary)}
-    return RecordFacts({d.player: d for d in dead_roster or []}, saves, nights, dict(cast_role_counts or {}))
+        reanimated |= {(night, p) for p in _REANIMATED_SAVE.findall(s.summary)}
+    return RecordFacts({d.player: d for d in dead_roster or []}, saves, nights, dict(cast_role_counts or {}),
+                       reanimated)
 
 
 def _entry(c: dict) -> tuple[str, list[dict]]:
@@ -163,7 +169,8 @@ def build_claim_ledger(discussion: list[DaySummary], messages: list[DayChannel] 
                     p = ledger.setdefault(player, PlayerClaims())
                     for a in said:
                         _add_action(p, ClaimedAction(int(a.get("night") or 0), a.get("action", ""), a.get("target") or "",
-                                                     a.get("result", ""), s.day, reason=a.get("reason") or ""))
+                                                     a.get("result", ""), s.day, reason=a.get("reason") or "",
+                                                     seen=[v for v in a.get("seen") or [] if v]))
                 continue
             kind, actions = _entry(c)
             # A block, watch, follow, check, sigil or attack on oneself is no one's claim: it is
@@ -196,8 +203,24 @@ def build_claim_ledger(discussion: list[DaySummary], messages: list[DayChannel] 
     return ledger
 
 
+def _sighting(a: ClaimedAction) -> list[str] | None:
+    """What a watch or follow claim says was seen: [] for "no one" (no_visitors), the names when it
+    names any, None when it does not say."""
+    if a.result == "no_visitors":
+        return []
+    return sorted(a.seen) if a.seen else None
+
+
+def _sighting_changed(old: ClaimedAction, new: ClaimedAction) -> bool:
+    # Reviews 2026-10-16: "saw A" corrected to "saw B", or "saw no one" to "saw B", kept the first
+    # sighting (or lost its history). A sighting stated both times and different is a change.
+    before, after = _sighting(old), _sighting(new)
+    return before is not None and after is not None and before != after
+
+
 def _same_claim(old: ClaimedAction, new: ClaimedAction) -> bool:
-    return old.target == new.target and new.result in (old.result, "not_said")
+    return (old.target == new.target and new.result in (old.result, "not_said")
+            and not _sighting_changed(old, new))
 
 
 def _add_action(p: PlayerClaims, new: ClaimedAction) -> None:
@@ -215,6 +238,10 @@ def _add_action(p: PlayerClaims, new: ClaimedAction) -> None:
         if k[0] == 0:
             if new.result == "not_said":
                 new.result = p.actions[k].result
+            # ...and what it said was seen, unless the dated claim says it again (review v3 §4: dating
+            # an undated watch dropped its visitor).
+            if _sighting(new) is None:
+                new.seen = p.actions[k].seen
             del p.actions[k]
     key = (new.night, new.action) if new.night else (0, new.action, new.target)
     old = p.actions.get(key)
@@ -224,7 +251,7 @@ def _add_action(p: PlayerClaims, new: ClaimedAction) -> None:
         return  # a repeat
     if old and new.action and old.day == new.day and old.target != new.target:
         new.earlier, new.also = old.earlier, [*old.also, action_text(old)]  # two targets named the same day
-    elif old and not (old.target == new.target and old.result == "not_said"):
+    elif old and (not (old.target == new.target and old.result == "not_said") or _sighting_changed(old, new)):
         new.earlier = [*old.earlier, *old.also, action_text(old)]  # a change; filling in a result is not one
     p.actions[key] = new
 
@@ -332,7 +359,7 @@ def role_checks(player: str, p: PlayerClaims, ledger: dict[str, PlayerClaims], f
     return notes
 
 
-def action_checks(player: str, a: ClaimedAction, facts: RecordFacts) -> list[Check]:
+def action_checks(player: str, a: ClaimedAction, facts: RecordFacts, role: str | None = None) -> list[Check]:
     notes = []
     if a.also and a.action in _NOUNS:
         notes.append(Check(f"Rules: one {_NOUNS[a.action]} a night.", False))
@@ -355,6 +382,17 @@ def action_checks(player: str, a: ClaimedAction, facts: RecordFacts) -> list[Che
     if a.action == "protect":
         if (a.night, a.target) in facts.saves:
             notes.append(Check(f"Record: {a.target} was attacked and saved by the healer that night.", True))
+        elif (a.night, a.target) in facts.reanimated_saves:
+            # The save was the necromancer's: only a claim to be the living healer conflicts with it
+            # (catalogue OQ18, 2026-10-16); for any other claimed role the fact stands without a verdict.
+            fact = (f"Record: {a.target} was saved by a reanimated healer that night: the necromancer, "
+                    "through the dead healer's body")
+            if role == "healer":
+                notes.append(Check(fact + ", not a living healer.", False))
+            elif role == "necromancer":
+                notes.append(Check(fact + ", as a necromancer's protection would be.", True))
+            else:
+                notes.append(Check(fact + ".", None))
         elif a.result == "saved_from_attack":
             notes.append(Check(f"Record: no save of {a.target} was announced that night.", False))
     elif a.action in ("shoot", "kill"):
@@ -386,7 +424,8 @@ def ledger_rows(summaries: list[DaySummary], dead_roster=(), cast_role_counts=No
         entries = []
         for a in p.actions.values():
             planned = plans.pop((a.night, a.action), None) if a.night else None
-            entries.append(LedgerEntry(a.night, a.action, a.target, a, planned, action_checks(player, a, facts)))
+            entries.append(LedgerEntry(a.night, a.action, a.target, a, planned,
+                                       action_checks(player, a, facts, p.current_role)))
         for (night, action), target in plans.items():
             entries.append(LedgerEntry(night, action, target, None, target, plan_checks(action, target, night, facts)))
         entries.sort(key=lambda e: (e.night or 99, e.claim.day if e.claim else e.night))
