@@ -67,6 +67,7 @@ import { useLedger } from '@/hooks/useLedger';
 import { useReplayFiled } from '@/hooks/useReplayFiled';
 import { draftLine, rejoinGame, submitTurn, type TurnPayload } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
+import { TrainLoader } from '@/components/TrainLoader';
 import { ApiError } from '@/lib/request';
 import { awayTold, seatToken } from '@/lib/storage';
 import { foldEvents } from '@/game/foldEvents';
@@ -273,6 +274,14 @@ export function LiveTheatre({
   // the train leaves once its picture is there: a game for one's platform is new to the page
   const [stationReady, setStationReady] = useState(false);
   const onStationReady = useCallback(() => setStationReady(true), []);
+  // until then a game for one's platform is under the house's loading picture, which fades off
+  // as they come (0.4 s)
+  const [coverGone, setCoverGone] = useState(false);
+  useEffect(() => {
+    if (!stationReady) return;
+    const t = setTimeout(() => setCoverGone(true), 400);
+    return () => clearTimeout(t);
+  }, [stationReady]);
   useEffect(() => {
     if (platform === 'waiting' && (departed || begun) && stationReady)
       setPlatform('departing');
@@ -869,6 +878,10 @@ export function LiveTheatre({
           ) : null}
         </Layer>
       </Stage>
+      {/* a game for one's platform, new to the page, until its train and country are in */}
+      {platformOn && heldRoom?.bare && !coverGone ? (
+        <TrainLoader leaving={stationReady} />
+      ) : null}
     </div>
   );
 }
