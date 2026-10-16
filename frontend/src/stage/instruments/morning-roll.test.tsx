@@ -47,6 +47,15 @@ describe('MorningRoll', () => {
     );
   });
 
+  it('names a reanimated healer for a save through the dead healer’s body', () => {
+    expect(
+      causeOf({ kind: 'save', player: 'player_1', types: ['wolves'], reanimated: true }),
+    ).toBe('attacked by the wolves, saved by a reanimated healer');
+    expect(causeOf({ kind: 'save', player: 'player_1', types: ['wolves'] })).toBe(
+      'attacked by the wolves, saved by the healer',
+    );
+  });
+
   it('gives a seat saved its row, with no role and the healer’s cross', () => {
     const out = html(
       [{ kind: 'save', player: 'player_1', types: ['wolves', 'serial_killer'] }],

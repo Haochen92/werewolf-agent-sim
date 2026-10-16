@@ -521,3 +521,52 @@ def test_a_finished_game_saves_its_extraction_input_and_extracts_nothing(monkeyp
     assert case["observations"] == [] and case["strategy_points"] == []
     assert not any(r["kind"] in ("postgame_extraction", "dehalo") for r in sink.records)
     assert "memory_extracted" not in {e.type for e in events}
+
+
+def test_a_save_through_the_healers_body_is_announced_as_a_reanimated_healer():
+    # Owner, 2026-10-16: there is one healer, so once it is dead a save is the necromancer's, and the
+    # morning names it as it names a reanimated attack.
+    st = _state({"lone_killer": "necromancer", "neutral": "speculator"}, day=3)
+    h = _holders(st)
+    st["dead_roster"] = [DeathRecord(player=h["healer"], role="healer", day=1, phase="night")]
+    st["night_choices"] = [
+        NightChoice(h["chanteuse"], "chanteuse", "kill", h["sentinel"]),
+        NightChoice(h["necromancer"], "necromancer", "protect", h["sentinel"], via=h["healer"]),
+        NightChoice(h["vigilante"], "vigilante", "kill", h["sentinel"]),
+    ]
+    update = night_resolution(st, SimpleNamespace(context={"metrics": Metrics()}))
+    message = update["day_channel"][0].message
+    assert f"{h['sentinel']} was attacked by the wolves and the vigilante but was saved by a reanimated healer!" in message
+    assert "saved by the healer" not in message
+    assert update["night_report"].reanimated_saves == [h["sentinel"]]
+    shot = next(r for r in update["night_actions"] if r.actor == h["vigilante"])
+    assert shot.outcome == f"{h['sentinel']} survived: a reanimated healer saved them."
+
+
+def test_a_living_healers_save_still_names_the_healer():
+    st = _state({"lone_killer": "serial_killer", "neutral": "speculator"})
+    h = _holders(st)
+    st["night_choices"] = [
+        NightChoice(h["chanteuse"], "chanteuse", "kill", h["sentinel"]),
+        NightChoice(h["healer"], "healer", "protect", h["sentinel"]),
+    ]
+    update = night_resolution(st, SimpleNamespace(context={"metrics": Metrics()}))
+    assert f"{h['sentinel']} was attacked by the wolves but was saved by the healer!" in update["day_channel"][0].message
+    assert update["night_report"].reanimated_saves == []
+
+
+def test_a_clean_through_the_illusionists_body_leaves_the_carriers_visit_seen():
+    # Owner, 2026-10-16: only the living illusionist's conceal hides the pack carrier's visit.
+    from Agents.rules.night import visitors_of
+    st = _state({"lone_killer": "necromancer", "neutral": "speculator"}, day=3)
+    h = _holders(st)
+    choices = [
+        NightChoice(h["chanteuse"], "chanteuse", "kill", h["healer"]),
+        NightChoice(h["necromancer"], "necromancer", "kill", h["healer"], via=h["illusionist"]),
+        NightChoice(h["sentinel"], "sentinel", "watch", h["healer"]),
+    ]
+    outcome = resolve_night(choices, st["roles"], 3, body_conceals=1)
+    assert outcome.concealed == [h["healer"]]
+    assert set(visitors_of(outcome, h["healer"])) >= {h["chanteuse"], h["illusionist"]}
+    records = {r.actor: r for r in night_action_records(choices, outcome, st["roles"])}
+    assert h["chanteuse"] in records[h["sentinel"]].seen

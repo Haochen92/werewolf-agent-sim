@@ -61,7 +61,14 @@ def _role_words(role: str) -> str:
     return role.replace("_", " ")
 
 
-def _kill_outcome(target: str, verdict: NightVerdict | None, roles: dict[str, str], concealed: bool) -> str:
+def _saver(target: str, outcome: NightOutcome) -> str:
+    """Who saved a player, as the announcement names it: the healer, or a reanimated healer when
+    the necromancer protected through the dead healer's body (owner, 2026-10-16)."""
+    return "a reanimated healer" if target in outcome.protected_through_body else "the healer"
+
+
+def _kill_outcome(target: str, verdict: NightVerdict | None, roles: dict[str, str], concealed: bool,
+                  saver: str = "the healer") -> str:
     """The result of a kill or a shot, as its actor learns it. An immune target is unharmed and
     the public hears nothing; which roles can be immune on which nights is in the rules."""
     if verdict == "killed":
@@ -69,7 +76,7 @@ def _kill_outcome(target: str, verdict: NightVerdict | None, roles: dict[str, st
             return f"{target} died. Their role was concealed."
         return f"{target} died. They were a {_role_words(roles.get(target, 'unknown'))}."
     if verdict == "saved":
-        return f"{target} survived: the healer saved them."
+        return f"{target} survived: {saver} saved them."
     return (
         f"{target} was unharmed: immune to night kills tonight. "
         "The public was told nothing about this attack."
@@ -111,7 +118,7 @@ def _record_of(choice: NightChoice, outcome: NightOutcome, roles: dict[str, str]
     elif choice.kind == "kill":
         verdict = outcome.verdicts.get(target)
         result = verdict or "killed"
-        outcome_text = _kill_outcome(target, verdict, roles, target in outcome.concealed)
+        outcome_text = _kill_outcome(target, verdict, roles, target in outcome.concealed, _saver(target, outcome))
         if choice.via is not None and roles.get(choice.via) == "illusionist" and target in outcome.concealed:
             # The necromancer cleaned this body through the illusionist's, and learns the role.
             seen = [target]
@@ -158,7 +165,7 @@ def _record_of(choice: NightChoice, outcome: NightOutcome, roles: dict[str, str]
             else:
                 result = "saved"
                 outcome_text = (
-                    f"{target} attacked someone tonight, but the healer's protection saved them "
+                    f"{target} attacked someone tonight, but {_saver(target, outcome)}'s protection saved them "
                     "from your sigil."
                 )
         else:

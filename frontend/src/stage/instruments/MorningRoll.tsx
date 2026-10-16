@@ -25,7 +25,9 @@ import styles from './MorningRoll.module.css';
 export type RollRow =
   /** `role` null: a body an illusionist concealed ("role hidden"). */
   | { kind: 'death'; player: string; role: string | null; types: AttackerType[] }
-  | { kind: 'save'; player: string; types: AttackerType[] }
+  /** `reanimated`: saved through the dead healer's body, so the morning names a reanimated healer
+   *  (owner, 2026-10-16). */
+  | { kind: 'save'; player: string; types: AttackerType[]; reanimated?: boolean }
   | { kind: 'pick'; pick: string };
 
 /** The side a speculator picked, as the game master's dawn line says it. */
@@ -78,7 +80,8 @@ export const BY: Record<AttackerType, string> = {
 export function causeOf(row: RollRow): string {
   if (row.kind === 'pick') return pickLine(row.pick);
   const by = row.types.map((t) => BY[t]).join(' and ');
-  if (row.kind === 'save') return `attacked by ${by}, saved by the healer`;
+  if (row.kind === 'save')
+    return `attacked by ${by}, saved by ${row.reanimated ? 'a reanimated healer' : 'the healer'}`;
   return row.types.length === 1 ? DIED[row.types[0]] : `attacked by ${by}, and fell`;
 }
 

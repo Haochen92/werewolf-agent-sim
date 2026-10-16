@@ -145,8 +145,10 @@ def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
         attacker_types = list(dict.fromkeys(attack.attacker_type for attack in attacks_on[target]))
         phrase = _join([_ATTACK_FLAVOR[t][1] for t in attacker_types])
         if verdict == "saved":
-            # Use a neutral verb so it doesn't read as "killed ... but saved".
-            lines.append(f"{target} was attacked by {phrase} but was saved by the healer!")
+            # Use a neutral verb so it doesn't read as "killed ... but saved". A save through the dead
+            # healer's body names a reanimated healer, as a reanimated attack does (owner, 2026-10-16).
+            saver = "a reanimated healer" if target in outcome.protected_through_body else "the healer"
+            lines.append(f"{target} was attacked by {phrase} but was saved by {saver}!")
             report_saves.append((target, attacker_types))
             continue
 
@@ -190,5 +192,8 @@ def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
         )
     ]
     state_update["day_summaries"] = [DaySummary(day=current_day, summary=message, source="game_master")]
-    state_update["night_report"] = NightReport(night=current_day, deaths=report_deaths, saves=report_saves, pick=pick)
+    state_update["night_report"] = NightReport(
+        night=current_day, deaths=report_deaths, saves=report_saves, pick=pick,
+        reanimated_saves=[p for p, _ in report_saves if p in outcome.protected_through_body],
+    )
     return state_update

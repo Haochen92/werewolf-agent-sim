@@ -1377,6 +1377,11 @@ export interface components {
         | 'reanimated_vigilante'
         | 'reanimated_sigilist'
       )[];
+      /**
+       * Reanimated
+       * @default false
+       */
+      reanimated: boolean;
     };
     /** PackRosterUpdate */
     PackRosterUpdate: {

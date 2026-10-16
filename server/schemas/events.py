@@ -477,6 +477,9 @@ class NightDeath(BaseModel, frozen=True):
 class NightSave(BaseModel, frozen=True):
     player: str
     attacker_types: list[AttackerType]
+    reanimated: bool = False
+    """True when the save came through the dead healer's body: the morning says "a reanimated
+    healer" (owner, 2026-10-16). Absent from earlier replays, where every save was the healer's."""
 
 
 class NightResult(DurableEvent, frozen=True):

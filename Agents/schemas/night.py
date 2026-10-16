@@ -104,6 +104,10 @@ class NightOutcome:
     """Every fortune teller's bet tonight, settled against the deaths."""
     self_bets: list[str] = field(default_factory=list)
     """Fortune tellers who bet on themselves: unharmed tonight, nothing scored."""
+    protected_through_body: list[str] = field(default_factory=list)
+    """Players a necromancer protected through the dead healer's body tonight. A save of one of
+    them is announced as made by a reanimated healer (owner, 2026-10-16): there is one healer, so
+    once it is dead any later save is the necromancer's."""
 
 
 @dataclass(frozen=True)
@@ -118,3 +122,6 @@ class NightReport:
     """(player, attacker types) for each announced save, in seat order."""
     pick: str | None
     """The side a speculator picked tonight, announced without the seat; None if none."""
+    reanimated_saves: list[str] = field(default_factory=list)
+    """The saved players whose protection came through the dead healer's body (a reanimated
+    healer); a subset of ``saves``."""

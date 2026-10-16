@@ -2880,6 +2880,11 @@
             },
             "type": "array",
             "title": "Attacker Types"
+          },
+          "reanimated": {
+            "type": "boolean",
+            "title": "Reanimated",
+            "default": false
           }
         },
         "type": "object",

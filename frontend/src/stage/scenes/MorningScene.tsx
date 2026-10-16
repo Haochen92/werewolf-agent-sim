@@ -94,7 +94,13 @@ export function reportOf(night: NightView | null): Told[] {
   // a view folded before `saves` existed has only `save`
   const saves = night.saves?.length ? night.saves : night.save ? [night.save] : [];
   for (const save of saves)
-    told.push({ kind: 'save', player: save.player, types: save.attacker_types });
+    told.push({
+      kind: 'save',
+      player: save.player,
+      types: save.attacker_types,
+      // a replay from before the flag has none: every save then was the healer's
+      reanimated: save.reanimated === true,
+    });
   if (night.pick) told.push({ kind: 'pick', pick: night.pick });
   return told;
 }
@@ -649,7 +655,9 @@ function MorningWords({
           {...printed}
           {...t}
         >
-          And saved by the healer.
+          {told.kind === 'save' && told.reanimated
+            ? 'And saved by a reanimated healer.'
+            : 'And saved by the healer.'}
         </Notice>
       );
     case 'morning.quiet':
