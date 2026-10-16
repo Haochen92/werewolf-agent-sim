@@ -358,7 +358,7 @@ export interface RoomInput {
    */
   curtain?: 'closing' | 'opening' | null;
   /**
-   * A departure with no room behind it (a replay's opening, a game for one): the sign is the
+   * A departure with no room behind it (a game for one): the sign is the
    * line's own, not a table's, and nobody can press anything.
    */
   bare?: boolean;

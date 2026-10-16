@@ -5,21 +5,18 @@
  * theatre, which plays it on the stage beat by beat (src/stage/containers/ReplayTheatre).
  * The page itself only waits for the log and says so if it cannot have it.
  *
- * The way in is the train's departure (owner, 2026-10-15; `StationDeparture`), played by the
- * route's layout from the click (`DepartureHost`, 2026-10-16) and run from here: it plays whole,
- * the curtain falls, and it holds until the log is here, so the page is never quicker than the
- * departure, cached replay or not. The log is fetched meanwhile, and the theatre is mounted
- * under the platform as soon as it comes (out of sight and inert), so its code has run and its
- * pictures are on their way before it is seen; then the curtain lifts off it. What the page
- * cannot have is said at once, and the platform goes.
- * With `?still=1` (the tests and goldens) there is no departure: the empty platform while the
- * log is on its way (`StationStill`), then the theatre at once.
+ * The way in is the house's loading picture over the page (`ReplayCover`, held by the route's
+ * layout from the click; owner, 2026-10-16, in place of the train's departure, now the live
+ * games' only). The theatre is mounted under it as soon as the log comes (out of sight and
+ * inert), so its code has run and its pictures are in before it is seen; the cover lifts off it
+ * then, and the theatre starts as it does. What the page cannot have is said at once, and the
+ * cover goes. With `?still=1` (the tests and goldens) there is no cover: the empty platform
+ * while the log is on its way (`StationStill`), then the theatre at once.
  *
  * A game is filed as a replay when its run ends, which with memory on is after the lessons are
  * written, a minute or more after `game_over`: a viewer who comes from the live curtain can be
  * early. So a 404 asks the game's status before saying anything (2026-10-01): a game that is
- * over but not yet filed keeps the platform up, "Winding the reels… come back in a few
- * minutes", and the log is asked for again every few seconds until it comes; a status from the
+ * over but not yet filed keeps the cover up, "Winding the reels…", and the log is asked for again every few seconds until it comes; a status from the
  * game's row (archived) means the replay landed between the two calls, and the log is asked
  * for once more at once; a dropped game says so; only an id the server does not know at all
  * is "No such replay."
@@ -47,7 +44,7 @@ import { picturesOf } from '@/stage/pictures-of';
 import { ReplayTheatre } from '@/stage/containers/ReplayTheatre';
 import { StationStill } from '@/stage/scenes/StationStill';
 import type { GameStatus } from '@/types/contracts';
-import { useDeparture } from './DepartureHost';
+import { useCover } from './ReplayCover';
 import classes from './TheaterClient.module.css';
 
 const HOME = { href: '/', label: 'Home' };
@@ -59,7 +56,7 @@ const UNDER: CSSProperties = { visibility: 'hidden' };
 const PICTURES_CAP_MS = 4000;
 
 /**
- * The still's line while a finished game's replay is being filed (the curtain's plaque's): a
+ * What the wait is while a finished game's replay is being filed (the cover's, or the still's): a
  * matter of moments, and the page asks again every five seconds and plays it when it comes.
  */
 const WINDING = 'Winding the reels…';
@@ -109,28 +106,38 @@ export function TheaterClient({ gameId }: { gameId: string }) {
   const retrying = filedSince || (missing && retried && isFetching);
   const waiting = isPending || statusPending || retrying || (missing && winding);
 
-  // the departure's curtain is down and the log is here: the theatre is drawn behind it, and
-  // once its pictures are in, the curtain lifts off it
-  const departure = useDeparture();
-  const shown = !!departure?.down && !!data;
+  // the log is here: the theatre is drawn under the cover, and once its pictures are in, the
+  // cover lifts off it (after its least hold) and the theatre starts
+  const cover = useCover();
   const theatre = useRef<HTMLElement>(null);
-  const [lifting, setLifting] = useState(false);
+  const [ready, setReady] = useState(false);
   useEffect(() => {
-    if (!shown || !theatre.current) return;
+    if (!data || !theatre.current) return;
     let live = true;
     void picturesOf(theatre.current, PICTURES_CAP_MS).then(() => {
-      if (live) setLifting(true);
+      if (live) setReady(true);
     });
     return () => {
       live = false;
     };
-  }, [shown]);
-  const cue = departure?.cue;
-  const line = missing && winding ? WINDING : 'Rewinding the reels…';
+  }, [data]);
+  const lifting = cover ? cover.lifting : ready;
+  const cue = cover?.cue;
+  const winds = missing && winding;
   const off = !data && !waiting;
-  useEffect(() => cue?.({ line, lifting, off }), [cue, line, lifting, off]);
+  useEffect(
+    () => cue?.({ line: winds ? WINDING : null, ready, off }),
+    [cue, winds, ready, off],
+  );
 
-  if (still && waiting) return <StationStill what="replay" hud="replay" line={line} />;
+  if (still && waiting)
+    return (
+      <StationStill
+        what="replay"
+        hud="replay"
+        line={winds ? WINDING : 'Rewinding the reels…'}
+      />
+    );
   if (still && data)
     return (
       <OrientationGuard>
@@ -139,13 +146,13 @@ export function TheaterClient({ gameId }: { gameId: string }) {
         </main>
       </OrientationGuard>
     );
-  // the layout has the departure over it, and the phone's turn card (`DepartureHost`)
+  // the layout has the cover over it, and the phone's turn card (`ReplayCover`)
   if (data)
     return (
       <main
         ref={theatre}
         className={classes.page}
-        style={shown ? undefined : UNDER}
+        style={lifting ? undefined : UNDER}
         inert={!lifting}
         aria-hidden={lifting ? undefined : true}
       >

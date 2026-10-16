@@ -91,8 +91,8 @@ export interface ReplayTheatreProps {
     underEl?: HTMLElement | null;
   };
   /**
-   * The theatre waits out of sight under the replay page's departure (TheaterClient), its
-   * pictures on their way: its keys wait too.
+   * The theatre waits out of sight under the replay page's cover (TheaterClient), its pictures
+   * on their way: its keys wait too.
    */
   waiting?: boolean;
 }
@@ -338,7 +338,7 @@ export function ReplayTheatre({
   }, [index, state.xray]);
 
   // the keys: arrows step, space plays or pauses, the brackets jump chapters (not a preview's,
-  // nor a theatre still waiting under the departure, out of sight)
+  // nor a theatre still waiting under the cover, out of sight)
   useEffect(() => {
     if (isMini || waiting) return;
     const onKey = (e: KeyboardEvent) => {

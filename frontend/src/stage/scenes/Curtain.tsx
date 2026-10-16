@@ -4,8 +4,7 @@
  * The curtain between the platform and the game: a plain dark sheet over the whole stage, the
  * bleed included, saying where the game begins. It falls over the departed platform
  * (`closing`), holds while the game is on its way, and lifts off the game's first beat
- * (`opening`). The replay page's departure (`StationDeparture`) holds it down and the page
- * fades the whole platform away instead, as the replay theatre's stage is laid out apart.
+ * (`opening`).
  *
  * A curtain that mounts lifting starts down: the platform swaps its whole scene for the curtain
  * as it lifts, which remounts it, and it would otherwise vanish at once.

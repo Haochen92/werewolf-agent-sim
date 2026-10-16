@@ -76,19 +76,9 @@ async function seek(page: Page, i: number) {
   await expect(theatre(page)).toHaveAttribute('data-beat-index', String(i));
 }
 
-test('replay: the way in is the train leaving; the curtain holds for the log, then lifts off the stage', async ({
+test('replay: the way in is the loading picture; it holds for the log, then lifts off the stage', async ({
   page,
 }) => {
-  // the departure's moment, not its seven seconds
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.addInitScript(() => {
-    const seen: string[] = [];
-    (window as unknown as { departure: string[] }).departure = seen;
-    new MutationObserver(() => {
-      const at = document.querySelector('[data-departure]')?.getAttribute('data-departure');
-      if (at && seen.at(-1) !== at) seen.push(at);
-    }).observe(document, { subtree: true, attributes: true, childList: true });
-  });
   await mockApi(page);
   // hold the log until the picture is taken
   let release = () => {};
@@ -100,19 +90,14 @@ test('replay: the way in is the train leaving; the curtain holds for the log, th
     await route.fallback();
   });
   await page.goto(`/replays/${GAME}`);
-  const platform = page.locator('[data-departure]');
-  await expect(platform).toHaveAttribute('data-departure', 'down', { timeout: 15_000 });
-  await expect(platform.getByRole('status')).toHaveText('Rewinding the reels…');
+  const cover = page.locator('[data-replay-cover]');
+  await expect(cover).toHaveAttribute('data-replay-cover', 'up');
   await expect(page.locator('[data-transport]')).toHaveCount(0);
   await settle(page);
   await expect(page).toHaveScreenshot('loading-replay.png');
   release();
   await expect(page.locator('[data-transport]')).toBeVisible({ timeout: 10_000 });
-  await expect(platform).toHaveCount(0, { timeout: 5_000 });
-  const order = await page.evaluate(
-    () => (window as unknown as { departure: string[] }).departure,
-  );
-  expect(order).toEqual(['boarding', 'departing', 'closing', 'down', 'lifting']);
+  await expect(cover).toHaveCount(0, { timeout: 5_000 });
 });
 
 test('replay: the first beat', async ({ page }) => {

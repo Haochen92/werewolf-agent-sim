@@ -6,7 +6,7 @@ export const metadata = { title: 'Replay' };
 // Dynamic segment, rendered on demand; everything below this boundary is client-side —
 // the theater is interaction-bound (scrubber, X-ray) and the skeleton IS the first paint
 // (build_plan §3). The Suspense boundary is also what `useSearchParams` requires; while it
-// waits, the layout's departure is over the page (`DepartureHost`).
+// waits, the layout's cover is over the page (`ReplayCover`).
 export default async function ReplayTheaterPage({
   params,
 }: {
