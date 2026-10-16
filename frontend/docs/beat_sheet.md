@@ -215,7 +215,9 @@ replay plays them) and **Skip the opening →** (to the first beat after the rou
 wing card of the round opens its file (the keyhole, as at the vote's stop), and the file leads
 with the seat's entry, read from the log ahead: "At the opening", then its line; or "Passed",
 the reason (row 3's wording) and, when it held one back, "What it held back" with the draft. The
-rest of the file is as at the playhead; the no-seat sheet is "The opening", its seats' faces the
+rest of the file (notes, reads, lessons) reads as of the round's end, once every opening was
+written, also from the log ahead (owner, 2026-10-16: at the round's start they were still empty);
+the stage, the transcript and the Record stay at the round's start; the no-seat sheet is "The opening", its seats' faces the
 call to action. The closing is a round too, but of the accused only, its
 lines played straight after the moderator's call: no stop; its passes, if any, are row 9's placard.
 
