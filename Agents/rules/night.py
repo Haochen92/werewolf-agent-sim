@@ -186,7 +186,8 @@ def resolve_night(choices: list[NightChoice], roles: dict[str, str], night: int,
             kind = "reanimated_sigilist" if choice.via else "sigilist"  # a sigil placed through a body
             attacks_on.setdefault(choice.target, []).append(Attack(choice.actor, kind))
 
-    # 4. One verdict per attacked player. A fortune teller's self-bet makes it unharmed tonight.
+    # 4. One verdict per attacked player. A fortune teller's self-bet makes it unharmed tonight: its
+    # verdict is "immune" like the serial killer's, but the morning announces it (owner, 2026-10-17).
     protected: list[str] = []
     for choice in in_effect:
         if choice.kind == "protect" and choice.target is not None:

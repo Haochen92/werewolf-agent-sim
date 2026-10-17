@@ -5,7 +5,8 @@
  * replay's rooms: the acting role's felt sigil tacked on like a patch (owner, 2026-09-30,
  * replacing bench 67's line drawings). A bite is the wolf's head, a knife the serial killer's
  * scythe, a bullet the vigilante's, a sigil the sigilist's (a necromancer's reanimated body leaves
- * its own kind's mark), the plaster (the healer's save) the cross, the lens (the
+ * its own kind's mark), the plaster (the healer's save) the cross, the bet (a fortune teller's
+ * self-bet that stopped an attack) the crystal ball, the lens (the
  * investigator's reading, on that seat's screen only) the magnifier. The wire names the
  * attacker's type, never the attacker, and a type is a role: a mark still says what was done,
  * never by whom.
@@ -19,7 +20,7 @@ import { useMotionScale, useSteps } from '../motion';
 import { MATERIALS as M } from '../paint/materials';
 import { Sigil } from './Sigil';
 
-export type ActKind = 'bite' | 'knife' | 'bullet' | 'sigil' | 'plaster' | 'lens';
+export type ActKind = 'bite' | 'knife' | 'bullet' | 'sigil' | 'plaster' | 'bet' | 'lens';
 
 /** The mark an attacker type leaves (`night_result.attacker_types`). */
 export const ATTACK_MARK: Record<AttackerType, ActKind> = {
@@ -39,6 +40,7 @@ export const MARK_ROLE: Record<ActKind, string> = {
   bullet: 'vigilante',
   sigil: 'sigilist',
   plaster: 'healer',
+  bet: 'fortune_teller',
   lens: 'investigator',
 };
 
@@ -49,6 +51,7 @@ const TACK: Record<ActKind, readonly [number, number]> = {
   bullet: [20, 30.5],
   sigil: [24, 12],
   plaster: [24, 14],
+  bet: [24, 11],
   lens: [19, 9.5],
 };
 

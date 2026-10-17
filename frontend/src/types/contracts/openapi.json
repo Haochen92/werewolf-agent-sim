@@ -2885,6 +2885,11 @@
             "type": "boolean",
             "title": "Reanimated",
             "default": false
+          },
+          "self_bet": {
+            "type": "boolean",
+            "title": "Self Bet",
+            "default": false
           }
         },
         "type": "object",

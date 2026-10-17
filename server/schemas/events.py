@@ -480,6 +480,10 @@ class NightSave(BaseModel, frozen=True):
     reanimated: bool = False
     """True when the save came through the dead healer's body: the morning says "a reanimated
     healer" (owner, 2026-10-16). Absent from earlier replays, where every save was the healer's."""
+    self_bet: bool = False
+    """True when a fortune teller's own self-bet stopped the attack, not a protection: the morning
+    says "the fortune teller's self-bet saved them" (owner, 2026-10-17). Absent from earlier
+    replays, where such an attack was silent."""
 
 
 class NightResult(DurableEvent, frozen=True):

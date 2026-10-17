@@ -164,7 +164,7 @@ class GameView:
         carrier = next((c.get("actor") for c in n.get("choices") or []
                         if c.get("kind") == "kill" and self.side.get(c.get("actor")) == WOLVES), None)
         victim = rec.get("target")
-        if self._sighted(night, carrier, victim) or rec.get("result") in ("saved", "immune"):
+        if self._sighted(night, carrier, victim) or rec.get("result") in ("saved", "immune", "self_bet_saved"):
             return "negative"
         if rec.get("result") != "killed":
             return None
@@ -217,7 +217,7 @@ class GameView:
 
     def _grade_serial_killer(self, rec: dict, night: int, player: str) -> str | None:
         victim = rec.get("target")
-        if self._sighted(night, player, victim) or rec.get("result") in ("saved", "immune"):
+        if self._sighted(night, player, victim) or rec.get("result") in ("saved", "immune", "self_bet_saved"):
             return "negative"
         if rec.get("result") != "killed":
             return None

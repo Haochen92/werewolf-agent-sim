@@ -103,7 +103,9 @@ class NightOutcome:
     bets: list[Bet] = field(default_factory=list)
     """Every fortune teller's bet tonight, settled against the deaths."""
     self_bets: list[str] = field(default_factory=list)
-    """Fortune tellers who bet on themselves: unharmed tonight, nothing scored."""
+    """Fortune tellers who bet on themselves: unharmed tonight, nothing scored. An attack on one is
+    announced (owner, 2026-10-17); its verdict stays "immune", and this list tells it apart from the
+    serial killer's and the night-1 necromancer's silent immunity."""
     protected_through_body: list[str] = field(default_factory=list)
     """Players a necromancer protected through the dead healer's body tonight. A save of one of
     them is announced as made by a reanimated healer (owner, 2026-10-16): there is one healer, so
@@ -125,3 +127,6 @@ class NightReport:
     reanimated_saves: list[str] = field(default_factory=list)
     """The saved players whose protection came through the dead healer's body (a reanimated
     healer); a subset of ``saves``."""
+    self_bet_saves: list[str] = field(default_factory=list)
+    """The saved players whose own self-bet stopped the attack (a fortune teller; owner,
+    2026-10-17); a subset of ``saves``."""

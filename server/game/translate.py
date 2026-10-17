@@ -662,7 +662,8 @@ class Translator:
         deaths = [ev.NightDeath(player=p, role=role, attacker_types=types, concealed=not role)
                   for p, role, types in report.get("deaths") or []]
         reanimated = set(report.get("reanimated_saves") or [])
-        saves = [ev.NightSave(player=p, attacker_types=types, reanimated=p in reanimated)
+        self_bet = set(report.get("self_bet_saves") or [])
+        saves = [ev.NightSave(player=p, attacker_types=types, reanimated=p in reanimated, self_bet=p in self_bet)
                  for p, types in report.get("saves") or []]
         out.append(self._emit(ev.NightResult, deaths=deaths, save=saves[0] if saves else None,
                               saves=saves, pick=report.get("pick")))

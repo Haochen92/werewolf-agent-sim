@@ -19,15 +19,13 @@ ROLE_TITLES = {
 
 def _immune_role_phrase(role: str) -> str:
     """How an immune role is named in a line about immunity."""
-    if role == "fortune_teller":
-        return "the Fortune Teller betting on itself that night"
     if role == "necromancer":
         return "the Necromancer (it cannot be killed on night 1)"
     return ROLE_TITLES[role]
 
 
 def immune_roles_phrase(roles: list[str]) -> str:
-    """"the Serial Killer, or the Fortune Teller betting on itself that night"."""
+    """The immune roles, joined with "or": "the Serial Killer"."""
     return ", or ".join(_immune_role_phrase(role) for role in roles)
 
 
@@ -53,15 +51,14 @@ def pack_carrier_blocked_through_chanteuse_body() -> str:
 # --- attacks that met immunity (A13–A19) ------------------------------------------------------
 
 def target_is_the_only_immune_role(target: str, role: str) -> str:
-    if role == "fortune_teller":
-        return (f"Only the Fortune Teller betting on itself could survive that attack, so {target} is "
-                f"the Fortune Teller and bet on itself that night.")
     return (f"Only {_immune_role_phrase(role)} could survive that attack, so {target} is "
             f"{ROLE_TITLES[role]}.")
 
 
-def target_is_one_of_the_immune_roles(target: str, roles: list[str]) -> str:
-    return f"{target} could not be killed that night: {target} is {immune_roles_phrase(roles)}."
+# --- an attack the fortune teller's self-bet stopped (A53, A54) -------------------------------
+
+def saved_by_own_self_bet_so_fortune_teller(target: str) -> str:
+    return f"Only the Fortune Teller's own bet saves a player like this, so {target} is the Fortune Teller."
 
 
 # --- saves (A1, A11, A12) ---------------------------------------------------------------------

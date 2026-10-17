@@ -69,18 +69,19 @@ Night, the actions:
     that saw no one does not mean the watched player stayed home. When you speak of a visit, say which
     way it went: "I went to X", "X came to me".
 - An attack kills its target unless the target is protected that night (a save, announced in the
-    morning) or cannot be killed at night (nothing announced). A player attacked by more than one
-    attacker still dies once.
+    morning) or cannot be killed at night (nothing announced, unless that role's rules above say the
+    attack is announced). A player attacked by more than one attacker still dies once.
 - What a player did or learned at night is known only to them. Town players do not share their results
     with each other; the wolves share only the pack's kill, each wolf's own ability and result stay its
     own. Night actions are hidden; only the outcomes are announced in the morning.
 Morning, the report:
 - Players receive public and private information about the night. Public: every player who was attacked,
-    unless they cannot be killed at night (that attack is never mentioned); whether an attacked player
-    was saved; each dead player's role, unless a role listed above hid it; and, for each dead Town
-    player whose role was revealed, their record read out as their will. Private: each surviving
-    player's own night action and its result. A player who died in the night learns nothing from it, so
-    that night is not in their will either.
+    unless they cannot be killed at night (that attack is never mentioned, unless that role's rules
+    above say it is announced); whether an attacked player was saved, and by what; each dead player's
+    role, unless a role listed above hid it; and, for each dead Town player whose role was revealed,
+    their record read out as their will. Private: each surviving player's own night action and its
+    result. A player who died in the night learns nothing from it, so that night is not in their will
+    either.
 - The order: the Game Master goes through the attacked players in seat order; for a death, the kind of
     attacker, then the role, then the will of a revealed Town player; for a save, that they were
     attacked and saved. A night where no one died and no one was saved is announced as "No one died last

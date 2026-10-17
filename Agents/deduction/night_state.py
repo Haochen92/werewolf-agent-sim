@@ -15,7 +15,9 @@ ALWAYS_IMMUNE = "serial_killer"
 IMMUNE_ON_NIGHT_ONE = "necromancer"
 """The necromancer cannot be killed on night 1 only."""
 IMMUNE_WHEN_SELF_BETTING = "fortune_teller"
-"""The fortune teller cannot be killed on a night it bets on itself."""
+"""The fortune teller cannot be killed on a night it bets on itself. The morning announces an attack
+its self-bet stopped (R10, 2026-10-17), so it is never a silent immune target: its records say
+`self_bet_saved` (catalogue A53, A54)."""
 
 
 def revealed_before_night(dead_roster: list[DeathRecord], night: int) -> dict[str, str]:
@@ -49,7 +51,8 @@ def role_revealed_on_others(role: str, player: str, dead_roster: list[DeathRecor
 
 def roles_always_immune(night: int, cast_role_counts: dict[str, int]) -> set[str]:
     """The roles in this cast that cannot be killed on `night` whatever they choose: the serial
-    killer, and the necromancer on night 1. (The fortune teller only on a self-bet night.)"""
+    killer, and the necromancer on night 1. (The fortune teller only on a self-bet night, and the
+    morning announces that attack.)"""
     roles = set()
     if cast_role_counts.get(ALWAYS_IMMUNE):
         roles.add(ALWAYS_IMMUNE)
@@ -60,18 +63,15 @@ def roles_always_immune(night: int, cast_role_counts: dict[str, int]) -> set[str
 
 def immune_candidates(target: str, night: int, own_role: str, cast_role_counts: dict[str, int],
                       dead_roster: list[DeathRecord]) -> list[str]:
-    """The roles `target` could hold that would make it unkillable on `night` (catalogue L1, per
-    cast). "fortune_teller" stands for a fortune teller betting on itself that night.
+    """The roles `target` could hold that would make an attack on it fail in silence on `night`
+    (catalogue L1, per cast): the serial killer, and the necromancer on night 1. A fortune teller
+    betting on itself is not one: the morning announces an attack its self-bet stopped (R10).
 
     Ruled out: the seat's own role (it is not the target), and a role publicly revealed on
     someone else.
     """
-    candidates = sorted(roles_always_immune(night, cast_role_counts))
-    if cast_role_counts.get(IMMUNE_WHEN_SELF_BETTING):
-        candidates.append(IMMUNE_WHEN_SELF_BETTING)
-
     possible = []
-    for role in candidates:
+    for role in sorted(roles_always_immune(night, cast_role_counts)):
         if role == own_role:
             continue
         if role_revealed_on_others(role, target, dead_roster, cast_role_counts):

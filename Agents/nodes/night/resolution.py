@@ -138,12 +138,18 @@ def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
     dead_roster: list[DeathRecord] = []
     for target in seat_order(attacks_on):
         verdict = verdicts[target]
-        if verdict == "immune":
-            continue  # silent
+        self_bet_saved = verdict == "immune" and target in outcome.self_bets
+        if verdict == "immune" and not self_bet_saved:
+            continue  # the serial killer, or the necromancer on night 1: silent
         # Each attacker TYPE once (a guard: "attacked by the wolves and the wolves" was seen on
         # 2026-10-10 when a borrowed kill still read as the body's kind; it now reads "reanimated").
         attacker_types = list(dict.fromkeys(attack.attacker_type for attack in attacks_on[target]))
         phrase = _join([_ATTACK_FLAVOR[t][1] for t in attacker_types])
+        if self_bet_saved:
+            # A fortune teller's self-bet that stopped an attack is announced (owner, 2026-10-17).
+            lines.append(f"{target} was attacked by {phrase} but survived: the fortune teller's self-bet saved them.")
+            report_saves.append((target, attacker_types))
+            continue
         if verdict == "saved":
             # Use a neutral verb so it doesn't read as "killed ... but saved". A save through the dead
             # healer's body names a reanimated healer, as a reanimated attack does (owner, 2026-10-16).
@@ -194,6 +200,8 @@ def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
     state_update["day_summaries"] = [DaySummary(day=current_day, summary=message, source="game_master")]
     state_update["night_report"] = NightReport(
         night=current_day, deaths=report_deaths, saves=report_saves, pick=pick,
-        reanimated_saves=[p for p, _ in report_saves if p in outcome.protected_through_body],
+        reanimated_saves=[p for p, _ in report_saves
+                          if p in outcome.protected_through_body and p not in outcome.self_bets],
+        self_bet_saves=[p for p, _ in report_saves if p in outcome.self_bets],
     )
     return state_update

@@ -11,6 +11,7 @@ describe('ActMark', () => {
     ['bullet', 'vigilante'],
     ['sigil', 'sigilist'],
     ['plaster', 'healer'],
+    ['bet', 'fortune_teller'],
     ['lens', 'investigator'],
   ] as [ActKind, string][])('pins %s as the %s’s felt sigil', (kind, role) => {
     expect(MARK_ROLE[kind]).toBe(role);

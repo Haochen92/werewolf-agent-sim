@@ -1382,6 +1382,11 @@ export interface components {
        * @default false
        */
       reanimated: boolean;
+      /**
+       * Self Bet
+       * @default false
+       */
+      self_bet: boolean;
     };
     /** PackRosterUpdate */
     PackRosterUpdate: {

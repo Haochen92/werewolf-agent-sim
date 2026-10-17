@@ -4,9 +4,9 @@
  * The morning roll (owner, 2026-09-30): what the night did, read as a list on the house's
  * printed paper (owner, 2026-10-15) rather than as sentences in a box. One row per death, the seat's chip, "Seat 1 ·
  * Villager" and how it went, each attacker's felt sigil before the words; a seat that
- * survived an attack gets a row too (each of the healer's saves, which the log names), the
- * speculator's pick is a last row in the game master's words, and a quiet night is the one
- * line. The game master's own words stay in the transcript.
+ * survived an attack gets a row too (each save the log names: the healer's, or a fortune
+ * teller's own self-bet), the speculator's pick is a last row in the game master's words, and a
+ * quiet night is the one line. The game master's own words stay in the transcript.
  *
  * Played, the rows come in one after another, at the pace the report's hold gives them.
  * The roll names no roles until the cards have come down (owner, 2026-09-30): at the shutter
@@ -26,8 +26,15 @@ export type RollRow =
   /** `role` null: a body an illusionist concealed ("role hidden"). */
   | { kind: 'death'; player: string; role: string | null; types: AttackerType[] }
   /** `reanimated`: saved through the dead healer's body, so the morning names a reanimated healer
-   *  (owner, 2026-10-16). */
-  | { kind: 'save'; player: string; types: AttackerType[]; reanimated?: boolean }
+   *  (owner, 2026-10-16). `selfBet`: a fortune teller's own self-bet stopped the attack, which the
+   *  morning announces (owner, 2026-10-17). */
+  | {
+      kind: 'save';
+      player: string;
+      types: AttackerType[];
+      reanimated?: boolean;
+      selfBet?: boolean;
+    }
   | { kind: 'pick'; pick: string };
 
 /** The side a speculator picked, as the game master's dawn line says it. */
@@ -76,12 +83,17 @@ export const BY: Record<AttackerType, string> = {
   reanimated_sigilist: 'a reanimated sigil',
 };
 
+/** Who saved a seat, as the game master's line names it. */
+export function saverOf(row: { reanimated?: boolean; selfBet?: boolean }): string {
+  if (row.selfBet) return 'the fortune teller’s self-bet';
+  return row.reanimated ? 'a reanimated healer' : 'the healer';
+}
+
 /** The words of a row's cause. */
 export function causeOf(row: RollRow): string {
   if (row.kind === 'pick') return pickLine(row.pick);
   const by = row.types.map((t) => BY[t]).join(' and ');
-  if (row.kind === 'save')
-    return `attacked by ${by}, saved by ${row.reanimated ? 'a reanimated healer' : 'the healer'}`;
+  if (row.kind === 'save') return `attacked by ${by}, saved by ${saverOf(row)}`;
   return row.types.length === 1 ? DIED[row.types[0]] : `attacked by ${by}, and fell`;
 }
 
@@ -139,7 +151,7 @@ export function MorningRoll({
         const character = cast[n - 1];
         const sigils = [
           ...r.types.map((t) => SIGIL_OF[t]),
-          ...(r.kind === 'save' ? ['healer'] : []),
+          ...(r.kind === 'save' ? [r.selfBet ? 'fortune_teller' : 'healer'] : []),
         ];
         return (
           <motion.li

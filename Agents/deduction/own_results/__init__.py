@@ -11,6 +11,7 @@ from Agents.deduction.own_results.attacks import (
     immune_target_line,
     no_attack_announced_line,
     saved_from_your_attack_line,
+    self_bet_saved_line,
     your_protection_saved_line,
 )
 from Agents.deduction.own_results.roleblock import roleblock_line
@@ -25,6 +26,8 @@ def _line_for(record: NightActionRecord, view: SeatView) -> OwnResultLine | None
         return roleblock_line(record, view)
     if record.action in ATTACKS and record.result == "immune":
         return immune_target_line(record, view)
+    if record.result == "self_bet_saved":
+        return self_bet_saved_line(record, view)
     if record.action in ATTACKS and record.result == "saved":
         return saved_from_your_attack_line(record, view)
     if record.action == "protect" and record.result == "saved":

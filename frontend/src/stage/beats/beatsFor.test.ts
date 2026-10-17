@@ -795,8 +795,18 @@ describe('the ten-seat morning (night records, every save, the pick)', () => {
       deaths: [],
       pick: null,
       saves: [
-        { player: 'player_1', attacker_types: ['wolves'], reanimated: false },
-        { player: 'player_3', attacker_types: ['serial_killer'], reanimated: false },
+        {
+          player: 'player_1',
+          attacker_types: ['wolves'],
+          reanimated: false,
+          self_bet: false,
+        },
+        {
+          player: 'player_3',
+          attacker_types: ['serial_killer'],
+          reanimated: false,
+          self_bet: false,
+        },
       ],
     } as DurableGameEvent;
     const beats = beatsFor([two], { xray: false });

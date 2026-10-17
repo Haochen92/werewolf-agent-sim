@@ -6,7 +6,8 @@ RULES = """
 The Vigilante has a few bullets for the whole game and cannot reload. At night it may shoot one
 player or hold its fire; a shot is an attack and a visit, and spends a bullet even if it does
 not kill. A shot at a player who cannot be killed at night does not kill them, but the Vigilante
-is told the target was immune.
+is told the target was immune; when that player's role says the attack is announced, it is told
+what saved them instead.
 """
 
 PLAYSTYLE = """

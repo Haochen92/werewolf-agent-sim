@@ -12,8 +12,9 @@
  *   never by whom), the string gives way, the chip drops;
  * - the card: once the chip is gone, its role card comes down large and centred and the
  *   wing's tile turns to the sigil; the card is drawn up as the next beat begins;
- * - saved: the attackers' marks small and the healer's cross large beneath it, the ribbon on
- *   its string; it goes back up whole as the next beat begins.
+ * - saved: the attackers' marks small and the healer's cross large beneath it (a fortune teller's
+ *   own self-bet: its crystal ball), the ribbon on its string; it goes back up whole as the
+ *   next beat begins.
  *
  * A quiet night is the line alone. After the report, what only one seat learns plays on that
  * seat's screen (and, in aqua, in the X-ray): the investigator's target turns to its sigil
@@ -28,7 +29,14 @@ import { isNineSeat } from '../card-text';
 import { ATTACK_MARK, ActMark } from '../instruments/ActMark';
 import { RoleCard } from '../instruments/Card';
 import { Chip } from '../instruments/Chip';
-import { BY, DIED, MorningRoll, pickLine, type RollRow } from '../instruments/MorningRoll';
+import {
+  BY,
+  DIED,
+  MorningRoll,
+  pickLine,
+  saverOf,
+  type RollRow,
+} from '../instruments/MorningRoll';
 import { CardButton, Caps, Notice, NoticeZone } from '../instruments/Notice';
 import { StringDrop } from '../instruments/StringDrop';
 import { bigCard, chipRow, featuredChip, rowX } from '../instruments/flies';
@@ -100,6 +108,8 @@ export function reportOf(night: NightView | null): Told[] {
       types: save.attacker_types,
       // a replay from before the flag has none: every save then was the healer's
       reanimated: save.reanimated === true,
+      // a replay from before the flag has none: a self-bet's save was silent then
+      selfBet: save.self_bet === true,
     });
   if (night.pick) told.push({ kind: 'pick', pick: night.pick });
   return told;
@@ -459,8 +469,8 @@ function MorningBeat(props: SceneProps) {
     );
     marks.push(
       <ActMark
-        key="plaster"
-        kind="plaster"
+        key="saver"
+        kind={told.kind === 'save' && told.selfBet ? 'bet' : 'plaster'}
         x={F.x}
         y={markY + mk * 1.6}
         k={mk * 1.45}
@@ -655,9 +665,7 @@ function MorningWords({
           {...printed}
           {...t}
         >
-          {told.kind === 'save' && told.reanimated
-            ? 'And saved by a reanimated healer.'
-            : 'And saved by the healer.'}
+          {`And saved by ${told.kind === 'save' ? saverOf(told) : 'the healer'}.`}
         </Notice>
       );
     case 'morning.quiet':

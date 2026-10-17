@@ -1,6 +1,10 @@
-"""Catalogue rows A1–A5, A11–A19 and A48: what an attacker or a protector learns about its target.
+"""Catalogue rows A1–A5, A11–A19, A48, A53 and A54: what an attacker or a protector learns about its
+target.
 
-- An attack that went ahead and failed with no save means the target was immune (A13–A19).
+- An attack that went ahead and failed in silence means the target was immune: the serial killer,
+  or the necromancer on night 1 (A13–A19).
+- An attack the fortune teller's self-bet stopped is announced, and names the fortune teller to the
+  attacker and to a protector alike (A53, A54; R10, 2026-10-17).
 - An attack stopped by a save means the target can be killed at night (A11, A12).
 - A protector whose target was saved learns who attacked it (A1, with B11's attack types).
 - A protector told "no attack was announced" learns that no attack reached its target, unless
@@ -25,15 +29,6 @@ SAVED_BY_YOUR_PROTECTION = re.compile(r"was attacked by (?P<attackers>.+), and y
 SAVED_BY_REANIMATED_HEALER = "a reanimated healer saved them"
 
 
-def _immune_reasons(candidates: list[str]) -> frozenset[str]:
-    """The candidates as the reasons a fact checker reads: a fortune teller is immune only on a
-    self-bet."""
-    reasons = set()
-    for role in candidates:
-        reasons.add("self_bet" if role == IMMUNE_WHEN_SELF_BETTING else role)
-    return frozenset(reasons)
-
-
 def _always_immune_other_than(own_role: str, night: int, cast_role_counts: dict[str, int]) -> list[str]:
     """The roles a saved target cannot hold, leaving out the seat's own (the serial killer knows
     its target is not itself)."""
@@ -43,24 +38,32 @@ def _always_immune_other_than(own_role: str, night: int, cast_role_counts: dict[
 
 
 def immune_target_line(record: NightActionRecord, view: SeatView) -> OwnResultLine | None:
-    """A13–A19: the attack went ahead and the target was unharmed."""
+    """A13–A19: the attack went ahead and the target was unharmed, in silence. Since R10 every
+    cast leaves one explanation at most (the serial killer, or the necromancer on night 1), so the
+    line names it; the "either … or" form of A14 is retired."""
     target = record.target
     candidates = immune_candidates(target, record.day, view.role, view.cast_role_counts, view.dead_roster)
-    if not candidates:
+    if len(candidates) != 1:
         return None
 
-    facts = (AttackOutcome(target, _immune_reasons(candidates)), RoleIn(target, frozenset(candidates)))
-    if len(candidates) == 1:
-        return OwnResultLine(
-            text=wording.target_is_the_only_immune_role(target, candidates[0]),
-            row="A13",
-            facts=facts,
-        )
+    role = candidates[0]
     return OwnResultLine(
-        text=wording.target_is_one_of_the_immune_roles(target, candidates),
-        row="A14",
-        grade="possible",
-        facts=facts,
+        text=wording.target_is_the_only_immune_role(target, role),
+        row="A13",
+        facts=(AttackOutcome(target, frozenset({role})), RoleIn(target, frozenset({role}))),
+    )
+
+
+def self_bet_saved_line(record: NightActionRecord, view: SeatView) -> OwnResultLine:
+    """A53 (an attacker's record), A54 (a protector's): the target survived on its own self-bet.
+    Only the fortune teller can bet on itself, so the target is the fortune teller; for a
+    protector, its protection saved nothing (the record says so)."""
+    target = record.target
+    return OwnResultLine(
+        text=wording.saved_by_own_self_bet_so_fortune_teller(target),
+        row="A54" if record.action == "protect" else "A53",
+        facts=(RoleIn(target, frozenset({IMMUNE_WHEN_SELF_BETTING})),
+               AttackOutcome(target, frozenset({"self_bet"}))),
     )
 
 
@@ -131,7 +134,7 @@ def no_attack_announced_line(record: NightActionRecord, view: SeatView) -> OwnRe
     """A2–A5, A48: no attack on the protected player was announced."""
     target = record.target
     candidates = immune_candidates(target, record.day, view.role, view.cast_role_counts, view.dead_roster)
-    fact = AttackOutcome(target, _immune_reasons(candidates))
+    fact = AttackOutcome(target, frozenset(candidates))
     if not candidates:
         return OwnResultLine(text=wording.no_attack_reached(target), row="A4", facts=(fact,))
     return OwnResultLine(
