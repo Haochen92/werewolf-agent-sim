@@ -1008,6 +1008,10 @@ is [`live_timing_sheet.md`](live_timing_sheet.md) (2026-10-01).
   the countdown runs on real time from `deadline`, the beat on stage is cut short once (its hold
   ends now) and the beats queued between it and the request play at normal speed (until
   2026-10-01 they drained at fast speed).
+  **Exception, the pack's chat (owner, 2026-10-17):** a packmate's line (`pack.line`, a pass
+  too) directly before the seat's own prompt does not hold it; the prompt opens as the line
+  lands. The line is whole in the transcript already, and its 5–15 s reading hold made a human
+  wolf wait after every packmate line (solo game 51226f24: 28 s of holds in one night).
 - **The prompt comes after its announcement (2026-10-12).** The server asks just before it
   announces: the ballot before `phase_change: voting`, a night act before the night, the opening
   before `round_opened`. A prompt whose next event is that announcement is placed after the

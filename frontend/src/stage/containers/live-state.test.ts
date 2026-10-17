@@ -926,6 +926,30 @@ describe('the live stage: what the seat lived through', () => {
     expect(s.beat.id).toBe('morning.day-begins');
   });
 
+  it('a packmate’s line does not hold the seat’s own chat prompt right after it (2026-10-17)', () => {
+    // night 2, seat 3: round 1 answered, then seat 8's line lands as news and the next ask follows
+    const me = 'player_3';
+    const s = new Session(me);
+    const mine = SPACED.filter(entitled(me));
+    s.arrive(
+      mine.filter((e) => e.seq < 1400),
+      false,
+    ).drain();
+    s.arrive(
+      mine.filter((e) => e.seq === 1400),
+      true,
+    );
+    expect(s.beat).toMatchObject({ id: 'pack.line', seq: 1400 });
+    expect(s.state.holding).toBe(true);
+    // the prompt arrives while the line still holds: it opens at once, no hold run out
+    s.ctx = ctx({ me, openPrompt: 1425 });
+    s.arrive(
+      [{ ...request(1425, 'wolf_discuss'), player: me, day: s.events.at(-1)!.day }],
+      true,
+    );
+    expect(s.beat).toMatchObject({ id: 'pack.your-line', seq: 1425 });
+  });
+
   it('a line the seat’s agent said for it is news: it plays', () => {
     const s = night('player_3', 1200, 1300, [
       { seq: 1215, kind: 'wolf_discuss', agent: true },

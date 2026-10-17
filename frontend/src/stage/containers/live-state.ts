@@ -490,6 +490,19 @@ function promptAt(state: LiveState, ctx: LiveCtx): number {
   );
 }
 
+/** The beat on the stage is a packmate's line, and the next is this seat's open prompt. */
+function packmateThenMe(state: LiveState, ctx: LiveCtx): boolean {
+  const current = state.beats[state.cursor.index];
+  const next = state.beats[state.cursor.index + 1];
+  return (
+    current?.id === 'pack.line' &&
+    current.subject !== ctx.me &&
+    !!next?.liveOnly &&
+    next.seat === ctx.me &&
+    next.seq === ctx.openPrompt
+  );
+}
+
 /**
  * How far behind its own turn a stage may read on a room's clock, in the holds still to play
  * before the turn: past it the stage lands still just before the turn, and the turn plays (the
@@ -558,6 +571,9 @@ function advance(state: LiveState, ctx: LiveCtx): LiveState {
       state = { ...state, holding: cut ? false : state.holding, hurried: ctx.openPrompt };
     }
   }
+  // the pack's chat is a conversation (owner, 2026-10-17): a packmate's line is in the
+  // transcript whole as it lands, so the seat's own prompt right after it opens at once
+  if (state.holding && packmateThenMe(state, ctx)) state = { ...state, holding: false };
   if (state.holding) return state;
   if (current && waitsHere(current, ctx)) return state;
   const next = nextLiveStep(state.beats, state.cursor.index, ctx);
