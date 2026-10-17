@@ -12,10 +12,16 @@ logger = logging.getLogger(__name__)
 _TIMEOUT_SECONDS = 20.0
 
 
+class KeyRefused(ValueError):
+    """The provider would not serve the model on this key; the message says why."""
+
+
 async def check_key(model: str, api_key: str) -> None:
-    """Raise ValueError with a one-line reason when the provider will not serve this
+    """Raise KeyRefused with a one-line reason when the provider will not serve this
     model on this key. The sync client runs in a worker thread so the loop stays free."""
     from Agents.llm_factory import GAME_LLM, GameLLM, create_chat_model
+    from Agents.llm_factory.chat import provider_name
+    from Agents.llm_factory.embeddings import provider_complaint
 
     def call() -> None:
         token = GAME_LLM.set(GameLLM(api_key=api_key, model=model))
@@ -28,7 +34,8 @@ async def check_key(model: str, api_key: str) -> None:
     try:
         await asyncio.wait_for(asyncio.to_thread(call), timeout=_TIMEOUT_SECONDS)
     except asyncio.TimeoutError as exc:
-        raise ValueError(f"the provider did not answer within {int(_TIMEOUT_SECONDS)} s") from exc
+        raise KeyRefused(f"{provider_name(model)} did not answer within "
+                         f"{int(_TIMEOUT_SECONDS)} s. Try again.") from exc
     except Exception as exc:  # the provider's complaint is the useful part
-        detail = repr(exc).replace(api_key, "***")
-        raise ValueError(f"the provider rejected this key: {detail[:300]}") from exc
+        detail = provider_complaint(exc).replace(api_key, "***")
+        raise KeyRefused(f"{provider_name(model)} refused this key: {detail}.") from exc

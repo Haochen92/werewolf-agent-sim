@@ -761,6 +761,8 @@ export interface components {
       cast?: string[];
       /** Error */
       error?: string | null;
+      /** Error Kind */
+      error_kind?: 'key_rejected' | null;
     };
     /**
      * GmMessage

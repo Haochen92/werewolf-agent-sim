@@ -327,6 +327,10 @@ class GameStatus(BaseModel):
     casts were stored: the client then shows the cast it always derived."""
     error: str | None = None
     """The session's death report (key-redacted); None while healthy."""
+    error_kind: Literal["key_rejected"] | None = None
+    """What kind of death ``error`` reports, where the page words it itself:
+    "key_rejected" = the provider refused the game's key mid-game (``error`` then reads
+    "<Provider> refused this game's API key: <status>, <reason>.")."""
 
 
 

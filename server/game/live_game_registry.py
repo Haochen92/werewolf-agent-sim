@@ -131,7 +131,8 @@ class LiveGameRegistry:
         """Open a waiting room: build it and register it in the table. Nothing is written
         to the database until the game starts; a room that never starts leaves no trace.
         Its id is the id the running game will keep, so one identifier covers the room
-        and the game it becomes."""
+        and the game it becomes. A key is tried on the provider first (see _try_key)."""
+        await self._try_key(model, api_key)
         room = GameLobby(api_key=api_key, model=model, name=name, memory=memory)
         self._entries[room.game_id] = room
         return room
@@ -212,7 +213,8 @@ class LiveGameRegistry:
         """Start a game that never had a waiting room: the solo and all-AI door,
         POST /games. ``memory`` is recorded on the row so a restart rebuilds the same
         game; the config itself already carries it. ``character`` is the solo player's
-        chosen puppet, if they chose one."""
+        chosen puppet, if they chose one. A key is tried on the provider first (see _try_key)."""
+        await self._try_key(model, api_key)
         picks = [character] * len(seat_tokens)
         session = GameSession(
             run_config, api_key=api_key, model=model, seat_tokens=seat_tokens,
@@ -221,6 +223,15 @@ class LiveGameRegistry:
             session, model=model, byok=bool(api_key), memory=memory,
             seats=[{"name": "human", "token": token, "character": character}
                    for token in seat_tokens])
+
+    async def _try_key(self, model: str, api_key: str) -> None:
+        """Ask the provider one trivial question with a player's key before anything opens on
+        it: a key for the wrong provider, revoked or out of credit is refused here with the
+        provider's complaint (ValueError, a 422), not discovered as a game of silent passes
+        (2026-10-17: an OpenAI key sent with Haiku played a whole day on 401s). The house's
+        own credentials are not tried."""
+        if api_key:
+            await self._check_key(model, api_key)
 
     async def _launch(self, session: GameSession, **row_fields) -> GameSession:
         """The step both doors share once a game is about to run: put the session in the

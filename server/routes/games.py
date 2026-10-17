@@ -17,6 +17,7 @@ from server.database_models.game import COMPLETED, GameRow
 from server.game.cast import is_pickable
 from server.game.entitlement import entitled
 from server.game.game_session import GameSession
+from server.game.key_check import KeyRefused
 from server.game.ledger import ledger_days
 from server.game.run_config import game_run_config
 from server.schemas.ledger import LedgerDay
@@ -24,7 +25,9 @@ from server.schemas.requests import (
     DraftRequest, DraftResponse, FundGame, GameCreated, GameStatus, NewSoloGame, TurnAccepted,
 )
 
-from ._shared import authorize_model, live_status, require_memory_available, set_seat_cookie
+from ._shared import (
+    authorize_model, error_kind, live_status, require_memory_available, set_seat_cookie,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -54,15 +57,19 @@ async def create_game(
     if body.character is not None and not is_pickable(body.character):
         raise HTTPException(status_code=422, detail=f"no such character: {body.character}")
     seat_tokens = [str(uuid4())] if body.human or body.human_role is not None else []
-    session = await games.start_instant(
-        game_run_config(memory=body.memory, human_player=len(seat_tokens),
-                        human_role=body.human_role),
-        api_key=body.api_key,
-        model=model,
-        seat_tokens=seat_tokens,
-        memory=body.memory,
-        character=body.character if seat_tokens else None,
-    )
+    run_config = game_run_config(memory=body.memory, human_player=len(seat_tokens),
+                                 human_role=body.human_role)
+    try:
+        session = await games.start_instant(
+            run_config,
+            api_key=body.api_key,
+            model=model,
+            seat_tokens=seat_tokens,
+            memory=body.memory,
+            character=body.character if seat_tokens else None,
+        )
+    except KeyRefused as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     if seat_tokens:
         set_seat_cookie(response, session.game_id, seat_tokens[0])
     return GameCreated(
@@ -112,6 +119,7 @@ def _archived_status(row: GameRow, token: str, cast: list[str]) -> GameStatus:
         winner=row.winner,
         cast=cast,
         error=row.error,
+        error_kind=error_kind(row.error),
         archived=True,
     )
 

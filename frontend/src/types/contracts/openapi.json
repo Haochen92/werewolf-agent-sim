@@ -1680,6 +1680,18 @@
               }
             ],
             "title": "Error"
+          },
+          "error_kind": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "key_rejected"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Kind"
           }
         },
         "type": "object",
