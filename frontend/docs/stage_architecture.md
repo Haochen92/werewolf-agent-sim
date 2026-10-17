@@ -244,7 +244,7 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   figures and their heads) has its own recipe since 2026-09-28 ("The cast", below).
 - Location and names, mirroring the bundle:
   ```
-  src/assets/sprites/day/<character>/{base,talking,thinking,out,head}.webp
+  src/assets/sprites/characters/<character>/{base,talking,thinking,out,head}.webp
   src/assets/sprites/kits/{healer,investigator,vigilante,serial_killer,wolf,villager,clock,lamp}.webp
   src/assets/sprites/wood/walnut.webp               (the station's beam and ledge only)
   src/assets/sprites/textures/{walnut,boards,velvet,cork,ink}.webp  (cork: scripts/make-cork.mjs;
@@ -257,7 +257,7 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   src/assets/sprites/roles/{villager,wolf,investigator,vigilante,healer,serial_killer,
     sentinel,trailseer,sigilist,chanteuse,illusionist,necromancer,speculator,fortune_teller}.webp
     (the role cards' felt dolls, 720×960, figure at full height, centred, feet on the bottom edge)
-  src/assets/sprites/shadow/day/<character>/{base,talking,thinking,out}.webp
+  src/assets/sprites/shadow/characters/<character>/{base,talking,thinking,out}.webp
   src/assets/sprites/atmosphere/grain.webp
   ```
   Characters: `cat hare owl badger cyclops threeEyes dragon onion whale polarBear shade`.

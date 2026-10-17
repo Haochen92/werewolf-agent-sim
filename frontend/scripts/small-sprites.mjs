@@ -50,19 +50,19 @@ const LIST = [
   ['window/night-far.webp', 0.65],
   ['window/night-near.webp', 0.75],
 ];
-for (const character of (await readdir(path.join(DIR, 'day'))).sort())
+for (const character of (await readdir(path.join(DIR, 'characters'))).sort())
   for (const state of ['base', 'talking', 'thinking', 'out']) {
-    const rel = `day/${character}/${state}.webp`;
+    const rel = `characters/${character}/${state}.webp`;
     if (await stat(path.join(DIR, rel)).catch(() => null)) LIST.push([rel, 0.8]);
   }
-for (const character of (await readdir(path.join(DIR, 'day'))).sort()) {
-  const rel = `day/${character}/head.webp`;
+for (const character of (await readdir(path.join(DIR, 'characters'))).sort()) {
+  const rel = `characters/${character}/head.webp`;
   if (await stat(path.join(DIR, rel)).catch(() => null)) LIST.push([rel, 224 / 384]);
 }
 const only = process.argv[2];
 
 function optionsFor(rel) {
-  if (rel.split('/')[0] === 'day') return { quality: 82, alphaQuality: 100, effort: 6 };
+  if (rel.split('/')[0] === 'characters') return { quality: 82, alphaQuality: 100, effort: 6 };
   return { quality: 85, alphaQuality: 100, effort: 6 };
 }
 
