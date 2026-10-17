@@ -222,7 +222,7 @@ platform has none), fills two layers:
   takes none): where the shutter is open behind them, the puppets' and the chips' shadows move in
   a still box clipped to everything but the glass (`offGlass` in `cast/CastShadow.tsx`), in step
   with their figure; the stand throws a soft pool off its right side; on the vote's table,
-  soft gradient ellipses under the table (the lift shadow, retuned), the jar (tipped with it),
+  soft gradient ellipses under the table (the lift shadow, retuned), the jar (at the back with it, for the count),
   each plate and each tower of chips.
 - GPU (§6): nothing moves or fades; normal alpha only, no blend mode and no CSS filter. The one
   SVG blur is `carHaze`'s, static. Baked shadows ride inside their
@@ -340,6 +340,22 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   first shifted down to register with day's (night 27 px, dusk 10 px: `-background none -gravity
   north -splice 0xN +gravity`), then crop `1536x520+0+440`; night's `near` also `-modulate 65,55`
   so the row is the darkest thing outside.
+- **The felt set (owner, 2026-10-17)** replaces every painted prop below: the table was a
+  photographed miniature while the cast are felt. The owner's ChatGPT masters are in
+  `claude_artifacts/design/rasters/felt/`, fitted by `scripts/fit_felt_props.py` (each file at or
+  under the pixels of the one it replaced; the numbers below each heading are the old set's). The
+  stand: stitched leather rails and riveted stiles round a bottle-green felt panel, 1487×440,
+  slices 169 211 144 211, darkened to the old front's mean, quality 75, with a phone copy
+  (`stand-front@small`, Stand.tsx scales `--slice`). The table: a green baize top, a cream felt
+  cloth with a stitched scalloped hem (`TABLE_PX`). The plate: cream stoneware. The jar: a footed
+  glass sweet jar with a domed glass lid on a ball knob, both cut from shots on black (alpha from
+  brightness, a warm white), `GLASS_PX`/`LID_PX`; it no longer tips: for the count it fades from the
+  centre to the table's right end (`jarGeometry().aside`), the plates' row moved left to leave it
+  that end, and the chips are lifted out of its mouth. The shutter: a burgundy felt roller blind
+  with a hem rod and brass ring (`PAINTED_SHUTTER`; raised, the rod hangs half under the pelmet).
+  The place cards are printed paper tacked with two brass tacks, in the display serif (the house's
+  facts are paper). Mobile cost: the props' decoded memory fell 20.1 → 18.1 MiB; nothing new moves.
+  The landing's carriage is the same felt (Carriage.module.css `.paint`, a cream picture per screen).
 - The painted props (ruled 2026-09-27, the polish pass): the jar's glass and lid, the stand's front
   and the vote's table are the owner's rasters, `SPRITES.props.{jarGlass,jarLid,stand,voteTable}`,
   replacing their vector bodies (plates, cards, chips, strings, footlights and plaque stay vector).
@@ -731,7 +747,8 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   were SVG transforms on a group inside a full-stage drawing, and a phone stuttered through both:
   an SVG `transform` relays out and repaints the drawing every frame. Each now sits in an HTML
   box the picture's size (`Jar`, `Shutter`) with its own small `<svg>` inside, and motion moves
-  the box (`x`/`y`/`rotate`/`scale`, a CSS transform), so the browser repaints one finished
+  the box (`x`/`y`/`rotate`/`scale`, a CSS transform; the jar no longer moves since 2026-10-17,
+  it fades between two still boxes), so the browser repaints one finished
   picture through a transform. No layer is made for it (motion drives these in JavaScript, not
   the Web Animations API, so nothing is promoted), which keeps the rest and the move at the same
   memory. If a move still stutters, the next notch is `will-change: transform` on the box for the
