@@ -37,6 +37,12 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Load the model catalogue, compose resources, recover games, run the retention sweeper
     and the catalogue's refresh, then stop tasks before closing storage."""
+    # The graph's nodes are sync and run on the loop's default executor, which has 8 threads on
+    # this 4-CPU host: one night step is ~10 model-bound nodes per game, and the checkpointer's
+    # own thread work queued behind them, so a human wolf's prompt surfaced seconds late
+    # (2026-10-17). The threads mostly wait on the network, so many are cheap.
+    asyncio.get_running_loop().set_default_executor(
+        ThreadPoolExecutor(max_workers=64, thread_name_prefix="graph"))
     dsn = catalog_dsn(server_settings.WW_POSTGRES_DSN)
     if dsn:
         await refresh_catalog(dsn)  # before recovery: a recovered game needs its rescue model
