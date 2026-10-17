@@ -28,13 +28,14 @@ import { Compartment } from '../instruments/Compartment';
 import { CardOverlay, FramedCard } from '../instruments/FramedCard';
 import { Photo } from '../instruments/Photo';
 import { Pin } from '../instruments/Pin';
+import { SideFlag } from '../instruments/SideFlag';
 import { TopStrip } from '../instruments/TopStrip';
 import { Wing } from '../instruments/Wing';
 import { useMotionScale } from '../motion';
 import { useSmall } from '../set';
 import { notebookGame } from '../notebook';
 import { photoTwine, roomChoice, roomLight, roomPlan } from '../paint/compartment';
-import { hiddenRolesHeld, knownRoles, seatNumber } from '../roles';
+import { hiddenRolesHeld, knownRoles, seatNumber, type Faction } from '../roles';
 import { sideOpen, stripButtons } from '../slot';
 import { BLEED, geometry } from '../units';
 import type { SceneProps } from './types';
@@ -102,6 +103,15 @@ export interface NightRoomProps extends Pick<
     onChoose?: (seat: string) => void;
     tag: string;
   };
+  /**
+   * The speculator's sides, hung on the line in place of the photos (`photos` is then empty):
+   * each side's pennant and its name. The chosen one is lit and wears the pin, as a photo does.
+   */
+  flags?: {
+    sides: readonly { id: string; faction: Faction; label: string }[];
+    chosen: string | null;
+    onChoose?: (id: string) => void;
+  };
   /** Marks drawn over a photo (the teeth), by seat. */
   marks?: Partial<Record<string, ReactNode>>;
   /** Seats the wing marks as the pack's (red edge). */
@@ -153,6 +163,7 @@ export function NightRoom({
   onChoose,
   captions,
   bodies,
+  flags,
   marks,
   pack = [],
   cardOpen,
@@ -175,14 +186,18 @@ export function NightRoom({
   const side = sideOpen(presentation);
   const g = geometry(hud, side);
   const room = ROOM_OF[role] ?? 'healer';
-  const n = Math.max(1, photos.length);
+  const n = Math.max(1, flags ? flags.sides.length : photos.length);
   // a necromancer's bodies hang on the twine; the seats then hang below them
   const bodyPlan = bodies
     ? roomPlan({ room, hud, side, n: Math.max(1, bodies.seats.length), maxW: BODY_W })
     : null;
   const lower = bodyPlan ? bodyPlan.photo.h + BODY_GAP : 0;
   const plan = roomPlan({ room, hud, side, n, lower });
-  const chosenIndex = lit ? photos.indexOf(lit) : -1;
+  const chosenIndex = flags
+    ? flags.sides.findIndex((f) => f.id === flags.chosen)
+    : lit
+      ? photos.indexOf(lit)
+      : -1;
   const deadBySeat = new Map(view.dead.map((d) => [d.player, d]));
   const known = knownRoles(me, view.me);
   const hidden = hiddenRolesHeld(me, view.me);
@@ -239,6 +254,31 @@ export function NightRoom({
                 ) : null}
               </AnimatePresence>
             </Photo>
+          );
+        })}
+        {flags?.sides.map((f, i) => {
+          const at = plan.photos[i];
+          if (!at) return null;
+          return (
+            <SideFlag
+              key={f.id}
+              faction={f.faction}
+              label={f.label}
+              index={i}
+              x={at.x}
+              top={at.top}
+              w={plan.photo.w}
+              h={plan.photo.h}
+              light={chosenIndex < 0 ? undefined : i === chosenIndex ? 'lit' : 'dim'}
+              onChoose={flags.onChoose ? () => flags.onChoose!(f.id) : undefined}
+              arrive={animate ? 0.1 + i * PHOTO_STAGGER : false}
+            >
+              <AnimatePresence key={seed} initial={false}>
+                {flags.chosen === f.id ? (
+                  <Pin key="pin" role={role} w={plan.photo.w * 1.3} home={pinHome} />
+                ) : null}
+              </AnimatePresence>
+            </SideFlag>
           );
         })}
         {bodies && bodyPlan

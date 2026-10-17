@@ -539,8 +539,33 @@ button.photo:focus-visible {
   pointer-events: none;
 }
 
-/* ---- plates to choose from, over the plate: the speculator's sides, the fortune teller's
-   roles (ten-seat pass §2); the plate's own buttons, a size down, the chosen one lit ---- */
+/* ---- the speculator's sides: a pennant on the line where a photo hangs (SideFlag) ---- */
+.flag {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+}
+.flag svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.flagName {
+  position: absolute;
+  left: -10%;
+  width: 120%;
+  text-align: center;
+  text-wrap: balance;
+  line-height: 1.05;
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  font-size: calc(var(--meta) * 1.25);
+  color: var(--paper);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+/* ---- plates to choose from, over the plate: the fortune teller's roles (ten-seat pass §2);
+   the plate's own buttons, a size down, the chosen one lit ---- */
 .choices {
   position: absolute;
   left: 50%;

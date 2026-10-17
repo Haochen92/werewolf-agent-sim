@@ -1,7 +1,8 @@
 /**
  * The brass plate at the foot of the night room: it names the act ("Protect seat 1", "Check
  * seat 4", "Shoot seat 2", "Kill seat 5") once a photo is chosen, and pressing it confirms.
- * Before a choice it asks ("Choose a seat to protect") and cannot be pressed. A request that
+ * Before a choice it asks ("Choose a seat to protect") and cannot be pressed; without a `label`
+ * (the speculator's, whose sides hang on the line) it has no act until one is chosen. A request that
  * lists a no-action word has a second button in its words ("Hold fire", "Keep your checks",
  * "Stay put"), because not acting is an act too. A live turn ends the row with the hand-over,
  * in the same dress: "Let my agent choose".
@@ -25,8 +26,8 @@ import { countLeft, countText, URGENT_MS, type TurnClock } from '../countdown';
 import styles from './NightRoom.module.css';
 
 export interface ActPlateProps {
-  /** What the plate says: the act and its seat, or the ask before a choice. */
-  label: string;
+  /** What the plate says: the act and its seat, or the ask before a choice; null = no act yet. */
+  label: string | null;
   onConfirm?: () => void;
   /** Nothing chosen yet, or already sent. */
   disabled?: boolean;
@@ -100,7 +101,7 @@ export function ActPlate({
     <div
       className={place ? `${styles.plate} ${place}` : styles.plate}
       style={style}
-      data-plate={label}
+      data-plate={label ?? undefined}
     >
       {error ? (
         <p className={`${styles.note} ${styles.noteError}`} role="alert">
@@ -110,9 +111,16 @@ export function ActPlate({
         <p className={styles.note}>{note}</p>
       ) : null}
       {clock ? <PlateCount clock={clock} /> : null}
-      <button type="button" className={styles.pri} disabled={disabled} onClick={onConfirm}>
-        {label}
-      </button>
+      {label !== null ? (
+        <button
+          type="button"
+          className={styles.pri}
+          disabled={disabled}
+          onClick={onConfirm}
+        >
+          {label}
+        </button>
+      ) : null}
       {secondary ? (
         <button type="button" disabled={secondary.disabled} onClick={secondary.onClick}>
           {secondary.label}
@@ -137,10 +145,10 @@ export interface PlateChoice {
 }
 
 /**
- * A row of plates to choose from, over the plate (ten-seat pass §2): the speculator's sides,
- * the fortune teller's roles (as sigils, `sigils`). Tapping one lights it, tapping it again
- * puts it out; the gold plate under it still commits. A small sibling of the plate, in its
- * style, placed over it at the same x.
+ * A row of plates to choose from, over the plate (ten-seat pass §2): the fortune teller's roles
+ * (as sigils, `sigils`). Tapping one lights it, tapping it again puts it out; the gold plate
+ * under it still commits. A small sibling of the plate, in its style, placed over it at the
+ * same x.
  */
 export function ChoicePlates({
   choices,

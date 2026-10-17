@@ -6,8 +6,8 @@
  * chanteuse and the illusionist in the pack's, for their own skill). Only the seats the server
  * offered hang there (`pending.candidates` is the only source of legal targets; the room never
  * works out who may be chosen), and the server's other words are plates: its no-action word
- * the plate's second button, the speculator's sides a row of plates, the illusionist's conceal
- * the plate itself. A necromancer's bodies hang on a line of their own over the seats, a
+ * the plate's second button, the illusionist's conceal the plate itself. The speculator's sides
+ * hang on the line in the photos' place, as their pennants (owner, 2026-10-17). A necromancer's bodies hang on a line of their own over the seats, a
  * fortune teller may name a role on its bet from a row of sigils (ten-seat pass §2).
  *
  * - `room.opens`: the room dark but for the candle's pool on the photos; the plate asks, and
@@ -33,6 +33,7 @@ import { SideSlot } from '../SideSlot';
 import { ActPlate, ChoicePlates } from '../instruments/ActPlate';
 import { CountPill } from '../instruments/CountPill';
 import { pinColour } from '../instruments/Pin';
+import type { Faction } from '../roles';
 import { Sigil } from '../instruments/Sigil';
 import { StageMotion } from '../motion';
 import { isPackRole, ROLE_NAME, seatNumber } from '../roles';
@@ -123,12 +124,19 @@ const NO_ACTION_OF_KIND: Partial<Record<ActionKind, string>> = {
   speculator_pick: 'not_yet',
 };
 
-/** The speculator's sides, as their plates say them and as "You pick …" says them. */
+/** The speculator's sides, as their pennants are named and as "You pick …" says them. */
 export const SIDE_PLATE: Record<string, string> = {
   town: 'Town',
   wolves: 'Wolves',
-  lone_killer: 'The lone killer',
+  lone_killer: 'Lone killer',
   self: 'Yourself',
+};
+/** Each side's pennant. */
+const SIDE_FACTION: Record<string, Faction> = {
+  town: 'villagers',
+  wolves: 'wolves',
+  lone_killer: 'serial_killer',
+  self: 'neutral_benign',
 };
 const SIDE_PICKED: Record<string, string> = {
   town: 'the Town',
@@ -239,15 +247,19 @@ export const AGENT_SEALED = 'Your seat’s agent acted for you';
 /** The sealed plate while the answer is on its way: in only once the server has it (2026-10-17). */
 export const SENDING_SEALED = 'Sending…';
 
-/** What the plate says: the ask before a choice, the act and its target after one. */
+/**
+ * What the plate says: the ask before a choice, the act and its target after one. The
+ * speculator's asks nothing: its sides on the line are the ask, so it has no act until one is
+ * chosen (null).
+ */
 export function plateLabel(
   kind: ActionKind | undefined,
   chosen: string | null,
   more: PlateMore = {},
-): string {
+): string | null {
   if (kind === 'conceal') return CONCEAL_PLATE;
   if (kind === 'speculator_pick')
-    return chosen && SIDE_PICKED[chosen] ? `Pick ${SIDE_PICKED[chosen]}` : 'Choose a side';
+    return chosen && SIDE_PICKED[chosen] ? `Pick ${SIDE_PICKED[chosen]}` : null;
   // the necromancer acts as the dead player it borrows: short words, so its plate and Stay
   // put sit in the room as the others' do on a phone (2026-10-11)
   if (kind === 'necromancer_target') {
@@ -334,7 +346,8 @@ function ShelfRoom(props: SceneProps) {
   // the seats hang on the line; the server's other words are plates (a side, conceal, no one)
   const photos = candidates.filter(isSeat);
   const none = noActionWord(candidates);
-  const sides = kind === 'speculator_pick' ? candidates.filter((c) => c in SIDE_PLATE) : [];
+  const sides =
+    kind === 'speculator_pick' ? candidates.filter((c) => c in SIDE_FACTION) : [];
   const bodies =
     kind === 'necromancer_target' ? (pending?.bodies ?? []).filter(isSeat) : [];
   // a new request, another viewer or a new seeded choice starts the choice afresh; the room
@@ -368,8 +381,9 @@ function ShelfRoom(props: SceneProps) {
   // shut on the choice while it is on its way, but not yet said to be in
   const sending = isIn && !!turn?.sending;
   const target = isIn ? (elsewhere ? null : pressed) : chosen;
-  // only a seat is lit and pinned (a side or a no-action word hangs nowhere)
+  // only a seat or a side is lit and pinned (a no-action word hangs nowhere)
   const seat = target && isSeat(target) ? target : null;
+  const pickedSide = target && SIDE_FACTION[target] ? target : null;
   const bet = kind === 'bet_target';
   // a role is named on a bet on someone else, never on yourself
   const naming = bet && roleNamed && chosen !== me ? roleNamed : null;
@@ -418,6 +432,19 @@ function ShelfRoom(props: SceneProps) {
             }
           : undefined
       }
+      flags={
+        sides.length
+          ? {
+              sides: sides.map((c) => ({
+                id: c,
+                faction: SIDE_FACTION[c],
+                label: SIDE_PLATE[c],
+              })),
+              chosen: pickedSide,
+              onChoose: isIn ? undefined : choose,
+            }
+          : undefined
+      }
       pack={isPackRole(role) ? view.packRoster : undefined}
       cardOpen={cardOpen}
       onCard={setCardOpen}
@@ -432,14 +459,6 @@ function ShelfRoom(props: SceneProps) {
     >
       {/* once the act is in, the lobby's count: the others acting, until the morning */}
       {isIn && !sending ? <NightCount {...props} /> : null}
-      {pending && !isIn && sides.length ? (
-        <ChoicePlates
-          centre={centre}
-          hidden={props.presentation.footHidden}
-          choices={sides.map((c) => ({ id: c, label: SIDE_PLATE[c], on: c === chosen }))}
-          onToggle={choose}
-        />
-      ) : null}
       {pending && !isIn && bet && chosen !== me ? (
         <ChoicePlates
           centre={centre}
