@@ -262,7 +262,17 @@ export interface PlaceCardProps {
   lighting?: boolean;
 }
 
-/** The place card on the cloth under a plate: the candidate's head, "Seat 2", the count. */
+/** The paper's face: the stage's display serif with lining figures (Notice.module.css `.head strong`). */
+const SERIF: CSSProperties = {
+  fontFamily: 'var(--font-display)',
+  fontVariantNumeric: 'lining-nums tabular-nums',
+};
+
+/**
+ * The place card on the cloth under a plate: the candidate's head, "Seat 2", the count. A
+ * printed paper label tacked to the felt (2026-10-17; it was a tent card, which could stand on a
+ * table but not hang on a cloth).
+ */
 export function PlaceCard({ v, p, nCands, n, cast, lit, hit, lighting }: PlaceCardProps) {
   const b = placeCardBox(v, p, nCands),
     { x, y, w: cw, h: ch } = b,
@@ -271,6 +281,10 @@ export function PlaceCard({ v, p, nCands, n, cast, lit, hit, lighting }: PlaceCa
     hx = x + r * 1.35;
   const ab = p.c === 'abstain';
   const label = ab ? 'Abstain' : `Seat ${seatNumber(p.c)}`;
+  // the label's top (where the tent card's fold was), its tacks' size, its paper's gradient
+  const y0 = y + ch * 0.12,
+    tack = Math.max(2, ch * 0.045),
+    paper = `place-card-paper-${p.c}`;
   const fs = Math.max(9, ch * 0.3),
     nfs = Math.max(13, ch * 0.62);
   const nx = x + cw - 10;
@@ -282,7 +296,7 @@ export function PlaceCard({ v, p, nCands, n, cast, lit, hit, lighting }: PlaceCa
       x={nx}
       y={cy + nfs * 0.36}
       textAnchor="end"
-      fontFamily="var(--font-stage-sans, Outfit), system-ui, sans-serif"
+      style={SERIF}
       fontWeight={700}
       fontSize={nfs}
       fill={lit ? '#9a6a12' : K2}
@@ -292,7 +306,7 @@ export function PlaceCard({ v, p, nCands, n, cast, lit, hit, lighting }: PlaceCa
   );
   const frame = lit ? (
     <path
-      d={`M${x + 3},${y + ch * 0.12 + 3} v${ch * 0.88 - 6} h${cw - 6} v${-(ch * 0.88 - 6)}`}
+      d={`M${x + 3},${y0 + 3} v${y + ch - y0 - 6} h${cw - 6} v${-(y + ch - y0 - 6)}Z`}
       fill="none"
       stroke="#e0a63a"
       strokeWidth={2.2}
@@ -308,19 +322,44 @@ export function PlaceCard({ v, p, nCands, n, cast, lit, hit, lighting }: PlaceCa
         strokeOpacity={0.18}
         strokeWidth={4}
       />
-      <path
-        d={`M${x},${y + ch * 0.12} l${cw * 0.5},${-ch * 0.12} l${cw * 0.5},${ch * 0.12} v${ch * 0.88} h${-cw}Z`}
-        fill={lit ? '#f7edd0' : '#f4ecd9'}
-        stroke={K2}
-        strokeWidth={1.8}
-        strokeLinejoin="round"
+      {/* printed paper (the house's facts are paper, as the vote's result is): the notice's
+          cream, lit from the top left, a soft edge, no ink outline */}
+      <defs>
+        <linearGradient id={paper} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor={lit ? '#fbf3dc' : '#f5ebd4'} />
+          <stop offset="0.55" stopColor={lit ? '#f4e8c8' : '#efe3c8'} />
+          <stop offset="1" stopColor={lit ? '#e9d8ad' : '#e2d2ae'} />
+        </linearGradient>
+      </defs>
+      <rect
+        x={x}
+        y={y0}
+        width={cw}
+        height={y + ch - y0}
+        rx={2.5}
+        fill={`url(#${paper})`}
+        stroke="#b79d6c"
+        strokeWidth={1.2}
       />
-      <path
-        d={`M${x},${y + ch * 0.12} l${cw * 0.5},${-ch * 0.12} l${cw * 0.5},${ch * 0.12}`}
-        fill="#e3d5b4"
-        stroke={K2}
-        strokeWidth={1.4}
-      />
+      {/* tacked to the felt at its top corners, brass, as the placards' paper is held */}
+      {[x + tack * 1.6, x + cw - tack * 1.6].map((tx0) => (
+        <g key={tx0}>
+          <circle
+            cx={tx0}
+            cy={y0 + tack * 1.6}
+            r={tack}
+            fill="#b8893a"
+            stroke="#6b4a1c"
+            strokeWidth={0.8}
+          />
+          <circle
+            cx={tx0 - tack * 0.3}
+            cy={y0 + tack * 1.3}
+            r={tack * 0.35}
+            fill="#f1d58e"
+          />
+        </g>
+      ))}
       {frame && lighting ? (
         <Tween play delay={0.2} duration={0.7} ease="easeOut" opacity={(q) => q}>
           {frame}
@@ -341,10 +380,10 @@ export function PlaceCard({ v, p, nCands, n, cast, lit, hit, lighting }: PlaceCa
         <text
           x={tx}
           y={cy + fs * 0.36}
-          fontFamily="var(--font-stage-sans, Outfit), system-ui, sans-serif"
-          fontWeight={500}
+          style={SERIF}
+          fontWeight={600}
           fontSize={fs}
-          fill="#4a3320"
+          fill="#2a1d11"
         >
           {label}
         </text>
