@@ -41,6 +41,29 @@ describe('the hand-over is each plate’s own (owner, 2026-10-17)', () => {
     expect(out).not.toContain('Abstain');
   });
 
+  it('says "Sending…" with the chips shut on the choice and no plate, until the server has it (2026-10-17)', () => {
+    const out = html(
+      <BallotRow
+        candidates={['player_2', 'player_4', 'abstain']}
+        cast={cast}
+        chosen="player_4"
+        me="player_1"
+        onAgent={noop}
+        sending
+      />,
+    );
+    expect(out).toContain('data-ballot="sending"');
+    expect(out).toContain('Sending…');
+    expect(out).not.toContain('Your ballot is in');
+    expect(out).not.toContain('Vote seat 4');
+    expect(out).not.toContain('Let my agent vote');
+    // every chip is shut, the chosen one still lit
+    const chips = [...out.matchAll(/<button[^>]*role="radio"[^>]*>/g)].map((m) => m[0]);
+    expect(chips).toHaveLength(3);
+    expect(chips.every((c) => c.includes('disabled'))).toBe(true);
+    expect(chips.filter((c) => c.includes('aria-checked="true"'))).toHaveLength(1);
+  });
+
   it('puts the plate’s hand-over last, in the second button’s dress', () => {
     const out = html(
       <ActPlate

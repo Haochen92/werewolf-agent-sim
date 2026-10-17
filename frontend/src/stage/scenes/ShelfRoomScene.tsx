@@ -236,6 +236,8 @@ export function spentNote(
 
 /** The sealed plate when the seat's agent answered, or the server already had an answer. */
 export const AGENT_SEALED = 'Your seat’s agent acted for you';
+/** The sealed plate while the answer is on its way: in only once the server has it (2026-10-17). */
+export const SENDING_SEALED = 'Sending…';
 
 /** What the plate says: the ask before a choice, the act and its target after one. */
 export function plateLabel(
@@ -363,6 +365,8 @@ function ShelfRoom(props: SceneProps) {
   const elsewhere =
     turn?.sent === 'agent' || turn?.sent === 'closed' || (handed && !failed);
   const isIn = !failed && (elsewhere || pressed !== undefined || turn?.sent === 'you');
+  // shut on the choice while it is on its way, but not yet said to be in
+  const sending = isIn && !!turn?.sending;
   const target = isIn ? (elsewhere ? null : pressed) : chosen;
   // only a seat is lit and pinned (a side or a no-action word hangs nowhere)
   const seat = target && isSeat(target) ? target : null;
@@ -427,7 +431,7 @@ function ShelfRoom(props: SceneProps) {
       }}
     >
       {/* once the act is in, the lobby's count: the others acting, until the morning */}
-      {isIn ? <NightCount {...props} /> : null}
+      {isIn && !sending ? <NightCount {...props} /> : null}
       {pending && !isIn && sides.length ? (
         <ChoicePlates
           centre={centre}
@@ -482,7 +486,11 @@ function ShelfRoom(props: SceneProps) {
           sealed={
             isIn
               ? {
-                  label: elsewhere ? AGENT_SEALED : sealedLabel(kind, pressed, more),
+                  label: sending
+                    ? SENDING_SEALED
+                    : elsewhere
+                      ? AGENT_SEALED
+                      : sealedLabel(kind, pressed, more),
                   colour: pinColour(role),
                 }
               : null

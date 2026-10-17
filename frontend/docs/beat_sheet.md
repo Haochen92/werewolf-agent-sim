@@ -287,8 +287,11 @@ until the lynch's card clears the rail. The table's top is the walnut tile in pe
 bench's cloth hanging from its front edge. The ballot: the chosen chip is lit (amber ring, glow),
 the rest dim (the bench raised it); the plate reads "Choose a seat" / "Vote seat 6" / "Abstain";
 "Your vote · Tap a chip, or the empty plate to abstain." with "your seat's agent votes for you in
-1:14"; sent, "Your ballot is in · no one sees it until voting closes" (the time is on the plate; the
-car's wall clock is gone since 2026-09-29). Not yet built: the live drop (row 2; the pill reads `turn.progress` once the container feeds
+1:14"; on its way, "Your vote · Sending…" (a pulsing amber dot, the chips shut on the choice, no
+plate; the send is tried up to four times, about a minute at worst) and, only once the server has
+it, "Your ballot is in · no one sees it until voting closes"; a failed send opens the row again
+with its words in red (owner, 2026-10-17; the night plates likewise read "Sending…" until their act
+is in) (the time is on the plate; the car's wall clock is gone since 2026-09-29). Not yet built: the live drop (row 2; the pill reads `turn.progress` once the container feeds
 it from `phase_progress`), the count's X-ray film (row 6).
 
 ## 4. The lynch — H§4.4 · bench 65

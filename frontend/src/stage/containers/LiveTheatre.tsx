@@ -224,6 +224,26 @@ async function asSeat<T>(gameId: string, call: () => Promise<T>): Promise<T> {
   }
 }
 
+// A send the network lost (or that hung) is tried again after these waits; the server's own
+// answer is never retried. A retry that lands on an answer already taken comes back 409, which
+// the send treats as "already answered" (2026-10-17: a vote lost on bad wifi was never re-sent).
+const SEND_RETRY_MS = [2_000, 5_000, 10_000];
+const SEND_TIMEOUT_MS = 15_000;
+
+async function postTurn(gameId: string, payload: TurnPayload): Promise<void> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      await asSeat(gameId, () =>
+        submitTurn(gameId, payload, AbortSignal.timeout(SEND_TIMEOUT_MS)),
+      );
+      return;
+    } catch (err) {
+      if (err instanceof ApiError || attempt >= SEND_RETRY_MS.length) throw err;
+      await new Promise((r) => setTimeout(r, SEND_RETRY_MS[attempt]));
+    }
+  }
+}
+
 const failure = (err: unknown) => ({
   status: err instanceof ApiError ? err.status : 0,
   // the server's own words for a refusal; a dropped connection gets plain ones
@@ -392,7 +412,7 @@ export function LiveTheatre({
       const delegated = 'delegate' in payload;
       turnDispatch({ type: 'sending', seq });
       try {
-        await asSeat(gameId, () => submitTurn(gameId, payload));
+        await postTurn(gameId, payload);
         turnDispatch({ type: 'sent', seq, delegated });
         clearPending();
       } catch (err) {

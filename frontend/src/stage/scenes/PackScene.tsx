@@ -38,6 +38,7 @@ import { geometry } from '../units';
 import { NightRoom } from './NightRoom';
 import {
   AGENT_SEALED,
+  SENDING_SEALED,
   CHANGE_NOTE,
   LONE_WOLF_SEALED,
   NightCount,
@@ -143,6 +144,8 @@ function Pack({ entering, ...props }: SceneProps & { entering: boolean }) {
   const elsewhere =
     voting && (turn?.sent === 'agent' || turn?.sent === 'closed' || (handed && !failed));
   const mine = failed ? null : sentVote;
+  // shut on the choice while it is on its way, but not yet said to be in
+  const sending = voting && (!!mine || elsewhere) && !!turn?.sending;
   const [cardOpen, setCardOpen] = useSeeded(seed, () => !!turn?.cardOpen);
 
   const votes = night?.wolfVotes ?? [];
@@ -239,7 +242,7 @@ function Pack({ entering, ...props }: SceneProps & { entering: boolean }) {
         />
       ) : null}
       {/* once the vote is in, the lobby's count: the others acting, until the morning */}
-      {mine || elsewhere || decided || votes.some((v) => v.wolf === me) ? (
+      {!sending && (mine || elsewhere || decided || votes.some((v) => v.wolf === me)) ? (
         <NightCount {...props} />
       ) : null}
       {voting ? (
@@ -278,13 +281,15 @@ function Pack({ entering, ...props }: SceneProps & { entering: boolean }) {
           sealed={
             mine || elsewhere
               ? {
-                  label: mine
-                    ? carrying
-                      ? sealedLabel('carrier_kill', mine)
-                      : alone
-                        ? LONE_WOLF_SEALED(seatNumber(mine))
-                        : sealedLabel('wolf_vote', mine)
-                    : AGENT_SEALED,
+                  label: sending
+                    ? SENDING_SEALED
+                    : mine
+                      ? carrying
+                        ? sealedLabel('carrier_kill', mine)
+                        : alone
+                          ? LONE_WOLF_SEALED(seatNumber(mine))
+                          : sealedLabel('wolf_vote', mine)
+                      : AGENT_SEALED,
                   colour: pinColour('wolf'),
                 }
               : null

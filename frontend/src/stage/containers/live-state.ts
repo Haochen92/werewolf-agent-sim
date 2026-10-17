@@ -791,19 +791,25 @@ export function turnReducer(state: TurnState, action: TurnAction): TurnState {
 }
 
 /**
- * Where a night act or pack vote stands, for the plate: in (from here, or the seat's agent),
- * refused as already answered (409), or open with the last send's failure to show.
+ * Where a night act, pack vote or ballot stands, for the plate: on its way (`sending`: shut on
+ * the choice, not yet in), in (from here, or the seat's agent), refused as already answered
+ * (409), or open with the last send's failure to show.
  */
 export function actSent(t: TurnState): {
   sent: 'you' | 'agent' | 'closed' | null;
   sendError: string | null;
+  sending: boolean;
 } {
-  if (t.sending) return { sent: 'you', sendError: null };
+  if (t.sending) return { sent: 'you', sendError: null, sending: true };
   if (t.answered)
     return t.error
-      ? { sent: 'closed', sendError: t.error }
-      : { sent: t.byAgent.includes(t.seq ?? -1) ? 'agent' : 'you', sendError: null };
-  return { sent: null, sendError: t.error };
+      ? { sent: 'closed', sendError: t.error, sending: false }
+      : {
+          sent: t.byAgent.includes(t.seq ?? -1) ? 'agent' : 'you',
+          sendError: null,
+          sending: false,
+        };
+  return { sent: null, sendError: t.error, sending: false };
 }
 
 // --- answering -------------------------------------------------------------------

@@ -248,6 +248,11 @@ export interface TurnInput {
    * ('closed'). Unset: not sent, or the send failed and may be tried again.
    */
   sent?: 'you' | 'agent' | 'closed' | null;
+  /**
+   * The answer sent from here is still on its way (retried while the network loses it): the
+   * plate is shut on the choice but says "Sending…", not that it is in (owner, 2026-10-17).
+   */
+  sending?: boolean;
   /** Why the last send failed, in the words to show under the plate. */
   sendError?: string | null;
   /** A line already written in the pack's chat box. */

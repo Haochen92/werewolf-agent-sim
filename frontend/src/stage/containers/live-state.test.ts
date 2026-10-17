@@ -1256,23 +1256,26 @@ describe('the turn’s state: the line, the drafts, the answer', () => {
     expect(turnReducer(sent, { type: 'expired', seq: 201 })).toBe(sent);
   });
 
-  it('tells the night plate: sealed while sending and once in, open again with the words on a failure', () => {
+  it('tells the plate: shut and "sending" on its way, in once the server took it, open again with the words on a failure', () => {
     const sending = turnReducer(opened, { type: 'sending', seq: 201 });
-    expect(actSent(opened)).toEqual({ sent: null, sendError: null });
-    expect(actSent(sending)).toEqual({ sent: 'you', sendError: null });
+    expect(actSent(opened)).toEqual({ sent: null, sendError: null, sending: false });
+    expect(actSent(sending)).toEqual({ sent: 'you', sendError: null, sending: true });
     const act = (a: Parameters<typeof turnReducer>[1]) => actSent(turnReducer(sending, a));
     expect(act({ type: 'sent', seq: 201, delegated: false })).toEqual({
       sent: 'you',
       sendError: null,
+      sending: false,
     });
     expect(act({ type: 'sent', seq: 201, delegated: true }).sent).toBe('agent');
     expect(act({ type: 'send-failed', seq: 201, status: 409, message: 'x' })).toEqual({
       sent: 'closed',
       sendError: ALREADY_ANSWERED,
+      sending: false,
     });
     expect(act({ type: 'send-failed', seq: 201, status: 0, message: 'offline' })).toEqual({
       sent: null,
       sendError: 'offline',
+      sending: false,
     });
     expect(actSent(turnReducer(opened, { type: 'expired', seq: 201 })).sent).toBe('agent');
   });

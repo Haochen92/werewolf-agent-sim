@@ -111,17 +111,24 @@ function VoteBeat({
   const [chosen, setChosen] = useState<string | null>(
     turn?.chosen && offered.includes(turn.chosen) ? turn.chosen : null,
   );
-  const [sent, setSent] = useState(false);
-  const confirm = () => {
-    if (!chosen || sent) return;
-    setSent(true);
-    onAct?.(chosen === 'abstain' ? null : chosen);
-  };
+  const [pressed, setPressed] = useState(false);
+  // a send that failed (the network, or a refusal) reopens the ballot with its choice, as the
+  // night plates do; one the agent or the server closed comes as turn.sent and stays shut
+  const failed = !!turn?.sendError && !turn.sent;
   // handed to the seat's agent from here, or by the deadline; a failed hand-over reopens the row
   const [handed, setHanded] = useState(false);
-  const agentHas = turn?.sent === 'agent' || (handed && !turn?.sendError);
+  // on its way from here (retried while the network loses it): shut on the choice, and "in"
+  // only once the server has it (owner, 2026-10-17)
+  const sending = (pressed || handed) && !!turn?.sending;
+  const sent = pressed && !failed && !sending;
+  const agentHas = turn?.sent === 'agent' || (handed && !turn?.sendError && !sending);
+  const confirm = () => {
+    if (!chosen || sent || sending) return;
+    setPressed(true);
+    onAct?.(chosen === 'abstain' ? null : chosen);
+  };
   const handOver = () => {
-    if (sent || agentHas) return;
+    if (sent || sending || agentHas) return;
     setHanded(true);
     onDelegate?.();
   };
@@ -349,13 +356,15 @@ function VoteBeat({
               candidates={offered}
               cast={cast}
               chosen={chosen}
-              onChoose={sent || agentHas ? undefined : setChosen}
+              onChoose={sent || sending || agentHas ? undefined : setChosen}
               onConfirm={confirm}
               onAgent={onDelegate ? handOver : undefined}
               sent={sent || agentHas}
+              sending={sending}
               byAgent={agentHas && !sent}
               me={me}
               clock={turn?.clock ?? null}
+              error={failed ? turn?.sendError : null}
               arrive={animate}
             />
           ) : null}

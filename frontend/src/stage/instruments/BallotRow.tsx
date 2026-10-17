@@ -3,8 +3,9 @@
 /**
  * The seated human's ballot: a row of the candidates' chips and, at its end, an empty plate
  * that means abstain. Tap one to choose it (it lights, the rest dim: nothing moves to say
- * chosen), then confirm on the brass plate below, which names the vote. Once sent, the row
- * gives way to "Your ballot is in", which only this seat sees.
+ * chosen), then confirm on the brass plate below, which names the vote. While the send is on
+ * its way the row is shut on the choice, "Sending…", with no plate; once the server has it, the
+ * row gives way to "Your ballot is in", which only this seat sees.
  *
  * The candidates are the server's list and nothing else (`abstain` is a choice only when the
  * server lists it). Props in, the choice out through `onChoose` and `onConfirm`: the scene
@@ -29,6 +30,8 @@ export interface BallotRowProps {
   onConfirm?: () => void;
   /** Sent: the row gives way to "Your ballot is in". */
   sent?: boolean;
+  /** On its way: the row is shut on the choice, "Sending…", until the server has it. */
+  sending?: boolean;
   /** "Let my agent vote", beside the brass plate: the turn goes to the seat's agent. */
   onAgent?: () => void;
   /** Sent by the seat's agent: the "in" line names no seat (the agent has not voted yet). */
@@ -37,6 +40,8 @@ export interface BallotRowProps {
   me: string;
   /** The turn's clock, or null for no deadline. */
   clock?: TurnClock | null;
+  /** Why the last send failed; the row is open again. */
+  error?: string | null;
   arrive?: boolean;
 }
 
@@ -50,10 +55,12 @@ export function BallotRow({
   onChoose,
   onConfirm,
   sent = false,
+  sending = false,
   onAgent,
   byAgent = false,
   me,
   clock,
+  error = null,
   arrive = false,
 }: BallotRowProps) {
   const k = useMotionScale();
@@ -108,16 +115,28 @@ export function BallotRow({
       .filter(Boolean)
       .join(' ');
   return (
-    <motion.div className={styles.box} {...fade} data-ballot="open">
+    <motion.div className={styles.box} {...fade} data-ballot={sending ? 'sending' : 'open'}>
       <header>
         <strong>Your vote</strong>
-        <span>Tap a chip{canAbstain ? ', or the empty plate to abstain' : ''}.</span>
-        {clock ? (
+        {sending ? (
+          <span className={styles.sending} role="status">
+            <i aria-hidden="true" />
+            Sending…
+          </span>
+        ) : (
+          <span>Tap a chip{canAbstain ? ', or the empty plate to abstain' : ''}.</span>
+        )}
+        {clock && !sending ? (
           <span className={styles.count}>
             your seat’s agent votes for you in <CountText clock={clock} />
           </span>
         ) : null}
       </header>
+      {error ? (
+        <p className={styles.error} role="alert">
+          {error}
+        </p>
+      ) : null}
       <div className={styles.row} role="radiogroup" aria-label="Your vote">
         {seats.map((c) => (
           <button
@@ -125,6 +144,7 @@ export function BallotRow({
             type="button"
             role="radio"
             aria-checked={chosen === c}
+            disabled={sending}
             className={cls(c)}
             onClick={() => onChoose?.(chosen === c ? null : c)}
             data-seat={seatNumber(c)}
@@ -138,6 +158,7 @@ export function BallotRow({
             type="button"
             role="radio"
             aria-checked={chosen === 'abstain'}
+            disabled={sending}
             className={cls('abstain')}
             onClick={() => onChoose?.(chosen === 'abstain' ? null : 'abstain')}
           >
@@ -146,21 +167,23 @@ export function BallotRow({
           </button>
         ) : null}
       </div>
-      <div className={styles.plate}>
-        <button
-          type="button"
-          disabled={!chosen}
-          onClick={onConfirm}
-          data-plate={plateLabel(chosen)}
-        >
-          {plateLabel(chosen)}
-        </button>
-        {onAgent ? (
-          <button type="button" className={styles.agent} onClick={onAgent}>
-            Let my agent vote
+      {sending ? null : (
+        <div className={styles.plate}>
+          <button
+            type="button"
+            disabled={!chosen}
+            onClick={onConfirm}
+            data-plate={plateLabel(chosen)}
+          >
+            {plateLabel(chosen)}
           </button>
-        ) : null}
-      </div>
+          {onAgent ? (
+            <button type="button" className={styles.agent} onClick={onAgent}>
+              Let my agent vote
+            </button>
+          ) : null}
+        </div>
+      )}
     </motion.div>
   );
 }
