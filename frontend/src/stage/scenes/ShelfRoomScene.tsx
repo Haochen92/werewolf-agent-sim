@@ -459,21 +459,6 @@ function ShelfRoom(props: SceneProps) {
     >
       {/* once the act is in, the lobby's count: the others acting, until the morning */}
       {isIn && !sending ? <NightCount {...props} /> : null}
-      {pending && !isIn && bet && chosen !== me ? (
-        <ChoicePlates
-          centre={centre}
-          hidden={props.presentation.footHidden}
-          caption="name a role for two points"
-          sigils
-          choices={betRoles(view.lineup, role).map((r) => ({
-            id: r,
-            label: <Sigil role={r} variant="felt" />,
-            title: ROLE_NAME[r],
-            on: r === roleNamed,
-          }))}
-          onToggle={(r) => setRoleNamed((was) => (was === r ? null : r))}
-        />
-      ) : null}
       {pending ? (
         <ActPlate
           label={plateLabel(kind, chosen, more)}
@@ -502,6 +487,21 @@ function ShelfRoom(props: SceneProps) {
               : undefined
           }
           error={failed ? turn?.sendError : null}
+          over={
+            !isIn && bet && chosen !== me ? (
+              <ChoicePlates
+                caption="name a role for two points"
+                sigils
+                choices={betRoles(view.lineup, role).map((r) => ({
+                  id: r,
+                  label: <Sigil role={r} variant="felt" />,
+                  title: ROLE_NAME[r],
+                  on: r === roleNamed,
+                }))}
+                onToggle={(r) => setRoleNamed((was) => (was === r ? null : r))}
+              />
+            ) : null
+          }
           sealed={
             isIn
               ? {

@@ -565,11 +565,12 @@ button.photo:focus-visible {
 }
 
 /* ---- plates to choose from, over the plate: the fortune teller's roles (ten-seat pass §2);
-   the plate's own buttons, a size down, the chosen one lit ---- */
+   the plate's own buttons, a size down, the chosen one lit. Hung from the plate's top, clear of
+   its note, so a plate wrapped onto two rows lifts the row instead of covering it ---- */
 .choices {
   position: absolute;
   left: 50%;
-  bottom: calc(8px + 132px * var(--legible-ui));
+  bottom: calc(100% + 64px * var(--legible-ui));
   transform: translateX(-50%);
   /* its own width, not what is left right of `left`: the row wraps only past its max-width */
   width: max-content;

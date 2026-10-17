@@ -53,6 +53,11 @@ export interface ActPlateProps {
   sealed?: { label: string; colour: string } | null;
   /** Not drawn, and still mounted (`Presentation.footHidden`: the "You're back" notice stands here). */
   hidden?: boolean;
+  /**
+   * A row to choose from over the plate (`ChoicePlates`), hung from the plate's top so a plate
+   * wrapped onto two rows (a phone beside the open transcript) lifts it rather than covers it.
+   */
+  over?: ReactNode;
 }
 
 export function ActPlate({
@@ -70,6 +75,7 @@ export function ActPlate({
   error,
   sealed,
   hidden = false,
+  over,
 }: ActPlateProps) {
   const place = inline ? styles.inline : left == null ? '' : styles.left;
   const x = left ?? centre;
@@ -103,6 +109,7 @@ export function ActPlate({
       style={style}
       data-plate={label ?? undefined}
     >
+      {over}
       {error ? (
         <p className={`${styles.note} ${styles.noteError}`} role="alert">
           {error}
@@ -147,37 +154,26 @@ export interface PlateChoice {
 /**
  * A row of plates to choose from, over the plate (ten-seat pass §2): the fortune teller's roles
  * (as sigils, `sigils`). Tapping one lights it, tapping it again puts it out; the gold plate
- * under it still commits. A small sibling of the plate, in its style, placed over it at the
- * same x.
+ * under it still commits. A small sibling of the plate, in its style, handed to the plate as
+ * its `over` and hung from its top edge.
  */
 export function ChoicePlates({
   choices,
   onToggle,
   caption,
-  centre,
   sigils,
   disabled,
-  hidden = false,
 }: {
   choices: readonly PlateChoice[];
   onToggle: (id: string) => void;
   /** A quiet line over the row ("name a role for two points"). */
   caption?: string;
-  /** Centred on this x in units (the plate's). */
-  centre?: number;
   /** The labels are pictures: square plates. */
   sigils?: boolean;
   disabled?: boolean;
-  /** Not drawn, and still mounted (`Presentation.footHidden`: the "You're back" notice stands here). */
-  hidden?: boolean;
 }) {
   return (
-    <div
-      className={styles.choices}
-      style={{ left: centre, visibility: hidden ? 'hidden' : undefined }}
-      role="group"
-      aria-label={caption}
-    >
+    <div className={styles.choices} role="group" aria-label={caption}>
       {caption ? <p className={styles.choicesCaption}>{caption}</p> : null}
       <div className={styles.choicesRow}>
         {choices.map((c) => (
