@@ -45,3 +45,10 @@ def test_a_game_failure_is_tagged_and_never_carries_the_key():
     assert event["tags"]["game_id"] == "g1" and event["tags"]["byok"] == "yes"
     assert "sk-ant-secret-123" not in str(event)
     assert "***" in event["exception"]["values"][0]["value"]
+
+
+def test_private_fields_are_dropped_at_any_depth():
+    event = {"extra": {"body": {"api_key": "sk-1", "model": "m"}}, "list": [{"seat_token": "t"}]}
+    assert error_reporting._drop_private(event) == {
+        "extra": {"body": {"api_key": "[Filtered]", "model": "m"}},
+        "list": [{"seat_token": "[Filtered]"}]}
