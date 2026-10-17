@@ -104,7 +104,8 @@ def format_extraction_inputs(state: OrchestratorGraph) -> dict[str, str]:
         "formatted_previous_strategies": (
             "No previous role strategy summaries were injected into this game."
         ),
-        "game_outcome": state.get("winner", "unknown"),
+        # END_GAME leaves winner None on a draw (no side standing, or a tie at the day limit).
+        "game_outcome": state.get("winner") or "draw",
     }
 
 
