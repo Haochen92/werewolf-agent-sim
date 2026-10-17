@@ -529,3 +529,10 @@ each picture's first request against the time its beat began.
 - A Playwright run proves nothing until you know whose server answered on its port: another
   session's build held 3121 (2026-10-15), mine failed to start, and the suite ran against theirs.
   Check the port's process first (`ss -ltnp`, then `readlink /proc/<pid>/cwd`).
+- Don't make a `<button>` the box whose layout matters. iPadOS 18's Safari did not lay a button out
+  as the flex column its CSS asked for, so the seat card's children with no in-flow content (the
+  photo, an absolutely placed image; the empty ruled foot) fell to zero width, while iPhone and
+  desktop drew it whole (2026-10-17). It hit every tappable card and no plain one, which made it
+  look like a guide-only bug for two days. Let the button hold the card (`Wing.module.css`
+  `.tap`), and settle a device-only layout bug with a test page of variants opened on the device:
+  headless WebKit did not reproduce this one.

@@ -124,8 +124,27 @@
 .banded {
   --band-h: calc(var(--meta) * 1.2);
 }
+/* a card you can tap: the button only holds it, and the card fills it. iPadOS 18's Safari does
+   not lay a button out as the card's flex column: the photo and the ruled foot, which hold no
+   text, fell to zero width (owner's iPad, 2026-10-17). The rail's grid sizes the button. */
 .tap {
+  position: relative;
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  appearance: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
   cursor: pointer;
+}
+.tap > .tile {
+  position: absolute;
+  inset: 0;
 }
 .tap:focus-visible {
   outline: 2.4px solid var(--amber);
@@ -425,7 +444,7 @@
 }
 .file:hover::after,
 .file:active::after,
-.file:focus-visible::after {
+.tap:focus-visible > .file::after {
   border-color: var(--xray-hi);
   box-shadow: 0 0 9.6px rgba(134, 176, 160, 0.45);
   opacity: 1;

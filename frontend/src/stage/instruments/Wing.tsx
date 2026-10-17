@@ -421,7 +421,7 @@ function WingTile({
   return (
     <button
       type="button"
-      className={`${cls} ${styles.tap}`}
+      className={styles.tap}
       data-seat={seat}
       data-glow={glow}
       data-word={word}
@@ -430,7 +430,8 @@ function WingTile({
       aria-haspopup={read?.onRead || file ? undefined : 'dialog'}
       onClick={(e) => tap(e.currentTarget)}
     >
-      {face}
+      {/* the button holds the card rather than being it (see `.tap`) */}
+      <span className={cls}>{face}</span>
     </button>
   );
 }
