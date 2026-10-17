@@ -440,6 +440,16 @@ The same room, painted as the wolves' red-lit compartment ("Grandma's things"); 
 the chat, not on the line. Seats the pack can choose exclude wolves (`candidates`). The wing marks
 pack seats with a red edge.
 
+**The chat is the transcript's (owner, 2026-10-17; the on-stage chat was too small, on a phone
+most of all).** The pack's talk, the kill, the game master's note and the pack's dawn record are
+the drawer's Wolf lines (§11), and no chat box stands in the room. Live, a seated wolf's
+transcript opens by itself the first time the pack's room comes on stage on a night, with only
+Wolf ticked (`packNight`); what the reader does then (shut it, tick Public) holds until dawn,
+when it closes and its filters go back to all (`slot.ts` `packNightStep`). The replay does not
+open it. Your line to the pack ("Say it", "Pass") stays at the room's foot on the left, with how
+the night goes over it until someone has spoken. Where the rows below say "the chat", read the
+Wolf lines.
+
 | # | Beat | Anchor | Sees | Stage | Slot | Hold |
 |---|---|---|---|---|---|---|
 | 1 | `pack.wakes` | `phase_change: night` while I am a wolf | F | the wolves' compartment; the chat empty or holding the deal's line | D: the pack chat (red edge) | — |
@@ -685,12 +695,17 @@ of the lynch/night atoms lent to them; the votes as one line per day, landing wi
 time; ruled 2026-09-26); the game master's vote line, which names the lynched seat's role, held
 back on a lynch day until `lynch.truth` for the same reason; the day's brief at its Dawn
 (clamped, opens on a tap; public, so everyone's since 2026-09-29, when it was X-ray only); the ending); a
-seated human's private results as dashed "Only you" lines; a wolf's pack chat with the red edge;
+seated human's private results as dashed "Only you" lines; a wolf's pack chat with the red edge
+(the Wolf tier, 2026-10-17: the talk, the kill, the game master's note to the pack and its dawn
+record, less a record that only repeats the morning);
 X-ray on adds, in the X-ray's verdigris (aqua until 2026-09-29): roles after names, passes with
-reason and draft, the night acts, the pack's talk, everyone's private lines as "Only seat 4".
+reason and draft, the night acts (the carrier's kill is the pack's kill line, an act with no
+target says what it is: "conceals the body."), the pack's talk, everyone's private lines as
+"Only seat 4".
 Chapters run down the drawer as rules; rules with nothing under them disappear. Filters:
 days as tabs at the foot; seat chips at the head (dead dimmed, still selectable); Show › Public /
-Private (ruled 2026-09-29: no X-ray toggle; the X-ray's lines follow the X-ray's one switch).
+Private, and Wolf for a wolf or with the X-ray (2026-10-17) (ruled 2026-09-29: no X-ray toggle;
+the X-ray's lines follow the X-ray's one switch).
 In the replay the drawer stops at the current beat.
 
 As built 2026-09-25 (benches 74 and 52 where they give it; the rest no bench gives, change here
@@ -739,8 +754,8 @@ that room when the slot is closed); on a 16:9 desk nothing changes. **The drawer
 strip's buttons over it), z under the strip's buttons and the epilogue's veil. It stops at the
 rail on the prompts (`day.your-turn`, `vote.your-ballot`) and for the whole of the night rooms
 (`room`, `pack`), whose chat and plate keep the band. On a phone (`data-small`) it runs full
-height beside the car's prompts and the own room's plate, which stop short of it; only the
-pack's chat, which spans the band's right, keeps it at the rail (`railHolds`, 2026-09-27). The lit line scrolls to 0.6 of the list's
+height beside the prompts and the rooms' plates, which stop short of it (the pack's room too
+since its chat moved into the drawer, 2026-10-17; `railHolds` kept it at the rail before). The lit line scrolls to 0.6 of the list's
 height (bench 74); with no line of its own the drawer shows its end. It follows only while the
 reader is at now (the lit line in view, or the end): scrolled away, new lines arrive without
 moving it and a "↓ Back to now" pill sits at its foot until tapped or scrolled back (ruled

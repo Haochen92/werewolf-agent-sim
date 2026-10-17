@@ -141,6 +141,12 @@
   background: linear-gradient(#5a4632, #3a2a1a);
   color: var(--paper);
 }
+.cue {
+  width: 100%;
+  font-size: calc(var(--meta) * 0.95);
+  color: var(--paper);
+  opacity: 0.85;
+}
 .count {
   width: 100%;
   font-size: calc(var(--meta) * 0.95);

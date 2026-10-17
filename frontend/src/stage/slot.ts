@@ -32,8 +32,11 @@ export function sideOpen(p: Pick<Presentation, 'slot'>): boolean {
 
 /**
  * The beats where the seated human is answering something, and the scenes that are their own
- * room at night: the drawer stops at the rail so the prompt (the ballot row, the plate, the
- * pack's chat) keeps the whole band.
+ * room at night: the drawer stops at the rail so the prompt (the ballot row, the plate, your
+ * line to the pack) keeps the whole band. On a phone the prompts stop short of the slot (the
+ * rooms' plates are centred in the room left of it), so the drawer runs full height there
+ * (owner, 2026-09-26: it should fill the side; the pack's too since its chat moved into the
+ * drawer, 2026-10-17).
  */
 const PROMPTS: readonly BeatId[] = [
   'day.your-turn',
@@ -45,16 +48,6 @@ const PROMPTS: readonly BeatId[] = [
 
 export function atRail(beat: Pick<SceneBeat, 'id' | 'scene'>): boolean {
   return PROMPTS.includes(beat.id) || beat.scene === 'room' || beat.scene === 'pack';
-}
-
-/**
- * Where the rail stop holds even on a phone. On a phone the car's prompts (the ballot, the
- * dock) and the own room's plate (centred in the room left of the slot) stop short of it, so
- * the drawer may run full height there (owner, 2026-09-26: it should fill the side); the
- * pack's chat still spans the band's right, under the slot, so the pack keeps the rail.
- */
-export function railHolds(beat: Pick<SceneBeat, 'scene'>): boolean {
-  return beat.scene === 'pack';
 }
 
 /** The box at the foot narrows to the room: only a full-height drawer takes the band's right. */
@@ -136,6 +129,35 @@ export function pressXray(
   p: Pick<Presentation, 'slot' | 'xray'>,
 ): Pick<Presentation, 'slot' | 'xray'> {
   return { xray: !p.xray, slot: p.slot };
+}
+
+/** The scenes from dusk to the morning report. */
+const NIGHT_SCENES: readonly string[] = ['night', 'room', 'pack'];
+
+/**
+ * The wolves' night in the transcript (owner, 2026-10-17), for a seated wolf, live: the first
+ * time the pack's room comes on stage on a night the transcript opens on the pack's lines alone
+ * (`open`), and when that night is over it closes, its filters back to all (`close`). `opened` is
+ * the night it last opened for: a reader who shut it, or ticked more, keeps that until dawn.
+ */
+export function packNightStep(
+  beat: Pick<SceneBeat, 'scene' | 'day'>,
+  wolf: boolean,
+  opened: number | null,
+): 'open' | 'close' | null {
+  if (!wolf) return null;
+  if (beat.scene === 'pack' && opened !== beat.day) return 'open';
+  if (opened !== null && !NIGHT_SCENES.includes(beat.scene)) return 'close';
+  return null;
+}
+
+/** What `packNightStep` does to the slot: the transcript in it, or out of it (a file stays). */
+export function packNightSlot(
+  p: Pick<Presentation, 'slot' | 'xray'>,
+  open: boolean,
+): Pick<Presentation, 'slot' | 'xray'> {
+  if (open) return { xray: p.xray, slot: 'drawer' };
+  return { xray: p.xray, slot: slotOf(p) === 'drawer' ? null : p.slot };
 }
 
 /** A seat's file opened from the stage: the pane shows File (only with the X-ray on). */

@@ -44,7 +44,13 @@ import { BY, DIED } from '@/stage/instruments/MorningRoll';
 import { ROLE_NAME, seatNumber } from '@/stage/roles';
 import { sealedLabel } from '@/stage/scenes/ShelfRoomScene';
 import type { ActMore, Presentation } from '@/stage/scenes/types';
-import { pressFile, pressTranscript, showFile, showRecord } from '@/stage/slot';
+import {
+  packNightSlot,
+  pressFile,
+  pressTranscript,
+  showFile,
+  showRecord,
+} from '@/stage/slot';
 import type { DurableGameEvent, EventOf, GameStatus, Phase } from '@/types/contracts';
 import { nextLiveStep, type LiveContext } from './live-queue';
 import { carryAcross, holdFor, still, type Cursor } from './transport';
@@ -105,7 +111,9 @@ export type LiveAction =
   /** A seat tapped on the stage after the game: its file comes to the pane. */
   | { type: 'show-file'; xray: boolean }
   /** The transcript's pointer: the case file comes to the pane on the Record, any time. */
-  | { type: 'show-record' };
+  | { type: 'show-record' }
+  /** The wolves' night: the transcript opens on the pack's lines, and goes at dawn (slot.ts). */
+  | { type: 'pack-night'; open: boolean };
 
 export function initialLiveState(slot: Presentation['slot'] = null): LiveState {
   return {
@@ -641,6 +649,11 @@ export function liveReducer(state: LiveState, action: LiveAction): LiveState {
       return { ...state, slot: showFile({ slot: state.slot, xray: action.xray }).slot };
     case 'show-record':
       return { ...state, slot: showRecord({ slot: state.slot, xray: false }).slot };
+    case 'pack-night':
+      return {
+        ...state,
+        slot: packNightSlot({ slot: state.slot, xray: false }, action.open).slot,
+      };
   }
 }
 

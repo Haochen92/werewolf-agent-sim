@@ -18,7 +18,7 @@ import { Film } from './film/Film';
 import { fileFocus, type FileChoice } from './film/case-file';
 import { recordMornings, type RecordPick } from './film/record-model';
 import type { SceneProps } from './scenes/types';
-import { atRail, railHolds, slotOf, tapsOpenFiles } from './slot';
+import { atRail, slotOf, tapsOpenFiles } from './slot';
 import { actedTonight, nightBranchesOf } from './scenes/replay-night';
 
 /** Memoised: it redraws when the beat, the view or what the page hands the slot changes. */
@@ -89,7 +89,6 @@ export const SideSlot = memo(function SideSlot({
           filters={slot?.filters ?? own.filters}
           onFilters={slot?.onFilters ?? own.setFilters}
           rail={atRail(beat)}
-          railHolds={railHolds(beat)}
           animate={animate}
           scroll={slot?.drawerScroll ?? own.scroll}
           onRecord={openRecord}

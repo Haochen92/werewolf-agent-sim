@@ -78,6 +78,7 @@ import { isNineSeat } from '../card-text';
 import { castForRoom, resolveCast } from '../cast/castForGame';
 import { beatsFor } from '../beats/beatsFor';
 import type { SceneBeat } from '../beats/types';
+import { DEFAULT_FILTERS, packNight, wolfViewer } from '../drawer/drawer-lines';
 import { useDrawerFilters } from '../drawer/use-drawer-filters';
 import { StageMotion } from '../motion';
 import { notebookForAgent, useNotebook, useNoteEditing } from '../notebook';
@@ -99,7 +100,7 @@ import type {
   SlotInput,
   TurnInput,
 } from '../scenes/types';
-import { sideOpen } from '../slot';
+import { packNightStep, sideOpen } from '../slot';
 import { Layer, Stage } from '../Stage';
 import { geometry } from '../units';
 import { createFoldCache, type FoldCache } from './fold-cache';
@@ -493,6 +494,20 @@ export function LiveTheatre({
 
   // the side slot's state that outlives a beat; the game's end is the X-ray's switch here
   const drawer = useDrawerFilters();
+  // a wolf's night: the transcript opens on the pack's lines and goes at dawn (slot.ts)
+  const packOpened = useRef<number | null>(null);
+  const wolf = wolfViewer(view, me);
+  const setFilters = drawer.setFilters;
+  useEffect(() => {
+    if (!beat) return;
+    const step = packNightStep(beat, wolf, packOpened.current);
+    if (!step) return;
+    packOpened.current = step === 'open' ? beat.day : null;
+    setFilters((f) =>
+      step === 'open' ? packNight(f) : { ...f, show: DEFAULT_FILTERS.show },
+    );
+    dispatch({ type: 'pack-night', open: step === 'open' });
+  }, [beat, wolf, setFilters]);
   // the seat's own card, opened over the stage from "your card": it stays open as beats go by
   const [cardOpen, setCardOpen] = useState(false);
   useEffect(() => {

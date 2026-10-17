@@ -160,6 +160,11 @@
   background: var(--amber);
   border-color: var(--amber);
 }
+.show.wolf[aria-pressed='true'] i {
+  background: var(--wolf);
+  border-color: var(--wolf);
+  color: var(--cream);
+}
 .show.xray[aria-pressed='true'] i {
   background: var(--xray);
   border-color: var(--xray);
@@ -178,8 +183,8 @@
 [data-small] .ttl {
   display: none;
 }
-/* on a phone the car's prompts and the own room's plate stop short of the slot, so the drawer
-   runs full height there (slot.ts `railHolds`: the pack's chat keeps the rail) */
+/* on a phone the prompts and the rooms' plates stop short of the slot, so the drawer runs full
+   height there (slot.ts `atRail`) */
 [data-small] .drawer[data-rail='soft'] {
   height: 900px;
 }

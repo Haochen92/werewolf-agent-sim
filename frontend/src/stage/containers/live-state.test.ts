@@ -988,6 +988,12 @@ describe('the live stage: the side slot', () => {
         'film',
       );
   });
+
+  it('a wolf’s night brings the transcript and dawn takes it away', () => {
+    const night = liveReducer(initialLiveState(null), { type: 'pack-night', open: true });
+    expect(night.slot).toBe('drawer');
+    expect(liveReducer(night, { type: 'pack-night', open: false }).slot).toBeNull();
+  });
 });
 
 describe('the turn’s body, by request kind', () => {

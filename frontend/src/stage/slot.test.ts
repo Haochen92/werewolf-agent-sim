@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   fileTap,
+  packNightSlot,
+  packNightStep,
   pressFile,
   pressXray,
   showFile,
@@ -80,5 +82,34 @@ describe('the case file without the X-ray (the Record)', () => {
     for (const slot of [null, 'drawer', 'film'] as const)
       for (const xray of [false, true])
         expect(showRecord({ slot, xray })).toEqual({ xray, slot: 'film' });
+  });
+});
+
+describe('the wolves’ night in the transcript (owner, 2026-10-17)', () => {
+  const at = (scene: string, day: number) =>
+    ({ scene, day }) as Parameters<typeof packNightStep>[0];
+
+  it('opens once a night, when the pack’s room first comes on stage, for a wolf only', () => {
+    expect(packNightStep(at('pack', 2), true, null)).toBe('open');
+    expect(packNightStep(at('pack', 2), false, null)).toBeNull();
+    // opened for this night already: a reader who shut it keeps it shut
+    expect(packNightStep(at('pack', 2), true, 2)).toBeNull();
+    expect(packNightStep(at('pack', 3), true, 2)).toBe('open');
+  });
+
+  it('stays through the night’s other rooms and closes when the night is over', () => {
+    for (const scene of ['night', 'room', 'pack'])
+      expect(packNightStep(at(scene, 2), true, 2)).toBeNull();
+    expect(packNightStep(at('morning', 2), true, 2)).toBe('close');
+    expect(packNightStep(at('over', 2), true, 2)).toBe('close');
+    // a night it did not open has nothing to close
+    expect(packNightStep(at('morning', 2), true, null)).toBeNull();
+  });
+
+  it('brings the transcript, and at dawn takes only the transcript away', () => {
+    for (const slot of [null, 'drawer', 'film'] as const)
+      expect(packNightSlot({ slot, xray: false }, true).slot).toBe('drawer');
+    expect(packNightSlot({ slot: 'drawer', xray: false }, false).slot).toBeNull();
+    expect(packNightSlot({ slot: 'film', xray: false }, false).slot).toBe('film');
   });
 });

@@ -58,6 +58,7 @@ import {
   showRow,
   voteSentence,
   voteTally,
+  wolfViewer,
   WINNER_TEXT,
   type DrawerFilters,
   type DrawerLine,
@@ -77,6 +78,7 @@ export function atFoot(
 const TIER_NAME: Record<LineTier, string> = {
   public: 'Public',
   private: 'Private',
+  pack: 'Wolf',
   xray: 'Revealed',
 };
 
@@ -91,8 +93,6 @@ export interface DrawerProps {
   onFilters?: (next: DrawerFilters) => void;
   /** The seated human is answering a prompt: stop at the rail. */
   rail?: boolean;
-  /** The rail stop holds on a phone too (their own room); else the drawer runs full there. */
-  railHolds?: boolean;
   /** Played forward: scroll to the new line smoothly; at rest it is simply there. */
   animate?: boolean;
   /** Where the reader was and whether they follow the beat, kept across scenes by the container. */
@@ -119,7 +119,6 @@ export function Drawer({
   filters,
   onFilters,
   rail = false,
-  railHolds = false,
   animate = false,
   scroll: kept,
   onRecord,
@@ -138,7 +137,7 @@ export function Drawer({
   );
   const lit = litKey(lines, beat);
   const days = drawerDays(lines);
-  const tiers = showRow(me, xray);
+  const tiers = showRow(me, xray, wolfViewer(view, me));
   const dead = new Set(view.dead.map((d) => d.player));
 
   // Following, the beat's line is scrolled into view, a little below the middle (bench 74);
@@ -271,7 +270,7 @@ export function Drawer({
         } as CSSProperties
       }
       data-drawer={rail ? 'rail' : 'full'}
-      data-rail={rail ? (railHolds ? 'holds' : 'soft') : undefined}
+      data-rail={rail ? 'soft' : undefined}
       aria-label="Transcript"
     >
       <header>
@@ -326,7 +325,8 @@ export function Drawer({
                 <button
                   key={t}
                   type="button"
-                  className={`${styles.pill} ${styles.show} ${styles[t]}`}
+                  // `.pack` is the pack's line; its toggle is `.wolf`
+                  className={`${styles.pill} ${styles.show} ${styles[t === 'pack' ? 'wolf' : t]}`}
                   aria-pressed={filters.show[t]}
                   onClick={() => set({ show: { ...filters.show, [t]: !filters.show[t] } })}
                 >

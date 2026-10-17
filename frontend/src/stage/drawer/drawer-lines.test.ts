@@ -12,6 +12,7 @@ import {
   drawerDays,
   drawerLines,
   filterLines,
+  packNight,
   groupPasses,
   lineFrom,
   litKey,
@@ -66,7 +67,13 @@ describe('the drawer: which lines a viewer holds', () => {
       [271, 'Only the pack'],
       [402, 'Only seat 7'],
     ]);
-    expect(only.every((l) => l.tier === 'private')).toBe(true);
+    // the game master's note to the pack is the pack's, as its talk and its kill are
+    expect(only.map((l) => l.tier)).toEqual(['private', 'pack', 'private']);
+    expect(
+      lines
+        .filter((l) => l.kind === 'pack' || l.kind === 'kill')
+        .every((l) => l.tier === 'pack'),
+    ).toBe(true);
     expect(lines.filter((l) => l.kind === 'pass').every((l) => l.tier === 'xray')).toBe(
       true,
     );
@@ -92,9 +99,7 @@ describe('the drawer: which lines a viewer holds', () => {
     expect(count(lines, 'act')).toBe(0);
     const pack = lines.filter((l) => l.kind === 'pack');
     expect(pack).toHaveLength(8);
-    expect(pack.every((l) => l.tier === 'private' && l.kind === 'pack' && l.mine)).toBe(
-      true,
-    );
+    expect(pack.every((l) => l.tier === 'pack' && l.kind === 'pack' && l.mine)).toBe(true);
     const note = byKey(lines, 'only-271');
     expect(note).toMatchObject({
       who: 'Only you',
@@ -251,7 +256,7 @@ describe('the drawer: the filters', () => {
   it('filters by tier', () => {
     const noXray = filterLines(lines, {
       ...DEFAULT_FILTERS,
-      show: { public: true, private: true, xray: false },
+      show: { public: true, private: true, pack: true, xray: false },
     });
     expect(count(noXray, 'pass') + count(noXray, 'act')).toBe(0);
     // the record's line is public: it stays
@@ -259,17 +264,31 @@ describe('the drawer: the filters', () => {
     expect(count(noXray, 'only')).toBe(3);
     const nothing = filterLines(lines, {
       ...DEFAULT_FILTERS,
-      show: { public: false, private: false, xray: false },
+      show: { public: false, private: false, pack: false, xray: false },
     });
     expect(nothing).toEqual([]);
+  });
+
+  it('opens the wolves’ night on the pack’s lines alone', () => {
+    // a live wolf has no X-ray; the X-ray's switch is left as it was
+    const left = { ...DEFAULT_FILTERS, day: 2, seat: 'player_1' };
+    left.show = { ...left.show, xray: false };
+    expect(packNight(left).show.xray).toBe(false);
+    const night = filterLines(lines, packNight(left));
+    const kinds = new Set(night.filter((l) => l.kind !== 'rule').map((l) => l.kind));
+    expect([...kinds].sort()).toEqual(['kill', 'only', 'pack']);
+    expect(night.filter((l) => l.kind === 'only').map((l) => l.seq)).toEqual([271]);
+    // every day and every seat: the night's talk is not hidden behind a filter left on
+    expect(drawerDays(night).length).toBeGreaterThan(1);
   });
 
   it('has a day tab per day and the Show toggles the viewer holds', () => {
     expect(drawerDays(lines)).toEqual([1, 2, 3, 4]);
     expect(showRow(null, false)).toEqual([]);
     expect(showRow('player_4', false)).toEqual(['public', 'private']);
+    expect(showRow('player_8', false, true)).toEqual(['public', 'private', 'pack']);
     // the X-ray's lines have no toggle of their own: they follow the X-ray's switch
-    expect(showRow(null, true)).toEqual(['public', 'private']);
+    expect(showRow(null, true)).toEqual(['public', 'private', 'pack']);
   });
 });
 
@@ -495,31 +514,52 @@ describe('the drawer on a ten-seat game', () => {
   const necroLog = necro.events as unknown as DurableGameEvent[];
   const p3Log = phase3.events as unknown as DurableGameEvent[];
 
+  // night 1's pack record reached both wolves (seqs 99 and 100), the illusionist's hiding it
+  const concealedN1 = necroLog.map((e) =>
+    e.type === 'night_record' && e.actor === 'wolves' && e.day === 1
+      ? ({
+          ...e,
+          seen: ['sigilist'],
+          outcome:
+            'player_4 died, and the illusionist hid their role: they were a sigilist.',
+        } as DurableGameEvent)
+      : e,
+  );
+
   it('shows the X-ray the pack’s kill record once a night, standing for every wolf’s copy', () => {
-    const lines = drawerLines(foldEvents(necroLog), { me: null, xray: true });
-    // night 1's record reached both wolves (seqs 99 and 100)
+    const lines = drawerLines(foldEvents(concealedN1), { me: null, xray: true });
     expect(byKey(lines, 'only-99')).toMatchObject({
       who: 'Only the pack',
+      tier: 'pack',
       mine: false,
       covers: [100],
-      text: 'player_4 died. They were a sigilist.',
     });
     expect(byKey(lines, 'only-100')).toBeUndefined();
-    const packLines = lines.filter((l) => l.kind === 'only' && l.who === 'Only the pack');
-    expect(packLines.map((l) => l.seq)).toEqual([99, 314]);
     // the X-ray's only-you beat lights it, whichever copy it stands on
     expect(litKey(lines, { id: 'morning.only-you', day: 1, seq: 99 })).toBe('only-99');
     expect(litKey(lines, { id: 'morning.only-you', day: 1, seq: 100 })).toBe('only-99');
   });
 
+  it('drops the pack’s record that only repeats the morning, and keeps a save', () => {
+    const lines = drawerLines(foldEvents(necroLog), { me: null, xray: true });
+    // night 1: a sigilist died, as the morning announced it
+    expect(byKey(lines, 'only-99')).toBeUndefined();
+    expect(byKey(lines, 'only-100')).toBeUndefined();
+    expect(byKey(lines, 'only-314')).toMatchObject({
+      who: 'Only the pack',
+      tier: 'pack',
+      text: 'player_1 survived: the healer saved them.',
+    });
+  });
+
   it('gives a seated wolf its own copy of the pack’s record', () => {
-    const view = foldEvents(necroLog, { mySeat: 'player_10' });
+    const view = foldEvents(concealedN1, { mySeat: 'player_10' });
     const only = drawerLines(view, { me: 'player_10', xray: false }).filter(
       (l) => l.kind === 'only',
     );
-    expect(only.map((l) => [l.seq, l.kind === 'only' && l.who])).toEqual([
-      [100, 'Only you'],
-      [101, 'Only you'],
+    expect(only.map((l) => [l.seq, l.kind === 'only' && l.who, l.tier])).toEqual([
+      [100, 'Only you', 'pack'],
+      [101, 'Only you', 'private'],
     ]);
   });
 
