@@ -333,6 +333,7 @@ export function foldEvent(
       const card = {
         role: event.role,
         pack: event.pack ?? null,
+        packRoles: event.pack_roles ?? null,
         bullets: event.bullets ?? null,
         uses: event.uses ?? null,
       };

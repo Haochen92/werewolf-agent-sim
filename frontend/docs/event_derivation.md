@@ -14,7 +14,7 @@
 | --- | --- |
 | Public | `game_started {seats, cast_role_counts, lineup}` — `lineup` the ten dealt roles in the rules block's order |
 | Faction | — |
-| Seat | `role_assigned {role, pack? (the pack's roles), uses? (a limited ability's start), bullets? (nine-seat records)}` ×10 |
+| Seat | `role_assigned {role, pack? (the pack's seats), pack_roles? (seat → role, the pack's own; 2026-10-17), uses? (a limited ability's start), bullets? (nine-seat records)}` ×10 |
 | Observer | `roles_assigned {player: role}` — nobody receives it live; exists so the game_over backlog replay has survivor roles from minute zero |
 - `phase_change("day")` — marker table (node identity). `human_player` = no event (session handshake).
 

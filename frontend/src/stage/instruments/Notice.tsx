@@ -19,7 +19,7 @@ import { ChipSprite } from '../cast/ChipSprite';
 import { useMotionScale } from '../motion';
 import { CARD_TEXT } from '../card-text';
 import { roleAvatar } from '../paint/role-kit';
-import { ROLE_ORDER, ROLE_PLURAL, factionOf } from '../roles';
+import { ROLE_NAME, ROLE_ORDER, ROLE_PLURAL, factionOf } from '../roles';
 import { bandFoot, geometry, type Hud, type StageGeometry } from '../units';
 import { Sigil } from './Sigil';
 import styles from './Notice.module.css';
@@ -321,10 +321,13 @@ export function Caps({ n }: { n: number }) {
  */
 export function PackChat({
   mate,
+  role = null,
   character,
   arrive = false,
 }: {
   mate: number;
+  /** The mate's role; null for a game dealt before the pack knew each other's roles. */
+  role?: string | null;
   character: Character;
   arrive?: boolean;
 }) {
@@ -349,7 +352,7 @@ export function PackChat({
             <span className={styles.chip}>
               <ChipSprite character={character} />
             </span>
-            . You hunt together at night.
+            {role ? `, the ${ROLE_NAME[role] ?? role}` : ''}. You hunt together at night.
           </span>
         </div>
         <div className={styles.input} aria-disabled="true">

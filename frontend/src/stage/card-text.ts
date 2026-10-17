@@ -109,7 +109,7 @@ export const CARD_TEXT: Record<string, CardText> = {
     line: 'There’s always one more song before her guest can leave.',
     ability:
       'Each night, block one player’s night action. The lone killer and neutral player cannot be blocked; you are told if your block fails. You can block on the same night you carry out the pack’s attack.',
-    pack: 'You know your fellow wolf and can talk privately at night. The pack attacks one player each night. Surviving wolves take turns choosing and carrying out the attack.',
+    pack: 'You know your fellow wolf and their role, and can talk privately at night. The pack attacks one player each night. Surviving wolves take turns choosing and carrying out the attack.',
     night:
       'Discuss who to kill tonight. Also enchant one player: their night action has no effect. Some roles are immune.',
     nightAlone:
@@ -121,7 +121,7 @@ export const CARD_TEXT: Record<string, CardText> = {
     line: 'When the curtain lifts, a passenger’s secret has vanished.',
     ability:
       'Twice per game, conceal the pack’s victim’s role; the whole pack learns it. This also hides the attacking wolf’s visit. Your own concealment visit remains visible unless you carried out the attack yourself. A use is spent only if the victim dies.',
-    pack: 'You know your fellow wolf and can talk privately at night. The pack attacks one player each night. Surviving wolves take turns choosing and carrying out the attack.',
+    pack: 'You know your fellow wolf and their role, and can talk privately at night. The pack attacks one player each night. Surviving wolves take turns choosing and carrying out the attack.',
     night:
       "Discuss who to kill tonight. You may also conceal the victim's role and information from the morning report; the whole pack learns it.",
     nightAlone:

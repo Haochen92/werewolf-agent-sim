@@ -93,6 +93,9 @@ class RoleAssigned(DurableEvent, frozen=True):
     role: Role
     pack: list[str] | None = None
     """Fellow wolves — wolves only."""
+    pack_roles: dict[str, str] | None = None
+    """The pack's roles, player -> role — wolves only (the pack knows each other's roles, owner
+    2026-10-17). Absent from games dealt before then."""
     bullets: int | None = None
     """Starting bullets — vigilante only (nine-seat records; the ten-seat game sends uses)."""
     uses: int | None = None

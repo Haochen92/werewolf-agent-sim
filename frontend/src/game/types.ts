@@ -266,6 +266,8 @@ export interface RoleCard {
   role: string;
   /** Wolves only. */
   pack: string[] | null;
+  /** Wolves only: the pack's roles, seat -> role. Absent from games dealt before 2026-10-17. */
+  packRoles?: Record<string, string> | null;
   /** Vigilante only. */
   bullets: number | null;
   /**

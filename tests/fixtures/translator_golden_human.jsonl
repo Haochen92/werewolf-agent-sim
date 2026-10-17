@@ -1,14 +1,14 @@
 {"cast_role_counts": {"chanteuse": 1, "fortune_teller": 1, "healer": 1, "illusionist": 1, "investigator": 1, "sentinel": 1, "serial_killer": 1, "sigilist": 1, "trailseer": 1, "vigilante": 1}, "day": 1, "lineup": ["investigator", "sentinel", "trailseer", "vigilante", "sigilist", "healer", "chanteuse", "illusionist", "serial_killer", "fortune_teller"], "seats": ["player_1", "player_2", "player_3", "player_4", "player_5", "player_6", "player_7", "player_8", "player_9", "player_10"], "seq": 1, "type": "game_started"}
-{"bullets": 2, "day": 1, "pack": null, "player": "player_1", "role": "vigilante", "seq": 2, "type": "role_assigned", "uses": 2}
-{"bullets": null, "day": 1, "pack": null, "player": "player_2", "role": "healer", "seq": 3, "type": "role_assigned", "uses": null}
-{"bullets": null, "day": 1, "pack": null, "player": "player_3", "role": "trailseer", "seq": 4, "type": "role_assigned", "uses": null}
-{"bullets": null, "day": 1, "pack": null, "player": "player_4", "role": "sigilist", "seq": 5, "type": "role_assigned", "uses": 2}
-{"bullets": null, "day": 1, "pack": ["player_5", "player_6"], "player": "player_5", "role": "chanteuse", "seq": 6, "type": "role_assigned", "uses": null}
-{"bullets": null, "day": 1, "pack": ["player_5", "player_6"], "player": "player_6", "role": "illusionist", "seq": 7, "type": "role_assigned", "uses": 2}
-{"bullets": null, "day": 1, "pack": null, "player": "player_7", "role": "investigator", "seq": 8, "type": "role_assigned", "uses": null}
-{"bullets": null, "day": 1, "pack": null, "player": "player_8", "role": "fortune_teller", "seq": 9, "type": "role_assigned", "uses": 2}
-{"bullets": null, "day": 1, "pack": null, "player": "player_9", "role": "sentinel", "seq": 10, "type": "role_assigned", "uses": null}
-{"bullets": null, "day": 1, "pack": null, "player": "player_10", "role": "serial_killer", "seq": 11, "type": "role_assigned", "uses": null}
+{"bullets": 2, "day": 1, "pack": null, "pack_roles": null, "player": "player_1", "role": "vigilante", "seq": 2, "type": "role_assigned", "uses": 2}
+{"bullets": null, "day": 1, "pack": null, "pack_roles": null, "player": "player_2", "role": "healer", "seq": 3, "type": "role_assigned", "uses": null}
+{"bullets": null, "day": 1, "pack": null, "pack_roles": null, "player": "player_3", "role": "trailseer", "seq": 4, "type": "role_assigned", "uses": null}
+{"bullets": null, "day": 1, "pack": null, "pack_roles": null, "player": "player_4", "role": "sigilist", "seq": 5, "type": "role_assigned", "uses": 2}
+{"bullets": null, "day": 1, "pack": ["player_5", "player_6"], "pack_roles": {"player_5": "chanteuse", "player_6": "illusionist"}, "player": "player_5", "role": "chanteuse", "seq": 6, "type": "role_assigned", "uses": null}
+{"bullets": null, "day": 1, "pack": ["player_5", "player_6"], "pack_roles": {"player_5": "chanteuse", "player_6": "illusionist"}, "player": "player_6", "role": "illusionist", "seq": 7, "type": "role_assigned", "uses": 2}
+{"bullets": null, "day": 1, "pack": null, "pack_roles": null, "player": "player_7", "role": "investigator", "seq": 8, "type": "role_assigned", "uses": null}
+{"bullets": null, "day": 1, "pack": null, "pack_roles": null, "player": "player_8", "role": "fortune_teller", "seq": 9, "type": "role_assigned", "uses": 2}
+{"bullets": null, "day": 1, "pack": null, "pack_roles": null, "player": "player_9", "role": "sentinel", "seq": 10, "type": "role_assigned", "uses": null}
+{"bullets": null, "day": 1, "pack": null, "pack_roles": null, "player": "player_10", "role": "serial_killer", "seq": 11, "type": "role_assigned", "uses": null}
 {"day": 1, "roles": {"player_1": "vigilante", "player_10": "serial_killer", "player_2": "healer", "player_3": "trailseer", "player_4": "sigilist", "player_5": "chanteuse", "player_6": "illusionist", "player_7": "investigator", "player_8": "fortune_teller", "player_9": "sentinel"}, "seq": 12, "type": "roles_assigned"}
 {"day": 1, "phase": "day", "seq": 13, "type": "phase_change"}
 {"day": 1, "players": ["player_1", "player_2", "player_3", "player_4", "player_5", "player_6", "player_7", "player_8", "player_9", "player_10"], "round": "opening", "seq": 14, "type": "round_opened"}

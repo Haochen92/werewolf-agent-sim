@@ -435,6 +435,7 @@ class Translator:
             out.append(self._emit(
                 ev.RoleAssigned, player=player, role=role,
                 pack=list(self.wolves) if _is_pack(role) else None,
+                pack_roles={w: self.roles[w] for w in self.wolves} if _is_pack(role) else None,
                 bullets=uses.get("vigilante") if role == "vigilante" else None,
                 uses=uses.get(role),
             ))

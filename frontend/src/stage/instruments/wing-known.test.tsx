@@ -11,7 +11,23 @@ const me = (over: Partial<MeView> = {}): Pick<MeView, 'role' | 'privateResults'>
 });
 
 describe('what a seat already knows, from its own view', () => {
-  it('a wolf knows its pack mates as the pack, not by role, and not itself', () => {
+  it('a wolf knows its pack mates and their roles (owner, 2026-10-17), not itself', () => {
+    const k = knownRoles(
+      'player_3',
+      me({
+        role: {
+          role: 'chanteuse',
+          pack: ['player_3', 'player_8'],
+          packRoles: { player_3: 'chanteuse', player_8: 'illusionist' },
+          bullets: null,
+          uses: null,
+        },
+      }),
+    );
+    expect([...k]).toEqual([['player_8', { how: 'pack', role: 'illusionist' }]]);
+  });
+
+  it('a wolf dealt before then knows its pack mates as the pack, not by role', () => {
     const k = knownRoles(
       'player_3',
       me({
@@ -86,6 +102,14 @@ describe('the wing’s known band', () => {
       /data-known="seen"[^>]*>.*data-sigil="villager".*Seen · .*Villager/,
     );
     expect(out).toContain('data-variant="felt"');
+  });
+
+  it('bands a pack mate whose role the deal named with the role’s sigil', () => {
+    const out = html([{ seat: 8, known: { how: 'pack', role: 'illusionist' } }]);
+    expect(out).toMatch(
+      /data-known="pack"[^>]*>.*data-sigil="illusionist".*Pack · .*Illusionist/,
+    );
+    expect(out).not.toContain('data-faction="wolves"');
   });
 
   it('gives the band to a death, "You" and the X-ray’s truth first', () => {

@@ -1680,6 +1680,10 @@ export interface components {
         | 'wolf';
       /** Pack */
       pack?: string[] | null;
+      /** Pack Roles */
+      pack_roles?: {
+        [key: string]: string;
+      } | null;
       /** Bullets */
       bullets?: number | null;
       /** Uses */

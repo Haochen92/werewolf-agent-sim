@@ -3569,6 +3569,20 @@
             ],
             "title": "Pack"
           },
+          "pack_roles": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pack Roles"
+          },
           "bullets": {
             "anyOf": [
               {
