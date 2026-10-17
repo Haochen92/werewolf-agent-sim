@@ -276,3 +276,25 @@ export function knownRoles(
   for (const p of mine.role?.pack ?? []) if (p !== me) known.set(p, { how: 'pack' });
   return known;
 }
+
+/**
+ * The roles of concealed bodies this seat was told: the pack's record names the role the
+ * illusionist hid, for every wolf (owner, 2026-10-17). The wing shows it on the dead seat's card.
+ */
+export function hiddenRolesHeld(
+  me: string | null,
+  mine: Pick<MeView, 'privateResults'>,
+): Map<string, string> {
+  const held = new Map<string, string>();
+  if (!me) return held;
+  for (const r of mine.privateResults)
+    if (
+      r.kind === 'night_record' &&
+      r.player === me &&
+      r.actor === 'wolves' &&
+      r.target &&
+      r.seen.length
+    )
+      held.set(r.target, r.seen[0]);
+  return held;
+}

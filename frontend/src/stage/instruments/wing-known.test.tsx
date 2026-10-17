@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import type { MeView } from '@/game/types';
-import { knownRoles } from '../roles';
+import { hiddenRolesHeld, knownRoles } from '../roles';
 import { Wing } from './Wing';
 
 const me = (over: Partial<MeView> = {}): Pick<MeView, 'role' | 'privateResults'> => ({
@@ -113,5 +113,44 @@ describe('a concealed body on the wing', () => {
     const out = html([{ seat: 3, dead: { role: null }, truth: 'trailseer' }]);
     expect(out).toContain('Trailseer');
     expect(out).not.toContain('Role hidden');
+  });
+});
+
+describe('a concealed body’s role, as the pack was told it (owner, 2026-10-17)', () => {
+  const record = (player: string, seen: string[]) => ({
+    kind: 'night_record' as const,
+    player,
+    seq: 99,
+    day: 1,
+    actor: 'wolves',
+    action: 'kill',
+    target: 'player_4',
+    result: 'killed',
+    outcome: '',
+    seen,
+  });
+
+  it('is held by the wolf whose copy of the pack’s record names it', () => {
+    const held = hiddenRolesHeld(
+      'player_6',
+      me({ privateResults: [record('player_6', ['sigilist'])] }),
+    );
+    expect([...held]).toEqual([['player_4', 'sigilist']]);
+  });
+
+  it('is not held from a record with no role, or another seat’s copy', () => {
+    expect(
+      hiddenRolesHeld('player_6', me({ privateResults: [record('player_6', [])] })).size,
+    ).toBe(0);
+    expect(
+      hiddenRolesHeld(
+        'player_6',
+        me({ privateResults: [record('player_10', ['sigilist'])] }),
+      ).size,
+    ).toBe(0);
+    expect(
+      hiddenRolesHeld(null, me({ privateResults: [record('player_6', ['sigilist'])] }))
+        .size,
+    ).toBe(0);
   });
 });

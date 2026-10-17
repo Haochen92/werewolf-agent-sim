@@ -9,6 +9,7 @@
  * beats exist only with `xray` on, and never in a live cut. What the log holds is the server's
  * decision.
  */
+import { repeatsDawn } from '@/game/records';
 import type { DurableGameEvent, EventOf } from '@/types/contracts';
 import { pageHold, speechPages } from './pages';
 import {
@@ -650,7 +651,9 @@ export function beatsFor(
 
       case 'night_record': {
         // A ten-seat seat's own record of its night. The pack's kill record is one beat a
-        // night, at its first copy, for whichever wolf holds one (the viewer, when it does).
+        // night, at its first copy, for whichever wolf holds one (the viewer, when it does),
+        // unless it only repeats the morning report.
+        if (repeatsDawn({ ...e, seen: e.seen ?? null })) break;
         let seat = e.player;
         if (e.actor === 'wolves') {
           if (packTold.has(e.day)) break;

@@ -341,7 +341,7 @@ const SLOT: [name: string, path: string, ready: string, click?: string][] = [
   ['slot-lynch-card-up-film', 'lynch?beat=9&viewer=xray&slot=film', '[data-film="lynch"]'],
   [
     'slot-morning-carried-summary-film',
-    'morning?beat=31&viewer=xray&slot=film',
+    'morning?beat=29&viewer=xray&slot=film',
     '[data-film="record"]',
   ],
   [
@@ -361,7 +361,7 @@ const SLOT: [name: string, path: string, ready: string, click?: string][] = [
   ],
   [
     'slot-record-line-drawer',
-    'morning?beat=31&viewer=xray&hud=replay&slot=drawer',
+    'morning?beat=29&viewer=xray&hud=replay&slot=drawer',
     '[data-line="record-2"]',
   ],
 ];

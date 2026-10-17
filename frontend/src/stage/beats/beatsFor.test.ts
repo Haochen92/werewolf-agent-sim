@@ -677,13 +677,16 @@ describe('the ten-seat morning (night records, every save, the pick)', () => {
   const onlyYou = (beats: SceneBeat[]) => beats.filter((b) => b.id === 'morning.only-you');
 
   it('gives the X-ray one only-you beat per record, the pack’s kill once a night at its first copy', () => {
+    // the pack's kill that landed with no role for it to learn repeats the morning: no beat
+    const repeats = (r: ReturnType<typeof records>[number]) =>
+      r.actor === 'wolves' && r.result === 'killed' && !r.seen?.length;
     for (const log of [p3Log, necroLog]) {
       const all = records(log);
       const packFirst = new Map<number, number>();
       for (const r of all)
         if (r.actor === 'wolves' && !packFirst.has(r.day)) packFirst.set(r.day, r.seq);
       const expected = all.filter(
-        (r) => r.actor !== 'wolves' || packFirst.get(r.day) === r.seq,
+        (r) => !repeats(r) && (r.actor !== 'wolves' || packFirst.get(r.day) === r.seq),
       );
       const beats = onlyYou(beatsFor(log, { xray: true }));
       expect(beats.map((b) => [b.seq, b.sees, b.seat, b.aqua])).toEqual(
@@ -694,9 +697,10 @@ describe('the ten-seat morning (night records, every save, the pick)', () => {
         expected.map((r) => (r.target?.startsWith('player_') ? r.target : undefined)),
       );
     }
-    // the necromancer game's night 1: the pack's record reached both wolves (99, 100)
+    // the necromancer game's night 1: the pack's record (99, 100: a sigilist died, as the
+    // morning says) is not told again
     const n1 = onlyYou(beatsFor(necroLog, { xray: true })).filter((b) => b.day === 1);
-    expect(n1.map((b) => b.seq)).toEqual([97, 98, 99, 101, 102, 103, 104]);
+    expect(n1.map((b) => b.seq)).toEqual([97, 98, 101, 102, 103, 104]);
   });
 
   it('keeps every record out of the public replay', () => {
@@ -710,23 +714,24 @@ describe('the ten-seat morning (night records, every save, the pick)', () => {
       [228, 'player_3'],
       [340, 'player_6'],
     ]);
-    // the illusionist: the pack's kill each night, and its own conceal (no seat named)
+    // the illusionist: its own conceal (no seat named); the pack's kills (99, 226) only repeat
+    // the morning (this game predates the pack learning a concealed role, 2026-10-17)
     const illusionist = onlyYou(
       beatsFor(p3Log, { xray: false, me: 'player_6', live: true }),
     );
     expect(illusionist.map((b) => [b.seq, b.seat, b.subject])).toEqual([
-      [99, 'player_6', 'player_7'],
-      [226, 'player_6', 'player_3'],
       [227, 'player_6', undefined],
     ]);
-    // the chanteuse holds the second copy: the beat is hers, at the night's first copy
+    // the chanteuse: its own block; the pack's kill on night 1 repeats the morning
     const chanteuse = onlyYou(
       beatsFor(necroLog, { xray: false, me: 'player_10', live: true }),
     );
     expect(chanteuse.filter((b) => b.day === 1).map((b) => [b.seq, b.seat])).toEqual([
-      [99, 'player_10'],
       [101, 'player_10'],
     ]);
+    // a save is still told to the pack (owner, 2026-10-17): the necromancer game's night 2
+    const saved = onlyYou(beatsFor(necroLog, { xray: false, me: 'player_6', live: true }));
+    expect(saved.map((b) => [b.seq, b.subject])).toContainEqual([314, 'player_1']);
   });
 
   it('tells every save a chip at a time, and holds the roll for the pick’s row too', () => {

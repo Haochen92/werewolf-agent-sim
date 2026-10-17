@@ -23,7 +23,7 @@ import { beam, type Special } from '../paint/draw';
 import { diningCarPlan } from '../paint/dining-car';
 import { light, type Pool } from '../paint/light';
 import type { Phase } from '../paint/materials';
-import { ROLE_NAME, factionOf, knownRoles, seatNumber } from '../roles';
+import { ROLE_NAME, factionOf, hiddenRolesHeld, knownRoles, seatNumber } from '../roles';
 import { BLEED, STAGE_H, STAGE_W, type Hud, type StageGeometry } from '../units';
 import type { SlotInput } from './types';
 
@@ -176,6 +176,7 @@ export function TableWing({
 }) {
   const deadBySeat = new Map(view.dead.map((d) => [d.player, d]));
   const known = opts.known === false ? null : knownRoles(me, view.me);
+  const hidden = hiddenRolesHeld(me, view.me);
   return (
     <>
       <Wing
@@ -188,7 +189,7 @@ export function TableWing({
           return {
             seat: seatNumber(seat),
             character: cast[i],
-            dead: d ? { role: d.role } : undefined,
+            dead: d ? { role: d.role ?? hidden.get(seat) ?? null } : undefined,
             truth: opts.truth?.(seat) ?? null,
             lit: opts.lit?.(seat),
             dim: opts.dim?.(seat),
