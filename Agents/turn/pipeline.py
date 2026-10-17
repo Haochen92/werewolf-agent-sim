@@ -193,7 +193,7 @@ def run_memory_informed_action(
                 cast_role_counts=payload.get("cast_role_counts", {}),
                 messages=payload.get("day_channel", []),
             ),
-            "wolf_channel": format_wolf_channel(payload.get("wolf_channel", [])),
+            "wolf_channel": format_wolf_channel(payload.get("wolf_channel", []), payload.get("player_id")),
             "surviving_players": payload.get("surviving_players", []),
             "surviving_wolves": payload.get("surviving_wolves", []),
             "surviving_villagers": payload.get("surviving_villagers", []),
@@ -391,7 +391,7 @@ def run_memory_informed_night_action(
                 cast_role_counts=payload.get("cast_role_counts", {}),
                 messages=payload.get("day_channel", []),
             ),
-            "wolf_channel": format_wolf_channel(payload.get("wolf_channel", [])),
+            "wolf_channel": format_wolf_channel(payload.get("wolf_channel", []), payload.get("player_id")),
             "surviving_players": payload.get("surviving_players", []),
         },
         metadata={

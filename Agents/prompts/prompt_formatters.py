@@ -18,6 +18,7 @@ from Agents.schemas.game_events import (
     DaySummary,
     DayVote,
     DeathRecord,
+    DiscussionPassReason,
     InvestigatorResult,
     NightActionRecord,
     WolfChannel,
@@ -187,20 +188,31 @@ def format_night_actions(records: list[NightActionRecord], current_day: int | No
     return "\n".join(lines)
 
 
-def format_wolf_channel(messages: list[WolfChannel]) -> str:
-    visible = [message for message in messages if not message.passed]
+def _wolf_channel_line(m: WolfChannel, viewer: str | None) -> str:
+    stamp = f"[Day {m.day}, Round {m.round}]"
+    if m.passed:
+        # Shown so the speaker knows its partner heard it and has moved on (owner, 2026-10-17:
+        # with passes hidden the AI wolf restated its proposal every round).
+        if m.wolf == viewer:
+            return f"{stamp} You had nothing else to add."
+        if viewer:
+            return f"{stamp} Your wolf partner {m.wolf} has nothing else to add."
+        return f"{stamp} {m.wolf} has nothing else to add."
+    if not m.message:
+        return f"{stamp} {m.wolf} votes: {m.vote}"
+    ending = "" if m.message.endswith((".", "!", "?")) else "."
+    return f"{stamp} {m.wolf}: {m.message}{ending}" + (f"  vote: {m.vote}" if m.vote else "")
+
+
+def format_wolf_channel(messages: list[WolfChannel], viewer: str | None = None) -> str:
+    """The pack chat as `viewer` (a wolf's player_id) reads it; without one, as an observer."""
+    # A pass after a failed generation is not the wolf's choice, so it stays hidden.
+    visible = [m for m in messages if not m.passed or m.pass_reason == DiscussionPassReason.VOLUNTARY]
     if not visible:
         return "No messages yet."
     # Talk entries carry a message and vote="" (also GM whiff notes); binding-vote entries
-    # carry a vote and message="". Technical passes are observer-only and filtered above.
-    # Render each visible entry without the other's dangling suffix.
-    return "\n".join(
-        f"[Day {m.day}, Round {m.round}] {m.wolf} votes: {m.vote}"
-        if not m.message
-        else f"[Day {m.day}, Round {m.round}] {m.wolf}: {m.message}."
-        + (f"  vote: {m.vote}" if m.vote else "")
-        for m in visible
-    )
+    # carry a vote and message="".
+    return "\n".join(_wolf_channel_line(m, viewer) for m in visible)
 
 
 def format_investigator_results(results: list[InvestigatorResult], current_day: int | None = None) -> str:

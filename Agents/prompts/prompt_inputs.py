@@ -277,7 +277,7 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
             cast_role_counts=payload.get("cast_role_counts", {}),
             messages=payload.get("day_channel", []),
         ),
-        "wolf_channel": format_wolf_channel(payload.get("wolf_channel", [])),
+        "wolf_channel": format_wolf_channel(payload.get("wolf_channel", []), payload.get("player_id")),
         # The actor's own engine-written night record (only night actors' payloads carry it).
         "night_actions": format_night_actions(payload.get("night_actions", []), payload.get("current_day"),
                                               _own_result_lines(payload)),
