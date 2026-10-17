@@ -99,6 +99,7 @@ import stationTrain from './sprites/station/train.webp';
 import stationSky1x from './sprites/station/sky@1x.webp';
 import stationTrain1x from './sprites/station/train@1x.webp';
 import stationBlind from './sprites/station/blind.webp';
+import stationBeam from './sprites/station/beam.webp';
 import carriageRoof from './sprites/carriage/roof.webp';
 import carriageRail from './sprites/carriage/rail.webp';
 import carriageTeak from './sprites/carriage/teak.webp';
@@ -359,9 +360,11 @@ export type KitName =
 
 /**
  * The waiting room's pictures (the platform, the train, its lamps), extracted once from the
- * waiting-room mockup (scripts/extract-station-sprites.mjs; no masters exist in the bundle).
+ * waiting-room mockup (scripts/extract-station-sprites.mjs; no masters exist in the bundle); the
+ * train and `beam` (the beam's and the ledge's walnut) are the owner's felt since 2026-10-17
+ * (scripts/fit_felt_station.py).
  */
-export type StationPicture = 'sky' | 'floor' | 'post' | 'lamp' | 'train' | 'blind';
+export type StationPicture = 'sky' | 'floor' | 'post' | 'lamp' | 'train' | 'blind' | 'beam';
 
 /**
  * The landing carriage's pieces, cut from the waiting room's train (scripts/cut-carriage.mjs),
@@ -613,6 +616,7 @@ export const SPRITES: {
     lamp: stationLampLit,
     train: stationTrain,
     blind: stationBlind,
+    beam: stationBeam,
   },
   stationAt1x: { sky: stationSky1x, train: stationTrain1x },
   carriage: {

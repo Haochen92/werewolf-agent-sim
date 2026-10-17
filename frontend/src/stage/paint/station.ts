@@ -4,7 +4,8 @@
  *
  * A winter night under the station's canopy. At the back, the painted country (a raster) with
  * the moon over it and the track bed below; on the track, the train (the dining car in the
- * middle, its one long window holding the nine places, a carriage either side); in front, the
+ * middle, its five windows holding the nine places, a carriage either side; felt since
+ * 2026-10-17); in front, the
  * cold stone platform, its edge the same stone under a soft drift of snow, two iron lamp posts
  * with their lanterns hung out over the platform, and a walnut beam with a brass trim along the
  * top, snow lying on it. The people waiting stand on
@@ -23,18 +24,25 @@
 import { STAGE_H, STAGE_W, geometry, type Hud } from '../units';
 import { STATION } from './materials';
 
-/** The train picture's own geometry, in the pixels of the master it was cut from (the mockup's `G`). */
+/**
+ * The train picture's own geometry, in the pixels of its master: the owner's felt train (2026-10-17),
+ * joined from its pieces by scripts/fit_felt_station.py, which prints these numbers.
+ */
 const TRAIN_PX = {
-  w: 11980,
-  h: 1400,
+  w: 8404,
+  h: 1415,
   /** The dining car's window, left to right and top to bottom. */
-  wx0: 4316,
-  wx1: 7663,
-  wy0: 393,
-  wy1: 809,
+  wx0: 2587,
+  wx1: 5787,
+  wy0: 482,
+  wy1: 778,
   /** The roof's snow line and the wheels' foot. */
-  snow: 61,
-  bottom: 1379,
+  snow: 102,
+  bottom: 1411,
+  /** The dining car's five windows: the first's left edge is `wx0`; each this wide, this far apart. */
+  windows: 5,
+  windowW: 480,
+  windowPitch: 680,
 } as const;
 
 /** The car from its roof's snow to its wheels (48cqh), and where that snow sits (16cqh). */
@@ -63,8 +71,10 @@ export interface StationPlan {
   cx: number;
   /** The whole train picture at rest. */
   train: Box;
-  /** The dining car's long window, in world units (the train at rest). */
+  /** The dining car's windows, first to last, as one box (the train at rest): the places' row. */
   glass: Box;
+  /** Each window's own glass, in world units: a place is seen only through these. */
+  windows: Box[];
   /** One place's width in the window. */
   pitch: number;
   /** The places' centres, one per seat, left to right; the platform's marks sit under them. */
@@ -112,6 +122,12 @@ export function stationPlan(hud: Hud = 'live', seats = 9): StationPlan {
     w: wlen,
     h: (TRAIN_PX.wy1 - TRAIN_PX.wy0) * k,
   };
+  const windows = Array.from({ length: TRAIN_PX.windows }, (_, i) => ({
+    x: wl + i * TRAIN_PX.windowPitch * k,
+    y: glass.y,
+    w: TRAIN_PX.windowW * k,
+    h: glass.h,
+  }));
   const pitch = wlen / seats;
   const postH = 0.69 * STAGE_H;
   const lampH = 0.13 * STAGE_H;
@@ -124,9 +140,11 @@ export function stationPlan(hud: Hud = 'live', seats = 9): StationPlan {
     cx,
     train,
     glass,
+    windows,
     pitch,
     places: Array.from({ length: seats }, (_, i) => wl + (i + 0.5) * pitch),
-    plateY: glass.y + glass.h + 4.5,
+    // under the window's felt frame, on the panel
+    plateY: glass.y + glass.h + 14,
     floorY: 0.66 * STAGE_H,
     edgeH: 0.038 * STAGE_H,
     feetY: 0.775 * STAGE_H,
@@ -211,7 +229,7 @@ export function stationFront(o: StationOpts): string {
   d += `<linearGradient id="${P}sides" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0c0a07" stop-opacity=".85"/><stop offset=".1" stop-color="#0c0a07" stop-opacity="0"/><stop offset=".9" stop-color="#0c0a07" stop-opacity="0"/><stop offset="1" stop-color="#0c0a07" stop-opacity=".85"/></linearGradient>`;
   if (o.wood)
     d += `<pattern id="${P}wood" patternUnits="userSpaceOnUse" x="0" y="0" width="${woodW}" height="${woodW}"><image href="${o.wood}" width="${woodW}" height="${woodW}" preserveAspectRatio="none"/></pattern>`;
-  d += `<linearGradient id="${P}beamShade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${STATION.beamShadeTop}" stop-opacity=".25"/><stop offset="1" stop-color="${STATION.beamShadeBot}" stop-opacity=".55"/></linearGradient>`;
+  d += `<linearGradient id="${P}beamShade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${STATION.beamShadeTop}" stop-opacity=".1"/><stop offset="1" stop-color="${STATION.beamShadeBot}" stop-opacity=".35"/></linearGradient>`;
   d += `<linearGradient id="${P}lip" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${STATION.lipTop}"/><stop offset="1" stop-color="${STATION.lipBot}"/></linearGradient>`;
   d += `<filter id="${P}postsh" x="-20%" y="-5%" width="140%" height="110%"><feDropShadow dx="6.4" dy="0" stdDeviation="4.8" flood-color="#000" flood-opacity=".45"/></filter>`;
   d += `</defs>`;

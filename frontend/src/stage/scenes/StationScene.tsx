@@ -198,7 +198,7 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
             hud,
             post: SPRITES.station.post.src,
             lamp: SPRITES.station.lamp.src,
-            wood: SPRITES.wood.src,
+            wood: SPRITES.station.beam.src,
             stone: SPRITES.station.floor.src,
           }}
         />
@@ -312,7 +312,7 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
           style={{
             left: S.cx,
             x: '-50%',
-            backgroundImage: `linear-gradient(rgba(60,30,12,.25),rgba(20,10,4,.55)),url(${SPRITES.wood.src})`,
+            backgroundImage: `linear-gradient(rgba(60,30,12,.08),rgba(20,10,4,.3)),url(${SPRITES.station.beam.src})`,
           }}
           initial={from({ y: 0 })}
           animate={{ y: departing ? 160 : 0 }}

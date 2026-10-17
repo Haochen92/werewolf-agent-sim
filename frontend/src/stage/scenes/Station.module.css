@@ -28,7 +28,8 @@
 }
 .glass {
   position: absolute;
-  border-radius: 22.4px;
+  /* the felt window's inner corner */
+  border-radius: 15px;
   overflow: hidden;
 }
 .inWindow {
