@@ -278,11 +278,13 @@ async def _sse(
         return session.seat_of_viewer(token)
 
     sent: set[int] = set()
+    stream = uuid4().hex[:6]  # pairs this stream's connect and disconnect lines in the log
     logger.info(
-        "game %s: viewer connected (seat=%r, cursor=%d)",
+        "game %s: viewer connected (seat=%r, cursor=%d, stream=%s)",
         session.game_id,
         viewer_seat(),
         last_seq,
+        stream,
     )
 
     def may_see(event) -> bool:
@@ -324,7 +326,8 @@ async def _sse(
     finally:
         session.unsubscribe(q)
         logger.info(
-            "game %s: viewer disconnected (seat=%r)",
+            "game %s: viewer disconnected (seat=%r, stream=%s)",
             session.game_id,
             viewer_seat(),
+            stream,
         )
