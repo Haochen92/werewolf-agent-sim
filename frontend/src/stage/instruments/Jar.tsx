@@ -1,22 +1,21 @@
 'use client';
 
 /**
- * The ballot jar: clear glass on the vote's table, with a brass lid hung on its own string.
- * Upright while the ballots come in, the chips lying in a pile at the bottom, backs up, so the
- * glass shows how many and never whose (the seated human's own chip lies face up, on their
- * screen only). For the count it is tipped over onto its side at the back rail and the chips
- * roll out of its mouth one by one.
+ * The ballot jar: a footed glass sweet jar on the vote's table (the felt set, 2026-10-17), with a
+ * domed glass lid hung on its own string.
+ * In the centre while the ballots come in, the chips lying in a pile at the bottom, backs up, so
+ * the glass shows how many and never whose (the seated human's own chip lies face up, on their
+ * screen only). For the count it stands at the back of the table, to the right, and the chips
+ * are lifted out of its mouth one by one (it was tipped onto its side until 2026-10-17).
  *
  * The lid is its own piece: it comes down on its string as the table arrives and lifts off
  * (`up`), goes back on when voting closes (`down`), and flies out of the frame when the count
  * begins (`gone`). The glass and the lid are painted pictures (SPRITES.props); the chips are
  * drawn under the glass. Drawn after the vote bench (rev 64 `jar`, `lidGroup`, `pileSVG`).
- * The glass rides an HTML box of its own so its tip is a CSS transform (see `Jar`).
+ * The glass sits in an HTML box of its own, its own small drawing inside (see `Jar`).
  */
-import { motion } from 'motion/react';
-import type { CSSProperties, ReactNode } from 'react';
+import type { CSSProperties } from 'react';
 import { SPRITES } from '@/assets/manifest';
-import { useMotionScale, useSteps } from '../motion';
 import { rnd } from '../paint/draw';
 import { useSmall } from '../set';
 import { STAGE_H } from '../units';
@@ -38,27 +37,16 @@ export interface JarProps {
   n: number;
   /** Which chip is the viewer's own, shown face up, and its face. */
   mine?: { index: number; face: Face } | null;
-  /** On its side at the back rail, for the count. */
-  tipped?: boolean;
-  /** Play the tip over (the count begins). */
-  tipping?: boolean;
+  /** Standing at the back of the table, for the count. */
+  counting?: boolean;
+  /** Played: the count begins, and the jar fades from the centre to the back. */
+  countBegins?: boolean;
   /** Chips that drop in this beat, in the order they fall, and when the first starts. */
   falling?: number[];
   fallDelay?: number;
 }
 
-/** Where the chips lie once the jar is on its side, in the jar's own (upright) drawing. */
-function lyingSpots(v: VoteGeometry, n: number): [number, number][] {
-  const J = jarGeometry(v),
-    { r } = v;
-  return Array.from({ length: n }, (_, i) => [
-    v.cx + (i % 2 ? 0.6 : -0.6) * r + (rnd(i, 601) - 0.5) * r * 0.5,
-    Math.min(J.yR + r * 1.1 + Math.floor(i / 2) * r * 1.25, J.floor - r * 1.1),
-  ]);
-}
-
 const FALL = [0.45, 0, 0.85, 0.7] as [number, number, number, number];
-const TIP = [0.4, 0.6, 0.35, 1] as [number, number, number, number];
 
 /** When each falling chip starts: `fallDelay`, then 0.09 s apart in the order they fall. */
 function fallTimes(falling: number[] | undefined, fallDelay: number) {
@@ -77,23 +65,22 @@ const SHEET: CSSProperties = {
 
 /**
  * The glass with the chips in it: an HTML box over the table, the glass picture's size, with
- * its own small drawing inside. The tip is a CSS transform on that box (motion's `x`, `y`,
- * `rotate` and `scale`, about the base's centre), so the browser repaints one finished picture
- * through a transform each frame; the same move as an SVG `transform` on a group inside the
- * table's drawing relaid out the drawing every frame and stuttered on a phone (build log
- * §8.4). The chips dropping in are drawn over the glass by `JarFallers`, in the table's drawing.
+ * its own small drawing inside. It never moves (owner 2026-10-17: the sweet jar is not tipped
+ * out): it stands in the centre while the ballots come in and at the back of the table, to the
+ * right and smaller, for the count. When the count begins the one fades out and the other in,
+ * an opacity on a group inside each box's drawing (`Tween`, driven in JavaScript), so no layer is
+ * made for the fade. The chips dropping in are drawn over the glass by `JarFallers`, in the
+ * table's drawing; the counted ones leave by the back jar's mouth (`VoteTable`'s `ArcChip`).
  */
 export function Jar({
   v,
   n,
   mine,
-  tipped = false,
-  tipping = false,
+  counting = false,
+  countBegins = false,
   falling,
   fallDelay = 0,
 }: JarProps) {
-  const k = useMotionScale();
-  const step = useSteps();
   // a phone draws the glass far under its file's size: its copy
   const glass = useSmall() ? SPRITES.small.props.jarGlass : SPRITES.props.jarGlass;
   const J = jarGeometry(v),
@@ -101,7 +88,7 @@ export function Jar({
     { w, h } = J;
   const { order, at } = fallTimes(falling, fallDelay);
 
-  const upright = pileSpots(v, n).map(([x, y], i) => {
+  const pile = pileSpots(v, n).map(([x, y], i) => {
     const chip = (
       <FlatChip key={i} x={x} y={y} r={r} face={mine?.index === i ? mine.face : null} />
     );
@@ -121,7 +108,6 @@ export function Jar({
       chip
     );
   });
-  const lying = lyingSpots(v, n).map(([x, y], i) => <ChipBack key={i} x={x} y={y} r={r} />);
 
   // the picture's file over the painted glass's height: the box the glass is drawn in
   const s = h / GLASS_PX.h;
@@ -131,9 +117,17 @@ export function Jar({
     w: GLASS_PX.W * s,
     h: GLASS_PX.H * s,
   };
+  // the same box at the back: scaled about the base's centre and set down there
+  const A = J.aside;
+  const back = {
+    x: A.x + (box.x - cx) * A.sc,
+    y: A.y + (box.y - base) * A.sc,
+    w: box.w * A.sc,
+    h: box.h * A.sc,
+  };
   // the painted glass over its chips, so they take its mist and highlights
-  const sheet = (pile: ReactNode) => (
-    <svg viewBox={`${box.x} ${box.y} ${box.w} ${box.h}`} style={SHEET} aria-hidden="true">
+  const glassOver = (
+    <>
       {pile}
       <image
         href={glass.src}
@@ -143,46 +137,42 @@ export function Jar({
         height={box.h}
         preserveAspectRatio="none"
       />
-    </svg>
-  );
-
-  const pile = !tipped ? (
-    upright
-  ) : !tipping ? (
-    lying
-  ) : (
-    <>
-      <Tween play delay={1.25} duration={0.25} ease="linear" opacity={(p) => 1 - p}>
-        {upright}
-      </Tween>
-      <Tween play delay={1.3} duration={0.25} ease="linear" opacity={(p) => p}>
-        {lying}
-      </Tween>
     </>
   );
-  const T = J.tip;
-  const standing = { x: 0, y: 0, rotate: 0, scale: 1 };
-  const over = { x: T.dx, y: T.dy, rotate: T.ang, scale: T.sc };
-  return (
-    <motion.div
-      data-moves=""
+  const sheet = (where: typeof box, fade?: 'out' | 'in') => (
+    <div
       style={{
         position: 'absolute',
-        left: box.x,
-        top: box.y,
-        width: box.w,
-        height: box.h,
-        transformOrigin: `${T.ox - box.x}px ${T.oy - box.y}px`,
+        left: where.x,
+        top: where.y,
+        width: where.w,
+        height: where.h,
       }}
-      initial={tipping ? standing : false}
-      animate={tipped ? over : standing}
-      // not played: at rest in its state at once, also when the state changes under it
-      transition={
-        tipping ? step({ duration: 0.8 * k, delay: 0.9 * k, ease: TIP }) : { duration: 0 }
-      }
     >
-      {sheet(pile)}
-    </motion.div>
+      <svg viewBox={`${box.x} ${box.y} ${box.w} ${box.h}`} style={SHEET} aria-hidden="true">
+        {fade ? (
+          <Tween
+            play
+            delay={fade === 'out' ? 0.9 : 1.05}
+            duration={0.35}
+            ease="linear"
+            opacity={(p) => (fade === 'out' ? 1 - p : p)}
+          >
+            {glassOver}
+          </Tween>
+        ) : (
+          glassOver
+        )}
+      </svg>
+    </div>
+  );
+  if (!counting) return sheet(box);
+  if (!countBegins) return sheet(back);
+  return (
+    <>
+      {sheet(box, 'out')}
+      {sheet(back, 'in')}
+    </>
   );
 }
 
@@ -228,57 +218,45 @@ export function JarFallers({
 
 /**
  * The jar's shadow on the table (the rooms' atmosphere), to the right of its foot, lighter than
- * a solid thing's for the glass. Tipped, it lies along the jar at the back rail; played, the
- * one fades into the other as the jar goes over.
+ * a solid thing's for the glass. For the count it lies under the jar at the back; played, the
+ * one fades into the other with the jar.
  */
 export function JarShadow({
   v,
-  tipped,
-  tipping = false,
+  counting,
+  countBegins = false,
   shade,
 }: {
   v: VoteGeometry;
-  tipped: boolean;
-  tipping?: boolean;
+  counting: boolean;
+  countBegins?: boolean;
   /** The soft shadow's fill (VoteTable's `SoftShadow`). */
   shade: string;
 }) {
   const J = jarGeometry(v),
     { cx, base } = v,
-    T = J.tip;
-  const up = (
+    A = J.aside;
+  const at = (x: number, y: number, k: number) => (
     <ellipse
-      cx={cx + J.w * 0.16}
-      cy={base - v.depth * 0.02}
-      rx={J.w * 0.64}
-      ry={v.depth * 0.26}
+      cx={x + J.w * 0.16 * k}
+      cy={y - v.depth * 0.02 * k}
+      rx={J.w * 0.64 * k}
+      ry={v.depth * 0.26 * k}
       fill={`url(#${shade})`}
       opacity={0.7}
     />
   );
-  // lying: its length along the rail, its near side on the table's back line
-  const len = J.h * T.sc,
-    x = cx + T.dx + len * 0.06,
-    y = v.topY - v.depth * 1.05 + J.w * T.sc * 0.02;
-  const down = (
-    <ellipse
-      cx={x}
-      cy={y}
-      rx={len * 0.56}
-      ry={v.depth * 0.22}
-      fill={`url(#${shade})`}
-      opacity={0.7}
-    />
-  );
-  if (!tipped) return up;
-  if (!tipping) return down;
+  const front = at(cx, base, 1),
+    back = at(A.x, A.y, A.sc);
+  if (!counting) return front;
+  if (!countBegins) return back;
   return (
     <>
-      <Tween play delay={1.1} duration={0.5} ease="linear" opacity={(p) => 1 - p}>
-        {up}
+      <Tween play delay={0.9} duration={0.35} ease="linear" opacity={(p) => 1 - p}>
+        {front}
       </Tween>
-      <Tween play delay={1.3} duration={0.5} ease="linear" opacity={(p) => p}>
-        {down}
+      <Tween play delay={1.05} duration={0.35} ease="linear" opacity={(p) => p}>
+        {back}
       </Tween>
     </>
   );
@@ -298,7 +276,7 @@ export interface JarLidProps {
 
 const LID_EASE = [0.3, 0.8, 0.4, 1] as [number, number, number, number];
 
-/** The brass lid on its string, tied round the ring on its top. */
+/** The glass lid on its string, tied round the neck of its knob. */
 export function JarLid({ v, state, from, delay, arriving = false }: JarLidProps) {
   const pic = useSmall() ? SPRITES.small.props.jarLid : SPRITES.props.jarLid;
   const J = jarGeometry(v),

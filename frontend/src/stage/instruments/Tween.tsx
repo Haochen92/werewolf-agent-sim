@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * A group inside an SVG drawing that moves by a formula: the jar tipping over about its base,
+ * A group inside an SVG drawing that moves by a formula: the jar fading to the back of the table,
  * the lid lifting and tilting on its string, a chip arcing out of the jar and turning over on
  * the way. These turn about a fixed point of the drawing, which an SVG `transform` attribute
  * says exactly; so rather than ask the animation library to guess an SVG's pivot, the group is

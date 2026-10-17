@@ -67,49 +67,47 @@ export function voteGeometry(g: StageGeometry): VoteGeometry {
  * The painted glass and lid (SPRITES.props), in their files' pixels: the file's size and the
  * painted thing's box inside it. The glass's lines are fractions of its height above its foot.
  */
-export const GLASS_PX = { W: 988, H: 1446, x: 8, y: 8, w: 972, h: 1430 } as const;
-/** The lid's skirt is 1030 px wide; the string ties round the ring's top bar, 38 px down. */
+export const GLASS_PX = { W: 1052, H: 960, x: 6, y: 6, w: 1040, h: 948 } as const;
+/**
+ * The lid (a glass dome with a ball knob, its flange underneath going down inside the mouth):
+ * `skirt` is the width in its pixels that matches the jar's lip, so the 960 px flange fills the
+ * mouth's inside (0.84 of the lip); the string ties round the knob's neck, 224 px down.
+ */
 export const LID_PX = {
-  W: 1154,
-  H: 827,
-  x: 8,
-  y: 8,
-  w: 1138,
-  h: 811,
-  skirt: 1030,
-  tie: 38,
+  W: 1276,
+  H: 686,
+  x: 6,
+  y: 6,
+  w: 1264,
+  h: 674,
+  skirt: 1143,
+  tie: 224,
 } as const;
 
 /** The jar and its lid, upright on the table, where the glass picture has them. */
 export function jarGeometry(v: VoteGeometry) {
   const { cx, base, g } = v,
-    h = 0.56 * g.ph,
+    // the footed sweet jar (2026-10-17) is squat: this height keeps it ~1.2× the old jar's width
+    h = 0.42 * g.ph,
     w = (h * GLASS_PX.w) / GLASS_PX.h;
-  // measured on the picture: the lip's width, its foot, the mouth, the neck's foot, the inner floor
-  const wN = w * 0.705,
-    yL = base - h * 0.907,
-    yR = base - h * 0.968,
-    yN = base - h * 0.824,
-    floor = base - h * 0.15;
-  // the lid's skirt as wide as the lip it screws over, its foot on the lip's foot
+  // measured on the picture: the lip's width; where the lid's flange ends inside the neck (the
+  // dome's front edge then rests on the lip's); the mouth; the neck's foot; the inner floor
+  const wN = w * 0.7,
+    yL = base - h * 0.793,
+    yR = base - h * 0.948,
+    yN = base - h * 0.758,
+    floor = base - h * 0.278;
+  // the lid scaled so its flange fills the mouth, its foot (the flange's) inside the neck
   const ks = wN / LID_PX.skirt,
     lw = LID_PX.w * ks,
     lh = LID_PX.h * ks,
     ly = yL - lh;
-  // the tipped pose: turned on its side about the base's centre, a little smaller for being
-  // upstage, set down at the back rail to the right
-  const sc = 0.62,
-    ang = -96,
-    rad = (ang * Math.PI) / 180;
-  const cs = Math.cos(rad),
-    sn = Math.sin(rad);
-  const cy0 = -h / 2,
-    cX = -cy0 * sn * sc,
-    cY = cy0 * cs * sc;
-  const wantX = cx + 0.22 * v.tw,
-    wantY = v.topY - v.depth * 1.05 - w * sc * 0.5;
-  const dx = wantX - cx - cX,
-    dy = wantY - base - cY;
+  // for the count it stands at the table's right end, past the plates' row (`plateSpots`), a
+  // little smaller for being upstage (owner 2026-10-17: a sweet jar is not tipped out; it fades
+  // from the centre to there)
+  const sc = 0.6,
+    ax = cx + 0.38 * v.tw,
+    ay = v.topY - v.depth * 0.7;
   const m = base - yR;
   return {
     h,
@@ -117,7 +115,7 @@ export function jarGeometry(v: VoteGeometry) {
     wN,
     yN,
     yR,
-    /** Where the chips in the jar lie: on the thick glass bottom. */
+    /** Where the chips in the jar lie: in the belly's bottom, above the stem. */
     floor,
     /** The lid picture's box, its scale (units a pixel), and where its string ties on. */
     lid: { lh, lw, ly, ks, knob: ly + LID_PX.tie * ks, cx, cy: ly + lh / 2 },
@@ -125,9 +123,10 @@ export function jarGeometry(v: VoteGeometry) {
     lidUp: { x: 0.07 * g.pwid, y: -0.11 * g.ph, rot: -16 },
     /** The top of the lid's ring, where the light's special stops. */
     top: ly,
-    tip: { ox: cx, oy: base, dx, dy, ang, sc },
-    /** The tipped jar's mouth, where a counted chip leaves it. */
-    mouth: { x: cx + dx + m * sn * sc, y: base + dy - m * cs * sc },
+    /** Standing at the back for the count: its base's centre, and its scale about it. */
+    aside: { x: ax, y: ay, sc },
+    /** The jar's mouth at the back, where a counted chip leaves it. */
+    mouth: { x: ax, y: ay - m * sc },
   };
 }
 
@@ -135,8 +134,8 @@ export function jarGeometry(v: VoteGeometry) {
 export function pileSpots(v: VoteGeometry, n: number): [number, number][] {
   const J = jarGeometry(v),
     base = J.floor,
-    // inside the glass's walls
-    halfW = J.w * 0.44,
+    // inside the glass's walls, where the belly narrows to its stem
+    halfW = J.w * 0.3,
     { r } = v,
     per = 4;
   const out: [number, number][] = [];
@@ -168,21 +167,26 @@ export interface PlateSpot {
   towers: number;
 }
 
-/** One plate per candidate along the front edge, abstain's last, sized to the full tally. */
+/**
+ * One plate per candidate along the front edge, abstain's last, sized to the full tally. The row
+ * leaves the table's right end to the jar standing there (`jarGeometry().aside`), so no plate's
+ * towers stand in front of it, however many candidates there are.
+ */
 export function plateSpots(
   v: VoteGeometry,
   cands: readonly string[],
   counts: Record<string, number>,
 ): PlateSpot[] {
   const n = cands.length,
-    span = v.tw * 0.84,
+    left = v.cx - v.tw * 0.42,
+    span = v.tw * 0.68,
     gap = span / Math.max(1, n);
   const rx0 = Math.min(0.2 * v.g.pwid, gap * 0.44);
   return cands.map((c, i) => {
     const rx = rx0;
     return {
       c,
-      x: v.cx - span / 2 + gap * (i + 0.5),
+      x: left + gap * (i + 0.5),
       y: v.topY - v.depth * 0.28,
       rx,
       ry: rx * 0.3,

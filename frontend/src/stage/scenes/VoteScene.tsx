@@ -317,7 +317,7 @@ function VoteBeat({
               ballotsIn={ballotsIn}
               mine={myIndex != null && myIndex >= 0 ? myIndex : null}
               lid={lid}
-              tipped={counting}
+              counting={counting}
               counted={counted}
               order={order}
               candidates={cands}
@@ -327,7 +327,7 @@ function VoteBeat({
                 lidFrom,
                 arriving: animate && id === 'vote.opens',
                 falling,
-                tipping: animate && id === 'vote.count-begins',
+                countBegins: animate && id === 'vote.count-begins',
                 platesIn: animate && id === 'vote.count-begins',
                 landing: animate && id === 'vote.chip-counted',
                 lighting: animate && id === 'vote.result',

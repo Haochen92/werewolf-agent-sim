@@ -103,10 +103,10 @@ describe('sprite manifest', () => {
       ['jarGlass', 'jarLid', 'plate', 'shutter', 'stand', 'voteTable'].sort(),
     );
     for (const img of Object.values(SPRITES.props)) hasSize(img);
-    // the plate is squashed to ry = 0.3 rx; the shutter is 8:3
+    // the plate is squashed to ry = 0.3 rx; the blind is the size window.ts measured its rod on
     expect([SPRITES.props.plate.width, SPRITES.props.plate.height]).toEqual([900, 270]);
     expect([SPRITES.props.shutter.width, SPRITES.props.shutter.height]).toEqual([
-      1640, 615,
+      1499, 673,
     ]);
   });
 

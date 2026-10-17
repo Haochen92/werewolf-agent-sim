@@ -1,12 +1,13 @@
 'use client';
 
 /**
- * The vote's table: what the lift brings up through the trap. A painted walnut table with a
- * linen cloth hanging from its front edge, a lace hem and turned legs; on it the glass jar. For the count the jar is tipped over at the back
- * rail and a row of plates stands along the front edge, one per seat that got a vote and one
- * more at the right for abstain (an ordinary empty plate, owner 2026-09-30; it was an upturned
- * saucer), each with a place card on the cloth below it (the candidate's head and seat, or
- * "Abstain", and the running number). The counted chips stack on the plates face
+ * The vote's table: what the lift brings up through the trap. A painted table, a baize top, a
+ * cream felt cloth hanging from its front edge, a stitched scalloped hem and turned legs (the
+ * felt set, 2026-10-17); on it the glass jar. For the count the jar stands at the back of the
+ * table, to the right, and a row of plates stands along the front edge, one per seat that got
+ * a vote and one more at the right for abstain (an ordinary empty plate, owner 2026-09-30; it
+ * was an upturned saucer), each with a place card on the cloth below it (the candidate's head
+ * and seat, or "Abstain", and the running number). The counted chips stack on the plates face
  * up, in towers of four, so the table can be read at a glance.
  *
  * Props describe the state; `play` names what moves in this beat. Nothing here says who
@@ -43,17 +44,19 @@ const svgFill: CSSProperties = {
 };
 
 /**
- * The table picture (SPRITES.props.voteTable) in its file's pixels: its top's back and front
- * lines, the front corners, and the depth of cloth the vector `drop` stands for.
+ * The table picture (SPRITES.props.voteTable, the felt set of 2026-10-17: a green baize top, a
+ * cream felt cloth with a stitched scalloped hem) in its file's pixels: its top's back and front
+ * lines, the front corners, and the depth of cloth the vector `drop` stands for (to the hem's
+ * cusps, so the place cards hang on the plain felt above the scallops).
  */
 const TABLE_PX = {
-  W: 1536,
-  H: 295,
-  back: 9,
-  front: 88,
-  left: 21,
-  right: 1518.5,
-  drop: 138,
+  W: 1412,
+  H: 321,
+  back: 5.5,
+  front: 47.9,
+  left: 8.9,
+  right: 1402.6,
+  drop: 177.9,
 };
 
 /**
@@ -369,7 +372,7 @@ export function PlaceCard({ v, p, nCands, n, cast, lit, hit, lighting }: PlaceCa
   );
 }
 
-/** A chip leaving the tipped jar's mouth: it arcs over, turns face up on the way, and lands. */
+/** A chip leaving the jar's mouth: it arcs over, turns face up on the way, and lands. */
 function ArcChip({
   from,
   to,
@@ -420,8 +423,8 @@ export interface VoteTableProps {
   /** Which chip in the upright jar is the viewer's own (face up, on their screen only). */
   mine?: number | null;
   lid: LidState;
-  /** The jar on its side for the count, the plates and the cards out. */
-  tipped: boolean;
+  /** The count: the jar at the back, the plates and the cards out. */
+  counting: boolean;
   /** How many chips of `order` have landed on their plates. */
   counted: number;
   /** The ballots in the order they are counted. */
@@ -439,10 +442,11 @@ export interface VoteTableProps {
     arriving?: boolean;
     /** Chips in the jar that drop in now, in the order they fall. */
     falling?: number[];
-    tipping?: boolean;
+    /** The count begins: the jar fades from the centre to the back. */
+    countBegins?: boolean;
     /** The plates and cards come out onto the table. */
     platesIn?: boolean;
-    /** The last counted chip rolls out of the jar onto its plate. */
+    /** The last counted chip is lifted out of the jar onto its plate. */
     landing?: boolean;
     /** The winner's light comes up. */
     lighting?: boolean;
@@ -456,7 +460,7 @@ export function VoteTable({
   ballotsIn,
   mine,
   lid,
-  tipped,
+  counting,
   counted,
   order,
   candidates,
@@ -468,14 +472,14 @@ export function VoteTable({
   // the rooms' atmosphere: soft shadows under the table, the jar, the plates and the towers
   const ids = 'vt' + useId().replace(/[^A-Za-z0-9_-]/g, '');
   const shade = ids + 's';
-  const ps = tipped ? plateSpots(v, candidates, counts) : [];
+  const ps = counting ? plateSpots(v, candidates, counts) : [];
   const onPlate: Record<string, string[]> = {};
   order.slice(0, counted).forEach((b) => (onPlate[b.votee] ??= []).push(b.voter));
   const newest = play.landing && counted > 0 ? order[counted - 1] : null;
   const myFace = me
     ? { seat: seatNumber(me), character: cast[seatNumber(me) - 1], you: true }
     : null;
-  const own = !tipped && mine != null && myFace ? { index: mine, face: myFace } : null;
+  const own = !counting && mine != null && myFace ? { index: mine, face: myFace } : null;
 
   const plates: ReactNode[] = ps.map((p, i) => {
     const lit = !!winner?.includes(p.c);
@@ -550,25 +554,25 @@ export function VoteTable({
     <div style={{ position: 'absolute', inset: 0 }} data-vote-table="">
       <TableBack v={v} shade={ids + 'b'} />
       <TablePicture v={v} />
-      {/* the jar's shadow under it, the jar as its own box (its tip is a CSS transform, see
-          `Jar`), then what is drawn over the glass: the chips dropping in, the lid, the plates */}
+      {/* the jar's shadow under it, the jar as its own box (see `Jar`), then what is drawn
+          over the glass: the chips dropping in, the lid, the plates */}
       <svg viewBox={`0 0 ${STAGE_W} ${STAGE_H}`} style={svgFill} aria-hidden="true">
         <defs>
           <SoftShadow id={shade} />
         </defs>
-        <JarShadow v={v} tipped={tipped} tipping={play.tipping} shade={shade} />
+        <JarShadow v={v} counting={counting} countBegins={play.countBegins} shade={shade} />
       </svg>
       <Jar
         v={v}
-        n={tipped ? ballotsIn - counted : ballotsIn}
+        n={counting ? ballotsIn - counted : ballotsIn}
         mine={own}
-        tipped={tipped}
-        tipping={play.tipping}
+        counting={counting}
+        countBegins={play.countBegins}
         falling={play.falling}
       />
       <svg viewBox={`0 0 ${STAGE_W} ${STAGE_H}`} style={svgFill} aria-hidden="true">
         <JarFallers v={v} mine={own} falling={play.falling} />
-        {!tipped || play.lidFrom ? (
+        {!counting || play.lidFrom ? (
           <JarLid v={v} state={lid} from={play.lidFrom} arriving={play.arriving} />
         ) : null}
         {plates}

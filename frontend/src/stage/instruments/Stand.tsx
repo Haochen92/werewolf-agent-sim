@@ -2,8 +2,8 @@
 
 /**
  * The stand: the puppet booth's front, below the rail, that the speaking puppet stands in.
- * A painted walnut sideboard front (a brass gallery on its rounded rail, marquetry corners, a
- * flame-figured panel), two footlights, the brass plate on its rail naming the seat. It is drawn over the puppet's feet (the stand layer
+ * A painted podium front (the felt set, 2026-10-17: stitched leather rails and riveted stiles
+ * round a bottle-green felt panel), two footlights, the brass plate on its rail naming the seat. It is drawn over the puppet's feet (the stand layer
  * is above the figures), which is what makes a glove puppet read as standing in a booth.
  *
  * The box is 605 puppet units wide, centred on the puppet (units.ts `standBox`); the picture
@@ -12,6 +12,7 @@
  */
 import { useLayoutEffect, useRef, type CSSProperties, type ReactNode } from 'react';
 import { SPRITES } from '@/assets/manifest';
+import { useSmall } from '../set';
 import { standBox, type StageGeometry } from '../units';
 import type { Faction } from '../roles';
 import styles from './Stand.module.css';
@@ -35,9 +36,18 @@ export interface StandProps {
 /** How far the plate tucks behind the speech box's top edge, as a share of its height. */
 const TUCK = 0.12;
 
+/**
+ * The painted front's 9-slice lines (top, right, bottom, left) in the full picture's pixels,
+ * 1487 wide; the phone's copy has the same lines at its own scale.
+ */
+const STAND_PX_W = 1487;
+const STAND_SLICES = [169, 211, 144, 211];
+
 export function Stand({ g, lit = true, widen = 1, children, speech = false }: StandProps) {
   const box = standBox(g);
   const w = box.w * widen;
+  // a phone draws the front under 1000 physical px wide: its copy
+  const front = useSmall() ? SPRITES.small.props.stand : SPRITES.props.stand;
   const ref = useRef<HTMLDivElement>(null);
   const plated = Boolean(children);
   // the plate on the rail, or on the speech box's top edge where the box has risen over the
@@ -79,7 +89,8 @@ export function Stand({ g, lit = true, widen = 1, children, speech = false }: St
             left: g.cx - w / 2,
             width: w,
             '--u': `${g.u}px`,
-            '--front': `url(${SPRITES.props.stand.src})`,
+            '--front': `url(${front.src})`,
+            '--slice': STAND_SLICES.map((n) => n * (front.width / STAND_PX_W)).join(' '),
           } as CSSProperties
         }
       >

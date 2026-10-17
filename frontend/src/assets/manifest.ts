@@ -291,6 +291,7 @@ import automatonHeadSmall from './sprites/characters/automaton/head@small.webp';
 import propJarGlassSmall from './sprites/props/jar-glass@small.webp';
 import propJarLidSmall from './sprites/props/jar-lid@small.webp';
 import propPlateSmall from './sprites/props/plate@small.webp';
+import propStandSmall from './sprites/props/stand-front@small.webp';
 import roleVillagerTile from './sprites/roles/villager@small.webp';
 import roleWolfTile from './sprites/roles/wolf@small.webp';
 import roleInvestigatorTile from './sprites/roles/investigator@small.webp';
@@ -366,7 +367,13 @@ export type StationPicture = 'sky' | 'floor' | 'post' | 'lamp' | 'train' | 'blin
  * seamless teak tile, the window's brass rim (a 9-slice), a bogie, the solebar and the bellows.
  */
 export type CarriagePicture =
-  'roof' | 'rail' | 'teak' | 'frame' | 'bogie' | 'solebar' | 'bellows';
+  | 'roof'
+  | 'rail'
+  | 'teak'
+  | 'frame'
+  | 'bogie'
+  | 'solebar'
+  | 'bellows';
 
 /**
  * The country behind the dining car's window (FeltWindow): per hour, the far sky and hills, and
@@ -449,7 +456,7 @@ export type TexturePicture = 'walnut' | 'boards' | 'velvet' | 'cork' | 'ink';
  */
 export interface SmallSprites {
   day: Record<Character, Record<DayState | 'head', StaticImageData>>;
-  props: Record<'jarGlass' | 'jarLid' | 'plate', StaticImageData>;
+  props: Record<'jarGlass' | 'jarLid' | 'plate' | 'stand', StaticImageData>;
   roleTiles: Record<RoleSprite, StaticImageData>;
   window: { night: Record<WindowPicture, StaticImageData> };
 }
@@ -864,7 +871,12 @@ export const SPRITES: {
         head: automatonHeadSmall,
       },
     },
-    props: { jarGlass: propJarGlassSmall, jarLid: propJarLidSmall, plate: propPlateSmall },
+    props: {
+      jarGlass: propJarGlassSmall,
+      jarLid: propJarLidSmall,
+      plate: propPlateSmall,
+      stand: propStandSmall,
+    },
     roleTiles: {
       villager: roleVillagerTile,
       wolf: roleWolfTile,

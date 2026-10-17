@@ -66,8 +66,13 @@ export interface ShutterOpts {
   picture?: string;
 }
 
-/** The painted shutter (px): three sections, the rails between them at these rows. */
-const PAINTED_SHUTTER = { w: 1640, h: 615, rails: [0, 182, 372], rail: 34 };
+/**
+ * The painted shutter (px; the felt set of 2026-10-17): a burgundy felt roller blind, its cloth's
+ * edges at `cloth`, the hem rod's centre on row `hem`, the rod from `rod[0]` with its brass pull
+ * ring hanging below it to the picture's foot. The cloth spans the frame and its top to the
+ * rod's centre the frame's height, so the rod lies along the frame's foot, the ring below it.
+ */
+const PAINTED_SHUTTER = { w: 1499, h: 673, cloth: [13.2, 1486.3], hem: 569.2, rod: 537.1 };
 
 /** The shutter's pieces in units: the frame it covers, the pelmet above it, one section's height. */
 export function shutterGeometry(g: StageGeometry, s = 1) {
@@ -80,7 +85,20 @@ export function shutterGeometry(g: StageGeometry, s = 1) {
     cx: wx + ww / 2,
   };
   const pel = { x: f.x - 6 * s, y: f.y - 30 * s, w: f.w + 12 * s, h: 26 * s };
-  return { f, pel, section: f.h / 3 };
+  // the painted blind over the frame (its rod's ends and ring past it), and the box the moving
+  // panel is clipped to: from under the pelmet down to the ring's foot, wide enough for the rod
+  const P = PAINTED_SHUTTER,
+    sx = f.w / (P.cloth[1] - P.cloth[0]),
+    sy = f.h / P.hem;
+  const picture = { x: f.x - P.cloth[0] * sx, y: f.y, w: P.w * sx, h: P.h * sy, sy };
+  const top = pel.y + pel.h - 2 * s;
+  const box = {
+    x: Math.min(pel.x, picture.x - 2 * s),
+    y: top,
+    w: Math.max(pel.w, picture.w + 4 * s),
+    h: picture.y + picture.h - top + 2 * s,
+  };
+  return { f, pel, section: f.h / 3, picture, box };
 }
 
 /**
@@ -88,9 +106,10 @@ export function shutterGeometry(g: StageGeometry, s = 1) {
  * moves them: the clip that hides the panel under the pelmet (id `<id>-shc`), the three-section
  * panel down over the frame, the folded stack edge-on under the pelmet, and the pelmet itself.
  * Given `walnut`, the wood is textured (the clip then also carries its pattern, `<id>-shx`).
- * Given `picture` (owner, 2026-09-30), the panel is the painted shutter stretched over the frame
- * (8:3 on a frame of about 818 × 316, a light stretch) and the folded stack is three strips of
- * its rails, edge on; the pelmet stays vector.
+ * Given `picture` (owner, 2026-09-30; the felt roller blind since 2026-10-17), the panel is the
+ * painted blind over the frame (`shutterGeometry().picture`: the cloth across it, its rod on the
+ * frame's foot) and the rolled-up stack is the picture's rod and ring, the rod half under the
+ * pelmet; the pelmet stays vector.
  */
 export function shutterParts(
   g: StageGeometry,
@@ -99,7 +118,7 @@ export function shutterParts(
   picture?: string,
 ) {
   const s = 1,
-    { f, pel, section: h3 } = shutterGeometry(g, s),
+    { f, pel, section: h3, picture: pic, box } = shutterGeometry(g, s),
     cid = id + '-shc',
     T = walnut ? id + '-shx' : null;
   // a walnut piece: flat, or the texture under a veil to the flat's value and then the ink
@@ -133,24 +152,28 @@ export function shutterParts(
   };
   const P = PAINTED_SHUTTER;
   const panel = picture
-    ? `<image href="${picture}" x="${f.x}" y="${f.y}" width="${f.w}" height="${f.h}" preserveAspectRatio="none"/>`
+    ? `<image href="${picture}" x="${pic.x}" y="${pic.y}" width="${pic.w}" height="${pic.h}" preserveAspectRatio="none"/>`
     : louvre(f.y, h3, true) +
       louvre(f.y + h3, h3, true) +
       louvre(f.y + 2 * h3, h3, false) +
       `<rect x="${f.cx - 14 * s}" y="${f.y + f.h - 12 * s}" width="${28 * s}" height="${5 * s}" rx="${2.5 * s}" fill="${brass}" stroke="${K2}" stroke-width="${s}"/>`;
-  // the folded sections, edge on: with the picture, a strip of each section's top rail
+  // rolled up: with the picture, the hem rod half under the pelmet, its ring hanging; without,
+  // the louvres' folded sections, edge on
   let stack = '';
-  for (let i = 0; i < 3; i++) {
-    const x = f.x + 2 * s * i,
-      y = pel.y + pel.h - 2 * s + i * 7 * s,
-      w = f.w - 4 * s * i;
-    stack += picture
-      ? `<svg x="${x}" y="${y}" width="${w}" height="${7 * s}" viewBox="0 ${P.rails[i]} ${P.w} ${P.rail}" preserveAspectRatio="none"><image href="${picture}" width="${P.w}" height="${P.h}"/></svg>` +
-        inkP(`M${x},${y} h${w} v${7 * s} h${-w}Z`, 'none', 1.6 * s)
-      : wood(`M${x},${y} h${w} v${7 * s} h${-w}Z`, i % 2 ? WAL : WAL2, 1.6 * s);
-  }
+  if (picture) {
+    const rodH = (P.hem - P.rod) * 2 * pic.sy,
+      y = pel.y + pel.h - rodH / 2,
+      h = (P.h - P.rod) * pic.sy;
+    stack = `<svg x="${pic.x}" y="${y}" width="${pic.w}" height="${h}" viewBox="0 ${P.rod} ${P.w} ${P.h - P.rod}" preserveAspectRatio="none"><image href="${picture}" width="${P.w}" height="${P.h}"/></svg>`;
+  } else
+    for (let i = 0; i < 3; i++) {
+      const x = f.x + 2 * s * i,
+        y = pel.y + pel.h - 2 * s + i * 7 * s,
+        w = f.w - 4 * s * i;
+      stack += wood(`M${x},${y} h${w} v${7 * s} h${-w}Z`, i % 2 ? WAL : WAL2, 1.6 * s);
+    }
   const clip =
-    `<clipPath id="${cid}"><rect x="${pel.x}" y="${pel.y + pel.h - 2 * s}" width="${pel.w}" height="${f.h + 40 * s}"/></clipPath>` +
+    `<clipPath id="${cid}"><rect x="${box.x}" y="${box.y}" width="${box.w}" height="${box.h}"/></clipPath>` +
     (walnut && T
       ? `<defs>${walnutImage(id + '-shw', walnut)}${walnutAcross(T, id + '-shw')}</defs>`
       : '');
@@ -161,10 +184,10 @@ export function shutterParts(
 }
 
 /**
- * The louvred shutter at rest: three hinged sections that concertina up into a walnut pelmet
- * above the frame. Open, only the pelmet and the folded stack's edges show, so the window by
- * day and by night is the whole window; closed, the three sections cover the frame, a brass
- * pull on the bottom rail. The pelmet is part of the window at every hour.
+ * The shutter at rest: a blind that rolls up into a walnut pelmet above the frame (the vector
+ * fallback: three louvred sections that concertina). Open, only the pelmet and the rolled-up
+ * stack show, so the window by day and by night is the whole window; closed, the blind covers
+ * the frame. The pelmet is part of the window at every hour.
  */
 export function shutter(o: ShutterOpts): string {
   const g = geometry(o.hud ?? 'live', o.side ?? false),

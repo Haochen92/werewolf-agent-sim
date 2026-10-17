@@ -62,8 +62,8 @@ describe('the vote’s geometry', () => {
   it('sizes the jar to its picture and seats the lid on the lip', () => {
     const J = jarGeometry(v);
     expect(J.w / J.h).toBeCloseTo(GLASS_PX.w / GLASS_PX.h, 9);
-    // the lid's foot on the lip's foot, its collar a little wider than the lip
-    expect(J.lid.ly + J.lid.lh).toBeCloseTo(v.base - J.h * 0.907, 6);
+    // the lid's foot (its flange's) inside the neck, its dome a little wider than the lip
+    expect(J.lid.ly + J.lid.lh).toBeCloseTo(v.base - J.h * 0.793, 6);
     expect(J.lid.lw / J.wN).toBeGreaterThan(1);
     expect(J.lid.lw / J.wN).toBeLessThan(1.15);
   });
@@ -74,6 +74,17 @@ describe('the vote’s geometry', () => {
       expect(y).toBeLessThan(J.floor);
       expect(Math.abs(x - v.cx) + v.r).toBeLessThanOrEqual(J.w / 2);
     }
+  });
+
+  it('keeps every plate clear of the jar standing at the table’s end', () => {
+    const J = jarGeometry(v),
+      jarLeft = J.aside.x - (J.w * J.aside.sc) / 2;
+    for (let n = 1; n <= 8; n++) {
+      const cands = Array.from({ length: n }, (_, i) => `player_${i + 1}`);
+      for (const p of plateSpots(v, cands, {})) expect(p.x + p.rx).toBeLessThan(jarLeft);
+    }
+    // and the jar is still on the table
+    expect(J.aside.x + (J.w * J.aside.sc) / 2).toBeLessThanOrEqual(v.cx + v.tw / 2);
   });
 
   it('pushes in by 1.32 about a point above the table', () => {
