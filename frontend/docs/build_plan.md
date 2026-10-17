@@ -242,6 +242,7 @@ never reads any of it; one `lib/storage.ts` module owns the key names):
 | `ghost_{gameId}` | ghost-mode guesses keyed by phase | guess widget (ruling 7) | never (it's the user's history) |
 | `notes_{gameId}` | the seated player's notes per seat, the one suspect, whether the rail's hint was seen | the seat rail's note editor (HUD pass 2, 2026-09-29) | never (it's the user's own record) |
 | `music` | `on` or `off`, the viewer's last choice of music; absent = never chosen (the game plays it, the guide does not) | the sound button (the stage's strip, the guide) | never |
+| `depart_{gameId}` (**sessionStorage**) | a game for one's departure: the ticket's puppet and when it was bought | the ticket office's solo create | once its train has left (the curtain falls); not read after 60 s; with the tab |
 | `told_{gameId}_{seat}` (**sessionStorage**) | the seat has been told of its own death that came in while the page was away, or watched it live | the live theatre's "While you were away" notice, dismissed; a live `night_result`/`lynch_result` naming the seat (2026-10-11) | with the tab |
 
 BYOK-remember explicitly needs ZERO additional server support: the key's only wire appearance

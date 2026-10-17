@@ -49,6 +49,14 @@ export function reopenNow(readyState: number, hidden: boolean): boolean {
   return !hidden && readyState !== 1;
 }
 
+/**
+ * A drop shorter than this, counted from the last thing the stream said (the server pings every
+ * 15 s), is a blip, not an absence: what the reopened stream sends past what the page holds
+ * plays as news, with no "You're back" (owner, 2026-10-17: a one-second drop opened the notice).
+ */
+export const BLIP_MS = 20_000;
+export const briefDrop = (quietMs: number): boolean => quietMs < BLIP_MS;
+
 /** Silence after which an open stream is taken for dead: the server pings every 15 s. */
 export const STREAM_SILENT_MS = 40_000;
 /** How often a stream the browser gave up on (closed) is tried again. */

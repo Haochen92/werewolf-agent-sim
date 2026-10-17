@@ -597,8 +597,9 @@ test('replay: a game over but not yet filed winds its reels, then plays', async 
   let filed = false;
   await mockUnfiled(page, () => filed, OVER);
   await page.goto(`/replays/${GAME}?still=1`);
+  // with ?still=1 the page's own loading picture, saying what the wait is
   const still = page.locator('[data-loading="replay"]');
-  await expect(still.getByRole('status')).toHaveText('Winding the reels…');
+  await expect(still.getByRole('status')).toContainText('Winding the reels…');
   await expect(page.getByText('No such replay.')).toHaveCount(0);
   // the run ends: the next ask (every five seconds) finds the replay
   filed = true;

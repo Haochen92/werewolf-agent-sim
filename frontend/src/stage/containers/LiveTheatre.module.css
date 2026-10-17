@@ -7,7 +7,7 @@
 }
 
 /* What the theatre itself says over the stage, in stage units: before the first beat, the
-   epilogue's way on, the hand-over on a prompt, a dropped connection. */
+   epilogue's way on, the hand-over on a prompt (a dropped connection: `ConnectionPill`). */
 .waiting {
   position: absolute;
   left: 0;
@@ -50,15 +50,4 @@
   background: rgba(14, 9, 6, 0.92);
   font-size: var(--meta);
   color: #f08a78;
-}
-
-.connection {
-  position: absolute;
-  z-index: 6;
-  left: 50%;
-  top: 96px;
-  transform: translateX(-50%);
-  margin: 0;
-  font-size: calc(var(--meta) * 0.9);
-  color: var(--bone3);
 }

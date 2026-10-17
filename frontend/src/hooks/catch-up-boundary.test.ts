@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  BLIP_MS,
+  briefDrop,
   CATCH_UP_GATHER_MS,
   catchUpBatch,
   catchUpBoundary,
@@ -87,5 +89,14 @@ describe('a stalled stream', () => {
     expect(streamStalled(2, STREAM_RETRY_MS + 1, false)).toBe(true);
     // never while the page is hidden
     expect(streamStalled(2, STREAM_SILENT_MS * 10, true)).toBe(false);
+  });
+});
+
+describe('briefDrop (2026-10-17)', () => {
+  it('a drop under 20 s is a blip; longer is an absence', () => {
+    expect(briefDrop(0)).toBe(true);
+    expect(briefDrop(19_999)).toBe(true);
+    expect(briefDrop(BLIP_MS)).toBe(false);
+    expect(briefDrop(5 * 60_000)).toBe(false);
   });
 });

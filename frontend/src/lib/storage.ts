@@ -15,6 +15,7 @@ const KEYS = {
   notes: (gameId: string) => `notes_${gameId}`,
   live: (gameId: string) => `live_${gameId}`,
   away: (gameId: string) => `away_${gameId}`,
+  depart: (gameId: string) => `depart_${gameId}`,
   music: 'music',
 } as const;
 
@@ -171,4 +172,38 @@ export const liveSeen = {
 export const awayTold = {
   get: (gameId: string): number => readTab(KEYS.away(gameId)) ?? 0,
   mark: (gameId: string, seq: number): void => raiseTab(KEYS.away(gameId), seq),
+};
+
+export type DepartMark = { character: string | null; at: number };
+
+/**
+ * A game for one this tab just bought a ticket for, until its train has left (`lib/departures`
+ * reads it): per tab, so a reload before the departure still departs and another tab never does.
+ */
+export const departMark = {
+  get: (gameId: string): DepartMark | undefined => {
+    if (typeof window === 'undefined') return undefined;
+    try {
+      const raw = window.sessionStorage.getItem(KEYS.depart(gameId));
+      return raw === null ? undefined : (JSON.parse(raw) as DepartMark);
+    } catch {
+      return undefined;
+    }
+  },
+  set: (gameId: string, mark: DepartMark): void => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.sessionStorage.setItem(KEYS.depart(gameId), JSON.stringify(mark));
+    } catch {
+      /* disabled storage: the tab's memory alone departs it, as before */
+    }
+  },
+  clear: (gameId: string): void => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.sessionStorage.removeItem(KEYS.depart(gameId));
+    } catch {
+      /* nothing was kept */
+    }
+  },
 };

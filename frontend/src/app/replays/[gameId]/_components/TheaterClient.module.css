@@ -13,7 +13,12 @@
   overscroll-behavior: none;
 }
 
-/* the wait, and what went wrong */
+/* the wait (`?still=1`: the loading picture the cover would show), and what went wrong */
+.wait {
+  position: fixed;
+  inset: 0;
+  background: var(--ink-900);
+}
 .meta {
   color: var(--text-faint);
   font-size: 0.9rem;

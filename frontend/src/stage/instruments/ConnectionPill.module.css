@@ -1,0 +1,73 @@
+/* The connection pill (board 3), in stage units: centred under the top strip, below the
+   hand-over's failed-send line (LiveTheatre.module.css `.error`), so the two never overlap.
+   Only "Try now" takes a tap; the rest lets it through to the stage. */
+.pill {
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  top: 100px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  max-width: calc(100% - 64px);
+  box-sizing: border-box;
+  padding: 0.45em 1.15em;
+  border: 1px solid #8a6a36;
+  border-radius: 999px;
+  background: rgba(20, 13, 8, 0.92);
+  font-family: var(--font-ui);
+  font-size: var(--meta);
+  color: var(--bone);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.pill:has(.retry) {
+  padding-block: 0.3em;
+  padding-right: 0.4em;
+}
+
+.dot {
+  flex: none;
+  width: 0.55em;
+  height: 0.55em;
+  border-radius: 50%;
+  background: #e0a63a;
+  animation: beat 1.2s ease-in-out infinite;
+}
+.dot[data-state='offline'] {
+  background: #9a8a6c;
+  animation: none;
+}
+@keyframes beat {
+  50% {
+    opacity: 0.25;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dot {
+    animation: none;
+  }
+}
+
+/* a thumb's size on a phone: never under 44 css px tall (TurnDock.module.css `.plaques`) */
+.retry {
+  flex: none;
+  min-height: max(
+    calc(30px * var(--legible-ui)),
+    calc(44px / max(var(--stage-scale, 1), 0.01))
+  );
+  padding: 0 1em;
+  border: 0;
+  border-radius: 999px;
+  background: #e0c88f;
+  color: #1d140e;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.retry:focus-visible {
+  outline: 2px solid var(--bone);
+  outline-offset: 2px;
+}

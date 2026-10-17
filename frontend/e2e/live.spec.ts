@@ -15,8 +15,9 @@
  * line (steered or not, and with the seat notebook when "Use my seat notes" is ticked) into the
  * box to be edited, Send sends it, and a line typed by hand sends as it is; on a phone the
  * plaques keep a thumb's size (a picture), a tap on the preview opens the composer and it keeps
- * above the soft keyboard; while the status is on its way the page is the empty platform (a
- * picture). The pace
+ * above the soft keyboard; while the status is on its way the page is the house's loading
+ * picture (a picture), and a reload of a game for one before its train has left is that
+ * picture until the platform departs, never the platform standing. The pace
  * (2026-10-01): a departed game plays its deal and the turns after it from the first beat,
  * however much the log held; a queue of beats plays at its normal holds; Reveal and File wait
  * for the stage's ending.
@@ -25,7 +26,9 @@
  * until the archive answers for it (a picture), then the link in its place.
  *
  * The mocked stream ends when its body does, so the browser reads it as a dropped connection;
- * the theatre's "Reconnecting…" note is hidden in the pictures for that reason.
+ * the theatre's connection pill is hidden in the pictures for that reason (and is tested on
+ * its own: its words in a game for one and a room, offline, and "Try now"). The ballot says
+ * "Sending…" until the server has it, and "Your ballot is in" only then.
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -347,7 +350,7 @@ test('live: a refresh mid-day lands still on the latest beat', async ({ page }) 
   await expect(page).toHaveScreenshot('live-catch-up-d3.png');
 });
 
-test('live: while the status is on its way the page is the empty platform, then the stage', async ({
+test('live: while the status is on its way the page is the house’s loading picture, then the stage (owner, 2026-10-17)', async ({
   page,
 }) => {
   await mockApi(page, { status: status(200), stream: upTo(200) });
@@ -360,17 +363,63 @@ test('live: while the status is on its way the page is the empty platform, then 
     await route.fallback();
   });
   await page.goto(`/games/${GAME}`);
-  const still = page.locator('[data-loading="game"]');
-  await expect(still).toBeVisible();
-  await expect(still.getByRole('status')).toHaveText('Boarding…');
-  // nobody on it: no people, no chips, no plates, no ledge buttons
-  await expect(still.locator('[data-aboard], [data-tag], [data-ledge]')).toHaveCount(0);
-  await expect(still.locator('[data-layer="hud"] img')).toHaveCount(0);
+  const cover = page.locator('[data-game-cover]');
+  await expect(cover).toHaveAttribute('data-game-cover', 'up');
+  await expect(cover.getByRole('status')).toBeVisible();
+  // one picture: no still platform, no stage under it yet, and no line ("Boarding…" is gone)
+  await expect(page.locator('[data-loading]')).toHaveCount(0);
+  await expect(theatre(page)).toHaveCount(0);
+  await expect(cover.getByText('Boarding…')).toHaveCount(0);
   await settle(page);
   await expect(page).toHaveScreenshot('loading-game.png');
   release();
   await landsOn(page, 'day.speech');
-  await expect(still).toHaveCount(0);
+  await expect(cover).toHaveCount(0);
+});
+
+test('live: a reload of a game for one before its train has left is the loading picture until it departs, never the platform standing (owner, 2026-10-17)', async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  // the ticket office's mark, as a reload finds it: this tab bought the ticket a moment ago
+  await page.addInitScript((game) => {
+    sessionStorage.setItem(
+      `depart_${game}`,
+      JSON.stringify({ character: null, at: Date.now() }),
+    );
+    // every frame: whether the platform stands with no cover over it, before it has departed
+    const w = window as unknown as { bare: number; firstCover: string | null };
+    w.bare = 0;
+    w.firstCover = null;
+    document.addEventListener('DOMContentLoaded', () => {
+      w.firstCover =
+        document.querySelector('[data-game-cover]')?.getAttribute('data-game-cover') ??
+        null;
+    });
+    const look = () => {
+      const standing = document.querySelector('[data-platform="waiting"]');
+      if (standing && !document.querySelector('[data-game-cover]')) w.bare += 1;
+      requestAnimationFrame(look);
+    };
+    requestAnimationFrame(look);
+  }, GAME);
+  await mockApi(page, { status: status(12), stream: upTo(12) });
+  await page.goto(`/games/${GAME}`);
+  // the server's first paint is already the loader: no still platform to tear down
+  expect(
+    await page.evaluate(() => (window as unknown as { firstCover: string }).firstCover),
+  ).toBe('up');
+  await expect(page.locator('[data-loading]')).toHaveCount(0);
+  // the cover lifts as the train leaves, and the deal follows on the same stage
+  await expect(theatre(page)).toHaveAttribute(
+    'data-platform',
+    /departing|closing|opening|off/,
+    {
+      timeout: 15_000,
+    },
+  );
+  await expect(page.locator('[data-game-cover]')).toHaveCount(0);
+  expect(await page.evaluate(() => (window as unknown as { bare: number }).bare)).toBe(0);
 });
 
 test('live: a new game’s first connection plays the deal from its first beat', async ({
@@ -1303,6 +1352,7 @@ test('live: back from a dropped stream the page reopens it at once, says what we
     status: status(140, as4),
     stream: ALL.filter((e) => e.seq <= 140 && seenBy4(e)),
   };
+  await page.clock.install({ time: T0 });
   await mockApi(page, mock);
   const streams: string[] = [];
   page.on('request', (req) => {
@@ -1317,8 +1367,10 @@ test('live: back from a dropped stream the page reopens it at once, says what we
   // meanwhile the night resolved and day 3 began; the server sends what the page missed
   mock.status = status(170, as4);
   mock.stream = ALL.filter((e) => e.seq > 140 && e.seq <= 170 && seenBy4(e));
-  // the page comes back into view: the stream is not open, so it is reopened from where the
-  // page had got to, without waiting on the browser's retry
+  // away longer than a blip (2026-10-17: a drop under 20 s plays on as news), then the page
+  // comes back into view: the stream is not open, so it is reopened from where the page had got
+  // to, without waiting on the browser's retry
+  await page.clock.fastForward(30_000);
   await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
   await expect.poll(() => streams.length).toBe(2);
   const had = Math.max(...ALL.filter((e) => e.seq <= 140 && seenBy4(e)).map((e) => e.seq));
@@ -1374,6 +1426,148 @@ test('live: back from a dropped stream the page reopens it at once, says what we
   await expect(told).toHaveCount(0);
 });
 
+test('live: a blip in the stream is not an absence: what came meanwhile plays on, no notice (2026-10-17)', async ({
+  page,
+}) => {
+  const mock: Mock = {
+    status: status(200, { pending_seats: [ME], pending_input: true }),
+    stream: [...upTo(200), yourTurn(201)],
+  };
+  await mockApi(page, mock);
+  await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  await landsOn(page, 'day.your-turn');
+  // the stream drops and is back at once, the table's roster having come meanwhile
+  mock.status = status(202, { pending_seats: [ME], pending_input: true });
+  mock.stream = [
+    {
+      seq: 202,
+      day: 3,
+      type: 'roster_update',
+      surviving_players: [
+        'player_1',
+        'player_2',
+        'player_5',
+        'player_6',
+        ME,
+        'player_8',
+        'player_9',
+      ],
+    },
+  ];
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+  await expect(page.locator('[data-dock="discuss"]')).toBeVisible();
+  await expect(page.getByRole('alertdialog', { name: 'You’re back' })).toHaveCount(0);
+});
+
+test('live: a dropped stream says so under the strip: in a game for one the game waits; past a blip it is offline, and "Try now" reopens it (owner, 2026-10-17)', async ({
+  page,
+}) => {
+  await page.clock.install({ time: T0 });
+  await mockApi(page, { status: status(200), stream: upTo(200) });
+  const streams: string[] = [];
+  page.on('request', (req) => {
+    if (req.url().includes(`/games/${GAME}/events`)) streams.push(req.url());
+  });
+  await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  await landsOn(page, 'day.speech');
+  // the mocked stream ends with its body: the browser is reconnecting (and waits an hour)
+  const pill = page.locator('[data-connection]');
+  await expect(pill).toHaveAttribute('data-connection', 'reconnecting');
+  await expect(pill).toHaveText('Reconnecting… the game waits for you');
+  const tryNow = pill.getByRole('button', { name: 'Try now' });
+  await expect(tryNow).toHaveCount(0);
+  // still down past a blip: offline, and a way to try at once
+  await page.clock.fastForward(21_000);
+  await expect(pill).toHaveAttribute('data-connection', 'offline');
+  await expect(pill).toContainText('You’re offline. The game waits.');
+  const before = streams.length;
+  await tryNow.click();
+  await expect.poll(() => streams.length).toBe(before + 1);
+  // the new stream ends too: reconnecting again, its count started afresh
+  await expect(pill).toHaveAttribute('data-connection', 'reconnecting');
+  await expect(tryNow).toHaveCount(0);
+});
+
+test('live: in a room the pill says the seat’s clock is running, offline the moment the browser says so, with a thumb-sized "Try now" on a phone (owner, 2026-10-17)', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 667, height: 375 });
+  await mockApi(page, {
+    status: status(200, { human_players: [ME, 'player_3'] }),
+    stream: upTo(200),
+  });
+  await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  await landsOn(page, 'day.speech');
+  const pill = page.locator('[data-connection]');
+  await expect(pill).toHaveText('Reconnecting… your seat’s clock is running');
+  await page.context().setOffline(true);
+  await expect(pill).toHaveAttribute('data-connection', 'offline');
+  await expect(pill).toContainText('You’re offline. Your seat’s clock is running.');
+  const tryNow = pill.getByRole('button', { name: 'Try now' });
+  await expect(tryNow).toBeVisible();
+  expect((await tryNow.boundingBox())!.height).toBeGreaterThanOrEqual(43.5);
+  // back online: the page reopens the stream itself
+  await page.context().setOffline(false);
+  await expect(pill).not.toHaveAttribute('data-connection', 'offline');
+});
+
+test('live: the ballot says "Sending…" while the vote is on its way, and "Your ballot is in" only once the server has it (owner, 2026-10-17)', async ({
+  page,
+}) => {
+  const posted: Mock['posted'] = [];
+  await mockApi(page, {
+    status: status(220, { pending_seats: [ME], pending_input: true }),
+    stream: [
+      ...upTo(220),
+      {
+        seq: 221,
+        day: 3,
+        type: 'input_request',
+        player: ME,
+        action_kind: 'vote',
+        candidates: ['player_2', 'player_6', 'abstain'],
+        deadline: new Date(T0 + 120_000).toISOString(),
+      },
+    ],
+    posted,
+  });
+  // the server takes its time over the ballot
+  let answer = () => {};
+  const held = new Promise<void>((r) => (answer = r));
+  await page.unroute(`**/games/${GAME}/turns`);
+  await page.route(`**/games/${GAME}/turns`, async (route) => {
+    const req = route.request();
+    if (req.method() === 'OPTIONS')
+      return route.fulfill({ status: 204, headers: cors(req) });
+    posted.push({ path: 'turns', body: req.postDataJSON() });
+    await held;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: cors(req),
+      body: JSON.stringify({ accepted: true }),
+    });
+  });
+  await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  await landsOn(page, 'vote.your-ballot');
+  const ballot = page.locator('[data-ballot]');
+  await expect(ballot).toHaveAttribute('data-ballot', 'open');
+  await ballot.locator('[data-seat="6"]').click();
+  await ballot.getByRole('button', { name: 'Vote seat 6' }).click();
+  // on its way: shut on the choice, no plate, not yet in
+  await expect(ballot).toHaveAttribute('data-ballot', 'sending');
+  await expect(ballot.getByRole('status')).toHaveText('Sending…');
+  await expect(ballot.getByRole('button', { name: 'Vote seat 6' })).toHaveCount(0);
+  await expect(ballot.locator('[data-seat="6"]')).toBeDisabled();
+  await expect(ballot.locator('[data-seat="6"]')).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByText('Your ballot is in')).toHaveCount(0);
+  // the server has it
+  answer();
+  await expect(ballot).toHaveAttribute('data-ballot', 'in');
+  await expect(ballot).toContainText('Your ballot is in');
+  expect(posted).toEqual([{ path: 'turns', body: { target: 'player_6' } }]);
+});
+
 test('live: back from a dropped stream on the seat’s turn, the notice stands alone in the dock’s place, and the line being written comes back with it', async ({
   page,
 }) => {
@@ -1382,6 +1576,7 @@ test('live: back from a dropped stream on the seat’s turn, the notice stands a
     status: status(200, { pending_seats: [ME], pending_input: true }),
     stream: [...upTo(200), yourTurn(201)],
   };
+  await page.clock.install({ time: T0 });
   await mockApi(page, mock);
   await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
   await landsOn(page, 'day.your-turn');
@@ -1409,6 +1604,7 @@ test('live: back from a dropped stream on the seat’s turn, the notice stands a
       ],
     },
   ];
+  await page.clock.fastForward(30_000); // away longer than a blip
   await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
   const told = page.getByRole('alertdialog', { name: 'You’re back' });
   await expect(told).toBeVisible({ timeout: 15_000 });

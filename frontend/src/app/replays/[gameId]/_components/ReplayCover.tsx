@@ -13,7 +13,7 @@
  * The page (TheaterClient) runs it (`useCover`): what the wait is when it is more than loading
  * (a replay still being filed), when its theatre is drawn and ready, and when there is nothing
  * to wait for (a dropped game, no such replay), which takes it away at once. With `?still=1` (the
- * tests and goldens) there is no cover and the page draws its own still.
+ * tests and goldens) there is no cover and the page draws its own loader.
  */
 import { useSearchParams } from 'next/navigation';
 import {

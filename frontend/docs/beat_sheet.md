@@ -126,19 +126,25 @@ host key, the seat token). Nobody has a seat yet: the i-th person to board stand
 place and wears `castForGame(gameId)[i]`, with no numeral; seats are dealt at the start and the
 empty places go to agents. Never in the replay or the workbench fixture (the workbench draws it from
 synthetic rooms, `SYNTHETIC.station`).
-**The loading still (2026-09-30)**, not a beat: while `/games/[id]` loads (its `loading.tsx`,
-the page's Suspense fallback, and the game page while its status or a rejoin is on its way) the
-page is this platform empty (`scenes/StationStill.tsx`: the train, the lamps, the sign "The Ninth
-Express", the rail's empty cards, the snow; no people, plates or chips), its ledge fading in after
-0.3 s with "Boarding…" or "Reclaiming your seat…". A replay has neither the still nor a departure
-(owner, 2026-10-16): its way in is the house's loading picture (`components/TrainLoader.tsx`: the
-Ninth Express in cream silhouette, its engine's wheels turning and steam blowing back, "The Ninth
-Express" under the rails, snow falling past), held by the route's layout (`ReplayCover`) from the
-click, at least 2 s, until the theatre is drawn under it, then faded off (0.4 s) as the theatre
-starts; "Winding the reels…" under it while a finished game is still being filed. The still
-stands in for it only with `?still=1` (the tests). The same picture covers a game for one's
-platform while its train and country are not in yet, and a page of the site while its code is
-on its way (`(site)/loading.tsx`, after 0.3 s, no least hold).
+**The wait is the house's train loader (owner, 2026-10-17)**, not a beat: every default waiting
+picture is the house's loading picture (`components/TrainLoader.tsx`: the Ninth Express in cream
+silhouette, its engine's wheels turning and steam blowing back, "The Ninth Express" under the
+rails, snow falling past). On `/games/[id]` it is one picture from the click (the ticket office's,
+a room's link) or a reload's first paint until the page has something to show: the route's layout
+holds it (`GameCover`), and the route's `loading.tsx`, the page's Suspense fallback and its wait
+for the status or a rejoin draw nothing of their own, so it is never torn down for another. It
+stays up while the status or a rejoin is on its way ("Reclaiming your seat…" under it while a
+lost seat is reclaimed; the loading itself has no line), and over a platform (a game for one's,
+or a room's) until its train and country are in (at most 12 s), then fades off (0.4 s) as the
+train leaves or the room stands; over a game under way it fades off as the status comes; what
+went wrong is said at once. Until 2026-10-17 the wait was this platform empty
+(`StationStill`, since deleted), which stood until the page was ready and was then torn down for
+the departure, and read as a crash. A replay has no departure (owner, 2026-10-16): its way in is
+the same picture, held by the route's layout (`ReplayCover`) from the click, at least 2 s, until
+the theatre is drawn under it, then faded off (0.4 s) as the theatre starts; "Winding the reels…"
+under it while a finished game is still being filed. With `?still=1` (the tests) the replay page
+draws the same picture itself, with no cover. The same picture waits for a page of the site
+while its code is on its way (`(site)/loading.tsx`, after 0.3 s, no least hold).
 
 | # | Beat | Anchor | Sees | Stage | Slot | Hold |
 |---|---|---|---|---|---|---|
@@ -674,8 +680,8 @@ in a memory-on game whose lessons have not come in, "Your seat's lessons are bei
 under it (a spectator: "The seats' lessons…"). The link comes in where the plaque stood (both
 lie in one cell, the plaque kept unseen), "Back to the lobby" unmoved; the case file's "watch
 the replay →" waits likewise. The workbench draws the link's state. The replay page waits too:
-a 404 asks the status, and a game over but not filed shows the empty platform with "Winding the
-reels… come back in a few minutes", asking for the replay every 5 s until it comes; a status
+a 404 asks the status, and a game over but not filed keeps the loading picture up with "Winding
+the reels…", asking for the replay every 5 s until it comes; a status
 from the row means it landed between the two calls (asked once more at once); a dropped game
 says "This game was dropped."; only an id unknown to both is "No such replay.". **To
 reconcile:** the winners come from the roles the view holds; live, `game_over` arrives before the
@@ -1132,8 +1138,13 @@ is not the day's (the ballot, a night act, the pack) gets a pill under the top s
 play this turn", its error beneath. **Counts:** `phase_progress` feeds the vote's jar and pill
 at the opening ("Ballots in, n of N") and the night hub's "Acted n of N" (clamped to the census).
 **The curtain:** "Watch the replay" → `/replays/{id}`, "Back
-to the lobby" → `/rooms` (links). The drawer opens by default as the replay's. "Reconnecting…"
-under the strip while the stream reconnects. **The deal on first connection:** a new game's
+to the lobby" → `/rooms` (links). The drawer opens by default as the replay's. **The connection
+pill (owner, 2026-10-17, board 3)** under the strip while the stream is down (never while the tab
+is hidden): a pulsing amber dot (still for reduced motion) and "Reconnecting… the game waits for
+you" in a game for one, "Reconnecting… your seat's clock is running" in a room (a watcher: just
+"Reconnecting…"); still down after 20 s (`BLIP_MS`), or with the browser offline, a grey dot,
+"You're offline. The game waits." (a room: "You're offline. Your seat's clock is running.") and
+"Try now" (a thumb's size on a phone), which reopens the stream at once. **The deal on first connection:** a new game's
 deal is over before the page connects, so while the history holds no `turn_started` it plays from
 beat 0 at normal speed (as every beat does since 2026-10-01); after a departure on this page it
 plays from beat 0 whatever the history holds (`historyLanding`'s `departed`, up to the status's

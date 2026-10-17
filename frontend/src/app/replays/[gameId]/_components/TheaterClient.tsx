@@ -10,8 +10,8 @@
  * games' only). The theatre is mounted under it as soon as the log comes (out of sight and
  * inert), so its code has run and its pictures are in before it is seen; the cover lifts off it
  * then, and the theatre starts as it does. What the page cannot have is said at once, and the
- * cover goes. With `?still=1` (the tests and goldens) there is no cover: the empty platform
- * while the log is on its way (`StationStill`), then the theatre at once.
+ * cover goes. With `?still=1` (the tests and goldens) there is no cover: the same loading
+ * picture, drawn by the page while the log is on its way, then the theatre at once.
  *
  * A game is filed as a replay when its run ends, which with memory on is after the lessons are
  * written, a minute or more after `game_over`: a viewer who comes from the live curtain can be
@@ -35,6 +35,7 @@ import { Anchor } from '@mantine/core';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { TrainLoader } from '@/components/TrainLoader';
 import { FILED_POLL_MS } from '@/hooks/useReplayFiled';
 import { getGameStatus, getReplay } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
@@ -42,7 +43,6 @@ import { ApiError } from '@/lib/request';
 import { OrientationGuard } from '@/stage/OrientationGuard';
 import { picturesOf } from '@/stage/pictures-of';
 import { ReplayTheatre } from '@/stage/containers/ReplayTheatre';
-import { StationStill } from '@/stage/scenes/StationStill';
 import type { GameStatus } from '@/types/contracts';
 import { useCover } from './ReplayCover';
 import classes from './TheaterClient.module.css';
@@ -56,8 +56,9 @@ const UNDER: CSSProperties = { visibility: 'hidden' };
 const PICTURES_CAP_MS = 4000;
 
 /**
- * What the wait is while a finished game's replay is being filed (the cover's, or the still's): a
- * matter of moments, and the page asks again every five seconds and plays it when it comes.
+ * What the wait is while a finished game's replay is being filed (on the cover, or on the page's
+ * own loader with `?still=1`): a matter of moments, and the page asks again every five seconds
+ * and plays it when it comes.
  */
 const WINDING = 'Winding the reels…';
 
@@ -132,11 +133,9 @@ export function TheaterClient({ gameId }: { gameId: string }) {
 
   if (still && waiting)
     return (
-      <StationStill
-        what="replay"
-        hud="replay"
-        line={winds ? WINDING : 'Rewinding the reels…'}
-      />
+      <div className={classes.wait} data-loading="replay">
+        <TrainLoader atOnce line={winds ? WINDING : null} />
+      </div>
     );
   if (still && data)
     return (

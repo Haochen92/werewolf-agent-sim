@@ -20,7 +20,7 @@ const KEY = 'ninth-express:home-screen-tip';
 /** Shown this many times unasked; the × ends it for good (`DONE`). */
 const SHOWS = 3;
 const DONE = 99;
-/** One page load counts once: the theatre's loading still and then the theatre both mount it. */
+/** One page load counts once, however many times the page mounts it. */
 let counted = false;
 /** How the line says it: Safari's Share menu (an iPhone), or Chrome's install (Android). */
 type Way = 'share' | 'install';

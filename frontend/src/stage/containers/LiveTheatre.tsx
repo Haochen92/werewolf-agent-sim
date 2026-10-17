@@ -67,7 +67,7 @@ import { useLedger } from '@/hooks/useLedger';
 import { useReplayFiled } from '@/hooks/useReplayFiled';
 import { draftLine, rejoinGame, submitTurn, type TurnPayload } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
-import { TrainLoader } from '@/components/TrainLoader';
+import { departures } from '@/lib/departures';
 import { ApiError } from '@/lib/request';
 import { awayTold, seatToken } from '@/lib/storage';
 import { foldEvents } from '@/game/foldEvents';
@@ -82,6 +82,7 @@ import { DEFAULT_FILTERS, packNight, wolfViewer } from '../drawer/drawer-lines';
 import { useDrawerFilters } from '../drawer/use-drawer-filters';
 import { StageMotion } from '../motion';
 import { notebookForAgent, useNotebook, useNoteEditing } from '../notebook';
+import { ConnectionPill } from '../instruments/ConnectionPill';
 import { CardOverlay } from '../instruments/FramedCard';
 import { AwayNotice, LeaveConfirm } from '../instruments/TopStrip';
 import { draftRequest } from '../instruments/turn-dock';
@@ -146,6 +147,10 @@ export interface LiveTheatreProps {
    * the house's, known once the seat is dealt), and the deal follows as a room's does.
    */
   solo?: { character: string | null };
+  /** The platform (a game for one's, a room's) has its train and country in: the page's cover may lift. */
+  onPlatformReady?: () => void;
+  /** "Try now" on the connection pill: reopen the stream at once. */
+  onReconnect?: () => void;
 }
 
 /**
@@ -257,6 +262,8 @@ export function LiveTheatre({
   departed = false,
   onRoomAct,
   solo,
+  onPlatformReady,
+  onReconnect,
 }: LiveTheatreProps) {
   const queryClient = useQueryClient();
   const storeGame = useGameSession((s) => s.gameId);
@@ -290,19 +297,17 @@ export function LiveTheatre({
   useEffect(() => {
     if (platform !== 'off') setPlatformSeen(true);
     if (platform === 'departing') setDepartedHere(true);
-  }, [platform]);
+    // a game for one's train has left: a reload from here lands on the game, never departs again
+    if (platform === 'closing' && solo) departures.forget(gameId);
+  }, [platform, solo, gameId]);
   const begun = status !== undefined && status.state !== 'waiting';
   // the train leaves once its picture is there: a game for one's platform is new to the page
   const [stationReady, setStationReady] = useState(false);
   const onStationReady = useCallback(() => setStationReady(true), []);
-  // until then a game for one's platform is under the house's loading picture, which fades off
-  // as they come (0.4 s)
-  const [coverGone, setCoverGone] = useState(false);
+  // until then a game for one's platform is under the page's cover (the house's loading picture)
   useEffect(() => {
-    if (!stationReady) return;
-    const t = setTimeout(() => setCoverGone(true), 400);
-    return () => clearTimeout(t);
-  }, [stationReady]);
+    if (stationReady) onPlatformReady?.();
+  }, [stationReady, onPlatformReady]);
   useEffect(() => {
     if (platform === 'waiting' && (departed || begun) && stationReady)
       setPlatform('departing');
@@ -899,17 +904,16 @@ export function LiveTheatre({
               onLeave={() => router.push(LOBBY)}
             />
           ) : null}
-          {connection === 'reconnecting' ? (
-            <p className={styles.connection} data-connection>
-              Reconnecting…
-            </p>
-          ) : null}
+          <ConnectionPill
+            connection={connection}
+            // a game for one has no clocks and waits; a room's seat clock runs on the server
+            table={
+              !me ? 'watching' : (status?.human_players ?? []).length > 1 ? 'room' : 'solo'
+            }
+            onRetry={onReconnect}
+          />
         </Layer>
       </Stage>
-      {/* a game for one's platform, new to the page, until its train and country are in */}
-      {platformOn && heldRoom?.bare && !coverGone ? (
-        <TrainLoader leaving={stationReady} />
-      ) : null}
     </div>
   );
 }
