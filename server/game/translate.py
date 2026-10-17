@@ -435,6 +435,7 @@ class Translator:
             out.append(self._emit(
                 ev.RoleAssigned, player=player, role=role,
                 pack=list(self.wolves) if _is_pack(role) else None,
+                pack_roles={w: self.roles[w] for w in self.wolves} if _is_pack(role) else None,
                 bullets=uses.get("vigilante") if role == "vigilante" else None,
                 uses=uses.get(role),
             ))
@@ -661,7 +662,10 @@ class Translator:
         report = delta.get("night_report") or {}
         deaths = [ev.NightDeath(player=p, role=role, attacker_types=types, concealed=not role)
                   for p, role, types in report.get("deaths") or []]
-        saves = [ev.NightSave(player=p, attacker_types=types) for p, types in report.get("saves") or []]
+        reanimated = set(report.get("reanimated_saves") or [])
+        self_bet = set(report.get("self_bet_saves") or [])
+        saves = [ev.NightSave(player=p, attacker_types=types, reanimated=p in reanimated, self_bet=p in self_bet)
+                 for p, types in report.get("saves") or []]
         out.append(self._emit(ev.NightResult, deaths=deaths, save=saves[0] if saves else None,
                               saves=saves, pick=report.get("pick")))
 

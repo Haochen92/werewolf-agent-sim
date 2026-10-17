@@ -1,0 +1,224 @@
+/* The loading picture (TrainLoader.tsx). The loader fills whatever box holds it; the veil is
+   the dark ground and everything on it. The loader comes up after 0.3 s; the veil fades off
+   when the wait is over (`data-leaving`), so the two never fight over one opacity. */
+.loader {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  opacity: 0;
+  animation: arrive 0.35s ease-out 0.3s forwards;
+}
+.loader[data-at-once] {
+  animation-delay: 0s;
+}
+.veil {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--ink-900);
+  transition: opacity 0.4s ease-in;
+}
+.veil[data-leaving] {
+  opacity: 0;
+}
+
+/* the train and its name under the rails */
+.lock {
+  position: relative;
+  z-index: 1;
+  width: min(80%, 760px);
+  display: grid;
+  justify-items: center;
+  gap: clamp(6px, 1.4vw, 14px);
+}
+.lock svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: hidden;
+}
+.caption {
+  padding-left: 0.34em;
+  font-family: var(--font-serif);
+  font-size: clamp(11px, 1.6vw, 15px);
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--bone);
+  opacity: 0.62;
+}
+.line {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(13px, 1.8vw, 17px);
+  color: var(--bone);
+  opacity: 0.85;
+}
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+/* the drawing's colours: cream on the dark, amber where a lamp is lit; on paper (the ticket's
+   start plate) ink on cream, its cut-outs the plate's own colour */
+.drawing {
+  --train-body: var(--bone);
+  --train-snow: #fff;
+  --train-cut: var(--ink-900);
+}
+.drawing[data-tone='paper'] {
+  --train-body: var(--ink);
+  --train-snow: #fbf3df;
+  --train-cut: #efe2c2;
+}
+.body {
+  fill: var(--train-body);
+}
+.snowcap {
+  fill: var(--train-snow);
+}
+.dark {
+  fill: var(--train-cut);
+}
+.lit {
+  fill: var(--amber);
+}
+.sconce {
+  fill: #6e4a14;
+}
+.cut {
+  fill: none;
+  stroke: var(--train-cut);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+.puff {
+  fill: var(--train-body);
+}
+
+/* the train's motion: the wheels turn, the rod goes round with them (a circle from two eased
+   swings a quarter turn apart), the body chuffs, the steam blows back, the ties run under it */
+.wheel {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: spin 0.8s linear infinite;
+}
+.rodX {
+  animation: swingX 0.4s ease-in-out infinite alternate;
+}
+.rodY {
+  animation: swingY 0.4s ease-in-out -0.2s infinite alternate;
+}
+.bob {
+  animation: chuff 0.2s ease-in-out infinite alternate;
+}
+.puff {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: puff 1.4s ease-out infinite;
+}
+.ties {
+  animation: ties 0.235s linear infinite;
+}
+
+/* the snow: each layer one tiled picture, a tile taller than the screen, sliding down a tile
+   and starting again; the box they fall in leans, so the snow blows back past the train */
+.snow {
+  position: absolute;
+  inset: -25%;
+  rotate: 9deg;
+  pointer-events: none;
+}
+/* the near flakes fall in front of the train */
+.snow:last-child {
+  z-index: 2;
+}
+.far,
+.near {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+.far {
+  top: -480px;
+  background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='480' height='480' fill='%23efe4cb' fill-opacity='0.45'><circle cx='158' cy='77' r='1.9'/><circle cx='40' cy='257' r='1.6'/><circle cx='33' cy='243' r='1.1'/><circle cx='209' cy='39' r='1.2'/><circle cx='205' cy='393' r='1.3'/><circle cx='110' cy='300' r='2.3'/><circle cx='276' cy='192' r='2.4'/><circle cx='28' cy='408' r='1.5'/><circle cx='74' cy='61' r='1.5'/><circle cx='388' cy='91' r='1.9'/><circle cx='305' cy='180' r='1.8'/><circle cx='35' cy='34' r='1.4'/><circle cx='324' cy='206' r='1.5'/><circle cx='280' cy='218' r='1.5'/><circle cx='378' cy='333' r='1.4'/><circle cx='275' cy='252' r='2.2'/><circle cx='347' cy='141' r='2.4'/><circle cx='61' cy='202' r='2.1'/><circle cx='77' cy='235' r='1.2'/><circle cx='319' cy='364' r='1.8'/><circle cx='416' cy='153' r='2.0'/><circle cx='284' cy='277' r='1.7'/><circle cx='399' cy='448' r='1.7'/><circle cx='317' cy='34' r='2.0'/></svg>");
+  animation: fallFar 11.4s linear infinite;
+}
+.near {
+  top: -560px;
+  background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='560' height='560' fill='%23efe4cb' fill-opacity='0.7'><circle cx='254' cy='313' r='3.5'/><circle cx='261' cy='284' r='3.0'/><circle cx='107' cy='287' r='3.1'/><circle cx='441' cy='58' r='2.6'/><circle cx='56' cy='450' r='3.2'/><circle cx='29' cy='544' r='3.6'/><circle cx='364' cy='343' r='2.4'/><circle cx='14' cy='296' r='2.3'/><circle cx='110' cy='139' r='2.2'/><circle cx='260' cy='247' r='3.4'/></svg>");
+  animation: fallNear 6.9s linear infinite;
+}
+
+@keyframes arrive {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes swingX {
+  from {
+    transform: translateX(-6px);
+  }
+  to {
+    transform: translateX(6px);
+  }
+}
+@keyframes swingY {
+  from {
+    transform: translateY(6px);
+  }
+  to {
+    transform: translateY(-6px);
+  }
+}
+@keyframes chuff {
+  to {
+    transform: translateY(-0.7px);
+  }
+}
+@keyframes puff {
+  0% {
+    opacity: 0.6;
+    transform: translate(0, 0) scale(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-90px, -22px) scale(1.6);
+  }
+}
+@keyframes ties {
+  to {
+    transform: translateX(-24px);
+  }
+}
+@keyframes fallFar {
+  to {
+    transform: translateY(480px);
+  }
+}
+@keyframes fallNear {
+  to {
+    transform: translateY(560px);
+  }
+}
+
+/* less motion: the picture stands still (the fade in and out stay; they move nothing) */
+@media (prefers-reduced-motion: reduce) {
+  .veil *,
+  .drawing * {
+    animation: none !important;
+  }
+  .puff {
+    opacity: 0.4;
+  }
+}

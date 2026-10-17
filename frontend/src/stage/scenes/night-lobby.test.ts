@@ -218,8 +218,8 @@ describe('why the seat is asked nothing tonight', () => {
     });
     expect(noAskLine(me('investigator', 0), [], 3)).toBe('No checks left.');
     expect(noAskLine(me('sentinel', 0), [], 3)).toBe('No watches left.');
-    expect(noAskLine(me('vigilante', 0), [], 3)).toBe('No caps left.');
-    expect(noAskLine(me('vigilante', null, 0), [], 3)).toBe('No caps left.'); // nine-seat
+    expect(noAskLine(me('vigilante', 0), [], 3)).toBe('No bullets left.');
+    expect(noAskLine(me('vigilante', null, 0), [], 3)).toBe('No bullets left.'); // nine-seat
     expect(noAskLine(me('sigilist', 0), [], 3)).toBe('No sigils left.');
     expect(noAskLine(me('speculator', 0), [], 3)).toBe('You have made your pick.');
     // a use left, a role whose turn comes spent or not, a dead seat: nothing to say

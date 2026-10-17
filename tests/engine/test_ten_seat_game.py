@@ -387,6 +387,36 @@ def test_the_conceal_is_a_visit_to_the_packs_victim():
     assert h["illusionist"] not in visitors_of(resolve_night(choices, st["roles"], 2), h["healer"])
 
 
+def test_the_whole_pack_learns_the_role_the_illusionist_hid():
+    # Owner, 2026-10-17: the pack's record (every wolf's) names the concealed role.
+    st = _state({"lone_killer": "serial_killer", "neutral": "speculator"})
+    h = _holders(st)
+    choices = [
+        NightChoice(h["chanteuse"], "chanteuse", "kill", h["healer"]),
+        NightChoice(h["illusionist"], "illusionist", "conceal", None),
+    ]
+    pack = next(r for r in night_action_records(choices, resolve_night(choices, st["roles"], 2), st["roles"])
+                if r.actor == "wolves")
+    assert pack.result == "killed" and pack.seen == ["healer"]
+    assert pack.outcome == f"{h['healer']} died, and the illusionist hid their role: they were a healer."
+    # No conceal: the role is public, and the record says it as before.
+    plain = night_action_records(choices[:1], resolve_night(choices[:1], st["roles"], 2), st["roles"])[0]
+    assert plain.seen == [] and plain.outcome == f"{h['healer']} died. They were a healer."
+
+
+def test_a_clean_through_the_illusionists_body_is_not_told_to_the_pack():
+    st = _state({"lone_killer": "necromancer", "neutral": "speculator"}, day=3)
+    h = _holders(st)
+    choices = [
+        NightChoice(h["chanteuse"], "chanteuse", "kill", h["healer"]),
+        NightChoice(h["necromancer"], "necromancer", "kill", h["healer"], via=h["illusionist"]),
+    ]
+    outcome = resolve_night(choices, st["roles"], 3, body_conceals=1)
+    assert outcome.concealed == [h["healer"]]
+    pack = next(r for r in night_action_records(choices, outcome, st["roles"]) if r.actor == "wolves")
+    assert pack.seen == [] and pack.outcome == f"{h['healer']} died. Their role was concealed."
+
+
 def test_a_wolfs_skill_turn_is_stamped_with_its_own_round():
     from Agents.nodes.night.pack import CARRIER_ROUND, SKILL_ROUND, pack_fan_out_skills
     st = _state({"lone_killer": "serial_killer", "neutral": "speculator"})
@@ -521,3 +551,172 @@ def test_a_finished_game_saves_its_extraction_input_and_extracts_nothing(monkeyp
     assert case["observations"] == [] and case["strategy_points"] == []
     assert not any(r["kind"] in ("postgame_extraction", "dehalo") for r in sink.records)
     assert "memory_extracted" not in {e.type for e in events}
+
+
+def test_a_save_through_the_healers_body_is_announced_as_a_reanimated_healer():
+    # Owner, 2026-10-16: there is one healer, so once it is dead a save is the necromancer's, and the
+    # morning names it as it names a reanimated attack.
+    st = _state({"lone_killer": "necromancer", "neutral": "speculator"}, day=3)
+    h = _holders(st)
+    st["dead_roster"] = [DeathRecord(player=h["healer"], role="healer", day=1, phase="night")]
+    st["night_choices"] = [
+        NightChoice(h["chanteuse"], "chanteuse", "kill", h["sentinel"]),
+        NightChoice(h["necromancer"], "necromancer", "protect", h["sentinel"], via=h["healer"]),
+        NightChoice(h["vigilante"], "vigilante", "kill", h["sentinel"]),
+    ]
+    update = night_resolution(st, SimpleNamespace(context={"metrics": Metrics()}))
+    message = update["day_channel"][0].message
+    assert f"{h['sentinel']} was attacked by the wolves and the vigilante but was saved by a reanimated healer!" in message
+    assert "saved by the healer" not in message
+    assert update["night_report"].reanimated_saves == [h["sentinel"]]
+    shot = next(r for r in update["night_actions"] if r.actor == h["vigilante"])
+    assert shot.outcome == f"{h['sentinel']} survived: a reanimated healer saved them."
+
+
+def test_a_living_healers_save_still_names_the_healer():
+    st = _state({"lone_killer": "serial_killer", "neutral": "speculator"})
+    h = _holders(st)
+    st["night_choices"] = [
+        NightChoice(h["chanteuse"], "chanteuse", "kill", h["sentinel"]),
+        NightChoice(h["healer"], "healer", "protect", h["sentinel"]),
+    ]
+    update = night_resolution(st, SimpleNamespace(context={"metrics": Metrics()}))
+    assert f"{h['sentinel']} was attacked by the wolves but was saved by the healer!" in update["day_channel"][0].message
+    assert update["night_report"].reanimated_saves == []
+
+
+# ---- R10 (owner, 2026-10-17): an attack the fortune teller's self-bet stopped is announced ----
+
+def test_an_attack_a_self_bet_stopped_is_announced_and_every_record_says_so():
+    st = _state({"lone_killer": "serial_killer", "neutral": "fortune_teller"})
+    h = _holders(st)
+    ft = h["fortune_teller"]
+    st["night_choices"] = [
+        NightChoice(h["chanteuse"], "chanteuse", "kill", ft),
+        NightChoice(h["serial_killer"], "serial_killer", "kill", ft),
+        NightChoice(ft, "fortune_teller", "bet", ft),
+        NightChoice(h["healer"], "healer", "protect", ft),
+    ]
+    update = night_resolution(st, SimpleNamespace(context={"metrics": Metrics()}))
+    assert update["day_channel"][0].message == (
+        f"Night of day 2: {ft} was attacked by the wolves and the serial killer but survived: the fortune "
+        f"teller's self-bet saved them.")
+    report = update["night_report"]
+    assert report.saves == [(ft, ["wolves", "serial_killer"])] and report.deaths == []
+    assert report.self_bet_saves == [ft] and report.reanimated_saves == []
+    records = {r.actor: r for r in update["night_actions"]}
+    assert (records["wolves"].result, records["wolves"].outcome) == (
+        "self_bet_saved", f"{ft} survived: the fortune teller's self-bet saved them.")
+    assert records[h["serial_killer"]].result == "self_bet_saved"
+    assert (records[h["healer"]].result, records[h["healer"]].outcome) == (
+        "self_bet_saved", f"{ft} was attacked by the wolves and the serial killer and survived: the fortune "
+                          f"teller's self-bet saved them, not your protection.")
+    assert (records[ft].result, records[ft].outcome) == (
+        "self_bet", "You bet on yourself and were attacked by the wolves and the serial killer: your self-bet "
+                    "saved you, and the morning announces it.")
+    assert update["uses_left"]["fortune_teller"] == 1
+
+
+def test_a_self_bet_with_no_attack_on_it_is_silent():
+    st = _state({"lone_killer": "serial_killer", "neutral": "fortune_teller"})
+    h = _holders(st)
+    ft = h["fortune_teller"]
+    st["night_choices"] = [NightChoice(ft, "fortune_teller", "bet", ft),
+                           NightChoice(h["healer"], "healer", "protect", ft)]
+    update = night_resolution(st, SimpleNamespace(context={"metrics": Metrics()}))
+    assert update["day_channel"][0].message == "Night of day 2: No one died last night."
+    assert update["night_report"].saves == [] and update["night_report"].self_bet_saves == []
+    records = {r.actor: r for r in update["night_actions"]}
+    assert (records[ft].result, records[ft].outcome) == (
+        "self_bet", "You bet on yourself: an attack on you tonight fails, and nothing is scored.")
+    assert (records[h["healer"]].result, records[h["healer"]].outcome) == (
+        "no_attack", f"No attack on {ft} was announced.")
+
+
+def test_the_serial_killers_immunity_stays_silent_beside_a_self_bet():
+    st = _state({"lone_killer": "serial_killer", "neutral": "fortune_teller"})
+    h = _holders(st)
+    ft, killer = h["fortune_teller"], h["serial_killer"]
+    st["night_choices"] = [
+        NightChoice(h["vigilante"], "vigilante", "kill", killer),
+        NightChoice(ft, "fortune_teller", "bet", ft),
+        NightChoice(killer, "serial_killer", "kill", h["healer"]),
+    ]
+    update = night_resolution(st, SimpleNamespace(context={"metrics": Metrics()}))
+    message = update["day_channel"][0].message
+    assert killer not in message and "self-bet" not in message
+    assert update["night_report"].self_bet_saves == []
+    shot = next(r for r in update["night_actions"] if r.actor == h["vigilante"])
+    assert (shot.result, shot.outcome) == (
+        "immune", f"{killer} was unharmed: immune to night kills tonight. The public was told nothing about "
+                  "this attack.")
+
+
+def test_a_reanimated_attack_on_a_self_betting_fortune_teller_is_announced_too():
+    st = _state({"lone_killer": "necromancer", "neutral": "fortune_teller"}, day=3)
+    h = _holders(st)
+    ft, body = h["fortune_teller"], h["illusionist"]
+    st["dead_roster"] = [DeathRecord(player=body, role="illusionist", day=1, phase="night")]
+    st["surviving_wolves"] = [w for w in st["surviving_wolves"] if w != body]
+    st["night_choices"] = [
+        NightChoice(h["necromancer"], "necromancer", "kill", ft, via=body),
+        NightChoice(ft, "fortune_teller", "bet", ft),
+    ]
+    update = night_resolution(st, SimpleNamespace(context={"metrics": Metrics()}))
+    assert (f"{ft} was attacked by a reanimated wolf but survived: the fortune teller's self-bet saved them."
+            in update["day_channel"][0].message)
+    record = next(r for r in update["night_actions"] if r.actor == h["necromancer"])
+    assert (record.result, record.outcome) == (
+        "self_bet_saved", f"Through {body}'s body: {ft} survived: the fortune teller's self-bet saved them.")
+
+
+def test_a_protection_through_the_healers_body_on_a_self_betting_fortune_teller_is_not_a_reanimated_save():
+    st = _state({"lone_killer": "necromancer", "neutral": "fortune_teller"}, day=3)
+    h = _holders(st)
+    ft = h["fortune_teller"]
+    st["dead_roster"] = [DeathRecord(player=h["healer"], role="healer", day=1, phase="night")]
+    st["night_choices"] = [
+        NightChoice(h["chanteuse"], "chanteuse", "kill", ft),
+        NightChoice(ft, "fortune_teller", "bet", ft),
+        NightChoice(h["necromancer"], "necromancer", "protect", ft, via=h["healer"]),
+    ]
+    update = night_resolution(st, SimpleNamespace(context={"metrics": Metrics()}))
+    message = update["day_channel"][0].message
+    assert "reanimated healer" not in message and "the fortune teller's self-bet saved them" in message
+    assert update["night_report"].self_bet_saves == [ft] and update["night_report"].reanimated_saves == []
+    record = next(r for r in update["night_actions"] if r.actor == h["necromancer"])
+    assert record.result == "self_bet_saved" and record.outcome.endswith("not your protection.")
+
+
+def test_the_will_tells_a_self_bet_save_in_its_own_words():
+    from Agents.rules.night_record import disclosure
+    st = _state({"lone_killer": "serial_killer", "neutral": "fortune_teller"})
+    h = _holders(st)
+    ft = h["fortune_teller"]
+    choices = [NightChoice(h["vigilante"], "vigilante", "kill", ft),
+               NightChoice(ft, "fortune_teller", "bet", ft),
+               NightChoice(h["healer"], "healer", "protect", ft)]
+    records = night_action_records(choices, resolve_night(choices, st["roles"], 2), st["roles"])
+    assert disclosure(h["vigilante"], "vigilante", records) == (
+        f"The record of {h['vigilante']}, the vigilante: night 2, shot {ft}, who was saved by the fortune "
+        "teller's self-bet.")
+    assert disclosure(h["healer"], "healer", records) == (
+        f"The record of {h['healer']}, the healer: night 2, protected {ft}, who was attacked and saved by the "
+        "fortune teller's self-bet.")
+
+
+def test_a_clean_through_the_illusionists_body_leaves_the_carriers_visit_seen():
+    # Owner, 2026-10-16: only the living illusionist's conceal hides the pack carrier's visit.
+    from Agents.rules.night import visitors_of
+    st = _state({"lone_killer": "necromancer", "neutral": "speculator"}, day=3)
+    h = _holders(st)
+    choices = [
+        NightChoice(h["chanteuse"], "chanteuse", "kill", h["healer"]),
+        NightChoice(h["necromancer"], "necromancer", "kill", h["healer"], via=h["illusionist"]),
+        NightChoice(h["sentinel"], "sentinel", "watch", h["healer"]),
+    ]
+    outcome = resolve_night(choices, st["roles"], 3, body_conceals=1)
+    assert outcome.concealed == [h["healer"]]
+    assert set(visitors_of(outcome, h["healer"])) >= {h["chanteuse"], h["illusionist"]}
+    records = {r.actor: r for r in night_action_records(choices, outcome, st["roles"])}
+    assert h["chanteuse"] in records[h["sentinel"]].seen

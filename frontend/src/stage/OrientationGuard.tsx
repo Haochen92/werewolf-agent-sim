@@ -13,27 +13,20 @@
  * screen there.
  */
 import { useEffect, useRef, type ReactNode } from 'react';
+import { canFullscreen, canTurn, enterFullscreen } from './fullscreen';
 import { HomeScreenTip } from './HomeScreenTip';
 import styles from './OrientationGuard.module.css';
-
-/** `screen.orientation.lock` is not in every TypeScript DOM lib yet. */
-type Lockable = ScreenOrientation & { lock?: (o: 'landscape') => Promise<void> };
 
 export function OrientationGuard({ children }: { children: ReactNode }) {
   const asked = useRef(false);
   useEffect(() => {
     if (!window.matchMedia('(pointer: coarse)').matches) return;
-    const root = document.documentElement;
-    const orientation = screen.orientation as Lockable | undefined;
-    if (!root.requestFullscreen || !orientation?.lock) return;
+    if (!canFullscreen() || !canTurn()) return;
     // both need a user gesture, so they wait for the first touch
     const onFirst = () => {
       if (asked.current) return;
       asked.current = true;
-      root
-        .requestFullscreen({ navigationUI: 'hide' })
-        .then(() => orientation.lock?.('landscape'))
-        .catch(() => {});
+      void enterFullscreen();
     };
     window.addEventListener('pointerup', onFirst, { once: true });
     return () => window.removeEventListener('pointerup', onFirst);

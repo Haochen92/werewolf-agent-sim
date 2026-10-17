@@ -33,6 +33,36 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* a send that failed; the same red as the night plates' note */
+.error {
+  margin: 0 0 0.4em;
+  color: #f08a7a;
+}
+
+/* on its way: a pulsing amber dot before "Sending…" (still for reduced motion) */
+.sending {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+}
+.sending i {
+  width: 0.45em;
+  height: 0.45em;
+  border-radius: 50%;
+  background: #e0a63a;
+  animation: beat 1.2s ease-in-out infinite;
+}
+@keyframes beat {
+  50% {
+    opacity: 0.25;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sending i {
+    animation: none;
+  }
+}
+
 .row {
   display: flex;
   gap: 11.2px;
@@ -54,6 +84,9 @@
   transition:
     opacity 0.2s,
     filter 0.2s;
+}
+.vchip:disabled {
+  cursor: default;
 }
 .vchip b {
   font-size: calc(var(--meta) * 0.95);
@@ -129,7 +162,13 @@
     0 0 16px 4px rgba(255, 179, 92, 0.55);
 }
 
-/* the brass plate that confirms, naming the vote */
+/* the brass plate that confirms, naming the vote; the hand-over beside it */
+.plate {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 11.2px;
+  align-items: center;
+}
 .plate button {
   font: inherit;
   font-size: calc(22.4px * 1.15 * var(--legible-ui));
@@ -147,6 +186,11 @@
 .plate button:disabled {
   opacity: 0.5;
   cursor: default;
+}
+/* the hand-over: the night plate's second button (NightRoom.module.css `.plate button`) */
+.plate button.agent {
+  background: linear-gradient(#5a4632, #3a2a1a);
+  color: var(--paper);
 }
 
 /* "Your ballot is in": me → my choice */

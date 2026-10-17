@@ -152,7 +152,7 @@ def test_accusers_are_listed_in_the_order_they_first_accused():
 
 # --- the moderator's line -------------------------------------------------------------------
 
-def test_the_announcement_names_exactly_the_accusers_the_tags_record():
+def test_the_announcement_names_who_speaks_and_never_the_accusers():
     day = [
         said(0, "player_2", [accusation("player_5")]),
         said(1, "player_4", [accusation("player_5"), accusation("player_6")]),
@@ -162,8 +162,9 @@ def test_the_announcement_names_exactly_the_accusers_the_tags_record():
 
     line = closing_announcement(closing_speakers(day, 2, ALIVE))
 
-    assert line == ("Before the vote: player_5 has been accused by player_2, player_4 and player_7; "
-                    "player_6 by player_4 and player_1. Each gets a last word.")
+    # The accusers are not named: a tag can be wrong or out of date, and a count in the
+    # moderator's voice is read as fact (2f19d908).
+    assert line == "Before the vote: player_5 and player_6 each get a last word."
 
 
 def test_the_announcement_for_one_accused():
@@ -171,8 +172,7 @@ def test_the_announcement_for_one_accused():
 
     line = closing_announcement([trial])
 
-    assert line == ("Before the vote: player_5 has been accused by player_2 and player_4. "
-                    "player_5 gets a last word.")
+    assert line == "Before the vote: player_5 gets a last word."
 
 
 def test_no_announcement_without_an_accused_player():

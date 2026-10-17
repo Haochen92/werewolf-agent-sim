@@ -3,7 +3,8 @@ is untouched by it.
 
 - The golden pins, byte for byte, what every role's AI discuss turn sends the model (a
   prompt change is a research epoch bump; see tests/fixtures/day_discuss_prompt_golden.py).
-- With no direction the preview sends exactly that prompt; with one it adds one message
+- With no direction the preview sends that prompt without the deduction lines (a human seat never
+  gets machine deduction, owner 2026-10-16, so neither does its draft); with one it adds one message
   after it and nothing else; either way nothing is committed or recorded.
 """
 
@@ -15,6 +16,7 @@ import json
 import pytest
 
 from Agents.nodes.day.actors import preview_discuss
+from Agents.deduction import seat_view
 from Agents.schemas import day_discuss_output
 from Agents.turn import agent_player, pipeline
 from Agents.turn.drafting_agent import player_direction
@@ -33,26 +35,40 @@ def _human_payload(role: str) -> dict:
     return {**speaker_payload(role), "human_player": True}
 
 
+def _without_deductions(monkeypatch) -> dict:
+    """The AI turns' prompts in a game set to "off": what a human seat's draft sees."""
+    with monkeypatch.context() as patched:
+        patched.setattr(seat_view, "DEFAULT_DEDUCTION_MODE", "off")
+        return render(patched)
+
+
 def test_ai_discuss_prompt_is_byte_identical_to_the_golden(monkeypatch):
     assert render(monkeypatch) == json.loads(GOLDEN.read_text())
 
 
 @pytest.mark.parametrize("role", ROLES)
 def test_preview_without_direction_sends_the_real_turns_prompt(monkeypatch, role):
+    expected = _without_deductions(monkeypatch)[role]
     sent: list = []
     monkeypatch.setattr(agent_player, "get_llm", lambda: capturing_llm(sent))
     line = preview_discuss(_human_payload(role), {"configurable": {}}, runtime())
     assert line == "player_2, answer the question."
-    assert [list(m) for m in sent[0]] == json.loads(GOLDEN.read_text())[role]
+    assert [list(m) for m in sent[0]] == expected
+
+
+def test_the_ai_turn_has_deduction_lines_the_human_draft_does_not(monkeypatch):
+    ai = json.dumps(json.loads(GOLDEN.read_text())["healer"])
+    draft = json.dumps(_without_deductions(monkeypatch)["healer"])
+    assert "so player_3 is not a wolf" in ai and "so player_3 is not a wolf" not in draft
 
 
 def test_preview_with_direction_adds_one_message_and_nothing_else(monkeypatch):
+    golden = _without_deductions(monkeypatch)["healer"]
     sent: list = []
     monkeypatch.setattr(agent_player, "get_llm", lambda: capturing_llm(sent))
     direction = player_direction("push on player_2 {softly}", "player_2 is odd",
                                  {"player_5": "quiet"}, "player_2")
     preview_discuss(_human_payload("healer"), {"configurable": {}}, runtime(), direction)
-    golden = json.loads(GOLDEN.read_text())["healer"]
     assert [list(m) for m in sent[0]] == golden + [["human", direction]]
 
 

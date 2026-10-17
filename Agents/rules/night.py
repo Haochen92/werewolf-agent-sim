@@ -186,7 +186,8 @@ def resolve_night(choices: list[NightChoice], roles: dict[str, str], night: int,
             kind = "reanimated_sigilist" if choice.via else "sigilist"  # a sigil placed through a body
             attacks_on.setdefault(choice.target, []).append(Attack(choice.actor, kind))
 
-    # 4. One verdict per attacked player. A fortune teller's self-bet makes it unharmed tonight.
+    # 4. One verdict per attacked player. A fortune teller's self-bet makes it unharmed tonight: its
+    # verdict is "immune" like the serial killer's, but the morning announces it (owner, 2026-10-17).
     protected: list[str] = []
     for choice in in_effect:
         if choice.kind == "protect" and choice.target is not None:
@@ -218,6 +219,9 @@ def resolve_night(choices: list[NightChoice], roles: dict[str, str], night: int,
         for victim in pack_victims:
             if verdicts.get(victim) == "killed" and victim not in concealed:
                 concealed.append(victim)
+    # Only the living illusionist's conceal hides the carrier's visit (below); a clean through its
+    # body does not (owner, 2026-10-16).
+    concealed_by_illusionist = list(concealed)
     # A kill through the illusionist's body also cleans its victim, while the dead illusionist has a
     # conceal left (``body_conceals``; owner, 2026-10-10): the role is hidden and the necromancer
     # learns it. The conceal is spent in the resolution node.
@@ -229,9 +233,9 @@ def resolve_night(choices: list[NightChoice], roles: dict[str, str], night: int,
     # A conceal that took also hides the attacking trace: the carrier's visit to that victim is
     # not among the visits the sentinel and trailseer see (balance ruling 2026-10-09). The
     # carrier's other visit that night, and the illusionist's own, stay visible.
-    carriers = [c.actor for c in in_effect if is_pack_kill(c) and c.target in concealed]
+    carriers = [c.actor for c in in_effect if is_pack_kill(c) and c.target in concealed_by_illusionist]
     visits = [(visitor, visited) for visitor, visited in visits
-              if not (visitor in carriers and visited in concealed)]
+              if not (visitor in carriers and visited in concealed_by_illusionist)]
 
     # 6. What an investigator reads: the wolves, and a necromancer on a night it attacked.
     suspicious: list[str] = []
@@ -270,6 +274,8 @@ def resolve_night(choices: list[NightChoice], roles: dict[str, str], night: int,
         picks=picks,
         bets=bets,
         self_bets=self_bets,
+        protected_through_body=[c.target for c in in_effect
+                                if c.kind == "protect" and c.via is not None and c.target is not None],
     )
 
 

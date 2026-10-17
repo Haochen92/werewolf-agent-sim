@@ -1,6 +1,6 @@
 /* The speaking turn's box, as bench 72 places it (in the speech box's stead, the red count at
    its head), in the HUD pass's material (owner, 2026-09-29): the speech box's walnut board and
-   thin brass edge, Young Serif for the heading and the buttons, Literata in the fields. Since
+   thin brass edge, Garamond for the heading, Literata 600 for the buttons (2026-10-16), Literata in the fields. Since
    2026-10-01 no boxes: the head, the line's preview once there is one, then three plaques (Write
    your line, Send, Pass); the writing is in the composer. In stage units (1cqw = 16). */
 .dock {
@@ -35,8 +35,9 @@
 }
 .head strong {
   font-family: var(--font-display);
-  font-weight: 400;
-  font-size: calc(22.4px * 1.05 * var(--legible-ui));
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
+  font-size: calc(22.4px * 1.05 * var(--legible-ui) * var(--display-scale, 1.08));
   color: var(--cream);
 }
 .head span {
@@ -45,10 +46,11 @@
 }
 .head .count {
   margin-left: auto;
-  font-family: var(--font-display);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   font-size: calc(var(--meta) * 1.15);
   color: #e3503f;
-  font-variant-numeric: tabular-nums;
 }
 /* the dock's head: the heading, the hint, the count at the far right. The hint takes what room
    is left beside them and wraps in it; on a narrow head (a phone with the side slot open) it
@@ -195,7 +197,9 @@
 }
 .agent label {
   flex: 0 0 auto;
-  font-family: var(--font-display);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   font-size: var(--meta);
   color: var(--hud-brass-hi);
   white-space: nowrap;
@@ -239,10 +243,12 @@
   resize: none;
 }
 
-/* the buttons: quiet brass-edged walnut plaques in Young Serif; Send is the one in brass */
+/* the buttons: quiet brass-edged walnut plaques in Literata 600; Send is the one in brass */
 .dock button {
   font: inherit;
-  font-family: var(--font-display);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   font-size: calc(var(--meta) * 1.08);
   line-height: 1.3;
   padding: calc(4.8px * var(--legible-ui)) calc(14.4px * var(--legible-ui));
@@ -344,7 +350,8 @@
   --meta: 17px;
   --said: 24px;
   --font-body: var(--font-stage-body, Literata), Georgia, serif;
-  --font-display: var(--font-stage-display, 'Young Serif'), Georgia, serif;
+  --font-display: var(--font-stage-display, 'EB Garamond'), Georgia, serif;
+  --font-ui: var(--font-stage-body, Literata), Georgia, serif;
   font-family: var(--font-body);
 }
 /* a phone: the sheet to the screen's edges, and never under 16 px in a field (iOS zooms) */
@@ -392,11 +399,12 @@
 .head .clock {
   flex: none;
   margin-left: auto;
-  font-family: var(--font-display);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   font-size: calc(var(--meta) * 2);
   line-height: 1;
   color: #e3503f;
-  font-variant-numeric: tabular-nums;
 }
 .dock .close {
   flex: none;

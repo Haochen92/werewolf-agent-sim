@@ -20,8 +20,14 @@ from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel
 
 from Agents.llm_factory import get_llm, get_llm_game_fallback
-from Agents.llm_factory.chat import GAME_LLM
-from Agents.llm_factory.embeddings import is_transient_provider_error
+from Agents.llm_factory.chat import GAME_LLM, provider_name
+from Agents.llm_factory.embeddings import (
+    KEY_REFUSED,
+    ProviderKeyRejected,
+    is_key_rejected_error,
+    provider_complaint,
+    is_transient_provider_error,
+)
 from Agents.llm_factory.providers.common import enforced_output
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
 from Agents.schemas.game_events import (
@@ -95,6 +101,11 @@ def run_agent(
     enforced = False
     for _ in range(max_retries + 1):
         result = _generate(chain, prompt_input, output_key, player_id)
+        if isinstance(result, _Rejected):
+            if not on_rescue:
+                raise ProviderKeyRejected(
+                    f"{provider_name(GAME_LLM.get().model)} {KEY_REFUSED}: {result.detail}.")
+            break  # the rescue's own credential: the turn falls to the typed fallback
         if result is _STALLED:
             # Slow or full is not asked again: the rescue takes the turn, and the count
             # decides whether the next turns skip the primary altogether.
@@ -125,7 +136,7 @@ def run_agent(
         result = _generate(fallback_chain, prompt_input, output_key, player_id)
         # The rescue can stall too (both models bounced under load, 2026-10-09): then the turn
         # falls to the typed fallback below, never to the resolver.
-        if result is not None and result is not _STALLED:
+        if result is not None and result is not _STALLED and not isinstance(result, _Rejected):
             reasoning = extract_agent_reasoning(result)
             record_reads(reasoning["reads"], payload, output_key, output_schema)
             outcome = resolve_decision(result, reasoning, output_key, payload, valid_targets)
@@ -201,13 +212,24 @@ def run_agent(
 _STALLED = object()
 
 
+class _Rejected:
+    """What _generate returns when the provider refused the key itself; carries its complaint."""
+
+    def __init__(self, detail: str):
+        self.detail = detail
+
+
 
 def _generate(chain: Any, prompt_input: dict, output_key: str, player_id: str):
     """One structured LLM call. Returns the parsed decision; None on a parse or request error;
-    ``_STALLED`` when the provider timed out or bounced the call (429, 5xx, dropped)."""
+    ``_STALLED`` when the provider timed out or bounced the call (429, 5xx, dropped);
+    ``_Rejected`` when it refused the key (401/403, out of credit)."""
     try:
         return chain.invoke(prompt_input, config={"run_name": f"{output_key}_{player_id}"})
     except Exception as e:
+        if is_key_rejected_error(e):
+            logger.error(f"LLM call for {player_id}: the provider rejected the key: {e}")
+            return _Rejected(provider_complaint(e))
         if is_transient_provider_error(e):
             logger.warning(f"LLM call stalled for {player_id} (slow or full): {e}")
             return _STALLED

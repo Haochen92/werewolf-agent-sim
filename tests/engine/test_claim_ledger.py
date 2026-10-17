@@ -215,8 +215,9 @@ def test_accusations_tag_revealed_players_and_drop_the_retold_sections():
     text = format_day_summaries([old], before_day=4,
                                 dead_roster=[DeathRecord(player="p8", role="chanteuse", day=3, phase="day")])
     assert ("[Day 3] p8 (revealed chanteuse, voted out day 3), p1 → p2: p8 argued p2 survived an attack. "
-            "Defense: p2 denied it. Disputed: p6 disagreed. Summariser's check against the record: "
-            "No attack on p2 was announced.") in text
+            "Defense: p2 denied it. Disputed: p6 disagreed.") in text
+    # an older summary's record_check is not shown: the summariser's checks were wrong (2026-10-16)
+    assert "No attack on p2 was announced" not in text
     assert "a story" not in text and "pushing p2" not in text and "concrete_claim" not in text
     assert "Claims made in the day discussion" not in text  # nobody claimed: no block
 
@@ -391,3 +392,119 @@ def test_a_roleblock_is_an_attempt_and_empty_results_are_kept():
     assert "  Night 1: watched p7; says no one visited them." in lines
     assert "  Night 3: set a sigil on p4, says it had no effect." in lines
     assert not any("did not act" in line for line in lines)
+
+
+_REANIMATED = "Night of day 1: p1 was attacked by the wolves but was saved by a reanimated healer!"
+
+
+def _reanimated_save_claimed_by(role):
+    from Agents.rules.claim_ledger import ledger_rows
+    rows = ledger_rows([_gm(_REANIMATED, 1), _day(2, [_claim("p4", role, (1, "protect", "p1", "saved_from_attack"))])])
+    (row,) = rows
+    (entry,) = row.entries
+    return entry.checks
+
+
+def test_a_reanimated_healers_save_claimed_by_a_healer_does_not_fit():
+    # Owner, 2026-10-16: a save announced as by a reanimated healer is the necromancer's, so a claim to
+    # be the living healer who made it does not fit the record.
+    (check,) = _reanimated_save_claimed_by("healer")
+    assert check.fits is False and check.text.endswith("not a living healer.")
+
+
+def test_a_reanimated_healers_save_claimed_by_a_necromancer_fits():
+    # Catalogue OQ18: a necromancer truthfully claiming that protection is consistent with the record.
+    (check,) = _reanimated_save_claimed_by("necromancer")
+    assert check.fits is True
+
+
+def test_a_reanimated_healers_save_claimed_without_a_role_is_stated_without_a_verdict():
+    (check,) = _reanimated_save_claimed_by("none")
+    assert check.fits is None and "saved by a reanimated healer" in check.text
+    text = format_day_summaries([_gm(_REANIMATED, 1), _day(2, [_claim("p4", "healer", (1, "protect", "p1", "saved_from_attack"))])],
+                                before_day=3)
+    assert "no save of p1 was announced" not in text
+
+
+_SELF_BET = "Night of day 1: p1 was attacked by the serial killer but survived: the fortune teller's self-bet saved them."
+
+
+def _protection_of_p1(result):
+    from Agents.rules.claim_ledger import ledger_rows
+    rows = ledger_rows([_gm(_SELF_BET, 1), _day(2, [_claim("p4", "healer", (1, "protect", "p1", result))])])
+    (row,) = rows
+    (entry,) = row.entries
+    return entry.checks
+
+
+def test_a_save_claimed_on_a_self_bet_night_does_not_fit():
+    # Owner, 2026-10-17 (R10): the fortune teller's self-bet takes priority over a protection, so the
+    # healer saved nothing; the note says what did, not "no save was announced".
+    (check,) = _protection_of_p1("saved_from_attack")
+    assert check.fits is False
+    assert check.text == "Record: p1 was saved that night by the fortune teller's self-bet, not by a protection."
+
+
+def test_a_protection_claimed_without_a_save_on_a_self_bet_night_is_stated_without_a_verdict():
+    (check,) = _protection_of_p1("not_said")
+    assert check.fits is None and "fortune teller's self-bet" in check.text
+
+
+def _watch(player, role, night, target, seen, day):
+    # Schema-valid, as the summariser writes it: a named sighting has result not_said and the names in
+    # seen; "no one" is no_visitors with seen empty (review 2026-10-16: "seen" is not a legal result).
+    claim = _claim(player, role, (night, "watch", target, "not_said" if seen else "no_visitors"))
+    claim["night_actions"][0]["seen"] = seen
+    return _day(day, [claim])
+
+
+def _line(text, night_target):
+    return next(l for l in text.splitlines() if night_target in l)
+
+
+def test_a_corrected_sighting_replaces_the_old_one_and_keeps_it_as_history():
+    text = _ledger(_watch("p2", "sentinel", 1, "p5", ["p7"], 2), _watch("p2", "sentinel", 1, "p5", ["p8"], 3))
+    line = _line(text, "watched p5")
+    assert "says p8 visited them" in line
+    assert "changed on day 3" in line and "says p7 visited them" in line
+
+
+def test_no_visitors_corrected_to_a_sighting_is_a_change():
+    text = _ledger(_watch("p2", "sentinel", 1, "p5", [], 2), _watch("p2", "sentinel", 1, "p5", ["p8"], 3))
+    line = _line(text, "watched p5")
+    assert line.index("says p8 visited them") < line.index("changed on day 3")
+    assert "says no one visited them" in line.split("changed on day 3")[1]
+
+
+def test_a_sighting_corrected_to_no_visitors_is_a_change():
+    text = _ledger(_watch("p2", "sentinel", 1, "p5", ["p7"], 2), _watch("p2", "sentinel", 1, "p5", [], 3))
+    line = _line(text, "watched p5")
+    assert line.index("says no one visited them") < line.index("changed on day 3")
+    assert "says p7 visited them" in line.split("changed on day 3")[1]
+
+
+def test_a_repeated_sighting_is_one_entry():
+    text = _ledger(_watch("p2", "sentinel", 1, "p5", ["p7"], 2), _watch("p2", "sentinel", 1, "p5", ["p7"], 3))
+    assert text.count("says p7 visited them") == 1 and "changed" not in text
+
+
+def test_a_sighting_named_once_then_repeated_without_names_is_a_repeat():
+    plain = _claim("p2", "sentinel", (1, "watch", "p5", "not_said"))
+    text = _ledger(_watch("p2", "sentinel", 1, "p5", ["p7"], 2), _day(3, [plain]))
+    assert "says p7 visited them" in text and "changed" not in text
+
+
+def test_a_roleless_watch_keeps_its_sighting():
+    text = _ledger(_watch("p2", "none", 1, "p5", ["p7"], 2))
+    assert "says p7 visited them" in text
+
+
+def test_dating_an_undated_watch_keeps_its_sighting():
+    # Review v3 §4: an undated "watched p5, saw p7", dated to night 1 the next day without repeating the
+    # visitor, rendered only "Night 1: watched p5".
+    undated = _claim("p2", "sentinel", (0, "watch", "p5", "not_said"))
+    undated["night_actions"][0]["seen"] = ["p7"]
+    dated = _claim("p2", "sentinel", (1, "watch", "p5", "not_said"))
+    text = _ledger(_day(2, [undated]), _day(3, [dated]))
+    assert "Night 1: watched p5; says p7 visited them" in text
+    assert "Night not stated" not in text

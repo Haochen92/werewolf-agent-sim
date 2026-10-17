@@ -165,7 +165,7 @@ export function Guide() {
   const { pinned, backToTop } = useReplaceSiteStrip();
   const current = useSectionInView(IDS, line);
   const here = SECTIONS.find((s) => s.id === current) ?? SECTIONS[0];
-  // the guide's music plays only for a reader who turns it on (the switch by the title)
+  // the guide's music plays only for a reader who turns it on (the nav's switch)
   useMusicBed(GUIDE_BED);
 
   return (
@@ -257,6 +257,8 @@ export function Guide() {
                 </Menu.Item>
               </Menu.Dropdown>
             </Menu>
+            {/* the music's switch: this bar stands in for the nav's strip on a phone */}
+            <SoundButton optIn className={classes.barMusic} />
             <span
               className={classes.progress}
               style={
@@ -269,12 +271,7 @@ export function Guide() {
           </div>
         </div>
 
-        <div className={classes.titleRow}>
-          <h1 className={classes.title}>Gameplay guide</h1>
-          <SoundButton optIn className={classes.music}>
-            Music
-          </SoundButton>
-        </div>
+        <h1 className={classes.title}>Gameplay guide</h1>
 
         <section id="intro" className={classes.section} aria-labelledby="intro-head">
           <h2 id="intro-head">Aboard the Ninth Express</h2>
@@ -298,8 +295,8 @@ export function Guide() {
         <section id="tools" className={classes.section} aria-labelledby="tools-head">
           <h2 id="tools-head">Tools</h2>
           <p className={classes.sub}>
-            Two aids while you play: notes on the other players, and your own agent to help
-            write your messages.
+            Three aids while you play: notes on the other players, your own agent to help
+            write your messages, and your role card.
           </p>
           <ToolsTray />
         </section>

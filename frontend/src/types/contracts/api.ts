@@ -761,6 +761,8 @@ export interface components {
       cast?: string[];
       /** Error */
       error?: string | null;
+      /** Error Kind */
+      error_kind?: 'key_rejected' | null;
     };
     /**
      * GmMessage
@@ -1377,6 +1379,16 @@ export interface components {
         | 'reanimated_vigilante'
         | 'reanimated_sigilist'
       )[];
+      /**
+       * Reanimated
+       * @default false
+       */
+      reanimated: boolean;
+      /**
+       * Self Bet
+       * @default false
+       */
+      self_bet: boolean;
     };
     /** PackRosterUpdate */
     PackRosterUpdate: {
@@ -1515,11 +1527,8 @@ export interface components {
       game_id: string;
       /** Finished At */
       finished_at?: string | null;
-      /**
-       * Winner
-       * @enum {string}
-       */
-      winner: 'villagers' | 'wolves' | 'serial_killer' | 'necromancer';
+      /** Winner */
+      winner?: ('villagers' | 'wolves' | 'serial_killer' | 'necromancer') | null;
       /** Neutral Result */
       neutral_result?: string | null;
       /** Days */
@@ -1558,11 +1567,8 @@ export interface components {
       game_id: string;
       /** Finished At */
       finished_at?: string | null;
-      /**
-       * Winner
-       * @enum {string}
-       */
-      winner: 'villagers' | 'wolves' | 'serial_killer' | 'necromancer';
+      /** Winner */
+      winner?: ('villagers' | 'wolves' | 'serial_killer' | 'necromancer') | null;
       /** Neutral Result */
       neutral_result?: string | null;
       /** Days */
@@ -1670,6 +1676,10 @@ export interface components {
         | 'wolf';
       /** Pack */
       pack?: string[] | null;
+      /** Pack Roles */
+      pack_roles?: {
+        [key: string]: string;
+      } | null;
       /** Bullets */
       bullets?: number | null;
       /** Uses */

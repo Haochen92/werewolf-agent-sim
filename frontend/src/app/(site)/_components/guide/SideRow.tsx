@@ -124,6 +124,8 @@ export function SideRow({
         className={classes.view}
         onPointerDown={(e) => {
           swipeFrom.current = e.clientX;
+          // a finger's swipe is followed by no click to clear the mark, and it ate the next tap
+          swiped.current = false;
         }}
         onPointerUp={(e) => {
           const from = swipeFrom.current;

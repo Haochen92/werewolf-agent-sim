@@ -12,6 +12,9 @@
  * When it is your turn to talk, a line, "Say it" and "Pass" sit at the foot of the room on the
  * left; the chat keeps the right. A round a wolf passed shows as "passed". They shut while the
  * line is on its way and once it is in; a send that failed reopens them, with why under the box.
+ *
+ * The chat is the replay's night room's. Live, the pack talks in the transcript (its Wolf lines,
+ * owner 2026-10-17) and only the line to say it (`SayLine`) stands in the pack's room.
  */
 import { motion } from 'motion/react';
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
@@ -61,8 +64,12 @@ export interface PackChatProps {
     left: number;
     /** The small line under it (the countdown, ticking on its own). */
     note?: ReactNode;
+    /** A line over the box: how the pack's night goes, before anyone has spoken. */
+    cue?: string;
     /** Pass the round (the ten-seat chat ends once every wolf passed a round). */
     onPass?: () => void;
+    /** "Let my agent talk": the round goes to the seat's agent. */
+    onAgent?: () => void;
     /** The request this line answers: a new one starts the box afresh. */
     seq?: number;
     /** The line (or the pass) is on its way, or in: the box and both buttons are shut. */
@@ -181,16 +188,18 @@ export function PackChat({
   );
 }
 
-function SayLine({
+export function SayLine({
   draft,
   onSay,
   onPass,
+  onAgent,
   left,
   note,
+  cue,
   sent,
   error,
   hidden,
-}: NonNullable<PackChatProps['input']> & { hidden: boolean }) {
+}: NonNullable<PackChatProps['input']> & { hidden?: boolean }) {
   const [text, setText] = useState(draft);
   // pressed here: shut at once, before the container says the send is on its way
   const [pressed, setPressed] = useState(false);
@@ -208,6 +217,7 @@ function SayLine({
         onSay?.(text.trim());
       }}
     >
+      {cue ? <span className={styles.cue}>{cue}</span> : null}
       <input
         aria-label="Your line to the pack"
         placeholder="Say something to your packmate…"
@@ -229,6 +239,19 @@ function SayLine({
           }}
         >
           Pass
+        </button>
+      ) : null}
+      {onAgent ? (
+        <button
+          type="button"
+          disabled={shut}
+          onClick={() => {
+            if (shut) return;
+            setPressed(true);
+            onAgent();
+          }}
+        >
+          Let my agent talk
         </button>
       ) : null}
       {error ? (

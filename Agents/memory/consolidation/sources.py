@@ -41,6 +41,7 @@ def record_from_event_log(game_id: str, events: list[dict]) -> dict:
     carriers: dict[int, str] = {}
     night_deaths: dict[int, list] = {}
     night_saves: dict[int, list] = {}
+    night_self_bet_saves: dict[int, list] = {}
     night_choices: dict[int, list] = {}
     votes: dict[int, list] = {}
     lynches: dict[int, dict] = {}
@@ -59,7 +60,9 @@ def record_from_event_log(game_id: str, events: list[dict]) -> dict:
             carriers[day] = e["carrier"]
         elif t == "night_result":
             night_deaths[day] = e.get("deaths") or []
-            night_saves[day] = [x["player"] for x in e.get("saves") or []]
+            # A save may be a fortune teller's own self-bet (announced since 2026-10-17), not a protection.
+            night_saves[day] = [x["player"] for x in e.get("saves") or [] if not x.get("self_bet")]
+            night_self_bet_saves[day] = [x["player"] for x in e.get("saves") or [] if x.get("self_bet")]
         elif t == "night_action":
             night_choices.setdefault(day, []).append(e)
         elif t == "vote_cast":
@@ -78,7 +81,7 @@ def record_from_event_log(game_id: str, events: list[dict]) -> dict:
         deaths = night_deaths.get(day, [])
         recs = list(records.get(day, {}).values()) + _untold_records(
             day, night_choices.get(day, []), records.get(day, {}), roles,
-            [d["player"] for d in deaths], night_saves.get(day, []))
+            [d["player"] for d in deaths], night_saves.get(day, []), night_self_bet_saves.get(day, []))
         concealed = [d["player"] for d in deaths if d.get("concealed")]
         choices, attackers, attacks_on, visits = [], [], {}, []
         for r in recs:
@@ -115,7 +118,7 @@ def record_from_event_log(game_id: str, events: list[dict]) -> dict:
 
 
 def _untold_records(day: int, choices: list[dict], records: dict, roles: dict, died: list[str],
-                    saved: list[str]) -> list[dict]:
+                    saved: list[str], self_bet_saved: list[str] = ()) -> list[dict]:
     """The records of actors who chose an action that night but were told nothing (they died): the
     result where the public outcome decides it, else ``unknown``."""
 
@@ -128,12 +131,13 @@ def _untold_records(day: int, choices: list[dict], records: dict, roles: dict, d
             continue
         action = {"vigilante": "shoot"}.get(role, ROLE_SPECS[role].night_action)
         if action == "protect":
-            result = "saved" if target in saved else "no_attack"
+            result = "saved" if target in saved else "self_bet_saved" if target in self_bet_saved else "no_attack"
         elif action == "investigate":
             result = "suspicious" if ROLE_SPECS.get(roles.get(target, ""), None) and \
                 ROLE_SPECS[roles[target]].side == WOLVES else "not_suspicious"
         elif action in ("kill", "shoot"):
-            result = "killed" if target in died else "saved" if target in saved else "immune"
+            result = ("killed" if target in died else "saved" if target in saved
+                      else "self_bet_saved" if target in self_bet_saved else "immune")
         elif action == "bet":
             result = "self_bet" if target == actor else "scored_1" if target in died else "missed"
         elif action == "pick":

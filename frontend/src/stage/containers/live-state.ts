@@ -44,7 +44,13 @@ import { BY, DIED } from '@/stage/instruments/MorningRoll';
 import { ROLE_NAME, seatNumber } from '@/stage/roles';
 import { sealedLabel } from '@/stage/scenes/ShelfRoomScene';
 import type { ActMore, Presentation } from '@/stage/scenes/types';
-import { pressFile, pressTranscript, showFile, showRecord } from '@/stage/slot';
+import {
+  packNightSlot,
+  pressFile,
+  pressTranscript,
+  showFile,
+  showRecord,
+} from '@/stage/slot';
 import type { DurableGameEvent, EventOf, GameStatus, Phase } from '@/types/contracts';
 import { nextLiveStep, type LiveContext } from './live-queue';
 import { carryAcross, holdFor, still, type Cursor } from './transport';
@@ -105,7 +111,9 @@ export type LiveAction =
   /** A seat tapped on the stage after the game: its file comes to the pane. */
   | { type: 'show-file'; xray: boolean }
   /** The transcript's pointer: the case file comes to the pane on the Record, any time. */
-  | { type: 'show-record' };
+  | { type: 'show-record' }
+  /** The wolves' night: the transcript opens on the pack's lines, and goes at dawn (slot.ts). */
+  | { type: 'pack-night'; open: boolean };
 
 export function initialLiveState(slot: Presentation['slot'] = null): LiveState {
   return {
@@ -482,6 +490,19 @@ function promptAt(state: LiveState, ctx: LiveCtx): number {
   );
 }
 
+/** The beat on the stage is a packmate's line, and the next is this seat's open prompt. */
+function packmateThenMe(state: LiveState, ctx: LiveCtx): boolean {
+  const current = state.beats[state.cursor.index];
+  const next = state.beats[state.cursor.index + 1];
+  return (
+    current?.id === 'pack.line' &&
+    current.subject !== ctx.me &&
+    !!next?.liveOnly &&
+    next.seat === ctx.me &&
+    next.seq === ctx.openPrompt
+  );
+}
+
 /**
  * How far behind its own turn a stage may read on a room's clock, in the holds still to play
  * before the turn: past it the stage lands still just before the turn, and the turn plays (the
@@ -550,6 +571,9 @@ function advance(state: LiveState, ctx: LiveCtx): LiveState {
       state = { ...state, holding: cut ? false : state.holding, hurried: ctx.openPrompt };
     }
   }
+  // the pack's chat is a conversation (owner, 2026-10-17): a packmate's line is in the
+  // transcript whole as it lands, so the seat's own prompt right after it opens at once
+  if (state.holding && packmateThenMe(state, ctx)) state = { ...state, holding: false };
   if (state.holding) return state;
   if (current && waitsHere(current, ctx)) return state;
   const next = nextLiveStep(state.beats, state.cursor.index, ctx);
@@ -641,6 +665,11 @@ export function liveReducer(state: LiveState, action: LiveAction): LiveState {
       return { ...state, slot: showFile({ slot: state.slot, xray: action.xray }).slot };
     case 'show-record':
       return { ...state, slot: showRecord({ slot: state.slot, xray: false }).slot };
+    case 'pack-night':
+      return {
+        ...state,
+        slot: packNightSlot({ slot: state.slot, xray: false }, action.open).slot,
+      };
   }
 }
 
@@ -762,19 +791,25 @@ export function turnReducer(state: TurnState, action: TurnAction): TurnState {
 }
 
 /**
- * Where a night act or pack vote stands, for the plate: in (from here, or the seat's agent),
- * refused as already answered (409), or open with the last send's failure to show.
+ * Where a night act, pack vote or ballot stands, for the plate: on its way (`sending`: shut on
+ * the choice, not yet in), in (from here, or the seat's agent), refused as already answered
+ * (409), or open with the last send's failure to show.
  */
 export function actSent(t: TurnState): {
   sent: 'you' | 'agent' | 'closed' | null;
   sendError: string | null;
+  sending: boolean;
 } {
-  if (t.sending) return { sent: 'you', sendError: null };
+  if (t.sending) return { sent: 'you', sendError: null, sending: true };
   if (t.answered)
     return t.error
-      ? { sent: 'closed', sendError: t.error }
-      : { sent: t.byAgent.includes(t.seq ?? -1) ? 'agent' : 'you', sendError: null };
-  return { sent: null, sendError: t.error };
+      ? { sent: 'closed', sendError: t.error, sending: false }
+      : {
+          sent: t.byAgent.includes(t.seq ?? -1) ? 'agent' : 'you',
+          sendError: null,
+          sending: false,
+        };
+  return { sent: null, sendError: t.error, sending: false };
 }
 
 // --- answering -------------------------------------------------------------------

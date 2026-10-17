@@ -43,6 +43,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useMediaQuery } from '@mantine/hooks';
 import { SPRITES } from '@/assets/manifest';
 import { Button } from '@/components/site';
+import { TrainLoader } from '@/components/TrainLoader';
 import { useModelLabels } from '@/hooks/useModelLabels';
 import { getReplay, listReplaysWithTotal } from '@/lib/api';
 import { featuredWindow } from '@/lib/featured-window';
@@ -53,6 +54,7 @@ import { SITE } from '@/lib/site';
 import { beatsFor } from '@/stage/beats/beatsFor';
 import type { MiniUnder } from '@/stage/containers/ReplayTheatre';
 import { stageFonts } from '@/stage/fonts';
+import { picturesOf } from '@/stage/pictures-of';
 import { winnerKey, type WinnerKey } from '@/stage/roles';
 import type { DurableGameEvent, ReplayGame } from '@/types/contracts';
 import classes from './Carriage.module.css';
@@ -63,6 +65,10 @@ import classes from './Carriage.module.css';
 // the replay, and on a slow phone that chain put the stage's pictures 3.4 s after the scroll
 const theatreCode = () => import('@/stage/containers/ReplayTheatre');
 const underCode = () => import('./CarriageUnder');
+/** How long the line waits on the stage's pictures before the replay plays without them. */
+const PAINT_CAP_MS = 8000;
+/** The loader's fade off the window (TrainLoader.module.css, `.veil`). */
+const LIFT_MS = 400;
 const ReplayTheatre = dynamic(() => theatreCode().then((m) => m.ReplayTheatre), {
   ssr: false,
 });
@@ -210,6 +216,31 @@ export function FeaturedReplay() {
     [events],
   );
 
+  // the stage paints its dark ground at once and its pictures as they come: the house's loading
+  // picture stays over it until they are in, and the replay plays from then (a first visit after
+  // a deploy, every file new to Cloudflare, showed a dark window for 10 s and more, and read as
+  // broken). The picture is up from when the carriage comes near (owner, 2026-10-16: the train,
+  // not "Rewinding the reels…"), then fades off the stage
+  const [painted, setPainted] = useState(false);
+  const [lifted, setLifted] = useState(false);
+  const loaded = !!(game && cut);
+  useEffect(() => {
+    const el = screenRef.current;
+    if (!loaded || !el) return;
+    let live = true;
+    void picturesOf(el, PAINT_CAP_MS).then(() => {
+      if (live) setPainted(true);
+    });
+    return () => {
+      live = false;
+    };
+  }, [loaded, screenRef]);
+  useEffect(() => {
+    if (!painted) return;
+    const t = setTimeout(() => setLifted(true), LIFT_MS);
+    return () => clearTimeout(t);
+  }, [painted]);
+
   const id = game?.game_id ?? null;
   const record = id ? id.slice(0, 7).toUpperCase() : '';
   // the theatre's way out comes back here (`from=home`, TheaterClient)
@@ -266,7 +297,11 @@ export function FeaturedReplay() {
                 ))}
               </div>
               <div className={classes.glass}>
-                <div ref={screenRef} className={`${classes.screen} ${stageFonts}`}>
+                <div
+                  ref={screenRef}
+                  className={`${classes.screen} ${stageFonts}`}
+                  data-painted={painted || undefined}
+                >
                   {game && cut ? (
                     <ReplayTheatre
                       key={game.game_id}
@@ -274,19 +309,20 @@ export function FeaturedReplay() {
                       mini={{
                         from: cut.from,
                         to: cut.to,
-                        autoplay: onScreen && !still,
+                        autoplay: onScreen && !still && painted,
                         controls: wide ? 'stage' : 'under',
                         under,
                         underEl,
                       }}
                     />
-                  ) : (
-                    <p className={classes.wait}>
-                      {failed
-                        ? 'The archive is resting; the replays are a click away.'
-                        : ' '}
+                  ) : null}
+                  {failed && !painted ? (
+                    <p className={classes.wait} role="status">
+                      The archive is resting; the replays are a click away.
                     </p>
-                  )}
+                  ) : near && !lifted ? (
+                    <TrainLoader atOnce leaving={painted} />
+                  ) : null}
                 </div>
               </div>
             </div>

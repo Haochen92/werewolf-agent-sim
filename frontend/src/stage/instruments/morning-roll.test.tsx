@@ -47,6 +47,32 @@ describe('MorningRoll', () => {
     );
   });
 
+  it('names a reanimated healer for a save through the dead healer’s body', () => {
+    expect(
+      causeOf({ kind: 'save', player: 'player_1', types: ['wolves'], reanimated: true }),
+    ).toBe('attacked by the wolves, saved by a reanimated healer');
+    expect(causeOf({ kind: 'save', player: 'player_1', types: ['wolves'] })).toBe(
+      'attacked by the wolves, saved by the healer',
+    );
+  });
+
+  it('names the fortune teller’s self-bet, with its sigil, for a save it made', () => {
+    const row: RollRow = {
+      kind: 'save',
+      player: 'player_5',
+      types: ['wolves', 'serial_killer'],
+      selfBet: true,
+    };
+    expect(causeOf(row)).toBe(
+      'attacked by the wolves and the serial killer, saved by the fortune teller’s self-bet',
+    );
+    const out = html([row]);
+    expect(out).toMatch(
+      /data-sigil="wolf"[\s\S]*data-sigil="serial_killer"[\s\S]*data-sigil="fortune_teller"/,
+    );
+    expect(out).not.toContain('data-sigil="healer"');
+  });
+
   it('gives a seat saved its row, with no role and the healer’s cross', () => {
     const out = html(
       [{ kind: 'save', player: 'player_1', types: ['wolves', 'serial_killer'] }],

@@ -161,7 +161,7 @@ Two wolves share one kill each night. Each also has one skill.
 
 **Pack rules**
 
-- Wolves know each other and share a private wolf chat.
+- Wolves know each other and each other's roles, and share a private wolf chat (owner, 2026-10-17: roles added).
 - One wolf, the carrier, performs the kill and is the only wolf who visits for it. The carrier
   rotates through the living wolves in seat order; a lone wolf always carries. (Naming a
   different carrier in chat was in the draft and is not built: the rotation only, 2026-10-09.)
@@ -177,7 +177,7 @@ Two wolves share one kill each night. Each also has one skill.
 | Skill | Status | Uses | What it does |
 |---|---|---|---|
 | Chanteuse | New, level 1 | Every night; the same target is allowed | Blocks one player's night action (town or wolf; see Roleblock) |
-| Illusionist | New, level 1 | 2 conceals | Conceals the pack's victim and privately learns their role |
+| Illusionist | New, level 1 | 2 conceals | Conceals the pack's victim; the whole pack privately learns their role (owner, 2026-10-17; was the Illusionist alone) |
 
 - A conceal is spent only when a body is actually concealed; a saved or immune victim keeps the
   use, because the Illusionist cannot know in advance.
@@ -279,7 +279,8 @@ node.
 | Necromancer, cleaned through the Illusionist's body | `X was killed by a reanimated wolf last night. Their role is hidden by a reanimated illusionist.` |
 | Two attackers | `X was attacked by the wolves and the serial killer last night. They were a {role}.` |
 | Save | `X was attacked by {attackers} but was saved by the healer!` |
-| Attack on an immune player | nothing |
+| Self-bet save | `X was attacked by {attackers} but survived: the fortune teller's self-bet saved them.` (owner, 2026-10-17; a self-bet with no attack on it: nothing) |
+| Attack on an immune player | nothing (the Serial Killer, and the Necromancer on night 1) |
 | Concealed body | `X was killed by the wolves last night. Their role is hidden by an illusionist.` |
 | The will | `The record of X, the {role}: night 1, protected Y; no attack on them was announced; night 2, checked Z: they were a villager.` (one clause per earlier night) |
 | No deaths | `No one died last night.` |
@@ -290,9 +291,11 @@ node.
 |---|---|
 | Protect, a save | `Y was attacked by {attackers}, and your protection saved them.` |
 | Protect, nothing | `No attack on Y was announced.` |
+| Protect, a self-bet save | `Y was attacked by {attackers} and survived: the fortune teller's self-bet saved them, not your protection.` (result `self_bet_saved`; owner, 2026-10-17) |
 | Kill or shoot, landed | `Y died. They were a {role}.` (concealed: `Y died. Their role was concealed.`) |
 | Kill or shoot, saved | `Y survived: the healer saved them.` |
-| Kill or shoot, immune | `Y was unharmed: immune to night kills tonight. The public was told nothing about this attack.` (which roles can be immune on which nights is in the rules; the string names none, since the Necromancer on night 1 and a self-betting Fortune Teller are immune too) |
+| Kill or shoot, immune | `Y was unharmed: immune to night kills tonight. The public was told nothing about this attack.` (which roles can be immune on which nights is in the rules; the string names none, since the Necromancer on night 1 is immune too; a self-betting Fortune Teller is the next row since 2026-10-17) |
+| Kill or shoot, a self-bet | `Y survived: the fortune teller's self-bet saved them.` (result `self_bet_saved`; owner, 2026-10-17) |
 | Hold fire | `You held your fire.` |
 | Watch | `Tonight Y was visited by A and B.` / `No one visited Y tonight.` |
 | Follow | `Tonight Y visited Z.` / `Y visited no one tonight.` |
@@ -309,7 +312,7 @@ node.
 | Pick | `You picked town. The morning will announce the pick, not you.` (the morning: `The Speculator has picked Town.`) |
 | Bet, scored | `Y died and was a healer: two points.` / `Y died: one point. They were not a healer.` |
 | Bet, missed | `Y did not die tonight: no points.` |
-| Self-bet | `You bet on yourself: an attack on you tonight fails, and nothing is scored.` |
+| Self-bet | `You bet on yourself: an attack on you tonight fails, and nothing is scored.` / attacked: `You bet on yourself and were attacked by {attackers}: your self-bet saved you, and the morning announces it.` (owner, 2026-10-17) |
 | Borrowed action | the body's own string, prefixed `Through Y's body: ` (the body is the first name in `seen`) |
 | Declined action (keep_sigil, no_conceal, stay_put, not_yet) | no record (the vigilante's hold_fire keeps its line) |
 
@@ -418,3 +421,14 @@ and how often the Illusionist conceals an info role.
 - **2026-10-10 (from the Luna games, owner):** the Sentinel's card now says what the engine always did: "Watching is a visit, but the Sentinel is not among the visitors it is told of: its own watch never appears in its result" (in all four Luna games a player argued the Sentinel should appear in its own list, the real Sentinel conceded, and in three it was voted out). The summary's claimed results gain no_visitors (a watch that saw no one, a follow that went nowhere), no_effect (a sigil) and roleblocked (tried and blocked); a roleblock is recorded as the attempt, never as a denial, which corrects the same day's claim retention (the Luna summariser had filed "I was roleblocked" as "says they did not act").
 - **2026-10-12 (wording, owner):** the shared pack rules still said "the carrier rotates unless the pack agrees otherwise", although the 2026-10-09 review entry records them as changed; the engine only rotates (`pack_carrier`). Found in the v8 memory seeding, where two synthesized strategy points told the pack to choose its carrier. The rules now say "the carrier rotates through the living wolves in seat order (a lone wolf always carries)". A prompt change: games before it are a different epoch.
 - **2026-10-12 (the first Haiku 5.5 game, owner; discussion_evidence.md §8.6):** three discussion lines, a prompt change, so games before it are a different epoch. (1) The shared rules say which way a visit goes: a watch shows who came to a player, never where they went or whether they acted; a follow shows whom they went to, never who came to them; "I visited no one" and "no one visited me" are different claims; a watch that saw no one does not mean the player stayed home; players word a visit with its direction ("I went to X", "X came to me"). (2) A reactive turn's brief adds: answer what is new in the latest message, point back in a few words to what one already said today instead of restating it, and do not ask again a question already answered. (3) A town seat on the open floor of a voting day is asked to decide whom it would vote for if the vote were held now, and to say why if it has not; evil and neutral seats are not (silence can be their better play). The engine is unchanged.
+- **2026-10-17 (owner, R10 in evidence/reasoning_failures/deduction_catalogue.md):** a Fortune
+  Teller's self-bet that stops an attack is announced, in the same place and seat order as the other
+  attacked players: "X was attacked by the serial killer but survived: the fortune teller's self-bet
+  saved them." A self-bet with no attack on it stays silent, and so do the Serial Killer's immunity
+  and the Necromancer's on night 1. The attacker's and the protector's records say so (result
+  `self_bet_saved`), the Fortune Teller's own self-bet record says whether it was attacked, and a
+  will names the self-bet. Accepted consequences: the Fortune Teller is exposed that night; a silent
+  "unharmed" now means the Serial Killer for certain (or the Necromancer on night 1); announced
+  self-bets are public use counts. The shared rules, the Fortune Teller's and the Healer's cards say
+  so: a prompt change, so games before it are a different epoch. On the wire a save carries
+  `self_bet`.

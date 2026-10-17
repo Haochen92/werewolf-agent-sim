@@ -39,7 +39,7 @@ const READY_CAP_MS = 6000;
 /**
  * Says once the train and the country this stage draws are loaded and decoded (or after
  * `READY_CAP_MS`), so a departure never pulls out before its train is there: on a page opened
- * for the departure, the replay's and a game for one's, the platform is new. Mounted inside the
+ * for the departure, a game for one's, the platform is new. Mounted inside the
  * Stage, beside the platform, for its measured pick.
  */
 export function StationReady({ onReady }: { onReady: () => void }) {

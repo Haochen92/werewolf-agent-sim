@@ -107,7 +107,7 @@ def test_status_snapshot_of_a_fresh_session(api_client, quiet_session):
         "game_id": session.game_id, "state": "running", "players": [], "host": None, "max_seats": 0,
         "human_players": [], "you": None, "you_aboard": None, "pending_input": False, "pending_seats": [],
         "deadlines": {}, "game_over": False, "last_seq": 0, "alive_role_counts": {},
-        "error": None, "name": "", "locked": False, "winner": None, "archived": False,
+        "error": None, "error_kind": None, "name": "", "locked": False, "winner": None, "archived": False,
         "awaiting_key": False, "cast": [], "characters": [],
     }
 
@@ -911,3 +911,35 @@ def test_a_seat_holder_may_fund_a_waiting_game_and_nobody_else(api_client, seate
     assert probed == ["sk-bad", "sk-good"]
     assert api_client.post(f"/games/{session.game_id}/key",
                            json={"api_key": ""}).status_code == 422  # an empty key is no key
+
+
+# ---- a player's key is tried on the provider before a game or room opens on it -----------
+
+def test_a_refused_key_opens_no_game_and_no_room(api_client, monkeypatch):
+    """2026-10-17: an OpenAI key sent with Haiku started a game that played on 401s."""
+    from server.game.key_check import KeyRefused
+
+    games = api_client.app.state.resources.games
+    tried = []
+
+    async def check_key(model, api_key):
+        tried.append(api_key)
+        raise KeyRefused("the provider rejected this key: 401 invalid x-api-key")
+
+    monkeypatch.setattr(games, "_check_key", check_key)
+    before = len(games)
+    r = api_client.post("/games", json={"human": True, "api_key": "sk-proj-wrong", "model": GEMINI})
+    assert r.status_code == 422 and "rejected this key" in r.json()["detail"]
+    r = api_client.post("/rooms", json={"api_key": "sk-proj-wrong", "model": GEMINI})
+    assert r.status_code == 422 and "rejected this key" in r.json()["detail"]
+    assert len(games) == before
+    assert tried == ["sk-proj-wrong", "sk-proj-wrong"]
+
+
+def test_a_game_whose_key_was_refused_says_so_in_its_status(api_client, seated_session):
+    session, _ = seated_session
+    session.error = "Anthropic refused this game's API key: 401, invalid x-api-key."
+    body = api_client.get(f"/games/{session.game_id}").json()
+    assert body["error_kind"] == "key_rejected"
+    session.error = "RuntimeError('boom')"
+    assert api_client.get(f"/games/{session.game_id}").json()["error_kind"] is None

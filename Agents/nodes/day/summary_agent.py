@@ -102,11 +102,9 @@ def _serialize_day_summary(result: DaySummaryOutput | DaySummaryOutputV4) -> str
             entry = f"{accusers} → {a.target}: {a.reasoning} (evidence type: {a.evidence_type})"
             if a.defense:
                 entry += f" Defense: {a.defense}"
-            # v3 fields: who disputed it, and where it conflicts with the game master's record.
+            # v3 field: who disputed it. (v3's record_check is no longer written or shown.)
             if getattr(a, "disputed_by", ""):
                 entry += f" Disputed: {a.disputed_by}"
-            if getattr(a, "record_check", ""):
-                entry += f" Against the record: {a.record_check}"
             acc_parts.append(entry)
         parts.append("Key accusations and defenses: " + " | ".join(acc_parts))
     else:

@@ -8,8 +8,11 @@ player who votes. Every night it places a bet on who will die that night, by any
 the player and, if it wishes, their role: one point if that player dies, two if the named role
 was also correct; a wrong role still scores one point for the death. A hidden role still scores.
 Instead, up to twice per game, it may bet on itself: that night an attack on it fails, and no
-points are scored. Bets are placed when the night starts and settled when it ends, when the
-Fortune Teller is told the result; a vote during the day never scores. A bet is not a visit, the
+points are scored. An attack a self-bet stopped is announced in the morning, naming the player
+("X was attacked by the wolves but survived: the fortune teller's self-bet saved them"), so it
+shows who the Fortune Teller is. A self-bet with no attack on it is not announced. Bets are
+placed when the night starts and settled when it ends, when the Fortune Teller is told the
+result; a vote during the day never scores. A bet is not a visit, the
 Fortune Teller cannot be blocked, and it reads Not suspicious to the Investigator. It has no
 will: its record is never read out.
 """

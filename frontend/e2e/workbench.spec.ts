@@ -13,7 +13,8 @@ import { expect, test, type Page } from '@playwright/test';
 const SHOTS: [name: string, query: string][] = [
   ['day-speech-first', 'beat=3'],
   ['day-speech-seat9-own', 'beat=17&viewer=seat:player_9'],
-  ['day-pass-xray', 'beat=1&viewer=xray'],
+  // an ordinary turn's pass (a round's passes are its one placard since 2026-10-16)
+  ['day-pass-xray', 'beat=11&viewer=xray'],
   ['day-speech-replay', 'beat=12&hud=replay'],
   ['day-pass-public', 'beat=23'],
   ['day-thinking-live-seat9', 'beat=21&viewer=seat:player_9&live=1'],
@@ -133,8 +134,9 @@ test('the control strip writes the URL', async ({ page }) => {
   await page.getByLabel('viewer').selectOption('xray');
   await expect(page).toHaveURL(/beat=0&viewer=xray/);
   await page.getByRole('button', { name: '▶' }).click();
+  // the opening's passes, one placard with the X-ray too (2026-10-16)
   await expect(
-    page.getByText('day.pass · seq 35 · xray → player_1 · 4000 ms'),
+    page.getByText('day.round-passes · seq 14 · public · 4000 ms'),
   ).toBeVisible();
   // the ten-seat game's seats in the viewer control
   await page.getByLabel('viewer').selectOption('seat:player_10');
@@ -316,7 +318,7 @@ const SLOT: [name: string, path: string, ready: string, click?: string][] = [
   ['slot-ballot-drawer-rail', 'vote?beat=25&slot=drawer', '[data-drawer="rail"]'],
   [
     'slot-day-speech-film',
-    'day?beat=26&viewer=xray&hud=replay&slot=film',
+    'day?beat=13&viewer=xray&hud=replay&slot=film',
     '[data-film="file"]',
   ],
   [
@@ -332,14 +334,14 @@ const SLOT: [name: string, path: string, ready: string, click?: string][] = [
   ],
   [
     'slot-day-read-card',
-    'day?beat=26&viewer=xray&hud=replay&slot=film',
+    'day?beat=13&viewer=xray&hud=replay&slot=film',
     '[data-read-card="player_1"]',
     '[data-layer="hud"] [data-seat="1"]',
   ],
   ['slot-lynch-card-up-film', 'lynch?beat=9&viewer=xray&slot=film', '[data-film="lynch"]'],
   [
     'slot-morning-carried-summary-film',
-    'morning?beat=31&viewer=xray&slot=film',
+    'morning?beat=29&viewer=xray&slot=film',
     '[data-film="record"]',
   ],
   [
@@ -359,7 +361,7 @@ const SLOT: [name: string, path: string, ready: string, click?: string][] = [
   ],
   [
     'slot-record-line-drawer',
-    'morning?beat=31&viewer=xray&hud=replay&slot=drawer',
+    'morning?beat=29&viewer=xray&hud=replay&slot=drawer',
     '[data-line="record-2"]',
   ],
 ];
@@ -688,12 +690,12 @@ const FRAMES: [name: string, path: string][] = [
   ['frame-iphone14-vote', 'vote?beat=17&viewer=seat:player_9&frame=iphone14'],
   ['frame-iphone14-night', 'night?beat=0&viewer=seat:player_9&frame=iphone14'],
   // the case file on a phone: its cover and tabs in one row over the sheet
-  ['frame-iphone14-file', 'day?beat=26&viewer=xray&hud=replay&slot=film&frame=iphone14'],
+  ['frame-iphone14-file', 'day?beat=13&viewer=xray&hud=replay&slot=film&frame=iphone14'],
   // the stand's plate on a phone: pinned to the speech box's top edge, not at the chest
-  ['frame-667-stand-plate', 'day?beat=26&viewer=xray&hud=replay&frame=667x375'],
+  ['frame-667-stand-plate', 'day?beat=13&viewer=xray&hud=replay&frame=667x375'],
   [
     'frame-568-stand-plate-file',
-    'day?beat=26&viewer=xray&hud=replay&slot=film&frame=568x320',
+    'day?beat=13&viewer=xray&hud=replay&slot=film&frame=568x320',
   ],
   // the transcript on a phone: the pane grows out into the right bleed as the wing does left
   ['frame-iphone14-drawer', 'day?beat=12&hud=replay&slot=drawer&frame=iphone14'],

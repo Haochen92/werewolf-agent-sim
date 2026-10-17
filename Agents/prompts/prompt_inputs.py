@@ -20,6 +20,7 @@ from pydantic import BaseModel
 
 from Agents.prompts.compose import preamble
 from Agents.prompts.common import VERDICT_EXAMPLES_PASS, memory_verdict_example
+from Agents.deduction import deduction_mode_for, own_result_lines, seat_view_from_payload
 from Agents.schemas.game_events import DayRound
 from Agents.schemas.roles import ROLE_SPECS, TOWN
 from Agents.prompts.cell_prompt import cell_driver_horizon, dimension_menu
@@ -36,6 +37,7 @@ from Agents.prompts.prompt_formatters import (
     format_day_summaries,
     format_dead_roster,
     format_night_actions,
+    format_pack_roster,
     format_retrieved_observations,
     format_strategy_points,
     format_wolf_channel,
@@ -155,6 +157,7 @@ def night_one_lot(payload: dict[str, Any]) -> str:
     """
     if payload.get("current_day", 1) != 1:
         return ""
+    ending = "Take it unless you have a reason to prefer someone else."
     role = payload.get("player_role", "")
     player_id = payload.get("player_id", "")
     spec = ROLE_SPECS.get(role)
@@ -163,6 +166,11 @@ def night_one_lot(payload: dict[str, Any]) -> str:
         candidates = list(payload.get("surviving_villagers", []))
         who = "pack"
         wording = "a lot has been drawn for the pack"
+        if payload.get("pack_chat"):
+            # A human ally never sees the lot: "Agreed, player_10" read as agreeing with a
+            # proposal nobody made (owner, 2026-10-17). So the chat puts it forward as a pick.
+            ending = ("Suggest {0} for the kill as your own pick unless an ally has a reason to prefer "
+                      "someone else; your allies do not see the lot, so do not mention it.")
     elif role in _LOT_ROLES:
         # A wolf's own skill turn draws its own lot, among the non-wolves.
         pool = payload.get("surviving_villagers") if spec is not None and spec.pack else payload.get("surviving_players", [])
@@ -179,10 +187,8 @@ def night_one_lot(payload: dict[str, Any]) -> str:
     seed_text = "{}:{}:{}:lot".format(payload.get("game_id", ""), payload.get("current_day", 1), who)
     rng = random.Random(zlib.crc32(seed_text.encode("utf-8")))
     drawn = candidates[rng.randrange(len(candidates))]
-    return (
-        "Night 1: nothing in the record points anywhere yet, so {}: {}. "
-        "Take it unless you have a reason to prefer someone else.\n\n".format(wording, drawn)
-    )
+    return "Night 1: nothing in the record points anywhere yet, so {}: {}. {}\n\n".format(
+        wording, drawn, ending.format(drawn))
 
 
 def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
@@ -245,6 +251,8 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         "discussion_stage_rules": _discussion_stage_rules(payload),
         "surviving_players": ", ".join(payload.get("surviving_players", [])),
         "surviving_wolves": ", ".join(payload.get("surviving_wolves", [])),
+        "pack_roster": format_pack_roster(payload.get("surviving_wolves", []), payload.get("pack_roles", {}),
+                                          payload.get("player_id")),
         "surviving_villagers": ", ".join(payload.get("surviving_villagers", [])),
         # Night 1 only, the solo roles and the pack: the default drawn by lot (night_one_lot).
         "night_lot": night_one_lot(payload),
@@ -276,9 +284,10 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
             cast_role_counts=payload.get("cast_role_counts", {}),
             messages=payload.get("day_channel", []),
         ),
-        "wolf_channel": format_wolf_channel(payload.get("wolf_channel", [])),
+        "wolf_channel": format_wolf_channel(payload.get("wolf_channel", []), payload.get("player_id")),
         # The actor's own engine-written night record (only night actors' payloads carry it).
-        "night_actions": format_night_actions(payload.get("night_actions", []), payload.get("current_day")),
+        "night_actions": format_night_actions(payload.get("night_actions", []), payload.get("current_day"),
+                                              _own_result_lines(payload)),
         "previous_strategy": payload.get("previous_strategy", ""),
         "strategy_points": strategy_points_text,
         "retrieved_observations": observations_text,
@@ -313,6 +322,14 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
             payload.get("dead_roster", []), payload.get("cast_role_counts", {})
         ),
     }
+
+def _own_result_lines(payload: dict[str, Any]):
+    """What the seat's own night records imply (level 1 of the deduction engine), or None when the
+    game's deduction mode is "off" or the seat is a human's (Agents/deduction/seat_view.py)."""
+    if deduction_mode_for(payload) == "off":
+        return None
+    return own_result_lines(seat_view_from_payload(payload))
+
 
 def _tell_book_block():
     from Agents.memory.tell_book import tell_book_block

@@ -26,7 +26,8 @@ from Agents.schemas.turn import ResolvedNightChoice, ResolvedWolfDiscussion
 from Agents.state import NightTurnState, PackNightGraph
 from Agents.tracing import GraphContext
 from Agents.turn import run_memory_informed_night_action
-from Agents.turn.action_space import KILL_TARGET
+from Agents.turn.action_space import KILL_TARGET, valid_targets_for_action
+from Agents.turn.human_turn import announce_human_turn
 
 # The chat's hard cap (owner, 2026-10-08): three rounds, a pass, ends on a full round of passes.
 WOLF_CHAT_ROUNDS = 3
@@ -93,6 +94,7 @@ def _pack_payload(state: PackNightGraph, wolf: str) -> NightTurnState:
         "wolf_channel": state["wolf_channel"],
         "surviving_villagers": state["surviving_villagers"],
         "surviving_wolves": state["surviving_wolves"],
+        "pack_roles": {w: state["roles"][w] for w in state["surviving_wolves"]},
         "surviving_players": [p for p in [*state["surviving_wolves"], *state["surviving_villagers"]] if p != wolf],
         "carrier": state.get("carrier", ""),
         "wolves_target": state.get("wolves_target") or "",
@@ -126,7 +128,7 @@ def route_pack_speaker(state: PackNightGraph):
     next_speaker = next((w for w in _speaking_order(state) if w not in spoken), None)
     if next_speaker is None:
         return []
-    return [Send("PACK_CHAT", _pack_payload(state, next_speaker))]
+    return [Send("PACK_CHAT", {**_pack_payload(state, next_speaker), "pack_chat": True})]
 
 
 def start_carrier(state: PackNightGraph):
@@ -145,15 +147,22 @@ def route_carrier(state: PackNightGraph):
 
 def pack_fan_out_skills(state: PackNightGraph):
     """Every wolf's skill turn in parallel, after the kill is known (the illusionist decides on
-    the victim; the chanteuse's block is its own). Humans go to the uncached twin."""
+    the victim; the chanteuse's block is its own). Humans go to the uncached twin, and their turn
+    is announced here: inside the pack's subgraph the interrupt reaches the server only once the
+    other wolves' skill turns have ended (see announce_human_turn; 2026-10-17)."""
     sends = []
     for wolf in state["surviving_wolves"]:
         role = state["roles"][wolf]
         spec = ROLE_SPECS[role]
         if spec.uses is not None and state.get("uses_left", {}).get(role, 0) <= 0:
             continue
-        node = "PACK_SKILL_HUMAN" if wolf in state["human_players"] else "PACK_SKILL"
-        sends.append(Send(node, {**_pack_payload(state, wolf), "current_round": SKILL_ROUND}))
+        payload = {**_pack_payload(state, wolf), "current_round": SKILL_ROUND}
+        if wolf in state["human_players"]:
+            announce_human_turn(wolf, role, spec.target_field, state["current_day"],
+                                valid_targets_for_action(payload, spec.target_field))
+            sends.append(Send("PACK_SKILL_HUMAN", payload))
+        else:
+            sends.append(Send("PACK_SKILL", payload))
     return sends or "COLLECT_PACK"
 
 

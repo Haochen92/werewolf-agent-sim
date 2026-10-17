@@ -876,6 +876,32 @@ async def test_shutdown_cancels_a_parked_game(quiet_session):
     assert session.ended
 
 
+class _FailsAfterGameOverGraph(FakeGraph):
+    """Plays the whole game, then the post-game step raises (2026-10-17: a draw's empty winner
+    broke the extraction input after END_GAME)."""
+
+    async def astream(self, payload, **kw):
+        async for part in super().astream(payload, **kw):
+            yield part
+        raise ValueError("post-game step failed")
+
+
+async def test_a_failure_after_game_over_keeps_the_game(quiet_session, fixture_chunks):
+    session = quiet_session(_FailsAfterGameOverGraph(fixture_chunks))
+    session.start()
+    await asyncio.wait_for(session.wait_finished(), timeout=30)
+    assert session.game_over is True
+    assert session.error is None  # archived as finished, not dropped
+
+
+async def test_a_failure_before_game_over_still_ends_the_game_with_its_error(quiet_session):
+    session = quiet_session(_FailsAfterGameOverGraph([]))
+    session.start()
+    await asyncio.wait_for(session.wait_finished(), timeout=10)
+    assert session.game_over is False
+    assert "post-game step failed" in session.error
+
+
 # ---- a solo game suspends while its player is away ---------------------------------------
 
 

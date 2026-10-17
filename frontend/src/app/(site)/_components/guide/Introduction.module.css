@@ -22,9 +22,9 @@
   margin: 0;
   max-width: 40ch;
   color: var(--text);
-  font-family: var(--font-serif);
-  font-size: 22px;
-  line-height: 1.4;
+  font-family: var(--font-stage-body, Literata), Georgia, serif;
+  font-size: 20px;
+  line-height: 1.5;
 }
 .story .you {
   margin-top: 16px;

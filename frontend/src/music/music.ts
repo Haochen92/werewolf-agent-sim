@@ -22,12 +22,15 @@ interface MusicState {
   pref: Pref;
   /** The viewer has pressed something on the page, so the browser lets sound start. */
   pressed: boolean;
+  /** Pages mounted whose music is the viewer's to turn on: the nav shows the switch for them. */
+  optInPages: number;
   choose: (pref: 'on' | 'off') => void;
 }
 
 export const useMusicState = create<MusicState>((set) => ({
   pref: null,
   pressed: false,
+  optInPages: 0,
   choose: (pref) => {
     musicPref.set(pref);
     music().setPref(pref);
@@ -54,11 +57,15 @@ export function MusicDirector() {
       if (!useMusicState.getState().pressed) useMusicState.setState({ pressed: true });
     };
     const onVisibility = () => music().setVisible(document.visibilityState === 'visible');
+    // a finger's press counts as the viewer's say-so only as it lifts (pointerup): an iPhone
+    // let no touch start the sound when it was taken on pointerdown alone; a mouse's, as it goes down
     window.addEventListener('pointerdown', onPress, true);
+    window.addEventListener('pointerup', onPress, true);
     window.addEventListener('keydown', onPress, true);
     document.addEventListener('visibilitychange', onVisibility);
     return () => {
       window.removeEventListener('pointerdown', onPress, true);
+      window.removeEventListener('pointerup', onPress, true);
       window.removeEventListener('keydown', onPress, true);
       document.removeEventListener('visibilitychange', onVisibility);
     };
@@ -75,6 +82,13 @@ export function useMusicBed(bed: Bed | null, active = true) {
   useEffect(() => {
     if (active) music().setBed(bed);
   }, [bed, active]);
+  // a site page's music is off until the viewer turns it on: the nav shows its switch meanwhile
+  const optIn = active && !!bed?.optIn;
+  useEffect(() => {
+    if (!optIn) return;
+    useMusicState.setState((s) => ({ optInPages: s.optInPages + 1 }));
+    return () => useMusicState.setState((s) => ({ optInPages: s.optInPages - 1 }));
+  }, [optIn]);
   useEffect(() => {
     if (!active) return;
     const leave = music().enter();

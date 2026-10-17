@@ -7,6 +7,7 @@ turn seeing the note it replaces, the vote wording, and the summariser's v4 outp
 """
 from __future__ import annotations
 
+from Agents.memory.consolidation.decision_scoring import no_lynch_streak_before
 from Agents.nodes.day.flow import build_speaker_send, fan_out_day
 from Agents.nodes.day.summary_agent import _serialize_day_summary, summary_context
 from Agents.nodes.night.resolution import night_resolution
@@ -207,6 +208,19 @@ def test_day_one_is_not_announced_as_a_vote_result():
     assert message.strip() == "There is no vote on day 1, so no one voted and no one is eliminated."
 
 
+def test_a_day_with_no_vote_does_not_count_toward_the_forced_vote():
+    # Owner, 2026-10-17: two days without a lynch force the vote, and day 1 (no vote held) is not one.
+    base = {"roles": ROLES, "lineup": LINEUP, "surviving_wolves": ["w0", "w1"],
+            "surviving_villagers": ["sk", "h", "v", "inv", "t0"], "day_channel": []}
+    day_one = day_resolution({**base, "current_day": 1, "no_lynch_streak": 0, "day_votes": []}, _runtime())
+    assert day_one["no_lynch_streak"] == 0
+    abstained = day_resolution({**base, "current_day": 2, "no_lynch_streak": 0,
+                                "day_votes": [DayVote(voter="h", votee="abstain")]}, _runtime())
+    assert abstained["no_lynch_streak"] == 1
+    assert no_lynch_streak_before(3, [{"day": 1, "voted_player": None, "no_vote": True},
+                                      {"day": 2, "voted_player": None, "no_vote": False}]) == 1
+
+
 # --- the v4 day summary -------------------------------------------------------------
 
 def test_the_summariser_gets_the_record_and_the_claim_ledger():
@@ -223,8 +237,7 @@ def test_the_v4_summary_writes_two_headings_and_transcribes_claims_in_fixed_word
         "accusations": [{"accusers": ["player_8"], "target": "player_2",
                          "reasoning": "player_8 argued that player_2 survived an attack.",
                          "evidence_type": "concrete_claim", "defense": "player_2 denied being attacked.",
-                         "disputed_by": "player_6 said survival proves nothing.",
-                         "record_check": "No attack on player_2 was ever announced."}],
+                         "disputed_by": "player_6 said survival proves nothing."}],
         "role_claims": [{"player": "player_3", "claimed_role": "investigator", "kind": "claimed",
                          "night_actions": [{"night": 1, "action": "investigate", "target": "player_1", "result": "vigilante",
                                             "reason": ""}],
@@ -233,7 +246,8 @@ def test_the_v4_summary_writes_two_headings_and_transcribes_claims_in_fixed_word
     })
     text = _serialize_day_summary(out)
     assert [line.split(":")[0] for line in text.splitlines()] == ["Key accusations and defenses", "Role claims"]
-    assert "Disputed: player_6" in text and "Against the record: No attack on player_2" in text
+    assert "Disputed: player_6" in text and "Against the record" not in text
+    assert "record_check" not in out.model_json_schema()["$defs"]["AccusationV4"]["properties"]
     assert ("player_3 claimed investigator — Night 1: checked player_1, result: vigilante, "
             "plans to check player_5 tonight") in text
     assert "player_4 retracted healer" in text

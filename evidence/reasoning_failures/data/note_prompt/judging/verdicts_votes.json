@@ -1,0 +1,434 @@
+[
+ {
+  "id": "C09-X1",
+  "action": "unjustified",
+  "certainty": "underclaims",
+  "fact_error": false,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Votes the healer as the 'weakest point' (late claim, visit to a blocked target) while its own read says the sentinel's watch confirms player_8's visit; unclaimed 6 and 10 face no such test."
+ },
+ {
+  "id": "C09-X2",
+  "action": "unjustified",
+  "certainty": "underclaims",
+  "fact_error": false,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": false,
+  "reason": "Note stays neutral and reads admit player_2's watch fits player_8's visit, yet votes player_8 as an unverifiable protection claim."
+ },
+ {
+  "id": "C09-X3",
+  "action": "unjustified",
+  "certainty": "underclaims",
+  "fact_error": false,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Note calls player_8's healer claim 'unverified and I want it tested' despite the sentinel watch corroborating the visit; unclaimed players untested."
+ },
+ {
+  "id": "C09-X4",
+  "action": "unjustified",
+  "certainty": "overclaims",
+  "fact_error": true,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Invents a conflict: 'one of player_2 or player_8 is lying', though the sentinel watch and healer visit agree; votes player_8 on that."
+ },
+ {
+  "id": "C09-Y1",
+  "action": "unjustified",
+  "certainty": "underclaims",
+  "fact_error": false,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Admits all claims are compatible, then votes player_8 as 'the most-accused unverified claim' with no evidence that sets it apart."
+ },
+ {
+  "id": "C09-Y2",
+  "action": "unjustified",
+  "certainty": "underclaims",
+  "fact_error": false,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Correctly defends player_8 but votes player_4, whose sigil claim the record's sigil death on player_7 supports, only for a weak push; unclaimed 6 and 10 ignored."
+ },
+ {
+  "id": "C09-Y3",
+  "action": "unjustified",
+  "certainty": "underclaims",
+  "fact_error": false,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Acknowledges player_2's watch confirms player_8's visit but votes it as 'most accused unverified claimant'."
+ },
+ {
+  "id": "C09-Y4",
+  "action": "unjustified",
+  "certainty": "overclaims",
+  "fact_error": true,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Misstates claims as conflicting: 'healer claim conflicts with player_2's watch' when the watch confirms the visit; votes player_8."
+ },
+ {
+  "id": "C10-X1",
+  "action": "unjustified",
+  "certainty": "overclaims",
+  "fact_error": true,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": false,
+  "reason": "Reads say player_8 has 'conflicting roles with player_2 and player_5 claims' (none conflict) and cite player_7's trailseer-seen visit to player_8 against it."
+ },
+ {
+  "id": "C10-X2",
+  "action": "unjustified",
+  "certainty": "overclaims",
+  "fact_error": true,
+  "note_keeps_valid": "no",
+  "note_carries_mistake": true,
+  "reason": "Note claims 'Claims conflict on the sentinel and investigator roles' (false) and drops the killer-among-unclaimed line, then votes the healer as unverified."
+ },
+ {
+  "id": "C10-X3",
+  "action": "justified",
+  "certainty": "calibrated",
+  "fact_error": false,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": false,
+  "reason": "Holds the sigil, keeps focus on the unclaimed players and votes unclaimed player_6; mentions player_7's visit to player_8 without using it against it."
+ },
+ {
+  "id": "C10-X4",
+  "action": "unjustified",
+  "certainty": "overclaims",
+  "fact_error": true,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Note says 'Player_2 and player_5 are at odds over the sentinel and investigator claims' (false), says to vote the unclaimed, then votes the healer."
+ },
+ {
+  "id": "C10-Y1",
+  "action": "unjustified",
+  "certainty": "overclaims",
+  "fact_error": true,
+  "note_keeps_valid": "no",
+  "note_carries_mistake": true,
+  "reason": "Says 'player_8 and player_2 have conflicting claims' (they agree) and drops the unclaimed focus to vote the healer."
+ },
+ {
+  "id": "C10-Y2",
+  "action": "unjustified",
+  "certainty": "overclaims",
+  "fact_error": true,
+  "note_keeps_valid": "no",
+  "note_carries_mistake": true,
+  "reason": "Says the healer protection 'conflicts with the room's account' (false), cites the trailseer's sighting of player_7's visit, and drops the sigil-hold conclusion."
+ },
+ {
+  "id": "C10-Y3",
+  "action": "unjustified",
+  "certainty": "overclaims",
+  "fact_error": true,
+  "note_keeps_valid": "no",
+  "note_carries_mistake": true,
+  "reason": "Read says player_8's claim 'contradicts the sentinel's watch on the same night' when the watch confirms it; drops the unclaimed focus."
+ },
+ {
+  "id": "C10-Y4",
+  "action": "unjustified",
+  "certainty": "overclaims",
+  "fact_error": true,
+  "note_keeps_valid": "no",
+  "note_carries_mistake": true,
+  "reason": "Asserts claims 'conflict on player_8' and garbles the trailseer sighting ('visited player_5 ... per the trailseer'); drops the sigil line."
+ },
+ {
+  "id": "C11-X1",
+  "action": "unjustified",
+  "certainty": "overclaims",
+  "fact_error": true,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Calls player_6 the likeliest killer but votes player_8, claiming its healer claim 'conflicts with player_4's point that player_5 was blocked' (a blocked target can still be protected)."
+ },
+ {
+  "id": "C11-X2",
+  "action": "justified",
+  "certainty": "calibrated",
+  "fact_error": false,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": false,
+  "reason": "Keeps the claims-consistent conclusion and votes unclaimed player_6 at low confidence."
+ },
+ {
+  "id": "C11-X3",
+  "action": "justified",
+  "certainty": "calibrated",
+  "fact_error": false,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": false,
+  "reason": "Correctly notes player_6 is the only unclaimed living player besides itself and votes it."
+ },
+ {
+  "id": "C11-X4",
+  "action": "unjustified",
+  "certainty": "underclaims",
+  "fact_error": true,
+  "note_keeps_valid": "no",
+  "note_carries_mistake": true,
+  "reason": "Calls player_8's 'visit to player_5 unverified' though its own player_2 read says the watch matches it; drops 'claims are consistent' and votes the healer."
+ },
+ {
+  "id": "C11-Y1",
+  "action": "justified",
+  "certainty": "calibrated",
+  "fact_error": false,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": false,
+  "reason": "Keeps the prior conclusion and votes unclaimed player_6; read on player_8 notes its account is internally consistent."
+ },
+ {
+  "id": "C11-Y2",
+  "action": "justified",
+  "certainty": "calibrated",
+  "fact_error": false,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": false,
+  "reason": "Votes player_6 as least-checked story while keeping the claims-consistent read and the bullets."
+ },
+ {
+  "id": "C11-Y3",
+  "action": "justified",
+  "certainty": "calibrated",
+  "fact_error": false,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Votes player_6, but the note now names player_8 as an alternative suspect only because its 'healer claim is unverified'."
+ },
+ {
+  "id": "C11-Y4",
+  "action": "justified",
+  "certainty": "calibrated",
+  "fact_error": false,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": false,
+  "reason": "Keeps the prior conclusion and votes unclaimed player_6; no errors."
+ },
+ {
+  "id": "C12-X1",
+  "action": "justified",
+  "certainty": "calibrated",
+  "fact_error": true,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Vote on player_6 is well founded, but the note says 'player_6 denies visits while the watch shows two visitors', reading a watch on 6 as contradicting 6's own movements."
+ },
+ {
+  "id": "C12-X2",
+  "action": "justified",
+  "certainty": "calibrated",
+  "fact_error": true,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Sound vote, but 'player_6 denies a visit the sentinel saw' misreads the watch; also adds unfounded illusionist speculation about player_8."
+ },
+ {
+  "id": "C12-X3",
+  "action": "justified",
+  "certainty": "calibrated",
+  "fact_error": true,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Sound vote, but says player_6 was 'seen at a door by player_9's watch' and 'denies a visit the watch showed' (the watch was on player_6)."
+ },
+ {
+  "id": "C12-X4",
+  "action": "justified",
+  "certainty": "calibrated",
+  "fact_error": true,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Sound vote, but says 'player_6 has contradicted a watch result' and that the two claims 'clash', neither of which is true."
+ },
+ {
+  "id": "C12-Y1",
+  "action": "justified",
+  "certainty": "calibrated",
+  "fact_error": true,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Sound vote, but says player_6 'contradicts the sentinel's watch' by denying visits."
+ },
+ {
+  "id": "C12-Y2",
+  "action": "justified",
+  "certainty": "calibrated",
+  "fact_error": true,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Sound vote, but says player_6 'denies visits despite a watch showing two visitors'."
+ },
+ {
+  "id": "C12-Y3",
+  "action": "justified",
+  "certainty": "calibrated",
+  "fact_error": true,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Sound vote, but says player_6 'denies a visit the sentinel saw'."
+ },
+ {
+  "id": "C12-Y4",
+  "action": "justified",
+  "certainty": "calibrated",
+  "fact_error": true,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Sound vote, but says player_6 'denies visits contradicted by a watch'."
+ },
+ {
+  "id": "C13-X1",
+  "action": "weak",
+  "certainty": "underclaims",
+  "fact_error": false,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": false,
+  "reason": "Votes player_2 for a day-2 abstain push and ignores that player_1 voted with the illusionist against the investigator on day 3."
+ },
+ {
+  "id": "C13-X2",
+  "action": "weak",
+  "certainty": "underclaims",
+  "fact_error": true,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Lands on player_1 but only as 'most uncertain active voice', not from the vote record; garbles its own facts ('a day 3 visit to player_4 was consistent with my watch')."
+ },
+ {
+  "id": "C13-X3",
+  "action": "weak",
+  "certainty": "underclaims",
+  "fact_error": true,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Invents 'the wolves now have one illusionist left' and a 'two-body reanimation pattern'; votes player_2 and ignores player_1's vote with the illusionist."
+ },
+ {
+  "id": "C13-X4",
+  "action": "weak",
+  "certainty": "underclaims",
+  "fact_error": true,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Misstates deaths ('player_5 was reanimated'); plan says to vote whoever attacked the investigator's line (player_1) yet votes player_2."
+ },
+ {
+  "id": "C13-Y1",
+  "action": "weak",
+  "certainty": "underclaims",
+  "fact_error": false,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": false,
+  "reason": "No misstatements, but votes player_2 on thin talk and misses player_1's day-3 vote with the illusionist."
+ },
+ {
+  "id": "C13-Y2",
+  "action": "weak",
+  "certainty": "underclaims",
+  "fact_error": true,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Says 'a reanimated illusionist is active through player_5's body' (player_5 was killed by it) and votes player_2, ignoring the vote record."
+ },
+ {
+  "id": "C13-Y3",
+  "action": "weak",
+  "certainty": "underclaims",
+  "fact_error": false,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": false,
+  "reason": "Votes player_1, the right lead, but only as 'most suspicious' for questioning player_9, not from its day-3 vote with the illusionist."
+ },
+ {
+  "id": "C13-Y4",
+  "action": "weak",
+  "certainty": "underclaims",
+  "fact_error": false,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": false,
+  "reason": "Accurately restates the prior note but votes player_2 on thin grounds and misses player_1's vote with the illusionist."
+ },
+ {
+  "id": "C14-X1",
+  "action": "unjustified",
+  "certainty": "underclaims",
+  "fact_error": false,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Votes player_9 as 'the only living player making unverifiable night claims', ignoring the night 2 watch that fit the investigator's check."
+ },
+ {
+  "id": "C14-X2",
+  "action": "unjustified",
+  "certainty": "underclaims",
+  "fact_error": false,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Admits the night 2 watch matches player_4's check, yet votes player_9 as a 'possible necromancer bluff' with nothing that sets it apart."
+ },
+ {
+  "id": "C14-X3",
+  "action": "unjustified",
+  "certainty": "underclaims",
+  "fact_error": false,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Acknowledges the night 2 fit but votes player_9 because the night 4 watch is unverifiable; player_3 and player_10 face no such test."
+ },
+ {
+  "id": "C14-X4",
+  "action": "justified",
+  "certainty": "calibrated",
+  "fact_error": false,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": false,
+  "reason": "Treats player_9's claim as partly corroborated and votes the silent, unclaimed player_10."
+ },
+ {
+  "id": "C14-Y1",
+  "action": "unjustified",
+  "certainty": "underclaims",
+  "fact_error": false,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Votes player_9 as 'most claim-heavy survivor' because its night 4 result is unverifiable, ignoring the night 2 corroboration."
+ },
+ {
+  "id": "C14-Y2",
+  "action": "unjustified",
+  "certainty": "overclaims",
+  "fact_error": true,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Treats the GM not announcing a private watch result as a conflict ('conflicts with no GM record of it') and votes player_9."
+ },
+ {
+  "id": "C14-Y3",
+  "action": "justified",
+  "certainty": "calibrated",
+  "fact_error": true,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": false,
+  "reason": "Recognises player_9's corroborated claim and votes unclaimed player_3; minor slip: 'their day 2 watch matched player_4's day 2 check' (night 2)."
+ },
+ {
+  "id": "C14-Y4",
+  "action": "weak",
+  "certainty": "calibrated",
+  "fact_error": true,
+  "note_keeps_valid": "yes",
+  "note_carries_mistake": true,
+  "reason": "Rightly trusts player_9, but votes player_3 for a 'day 3 vote against the investigator' that player_3 never cast, and says player_10 voted player_6 on day 4."
+ }
+]

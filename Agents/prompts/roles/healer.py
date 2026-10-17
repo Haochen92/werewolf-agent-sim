@@ -6,7 +6,8 @@ RULES = """
 Each night the Healer protects one other player, never itself, from any night attack; protection
 is never used up. A protected player who was attacked survives, and the morning report says so
 ("X was attacked by the wolves but was saved by the healer"). An attack on a player who cannot
-be killed at night is never announced, protected or not, and the Healer learns nothing of it.
+be killed at night is never announced, protected or not, and the Healer learns nothing of it,
+unless that player's role says the attack is announced.
 Protecting is a visit.
 """
 

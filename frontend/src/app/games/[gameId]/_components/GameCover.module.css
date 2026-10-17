@@ -1,0 +1,14 @@
+/* The cover over a live game's page: the whole window, over the page drawn under it. Up, its
+   ground is the loader's, so the loader's own fade in never shows the page; while it fades
+   off, a tap reaches the stage. */
+.cover {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+}
+.cover[data-game-cover='up'] {
+  background: var(--ink-900);
+}
+.cover[data-game-cover='lifting'] {
+  pointer-events: none;
+}

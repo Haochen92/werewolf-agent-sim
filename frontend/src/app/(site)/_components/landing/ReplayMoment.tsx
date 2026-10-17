@@ -6,6 +6,7 @@
  */
 import { ChipSprite } from '@/stage/cast/ChipSprite';
 import { castForGame } from '@/stage/cast/castForGame';
+import { stageFonts } from '@/stage/fonts';
 import { BLUFF } from './features';
 import classes from './ReplayMoment.module.css';
 
@@ -16,7 +17,7 @@ const seats = (text: string) => text.replace(/player_(\d+)/gi, 'Seat $1');
 
 export function ReplayMoment() {
   return (
-    <figure className={classes.moment}>
+    <figure className={`${classes.moment} ${stageFonts}`}>
       <figcaption className={classes.when}>
         Day {BLUFF.day} &middot; Seat {BLUFF.seat}, the {BLUFF.role}
       </figcaption>

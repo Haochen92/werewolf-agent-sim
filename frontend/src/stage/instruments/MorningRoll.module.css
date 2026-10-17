@@ -38,7 +38,9 @@
   gap: 0 calc(12.8px * var(--legible-ui));
 }
 .who {
-  font-family: var(--font-display);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   color: var(--paper-ink, #2a1d11);
   white-space: nowrap;
 }

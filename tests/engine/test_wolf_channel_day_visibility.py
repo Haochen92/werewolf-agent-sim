@@ -183,6 +183,23 @@ def test_format_wolf_channel_hides_generation_failure_pass():
     assert "generation_failed" not in format_wolf_channel([NOTE, technical_pass])
 
 
+def test_format_wolf_channel_shows_a_chosen_pass_to_the_pack():
+    # With passes hidden the AI wolf restated its proposal every round (owner, 2026-10-17).
+    chosen_pass = WolfChannel(day=1, round=2, wolf="w0", message="", vote="", passed=True,
+                              pass_reason=DiscussionPassReason.VOLUNTARY)
+    assert format_wolf_channel([chosen_pass], "w1") == (
+        "[Day 1, Round 2] Your wolf partner w0 has nothing else to add.")
+    assert format_wolf_channel([chosen_pass], "w0") == "[Day 1, Round 2] You had nothing else to add."
+    assert format_wolf_channel([chosen_pass]) == "[Day 1, Round 2] w0 has nothing else to add."
+
+
+def test_format_wolf_channel_ends_a_message_with_one_full_stop():
+    said = WolfChannel(day=1, round=1, wolf="w0", message="player_9 tonight.", vote="")
+    unpunctuated = WolfChannel(day=1, round=2, wolf="w0", message="Ok", vote="")
+    assert format_wolf_channel([said, unpunctuated]).splitlines() == [
+        "[Day 1, Round 1] w0: player_9 tonight.", "[Day 1, Round 2] w0: Ok."]
+
+
 # --- (5) re-scoped leak check -----------------------------------------------
 
 def _entry(player_id: str, role: str, output_key: str, payload: dict) -> dict:
@@ -213,3 +230,15 @@ def test_leak_check_still_flags_town_entry():
     # Negative control: the channel in a non-wolf entry is still a leak.
     leaked = [_entry("t0", "sentinel", "day_votes", {"wolf_channel": [NOTE]})]
     assert check_wolf_channel_isolation(leaked) != []
+
+
+# --- (6) the pack knows each other's roles (owner, 2026-10-17) ----------------
+
+def test_a_wolf_day_payload_carries_the_pack_roles_and_a_town_payload_does_not():
+    state = _day_state()
+    wolf_payload = build_speaker_send(state, "w1", "illusionist", _fr()).arg
+    assert wolf_payload["pack_roles"] == {"w0": "chanteuse", "w1": "illusionist"}
+    assert "pack_roles" not in build_speaker_send(state, "t0", "sentinel", _fr()).arg
+    assert build_agent_prompt_input(wolf_payload)["pack_roster"] == (
+        "- w0, the Chanteuse: each night also blocks one player's night action.\n"
+        "- w1 (you), the Illusionist: twice per game may hide the role of the player the wolves killed.")

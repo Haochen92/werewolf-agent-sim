@@ -29,6 +29,7 @@ import {
   Notice,
   NoticeZone,
   PackChat,
+  UsesLeft,
 } from '../instruments/Notice';
 import { StringDrop } from '../instruments/StringDrop';
 import { bigCard, chipRow, rowX, smallCards } from '../instruments/flies';
@@ -40,6 +41,7 @@ import { seatNumber } from '../roles';
 import { bandNarrows, sideOpen } from '../slot';
 import { STAGE_H, geometry } from '../units';
 import { StandReturns } from './DiningCarParts';
+import { usesNote } from './ShelfRoomScene';
 import { CarSetSpec } from './CarScene';
 import type { SceneProps } from './types';
 
@@ -74,12 +76,13 @@ function DealBeat({ view, beat, me, presentation, turn }: SceneProps) {
   const card = me ? view.me.role : null;
   const myRole = card?.role ?? null;
   const mate = card?.pack?.find((p) => p !== me) ?? null;
+  const mateRole = mate ? (card?.packRoles?.[mate] ?? null) : null;
   const packShown = mate !== null && at('deal.your-pack');
 
-  // what this viewer knows of each small card at this beat: a role (the X-ray's), or a pack
-  // mate, whose role the wire never says (its card shows the pack, not a role)
+  // what this viewer knows of each small card at this beat: a role (the X-ray's, or a pack
+  // mate's from the deal), or a pack mate dealt before 2026-10-17, whose card shows the pack
   const known = (seat: string): string | null =>
-    xray ? (view.xray.roles[seat] ?? null) : null;
+    xray ? (view.xray.roles[seat] ?? null) : packShown && seat === mate ? mateRole : null;
   const mateCard = (seat: string) => !xray && packShown && seat === mate;
   const yours = id === 'deal.your-card' && !!myRole;
   // your card was the big one from its beat on; its small one is not hung again
@@ -252,6 +255,7 @@ function DealBeat({ view, beat, me, presentation, turn }: SceneProps) {
             view={view}
             myRole={myRole}
             mate={mate}
+            mateRole={mateRole}
             cast={cast}
             arrive={animate}
           />
@@ -270,6 +274,7 @@ function DealWords({
   view,
   myRole,
   mate,
+  mateRole,
   cast,
   arrive,
 }: {
@@ -277,6 +282,7 @@ function DealWords({
   view: SceneProps['view'];
   myRole: string | null;
   mate: string | null;
+  mateRole: string | null;
   cast: SceneProps['presentation']['cast'];
   arrive: boolean;
 }) {
@@ -305,6 +311,7 @@ function DealWords({
     case 'deal.your-card': {
       if (!myRole) return null;
       const bullets = view.me.role?.bullets ?? null;
+      const uses = usesNote(myRole, view.me.role?.uses ?? null);
       return (
         <Notice
           kind="paper"
@@ -314,14 +321,19 @@ function DealWords({
           {...t}
         >
           {cardTextFor(myRole, isNineSeat(view))?.night}
-          {myRole === 'vigilante' && bullets !== null ? <Caps n={bullets} /> : null}
+          {/* a nine-seat vigilante's caps; any other limited ability, its uses left */}
+          {myRole === 'vigilante' && bullets !== null ? (
+            <Caps n={bullets} />
+          ) : uses ? (
+            <UsesLeft text={uses} />
+          ) : null}
         </Notice>
       );
     }
     case 'deal.your-pack': {
       if (!mate) return null;
       const n = seatNumber(mate);
-      return <PackChat mate={n} character={cast[n - 1]} arrive={arrive} />;
+      return <PackChat mate={n} role={mateRole} character={cast[n - 1]} arrive={arrive} />;
     }
     case 'deal.face-up':
       return (

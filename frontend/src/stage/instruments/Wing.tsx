@@ -376,28 +376,30 @@ function WingTile({
       ) : null}
       {knew ? (
         <span
-          className={`${styles.band} ${styles.knownBand} ${knew.how === 'seen' && (ROLE_NAME[knew.role] ?? knew.role).length > 6 ? styles.knownLong : ''}`}
+          className={`${styles.band} ${styles.knownBand} ${knew.role && (ROLE_NAME[knew.role] ?? knew.role).length > 6 ? styles.knownLong : ''}`}
           data-known={knew.how}
           title={
-            knew.how === 'pack'
-              ? 'Your pack'
-              : `Seen · ${ROLE_NAME[knew.role] ?? knew.role}`
+            knew.role
+              ? `${knew.how === 'pack' ? 'Pack' : 'Seen'} · ${ROLE_NAME[knew.role] ?? knew.role}`
+              : 'Your pack'
           }
         >
-          {/* a pack mate's role is not on the wire: the pack's side mark, never a role's sigil */}
-          {knew.how === 'pack' ? (
-            <FactionMark faction="wolves" small />
-          ) : (
+          {/* a pack mate dealt before 2026-10-17 has no role on the wire: the pack's side mark */}
+          {knew.role ? (
             <Sigil role={knew.role} variant="felt" small />
+          ) : (
+            <FactionMark faction="wolves" small />
           )}
           <span className={styles.knownWords}>
-            {knew.how === 'pack' ? (
-              'Your pack'
-            ) : (
+            {knew.role ? (
               <>
-                <span className={styles.knownSeen}>Seen · </span>
+                <span className={styles.knownSeen}>
+                  {knew.how === 'pack' ? 'Pack' : 'Seen'} ·{' '}
+                </span>
                 {ROLE_NAME[knew.role] ?? knew.role}
               </>
+            ) : (
+              'Your pack'
             )}
           </span>
         </span>
@@ -421,7 +423,7 @@ function WingTile({
   return (
     <button
       type="button"
-      className={`${cls} ${styles.tap}`}
+      className={styles.tap}
       data-seat={seat}
       data-glow={glow}
       data-word={word}
@@ -430,7 +432,8 @@ function WingTile({
       aria-haspopup={read?.onRead || file ? undefined : 'dialog'}
       onClick={(e) => tap(e.currentTarget)}
     >
-      {face}
+      {/* the button holds the card rather than being it (see `.tap`) */}
+      <span className={cls}>{face}</span>
     </button>
   );
 }

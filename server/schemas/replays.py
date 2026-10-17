@@ -16,7 +16,8 @@ class ReplayBase(BaseModel):
 
     game_id: str
     finished_at: datetime | None = None
-    winner: Winner
+    winner: Winner | None = None
+    """The winning side; None for a draw (no side left standing, or a tie at the day limit)."""
     neutral_result: str | None = None
     """How the neutral fared, beside the winner ("won", "lost", "won (2 points)"); None for a
     nine-seat game, which dealt no neutral."""

@@ -4,7 +4,8 @@ from Agents.schemas.role_card import DiscussWords, NightWords, RoleCard, VoteWor
 
 RULES = """
 Each night the Trailseer follows one player and privately learns whom they visited that night,
-or that they visited no one. Following is a visit.
+or that they visited no one. "Visited no one" means only that no visit was made in their name that
+night, not that they did nothing. Following is a visit.
 """
 
 PLAYSTYLE = """

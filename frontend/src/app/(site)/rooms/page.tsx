@@ -1,4 +1,5 @@
 import { HangTag } from '@/components/site';
+import { PageMusic } from '@/music/PageMusic';
 import { PlatformBackdrop } from '../_components/landing/PlatformBackdrop';
 import platform from '../_components/landing/PlatformBackdrop.module.css';
 import { DeparturesBoard } from './_components/DeparturesBoard';
@@ -16,6 +17,7 @@ export default function RoomsPage() {
   return (
     <main className={`${classes.hall} ${platform.scene}`}>
       <PlatformBackdrop short />
+      <PageMusic bed="lobby" />
       <header className={classes.head}>
         <div>
           <h1 className={classes.title}>The departures hall</h1>

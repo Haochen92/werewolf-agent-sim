@@ -236,8 +236,7 @@ def test_the_closing_follows_a_discussion_that_ran_out_and_gets_no_replies(play_
         if entry.player == "game_master":
             moderator_lines.append(entry)
     (announcement,) = moderator_lines
-    assert announcement.message == ("Before the vote: player_5 has been accused by player_1 and "
-                                    "player_3. player_5 gets a last word.")
+    assert announcement.message == "Before the vote: player_5 gets a last word."
     assert announcement.day_round == "closing"
 
     closing_calls = table.calls_where(day_round="closing")
@@ -291,8 +290,7 @@ def test_the_closing_follows_a_discussion_that_hit_the_cap(play_day):
     for entry in entries:
         if entry.player == "game_master":
             moderator_lines.append(entry.message)
-    assert moderator_lines == ["Before the vote: player_5 has been accused by player_1 and "
-                               "player_2. player_5 gets a last word."]
+    assert moderator_lines == ["Before the vote: player_5 gets a last word."]
 
 
 # --- the round nodes, one at a time -------------------------------------------------------
@@ -424,8 +422,7 @@ def test_start_closing_writes_the_announcement_and_lists_the_accused_as_called()
     (announcement,) = update["day_channel"]
     assert announcement.player == "game_master"
     assert announcement.seq == 4
-    assert announcement.message == ("Before the vote: player_5 has been accused by player_1 and player_3; "
-                                    "player_4 by player_1 and player_2. Each gets a last word.")
+    assert announcement.message == "Before the vote: player_5 and player_4 each get a last word."
 
 
 def test_start_closing_refuses_to_run_with_nobody_on_trial():

@@ -504,6 +504,15 @@
   line-height: 1.3;
   color: #b3402f;
 }
+/* the seat's opening, at the opening's stop: above the file's section, ruled off from it */
+.opening {
+  padding-bottom: 12.8px;
+  margin-bottom: 12.8px;
+  border-bottom: 1px solid var(--rule);
+}
+.sheet .held {
+  margin-top: 11.2px;
+}
 .empty {
   font-family: var(--font-body);
   font-size: var(--note);

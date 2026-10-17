@@ -59,7 +59,8 @@ export interface SpeechBoxProps {
   hidden?: boolean;
 }
 
-const PASS_REASON: Record<string, string> = {
+/** Why a seat passed, as the X-ray says it (beat sheet §2 row 3; the case file's opening too). */
+export const PASS_REASON: Record<string, string> = {
   voluntary: 'chose to pass',
   novelty_gated: 'held back: nothing new to say',
   generation_failed: 'no line came',

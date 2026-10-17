@@ -124,8 +124,27 @@
 .banded {
   --band-h: calc(var(--meta) * 1.2);
 }
+/* a card you can tap: the button only holds it, and the card fills it. iPadOS 18's Safari does
+   not lay a button out as the card's flex column: the photo and the ruled foot, which hold no
+   text, fell to zero width (owner's iPad, 2026-10-17). The rail's grid sizes the button. */
 .tap {
+  position: relative;
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  appearance: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
   cursor: pointer;
+}
+.tap > .tile {
+  position: absolute;
+  inset: 0;
 }
 .tap:focus-visible {
   outline: 2.4px solid var(--amber);
@@ -165,8 +184,9 @@
   padding: 1.6px 4.8px 2.4px 3.2px;
   border-bottom-right-radius: 4.8px;
   background: #ece2c8;
-  font-family: var(--font-display);
-  font-weight: 400;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   font-size: calc(var(--meta) * 1.05);
   line-height: 1;
   color: #2a1d10;
@@ -245,7 +265,9 @@
   overflow: hidden;
   white-space: nowrap;
   border-radius: 0 0 3.2px 3.2px;
-  font-family: var(--font-display);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   font-size: min(calc(var(--meta) * 0.78), 19cqw);
   letter-spacing: -0.01em;
   line-height: 1;
@@ -422,7 +444,7 @@
 }
 .file:hover::after,
 .file:active::after,
-.file:focus-visible::after {
+.tap:focus-visible > .file::after {
   border-color: var(--xray-hi);
   box-shadow: 0 0 9.6px rgba(134, 176, 160, 0.45);
   opacity: 1;
@@ -693,8 +715,9 @@
 }
 .editorWho strong {
   font-family: var(--font-display);
-  font-weight: 400;
-  font-size: calc(26px * var(--legible-ui));
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
+  font-size: calc(26px * var(--legible-ui) * var(--display-scale, 1.08));
   line-height: 1.1;
 }
 .editorWho small {
@@ -798,7 +821,9 @@
   outline-offset: 2.4px;
 }
 .guessName {
-  font-family: var(--font-display);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   line-height: 1.2;
 }
 .guessUnsure {
@@ -915,7 +940,9 @@
   inset: calc(-28px * var(--grown)) calc(-4px * var(--grown));
 }
 .done {
-  font-family: var(--font-display);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   color: #24180c;
   background: linear-gradient(180deg, var(--hud-brass-hi), var(--hud-brass));
   border: 1.5px solid var(--hud-brass-lo);

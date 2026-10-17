@@ -130,6 +130,11 @@ export interface SceneBeat {
   /** The seats a round's beat is about: everyone writing an opening, or the seats that said
    *  nothing; on a `day.pass`, the seats of a run of passes told as one beat. */
   subjects?: string[];
+  /**
+   * On a round's opening beat: the seq of the first event after the round's lines, so its
+   * stop can skip the round and its file can find each seat's line; absent while it is written.
+   */
+  roundUntil?: number;
   /** The nth of a run: the nth chip counted. */
   ordinal?: number;
   spoke?: Spoke;
@@ -150,6 +155,12 @@ export interface SceneBeat {
    * Only the cutter can know it (the view at this beat has no `game_over` yet).
    */
   endsGame?: boolean;
+  /**
+   * On `vote.opens`: the seat the day's last beat had at the stand, whose puppet drops behind
+   * it as voting opens; absent when the stand was empty (a run of passes, a round's notice).
+   * Only the cutter knows what it showed: the log's last turn may never have been on the stage.
+   */
+  stand?: string;
 }
 
 export interface BeatOptions {

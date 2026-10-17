@@ -1,14 +1,14 @@
 {"cast_role_counts": {"chanteuse": 1, "fortune_teller": 1, "healer": 1, "illusionist": 1, "investigator": 1, "sentinel": 1, "serial_killer": 1, "sigilist": 1, "trailseer": 1, "vigilante": 1}, "day": 1, "lineup": ["investigator", "sentinel", "trailseer", "vigilante", "sigilist", "healer", "chanteuse", "illusionist", "serial_killer", "fortune_teller"], "seats": ["player_1", "player_2", "player_3", "player_4", "player_5", "player_6", "player_7", "player_8", "player_9", "player_10"], "seq": 1, "type": "game_started"}
-{"bullets": 2, "day": 1, "pack": null, "player": "player_1", "role": "vigilante", "seq": 2, "type": "role_assigned", "uses": 2}
-{"bullets": null, "day": 1, "pack": null, "player": "player_2", "role": "healer", "seq": 3, "type": "role_assigned", "uses": null}
-{"bullets": null, "day": 1, "pack": null, "player": "player_3", "role": "trailseer", "seq": 4, "type": "role_assigned", "uses": null}
-{"bullets": null, "day": 1, "pack": null, "player": "player_4", "role": "sigilist", "seq": 5, "type": "role_assigned", "uses": 2}
-{"bullets": null, "day": 1, "pack": ["player_5", "player_6"], "player": "player_5", "role": "chanteuse", "seq": 6, "type": "role_assigned", "uses": null}
-{"bullets": null, "day": 1, "pack": ["player_5", "player_6"], "player": "player_6", "role": "illusionist", "seq": 7, "type": "role_assigned", "uses": 2}
-{"bullets": null, "day": 1, "pack": null, "player": "player_7", "role": "investigator", "seq": 8, "type": "role_assigned", "uses": null}
-{"bullets": null, "day": 1, "pack": null, "player": "player_8", "role": "fortune_teller", "seq": 9, "type": "role_assigned", "uses": 2}
-{"bullets": null, "day": 1, "pack": null, "player": "player_9", "role": "sentinel", "seq": 10, "type": "role_assigned", "uses": null}
-{"bullets": null, "day": 1, "pack": null, "player": "player_10", "role": "serial_killer", "seq": 11, "type": "role_assigned", "uses": null}
+{"bullets": 2, "day": 1, "pack": null, "pack_roles": null, "player": "player_1", "role": "vigilante", "seq": 2, "type": "role_assigned", "uses": 2}
+{"bullets": null, "day": 1, "pack": null, "pack_roles": null, "player": "player_2", "role": "healer", "seq": 3, "type": "role_assigned", "uses": null}
+{"bullets": null, "day": 1, "pack": null, "pack_roles": null, "player": "player_3", "role": "trailseer", "seq": 4, "type": "role_assigned", "uses": null}
+{"bullets": null, "day": 1, "pack": null, "pack_roles": null, "player": "player_4", "role": "sigilist", "seq": 5, "type": "role_assigned", "uses": 2}
+{"bullets": null, "day": 1, "pack": ["player_5", "player_6"], "pack_roles": {"player_5": "chanteuse", "player_6": "illusionist"}, "player": "player_5", "role": "chanteuse", "seq": 6, "type": "role_assigned", "uses": null}
+{"bullets": null, "day": 1, "pack": ["player_5", "player_6"], "pack_roles": {"player_5": "chanteuse", "player_6": "illusionist"}, "player": "player_6", "role": "illusionist", "seq": 7, "type": "role_assigned", "uses": 2}
+{"bullets": null, "day": 1, "pack": null, "pack_roles": null, "player": "player_7", "role": "investigator", "seq": 8, "type": "role_assigned", "uses": null}
+{"bullets": null, "day": 1, "pack": null, "pack_roles": null, "player": "player_8", "role": "fortune_teller", "seq": 9, "type": "role_assigned", "uses": 2}
+{"bullets": null, "day": 1, "pack": null, "pack_roles": null, "player": "player_9", "role": "sentinel", "seq": 10, "type": "role_assigned", "uses": null}
+{"bullets": null, "day": 1, "pack": null, "pack_roles": null, "player": "player_10", "role": "serial_killer", "seq": 11, "type": "role_assigned", "uses": null}
 {"day": 1, "roles": {"player_1": "vigilante", "player_10": "serial_killer", "player_2": "healer", "player_3": "trailseer", "player_4": "sigilist", "player_5": "chanteuse", "player_6": "illusionist", "player_7": "investigator", "player_8": "fortune_teller", "player_9": "sentinel"}, "seq": 12, "type": "roles_assigned"}
 {"day": 1, "phase": "day", "seq": 13, "type": "phase_change"}
 {"day": 1, "players": ["player_1", "player_2", "player_3", "player_4", "player_5", "player_6", "player_7", "player_8", "player_9", "player_10"], "round": "opening", "seq": 14, "type": "round_opened"}
@@ -59,7 +59,7 @@
 {"action_kind": "block_target", "bodies": [], "candidates": ["player_1", "player_2", "player_3", "player_4", "player_6", "player_7", "player_8", "player_9", "player_10"], "day": 1, "deadline": "2026-01-01T00:01:00Z", "player": "player_5", "round": null, "seq": 59, "type": "input_request"}
 {"actor": "player_5", "day": 1, "role": "chanteuse", "seq": 60, "target": "player_1", "type": "night_action"}
 {"channel_seq": 11, "day": 1, "seq": 61, "text": "Night of day 1: player_3 was stabbed by the serial killer last night. They were a trailseer. player_7 was attacked by the wolves but was saved by the healer!", "type": "gm_message"}
-{"day": 1, "deaths": [{"attacker_types": ["serial_killer"], "concealed": false, "player": "player_3", "role": "trailseer"}], "pick": "town", "save": {"attacker_types": ["wolves"], "player": "player_7"}, "saves": [{"attacker_types": ["wolves"], "player": "player_7"}], "seq": 62, "type": "night_result"}
+{"day": 1, "deaths": [{"attacker_types": ["serial_killer"], "concealed": false, "player": "player_3", "role": "trailseer"}], "pick": "town", "save": {"attacker_types": ["wolves"], "player": "player_7", "reanimated": false, "self_bet": false}, "saves": [{"attacker_types": ["wolves"], "player": "player_7", "reanimated": false, "self_bet": false}], "seq": 62, "type": "night_result"}
 {"action": "watch", "actor": "player_9", "day": 1, "outcome": "Tonight player_7 was visited by player_2 and player_5.", "player": "player_9", "result": "seen", "seen": ["player_2", "player_5"], "seq": 63, "target": "player_7", "type": "night_record"}
 {"action": "investigate", "actor": "player_7", "day": 1, "outcome": "player_6 reads Suspicious.", "player": "player_7", "result": "suspicious", "seen": ["player_6"], "seq": 64, "target": "player_6", "type": "night_record"}
 {"action": "kill", "actor": "player_10", "day": 1, "outcome": "player_3 died. They were a trailseer.", "player": "player_10", "result": "killed", "seen": [], "seq": 65, "target": "player_3", "type": "night_record"}

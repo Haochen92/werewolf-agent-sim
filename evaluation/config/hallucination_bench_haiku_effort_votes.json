@@ -1,0 +1,14 @@
+{
+  "label": "haiku_effort_votes",
+  "dataset": "evidence/reasoning_failures/data/haiku_effort_replay/vote_cases.jsonl",
+  "n": 10,
+  "workers": 3,
+  "arms": [
+    {"label": "haiku_low", "model": "anthropic/claude-haiku-5-5",
+     "env": {"GOOGLE_GENAI_THINKING_LEVEL": "low", "LLM_STRUCTURED_MODE": "json_schema"}, "memory": "none"},
+    {"label": "haiku_medium", "model": "anthropic/claude-haiku-5-5",
+     "env": {"GOOGLE_GENAI_THINKING_LEVEL": "medium", "LLM_STRUCTURED_MODE": "json_schema"}, "memory": "none"}
+  ],
+  "golden_model": "anthropic/claude-sonnet-5-5",
+  "note": "Owner 2026-10-16 (after game 2f19d908): does more thinking fix Haiku's reasoning errors? Haiku 5.5 at low (the live catalogue level) against medium, both on the current tree (fea44f57, prompts unchanged), memory off. Cases: evaluation/experiments/haiku_effort_cases.py (403f4dbc's frozen turns and votes plus 2f19d908's day 2-3 failures; the 2f19d908 day-3 votes twice, as played and with today's closing line). Votes are scored by target (right = the actual threat); the goldens guard facts and name the reasoning errors. Record: evidence/reasoning_failures/experiment_log.md."
+}

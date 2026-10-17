@@ -91,7 +91,7 @@ export interface StationPlan {
 /**
  * Where everything on the platform is, in units, for a HUD mode (the wing narrows the room).
  * `seats` divides the window into places: the room's size (`RoomInput.places`); nine where no
- * room is known (the loading still, the back and front paint, which use no places).
+ * room is known (the back and front paint, which use no places).
  */
 export function stationPlan(hud: Hud = 'live', seats = 9): StationPlan {
   const g = geometry(hud);

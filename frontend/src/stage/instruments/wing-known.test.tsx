@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import type { MeView } from '@/game/types';
-import { knownRoles } from '../roles';
+import { hiddenRolesHeld, knownRoles } from '../roles';
 import { Wing } from './Wing';
 
 const me = (over: Partial<MeView> = {}): Pick<MeView, 'role' | 'privateResults'> => ({
@@ -11,7 +11,23 @@ const me = (over: Partial<MeView> = {}): Pick<MeView, 'role' | 'privateResults'>
 });
 
 describe('what a seat already knows, from its own view', () => {
-  it('a wolf knows its pack mates as the pack, not by role, and not itself', () => {
+  it('a wolf knows its pack mates and their roles (owner, 2026-10-17), not itself', () => {
+    const k = knownRoles(
+      'player_3',
+      me({
+        role: {
+          role: 'chanteuse',
+          pack: ['player_3', 'player_8'],
+          packRoles: { player_3: 'chanteuse', player_8: 'illusionist' },
+          bullets: null,
+          uses: null,
+        },
+      }),
+    );
+    expect([...k]).toEqual([['player_8', { how: 'pack', role: 'illusionist' }]]);
+  });
+
+  it('a wolf dealt before then knows its pack mates as the pack, not by role', () => {
     const k = knownRoles(
       'player_3',
       me({
@@ -88,6 +104,14 @@ describe('the wing’s known band', () => {
     expect(out).toContain('data-variant="felt"');
   });
 
+  it('bands a pack mate whose role the deal named with the role’s sigil', () => {
+    const out = html([{ seat: 8, known: { how: 'pack', role: 'illusionist' } }]);
+    expect(out).toMatch(
+      /data-known="pack"[^>]*>.*data-sigil="illusionist".*Pack · .*Illusionist/,
+    );
+    expect(out).not.toContain('data-faction="wolves"');
+  });
+
   it('gives the band to a death, "You" and the X-ray’s truth first', () => {
     const out = html([
       { seat: 8, dead: { role: 'wolf' }, known: { how: 'pack' } },
@@ -113,5 +137,44 @@ describe('a concealed body on the wing', () => {
     const out = html([{ seat: 3, dead: { role: null }, truth: 'trailseer' }]);
     expect(out).toContain('Trailseer');
     expect(out).not.toContain('Role hidden');
+  });
+});
+
+describe('a concealed body’s role, as the pack was told it (owner, 2026-10-17)', () => {
+  const record = (player: string, seen: string[]) => ({
+    kind: 'night_record' as const,
+    player,
+    seq: 99,
+    day: 1,
+    actor: 'wolves',
+    action: 'kill',
+    target: 'player_4',
+    result: 'killed',
+    outcome: '',
+    seen,
+  });
+
+  it('is held by the wolf whose copy of the pack’s record names it', () => {
+    const held = hiddenRolesHeld(
+      'player_6',
+      me({ privateResults: [record('player_6', ['sigilist'])] }),
+    );
+    expect([...held]).toEqual([['player_4', 'sigilist']]);
+  });
+
+  it('is not held from a record with no role, or another seat’s copy', () => {
+    expect(
+      hiddenRolesHeld('player_6', me({ privateResults: [record('player_6', [])] })).size,
+    ).toBe(0);
+    expect(
+      hiddenRolesHeld(
+        'player_6',
+        me({ privateResults: [record('player_10', ['sigilist'])] }),
+      ).size,
+    ).toBe(0);
+    expect(
+      hiddenRolesHeld(null, me({ privateResults: [record('player_6', ['sigilist'])] }))
+        .size,
+    ).toBe(0);
   });
 });

@@ -3,7 +3,7 @@
  * beat sheet §11 "The drawer"). The drawer is history, so it is built from what the view
  * holds up to the beat on stage: in the replay it stops at the beat for free.
  *
- * Three tiers, each shown only to whoever has it:
+ * Four tiers, each shown only to whoever has it:
  *
  * - public, for everyone: the speeches; the game master's lines verbatim (they are the record,
  *   so the lynch and the night that follow one only lend it their sigils, and nothing is said
@@ -12,21 +12,24 @@
  *   day's record in the case file (the summary is public, owner 2026-09-29; its text moved to
  *   the file's Record, 2026-10-04); the ending;
  * - private: a seated human's own results as "Only you" lines (what happened to their act and
- *   when; only the investigator's reading names a role); a wolf's pack chat and the kill; with
- *   the X-ray, everyone's private results as "Only seat 4";
- * - X-ray, in verdigris: the passes with their reason and held-back draft, the night acts,
- *   and the pack's talk.
+ *   when; only the investigator's reading names a role); with the X-ray, everyone's private
+ *   results as "Only seat 4";
+ * - pack ("Wolf"): what the whole pack holds: its talk, the kill, the game master's note to it
+ *   and its dawn record; a wolf's own, everyone's with the X-ray (owner, 2026-10-17);
+ * - X-ray, in verdigris: the passes with their reason and held-back draft, the night acts.
  *
  * The chapters (Day N · discussion, the vote, Night N, Dawn N+1, Game over) run down it as
  * rules, the seek bar's marks read downwards; a rule with nothing under it after the filters
  * is dropped. `firing_reason` and `addressed_targets` are deferred by decision.
  */
+import { repeatsDawn } from '@/game/records';
 import type { GameView, GmSlot, PassSlot, PrivateResult } from '@/game/types';
 import type { PassReason } from '@/types/contracts';
 import type { SceneBeat } from '../beats/types';
 import { isPackRole, seatNumber, seatify } from '../roles';
+import { carrierKillSeq } from '../scenes/replay-night';
 
-export type LineTier = 'public' | 'private' | 'xray';
+export type LineTier = 'public' | 'private' | 'pack' | 'xray';
 
 /** The drawer's three filters (handoff §2): a day tab, one seat, and which tiers show. */
 export interface DrawerFilters {
@@ -39,8 +42,17 @@ export interface DrawerFilters {
 export const DEFAULT_FILTERS: DrawerFilters = {
   day: 'all',
   seat: null,
-  show: { public: true, private: true, xray: true },
+  show: { public: true, private: true, pack: true, xray: true },
 };
+
+/** The wolves' night (owner, 2026-10-17): the transcript opens on the pack's lines alone. */
+export function packNight(f: DrawerFilters): DrawerFilters {
+  return {
+    day: 'all',
+    seat: null,
+    show: { ...f.show, public: false, private: false, pack: true },
+  };
+}
 
 interface LineBase {
   /** Stable across beats, so the lit line survives a step. */
@@ -99,15 +111,6 @@ export type DrawerLine =
   | (LineBase & { kind: 'over'; winner: string });
 
 export type LineKind = DrawerLine['kind'];
-
-/** What each act does, as a line says it (bench 74 `VERB`). */
-export const ACT_VERB: Record<string, string> = {
-  healer: 'protects',
-  investigator: 'checks',
-  vigilante: 'shoots',
-  serial_killer: 'marks',
-  wolf: 'chooses',
-};
 
 const ARTICLE: Record<string, string> = {
   villager: 'a villager',
@@ -181,12 +184,17 @@ export interface LineOptions {
   beat?: (Pick<SceneBeat, 'id' | 'day'> & Partial<Pick<SceneBeat, 'seq' | 'spoke'>>) | null;
 }
 
+/** The viewer is a seated wolf: it holds the pack's lines. */
+export function wolfViewer(view: Pick<GameView, 'me'>, me: string | null): boolean {
+  return !!me && (isPackRole(view.me.role?.role) || !!view.me.role?.pack);
+}
+
 /** Every line this viewer's drawer holds at this view, in the log's order, rules included. */
 export function drawerLines(view: GameView, o: LineOptions): DrawerLine[] {
   const { me, xray } = o;
   const out: { at: number; line: DrawerLine }[] = [];
   const push = (at: number, line: DrawerLine) => out.push({ at, line });
-  const wolfMe = !!me && (isPackRole(view.me.role?.role) || !!view.me.role?.pack);
+  const wolfMe = wolfViewer(view, me);
 
   const phaseSeq = (day: number, phase: string) =>
     view.timeline.find((t) => t.day === day && t.phase === phase)?.seq ?? null;
@@ -340,20 +348,23 @@ export function drawerLines(view: GameView, o: LineOptions): DrawerLine[] {
 
     const night = d.night;
     if (night) {
+      // the carrier's kill is the pack's kill line below, not an act of its own
+      const carried = xray ? carrierKillSeq(view, d.day) : null;
       if (xray)
         for (const a of night.actions)
-          push(a.seq, {
-            kind: 'act',
-            key: `act-${a.seq}`,
-            seq: a.seq,
-            day: d.day,
-            tier: 'xray',
-            seats: [a.actor, a.target],
-            actor: a.actor,
-            role: a.role,
-            target: a.target,
-          });
-      const packTier: LineTier = wolfMe ? 'private' : 'xray';
+          if (a.seq !== carried)
+            push(a.seq, {
+              kind: 'act',
+              key: `act-${a.seq}`,
+              seq: a.seq,
+              day: d.day,
+              tier: 'xray',
+              // an act with no target (a conceal, a held fire) comes as ""
+              seats: a.target ? [a.actor, a.target] : [a.actor],
+              actor: a.actor,
+              role: a.role,
+              target: a.target,
+            });
       if (wolfMe || xray) {
         for (const m of night.wolfChannel) {
           if (m.wolf !== 'game_master')
@@ -362,7 +373,7 @@ export function drawerLines(view: GameView, o: LineOptions): DrawerLine[] {
               key: `pack-${m.seq}`,
               seq: m.seq,
               day: d.day,
-              tier: packTier,
+              tier: 'pack',
               seats: [m.wolf],
               wolf: m.wolf,
               round: m.round,
@@ -375,7 +386,7 @@ export function drawerLines(view: GameView, o: LineOptions): DrawerLine[] {
               key: `only-${m.seq}`,
               seq: m.seq,
               day: d.day,
-              tier: 'private',
+              tier: 'pack',
               seats: [night.wolfKill],
               mine: true,
               who: 'Only you',
@@ -388,7 +399,7 @@ export function drawerLines(view: GameView, o: LineOptions): DrawerLine[] {
               key: `only-${m.seq}`,
               seq: m.seq,
               day: d.day,
-              tier: 'private',
+              tier: 'pack',
               seats: night.wolfKill ? [night.wolfKill] : [],
               mine: false,
               who: 'Only the pack',
@@ -407,7 +418,7 @@ export function drawerLines(view: GameView, o: LineOptions): DrawerLine[] {
             key: `kill-${d.day}`,
             seq: last,
             day: d.day,
-            tier: packTier,
+            tier: 'pack',
             seats: [night.wolfKill],
             target: night.wolfKill,
             mine: wolfMe,
@@ -582,6 +593,7 @@ function privateResultsFor(
   for (const p of all) {
     if (seen.has(p.seq)) continue;
     seen.add(p.seq);
+    if (p.kind === 'night_record' && repeatsDawn(p)) continue;
     const kept = isPackRecord(p) ? packNights.get(p.day) : undefined;
     if (kept) {
       kept.covers.push(p.seq);
@@ -605,7 +617,7 @@ function onlyLine(p: PrivateResult, me: string | null, covers: number[]): Drawer
     key: `only-${p.seq}`,
     seq: p.seq,
     day: p.day,
-    tier: 'private' as const,
+    tier: (isPackRecord(p) ? 'pack' : 'private') as LineTier,
     mine,
     who: mine ? 'Only you' : isPackRecord(p) ? 'Only the pack' : `Only seat ${n}`,
     ...(covers.length ? { covers } : {}),
@@ -728,11 +740,12 @@ export function drawerDays(lines: readonly DrawerLine[]): number[] {
 
 /**
  * The Show toggles this viewer has: none for a spectator; Public and Private for a seat, or with
- * the X-ray (everyone's private lines). The X-ray's own lines have no toggle: they follow the
- * X-ray's one switch (owner, 2026-09-29).
+ * the X-ray (everyone's private lines); Wolf for a wolf, or with the X-ray. The X-ray's own lines
+ * have no toggle: they follow the X-ray's one switch (owner, 2026-09-29).
  */
-export function showRow(me: string | null, xray: boolean): LineTier[] {
-  return me || xray ? ['public', 'private'] : [];
+export function showRow(me: string | null, xray: boolean, wolf = false): LineTier[] {
+  if (!me && !xray) return [];
+  return wolf || xray ? ['public', 'private', 'pack'] : ['public', 'private'];
 }
 
 /*

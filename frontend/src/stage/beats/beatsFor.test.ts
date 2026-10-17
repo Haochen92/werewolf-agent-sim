@@ -26,7 +26,8 @@ function line(b: SceneBeat, i: number): string {
     ? ` {${b.subjects.map((s) => s.replace('player_', '')).join(',')}}`
     : '';
   const chapter = b.chapter ? `  [${b.chapter.kind} ${b.chapter.n}]` : '';
-  return `${String(i).padStart(3)}  ${b.id.padEnd(24)} d${b.day} seq${String(b.seq).padStart(3)} end${String(b.end).padStart(3)}  ${b.sees}${who}${about}${seats}${nth}${spoke}${page}  ${b.holdMs}ms${chapter}`;
+  const stand = b.stand ? ` stand ${b.stand.replace('player_', '')}` : '';
+  return `${String(i).padStart(3)}  ${b.id.padEnd(24)} d${b.day} seq${String(b.seq).padStart(3)} end${String(b.end).padStart(3)}  ${b.sees}${who}${about}${seats}${nth}${spoke}${page}${stand}  ${b.holdMs}ms${chapter}`;
 }
 
 const dump = (beats: SceneBeat[]) => beats.map(line).join('\n') + '\n';
@@ -340,14 +341,17 @@ describe('the rounds of the day, on a hand-built log (Phase 2)', () => {
     ]);
   });
 
-  it('in the X-ray plays each pass marker instead of the grouped beat', () => {
+  it('in the X-ray groups the round’s passes too, and marks where the round ends', () => {
     const beats = beatsFor(openingRound, { xray: true });
 
-    expect(byId(beats, 'day.round-passes')).toHaveLength(0);
-    const passed: string[] = [];
-    for (const beat of byId(beats, 'day.pass')) passed.push(beat.subject ?? '');
-    expect(passed).toEqual(['player_1', 'player_3', 'player_4']);
-    expect(byId(beats, 'day.opening-prepares')).toHaveLength(1);
+    // the reasons are in the seats' files at the opening's stop (owner, 2026-10-16)
+    expect(byId(beats, 'day.pass')).toHaveLength(0);
+    const passes = byId(beats, 'day.round-passes');
+    expect(passes).toHaveLength(1);
+    expect(passes[0].subjects).toEqual(['player_1', 'player_3', 'player_4']);
+    const [opening] = byId(beats, 'day.opening-prepares');
+    const after = openingRound.find((e) => e.seq > 16 && e.type !== 'pass_marker');
+    expect(opening.roundUntil).toBe(after?.seq);
   });
 
   it('live with the X-ray on (game over) keeps the grouped beat, as the game played it', () => {
@@ -509,6 +513,34 @@ describe('a run of passes, and the prompt before its announcement (2026-10-12)',
     ]);
   });
 
+  // the vote opens on whoever the stage last had at the stand (2026-10-15): it had taken the
+  // log's last turn, which a run of passes never put on the stage, and that seat flashed up
+  it('the vote opens on the seat last at the stand, and on nobody after a run', () => {
+    const stand = (beats: SceneBeat[]) => beats.find((b) => b.id === 'vote.opens')?.stand;
+    expect(stand(beatsFor(day, { xray: false }))).toBe('player_7');
+    expect(stand(beatsFor(day, { xray: false, live: true }))).toBe('player_7');
+    // live folds no pass_marker (observer tier): still the seat the stage showed last
+    const heard = day.filter((e) => e.type !== 'pass_marker');
+    expect(stand(beatsFor(heard, { xray: false, live: true }))).toBe('player_7');
+    // the day ends on a run: the stand is empty in the replay and live, its last passer only
+    // stands in the X-ray, which plays each pass on its own
+    const quiet = [...day.slice(0, 7), ev(17, 'phase_change', { phase: 'voting' })];
+    expect(told(beatsFor(quiet, { xray: false })).slice(-2)).toEqual([
+      'day.pass player_2,player_4',
+      'vote.opens ',
+    ]);
+    expect(stand(beatsFor(quiet, { xray: false }))).toBeUndefined();
+    expect(
+      stand(
+        beatsFor(
+          quiet.filter((e) => e.type !== 'pass_marker'),
+          { xray: false, live: true },
+        ),
+      ),
+    ).toBeUndefined();
+    expect(stand(beatsFor(quiet, { xray: true }))).toBe('player_4');
+  });
+
   it('the X-ray replay keeps each pass_marker, with its reason', () => {
     const xray = beatsFor(day, { xray: true }).filter((b) => b.id === 'day.pass');
     expect(xray.map((b) => [b.subject, b.sees])).toEqual([
@@ -645,13 +677,16 @@ describe('the ten-seat morning (night records, every save, the pick)', () => {
   const onlyYou = (beats: SceneBeat[]) => beats.filter((b) => b.id === 'morning.only-you');
 
   it('gives the X-ray one only-you beat per record, the pack’s kill once a night at its first copy', () => {
+    // the pack's kill that landed with no role for it to learn repeats the morning: no beat
+    const repeats = (r: ReturnType<typeof records>[number]) =>
+      r.actor === 'wolves' && r.result === 'killed' && !r.seen?.length;
     for (const log of [p3Log, necroLog]) {
       const all = records(log);
       const packFirst = new Map<number, number>();
       for (const r of all)
         if (r.actor === 'wolves' && !packFirst.has(r.day)) packFirst.set(r.day, r.seq);
       const expected = all.filter(
-        (r) => r.actor !== 'wolves' || packFirst.get(r.day) === r.seq,
+        (r) => !repeats(r) && (r.actor !== 'wolves' || packFirst.get(r.day) === r.seq),
       );
       const beats = onlyYou(beatsFor(log, { xray: true }));
       expect(beats.map((b) => [b.seq, b.sees, b.seat, b.aqua])).toEqual(
@@ -662,9 +697,10 @@ describe('the ten-seat morning (night records, every save, the pick)', () => {
         expected.map((r) => (r.target?.startsWith('player_') ? r.target : undefined)),
       );
     }
-    // the necromancer game's night 1: the pack's record reached both wolves (99, 100)
+    // the necromancer game's night 1: the pack's record (99, 100: a sigilist died, as the
+    // morning says) is not told again
     const n1 = onlyYou(beatsFor(necroLog, { xray: true })).filter((b) => b.day === 1);
-    expect(n1.map((b) => b.seq)).toEqual([97, 98, 99, 101, 102, 103, 104]);
+    expect(n1.map((b) => b.seq)).toEqual([97, 98, 101, 102, 103, 104]);
   });
 
   it('keeps every record out of the public replay', () => {
@@ -678,23 +714,24 @@ describe('the ten-seat morning (night records, every save, the pick)', () => {
       [228, 'player_3'],
       [340, 'player_6'],
     ]);
-    // the illusionist: the pack's kill each night, and its own conceal (no seat named)
+    // the illusionist: its own conceal (no seat named); the pack's kills (99, 226) only repeat
+    // the morning (this game predates the pack learning a concealed role, 2026-10-17)
     const illusionist = onlyYou(
       beatsFor(p3Log, { xray: false, me: 'player_6', live: true }),
     );
     expect(illusionist.map((b) => [b.seq, b.seat, b.subject])).toEqual([
-      [99, 'player_6', 'player_7'],
-      [226, 'player_6', 'player_3'],
       [227, 'player_6', undefined],
     ]);
-    // the chanteuse holds the second copy: the beat is hers, at the night's first copy
+    // the chanteuse: its own block; the pack's kill on night 1 repeats the morning
     const chanteuse = onlyYou(
       beatsFor(necroLog, { xray: false, me: 'player_10', live: true }),
     );
     expect(chanteuse.filter((b) => b.day === 1).map((b) => [b.seq, b.seat])).toEqual([
-      [99, 'player_10'],
       [101, 'player_10'],
     ]);
+    // a save is still told to the pack (owner, 2026-10-17): the necromancer game's night 2
+    const saved = onlyYou(beatsFor(necroLog, { xray: false, me: 'player_6', live: true }));
+    expect(saved.map((b) => [b.seq, b.subject])).toContainEqual([314, 'player_1']);
   });
 
   it('tells every save a chip at a time, and holds the roll for the pick’s row too', () => {
@@ -758,8 +795,18 @@ describe('the ten-seat morning (night records, every save, the pick)', () => {
       deaths: [],
       pick: null,
       saves: [
-        { player: 'player_1', attacker_types: ['wolves'] },
-        { player: 'player_3', attacker_types: ['serial_killer'] },
+        {
+          player: 'player_1',
+          attacker_types: ['wolves'],
+          reanimated: false,
+          self_bet: false,
+        },
+        {
+          player: 'player_3',
+          attacker_types: ['serial_killer'],
+          reanimated: false,
+          self_bet: false,
+        },
       ],
     } as DurableGameEvent;
     const beats = beatsFor([two], { xray: false });

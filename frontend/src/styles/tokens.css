@@ -45,6 +45,7 @@
   --sign-text: #f3e7cc;
   --sign-muted: #a99a7e;
   --well-text: #d8c59c;
+  --sign-hook: #e8cf9c; /* the hook under the landing's sign: lamplit brass-cream */
 
   /* --- shared with the theatre: its names, its values -------------------- */
   --ink: #24180c;

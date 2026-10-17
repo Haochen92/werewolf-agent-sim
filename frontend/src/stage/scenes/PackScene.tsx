@@ -2,12 +2,13 @@
 
 /**
  * Night, the pack (handoff §4.7, beat sheet §7): the same room as the acting seat's, painted as
- * the wolves' red-lit compartment. Your packmate is in the chat, not on the line; the photos
- * are the seats the pack may choose, which never include a wolf.
+ * the wolves' red-lit compartment. The photos are the seats the pack may choose, which never
+ * include a wolf. The pack's talk is in the transcript, its Wolf lines (owner, 2026-10-17: the
+ * chat was too small, on a phone most of all); the live game opens it on them for the night.
  *
  * - `pack.your-line`: your round to talk: a line and "Say it" at the foot of the room, or
  *   "Pass" (the ten-seat chat ends once every wolf passed a round).
- * - `pack.line`: a line arrives in the chat, in the order it was said.
+ * - `pack.line`: a line arrives in the transcript, in the order it was said.
  * - `pack.vote`: the plate is live at once; your packmate's tooth is on their photo if their
  *   vote has arrived; yours lands when you confirm. In the ten-seat game there is no vote: the
  *   carrier alone names the kill here (`carrier_kill`), and each wolf's own skill (the block,
@@ -28,14 +29,16 @@ import { SideSlot } from '../SideSlot';
 import { ActPlate } from '../instruments/ActPlate';
 import { CountText } from '../instruments/CountText';
 import { pinColour } from '../instruments/Pin';
-import { PackChat, type PackEntry } from '../instruments/PackChat';
+import { SayLine, type PackEntry } from '../instruments/PackChat';
 import { Tooth } from '../instruments/Tooth';
 import { StageMotion } from '../motion';
 import { isPackRole, seatNumber } from '../roles';
+import { sideOpen } from '../slot';
 import { geometry } from '../units';
 import { NightRoom } from './NightRoom';
 import {
   AGENT_SEALED,
+  SENDING_SEALED,
   CHANGE_NOTE,
   LONE_WOLF_SEALED,
   NightCount,
@@ -102,10 +105,10 @@ export function PackScene(props: SceneProps) {
 }
 
 function Pack({ entering, ...props }: SceneProps & { entering: boolean }) {
-  const { view, beat, me, presentation, onAct, onSay, turn } = props;
+  const { view, beat, me, presentation, onAct, onSay, onDelegate, turn } = props;
   // a new beat, another viewer or a new seeded choice starts the vote and the card afresh
   const seed = `${beat.id}:${beat.seq}:${me}:${turn?.chosen ?? ''}:${turn?.cardOpen ? 1 : 0}`;
-  const { animate, cast, hud } = presentation;
+  const { animate, hud } = presentation;
   const g = geometry(hud, false);
   const night = view.days[beat.day]?.night ?? null;
   const pack = view.packRoster.length ? view.packRoster : (night?.packRoster ?? []);
@@ -136,8 +139,13 @@ function Pack({ entering, ...props }: SceneProps & { entering: boolean }) {
   );
   // a failed send reopens the plate; a vote the agent (or another tab) gave seals it
   const failed = !!turn?.sendError && !turn.sent;
-  const elsewhere = voting && (turn?.sent === 'agent' || turn?.sent === 'closed');
+  // handed to the seat's agent from the plate: sealed in the agent's words, until a failure
+  const [handed, setHanded] = useSeeded(seed, () => false);
+  const elsewhere =
+    voting && (turn?.sent === 'agent' || turn?.sent === 'closed' || (handed && !failed));
   const mine = failed ? null : sentVote;
+  // shut on the choice while it is on its way, but not yet said to be in
+  const sending = voting && (!!mine || elsewhere) && !!turn?.sending;
   const [cardOpen, setCardOpen] = useSeeded(seed, () => !!turn?.cardOpen);
 
   const votes = night?.wolfVotes ?? [];
@@ -172,23 +180,17 @@ function Pack({ entering, ...props }: SceneProps & { entering: boolean }) {
       carrier === me && votedHere ? false : arrived,
     );
 
-  const entries = packEntries(night);
-  if (mine && !votes.some((v) => v.wolf === me) && me)
-    entries.push({ kind: 'vote', seq: Number.MAX_SAFE_INTEGER, wolf: me, votee: mine });
-
   const lit = decided ?? (voting ? (mine ?? chosen) : null);
   const verb = alone || carrying ? 'Kill' : 'Vote';
-  const empty = tenSeat
+  // how the pack's night goes, told until someone has spoken: over your line, or a lone wolf's plate
+  const quiet = packEntries(night).length === 0;
+  const flow = tenSeat
     ? alone
       ? 'You hunt alone now: no talk tonight. The kill is yours, then your own skill.'
-      : talking && entries.length === 0
-        ? `${PACK_FLOW} Round 1 is yours to open.`
-        : PACK_FLOW
+      : `${PACK_FLOW} Round 1 is yours to open.`
     : alone
       ? 'You hunt alone now: no talk tonight, and the vote is yours.'
-      : talking && entries.length === 0
-        ? 'Two rounds of talk, then the vote. Round 1 is yours to open.'
-        : 'Two rounds of talk, then the vote.';
+      : 'Two rounds of talk, then the vote. Round 1 is yours to open.';
 
   return (
     <NightRoom
@@ -215,45 +217,38 @@ function Pack({ entering, ...props }: SceneProps & { entering: boolean }) {
         if (!mine && !elsewhere) setChosen(null);
       }}
     >
-      {me ? (
-        <PackChat
-          entries={entries}
-          you={me}
-          mate={mate}
-          cast={cast}
-          empty={empty}
-          arriving={beat.id === 'pack.line' ? beat.seq : undefined}
-          arrive={animate}
-          hidden={presentation.footHidden}
-          input={
-            talking
-              ? {
-                  draft: turn?.draft ?? '',
-                  onSay,
-                  // a pass is the act that names no one: `{pass_turn: true}`
-                  onPass: onAct ? () => onAct(null) : undefined,
-                  left: g.wingN + 22.4,
-                  // the request's own state: shut while on its way or in, reopened on a failure
-                  seq: beat.seq,
-                  sent: !!turn?.sent,
-                  error: turn?.sendError,
-                  note: turn?.clock ? (
-                    <>
-                      <CountText clock={turn.clock} /> to say it
-                    </>
-                  ) : undefined,
-                }
-              : undefined
+      {me && talking ? (
+        <SayLine
+          key={beat.seq}
+          draft={turn?.draft ?? ''}
+          onSay={onSay}
+          // a pass is the act that names no one: `{pass_turn: true}`
+          onPass={onAct ? () => onAct(null) : undefined}
+          onAgent={onDelegate}
+          left={g.wingN + 22.4}
+          // the request's own state: shut while on its way or in, reopened on a failure
+          seq={beat.seq}
+          sent={!!turn?.sent}
+          error={turn?.sendError}
+          cue={quiet ? flow : undefined}
+          note={
+            turn?.clock ? (
+              <>
+                <CountText clock={turn.clock} /> to say it
+              </>
+            ) : undefined
           }
+          hidden={presentation.footHidden}
         />
       ) : null}
       {/* once the vote is in, the lobby's count: the others acting, until the morning */}
-      {mine || elsewhere || decided || votes.some((v) => v.wolf === me) ? (
+      {!sending && (mine || elsewhere || decided || votes.some((v) => v.wolf === me)) ? (
         <NightCount {...props} />
       ) : null}
       {voting ? (
         <ActPlate
           left={g.wingN + 22.4}
+          maxWidth={geometry(hud, sideOpen(presentation)).room - 2 * 22.4}
           hidden={presentation.footHidden}
           label={
             mine
@@ -266,21 +261,35 @@ function Pack({ entering, ...props }: SceneProps & { entering: boolean }) {
           disabled={!chosen || !!mine}
           onConfirm={() => {
             if (!chosen || mine || elsewhere) return;
+            setHanded(false);
             setSentVote(chosen);
             onAct?.(chosen);
           }}
-          note={chosen ? CHANGE_NOTE : undefined}
+          agent={
+            onDelegate && !mine && !elsewhere
+              ? {
+                  label: 'Let my agent choose',
+                  onClick: () => {
+                    setHanded(true);
+                    onDelegate();
+                  },
+                }
+              : undefined
+          }
+          note={chosen ? CHANGE_NOTE : alone && quiet && !mine ? flow : undefined}
           error={failed ? turn?.sendError : null}
           sealed={
             mine || elsewhere
               ? {
-                  label: mine
-                    ? carrying
-                      ? sealedLabel('carrier_kill', mine)
-                      : alone
-                        ? LONE_WOLF_SEALED(seatNumber(mine))
-                        : sealedLabel('wolf_vote', mine)
-                    : AGENT_SEALED,
+                  label: sending
+                    ? SENDING_SEALED
+                    : mine
+                      ? carrying
+                        ? sealedLabel('carrier_kill', mine)
+                        : alone
+                          ? LONE_WOLF_SEALED(seatNumber(mine))
+                          : sealedLabel('wolf_vote', mine)
+                      : AGENT_SEALED,
                   colour: pinColour('wolf'),
                 }
               : null

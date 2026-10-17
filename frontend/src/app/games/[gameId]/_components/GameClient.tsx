@@ -21,9 +21,10 @@
  * the host departs the train pulls out and the deal begins on the one stage, nothing
  * remounted. The one step allowed upright is the boarding pass (the name a newcomer boards
  * with), a page before the guard; a full or locked room, or "Just watch", skips it. While the
- * status or a rejoin is on its way, the page is the empty platform (`StationStill`).
+ * status or a rejoin is on its way, and until a platform's pictures are in, the page is under
+ * the house's loading picture (`GameCover`, held by the layout).
  */
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Anchor } from '@mantine/core';
 import { useQueryClient } from '@tanstack/react-query';
@@ -38,18 +39,19 @@ import { KeyNeededCard } from '@/components/KeyNeededCard';
 import { TerminalError } from '@/components/TerminalError';
 import { OrientationGuard } from '@/stage/OrientationGuard';
 import { LiveTheatre } from '@/stage/containers/LiveTheatre';
-import { StationStill } from '@/stage/scenes/StationStill';
 import { BoardingPass, passIsUp } from './BoardingPass';
+import { useGameCover, type CoverWait } from './GameCover';
 import classes from './GameClient.module.css';
 import { useRoom } from './useRoom';
 
 export function GameClient({ gameId }: { gameId: string }) {
   const queryClient = useQueryClient();
-  const { status, state, error, statusError, isPending } = useGameStream(gameId);
+  const { status, state, error, statusError, isPending, reconnectNow } =
+    useGameStream(gameId);
   const { room, departed, onRoomAct, boarded } = useRoom(gameId, status);
-  // a game for one this tab just bought a ticket for: its page opens on the train leaving
+  // a game for one this tab just bought a ticket for: its page opens on the train leaving (the
+  // mark is forgotten once the train has left, `LiveTheatre`, so a remount before then departs)
   const [solo] = useState(() => departures.get(gameId));
-  useEffect(() => departures.forget(gameId), [gameId]);
   // "Just watch" on the boarding pass: the platform without a seat
   const [watching, setWatching] = useState(false);
   // aboard, but the pick on the pass was lost: the pass stays up until it is settled
@@ -95,12 +97,29 @@ export function GameClient({ gameId }: { gameId: string }) {
       .finally(() => setRejoining(false));
   }, [gameId, status, statusError, rejoinTried, queryClient]);
 
-  // the wait: the empty platform the room or the game takes over (beat sheet §1a)
-  if (isPending || rejoining) {
-    return (
-      <StationStill what="game" line={rejoining ? 'Reclaiming your seat…' : 'Boarding…'} />
-    );
-  }
+  // The page is under the house's loading picture (`GameCover`) while its status or a rejoin is
+  // on its way, and a platform (a game for one's, a room's) until its train and country are in;
+  // what went wrong is said at once.
+  const cover = useGameCover();
+  const [platformReady, setPlatformReady] = useState(false);
+  const onPlatformReady = useCallback(() => setPlatformReady(true), []);
+  const passUp = Boolean(
+    state === 'waiting' && status && room && !watching && passIsUp(room, repicking),
+  );
+  const wait: CoverWait =
+    isPending || rejoining
+      ? 'status'
+      : statusError || status?.archived || status?.awaiting_key || error
+        ? 'off'
+        : (solo || room) && !passUp && !platformReady
+          ? 'platform'
+          : 'ready';
+  useEffect(() => {
+    cover?.({ wait, line: rejoining ? 'Reclaiming your seat…' : null });
+  }, [cover, wait, rejoining]);
+
+  // the wait is the cover's
+  if (isPending || rejoining) return null;
 
   // The room closed before it departed (its host closed it, or nobody departed in time): the
   // server says why, and the way on is another room.
@@ -154,10 +173,17 @@ export function GameClient({ gameId }: { gameId: string }) {
 
   // D23: the game task died. The stream cannot tell us this — only the poll's error field
   // can, because heartbeats keep flowing and `state` stays "running".
-  if (error) return <TerminalError message={error} byok={status?.name?.includes('byok')} />;
+  if (error)
+    return (
+      <TerminalError
+        message={error}
+        byok={status?.name?.includes('byok')}
+        kind={status?.error_kind}
+      />
+    );
 
   // a newcomer to an open room with a place left gives their name first (upright is fine)
-  if (state === 'waiting' && status && room && !watching && passIsUp(room, repicking))
+  if (passUp && status)
     return (
       <BoardingPass
         gameId={gameId}
@@ -180,6 +206,8 @@ export function GameClient({ gameId }: { gameId: string }) {
           departed={departed}
           onRoomAct={onRoomAct}
           solo={solo}
+          onPlatformReady={onPlatformReady}
+          onReconnect={reconnectNow}
         />
       </main>
     </OrientationGuard>

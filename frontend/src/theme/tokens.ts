@@ -46,6 +46,7 @@ export const SITE_TOKENS = {
   '--sign-text': '#f3e7cc',
   '--sign-muted': '#a99a7e',
   '--well-text': '#d8c59c',
+  '--sign-hook': '#e8cf9c',
 } as const satisfies Record<CssVar, string>;
 
 /**

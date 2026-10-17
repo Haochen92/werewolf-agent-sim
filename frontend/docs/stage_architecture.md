@@ -90,7 +90,12 @@ The stage is a `16 / 9` box. Every position, size, radius and path in every scen
 - Sprites are placed in units too; their source pixel size only affects sharpness (§4).
 - Orientation: request fullscreen and `screen.orientation.lock("landscape")` where allowed
   (Android Chrome); where not (iOS Safari), a portrait interstitial ("turn your phone"). There is
-  no portrait layout. The interstitial is the room's, not the stage's.
+  no portrait layout. The interstitial is the room's, not the stage's. The whole screen also has
+  a switch on the top strip, after the speaker (`FullScreenButton`, 2026-10-16): where the page
+  may take it, a press does and a second gives it back; on an iPhone in Safari, which may not, it
+  shows the Home Screen line again (`HomeScreenTip`); where Chrome will install the house on a
+  phone, the press also offers the install (the same line, with an Install button; Chrome's own
+  bar is held back for it, `keepInstallPrompt` from the providers).
 
 **Layers** inside the box, bottom to top (each a positioned `div` filling the box):
 
@@ -627,10 +632,14 @@ Faction colour appears on a card only once it is face up (the handoff's card-bac
 
 The design's materials (`StageKit.vars()`: walnut, brass, felt, paper, the faction inks) become
 CSS custom properties on the stage box, alongside the existing [tokens.css](../src/styles/tokens.css).
-Fonts via `next/font` (`src/stage/fonts.ts`): the HUD's two voices (ruled 2026-09-29) are
-`Young Serif` (`--font-display`: the day plaque, nameplates, tabs, seat numerals on brass and on
-the wing) and `Literata` (`--font-body`, the stage's default face: speeches, the transcript, the
-dock), no extra letter-spacing on body text; `IM Fell English` stays on paper (and the case
+Fonts via `next/font` (`src/stage/fonts.ts`), by [typography.md](typography.md) (2026-10-16,
+which retired the 2026-09-29 Young Serif): `EB Garamond` 600 (`--font-display`, scaled by
+`--display-scale`) for the signs and headings (the day plaque, the nameplate, the seat tab, the
+dock's and the drawer's heads, the notices) and `Literata` for the rest: `--font-body`, the
+stage's default face, for speeches, the transcript and the dock's fields, and `--font-ui`, the
+same face at 600, for the small text and the controls (the strip's buttons, the seat numbers and
+role bands, the tabs, the clock); signs and controls set even, same-width digits. No extra
+letter-spacing on body text; `IM Fell English` stays on paper (and the case
 file's titles), `Patrick Hand` for pencil (the case file's margin line and pencilled facets),
 `Courier Prime` (`--font-stage-type`, 2026-09-29) the case file's typewriter for its labels, tabs
 and stamps only, and the sans (Outfit) only where a plate still names it. The case file's paper
@@ -1028,12 +1037,17 @@ a new take is a new name), so the browser and the CDN keep them for good (`next.
   stage, never of the stream (the stage plays behind the server). A *bed* plays underneath until
   the next bed differs (same `key`, same music):
   - the platform: the lobby's three in turn, from one picked for the visit;
-  - the deal and day 1: the parlour's discussion; then the parlour on odd days, the masked
-    accusations on even days;
+  - the discussion, from the deal on: the parlour's, until the table is down to four alive or
+    fewer, then the masked accusations', sadder, whatever day that falls on (owner, 2026-10-15;
+    they had alternated by day, and the masked accusations were too gloomy for a day 2);
   - the vote, the night (every night scene), and each morning's dawn, held on its loop if the
     morning outlasts it; the day's music comes in at "The day begins";
   - silence through the lynch and where the ending starts;
-  - from the winner's hour, the elders' music; the guide's is the same, opt-in.
+  - from the winner's hour, back on the platform: the lobby's three in turn, until the viewer
+    leaves (owner, 2026-10-15; it had been the elders' music, which is now the guide's alone).
+
+  The site's pages have music too, opt-in (off until the viewer turns it on, `PageMusic`): the
+  elders' on the guide and the landing, the lobby's three on the archive and the rooms' list.
 
   A *sting* is a one-shot on a moment: the psalm from the lynch's start (its hit lands on the
   truth), the short sting on "Voted out" on Fast (the psalm would be cut short), and the
@@ -1046,13 +1060,18 @@ a new take is a new name), so the browser and the CDN keep them for good (`next.
   ends and crossfades in. A hidden page suspends the context; an idle one is suspended after a
   few seconds.
 - **`music.ts`:** the viewer's choice (`musicPref`, `lib/storage`): `off` silences everything;
-  never chosen, the game plays and the guide does not. `MusicDirector` (in the providers) hears
-  the first press: browsers start sound only after one, and Safari only inside it, so on a page
-  with music the context is made in the press itself. `useStageMusic` is what the theatres call.
+  never chosen, the game plays and the site's pages do not. `MusicDirector` (in the providers)
+  hears the first press: browsers start sound only after one, and Safari only inside it, so on a
+  page with music the context is made in the press itself. A finger's press counts only as it
+  lifts (`pointerup`), a mouse's as it goes down, so it listens for both. On an iPhone the page
+  says it is a player (`navigator.audioSession.type = 'playback'`, Safari 17+), or the silent
+  switch mutes it. `useStageMusic` is what the theatres call.
 
 The containers own the rules for when a moment counts as played: live, a beat that arrives
 (`cursor.animate`), never what a refresh lands on; the replay, a beat played on, never a jump or a
 scrub, and a jump cuts a sting still sounding. The landing's preview and the guide's demos play
 nothing. The switch is `SoundButton`: on the strip (`SlotInput.sound`, the game and the full
-replay; the workbench has none, so its goldens are untouched) and beside the guide's title.
+replay; the workbench has none, so its goldens are untouched) and, on a site page with music,
+in the nav after the guide's sign, a speaker alone so it fits the phone's pinned strip
+(`TopNav` `Music`, shown while a page's opt-in bed is mounted: `optInPages`).
 `/workbench/music` auditions the files against the scenes' beats.

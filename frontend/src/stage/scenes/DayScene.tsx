@@ -31,16 +31,25 @@ import { useEffect, useState } from 'react';
 import { type DayState } from '@/assets/manifest';
 import type { GameView, PassSlot, SpeechSlot } from '@/game/types';
 import { Layer } from '../Stage';
+import { isNotice, isPassRun } from '../beats/beatsFor';
 import { Puppet } from '../cast/Puppet';
+import { OPENING_STOP } from '../containers/stops';
+import { openingEntries } from '../film/case-file';
 import { ReadCard } from '../film/ReadCard';
 import { freshReads, turnReads } from '../film/film-model';
-import { CardButton, HeldPlacard, Notice, NoticeZone } from '../instruments/Notice';
+import {
+  CardButton,
+  HeldPlacard,
+  Notice,
+  NoticeButton,
+  NoticeZone,
+} from '../instruments/Notice';
 import { SpeechBox } from '../instruments/SpeechBox';
 import { Plaque, Stand } from '../instruments/Stand';
 import { TurnDock } from '../instruments/TurnDock';
 import { useMotionScale } from '../motion';
 import { ROLE_NAME, factionOf, seatNumber } from '../roles';
-import { bandNarrows, sideOpen } from '../slot';
+import { bandNarrows, fileTap, sideOpen } from '../slot';
 import { geometry } from '../units';
 import { CarSetSpec } from './CarScene';
 import type { SceneProps } from './types';
@@ -62,14 +71,6 @@ export const continues = (was: SceneProps['beat'], now: SceneProps['beat']) =>
     (now.id === 'day.speech' || now.id === 'day.pass') &&
     now.subject === (was.subject ?? was.seat) &&
     now.day === was.day);
-
-/** A run of passes told as one beat: the seats, no speaker. */
-const isPassRun = (beat: SceneProps['beat']) =>
-  beat.id === 'day.pass' && (beat.subjects?.length ?? 0) > 1;
-
-/** The beats with nobody at the stand: a notice stands where the box would be. */
-const isNotice = (beat: SceneProps['beat']) =>
-  beat.id === 'day.opening-prepares' || beat.id === 'day.round-passes' || isPassRun(beat);
 
 /** "seats 2, 5 and 8", with the viewer's own seat as "you" (first). */
 function seatsPhrase(seats: readonly string[], me: string | null): string {
@@ -142,6 +143,13 @@ function moderatorLine(view: GameView, beat: SceneProps['beat']): string | null 
   return text;
 }
 
+/** The opening's stop, counted: "3 spoke, 7 passed.", "All 9 passed.", "All 9 spoke." */
+export function openingCount(spoke: number, passed: number): string {
+  if (!spoke) return `All ${passed} passed.`;
+  if (!passed) return `All ${spoke} spoke.`;
+  return `${spoke} spoke, ${passed} passed.`;
+}
+
 /** The day's body under the car's host (CarScene.tsx). */
 export function DayBody(props: SceneProps) {
   // live, the thinking puppet is already at the stand when its line arrives: it does not rise again
@@ -180,6 +188,8 @@ function DaySet({
   view,
   beat,
   presentation,
+  slot: slotInput,
+  stop,
   turnKey: at,
 }: SceneProps & { turnKey: string }) {
   const { hud, xray, cast } = presentation;
@@ -217,6 +227,11 @@ function DaySet({
           truth: (seat) => (xray ? (view.xray.roles[seat] ?? null) : null),
           // the speaker; or, at a round's notice, every seat the notice is about
           lit: (seat) => seat === speaker || (beat.subjects?.includes(seat) ?? false),
+          // the opening's stop: every card opens its seat's file, which leads with its opening
+          file:
+            stop && beat.id === OPENING_STOP
+              ? fileTap(presentation, slotInput, true)
+              : undefined,
           read: (seat) => {
             const rd = readOf(seat);
             return rd
@@ -255,7 +270,18 @@ function DaySet({
 }
 
 /** The turn itself: the puppet at the stand, its plate, and the box (or the dock) at the foot. */
-function DayTurn({ view, beat, me, presentation, turn, onSay, onAct, onNext }: SceneProps) {
+function DayTurn({
+  view,
+  beat,
+  me,
+  presentation,
+  turn,
+  onSay,
+  onAct,
+  onNext,
+  slot: slotInput,
+  stop,
+}: SceneProps) {
   const { hud, xray, animate, cast } = presentation;
   const k = useMotionScale();
   const side = sideOpen(presentation);
@@ -271,6 +297,12 @@ function DayTurn({ view, beat, me, presentation, turn, onSay, onAct, onNext }: S
   // the accused called to answer: at the stand thinking, the moderator's line in the box
   const called = beat.id === 'day.closing-called';
   const notice = isNotice(beat);
+  // the opening's stop (the X-ray replay): what each seat wrote is a tap away, counted here
+  const opening =
+    stop && xray && beat.id === OPENING_STOP
+      ? openingEntries(slotInput?.ahead ?? view, beat)
+      : null;
+  const spoke = opening ? [...opening.values()].filter((e) => e.kind === 'line').length : 0;
 
   // Played forward: arrive thinking, then speak. At rest: already speaking.
   const [settled, setSettled] = useState(!animate);
@@ -346,6 +378,29 @@ function DayTurn({ view, beat, me, presentation, turn, onSay, onAct, onNext }: S
               arrive={animate}
               hidden={presentation.footHidden}
             />
+          </NoticeZone>
+        ) : opening && stop ? (
+          <NoticeZone
+            hud={hud}
+            side={bandNarrows(presentation, beat)}
+            aside={side}
+            hidden={presentation.footHidden}
+          >
+            <Notice
+              title={`Day ${beat.day} · ${openingCount(spoke, opening.size - spoke)}`}
+              arrive={animate}
+              delay={0.6}
+              actions={
+                <>
+                  <NoticeButton lead onPress={stop.onPlay}>
+                    Play the opening ▶
+                  </NoticeButton>
+                  <NoticeButton onPress={stop.onEndRound}>Skip the opening →</NoticeButton>
+                </>
+              }
+            >
+              Tap a seat to read what it wrote.
+            </Notice>
           </NoticeZone>
         ) : notice ? null : called && character ? (
           // the house calls the accused: its printed paper, the seat thinking at the stand

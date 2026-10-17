@@ -684,7 +684,15 @@ reaches the server at once, the way `turn_started` already does for "X is thinki
 **What is announced.** The day vote for every seated human, and the four solo night roles
 (healer, investigator, serial killer, vigilante) when a human holds one. A human wolf is not:
 the pack's talk is sequential inside its branch and already prompts at the turn. Day
-discussion is sequential too and needs nothing.
+discussion is sequential too and needs nothing. *Since 2026-10-17:* a human wolf's skill turn
+(the chanteuse's block, the illusionist's conceal) is, from `pack_fan_out_skills`, because the
+skill turns run in parallel *inside* the pack's subgraph. Measured on langgraph 1.1.10 with the
+server's stream settings: an interrupt in a parallel step at the top level reaches the root
+stream at once, but one in a parallel step nested in a subgraph reaches it only when that inner
+step ends (the subgraph's own chunk comes at once, and the session acts on root-level interrupts
+only). That nesting is the real cause of the original delay: the vote and the rounds run inside
+the day's subgraph. The pack's chat and kill are single turns inside its subgraph, and the pack
+sits at the top level beside the solo actors, so they prompt at once.
 
 **Invariants to keep.** The announcement must offer exactly the targets the node will accept
 (the node still validates). Only the seat's own announcement is written, and `input_request`

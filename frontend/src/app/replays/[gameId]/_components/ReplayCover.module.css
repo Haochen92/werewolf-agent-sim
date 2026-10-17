@@ -1,0 +1,10 @@
+/* The cover over the replay's page: the whole window, over the theatre drawn under it; while it
+   fades off, a tap reaches the theatre. */
+.cover {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+}
+.cover[data-replay-cover='lifting'] {
+  pointer-events: none;
+}

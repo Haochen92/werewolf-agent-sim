@@ -164,7 +164,7 @@
 }
 .blk .typed {
   margin: 0;
-  font-family: ui-monospace, 'Courier New', monospace;
+  font-family: var(--font-stage-type, 'Courier Prime'), 'Courier New', monospace;
   font-size: 13.5px;
   line-height: 1.55;
   color: #3a2a18;
@@ -185,8 +185,10 @@
   border-radius: 4px;
   background: rgba(255, 250, 240, 0.7);
   color: #b0402f;
+  font-family: var(--font-sans);
   font-size: 11px;
-  letter-spacing: 0.12em;
+  font-weight: 600;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   transform: rotate(4deg);
 }
@@ -231,9 +233,9 @@
   height: 22px;
   margin-bottom: 4px;
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: #8a3a2a;
 }
@@ -259,8 +261,9 @@
   box-shadow:
     0 0 0 1px rgba(58, 42, 24, 0.18),
     0 2px 3px rgba(0, 0, 0, 0.2);
-  font-size: 15px;
-  line-height: 1.45;
+  font-family: var(--font-stage-body, Literata), Georgia, serif;
+  font-size: 14.5px;
+  line-height: 1.5;
   color: #2a2418;
 }
 .blk p.caption {

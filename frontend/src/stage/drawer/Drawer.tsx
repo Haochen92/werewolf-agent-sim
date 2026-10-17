@@ -42,9 +42,9 @@ import type { SceneBeat } from '../beats/types';
 import { ChipSprite } from '../cast/ChipSprite';
 import { Sigil } from '../instruments/Sigil';
 import { factionOf, seatNumber, seatify, ROLE_NAME } from '../roles';
+import { actLine } from '../scenes/replay-night';
 import { STAGE_H, STAGE_W, geometry, type Hud } from '../units';
 import {
-  ACT_VERB,
   drawerDays,
   drawerLines,
   filterLines,
@@ -58,6 +58,7 @@ import {
   showRow,
   voteSentence,
   voteTally,
+  wolfViewer,
   WINNER_TEXT,
   type DrawerFilters,
   type DrawerLine,
@@ -77,6 +78,7 @@ export function atFoot(
 const TIER_NAME: Record<LineTier, string> = {
   public: 'Public',
   private: 'Private',
+  pack: 'Wolf',
   xray: 'Revealed',
 };
 
@@ -91,8 +93,6 @@ export interface DrawerProps {
   onFilters?: (next: DrawerFilters) => void;
   /** The seated human is answering a prompt: stop at the rail. */
   rail?: boolean;
-  /** The rail stop holds on a phone too (their own room); else the drawer runs full there. */
-  railHolds?: boolean;
   /** Played forward: scroll to the new line smoothly; at rest it is simply there. */
   animate?: boolean;
   /** Where the reader was and whether they follow the beat, kept across scenes by the container. */
@@ -119,7 +119,6 @@ export function Drawer({
   filters,
   onFilters,
   rail = false,
-  railHolds = false,
   animate = false,
   scroll: kept,
   onRecord,
@@ -138,7 +137,7 @@ export function Drawer({
   );
   const lit = litKey(lines, beat);
   const days = drawerDays(lines);
-  const tiers = showRow(me, xray);
+  const tiers = showRow(me, xray, wolfViewer(view, me));
   const dead = new Set(view.dead.map((d) => d.player));
 
   // Following, the beat's line is scrolled into view, a little below the middle (bench 74);
@@ -205,18 +204,23 @@ export function Drawer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lit, shown, animate, seek]);
   useEffect(() => () => clearTimeout(settle.current), []);
+  // our scroll at rest: read where it stopped (the reader may have taken the scrollbar meanwhile)
+  const rested = () => {
+    ours.current = false;
+    const at = (memo.foot && foot()) || atNow();
+    if (at !== memo.following) follow(at);
+  };
   const onScroll = () => {
     const el = scroller.current;
     if (!el) return;
     memo.top = el.scrollTop;
     clearTimeout(settle.current);
-    // ours: wait for it to come to rest, then read where it stopped
+    // ours: wait for it to come to rest. The browser's scrollend says so where it has one; a
+    // timer since the last scroll event is only the fallback, as it fires mid-scroll when a
+    // frame stalls longer (game over's render on a phone; a test's fake clock, always), and the
+    // drawer then took itself for scrolled away and stopped following
     if (ours.current) {
-      settle.current = setTimeout(() => {
-        ours.current = false;
-        const at = (memo.foot && foot()) || atNow();
-        if (at !== memo.following) follow(at);
-      }, 160);
+      if (!('onscrollend' in window)) settle.current = setTimeout(rested, 160);
       return;
     }
     memo.foot = foot();
@@ -266,7 +270,7 @@ export function Drawer({
         } as CSSProperties
       }
       data-drawer={rail ? 'rail' : 'full'}
-      data-rail={rail ? (railHolds ? 'holds' : 'soft') : undefined}
+      data-rail={rail ? 'soft' : undefined}
       aria-label="Transcript"
     >
       <header>
@@ -321,7 +325,8 @@ export function Drawer({
                 <button
                   key={t}
                   type="button"
-                  className={`${styles.pill} ${styles.show} ${styles[t]}`}
+                  // `.pack` is the pack's line; its toggle is `.wolf`
+                  className={`${styles.pill} ${styles.show} ${styles[t === 'pack' ? 'wolf' : t]}`}
                   aria-pressed={filters.show[t]}
                   onClick={() => set({ show: { ...filters.show, [t]: !filters.show[t] } })}
                 >
@@ -339,6 +344,7 @@ export function Drawer({
           className={styles.lines}
           ref={scroller}
           onScroll={onScroll}
+          onScrollEnd={() => ours.current && rested()}
           onWheel={reader}
           onTouchStart={reader}
           onPointerDown={reader}
@@ -550,8 +556,7 @@ function Line({
         <div className={cls('xr')} {...at}>
           {chip(l.actor)}
           <div className={styles.who}>
-            Seat {seatNumber(l.actor)} {ACT_VERB[l.role] ?? 'acts on'} seat{' '}
-            {seatNumber(l.target)}
+            Seat {seatNumber(l.actor)} {actLine(l.role, l.target)}
             {roleTag(l.actor)}
           </div>
         </div>

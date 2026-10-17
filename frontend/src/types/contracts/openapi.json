@@ -1680,6 +1680,18 @@
               }
             ],
             "title": "Error"
+          },
+          "error_kind": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "key_rejected"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Kind"
           }
         },
         "type": "object",
@@ -2880,6 +2892,16 @@
             },
             "type": "array",
             "title": "Attacker Types"
+          },
+          "reanimated": {
+            "type": "boolean",
+            "title": "Reanimated",
+            "default": false
+          },
+          "self_bet": {
+            "type": "boolean",
+            "title": "Self Bet",
+            "default": false
           }
         },
         "type": "object",
@@ -3132,12 +3154,19 @@
             "title": "Finished At"
           },
           "winner": {
-            "type": "string",
-            "enum": [
-              "villagers",
-              "wolves",
-              "serial_killer",
-              "necromancer"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "villagers",
+                  "wolves",
+                  "serial_killer",
+                  "necromancer"
+                ]
+              },
+              {
+                "type": "null"
+              }
             ],
             "title": "Winner"
           },
@@ -3223,7 +3252,6 @@
         "type": "object",
         "required": [
           "game_id",
-          "winner",
           "days",
           "n_events",
           "n_humans",
@@ -3251,12 +3279,19 @@
             "title": "Finished At"
           },
           "winner": {
-            "type": "string",
-            "enum": [
-              "villagers",
-              "wolves",
-              "serial_killer",
-              "necromancer"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "villagers",
+                  "wolves",
+                  "serial_killer",
+                  "necromancer"
+                ]
+              },
+              {
+                "type": "null"
+              }
             ],
             "title": "Winner"
           },
@@ -3495,7 +3530,6 @@
         "type": "object",
         "required": [
           "game_id",
-          "winner",
           "days",
           "n_events",
           "n_humans",
@@ -3558,6 +3592,20 @@
               }
             ],
             "title": "Pack"
+          },
+          "pack_roles": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pack Roles"
           },
           "bullets": {
             "anyOf": [

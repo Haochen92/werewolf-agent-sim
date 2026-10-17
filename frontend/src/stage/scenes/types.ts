@@ -74,6 +74,12 @@ export interface SceneProps {
   /** The seated human's line (the pack's chat): reported the same way as `onAct`. */
   onSay?: (text: string) => void;
   /**
+   * The seated human hands the open prompt to its seat's agent (`{delegate: true}`): a vote, a
+   * night act, the pack's kill or a chat round, each plate's own "Let my agent …" button (owner,
+   * 2026-10-17; it was one plaque in the top strip). Not on the speaking turn, which has Draft.
+   */
+  onDelegate?: () => void;
+  /**
    * A tap on the speech box: the viewer has read this page, move on (the replay steps forward,
    * a live game ends the beat's hold, the workbench steps its beat). Without it the box is
    * only read.
@@ -109,7 +115,8 @@ export interface SceneProps {
 
 /**
  * The replay's stops (owner, 2026-09-30; containers/stops.ts): with the X-ray on the play
- * pauses at the night hub and with the ballots in, and the stage's notice offers the ways on.
+ * pauses at the night hub, with the ballots in and at the opening, and the stage's notice offers
+ * the ways on.
  * Handed down by the replay's container (and the workbench); without it the stage draws no
  * stop notice and the hub's lit seats only seek.
  */
@@ -122,6 +129,8 @@ export interface StopInput {
   onPlay: () => void;
   /** "End the night": on to the first beat after the night whole. */
   onEndNight: () => void;
+  /** "Skip the opening": on to the first beat after the round. */
+  onEndRound: () => void;
   /** A room's "Back to the night": the hub. */
   onBack: () => void;
 }
@@ -239,6 +248,11 @@ export interface TurnInput {
    * ('closed'). Unset: not sent, or the send failed and may be tried again.
    */
   sent?: 'you' | 'agent' | 'closed' | null;
+  /**
+   * The answer sent from here is still on its way (retried while the network loses it): the
+   * plate is shut on the choice but says "Sending…", not that it is in (owner, 2026-10-17).
+   */
+  sending?: boolean;
   /** Why the last send failed, in the words to show under the plate. */
   sendError?: string | null;
   /** A line already written in the pack's chat box. */
@@ -358,7 +372,7 @@ export interface RoomInput {
    */
   curtain?: 'closing' | 'opening' | null;
   /**
-   * A departure with no room behind it (a replay's opening, a game for one): the sign is the
+   * A departure with no room behind it (a game for one): the sign is the
    * line's own, not a table's, and nobody can press anything.
    */
   bare?: boolean;

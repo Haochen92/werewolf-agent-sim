@@ -5,6 +5,8 @@ from datetime import datetime, timezone
 
 from fastapi import HTTPException, Response
 
+from Agents.llm_factory.embeddings import KEY_REFUSED
+
 from server.config import server_settings
 from server.dependencies import seat_cookie_name
 from server.game.entitlement import entitled
@@ -85,6 +87,11 @@ async def authorize_model(house: HousePolicy, api_key: str, model: str) -> str:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
+def error_kind(error: str | None) -> str | None:
+    """The kind of a game's death report, from its words (an archived game keeps only those)."""
+    return "key_rejected" if error and KEY_REFUSED in error else None
+
+
 def live_status(session: GameLobby | GameSession, token: str) -> GameStatus:
     """The snapshot of a waiting room or a running game, from the live registry: what
     GET /games/{id} answers, and what the actions that change a room hand back."""
@@ -130,4 +137,5 @@ def live_status(session: GameLobby | GameSession, token: str) -> GameStatus:
         alive_role_counts=session.public_alive_counts,
         cast=[c.character for c in session.cast],
         error=session.error,
+        error_kind=error_kind(session.error),
     )

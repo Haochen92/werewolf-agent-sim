@@ -75,6 +75,28 @@ def test_a_human_wolf_is_not_announced_the_pack_prompts_at_the_turn(monkeypatch)
     assert written == []
 
 
+def test_a_human_wolfs_skill_turn_is_announced_with_its_targets(monkeypatch):
+    # Owner, 2026-10-17: the skill turns run in parallel inside the pack's subgraph, so a human
+    # chanteuse's block waited for the illusionist's agent before its prompt opened.
+    from Agents.nodes.night import pack
+    written = _capture(monkeypatch, pack)
+    state = _night_state(
+        human_players=["player_6"], uses_left={"illusionist": 1}, carrier="player_2",
+        wolves_target="player_8", day_channel=[], wolf_channel=[], night_actions=[], current_round=4,
+    )
+    sends = pack.pack_fan_out_skills(state)
+    assert sorted(s.node for s in sends) == ["PACK_SKILL", "PACK_SKILL_HUMAN"]
+    [ann] = written
+    assert (ann["player"], ann["role"], ann["phase"], ann["day"]) == ("player_6", "chanteuse", "block_target", 3)
+    human_send = next(s for s in sends if s.node == "PACK_SKILL_HUMAN")
+    from Agents.turn.action_space import valid_targets_for_action
+    assert ann["valid_targets"] == valid_targets_for_action(human_send.arg, "block_target")
+    # an agent wolf's skill turn is not announced
+    written.clear()
+    pack.pack_fan_out_skills({**state, "human_players": []})
+    assert written == []
+
+
 def test_a_human_round_turn_is_announced_with_its_round(monkeypatch):
     written = _capture(monkeypatch, flow)
     state = _day_state(human="player_3")

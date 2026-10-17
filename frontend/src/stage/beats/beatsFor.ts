@@ -9,6 +9,7 @@
  * beats exist only with `xray` on, and never in a live cut. What the log holds is the server's
  * decision.
  */
+import { repeatsDawn } from '@/game/records';
 import type { DurableGameEvent, EventOf } from '@/types/contracts';
 import { pageHold, speechPages } from './pages';
 import {
@@ -70,6 +71,20 @@ function speechHold(text: string): number {
 }
 
 type Draft = Omit<SceneBeat, 'scene' | 'label'>;
+
+/** A run of passes told as one beat: the seats, no speaker. */
+export const isPassRun = (beat: Pick<SceneBeat, 'id' | 'subjects'>): boolean =>
+  beat.id === 'day.pass' && (beat.subjects?.length ?? 0) > 1;
+
+/** The day's beats with nobody at the stand: a notice stands where the box would be. */
+export const isNotice = (beat: Pick<SceneBeat, 'id' | 'subjects'>): boolean =>
+  beat.id === 'day.opening-prepares' || beat.id === 'day.round-passes' || isPassRun(beat);
+
+/** Who a day beat has at the stand (DayScene draws that seat's puppet), or nobody. */
+export function atStand(beat: SceneBeat | undefined): string | undefined {
+  if (!beat || beat.scene !== 'day' || isNotice(beat)) return undefined;
+  return beat.subject ?? (beat.id === 'day.your-turn' ? beat.seat : undefined);
+}
 
 /** What a night's actors did, gathered from the events between "night falls" and the result. */
 interface Branch {
@@ -187,7 +202,9 @@ export function beatsFor(
     // anything the stage shows ends a run of passes, and comes after the turn on the stand
     tellPasses();
     showThinking();
-    emit(b);
+    // the vote opens on whoever this viewer last saw at the stand, not the log's last turn: a
+    // run of passes left it empty, and its last passer flashed up as the table rose (2026-10-15)
+    emit(b.id === 'vote.opens' ? { ...b, stand: atStand(out.at(-1)) } : b);
   };
   const pub = (
     id: BeatId,
@@ -267,10 +284,17 @@ export function beatsFor(
   // A round in progress (Phase 2): its players, and who of them has spoken. The lines of a
   // round arrive as plain speech events right after `round_opened`; the first event that is
   // not one of them (or an annotation of one) ends the round, and the players with no speech
-  // are told as one beat, "nothing to add". The X-ray plays each `pass_marker` instead.
-  let round: { opened: EventOf<'round_opened'>; spoke: Set<string> } | null = null;
+  // are told as one beat, "nothing to add": the X-ray's too, its reasons in the seats' files
+  // at the opening's stop (owner, 2026-10-16: ten passes on a beat each were forty seconds).
+  let round: {
+    opened: EventOf<'round_opened'>;
+    spoke: Set<string>;
+    /** The opening's beat, told where the round ends once it does. */
+    beat: SceneBeat | null;
+  } | null = null;
   const resolveRound = (at: number) => {
-    if (round && !xrayCut) {
+    if (round?.beat && at < events.length) round.beat.roundUntil = events[at].seq;
+    if (round) {
       const quiet: string[] = [];
       for (const player of round.opened.players) {
         if (!round.spoke.has(player)) quiet.push(player);
@@ -302,6 +326,9 @@ export function beatsFor(
         resolveTurn(i);
         if (e.round === 'opening') {
           pub('day.opening-prepares', e, next, HOLD.open, { subjects: [...e.players] });
+          const told = out.at(-1);
+          round = { opened: e, spoke: new Set(), beat: told?.seq === e.seq ? told : null };
+          break;
         } else {
           // the moderator's line is the event before this one; the first accused takes the stand
           pub('day.closing-called', e, next, HOLD.open, {
@@ -309,7 +336,7 @@ export function beatsFor(
             subjects: [...e.players],
           });
         }
-        round = { opened: e, spoke: new Set() };
+        round = { opened: e, spoke: new Set(), beat: null };
         break;
 
       case 'turn_started':
@@ -414,6 +441,8 @@ export function beatsFor(
       }
 
       case 'pass_marker':
+        // a round's passes are its one placard (resolveRound)
+        if (round) break;
         push({
           id: 'day.pass',
           day: e.day,
@@ -622,7 +651,9 @@ export function beatsFor(
 
       case 'night_record': {
         // A ten-seat seat's own record of its night. The pack's kill record is one beat a
-        // night, at its first copy, for whichever wolf holds one (the viewer, when it does).
+        // night, at its first copy, for whichever wolf holds one (the viewer, when it does),
+        // unless it only repeats the morning report.
+        if (repeatsDawn({ ...e, seen: e.seen ?? null })) break;
         let seat = e.player;
         if (e.actor === 'wolves') {
           if (packTold.has(e.day)) break;

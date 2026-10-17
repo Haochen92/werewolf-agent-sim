@@ -22,6 +22,7 @@ from Agents.memory.persistence.config import (
     MemoryPersistenceConfig,
     normalize_memory_persistence_config,
 )
+from Agents.schemas.deduction import DeductionMode
 
 # --- Pipeline arm defaults (memory OFF baseline) --------------------------------------
 # Empty: retrieval reads a role that is not listed as off, and the post-game extraction reads it as on,
@@ -59,6 +60,11 @@ DEFAULT_SP_EXPLORATION_SLOT = True
 # (alive bucket, partner lost, uses left), the cap refilling from same-stage ones. Off until the
 # owner turns it on with the re-extracted store.
 DEFAULT_STAGE_FILTER = False
+# The deduction engine (Agents/deduction/; owner, 2026-10-16): how much of it the AI seats get, set
+# once per game so a game can be an A/B arm. "off" = none, "record" = the lines beside each seat's
+# own night records (level 1), "full" = those plus the deduction block once it is built. A human
+# seat never gets any.
+DEFAULT_DEDUCTION_MODE: DeductionMode = "full"
 
 
 class RunConfig(BaseModel):
@@ -83,6 +89,7 @@ class RunConfig(BaseModel):
     sp_proven_tiering: bool = DEFAULT_SP_PROVEN_TIERING
     sp_exploration_slot: bool = DEFAULT_SP_EXPLORATION_SLOT
     stage_filter: bool = DEFAULT_STAGE_FILTER
+    deduction_mode: DeductionMode = DEFAULT_DEDUCTION_MODE
     game_id: str = ""
     session_id: str | None = None
     human_player: int = 0

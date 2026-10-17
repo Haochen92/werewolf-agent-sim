@@ -384,3 +384,64 @@ def test_a_json_mode_seat_is_asked_again_with_the_schema_enforced(monkeypatch, c
     assert primary.enforced_calls == 1
     assert any("schema enforced" in r.message for r in caplog.records)
     assert not any("rescued by the fallback model" in r.message for r in caplog.records)
+
+
+# ---- a refused key ends the game instead of playing on in technical passes ----------------
+
+def _anthropic_401():
+    import anthropic
+    import httpx
+
+    request = httpx.Request("POST", "https://api.anthropic.com/v1/messages")
+    body = {"type": "error", "error": {"type": "authentication_error",
+                                       "message": "invalid x-api-key"}}
+    return anthropic.AuthenticationError(
+        f"Error code: 401 - {body}", response=httpx.Response(401, request=request), body=body)
+
+
+class _RefusedLLM:
+    def with_structured_output(self, _schema):
+        def _refuse(_input):
+            raise _anthropic_401()
+        return RunnableLambda(_refuse)
+
+
+def test_a_refused_key_on_the_primary_ends_the_game(monkeypatch):
+    """2026-10-17: an OpenAI key sent with Haiku played a whole day of technical passes."""
+    import pytest
+
+    from Agents.llm_factory.embeddings import ProviderKeyRejected
+
+    monkeypatch.setattr(agent_mod, "get_llm", lambda: _RefusedLLM())
+    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: _WorkingLLM(_result()))
+    with pytest.raises(ProviderKeyRejected,
+                       match="refused this game's API key: 401, invalid x-api-key"):
+        agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
+
+
+def test_a_refused_rescue_key_falls_to_the_typed_fallback(monkeypatch):
+    """The rescue's own credential failing must not end a game whose primary works."""
+    monkeypatch.setattr(agent_mod, "get_llm", lambda: _BrokenLLM())
+    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: _RefusedLLM())
+    out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
+    assert isinstance(out, ResolvedNightChoice)
+
+
+def test_key_refusals_are_told_apart_from_bad_requests_and_stalls():
+    from Agents.llm_factory.embeddings import is_key_rejected_error
+
+    assert is_key_rejected_error(_anthropic_401())
+    assert is_key_rejected_error(ValueError("400 API key not valid. Please pass a valid API key."))
+    assert not is_key_rejected_error(ValueError("off-schema output"))
+    assert not is_key_rejected_error(TimeoutError("timed out"))
+
+
+def test_the_provider_is_named_with_its_own_short_reason():
+    from Agents.llm_factory.chat import provider_name
+    from Agents.llm_factory.embeddings import provider_complaint
+
+    assert provider_complaint(_anthropic_401()) == "401, invalid x-api-key"
+    assert provider_complaint(ValueError("API key not valid")) == "API key not valid"
+    assert [provider_name(m) for m in ("anthropic/claude-haiku-5-5", "openai/gpt-6-luna",
+                                       "deepseek/deepseek-v4-pro", "gemini-3.1-flash-lite")] == [
+        "Anthropic", "OpenAI", "DeepSeek", "Google"]

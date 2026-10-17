@@ -93,6 +93,9 @@ class RoleAssigned(DurableEvent, frozen=True):
     role: Role
     pack: list[str] | None = None
     """Fellow wolves — wolves only."""
+    pack_roles: dict[str, str] | None = None
+    """The pack's roles, player -> role — wolves only (the pack knows each other's roles, owner
+    2026-10-17). Absent from games dealt before then."""
     bullets: int | None = None
     """Starting bullets — vigilante only (nine-seat records; the ten-seat game sends uses)."""
     uses: int | None = None
@@ -477,6 +480,13 @@ class NightDeath(BaseModel, frozen=True):
 class NightSave(BaseModel, frozen=True):
     player: str
     attacker_types: list[AttackerType]
+    reanimated: bool = False
+    """True when the save came through the dead healer's body: the morning says "a reanimated
+    healer" (owner, 2026-10-16). Absent from earlier replays, where every save was the healer's."""
+    self_bet: bool = False
+    """True when a fortune teller's own self-bet stopped the attack, not a protection: the morning
+    says "the fortune teller's self-bet saved them" (owner, 2026-10-17). Absent from earlier
+    replays, where such an attack was silent."""
 
 
 class NightResult(DurableEvent, frozen=True):

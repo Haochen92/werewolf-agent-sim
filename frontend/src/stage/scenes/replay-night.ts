@@ -81,7 +81,36 @@ export function actLine(role: string, target: string | null): string {
   if (role === 'illusionist') return 'conceals the body.';
   if (!target) return HOLDS[role] ?? 'does not act.';
   if (role === 'speculator') return `picks ${SIDE[target] ?? target}.`;
-  return `${VERB[role] ?? 'acts on'} seat ${seatNumber(target)}.`;
+  return `${actVerb(role)} seat ${seatNumber(target)}.`;
+}
+
+/** What a role's act does to its target: "protects", "blocks". */
+export function actVerb(role: string): string {
+  return VERB[role] ?? 'acts on';
+}
+
+/** The night's wolves: its pack roster, and every pack role the X-ray holds. */
+function wolvesOf(view: GameView, day: number): Set<string> {
+  return new Set([
+    ...(view.days[day]?.night?.packRoster ?? []),
+    ...Object.entries(view.xray.roles)
+      .filter(([, r]) => isPackRole(r))
+      .map(([s]) => s),
+  ]);
+}
+
+/**
+ * The ten-seat carrier's kill, which comes as its own act beside its skill's (2026-10-10): the
+ * first pack act on the kill's target. It is the pack's, not the seat's. Null when none.
+ */
+export function carrierKillSeq(view: GameView, day: number): number | null {
+  const night = view.days[day]?.night;
+  if (!night || night.wolfKill === null) return null;
+  const wolves = wolvesOf(view, day);
+  return (
+    night.actions.find((a) => wolves.has(a.actor) && a.target === night.wolfKill)?.seq ??
+    null
+  );
 }
 
 /** Every branch of night `day` the view holds, in the order the replay plays them. */
@@ -89,12 +118,7 @@ export function nightBranchesOf(view: GameView, day: number): NightBranch[] {
   const night = view.days[day]?.night;
   if (!night) return [];
   const start = view.timeline.find((t) => t.day === day && t.phase === 'night')?.seq ?? -1;
-  const wolves = new Set([
-    ...night.packRoster,
-    ...Object.entries(view.xray.roles)
-      .filter(([, r]) => isPackRole(r))
-      .map(([s]) => s),
-  ]);
+  const wolves = wolvesOf(view, day);
 
   const byActor = new Map<string, NightBranch>();
   const touch = (actor: string, seq: number, role: string) => {
@@ -111,17 +135,10 @@ export function nightBranchesOf(view: GameView, day: number): NightBranch[] {
     return b;
   };
 
-  // A ten-seat carrier's kill comes as its own act beside its skill's (2026-10-10): the first
-  // pack act on the kill's target is the pack's, the rest (a block, a conceal) the seat's own.
-  let carried = false;
+  // the carrier's kill is the pack's; the rest of a wolf's acts (a block, a conceal) its own
+  const carried = carrierKillSeq(view, day);
   for (const a of night.actions) {
-    if (
-      !carried &&
-      night.wolfKill !== null &&
-      wolves.has(a.actor) &&
-      a.target === night.wolfKill
-    ) {
-      carried = true;
+    if (a.seq === carried) {
       touch('pack', a.seq, 'wolf');
     } else {
       // an act with no target (a held fire, a conceal) comes as "": a spoke with no mark
@@ -161,6 +178,21 @@ export function nightBranchesOf(view: GameView, day: number): NightBranch[] {
   return [...byActor.values()]
     .filter((b) => b.actor !== 'pack' || b.target !== null || b.lines > 0)
     .sort((a, b) => a.lastSeq - b.lastSeq);
+}
+
+/**
+ * What a seat had left of its limited ability going into night `day` (owner, 2026-10-16: the
+ * replay's room says it on the actor's card): its last count reported before the night fell,
+ * or, before any, the count it was dealt. Null for a seat without a limit.
+ */
+export function usesTonight(view: GameView, seat: string, day: number): number | null {
+  const fell =
+    view.timeline.find((t) => t.day === day && t.phase === 'night')?.seq ?? Infinity;
+  const last = (view.xray.privateResults[seat] ?? [])
+    .filter((p) => (p.kind === 'uses' || p.kind === 'bullets') && p.seq < fell)
+    .at(-1);
+  if (last && 'count' in last) return last.count;
+  return view.xray.dealt[seat] ?? null;
 }
 
 /** The branch chose no one: a seat that held (the vigilante holding fire). */
@@ -206,16 +238,23 @@ export function marksAt(branches: readonly NightBranch[], spoke: Spoke | null): 
 }
 
 /**
- * How many of the night's units are in at a spoke (the pill): the branches told
- * so far, counting this one once its mark has landed. The night whole is all of them.
+ * How many of the night's units are in at a spoke (the pill): the seats whose rooms have all
+ * been told, counting this one's once its mark has landed. `night` is the whole night's
+ * branches (read from the log ahead), so a seat with two rooms (a ten-seat wolf's skill and the
+ * pack's) counts at the later and the pill stays short of full until the last room. The night
+ * whole is all of them.
  */
 export function actedAt(
-  branches: readonly NightBranch[],
+  night: readonly NightBranch[],
   spoke: Spoke | null,
   total: number,
 ): number {
   if (spoke === null) return total;
-  return Math.min(total, spoke.rank + (endsBranch(spoke, branches[spoke.rank]) ? 1 : 0));
+  const told = spoke.rank + (endsBranch(spoke, night[spoke.rank]) ? 1 : 0);
+  const lastRoom = new Map<string, number>();
+  night.forEach((b, rank) => b.seats.forEach((s) => lastRoom.set(s, rank)));
+  const done = [...lastRoom.values()].filter((rank) => rank < told).length;
+  return Math.min(total, done);
 }
 
 /**

@@ -36,10 +36,11 @@ describe('card words by the game’s rules', () => {
     expect(face).toContain('Peeks inside one glove each night.');
   });
 
-  it('a ten-seat game’s investigator has two checks, Suspicious or Not suspicious', () => {
+  it('a ten-seat game’s investigator checks, Suspicious or Not suspicious', () => {
     const [overlay, framed, face] = investigator(PHASE3_GAME.events);
     for (const out of [overlay, framed]) {
-      expect(out).toContain('two checks in the game');
+      // the count is the card's uses line since 2026-10-16, not in the night text
+      expect(out).toContain('Check one player.');
       expect(out).toContain('Not suspicious');
       expect(out).not.toContain('exact role');
     }

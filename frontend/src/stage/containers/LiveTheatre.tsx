@@ -67,6 +67,7 @@ import { useLedger } from '@/hooks/useLedger';
 import { useReplayFiled } from '@/hooks/useReplayFiled';
 import { draftLine, rejoinGame, submitTurn, type TurnPayload } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
+import { departures } from '@/lib/departures';
 import { ApiError } from '@/lib/request';
 import { awayTold, seatToken } from '@/lib/storage';
 import { foldEvents } from '@/game/foldEvents';
@@ -77,9 +78,11 @@ import { isNineSeat } from '../card-text';
 import { castForRoom, resolveCast } from '../cast/castForGame';
 import { beatsFor } from '../beats/beatsFor';
 import type { SceneBeat } from '../beats/types';
+import { DEFAULT_FILTERS, packNight, wolfViewer } from '../drawer/drawer-lines';
 import { useDrawerFilters } from '../drawer/use-drawer-filters';
 import { StageMotion } from '../motion';
 import { notebookForAgent, useNotebook, useNoteEditing } from '../notebook';
+import { ConnectionPill } from '../instruments/ConnectionPill';
 import { CardOverlay } from '../instruments/FramedCard';
 import { AwayNotice, LeaveConfirm } from '../instruments/TopStrip';
 import { draftRequest } from '../instruments/turn-dock';
@@ -98,7 +101,7 @@ import type {
   SlotInput,
   TurnInput,
 } from '../scenes/types';
-import { sideOpen } from '../slot';
+import { packNightStep, sideOpen } from '../slot';
 import { Layer, Stage } from '../Stage';
 import { geometry } from '../units';
 import { createFoldCache, type FoldCache } from './fold-cache';
@@ -144,6 +147,10 @@ export interface LiveTheatreProps {
    * the house's, known once the seat is dealt), and the deal follows as a room's does.
    */
   solo?: { character: string | null };
+  /** The platform (a game for one's, a room's) has its train and country in: the page's cover may lift. */
+  onPlatformReady?: () => void;
+  /** "Try now" on the connection pill: reopen the stream at once. */
+  onReconnect?: () => void;
 }
 
 /**
@@ -222,6 +229,26 @@ async function asSeat<T>(gameId: string, call: () => Promise<T>): Promise<T> {
   }
 }
 
+// A send the network lost (or that hung) is tried again after these waits; the server's own
+// answer is never retried. A retry that lands on an answer already taken comes back 409, which
+// the send treats as "already answered" (2026-10-17: a vote lost on bad wifi was never re-sent).
+const SEND_RETRY_MS = [2_000, 5_000, 10_000];
+const SEND_TIMEOUT_MS = 15_000;
+
+async function postTurn(gameId: string, payload: TurnPayload): Promise<void> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      await asSeat(gameId, () =>
+        submitTurn(gameId, payload, AbortSignal.timeout(SEND_TIMEOUT_MS)),
+      );
+      return;
+    } catch (err) {
+      if (err instanceof ApiError || attempt >= SEND_RETRY_MS.length) throw err;
+      await new Promise((r) => setTimeout(r, SEND_RETRY_MS[attempt]));
+    }
+  }
+}
+
 const failure = (err: unknown) => ({
   status: err instanceof ApiError ? err.status : 0,
   // the server's own words for a refusal; a dropped connection gets plain ones
@@ -235,6 +262,8 @@ export function LiveTheatre({
   departed = false,
   onRoomAct,
   solo,
+  onPlatformReady,
+  onReconnect,
 }: LiveTheatreProps) {
   const queryClient = useQueryClient();
   const storeGame = useGameSession((s) => s.gameId);
@@ -268,11 +297,17 @@ export function LiveTheatre({
   useEffect(() => {
     if (platform !== 'off') setPlatformSeen(true);
     if (platform === 'departing') setDepartedHere(true);
-  }, [platform]);
+    // a game for one's train has left: a reload from here lands on the game, never departs again
+    if (platform === 'closing' && solo) departures.forget(gameId);
+  }, [platform, solo, gameId]);
   const begun = status !== undefined && status.state !== 'waiting';
   // the train leaves once its picture is there: a game for one's platform is new to the page
   const [stationReady, setStationReady] = useState(false);
   const onStationReady = useCallback(() => setStationReady(true), []);
+  // until then a game for one's platform is under the page's cover (the house's loading picture)
+  useEffect(() => {
+    if (stationReady) onPlatformReady?.();
+  }, [stationReady, onPlatformReady]);
   useEffect(() => {
     if (platform === 'waiting' && (departed || begun) && stationReady)
       setPlatform('departing');
@@ -382,7 +417,7 @@ export function LiveTheatre({
       const delegated = 'delegate' in payload;
       turnDispatch({ type: 'sending', seq });
       try {
-        await asSeat(gameId, () => submitTurn(gameId, payload));
+        await postTurn(gameId, payload);
         turnDispatch({ type: 'sent', seq, delegated });
         clearPending();
       } catch (err) {
@@ -484,6 +519,20 @@ export function LiveTheatre({
 
   // the side slot's state that outlives a beat; the game's end is the X-ray's switch here
   const drawer = useDrawerFilters();
+  // a wolf's night: the transcript opens on the pack's lines and goes at dawn (slot.ts)
+  const packOpened = useRef<number | null>(null);
+  const wolf = wolfViewer(view, me);
+  const setFilters = drawer.setFilters;
+  useEffect(() => {
+    if (!beat) return;
+    const step = packNightStep(beat, wolf, packOpened.current);
+    if (!step) return;
+    packOpened.current = step === 'open' ? beat.day : null;
+    setFilters((f) =>
+      step === 'open' ? packNight(f) : { ...f, show: DEFAULT_FILTERS.show },
+    );
+    dispatch({ type: 'pack-night', open: step === 'open' });
+  }, [beat, wolf, setFilters]);
   // the seat's own card, opened over the stage from "your card": it stays open as beats go by
   const [cardOpen, setCardOpen] = useState(false);
   useEffect(() => {
@@ -613,6 +662,8 @@ export function LiveTheatre({
     beat: liveOn ? (beat ?? null) : null,
     winner: view.over ? winnerKey(view.winner) : null,
     fast: state.speed === 'fast',
+    // the table at the beat on the stage, not the wire's: the music follows the stage
+    alive: liveOn && beat ? folds.at(beat.end).alive.length : 0,
   };
   // a moment's one-shot only as its beat plays: history landing still plays none
   useStageMusic({
@@ -741,7 +792,8 @@ export function LiveTheatre({
     cast: stationCast,
     animate: platformSeen,
   };
-  // a prompt that is not the day's dock (the ballot, a night act, the pack): the agent can take it
+  // a prompt that is not the day's dock (the ballot, a night act, the pack): its plate holds the
+  // hand-over, and a failed send is said under the strip
   const handOver = open && beat?.liveOnly && beat.id !== 'day.your-turn';
   return (
     <div
@@ -783,6 +835,7 @@ export function LiveTheatre({
               turn={turnInput}
               onAct={onAct}
               onSay={onSay}
+              onDelegate={onDelegate}
               // a tap on the speech box: this page is read, end its hold
               onNext={onNext}
               wayOut={wayOut}
@@ -802,16 +855,7 @@ export function LiveTheatre({
               Close the sheet
             </button>
           ) : null}
-          {handOver ? (
-            <button
-              type="button"
-              className={styles.handOver}
-              onClick={onDelegate}
-              disabled={turn.sending}
-            >
-              Let my agent play this turn
-            </button>
-          ) : null}
+          {/* a prompt's failed send, in the server's words (the hand-over is each plate's own) */}
           {handOver && turn.error ? (
             <p className={styles.error} role="alert">
               {turn.error}
@@ -860,11 +904,14 @@ export function LiveTheatre({
               onLeave={() => router.push(LOBBY)}
             />
           ) : null}
-          {connection === 'reconnecting' ? (
-            <p className={styles.connection} data-connection>
-              Reconnecting…
-            </p>
-          ) : null}
+          <ConnectionPill
+            connection={connection}
+            // a game for one has no clocks and waits; a room's seat clock runs on the server
+            table={
+              !me ? 'watching' : (status?.human_players ?? []).length > 1 ? 'room' : 'solo'
+            }
+            onRetry={onReconnect}
+          />
         </Layer>
       </Stage>
     </div>

@@ -187,9 +187,10 @@ class WolfChannel(BaseModel):
     vote: str
     """The wolf's current kill-target vote (a surviving villager)."""
     passed: bool = False
-    """True only when wolf discussion exhausted every model attempt; hidden from pack prompts."""
+    """True when the wolf passed: by choice (the pack reads that it had nothing else to add) or
+    after every model attempt failed (hidden from pack prompts)."""
     pass_reason: DiscussionPassReason | None = None
-    """Observer classification for a pass; currently generation_failed is the only wolf value."""
+    """voluntary or generation_failed."""
 
 
 class InvestigatorResult(BaseModel):

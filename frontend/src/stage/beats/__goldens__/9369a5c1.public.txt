@@ -109,7 +109,7 @@
 108  day.speech               d4 seq356 end356  public →player_7 p1/3  5000ms
 109  day.speech               d4 seq356 end356  public →player_7 p2/3  11250ms
 110  day.speech               d4 seq356 end356  public →player_7 p3/3  5000ms
-111  vote.opens               d4 seq362 end362  public  4000ms  [vote 4]
+111  vote.opens               d4 seq362 end362  public stand 7  4000ms  [vote 4]
 112  vote.ballots-drop        d4 seq378 end382  public  2500ms
 113  vote.closes              d4 seq378 end382  public  2500ms
 114  vote.count-begins        d4 seq378 end382  public  2000ms

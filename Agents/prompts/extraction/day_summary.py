@@ -12,6 +12,10 @@ A plan for a coming night is not a claimed action, and a vague result is not_sai
 decoy "I'll check player_2 tonight" was logged as a night-2 investigation). Plans are recorded on
 their own (planned_actions), so the ledger can set them beside what the player later says they did.
 Each written accusation field is capped at 30 words.
+
+2026-10-16: record_check is gone. The summariser's check of an accusation against the record was wrong
+in all 27 it wrote across 36 replayed summaries (evidence/reasoning_failures/experiment_log.md §3),
+and the claim ledger already checks claims against the record in code.
 """
 
 
@@ -32,7 +36,7 @@ DAY {current_day} PUBLIC DISCUSSION ONLY:
 Rules:
 - Attribute everything. Write every statement about the game as something a named player said or argued ("player_8 claimed that player_2 survived an attack"). Never state a player's claim as fact, including the premise an accusation rests on.
 - Accusations: every distinct accusation is a separate entry with ALL participating accusers listed. Record the target's defence, and who else argued against it and why. Keep each written field to at most 30 words.
-- The game master's record above is the only source of fact. If an accusation rests on a public event the record contradicts, or one the game master would have announced but did not (a death, a healer save, a vote), say so in record_check and cite the record. Private night results (investigations, protections, a held shot) are never announced, and nor is an attack on a player who cannot be killed at night, so their absence from the record is not a conflict. An accusation repeated by several players is still a claim.
+- The game master's record above is the only source of fact. An accusation repeated by several players is still a claim.
 - Role claims: list every role claim made today, including a player repeating an earlier claim, and mark a withdrawn claim as retracted. Record each night action the player claimed (investigate, protect, shoot, kill, watch, follow, sigil, block) with its night, target and result, using only the allowed result words; for a watch or follow, the player_ids they say they saw go in seen. Transcribe what they said; do not judge whether it is true.
 - A night action is one the player says already happened. A plan for tonight ("I'll check player_2 tonight") is not a night action: record it in planned_actions. If the player gave no result, or only a vague one ("got nothing useful"), the result is not_said.
 - A player who states a night plan without claiming a role is claiming the role that does that action: record the claim with the plan.

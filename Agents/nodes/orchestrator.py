@@ -164,8 +164,9 @@ def remove_from_buckets(state_update: dict, state: OrchestratorGraph, dead: list
 def day_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
     """Resolve the day's vote into a lynch (or a no-lynch) and announce it.
 
-    A real lynch needs a unique, non-"abstain" plurality; a tie, an abstain
-    plurality, or no votes is a no-lynch day (which bumps no_lynch_streak). On a
+    A real lynch needs a unique, non-"abstain" plurality; a tie or an abstain
+    plurality is a no-lynch day (which bumps no_lynch_streak), and a day with no
+    votes (day 1) leaves the streak as it was. On a
     lynch: removes the player from both survivor buckets and writes a game_master message +
     day summary. Records a DayResolutionMetric span on every path.
     """
@@ -176,8 +177,14 @@ def day_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
     tally = tally_day_vote(vote.votee for vote in day_votes)
     vote_counts, candidates, lynched = tally.vote_counts, tally.candidates, tally.lynched
 
+    # A day with no vote held (day 1) is not a no-lynch day: the town had no chance to lynch.
     prev_streak = state.get("no_lynch_streak", 0)
-    no_lynch_streak = 0 if lynched else prev_streak + 1
+    if lynched:
+        no_lynch_streak = 0
+    elif tally.outcome == "no_vote":
+        no_lynch_streak = prev_streak
+    else:
+        no_lynch_streak = prev_streak + 1
 
     metric = DayResolutionMetric(
         day=current_day,
@@ -467,8 +474,9 @@ def route_night_actors(state: OrchestratorGraph) -> list[str]:
 
     A human solo actor's turn is announced here (announce_human_turn), so their room opens as
     the night starts instead of after the slowest branch, the pack's whole talk, has ended
-    (2026-10-06). A human wolf is not announced: the pack's talk is sequential and prompts at
-    the turn."""
+    (2026-10-06). A human wolf is not announced here: the pack's talk and kill are sequential and
+    prompt at the turn, and its skill turn, parallel inside the pack, is announced in
+    pack_fan_out_skills."""
     alive_phases = []
     if state.get("surviving_wolves"):
         alive_phases.append("PACK_NIGHT_PHASE")

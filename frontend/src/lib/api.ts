@@ -179,10 +179,15 @@ export type TurnPayload =
   | { message: string }
   | { target: string; body?: string; role_named?: string };
 
-export function submitTurn(gameId: string, payload: TurnPayload): Promise<TurnAccepted> {
+export function submitTurn(
+  gameId: string,
+  payload: TurnPayload,
+  signal?: AbortSignal,
+): Promise<TurnAccepted> {
   return request<TurnAccepted>(`/games/${encodeURIComponent(gameId)}/turns`, {
     method: 'POST',
     body: payload,
+    signal,
   });
 }
 

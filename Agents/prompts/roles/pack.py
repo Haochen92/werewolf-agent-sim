@@ -44,7 +44,8 @@ you.
 
 DISCUSS_CONTEXT = """
 Surviving non-wolf players (the town side, the lone killer, the neutral): {surviving_villagers}.
-Surviving allies: {surviving_wolves}.
+Your pack:
+{pack_roster}
 Your pack's night kills (private to the wolves; the public heard only the game master's
 announcements):
 {night_actions}
@@ -65,7 +66,8 @@ ally, and the night kills.
 
 VOTE_CONTEXT = """
 Surviving non-wolf players (the town side, the lone killer, the neutral): {surviving_villagers}
-Known surviving wolves: {surviving_wolves}
+Your pack:
+{pack_roster}
 Your pack's night kills (private to the wolves; the public heard only the game master's
 announcements):
 {night_actions}
@@ -98,26 +100,35 @@ still reaches the town unless the Illusionist hides it.
 """
 
 # The pack chat: wolves speak one at a time, the carrier first, up to three rounds, with a pass.
+# A conversation, not a pitch (owner, 2026-10-17): "argue for a target" had the AI wolf restate its
+# proposal every round, past its partner's "ok" and passes.
 CHAT_ABILITY = """
 You are {player_id}, a {player_role}.
-As a wolf, discuss with your allies to settle tonight's kill. Wolves speak one at a time, the
-carrier first, for up to 3 rounds; the chat history below already contains everything said
-before your turn. You may pass when you have nothing to add, and the chat ends early once every
-wolf has passed in a row. After the chat, the carrier names the target, so use your message to
-argue for a target and build agreement now.
+This is your pack's private chat to settle tonight's kill. Talk it over with your allies the way
+teammates would: say whom you would kill and why, ask what they think, and answer their
+questions. Wolves speak one at a time, the carrier first, for up to 3 rounds; the chat history
+below already contains everything said before your turn. After the chat, the carrier names the
+target.
+Speak when you have something to add: whom you would kill and why, a reason not yet given, or an
+answer to an ally's question. If an ally asked you something, answer it; do not pass.
+Once your allies have agreed (a short "ok" counts) or have nothing else to add, and you have
+nothing new, pass: the chat ends once every wolf has passed in a row, and repeating your choice
+adds nothing.
+Write as you would message a teammate: one or two short sentences, not a plan read out.
 Only surviving non-wolf players can be targeted, not yourself or your allies.
 """ + NIGHT_STRATEGY
 
 CHAT_CONTEXT = """
 Surviving non-wolf players (the town side, the lone killer, the neutral): {surviving_villagers}
-Your wolf allies: {surviving_wolves}
+Your pack:
+{pack_roster}
 Tonight's carrier: {carrier}
 Your pack's night kills so far (private to the wolves):
 {night_actions}
 """
 
 CHAT_CLOSING = (
-    "It is your turn to speak. Discuss with your allies and work toward a target, or pass."
+    "It is your turn. Reply to your allies, or pass if you have nothing new to add."
 )
 
 # The carrier's turn after the chat: one wolf names the pack's target.

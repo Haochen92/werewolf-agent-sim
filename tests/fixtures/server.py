@@ -88,4 +88,8 @@ def api_client():
     """TestClient over the real app factory; `with` runs the lifespan (registry +
     shutdown cancellation), so injected sessions are cleaned up like real ones."""
     with TestClient(create_app()) as client:
+        async def accept_any_key(model, api_key):  # never ask a real provider from a test
+            return None
+
+        client.app.state.resources.games._check_key = accept_any_key
         yield client

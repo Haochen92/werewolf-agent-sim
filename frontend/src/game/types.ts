@@ -266,6 +266,8 @@ export interface RoleCard {
   role: string;
   /** Wolves only. */
   pack: string[] | null;
+  /** Wolves only: the pack's roles, seat -> role. Absent from games dealt before 2026-10-17. */
+  packRoles?: Record<string, string> | null;
   /** Vigilante only. */
   bullets: number | null;
   /**
@@ -360,6 +362,11 @@ export interface XrayView {
   agents: Record<string, AgentXray>;
   /** Seat-private results, filed by recipient so the finished-game inspector can show them. */
   privateResults: Record<string, PrivateResult[]>;
+  /**
+   * Each seat's limited ability as dealt (its `role_assigned` uses, or a nine-seat vigilante's
+   * bullets), so the replay's rooms can say what was left on night 1, before any `uses_remaining`.
+   */
+  dealt: Record<string, number>;
   /**
    * What the finished game taught, as extracted — raw, before any dedup against the
    * store. Memory-on games only; arrives after game_over. Null until then.

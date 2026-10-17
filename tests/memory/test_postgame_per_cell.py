@@ -113,3 +113,16 @@ def test_the_extractor_sees_a_dying_actors_last_night_marked_as_never_told():
     text = format_extraction_inputs(state)["formatted_discussions"]
     assert "Night 1: player_4 (investigator) investigate player_9." in text
     assert "(They died that night and were never told this.)" in text
+
+
+def test_a_draw_is_the_outcome_when_end_game_names_no_winner():
+    """2026-10-17: a draw left winner None, the post-game ExtractionCase refused it, and the
+    finished game was dropped."""
+    from Agents.memory.extraction.inputs import format_extraction_inputs
+    from Agents.schemas.evaluation import ExtractionCase
+
+    state = {"roles": {}, "night_actions": [], "dead_roster": [], "day_channel": [],
+             "wolf_channel": [], "agent_strategies": {}, "lineup": [], "winner": None}
+    outcome = format_extraction_inputs(state)["game_outcome"]
+    assert outcome == "draw"
+    ExtractionCase(game_outcome=outcome)  # the case the post-game step builds accepts it

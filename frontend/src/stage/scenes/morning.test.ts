@@ -21,10 +21,25 @@ describe('the morning’s report (reportOf)', () => {
     // night 2 of the phase-3 game: one concealed body; two saves added for the case
     const night: NightView = {
       ...nightOf(p3, 2),
-      save: { player: 'player_4', attacker_types: ['wolves'] },
+      save: {
+        player: 'player_4',
+        attacker_types: ['wolves'],
+        reanimated: false,
+        self_bet: false,
+      },
       saves: [
-        { player: 'player_4', attacker_types: ['wolves'] },
-        { player: 'player_8', attacker_types: ['serial_killer'] },
+        {
+          player: 'player_4',
+          attacker_types: ['wolves'],
+          reanimated: false,
+          self_bet: false,
+        },
+        {
+          player: 'player_8',
+          attacker_types: ['serial_killer'],
+          reanimated: false,
+          self_bet: true,
+        },
       ],
       pick: 'town',
     };
@@ -35,8 +50,20 @@ describe('the morning’s report (reportOf)', () => {
         role: null,
         types: ['wolves', 'serial_killer'],
       },
-      { kind: 'save', player: 'player_4', types: ['wolves'] },
-      { kind: 'save', player: 'player_8', types: ['serial_killer'] },
+      {
+        kind: 'save',
+        player: 'player_4',
+        types: ['wolves'],
+        reanimated: false,
+        selfBet: false,
+      },
+      {
+        kind: 'save',
+        player: 'player_8',
+        types: ['serial_killer'],
+        reanimated: false,
+        selfBet: true,
+      },
       { kind: 'pick', pick: 'town' },
     ]);
   });

@@ -43,6 +43,7 @@ import type { LedgerDay } from '@/types/contracts';
 import type { SceneBeat } from '../beats/types';
 import { ChipSprite } from '../cast/ChipSprite';
 import { Sigil } from '../instruments/Sigil';
+import { PASS_REASON } from '../instruments/SpeechBox';
 import {
   PHASE_NAME,
   PHASE_ORDER,
@@ -52,9 +53,9 @@ import {
 } from '../instruments/ledger';
 import { PHASE_ICON } from '../instruments/Ledger';
 import { VerdictMark } from '../instruments/VerdictMark';
-import { ACT_VERB } from '../drawer/drawer-lines';
 import { ROLE_ARTICLE } from '../paint/role-kit';
 import { ROLE_NAME, factionOf, seatNumber, seatify } from '../roles';
+import { actLine, actVerb } from '../scenes/replay-night';
 import { sideSlot, type Hud } from '../units';
 import {
   FORM,
@@ -66,10 +67,13 @@ import {
   firstSentence,
   marginNote,
   openTab,
+  openingEntries,
+  openingFile,
   recordPicked,
   situationOf,
   tagsOf,
   type Dimensions,
+  type OpeningEntry,
   seatFile,
   shortForm,
   shownSeat,
@@ -210,7 +214,15 @@ export function Film({
     shown && focus && focus.seats.length > 1 && focus.seats.includes(shown)
       ? focus.seats.find((s) => s !== shown)!
       : null;
-  const file = shown ? seatFile(view, shown, ahead, ballotCut(view, beat)) : null;
+  // at the opening's stop the file leads with what the seat wrote, and reads as of the
+  // round's end (both from the log ahead); anywhere else it reads to the playhead
+  const entry = shown && xray ? openingEntries(ahead ?? view, beat)?.get(shown) : undefined;
+  const until = entry && ahead ? beat.roundUntil : undefined;
+  const file = !shown
+    ? null
+    : until !== undefined
+      ? openingFile(ahead!, shown, until)
+      : seatFile(view, shown, ahead, ballotCut(view, beat));
   const nudge =
     replay && view.over ? (
       <p className={styles.nudge} data-nudge>
@@ -264,6 +276,7 @@ export function Film({
             tab={tab}
             onTab={onTab}
             nudge={nudge}
+            lead={entry ? <Opening entry={entry} /> : null}
             chooser={
               <Chooser
                 wide={wide}
@@ -702,6 +715,7 @@ function SeatFileView({
   chooser,
   flip,
   nudge,
+  lead,
 }: {
   file: SeatFile;
   asOf: string;
@@ -711,6 +725,8 @@ function SeatFileView({
   chooser: ReactNode;
   flip: ReactNode;
   nudge: ReactNode;
+  /** Above the section: the seat's opening, at the opening's stop. */
+  lead?: ReactNode;
 }) {
   const tabs = fileTabs(file);
   const open = openTab(tabs, tab);
@@ -749,6 +765,7 @@ function SeatFileView({
       </div>
       <div className={styles.sheet} role="tabpanel" data-sheet={open}>
         {nudge}
+        {lead}
         {open === 'notes' ? (
           <Notes key={file.pages.length} file={file} />
         ) : open === 'reads' ? (
@@ -764,6 +781,33 @@ function SeatFileView({
         )}
       </div>
     </>
+  );
+}
+
+/** The seat's opening, at its stop: the line it wrote, or that it passed, why, and what it held back. */
+function Opening({ entry }: { entry: OpeningEntry }) {
+  return (
+    <div className={styles.opening} data-opening={entry.kind}>
+      <div className={styles.shHead}>
+        <span className={styles.title}>At the opening</span>
+      </div>
+      {entry.kind === 'line' ? (
+        <p className={styles.body}>{seatify(entry.line)}</p>
+      ) : (
+        <>
+          <p className={styles.typed}>
+            Passed
+            {entry.reason ? ` · ${PASS_REASON[entry.reason] ?? entry.reason}` : ''}
+          </p>
+          {entry.draft ? (
+            <>
+              <p className={`${styles.typed} ${styles.held}`}>What it held back</p>
+              <p className={styles.body}>{seatify(entry.draft)}</p>
+            </>
+          ) : null}
+        </>
+      )}
+    </div>
   );
 }
 
@@ -1338,10 +1382,11 @@ function Docket({
                 <span className={styles.pair}>
                   {b.target ? (
                     <>
-                      {ACT_VERB[b.role] ?? 'acts on'} {chip(b.target, sm)}
+                      {actVerb(b.role)} {chip(b.target, sm)}
                     </>
                   ) : (
-                    'holds'
+                    // a conceal, a held fire, a consult with no act
+                    actLine(b.role, null).replace(/\.$/, '')
                   )}
                 </span>
               </button>

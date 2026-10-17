@@ -12,11 +12,11 @@ from server.schemas.replays import ReplayBase, ReplayGame
 
 
 # What makes a game show up in the replay list: it finished cleanly and every summary
-# field the list shows was written. The list and its total count use the same test.
+# field the list shows was written. The list and its total count use the same test. The
+# winner is not one of them: a draw has none (2026-10-17: draw f2e944a3 could not be replayed).
 _LISTED = (
     GameRow.status == COMPLETED,
     GameRow.finished_at.is_not(None),
-    GameRow.winner.is_not(None),
     GameRow.days.is_not(None),
     GameRow.n_events.is_not(None),
     GameRow.n_humans.is_not(None),
@@ -115,7 +115,6 @@ class ReplayService:
                         GameRow.game_id == game_id,
                         GameRow.status == COMPLETED,
                         GameRow.finished_at.is_not(None),
-                        GameRow.winner.is_not(None),
                         GameRow.days.is_not(None),
                         GameRow.n_events.is_not(None),
                         GameRow.n_humans.is_not(None),

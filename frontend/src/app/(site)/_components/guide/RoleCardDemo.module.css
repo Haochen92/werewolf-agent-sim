@@ -1,0 +1,20 @@
+/* the night room's crop: the room's dark under it until its picture is in */
+.crop {
+  border-radius: 6px;
+  background: #1c120a;
+}
+/* the baked room, filling the crop in stage units */
+.room {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(var(--w) * 1px);
+  height: calc(var(--h) * 1px);
+}
+/* the crop's own width, so the card opened centres in it; shorter than the stage, so the
+   opened card grows less on a phone (NightRoom.module.css `--card-max`) */
+.box {
+  right: auto;
+  width: calc(var(--w) * 1px);
+  --card-max: 1.1;
+}

@@ -125,6 +125,8 @@ class DayActorState(TypedDict, total=False):
     """PRIVATE: the speaker's own night record (and the pack's kills for a wolf)."""
     surviving_wolves: list[str]
     """PRIVATE, wolves only: the pack."""
+    pack_roles: dict[str, str]
+    """PRIVATE, wolves only: the living wolves' roles (the pack knows each other's roles)."""
     surviving_villagers: list[str]
     """Wolves only: the non-wolves."""
     wolf_channel: list[WolfChannel]

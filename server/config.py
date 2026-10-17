@@ -86,6 +86,12 @@ class ServerSettings(BaseSettings):
     """The secret the /admin endpoints require in the X-Admin-Token header. Empty
     disables them (they answer 404)."""
 
+    SENTRY_DSN: str = ""
+    """Where crash reports go (server/error_reporting.py). Empty: reporting is off."""
+
+    SENTRY_ENVIRONMENT: str = "production"
+    """The environment crash reports are filed under in Sentry."""
+
     LOG_LEVEL: str = "INFO"
     """Level for the server's own loggers (recovery, AFK clocks, sweep, stream open/close).
     Uvicorn configures only its own loggers; without this the app's INFO lines never

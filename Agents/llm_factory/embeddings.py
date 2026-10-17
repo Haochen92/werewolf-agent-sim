@@ -111,6 +111,57 @@ def _embed_error_is_transient(exc: BaseException) -> bool:
 is_transient_provider_error = _embed_error_is_transient
 
 
+_KEY_REJECTED_STATUS_CODES = {401, 403}
+_KEY_REJECTED_MARKERS = (
+    "invalid x-api-key", "invalid api key", "incorrect api key", "api key not valid",
+    "api_key_invalid", "authentication_error", "permission_denied",
+    "credit balance is too low",
+)
+
+
+# The words every refusal of a game's key is told in (agent_player); the server knows such a
+# death by them, even from an archived game's stored error.
+KEY_REFUSED = "refused this game's API key"
+
+
+def provider_complaint(exc: BaseException) -> str:
+    """The provider's own short reason for a failed call, e.g. "401, invalid x-api-key": the
+    status and the message from the SDK's error body (Anthropic and OpenAI shape it alike)."""
+    status = getattr(exc, "status_code", None)
+    body = getattr(exc, "body", None)
+    error = body.get("error") if isinstance(body, dict) else None
+    message = error.get("message") if isinstance(error, dict) else None
+    if not message:
+        message = str(getattr(exc, "message", "") or exc)
+    message = message.strip()[:200]
+    return f"{status}, {message}" if status else message
+
+
+class ProviderKeyRejected(RuntimeError):
+    """The provider refused the game's credential: no later turn on that key can succeed, so the
+    game ends with this said rather than playing on in technical passes (owner's BYOK ruling,
+    2026-08-12: a dead key is surfaced and the player restarts)."""
+
+
+def is_key_rejected_error(exc: BaseException) -> bool:
+    """Whether a chat call failed because the key itself was refused (wrong provider's key,
+    revoked, out of credit), not because of this one request."""
+    seen: set[int] = set()
+    current: BaseException | None = exc
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        if getattr(current, "status_code", None) in _KEY_REJECTED_STATUS_CODES:
+            return True
+        response = getattr(current, "response", None)
+        if getattr(response, "status_code", None) in _KEY_REJECTED_STATUS_CODES:
+            return True
+        message = str(current).lower()
+        if any(marker in message for marker in _KEY_REJECTED_MARKERS):
+            return True
+        current = current.__cause__ or current.__context__
+    return False
+
+
 def _embed_with_retries(call: Callable[[], Any], *, op: str) -> Any:
     attempts = int(os.getenv("EMBED_RETRY_ATTEMPTS", "5"))
     initial = float(os.getenv("EMBED_RETRY_INITIAL_DELAY", "2.0"))

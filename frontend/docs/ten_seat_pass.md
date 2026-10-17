@@ -197,3 +197,12 @@ seat every night, whether or not that seat acts; padding timers fill the units t
 In a replay a seat with no night action has no room to click, which is fine. Implemented in
 `server/game/pacing.py` (the vote bar's total moves to the same alive count, fixing an overcount
 after a concealed death) and mirrored in `nightUnits`.
+
+## 11. Ruling 2026-10-16: "N acted" counts seats (overrules §10's first sentence)
+
+Owner: the night stop's notice counts the seats that acted, not the rooms. A ten-seat wolf with a
+skill is in two rooms (its own and the pack's), so a night where every seat acted read "Night 1 ·
+11 acted." beside "Acted 10 of 10". The notice is now `acted.size` (seats with a room), the same
+unit as the pill. The pill inside the rooms (`actedAt`) counts a seat once all its rooms have
+been told, read from the night ahead; it used to count rooms against a total of seats and so read
+full one room early. The live bar is unchanged: the pack is one tick, its wolves' skills inside it.

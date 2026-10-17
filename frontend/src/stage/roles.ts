@@ -257,7 +257,8 @@ export function seatify(text: string): string {
  * deal lists the pack's seats, not their roles, so a mate has none here. `seen`: a role named
  * by its own investigation.
  */
-export type KnownRole = { how: 'pack' } | { how: 'seen'; role: string };
+/** A pack mate's role is known from the deal since 2026-10-17; older games carry none. */
+export type KnownRole = { how: 'pack'; role?: string } | { how: 'seen'; role: string };
 
 /**
  * What a seat already knows of the others, from its own view only (the card it was dealt and
@@ -273,6 +274,32 @@ export function knownRoles(
   for (const r of mine.privateResults)
     if (r.kind === 'investigation' && r.player === me && r.target !== me)
       known.set(r.target, { role: r.role, how: 'seen' });
-  for (const p of mine.role?.pack ?? []) if (p !== me) known.set(p, { how: 'pack' });
+  for (const p of mine.role?.pack ?? []) {
+    if (p === me) continue;
+    const role = mine.role?.packRoles?.[p];
+    known.set(p, role ? { how: 'pack', role } : { how: 'pack' });
+  }
   return known;
+}
+
+/**
+ * The roles of concealed bodies this seat was told: the pack's record names the role the
+ * illusionist hid, for every wolf (owner, 2026-10-17). The wing shows it on the dead seat's card.
+ */
+export function hiddenRolesHeld(
+  me: string | null,
+  mine: Pick<MeView, 'privateResults'>,
+): Map<string, string> {
+  const held = new Map<string, string>();
+  if (!me) return held;
+  for (const r of mine.privateResults)
+    if (
+      r.kind === 'night_record' &&
+      r.player === me &&
+      r.actor === 'wolves' &&
+      r.target &&
+      r.seen.length
+    )
+      held.set(r.target, r.seen[0]);
+  return held;
 }

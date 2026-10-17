@@ -49,6 +49,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+import traceback
 from datetime import datetime, timezone
 from typing import Any, Callable, Sequence
 
@@ -60,6 +61,7 @@ from pydantic_core import to_jsonable_python
 
 from Agents.config import RunConfig, build_runnable_config, normalize_run_config
 from Agents.llm_factory import GAME_LLM, GameLLM
+from Agents.llm_factory.embeddings import ProviderKeyRejected
 from Agents.nodes.day.actors import preview_discuss
 from Agents.observability import EvalCaseSink
 from Agents.graphs.parent import parent_graph_compiled
@@ -71,6 +73,7 @@ from Agents.turn.drafting_agent import draft_from_notes, player_direction
 from Agents.turn.eval import TURN_CAPTURE, TurnCapture
 from Agents.turn.human_turn import validate_human_response
 
+from server.error_reporting import report_game_failure
 from server.game.cast import CastSeat, draw_cast
 from server.storage.game_repository import GameRepository
 from server.storage.prompt_captures import build_capture, encode_capture
@@ -365,7 +368,8 @@ class GameSession:
                     root.update_trace(output=interrupted_output)
                     raise
                 except Exception as exc:  # surface, don't vanish: report task death
-                    detail = repr(exc)
+                    # A refused key is told in plain words (the page shows them); the rest raw.
+                    detail = str(exc) if isinstance(exc, ProviderKeyRejected) else repr(exc)
                     if self._api_key:
                         # Provider auth errors can echo the credential; viewers see error text.
                         detail = detail.replace(self._api_key, "***")
@@ -373,7 +377,13 @@ class GameSession:
                     error_output = {"status": "error", "error": detail}
                     root.update(output=error_output, level="ERROR", status_message=detail)
                     root.update_trace(output=error_output)
-                    logger.error("game %s: task died: %s", self.game_id, detail)
+                    trace = "".join(traceback.format_exception(exc))
+                    if self._api_key:
+                        trace = trace.replace(self._api_key, "***")
+                    logger.error("game %s: task died: %s\n%s", self.game_id, detail, trace)
+                    if not isinstance(exc, ProviderKeyRejected):  # the player's key, not a bug
+                        report_game_failure(exc, game_id=self.game_id, model=self.model,
+                                            byok=bool(self._api_key), secret=self._api_key)
                     if self._repository is not None:
                         await self._repository.update_game(
                             self.game_id, status="dropped", error=detail)
@@ -400,23 +410,35 @@ class GameSession:
             # Recovered at an interrupt: the seats were re-parked from the checkpoint
             # before this task started; wait for their answers.
             graph_input = Command(resume=await self._collect_answers())
-        while True:
-            interrupted = False
-            async for chunk in self._graph.astream(
-                graph_input, config=self.config, context=self._context,
-                stream_mode=["updates", "custom"], subgraphs=True, version="v2",
-            ):
-                if self._on_chunk(chunk):
-                    # Sticky: the interrupt chunk is often NOT last (siblings keep
-                    # streaming after it), so keep consuming and remember it.
-                    interrupted = True
-                # Synchronous per chunk: a crash loses at most this chunk's events.
-                await self._persist_tail()
-                await self._wait_for_absent_player()
-            if not interrupted:
-                break
-            # Resume with user input, once every interrupted seat has answered.
-            graph_input = Command(resume=await self._collect_answers())
+        try:
+            while True:
+                interrupted = False
+                async for chunk in self._graph.astream(
+                    graph_input, config=self.config, context=self._context,
+                    stream_mode=["updates", "custom"], subgraphs=True, version="v2",
+                ):
+                    if self._on_chunk(chunk):
+                        # Sticky: the interrupt chunk is often NOT last (siblings keep
+                        # streaming after it), so keep consuming and remember it.
+                        interrupted = True
+                    # Synchronous per chunk: a crash loses at most this chunk's events.
+                    await self._persist_tail()
+                    await self._wait_for_absent_player()
+                if not interrupted:
+                    break
+                # Resume with user input, once every interrupted seat has answered.
+                graph_input = Command(resume=await self._collect_answers())
+        except Exception as exc:
+            if not self.game_over:
+                raise
+            # The game was played to its end and only the post-game step failed: keep the
+            # game (a replay without its extraction input) rather than drop it (2026-10-17: a
+            # draw's empty winner broke the extraction input and lost a finished game).
+            logger.exception("game %s: failed after game over; archiving it anyway",
+                             self.game_id)
+            report_game_failure(exc, game_id=self.game_id, model=self.model,
+                                byok=bool(self._api_key), secret=self._api_key,
+                                after_game_over=True)
         if self.game_over and self._repository is not None:
             # The final chunk may have failed to save, with no next chunk to retry it.
             # One last attempt is bounded; completion still checks for any shortfall.

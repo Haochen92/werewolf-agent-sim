@@ -1,0 +1,7 @@
+/* The page's room under the nav, about a screen tall, for the loading picture to fill; it runs
+   out to the window's sides, past the site's column. */
+.wait {
+  position: relative;
+  min-height: calc(100dvh - 120px);
+  margin-inline: calc(50% - 50vw);
+}

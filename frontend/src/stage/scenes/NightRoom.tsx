@@ -34,7 +34,7 @@ import { useMotionScale } from '../motion';
 import { useSmall } from '../set';
 import { notebookGame } from '../notebook';
 import { photoTwine, roomChoice, roomLight, roomPlan } from '../paint/compartment';
-import { knownRoles, seatNumber } from '../roles';
+import { hiddenRolesHeld, knownRoles, seatNumber } from '../roles';
 import { sideOpen, stripButtons } from '../slot';
 import { BLEED, geometry } from '../units';
 import type { SceneProps } from './types';
@@ -185,6 +185,7 @@ export function NightRoom({
   const chosenIndex = lit ? photos.indexOf(lit) : -1;
   const deadBySeat = new Map(view.dead.map((d) => [d.player, d]));
   const known = knownRoles(me, view.me);
+  const hidden = hiddenRolesHeld(me, view.me);
   const myRole = view.me.role?.role ?? role;
 
   return (
@@ -350,7 +351,7 @@ export function NightRoom({
             return {
               seat: seatNumber(seat),
               character: cast[i],
-              dead: d ? { role: d.role } : undefined,
+              dead: d ? { role: d.role ?? hidden.get(seat) ?? null } : undefined,
               truth,
               you: seat === me,
               pack: seat !== me && pack.includes(seat),

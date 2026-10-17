@@ -24,6 +24,13 @@ describe('spritesAhead', () => {
       'owl/talking',
     ]);
   });
+  it('gives a pass the pose it ends in, at rest', () => {
+    const beats = [beat({ id: 'day.pass', subject: 'player_3' })];
+    expect(spritesAhead(beats, -1, CAST, (c, p) => `${c}/${p}`)).toEqual([
+      'cat/thinking',
+      'cat/base',
+    ]);
+  });
   it('gives nothing when no day turn is ahead', () => {
     expect(
       spritesAhead([beat({ scene: 'over', id: 'over.curtain' })], -1, CAST, () => 'x'),

@@ -83,7 +83,8 @@
 .mobileBar {
   composes: board from '../../../../components/site/Board.module.css';
 }
-.toTop {
+.toTop,
+.barMusic {
   composes: well from '../../../../components/site/Board.module.css';
 }
 
@@ -94,41 +95,24 @@
 .title {
   margin: 0;
   color: var(--text);
-  font-weight: 800;
-  font-size: clamp(38px, 5vw, 60px);
-  line-height: 1;
-  letter-spacing: -0.035em;
-}
-/* the title, and at its right the music's switch: off until the reader turns it on, the
-   brass plate while it plays (the well's pressed look) */
-.titleRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-.music {
-  composes: well from '../../../../components/site/Board.module.css';
-  height: 38px;
-  padding: 0 14px;
-  font-size: 13px;
-  letter-spacing: 0.14em;
-}
-.music svg {
-  width: 18px;
-  height: 18px;
+  font-family: var(--font-garamond);
+  font-weight: 600;
+  font-size: clamp(40px, 5.4vw, 64px);
+  line-height: 1.08;
+  letter-spacing: 0;
 }
 .section {
   padding-top: 96px;
 }
 .section > h2 {
   margin: 0 0 20px;
+  text-wrap: balance;
   color: var(--text);
-  font-size: 30px;
-  font-weight: 800;
+  font-family: var(--font-garamond);
+  font-size: 32px;
+  font-weight: 600;
   line-height: 1.15;
-  letter-spacing: -0.025em;
+  letter-spacing: 0;
 }
 .section > h2:has(+ .sub) {
   margin-bottom: 8px;
@@ -399,8 +383,8 @@
   margin: 0 6px 0 0;
   color: var(--text);
   font-size: 24px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 .badge {
   flex: none;
@@ -541,6 +525,17 @@
     stroke-linecap: round;
     stroke-linejoin: round;
   }
+  .barMusic {
+    flex: none;
+    width: 40px;
+    height: 40px;
+    margin-left: 10px;
+    padding: 0;
+  }
+  .barMusic svg {
+    width: 18px;
+    height: 18px;
+  }
   .barRule {
     flex: none;
     align-self: stretch;
@@ -614,7 +609,7 @@
   }
   .section > h2 {
     margin-bottom: 16px;
-    font-size: 27px;
+    font-size: 29px;
   }
   .section > h2:has(+ .sub) {
     margin-bottom: 6px;

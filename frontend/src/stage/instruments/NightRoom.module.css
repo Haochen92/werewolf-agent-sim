@@ -306,8 +306,9 @@ button.photo:focus-visible {
   position: relative;
   width: 416px;
   height: 608px;
-  /* read on a phone: the whole card larger, about its centre (it still fits the stage) */
-  scale: min(var(--legible), 1.45);
+  /* read on a phone: the whole card larger, about its centre (it still fits the stage); a box
+     shorter than the stage caps it (`--card-max`: the guide's night room) */
+  scale: min(var(--legible), var(--card-max, 1.45));
   background: var(--paper);
   border: calc(3 * var(--u)) solid var(--ink);
   border-radius: calc(10 * var(--u));
@@ -399,13 +400,21 @@ button.photo:focus-visible {
   bottom: 8px;
   transform: translateX(-50%);
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  /* its own width, up to the room's (`maxWidth`): placed by `left`, it would otherwise wrap at
+     the stage's right edge */
+  width: max-content;
   gap: 11.2px;
   align-items: center;
   z-index: 2;
 }
+/* the plate wraps within the room (`maxWidth`): on a phone beside the open transcript the
+   vigilante's row (count, Shoot, Hold fire, the hand-over) ran over the wing (2026-10-17) */
 .plate.left {
   transform: none;
   bottom: 41.6px;
+  justify-content: flex-start;
 }
 .plate.inline {
   position: static;

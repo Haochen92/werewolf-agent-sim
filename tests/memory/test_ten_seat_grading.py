@@ -57,6 +57,7 @@ def pack_night(result, victim="p1", extra=(), **outcome):
     ("killed", "p10", "neutral"),   # a neutral
     ("saved", "p1", "negative"),    # a target the healer covered
     ("immune", "p9", "negative"),   # the serial killer
+    ("self_bet_saved", "p10", "negative"),  # a fortune teller's self-bet stopped it (2026-10-17)
 ])
 def test_pack_kill(result, victim, grade):
     v = view(pack_night(result, victim))
@@ -344,6 +345,23 @@ def test_record_from_event_log_rebuilds_what_the_grader_reads():
     assert v.observation_grade("healer", "night_action", 1) == "positive"
     assert v.observation_grade("chanteuse", "day_discussion", 2) == "positive"  # a landed push
     assert v.observation_grade("chanteuse", "day_vote", 2) == "positive"  # blended with the room
+
+
+def test_an_untold_record_on_a_self_bet_save_is_not_a_protections():
+    # 2026-10-17: a fortune teller's self-bet save is announced among the saves, flagged `self_bet`.
+    from Agents.memory.consolidation.sources import record_from_event_log
+
+    roles = {"p6": "healer", "p4": "vigilante", "p9": "serial_killer", "p10": "fortune_teller"}
+    events = [
+        {"seq": 1, "day": 1, "type": "roles_assigned", "roles": roles},
+        {"seq": 2, "day": 1, "type": "night_action", "actor": "p6", "role": "healer", "target": "p10"},
+        {"seq": 3, "day": 1, "type": "night_action", "actor": "p4", "role": "vigilante", "target": "p10"},
+        {"seq": 4, "day": 1, "type": "night_result", "deaths": [{"player": "p6", "concealed": False},
+                                                                 {"player": "p4", "concealed": False}],
+         "saves": [{"player": "p10", "self_bet": True}]},
+    ]
+    records = {r["actor"]: r for r in record_from_event_log("g1", events)["night_resolutions"][0]["records"]}
+    assert records["p6"]["result"] == "self_bet_saved" and records["p4"]["result"] == "self_bet_saved"
 
 
 def test_a_served_games_decisions_come_from_its_memory_consulted_events():

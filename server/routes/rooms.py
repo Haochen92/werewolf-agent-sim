@@ -7,6 +7,7 @@ from fastapi import APIRouter, HTTPException, Response
 from server.config import server_settings
 from server.database_models.game import GameRow
 from server.dependencies import GamesRegistry, GraphRuntimeDep, House, Room, SeatToken, ended_detail
+from server.game.key_check import KeyRefused
 from server.game.lobby import MAX_HUMAN_SEATS, GameLobby
 from server.schemas.requests import (
     ChooseCharacter,
@@ -42,8 +43,11 @@ async def create_room(body: NewRoom, games: GamesRegistry, house: House,
     """
     await require_memory_available(body.memory, runtime)
     model = await authorize_model(house, body.api_key, body.model)
-    room = await games.open_room(api_key=body.api_key, model=model, name=body.name,
-                                 memory=body.memory)
+    try:
+        room = await games.open_room(api_key=body.api_key, model=model, name=body.name,
+                                     memory=body.memory)
+    except KeyRefused as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     return RoomCreated(game_id=room.game_id, host_key=room.host_key)
 
 

@@ -31,8 +31,10 @@ _ATTACKER_PHRASE = {
 }
 
 # The result words a record may carry, by action. The disclosure reads these, never the prose.
-#   protect:     saved | no_attack
-#   kill/shoot:  killed | saved | immune
+#   protect:     saved | no_attack | self_bet_saved
+#   kill/shoot:  killed | saved | immune | self_bet_saved  (a pack kill the illusionist concealed: the
+#                role in `seen`. immune is silent; self_bet_saved, a fortune teller's self-bet that
+#                stopped the attack, is announced, owner 2026-10-17)
 #   hold_fire:   held
 #   investigate: suspicious | not_suspicious   (the target is in `seen`)
 #   watch, follow: seen            (the names are in `seen`; empty = no one)
@@ -41,7 +43,8 @@ _ATTACKER_PHRASE = {
 #   block:       blocked | no_effect
 #   conceal:     concealed | no_body  (the concealed role is in `seen`)
 #   pick:        picked              (the side is in `seen`)
-#   bet:         scored_1 | scored_2 | missed | self_bet
+#   bet:         scored_1 | scored_2 | missed | self_bet  (self_bet: the record says whether it
+#                was attacked)
 #   any action a block cancelled: roleblocked
 # A necromancer's record carries the body's action, with the body in `seen` first.
 
@@ -61,7 +64,30 @@ def _role_words(role: str) -> str:
     return role.replace("_", " ")
 
 
-def _kill_outcome(target: str, verdict: NightVerdict | None, roles: dict[str, str], concealed: bool) -> str:
+def _saver(target: str, outcome: NightOutcome) -> str:
+    """Who saved a player, as the announcement names it: the healer, or a reanimated healer when
+    the necromancer protected through the dead healer's body (owner, 2026-10-16)."""
+    return "a reanimated healer" if target in outcome.protected_through_body else "the healer"
+
+
+def _self_bet_saved(target: str | None, outcome: NightOutcome) -> bool:
+    """Whether a fortune teller's self-bet stopped an attack on this player tonight: the morning
+    announces it (owner, 2026-10-17), unlike the serial killer's immunity."""
+    return target in outcome.self_bets and target in outcome.attacks_on
+
+
+def _attackers_phrase(target: str, outcome: NightOutcome) -> str:
+    """The attacks on a player, as the records name them: "the wolves and the serial killer"."""
+    attacker_types = []
+    for attack in outcome.attacks_on[target]:
+        phrase = _ATTACKER_PHRASE[attack.attacker_type]
+        if phrase not in attacker_types:
+            attacker_types.append(phrase)
+    return _join(attacker_types)
+
+
+def _kill_outcome(target: str, verdict: NightVerdict | None, roles: dict[str, str], concealed: bool,
+                  saver: str = "the healer") -> str:
     """The result of a kill or a shot, as its actor learns it. An immune target is unharmed and
     the public hears nothing; which roles can be immune on which nights is in the rules."""
     if verdict == "killed":
@@ -69,7 +95,7 @@ def _kill_outcome(target: str, verdict: NightVerdict | None, roles: dict[str, st
             return f"{target} died. Their role was concealed."
         return f"{target} died. They were a {_role_words(roles.get(target, 'unknown'))}."
     if verdict == "saved":
-        return f"{target} survived: the healer saved them."
+        return f"{target} survived: {saver} saved them."
     return (
         f"{target} was unharmed: immune to night kills tonight. "
         "The public was told nothing about this attack."
@@ -80,8 +106,10 @@ def _record_actor(choice: NightChoice) -> str:
     return PACK_ACTOR if is_pack_kill(choice) else choice.actor
 
 
-def _record_of(choice: NightChoice, outcome: NightOutcome, roles: dict[str, str]) -> NightActionRecord:
-    """One choice that went ahead, as its actor learns the result."""
+def _record_of(choice: NightChoice, outcome: NightOutcome, roles: dict[str, str],
+               pack_concealed: bool = False) -> NightActionRecord:
+    """One choice that went ahead, as its actor learns the result. ``pack_concealed``: the living
+    illusionist's conceal went ahead tonight."""
     night = outcome.night
     target = choice.target
     actor = _record_actor(choice)
@@ -93,11 +121,14 @@ def _record_of(choice: NightChoice, outcome: NightOutcome, roles: dict[str, str]
 
     if choice.kind == "protect":
         if outcome.verdicts.get(target) == "saved":
-            attacker_types = []
-            for attack in outcome.attacks_on[target]:
-                attacker_types.append(_ATTACKER_PHRASE[attack.attacker_type])
             result = "saved"
-            outcome_text = f"{target} was attacked by {_join(attacker_types)}, and your protection saved them."
+            outcome_text = (f"{target} was attacked by {_attackers_phrase(target, outcome)}, "
+                            "and your protection saved them.")
+        elif _self_bet_saved(target, outcome):
+            # The self-bet comes first: the protection saved nothing, and the morning said so.
+            result = "self_bet_saved"
+            outcome_text = (f"{target} was attacked by {_attackers_phrase(target, outcome)} and survived: "
+                            "the fortune teller's self-bet saved them, not your protection.")
         else:
             # Covers an attack on an immune player too: that attack is silent, so the healer
             # learns nothing more than the public does.
@@ -111,7 +142,16 @@ def _record_of(choice: NightChoice, outcome: NightOutcome, roles: dict[str, str]
     elif choice.kind == "kill":
         verdict = outcome.verdicts.get(target)
         result = verdict or "killed"
-        outcome_text = _kill_outcome(target, verdict, roles, target in outcome.concealed)
+        outcome_text = _kill_outcome(target, verdict, roles, target in outcome.concealed, _saver(target, outcome))
+        if _self_bet_saved(target, outcome):
+            result = "self_bet_saved"
+            outcome_text = f"{target} survived: the fortune teller's self-bet saved them."
+        if is_pack_kill(choice) and pack_concealed and target in outcome.concealed:
+            # The whole pack learns the role the illusionist hid (owner, 2026-10-17); a clean
+            # through the dead illusionist's body is the necromancer's alone (below).
+            seen = [roles.get(target, "unknown")]
+            outcome_text = (f"{target} died, and the illusionist hid their role: they were a "
+                            f"{_role_words(roles.get(target, 'unknown'))}.")
         if choice.via is not None and roles.get(choice.via) == "illusionist" and target in outcome.concealed:
             # The necromancer cleaned this body through the illusionist's, and learns the role.
             seen = [target]
@@ -158,7 +198,7 @@ def _record_of(choice: NightChoice, outcome: NightOutcome, roles: dict[str, str]
             else:
                 result = "saved"
                 outcome_text = (
-                    f"{target} attacked someone tonight, but the healer's protection saved them "
+                    f"{target} attacked someone tonight, but {_saver(target, outcome)}'s protection saved them "
                     "from your sigil."
                 )
         else:
@@ -192,7 +232,11 @@ def _record_of(choice: NightChoice, outcome: NightOutcome, roles: dict[str, str]
     elif choice.kind == "bet":
         if target == choice.actor:
             result = "self_bet"
-            outcome_text = "You bet on yourself: an attack on you tonight fails, and nothing is scored."
+            if _self_bet_saved(target, outcome):
+                outcome_text = (f"You bet on yourself and were attacked by {_attackers_phrase(target, outcome)}: "
+                                "your self-bet saved you, and the morning announces it.")
+            else:
+                outcome_text = "You bet on yourself: an attack on you tonight fails, and nothing is scored."
         else:
             bet = next((b for b in outcome.bets if b.actor == choice.actor), None)
             points = bet.points if bet else 0
@@ -224,16 +268,19 @@ def night_action_records(
     """The night's records, one per choice, in choice order. A choice a block cancelled is
     recorded as roleblocked: its actor is told, and learns nothing else."""
     records: list[NightActionRecord] = []
+    pack_concealed = any(c.kind == "conceal" and c.actor not in outcome.blocked for c in choices)
     for choice in choices:
         if choice.actor in outcome.blocked:
             action = "shoot" if (choice.kind == "kill" and choice.role == "vigilante") else choice.kind
             records.append(NightActionRecord(
                 day=outcome.night, actor=_record_actor(choice), action=action, target=choice.target,
-                outcome="You were roleblocked: your action was not carried out and you learned nothing tonight.",
+                # "and you learned nothing tonight" was cut (owner, R4, 2026-10-16): false, since a
+                # block is the Chanteuse's visit. What the block implies is the deduction layer's.
+                outcome="You were roleblocked: your action was not carried out.",
                 result="roleblocked", seen=[],
             ))
             continue
-        records.append(_record_of(choice, outcome, roles))
+        records.append(_record_of(choice, outcome, roles, pack_concealed))
     return records
 
 
@@ -256,6 +303,8 @@ def _disclosed(record: NightActionRecord) -> str:
     if record.action == "protect":
         if record.result == "saved":
             return f"protected {target}, who was attacked and saved"
+        if record.result == "self_bet_saved":
+            return f"protected {target}, who was attacked and saved by the fortune teller's self-bet"
         return f"protected {target}; no attack on them was announced"
     if record.action == "hold_fire":
         return "held fire"
@@ -264,6 +313,8 @@ def _disclosed(record: NightActionRecord) -> str:
             return f"shot {target}, who died"
         if record.result == "saved":
             return f"shot {target}, who was saved"
+        if record.result == "self_bet_saved":
+            return f"shot {target}, who was saved by the fortune teller's self-bet"
         return f"shot {target}, who was unharmed"
     if record.action == "investigate":
         if record.result == "suspicious":

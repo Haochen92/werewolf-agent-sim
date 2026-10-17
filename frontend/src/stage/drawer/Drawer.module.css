@@ -52,8 +52,9 @@
   gap: 9.6px;
   /* a heading: the second tier (--legible-ui), not the words' */
   font-family: var(--font-display);
-  font-size: calc(22.4px * 1.15 * var(--legible-ui));
-  font-weight: 400;
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
+  font-size: calc(22.4px * 1.15 * var(--legible-ui) * var(--display-scale, 1.08));
 }
 .ttl small {
   font-family: var(--font-body);
@@ -84,7 +85,9 @@
 .pill {
   position: relative;
   font: inherit;
-  font-family: var(--font-display);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   font-size: calc(var(--meta) * 1.05);
   line-height: 1.4;
   min-height: calc(36.8px * var(--legible-ui));
@@ -157,6 +160,11 @@
   background: var(--amber);
   border-color: var(--amber);
 }
+.show.wolf[aria-pressed='true'] i {
+  background: var(--wolf);
+  border-color: var(--wolf);
+  color: var(--cream);
+}
 .show.xray[aria-pressed='true'] i {
   background: var(--xray);
   border-color: var(--xray);
@@ -175,8 +183,8 @@
 [data-small] .ttl {
   display: none;
 }
-/* on a phone the car's prompts and the own room's plate stop short of the slot, so the drawer
-   runs full height there (slot.ts `railHolds`: the pack's chat keeps the rail) */
+/* on a phone the prompts and the rooms' plates stop short of the slot, so the drawer runs full
+   height there (slot.ts `atRail`) */
 [data-small] .drawer[data-rail='soft'] {
   height: 900px;
 }
@@ -201,7 +209,9 @@
   position: relative;
   flex: 1;
   font: inherit;
-  font-family: var(--font-display);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   font-size: calc(22.4px * 0.9 * var(--legible-ui));
   color: var(--cream2);
   background: transparent;
@@ -238,7 +248,9 @@
   bottom: calc(12.8px * var(--legible-ui));
   transform: translateX(-50%);
   font: inherit;
-  font-family: var(--font-display);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   font-size: calc(var(--meta) * 1.05);
   line-height: 1.3;
   white-space: nowrap;
@@ -276,8 +288,9 @@
   gap: 12.8px;
   margin: 19.2px 0 1.6px;
   font-family: var(--font-display);
-  font-weight: 400;
-  font-size: calc(var(--said) * 1.45);
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
+  font-size: calc(var(--said) * 1.45 * var(--display-scale, 1.08));
   line-height: 1.1;
   color: var(--cream);
 }
@@ -295,8 +308,9 @@
   padding-top: 12.8px;
   border-top: 1px solid rgba(201, 164, 92, 0.2);
   font-family: var(--font-display);
-  font-weight: 400;
-  font-size: calc(var(--said) * 1.1);
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
+  font-size: calc(var(--said) * 1.1 * var(--display-scale, 1.08));
   line-height: 1.15;
   color: var(--cream);
 }
@@ -362,8 +376,9 @@
 /* a seat's name: the display face in brass-cream; in a report, the dead in terracotta */
 .nm,
 .dead {
-  font-family: var(--font-display);
-  font-weight: 400;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 .nm {
   color: var(--hud-brass-hi);
@@ -436,7 +451,9 @@
   gap: 8px;
 }
 .tn {
-  font-family: var(--font-display);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   color: var(--cream);
   white-space: nowrap;
 }
@@ -453,9 +470,10 @@
   margin: 0;
 }
 .tc {
-  font-family: var(--font-display);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   color: var(--cream2);
-  font-variant-numeric: tabular-nums;
 }
 .vs {
   margin: 3.2px 0 0;

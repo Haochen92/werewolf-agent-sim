@@ -91,8 +91,8 @@ export interface ReplayTheatreProps {
     underEl?: HTMLElement | null;
   };
   /**
-   * The theatre waits out of sight under the replay page's departure (TheaterClient), its
-   * pictures on their way: its keys wait too.
+   * The theatre waits out of sight under the replay page's cover (TheaterClient), its pictures
+   * on their way: its keys wait too.
    */
   waiting?: boolean;
 }
@@ -213,6 +213,7 @@ export function ReplayTheatre({
     beat: beat ?? null,
     winner: ahead.over ? winnerKey(ahead.winner) : null,
     fast: state.speed === 'fast',
+    alive: view?.alive.length ?? 0,
   };
   useStageMusic({
     bed: state.playing ? bedFor(moment) : null,
@@ -310,6 +311,7 @@ export function ReplayTheatre({
             },
             onPlay: () => dispatch({ type: 'play' }),
             onEndNight: () => dispatch({ type: 'end-night' }),
+            onEndRound: () => dispatch({ type: 'end-round' }),
             onBack: () => dispatch({ type: 'to-hub' }),
           },
     [controls, state.xray, state.loop, state.visited, beat, beats],
@@ -337,7 +339,7 @@ export function ReplayTheatre({
   }, [index, state.xray]);
 
   // the keys: arrows step, space plays or pauses, the brackets jump chapters (not a preview's,
-  // nor a theatre still waiting under the departure, out of sight)
+  // nor a theatre still waiting under the cover, out of sight)
   useEffect(() => {
     if (isMini || waiting) return;
     const onKey = (e: KeyboardEvent) => {

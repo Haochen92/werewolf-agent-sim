@@ -357,7 +357,7 @@ export function LastWordDemo() {
             line={
               answered
                 ? 'I’m the investigator. I checked seat 7 last night: a wolf. Vote seat 7, not me.'
-                : 'Before the vote: seat 4 has been accused by seat 2, seat 3 and seat 7. Seat 4 gets a last word.'
+                : 'Before the vote: seat 4 gets a last word.'
             }
             tag={answered ? undefined : { text: 'the game master' }}
             onNext={() => setAnswered((a) => !a)}

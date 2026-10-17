@@ -62,16 +62,6 @@ export function VoteBody(props: SceneProps) {
   return <VoteBeat key={`${me ?? ''}:${turn?.chosen ?? ''}`} {...props} />;
 }
 
-/** The last turn of the day before the vote: whose puppet leaves the stand as voting opens. */
-function lastTurn(view: GameView, day: number): string | null {
-  const slots = view.days[day]?.slots ?? [];
-  for (let i = slots.length - 1; i >= 0; i--) {
-    const s = slots[i];
-    if (s.kind !== 'gm') return s.player;
-  }
-  return null;
-}
-
 /** The game master's line about the vote (the last line of its tally message), seatified. */
 function gmVoteLine(view: GameView, day: number): string | null {
   const gm = (view.days[day]?.slots ?? []).filter((s) => s.kind === 'gm').at(-1);
@@ -86,6 +76,7 @@ function VoteBeat({
   me,
   presentation,
   onAct,
+  onDelegate,
   turn,
   slot: slotInput,
   stop,
@@ -120,16 +111,32 @@ function VoteBeat({
   const [chosen, setChosen] = useState<string | null>(
     turn?.chosen && offered.includes(turn.chosen) ? turn.chosen : null,
   );
-  const [sent, setSent] = useState(false);
+  const [pressed, setPressed] = useState(false);
+  // a send that failed (the network, or a refusal) reopens the ballot with its choice, as the
+  // night plates do; one the agent or the server closed comes as turn.sent and stays shut
+  const failed = !!turn?.sendError && !turn.sent;
+  // handed to the seat's agent from here, or by the deadline; a failed hand-over reopens the row
+  const [handed, setHanded] = useState(false);
+  // on its way from here (retried while the network loses it): shut on the choice, and "in"
+  // only once the server has it (owner, 2026-10-17)
+  const sending = (pressed || handed) && !!turn?.sending;
+  const sent = pressed && !failed && !sending;
+  const agentHas = turn?.sent === 'agent' || (handed && !turn?.sendError && !sending);
   const confirm = () => {
-    if (!chosen || sent) return;
-    setSent(true);
+    if (!chosen || sent || sending) return;
+    setPressed(true);
     onAct?.(chosen === 'abstain' ? null : chosen);
+  };
+  const handOver = () => {
+    if (sent || sending || agentHas) return;
+    setHanded(true);
+    onDelegate?.();
   };
 
   // the jar: how many are in, and which is this viewer's own
   const living = view.alive.length;
-  const liveIn = sent ? Math.max(1, turn?.progress?.n ?? 1) : (turn?.progress?.n ?? 0);
+  const liveIn =
+    sent || agentHas ? Math.max(1, turn?.progress?.n ?? 1) : (turn?.progress?.n ?? 0);
   // live, the ballots drop in as they are cast (`phase_progress`); the replay's jar opens empty
   const ballotsIn = prompt ? liveIn : opening ? (turn?.progress?.n ?? 0) : ballots.length;
   const myIndex = prompt
@@ -187,8 +194,9 @@ function VoteBeat({
   const litSeat = newest ? newest.voter : resolved ? lynched : null;
   const untold = new Set(lynched ? [lynched] : []);
 
-  // the stand leaving as voting opens: the day's last turn drops behind it
-  const leaving = animate && id === 'vote.opens' ? lastTurn(view, day) : null;
+  // the stand leaving as voting opens: whoever the day last had at it drops behind it (the cutter
+  // says who: `stand`)
+  const leaving = animate && id === 'vote.opens' ? (beat.stand ?? null) : null;
   const ln = leaving ? seatNumber(leaving) : 0;
   const leavingChar = ln ? cast[ln - 1] : null;
 
@@ -348,11 +356,15 @@ function VoteBeat({
               candidates={offered}
               cast={cast}
               chosen={chosen}
-              onChoose={sent ? undefined : setChosen}
+              onChoose={sent || sending || agentHas ? undefined : setChosen}
               onConfirm={confirm}
-              sent={sent}
+              onAgent={onDelegate ? handOver : undefined}
+              sent={sent || agentHas}
+              sending={sending}
+              byAgent={agentHas && !sent}
               me={me}
               clock={turn?.clock ?? null}
+              error={failed ? turn?.sendError : null}
               arrive={animate}
             />
           ) : null}

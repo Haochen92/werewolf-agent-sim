@@ -96,8 +96,8 @@ The first scene of a match. Nothing on the wire narrates it; every line is the c
 |---|---|---|---|---|---|---|
 | 1 | `deal.table-seated` | `game_started` (seq 1) | P | dining car at dawn, shutter up, room empty; nine chips come down from the flies in seat order as the seated table | D: nothing (no wire line) | 3.0 |
 | 2 | `deal.cards-dealt` | `game_started.cast_role_counts` | P | nine face-down cards come down on the same strings, one under each chip; the plate reads the cast counts | — | 3.0 |
-| 3 | `deal.your-card` | my `role_assigned` (seq 2–10) | S | my card comes down large, centred, on its own string, and turns face up; the box: who I am, my night action; the vigilante counts two caps; the card button appears | D: dashed "Only you" line | 6.0 |
-| 4 | `deal.your-pack` | my `role_assigned.pack` | F | the packmate's chip takes the red edge, its small card turns to the pack card (`PackCard`: the wolves' bands, their badge and "Your pack", since the wire lists the pack's seats, never a mate's role; 2026-10-10, it was "turns to the wolf"); the pack chat opens with the client's game-master line and stays open for the night | D: the pack chat's opening line | 4.0 |
+| 3 | `deal.your-card` | my `role_assigned` (seq 2–10) | S | my card comes down large, centred, on its own string, and turns face up; the box: who I am, my night action, and a limited ability's uses line ("2 sigils left"; a nine-seat vigilante counts two caps); the card button appears | D: dashed "Only you" line | 6.0 |
+| 4 | `deal.your-pack` | my `role_assigned.pack` + `pack_roles` | F | the packmate's chip takes the red edge, its small card turns face up to the mate's role (the pack knows each other's roles, owner 2026-10-17; the wing's band reads "Pack · Illusionist" with the role's sigil); a game dealt before then names no roles, so the card turns to the pack card (`PackCard`: the wolves' bands, their badge and "Your pack"); the pack chat opens with the client's game-master line ("Your packmate is seat 8, the Illusionist") and stays open for the night | D: the pack chat's opening line | 4.0 |
 | 5 | `deal.face-up` | `roles_assigned` (seq 11) | X | all nine small cards turn at once; the wing's cards take their bands and badges | F: the deal listed | 2.6 |
 | 6 | `deal.day-begins` | `phase_change: day` (seq 12) | P | cards and chips go up, the paint goes to day, the stand returns with the first speaker. **Chapter mark: Day 1** | — | 3.0 |
 
@@ -126,17 +126,31 @@ host key, the seat token). Nobody has a seat yet: the i-th person to board stand
 place and wears `castForGame(gameId)[i]`, with no numeral; seats are dealt at the start and the
 empty places go to agents. Never in the replay or the workbench fixture (the workbench draws it from
 synthetic rooms, `SYNTHETIC.station`).
-**The loading still (2026-09-30)**, not a beat: while `/games/[id]` or `/replays/[id]` loads (its
-`loading.tsx`, the page's Suspense fallback, and the game page while its status or a rejoin is on
-its way) the page is this platform empty (`scenes/StationStill.tsx`: the train, the lamps, the sign
-"The Ninth Express", the rail's empty cards, the snow; no people, plates or chips), its ledge
-fading in after 0.3 s with "Boarding…", "Reclaiming your seat…" or "Rewinding the reels…".
+**The wait is the house's train loader (owner, 2026-10-17)**, not a beat: every default waiting
+picture is the house's loading picture (`components/TrainLoader.tsx`: the Ninth Express in cream
+silhouette, its engine's wheels turning and steam blowing back, "The Ninth Express" under the
+rails, snow falling past). On `/games/[id]` it is one picture from the click (the ticket office's,
+a room's link) or a reload's first paint until the page has something to show: the route's layout
+holds it (`GameCover`), and the route's `loading.tsx`, the page's Suspense fallback and its wait
+for the status or a rejoin draw nothing of their own, so it is never torn down for another. It
+stays up while the status or a rejoin is on its way ("Reclaiming your seat…" under it while a
+lost seat is reclaimed; the loading itself has no line), and over a platform (a game for one's,
+or a room's) until its train and country are in (at most 12 s), then fades off (0.4 s) as the
+train leaves or the room stands; over a game under way it fades off as the status comes; what
+went wrong is said at once. Until 2026-10-17 the wait was this platform empty
+(`StationStill`, since deleted), which stood until the page was ready and was then torn down for
+the departure, and read as a crash. A replay has no departure (owner, 2026-10-16): its way in is
+the same picture, held by the route's layout (`ReplayCover`) from the click, at least 2 s, until
+the theatre is drawn under it, then faded off (0.4 s) as the theatre starts; "Winding the reels…"
+under it while a finished game is still being filed. With `?still=1` (the tests) the replay page
+draws the same picture itself, with no cover. The same picture waits for a page of the site
+while its code is on its way (`(site)/loading.tsx`, after 0.3 s, no least hold).
 
 | # | Beat | Anchor | Sees | Stage | Slot | Hold |
 |---|---|---|---|---|---|---|
 | 1 | `station.waiting` | status `waiting`, not `locked` | P | the platform at night: the train at the platform with the dining car's window over the nine places; each person aboard on the platform under their place (their name on a paper tag at their feet and on a brass plate under the window; "you", "host" on the tag); open places a dashed amber mark and an "open" plate; their chips on the wing; the station sign with the room's name and "hosted by …"; the Invite and Ticket tags hung from the canopy; the ledge: "3 of 9 aboard · waiting for the host" (the host: "· ready when you are", with the Lock and Depart plates) | — (no drawer, no film) | until the room changes |
 | 2 | `station.locked` | status `waiting`, `locked` | P | as 1, with the brass "Locked" plate under the sign; the ledge's line leads "Locked: nobody new can board."; the host's plate reads Unlock | — | until the room changes |
-| 3 | `station.departing` | the host's Depart went through (`POST /start`), or the status left `waiting` | P | the ledge reads "All aboard"; the people step off the platform into their places in the window; the blinds unroll on the agents' places with their shadows on them, the plates turn to "agent"; the tags draw up into the canopy; the ledge sinks; the train pulls out to the right; then a curtain falls on the empty platform ("The deal begins in the dining car") and lifts on §1 row 1 | — | 7.0 s, then the curtain 1.2 s down and 1.0 s up |
+| 3 | `station.departing` | the host's Depart went through (`POST /start`), or the status left `waiting` | P | the ledge reads "All aboard"; the people step off the platform into their places in the window; the blinds unroll on the agents' places with their shadows on them, the plates turn to "agent"; the tags draw up into the canopy; the ledge sinks; the train pulls out to the right; then a curtain falls on the empty platform ("The deal begins in the dining car") and lifts on §1 row 1 | — | 4.55 s (drawn at 7.0 s, played at 0.65, 2026-10-16; live games only), then the curtain 1.2 s down and 1.0 s up |
 
 As built 2026-09-26 (the mockup `claude_artifacts/design/pages/waiting-room.html` gives the
 picture and the departure's order; the timings are the build's, change here first). A person who
@@ -145,7 +159,8 @@ in after 0.6 s; what was there when the page opened is simply there. The departu
 off the platform in 0.45 s and appear in the window (fade and rise, 0.8 s after 0.3 s); the agents'
 blinds unroll 0.9 s each from 0.5 s, 0.16 s apart, their shadows 0.6 s from 1.2 s; the tags draw up
 0.9 s; the ledge sinks 1.0 s and the train pulls out 4.6 s, both from 2.4 s (the train on the
-mockup's ease-in, clipped at the world's edges). A viewer who asked for reduced motion gets a
+mockup's ease-in, clipped at the world's edges). All of it plays at 0.65 of these (`DEPART.pace`,
+owner 2026-10-16: seven seconds was long to wait), 4.55 s in all. A viewer who asked for reduced motion gets a
 0.6 s departure. The hand-off (`LiveTheatre`): the game's events are held back from the stage until
 the curtain is down, then the deal plays from its first beat at normal speed whether it arrived as
 history or as news (`live-state.ts`), and the curtain lifts off it; one `<Stage>` throughout.
@@ -190,11 +205,27 @@ rows is the Phase 2 game (`fixtures/replay-phase2.json`, memory off; goldens `ph
 
 | # | Beat | Anchor | Sees | Stage | Slot | Hold |
 |---|---|---|---|---|---|---|
-| 7 | `day.opening-prepares` | `round_opened` `opening` | P | the stand empty, every seat of the round lit on the wing, a placard held up over the stand, tilted (owner, 2026-10-15): "Everyone is writing their opening." (day 1: "…before the first night", since nothing has happened yet), live with the lines written so far under it ("3 of 9 written", `phase_progress` stage `opening`) | D: the notice line | live: until the round's first line (or the next beat) · replay: **4.0** |
+| 7 | `day.opening-prepares` | `round_opened` `opening` | P | the stand empty, every seat of the round lit on the wing, a placard held up over the stand, tilted (owner, 2026-10-15): "Everyone is writing their opening." (day 1: "…before the first night", since nothing has happened yet), live with the lines written so far under it ("3 of 9 written", `phase_progress` stage `opening`). **X-ray replay: the opening's stop** (below) | D: the notice line | live: until the round's first line (or the next beat) · replay: **4.0** · X-ray: a stop (waits) |
 | 8 | `day.speech` | each `speech` of the round | P | as row 2; the puppet rises for each opening in turn (seat order) | D: the line | speech |
-| 9 | `day.round-passes` | the round's end: the first event after its lines that is not one of them (`turn_started`, the next `round_opened`, `day_summary`, a phase change), when any player of the round has no speech | P (the X-ray plays each `pass_marker` as row 3 instead, with its reason and draft) | the stand empty, the passing seats lit on the wing, the notice: "Seats 2, 5 and 8 had nothing to put on the table." (one seat: "Seat 2 had…"; everyone: "Nobody had anything to put on the table.") | D: the notice line | **4.0** |
-| 10 | `day.closing-called` | `round_opened` `closing` (the moderator's `gm_message` is the event before it) | P | the first accused takes the stand thinking; the house's printed paper at the foot carries the moderator's line under "Day 2 · The closing" and the seat's chip (owner, 2026-10-15; it was the speech box under a "the moderator" tag): "Before the vote: seat 4 has been accused by seats 2, 3 and 6. Seat 4 gets a last word."; the accused lit on the wing | D: the moderator's line | **4.0**, then the accused's lines as row 2 without rising again (one puppet per accused) |
+| 9 | `day.round-passes` | the round's end: the first event after its lines that is not one of them (`turn_started`, the next `round_opened`, `day_summary`, a phase change), when any player of the round has no speech | P · X alike (since 2026-10-16 the X-ray tells a round's passes as this one placard too, its reasons and drafts in the seats' files; it played each `pass_marker` as row 3) | the stand empty, the passing seats lit on the wing, the notice: "Seats 2, 5 and 8 had nothing to put on the table." (one seat: "Seat 2 had…"; everyone: "Nobody had anything to put on the table.") | D: the notice line | **4.0** |
+| 10 | `day.closing-called` | `round_opened` `closing` (the moderator's `gm_message` is the event before it) | P | the first accused takes the stand thinking; the house's printed paper at the foot carries the moderator's line under "Day 2 · The closing" and the seat's chip (owner, 2026-10-15; it was the speech box under a "the moderator" tag): "Before the vote: seat 4 gets a last word." (the accusers are not named since 2026-10-16: game 2f19d908 counted a withdrawn accuser); the accused lit on the wing | D: the moderator's line | **4.0**, then the accused's lines as row 2 without rising again (one puppet per accused) |
 | 11 | `day.your-turn`, labelled | `input_request` `discuss` with `round` | S | as row 4, with the dock's head by the round: `opening` **Your opening** "A role claim, something from last night, or a challenge. Or pass." · `proactive` **The floor is yours** "One or two useful points, or pass." · `closing` **Your last word** "The village has its eye on you." · `discussion` (and a record without the field) **Your turn to speak** as before | — | as row 4 |
+
+**The opening's stop (X-ray on; owner, 2026-10-16).** The opening is written by every seat at
+once and played afterwards, as the night's acts and the ballots are, so it gets their stop: with
+ten passes each told on its own beat, a quiet opening was forty seconds of passes. The play
+pauses on row 7, however the cursor got there (`containers/stops.ts`). The placard stays over the
+stand; the notice at the foot: "Day 1 · 3 spoke, 7 passed." (counted from the log ahead; "All 9
+passed." or "All 9 spoke." when the round went one way), "Tap a seat to read what it wrote.", with **Play the opening ▶** (on through its lines and its passes' placard, as the public
+replay plays them) and **Skip the opening →** (to the first beat after the round, playing). Every
+wing card of the round opens its file (the keyhole, as at the vote's stop), and the file leads
+with the seat's entry, read from the log ahead: "At the opening", then its line; or "Passed",
+the reason (row 3's wording) and, when it held one back, "What it held back" with the draft. The
+rest of the file (notes, reads, lessons) reads as of the round's end, once every opening was
+written, also from the log ahead (owner, 2026-10-16: at the round's start they were still empty);
+the stage, the transcript and the Record stay at the round's start; the no-seat sheet is "The opening", its seats' faces the
+call to action. The closing is a round too, but of the accused only, its
+lines played straight after the moderator's call: no stop; its passes, if any, are row 9's placard.
 
 As built 2026-10-07 (benches `phase2-*` in `e2e/workbench.spec.ts`), restyled 2026-10-15: the
 round's notices are the placard held over the empty stand, and the wing lights every seat the
@@ -210,6 +241,14 @@ on `input_request.deadline`; on expiry the seat's agent acts and only the seat i
 who leaves is the same rule made permanent: the table sees nothing; if they come back they arrive
 still, at their seat, with the plaque's tag on their own screen ("your seat's agent played 3 turns
 for you", counted client-side from unanswered requests). Agents have no client-side timer.
+
+**The hand-over is each plate's own** (owner, 2026-10-17; it was one plaque, "Let my agent play
+this turn", under the top strip, too easily missed). Every live prompt but the speaking turn ends
+its row with a button in the plate's second-button dress (the walnut of "Hold fire" and "Pass"),
+its verb the turn's: "Let my agent vote" beside the ballot's plate, "Let my agent choose" on a
+night room's plate and the pack's kill, "Let my agent talk" beside Say it and Pass. One tap, no
+confirm: the plate seals at once in the agent's words ("Your agent has your ballot", "Your seat's
+agent acted for you"), and a failed send reopens it. The speaking turn keeps Draft, Send, Pass.
 
 As built 2026-09-25 (no bench gives them; change here first): the public pass has no reason line
 (the box reads "passes." under the seat's chip). Live, a line or a pass that follows its own
@@ -254,8 +293,11 @@ until the lynch's card clears the rail. The table's top is the walnut tile in pe
 bench's cloth hanging from its front edge. The ballot: the chosen chip is lit (amber ring, glow),
 the rest dim (the bench raised it); the plate reads "Choose a seat" / "Vote seat 6" / "Abstain";
 "Your vote · Tap a chip, or the empty plate to abstain." with "your seat's agent votes for you in
-1:14"; sent, "Your ballot is in · no one sees it until voting closes" (the time is on the plate; the
-car's wall clock is gone since 2026-09-29). Not yet built: the live drop (row 2; the pill reads `turn.progress` once the container feeds
+1:14"; on its way, "Your vote · Sending…" (a pulsing amber dot, the chips shut on the choice, no
+plate; the send is tried up to four times, about a minute at worst) and, only once the server has
+it, "Your ballot is in · no one sees it until voting closes"; a failed send opens the row again
+with its words in red (owner, 2026-10-17; the night plates likewise read "Sending…" until their act
+is in) (the time is on the plate; the car's wall clock is gone since 2026-09-29). Not yet built: the live drop (row 2; the pill reads `turn.progress` once the container feeds
 it from `phase_progress`), the count's X-ray film (row 6).
 
 ## 4. The lynch — H§4.4 · bench 65
@@ -312,7 +354,7 @@ reads "You sleep" with the reason in place of the card's night line, derived on 
 what the seat knows, mirroring the engine's `acts_tonight` (`noAskLine`): the necromancer on night
 1 "Your power wakes on night 2."; from night 2 with no revealed body whose role gives an ability
 (`BORROWED_ROLES` in `roles.ts`, the engine's `BORROWED_ABILITY`) "No body you can use tonight.";
-a spent limited ability "No checks left." / "No watches left." / "No caps left." / "No sigils
+a spent limited ability "No checks left." / "No watches left." / "No bullets left." / "No sigils
 left.", the speculator after its pick "You have made your pick." Otherwise the night line stays
 (an ask may still come), and an ask that has come wins. Live testing found the necromancer's
 night 1 saying nothing of why it had no room.
@@ -361,9 +403,13 @@ stands on the table's clear spot by the candle, 200 units tall, a soft contact s
 **The caps** (vigilante) are on the card, under its night line, on the table and opened: "2 caps
 left" / "your last cap" (ruled 2026-09-28; the plate's quiet line keeps only "tap another photo
 to change"). Ten-seat (2026-10-10): every limited ability counts the same way from
-`role_assigned.uses` / `uses_remaining`, in its own word: checks, watches, caps, sigils,
-conceals, self-bets ("2 checks left" / "your last check"); the speculator's one pick has no
-count; a nine-seat game keeps `bullets`. **The card opened** in the room (and the pack's) drops the front line: the name,
+`role_assigned.uses` / `uses_remaining`, in its own word: checks, watches, bullets (caps until
+2026-10-16), sigils, conceals, self-bets ("2 checks left" / "your last check"); the speculator's
+one pick has no count; a nine-seat game keeps `bullets`. **The uses line is the standard (owner,
+2026-10-16):** the count is never in the card's night text (shortened that day), only in this
+line, on every card the game shows: the deal's "Your card" box, the card on the table, the card
+opened, and the replay's rooms, where the actor's card says what it had left going into that
+night (`usesTonight`: its last `uses_remaining` before the night fell, else its dealt count). **The card opened** in the room (and the pack's) drops the front line: the name,
 the figure, what you do at night (ruled 2026-09-28; the deal, the lobby and the game over keep
 it). A name over ten letters (Illusionist, Necromancer, Investigator, Serial killer, Fortune
 teller) is a step smaller in the head, framed and opened, so it and its sigil stay on the card
@@ -410,6 +456,16 @@ up as the others act until the morning; hidden before, when the plate's countdow
 The same room, painted as the wolves' red-lit compartment ("Grandma's things"); the packmate is in
 the chat, not on the line. Seats the pack can choose exclude wolves (`candidates`). The wing marks
 pack seats with a red edge.
+
+**The chat is the transcript's (owner, 2026-10-17; the on-stage chat was too small, on a phone
+most of all).** The pack's talk, the kill, the game master's note and the pack's dawn record are
+the drawer's Wolf lines (§11), and no chat box stands in the room. Live, a seated wolf's
+transcript opens by itself the first time the pack's room comes on stage on a night, with only
+Wolf ticked (`packNight`); what the reader does then (shut it, tick Public) holds until dawn,
+when it closes and its filters go back to all (`slot.ts` `packNightStep`). The replay does not
+open it. Your line to the pack ("Say it", "Pass") stays at the room's foot on the left, with how
+the night goes over it until someone has spoken. Where the rows below say "the chat", read the
+Wolf lines.
 
 | # | Beat | Anchor | Sees | Stage | Slot | Hold |
 |---|---|---|---|---|---|---|
@@ -492,7 +548,8 @@ has been seen keeps a steady, quieter verdigris edge and its lamp goes out. **Th
 band, "Visit ▸" in the typewriter, bold, in the paper's verdigris ink (`--ink-follow`), and
 "Seen" in a muted grey once its room has been visited; the glow is secondary. The notice at the
 foot (a placard held up from below, in the Notice zone; the walnut board until 2026-10-15): "Night
-2 · 5 acted." (rooms, as the pill counts them: the pack's two wolves are one) "Tap a lit seat to
+2 · 6 acted." (seats, as the pill counts them: the pack's two wolves are two, a wolf with a room of
+its own and the pack's is one; ten_seat_pass §11) "Tap a lit seat to
 visit its room." and two buttons, **Watch them all ▶** (the play goes on through every room in
 order, seen or not, then the whole, then on) and **End the night →** (to the first beat after
 `rnight.whole`, playing). A lit seat's tap plays that actor's room from its first step (a
@@ -552,7 +609,8 @@ the stand ×1.36 (the winners' grammar of §10; bench 67 put them ±0.46 on the 
 seat 2." (protects · checks · shoots · marks, bench 67's verbs). The pack's chat is headed "The
 pack · seats 3 and 8" / "Seat 8 hunts alone"; a line step shows the lines so far, the mark step
 adds the votes and "The pack chooses seat 4 · both teeth", and one bite lands. "Acted n of N"
-counts the spokes whose mark has landed (N of N at the whole). The lamps: lit on this actor and those still to come;
+counts the seats whose every spoke has landed (a wolf with its own room and the pack's at the
+later; N of N at the whole). The lamps: lit on this actor and those still to come;
 this one's goes out at 1.6 s of its mark step (at rest, already out); a seat with no spoke (a
 vigilante holding fire) loses its lamp after the hub. Played: a new actor rises at 0.2 s (+0.22 s
 for the second wolf), its instrument fades in 0.5 s after 0.6 s, the mark pops at 0.9 s, the box
@@ -573,7 +631,7 @@ leading. A seated human's "you won / you lost" is client-known from `role_assign
 | 1 | `over.where-it-ended` | `game_over`. **Chapter mark: Game over** | P | the last scene's frame, held. After a morning: the night's paint behind the shutter, the room empty, the last card drawn up. After a lynch: dusk, the shutter down, the leaves standing open, the card gone. The notice: after a lynch the vote's end line; after a morning that morning's roll (§8) | D: the ending line (the game master's; without one, "The town has won." … "The game is a draw.") | 2.0; after a morning the roll's 3.5 + 1.5 a row |
 | 2 | `over.winners-hour` | `winner` (null: a draw) | P | the shutter rises, by winner (2026-10-10, was by side): full day for the town, night for the wolves, dusk for the serial killer and for the necromancer, a grey dawn for a draw; the leaves fold if open | — | 3.0 |
 | 3 | `over.verdict` | 〃 | P | a walnut board comes down on two strings, large and centred: the faction's colour at its edges, its felt badge sewn on at the left (2026-10-07; it was the winner's role sigil on a paper plate), the winner's line in the card's serif ("The town has won" · "The wolves have won" · "The serial killer has won" · "The necromancer has won", under the lone killer's violet · a draw "No side has won" (a neutral's win can stand under it), bone edges and no badge, the words centred), "Day 4 · at the morning" beneath; drawn up as the next beat begins | — | 3.2 |
-| 4 | `over.winners-stand` | 〃 + the roster | P | the stand comes up and the winners' **survivors** rise into it (the town's or the pack's by side, a pack mate known by side alone since the wire never says its role; the serial killer's or the necromancer's own seat; a neutral never; a draw nobody, so no stand and no "last of them" line), base state: one at full size, two at 0.78, three at 0.6 with the box widened (×1.36, ×1.6); one special each; the plaque names the seats (and roles once the truth is out); the winners' wing tiles lit, the rest dimmed; the fallen stay on the wing as grey cards with their roles' bands. The box: "The wolves have won" (a draw's without pennant or colour), under it the neutral's result when one was dealt (`game_over.neutral_result`, the lineup's neutral; 2026-10-10): "The speculator’s pick won" · "The speculator lost" · "The fortune teller won, with 2 points" · "The fortune teller lost, with 1 point" (the client's lines, so the role's name as the game writes it, `ROLE_NAME`; the engine's own lines, the pick at dawn, keep its words), then the survivors' chips, "Seat 8 is the last of them standing". S: "You won" / "You lost. You were the vigilante"; a neutral seat won or lost on its own result | — | 3.0 |
+| 4 | `over.winners-stand` | 〃 + the roster | P | the stand comes up and the winners' **survivors** rise into it (the town's or the pack's by side, a pack mate known by side; the serial killer's or the necromancer's own seat; a neutral never; a draw nobody, so no stand and no "last of them" line), base state: one at full size, two at 0.78, three at 0.6 with the box widened (×1.36, ×1.6); one special each; the plaque names the seats (and roles once the truth is out); the winners' wing tiles lit, the rest dimmed; the fallen stay on the wing as grey cards with their roles' bands. The box: "The wolves have won" (a draw's without pennant or colour), under it the neutral's result when one was dealt (`game_over.neutral_result`, the lineup's neutral; 2026-10-10): "The speculator’s pick won" · "The speculator lost" · "The fortune teller won, with 2 points" · "The fortune teller lost, with 1 point" (the client's lines, so the role's name as the game writes it, `ROLE_NAME`; the engine's own lines, the pick at dawn, keep its words), then the survivors' chips, "Seat 8 is the last of them standing". S: "You won" / "You lost. You were the vigilante"; a neutral seat won or lost on its own result | — | 3.0 |
 | 5 | `over.truth` | `roles_assigned` from the backlog (live) · already in the log (replay) | everyone | every living tile takes its faction strip and sigil badge, and a concealed body's "Role hidden" tile its role; live: the File tab reads "File · unlocked" (the X-ray button's "unlocked" until 2026-09-29) | F, the docket: the case, closed (the deal, and how each seat went) | 2.6 |
 | 6 | `over.epilogue` | `memory_extracted` (407; memory-on games) | everyone | the case's closing spread comes down over the whole stage, one sheet (the case file's look since 2026-09-30: manila round a typed paper sheet, IM Fell titles, the typewriter's labels, the file's calm stamp inks; it was the X-ray's blue-black film). Left: one file tab per **role** (observations are keyed by role), the open one the sheet's own paper joined to it, the chips of the seats that held it, a tally of verdicts as pips. Right: rows grouped by phase (discussion · vote · night, the case file's phase icons), each collapsed to its scenario (chevron, its ✓ ✗ ± ? mark, "Scenario", the situation clamped to two lines, "open"); opened: "What it did", "How it went" with the verdict stamped on it, mark and word (Worked · Cost · Mixed · Unclear; it was a stitched felt patch). Bottom: the lessons kept (`strategy_points`) as index cards, situation → action; empty says "None from this game" | F (full stage) | until dismissed |
 | 7 | `over.curtain` | — | P | the winners at the stand in the winner's hour; the result in the box with the way out (live: the replay, the lobby; replay: the transport at its end) | — | hold |
@@ -622,8 +680,8 @@ in a memory-on game whose lessons have not come in, "Your seat's lessons are bei
 under it (a spectator: "The seats' lessons…"). The link comes in where the plaque stood (both
 lie in one cell, the plaque kept unseen), "Back to the lobby" unmoved; the case file's "watch
 the replay →" waits likewise. The workbench draws the link's state. The replay page waits too:
-a 404 asks the status, and a game over but not filed shows the empty platform with "Winding the
-reels… come back in a few minutes", asking for the replay every 5 s until it comes; a status
+a 404 asks the status, and a game over but not filed keeps the loading picture up with "Winding
+the reels…", asking for the replay every 5 s until it comes; a status
 from the row means it landed between the two calls (asked once more at once); a dropped game
 says "This game was dropped."; only an id unknown to both is "No such replay.". **To
 reconcile:** the winners come from the roles the view holds; live, `game_over` arrives before the
@@ -654,12 +712,17 @@ of the lynch/night atoms lent to them; the votes as one line per day, landing wi
 time; ruled 2026-09-26); the game master's vote line, which names the lynched seat's role, held
 back on a lynch day until `lynch.truth` for the same reason; the day's brief at its Dawn
 (clamped, opens on a tap; public, so everyone's since 2026-09-29, when it was X-ray only); the ending); a
-seated human's private results as dashed "Only you" lines; a wolf's pack chat with the red edge;
+seated human's private results as dashed "Only you" lines; a wolf's pack chat with the red edge
+(the Wolf tier, 2026-10-17: the talk, the kill, the game master's note to the pack and its dawn
+record, less a record that only repeats the morning);
 X-ray on adds, in the X-ray's verdigris (aqua until 2026-09-29): roles after names, passes with
-reason and draft, the night acts, the pack's talk, everyone's private lines as "Only seat 4".
+reason and draft, the night acts (the carrier's kill is the pack's kill line, an act with no
+target says what it is: "conceals the body."), the pack's talk, everyone's private lines as
+"Only seat 4".
 Chapters run down the drawer as rules; rules with nothing under them disappear. Filters:
 days as tabs at the foot; seat chips at the head (dead dimmed, still selectable); Show › Public /
-Private (ruled 2026-09-29: no X-ray toggle; the X-ray's lines follow the X-ray's one switch).
+Private, and Wolf for a wolf or with the X-ray (2026-10-17) (ruled 2026-09-29: no X-ray toggle;
+the X-ray's lines follow the X-ray's one switch).
 In the replay the drawer stops at the current beat.
 
 As built 2026-09-25 (benches 74 and 52 where they give it; the rest no bench gives, change here
@@ -708,8 +771,8 @@ that room when the slot is closed); on a 16:9 desk nothing changes. **The drawer
 strip's buttons over it), z under the strip's buttons and the epilogue's veil. It stops at the
 rail on the prompts (`day.your-turn`, `vote.your-ballot`) and for the whole of the night rooms
 (`room`, `pack`), whose chat and plate keep the band. On a phone (`data-small`) it runs full
-height beside the car's prompts and the own room's plate, which stop short of it; only the
-pack's chat, which spans the band's right, keeps it at the rail (`railHolds`, 2026-09-27). The lit line scrolls to 0.6 of the list's
+height beside the prompts and the rooms' plates, which stop short of it (the pack's room too
+since its chat moved into the drawer, 2026-10-17; `railHolds` kept it at the rail before). The lit line scrolls to 0.6 of the list's
 height (bench 74); with no line of its own the drawer shows its end. It follows only while the
 reader is at now (the lit line in view, or the end): scrolled away, new lines arrive without
 moving it and a "↓ Back to now" pill sits at its foot until tapped or scrolled back (ruled
@@ -903,14 +966,16 @@ short of it; otherwise (the film, a prompt, the epilogue) 22.4 from the right ed
 timer on `holdFor`; a beat that waits (the epilogue, the curtain) and the last beat stop the play;
 play at the end starts from the first beat, play on a waiting beat steps on at once; stepping or
 seeking while playing plays on from there. **The stops (2026-09-30, `containers/stops.ts`):** with
-the X-ray on, the night hub (§9) and the ballots in (`vote.closes`, §3) pause the play however
+the X-ray on, the night hub (§9), the ballots in (`vote.closes`, §3) and the opening
+(`day.opening-prepares`, §2, 2026-10-16) pause the play however
 the cursor got there (a tick, a step, a seek, a chapter jump), at either speed; play (the
 notice's ▶) steps on from a stop at once, as from a beat that waits. The reducer also keeps the
 visit (the room tapped at the hub or from another room, `day:actor`: its last step's tick
 pauses the play there, 2026-09-30, it returned to the hub until then; the visit ends as soon as
 the cursor leaves that room, or on play, which then goes on linearly) and the rooms seen (the
 wing's "Seen" and steady marks); "End the
-night" seeks to the first beat after the night whole and plays; "Back to the night" seeks to the
+night" seeks to the first beat after the night whole and plays, "Skip the opening" to the first
+beat after the round; "Back to the night" seeks to the
 hub. A preview's loop has no stops. Nothing is persisted. The hold pauses while a pointer or a touch rests on a
 `[data-speech]` (the speech box, the pack's chat) and resumes with what was left; a new beat or a
 new speed starts a fresh hold. Keys: ← → step, space plays/pauses, [ ] jump chapters (not while
@@ -952,6 +1017,10 @@ is [`live_timing_sheet.md`](live_timing_sheet.md) (2026-10-01).
   the countdown runs on real time from `deadline`, the beat on stage is cut short once (its hold
   ends now) and the beats queued between it and the request play at normal speed (until
   2026-10-01 they drained at fast speed).
+  **Exception, the pack's chat (owner, 2026-10-17):** a packmate's line (`pack.line`, a pass
+  too) directly before the seat's own prompt does not hold it; the prompt opens as the line
+  lands. The line is whole in the transcript already, and its 5–15 s reading hold made a human
+  wolf wait after every packmate line (solo game 51226f24: 28 s of holds in one night).
 - **The prompt comes after its announcement (2026-10-12).** The server asks just before it
   announces: the ballot before `phase_change: voting`, a night act before the night, the opening
   before `round_opened`. A prompt whose next event is that announcement is placed after the
@@ -1069,8 +1138,13 @@ is not the day's (the ballot, a night act, the pack) gets a pill under the top s
 play this turn", its error beneath. **Counts:** `phase_progress` feeds the vote's jar and pill
 at the opening ("Ballots in, n of N") and the night hub's "Acted n of N" (clamped to the census).
 **The curtain:** "Watch the replay" → `/replays/{id}`, "Back
-to the lobby" → `/rooms` (links). The drawer opens by default as the replay's. "Reconnecting…"
-under the strip while the stream reconnects. **The deal on first connection:** a new game's
+to the lobby" → `/rooms` (links). The drawer opens by default as the replay's. **The connection
+pill (owner, 2026-10-17, board 3)** under the strip while the stream is down (never while the tab
+is hidden): a pulsing amber dot (still for reduced motion) and "Reconnecting… the game waits for
+you" in a game for one, "Reconnecting… your seat's clock is running" in a room (a watcher: just
+"Reconnecting…"); still down after 20 s (`BLIP_MS`), or with the browser offline, a grey dot,
+"You're offline. The game waits." (a room: "You're offline. Your seat's clock is running.") and
+"Try now" (a thumb's size on a phone), which reopens the stream at once. **The deal on first connection:** a new game's
 deal is over before the page connects, so while the history holds no `turn_started` it plays from
 beat 0 at normal speed (as every beat does since 2026-10-01); after a departure on this page it
 plays from beat 0 whatever the history holds (`historyLanding`'s `departed`, up to the status's
@@ -1106,7 +1180,7 @@ the foot's notices and the ballot, a night room's plates and the pack's chat. Hi
 come back exactly as they were when the notice closes (Carry on, See what happened, Leave,
 Esc). Nothing dims the stage and nothing takes the taps outside the notice: the wing, the strip
 and the drawer stay usable, but a seat whose turn is open answers it after Carry on (its dock,
-ballot or plate comes back then; "Let my agent play this turn" stays at the top). Owner
+ballot or plate comes back then, its hand-over with it). Owner
 2026-10-11: no full-stage veil, which earlier the same day dimmed the stage behind the notice; a
 full-stage element over the stage becomes its own GPU layer whenever anything under it moves
 (phone_lessons.md §1–2, ~54 MB a layer on the owner's iPhone), and the notice opens just after a
@@ -1146,7 +1220,7 @@ lobby while it lasts." **Not built / to reconcile:** the live
 ballot drop (§3 row 2) moves the count, not chips; a night act the agent played while away is named
 with its target only for the pack's vote and kill (a seat's own `night_action` is observer tier,
 so the notice says "it took your night’s act"); the draft helper in the pack's chat (the
-pack's turn still has the "Let my agent play this turn" pill); a
+pack's turn has its own "Let my agent talk"); a
 reload during a vote already cast reopens the ballot (a second send gets the 409 line).
 
 ## 13. Viewers and tiers — H§7

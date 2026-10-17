@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { DurableGameEvent } from '@/types/contracts';
 import fixture from '@/stage/fixtures/replay-9369a5c1.json';
+import phase2 from '@/stage/fixtures/replay-phase2.json';
 import { foldEvents } from '@/game/foldEvents';
 import { beatsFor } from '@/stage/beats/beatsFor';
 import { createFoldCache } from './fold-cache';
@@ -411,5 +412,47 @@ describe('the stops (the X-ray on)', () => {
     const pack = find('rnight.spoke', 2, 'pack');
     const off = reduce(on(pack + 1, { slot: 'film' }), { type: 'xray' });
     expect(beats.public[off.cursor.index]).toMatchObject({ id: 'night.hub', day: 2 });
+  });
+});
+
+describe('the opening’s stop (the Phase 2 game, the X-ray on)', () => {
+  const log = phase2.events as unknown as DurableGameEvent[];
+  const p2 = {
+    public: beatsFor(log, { xray: false }),
+    xray: beatsFor(log, { xray: true }),
+  };
+  const reduce2 = replayReducer(p2);
+  const x = p2.xray;
+  const opening = x.findIndex((b) => b.id === 'day.opening-prepares' && b.day === 2);
+  const on = (index: number, rest: Partial<ReplayState> = {}): ReplayState => ({
+    ...initialReplayState(),
+    xray: true,
+    cursor: still(index),
+    ...rest,
+  });
+
+  it('pauses on the opening, and plays on into its lines', () => {
+    const s = reduce2(on(opening - 1, { playing: true }), { type: 'tick' });
+    expect([s.cursor.index, s.playing]).toEqual([opening, false]);
+    const played = reduce2(s, { type: 'play' });
+    expect([x[played.cursor.index].id, played.playing]).toEqual(['day.speech', true]);
+    // without the X-ray it is a beat like any other
+    const pub = p2.public.findIndex((b) => b.id === 'day.opening-prepares' && b.day === 2);
+    const p = reduce2(
+      { ...initialReplayState(), cursor: still(pub - 1), playing: true },
+      { type: 'tick' },
+    );
+    expect([p.cursor.index, p.playing]).toEqual([pub, true]);
+  });
+
+  it('“Skip the opening” goes past its lines and its passes, playing', () => {
+    const s = reduce2(on(opening), { type: 'end-round' });
+    // the round's one line and its passes' placard are behind it: the discussion's first turn
+    expect(x.slice(opening + 1, s.cursor.index).map((b) => b.id)).toEqual([
+      'day.speech',
+      'day.round-passes',
+    ]);
+    expect(x[s.cursor.index]).toMatchObject({ id: 'day.speech', seq: 102 });
+    expect(s.playing).toBe(true);
   });
 });

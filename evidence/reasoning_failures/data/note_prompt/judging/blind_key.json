@@ -1,0 +1,72 @@
+{
+ "C01": {
+  "X": "note_current",
+  "Y": "note_new",
+  "case_id": "9b3219e5dc1eb831"
+ },
+ "C02": {
+  "X": "note_current",
+  "Y": "note_new",
+  "case_id": "18d2b69655eb88ff"
+ },
+ "C03": {
+  "X": "note_current",
+  "Y": "note_new",
+  "case_id": "56c0210b9c3481de"
+ },
+ "C04": {
+  "X": "note_current",
+  "Y": "note_new",
+  "case_id": "6ca752dd6b559c66"
+ },
+ "C05": {
+  "X": "note_current",
+  "Y": "note_new",
+  "case_id": "857594795ccc7fd4"
+ },
+ "C06": {
+  "X": "note_new",
+  "Y": "note_current",
+  "case_id": "e5072bd5a8fd1130"
+ },
+ "C07": {
+  "X": "note_current",
+  "Y": "note_new",
+  "case_id": "c52500274ffeccf0"
+ },
+ "C08": {
+  "X": "note_new",
+  "Y": "note_current",
+  "case_id": "95b5dedc19716269"
+ },
+ "C09": {
+  "X": "note_current",
+  "Y": "note_new",
+  "case_id": "9b827b695a61ece9"
+ },
+ "C10": {
+  "X": "note_current",
+  "Y": "note_new",
+  "case_id": "c5e12a38f7f8f9da"
+ },
+ "C11": {
+  "X": "note_new",
+  "Y": "note_current",
+  "case_id": "f475e6ad184f725f"
+ },
+ "C12": {
+  "X": "note_new",
+  "Y": "note_current",
+  "case_id": "47796ac2ab412db3"
+ },
+ "C13": {
+  "X": "note_new",
+  "Y": "note_current",
+  "case_id": "9ff448464a0faaee"
+ },
+ "C14": {
+  "X": "note_current",
+  "Y": "note_new",
+  "case_id": "5b11c9fd2f6b9b0e"
+ }
+}

@@ -25,13 +25,14 @@
  * held through its sleep), or when the browser closed it for good (2026-10-15: a stream that
  * died either way left the stage frozen, and the seat's agent played its turns unseen).
  */
-import { useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiUrl } from '@/lib/config';
 import { getGameStatus } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { useGameSession } from '@/game/store';
 import {
+  briefDrop,
   catchUpBatch,
   catchUpBoundary,
   reopenNow,
@@ -53,6 +54,8 @@ export interface GameStream {
   /** Failure to obtain the status snapshot itself (404, invalid cookie, network, proxy). */
   statusError: Error | null;
   isPending: boolean;
+  /** Reopen the stream now, not on the next retry ("Try now"); nothing while there is none. */
+  reconnectNow: () => void;
 }
 
 export function useGameStream(gameId: string, enabled = true): GameStream {
@@ -87,6 +90,10 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
       return state === 'running' ? 12_000 : false;
     },
   });
+
+  // the open stream's reopen, for "Try now"
+  const tryNow = useRef<(() => void) | null>(null);
+  const reconnectNow = useCallback(() => tryNow.current?.(), []);
 
   const status = isFetchedAfterMount ? data : undefined;
   const isPending = loading || (!isFetchedAfterMount && !statusError);
@@ -129,14 +136,25 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
     const hear = () => {
       heard = Date.now();
     };
+    // when the stream last spoke before the current drop; null while it is up
+    let quietFrom: number | null = null;
+    const drop = () => {
+      quietFrom ??= heard;
+      boundary.dropped();
+    };
     const connect = (at: string): EventSource => {
       const source = new EventSource(at, { withCredentials: true });
       source.addEventListener('ping', hear);
       source.addEventListener('open', () => {
+        const gone = quietFrom === null ? 0 : Date.now() - quietFrom;
+        quietFrom = null;
         hear();
         setConnection('open');
+        if (!boundary.resuming()) return;
+        // a blip: everything past what the page holds is news
+        if (briefDrop(gone)) boundary.resumed(useGameSession.getState().view.lastSeq);
         // back after a drop: ask how far the log has got; up to there is catch-up, not news
-        if (boundary.resuming())
+        else
           getGameStatus(gameId).then(
             (fresh) => boundary.resumed(fresh.last_seq ?? 0),
             () => boundary.resumed(useGameSession.getState().view.lastSeq),
@@ -171,7 +189,7 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
 
       source.addEventListener('error', () => {
         // the browser is reopening the stream: what it resends until the fresh status is catch-up
-        if (source.readyState === EventSource.CONNECTING) boundary.dropped();
+        if (source.readyState === EventSource.CONNECTING) drop();
         // A backgrounded tab gets throttled and drops the connection; that is the browser
         // doing its job, not a fault, and surfacing it would cry wolf on every tab switch.
         if (typeof document !== 'undefined' && document.hidden) return;
@@ -189,15 +207,16 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
     // unless the watch below finds it silent.
     const reopen = (force = false) => {
       if (!force && !reopenNow(source.readyState, document.hidden)) return;
+      drop(); // before hear(): the gap runs from the last thing the old stream said
       hear();
       source.close();
       history.flush();
-      boundary.dropped();
       setConnection('reconnecting');
       const at = useGameSession.getState().view.lastSeq;
       source = connect(at > 0 ? `${url}?last_seq=${at}` : url);
     };
     const onBack = () => reopen();
+    tryNow.current = () => reopen(true);
     document.addEventListener('visibilitychange', onBack);
     window.addEventListener('online', onBack);
     const watch = setInterval(() => {
@@ -209,6 +228,7 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
       document.removeEventListener('visibilitychange', onBack);
       window.removeEventListener('online', onBack);
       clearInterval(watch);
+      tryNow.current = null;
       source.close();
       history.drop();
       setConnection('idle');
@@ -226,5 +246,6 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
     error: status?.error ?? null,
     statusError,
     isPending,
+    reconnectNow,
   };
 }

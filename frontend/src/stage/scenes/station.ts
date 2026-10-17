@@ -17,9 +17,11 @@ export const MIN_ABOARD = 1;
 /**
  * The departure at normal speed, in seconds (scaled by the motion speed like every other beat):
  * the people step aboard and the blinds come down on the agents' places, then the train pulls
- * out. `total` is when the platform is empty; the container drops the curtain after it.
+ * out. `total` is when the platform is empty; the container drops the curtain after it. The
+ * whole of it, the blinds' stagger too, is drawn at seven seconds and played at `pace`: 4.5 s
+ * (owner, 2026-10-16: seven was long to wait for a game or a replay).
  */
-export const DEPART = { pullAt: 2.4, pull: 4.6, total: 7.0 } as const;
+export const DEPART = { pullAt: 2.4, pull: 4.6, total: 7.0, pace: 0.65 } as const;
 
 /** The curtain between the platform and the deal: falling, then lifting off the deal's first beat. */
 export const CURTAIN = { close: 1.2, open: 1.0 } as const;
@@ -29,7 +31,7 @@ export function departMs(): number {
   const reduce =
     typeof window !== 'undefined' &&
     window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  return reduce ? 600 : DEPART.total * 1000;
+  return reduce ? 600 : DEPART.total * DEPART.pace * 1000;
 }
 
 export type StationBeatId = 'station.waiting' | 'station.locked' | 'station.departing';

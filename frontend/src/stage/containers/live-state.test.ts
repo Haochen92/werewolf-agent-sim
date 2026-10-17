@@ -926,6 +926,30 @@ describe('the live stage: what the seat lived through', () => {
     expect(s.beat.id).toBe('morning.day-begins');
   });
 
+  it('a packmate’s line does not hold the seat’s own chat prompt right after it (2026-10-17)', () => {
+    // night 2, seat 3: round 1 answered, then seat 8's line lands as news and the next ask follows
+    const me = 'player_3';
+    const s = new Session(me);
+    const mine = SPACED.filter(entitled(me));
+    s.arrive(
+      mine.filter((e) => e.seq < 1400),
+      false,
+    ).drain();
+    s.arrive(
+      mine.filter((e) => e.seq === 1400),
+      true,
+    );
+    expect(s.beat).toMatchObject({ id: 'pack.line', seq: 1400 });
+    expect(s.state.holding).toBe(true);
+    // the prompt arrives while the line still holds: it opens at once, no hold run out
+    s.ctx = ctx({ me, openPrompt: 1425 });
+    s.arrive(
+      [{ ...request(1425, 'wolf_discuss'), player: me, day: s.events.at(-1)!.day }],
+      true,
+    );
+    expect(s.beat).toMatchObject({ id: 'pack.your-line', seq: 1425 });
+  });
+
   it('a line the seat’s agent said for it is news: it plays', () => {
     const s = night('player_3', 1200, 1300, [
       { seq: 1215, kind: 'wolf_discuss', agent: true },
@@ -987,6 +1011,12 @@ describe('the live stage: the side slot', () => {
       expect(liveReducer(initialLiveState(slot), { type: 'show-record' }).slot).toBe(
         'film',
       );
+  });
+
+  it('a wolf’s night brings the transcript and dawn takes it away', () => {
+    const night = liveReducer(initialLiveState(null), { type: 'pack-night', open: true });
+    expect(night.slot).toBe('drawer');
+    expect(liveReducer(night, { type: 'pack-night', open: false }).slot).toBeNull();
   });
 });
 
@@ -1226,23 +1256,26 @@ describe('the turn’s state: the line, the drafts, the answer', () => {
     expect(turnReducer(sent, { type: 'expired', seq: 201 })).toBe(sent);
   });
 
-  it('tells the night plate: sealed while sending and once in, open again with the words on a failure', () => {
+  it('tells the plate: shut and "sending" on its way, in once the server took it, open again with the words on a failure', () => {
     const sending = turnReducer(opened, { type: 'sending', seq: 201 });
-    expect(actSent(opened)).toEqual({ sent: null, sendError: null });
-    expect(actSent(sending)).toEqual({ sent: 'you', sendError: null });
+    expect(actSent(opened)).toEqual({ sent: null, sendError: null, sending: false });
+    expect(actSent(sending)).toEqual({ sent: 'you', sendError: null, sending: true });
     const act = (a: Parameters<typeof turnReducer>[1]) => actSent(turnReducer(sending, a));
     expect(act({ type: 'sent', seq: 201, delegated: false })).toEqual({
       sent: 'you',
       sendError: null,
+      sending: false,
     });
     expect(act({ type: 'sent', seq: 201, delegated: true }).sent).toBe('agent');
     expect(act({ type: 'send-failed', seq: 201, status: 409, message: 'x' })).toEqual({
       sent: 'closed',
       sendError: ALREADY_ANSWERED,
+      sending: false,
     });
     expect(act({ type: 'send-failed', seq: 201, status: 0, message: 'offline' })).toEqual({
       sent: null,
       sendError: 'offline',
+      sending: false,
     });
     expect(actSent(turnReducer(opened, { type: 'expired', seq: 201 })).sent).toBe('agent');
   });

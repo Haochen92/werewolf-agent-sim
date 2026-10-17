@@ -8,15 +8,18 @@ is prompt_inputs.py's job, and the wording of the prompts themselves lives in th
 modules (day_discuss.py, day_vote.py, night.py).
 """
 
+from Agents.prompts.roles import card
 from Agents.rules.board_clocks import alive_role_counts
 from Agents.schemas.roles import ROLE_SPECS, roles
 from Agents.rules.claim_ledger import format_claim_ledger, revealed_tag
 from Agents.schemas import RetrievedObservation, RetrievedStrategyPoint
+from Agents.schemas.deduction import OwnResultLine
 from Agents.schemas.game_events import (
     DayChannel,
     DaySummary,
     DayVote,
     DeathRecord,
+    DiscussionPassReason,
     InvestigatorResult,
     NightActionRecord,
     WolfChannel,
@@ -150,51 +153,84 @@ def format_accusations(discussion: list[DaySummary], dead_roster: list[DeathReco
                 entry += f" Defense: {a['defense']}"
             if a.get("disputed_by"):
                 entry += f" Disputed: {a['disputed_by']}"
-            if a.get("record_check"):
-                entry += f" Summariser's check against the record: {a['record_check']}"
             lines.append(entry)
     return "\n".join(lines)
 
 
-def format_night_actions(records: list[NightActionRecord], current_day: int | None = None) -> str:
-    """The actor's own night record, one line per night, written by the engine."""
+def format_night_actions(records: list[NightActionRecord], current_day: int | None = None,
+                         implications: list[OwnResultLine | None] | None = None) -> str:
+    """The actor's own night record, one line per night, written by the engine. `implications`
+    (Agents/deduction/own_results/, one entry per record) adds what each result implies, or
+    replaces the record's prose where the line says so (the roleblock)."""
     if not records:
         return "Nothing yet."
     verbs = {"protect": "you protected", "shoot": "you shot", "kill": "you attacked",
              "investigate": "you checked", "watch": "you watched", "follow": "you followed",
              "sigil": "you set a sigil on", "block": "you blocked", "bet": "you bet on"}
     lines = []
-    for r in records:
+    for i, r in enumerate(records):
         night = f"Night {r.day}" + (" (last night)" if current_day is not None and r.day == current_day - 1 else "")
+        implied = implications[i] if implications else None
+        outcome = r.outcome
+        if implied is not None:
+            outcome = implied.text if implied.replaces_outcome else f"{r.outcome} {implied.text}"
         if r.result == "roleblocked":
-            lines.append(f"{night}: {r.outcome}")
+            lines.append(f"{night}: {outcome}")
             continue
         if r.action == "hold_fire":
             lines.append(f"{night}: you held your fire.")
             continue
         if r.action in ("conceal", "pick"):
             # No player target of its own: the outcome says what was hidden, or picked.
-            lines.append(f"{night}: {r.outcome}")
+            lines.append(f"{night}: {outcome}")
             continue
         verb = "your pack attacked" if r.actor == "wolves" else verbs.get(r.action, f"you {r.action}")
-        lines.append(f"{night}: {verb} {r.target}. {r.outcome}")
+        lines.append(f"{night}: {verb} {r.target}. {outcome}")
     return "\n".join(lines)
 
 
-def format_wolf_channel(messages: list[WolfChannel]) -> str:
-    visible = [message for message in messages if not message.passed]
+def format_pack_roster(wolves: list[str], pack_roles: dict[str, str], viewer: str | None) -> str:
+    """The living pack, one wolf a line with its role and what the role does: "- player_1, the
+    Chanteuse: each night also blocks one player's night action." (The pack knows each other's
+    roles, owner 2026-10-17.)"""
+    lines = []
+    for wolf in wolves:
+        name = f"{wolf} (you)" if wolf == viewer else wolf
+        role = pack_roles.get(wolf)
+        if role is None:
+            lines.append(f"- {name}")
+            continue
+        role_card = card(role)
+        ability = role_card.lineup.removeprefix("a wolf; ")
+        lines.append(f"- {name}, the {role_card.name}: {ability}")
+    return "\n".join(lines)
+
+
+def _wolf_channel_line(m: WolfChannel, viewer: str | None) -> str:
+    stamp = f"[Day {m.day}, Round {m.round}]"
+    if m.passed:
+        # Shown so the speaker knows its partner heard it and has moved on (owner, 2026-10-17:
+        # with passes hidden the AI wolf restated its proposal every round).
+        if m.wolf == viewer:
+            return f"{stamp} You had nothing else to add."
+        if viewer:
+            return f"{stamp} Your wolf partner {m.wolf} has nothing else to add."
+        return f"{stamp} {m.wolf} has nothing else to add."
+    if not m.message:
+        return f"{stamp} {m.wolf} votes: {m.vote}"
+    ending = "" if m.message.endswith((".", "!", "?")) else "."
+    return f"{stamp} {m.wolf}: {m.message}{ending}" + (f"  vote: {m.vote}" if m.vote else "")
+
+
+def format_wolf_channel(messages: list[WolfChannel], viewer: str | None = None) -> str:
+    """The pack chat as `viewer` (a wolf's player_id) reads it; without one, as an observer."""
+    # A pass after a failed generation is not the wolf's choice, so it stays hidden.
+    visible = [m for m in messages if not m.passed or m.pass_reason == DiscussionPassReason.VOLUNTARY]
     if not visible:
         return "No messages yet."
     # Talk entries carry a message and vote="" (also GM whiff notes); binding-vote entries
-    # carry a vote and message="". Technical passes are observer-only and filtered above.
-    # Render each visible entry without the other's dangling suffix.
-    return "\n".join(
-        f"[Day {m.day}, Round {m.round}] {m.wolf} votes: {m.vote}"
-        if not m.message
-        else f"[Day {m.day}, Round {m.round}] {m.wolf}: {m.message}."
-        + (f"  vote: {m.vote}" if m.vote else "")
-        for m in visible
-    )
+    # carry a vote and message="".
+    return "\n".join(_wolf_channel_line(m, viewer) for m in visible)
 
 
 def format_investigator_results(results: list[InvestigatorResult], current_day: int | None = None) -> str:
