@@ -131,6 +131,7 @@ def _private_fields(state: DayGraphState, player: str, role: str) -> dict:
     fields: dict = {}
     if spec.pack:
         fields["surviving_wolves"] = state["surviving_wolves"]
+        fields["pack_roles"] = {wolf: state["roles"][wolf] for wolf in state["surviving_wolves"]}
         fields["surviving_villagers"] = state["surviving_villagers"]
         # Wolves carry their own night coordination + GM notes into day discuss/vote (their own
         # information; gated to wolves only — see check_wolf_channel_isolation).

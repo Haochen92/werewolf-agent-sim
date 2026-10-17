@@ -230,3 +230,15 @@ def test_leak_check_still_flags_town_entry():
     # Negative control: the channel in a non-wolf entry is still a leak.
     leaked = [_entry("t0", "sentinel", "day_votes", {"wolf_channel": [NOTE]})]
     assert check_wolf_channel_isolation(leaked) != []
+
+
+# --- (6) the pack knows each other's roles (owner, 2026-10-17) ----------------
+
+def test_a_wolf_day_payload_carries_the_pack_roles_and_a_town_payload_does_not():
+    state = _day_state()
+    wolf_payload = build_speaker_send(state, "w1", "illusionist", _fr()).arg
+    assert wolf_payload["pack_roles"] == {"w0": "chanteuse", "w1": "illusionist"}
+    assert "pack_roles" not in build_speaker_send(state, "t0", "sentinel", _fr()).arg
+    assert build_agent_prompt_input(wolf_payload)["pack_roster"] == (
+        "- w0, the Chanteuse: each night also blocks one player's night action.\n"
+        "- w1 (you), the Illusionist: twice per game may hide the role of the player the wolves killed.")

@@ -44,7 +44,8 @@ you.
 
 DISCUSS_CONTEXT = """
 Surviving non-wolf players (the town side, the lone killer, the neutral): {surviving_villagers}.
-Surviving allies: {surviving_wolves}.
+Your pack:
+{pack_roster}
 Your pack's night kills (private to the wolves; the public heard only the game master's
 announcements):
 {night_actions}
@@ -65,7 +66,8 @@ ally, and the night kills.
 
 VOTE_CONTEXT = """
 Surviving non-wolf players (the town side, the lone killer, the neutral): {surviving_villagers}
-Known surviving wolves: {surviving_wolves}
+Your pack:
+{pack_roster}
 Your pack's night kills (private to the wolves; the public heard only the game master's
 announcements):
 {night_actions}
@@ -118,7 +120,8 @@ Only surviving non-wolf players can be targeted, not yourself or your allies.
 
 CHAT_CONTEXT = """
 Surviving non-wolf players (the town side, the lone killer, the neutral): {surviving_villagers}
-Your wolf allies: {surviving_wolves}
+Your pack:
+{pack_roster}
 Tonight's carrier: {carrier}
 Your pack's night kills so far (private to the wolves):
 {night_actions}

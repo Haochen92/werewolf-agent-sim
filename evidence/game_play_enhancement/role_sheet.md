@@ -161,7 +161,7 @@ Two wolves share one kill each night. Each also has one skill.
 
 **Pack rules**
 
-- Wolves know each other and share a private wolf chat.
+- Wolves know each other and each other's roles, and share a private wolf chat (owner, 2026-10-17: roles added).
 - One wolf, the carrier, performs the kill and is the only wolf who visits for it. The carrier
   rotates through the living wolves in seat order; a lone wolf always carries. (Naming a
   different carrier in chat was in the draft and is not built: the rotation only, 2026-10-09.)

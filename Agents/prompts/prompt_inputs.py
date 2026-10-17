@@ -37,6 +37,7 @@ from Agents.prompts.prompt_formatters import (
     format_day_summaries,
     format_dead_roster,
     format_night_actions,
+    format_pack_roster,
     format_retrieved_observations,
     format_strategy_points,
     format_wolf_channel,
@@ -246,6 +247,8 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         "discussion_stage_rules": _discussion_stage_rules(payload),
         "surviving_players": ", ".join(payload.get("surviving_players", [])),
         "surviving_wolves": ", ".join(payload.get("surviving_wolves", [])),
+        "pack_roster": format_pack_roster(payload.get("surviving_wolves", []), payload.get("pack_roles", {}),
+                                          payload.get("player_id")),
         "surviving_villagers": ", ".join(payload.get("surviving_villagers", [])),
         # Night 1 only, the solo roles and the pack: the default drawn by lot (night_one_lot).
         "night_lot": night_one_lot(payload),

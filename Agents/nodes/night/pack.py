@@ -94,6 +94,7 @@ def _pack_payload(state: PackNightGraph, wolf: str) -> NightTurnState:
         "wolf_channel": state["wolf_channel"],
         "surviving_villagers": state["surviving_villagers"],
         "surviving_wolves": state["surviving_wolves"],
+        "pack_roles": {w: state["roles"][w] for w in state["surviving_wolves"]},
         "surviving_players": [p for p in [*state["surviving_wolves"], *state["surviving_villagers"]] if p != wolf],
         "carrier": state.get("carrier", ""),
         "wolves_target": state.get("wolves_target") or "",

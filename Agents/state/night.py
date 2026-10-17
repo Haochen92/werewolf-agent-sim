@@ -30,6 +30,8 @@ class NightTurnState(TypedDict, total=False):
     """Candidate targets: every living player except the actor."""
     surviving_wolves: list[str]
     """The pack, on a wolf's payload only."""
+    pack_roles: dict[str, str]
+    """The living wolves' roles, on a wolf's payload only (the pack knows each other's roles)."""
     surviving_villagers: list[str]
     """The non-wolves, on a wolf's payload only: the pack's candidate targets."""
     wolf_channel: list[WolfChannel]

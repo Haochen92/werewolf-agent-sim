@@ -8,6 +8,7 @@ is prompt_inputs.py's job, and the wording of the prompts themselves lives in th
 modules (day_discuss.py, day_vote.py, night.py).
 """
 
+from Agents.prompts.roles import card
 from Agents.rules.board_clocks import alive_role_counts
 from Agents.schemas.roles import ROLE_SPECS, roles
 from Agents.rules.claim_ledger import format_claim_ledger, revealed_tag
@@ -185,6 +186,23 @@ def format_night_actions(records: list[NightActionRecord], current_day: int | No
             continue
         verb = "your pack attacked" if r.actor == "wolves" else verbs.get(r.action, f"you {r.action}")
         lines.append(f"{night}: {verb} {r.target}. {outcome}")
+    return "\n".join(lines)
+
+
+def format_pack_roster(wolves: list[str], pack_roles: dict[str, str], viewer: str | None) -> str:
+    """The living pack, one wolf a line with its role and what the role does: "- player_1, the
+    Chanteuse: each night also blocks one player's night action." (The pack knows each other's
+    roles, owner 2026-10-17.)"""
+    lines = []
+    for wolf in wolves:
+        name = f"{wolf} (you)" if wolf == viewer else wolf
+        role = pack_roles.get(wolf)
+        if role is None:
+            lines.append(f"- {name}")
+            continue
+        role_card = card(role)
+        ability = role_card.lineup.removeprefix("a wolf; ")
+        lines.append(f"- {name}, the {role_card.name}: {ability}")
     return "\n".join(lines)
 
 
