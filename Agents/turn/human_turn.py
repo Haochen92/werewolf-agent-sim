@@ -34,8 +34,9 @@ def announce_human_turn(player_id: str, role: str, phase: str, day: int,
                         bodies: list[str] = ()) -> None:
     """Tell the server a human's turn is coming, before the step it sits in has ended.
 
-    A vote or a night action runs in one parallel step with the agents' siblings, and LangGraph
-    surfaces an ``interrupt()`` only when the whole step is done, so the human's prompt used to
+    A vote or a night action runs in one parallel step with the agents' siblings, and when that
+    step sits inside a subgraph (the day's, the pack's skills) LangGraph surfaces the
+    ``interrupt()`` at the root only when the whole step is done, so the human's prompt used to
     arrive after the agents had acted. Written from the routing edge that fans the step out, this
     reaches the server at once; the server opens the prompt and holds the answer until the
     interrupt arrives, which stays the point where the answer is taken (the checkpoint, recovery

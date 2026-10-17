@@ -467,8 +467,9 @@ def route_night_actors(state: OrchestratorGraph) -> list[str]:
 
     A human solo actor's turn is announced here (announce_human_turn), so their room opens as
     the night starts instead of after the slowest branch, the pack's whole talk, has ended
-    (2026-10-06). A human wolf is not announced: the pack's talk is sequential and prompts at
-    the turn."""
+    (2026-10-06). A human wolf is not announced here: the pack's talk and kill are sequential and
+    prompt at the turn, and its skill turn, parallel inside the pack, is announced in
+    pack_fan_out_skills."""
     alive_phases = []
     if state.get("surviving_wolves"):
         alive_phases.append("PACK_NIGHT_PHASE")
