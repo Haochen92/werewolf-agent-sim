@@ -163,6 +163,28 @@
   font-size: 16px;
   line-height: 1.6;
 }
+/* The two research questions share the reading column and the station's brass rules. */
+.researchThreads {
+  display: grid;
+  gap: 26px;
+  margin-block: 28px;
+}
+.researchThread {
+  padding-left: 20px;
+  border-left: 1px solid rgba(201, 150, 63, 0.35);
+}
+.researchThread h3 {
+  margin: 0 0 10px;
+  font-family: var(--font-garamond);
+  font-size: 25px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-wrap: balance;
+  color: var(--text);
+}
+.researchThread p {
+  margin-bottom: 0;
+}
 /* the turn from building the system to judging it: the one sentence in the text's own colour */
 .pivot {
   font-weight: 500;

@@ -135,36 +135,61 @@ export default function HomePage() {
         className={`${rooms.room} ${classes.closing}`}
         aria-labelledby="closing-head"
       >
-        {/* motivation, mechanism, the hard part, where it stands (owner, 2026-10-15) */}
-        <h2 id="closing-head">Can agents turn experience into better decisions?</h2>
+        {/* Two research threads: learning across games and reasoning within a game. */}
+        <h2 id="closing-head">Can smaller models become better players?</h2>
         <p>
-          Social deduction games like Werewolf put memory and reasoning under pressure:
-          agents must act on incomplete information while other players deliberately mislead
-          them. Without memory, every game starts from scratch: what the agents learned in
-          earlier games is lost.
+          Werewolf puts memory and reasoning under pressure. Agents must act on incomplete
+          information while other players deliberately mislead them. In our games, smaller
+          models also miss connections between clues, misread results and invent facts—even
+          when the evidence they need is already in front of them.
         </p>
         <p>
-          This project explores whether agents can build useful experience without
-          retraining their underlying models. Its memory pipeline extracts observations from
-          past games, consolidates them into strategies, and retrieves those relevant to a
-          new situation. It scores each strategy against the games where it was used, and
-          prunes those with poor records.
+          This project explores how experience and reasoning support can help them make
+          better decisions without retraining their underlying models.
         </p>
+        <div className={classes.researchThreads}>
+          <section
+            className={classes.researchThread}
+            aria-labelledby="memory-research-head"
+          >
+            <h3 id="memory-research-head">Learn from past games</h3>
+            <p>
+              A memory pipeline extracts observations from past games and uses a stronger
+              model to turn them into reusable strategies. Agents retrieve relevant lessons
+              when they face a new situation. The aim is to carry useful reasoning from a
+              stronger model into a smaller model&rsquo;s decisions, as well as preserve
+              experience across games.
+            </p>
+          </section>
+          <section
+            className={classes.researchThread}
+            aria-labelledby="deduction-research-head"
+          >
+            <h3 id="deduction-research-head">Connect the evidence in this game</h3>
+            <p>
+              Remembering a lesson still leaves the agent with deductions to make. Seeing
+              someone visit a player, for example, does not prove they healed them. We are
+              developing rule-based support that makes the implications of public events and
+              an agent&rsquo;s own results explicit, with player claims and conditional
+              conclusions identified as such.
+            </p>
+          </section>
+        </div>
         <p>
           <strong className={classes.pivot}>
-            The challenge is deciding what counts as a useful lesson.
+            The challenge is finding out which help actually improves decisions.
           </strong>{' '}
           A winning game can hide bad decisions, and a plausible reflection can reinforce
-          the wrong strategy. Recorded decisions, replay tools and controlled evaluations
-          make those failures inspectable.
+          the wrong strategy. Strategies are scored against games where they were used;
+          recorded decisions, replay tools and controlled evaluations let us inspect where
+          both memory and reasoning support help or fail.
         </p>
         {/* the state of the work, by the way to its evidence */}
         <div className={classes.standing}>
           <p>
-            The pipeline is built. Controlled experiments on earlier versions found both
-            gains and failures, and those findings shaped the current version, which
-            hasn&rsquo;t yet been tested at scale. Whether it improves play is still an open
-            question.
+            The memory pipeline is built, and deduction support is being developed and
+            tested. Earlier memory experiments found both gains and failures. Whether the
+            current system reliably improves play at scale remains an open question.
           </p>
           <Button
             component="a"
