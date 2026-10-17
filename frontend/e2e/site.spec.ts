@@ -376,6 +376,116 @@ test('ticket: a spent purse opens the key field and holds the ticket', async ({ 
   expect(posted).toBe(false);
 });
 
+/** `POST <path>` answered with `status` and `{detail}`, after `delay` ms (the key check's wait). */
+async function routeCreate(
+  page: Page,
+  path: string,
+  status: number,
+  detail: string,
+  delay = 0,
+) {
+  await page.route(`**${path}`, async (route) => {
+    const req = route.request();
+    if (req.resourceType() === 'document' || req.headers()['rsc']) return route.fallback();
+    const cors = {
+      'access-control-allow-origin': req.headers()['origin'] ?? '*',
+      'access-control-allow-credentials': 'true',
+      'access-control-allow-methods': 'POST, OPTIONS',
+      'access-control-allow-headers': 'content-type',
+    };
+    if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors });
+    if (req.method() !== 'POST') return route.fallback();
+    if (delay) await new Promise((done) => setTimeout(done, delay));
+    await route.fulfill({
+      status,
+      contentType: 'application/json',
+      headers: cors,
+      body: JSON.stringify({ detail }),
+    });
+  });
+}
+
+test('ticket: a key whose prefix names another company gets a hint, and clearing it lets the house pay', async ({
+  page,
+}) => {
+  await openTicket(page, '/play', 3);
+  await page.getByRole('button', { name: 'Use my own key instead' }).click();
+  const key = page.getByLabel('Your key');
+
+  // a plain sk-… could be OpenAI or DeepSeek: no hint, the server decides
+  await key.fill('sk-abc123');
+  await expect(page.getByText(/needs a Google key/)).toHaveCount(0);
+
+  await key.fill('sk-ant-abc123');
+  await expect(
+    page.getByText(
+      'An Anthropic key. Gemini 3.5 Flash-Lite needs a Google key (AIza…). Clear it and the house pays.',
+    ),
+  ).toBeVisible();
+  // the hint never holds the ticket
+  await expect(page.getByRole('button', { name: 'Start the game' })).toBeEnabled();
+
+  // a model the house does not pay for: no house sentence
+  await page.getByLabel('Model', { exact: true }).click();
+  await page.getByRole('option', { name: /DeepSeek V4 Pro/ }).click();
+  await expect(
+    page.getByText('An Anthropic key. DeepSeek V4 Pro needs a DeepSeek key (sk-…).', {
+      exact: true,
+    }),
+  ).toBeVisible();
+
+  await page.getByRole('button', { name: 'Clear the key' }).click();
+  await expect(key).toHaveValue('');
+  await expect(page.getByText(/An Anthropic key\./)).toHaveCount(0);
+});
+
+test('ticket: a refused key is said under the key field while the plate checks, then cleared by editing', async ({
+  page,
+}) => {
+  const REFUSED = 'Google refused this key: 400, API key not valid.';
+  await routeCreate(page, '/games', 422, REFUSED, 800);
+  await openTicket(page, '/play', 3);
+  await page.getByRole('button', { name: 'Use my own key instead' }).click();
+  const key = page.getByLabel('Your key');
+  await key.fill('AIzaWrongKey');
+  await page.getByRole('button', { name: 'Start the game' }).click();
+
+  // the check: the plate becomes the small train, the fields lock
+  await expect(
+    page.getByRole('status').filter({ hasText: 'Checking your key with Google…' }),
+  ).toBeVisible();
+  await expect(key).toBeDisabled();
+
+  const refusal = page.getByRole('alert').filter({ hasText: REFUSED });
+  await expect(refusal).toBeVisible();
+  await expect(refusal).toContainText(
+    'Check the key and its credit, or clear it and the house pays.',
+  );
+  await expect(key).toHaveAttribute('aria-invalid', 'true');
+  await expect(key).toBeFocused();
+  await expect(page.getByText('The game could not be started')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Start the game' })).toBeVisible();
+
+  await key.fill('AIzaAnotherKey');
+  await expect(refusal).toHaveCount(0);
+  await expect(key).not.toHaveAttribute('aria-invalid', 'true');
+});
+
+test('ticket: any other refusal keeps the stub’s alert', async ({ page }) => {
+  await routeCreate(page, '/games', 422, 'model: not on the menu');
+  await openTicket(page, '/play', 3);
+  await page.getByRole('button', { name: 'Use my own key instead' }).click();
+  const key = page.getByLabel('Your key');
+  await key.fill('AIzaSomeKey');
+  await page.getByRole('button', { name: 'Start the game' }).click();
+
+  const alert = page
+    .getByRole('alert')
+    .filter({ hasText: 'The game could not be started' });
+  await expect(alert).toContainText('model: not on the menu');
+  await expect(key).not.toHaveAttribute('aria-invalid', 'true');
+});
+
 test('ticket: /rooms/new opens a room and goes to it', async ({ page }) => {
   const ROOM = 'b7d1c0de-0000-4000-8000-00000000abcd';
   let sent: Record<string, unknown> | null = null;

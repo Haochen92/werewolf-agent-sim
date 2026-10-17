@@ -15,8 +15,9 @@
  * Both send the model, the agents' memory (off by default) and the key. Whether a key is needed
  * is the house's call, per model (`KeyRow`, `house.ts`). The two hung tags at the top are doors
  * between the two pages. States: loading the menu, idle, a key missing (the ticket is held and
- * the key field says why), submitting (the button is busy), and a server refusal (an alert on
- * the stub); success is the redirect.
+ * the key field says why), submitting (the fields lock; with a key, the server asks the provider
+ * first, 1–3 s, and the plate becomes the house train running in place), a refused key (under
+ * the key field) and any other server refusal (an alert on the stub); success is the redirect.
  *
  * Left out, because the wire has no field for them yet: the turn clock, watchers, and locking
  * the room at creation (a locked room admits nobody, the host included, so the host locks it
@@ -29,10 +30,12 @@ import { Alert, Select, Switch, TextInput } from '@mantine/core';
 import { createGame, createRoom, getModels } from '@/lib/api';
 import { departures } from '@/lib/departures';
 import { formatCost } from '@/lib/format';
+import { keyRefusal, modelProvider, PROVIDERS } from '@/lib/key-provider';
 import { hostKey, seatToken } from '@/lib/storage';
 import { queryKeys } from '@/lib/queryKeys';
 import { Button, HangTag, Icon, Paper, StationWall, wallPage } from '@/components/site';
 import { PuppetPicker } from '@/components/PuppetPicker';
+import { TrainDrawing } from '@/components/TrainLoader';
 import { useCharacters } from '@/hooks/useCharacters';
 import { CARD_TEXT } from '@/stage/card-text';
 import type { PoolRole } from '@/types/contracts';
@@ -130,9 +133,19 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
     onSuccess: (gameId) => router.push(`/games/${gameId}`),
   });
 
+  // A key the provider refused is shown under the key field, not in the stub's alert; a new key
+  // or another model makes it stale.
+  const refusal = keyRefusal(create.error);
+  useEffect(() => {
+    if (refusal) keyInput.current?.focus();
+  }, [refusal]);
+  const checking = create.isPending && apiKey.trim() !== '';
+  const provider = modelProvider(model);
+
   const onKeyChange = (next: string) => {
     setApiKey(next);
     if (next.trim()) setKeyError(null);
+    if (refusal) create.reset();
   };
 
   const submit = (e: FormEvent) => {
@@ -189,7 +202,8 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
         aria-busy={create.isPending}
         aria-labelledby={`${ids}-heading`}
       >
-        <div className={classes.body}>
+        {/* a native fieldset, so one switch locks every control while the request is out */}
+        <fieldset className={classes.body} disabled={create.isPending}>
           <h2 id={`${ids}-heading`} className={classes.heading}>
             {copy.heading}
           </h2>
@@ -308,7 +322,11 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
                 id={`${ids}-model`}
                 data={modelGroups(menu?.models ?? [])}
                 value={model || null}
-                onChange={(next) => next && setModel(next)}
+                onChange={(next) => {
+                  if (!next) return;
+                  setModel(next);
+                  if (refusal) create.reset();
+                }}
                 allowDeselect={false}
                 disabled={!menu}
                 placeholder={models.isError ? 'The server’s default' : 'Reading the menu…'}
@@ -373,6 +391,7 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
             value={apiKey}
             onChange={onKeyChange}
             error={keyError}
+            refusal={refusal}
           />
 
           {kind === 'room' ? (
@@ -392,7 +411,7 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
               </div>
             </div>
           ) : null}
-        </div>
+        </fieldset>
 
         <div className={classes.stub}>
           <span className={classes.punch} aria-hidden="true" />
@@ -437,7 +456,7 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
           ) : null}
 
           <div className={classes.go}>
-            {create.error ? (
+            {create.error && !refusal ? (
               <Alert
                 title={copy.failed}
                 withCloseButton
@@ -449,15 +468,24 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
                 {create.error.message || 'The server did not answer.'}
               </Alert>
             ) : null}
-            <Button
-              type="submit"
-              variant="plate"
-              size="lg"
-              fullWidth
-              loading={create.isPending}
-            >
-              {copy.submit}
-            </Button>
+            {checking ? (
+              <div className={classes.checking} role="status">
+                <TrainDrawing tone="paper" className={classes.checkingTrain} />
+                <span>
+                  Checking your key{provider ? ` with ${PROVIDERS[provider].name}` : ''}…
+                </span>
+              </div>
+            ) : (
+              <Button
+                type="submit"
+                variant="plate"
+                size="lg"
+                fullWidth
+                loading={create.isPending}
+              >
+                {copy.submit}
+              </Button>
+            )}
             <p className={classes.fine}>{copy.fine}</p>
           </div>
         </div>

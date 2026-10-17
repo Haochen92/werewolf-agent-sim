@@ -184,6 +184,41 @@ function Line() {
 
 const PUFFS = [0, 1, 2, 3, 4];
 
+/**
+ * The train alone, running in place on its sliding ties. Also drawn small on the ticket
+ * office's start plate while a key is checked (`tone="paper"`: ink on cream); still under
+ * reduced motion wherever it is.
+ */
+export function TrainDrawing({ tone, className }: { tone?: 'paper'; className?: string }) {
+  return (
+    <svg
+      viewBox={`0 4 ${W} 126`}
+      aria-hidden="true"
+      className={className ? `${classes.drawing} ${className}` : classes.drawing}
+      data-tone={tone}
+    >
+      <Line />
+      <g className={classes.bob}>
+        <Car x={8} w={110} />
+        <Bellows x={118} />
+        <Car x={126} w={130} dining />
+        <Bellows x={256} />
+        <Engine x={264} />
+      </g>
+      {PUFFS.map((i) => (
+        <circle
+          key={i}
+          className={classes.puff}
+          style={{ animationDelay: `${-i * 0.28}s` }}
+          cx={406}
+          cy={40 + (i % 2) * 3}
+          r={6}
+        />
+      ))}
+    </svg>
+  );
+}
+
 export function TrainLoader({
   leaving = false,
   atOnce = false,
@@ -204,26 +239,7 @@ export function TrainLoader({
           <div className={classes.far} />
         </div>
         <div className={classes.lock}>
-          <svg viewBox={`0 4 ${W} 126`} aria-hidden="true">
-            <Line />
-            <g className={classes.bob}>
-              <Car x={8} w={110} />
-              <Bellows x={118} />
-              <Car x={126} w={130} dining />
-              <Bellows x={256} />
-              <Engine x={264} />
-            </g>
-            {PUFFS.map((i) => (
-              <circle
-                key={i}
-                className={classes.puff}
-                style={{ animationDelay: `${-i * 0.28}s` }}
-                cx={406}
-                cy={40 + (i % 2) * 3}
-                r={6}
-              />
-            ))}
-          </svg>
+          <TrainDrawing />
           <span className={classes.caption} aria-hidden="true">
             The Ninth Express
           </span>

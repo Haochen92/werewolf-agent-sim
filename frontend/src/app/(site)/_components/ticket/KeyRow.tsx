@@ -9,6 +9,10 @@
  * the field too, since it will be sent. (The mockup shows the key as always required, which
  * would turn away every visitor the house would have paid for.)
  *
+ * A key whose prefix names another company than the model's gets a hint as it is typed
+ * (`lib/key-provider`); it never holds the ticket, since the server checks the key with the
+ * provider anyway, and a refusal from that check is shown here, under the field it is about.
+ *
  * The key's words follow the server: it is sent once with the create request, held in memory
  * for that game only, and lost only if the server restarts, after which the game waits for a
  * player to enter a key again (`POST /games/{id}/key`, the restart card).
@@ -18,6 +22,7 @@ import { Switch, TextInput } from '@mantine/core';
 import { useRememberedKey } from '@/hooks/useRememberedKey';
 import type { ModelsMenu } from '@/types/contracts';
 import { Button, Icon } from '@/components/site';
+import { keyHint } from '@/lib/key-provider';
 import { houseLine } from './house';
 import type { TicketKind } from './TicketOffice';
 import classes from './Ticket.module.css';
@@ -36,16 +41,22 @@ interface KeyRowProps {
   onChange: (key: string) => void;
   /** Set when the ticket was punched without a key it needed. */
   error: string | null;
+  /** The provider's words when the server's check refused the key. */
+  refusal: string | null;
 }
 
 export const KeyRow = forwardRef<HTMLInputElement, KeyRowProps>(function KeyRow(
-  { kind, menu, menuFailed, model, required, value, onChange, error },
+  { kind, menu, menuFailed, model, required, value, onChange, error, refusal },
   ref,
 ) {
   const key = useRememberedKey(value, onChange);
   const [ownKey, setOwnKey] = useState(false);
   const open = required || ownKey || menuFailed || value !== '';
   const line = menu ? houseLine(menu, model) : '';
+  const row = menu?.models.find((r) => r.model === model);
+  // what clearing the key would mean: the house runs this model right now
+  const housePays = !!row?.house_funded && !required;
+  const hint = keyHint(value, model, row?.label ?? 'This model', housePays);
 
   return (
     <div className={classes.fld}>
@@ -80,15 +91,30 @@ export const KeyRow = forwardRef<HTMLInputElement, KeyRowProps>(function KeyRow(
                 placeholder={required ? 'Paste an API key' : 'Paste an API key (optional)'}
                 autoComplete="off"
                 spellCheck={false}
-                error={error}
+                error={
+                  error ??
+                  (refusal ? (
+                    <>
+                      <span className={classes.refusal}>{refusal}</span>
+                      <span className={classes.refusalHow}>
+                        {housePays
+                          ? 'Check the key and its credit, or clear it and the house pays.'
+                          : 'Check the key and its credit.'}
+                      </span>
+                    </>
+                  ) : null)
+                }
+                errorProps={refusal ? { role: 'alert' } : undefined}
                 aria-required={required}
                 classNames={{
                   root: classes.lineRoot,
-                  input: `${classes.line} ${classes.keyInput}`,
+                  input: `${classes.line} ${classes.keyInput}${hint ? ` ${classes.lineHint}` : ''}`,
                   error: classes.lineError,
                 }}
               />
-              {key.loadedFromStorage ? (
+              {/* a hint's "Clear the key" forgets a saved key too (a wrong key kept would come
+                  back on the next visit), so this button steps aside */}
+              {key.loadedFromStorage && !hint ? (
                 <Button
                   type="button"
                   variant="text"
@@ -98,6 +124,28 @@ export const KeyRow = forwardRef<HTMLInputElement, KeyRowProps>(function KeyRow(
                 >
                   Forget the saved key
                 </Button>
+              ) : null}
+            </div>
+            <div aria-live="polite">
+              {hint ? (
+                <div className={classes.keyHint}>
+                  <p className={classes.keyHintLine}>
+                    <Icon name="i-key" size={16} />
+                    <span>
+                      {hint.lead} (<code>{hint.prefix}</code>).
+                      {hint.tail ? ` ${hint.tail}` : null}
+                    </span>
+                  </p>
+                  <Button
+                    type="button"
+                    variant="text"
+                    size="sm"
+                    className={classes.hintButton}
+                    onClick={key.clearSaved}
+                  >
+                    Clear the key
+                  </Button>
+                </div>
               ) : null}
             </div>
             <Switch

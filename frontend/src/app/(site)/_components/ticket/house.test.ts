@@ -33,6 +33,7 @@ const menu = (house: Partial<ModelsMenu['house']> = {}): ModelsMenu => ({
     reset_at: '2026-09-27T00:00:00Z',
     ...house,
   },
+  memory_available: false,
 });
 
 describe('needsKey', () => {

@@ -63,15 +63,26 @@
   clip-path: inset(50%);
 }
 
-/* the drawing's colours: cream on the dark, amber where a lamp is lit */
+/* the drawing's colours: cream on the dark, amber where a lamp is lit; on paper (the ticket's
+   start plate) ink on cream, its cut-outs the plate's own colour */
+.drawing {
+  --train-body: var(--bone);
+  --train-snow: #fff;
+  --train-cut: var(--ink-900);
+}
+.drawing[data-tone='paper'] {
+  --train-body: var(--ink);
+  --train-snow: #fbf3df;
+  --train-cut: #efe2c2;
+}
 .body {
-  fill: var(--bone);
+  fill: var(--train-body);
 }
 .snowcap {
-  fill: #fff;
+  fill: var(--train-snow);
 }
 .dark {
-  fill: var(--ink-900);
+  fill: var(--train-cut);
 }
 .lit {
   fill: var(--amber);
@@ -81,12 +92,12 @@
 }
 .cut {
   fill: none;
-  stroke: var(--ink-900);
+  stroke: var(--train-cut);
   stroke-width: 1.6;
   stroke-linecap: round;
 }
 .puff {
-  fill: var(--bone);
+  fill: var(--train-body);
 }
 
 /* the train's motion: the wheels turn, the rod goes round with them (a circle from two eased
@@ -203,7 +214,8 @@
 
 /* less motion: the picture stands still (the fade in and out stay; they move nothing) */
 @media (prefers-reduced-motion: reduce) {
-  .veil * {
+  .veil *,
+  .drawing * {
     animation: none !important;
   }
   .puff {
