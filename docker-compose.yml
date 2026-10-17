@@ -51,6 +51,9 @@ services:
       args:
         # Baked into the client bundle at build time — same-origin behind Caddy.
         NEXT_PUBLIC_API_BASE_URL: /api
+        # Where the browser's crash reports go (frontend/src/instrumentation-client.ts): public by
+        # design (it can only send errors to the project), the same project as SENTRY_DSN.
+        NEXT_PUBLIC_SENTRY_DSN: https://3c689b3f475331a3114ccfdc33eab8c7@o4512270888337408.ingest.de.sentry.io/4512271120924752
     container_name: wolf-frontend
     restart: unless-stopped
     environment:
