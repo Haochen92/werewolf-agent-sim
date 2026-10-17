@@ -11,12 +11,14 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from server.config import server_settings
+from server.error_reporting import init_error_reporting
 from server.housekeeping.catalog_refresh import catalog_dsn, refresh_catalog, run_catalog_refresh
 from server.housekeeping.recovery import recover_registry
 from server.resources import app_resources
@@ -69,6 +71,7 @@ def _configure_logging() -> None:
 def create_app() -> FastAPI:
     """Create the API application and register each domain router."""
     _configure_logging()
+    init_error_reporting()  # before the app exists, so the FastAPI integration hooks it
     app = FastAPI(title="werewolf-agent-sim server", lifespan=lifespan)
     app.add_middleware(
         CORSMiddleware,
