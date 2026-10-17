@@ -139,9 +139,31 @@ def shutter() -> None:
     })
 
 
+def carriage_frame(master: str, hole: tuple[int, int, int, int], name: str) -> None:
+    """A carriage picture for the landing (owner 2026-10-17: cream and walnut felt, gold stitching,
+    a quilted snowy roof), drawn as a 9-slice round the game's window (Carriage.module.css
+    `.paint`). The window is cut clean: inside the rim's inner edge (`hole`: x0, y0, x1, y1, master
+    px, a few px inside the measured edge so the stage overlaps the rim) nothing is left, so no
+    fringe shows round the game; the stage covers the hole."""
+    im = np.asarray(Image.open(MASTERS / master).convert('RGBA')).astype(float)
+    im[hole[1] : hole[3], hole[0] : hole[2], 3] = 0
+    a = im[..., 3]
+    im[..., 3] = np.where(a < 96, 0, np.where(a > 200, 255, a))
+    im[im[..., 3] == 0, :3] = 0
+    out = Image.fromarray(im.round().astype(np.uint8), 'RGBA')
+    dest = ROOT / f'src/assets/sprites/carriage/{name}'
+    out.save(dest, 'WEBP', quality=75, alpha_quality=100, method=6)
+    print(f'  carriage/{name}: {out.width}×{out.height}, {dest.stat().st_size / 1024:.0f} KB; '
+          f'slices {hole[1]} {out.width - hole[2]} {out.height - hole[3]} {hole[0]}')
+
+
 if __name__ == '__main__':
     print('stand'); stand()
     print('table'); table()
     print('plate'); plate()
     print('glass'); glass('jar-glass-on-black.png', 'jar-glass.webp'); glass('jar-lid-on-black.png', 'jar-lid.webp')
     print('shutter'); shutter()
+    print('carriage')
+    # the desktop's carriage, and the phone's own (thin posts, the window near the screen's width)
+    carriage_frame('carriage.png', (226, 262, 1312, 674), 'frame-felt.webp')
+    carriage_frame('carriage-phone.png', (130, 264, 1406, 692), 'frame-felt-phone.webp')

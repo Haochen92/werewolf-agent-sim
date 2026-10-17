@@ -889,3 +889,109 @@
 .depot[data-art] .gang {
   background: var(--art-bellows) center 0 / 24px 100px repeat-y;
 }
+
+/* ---------- the felt carriage (owner 2026-10-17): one picture, a 9-slice ----------
+   The whole carriage (a quilted snowy roof, cream and walnut felt lined in gold stitch, riveted
+   posts, wheels) is one painted picture, its window cut out, laid round the game's window from
+   outside and under the glass, so it never paints over the moving stage. `--k` is one picture
+   pixel on screen: the corners and the strips above and below keep their painted proportions,
+   and only the window's sides stretch, to the game's 16:9. A desktop draws SPRITES.carriage.felt
+   (window 226–1312 across, 262–674 down, of 1536×1024); a phone its own twin, `feltPhone`, whose
+   posts are thin so the window keeps nearly the screen's width (window 130–1406 across, 264–692
+   down; the body, 46–1490 across, fills the screen). The CSS carriage stays in the flow, hidden,
+   to hold the room above and below the window. Only the picture a screen uses is fetched. */
+.paint {
+  display: none;
+}
+@media (min-width: 861px) {
+  .depot[data-art] {
+    /* the picture's width on screen; the window is its hole, 1086 of its 1536 px */
+    --pw: min(1300px, 100vw - 24px);
+    --k: calc(var(--pw) / 1536);
+    --gw: calc(var(--k) * 1086);
+    --gh: calc(var(--gw) * 9 / 16);
+    --felt: var(--art-felt);
+    --st: 262;
+    --sr: 224;
+    --sb: 350;
+    --sl: 226;
+    /* the roof's clear top, and the row where the platform's edge crosses the wheels */
+    --clear: 75;
+    --cross: 935;
+  }
+}
+@media (max-width: 860px) {
+  .depot[data-art] {
+    /* the carriage's body, 1444 picture px, fills the screen */
+    --k: calc(100vw / 1444);
+    --gw: calc(var(--k) * 1276);
+    --gh: calc(var(--gw) * 9 / 16);
+    --felt: var(--art-feltPhone);
+    --st: 264;
+    --sr: 130;
+    --sb: 332;
+    --sl: 130;
+    --clear: 73;
+    --cross: 925;
+  }
+}
+.depot[data-art] .paint {
+  display: block;
+  position: absolute;
+  /* under the glass, which follows it in the window's own layer (not -1: a picture behind its
+     layer made Chromium's full-page capture think the signboard had scrolled away) */
+  z-index: 0;
+  top: calc(var(--k) * var(--st) * -1);
+  right: calc(var(--k) * var(--sr) * -1);
+  bottom: calc(var(--k) * var(--sb) * -1);
+  left: calc(var(--k) * var(--sl) * -1);
+  border-style: solid;
+  border-width: calc(var(--k) * var(--st)) calc(var(--k) * var(--sr))
+    calc(var(--k) * var(--sb)) calc(var(--k) * var(--sl));
+  border-image-source: var(--felt);
+  border-image-slice: var(--st) var(--sr) var(--sb) var(--sl);
+  border-image-repeat: stretch;
+  pointer-events: none;
+}
+/* the CSS carriage gives way: its room above the window (the roof, under the board) and below
+   (the lower panel and the wheels) is the picture's, its drawing hidden */
+.depot[data-art] .roof,
+.depot[data-art] .cantrail,
+.depot[data-art] .lights,
+.depot[data-art] .gang,
+.depot[data-art] .under,
+.depot[data-art] .door,
+.depot[data-art] .grab,
+.depot[data-art] .body::after {
+  visibility: hidden;
+}
+.depot[data-art] .roof,
+.depot[data-art] .cantrail,
+.depot[data-art] .under {
+  height: 0;
+}
+.depot[data-art] .band {
+  /* the picture's roof above the window, less its clear top */
+  padding: calc(var(--k) * (var(--st) - var(--clear))) 0 0;
+  background: none;
+}
+.depot[data-art] .lower {
+  /* the picture below the window, down to where the platform's edge crosses the wheels (over
+     their lower third); the platform is lifted over the picture for it */
+  height: calc(var(--k) * (var(--cross) - (1024 - var(--sb))) + 30px);
+  background: none;
+}
+.depot[data-art] .lower::before {
+  display: none;
+}
+.depot[data-art] .platform {
+  z-index: 4;
+}
+.depot[data-art] .below,
+.depot[data-art] .mui {
+  z-index: 5;
+}
+.depot[data-art] .glass {
+  border-image: none;
+  box-shadow: none;
+}

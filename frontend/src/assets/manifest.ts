@@ -106,6 +106,8 @@ import carriageFrame from './sprites/carriage/frame.webp';
 import carriageBogie from './sprites/carriage/bogie.webp';
 import carriageSolebar from './sprites/carriage/solebar.webp';
 import carriageBellows from './sprites/carriage/bellows.webp';
+import carriageFelt from './sprites/carriage/frame-felt.webp';
+import carriageFeltPhone from './sprites/carriage/frame-felt-phone.webp';
 import windowDayFar from './sprites/window/day-far.webp';
 import windowDayNear from './sprites/window/day-near.webp';
 import windowDuskFar from './sprites/window/dusk-far.webp';
@@ -364,7 +366,10 @@ export type StationPicture = 'sky' | 'floor' | 'post' | 'lamp' | 'train' | 'blin
 /**
  * The landing carriage's pieces, cut from the waiting room's train (scripts/cut-carriage.mjs),
  * each at the painting's own pixels and shown at half size: the roof's bay, the brass rail, a
- * seamless teak tile, the window's brass rim (a 9-slice), a bogie, the solebar and the bellows.
+ * seamless teak tile, the window's brass rim (a 9-slice), a bogie, the solebar and the bellows;
+ * and `felt`, the whole cream felt carriage drawn round the window (2026-10-17,
+ * scripts/fit_felt_props.py `carriage_frame`), with `feltPhone`, its phone-shaped twin (thin
+ * posts, the window near the screen's width).
  */
 export type CarriagePicture =
   | 'roof'
@@ -373,7 +378,9 @@ export type CarriagePicture =
   | 'frame'
   | 'bogie'
   | 'solebar'
-  | 'bellows';
+  | 'bellows'
+  | 'felt'
+  | 'feltPhone';
 
 /**
  * The country behind the dining car's window (FeltWindow): per hour, the far sky and hills, and
@@ -616,6 +623,8 @@ export const SPRITES: {
     bogie: carriageBogie,
     solebar: carriageSolebar,
     bellows: carriageBellows,
+    felt: carriageFelt,
+    feltPhone: carriageFeltPhone,
   },
   window: {
     day: { far: windowDayFar, near: windowDayNear },

@@ -291,6 +291,8 @@ export function FeaturedReplay() {
           <div className={classes.cantrail} aria-hidden="true" />
           <div className={classes.band}>
             <div className={classes.gwin}>
+              {/* the felt carriage, one picture round the window, under the glass */}
+              <span className={classes.paint} aria-hidden="true" />
               <div className={classes.lights} aria-hidden="true">
                 {Array.from({ length: 7 }, (_, i) => (
                   <i key={i} />
