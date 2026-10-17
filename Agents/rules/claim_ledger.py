@@ -31,6 +31,9 @@ from Agents.schemas.roles import ROLE_SPECS, WOLVES, roles as ROLES
 _SAVE = re.compile(r"(\S+) was attacked by [^!.]*? but was saved by the healer")
 # A save through the dead healer's body (owner, 2026-10-16): the necromancer's, not a living healer's.
 _REANIMATED_SAVE = re.compile(r"(\S+) was attacked by [^!.]*? but was saved by a reanimated healer")
+# A fortune teller's self-bet that stopped an attack (owner, 2026-10-17, catalogue R10): it takes
+# priority over a protection, so a healer on that player saved nothing.
+_SELF_BET_SAVE = re.compile(r"(\S+) was attacked by [^!.]*? but survived: the fortune teller's self-bet saved them")
 _NIGHT = re.compile(r"^Night of day (\d+):")
 
 _VERBS = {"no_action": "did not act", "investigate": "checked", "protect": "protected", "shoot": "shot", "kill": "attacked",
@@ -103,10 +106,12 @@ class RecordFacts:
     """The public cast census; {} when unknown (then no claim is checked against it)."""
     reanimated_saves: set[tuple[int, str]] = frozenset()
     """(night, player) for every save announced as made by a reanimated healer."""
+    self_bet_saves: set[tuple[int, str]] = frozenset()
+    """(night, player) for every attack announced as stopped by the fortune teller's self-bet."""
 
 
 def record_facts(summaries: list[DaySummary], dead_roster=(), cast_role_counts=None) -> RecordFacts:
-    saves, reanimated, nights = set(), set(), set()
+    saves, reanimated, self_bets, nights = set(), set(), set(), set()
     for s in summaries:
         if s.source != "game_master" or not (m := _NIGHT.match(s.summary.strip())):
             continue
@@ -114,8 +119,9 @@ def record_facts(summaries: list[DaySummary], dead_roster=(), cast_role_counts=N
         nights.add(night)
         saves |= {(night, p) for p in _SAVE.findall(s.summary)}
         reanimated |= {(night, p) for p in _REANIMATED_SAVE.findall(s.summary)}
+        self_bets |= {(night, p) for p in _SELF_BET_SAVE.findall(s.summary)}
     return RecordFacts({d.player: d for d in dead_roster or []}, saves, nights, dict(cast_role_counts or {}),
-                       reanimated)
+                       reanimated, self_bets)
 
 
 def _entry(c: dict) -> tuple[str, list[dict]]:
@@ -393,6 +399,11 @@ def action_checks(player: str, a: ClaimedAction, facts: RecordFacts, role: str |
                 notes.append(Check(fact + ", as a necromancer's protection would be.", True))
             else:
                 notes.append(Check(fact + ".", None))
+        elif (a.night, a.target) in facts.self_bet_saves:
+            # The self-bet takes priority over a protection: the record contradicts only a claim to
+            # have saved them.
+            fact = f"Record: {a.target} was saved that night by the fortune teller's self-bet, not by a protection"
+            notes.append(Check(fact + ".", False if a.result == "saved_from_attack" else None))
         elif a.result == "saved_from_attack":
             notes.append(Check(f"Record: no save of {a.target} was announced that night.", False))
     elif a.action in ("shoot", "kill"):

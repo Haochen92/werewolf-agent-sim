@@ -426,6 +426,30 @@ def test_a_reanimated_healers_save_claimed_without_a_role_is_stated_without_a_ve
     assert "no save of p1 was announced" not in text
 
 
+_SELF_BET = "Night of day 1: p1 was attacked by the serial killer but survived: the fortune teller's self-bet saved them."
+
+
+def _protection_of_p1(result):
+    from Agents.rules.claim_ledger import ledger_rows
+    rows = ledger_rows([_gm(_SELF_BET, 1), _day(2, [_claim("p4", "healer", (1, "protect", "p1", result))])])
+    (row,) = rows
+    (entry,) = row.entries
+    return entry.checks
+
+
+def test_a_save_claimed_on_a_self_bet_night_does_not_fit():
+    # Owner, 2026-10-17 (R10): the fortune teller's self-bet takes priority over a protection, so the
+    # healer saved nothing; the note says what did, not "no save was announced".
+    (check,) = _protection_of_p1("saved_from_attack")
+    assert check.fits is False
+    assert check.text == "Record: p1 was saved that night by the fortune teller's self-bet, not by a protection."
+
+
+def test_a_protection_claimed_without_a_save_on_a_self_bet_night_is_stated_without_a_verdict():
+    (check,) = _protection_of_p1("not_said")
+    assert check.fits is None and "fortune teller's self-bet" in check.text
+
+
 def _watch(player, role, night, target, seen, day):
     # Schema-valid, as the summariser writes it: a named sighting has result not_said and the names in
     # seen; "no one" is no_visitors with seen empty (review 2026-10-16: "seen" is not a legal result).
