@@ -56,6 +56,18 @@ def _provider_family(model: str) -> str:
     return model.split("/", 1)[0] if "/" in model else "google"
 
 
+_PROVIDER_NAMES = {"anthropic": "Anthropic", "openai": "OpenAI", "deepseek": "DeepSeek",
+                   "google": "Google"}
+
+
+def provider_name(model: str) -> str:
+    """The company a model id's key belongs to, as a player knows it (Anthropic, OpenAI…)."""
+    if not model:
+        return "The model provider"
+    family = _provider_family(model)
+    return _PROVIDER_NAMES.get(family, family)
+
+
 def _game_key_for(family: str) -> str:
     """The BYOK key, iff the game's selected model belongs to this provider family."""
     override = GAME_LLM.get()
