@@ -68,6 +68,8 @@ export interface PackChatProps {
     cue?: string;
     /** Pass the round (the ten-seat chat ends once every wolf passed a round). */
     onPass?: () => void;
+    /** "Let my agent talk": the round goes to the seat's agent. */
+    onAgent?: () => void;
     /** The request this line answers: a new one starts the box afresh. */
     seq?: number;
     /** The line (or the pass) is on its way, or in: the box and both buttons are shut. */
@@ -190,6 +192,7 @@ export function SayLine({
   draft,
   onSay,
   onPass,
+  onAgent,
   left,
   note,
   cue,
@@ -236,6 +239,19 @@ export function SayLine({
           }}
         >
           Pass
+        </button>
+      ) : null}
+      {onAgent ? (
+        <button
+          type="button"
+          disabled={shut}
+          onClick={() => {
+            if (shut) return;
+            setPressed(true);
+            onAgent();
+          }}
+        >
+          Let my agent talk
         </button>
       ) : null}
       {error ? (

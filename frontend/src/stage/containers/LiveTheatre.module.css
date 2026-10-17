@@ -19,8 +19,7 @@
   color: var(--bone2);
 }
 
-.onward,
-.handOver {
+.onward {
   position: absolute;
   z-index: 6;
   font: inherit;
@@ -37,17 +36,6 @@
 .onward {
   right: 22.4px;
   bottom: 19.2px;
-}
-/* a prompt's hand-over: centred under the top strip, clear of the rooms' own controls */
-.handOver {
-  left: 50%;
-  top: 19.2px;
-  transform: translateX(-50%);
-  color: var(--bone2);
-}
-.handOver:disabled {
-  opacity: 0.45;
-  cursor: default;
 }
 
 .error {

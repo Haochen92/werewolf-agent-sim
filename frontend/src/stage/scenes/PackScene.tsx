@@ -33,6 +33,7 @@ import { SayLine, type PackEntry } from '../instruments/PackChat';
 import { Tooth } from '../instruments/Tooth';
 import { StageMotion } from '../motion';
 import { isPackRole, seatNumber } from '../roles';
+import { sideOpen } from '../slot';
 import { geometry } from '../units';
 import { NightRoom } from './NightRoom';
 import {
@@ -103,7 +104,7 @@ export function PackScene(props: SceneProps) {
 }
 
 function Pack({ entering, ...props }: SceneProps & { entering: boolean }) {
-  const { view, beat, me, presentation, onAct, onSay, turn } = props;
+  const { view, beat, me, presentation, onAct, onSay, onDelegate, turn } = props;
   // a new beat, another viewer or a new seeded choice starts the vote and the card afresh
   const seed = `${beat.id}:${beat.seq}:${me}:${turn?.chosen ?? ''}:${turn?.cardOpen ? 1 : 0}`;
   const { animate, hud } = presentation;
@@ -137,7 +138,10 @@ function Pack({ entering, ...props }: SceneProps & { entering: boolean }) {
   );
   // a failed send reopens the plate; a vote the agent (or another tab) gave seals it
   const failed = !!turn?.sendError && !turn.sent;
-  const elsewhere = voting && (turn?.sent === 'agent' || turn?.sent === 'closed');
+  // handed to the seat's agent from the plate: sealed in the agent's words, until a failure
+  const [handed, setHanded] = useSeeded(seed, () => false);
+  const elsewhere =
+    voting && (turn?.sent === 'agent' || turn?.sent === 'closed' || (handed && !failed));
   const mine = failed ? null : sentVote;
   const [cardOpen, setCardOpen] = useSeeded(seed, () => !!turn?.cardOpen);
 
@@ -217,6 +221,7 @@ function Pack({ entering, ...props }: SceneProps & { entering: boolean }) {
           onSay={onSay}
           // a pass is the act that names no one: `{pass_turn: true}`
           onPass={onAct ? () => onAct(null) : undefined}
+          onAgent={onDelegate}
           left={g.wingN + 22.4}
           // the request's own state: shut while on its way or in, reopened on a failure
           seq={beat.seq}
@@ -240,6 +245,7 @@ function Pack({ entering, ...props }: SceneProps & { entering: boolean }) {
       {voting ? (
         <ActPlate
           left={g.wingN + 22.4}
+          maxWidth={geometry(hud, sideOpen(presentation)).room - 2 * 22.4}
           hidden={presentation.footHidden}
           label={
             mine
@@ -252,9 +258,21 @@ function Pack({ entering, ...props }: SceneProps & { entering: boolean }) {
           disabled={!chosen || !!mine}
           onConfirm={() => {
             if (!chosen || mine || elsewhere) return;
+            setHanded(false);
             setSentVote(chosen);
             onAct?.(chosen);
           }}
+          agent={
+            onDelegate && !mine && !elsewhere
+              ? {
+                  label: 'Let my agent choose',
+                  onClick: () => {
+                    setHanded(true);
+                    onDelegate();
+                  },
+                }
+              : undefined
+          }
           note={chosen ? CHANGE_NOTE : alone && quiet && !mine ? flow : undefined}
           error={failed ? turn?.sendError : null}
           sealed={

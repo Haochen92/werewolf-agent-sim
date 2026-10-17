@@ -76,6 +76,7 @@ function VoteBeat({
   me,
   presentation,
   onAct,
+  onDelegate,
   turn,
   slot: slotInput,
   stop,
@@ -116,10 +117,19 @@ function VoteBeat({
     setSent(true);
     onAct?.(chosen === 'abstain' ? null : chosen);
   };
+  // handed to the seat's agent from here, or by the deadline; a failed hand-over reopens the row
+  const [handed, setHanded] = useState(false);
+  const agentHas = turn?.sent === 'agent' || (handed && !turn?.sendError);
+  const handOver = () => {
+    if (sent || agentHas) return;
+    setHanded(true);
+    onDelegate?.();
+  };
 
   // the jar: how many are in, and which is this viewer's own
   const living = view.alive.length;
-  const liveIn = sent ? Math.max(1, turn?.progress?.n ?? 1) : (turn?.progress?.n ?? 0);
+  const liveIn =
+    sent || agentHas ? Math.max(1, turn?.progress?.n ?? 1) : (turn?.progress?.n ?? 0);
   // live, the ballots drop in as they are cast (`phase_progress`); the replay's jar opens empty
   const ballotsIn = prompt ? liveIn : opening ? (turn?.progress?.n ?? 0) : ballots.length;
   const myIndex = prompt
@@ -339,9 +349,11 @@ function VoteBeat({
               candidates={offered}
               cast={cast}
               chosen={chosen}
-              onChoose={sent ? undefined : setChosen}
+              onChoose={sent || agentHas ? undefined : setChosen}
               onConfirm={confirm}
-              sent={sent}
+              onAgent={onDelegate ? handOver : undefined}
+              sent={sent || agentHas}
+              byAgent={agentHas && !sent}
               me={me}
               clock={turn?.clock ?? null}
               arrive={animate}

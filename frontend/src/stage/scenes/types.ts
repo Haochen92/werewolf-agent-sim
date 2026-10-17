@@ -74,6 +74,12 @@ export interface SceneProps {
   /** The seated human's line (the pack's chat): reported the same way as `onAct`. */
   onSay?: (text: string) => void;
   /**
+   * The seated human hands the open prompt to its seat's agent (`{delegate: true}`): a vote, a
+   * night act, the pack's kill or a chat round, each plate's own "Let my agent …" button (owner,
+   * 2026-10-17; it was one plaque in the top strip). Not on the speaking turn, which has Draft.
+   */
+  onDelegate?: () => void;
+  /**
    * A tap on the speech box: the viewer has read this page, move on (the replay steps forward,
    * a live game ends the beat's hold, the workbench steps its beat). Without it the box is
    * only read.

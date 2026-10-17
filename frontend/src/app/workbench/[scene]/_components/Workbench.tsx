@@ -53,6 +53,7 @@ const viewersOf = (seats: readonly string[]) => [
 const logAct = (target: string | null, more?: ActMore) =>
   console.info('[workbench] act →', target ?? 'no one', more ?? '');
 const logSay = (text: string) => console.info('[workbench] say →', text);
+const logDelegate = () => console.info('[workbench] delegate →');
 
 /** The strip's frame buttons: fill, then the presets under a short name (a WxH is URL-only). */
 const FRAMES: { value: 'fill' | FramePreset; label: string }[] = [
@@ -296,6 +297,7 @@ export function Workbench({ scene }: { scene: string }) {
         }}
         onAct={logAct}
         onSay={logSay}
+        onDelegate={logDelegate}
         onNext={
           frame.index < frame.beats.length - 1
             ? () => go({ beat: frame.index + 1 })

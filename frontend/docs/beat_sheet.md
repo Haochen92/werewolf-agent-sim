@@ -236,6 +236,14 @@ who leaves is the same rule made permanent: the table sees nothing; if they come
 still, at their seat, with the plaque's tag on their own screen ("your seat's agent played 3 turns
 for you", counted client-side from unanswered requests). Agents have no client-side timer.
 
+**The hand-over is each plate's own** (owner, 2026-10-17; it was one plaque, "Let my agent play
+this turn", under the top strip, too easily missed). Every live prompt but the speaking turn ends
+its row with a button in the plate's second-button dress (the walnut of "Hold fire" and "Pass"),
+its verb the turn's: "Let my agent vote" beside the ballot's plate, "Let my agent choose" on a
+night room's plate and the pack's kill, "Let my agent talk" beside Say it and Pass. One tap, no
+confirm: the plate seals at once in the agent's words ("Your agent has your ballot", "Your seat's
+agent acted for you"), and a failed send reopens it. The speaking turn keeps Draft, Send, Pass.
+
 As built 2026-09-25 (no bench gives them; change here first): the public pass has no reason line
 (the box reads "passes." under the seat's chip). Live, a line or a pass that follows its own
 seat's thinking beat does not rise again: the puppet already at the stand goes on talking (or to
@@ -1154,7 +1162,7 @@ the foot's notices and the ballot, a night room's plates and the pack's chat. Hi
 come back exactly as they were when the notice closes (Carry on, See what happened, Leave,
 Esc). Nothing dims the stage and nothing takes the taps outside the notice: the wing, the strip
 and the drawer stay usable, but a seat whose turn is open answers it after Carry on (its dock,
-ballot or plate comes back then; "Let my agent play this turn" stays at the top). Owner
+ballot or plate comes back then, its hand-over with it). Owner
 2026-10-11: no full-stage veil, which earlier the same day dimmed the stage behind the notice; a
 full-stage element over the stage becomes its own GPU layer whenever anything under it moves
 (phone_lessons.md §1–2, ~54 MB a layer on the owner's iPhone), and the notice opens just after a
@@ -1194,7 +1202,7 @@ lobby while it lasts." **Not built / to reconcile:** the live
 ballot drop (§3 row 2) moves the count, not chips; a night act the agent played while away is named
 with its target only for the pack's vote and kill (a seat's own `night_action` is observer tier,
 so the notice says "it took your night’s act"); the draft helper in the pack's chat (the
-pack's turn still has the "Let my agent play this turn" pill); a
+pack's turn has its own "Let my agent talk"); a
 reload during a vote already cast reopens the ballot (a second send gets the 409 line).
 
 ## 13. Viewers and tiers — H§7

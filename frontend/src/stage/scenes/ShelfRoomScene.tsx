@@ -324,7 +324,7 @@ export function ShelfRoomScene(props: SceneProps) {
 }
 
 function ShelfRoom(props: SceneProps) {
-  const { view, beat, me, onAct, turn } = props;
+  const { view, beat, me, onAct, onDelegate, turn } = props;
   const pending = view.me.pending;
   const kind = pending?.actionKind;
   const role = view.me.role?.role ?? (kind && ROLE_OF_KIND[kind]) ?? 'villager';
@@ -358,7 +358,10 @@ function ShelfRoom(props: SceneProps) {
 
   // the server takes one answer: in once pressed (or answered elsewhere), open again on a failure
   const failed = !!turn?.sendError && !turn.sent;
-  const elsewhere = turn?.sent === 'agent' || turn?.sent === 'closed';
+  // handed to the seat's agent from this plate: in, in the agent's words, until a failure
+  const [handed, setHanded] = useSeeded(seed, () => false);
+  const elsewhere =
+    turn?.sent === 'agent' || turn?.sent === 'closed' || (handed && !failed);
   const isIn = !failed && (elsewhere || pressed !== undefined || turn?.sent === 'you');
   const target = isIn ? (elsewhere ? null : pressed) : chosen;
   // only a seat is lit and pinned (a side or a no-action word hangs nowhere)
@@ -376,6 +379,7 @@ function ShelfRoom(props: SceneProps) {
 
   const act = (to: string | null) => {
     if (isIn) return;
+    setHanded(false);
     setPressed(to ?? none);
     const extra =
       to && kind === 'necromancer_target' && body
@@ -386,7 +390,8 @@ function ShelfRoom(props: SceneProps) {
     onAct?.(to, extra);
   };
   const choose = (c: string) => setChosen((was) => (was === c ? null : c));
-  const centre = geometry(props.presentation.hud, sideOpen(props.presentation)).cx;
+  const room = geometry(props.presentation.hud, sideOpen(props.presentation));
+  const centre = room.cx;
 
   return (
     <NightRoom
@@ -451,6 +456,7 @@ function ShelfRoom(props: SceneProps) {
           label={plateLabel(kind, chosen, more)}
           // centred in the room, left of an open side slot, so the drawer can run full height
           centre={centre}
+          maxWidth={room.room - 2 * 22.4}
           hidden={props.presentation.footHidden}
           clock={isIn ? null : turn?.clock}
           disabled={!ready || isIn}
@@ -461,6 +467,17 @@ function ShelfRoom(props: SceneProps) {
               : undefined
           }
           note={chosen ? (sides.length ? SIDE_CHANGE_NOTE : CHANGE_NOTE) : undefined}
+          agent={
+            onDelegate && !isIn
+              ? {
+                  label: 'Let my agent choose',
+                  onClick: () => {
+                    setHanded(true);
+                    onDelegate();
+                  },
+                }
+              : undefined
+          }
           error={failed ? turn?.sendError : null}
           sealed={
             isIn

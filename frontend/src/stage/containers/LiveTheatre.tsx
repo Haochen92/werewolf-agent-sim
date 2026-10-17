@@ -767,7 +767,8 @@ export function LiveTheatre({
     cast: stationCast,
     animate: platformSeen,
   };
-  // a prompt that is not the day's dock (the ballot, a night act, the pack): the agent can take it
+  // a prompt that is not the day's dock (the ballot, a night act, the pack): its plate holds the
+  // hand-over, and a failed send is said under the strip
   const handOver = open && beat?.liveOnly && beat.id !== 'day.your-turn';
   return (
     <div
@@ -809,6 +810,7 @@ export function LiveTheatre({
               turn={turnInput}
               onAct={onAct}
               onSay={onSay}
+              onDelegate={onDelegate}
               // a tap on the speech box: this page is read, end its hold
               onNext={onNext}
               wayOut={wayOut}
@@ -828,16 +830,7 @@ export function LiveTheatre({
               Close the sheet
             </button>
           ) : null}
-          {handOver ? (
-            <button
-              type="button"
-              className={styles.handOver}
-              onClick={onDelegate}
-              disabled={turn.sending}
-            >
-              Let my agent play this turn
-            </button>
-          ) : null}
+          {/* a prompt's failed send, in the server's words (the hand-over is each plate's own) */}
           {handOver && turn.error ? (
             <p className={styles.error} role="alert">
               {turn.error}

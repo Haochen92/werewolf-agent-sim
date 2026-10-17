@@ -29,6 +29,10 @@ export interface BallotRowProps {
   onConfirm?: () => void;
   /** Sent: the row gives way to "Your ballot is in". */
   sent?: boolean;
+  /** "Let my agent vote", beside the brass plate: the turn goes to the seat's agent. */
+  onAgent?: () => void;
+  /** Sent by the seat's agent: the "in" line names no seat (the agent has not voted yet). */
+  byAgent?: boolean;
   /** This seat, for the "in" line's chip. */
   me: string;
   /** The turn's clock, or null for no deadline. */
@@ -46,6 +50,8 @@ export function BallotRow({
   onChoose,
   onConfirm,
   sent = false,
+  onAgent,
+  byAgent = false,
   me,
   clock,
   arrive = false,
@@ -62,6 +68,16 @@ export function BallotRow({
     </span>
   );
 
+  if (sent && byAgent) {
+    return (
+      <motion.div className={`${styles.box} ${styles.in}`} {...fade} data-ballot="agent">
+        <header>
+          <strong>Your agent has your ballot</strong>
+          <span>no one sees it until voting closes</span>
+        </header>
+      </motion.div>
+    );
+  }
   if (sent) {
     return (
       <motion.div className={`${styles.box} ${styles.in}`} {...fade} data-ballot="in">
@@ -139,6 +155,11 @@ export function BallotRow({
         >
           {plateLabel(chosen)}
         </button>
+        {onAgent ? (
+          <button type="button" className={styles.agent} onClick={onAgent}>
+            Let my agent vote
+          </button>
+        ) : null}
       </div>
     </motion.div>
   );

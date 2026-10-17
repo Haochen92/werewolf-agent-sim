@@ -3,7 +3,8 @@
  * seat 4", "Shoot seat 2", "Kill seat 5") once a photo is chosen, and pressing it confirms.
  * Before a choice it asks ("Choose a seat to protect") and cannot be pressed. A request that
  * lists a no-action word has a second button in its words ("Hold fire", "Keep your checks",
- * "Stay put"), because not acting is an act too.
+ * "Stay put"), because not acting is an act too. A live turn ends the row with the hand-over,
+ * in the same dress: "Let my agent choose".
  *
  * In the pack's room the plate sits at the left, because the wolves' chat has the right. On the
  * waiting room's ledge it is `inline`, in the ledge's row beside its notice ("Depart", "Lock").
@@ -31,10 +32,14 @@ export interface ActPlateProps {
   disabled?: boolean;
   /** A second act beside it (the request's no-action word: "Hold fire", "Keep your checks"). */
   secondary?: { label: string; onClick?: () => void; disabled?: boolean };
+  /** The hand-over, last in the row in the second act's dress ("Let my agent choose"). */
+  agent?: { label: string; onClick?: () => void; disabled?: boolean };
   /** Centred on the stage, or at the room's left edge in units (the pack). */
   left?: number;
   /** Centred on this x in units instead (the shelf room: the room left of an open side slot). */
   centre?: number;
+  /** The room's width in units: a row wider than it wraps, the hand-over going under. */
+  maxWidth?: number;
   /** The turn's real time left; null or absent = no deadline, no count. */
   clock?: TurnClock | null;
   /** Placed by its parent's layout instead (the waiting room's ledge). */
@@ -54,8 +59,10 @@ export function ActPlate({
   onConfirm,
   disabled,
   secondary,
+  agent,
   left,
   centre,
+  maxWidth,
   clock,
   inline,
   note,
@@ -65,7 +72,11 @@ export function ActPlate({
 }: ActPlateProps) {
   const place = inline ? styles.inline : left == null ? '' : styles.left;
   const x = left ?? centre;
-  const style: CSSProperties = { left: x, visibility: hidden ? 'hidden' : undefined };
+  const style: CSSProperties = {
+    left: x,
+    maxWidth,
+    visibility: hidden ? 'hidden' : undefined,
+  };
   if (sealed)
     return (
       <div
@@ -105,6 +116,11 @@ export function ActPlate({
       {secondary ? (
         <button type="button" disabled={secondary.disabled} onClick={secondary.onClick}>
           {secondary.label}
+        </button>
+      ) : null}
+      {agent ? (
+        <button type="button" disabled={agent.disabled} onClick={agent.onClick}>
+          {agent.label}
         </button>
       ) : null}
     </div>

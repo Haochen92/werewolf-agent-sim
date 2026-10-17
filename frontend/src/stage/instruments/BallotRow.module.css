@@ -129,7 +129,13 @@
     0 0 16px 4px rgba(255, 179, 92, 0.55);
 }
 
-/* the brass plate that confirms, naming the vote */
+/* the brass plate that confirms, naming the vote; the hand-over beside it */
+.plate {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 11.2px;
+  align-items: center;
+}
 .plate button {
   font: inherit;
   font-size: calc(22.4px * 1.15 * var(--legible-ui));
@@ -147,6 +153,11 @@
 .plate button:disabled {
   opacity: 0.5;
   cursor: default;
+}
+/* the hand-over: the night plate's second button (NightRoom.module.css `.plate button`) */
+.plate button.agent {
+  background: linear-gradient(#5a4632, #3a2a1a);
+  color: var(--paper);
 }
 
 /* "Your ballot is in": me → my choice */
