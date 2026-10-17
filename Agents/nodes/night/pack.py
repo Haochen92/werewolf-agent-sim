@@ -128,7 +128,7 @@ def route_pack_speaker(state: PackNightGraph):
     next_speaker = next((w for w in _speaking_order(state) if w not in spoken), None)
     if next_speaker is None:
         return []
-    return [Send("PACK_CHAT", _pack_payload(state, next_speaker))]
+    return [Send("PACK_CHAT", {**_pack_payload(state, next_speaker), "pack_chat": True})]
 
 
 def start_carrier(state: PackNightGraph):

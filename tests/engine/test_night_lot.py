@@ -112,6 +112,17 @@ def test_the_pack_draws_one_lot_among_the_non_wolves():
     assert _drawn(first_wolf) not in ("player_2", "player_6")
 
 
+def test_the_pack_chat_puts_the_lot_forward_as_a_pick_and_the_carrier_takes_it():
+    # A human ally never sees the lot, so "Agreed, player_10" answered no one (owner, 2026-10-17).
+    carrier = night_one_lot(_payload("player_2", "chanteuse"))
+    chat = night_one_lot(dict(_payload("player_2", "chanteuse"), pack_chat=True))
+    drawn = _drawn(carrier)
+
+    assert _drawn(chat) == drawn
+    assert f"Suggest {drawn} for the kill as your own pick" in chat
+    assert "Take it unless" in carrier and "Suggest" not in carrier
+
+
 def test_the_night_prompts_carry_the_lot_on_night_one_only():
     night_one = INVESTIGATOR_NIGHT.invoke(build_agent_prompt_input(_payload("player_4", "investigator"))).to_string()
     night_two = INVESTIGATOR_NIGHT.invoke(

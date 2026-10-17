@@ -40,6 +40,9 @@ class NightTurnState(TypedDict, total=False):
     """Tonight's carrier, on a wolf's payload only."""
     wolves_target: str
     """The pack's kill tonight, on a wolf's skill payload only; "" until the carrier named it."""
+    pack_chat: bool
+    """A wolf's payload: True on a chat turn only, where the night 1 lot is put forward as the
+    wolf's own suggestion."""
     pack_turn: bool
     """A wolf's payload: True on the chat and the carrier's turn (the pack's lot applies), False
     on its own skill turn."""

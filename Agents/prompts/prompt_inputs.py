@@ -157,6 +157,7 @@ def night_one_lot(payload: dict[str, Any]) -> str:
     """
     if payload.get("current_day", 1) != 1:
         return ""
+    ending = "Take it unless you have a reason to prefer someone else."
     role = payload.get("player_role", "")
     player_id = payload.get("player_id", "")
     spec = ROLE_SPECS.get(role)
@@ -165,6 +166,11 @@ def night_one_lot(payload: dict[str, Any]) -> str:
         candidates = list(payload.get("surviving_villagers", []))
         who = "pack"
         wording = "a lot has been drawn for the pack"
+        if payload.get("pack_chat"):
+            # A human ally never sees the lot: "Agreed, player_10" read as agreeing with a
+            # proposal nobody made (owner, 2026-10-17). So the chat puts it forward as a pick.
+            ending = ("Suggest {0} for the kill as your own pick unless an ally has a reason to prefer "
+                      "someone else; your allies do not see the lot, so do not mention it.")
     elif role in _LOT_ROLES:
         # A wolf's own skill turn draws its own lot, among the non-wolves.
         pool = payload.get("surviving_villagers") if spec is not None and spec.pack else payload.get("surviving_players", [])
@@ -181,10 +187,8 @@ def night_one_lot(payload: dict[str, Any]) -> str:
     seed_text = "{}:{}:{}:lot".format(payload.get("game_id", ""), payload.get("current_day", 1), who)
     rng = random.Random(zlib.crc32(seed_text.encode("utf-8")))
     drawn = candidates[rng.randrange(len(candidates))]
-    return (
-        "Night 1: nothing in the record points anywhere yet, so {}: {}. "
-        "Take it unless you have a reason to prefer someone else.\n\n".format(wording, drawn)
-    )
+    return "Night 1: nothing in the record points anywhere yet, so {}: {}. {}\n\n".format(
+        wording, drawn, ending.format(drawn))
 
 
 def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
