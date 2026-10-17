@@ -89,12 +89,14 @@ def _day_was_no_lynch(resolution: Mapping) -> bool:
 
 def no_lynch_streak_before(day: int, day_resolutions: Iterable[Mapping]) -> int:
     """Reconstruct the runtime ``no_lynch_streak`` entering ``day``: the count of
-    consecutive no-lynch days immediately before it, a lynch resetting it to 0
-    (``no_lynch_streak = 0 if lynched else prev + 1``)."""
+    consecutive no-lynch days immediately before it, a lynch resetting it to 0 and
+    a day with no vote held (day 1) skipped, as the orchestrator counts it."""
     streak = 0
     for res in sorted(day_resolutions, key=lambda r: r.get("day", 0)):
         if res.get("day", 0) >= day:
             break
+        if res.get("no_vote"):
+            continue
         streak = streak + 1 if _day_was_no_lynch(res) else 0
     return streak
 

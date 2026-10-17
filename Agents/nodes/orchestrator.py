@@ -164,8 +164,9 @@ def remove_from_buckets(state_update: dict, state: OrchestratorGraph, dead: list
 def day_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
     """Resolve the day's vote into a lynch (or a no-lynch) and announce it.
 
-    A real lynch needs a unique, non-"abstain" plurality; a tie, an abstain
-    plurality, or no votes is a no-lynch day (which bumps no_lynch_streak). On a
+    A real lynch needs a unique, non-"abstain" plurality; a tie or an abstain
+    plurality is a no-lynch day (which bumps no_lynch_streak), and a day with no
+    votes (day 1) leaves the streak as it was. On a
     lynch: removes the player from both survivor buckets and writes a game_master message +
     day summary. Records a DayResolutionMetric span on every path.
     """
@@ -176,8 +177,14 @@ def day_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
     tally = tally_day_vote(vote.votee for vote in day_votes)
     vote_counts, candidates, lynched = tally.vote_counts, tally.candidates, tally.lynched
 
+    # A day with no vote held (day 1) is not a no-lynch day: the town had no chance to lynch.
     prev_streak = state.get("no_lynch_streak", 0)
-    no_lynch_streak = 0 if lynched else prev_streak + 1
+    if lynched:
+        no_lynch_streak = 0
+    elif tally.outcome == "no_vote":
+        no_lynch_streak = prev_streak
+    else:
+        no_lynch_streak = prev_streak + 1
 
     metric = DayResolutionMetric(
         day=current_day,

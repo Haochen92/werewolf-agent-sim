@@ -7,6 +7,7 @@ turn seeing the note it replaces, the vote wording, and the summariser's v4 outp
 """
 from __future__ import annotations
 
+from Agents.memory.consolidation.decision_scoring import no_lynch_streak_before
 from Agents.nodes.day.flow import build_speaker_send, fan_out_day
 from Agents.nodes.day.summary_agent import _serialize_day_summary, summary_context
 from Agents.nodes.night.resolution import night_resolution
@@ -205,6 +206,19 @@ def test_day_one_is_not_announced_as_a_vote_result():
              "day_votes": []}
     message = day_resolution(state, _runtime())["day_channel"][0].message
     assert message.strip() == "There is no vote on day 1, so no one voted and no one is eliminated."
+
+
+def test_a_day_with_no_vote_does_not_count_toward_the_forced_vote():
+    # Owner, 2026-10-17: two days without a lynch force the vote, and day 1 (no vote held) is not one.
+    base = {"roles": ROLES, "lineup": LINEUP, "surviving_wolves": ["w0", "w1"],
+            "surviving_villagers": ["sk", "h", "v", "inv", "t0"], "day_channel": []}
+    day_one = day_resolution({**base, "current_day": 1, "no_lynch_streak": 0, "day_votes": []}, _runtime())
+    assert day_one["no_lynch_streak"] == 0
+    abstained = day_resolution({**base, "current_day": 2, "no_lynch_streak": 0,
+                                "day_votes": [DayVote(voter="h", votee="abstain")]}, _runtime())
+    assert abstained["no_lynch_streak"] == 1
+    assert no_lynch_streak_before(3, [{"day": 1, "voted_player": None, "no_vote": True},
+                                      {"day": 2, "voted_player": None, "no_vote": False}]) == 1
 
 
 # --- the v4 day summary -------------------------------------------------------------
