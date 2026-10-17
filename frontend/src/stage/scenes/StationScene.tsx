@@ -28,7 +28,7 @@
  * rises into place. The train is a picture that slides on its own layer (nothing on this stage
  * fades a live SVG; the curtain is a plain dark sheet). The snow is the only idle motion.
  */
-import Image from 'next/image';
+import Image, { type StaticImageData } from 'next/image';
 import { motion, type Transition } from 'motion/react';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { preload } from 'react-dom';
@@ -132,31 +132,40 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
               draggable={false}
               className={styles.fill}
             />
-            <div
-              className={styles.glass}
-              style={{
-                left: S.glass.x - S.train.x,
-                top: S.glass.y - S.train.y,
-                width: S.glass.w,
-                height: S.glass.h,
-              }}
-            >
-              {departing
-                ? S.places.map((_, i) => (
-                    <WindowPlace
-                      key={i}
-                      i={i}
-                      person={i < n}
-                      agentIndex={i - n}
-                      pitch={S.pitch}
-                      glassH={S.glass.h}
-                      character={cast[i]}
+            {/* each window its own glass, its places seated in it side by side: a place sits in
+                the window nearest it, and nobody is drawn over the cream between windows (the
+                five felt windows, 2026-10-17) */}
+            {S.windows.map((w, j) => {
+              const seated = S.places
+                .map((x, i) => ({ x, i }))
+                .filter(({ x }) => nearestWindow(S.windows, x) === j);
+              return (
+                <div
+                  key={j}
+                  className={styles.glass}
+                  style={{
+                    left: w.x - S.train.x,
+                    top: w.y - S.train.y,
+                    width: w.w,
+                    height: w.h,
+                  }}
+                >
+                  {departing ? (
+                    <WindowSeats
+                      seats={seated.map(({ i }) => ({
+                        person: i < n,
+                        agentIndex: i - n,
+                        character: cast[i],
+                      }))}
+                      w={w.w}
+                      h={w.h}
                       animate={animate}
                       T={T}
                     />
-                  ))
-                : null}
-            </div>
+                  ) : null}
+                </div>
+              );
+            })}
             <div
               className={styles.plates}
               style={{
@@ -399,96 +408,129 @@ function placeGeometry(
   return { ...g, cx: x, ph, railY: feetY - 0.08 * bodyH };
 }
 
-/** One place in the dining car's window at departure: a person at it, or an agent's blind. */
-function WindowPlace({
-  i,
-  person,
-  agentIndex,
-  pitch,
-  glassH,
-  character,
+/** Which of the windows a place sits in: the one whose centre is nearest it. */
+function nearestWindow(windows: readonly { x: number; w: number }[], x: number): number {
+  let best = 0;
+  windows.forEach((w, j) => {
+    if (
+      Math.abs(x - (w.x + w.w / 2)) < Math.abs(x - (windows[best].x + windows[best].w / 2))
+    )
+      best = j;
+  });
+  return best;
+}
+
+interface WindowSeat {
+  person: boolean;
+  /** Which of the agents' places this is, left to right: the curtains come down in turn. */
+  agentIndex: number;
+  character: SceneProps['presentation']['cast'][number];
+}
+
+/**
+ * One window of the dining car at departure, seen from the platform: its places side by side,
+ * each a share of the window. A person sits at the sill, the upper body showing; an agent's
+ * share has a curtain drawn inside the glass, the whole window where every place in it is an
+ * agent's (owner, 2026-10-17), and the agent's head and shoulders a shadow cast on it from
+ * behind, as a person sits.
+ */
+function WindowSeats({
+  seats,
+  w,
+  h,
   animate,
   T,
 }: {
-  i: number;
-  person: boolean;
-  /** Which of the agents' places this is, left to right: the blinds come down in turn. */
-  agentIndex: number;
-  pitch: number;
-  glassH: number;
-  character: SceneProps['presentation']['cast'][number];
+  seats: WindowSeat[];
+  w: number;
+  h: number;
   animate: boolean;
   T: (d: number, delay?: number, ease?: Transition['ease']) => Transition;
 }) {
-  const img = SPRITES.day[character].base;
-  // a phone draws the phone's copy; the place is measured on the full picture
-  const pic = useSmall() ? SPRITES.small.day[character].base : img;
-  const aspect = img.width / img.height;
-  const cx = (i + 0.5) * pitch;
-  if (person) {
-    // the upper body shows over the sill, every body the same height
-    const h = 140 / BODY[character].body;
-    const w = h * aspect;
-    return (
-      <motion.div
-        className={styles.inWindow}
-        style={{ left: cx - w / 2, top: glassH + 40 - h, width: w, height: h }}
-        initial={animate ? { opacity: 0, y: 18 } : false}
-        animate={{ opacity: 1, y: 0 }}
-        transition={T(0.8, 0.3, 'easeOut')}
-      >
-        <Image
-          decoding="sync"
-          src={pic}
-          alt=""
-          unoptimized
-          loading="eager"
-          draggable={false}
-          className={styles.fill}
-        />
-      </motion.div>
-    );
-  }
-  const bw = pitch * 0.86;
-  const bh = bw / (1024 / 1465);
-  const sh = 99;
-  const sw = sh * aspect;
+  const small = useSmall();
+  const slot = w / Math.max(1, seats.length);
+  // a person sits in their share, every body the same height, smaller where two share a window
+  const body = (s: WindowSeat, k: number) => {
+    const img = SPRITES.day[s.character].base;
+    const pic = small ? SPRITES.small.day[s.character].base : img;
+    const aspect = img.width / img.height;
+    const full = 140 / BODY[s.character].body;
+    const fit = Math.min(1, (slot * 1.15) / (full * aspect));
+    const bh = full * fit;
+    const bw = bh * aspect;
+    return {
+      pic,
+      box: {
+        left: (k + 0.5) * slot - bw / 2,
+        top: h + 40 * fit - bh,
+        width: bw,
+        height: bh,
+      },
+    };
+  };
+  const img = (src: StaticImageData) => (
+    <Image
+      decoding="sync"
+      src={src}
+      alt=""
+      unoptimized
+      loading="eager"
+      draggable={false}
+      className={styles.fill}
+    />
+  );
+  // the curtains: one over the whole window if every place in it is an agent's, else one over
+  // each agent's share
+  const agents = seats.map((s, k) => ({ s, k })).filter(({ s }) => !s.person);
+  const curtains =
+    agents.length === seats.length && agents.length > 0
+      ? [{ x: 0, cw: w, who: agents }]
+      : agents.map((a) => ({ x: a.k * slot, cw: slot, who: [a] }));
   return (
     <>
-      <motion.div
-        className={styles.blind}
-        style={{ left: cx - bw / 2, top: -3.6, width: bw, height: bh }}
-        initial={animate ? { clipPath: 'inset(0% 0% 100% 0%)' } : false}
-        animate={{ clipPath: 'inset(0% 0% 0% 0%)' }}
-        transition={T(0.9, 0.5 + agentIndex * 0.16, UNROLL_EASE)}
-      >
-        <Image
-          decoding="sync"
-          src={SPRITES.station.blind}
-          alt=""
-          unoptimized
-          loading="eager"
-          draggable={false}
-          className={styles.fill}
-        />
-      </motion.div>
-      <motion.div
-        className={styles.shadow}
-        style={{ left: cx - sw / 2, top: glassH - 10.8 - sh, width: sw, height: sh }}
-        initial={animate ? { opacity: 0 } : false}
-        animate={{ opacity: 0.58 }}
-        transition={T(0.6, 1.2 + agentIndex * 0.16, 'easeOut')}
-      >
-        <Image
-          decoding="sync"
-          src={pic}
-          alt=""
-          unoptimized
-          loading="eager"
-          draggable={false}
-          className={styles.fill}
-        />
-      </motion.div>
+      {seats.map((s, k) => {
+        if (!s.person) return null;
+        const { pic, box } = body(s, k);
+        return (
+          <motion.div
+            key={k}
+            className={styles.inWindow}
+            style={box}
+            initial={animate ? { opacity: 0, y: 18 } : false}
+            animate={{ opacity: 1, y: 0 }}
+            transition={T(0.8, 0.3, 'easeOut')}
+          >
+            {img(pic)}
+          </motion.div>
+        );
+      })}
+      {curtains.map((c) => (
+        <motion.div
+          key={`c${c.x}`}
+          className={styles.blind}
+          style={{ left: c.x, top: -3.6, width: c.cw, height: h + 7.2 }}
+          initial={animate ? { clipPath: 'inset(0% 0% 100% 0%)' } : false}
+          animate={{ clipPath: 'inset(0% 0% 0% 0%)' }}
+          transition={T(0.9, 0.5 + c.who[0].s.agentIndex * 0.16, UNROLL_EASE)}
+        >
+          {img(SPRITES.station.blind)}
+          {c.who.map(({ s, k }) => {
+            const { pic, box } = body(s, k);
+            return (
+              <motion.div
+                key={k}
+                className={styles.shadow}
+                style={{ ...box, left: box.left - c.x, top: box.top + 3.6 }}
+                initial={animate ? { opacity: 0 } : false}
+                animate={{ opacity: 0.5 }}
+                transition={T(0.6, 1.2 + s.agentIndex * 0.16, 'easeOut')}
+              >
+                {img(pic)}
+              </motion.div>
+            );
+          })}
+        </motion.div>
+      ))}
     </>
   );
 }

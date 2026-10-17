@@ -37,9 +37,20 @@
 }
 .blind {
   position: absolute;
-  filter: drop-shadow(0 2.7px 3.6px rgba(0, 0, 0, 0.4));
+  /* the curtain's own box: the agent's shadow behind it never shows past it */
+  overflow: hidden;
 }
-/* the agent's shadow cast on the blind */
+/* the curtain picture's cloth is its rows 36–603 of 732 (a roller above, a tassel below) and
+   narrows to hems at its sides: drawn so the cloth alone fills the curtain's box, from the
+   window's head to its sill and side to side */
+.blind > img {
+  top: -6.3%;
+  left: -10%;
+  width: 120%;
+  height: 129%;
+  object-fit: fill;
+}
+/* the agent's head and shoulders, cast on the curtain from behind */
 .shadow {
   position: absolute;
   mix-blend-mode: multiply;
