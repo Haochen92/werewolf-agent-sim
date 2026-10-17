@@ -42,9 +42,9 @@ import type { SceneBeat } from '../beats/types';
 import { ChipSprite } from '../cast/ChipSprite';
 import { Sigil } from '../instruments/Sigil';
 import { factionOf, seatNumber, seatify, ROLE_NAME } from '../roles';
+import { actLine } from '../scenes/replay-night';
 import { STAGE_H, STAGE_W, geometry, type Hud } from '../units';
 import {
-  ACT_VERB,
   drawerDays,
   drawerLines,
   filterLines,
@@ -556,8 +556,7 @@ function Line({
         <div className={cls('xr')} {...at}>
           {chip(l.actor)}
           <div className={styles.who}>
-            Seat {seatNumber(l.actor)} {ACT_VERB[l.role] ?? 'acts on'} seat{' '}
-            {seatNumber(l.target)}
+            Seat {seatNumber(l.actor)} {actLine(l.role, l.target)}
             {roleTag(l.actor)}
           </div>
         </div>

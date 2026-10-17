@@ -6,6 +6,7 @@ import type { DurableGameEvent } from '@/types/contracts';
 import phase3 from '@/stage/fixtures/replay-phase3.json';
 import necro from '@/stage/fixtures/replay-phase3-necro.json';
 import { FIXTURE_EVENTS } from '../workbench/fixture';
+import { actLine } from '../scenes/replay-night';
 import {
   DEFAULT_FILTERS,
   drawerDays,
@@ -553,18 +554,33 @@ describe('the drawer on a ten-seat game', () => {
         xray: true,
         beat,
       })
-        .filter((l) => l.day === 1 && l.kind === 'act')
+        .filter((l) => l.day === 1 && (l.kind === 'act' || l.kind === 'kill'))
         .map((l) => l.key);
     };
-    // the chanteuse carried the kill (91) and blocked seat 1 (94): the kill lands with the
-    // pack's mark, the block with her own spoke after it
+    // the chanteuse carried the kill (91) and blocked seat 1 (94): the kill is the pack's kill
+    // line, at the pack's mark, never an act of its own; the block is her own spoke's, after it
     const mark = night1(
       (b) => b.spoke?.actor === 'pack' && b.spoke.step === b.spoke.steps - 1,
     );
-    expect(mark).toContain('act-91');
+    expect(mark).toContain('kill-1');
+    expect(mark).not.toContain('act-91');
     expect(mark).not.toContain('act-94');
-    expect(night1((b) => b.spoke?.actor === 'player_5')).toContain('act-94');
-    expect(night1((b) => b.spoke?.rank === 0)).not.toContain('act-91');
+    const own = night1((b) => b.spoke?.actor === 'player_5');
+    expect(own).toContain('act-94');
+    expect(own).not.toContain('act-91');
+  });
+
+  it('says an act with no target as what it is, never "seat 0"', () => {
+    // the conceal comes with target "" (replay 645228e7 read "Seat 3 acts on seat 0")
+    const acts = drawerLines(foldEvents(p3Log), { me: null, xray: true }).filter(
+      (l): l is Extract<DrawerLine, { kind: 'act' }> => l.kind === 'act' && !l.target,
+    );
+    expect(acts.length).toBeGreaterThan(0);
+    for (const a of acts) {
+      expect(a.seats).toEqual([a.actor]);
+      expect(actLine(a.role, a.target)).not.toMatch(/seat/);
+    }
+    expect(acts.map((a) => actLine(a.role, a.target))).toContain('conceals the body.');
   });
 });
 

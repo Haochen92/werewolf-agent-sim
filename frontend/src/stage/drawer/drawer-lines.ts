@@ -25,6 +25,7 @@ import type { GameView, GmSlot, PassSlot, PrivateResult } from '@/game/types';
 import type { PassReason } from '@/types/contracts';
 import type { SceneBeat } from '../beats/types';
 import { isPackRole, seatNumber, seatify } from '../roles';
+import { carrierKillSeq } from '../scenes/replay-night';
 
 export type LineTier = 'public' | 'private' | 'xray';
 
@@ -99,15 +100,6 @@ export type DrawerLine =
   | (LineBase & { kind: 'over'; winner: string });
 
 export type LineKind = DrawerLine['kind'];
-
-/** What each act does, as a line says it (bench 74 `VERB`). */
-export const ACT_VERB: Record<string, string> = {
-  healer: 'protects',
-  investigator: 'checks',
-  vigilante: 'shoots',
-  serial_killer: 'marks',
-  wolf: 'chooses',
-};
 
 const ARTICLE: Record<string, string> = {
   villager: 'a villager',
@@ -340,19 +332,23 @@ export function drawerLines(view: GameView, o: LineOptions): DrawerLine[] {
 
     const night = d.night;
     if (night) {
+      // the carrier's kill is the pack's kill line below, not an act of its own
+      const carried = xray ? carrierKillSeq(view, d.day) : null;
       if (xray)
         for (const a of night.actions)
-          push(a.seq, {
-            kind: 'act',
-            key: `act-${a.seq}`,
-            seq: a.seq,
-            day: d.day,
-            tier: 'xray',
-            seats: [a.actor, a.target],
-            actor: a.actor,
-            role: a.role,
-            target: a.target,
-          });
+          if (a.seq !== carried)
+            push(a.seq, {
+              kind: 'act',
+              key: `act-${a.seq}`,
+              seq: a.seq,
+              day: d.day,
+              tier: 'xray',
+              // an act with no target (a conceal, a held fire) comes as ""
+              seats: a.target ? [a.actor, a.target] : [a.actor],
+              actor: a.actor,
+              role: a.role,
+              target: a.target,
+            });
       const packTier: LineTier = wolfMe ? 'private' : 'xray';
       if (wolfMe || xray) {
         for (const m of night.wolfChannel) {

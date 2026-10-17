@@ -53,9 +53,9 @@ import {
 } from '../instruments/ledger';
 import { PHASE_ICON } from '../instruments/Ledger';
 import { VerdictMark } from '../instruments/VerdictMark';
-import { ACT_VERB } from '../drawer/drawer-lines';
 import { ROLE_ARTICLE } from '../paint/role-kit';
 import { ROLE_NAME, factionOf, seatNumber, seatify } from '../roles';
+import { actLine, actVerb } from '../scenes/replay-night';
 import { sideSlot, type Hud } from '../units';
 import {
   FORM,
@@ -1382,10 +1382,11 @@ function Docket({
                 <span className={styles.pair}>
                   {b.target ? (
                     <>
-                      {ACT_VERB[b.role] ?? 'acts on'} {chip(b.target, sm)}
+                      {actVerb(b.role)} {chip(b.target, sm)}
                     </>
                   ) : (
-                    'holds'
+                    // a conceal, a held fire, a consult with no act
+                    actLine(b.role, null).replace(/\.$/, '')
                   )}
                 </span>
               </button>
