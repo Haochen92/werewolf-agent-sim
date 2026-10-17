@@ -1527,11 +1527,8 @@ export interface components {
       game_id: string;
       /** Finished At */
       finished_at?: string | null;
-      /**
-       * Winner
-       * @enum {string}
-       */
-      winner: 'villagers' | 'wolves' | 'serial_killer' | 'necromancer';
+      /** Winner */
+      winner?: ('villagers' | 'wolves' | 'serial_killer' | 'necromancer') | null;
       /** Neutral Result */
       neutral_result?: string | null;
       /** Days */
@@ -1570,11 +1567,8 @@ export interface components {
       game_id: string;
       /** Finished At */
       finished_at?: string | null;
-      /**
-       * Winner
-       * @enum {string}
-       */
-      winner: 'villagers' | 'wolves' | 'serial_killer' | 'necromancer';
+      /** Winner */
+      winner?: ('villagers' | 'wolves' | 'serial_killer' | 'necromancer') | null;
       /** Neutral Result */
       neutral_result?: string | null;
       /** Days */

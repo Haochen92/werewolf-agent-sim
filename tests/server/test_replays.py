@@ -255,6 +255,15 @@ async def test_postgres_round_trip():
     assert row is not None and row.status == COMPLETED and row.winner == "wolves"
     assert len(event_rows) == 3
 
+    # A draw has no winner and is a replay all the same (2026-10-17, game f2e944a3).
+    draw = [*_log(with_over=False), ev.GameOver(seq=3, day=3, winner=None)]
+    await repository.create_game("itest-draw", status=RUNNING)
+    await repository.record_events("itest-draw", draw)
+    await repository.complete_game("itest-draw", draw, n_humans=1)
+    assert (await replay_service.get_replay("itest-draw")).winner is None
+    assert any(item.game_id == "itest-draw"
+               for item in await replay_service.list_replays(limit=500, offset=0))
+
     # A batch was lost during play: completion marks the game dropped, not completed.
     await repository.create_game("itest-short", status=RUNNING)
     await repository.record_events("itest-short", _log()[:2])
@@ -275,3 +284,10 @@ async def test_postgres_round_trip():
     with pytest.raises(IncompleteReplay):
         await replay_service.get_replay("itest-holed")
     await database.close()
+
+
+def test_a_draw_is_a_replay_with_no_winner():
+    """2026-10-17: the replay schema required a winner, so a draw could never be watched."""
+    game = ReplayGame(game_id="g", winner=None, days=4, n_events=3, n_humans=1,
+                      cast_role_counts={"wolf": 1}, events=[])
+    assert game.model_dump()["winner"] is None
