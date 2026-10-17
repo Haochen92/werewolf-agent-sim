@@ -91,10 +91,15 @@ export const FACTION_NAME: Record<Faction, string> = {
   neutral_benign: 'Neutral',
 };
 
-/** A winner as a record key: the wire's four, or `draw` for a game no side won. */
-export type WinnerKey = NonNullable<Winner> | 'draw';
+/**
+ * A winner as a record key: the wire's four; the neutral, when it won a game no side did (the
+ * speculator's self-pick, the fortune teller's points: the wire says no winner); or `draw`.
+ */
+export type WinnerKey = NonNullable<Winner> | NeutralRole | 'draw';
 
-export const winnerKey = (winner: Winner): WinnerKey => winner ?? 'draw';
+/** `neutral`: the game's neutral if it won (`neutralWinner`), which takes a game no side won. */
+export const winnerKey = (winner: Winner, neutral: NeutralRole | null = null): WinnerKey =>
+  winner ?? neutral ?? 'draw';
 
 /** Who won, as the table says it. A draw has no winner; it is `DRAW_NAME`. */
 export const WINNER_NAME: Record<NonNullable<Winner>, string> = {
@@ -111,6 +116,8 @@ const WINNER_FACTION: Record<WinnerKey, Faction | null> = {
   wolves: 'wolves',
   serial_killer: 'serial_killer',
   necromancer: 'serial_killer',
+  speculator: 'neutral_benign',
+  fortune_teller: 'neutral_benign',
   draw: null,
 };
 

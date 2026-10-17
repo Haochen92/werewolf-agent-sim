@@ -58,7 +58,8 @@ export function matchesReplay(
   if (f.winners.length) {
     const neutral = neutralWinner(r.cast_role_counts, r.neutral_result);
     if (
-      !f.winners.includes(winnerKey(r.winner)) &&
+      // a game no side won is the neutral's when it won it, not a draw
+      !f.winners.includes(winnerKey(r.winner, neutral)) &&
       !(neutral && f.winners.includes(neutral))
     )
       return false;

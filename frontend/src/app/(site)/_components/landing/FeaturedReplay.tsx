@@ -55,7 +55,7 @@ import { beatsFor } from '@/stage/beats/beatsFor';
 import type { MiniUnder } from '@/stage/containers/ReplayTheatre';
 import { stageFonts } from '@/stage/fonts';
 import { picturesOf } from '@/stage/pictures-of';
-import { winnerKey, type WinnerKey } from '@/stage/roles';
+import { neutralWinner, winnerKey, type WinnerKey } from '@/stage/roles';
 import type { DurableGameEvent, ReplayGame } from '@/types/contracts';
 import classes from './Carriage.module.css';
 
@@ -86,6 +86,8 @@ const WON: Record<WinnerKey, string> = {
   wolves: 'Wolves won',
   serial_killer: 'Serial killer won',
   necromancer: 'Necromancer won',
+  speculator: 'Speculator won',
+  fortune_teller: 'Fortune teller won',
   draw: 'A draw',
 };
 
@@ -96,7 +98,7 @@ function detailsOf(game: ReplayGame): string[] {
     game.memory ? 'Memory on' : 'Memory off',
     humans ? `${humans} human${humans > 1 ? 's' : ''} at the table` : 'All agents',
     `${game.days} ${game.days === 1 ? 'day' : 'days'}`,
-    WON[winnerKey(game.winner)],
+    WON[winnerKey(game.winner, neutralWinner(game.cast_role_counts, game.neutral_result))],
     formatDate(game.finished_at),
   ].filter(Boolean);
 }

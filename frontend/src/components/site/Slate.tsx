@@ -69,6 +69,12 @@ const FACTION: Record<WinnerKey, { name: string; verb: string; className: string
   wolves: { name: WINNER_NAME.wolves, verb: 'win', className: classes.wolf },
   serial_killer: { name: WINNER_NAME.serial_killer, verb: 'wins', className: classes.sk },
   necromancer: { name: WINNER_NAME.necromancer, verb: 'wins', className: classes.sk },
+  speculator: { name: ROLE_NAME.speculator, verb: 'wins', className: classes.benign },
+  fortune_teller: {
+    name: ROLE_NAME.fortune_teller,
+    verb: 'wins',
+    className: classes.benign,
+  },
   draw: { name: DRAW_NAME, verb: '', className: classes.draw },
 };
 
@@ -83,21 +89,25 @@ export interface SlateProps {
 }
 
 export function Slate({ replay, modelLabel, mine = false, from }: SlateProps) {
-  const faction = FACTION[winnerKey(replay.winner)];
-  const side = winnerFaction(replay.winner);
+  const neutralWon = neutralWinner(replay.cast_role_counts, replay.neutral_result);
+  // a game no side won is the neutral's when it won it
+  const won = winnerKey(replay.winner, neutralWon);
+  const faction = FACTION[won];
+  const side = winnerFaction(won);
   const ended = endedLabel(replay.ended_phase, replay.days);
   const date = formatDate(replay.finished_at);
   const model = replay.model ? (modelLabel ?? replay.model) : null;
   const cost = formatCost(replay.cost_usd);
   const callTime = formatCallSeconds(replay.avg_call_seconds);
   const humans = replay.n_humans;
-  const neutralWon = neutralWinner(replay.cast_role_counts, replay.neutral_result);
 
   const aria = [
     `Replay: ${faction.name.toLowerCase()} ${faction.verb}`.trim(),
     `${replay.days} ${replay.days === 1 ? 'day' : 'days'}`,
     ended ? `ended ${ended.toLowerCase()}` : null,
-    neutralWon ? `the ${ROLE_NAME[neutralWon].toLowerCase()} won too` : null,
+    neutralWon && won !== neutralWon
+      ? `the ${ROLE_NAME[neutralWon].toLowerCase()} won too`
+      : null,
     model ?? 'model unrecorded',
     cost ? `cost ${cost}` : null,
     mine ? 'you played' : null,

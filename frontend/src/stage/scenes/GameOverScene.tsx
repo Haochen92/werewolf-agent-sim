@@ -49,7 +49,7 @@ import type { Special } from '../paint/draw';
 import type { Phase } from '../paint/materials';
 import { ROLE_ARTICLE } from '../paint/role-kit';
 import { FactionMark } from '../instruments/FactionMark';
-import { ROLE_NAME, seatNumber, winnerFaction, winnerKey, type WinnerKey } from '../roles';
+import { ROLE_NAME, seatNumber, winnerFaction, type WinnerKey } from '../roles';
 import { useSmall } from '../set';
 import { bandNarrows, sideOpen } from '../slot';
 import { STAGE_H, geometry } from '../units';
@@ -59,6 +59,7 @@ import {
   WINNERS_HOUR,
   WINNER_LINE,
   endedAt,
+  endingWinner,
   knownRole,
   lastStanding,
   neutralLine,
@@ -102,8 +103,9 @@ function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
   // the side slot open: the room is laid out beside it (bench 73 drew the film up)
   const side = sideOpen(presentation);
   const g = geometry(hud, side);
-  // the winner as a key (a draw is `draw`), and the side whose colour it wears (none for a draw)
-  const winner = winnerKey(view.winner);
+  // the winner as a key (a draw is `draw`, a neutral's game its role), and the side whose colour
+  // it wears (none for a draw)
+  const winner = endingWinner(view);
   const tone = winnerFaction(winner) ?? undefined;
   const ended = endedAt(view);
   const left: Phase = ended === 'lynch' ? 'dusk' : 'night';
@@ -309,7 +311,8 @@ function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
             ) : onStand ? (
               <EndBox
                 winner={winner}
-                neutral={neutralLine(view)}
+                // a neutral that won the game no side did is the headline, not the line under it
+                neutral={tone === 'neutral_benign' ? null : neutralLine(view)}
                 won={!!myRole && roleWon(myRole, winner, view.neutralResult)}
                 winners={winners}
                 me={me}

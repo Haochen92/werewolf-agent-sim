@@ -49,6 +49,11 @@
   --slate-hue: var(--sk);
   --slate-ink: var(--sk-ink);
 }
+/* a neutral that won the game no side did */
+.benign {
+  --slate-hue: var(--benign);
+  --slate-ink: var(--benign-ink);
+}
 /* a draw: no side won, so no side's colour */
 .draw {
   --slate-hue: var(--muted);

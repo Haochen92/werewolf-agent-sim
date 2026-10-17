@@ -8,6 +8,7 @@ import {
   WINNERS_HOUR,
   WINNER_LINE,
   endedAt,
+  endingWinner,
   fateOf,
   knownRole,
   knownSide,
@@ -126,6 +127,8 @@ describe('the ending per winner (ten-seat pass §1)', () => {
       wolves: 'night',
       serial_killer: 'dusk',
       necromancer: 'dusk',
+      speculator: 'dawn',
+      fortune_teller: 'dawn',
       draw: 'dawn',
     });
     expect(WINNER_LINE).toEqual({
@@ -133,6 +136,8 @@ describe('the ending per winner (ten-seat pass §1)', () => {
       wolves: 'The wolves have won',
       serial_killer: 'The serial killer has won',
       necromancer: 'The necromancer has won',
+      speculator: 'The speculator has won',
+      fortune_teller: 'The fortune teller has won',
       draw: 'No side has won',
     });
   });
@@ -158,6 +163,27 @@ describe('the ending per winner (ten-seat pass §1)', () => {
     // the serial killer's win is not the necromancer's
     expect(winnersOf({ ...won, winner: 'serial_killer' as const })).toEqual([]);
     expect(winnersOf({ ...necro, winner: null })).toEqual([]);
+  });
+
+  it('gives a game no side won to the neutral that won it', () => {
+    const spec = Object.keys(necro.xray.roles).find(
+      (s) => necro.xray.roles[s] === 'speculator',
+    )!;
+    // the speculator's self-pick: the last one standing, the wire's winner none
+    const alone = { ...necro, winner: null, neutralResult: 'won', alive: [spec] };
+    expect(endingWinner(alone)).toBe('speculator');
+    expect(winnersOf(alone)).toEqual([spec]);
+    const lost = { ...alone, neutralResult: 'lost' };
+    expect(endingWinner(lost)).toBe('draw');
+    expect(winnersOf(lost)).toEqual([]);
+    // beside a side's win the neutral stays the line under it, and off the stand
+    const beside = { ...necro, winner: 'villagers' as const, neutralResult: 'won' };
+    expect(endingWinner(beside)).toBe('villagers');
+    expect(winnersOf({ ...beside, alive: [spec] })).toEqual([]);
+    // the fortune teller on its points, dead or alive
+    expect(endingWinner({ ...p3, winner: null, neutralResult: 'won (3 points)' })).toBe(
+      'fortune_teller',
+    );
   });
 
   it('knows a pack mate by its side, not a role', () => {
