@@ -120,10 +120,10 @@ export const CARD_TEXT: Record<string, CardText> = {
     name: 'Illusionist',
     line: 'When the curtain lifts, a passenger’s secret has vanished.',
     ability:
-      'Twice per game, conceal the pack’s victim’s role and learn it yourself. This also hides the attacking wolf’s visit. Your own concealment visit remains visible unless you carried out the attack yourself. A use is spent only if the victim dies.',
+      'Twice per game, conceal the pack’s victim’s role; the whole pack learns it. This also hides the attacking wolf’s visit. Your own concealment visit remains visible unless you carried out the attack yourself. A use is spent only if the victim dies.',
     pack: 'You know your fellow wolf and can talk privately at night. The pack attacks one player each night. Surviving wolves take turns choosing and carrying out the attack.',
     night:
-      "Discuss who to kill tonight. You may also conceal the victim's role and information from the morning report and learn it yourself.",
+      "Discuss who to kill tonight. You may also conceal the victim's role and information from the morning report; the whole pack learns it.",
     nightAlone:
       'Choose one player to kill. You may also conceal their role and information from the morning report and learn it yourself. You hunt alone now.',
     win: 'The lone killer is eliminated and the surviving wolves equal or outnumber all other living players combined.',

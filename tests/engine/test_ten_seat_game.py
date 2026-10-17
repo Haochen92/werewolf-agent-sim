@@ -387,6 +387,36 @@ def test_the_conceal_is_a_visit_to_the_packs_victim():
     assert h["illusionist"] not in visitors_of(resolve_night(choices, st["roles"], 2), h["healer"])
 
 
+def test_the_whole_pack_learns_the_role_the_illusionist_hid():
+    # Owner, 2026-10-17: the pack's record (every wolf's) names the concealed role.
+    st = _state({"lone_killer": "serial_killer", "neutral": "speculator"})
+    h = _holders(st)
+    choices = [
+        NightChoice(h["chanteuse"], "chanteuse", "kill", h["healer"]),
+        NightChoice(h["illusionist"], "illusionist", "conceal", None),
+    ]
+    pack = next(r for r in night_action_records(choices, resolve_night(choices, st["roles"], 2), st["roles"])
+                if r.actor == "wolves")
+    assert pack.result == "killed" and pack.seen == ["healer"]
+    assert pack.outcome == f"{h['healer']} died, and the illusionist hid their role: they were a healer."
+    # No conceal: the role is public, and the record says it as before.
+    plain = night_action_records(choices[:1], resolve_night(choices[:1], st["roles"], 2), st["roles"])[0]
+    assert plain.seen == [] and plain.outcome == f"{h['healer']} died. They were a healer."
+
+
+def test_a_clean_through_the_illusionists_body_is_not_told_to_the_pack():
+    st = _state({"lone_killer": "necromancer", "neutral": "speculator"}, day=3)
+    h = _holders(st)
+    choices = [
+        NightChoice(h["chanteuse"], "chanteuse", "kill", h["healer"]),
+        NightChoice(h["necromancer"], "necromancer", "kill", h["healer"], via=h["illusionist"]),
+    ]
+    outcome = resolve_night(choices, st["roles"], 3, body_conceals=1)
+    assert outcome.concealed == [h["healer"]]
+    pack = next(r for r in night_action_records(choices, outcome, st["roles"]) if r.actor == "wolves")
+    assert pack.seen == [] and pack.outcome == f"{h['healer']} died. Their role was concealed."
+
+
 def test_a_wolfs_skill_turn_is_stamped_with_its_own_round():
     from Agents.nodes.night.pack import CARRIER_ROUND, SKILL_ROUND, pack_fan_out_skills
     st = _state({"lone_killer": "serial_killer", "neutral": "speculator"})

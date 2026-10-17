@@ -55,12 +55,12 @@ How each side and role works:
     Blocking is a visit.
 - Illusionist: Twice per game the Illusionist may hide the role of the player the wolves killed that
     night. The morning report then says "Their role is hidden by an illusionist" instead of the role,
-    that player has no will, and the Illusionist privately learns the role. Hiding the body also hides
-    the attacking trace: the carrier's visit to that victim is not seen by a Sentinel watching the
-    victim or a Trailseer following the carrier. The carrier's other visit that night is still seen, and
-    so is the Illusionist's own visit to hide the body, unless the Illusionist carried the kill itself:
-    then it leaves no trace at that door at all. If the wolves' victim survived, nothing is hidden, the
-    use is kept, and every visit to the victim is seen.
+    that player has no will, and every wolf privately learns the role. Hiding the body also hides the
+    attacking trace: the carrier's visit to that victim is not seen by a Sentinel watching the victim or
+    a Trailseer following the carrier. The carrier's other visit that night is still seen, and so is the
+    Illusionist's own visit to hide the body, unless the Illusionist carried the kill itself: then it
+    leaves no trace at that door at all. If the wolves' victim survived, nothing is hidden, the use is
+    kept, and every visit to the victim is seen.
 - Serial Killer: The Serial Killer works alone against everyone. Each night it kills one player; the
     kill is an attack and a visit. It cannot be killed at night by any attack (an attack on it fails,
     and nothing is announced), it cannot be blocked, it reads Not suspicious to the Investigator, and it

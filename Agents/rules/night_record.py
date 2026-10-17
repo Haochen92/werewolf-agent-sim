@@ -32,7 +32,7 @@ _ATTACKER_PHRASE = {
 
 # The result words a record may carry, by action. The disclosure reads these, never the prose.
 #   protect:     saved | no_attack
-#   kill/shoot:  killed | saved | immune
+#   kill/shoot:  killed | saved | immune  (a pack kill the illusionist concealed: the role in `seen`)
 #   hold_fire:   held
 #   investigate: suspicious | not_suspicious   (the target is in `seen`)
 #   watch, follow: seen            (the names are in `seen`; empty = no one)
@@ -87,8 +87,10 @@ def _record_actor(choice: NightChoice) -> str:
     return PACK_ACTOR if is_pack_kill(choice) else choice.actor
 
 
-def _record_of(choice: NightChoice, outcome: NightOutcome, roles: dict[str, str]) -> NightActionRecord:
-    """One choice that went ahead, as its actor learns the result."""
+def _record_of(choice: NightChoice, outcome: NightOutcome, roles: dict[str, str],
+               pack_concealed: bool = False) -> NightActionRecord:
+    """One choice that went ahead, as its actor learns the result. ``pack_concealed``: the living
+    illusionist's conceal went ahead tonight."""
     night = outcome.night
     target = choice.target
     actor = _record_actor(choice)
@@ -119,6 +121,12 @@ def _record_of(choice: NightChoice, outcome: NightOutcome, roles: dict[str, str]
         verdict = outcome.verdicts.get(target)
         result = verdict or "killed"
         outcome_text = _kill_outcome(target, verdict, roles, target in outcome.concealed, _saver(target, outcome))
+        if is_pack_kill(choice) and pack_concealed and target in outcome.concealed:
+            # The whole pack learns the role the illusionist hid (owner, 2026-10-17); a clean
+            # through the dead illusionist's body is the necromancer's alone (below).
+            seen = [roles.get(target, "unknown")]
+            outcome_text = (f"{target} died, and the illusionist hid their role: they were a "
+                            f"{_role_words(roles.get(target, 'unknown'))}.")
         if choice.via is not None and roles.get(choice.via) == "illusionist" and target in outcome.concealed:
             # The necromancer cleaned this body through the illusionist's, and learns the role.
             seen = [target]
@@ -231,6 +239,7 @@ def night_action_records(
     """The night's records, one per choice, in choice order. A choice a block cancelled is
     recorded as roleblocked: its actor is told, and learns nothing else."""
     records: list[NightActionRecord] = []
+    pack_concealed = any(c.kind == "conceal" and c.actor not in outcome.blocked for c in choices)
     for choice in choices:
         if choice.actor in outcome.blocked:
             action = "shoot" if (choice.kind == "kill" and choice.role == "vigilante") else choice.kind
@@ -242,7 +251,7 @@ def night_action_records(
                 result="roleblocked", seen=[],
             ))
             continue
-        records.append(_record_of(choice, outcome, roles))
+        records.append(_record_of(choice, outcome, roles, pack_concealed))
     return records
 
 

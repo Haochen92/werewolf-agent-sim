@@ -6,7 +6,7 @@ from Agents.schemas.role_card import NightWords, RoleCard
 RULES = """
 Twice per game the Illusionist may hide the role of the player the wolves killed that night. The
 morning report then says "Their role is hidden by an illusionist" instead of the role, that
-player has no will, and the Illusionist privately learns the role. Hiding the body also hides the
+player has no will, and every wolf privately learns the role. Hiding the body also hides the
 attacking trace: the carrier's visit to that victim is not seen by a Sentinel watching the victim
 or a Trailseer following the carrier. The carrier's other visit that night is still seen, and so is
 the Illusionist's own visit to hide the body, unless the Illusionist carried the kill itself: then it

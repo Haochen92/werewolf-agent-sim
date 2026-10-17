@@ -64,7 +64,7 @@ known from the assigned role's perspective. This is a spectrum, not binary:
 2. System-confirmed — role revealed by game mechanics. A death reveals the
    dead player's role UNLESS the illusionist concealed the body: a concealed
    body's role stays hidden until the game ends, so during play only the
-   illusionist knows it (privately), however obvious it is in hindsight. When a town player dies
+   wolves know it (privately), however obvious it is in hindsight. When a town player dies
    and the role is revealed, the game master reads out that role's record of
    earlier nights; that record is public fact too. A healer save announcement
    confirms only that the player was attacked and protected, not their role.

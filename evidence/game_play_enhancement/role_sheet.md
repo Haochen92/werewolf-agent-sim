@@ -177,7 +177,7 @@ Two wolves share one kill each night. Each also has one skill.
 | Skill | Status | Uses | What it does |
 |---|---|---|---|
 | Chanteuse | New, level 1 | Every night; the same target is allowed | Blocks one player's night action (town or wolf; see Roleblock) |
-| Illusionist | New, level 1 | 2 conceals | Conceals the pack's victim and privately learns their role |
+| Illusionist | New, level 1 | 2 conceals | Conceals the pack's victim; the whole pack privately learns their role (owner, 2026-10-17; was the Illusionist alone) |
 
 - A conceal is spent only when a body is actually concealed; a saved or immune victim keeps the
   use, because the Illusionist cannot know in advance.
