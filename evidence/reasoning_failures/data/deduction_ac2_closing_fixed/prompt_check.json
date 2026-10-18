@@ -1,0 +1,19 @@
+{
+ "new_call_present": true,
+ "no_accused_by": true,
+ "system_equals_2x2": true,
+ "only_closing_line_differs": true,
+ "human_equals_2x2_with_line_swapped": true,
+ "diff_vs_2x2": [
+  "--- deduction_ac2_2x2/prompts/AC2_current_before_note.txt",
+  "+++ rendered",
+  "@@ -43 +43 @@",
+  "-game_master: Before the vote: player_8 has been accused by player_2, player_5 and player_4. player_8 gets a last word.",
+  "+game_master: Before the vote: player_8 gets a last word."
+ ],
+ "human_chars": 11053,
+ "human_sha256": "2526326ead304f43952630fa341c0b67042ea58d225d2ab3a1447f452f0c85ba",
+ "system_chars": 12306,
+ "system_sha256": "016c791eaeff2a0c9e792767e3ffa2095f88639f1ce3ed6e18f9461a19a492ca",
+ "all_ok": true
+}

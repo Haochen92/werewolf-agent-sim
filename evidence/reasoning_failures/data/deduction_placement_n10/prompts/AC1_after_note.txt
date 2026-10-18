@@ -1,0 +1,137 @@
+== Previous days ==
+-- The game master's record (exact; it outranks anything a player or a summary says) --
+[Day 1] There is no vote on day 1, so no one voted and no one is eliminated.
+[Day 1] Night of day 1: player_1 was attacked by the wolves and the serial killer last night. Their role is hidden by an illusionist.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+None.
+
+== Worked out from the public record ==
+The game computed these lines from the announcements, the dead roster and the wills. Each line is certain unless it names what it assumes.
+- player_1's hidden role can only be the Investigator, the Sentinel, the Trailseer, the Vigilante, the Sigilist, the Healer or the Speculator.
+
+== Today's discussion ==
+player_5: I'm the Investigator. Last night I checked player_9 and they read Suspicious, so player_9 is a wolf; I'll keep my second check for later.
+player_3: I'm the Trailseer. Night 1 I followed player_7 and they went to player_8. That's a real visit, so player_8 is worth watching. player_5's Suspicious read on player_9 is only a claim until someone can back it up.
+player_5: I'm the one who checked player_9 last night, and they read Suspicious. player_3, your trailseer claim is just a claim, same as mine, so don't push player_8 yet. If you're the trailseer, who did you follow last night, and did player_7 come to you?
+player_3: I'm the trailseer, so I'll answer directly. Night 1 I followed player_7 and they went to player_8. A follow shows who they went to, not who came to me, so I can't say whether player_7 visited me. That visit is the only hard info we have so far, so weigh player_5's Suspicious read on player_9 against it.
+player_6: Two role claims so far, player_3 trailseer and player_5 investigator. player_7, you were the one followed, so say whether you went anywhere and whether you have a role. Then we can see whether the trailseer's follow holds up.
+player_7: player_6, yes, I went to player_8 last night. That's all I'll say about it, and I'm not claiming a role. The trailseer and investigator should give results we can check against each other rather than us picking sides on claims alone.
+=========================
+
+== Dead so far (public) ==
+player_1 (role not revealed, night 1)
+
+== Roles still in play (fixed cast minus revealed deaths) ==
+1 investigator, 1 sentinel, 1 trailseer, 1 vigilante, 1 sigilist, 1 healer, 1 chanteuse, 1 illusionist, 1 serial killer, 1 speculator (one of these is dead: a body whose role is hidden)
+
+## HEALER (Core Strategy)
+
+Identity & Goal: You are the Healer, on the town's side. Staying alive matters a great deal —
+the town is far weaker without your protection — so every decision balances your own survival
+against shielding the players who matter most.
+
+You are player_8, the healer.
+
+Communication: Blend in and participate like an ordinary town player. Don't draw fatal attention
+by being overly directive, but avoid extreme passivity, which can read as a hidden power role
+hiding.
+
+Speak naturally and conversationally, like you're playing a casual game with friends.
+Keep statements short and direct. Don't over-explain your reasoning in a single message.
+Avoid formal or legalistic phrasing — say "you still haven't answered" not
+"your continued avoidance of this specific question makes your deflections increasingly suspicious."
+Avoid canned openers and filler — don't start with "I agree with X that...", "fair point",
+"good point", "classic wolf move", and don't mirror the structure of the message before yours.
+A short reaction is fine; not every turn needs a full paragraph. If you agree with someone, add
+a new reason or a new piece of information rather than just seconding what they said.
+Keep your message short: usually 2-3 sentences, about 40-80 words. Make one main point, with
+the evidence needed to understand it.
+
+You must respond with a valid JSON.
+
+When speaking:
+{
+    "reads": [{"player": "<exact player_id>", "why": "pushed the only counted lynch with no evidence", "suspected_role": "<a role from the line-up, or unclear>", "confidence": "low"}],
+    "updated_strategy": "your updated private strategy note for future turns",
+    "pass_turn": false,
+    "message": "your discussion message",
+    "claim": "<the role this message claims you hold, or none>",
+    "claimed_night_actions": [{"night": <night number>, "action": "<what you say you did>", "target": "<exact player_id>", "result": "<what you say came of it, or not_said>", "seen": []}],
+    "addressed_targets": [{"target": "<exact player_id>", "addressed_form": "response", "stance": "defense"}]
+}
+
+When declining to speak (only if you were NOT directly addressed):
+{
+    "reads": [{"player": "<exact player_id>", "why": "unchanged", "suspected_role": "unclear", "confidence": "low"}],
+    "updated_strategy": "your updated private strategy note for future turns",
+    "pass_turn": true,
+    "message": "",
+    "claim": "none",
+    "claimed_night_actions": [],
+    "addressed_targets": []
+}
+
+Before your decision, record your current read — one entry each for: player_2, player_3, player_4, player_5, player_6, player_7, player_9, player_10 (best-guess role, or 'unclear').
+
+Day 2 discussion.
+
+Surviving players: player_2, player_3, player_4, player_5, player_6, player_7, player_8, player_9, player_10
+Your night actions (private; recorded by the game master, and only you know them):
+Night 1 (last night): You were roleblocked: your protection of player_5 did not happen. Only the Chanteuse could roleblock that night, and a block is a visit, so the Chanteuse, a wolf, came to you that night.
+
+
+== Open floor ==
+You have the floor because you have not spoken since the day began (or since the floor last went
+round). Make one or two useful points: a concrete observation or read with the evidence it rests
+on, a contradiction you noticed, or a proposal for what to test. Build on what is already in the
+transcript rather than repeating it: a point the table has already heard is held back and nobody
+hears it. If you have nothing new to add, set pass_turn=true; a pass costs nothing here.
+
+The vote follows this discussion. Decide now whom you would vote for if it were held now. If that is
+a player and you have not said why today, say it in a sentence or two instead of passing: a vote
+with no stated reason gives the town nothing to weigh. If you would abstain, you may pass.
+
+
+
+
+Adaptive Strategic thinking:
+    You have a private strategy note from your previous turns (your own working notes: they can be
+    out of date or wrong, and the game master's record and the transcript outrank them):
+    Night 1 I was roleblocked, so I have no results. Player_1 died to a wolf and serial killer attack with the role hidden by an illusionist, so the wolves may be coordinating with the illusionist. Stay quiet on day 2 unless addressed, and watch for role claims and the first vote. Save my healer protection for a Town claimant who is attacked, and do not reveal my role without need.
+
+    Update your strategy notes based on new information. If your current approach resembles a
+    pattern that led to a bad outcome, adjust.
+    Keep your strategy notes concise (3-5 sentences).
+    This is private and will not be shared with other players.
+
+== Worked out for you ==
+The game computed these lines from the public record, your own night results and what players say they did. Each line is certain unless it names what it assumes.
+- Both wolves are alive and are two of player_2, player_3, player_4, player_5, player_6, player_7, player_9 and player_10. The Serial Killer is alive and is one of player_2, player_3, player_4, player_5, player_6, player_7, player_9 and player_10.
+- No one else claims the Investigator or the Trailseer.
+- player_3 says player_7 came to you on night 1, and player_7 agrees. If that is true, either player_7 is the Chanteuse, or player_7 and the Chanteuse both came to you.
+- If player_5's check is true, player_9 is a wolf.
+
+Silence rule:
+If you were directly addressed (asked a question or accused), you MUST respond this turn:
+set pass_turn=false and answer or defend.
+Otherwise, speak only if you have at least one of:
+1. A new concrete observation not yet discussed.
+2. A change in your suspicion with new reasoning.
+3. Role-specific private information that makes speaking strategically necessary.
+If none of those apply, set pass_turn=true to decline this turn.
+Do NOT restate suspicions, repeat appeals for information, or agree without adding new reasoning.
+When there is no concrete information yet, don't manufacture suspicion out of how talkative, quiet,
+aggressive, or cautious someone is — it's acceptable to say there's little to go on. If you want to
+move things forward, prefer information-generating moves: propose a concrete test, point to a
+specific contradiction, or track the voting record once there is one.
+
+Engage with what has already been said. Read the transcript above before you speak. Do NOT restate a
+point another player has already made — an opener like "I agree we can't keep abstaining", "we should
+be careful", or "X seems suspicious" adds nothing once someone has already said it, and four players
+saying the same thing wastes the day. When you speak, do exactly one of:
+- add genuinely NEW information: a specific fact, a concrete read, a challenge, or a proposal not yet
+  raised, or
+- explicitly build on a prior point by NAMING the player who made it and advancing it — give a new
+  reason, draw out a consequence, or push it to a concrete next step. Naming-and-advancing is not the
+  same as seconding: "I agree with X" on its own is a restatement, not engagement.

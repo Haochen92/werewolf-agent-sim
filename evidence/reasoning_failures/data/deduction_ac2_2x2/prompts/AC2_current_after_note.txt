@@ -1,0 +1,98 @@
+== Previous days ==
+-- The game master's record (exact; it outranks anything a player or a summary says) --
+[Day 1] There is no vote on day 1, so no one voted and no one is eliminated.
+[Day 1] Night of day 1: player_1 was attacked by the wolves and the serial killer last night. Their role is hidden by an illusionist.
+[Day 2] Here's the vote result for day 2:
+  player_2 voted to eliminate player_9
+  player_3 voted to eliminate player_9
+  player_4 voted to eliminate player_9
+  player_5 voted to eliminate player_9
+  player_6 voted to eliminate player_9
+  player_7 voted to eliminate player_3
+  player_8 voted to eliminate player_9
+  player_9 voted to eliminate player_5
+  player_10 voted to eliminate player_9
+Player player_9 has been voted out and was a illusionist.
+[Day 2] Night of day 2: player_3 was attacked by the wolves and the serial killer last night. They were a trailseer. The record of player_3, the trailseer: night 1, followed player_7; they visited player_8. player_7 was struck down by a sigil last night. They were a chanteuse.
+
+-- Claims made in the day discussion (claims, not facts; a note starting "Record:" or "Rules:" is an exact check by the game master; a plan said in the day binds no one: a player may choose a different target at night) --
+player_5: claimed investigator (day 2).
+  Night 1: checked player_9, says they read Suspicious. Record: player_9 was revealed as illusionist, as claimed.
+player_3: claimed trailseer (day 2). Record: revealed as trailseer when they died on night 2, as claimed.
+  Night 1: followed player_7; says they visited player_8 (a visit alone does not establish what they did there).
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+[Day 2] player_5 → player_9 (revealed illusionist, voted out day 2): player_5 argued player_9 is a wolf because player_5's night-1 investigation of player_9 read Suspicious. Defense: player_9 said a single Suspicious read can't be verified, that they have no role to counter with, and asked which night and why player_5 checked them. Disputed: player_3 argued player_5's Suspicious read is only a claim until someone backs it up and should be weighed against player_3's follow on player_7.
+[Day 2] player_3 (revealed trailseer, killed night 2) → player_8: player_3 argued player_8 is worth watching because player_3's night-1 follow on player_7 showed player_7 went to player_8. Defense: player_7 confirmed they went to player_8 but claimed no role and said the trailseer and investigator should give checkable results. Disputed: player_5 argued player_3's trailseer claim is only a claim and told player_3 not to push player_8 yet.
+
+== Worked out from the public record ==
+The game computed these lines from the announcements, the dead roster and the wills. Each line is certain unless it names what it assumes.
+- player_1's hidden role can only be the Investigator, the Sentinel, the Vigilante, the Healer or the Speculator.
+
+== Today's discussion ==
+player_2: I'm the sentinel, and I'm claiming it now. On night 2 I watched player_5 and saw that player_7 and player_8 both came to them, so player_8 needs to explain that visit.
+player_4: I'm the sigilist. My sigil on player_7 last night struck them down as they attacked, so that's one wolf gone. I still have one sigil left, and I'll use it only on someone who attacks.
+player_8: Yes, I went to player_5 last night, so that visit is mine. It doesn't tell you what I did there. player_7 also came to player_5, so I'd like to hear from player_7's side, since they're dead and can't answer. Two claims are on the table now, sentinel and investigator, so we need to see whose results line up.
+player_5: Both wolves are already dead: player_9 was lynched and player_7 was sigil-struck. So the only threat left is the serial killer, and it reads Not suspicious to any check. My last check can't find it. player_8, you say you visited me; I was blocked, so I can't confirm that. Who else do you think could be the killer?
+player_8: Yes, my visit last night was to player_5, and it was protection. player_7 coming to you fits you being blocked, so that part lines up. As for the killer, player_2 and player_4 both have checkable claims, so let's see whether player_2's watch and player_4's sigil results hold up before we pick someone.
+player_10: Wolves look fully dead now, so the killer is the only evil left. The claims so far all fit each other: player_2's watch matches player_8's visit to player_5, and player_4's sigil matches player_7 attacking. That leaves player_6, who hasn't claimed anything, as my vote for now. Happy to switch if someone's claim breaks.
+player_2: My watch on player_5 last night showed player_7 and player_8 coming to them, so player_8's visit checks out. Nothing else from me yet. player_6 hasn't said anything, so I'd like to hear their night result before I vote.
+player_4: Wolves are both gone, so the killer is among the unclaimed players: 6, 8, 10. My sigil can't touch the killer, so I'm not using it on anyone until a claim gives a reason. I'd vote player_8 for now: they admitted a visit and called it protection, but that night player_5 was blocked, so there was nothing to protect. I'm open to switching if player_6 or player_10 gives a checkable result.
+player_8: player_4, I'm the healer. I wasn't roleblocked on night 2, so my visit to player_5 went through. Player_5 being blocked doesn't cancel my protection, and nobody attacked player_5, so no save was announced. I'm not voting player_8 on that point, so give me something checkable to act on.
+player_6: I'm unclaimed, so I have no night result to share, and I won't invent one. Nobody's claim has broken yet. I'd rather vote on what the claims actually show than on a guess, so I'll follow the room's reasoning on player_8 once player_8 answers player_4's point.
+game_master: Before the vote: player_8 has been accused by player_2, player_5 and player_4. player_8 gets a last word.
+player_8: My protection on player_5 went through: being blocked doesn't stop my visit, and I wasn't blocked myself. Nobody attacked player_5 on night 2, so no save was announced, which is consistent with that. player_4, the nothing-to-protect point doesn't hold, so I'd look at the claims that can be checked instead.
+=========================
+
+== Dead so far (public) ==
+player_1 (role not revealed, night 1), player_9 (illusionist, lynched day 2), player_3 (trailseer, night 2), player_7 (chanteuse, night 2)
+
+== Roles still in play (fixed cast minus revealed deaths) ==
+1 investigator, 1 sentinel, 1 vigilante, 1 sigilist, 1 healer, 1 serial killer, 1 speculator (one of these is dead: a body whose role is hidden)
+
+## INVESTIGATOR (Core Strategy)
+
+Identity & Goal: You are the Investigator, on the town's side, holding the most powerful
+information tool in the game. That information only helps the town once the town acts on it; a
+result that stays in your head changes no votes.
+
+You are player_5, a investigator.
+
+Voting & Logic: During the day you vote like any town player. Weigh the public voting record and
+how events actually played out, by your own judgment.
+
+You are now at the end of the current day of discussion. Vote to eliminate the player you believe
+is most likely to be a threat to the town — a wolf or the lone killer.
+You must vote from one of the surviving players, or "abstain" when it is offered.
+You cannot vote for yourself.
+You may vote "abstain" if you have no one you can justify eliminating yet — an abstain plurality means no one is eliminated today. Only abstain when holding off genuinely beats a guess; a wrong elimination is costly, but so is letting the killers act another night unchecked.
+
+You must respond with a valid JSON:
+{"reads": [{"player": "<exact player_id>", "why": "pushed the only counted lynch with no evidence", "suspected_role": "<a role from the line-up, or unclear>", "confidence": "low"}], "updated_strategy": "your updated private strategy note for future turns", "vote_target": "exact player_id from the surviving players list, or \"abstain\""}
+
+Before your decision, record your current read — one entry each for: player_2, player_4, player_6, player_8, player_10 (best-guess role, or 'unclear').
+Day 3. Time to vote!
+
+Here are the surviving players: player_2, player_4, player_5, player_6, player_8, player_10
+Your night actions (private; recorded by the game master, and only you know them):
+Night 1: you checked player_9. player_9 reads Suspicious. Only a wolf reads Suspicious in this game, so player_9 is a wolf.
+Night 2 (last night): You were roleblocked: your check on player_3 did not happen. Only the Chanteuse could roleblock that night, and a block is a visit, so the Chanteuse, a wolf, came to you that night.
+
+Adaptive Strategic thinking:
+    You have a private strategy note from your previous turns (your own working notes: they can be
+    out of date or wrong, and the game master's record and the transcript outrank them):
+    Both wolves (player_9 and player_7) are dead, so only the serial killer is left to find. Suspicious reads only come from wolves, so my last check can't expose the serial killer; it reads Not suspicious. Focus on sentinel and sigilist claims and on who had a visit that doesn't line up. Vote on evidence, not on the check.
+
+    Your updated_strategy replaces this note, so carry forward what still matters (your reads, your
+    plans for the night) and drop what the day has disproven. Keep it concise (3-5 sentences).
+    This is private and will not be shared with other players.
+
+== Worked out for you ==
+The game computed these lines from the public record, your own night results and what players say they did. Each line is certain unless it names what it assumes.
+- Both wolves are dead: player_9 and player_7. The Serial Killer is alive and is one of player_2, player_4, player_6, player_8 and player_10.
+- If the current role claims are true, the Serial Killer is player_6 or player_10.
+- No one else claims the Investigator, the Sentinel, the Sigilist or the Healer. player_6 and player_10 have made no role claim.
+- You were roleblocked on night 2, so the Chanteuse came to you, and player_7 was the Chanteuse. player_2's report that player_7 came to you that night is true. This does not show that player_2 is the Sentinel.
+- player_8 can be the Serial Killer only if player_2's watch is false. player_2 says player_8 came to you on night 2, and player_8 says it protected you that night. These agree; the sighting does not show which action player_8 took. player_3's will shows player_7, the Chanteuse, went to player_8 on night 1. The pack's kill that night was on player_1, so that visit was her block on player_8.
+- The Sigilist went to player_7 on night 2 to set a sigil on them, and a watch on player_7 that night would have shown that visit. A wolf is struck by a sigil only when it carries the pack's kill, so player_7 carried the pack's kill on night 2. No protection went ahead on player_7 on night 2: one would have saved player_7.
+Cast your vote. Choose the player who is the greatest threat to the town.
