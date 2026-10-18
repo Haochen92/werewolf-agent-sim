@@ -226,3 +226,23 @@ def test_the_eliminated_check_takes_death_dicts_as_well():
     deaths = [{"player": "player_2", "role": "investigator", "day": 1, "phase": "night"}]
     log = [_prompt("player_2", 3, "day_channel")]
     assert len(check_eliminated_players_excluded(log, deaths)) == 1
+
+
+def test_the_same_words_in_the_seats_own_record_are_no_leak():
+    # Two killers on one victim, and a Necromancer's block through the dead Chanteuse's body: the
+    # receiving seat's own record carries the sentence (persona voice games, 2026-10-18).
+    records = [
+        NightActionRecord(day=1, actor="wolves", action="kill", target="player_3",
+                          outcome="player_3 survived: the healer saved them."),
+        NightActionRecord(day=1, actor="player_6", action="kill", target="player_3",
+                          outcome="player_3 survived: the healer saved them."),
+        NightActionRecord(day=2, actor="player_4", action="block", target="player_5",
+                          outcome="player_5 was roleblocked tonight."),
+        NightActionRecord(day=3, actor="player_8", action="block", target="player_5",
+                          outcome="Through player_4's body: player_5 was roleblocked tonight."),
+    ]
+    killer = {"player_id": "player_6", "player_role": "serial_killer",
+              "prompt_input": {"night_actions": "Night 1: player_3 survived: the healer saved them."}}
+    necro = {"player_id": "player_8", "player_role": "necromancer",
+             "prompt_input": {"night_actions": "Night 3: Through player_4's body: player_5 was roleblocked tonight."}}
+    assert check_night_record_isolation([killer, necro], records, ROLES) == []

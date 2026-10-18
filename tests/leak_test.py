@@ -162,17 +162,23 @@ def check_night_record_isolation(
     night_actions (NightActionRecord objects or their dicts); the ten-seat successor of the
     investigator_results / vigilante_results checks."""
     leaks: list[str] = []
-    for record in records:
-        actor = record["actor"] if isinstance(record, dict) else record.actor
-        outcome = record["outcome"] if isinstance(record, dict) else record.outcome
+    pairs = [(r["actor"], r["outcome"]) if isinstance(r, dict) else (r.actor, r.outcome) for r in records]
+
+    def allowed(actor: str, entry: dict[str, Any]) -> bool:
+        if actor == PACK_ACTOR:
+            return _is_wolf(roles.get(entry["player_id"], entry["player_role"]))
+        return entry["player_id"] == actor
+
+    for actor, outcome in pairs:
         if not outcome or not outcome.strip():
             continue
         for entry in prompt_log:
-            if actor == PACK_ACTOR:
-                allowed = _is_wolf(roles.get(entry["player_id"], entry["player_role"]))
-            else:
-                allowed = entry["player_id"] == actor
-            if allowed:
+            if allowed(actor, entry):
+                continue
+            # The same words in a record the seat may see are no leak: two killers on one victim,
+            # two blocked seats and a Necromancer acting through a dead player's body ("Through
+            # player_9's body: ...") get the same sentence (persona voice games, 2026-10-18).
+            if any(outcome in own for other, own in pairs if own and allowed(other, entry)):
                 continue
             if outcome in entry["prompt_input"].get("night_actions", ""):
                 _record_leak(
