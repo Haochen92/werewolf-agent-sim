@@ -316,6 +316,7 @@ export function FeaturedReplay() {
             <i className={classes.flakes} />
           </div>
         </div>
+        <div className={classes.rail} aria-hidden="true" />
         <div className={classes.rbwrap}>
           <div className={classes.rboard}>
             <div className={classes.field}>

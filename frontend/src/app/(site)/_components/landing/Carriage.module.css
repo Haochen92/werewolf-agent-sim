@@ -11,6 +11,9 @@
 
 /* ---------- the depot: the figure spans the screen, past the column ---------- */
 .depot {
+  /* the track under the wheels: its height, and how far down it the wheels stand */
+  --rail-h: 64px;
+  --rail-top: 12px;
   /* the whole carriage on a desktop: end · door · the game's window · door · end */
   --end: 24px;
   --dw: 88px;
@@ -242,22 +245,27 @@
   padding: 0 12px 16px;
 }
 .rboard {
-  composes: board from '../../../../components/site/Board.module.css';
   position: relative;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   gap: 26px;
   max-width: 100%;
-  padding: 12px 30px 13px;
-  border-radius: 8px;
+  padding: 0 12px;
+  /* the owner's walnut sign in its brass frame (scripts/fit_kit.py): a 9-slice, the frame and its
+     four rivets kept, the walnut stretched to the board */
+  border-style: solid;
+  border-width: 18px 20px;
+  border-image: url('../../../../assets/site/kit/train-sign.webp') 44 48 fill / 18px 20px
+    stretch;
 }
 /* brackets running down into the roof's deck, with foot plates */
 .rboard::before,
 .rboard::after {
   content: '';
   position: absolute;
-  top: 100%;
+  /* from under the frame's foot */
+  top: calc(100% + 18px);
   width: 7px;
   height: 17px;
   background: linear-gradient(90deg, #22180b, #a87a38 50%, #22180b);
@@ -990,7 +998,7 @@
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    padding: 10px 20px 12px;
+    padding: 0 8px;
   }
   .field {
     align-items: center;
@@ -1112,9 +1120,9 @@
     --sr: 224;
     --sb: 364;
     --sl: 226;
-    /* the roof's clear top, and the row where the platform's edge crosses the wheels */
+    /* the roof's clear top, and the wheels' last row (they stand on the track there) */
     --clear: 33;
-    --cross: 925;
+    --cross: 991;
   }
 }
 @media (max-width: 860px) {
@@ -1129,7 +1137,9 @@
     --sb: 337;
     --sl: 135;
     --clear: 60;
-    --cross: 940;
+    --cross: 974;
+    --rail-h: 40px;
+    --rail-top: 8px;
   }
 }
 .depot[data-art] .paint {
@@ -1173,9 +1183,8 @@
   background: none;
 }
 .depot[data-art] .lower {
-  /* the picture below the window, down to where the platform's edge crosses the wheels (over
-     their lower third); the platform is lifted over the picture for it */
-  height: calc(var(--k) * (var(--cross) - (1024 - var(--sb))) + 30px);
+  /* the picture below the window, down to the wheels' feet, on the track */
+  height: calc(var(--k) * (var(--cross) - (1024 - var(--sb))));
   background: none;
 }
 .depot[data-art] .lower::before {
@@ -1183,6 +1192,24 @@
 }
 .depot[data-art] .platform {
   z-index: 4;
+  /* the platform's edge below the track, not across the wheels (owner, 2026-10-18) */
+  margin-top: calc(var(--rail-h) - var(--rail-top));
+}
+/* the track (the owner's railway, scripts/fit_kit.py): across the screen under the painted
+   carriage, its wheels standing `--rail-top` into it; under the carriage in the paint order (it
+   comes first in the car), a still strip repeated along */
+.rail {
+  display: none;
+}
+.depot[data-art] .rail {
+  display: block;
+  position: absolute;
+  left: calc(50% - 50vw);
+  top: calc(100% - var(--rail-top));
+  width: 100vw;
+  height: var(--rail-h);
+  background: url('../../../../assets/site/kit/rail.webp') 50% 0 / auto 100% repeat-x;
+  pointer-events: none;
 }
 .depot[data-art] .below,
 .depot[data-art] .mui {

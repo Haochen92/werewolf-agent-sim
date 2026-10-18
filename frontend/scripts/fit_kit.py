@@ -13,6 +13,8 @@ replay's exhibit, "At the end of the line" (owner, 2026-10-18), from the owner's
 - kraft, folder-tab, brass-disc: "At the end of the line" (the replay's exhibit): the folder's
   kraft (laid once), its top edge (a 9-slice: the shoulders kept, the raised middle stretched),
   the head of the brass pin that joins its cards.
+- train-sign, rail: the carriage's game-ID board (the owner's walnut sign in its brass frame, a
+  9-slice) and the track under its wheels (a repeating strip, cut where its ends match).
 - ink: the worn-ink mask for the stamps: the master's grey speckle as alpha (white = ink, the
   black flecks = where the ink did not take), a small tile.
 
@@ -76,6 +78,22 @@ def main() -> None:
     disc = Image.open(KIT / "brass-disc.png").convert("RGBA")
     disc = disc.crop(opaque_box(disc, 128))
     save(disc.resize((48, 48), Image.LANCZOS), "brass-disc", 86)
+
+    # the carriage (owner, 2026-10-18): the game-ID board's sign (a 9-slice: the brass frame and
+    # its rivets kept, the walnut stretched) and the track under the wheels, cut to a whole number
+    # where its ends match best, so it repeats along the screen with no seam
+    sign = Image.open(LANDING / "train_sign.png").convert("RGBA")
+    sign = sign.crop(opaque_box(sign, 128))
+    save(sign.resize((round(sign.width * 180 / sign.height), 180), Image.LANCZOS), "train-sign", 84)
+
+    rail = Image.open(LANDING / "railway.png").convert("RGBA")
+    y0, y1 = 279, 503  # the track's rows: the far rail's top to the sleepers' feet
+    # the sleepers' spacing drifts across the master (the far row's differs from the near's), so
+    # the cut is the span whose two ends match best over 24 columns, found by trying every span
+    # from 1500 to 2160 at every start (a few minutes; kept as numbers)
+    x0, span = 122, 1749
+    track = rail.crop((x0, y0, x0 + span, y1))
+    save(track.resize((round(span * 128 / track.height), 128), Image.LANCZOS), "rail", 74)
 
     ink = Image.open(LANDING / "ink.png").convert("L").resize((256, 256), Image.LANCZOS)
     mask = Image.new("RGBA", ink.size, (0, 0, 0, 0))

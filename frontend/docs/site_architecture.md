@@ -195,6 +195,12 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   on card paper ruled in red under a red ribbon, a brass pin (`brass-disc` heads) down to its
   private note typed on ruled cream with the paperclip, the note's own "Do not disclose:" marked
   in red pencil, and what came of it inside a ruled edge on the kraft. Copy unchanged.
+- The carriage's board and track (owner, 2026-10-18): the game-ID board is the owner's walnut
+  sign in its brass frame (`train-sign.webp`, a 9-slice: the frame and its four rivets kept, the
+  walnut stretched to the board), and the painted carriage stands on the owner's railway
+  (`rail.webp`, a strip repeated across the screen, cut where its ends match: the sleepers'
+  spacing drifts across the master), its wheels `--rail-top` into it, the platform's edge below
+  the track instead of across the wheels. 64px of track on a desktop, 40px on a phone.
 - The landing's words (owner, 2026-10-15): every quoted agent line is a real one, verbatim, at
   the seq `landing/features.ts` names. The memory card's slip is game 2f19d908's Sigilist
   following a lesson; the replay section's moment is game 68c26e83's Chanteuse claiming the
