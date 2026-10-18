@@ -1,57 +1,111 @@
-/* The replay section's exhibit (ReplayMoment.tsx): the stage's felt speech patch (SpeechBox)
-   and the Reveal's ruled note, drawn for the page. */
+/* The replay section's exhibit (ReplayMoment.tsx), in the owner's material kit (2026-10-18;
+   scripts/fit_kit.py, mock-replay-moment): a case file on walnut under a brass plate; in a kraft
+   folder, the line said aloud on card under a red ribbon, a brass pin down to its private note
+   clipped on cream, and what came of it on the folder's own kraft. Each paper is laid once, never
+   repeated (the masters' light falls off to their corners); nothing moves. */
 .moment {
   display: grid;
-  gap: 16px;
   margin: 0;
   min-width: 0;
-}
-.when {
-  color: var(--brass-hi);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  padding: 18px 18px 20px;
+  border-radius: 10px;
+  background:
+    radial-gradient(ellipse 85% 80% at 50% 45%, transparent 45%, rgba(12, 6, 2, 0.6) 100%),
+    url('../../../../assets/site/kit/walnut.webp') 0 0 / 314px 314px repeat,
+    #2c1a0e;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 170, 0.12),
+    0 24px 50px -20px rgba(0, 0, 0, 0.9);
 }
 
-/* what it said: cream felt stitched round its edge under a red felt label */
+/* the file's name on a brass plate, its screwed ends kept (a 9-slice, as the features' plates) */
+.when {
+  justify-self: center;
+  box-sizing: border-box;
+  height: 34px;
+  max-width: 100%;
+  padding: 0 6px;
+  border-style: solid;
+  border-width: 0 26px;
+  border-image: url('../../../../assets/site/kit/brass-plate.webp') 0 90 fill / 0 26px
+    stretch;
+  overflow: hidden;
+  color: #2e1c06;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 34px;
+  letter-spacing: 0.14em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-shadow: 0 1px 0 rgba(255, 240, 200, 0.5);
+}
+
+/* the kraft folder, its top edge the kit's tab (the shoulders kept, the raised middle stretched) */
+.folder {
+  position: relative;
+  display: grid;
+  gap: 16px;
+  margin-top: 40px;
+  padding: 22px 14px 14px;
+  border-radius: 0 0 6px 6px;
+  background: url('../../../../assets/site/kit/kraft.webp') 50% 50% / cover no-repeat
+    #d9b47e;
+  box-shadow: 0 10px 20px -10px rgba(0, 0, 0, 0.8);
+}
+.folder::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -27px;
+  height: 28px;
+  border-style: solid;
+  border-width: 0 24px;
+  border-image: url('../../../../assets/site/kit/folder-tab.webp') 0 64 fill / 0 24px
+    stretch;
+}
+
+/* what it said: on card, ruled in red, under a red ribbon */
 .felt {
   position: relative;
   margin: 8px 0 0;
   padding: 30px 22px 20px;
-  border-radius: 10px;
+  border-radius: 3px;
   color: #2a1d10;
   font-family: var(--font-stage-body, Literata), Georgia, serif;
   font-size: 16px;
   line-height: 1.55;
-  background:
-    repeating-linear-gradient(45deg, rgba(120, 90, 50, 0.06) 0 2px, transparent 2px 4px),
-    repeating-linear-gradient(-45deg, rgba(120, 90, 50, 0.06) 0 2px, transparent 2px 4px),
+  background: url('../../../../assets/site/kit/card-paper.webp') 50% 50% / cover no-repeat
     #eee2c6;
-  box-shadow: 0 12px 24px -12px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 6px 14px -6px rgba(0, 0, 0, 0.6);
 }
 .felt::before {
   content: '';
   position: absolute;
-  inset: 6px;
-  border: 1.5px dashed rgba(120, 90, 50, 0.45);
-  border-radius: 7px;
+  inset: 8px;
+  border: 1px solid rgba(168, 50, 42, 0.55);
+  border-radius: 2px;
   pointer-events: none;
 }
 .head {
   position: absolute;
-  top: -14px;
-  left: 16px;
+  top: -12px;
+  left: 14px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 3px 12px 3px 4px;
-  border-radius: 6px;
+  gap: 10px;
+  padding: 3px 26px 3px 5px;
   background: #a8322a;
   color: #fbeedd;
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  /* a ribbon: its tail cut on the slant */
+  clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3);
 }
 .chip {
   display: block;
@@ -61,25 +115,67 @@
   overflow: hidden;
 }
 
-/* what it wrote down: typed on the Reveal's ruled paper */
+/* the brass pin from the card down to the note: a rod between two heads */
+.pin {
+  position: relative;
+  height: 0;
+  margin: -8px 0;
+}
+.pin::before,
+.pin::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+}
+.pin::before {
+  top: -15px;
+  width: 3px;
+  height: 30px;
+  margin-left: -1.5px;
+  background: linear-gradient(90deg, #6a4c20, #e6c98e 50%, #6a4c20);
+}
+.pin::after {
+  top: -21px;
+  width: 12px;
+  height: 42px;
+  margin-left: -6px;
+  background:
+    url('../../../../assets/site/kit/brass-disc.webp') 50% 0 / 12px 12px no-repeat,
+    url('../../../../assets/site/kit/brass-disc.webp') 50% 100% / 12px 12px no-repeat;
+}
+
+/* what it wrote down: typed on ruled cream, clipped to the folder */
 .note {
   position: relative;
   margin: 0;
-  padding: 34px 22px 18px;
+  padding: 44px 22px 18px;
   color: #1d2b28;
   font-family: var(--font-stage-type, 'Courier Prime'), 'Courier New', monospace;
   font-size: 15px;
   line-height: 24px;
   background:
-    repeating-linear-gradient(180deg, transparent 0 23px, rgba(44, 107, 97, 0.18) 23px 24px) 0
-      10px,
-    #f2ecdc;
-  box-shadow: 0 12px 24px -12px rgba(0, 0, 0, 0.8);
+    repeating-linear-gradient(180deg, transparent 0 23px, rgba(44, 107, 97, 0.16) 23px 24px)
+      0 20px,
+    url('../../../../assets/site/kit/cream.webp') 50% 50% / cover no-repeat #f2ecdc;
+  box-shadow: 0 6px 14px -6px rgba(0, 0, 0, 0.6);
+}
+.note::after {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: -16px;
+  width: 17px;
+  height: 76px;
+  background: url('../../../../assets/site/kit/paperclip.webp') 0 0 / 100% 100% no-repeat;
+  transform: rotate(-4deg);
 }
 .noteHead {
   position: absolute;
-  top: 10px;
+  top: 12px;
   left: 22px;
+  right: 22px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(44, 107, 97, 0.55);
   color: #2c6b61;
   font-family: var(--font-sans);
   font-size: 11px;
@@ -87,18 +183,43 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
+/* the note's own "Do not disclose:", marked in red pencil */
+.mark {
+  padding: 0 2px;
+  border-radius: 2px;
+  background: rgba(214, 96, 84, 0.28);
+  color: inherit;
+}
 
+/* what came of it: on the folder's kraft, inside a ruled edge */
 .after {
+  position: relative;
   margin: 0;
-  color: var(--muted);
-  font-size: 15px;
+  padding: 14px 18px;
+  color: #2a1d10;
+  font-family: var(--font-stage-body, Literata), Georgia, serif;
+  font-size: 15.5px;
+  line-height: 1.5;
+}
+.after::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(90, 60, 20, 0.45);
+  border-radius: 3px;
+  pointer-events: none;
 }
 .after b {
-  color: var(--text);
-  font-weight: 500;
+  font-weight: 700;
 }
 
 @media (max-width: 640px) {
+  .moment {
+    padding: 14px 10px 12px;
+  }
+  .folder {
+    padding: 20px 10px 10px;
+  }
   .felt {
     font-size: 15px;
   }

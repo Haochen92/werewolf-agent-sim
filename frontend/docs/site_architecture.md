@@ -189,6 +189,12 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   ones dimmed by opacity), the paperclip on the lesson slip, and the FOLLOWED stamp masked by the
   worn-ink speckle. About 70 KB, nothing moves. The mock's shorter copy was not taken (owner: the
   card text stays, the lesson and the drafted line are real).
+- "At the end of the line" (the replay's exhibit, `ReplayMoment`) in the same kit (owner,
+  2026-10-18, mock-replay-moment): a case file on walnut, its "Day 2 · Seat 10, the Chanteuse" on
+  a brass plate; in a kraft folder (its top edge the kit's tab as a 9-slice) the line said aloud
+  on card paper ruled in red under a red ribbon, a brass pin (`brass-disc` heads) down to its
+  private note typed on ruled cream with the paperclip, the note's own "Do not disclose:" marked
+  in red pencil, and what came of it inside a ruled edge on the kraft. Copy unchanged.
 - The landing's words (owner, 2026-10-15): every quoted agent line is a real one, verbatim, at
   the seq `landing/features.ts` names. The memory card's slip is game 2f19d908's Sigilist
   following a lesson; the replay section's moment is game 68c26e83's Chanteuse claiming the
