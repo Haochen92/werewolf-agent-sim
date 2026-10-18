@@ -124,7 +124,9 @@ Morning, the report:
     attacked and saved. A night where no one died and no one was saved is announced as "No one died last
     night."
 - Nothing else about the night is announced, beyond what a role's rules above say is announced: not a
-    protection where no attack came, not an ability held back, not who did what. Only Town wills are read out, and a hidden role has none. Once read out, a will is
+    protection where no attack came, not an ability held back, not who did what, not who visited whom:
+    only a watch, a follow or a will shows a visit, so the report's silence neither confirms nor
+    contradicts a claimed sighting. Only Town wills are read out, and a hidden role has none. Once read out, a will is
     announced fact; anything a player says about the night is a claim.
 
 Win conditions:
