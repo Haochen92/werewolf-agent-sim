@@ -5,7 +5,7 @@
  * night blue and back, the end of the game its terminus. A small engine runs to the stop
  * picked; the stop's card is the site's walnut signboard, with the phase's own instrument
  * working in one fixed slot (so stepping along the line moves no edge), and your part on a cream
- * plate. Under the line, that a claim is not proof, and the clock's enamel sign.
+ * plate. Under the line, the clock's enamel sign.
  */
 import { useRef, type ComponentType, type CSSProperties, type ReactNode } from 'react';
 import { DiscGlyph } from '@/stage/instruments/TopStrip';
@@ -194,15 +194,6 @@ export function DayLine() {
           );
         })}
       </div>
-
-      <aside className={classes.claims}>
-        <h3>A claim isn&rsquo;t proof</h3>
-        <p>
-          Anyone can lie about their role or what they saw at night. A claim is only what
-          someone says happened. Check it against other players&rsquo; accounts, the votes,
-          which are shown once voting closes, and the game master&rsquo;s announcements.
-        </p>
-      </aside>
 
       <ClockSign />
     </>
