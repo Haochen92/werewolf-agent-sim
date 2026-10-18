@@ -23,6 +23,10 @@
   z-index: 2;
   transition: opacity 0.4s ease-in;
 }
+/* the train comes up after 1 s here, not the loader's own 0.3 s (PageGate.tsx `SHOW_MS`) */
+.cover > :not([data-at-once]) {
+  animation-delay: 1s;
+}
 /* the wait is over: the loader fades off (before React is up, so the stylesheet does it) */
 :global(html:not([data-gate])) .cover {
   opacity: 0;

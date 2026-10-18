@@ -7,7 +7,8 @@
  *
  * Put it first in the page's `<main>`. It reads the pictures off the page itself (the `<img>`s
  * and the stylesheet's backgrounds on the screen), so a page lists nothing. The loader comes up
- * only after 0.3 s, so a cached visit never sees it; 8 s ends the wait whatever is missing.
+ * only after 1 s and then stays 2 s, so a cached visit never sees it; 8 s ends the wait whatever
+ * is missing.
  *
  * The wait (`gate`) runs as the page arrives, from an inline script, not once React is up: a
  * cached visit opens as soon as the page is parsed, before the page's code has started. A page
@@ -23,11 +24,12 @@ import classes from './PageGate.module.css';
 const CAP_MS = 8000;
 /** The fade off the loader and onto the page (PageGate.module.css). */
 const LIFT_MS = 400;
-/** When the loader comes up, unless it follows one already up (TrainLoader.module.css). */
-const SHOW_MS = 300;
-/** Once up, how long the loader stays at least, so the train never blinks on and off (owner,
- *  2026-10-18: the replay's way in holds it the same way). */
-const HOLD_MS = 1500;
+/** When the loader comes up, unless it follows one already up (PageGate.module.css): under a
+ *  second a wait needs no sign, and a train shown sooner mostly blinks (owner, 2026-10-18). */
+const SHOW_MS = 1000;
+/** Once up, how long the loader stays at least, so it is seen, never a blink (owner,
+ *  2026-10-18). */
+const HOLD_MS = 2000;
 
 type GateRun = { root: Element | null; ready: Promise<void> | null };
 type GateWindow = { __gateRun?: GateRun | null };
