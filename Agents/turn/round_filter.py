@@ -38,13 +38,15 @@ statement, and your job is to label each line's kind:
 - claim: the speaker claims a role for themselves, or claims a role that someone else claimed (a
   counterclaim). Two players claiming the same role are both claims.
 - night_action: the speaker states their OWN night action or its result: whom they protected,
-  investigated or shot, that they held fire, and what they learned.
+  checked, shot, watched, followed, blocked or set a sigil on, a bet or a pick they made, that they
+  held fire or did nothing, and what they saw or learned.
 - challenge: the speaker disputes a claim made on an earlier day, with a reason.
 - repeat: the line only repeats an earlier line in this list, and is not a claim.
 - other: anything else: a deduction, a suspicion, advice, a comment on the game, padding around one
   of the kinds above that is itself mostly something else.
 
-A line that holds one of the three kinds plus a sentence of something else is still that kind.
+A line that holds one of the three kinds plus a sentence of something else (a question, a deduction
+from it) is still that kind.
 Judge only what kind of statement it is, never whether it is true.""",
         ),
         (
@@ -70,6 +72,13 @@ def filter_openings(entries: list[DayChannel]) -> list[DayChannel]:
     kinds = _judge_kinds(spoken)
     if kinds is None:
         return entries
+    # The speaker's own structured fields settle the kind when they say it: a line that filled in a
+    # night action (each kept only when the line names it; turn/resolve.py), or claimed a role the
+    # line names. The judge had labelled such lines "other" (persona voice games, 2026-10-18).
+    for entry in spoken:
+        declared = _declared_kind(entry)
+        if declared is not None:
+            kinds[entry.player] = declared
 
     out: list[DayChannel] = []
     for entry in entries:
@@ -85,6 +94,16 @@ def filter_openings(entries: list[DayChannel]) -> list[DayChannel]:
             held = _held(entry, DiscussionPassReason.OPENING_FILTERED)
             out.append(held.model_copy(update={"opening_kind": kind}))
     return out
+
+
+def _declared_kind(entry: DayChannel) -> str | None:
+    """"night_action" or "claim" when the speaker's own fields say so and the line bears it out;
+    None leaves the line to the judge."""
+    if entry.claimed_night_actions:
+        return "night_action"
+    if entry.claim != "none" and entry.claim.replace("_", " ") in entry.message.lower():
+        return "claim"
+    return None
 
 
 def _judge_kinds(spoken: list[DayChannel]) -> dict[str, str] | None:

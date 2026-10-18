@@ -159,3 +159,21 @@ def test_a_human_opening_is_never_held(monkeypatch):
     assert out[0].passed is True
     assert out[0].pass_reason == DiscussionPassReason.OPENING_FILTERED
     assert out[1] == entries[1]
+
+
+def test_a_line_whose_own_fields_say_night_action_or_claim_is_kept_whatever_the_judge_says(monkeypatch):
+    # The judge labelled a trailseer's follow "other" in the persona voice games (2026-10-18).
+    from Agents.schemas.game_events import SpokenNightAction
+
+    follow = opening("player_1", "Night 3 I followed player_10, and they went to player_2. player_10, why?")
+    follow = follow.model_copy(update={"claimed_night_actions": [
+        SpokenNightAction(night=3, action="follow", target="player_10", result="not_said", seen=["player_2"])]})
+    claim = opening("player_2", "I'm the healer, and I want player_5 to answer for their vote.")
+    claim = claim.model_copy(update={"claim": "healer"})
+    unnamed = opening("player_3", "Let's look at the votes first.").model_copy(update={"claim": "sentinel"})
+    monkeypatch.setattr(round_filter, "get_llm_judge",
+                        judge_saying({"player_1": "other", "player_2": "other", "player_3": "other"}))
+
+    out = round_filter.filter_openings([follow, claim, unnamed])
+
+    assert [(e.passed, e.opening_kind) for e in out] == [(False, "night_action"), (False, "claim"), (True, "other")]

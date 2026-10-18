@@ -489,7 +489,8 @@ class OpeningVerdict(LenientToolCallModel):
         description=(
             "claim = the speaker claims a role for themselves, or claims a role someone else claimed "
             "(a counterclaim); night_action = the speaker states their OWN night action or its result "
-            "(whom they protected, investigated, shot, or that they held fire, and what they learned); "
+            "(whom they protected, checked, shot, watched, followed, blocked or set a sigil on, a bet "
+            "or a pick, that they held fire or did nothing, and what they saw or learned); "
             "challenge = the speaker disputes a claim made on an earlier day, giving a reason; "
             "repeat = the line only repeats an earlier line in this list that is not a claim; "
             "other = anything else: a deduction, a suspicion, advice, a general remark."
