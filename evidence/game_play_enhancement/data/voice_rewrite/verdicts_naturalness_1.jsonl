@@ -1,0 +1,45 @@
+{"pair": "p00", "more_natural": "Y", "robotic": [], "note": "spoken beat"}
+{"pair": "p02", "more_natural": "Y", "robotic": ["X"], "note": "stock opener"}
+{"pair": "p04", "more_natural": "Y", "robotic": [], "note": "casual wording"}
+{"pair": "p06", "more_natural": "Y", "robotic": [], "note": "spoken aside"}
+{"pair": "p08", "more_natural": "Y", "robotic": [], "note": "coherent flow"}
+{"pair": "p10", "more_natural": "Y", "robotic": [], "note": "human hedging"}
+{"pair": "p12", "more_natural": "Y", "robotic": [], "note": "casual phrasing"}
+{"pair": "p14", "more_natural": "X", "robotic": ["Y"], "note": "stiff"}
+{"pair": "p16", "more_natural": "X", "robotic": ["Y"], "note": "choppy log-like"}
+{"pair": "p18", "more_natural": "X", "robotic": [], "note": "terse natural"}
+{"pair": "p20", "more_natural": "X", "robotic": ["Y"], "note": "stiff"}
+{"pair": "p22", "more_natural": "same", "robotic": [], "note": "near identical"}
+{"pair": "p24", "more_natural": "Y", "robotic": [], "note": "casual"}
+{"pair": "p26", "more_natural": "Y", "robotic": ["X"], "note": "stock opener"}
+{"pair": "p28", "more_natural": "X", "robotic": ["Y"], "note": "run-on"}
+{"pair": "p30", "more_natural": "X", "robotic": [], "note": "human texture"}
+{"pair": "p32", "more_natural": "X", "robotic": ["Y"], "note": "I-can-confirm stiff"}
+{"pair": "p34", "more_natural": "Y", "robotic": [], "note": "clipped speech"}
+{"pair": "p36", "more_natural": "same", "robotic": [], "note": "near identical"}
+{"pair": "p38", "more_natural": "Y", "robotic": [], "note": "compact"}
+{"pair": "p40", "more_natural": "X", "robotic": ["Y"], "note": "stock results opener"}
+{"pair": "p42", "more_natural": "Y", "robotic": ["X"], "note": "stock opener"}
+{"pair": "p44", "more_natural": "X", "robotic": [], "note": "clipped"}
+{"pair": "p46", "more_natural": "Y", "robotic": [], "note": "cleaner"}
+{"pair": "p48", "more_natural": "X", "robotic": [], "note": "natural fragments"}
+{"pair": "p50", "more_natural": "Y", "robotic": [], "note": "spoken"}
+{"pair": "p52", "more_natural": "Y", "robotic": [], "note": "spoken"}
+{"pair": "p54", "more_natural": "X", "robotic": [], "note": "voice"}
+{"pair": "p56", "more_natural": "Y", "robotic": [], "note": "spoken"}
+{"pair": "p58", "more_natural": "X", "robotic": [], "note": "human texture"}
+{"pair": "p60", "more_natural": "Y", "robotic": [], "note": "spoken"}
+{"pair": "p62", "more_natural": "Y", "robotic": [], "note": "blunt spoken"}
+{"pair": "p64", "more_natural": "Y", "robotic": [], "note": "spoken"}
+{"pair": "p66", "more_natural": "Y", "robotic": [], "note": "spoken"}
+{"pair": "p68", "more_natural": "X", "robotic": [], "note": "sorry human"}
+{"pair": "p70", "more_natural": "X", "robotic": [], "note": "human"}
+{"pair": "p72", "more_natural": "same", "robotic": [], "note": "near identical"}
+{"pair": "p74", "more_natural": "X", "robotic": [], "note": "human"}
+{"pair": "p76", "more_natural": "X", "robotic": [], "note": "hear me out"}
+{"pair": "p78", "more_natural": "Y", "robotic": [], "note": "casual"}
+{"pair": "p80", "more_natural": "Y", "robotic": [], "note": "casual"}
+{"pair": "p82", "more_natural": "X", "robotic": ["Y"], "note": "promise grating"}
+{"pair": "p84", "more_natural": "Y", "robotic": [], "note": "flows"}
+{"pair": "p86", "more_natural": "Y", "robotic": ["X"], "note": "report-like"}
+{"pair": "p88", "more_natural": "same", "robotic": [], "note": "near identical"}

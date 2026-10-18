@@ -1,0 +1,13 @@
+{"pair":"q01","more_natural":"X","robotic":["Y"],"distinct_voice":[],"note":"X tighter; Y's closing demand is clunky"}
+{"pair":"q03","more_natural":"Y","robotic":["X"],"distinct_voice":[],"note":"Y flows like speech; X ends on a stock 'let's vote'"}
+{"pair":"q07","more_natural":"Y","robotic":["X"],"distinct_voice":["Y"],"note":"X ends 'Low confidence.' like a report; Y admits a thin reason"}
+{"pair":"q11","more_natural":"Y","robotic":["X"],"distinct_voice":[],"note":"X is a checklist; Y reads more spoken despite 'fair question'"}
+{"pair":"q13","more_natural":"Y","robotic":["X"],"distinct_voice":["Y"],"note":"X has filler opener and stiff phrasing; Y ends on a pointed question"}
+{"pair":"q15","more_natural":"X","robotic":["Y"],"distinct_voice":["X"],"note":"X has a stance in its own words; Y is mechanical"}
+{"pair":"q17","more_natural":"Y","robotic":["X"],"distinct_voice":[],"note":"Y speaks to player_8 directly; X is report-like"}
+{"pair":"q19","more_natural":"Y","robotic":["X"],"distinct_voice":["Y"],"note":"Y 'not going to pretend' has personality; X is a stiff accusation"}
+{"pair":"q21","more_natural":"X","robotic":["Y"],"distinct_voice":[],"note":"Y is a staccato recital; X sounds more conversational"}
+{"pair":"q25","more_natural":"X","robotic":["Y"],"distinct_voice":["X"],"note":"Y 'Note the math:' is analytic; X has a defensive, human tone"}
+{"pair":"q27","more_natural":"X","robotic":["Y"],"distinct_voice":[],"note":"Y's syllogism sounds mechanical"}
+{"pair":"q31","more_natural":"Y","robotic":[],"distinct_voice":["Y"],"note":"Y 'dress it up' and 'invent a visit' have personality"}
+{"pair":"q33","more_natural":"X","robotic":[],"distinct_voice":[],"note":"Y is convoluted and tangled; X is clearer and pointed"}

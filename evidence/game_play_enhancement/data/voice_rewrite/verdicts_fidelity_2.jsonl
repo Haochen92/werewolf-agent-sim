@@ -1,0 +1,45 @@
+{"pair": "p01", "verdict": "minor", "what": "'whoever gets accused or defends player_3' -> 'whoever starts pushing on player_3 or stands up for them'; accused becomes pushing; 'pick who you'd want checked' -> 'Tell me who you'd want checked'"}
+{"pair": "p03", "verdict": "changed", "what": "ORIGINAL tells player_8 to 'ask player_1 which night it came from and whether a Sentinel or Trailseer can confirm'; REWRITE addresses player_1 directly: 'player_1, which night was that from? And can a Sentinel or Trailseer back it up?' Addressee of the ask changes"}
+{"pair": "p05", "verdict": "changed", "what": "ORIGINAL 'I'm the trailseer, so here are my results' -> REWRITE 'Alright, my results' (role claim dropped); 'I'd vote you today unless someone gives a result' -> 'I'm voting you today' (conditional preference becomes firm commitment)"}
+{"pair": "p07", "verdict": "changed", "what": "'your watch showing me at their door fits' -> 'your watch putting you at their door' (wrong party: watch saw the speaker, not player_9); adds 'which I'll admit is awkward for you'"}
+{"pair": "p09", "verdict": "changed", "what": "ORIGINAL 'ask player_1 which night it came from' -> REWRITE 'player_1, which night was that from?' addressee of the question moves from player_8 to player_1; 'sorry' and 'properly' are only tone"}
+{"pair": "p11", "verdict": "same", "what": ""}
+{"pair": "p13", "verdict": "minor", "what": "'player_3's claimed night 2 save' -> 'player_3's night 2 save' (drops 'claimed'); 'I'd rather see' -> 'I want to see'"}
+{"pair": "p15", "verdict": "minor", "what": "'I did act on player_10 and nothing more' -> 'I acted on player_10 and that's all I'll say' (no other action vs. refusal to say more); 'contradictions' -> 'mismatch'"}
+{"pair": "p17", "verdict": "changed", "what": "'I'd vote player_7 unless you give a better answer' -> 'Unless you give me a better answer than that, I'm voting you' (hedged to firm commitment)"}
+{"pair": "p19", "verdict": "same", "what": ""}
+{"pair": "p21", "verdict": "same", "what": ""}
+{"pair": "p23", "verdict": "same", "what": ""}
+{"pair": "p25", "verdict": "same", "what": ""}
+{"pair": "p27", "verdict": "minor", "what": "'I'd test that first' -> 'test that first' (imperative); 'the claim with the most support' -> 'the strongest claim'; drops 'As I said' and 'which is what you report'"}
+{"pair": "p29", "verdict": "minor", "what": "'I'm not asking for a lynch on it alone' -> 'I'm not asking anyone to lynch you over it' (drops 'alone'; slightly stronger disclaimer)"}
+{"pair": "p31", "verdict": "minor", "what": "'player_3 is a wolf' -> 'that's a wolf in my book' (slightly softer); 'vote on it' -> 'line up a vote on them'; adds 'come clean'"}
+{"pair": "p33", "verdict": "same", "what": ""}
+{"pair": "p35", "verdict": "same", "what": ""}
+{"pair": "p37", "verdict": "same", "what": ""}
+{"pair": "p39", "verdict": "minor", "what": "adds 'so don't make me guess'; 'player_4 and player_9' -> 'player_4, player_9'"}
+{"pair": "p41", "verdict": "minor", "what": "'I want a vote on you today' -> 'Vote you today' (clipped, no softening of ask); otherwise same"}
+{"pair": "p43", "verdict": "same", "what": ""}
+{"pair": "p45", "verdict": "minor", "what": "'I'd vote player_6 today' -> 'Vote player_6 today' (personal intent becomes imperative)"}
+{"pair": "p47", "verdict": "same", "what": ""}
+{"pair": "p49", "verdict": "same", "what": ""}
+{"pair": "p51", "verdict": "same", "what": ""}
+{"pair": "p53", "verdict": "changed", "what": "adds hedge 'I'm pretty sure I didn't do anything'; 'self-bet can't be checked' -> 'is one I can't really check' (nobody can verify -> speaker can't verify); drops 'claimed' before 'night 2 save'"}
+{"pair": "p55", "verdict": "changed", "what": "drops 'That's a clean result for player_4'; 'if anyone has a read on them, use this to test it' -> 'if you're still on the fence about them, that's your test' (audience/framing shifted, exculpatory judgment lost)"}
+{"pair": "p57", "verdict": "same", "what": ""}
+{"pair": "p59", "verdict": "minor", "what": "'aren't something I can share without making a claim' -> 'are staying with me until I decide to put them out there' (reason dropped, implies later disclosure)"}
+{"pair": "p61", "verdict": "changed", "what": "'A save on player_7 means someone was protecting them' -> 'if player_7 got saved, somebody was guarding them' (stated fact becomes conditional)"}
+{"pair": "p63", "verdict": "same", "what": ""}
+{"pair": "p65", "verdict": "minor", "what": "'I'd like the vote to go to them' -> 'I want the vote on 6' (firmer); 'matches what I did' -> 'which is right'"}
+{"pair": "p67", "verdict": "same", "what": ""}
+{"pair": "p69", "verdict": "same", "what": ""}
+{"pair": "p71", "verdict": "minor", "what": "adds 'promise' to 'I'm not sitting on a second read'; 'abstain on it again' -> 'skipping the vote on them again'"}
+{"pair": "p73", "verdict": "changed", "what": "'I'd rather not lynch on one unverified claim' -> 'I'm not lynching on one unverified claim' (preference becomes firm refusal)"}
+{"pair": "p75", "verdict": "same", "what": ""}
+{"pair": "p77", "verdict": "changed", "what": "'your watch showing me at their door' -> 'your watch seeing you at their door' (wrong party); 'player_6 is the one to vote' -> 'player_6 is who I'd vote for' (ask softened); 'stay silent' -> 'go quiet'"}
+{"pair": "p79", "verdict": "minor", "what": "'without making a claim' -> 'until I'm ready to put a claim on them'; adds 'don't read anything into that'; 'pick someone' -> 'could you point it at someone'"}
+{"pair": "p81", "verdict": "same", "what": ""}
+{"pair": "p83", "verdict": "same", "what": ""}
+{"pair": "p85", "verdict": "minor", "what": "adds 'Genuinely asking, I'm not trying to pile on'; otherwise same"}
+{"pair": "p87", "verdict": "same", "what": ""}
+{"pair": "p89", "verdict": "same", "what": ""}
