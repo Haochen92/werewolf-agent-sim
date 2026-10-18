@@ -106,7 +106,7 @@ attacked that night)."""
 def rendered_input(t: dict, covers: bool) -> dict:
     """The turn's prompt input with both deduction blocks rendered now from its rebuilt payload (the
     block census's rebuild: evaluation/experiments/deduction_block_census.py)."""
-    import Agents.deduction.comparisons.covers as covers_module
+    import Agents.deduction.evil.covers as covers_module
     from Agents.prompts.prompt_inputs import _deduction_blocks, _deduction_slots, _own_result_lines
     from evaluation.experiments.deduction_block_census import _final_state, _payload_at
 

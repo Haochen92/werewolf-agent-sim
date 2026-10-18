@@ -72,7 +72,7 @@ def record_items(view: SeatView, today: int, possible: Possible) -> list[Deducti
 def claim_items(view: SeatView, claim: ActionClaim, today: int, possible: Possible) -> list[DeductionItem]:
     """One claimed action against the morning, the roster and the rules: an action that could not
     happen (E14) says only that. Also run on an evil seat's own visits, as claims it might make
-    (own_visits.py)."""
+    (Agents/deduction/evil/own_visits.py)."""
     impossible = _impossible(view, claim, _dead_before(view, claim.night), today)
     if impossible:
         return impossible

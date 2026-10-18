@@ -1,4 +1,4 @@
-"""An evil seat's covers (slice 14, Agents/deduction/comparisons/covers.py; ruling R11): per town role the
+"""An evil seat's covers (slice 14, Agents/deduction/evil/covers.py; ruling R11): per town role the
 seat can claim, the night story that fits its real nights and every claim so far.
 
 - On constructed games through the real engine: the exact line where it fires (a reported sighting, the
@@ -148,7 +148,7 @@ def test_random_games_stories_name_real_visits_and_a_deal_allows_them():
 
 
 def _role_of(claim) -> str:
-    from Agents.deduction.comparisons.covers import ACTION_OF, HOLD_OF
+    from Agents.deduction.evil.covers import ACTION_OF, HOLD_OF
 
     if claim.action == "no_action":
         return next(role for role, held in HOLD_OF.items() if held == claim.result)

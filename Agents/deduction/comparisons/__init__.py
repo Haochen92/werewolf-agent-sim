@@ -13,10 +13,9 @@ left out needs a whole list (L12).
 - pairs.py: two places in one night (E2a), a sighting and the visitor's own word (E1), and the two
   directions of a visit (E17);
 - record.py: claims against the morning, the roster and the rules (E4, E6, E7, E8, E9, E11, E14);
-- status.py: the role claims' status (F3, E15), role claims the seat knows are false, and an evil
-  seat's claimable roles (F7's note) with a hidden body's role its own record shows (L8);
-- own_visits.py: an evil seat's own visits of the last two nights against the claims it might make
-  about them (E4b, E14 and E2a's rule, run on the seat's true night);
+- status.py: the role claims' status (F3, E15) and role claims the seat knows are false;
+- an evil seat's own lines (the claimable roles, a hidden body's role, its own visits, its covers)
+  are Agents/deduction/evil/, drawn in here;
 - block_visits.py: a sighting of the known Chanteuse at a player who was not the pack's victim, her
   block, against that player's roleblock claim (AC2 line 3).
 The possible explanations of a claim the morning leaves open (F8, slice 12:
@@ -42,8 +41,9 @@ from Agents.deduction.comparisons.conflicts import conflict_items
 from Agents.deduction.comparisons.pairs import direction_items, place_items
 from Agents.deduction.comparisons.record import record_items
 from Agents.deduction.comparisons.statements import claim_lists, claim_statements, engine_lists, engine_statements
-from Agents.deduction.comparisons.own_visits import own_visit_items
-from Agents.deduction.comparisons.status import claimable_items, role_claim_items, status_items
+from Agents.deduction.comparisons.status import role_claim_items, status_items
+from Agents.deduction.evil.claimable import claimable_items
+from Agents.deduction.evil.own_visits import own_visit_items
 from Agents.deduction.seat_view import public_record
 from Agents.deduction.self_knowledge import possible_roles
 from Agents.schemas.deduction import ActionClaim, Candidates, DeductionItem, SeatView
@@ -57,7 +57,7 @@ def comparison_items(view: SeatView, today: int) -> list[DeductionItem]:
     if candidates is None:
         return []
     items = compare(view, today, candidates)
-    from Agents.deduction.comparisons.covers import cover_items  # it runs `compare` as a public observer
+    from Agents.deduction.evil.covers import cover_items  # it runs `compare` as a public observer
 
     return items[:_shared_end(items)] + cover_items(view, today) + items[_shared_end(items):]
 

@@ -1,5 +1,5 @@
 """The role claims' status (catalogue F3's claim half, E15), each role claim against what the seat knows
-(Table D), and, for an evil seat, the roles it can still claim (F7's note, owner 2026-10-16).
+(Table D).
 
 - The status line, shared, from the first role claim on: which claimed roles no one else claims
   (AC4, line 3), which are claimed by two or more players ("at most one holds it", a role dealt
@@ -9,35 +9,24 @@
 - A role claim the seat knows is false: a role not dealt, a role revealed at another player's death,
   the seat's own role, a packmate's, or a role the seat's candidates leave the claimant no longer.
   A false claim does not prove an evil role (Table E): the line says only that the claim is false.
-- An evil seat (a wolf, the lone killer): the town and neutral roles the public record still allows
-  it, the full list, so it can claim one without a public contradiction; and which of them no living
-  player claims now (claiming one that is claimed starts a counter-claim). Facts only, no advice.
-  The public's candidate roles for the seat are what the public record allows (propagation, checked
-  against every legal deal by the brute-force oracle in the tests). With it, a hidden body's role the
-  seat's own record shows (a wolf's pack kill, the Necromancer's kill through the Illusionist's body),
-  when it is one of those roles and dealt once: no living player holds it (owner, 2026-10-17).
+An evil seat's own lines (the roles it can claim, a hidden body's role) are in Agents/deduction/evil/.
 The claim ledger in the prompt (days before today) already says when a claim exceeds a role's count
 or a revealed role: those lines are left to it for a claim said before today.
 """
 
 from __future__ import annotations
 
-from Agents.deduction.candidates import public_candidates
 from Agents.deduction.comparisons import wording
 from Agents.deduction.comparisons.statements import Possible
-from Agents.deduction.records import read_record
-from Agents.deduction.seat_view import public_record
 from Agents.schemas.deduction import (
     DeductionItem,
-    HeldBy,
     NotAllTrue,
-    OpenRoles,
     PlayerClaimView,
     RoleIn,
     SeatView,
     Source,
 )
-from Agents.schemas.roles import LONE_KILLER, NEUTRAL, ROLE_SPECS, TOWN, WOLVES
+from Agents.schemas.roles import ROLE_SPECS
 
 MOST_SILENT_NAMED = 3
 """The players with no role claim are named only when this few (coordinator, 2026-10-17): a longer
@@ -147,57 +136,4 @@ def role_claim_items(view: SeatView, today: int, night: int, possible: Possible)
                                    text=wording.role_claim_false(player.player, role, reason,
                                                                  implied=bool(player.roles and player.roles[-1].implied_by)),
                                    sources=(Source("claim", 0, player.player),), receiver=view.player_id))
-    return items
-
-
-def claimable_roles(view: SeatView) -> list[str]:
-    """The town and neutral roles the public record still allows an evil seat, in role order."""
-    spec = ROLE_SPECS.get(view.role)
-    if spec is None or spec.side not in (WOLVES, LONE_KILLER) or not view.living:
-        return []
-    public = public_candidates(public_record(view))
-    if public is None or view.player_id not in public.roles:
-        return []
-    allowed = public.roles[view.player_id]
-    return [role for role in _dealt(view) if role in allowed and ROLE_SPECS[role].side in (TOWN, NEUTRAL)]
-
-
-def claimable_items(view: SeatView, night: int) -> list[DeductionItem]:
-    """An evil seat's own line: the town and neutral roles the public record still allows it."""
-    spec = ROLE_SPECS.get(view.role)
-    if spec is None or spec.side not in (WOLVES, LONE_KILLER) or not view.living:
-        return []
-    public = public_candidates(public_record(view))
-    if public is None or view.player_id not in public.roles:
-        return []
-    roles = claimable_roles(view)
-    living = set(view.living)
-    claimed = {player.current_role for player in view.claims if player.player in living}
-    unclaimed = [role for role in roles if role not in claimed]
-    return [DeductionItem(row="F7+E15", subject=None, night=night,
-                          conclusion=(OpenRoles(view.player_id, frozenset(roles)),),
-                          text=wording.claimable(roles, unclaimed),
-                          sources=(Source("dead_roster", night), Source("announcement", night)),
-                          receiver=view.player_id), *_hidden_roles(view, roles)]
-
-
-def _hidden_roles(view: SeatView, claimable: list[str]) -> list[DeductionItem]:
-    """A hidden body's role the seat's own record shows (L8: the living Illusionist's conceal, on the
-    pack's kill record, to every wolf; one through its body, on the Necromancer's kill record, to the
-    Necromancer), when it is a role the seat can claim (so the public record does not show it) dealt
-    once (so the body was its only holder)."""
-    concealed = {death.player for death in view.dead_roster if death.concealed}
-    items = []
-    for record in view.night_records:
-        read = read_record(record, view)
-        role = read.hidden_role
-        if (not role or read.target not in concealed or role not in claimable
-                or view.cast_role_counts.get(role) != 1):
-            continue
-        source = wording.own_record(read.night) if read.body else wording.pack_kill_record(read.night)
-        items.append(DeductionItem(row="F7+L8", subject=None, night=read.night,
-                                   conclusion=(HeldBy(role, (read.target,)), OpenRoles(view.player_id, frozenset({role}))),
-                                   text=wording.hidden_role_claim(read.target, role, source),
-                                   sources=(Source("own_record", read.night, read.target), Source("dead_roster", read.night)),
-                                   derivation=(record,), receiver=view.player_id))
     return items

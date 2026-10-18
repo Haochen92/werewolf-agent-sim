@@ -27,8 +27,8 @@ import dataclasses
 
 from Agents.deduction.candidates import public_candidates
 from Agents.deduction.comparisons import wording
-from Agents.deduction.comparisons.own_visits import RECENT_NIGHTS, _visits
-from Agents.deduction.comparisons.status import claimable_roles
+from Agents.deduction.evil.own_visits import RECENT_NIGHTS, _visits
+from Agents.deduction.evil.claimable import claimable_roles
 from Agents.deduction.conditionals.visits import roles_that_could_visit
 from Agents.deduction.morning import announcement_of
 from Agents.deduction.seat_view import public_record

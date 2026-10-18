@@ -1,7 +1,7 @@
 """An evil seat's own lines (owner, 2026-10-17: evil seats build no fake claims; they get certain facts,
-never advice): a hidden body's role the seat's own record shows (Agents/deduction/comparisons/status.py,
+never advice): a hidden body's role the seat's own record shows (Agents/deduction/evil/claimable.py,
 catalogue L8), and its own visits of the last two nights against the claims it might make about them
-(Agents/deduction/comparisons/own_visits.py: E4b, E14 and E2a's rule run on the seat's true night).
+(Agents/deduction/evil/own_visits.py: E4b, E14 and E2a's rule run on the seat's true night).
 
 - Per line, on constructed games through the real engine: the exact sentence where it fires and the
   games that differ in one respect where it must not (a concealed body and a revealed one, the living
