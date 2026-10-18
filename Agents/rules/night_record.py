@@ -15,8 +15,10 @@ composed that no player could have forged.
 
 from __future__ import annotations
 
+from typing import Literal
+
 from Agents.rules.night import is_pack_kill, visited_by, visitors_of
-from Agents.schemas.game_events import NightActionRecord
+from Agents.schemas.game_events import NightActionRecord, ReadOutWill, WillClause
 from Agents.schemas.night import NightChoice, NightOutcome, NightVerdict
 from Agents.schemas.roles import ROLE_SPECS, TOWN, side_of
 
@@ -47,6 +49,8 @@ _ATTACKER_PHRASE = {
 #                was attacked)
 #   any action a block cancelled: roleblocked
 # A necromancer's record carries the body's action, with the body in `seen` first.
+# Beside the prose, a survived attack carries its attacker types and a bet the role it named
+# (`attacker_types`, `bet_role`), for code that must not parse the prose.
 
 PACK_ACTOR = "wolves"
 """The actor every pack kill is recorded under, so each wolf reads the pack's record."""
@@ -76,14 +80,19 @@ def _self_bet_saved(target: str | None, outcome: NightOutcome) -> bool:
     return target in outcome.self_bets and target in outcome.attacks_on
 
 
-def _attackers_phrase(target: str, outcome: NightOutcome) -> str:
-    """The attacks on a player, as the records name them: "the wolves and the serial killer"."""
+def _attacker_types(target: str, outcome: NightOutcome) -> list[str]:
+    """The attacks on a player, each type once, in the order they were made (the record's
+    structured `attacker_types`, so the deduction engine never parses the prose)."""
     attacker_types = []
     for attack in outcome.attacks_on[target]:
-        phrase = _ATTACKER_PHRASE[attack.attacker_type]
-        if phrase not in attacker_types:
-            attacker_types.append(phrase)
-    return _join(attacker_types)
+        if attack.attacker_type not in attacker_types:
+            attacker_types.append(attack.attacker_type)
+    return attacker_types
+
+
+def _attackers_phrase(target: str, outcome: NightOutcome) -> str:
+    """The attacks on a player, as the records name them: "the wolves and the serial killer"."""
+    return _join([_ATTACKER_PHRASE[attacker_type] for attacker_type in _attacker_types(target, outcome)])
 
 
 def _kill_outcome(target: str, verdict: NightVerdict | None, roles: dict[str, str], concealed: bool,
@@ -118,15 +127,20 @@ def _record_of(choice: NightChoice, outcome: NightOutcome, roles: dict[str, str]
     result = ""
     seen: list[str] = []
     outcome_text = ""
+    attacker_types: list[str] = []
+    bet_role = None
+    hidden_role = None
 
     if choice.kind == "protect":
         if outcome.verdicts.get(target) == "saved":
             result = "saved"
+            attacker_types = _attacker_types(target, outcome)
             outcome_text = (f"{target} was attacked by {_attackers_phrase(target, outcome)}, "
                             "and your protection saved them.")
         elif _self_bet_saved(target, outcome):
             # The self-bet comes first: the protection saved nothing, and the morning said so.
             result = "self_bet_saved"
+            attacker_types = _attacker_types(target, outcome)
             outcome_text = (f"{target} was attacked by {_attackers_phrase(target, outcome)} and survived: "
                             "the fortune teller's self-bet saved them, not your protection.")
         else:
@@ -146,6 +160,8 @@ def _record_of(choice: NightChoice, outcome: NightOutcome, roles: dict[str, str]
         if _self_bet_saved(target, outcome):
             result = "self_bet_saved"
             outcome_text = f"{target} survived: the fortune teller's self-bet saved them."
+        if result in ("saved", "self_bet_saved"):
+            attacker_types = _attacker_types(target, outcome)
         if is_pack_kill(choice) and pack_concealed and target in outcome.concealed:
             # The whole pack learns the role the illusionist hid (owner, 2026-10-17); a clean
             # through the dead illusionist's body is the necromancer's alone (below).
@@ -155,6 +171,7 @@ def _record_of(choice: NightChoice, outcome: NightOutcome, roles: dict[str, str]
         if choice.via is not None and roles.get(choice.via) == "illusionist" and target in outcome.concealed:
             # The necromancer cleaned this body through the illusionist's, and learns the role.
             seen = [target]
+            hidden_role = roles.get(target, "unknown")
             outcome_text = (f"{target} died, and you hid their role: they were a "
                             f"{_role_words(roles.get(target, 'unknown'))}.")
 
@@ -233,6 +250,7 @@ def _record_of(choice: NightChoice, outcome: NightOutcome, roles: dict[str, str]
         if target == choice.actor:
             result = "self_bet"
             if _self_bet_saved(target, outcome):
+                attacker_types = _attacker_types(target, outcome)
                 outcome_text = (f"You bet on yourself and were attacked by {_attackers_phrase(target, outcome)}: "
                                 "your self-bet saved you, and the morning announces it.")
             else:
@@ -240,6 +258,7 @@ def _record_of(choice: NightChoice, outcome: NightOutcome, roles: dict[str, str]
                 # none; "an attack on you fails" read as if one had (owner, 2026-10-17).
                 outcome_text = "You bet on yourself. No one attacked you tonight, and nothing is scored."
         else:
+            bet_role = choice.role_named
             bet = next((b for b in outcome.bets if b.actor == choice.actor), None)
             points = bet.points if bet else 0
             if points == 2:
@@ -261,6 +280,7 @@ def _record_of(choice: NightChoice, outcome: NightOutcome, roles: dict[str, str]
     return NightActionRecord(
         day=night, actor=actor, action=action, target=target,
         outcome=outcome_text, result=result, seen=seen,
+        attacker_types=attacker_types, bet_role=bet_role, hidden_role=hidden_role,
     )
 
 
@@ -356,3 +376,25 @@ def disclosure(player: str, role: str, records: list[NightActionRecord]) -> str 
     for night, text in entries:
         parts.append(f"night {night}, {text}")
     return f"The record of {player}, the {_role_words(role)}: " + "; ".join(parts) + "."
+
+
+def _will_clause(record: NightActionRecord) -> WillClause:
+    """One record as `_disclosed` words it: a roleblocked night names no action or target, and
+    only a watch or a follow lists names."""
+    if record.result == "roleblocked":
+        return WillClause(night=record.day, action=None, target=None, result=record.result)
+    seen = list(record.seen) if record.action in ("watch", "follow") else []
+    return WillClause(night=record.day, action=record.action, target=record.target, result=record.result,
+                      seen=seen)
+
+
+def read_out_will(player: str, role: str, records: list[NightActionRecord], day: int,
+                  phase: Literal["night", "day"]) -> ReadOutWill | None:
+    """The record `disclosure` reads out, as data, for the deduction engine (catalogue L11): from
+    the same records, at the same reveal. Every revealed town role gets one, with no clauses when
+    nothing was read out; None for a role off the town side, as for the prose."""
+    if role not in ROLE_SPECS or side_of(role) != TOWN:
+        return None
+    own = sorted((record for record in records if record.actor == player), key=lambda record: record.day)
+    return ReadOutWill(holder=player, role=role, day=day, phase=phase,
+                       clauses=[_will_clause(record) for record in own])

@@ -18,8 +18,9 @@ from Agents.schemas.roles import ROLE_SPECS
 from Agents.state import OrchestratorGraph
 from Agents.tracing import GraphContext, NightResolutionMetric, langfuse
 from Agents.nodes.orchestrator import remove_from_buckets, side_counts
+from Agents.rules.announcement import night_announcement
 from Agents.rules.night import is_pack_kill, resolve_night
-from Agents.rules.night_record import disclosure, night_action_records
+from Agents.rules.night_record import disclosure, night_action_records, read_out_will
 from Agents.rules.seats import seat_order
 
 
@@ -136,6 +137,7 @@ def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
     report_deaths: list[tuple[str, str, list[str]]] = []
     report_saves: list[tuple[str, list[str]]] = []
     dead_roster: list[DeathRecord] = []
+    wills = []
     for target in seat_order(attacks_on):
         verdict = verdicts[target]
         self_bet_saved = verdict == "immune" and target in outcome.self_bets
@@ -174,6 +176,10 @@ def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
             record_line = disclosure(target, roles[target], earlier_records)
             if record_line:
                 lines.append(record_line)
+            # The same record as data, for the deduction engine (public from now on; never rendered).
+            will = read_out_will(target, roles[target], earlier_records, current_day, "night")
+            if will is not None:
+                wills.append(will)
 
     if dead_roster:
         state_update["dead_roster"] = dead_roster
@@ -198,10 +204,14 @@ def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
         )
     ]
     state_update["day_summaries"] = [DaySummary(day=current_day, summary=message, source="game_master")]
-    state_update["night_report"] = NightReport(
+    report = NightReport(
         night=current_day, deaths=report_deaths, saves=report_saves, pick=pick,
         reanimated_saves=[p for p, _ in report_saves
                           if p in outcome.protected_through_body and p not in outcome.self_bets],
         self_bet_saves=[p for p, _ in report_saves if p in outcome.self_bets],
     )
+    state_update["night_report"] = report
+    # The same morning as data, for the deduction engine (public; never rendered).
+    state_update["night_announcements"] = [night_announcement(report)]
+    state_update["read_out_wills"] = wills
     return state_update

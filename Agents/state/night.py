@@ -5,7 +5,15 @@ the words and the field, which come from the card and the registry."""
 from operator import add
 from typing import Annotated, TypedDict
 
-from Agents.schemas.game_events import DayChannel, DaySummary, DeathRecord, NightActionRecord, WolfChannel
+from Agents.schemas.game_events import (
+    DayChannel,
+    DaySummary,
+    DeathRecord,
+    NightActionRecord,
+    NightAnnouncement,
+    ReadOutWill,
+    WolfChannel,
+)
 from Agents.state.reducers import merge_strategies
 
 
@@ -18,6 +26,11 @@ class NightTurnState(TypedDict, total=False):
     """Prior-day summaries for context."""
     dead_roster: list[DeathRecord]
     """Public dead roster, carried into the night to render the who-died block."""
+    night_announcements: list[NightAnnouncement]
+    """Public: each night's morning announcement as data, for the deduction engine
+    (Agents/deduction/seat_view.py); never rendered into the prompt."""
+    read_out_wills: list[ReadOutWill]
+    """Public: each read-out town record as data, for the deduction engine; never rendered."""
     cast_role_counts: dict[str, int]
     """Public fixed-cast census (role -> count; counts only, no identities) feeding the alive-roles
     line (cast minus revealed dead)."""
@@ -77,6 +90,8 @@ class PackNightGraph(TypedDict, total=False):
     day_channel: list[DayChannel]
     day_summaries: list[DaySummary]
     dead_roster: list[DeathRecord]
+    night_announcements: list[NightAnnouncement]
+    read_out_wills: list[ReadOutWill]
     cast_role_counts: dict[str, int]
     lineup: list[str]
     night_actions: list[NightActionRecord]

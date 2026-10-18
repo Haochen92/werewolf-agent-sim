@@ -33,8 +33,11 @@ def night_turn_payload(state: OrchestratorGraph, actor: str, role: str) -> Night
         "current_round": 0,
         "day_channel": state.get("day_channel", []),
         "day_summaries": state.get("day_summaries", []),
-        # Both public: the dead roster is announced, the cast census is counts-only.
+        # All public: the dead roster, the mornings and the wills are announced, the cast census is
+        # counts-only.
         "dead_roster": state.get("dead_roster", []),
+        "night_announcements": state.get("night_announcements", []),
+        "read_out_wills": state.get("read_out_wills", []),
         "cast_role_counts": cast_role_counts(state.get("roles", {})),
         "lineup": state.get("lineup", []),
         "surviving_players": [p for p in survivors(state) if p != actor],

@@ -32,6 +32,11 @@ _STATE_MODEL_ALLOWLIST = [
     game_events.DeathRecord,
     game_events.NightActionRecord,  # the private night record (2026-10-03); missing until 2026-10-04
     game_events.RoundCandidate,  # a round turn's held line (Phase 2, 2026-10-07); wraps a DayChannel
+    game_events.NightAnnouncement,  # each morning as data, for the deduction engine (2026-10-17)
+    game_events.AnnouncedDeath,
+    game_events.AnnouncedSave,
+    game_events.ReadOutWill,  # each read-out town record as data, for the deduction engine (2026-10-17)
+    game_events.WillClause,
     night.NightChoice,  # tonight's choices (Phase 3, 2026-10-09): a dataclass, like the next
     night.NightReport,  # the night's public outcome, read by the wire
 ]

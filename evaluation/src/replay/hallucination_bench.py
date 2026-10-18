@@ -13,8 +13,8 @@ not covered yet.
 
 Engine-written parts of an old state are brought up to the checked-out engine, as a game played on
 it would have them: game-master summaries are labelled as such, ballot lines take today's wording,
-and the private night record is rebuilt from the case's stored night targets when the state
-predates it. What players and the summariser wrote stays as it was, unless an arm re-summarises
+the private night record is rebuilt from the case's stored night targets when the state
+predates it, and the mornings and read-out wills as data from the game-master prose. What players and the summariser wrote stays as it was, unless an arm re-summarises
 the earlier days (``resummarize``), which tests the current summariser.
 
 Reads nine-seat records: the frozen bench is nine-seat, and the ten-seat prompts render only a case
@@ -78,6 +78,14 @@ def hydrate_state(state: dict[str, Any]) -> dict[str, Any]:
     for key, model in _LIST_MODELS.items():
         source = {"day_summaries": summaries, "day_channel": channel}.get(key, state.get(key) or [])
         out[key] = [model.model_validate(x) for x in source]
+    if "night_announcements" not in state or "read_out_wills" not in state:
+        # A state from before the mornings and the read-out wills were kept as data: rebuilt from
+        # the game-master prose with the engine's own reader, so the deduction engine sees them.
+        from Agents.rules.public_prose import public_data_from_summaries
+
+        mornings, wills = public_data_from_summaries(out["day_summaries"])
+        out.setdefault("night_announcements", mornings)
+        out.setdefault("read_out_wills", wills)
     return out
 
 

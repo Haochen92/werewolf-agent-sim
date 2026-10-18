@@ -178,6 +178,10 @@ def build_speaker_send(
         # Public dead roster — attached to EVERY role's payload (no leak gating; the dead
         # players' roles were announced publicly). Renders the who-died-and-as-what block.
         "dead_roster": state.get("dead_roster", []),
+        # Each morning and each read-out will as data, for the deduction engine; public like the
+        # roster, never rendered.
+        "night_announcements": state.get("night_announcements", []),
+        "read_out_wills": state.get("read_out_wills", []),
         # Public fixed-cast census (counts only, no identities) — feeds the alive-roles line
         # (cast minus revealed deaths). Same no-leak rationale as dead_roster.
         "cast_role_counts": cast_role_counts(state.get("roles", {})),
@@ -226,6 +230,8 @@ def fan_out_day(
             "day_summaries": state.get("day_summaries", []),
             # Public dead roster on every role's payload (see build_speaker_send).
             "dead_roster": state.get("dead_roster", []),
+            "night_announcements": state.get("night_announcements", []),
+            "read_out_wills": state.get("read_out_wills", []),
             # Public fixed-cast census feeding the alive-roles line (see build_speaker_send).
             "cast_role_counts": cast_role_counts(state.get("roles", {})),
             "lineup": state.get("lineup", []),

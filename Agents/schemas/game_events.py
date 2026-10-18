@@ -17,6 +17,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
 
+from Agents.schemas.night import AttackerType
+
 
 # Model-visible: embedded in DayDiscussOutput -> its field descriptions are part of the frozen
 # structured-output contract. Frozen; do not edit without a prompt-freeze review.
@@ -262,3 +264,104 @@ class NightActionRecord(BaseModel):
     seen: list[str] = Field(default_factory=list)
     """Names the action learned: the sentinel's visitors, the player the trailseer's target
     visited, the role the illusionist concealed."""
+    attacker_types: list[AttackerType] = Field(default_factory=list)
+    """The attacks on the target, as the morning named them, when the target was attacked and
+    survived (`saved`, `self_bet_saved`; a fortune teller's attacked self-bet): on a protector's,
+    an attacker's and the fortune teller's own record. Empty otherwise, and on records written
+    before 2026-10-17. The prose says the same; this is for code, so nothing parses the prose."""
+    bet_role: str | None = None
+    """The role a fortune teller's bet on another player named; None for a bet on the death
+    alone, for every other action, and on records written before 2026-10-17."""
+    hidden_role: str | None = None
+    """The role the necromancer hid by killing through the illusionist's body, on its own record
+    (the prose says it too); None otherwise, and on records written before 2026-10-18. The pack's
+    kill keeps the role the living illusionist hid in `seen`."""
+
+
+# How the morning said a dead player's role was hidden: not at all, by the living illusionist's
+# conceal ("hidden by an illusionist"), or by the necromancer through the illusionist's body.
+HiddenBy = Literal["", "illusionist", "reanimated_illusionist"]
+
+# Who the morning said saved an attacked player: the living healer, the necromancer through the
+# dead healer's body ("a reanimated healer"), or the player's own fortune-teller self-bet.
+Saver = Literal["healer", "reanimated_healer", "self_bet"]
+
+
+class AnnouncedDeath(BaseModel):
+    """One night death as the morning announced it."""
+
+    player: str
+    attacker_types: list[AttackerType]
+    """Each attack on the player, once per type, in the order the morning names them."""
+    role: str
+    """The role the morning revealed; "" when it was hidden."""
+    hidden_by: HiddenBy = ""
+    """How the role was hidden; "" when it was revealed."""
+
+
+class AnnouncedSave(BaseModel):
+    """One attacked player the morning announced as saved."""
+
+    player: str
+    attacker_types: list[AttackerType]
+    """Each attack on the player, once per type, in the order the morning names them."""
+    saver: Saver
+    """Who the morning said saved the player."""
+
+
+class NightAnnouncement(BaseModel):
+    """One night's morning announcement as data: exactly what the moderator's prose said, built
+    from the same NightReport in night_resolution (Agents/rules/announcement.py), so the two
+    cannot drift. Public: it rides every seat's payload for the deduction engine, and is never
+    rendered to anyone (the prose in day_channel is what the players read). The read-out wills
+    are not here: they are ReadOutWill, composed from the dead player's records."""
+
+    night: int
+    """The night announced (the night belonging to that day)."""
+    deaths: list[AnnouncedDeath] = Field(default_factory=list)
+    """The night's deaths, in seat order."""
+    saves: list[AnnouncedSave] = Field(default_factory=list)
+    """The announced saves, in seat order."""
+    pick: str | None = None
+    """The side the speculator picked that night (town, wolves, lone_killer, self); None if none."""
+    no_one_died: bool = False
+    """True when the morning said "No one died last night." (no death and no save announced)."""
+
+
+class WillClause(BaseModel):
+    """One night of a read-out record, exactly as the moderator's sentence says it
+    (Agents/rules/night_record.py `_disclosed`): nothing the sentence leaves out is kept here."""
+
+    night: int
+    """The night the action was taken."""
+    action: str | None
+    """The action as the record names it (protect, shoot, hold_fire, investigate, watch, follow,
+    sigil); None for a roleblocked night, whose sentence does not say what was tried."""
+    target: str | None
+    """Who the action was on; None for hold_fire and a roleblocked night."""
+    result: str
+    """The record's result word (Agents/rules/night_record.py lists them)."""
+    seen: list[str] = Field(default_factory=list)
+    """The names a watch or a follow listed (empty = "saw no one" / "visited no one"); empty for
+    every other action."""
+
+
+class ReadOutWill(BaseModel):
+    """A revealed town player's night record as the moderator read it out at the reveal (catalogue
+    L11, R8): built in the same node, from the same records, as the prose sentence "The record of
+    …" (Agents/rules/night_record.py `read_out_will`). Public from that moment on, on every seat's
+    payload for the deduction engine; never rendered (the prose is what the players read). A seat
+    reasoning before the reveal never has it: the state appends it at the reveal."""
+
+    holder: str
+    """The dead player whose record it is."""
+    role: str
+    """The holder's revealed role (always a town role)."""
+    day: int
+    """The day of the death: the night of a night death, or the day of a lynch."""
+    phase: Literal["night", "day"]
+    """When it was read out: "night" = with the morning after night `day`; "day" = with the vote
+    result of day `day`."""
+    clauses: list[WillClause] = Field(default_factory=list)
+    """One per night the holder had on record, in night order; empty when it had nothing on record
+    and no record sentence was read (catalogue B24)."""

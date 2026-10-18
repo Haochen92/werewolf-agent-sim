@@ -20,7 +20,7 @@ from langgraph.runtime import Runtime
 
 from Agents.game_config import game_config_from_runnable
 from Agents.rules.night import usable_bodies
-from Agents.rules.night_record import disclosure
+from Agents.rules.night_record import disclosure, read_out_will
 from Agents.rules.resolution import tally_day_vote
 from Agents.rules.seats import alive_holder, seat_order, survivors
 from Agents.schemas import DayChannel, DaySummary, DeathRecord
@@ -220,6 +220,9 @@ Player {lynched} has been voted out and was a {state['roles'][lynched].replace('
         record_line = disclosure(lynched, state["roles"][lynched], list(state.get("night_actions", [])))
         if record_line:
             message = message + record_line + "\n"
+        # The same record as data, for the deduction engine (public from now on; never rendered).
+        will = read_out_will(lynched, state["roles"][lynched], list(state.get("night_actions", [])),
+                             current_day, "day")
         state_update = {
             "voted_player": lynched,
             "no_lynch_streak": no_lynch_streak,
@@ -244,6 +247,7 @@ Player {lynched} has been voted out and was a {state['roles'][lynched].replace('
                     phase="day",
                 )
             ],
+            "read_out_wills": [will] if will is not None else [],
         }
         remove_from_buckets(state_update, state, [lynched])
         return state_update

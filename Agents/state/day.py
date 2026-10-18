@@ -20,6 +20,8 @@ from Agents.schemas.game_events import (
     DeathRecord,
     FiringReason,
     NightActionRecord,
+    NightAnnouncement,
+    ReadOutWill,
     RoundCandidate,
     WolfChannel,
 )
@@ -40,6 +42,10 @@ class DayGraphState(TypedDict, total=False):
     """Prior-day summaries, plus today's once written."""
     dead_roster: list[DeathRecord]
     """Public dead roster, read-only in the day graph."""
+    night_announcements: list[NightAnnouncement]
+    """Public: each night's morning announcement as data, read-only in the day graph."""
+    read_out_wills: list[ReadOutWill]
+    """Public: each read-out town record as data, read-only in the day graph."""
     wolf_channel: list[WolfChannel]
     """The pack's night chat, carried into the day for the wolves' payloads only."""
     roles: dict[str, str]
@@ -105,6 +111,12 @@ class DayActorState(TypedDict, total=False):
     """Prior-day summaries for context."""
     dead_roster: list[DeathRecord]
     """Public dead roster (dead player -> revealed role + when); shown to every role."""
+    night_announcements: list[NightAnnouncement]
+    """Public: each night's morning announcement as data, on every role's payload for the
+    deduction engine (Agents/deduction/seat_view.py); never rendered into the prompt."""
+    read_out_wills: list[ReadOutWill]
+    """Public: each read-out town record as data, on every role's payload for the deduction
+    engine; never rendered into the prompt (the moderator's prose is)."""
     cast_role_counts: dict[str, int]
     """Public fixed-cast census (role -> count; counts only, no identities) feeding the alive-roles line."""
     lineup: list[str]
