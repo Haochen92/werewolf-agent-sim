@@ -128,20 +128,22 @@ export function Backdrop({
 }
 
 /**
- * The baked layout a HUD's sheet was made at, and how far it slides. No HUD (the landing's
- * carriage on an upright phone) has no sheets of its own: it takes the live HUD's, slid by the
- * wing the live layout keeps (its room is centred 96 units further left, 136.5 with the side
- * slot open; the car follows the puppet's centre line, so a slide is exact). Unslid, the
- * shutter, drawn from geometry('none'), fell short of the painted window's right side
+ * The baked layout a HUD's sheet was made at, and how far it slides. Every sheet is baked with
+ * the side slot closed; the car follows the puppet's centre line, so a layout centred elsewhere
+ * takes the same sheet slid by the difference, which is exact for the car (only the felt
+ * country in its window slides with it). The open slot (the transcript, the case file) slides
+ * it 296 units left, so opening the slot costs no second sheet's decode (owner, 2026-10-18; the
+ * second set of sheets cost a phone ~17 MB per toggle). No HUD (the landing's carriage on an
+ * upright phone) takes the live HUD's sheet, slid by the wing the live layout keeps. Unslid,
+ * the shutter, drawn from geometry('none'), fell short of the painted window's right side
  * (2026-10-15); `backdrop.test.ts` holds the two centres equal for every layout.
  */
 export function sheetFor(
   hud: Hud,
   side: boolean,
 ): { layout: 'live' | 'replay'; dx: number } {
-  if (hud === 'replay') return { layout: 'replay', dx: 0 };
-  const dx = hud === 'none' ? geometry('none', side).cx - geometry('live', side).cx : 0;
-  return { layout: 'live', dx };
+  const layout = hud === 'replay' ? 'replay' : 'live';
+  return { layout, dx: geometry(hud, side).cx - geometry(layout, false).cx };
 }
 
 /** The sheet itself, drawn by the Stage from the scene's description. */
@@ -150,7 +152,7 @@ export function BackdropSheet({ phase, hud, side, from, fadeDelay, k }: Backdrop
   const cut = useCut(narrow ? from : null, phase, fadeDelay * k);
   const { layout, dx } = sheetFor(hud, side);
   if (!scale) return null;
-  const at = (p: Phase) => SETS.car[p][layout][side ? 'side' : 'full'][scale];
+  const at = (p: Phase) => SETS.car[p][layout][scale];
   const sheet = {
     position: 'absolute',
     top: 0,

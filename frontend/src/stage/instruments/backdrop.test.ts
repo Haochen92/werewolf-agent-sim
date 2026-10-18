@@ -58,8 +58,9 @@ describe('pickScale', () => {
 
 /**
  * The window is placed twice: the shutter live from the layout's geometry, the glass baked into
- * a sheet made at one of two layouts. A layout without sheets of its own (no HUD) once took the
- * live HUD's unslid, and the shutter fell 96 units short of the glass's right side (2026-10-15).
+ * a sheet made at one of two layouts, both with the side slot closed. A layout without sheets of
+ * its own (no HUD) once took the live HUD's unslid, and the shutter fell 96 units short of the
+ * glass's right side (2026-10-15); the open slot slides the closed slot's sheet (2026-10-18).
  */
 describe('sheetFor', () => {
   const layouts: [Hud, boolean][] = (['none', 'live', 'replay'] as const).flatMap((hud) =>
@@ -70,7 +71,7 @@ describe('sheetFor', () => {
     'puts the painted glass under the shutter (hud %s, side %s)',
     (hud, side) => {
       const { layout, dx } = sheetFor(hud, side);
-      const glass = diningCarPlan({ phase: 'day', hud: layout, side }).glass;
+      const glass = diningCarPlan({ phase: 'day', hud: layout, side: false }).glass;
       const shutter = shutterGeometry(geometry(hud, side)).f;
       expect(glass.x + glass.w / 2 + dx).toBeCloseTo(shutter.cx, 0);
     },
