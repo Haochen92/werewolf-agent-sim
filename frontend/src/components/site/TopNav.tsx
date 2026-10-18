@@ -2,11 +2,11 @@
 
 /**
  * The site's nav as the station's signboard (redesign handoff 2026-10-14, §1): the brand (the
- * train's headlamp mark, `scripts/brand-mark.mjs`, and the name in EB Garamond) and the three
+ * gold 9 badge, `scripts/brand-mark.mjs`, and the name in EB Garamond) and the three
  * doors as recessed wells on a wooden board in a brass frame, hung from two brass rods. The
  * current page's door is the cream plate (`aria-current`). The Rooms door carries a split-flap
  * counter of the tables boarding right now (`useBoarding`), blank until the server answers.
- * Pointing at the brand turns the headlamp up. The guide is not a door but an enamel sign
+ * Pointing at the brand gilds the badge brighter. The guide is not a door but an enamel sign
  * screwed to the board (owner, 2026-10-14): after the doors on a desktop, reading "Guide" beside
  * an open book; on a phone the book alone, at the end of the name's row, so the board keeps two
  * rows. On a phone the brand and the sign take the first row and the doors share the second.
