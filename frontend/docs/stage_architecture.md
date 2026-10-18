@@ -622,6 +622,17 @@ anything that shows state is drawn over the sprite in vector, never baked in.
     with an inner vignette, on a cream border yellowed at its edges; the numeral in IM Fell on
     its foot; a wooden peg on its top edge; a box shadow down-right on the wall; tilted by a
     fixed table per seat (±3.1°) about where it hangs.
+- **The seat rail and the hidden chip** (owner, 2026-10-18; masters in `claude_artifacts/
+  design/rasters/wood/kit/` and `…/live_ugrade/`). The rail is the owner's walnut frame with
+  brass brackets over the burgundy velvet tile, a brass plate at its head lettered with what a
+  tap does; each card is the owner's warm cream paper (a tile) with a baked shadow drawn round
+  it by the border image's outset, the seat number on a small brass tag (the plate's picture
+  again), two punches drawn where the photo meets the notes, and a footer that holds facts only
+  as the side's colour and the role's sigil (a darker fold of the paper while nothing is known).
+  Frame and plate are 9-slices cut to the size their borders show (`scripts/fit_rail.py`;
+  ~30 KB, ~2.2 MB decoded once a game). A chip back up in the jar is the owner's navy wooden
+  chip, squashed to the table's 0.42 tilt, 192 px and a 128 px phone copy
+  (`scripts/fit_chips.py`); a chip face up stays drawn.
 - **Never upscale.** No sprite atlases: HTTP/2 makes many small files cheap and an atlas adds
   tooling.
 - Preload the game's nine characters (four states + head) at the deal; `next/image` `priority`
@@ -794,7 +805,11 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
 - **The backdrop belongs to the Stage.** A scene's `Backdrop` only describes the sheet
   (phase, HUD, side, the hour it comes from) and the Stage draws one `BackdropSheet` at the foot
   of the paint layer, kept across beats and across scenes, so a beat never remounts the
-  picture: on iPhone Safari a fresh `<img>` is black until it decodes (build log §8.8). Every
+  picture: on iPhone Safari a fresh `<img>` is black until it decodes (build log §8.8). The
+  wing is the Stage's the same way (owner, 2026-10-18: the HUD that stays all game is drawn
+  once): the car, a night room and the platform describe theirs with `StageWing` and the Stage
+  draws one at the foot of the HUD layer, updated in place across beats, rooms and scenes
+  (set.ts `WingHost`; the phone-rule gate fails a step that builds it again). Every
   other next/image in the stage carries `decoding="sync"` for the same reason: what a beat
   remounts (the wing's heads in a scene keyed whole) paints at once.
 - **The car's set belongs to one host; a scene is a body under it (`scenes/CarScene.tsx`).**

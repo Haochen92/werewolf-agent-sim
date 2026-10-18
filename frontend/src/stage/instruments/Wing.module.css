@@ -1,13 +1,14 @@
-/* The seat rail (HUD pass 2, owner 2026-09-29, "B on photo stock"): a cork board in a walnut
-   frame with a brass edge down the left of the stage, the seats tacked to it as photo cards in a
-   grid whose rows and columns come from the seat count (rail-layout.ts, set inline). Sizes are
-   units. */
+/* The seat rail (HUD pass 2, owner 2026-09-29, "B on photo stock"; framed 2026-10-18): burgundy
+   velvet in the owner's walnut frame with brass brackets down the left of the stage, a brass plate
+   lettered with what a tap does at its head, the seats under it as photo cards on cream paper, in
+   a grid whose rows and columns come from the seat count (rail-layout.ts, set inline). The frame
+   and the plate are 9-slices and the paper a tile (scripts/fit_rail.py), drawn once and still.
+   Sizes are units. */
 
 /* how far the rail grows past the world's left edge: as much of the bleed as the screen shows
    (--spare, written by the stage), up to what the layout wants (--reach-max) */
 .wing,
 .bleed,
-.hint,
 .editor {
   --reach: min(var(--spare, 0px), var(--reach-max, 0px));
 }
@@ -22,37 +23,57 @@
   display: grid;
   gap: var(--rail-gap);
   padding: var(--rail-pad);
-  padding-right: calc(var(--rail-pad) + 3px);
-  /* the frame: the speech box's walnut, darker, its brass edge on the room's side only */
-  background:
-    linear-gradient(90deg, rgba(36, 23, 13, 0.9), rgba(28, 18, 10, 0.93)),
-    var(--board) 0 0 / 320px 320px repeat,
-    var(--walnut-bot);
-  border-right: 1.5px solid var(--hud-brass);
-  box-shadow:
-    inset -3px 0 0 rgba(22, 13, 7, 0.9),
-    inset -4px 0 0 rgba(201, 164, 92, 0.3),
-    6px 0 16px rgba(0, 0, 0, 0.5);
+  box-shadow: 6px 0 16px rgba(0, 0, 0, 0.5);
 }
-/* the cork inside the frame: a still tile (scripts/make-cork.mjs), dimmed to the car's light
-   and darker towards the frame, a fine brass line where it meets the wood */
+/* the velvet inside the frame: a still tile, dimmed to the car's light and darker towards the
+   wood; it stops short of the frame's rounded outer corners */
 .wing::before {
   content: '';
   position: absolute;
-  inset: 7px 10px 7px 7px;
-  border-radius: 2.4px;
+  inset: 8px;
+  border-radius: 6px;
   background:
-    linear-gradient(rgba(34, 20, 9, 0.24), rgba(34, 20, 9, 0.24)),
-    var(--cork) 0 0 / 288px 288px repeat,
-    #9c6b3e;
-  box-shadow:
-    inset 0 0 0 1.2px rgba(122, 90, 43, 0.9),
-    inset 0 0 0 2.4px rgba(22, 13, 7, 0.55),
-    inset 0 0 22px 4px rgba(30, 16, 6, 0.55);
+    linear-gradient(rgba(20, 6, 8, 0.3), rgba(20, 6, 8, 0.3)),
+    var(--velvet) 0 0 / 256px 256px repeat,
+    #4a1418;
+  box-shadow: inset 0 0 22px 4px rgba(10, 3, 4, 0.6);
+  pointer-events: none;
+}
+/* the frame over the velvet's edge: its walnut (11.7 units) and piping (13.6) inside the
+   rail's padding (14), the brackets in the corners; the hole is not drawn */
+.wing::after {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  border: 22px solid transparent;
+  border-image: var(--rail-frame) 53 / 22px stretch;
   pointer-events: none;
 }
 .wing > * {
   z-index: 1;
+}
+/* the brass plate at the rail's head, lettered with what a tap on a card does: its riveted ends a
+   fixed share of its height, its brushed middle stretched to the rail's width */
+.plate {
+  grid-column: 1 / -1;
+  align-self: start;
+  height: calc(var(--meta) * 2.1);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-style: solid;
+  border-color: transparent;
+  border-width: 0 calc(var(--meta) * 2.1 * 41 / 80);
+  border-image: var(--rail-plate) 0 41 fill / 0 calc(var(--meta) * 2.1 * 41 / 80) stretch;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: calc(var(--meta) * 1.08);
+  line-height: 1;
+  white-space: nowrap;
+  color: #3a2810;
+  text-shadow: 0 1px 0 rgba(255, 238, 196, 0.5);
 }
 /* past the rail's outer edge, what is left of the bleed, into the house's dark */
 .bleed {
@@ -80,49 +101,25 @@
   container-type: size;
   box-sizing: border-box;
   margin: 0;
-  border: 0;
   padding: 4.8px 4.8px 0;
   border-radius: 3.2px;
   font: inherit;
   text-align: left;
   color: #2a1d10;
+  /* flat paper (owner, 2026-10-18: one continuous ivory card, gentle edges only) */
   background:
-    radial-gradient(
-      ellipse at 50% 45%,
-      rgba(255, 250, 238, 0) 55%,
-      rgba(150, 110, 60, 0.28) 100%
-    ),
+    var(--rail-paper) 0 0 / 128px 128px repeat,
     #ece2c8;
-  /* it lies on the cork: a soft contact shadow down and to the right */
-  box-shadow:
-    inset 0 0 0 0.8px rgba(90, 60, 30, 0.35),
-    1px 1.6px 1.6px rgba(30, 15, 5, 0.5),
-    3.2px 5.6px 7px rgba(30, 15, 5, 0.45);
+  /* its shadow on the velvet, baked (fit_rail.py `shadow`): drawn round the card by the border
+     image's outset, the card's own middle left undrawn, so no blur is computed at a repaint */
+  border: 0 solid transparent;
+  border-image: var(--rail-shadow) 32 / 16px / 16px stretch;
+  box-shadow: inset 0 0 0 0.8px rgba(90, 60, 30, 0.35);
   transition: opacity 0.3s;
 }
-/* the brass tack at the top of each card, pinning it to the cork */
-.tack {
-  position: absolute;
-  z-index: 3;
-  left: 50%;
-  top: calc(-3.2px * var(--legible-ui));
-  width: calc(10px * var(--legible-ui));
-  aspect-ratio: 1;
-  translate: -50% 0;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle at 36% 32%,
-    #fff3c8 0,
-    var(--hud-brass-hi) 20%,
-    var(--hud-brass) 48%,
-    var(--hud-brass-lo) 100%
-  );
-  box-shadow:
-    inset 0 0 0 0.8px rgba(60, 40, 15, 0.6),
-    1.6px 2.4px 2.4px rgba(20, 10, 3, 0.6);
-}
+
 .banded {
-  --band-h: calc(var(--meta) * 1.2);
+  --band-h: calc(var(--meta) * 1.25);
 }
 /* a card you can tap: the button only holds it, and the card fills it. iPadOS 18's Safari does
    not lay a button out as the card's flex column: the photo and the ruled foot, which hold no
@@ -154,9 +151,9 @@
   opacity: 0.45;
 }
 
-/* the photograph: as wide as the card, and at most 60% of its height (a card on a phone is
-   wide, its head framed by the height; on a desk it is tall, and the photo a short portrait that
-   leaves the foot three ruled lines) */
+/* the photograph: as wide as the card, and at most 60% of its height (a card on a phone is wide,
+   its head framed by the height; on a desk it is a short portrait), on a warm studio dark, a thin
+   dark keyline round it */
 .picture {
   position: relative;
   flex: 0 0 auto;
@@ -165,31 +162,41 @@
   overflow: hidden;
   border-radius: 1.6px;
   line-height: 0;
-  background: radial-gradient(circle at 50% 40%, #8a8378, #4d463d);
+  background: radial-gradient(circle at 50% 38%, #7a5636, #2e1d11 78%);
 }
 .picture::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(150, 100, 40, 0.14);
-  box-shadow: inset 0 0 6px rgba(40, 25, 10, 0.55);
+  background: rgba(150, 100, 40, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(40, 25, 10, 0.6);
   pointer-events: none;
 }
-/* the seat's numeral, printed on the card's corner */
+/* the seat's number on a small brass tag over the photo (owner, 2026-10-18): the rail plate's
+   picture, riveted ends kept and its middle stretched, so nothing new is decoded */
 .num {
-  position: absolute;
-  z-index: 1;
-  left: 4.8px;
-  top: 4.8px;
-  padding: 1.6px 4.8px 2.4px 3.2px;
-  border-bottom-right-radius: 4.8px;
-  background: #ece2c8;
-  font-family: var(--font-ui);
-  font-weight: 600;
+  --tag-h: calc(var(--meta) * 1.25);
+  order: -1;
+  align-self: center;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  min-width: 46%;
+  height: var(--tag-h);
+  margin-bottom: 3.2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-style: solid;
+  border-color: transparent;
+  border-width: 0 calc(var(--tag-h) * 41 / 80);
+  border-image: var(--rail-plate) 0 41 fill / 0 calc(var(--tag-h) * 41 / 80) stretch;
+  font-family: var(--font-display);
+  font-weight: 700;
   font-variant-numeric: lining-nums tabular-nums;
-  font-size: calc(var(--meta) * 1.05);
+  font-size: var(--meta);
   line-height: 1;
-  color: #2a1d10;
+  color: #3a2810;
+  text-shadow: 0 1px 0 rgba(255, 238, 196, 0.5);
 }
 
 /* the foot: faint ruled lines where the player may write (the "write here"), their note's first
@@ -207,6 +214,27 @@
   font-size: max(calc(var(--meta) * 0.9), calc(11px / max(var(--stage-scale, 1), 0.01)));
   line-height: 1.35;
 }
+/* two punches where the photo meets the notes, as on a ticket (owner, 2026-10-18): half circles
+   of the velvet's shade on the card's edges, a hairline rim (drawn, not cut: no mask on the stage) */
+.tile:not(.empty) .foot::before,
+.tile:not(.empty) .foot::after {
+  --notch: 6cqw;
+  content: '';
+  position: absolute;
+  top: calc(-1 * var(--notch));
+  width: calc(2 * var(--notch));
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 30%, #240709, #4a1218 70%);
+  box-shadow: 0 0 0 0.8px rgba(90, 60, 30, 0.35);
+  pointer-events: none;
+}
+.tile:not(.empty) .foot::before {
+  left: calc(-4.8px - var(--notch));
+}
+.tile:not(.empty) .foot::after {
+  right: calc(-4.8px - var(--notch));
+}
 :global([data-small]) .foot {
   font-size: calc(var(--meta) * 0.82);
 }
@@ -215,8 +243,8 @@
     to bottom,
     transparent 0,
     transparent calc(1lh - 1px),
-    rgba(95, 120, 160, 0.32) calc(1lh - 1px),
-    rgba(95, 120, 160, 0.32) 1lh
+    rgba(120, 95, 60, 0.3) calc(1lh - 1px),
+    rgba(120, 95, 60, 0.3) 1lh
   );
   background-origin: content-box;
   background-clip: content-box;
@@ -281,10 +309,57 @@
 .tile:not(.dead) .band {
   box-shadow: inset 0 2px 0 var(--c);
 }
-.tile .youBand {
-  background: var(--amber);
+/* a seat nothing is known of yet: a darker fold of the card's own paper, so every card ends in the
+   same row and no side's colour is implied */
+.tile .blank {
+  background: #d3c3a2;
+  box-shadow: inset 0 0.8px 0 rgba(120, 95, 60, 0.35);
+}
+/* a fact is its side's colour and its role's sigil (owner, 2026-10-18: the colour and the icon
+   are enough on a card this narrow); the name stays for a screen reader and the tooltip, and is
+   shown only where there is no sigil (a role hidden) */
+.band > svg,
+.knownBand > svg {
+  flex: 0 0 auto;
+  width: auto;
+  height: 78%;
+  aspect-ratio: 1;
+}
+.band > svg + .bandName,
+.knownWords {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+/* your own seat: an amber corner folded over the photo's top right, "You" on it where it reads
+   (the footer stays for facts) */
+.you {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: 0;
+  width: 36cqw;
+  aspect-ratio: 1;
+  border-top-right-radius: 3.2px;
+  background: linear-gradient(225deg, var(--amber) 50%, transparent 50%);
+  pointer-events: none;
+}
+.you > span {
+  position: absolute;
+  top: 20%;
+  right: -4%;
+  rotate: 45deg;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: min(calc(var(--meta) * 0.7), 11cqw);
+  line-height: 1;
   color: var(--ink);
-  box-shadow: none;
+}
+:global([data-small]) .you > span {
+  display: none;
 }
 
 /* what this seat knows from its own view (a pack mate, an investigation): the band in brass, the
@@ -300,16 +375,6 @@
   box-shadow:
     inset 0 1px 0 rgba(255, 243, 200, 0.55),
     inset 0 -1px 0 var(--hud-brass-lo);
-}
-.knownBand > svg {
-  flex: 0 0 auto;
-  width: 1.2em;
-  height: 1.2em;
-}
-.knownWords {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .knownSeen {
   display: none;
@@ -355,28 +420,6 @@
   box-shadow: 0 1px 2.4px rgba(0, 0, 0, 0.55);
 }
 
-/* the X-ray's sigil badge on a living seat's photo */
-.badge {
-  position: absolute;
-  z-index: 1;
-  right: 2.4px;
-  top: 2.4px;
-  width: min(34cqw, 25.6px);
-  aspect-ratio: 1;
-  border-radius: 4px;
-  background: var(--paper);
-  color: var(--c);
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--bone3);
-  line-height: 0;
-}
-.badge svg {
-  width: 78%;
-  height: 78%;
-  stroke-width: 3.4;
-}
-
 .c-villagers {
   --c: var(--town);
   --ci: var(--town-ink);
@@ -404,12 +447,10 @@
   pointer-events: none;
 }
 .tile::before {
-  inset: -4.8px;
-  border-radius: 7.2px;
-  border: 3.2px solid var(--hud-brass-hi);
-  box-shadow:
-    0 0 0 1.6px var(--hud-brass-lo),
-    0 0 16px 3.2px rgba(236, 208, 142, 0.55);
+  inset: -3.2px;
+  border-radius: 5.6px;
+  border: 1.6px solid var(--amber);
+  box-shadow: 0 0 9.6px 1.6px rgba(236, 208, 142, 0.5);
   opacity: 0;
   transition: opacity 0.3s;
 }
@@ -621,39 +662,6 @@
 .empty .picture,
 .empty .num {
   visibility: hidden;
-}
-
-/* ---- the first-time hint, a paper slip beside the rail ---- */
-.hint {
-  position: absolute;
-  /* under the card's veil (z 5): with the same z, whichever the page added last was on top */
-  z-index: 4;
-  left: calc(var(--wing) + 16px);
-  top: 480px;
-  margin: 0;
-  padding: calc(6.4px * var(--legible-ui)) calc(12.8px * var(--legible-ui));
-  max-width: calc(240px * var(--legible-ui));
-  font-family: var(--font-body);
-  font-style: italic;
-  font-size: var(--meta);
-  line-height: 1.25;
-  color: #2a1d10;
-  background: #f3ead3;
-  border-radius: 2.4px;
-  box-shadow: 2px 4px 9.6px rgba(0, 0, 0, 0.5);
-  rotate: -1.5deg;
-  pointer-events: none !important;
-}
-/* its point, at the rail */
-.hint::before {
-  content: '';
-  position: absolute;
-  left: -8px;
-  top: 50%;
-  margin-top: -8px;
-  border: 8px solid transparent;
-  border-left: 0;
-  border-right-color: #f3ead3;
 }
 
 /* ---- the note editor: a walnut board with a ruled paper slip in it ---- */

@@ -487,15 +487,16 @@ test('the seat rail: notes and guesses for a seated player, none in a replay', a
 }) => {
   const live = '/workbench/day?live=1&viewer=seat:player_9&animate=0&strip=0';
   await page.goto(`${live}&beat=7`, { waitUntil: 'networkidle' });
-  const hint = page.getByText('Tap a card to write notes');
-  await expect(hint).toBeVisible();
+  // the rail's plate says what a tap does (owner, 2026-10-18: it replaced the first-time hint)
+  const plate = page.getByText('Tap to write', { exact: true });
+  await expect(plate).toBeVisible();
   // your own card is not a notebook page
   await expect(page.getByRole('button', { name: 'Seat 9, notes' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Seat 10, notes' }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toContainText('Seat 10');
   await expect(dialog).toContainText('Alive');
-  await expect(hint).toHaveCount(0);
+  await expect(plate).toBeVisible();
   await page.keyboard.type('Jumped on the slip');
   // the role guess: only the roles that could still be alive (the night's three dead were told:
   // healer, chanteuse, investigator), with how many are left, "not sure" first, in a panel over
@@ -537,11 +538,10 @@ test('the seat rail: notes and guesses for a seated player, none in a replay', a
   await expect(card).toContainText('Jumped on the slip');
   await expect(card.locator('[data-guess="serial_killer"]')).toBeVisible();
 
-  // kept on the device: a later beat still has it, and the hint stays dismissed
+  // kept on the device: a later beat still has it
   await page.goto(`${live}&beat=14`, { waitUntil: 'networkidle' });
   await expect(card).toContainText('Jumped on the slip');
   await expect(card.locator('[data-guess="serial_killer"]')).toBeVisible();
-  await expect(hint).toHaveCount(0);
   // a dead seat: its note may be written, its role is not guessed; Escape closes
   await page.getByRole('button', { name: 'Seat 5, notes' }).click();
   await expect(dialog).toContainText('Dead · Chanteuse');
@@ -556,7 +556,7 @@ test('the seat rail: notes and guesses for a seated player, none in a replay', a
   });
   await expect(page.locator('[data-layer="hud"] [data-seat]')).toHaveCount(10);
   await expect(page.getByRole('button', { name: /^Seat \d+, notes$/ })).toHaveCount(0);
-  await expect(hint).toHaveCount(0);
+  await expect(plate).toHaveCount(0);
 });
 
 /**

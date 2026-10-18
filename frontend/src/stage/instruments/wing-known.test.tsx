@@ -112,7 +112,7 @@ describe('the wing’s known band', () => {
     expect(out).not.toContain('data-faction="wolves"');
   });
 
-  it('gives the band to a death, "You" and the X-ray’s truth first', () => {
+  it('gives the band to a death and the X-ray’s truth first, and none to your own seat', () => {
     const out = html([
       { seat: 8, dead: { role: 'wolf' }, known: { how: 'pack' } },
       { seat: 3, you: true, known: { how: 'pack' } },
@@ -128,7 +128,7 @@ describe('a concealed body on the wing', () => {
 
   it('turns to "Role hidden", no role and no side', () => {
     const out = html([{ seat: 3, dead: { role: null } }]);
-    expect(out).toMatch(/data-hidden="true"[^>]*>Role hidden</);
+    expect(out).toMatch(/data-hidden="true"[^>]*><span[^>]*>Role hidden</);
     expect(out).not.toContain('data-sigil');
     expect(out).not.toMatch(/c-(villagers|wolves|serial_killer|neutral_benign)/);
   });

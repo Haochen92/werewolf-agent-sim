@@ -11,10 +11,13 @@
  * A card the player may write on has faint ruled lines on its foot, their note's first words on
  * them, never under 11 css px: on a phone the words give way to a pencil scribble.
  *
- * One card stock for every state. The seat on the stand is edged in brass; a dead seat is the
- * same photo gone grey with its role on an ink band (deaths reveal the role on the wire, so
- * everyone may see it) and a black mourning ribbon across the photo's corner; your own seat wears an amber "You" band; with the X-ray on, a living
- * seat wears its faction's band and a sigil badge, the truth only the observer tier holds.
+ * One card stock for every state (owner, 2026-10-18): the seat's number on a brass tag over the
+ * photo, and a footer row that holds facts only, as the side's colour and the role's sigil (a
+ * neutral stripe while nothing is known). The seat on the stand is edged in amber; a dead seat is
+ * the same photo gone grey with its role in the footer (deaths reveal the role on the wire, so
+ * everyone may see it) and a black mourning ribbon across the photo's corner; your own seat wears
+ * an amber corner on its photo; with the X-ray on, a living seat's footer shows its truth, which
+ * only the observer tier holds.
  * With the X-ray on at a beat where nobody speaks, a card opens that seat's case file, and says
  * so with a steady verdigris edge and a small keyhole badge (the Reveal switch's) on its corner
  * (no breathing: nine cards pulsing would be noise). Only the replay's night stop breathes: the
@@ -196,11 +199,15 @@ export function Wing({
     '--wing': `${width}px`,
     '--reach-max': `${L.reach}px`,
     gridTemplateColumns: `repeat(${L.cols}, minmax(0, 1fr))`,
-    gridTemplateRows: `repeat(${L.rows}, minmax(0, 1fr))`,
+    gridTemplateRows: `auto repeat(${L.rows}, minmax(0, 1fr))`,
     '--rail-pad': `${RAIL_PAD}px`,
     '--rail-gap': `${RAIL_GAP}px`,
     '--board': `url(${SPRITES.textures.walnut.src})`,
-    '--cork': `url(${SPRITES.textures.cork.src})`,
+    '--velvet': `url(${SPRITES.textures.velvet.src})`,
+    '--rail-frame': `url(${SPRITES.rail.frame.src})`,
+    '--rail-plate': `url(${SPRITES.rail.plate.src})`,
+    '--rail-paper': `url(${SPRITES.rail.paper.src})`,
+    '--rail-shadow': `url(${SPRITES.rail.shadow.src})`,
   } as CSSProperties;
   const open = (seat: number, el: HTMLElement) => {
     if (pin) {
@@ -209,7 +216,6 @@ export function Wing({
     }
     opener.current = el;
     carried = null;
-    book?.dismissHint();
     setEditing({ seat, dead: !!bySeat.get(seat)?.dead });
   };
   const close = () => {
@@ -218,7 +224,6 @@ export function Wing({
     // the card that opened it, if this wing still holds it (a remounted wing does not)
     if (opener.current?.isConnected) opener.current.focus();
   };
-  const hint = !pin && !!book && !book.hinted && tiles.some(editable);
   return (
     <>
       <div className={styles.bleed} style={rail} aria-hidden="true" />
@@ -229,6 +234,7 @@ export function Wing({
         role="group"
         aria-label="The seats"
       >
+        <div className={styles.plate}>{plateWords(tiles, editable)}</div>
         {tiles.map((t) => (
           <WingTile
             key={t.seat}
@@ -239,11 +245,6 @@ export function Wing({
           />
         ))}
       </div>
-      {hint ? (
-        <p className={styles.hint} style={rail} aria-hidden="true">
-          Tap a card to write notes
-        </p>
-      ) : null}
       {book && stays && edited?.character ? (
         <NoteEditor
           key={edited.seat}
@@ -280,6 +281,21 @@ export function StageWing(props: WingSpec) {
   return host ? null : <Wing {...props} />;
 }
 
+/**
+ * What a tap on a card does, lettered on the rail's plate (owner, 2026-10-18: the plate is the
+ * instruction): an actor's night to visit, a note to write, a file or a read to open; with no
+ * tap, the rail's name.
+ */
+function plateWords(
+  tiles: readonly WingTileProps[],
+  editable: (t: WingTileProps) => boolean,
+): string {
+  if (tiles.some((t) => t.word === 'visit')) return 'Tap to visit';
+  if (tiles.some(editable)) return 'Tap to write';
+  if (tiles.some((t) => t.file || t.read?.onRead)) return 'Tap to read';
+  return 'Passengers';
+}
+
 interface CardProps extends WingTileProps {
   /** The seated player's note on this seat. */
   note?: string;
@@ -312,16 +328,12 @@ function WingTile({
   const role = dead ? (dead.role ?? truth ?? null) : (truth ?? null);
   const hidden = !!dead && !role;
   const faction = factionOf(role);
-  const band = you
-    ? 'You'
-    : role
-      ? (ROLE_NAME[role] ?? role)
-      : hidden
-        ? 'Role hidden'
-        : null;
-  const knew = !band && known ? known : null;
+  // the footer holds facts only (owner, 2026-10-18): a role the table or this viewer knows; your
+  // own seat is the corner's, and a guess stays pencilled on the photo
+  const band = role ? (ROLE_NAME[role] ?? role) : hidden ? 'Role hidden' : null;
+  const knew = !band && known && !you ? known : null;
   const cls = [
-    band || knew ? styles.banded : '',
+    character ? styles.banded : '',
     styles.tile,
     faction ? styles[`c-${faction}`] : '',
     !character ? styles.empty : '',
@@ -347,10 +359,10 @@ function WingTile({
     <>
       <span className={styles.picture}>
         {character ? <ChipSprite character={character} /> : null}
-        {truth && !dead ? (
-          <span className={styles.badge}>
-            {/* the X-ray's truth: a felt badge on paper; the guess below stays a pencilled stamp */}
-            <Sigil role={truth} variant="felt" small />
+        {/* your own seat: the amber corner (the footer is for facts) */}
+        {you ? (
+          <span className={styles.you}>
+            <span>You</span>
           </span>
         ) : null}
         {lamp ? <span className={styles.lamp} /> : null}
@@ -385,11 +397,13 @@ function WingTile({
       </span>
       {band ? (
         <span
-          className={`${styles.band} ${you ? styles.youBand : ''}`}
-          data-hidden={hidden && !you ? true : undefined}
+          className={styles.band}
+          title={band}
+          data-hidden={hidden ? true : undefined}
           data-long={LONG_BAND.has(band) ? true : undefined}
         >
-          {band}
+          {role ? <Sigil role={role} variant="felt" small /> : null}
+          <span className={styles.bandName}>{band}</span>
         </span>
       ) : null}
       {knew ? (
@@ -422,6 +436,9 @@ function WingTile({
           </span>
         </span>
       ) : null}
+      {character && !band && !knew ? (
+        <span className={`${styles.band} ${styles.blank}`} aria-hidden="true" />
+      ) : null}
       {read?.onRead ? <span className={styles.breathe} aria-hidden="true" /> : null}
       {glow === 'acted' ? <span className={styles.glow} aria-hidden="true" /> : null}
       {/* a card that opens a file wears the Reveal switch's keyhole; an actor's opens its room */}
@@ -429,7 +446,6 @@ function WingTile({
       {read?.onRead && read.fresh ? (
         <span key={read.fresh} className={styles.flash} aria-hidden="true" />
       ) : null}
-      {character ? <span className={styles.tack} aria-hidden="true" /> : null}
     </>
   );
   if (!tap)

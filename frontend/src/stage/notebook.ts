@@ -24,20 +24,15 @@ export interface NotebookState {
   notes: Readonly<Record<number, string>>;
   /** The role the player thinks a seat holds, per seat number (a role id); none: not sure. */
   guesses: Readonly<Record<number, string>>;
-  /** The rail's hint has been dismissed (by a first tap on a card). */
-  hinted: boolean;
 }
 
 export interface Notebook extends NotebookState {
   setNote: (seat: number, text: string) => void;
   /** "I think they are…": a role id, or null for "not sure". */
   setGuess: (seat: number, role: string | null) => void;
-  dismissHint: () => void;
 }
 
-const EMPTY: NotebookState = { notes: {}, guesses: {}, hinted: false };
-/** What the server renders: no notes, and no hint (it appears once the page is live). */
-const SERVER: NotebookState = { ...EMPTY, hinted: true };
+const EMPTY: NotebookState = { notes: {}, guesses: {} };
 
 /** A stored record read back, whatever state it is in. */
 export function parseNotebook(raw: unknown): NotebookState {
@@ -53,8 +48,9 @@ export function parseNotebook(raw: unknown): NotebookState {
     for (const [k, v] of Object.entries(r.guesses as Record<string, unknown>))
       if (typeof v === 'string' && v in ROLE_NAME && Number.isInteger(Number(k)))
         guesses[Number(k)] = v;
-  // a `suspect` kept before 2026-10-14 is not read, and goes with the next write
-  return { notes, guesses, hinted: r.hinted === true };
+  // a `suspect` kept before 2026-10-14, or a `hinted` before 2026-10-18 (the rail's first-time
+  // hint, gone now its plate says what a tap does), is not read, and goes with the next write
+  return { notes, guesses };
 }
 
 /** The roles in the order the cast is read out (the cast plate's), for the guess's choices. */
@@ -115,7 +111,7 @@ export function useNotebook(gameId: string | null): Notebook | null {
   const state = useSyncExternalStore(
     subscribe,
     () => (gameId ? current(gameId) : EMPTY),
-    () => SERVER,
+    () => EMPTY,
   );
   return useMemo(() => {
     if (!gameId) return null;
@@ -135,8 +131,6 @@ export function useNotebook(gameId: string | null): Notebook | null {
           else delete guesses[seat];
           return { ...b, guesses };
         }),
-      dismissHint: () =>
-        updateNotebook(gameId, (b) => (b.hinted ? b : { ...b, hinted: true })),
     };
   }, [gameId, state]);
 }

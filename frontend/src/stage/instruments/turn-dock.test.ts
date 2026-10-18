@@ -250,7 +250,6 @@ describe('the notebook’s role guess (2026-09-30)', () => {
     expect(parseNotebook({ notes: { 5: 'quiet' }, suspect: 5, hinted: true })).toEqual({
       notes: { 5: 'quiet' },
       guesses: {},
-      hinted: true,
     });
     expect(
       parseNotebook({ notes: {}, guesses: { 3: 'wolf', 4: 'nonsense', x: 'wolf' } })

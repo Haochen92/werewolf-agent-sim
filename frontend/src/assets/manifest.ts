@@ -217,6 +217,10 @@ import textureBoards from './sprites/textures/boards.webp';
 import textureVelvet from './sprites/textures/velvet.webp';
 import textureCork from './sprites/textures/cork.webp';
 import textureInk from './sprites/textures/ink.webp';
+import railFrame from './sprites/rail/frame.webp';
+import railPaper from './sprites/rail/paper.webp';
+import railShadow from './sprites/rail/shadow.webp';
+import railPlate from './sprites/rail/plate.webp';
 import owlBaseSmall from './sprites/characters/owl/base@small.webp';
 import owlTalkingSmall from './sprites/characters/owl/talking@small.webp';
 import owlThinkingSmall from './sprites/characters/owl/thinking@small.webp';
@@ -459,6 +463,8 @@ export type RoleSprite =
  * the ink's coverage, a mask for the stamps.
  */
 export type TexturePicture = 'walnut' | 'boards' | 'velvet' | 'cork' | 'ink';
+/** The seat rail's pictures (scripts/fit_rail.py): its frame and lettered plate, the cards' paper and shadow. */
+export type RailPicture = 'frame' | 'plate' | 'paper' | 'shadow';
 
 /**
  * The phone's copies (scripts/small-sprites.mjs, each beside its source) of the pictures a small
@@ -491,6 +497,7 @@ export const SPRITES: {
   };
   grain: StaticImageData;
   textures: Record<TexturePicture, StaticImageData>;
+  rail: Record<RailPicture, StaticImageData>;
   small: SmallSprites;
 } = {
   day: {
@@ -778,6 +785,12 @@ export const SPRITES: {
     velvet: textureVelvet,
     cork: textureCork,
     ink: textureInk,
+  },
+  rail: {
+    frame: railFrame,
+    plate: railPlate,
+    paper: railPaper,
+    shadow: railShadow,
   },
   small: {
     day: {

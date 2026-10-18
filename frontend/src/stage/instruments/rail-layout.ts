@@ -12,8 +12,8 @@
  */
 import { STAGE_H, WING_N } from '../units';
 
-/** The rail's inner padding (its walnut frame and a margin of cork) and the gap between
- * cards (room for the tacks), in units. */
+/** The rail's inner padding (its frame's walnut and piping, 13.6 units) and the gap between
+ * cards (room for their frames' corners), in units. */
 export const RAIL_PAD = 14;
 export const RAIL_GAP = 10;
 /** The most rows before a third column. */
@@ -27,7 +27,10 @@ export interface RailLayout {
   cols: number;
   /** Rows of cards. */
   rows: number;
-  /** A card's height, in units: the rows fill the rail's height. */
+  /**
+   * A card's height, in units, if the rows filled the rail's height: the plate at its head
+   * (Wing.module.css `.plate`) takes a row of the type's height first.
+   */
   cardH: number;
   /** The rail's width inside the world, and the card width that gives. */
   width: number;
