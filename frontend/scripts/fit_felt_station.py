@@ -1,6 +1,7 @@
-"""One-off: the station's felt train (owner, 2026-10-17), joined from the owner's pieces.
+"""One-off: the station's train, joined from the owner's pieces: felt (2026-10-17), then a wooden
+toy, walnut and cream with brass (2026-10-18, `SET`; the felt set's numbers are kept beside it).
 
-Reads claude_artifacts/design/rasters/felt/station/ (train_back = a car's left end, train_front its
+Reads claude_artifacts/design/rasters/<SET>/station/ (train_back = a car's left end, train_front its
 right end, train_center a window bay, train_connector the bellows, train_wheel) and writes the
 master `train.png` beside them, plus the WebP files the build ships (src/assets/sprites/station/
 train.webp at about 1.5 px a unit and train@1x.webp at 1), and prints the geometry station.ts
@@ -21,21 +22,50 @@ import numpy as np
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
-SRC = ROOT / 'claude_artifacts/design/rasters/felt/station'
+SET = 'wood'
+SRC = ROOT / f'claude_artifacts/design/rasters/{SET}/station'
+FELT = ROOT / 'claude_artifacts/design/rasters/felt/station'
 OUT = ROOT / 'src/assets/sprites/station'
 
-# the bands' tops down a plain column: snow, top rail, cream panel, brown panel, bottom rail,
-# chassis, and the foot; the bay's, and the ends' it is warped onto
-BAY_ROWS = [84, 144, 324, 378, 960, 1140, 1224, 1320]
-END_ROWS = [42, 102, 300, 360, 864, 1020, 1110, 1302]
-# the bay's window hole and the straight run of its frame (columns), in its own pixels
-HOLE = (258, 865)
-STRAIGHT = (430, 690)
-# what is kept of each piece across: the bay without most of its outer cream, the ends without
-# the plain panel on their inner side (the door, the post and the buffer kept)
-BAY_KEEP = (150, 975)
-BACK_KEEP = (100, 600)  # the left end: buffer, post, door
-FRONT_KEEP = (520, 1050)  # the right end: door, post, buffer
+# Each set's measurements, in its pieces' own pixels:
+# - rows: the bands' tops down a plain column (the snow's top, the roof, the top rail, the cream
+#   panel, the brown panel, the bottom rail, the chassis, and the foot); the bay's, and the ends'
+#   it is warped onto
+# - hole: the bay's window hole, and straight: the straight run of its frame (columns)
+# - keep: what is kept of each piece across: the bay without most of its outer cream (the corner
+#   ornaments too), the ends without the plain panel on their inner side (the door, the post and
+#   the buffer kept)
+# - wheel: the wheel's crop (rows, columns), so the rim comes out the same size
+# - lines: more rows of the bay held to the ends' (bay row, end row), so a gold line meets its own
+# - under: a strip of an end's own chassis (rows, columns) laid under the bay, when the bay's
+#   chassis is one tier and the ends' two: the bay's tier is then held to the upper one, unstretched
+#   (its brass bolts stay round), the foot in `rows` being where the bay's chassis stops
+GEOMETRY = {
+    'felt': dict(
+        bay_rows=[84, 144, 324, 378, 960, 1140, 1224, 1320],
+        end_rows=[42, 102, 300, 360, 864, 1020, 1110, 1302],
+        hole=(258, 865), straight=(430, 690),
+        bay_keep=(150, 975), back_keep=(100, 600), front_keep=(520, 1050),
+        wheel=((60, 1200), (120, 1135)),
+        lines=[],
+        under=None,
+    ),
+    'wood': dict(
+        bay_rows=[131, 190, 309, 376, 970, 1140, 1226, 1318],
+        end_rows=[97, 138, 260, 356, 862, 1026, 1106, 1198],
+        hole=(257, 866), straight=(430, 690),
+        bay_keep=(150, 975), back_keep=(100, 584), front_keep=(552, 1050),
+        wheel=((60, 1200), (130, 1123)),
+        lines=[(338, 311)],  # the top rail's gold line
+        under=((1194, 1302), (620, 980)),
+    ),
+}
+_g = GEOMETRY[SET]
+BAY_ROWS, END_ROWS = _g['bay_rows'], _g['end_rows']
+HOLE, STRAIGHT = _g['hole'], _g['straight']
+BAY_KEEP, BACK_KEEP, FRONT_KEEP = _g['bay_keep'], _g['back_keep'], _g['front_keep']
+WHEEL_ROWS, WHEEL_COLS = _g['wheel']
+LINES, UNDER = _g['lines'], _g['under']
 H = 1402
 # the dining car's windows: how many, each one's width, and the cream either side of each
 DINING_WINDOWS = 5
@@ -119,6 +149,36 @@ def light_hole(a: np.ndarray, x0: int, x1: int, rows: tuple[int, int], offset: i
     return out
 
 
+def light_portholes(a: np.ndarray) -> np.ndarray:
+    """Every see-through hole inside a piece (a door's porthole) filled as a window is, so the
+    sky never shows through the car."""
+    from scipy import ndimage
+
+    clear = a[..., 3] < 128
+    lab, n = ndimage.label(clear)
+    edge = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]])))
+    out = a
+    for i, box in enumerate(ndimage.find_objects(lab), 1):
+        if i in edge:
+            continue
+        ys, xs = box
+        out = light_hole(out, xs.start - 3, xs.stop + 3, (ys.start - 3, ys.stop + 3), 300 * i)
+    return out
+
+
+def with_under(middle: np.ndarray) -> np.ndarray:
+    """The bay over the ends' lower chassis tier, mirror-tiled to its width (`UNDER`)."""
+    if not UNDER:
+        return middle
+    (y0, y1), (x0, x1) = UNDER
+    tier = rgba('train_back')[y0:y1, x0:x1]
+    strip = stretch_cols(tier, 0, tier.shape[1], middle.shape[1])[:, : middle.shape[1]]
+    out = np.zeros_like(middle)
+    place(out, strip, 0, y0)
+    place(out, middle, 0)
+    return out
+
+
 def hole_rows(a: np.ndarray, x: int) -> tuple[int, int]:
     col = a[:, x, 3]
     ys = np.nonzero(col[300:1100] < 128)[0] + 300
@@ -145,10 +205,11 @@ def scaled(a: np.ndarray, k: float) -> np.ndarray:
 
 
 def main() -> None:
-    bay = warp_rows(rgba('train_center'), BAY_ROWS, END_ROWS, H)
+    knots = sorted([*zip(BAY_ROWS, END_ROWS), *LINES])
+    bay = warp_rows(rgba('train_center'), [b for b, _ in knots], [e for _, e in knots], H)
     rows = hole_rows(bay, (HOLE[0] + HOLE[1]) // 2)
-    back = rgba('train_back')[:, BACK_KEEP[0] : BACK_KEEP[1]]
-    front = rgba('train_front')[:, FRONT_KEEP[0] : FRONT_KEEP[1]]
+    back = light_portholes(rgba('train_back')[:, BACK_KEEP[0] : BACK_KEEP[1]])
+    front = light_portholes(rgba('train_front')[:, FRONT_KEEP[0] : FRONT_KEEP[1]])
     short = light_hole(bay, HOLE[0], HOLE[1], rows, 900)[:, BAY_KEEP[0] : BAY_KEEP[1]]
     # the dining car: five of the bay side by side, each window narrowed along its straight run
     # and the cream between them trimmed, so the five span about the room's places (owner,
@@ -173,13 +234,13 @@ def main() -> None:
         place(c, front, w - front.shape[1])
         return c
 
-    side, dining = car(short), car(longbay)
+    side, dining = car(with_under(short)), car(with_under(longbay))
     # the bellows between cars: their snow at the roof's snow, their foot on the bottom rail
     conn = rgba('train_connector')
     cs = (END_ROWS[6] - END_ROWS[1] - 60) / (1455 - 55)
     conn = scaled(conn[55:1456, 76:950], cs)
     gap = 150  # buffer to buffer; the bellows behind, between the cars' ends
-    wheel = rgba('train_wheel')[60:1200, 120:1135]
+    wheel = rgba('train_wheel')[WHEEL_ROWS[0] : WHEEL_ROWS[1], WHEEL_COLS[0] : WHEEL_COLS[1]]
     wheel = scaled(wheel, 300 / wheel.shape[1])
 
     cars = [side, dining, side]
@@ -199,17 +260,19 @@ def main() -> None:
         place(train, c, x0)
     a = train[..., 3]
     ys = np.nonzero(a.max(1) > 10)[0]
-    train = train[: ys.max() + 4]
+    # the empty rows above the snow and below the wheels are cut (no pixels drawn for nothing)
+    top = max(int(ys.min()) - 4, 0)
+    train = train[top : ys.max() + 4]
     # the glass the places sit in: the first window's left edge to the last one's right
     win_x0 = starts[1] + back.shape[1] - 6 + DINING_PANEL
     win_x1 = starts[1] + back.shape[1] - 6 + longbay.shape[1] - DINING_PANEL
     master = Image.fromarray(train.clip(0, 255).round().astype(np.uint8), 'RGBA')
     master.save(SRC / 'train.png')
-    snow = END_ROWS[1]
-    bottom = int(ys.max())
+    snow = END_ROWS[1] - top
+    bottom = int(ys.max()) - top
     print('master', master.size)
     print('TRAIN_PX', dict(w=master.width, h=master.height, wx0=win_x0, wx1=win_x1,
-                           wy0=rows[0] + 6, wy1=rows[1] - 7, snow=snow, bottom=bottom))
+                           wy0=rows[0] + 6 - top, wy1=rows[1] - 7 - top, snow=snow, bottom=bottom))
     # the shipped copies: units a master px is CAR_H (432) over the snow-to-foot height
     k = 432 / (bottom - snow)
     for name, density in (('train.webp', 1.5), ('train@1x.webp', 1.0)):
@@ -222,7 +285,7 @@ def main() -> None:
 def beam() -> None:
     """The beam along the top and the ledge along the foot: the owner's walnut felt, a tile that
     meets itself on every side (its edges cross-faded into the opposite ones), 512 px square."""
-    a = np.asarray(Image.open(SRC / 'wood_felt.png').convert('RGB')).astype(float)
+    a = np.asarray(Image.open(FELT / 'wood_felt.png').convert('RGB')).astype(float)
     n, b = a.shape[0], 96
     k = np.linspace(0, 1, b)
     a = a.copy()
@@ -252,5 +315,5 @@ def floor() -> None:
 
 if __name__ == '__main__':
     main()
-    beam()
-    floor()
+    # the beam and the floor are as the felt set made them (2026-10-17); call beam() and floor() to
+    # remake them

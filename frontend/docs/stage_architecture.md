@@ -355,7 +355,11 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   with a hem rod and brass ring (`PAINTED_SHUTTER`; raised, the rod hangs half under the pelmet).
   The place cards are printed paper tacked with two brass tacks, in the display serif (the house's
   facts are paper). Mobile cost: the props' decoded memory fell 20.1 → 18.1 MiB; nothing new moves.
-  The landing's carriage is the same felt (Carriage.module.css `.paint`, a cream picture per screen).
+  The landing's carriage and the station's train are a wooden toy (owner, 2026-10-18: walnut, cream
+  panels, brass, a snowy roof; masters in `claude_artifacts/design/rasters/wood/`): the carriage one
+  picture per screen (Carriage.module.css `.paint`, `SPRITES.carriage.whole`/`wholePhone`), the
+  train joined from its pieces by `scripts/fit_felt_station.py` (`SET = 'wood'`; the felt set's
+  numbers kept beside it), within the felt train's pixels.
 - The painted props (ruled 2026-09-27, the polish pass): the jar's glass and lid, the stand's front
   and the vote's table are the owner's rasters, `SPRITES.props.{jarGlass,jarLid,stand,voteTable}`,
   replacing their vector bodies (plates, cards, chips, strings, footlights and plaque stay vector).

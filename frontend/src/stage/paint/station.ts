@@ -25,20 +25,21 @@ import { STAGE_H, STAGE_W, geometry, type Hud } from '../units';
 import { STATION } from './materials';
 
 /**
- * The train picture's own geometry, in the pixels of its master: the owner's felt train (2026-10-17),
- * joined from its pieces by scripts/fit_felt_station.py, which prints these numbers.
+ * The train picture's own geometry, in the pixels of its master: the owner's wooden toy train
+ * (2026-10-18; felt before it), joined from its pieces by scripts/fit_felt_station.py, which
+ * prints these numbers.
  */
 const TRAIN_PX = {
-  w: 8404,
-  h: 1415,
+  w: 8260,
+  h: 1323,
   /** The dining car's window, left to right and top to bottom. */
-  wx0: 2587,
-  wx1: 5787,
-  wy0: 482,
-  wy1: 778,
+  wx0: 2523,
+  wx1: 5723,
+  wy0: 383,
+  wy1: 676,
   /** The roof's snow line and the wheels' foot. */
-  snow: 102,
-  bottom: 1411,
+  snow: 45,
+  bottom: 1319,
   /** The dining car's five windows: the first's left edge is `wx0`; each this wide, this far apart. */
   windows: 5,
   windowW: 480,
