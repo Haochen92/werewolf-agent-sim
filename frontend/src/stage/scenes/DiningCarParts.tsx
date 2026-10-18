@@ -17,7 +17,7 @@ import { CarBackdrop } from '../instruments/CarBackdrop';
 import { FeltWindow } from '../instruments/FeltWindow';
 import { SpeechBox } from '../instruments/SpeechBox';
 import { Plaque, Stand } from '../instruments/Stand';
-import { Wing, type WingTileProps } from '../instruments/Wing';
+import { StageWing, type WingTileProps } from '../instruments/Wing';
 import { useMotionScale } from '../motion';
 import { beam, type Special } from '../paint/draw';
 import { diningCarPlan } from '../paint/dining-car';
@@ -179,7 +179,7 @@ export function TableWing({
   const hidden = hiddenRolesHeld(me, view.me);
   return (
     <>
-      <Wing
+      <StageWing
         width={width}
         notes={notes}
         edit={edit}

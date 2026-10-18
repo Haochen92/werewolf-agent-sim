@@ -39,7 +39,7 @@ import { useSmall } from '../set';
 import { ChipSprite } from '../cast/ChipSprite';
 import { Puppet } from '../cast/Puppet';
 import { Bleed } from '../instruments/Bleed';
-import { Wing } from '../instruments/Wing';
+import { StageWing } from '../instruments/Wing';
 import { StageMotion, useMotionScale } from '../motion';
 import { stationBack, stationFront, stationPlan } from '../paint/station';
 import { STAGE_H, geometry, type StageGeometry } from '../units';
@@ -296,7 +296,7 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
       </Layer>
 
       <Layer name="hud">
-        <Wing
+        <StageWing
           width={g.wingN}
           tiles={S.places.map((_, i) => ({
             seat: i + 1,

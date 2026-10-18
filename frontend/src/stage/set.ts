@@ -11,10 +11,17 @@
  * remounts its scene never remounts the picture: a remounted `<img>` on iPhone Safari shows
  * nothing until its decode lands, a black frame per beat, and decodes the sheet again each
  * time (build log §8.8).
+ *
+ * `WingContext`: the same for the seat rail. A scene describes its wing (`StageWing`) and the
+ * Stage draws one, at the foot of the HUD layer, kept from the waiting room to the game's end:
+ * the dining car, a night room and the platform each describe theirs, and a change between
+ * them updates the same wing in place instead of building it again (owner, 2026-10-18: the
+ * HUD that stays all game is drawn once).
  */
-import { createContext, useContext } from 'react';
+import { createContext, useContext, type ComponentProps } from 'react';
 import type { Phase } from './paint/materials';
 import type { Hud } from './units';
+import type { Wing } from './instruments/Wing';
 
 /** The stage is drawn small (`data-small`): a phone, or a window that draws it under three-quarter size. */
 export const SmallContext = createContext(false);
@@ -56,3 +63,20 @@ export interface BackdropSpec {
 export const BackdropContext = createContext<((spec: BackdropSpec | null) => void) | null>(
   null,
 );
+
+/** A scene's wing, as it describes it: the wing's own props. */
+export type WingSpec = ComponentProps<typeof Wing>;
+
+/**
+ * The Stage's wing, for the scenes that describe one. `owner` is the describing scene's own
+ * token: the scene that rendered last is drawn, and the wing goes only when no scene describes
+ * one any more, checked after the commits in hand have run (a night room giving way to the car
+ * unmounts the room a commit before the car's set comes up; clearing at once would build the
+ * wing again).
+ */
+export interface WingHost {
+  show(owner: object, spec: WingSpec): void;
+  hide(owner: object): void;
+}
+
+export const WingContext = createContext<WingHost | null>(null);

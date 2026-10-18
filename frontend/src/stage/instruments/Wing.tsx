@@ -28,9 +28,10 @@
  * shows as a small pencilled sigil on the card). The notes stay on this device (notebook.ts),
  * reaching the server only with a speech draft sent with "Use my seat notes" ticked. In a
  * replay, and for an observer, the cards are only shown.
- * The open editor is the container's (`edit`, 2026-10-01): the wing is remounted with every turn
- * and scene, and the editor with it, open on the same seat, the focus and the caret where they
- * were. It closes on Done, Escape or a tap outside, or when its seat dies or can no longer be
+ * The open editor is the container's (`edit`, 2026-10-01): the wing was remounted with every
+ * turn and scene, and the editor came back with it, open on the same seat, the focus and the
+ * caret where they were. Since 2026-10-18 a scene describes its wing (`StageWing`) and the Stage
+ * keeps one for the whole game; the editor's carry still covers a wing drawn outside a Stage. It closes on Done, Escape or a tap outside, or when its seat dies or can no longer be
  * written on; the focus goes back to the card that opened it if that card is still there.
  *
  * Its width: `width` inside the world, and on a screen wider than 16:9 it grows out into the
@@ -38,6 +39,7 @@
  * a wider rail and the room keeps its place.
  */
 import {
+  useContext,
   useEffect,
   useId,
   useLayoutEffect,
@@ -58,6 +60,7 @@ import {
   type Notebook,
 } from '../notebook';
 import { ROLE_NAME, factionOf, type KnownRole } from '../roles';
+import { WingContext, type WingSpec } from '../set';
 import { RAIL_GAP, RAIL_PAD, railLayout } from './rail-layout';
 import { FactionMark } from './FactionMark';
 import { Sigil } from './Sigil';
@@ -260,6 +263,21 @@ export function Wing({
       ) : null}
     </>
   );
+}
+
+/**
+ * A scene's wing, described to the Stage, which draws one wing for the whole game and updates
+ * it in place (set.ts `WingContext`). Described afresh every render: the tiles carry the scene's
+ * taps. Outside a Stage it draws the wing itself.
+ */
+export function StageWing(props: WingSpec) {
+  const host = useContext(WingContext);
+  const owner = useRef({}).current;
+  useLayoutEffect(() => {
+    host?.show(owner, props);
+  });
+  useLayoutEffect(() => (host ? () => host.hide(owner) : undefined), [host, owner]);
+  return host ? null : <Wing {...props} />;
 }
 
 interface CardProps extends WingTileProps {

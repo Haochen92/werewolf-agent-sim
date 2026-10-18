@@ -30,7 +30,7 @@ import { Photo } from '../instruments/Photo';
 import { Pin } from '../instruments/Pin';
 import { SideFlag } from '../instruments/SideFlag';
 import { TopStrip } from '../instruments/TopStrip';
-import { Wing } from '../instruments/Wing';
+import { StageWing } from '../instruments/Wing';
 import { useMotionScale } from '../motion';
 import { useSmall } from '../set';
 import { notebookGame } from '../notebook';
@@ -372,7 +372,7 @@ export function NightRoom({
       </Layer>
 
       <Layer name="hud">
-        <Wing
+        <StageWing
           width={g.wingN}
           notes={notebookGame(presentation, me)}
           edit={slotInput?.notebook}
