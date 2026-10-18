@@ -2,7 +2,6 @@
 export { Button, type ButtonProps } from './Button';
 export { Flapword } from './Flapword';
 export { Book, GuideSign } from './GuideSign';
-export { HangTag } from './HangTag';
 export { Icon } from './Icon';
 export { IconSprite, type IconName } from './IconSprite';
 export { Paper, type PaperProps } from './Paper';

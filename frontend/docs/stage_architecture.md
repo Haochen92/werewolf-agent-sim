@@ -898,7 +898,7 @@ on a phone. Most costly first:
   moves. Deliberate (build_log §8.7): the layer would be stage-sized there. Leave it unless the
   memory picture changes.
 - **Hover and press brightening by `filter`** (`Button.module.css`, `Station.module.css` `.brass`,
-  `BallotRow.module.css`, `Features.module.css`, `HangTag.module.css`): one short repaint of a small
+  `BallotRow.module.css`, `Features.module.css`): one short repaint of a small
   element when touched. Knob: an `opacity` overlay. Low value.
 - **The archive's loading shimmer** (`page.module.css` `.skeletonCard`): animates
   `background-position` while the latest games load. Knob: a highlight moved by `transform`.
