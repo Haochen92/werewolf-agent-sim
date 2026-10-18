@@ -19,7 +19,7 @@ from Agents.deduction import seat_view_from_payload
 from Agents.deduction.comparisons import comparison_items
 from Agents.schemas.deduction import RoleIn, VisitAsClaimed
 from Agents.schemas.roles import ROLE_SPECS
-from tests.engine.deduction.test_candidates import Table, _ne_sp
+from tests.engine.deduction.test_candidates import Table, _ne_sp, _sk_sp
 from tests.engine.deduction.test_comparisons import _continuing, _night_one, _role, _said, _two_nights, _view
 from tests.engine.deduction.test_evil_seat import _payload
 from tests.factories.random_claims import _every_visit, random_comparison_claims
@@ -45,7 +45,7 @@ def test_a_reported_sighting_and_the_stories_that_explain_it():
         "player_3 says it saw your visit on night 1. Stories that fit your nights and every claim so far: as the "
         "Investigator, you checked player_10 on night 1, who read Not suspicious; as the Sigilist, you set a sigil on "
         "player_10 on night 1. A Trailseer story fits too (you followed player_10 on night 1), but player_3 claims the "
-        "Trailseer: claiming it starts a counter-claim. No other town role you can claim has a story that fits these nights."]
+        "Trailseer: claiming it starts a counter-claim. No other role you can claim has a story that fits these nights."]
     # The check's reading is fixed: player_10 was revealed as the Speculator (in the screen, a fake Investigator
     # called the revealed Chanteuse Not suspicious). No Sentinel story: player_10 was attacked that night, so a
     # watch would have seen the attacker. The Healer is claimable, but player_10 died: no protection story.
@@ -55,21 +55,21 @@ def test_a_night_with_no_visit_is_held_by_the_roles_that_may_hold():
     # The Illusionist did not conceal on night 1: no visit. The Healer and the Trailseer must act each night.
     assert _covers(_night_one(), "player_8", 2) == [
         "Stories that fit your nights and every claim so far: as the Investigator, you kept your check on night 1; as "
-        "the Sentinel, you kept your watch on night 1; as the Sigilist, you kept your sigil on night 1. No other town role you can claim has a story that fits these nights."]
+        "the Sentinel, you kept your watch on night 1; as the Sigilist, you kept your sigil on night 1. No other role you can claim has a story that fits these nights."]
 
 
 def test_a_packmates_claim_is_named():
     assert _covers(_night_one(), "player_8", 2, _role(2, "player_7", "sentinel")) == [
         "Stories that fit your nights and every claim so far: as the Investigator, you kept your check on night 1; as "
         "the Sigilist, you kept your sigil on night 1. A Sentinel story fits too (you kept your watch on night 1), but "
-        "your packmate player_7 claims the Sentinel: claiming it starts a counter-claim. No other town role you can claim has a story that fits these nights."]
+        "your packmate player_7 claims the Sentinel: claiming it starts a counter-claim. No other role you can claim has a story that fits these nights."]
 
 
 def test_two_nights_make_one_story():
     # Day 3: only the Trailseer and the Healer are left to claim, and player_1 and player_10 died where it went.
     assert _covers(_two_nights(), "player_9", 3) == [
         "Stories that fit your nights and every claim so far: as the Trailseer, you followed player_10 on night 1 and "
-        "followed player_1 on night 2. No other town role you can claim has a story that fits these nights."]
+        "followed player_1 on night 2. No other role you can claim has a story that fits these nights."]
 
 
 def test_a_night_already_told_and_a_role_already_claimed():
@@ -83,12 +83,45 @@ def test_the_chanteuses_two_visits_have_no_story():
     assert _covers(_night_one(), "player_7", 2) == []  # it went to player_3 and player_4: E2a+own says so
 
 
-def test_never_for_a_town_or_neutral_seat_nor_the_necromancer():
+def test_never_for_a_town_or_neutral_seat():
     for seat in ("player_1", "player_3", "player_6", "player_10"):
         assert _covers(_night_one(), seat, 2) == []
+
+
+def test_the_necromancer_has_no_visit_to_explain_and_the_neutrals_fit():
+    # NE+SP: player_9 the Necromancer. Its visits are under the bodies' names, so every night is held;
+    # the Speculator's pick is no visit. In the games a Necromancer improvised "I held fire" with no line.
     table = Table(_ne_sp()).night(1, ("player_7", "kill", "player_1"), ("player_7", "block", "player_3"))
-    necromancer = next(p for p, role in table.roles.items() if role == "necromancer")
-    assert _covers(table, necromancer, 2) == []
+    assert _covers(table, "player_9", 2) == [
+        "Stories that fit your nights and every claim so far: as the Sentinel, you kept your watch on night 1; as the "
+        "Vigilante, you held fire on night 1; as the Sigilist, you kept your sigil on night 1; as the Speculator, you "
+        "made no visit, and the Speculator's pick is not a visit. No other role you can claim has a story that fits "
+        "these nights."]
+
+
+def _three_kills() -> Table:
+    """The Serial Killer kills player_10, player_6 and player_5 on nights 1 to 3."""
+    table = Table(_sk_sp()).night(1, ("player_9", "kill", "player_10"))
+    table.night(2, ("player_9", "kill", "player_6"))
+    return table.night(3, ("player_9", "kill", "player_5"))
+
+
+def test_a_story_that_spends_every_use_says_so():
+    assert _covers(_three_kills(), "player_9", 3) == [
+        "Stories that fit your nights and every claim so far: as the Investigator, you checked player_10 on night 1, "
+        "who read Not suspicious, and checked player_6 on night 2, who read Not suspicious (all 2 of the "
+        "Investigator's checks); as the Trailseer, you followed player_10 on night 1 and followed player_6 on night 2. "
+        "No other role you can claim has a story that fits these nights."]
+
+
+def test_a_claimed_role_that_cannot_tell_a_night():
+    """voices-04 (cover games): a Serial Killer claimed the Investigator, ran out of checks, and said it
+    "kept my check" on a night a will showed it visit."""
+    told = _said(3, "player_9", (1, "investigate", "player_10", "not_suspicious", []),
+                 (2, "investigate", "player_6", "not_suspicious", []), claim="investigator")
+    assert _covers(_three_kills(), "player_9", 4, told) == [
+        "As the Investigator, the role you claim, no story fits night 3: you visited a player on night 3, and the "
+        "Investigator has 2 checks for the whole game, counting those you have already told."]
 
 
 # --- the leak boundary ---------------------------------------------------------------------------------

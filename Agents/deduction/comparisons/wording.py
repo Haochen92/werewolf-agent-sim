@@ -429,28 +429,57 @@ def _story(deeds: list[tuple[int, str, str, str]]) -> str:
         nights.setdefault((deed, after), []).append(night)
     parts = [f"{deed} on {'night' if len(on) == 1 else 'nights'} {_joined([str(x) for x in on], 'and')}{after}"
              for (deed, after), on in nights.items()]
+    if len(parts) > 1 and any("," in part for part in parts):  # "…who read Suspicious, and checked …"
+        return "you " + ", ".join(parts[:-1]) + ", and " + parts[-1]
     return "you " + _joined(parts, "and")
 
 
-def covers(n: Names, fitting: list[tuple[str, list]], countered: list[tuple[str, list, list[str], list[str]]],
-           reported: dict[int, list[str]], others_fail: bool = False) -> str:
+_USE_NOUN = {"investigator": "checks", "sentinel": "watches", "sigilist": "sigils"}
+
+
+def _told(role: str, deeds: list, spent: int | None) -> str:
+    """A role's story: its nights, or that the role makes no visits; and when it spends every use."""
+    if deeds:
+        told = _story(deeds)
+    else:  # a neutral: its action is not a visit
+        told = ("you made no visit, and the Fortune Teller's bets are not visits" if role == "fortune_teller"
+                else f"you made no visit, and {title(role)}'s pick is not a visit")
+    if spent is not None:
+        told += f" (all {spent} of {title(role)}'s {_USE_NOUN[role]})"
+    return told
+
+
+def covers(n: Names, fitting: list[tuple[str, list, int | None]],
+           countered: list[tuple[str, list, list[str], list[str], int | None]],
+           reported: dict[int, list[str]], others_fail: bool = False,
+           stuck: tuple[str, list[int], int | None] | None = None) -> str:
     """Slice 14 (R11): "player_3 says it saw your visit on night 1. Stories that fit your nights and
-    every claim so far: as the Investigator, you checked player_10 on night 1 and kept your check on
-    night 2. A Trailseer story fits too (you followed player_10 on night 1), but player_3 claims the
-    Trailseer: claiming it starts a counter-claim."."""
+    every claim so far: as the Investigator, you checked player_10 on night 1, who read Not suspicious.
+    A Trailseer story fits too (you followed player_10 on night 1), but player_3 claims the
+    Trailseer: claiming it starts a counter-claim. No other role you can claim has a story that fits
+    these nights."; for a seat that claimed a role with no story left: "As the Investigator, the role
+    you claim, no story fits night 3: you visited a player on each night, and the Investigator has 2
+    checks for the whole game."."""
     sentences = [f"{_joined(players, 'and')} {'says it' if len(players) == 1 else 'say they'} saw your visit on night {night}."
                  for night, players in sorted(reported.items())]
     if fitting:
-        told = "; ".join(f"as {title(role)}, {_story(deeds)}" for role, deeds in fitting)
+        told = "; ".join(f"as {title(role)}, {_told(role, deeds, spent)}" for role, deeds, spent in fitting)
         sentences.append(f"Stories that fit your nights and every claim so far: {told}.")
-    for role, deeds, claimants, packmates in countered:
+    for role, deeds, claimants, packmates, spent in countered:
         who = " and ".join(f"your packmate {player}" if player in packmates else player for player in claimants)
         verb = "claims" if len(claimants) == 1 else "claim"
         story = title(role).removeprefix("the ")
-        sentences.append(f"A {story} story fits too ({_story(deeds)}), but {who} {verb} {title(role)}: claiming it "
-                         f"starts a counter-claim.")
+        sentences.append(f"A {story} story fits too ({_told(role, deeds, spent)}), but {who} {verb} {title(role)}: "
+                         f"claiming it starts a counter-claim.")
     if others_fail:
-        sentences.append("No other town role you can claim has a story that fits these nights.")
+        sentences.append("No other role you can claim has a story that fits these nights.")
+    if stuck is not None:
+        role, nights, uses = stuck
+        when = f"night {nights[0]}" if len(nights) == 1 else f"nights {_joined([str(x) for x in nights], 'and')}"
+        reason = (f"you visited a player on {when}, and {title(role)} has {uses} {_USE_NOUN[role]} for the whole game, "
+                  f"counting those you have already told" if uses is not None
+                  else "each story would contradict the record or a claim so far")
+        sentences.append(f"As {title(role)}, the role you claim, no story fits {when}: {reason}.")
     return " ".join(sentences)
 
 

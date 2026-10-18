@@ -16,9 +16,12 @@ no line calls it false, sets it against another claim, or leaves it open; and wh
 the role have made each visit (conditionals/visits.py: a sigil that struck elsewhere, a save elsewhere). The lines stay facts (R11:
 the advice is the cards'): which stories fit, which would be counter-claimed and by whom.
 
-Wolves and the Serial Killer only; the Necromancer's visits are under the bodies' names, never its
-own, so its covers are the claimable roles alone (status.py). Only for a seat that has not yet said
-what it did on those nights, and, once it claims a role, only that role.
+Wolves, the Serial Killer and the Necromancer. The Necromancer's visits are under the bodies' names,
+never its own, so every night is one with no visit to explain. The neutrals (the Fortune Teller's
+bets, the Speculator's pick) make no visits, so they fit only nights with no shown visit. Only for
+nights the seat has not yet told; once it claims a role, only that role, and when that role cannot
+tell a night (a Serial Killer's kills outrun the Investigator's two checks), the line says so. A story
+that spends a role's every use says so too.
 """
 
 from __future__ import annotations
@@ -34,7 +37,7 @@ from Agents.deduction.morning import announcement_of
 from Agents.deduction.seat_view import public_record
 from Agents.schemas.deduction import ActionClaim, DeductionItem, PlayerClaimView, RoleClaim, SeatView, Source
 from Agents.schemas.role_traits import BODY_USER, ROLE_TRAITS
-from Agents.schemas.roles import LONE_KILLER, ROLE_SPECS, TOWN, WOLVES
+from Agents.schemas.roles import LONE_KILLER, NEUTRAL, ROLE_SPECS, WOLVES
 
 ACTION_OF = {"investigator": "investigate", "healer": "protect", "sentinel": "watch", "trailseer": "follow",
              "vigilante": "shoot", "sigilist": "sigil"}
@@ -50,11 +53,11 @@ OBSERVER_ROLE = "villager"
 
 
 def cover_items(view: SeatView, today: int) -> list[DeductionItem]:
-    """One shared line: per claimable town role, the story that fits the seat's last two nights,
-    the counter-claimed ones apart; nothing when no role has a story."""
+    """One shared line: per claimable role, the story that fits the seat's last two nights, the
+    counter-claimed ones apart; once the seat claims a role, that role's story or the nights it cannot
+    tell; nothing when there is nothing to say."""
     spec = ROLE_SPECS.get(view.role)
-    if (spec is None or spec.side not in (WOLVES, LONE_KILLER) or view.role == BODY_USER
-            or view.player_id not in view.living):
+    if spec is None or spec.side not in (WOLVES, LONE_KILLER) or view.player_id not in view.living:
         return []
     nights = [night for night in range(max(1, today - RECENT_NIGHTS), today) if announcement_of(view, night) is not None]
     mine = next((player for player in view.claims if player.player == view.player_id), None)
@@ -66,10 +69,13 @@ def cover_items(view: SeatView, today: int) -> list[DeductionItem]:
     public = public_candidates(record)
     if public is None:
         return []
-    roles = [role for role in claimable_roles(view) if ROLE_SPECS[role].side == TOWN and role in ACTION_OF]
-    if mine is not None and mine.current_role is not None:
-        roles = [role for role in roles if role == mine.current_role]
-    visits = {night: [target for target, shown in _visits(view, night).items() if shown] for night in nights}
+    roles = [role for role in claimable_roles(view) if role in ACTION_OF or ROLE_SPECS[role].side == NEUTRAL]
+    claimed = mine.current_role if mine is not None else None
+    if claimed is not None:
+        roles = [role for role in roles if role == claimed]
+    # The Necromancer's visits are under the bodies' names: no watch or follow ever shows one of its own.
+    visits = {night: ([] if view.role == BODY_USER else [t for t, shown in _visits(view, night).items() if shown])
+              for night in nights}
     living = set(view.living)
     fitting, countered = [], []
     for role in roles:
@@ -79,16 +85,19 @@ def cover_items(view: SeatView, today: int) -> list[DeductionItem]:
         claimants = [player.player for player in view.claims
                      if player.player in living and player.player != view.player_id and player.current_role == role]
         (countered if claimants else fitting).append((role, story, claimants))
-    if not fitting and not countered:
+    stuck = claimed in roles and not fitting and not countered
+    if not fitting and not countered and not stuck:
         return []
     reported = _reported(view, nights)
     n = wording.Names(view.player_id)
     # In the screen a seat offered only a counter-claimed story claimed a role whose story did not fit
     # ("I'm the Vigilante, I shot player_8": no shot was announced), so the line says when the rest fail.
-    others_fail = (mine is None or mine.current_role is None) and len(fitting) + len(countered) < len(roles)
-    text = wording.covers(n, [(role, _deeds(story)) for role, story, _ in fitting],
-                          [(role, _deeds(story), claimants, [c for c in claimants if c in view.pack_roles])
-                           for role, story, claimants in countered], reported, others_fail)
+    others_fail = claimed is None and len(fitting) + len(countered) < len(roles)
+    text = wording.covers(n, [(role, _deeds(story), _spent(view, role, story)) for role, story, _ in fitting],
+                          [(role, _deeds(story), claimants, [c for c in claimants if c in view.pack_roles], _spent(view, role, story))
+                           for role, story, claimants in countered], reported, others_fail,
+                          stuck=(claimed, [night for night in nights if visits[night]] or nights,
+                                 _out_of_uses(view, claimed, visits)) if stuck else None)
     return [DeductionItem(row="F7+S14", subject=None, night=max(nights), conclusion=(), text=text,
                           sources=(Source("own_record", max(nights), view.player_id),
                                    *(Source("claim", 0, player) for player in sorted({p for _, _, cs in countered for p in cs}))),
@@ -96,9 +105,48 @@ def cover_items(view: SeatView, today: int) -> list[DeductionItem]:
                           receiver=view.player_id)]
 
 
+LIMITED = {"investigator": "investigate", "sentinel": "watch", "sigilist": "sigil"}
+"""The roles whose visits are counted for the whole game (the Vigilante's bullets are a balance
+setting kept out of every public line, ruling R7)."""
+
+
+def _uses(role: str) -> int:
+    from Agents.config.game import GameConfig  # the config package imports the prompts, which import this
+
+    return GameConfig().starting_uses()[role]
+
+
+def _told_uses(view: SeatView, role: str) -> int:
+    mine = next((player for player in view.claims if player.player == view.player_id), None)
+    return len({claim.night for claim in (mine.actions if mine is not None else ())
+                if claim.latest and claim.action == LIMITED[role] and claim.target})
+
+
+def _spent(view: SeatView, role: str, story: tuple[ActionClaim, ...]) -> int | None:
+    """The role's whole-game uses, when the story (with what the seat already said) spends them all:
+    an Investigator story covers two nights of a Serial Killer's kills, and no more."""
+    if role not in LIMITED:
+        return None
+    used = _told_uses(view, role) + sum(claim.action == LIMITED[role] for claim in story)
+    return _uses(role) if used >= _uses(role) else None
+
+
+def _out_of_uses(view: SeatView, role: str, visits: dict[int, list[str]]) -> int | None:
+    """The role's uses when the seat's visits outrun them (in the games a Serial Killer that claimed
+    the Investigator ran out of checks and said it "kept my check" on a night a will showed it visit)."""
+    if role not in LIMITED:
+        return None
+    needed = _told_uses(view, role) + sum(bool(targets) for targets in visits.values())
+    return _uses(role) if needed > _uses(role) else None
+
+
 def _story(view: SeatView, role: str, visits: dict[int, list[str]], today: int, public) -> tuple[ActionClaim, ...] | None:
     """The role's story for the nights, or None: a night it cannot tell, or a line that does not agree."""
     claims = []
+    if ROLE_SPECS[role].side == NEUTRAL:  # the Fortune Teller's bets and the Speculator's pick are not visits
+        if any(visits.values()):
+            return None
+        visits = {}
     for night, targets in visits.items():
         if len(targets) > 1:
             return None
