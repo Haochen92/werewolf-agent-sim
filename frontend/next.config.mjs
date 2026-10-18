@@ -6,6 +6,11 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['@mantine/core', '@mantine/hooks', '@tabler/icons-react'],
   },
+  // opening a room is the ticket office's "Play with others", so it lives under Play; the old
+  // address keeps working for links already out there (owner, 2026-10-18)
+  async redirects() {
+    return [{ source: '/rooms/new', destination: '/play/room', permanent: true }];
+  },
   // the score's tracks carry their version in the name (`lobby-bossa.v1.mp3`; a new take is a
   // new name), so a browser and the CDN keep each for good instead of asking again every visit
   async headers() {

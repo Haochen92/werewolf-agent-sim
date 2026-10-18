@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * The BYOK field on the restart card (`KeyNeededCard`). The ticket office (`/play`, `/rooms/new`)
+ * The BYOK field on the restart card (`KeyNeededCard`). The ticket office (`/play`, `/play/room`)
  * draws its own key row over the same behaviour, `useRememberedKey`.
  *
  * Remembering is PURELY client-side and needs zero server support: the server never stores

@@ -113,7 +113,7 @@ select (from `GET /models`, disabled until a key is entered; empty = house defau
 `build_plan.md` §5) · start button → redirect to `/games/[id]`. Copy states plainly:
 key is sent once, never stored server-side, BYOK games do not survive server restarts.
 
-### Rooms `/rooms` and `/rooms/new`
+### Rooms `/rooms` and `/play/room` (the room form, under Play since 2026-10-18)
 Browser: rows from `GET /rooms` — name (fallback "Unnamed table"), roster count
 (`players/max_seats`), created-ago, lock state (locked rows render with a padlock,
 join disabled). Join = name prompt → `POST /join` → `/games/[id]`. Create page: room

@@ -1,4 +1,4 @@
-/* Lobby (D6/D7), terminal error (D23), and the forms shared by /play and /rooms/new. */
+/* Lobby (D6/D7), terminal error (D23), and the forms shared by /play and /play/room. */
 
 .wrap {
   max-width: 520px;
@@ -167,7 +167,7 @@
   margin-top: var(--space-4);
 }
 
-/* --- form groups (/play, /rooms/new) -------------------------------------- */
+/* --- form groups (/play, /play/room) -------------------------------------- */
 
 .group {
   margin-bottom: var(--space-5);

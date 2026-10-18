@@ -164,7 +164,7 @@ export function Features() {
             <span className={classes.timer} aria-hidden="true" />
             Sam&rsquo;s timer ran out: Sam&rsquo;s agent takes the turn.
           </p>
-          <Button component={Link} href="/rooms/new" size="sm" className={classes.open}>
+          <Button component={Link} href="/play/room" size="sm" className={classes.open}>
             Open a table &rarr;
           </Button>
         </article>

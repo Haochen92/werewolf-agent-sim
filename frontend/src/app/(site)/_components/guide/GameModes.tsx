@@ -106,7 +106,7 @@ export function GameModes() {
             <span className={`${guide.stack} ${classes.go}`}>
               <Button
                 component={Link}
-                href="/rooms/new"
+                href="/play/room"
                 variant="plate"
                 {...path.with('host')}
               >

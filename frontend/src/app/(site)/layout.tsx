@@ -4,7 +4,7 @@ import classes from './layout.module.css';
 
 /**
  * The site shell: the top nav and the footer around every page that is not the theatre
- * (`/`, `/play`, `/rooms`, `/rooms/new`, `/replays`). `(site)` is a route group, so it adds
+ * (`/`, `/play`, `/rooms`, `/play/room`, `/replays`). `(site)` is a route group, so it adds
  * nothing to the URLs; the theatre's routes (`/games/[id]`, `/replays/[id]`, `/workbench`) sit
  * outside it and get no chrome. The station round the column is what a page's wall is placed
  * in and clipped to (StationWall, the hero's and the hall's pictures): the screen's width, the page's height, so a

@@ -39,7 +39,7 @@ export default function RoomsPage() {
             </p>
           </div>
           <nav className={classes.doors} aria-label="Other ways aboard">
-            <HeroTicket href="/rooms/new" kicker="Admit a party" title="Open a table">
+            <HeroTicket href="/play/room" kicker="Admit a party" title="Open a table">
               Choose the model, then wait in the room for whoever boards.
             </HeroTicket>
             <HeroTicket href="/play" kicker="Admit one" title="Play solo">

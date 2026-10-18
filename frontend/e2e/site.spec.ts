@@ -9,7 +9,7 @@ import { expect, test, type Page, type Route } from '@playwright/test';
 
 const GITHUB = 'https://github.com/Haochen92/werewolf-agent-sim';
 
-for (const path of ['/', '/replays', '/rooms', '/play', '/rooms/new', '/guide']) {
+for (const path of ['/', '/replays', '/rooms', '/play', '/play/room', '/guide']) {
   test(`site shell: ${path}`, async ({ page }) => {
     await page.goto(path);
     await expect(page).toHaveTitle(/^The Ninth Express/);
@@ -278,7 +278,7 @@ for (const [name, viewport] of [
 }
 
 /**
- * The ticket office (`/play`, `/rooms/new`) over a mocked `GET /models`. Whether the key field
+ * The ticket office (`/play`, `/play/room`) over a mocked `GET /models`. Whether the key field
  * shows is the house's call: a purse that covers the default model folds it away, a spent purse
  * (the server flips `needs_key`) opens it and holds the ticket until a key is typed.
  */
@@ -486,7 +486,20 @@ test('ticket: any other refusal keeps the stub’s alert', async ({ page }) => {
   await expect(key).not.toHaveAttribute('aria-invalid', 'true');
 });
 
-test('ticket: /rooms/new opens a room and goes to it', async ({ page }) => {
+test('ticket: opening a room is Play’s, and its old address still leads there', async ({
+  page,
+}) => {
+  await page.goto('/rooms/new');
+  await page.waitForURL('**/play/room');
+  const nav = page.getByRole('navigation').first();
+  await expect(nav.getByRole('link', { name: 'Play', exact: true })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
+  await expect(nav.getByRole('link', { name: /^Rooms/ })).not.toHaveAttribute('aria-current');
+});
+
+test('ticket: /play/room opens a room and goes to it', async ({ page }) => {
   const ROOM = 'b7d1c0de-0000-4000-8000-00000000abcd';
   let sent: Record<string, unknown> | null = null;
   await page.route('**/rooms', async (route) => {
@@ -507,7 +520,7 @@ test('ticket: /rooms/new opens a room and goes to it', async ({ page }) => {
       body: JSON.stringify({ game_id: ROOM, host_key: 'hk-1' }),
     });
   });
-  await openTicket(page, '/rooms/new', 3);
+  await openTicket(page, '/play/room', 3);
   await expect(page.getByText('Up to 10 people')).toBeVisible();
 
   await page.getByLabel('Room name').fill('Night shift');
@@ -529,7 +542,7 @@ test('ticket: /rooms/new opens a room and goes to it', async ({ page }) => {
 for (const [name, path, viewport] of [
   ['play-1440', '/play', { width: 1440, height: 900 }],
   ['play-390', '/play', { width: 390, height: 844 }],
-  ['rooms-new-1440', '/rooms/new', { width: 1440, height: 900 }],
+  ['play-room-1440', '/play/room', { width: 1440, height: 900 }],
 ] as const) {
   test(`ticket: ${name}`, async ({ page }) => {
     await page.setViewportSize(viewport);
@@ -645,7 +658,7 @@ test('rooms: the board says boarding, locked and full, and why', async ({ page }
 
   await expect(page.getByRole('link', { name: /Open a table/ })).toHaveAttribute(
     'href',
-    '/rooms/new',
+    '/play/room',
   );
 });
 
@@ -672,7 +685,7 @@ test('rooms: an empty board says so, and the doors beside the title stay', async
   const doors = page.getByRole('navigation', { name: 'Other ways aboard' });
   await expect(doors.getByRole('link', { name: /Open a table/ })).toHaveAttribute(
     'href',
-    '/rooms/new',
+    '/play/room',
   );
   await expect(doors.getByRole('link', { name: /Play solo/ })).toHaveAttribute(
     'href',

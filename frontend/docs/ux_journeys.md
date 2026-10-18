@@ -67,7 +67,7 @@ the player's first screen is the role reveal (D8).
 
 ## 3. Journeys C & D — host and joiner: rooms
 
-**D4 · Create form (`/rooms/new`).** Same card pattern as D3: room name (optional,
+**D4 · Create form (`/play/room`; `/rooms/new` before 2026-10-18 redirects).** Same card pattern as D3: room name (optional,
 placeholder "Unnamed table") · optional model/BYOK (same `ByokField`) · "Open the room."
 On success: stash `host_{gameId}`, redirect to the lobby.
 
@@ -76,7 +76,7 @@ rows scale to many rooms): name · seat count `players/max_seats` · created-ago
 on locked rows (visible but join disabled — locked ≠ hidden, mirroring the server).
 Tapping a row expands it inline to a name prompt + join button (no modal; mobile-first).
 Join success → lobby as a seated joiner. Empty state: "no open tables — create one" +
-door to `/rooms/new`.
+door to `/play/room`.
 
 **D6 · The lobby (`/games/[id]` · state=waiting).** One centered lobby card, driven by the
 status poll:
