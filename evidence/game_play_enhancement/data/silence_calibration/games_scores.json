@@ -1,0 +1,77 @@
+{
+ "voices-01.on": {
+  "before": {
+   "days": 4,
+   "discussion:spoken": 4,
+   "opening:passed": 28,
+   "opening:spoken": 1,
+   "proactive:passed": 14,
+   "proactive:spoken": 5
+  },
+  "after": {
+   "days": 4,
+   "discussion:spoken": 10,
+   "opening:passed": 26,
+   "opening:spoken": 2,
+   "proactive:held": 1,
+   "proactive:passed": 8,
+   "proactive:spoken": 15
+  }
+ },
+ "voices-02.on": {
+  "before": {
+   "days": 5,
+   "discussion:spoken": 15,
+   "opening:passed": 28,
+   "opening:spoken": 5,
+   "proactive:passed": 10,
+   "proactive:spoken": 14
+  },
+  "after": {
+   "days": 4,
+   "discussion:spoken": 15,
+   "opening:passed": 29,
+   "opening:spoken": 1,
+   "proactive:held": 2,
+   "proactive:passed": 6,
+   "proactive:spoken": 14
+  }
+ },
+ "voices-03.on": {
+  "before": {
+   "days": 6,
+   "discussion:spoken": 17,
+   "opening:passed": 39,
+   "opening:spoken": 3,
+   "proactive:passed": 23,
+   "proactive:spoken": 8
+  },
+  "after": {
+   "days": 3,
+   "discussion:spoken": 14,
+   "opening:passed": 24,
+   "opening:spoken": 2,
+   "proactive:passed": 8,
+   "proactive:spoken": 10
+  }
+ },
+ "voices-04.on": {
+  "before": {
+   "days": 4,
+   "discussion:spoken": 17,
+   "opening:passed": 24,
+   "opening:spoken": 6,
+   "proactive:passed": 12,
+   "proactive:spoken": 14
+  },
+  "after": {
+   "days": 5,
+   "discussion:spoken": 16,
+   "opening:passed": 34,
+   "opening:spoken": 3,
+   "proactive:held": 4,
+   "proactive:passed": 10,
+   "proactive:spoken": 15
+  }
+ }
+}

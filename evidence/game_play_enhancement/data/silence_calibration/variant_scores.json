@@ -1,0 +1,21 @@
+{
+ "speak_rate": {
+  "current/later": {
+   "D": "21/43",
+   "valuable": "24/46"
+  },
+  "current/opening": {
+   "valuable": "22/46",
+   "D": "0/20"
+  },
+  "v1/later": {
+   "D": "21/43",
+   "valuable": "25/47"
+  },
+  "v1/opening": {
+   "valuable": "24/46",
+   "D": "2/20"
+  }
+ },
+ "spoken_kinds": {}
+}

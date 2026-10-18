@@ -1,0 +1,1196 @@
+### s002
+Speaker: player_3, during the opening round (each player speaks once, before seeing the others).
+
+Earlier days (summary, most recent part):
+-- The game master's record (exact; it outranks anything a player or a summary says) --
+[Day 1] There is no vote on day 1, so no one voted and no one is eliminated.
+[Day 1] Night of day 1: player_1 was killed by the wolves last night. Their role is hidden by an illusionist. player_10 was stabbed by the serial killer last night. They were a chanteuse.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+None.
+
+Today's discussion so far, as the speaker saw it:
+No messages yet.
+
+THE LINE:
+Nothing new from my side to claim yet, and I have no night results worth sharing. I'd rather hear what everyone saw last night before anyone commits to a role.
+
+### s006
+Speaker: player_5, during the opening round (each player speaks once, before seeing the others).
+
+Earlier days (summary, most recent part):
+-- The game master's record (exact; it outranks anything a player or a summary says) --
+[Day 1] There is no vote on day 1, so no one voted and no one is eliminated.
+[Day 1] Night of day 1: player_2 was killed by the wolves last night. Their role is hidden by an illusionist. player_8 was stabbed by the serial killer last night. They were a investigator.
+[Day 2] Here's the vote result for day 2:
+  player_1 voted to eliminate player_4
+  player_3 voted to eliminate player_4
+  player_4 voted to eliminate player_5
+  player_5 voted to eliminate player_4
+  player_6 voted to eliminate player_4
+  player_7 voted to eliminate player_4
+  player_9 voted to eliminate player_4
+  player_10 voted to eliminate player_4
+Player player_4 has been voted out and was a serial killer.
+[Day 2] Night of day 2: player_5 was attacked by the wolves but was saved by the healer!
+
+-- Claims made in the day discussion (claims, not facts; a note starting "Record:" or "Rules:" is an exact check by the game master; a plan said in the day binds no one: a player may choose a different target at night) --
+player_5: claimed trailseer (day 2).
+  Night 1: followed player_4; says they visited player_8 (a visit alone does not establish what they did there).
+player_4: claimed no role.
+  Night 1: says they did not act.
+player_6: claimed no role.
+  Night 1: says they did not act.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+[Day 2] player_5, player_6, player_9 → player_4 (revealed serial killer, voted out day 2): player_5 said the night 1 follow shows player_4 visited player_8, a kill, making them the top serial killer suspect. player_6 and player_9 said one of them is lying and favoured a vote. Defense: player_4 said they visited nobody on night 1, called player_5's trail one unverified claim, and asked for a second source before any vote. Disputed: player_1 and player_10 asked whether player_5 followed anyone else and wanted the trail and claim checked before voting.
+
+Today's discussion so far, as the speaker saw it:
+No messages yet.
+
+THE LINE:
+New from me: on night 2 I followed player_6, and they visited no one. That's one trail, not a verdict, but it's data for whoever wants to test the accusations from yesterday.
+
+### s010
+Speaker: player_2, during the day's discussion.
+
+Earlier days (summary, most recent part):
+yer_4 had barely spoken on day 1, called it a thin read, and said they would hear player_4 out before voting again. Disputed: player_10 asked player_7 whether the vote on player_9 rests on anything beyond the same thin day-2 push.
+[Day 3] player_2 → player_10: player_2 argued player_10 pushed a single day-2 lynch and asked them to explain why before a vote. Defense: player_10 said they did not push anyone on day 2 and abstained, and that the sentinel's watch on them showed no visitors on night 1. (Game record shows player_10 voted to eliminate player_1 on day 2.)
+[Day 3] player_10, player_9 (revealed chanteuse, voted out day 4) → player_7: player_10 asked player_7 whether the vote on player_9 rests on more than the day-2 lynch. player_9 asked the same question about player_7's vote.
+[Day 3] player_1 → player_8: player_1 asked player_8 to say whether they are the vigilante and to name the night they would shoot and why they are holding fire. Defense: player_8 said they held fire on nights 1 and 2, are not claiming yet, and need a real contradiction between two claims before shooting.
+[Day 3] player_1 → player_4: player_1 argued player_4 has been targeted twice without saying anything and should answer directly. Defense: player_4 said they will not claim a role on a thin read, would not name a night they would shoot, and want someone to make a concrete claim first.
+[Day 4] player_7, player_2 → player_9 (revealed chanteuse, voted out day 4): player_7 said player_9 read Suspicious on night 3, so a wolf; player_2 said that check is the only hard result and a Suspicious healer read would be strange. Defense: player_9 claimed to be the healer, protecting player_8 on night 2 and player_2 on night 3 with no attacks, and said one Suspicious read should not decide a lynch. Disputed: player_7 argued player_9's save on player_2 could not stop the night 3 kill on player_10, and only a Chanteuse or Illusionist fits that claim.
+[Day 4] player_5 (revealed illusionist, killed night 4) → player_9 (revealed chanteuse, voted out day 4): player_5 argued player_9's healer claim cannot stand because player_10 was shown to be the healer; later said they spoke too quickly and nothing was announced. Defense: player_9 said player_10's role was hidden with no announced reveal, kept the healer claim, and asked player_5 for their night 1 and 2 results. Disputed: player_5 withdrew the premise, saying nothing was announced about player_10's role, and asked how saves work when no attack came.
+[Day 4] player_9 (revealed chanteuse, voted out day 4) → player_7: player_9 argued that if player_7 checked them Suspicious one of them is lying, and asked why an investigator would wait until day 4 to check someone. Defense: player_7 said they checked player_9 on night 3 and got Suspicious, was blocked on night 2, and preferred a Suspicious read to a guess. Disputed: player_2 said player_7's check is the only hard result on the table, and a Suspicious read on a real healer would be strange.
+
+Today's discussion so far, as the speaker saw it:
+player_8: I'm the vigilante. I held fire on nights 1 and 2, was roleblocked on night 3, and shot player_5 on night 4. I have one bullet left.
+
+THE LINE:
+player_8's claim fits the record: player_5 was shot on night 4, and a shot is the only attack that night. That is consistent, but it is not proof. player_1 and player_4 have both avoided a role claim, so I want a concrete answer from each. If either of you has a night result, say it now so we can check it against the board. My vote leans player_4 for now, mostly for the dodging.
+
+### s014
+Speaker: player_8, during the day's discussion.
+
+Earlier days (summary, most recent part):
+ain
+It's a tie between ['player_10', 'player_4', 'player_1', 'abstain']. No one is voted out this day.
+[Day 3] Night of day 3: player_2 was killed by the wolves last night. Their role is hidden by an illusionist. player_4 was struck down by a sigil last night. They were a chanteuse.
+
+-- Claims made in the day discussion (claims, not facts; a note starting "Record:" or "Rules:" is an exact check by the game master; a plan said in the day binds no one: a player may choose a different target at night) --
+player_1: claimed trailseer (day 2).
+  Night 1: followed player_8; says they visited no one.
+  Night 2: says they tried to follow player_7 and were roleblocked.
+player_2: claimed investigator (day 3).
+  Night 1: checked player_7, says they read Not suspicious.
+  Night 2: checked player_1, says they read Not suspicious.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+[Day 3] player_4 (revealed chanteuse, killed night 3), player_5, player_10 → player_1: player_4 argued player_1's trailseer claim rested on one night 1 follow and an unverifiable night 2 block. player_5 and player_10 said they voted on the same thin case. Defense: player_1 said a block means someone with a block visited them and the Chanteuse is alive, but could not say who. player_1 asked the day 2 voters to explain their votes. Disputed: player_2 said their checks on player_1 read Not suspicious and they would not vote player_1. player_7 said the Necromancer's attack and healer save fit a power role. player_6 said the block story explains the missing follow.
+[Day 3] player_6, player_7, player_1 → player_4 (revealed chanteuse, killed night 3): player_6 said player_4 voted player_1 on day 2 without a reason. player_7 wanted player_4 to explain and asked for a concrete check on player_4's night 2. player_1 said three day 2 voters gave no reasons. Defense: player_4 said they voted player_1 because the trailseer claim rested on one follow and an uncheckable block. player_4 said they are not claiming a power role and asked what evidence would change minds. Disputed: player_5 and player_10 gave the same reason for their day 2 votes as player_4.
+[Day 3] player_6, player_8, player_1 → player_5: player_6 said player_5 voted player_1 on day 2 without a reason. player_8 said player_5 voted without a reason. player_1 said three day 2 voters gave no reasons. Defense: player_5 said they voted player_1 for the untestable night 1 follow and night 2 block. player_5 said that case is thin and they want a real read before a vote.
+[Day 3] player_8, player_7, player_1 → player_10: player_8 said player_10 voted player_1 on day 2 without a reason and asked what they saw. player_7 wanted to hear from player_10. player_1 said three day 2 voters gave no reasons. Defense: player_10 said they voted player_1 with no strong reason, the same as player_4's. player_10 corrected an earlier claim that they abstained and said they are open to player_1 being town.
+
+Today's discussion so far, as the speaker saw it:
+player_6: I'm the sigilist. My sigil on player_4 last night struck them down, and the announcement confirms they were a chanteuse, so one wolf is gone. I still have one sigil and will only use it on a player who looks like they're attacking.
+player_7: I'm the sentinel, and I've used both watches: on night 2 I watched player_1 and saw player_2, player_3, player_4 and player_9 come to them. On night 3 I watched player_4 and only player_6 came to them, which fits the sigil that struck player_4.
+player_1: Since I'm already claimed trailseer, here's the night 3 result: I followed player_10 and they went to player_2. player_2 then died hidden, which fits an illusionist concealing the body. player_10 also said they abstained on day 2, but they voted. I'd vote player_10 today.
+player_10: player_1, I won't deny that. On night 3 I went to player_2 because they were claimed investigator and I wanted to see what they knew. I didn't get anything useful from it. I did vote you on day 2 with no strong reason, same as player_4 and player_5, and I'm not pushing anyone today.
+
+THE LINE:
+player_7's night 2 watch saw player_4 come to player_1, which is the Chanteuse's block player_1 described. That backs player_1's block story. player_7, did you see anyone else visit player_1 that night? It tells us whether the block was the only visit.
+
+### s018
+Speaker: player_6, during the day's discussion.
+
+Earlier days (summary, most recent part):
+ight) --
+player_8: claimed trailseer (day 2).
+  Night 1: followed player_10; says they visited player_7 (a visit alone does not establish what they did there).
+  Night 2: followed player_9; says they visited player_8 (a visit alone does not establish what they did there).
+player_7: claimed sigilist (day 2). Record: revealed as sigilist when they were voted out on day 2, as claimed.
+  Night 1: says they did not act.
+player_5: claimed investigator (day 3).
+  Night 2: checked player_8, says they read Not suspicious.
+player_9: claimed no role.
+  Night 2: went to player_8.
+player_4: claimed no role.
+  Night 2: says they did not act.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+[Day 2] player_8, player_9, player_2, player_3 → player_7 (revealed sigilist, voted out day 2): player_8 claimed player_10 visited player_7 on night 1 as a block; player_9 said this conflicts with player_7's clean report and leaned toward voting player_7. Defense: player_7 said they placed nothing, visited no one, got no roleblock notice, and that a lone follow is one claim against their word. Disputed: player_5 argued that if player_8's follow is real, player_7 was blocked and so is Town. player_6 said both player_8's and player_7's accounts cannot be true.
+[Day 2] player_7 (revealed sigilist, voted out day 2), player_3 → player_8: player_7 argued player_8's follow conflicts with player_7's no-block morning report, so either the follow or the report is off; player_3 said player_8's account only holds if honest. Defense: player_8 said the follow was real, that a blocked player is told so in the morning, and asked player_7 for the exact morning report wording. Disputed: player_9 argued player_7 should recheck the morning report since both accounts cannot be right; player_2 said player_8 gave a specific result naming player_7.
+[Day 2] player_7 (revealed sigilist, voted out day 2) → player_9: player_7 said the players pushing against them, namely player_9, have no night 1 result of their own.
+[Day 3] player_5, player_8 → player_4 (revealed serial killer, voted out day 3): player_5 argued player_4 never answered for their night 2 and would be voted if they could not answer. player_8 argued player_4 left their night unchecked and should be voted today unless they gave something firmer. Defense: player_4 said they stayed home on night 2 and went to nobody, claimed no role, and called player_5's check and player_8's follow unverified claims.
+[Day 3] player_4 (revealed serial killer, voted out day 3) → player_9: player_4 argued player_9's visit to player_8 fits the night 2 save, so player_9 should be tested before anyone else. Defense: player_9 said they went to player_8 on night 2, gave no more of their night, and asked player_4 to explain their own night first. Disputed: player_2 argued player_9's visit fits the save, that player_8's follow is consistent with player_9 as healer, and that player_5's check is only one claim.
+
+Today's discussion so far, as the speaker saw it:
+player_3: I'm the Fortune Teller, and I've already scored my two points. My night 3 bet on player_5 hit, so player_5 really was the Investigator. That means player_5's night 2 check on player_8 is genuine, and it's worth weighing that when we look at player_8's trailseer claim.
+player_6: I'm the sentinel. On night 2 I watched player_8 and saw player_2, player_4, player_5 and player_9 come to them, so player_4's claim of visiting nobody was false.
+player_8: I must speak plainly, though it may cost me. I am the trailseer. On night 3 I followed player_5, and they went to player_9. Player_5 claimed investigator, so that visit may have been a check.
+player_9: player_6's night 2 watch checks out against what I know: I went to player_8 that night, and the serial killer's attack means player_4 did too, so player_4's 'nobody' was false. That leaves player_2 as the one visitor to player_8 I can't account for, with no claim to explain it. I'd vote player_2 today.
+player_2: player_9, I went to no one on night 2 and I have no role to show for it. I am not going to hang my name on a claim I cannot back. If you want a test, the sentinel's watch on player_8 is the cleanest thing we have, and you should answer why you went there rather than pointing at me.
+player_3: I'm not going to claim anything I can't prove, but the arithmetic is worth doing. If player_6's watch is real, the visitors to player_8 on night 2 were 2, 4, 5 and 9. Player_4 was the serial killer and player_5 the investigator, so the wolf carrier and the healer were 2 and 9, one each. Player_9, if you're the healer, say so and we can check it against the save.
+
+THE LINE:
+Sharing my night 2 watch on player_8: 2, 4, 5 and 9 came to them. player_2, you said you went to no one, but you're on that list. Explain that visit before anyone else gets pushed.
+
+### s022
+Speaker: player_7, during the day's discussion.
+
+Earlier days (summary, most recent part):
+-- The game master's record (exact; it outranks anything a player or a summary says) --
+[Day 1] There is no vote on day 1, so no one voted and no one is eliminated.
+[Day 1] Night of day 1: player_2 was killed by the wolves last night. Their role is hidden by an illusionist. player_8 was stabbed by the serial killer last night. They were a investigator.
+[Day 2] Here's the vote result for day 2:
+  player_1 voted to eliminate player_4
+  player_3 voted to eliminate player_4
+  player_4 voted to eliminate player_5
+  player_5 voted to eliminate player_4
+  player_6 voted to eliminate player_4
+  player_7 voted to eliminate player_4
+  player_9 voted to eliminate player_4
+  player_10 voted to eliminate player_4
+Player player_4 has been voted out and was a serial killer.
+[Day 2] Night of day 2: player_5 was attacked by the wolves but was saved by the healer!
+
+-- Claims made in the day discussion (claims, not facts; a note starting "Record:" or "Rules:" is an exact check by the game master; a plan said in the day binds no one: a player may choose a different target at night) --
+player_5: claimed trailseer (day 2).
+  Night 1: followed player_4; says they visited player_8 (a visit alone does not establish what they did there).
+player_4: claimed no role.
+  Night 1: says they did not act.
+player_6: claimed no role.
+  Night 1: says they did not act.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+[Day 2] player_5, player_6, player_9 → player_4 (revealed serial killer, voted out day 2): player_5 said the night 1 follow shows player_4 visited player_8, a kill, making them the top serial killer suspect. player_6 and player_9 said one of them is lying and favoured a vote. Defense: player_4 said they visited nobody on night 1, called player_5's trail one unverified claim, and asked for a second source before any vote. Disputed: player_1 and player_10 asked whether player_5 followed anyone else and wanted the trail and claim checked before voting.
+
+Today's discussion so far, as the speaker saw it:
+player_5: New from me: on night 2 I followed player_6, and they visited no one. That's one trail, not a verdict, but it's data for whoever wants to test the accusations from yesterday.
+player_3: Well, I do think player_5's night 2 trail is worth noting. If player_6 visited no one, then player_6 was not the one who went to player_5 that night, since a wolf carrying the kill would have shown up in their own follow. The wolves then went after player_5 anyway, which makes their claim look more genuine to me. I would still like a second look before anyone is put to the vote.
+player_6: Right then, I can confirm one bit from my side: I held fire on night 2 and visited no one, so player_5's follow on me is accurate. That doesn't prove the rest of their trail, though. Player_1 and player_10 asked for a check on player_5's trail, so I'd like someone to say which other claims about night 1 or night 2 could be tested against the healer's save on player_5.
+
+THE LINE:
+The record already settles one point: player_8 was stabbed by the serial killer on night 1, and player_4 said they visited nobody that night. Player_5's night 1 trail therefore fits the facts, and player_4's denial does not. I am not voting anyone yet, but I would look hard at whoever pushed for a second source against player_5 after that.
+
+### s026
+Speaker: player_1, during the day's discussion.
+
+Earlier days (summary, most recent part):
+-- The game master's record (exact; it outranks anything a player or a summary says) --
+[Day 1] There is no vote on day 1, so no one voted and no one is eliminated.
+[Day 1] Night of day 1: player_7 was attacked by the serial killer but was saved by the healer!
+[Day 2] Here's the vote result for day 2:
+  player_1 voted to abstain
+  player_2 voted to eliminate player_3
+  player_3 voted to abstain
+  player_4 voted to abstain
+  player_5 voted to eliminate player_2
+  player_6 voted to abstain
+  player_7 voted to abstain
+  player_8 voted to eliminate player_3
+  player_9 voted to abstain
+  player_10 voted to abstain
+The town chose to abstain. No one is eliminated today.
+[Day 2] Night of day 2: player_3 was killed by the wolves last night. Their role is hidden by an illusionist. player_5 was stabbed by the serial killer last night. They were a illusionist.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+None.
+
+Today's discussion so far, as the speaker saw it:
+player_4: Right then, I'm the Sentinel. Last night I watched player_3 and saw player_1, player_5 and player_10 come to them.
+player_1: player_4's report checks out on my end: I did go to player_3 on night 2. That makes player_10's visit to player_3 the interesting part. It was seen, so it wasn't the carrier's kill. player_10, what were you doing there?
+player_10: player_1, I did not visit player_3 on night 2. Whatever player_4's report says about my name, I was not at player_3's door that night. Player_4, if you saw me come to player_3, can you say how that matches what the record shows about player_5's visit?
+player_4: player_10, my watch on player_3 is what it is: you came to them that night, along with player_1 and player_5. I'm not going to argue the names. Player_5 was the illusionist, so their visit is the conceal, and that's why the kill itself didn't show. So what were you visiting player_3 for, if not the kill?
+player_10: player_4, I did not go to player_3 on night 2. I followed player_3 that night and they visited no one, and I went nowhere near their door. A Sentinel watch on player_3 wouldn't show me coming there, so either your report is wrong or it's made up. player_1, you say you went to player_3; what was your reason?
+
+THE LINE:
+player_10, I went to player_3 on night 2 because I'm the Investigator and I checked them. They came back Not suspicious, so player_3 is not a wolf. That's the reason I was there. If you only followed player_3, you wouldn't be at their door, so explain what brought player_4's watch to show you visiting them.
+
+### s030
+Speaker: player_4, during the day's discussion.
+
+Earlier days (summary, most recent part):
+yer_4 had barely spoken on day 1, called it a thin read, and said they would hear player_4 out before voting again. Disputed: player_10 asked player_7 whether the vote on player_9 rests on anything beyond the same thin day-2 push.
+[Day 3] player_2 → player_10: player_2 argued player_10 pushed a single day-2 lynch and asked them to explain why before a vote. Defense: player_10 said they did not push anyone on day 2 and abstained, and that the sentinel's watch on them showed no visitors on night 1. (Game record shows player_10 voted to eliminate player_1 on day 2.)
+[Day 3] player_10, player_9 (revealed chanteuse, voted out day 4) → player_7: player_10 asked player_7 whether the vote on player_9 rests on more than the day-2 lynch. player_9 asked the same question about player_7's vote.
+[Day 3] player_1 → player_8: player_1 asked player_8 to say whether they are the vigilante and to name the night they would shoot and why they are holding fire. Defense: player_8 said they held fire on nights 1 and 2, are not claiming yet, and need a real contradiction between two claims before shooting.
+[Day 3] player_1 → player_4: player_1 argued player_4 has been targeted twice without saying anything and should answer directly. Defense: player_4 said they will not claim a role on a thin read, would not name a night they would shoot, and want someone to make a concrete claim first.
+[Day 4] player_7, player_2 → player_9 (revealed chanteuse, voted out day 4): player_7 said player_9 read Suspicious on night 3, so a wolf; player_2 said that check is the only hard result and a Suspicious healer read would be strange. Defense: player_9 claimed to be the healer, protecting player_8 on night 2 and player_2 on night 3 with no attacks, and said one Suspicious read should not decide a lynch. Disputed: player_7 argued player_9's save on player_2 could not stop the night 3 kill on player_10, and only a Chanteuse or Illusionist fits that claim.
+[Day 4] player_5 (revealed illusionist, killed night 4) → player_9 (revealed chanteuse, voted out day 4): player_5 argued player_9's healer claim cannot stand because player_10 was shown to be the healer; later said they spoke too quickly and nothing was announced. Defense: player_9 said player_10's role was hidden with no announced reveal, kept the healer claim, and asked player_5 for their night 1 and 2 results. Disputed: player_5 withdrew the premise, saying nothing was announced about player_10's role, and asked how saves work when no attack came.
+[Day 4] player_9 (revealed chanteuse, voted out day 4) → player_7: player_9 argued that if player_7 checked them Suspicious one of them is lying, and asked why an investigator would wait until day 4 to check someone. Defense: player_7 said they checked player_9 on night 3 and got Suspicious, was blocked on night 2, and preferred a Suspicious read to a guess. Disputed: player_2 said player_7's check is the only hard result on the table, and a Suspicious read on a real healer would be strange.
+
+Today's discussion so far, as the speaker saw it:
+player_8: I'm the vigilante. I held fire on nights 1 and 2, was roleblocked on night 3, and shot player_5 on night 4. I have one bullet left.
+
+THE LINE:
+player_8, your shot on player_5 fits the record, since player_5 was an illusionist. The useful test is your bullet: if you name a target tomorrow, that target should be someone the table can check against the night results. I'd rather we follow the claims that line up with the record than chase the quiet ones.
+
+### s034
+Speaker: player_4, during the opening round (each player speaks once, before seeing the others).
+
+Earlier days (summary, most recent part):
+. player_6 and player_9 said the changing account justified a lynch vote. Defense: player_10 called the denial a muddle, admitted following player_3 on night 2 (who visited no one), and said to vote on the evidence rather than the slip. Disputed: No one defended player_10. player_4 said the watch showed player_10 at player_3's door, and a follow does not stop at the door.
+[Day 3] player_10 (revealed trailseer, voted out day 3), player_4 → player_1 (revealed investigator, killed night 4): player_10 argued an Investigator check means player_1 visited player_3, a visit player_10 cannot see. player_4 said player_1's check claim is unverified. Defense: player_1 said they are the Investigator, checked player_3 on night 2 and got Not suspicious, and asked player_10 whether they denied or followed. Disputed: player_4 said the check claim is unverified and asked to see the next lynch vote before trusting player_1 or player_10.
+[Day 3] player_10 (revealed trailseer, voted out day 3) → player_4: player_10 argued a Sentinel watch would not show a follow visit, so player_4's report was either wrong or made up. Defense: player_4 said the watch showed player_10 at player_3's door, refused to argue the names, and asked what player_10 was doing there. Disputed: player_10 later dropped the point, saying player_4 seems to be telling the truth about player_10's name.
+[Day 4] player_7 → player_1 (revealed investigator, killed night 4): player_7 argued that player_1's count of two checks already used both, so claiming one check left was inconsistent, and asked for an explanation before the lynch. Defense: player_1 said the night 1 check on player_7 was roleblocked and never happened, so nights 2 and 3 were the two checks. Asked voters to judge the evidence.
+[Day 4] player_6 (revealed sigilist, voted out day 4) → player_4: player_6 argued that player_4's night 3 roleblock claim conflicts with the record showing player_4 was attacked and saved that night. Defense: player_4 said both can be true: the attack was stopped by the save, and the separate roleblock stopped the watch on player_2. Said they cannot tell who blocked them.
+[Day 4] player_6 (revealed sigilist, voted out day 4) → player_2 (revealed serial killer, voted out day 5): player_6 argued that player_2 has only asked questions and has not said what they did on night 3. Defense: player_2 said they are town, will not claim a night-3 action, and that the claims on the table should decide votes. Said asking questions is fine.
+[Day 5] player_7, player_9 (revealed healer, killed night 5), player_4 → player_2 (revealed serial killer, voted out day 5): player_7 noted player_2 only said they would wait and asked about a night-4 protect; player_9 said player_2 won't answer direct questions; player_4 said player_2 refuses to say about night 4. Defense: player_2 said they are town, won't reveal night actions, and asking doesn't make them a wolf. player_4's watch stands or falls on the record. Voting on that alone is thin.
+
+Today's discussion so far, as the speaker saw it:
+No messages yet.
+
+THE LINE:
+Right then, new info from me: last night I tried to watch player_7 and was roleblocked, so someone blocked me. That means a wolf came to my door, and the only wolf left who can block is the Chanteuse.
+
+### s038
+Speaker: player_2, during the day's discussion.
+
+Earlier days (summary, most recent part):
+them from attacks. Disputed: player_7 said both players cannot have saved player_9 on the same night and asked player_4 to state each night's save.
+[Day 4] player_4 (revealed healer, voted out day 4) → player_7 (revealed chanteuse, killed night 4): player_4 said player_7's Healer claim is false because player_4 was the one protecting player_9 on nights 2 and 3. player_4 also said player_7 has been silent about their night. Defense: player_7 said they protected player_5 on night 1 and player_9 on nights 2 and 3. player_7 asked player_4 to say which saves they made each night. Disputed: player_8 said their night 3 watch on player_7 saw no visitors, so player_7 did not carry the night 3 kill and was not healer that night.
+[Day 4] player_2, player_4 (revealed healer, voted out day 4) → player_8: player_2 said player_8's night 2 list names dead player_10 and asked for an explanation. player_4 said the list may be off because it names player_10. Defense: player_8 said dead player_10 cannot be a living visitor, so that name is the Necromancer checking player_9 through a dead Investigator's body. The other three names are real visitors. Disputed: player_1 asked that player_8's list be tested before anyone votes.
+[Day 4] player_1 (revealed illusionist, voted out day 5) → player_5: player_1 said player_5's Sigilist claim is unproven. player_5 has shown no placed sigil and has not said what they did on nights 1 and 2. Defense: player_5 said they are the real Sigilist, placed no sigils so player_1's claim is false, and asked why player_1's only action was a sigil on a non-attacker. Disputed: player_7 asked both Sigilist claimants to say where their sigils went.
+[Day 5] player_1 (revealed illusionist, voted out day 5), player_9 → player_5: player_1 argued player_5 claims sigilist but has not said where their night 1 or 2 sigils went. player_9 said they lean player_5 for the same reason. Defense: player_5 said they placed no sigils on nights 1 or 2, so have none to show, and both sigils are unspent. player_5 also said player_1's night 2 visit fits no real Sigilist.
+[Day 5] player_5 → player_1 (revealed illusionist, voted out day 5): player_5 argued player_1's claimed night 2 sigil on player_9 is a visit that player_8's watch shows, and that a visit like that does not fit a real Sigilist. Defense: player_1 argued the night 2 visit was the sigil itself, since placing a sigil is a visit, and the sigil had no effect, matching player_8's list.
+[Day 5] player_1 (revealed illusionist, voted out day 5) → player_9: player_1 said whoever is the real Trailseer should explain what player_9's night 4 follow would have shown before the block, questioning the Trailseer claim. Defense: player_9 said their night 4 follow on player_1 was roleblocked, so they learned nothing. Their night 2 follow on player_4 showed player_4 going to them, which fits a save. Disputed: player_5 argued player_9's night 1 follow matching player_10's check on player_5 is a point in player_9's favour.
+
+Today's discussion so far, as the speaker saw it:
+No messages yet.
+
+THE LINE:
+Four alive, and the necromancer is one of player_3 or player_6, so we have to get it right today. player_3 abstained twice and has never said what they did at night. I'd vote player_3 if we vote now, but I want a claim from both of them before anyone locks in.
+
+### s042
+Speaker: player_8, during the opening round (each player speaks once, before seeing the others).
+
+Earlier days (summary, most recent part):
+aims, not facts; a note starting "Record:" or "Rules:" is an exact check by the game master; a plan said in the day binds no one: a player may choose a different target at night) --
+player_9: claimed trailseer (day 2).
+  Night 1: followed player_10; says they visited player_5 (a visit alone does not establish what they did there).
+  Night 2: followed player_4; says they visited player_9 (a visit alone does not establish what they did there).
+player_10: claimed investigator (day 2). Record: revealed as investigator when they were voted out on day 2, as claimed.
+  Night 1: checked player_5, says they read Not suspicious.
+player_8: claimed sentinel (day 3).
+  Night 1: says they did not act.
+  Night 2: watched player_9; says player_1, player_4, player_7 and player_10 visited them (a visit alone does not establish a visitor's role or what they did).
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+[Day 2] player_3, player_4 → player_9: player_3 argued the two overlapping night 1 visit claims cannot both be the whole story. player_4 argued one of player_9 and player_10 is probably not telling the whole truth. Defense: player_9 said the follow showed player_10 went to player_5 and nowhere else. A single check fits that, and the result does not show the visit's kind. Disputed: player_1 said the claim fits the night 1 visit and save. player_10 said both claims can be true, as a check and a follow both reach player_5.
+[Day 2] player_2, player_3, player_4 → player_10 (revealed investigator, voted out day 2): player_2 asked what player_10 did on night 1 when visiting the attacked player_5. player_3 and player_4 argued player_10's check and player_9's follow conflict over that visit. Defense: player_10 said they are the investigator, checked player_5 on night 1 and got Not suspicious, and both claims can be true. More would reveal their role. Disputed: No one defended player_10 directly. player_1 asked whether they were the healer, and player_9 said their follow does not reveal the visit's purpose.
+[Day 3] player_1, player_2 → player_8: player_1 asked what player_8 saw on night 1 and argued the Sentinel claim needs testing; player_2 argued the four-visitor list conflicts with the healer's protection of player_9. Defense: player_8 said the four-visitor list is complete, night 1 watches were kept, and the healer's protection and the wolf attack are among player_1, player_4 and player_7. Disputed: player_9 said their night 2 follow on player_4 matches player_8's list, so that part checks out.
+[Day 3] player_8 → player_1: player_8 argued player_1 is on the four-visitor list and asked what player_1 went to player_9 for on night 2. Defense: player_1 has not yet answered the night 2 question; earlier asked player_8 for the night 1 watch result, saying the Sentinel claim should be tested. Disputed: No one argued against it; player_9 said they want to hear player_1 and player_7 say what they did before voting.
+
+Today's discussion so far, as the speaker saw it:
+No messages yet.
+
+THE LINE:
+Sentinel here, and I watched player_7 last night: no one visited them. So player_7 did not carry the night-3 kill and was not the healer that night, which narrows the night-2 visitors to player_1 and player_4.
+
+### s046
+Speaker: player_5, during the opening round (each player speaks once, before seeing the others).
+
+Earlier days (summary, most recent part):
+-- The game master's record (exact; it outranks anything a player or a summary says) --
+[Day 1] There is no vote on day 1, so no one voted and no one is eliminated.
+[Day 1] Night of day 1: player_2 was killed by the wolves last night. They were a sigilist. player_8 was stabbed by the serial killer last night. They were a investigator.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+None.
+
+Today's discussion so far, as the speaker saw it:
+No messages yet.
+
+THE LINE:
+I'm the Trailseer. Night 1 I followed player_4, and they visited player_8, who was stabbed that night, so player_4 is my first suspect.
+
+### s050
+Speaker: player_1, during the opening round (each player speaks once, before seeing the others).
+
+Earlier days (summary, most recent part):
+ night. Their role is hidden by an illusionist.
+
+-- Claims made in the day discussion (claims, not facts; a note starting "Record:" or "Rules:" is an exact check by the game master; a plan said in the day binds no one: a player may choose a different target at night) --
+player_5: claimed trailseer (day 2).
+  Night 1: followed player_4; says they visited player_8 (a visit alone does not establish what they did there).
+  Night 2: followed player_6; says they visited no one.
+player_4: claimed no role.
+  Night 1: says they did not act.
+player_6: claimed no role.
+  Night 1: says they did not act.
+  Night 2: says they did not act.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+[Day 2] player_5, player_6, player_9 (revealed chanteuse, voted out day 3) → player_4 (revealed serial killer, voted out day 2): player_5 said the night 1 follow shows player_4 visited player_8, a kill, making them the top serial killer suspect. player_6 and player_9 said one of them is lying and favoured a vote. Defense: player_4 said they visited nobody on night 1, called player_5's trail one unverified claim, and asked for a second source before any vote. Disputed: player_1 and player_10 asked whether player_5 followed anyone else and wanted the trail and claim checked before voting.
+[Day 3] player_9 (revealed chanteuse, voted out day 3) → player_3: player_9 argued that player_3's view that the wolves going after player_5 made the claim genuine was a leap, since a healer save fits a fake trail as well. Defense: player_3 said they called the attack only a point, not proof, agreed a save fits a true or false trail alike, and would not vote on the attack alone.
+[Day 3] player_9 (revealed chanteuse, voted out day 3) → player_5: player_9 said player_5's test idea felt insincere, that a healer save is as consistent with a fake trail, and asked for player_5's night 3 follow to be tested before any vote. Defense: player_5 said night 3 has not happened yet, will follow a living player tonight and post the result tomorrow, and that the night 2 follow on player_6 stands. Disputed: player_7 said player_5's night 1 trail fits the record. player_3 said the save is consistent with a true trail and wanted a night 3 test before any vote.
+[Day 3] player_7 → player_1: player_7 said whoever pushed for a second source against player_5's trail should be looked at hard, after arguing player_5's night 1 trail fits the facts. Defense: player_1 said a fair test is a new follow on a living player, that they are not voting on the night 1 trail alone, and that they are not claiming anything.
+[Day 3] player_7 → player_10: player_7 said whoever pushed for a second source against player_5's trail should be looked at hard, after arguing player_5's night 1 trail fits the facts. Defense: player_10 said they want player_6's held fire and player_5's night 2 follow compared with the announced healer save, and will wait for the next trail before deciding.
+
+Today's discussion so far, as the speaker saw it:
+No messages yet.
+
+THE LINE:
+I'm the sentinel. Night 1 I watched player_6 and night 3 I watched player_10, and no one visited either of them.
+
+### s054
+Speaker: player_4, during the day's discussion.
+
+Earlier days (summary, most recent part):
+heir role is hidden by an illusionist.
+[Day 2] Here's the vote result for day 2:
+  player_1 voted to abstain
+  player_2 voted to abstain
+  player_4 voted to eliminate player_2
+  player_5 voted to eliminate player_2
+  player_6 voted to abstain
+  player_7 voted to abstain
+  player_8 voted to abstain
+  player_9 voted to eliminate player_2
+  player_10 voted to eliminate player_2
+The town chose to abstain. No one is eliminated today.
+[Day 2] Night of day 2: player_2 was killed by the wolves last night. Their role is hidden by an illusionist. The Speculator has picked Town.
+[Day 3] Here's the vote result for day 3:
+  player_1 voted to eliminate player_9
+  player_4 voted to abstain
+  player_5 voted to eliminate player_9
+  player_6 voted to eliminate player_9
+  player_7 voted to eliminate player_1
+  player_8 voted to eliminate player_9
+  player_9 voted to eliminate player_4
+  player_10 voted to eliminate player_9
+Player player_9 has been voted out and was a healer.
+The record of player_9, the healer: night 1, protected player_7; no attack on them was announced; night 2, was roleblocked.
+[Day 3] Night of day 3: player_7 was killed by the wolves last night. They were a sentinel. The record of player_7, the sentinel: night 1, was roleblocked; night 2, watched player_2; saw player_1 visit them.
+
+-- Claims made in the day discussion (claims, not facts; a note starting "Record:" or "Rules:" is an exact check by the game master; a plan said in the day binds no one: a player may choose a different target at night) --
+player_2: claimed investigator (day 2).
+  Night 1: checked player_7, says they read Not suspicious. Record: player_7 was revealed as sentinel, as claimed.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+[Day 3] player_8, player_9 (revealed healer, voted out day 3) → player_4: player_8 asked the day-2 eliminate voters what they saw to push player_2. player_9 said player_4 owns a lynch with no evidence. Defense: player_4 owned the day-2 vote, said one unverified claim was not enough, and asked player_7 directly what they were checked as.
+[Day 3] player_8, player_4 → player_9 (revealed healer, voted out day 3): player_8 and player_4 asked player_9 what they saw that made them certain the day-2 lynch was wrong. Defense: player_9 revealed nothing, called the questions circling, and said a real night result should come forward before a vote.
+[Day 3] player_9 (revealed healer, voted out day 3) → player_8: player_9 said player_8 keeps circling the day-2 vote instead of offering concrete evidence. Defense: player_8 has no night result, claims no role, and abstained on day 2 because a single unverified claim was not enough to lynch.
+[Day 3] player_9 (revealed healer, voted out day 3) → player_6: player_9 said player_6's vague request to test first gave the town nothing concrete to act on. Defense: player_6 said their current vote is abstain and they are not ready to lynch on one claim about player_7.
+
+Today's discussion so far, as the speaker saw it:
+player_1: I'm the trailseer, and I'm claiming it now. Night 3 I followed player_4, who visited player_7, the sentinel the wolves killed that night.
+
+THE LINE:
+player_1, if you followed me on night 3, you saw the right door: I'm the Sigilist. I placed a sigil on player_7 that night, and it had no effect, since they did not attack anyone. That is why I went to them. Since your report is a trailseer report, it should match what you saw, so check it against the sigil story.
+
+### s058
+Speaker: player_5, during the day's discussion.
+
+Earlier days (summary, most recent part):
+-- The game master's record (exact; it outranks anything a player or a summary says) --
+[Day 1] There is no vote on day 1, so no one voted and no one is eliminated.
+[Day 1] Night of day 1: player_2 was killed by the wolves last night. They were a sigilist. player_8 was stabbed by the serial killer last night. They were a investigator.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+None.
+
+Today's discussion so far, as the speaker saw it:
+player_5: I'm the Trailseer. Night 1 I followed player_4, and they visited player_8, who was stabbed that night, so player_4 is my first suspect.
+player_4: I didn't go to player_8 on night 1. My visit that night was to player_9, nothing more. I'm not claiming a role. If player_5 is really the Trailseer, they should say who I visited on night 1 and who visited them, and we can check it against the wills and the deaths.
+player_1: player_4 says they went to player_9 on night 1, but player_5's follow puts them at player_8, who was stabbed that night. Both can't be true. Unless player_4 can explain that, I'm voting player_4 today.
+player_4: I'm not going to vote on a claim nobody can check. I went to player_9 on night 1 and nobody came to me that I know of. player_5 could be the Trailseer, or a wolf who's read that a follow on me makes a good target. Ask player_5 who they followed on night 2 and who they saw go to whom, so we get something to test.
+player_5: player_4, my follow on you night 1 showed you went to player_8 and nowhere else, so player_9 wasn't your visit. You can't both be right about that. Why would you say player_9 when the wolves' victim was player_8? Anyone who wants to check me can ask player_8's stabbing and the morning report.
+player_4: I went to player_9 on night 1, and nobody came to me. A follow only shows where I went, so player_5 is reporting a visit I say I didn't make. If player_5 is the Trailseer, they should name who they followed on night 2 and who that player visited, so we have something to test.
+player_5: As I said, my follow on player_4 on night 1 showed they went to player_8 and nowhere else. player_8 was the one stabbed, so player_9 wasn't their visit. player_4, why name player_9 when the record points at player_8? I'll follow someone new tonight and post what I see.
+player_6: player_4, you say you visited player_9 and nobody came to you, but player_5's follow only shows where you went. Did player_9 say anything about who visited them on night 1? Also player_5, does your follow show player_4 going anywhere besides player_8?
+player_4: player_6, player_5's follow is the only thing saying I went to player_8, and I'm not going to confirm a visit I didn't make. I went to player_9 on night 1 and nobody came to me that I know of. player_5, if your night 2 follow shows who I visited, post it now so we can check it against the morning report.
+player_5: player_6, my night 1 follow on player_4 showed they went to player_8 and nowhere else, so I can't see a visit to player_9. I didn't get anything on player_9 myself. player_4, you still haven't said who you think came to you, or why you went to player_9.
+player_7: For now I'd vote player_4. player_5's follow puts them at player_8, the night 1 stab, and player_4 names player_9 without anyone confirming it. Player_4 should say who visited them that night, if anyone did.
+player_4: player_7, I already said it: my night 1 visit was player_9, and nobody came to me that I know of. Player_5's follow is their only claim against me, and I can't confirm a visit I didn't make. If player_5 is the Trailseer, a night 2 follow that names a visit should be checkable in the morning report, so let's see that before anyone votes on it.
+player_10: player_5's follow and player_4's 'player_9' visit can't both be right, so the cleanest test is the night 2 results. player_5, if you followed someone last night, post the target and who they visited, and I'd like player_4 to say who they think came to them. Until one of you is checkable, I'm not voting.
+
+THE LINE:
+player_10, as I said, my night 1 follow on player_4 showed only a visit to player_8, so I'm not voting until we see more. Tonight I'm following someone new and will post who they visited. player_4, if you're a wolf-side Chanteuse, a block on someone would show up as a no-visit, so keep that in mind.
+
+### s062
+Speaker: player_5, during the day's discussion.
+
+Earlier days (summary, most recent part):
+-- The game master's record (exact; it outranks anything a player or a summary says) --
+[Day 1] There is no vote on day 1, so no one voted and no one is eliminated.
+[Day 1] Night of day 1: player_4 was stabbed by the serial killer last night. They were a chanteuse. player_10 was killed by the wolves last night. Their role is hidden by an illusionist.
+[Day 2] Here's the vote result for day 2:
+  player_1 voted to eliminate player_6
+  player_2 voted to abstain
+  player_3 voted to eliminate player_6
+  player_5 voted to abstain
+  player_6 voted to eliminate player_7
+  player_7 voted to eliminate player_6
+  player_8 voted to eliminate player_3
+  player_9 voted to eliminate player_7
+Player player_6 has been voted out and was a sigilist.
+[Day 2] Night of day 2: player_3 was attacked by the wolves and the serial killer last night. Their role is hidden by an illusionist.
+
+-- Claims made in the day discussion (claims, not facts; a note starting "Record:" or "Rules:" is an exact check by the game master; a plan said in the day binds no one: a player may choose a different target at night) --
+player_3: claimed healer (day 2).
+  Night 1: says they tried to protect player_7 and were roleblocked.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+[Day 2] player_6 (revealed sigilist, voted out day 2) → player_7: player_6 argued that player_7 is pushing for votes without naming a lynch target. Defense: player_7 said they had no lynch yet, since the only thing to test is player_3's claim, and waiting for tonight's report beats guessing.
+[Day 2] player_6 (revealed sigilist, voted out day 2), player_7 → player_3: player_6 and player_7 asked player_3 to name tonight's protection target before the report, so a save could be checked against the attack. Defense: player_3 refused to name tonight's target before the report, said night 1 protection was blocked, and said tonight's report is the test. player_3 also claimed player_4 visited them before dying.
+
+Today's discussion so far, as the speaker saw it:
+player_1: I'm the sentinel. Night 2 I watched player_7: player_2 and player_3 both visited them. I have one watch left.
+player_7: I'm the Investigator. Night 1 I checked player_5 (Not suspicious), and night 2 I checked player_3 (Not suspicious), so neither is a wolf.
+
+THE LINE:
+Two claims clash here. player_7 says player_3 checked Not suspicious, and player_3 says they're the healer and protected player_7 on night 1 before being roleblocked. Night 2 went wrong for player_3 anyway, so whoever is telling the truth about player_3 matters. player_1, did your watch on player_7 show anyone visiting player_3 that night?
+
+### s066
+Speaker: player_10, during the opening round (each player speaks once, before seeing the others).
+
+Earlier days (summary, most recent part):
+-- The game master's record (exact; it outranks anything a player or a summary says) --
+[Day 1] There is no vote on day 1, so no one voted and no one is eliminated.
+[Day 1] Night of day 1: player_2 was killed by the wolves last night. They were a sigilist. player_8 was stabbed by the serial killer last night. They were a investigator.
+[Day 2] Here's the vote result for day 2:
+  player_1 voted to eliminate player_4
+  player_3 voted to eliminate player_4
+  player_4 voted to eliminate player_5
+  player_5 voted to eliminate player_4
+  player_6 voted to eliminate player_4
+  player_7 voted to eliminate player_4
+  player_9 voted to eliminate player_4
+  player_10 voted to eliminate player_4
+Player player_4 has been voted out and was a serial killer.
+[Day 2] Night of day 2: player_5 was attacked by the wolves but was saved by the healer!
+
+-- Claims made in the day discussion (claims, not facts; a note starting "Record:" or "Rules:" is an exact check by the game master; a plan said in the day binds no one: a player may choose a different target at night) --
+player_5: claimed trailseer (day 2).
+  Night 1: followed player_4; says they visited player_8 (a visit alone does not establish what they did there).
+player_4: claimed no role.
+  Night 1: went to player_9.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+[Day 2] player_1, player_5, player_7 → player_4 (revealed serial killer, voted out day 2): player_5 argued a night 1 follow showed player_4 went to player_8, the stabbed player; player_1 said that contradicts player_4's player_9 visit; player_7 would vote player_4. Defense: player_4 said they visited player_9 on night 1 and nobody came to them, denied going to player_8, and refused to confirm a visit they did not make. Disputed: player_6 asked whether player_9 said who visited them and whether the follow shows other destinations; player_10 said they would not vote until one claim was checkable.
+[Day 2] player_4 (revealed serial killer, voted out day 2) → player_5: player_4 argued player_5 may not be the Trailseer, or may be a wolf who targeted player_4 with a follow claim, since player_4 says their visit was to player_9. Defense: player_5 repeated that the night 1 follow showed player_4 visited only player_8, and suggested player_4 could be a wolf-side Chanteuse whose block shows as no visit.
+
+Today's discussion so far, as the speaker saw it:
+No messages yet.
+
+THE LINE:
+I have nothing firm to add yet, but I want to see player_5's trailseer claim tested. Player_5, if you followed someone on night 2, which name did you get back, and did anyone visit you? Concrete results will help us check claims before we lynch anyone.
+
+### s070
+Speaker: player_4, during the day's discussion.
+
+Earlier days (summary, most recent part):
+stain
+  player_2 voted to abstain
+  player_3 voted to abstain
+  player_4 voted to abstain
+  player_5 voted to abstain
+  player_7 voted to abstain
+  player_8 voted to abstain
+  player_9 voted to eliminate player_4
+  player_10 voted to eliminate player_1
+The town chose to abstain. No one is eliminated today.
+[Day 2] Night of day 2: player_3 was killed by the wolves last night. They were a sentinel. The record of player_3, the sentinel: night 1, watched player_10; saw no one.
+[Day 3] Here's the vote result for day 3:
+  player_1 voted to abstain
+  player_2 voted to eliminate player_9
+  player_4 voted to eliminate player_9
+  player_5 voted to abstain
+  player_7 voted to eliminate player_4
+  player_8 voted to eliminate player_4
+  player_9 voted to eliminate player_4
+  player_10 voted to eliminate player_9
+It's a tie between ['player_9', 'player_4']. No one is voted out this day.
+[Day 3] Night of day 3: player_10 was killed by the wolves last night. Their role is hidden by an illusionist. The Speculator has picked Town.
+
+-- Claims made in the day discussion (claims, not facts; a note starting "Record:" or "Rules:" is an exact check by the game master; a plan said in the day binds no one: a player may choose a different target at night) --
+player_8: claimed no role.
+  Night 2: says they did not act.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+[Day 3] player_7, player_2 → player_9: player_7 argued player_9's day-2 lynch push on player_4 had no real basis and said they vote for player_9. player_2 asked player_9 to explain that push before a vote. Defense: player_9 said player_4 had barely spoken on day 1, called it a thin read, and said they would hear player_4 out before voting again. Disputed: player_10 asked player_7 whether the vote on player_9 rests on anything beyond the same thin day-2 push.
+[Day 3] player_2 → player_10: player_2 argued player_10 pushed a single day-2 lynch and asked them to explain why before a vote. Defense: player_10 said they did not push anyone on day 2 and abstained, and that the sentinel's watch on them showed no visitors on night 1. (Game record shows player_10 voted to eliminate player_1 on day 2.)
+[Day 3] player_10, player_9 → player_7: player_10 asked player_7 whether the vote on player_9 rests on more than the day-2 lynch. player_9 asked the same question about player_7's vote.
+[Day 3] player_1 → player_8: player_1 asked player_8 to say whether they are the vigilante and to name the night they would shoot and why they are holding fire. Defense: player_8 said they held fire on nights 1 and 2, are not claiming yet, and need a real contradiction between two claims before shooting.
+[Day 3] player_1 → player_4: player_1 argued player_4 has been targeted twice without saying anything and should answer directly. Defense: player_4 said they will not claim a role on a thin read, would not name a night they would shoot, and want someone to make a concrete claim first.
+
+Today's discussion so far, as the speaker saw it:
+player_7: I'm the investigator. On night 3 I checked player_9 and got Suspicious, so player_9 is a wolf; please vote them out today.
+player_9: I'm not a wolf, so that check on me came back wrong somewhere. Two checks is a lot to sit on for three nights, so why wait until day 4 to call it out? If you're the investigator, say who you checked on nights 1 and 2 and what they came back as.
+player_7: player_9, I am the investigator. Night 1 I checked player_2 and got Not suspicious. Night 2 I was roleblocked, so no check. Night 3 I checked you and got Suspicious. Vote player_9 today.
+player_9: player_7, I'm the healer, and I'd rather say it now than sit on it. I protected player_8 on night 2 and player_2 on night 3, and nothing was attacked either time. If you checked me Suspicious, one of us is lying, and the healer is Town. Why would an investigator check someone on day 4 and not earlier?
+player_7: player_9, I checked you on night 3 and you read Suspicious. I didn't wait to call it out; night 2 I was blocked, and I'd rather have a Suspicious read than a guess. Your healer claim doesn't hold: a save on player_2 on night 3 couldn't have stopped the kill on player_10, and the wolves' only roles that fit your claim are the Chanteuse or the Illusionist. Vote player_9 today.
+player_2: I'm player_2 and I wasn't attacked on night 3, so I can't confirm or rule out player_9's save. Only one of the two claims can be true. player_7's check is the only hard result on the table, and a Suspicious read on a real healer would be strange. I'd vote player_9 today unless someone shows a reason not to.
+player_9: player_2, player_7's check is one result, and I'm the healer: I protected player_8 on night 2 and player_2 on night 3, and nothing was attacked either time. A save on player_2 doesn't stop the kill on player_10, so that's not a contradiction. If player_7 is the investigator, a Suspicious read on a real healer is the mistake to look at, so I'd like player_7 to say why they checked me on night 3 and not earlier.
+
+THE LINE:
+Oh, I hate that player_9 is still standing there so calmly! Their healer claim can't be right, since a save on player_2 couldn't have touched the kill on player_10. player_7's Suspicious read on them fits that, so I lean toward voting player_9 today. player_8, you said you held fire nights 1 and 2. Did you hold fire on night 3 too?
+
+### s074
+Speaker: player_9, during the opening round (each player speaks once, before seeing the others).
+
+Earlier days (summary, most recent part):
+No previous days yet.
+
+Today's discussion so far, as the speaker saw it:
+No messages yet.
+
+THE LINE:
+No night info from me to share yet, and I haven't claimed anything. Day 1 with nothing concrete, so I'd rather hear who wants to claim before anyone pushes a lynch on thin reads.
+
+### s078
+Speaker: player_7, during the day's discussion.
+
+Earlier days (summary, most recent part):
+-- The game master's record (exact; it outranks anything a player or a summary says) --
+[Day 1] There is no vote on day 1, so no one voted and no one is eliminated.
+[Day 1] Night of day 1: player_3 was killed by the wolves last night. They were a vigilante.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+None.
+
+Today's discussion so far, as the speaker saw it:
+player_1: I'm the trailseer. On night 1 I followed player_8, and they visited no one, so there's no visit to read from that. I'll follow someone else tonight and report what I see.
+
+THE LINE:
+Nothing is settled yet, so I'd like to hear from the claimed trailseer first. player_1, if your follow on player_8 gives you anything tonight, say who player_8 went to, and we can check that against the night-two kill. I'm not ready to vote on anyone without more to go on.
+
+### s082
+Speaker: player_5, during the opening round (each player speaks once, before seeing the others).
+
+Earlier days (summary, most recent part):
+-- The game master's record (exact; it outranks anything a player or a summary says) --
+[Day 1] There is no vote on day 1, so no one voted and no one is eliminated.
+[Day 1] Night of day 1: player_5 was attacked by the wolves but was saved by the healer!
+[Day 2] Here's the vote result for day 2:
+  player_1 voted to eliminate player_3
+  player_2 voted to eliminate player_3
+  player_3 voted to abstain
+  player_4 voted to eliminate player_10
+  player_5 voted to eliminate player_10
+  player_6 voted to eliminate player_10
+  player_7 voted to eliminate player_3
+  player_8 voted to abstain
+  player_9 voted to eliminate player_10
+  player_10 voted to eliminate player_3
+It's a tie between ['player_3', 'player_10']. No one is voted out this day.
+[Day 2] Night of day 2: player_3 was killed by the wolves last night. Their role is hidden by an illusionist.
+
+-- Claims made in the day discussion (claims, not facts; a note starting "Record:" or "Rules:" is an exact check by the game master; a plan said in the day binds no one: a player may choose a different target at night) --
+player_9: claimed trailseer (day 2).
+  Night 1: followed player_10; says they visited player_5 (a visit alone does not establish what they did there).
+player_10: claimed investigator (day 2).
+  Night 1: checked player_5, says they read Not suspicious.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+[Day 2] player_3, player_5 → player_10: player_3 argued player_9's follow and player_10's check cannot both be fully right if player_10 is a wolf. player_5 argued a wolf carrier's visit would look the same as a check and asked for the result. Defense: player_10 said their night 1 action was an investigation of player_5, which returned Not suspicious. They said the follow fits that and would also fit a wolf visit, so they would not claim more. Disputed: player_9 argued that a check is a visit, so player_9's follow of player_10 to player_5 and player_10's check fit together.
+
+Today's discussion so far, as the speaker saw it:
+No messages yet.
+
+THE LINE:
+I'm player_5, the sigilist. The healer saved me on night 1, and I still have both sigils. Any wolf who attacks is at risk of a sigil strike, so I'll be placing them carefully.
+
+### s086
+Speaker: player_3, during the day's discussion.
+
+Earlier days (summary, most recent part):
+-- The game master's record (exact; it outranks anything a player or a summary says) --
+[Day 1] There is no vote on day 1, so no one voted and no one is eliminated.
+[Day 1] Night of day 1: player_2 was killed by the wolves last night. They were a sigilist. player_8 was stabbed by the serial killer last night. They were a investigator.
+[Day 2] Here's the vote result for day 2:
+  player_1 voted to eliminate player_4
+  player_3 voted to eliminate player_4
+  player_4 voted to eliminate player_5
+  player_5 voted to eliminate player_4
+  player_6 voted to eliminate player_4
+  player_7 voted to eliminate player_4
+  player_9 voted to eliminate player_4
+  player_10 voted to eliminate player_4
+Player player_4 has been voted out and was a serial killer.
+[Day 2] Night of day 2: player_5 was attacked by the wolves but was saved by the healer!
+
+-- Claims made in the day discussion (claims, not facts; a note starting "Record:" or "Rules:" is an exact check by the game master; a plan said in the day binds no one: a player may choose a different target at night) --
+player_5: claimed trailseer (day 2).
+  Night 1: followed player_4; says they visited player_8 (a visit alone does not establish what they did there).
+player_4: claimed no role.
+  Night 1: went to player_9.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+[Day 2] player_1, player_5, player_7 → player_4 (revealed serial killer, voted out day 2): player_5 argued a night 1 follow showed player_4 went to player_8, the stabbed player; player_1 said that contradicts player_4's player_9 visit; player_7 would vote player_4. Defense: player_4 said they visited player_9 on night 1 and nobody came to them, denied going to player_8, and refused to confirm a visit they did not make. Disputed: player_6 asked whether player_9 said who visited them and whether the follow shows other destinations; player_10 said they would not vote until one claim was checkable.
+[Day 2] player_4 (revealed serial killer, voted out day 2) → player_5: player_4 argued player_5 may not be the Trailseer, or may be a wolf who targeted player_4 with a follow claim, since player_4 says their visit was to player_9. Defense: player_5 repeated that the night 1 follow showed player_4 visited only player_8, and suggested player_4 could be a wolf-side Chanteuse whose block shows as no visit.
+
+Today's discussion so far, as the speaker saw it:
+player_5: Trailseer here, still the only one claiming it. Last night I was roleblocked, so my follow on player_9 didn't happen. Tonight I'm following player_9 again, and I'll post what I see if it's checkable.
+player_6: player_5, if your follow on player_9 tonight shows anyone visiting player_9 that is checkable, post it. Also, player_9 can you say who, if anyone, came to you on night 1? That would confirm or break player_4's claim of visiting you, and it tells us whether player_4 was lying.
+player_5: player_6, my night 2 follow on player_9 was blocked, so I have nothing on them from last night. Tonight's follow hasn't happened yet, so I can only post it after the night. If it shows a visit to player_9, I'll say who. Player_9, your answer on who came to you on night 1 would help.
+player_9: player_6, I can't say anyone came to me on night 1. I didn't see a watch or anything like that, so I have nothing to check player_4's claim against. What I do see: player_5's night 1 follow put player_4 at player_8, and player_8 was the one stabbed, which fits player_4 being the killer. That makes player_4's visit to player_9 the odd part.
+player_7: player_5, you were roleblocked on night 2, so the claim that your follow on player_9 was blocked fits. Your night 1 follow on player_4 is the only checkable piece so far. I'd like to see tonight's follow result before deciding on a lynch. I'm not voting yet.
+player_5: player_7, fair ask. Tonight I follow player_9 and I'll post the result in the morning if it shows a visit. Night 1 is the only checkable piece so far, and I'd rather not give a lynch vote before I have that. A block on me on night 2 fits a wolf targeting the Trailseer.
+player_10: player_5, you were roleblocked on night 2, so your night 2 follow didn't happen. Tonight's follow on player_9 will be the first real test. Can you say the result plainly in the morning, including if it shows no visitors? Then we can see whether it fits what player_9 says about night 1.
+player_5: player_10, yes, I'll post tonight's follow result plainly in the morning, including if no one visited player_9. Night 2 was the block, so I have nothing from that night. Tonight's follow is the first real check.
+
+THE LINE:
+Worth noting for the morning: player_5 says the follow on player_9 is tonight's test. If it shows nobody visiting player_9, that tells us little on its own, since a wolf-side block or a hidden kill would look the same. I'd rather see the follow on player_9 and whether player_9 or anyone else was reported as blocked before deciding.
+
+### s090
+Speaker: player_8, during the opening round (each player speaks once, before seeing the others).
+
+Earlier days (summary, most recent part):
+-- The game master's record (exact; it outranks anything a player or a summary says) --
+[Day 1] There is no vote on day 1, so no one voted and no one is eliminated.
+[Day 1] Night of day 1: player_5 was attacked by the wolves but was saved by the healer!
+[Day 2] Here's the vote result for day 2:
+  player_1 voted to eliminate player_3
+  player_2 voted to eliminate player_3
+  player_3 voted to abstain
+  player_4 voted to eliminate player_10
+  player_5 voted to eliminate player_10
+  player_6 voted to eliminate player_10
+  player_7 voted to eliminate player_3
+  player_8 voted to abstain
+  player_9 voted to eliminate player_10
+  player_10 voted to eliminate player_3
+It's a tie between ['player_3', 'player_10']. No one is voted out this day.
+[Day 2] Night of day 2: player_3 was killed by the wolves last night. Their role is hidden by an illusionist.
+
+-- Claims made in the day discussion (claims, not facts; a note starting "Record:" or "Rules:" is an exact check by the game master; a plan said in the day binds no one: a player may choose a different target at night) --
+player_9: claimed trailseer (day 2).
+  Night 1: followed player_10; says they visited player_5 (a visit alone does not establish what they did there).
+player_10: claimed investigator (day 2).
+  Night 1: checked player_5, says they read Not suspicious.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+[Day 2] player_3, player_5 → player_10: player_3 argued player_9's follow and player_10's check cannot both be fully right if player_10 is a wolf. player_5 argued a wolf carrier's visit would look the same as a check and asked for the result. Defense: player_10 said their night 1 action was an investigation of player_5, which returned Not suspicious. They said the follow fits that and would also fit a wolf visit, so they would not claim more. Disputed: player_9 argued that a check is a visit, so player_9's follow of player_10 to player_5 and player_10's check fit together.
+
+Today's discussion so far, as the speaker saw it:
+No messages yet.
+
+THE LINE:
+I'm the Sentinel, player_8. Night 2 I watched player_10 and no one visited them, so player_10 had no visitors that night. That doesn't prove anything about their check, but it's one piece of the picture.
+
+### s094
+Speaker: player_3, during the day's discussion.
+
+Earlier days (summary, most recent part):
+-- The game master's record (exact; it outranks anything a player or a summary says) --
+[Day 1] There is no vote on day 1, so no one voted and no one is eliminated.
+[Day 1] Night of day 1: player_6 was killed by the wolves last night. Their role is hidden by an illusionist.
+[Day 2] Here's the vote result for day 2:
+  player_1 voted to abstain
+  player_2 voted to abstain
+  player_3 voted to abstain
+  player_4 voted to abstain
+  player_5 voted to abstain
+  player_7 voted to abstain
+  player_8 voted to abstain
+  player_9 voted to abstain
+  player_10 voted to abstain
+The town chose to abstain. No one is eliminated today.
+[Day 2] Night of day 2: player_4 was killed by the wolves last night. They were a necromancer.
+[Day 3] Here's the vote result for day 3:
+  player_1 voted to abstain
+  player_2 voted to abstain
+  player_3 voted to abstain
+  player_5 voted to eliminate player_3
+  player_7 voted to abstain
+  player_8 voted to abstain
+  player_9 voted to abstain
+  player_10 voted to abstain
+The town chose to abstain. No one is eliminated today.
+[Day 3] Night of day 3: player_10 was killed by the wolves last night. Their role is hidden by an illusionist. The Speculator has picked Town.
+[Day 4] Here's the vote result for day 4:
+  player_1 voted to eliminate player_5
+  player_2 voted to eliminate player_5
+  player_3 voted to eliminate player_5
+  player_5 voted to eliminate player_3
+  player_7 voted to eliminate player_5
+  player_8 voted to eliminate player_5
+  player_9 voted to eliminate player_3
+Player player_5 has been voted out and was a illusionist.
+[Day 4] Night of day 4: player_1 was killed by the wolves last night. They were a speculator.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+[Day 4] player_2, player_3, player_8 → player_5 (revealed illusionist, voted out day 4): player_2 argued player_5's day 3 vote was the only elimination vote and had no basis. player_3 asked why player_5 put them up with no reason. player_8 argued the same. Defense: player_5 said its day 3 vote was a read on player_10 with no hard information. Said it is not pushing anyone today and asked abstainers for reasons.
+[Day 4] player_2, player_8 → player_7: player_2 argued player_7 abstained every day with no reason given. player_8 argued player_7 abstained three days running and should give at least one reason. Defense: player_7 said it abstained because it had nothing to go on and will not vote on a bare read. Asked player_9 to give its reason too.
+[Day 4] player_2, player_8 → player_9: player_2 argued player_9 abstained every day with no reason given. player_8 argued player_9 abstained three days running and should give at least one reason. Defense: player_9 said nobody has put up anything concrete, so it will not vote on a bare read. Asked holders of night roles to state what they would have learned.
+
+Today's discussion so far, as the speaker saw it:
+player_7: I'm the Investigator. I checked player_2 on night 1 and player_3 on night 3, and both read Not suspicious, so both are clear. That leaves the surviving wolf as player_8 or player_9, and I'll use my last check on whichever one looks worse.
+player_2: player_7, you say you checked me, and I'm town, so that result is fine. But a Chanteuse could claim Investigator too, and the clears would then point the table at 8 and 9. I'd like to hear from the other night roles before anyone votes on the Investigator claim.
+player_8: player_7, you say you checked player_2 on night 1 and player_3 on night 3, which is two checks, and then say you'll use your last check now. That's three. Which is it? If you're really the Investigator, explain that before anyone accepts the clears. I'd vote player_7 today on that count.
+player_7: player_8, that was my mistake. I checked player_2 on night 1 and player_3 on night 3, that's two checks, and both are used up. I have none left, so my 'last check' line was wrong. Both results are Not suspicious, so the wolf is 8 or 9. Player_9, you've abstained every day with no reason; what's yours?
+player_9: player_7, I abstained on days 2 and 3 because nobody had a concrete case. On day 4 I voted player_3 because player_5 had pushed them on day 3 with no basis, and that made me want to test that push. Your checks: if you're the Investigator, how did the day 3 check on player_3 come about, and why did you not say so before today?
+
+THE LINE:
+I'd vote player_7 today. Its check count changed mid-argument, and it cited a check on player_3 on night 3 with a clear result, which I can't verify. If it's the Investigator, the clears on 2 and 3 can't both stand on that story. player_8 and player_9 have both asked for reasons, and I'd rather hear player_7 answer that before anyone leans on the clears.
+
+### s098
+Speaker: player_5, during the day's discussion.
+
+Earlier days (summary, most recent part):
+lly right if player_10 is a wolf. player_5 argued a wolf carrier's visit would look the same as a check and asked for the result. Defense: player_10 said their night 1 action was an investigation of player_5, which returned Not suspicious. They said the follow fits that and would also fit a wolf visit, so they would not claim more. Disputed: player_9 argued that a check is a visit, so player_9's follow of player_10 to player_5 and player_10's check fit together.
+[Day 3] player_2 (revealed vigilante, killed night 3), player_5, player_8, player_9 (revealed trailseer, killed night 4) → player_10 (revealed investigator, voted out day 3): player_2 argued player_9's sighting of player_10 going to player_5 on night 1 fits a wolf visit. player_5 and player_8 wanted player_10 voted. player_9 questioned player_10's check count. Defense: player_10 said their checks on player_5 (night 1) and player_4 (night 2) read Not suspicious. They corrected their check count to zero and said a wolf visit would be hidden from them.
+[Day 3] player_7 (revealed chanteuse, killed night 3) → player_2 (revealed vigilante, killed night 3): player_7 argued player_2 only raised the player_9 sighting and pushed the player_10 vote, and asked whether player_2 holds a role or is only reading the board. Defense: player_2 claimed to be the vigilante, said they held fire on nights 1 and 2 with two bullets left, and asked player_4 and player_8 to name their night 2 results.
+[Day 4] player_1 (revealed illusionist, voted out day 4) → player_6: player_1 argued player_6 has been quiet since player_7 died, so the Necromancer could be sitting there among players 6, 8 or 9. Defense: player_6 said player_1 named them without any result and asked what night 3 result player_1 saw and why a silent player is suspect. Disputed: player_1 replied they named player_6 only for being quiet, with no result behind it, and are not claiming a role.
+[Day 4] player_5 → player_1 (revealed illusionist, voted out day 4): player_5 argued player_1 named player_6 without any result, then asked others for night 3 results, so player_1 should state their own night 3 action. Defense: player_1 said they named player_6 only for being quiet, asked for night 3 results to settle the sentinel-trailseer conflict, and claims no role. Disputed: player_6 argued player_1 named them without saying what they saw on night 3 and asked who to vote and why.
+[Day 4] player_1 (revealed illusionist, voted out day 4), player_9 (revealed trailseer, killed night 4) → player_8: player_1 said player_8 and player_9 contradict each other on who was visited; player_9 asked player_8 who came to them on night 3, doubting the sentinel claim. Defense: player_8 said they were roleblocked on night 3, so their watch on player_9 never happened and they learned nothing; night 2 they watched player_10 and no one visited. Disputed: player_9 said they followed player_6 on night 3 and no visit was made in their name, and asked player_8 to name who came to them.
+
+Today's discussion so far, as the speaker saw it:
+player_8: I'm the sentinel. Night 4 I watched player_6, and player_9 came to them. Night 3 I was roleblocked, so that watch learned nothing.
+player_6: player_8, a watch on me that night would show who came to me, and I did not go anywhere on night 4 that I can confirm for you. Player_9 is dead and their will only covers night 3, so the 'player_9 came to player_6' part can't be checked from the record. Someone asking for the watch result should say whose result it was.
+
+THE LINE:
+player_8, your night 4 watch on player_6 is the one thing we can test: if player_9 really went to player_6, that's a visit the record could back up. I'd like to hear who you say came to player_6 on night 4, and whether you think player_6 was the one who visited you on night 3 when you were blocked. My vote today leans player_6 for going quiet while player_9 and player_1 pointed at them.
+
+### s102
+Speaker: player_3, during the day's discussion.
+
+Earlier days (summary, most recent part):
+-- The game master's record (exact; it outranks anything a player or a summary says) --
+[Day 1] There is no vote on day 1, so no one voted and no one is eliminated.
+[Day 1] Night of day 1: player_2 was killed by the wolves last night. They were a sigilist. player_8 was stabbed by the serial killer last night. They were a investigator.
+[Day 2] Here's the vote result for day 2:
+  player_1 voted to eliminate player_4
+  player_3 voted to eliminate player_4
+  player_4 voted to eliminate player_5
+  player_5 voted to eliminate player_4
+  player_6 voted to eliminate player_4
+  player_7 voted to eliminate player_4
+  player_9 voted to eliminate player_4
+  player_10 voted to eliminate player_4
+Player player_4 has been voted out and was a serial killer.
+[Day 2] Night of day 2: player_5 was attacked by the wolves but was saved by the healer!
+
+-- Claims made in the day discussion (claims, not facts; a note starting "Record:" or "Rules:" is an exact check by the game master; a plan said in the day binds no one: a player may choose a different target at night) --
+player_5: claimed trailseer (day 2).
+  Night 1: followed player_4; says they visited player_8 (a visit alone does not establish what they did there).
+player_4: claimed no role.
+  Night 1: went to player_9.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+[Day 2] player_1, player_5, player_7 → player_4 (revealed serial killer, voted out day 2): player_5 argued a night 1 follow showed player_4 went to player_8, the stabbed player; player_1 said that contradicts player_4's player_9 visit; player_7 would vote player_4. Defense: player_4 said they visited player_9 on night 1 and nobody came to them, denied going to player_8, and refused to confirm a visit they did not make. Disputed: player_6 asked whether player_9 said who visited them and whether the follow shows other destinations; player_10 said they would not vote until one claim was checkable.
+[Day 2] player_4 (revealed serial killer, voted out day 2) → player_5: player_4 argued player_5 may not be the Trailseer, or may be a wolf who targeted player_4 with a follow claim, since player_4 says their visit was to player_9. Defense: player_5 repeated that the night 1 follow showed player_4 visited only player_8, and suggested player_4 could be a wolf-side Chanteuse whose block shows as no visit.
+
+Today's discussion so far, as the speaker saw it:
+player_5: Trailseer here, still the only one claiming it. Last night I was roleblocked, so my follow on player_9 didn't happen. Tonight I'm following player_9 again, and I'll post what I see if it's checkable.
+
+THE LINE:
+player_5, if you were roleblocked last night, then your night 1 follow on player_4 is the only real data we have, and it conflicts with player_4's player_9 claim. Tonight's follow on player_9 is useful, but only if you post what it shows. Whoever the Chanteuse blocks is worth noting too, since a block shows as no visit.
+
+### s106
+Speaker: player_1, during the day's discussion.
+
+Earlier days (summary, most recent part):
+ night. Their role is hidden by an illusionist.
+
+-- Claims made in the day discussion (claims, not facts; a note starting "Record:" or "Rules:" is an exact check by the game master; a plan said in the day binds no one: a player may choose a different target at night) --
+player_5: claimed trailseer (day 2).
+  Night 1: followed player_4; says they visited player_8 (a visit alone does not establish what they did there).
+  Night 2: followed player_6; says they visited no one.
+player_4: claimed no role.
+  Night 1: says they did not act.
+player_6: claimed no role.
+  Night 1: says they did not act.
+  Night 2: says they did not act.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+[Day 2] player_5, player_6, player_9 (revealed chanteuse, voted out day 3) → player_4 (revealed serial killer, voted out day 2): player_5 said the night 1 follow shows player_4 visited player_8, a kill, making them the top serial killer suspect. player_6 and player_9 said one of them is lying and favoured a vote. Defense: player_4 said they visited nobody on night 1, called player_5's trail one unverified claim, and asked for a second source before any vote. Disputed: player_1 and player_10 asked whether player_5 followed anyone else and wanted the trail and claim checked before voting.
+[Day 3] player_9 (revealed chanteuse, voted out day 3) → player_3: player_9 argued that player_3's view that the wolves going after player_5 made the claim genuine was a leap, since a healer save fits a fake trail as well. Defense: player_3 said they called the attack only a point, not proof, agreed a save fits a true or false trail alike, and would not vote on the attack alone.
+[Day 3] player_9 (revealed chanteuse, voted out day 3) → player_5: player_9 said player_5's test idea felt insincere, that a healer save is as consistent with a fake trail, and asked for player_5's night 3 follow to be tested before any vote. Defense: player_5 said night 3 has not happened yet, will follow a living player tonight and post the result tomorrow, and that the night 2 follow on player_6 stands. Disputed: player_7 said player_5's night 1 trail fits the record. player_3 said the save is consistent with a true trail and wanted a night 3 test before any vote.
+[Day 3] player_7 → player_1: player_7 said whoever pushed for a second source against player_5's trail should be looked at hard, after arguing player_5's night 1 trail fits the facts. Defense: player_1 said a fair test is a new follow on a living player, that they are not voting on the night 1 trail alone, and that they are not claiming anything.
+[Day 3] player_7 → player_10: player_7 said whoever pushed for a second source against player_5's trail should be looked at hard, after arguing player_5's night 1 trail fits the facts. Defense: player_10 said they want player_6's held fire and player_5's night 2 follow compared with the announced healer save, and will wait for the next trail before deciding.
+
+Today's discussion so far, as the speaker saw it:
+player_5: Night 3 I followed player_3, and they visited no one, so player_3 did not go to anyone that night. I'm still open to a fresh follow on a living player tonight if the town wants another check.
+player_7: I am the healer. I protected player_5 on night 2, when the wolves attacked them and it was stopped, and again on night 3 with no attack, so the save is a fact and not just a claim.
+
+THE LINE:
+player_5's night 1 trail says player_4 went to player_8, and player_8 was stabbed by the serial killer that night. That fits, and player_4 denied it. Player_6 pushed the second-source demand against that trail on day 2 and still has no role claim. If we vote today, I'd put it on player_6 until they say what they did on nights 1 and 2.
+
+### s110
+Speaker: player_2, during the opening round (each player speaks once, before seeing the others).
+
+Earlier days (summary, most recent part):
+-- The game master's record (exact; it outranks anything a player or a summary says) --
+[Day 1] There is no vote on day 1, so no one voted and no one is eliminated.
+[Day 1] Night of day 1: player_1 was killed by the wolves last night. Their role is hidden by an illusionist. player_10 was stabbed by the serial killer last night. They were a chanteuse.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+None.
+
+Today's discussion so far, as the speaker saw it:
+No messages yet.
+
+THE LINE:
+Nothing from me on last night beyond the announcements. I'd like the Sentinel, Trailseer and Investigator to say whether they got anything useful, since our only real information so far is that player_10 was the Chanteuse.
+
+### s114
+Speaker: player_9, during the day's discussion.
+
+Earlier days (summary, most recent part):
+-- The game master's record (exact; it outranks anything a player or a summary says) --
+[Day 1] There is no vote on day 1, so no one voted and no one is eliminated.
+[Day 1] Night of day 1: player_6 was killed by the wolves last night. They were a trailseer.
+[Day 2] Here's the vote result for day 2:
+  player_1 voted to abstain
+  player_2 voted to abstain
+  player_3 voted to abstain
+  player_4 voted to abstain
+  player_5 voted to abstain
+  player_7 voted to abstain
+  player_8 voted to abstain
+  player_9 voted to eliminate player_4
+  player_10 voted to eliminate player_1
+The town chose to abstain. No one is eliminated today.
+[Day 2] Night of day 2: player_3 was killed by the wolves last night. They were a sentinel. The record of player_3, the sentinel: night 1, watched player_10; saw no one.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+None.
+
+Today's discussion so far, as the speaker saw it:
+player_2: Two info roles down already, so the wolves are clearly hunting checks. Player_10 drew the sentinel's watch on night 1 and saw no one, which is a useful bit for anyone who claims to be a Trailseer-type. Player_9 and player_10 each pushed a single lynch on day 2, so I'd like them to say why they picked those targets before we vote.
+player_9: I went after player_4 on day 2 because they had said almost nothing on day 1 and I wanted them to show their hand. It was a thin read, not a strong one. I'd rather hear what player_4 has to say before we vote again.
+player_10: Fair enough, player_2. The sentinel's watch on me showed no visitors on night 1, which only tells us nobody came to me that night, not what I did. I'm not going to claim a role on a thin read. Who do you think is the strongest lead for a wolf so far, and why?
+player_7: Both day 2 pushes were thin. I'd like player_9 and player_10 to say what they're looking at beyond gut feel. My vote right now is on player_9 for pushing a lynch with no real basis, but I'd like to hear player_4's answer before locking that in.
+
+THE LINE:
+As I said earlier, player_4 had barely spoken on day 1, and that's all I had. It was thin and I won't pretend otherwise. I'll hear player_4 out before we vote again. player_7, does your vote on me come with anything beyond the lynch itself?
+
+### s118
+Speaker: player_1, during the opening round (each player speaks once, before seeing the others).
+
+Earlier days (summary, most recent part):
+ain
+It's a tie between ['player_10', 'player_4', 'player_1', 'abstain']. No one is voted out this day.
+[Day 3] Night of day 3: player_2 was killed by the wolves last night. Their role is hidden by an illusionist. player_4 was struck down by a sigil last night. They were a chanteuse.
+
+-- Claims made in the day discussion (claims, not facts; a note starting "Record:" or "Rules:" is an exact check by the game master; a plan said in the day binds no one: a player may choose a different target at night) --
+player_1: claimed trailseer (day 2).
+  Night 1: followed player_8; says they visited no one.
+  Night 2: says they tried to follow player_7 and were roleblocked.
+player_2: claimed investigator (day 3).
+  Night 1: checked player_7, says they read Not suspicious.
+  Night 2: checked player_1, says they read Not suspicious.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+[Day 3] player_4 (revealed chanteuse, killed night 3), player_5, player_10 → player_1: player_4 argued player_1's trailseer claim rested on one night 1 follow and an unverifiable night 2 block. player_5 and player_10 said they voted on the same thin case. Defense: player_1 said a block means someone with a block visited them and the Chanteuse is alive, but could not say who. player_1 asked the day 2 voters to explain their votes. Disputed: player_2 said their checks on player_1 read Not suspicious and they would not vote player_1. player_7 said the Necromancer's attack and healer save fit a power role. player_6 said the block story explains the missing follow.
+[Day 3] player_6, player_7, player_1 → player_4 (revealed chanteuse, killed night 3): player_6 said player_4 voted player_1 on day 2 without a reason. player_7 wanted player_4 to explain and asked for a concrete check on player_4's night 2. player_1 said three day 2 voters gave no reasons. Defense: player_4 said they voted player_1 because the trailseer claim rested on one follow and an uncheckable block. player_4 said they are not claiming a power role and asked what evidence would change minds. Disputed: player_5 and player_10 gave the same reason for their day 2 votes as player_4.
+[Day 3] player_6, player_8, player_1 → player_5: player_6 said player_5 voted player_1 on day 2 without a reason. player_8 said player_5 voted without a reason. player_1 said three day 2 voters gave no reasons. Defense: player_5 said they voted player_1 for the untestable night 1 follow and night 2 block. player_5 said that case is thin and they want a real read before a vote.
+[Day 3] player_8, player_7, player_1 → player_10: player_8 said player_10 voted player_1 on day 2 without a reason and asked what they saw. player_7 wanted to hear from player_10. player_1 said three day 2 voters gave no reasons. Defense: player_10 said they voted player_1 with no strong reason, the same as player_4's. player_10 corrected an earlier claim that they abstained and said they are open to player_1 being town.
+
+Today's discussion so far, as the speaker saw it:
+No messages yet.
+
+THE LINE:
+Night 3 I followed player_10, and they went to player_2, who was killed that night. player_10, why did you visit player_2?
+
+### s122
+Speaker: player_5, during the day's discussion.
+
+Earlier days (summary, most recent part):
+- The game master's record (exact; it outranks anything a player or a summary says) --
+[Day 1] There is no vote on day 1, so no one voted and no one is eliminated.
+[Day 1] Night of day 1: player_2 was killed by the wolves last night. They were a sigilist. player_8 was stabbed by the serial killer last night. They were a investigator.
+[Day 2] Here's the vote result for day 2:
+  player_1 voted to eliminate player_4
+  player_3 voted to eliminate player_4
+  player_4 voted to eliminate player_5
+  player_5 voted to eliminate player_4
+  player_6 voted to eliminate player_4
+  player_7 voted to eliminate player_4
+  player_9 voted to eliminate player_4
+  player_10 voted to eliminate player_4
+Player player_4 has been voted out and was a serial killer.
+[Day 2] Night of day 2: player_5 was attacked by the wolves but was saved by the healer!
+[Day 3] Here's the vote result for day 3:
+  player_1 voted to eliminate player_7
+  player_3 voted to abstain
+  player_5 voted to eliminate player_9
+  player_6 voted to eliminate player_9
+  player_7 voted to eliminate player_6
+  player_9 voted to eliminate player_5
+  player_10 voted to eliminate player_5
+It's a tie between ['player_9', 'player_5']. No one is voted out this day.
+[Day 3] Night of day 3: player_6 was killed by the wolves last night. Their role is hidden by an illusionist.
+
+-- Claims made in the day discussion (claims, not facts; a note starting "Record:" or "Rules:" is an exact check by the game master; a plan said in the day binds no one: a player may choose a different target at night) --
+player_5: claimed trailseer (day 2).
+  Night 1: followed player_4; says they visited player_8 (a visit alone does not establish what they did there).
+  Night 2: says they tried to follow player_9 and were roleblocked.
+  Night 3: on day 3 said they planned to follow player_9.
+player_4: claimed no role.
+  Night 1: went to player_9.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+[Day 2] player_1, player_5, player_7 → player_4 (revealed serial killer, voted out day 2): player_5 argued a night 1 follow showed player_4 went to player_8, the stabbed player; player_1 said that contradicts player_4's player_9 visit; player_7 would vote player_4. Defense: player_4 said they visited player_9 on night 1 and nobody came to them, denied going to player_8, and refused to confirm a visit they did not make. Disputed: player_6 asked whether player_9 said who visited them and whether the follow shows other destinations; player_10 said they would not vote until one claim was checkable.
+[Day 2] player_4 (revealed serial killer, voted out day 2) → player_5: player_4 argued player_5 may not be the Trailseer, or may be a wolf who targeted player_4 with a follow claim, since player_4 says their visit was to player_9. Defense: player_5 repeated that the night 1 follow showed player_4 visited only player_8, and suggested player_4 could be a wolf-side Chanteuse whose block shows as no visit.
+
+Today's discussion so far, as the speaker saw it:
+player_5: Night 3 I was roleblocked again trying to follow player_9, so that's two blocks on the same target. Someone wanted player_9 kept out of my follow, so watch who benefits from that.
+player_7: Night 3 nobody attacked player_5, and the wolves went for player_6 instead, which fits player_5 being a real trailseer the pack doesn't want to hit. Whoever blocked player_5 twice is a wolf, and the blocker is likely someone who doesn't want player_9 followed. I'd vote player_9 for now unless someone can show why the blocks don't point there.
+player_9: player_7, a roleblock only tells us someone was blocked, not who did it. Blocks on player_5 point at whoever is blocking, and I'm not going to explain my night. Voting me on that is a leap. If you want a real read, ask player_5 for a concrete follow result and see if the numbers line up with the blocks.
+
+THE LINE:
+Plainly: night 1 I followed player_4 and they went to player_8. Nights 2 and 3 my follow on player_9 was roleblocked, so a wolf Chanteuse is hitting me. player_9, you say a block only shows someone blocked, but you are the one who wanted player_9 kept out of the follow. Vote player_9 for now unless you give a real reason.
+
+### s126
+Speaker: player_6, during the opening round (each player speaks once, before seeing the others).
+
+Earlier days (summary, most recent part):
+ain
+It's a tie between ['player_10', 'player_4', 'player_1', 'abstain']. No one is voted out this day.
+[Day 3] Night of day 3: player_2 was killed by the wolves last night. Their role is hidden by an illusionist. player_4 was struck down by a sigil last night. They were a chanteuse.
+
+-- Claims made in the day discussion (claims, not facts; a note starting "Record:" or "Rules:" is an exact check by the game master; a plan said in the day binds no one: a player may choose a different target at night) --
+player_1: claimed trailseer (day 2).
+  Night 1: followed player_8; says they visited no one.
+  Night 2: says they tried to follow player_7 and were roleblocked.
+player_2: claimed investigator (day 3).
+  Night 1: checked player_7, says they read Not suspicious.
+  Night 2: checked player_1, says they read Not suspicious.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+[Day 3] player_4 (revealed chanteuse, killed night 3), player_5, player_10 → player_1: player_4 argued player_1's trailseer claim rested on one night 1 follow and an unverifiable night 2 block. player_5 and player_10 said they voted on the same thin case. Defense: player_1 said a block means someone with a block visited them and the Chanteuse is alive, but could not say who. player_1 asked the day 2 voters to explain their votes. Disputed: player_2 said their checks on player_1 read Not suspicious and they would not vote player_1. player_7 said the Necromancer's attack and healer save fit a power role. player_6 said the block story explains the missing follow.
+[Day 3] player_6, player_7, player_1 → player_4 (revealed chanteuse, killed night 3): player_6 said player_4 voted player_1 on day 2 without a reason. player_7 wanted player_4 to explain and asked for a concrete check on player_4's night 2. player_1 said three day 2 voters gave no reasons. Defense: player_4 said they voted player_1 because the trailseer claim rested on one follow and an uncheckable block. player_4 said they are not claiming a power role and asked what evidence would change minds. Disputed: player_5 and player_10 gave the same reason for their day 2 votes as player_4.
+[Day 3] player_6, player_8, player_1 → player_5: player_6 said player_5 voted player_1 on day 2 without a reason. player_8 said player_5 voted without a reason. player_1 said three day 2 voters gave no reasons. Defense: player_5 said they voted player_1 for the untestable night 1 follow and night 2 block. player_5 said that case is thin and they want a real read before a vote.
+[Day 3] player_8, player_7, player_1 → player_10: player_8 said player_10 voted player_1 on day 2 without a reason and asked what they saw. player_7 wanted to hear from player_10. player_1 said three day 2 voters gave no reasons. Defense: player_10 said they voted player_1 with no strong reason, the same as player_4's. player_10 corrected an earlier claim that they abstained and said they are open to player_1 being town.
+
+Today's discussion so far, as the speaker saw it:
+No messages yet.
+
+THE LINE:
+I'm the sigilist. My sigil on player_4 last night struck them down, and the announcement confirms they were a chanteuse, so one wolf is gone. I still have one sigil and will only use it on a player who looks like they're attacking.
+
+### s130
+Speaker: player_10, during the opening round (each player speaks once, before seeing the others).
+
+Earlier days (summary, most recent part):
+e does not establish what they did there).
+  Night 2: says they tried to follow player_9 and were roleblocked.
+  Night 3: says they tried to follow player_9 and were roleblocked (planned on day 3).
+  Night 4: followed player_7; says they visited player_5 (a visit alone does not establish what they did there).
+player_4: claimed no role.
+  Night 1: went to player_9.
+player_7: claimed healer (day 5).
+  Night 1: protected player_10, says there was no attack.
+  Night 2: protected player_5, says they saved them from an attack. Record: player_5 was attacked and saved by the healer that night.
+  Night 3: protected player_5, says there was no attack.
+  Night 4: protected player_5, says they saved them from an attack. Record: player_5 was attacked and saved by the healer that night.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+[Day 2] player_1, player_5, player_7 → player_4 (revealed serial killer, voted out day 2): player_5 argued a night 1 follow showed player_4 went to player_8, the stabbed player; player_1 said that contradicts player_4's player_9 visit; player_7 would vote player_4. Defense: player_4 said they visited player_9 on night 1 and nobody came to them, denied going to player_8, and refused to confirm a visit they did not make. Disputed: player_6 asked whether player_9 said who visited them and whether the follow shows other destinations; player_10 said they would not vote until one claim was checkable.
+[Day 2] player_4 (revealed serial killer, voted out day 2) → player_5: player_4 argued player_5 may not be the Trailseer, or may be a wolf who targeted player_4 with a follow claim, since player_4 says their visit was to player_9. Defense: player_5 repeated that the night 1 follow showed player_4 visited only player_8, and suggested player_4 could be a wolf-side Chanteuse whose block shows as no visit.
+[Day 4] player_5, player_7 → player_9 (revealed chanteuse, voted out day 4): player_7 argued the blocker is a wolf wanting player_9's follow stopped; player_5 argued player_9 wanted player_9 kept out of the follow and benefits from the blocks. Defense: player_9 said a roleblock shows only that someone was blocked, not who. Declined to explain their night, called the vote a leap, and asked for concrete follow results. Disputed: player_10 said the block argument points at player_9 only if the blocker is a wolf wanting the follow stopped, and asked player_5 for a concrete test.
+[Day 5] player_1 → player_7: player_1 argued that player_5's night 4 follow showed player_7 visiting a saved target, so player_7 is either the healer or the wolf. Low confidence; wants player_7 heard first. Defense: player_7 said they are the healer, protected player_5 on nights 2 to 4, and that the night 4 visit was their protection, not a wolf's. Disputed: player_5 said the follow only shows a visit, which fits a save but not a healer, and asked for night-by-night protection records. player_5 is not voting yet.
+
+Today's discussion so far, as the speaker saw it:
+No messages yet.
+
+THE LINE:
+Opening, my turn: I'm not claiming anything yet. player_7 died last night and was hidden as a healer, so the healer claim is now unverifiable. I'd like player_5's follow results checked against player_7's protections, since they say they protected player_5 on nights 2 to 4.
+
+### s134
+Speaker: player_2, during the day's discussion.
+
+Earlier days (summary, most recent part):
+-- The game master's record (exact; it outranks anything a player or a summary says) --
+[Day 1] There is no vote on day 1, so no one voted and no one is eliminated.
+[Day 1] Night of day 1: player_7 was attacked by the serial killer but was saved by the healer!
+[Day 2] Here's the vote result for day 2:
+  player_1 voted to abstain
+  player_2 voted to abstain
+  player_3 voted to abstain
+  player_4 voted to abstain
+  player_5 voted to eliminate player_2
+  player_6 voted to abstain
+  player_7 voted to abstain
+  player_8 voted to eliminate player_2
+  player_9 voted to abstain
+  player_10 voted to eliminate player_5
+The town chose to abstain. No one is eliminated today.
+[Day 2] Night of day 2: player_1 was killed by the wolves last night. Their role is hidden by an illusionist. player_5 was stabbed by the serial killer last night. They were a illusionist.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+None.
+
+Today's discussion so far, as the speaker saw it:
+player_4: I'm the Sentinel. On night 2 I watched player_2 and saw player_10 come to them, so keep player_10 under the microscope.
+player_10: I'm the Trailseer. Last night I followed player_2, and they visited player_5. player_2, what did you go to player_5 for?
+player_2: Yes, I went to player_5 last night. I'm the Investigator and I checked them, and it came back Suspicious. That fits player_10's account of where I went. player_4, you saw player_10 come to me, so one of you is lying or the Trailseer is genuinely following. Who else is checking the Trailseer claim?
+player_8: player_2 and player_4 both say they saw the same visit to player_10, so I'd like each of you to say whether player_10's follow claim could be checked. player_10, if you followed player_2, did you learn only where player_2 went, or anything about who came to player_2? Those answers would separate the two stories.
+player_10: player_8, a follow only shows where the target went, never who came to them. So I know player_2 went to player_5 and nothing about who visited player_2. That's why player_4 seeing me come to player_2 fits: following is a visit. My night 1 follow on player_1 showed no visits.
+
+THE LINE:
+player_8, I'm the Investigator. I checked player_5 on night 2 and it came back Suspicious. So yes, I went to player_5, which matches player_10's follow. I can't see who came to me, so I can't back up player_4's watch. I'd like to see player_4 and player_10 push their claims further.
+
+### s138
+Speaker: player_7, during the opening round (each player speaks once, before seeing the others).
+
+Earlier days (summary, most recent part):
+-- The game master's record (exact; it outranks anything a player or a summary says) --
+[Day 1] There is no vote on day 1, so no one voted and no one is eliminated.
+[Day 1] Night of day 1: player_2 was killed by the wolves last night. Their role is hidden by an illusionist. player_8 was stabbed by the serial killer last night. They were a investigator.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+None.
+
+Today's discussion so far, as the speaker saw it:
+No messages yet.
+
+THE LINE:
+I am the healer, and last night I protected player_10. No attack on them was announced, so the town can weigh that when reading the serial killer.
+
+### s142
+Speaker: player_5, during the day's discussion.
+
+Earlier days (summary, most recent part):
+stain
+  player_2 voted to abstain
+  player_3 voted to abstain
+  player_4 voted to abstain
+  player_5 voted to abstain
+  player_7 voted to abstain
+  player_8 voted to abstain
+  player_9 voted to eliminate player_4
+  player_10 voted to eliminate player_1
+The town chose to abstain. No one is eliminated today.
+[Day 2] Night of day 2: player_3 was killed by the wolves last night. They were a sentinel. The record of player_3, the sentinel: night 1, watched player_10; saw no one.
+[Day 3] Here's the vote result for day 3:
+  player_1 voted to abstain
+  player_2 voted to eliminate player_9
+  player_4 voted to eliminate player_9
+  player_5 voted to abstain
+  player_7 voted to eliminate player_4
+  player_8 voted to eliminate player_4
+  player_9 voted to eliminate player_4
+  player_10 voted to eliminate player_9
+It's a tie between ['player_9', 'player_4']. No one is voted out this day.
+[Day 3] Night of day 3: player_10 was killed by the wolves last night. Their role is hidden by an illusionist. The Speculator has picked Town.
+
+-- Claims made in the day discussion (claims, not facts; a note starting "Record:" or "Rules:" is an exact check by the game master; a plan said in the day binds no one: a player may choose a different target at night) --
+player_8: claimed no role.
+  Night 2: says they did not act.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+[Day 3] player_7, player_2 → player_9: player_7 argued player_9's day-2 lynch push on player_4 had no real basis and said they vote for player_9. player_2 asked player_9 to explain that push before a vote. Defense: player_9 said player_4 had barely spoken on day 1, called it a thin read, and said they would hear player_4 out before voting again. Disputed: player_10 asked player_7 whether the vote on player_9 rests on anything beyond the same thin day-2 push.
+[Day 3] player_2 → player_10: player_2 argued player_10 pushed a single day-2 lynch and asked them to explain why before a vote. Defense: player_10 said they did not push anyone on day 2 and abstained, and that the sentinel's watch on them showed no visitors on night 1. (Game record shows player_10 voted to eliminate player_1 on day 2.)
+[Day 3] player_10, player_9 → player_7: player_10 asked player_7 whether the vote on player_9 rests on more than the day-2 lynch. player_9 asked the same question about player_7's vote.
+[Day 3] player_1 → player_8: player_1 asked player_8 to say whether they are the vigilante and to name the night they would shoot and why they are holding fire. Defense: player_8 said they held fire on nights 1 and 2, are not claiming yet, and need a real contradiction between two claims before shooting.
+[Day 3] player_1 → player_4: player_1 argued player_4 has been targeted twice without saying anything and should answer directly. Defense: player_4 said they will not claim a role on a thin read, would not name a night they would shoot, and want someone to make a concrete claim first.
+
+Today's discussion so far, as the speaker saw it:
+player_7: I'm the investigator. On night 3 I checked player_9 and got Suspicious, so player_9 is a wolf; please vote them out today.
+player_9: I'm not a wolf, so that check on me came back wrong somewhere. Two checks is a lot to sit on for three nights, so why wait until day 4 to call it out? If you're the investigator, say who you checked on nights 1 and 2 and what they came back as.
+player_7: player_9, I am the investigator. Night 1 I checked player_2 and got Not suspicious. Night 2 I was roleblocked, so no check. Night 3 I checked you and got Suspicious. Vote player_9 today.
+player_9: player_7, I'm the healer, and I'd rather say it now than sit on it. I protected player_8 on night 2 and player_2 on night 3, and nothing was attacked either time. If you checked me Suspicious, one of us is lying, and the healer is Town. Why would an investigator check someone on day 4 and not earlier?
+player_7: player_9, I checked you on night 3 and you read Suspicious. I didn't wait to call it out; night 2 I was blocked, and I'd rather have a Suspicious read than a guess. Your healer claim doesn't hold: a save on player_2 on night 3 couldn't have stopped the kill on player_10, and the wolves' only roles that fit your claim are the Chanteuse or the Illusionist. Vote player_9 today.
+player_2: I'm player_2 and I wasn't attacked on night 3, so I can't confirm or rule out player_9's save. Only one of the two claims can be true. player_7's check is the only hard result on the table, and a Suspicious read on a real healer would be strange. I'd vote player_9 today unless someone shows a reason not to.
+player_9: player_2, player_7's check is one result, and I'm the healer: I protected player_8 on night 2 and player_2 on night 3, and nothing was attacked either time. A save on player_2 doesn't stop the kill on player_10, so that's not a contradiction. If player_7 is the investigator, a Suspicious read on a real healer is the mistake to look at, so I'd like player_7 to say why they checked me on night 3 and not earlier.
+
+THE LINE:
+Good day to you all. player_9's healer claim cannot stand, since player_10 has now been shown to be the healer, so I would weigh that claim very low. I have no role to offer yet and would rather see who makes a clear, checkable claim first.
+
+### s146
+Speaker: player_1, during the day's discussion.
+
+Earlier days (summary, most recent part):
+-- The game master's record (exact; it outranks anything a player or a summary says) --
+[Day 1] There is no vote on day 1, so no one voted and no one is eliminated.
+[Day 1] Night of day 1: player_4 was stabbed by the serial killer last night. They were a chanteuse. player_10 was killed by the wolves last night. Their role is hidden by an illusionist.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+None.
+
+Today's discussion so far, as the speaker saw it:
+player_3: I'm the healer. Night 1 I meant to protect player_7, but I was roleblocked, so that protection didn't happen. That means the chanteuse, player_4, came to me before they died.
+player_7: player_3, if you're the healer, who are you protecting tonight, and does that night's result come back to you? I'm not claiming anything yet, but I'd like to see who else steps up before I use my last check. Everyone else, tell us who you'd vote for and why.
+player_3: Yes, I'm the healer. Night 1 my protection on player_7 was blocked, so that's the only thing I've done so far. Tonight I'll protect someone, and a save shows up in the morning report, so you'll see if it worked. player_7, if you're the investigator, I'd hold that last check for a day we actually have a vote to make.
+
+THE LINE:
+player_3, you say your night 1 protection on player_7 was blocked. Tonight, name who you protect and I'll be watching for whether a save is announced. If you're the healer, a real save will confirm it fast. Nobody has a vote yet, so I'm not naming a target today.
+
+### s150
+Speaker: player_8, during the day's discussion.
+
+Earlier days (summary, most recent part):
+-- The game master's record (exact; it outranks anything a player or a summary says) --
+[Day 1] There is no vote on day 1, so no one voted and no one is eliminated.
+[Day 1] Night of day 1: player_4 was stabbed by the serial killer last night. They were a chanteuse. player_10 was killed by the wolves last night. Their role is hidden by an illusionist.
+[Day 2] Here's the vote result for day 2:
+  player_1 voted to abstain
+  player_2 voted to abstain
+  player_3 voted to abstain
+  player_5 voted to abstain
+  player_6 voted to abstain
+  player_7 voted to abstain
+  player_8 voted to abstain
+  player_9 voted to abstain
+The town chose to abstain. No one is eliminated today.
+[Day 2] Night of day 2: player_3 was killed by the wolves last night. Their role is hidden by an illusionist. player_5 was stabbed by the serial killer last night. They were a speculator.
+[Day 3] Here's the vote result for day 3:
+  player_1 voted to abstain
+  player_2 voted to abstain
+  player_6 voted to abstain
+  player_7 voted to abstain
+  player_8 voted to abstain
+  player_9 voted to abstain
+The town chose to abstain. No one is eliminated today.
+[Day 3] Night of day 3: player_1 was stabbed by the serial killer last night. They were a sentinel. The record of player_1, the sentinel: night 1, watched player_6; saw no one. player_7 was killed by the wolves last night. They were a investigator. The record of player_7, the investigator: night 1, checked player_5: Not suspicious; night 2, checked player_3: Not suspicious.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+None.
+
+Today's discussion so far, as the speaker saw it:
+player_2: I'm the trailseer. Last night I followed player_1 and they went to player_8. My earlier follows on player_3 and player_6 showed no visits.
+player_6: I am the Sigilist, player_6, holding two sigils that I have not spent yet. I will use them only once someone's visible attack or claim names an attacker.
+player_8: player_2, you say player_1 went to me on night 2. I didn't have a night result to share, and I'm not claiming a role. Let's see whether your follows and player_6's sigil story line up before we lean on either of you.
+player_9: player_8, you were named as the visit from player_1, so you need to answer directly: did you have a night action on night 2, and did anyone come to you? Silence doesn't help the town, and a plain answer lets us test player_2's follow against your claim.
+player_8: player_9, I'm not claiming a role, so I have no night result to give you. Player_2, player_1's will shows no action on night 2, so a follow that saw them visiting me doesn't line up. Which night did your follow actually happen, and what did you learn about player_6 on night 1?
+player_2: player_8, my follows were night 1 on player_3, night 2 on player_6, and night 3 on player_1. Night 2 was player_6, who visited no one, so that's what I learned about player_6. Last night player_1 went to you. Did they come to you as a watch, or some other visit?
+player_8: player_2, as I said, I'm not claiming and nothing I have from night 2 is for sharing. But player_1's will shows no night 2 action, so a follow that saw them going to me doesn't fit. Did you see that from a follow on player_1, or is it from somewhere else?
+player_2: player_8, my follow on player_1 was last night, night 3, not night 2. Player_1 went to you that night. Nothing in player_1's will contradicts that, since it only covers what they did on nights 1 and 2. Your deflecting isn't helping; if you have no visit, say so plainly.
+
+THE LINE:
+player_2, you first said player_1 went to me on night 2, then moved it to night 3. Player_1 wasn't at my door on either night, so the follow you're citing doesn't match me. Are you sure your follow saw me, or did you read it off a different name?
+
+### s154
+Speaker: player_5, during the opening round (each player speaks once, before seeing the others).
+
+Earlier days (summary, most recent part):
+er_7 voted to eliminate player_6
+  player_9 voted to eliminate player_5
+  player_10 voted to eliminate player_5
+It's a tie between ['player_9', 'player_5']. No one is voted out this day.
+[Day 3] Night of day 3: player_6 was killed by the wolves last night. Their role is hidden by an illusionist.
+[Day 4] Here's the vote result for day 4:
+  player_1 voted to eliminate player_9
+  player_3 voted to eliminate player_9
+  player_5 voted to eliminate player_9
+  player_7 voted to eliminate player_9
+  player_9 voted to eliminate player_7
+  player_10 voted to eliminate player_7
+Player player_9 has been voted out and was a chanteuse.
+[Day 4] Night of day 4: player_5 was attacked by the wolves but was saved by the healer!
+
+-- Claims made in the day discussion (claims, not facts; a note starting "Record:" or "Rules:" is an exact check by the game master; a plan said in the day binds no one: a player may choose a different target at night) --
+player_5: claimed trailseer (day 2).
+  Night 1: followed player_4; says they visited player_8 (a visit alone does not establish what they did there).
+  Night 2: says they tried to follow player_9 and were roleblocked.
+  Night 3: says they tried to follow player_9 and were roleblocked (planned on day 3).
+player_4: claimed no role.
+  Night 1: went to player_9.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+[Day 2] player_1, player_5, player_7 → player_4 (revealed serial killer, voted out day 2): player_5 argued a night 1 follow showed player_4 went to player_8, the stabbed player; player_1 said that contradicts player_4's player_9 visit; player_7 would vote player_4. Defense: player_4 said they visited player_9 on night 1 and nobody came to them, denied going to player_8, and refused to confirm a visit they did not make. Disputed: player_6 asked whether player_9 said who visited them and whether the follow shows other destinations; player_10 said they would not vote until one claim was checkable.
+[Day 2] player_4 (revealed serial killer, voted out day 2) → player_5: player_4 argued player_5 may not be the Trailseer, or may be a wolf who targeted player_4 with a follow claim, since player_4 says their visit was to player_9. Defense: player_5 repeated that the night 1 follow showed player_4 visited only player_8, and suggested player_4 could be a wolf-side Chanteuse whose block shows as no visit.
+[Day 4] player_5, player_7 → player_9 (revealed chanteuse, voted out day 4): player_7 argued the blocker is a wolf wanting player_9's follow stopped; player_5 argued player_9 wanted player_9 kept out of the follow and benefits from the blocks. Defense: player_9 said a roleblock shows only that someone was blocked, not who. Declined to explain their night, called the vote a leap, and asked for concrete follow results. Disputed: player_10 said the block argument points at player_9 only if the blocker is a wolf wanting the follow stopped, and asked player_5 for a concrete test.
+
+Today's discussion so far, as the speaker saw it:
+No messages yet.
+
+THE LINE:
+Night 4 I followed player_7, and it showed they went to me. I was attacked that night and saved, so whoever protected me is the one to look at. I'm the trailseer and I'll keep following.

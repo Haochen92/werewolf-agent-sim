@@ -1,0 +1,32 @@
+{
+ "no_note": {
+  "D": {
+   "current": "21/42",
+   "no_note": "23/42"
+  },
+  "valuable": {
+   "current": "24/46",
+   "no_note": "27/46"
+  }
+ },
+ "no_pass_sentence": {
+  "D": {
+   "current": "7/29",
+   "no_pass_sentence": "18/29"
+  },
+  "valuable": {
+   "current": "13/35",
+   "no_pass_sentence": "23/35"
+  }
+ },
+ "no_blend_in": {
+  "D": {
+   "current": "10/23",
+   "no_blend_in": "11/23"
+  },
+  "valuable": {
+   "current": "12/25",
+   "no_blend_in": "10/25"
+  }
+ }
+}

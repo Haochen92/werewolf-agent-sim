@@ -1,0 +1,39 @@
+{"item":"s003","kind":"C","worth_hearing":"yes","note":"asks Sentinel/Investigator/Trailseer to speak early to cross-test"}
+{"item":"s007","kind":"D","worth_hearing":"no","note":"refuses claim, waits for claims; filler"}
+{"item":"s011","kind":"A","worth_hearing":"yes","note":"new night 3 roleblocked follow, Chanteuse came to them"}
+{"item":"s015","kind":"C","worth_hearing":"yes","note":"asks player_4 and player_1 if they trust player_10's Trailseer claim"}
+{"item":"s019","kind":"D","worth_hearing":"no","note":"restates known SK attack and save; generic call for claims"}
+{"item":"s023","kind":"C","worth_hearing":"yes","note":"asks players 3, 6, 8 for their night 2 actions"}
+{"item":"s027","kind":"A","worth_hearing":"yes","note":"own night 3 action: went to player_8; counter-asks player_4"}
+{"item":"s031","kind":"C","worth_hearing":"yes","note":"asks player_7 where a sigil was placed; notes watch only confirms player_8's visit"}
+{"item":"s035","kind":"D","worth_hearing":"no","note":"nothing to say; filler"}
+{"item":"s039","kind":"A","worth_hearing":"yes","note":"vigilante claim, night 5 roleblocked, necromancer inference"}
+{"item":"s043","kind":"D","worth_hearing":"no","note":"no information; filler"}
+{"item":"s047","kind":"C","worth_hearing":"yes","note":"asks player_2 what they did night 2, since only they can be checked"}
+{"item":"s051","kind":"D","worth_hearing":"no","note":"nothing to report; filler"}
+{"item":"s055","kind":"D","worth_hearing":"no","note":"let's hear claims; filler"}
+{"item":"s059","kind":"A","worth_hearing":"yes","note":"Investigator claim with two checks"}
+{"item":"s063","kind":"D","worth_hearing":"no","note":"nothing new; filler"}
+{"item":"s067","kind":"C","worth_hearing":"yes","note":"asks healer claimant for night 2 protection and saves"}
+{"item":"s071","kind":"D","worth_hearing":"no","note":"repeats own known check; re-asks player_3 for role already stated"}
+{"item":"s075","kind":"D","worth_hearing":"no","note":"re-asks player_7's question about player_8's night 1 sighting"}
+{"item":"s079","kind":"D","worth_hearing":"no","note":"repeats no-sigil answer already given"}
+{"item":"s083","kind":"D","worth_hearing":"no","note":"repeats player_5's ask to name a night a sigil would strike"}
+{"item":"s087","kind":"C","worth_hearing":"no","note":"asks player_7 about night 1 check; close to earlier 'why wait' question, muddled"}
+{"item":"s091","kind":"A","worth_hearing":"yes","note":"vigilante claim, night 4 shot on player_5, one bullet left"}
+{"item":"s095","kind":"A","worth_hearing":"yes","note":"Investigator claim with night 3 check on player_2"}
+{"item":"s099","kind":"C","worth_hearing":"no","note":"obvious test of the follow claim; player_1 already said they would follow"}
+{"item":"s103","kind":"A","worth_hearing":"yes","note":"Sentinel claim with night 2 visitor list, necromancer point"}
+{"item":"s107","kind":"A","worth_hearing":"yes","note":"new night 2 check on player_4 Not suspicious"}
+{"item":"s111","kind":"D","worth_hearing":"no","note":"repeats the push on player_2 to answer already made by player_7 and player_6"}
+{"item":"s115","kind":"A","worth_hearing":"yes","note":"sigilist claim and sigil struck player_2"}
+{"item":"s119","kind":"A","worth_hearing":"yes","note":"Sentinel claim with night 2 visitors, contradicts player_4"}
+{"item":"s123","kind":"D","worth_hearing":"no","note":"repeats player_2's ask for reasons behind the day 2 lynches"}
+{"item":"s127","kind":"B","worth_hearing":"yes","note":"wolves dead so remaining killer is SK among 1, 8, 10"}
+{"item":"s131","kind":"B","worth_hearing":"yes","note":"player_2 is the only unaccounted visitor to player_8; votes them"}
+{"item":"s135","kind":"B","worth_hearing":"yes","note":"inference: wolves down to one after illusionist death"}
+{"item":"s139","kind":"A","worth_hearing":"yes","note":"Investigator claim with two checks and one left"}
+{"item":"s143","kind":"D","worth_hearing":"no","note":"restates the follow contradiction already raised by player_1"}
+{"item":"s147","kind":"D","worth_hearing":"no","note":"nothing to report; filler"}
+{"item":"s151","kind":"C","worth_hearing":"yes","note":"asks player_2 whether they protected anyone night 4; blocker is 8 or 9"}
+{"item":"s155","kind":"D","worth_hearing":"no","note":"re-asks player_1 and player_7 what they did, already asked by player_8 and player_9"}

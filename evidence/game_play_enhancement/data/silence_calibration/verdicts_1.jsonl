@@ -1,0 +1,39 @@
+{"item": "s000", "kind": "D", "worth_hearing": "no", "note": "repeats sigil claim and ask already made"}
+{"item": "s004", "kind": "A", "worth_hearing": "yes", "note": "new Vigilante claim and no-block answer"}
+{"item": "s008", "kind": "D", "worth_hearing": "no", "note": "filler ask for claims"}
+{"item": "s012", "kind": "C", "worth_hearing": "yes", "note": "asks sentinel/trailseer for night-3 visitors"}
+{"item": "s016", "kind": "C", "worth_hearing": "yes", "note": "asks which role player_10 holds"}
+{"item": "s020", "kind": "C", "worth_hearing": "yes", "note": "asks player_3 role and night 4 action"}
+{"item": "s024", "kind": "D", "worth_hearing": "no", "note": "agrees, repeats ask for named visitor"}
+{"item": "s028", "kind": "A", "worth_hearing": "yes", "note": "night-3 roleblock result"}
+{"item": "s032", "kind": "A", "worth_hearing": "yes", "note": "night-4 sigil on player_8"}
+{"item": "s036", "kind": "A", "worth_hearing": "yes", "note": "trailseer claim and result"}
+{"item": "s040", "kind": "D", "worth_hearing": "no", "note": "nothing to claim"}
+{"item": "s044", "kind": "A", "worth_hearing": "yes", "note": "denies visit; asks record question"}
+{"item": "s048", "kind": "D", "worth_hearing": "no", "note": "repeats watch list already given"}
+{"item": "s052", "kind": "D", "worth_hearing": "no", "note": "repeats wait-for-claims"}
+{"item": "s056", "kind": "D", "worth_hearing": "no", "note": "abstain and wait"}
+{"item": "s060", "kind": "A", "worth_hearing": "yes", "note": "says player_7 visited player_3"}
+{"item": "s064", "kind": "A", "worth_hearing": "yes", "note": "Fortune Teller claim and bet result"}
+{"item": "s068", "kind": "A", "worth_hearing": "yes", "note": "trailseer claim and follow"}
+{"item": "s072", "kind": "D", "worth_hearing": "no", "note": "test already asked by player_9"}
+{"item": "s076", "kind": "D", "worth_hearing": "no", "note": "repeats denial and call for second claim"}
+{"item": "s080", "kind": "A", "worth_hearing": "yes", "note": "night-2 follow result on player_4"}
+{"item": "s084", "kind": "A", "worth_hearing": "yes", "note": "trailseer claim and follow"}
+{"item": "s088", "kind": "D", "worth_hearing": "no", "note": "no result, wait"}
+{"item": "s092", "kind": "B", "worth_hearing": "yes", "note": "Illusionist reading and test targets"}
+{"item": "s096", "kind": "A", "worth_hearing": "yes", "note": "night-3 follow result"}
+{"item": "s100", "kind": "C", "worth_hearing": "yes", "note": "asks each to name the liar"}
+{"item": "s104", "kind": "C", "worth_hearing": "yes", "note": "asks nights 1-2 check results"}
+{"item": "s108", "kind": "A", "worth_hearing": "yes", "note": "sentinel night-4 watch result"}
+{"item": "s112", "kind": "C", "worth_hearing": "yes", "note": "asks player_8 exact message"}
+{"item": "s116", "kind": "D", "worth_hearing": "no", "note": "generic ask for vote names"}
+{"item": "s120", "kind": "D", "worth_hearing": "no", "note": "filler, ask for results"}
+{"item": "s124", "kind": "D", "worth_hearing": "no", "note": "agrees, holds info"}
+{"item": "s128", "kind": "D", "worth_hearing": "no", "note": "nothing to share"}
+{"item": "s132", "kind": "D", "worth_hearing": "no", "note": "nothing to claim"}
+{"item": "s136", "kind": "D", "worth_hearing": "no", "note": "agrees with player_9"}
+{"item": "s140", "kind": "B", "worth_hearing": "no", "note": "thin pick of quiet player_8"}
+{"item": "s144", "kind": "B", "worth_hearing": "yes", "note": "wolves gone, SK among five seats"}
+{"item": "s148", "kind": "B", "worth_hearing": "no", "note": "says claim dead weight, repeats ask"}
+{"item": "s152", "kind": "D", "worth_hearing": "no", "note": "repeats night-2 test ask"}

@@ -1,0 +1,39 @@
+{"item":"s001","kind":"B","worth_hearing":"yes","note":"concedes the follow-is-a-visit point, resolves the contradiction"}
+{"item":"s005","kind":"D","worth_hearing":"no","note":"no claim; repeats the call to test player_5's trail"}
+{"item":"s009","kind":"A","worth_hearing":"yes","note":"healer claim with both nights' protections"}
+{"item":"s013","kind":"D","worth_hearing":"no","note":"repeats asks already made by players 2 and 5"}
+{"item":"s017","kind":"C","worth_hearing":"yes","note":"asks all to say if blocked or protected"}
+{"item":"s021","kind":"A","worth_hearing":"yes","note":"sigilist claim with sigils unused"}
+{"item":"s025","kind":"B","worth_hearing":"yes","note":"spots three checks claimed against two nights"}
+{"item":"s029","kind":"D","worth_hearing":"no","note":"echoes player_3's call for watch/follow results"}
+{"item":"s033","kind":"D","worth_hearing":"no","note":"filler, asks for claims"}
+{"item":"s037","kind":"C","worth_hearing":"yes","note":"wolf-claim reasoning and asks for player_9's follow plan"}
+{"item":"s041","kind":"B","worth_hearing":"yes","note":"hidden illusionist explains unseen kill on player_3"}
+{"item":"s045","kind":"A","worth_hearing":"yes","note":"roleblocked night, will re-follow player_9"}
+{"item":"s049","kind":"A","worth_hearing":"yes","note":"sentinel claim with watch result"}
+{"item":"s053","kind":"D","worth_hearing":"no","note":"repeats the ask for named results"}
+{"item":"s057","kind":"A","worth_hearing":"yes","note":"confirms own night 2 inaction matches the follow"}
+{"item":"s061","kind":"D","worth_hearing":"no","note":"re-asks what the watch showed, already asked"}
+{"item":"s065","kind":"A","worth_hearing":"yes","note":"new night 1 follow result on player_8"}
+{"item":"s069","kind":"B","worth_hearing":"yes","note":"weighs player_6's watch as strongest cross-check"}
+{"item":"s073","kind":"A","worth_hearing":"yes","note":"sigilist claim with two sigils"}
+{"item":"s077","kind":"B","worth_hearing":"no","note":"wolves-down-to-illusionist inference; otherwise generic ask for claims"}
+{"item":"s081","kind":"B","worth_hearing":"yes","note":"ties player_9's visit to the announced save"}
+{"item":"s085","kind":"B","worth_hearing":"yes","note":"links player_9's two saves to finding the healer"}
+{"item":"s089","kind":"C","worth_hearing":"yes","note":"challenges follow vs night 4 shot contradiction"}
+{"item":"s093","kind":"D","worth_hearing":"no","note":"asks for claims again; nothing new"}
+{"item":"s097","kind":"D","worth_hearing":"no","note":"filler, nothing to share"}
+{"item":"s101","kind":"D","worth_hearing":"no","note":"agrees with record, abstain without new reason"}
+{"item":"s105","kind":"D","worth_hearing":"no","note":"filler, asks for results"}
+{"item":"s109","kind":"D","worth_hearing":"no","note":"filler, let's hear claims"}
+{"item":"s113","kind":"B","worth_hearing":"yes","note":"dead healer leaves saves unbacked; targets two claimants"}
+{"item":"s117","kind":"D","worth_hearing":"no","note":"repeats player_6's ask; player_1 already answered"}
+{"item":"s121","kind":"A","worth_hearing":"yes","note":"night 4 follow result on player_5"}
+{"item":"s125","kind":"D","worth_hearing":"no","note":"filler, wait for claims"}
+{"item":"s129","kind":"D","worth_hearing":"no","note":"restates follow already claimed"}
+{"item":"s133","kind":"D","worth_hearing":"no","note":"repeats the claim and ask already made"}
+{"item":"s137","kind":"D","worth_hearing":"no","note":"filler, nothing to claim"}
+{"item":"s141","kind":"A","worth_hearing":"yes","note":"sigilist claim"}
+{"item":"s145","kind":"C","worth_hearing":"yes","note":"asks player_3 which role is missing; check already on file"}
+{"item":"s149","kind":"A","worth_hearing":"yes","note":"speculator claim"}
+{"item":"s153","kind":"D","worth_hearing":"no","note":"filler, wait for claims"}
