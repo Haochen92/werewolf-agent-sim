@@ -180,6 +180,15 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   under it (`HeroRule`), then the rest centred in Literata and the Reveal line in the site's
   sans. The footer follows the closing close (`.last`). The drawn rooms before it (granite under
   a caged wall light, the platform's tile under a pendant) are in git history.
+- "What makes it different" is drawn in the owner's material kit (2026-10-18;
+  `scripts/fit_kit.py` → `src/assets/site/kit/`, masters in `claude_artifacts/design/rasters/wood/kit/`):
+  a walnut board (a 314px tile) in a brass rim with a screw in each corner, each card on one sheet
+  of the kit's card paper and each slip on its cream (laid once, never repeated: the masters'
+  light falls off to their corners), the brass name plates a 9-slice of the kit's plate (screwed
+  ends kept, the middle stretched to the name; narrower ends as the phone's tabs, the unchosen
+  ones dimmed by opacity), the paperclip on the lesson slip, and the FOLLOWED stamp masked by the
+  worn-ink speckle. About 70 KB, nothing moves. The mock's shorter copy was not taken (owner: the
+  card text stays, the lesson and the drafted line are real).
 - The landing's words (owner, 2026-10-15): every quoted agent line is a real one, verbatim, at
   the seq `landing/features.ts` names. The memory card's slip is game 2f19d908's Sigilist
   following a lesson; the replay section's moment is game 68c26e83's Chanteuse claiming the
