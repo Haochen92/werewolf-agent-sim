@@ -1,9 +1,23 @@
-/* The case file: kraft index tabs over a kraft folder; in it an exhibit clipped in (a dark mount,
-   a touch askew, a steel paperclip) beside a ruled index card. */
+/* The case file: kraft index tabs over a kraft folder on a walnut board in a brass rim; in it an
+   exhibit clipped in (a walnut mount, a touch askew, a brass paperclip) beside a ruled index card
+   on cream. The owner's material kit (2026-10-18; scripts/fit_kit.py, mock-guide-replay): each
+   paper laid once, never repeated; nothing moves. */
 
 .folder {
   --kraft: #cfae74;
   --kraft-dk: #a9874d;
+  padding: 18px 18px 20px;
+  border-radius: 10px;
+  background:
+    radial-gradient(ellipse 85% 80% at 50% 45%, transparent 45%, rgba(12, 6, 2, 0.6) 100%),
+    url('../../../../assets/site/kit/walnut.webp') 0 0 / 314px 314px repeat,
+    #2c1a0e;
+  box-shadow:
+    inset 0 0 0 3px #b8914c,
+    inset 0 0 0 4px rgba(255, 236, 190, 0.35),
+    inset 0 0 0 6px rgba(40, 22, 6, 0.7),
+    0 0 0 1px #4a3214,
+    0 24px 50px -20px rgba(0, 0, 0, 0.9);
 }
 
 .tabs {
@@ -22,7 +36,11 @@
   font-size: 18px;
   line-height: 1;
   color: #3a2a12;
-  background: linear-gradient(180deg, #b8955a, var(--kraft-dk));
+  /* the folder's kraft, a shade darker on the tabs behind */
+  background:
+    linear-gradient(rgba(90, 60, 20, 0.22), rgba(90, 60, 20, 0.22)),
+    url('../../../../assets/site/kit/kraft.webp') 50% 0 / 600px auto no-repeat
+      var(--kraft-dk);
   box-shadow: inset 0 1px 0 rgba(255, 240, 200, 0.35);
   cursor: pointer;
   translate: 0 4px;
@@ -33,7 +51,8 @@
 }
 .tabs button[aria-selected='true'] {
   z-index: 1;
-  background: var(--kraft);
+  background: url('../../../../assets/site/kit/kraft.webp') 50% 0 / 600px auto no-repeat
+    var(--kraft);
   translate: 0 0;
   color: var(--ink);
 }
@@ -46,9 +65,7 @@
   position: relative;
   padding: 24px;
   border-radius: 4px 18px 18px 18px;
-  background:
-    radial-gradient(ellipse at 20% 0%, rgba(255, 240, 200, 0.25), transparent 60%),
-    repeating-linear-gradient(92deg, rgba(90, 60, 20, 0.05) 0 1px, transparent 1px 5px),
+  background: url('../../../../assets/site/kit/kraft.webp') 50% 50% / cover no-repeat
     var(--kraft);
   box-shadow:
     inset 0 0 0 1px rgba(80, 55, 20, 0.35),
@@ -79,7 +96,10 @@
   align-content: center;
   padding: 10px;
   border-radius: 4px;
-  background: #1a120b;
+  /* a walnut mount */
+  background:
+    linear-gradient(rgba(14, 8, 3, 0.45), rgba(14, 8, 3, 0.45)),
+    url('../../../../assets/site/kit/walnut.webp') 0 0 / 314px 314px repeat #1a120b;
   box-shadow:
     0 10px 18px -8px rgba(40, 25, 5, 0.8),
     0 0 0 1px rgba(0, 0, 0, 0.4);
@@ -88,7 +108,6 @@
 .slate {
   grid-area: slate;
   padding: 18px;
-  background: var(--ink);
 }
 .slateBox {
   max-width: 420px;
@@ -97,26 +116,15 @@
   grid-area: band;
   transform: none;
 }
+/* the kit's brass clip over the mount's top edge */
 .paperclip {
   position: absolute;
-  top: -14px;
+  top: -18px;
   left: 28px;
-  width: 18px;
-  height: 52px;
-  border: 2.5px solid #9aa3ad;
-  border-radius: 9px;
-  box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.35);
-}
-.paperclip::after {
-  content: '';
-  position: absolute;
-  left: 3px;
-  right: 3px;
-  top: 6px;
-  bottom: 10px;
-  border: 2.5px solid #b9c1ca;
-  border-top: 0;
-  border-radius: 0 0 6px 6px;
+  width: 15px;
+  height: 67px;
+  background: url('../../../../assets/site/kit/paperclip.webp') 0 0 / 100% 100% no-repeat;
+  transform: rotate(-3deg);
 }
 .live .paperclip {
   left: auto;
@@ -131,17 +139,21 @@
   border-radius: 3px;
   color: #2a1d10;
   transform: rotate(0.5deg);
+  /* blue lines under the text (the first under the list's first line), on the kit's cream; the
+     title's red double rule is its own border, which stays smooth on the tilted card */
+  --lines: 71px;
   background:
-    linear-gradient(transparent 46px, #d9534f 46px, #d9534f 48px, transparent 48px),
-    repeating-linear-gradient(transparent 0 27px, rgba(80, 120, 180, 0.35) 27px 28px) 0
-      48px / 100% calc(100% - 48px) no-repeat,
-    #fbf7ec;
+    repeating-linear-gradient(transparent 0 27px, rgba(80, 120, 180, 0.3) 27px 28px) 0
+      var(--lines) / 100% calc(100% - var(--lines)) no-repeat,
+    url('../../../../assets/site/kit/cream.webp') 50% 50% / cover no-repeat #fbf7ec;
   box-shadow:
     0 10px 18px -8px rgba(40, 25, 5, 0.7),
     0 0 0 1px rgba(0, 0, 0, 0.08);
 }
 .card h3 {
-  margin: 0 0 18px;
+  margin: 0 -22px 14px;
+  padding: 0 22px 4px;
+  border-bottom: 6px double #c0443a;
   font-family: var(--font-serif);
   font-weight: 400;
   font-size: 26px;
@@ -161,10 +173,14 @@
   color: #3a2a18;
 }
 .card li::before {
-  content: '\2014';
+  content: '';
   position: absolute;
   left: 0;
-  color: #b03a2e;
+  top: 11px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #b03a2e;
 }
 .card b {
   color: var(--ink);
@@ -184,7 +200,8 @@
   text-transform: uppercase;
   transform: rotate(-8deg);
   opacity: 0.85;
-  mix-blend-mode: multiply;
+  /* worn ink (the kit's speckle, a still mask), not a blend */
+  mask: url('../../../../assets/site/kit/ink.webp') 0 0 / 128px 128px repeat;
 }
 
 @media (max-width: 760px) {
@@ -199,6 +216,9 @@
   .body {
     padding: 16px;
   }
+  .folder {
+    padding: 12px 8px 12px;
+  }
   .file {
     grid-template-columns: minmax(0, 1fr);
     gap: 16px;
@@ -212,7 +232,12 @@
       'band';
   }
   .card {
+    --lines: 67px;
     padding: 14px 16px 16px;
+  }
+  .card h3 {
+    margin: 0 -16px 14px;
+    padding: 0 16px 4px;
   }
   .card li {
     font-size: 14.5px;

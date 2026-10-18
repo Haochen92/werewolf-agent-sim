@@ -201,6 +201,12 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   (`rail.webp`, a strip repeated across the screen, cut where its ends match: the sleepers'
   spacing drifts across the master), its wheels `--rail-top` into it, the platform's edge below
   the track instead of across the wheels. 64px of track on a desktop, 40px on a phone.
+- The guide's "The end of the line" (`CaseFile`) in the same kit (owner, 2026-10-18,
+  mock-guide-replay): the kraft folder and its index tabs (the tabs behind a shade darker) on a
+  walnut board in a brass rim, each exhibit on a walnut mount under the kit's brass clip, each
+  index card on cream with its title's red double rule drawn as a border (a gradient rule on the
+  tilted card stair-stepped), round red bullets, and the "Memory on" stamp in worn ink (a still
+  mask; it was a multiply blend). Copy unchanged.
 - The landing's words (owner, 2026-10-15): every quoted agent line is a real one, verbatim, at
   the seq `landing/features.ts` names. The memory card's slip is game 2f19d908's Sigilist
   following a lesson; the replay section's moment is game 68c26e83's Chanteuse claiming the
