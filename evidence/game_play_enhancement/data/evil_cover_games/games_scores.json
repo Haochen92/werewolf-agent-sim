@@ -1,0 +1,512 @@
+{
+ "before": {
+  "games": 8,
+  "winners": {
+   "serial_killer": 1,
+   "villagers": 7
+  },
+  "evil_seats": 24,
+  "evil_seats_that_claimed": 3,
+  "evil_lynched": 15,
+  "evil_alive_at_end": 1,
+  "lynches_evil_other": [
+   15,
+   10
+  ],
+  "per_game": {
+   "voices-05.on": {
+    "winner": "villagers",
+    "days": 6,
+    "evil": {
+     "player_1": {
+      "role": "illusionist",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "day 5"
+     },
+     "player_6": {
+      "role": "necromancer",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "day 3"
+     },
+     "player_7": {
+      "role": "chanteuse",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "day 6"
+     }
+    },
+    "lynches": {
+     "evil": 3,
+     "other": 2
+    }
+   },
+   "voices-06.on": {
+    "winner": "villagers",
+    "days": 4,
+    "evil": {
+     "player_4": {
+      "role": "chanteuse",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "day 3"
+     },
+     "player_5": {
+      "role": "necromancer",
+      "claims": [
+       "sentinel"
+      ],
+      "first_claim_day": 4,
+      "out": "day 4"
+     },
+     "player_10": {
+      "role": "illusionist",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "night 3"
+     }
+    },
+    "lynches": {
+     "evil": 2,
+     "other": 1
+    }
+   },
+   "voices-07.on": {
+    "winner": "villagers",
+    "days": 5,
+    "evil": {
+     "player_2": {
+      "role": "serial_killer",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "day 5"
+     },
+     "player_5": {
+      "role": "illusionist",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "day 3"
+     },
+     "player_8": {
+      "role": "chanteuse",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "night 5"
+     }
+    },
+    "lynches": {
+     "evil": 2,
+     "other": 1
+    }
+   },
+   "voices-08.on": {
+    "winner": "villagers",
+    "days": 5,
+    "evil": {
+     "player_4": {
+      "role": "chanteuse",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "night 1"
+     },
+     "player_8": {
+      "role": "serial_killer",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "day 5"
+     },
+     "player_9": {
+      "role": "illusionist",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "day 4"
+     }
+    },
+    "lynches": {
+     "evil": 2,
+     "other": 1
+    }
+   },
+   "voices-01.on": {
+    "winner": "serial_killer",
+    "days": 4,
+    "evil": {
+     "player_1": {
+      "role": "serial_killer",
+      "claims": [
+       "investigator"
+      ],
+      "first_claim_day": 3,
+      "out": "alive"
+     },
+     "player_3": {
+      "role": "illusionist",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "night 1"
+     },
+     "player_5": {
+      "role": "chanteuse",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "night 2"
+     }
+    },
+    "lynches": {
+     "evil": 0,
+     "other": 3
+    }
+   },
+   "voices-02.on": {
+    "winner": "villagers",
+    "days": 4,
+    "evil": {
+     "player_4": {
+      "role": "serial_killer",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "day 2"
+     },
+     "player_9": {
+      "role": "chanteuse",
+      "claims": [
+       "healer"
+      ],
+      "first_claim_day": 3,
+      "out": "night 4"
+     },
+     "player_10": {
+      "role": "illusionist",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "day 4"
+     }
+    },
+    "lynches": {
+     "evil": 2,
+     "other": 1
+    }
+   },
+   "voices-03.on": {
+    "winner": "villagers",
+    "days": 3,
+    "evil": {
+     "player_4": {
+      "role": "necromancer",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "night 3"
+     },
+     "player_5": {
+      "role": "illusionist",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "day 2"
+     },
+     "player_9": {
+      "role": "chanteuse",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "day 3"
+     }
+    },
+    "lynches": {
+     "evil": 2,
+     "other": 0
+    }
+   },
+   "voices-04.on": {
+    "winner": "villagers",
+    "days": 5,
+    "evil": {
+     "player_2": {
+      "role": "illusionist",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "day 5"
+     },
+     "player_4": {
+      "role": "serial_killer",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "day 4"
+     },
+     "player_10": {
+      "role": "chanteuse",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "night 1"
+     }
+    },
+    "lynches": {
+     "evil": 2,
+     "other": 1
+    }
+   }
+  }
+ },
+ "after": {
+  "games": 8,
+  "winners": {
+   "villagers": 5,
+   "wolves": 3
+  },
+  "evil_seats": 24,
+  "evil_seats_that_claimed": 11,
+  "evil_lynched": 10,
+  "evil_alive_at_end": 5,
+  "lynches_evil_other": [
+   10,
+   13
+  ],
+  "per_game": {
+   "voices-01.on": {
+    "winner": "villagers",
+    "days": 4,
+    "evil": {
+     "player_1": {
+      "role": "serial_killer",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "day 4"
+     },
+     "player_3": {
+      "role": "illusionist",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "night 1"
+     },
+     "player_5": {
+      "role": "chanteuse",
+      "claims": [
+       "trailseer"
+      ],
+      "first_claim_day": 3,
+      "out": "day 3"
+     }
+    },
+    "lynches": {
+     "evil": 2,
+     "other": 0
+    }
+   },
+   "voices-02.on": {
+    "winner": "wolves",
+    "days": 3,
+    "evil": {
+     "player_4": {
+      "role": "serial_killer",
+      "claims": [
+       "sigilist"
+      ],
+      "first_claim_day": 2,
+      "out": "day 2"
+     },
+     "player_9": {
+      "role": "chanteuse",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "alive"
+     },
+     "player_10": {
+      "role": "illusionist",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "alive"
+     }
+    },
+    "lynches": {
+     "evil": 1,
+     "other": 1
+    }
+   },
+   "voices-03.on": {
+    "winner": "wolves",
+    "days": 6,
+    "evil": {
+     "player_4": {
+      "role": "necromancer",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "day 5"
+     },
+     "player_5": {
+      "role": "illusionist",
+      "claims": [
+       "trailseer"
+      ],
+      "first_claim_day": 5,
+      "out": "alive"
+     },
+     "player_9": {
+      "role": "chanteuse",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "night 4"
+     }
+    },
+    "lynches": {
+     "evil": 1,
+     "other": 2
+    }
+   },
+   "voices-04.on": {
+    "winner": "villagers",
+    "days": 4,
+    "evil": {
+     "player_2": {
+      "role": "illusionist",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "night 3"
+     },
+     "player_4": {
+      "role": "serial_killer",
+      "claims": [
+       "investigator"
+      ],
+      "first_claim_day": 3,
+      "out": "day 4"
+     },
+     "player_10": {
+      "role": "chanteuse",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "night 1"
+     }
+    },
+    "lynches": {
+     "evil": 1,
+     "other": 2
+    }
+   },
+   "voices-05.on": {
+    "winner": "villagers",
+    "days": 5,
+    "evil": {
+     "player_1": {
+      "role": "illusionist",
+      "claims": [
+       "sigilist"
+      ],
+      "first_claim_day": 4,
+      "out": "day 4"
+     },
+     "player_6": {
+      "role": "necromancer",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "night 5"
+     },
+     "player_7": {
+      "role": "chanteuse",
+      "claims": [
+       "sentinel"
+      ],
+      "first_claim_day": 4,
+      "out": "night 5"
+     }
+    },
+    "lynches": {
+     "evil": 1,
+     "other": 3
+    }
+   },
+   "voices-06.on": {
+    "winner": "wolves",
+    "days": 4,
+    "evil": {
+     "player_4": {
+      "role": "chanteuse",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "alive"
+     },
+     "player_5": {
+      "role": "necromancer",
+      "claims": [
+       "investigator"
+      ],
+      "first_claim_day": 2,
+      "out": "day 3"
+     },
+     "player_10": {
+      "role": "illusionist",
+      "claims": [
+       "vigilante"
+      ],
+      "first_claim_day": 4,
+      "out": "alive"
+     }
+    },
+    "lynches": {
+     "evil": 1,
+     "other": 2
+    }
+   },
+   "voices-07.on": {
+    "winner": "villagers",
+    "days": 5,
+    "evil": {
+     "player_2": {
+      "role": "serial_killer",
+      "claims": [
+       "trailseer"
+      ],
+      "first_claim_day": 2,
+      "out": "day 2"
+     },
+     "player_5": {
+      "role": "illusionist",
+      "claims": [
+       "sigilist"
+      ],
+      "first_claim_day": 3,
+      "out": "night 3"
+     },
+     "player_8": {
+      "role": "chanteuse",
+      "claims": [
+       "healer"
+      ],
+      "first_claim_day": 4,
+      "out": "day 5"
+     }
+    },
+    "lynches": {
+     "evil": 2,
+     "other": 2
+    }
+   },
+   "voices-08.on": {
+    "winner": "villagers",
+    "days": 3,
+    "evil": {
+     "player_4": {
+      "role": "chanteuse",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "night 1"
+     },
+     "player_8": {
+      "role": "serial_killer",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "day 3"
+     },
+     "player_9": {
+      "role": "illusionist",
+      "claims": [],
+      "first_claim_day": null,
+      "out": "night 2"
+     }
+    },
+    "lynches": {
+     "evil": 1,
+     "other": 1
+    }
+   }
+  }
+ }
+}

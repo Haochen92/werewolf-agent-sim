@@ -262,5 +262,56 @@ def score(prefix: str = "", files: str = "samples.jsonl") -> None:
     print(json.dumps(report, indent=1))
 
 
+GAMES = Path("evidence/game_play_enhancement/data/evil_cover_games")
+"""Step 4: whole games. after/: R11's card, slice 13b and 14 (deals voices-01..08, voices on). before/:
+the same deals at c61fa762 (the silence build: old evil cards, no covers); deals 01-04 are the silence
+calibration games (SOURCES["silence"]), run from that same code."""
+
+
+def _game_record(path: Path) -> dict:
+    capture = json.loads(gzip.open(path, "rt").read())
+    state = capture["final_state"]
+    roles = state["roles"]
+    evil = {p: r for p, r in roles.items() if r in EVIL}
+    deaths = {d["player"]: d for d in state["dead_roster"]}
+    claims: dict = defaultdict(list)
+    for e in state["day_channel"]:
+        if e["player"] in evil and (e.get("message") or "").strip() and e.get("claim", "none") != "none":
+            claims[e["player"]].append((e["day"], e["claim"]))
+    lynched = [r["voted_player"] for r in state["day_resolutions"] if r.get("voted_player")]
+    return {
+        "winner": state["winner"], "days": state["current_day"],
+        "evil": {p: {"role": r, "claims": sorted({c for _, c in claims[p]}),
+                     "first_claim_day": min((d for d, _ in claims[p]), default=None),
+                     "out": (f"{deaths[p]['phase']} {deaths[p]['day']}" if p in deaths else "alive")} for p, r in evil.items()},
+        "lynches": {"evil": sum(roles[p] in EVIL for p in lynched), "other": sum(roles[p] not in EVIL for p in lynched)},
+    }
+
+
+def games() -> None:
+    """Per arm: winners, evil seats that claimed (and when), how evil seats left the game, and whom the
+    day votes removed."""
+    arms = {"before": sorted([*(SOURCES["silence"]).glob("*.capture.json.gz"), *(GAMES / "before").glob("*.capture.json.gz")]),
+            "after": sorted((GAMES / "after").glob("*.capture.json.gz"))}
+    report = {}
+    for arm, paths in arms.items():
+        records = {p.name.removesuffix(".capture.json.gz"): _game_record(p) for p in paths}
+        seats = [e for r in records.values() for e in r["evil"].values()]
+        report[arm] = {
+            "games": len(records),
+            "winners": dict(sorted(defaultdict(int, {w: sum(r["winner"] == w for r in records.values())
+                                                     for w in {r["winner"] for r in records.values()}}).items())),
+            "evil_seats": len(seats),
+            "evil_seats_that_claimed": sum(bool(e["claims"]) for e in seats),
+            "evil_lynched": sum(e["out"].startswith("day") for e in seats),
+            "evil_alive_at_end": sum(e["out"] == "alive" for e in seats),
+            "lynches_evil_other": [sum(r["lynches"]["evil"] for r in records.values()),
+                                   sum(r["lynches"]["other"] for r in records.values())],
+            "per_game": records,
+        }
+    (GAMES / "games_scores.json").write_text(json.dumps(report, indent=1))
+    print(json.dumps({arm: {k: v for k, v in r.items() if k != "per_game"} for arm, r in report.items()}, indent=1))
+
+
 if __name__ == "__main__":
-    {"sample": sample, "packets": packets, "score": score}[sys.argv[1]](*sys.argv[2:])
+    {"sample": sample, "packets": packets, "score": score, "games": games}[sys.argv[1]](*sys.argv[2:])
