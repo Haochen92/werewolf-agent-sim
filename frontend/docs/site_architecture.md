@@ -198,6 +198,11 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
 - The guide's tools board (`ToolsTray`) is the features board's twin in the kit (owner,
   2026-10-18): walnut in a brass rim, every tab the brass plate (the unchosen dimmed), the tool on
   card paper, its steps numbered on brass discs; it no longer composes `PlateTabs`.
+- The role cards (`RoleCard`, the guide's rows) are on the kit's card paper under its card frame
+  (`card-frame.webp`, a 9-slice: cream band, fine rule, corner flourishes), no walnut tray (owner:
+  the phone's row scrolls sideways). The replay slates (`Slate`, the landing, the archive, the
+  guide) are on the same card paper. Both pictures are shared by every card and slate on a page:
+  one fetch and one decode each, nothing drawn per card.
 - The carriage's board and track (owner, 2026-10-18): the game-ID board is the owner's walnut
   sign in its brass frame (`train-sign.webp`, a 9-slice: the frame and its four rivets kept, the
   walnut stretched to the board), and the painted carriage stands on the owner's railway
