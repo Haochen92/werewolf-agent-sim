@@ -13,7 +13,6 @@ import type { DrawerScroll } from '@/stage/drawer/use-drawer-filters';
 import type { FileChoice } from '@/stage/film/case-file';
 import type { RecordPick } from '@/stage/film/record-model';
 import type { DayRound, LedgerDay } from '@/types/contracts';
-import type { NoteEdit } from '@/stage/notebook';
 
 export type MotionSpeed = 'normal' | 'fast';
 
@@ -194,12 +193,6 @@ export interface SlotInput {
    * ("See what happened" on the "You're back" notice). Null: nowhere.
    */
   drawerSeek?: number | null;
-  /**
-   * The seat notebook's editor: whose notes are open (`useNoteEditing`), held by the container
-   * so the editor stays open while beats, scenes and recuts go by (the wing is remounted with
-   * them). Without it the wing keeps the open seat itself, for as long as it is mounted.
-   */
-  notebook?: { editing: NoteEdit | null; onEdit: (edit: NoteEdit | null) => void };
   /**
    * Live only: the finished game's replay, which the closed case file points to after the
    * game ("watch the replay →"). The replay has none: it is the replay.

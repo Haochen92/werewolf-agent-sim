@@ -21,8 +21,8 @@
  * (2026-10-01): a departed game plays its deal and the turns after it from the first beat,
  * however much the log held; a queue of beats plays at its normal holds; Reveal and File wait
  * for the stage's ending.
- * A seat's notes stay open (words, caret, the role list) while the beats and scenes go by, and
- * close when the seat dies (2026-10-01). The curtain waits for the replay to be filed: a plaque
+ * A seat's file, opened from its photo, stays the case file's pick while the beats and scenes go
+ * by, its lines kept, its guess gone once the seat dies (2026-10-18). The curtain waits for the replay to be filed: a plaque
  * until the archive answers for it (a picture), then the link in its place.
  *
  * The mocked stream ends when its body does, so the browser reads it as a dropped connection;
@@ -603,7 +603,7 @@ test('live: a queue of beats plays at its normal holds, one after another', asyn
   ]);
 });
 
-test('live: game over in the night keeps Reveal and the seats’ files shut until the stage reaches the ending', async ({
+test('live: game over in the night keeps Reveal and the agents’ files shut until the stage reaches the ending', async ({
   page,
 }) => {
   test.setTimeout(150_000); // the stream's fold (landsOn), then the night and the ending
@@ -620,12 +620,13 @@ test('live: game over in the night keeps Reveal and the seats’ files shut unti
   await landsOn(page, 'night.hub');
   const reveal = page.getByRole('button', { name: 'Reveal', exact: true });
   const file = page.getByRole('button', { name: 'File', exact: true });
-  // the File opens all game, on the Record alone: the seats' files wait for the game's end
+  // the File opens all game, on the Record; a seat's tab opens the player's own file on it
+  // (2026-10-18), and the agents' files wait for the game's end
   await file.click();
   await expect(page.locator('[data-film="record"]')).toBeVisible();
-  const seat3 = page.getByRole('tab', { name: 'Seat 3’s file (out)' });
-  await expect(seat3).toBeDisabled();
-  await expect(seat3).toHaveAttribute('title', 'Revealed after the game');
+  await page.getByRole('tab', { name: 'Seat 3’s file (out)' }).click();
+  await expect(page.locator('[data-film="player"] [data-player-file="3"]')).toBeVisible();
+  await expect(page.locator('[data-film="file"]')).toHaveCount(0);
   await file.click();
   // the log holds the game's end, the stage is still in the night: nothing unlocks
   const before: string[] = [];
@@ -818,7 +819,8 @@ test('live: the seat notes go with a draft while ticked; Redraft this revises th
     (game) =>
       localStorage.setItem(
         `notes_${game}`,
-        // kept before 2026-10-14: its suspect mark is no longer read, and not sent
+        // kept before 2026-10-14: its suspect mark is no longer read, and not sent; its free
+        // notes (before 2026-10-18) are the seats' lines on day 1
         JSON.stringify({ notes: { 5: 'jumped on the slip fast', 8: 'quiet' }, suspect: 5 }),
       ),
     GAME,
@@ -862,7 +864,10 @@ test('live: the seat notes go with a draft while ticked; Redraft this revises th
       body: {
         notes: '',
         current: '',
-        seat_notes: { player_5: 'jumped on the slip fast', player_8: 'quiet' },
+        seat_notes: {
+          player_5: 'Day 1: jumped on the slip fast',
+          player_8: 'Day 1: quiet',
+        },
       },
     },
     {
@@ -1669,7 +1674,7 @@ test('live: after game over the ending plays to its curtain', async ({ page }) =
   await expect(page).toHaveScreenshot('live-curtain.png');
 });
 
-test('live: a seat’s notes stay open while the beats and scenes go by, until the seat dies', async ({
+test('live: a seat’s file stays open while the beats and scenes go by, past the seat’s death', async ({
   page,
 }) => {
   test.setTimeout(90_000);
@@ -1682,12 +1687,16 @@ test('live: a seat’s notes stay open while the beats and scenes go by, until t
   await expect(theatre(page)).toBeAttached();
   await go();
   await landsOn(page, /^vote\./);
-  await page.getByRole('button', { name: 'Seat 5, notes' }).click();
-  const editor = page.getByRole('dialog', { name: 'Seat 5' });
-  const paper = editor.getByRole('textbox', { name: 'Your notes on seat 5' });
-  await expect(paper).toBeFocused();
-  await page.keyboard.type('quiet on day 3');
-  // the beats go by under it, into the night: still open, the words and the caret kept
+  await page.getByRole('button', { name: 'Seat 5’s file' }).click();
+  const file = page.locator('[data-player-file="5"]');
+  await expect(file).toBeVisible();
+  await page.getByRole('textbox', { name: 'Your lines on seat 5, day 3' }).fill('quiet on day 3');
+  await page.getByRole('button', { name: /^I think seat 5 is/ }).click();
+  await page
+    .getByRole('dialog', { name: 'I think seat 5 is' })
+    .getByRole('button', { name: 'Villager' })
+    .click();
+  // the beats go by, into the night and the morning that tells seat 5's death
   const seen: string[] = [(await theatre(page).getAttribute('data-beat'))!];
   const step = async () => {
     await page.clock.runFor(1000);
@@ -1695,31 +1704,17 @@ test('live: a seat’s notes stay open while the beats and scenes go by, until t
     if (seen.at(-1) !== beat) seen.push(beat);
     return beat;
   };
-  while (!(await step()).startsWith('night.')) await expect(editor).toBeVisible();
-  expect(seen.length).toBeGreaterThanOrEqual(3);
-  await expect(editor).toBeVisible();
-  await expect(paper).toBeFocused();
-  await page.keyboard.type(', voted 6');
-  await expect(paper).toHaveValue('quiet on day 3, voted 6');
-  // the guess's listbox, opened, stays open across a beat and still picks
-  await editor.getByRole('button', { name: /I think they are/ }).click();
-  const list = editor.getByRole('listbox');
-  await expect(list).toBeVisible();
-  const at = seen.length;
-  while (seen.length === at) await step();
-  await expect(list).toBeVisible();
-  await page.keyboard.press('ArrowDown');
-  await page.keyboard.press('Enter');
-  await expect(list).toHaveCount(0);
-  await expect(editor.locator('[data-seat-guess="5"]')).toContainText('Villager');
-  // the morning tells seat 5's death: the notes close; what was written is on its card
-  for (let t = 0; t < 120 && (await editor.count()) > 0; t++) await step();
-  await expect(editor).toHaveCount(0);
-  expect(seen.at(-1)).toMatch(/^morning\./);
+  for (let t = 0; t < 160 && !seen.at(-1)!.startsWith('morning.'); t++) await step();
   expect(seen.some((b) => b.startsWith('night.'))).toBe(true);
-  await expect(page.locator('[data-layer="hud"] [data-seat="5"]')).toContainText(
-    'quiet on day 3, voted 6',
-  );
+  expect(seen.at(-1)).toMatch(/^morning\./);
+  // still seat 5's file: its line kept, and, dead, its role stamped on in place of a guess
+  await expect(file).toBeVisible();
+  await page.getByRole('tab', { name: 'Day 3' }).click();
+  await expect(
+    page.getByRole('textbox', { name: 'Your lines on seat 5, day 3' }),
+  ).toHaveValue('quiet on day 3');
+  await expect(page.getByRole('button', { name: /^I think seat 5 is/ })).toHaveCount(0);
+  await expect(file).toContainText('Was');
 });
 
 test('live: the curtain waits for the replay to be filed, then the link comes in its place', async ({

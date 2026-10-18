@@ -151,7 +151,7 @@ const CarSetSheet = memo(function CarSetSheet({
           me={me}
           width={g.wingN}
           notes={notebookGame(presentation, me)}
-          edit={slotInput?.notebook}
+          onOpenFile={slotInput?.onOpenFile}
           opts={spec.wing}
         />
         <TopStrip hud={hud} {...spec.strip} {...stripButtons(presentation, slotInput)} />

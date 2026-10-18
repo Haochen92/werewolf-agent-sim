@@ -18,6 +18,8 @@
   --f-hand: var(--font-stage-hand, 'Patrick Hand'), cursive;
   --f-title: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
   --rule: rgba(90, 70, 40, 0.22);
+  /* the player's own answers in their file (PlayerFile): graphite */
+  --pencil: #34445c;
   /* the labels on the paper grow on a phone like the words they sit by (the chrome, --meta, less) */
   --label: calc(13.6px * var(--legible));
 }

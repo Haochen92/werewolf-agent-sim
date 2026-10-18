@@ -5,7 +5,7 @@
  * pinned open in the page). Draft answers with sample lines (`sampleDraft`), after the wait a
  * real draft takes; no model is called and nothing is sent, and the demo says so once a sample
  * is in the box. "Use my seat notes" reads the
- * notebook the seat-card demo above writes, so a note written there steers the draft here. Send
+ * notebook the file demo above keeps, so a claim, a guess or a line there steers the draft here. Send
  * shows the line as said and starts a new turn, three drafts again.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';

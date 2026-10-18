@@ -56,7 +56,8 @@ import { VerdictMark } from '../instruments/VerdictMark';
 import { ROLE_ARTICLE } from '../paint/role-kit';
 import { ROLE_NAME, factionOf, seatNumber, seatify } from '../roles';
 import { actLine, actVerb } from '../scenes/replay-night';
-import { sideSlot, type Hud } from '../units';
+import { HUD_CHROME, STAGE_H, sideSlot, type Hud } from '../units';
+import type { Notebook } from '../notebook';
 import {
   FORM,
   ROLE_PLURAL,
@@ -91,6 +92,7 @@ import {
   type Verdict,
 } from './film-model';
 import { RecordSheet } from './Record';
+import { PlayerFile } from './PlayerFile';
 import {
   recordBeat,
   finalMorning,
@@ -150,6 +152,13 @@ export interface FilmProps {
   /** The Record's page the viewer turned to; with `onRecordPick` it is the container's. */
   recordPick?: RecordPick | null;
   onRecordPick?: (pick: RecordPick | null) => void;
+  /**
+   * Live, a seated player (owner, 2026-10-18): their own file on each seat (PlayerFile), which
+   * the seats' tabs open while the X-ray is off; null: none.
+   */
+  player?: { book: Notebook; me: string; cast: Readonly<Record<string, number>> } | null;
+  /** The folder runs the stage's height, beside a narrowed box (live); unset: it stops at the rail. */
+  full?: boolean;
 }
 
 export function Film({
@@ -169,6 +178,8 @@ export function Film({
   ledger = null,
   recordPick,
   onRecordPick,
+  player = null,
+  full = false,
 }: FilmProps) {
   const [ownSeat, setOwnSeat] = useState<FileChoice | null>(null);
   const [ownPick, setOwnPick] = useState<RecordPick | null>(null);
@@ -178,11 +189,17 @@ export function Film({
   const choose = onSeat ?? setOwnSeat;
   if (beat.id === 'over.epilogue') return null;
   const focus = fileFocus(view, beat);
-  const picked = xray ? shownSeat(focus, choice) : null;
+  // the player's own files: a pick holds until they pick again, whoever the beat is about
+  const mine = !xray ? player : null;
+  const picked = xray
+    ? shownSeat(focus, choice)
+    : mine && choice?.seat && !choice.record
+      ? choice.seat
+      : null;
   // the Record: all the file holds with the X-ray off; with it on, the viewer's pick, or the
   // carried summary's beat (a day's record, a moment before its morning)
   const record =
-    !xray || (picked === null && (recordPicked(focus, choice) || recordBeat(beat)));
+    xray ? picked === null && (recordPicked(focus, choice) || recordBeat(beat)) : !picked;
   const shown = record ? null : picked;
   // the beat's own docket (a beat with no seat in focus), titled by what it holds
   const own = focus || recordBeat(beat) ? null : docketFor(view, beat);
@@ -203,6 +220,9 @@ export function Film({
   const turnTo = (m: number) =>
     (onRecordPick ?? setOwnPick)({ morning: m, latest: mornings.at(-1) ?? m });
   const r = sideSlot(hud);
+  const height = full ? STAGE_H - r.y - HUD_CHROME.slotInset : r.h;
+  // with the X-ray off a seated player's own files open; the beat's docket waits for the end
+  const seatsLocked = mine ? null : locked;
   const pick = (s: string | null) => choose({ seat: s, key: focus?.key ?? null });
   const pickRecord = () => choose({ seat: null, key: focus?.key ?? null, record: true });
   const chip = (s: string, cls = styles.face) => {
@@ -218,7 +238,7 @@ export function Film({
   // round's end (both from the log ahead); anywhere else it reads to the playhead
   const entry = shown && xray ? openingEntries(ahead ?? view, beat)?.get(shown) : undefined;
   const until = entry && ahead ? beat.roundUntil : undefined;
-  const file = !shown
+  const file = !shown || !xray
     ? null
     : until !== undefined
       ? openingFile(ahead!, shown, until)
@@ -239,10 +259,10 @@ export function Film({
         left: r.x,
         top: r.y,
         width: `calc(${r.w}px + var(--slot-reach, 0px))`,
-        height: r.h,
+        height,
         ...INK_TEX,
       }}
-      data-film={record ? 'record' : file ? 'file' : docket!.kind}
+      data-film={record ? 'record' : mine && shown ? 'player' : file ? 'file' : docket!.kind}
       data-file-seat={shown ?? undefined}
       data-wide={wide || undefined}
       aria-label={
@@ -261,13 +281,38 @@ export function Film({
           docket={ownTitle}
           record={record}
           locked={locked}
+          seatsLocked={seatsLocked}
           cast={cast}
           onPick={pick}
           onRecord={pickRecord}
         />
       ) : null}
       <div className={styles.fold}>
-        {file ? (
+        {mine && shown ? (
+          <PlayerFile
+            key={shown}
+            seat={shown}
+            me={mine.me}
+            view={view}
+            book={mine.book}
+            cast={mine.cast}
+            day={beat.day}
+            ledger={ledger}
+            chip={chip}
+            chooser={
+              <Chooser
+                wide={wide}
+                label={`Seat ${seatNumber(shown)}`}
+                seats={view.seats}
+                shown={shown}
+                docket={null}
+                chip={chip}
+                onPick={pick}
+                onRecord={pickRecord}
+              />
+            }
+          />
+        ) : file ? (
           <SeatFileView
             key={shown!}
             file={file}
@@ -318,6 +363,7 @@ export function Film({
                     docket={ownTitle}
                     record
                     locked={locked}
+                    seatsLocked={seatsLocked}
                     chip={chip}
                     onPick={pick}
                     onRecord={pickRecord}
@@ -404,6 +450,7 @@ function Chooser({
   docket,
   record = false,
   locked = null,
+  seatsLocked = locked,
   chip,
   onPick,
   onRecord,
@@ -418,6 +465,8 @@ function Chooser({
   record?: boolean;
   /** Why the seats and the docket cannot be opened (the X-ray is off); null: they can. */
   locked?: string | null;
+  /** Why the seats cannot (a seated player's own files open them live); unset: as `locked`. */
+  seatsLocked?: string | null;
   chip: (seat: string, cls?: string) => ReactNode;
   onPick: (seat: string | null) => void;
   onRecord: () => void;
@@ -476,8 +525,8 @@ function Chooser({
               type="button"
               className={styles.pick}
               aria-pressed={s === shown}
-              disabled={!!locked}
-              title={locked ?? undefined}
+              disabled={!!seatsLocked}
+              title={seatsLocked ?? undefined}
               onClick={() => go(s)}
             >
               {chip(s)}
@@ -515,6 +564,7 @@ function SeatTabs({
   docket,
   record,
   locked,
+  seatsLocked,
   cast,
   onPick,
   onRecord,
@@ -528,6 +578,8 @@ function SeatTabs({
   record: boolean;
   /** Why the docket and the seats cannot be opened (the X-ray is off); null: they can. */
   locked: string | null;
+  /** Why the seats cannot (a seated player's own files open them live). */
+  seatsLocked: string | null;
   cast: readonly Character[];
   onPick: (seat: string | null) => void;
   onRecord: () => void;
@@ -570,8 +622,8 @@ function SeatTabs({
             className={dead ? `${styles.stab} ${styles.dead}` : styles.stab}
             aria-selected={s === shown}
             aria-label={`Seat ${seatNumber(s)}’s file${dead ? ' (out)' : ''}`}
-            title={locked ?? `Seat ${seatNumber(s)}${dead ? ' · out' : ''}`}
-            disabled={!!locked}
+            title={seatsLocked ?? `Seat ${seatNumber(s)}${dead ? ' · out' : ''}`}
+            disabled={!!seatsLocked}
             onClick={() => onPick(s)}
           >
             <span className={styles.tface}>{c ? <ChipSprite character={c} /> : null}</span>

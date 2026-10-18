@@ -15,6 +15,7 @@ import { castForGame, rosterSize } from '@/stage/cast/castForGame';
 import { Drawer } from '@/stage/drawer/Drawer';
 import { DEFAULT_FILTERS, type DrawerFilters } from '@/stage/drawer/drawer-lines';
 import { Film } from '@/stage/film/Film';
+import { useNotebook } from '@/stage/notebook';
 import type { FileChoice } from '@/stage/film/case-file';
 import tenSeat from '@/stage/fixtures/replay-phase3.json';
 import memoryGame from '@/stage/fixtures/replay-9369a5c1.json';
@@ -88,6 +89,36 @@ export function RevealDemo() {
           seat={seat}
           onSeat={setSeat}
           xray
+        />
+      </Focus>
+    </div>
+  );
+}
+
+/**
+ * The player's own file on a seat, as a live game keeps it (Reveal off), a ten-seat game at the
+ * end of day 2: the claim, the guess, a page a day with the night and the vote. Its notebook is
+ * a game of its own (`notes_guide` on this device), which the composer demo's "Use my seat
+ * notes" reads.
+ */
+export function NotesDemo() {
+  const g = useGameAt(tenSeat, { xray: false, day: 2, last: true });
+  const book = useNotebook('guide');
+  const [seat, setSeat] = useState<FileChoice | null>({ seat: 'player_3', key: null });
+  return (
+    <div className={classes.sidePanel}>
+      <Focus selector="[data-film]" pad={0}>
+        <Film
+          view={g.view}
+          beat={g.beat}
+          hud="live"
+          cast={g.cast}
+          seat={seat}
+          onSeat={setSeat}
+          xray={false}
+          player={
+            book ? { book, me: 'player_1', cast: g.view.castRoleCounts } : null
+          }
         />
       </Focus>
     </div>

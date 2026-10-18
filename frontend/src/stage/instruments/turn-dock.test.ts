@@ -182,12 +182,12 @@ describe('the dock’s three plaques and the line’s preview (2026-10-01)', () 
 });
 
 describe('“Use my seat notes”: the notebook goes with a draft only when ticked', () => {
-  const book = { notes: { 5: '  jumped on 3’s slip  ', 8: '   ' } };
+  const book = { lines: { 5: { 2: '  jumped on 3’s slip  ' }, 8: { 1: '   ' } } };
 
-  it('is shown only when the notebook holds a note or a guess', () => {
+  it('is shown only when the notebook holds something', () => {
     expect(notebookForAgent(null)).toBeNull();
-    expect(notebookForAgent({ notes: {} })).toBeNull();
-    expect(notebookForAgent({ notes: { 4: '  ' } })).toBeNull();
+    expect(notebookForAgent({ lines: {} })).toBeNull();
+    expect(notebookForAgent({ lines: { 4: { 1: '  ' } } })).toBeNull();
     expect(dockControls(dock()).hasNotebook).toBe(false);
     const on = { shared: true, onShared: () => {} };
     expect(dockControls(dock({ notebook: on })).hasNotebook).toBe(true);
@@ -199,9 +199,9 @@ describe('“Use my seat notes”: the notebook goes with a draft only when tick
 
   it('names seats as the agents do', () => {
     expect(notebookForAgent(book)).toEqual({
-      seat_notes: { player_5: 'jumped on 3’s slip' },
+      seat_notes: { player_5: 'Day 2: jumped on 3’s slip' },
     });
-    const long = notebookForAgent({ notes: { 2: 'x'.repeat(600) } });
+    const long = notebookForAgent({ lines: { 2: { 1: 'x'.repeat(600) } } });
     expect(long?.seat_notes.player_2).toHaveLength(300); // the server's cap
   });
 
@@ -211,7 +211,7 @@ describe('“Use my seat notes”: the notebook goes with a draft only when tick
     expect(draftRequest(' softer ', ' Seat 5 is odd. ', shared, true)).toEqual({
       notes: 'softer',
       current: 'Seat 5 is odd.',
-      seat_notes: { player_5: 'jumped on 3’s slip' },
+      seat_notes: { player_5: 'Day 2: jumped on 3’s slip' },
     });
     expect(draftRequest('softer', 'Seat 5 is odd.', shared, false)).toEqual({
       notes: 'softer',
@@ -246,10 +246,13 @@ describe('the notebook’s role guess (2026-09-30)', () => {
     ]);
   });
 
-  it('keeps a guess in the notebook; an old notebook (no guesses, a suspect) still reads', () => {
+  it('keeps a guess in the notebook; an old notebook (a note, a suspect) still reads', () => {
+    // a free note per seat (before 2026-10-18) is that seat's lines on day 1
     expect(parseNotebook({ notes: { 5: 'quiet' }, suspect: 5, hinted: true })).toEqual({
-      notes: { 5: 'quiet' },
       guesses: {},
+      claims: {},
+      nights: {},
+      lines: { 5: { 1: 'quiet' } },
     });
     expect(
       parseNotebook({ notes: {}, guesses: { 3: 'wolf', 4: 'nonsense', x: 'wolf' } })
@@ -257,15 +260,32 @@ describe('the notebook’s role guess (2026-09-30)', () => {
     ).toEqual({ 3: 'wolf' });
   });
 
-  it('folds the guess into that seat’s note for a draft; the request keeps its shape', () => {
+  it('tells each seat’s file in one line for a draft; the request keeps its shape', () => {
     const book = {
-      notes: { 3: 'pushed hard on day 2', 6: '  ' },
+      lines: { 3: { 2: 'pushed hard on day 2' }, 6: { 1: '  ' } },
       guesses: { 3: 'wolf', 6: 'serial_killer', 7: 'healer' },
+      claims: { 3: 'healer' },
+      nights: { 3: { 1: { target: 4, result: 'saved' } } },
     };
     expect(notebookForAgent(book, (n) => n === 7)).toEqual({
       seat_notes: {
-        player_3: '(I think: wolf) pushed hard on day 2',
+        player_3:
+          '(I think: wolf) Claims healer. Night 1: says they protected player_4; saved them from an attack. Day 2: pushed hard on day 2',
         player_6: '(I think: serial killer)',
+      },
+    });
+  });
+
+  it('tells the player’s own seat as what they have claimed, with no guess', () => {
+    const book = {
+      guesses: { 9: 'wolf' },
+      claims: { 9: 'trailseer' },
+      nights: { 9: { 1: { target: 5, seen: [7, 1] } } },
+    };
+    expect(notebookForAgent(book, () => false, 9)).toEqual({
+      seat_notes: {
+        player_9:
+          'What I have claimed: trailseer. Night 1: I said I followed player_5; saw player_7, player_1.',
       },
     });
   });

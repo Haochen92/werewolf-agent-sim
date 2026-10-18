@@ -174,12 +174,13 @@ units) the rail is 310 units, ~134 css px, 51 of them in the letterbox; on a 16:
 192 (12% of the width; the kit's wing was 5.5%). What is left of the bleed past the rail darkens to
 the house's dark. A card is flex and a size container: the photo fills its width, up to 1.2× as tall and at most
 60% of the card (`min(120cqw, 60cqh)`), the numeral on its corner. The foot holds faint ruled
-lines where the seated player may write and their note on them (whole lines,
+lines where the seated player keeps a file and the claim they noted on them (whole lines,
 `round(down, 100%, 1lh)`, at `max(0.9 × --meta, 11px / --stage-scale)`, so never under 11 css
 px); under the stage's `data-small` (a phone) the words give way to a pencil scribble. Then a band (the
-role's ink, the X-ray's faction, "You" in amber) and the suspect's wax seal. The note editor is a
-dialog over a scrim (`z-index` 40–41 in the HUD layer), a walnut board with a ruled paper area;
-its presses keep a phone's 44 css px tap area (`--grown`). The notebook is `notebook.ts`: one
+role's ink, the X-ray's faction, "You" in amber). A tap on a card opens the player's file on it in
+the case file (`film/PlayerFile.tsx`, owner 2026-10-18: no card over the stage, nothing drawn
+beyond the file's own paper; its pick cards keep a phone's 38 css px a row, `38px /
+--stage-scale`). The notebook is `notebook.ts`: one
 store per game id over `localStorage` (`lib/storage.ts` `seatNotes`, every access guarded), read
 by every rail through `useSyncExternalStore`; `Presentation.game` is set only by the live
 container (and the workbench's live cuts), so a replay's cards are never editable. GPU: the lit
@@ -992,7 +993,7 @@ src/stage/
 │                            #   room's painting, its window and its sinking edges), Photo
 │                            #   (a seat's print on the line),
 │                            #   RoleCard, CardBack, SmallCard, Chip, String, Wing (the seat
-│                            #   rail: cards, suspect slot, note editor; rail-layout.ts),
+│                            #   rail: cards and their taps; rail-layout.ts),
 │                            #   VerdictBoard, ActMark, Sigil, Jar, VoteTable, Plate,
 │                            #   ActPlate (the night room's plate, with its countdown: the room
 │                            #   has no clock since 2026-09-27; CarriageClock is gone), Pin (the
@@ -1003,7 +1004,8 @@ src/stage/
 │                            #   CastShadow (a figure's baked shadow on the wall),
 │                            #   ChipSprite + headRect (the head portrait, framed by HEAD_FRAME)
 ├── film/                    # Film: the case file in the side slot (case-file.ts a seat's file,
-│                            #   film-model.ts the docket), ReadCard (the wing's read, a paper card)
+│                            #   film-model.ts the docket), ReadCard (the wing's read, a paper card),
+│                            #   PlayerFile (live: the seated player's own file on a seat)
 ├── drawer/                  # Transcript drawer: lines by kind, day tabs, seat chips, Show toggles
 ├── scenes/                  # StationScene (the waiting room; station.ts its rules) DealScene
 │                            #   DayScene VoteScene LynchScene NightLobbyScene ShelfRoomScene

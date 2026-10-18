@@ -476,86 +476,85 @@ test('the phone frame draws the stage at the phone’s size', async ({ page }) =
 });
 
 /**
- * The seat rail's notebook (beat sheet §0, HUD pass 2): a seated player (a live cut, seat 9 on
- * day 2 of the ten-seat game) taps another seat's card to write a note and guess its role (the
- * roles still possible, with how many are left); the note and the guess show on the card, and
- * both come back after a reload (this device only). A dead seat has no guess. The replay's cut
- * shows the cards only.
+ * The seated player's files (owner, 2026-10-18: the notes moved into the case file): a seated
+ * player (a live cut, seat 9 on day 2 of the ten-seat game) taps a seat's photo and their file
+ * on it opens in the case file, the folder the stage's height. The claim is any role; the guess
+ * only the roles that could still be alive, "Not sure" first; a day's page takes the night as
+ * the claimed role does it, picked, and the player's lines. The claim is pencilled on the card,
+ * the guess on its photo, and both come back on a later beat (this device only). A dead seat has
+ * its role stamped on, no guess; the player's own seat is their cover, their role stamped on.
+ * The replay's cut shows the cards only.
  */
-test('the seat rail: notes and guesses for a seated player, none in a replay', async ({
+test('the seat rail: a seated player keeps a file on every seat, none in a replay', async ({
   page,
 }) => {
   const live = '/workbench/day?live=1&viewer=seat:player_9&animate=0&strip=0';
   await page.goto(`${live}&beat=7`, { waitUntil: 'networkidle' });
   // the rail's plate says what a tap does (owner, 2026-10-18: it replaced the first-time hint)
-  const plate = page.getByText('Tap to write', { exact: true });
+  const plate = page.getByText('Tap to open file', { exact: true });
   await expect(plate).toBeVisible();
-  // your own card is not a notebook page
-  await expect(page.getByRole('button', { name: 'Seat 9, notes' })).toHaveCount(0);
-  await page.getByRole('button', { name: 'Seat 10, notes' }).click();
-  const dialog = page.getByRole('dialog');
-  await expect(dialog).toContainText('Seat 10');
-  await expect(dialog).toContainText('Alive');
-  await expect(plate).toBeVisible();
-  await page.keyboard.type('Jumped on the slip');
-  // the role guess: only the roles that could still be alive (the night's three dead were told:
-  // healer, chanteuse, investigator), with how many are left, "not sure" first, in a panel over
-  // the notebook; the arrows move and Enter picks
-  const guess = dialog.getByRole('button', { name: /I think they are…/ });
-  await expect(guess).toHaveText('not sure');
-  await guess.click();
-  const menu = dialog.getByRole('listbox');
-  await expect(menu).toBeFocused();
-  await expect(menu.getByRole('option')).toHaveText([
-    'not sure',
-    // the pool's order (ten-seat pass §7)
-    /^Sentinel\s*1 left$/,
-    /^Trailseer\s*1 left$/,
-    /^Vigilante\s*1 left$/,
-    /^Sigilist\s*1 left$/,
-    /^Illusionist\s*1 left$/,
-    /^Serial killer\s*1 left$/,
-    /^Fortune teller\s*1 left$/,
+  await page.getByRole('button', { name: 'Seat 10’s file' }).click();
+  const file = page.locator('[data-film="player"]');
+  await expect(file.locator('[data-player-file="10"]')).toBeVisible();
+  await file.getByRole('button', { name: /^The role seat 10 claims/ }).click();
+  await page
+    .getByRole('dialog', { name: 'The role seat 10 claims' })
+    .getByRole('button', { name: 'Sigilist' })
+    .click();
+  // the night's three dead were told (healer, chanteuse, investigator): not to be guessed
+  await file.getByRole('button', { name: /^I think seat 10 is/ }).click();
+  const guesses = page.getByRole('dialog', { name: 'I think seat 10 is' });
+  await expect(guesses.getByRole('button')).toHaveText([
+    'Not sure',
+    'Sentinel',
+    'Trailseer',
+    'Vigilante',
+    'Sigilist',
+    'Illusionist',
+    'Serial killer',
+    'Fortune teller',
   ]);
-  await expect(menu.getByRole('option', { selected: true })).toHaveText('not sure');
-  for (let i = 0; i < 6; i++) await page.keyboard.press('ArrowDown');
-  await page.keyboard.press('Enter');
-  await expect(menu).toHaveCount(0);
-  await expect(guess).toBeFocused();
-  await expect(guess).toHaveText('Serial killer');
+  await guesses.getByRole('button', { name: 'Serial killer' }).click();
+  await expect(guesses).toHaveCount(0);
+  // day 2's page: night 1 as a sigilist would have it, picked; a line
+  await file.getByRole('button', { name: 'Night 1: set a sigil on: pick a seat' }).click();
+  await page
+    .getByRole('dialog', { name: 'Night 1: set a sigil on' })
+    .getByRole('button', { name: '4', exact: true })
+    .click();
+  await file
+    .getByRole('textbox', { name: 'Your lines on seat 10, day 2' })
+    .fill('Jumped on the slip');
   await page.addStyleTag({ content: 'nextjs-portal{display:none!important}' });
-  await expect(page).toHaveScreenshot('wing-notebook-guess.png');
-  // open again: the guess is the selected row; Escape closes the panel, not the notebook
-  await page.keyboard.press('ArrowDown');
-  await expect(menu.getByRole('option', { selected: true })).toHaveText(/^Serial killer/);
-  await expect(page).toHaveScreenshot('wing-notebook-menu.png');
-  await page.keyboard.press('Escape');
-  await expect(menu).toHaveCount(0);
-  await expect(dialog).toBeVisible();
-  await dialog.getByRole('button', { name: 'Done' }).click();
-  await expect(dialog).toHaveCount(0);
+  await expect(page).toHaveScreenshot('wing-player-file.png');
   const card = page.locator('[data-layer="hud"] [data-seat="10"]');
-  await expect(card).toContainText('Jumped on the slip');
+  await expect(card).toContainText('Sigilist');
   await expect(card.locator('[data-guess="serial_killer"]')).toBeVisible();
 
   // kept on the device: a later beat still has it
   await page.goto(`${live}&beat=14`, { waitUntil: 'networkidle' });
-  await expect(card).toContainText('Jumped on the slip');
+  await expect(card).toContainText('Sigilist');
   await expect(card.locator('[data-guess="serial_killer"]')).toBeVisible();
-  // a dead seat: its note may be written, its role is not guessed; Escape closes
-  await page.getByRole('button', { name: 'Seat 5, notes' }).click();
-  await expect(dialog).toContainText('Dead · Chanteuse');
-  await expect(dialog.getByRole('button', { name: /I think they are…/ })).toHaveCount(0);
-  await page.keyboard.press('Escape');
-  await expect(dialog).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Seat 5, notes' })).toBeFocused();
+  await page.getByRole('button', { name: 'Seat 10’s file' }).click();
+  await file.getByRole('tab', { name: 'Day 2' }).click();
+  await expect(
+    file.getByRole('textbox', { name: 'Your lines on seat 10, day 2' }),
+  ).toHaveValue('Jumped on the slip');
+  await expect(file.getByRole('button', { name: 'Night 1: set a sigil on: seat 4' })).toBeVisible();
+  // a dead seat: its role is stamped on, and not guessed
+  await page.getByRole('button', { name: 'Seat 5’s file' }).click();
+  await expect(file.locator('[data-player-file="5"]')).toContainText('Chanteuse');
+  await expect(file.getByRole('button', { name: /^I think seat 5 is/ })).toHaveCount(0);
+  // the player's own seat: what they claim, their role stamped on
+  await page.getByRole('button', { name: 'Seat 9’s file' }).click();
+  await expect(file.getByRole('button', { name: /^The role you claim/ })).toBeVisible();
 
-  // the replay's cut: the same seat, nothing to write on
+  // the replay's cut: the same seats, nothing to keep
   await page.goto('/workbench/day?beat=6&viewer=seat:player_9&animate=0&strip=0', {
     waitUntil: 'networkidle',
   });
   await expect(page.locator('[data-layer="hud"] [data-seat]')).toHaveCount(10);
-  await expect(page.getByRole('button', { name: /^Seat \d+, notes$/ })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /^Seat \d+’s file$/ })).toHaveCount(0);
   await expect(plate).toHaveCount(0);
 });
 
@@ -649,33 +648,37 @@ test('the strip’s door: live only, and it asks before leaving', async ({ page 
   );
 });
 
-/** The guess's panel on the smallest phone: every row on the stage, a finger's height, tappable. */
-test('the seat rail: the role guess fits a small phone and takes a tap', async ({
+/**
+ * The player's file on the smallest phone: the folder runs the stage's height beside the
+ * narrowed box, and the guess's card opens across it, every row on the stage, a thumb's height.
+ */
+const ROW_MIN = 36;
+test('the seat rail: the player’s file fits a small phone and its guess takes a tap', async ({
   page,
 }) => {
   await page.goto(
     '/workbench/day?live=1&viewer=seat:player_9&animate=0&strip=0&beat=7&frame=667x375',
     { waitUntil: 'networkidle' },
   );
-  await page.getByRole('button', { name: 'Seat 10, notes' }).click();
-  const dialog = page.getByRole('dialog');
-  // opened from the keys, so no pointer rests on a row for the picture
-  await dialog.getByRole('button', { name: /I think they are…/ }).focus();
-  await page.keyboard.press('Enter');
-  const options = dialog.getByRole('listbox').getByRole('option');
-  await expect(options).toHaveCount(8);
+  await page.getByRole('button', { name: 'Seat 10’s file' }).click();
+  const file = page.locator('[data-film="player"]');
   const stage = (await page.locator('[data-layer="hud"]').boundingBox())!;
-  for (const box of await options.evaluateAll((els) =>
+  const folder = (await file.boundingBox())!;
+  expect(folder.y + folder.height).toBeGreaterThan(stage.y + stage.height * 0.9);
+  await file.getByRole('button', { name: /^I think seat 10 is/ }).click();
+  const rows = page.getByRole('dialog', { name: 'I think seat 10 is' }).getByRole('button');
+  await expect(rows).toHaveCount(8);
+  for (const box of await rows.evaluateAll((els) =>
     els.map((el) => el.getBoundingClientRect().toJSON() as DOMRect),
   )) {
-    expect(box.height).toBeGreaterThanOrEqual(37);
+    expect(box.height).toBeGreaterThanOrEqual(ROW_MIN);
     expect(box.top).toBeGreaterThanOrEqual(stage.y);
     expect(box.bottom).toBeLessThanOrEqual(stage.y + stage.height);
   }
   await page.addStyleTag({ content: 'nextjs-portal{display:none!important}' });
-  await expect(page).toHaveScreenshot('frame-667-notebook-menu.png');
-  await options.filter({ hasText: 'Sigilist' }).click();
-  await expect(dialog.getByRole('button', { name: /I think they are…/ })).toHaveText(
+  await expect(page).toHaveScreenshot('frame-667-player-file-guess.png');
+  await rows.filter({ hasText: 'Sigilist' }).click();
+  await expect(file.getByRole('button', { name: /^I think seat 10 is/ })).toContainText(
     'Sigilist',
   );
 });

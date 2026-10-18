@@ -1,0 +1,316 @@
+/* The player's own file on a seat (PlayerFile.tsx), on the case file's paper: the file's own
+   typewriter labels, IM Fell titles and stamps (Film.module.css), the player's answers in a
+   graphite pencil hand, blanks dotted like a printed form's. Small cards for the picks, in the
+   chooser's paper. No new pictures. */
+.cover {
+  position: relative;
+  flex-wrap: nowrap;
+}
+/* on a phone too the cover takes its own row, the day tabs under it, so the role cards open
+   across the folder */
+:global([data-small]) .cover {
+  flex: 1 1 100%;
+}
+.who {
+  gap: 4.8px;
+}
+.label {
+  font-family: var(--f-type);
+  font-weight: 700;
+  font-size: var(--label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--type-label);
+  white-space: nowrap;
+}
+.claim {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4.8px 9.6px;
+}
+/* the player's answers: graphite, by hand */
+.field,
+.seat {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4.8px;
+  font-family: var(--f-hand);
+  font-size: calc(var(--note) * 1.08);
+  line-height: 1.15;
+  color: var(--pencil);
+  white-space: nowrap;
+}
+.field {
+  padding: 0 2px 1px;
+  border-bottom: 1.5px dotted rgba(74, 58, 28, 0.55);
+}
+.unset {
+  color: var(--type-mut);
+  font-style: italic;
+}
+.caret {
+  font-style: normal;
+  font-family: var(--f-type);
+  font-size: 0.62em;
+  color: var(--type-label);
+}
+.field:focus-visible,
+.seat:focus-visible,
+.add:focus-visible,
+.stampButton:focus-visible,
+.chipButton:focus-visible {
+  outline: 2.4px solid var(--amber);
+  outline-offset: 2.4px;
+}
+/* what the morning's Record has the seat claim, beside the player's pick */
+.recordRole {
+  font-family: var(--f-type);
+  font-size: calc(var(--label) * 0.9);
+  color: var(--type-mut);
+}
+/* "I think they are": the guess stamped on, or a dashed blank stamp while not sure */
+.guess {
+  margin-left: auto;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4.8px;
+}
+.guess .label {
+  font-size: calc(var(--label) * 0.85);
+}
+.stampButton {
+  all: unset;
+  cursor: pointer;
+  border-radius: 4.8px;
+}
+.stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 6.4px;
+  font-size: calc(var(--meta) * 1.2);
+  rotate: -4deg;
+}
+.stamp svg {
+  width: 1.2em;
+  height: 1.2em;
+}
+.blankStamp {
+  font-size: calc(var(--meta) * 0.95);
+  color: var(--type-mut);
+  border-style: dashed;
+  opacity: 0.75;
+}
+:global([data-small]) .stamp {
+  font-size: calc(var(--label) * 1.25);
+  border-width: 2px;
+}
+:global([data-small]) .guess > .label {
+  display: none;
+}
+
+/* the cards the picks open: the chooser's paper, across the cover or under the row they
+   belong to (so a card never runs off the folder's side) */
+.pop {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4.8px 6.4px;
+}
+.roles,
+.seats {
+  position: absolute;
+  z-index: 6;
+  top: calc(100% + 4.8px);
+  padding: 8px;
+  border-radius: 6.4px;
+  background: var(--card);
+  box-shadow:
+    0 9.6px 24px rgba(0, 0, 0, 0.35),
+    0 0 0 1px var(--manila-edge);
+}
+.roles {
+  left: 0;
+  right: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.6px 6.4px;
+}
+.side {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  gap: 1.6px 6.4px;
+}
+.side > .label {
+  grid-column: 1 / -1;
+  margin: 6.4px 4px 1.6px;
+}
+.role {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: max(calc(32px * var(--legible-ui)), calc(26px * var(--legible)));
+  padding: 3.2px 6.4px;
+  border-radius: 4.8px;
+  font-family: var(--font-body);
+  font-size: calc(var(--note) * 0.85);
+  color: var(--type);
+}
+.role svg {
+  flex: none;
+  width: 22px;
+  height: 22px;
+}
+.role:hover {
+  background: var(--sheet2);
+}
+.role[aria-pressed='true'] {
+  background: var(--sheet2);
+  box-shadow: inset 0 0 0 1px var(--type);
+  font-weight: 600;
+}
+/* a phone: a thumb's 38 css px a row (the stage is drawn small, so in its own units) */
+:global([data-small]) .role,
+:global([data-small]) .seats > button {
+  min-height: calc(38px / var(--stage-scale, 1));
+}
+:global([data-small]) .role svg {
+  width: calc(18px / var(--stage-scale, 1));
+  height: calc(18px / var(--stage-scale, 1));
+}
+.unsure {
+  grid-column: 1 / -1;
+  font-style: italic;
+  color: var(--type-mut);
+}
+.seats {
+  left: 0;
+  display: grid;
+  grid-template-columns: repeat(5, auto);
+  gap: 3.2px;
+}
+.wide {
+  grid-column: span 5;
+  justify-content: center;
+}
+
+/* a day's page */
+.row {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6.4px 8px;
+  padding: 4.8px 0;
+  font-family: var(--font-body);
+  font-size: calc(var(--note) * 0.88);
+}
+.seat {
+  padding: 1.6px 9.6px 1.6px 3.2px;
+  border-radius: 999px;
+  background: rgba(255, 250, 235, 0.7);
+  border: 1.5px dashed rgba(90, 70, 40, 0.45);
+  font-size: calc(var(--note) * 1.02);
+}
+.face {
+  flex: none;
+  width: 1.35em;
+  height: 1.35em;
+  border-radius: 50%;
+  overflow: hidden;
+  line-height: 0;
+  background: #ecdfc3;
+  box-shadow: 0 0 0 1px var(--manila-edge);
+}
+.add,
+.chipButton {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  font-family: var(--f-type);
+  font-size: var(--label);
+  color: var(--type-label);
+  padding: 3.2px 8px;
+  border-radius: 999px;
+  border: 1.5px dashed rgba(90, 70, 40, 0.3);
+}
+.chipButton {
+  font-family: var(--f-hand);
+  font-size: calc(var(--note) * 0.98);
+  color: var(--type-mut);
+}
+.chipButton[aria-pressed='true'] {
+  color: var(--pencil);
+  border-style: solid;
+  border-color: rgba(52, 68, 92, 0.55);
+  background: rgba(255, 250, 235, 0.7);
+}
+.recordLine {
+  margin: 1.6px 0 0;
+  font-family: var(--f-type);
+  font-size: calc(var(--label) * 0.95);
+  color: var(--type-mut);
+}
+.sectRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 9.6px;
+}
+.from {
+  font-family: var(--f-type);
+  font-size: calc(var(--label) * 0.85);
+  color: var(--type-mut);
+}
+.auto {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6.4px;
+  padding: 3.2px 0;
+  font-family: var(--font-body);
+  font-size: calc(var(--note) * 0.88);
+}
+.auto .face {
+  width: 1.45em;
+  height: 1.45em;
+}
+/* the player's lines: pencil on the page's own rules */
+.lines {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 4.8em;
+  margin: 1.6px 0 0;
+  padding: 0 2px;
+  border: 0;
+  resize: none;
+  field-sizing: content;
+  font-family: var(--f-hand);
+  font-size: calc(var(--note) * 1.08);
+  line-height: 1.6em;
+  color: var(--pencil);
+  background: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent calc(1.6em - 1px),
+      rgba(90, 70, 40, 0.22) calc(1.6em - 1px),
+      rgba(90, 70, 40, 0.22) 1.6em
+    )
+    0 0 / 100% 1.6em local;
+}
+.lines::placeholder {
+  color: rgba(52, 68, 92, 0.4);
+}
+.lines:focus-visible {
+  outline: none;
+}

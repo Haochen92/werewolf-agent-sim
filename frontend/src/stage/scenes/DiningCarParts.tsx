@@ -25,7 +25,6 @@ import { light, type Pool } from '../paint/light';
 import type { Phase } from '../paint/materials';
 import { ROLE_NAME, factionOf, hiddenRolesHeld, knownRoles, seatNumber } from '../roles';
 import { BLEED, STAGE_H, STAGE_W, type Hud, type StageGeometry } from '../units';
-import type { SlotInput } from './types';
 
 /**
  * The car at an hour; played from another hour, the old hour's picture fades off over the new
@@ -161,7 +160,7 @@ export function TableWing({
   me,
   width,
   notes = null,
-  edit,
+  onOpenFile,
   opts = {},
 }: {
   view: GameView;
@@ -170,8 +169,8 @@ export function TableWing({
   width: number;
   /** The game whose notebook the seated player keeps (`notebookGame`); null: none. */
   notes?: string | null;
-  /** The open note editor, held above the scenes (`SlotInput.notebook`). */
-  edit?: SlotInput['notebook'];
+  /** Opens a seat's file in the case file (`SlotInput.onOpenFile`): the player's own, live. */
+  onOpenFile?: (seat: string) => void;
   opts?: WingSeatOptions;
 }) {
   const deadBySeat = new Map(view.dead.map((d) => [d.player, d]));
@@ -182,8 +181,7 @@ export function TableWing({
       <StageWing
         width={width}
         notes={notes}
-        edit={edit}
-        castCounts={view.castRoleCounts}
+        onOpen={onOpenFile ? (n) => onOpenFile(`player_${n}`) : undefined}
         tiles={view.seats.map((seat, i) => {
           const d = opts.untold?.has(seat) ? undefined : deadBySeat.get(seat);
           return {

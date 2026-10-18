@@ -2,17 +2,22 @@
 
 /**
  * The tools, on a walnut board in the owner's material kit: a brass plate per tool, and the
- * tool shown on a paper card, working (the seat card with its notes pinned open; the composer with canned
+ * tool shown on a paper card, working (your file on a seat, in the case file; the composer with canned
  * drafts; your role card by day and at night), with numbered coins saying how to use it. The
  * tray holds every card in one cell, so it is as tall as the tallest and a switch moves nothing.
  */
 import type { ReactNode } from 'react';
+import dynamic from 'next/dynamic';
 import { ComposerDemo } from './ComposerDemo';
 import { RoleCardDemo } from './RoleCardDemo';
-import { SeatCardsDemo } from './SeatCardsDemo';
 import { useTabs } from './useTabs';
 import guide from './Guide.module.css';
 import classes from './ToolsTray.module.css';
+
+// a recorded game's view: loaded with the case file's demos, after the page
+const NotesDemo = dynamic(() => import('./ExhibitDemos').then((m) => m.NotesDemo), {
+  ssr: false,
+});
 
 function Tool({
   title,
@@ -51,11 +56,11 @@ export function ToolsTray() {
       <div className={`${guide.stack} ${classes.cards}`}>
         <div className={classes.card} {...t.panel('cards')}>
           <Tool
-            title="Notes on every player"
-            demo={<SeatCardsDemo />}
+            title="A file on every player"
+            demo={<NotesDemo />}
             how={[
-              ['Select a player\u2019s card', 'write a note, or guess their role'],
-              ['Your guess shows on their card', 'only you can see it'],
+              ['Select a player\u2019s photo', 'their file opens: their claim, your guess'],
+              ['A page for each day', 'their night, the vote, your own lines'],
               [
                 'Saved in this browser',
                 'shared only with a draft, if Use my seat notes is ticked',

@@ -48,7 +48,6 @@ import { winnerKey } from '../roles';
 import { DecodeAhead } from '../cast/DecodeAhead';
 import { beatsFor } from '../beats/beatsFor';
 import { useDrawerFilters } from '../drawer/use-drawer-filters';
-import { useNoteEditing } from '../notebook';
 import { StageMotion } from '../motion';
 import type { SceneBeat } from '../beats/types';
 import type { MotionSpeed, Presentation, SlotInput, StopInput } from '../scenes/types';
@@ -231,8 +230,6 @@ export function ReplayTheatre({
   // the claim ledger for the file's Record, asked once (a preview does without: its Record
   // shows the summaries' own claims)
   const ledger = useLedger(game.game_id, 'final', !mini);
-  // the seat notebook's open editor (a replay has no notebook today: kept as the live game's)
-  const noteEditing = useNoteEditing();
   const onXray = useCallback(() => dispatch({ type: 'xray' }), []);
   // the landing's two buttons under a preview are the older pair, Transcript and X-ray: its
   // X-ray turns the X-ray on and brings the film, or, with the film up, turns it off and
@@ -255,7 +252,6 @@ export function ReplayTheatre({
       recordPick,
       onRecordPick: setRecordPick,
       onShowRecord: () => dispatch({ type: 'show-record' }),
-      notebook: noteEditing,
       ahead,
       onTranscript: () => dispatch({ type: 'transcript' }),
       onFile: () => dispatch({ type: 'file' }),
@@ -279,7 +275,6 @@ export function ReplayTheatre({
       fileSeat,
       ledger,
       recordPick,
-      noteEditing,
       ahead,
       onXray,
       isMini,

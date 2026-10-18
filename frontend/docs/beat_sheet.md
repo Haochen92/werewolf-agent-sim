@@ -65,28 +65,32 @@ all for two columns, about 134 css px on an iPhone 14, 51 of them in the letterb
 card is edged in brass; a dead seat is the same photo gone grey with its role on its faction's
 ink band and a black crepe mourning ribbon across the photo's top corner (2026-09-29); your own seat an amber "You" band; with the X-ray on, a living seat its faction's band
 and the sigil badge; the game's losers dimmed. Lit and dimmed are light only.
-**Notes (live, seated only).** Tapping another seat's card opens its note editor (the seat's
-head, number, alive or dead; a ruled writing area; "Mark as suspect", not for the dead; Done;
-Escape or a tap outside closes). The editor stays open while the beats, the scenes and the
-recuts go by under it (2026-10-01; it closed on every beat, the wing being remounted with each):
-the container holds which seat it is on (`SlotInput.notebook`), the words are the notebook's as
-typed, and a remounted editor puts the focus and the caret back where they were (an open role
-list stays open). It closes on Done, Escape or a tap outside, when its seat dies (as the stage
-tells the death; a seat already dead when opened stays open), or when the seat can no longer be
-written on; the focus goes back to the card that opened it if that card is still on the rail,
-else nowhere. The first time in a game a paper slip beside the rail says "Tap a
-card to write notes" until the first tap. A card the player may write on has two or three
-faint ruled lines on its foot, the note's first words on them in Literata, never under 11 css
-px; where they would be smaller (a phone) the card shows two short pencil strokes instead, and a
-tap reads the note. One suspect at a time: a wax seal on its card and its
-head in the suspect slot (a suspect who dies leaves the slot empty). Under the note (owner,
-2026-09-30), a role guess, "I think they are… ▾": the roles a living seat could still hold (the
-cast's counts less the roles the dead have shown, "Wolf · 1 left"), and "not sure"; not for the
-dead. A guess shows as the role's sigil on a small paper disc with a pencilled (dashed) edge at
-the photo's lower left, never the X-ray's badge. All of it stays on the
-device (`notes_{gameId}`, the guesses an added field an older notebook reads without); it reaches the server only with a speech draft the player sends it
-along with ("Use my seat notes", ticked; D25), the guess folded into that seat's note on the
-device ("(I think: wolf) …") so the request is the server's as it was, and the suspect never preselects a ballot. In a replay and for an observer the cards are only shown: no editor, hint or pencil lines.
+**Your files (live, seated only; owner, 2026-10-18: the notes moved into the case file, picks
+over writing).** Tapping a seat's card, your own too, opens your file on that seat in the case
+file (`film/PlayerFile.tsx`), which in a live game runs the stage's height, the box at the foot
+narrowed beside it as the drawer's is (`slot.ts filmFull`); the folder's seat tabs page through
+the files, the Record stays first, and the docket waits for the game's end. The rail's plate
+says "Tap to open file". The cover holds what stands for the whole game: "Claims [role ▾]" (any
+role the game deals, pencilled on a dotted blank, the role's sigil beside it; beside that the
+morning Record's claim for the seat, "✓ on the record" or "record: Healer") and "I think they
+are", the guess stamped on in its side's ink (a dashed "Not sure" stamp until then; the card
+offers only the roles that could still be alive, by side, each with its sigil). On a dead seat
+the stamp is the role its death showed, and there is no guess; on your own seat the claim is
+"I claim" (your cover, for an evil seat above all) and the stamp is your role. Under the cover a
+tab per day, added as the days come. A day's page: "Night N · their claim", what the seat said
+it did the night before, picked rather than written, the claimed role setting the verb
+(`notebook.ts CLAIM_FORM`: "followed [seat]", "saw them visit [seats]", "reads Suspicious"), the
+Record's line for that night under it; "The vote", filled in from the table (who they voted
+for, who voted for them); and your lines, pencilled on the page's rules. Labels are the file's
+typewriter, your answers a graphite pencil hand. The claim is pencilled on the card's foot (two
+short strokes on a phone), the guess on its photo (the role's sigil on a small paper disc with a
+dashed edge at the photo's lower left, never the X-ray's badge). All of it stays on the device
+(`notes_{gameId}`; a free note kept before 2026-10-18 reads back as the seat's lines on day 1);
+it reaches the server only with a speech draft the player sends it along with ("Use my seat
+notes", ticked; D25), each seat's file told in one line ("(I think: wolf) Claims healer. Night
+1: says they protected player_4. Day 2: …"; your own seat "What I have claimed: …"), so the
+request is the server's as it was. In a replay and for an observer the cards are only shown:
+no files, no pencil.
 
 ## 1. The deal — H§4.0 · bench 75
 

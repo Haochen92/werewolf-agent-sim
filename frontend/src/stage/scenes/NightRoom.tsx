@@ -375,8 +375,9 @@ export function NightRoom({
         <StageWing
           width={g.wingN}
           notes={notebookGame(presentation, me)}
-          edit={slotInput?.notebook}
-          castCounts={view.castRoleCounts}
+          onOpen={
+            slotInput?.onOpenFile ? (n) => slotInput.onOpenFile!(`player_${n}`) : undefined
+          }
           tiles={view.seats.map((seat, i) => {
             const d = deadBySeat.get(seat);
             const truth = xray
