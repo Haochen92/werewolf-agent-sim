@@ -1088,7 +1088,9 @@ The containers own the rules for when a moment counts as played: live, a beat th
 (`cursor.animate`), never what a refresh lands on; the replay, a beat played on, never a jump or a
 scrub, and a jump cuts a sting still sounding. The landing's preview and the guide's demos play
 nothing. The switch is `SoundButton`: on the strip (`SlotInput.sound`, the game and the full
-replay; the workbench has none, so its goldens are untouched) and, on a site page with music,
+replay; the workbench has none, so its goldens are untouched), on the platform's ledge after its
+plates (2026-10-18: one choice across the site, so music turned off on a site page silenced the
+platform with no way back there), and, on a site page with music,
 in the nav after the guide's sign, a speaker alone so it fits the phone's pinned strip
 (`TopNav` `Music`, shown while a page's opt-in bed is mounted: `optInPages`).
 `/workbench/music` auditions the files against the scenes' beats.

@@ -11,7 +11,7 @@
  * - `station.waiting`: the room filling. Each person who joins rises onto the platform as the
  *   status poll brings their name; their chip takes a tile on the wing. The ledge at the foot
  *   says how many are aboard and carries the brass plates: the host's Lock, Close and Depart,
- *   everyone else's Leave.
+ *   everyone else's Leave, and for everyone the music's speaker (the lobby's three play here).
  * - `station.locked`: the same, with the brass "Locked" plate under the station's sign.
  * - `station.departing`: Depart was pressed (or the game has begun). The people step off the
  *   platform into their places in the window, the blinds come down on the agents' places with
@@ -33,6 +33,7 @@ import { motion, type Transition } from 'motion/react';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { preload } from 'react-dom';
 import { BODY, SPRITES } from '@/assets/manifest';
+import { SoundButton } from '@/music/SoundButton';
 import { Layer, Paint } from '../Stage';
 import { useSmall } from '../set';
 import { ChipSprite } from '../cast/ChipSprite';
@@ -385,6 +386,8 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
               {room.busy === 'leave' ? 'Leaving…' : 'Leave'}
             </button>
           ) : null}
+          {/* the music's switch, as on the game's strip: the platform plays the lobby's three */}
+          <SoundButton className={`${styles.brass} ${styles.brassSmall} ${styles.sound}`} />
         </motion.div>
       </Layer>
       {curtain}

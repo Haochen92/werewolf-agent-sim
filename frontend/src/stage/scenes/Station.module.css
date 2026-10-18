@@ -634,6 +634,24 @@
   padding: 0 calc(20.8px * var(--legible-ui));
   font-size: calc(20.8px * var(--legible-ui));
 }
+/* the music's speaker: a square plate, the same brass on or off (not Lock's deeper "pressed") */
+.sound {
+  min-width: 39.6px;
+  padding: 0 calc(10.4px * var(--legible-ui));
+}
+.sound[aria-pressed='true'] {
+  background:
+    radial-gradient(circle at 10% 18%, #7a5a26 3.5px, transparent 4.2px),
+    radial-gradient(circle at 90% 18%, #7a5a26 3.5px, transparent 4.2px),
+    radial-gradient(circle at 10% 82%, #7a5a26 3.5px, transparent 4.2px),
+    radial-gradient(circle at 90% 82%, #7a5a26 3.5px, transparent 4.2px),
+    linear-gradient(#f2d185, #c99a44 48%, #9c7430);
+}
+/* the speaker's body filled (`.brass svg` strokes the plates' line icons) */
+.sound svg path:first-child {
+  fill: currentColor;
+  stroke-width: 1.2;
+}
 
 /* ---- the curtain between the platform and the deal: a plain dark sheet, over everything ---- */
 .curtain {
