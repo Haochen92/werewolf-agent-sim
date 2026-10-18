@@ -18,9 +18,17 @@
 .nav {
   transition: top 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+/* held at the screen's middle, below the wall's lamp and its glow (owner, 2026-10-18), and
+   starting there too: --nav-h is the list's own height (ten links and two rules, measured), and
+   the margin lifts it by the guide's own top (the board's foot and the page's padding) */
 .nav {
+  --nav-h: 426px;
   position: sticky;
-  top: calc(env(safe-area-inset-top, 0px) + var(--site-strip, 0px) + 24px);
+  top: max(
+    calc(env(safe-area-inset-top, 0px) + var(--site-strip, 0px) + 24px),
+    calc(50svh - var(--nav-h) / 2)
+  );
+  margin-top: max(0px, calc(50svh - var(--nav-h) / 2 - 150px));
   align-self: start;
   display: flex;
   flex-direction: column;
