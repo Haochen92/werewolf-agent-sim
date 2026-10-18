@@ -126,7 +126,7 @@ def resolve_decision(
 
         addressed_targets = getattr(result, "addressed_targets", [])
 
-        # The echo gate: a sweep turn that makes a point already made today is held, not
+        # The echo gate: a sweep turn that adds nothing to today's discussion is held, not
         # published. Reactive turns are never gated (the answer is owed), nor is a human seat,
         # nor a player answering someone who named them (the ruling that a player confirming or
         # denying what was said about themselves is never a duplicate, decided from the tags, so
@@ -140,7 +140,7 @@ def resolve_decision(
             else:
                 echo_of = line_echo_of(message, player_id, earlier_today)
             if echo_of:
-                logger.info("[echo gate] day=%d %s held: same point as %s", current_day, player_id, echo_of)
+                logger.info("[echo gate] day=%d %s held: repeats %s", current_day, player_id, echo_of)
                 entry = DayChannel(
                     day=current_day,
                     seq=seq,

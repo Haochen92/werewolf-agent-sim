@@ -466,17 +466,16 @@ class LineEchoVerdict(LenientToolCallModel):
     )
     adds: str = Field(
         description=(
-            "What the new line says that no earlier line said: a reason, a fact, a name, a conclusion, "
-            "a next step, a question put to a player, an answer to a player. Crediting an earlier "
-            "speaker and then adding to their point counts as adding. Write exactly 'nothing' only if "
-            "every part of the new line's point was already said by an earlier line."
+            "What the new line adds that the discussion did not have: a fact, a reading with its reason, "
+            "a question or test nobody asked. Write exactly 'nothing' only if it restates, agrees without a "
+            "new reason, repeats a request already made, or is filler."
         ),
     )
     same_point_as: str = Field(
         description=(
-            "Empty string unless adds is 'nothing'. Then the player id of the FIRST earlier line that "
-            "already made the whole point: the same observation, the same suspicion of the same player "
-            "for the same reason, or the same proposal."
+            "Empty string unless adds is 'nothing'. Then the player id of the FIRST earlier line the new "
+            "line restates, agrees with or repeats, or 'none' if it is filler that repeats no particular "
+            "line."
         ),
     )
 

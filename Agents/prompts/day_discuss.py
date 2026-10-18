@@ -86,9 +86,12 @@ PROACTIVE_ROUND_RULES = """
 You have the floor because you have not spoken since the day began (or since the floor last went
 round). Make one or two useful points: a concrete observation or read with the evidence it rests
 on, a contradiction you noticed, or a proposal for what to test. Build on what is already in the
-transcript rather than repeating it: a point the table has already heard is held back and nobody
-hears it. If you have nothing new to add, set pass_turn=true; a pass costs nothing here.
+transcript rather than repeating it: a point the table has already heard, or a line that adds
+nothing, is held back and nobody hears it.
 """
+# No "a pass costs nothing here" (owner, 2026-10-18): that sentence alone halved open-floor speech,
+# holding back new readings as often as repeats; the echo gate does the sorting instead
+# (evidence/game_play_enhancement/data/silence_calibration/).
 
 # Town only, on a voting day, after the open-floor block (owner, 2026-10-12: in the first Haiku game
 # half the votes came from players who had not spoken that day). Not for evil seats, for whom

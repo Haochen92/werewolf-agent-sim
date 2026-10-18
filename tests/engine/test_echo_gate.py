@@ -1,7 +1,7 @@
 """The per-line echo gate on sweep turns (Agents/turn/echo_gate.py, called from resolve_decision).
 
-A held line is never heard, so the gate must hold only a clear repeat, never touch the turns the
-owner exempted, and fail open; the judge is faked, the decision code around it is real.
+A held line is never heard, so the gate must hold only a line that adds nothing, never touch the
+turns the owner exempted, and fail open; the judge is faked, the decision code around it is real.
 """
 from __future__ import annotations
 
@@ -44,14 +44,14 @@ def judge_saying(adds: str, same_point_as: str, seen: list | None = None):
             seen.append(prompt_value.to_string())
         return LineEchoVerdict(new_point="a point", adds=adds, same_point_as=same_point_as)
 
-    return lambda: SimpleNamespace(with_structured_output=lambda _schema: RunnableLambda(answer))
+    return lambda *_thinking: SimpleNamespace(with_structured_output=lambda _schema: RunnableLambda(answer))
 
 
 def judge_raising(error: Exception):
     def answer(_prompt_value):
         raise error
 
-    return lambda: SimpleNamespace(with_structured_output=lambda _schema: RunnableLambda(answer))
+    return lambda *_thinking: SimpleNamespace(with_structured_output=lambda _schema: RunnableLambda(answer))
 
 
 EARLIER = [
@@ -95,6 +95,12 @@ def test_keeps_a_line_whose_named_repeat_is_the_speaker_or_nobody(monkeypatch):
 
     monkeypatch.setattr(echo_gate, "get_llm_judge", judge_saying("nothing", ""))
     assert echo_gate.line_echo_of("again", "player_4", EARLIER) == ""
+
+
+def test_holds_filler_that_repeats_no_particular_line(monkeypatch):
+    monkeypatch.setattr(echo_gate, "get_llm_judge", judge_saying("nothing", "None"))
+
+    assert echo_gate.line_echo_of("Little to go on yet; let's be careful.", "player_4", EARLIER) == "filler"
 
 
 def test_keeps_a_line_whose_named_repeat_never_spoke(monkeypatch):

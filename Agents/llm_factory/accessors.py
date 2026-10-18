@@ -158,14 +158,15 @@ def get_llm_summary():
     )
 
 
-def get_llm_judge():
-    """Cheap model for binary judgments (e.g. the proactive novelty gate) — minimal thinking."""
+def get_llm_judge(default_thinking_level: str = "minimal"):
+    """Cheap model for binary judgments (e.g. the proactive novelty gate) — minimal thinking unless
+    the caller needs more (the echo gate runs at low) or the env sets it for every judge."""
     return create_chat_model(
         _game_model(),
         temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
         thinking_level=_thinking_level_from_env(
             "GOOGLE_GENAI_JUDGE_THINKING_LEVEL",
-            "minimal",
+            default_thinking_level,
         ),
     )
 
