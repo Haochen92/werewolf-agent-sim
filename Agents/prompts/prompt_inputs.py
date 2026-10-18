@@ -19,6 +19,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from Agents.prompts.compose import preamble
+from Agents.prompts.voices import persona_paragraph
 from Agents.prompts.common import VERDICT_EXAMPLES_PASS, memory_verdict_example
 from Agents.deduction import (
     deduction_blocks,
@@ -307,6 +308,8 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         # Not a template variable: every shown line's derivation, carried with the prompt capture
         # (Agents/turn/eval.py log_prompt), never rendered.
         "deduction_log": deduction_log(deductions),
+        # The seat's speaking voice (RunConfig.persona_voices); "" when off or for a human seat.
+        "persona_paragraph": persona_paragraph(payload),
         "previous_strategy": payload.get("previous_strategy", ""),
         "strategy_points": strategy_points_text,
         "retrieved_observations": observations_text,

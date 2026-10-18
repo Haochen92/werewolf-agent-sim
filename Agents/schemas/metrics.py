@@ -89,6 +89,10 @@ class GraphContext(TypedDict):
     """Local eval-case accumulator (the tee beside the Langfuse span dump).
     NotRequired + ``.get()``-accessed everywhere so contexts built without it
     (tests, ad-hoc invokes) keep working; emission is then Langfuse-only."""
+    seat_puppets: NotRequired[dict[str, str]]
+    """A served game's puppet at each seat ({"player_3": "owl"}), filled by the server's session when
+    it deals the cast, which it reads before any spoken turn runs. A seat's speaking voice is its
+    puppet's (Agents/prompts/voices.py); a batch game has none and draws them from the game id."""
 
 
 # ---------------------------------------------------------------------------

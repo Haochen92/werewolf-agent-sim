@@ -69,6 +69,9 @@ DEFAULT_DEDUCTION_MODE: DeductionMode = "full"
 # screen of the two: "before_note" keeps the per-turn note last, the cache-friendly order; the
 # public block is in the shared public record either way.
 DEFAULT_DEDUCTION_PLACEMENT: DeductionPlacement = "before_note"
+# A speaking voice for each AI seat, fixed for the game (Agents/prompts/voices.py; owner, 2026-10-18).
+# Off by default: a prompt change, run as an A/B against games without it first.
+DEFAULT_PERSONA_VOICES = False
 
 
 class RunConfig(BaseModel):
@@ -95,6 +98,7 @@ class RunConfig(BaseModel):
     stage_filter: bool = DEFAULT_STAGE_FILTER
     deduction_mode: DeductionMode = DEFAULT_DEDUCTION_MODE
     deduction_placement: DeductionPlacement = DEFAULT_DEDUCTION_PLACEMENT
+    persona_voices: bool = DEFAULT_PERSONA_VOICES
     game_id: str = ""
     session_id: str | None = None
     human_player: int = 0

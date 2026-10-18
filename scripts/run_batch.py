@@ -291,6 +291,11 @@ def parse_args() -> argparse.Namespace:
              "(RunConfig.deduction_placement; catalogue OQ21).",
     )
     parser.add_argument(
+        "--persona-voices",
+        action="store_true",
+        help="Give each AI seat a speaking voice, fixed for the game (RunConfig.persona_voices).",
+    )
+    parser.add_argument(
         "--skip-embedding-canary",
         action="store_true",
         help=(
@@ -563,6 +568,7 @@ def run_batch(args: argparse.Namespace) -> int:
             "stage_filter": args.stage_filter,
             "deduction_mode": args.deductions,
             "deduction_placement": args.deduction_placement,
+            "persona_voices": args.persona_voices,
             "memory_persistence_config": memory_persistence_config,
             "game_config": game_config,
         }
@@ -623,6 +629,7 @@ def run_batch(args: argparse.Namespace) -> int:
                     stage_filter=args.stage_filter,
                     deduction_mode=args.deductions,
                     deduction_placement=args.deduction_placement,
+                    persona_voices=args.persona_voices,
                     game_id=game_id,
                 )
             )

@@ -267,7 +267,9 @@ class GameSession:
         self._session_id = run.session_id or self.game_id
         self._graph = graph if graph is not None else parent_graph_compiled
         self._repository = repository
-        self._context = {"metrics": Metrics(), "eval_sink": EvalCaseSink()}
+        # seat_puppets: the cast as the engine reads it (a seat speaks in its puppet's voice when the
+        # game has voices on); filled at the deal or from the stored cast.
+        self._context = {"metrics": Metrics(), "eval_sink": EvalCaseSink(), "seat_puppets": {}}
         self.capture = TurnCapture()
         self._capture_partial = False
         # Tokens and call time per model, saved on the row as the game goes (server/game/usage.py).
@@ -585,6 +587,11 @@ class GameSession:
             return
         picks = {seat: pick for seat, pick in zip(self.human_players, self._picks) if pick}
         self.cast = draw_cast(seats, picks)
+        self._share_cast()
+
+    def _share_cast(self) -> None:
+        """Hand the cast to the engine's runtime context, where each seat's voice is looked up."""
+        self._context["seat_puppets"].update({c.seat: c.character for c in self.cast})
 
     async def drop(self, reason: str) -> None:
         """Give this game up for good: stop it and record why. Retention calls this on a
@@ -840,6 +847,7 @@ class GameSession:
         self.translator.hydrate(self.log)
         self.human_players = list(human_players)
         self.cast = list(cast)
+        self._share_cast()
         self.game_over = any(e.type == "game_over" for e in self.log)
         self._saved_event_count = len(self.log)
         self._saved_humans = list(self.human_players)

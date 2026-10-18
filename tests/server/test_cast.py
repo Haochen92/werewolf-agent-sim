@@ -97,6 +97,14 @@ def test_the_catalogue_is_served_with_ids_and_display_names(api_client):
     assert {"id": "shade", "display_name": "Songbird", "retired": False} in cards
 
 
+def test_every_puppet_has_a_speaking_voice():
+    """A puppet added to the catalogue needs its voice in Agents/prompts/voices.py (owner,
+    2026-10-18), or its seat speaks with none when a game has voices on."""
+    from Agents.prompts.voices import VOICES
+
+    assert list(VOICES) == [c.id for c in CATALOGUE]
+
+
 # ---- the session: the cast is drawn at the deal and written down once ----------------
 
 
@@ -141,6 +149,8 @@ async def test_the_deal_lands_each_pick_on_the_seat_its_player_was_dealt(quiet_s
     assert not by_seat["player_7"].chosen  # tok-b never chose: the house drew
     assert len({c.character for c in session.cast}) == 9
     assert repository.written == [session.cast]  # written once, with the deal
+    # and handed to the engine, where each seat's speaking voice is its puppet's
+    assert session._context["seat_puppets"] == {c.seat: c.character for c in session.cast}
 
 
 async def test_a_failed_cast_write_is_retried_with_the_next_save(quiet_session):
@@ -162,6 +172,7 @@ async def test_a_rebuilt_game_keeps_the_cast_it_stored_and_never_redraws(quiet_s
     session = quiet_session(FakeGraph([]), seat_tokens=["tok-a"], picks=["cat"])
     session.reload_history([], ["player_3"], stored)
     assert session.cast == stored and session._saved_cast
+    assert session._context["seat_puppets"] == {c.seat: c.character for c in stored}
     session._deal_cast(SEATS)  # a replayed deal chunk after a restart changes nothing
     assert session.cast == stored
 

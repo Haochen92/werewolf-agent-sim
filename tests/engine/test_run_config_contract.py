@@ -29,6 +29,7 @@ EXPECTED_CONFIGURABLE_KEYS = {
     "human_role",
     "memory_config",
     "memory_persistence_config",
+    "persona_voices",
     "reranking_config",
     "retrieval_types_config",
     "session_id",
@@ -82,6 +83,7 @@ def test_defaults_applied_when_omitted():
     assert conf["retrieval_types_config"] == DEFAULT_RETRIEVAL_TYPES_CONFIG
     assert conf["deduction_mode"] == "full"
     assert conf["deduction_placement"] == "before_note"
+    assert conf["persona_voices"] is False
 
 
 def test_deduction_mode_rides_the_configurable():

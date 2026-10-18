@@ -172,7 +172,10 @@ def day_discuss_template(role: str) -> ChatPromptTemplate:
     # everything else that differs by seat or call type.
     human = (
         PUBLIC_RECORD + BOARD
-        + build_system_prompt(card.playstyle, words.framing, TONE_INSTRUCTION, DAY_DISCUSS_RESPONSE_FORMAT)
+        # {persona_paragraph}: the seat's voice when the game has voices on (Agents/prompts/voices.py),
+        # else "", which leaves the prompt as it was.
+        + build_system_prompt(card.playstyle, words.framing, TONE_INSTRUCTION.strip() + "{persona_paragraph}",
+                              DAY_DISCUSS_RESPONSE_FORMAT)
         + "\n" + "{tell_book}" + READS_COMMIT_INSTRUCTION
         + _DISCUSS_HEADER + words.context + _DISCUSSION_STAGE_RULES
         + words.trailer + _FIRING_BRIEF + DAY_DISCUSSION_MEMORY_CONTEXT

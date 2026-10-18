@@ -83,6 +83,18 @@ def _with_deduction_placement(enriched_payload: dict[str, Any], config: Runnable
     return enriched_payload
 
 
+def _with_persona_voices(enriched_payload: dict[str, Any], config: RunnableConfig,
+                         runtime: Runtime[GraphContext] | None) -> dict[str, Any]:
+    """Whether the game gives its AI seats speaking voices (RunConfig.persona_voices), and the puppet
+    at the seat when the server dealt one (GraphContext.seat_puppets), read where the prompt is built
+    (Agents/prompts/voices.py); off when a bare test has no config."""
+    configurable = config.get("configurable", {}) if config else {}
+    enriched_payload["persona_voices"] = bool(configurable.get("persona_voices"))
+    context = getattr(runtime, "context", None) or {}
+    enriched_payload["seat_puppet"] = (context.get("seat_puppets") or {}).get(enriched_payload.get("player_id"))
+    return enriched_payload
+
+
 def _announce_memory_consulted(
     *,
     player_id: str,
@@ -227,6 +239,7 @@ def run_memory_informed_action(
         enriched_payload = _with_game_id(enriched_payload, config)
         enriched_payload = _with_deduction_mode(enriched_payload, config)
         enriched_payload = _with_deduction_placement(enriched_payload, config)
+        enriched_payload = _with_persona_voices(enriched_payload, config, runtime)
         result = run_agent(
             enriched_payload,
             prompt_template,
@@ -356,6 +369,7 @@ def preview_agent_action(
     enriched_payload = _with_game_id(enriched_payload, config)
     enriched_payload = _with_deduction_mode(enriched_payload, config)
     enriched_payload = _with_deduction_placement(enriched_payload, config)
+    enriched_payload = _with_persona_voices(enriched_payload, config, runtime)
     if direction:
         prompt_template = prompt_template + HumanMessage(content=direction)
     return run_agent(enriched_payload, prompt_template, output_schema, output_key)
@@ -428,6 +442,7 @@ def run_memory_informed_night_action(
         enriched_payload = _with_game_id(enriched_payload, config)
         enriched_payload = _with_deduction_mode(enriched_payload, config)
         enriched_payload = _with_deduction_placement(enriched_payload, config)
+        enriched_payload = _with_persona_voices(enriched_payload, config, runtime)
         result = run_agent(
             enriched_payload,
             prompt_template,
