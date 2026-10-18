@@ -97,7 +97,10 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className={rooms.room} aria-labelledby="features-head">
+        <section
+          className={`${rooms.room} ${rooms.lamped}`}
+          aria-labelledby="features-head"
+        >
           <div className={classes.secHead}>
             <h2 id="features-head">What makes it different</h2>
           </div>

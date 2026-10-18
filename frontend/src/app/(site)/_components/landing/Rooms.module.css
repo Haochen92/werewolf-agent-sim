@@ -16,9 +16,10 @@
 
 /* ---------- a room: the section, with its padding ---------- */
 .room {
+  --room-top: 96px;
   position: relative;
   isolation: isolate;
-  padding: 96px 0 110px;
+  padding: var(--room-top) 0 110px;
 }
 /* the brass threshold before the closing word: a sill with a bright line along it, its shadow below */
 .threshold {
@@ -43,16 +44,13 @@
 }
 
 /* ---------- the navy wall: the story, the features and the replay ---------- */
-/* One wall behind the three rooms (owner, 2026-10-18): the station's navy panelling, its lamp at
-   the top left by the story, a picture spanning the screen (scripts/fit_walls.py); under it a
-   band of its lower panels repeats as far as the rooms go, laid upright and mirrored so no join
-   shows. It rises out of the dark above and sinks back into it before the closing word. A
-   screen taller than wide has its own wall, the lamp lower and further in. Still, painted once. */
+/* One wall behind the three rooms (owner, 2026-10-18): the station's navy panelling, a band of it
+   repeated down as far as the rooms go, laid upright and mirrored so no join shows
+   (scripts/fit_walls.py). It rises out of the dark above and sinks back into it before the
+   closing word. Its lamp hangs just above "What makes it different" (`.lamped`). A screen taller
+   than wide has its own wall. Still, painted once. */
 .navy {
-  --wall: url('../../../../assets/site/walls/navy-wide.webp');
   --band: url('../../../../assets/site/walls/navy-wide-band.webp');
-  /* the picture's height at the screen's width (1536 x 1024) */
-  --wall-h: 66.667vw;
   position: relative;
   isolation: isolate;
 }
@@ -69,8 +67,7 @@
 }
 .navy::before {
   background:
-    var(--wall) center top / 100% auto no-repeat,
-    var(--band) center var(--wall-h) / 100% auto repeat-y,
+    var(--band) center top / 100% auto repeat-y,
     #12161b;
 }
 .navy::after {
@@ -78,11 +75,37 @@
     linear-gradient(180deg, var(--bg) 0, rgba(12, 10, 7, 0.55) 90px, transparent 220px),
     linear-gradient(180deg, transparent calc(100% - 240px), var(--bg) 100%);
 }
+
+/* the wall's lamp, cut from its picture with the wall round it fading to clear (the band shows
+   through), hung so its glass is just above the room's heading: --glass is the glass's middle
+   down the piece and --piece the piece's height, both at the screen's width (the master's
+   rows 352 of 230-630 at 1536 wide; 886 of 760-1130 at 1024 for a tall screen) */
+/* the board runs close into the replay's room under it (owner, 2026-10-18) */
+.lamped {
+  padding-bottom: 24px;
+}
+.lamped::before {
+  --glass: 7.94vw;
+  --piece: 26.04vw;
+  content: '';
+  position: absolute;
+  left: calc(50% - 50vw);
+  width: 100vw;
+  top: calc(var(--room-top) - 58px - var(--glass));
+  height: var(--piece);
+  z-index: -1;
+  pointer-events: none;
+  background: url('../../../../assets/site/walls/navy-wide-lamp.webp') center top / 100%
+    auto no-repeat;
+}
 @media (max-aspect-ratio: 1/1) {
   .navy {
-    --wall: url('../../../../assets/site/walls/navy-tall.webp');
     --band: url('../../../../assets/site/walls/navy-tall-band.webp');
-    --wall-h: 150vw;
+  }
+  .lamped::before {
+    --glass: 11.33vw;
+    --piece: 36.13vw;
+    background-image: url('../../../../assets/site/walls/navy-tall-lamp.webp');
   }
 }
 
@@ -101,7 +124,11 @@
 /* ---------- a phone ---------- */
 @media (max-width: 860px) {
   .room {
-    padding: 104px 0 76px;
+    --room-top: 104px;
+    padding: var(--room-top) 0 76px;
+  }
+  .lamped {
+    padding-bottom: 16px;
   }
   .story {
     padding-top: 96px;
