@@ -124,9 +124,9 @@
   transform: translateX(3px);
 }
 
-/* a phone: the title and the way in, one line each ticket, two side by side (owner's mock,
-   2026-10-18) */
-@media (max-width: 700px) {
+/* a phone (and a portrait tablet: the site's phone layout, two rows of nav): the title and the
+   way in, one line each ticket, two side by side (owner's mock, 2026-10-18; the hall's too) */
+@media (max-width: 860px) {
   .ticket {
     flex: 1 1 0;
     width: auto;
