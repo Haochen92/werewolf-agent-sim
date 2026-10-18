@@ -1,27 +1,90 @@
-/* The tools' tray: the platform's boards in less light; brass plate tabs (the rooms' plate for
-   the tool shown, a dark tab for the other); the tool on the landing's paper card, flat, so the
-   demo's ground matches it. */
+/* The tools' board, as the landing's "What makes it different" (the owner's material kit,
+   2026-10-18; scripts/fit_kit.py): walnut in a brass rim, a brass name plate per tool for its
+   tab (the one shown bright, the others dimmed), the tool on the kit's card paper, the steps
+   numbered on brass discs. Nothing moves; no filter or blend. */
 
 .tray {
+  /* the rim's screws, this far in from each corner */
+  --screw: 14px;
   display: grid;
   gap: 14px;
   justify-items: start;
-  padding: 24px 24px 40px;
-  border-radius: 18px;
+  padding: 26px 24px 40px;
+  border-radius: 10px;
   background:
-    radial-gradient(ellipse 90% 80% at 50% 40%, transparent 0, rgba(8, 5, 3, 0.4) 100%),
-    linear-gradient(rgba(20, 12, 6, 0.12), rgba(20, 12, 6, 0.12)),
-    var(--boards) 0 0 / 420px auto repeat,
-    #3a2616;
-  /* the boards take the walnut's hue: their grain, in its brown */
-  background-blend-mode: normal, normal, saturation, normal;
+    radial-gradient(
+        circle at 50% 50%,
+        #f4dca0 0 1px,
+        #b08a4a 2px,
+        #6a4c20 4px,
+        transparent 4.5px
+      )
+      var(--screw) var(--screw) / 9px 9px no-repeat,
+    radial-gradient(
+        circle at 50% 50%,
+        #f4dca0 0 1px,
+        #b08a4a 2px,
+        #6a4c20 4px,
+        transparent 4.5px
+      )
+      calc(100% - var(--screw)) var(--screw) / 9px 9px no-repeat,
+    radial-gradient(
+        circle at 50% 50%,
+        #f4dca0 0 1px,
+        #b08a4a 2px,
+        #6a4c20 4px,
+        transparent 4.5px
+      )
+      var(--screw) calc(100% - var(--screw)) / 9px 9px no-repeat,
+    radial-gradient(
+        circle at 50% 50%,
+        #f4dca0 0 1px,
+        #b08a4a 2px,
+        #6a4c20 4px,
+        transparent 4.5px
+      )
+      calc(100% - var(--screw)) calc(100% - var(--screw)) / 9px 9px no-repeat,
+    radial-gradient(ellipse 80% 75% at 50% 45%, transparent 40%, rgba(12, 6, 2, 0.6) 100%),
+    url('../../../../assets/site/kit/walnut.webp') 0 0 / 314px 314px repeat,
+    #2c1a0e;
   box-shadow:
-    inset 0 2px 0 rgba(255, 220, 170, 0.08),
+    inset 0 0 0 3px #b8914c,
+    inset 0 0 0 4px rgba(255, 236, 190, 0.35),
+    inset 0 0 0 6px rgba(40, 22, 6, 0.7),
+    0 0 0 1px #4a3214,
     0 24px 50px -20px rgba(0, 0, 0, 0.9);
 }
 
+/* the tabs: the kit's brass plate, its screwed ends kept and its middle stretched to the name */
 .tabs {
-  composes: tabs from '../../../../components/site/PlateTabs.module.css';
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.tabs button {
+  box-sizing: border-box;
+  height: 40px;
+  padding: 0 6px;
+  border-style: solid;
+  border-width: 0 30px;
+  border-image: url('../../../../assets/site/kit/brass-plate.webp') 0 90 fill / 0 30px
+    stretch;
+  background: none;
+  color: #2e1c06;
+  font-family: var(--font-serif);
+  font-size: 19px;
+  line-height: 1;
+  text-shadow: 0 1px 0 rgba(255, 240, 200, 0.5);
+  cursor: pointer;
+  opacity: 0.62;
+  transition: opacity 0.2s;
+}
+.tabs button[aria-selected='true'] {
+  opacity: 1;
+}
+.tabs button:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
 }
 
 .cards {
@@ -38,7 +101,8 @@
   padding: 24px;
   border-radius: 3px;
   color: #3a2a18;
-  background: #efe2c2;
+  background: url('../../../../assets/site/kit/card-paper.webp') 50% 50% / cover no-repeat
+    #efe2c2;
   box-shadow:
     0 12px 20px -8px rgba(0, 0, 0, 0.75),
     0 0 0 1px rgba(0, 0, 0, 0.25);
@@ -93,11 +157,11 @@
   font-size: 21px;
   line-height: 1;
   color: var(--plate-ink);
-  background: radial-gradient(circle at 35% 30%, #f4dc9c, #c9a04e 55%, #8a6526);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 250, 220, 0.7),
-    inset 0 -2px 3px rgba(60, 35, 5, 0.35),
-    0 2px 4px rgba(60, 35, 5, 0.45);
+  /* the kit's brass disc */
+  background: url('../../../../assets/site/kit/brass-disc.webp') 50% 50% / 100% 100%
+    no-repeat;
+  text-shadow: 0 1px 0 rgba(255, 240, 200, 0.5);
+  box-shadow: 0 2px 4px rgba(60, 35, 5, 0.45);
 }
 .how b {
   font-family: var(--font-serif);
@@ -122,7 +186,23 @@
 
 @media (max-width: 760px) {
   .tray {
-    padding: 16px 16px 28px;
+    --screw: 7px;
+    padding: 18px 12px 24px;
+  }
+  /* three equal plates across the board, their screwed ends smaller */
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    justify-self: stretch;
+    gap: 6px;
+  }
+  .tabs button {
+    min-width: 0;
+    padding: 0 2px;
+    border-width: 0 14px;
+    border-image-width: 0 14px;
+    font-size: 15px;
+    white-space: nowrap;
   }
   .card {
     justify-content: flex-start;

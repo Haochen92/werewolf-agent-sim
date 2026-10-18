@@ -69,7 +69,7 @@ Which face goes where (three voices, three props) is ruled in [typography.md](ty
 | `SiteFooter` | The GitHub link with its icon, the other links, and the credit line, whose "N games archived" is live (`GamesArchived`, the archive's `X-Total-Count`). |
 | `Button` | Mantine Button narrowed to the kit's three variants (below): `well` (the default), `plate` and `text`. Polymorphic. |
 | `GuideSign` | The guide's one look wherever a page points at it: the navy enamel and the open book (`Book`, which the nav's sign draws too), a size up for a page: under the hero's tickets, under the roles. |
-| `PlateTabs.module.css` | The site's plain tabs, composed by any tab set that is not itself a picture: dark tabs, the chosen one a brass plate; `small` inside a panel. |
+| `PlateTabs.module.css` | The site's plain tabs, composed by any tab set that is not itself a picture: dark tabs, the chosen one a brass plate; `small` inside a panel. The material-kit boards (the landing's features, the guide's tools) draw their own: every tab the kit's brass plate, the unchosen dimmed. |
 | `Paper` | The paper surface for things inside the fiction. Polymorphic Box. |
 | `Flapword` | Split-flap tiles for one word, with `tone` `hot` or `dim`. |
 | `Icon` / `IconSprite` | One `<symbol>` sprite, rendered once by the site layout. It holds `i-*` (the mockups' icons plus `i-lock-open`, `i-ticket` and `i-github`) and `sg-*`, whose paths are the stage's `Sigil`. |
@@ -195,6 +195,9 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   on card paper ruled in red under a red ribbon, a brass pin (`brass-disc` heads) down to its
   private note typed on ruled cream with the paperclip, the note's own "Do not disclose:" marked
   in red pencil, and what came of it inside a ruled edge on the kraft. Copy unchanged.
+- The guide's tools board (`ToolsTray`) is the features board's twin in the kit (owner,
+  2026-10-18): walnut in a brass rim, every tab the brass plate (the unchosen dimmed), the tool on
+  card paper, its steps numbered on brass discs; it no longer composes `PlateTabs`.
 - The carriage's board and track (owner, 2026-10-18): the game-ID board is the owner's walnut
   sign in its brass frame (`train-sign.webp`, a 9-slice: the frame and its four rivets kept, the
   walnut stretched to the board), and the painted carriage stands on the owner's railway
