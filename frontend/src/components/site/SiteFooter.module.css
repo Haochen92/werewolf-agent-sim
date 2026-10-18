@@ -24,6 +24,9 @@
 :global(html[data-gate-lift]) .foot {
   transition: opacity 0.4s ease-out;
 }
+:global(html[data-gate-lift='quick']) .foot {
+  transition: none;
+}
 
 .meta {
   margin: 0;

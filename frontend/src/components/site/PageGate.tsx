@@ -23,17 +23,30 @@ import classes from './PageGate.module.css';
 const CAP_MS = 8000;
 /** The fade off the loader and onto the page (PageGate.module.css). */
 const LIFT_MS = 400;
+/** When the loader comes up, unless it follows one already up (TrainLoader.module.css). */
+const SHOW_MS = 300;
+/** Once up, how long the loader stays at least, so the train never blinks on and off (owner,
+ *  2026-10-18: the replay's way in holds it the same way). */
+const HOLD_MS = 1500;
 
 type GateRun = { root: Element | null; ready: Promise<void> | null };
 type GateWindow = { __gateRun?: GateRun | null };
 
 /**
  * Hides the page under `root`, waits until the pictures on the screen and the fonts are loaded and
- * decoded (or `cap` ms), then shows it, fading in for `lift` ms. Plain script that uses nothing
+ * decoded (or `cap` ms), then shows it, fading in for `lift` ms. A loader that came up (`show` ms
+ * in) stays `hold` ms before it goes; a wait over before `show` shows nothing. Plain script that uses nothing
  * from outside itself: it is also written into the page as text (`INLINE`), so it can run as the
  * page arrives. A later run (another page) makes an earlier one's ending do nothing.
  */
-function gate(root: Element | null, cap: number, lift: number): Promise<void> {
+function gate(
+  root: Element | null,
+  cap: number,
+  lift: number,
+  show: number,
+  hold: number,
+): Promise<void> {
+  const t0 = performance.now();
   const html = document.documentElement;
   const w = window as unknown as GateWindow;
   const run: GateRun = { root: root, ready: null };
@@ -78,21 +91,29 @@ function gate(root: Element | null, cap: number, lift: number): Promise<void> {
       });
       return Promise.all(waits);
     });
-  run.ready = Promise.race([pictures, new Promise((done) => setTimeout(done, cap))]).then(
-    () => {
+  run.ready = Promise.race([pictures, new Promise((done) => setTimeout(done, cap))])
+    .then(() => {
+      const up = performance.now() - t0;
+      const shown = up > show;
+      const rest = shown ? show + hold - up : 0;
+      return new Promise<boolean>((done) =>
+        setTimeout(() => done(shown), rest > 0 ? rest : 0),
+      );
+    })
+    .then((shown) => {
       if (w.__gateRun !== run) return;
       html.removeAttribute('data-gate');
-      html.setAttribute('data-gate-lift', '');
+      // a page ready before the loader came up is simply there: no fade (PageGate.module.css)
+      html.setAttribute('data-gate-lift', shown ? '' : 'quick');
       setTimeout(() => {
         if (w.__gateRun === run) html.removeAttribute('data-gate-lift');
       }, lift);
-    },
-  );
+    });
   return run.ready;
 }
 
 /** The page's inline script: the wait, from where the script stands in the page's `<main>`. */
-const INLINE = `(${gate.toString()})(document.currentScript&&document.currentScript.closest('main'),${CAP_MS},${LIFT_MS})`;
+const INLINE = `(${gate.toString()})(document.currentScript&&document.currentScript.closest('main'),${CAP_MS},${LIFT_MS},${SHOW_MS},${HOLD_MS})`;
 
 // whether the page's first screen is up, for the sections below it
 let open = false;
@@ -149,7 +170,9 @@ export function PageGate() {
     // click (React does not run a script it puts on the page) starts its own wait here
     const run = w.__gateRun;
     const ready =
-      run && run.root === root && run.ready ? run.ready : gate(root, CAP_MS, LIFT_MS);
+      run && run.root === root && run.ready
+        ? run.ready
+        : gate(root, CAP_MS, LIFT_MS, atOnce ? 0 : SHOW_MS, HOLD_MS);
     setOpen(false);
     let live = true;
     let t: ReturnType<typeof setTimeout> | undefined;

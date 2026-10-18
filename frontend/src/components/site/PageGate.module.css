@@ -28,3 +28,9 @@
   opacity: 0;
   pointer-events: none;
 }
+/* a page ready before the loader came up is simply there: a fade off a loader not yet seen
+   would show the train arriving as it goes, a blink */
+:global(html[data-gate-lift='quick']) .cover,
+:global(html[data-gate-lift='quick']) .cover ~ * {
+  transition: none;
+}

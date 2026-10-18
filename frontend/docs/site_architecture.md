@@ -234,7 +234,9 @@ loading picture, then fade in at once while the loader fades off. A cold first v
 the words on bare black and each wall painting in from the top. The gate finds the pictures
 itself (the `<img>`s and the computed backgrounds, `::before`/`::after` included, of whatever is
 on the screen), so a page lists nothing; what is further down loads as before. The loader comes
-up after 0.3 s, so a cached visit never sees it, and follows `(site)/loading.tsx`'s at once
+up after 0.3 s and, once up, stays at least 1.5 s so the train never blinks (owner, 2026-10-18, as
+the replay's way in holds it); a page ready before 0.3 s is simply there, with no fade, so a
+cached visit never sees it, and follows `(site)/loading.tsx`'s at once
 (`RouteWaitMark`) so the train never goes and comes back; 8 s ends the wait. The wait itself
 (`gate`) is written into the page as its inline script, so it runs as the page arrives, not once
 React is up: a cached visit comes up 100–230 ms after the request, a click between pages 100–340
