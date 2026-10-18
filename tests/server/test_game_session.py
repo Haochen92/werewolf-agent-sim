@@ -566,7 +566,10 @@ async def test_a_draft_previews_the_seats_real_turn_and_changes_nothing(quiet_se
 
     line, left = await session.draft_line(seat, "")
     assert (line, left) == ("player_2, answer the question.", 2)
-    discuss({**payload, "human_player": False}, session.config, runtime())  # the AI turn
+    # The AI turn in a game set to no deductions, since a human seat never gets them
+    # (Agents/deduction/seat_view.py).
+    off = {**session.config, "configurable": {**session.config["configurable"], "deduction_mode": "off"}}
+    discuss({**payload, "human_player": False}, off, runtime())
     assert sent[0] == sent[1]
 
     await session.draft_line(seat, "push on player_2", current="player_2?",

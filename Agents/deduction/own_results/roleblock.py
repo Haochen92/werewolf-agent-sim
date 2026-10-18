@@ -12,18 +12,20 @@ from Agents.deduction.night_state import revealed_before_night
 from Agents.rules.night_record import PACK_ACTOR
 from Agents.schemas.deduction import BlockedBy, OwnResultLine, SeatView
 from Agents.schemas.game_events import NightActionRecord
+from Agents.schemas.role_traits import BLOCKER, BODY_USER
 
 
 def roleblock_line(record: NightActionRecord, view: SeatView) -> OwnResultLine | None:
     """What a "roleblocked" record implies. It replaces the record's own sentence."""
-    if not view.cast_role_counts.get("chanteuse"):
+    if not view.cast_role_counts.get(BLOCKER):
         return None
 
     is_pack_record = record.actor == PACK_ACTOR
-    chanteuse_was_dead = "chanteuse" in revealed_before_night(view.dead_roster, record.day).values()
+    blocked = wording.what_was_blocked(record.action, record.target)
+    chanteuse_was_dead = BLOCKER in revealed_before_night(view.dead_roster, record.day).values()
 
     if chanteuse_was_dead:
-        if not view.cast_role_counts.get("necromancer"):
+        if not view.cast_role_counts.get(BODY_USER):
             return None
         if is_pack_record:
             return OwnResultLine(
@@ -33,7 +35,7 @@ def roleblock_line(record: NightActionRecord, view: SeatView) -> OwnResultLine |
                 facts=(BlockedBy(PACK_ACTOR, through_body=True),),
             )
         return OwnResultLine(
-            text=wording.blocked_through_chanteuse_body(),
+            text=wording.blocked_through_chanteuse_body(blocked),
             row="A7",
             replaces_outcome=True,
             facts=(BlockedBy(view.player_id, through_body=True),),
@@ -43,7 +45,7 @@ def roleblock_line(record: NightActionRecord, view: SeatView) -> OwnResultLine |
         # The living Chanteuse cannot block her own pack: no legal game reaches this.
         return None
     return OwnResultLine(
-        text=wording.blocked_by_living_chanteuse(),
+        text=wording.blocked_by_living_chanteuse(blocked),
         row="A6",
         replaces_outcome=True,
         facts=(BlockedBy(view.player_id, through_body=False),),

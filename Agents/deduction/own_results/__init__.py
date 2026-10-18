@@ -14,7 +14,14 @@ from Agents.deduction.own_results.attacks import (
     self_bet_saved_line,
     your_protection_saved_line,
 )
+from Agents.deduction.own_results.bets import bet_line
+from Agents.deduction.own_results.blocks import block_line
+from Agents.deduction.own_results.checks import check_line
+from Agents.deduction.own_results.conceals import conceal_line
 from Agents.deduction.own_results.roleblock import roleblock_line
+from Agents.deduction.own_results.sightings import sighting_line
+from Agents.deduction.own_results.sigils import sigil_line
+from Agents.deduction.records import read_record
 from Agents.schemas.deduction import OwnResultLine, SeatView
 from Agents.schemas.game_events import NightActionRecord
 
@@ -34,6 +41,22 @@ def _line_for(record: NightActionRecord, view: SeatView) -> OwnResultLine | None
         return your_protection_saved_line(record, view)
     if record.action == "protect" and record.result == "no_attack":
         return no_attack_announced_line(record, view)
+
+    # The rows below read the record through the L14 adapter: a body's name, a check's target and
+    # a learned role are never mistaken for a visitor.
+    read = read_record(record, view)
+    if read.action == "investigate":
+        return check_line(read, view)
+    if read.action in ("watch", "follow"):
+        return sighting_line(read, view)
+    if read.action == "sigil":
+        return sigil_line(read, view)
+    if read.action == "block":
+        return block_line(read, view)
+    if read.action == "bet":
+        return bet_line(read, view)
+    if read.action == "conceal":
+        return conceal_line(read, view)
     return None
 
 

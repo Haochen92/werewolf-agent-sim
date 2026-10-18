@@ -25,9 +25,9 @@ from Agents.rules.night_record import night_action_records, own_night_actions
 from Agents.schemas.deduction import SeatView
 from Agents.schemas.game_events import DeathRecord
 from Agents.schemas.night import NightChoice
-from Agents.schemas.roles import cast_role_counts
+from Agents.schemas.roles import ROLE_SPECS, cast_role_counts
 from Agents.turn import pipeline
-from tests.factories.random_nights import BASE_ROLES, CASTS, fact_holds, random_night
+from tests.factories.random_nights import BASE_ROLES, CASTS, fact_holds, random_night, resolve_through_the_node
 
 
 def _game(killer: str, neutral: str) -> tuple[dict[str, str], dict[str, str]]:
@@ -38,19 +38,30 @@ def _game(killer: str, neutral: str) -> tuple[dict[str, str], dict[str, str]]:
     return roles, player_of
 
 
-def _seat_view(receiver, roles, records, dead_roster) -> SeatView:
+def _pack_roles(receiver, roles, dead_roster) -> dict[str, str]:
+    """What a wolf's payload carries: its living pack and their roles (empty for anyone else)."""
+    if not ROLE_SPECS[roles[receiver]].pack:
+        return {}
+    dead = {death.player for death in dead_roster}
+    return {player: role for player, role in roles.items() if ROLE_SPECS[role].pack and player not in dead}
+
+
+def _seat_view(receiver, roles, records, dead_roster, announcements=()) -> SeatView:
     return SeatView(
         player_id=receiver,
         role=roles[receiver],
         cast_role_counts=cast_role_counts(roles),
         dead_roster=list(dead_roster),
         night_records=own_night_actions(records, receiver, roles[receiver]),
+        pack_roles=_pack_roles(receiver, roles, dead_roster),
+        announcements=list(announcements),
     )
 
 
 def _after_night(choices, roles, night, receiver, earlier_deaths=(), body_conceals=0, later_deaths=()):
     """Resolve one night and return the receiver's records, its lines and the outcome. The roster
-    holds the earlier deaths, this night's, and any later ones the seat has since heard of."""
+    holds the earlier deaths, this night's, and any later ones the seat has since heard of; the
+    morning is the one the resolution node committed."""
     outcome = resolve_night(choices, roles, night, body_conceals)
     records = night_action_records(choices, outcome, roles)
     this_nights_deaths = [
@@ -59,7 +70,10 @@ def _after_night(choices, roles, night, receiver, earlier_deaths=(), body_concea
         for player in outcome.deaths
     ]
     roster = list(earlier_deaths) + this_nights_deaths + list(later_deaths)
-    view = _seat_view(receiver, roles, records, roster)
+    dead_before = {death.player for death in earlier_deaths}
+    alive = [player for player in roles if player not in dead_before]
+    morning = resolve_through_the_node(choices, roles, night, alive, body_conceals)["night_announcements"]
+    view = _seat_view(receiver, roles, records, roster, morning)
     return view.night_records, own_result_lines(view), outcome
 
 
@@ -77,7 +91,8 @@ def test_a_block_by_the_living_chanteuse_says_she_came_to_you_and_replaces_the_r
                NightChoice(player_of["healer"], "healer", "protect", player_of["investigator"])]
     records, lines, _ = _after_night(choices, roles, 1, player_of["healer"])
     assert format_night_actions(records, current_day=2, implications=lines) == (
-        "Night 1 (last night): You were roleblocked: your action was not carried out. Only the "
+        f"Night 1 (last night): You were roleblocked: your protection of {player_of['investigator']} did not "
+        "happen. Only the "
         "Chanteuse could roleblock that night, and a block is a visit, so the Chanteuse, a wolf, came "
         "to you that night."
     )
@@ -102,7 +117,8 @@ def test_a_block_after_the_chanteuse_was_lynched_is_the_necromancer_through_her_
                NightChoice(player_of["healer"], "healer", "protect", player_of["investigator"])]
     records, lines, _ = _after_night(choices, roles, 2, player_of["healer"], earlier_deaths=[lynched])
     assert format_night_actions(records, current_day=3, implications=lines) == (
-        "Night 2 (last night): You were roleblocked: your action was not carried out. The Chanteuse was "
+        f"Night 2 (last night): You were roleblocked: your protection of {player_of['investigator']} did not "
+        "happen. The Chanteuse was "
         "already dead, so the Necromancer blocked you through her body; a watcher at your door would "
         "have seen the Chanteuse's name, not the Necromancer's."
     )
@@ -317,7 +333,8 @@ def test_the_seat_view_reads_only_the_seats_own_payload_fields():
         roles={"player_1": "investigator"}, night_choices=["secret"], surviving_wolves=["player_7"]))
     assert plain == with_hidden_state
     assert set(SeatView.__dataclass_fields__) == {
-        "player_id", "role", "cast_role_counts", "dead_roster", "night_records"}
+        "player_id", "role", "cast_role_counts", "dead_roster", "night_records", "pack_roles", "announcements",
+        "wills", "living", "claims"}
 
 
 def test_the_seat_view_reads_stored_dicts_like_live_models():
@@ -335,6 +352,52 @@ def test_hidden_roles_that_do_not_change_the_seats_view_do_not_change_its_lines(
     swapped[player_of["sentinel"]], swapped[player_of["trailseer"]] = "trailseer", "sentinel"
     _, after, _ = _after_night(choices, swapped, 1, player_of["illusionist"])
     assert before == after
+
+
+def test_a_watchers_lines_do_not_depend_on_which_role_made_the_visit():
+    """Two hidden states the sentinel cannot tell apart: player_6 visited as the Healer, or as the
+    Investigator (roles and actions swapped with player_1). Same record, same roster, same lines."""
+    roles, player_of = _game("necromancer", "speculator")
+    sentinel, sigilist = player_of["sentinel"], player_of["sigilist"]
+    choices = [NightChoice("player_6", "healer", "protect", sigilist),
+               NightChoice("player_1", "investigator", "investigate", player_of["trailseer"]),
+               NightChoice(sentinel, "sentinel", "watch", sigilist)]
+    records, before, _ = _after_night(choices, roles, 2, sentinel)
+    swapped = {**roles, "player_1": "healer", "player_6": "investigator"}
+    swapped_choices = [NightChoice("player_6", "investigator", "investigate", sigilist),
+                       NightChoice("player_1", "healer", "protect", player_of["trailseer"]),
+                       NightChoice(sentinel, "sentinel", "watch", sigilist)]
+    swapped_records, after, _ = _after_night(swapped_choices, swapped, 2, sentinel)
+    assert records == swapped_records
+    assert before == after and before[0] is not None
+
+
+def test_an_investigators_lines_do_not_depend_on_which_wolf_it_checked():
+    roles, player_of = _game("serial_killer", "speculator")
+    investigator = player_of["investigator"]
+    choices = [NightChoice(investigator, "investigator", "investigate", "player_7")]
+    _, before, _ = _after_night(choices, roles, 1, investigator)
+    swapped = {**roles, "player_7": "illusionist", "player_8": "chanteuse"}
+    _, after, _ = _after_night(choices, swapped, 1, investigator)
+    assert before == after and before[0] is not None
+
+
+def test_planted_hidden_state_on_the_payload_never_changes_a_line():
+    """Over random legal nights, every seat's lines from its own payload equal its lines from the
+    same payload with the whole hidden night planted beside it (roles, choices, every record)."""
+    rng = random.Random(20261017)
+    for _ in range(2000):
+        game = random_night(rng)
+        for receiver in game.receivers():
+            view = _seat_view(receiver, game.roles, game.records, game.dead_roster, [game.announcement])
+            payload = {"player_id": receiver, "player_role": view.role,
+                       "cast_role_counts": view.cast_role_counts, "dead_roster": view.dead_roster,
+                       "night_actions": view.night_records, "pack_roles": view.pack_roles,
+                       "night_announcements": view.announcements}
+            planted = {**payload, "roles": game.roles, "night_choices": game.choices,
+                       "all_night_actions": game.records, "outcome": game.outcome}
+            assert own_result_lines(seat_view_from_payload(planted)) == own_result_lines(view)
+            assert own_result_lines(seat_view_from_payload(payload)) == own_result_lines(view)
 
 
 @pytest.mark.parametrize("mode,shown", [("off", False), ("record", True), ("full", True), (None, True)])
@@ -356,25 +419,40 @@ def test_a_human_seat_gets_no_lines_whatever_the_mode():
 
 # --- soundness over random legal nights -------------------------------------------------------
 
-ROWS_BUILT = {"A1", "A2", "A4", "A6", "A7", "A8", "A11", "A12", "A13", "A53", "A54"}
+ROWS_BUILT = {"A1", "A2", "A4", "A6", "A7", "A8", "A11", "A12", "A13", "A53", "A54",
+              "A21", "A22", "A23", "A24", "A25", "A26", "A27", "A32", "A33", "A34", "A35",
+              "A37", "A38", "A39", "A40", "A41", "A42", "A43", "A49", "A50",
+              "A28", "A29", "A30", "A31", "A36", "A45"}
 """The rows the random nights must reach. A14's "either … or" line is retired (R10): every cast now
 leaves one silent immune role at most."""
+SENTENCES_REACHED = {
+    "A22 (c)": "No attack through a dead player's body was announced that night",
+    "A28, A29 one each": "one each; your watch does not show which is which",
+    "A30 the Illusionist carried": "so the Illusionist made the kill itself",
+}
+"""Conditions inside a row the random nights must also reach, by a phrase of their sentence. A22 (b)
+is too rare in random play to pin here (about once in 20,000 nights): its constructed nights are in
+test_morning_results.py."""
 
 
 def test_every_fact_a_line_states_holds_in_the_real_game():
     rng = random.Random(20261016)
     times_each_row_fired: dict[str, int] = {}
+    sentences_reached: set[str] = set()
     for _ in range(20000):
         game = random_night(rng)
         for receiver in game.receivers():
-            view = _seat_view(receiver, game.roles, game.records, game.dead_roster)
+            view = _seat_view(receiver, game.roles, game.records, game.dead_roster, [game.announcement])
             for line in own_result_lines(view):
                 if line is None:
                     continue
-                times_each_row_fired[line.row] = times_each_row_fired.get(line.row, 0) + 1
+                for row in line.row.split("+"):
+                    times_each_row_fired[row] = times_each_row_fired.get(row, 0) + 1
+                sentences_reached |= {name for name, phrase in SENTENCES_REACHED.items() if phrase in line.text}
                 for fact in line.facts:
                     assert fact_holds(fact, game), (line, fact, game)
     assert set(times_each_row_fired) >= ROWS_BUILT, times_each_row_fired
+    assert sentences_reached == set(SENTENCES_REACHED)
 
 
 @pytest.mark.parametrize("killer,neutral", CASTS)
@@ -387,7 +465,7 @@ def test_a_line_never_names_a_role_outside_its_cast(killer, neutral):
         if killer not in game.roles.values() or neutral not in game.roles.values():
             continue
         for receiver in game.receivers():
-            view = _seat_view(receiver, game.roles, game.records, game.dead_roster)
+            view = _seat_view(receiver, game.roles, game.records, game.dead_roster, [game.announcement])
             for line in own_result_lines(view):
                 if line is not None:
                     for role in not_dealt:
