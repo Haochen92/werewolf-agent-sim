@@ -1,7 +1,7 @@
 # Site architecture: the pages around the theatre
 
 The app has two halves with two toolkits. The **site** is the pages you move between: `/`, `/play`,
-`/rooms`, `/rooms/new` and `/replays`. It is built from Mantine components themed from the page
+`/rooms`, `/play/room` and `/replays`. It is built from Mantine components themed from the page
 mockups (`claude_artifacts/design/pages/*.html`, with `landing.html` as the style source). The
 **theatre** is the stage: `/games/[id]`, `/replays/[id]` and `/workbench`. It is CSS modules over
 `stage/paint/materials.ts` and never imports Mantine (stage_architecture.md). Rulings: review
@@ -65,12 +65,11 @@ Which face goes where (three voices, three props) is ruled in [typography.md](ty
 |---|---|
 | `TopNav` | The station's signboard (redesign 2026-10-14 §1): the gold 9 badge (2026-10-18) and the name in EB Garamond, and Play · Rooms · Replays as recessed wells on a board hung from two brass rods; the current page is the cream plate (`aria-current`). Rooms carries a split-flap count of the tables boarding (`hooks/useBoarding`, the same query as the departures board). The guide is not a fourth door but an enamel sign (`SITE.guide`, owner 2026-10-14): after the doors and a brass line, an open book and "Guide"; the book alone under 1060px; on a phone the book at the end of the name's row (the board is a grid there, so the sign never falls onto a row of its own, and the name shrinks to leave it room). Once the board scrolls away a slim strip of it pins to the top (`inert` while hidden); its name drops cleanly when the doors need the room; on a phone the strip keeps the book at its right end (owner 2026-10-15). On a phone the doors share a second row. |
 | `Board.module.css` | The signage's materials, composed by every board on the site: `board` (wood in a brass frame: what you operate), `rivets`, `well` (a recessed button; `aria-current`/`-pressed`/`-selected` make it the cream plate), `plate` (the primary action), `enamel` (a navy sign screwed to a board: somewhere to read, not a door) and `flap` (one split-flap tile). Paper carries what you read; brass is for lines and hardware, never a small flat fill. |
-| `StationWall` | A page's wall: the landing's rooms behind the other pages (owner 2026-10-14). `records` (the archive: platform tile, oxblood band, pendant) and `granite` (the ticket office: granite under the caged wall light, `StationLamps`); the departures hall has a picture of its own (below). Placed against `.station` from the page's top, under the page's own stacking context (`wallPage` on its `<main>`), capped where its light runs out, its foot faded to the page's ground. `cards` is the guide's: the roles' green tile, lit from over the board. Further down, each side of the guide's roles stands on the same tile in its own colour (ochre, oxblood, aubergine, slate; `Guide.module.css` `.side::before`, owner 2026-10-15). |
+| `StationWall` | A page's wall: each a picture of its room's wall (owner 2026-10-18, below): `records` the archive, `granite` the ticket office, `cards` the guide; the landing and the departures hall have pictures of their own. Placed against `.station` from the page's top, under the page's own stacking context (`wallPage` on its `<main>`), its foot faded to the page's ground. Further down, each side of the guide's roles stands on a tile in its own colour (ochre, oxblood, aubergine, slate; `Guide.module.css` `.side::before`, owner 2026-10-15). |
 | `SiteFooter` | The GitHub link with its icon, the other links, and the credit line, whose "N games archived" is live (`GamesArchived`, the archive's `X-Total-Count`). |
 | `Button` | Mantine Button narrowed to the kit's three variants (below): `well` (the default), `plate` and `text`. Polymorphic. |
 | `GuideSign` | The guide's one look wherever a page points at it: the navy enamel and the open book (`Book`, which the nav's sign draws too), a size up for a page: under the hero's tickets, under the roles. |
 | `PlateTabs.module.css` | The site's plain tabs, composed by any tab set that is not itself a picture: dark tabs, the chosen one a brass plate; `small` inside a panel. |
-| `HangTag` | The hung paper tag. With `href` it is a link (a door); with `onClick` and `pressed` it is a choice. On a phone it is a stub, two to a row (below). |
 | `Paper` | The paper surface for things inside the fiction. Polymorphic Box. |
 | `Flapword` | Split-flap tiles for one word, with `tone` `hot` or `dim`. |
 | `Icon` / `IconSprite` | One `<symbol>` sprite, rendered once by the site layout. It holds `i-*` (the mockups' icons plus `i-lock-open`, `i-ticket` and `i-github`) and `sg-*`, whose paths are the stage's `Sigil`. |
@@ -120,8 +119,8 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   guide's sign at the screen's foot (`.heroFoot`, owner 2026-10-18). The foot keeps at least the
   passengers' height under the tickets, so a short phone runs the hero past the fold rather than
   lay the sign over them.
-- The tickets (`HeroTicket`, the landing's and the departures hall's; `HangTag` stays the ticket
-  office's) are
+- The tickets (`HeroTicket`, the landing's, the departures hall's and the ticket office's, where
+  `current` marks the page's own kind) are
   flat cream card on the scene: the shape (scalloped ends, a notch each side, a bite out of the top)
   is a mask, so it stays round at any size, and the fibre is one 512 px tile (`ticket-paper.webp`)
   under both. A wide screen shows the kicker, the line and a ruled foot ending in the arrow (the
@@ -162,18 +161,17 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
 
 ## The landing's rooms (rooms benches, owner 2026-10-14)
 
-- Under the carriage each section is a room of the station (`Rooms.module.css`), and each fades
-  into the next through the dark: no threshold between them, only one brass threshold left before
-  the closing word. Chosen on the comparison bench (`station-rooms-compare`) over panelling, felt
-  and pigeonholes, which lost the station: "What makes it different" is dark granite in dressed
-  blocks under a caged wall light (`WallLight` in `RoomLamps.tsx`), and it opens with the
-  story (owner, 2026-10-16): on the wall, no paper, in Literata, with the Reveal line set apart
-  under it in the site's sans; the replay section ("At the
-  end of the line, the secrets come out", then "Latest games") is the platform's own tile
-  (`wall-tile.svg`) with an oxblood band near the ceiling, under a pendant (`Pendant`). Each
-  tiled room has its own band colour, as old stations did. "Take a seat" is gone: the hero's
-  tags and the nav's Play and Rooms are the way in. The roles' green-tile room left the landing
-  with the roles (owner, 2026-10-15); the green tile is the guide's now.
+- Under the carriage the story, the features and the replay (with the latest games) stand on one
+  wall (owner, 2026-10-18): the station's navy panelling, a picture spanning the screen with its
+  lamp at the top left by the story (`.navy` in `Rooms.module.css`; `walls/navy-wide.webp`, a
+  tall one for a screen taller than wide). Under the picture a band of its lower panels repeats as
+  far as the rooms run, laid upright and mirrored so no join shows (`scripts/fit_walls.py`). The
+  wall rises out of the dark from the carriage above and sinks back into it before the brass
+  threshold and the closing word, which stand on the page's own dark. The story opens it: its
+  line "Ten puppets share a carriage, but not a destination." as the title, the brand's gold rule
+  under it (`HeroRule`), then the rest centred in Literata and the Reveal line in the site's
+  sans. The footer follows the closing close (`.last`). The drawn rooms before it (granite under
+  a caged wall light, the platform's tile under a pendant) are in git history.
 - The landing's words (owner, 2026-10-15): every quoted agent line is a real one, verbatim, at
   the seq `landing/features.ts` names. The memory card's slip is game 2f19d908's Sigilist
   following a lesson; the replay section's moment is game 68c26e83's Chanteuse claiming the
@@ -183,33 +181,17 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   version (v8) has not been tested at scale, so whether it improves play is open. Its "Read the
   case study" plate goes to `SITE.caseStudy`, for now the memory research's history in the repo
   (`evidence/memory_system/store_progression.md` on `main`).
-- The walls and the light span the screen from the section's `::before`/`::after` (`.lit`),
-  behind its content. The light is gradients over the wall, darkest away
-  from the lamp; a lit room rises out of the dark at its top (`--fade-in`) and the pendant's wall
-  stops where its light runs out (520px), so the page's own ground carries on below. The reading
-  room has one light for the story and the features, hung level with "What makes it different":
-  it is drawn from the features' own box (`.lamplit::before`, reaching 1000px up over the story),
-  so however the story wraps the lamp stays by the heading, and the room clips its height
-  (`overflow: visible clip`) so the light never reaches the carriage above. Its wall spans the
-  whole room. No masks, no filters, no drop shadows.
-- The granite is one 512px seamless square (`assets/site/granite.webp`, 59 KB, about 1 MB
-  decoded), baked once from SVG noise by `scripts/bake-granite.mjs`, with its joints a separate
-  SVG over it; a noise filter on the wall itself is what it replaces. No phone copy: the square
-  is small and a smaller one would coarsen the grain.
-- The wall light stands in the gutter from 1300px up (the section's own 50% is the screen's
-  centre, so it is placed from there, not from `--bx`, which only the full-width light reads);
-  narrower, its light comes in from the left edge without it.
-- Paint census (production build, scrolling the rooms, animations still, median of three):
-  the rooms add about 190 ms of one-off raster on a 3× phone and 480 ms on a 2× desktop, against
-  130 / 700 ms for the rooms they replaced, measured the same way (frontend_lessons §25).
 
 ## The other pages' walls
 
-Each site page stands in one of the landing's rooms (`StationWall`, above): the archive in the
-latest games' room, the ticket office (`/play`, `/rooms/new`) in the reading room. Paint census
-(production, scrolling the first 1400px, animations still,
-median of three, wall on against off): the archive +44 ms on a 3× phone / +177 ms on a 2×
-desktop, the ticket office within noise / +135 ms.
+Each site page has its room's wall as a picture behind it (`StationWall`, owner 2026-10-18,
+`scripts/fit_walls.py`): the archive (`records`) navy panels between filing drawers under a
+pendant, the guide (`cards`) a green room with a lamp by the title, the ticket office
+(`granite`, `/play` and `/play/room`) brick over panelling beside a window. The archive's and the
+guide's walls run to the page's foot (the picture, then a mirrored band of its lower wall); the
+ticket office's lower wall is panelling and floor, which would stack if repeated, so its picture
+fades out. Each has a tall picture for a screen taller than wide. A screen fetches its own
+picture and band, about 60–150 KB.
 
 ## The departures hall (owner's mock and raster kit, 2026-10-18)
 
@@ -234,14 +216,12 @@ desktop, the ticket office within noise / +135 ms.
   masters' cut-out fringe, builds each middle from its own head's sides, and tapers each foot
   into them. A screen fetches 230–280 KB of pictures; nothing moves.
 
-## The tags on a phone
+## The tickets on a phone
 
-At 700px and under a `HangTag` is its torn-off stub (owner, 2026-10-14): a strip of the tag's
-paper with a perforated left edge, the kicker and title at its left and an arrow at its right;
-the line and the footer stay on the tag, and `note` (the tables boarding, on the landing) sits
-under the title. Two stubs share a row on the landing, the ticket office and the departures
-hall. The current page's stub keeps its ring inside the paper (the perforation's mask would cut
-one outside) and loses its arrow.
+At 860px and under (the site's phone layout) a `HeroTicket` is its stub: the title and an arrow
+on one line, two side by side, centred under the page's title on the departures hall and the
+ticket office, under the tagline on the landing. The ticket office's other kind is faded
+(`opacity`), full on hover. (`HangTag`, the hung tag before them, is in git history.)
 
 ## Tests
 
