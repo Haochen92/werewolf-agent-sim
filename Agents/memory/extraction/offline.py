@@ -117,7 +117,8 @@ def input_from_event_log(game_id: str, events: list[dict], human_players: list |
             winner = e.get("winner")
         elif t == "speech":
             day_channel.append(DayChannel(day=e["day"], seq=e.get("channel_seq", e["seq"]), player=e["player"],
-                                          message=e["message"], claim=e.get("claim") or "none"))
+                                          message=e["message"], claim=e.get("claim") or "none",
+                                          claimed_night_actions=e.get("claimed_night_actions") or []))
         elif t == "gm_message":  # the game master's lines in the day channel (votes, night news)
             day_channel.append(DayChannel(day=e["day"], seq=e.get("channel_seq", e["seq"]),
                                           player="game_master", message=e["text"]))

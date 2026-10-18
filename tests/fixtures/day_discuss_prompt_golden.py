@@ -127,7 +127,7 @@ def speaker_payload(role: str) -> dict:
 def capturing_llm(sent: list) -> SimpleNamespace:
     """A stand-in for get_llm(): records every prompt it is sent and answers with a line."""
     reply = day_discuss_output(ROLES)(
-        message="player_2, answer the question.", pass_turn=False, claim="none",
+        message="player_2, answer the question.", pass_turn=False, claim="none", claimed_night_actions=[],
         updated_strategy="", addressed_targets=[], strategy_verdicts=[],
         memory_applicability=[], reads=[])
 

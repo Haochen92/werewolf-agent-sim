@@ -134,8 +134,9 @@ _DISCUSSION_STAGE_RULES = """
 # (compose.preamble).
 
 # The two examples, in the schema's field order; the verdict lines are slots, empty on a turn shown no
-# memory (prompts/common.py, VERDICT_EXAMPLES). The example read and the example claim name no
-# role and no seat, since a named one gets copied (discussion_evidence.md section 7.5).
+# memory (prompts/common.py, VERDICT_EXAMPLES). The example read, the example claim and the example
+# claimed night action name no role and no seat, since a named one gets copied (discussion_evidence.md
+# section 7.5).
 DAY_DISCUSS_RESPONSE_FORMAT = """
 You must respond with a valid JSON.
 
@@ -146,6 +147,7 @@ When speaking:
     "pass_turn": false,
     "message": "your discussion message",
     "claim": "<the role this message claims you hold, or none>",
+    "claimed_night_actions": [{{"night": <night number>, "action": "<what you say you did>", "target": "<exact player_id>", "result": "<what you say came of it, or not_said>", "seen": []}}],
     "addressed_targets": [{{"target": "<exact player_id>", "addressed_form": "response", "stance": "defense"}}]
 }}
 
@@ -156,6 +158,7 @@ When declining to speak (only if you were NOT directly addressed):
     "pass_turn": true,
     "message": "",
     "claim": "none",
+    "claimed_night_actions": [],
     "addressed_targets": []
 }}
 """

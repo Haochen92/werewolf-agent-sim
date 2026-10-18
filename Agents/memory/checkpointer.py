@@ -25,6 +25,7 @@ _STATE_MODEL_ALLOWLIST = [
     game_events.FiringReason,
     game_events.DiscussionPassReason,  # str-Enum inside DayChannel (pass markers)
     game_events.DayChannel,
+    game_events.SpokenNightAction,  # a speaker's claimed night action inside DayChannel (slice 9a, 2026-10-17)
     game_events.DaySummary,
     game_events.WolfChannel,
     game_events.InvestigatorResult,

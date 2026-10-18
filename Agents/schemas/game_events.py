@@ -79,6 +79,25 @@ class DiscussionPassReason(str, Enum):
     gated_candidate, shown to its author only."""
 
 
+class SpokenNightAction(BaseModel):
+    """One night action a speaker claimed in its own message, from the discussion output's
+    claimed_night_actions field (slice 9a): what was claimed, true or not. The fields and words are
+    the day summariser's (output.ClaimedNightAction), so the claim ledger reads both alike."""
+
+    night: int
+    """The night as the speaker filled it; 0 = not said. The ledger reads a night that had not
+    happened by the day it was said as not said."""
+    action: str
+    """investigate / protect / shoot / kill / watch / follow / sigil / block / conceal / bet / pick,
+    visit (went to the target, action not said), or no_action for a denial."""
+    target: str
+    """The player the action was on; for no_action, the one not visited, or ""."""
+    result: str
+    """A result word of output.NIGHT_RESULT_WORDS (never a role); "not_said" when unstated."""
+    seen: list[str] = Field(default_factory=list)
+    """A watch or follow: the players the speaker says they saw."""
+
+
 class DayChannel(BaseModel):
     """One entry in the public day-discussion transcript (a spoken message or a pass marker)."""
 
@@ -97,6 +116,11 @@ class DayChannel(BaseModel):
     dealt roles), or "none". Public, like the words. The claim ledger takes its role lines from
     here; the summariser's transcription of the role is the cross-check (role_sheet.md, formal
     claims). "none" on passes, narration, a human's line and entries from before the field."""
+    claimed_night_actions: list[SpokenNightAction] = Field(default_factory=list)
+    """The night actions the speaker claims in this message, from the output's field of that name
+    (slice 9a), each target and sighting named in the message; public, like the words. The claim
+    ledger takes them for the speaker's day, ahead of the summariser's transcription. Empty on
+    passes, narration, a human's line and entries from before the field."""
     day_round: DayRound = "discussion"
     """Which round of the day the entry belongs to: "opening" (every living player at once, before
     the discussion), "discussion" (the scheduler's reactive turns), "proactive" (a sweep turn: the

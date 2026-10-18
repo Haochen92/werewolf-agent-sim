@@ -1810,6 +1810,8 @@ export interface components {
        * @default none
        */
       claim: string;
+      /** Claimed Night Actions */
+      claimed_night_actions?: components['schemas']['WireClaimedNightAction'][];
     };
     /** StrategyUpdate */
     StrategyUpdate: {
@@ -1959,6 +1961,22 @@ export interface components {
        * @enum {string}
        */
       stance: 'accusation' | 'defense' | 'agreement' | 'neutral';
+    };
+    /**
+     * WireClaimedNightAction
+     * @description One night action a speaker claimed, true or not (Agents' SpokenNightAction).
+     */
+    WireClaimedNightAction: {
+      /** Night */
+      night: number;
+      /** Action */
+      action: string;
+      /** Target */
+      target: string;
+      /** Result */
+      result: string;
+      /** Seen */
+      seen?: string[];
     };
     /** WireExtractedLesson */
     WireExtractedLesson: {

@@ -2,11 +2,14 @@
 across days, with exact checks against the game master's record.
 
 A role claim comes from the speaker: the claim field of the discussion output rides the spoken
-entry (DayChannel.claim), so who claimed what on which day is never misattributed. The day
-summariser transcribes the claimed night actions, the retractions and the plans
-(DaySummaryOutputV4.role_claims); its transcription of the role itself is the cross-check: taken
-only for a player who set no claim that day (a human's line has no field), dropped where it
-disagrees with the field. The rest is code: each player's history is kept (a changed claim keeps
+entry (DayChannel.claim), so who claimed what on which day is never misattributed. So do the
+speaker's claimed night actions (DayChannel.claimed_night_actions, slice 9a), which is how a claim
+made today is on record before the day is summarised. The day summariser transcribes the
+retractions and the plans (DaySummaryOutputV4.role_claims), and its transcription of the roles and
+the night actions is the cross-check: taken only for a player who filled no field of that kind
+that day (a human's line has none, nor has a game from before the field), dropped where the player
+did. A night said on day D must be before D (night n is the night after day n): a later one, from
+either source, is read as not said. The rest is code: each player's history is kept (a changed claim keeps
 the earlier one), and each claim is checked against engine facts: revealed roles, announced saves
 and deaths, the cast and the rules.
 A plan said in the day for that night is set beside what the player later says they did, as fact
@@ -24,7 +27,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
-from Agents.schemas.game_events import DayChannel, DaySummary, DeathRecord
+from Agents.schemas.game_events import DayChannel, DaySummary, DeathRecord, SpokenNightAction
 from Agents.schemas.roles import ROLE_SPECS, WOLVES, roles as ROLES
 
 # The engine's own announcement wording (night_resolution): a save, and the night it belongs to.
@@ -38,12 +41,12 @@ _NIGHT = re.compile(r"^Night of day (\d+):")
 
 _VERBS = {"no_action": "did not act", "investigate": "checked", "protect": "protected", "shoot": "shot", "kill": "attacked",
           "watch": "watched", "follow": "followed", "sigil": "set a sigil on", "block": "blocked",
-          "conceal": "concealed", "bet": "bet on", "pick": "picked"}
+          "conceal": "concealed", "bet": "bet on", "pick": "picked", "visit": "went to"}
 _NOUNS = {"investigate": "check", "protect": "protection", "shoot": "shot", "kill": "kill",
           "watch": "watch", "follow": "trail", "sigil": "sigil", "block": "block",
           "conceal": "conceal", "bet": "bet", "pick": "pick"}
 # Claimed actions on oneself that only make sense as something done TO the speaker.
-_DONE_TO_ONESELF = {"block", "watch", "follow", "investigate", "sigil", "kill", "shoot", "conceal"}
+_DONE_TO_ONESELF = {"block", "watch", "follow", "investigate", "sigil", "kill", "shoot", "conceal", "visit"}
 PLAN_VERBS = {"investigate": "check", "protect": "protect", "shoot": "shoot", "kill": "attack",
               "watch": "watch", "follow": "follow", "sigil": "set a sigil on", "block": "block",
               "conceal": "conceal", "bet": "bet on", "pick": "pick"}
@@ -76,6 +79,13 @@ class ClaimedAction:
     """A claimed watch or follow: the players they say they saw. The claimant's word, like the rest."""
     reason: str = ""
     """The player's reason for doing something other than what they planned, if they gave one."""
+    said_in: int | None = None
+    """The seq of the message that claimed it (the speaker's own field); None from a summary, which
+    covers the whole day."""
+    earlier_claims: list[ClaimedAction] = field(default_factory=list)
+    """``earlier`` as claims, oldest first, for code (the deduction engine's claims view)."""
+    also_claims: list[ClaimedAction] = field(default_factory=list)
+    """``also`` as claims."""
 
 
 @dataclass
@@ -146,21 +156,53 @@ def spoken_claims(messages: list[DayChannel]) -> dict[int, list[tuple[str, str]]
     return by_day
 
 
+def spoken_actions(messages: list[DayChannel]) -> dict[int, list[tuple[str, int, SpokenNightAction]]]:
+    """The night actions the speakers claimed in their own fields, by day: (player, message seq,
+    action) in the order spoken. A held or passed entry claimed nothing the table heard."""
+    by_day: dict[int, list[tuple[str, int, SpokenNightAction]]] = {}
+    for m in sorted(messages, key=lambda m: (m.day, m.seq)):
+        if m.passed:
+            continue
+        for a in m.claimed_night_actions:
+            by_day.setdefault(m.day, []).append((m.player, m.seq, a))
+    return by_day
+
+
+def said_night(night, day: int) -> int:
+    """The night a claim said on ``day`` names, or 0 (not said). Night n is the night after day n,
+    so on day D the latest past night is D - 1; a later one has not happened yet."""
+    night = int(night or 0)
+    return night if 0 < night < day else 0
+
+
 def build_claim_ledger(discussion: list[DaySummary], messages: list[DayChannel] = ()) -> dict[str, PlayerClaims]:
-    """Each player's claims across days, in the order players first claimed. The role lines come
-    from the speakers' own claim fields (``messages``); the summariser's role claims fill in for
-    a player who set none that day, and its night actions, retractions and plans are taken as
-    transcribed."""
+    """Each player's claims across days, in the order players first claimed. The role lines and
+    the night actions come from the speakers' own fields (``messages``); the summariser's role
+    claims fill in for a player who set none that day, its night actions for a player who filled
+    none that day, and its retractions and plans are taken as transcribed."""
     ledger: dict[str, PlayerClaims] = {}
     spoken = spoken_claims(list(messages))
+    acted = spoken_actions(list(messages))
     summaries = {s.day: s for s in discussion}
-    for day in sorted({*spoken, *summaries}):
+    for day in sorted({*spoken, *acted, *summaries}):
         claimed_today: set[str] = set()
         for player, role in spoken.get(day, []):
             claimed_today.add(player)
             p = ledger.setdefault(player, PlayerClaims())
             if role != p.current_role:
                 p.roles.append((day, role, "claimed"))
+        acted_today: set[str] = set()
+        for player, seq, a in acted.get(day, []):
+            # The summary's filters, kept for the speaker's own field: an action on oneself that
+            # only makes sense as done to the speaker, and an entry that says nothing.
+            if a.target == player and a.action in _DONE_TO_ONESELF:
+                continue
+            if not (a.target or a.action == "no_action" or a.result == "roleblocked"):
+                continue
+            acted_today.add(player)
+            _add_action(ledger.setdefault(player, PlayerClaims()),
+                        ClaimedAction(said_night(a.night, day), a.action, a.target, a.result, day,
+                                      seen=[v for v in a.seen if v], said_in=seq))
         s = summaries.get(day)
         if s is None:
             continue
@@ -171,10 +213,10 @@ def build_claim_ledger(discussion: list[DaySummary], messages: list[DayChannel] 
             if role == "none":  # no role claimed: only what they said they did or did not do
                 said = [a for a in c.get("night_actions") or []
                         if a.get("target") or a.get("action") == "no_action" or a.get("result") == "roleblocked"]
-                if said:  # an entry with nothing in it is not shown
+                if said and player not in acted_today:  # an entry with nothing in it is not shown
                     p = ledger.setdefault(player, PlayerClaims())
                     for a in said:
-                        _add_action(p, ClaimedAction(int(a.get("night") or 0), a.get("action", ""), a.get("target") or "",
+                        _add_action(p, ClaimedAction(said_night(a.get("night"), s.day), a.get("action", ""), a.get("target") or "",
                                                      a.get("result", ""), s.day, reason=a.get("reason") or "",
                                                      seen=[v for v in a.get("seen") or [] if v]))
                 continue
@@ -198,9 +240,9 @@ def build_claim_ledger(discussion: list[DaySummary], messages: list[DayChannel] 
                     p.roles.append((s.day, role, "retracted"))
             elif role != p.current_role and player not in claimed_today:
                 p.roles.append((s.day, role, "claimed"))
-            for a in actions:
+            for a in [] if player in acted_today else actions:  # the speaker's own field outranks the summary
                 if a.get("target") or a.get("action") == "no_action" or a.get("result") == "roleblocked":
-                    _add_action(p, ClaimedAction(int(a.get("night") or 0), a.get("action", ""), a.get("target") or "",
+                    _add_action(p, ClaimedAction(said_night(a.get("night"), s.day), a.get("action", ""), a.get("target") or "",
                                                  a.get("result", ""), s.day, reason=a.get("reason") or "",
                                                  seen=[v for v in a.get("seen") or [] if v]))
             for plan in c.get("planned_actions") or []:  # said on day N about night N
@@ -230,12 +272,22 @@ def _same_claim(old: ClaimedAction, new: ClaimedAction) -> bool:
 
 
 def _add_action(p: PlayerClaims, new: ClaimedAction) -> None:
+    # A visit says where, not what (owner 2026-10-17, AC1's "I went to player_8"): an action named on
+    # the same night and target fills it in (not a change), and a visit said after one repeats it.
+    if new.action == "visit" and any(a.night == new.night and a.target == new.target
+                                     and a.action not in ("visit", "no_action") for a in p.actions.values()):
+        return
     # A denial and an action for the same night replace each other, and the earlier one is kept as
     # history ("I didn't visit anyone" on day 3, a sigil claimed for that night on day 4: f06).
     if new.night and new.action:
         for k in [k for k, a in p.actions.items()
                   if a.night == new.night and (a.action == "no_action") != (new.action == "no_action")]:
             new.earlier = [*new.earlier, *p.actions[k].earlier, action_text(p.actions[k])]
+            new.earlier_claims = [*new.earlier_claims, *p.actions[k].earlier_claims, p.actions[k]]
+            del p.actions[k]
+    if new.action not in ("", "visit", "no_action"):  # fills in a visit (see above)
+        for k in [k for k, a in p.actions.items()
+                  if a.action == "visit" and a.night == new.night and a.target == new.target]:
             del p.actions[k]
     same = [k for k, a in p.actions.items() if a.action == new.action and _same_claim(a, new)]
     if not new.night and same:
@@ -255,10 +307,14 @@ def _add_action(p: PlayerClaims, new: ClaimedAction) -> None:
         old.reason = old.reason or new.reason
         old.seen = old.seen or new.seen
         return  # a repeat
-    if old and new.action and old.day == new.day and old.target != new.target:
-        new.earlier, new.also = old.earlier, [*old.also, action_text(old)]  # two targets named the same day
+    # Two targets named the same day (a summary's day, or one message of the speaker's): both
+    # stand. A later message correcting an earlier one is a change.
+    if old and new.action and old.day == new.day and old.said_in == new.said_in and old.target != new.target:
+        new.earlier, new.also = old.earlier, [*old.also, action_text(old)]
+        new.earlier_claims, new.also_claims = old.earlier_claims, [*old.also_claims, old]
     elif old and (not (old.target == new.target and old.result == "not_said") or _sighting_changed(old, new)):
         new.earlier = [*old.earlier, *old.also, action_text(old)]  # a change; filling in a result is not one
+        new.earlier_claims = [*old.earlier_claims, *old.also_claims, old]
     p.actions[key] = new
 
 

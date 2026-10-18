@@ -3866,6 +3866,13 @@
             "type": "string",
             "title": "Claim",
             "default": "none"
+          },
+          "claimed_night_actions": {
+            "items": {
+              "$ref": "#/components/schemas/WireClaimedNightAction"
+            },
+            "type": "array",
+            "title": "Claimed Night Actions"
           }
         },
         "type": "object",
@@ -4153,6 +4160,42 @@
           "stance"
         ],
         "title": "WireAddressedTarget"
+      },
+      "WireClaimedNightAction": {
+        "properties": {
+          "night": {
+            "type": "integer",
+            "title": "Night"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "result": {
+            "type": "string",
+            "title": "Result"
+          },
+          "seen": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Seen"
+          }
+        },
+        "type": "object",
+        "required": [
+          "night",
+          "action",
+          "target",
+          "result"
+        ],
+        "title": "WireClaimedNightAction",
+        "description": "One night action a speaker claimed, true or not (Agents' SpokenNightAction)."
       },
       "WireExtractedLesson": {
         "properties": {

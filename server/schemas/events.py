@@ -156,6 +156,17 @@ class RoundOpened(DurableEvent, frozen=True):
     """Who is in the round, in the order their lines will be played."""
 
 
+class WireClaimedNightAction(BaseModel, frozen=True):
+    """One night action a speaker claimed, true or not (Agents' SpokenNightAction)."""
+
+    night: int
+    """The night as the speaker filled it; 0 = not said."""
+    action: str
+    target: str
+    result: str
+    seen: list[str] = Field(default_factory=list)
+
+
 class Speech(DurableEvent, frozen=True):
     type: Literal["speech"] = "speech"
     channel_seq: int
@@ -166,6 +177,9 @@ class Speech(DurableEvent, frozen=True):
     claim: str = "none"
     """The role the speaker's own output claimed in this line, or "none". The claim ledger's
     role lines are built from these; a record from before the field has "none" throughout."""
+    claimed_night_actions: list[WireClaimedNightAction] = Field(default_factory=list)
+    """The night actions the speaker's own output claimed in this line (each named in it). The
+    claim ledger takes them ahead of the day summary's; a record from before the field has none."""
 
 
 class PassMarker(DurableEvent, frozen=True):

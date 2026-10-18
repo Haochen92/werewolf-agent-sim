@@ -285,11 +285,12 @@ class DaySummaryOutputV3(LenientToolCallModel):
 # Model-visible: no class docstrings.
 class ClaimedNightAction(LenientToolCallModel):
     night: int = Field(description="The night the action happened; 0 if the player did not say")
-    action: Literal["investigate", "protect", "shoot", "kill", "watch", "follow", "sigil", "block", "conceal", "bet", "pick", "no_action"] = Field(
+    action: Literal["investigate", "protect", "shoot", "kill", "watch", "follow", "sigil", "block", "conceal", "bet", "pick", "visit", "no_action"] = Field(
         description=(
-            "What the player says they already did that night (not a plan for a coming night); no_action "
-            "when they say they did not act or visited no one that night (held fire, kept a watch or a "
-            "sigil, stayed home, did not visit someone)"
+            "What the player says they already did that night (not a plan for a coming night); visit when "
+            "they say they went to the target that night without saying what they did there (result "
+            "not_said); no_action when they say they did not act or visited no one that night (held fire, "
+            "kept a watch or a sigil, stayed home, did not visit someone)"
         ),
     )
     target: str = Field(description="Player ID the action was on; for no_action, the player they say they did not visit, or empty string")

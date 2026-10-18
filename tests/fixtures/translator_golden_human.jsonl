@@ -21,11 +21,11 @@
 {"channel_seq": 0, "day": 1, "gated": false, "gated_candidate": null, "pass_reason": "voluntary", "player": "player_1", "seq": 21, "type": "pass_marker"}
 {"channel_seq": 1, "day": 1, "gated": true, "gated_candidate": "Nothing yet.", "pass_reason": "opening_filtered", "player": "player_2", "seq": 22, "type": "pass_marker"}
 {"channel_seq": 2, "day": 1, "gated": true, "gated_candidate": "Nothing yet.", "pass_reason": "opening_filtered", "player": "player_3", "seq": 23, "type": "pass_marker"}
-{"channel_seq": 3, "claim": "none", "day": 1, "message": "Glad to have an investigator. Stay safe.", "player": "player_4", "seq": 24, "type": "speech"}
+{"channel_seq": 3, "claim": "none", "claimed_night_actions": [], "day": 1, "message": "Glad to have an investigator. Stay safe.", "player": "player_4", "seq": 24, "type": "speech"}
 {"about_channel_seq": 3, "day": 1, "player": "player_4", "seq": 25, "targets": [{"addressed_form": "mention", "stance": "agreement", "target": "player_7"}], "type": "addressed_targets"}
 {"channel_seq": 4, "day": 1, "gated": false, "gated_candidate": null, "pass_reason": "voluntary", "player": "player_5", "seq": 26, "type": "pass_marker"}
 {"channel_seq": 5, "day": 1, "gated": true, "gated_candidate": "Nothing yet.", "pass_reason": "opening_filtered", "player": "player_6", "seq": 27, "type": "pass_marker"}
-{"channel_seq": 6, "claim": "none", "day": 1, "message": "I am the investigator. Nothing to report before the first night.", "player": "player_7", "seq": 28, "type": "speech"}
+{"channel_seq": 6, "claim": "none", "claimed_night_actions": [], "day": 1, "message": "I am the investigator. Nothing to report before the first night.", "player": "player_7", "seq": 28, "type": "speech"}
 {"channel_seq": 7, "day": 1, "gated": true, "gated_candidate": "Nothing yet.", "pass_reason": "opening_filtered", "player": "player_8", "seq": 29, "type": "pass_marker"}
 {"channel_seq": 8, "day": 1, "gated": true, "gated_candidate": "Nothing yet.", "pass_reason": "opening_filtered", "player": "player_9", "seq": 30, "type": "pass_marker"}
 {"channel_seq": 9, "day": 1, "gated": false, "gated_candidate": null, "pass_reason": "voluntary", "player": "player_10", "seq": 31, "type": "pass_marker"}
@@ -82,13 +82,13 @@
 {"channel_seq": 2, "day": 2, "gated": false, "gated_candidate": null, "pass_reason": "voluntary", "player": "player_4", "seq": 82, "type": "pass_marker"}
 {"channel_seq": 3, "day": 2, "gated": false, "gated_candidate": null, "pass_reason": "voluntary", "player": "player_5", "seq": 83, "type": "pass_marker"}
 {"channel_seq": 4, "day": 2, "gated": false, "gated_candidate": null, "pass_reason": "voluntary", "player": "player_6", "seq": 84, "type": "pass_marker"}
-{"channel_seq": 5, "claim": "none", "day": 2, "message": "player_6 reads Suspicious.", "player": "player_7", "seq": 85, "type": "speech"}
+{"channel_seq": 5, "claim": "none", "claimed_night_actions": [], "day": 2, "message": "player_6 reads Suspicious.", "player": "player_7", "seq": 85, "type": "speech"}
 {"about_channel_seq": 5, "day": 2, "player": "player_7", "seq": 86, "targets": [{"addressed_form": "mention", "stance": "accusation", "target": "player_6"}], "type": "addressed_targets"}
 {"channel_seq": 6, "day": 2, "gated": false, "gated_candidate": null, "pass_reason": "voluntary", "player": "player_8", "seq": 87, "type": "pass_marker"}
 {"channel_seq": 7, "day": 2, "gated": false, "gated_candidate": null, "pass_reason": "voluntary", "player": "player_9", "seq": 88, "type": "pass_marker"}
 {"channel_seq": 8, "day": 2, "gated": false, "gated_candidate": null, "pass_reason": "voluntary", "player": "player_10", "seq": 89, "type": "pass_marker"}
 {"day": 2, "player": "player_6", "seq": 90, "type": "turn_started"}
-{"channel_seq": 9, "claim": "none", "day": 2, "message": "The check is wrong, player_7. I am a sentinel.", "player": "player_6", "seq": 91, "type": "speech"}
+{"channel_seq": 9, "claim": "none", "claimed_night_actions": [], "day": 2, "message": "The check is wrong, player_7. I am a sentinel.", "player": "player_6", "seq": 91, "type": "speech"}
 {"about_channel_seq": 9, "day": 2, "owes": ["player_7"], "player": "player_6", "seq": 92, "tier": "reactive", "type": "firing_reason"}
 {"about_channel_seq": 9, "day": 2, "player": "player_6", "seq": 93, "targets": [{"addressed_form": "response", "stance": "defense", "target": "player_7"}], "type": "addressed_targets"}
 {"day": 2, "player": "player_6", "seq": 94, "strategy": "counterclaim", "type": "strategy_update"}

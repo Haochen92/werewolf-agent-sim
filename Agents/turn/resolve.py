@@ -6,6 +6,7 @@ not know graph channel names or reducer shapes: registered actor nodes own the f
 resolved-turn -> graph-delta conversion.
 """
 
+import re
 from logging import getLogger
 from typing import Any
 
@@ -16,6 +17,7 @@ from Agents.schemas.game_events import (
     DayChannel,
     DayVote,
     DiscussionPassReason,
+    SpokenNightAction,
     WolfChannel,
 )
 from Agents.schemas.night import NightChoice
@@ -162,6 +164,7 @@ def resolve_decision(
             message=message,
             addressed_targets=addressed_targets,
             claim=_claim_of(result),  # a held line's claim was never heard, so only a spoken one
+            claimed_night_actions=_claimed_actions_of(result, message, player_id),
             firing_reason=firing_reason,
         )
         return ResolvedDayDiscussion(entry=entry, effects=effects)
@@ -215,6 +218,24 @@ def resolve_decision(
 
 def _claim_of(result: BaseModel) -> str:
     return getattr(result, "claim", None) or "none"
+
+
+_PLAYER_ID = re.compile(r"\bplayer_\d+\b", re.IGNORECASE)
+
+
+def _claimed_actions_of(result: BaseModel, message: str, player_id: str) -> list[SpokenNightAction]:
+    # The field is public, so it keeps only what the line itself says: an entry whose target or
+    # sighting the message does not name is dropped, or a seat's own true action, filled in but
+    # never said, would reach every seat's ledger. A human's decision has no field.
+    named = {name.lower() for name in _PLAYER_ID.findall(message)}
+    kept = []
+    for a in getattr(result, "claimed_night_actions", None) or []:
+        names = [a.target, *a.seen] if a.target else list(a.seen)
+        if any(name.lower() not in named for name in names):
+            logger.info("[claimed actions] %s: dropped %s on %r, not named in the line", player_id, a.action, a.target)
+            continue
+        kept.append(SpokenNightAction(night=a.night, action=a.action, target=a.target, result=a.result, seen=list(a.seen)))
+    return kept
 
 
 def night_choice(role: str, actor: str, result: Any, payload: dict[str, Any], valid_targets: list[str]):

@@ -92,7 +92,8 @@ def test_preview_commits_and_records_nothing(monkeypatch):
 
 
 def test_preview_reports_a_pass_as_empty_and_a_failure_as_an_error(monkeypatch):
-    passing = day_discuss_output(ROLES)(message="", pass_turn=True, claim="none", updated_strategy="note",
+    passing = day_discuss_output(ROLES)(message="", pass_turn=True, claim="none", claimed_night_actions=[],
+                                        updated_strategy="note",
                                         addressed_targets=[], strategy_verdicts=[],
                                         memory_applicability=[], reads=[])
     monkeypatch.setattr(agent_player, "get_llm", lambda: _answering(passing))

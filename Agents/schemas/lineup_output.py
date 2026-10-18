@@ -19,7 +19,13 @@ from typing import Generic, Literal, TypeVar
 from pydantic import Field, field_validator
 
 from Agents.schemas.game_events import AddressedTarget
-from Agents.schemas.output import LenientToolCallModel, MemoryVerdict, StrategyVerdict
+from Agents.schemas.output import (
+    NIGHT_RESULT_WORDS,
+    ClaimedNightAction,
+    LenientToolCallModel,
+    MemoryVerdict,
+    StrategyVerdict,
+)
 
 ReadRole = TypeVar("ReadRole")
 """The role guess in a read: "unclear" or a dealt role."""
@@ -89,12 +95,55 @@ class TurnOutput(LineupModel, Generic[ReadRole]):
 # --- Day ---
 
 
+# The summariser's action words; its result words without the roles and "not_a_wolf", which no
+# ten-seat action yields (so the field names no role the game did not deal).
+SpokenAction = ClaimedNightAction.model_fields["action"].annotation
+SpokenResult = Literal[tuple(w for w in NIGHT_RESULT_WORDS if w != "not_a_wolf")]
+
+
+class NightActionClaim(LineupModel):
+    # A night action the speaker claims in its own discussion message (slice 9a, owner 2026-10-17):
+    # the summariser's ClaimedNightAction in the speaker's voice, so the claim ledger reads both
+    # alike. Every field required (flash-lite fails on optional ones).
+    night: int = Field(description="The night number; on day D, last night is night D-1. 0 if you did not say which night.")
+    action: SpokenAction = Field(
+        description=(
+            "What you say you already did that night; visit when you say you went to the target without "
+            "saying what you did there (result not_said); no_action when you say you did not act or visited "
+            "no one (held fire, kept a watch or a sigil, stayed home)."
+        ),
+    )
+    target: str = Field(description="The exact player_id the action was on; for no_action, the player you say you did not visit, or empty string.")
+    result: SpokenResult = Field(
+        description=(
+            "What you say came of it. investigate: suspicious or not_suspicious. protect: saved_from_attack "
+            "or no_attack. shoot / kill: died or survived. sigil: died if you say it struck them down, "
+            "survived if you say they were saved, no_effect if you say it had no effect. watch: no_visitors "
+            "if you say no one visited; follow: no_visitors if you say they visited no one. Any action: "
+            "roleblocked if you say you were blocked. not_said if you do not say."
+        ),
+    )
+    seen: list[str] = Field(
+        description=(
+            "watch / follow only: the exact player_ids you say you saw (the visitors, or where the player "
+            "went). Empty list otherwise, or if you say you saw no one."
+        ),
+    )
+
+
 class DayDiscussOutput(TurnOutput[ReadRole], Generic[ReadRole, NamedRole]):
     pass_turn: bool = Field(
         description="True only if you have nothing new to add and decline to speak. False when answering/defending.",
     )
     message: str
     claim: NamedRole = Field(description='The role you claim in this message, outright or by describing its action as yours ("I watched player_5" claims sentinel), or "none" if you make no claim.')
+    claimed_night_actions: list[NightActionClaim] = Field(
+        description=(
+            "Each action this message says you already took on a past night, one entry each, as the message "
+            "tells it. Only what this message newly states or changes, not what your earlier messages said; "
+            "never a plan for tonight, never what another player did. Empty list if none."
+        ),
+    )
     addressed_targets: list[AddressedTarget] = Field(
         description="List of targets addressed in the discussion. Empty list if none.",
     )

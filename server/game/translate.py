@@ -464,7 +464,9 @@ class Translator:
             else:
                 out.append(self._emit(ev.Speech, day=day, channel_seq=cseq,
                                       player=player, message=entry["message"],
-                                      claim=entry.get("claim") or "none"))
+                                      claim=entry.get("claim") or "none",
+                                      claimed_night_actions=[ev.WireClaimedNightAction(**a) for a in
+                                                             entry.get("claimed_night_actions") or []]))
             firing = entry.get("firing_reason")
             if firing is not None:
                 out.append(self._emit(
