@@ -6,7 +6,7 @@
   position: relative;
   isolation: isolate;
   display: flex;
-  width: var(--ticket-w, 260px);
+  width: var(--ticket-w, 248px);
   color: var(--town-ink);
   text-decoration: none;
   text-align: left;
@@ -41,7 +41,7 @@
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  padding: 22px 26px 16px;
+  padding: 20px 24px 15px;
   border-radius: 4px;
   font-family: var(--font-serif);
   background:
@@ -78,37 +78,42 @@
   pointer-events: none;
 }
 
+/* the print a shade stronger than a tag's (owner, 2026-10-18): a bolder title, the small lines darker */
 .kicker {
   display: block;
-  font-size: 10px;
-  letter-spacing: 0.22em;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  opacity: 0.62;
+  opacity: 0.78;
 }
 .title {
   display: block;
   margin: 4px 0 6px;
-  font-size: var(--ticket-title, 25px);
+  font-size: var(--ticket-title, 27px);
+  font-weight: 600;
   line-height: 1.05;
 }
 .line {
   display: block;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   font-style: italic;
-  font-size: 12.5px;
+  font-size: 13px;
   line-height: 1.35;
-  opacity: 0.8;
+  opacity: 0.92;
 }
+/* the rule, ending in the way in */
 .foot {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  gap: 4px;
   margin-top: auto;
-  padding-top: 8px;
-  border-top: 1.3px solid var(--town-ink);
-  font-size: 12.5px;
-  opacity: 0.85;
+}
+.foot::before {
+  content: '';
+  flex: 1;
+  height: 1.3px;
+  background: var(--town-ink);
 }
 .go {
   font-size: 17px;
@@ -118,12 +123,9 @@
 .ticket:hover .go {
   transform: translateX(3px);
 }
-.note {
-  display: none;
-}
 
 /* a phone: the title and the way in, one line each ticket, two side by side (owner's mock,
-   2026-10-18); a live note under the title */
+   2026-10-18) */
 @media (max-width: 700px) {
   .ticket {
     flex: 1 1 0;
@@ -155,23 +157,11 @@
     line-height: 1.1;
     text-wrap: balance;
   }
-  .note {
-    grid-column: 1;
-    display: block;
-    margin-top: 3px;
-    font-size: 12px;
-    font-style: italic;
-    opacity: 0.72;
-  }
   .foot {
     grid-column: 2;
-    grid-row: 1 / span 2;
     margin: 0;
-    padding: 0;
-    border: 0;
-    opacity: 1;
   }
-  .foot > span:first-child {
+  .foot::before {
     display: none;
   }
   .go {

@@ -814,14 +814,16 @@ test('landing: the carriage plays day 2 of the featured game, with the replay’
   await expect(carriage(page)).toContainText('Gemini 3.5 Flash-Lite');
   await expect(carriage(page)).toContainText('Town won');
 
-  // the doors, the rooms boarding, the latest games and the archive's count in the footer
+  // the doors, the rooms boarding (on the nav's Rooms door alone, owner 2026-10-18), the latest
+  // games and the archive's count in the footer
   await expect(page.getByRole('link', { name: /Play solo/ }).first()).toHaveAttribute(
     'href',
     '/play',
   );
   const party = page.getByRole('link', { name: /Play with others/ }).first();
   await expect(party).toHaveAttribute('href', '/rooms');
-  await expect(party).toContainText('2 tables boarding');
+  await expect(party).not.toContainText('boarding');
+  await expect(page.getByRole('link', { name: /^Rooms 2 boarding$/ }).first()).toBeVisible();
   await expect(page.locator('[data-game]')).toHaveCount(3);
   await expect(page.getByRole('contentinfo')).toContainText('212 games archived');
 });
