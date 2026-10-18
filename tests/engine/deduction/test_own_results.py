@@ -400,7 +400,7 @@ def test_planted_hidden_state_on_the_payload_never_changes_a_line():
             assert own_result_lines(seat_view_from_payload(payload)) == own_result_lines(view)
 
 
-@pytest.mark.parametrize("mode,shown", [("off", False), ("record", True), ("full", True), (None, True)])
+@pytest.mark.parametrize("mode,shown", [("off", False), ("record", True), ("public", True), ("full", True), (None, True)])
 def test_the_games_mode_decides_whether_an_ai_seat_gets_the_lines(mode, shown):
     payload = _blocked_healer_payload(deduction_mode=mode) if mode else _blocked_healer_payload()
     assert (prompt_inputs._own_result_lines(payload) is not None) == shown

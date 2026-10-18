@@ -27,10 +27,13 @@ from Agents.schemas.game_events import DayChannel
 
 
 def deduction_blocks(view: SeatView, own_lines: Sequence[OwnResultLine | None],
-                     day_channel: Iterable[DayChannel], current_day: int, vote: bool = False) -> DeductionBlocks:
+                     day_channel: Iterable[DayChannel], current_day: int, vote: bool = False,
+                     claims: bool = True) -> DeductionBlocks:
     """The public block and the seat block of a turn. `own_lines` are the level-1 lines shown beside
     the seat's records (one entry per record), which the seat block does not repeat. `vote`: a vote
-    turn, which reads a conditional about a player as its contrapositive (fold rule 3)."""
+    turn, which reads a conditional about a player as its contrapositive (fold rule 3). `claims`
+    False (difficulty level 2, mode "public"): the seat block keeps only the census and the seat's
+    candidate roles, what the record alone works out."""
     record = public_record(view)
     events = public_items(record)
     dead = [death.player for death in view.dead_roster]
@@ -39,10 +42,13 @@ def deduction_blocks(view: SeatView, own_lines: Sequence[OwnResultLine | None],
     roles_left = [item for item in public_candidate_items(record, informative=True) if item.row != "F3"]
     public = render_public([*roles_left, *events, *budget_items(record, events)], record.living, dead)
     own = [(night.day, line) for night, line in zip(view.night_records, own_lines) if line is not None]
-    joins = join_items(view)
-    seat_items = [*seat_candidate_items(view, informative=True), *joins, *for_turn(conditional_items(view), vote),
-                  *_not_joined(comparison_items(view, current_day), joins)]
-    seat = render_seat(seat_items, events, raised_today(day_channel, current_day), view.living, dead, public, own)
+    seat_items = seat_candidate_items(view, informative=True)
+    if claims:
+        joins = join_items(view)
+        seat_items = [*seat_items, *joins, *for_turn(conditional_items(view), vote),
+                      *_not_joined(comparison_items(view, current_day), joins)]
+    seat = render_seat(seat_items, events, raised_today(day_channel, current_day), view.living, dead, public, own,
+                       claims=claims)
     return DeductionBlocks(public=public, seat=seat)
 
 

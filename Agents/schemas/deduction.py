@@ -17,10 +17,15 @@ from Agents.schemas.game_events import (
     WillClause,
 )
 
-DeductionMode = Literal["off", "record", "full"]
-"""How much of the engine a game's AI seats get, set once per game (RunConfig.deduction_mode):
-nothing; the lines beside their own night records (level 1); or those plus the deduction blocks
-(Agents/deduction/render.py: the public block and the seat's own). A human seat always gets nothing."""
+DeductionMode = Literal["off", "record", "public", "full"]
+"""How much of the engine a game's AI seats get, set once per game (RunConfig.deduction_mode), by difficulty
+level (owner, 2026-10-18):
+- "off": nothing (an A/B arm; a human seat always gets nothing);
+- "record", level 1: the lines beside the seat's own night records;
+- "public", level 2: those, the public block (Agents/deduction/render.py) and the seat's census and
+  candidate roles: what the record alone works out;
+- "full", level 3: those plus the claims against the record and each other, the conditionals, the
+  explanations and an evil seat's covers."""
 
 DeductionPlacement = Literal["before_note", "after_note"]
 """Where a seat's own deduction block sits in its prompt, relative to its carried-forward strategy

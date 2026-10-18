@@ -279,9 +279,10 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--deductions",
-        choices=("off", "record", "full"),
+        choices=("off", "record", "public", "full"),
         default="full",
-        help="How much of the deduction engine the AI seats get (RunConfig.deduction_mode).",
+        help="How much of the deduction engine the AI seats get (RunConfig.deduction_mode): difficulty "
+             "level 1 = record, 2 = public, 3 = full.",
     )
     parser.add_argument(
         "--deduction-placement",

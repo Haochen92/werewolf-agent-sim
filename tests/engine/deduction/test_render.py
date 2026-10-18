@@ -287,6 +287,26 @@ def test_the_public_block_is_before_the_boundary_and_the_seat_block_after_it_by_
         assert (seat < note) == (placement == "before_note"), kind
 
 
+def test_level_two_keeps_the_record_and_leaves_out_every_claim_line():
+    """Mode "public" (difficulty level 2): the same public block, and a seat block of only the census
+    and the seat's candidate roles: no line from the claims (the status, joins, conditionals, Table E)."""
+    from Agents.schemas.game_events import DayChannel
+    from tests.fixtures.day_discuss_prompt_golden import speaker_payload
+
+    payload = speaker_payload("healer")
+    day = payload["current_day"]
+    claims = [DayChannel(day=day, seq=k, player=p, message="(a role)", claim="investigator")
+              for k, p in enumerate(("player_1", "player_2"))]
+    payload = {**payload, "day_channel": [*payload.get("day_channel", []), *claims]}
+    full = build_agent_prompt_input({**payload, "deduction_mode": "full"})
+    public = build_agent_prompt_input({**payload, "deduction_mode": "public"})
+    assert "both claim the Investigator" in full["deduction_seat_before_note"]
+    assert public["deduction_public_block"] == full["deduction_public_block"]
+    assert {entry["row"] for entry in public["deduction_log"] if entry["block"] == "seat"} <= {"F3", "F7"}
+    seat = public["deduction_seat_before_note"]
+    assert "from the public record and your own night results." in seat and "claim" not in seat
+
+
 @pytest.mark.parametrize("change", [{"deduction_mode": "off"}, {"deduction_mode": "record"}, {"human_player": True}])
 def test_no_block_outside_full_mode_or_for_a_human_seat(change):
     from Agents.prompts.day_discuss import day_discuss_template

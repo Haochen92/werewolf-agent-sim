@@ -236,8 +236,8 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
             "Abstaining is not available today — you must vote for a surviving player."
         )
     uses_left = payload.get("uses_left")
-    # The deduction engine: the lines beside the seat's own records (level 1), and in "full" mode
-    # the public block and the seat's own block (Agents/deduction/render.py).
+    # The deduction engine: the lines beside the seat's own records (level 1), and in "public" and
+    # "full" mode the public block and the seat's own block (Agents/deduction/render.py).
     own_lines = _own_result_lines(payload)
     deductions = _deduction_blocks(payload, own_lines)
     return {
@@ -347,25 +347,27 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
 
 def _own_result_lines(payload: dict[str, Any]) -> list[OwnResultLine | None] | None:
     """What the seat's own night records imply (level 1 of the deduction engine), or None when the
-    game's deduction mode is "off" or the seat is a human's (Agents/deduction/seat_view.py). In
-    "full" mode a line another of the seat's lines contains is left out (fold rule 3); "record"
-    mode keeps level 1 as it was before the blocks."""
+    game's deduction mode is "off" or the seat is a human's (Agents/deduction/seat_view.py). With the
+    blocks ("public", "full") a line another of the seat's lines contains is left out (fold rule 3);
+    "record" mode keeps level 1 as it was before the blocks."""
     mode = deduction_mode_for(payload)
     if mode == "off":
         return None
     view = seat_view_from_payload(payload)
     lines = own_result_lines(view)
-    if mode == "full":
+    if mode in ("public", "full"):
         lines = fold_own_lines(view.night_records, lines)
     return lines
 
 
 def _deduction_blocks(payload: dict[str, Any], own_lines: list[OwnResultLine | None] | None) -> DeductionBlocks | None:
-    """The turn's two deduction blocks, only in "full" mode (a human seat never gets them)."""
-    if deduction_mode_for(payload) != "full":
+    """The turn's two deduction blocks, in "public" and "full" mode (a human seat never gets them)."""
+    mode = deduction_mode_for(payload)
+    if mode not in ("public", "full"):
         return None
     return deduction_blocks(seat_view_from_payload(payload), own_lines or [], payload.get("day_channel", []),
-                            payload.get("current_day", 1), vote=bool(payload.get("vote_turn")))
+                            payload.get("current_day", 1), vote=bool(payload.get("vote_turn")),
+                            claims=mode == "full")
 
 
 def _deduction_slots(payload: dict[str, Any], blocks: DeductionBlocks | None) -> dict[str, str]:

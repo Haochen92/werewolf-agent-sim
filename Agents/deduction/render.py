@@ -61,6 +61,9 @@ PUBLIC_FRAMING = ("The game computed these lines from the announcements, the dea
 SEAT_HEADING = "== Worked out for you =="
 SEAT_FRAMING = ("The game computed these lines from the public record, your own night results and what players say they did. "
                 "Each line is certain unless it names what it assumes.")
+RECORD_SEAT_FRAMING = ("The game computed these lines from the public record and your own night results. "
+                       "Each line is certain unless it names what it assumes.")
+"""Difficulty level 2 (mode "public"): no line reads what players say they did."""
 
 ROLE_FACTS = (RoleIn, HeldBy)
 """Facts about a role, which is the same on every night: compared without their night."""
@@ -164,13 +167,13 @@ def render_public(items: Sequence[DeductionItem], living: Sequence[str], dead: S
 
 def render_seat(seat_items: Sequence[DeductionItem], public_items: Sequence[DeductionItem],
                 raised: frozenset[tuple[str, int]], living: Sequence[str], dead: Sequence[str],
-                public: RenderedBlock, own: Sequence[tuple[int, OwnResultLine]]) -> RenderedBlock:
+                public: RenderedBlock, own: Sequence[tuple[int, OwnResultLine]], claims: bool = True) -> RenderedBlock:
     """The seat block: the seat's own items, and the public working steps raised today, less what
     the public block or the seat's own level-1 lines (night, line) already state."""
     already = [_of(item) for item in public.shown] + [proposition(line.facts, night) for night, line in own]
     candidates = [*seat_items, *(item for item in public_items if is_working_step(item) and is_raised(item, raised))]
     shown = [item for item, keep in zip(candidates, _kept([_of(item) for item in candidates], already)) if keep]
-    return _block(SEAT_HEADING, SEAT_FRAMING, shown, living, dead)
+    return _block(SEAT_HEADING, SEAT_FRAMING if claims else RECORD_SEAT_FRAMING, shown, living, dead)
 
 
 def _block(heading: str, framing: str, items: Sequence[DeductionItem], living: Sequence[str],
