@@ -18,6 +18,12 @@
   padding: 18px 0 0;
 }
 
+/* the page ends on its picture (the board, or the bench after it): the footer follows it close,
+   a strip of dark just deep enough for its line (owner, 2026-10-18) */
+.hall + footer {
+  margin-top: 0;
+}
+
 /* the picture: still, drawn once (no filter, no blend), behind the nav's board to the fold */
 .scene {
   position: absolute;
@@ -413,7 +419,7 @@
   (min-aspect-ratio: 16/9) and (min-width: 1362px) {
   .hall {
     min-height: calc(100svh - var(--nav-foot));
-    padding-bottom: 48px;
+    padding-bottom: 20px;
   }
   /* the bench at the left edge, given up last; the arch on the right first */
   .scene img {
