@@ -114,9 +114,11 @@ function SectionIcon({ faction, icon }: { faction?: Faction; icon?: ReactNode })
 }
 
 /**
- * The section being read: the last one whose heading has reached the bottom of what is pinned
- * at the top (the phone's line, else the site's strip), so the nav changes as a section's
- * title comes up under it. At the page's foot, the last section.
+ * The section being read: the last one whose heading has come up to the reading line. On a
+ * phone that is the foot of its bar at the top, so the line changes as a section's title comes
+ * up under it; on a desktop, where the nav holds the screen's middle (owner, 2026-10-18), it is
+ * 40% down the screen, so the nav names what is in front of the reader, not what has left the
+ * top. At the page's foot, the last section.
  */
 function useSectionInView(ids: string[], line: RefObject<HTMLElement | null>) {
   const [current, setCurrent] = useState(ids[0]);
@@ -134,7 +136,10 @@ function useSectionInView(ids: string[], line: RefObject<HTMLElement | null>) {
       );
       // the phone's bar (its foot, or the top while it is up), else the strip (none at the page's
       // top); an anchor lands its heading 16 under that (Guide.module.css), so a jump counts
-      const under = (bar && bar.height > 0 ? Math.max(bar.bottom, 0) : strip || 0) + 24;
+      const under =
+        bar && bar.height > 0
+          ? Math.max(bar.bottom, 0) + 24
+          : Math.max((strip || 0) + 24, window.innerHeight * 0.4);
       const atFoot =
         window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
       let at = 0;
