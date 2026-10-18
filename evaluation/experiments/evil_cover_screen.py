@@ -95,6 +95,36 @@ def arm_template(role: str, arm: str):
     return ChatPromptTemplate.from_messages([("system", system.prompt.template), ("human", text)])
 
 
+ARMS = ("before", "card", "card_now", "covers", "covers2")
+"""before / card: the captured prompt input (its deduction blocks as the game rendered them). card_now /
+covers (step 2, slice 14): the blocks re-rendered by the checked-out engine from the turn's rebuilt
+payload, without and with the covers line; the card text is R11's in all after "before". covers2 (step 3):
+covers again after its fix (a check of a revealed role carries its reading; no watch story on a player
+attacked that night)."""
+
+
+def rendered_input(t: dict, covers: bool) -> dict:
+    """The turn's prompt input with both deduction blocks rendered now from its rebuilt payload (the
+    block census's rebuild: evaluation/experiments/deduction_block_census.py)."""
+    import Agents.deduction.comparisons.covers as covers_module
+    from Agents.prompts.prompt_inputs import _deduction_blocks, _deduction_slots, _own_result_lines
+    from evaluation.experiments.deduction_block_census import _final_state, _payload_at
+
+    source, game = t["turn"].split("/", 1)[0], t["game"]
+    capture = json.loads(gzip.open(SOURCES[source] / f"{game}.capture.json.gz", "rt").read())
+    entry = {"day": t["day"], "player_id": t["player"], "player_role": t["role"], "output_key": "day_channel",
+             "prompt_input": t["prompt_input"]}
+    payload = _payload_at(_final_state(capture["final_state"]), entry)
+    real = covers_module.cover_items
+    if not covers:
+        covers_module.cover_items = lambda view, today: []
+    try:
+        blocks = _deduction_blocks(payload, _own_result_lines(payload))
+    finally:
+        covers_module.cover_items = real
+    return {**t["prompt_input"], **_deduction_slots(payload, blocks)}
+
+
 def _pressure(entries: list[dict], player: str) -> list[str]:
     """What earlier lines today did to the seat: accused it, or said they saw its visit."""
     why = []
@@ -131,7 +161,7 @@ def pressured_turns() -> list[dict]:
     return out
 
 
-def sample() -> None:
+def sample(arms: str = "before,card", out: str = "samples.jsonl") -> None:
     from Agents.llm_factory import get_llm
     from Agents.llm_factory.accessors import _game_model, game_thinking_level
     from Agents.schemas import day_discuss_output
@@ -142,18 +172,20 @@ def sample() -> None:
     turns = pressured_turns()
     print(f"{len(turns)} pressured turns")
     calls = 0
-    with (OUT / "samples.jsonl").open("w") as fh:
+    with (OUT / out).open("w") as fh:
         for t in turns:
-            for arm in ("before", "card"):
+            for arm in arms.split(","):
+                prompt_input = rendered_input(t, covers=arm != "card_now") if arm in ("card_now", "covers", "covers2") else t["prompt_input"]
                 for k in range(SAMPLES):
                     if calls >= MAX_CALLS:
                         raise SystemExit(f"call cap {MAX_CALLS} reached")
                     calls += 1
-                    chain = arm_template(t["role"], arm) | get_llm().with_structured_output(day_discuss_output(t["lineup"]))
+                    chain = arm_template(t["role"], "before" if arm == "before" else "card") | get_llm().with_structured_output(
+                        day_discuss_output(t["lineup"]))
                     row = {"turn": t["turn"], "role": t["role"], "round": t["round"], "arm": arm, "k": k,
                            "pressure": t["pressure"], "original": t["line"]}
                     try:
-                        out = chain.invoke(t["prompt_input"])
+                        out = chain.invoke(prompt_input)
                         row |= {"pass_turn": out.pass_turn, "line": out.message, "claim": getattr(out, "claim", "none"),
                                 "strategy": getattr(out, "strategy", None)}
                     except Exception as e:  # recorded; the sample drops out
@@ -164,10 +196,16 @@ def sample() -> None:
     print(f"{calls} calls")
 
 
-def packets(judges: int = 4) -> None:
-    """Blind packets: the public context and the line; no arm, no role, no private record."""
+def _rows(files: str) -> list[dict]:
+    return [json.loads(line) for name in files.split(",") for line in (OUT / name).read_text().splitlines()]
+
+
+def packets(judges: str = "4", prefix: str = "", files: str = "samples.jsonl") -> None:
+    """Blind packets: the public context and the line; no arm, no role, no private record. Step 2
+    (prefix "v2_") pools every arm's samples, so all four are judged alike."""
+    judges = int(judges)
     by_turn = {t["turn"]: t for t in pressured_turns()}
-    rows = [json.loads(line) for line in (OUT / "samples.jsonl").read_text().splitlines()]
+    rows = _rows(files)
     rows = [r for r in rows if r.get("pass_turn") is False and (r.get("line") or "").strip()]
     random.Random(SEED).shuffle(rows)
     key, packs = {}, [[] for _ in range(judges)]
@@ -181,25 +219,26 @@ def packets(judges: int = 4) -> None:
             f"Dead so far (public): {pi.get('dead_roster', '')}\n\n"
             f"Earlier days (summary, most recent part):\n{(pi.get('day_summaries') or '')[-silence_calibration.SUMMARY_TAIL:]}\n\n"
             f"Today's discussion so far, as the speaker saw it:\n{pi.get('day_channel') or ''}\n\nTHE LINE:\n{r['line']}\n")
-    (OUT / "blind_key.json").write_text(json.dumps(key, indent=1))
+    (OUT / f"{prefix}blind_key.json").write_text(json.dumps(key, indent=1))
     for j, pack in enumerate(packs):
-        (OUT / f"packet_{j + 1}.md").write_text("\n".join(pack))
+        (OUT / f"{prefix}packet_{j + 1}.md").write_text("\n".join(pack))
     print({f"packet_{j + 1}": len(p) for j, p in enumerate(packs)})
 
 
-def score() -> None:
-    """Per arm: how the seat answered (the judges' kinds), and whether its claims fit the record."""
-    key = json.loads((OUT / "blind_key.json").read_text())
+def score(prefix: str = "", files: str = "samples.jsonl") -> None:
+    """Per arm: how the seat answered (the judges' kinds), and whether its claims fit the record and
+    the sightings reported (step 2: contradicts_sighting)."""
+    key = json.loads((OUT / f"{prefix}blind_key.json").read_text())
     verdicts = {}
-    for path in sorted(OUT.glob("verdicts_*.jsonl")):
+    for path in sorted(OUT.glob(f"{prefix}verdicts_*.jsonl")):
         for line in path.read_text().splitlines():
             if line.strip():
                 v = json.loads(line)
                 verdicts[v["item"]] = key[v["item"]] | v
-    rows = [json.loads(line) for line in (OUT / "samples.jsonl").read_text().splitlines()]
+    rows = _rows(files)
     report: dict = {"samples": {}, "answer": {}, "claim_fits": {}, "contested": {}, "town_would_catch": {},
-                    "explains_sighting": {}, "claimed_roles": {}}
-    for arm in ("before", "card"):
+                    "explains_sighting": {}, "contradicts_sighting": {}, "claimed_roles": {}}
+    for arm in [arm for arm in ARMS if any(r["arm"] == arm for r in rows)]:
         mine = [r for r in rows if r["arm"] == arm and r.get("pass_turn") is not None]
         report["samples"][arm] = {"n": len(mine), "passed": sum(r["pass_turn"] for r in mine),
                                   "claim_field_set": sum((r.get("claim") or "none") != "none" for r in mine)}
@@ -213,13 +252,15 @@ def score() -> None:
         report["town_would_catch"][arm] = f"{sum(v['town_would_catch'] for v in claims)}/{len(claims)}"
         report["contested"][arm] = f"{sum(v['contested'] for v in claims)}/{len(claims)}"
         report["explains_sighting"][arm] = f"{sum(v['explains_sighting'] for v in judged)}/{len(judged)}"
+        if all("contradicts_sighting" in v for v in judged):
+            report["contradicts_sighting"][arm] = f"{sum(v['contradicts_sighting'] for v in claims)}/{len(claims)}"
         roles: dict = defaultdict(int)
         for v in claims:
             roles[v["claimed_role"]] += 1
         report["claimed_roles"][arm] = dict(sorted(roles.items()))
-    (OUT / "scores.json").write_text(json.dumps(report, indent=1))
+    (OUT / f"{prefix}scores.json").write_text(json.dumps(report, indent=1))
     print(json.dumps(report, indent=1))
 
 
 if __name__ == "__main__":
-    {"sample": sample, "packets": packets, "score": score}[sys.argv[1]]()
+    {"sample": sample, "packets": packets, "score": score}[sys.argv[1]](*sys.argv[2:])
