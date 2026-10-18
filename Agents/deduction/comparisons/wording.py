@@ -399,6 +399,48 @@ def can_only_be(player: str, roles: list[str]) -> str:
     return f"{player} can only be {_joined([title(role) for role in roles], 'or')}"
 
 
+_HELD = {"held_fire": "held fire", "kept_check": "kept your check", "kept_watch": "kept your watch",
+         "kept_sigil": "kept your sigil"}
+
+
+def _story(deeds: list[tuple[int, str, str, str]]) -> str:
+    """A cover's nights: "you checked player_10 on night 1 and kept your check on night 2"."""
+    nights: dict[tuple[str, str], list[int]] = {}  # the same deed on two nights is said once
+    for night, action, target, result in deeds:
+        if action == "no_action":
+            deed, after = _HELD[result], ""
+        else:
+            deed = f"{DEED[action]} {target}"
+            after = {"saved_from_attack": " and saved them", "suspicious": ", who read Suspicious",
+                     "not_suspicious": ", who read Not suspicious"}.get(result, "")
+        nights.setdefault((deed, after), []).append(night)
+    parts = [f"{deed} on {'night' if len(on) == 1 else 'nights'} {_joined([str(x) for x in on], 'and')}{after}"
+             for (deed, after), on in nights.items()]
+    return "you " + _joined(parts, "and")
+
+
+def covers(n: Names, fitting: list[tuple[str, list]], countered: list[tuple[str, list, list[str], list[str]]],
+           reported: dict[int, list[str]], others_fail: bool = False) -> str:
+    """Slice 14 (R11): "player_3 says it saw your visit on night 1. Stories that fit your nights and
+    every claim so far: as the Investigator, you checked player_10 on night 1 and kept your check on
+    night 2. A Trailseer story fits too (you followed player_10 on night 1), but player_3 claims the
+    Trailseer: claiming it starts a counter-claim."."""
+    sentences = [f"{_joined(players, 'and')} {'says it' if len(players) == 1 else 'say they'} saw your visit on night {night}."
+                 for night, players in sorted(reported.items())]
+    if fitting:
+        told = "; ".join(f"as {title(role)}, {_story(deeds)}" for role, deeds in fitting)
+        sentences.append(f"Stories that fit your nights and every claim so far: {told}.")
+    for role, deeds, claimants, packmates in countered:
+        who = " and ".join(f"your packmate {player}" if player in packmates else player for player in claimants)
+        verb = "claims" if len(claimants) == 1 else "claim"
+        story = title(role).removeprefix("the ")
+        sentences.append(f"A {story} story fits too ({_story(deeds)}), but {who} {verb} {title(role)}: claiming it "
+                         f"starts a counter-claim.")
+    if others_fail:
+        sentences.append("No other town role you can claim has a story that fits these nights.")
+    return " ".join(sentences)
+
+
 def claimable(roles: list[str], unclaimed: list[str]) -> str:
     """F7's note for an evil seat (owner, 2026-10-16): the town and neutral roles the public record
     still allows it, and which of them no living player claims now (coordinator, 2026-10-17)."""

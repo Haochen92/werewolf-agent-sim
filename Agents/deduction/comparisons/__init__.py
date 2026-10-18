@@ -46,7 +46,7 @@ from Agents.deduction.comparisons.own_visits import own_visit_items
 from Agents.deduction.comparisons.status import claimable_items, role_claim_items, status_items
 from Agents.deduction.seat_view import public_record
 from Agents.deduction.self_knowledge import possible_roles
-from Agents.schemas.deduction import ActionClaim, DeductionItem, SeatView
+from Agents.schemas.deduction import ActionClaim, Candidates, DeductionItem, SeatView
 
 
 def comparison_items(view: SeatView, today: int) -> list[DeductionItem]:
@@ -56,6 +56,23 @@ def comparison_items(view: SeatView, today: int) -> list[DeductionItem]:
     candidates = seat_candidates(view)
     if candidates is None:
         return []
+    items = compare(view, today, candidates)
+    from Agents.deduction.comparisons.covers import cover_items  # it runs `compare` as a public observer
+
+    return items[:_shared_end(items)] + cover_items(view, today) + items[_shared_end(items):]
+
+
+def _shared_end(items: list[DeductionItem]) -> int:
+    """Where the shared lines end: the covers go after an evil seat's roles and own-visit lines."""
+    return sum(1 for item in items if item.subject is None and item.row in SHARED_ROWS)
+
+
+SHARED_ROWS = frozenset({"F3+E15", "F7+E15", "F7+L8", "E2a+own", "E4b+own", "E14+own"})
+
+
+def compare(view: SeatView, today: int, candidates: Candidates) -> list[DeductionItem]:
+    """The comparisons on `view` with these candidate roles: the seat's own, or (covers.py) the
+    public's, for an observer who knows only the public record and the claims."""
 
     def possible(player: str) -> frozenset[str]:
         return candidates.roles.get(player, possible_roles(player, view))

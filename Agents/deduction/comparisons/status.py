@@ -150,6 +150,18 @@ def role_claim_items(view: SeatView, today: int, night: int, possible: Possible)
     return items
 
 
+def claimable_roles(view: SeatView) -> list[str]:
+    """The town and neutral roles the public record still allows an evil seat, in role order."""
+    spec = ROLE_SPECS.get(view.role)
+    if spec is None or spec.side not in (WOLVES, LONE_KILLER) or not view.living:
+        return []
+    public = public_candidates(public_record(view))
+    if public is None or view.player_id not in public.roles:
+        return []
+    allowed = public.roles[view.player_id]
+    return [role for role in _dealt(view) if role in allowed and ROLE_SPECS[role].side in (TOWN, NEUTRAL)]
+
+
 def claimable_items(view: SeatView, night: int) -> list[DeductionItem]:
     """An evil seat's own line: the town and neutral roles the public record still allows it."""
     spec = ROLE_SPECS.get(view.role)
@@ -158,8 +170,7 @@ def claimable_items(view: SeatView, night: int) -> list[DeductionItem]:
     public = public_candidates(public_record(view))
     if public is None or view.player_id not in public.roles:
         return []
-    allowed = public.roles[view.player_id]
-    roles = [role for role in _dealt(view) if role in allowed and ROLE_SPECS[role].side in (TOWN, NEUTRAL)]
+    roles = claimable_roles(view)
     living = set(view.living)
     claimed = {player.current_role for player in view.claims if player.player in living}
     unclaimed = [role for role in roles if role not in claimed]
