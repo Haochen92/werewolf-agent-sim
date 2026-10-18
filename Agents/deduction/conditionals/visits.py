@@ -25,9 +25,10 @@ from __future__ import annotations
 from collections.abc import Iterable
 
 from Agents.deduction.candidates.constraints import NEVER_VISIT_UNDER_OWN_NAME, WOLF_ROLES
+from Agents.deduction.morning import placed_visits
 from Agents.deduction.night_state import roles_always_immune
 from Agents.schemas.game_events import NightAnnouncement
-from Agents.schemas.role_traits import OWN_ATTACK_TYPES, VISITS_TWO, announced_as, roles_acting, roles_with
+from Agents.schemas.role_traits import VISITS_TWO, roles_acting, roles_with
 
 CHANTEUSE = VISITS_TWO
 TWO_VISITS = frozenset(roles_with(visits_two=True))
@@ -36,23 +37,6 @@ also blocks (catalogue L4, A34)."""
 VISIT_IS_AN_ATTACK = frozenset(roles_acting("kill") + roles_acting("conceal"))
 """The roles whose every visit is an announced attack unless its target was silently immune: those
 whose own action is a kill, and the conceal (a visit to the pack's victim)."""
-PLACED_BY_ATTACK = {kind: announced_as(kind) for kind in OWN_ATTACK_TYPES}
-"""Whose visit an announced attack type places at its target. A wolves' attack places the carrier's
-(a wolf), and the Illusionist's whether or not it carried: both its visits go to the pack's victim."""
-HEALER = roles_acting("protect")[0]
-
-
-def placed_visits(announcement: NightAnnouncement) -> dict[str, set[str]]:
-    """Per role, the players the morning shows its visit went to that night."""
-    placed: dict[str, set[str]] = {}
-    for event in [*announcement.deaths, *announcement.saves]:
-        for kind in event.attacker_types:
-            for role in PLACED_BY_ATTACK.get(kind, ()):
-                placed.setdefault(role, set()).add(event.player)
-    for save in announcement.saves:
-        if save.saver == "healer":
-            placed.setdefault(HEALER, set()).add(save.player)
-    return placed
 
 
 def roles_that_could_visit(target: str, night: int, announcement: NightAnnouncement | None, dealt: frozenset[str],

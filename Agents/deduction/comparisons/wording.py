@@ -267,6 +267,19 @@ def shot_went_ahead_false(claimant: str, target: str, night: int, killed: bool, 
     return f"{claimant} says {said} on night {night}, but {no_shot_announced(target)}{extra}: that claim is false."
 
 
+_PLACED_BY = {"healer": ("the Healer's protection saved", "it protects one player a night"),
+              "sigilist": ("the Sigilist's sigil struck", "it sets one sigil a night"),
+              "vigilante": ("the Vigilante shot", "it fires at one player a night")}
+
+
+def placed_elsewhere(n: Names, claimant: str, action: str, target: str, night: int, role: str, placed: list[str]) -> str:
+    """E18: "player_3 says it protected player_2 on night 1, but the Healer's protection saved player_5
+    that night, and it protects one player a night: that claim is false."."""
+    did, once = _PLACED_BY[role]
+    return is_false(own_visit(n, claimant, action, target, when(night, True)),
+                    f"{did} {_joined([n(p) for p in placed], 'and')} that night, and {once}", "claim")
+
+
 def sigil_struck_false(claimant: str, target: str, night: int) -> str:
     """E9."""
     return (f"{claimant} says its sigil struck {target} down on night {night}, but no sigil killed {target} that "

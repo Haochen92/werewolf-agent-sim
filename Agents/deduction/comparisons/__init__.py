@@ -12,7 +12,7 @@ left out needs a whole list (L12).
   E12, and the seat's own movements);
 - pairs.py: two places in one night (E2a), a sighting and the visitor's own word (E1), and the two
   directions of a visit (E17);
-- record.py: claims against the morning, the roster and the rules (E4, E6, E7, E8, E9, E11, E14);
+- record.py: claims against the morning, the roster and the rules (E4, E6, E7, E8, E9, E11, E14, E18);
 - status.py: the role claims' status (F3, E15) and role claims the seat knows are false;
 - an evil seat's own lines (the claimable roles, a hidden body's role, its own visits, its covers)
   are Agents/deduction/evil/, drawn in here;
@@ -88,6 +88,7 @@ def compare(view: SeatView, today: int, candidates: Candidates) -> list[Deductio
     impossible = {item.derivation[0] for item in against_record if item.row == "E14"}
     conflicts = conflict_items(view, statements, lists)
     false = {claims[0] for item in conflicts if len(claims := _claims(item)) == 1}
+    false |= {item.derivation[0] for item in against_record if item.row == "E18"}  # no "either…or" beside it
     from Agents.deduction.explanations.branches import explanation_items  # it reads this package's statements
 
     explanations = [item for item in explanation_items(view, possible) if not false & set(_claims(item))]

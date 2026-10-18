@@ -323,6 +323,40 @@ def test_e7_a_check_against_a_known_role_and_the_ledgers_share():
     assert _lines(table, "player_6", 3, yesterday, rows={"E7"}) == []
 
 
+# --- E18: the morning places a role's one visit -----------------------------------------------------------
+
+def _placed_night() -> Table:
+    """The pack kills player_5 and the Healer saves it; the Vigilante shoots player_8 dead."""
+    return Table(_sk_sp()).night(1, ("player_7", "kill", "player_5"), ("player_6", "protect", "player_5"),
+                                 ("player_4", "kill", "player_8"))
+
+
+def test_e18_a_claimed_action_where_the_morning_placed_the_roles_visit_elsewhere():
+    healer = _said(2, "player_3", (1, "protect", "player_2", "no_attack", []), claim="healer")
+    assert _lines(_placed_night(), "player_1", 2, healer, rows={"E18"}) == [
+        "player_3 says it protected player_2 on night 1, but the Healer's protection saved player_5 that night, and "
+        "it protects one player a night: that claim is false."]
+    vigilante = _said(2, "player_9", (1, "shoot", "player_2", "survived", []), claim="vigilante")
+    assert _lines(_placed_night(), "player_1", 2, vigilante) == [  # no "either…or" (F8) beside it
+        "player_9 says it shot at player_2 on night 1, but the Vigilante shot player_8 that night, and it fires at one "
+        "player a night: that claim is false."]
+    struck = Table(_sk_sp()).night(1, ("player_7", "kill", "player_4"), ("player_5", "sigil", "player_7"),
+                                   ("player_9", "kill", "player_10"))
+    sigil = _said(2, "player_8", (1, "sigil", "player_2", "no_effect", []), claim="sigilist")
+    assert _lines(struck, "player_1", 2, sigil, rows={"E18"}) == [
+        "player_8 says it set a sigil on player_2 on night 1, but the Sigilist's sigil struck player_7 that night, and "
+        "it sets one sigil a night: that claim is false."]
+
+
+def test_e18_not_for_the_true_claim_nor_where_another_row_says_it():
+    true = _said(2, "player_6", (1, "protect", "player_5", "saved_from_attack", []), claim="healer")
+    assert _lines(_placed_night(), "player_1", 2, true, rows={"E18"}) == []
+    # A protection of a player who died that night: E4b says it, not E18.
+    dead = _said(2, "player_3", (1, "protect", "player_8", "no_attack", []), claim="healer")
+    assert [i.row for i in comparison_items(_view(_placed_night(), "player_1", 2, dead), 2)
+            if i.subject == "player_3"] == ["E4b"]
+
+
 def _shot_at_the_serial_killer() -> Table:
     return Table(_sk_sp()).night(1, ("player_7", "kill", "player_1"), ("player_9", "kill", "player_10"),
                                  ("player_4", "kill", "player_9"))
@@ -621,7 +655,7 @@ def truth_oracle(nights: int, seed: int, seats: int = 3) -> dict[str, int]:
 def test_the_truth_oracle_on_random_games_with_claims_of_every_kind():
     counts = truth_oracle(nights=4000, seed=20261031)
     rows = {"E1", "E2a", "E2b", "E2c", "E3a", "E3b", "E4b", "E6", "E6b", "E7", "E8b", "E9", "E11", "E12",
-            "E14", "E17", "E15+D", "F3+E15", "F7+E15", "F8"}
+            "E14", "E17", "E18", "E15+D", "F3+E15", "F7+E15", "F8"}
     assert rows <= set(counts), rows - set(counts)
     assert {"E1 both true", "E17 both true", "E2a premise true", "F8 explained", "F8 claim false"} <= set(counts), counts
 

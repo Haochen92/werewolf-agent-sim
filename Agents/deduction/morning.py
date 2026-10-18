@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from Agents.schemas.deduction import SeatView
 from Agents.schemas.game_events import AnnouncedDeath, AnnouncedSave, NightAnnouncement
-from Agents.schemas.role_traits import BODY_OF_ATTACK_TYPE
+from Agents.schemas.role_traits import BODY_OF_ATTACK_TYPE, OWN_ATTACK_TYPES, announced_as, roles_acting
 from Agents.schemas.roles import BORROWED_ABILITY
 
 KILLS_THROUGH_A_BODY = frozenset(kind for kind, body in BODY_OF_ATTACK_TYPE.items() if BORROWED_ABILITY[body] == "kill")
@@ -60,3 +60,25 @@ def necromancer_action_other_than_a_kill(announcement: NightAnnouncement) -> str
     if "reanimated_sigilist" in attack_types(announcement):
         return "reanimated_sigilist"
     return None
+
+
+# --- where the morning places a role's one visit (shared by the conditionals' premises, the
+# comparisons' E18 and the covers: one rule, so the tiers cannot disagree on it) ------------------
+
+PLACED_BY_ATTACK = {kind: announced_as(kind) for kind in OWN_ATTACK_TYPES}
+"""Whose visit an announced attack type places at its target. A wolves' attack places the carrier's
+(a wolf), and the Illusionist's whether or not it carried: both its visits go to the pack's victim."""
+HEALER = roles_acting("protect")[0]
+
+
+def placed_visits(announcement: NightAnnouncement) -> dict[str, set[str]]:
+    """Per role, the players the morning shows its visit went to that night."""
+    placed: dict[str, set[str]] = {}
+    for event in [*announcement.deaths, *announcement.saves]:
+        for kind in event.attacker_types:
+            for role in PLACED_BY_ATTACK.get(kind, ()):
+                placed.setdefault(role, set()).add(event.player)
+    for save in announcement.saves:
+        if save.saver == "healer":
+            placed.setdefault(HEALER, set()).add(save.player)
+    return placed
