@@ -95,12 +95,13 @@ def arm_template(role: str, arm: str):
     return ChatPromptTemplate.from_messages([("system", system.prompt.template), ("human", text)])
 
 
-ARMS = ("before", "card", "card_now", "covers", "covers2")
+ARMS = ("before", "card", "card_now", "covers", "covers2", "covers3")
 """before / card: the captured prompt input (its deduction blocks as the game rendered them). card_now /
 covers (step 2, slice 14): the blocks re-rendered by the checked-out engine from the turn's rebuilt
 payload, without and with the covers line; the card text is R11's in all after "before". covers2 (step 3):
 covers again after its fix (a check of a revealed role carries its reading; no watch story on a player
-attacked that night)."""
+attacked that night). covers3 (step 5): the Necromancer's and the neutrals' stories, the uses a story
+spends, and the nights a claimed role cannot tell."""
 
 
 def rendered_input(t: dict, covers: bool) -> dict:
@@ -175,7 +176,7 @@ def sample(arms: str = "before,card", out: str = "samples.jsonl") -> None:
     with (OUT / out).open("w") as fh:
         for t in turns:
             for arm in arms.split(","):
-                prompt_input = rendered_input(t, covers=arm != "card_now") if arm in ("card_now", "covers", "covers2") else t["prompt_input"]
+                prompt_input = rendered_input(t, covers=arm != "card_now") if arm in ("card_now", "covers", "covers2", "covers3") else t["prompt_input"]
                 for k in range(SAMPLES):
                     if calls >= MAX_CALLS:
                         raise SystemExit(f"call cap {MAX_CALLS} reached")

@@ -129,3 +129,31 @@ labels for the first four arms and `v3_*` for covers2.)
    - The notes in the captured inputs were written under the old card.
 
    Whole games are the next measure.
+
+# Step 5: the Serial Killer's and the Necromancer's covers (2026-10-18)
+
+**Change (owner, after the cover games):**
+- the Necromancer gets covers (no visit of its own ever shows);
+- the neutrals fit nights with no shown visit;
+- a story that spends a role's every use says so;
+- a claimed role that cannot tell a night says so.
+
+`covers3` was replayed on the same 41 turns (82 calls) and judged blind by four subagents (`v4_*`).
+These judges were also told each role's use count.
+
+| | covers2 | covers3 |
+|---|---|---|
+| Claims a role | 44 | 42 |
+| Denies | 0 | 1 |
+| Claims that fit the public record | 41/44 | 41/42 |
+| Claims a careful town could show false | 3/44 | **1/42** |
+| Claims contradicting a reported sighting | 1/44 | **0/42** |
+| Claims of a role a living player already claims | 2/44 | 0/42 |
+| Serial Killer turns: claims, of them catchable | 15, 2 | 13, 1 |
+| Necromancer turns (4 turns × 2): claims | 1 | 1 |
+
+**Reading.**
+- The Serial Killer's catchable claims halve, and nothing contradicts a sighting.
+- The Necromancer still mostly deflects (5 of 6 lines) with its covers line in front of it. That is
+  4 turns, too few to judge; its captured notes, written under the old card, say "stay quiet".
+- No paired games (owner: not a major change).
