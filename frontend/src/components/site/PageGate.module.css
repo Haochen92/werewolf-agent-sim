@@ -1,0 +1,30 @@
+/* A site page comes up whole (PageGate.tsx): while `html[data-gate]` the page under the nav is
+   hidden behind the loader (the gate is the first box in its `<main>`, the page the boxes after
+   it; the footer hides with it, SiteFooter.module.css); while `html[data-gate-lift]` they fade
+   in, one opacity each, as the loader fades off. The nav never changes. */
+:global(html[data-gate]) .cover ~ * {
+  opacity: 0;
+  /* should the page's script never run, the page shows anyway */
+  animation: gate-failsafe 0s 10s forwards;
+}
+@keyframes gate-failsafe {
+  to {
+    opacity: 1;
+  }
+}
+:global(html[data-gate-lift]) .cover ~ * {
+  transition: opacity 0.4s ease-out;
+}
+
+/* the screen under the nav (the nav's board stands over it, `.hang` z-index 3) */
+.cover {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  transition: opacity 0.4s ease-in;
+}
+/* the wait is over: the loader fades off (before React is up, so the stylesheet does it) */
+:global(html:not([data-gate])) .cover {
+  opacity: 0;
+  pointer-events: none;
+}

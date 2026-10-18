@@ -20,7 +20,7 @@ import {
 import { Menu, UnstyledButton } from '@mantine/core';
 import { FACTION_NAME, type Faction } from '@/stage/roles';
 import { FactionMark } from '@/stage/instruments/FactionMark';
-import { StationWall, useReplaceSiteStrip, wallPage } from '@/components/site';
+import { PageGate, StationWall, useReplaceSiteStrip, wallPage } from '@/components/site';
 import { stageFonts } from '@/stage/fonts';
 import { GUIDE_BED } from '@/music/cues';
 import { useMusicBed } from '@/music/music';
@@ -175,6 +175,7 @@ export function Guide() {
 
   return (
     <main className={`${classes.guide} ${stageFonts} ${wallPage}`}>
+      <PageGate />
       <StationWall kind="cards" />
       <nav className={classes.nav} aria-label="Guide sections">
         {SECTIONS.map((s, i) => (

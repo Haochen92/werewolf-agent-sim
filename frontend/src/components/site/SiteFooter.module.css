@@ -11,6 +11,20 @@
   border-top: 1px solid var(--line);
 }
 
+/* hidden with the page while it comes up (PageGate.module.css) */
+:global(html[data-gate]) .foot {
+  opacity: 0;
+  animation: gate-failsafe 0s 10s forwards;
+}
+@keyframes gate-failsafe {
+  to {
+    opacity: 1;
+  }
+}
+:global(html[data-gate-lift]) .foot {
+  transition: opacity 0.4s ease-out;
+}
+
 .meta {
   margin: 0;
   font-size: 13.5px;

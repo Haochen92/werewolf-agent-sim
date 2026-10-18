@@ -1,6 +1,7 @@
 import hallTall from '@/assets/site/hall-tall.webp';
 import hallWall from '@/assets/site/hall-wall.webp';
 import hallWide from '@/assets/site/hall-wide.webp';
+import { PageGate } from '@/components/site';
 import { PageMusic } from '@/music/PageMusic';
 import { HeroTicket } from '../_components/landing/HeroTicket';
 import { DeparturesBoard } from './_components/DeparturesBoard';
@@ -23,6 +24,7 @@ const BESIDE =
 export default function RoomsPage() {
   return (
     <main className={classes.hall}>
+      <PageGate />
       {/* art direction, one file a screen: a plain picture, not next/image */}
       <picture className={classes.scene}>
         <source media="(max-aspect-ratio: 1/1)" srcSet={hallTall.src} />

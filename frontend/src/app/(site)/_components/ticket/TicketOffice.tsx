@@ -33,7 +33,7 @@ import { formatCost } from '@/lib/format';
 import { keyRefusal, modelProvider, PROVIDERS } from '@/lib/key-provider';
 import { hostKey, seatToken } from '@/lib/storage';
 import { queryKeys } from '@/lib/queryKeys';
-import { Button, Icon, Paper, StationWall, wallPage } from '@/components/site';
+import { Button, Icon, Paper, PageGate, StationWall, wallPage } from '@/components/site';
 import { HeroTicket } from '../landing/HeroTicket';
 import { PuppetPicker } from '@/components/PuppetPicker';
 import { TrainDrawing } from '@/components/TrainLoader';
@@ -167,6 +167,7 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
 
   return (
     <main className={`${classes.office} ${wallPage}`}>
+      <PageGate />
       <StationWall kind="granite" />
       <div className={classes.intro}>
         <div>

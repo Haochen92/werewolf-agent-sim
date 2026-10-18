@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { Anchor } from '@mantine/core';
-import { Button, GuideSign } from '@/components/site';
+import { Button, GuideSign, PageGate } from '@/components/site';
 import { SITE } from '@/lib/site';
 import { PageMusic } from '@/music/PageMusic';
 import { stageFonts } from '@/stage/fonts';
@@ -41,6 +41,7 @@ import heroTall from '@/assets/site/hero-tall.webp';
 export default function HomePage() {
   return (
     <main className={classes.landing}>
+      <PageGate />
       {/* the guide's piece, for a viewer who turns it on (the nav's switch) */}
       <PageMusic bed="guide" />
       <header className={classes.hero}>
