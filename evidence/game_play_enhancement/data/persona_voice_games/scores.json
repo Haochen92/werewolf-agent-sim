@@ -1,0 +1,357 @@
+{
+ "pairs": 8,
+ "per_game": {
+  "voices-01": {
+   "off": {
+    "winner": "villagers",
+    "days": 4,
+    "spoken_lines": 0,
+    "words_median": null,
+    "reads": 638,
+    "committed": 6,
+    "unclear_rate": 0.991,
+    "role_acc": 0.5,
+    "side_acc": 1.0,
+    "brier": 0.2725
+   },
+   "on": {
+    "winner": "villagers",
+    "days": 4,
+    "spoken_lines": 11,
+    "words_median": 51,
+    "reads": 658,
+    "committed": 20,
+    "unclear_rate": 0.97,
+    "role_acc": 0.95,
+    "side_acc": 0.95,
+    "brier": 0.1225
+   }
+  },
+  "voices-02": {
+   "off": {
+    "winner": "villagers",
+    "days": 6,
+    "spoken_lines": 45,
+    "words_median": 53,
+    "reads": 1026,
+    "committed": 164,
+    "unclear_rate": 0.84,
+    "role_acc": 0.933,
+    "side_acc": 0.933,
+    "brier": 0.1353
+   },
+   "on": {
+    "winner": "villagers",
+    "days": 5,
+    "spoken_lines": 35,
+    "words_median": 54,
+    "reads": 811,
+    "committed": 123,
+    "unclear_rate": 0.848,
+    "role_acc": 0.951,
+    "side_acc": 0.951,
+    "brier": 0.1282
+   }
+  },
+  "voices-03": {
+   "off": {
+    "winner": "villagers",
+    "days": 5,
+    "spoken_lines": 19,
+    "words_median": 51,
+    "reads": 1043,
+    "committed": 13,
+    "unclear_rate": 0.988,
+    "role_acc": 0.385,
+    "side_acc": 0.385,
+    "brier": 0.2994
+   },
+   "on": {
+    "winner": "villagers",
+    "days": 6,
+    "spoken_lines": 29,
+    "words_median": 54,
+    "reads": 1144,
+    "committed": 79,
+    "unclear_rate": 0.931,
+    "role_acc": 0.911,
+    "side_acc": 0.924,
+    "brier": 0.1377
+   }
+  },
+  "voices-04": {
+   "off": {
+    "winner": "villagers",
+    "days": 5,
+    "spoken_lines": 26,
+    "words_median": 54.0,
+    "reads": 1169,
+    "committed": 216,
+    "unclear_rate": 0.815,
+    "role_acc": 0.958,
+    "side_acc": 0.958,
+    "brier": 0.1304
+   },
+   "on": {
+    "winner": "villagers",
+    "days": 4,
+    "spoken_lines": 40,
+    "words_median": 53.5,
+    "reads": 825,
+    "committed": 143,
+    "unclear_rate": 0.827,
+    "role_acc": 0.972,
+    "side_acc": 0.972,
+    "brier": 0.1288
+   }
+  },
+  "voices-05": {
+   "off": {
+    "winner": "necromancer",
+    "days": 6,
+    "spoken_lines": 49,
+    "words_median": 53,
+    "reads": 1631,
+    "committed": 291,
+    "unclear_rate": 0.822,
+    "role_acc": 0.897,
+    "side_acc": 0.904,
+    "brier": 0.1521
+   },
+   "on": {
+    "winner": "villagers",
+    "days": 5,
+    "spoken_lines": 43,
+    "words_median": 57,
+    "reads": 1165,
+    "committed": 321,
+    "unclear_rate": 0.724,
+    "role_acc": 0.975,
+    "side_acc": 0.975,
+    "brier": 0.129
+   }
+  },
+  "voices-06": {
+   "off": {
+    "winner": "necromancer",
+    "days": 6,
+    "spoken_lines": 31,
+    "words_median": 52,
+    "reads": 1041,
+    "committed": 187,
+    "unclear_rate": 0.82,
+    "role_acc": 0.952,
+    "side_acc": 0.957,
+    "brier": 0.1327
+   },
+   "on": {
+    "winner": "necromancer",
+    "days": 5,
+    "spoken_lines": 32,
+    "words_median": 56.0,
+    "reads": 1074,
+    "committed": 75,
+    "unclear_rate": 0.93,
+    "role_acc": 0.907,
+    "side_acc": 0.907,
+    "brier": 0.1452
+   }
+  },
+  "voices-07": {
+   "off": {
+    "winner": "serial_killer",
+    "days": 5,
+    "spoken_lines": 28,
+    "words_median": 52.5,
+    "reads": 1152,
+    "committed": 177,
+    "unclear_rate": 0.846,
+    "role_acc": 0.65,
+    "side_acc": 0.65,
+    "brier": 0.2197
+   },
+   "on": {
+    "winner": "villagers",
+    "days": 6,
+    "spoken_lines": 44,
+    "words_median": 52.0,
+    "reads": 1323,
+    "committed": 190,
+    "unclear_rate": 0.856,
+    "role_acc": 0.942,
+    "side_acc": 0.947,
+    "brier": 0.122
+   }
+  },
+  "voices-08": {
+   "off": {
+    "winner": "serial_killer",
+    "days": 4,
+    "spoken_lines": 8,
+    "words_median": 46.5,
+    "reads": 642,
+    "committed": 51,
+    "unclear_rate": 0.921,
+    "role_acc": 0.882,
+    "side_acc": 0.882,
+    "brier": 0.1539
+   },
+   "on": {
+    "winner": "villagers",
+    "days": 4,
+    "spoken_lines": 12,
+    "words_median": 49.5,
+    "reads": 638,
+    "committed": 22,
+    "unclear_rate": 0.966,
+    "role_acc": 1.0,
+    "side_acc": 1.0,
+    "brier": 0.118
+   }
+  }
+ },
+ "arms": {
+  "off": {
+   "spoken_lines": 206,
+   "words_median": 53.0,
+   "town_votes": {
+    "abstain": 37,
+    "on_not_town": 50,
+    "on_town": 41
+   },
+   "reads": 8342,
+   "committed": 1105,
+   "unclear_rate": 0.868,
+   "role_acc": 0.875,
+   "side_acc": 0.881,
+   "brier": 0.1554
+  },
+  "on": {
+   "spoken_lines": 246,
+   "words_median": 53.5,
+   "town_votes": {
+    "abstain": 35,
+    "on_not_town": 49,
+    "on_town": 28
+   },
+   "reads": 7638,
+   "committed": 973,
+   "unclear_rate": 0.873,
+   "role_acc": 0.955,
+   "side_acc": 0.957,
+   "brier": 0.1291
+  }
+ },
+ "words_by_voice": {
+  "automaton": {
+   "lines": 15,
+   "median": 56
+  },
+  "badger": {
+   "lines": 19,
+   "median": 55
+  },
+  "cat": {
+   "lines": 26,
+   "median": 52.5
+  },
+  "cyclops": {
+   "lines": 19,
+   "median": 53
+  },
+  "dragon": {
+   "lines": 20,
+   "median": 48.5
+  },
+  "hare": {
+   "lines": 5,
+   "median": 58
+  },
+  "kitsune": {
+   "lines": 20,
+   "median": 47.0
+  },
+  "lionCub": {
+   "lines": 20,
+   "median": 57.5
+  },
+  "mushroom": {
+   "lines": 13,
+   "median": 56
+  },
+  "onion": {
+   "lines": 18,
+   "median": 56.5
+  },
+  "owl": {
+   "lines": 6,
+   "median": 61.5
+  },
+  "polarBear": {
+   "lines": 29,
+   "median": 58
+  },
+  "shade": {
+   "lines": 16,
+   "median": 51.5
+  },
+  "threeEyes": {
+   "lines": 9,
+   "median": 49
+  },
+  "whale": {
+   "lines": 11,
+   "median": 50
+  }
+ },
+ "repeated_openers": {
+  "voices-02:player_1:polarBear": [
+   "player_5",
+   2
+  ],
+  "voices-02:player_6:badger": [
+   "right",
+   3
+  ],
+  "voices-02:player_7:lionCub": [
+   "i",
+   2
+  ],
+  "voices-03:player_7:kitsune": [
+   "player_9",
+   3
+  ],
+  "voices-04:player_5:shade": [
+   "i'm",
+   2
+  ],
+  "voices-04:player_2:lionCub": [
+   "player_9",
+   3
+  ],
+  "voices-04:player_3:hare": [
+   "i'm",
+   2
+  ],
+  "voices-05:player_6:owl": [
+   "player_8",
+   3
+  ],
+  "voices-06:player_4:automaton": [
+   "player_6",
+   4
+  ],
+  "voices-07:player_8:shade": [
+   "player_4",
+   2
+  ],
+  "voices-08:player_2:shade": [
+   "player_8",
+   2
+  ],
+  "voices-08:player_8:threeEyes": [
+   "player_2",
+   3
+  ]
+ }
+}
