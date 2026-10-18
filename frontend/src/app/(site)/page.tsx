@@ -1,6 +1,5 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
-import { Anchor } from '@mantine/core';
 import { Button, GuideSign, PageGate } from '@/components/site';
 import { SITE } from '@/lib/site';
 import { PageMusic } from '@/music/PageMusic';
@@ -12,7 +11,6 @@ import { FeaturedReplay } from './_components/landing/FeaturedReplay';
 import { Features } from './_components/landing/Features';
 import { HeroRule } from './_components/landing/HeroRule';
 import { ReplayMoment } from './_components/landing/ReplayMoment';
-import { BLUFF } from './_components/landing/features';
 import rooms from './_components/landing/Rooms.module.css';
 import classes from './_components/landing/Landing.module.css';
 import pageClasses from './page.module.css';
@@ -121,18 +119,13 @@ export default function HomePage() {
               <p>
                 Read its suspicions, its plans, and the lessons it weighed from past games.
               </p>
-              <Button
-                component={Link}
-                href={`/replays/${BLUFF.game}?from=home`}
-                variant="plate"
-              >
-                Explore this replay &rarr;
-              </Button>
             </div>
             <ReplayMoment />
           </div>
+          {/* the exhibit leads into the games to watch, and the one way on is under them (owner,
+              2026-10-18) */}
           <h3 id="latest-head" className={classes.latestHead}>
-            Latest games
+            Watch latest games
           </h3>
           {/* two rows of two; one column of two where the grid goes single file */}
           <div className={classes.latest}>
@@ -140,9 +133,14 @@ export default function HomePage() {
               <ReplayListClient limit={4} />
             </Suspense>
           </div>
-          <Anchor component={Link} href="/replays" className={classes.allGames}>
-            All replays &rarr;
-          </Anchor>
+          <Button
+            component={Link}
+            href="/replays"
+            variant="plate"
+            className={classes.allGames}
+          >
+            Watch all replays &rarr;
+          </Button>
         </section>
       </div>
 

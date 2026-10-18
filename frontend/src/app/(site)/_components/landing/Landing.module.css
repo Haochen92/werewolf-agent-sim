@@ -407,10 +407,9 @@
   margin-top: 18px;
 }
 
+/* the way on to the whole archive, under the latest games (owner, 2026-10-18) */
 .allGames {
-  display: inline-block;
-  margin-top: 22px;
-  font-size: 15px;
+  margin-top: 24px;
 }
 
 /* a phone: the board takes two rows, the words start under it, and the passengers stand in the
