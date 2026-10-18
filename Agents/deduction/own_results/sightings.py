@@ -147,7 +147,9 @@ def _follow_line(record: ReadRecord, view: SeatView) -> OwnResultLine | None:
 
 
 def _visited_no_one(record: ReadRecord, view: SeatView) -> OwnResultLine | None:
-    """A35: the Serial Killer always visits; the Healer does unless it was blocked."""
+    """A35: the Serial Killer always visits; the Healer does unless it was blocked. The Trailseer
+    must visit too, but every follow is the Trailseer's own, its revealed body's or its will, and a
+    game deals one, so the followed player is never it."""
     target = record.target
     possible = possible_roles(target, view)
     not_serial_killer = ALWAYS_VISITS in possible
