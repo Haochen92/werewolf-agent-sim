@@ -541,8 +541,8 @@ for (const [name, path, viewport] of [
 
 /**
  * The departures board (`/rooms`) over a mocked `GET /rooms`: one room boarding, one locked and
- * one full. The clock is pinned so "opened … ago" is the same on every run. Board opens the
- * strip; Join posts the name and goes to the room with the seat token kept on this device.
+ * one full. The clock is pinned so "opened … ago" is the same on every run. Board goes to the
+ * room, whose boarding pass takes the name and the puppet; the board joins nobody itself.
  */
 const NOW = new Date('2026-09-26T12:00:00Z');
 const BOARDING = 'a1b2c3d4-0000-4000-8000-000000000001';
@@ -620,7 +620,10 @@ test('rooms: the board says boarding, locked and full, and why', async ({ page }
   await expect(boarding).toContainText('hosted by mira');
   await expect(boarding).toContainText('opened 4 minutes ago');
   await expect(boarding).toContainText('3 of 9 aboard, 6 places open');
-  await expect(boarding.getByRole('button', { name: 'Board' })).toBeEnabled();
+  await expect(boarding.getByRole('link', { name: 'Board' })).toHaveAttribute(
+    'href',
+    `/games/${BOARDING}`,
+  );
 
   const locked = page.locator(`[data-room="${LOCKED}"]`);
   await expect(locked).toContainText('LOCKED');
@@ -646,36 +649,14 @@ test('rooms: the board says boarding, locked and full, and why', async ({ page }
   );
 });
 
-test('rooms: Join posts the name and goes to the room', async ({ page }) => {
+test('rooms: Board goes to the room without joining it', async ({ page }) => {
   const sent = await mockJoin(page, 200, { token: 'seat-tok-1' });
   await openBoard(page);
 
-  const row = page.locator(`[data-room="${BOARDING}"]`);
-  await row.getByRole('button', { name: 'Board' }).click();
-  await row.getByLabel('Your name on the manifest').fill('sol');
-  await row.getByRole('button', { name: 'Join' }).click();
-
+  await page.locator(`[data-room="${BOARDING}"]`).getByRole('link', { name: 'Board' }).click();
   await page.waitForURL(`**/games/${BOARDING}`);
-  expect(sent).toHaveLength(1);
-  expect(sent[0].url).toMatch(new RegExp(`/games/${BOARDING}/join$`));
-  expect(sent[0].body).toEqual({ name: 'sol' });
-  expect(await page.evaluate((id) => localStorage.getItem(`seat_${id}`), BOARDING)).toBe(
-    'seat-tok-1',
-  );
-});
-
-test('rooms: a refused join says the server’s words in the row', async ({ page }) => {
-  await mockJoin(page, 409, { detail: 'room is locked — ask the host to unlock it' });
-  await openBoard(page);
-
-  const row = page.locator(`[data-room="${BOARDING}"]`);
-  await row.getByRole('button', { name: 'Board' }).click();
-  await row.getByLabel('Your name on the manifest').fill('sol'); // Join stays off without a name
-  await row.getByRole('button', { name: 'Join' }).click();
-  await expect(row.getByRole('alert')).toContainText(
-    'room is locked — ask the host to unlock it',
-  );
-  await expect(page).toHaveURL(/\/rooms$/);
+  expect(sent).toHaveLength(0);
+  expect(await page.evaluate((id) => localStorage.getItem(`seat_${id}`), BOARDING)).toBeNull();
 });
 
 test('rooms: an empty board says so, and the doors beside the title stay', async ({

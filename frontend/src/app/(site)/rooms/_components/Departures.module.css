@@ -243,25 +243,6 @@
   min-width: 112px;
 }
 
-/* the boarding strip: under the room, the name for the manifest and Join */
-.pass {
-  grid-column: 2 / -1;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 12px;
-  padding: 0 0 18px;
-}
-
-.passName {
-  flex: 1 1 220px;
-  max-width: 320px;
-}
-
-.passAlert {
-  flex: 1 1 100%;
-}
-
 /* ---------- empty, failed, footer ---------- */
 
 .empty {
@@ -345,8 +326,7 @@
     grid-template-areas:
       'st act'
       'rm rm'
-      'seats seats'
-      'pass pass';
+      'seats seats';
     gap: 8px 12px;
     padding: 14px 14px 16px;
   }
@@ -365,13 +345,6 @@
   }
   .act > * {
     min-width: 0;
-  }
-  .pass {
-    grid-area: pass;
-    padding: 4px 0 0;
-  }
-  .passName {
-    max-width: none;
   }
   .doors {
     gap: 12px;
