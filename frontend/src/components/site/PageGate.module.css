@@ -23,9 +23,15 @@
   z-index: 2;
   transition: opacity 0.4s ease-in;
 }
-/* the train comes up after 1 s here, not the loader's own 0.3 s (PageGate.tsx `SHOW_MS`) */
+/* the train comes up 1 s after the page was asked for, not the loader's own 0.3 s (PageGate.tsx
+   `SHOW_MS`, `--show`: what is left of that second when the page mounts) */
 .cover > :not([data-at-once]) {
-  animation-delay: 1s;
+  animation-delay: var(--show, 1s);
+}
+/* carrying on a train already up (the site loader's): there at once, no fade in */
+.cover > [data-at-once][role='status'] {
+  animation: none;
+  opacity: 1;
 }
 /* the wait is over: the loader fades off (before React is up, so the stylesheet does it) */
 :global(html:not([data-gate])) .cover {

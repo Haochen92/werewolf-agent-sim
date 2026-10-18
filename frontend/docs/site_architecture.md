@@ -236,7 +236,10 @@ itself (the `<img>`s and the computed backgrounds, `::before`/`::after` included
 on the screen), so a page lists nothing; what is further down loads as before. The loader comes
 up after 1 s (under a second a wait needs no sign) and, once up, stays at least 2 s so it is seen,
 never a blink (owner, 2026-10-18); a page ready before 1 s is simply there, with no fade, so a
-cached visit never sees it, and follows `(site)/loading.tsx`'s at once
+cached visit never sees it. A page reached by a click counts that second from the click, and the
+site loader (`(site)/loading.tsx`, also 1 s) hands its train to the page's gate without a break;
+what the two share is kept on the window (`__gateNav`), since the build gives each its own copy
+of PageGate's module, and follows `(site)/loading.tsx`'s at once
 (`RouteWaitMark`) so the train never goes and comes back; 8 s ends the wait. The wait itself
 (`gate`) is written into the page as its inline script, so it runs as the page arrives, not once
 React is up: a cached visit comes up 100–230 ms after the request, a click between pages 100–340

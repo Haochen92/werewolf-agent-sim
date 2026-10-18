@@ -16,7 +16,14 @@
  * page as it is. `usePageOpen` tells a later section of the page that the first screen is up, so
  * it can start loading its own (the landing carriage).
  */
-import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type CSSProperties,
+} from 'react';
 import { TrainLoader } from '@/components/TrainLoader';
 import classes from './PageGate.module.css';
 
@@ -140,22 +147,72 @@ export function usePageOpen(): boolean {
   );
 }
 
-// the site's own loader (`(site)/loading.tsx`) while a page's code comes: a gate that follows a
-// loader already up shows its own at once, or the train would go and come back
-let routeWait: { from: number; to: number | null } | null = null;
+// What the loaders share lives on the window, not in this module: the build puts a copy of this
+// module in the site loader's bundle and another in the pages', each with its own variables, and a
+// page's gate never saw the loader's train (it blinked, went dark, and came back).
+type GateNav = {
+  /** The site loader (`(site)/loading.tsx`) came on the page, and went (null while it is up). */
+  routeFrom?: number;
+  routeTo?: number | null;
+  /** When the visitor last asked for a page: a click on one of the site's links, back or forward. */
+  askedAt?: number;
+};
+const nav = (): GateNav => {
+  const w = window as unknown as { __gateNav?: GateNav };
+  return (w.__gateNav ??= {});
+};
+
+// the site's own loader while a page's code comes: a gate that follows a train already up carries
+// it on, at once and with what it has shown counted to its hold (owner, 2026-10-18)
 /** Put in `(site)/loading.tsx`: marks while its loader is on the page. */
 export function RouteWaitMark() {
   useEffect(() => {
-    routeWait = { from: performance.now(), to: null };
+    nav().routeFrom = performance.now();
+    nav().routeTo = null;
     return () => {
-      if (routeWait) routeWait.to = performance.now();
+      nav().routeTo = performance.now();
     };
   }, []);
   return null;
 }
-function followsLoader(): boolean {
-  if (!routeWait?.to) return false;
-  return routeWait.to - routeWait.from > 300 && performance.now() - routeWait.to < 200;
+/** How long the site loader's train has been up, in ms; 0 when it is not. Read as the page
+ *  renders, so the loader is usually still on the page (it goes when the page commits). */
+function trainUpFor(): number {
+  const { routeFrom, routeTo } = nav();
+  if (routeFrom === undefined) return 0;
+  const now = performance.now();
+  if (routeTo != null && now - routeTo > 200) return 0;
+  return Math.max(0, (routeTo ?? now) - routeFrom - SHOW_MS);
+}
+
+// a page reached by a click counts its loader's second from the click, not from when its code
+// arrived, or a slow click sat dark for that wait and a second more (owner, 2026-10-18)
+if (
+  typeof window !== 'undefined' &&
+  !(window as unknown as { __gateAsk?: true }).__gateAsk
+) {
+  (window as unknown as { __gateAsk?: true }).__gateAsk = true;
+  document.addEventListener(
+    'click',
+    (e) => {
+      const a = e.target instanceof Element ? e.target.closest('a[href]') : null;
+      if (a instanceof HTMLAnchorElement && a.origin === location.origin)
+        nav().askedAt = performance.now();
+    },
+    true,
+  );
+  window.addEventListener('popstate', () => {
+    nav().askedAt = performance.now();
+  });
+}
+
+/** How this page's train starts: carried on from the site loader's, up `carried` ms already, or
+ *  due `show` ms from now (from the click that asked for the page, when there was one). */
+function trainStart(): { carried: number; show: number } {
+  const carried = trainUpFor();
+  if (carried > 0) return { carried, show: -carried };
+  const since = performance.now() - (nav().askedAt ?? -Infinity);
+  return { carried: 0, show: since < CAP_MS ? Math.max(0, SHOW_MS - since) : SHOW_MS };
 }
 
 const useLayoutEffectOnClient = typeof window === 'undefined' ? useEffect : useLayoutEffect;
@@ -163,7 +220,9 @@ const useLayoutEffectOnClient = typeof window === 'undefined' ? useEffect : useL
 export function PageGate() {
   const ref = useRef<HTMLDivElement>(null);
   const [phase, setPhase] = useState<'wait' | 'done'>('wait');
-  const [atOnce] = useState(() => typeof window !== 'undefined' && followsLoader());
+  const [start] = useState(() =>
+    typeof window !== 'undefined' ? trainStart() : { carried: 0, show: SHOW_MS },
+  );
 
   useLayoutEffectOnClient(() => {
     const root = ref.current?.parentElement ?? null;
@@ -174,7 +233,7 @@ export function PageGate() {
     const ready =
       run && run.root === root && run.ready
         ? run.ready
-        : gate(root, CAP_MS, LIFT_MS, atOnce ? 0 : SHOW_MS, HOLD_MS);
+        : gate(root, CAP_MS, LIFT_MS, start.show, HOLD_MS);
     setOpen(false);
     let live = true;
     let t: ReturnType<typeof setTimeout> | undefined;
@@ -196,9 +255,14 @@ export function PageGate() {
 
   if (phase === 'done') return null;
   return (
-    <div ref={ref} className={classes.cover} data-gate-cover="">
+    <div
+      ref={ref}
+      className={classes.cover}
+      style={{ '--show': `${Math.max(0, start.show)}ms` } as CSSProperties}
+      data-gate-cover=""
+    >
       <script dangerouslySetInnerHTML={{ __html: INLINE }} />
-      <TrainLoader atOnce={atOnce} />
+      <TrainLoader atOnce={start.carried > 0} />
     </div>
   );
 }

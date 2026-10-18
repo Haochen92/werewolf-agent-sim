@@ -516,6 +516,13 @@ revisit and a click, timed.
 
 ## Small things that cost an afternoon
 
+- Module state is not shared just because two files import the same module: the build can put a
+  copy of a module into two bundles (here the site loader's and the pages'), each copy with its
+  own variables. The page gate read "is the site loader's train up?" from a variable only the
+  other copy ever wrote, so the train blinked, went dark, and came back (2026-10-18). State that
+  two parts of the app hand to each other goes on `window` (or a context), and a check of the
+  built chunks (`grep -rl` a distinctive string in `.next/static/chunks`) shows the copies.
+
 - Two rules for one class name in a CSS module are one class: a `.head` for a page's header and a
   `.head` for a 2px playhead further down the same file merged, and the header became a 2px
   absolute strip. Name each part for what it is (`.playhead`).

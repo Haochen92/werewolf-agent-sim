@@ -5,3 +5,8 @@
   min-height: calc(100dvh - 120px);
   margin-inline: calc(50% - 50vw);
 }
+/* the train after 1 s, as the page's own gate has it (PageGate.tsx `SHOW_MS`): a page whose code
+   comes within a second shows none, never a blink */
+.wait > :not([data-at-once]) {
+  animation-delay: 1s;
+}
