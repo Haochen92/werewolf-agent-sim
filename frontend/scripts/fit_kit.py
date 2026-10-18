@@ -15,6 +15,7 @@ replay's exhibit, "At the end of the line" (owner, 2026-10-18), from the owner's
   the head of the brass pin that joins its cards.
 - train-sign, rail: the carriage's game-ID board (the owner's walnut sign in its brass frame, a
   9-slice) and the track under its wheels (a repeating strip, cut where its ends match).
+- card-frame: the role cards' frame, a 9-slice over each face (the card paper under it).
 - ink: the worn-ink mask for the stamps: the master's grey speckle as alpha (white = ink, the
   black flecks = where the ink did not take), a small tile.
 
@@ -94,6 +95,12 @@ def main() -> None:
     x0, span = 122, 1749
     track = rail.crop((x0, y0, x0 + span, y1))
     save(track.resize((round(span * 128 / track.height), 128), Image.LANCZOS), "rail", 74)
+
+    # the role cards' frame (owner, 2026-10-18): a cream band, a fine rule and corner flourishes,
+    # clear inside; a 9-slice laid over each face
+    frame = Image.open(KIT / "card-frame.png").convert("RGBA")
+    frame = frame.crop(opaque_box(frame, 128))
+    save(frame.resize((512, round(frame.height * 512 / frame.width)), Image.LANCZOS), "card-frame", 84)
 
     ink = Image.open(LANDING / "ink.png").convert("L").resize((256, 256), Image.LANCZOS)
     mask = Image.new("RGBA", ink.size, (0, 0, 0, 0))
