@@ -911,6 +911,8 @@
     --pier: 12px;
     --top: 34px;
     --cw: 100vw;
+    /* a quarter less dark between the hero and the carriage than a desktop's (owner, 2026-10-18) */
+    margin-top: 64px;
   }
   .car {
     overflow: hidden;
