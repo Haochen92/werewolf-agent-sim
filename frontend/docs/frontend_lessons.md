@@ -471,6 +471,47 @@ stage instead of the car. Now one sheet slides by the room's change of centre (`
 baking a variant of a picture, ask whether it is the base shifted; settle it by sliding one onto
 the other and diffing, and the leftover says what is anchored elsewhere (2026-10-18).
 
+**45. A page drawn on pictures shows its words before its pictures: hold it whole, and run the
+hold before React.** On a first visit with nothing cached (the owner, in a private window,
+2026-10-18), the departures board's words and empty rows stood on bare black with no case
+round them, the guide's text sat on black while its wall painted in from the top, and the
+landing carriage's window and loader hung in the night with no carriage. Each was the page's
+HTML arriving seconds before its pictures, and none showed on a cached browser, which is where
+every check had been made. Three fixes in turn, each kept or dropped for a reason:
+
+- A blurred stand-in under each picture (next's `blurDataURL`, ~80 bytes inline) and a hold on
+  the board alone until its case was decoded. Better, but the page still came up in pieces.
+- One gate per page (`components/site/PageGate.tsx`), and one for the carriage's whole scene
+  (`FeaturedReplay` `.gate`): the page is hidden behind the house's loader until the pictures on
+  its first screen and its fonts are decoded, then fades in at once. The gate finds the pictures
+  itself (every `<img>` on screen, and every computed background, `::before` and `::after`
+  included), so a page lists nothing and the stylesheet stays the one place that says which
+  picture a screen uses. The loader appears only after 0.3 s, and 8 s ends the wait. The section
+  after the first screen starts loading the moment the first screen is up (`usePageOpen`), so
+  it is usually ready before it is seen.
+- The gate's first version waited in a React effect, so it could not open before the page had
+  hydrated: a *cached* revisit took 1.4–1.9 s and showed the loader. The wait now runs from an
+  inline script written into the page (`gate.toString()`), as the page is parsed; React runs the
+  same function only for a page reached by a click (React does not run a script it renders). A
+  cached visit comes up in 100–230 ms, a click in 100–340 ms, the loader never seen. A function
+  sent as text must use nothing from outside itself: no imports, no module constants, and
+  nothing a compiler turns into a helper call (async/await, spreading a NodeList); check the
+  built HTML.
+
+Why nothing off the shelf: Suspense and `loading.tsx` wait on code and data, not pictures;
+`next/image` knows one picture at a time and nothing about CSS backgrounds; Mantine's
+`LoadingOverlay` is a cover with a switch; `imagesLoaded` reads backgrounds only off the
+elements you name (never `::before`/`::after`) and waits for the download, not the decode.
+
+Rules: hide with script, never with the stylesheet alone, so a crawler or a reader without
+script gets the page as it is (the stylesheet shows it after 10 s should the script never run),
+and keep the page's boxes in their place while hidden (opacity, not `display`), so nothing moves
+when it appears. Never gate behind something heavy that the first screen does not need: gating
+the hero on the carriage would have put every first visit behind the theatre's code. Check any
+page drawn on pictures cold: a fresh browser context, the network throttled (CDP
+`Network.emulateNetworkConditions`, ~1 Mbps), a screenshot every second; then the cached
+revisit and a click, timed.
+
 ---
 
 ## Small things that cost an afternoon

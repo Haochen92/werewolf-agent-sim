@@ -148,8 +148,15 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   window's brass rim (a 9-slice laid round the glass with `border-image-outset`, so it never paints
   over the game; its rivets repeat), a bogie, the solebar and the bellows. Each shows at half its
   painted size (sharp on a 2× screen; the painting is only 700px tall, so nothing is enlarged).
-  They arrive with the theatre when the carriage comes near (`data-art` and `--art-*` on the
-  figure), over a CSS stand-in drawn until then. The doors stay drawn in CSS over the teak: the
+  They arrive with the theatre when the carriage comes near, over a CSS stand-in drawn until
+  then; `data-art` and `--art-*` go on the figure only once the screen's whole-carriage picture
+  is decoded (`useDecoded`): switched at once, a cold first visit showed the window and its loader
+  alone in the night for seconds (owner, 2026-10-18). The whole scene comes up at once (owner,
+  2026-10-18): until the picture is in and the game is painted in its window, the section (the
+  night, the board, the carriage, the details) is the house's loading picture (`.gate`,
+  `data-ready`), 10 s at most. It is asked for as soon as the page's first screen is up
+  (`usePageOpen`), not when it comes near, so it is usually ready before it is seen: a visitor
+  who never scrolls now fetches it too (owner's call over the audit of 2026-10-11 §2). The doors stay drawn in CSS over the teak: the
   painting's doors are a third of the height this carriage needs; sharper doors, ends and bogies
   for a desktop want a larger source.
 - Performance rules it keeps: nothing decorative is painted over the game's window (an overlay above
@@ -217,6 +224,27 @@ picture and band, about 60–150 KB.
   `scripts/fit_hall.py` from `claude_artifacts/design/rasters/wood/rooms/`: it cleans the
   masters' cut-out fringe, builds each middle from its own head's sides, and tapers each foot
   into them. A screen fetches 230–280 KB of pictures; nothing moves.
+
+## Pages come up whole (owner, 2026-10-18)
+
+Every site page (the landing, the departures hall, the archive, the guide, the ticket office)
+starts with `PageGate` in its `<main>`: until the pictures on its first screen and its fonts are
+decoded, the page under the nav and the footer are hidden (`html[data-gate]`) behind the house's
+loading picture, then fade in at once while the loader fades off. A cold first visit had shown
+the words on bare black and each wall painting in from the top. The gate finds the pictures
+itself (the `<img>`s and the computed backgrounds, `::before`/`::after` included, of whatever is
+on the screen), so a page lists nothing; what is further down loads as before. The loader comes
+up after 0.3 s, so a cached visit never sees it, and follows `(site)/loading.tsx`'s at once
+(`RouteWaitMark`) so the train never goes and comes back; 8 s ends the wait. The wait itself
+(`gate`) is written into the page as its inline script, so it runs as the page arrives, not once
+React is up: a cached visit comes up 100–230 ms after the request, a click between pages 100–340
+ms, the loader never seen (measured 2026-10-18; waiting for React first had cost a cached visit
+over a second). A click runs the same function from React, which does not run a script it puts
+on the page. The page is hidden by that script, never by the stylesheet alone, so a crawler or a
+reader without script gets the page as it is (a stylesheet fallback shows it after 10 s should
+the script never run). The function must stay plain script that uses nothing from outside itself
+(`toString`). Next, React and Mantine have nothing for this: Suspense waits on code and data, not
+pictures, and `next/image` only knows one picture at a time.
 
 ## The tickets on a phone
 
