@@ -202,9 +202,23 @@
 }
 
 /* ---------- the story: at the top of the reading room, on the wall, in the world's voice ---------- */
+/* the story's line as its title, the brand's rule under it, then the rest centred (owner's mock,
+   2026-10-18) */
+.storyTitle {
+  max-width: 32ch;
+  margin: 0 auto;
+  font-family: var(--font-garamond);
+  font-weight: 600;
+  font-size: clamp(30px, 3.9vw, 54px);
+  line-height: 1.12;
+  text-wrap: balance;
+  color: var(--text);
+  text-shadow: 0 2px 16px rgba(4, 6, 16, 0.7);
+}
 .prologue {
-  max-width: 60ch;
-  margin: 0 auto 110px;
+  max-width: 56ch;
+  margin: 26px auto 0;
+  text-align: center;
 }
 .tale {
   margin: 0 0 18px;
@@ -229,18 +243,26 @@
 
 /* ---------- the ending: the research question behind the game ---------- */
 /* a quiet reading column: centred on the page, its text set left (as the replay's pitch is) */
+/* The closing: the research (owner's mock, 2026-10-18). On a wide screen the question and why
+   on the left with the way to the case study, the two threads on the right parted by a gold
+   rule; under a gold rule across both, the turn to judging them, in italic, and where the work
+   stands. A phone stacks them. */
 .closing {
-  max-width: 64ch;
+  max-width: 1160px;
   margin-inline: auto;
 }
+/* the page ends on the closing word: the footer follows it close (owner, 2026-10-18) */
+.landing + footer {
+  margin-top: 0;
+}
 .closing h2 {
-  margin: 0 0 18px;
+  margin: 0 0 22px;
   text-wrap: balance;
   font-family: var(--font-garamond);
-  font-size: 32px;
+  font-size: clamp(32px, 3.6vw, 50px);
   font-weight: 600;
   letter-spacing: 0;
-  line-height: 1.16;
+  line-height: 1.1;
   color: var(--text);
 }
 .closing p {
@@ -248,43 +270,90 @@
   margin: 0 0 16px;
   color: var(--muted);
   font-size: 16px;
-  line-height: 1.6;
+  line-height: 1.65;
 }
-/* The two research questions share the reading column and the station's brass rules. */
+.research {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 72px;
+}
+/* the way to the evidence: a line of text over a gold rule, as the footer's links are */
+.researchLink {
+  display: inline-block;
+  margin-top: 12px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--brass, #c9963f);
+  color: var(--text);
+  font-size: 16px;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+.researchLink:hover {
+  color: var(--sign-hook);
+}
 .researchThreads {
   display: grid;
-  gap: 26px;
-  margin-block: 28px;
+  align-content: start;
+  gap: 30px;
+  padding-top: 8px;
 }
-.researchThread {
-  padding-left: 20px;
-  border-left: 1px solid rgba(201, 150, 63, 0.35);
+.researchThread + .researchThread {
+  padding-top: 30px;
+  border-top: 1px solid rgba(201, 150, 63, 0.45);
 }
 .researchThread h3 {
-  margin: 0 0 10px;
+  margin: 0 0 12px;
   font-family: var(--font-garamond);
-  font-size: 25px;
+  font-size: clamp(25px, 2.4vw, 32px);
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.15;
   text-wrap: balance;
   color: var(--text);
 }
 .researchThread p {
   margin-bottom: 0;
 }
-/* the turn from building the system to judging it: the one sentence in the text's own colour */
-.pivot {
-  font-weight: 500;
+/* the turn from building the system to judging it, and where the work stands */
+.standing {
+  margin-top: 44px;
+  padding-top: 30px;
+  border-top: 1px solid rgba(201, 150, 63, 0.45);
+}
+.closing .pivot {
+  font-family: var(--font-garamond);
+  font-style: italic;
+  font-size: clamp(19px, 1.7vw, 22px);
+  line-height: 1.45;
   color: var(--text);
 }
-/* where the work stands, under a fine brass rule, with the way to its evidence */
-.standing {
-  margin-top: 30px;
-  padding-top: 26px;
-  border-top: 1px solid rgba(201, 150, 63, 0.35);
+.standing p:last-child {
+  margin-bottom: 0;
 }
-.standing p {
-  margin-bottom: 22px;
+/* a phone keeps the question, the problem, the two threads, the turn and the way to the case
+   study; the project's aim and where the work stands are the wide screen's (owner, 2026-10-18) */
+@media (max-width: 700px) {
+  .wideOnly {
+    display: none;
+  }
+}
+@media (max-width: 900px) {
+  .research {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .researchLead {
+    display: contents;
+  }
+  .researchThreads {
+    margin-top: 18px;
+  }
+  /* stacked, the way to the case study follows the threads */
+  .researchLink {
+    order: 3;
+    align-self: flex-start;
+    margin-top: 30px;
+  }
 }
 
 /* ---------- latest games ---------- */
@@ -388,9 +457,6 @@
   }
   .promise {
     font-size: 16px;
-  }
-  .prologue {
-    margin-bottom: 80px;
   }
   .tagline {
     margin-bottom: 22px;

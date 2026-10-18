@@ -4,7 +4,8 @@
    parts the rooms from the page's closing word. The reading room is dark granite under a caged
    wall light; the replay and the latest games are under a pendant, on the platform's own tile
    with an oxblood band near the ceiling (each room its own colour, as old stations had). The
-   roles' green-tile room left with the roles, for the guide (owner, 2026-10-15).
+   roles' green-tile room left with the roles, for the guide (owner, 2026-10-15). Since
+   2026-10-18 the story, the features and the replay share one wall, a picture (`.navy`).
 
    Performance (frontend_lessons, "Rendering"): everything here is still and painted once with the
    page. The walls span the screen from pseudo-elements behind the section (z-index -1 inside the
@@ -19,31 +20,6 @@
   isolation: isolate;
   padding: 96px 0 110px;
 }
-/* the wall and the light span the screen, past the column (html clips sideways, Landing.module.css) */
-.lit::before,
-.lit::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: calc(50% - 50vw);
-  right: calc(50% - 50vw);
-  z-index: -1;
-  pointer-events: none;
-}
-
-/* the top of a lit room rises out of the dark, so nothing marks where the room above ended */
-.lit {
-  --fade-in: linear-gradient(
-    180deg,
-    var(--bg) 0,
-    rgba(12, 10, 7, 0.82) 50px,
-    rgba(12, 10, 7, 0.5) 110px,
-    rgba(12, 10, 7, 0.2) 170px,
-    transparent 230px
-  );
-}
-
 /* the brass threshold before the closing word: a sill with a bright line along it, its shadow below */
 .threshold {
   position: relative;
@@ -66,127 +42,60 @@
     0 6px 14px rgba(0, 0, 0, 0.6);
 }
 
-/* ---------- the reading room: granite blocks, a caged wall light low on the left ---------- */
-/* The room holds the story, then the features under one light (owner, 2026-10-16), hung level
-   with the start of the features: the light is drawn from the features' own box (.lamplit), so
-   however the story wraps the lamp stays by "What makes it different". --bx/--by: the light's
-   glass, --by from the top of .lamplit. On a screen wide enough it hangs in the gutter beside
-   the column; narrower, it is not drawn and its light comes from the left edge. The room clips
-   its height, so the light's reach up over the story stops at the room's top. */
-.study {
-  --bx: max(22px, calc(50% - 600px));
-  --by: 21px;
-  overflow: visible clip;
-}
-.study::before {
-  background:
-    url('../../../../assets/site/granite-joints.svg') center top / 512px 512px repeat,
-    url('../../../../assets/site/granite.webp') center top / 512px 512px repeat;
-}
-/* the rise out of the dark at the top, the sink back into it at the wall's foot */
-.study::after {
-  background:
-    var(--fade-in),
-    linear-gradient(
-      180deg,
-      transparent calc(100% - 360px),
-      rgba(12, 10, 7, 0.35) calc(100% - 270px),
-      rgba(12, 10, 7, 0.65) calc(100% - 180px),
-      rgba(12, 10, 7, 0.88) calc(100% - 90px),
-      var(--bg) 100%
-    );
-}
-/* the light, from the features' box: its glow round the glass, its warm fall down the wall, and
-   the dark that hides the stone away from it, reaching 1000px up over the story */
-.lamplit {
+/* ---------- the navy wall: the story, the features and the replay ---------- */
+/* One wall behind the three rooms (owner, 2026-10-18): the station's navy panelling, its lamp at
+   the top left by the story, a picture spanning the screen (scripts/fit_walls.py); under it a
+   band of its lower panels repeats as far as the rooms go, laid upright and mirrored so no join
+   shows. It rises out of the dark above and sinks back into it before the closing word. A
+   screen taller than wide has its own wall, the lamp lower and further in. Still, painted once. */
+.navy {
+  --wall: url('../../../../assets/site/walls/navy-wide.webp');
+  --band: url('../../../../assets/site/walls/navy-wide-band.webp');
+  /* the picture's height at the screen's width (1536 x 1024) */
+  --wall-h: 66.667vw;
   position: relative;
+  isolation: isolate;
 }
-.lamplit::before {
+.navy::before,
+.navy::after {
   content: '';
   position: absolute;
-  top: -1000px;
+  top: 0;
+  bottom: 0;
   left: calc(50% - 50vw);
   right: calc(50% - 50vw);
-  height: 2000px;
   z-index: -1;
   pointer-events: none;
+}
+.navy::before {
   background:
-    radial-gradient(
-      ellipse 140px 140px at var(--bx) calc(1000px + var(--by)),
-      rgba(255, 220, 160, 0.3),
-      transparent 70%
-    ),
-    radial-gradient(
-      ellipse 700px 620px at var(--bx) calc(1040px + var(--by)),
-      rgba(255, 206, 140, 0.17),
-      transparent 70%
-    ),
-    radial-gradient(
-      ellipse 900px 860px at var(--bx) calc(1000px + var(--by)),
-      transparent,
-      rgba(12, 10, 7, 0.65) 50%,
-      var(--bg) 80%
-    );
+    var(--wall) center top / 100% auto no-repeat,
+    var(--band) center var(--wall-h) / 100% auto repeat-y,
+    #12161b;
 }
-.wallLight {
-  display: none;
-  position: absolute;
-  /* the room's own 50% is the screen's centre, as the full-width light's is */
-  left: calc(50% - 600px - 28px);
-  top: calc(var(--by) - 36px);
-  width: 56px;
-  height: 72px;
+.navy::after {
+  background:
+    linear-gradient(180deg, var(--bg) 0, rgba(12, 10, 7, 0.55) 90px, transparent 220px),
+    linear-gradient(180deg, transparent calc(100% - 240px), var(--bg) 100%);
 }
-/* the light needs the gutter clear of the column (column edge at 50% - 552px) */
-@media (min-width: 1300px) {
-  .wallLight {
-    display: block;
+@media (max-aspect-ratio: 1/1) {
+  .navy {
+    --wall: url('../../../../assets/site/walls/navy-tall.webp');
+    --band: url('../../../../assets/site/walls/navy-tall-band.webp');
+    --wall-h: 150vw;
   }
 }
 
-/* ---------- the records room: the platform's tile, an oxblood band, a pendant ---------- */
-/* the band is two courses of the same bond at 128px, so its joints run on from the wall's */
-/* the pendant's light is gone 520px down, so the wall stops there (as the reading room's does) */
-.records::before,
-.records::after {
-  bottom: auto;
-  height: 520px;
+/* the page's last room: the footer close under it (owner, 2026-10-18) */
+.last {
+  padding-bottom: 48px;
 }
-.records::before {
-  background:
-    linear-gradient(rgba(201, 150, 63, 0.3), rgba(201, 150, 63, 0.3)) 0 127px / 100% 1px
-      no-repeat,
-    linear-gradient(rgba(201, 150, 63, 0.3), rgba(201, 150, 63, 0.3)) 0 192px / 100% 1px
-      no-repeat,
-    url('../../../../assets/site/oxblood-band.svg') center 128px / 120px 64px repeat-x,
-    url('../../../../assets/site/wall-tile.svg') center top / 120px 64px repeat;
-}
-/* the rise out of the dark, the sink back into it at the wall's foot (to the page's ground: the
-   vignette is darker), the pendant's light down the room and its pool on the slates, the
-   vignette, the dark */
-.records::after {
-  background:
-    var(--fade-in), linear-gradient(180deg, transparent calc(100% - 160px), var(--bg) 100%),
-    radial-gradient(
-      ellipse 560px 360px at 50% 60px,
-      rgba(255, 206, 130, 0.12),
-      transparent 70%
-    ),
-    radial-gradient(ellipse 50% 45% at 50% 62%, rgba(255, 214, 150, 0.1), transparent 70%),
-    radial-gradient(ellipse 110% 90% at 50% 45%, transparent 45%, rgba(0, 0, 0, 0.8)),
-    radial-gradient(
-      ellipse 620px 420px at 50% 40px,
-      transparent,
-      rgba(12, 10, 7, 0.75) 55%,
-      var(--bg) 80%
-    );
-}
-.pendant {
-  position: absolute;
-  left: calc(50% - 30px);
-  top: 0;
-  width: 60px;
-  height: 96px;
+
+/* the story's room: the title and the rule centred, nearer the room above than a room's top */
+.story {
+  padding-top: 120px;
+  padding-bottom: 40px;
+  text-align: center;
 }
 
 /* ---------- a phone ---------- */
@@ -194,9 +103,11 @@
   .room {
     padding: 104px 0 76px;
   }
-  .pendant {
-    left: calc(50% - 24px);
-    width: 48px;
-    height: 77px;
+  .story {
+    padding-top: 96px;
+    padding-bottom: 24px;
+  }
+  .last {
+    padding-bottom: 36px;
   }
 }
