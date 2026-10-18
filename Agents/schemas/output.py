@@ -23,7 +23,8 @@ from Agents.schemas.roles import roles
 # (Agents/rules/claim_ledger.py). Every role of the pool, dealt or not: the summariser transcribes
 # claims and a player may claim anything.
 NIGHT_RESULT_WORDS = ("not_a_wolf", "suspicious", "not_suspicious", "saved_from_attack", "no_attack", "died", "survived",
-                      "no_visitors", "no_effect", "roleblocked", "not_said")
+                      "no_visitors", "no_effect", "roleblocked", "held_fire", "kept_check", "kept_watch", "kept_sigil",
+                      "not_said")
 CLAIMED_ROLE_ENUM = Literal[tuple(roles)]
 CLAIMED_RESULT_ENUM = Literal[(*roles, *NIGHT_RESULT_WORDS)]
 
@@ -300,7 +301,9 @@ class ClaimedNightAction(LenientToolCallModel):
             "they say they found). protect: saved_from_attack or no_attack. shoot / kill: died or "
             "survived. watch: no_visitors if they say no one visited; follow: no_visitors if they say the "
             "player visited no one. sigil: no_effect if they say it had no effect. Any action: roleblocked "
-            "if they say they were blocked and it was not carried out. not_said if they did not say, or said "
+            "if they say they were blocked and it was not carried out. no_action: held_fire if they say they "
+            "held fire, kept_check / kept_watch / kept_sigil if they say they kept a check, a watch or a "
+            "sigil unused. not_said if they did not say, or said "
             "it only vaguely."
         ),
     )

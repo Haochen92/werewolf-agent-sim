@@ -120,7 +120,9 @@ class NightActionClaim(LineupModel):
             "or no_attack. shoot / kill: died or survived. sigil: died if you say it struck them down, "
             "survived if you say they were saved, no_effect if you say it had no effect. watch: no_visitors "
             "if you say no one visited; follow: no_visitors if you say they visited no one. Any action: "
-            "roleblocked if you say you were blocked. not_said if you do not say."
+            "roleblocked if you say you were blocked. no_action: held_fire if you say you held fire, "
+            "kept_check / kept_watch / kept_sigil if you say you kept a check, a watch or a sigil unused. "
+            "not_said if you do not say."
         ),
     )
     seen: list[str] = Field(

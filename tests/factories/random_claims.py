@@ -117,6 +117,8 @@ RESULT_OF_RECORD = {"suspicious": "suspicious", "not_suspicious": "not_suspiciou
 ACTIONS = ("investigate", "protect", "watch", "follow", "shoot", "kill", "sigil", "block", "visit")
 RESULTS = ("not_said", "suspicious", "not_suspicious", "saved_from_attack", "no_attack", "died", "survived",
            "no_visitors", "no_effect", "roleblocked")
+KEPT = ("held_fire", "kept_check", "kept_watch", "kept_sigil")
+"""What a denial can say was held back: each names a role (an implied role claim)."""
 
 
 def random_comparison_claims(rng: random.Random, game: RandomGame, snapshot: PublicRecord
@@ -146,7 +148,7 @@ def random_comparison_claims(rng: random.Random, game: RandomGame, snapshot: Pub
             elif draw < 0.6:
                 action = rng.choice((*ACTIONS, "no_action", "no_action"))
                 target = "" if action == "no_action" and rng.random() < 0.6 else rng.choice(everyone)
-                result = rng.choice(RESULTS)
+                result = rng.choice(KEPT) if action == "no_action" and rng.random() < 0.4 else rng.choice(RESULTS)
                 seen = rng.sample(everyone, rng.randint(0, 2)) if action in ("watch", "follow") else []
                 if result == "no_visitors":
                     seen = []
@@ -181,6 +183,8 @@ def _from_own_night(rng, game: RandomGame, resolved, player: str) -> SpokenNight
     if not choices and not visits:
         return _claim(night, "no_action", "")
     if not visits and rng.random() < 0.5:
+        if any(c.kind == "hold_fire" for c in choices) and rng.random() < 0.5:
+            return _claim(night, "no_action", "", result="held_fire")  # the Vigilante's true "I held fire"
         return _claim(night, "no_action", "") if rng.random() < 0.6 else _claim(night, "no_action", rng.choice(list(game.roles)))
     if records:
         record = rng.choice(records)

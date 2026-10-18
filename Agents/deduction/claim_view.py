@@ -5,6 +5,9 @@ happened read as not said, the speaker's own field ahead of the summariser's tra
 
 Public: built from the transcript and the day summaries, which every seat has. Today's claims come
 from the speakers' own fields; the summary of a day exists only once it is over.
+
+A player who names no role but claims actions only one role takes ("I held fire") gets that role as
+an implied claim (catalogue slice 13b), so every row reads it as a claim.
 """
 
 from __future__ import annotations
@@ -18,6 +21,20 @@ from Agents.schemas.game_events import DayChannel, DaySummary
 # Results that state an outcome, so the action went ahead (L13). A check's role result (an old
 # summary) counts too.
 _NOT_AN_OUTCOME = {"not_said", "roleblocked", ""}
+
+ACTION_ROLE = {"investigate": "investigator", "protect": "healer", "watch": "sentinel", "follow": "trailseer",
+               "shoot": "vigilante", "sigil": "sigilist", "block": "chanteuse"}
+"""The role an action claim implies, when the claimant names none."""
+KEPT_ROLE = {"held_fire": "vigilante", "kept_check": "investigator", "kept_watch": "sentinel", "kept_sigil": "sigilist"}
+"""The role a held-back action implies: only the Vigilante holds fire (owner, 2026-10-18: a vigilante
+who said it held fire was read as unclaimed, and the conditional on the role claims named it)."""
+
+
+def implied_role(claim: ActionClaim) -> str | None:
+    """The role this one claimed action implies, or None (a bare visit, an attack, a plain denial)."""
+    if claim.action == "no_action":
+        return KEPT_ROLE.get(claim.result)
+    return ACTION_ROLE.get(claim.action)
 
 
 def claims_view(day_channel: Iterable[DayChannel | dict], day_summaries: Iterable[DaySummary | dict]) -> list[PlayerClaimView]:
@@ -34,14 +51,33 @@ def claims_view(day_channel: Iterable[DayChannel | dict], day_summaries: Iterabl
             actions += [*history, _action(player, a, latest=True, history=history)]
             actions += [_action(player, also, latest=True) for also in a.also_claims]
         actions.sort(key=lambda c: (c.night or 99, c.day))
+        roles = tuple(RoleClaim(day, role, kind == "retracted") for day, role, kind in p.roles)
+        withdrawn = tuple(role for _, role, kind in p.roles if kind == "retracted")
+        current = p.current_role
+        implied = _implied_claim(actions, withdrawn) if current is None else None
+        if implied is not None:
+            roles, current = (*roles, implied), implied.role
         views.append(PlayerClaimView(
             player=player,
-            roles=tuple(RoleClaim(day, role, kind == "retracted") for day, role, kind in p.roles),
-            current_role=p.current_role,
-            withdrawn_roles=tuple(role for _, role, kind in p.roles if kind == "retracted"),
+            roles=roles,
+            current_role=current,
+            withdrawn_roles=withdrawn,
             actions=tuple(actions),
         ))
     return views
+
+
+def _implied_claim(actions: list[ActionClaim], withdrawn: tuple[str, ...]) -> RoleClaim | None:
+    """The role claim a player's current action claims make when it names no role: every one that
+    implies a role implies the same one, and the player has not withdrawn it."""
+    implying = [a for a in actions if a.latest and implied_role(a) is not None]
+    roles = {implied_role(a) for a in implying}
+    if len(roles) != 1:
+        return None
+    role = roles.pop()
+    if role in withdrawn:
+        return None
+    return RoleClaim(min(a.day for a in implying), role, False, implied_by=tuple(implying))
 
 
 def _action(player: str, a: ClaimedAction, latest: bool, history: tuple[ActionClaim, ...] = ()) -> ActionClaim:

@@ -85,3 +85,35 @@ def test_a_claimed_visit_went_ahead_with_its_action_unknown():
     (p7,) = seat_view_from_payload({"player_id": "player_8", "day_channel": channel, "day_summaries": []}).claims
     (visit,) = p7.actions
     assert (visit.action, visit.target, visit.night, visit.completed, visit.blocked) == ("visit", "player_8", 1, True, False)
+
+
+def _claims_of(*lines: dict, summaries=()) -> dict:
+    view = seat_view_from_payload({"player_id": "player_1", "day_channel": list(lines), "day_summaries": list(summaries)})
+    return {c.player: c for c in view.claims}
+
+
+def test_actions_of_one_role_imply_its_claim():
+    """owner, 2026-10-18: a vigilante that said it held fire was read as unclaimed."""
+    held = _line(3, 0, "player_7", "I held fire both nights.",
+                 actions=[(1, "no_action", "", "held_fire", []), (2, "no_action", "", "held_fire", [])])
+    p7 = _claims_of(held)["player_7"]
+    assert p7.current_role == "vigilante"
+    (implied,) = p7.roles
+    assert (implied.day, implied.role, implied.withdrawn) == (3, "vigilante", False)
+    assert [(a.night, a.result) for a in implied.implied_by] == [(1, "held_fire"), (2, "held_fire")]
+
+
+def test_no_implied_claim_from_a_plain_denial_two_roles_a_named_role_or_a_withdrawn_one():
+    plain = _line(3, 0, "player_7", "I did nothing.", actions=[(1, "no_action", "", "not_said", [])])
+    assert _claims_of(plain)["player_7"].current_role is None
+    mixed = _line(3, 0, "player_7", "I held fire, then protected player_2.",
+                  actions=[(1, "no_action", "", "held_fire", []), (2, "protect", "player_2", "not_said", [])])
+    assert _claims_of(mixed)["player_7"].current_role is None
+    named = _line(3, 0, "player_7", "Sentinel: I held fire... I mean I kept my watch.", claim="sentinel",
+                  actions=[(1, "no_action", "", "held_fire", [])])
+    p7 = _claims_of(named)["player_7"]
+    assert p7.current_role == "sentinel" and not any(r.implied_by for r in p7.roles)
+    withdrew = _summary(2, {"player": "player_7", "claimed_role": "vigilante", "kind": "claimed"},
+                        {"player": "player_7", "claimed_role": "vigilante", "kind": "retracted"})
+    held = _line(3, 0, "player_7", "I held fire.", actions=[(1, "no_action", "", "held_fire", [])])
+    assert _claims_of(held, summaries=[withdrew])["player_7"].current_role is None

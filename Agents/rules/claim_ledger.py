@@ -50,6 +50,8 @@ _DONE_TO_ONESELF = {"block", "watch", "follow", "investigate", "sigil", "kill", 
 PLAN_VERBS = {"investigate": "check", "protect": "protect", "shoot": "shoot", "kill": "attack",
               "watch": "watch", "follow": "follow", "sigil": "set a sigil on", "block": "block",
               "conceal": "conceal", "bet": "bet on", "pick": "pick"}
+_KEPT = {"held_fire": "held fire", "kept_check": "kept a check unused", "kept_watch": "kept a watch unused",
+         "kept_sigil": "kept a sigil unused"}
 _SAYS = {
     "suspicious": "says they read Suspicious",
     "not_suspicious": "says they read Not suspicious",
@@ -327,6 +329,8 @@ def action_text(a: ClaimedAction) -> str:
     if not a.action:
         return f"{night}: {a.target} {a.result}"
     if a.action == "no_action":
+        if a.result in _KEPT:  # "held fire" names the Vigilante: kept, not folded into "did not act"
+            return f"{night}: says they {_KEPT[a.result]}" + (f" and did not visit {a.target}" if a.target else "")
         return f"{night}: says they did not visit {a.target}" if a.target else f"{night}: says they did not act"
     if a.result == "roleblocked":  # tried and blocked: an attempt, not a denial
         tried = f"{PLAN_VERBS.get(a.action, a.action)} {a.target}".strip()

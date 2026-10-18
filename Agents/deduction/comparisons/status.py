@@ -74,6 +74,11 @@ def status_items(view: SeatView, today: int, night: int) -> list[DeductionItem]:
     sentences, facts, sources = [], [], []
     alone = [role for role in ROLE_SPECS if len(by_role.get(role, [])) == 1 and view.cast_role_counts.get(role) == 1
              and not _revealed_holders(view, role) and role not in claimed_by_hidden]
+    for player in view.claims:
+        last = player.roles[-1] if player.roles else None
+        if player.player in living and player.player != view.player_id and last is not None and last.implied_by:
+            said = [(a.action, a.result, a.target, a.night) for a in last.implied_by]
+            sentences.append(wording.implied_claim(n, player.player, said, last.role))
     if alone:
         sentences.append(wording.no_one_else_claims(alone))
     for role in ROLE_SPECS:
@@ -139,7 +144,8 @@ def role_claim_items(view: SeatView, today: int, night: int, possible: Possible)
         if reason is None:
             continue  # the ledger says it for a claim said before today
         items.append(DeductionItem(row="E15+D", subject=player.player, night=night, conclusion=tuple(conclusion),
-                                   text=wording.role_claim_false(player.player, role, reason),
+                                   text=wording.role_claim_false(player.player, role, reason,
+                                                                 implied=bool(player.roles and player.roles[-1].implied_by)),
                                    sources=(Source("claim", 0, player.player),), receiver=view.player_id))
     return items
 

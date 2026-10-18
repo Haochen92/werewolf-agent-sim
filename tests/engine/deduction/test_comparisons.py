@@ -175,6 +175,8 @@ def test_e3a_a_named_sighting_is_partial_and_rules_nothing_out():
 def test_e3a_the_seats_own_watch_is_whole():
     made_up = _said(2, "player_8", (1, "watch", "player_5", "not_said", ["player_4"]))
     assert _lines(_night_one(), "player_2", 2, made_up) == [
+        # A watch, with no role named, is a claim to be the Sentinel (owner, 2026-10-18), and the seat is it.
+        "player_8's claimed night actions are the Sentinel's, but you are the Sentinel: that claim is false.",
         "player_8 says player_4 came to player_5 on night 1, but your watch on player_5 saw everyone who came to "
         "player_5 that night but you, and player_4 was not among them: that report is false."]
     # A watch on player_5 is itself a visit to player_5, which the seat's watch did not see either.
@@ -407,9 +409,33 @@ def test_the_status_line_counter_claims_today_and_no_claims():
     lines = (_role(2, "player_3", "healer"), _role(2, "player_8", "healer"), _role(2, "player_2", "sentinel"))
     assert _lines(_night_one(), "player_1", 2, *lines, rows={"F3+E15"}) == [
         "No one else claims the Sentinel. player_3 and player_8 both claim the Healer; at most one holds it."]
+    # A protection with no role named reads as a Healer claim (owner, 2026-10-18), so the status begins.
     # Four players with no role claim: not named (three or fewer are).
     assert _lines(_night_one(), "player_1", 2, _said(2, "player_6", (1, "protect", "player_5", "no_attack", [])),
-                  rows={"F3+E15"}) == []  # no role claim yet: no status
+                  rows={"F3+E15"}) == [
+        "player_6 names no role, but says it protected player_5 on night 1, which is the Healer's action: this "
+        "reads as a claim to be the Healer. No one else claims the Healer."]
+    # A plain denial names no role: still no status.
+    assert _lines(_night_one(), "player_1", 2, _said(2, "player_6", (1, "no_action", "", "not_said", [])),
+                  rows={"F3+E15"}) == []
+
+
+def test_an_implied_claim_held_fire_is_the_vigilante():
+    """voices-01 (silence calibration games, 2026-10-18): a vigilante that said it held fire both
+    nights was read as unclaimed, and the conditional on the role claims named it the Serial Killer."""
+    held = _said(3, "player_8", (1, "no_action", "", "held_fire", []), (2, "no_action", "", "held_fire", []))
+    assert _lines(_two_nights(), "player_3", 3, _role(3, "player_6", "healer"), held, rows={"F3+E15"}) == [
+        "player_8 names no role, but says it held fire on nights 1 and 2, which is the Vigilante's action: this reads "
+        "as a claim to be the Vigilante. No one else claims the Healer. player_7 and player_9 have made no role "
+        "claim."]
+    # The Vigilante (player_4) was revealed on night 1, so the implied claim is checked like a named one.
+    assert _lines(_two_nights(), "player_3", 3, _role(3, "player_6", "healer"), held) == [
+        "player_8's claimed night actions are the Vigilante's, but player_4 was revealed as the Vigilante: that claim "
+        "is false."]
+    # Actions of two roles name no single role: no implied claim.
+    mixed = _said(3, "player_8", (1, "no_action", "", "held_fire", []), (2, "protect", "player_6", "not_said", []))
+    assert "reads as a claim" not in " ".join(_lines(_two_nights(), "player_3", 3, _role(3, "player_6", "healer"), mixed,
+                                                     rows={"F3+E15"}))
 
 
 def test_a_counter_claim_said_before_today_is_the_ledgers():

@@ -9,6 +9,7 @@ read as the whole list unless it says "no one" (L12), and these joins use only t
 
 from __future__ import annotations
 
+from Agents.deduction.claim_view import ACTION_ROLE  # noqa: F401 (re-exported: its users import it from here)
 from Agents.schemas.deduction import ActionClaim, PlayerClaimView, VisitClaim
 from Agents.schemas.role_traits import ROLE_TRAITS
 
@@ -17,9 +18,6 @@ NOT_A_VISIT = frozenset({"", "no_action", "bet", "pick", "conceal", "hold_fire"}
 """Claimed actions that are no visit to their target: a denial, the neutrals' bet and pick, the
 conceal (its visit is to the pack's victim, which the claim does not name), held fire."""
 
-ACTION_ROLE = {"investigate": "investigator", "protect": "healer", "watch": "sentinel", "follow": "trailseer",
-               "shoot": "vigilante", "sigil": "sigilist", "block": "chanteuse"}
-"""The role an action claim implies, when the claimant names none."""
 
 
 def visit_claims(claims: list[PlayerClaimView]) -> list[VisitClaim]:

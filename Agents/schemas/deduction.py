@@ -95,6 +95,9 @@ class RoleClaim:
     withdrawn: bool
     """True: the player withdrew this role that day. A withdrawal stays in the history and
     reserves no role."""
+    implied_by: tuple[ActionClaim, ...] = ()
+    """Set when the player named no role but claimed actions only this role takes ("I held fire":
+    the Vigilante): those claims. The engine reads it as a role claim; its wording says why."""
 
 
 @dataclass(frozen=True)

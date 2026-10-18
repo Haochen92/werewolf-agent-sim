@@ -338,12 +338,41 @@ def withdrew(player: str, role: str, claimed_day: int, withdrawn_day: int) -> st
     return f"{player} claimed {title(role)} on day {claimed_day} and withdrew it on day {withdrawn_day}."
 
 
+_KEPT_DEED = {"held_fire": "held fire", "kept_check": "kept a check", "kept_watch": "kept a watch",
+              "kept_sigil": "kept a sigil"}
+
+
+def implied_claim(n: Names, claimant: str, actions: list[tuple[str, str, str, int]], role: str) -> str:
+    """An implied role claim: "player_7 names no role, but says it held fire on nights 1 and 2, which
+    is the Vigilante's action: this reads as a claim to be the Vigilante." ``actions`` are (action,
+    result, target, night), in night order."""
+    deeds: dict[str, list[int]] = {}
+    for action, result, target, night in actions:
+        deed = _KEPT_DEED[result] if action == "no_action" else f"{DEED[action]} {n(target)}".rstrip()
+        deeds.setdefault(deed, [])
+        if night > 0 and night not in deeds[deed]:
+            deeds[deed].append(night)
+    said = []
+    for deed, nights in deeds.items():
+        if not nights:
+            said.append(deed)
+        elif len(nights) == 1:
+            said.append(f"{deed} on night {nights[0]}")
+        else:
+            said.append(f"{deed} on nights {_joined([str(night) for night in nights], 'and')}")
+    whose = "action" if len(deeds) == 1 else "actions"
+    return (f"{claimant} names no role, but says it {_joined(said, 'and')}, which is {title(role)}'s {whose}: "
+            f"this reads as a claim to be {title(role)}.")
+
+
 def no_role_claim(players: list[str]) -> str:
     verb = "has" if len(players) == 1 else "have"
     return f"{_joined(players, 'and')} {verb} made no role claim."
 
 
-def role_claim_false(player: str, role: str, reason: str) -> str:
+def role_claim_false(player: str, role: str, reason: str, implied: bool = False) -> str:
+    if implied:  # the player named no role: its claimed actions did
+        return f"{player}'s claimed night actions are {title(role)}'s, but {reason}: that claim is false."
     return f"{player} claims {title(role)}, but {reason}: that claim is false."
 
 

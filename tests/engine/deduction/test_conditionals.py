@@ -398,12 +398,37 @@ def truth_oracle(nights: int, seed: int, seats_per_point: int = 2) -> dict[str, 
                 continue
             lines, today = random_claims(rng, game, snapshot)
             roles_said, summaries, current = random_role_claims(rng, game, snapshot, today)
+            current = _with_implied(current, lines + roles_said, summaries)
             for player in rng.sample(snapshot.living, min(seats_per_point, len(snapshot.living))):
                 payload = {**game.payload_of(player, snapshot), "day_channel": lines + roles_said,
                            "day_summaries": summaries, "current_day": today}
                 for item in conditional_items(seat_view_from_payload(payload)):
                     _check(item, game, current, counts)
     return counts
+
+
+_IMPLIES = {"investigate": "investigator", "protect": "healer", "watch": "sentinel", "follow": "trailseer",
+            "shoot": "vigilante", "sigil": "sigilist", "block": "chanteuse"}
+_KEPT_IMPLIES = {"held_fire": "vigilante", "kept_check": "investigator", "kept_watch": "sentinel", "kept_sigil": "sigilist"}
+
+
+def _with_implied(current: dict[str, str], lines, summaries) -> dict[str, str]:
+    """The oracle's own account of the current role claims, with the implied ones (owner, 2026-10-18):
+    a player with no current role claim whose latest claimed actions all name one role it has not
+    withdrawn ("I held fire": the Vigilante). Read off the claim ledger's fold, with its own table."""
+    from Agents.rules.claim_ledger import build_claim_ledger
+
+    out = dict(current)
+    for player, p in build_claim_ledger([s for s in summaries if s.source != "game_master"], lines).items():
+        if player in out or p.current_role is not None:
+            continue
+        latest = [a for claim in p.actions.values() for a in (claim, *claim.also_claims)]
+        named = {_KEPT_IMPLIES.get(a.result) if a.action == "no_action" else _IMPLIES.get(a.action) for a in latest}
+        named.discard(None)
+        withdrawn = {role for _, role, kind in p.roles if kind == "retracted"}
+        if len(named) == 1 and not named & withdrawn:
+            out[player] = named.pop()
+    return out
 
 
 def _check(item, game, current: dict[str, str], counts: dict[str, int]) -> None:

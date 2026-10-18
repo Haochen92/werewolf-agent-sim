@@ -363,6 +363,15 @@ def test_a_denial_is_kept_as_the_claimants_word_with_or_without_a_role():
                      "p6: claimed no role.", "  Night 1: says they did not visit p7."]
 
 
+def test_what_a_denial_held_back_is_kept():
+    # silence calibration games, 2026-10-18: "I held fire" was written "did not act", losing the role it names.
+    held = {"player": "p7", "claimed_role": "none", "kind": "claimed",
+            "night_actions": [{"night": 1, "action": "no_action", "target": "", "result": "held_fire"},
+                              {"night": 2, "action": "no_action", "target": "p3", "result": "kept_watch"}]}
+    assert _ledger(_day(3, [held])).splitlines() == [
+        "p7: claimed no role.", "  Night 1: says they held fire.", "  Night 2: says they kept a watch unused and did not visit p3."]
+
+
 def test_a_later_action_claim_for_the_same_night_keeps_the_denial_as_history():
     denial = {"player": "p5", "claimed_role": "none", "kind": "claimed",
               "night_actions": [{"night": 2, "action": "no_action", "target": "", "result": "not_said"}]}
