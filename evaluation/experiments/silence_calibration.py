@@ -56,10 +56,10 @@ SUMMARY_TAIL = 3000
 """How much of the earlier days' summaries a judge sees (the most recent part)."""
 
 
-def turns() -> list[dict]:
+def turns(games: Path = GAMES) -> list[dict]:
     """Every discuss turn of the captured games, its prompt input with the entry it produced."""
     out = []
-    for path in sorted(GAMES.glob("*.capture.json.gz")):
+    for path in sorted(games.glob("*.capture.json.gz")):
         game = path.name.removesuffix(".capture.json.gz")
         capture = json.loads(gzip.open(path, "rt").read())
         prompts, entries = defaultdict(list), defaultdict(list)
@@ -83,7 +83,7 @@ def turns() -> list[dict]:
                     kind, line = "posted", e["message"]
                 else:
                     kind, line = "pass", None
-                out.append({"turn": f"{game}:{key[0]}:{key[1]}:{i}", "game": game, "day": key[0],
+                out.append({"turn": f"{game}:{key[0]}:{key[1]}:{i}", "game": game, "day": key[0], "seq": e["seq"],
                             "player": key[1], "role": p["player_role"], "round": e["day_round"],
                             "kind": kind, "line": line, "pass_reason": e.get("pass_reason"),
                             "lineup": lineup, "prompt_input": p["prompt_input"]})
