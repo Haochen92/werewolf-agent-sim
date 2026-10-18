@@ -896,7 +896,7 @@ for (const { name, viewport, dpr, sheet, px } of [
 ]) {
   test.describe(`landing preview on a ${name} at density ${dpr}`, () => {
     test.use({ viewport, deviceScaleFactor: dpr });
-    test('loads when scrolled to, with one backdrop sheet of the size it needs', async ({
+    test('loads once the first screen is up, before it is scrolled to, with one backdrop sheet of the size it needs', async ({
       page,
     }) => {
       const sheets: string[] = [];
@@ -916,14 +916,11 @@ for (const { name, viewport, dpr, sheet, px } of [
       });
       await routeLanding(page);
       await page.goto('/', { waitUntil: 'networkidle' });
-      // under the fold: the frame is drawn, nothing of the preview asked for
-      await expect(carriage(page)).toBeAttached();
-      await expect(mini(page)).toHaveCount(0);
-      expect(sheets).toEqual([]);
-      expect(replays).toBe(0);
-
-      await carriage(page).scrollIntoViewIfNeeded();
+      // under the fold, never scrolled to: asked for as soon as the hero is up (owner,
+      // 2026-10-18), so the whole scene is ready before it is seen
+      await expect(page.locator('html')).not.toHaveAttribute('data-gate');
       await expect(mini(page)).toBeAttached();
+      await expect(carriage(page)).toHaveAttribute('data-ready', 'true');
       const img = carriage(page).locator('[data-backdrop] img');
       await expect(img).toHaveJSProperty('complete', true);
       expect(await img.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBe(px);

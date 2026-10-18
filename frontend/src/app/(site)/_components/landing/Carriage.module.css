@@ -42,7 +42,7 @@
    after the hero's): the page's black for the top half, then down to a dark blue at the wheels,
    and snow falling through the black, gone by two thirds of the way down (owner). The flakes are
    sheets drawn once and repeated, and only the sheets move (a transform each, two layers, behind
-   the carriage and never over the game's window); they start when the carriage comes near and
+   the carriage and never over the game's window); they start when the painted carriage is up and
    are still for reduced motion. */
 .night {
   position: absolute;
@@ -209,6 +209,28 @@
   .fall::before {
     animation: none;
   }
+}
+
+/* ---------- the scene comes up whole (FeaturedReplay, `data-ready`) ----------
+   Until the carriage's picture is in and the game is painted in its window, the section is the
+   house's loading picture, from the night's top to the details under the platform; then the
+   scene fades in at once, one opacity a box, and the loader fades off. */
+.gate {
+  position: absolute;
+  top: -90px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 6;
+}
+.depot[data-ready] .gate {
+  pointer-events: none;
+}
+.depot > :not(.gate) {
+  transition: opacity 0.4s ease-out;
+}
+.depot:not([data-ready]) > :not(.gate) {
+  opacity: 0;
 }
 
 /* ---------- the roof board: in the flow, so it stays on the roof at any height ---------- */
@@ -1002,8 +1024,9 @@
 }
 
 /* ---------- the painted carriage (scripts/cut-carriage.mjs) ----------
-   FeaturedReplay sets `data-art` and the pieces' URLs (`--art-*`) as the carriage comes near
-   (the moment the theatre itself loads), so a visitor who never scrolls fetches none of them.
+   FeaturedReplay sets `data-art` and the pieces' URLs (`--art-*`) once the carriage has come
+   near (the moment the theatre itself loads) and its picture is decoded, so a visitor who never
+   scrolls fetches none of them, and the drawn carriage stays up until the picture can replace it.
    Every piece shows at half its painted size, sharp on a 2× screen; the stand-in stays under
    it until the pictures arrive. The doors keep their drawing, over the teak. */
 .depot[data-art] .roof {

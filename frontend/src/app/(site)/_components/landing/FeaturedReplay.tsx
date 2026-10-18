@@ -14,7 +14,8 @@
  * Nothing on the carriage's body is interactive.
  *
  * The carriage is painted with pieces cut from the waiting room's train (`SPRITES.carriage`,
- * scripts/cut-carriage.mjs), laid over a CSS stand-in once the carriage comes near.
+ * scripts/cut-carriage.mjs), laid over a CSS stand-in once the carriage comes near and its
+ * picture is in.
  *
  * The game is `SITE.featuredReplay`; if the archive no longer has it, the newest game plays
  * instead, with its own window. It plays while it is on screen; it rests on the window's first
@@ -42,8 +43,9 @@ import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useMediaQuery } from '@mantine/hooks';
 import { SPRITES } from '@/assets/manifest';
-import { Button } from '@/components/site';
+import { Button, usePageOpen } from '@/components/site';
 import { TrainLoader } from '@/components/TrainLoader';
+import { useDecoded } from '@/hooks/useDecoded';
 import { useModelLabels } from '@/hooks/useModelLabels';
 import { getReplay, listReplaysWithTotal } from '@/lib/api';
 import { featuredWindow } from '@/lib/featured-window';
@@ -67,6 +69,8 @@ const theatreCode = () => import('@/stage/containers/ReplayTheatre');
 const underCode = () => import('./CarriageUnder');
 /** How long the line waits on the stage's pictures before the replay plays without them. */
 const PAINT_CAP_MS = 8000;
+/** How long the scene waits, from when it is asked for, before it comes up with what it has. */
+const SCENE_CAP_MS = 10_000;
 /** The loader's fade off the window (TrainLoader.module.css, `.veil`). */
 const LIFT_MS = 400;
 const ReplayTheatre = dynamic(() => theatreCode().then((m) => m.ReplayTheatre), {
@@ -202,7 +206,11 @@ export function FeaturedReplay() {
   const modelName = useModelLabels();
   const wide = useMediaQuery('(min-width: 861px)');
   const [screenRef, onScreen] = useOnScreen<HTMLDivElement>();
-  const near = useNear(screenRef);
+  // asked for once the page's first screen is up (the hero), a section ahead of the visitor, or
+  // when it comes near, whichever is first
+  const comesNear = useNear(screenRef);
+  const pageOpen = usePageOpen();
+  const near = comesNear || pageOpen;
   const { game, failed } = useShownGame(near);
   useEffect(() => {
     if (!near) return;
@@ -243,6 +251,40 @@ export function FeaturedReplay() {
     return () => clearTimeout(t);
   }, [painted]);
 
+  // the painted carriage takes over from the drawn stand-in only once its picture is decoded:
+  // switched at `near`, a cold first visit (nothing cached) showed the window alone in the dark,
+  // its loader turning, until the picture came (owner, 2026-10-18)
+  const whole = useMemo(
+    () =>
+      near
+        ? [
+            (window.matchMedia('(min-width: 861px)').matches
+              ? SPRITES.carriage.whole
+              : SPRITES.carriage.wholePhone
+            ).src,
+          ]
+        : null,
+    [near],
+  );
+  const dressed = useDecoded(whole);
+
+  // the whole scene comes up at once (owner, 2026-10-18): the night, the board, the carriage and
+  // the game playing in its window, the house's loading picture over the section until then;
+  // `SCENE_CAP_MS` from when it was asked for, it comes up with what it has
+  const [capped, setCapped] = useState(false);
+  useEffect(() => {
+    if (!near) return;
+    const t = setTimeout(() => setCapped(true), SCENE_CAP_MS);
+    return () => clearTimeout(t);
+  }, [near]);
+  const ready = (dressed && (painted || failed)) || capped;
+  const [covered, setCovered] = useState(true);
+  useEffect(() => {
+    if (!ready) return;
+    const t = setTimeout(() => setCovered(false), LIFT_MS);
+    return () => clearTimeout(t);
+  }, [ready]);
+
   const id = game?.game_id ?? null;
   const record = id ? id.slice(0, 7).toUpperCase() : '';
   // the theatre's way out comes back here (`from=home`, TheaterClient)
@@ -256,12 +298,18 @@ export function FeaturedReplay() {
   return (
     <figure
       className={classes.depot}
-      // the painted pieces come with the theatre, when the carriage is near
-      data-art={near || undefined}
-      style={near ? ART : undefined}
+      // the painted pieces, once the carriage is near and its picture is in
+      data-art={dressed || undefined}
+      style={dressed ? ART : undefined}
       data-frame="carriage"
+      data-ready={ready || undefined}
       aria-label={game ? `Replay of ${what.toLowerCase()} of game ${record}` : undefined}
     >
+      {covered ? (
+        <div className={classes.gate}>
+          <TrainLoader leaving={ready} />
+        </div>
+      ) : null}
       <div className={classes.car}>
         <div className={classes.night} aria-hidden="true">
           <div className={classes.fall}>
