@@ -11,85 +11,161 @@
   overflow-x: clip;
 }
 
-/* ---------- the hero ---------- */
+/* ---------- the hero (owner, 2026-10-18) ----------
+   The night platform as a handmade set fills the first screen, from the page's top (behind the
+   nav's board) to the fold; the words lie on its calm sky: centre-left on a wide screen, the
+   carriage and its passengers on the right; on a phone over the sky, the passengers under them.
+   The picture is still, drawn once (no filter, no blend), and only its own file is fetched. */
 .hero {
+  /* where the nav's board ends (TopNav: one row, two on a phone) */
+  --nav-foot: 110px;
   position: relative;
   isolation: isolate;
-  /* the room under the nav: the title is a sign in the middle of the wall (owner, 2026-10-16),
-     and the lamps hang from the same number (PlatformBackdrop.module.css .heroScene) */
-  padding: var(--hero-top) 0 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: calc(100svh - var(--nav-foot));
+  padding: 24px 0 72px;
   text-align: center;
 }
-/* candle glow behind the tags */
-.hero::after {
+.scene {
+  position: absolute;
+  top: calc(-1 * var(--nav-foot));
+  bottom: 0;
+  left: calc(50% - 50vw);
+  z-index: -1;
+  width: 100vw;
+  pointer-events: none;
+}
+.scene img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* the carriage's feet and the passengers kept, the sky given up first */
+  object-position: 50% 75%;
+}
+/* the scene's foot fades to the page's ground, where the carriage below begins */
+.scene::after {
   content: '';
   position: absolute;
-  left: 50%;
-  bottom: -120px;
-  z-index: -1;
-  width: 900px;
-  max-width: 100%;
-  height: 420px;
-  transform: translateX(-50%);
-  pointer-events: none;
-  background: radial-gradient(
-    ellipse at 50% 60%,
-    rgba(224, 166, 58, 0.22),
-    rgba(224, 166, 58, 0.06) 45%,
-    transparent 70%
-  );
+  inset: auto 0 0;
+  height: 90px;
+  background: linear-gradient(transparent, var(--bg));
 }
-/* the game's name as the station's sign, and the hook under it (docs/typography.md) */
+.heroText {
+  position: relative;
+}
+/* the game's name, and the hook under the rule (docs/typography.md) */
 .name {
   margin: 0;
   font-family: var(--font-garamond);
   font-weight: 600;
-  font-size: var(--name-size);
+  font-size: clamp(44px, 5.3vw, 80px);
   line-height: 1.02;
   letter-spacing: 0.005em;
   text-wrap: balance;
   color: var(--text);
+  text-shadow: 0 2px 18px rgba(4, 6, 16, 0.6);
 }
-/* lighter and lamplit, so it reads as the line under the sign, not a second title (owner, 2026-10-16) */
+.rule {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: min(480px, 92%);
+  margin: 14px auto 10px;
+  color: var(--sign-hook);
+}
+.ruleSide {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 20px;
+}
+.ruleMark {
+  flex: none;
+  width: 38px;
+  height: 38px;
+}
+/* lighter and lamplit, so it reads as the line under the name, not a second title (owner, 2026-10-16) */
 .tagline {
-  margin: 12px auto 30px;
+  margin: 0 auto 30px;
   font-family: var(--font-garamond);
   font-weight: 500;
-  font-size: clamp(22px, 3.9vw, 40px);
+  font-size: clamp(22px, 2.9vw, 38px);
   line-height: 1.15;
   letter-spacing: 0.02em;
   text-wrap: balance;
   color: var(--sign-hook);
+  text-shadow: 0 2px 14px rgba(4, 6, 16, 0.7);
 }
-/* the doors, hung from a rail on a wide screen, flat and stacked on a phone */
-.seatRail {
-  position: relative;
+/* the two tickets, side by side */
+.tickets {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
-  align-items: flex-start;
-  gap: 22px;
-  margin-top: 40px;
-  padding-top: 32px;
+  align-items: stretch;
+  gap: 18px;
 }
-.rail {
-  position: absolute;
-  left: 50%;
-  top: 22px;
-  width: min(560px, 84%);
-  height: 1px;
-  transform: translateX(-50%);
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 235, 200, 0.22) 18%,
-    rgba(255, 235, 200, 0.22) 82%,
-    transparent
-  );
+
+/* a wide screen: the words centre-left, on the sky between the station's lamp and the carriage,
+   their middle at --at of the screen, a dark breath behind them so the name reads over the hills */
+@media (min-width: 861px) and (min-aspect-ratio: 1/1) {
+  .heroText {
+    --at: 31vw;
+    --block: min(640px, 46vw);
+    width: var(--block);
+    margin-left: calc(
+      max(var(--at), 24px + var(--block) / 2) - 50vw + 50% - var(--block) / 2
+    );
+  }
+  .heroText::before {
+    content: '';
+    position: absolute;
+    inset: -12% -18%;
+    z-index: -1;
+    background: radial-gradient(closest-side, rgba(6, 8, 20, 0.42), transparent);
+    pointer-events: none;
+  }
+}
+/* a laptop's narrower screen: the words smaller and further left, so the tickets clear the
+   carriage's front end */
+@media (min-width: 861px) and (max-width: 1365px) and (min-aspect-ratio: 1/1) {
+  .heroText {
+    --at: 27vw;
+    --block: min(580px, 52vw);
+  }
+  .name {
+    font-size: 66px;
+  }
+  .tagline {
+    font-size: 32px;
+    margin-bottom: 24px;
+  }
+  .tickets {
+    gap: 14px;
+  }
+}
+/* a small laptop or a tablet on its side: smaller still, the tickets narrower */
+@media (min-width: 861px) and (max-width: 1099px) and (min-aspect-ratio: 1/1) {
+  .heroText {
+    --block: 470px;
+  }
+  .name {
+    font-size: 56px;
+  }
+  .tagline {
+    font-size: 28px;
+  }
+  .tickets {
+    --ticket-w: 222px;
+    --ticket-title: 22px;
+  }
 }
 
 /* ---------- the sections: the carriage, then the rooms (Rooms.module.css) under it ---------- */
 .first {
+  /* the carriage's sign hangs just under the hero's faded foot, not after a band of dark */
+  margin-top: -84px;
   padding-top: 22px;
   padding-bottom: 72px;
 }
@@ -257,11 +333,22 @@
   font-size: 15px;
 }
 
-/* on a phone the hero is short and the glow behind the tags reached the name: half of it there
-   (owner, 2026-10-16: the hero read too bright) */
+/* a phone: the board takes two rows, the words start under it, and the passengers stand in the
+   picture's lower part under them (the hero fills the first screen, owner 2026-10-18) */
 @media (max-width: 860px) {
-  .hero::after {
-    opacity: 0.5;
+  .hero {
+    --nav-foot: 154px;
+    justify-content: flex-start;
+    padding: 34px 0 48px;
+  }
+  .name {
+    font-size: clamp(40px, 12vw, 56px);
+  }
+}
+/* a screen taller than wide shows the tall picture: its passengers right of centre, its foot kept */
+@media (max-aspect-ratio: 1/1) {
+  .scene img {
+    object-position: 55% 100%;
   }
 }
 @media (max-width: 700px) {
@@ -274,16 +361,12 @@
   .prologue {
     margin-bottom: 80px;
   }
-  /* the two stubs side by side (HangTag), as tall as each other */
-  .seatRail {
-    flex-wrap: nowrap;
-    align-items: stretch;
-    gap: 10px;
-    margin-top: 32px;
-    padding-top: 0;
+  .tagline {
+    margin-bottom: 22px;
+    font-size: 21px;
   }
-  .rail {
-    display: none;
+  .tickets {
+    gap: 10px;
   }
   .first {
     padding-bottom: 48px;

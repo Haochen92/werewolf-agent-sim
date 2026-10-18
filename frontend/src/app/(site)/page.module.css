@@ -24,6 +24,15 @@
   font-size: 13.5px;
   line-height: 1.5;
   color: var(--muted);
+  /* it lies on the hero's picture: dark round the letters, so it reads over the carriage's snow */
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.95),
+    0 0 10px rgba(4, 6, 16, 0.9);
+}
+@media (max-width: 860px) {
+  .doorNote {
+    margin-top: 14px;
+  }
 }
 
 .doorNoteFree {

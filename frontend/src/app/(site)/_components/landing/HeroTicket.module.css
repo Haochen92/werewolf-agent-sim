@@ -1,0 +1,187 @@
+/* The hero's paper ticket (HeroTicket.tsx). Still at rest: the shape is a mask, the shadow and
+   the aged rim are drawn once; a hover lifts the whole ticket (a move, no repaint) and nudges
+   its arrow. */
+
+.ticket {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  width: var(--ticket-w, 260px);
+  color: var(--town-ink);
+  text-decoration: none;
+  text-align: left;
+  transition: transform 0.2s ease;
+}
+/* the shadow it casts on the scene: unmasked, under the paper, a little inside its edges */
+.ticket::before {
+  content: '';
+  position: absolute;
+  inset: 8px 10px 0;
+  z-index: -1;
+  border-radius: 6px;
+  box-shadow: 0 16px 26px -8px rgba(0, 0, 0, 0.85);
+}
+.ticket:hover {
+  transform: translateY(-3px);
+}
+.ticket:focus-visible {
+  outline: 2px solid var(--town);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+/* the paper: the fibre tile, an aged rim, a printed inner rule; the scalloped ends, their middle
+   notches and the bite out of the top are cut from it (each mask layer is the paper less one
+   cut, and the layers intersect) */
+.face {
+  --scallop: 3.4px;
+  --notch: 10px;
+  position: relative;
+  /* as tall as its neighbour, its foot at the bottom */
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 22px 26px 16px;
+  border-radius: 4px;
+  font-family: var(--font-serif);
+  background:
+    url('../../../../assets/site/ticket-paper.webp') 0 0 / 256px 256px repeat,
+    var(--paper);
+  box-shadow:
+    inset 0 0 0 1px rgba(110, 70, 25, 0.22),
+    inset 0 0 22px rgba(120, 78, 28, 0.3);
+  -webkit-mask:
+    radial-gradient(circle var(--scallop) at 0 50%, transparent 95%, #000) 0 0 / 100% 11px
+      repeat-y,
+    radial-gradient(circle var(--scallop) at 100% 50%, transparent 95%, #000) 0 0 / 100%
+      11px repeat-y,
+    radial-gradient(circle var(--notch) at 0 50%, transparent 97%, #000),
+    radial-gradient(circle var(--notch) at 100% 50%, transparent 97%, #000),
+    radial-gradient(circle 6px at 50% 0, transparent 96%, #000);
+  -webkit-mask-composite: source-in;
+  mask:
+    radial-gradient(circle var(--scallop) at 0 50%, transparent 95%, #000) 0 0 / 100% 11px
+      repeat-y,
+    radial-gradient(circle var(--scallop) at 100% 50%, transparent 95%, #000) 0 0 / 100%
+      11px repeat-y,
+    radial-gradient(circle var(--notch) at 0 50%, transparent 97%, #000),
+    radial-gradient(circle var(--notch) at 100% 50%, transparent 97%, #000),
+    radial-gradient(circle 6px at 50% 0, transparent 96%, #000);
+  mask-composite: intersect;
+}
+.face::before {
+  content: '';
+  position: absolute;
+  inset: 8px 12px;
+  border: 1px solid rgba(74, 46, 10, 0.28);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.kicker {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.62;
+}
+.title {
+  display: block;
+  margin: 4px 0 6px;
+  font-size: var(--ticket-title, 25px);
+  line-height: 1.05;
+}
+.line {
+  display: block;
+  margin-bottom: 12px;
+  font-style: italic;
+  font-size: 12.5px;
+  line-height: 1.35;
+  opacity: 0.8;
+}
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1.3px solid var(--town-ink);
+  font-size: 12.5px;
+  opacity: 0.85;
+}
+.go {
+  font-size: 17px;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+.ticket:hover .go {
+  transform: translateX(3px);
+}
+.note {
+  display: none;
+}
+
+/* a phone: the title and the way in, one line each ticket, two side by side (owner's mock,
+   2026-10-18); a live note under the title */
+@media (max-width: 700px) {
+  .ticket {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    max-width: 260px;
+  }
+  .face {
+    --scallop: 2.8px;
+    --notch: 8px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 4px;
+    height: 100%;
+    padding: 19px 14px 18px 16px;
+  }
+  .face::before {
+    inset: 6px 9px;
+  }
+  .kicker,
+  .line {
+    display: none;
+  }
+  .title {
+    grid-column: 1;
+    margin: 0;
+    font-size: clamp(15px, 4.3vw, 19px);
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+  .note {
+    grid-column: 1;
+    display: block;
+    margin-top: 3px;
+    font-size: 12px;
+    font-style: italic;
+    opacity: 0.72;
+  }
+  .foot {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    opacity: 1;
+  }
+  .foot > span:first-child {
+    display: none;
+  }
+  .go {
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticket,
+  .go {
+    transition: none;
+  }
+}

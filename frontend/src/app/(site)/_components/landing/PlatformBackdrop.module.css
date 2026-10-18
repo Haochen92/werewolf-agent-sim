@@ -22,32 +22,6 @@
   }
 }
 
-/* the landing's: the lamps hang level with the game's name (owner, 2026-10-16), worked out from
-   the numbers that place it: the nav board's foot (TopNav: 110px from the page's top, 154px
-   once it takes two rows), the room under it (--hero-top, Landing.module.css .hero) and half
-   the name's line. Move the name and the lamps follow. */
-.heroScene {
-  --hero-top: clamp(64px, 10.5vw, 150px);
-  --name-size: clamp(30px, 9.6vw, 96px);
-  --nav-foot: 110px;
-  --ly: calc(var(--nav-foot) + var(--hero-top) + var(--name-size) * 0.51);
-  /* the doors hang under the name and its tagline, so their light follows the lamps */
-  --doors-y: calc(var(--ly) + 280px);
-}
-@media (max-width: 860px) {
-  .heroScene {
-    --nav-foot: 154px;
-    /* on a phone the hero is short, so the doors' light sits under the tags and smaller,
-       leaving the wall under the name to the lamps (owner, 2026-10-16: it read too bright) */
-    --doors-y: calc(var(--ly) + 210px);
-    --doors-r: 360px 230px;
-  }
-  /* and the wall a shade darker, so the lamps read as the light again */
-  .heroScene .tiles {
-    opacity: 0.7;
-  }
-}
-
 /* under the landing's content, from the very top of the page (behind the nav's board) */
 .backdrop {
   position: absolute;

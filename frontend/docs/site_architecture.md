@@ -68,7 +68,7 @@ Which face goes where (three voices, three props) is ruled in [typography.md](ty
 | `StationWall` | A page's wall: the landing's rooms behind the other pages (owner 2026-10-14). `records` (the archive: platform tile, oxblood band, pendant) and `granite` (the ticket office: granite under the caged wall light, `StationLamps`); the departures hall stands on the landing's `PlatformBackdrop`. Placed against `.station` from the page's top, under the page's own stacking context (`wallPage` on its `<main>`), capped where its light runs out, its foot faded to the page's ground. `cards` is the guide's: the roles' green tile, lit from over the board. Further down, each side of the guide's roles stands on the same tile in its own colour (ochre, oxblood, aubergine, slate; `Guide.module.css` `.side::before`, owner 2026-10-15). |
 | `SiteFooter` | The GitHub link with its icon, the other links, and the credit line, whose "N games archived" is live (`GamesArchived`, the archive's `X-Total-Count`). |
 | `Button` | Mantine Button narrowed to the kit's three variants (below): `well` (the default), `plate` and `text`. Polymorphic. |
-| `GuideSign` | The guide's one look wherever a page points at it: the navy enamel and the open book (`Book`, which the nav's sign draws too), a size up for a page: under the hero's tags, under the roles. |
+| `GuideSign` | The guide's one look wherever a page points at it: the navy enamel and the open book (`Book`, which the nav's sign draws too), a size up for a page: under the hero's tickets, under the roles. |
 | `PlateTabs.module.css` | The site's plain tabs, composed by any tab set that is not itself a picture: dark tabs, the chosen one a brass plate; `small` inside a panel. |
 | `HangTag` | The hung paper tag. With `href` it is a link (a door); with `onClick` and `pressed` it is a choice. On a phone it is a stub, two to a row (below). |
 | `Paper` | The paper surface for things inside the fiction. Polymorphic Box. |
@@ -105,17 +105,24 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
 
 ## The landing's platform and carriage (redesign 2026-10-14 §2–4)
 
-- `PlatformBackdrop` puts the hero on a night platform: a glazed-tile wall (`assets/site/wall-tile.svg`)
-  under one mask so it shows only where light falls, two wall lamps, roof trusses, a vignette. One
-  still box, capped at 1250px, under the landing's own stacking context (`isolation: isolate`: the
-  body's ground would otherwise paint over a `z-index: -1` layer). `--lx`/`--rx`/`--ly` on the
-  landing place the lamps and their light; the carriage's platform reads them too.
-- The hero is a poster (owner, 2026-10-16, docs/typography.md): the game's name as the sign
-  (`h1`, Garamond 600, `--name-size`), the hook "Watch AIs lie to each other" as its tagline, then
-  the tags. `--hero-top` is the room under the nav (150px wide, 64px on a phone), and the lamps
-  are worked out from the numbers that place the name (`.heroScene`: the nav board's foot,
-  `--hero-top`, half the name's line), so moving the name moves them. The wall's light round the
-  doors (`--doors-y`) follows the lamps. The story is no longer in the hero (the rooms, below).
+- The hero is a picture (owner, 2026-10-18): the night platform as a handmade set (felt cast, the
+  wooden toy carriage), filling the first screen from the page's top, behind the nav's board, to the
+  fold. Two files, `assets/site/hero-wide.webp` (1536×1024) and `hero-tall.webp` (1024×1536, a
+  screen taller than wide), in one `<picture>`, so a screen fetches only its own; still, no filter;
+  its foot fades to the ground and the carriage's section starts just under it. Masters in
+  `claude_artifacts/design/rasters/wood/hero/`, fitted by `scripts/fit-hero.mjs`.
+- The words stay words over its calm sky (Landing.module.css `.heroText`): the game's name, a gold
+  rule with the brand's 9 (`HeroRule`, vector), the hook, the two tickets, the purse (HouseDoorNote,
+  outlined to read over the picture) and the guide's sign. On a wide screen they sit centre-left,
+  their middle at 31% of the screen (27% under 1366px, smaller again under 1100px) so the tickets
+  clear the cat and the fox; on a phone centred, the name on two lines, the passengers under them.
+- The tickets (`HeroTicket`, landing only; `HangTag` stays the rooms' and the ticket office's) are
+  flat cream card on the scene: the shape (scalloped ends, a notch each side, a bite out of the top)
+  is a mask, so it stays round at any size, and the fibre is one 512 px tile (`ticket-paper.webp`)
+  under both. A wide screen shows the kicker, the line and a ruled foot (the tables boarding); a
+  phone the title and the way in. A hover lifts the ticket and nudges its arrow.
+- `PlatformBackdrop` (the tiled wall, its lamps and trusses) is now the departures hall's alone
+  (`short`); the landing's `.scene` still sets `--lx`/`--rx`, which the carriage's platform reads.
 - `FeaturedReplay` is the replay theatre's mini mode in the big window of a carriage standing at the
   platform. Over 860px the whole carriage (end, door, window, door, end) with the replay's controls
   on the stage; at 860px and under, the window edge to edge and the controls on the platform beneath

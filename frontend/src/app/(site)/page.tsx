@@ -10,43 +10,57 @@ import { ReplayListClient } from './replays/_components/ReplayListClient';
 import { HouseDoorNote } from './_components/HouseDoorNote';
 import { SeatTags } from './_components/landing/SeatTags';
 import { FeaturedReplay } from './_components/landing/FeaturedReplay';
-import { PlatformBackdrop } from './_components/landing/PlatformBackdrop';
 import platform from './_components/landing/PlatformBackdrop.module.css';
 import { Features } from './_components/landing/Features';
+import { HeroRule } from './_components/landing/HeroRule';
 import { ReplayMoment } from './_components/landing/ReplayMoment';
 import { BLUFF } from './_components/landing/features';
 import rooms from './_components/landing/Rooms.module.css';
 import classes from './_components/landing/Landing.module.css';
 import pageClasses from './page.module.css';
+import heroWide from '@/assets/site/hero-wide.webp';
+import heroTall from '@/assets/site/hero-tall.webp';
 
 /**
- * The landing (landing mockup, review §A1, rulings §F7; reworked with the owner 2026-10-15 and
- * 2026-10-16): the hero (the game's name as its sign, the hook, the two hung tags), a game from
+ * The landing (landing mockup, review §A1, rulings §F7; reworked with the owner 2026-10-15,
+ * 2026-10-16 and 2026-10-18): the hero (the night platform as a handmade set, the game's name,
+ * the hook and two paper tickets over its sky), a game from
  * the archive playing in the carriage, the story and then what makes it different, the replay (one real moment of a bluff, then the latest games), and a closing on
  * the research behind it. A recruiter with no context sees the product working before reading
  * a word, and reaches a whole replay in one click from the carriage. The roles live on `/guide`.
  *
  * Under the carriage each section is a room of the station (Rooms.module.css), one running into
  * the next through the dark: granite under a caged wall light, then the platform's tile under a
- * pendant. The way to play is the hero's tags and the nav.
+ * pendant. The way to play is the hero's tickets and the nav.
+ *
+ * The hero's picture fills the first screen, from the page's top behind the nav: a wide one for a
+ * screen wider than tall, a tall one for a phone, and a screen fetches only the one it shows
+ * (`<picture>`). The words stay words over it, on the scene's calm sky.
  *
  * The two playing doors carry the house's purse (HouseDoorNote): whether a visitor needs their
  * own API key is live state, and the door is the honest place to say it.
  */
 export default function HomePage() {
   return (
-    <main className={`${classes.landing} ${platform.scene} ${platform.heroScene}`}>
-      <PlatformBackdrop />
+    <main className={`${classes.landing} ${platform.scene}`}>
       {/* the guide's piece, for a viewer who turns it on (the nav's switch) */}
       <PageMusic bed="guide" />
       <header className={classes.hero}>
-        {/* the game's name is the sign, the hook its tagline (owner, 2026-10-16) */}
-        <h1 className={classes.name}>The Ninth Express</h1>
-        <p className={classes.tagline}>Watch AIs lie to each other</p>
-        <SeatTags />
-        <HouseDoorNote />
-        {/* the guide is something to read, so its sign and not a third tag (owner, 2026-10-15) */}
-        <GuideSign className={classes.heroGuide} />
+        {/* art direction, one file a screen: a plain picture, not next/image */}
+        <picture className={classes.scene}>
+          <source media="(max-aspect-ratio: 1/1)" srcSet={heroTall.src} />
+          <img src={heroWide.src} alt="" fetchPriority="high" decoding="async" />
+        </picture>
+        <div className={classes.heroText}>
+          {/* the game's name, the hook its tagline (owner, 2026-10-16) */}
+          <h1 className={classes.name}>The Ninth Express</h1>
+          <HeroRule />
+          <p className={classes.tagline}>Watch AIs lie to each other</p>
+          <SeatTags />
+          <HouseDoorNote />
+          {/* the guide is something to read, so its sign and not a third ticket (owner, 2026-10-15) */}
+          <GuideSign className={classes.heroGuide} />
+        </div>
       </header>
 
       <section className={classes.first} aria-label="A game from the archive, playing">
