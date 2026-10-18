@@ -733,7 +733,10 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   a desktop, 1.5 on a phone) and fades the old hour's sheet off over the new, as `CarPaint`
   did. A scene with a backdrop passes `baked` to `Atmosphere`, which then draws the grade
   alone. Same drawing, one bitmap: the browser holds one layer where it held five (build log
-  §8.3). Rerun the bake when the car's paint or haze changes; the goldens say whether the
+  §8.3). One sheet per hour and HUD, baked with the side slot closed: the open slot (the
+  transcript, the case file) slides the same sheet with the room (`sheetFor`), so opening it
+  decodes no second sheet (owner, 2026-10-18; only the window's felt country slides with the
+  car). Rerun the bake when the car's paint or haze changes; the goldens say whether the
   sheets did. The light, the grade and everything that moves stay live.
 - **Nothing animates at rest inside the camera.** An element with a running animation (a CSS
   animation, `will-change`, a motion value in flight) gets its own GPU layer, and every stage

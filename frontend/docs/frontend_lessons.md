@@ -460,6 +460,17 @@ what a beat shows from its first frame to its last, not what it opens with, and 
 that one beat's pictures (a pose decodes to about 4 MB, 37). The probe that settles it: record
 each picture's first request against the time its beat began.
 
+**44. A layout that only moves a baked picture is that picture moved, not a second bake.** The
+car's set was baked twice per hour, once for each place the room can stand (the side slot
+closed and open), so opening the transcript swapped in a second sheet: on a phone a fresh
+~17 MB decode on every tap, and twice the sheets to bake and download. Sliding one sheet onto
+the other showed the car was the same painting 296 units over; only the felt country behind
+its glass and the dark past its ends stayed put, because the bake had anchored them to the
+stage instead of the car. Now one sheet slides by the room's change of centre (`Backdrop.tsx`
+`sheetFor`): 24 sheets instead of 48, and the goldens moved only behind the glass. Before
+baking a variant of a picture, ask whether it is the base shifted; settle it by sliding one onto
+the other and diffing, and the leftover says what is anchored elsewhere (2026-10-18).
+
 ---
 
 ## Small things that cost an afternoon
