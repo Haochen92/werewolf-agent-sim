@@ -878,6 +878,31 @@ this order before touching the choreography.
 The vote's `table-down` (beat 3) and `dusk→night` (beat 14) on 2026-09-25 are the reference
 cases; `PaintPicture`'s docstring (in git history, `Stage.tsx` before 2026-09-29) tells the second one.
 
+**Performance knobs not yet turned (audit 2026-10-18).** Motion that still animates a property
+the browser must repaint for (anything but `transform` and `opacity`), left as it is because
+nobody has seen it stutter. Owner, 2026-10-18: keep them here and turn one only if it shows up
+on a phone. Most costly first:
+- **The departure's agent curtains** (`StationScene.tsx` `WindowSeats`, `.blind`): unrolled by
+  animating `clip-path` for about a second, so each curtain repaints every frame. Knob: slide the
+  cloth down inside a still clipping box with `transform` (a blind unrolling is a slide; it looks
+  the same).
+- **The speculator's pennants** (`SideFlag.tsx`, `FILTER`): a `brightness` and `drop-shadow`
+  filter on every pennant at rest, and the filter itself animated over 0.6 s when one is lit or
+  dimmed. Knob: the shadow drawn once under the pennant, lit and dim as an `opacity` fade of a
+  light or dark sheet over it.
+- **SVG moved by its own transforms** (the trap's leaves, `Floor.tsx` through `Tween`, and any
+  other `Tween` inside an inline `<svg>`): an attribute transform repaints the SVG each frame
+  (phone_lessons §6). Unmeasured: check with the paint profiler before changing anything. Knob:
+  the moving part in its own box, moved by CSS `transform`.
+- **The vote's table on a phone** rides the lift without a layer of its own, so it repaints as it
+  moves. Deliberate (build_log §8.7): the layer would be stage-sized there. Leave it unless the
+  memory picture changes.
+- **Hover and press brightening by `filter`** (`Button.module.css`, `Station.module.css` `.brass`,
+  `BallotRow.module.css`, `Features.module.css`, `HangTag.module.css`): one short repaint of a small
+  element when touched. Knob: an `opacity` overlay. Low value.
+- **The archive's loading shimmer** (`page.module.css` `.skeletonCard`): animates
+  `background-position` while the latest games load. Knob: a highlight moved by `transform`.
+
 ## 7. The workbench
 
 `app/workbench/[scene]/page.tsx` (one route). It reads the URL, folds a bundled game (the
