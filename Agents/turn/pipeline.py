@@ -17,6 +17,8 @@ from pydantic import BaseModel
 
 
 from Agents.tracing import GraphContext, langfuse
+from Agents.config.langgraph import game_config_from_runnable
+from Agents.deduction.verified import limits_verified
 
 from Agents.prompts.prompt_formatters import (
     format_day_channel,
@@ -65,6 +67,19 @@ def _with_deduction_mode(enriched_payload: dict[str, Any], config: RunnableConfi
     mode = configurable.get("deduction_mode")
     if mode:
         enriched_payload["deduction_mode"] = mode
+    # Use limits other than the standard ones break the count rows: no deduction in such a game.
+    if config and not limits_verified(game_config_from_runnable(config)):
+        enriched_payload["deduction_mode"] = "off"
+    return enriched_payload
+
+
+def _with_deduction_placement(enriched_payload: dict[str, Any], config: RunnableConfig) -> dict[str, Any]:
+    """Where the seat's deduction block sits (RunConfig.deduction_placement), carried like the mode;
+    a bare test with no config gets the default (Agents/deduction/seat_view.py)."""
+    configurable = config.get("configurable", {}) if config else {}
+    placement = configurable.get("deduction_placement")
+    if placement:
+        enriched_payload["deduction_placement"] = placement
     return enriched_payload
 
 
@@ -211,6 +226,7 @@ def run_memory_informed_action(
         )
         enriched_payload = _with_game_id(enriched_payload, config)
         enriched_payload = _with_deduction_mode(enriched_payload, config)
+        enriched_payload = _with_deduction_placement(enriched_payload, config)
         result = run_agent(
             enriched_payload,
             prompt_template,
@@ -339,6 +355,7 @@ def preview_agent_action(
     enriched_payload, _ = enrich_payload_with_memory(dict(payload), config, runtime, action_phase)
     enriched_payload = _with_game_id(enriched_payload, config)
     enriched_payload = _with_deduction_mode(enriched_payload, config)
+    enriched_payload = _with_deduction_placement(enriched_payload, config)
     if direction:
         prompt_template = prompt_template + HumanMessage(content=direction)
     return run_agent(enriched_payload, prompt_template, output_schema, output_key)
@@ -410,6 +427,7 @@ def run_memory_informed_night_action(
         )
         enriched_payload = _with_game_id(enriched_payload, config)
         enriched_payload = _with_deduction_mode(enriched_payload, config)
+        enriched_payload = _with_deduction_placement(enriched_payload, config)
         result = run_agent(
             enriched_payload,
             prompt_template,

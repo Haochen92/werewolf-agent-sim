@@ -39,6 +39,10 @@ the degree its situation matches yours. If no observations are shown above, use 
 """
 
 
+# The seat's own deduction block (Agents/deduction/render.py) fills {deduction_seat_before_note} or
+# {deduction_seat_after_note}, by the game's placement setting (catalogue OQ21: whether the computed
+# lines should come after the note they may contradict); the other one, and both outside "full" mode, is "".
+
 # The memory blocks appear only when they hold something: memory is off by default on the live site,
 # and a retrieval can come back empty. Instructions about an empty list were ~1k characters of every
 # turn spent on nothing. prompt_inputs fills {observations_block} / {night_observations_block} /
@@ -57,7 +61,7 @@ You can use these strategy points to refine your approach, but do not apply them
 {synergy_instruction}"""
 
 
-DAY_DISCUSSION_MEMORY_CONTEXT = """{observations_block}{strategy_points_block}
+DAY_DISCUSSION_MEMORY_CONTEXT = """{deduction_seat_before_note}{observations_block}{strategy_points_block}
 Adaptive Strategic thinking:
     You have a private strategy note from your previous turns (your own working notes: they can be
     out of date or wrong, and the game master's record and the transcript outrank them):
@@ -66,13 +70,13 @@ Adaptive Strategic thinking:
     Update your strategy notes based on new information. If your current approach resembles a
     pattern that led to a bad outcome, adjust.
     Keep your strategy notes concise (3-5 sentences).
-    This is private and will not be shared with other players.
+    This is private and will not be shared with other players.{deduction_seat_after_note}
 """
 
 
 # The vote asks for updated_strategy, which replaces the note, so it must show the note it replaces:
 # without it, anything only the note remembered was lost at every vote (audit 2026-10-03, finding 3).
-DAY_VOTE_MEMORY_CONTEXT = """{observations_block}{strategy_points_block}
+DAY_VOTE_MEMORY_CONTEXT = """{deduction_seat_before_note}{observations_block}{strategy_points_block}
 Adaptive Strategic thinking:
     You have a private strategy note from your previous turns (your own working notes: they can be
     out of date or wrong, and the game master's record and the transcript outrank them):
@@ -80,11 +84,11 @@ Adaptive Strategic thinking:
 
     Your updated_strategy replaces this note, so carry forward what still matters (your reads, your
     plans for the night) and drop what the day has disproven. Keep it concise (3-5 sentences).
-    This is private and will not be shared with other players.
+    This is private and will not be shared with other players.{deduction_seat_after_note}
 """
 
 
-NIGHT_ACTION_MEMORY_CONTEXT = """{night_observations_block}{strategy_points_block}
+NIGHT_ACTION_MEMORY_CONTEXT = """{deduction_seat_before_note}{night_observations_block}{strategy_points_block}
 Adaptive Strategic thinking:
     You have a private strategy note from your previous turns (your own working notes: they can be
     out of date or wrong, and the game master's record and the transcript outrank them):
@@ -92,5 +96,5 @@ Adaptive Strategic thinking:
 
     Update your strategy notes based on new information. If your current approach resembles a
     pattern that led to a bad outcome, adjust. Keep your strategy notes concise (3-5 sentences).
-    This is private and will not be shared with other players.
+    This is private and will not be shared with other players.{deduction_seat_after_note}
 """

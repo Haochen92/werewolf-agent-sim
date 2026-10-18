@@ -20,7 +20,16 @@ from pydantic import BaseModel
 
 from Agents.prompts.compose import preamble
 from Agents.prompts.common import VERDICT_EXAMPLES_PASS, memory_verdict_example
-from Agents.deduction import deduction_mode_for, own_result_lines, seat_view_from_payload
+from Agents.deduction import (
+    deduction_blocks,
+    deduction_log,
+    deduction_mode_for,
+    deduction_placement_for,
+    fold_own_lines,
+    own_result_lines,
+    seat_view_from_payload,
+)
+from Agents.schemas.deduction import DeductionBlocks, OwnResultLine
 from Agents.schemas.game_events import DayRound
 from Agents.schemas.roles import ROLE_SPECS, TOWN
 from Agents.prompts.cell_prompt import cell_driver_horizon, dimension_menu
@@ -226,6 +235,10 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
             "Abstaining is not available today — you must vote for a surviving player."
         )
     uses_left = payload.get("uses_left")
+    # The deduction engine: the lines beside the seat's own records (level 1), and in "full" mode
+    # the public block and the seat's own block (Agents/deduction/render.py).
+    own_lines = _own_result_lines(payload)
+    deductions = _deduction_blocks(payload, own_lines)
     return {
         "player_id": payload.get("player_id", ""),
         "player_role": role,
@@ -287,7 +300,13 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         "wolf_channel": format_wolf_channel(payload.get("wolf_channel", []), payload.get("player_id")),
         # The actor's own engine-written night record (only night actors' payloads carry it).
         "night_actions": format_night_actions(payload.get("night_actions", []), payload.get("current_day"),
-                                              _own_result_lines(payload)),
+                                              own_lines),
+        # The public block sits in the shared public record (layout.PUBLIC_RECORD), the seat's own
+        # block before or after its strategy note (memory/context.py); "" outside "full" mode.
+        **_deduction_slots(payload, deductions),
+        # Not a template variable: every shown line's derivation, carried with the prompt capture
+        # (Agents/turn/eval.py log_prompt), never rendered.
+        "deduction_log": deduction_log(deductions),
         "previous_strategy": payload.get("previous_strategy", ""),
         "strategy_points": strategy_points_text,
         "retrieved_observations": observations_text,
@@ -323,12 +342,40 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         ),
     }
 
-def _own_result_lines(payload: dict[str, Any]):
+def _own_result_lines(payload: dict[str, Any]) -> list[OwnResultLine | None] | None:
     """What the seat's own night records imply (level 1 of the deduction engine), or None when the
-    game's deduction mode is "off" or the seat is a human's (Agents/deduction/seat_view.py)."""
-    if deduction_mode_for(payload) == "off":
+    game's deduction mode is "off" or the seat is a human's (Agents/deduction/seat_view.py). In
+    "full" mode a line another of the seat's lines contains is left out (fold rule 3); "record"
+    mode keeps level 1 as it was before the blocks."""
+    mode = deduction_mode_for(payload)
+    if mode == "off":
         return None
-    return own_result_lines(seat_view_from_payload(payload))
+    view = seat_view_from_payload(payload)
+    lines = own_result_lines(view)
+    if mode == "full":
+        lines = fold_own_lines(view.night_records, lines)
+    return lines
+
+
+def _deduction_blocks(payload: dict[str, Any], own_lines: list[OwnResultLine | None] | None) -> DeductionBlocks | None:
+    """The turn's two deduction blocks, only in "full" mode (a human seat never gets them)."""
+    if deduction_mode_for(payload) != "full":
+        return None
+    return deduction_blocks(seat_view_from_payload(payload), own_lines or [], payload.get("day_channel", []),
+                            payload.get("current_day", 1), vote=bool(payload.get("vote_turn")))
+
+
+def _deduction_slots(payload: dict[str, Any], blocks: DeductionBlocks | None) -> dict[str, str]:
+    """The template variables the blocks fill. The public block ends its section with a blank line;
+    the seat block goes in one of its two slots, by the game's placement setting (catalogue OQ21)."""
+    public = blocks.public.text if blocks is not None else ""
+    seat = blocks.seat.text if blocks is not None else ""
+    after_note = deduction_placement_for(payload) == "after_note"
+    return {
+        "deduction_public_block": f"{public}\n\n" if public else "",
+        "deduction_seat_before_note": f"\n{seat}\n" if seat and not after_note else "",
+        "deduction_seat_after_note": f"\n\n{seat}" if seat and after_note else "",
+    }
 
 
 def _tell_book_block():

@@ -245,6 +245,9 @@ def fan_out_day(
             # Which round of the day this turn belongs to (opening / closing here); the prompt
             # picks its rules block by it. Votes carry it too, unused.
             "day_round": day_round,
+            # A vote turn reads a conditional about a player as its contrapositive (deduction
+            # engine, fold rule 3: Agents/deduction/conditionals/).
+            "vote_turn": phase == "vote",
         }
 
     for player in surviving_players:

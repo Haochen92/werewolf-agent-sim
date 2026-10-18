@@ -22,7 +22,7 @@ from Agents.memory.persistence.config import (
     MemoryPersistenceConfig,
     normalize_memory_persistence_config,
 )
-from Agents.schemas.deduction import DeductionMode
+from Agents.schemas.deduction import DeductionMode, DeductionPlacement
 
 # --- Pipeline arm defaults (memory OFF baseline) --------------------------------------
 # Empty: retrieval reads a role that is not listed as off, and the post-game extraction reads it as on,
@@ -62,9 +62,13 @@ DEFAULT_SP_EXPLORATION_SLOT = True
 DEFAULT_STAGE_FILTER = False
 # The deduction engine (Agents/deduction/; owner, 2026-10-16): how much of it the AI seats get, set
 # once per game so a game can be an A/B arm. "off" = none, "record" = the lines beside each seat's
-# own night records (level 1), "full" = those plus the deduction block once it is built. A human
+# own night records (level 1), "full" = those plus the deduction blocks (public and own). A human
 # seat never gets any.
 DEFAULT_DEDUCTION_MODE: DeductionMode = "full"
+# Where the seat's own deduction block sits relative to its strategy note (catalogue OQ21), for a
+# screen of the two: "before_note" keeps the per-turn note last, the cache-friendly order; the
+# public block is in the shared public record either way.
+DEFAULT_DEDUCTION_PLACEMENT: DeductionPlacement = "before_note"
 
 
 class RunConfig(BaseModel):
@@ -90,6 +94,7 @@ class RunConfig(BaseModel):
     sp_exploration_slot: bool = DEFAULT_SP_EXPLORATION_SLOT
     stage_filter: bool = DEFAULT_STAGE_FILTER
     deduction_mode: DeductionMode = DEFAULT_DEDUCTION_MODE
+    deduction_placement: DeductionPlacement = DEFAULT_DEDUCTION_PLACEMENT
     game_id: str = ""
     session_id: str | None = None
     human_player: int = 0

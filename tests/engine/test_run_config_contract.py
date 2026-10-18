@@ -21,6 +21,7 @@ from Agents.config import (
 EXPECTED_TOP_KEYS = {"callbacks", "configurable", "metadata", "recursion_limit"}
 EXPECTED_CONFIGURABLE_KEYS = {
     "deduction_mode",
+    "deduction_placement",
     "filtering_config",
     "game_config",
     "game_id",
@@ -80,10 +81,15 @@ def test_defaults_applied_when_omitted():
     assert conf["filtering_config"] == DEFAULT_FILTERING_CONFIG
     assert conf["retrieval_types_config"] == DEFAULT_RETRIEVAL_TYPES_CONFIG
     assert conf["deduction_mode"] == "full"
+    assert conf["deduction_placement"] == "before_note"
 
 
 def test_deduction_mode_rides_the_configurable():
     assert _config(deduction_mode="off")["configurable"]["deduction_mode"] == "off"
+
+
+def test_deduction_placement_rides_the_configurable():
+    assert _config(deduction_placement="after_note")["configurable"]["deduction_placement"] == "after_note"
 
 
 def test_none_options_fall_back_to_defaults():

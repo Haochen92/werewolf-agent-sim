@@ -22,10 +22,13 @@ SHARED_SYSTEM = build_system_prompt("{preamble}", REASONING_DISCIPLINE)
 
 # The public record every call opens with. Its closing rule line is the only one in the user message:
 # it is where a Claude request is marked and an OpenAI request gets its breakpoint.
+# {deduction_public_block} is the deduction engine's public block (Agents/deduction/render.py), the same
+# for every seat, or "": it changes only at a morning, a reveal or a vote, so it goes before today's
+# transcript, which grows turn by turn (each turn's prefix still extends the one before it).
 PUBLIC_RECORD = """== Previous days ==
 {day_summaries}
 
-== Today's discussion ==
+{deduction_public_block}== Today's discussion ==
 {day_channel}
 =========================
 """
