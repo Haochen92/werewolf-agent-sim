@@ -339,10 +339,30 @@
   .hero {
     --nav-foot: 154px;
     justify-content: flex-start;
-    padding: 34px 0 48px;
+    padding: 34px 0 14px;
   }
   .name {
     font-size: clamp(40px, 12vw, 56px);
+  }
+  /* the words at the top, the purse and the guide at the screen's foot on the platform, the
+     passengers left clear between them (owner, 2026-10-18) */
+  .heroText {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  /* at least the passengers' height above it: a short screen grows the hero past the fold
+     rather than lay the guide over them */
+  .heroFoot {
+    margin-top: auto;
+    padding-top: 104px;
+  }
+  .heroGuide {
+    margin-top: 8px;
+  }
+  /* the carriage's sign starts below the first screen, after a breath of dark */
+  .first {
+    margin-top: 56px;
   }
 }
 /* a screen taller than wide shows the tall picture: its passengers right of centre, its foot kept */

@@ -109,17 +109,22 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   wooden toy carriage), filling the first screen from the page's top, behind the nav's board, to the
   fold. Two files, `assets/site/hero-wide.webp` (1536×1024) and `hero-tall.webp` (1024×1536, a
   screen taller than wide), in one `<picture>`, so a screen fetches only its own; still, no filter;
-  its foot fades to the ground and the carriage's section starts just under it. Masters in
+  its foot fades to the ground; on a wide screen the carriage's section starts just under it, on a
+  phone after a breath of dark, below the first screen (owner 2026-10-18). Masters in
   `claude_artifacts/design/rasters/wood/hero/`, fitted by `scripts/fit-hero.mjs`.
 - The words stay words over its calm sky (Landing.module.css `.heroText`): the game's name, a gold
   rule with the brand's 9 (`HeroRule`, vector), the hook, the two tickets, the purse (HouseDoorNote,
   outlined to read over the picture) and the guide's sign. On a wide screen they sit centre-left,
   their middle at 31% of the screen (27% under 1366px, smaller again under 1100px) so the tickets
-  clear the cat and the fox; on a phone centred, the name on two lines, the passengers under them.
+  clear the cat and the fox; on a phone centred, the name on two lines, the passengers under them, and the purse and the
+  guide's sign at the screen's foot (`.heroFoot`, owner 2026-10-18). The foot keeps at least the
+  passengers' height under the tickets, so a short phone runs the hero past the fold rather than
+  lay the sign over them.
 - The tickets (`HeroTicket`, landing only; `HangTag` stays the rooms' and the ticket office's) are
   flat cream card on the scene: the shape (scalloped ends, a notch each side, a bite out of the top)
   is a mask, so it stays round at any size, and the fibre is one 512 px tile (`ticket-paper.webp`)
-  under both. A wide screen shows the kicker, the line and a ruled foot (the tables boarding); a
+  under both. A wide screen shows the kicker, the line and a ruled foot ending in the arrow (the
+  tables boarding are the nav's count alone); a
   phone the title and the way in. A hover lifts the ticket and nudges its arrow.
 - `PlatformBackdrop` (the tiled wall, its lamps and trusses) is now the departures hall's alone
   (`short`); the landing's `.scene` still sets `--lx`/`--rx`, which the carriage's platform reads.

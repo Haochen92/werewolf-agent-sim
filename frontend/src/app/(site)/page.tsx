@@ -57,9 +57,12 @@ export default function HomePage() {
           <HeroRule />
           <p className={classes.tagline}>Watch AIs lie to each other</p>
           <SeatTags />
-          <HouseDoorNote />
-          {/* the guide is something to read, so its sign and not a third ticket (owner, 2026-10-15) */}
-          <GuideSign className={classes.heroGuide} />
+          {/* under the tickets on a wide screen; on a phone at the screen's foot (owner, 2026-10-18) */}
+          <div className={classes.heroFoot}>
+            <HouseDoorNote />
+            {/* the guide is something to read, so its sign and not a third ticket (owner, 2026-10-15) */}
+            <GuideSign className={classes.heroGuide} />
+          </div>
         </div>
       </header>
 
