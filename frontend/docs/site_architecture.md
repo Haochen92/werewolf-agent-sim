@@ -65,7 +65,7 @@ Which face goes where (three voices, three props) is ruled in [typography.md](ty
 |---|---|
 | `TopNav` | The station's signboard (redesign 2026-10-14 §1): the gold 9 badge (2026-10-18) and the name in EB Garamond, and Play · Rooms · Replays as recessed wells on a board hung from two brass rods; the current page is the cream plate (`aria-current`). Rooms carries a split-flap count of the tables boarding (`hooks/useBoarding`, the same query as the departures board). The guide is not a fourth door but an enamel sign (`SITE.guide`, owner 2026-10-14): after the doors and a brass line, an open book and "Guide"; the book alone under 1060px; on a phone the book at the end of the name's row (the board is a grid there, so the sign never falls onto a row of its own, and the name shrinks to leave it room). Once the board scrolls away a slim strip of it pins to the top (`inert` while hidden); its name drops cleanly when the doors need the room; on a phone the strip keeps the book at its right end (owner 2026-10-15). On a phone the doors share a second row. |
 | `Board.module.css` | The signage's materials, composed by every board on the site: `board` (wood in a brass frame: what you operate), `rivets`, `well` (a recessed button; `aria-current`/`-pressed`/`-selected` make it the cream plate), `plate` (the primary action), `enamel` (a navy sign screwed to a board: somewhere to read, not a door) and `flap` (one split-flap tile). Paper carries what you read; brass is for lines and hardware, never a small flat fill. |
-| `StationWall` | A page's wall: the landing's rooms behind the other pages (owner 2026-10-14). `records` (the archive: platform tile, oxblood band, pendant) and `granite` (the ticket office: granite under the caged wall light, `StationLamps`); the departures hall stands on the landing's `PlatformBackdrop`. Placed against `.station` from the page's top, under the page's own stacking context (`wallPage` on its `<main>`), capped where its light runs out, its foot faded to the page's ground. `cards` is the guide's: the roles' green tile, lit from over the board. Further down, each side of the guide's roles stands on the same tile in its own colour (ochre, oxblood, aubergine, slate; `Guide.module.css` `.side::before`, owner 2026-10-15). |
+| `StationWall` | A page's wall: the landing's rooms behind the other pages (owner 2026-10-14). `records` (the archive: platform tile, oxblood band, pendant) and `granite` (the ticket office: granite under the caged wall light, `StationLamps`); the departures hall has a picture of its own (below). Placed against `.station` from the page's top, under the page's own stacking context (`wallPage` on its `<main>`), capped where its light runs out, its foot faded to the page's ground. `cards` is the guide's: the roles' green tile, lit from over the board. Further down, each side of the guide's roles stands on the same tile in its own colour (ochre, oxblood, aubergine, slate; `Guide.module.css` `.side::before`, owner 2026-10-15). |
 | `SiteFooter` | The GitHub link with its icon, the other links, and the credit line, whose "N games archived" is live (`GamesArchived`, the archive's `X-Total-Count`). |
 | `Button` | Mantine Button narrowed to the kit's three variants (below): `well` (the default), `plate` and `text`. Polymorphic. |
 | `GuideSign` | The guide's one look wherever a page points at it: the navy enamel and the open book (`Book`, which the nav's sign draws too), a size up for a page: under the hero's tickets, under the roles. |
@@ -120,14 +120,17 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   guide's sign at the screen's foot (`.heroFoot`, owner 2026-10-18). The foot keeps at least the
   passengers' height under the tickets, so a short phone runs the hero past the fold rather than
   lay the sign over them.
-- The tickets (`HeroTicket`, landing only; `HangTag` stays the rooms' and the ticket office's) are
+- The tickets (`HeroTicket`, the landing's and the departures hall's; `HangTag` stays the ticket
+  office's) are
   flat cream card on the scene: the shape (scalloped ends, a notch each side, a bite out of the top)
   is a mask, so it stays round at any size, and the fibre is one 512 px tile (`ticket-paper.webp`)
   under both. A wide screen shows the kicker, the line and a ruled foot ending in the arrow (the
   tables boarding are the nav's count alone); a
-  phone the title and the way in. A hover lifts the ticket and nudges its arrow.
-- `PlatformBackdrop` (the tiled wall, its lamps and trusses) is now the departures hall's alone
-  (`short`); the landing's `.scene` still sets `--lx`/`--rx`, which the carriage's platform reads.
+  phone, and a portrait tablet (860px and under, the site's phone layout), the title and the way
+  in. A hover lifts the ticket and nudges its arrow.
+- `.landing` sets `--lx`/`--rx`, where the platform's lamps hang, which the carriage's light
+  reads. (`PlatformBackdrop`, the vector wall the landing and then the hall stood on, is in git
+  history.)
 - `FeaturedReplay` is the replay theatre's mini mode in the big window of a carriage standing at the
   platform. Over 860px the whole carriage (end, door, window, door, end) with the replay's controls
   on the stage; at 860px and under, the window edge to edge and the controls on the platform beneath
@@ -198,13 +201,33 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
 ## The other pages' walls
 
 Each site page stands in one of the landing's rooms (`StationWall`, above): the archive in the
-latest games' room, the ticket office (`/play`, `/rooms/new`) in the reading room, the departures
-hall on the platform. Paint census (production, scrolling the first 1400px, animations still,
+latest games' room, the ticket office (`/play`, `/rooms/new`) in the reading room. Paint census
+(production, scrolling the first 1400px, animations still,
 median of three, wall on against off): the archive +44 ms on a 3× phone / +177 ms on a 2×
-desktop, the ticket office within noise / +135 ms, the departures hall +234 / +445 ms. The
-departures hall stands on the landing's platform cut short (`PlatformBackdrop short`: 820px, its
-foot faded to the ground), since its page is short; the full 1250px platform cost it +416 /
-+1085 ms.
+desktop, the ticket office within noise / +135 ms.
+
+## The departures hall (owner's mock and raster kit, 2026-10-18)
+
+- The night platform's wall, one still picture from the page's top; over it the title beside the
+  landing's two paper tickets (`HeroTicket`, a size down). At 860px and under (owner) the title
+  is larger and centred alone over the tickets, the lede left out, the tickets stubs. A
+  passenger waits on the bench, and the board never stands over them (owner):
+  - a screen wide enough (`BESIDE` in rooms/page.tsx, the same three aspect bands in the module:
+    width at least 922px + 0.575 × height): the wall is the bench itself (`hall-wide.webp`,
+    1774×887) and the column (940px) stands right of the passenger;
+  - any other: the wall is empty (`hall-wall.webp` on a landscape screen; on a portrait one the
+    tall picture's wall above its bench, `hall-tall.webp`, drawn wide), and the bench is the
+    page's last picture, a band after the board (`.bench`: the wide picture's lower part, or the
+    tall one's, capped at 420px on a tablet). It is lazy, so a wide screen never fetches it, and
+    a phone draws both from its one tall file.
+- The board's case is three pictures, backgrounds so a screen fetches only its size's set: the
+  head (brass plate, clock, plaque), a middle repeated down as far as the rows go, the foot;
+  the phone has its own (thinner rims). The words on the plate and the plaque are live and scale
+  with the board (`cqi`); the plaque says whether the board is kept up to date (`Live`,
+  `Retrying`, `Reading`, `Offline`), never the count, which is the nav's. Fitted by
+  `scripts/fit_hall.py` from `claude_artifacts/design/rasters/wood/rooms/`: it cleans the
+  masters' cut-out fringe, builds each middle from its own head's sides, and tapers each foot
+  into them. A screen fetches 230–280 KB of pictures; nothing moves.
 
 ## The tags on a phone
 

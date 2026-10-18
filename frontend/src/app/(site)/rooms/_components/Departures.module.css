@@ -1,21 +1,57 @@
 /*
- * The departures hall (rooms mockup): the head (the title beside two doors hung from a hairline,
- * as on the ticket office) and the board (a walnut case in the landing's low light, a brass plate
- * and a black face with split-flap rows). Below 960px the column
- * heads go and each row stacks: status and button on top, then the room, then who is aboard.
+ * The departures hall (owner's mock, 2026-10-18): the night platform's wall as one still picture
+ * from the page's top, then the head (the title beside the landing's two paper tickets) and the
+ * board: a walnut case in three pictures (head, a middle repeated down, foot) round a black face
+ * with split-flap rows. Below 960px the column heads go and each row stacks: status and button
+ * on top, then the room, then who is aboard; below 700px the case is the phone's own.
+ *
+ * The passenger on the bench (owner): on a screen wide enough the wall's picture is the bench
+ * itself and the column stands right of them; on any other the wall is empty and the bench is
+ * the page's last picture, after the board (`.bench`).
  */
 
 .hall {
+  /* where the nav's board ends (TopNav: one row, two on a phone), as on the landing's hero */
+  --nav-foot: 110px;
+  position: relative;
+  isolation: isolate;
   padding: 18px 0 0;
+}
+
+/* the picture: still, drawn once (no filter, no blend), behind the nav's board to the fold */
+.scene {
+  position: absolute;
+  top: calc(-1 * var(--nav-foot));
+  left: calc(50% - 50vw);
+  z-index: -1;
+  width: 100vw;
+  height: 100svh;
+  overflow: hidden;
+  pointer-events: none;
+}
+/* the empty wall, its two lamps at the screen's edges */
+.scene img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* its foot fades to the page's ground, where a long board runs on */
+.scene::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 120px;
+  background: linear-gradient(transparent, var(--bg));
 }
 
 .head {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 30px;
+  gap: 24px;
   flex-wrap: wrap;
-  margin: 0 0 30px;
+  margin: 0 0 18px;
 }
 
 .title {
@@ -26,98 +62,112 @@
   letter-spacing: 0;
   margin: 0;
   color: var(--text);
+  text-shadow: 0 2px 18px rgba(4, 6, 16, 0.7);
 }
 
 .lede {
-  color: var(--muted);
-  font-size: 19px;
-  max-width: 44ch; /* leaves the doors room beside the title */
-  margin: 10px 0 0;
+  color: var(--sign-hook);
+  font-size: 18px;
+  max-width: 34ch; /* leaves the tickets room beside the title */
+  margin: 8px 0 0;
+  /* it lies on the brick: dark round the letters */
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.95),
+    0 0 10px rgba(4, 6, 16, 0.9);
 }
 
 /* ---------- the board ---------- */
 
+/* The case's pictures are backgrounds, so a screen fetches only its own size's three. The plate's
+   and the plaque's boxes are fit_hall.py's, in percent of the head; the words on them scale with
+   the board (`cqi`). */
 .board {
-  --wood: none;
-  border-radius: 16px;
-  padding: 14px;
-  /* the landing's features bench wood (Features.module.css): darkened and desaturated
-     toward the page, the grain only near the centre */
-  background:
-    radial-gradient(
-      ellipse 75% 70% at 50% 42%,
-      transparent 0,
-      rgba(10, 7, 4, 0.55) 65%,
-      rgba(8, 5, 3, 0.92) 100%
-    ),
-    linear-gradient(rgba(26, 20, 15, 0.58), rgba(26, 20, 15, 0.58)),
-    linear-gradient(rgba(70, 60, 52, 0.35), rgba(70, 60, 52, 0.35)),
-    var(--wood) 0 0 / 560px auto,
-    #2a1a0e;
-  background-blend-mode: normal, normal, saturation, normal, normal;
-  box-shadow:
-    inset 0 2px 0 rgba(255, 220, 170, 0.1),
-    inset 0 -10px 24px rgba(0, 0, 0, 0.5),
-    0 24px 50px -20px rgba(0, 0, 0, 0.9);
+  --head: url('../../../../assets/site/board-head.webp');
+  --middle: url('../../../../assets/site/board-middle.webp');
+  --foot: url('../../../../assets/site/board-foot.webp');
+  container-type: inline-size;
 }
 
-.bezel {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-  padding: 6px 6px 14px;
+.bhead {
+  position: relative;
+  aspect-ratio: 1600 / 256;
+  background: var(--head) 0 0 / 100% 100% no-repeat;
 }
 
+/* the brass plate: the name engraved, dark into the brass */
 .plate {
+  position: absolute;
+  left: 5.18%;
+  top: 48.24%;
+  width: 34.93%;
+  height: 25.59%;
+  display: grid;
+  place-items: center;
   margin: 0;
-  padding: 6px 18px 7px;
-  border-radius: 6px;
-  font-family: var(--font-serif);
-  font-weight: 400;
-  font-size: 26px;
+  padding-left: 0.32em; /* the last letter's spacing, so the word sits centred */
+  font-family: var(--font-garamond);
+  font-weight: 600;
+  font-size: 2.3cqi;
   line-height: 1;
-  color: #2a1a08;
-  background: linear-gradient(#e6c47a, #b8893a 55%, #9c7128);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.4),
-    0 2px 0 #4a3210,
-    0 0 0 1px #5e421a;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: #3a2508;
+  text-shadow: 0 1px 0 rgba(255, 238, 196, 0.45);
 }
 
-/* the mockup's selected Boarding tab, as a label: Boarding is the only list */
-.count {
+/* the plaque: whether the board is being kept up to date */
+.plaque {
+  position: absolute;
+  left: 75.47%;
+  top: 47.35%;
+  width: 19.3%;
+  height: 26.76%;
   display: flex;
-  gap: 8px;
   align-items: center;
-  min-height: 40px;
-  padding: 0 14px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.45);
-  box-shadow: inset 0 0 0 1px rgba(255, 220, 160, 0.1);
+  justify-content: center;
+  gap: 0.5em;
+  font-family: var(--font-garamond);
+  font-size: 2cqi;
+  line-height: 1;
+  color: var(--bone3);
+}
+.plaque::before {
+  content: '';
+  width: 0.45em;
+  height: 0.45em;
+  border-radius: 50%;
+  background: currentColor;
+}
+.plaque[data-live] {
   color: var(--bone);
 }
+.plaque[data-live]::before {
+  background: var(--amber);
+  box-shadow: 0 0 6px rgba(224, 166, 58, 0.7);
+}
 
-.n {
-  font-variant-numeric: tabular-nums;
-  color: var(--amber);
-  font-weight: 600;
+/* the black face between the rims (the inner gold line at 3.9% each side) */
+.bbody {
+  /* 2px under the head and the foot: their heights fall between pixels, and a hairline of the
+     scene would show at the joins */
+  margin-block: -2px;
+  padding: 2px 4.6%;
+  background: var(--middle) 0 0 / 100% auto repeat-y;
+}
+
+.bfoot {
+  aspect-ratio: 1600 / 136;
+  background: var(--foot) 0 0 / 100% 100% no-repeat;
 }
 
 .face {
-  border-radius: 10px;
-  background: #0d0906;
-  box-shadow:
-    inset 0 2px 14px rgba(0, 0, 0, 0.9),
-    0 0 0 2px #6e5226,
-    0 0 0 3px #2a1c0c;
   overflow: hidden;
 }
 
 .colhead,
 .row {
   display: grid;
-  grid-template-columns: 150px minmax(0, 1fr) 236px 190px; /* the last fits "Return to your seat" */
+  grid-template-columns: 140px minmax(0, 1fr) 212px 190px; /* the last fits "Return to your seat" */
   gap: 18px;
   align-items: center;
   padding: 0 20px;
@@ -126,9 +176,10 @@
 .colhead {
   min-height: 38px;
   color: var(--bone3);
-  font-size: 12.5px;
-  border-bottom: 1px solid #2a1f14;
-  background: #120d08;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(214, 160, 80, 0.32);
 }
 
 .rows {
@@ -139,7 +190,7 @@
 
 .row {
   min-height: 86px;
-  border-top: 1px solid #1f1710;
+  border-top: 1px solid rgba(255, 220, 160, 0.08);
 }
 
 .row:first-child {
@@ -147,7 +198,7 @@
 }
 
 .row:hover {
-  background: #140f0a;
+  background: rgba(255, 220, 160, 0.04);
 }
 
 .flap {
@@ -176,7 +227,7 @@
 
 .sub {
   display: flex;
-  gap: 14px;
+  gap: 2px 14px;
   align-items: center;
   color: var(--bone3);
   font-size: 13.5px;
@@ -272,52 +323,119 @@
   align-self: stretch;
 }
 
-.bfoot {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 8px 2px;
+.note {
+  margin: 0;
+  padding: 10px 20px 0;
+  border-top: 1px solid rgba(255, 220, 160, 0.08);
   color: var(--bone3);
   font-size: 13px;
-  flex-wrap: wrap;
 }
 
 /* ---------- the doors ---------- */
 
-/* the two doors beside the title, hung from the landing's hairline */
+/* the landing's two tickets beside the title, a size down */
 .doors {
-  position: relative;
+  --ticket-w: 214px;
+  --ticket-title: 23px;
   display: flex;
-  gap: 22px;
-  padding-top: 32px;
+  gap: 16px;
 }
-.rail {
+
+/* ---------- the bench ---------- */
+
+/* after the board: the bench with the passenger on it, a band across the screen, faded into the
+   ground above and below. On a landscape screen the wide picture's lower part, the bench at its
+   left; on a portrait one the tall picture's lower part, the bench in the middle. */
+.bench {
+  position: relative;
+  display: block;
+  width: 100vw;
+  height: clamp(240px, 34vw, 480px);
+  margin: 28px 0 0 calc(50% - 50vw);
+}
+.bench img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 0% 100%;
+}
+.bench::before,
+.bench::after {
+  content: '';
   position: absolute;
-  left: -24px;
-  right: -24px;
-  top: 22px;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 235, 200, 0.22) 18%,
-    rgba(255, 235, 200, 0.22) 82%,
-    transparent
-  );
+  inset-inline: 0;
+  height: 48px;
+}
+.bench::before {
+  top: 0;
+  background: linear-gradient(var(--bg), transparent);
+}
+.bench::after {
+  bottom: 0;
+  background: linear-gradient(transparent, var(--bg));
+}
+
+/* a portrait screen: the tall picture's wall above its bench (its top 540 rows of 1402) fills
+   the head's box, drawn wide enough that the bench stays below it; the bench, its lower part */
+@media (max-aspect-ratio: 1/1) {
+  .scene {
+    --wall-h: calc(var(--nav-foot) + 260px);
+    height: var(--wall-h);
+  }
+  .scene img {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: max(100%, var(--wall-h) * 1122 / 540);
+    height: auto;
+    transform: translateX(-50%);
+  }
+  /* a phone shows the whole lower part; a tablet's is capped, the passenger kept and the floor
+     given up */
+  .bench {
+    height: auto;
+    max-height: 420px;
+    aspect-ratio: 1122 / 862;
+  }
+  .bench img {
+    object-position: 50% 70%;
+  }
+}
+
+/* a screen wide enough for the column to stand right of the passenger: the bench is the wall's
+   picture, the column beside it. Their right edge is 0.575 of the picture's height in (0.2875 of
+   its width wider than 2:1), the column 940px with a 28px gutter: it clears them, give or take the
+   umbrella, where the width is at least 922px + 0.575 x the height, which these three aspect
+   bands keep to (page.tsx's BESIDE says the same) */
+@media (min-aspect-ratio: 3/2) and (min-width: 1500px),
+  (min-aspect-ratio: 8/5) and (min-width: 1438px),
+  (min-aspect-ratio: 16/9) and (min-width: 1362px) {
+  .hall {
+    min-height: calc(100svh - var(--nav-foot));
+    padding-bottom: 48px;
+  }
+  /* the bench at the left edge, given up last; the arch on the right first */
+  .scene img {
+    object-position: 0% 60%;
+  }
+  .column {
+    --w: min(940px, 100vw - 2 * var(--gutter));
+    --clear: calc(max(57.5svh, 28.75vw) + 24px);
+    width: var(--w);
+    margin-left: calc(
+      clamp((100vw - var(--w)) / 2, var(--clear), 100vw - var(--gutter) - var(--w)) - 50vw +
+        50%
+    );
+  }
+  .bench {
+    display: none;
+  }
 }
 
 /* ---------- phone and narrow tablet (the four columns need ~870px of board) ---------- */
 
 @media (max-width: 960px) {
-  .board {
-    padding: 8px;
-  }
-  .bezel {
-    gap: 10px;
-  }
-  .plate {
-    font-size: 21px;
-  }
   .colhead {
     display: none;
   }
@@ -346,22 +464,71 @@
   .act > * {
     min-width: 0;
   }
-  .doors {
-    gap: 12px;
-    flex-wrap: wrap;
+  .note {
+    padding-inline: 14px;
   }
 }
 
-/* a phone: the doors are stubs (HangTag's own rule), side by side, without the rail */
-@media (max-width: 700px) {
-  .rail {
+/* the site's phone layout: the nav's board takes two rows; the title larger and alone over the
+   tickets, centred as the landing's name is, the lede left out and the tickets the landing's
+   stubs (owner, 2026-10-18) */
+@media (max-width: 860px) {
+  .hall {
+    --nav-foot: 154px;
+  }
+  .head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 20px;
+    margin-bottom: 22px;
+    text-align: center;
+  }
+  .title {
+    font-size: clamp(42px, 11.5vw, 64px);
+    line-height: 1.02;
+    text-wrap: balance;
+  }
+  .lede {
     display: none;
   }
   .doors {
-    width: 100%;
-    flex-wrap: nowrap;
+    justify-content: center;
     gap: 10px;
-    padding-top: 0;
+  }
+}
+
+/* a phone: the phone's own case, its rims thinner and its plate and plaque deeper; the tickets
+   are stubs (HeroTicket's own rule), side by side under the title */
+@media (max-width: 700px) {
+  .board {
+    --head: url('../../../../assets/site/board-phone-head.webp');
+    --middle: url('../../../../assets/site/board-phone-middle.webp');
+    --foot: url('../../../../assets/site/board-phone-foot.webp');
+  }
+  .bhead {
+    aspect-ratio: 1080 / 249;
+  }
+  .plate {
+    left: 6.18%;
+    top: 43.38%;
+    width: 35.01%;
+    height: 26.15%;
+    font-size: 3.3cqi;
+    letter-spacing: 0.24em;
+    padding-left: 0.24em;
+  }
+  .plaque {
+    left: 66.9%;
+    top: 42.77%;
+    width: 26.85%;
+    height: 27.38%;
+    font-size: 3.4cqi;
+  }
+  .bbody {
+    padding-inline: 4.8%;
+  }
+  .bfoot {
+    aspect-ratio: 1080 / 110;
   }
   /* thirteen tiles fit the board's face */
   .emptyFlap {
