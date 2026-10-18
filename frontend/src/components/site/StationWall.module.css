@@ -1,5 +1,6 @@
 /* A page's wall (StationWall.tsx): a picture of the station's wall from the page's top, as wide
-   as the screen, its lamp painted in (owner, 2026-10-18; scripts/fit_walls.py). Under it a band
+   as the screen, its lamp painted in (owner, 2026-10-18; scripts/fit_walls.py); the archive's
+   is still drawn, the platform's tile under a pendant (owner preferred it). Under it a band
    of its lower wall, laid upright and mirrored, repeats to the page's foot, so a long page never
    runs off its wall; the ticket office's lower wall is panelling and floor, so its picture fades
    out instead. A screen taller than wide has its own picture. Still, painted once. */
@@ -28,23 +29,71 @@
     var(--wall) center top / 100% auto no-repeat,
     var(--band) center var(--wall-h) / 100% auto repeat-y;
 }
-/* the sink into the page's ground at the foot */
+/* each wall's sink into the page's ground at its foot is its own (below) */
 .wall::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent calc(100% - 260px), var(--bg) 100%);
 }
 
-/* the archive: navy panels between filing drawers, a pendant at the top right */
+/* ---------- the archive: the latest games' room ---------- */
+/* the platform's tile with two courses of oxblood under the nav, the pendant's light from just
+   below the board, and the dark that closes in from every side well before the box ends (its
+   vignette is black, so the foot fades to the page's own ground on top of everything, or the
+   box's end would show as an edge) */
+/* (owner, 2026-10-18: this drawn room over the filing-room picture, which it was briefly) */
 .records {
-  --wall: url('../../assets/site/walls/archive-wide.webp');
-  --band: url('../../assets/site/walls/archive-wide-band.webp');
+  bottom: auto;
+  height: 760px;
+  background: none;
 }
+.records::before,
+.records::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+.records::before {
+  background:
+    linear-gradient(rgba(201, 150, 63, 0.3), rgba(201, 150, 63, 0.3)) 0 127px / 100% 1px
+      no-repeat,
+    linear-gradient(rgba(201, 150, 63, 0.3), rgba(201, 150, 63, 0.3)) 0 192px / 100% 1px
+      no-repeat,
+    url('../../assets/site/oxblood-band.svg') center 128px / 120px 64px repeat-x,
+    url('../../assets/site/wall-tile.svg') center top / 120px 64px repeat;
+}
+.records::after {
+  background:
+    linear-gradient(180deg, transparent calc(100% - 220px), var(--bg) 100%),
+    radial-gradient(
+      ellipse 560px 360px at 50% 140px,
+      rgba(255, 206, 130, 0.13),
+      transparent 70%
+    ),
+    radial-gradient(ellipse 110% 90% at 50% 30%, transparent 45%, rgba(0, 0, 0, 0.8)),
+    radial-gradient(
+      ellipse 760px 560px at 50% 110px,
+      transparent,
+      rgba(12, 10, 7, 0.75) 55%,
+      var(--bg) 80%
+    );
+}
+/* the shade just under the board, its cord hanging behind it */
+.pendant {
+  position: absolute;
+  left: calc(50% - 30px);
+  top: 54px;
+  width: 60px;
+  height: 96px;
+}
+
 /* the guide: the green room, a lamp by the title */
 .cards {
   --wall: url('../../assets/site/walls/guide-wide.webp');
   --band: url('../../assets/site/walls/guide-wide-band.webp');
+}
+.cards::after {
+  background: linear-gradient(180deg, transparent calc(100% - 260px), var(--bg) 100%);
 }
 /* the ticket office: brick over panelling, the window and the lamp; the picture alone, so the
    box ends with it */
@@ -64,13 +113,16 @@
   background: linear-gradient(180deg, transparent 55%, var(--bg) 100%);
 }
 
+/* a phone: the board is taller, so the pendant would hang behind it; its light stays */
+@media (max-width: 860px) {
+  .pendant {
+    display: none;
+  }
+}
+
 @media (max-aspect-ratio: 1/1) {
   .wall {
     --wall-h: 150vw;
-  }
-  .records {
-    --wall: url('../../assets/site/walls/archive-tall.webp');
-    --band: url('../../assets/site/walls/archive-tall-band.webp');
   }
   .cards {
     --wall: url('../../assets/site/walls/guide-tall.webp');
