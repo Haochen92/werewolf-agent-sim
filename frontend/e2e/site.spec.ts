@@ -1059,11 +1059,18 @@ test('guide: the day line steps by the arrows and by its next-stop button', asyn
 test('guide: the case file loads its recorded games when opened', async ({ page }) => {
   await page.goto('/guide');
   const file = page.getByRole('tablist', { name: 'The end of the line' });
-  await file.getByRole('tab', { name: 'Reveal' }).click();
-  // the recorded game loads when the tab opens: alone it is in within a second, but beside the
-  // whole suite it has run past the default five (it flaked twice on 2026-10-18)
-  await expect(page.locator('#after [data-film]').first()).toBeVisible({ timeout: 15_000 });
-  await file.getByRole('tab', { name: 'Transcript' }).click();
+  // a tab clicked before the page is hydrated does nothing, and beside the whole suite the guide
+  // hydrates late (it flaked three times on 2026-10-18): click until the tab is the selected one
+  const open = async (name: string) => {
+    const tab = file.getByRole('tab', { name });
+    await expect(async () => {
+      await tab.click();
+      await expect(tab).toHaveAttribute('aria-selected', 'true', { timeout: 1000 });
+    }).toPass({ timeout: 15_000 });
+  };
+  await open('Reveal');
+  await expect(page.locator('#after [data-film]').first()).toBeVisible();
+  await open('Transcript');
   await expect(page.locator('#after [data-drawer]')).toBeVisible();
 });
 
