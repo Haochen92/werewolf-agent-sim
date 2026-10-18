@@ -890,15 +890,15 @@
   background: var(--art-bellows) center 0 / 24px 100px repeat-y;
 }
 
-/* ---------- the felt carriage (owner 2026-10-17): one picture, a 9-slice ----------
-   The whole carriage (a quilted snowy roof, cream and walnut felt lined in gold stitch, riveted
-   posts, wheels) is one painted picture, its window cut out, laid round the game's window from
+/* ---------- the whole carriage (owner 2026-10-18): one picture, a 9-slice ----------
+   The whole carriage (a wooden toy: walnut, cream panels, brass, a snowy roof, wheels) is one
+   painted picture, its window cut out, laid round the game's window from
    outside and under the glass, so it never paints over the moving stage. `--k` is one picture
    pixel on screen: the corners and the strips above and below keep their painted proportions,
-   and only the window's sides stretch, to the game's 16:9. A desktop draws SPRITES.carriage.felt
-   (window 226–1312 across, 262–674 down, of 1536×1024); a phone its own twin, `feltPhone`, whose
-   posts are thin so the window keeps nearly the screen's width (window 130–1406 across, 264–692
-   down; the body, 46–1490 across, fills the screen). The CSS carriage stays in the flow, hidden,
+   and only the window's sides stretch, to the game's 16:9. A desktop draws SPRITES.carriage.whole
+   (window 226–1312 across, 258–660 down, of 1536×1024); a phone its own twin, `wholePhone`, whose
+   posts are thin so the window keeps nearly the screen's width (window 135–1402 across, 261–687
+   down; the body's rails, 44–1492 across, fill the screen). The CSS carriage stays in the flow, hidden,
    to hold the room above and below the window. Only the picture a screen uses is fetched. */
 .paint {
   display: none;
@@ -910,29 +910,29 @@
     --k: calc(var(--pw) / 1536);
     --gw: calc(var(--k) * 1086);
     --gh: calc(var(--gw) * 9 / 16);
-    --felt: var(--art-felt);
-    --st: 262;
+    --whole: var(--art-whole);
+    --st: 258;
     --sr: 224;
-    --sb: 350;
+    --sb: 364;
     --sl: 226;
     /* the roof's clear top, and the row where the platform's edge crosses the wheels */
-    --clear: 75;
-    --cross: 935;
+    --clear: 33;
+    --cross: 925;
   }
 }
 @media (max-width: 860px) {
   .depot[data-art] {
-    /* the carriage's body, 1444 picture px, fills the screen */
-    --k: calc(100vw / 1444);
-    --gw: calc(var(--k) * 1276);
+    /* the carriage's body, 1448 picture px, fills the screen */
+    --k: calc(100vw / 1448);
+    --gw: calc(var(--k) * 1267);
     --gh: calc(var(--gw) * 9 / 16);
-    --felt: var(--art-feltPhone);
-    --st: 264;
-    --sr: 130;
-    --sb: 332;
-    --sl: 130;
-    --clear: 73;
-    --cross: 925;
+    --whole: var(--art-wholePhone);
+    --st: 261;
+    --sr: 134;
+    --sb: 337;
+    --sl: 135;
+    --clear: 60;
+    --cross: 940;
   }
 }
 .depot[data-art] .paint {
@@ -948,7 +948,7 @@
   border-style: solid;
   border-width: calc(var(--k) * var(--st)) calc(var(--k) * var(--sr))
     calc(var(--k) * var(--sb)) calc(var(--k) * var(--sl));
-  border-image-source: var(--felt);
+  border-image-source: var(--whole);
   border-image-slice: var(--st) var(--sr) var(--sb) var(--sl);
   border-image-repeat: stretch;
   pointer-events: none;

@@ -18,6 +18,8 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 MASTERS = ROOT / 'claude_artifacts/design/rasters/felt'
+# the landing carriage's masters (owner 2026-10-18: a wooden toy, walnut and cream, brass)
+CARRIAGES = ROOT / 'claude_artifacts/design/rasters/wood'
 OUT = ROOT / 'src/assets/sprites/props'
 LUMA = np.array([0.2126, 0.7152, 0.0722])
 WARM = np.array([1.0, 0.92, 0.80])
@@ -140,12 +142,12 @@ def shutter() -> None:
 
 
 def carriage_frame(master: str, hole: tuple[int, int, int, int], name: str) -> None:
-    """A carriage picture for the landing (owner 2026-10-17: cream and walnut felt, gold stitching,
-    a quilted snowy roof), drawn as a 9-slice round the game's window (Carriage.module.css
+    """A carriage picture for the landing (owner 2026-10-18: a wooden toy, walnut with cream
+    panels and brass, a snowy roof), drawn as a 9-slice round the game's window (Carriage.module.css
     `.paint`). The window is cut clean: inside the rim's inner edge (`hole`: x0, y0, x1, y1, master
     px, a few px inside the measured edge so the stage overlaps the rim) nothing is left, so no
     fringe shows round the game; the stage covers the hole."""
-    im = np.asarray(Image.open(MASTERS / master).convert('RGBA')).astype(float)
+    im = np.asarray(Image.open(CARRIAGES / master).convert('RGBA')).astype(float)
     im[hole[1] : hole[3], hole[0] : hole[2], 3] = 0
     a = im[..., 3]
     im[..., 3] = np.where(a < 96, 0, np.where(a > 200, 255, a))
@@ -164,6 +166,7 @@ if __name__ == '__main__':
     print('glass'); glass('jar-glass-on-black.png', 'jar-glass.webp'); glass('jar-lid-on-black.png', 'jar-lid.webp')
     print('shutter'); shutter()
     print('carriage')
-    # the desktop's carriage, and the phone's own (thin posts, the window near the screen's width)
-    carriage_frame('carriage.png', (226, 262, 1312, 674), 'frame-felt.webp')
-    carriage_frame('carriage-phone.png', (130, 264, 1406, 692), 'frame-felt-phone.webp')
+    # the desktop's carriage, and the phone's own (thin posts, the window near the screen's width);
+    # each hole 3 px into the rim past the measured clear window
+    carriage_frame('carriage.png', (226, 258, 1312, 660), 'whole.webp')
+    carriage_frame('carriage-phone.png', (135, 261, 1402, 687), 'whole-phone.webp')
