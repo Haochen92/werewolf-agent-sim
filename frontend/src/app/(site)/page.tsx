@@ -10,7 +10,6 @@ import { ReplayListClient } from './replays/_components/ReplayListClient';
 import { HouseDoorNote } from './_components/HouseDoorNote';
 import { SeatTags } from './_components/landing/SeatTags';
 import { FeaturedReplay } from './_components/landing/FeaturedReplay';
-import platform from './_components/landing/PlatformBackdrop.module.css';
 import { Features } from './_components/landing/Features';
 import { HeroRule } from './_components/landing/HeroRule';
 import { ReplayMoment } from './_components/landing/ReplayMoment';
@@ -42,7 +41,7 @@ import heroTall from '@/assets/site/hero-tall.webp';
  */
 export default function HomePage() {
   return (
-    <main className={`${classes.landing} ${platform.scene}`}>
+    <main className={classes.landing}>
       {/* the guide's piece, for a viewer who turns it on (the nav's switch) */}
       <PageMusic bed="guide" />
       <header className={classes.hero}>

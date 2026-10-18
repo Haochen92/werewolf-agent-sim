@@ -3,7 +3,18 @@
    under it are Rooms.module.css; the three features are Features.module.css. */
 
 .landing {
+  /* where the platform's two lamps hang, which the carriage's light follows (Carriage.module.css):
+     on a desktop just outside the content column, on a phone at the screen's edges */
+  --lx: max(6%, calc(50% - 650px));
+  --rx: min(94%, calc(50% + 650px));
+  isolation: isolate;
   padding-bottom: 8px;
+}
+@media (max-width: 860px) {
+  .landing {
+    --lx: 14px;
+    --rx: calc(100% - 14px);
+  }
 }
 /* the platform's wall and the carriage span the screen, past the column: the page itself clips
    sideways while the landing is on it, so nothing scrolls sideways */
