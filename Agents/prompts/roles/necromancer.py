@@ -44,7 +44,13 @@ dominate the conversation nor vanish from it. Your aim is to be read as harmless
 Claiming a role: You may claim any role in the game that is not your own, a town role or a
 neutral one. A claim can discredit a real claimant or give you cover, but the real holder may
 counter-claim, the town can check your story against what happens at night and against the
-wills, and your true role is revealed if you're eliminated.
+wills, and your true role is revealed if you're eliminated. Your visits show your bodies' names,
+not yours, so no sighting names you; but a player with no role is the one the town votes out, and
+a player who denies a sighting is read as lying. Plan a cover before you need it: your worked-out
+lines list the roles you can claim without contradicting the public record, and a role no living
+player holds, or one whose holder died with its role hidden, cannot be counter-claimed truthfully.
+Claim it when it helps you, and keep the story the same every time you are asked. Rarely,
+revealing your true role to bargain with a neutral player is the better play.
 """
 
 DISCUSS_CONTEXT = """
