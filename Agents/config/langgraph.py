@@ -68,6 +68,7 @@ def build_runnable_config(
             "sp_exploration_slot": run.sp_exploration_slot,
             "stage_filter": run.stage_filter,
             "deduction_mode": run.deduction_mode,
+            "deduction_by_side": dict(run.deduction_by_side),
             "deduction_placement": run.deduction_placement,
             "persona_voices": run.persona_voices,
             "game_config": game_config_dict(run.game),

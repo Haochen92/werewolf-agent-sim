@@ -412,6 +412,17 @@ def test_the_games_mode_reaches_the_turn_payload_from_the_run_config():
     assert pipeline._with_deduction_mode({}, {}) == {}  # no config: the payload keeps the default
 
 
+def test_a_sides_own_level_overrides_the_games_mode():
+    """Difficulty (owner, 2026-10-18): e.g. the town at level 3, the wolves at level 1."""
+    config = build_runnable_config(RunConfig(deduction_by_side={"wolves": "record", "neutral": "public"}))
+    assert pipeline._with_deduction_mode({"player_role": "chanteuse"}, config)["deduction_mode"] == "record"
+    assert pipeline._with_deduction_mode({"player_role": "speculator"}, config)["deduction_mode"] == "public"
+    assert pipeline._with_deduction_mode({"player_role": "healer"}, config)["deduction_mode"] == "full"
+    # Use limits the engine was not verified for still turn it off, whatever the side's level.
+    other = build_runnable_config(RunConfig(game={"sigils": 3}, deduction_by_side={"wolves": "full"}))
+    assert pipeline._with_deduction_mode({"player_role": "chanteuse"}, other)["deduction_mode"] == "off"
+
+
 def test_a_human_seat_gets_no_lines_whatever_the_mode():
     payload = _blocked_healer_payload(human_player=True, deduction_mode="full")
     assert prompt_inputs._own_result_lines(payload) is None

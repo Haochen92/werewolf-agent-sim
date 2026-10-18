@@ -23,6 +23,7 @@ from Agents.memory.persistence.config import (
     normalize_memory_persistence_config,
 )
 from Agents.schemas.deduction import DeductionMode, DeductionPlacement
+from Agents.schemas.roles import Side
 
 # --- Pipeline arm defaults (memory OFF baseline) --------------------------------------
 # Empty: retrieval reads a role that is not listed as off, and the post-game extraction reads it as on,
@@ -65,6 +66,10 @@ DEFAULT_STAGE_FILTER = False
 # own night records (level 1), "full" = those plus the deduction blocks (public and own). A human
 # seat never gets any.
 DEFAULT_DEDUCTION_MODE: DeductionMode = "full"
+# A side's own level (owner, 2026-10-18: a difficulty setting for experiments, e.g. the town at level 3
+# and the wolves at level 1): {"town" | "wolves" | "lone_killer" | "neutral": mode}, overriding
+# deduction_mode for the seats of the sides it names.
+DEFAULT_DEDUCTION_BY_SIDE: dict[str, DeductionMode] = {}
 # Where the seat's own deduction block sits relative to its strategy note (catalogue OQ21), for a
 # screen of the two: "before_note" keeps the per-turn note last, the cache-friendly order; the
 # public block is in the shared public record either way.
@@ -97,6 +102,7 @@ class RunConfig(BaseModel):
     sp_exploration_slot: bool = DEFAULT_SP_EXPLORATION_SLOT
     stage_filter: bool = DEFAULT_STAGE_FILTER
     deduction_mode: DeductionMode = DEFAULT_DEDUCTION_MODE
+    deduction_by_side: dict[Side, DeductionMode] = Field(default_factory=lambda: dict(DEFAULT_DEDUCTION_BY_SIDE))
     deduction_placement: DeductionPlacement = DEFAULT_DEDUCTION_PLACEMENT
     persona_voices: bool = DEFAULT_PERSONA_VOICES
     game_id: str = ""

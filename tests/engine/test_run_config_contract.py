@@ -8,6 +8,8 @@ both the injected path (mirroring main.run_game) and the bare-builder default (e
 """
 from __future__ import annotations
 
+import pytest
+
 from Agents.config import (
     DEFAULT_FILTERING_CONFIG,
     DEFAULT_MEMORY_CONFIG,
@@ -20,6 +22,7 @@ from Agents.config import (
 
 EXPECTED_TOP_KEYS = {"callbacks", "configurable", "metadata", "recursion_limit"}
 EXPECTED_CONFIGURABLE_KEYS = {
+    "deduction_by_side",
     "deduction_mode",
     "deduction_placement",
     "filtering_config",
@@ -82,12 +85,20 @@ def test_defaults_applied_when_omitted():
     assert conf["filtering_config"] == DEFAULT_FILTERING_CONFIG
     assert conf["retrieval_types_config"] == DEFAULT_RETRIEVAL_TYPES_CONFIG
     assert conf["deduction_mode"] == "full"
+    assert conf["deduction_by_side"] == {}
     assert conf["deduction_placement"] == "before_note"
     assert conf["persona_voices"] is False
 
 
 def test_deduction_mode_rides_the_configurable():
     assert _config(deduction_mode="off")["configurable"]["deduction_mode"] == "off"
+
+
+def test_deduction_by_side_rides_the_configurable_and_names_only_real_sides():
+    by_side = {"town": "full", "wolves": "record"}
+    assert _config(deduction_by_side=by_side)["configurable"]["deduction_by_side"] == by_side
+    with pytest.raises(ValueError):
+        RunConfig(deduction_by_side={"wolf": "record"})
 
 
 def test_deduction_placement_rides_the_configurable():

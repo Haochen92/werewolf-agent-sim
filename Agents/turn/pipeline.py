@@ -19,6 +19,7 @@ from pydantic import BaseModel
 from Agents.tracing import GraphContext, langfuse
 from Agents.config.langgraph import game_config_from_runnable
 from Agents.deduction.verified import limits_verified
+from Agents.schemas.roles import ROLE_SPECS
 
 from Agents.prompts.prompt_formatters import (
     format_day_channel,
@@ -61,10 +62,14 @@ def _with_game_id(enriched_payload: dict[str, Any], config: RunnableConfig) -> d
     return enriched_payload
 
 def _with_deduction_mode(enriched_payload: dict[str, Any], config: RunnableConfig) -> dict[str, Any]:
-    """The game's deduction mode on the prompt payload (RunConfig.deduction_mode), read where the
-    prompt is built (Agents/deduction/seat_view.py). A bare test with no config gets the default."""
+    """The game's deduction mode on the prompt payload (RunConfig.deduction_mode, or the seat's side's
+    from RunConfig.deduction_by_side), read where the prompt is built (Agents/deduction/seat_view.py).
+    A bare test with no config gets the default."""
     configurable = config.get("configurable", {}) if config else {}
-    mode = configurable.get("deduction_mode")
+    by_side = configurable.get("deduction_by_side") or {}
+    role = enriched_payload.get("player_role")
+    mode = by_side.get(ROLE_SPECS[role].side) if role in ROLE_SPECS else None
+    mode = mode or configurable.get("deduction_mode")
     if mode:
         enriched_payload["deduction_mode"] = mode
     # Use limits other than the standard ones break the count rows: no deduction in such a game.

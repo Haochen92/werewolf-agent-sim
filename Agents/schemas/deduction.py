@@ -18,8 +18,8 @@ from Agents.schemas.game_events import (
 )
 
 DeductionMode = Literal["off", "record", "public", "full"]
-"""How much of the engine a game's AI seats get, set once per game (RunConfig.deduction_mode), by difficulty
-level (owner, 2026-10-18):
+"""How much of the engine a game's AI seats get, set once per game (RunConfig.deduction_mode, and per
+side RunConfig.deduction_by_side), by difficulty level (owner, 2026-10-18):
 - "off": nothing (an A/B arm; a human seat always gets nothing);
 - "record", level 1: the lines beside the seat's own night records;
 - "public", level 2: those, the public block (Agents/deduction/render.py) and the seat's census and

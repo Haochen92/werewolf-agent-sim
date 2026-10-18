@@ -25,6 +25,7 @@ NightKind = Literal[
     "kill", "protect", "investigate", "watch", "follow", "sigil", "block", "conceal",
     "hold_fire", "borrow", "pick", "bet",
 ]
+Side = Literal["town", "wolves", "lone_killer", "neutral"]
 
 
 @dataclass(frozen=True)
@@ -32,8 +33,7 @@ class RoleSpec:
     """One role's rules, the engine's reading of the sheet."""
 
     name: str
-    side: str
-    """town | wolves | lone_killer | neutral."""
+    side: Side
     night_action: NightKind | None = None
     """What the role does at night; None for a role that never acts (none in the pool)."""
     target_field: str = ""

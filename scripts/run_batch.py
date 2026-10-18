@@ -101,6 +101,14 @@ def json_safe(value: Any) -> Any:
     return value
 
 
+def _deductions_by_side(raw: str) -> dict[str, str]:
+    """"town=full,wolves=record" -> {"town": "full", "wolves": "record"}; RunConfig validates the names."""
+    pairs = [part.split("=", 1) for part in raw.split(",") if part.strip()]
+    if any(len(pair) != 2 for pair in pairs):
+        raise argparse.ArgumentTypeError(f"expected side=mode pairs, got {raw!r}")
+    return {side.strip(): mode.strip() for side, mode in pairs}
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Run Werewolf games across memory configurations."
@@ -283,6 +291,13 @@ def parse_args() -> argparse.Namespace:
         default="full",
         help="How much of the deduction engine the AI seats get (RunConfig.deduction_mode): difficulty "
              "level 1 = record, 2 = public, 3 = full.",
+    )
+    parser.add_argument(
+        "--deductions-by-side",
+        type=_deductions_by_side,
+        default={},
+        help="A side's own level, overriding --deductions for its seats (RunConfig.deduction_by_side), "
+             "e.g. town=full,wolves=record. Sides: town, wolves, lone_killer, neutral.",
     )
     parser.add_argument(
         "--deduction-placement",
@@ -568,6 +583,7 @@ def run_batch(args: argparse.Namespace) -> int:
             "retrieval_types_config": retrieval_types_config,
             "stage_filter": args.stage_filter,
             "deduction_mode": args.deductions,
+            "deduction_by_side": args.deductions_by_side,
             "deduction_placement": args.deduction_placement,
             "persona_voices": args.persona_voices,
             "memory_persistence_config": memory_persistence_config,
@@ -629,6 +645,7 @@ def run_batch(args: argparse.Namespace) -> int:
                     retrieval_types_config=retrieval_types_config,
                     stage_filter=args.stage_filter,
                     deduction_mode=args.deductions,
+                    deduction_by_side=args.deductions_by_side,
                     deduction_placement=args.deduction_placement,
                     persona_voices=args.persona_voices,
                     game_id=game_id,
