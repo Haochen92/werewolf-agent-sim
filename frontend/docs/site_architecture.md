@@ -162,10 +162,11 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
 ## The landing's rooms (rooms benches, owner 2026-10-14)
 
 - Under the carriage the story, the features and the replay (with the latest games) stand on one
-  wall (owner, 2026-10-18): the station's navy panelling, a picture spanning the screen with its
-  lamp at the top left by the story (`.navy` in `Rooms.module.css`; `walls/navy-wide.webp`, a
-  tall one for a screen taller than wide). Under the picture a band of its lower panels repeats as
-  far as the rooms run, laid upright and mirrored so no join shows (`scripts/fit_walls.py`). The
+  wall (owner, 2026-10-18): the station's navy panelling, a band of it repeated as far as the
+  rooms run, laid upright and mirrored so no join shows (`.navy` in `Rooms.module.css`;
+  `scripts/fit_walls.py`, a tall set for a screen taller than wide). Its lamp, cut from the
+  picture with the wall round it fading to clear, hangs just above "What makes it different"
+  (`.lamped`), and the board runs close into the replay's room. The
   wall rises out of the dark from the carriage above and sinks back into it before the brass
   threshold and the closing word, which stand on the page's own dark. The story opens it: its
   line "Ten puppets share a carriage, but not a destination." as the title, the brand's gold rule
@@ -184,11 +185,12 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
 
 ## The other pages' walls
 
-Each site page has its room's wall as a picture behind it (`StationWall`, owner 2026-10-18,
-`scripts/fit_walls.py`): the archive (`records`) navy panels between filing drawers under a
-pendant, the guide (`cards`) a green room with a lamp by the title, the ticket office
-(`granite`, `/play` and `/play/room`) brick over panelling beside a window. The archive's and the
-guide's walls run to the page's foot (the picture, then a mirrored band of its lower wall); the
+Each site page has its room's wall behind it (`StationWall`, owner 2026-10-18,
+`scripts/fit_walls.py`): the guide (`cards`) a green room with a lamp by the title, its wood trim
+cut off; the ticket office (`granite`, `/play` and `/play/room`) brick over panelling beside a
+window. The archive (`records`) keeps its drawn room, the platform's tile with an oxblood band
+under a pendant: its filing-room picture was tried and the owner preferred the drawn one. The
+guide's wall runs to the page's foot (the picture, then a mirrored band of its lower wall); the
 ticket office's lower wall is panelling and floor, which would stack if repeated, so its picture
 fades out. Each has a tall picture for a screen taller than wide. A screen fetches its own
 picture and band, about 60–150 KB.
