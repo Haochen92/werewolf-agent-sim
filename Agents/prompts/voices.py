@@ -23,7 +23,9 @@ VOICES: dict[str, str] = {
     "threeEyes": "Easy-going and artsy, with a colourful turn of phrase.",
     "dragon": "Smooth and businesslike, clipped like a banker between appointments.",
     "onion": "Prim and proper, polite to a fault, with quaint, old-fashioned phrasing.",
-    "whale": "Steady and unhurried, a captain's calm, with the occasional sea phrase.",
+    # No sea phrases: "kept watch over player_8" turned a healer's protect into a sentinel's verb, and
+    # "Captain's log" opened a line (silence calibration games, 2026-10-18).
+    "whale": "Steady and unhurried, with a captain's calm.",
     "polarBear": "Hearty and outdoorsy, friendly and plain, like a hiker on the trail.",
     "shade": "Chirpy and quick, with a light, sing-song rhythm.",
     "kitsune": "Graceful and softly spoken, courteous and composed.",
