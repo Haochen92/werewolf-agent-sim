@@ -628,7 +628,7 @@ def test_a_self_bet_with_no_attack_on_it_is_silent():
     assert update["night_report"].saves == [] and update["night_report"].self_bet_saves == []
     records = {r.actor: r for r in update["night_actions"]}
     assert (records[ft].result, records[ft].outcome) == (
-        "self_bet", "You bet on yourself: an attack on you tonight fails, and nothing is scored.")
+        "self_bet", "You bet on yourself. No one attacked you tonight, and nothing is scored.")
     assert (records[h["healer"]].result, records[h["healer"]].outcome) == (
         "no_attack", f"No attack on {ft} was announced.")
 

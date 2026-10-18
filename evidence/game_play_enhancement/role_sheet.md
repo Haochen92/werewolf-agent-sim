@@ -312,7 +312,7 @@ node.
 | Pick | `You picked town. The morning will announce the pick, not you.` (the morning: `The Speculator has picked Town.`) |
 | Bet, scored | `Y died and was a healer: two points.` / `Y died: one point. They were not a healer.` |
 | Bet, missed | `Y did not die tonight: no points.` |
-| Self-bet | `You bet on yourself: an attack on you tonight fails, and nothing is scored.` / attacked: `You bet on yourself and were attacked by {attackers}: your self-bet saved you, and the morning announces it.` (owner, 2026-10-17) |
+| Self-bet | not attacked: `You bet on yourself. No one attacked you tonight, and nothing is scored.` (owner, 2026-10-17; was "an attack on you tonight fails") / attacked: `You bet on yourself and were attacked by {attackers}: your self-bet saved you, and the morning announces it.` (owner, 2026-10-17) |
 | Borrowed action | the body's own string, prefixed `Through Y's body: ` (the body is the first name in `seen`) |
 | Declined action (keep_sigil, no_conceal, stay_put, not_yet) | no record (the vigilante's hold_fire keeps its line) |
 

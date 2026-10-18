@@ -236,7 +236,9 @@ def _record_of(choice: NightChoice, outcome: NightOutcome, roles: dict[str, str]
                 outcome_text = (f"You bet on yourself and were attacked by {_attackers_phrase(target, outcome)}: "
                                 "your self-bet saved you, and the morning announces it.")
             else:
-                outcome_text = "You bet on yourself: an attack on you tonight fails, and nothing is scored."
+                # Every attack on a self-betting fortune teller is announced (R10), so this one had
+                # none; "an attack on you fails" read as if one had (owner, 2026-10-17).
+                outcome_text = "You bet on yourself. No one attacked you tonight, and nothing is scored."
         else:
             bet = next((b for b in outcome.bets if b.actor == choice.actor), None)
             points = bet.points if bet else 0
