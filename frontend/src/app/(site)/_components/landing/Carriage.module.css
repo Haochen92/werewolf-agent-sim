@@ -38,6 +38,178 @@
   width: var(--cw);
   margin: 0 auto;
 }
+/* the night behind it, across the screen (owner, 2026-10-18: a gradient, not a second picture
+   after the hero's): the page's black for the top half, then down to a dark blue at the wheels,
+   and snow falling through the black, gone by two thirds of the way down (owner). The flakes are
+   sheets drawn once and repeated, and only the sheets move (a transform each, two layers, behind
+   the carriage and never over the game's window); they start when the carriage comes near and
+   are still for reduced motion. */
+.night {
+  position: absolute;
+  top: -90px;
+  bottom: 0;
+  left: calc(50% - 50vw);
+  z-index: -1;
+  width: 100vw;
+  overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    var(--bg) 0 46%,
+    #0b1128 64%,
+    #121c44 86%,
+    #172453 100%
+  );
+}
+/* where the snow falls: faded out between half and two thirds of the way down (one mask, still,
+   over the two moving sheets) */
+.fall {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(#000 0 50%, transparent 67%);
+  mask-image: linear-gradient(#000 0 50%, transparent 67%);
+}
+/* two depths, each a sheet of flakes repeated on its own spacing (so no grid shows) and
+   falling at its own pace: the near one larger and quicker, the far one fainter and slower */
+.flakes,
+.fall::before {
+  content: '';
+  position: absolute;
+  inset: calc(-1 * var(--tile)) 0 0;
+  background-size: var(--tile) var(--tile);
+  animation: snowfall var(--fall) linear infinite paused;
+}
+.flakes {
+  --tile: 310px;
+  --fall: 16s;
+  background-image:
+    radial-gradient(
+      circle at 241px 195px,
+      rgba(240, 244, 255, 0.66) 0 1.6px,
+      transparent 2.3px
+    ),
+    radial-gradient(
+      circle at 7px 177px,
+      rgba(240, 244, 255, 0.87) 0 1.8px,
+      transparent 2.5px
+    ),
+    radial-gradient(
+      circle at 45px 175px,
+      rgba(240, 244, 255, 0.78) 0 1.9px,
+      transparent 2.6px
+    ),
+    radial-gradient(
+      circle at 24px 198px,
+      rgba(240, 244, 255, 0.88) 0 1.5px,
+      transparent 2.2px
+    ),
+    radial-gradient(
+      circle at 220px 84px,
+      rgba(240, 244, 255, 0.62) 0 1.5px,
+      transparent 2.2px
+    ),
+    radial-gradient(
+      circle at 71px 263px,
+      rgba(240, 244, 255, 0.9) 0 2.2px,
+      transparent 2.9px
+    ),
+    radial-gradient(
+      circle at 36px 200px,
+      rgba(240, 244, 255, 0.87) 0 2.1px,
+      transparent 2.8px
+    ),
+    radial-gradient(
+      circle at 153px 108px,
+      rgba(240, 244, 255, 0.82) 0 2px,
+      transparent 2.7px
+    ),
+    radial-gradient(
+      circle at 219px 48px,
+      rgba(240, 244, 255, 0.87) 0 2.1px,
+      transparent 2.8px
+    );
+}
+.fall::before {
+  --tile: 430px;
+  --fall: 38s;
+  background-image:
+    radial-gradient(
+      circle at 207px 147px,
+      rgba(240, 244, 255, 0.31) 0 0.9px,
+      transparent 1.6px
+    ),
+    radial-gradient(
+      circle at 366px 6px,
+      rgba(240, 244, 255, 0.31) 0 1.1px,
+      transparent 1.8px
+    ),
+    radial-gradient(
+      circle at 197px 255px,
+      rgba(240, 244, 255, 0.36) 0 0.8px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle at 380px 61px,
+      rgba(240, 244, 255, 0.3) 0 1.2px,
+      transparent 1.9px
+    ),
+    radial-gradient(
+      circle at 395px 300px,
+      rgba(240, 244, 255, 0.51) 0 0.8px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle at 173px 8px,
+      rgba(240, 244, 255, 0.33) 0 1.1px,
+      transparent 1.8px
+    ),
+    radial-gradient(
+      circle at 12px 260px,
+      rgba(240, 244, 255, 0.42) 0 0.7px,
+      transparent 1.4px
+    ),
+    radial-gradient(
+      circle at 105px 219px,
+      rgba(240, 244, 255, 0.35) 0 0.7px,
+      transparent 1.4px
+    ),
+    radial-gradient(
+      circle at 395px 51px,
+      rgba(240, 244, 255, 0.34) 0 1.1px,
+      transparent 1.8px
+    ),
+    radial-gradient(
+      circle at 315px 372px,
+      rgba(240, 244, 255, 0.31) 0 1.2px,
+      transparent 1.9px
+    ),
+    radial-gradient(
+      circle at 288px 353px,
+      rgba(240, 244, 255, 0.34) 0 1px,
+      transparent 1.7px
+    ),
+    radial-gradient(
+      circle at 141px 381px,
+      rgba(240, 244, 255, 0.55) 0 1.2px,
+      transparent 1.9px
+    );
+}
+.depot[data-art] .flakes,
+.depot[data-art] .fall::before {
+  animation-play-state: running;
+}
+@keyframes snowfall {
+  to {
+    transform: translateY(var(--tile));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flakes,
+  .fall::before {
+    animation: none;
+  }
+}
 
 /* ---------- the roof board: in the flow, so it stays on the roof at any height ---------- */
 .rbwrap {

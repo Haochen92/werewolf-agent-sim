@@ -131,6 +131,11 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
 - `.landing` sets `--lx`/`--rx`, where the platform's lamps hang, which the carriage's light
   reads. (`PlatformBackdrop`, the vector wall the landing and then the hall stood on, is in git
   history.)
+- Behind the carriage, the night (owner, 2026-10-18: a gradient, not a second picture after the
+  hero's): black for the top half, then a dark blue down to the wheels, with snow falling through
+  the black and gone by two thirds of the way down (`.night`). The page's one idle motion outside the theatre, kept cheap: two sheets of flakes
+  drawn once, each moved by a transform (two layers, behind the carriage, never over the game's
+  window), started when the carriage comes near, still for reduced motion.
 - `FeaturedReplay` is the replay theatre's mini mode in the big window of a carriage standing at the
   platform. Over 860px the whole carriage (end, door, window, door, end) with the replay's controls
   on the stage; at 860px and under, the window edge to edge and the controls on the platform beneath

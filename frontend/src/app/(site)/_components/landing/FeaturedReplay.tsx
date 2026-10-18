@@ -263,6 +263,11 @@ export function FeaturedReplay() {
       aria-label={game ? `Replay of ${what.toLowerCase()} of game ${record}` : undefined}
     >
       <div className={classes.car}>
+        <div className={classes.night} aria-hidden="true">
+          <div className={classes.fall}>
+            <i className={classes.flakes} />
+          </div>
+        </div>
         <div className={classes.rbwrap}>
           <div className={classes.rboard}>
             <div className={classes.field}>
