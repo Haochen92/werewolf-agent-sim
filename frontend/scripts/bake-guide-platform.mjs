@@ -1,0 +1,71 @@
+/**
+ * Bakes the guide introduction's platform picture (owner 2026-10-18): the platform as the game
+ * draws it, the full room of nine with six of them kept and spaced evenly between the lamp
+ * posts, the signs, tags, plates, ledge and snow hidden. Bake again if the station's train,
+ * floor, posts or the cast changes.
+ *
+ * Needs a running build with the workbench (any port; the testing port is 3121).
+ * Run from frontend/: `node scripts/bake-guide-platform.mjs http://localhost:3121`
+ */
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { chromium } from '@playwright/test';
+import sharp from 'sharp';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const OUT = path.join(root, 'src/assets/site/guide/platform.webp');
+const base = process.argv[2] ?? 'http://localhost:3121';
+
+/** The nine aboard (`station?beat=4`) by their place: the six kept, and the gap between them. */
+const KEEP = [0, 2, 3, 4, 6, 8];
+const GAP = 180;
+/** The crop, in stage units (one per css px at 1600×900): post to post, the canopy's beam left out. */
+const CROP = { x: 272, y: 52, w: 1256 };
+/** The size the guide's Introduction is laid out for. */
+const SIZE = { w: 1422, h: 762 };
+
+const browser = await chromium.launch();
+const page = await browser.newPage({
+  viewport: { width: 1600, height: 900 },
+  deviceScaleFactor: 1.2,
+});
+await page.goto(`${base}/workbench/station?beat=4&animate=0&strip=0`, {
+  waitUntil: 'networkidle',
+});
+await page.waitForTimeout(1500);
+await page.evaluate(
+  ([keep, gap, cx]) => {
+    for (const layer of ['instruments', 'floor', 'hud'])
+      document.querySelector(`[data-layer="${layer}"]`).style.visibility = 'hidden';
+    for (const el of document.querySelectorAll('[class*="plates"], [class*="snow"]'))
+      el.style.visibility = 'hidden';
+    [...document.querySelectorAll('[data-aboard] > div')].forEach((fig, i) => {
+      const k = keep.indexOf(i);
+      if (k < 0) {
+        fig.style.visibility = 'hidden';
+        return;
+      }
+      const r = fig.querySelector('img').getBoundingClientRect();
+      const want = cx + (k - (keep.length - 1) / 2) * gap;
+      fig.style.translate = `${want - (r.x + r.width / 2)}px 0`;
+    });
+  },
+  [KEEP, GAP, CROP.x + CROP.w / 2],
+);
+await page.waitForTimeout(300);
+const shot = await page.screenshot({
+  clip: {
+    x: CROP.x,
+    y: CROP.y,
+    width: CROP.w,
+    height: Math.round((CROP.w * SIZE.h) / SIZE.w),
+  },
+});
+await browser.close();
+const info = await sharp(shot)
+  .resize(SIZE.w, SIZE.h)
+  .webp({ quality: 82, effort: 6 })
+  .toFile(OUT);
+console.log(
+  `${path.relative(root, OUT)}: ${info.width}×${info.height}, ${Math.round(info.size / 1024)} KB`,
+);
