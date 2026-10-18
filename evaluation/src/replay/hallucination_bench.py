@@ -53,8 +53,15 @@ _BALLOT = re.compile(r"^(\s+\S+) voted for (\S+)$", re.M)
 _GM_OPENERS = ("Night of day", "Here's the vote result")
 
 
+# The closing call before 2026-10-16 counted the accusers ("player_8 has been accused by player_2,
+# player_5 and player_4. player_8 gets a last word."); today it names only who speaks (rules/closing.py).
+_CLOSING_CALL = re.compile(r"^Before the vote: .*?((?:\S+, )*(?:\S+ and )?\S+ (?:gets|each get) a last word\.)$")
+
+
 def _engine_wording(text: str) -> str:
-    """Ballot lines as the engine writes them now ("voted to eliminate" / "voted to abstain")."""
+    """Ballot lines and the closing call as the engine writes them now ("voted to eliminate" / "voted
+    to abstain"; "Before the vote: player_8 gets a last word.")."""
+    text = _CLOSING_CALL.sub(lambda m: f"Before the vote: {m.group(1)}", text)
     return _BALLOT.sub(lambda m: f"{m.group(1)} voted to " + (
         "abstain" if m.group(2) == "abstain" else f"eliminate {m.group(2)}"), text)
 

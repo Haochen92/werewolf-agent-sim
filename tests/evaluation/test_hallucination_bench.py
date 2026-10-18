@@ -107,6 +107,18 @@ def test_an_old_state_reads_with_todays_engine_labels_and_ballot_wording():
     assert "p3 voted to abstain" in s["day_summaries"][1].summary
 
 
+def test_an_old_closing_call_loses_its_accuser_count():
+    # 2f19d908's call counted the accusers, and a replayed voter cited "accused by three players"
+    # (owner, 2026-10-18: live games no longer say it).
+    from evaluation.src.replay.hallucination_bench import _engine_wording
+
+    old = "Before the vote: player_8 has been accused by player_2, player_5 and player_4. player_8 gets a last word."
+    assert _engine_wording(old) == "Before the vote: player_8 gets a last word."
+    pair = ("Before the vote: player_5 has been accused by player_1 and player_2, and player_8 by player_3 and "
+            "player_4. player_5 and player_8 each get a last word.")
+    assert _engine_wording(pair) == "Before the vote: player_5 and player_8 each get a last word."
+
+
 def test_the_night_record_is_rebuilt_from_stored_targets_for_living_actors_only():
     from evaluation.src.replay.hallucination_bench import night_actions_from_resolutions
 
