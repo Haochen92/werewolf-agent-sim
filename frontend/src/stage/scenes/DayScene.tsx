@@ -53,6 +53,7 @@ import { bandNarrows, fileTap, sideOpen } from '../slot';
 import { geometry } from '../units';
 import { CarSetSpec } from './CarScene';
 import type { SceneProps } from './types';
+import { useSmall } from '../set';
 
 /** How long the arriving puppet stands thinking before it speaks, after the rise (seconds). */
 const THINK = 0.6;
@@ -282,6 +283,7 @@ function DayTurn({
   slot: slotInput,
   stop,
 }: SceneProps) {
+  const small = useSmall();
   const { hud, xray, animate, cast } = presentation;
   const k = useMotionScale();
   const side = sideOpen(presentation);
@@ -382,7 +384,7 @@ function DayTurn({
         ) : opening && stop ? (
           <NoticeZone
             hud={hud}
-            side={bandNarrows(presentation, beat)}
+            side={bandNarrows(presentation, beat, small)}
             aside={side}
             hidden={presentation.footHidden}
           >
@@ -437,7 +439,7 @@ function DayTurn({
             }
             arrive={animate}
             thinking={mine || waiting || !settled}
-            side={bandNarrows(presentation, beat)}
+            side={bandNarrows(presentation, beat, small)}
             hidden={presentation.footHidden}
           />
         ) : null}

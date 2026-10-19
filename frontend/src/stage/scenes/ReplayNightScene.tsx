@@ -57,6 +57,7 @@ import {
 } from './replay-night';
 import type { SceneProps } from './types';
 import styles from './ReplayNight.module.css';
+import { useSmall } from '../set';
 
 /** When, after the beat starts, the choice lands, its mark follows, and the actor's lamp goes out (seconds). */
 const MARK_AT = 0.9;
@@ -136,6 +137,7 @@ function SpokeRoom({
   onCard,
   ...props
 }: SceneProps & { cardOpen: boolean; onCard: (open: boolean) => void }) {
+  const small = useSmall();
   const { view, beat, presentation, stop, slot: slotInput, onSeek } = props;
   const { hud, animate, cast } = presentation;
   const side = sideOpen(presentation);
@@ -274,7 +276,7 @@ function SpokeRoom({
       }}
     >
       {cur && !pack ? (
-        <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
+        <NoticeZone hud={hud} side={bandNarrows(presentation, beat, small)} aside={side}>
           <Notice
             chip={cast[seatNumber(cur.actor) - 1]}
             title={actorWord(cur)}

@@ -278,7 +278,7 @@ function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
 
       <Layer name="hud">
         {step !== 5 || shut ? (
-          <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
+          <NoticeZone hud={hud} side={bandNarrows(presentation, beat, small)} aside={side}>
             {myRole ? (
               <CardButton role={myRole} gone={myDead} onOpen={turn?.onCard} />
             ) : null}

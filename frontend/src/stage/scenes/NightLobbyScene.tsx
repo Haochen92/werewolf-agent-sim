@@ -41,6 +41,7 @@ import { CarSetSpec } from './CarScene';
 import { actedTonight } from './replay-night';
 import { spentNote } from './ShelfRoomScene';
 import type { SceneProps } from './types';
+import { useSmall } from '../set';
 
 /**
  * The pill's total, as the server paces it (server/game/pacing.py): one unit per publicly alive
@@ -146,6 +147,7 @@ function LobbyBeat({
   onSeek,
   stop,
 }: SceneProps) {
+  const small = useSmall();
   const { hud, xray, animate, cast } = presentation;
   const side = sideOpen(presentation);
   const g = geometry(hud, side);
@@ -245,7 +247,7 @@ function LobbyBeat({
         {atStop && acted?.size ? (
           <NoticeZone
             hud={hud}
-            side={bandNarrows(presentation, beat)}
+            side={bandNarrows(presentation, beat, small)}
             aside={side}
             hidden={presentation.footHidden}
           >
@@ -270,7 +272,7 @@ function LobbyBeat({
         {myRole ? (
           <NoticeZone
             hud={hud}
-            side={bandNarrows(presentation, beat)}
+            side={bandNarrows(presentation, beat, small)}
             aside={side}
             hidden={presentation.footHidden}
           >

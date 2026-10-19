@@ -67,8 +67,9 @@ ink band and a black crepe mourning ribbon across the photo's top corner (2026-0
 and the sigil badge; the game's losers dimmed. Lit and dimmed are light only.
 **Your files (live, seated only; owner, 2026-10-18: the notes moved into the case file, picks
 over writing).** Tapping a seat's card, your own too, opens your file on that seat in the case
-file (`film/PlayerFile.tsx`), which in a live game runs the stage's height, the box at the foot
-narrowed beside it as the drawer's is (`slot.ts filmFull`); the folder's seat tabs page through
+file (`film/PlayerFile.tsx`), which in a live game on a phone runs the stage's height, the box at
+the foot narrowed beside it as the drawer's is (`slot.ts filmFull`; on a desktop it stops above
+the rail, owner 2026-10-19); the folder's seat tabs page through
 the files, the Record stays first, and the docket waits for the game's end. The rail's plate
 says "Tap to open file". The cover holds what stands for the whole game: "Claims [role ▾]" (any
 role the game deals, pencilled on a dotted blank, the role's sigil beside it; beside that the

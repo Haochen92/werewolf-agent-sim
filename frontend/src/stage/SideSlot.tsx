@@ -19,6 +19,7 @@ import { fileFocus, type FileChoice } from './film/case-file';
 import { recordMornings, type RecordPick } from './film/record-model';
 import type { SceneProps } from './scenes/types';
 import { notebookGame, useNotebook } from './notebook';
+import { useSmall } from './set';
 import { atRail, filmFull, slotOf, tapsOpenFiles } from './slot';
 import { actedTonight, nightBranchesOf } from './scenes/replay-night';
 
@@ -37,6 +38,7 @@ export const SideSlot = memo(function SideSlot({
   const [ownPick, setOwnPick] = useState<RecordPick | null>(null);
   // a seated player's own files on the seats, live (film/PlayerFile.tsx)
   const book = useNotebook(notebookGame(presentation, me));
+  const small = useSmall();
   const occupant = slotOf(presentation);
   // the epilogue is the ledger come down over the whole stage: nothing sits beside it
   if (!occupant || beat.id === 'over.epilogue') return null;
@@ -120,7 +122,7 @@ export const SideSlot = memo(function SideSlot({
               ? { book, me, cast: view.castRoleCounts ?? {} }
               : null
           }
-          full={filmFull(presentation, beat)}
+          full={filmFull(presentation, beat, small)}
         />
       )}
     </Layer>

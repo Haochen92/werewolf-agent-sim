@@ -44,6 +44,7 @@ import { StandReturns } from './DiningCarParts';
 import { usesNote } from './ShelfRoomScene';
 import { CarSetSpec } from './CarScene';
 import type { SceneProps } from './types';
+import { useSmall } from '../set';
 
 const ORDER: SceneBeat['id'][] = [
   'deal.table-seated',
@@ -60,6 +61,7 @@ export function DealBody(props: SceneProps) {
 }
 
 function DealBeat({ view, beat, me, presentation, turn }: SceneProps) {
+  const small = useSmall();
   const { hud, xray, animate, cast } = presentation;
   const id = beat.id;
   const at = (b: SceneBeat['id']) => ORDER.indexOf(id) >= ORDER.indexOf(b);
@@ -235,7 +237,7 @@ function DealBeat({ view, beat, me, presentation, turn }: SceneProps) {
           xray={xray}
           animate={animate}
           delay={2.6}
-          narrow={bandNarrows(presentation, beat)}
+          narrow={bandNarrows(presentation, beat, small)}
           hidden={presentation.footHidden}
         />
       ) : null}
@@ -243,7 +245,7 @@ function DealBeat({ view, beat, me, presentation, turn }: SceneProps) {
       <Layer name="hud">
         <NoticeZone
           hud={hud}
-          side={bandNarrows(presentation, beat)}
+          side={bandNarrows(presentation, beat, small)}
           aside={side}
           hidden={presentation.footHidden}
         >

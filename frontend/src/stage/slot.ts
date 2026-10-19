@@ -51,23 +51,26 @@ export function atRail(beat: Pick<SceneBeat, 'id' | 'scene'>): boolean {
 }
 
 /**
- * The case file runs the stage's height in a live game until its end (owner, 2026-10-18: the
- * player's own files are kept there, and on a phone the folder above the rail had no room for
- * them), stopping at the rail where the drawer does.
+ * The case file runs the stage's height on a phone (`small`, the stage's `data-small`) in a live
+ * game until its end (owner, 2026-10-18: the player's own files are kept there, and the folder
+ * above the rail had no room for them on a phone; a desktop's has), stopping at the rail where the
+ * drawer does.
  */
 export function filmFull(
   p: Pick<Presentation, 'slot' | 'hud' | 'xray'>,
   beat: Pick<SceneBeat, 'id' | 'scene'>,
+  small: boolean,
 ): boolean {
-  return slotOf(p) === 'film' && p.hud === 'live' && !p.xray && !atRail(beat);
+  return small && slotOf(p) === 'film' && p.hud === 'live' && !p.xray && !atRail(beat);
 }
 
 /** The box at the foot narrows to the room beside a full-height drawer or file. */
 export function bandNarrows(
   p: Pick<Presentation, 'slot' | 'hud' | 'xray'>,
   beat: Pick<SceneBeat, 'id' | 'scene'>,
+  small: boolean,
 ): boolean {
-  return (slotOf(p) === 'drawer' && !atRail(beat)) || filmFull(p, beat);
+  return (slotOf(p) === 'drawer' && !atRail(beat)) || filmFull(p, beat, small);
 }
 
 /** The top strip's two tabs and its Reveal switch for a scene: pressed states from the presentation, presses to the container (and the replay's way back, the live game's door). */

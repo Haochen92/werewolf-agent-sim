@@ -35,6 +35,7 @@ import { STAGE_H, STAGE_W, geometry, type StageGeometry } from '../units';
 import { CarSetSpec } from './CarScene';
 import type { SceneProps } from './types';
 import { score, tally } from './vote-count';
+import { useSmall } from '../set';
 
 /** The lynch's body under the car's host (CarScene.tsx): up across its beats, playing by its props. */
 export function LynchBody(props: SceneProps) {
@@ -59,6 +60,7 @@ export function liftCard(g: StageGeometry) {
 }
 
 function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: SceneProps) {
+  const small = useSmall();
   const { hud, xray, animate, cast } = presentation;
   const k = useMotionScale();
   const steps = useSteps();
@@ -279,7 +281,7 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
       <Layer name="hud">
         <NoticeZone
           hud={hud}
-          side={bandNarrows(presentation, beat)}
+          side={bandNarrows(presentation, beat, small)}
           aside={side}
           hidden={presentation.footHidden}
         >

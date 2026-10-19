@@ -50,6 +50,7 @@ import {
   resultWords,
   tally,
 } from './vote-count';
+import { useSmall } from '../set';
 
 /**
  * The vote's body under the car's host (CarScene.tsx). It stays up from beat to beat and plays
@@ -81,6 +82,7 @@ function VoteBeat({
   slot: slotInput,
   stop,
 }: SceneProps) {
+  const small = useSmall();
   const { hud, xray, animate, cast } = presentation;
   const k = useMotionScale();
   const step = useSteps();
@@ -340,7 +342,7 @@ function VoteBeat({
       <Layer name="hud">
         <NoticeZone
           hud={hud}
-          side={bandNarrows(presentation, beat)}
+          side={bandNarrows(presentation, beat, small)}
           aside={side}
           hidden={presentation.footHidden}
         >

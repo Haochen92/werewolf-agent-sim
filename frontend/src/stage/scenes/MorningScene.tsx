@@ -49,6 +49,7 @@ import { STAGE_H, geometry } from '../units';
 import { StandReturns } from './DiningCarParts';
 import { CarSetSpec } from './CarScene';
 import type { SceneProps } from './types';
+import { useSmall } from '../set';
 
 /** How many the night touched, in words. */
 const COUNT = [
@@ -318,6 +319,7 @@ function MorningSet(props: SceneProps) {
 
 /** The beat's figures: the chips, the cards and the marks on their strings, and the words. */
 function MorningBeat(props: SceneProps) {
+  const small = useSmall();
   const { view, beat, me, presentation, turn } = props;
   const { hud, xray, animate, cast } = presentation;
   const {
@@ -520,7 +522,7 @@ function MorningBeat(props: SceneProps) {
           xray={xray}
           animate={animate}
           delay={2.6}
-          narrow={bandNarrows(presentation, beat)}
+          narrow={bandNarrows(presentation, beat, small)}
           hidden={presentation.footHidden}
         />
       ) : null}
@@ -529,7 +531,7 @@ function MorningBeat(props: SceneProps) {
         {!dayBegins ? (
           <NoticeZone
             hud={hud}
-            side={bandNarrows(presentation, beat)}
+            side={bandNarrows(presentation, beat, small)}
             aside={side}
             hidden={presentation.footHidden}
           >
