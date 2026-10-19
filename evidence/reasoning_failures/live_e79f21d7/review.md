@@ -22,7 +22,7 @@ The evil cover generator checks public consistency, private visit compatibility 
 - Add cover-risk guidance to wolf, Serial Killer and Necromancer discussion prompts: logical consistency is not strategic safety; unclaimed does not mean absent; a killing-role claim can invite retaliation; do not invent knowledge of another player's remaining uses.
 - Regenerate the composed-rule and captured discussion-prompt goldens deliberately. This changes the prompt epoch.
 
-No paid model calls or new games were run for this review. Prompt/solver tests can verify wiring and consistency, not prove that Haiku will obey the guidance or that evil win rates improve. These changes have not been deployed.
+No paid model calls or new games were run for this review. Prompt/solver tests can verify wiring and consistency, not prove that Haiku will obey the guidance or that evil win rates improve. These changes were subsequently deployed at `e486d3ca` after the owner approved deployment; see `frontend/docs/build_plan.md`.
 
 ## Verification
 
