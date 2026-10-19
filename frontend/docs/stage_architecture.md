@@ -331,6 +331,13 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   mean difference 2.5/255; the 2026-09-27 mockup's `.beam` is the same wood). The canopy's felt
   `fringe` was dropped that day: the mockup's top became a walnut beam with a brass trim, and
   its edge the paving's stone under a drift of snow. 12.4 MB of PNG → 1.4 MB of WebP, the train 708 KB of it.
+  Since 2026-10-19 the sky, paving, posts and lanterns are gone: the platform is the owner's one
+  picture (`platform`, 1672×941: the beam, two stone pillars with their lanterns, the ledge, the
+  paving, the night through the arches), shipped whole for the back and again with the arches
+  clear for the front (`platformFront`, `scripts/fit_platform.py`), the train between them, its
+  snow line lowered to 164 so its wheels stand behind the ledge. 12.6 MB decoded against about
+  14 before. The game's loading cover waits for the train, both pictures and the ledge's walnut
+  (`StationReady`).
 - The dining car's window (ruled 2026-09-27; since 2026-10-19 the car's country is painted in
   the owner's car, below, and only the night rooms keep the felt night): the country behind the glass is painted felt, a
   pair per hour, `SPRITES.window[hour].{far,near}`, drawn by `instruments/FeltWindow.tsx` over the
@@ -1006,7 +1013,7 @@ src/stage/
 │                            #   (diningCarPlan: the painting's place, its glass, glows, specials);
 │                            #   texture.ts: the surfaces' SVG patterns (walnut, boards);
 │                            #   bleed.ts: the platform's two strips past the world's sides (§3);
-│                            #   station.ts: the platform (stationBack/Front, stationPlan);
+│                            #   station.ts: the platform (stationPlan);
 │                            #   atmosphere.ts: the key light by hour, the car's haze;
 │                            #   compartment.ts: the night rooms' plan (roomPlan: the painting,
 │                            #   its glass, candle, card and photo line, ROOMS), the twine

@@ -3,7 +3,7 @@
  * draws it, the full room of nine with six of them kept and spaced evenly between the lamp
  * posts, the signs, tags, plates, ledge and snow hidden. A kept place may show another of the cast
  * (`SWAP`, owner 2026-10-18: the kitsune and the automaton), sized as `puppetBox` sizes a figure.
- * Bake again if the station's train, floor, posts or the cast changes.
+ * Bake again if the station's picture, its train or the cast changes.
  *
  * Needs a running build with the workbench (any port; the testing port is 3121).
  * Run from frontend/: `node scripts/bake-guide-platform.mjs http://localhost:3121`
