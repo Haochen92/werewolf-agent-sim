@@ -15,7 +15,8 @@
  * The seated human votes from a row of the candidates' chips (`vote.your-ballot`): tap one,
  * confirm on the plate; their own chip drops into the jar face up, on their screen only.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { SPRITES } from '@/assets/manifest';
 import type { GameView } from '@/game/types';
 import { Camera, Layer } from '../Stage';
 import { Puppet, puppetBox } from '../cast/Puppet';
@@ -92,6 +93,21 @@ function VoteBeat({
   stop,
 }: SceneProps) {
   const small = useSmall();
+  // the count's pictures, decoded from the ballot's open and held while the vote is on (owner,
+  // 2026-10-19: on a first vote the counted chips came up as their drawn faces, the ring not yet
+  // decoded); a phone's copies, as FlatChip draws them
+  useEffect(() => {
+    if (typeof Image === 'undefined') return;
+    const p = small ? SPRITES.small.props : SPRITES.props;
+    const held = [p.chipRing, p.chipHidden, p.plate].map(({ src }) => {
+      const img = new Image();
+      img.decoding = 'async';
+      img.src = src;
+      img.decode().catch(() => {});
+      return img;
+    });
+    return () => void held.splice(0);
+  }, [small]);
   const { hud, xray, animate, cast } = presentation;
   const k = useMotionScale();
   const step = useSteps();
