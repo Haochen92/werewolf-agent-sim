@@ -152,8 +152,11 @@ export function pileSpots(v: VoteGeometry, n: number): [number, number][] {
   return out;
 }
 
-/** A counted chip's thickness, as a fraction of its radius (the tower's step); chips per tower. */
-export const TOWER_STEP = 0.45;
+/**
+ * A counted chip's thickness, as a fraction of its radius (the tower's step: the maple ring's edge
+ * at the table's tilt, 2026-10-19); chips per tower.
+ */
+export const TOWER_STEP = 0.42;
 export const TOWER_CAP = 4;
 
 export interface PlateSpot {

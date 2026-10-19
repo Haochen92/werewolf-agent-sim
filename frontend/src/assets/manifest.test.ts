@@ -100,7 +100,16 @@ describe('sprite manifest', () => {
 
   it('has the painted props, the two late ones at their painted sizes', () => {
     expect(Object.keys(SPRITES.props).sort()).toEqual(
-      ['chipHidden', 'jarGlass', 'jarLid', 'plate', 'shutter', 'stand', 'voteTable'].sort(),
+      [
+        'chipHidden',
+        'chipRing',
+        'jarGlass',
+        'jarLid',
+        'plate',
+        'shutter',
+        'stand',
+        'voteTable',
+      ].sort(),
     );
     for (const img of Object.values(SPRITES.props)) hasSize(img);
     // the plate is squashed to ry = 0.3 rx; the blind is the size window.ts measured its rod on

@@ -119,6 +119,7 @@ import windowDawnFar from './sprites/window/dawn-far.webp';
 import windowDawnNear from './sprites/window/dawn-near.webp';
 import propJarGlass from './sprites/props/jar-glass.webp';
 import propChipHidden from './sprites/props/chip-hidden.webp';
+import propChipRing from './sprites/props/chip-ring.webp';
 import propJarLid from './sprites/props/jar-lid.webp';
 import propPlate from './sprites/props/plate.webp';
 import propShutter from './sprites/props/shutter.webp';
@@ -298,6 +299,7 @@ import lionCubHeadSmall from './sprites/characters/lionCub/head@small.webp';
 import automatonHeadSmall from './sprites/characters/automaton/head@small.webp';
 import propJarGlassSmall from './sprites/props/jar-glass@small.webp';
 import propChipHiddenSmall from './sprites/props/chip-hidden@small.webp';
+import propChipRingSmall from './sprites/props/chip-ring@small.webp';
 import propJarLidSmall from './sprites/props/jar-lid@small.webp';
 import propPlateSmall from './sprites/props/plate@small.webp';
 import propStandSmall from './sprites/props/stand-front@small.webp';
@@ -404,7 +406,14 @@ export type WindowPicture = 'far' | 'near';
  * perspective, ry = 0.3 rx) and the window's three-leaf shutter. Recipe: stage_architecture §4.
  */
 export type PropPicture =
-  'jarGlass' | 'jarLid' | 'stand' | 'voteTable' | 'plate' | 'shutter' | 'chipHidden';
+  | 'jarGlass'
+  | 'jarLid'
+  | 'stand'
+  | 'voteTable'
+  | 'plate'
+  | 'shutter'
+  | 'chipHidden'
+  | 'chipRing';
 
 /**
  * The dining car (opaque but for the window's glass): its walls, window frame, lamps and floor,
@@ -474,7 +483,10 @@ export type RailPicture = 'frame' | 'plate' | 'paper' | 'shadow';
  */
 export interface SmallSprites {
   day: Record<Character, Record<DayState | 'head', StaticImageData>>;
-  props: Record<'jarGlass' | 'jarLid' | 'plate' | 'stand' | 'chipHidden', StaticImageData>;
+  props: Record<
+    'jarGlass' | 'jarLid' | 'plate' | 'stand' | 'chipHidden' | 'chipRing',
+    StaticImageData
+  >;
   roleTiles: Record<RoleSprite, StaticImageData>;
   window: { night: Record<WindowPicture, StaticImageData> };
 }
@@ -653,6 +665,7 @@ export const SPRITES: {
     plate: propPlate,
     shutter: propShutter,
     chipHidden: propChipHidden,
+    chipRing: propChipRing,
   },
   car: { day: carDay, night: carNight },
   rooms: {
@@ -906,6 +919,7 @@ export const SPRITES: {
       plate: propPlateSmall,
       stand: propStandSmall,
       chipHidden: propChipHiddenSmall,
+      chipRing: propChipRingSmall,
     },
     roleTiles: {
       villager: roleVillagerTile,

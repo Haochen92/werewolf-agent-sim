@@ -633,7 +633,10 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   Frame and plate are 9-slices cut to the size their borders show (`scripts/fit_rail.py`;
   ~30 KB, ~2.2 MB decoded once a game). A chip back up in the jar is the owner's navy wooden
   chip, squashed to the table's 0.42 tilt, 192 px and a 128 px phone copy
-  (`scripts/fit_chips.py`); a chip face up stays drawn.
+  (`scripts/fit_chips.py`). A counted chip on a plate is the owner's maple ring (2026-10-19),
+  stretched to the same tilt so its edge is the towers' step (`TOWER_STEP` 0.42), the voter's face
+  inlaid in its hole at 0.74 of the radius, 288 px and a 192 px phone copy; a chip face up in the
+  jar stays drawn.
 - **Never upscale.** No sprite atlases: HTTP/2 makes many small files cheap and an atlas adds
   tooling.
 - Preload the game's nine characters (four states + head) at the deal; `next/image` `priority`

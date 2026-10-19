@@ -228,7 +228,7 @@ export function Plate({
       {voters.map((voter, i) => {
         const [x, y, rr] = stackPos(v, p, i);
         const chip = (
-          <FlatChip key={voter} x={x} y={y} r={rr} face={face(voter)} t={TOWER_STEP} />
+          <FlatChip key={voter} x={x} y={y} r={rr} face={face(voter)} t={TOWER_STEP} ring />
         );
         return landing && i === voters.length - 1 ? (
           <Tween
