@@ -1,9 +1,8 @@
 'use client';
 
 /**
- * The dining car's painting at an hour: the day picture by day and at dawn, the same picture
- * under the hour's warm tint at dusk, and the night picture (the day's, relit) at night. Its
- * glass is clear, so the felt country (FeltWindow) shows through it.
+ * The dining car's painting at an hour: the owner's room at that hour, the country painted in
+ * its glass.
  *
  * It sits where the car's plan puts it (`diningCarPlan().picture`): across with the puppet's
  * centre line and up or down with the rail, so its window and floor land on the stage's. In
@@ -18,13 +17,6 @@ import { diningCarPlan } from '../paint/dining-car';
 import type { Phase } from '../paint/materials';
 import { STAGE_H, STAGE_W, type Hud } from '../units';
 
-/**
- * The hour's tint over the painting: the dusk's warm fall of light (materials.ts `ROOMLIGHT`,
- * #c0703a multiplied at 0.24), as a flat warm dark laid at normal alpha, since a fading
- * backdrop carries no blend mode. Night has its own picture, day and dawn none.
- */
-export const CAR_TINT: Partial<Record<Phase, string>> = { dusk: 'rgba(78, 24, 4, 0.2)' };
-
 export function CarBackdrop({
   phase,
   hud,
@@ -36,8 +28,7 @@ export function CarBackdrop({
   side?: boolean;
 }) {
   const { x, y } = diningCarPlan({ phase, hud, side }).picture;
-  const img = SPRITES.car[phase === 'night' ? 'night' : 'day'];
-  const tint = CAR_TINT[phase];
+  const img = SPRITES.car[phase];
   const box = { position: 'absolute', top: 0, width: STAGE_W, height: STAGE_H } as const;
   return (
     <div data-car={phase} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
@@ -63,9 +54,6 @@ export function CarBackdrop({
         draggable={false}
         style={{ ...box, left: x, top: y }}
       />
-      {tint ? (
-        <div style={{ ...box, left: x, top: 0, height: STAGE_H, background: tint }} />
-      ) : null}
     </div>
   );
 }

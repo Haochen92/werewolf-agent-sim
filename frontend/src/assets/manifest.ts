@@ -127,6 +127,8 @@ import propStand from './sprites/props/stand-front.webp';
 import propVoteTable from './sprites/props/vote-table.webp';
 import carDay from './sprites/car/day.webp';
 import carNight from './sprites/car/night.webp';
+import carDusk from './sprites/car/dusk.webp';
+import carDawn from './sprites/car/dawn.webp';
 import roomHealer from './sprites/rooms/healer.webp';
 import roomInvestigator from './sprites/rooms/investigator.webp';
 import roomVigilante from './sprites/rooms/vigilante.webp';
@@ -416,11 +418,11 @@ export type PropPicture =
   | 'chipRing';
 
 /**
- * The dining car (opaque but for the window's glass): its walls, window frame, lamps and floor,
- * painted once by day and relit for the night, both fitted to the stage. Recipe:
+ * The dining car at each hour (opaque, the country painted in its glass): its walls, window,
+ * lamps and floor, the owner's one room relit four times, fitted to the stage. Recipe:
  * stage_architecture §4 "The dining car".
  */
-export type CarPicture = 'day' | 'night';
+export type CarPicture = 'day' | 'dusk' | 'night' | 'dawn';
 
 /**
  * The night rooms (opaque but for the window's glass): the acting seat's sleeping compartment by
@@ -667,7 +669,7 @@ export const SPRITES: {
     chipHidden: propChipHidden,
     chipRing: propChipRing,
   },
-  car: { day: carDay, night: carNight },
+  car: { day: carDay, dusk: carDusk, night: carNight, dawn: carDawn },
   rooms: {
     healer: roomHealer,
     investigator: roomInvestigator,

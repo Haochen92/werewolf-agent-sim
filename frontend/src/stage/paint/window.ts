@@ -1,7 +1,6 @@
 /**
  * The dining car's window: its place in the layout, and the louvred shutter that covers it.
- * The frame and the glass are the car's painting (CarBackdrop); the country behind the glass
- * is felt pictures, one set per hour, laid over it by the FeltWindow instrument.
+ * The frame, the glass and the country in it are the car's painting at the hour (CarBackdrop).
  *
  * The shutter is drawn over the painting, because it is the one part of the window that moves
  * (the Shutter instrument reuses the geometry here). At rest it is either gathered up under its
@@ -25,18 +24,18 @@ export function carLines(g: StageGeometry) {
   return { floorH, floorY, dado, B };
 }
 
-/** The window's glass, in units: centred on the puppet, above the dado. */
+/**
+ * The layout the car's painting is fitted to, in its own 1600×900 pixels: the puppet's centre
+ * line and the rail (the kit's car at HUD 'none'; scripts/fit_car_hours.py).
+ */
+export const CAR_FIT = { cx: 800, railY: 639 } as const;
+/** The painting's glass in the same pixels, centred on the puppet (owner's car, 2026-10-19). */
+export const CAR_GLASS = { x0: 440, y0: 77, x1: 1160, y1: 389, r: 34 } as const;
+
+/** The window's glass, in units: the painting's, which follows the puppet and the rail. */
 export function windowRect(g: StageGeometry): Rect {
-  const W = STAGE_W,
-    H = STAGE_H,
-    { dado } = carLines(g),
-    x0 = 0,
-    x1 = W;
-  const ww = Math.min(0.5 * W, x1 - x0 - 0.3 * W),
-    wx = g.cx - ww / 2,
-    wy = 0.12 * H,
-    wh = dado - 0.04 * H - wy;
-  return [wx, wy, ww, wh];
+  const G = CAR_GLASS;
+  return [g.cx - CAR_FIT.cx + G.x0, g.railY - CAR_FIT.railY + G.y0, G.x1 - G.x0, G.y1 - G.y0];
 }
 
 /** Snow falling past the glass: two copies stacked so the loop has no seam. */

@@ -146,7 +146,7 @@ describe('fidelity to kits/stage-kit.js', () => {
     'utf8',
   );
   // The painting's departure (2026-09-29): the car is a painting (SPRITES.car), so nothing of the
-  // kit's drawing is compared, only where things are. Its wall clock is gone (the owner ruled it
+  // kit's drawing is compared, only where things are, and its window is the painting's glass. Its wall clock is gone (the owner ruled it
   // out), and the lantern's special and glow sit on the painted lantern rather than in the slot
   // right of the window; the painting's two table lamps glow as the lantern does. The painting's
   // lamps are measured in its own pixels at the layout it was fitted to (CAR_PICTURE.fit), so the
@@ -156,7 +156,14 @@ describe('fidelity to kits/stage-kit.js', () => {
   const tableGlows = CAR_PICTURE.tableLamps
     .map((p) => `[${at(p)}, c.lit ? 0.3 * H : 0.06 * H, "#ffb35c"]`)
     .join(', ');
+  const G = CAR_PICTURE.glass;
   const pieces: [string, string][] = [
+    // the owner's car (2026-10-19): the window is the painting's glass, following the puppet
+    // and the rail, not the kit's
+    [
+      'ww = Math.min(0.5 * W, x1 - x0 - 0.3 * W), wx = cx - ww / 2, wy = 0.12 * H, wh = dado - 0.04 * H - wy',
+      `ww = ${G.x1 - G.x0}, wx = cx - ww / 2, wy = sh.B - ${CAR_PICTURE.fit.railY} + ${G.y0}, wh = ${G.y1 - G.y0}`,
+    ],
     // the seat rail (HUD pass 2, 2026-09-29): the wing is WING_N wide, not the kit's 5.5%
     [
       'const wingN = on ? W * (phone ? 0.049 : 0.055) : 0',

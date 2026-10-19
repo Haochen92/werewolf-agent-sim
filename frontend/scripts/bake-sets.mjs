@@ -16,6 +16,8 @@ const SCALES = [1, 1.5, 2];
 const W = 2200,
   H = 900;
 const OUT = 'src/assets/sets';
+// WebP quality: 80 since the owner's car (2026-10-19), whose detail cost ~1.6× the bytes at 88
+const QUALITY = 80;
 
 await mkdir(OUT, { recursive: true });
 const browser = await chromium.launch();
@@ -35,7 +37,7 @@ for (const scale of SCALES) {
       await page.waitForTimeout(400);
       const png = await page.screenshot({ clip: { x: 0, y: 0, width: W, height: H } });
       const name = `car-${phase}-${hud}-full@${scale}x.webp`;
-      const { size } = await sharp(png).webp({ quality: 88 }).toFile(`${OUT}/${name}`);
+      const { size } = await sharp(png).webp({ quality: QUALITY }).toFile(`${OUT}/${name}`);
       files.push({ phase, hud, scale: String(scale), name, size });
       console.log(`${name}  ${(size / 1024).toFixed(0)} KB`);
     }

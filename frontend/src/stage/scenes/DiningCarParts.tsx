@@ -14,7 +14,6 @@ import { Layer, Paint, useSmall } from '../Stage';
 import { Puppet } from '../cast/Puppet';
 import { PaintedBleed } from '../instruments/Bleed';
 import { CarBackdrop } from '../instruments/CarBackdrop';
-import { FeltWindow } from '../instruments/FeltWindow';
 import { SpeechBox } from '../instruments/SpeechBox';
 import { Plaque, Stand } from '../instruments/Stand';
 import { StageWing, type WingTileProps } from '../instruments/Wing';
@@ -27,10 +26,8 @@ import { ROLE_NAME, factionOf, hiddenRolesHeld, knownRoles, seatNumber } from '.
 import { BLEED, STAGE_H, STAGE_W, type Hud, type StageGeometry } from '../units';
 
 /**
- * The car at an hour; played from another hour, the old hour's picture fades off over the new
- * (the night picture comes in over the day's). Its sides sink into the house's dark past the
- * painting's edges, for a screen wider than 16:9. Over it, the felt country in its glass,
- * changing hour with it.
+ * The car at an hour; played from another hour, the old hour's picture fades off over the new.
+ * Its sides sink into the house's dark past the painting's edges, for a screen wider than 16:9.
  */
 export function CarPaint({
   phase,
@@ -50,7 +47,7 @@ export function CarPaint({
   const k = useMotionScale();
   const fade = { duration: 1.2 * k, delay: fadeDelay * k, ease: 'easeInOut' } as const;
   const plan = diningCarPlan({ phase, hud, side });
-  // both pictures ready before an hour's change needs the other one
+  // every hour's picture ready before an hour's change needs it (the benches only: play draws the baked sheets)
   useEffect(() => {
     for (const p of Object.values(SPRITES.car)) new window.Image().src = p.src;
   }, []);
@@ -68,7 +65,6 @@ export function CarPaint({
         </motion.div>
       ) : null}
       <PaintedBleed x={plan.picture.x} w={STAGE_W} outside />
-      <FeltWindow phase={phase} from={from} fade={fade} hud={hud} side={side} />
     </>
   );
 }

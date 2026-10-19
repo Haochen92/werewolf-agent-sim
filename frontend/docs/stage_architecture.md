@@ -99,7 +99,7 @@ The stage is a `16 / 9` box. Every position, size, radius and path in every scen
 
 **Layers** inside the box, bottom to top (each a positioned `div` filling the box):
 
-1. `paint` — the backdrop (the dining car's and the night rooms' paintings / station; the felt country in the glass; the shutter)
+1. `paint` — the backdrop (the dining car's and the night rooms' paintings / station; the night rooms' felt country in their glass; the shutter)
 2. `haze` — the atmosphere's back half: the key light on the wall, the pelmet's shadow, the veil
 3. `floor` — the trap (its hole, and its leaves while they move), lift
 4. `figures` — puppets, the night rooms' photos on their line, chips on strings, cards on strings
@@ -331,7 +331,8 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   mean difference 2.5/255; the 2026-09-27 mockup's `.beam` is the same wood). The canopy's felt
   `fringe` was dropped that day: the mockup's top became a walnut beam with a brass trim, and
   its edge the paving's stone under a drift of snow. 12.4 MB of PNG → 1.4 MB of WebP, the train 708 KB of it.
-- The dining car's window (ruled 2026-09-27): the country behind the glass is painted felt, a
+- The dining car's window (ruled 2026-09-27; since 2026-10-19 the car's country is painted in
+  the owner's car, below, and only the night rooms keep the felt night): the country behind the glass is painted felt, a
   pair per hour, `SPRITES.window[hour].{far,near}`, drawn by `instruments/FeltWindow.tsx` over the
   car's paint, inside the glass: `far` (sky, peaks, hills) stands still and covers the glass;
   `near` (pines, fence, pole, with alpha) fills the bottom 52% and loops left one tile width,
@@ -408,32 +409,31 @@ anything that shows state is drawn over the sprite in vector, never baked in.
     they were shortened at conversion to squat turned feet: below row 596 the wood is cleared
     (`-channel A -fx "j>=628||(j>=596&&(lightness<0.45||max(max(r,g),b)-min(min(r,g),b)>0.3))?0:u"`)
     and the legs' lower bulb and foot (rows 662–719) laid under it at row 581.
-- The dining car (ruled 2026-09-29): the car is a painting, `SPRITES.car.{day,night}`
-  (`instruments/CarBackdrop.tsx`), replacing the kit's vector walls, window frame, floor and
-  trapdoor, and the painted wall clock and wall lamp of 2026-09-27 (the owner ruled the clock
-  out; the lantern and two table lamps are painted in). Masters:
-  `claude_artifacts/design/rasters/car-{day,night}.png`, 1600×900 RGBA, already fitted to the
-  stage: `scripts/fit-car.mjs` scales a ChatGPT painting so its glass lands on the kit's glass at
-  HUD `none` (x 401–1199, y 113–409, corner radius 28, cleared to transparent) and squashes the
-  plain panelling under the window so its floor strip lands on the rail (y ≈ 590–640, where the
-  trap is); `scripts/relight-car.mjs` makes the night from the day (dark and warm, pools kept on
-  the lamps), so every panel lines up through the fade. Converted as the rooms are (`sharp`,
-  quality 85, alpha quality 100, effort 6): 117 KB by day, 54 KB by night.
+- The dining car (ruled 2026-09-29; the owner's own car since 2026-10-19): the car is a
+  painting, `SPRITES.car.{day,dusk,night,dawn}` (`instruments/CarBackdrop.tsx`), replacing the
+  kit's vector walls, window frame, floor and trapdoor: walnut panels, the brass-framed window
+  with the country painted in it, a painting either side under a picture light, a red booth and
+  a table lamp at each edge, and the boards with a brass hatch. The four are one room relit (they
+  line up to the pixel), so an hour's fade never shifts a panel. Masters:
+  `claude_artifacts/design/rasters/live_ugrade/car-<hour>.png` (1672×941; the floorless first set
+  in `car-v1/`); `scripts/fit_car_hours.py` scales them by 1.021, the least that lays the floor's
+  line at the wall's foot (master row 628) on the kit's `floorY` (580.5) and still reaches the
+  frame's foot, centres the glass on the puppet, and crops 1600×900 (WebP quality 82: 129–241 KB
+  an hour). The glass, x 440–1160, y 77–389, corner radius 34 (`CAR_GLASS` in `paint/window.ts`),
+  is the car's window: `windowRect` returns it, so the shutter and the window's special follow it
+  (a departure from the kit, which the fidelity test swaps in).
   - **Placement** (`CAR_PICTURE`, `carOffset` in `paint/dining-car.ts`): the painting moves as
     the drawn car did, across with the puppet's centre line (`cx − 800`: +44 under the live
     wing, left with the open side slot, its right end under the slot) and up with the rail
     (`railY − 639`: 27 up in the replay's frame, where its own last 27 rows are laid again under
-    its foot so the floor reaches the frame's edge). The felt window takes the painted glass,
-    moved the same way. The shutter keeps the kit's window: its pelmet sits on the painted blind's
-    housing, its panel covers the glass and most of the brass.
-  - **Hours**: day and dawn show the day picture, dusk the day picture under a flat warm dark
-    (`CAR_TINT`, `rgba(78,24,4,.2)`, normal alpha: the kit's `#c0703a` multiply at 0.24 matched on
-    the walnut, since a fading backdrop carries no blend mode), night the night picture, with no
-    tint over it. An hour's change fades the old picture off over the new (opacity only).
+    its foot so the floor reaches the frame's edge). The shutter covers the painted glass and its
+    frame, its pelmet above the frame.
+  - **Hours**: each hour shows its own picture, untinted. An hour's change fades the old picture
+    off over the new (opacity only).
   - **Light**: the kit's plan still says where the light falls; the lantern's special and glow sit
-    on the painted lantern (1485,175) and each table lamp (45,400 and 1555,400) glows as the
-    lantern does, lit at dusk and night; the car draws no halo, pool or visible cone of its own
-    (the night picture has its pools painted in). `carHaze` casts only the drawn pelmet's shadow.
+    on the picture light over the right-hand painting (1311,90) and each table lamp (14,220 and
+    1589,220) glows as the lantern does, lit at dusk and night; the car draws no halo, pool or
+    visible cone of its own (each picture has its own light painted in). `carHaze` casts only the drawn pelmet's shadow.
     Over the painting the house is lighter than over the old drawn walls (2026-09-29: the room
     reads as lit, the speaker keeps a gentle pool): `light`'s dark, before → after, is day 50 → 24;
     deal 30/58/40 → 14/40/26 (day begins / your card / dealt); vote 50 → 30; lynch 58/72/74 →
@@ -740,7 +740,7 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   link that stays up is the scene's floor, and a change to what a beat rebuilds is measured as
   a change in that floor (build log §8.3).
 - **The car's set is a baked picture, not live sheets.** The paint and the haze of the dining
-  car (the car picture, the window and its felt country, the bleed, the key light, the wall
+  car (the car picture, the window, the bleed, the key light, the wall
   pieces' blurred shadows) are photographed once by `scripts/bake-sets.mjs` from the bake
   bench (`/workbench/bake?phase=day&hud=live&side=0`: the set alone, 2200×900, nothing in
   front of it) into `src/assets/sets/` at 1×, 1.5× and 2×, with `src/assets/sets.ts` as the
@@ -750,8 +750,7 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   alone. Same drawing, one bitmap: the browser holds one layer where it held five (build log
   §8.3). One sheet per hour and HUD, baked with the side slot closed: the open slot (the
   transcript, the case file) slides the same sheet with the room (`sheetFor`), so opening it
-  decodes no second sheet (owner, 2026-10-18; only the window's felt country slides with the
-  car). Rerun the bake when the car's paint or haze changes; the goldens say whether the
+  decodes no second sheet (owner, 2026-10-18). Rerun the bake when the car's paint or haze changes; the goldens say whether the
   sheets did. The light, the grade and everything that moves stay live.
 - **Nothing animates at rest inside the camera.** An element with a running animation (a CSS
   animation, `will-change`, a motion value in flight) gets its own GPU layer, and every stage

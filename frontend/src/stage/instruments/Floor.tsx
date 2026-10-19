@@ -14,7 +14,6 @@
 import { useId, type ReactNode } from 'react';
 import { SPRITES } from '@/assets/manifest';
 import { Tween, about } from './Tween';
-import { CAR_TINT } from './CarBackdrop';
 import { diningCarPlan } from '../paint/dining-car';
 import { K2, type Phase } from '../paint/materials';
 import { carLines } from '../paint/window';
@@ -75,8 +74,7 @@ export function Trap({
     h = t.holeBot - t.holeTop;
   // the leaves' face: the car's painted floor where they lie, at the car's hour
   const tex = 'tr' + useId().replace(/[^A-Za-z0-9_-]/g, '');
-  const at = diningCarPlan({ phase, hud: g.hud, side: g.side }).picture,
-    tint = CAR_TINT[phase];
+  const at = diningCarPlan({ phase, hud: g.hud, side: g.side }).picture;
   const defs = (
     <defs>
       <pattern
@@ -87,12 +85,7 @@ export function Trap({
         width={STAGE_W}
         height={STAGE_H}
       >
-        <image
-          href={SPRITES.car[phase === 'night' ? 'night' : 'day'].src}
-          width={STAGE_W}
-          height={STAGE_H}
-        />
-        {tint ? <rect width={STAGE_W} height={STAGE_H} fill={tint} /> : null}
+        <image href={SPRITES.car[phase].src} width={STAGE_W} height={STAGE_H} />
       </pattern>
     </defs>
   );

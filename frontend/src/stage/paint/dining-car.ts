@@ -1,43 +1,45 @@
 /**
  * The dining car: the day's backdrop, and the night lobby's.
  *
- * The car is a painting (owner-ruled 2026-09-29): walnut panels, the long brass-framed window
- * on the country, a lantern on its bracket at the right, a table lamp at each edge, and the
- * stage floor, painted once by day and relit from that same picture for the night
- * (SPRITES.car, stage_architecture §4 "The dining car"). The CarBackdrop instrument lays it;
+ * The car is a painting (owner-ruled 2026-09-29; the owner's own, 2026-10-19): walnut panels, the
+ * brass-framed window with the country painted in it, a painting either side, a booth and a table
+ * lamp at each edge, and the boards with the brass hatch, one picture an hour, the four one room
+ * relit (SPRITES.car, stage_architecture §4 "The dining car"). The CarBackdrop instrument lays it;
  * this file says where it sits and what the layers above it need from the room: where the
  * light's glows and specials fall, the floor's lines, the window and its glass.
  *
- * The painting was fitted to the kit's car at the HUD 'none' layout (scripts/fit-car.mjs): its
- * glass on the kit's window, its floor strip on the rail. It follows the layout as the drawn
+ * The painting was fitted to the kit's car at the HUD 'none' layout (scripts/fit_car_hours.py):
+ * its glass centred on the puppet, the floor's line at the wall's foot on the kit's. Its glass is
+ * the car's window (window.ts `windowRect`), which the shutter covers. It follows the layout as the drawn
  * car did: across with the puppet's centre line (the HUD's wing, the open side slot) and up or
  * down with the rail (the replay's), so the glass, the floor and the lamps move together.
  *
  * The plan is still the design kit's `scene()` (kits/stage-kit.js, VERSION 2026-09-23); a test
  * holds the two equal, with the departures it documents: the kit's drawing is gone (the
- * painting is the walls, the frame and the floor), the wall clock is gone, and the lantern's
- * special and glow sit on the painted lantern, with a glow on each painted table lamp too.
+ * painting is the walls, the frame and the floor), the window is the painting's glass, the wall
+ * clock is gone, and the lantern's special and glow sit on the painting's picture light, with a
+ * glow on each painted table lamp too.
  */
 import { geometry, STAGE_H, STAGE_W, type Hud } from '../units';
 import type { Glow, Rect, Special } from './draw';
 import { PHASES, ROOMLIGHT, type Phase } from './materials';
-import { carLines, windowRect } from './window';
+import { CAR_FIT, CAR_GLASS, carLines, windowRect } from './window';
 
 /**
- * The fitted painting, in its own 1600×900 pixels (one a unit), measured on car-day.png
- * (2026-09-29): the layout it was fitted to, its cleared glass, and the lamps' flames.
+ * The fitted painting, in its own 1600×900 pixels (one a unit), measured on the owner's car
+ * (scripts/fit_car_hours.py, 2026-10-19): the layout it was fitted to, its glass, and the lamps.
  */
 export const CAR_PICTURE = {
   /** The puppet's centre line and the rail it was fitted to (the kit's car at HUD 'none'). */
-  fit: { cx: 800, railY: 639 },
-  /** The glass the felt country shows through: its box and corner radius. */
-  glass: { x0: 401, y0: 113, x1: 1199, y1: 409, r: 28 },
-  /** The lantern on its bracket at the right, its glass's centre. */
-  lantern: [1485, 175],
+  fit: CAR_FIT,
+  /** The glass, the country painted in it: its box and corner radius. */
+  glass: CAR_GLASS,
+  /** Where the kit's lantern goes: the picture light over the right-hand painting. */
+  lantern: [1311, 90],
   /** The table lamps at the left and right edges, their shades' centres. */
   tableLamps: [
-    [45, 400],
-    [1555, 400],
+    [14, 220],
+    [1589, 220],
   ],
 } as const;
 
@@ -64,7 +66,7 @@ export interface DiningCarPlan {
   /** Narrow spots from above on the window and the lantern. */
   specials: Special[];
   /**
-   * The painted lamps (the lantern, then the table lamps), lit in both pictures: the light
+   * The painted lamps (the lantern, then the table lamps), lit at every hour: the light
    * cuts each a clean warm hole through the house's dark (`light`'s `lamps`), at any hour.
    */
   lamps: Glow[];
