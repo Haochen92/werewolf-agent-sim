@@ -1,14 +1,13 @@
 'use client';
 
 /**
- * The lynch (handoff §4.4, beat sheet §4, bench 65): the trap's second act. The table has gone
- * down and the trap stands open. The shot pulls back; the stand comes up with the voted-out
- * seat's puppet rising into it, the open leaves either side of it, and the light closes to one
- * special. A held beat ("voted out"), then the drop: straight down through the trap, no fade,
- * the plaque left lit over an empty box. The lift brings the seat's role card up in the
- * puppet's place, and the wing's tile turns to the role's sigil once the card has cleared the
- * rail. The truth is held; then the card flies up and away, the stand goes, the shutter
- * gathers up on the night, and the leaves fold.
+ * The lynch (handoff §4.4, beat sheet §4, bench 65). The table has gone down out of the frame.
+ * The shot pulls back; the stand comes up with the voted-out seat's puppet rising into it, and
+ * the light closes to one special. A held beat ("voted out"), then the drop: straight down out
+ * of the stand, no fade, the plaque left lit over an empty box. The lift brings the seat's role
+ * card up in the puppet's place, and the wing's tile turns to the role's sigil once the card
+ * has cleared the rail. The truth is held; then the card flies up and away, the stand goes, and
+ * the shutter gathers up on the night.
  *
  * With the X-ray on, the case file's docket holds "Who had them right": each voter's last
  * read of this seat before the vote, against the truth, and the seat's own last note
@@ -21,7 +20,6 @@ import { isNineSeat } from '../card-text';
 import { Puppet, puppetBox } from '../cast/Puppet';
 import { Bounded, standBand } from '../instruments/Bounded';
 import { RoleCard } from '../instruments/Card';
-import { trapGeometry } from '../instruments/Floor';
 import { Lift } from '../instruments/Lift';
 import { CardButton, Notice, NoticeZone } from '../instruments/Notice';
 import { Plaque, Stand } from '../instruments/Stand';
@@ -31,7 +29,7 @@ import type { Special } from '../paint/draw';
 import { ROLE_ARTICLE } from '../paint/role-kit';
 import { ROLE_NAME, factionOf, seatNumber } from '../roles';
 import { bandNarrows, fileTap, sideOpen } from '../slot';
-import { STAGE_H, STAGE_W, geometry, type StageGeometry } from '../units';
+import { STAGE_H, geometry, type StageGeometry } from '../units';
 import { CarSetSpec } from './CarScene';
 import type { SceneProps } from './types';
 import { score, tally } from './vote-count';
@@ -70,7 +68,6 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
   const side = sideOpen(presentation);
   const g = geometry(hud, side);
   const v = voteGeometry(g);
-  const t = trapGeometry(g);
   const vote = view.days[day]?.vote;
   const seat = beat.subject ?? vote?.lynched ?? '';
   const n = seatNumber(seat),
@@ -116,17 +113,8 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
   const tone =
     step >= 2 && role ? (factionOf(role) ?? undefined) : tag ? 'agent' : undefined;
 
-  // the light: one special on the seat, a little on the standing leaves; night takes it down
+  // the light: one special on the seat; night takes it down
   const specials: Special[] = night ? [] : [[g.cx, 0, g.railY, g.pwid * 0.22, 1]];
-  const quiet: Special[] = night
-    ? []
-    : [-1, 1].map((s) => [
-        v.cx + (s * t.trapW) / 2,
-        t.holeTop - t.leafH * 2,
-        t.holeBot,
-        0.03 * STAGE_W,
-        0.7,
-      ]);
   const pool = night
     ? { x: g.cx, y: g.railY - g.pwid * 0.6, rx: g.pwid * 0.45, ry: g.pwid * 0.6 }
     : { x: g.cx, y: g.railY - g.pwid * 0.9, rx: g.pwid * 0.5, ry: g.pwid * 0.9 };
@@ -154,8 +142,7 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
           animate: night && animate,
           delay: 1.4,
         }}
-        trap={{ state: night ? 'closed' : 'open', animate: night && animate }}
-        light={{ pool, specials, quiet, dark }}
+        light={{ pool, specials, dark }}
         wing={{
           untold,
           lit: (s) => s === seat,

@@ -1,9 +1,10 @@
 'use client';
 
 /**
- * The vote's table: what the lift brings up through the trap. A painted table, a baize top, a
- * cream felt cloth hanging from its front edge, a stitched scalloped hem and turned legs (the
- * felt set, 2026-10-17); on it the glass jar. For the count the jar stands at the back of the
+ * The vote's table: what the lift brings up from below the frame, standing whole on the floor.
+ * The owner's table (2026-10-19): a green baize top in a studded walnut rim, a cream cloth
+ * hanging from its front edge with a fleur-de-lis and a scalloped hem, turned legs; on it the
+ * glass jar. For the count the jar stands at the back of the
  * table, to the right, and a row of plates stands along the front edge, one per seat that got
  * a vote and one more at the right for abstain (an ordinary empty plate, owner 2026-09-30; it
  * was an upturned saucer), each with a place card on the cloth below it (the candidate's head
@@ -25,6 +26,7 @@ import { Jar, JarFallers, JarLid, JarShadow, type LidState } from './Jar';
 import { Tween, about, lerp } from './Tween';
 import { ChipBack, ChipFace, FlatChip } from './VoteChip';
 import {
+  TABLE_PX,
   TOWER_CAP,
   TOWER_STEP,
   jarGeometry,
@@ -44,32 +46,16 @@ const svgFill: CSSProperties = {
 };
 
 /**
- * The table picture (SPRITES.props.voteTable, the felt set of 2026-10-17: a green baize top, a
- * cream felt cloth with a stitched scalloped hem) in its file's pixels: its top's back and front
- * lines, the front corners, and the depth of cloth the vector `drop` stands for (to the hem's
- * cusps, so the place cards hang on the plain felt above the scallops).
- */
-const TABLE_PX = {
-  W: 1412,
-  H: 321,
-  back: 5.5,
-  front: 47.9,
-  left: 8.9,
-  right: 1402.6,
-  drop: 177.9,
-};
-
-/**
- * The painted table in two strips that meet at the top's front line: the top stretched to
- * the vote's own depth, so the plates and the jar stand where they did; the cloth and legs
- * below it scaled to `drop`, so the place cards hang on the cloth.
+ * The painted table in two strips that meet at the top's front line: the top squashed to the
+ * vote's own depth, so the plates and the jar stand where they did; the cloth and the legs below
+ * it at the picture's own scale (the cloth's depth is the vote's `drop`).
  */
 function TablePicture({ v }: { v: VoteGeometry }) {
-  const { cx, topY, depth, tw, drop } = v,
+  const { cx, topY, depth, tw } = v,
     P = TABLE_PX;
   const s = tw / (P.right - P.left),
     sT = depth / (P.front - P.back),
-    sF = drop / P.drop;
+    sF = s;
   const strip = (top: number, height: number, sy: number, y0: number): CSSProperties => ({
     position: 'absolute',
     left: cx - ((P.left + P.right) / 2) * s,
@@ -612,7 +598,13 @@ export function VoteTable({
       <svg viewBox={`0 0 ${STAGE_W} ${STAGE_H}`} style={svgFill} aria-hidden="true">
         <JarFallers v={v} mine={own} falling={play.falling} />
         {!counting || play.lidFrom ? (
-          <JarLid v={v} state={lid} from={play.lidFrom} arriving={play.arriving} />
+          <JarLid
+            v={v}
+            state={lid}
+            from={play.lidFrom}
+            arriving={play.arriving}
+            part="lid"
+          />
         ) : null}
         {plates}
         {arc}

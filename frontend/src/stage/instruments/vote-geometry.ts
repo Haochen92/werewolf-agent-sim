@@ -1,13 +1,12 @@
 /**
- * Where the vote's things stand, in units: the table on its lift, the glass jar, the plates
+ * Where the vote's things stand, in units: the table on the floor, the glass jar, the plates
  * along the table's front edge, the place cards on the cloth, the chips on the plates. The
- * table rises through the trap, so all of it is sized from the same puppet box the trap is,
- * and a number here can be checked against the vote bench (rev 64 `VG`, `jar`, `plateSpots`,
- * `stackPos`, `cardSVG`) by eye.
+ * table is sized from the puppet's box as the vote bench's was, and stands whole, its feet
+ * near the frame's foot (owner, 2026-10-19); a number here can be checked against the vote
+ * bench (rev 64 `VG`, `jar`, `plateSpots`, `stackPos`, `cardSVG`) by eye.
  */
 import { carLines } from '../paint/window';
-import { CAMERA_ZOOM_MAX, STAGE_H, STAGE_W, type StageGeometry } from '../units';
-import { trapGeometry } from './Floor';
+import { CAMERA_ZOOM_MAX, STAGE_H, type StageGeometry } from '../units';
 
 export interface VoteGeometry {
   g: StageGeometry;
@@ -19,30 +18,42 @@ export interface VoteGeometry {
   tw: number;
   bw: number;
   drop: number;
-  /** Where the table's feet stand on the lift. */
+  /** Where the table's feet stand on the floor. */
   footY: number;
   /** A ballot chip's radius. */
   r: number;
   /** The jar's base line on the table. */
   base: number;
-  /** The trap's opening, and the lift's slab inside it. */
-  holeTop: number;
-  holeBot: number;
-  trapW: number;
-  slabTop: number;
-  slabBot: number;
   floorH: number;
 }
 
+/**
+ * The table picture (SPRITES.props.voteTable, the owner's, 2026-10-19: a green baize top in a
+ * studded walnut rim, a cream cloth with a fleur-de-lis and a scalloped hem, turned legs) in its
+ * file's pixels: its top's back and front lines, the front corners, the cloth's depth to the
+ * hem's cusps (so the place cards hang on the plain cloth above the scallops), and its feet.
+ */
+export const TABLE_PX = {
+  W: 1412,
+  H: 657,
+  back: 1.8,
+  front: 164.6,
+  left: 0,
+  right: 1411.1,
+  drop: 114.2,
+  feet: 654.8,
+} as const;
+
 export function voteGeometry(g: StageGeometry): VoteGeometry {
-  const H = STAGE_H,
-    ph = g.ph,
-    t = trapGeometry(g),
-    { floorH } = carLines(g);
-  const tw = t.trapW / 1.1,
+  const ph = g.ph,
+    { floorH } = carLines(g),
+    P = TABLE_PX;
+  // the bench's width (0.6 of the room right of the wing), the picture at one scale down it
+  const tw = Math.min((g.side ? 0.76 : 0.6) * g.room, 2.1 * g.pwid),
+    s = tw / (P.right - P.left),
     depth = 0.085 * ph,
-    topY = g.railY - 0.15 * ph;
-  const rim = Math.max(4, 0.011 * STAGE_W);
+    footY = 0.988 * STAGE_H,
+    topY = footY - (P.feet - P.front) * s;
   return {
     g,
     cx: g.cx,
@@ -50,15 +61,10 @@ export function voteGeometry(g: StageGeometry): VoteGeometry {
     depth,
     tw,
     bw: tw * 0.9,
-    drop: 0.13 * ph,
-    footY: g.railY + 0.012 * H,
+    drop: P.drop * s,
+    footY,
     r: Math.max(8, 0.078 * g.pwid),
     base: topY - depth * 0.62,
-    holeTop: t.holeTop,
-    holeBot: t.holeBot,
-    trapW: t.trapW,
-    slabTop: t.holeTop + rim,
-    slabBot: t.holeBot - rim,
     floorH,
   };
 }
@@ -223,10 +229,16 @@ export function placeCardBox(v: VoteGeometry, p: PlateSpot, nCands: number) {
   return { x: p.x - cw / 2, y: v.topY + v.drop * 0.16, w: cw, h: ch };
 }
 
-/** The camera's push-in for the count: 1.32 about a point just above the table (bench 64). */
+/**
+ * The camera's push-in for the count: 1.32, bringing the table's front edge to where the bench's
+ * came (bench 64), though the owner's table stands lower.
+ */
 export function countShot(v: VoteGeometry) {
   const k = CAMERA_ZOOM_MAX;
-  // the bench scales about (cx, topY − 0.04H) and then drops the picture 0.015H; one fixed
-  // point says the same: the point that scale alone leaves where it is
-  return { scale: k, x: v.cx, y: v.topY - 0.04 * STAGE_H - (0.015 * STAGE_H) / (k - 1) };
+  // the bench's table edge (railY − 0.15 of the puppet), and its shot: scaled about (cx, edge −
+  // 0.04H), then the picture dropped 0.015H, as one fixed point (the one scale alone leaves
+  // where it is); moved down k/(k − 1) of the way the table did, the edge lands where it did
+  const edge = v.g.railY - 0.15 * v.g.ph,
+    bench = edge - 0.04 * STAGE_H - (0.015 * STAGE_H) / (k - 1);
+  return { scale: k, x: v.cx, y: bench + (k * (v.topY - edge)) / (k - 1) };
 }

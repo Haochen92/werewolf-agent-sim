@@ -272,12 +272,18 @@ export interface JarLidProps {
   delay?: number;
   /** Played at "voting opens": the lid's string comes down first, then the lid lifts. */
   arriving?: boolean;
+  /**
+   * One part only: the lid rides the lift with the table; the string hangs from above the frame
+   * and is drawn outside the lift, in step, so the rising load is only as tall as the table
+   * (a phone repaints the load's box every frame of the rise).
+   */
+  part?: 'lid' | 'string';
 }
 
 const LID_EASE = [0.3, 0.8, 0.4, 1] as [number, number, number, number];
 
 /** The glass lid on its string, tied round the neck of its knob. */
-export function JarLid({ v, state, from, delay, arriving = false }: JarLidProps) {
+export function JarLid({ v, state, from, delay, arriving = false, part }: JarLidProps) {
   const pic = useSmall() ? SPRITES.small.props.jarLid : SPRITES.props.jarLid;
   const J = jarGeometry(v),
     { lw, ly, ks, knob, cx, cy } = J.lid;
@@ -318,21 +324,23 @@ export function JarLid({ v, state, from, delay, arriving = false }: JarLidProps)
   );
   const lid = (
     <g>
-      {arriving ? (
+      {part === 'lid' ? null : arriving ? (
         <Tween play delay={1.9} duration={0.3} ease="linear" opacity={(p) => p}>
           {string}
         </Tween>
       ) : (
         string
       )}
-      <image
-        href={pic.src}
-        x={cx - lw / 2 - LID_PX.x * ks}
-        y={ly - LID_PX.y * ks}
-        width={LID_PX.W * ks}
-        height={LID_PX.H * ks}
-        preserveAspectRatio="none"
-      />
+      {part === 'string' ? null : (
+        <image
+          href={pic.src}
+          x={cx - lw / 2 - LID_PX.x * ks}
+          y={ly - LID_PX.y * ks}
+          width={LID_PX.W * ks}
+          height={LID_PX.H * ks}
+          preserveAspectRatio="none"
+        />
+      )}
     </g>
   );
   if (!from || from === state) return <g transform={at(1)}>{lid}</g>;

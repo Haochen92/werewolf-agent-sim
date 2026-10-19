@@ -45,7 +45,6 @@ import { Layer } from '../Stage';
 import { SideSlot } from '../SideSlot';
 import type { SceneId } from '../beats/types';
 import { Backdrop } from '../instruments/Backdrop';
-import { Trap, type TrapState } from '../instruments/Floor';
 import { Shutter } from '../instruments/Shutter';
 import { TopStrip, type TopStripProps } from '../instruments/TopStrip';
 import { StageMotion } from '../motion';
@@ -66,8 +65,6 @@ export interface CarSet {
   /** The hour the car was at before this beat, to fade from (instruments/Backdrop.tsx). */
   backdrop?: { from?: Phase | null; fadeDelay?: number };
   shutter: { state: ShutterState; animate?: boolean; delay?: number };
-  /** The trap in the floor, where the scene has one; absent, the painted floor is shut. */
-  trap?: { state: TrapState; animate?: boolean; phase?: Phase } | null;
   light: { pool: Pool; specials?: Special[]; quiet?: Special[]; dark: number };
   wing: WingSeatOptions;
   strip: Pick<TopStripProps, 'title' | 'sub' | 'disc' | 'count' | 'side' | 'unlocked'>;
@@ -123,16 +120,6 @@ const CarSetSheet = memo(function CarSetSheet({
           delay={spec.shutter.delay}
         />
       </Layer>
-      {spec.trap ? (
-        <Layer name="floor">
-          <Trap
-            g={g}
-            phase={spec.trap.phase ?? spec.phase}
-            state={spec.trap.state}
-            animate={spec.trap.animate}
-          />
-        </Layer>
-      ) : null}
       <Layer name="light">
         <HouseLights
           phase={spec.phase}

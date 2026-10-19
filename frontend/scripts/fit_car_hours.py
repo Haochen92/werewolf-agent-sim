@@ -1,5 +1,5 @@
 """
-One-off: the owner's dining car at its four hours (2026-10-19), from the
+One-off: the owner's dining car at its four hours, and the vote's table (2026-10-19), from the
 masters in claude_artifacts/design/rasters/live_ugrade/.
 
 The four hours are one room relit (they line up to the pixel), so each is fitted the same way
@@ -8,6 +8,9 @@ centre line at 800, the rail at 639): scaled so the floor meets the wall on the 
 line (`carLines().floorY`, 580.5) with the picture still reaching the frame's foot, the glass
 centred on the puppet. The country is painted in the glass, so nothing is cut out. The lines
 code needs (`CAR_PICTURE`) are printed in the fitted picture's pixels.
+
+The table is cut to its bounding box, legs whole, at the old table's width (`TABLE_PX` in
+VoteTable.tsx is measured on it).
 
 Run from frontend/: `poetry run python scripts/fit_car_hours.py`
 """
@@ -30,6 +33,8 @@ CAR = {
 }
 FLOOR_Y, FIT_CX, W, H = 580.5, 800, 1600, 900
 SCALE = 1.021  # the least that keeps the picture's foot at the frame's (313 px under the wall's foot)
+# the table: its bounding box, its legs whole
+TABLE = {"file": "vote-table-felt.png", "box": (50, 195, 1620, 925), "width": 1412}
 
 
 def car() -> None:
@@ -47,5 +52,14 @@ def car() -> None:
     print("table lamps", [at(*p) for p in CAR["table_lamps"]], "picture light", at(*CAR["picture_light"]))
 
 
+def table() -> None:
+    im = Image.open(MASTERS / TABLE["file"]).convert("RGBA").crop(TABLE["box"])
+    s = TABLE["width"] / im.width
+    im = im.resize((TABLE["width"], round(im.height * s)), Image.LANCZOS)
+    im.save(OUT / "props" / "vote-table.webp", "WEBP", quality=85, alpha_quality=100, method=6)
+    print(f"props/vote-table.webp: {im.size}, scale {s:.4f} from the master less {TABLE['box'][:2]}")
+
+
 if __name__ == "__main__":
     car()
+    table()

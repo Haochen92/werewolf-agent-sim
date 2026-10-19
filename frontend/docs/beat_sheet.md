@@ -268,7 +268,7 @@ ephemeral: it paces the live drop and is not in the log.
 
 | # | Beat | Anchor | Sees | Stage | Slot | Hold |
 |---|---|---|---|---|---|---|
-| 1 | `vote.opens` | `phase_change: voting` (81, 220, 362). **Chapter mark: Vote N** | P | the puppet drops behind the stand, the stand goes; dusk; the shutter drops; the trap's leaves open and stand; the table rises on its lift with the jar; the lid's string comes down and the lid lifts. One move | D: the GM's line if any | 2.8 |
+| 1 | `vote.opens` | `phase_change: voting` (81, 220, 362). **Chapter mark: Vote N** | P | the puppet drops behind the stand, the stand goes; dusk; the shutter drops; the table comes up on its lift from below the frame and stands on the floor with the jar (no trap since 2026-10-19); the lid's string comes down and the lid lifts. One move | D: the GM's line if any | 2.8 |
 | 2 | `vote.ballot-drops` | live only: each `phase_progress` increment | P | one anonymous chip from the flies into the jar; the pill "Ballots in, n of N" | — | real time |
 | 3 | `vote.your-ballot` | `input_request` `vote` for me, placed after row 1 (§12, 2026-10-12) | S | the prompt: a row of the candidates' chips, the empty plate = abstain; tap, confirm on the plate; my chip drops in face up on my screen only; after that I have the spectator's jar | — | until answered / deadline |
 | 4 | `vote.ballots-drop` | replay only: the `vote_cast` batch (first: 109, 242, 378) | P | all the chips cascade together into the jar | — | 2.0 |
@@ -276,13 +276,13 @@ ephemeral: it paces the live drop and is not in the log.
 | 6 | `vote.count-begins` | the `vote_cast` batch | P | the lid flies out; the shot pushes in; the jar fades from the centre and stands at the back of the table, to the right (2026-10-17; it tipped onto its side before); plates along the front edge, one per seat with votes, abstain's an ordinary empty plate at the right, laid as the others, its place card reading "Abstain" (2026-09-30; it was an upturned saucer); every plate the painted plate (`SPRITES.props.plate`, 2026-09-30); place cards with head, seat, running number | F(X): the voters' consults and reads | 2.0 |
 | 7 | `vote.chip-counted` | each `vote_cast` | P (X: the ballot named at the drop) | one chip is lifted out of the jar's mouth, flips face up, lands on its plate; the card's number ticks; towers cap at four; the chip that settles the winner lands last | D: (the votes are one drawer line per day at the count: a tally per seat voted for, the voters' faces its marks, and the who-voted-whom sentence) | 2.0 each |
 | 8 | `vote.result` | `lynch_result` (119, 250, 384) | P | the winner's plate and card lit; "Voted out, 3 to 2" · `abstain`: "The table abstains" · `tie`: the tied plates lit equally, the GM's line, one held beat, then the abstain ending | D: the GM line with the lynch sigil lent to it | 3.2 |
-| 9 | `vote.table-down` | `lynch_result` | P | the lift lowers the table with the count on it. `lynched`: the leaves stay open → §4. `abstain`/`tie`: the leaves fold, the shot pulls back, the shutter gathers up on the night window → §5 | — | 3.0 |
+| 9 | `vote.table-down` | `lynch_result` | P | the lift lowers the table with the count on it, out of the frame. `lynched` → §4. `abstain`/`tie`: the shot pulls back, the shutter gathers up on the night window → §5 | — | 3.0 |
 | — | `vote.skipped` | `lynch_result: no_vote` (31, day 1) | — | **no vote scene**: the day goes straight to night falls (§5 row 1 takes the shutter move) | D: the GM line | — |
 
 As built 2026-09-25 (bench 64's timings; the rest no bench gives, change here first): top strip
 "Day N · The vote · <label>" ("Night falls · …" on the abstain ending). The opening: the puppet
 drops 0.45 s, the stand fades 0.3 s after 0.38 s, day → dusk 1.2 s after 0.15 s, the shutter 1.1 s
-after 0.35 s, the flat leaves fold 0.5 s after 0.3 s and stand 0.45 s after 0.7 s, the lift 1.4 s
+after 0.35 s, the lift 1.4 s
 after 0.55 s, the lid's string fades in 0.3 s after 1.9 s and the lid lifts 0.7 s after 2.1 s. The
 pill: "Ballots in, 0 of N" (N = the living) at the opening, "n of n" at the drop, "All in" at the
 close; the replay's chips fall 0.75 s each, 0.09 s apart. The close: the lid down 0.6 s after
@@ -291,8 +291,7 @@ fades out 0.35 s after 0.9 s and in at the back 0.35 s after 1.05 s, the plates 
 0.85 s, the card's number pops at 0.82 s, the box "Seat 7 votes Seat 2" ("Seat 5 abstains") after
 0.7 s; the wing lights the voter. The result: "Seat 2 · Voted out, 3 to 2." · "The table abstains
 · 9 to 0. No one is voted out." · "A tie, 3 to 3 · <the GM's last line>"; the plate's glow 0.7 s
-after 0.2 s. The down: the lift 1.5 s after 0.35 s; the abstain ending: the standing leaves fold at
-2.0 s, the flat ones lay at 2.4 s, the pull-back 1.2 s after 2.2 s, dusk → night after 2.4 s, the
+after 0.2 s. The down: the lift 1.5 s after 0.35 s; the abstain ending: the pull-back 1.2 s after 2.2 s, dusk → night after 2.4 s, the
 shutter up after 2.5 s; a lynch keeps the close shot. The voted-out seat stays alive on the wing
 until the lynch's card clears the rail. The table's top is the walnut tile in perspective, the
 bench's cloth hanging from its front edge. The ballot: the chosen chip is lit (amber ring, glow),
@@ -312,19 +311,18 @@ seat 2 serial killer).
 
 | # | Beat | Anchor | Sees | Stage | Slot | Hold |
 |---|---|---|---|---|---|---|
-| 1 | `lynch.stand-returns` | `lynch_result` | P | the shot pulls back; the stand comes up from below the rail with the voted-out puppet rising into it from behind the playboard; the leaves stand either side; the light collapses to one special | — | 3.0 |
+| 1 | `lynch.stand-returns` | `lynch_result` | P | the shot pulls back; the stand comes up from below the rail with the voted-out puppet rising into it from behind the playboard; the light collapses to one special | — | 3.0 |
 | 2 | `lynch.named` | 〃 | P | held; the plaque's tag "voted out". S (if me): the box "You are voted out" | — | 2.0 |
-| 3 | `lynch.drop` | 〃 | P | straight down through the trap, no fade; the plaque stays lit over the empty box | — | 2.0 |
+| 3 | `lynch.drop` | 〃 | P | straight down out of the stand, no fade; the plaque stays lit over the empty box | — | 2.0 |
 | 4 | `lynch.card-up` | `lynch_result.role` | P | the lift raises the role card (name, sigil, figure, front line, faction colour); the wing's card holds the live photo until the card clears the rail, then turns grey with the role's band | F(X), the docket: "Who had them right": each voter's `player_reads` on this seat vs the truth (● role ◐ side ○ none/wrong); the seat's last note | 2.6 |
 | 5 | `lynch.truth` | 〃 | P | held. S (if me): "You were a villager" → "You stay at the table as a spectator"; the card button reads "on the wing" | — | 2.6 |
-| 6 | `lynch.card-to-wing` | 〃 | P | the card flies up; the stand goes; the shutter gathers up on the night window; the leaves fold → §5. If this lynch ends the game → §10 | — | 3.0 |
+| 6 | `lynch.card-to-wing` | 〃 | P | the card flies up; the stand goes; the shutter gathers up on the night window → §5. If this lynch ends the game → §10 | — | 3.0 |
 
 As built 2026-09-25 (bench 65's timings; change here first): top strip "Day N · The lynch ·
 <label>". The pull-back 1.0 s after 0.1 s; the stand fades in 0.5 s after 0.5 s and the puppet
 rises (base state) at 1.05 s; the drop (the out state) 0.5 s after 0.35 s; the card rises 1.3 s
 after 0.3 s and the wing's tile turns at 1.45 s; the card flies 0.8 s after 0.3 s, the stand fades
-0.6 s after 1.3 s, dusk → night after 1.3 s, the shutter up after 1.4 s, the leaves at 2.0 s /
-2.4 s. The box: "Seat 2 · Voted out, 3 to 2." → "Seat 2 was the serial killer · Voted out, 3 to
+0.6 s after 1.3 s, dusk → night after 1.3 s, the shutter up after 1.4 s. The box: "Seat 2 · Voted out, 3 to 2." → "Seat 2 was the serial killer · Voted out, 3 to
 2." → "· Night falls." at the card to the wing; S: "You are voted out · 3 to 2. Your role is shown
 to the table next." → "You were a villager · The table sees your card now." → "· You stay at the
 table as a spectator." The docket ("Who had them right") shows at the card and the truth: each
@@ -633,8 +631,8 @@ leading. A seated human's "you won / you lost" is client-known from `role_assign
 
 | # | Beat | Anchor | Sees | Stage | Slot | Hold |
 |---|---|---|---|---|---|---|
-| 1 | `over.where-it-ended` | `game_over`. **Chapter mark: Game over** | P | the last scene's frame, held. After a morning: the night's paint behind the shutter, the room empty, the last card drawn up. After a lynch: dusk, the shutter down, the leaves standing open, the card gone. The notice: after a lynch the vote's end line; after a morning that morning's roll (§8) | D: the ending line (the game master's; without one, "The town has won." … "The game is a draw.") | 2.0; after a morning the roll's 3.5 + 1.5 a row |
-| 2 | `over.winners-hour` | `winner` (null: a draw) | P | the shutter rises, by winner (2026-10-10, was by side): full day for the town, night for the wolves, dusk for the serial killer and for the necromancer, a grey dawn for a draw, and for a game no side won that the neutral won (2026-10-17: the wire's winner is null, its `neutral_result` "won"); the leaves fold if open | — | 3.0 |
+| 1 | `over.where-it-ended` | `game_over`. **Chapter mark: Game over** | P | the last scene's frame, held. After a morning: the night's paint behind the shutter, the room empty, the last card drawn up. After a lynch: dusk, the shutter down, the card gone. The notice: after a lynch the vote's end line; after a morning that morning's roll (§8) | D: the ending line (the game master's; without one, "The town has won." … "The game is a draw.") | 2.0; after a morning the roll's 3.5 + 1.5 a row |
+| 2 | `over.winners-hour` | `winner` (null: a draw) | P | the shutter rises, by winner (2026-10-10, was by side): full day for the town, night for the wolves, dusk for the serial killer and for the necromancer, a grey dawn for a draw, and for a game no side won that the neutral won (2026-10-17: the wire's winner is null, its `neutral_result` "won") | — | 3.0 |
 | 3 | `over.verdict` | 〃 | P | a walnut board comes down on two strings, large and centred: the faction's colour at its edges, its felt badge sewn on at the left (2026-10-07; it was the winner's role sigil on a paper plate), the winner's line in the card's serif ("The town has won" · "The wolves have won" · "The serial killer has won" · "The necromancer has won", under the lone killer's violet · a draw "No side has won", bone edges and no badge, the words centred · a game no side won that the neutral won is the neutral's, as a winner's: "The speculator has won" · "The fortune teller has won", the neutrals' badge and colour (2026-10-17; it used to read as a draw); the archive's Won by, the slates and the featured replay say it so too), "Day 4 · at the morning" beneath; drawn up as the next beat begins | — | 3.2 |
 | 4 | `over.winners-stand` | 〃 + the roster | P | the stand comes up and the winners' **survivors** rise into it (the town's or the pack's by side, a pack mate known by side; the serial killer's or the necromancer's own seat; a neutral only for the game no side won that it won, its own seat; a draw nobody, so no stand and no "last of them" line), base state: one at full size, two at 0.78, three at 0.6 with the box widened (×1.36, ×1.6); one special each; the plaque names the seats (and roles once the truth is out); the winners' wing tiles lit, the rest dimmed; the fallen stay on the wing as grey cards with their roles' bands. The box: "The wolves have won" (a draw's without pennant or colour), under it the neutral's result when one was dealt (`game_over.neutral_result`, the lineup's neutral; 2026-10-10; not when the neutral is the winner's line): "The speculator’s pick won" · "The speculator lost" · "The fortune teller won, with 2 points" · "The fortune teller lost, with 1 point" (the client's lines, so the role's name as the game writes it, `ROLE_NAME`; the engine's own lines, the pick at dawn, keep its words), then the survivors' chips, "Seat 8 is the last of them standing". S: "You won" / "You lost. You were the vigilante"; a neutral seat won or lost on its own result | — | 3.0 |
 | 5 | `over.truth` | `roles_assigned` from the backlog (live) · already in the log (replay) | everyone | every living tile takes its faction strip and sigil badge, and a concealed body's "Role hidden" tile its role; live: the File tab reads "File · unlocked" (the X-ray button's "unlocked" until 2026-09-29) | F, the docket: the case, closed (the deal, and how each seat went) | 2.6 |
@@ -651,7 +649,7 @@ then "Game over · Day N · the wolves have won · <label>". Where it ended: "Th
 killed by the wolves: a villager. Seat 9 was shot by the vigilante: the healer." or "The vote's
 end · Seat 8 is voted out, 3 to 0: a wolf." (bench 73); played after a morning, the last card is
 drawn up (0.9 s after 0.1 s). The hour: the paint crossfades 1.2 s after 1.2 s, the shutter rises
-after 0.4 s, open leaves fold. The verdict: 1.5 puppet widths wide (at most 0.52 of the stage),
+after 0.4 s. The verdict: 1.5 puppet widths wide (at most 0.52 of the stage),
 0.17 tall, centred at 0.36; its second line in capitals, "DAY 4 · AT THE MORNING" / "AT THE VOTE";
 down 1.1 s after 0.4 s, up 0.8 s after 0.1 s. The stand fades in 0.5 s after 0.6 s; the winners
 rise at 1.1 s, 0.22 s apart, out of sight until then; the box after 1.6 s. The winners' puppets

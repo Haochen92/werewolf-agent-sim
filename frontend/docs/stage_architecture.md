@@ -101,7 +101,7 @@ The stage is a `16 / 9` box. Every position, size, radius and path in every scen
 
 1. `paint` — the backdrop (the dining car's and the night rooms' paintings / station; the night rooms' felt country in their glass; the shutter)
 2. `haze` — the atmosphere's back half: the key light on the wall, the pelmet's shadow, the veil
-3. `floor` — the trap (its hole, and its leaves while they move), lift
+3. `floor` — (unused since the trap went, 2026-10-19), lift
 4. `figures` — puppets, the night rooms' photos on their line, chips on strings, cards on strings
 5. `stand` — the stand, plaque, footlights
 6. `instruments` — table, jar, plates, verdict board, act marks, the night room's card
@@ -348,8 +348,9 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   under the pixels of the one it replaced; the numbers below each heading are the old set's). The
   stand: stitched leather rails and riveted stiles round a bottle-green felt panel, 1487×440,
   slices 169 211 144 211, darkened to the old front's mean, quality 75, with a phone copy
-  (`stand-front@small`, Stand.tsx scales `--slice`). The table: a green baize top, a cream felt
-  cloth with a stitched scalloped hem (`TABLE_PX`). The plate: brushed pewter (2026-10-19, was cream stoneware). The jar: a footed
+  (`stand-front@small`, Stand.tsx scales `--slice`). The table (the owner's, 2026-10-19): a green
+  baize top in a studded walnut rim, a cream cloth with a fleur-de-lis and a scalloped hem, turned
+  legs, whole, 1412×657 (`TABLE_PX` in vote-geometry.ts; `scripts/fit_car_hours.py`). The plate: brushed pewter (2026-10-19, was cream stoneware). The jar: a footed
   glass sweet jar with a domed glass lid on a ball knob, both cut from shots on black (alpha from
   brightness, a warm white), `GLASS_PX`/`LID_PX`; it no longer tips: for the count it fades from the
   centre to the table's right end (`jarGeometry().aside`), the plates' row moved left to leave it
@@ -444,10 +445,10 @@ anything that shows state is drawn over the sprite in vector, never baked in.
     the painting's lamps in every layout) go to `light`'s `lamps`, each cut as an unblurred
     radial hole (clear to 0.4 of its radius, soft to its rim) and warmed by a screened
     `rgba(255,179,92,.2)` radial over the world and the bleed, in every car scene.
-  - **Floor**: the painting is the floor. The stand's dark gathers from nothing at the rail; a shut
-    trap at rest draws nothing; an opening or shutting trap draws the hole, the standing leaves
-    and flat leaves cut from the painting itself at the car's hour (an SVG pattern of the picture),
-    so they fold out of the painted floor and lie back into it.
+  - **Floor**: the painting is the floor, its brass hatch painted in. The stand's dark gathers
+    from nothing at the rail. There is no drawn trap (owner, 2026-10-19): the vote's table comes
+    up on the lift from below the frame and stands whole on the boards, its feet near the frame's
+    foot (`voteGeometry`, `TABLE_PX`); the lynch's card comes up behind the stand.
   - **The bleed**: `PaintedBleed` (below, "The night rooms").
   - Kit fidelity: `paint.test.ts` holds the car's plan (window, floor, slots, glows, specials) and
     the light over it to the kit's `scene()` and `light()`, the kit swapped as documented there:
@@ -482,9 +483,8 @@ anything that shows state is drawn over the sprite in vector, never baked in.
     1254 and appended), so the seams fall on a regular beat and can be laid on the drawn ones;
     then resized and multiplied to `BOARD` `#5a3f26` (R 1.2441, G 1.4580, B 1.4971). Laid at a
     plank's width per eighth of the tile, stretched to twice its width along the grain (`boards`):
-    the car's floor strip and its trap (29 units a plank, a seam on the drawn one), the apron (45,
-    on its drawn seams), the trap's two leaves and the lift's slab (half the leaf each), the
-    shelf room's floor (36), and the bleed's.
+    the car's floor strip (29 units a plank, a seam on the drawn one), the apron (45, on its
+    drawn seams), the shelf room's floor (36), and the bleed's.
   - **Velvet** (`velvet.webp`, 512², 12 KB, 400 units a repeat): the master's red channel only,
     as light and shade, times the valance's `#4a1418` (`-channel R -separate -evaluate multiply
     1.1102`, then `-compose multiply` with `rgb(148,40,48)`), so it has the valance's colour
@@ -655,7 +655,7 @@ Two kinds, by whether they carry state:
   (the kits' `opts.id` rule). No `<mask>` and no CSS mask (§6): a dark sheet with soft holes
   (the house light, the car's veil, the night room's light and its chosen photo) is
   `paint/holes.ts`, an evenodd sheet with gradient rims.
-- **Instruments** — stand and plaque (the stand's front a raster, §4), trap and lift,
+- **Instruments** — stand and plaque (the stand's front a raster, §4), lift,
   cards (back, small, full, the framed card), chips and their strings, wing tiles, the shutter's
   motion, the verdict board, act marks, sigils, the jar/table/plates, film rows, the drawer.
   **JSX components with props**, because they carry state, need keys, and animate in and out.
@@ -693,7 +693,7 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
 - A scene rendered at rest passes `initial={false}` (and the beat's "settled" variant) so
   seeking, refresh and reconnect land instantly. Playing forward from beat N−1 to N animates the
   difference.
-- Enter/exit (a chip dropping through the trap, a card drawn up out of frame) is
+- Enter/exit (a chip dropping into the jar, a card drawn up out of frame) is
   `AnimatePresence`; sequencing within a beat is variants with `delay`.
 - Durations come from the beat sheet's `hold`, not from the component. A `MotionScale` context
   multiplies them: normal ×1, fast ×0.5 (skip, no motion at all, was removed 2026-09-29).
@@ -706,8 +706,7 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   2026-09-29, so it fades as an image; before that `PaintPicture` turned the generator's SVG
   into an image and faded the bitmap). A live filtered SVG fading on a GPU drops a whole black
   frame as Chrome gives it its own layer, and pinning that layer did not help.
-- A lift's load fades by its position, not the clock (`lift-fade.ts`), so nothing hangs over
-  the trap once the table has gone in; the load is its own layer while it moves.
+- A lift's load is its own layer while it moves.
 - **No mask of any kind on the stage beyond a glyph; CSS masks too** (found 2026-10-01 with the
   GPU probe, `styles/gpu-probe.css`): iPhone Safari kills the page ("A problem repeatedly
   occurred") when the stage carries full-stage SVG `<mask>`s; it survived only with masks removed,
@@ -819,7 +818,7 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   Every scene played in the dining car (the deal, the day, the vote, the lynch, the night's
   lobby, the morning, the ending, the replay's night) is a body of `CarScene`, and describes
   the set it wants with `<CarSetSpec>` (the hour, the shutter's state and whether it plays,
-  the trap, the house light's pool and specials, the wing's options, the strip's words), as a
+  the house light's pool and specials, the wing's options, the strip's words), as a
   scene describes its backdrop to the Stage and its shot with `Camera`. The host draws the set
   once and keeps it from beat to beat and from scene to scene, updating it in place: a counted
   chip changes two wing tiles, a change of scene changes the light's sheet and the shutter's
@@ -911,8 +910,7 @@ on a phone. Most costly first:
   filter on every pennant at rest, and the filter itself animated over 0.6 s when one is lit or
   dimmed. Knob: the shadow drawn once under the pennant, lit and dim as an `opacity` fade of a
   light or dark sheet over it.
-- **SVG moved by its own transforms** (the trap's leaves, `Floor.tsx` through `Tween`, and any
-  other `Tween` inside an inline `<svg>`): an attribute transform repaints the SVG each frame
+- **SVG moved by its own transforms** (any `Tween` inside an inline `<svg>`): an attribute transform repaints the SVG each frame
   (phone_lessons §6). Unmeasured: check with the paint profiler before changing anything. Knob:
   the moving part in its own box, moved by CSS `transform`.
 - **The vote's table on a phone** rides the lift without a layer of its own, so it repaints as it
@@ -987,7 +985,7 @@ src/stage/
 │                            #   its glass, candle, card and photo line, ROOMS), the twine
 │                            #   (photoTwine), the candle light (roomLight) and a choice's
 │                            #   darkness (roomChoice), gradients only
-├── instruments/             # JSX: Stand, Plaque, Trap, Lift, Clock, Shutter, CarBackdrop (the
+├── instruments/             # JSX: Stand, Plaque, Lift, Clock, Shutter, CarBackdrop (the
 │                            #   dining car's painting at an hour), Bleed (the bleed's paint,
 │                            #   under a room's own; PaintedBleed, a painting's sides sinking),
 │                            #   FeltWindow (the felt country behind the car's glass, and

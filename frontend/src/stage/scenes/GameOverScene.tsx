@@ -8,9 +8,9 @@
  *
  * - `over.where-it-ended`: the last scene's frame, held. After a morning: the night behind the
  *   shutter, the room empty (the last card drawn up). After a lynch: dusk, the shutter down,
- *   the trap's leaves standing open, the card gone.
+ *   the card gone.
  * - `over.winners-hour`: the shutter rises on the winners' hour (the town's day, the wolves'
- *   night, the lone killer's dusk, a draw's grey dawn); open leaves fold.
+ *   night, the lone killer's dusk, a draw's grey dawn).
  * - `over.verdict`: the walnut board comes down on its two strings.
  * - `over.winners-stand`: the board goes up; the stand comes up widened for the winning
  *   side's survivors, who rise into it; their tiles in the wing are lit, the rest dimmed. A
@@ -169,10 +169,6 @@ function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
           state: step === 0 ? 'closed' : 'open',
           animate: animate && step === 1,
           delay: 0.4,
-        }}
-        trap={{
-          state: ended === 'lynch' && step === 0 ? 'open' : 'closed',
-          animate: animate && step === 1 && ended === 'lynch',
         }}
         light={{ pool, specials, dark }}
         wing={{

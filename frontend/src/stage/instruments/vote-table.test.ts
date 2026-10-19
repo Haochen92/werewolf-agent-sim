@@ -3,6 +3,7 @@ import { geometry } from '../units';
 import { homography, project, type Pt } from './homography';
 import {
   GLASS_PX,
+  TABLE_PX,
   countShot,
   jarGeometry,
   pileSpots,
@@ -42,10 +43,13 @@ describe('the wood’s homography', () => {
 describe('the vote’s geometry', () => {
   const v = voteGeometry(geometry('live'));
 
-  it('sizes the table a tenth narrower than the trap, as the bench does', () => {
-    expect(v.trapW / v.tw).toBeCloseTo(1.1, 9);
-    // the trap is 0.66 of the room right of the wing (907.2 with the kit's 88-unit wing)
+  it('sizes the table as the bench does, and stands it whole, its feet near the frame’s foot', () => {
+    // 0.6 of the room right of the wing
     expect(v.tw).toBeCloseTo(0.6 * geometry('live').room, 6);
+    const s = v.tw / (TABLE_PX.right - TABLE_PX.left);
+    expect(v.footY).toBeLessThan(900);
+    expect(v.footY - v.topY).toBeCloseTo((TABLE_PX.feet - TABLE_PX.front) * s, 6);
+    expect(v.drop).toBeCloseTo(TABLE_PX.drop * s, 6);
   });
 
   it('caps a tower at four chips and starts a second one beside it', () => {
@@ -87,10 +91,13 @@ describe('the vote’s geometry', () => {
     expect(J.aside.x + (J.w * J.aside.sc) / 2).toBeLessThanOrEqual(v.cx + v.tw / 2);
   });
 
-  it('pushes in by 1.32 about a point above the table', () => {
-    const s = countShot(v);
+  it('pushes in by 1.32, bringing the table’s front edge to where the bench’s came', () => {
+    const s = countShot(v),
+      g = geometry('live');
     expect(s.scale).toBe(1.32);
     expect(s.x).toBe(v.cx);
-    expect(s.y).toBeLessThan(v.topY);
+    // the bench: scaled about (cx, edge − 0.04H), the picture then dropped 0.015H
+    const edge = g.railY - 0.15 * g.ph;
+    expect(s.y + 1.32 * (v.topY - s.y)).toBeCloseTo(edge + 0.32 * 0.04 * 900 + 0.015 * 900, 6);
   });
 });
