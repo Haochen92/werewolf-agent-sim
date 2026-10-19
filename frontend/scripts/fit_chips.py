@@ -18,6 +18,10 @@ radius), so it is stretched to 0.42, which brings its edge to 0.42, the towers' 
 chip is at most 54.8 units in radius, and the count's camera comes in to 1.32: ~290 px across at
 density 2 (288), 192 on a phone.
 
+The plate the towers stand on is pewter (2026-10-19, for the white cloth and the maple chips), in
+the cream plate's file: its outer rim fills the box, squashed to the table's 0.3, so the code is
+unchanged; then `node scripts/small-sprites.mjs props/plate` for the phone's copy.
+
 Run from frontend/: `poetry run python scripts/fit_chips.py`
 """
 
@@ -38,6 +42,8 @@ SIZES = {"chip-hidden.webp": 192, "chip-hidden@small.webp": 128}
 # the top's light gives way to the side's shade) and the hole's near rim
 RING = {"file": "chip-ring-maple.png", "box": (77, 96, 1694, 816), "top_near": 574, "hole_near": 504}
 RING_SIZES = {"chip-ring.webp": 288, "chip-ring@small.webp": 192}
+# the plate's master and its bounding box; written at the cream plate's size
+PLATE = {"file": "chip-plate-pewter.png", "box": (0, 0, 2172, 700), "size": (900, 270)}
 
 
 def hidden() -> None:
@@ -81,6 +87,13 @@ def ring() -> None:
         print(f"{name}: {out.width}x{out.height}, {(OUT / name).stat().st_size // 1024} KB")
 
 
+def plate() -> None:
+    im = Image.open(MASTERS / PLATE["file"]).convert("RGBA").crop(PLATE["box"])
+    im.resize(PLATE["size"], Image.LANCZOS).save(OUT / "plate.webp", "WEBP", quality=85, alpha_quality=100, method=6)
+    print(f"plate.webp: {PLATE['size']}, {(OUT / 'plate.webp').stat().st_size // 1024} KB")
+
+
 if __name__ == "__main__":
     hidden()
     ring()
+    plate()

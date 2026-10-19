@@ -348,7 +348,7 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   stand: stitched leather rails and riveted stiles round a bottle-green felt panel, 1487×440,
   slices 169 211 144 211, darkened to the old front's mean, quality 75, with a phone copy
   (`stand-front@small`, Stand.tsx scales `--slice`). The table: a green baize top, a cream felt
-  cloth with a stitched scalloped hem (`TABLE_PX`). The plate: cream stoneware. The jar: a footed
+  cloth with a stitched scalloped hem (`TABLE_PX`). The plate: brushed pewter (2026-10-19, was cream stoneware). The jar: a footed
   glass sweet jar with a domed glass lid on a ball knob, both cut from shots on black (alpha from
   brightness, a warm white), `GLASS_PX`/`LID_PX`; it no longer tips: for the count it fades from the
   centre to the table's right end (`jarGeometry().aside`), the plates' row moved left to leave it
