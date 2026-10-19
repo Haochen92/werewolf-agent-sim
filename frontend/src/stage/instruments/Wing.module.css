@@ -299,9 +299,6 @@
   color: var(--cream);
   background: var(--ci, #2a1d10);
 }
-.band[data-long] {
-  font-size: min(calc(var(--meta) * 0.78), 13.5cqw);
-}
 /* a living seat's truth (the X-ray, a packmate) keeps the faction's own colour on its edge */
 .tile:not(.dead) .band {
   box-shadow: inset 0 2px 0 var(--c);
@@ -312,24 +309,26 @@
   background: #d3c3a2;
   box-shadow: inset 0 0.8px 0 rgba(120, 95, 60, 0.35);
 }
-/* a fact is its side's colour and its role's sigil (owner, 2026-10-18: the colour and the icon
-   are enough on a card this narrow); the name stays for a screen reader and the tooltip, and is
-   shown only where there is no sigil (a role hidden) */
-.band > svg,
-.knownBand > svg {
-  flex: 0 0 auto;
-  width: auto;
-  height: 78%;
-  aspect-ratio: 1;
-}
-.band > svg + .bandName,
-.knownWords {
+/* a fact is its side's colour and its role's name in the band, and the role's sigil on a disc at
+   the photo's top left (owner, 2026-10-19: in the band the sigil was too small to read) */
+.mark {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  white-space: nowrap;
-  clip-path: inset(50%);
+  z-index: 2;
+  top: 2.4px;
+  left: 2.4px;
+  width: 38cqw;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #f3ead3;
+  border: 1.6px solid var(--c, #4d4a45);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+  line-height: 0;
+}
+.mark > svg {
+  width: 80%;
+  height: 80%;
 }
 /* your own seat: an amber corner folded over the photo's top right, "You" on it where it reads
    (the footer stays for facts) */

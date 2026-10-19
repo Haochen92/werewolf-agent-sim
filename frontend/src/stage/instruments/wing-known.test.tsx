@@ -91,25 +91,30 @@ describe('the wing’s known band', () => {
   const html = (tiles: Parameters<typeof Wing>[0]['tiles']) =>
     renderToStaticMarkup(<Wing width={192} tiles={tiles} />);
 
-  it('bands a pack mate (the pack’s mark) and a reading (the role’s felt sigil) in brass', () => {
+  it('bands a pack mate and a reading in brass, the mark on the photo (the pack’s, the role’s felt sigil)', () => {
     const out = html([
       { seat: 8, known: { how: 'pack' } },
       { seat: 1, known: { role: 'villager', how: 'seen' } },
     ]);
-    expect(out).toMatch(/data-known="pack"[^>]*>.*data-faction="wolves".*Your pack/);
+    expect(out).toMatch(/data-mark="pack"[^>]*>.*?data-faction="wolves"/);
+    expect(out).toMatch(/data-known="pack"[^>]*>.*Your pack/);
     expect(out).not.toContain('data-sigil="wolf"');
-    expect(out).toMatch(
-      /data-known="seen"[^>]*>.*data-sigil="villager".*Seen · .*Villager/,
-    );
+    expect(out).toMatch(/data-mark="seen"[^>]*>.*?data-sigil="villager"/);
+    expect(out).toMatch(/data-known="seen"[^>]*>.*Seen · .*Villager/);
     expect(out).toContain('data-variant="felt"');
   });
 
-  it('bands a pack mate whose role the deal named with the role’s sigil', () => {
+  it('bands a pack mate whose role the deal named with the role, its sigil on the photo', () => {
     const out = html([{ seat: 8, known: { how: 'pack', role: 'illusionist' } }]);
-    expect(out).toMatch(
-      /data-known="pack"[^>]*>.*data-sigil="illusionist".*Pack · .*Illusionist/,
-    );
+    expect(out).toMatch(/data-mark="pack"[^>]*>.*?data-sigil="illusionist"/);
+    expect(out).toMatch(/data-known="pack"[^>]*>.*Pack · .*Illusionist/);
     expect(out).not.toContain('data-faction="wolves"');
+  });
+
+  it('names a death in the band, a two-word role short, its sigil on the photo', () => {
+    const out = html([{ seat: 4, dead: { role: 'serial_killer' } }]);
+    expect(out).toMatch(/title="Serial killer"[^>]*><span[^>]*>Serial K\.</);
+    expect(out).toMatch(/data-mark="role"[^>]*>.*?data-sigil="serial_killer"/);
   });
 
   it('gives the band to a death and the X-ray’s truth first, and none to your own seat', () => {

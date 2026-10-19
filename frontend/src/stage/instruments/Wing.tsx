@@ -49,8 +49,9 @@ import { FactionMark } from './FactionMark';
 import { Sigil } from './Sigil';
 import styles from './Wing.module.css';
 
-/** The role names too wide for a desk card's band at full size: they take a step smaller. */
-const LONG_BAND = new Set(['Necromancer', 'Fortune teller']);
+/** A card's band names a two-word role short (owner, 2026-10-19); its tooltip has the whole name. */
+const SHORT: Record<string, string> = { serial_killer: 'Serial K.', fortune_teller: 'Fortune T.' };
+const cardName = (role: string) => SHORT[role] ?? ROLE_NAME[role] ?? role;
 
 export interface WingTileProps {
   /** The numeral. */
@@ -234,6 +235,9 @@ function WingTile({
   // own seat is the corner's, and a guess stays pencilled on the photo
   const band = role ? (ROLE_NAME[role] ?? role) : hidden ? 'Role hidden' : null;
   const knew = !band && known && !you ? known : null;
+  // the role's sigil sits on the photo's top left (owner, 2026-10-19: in the band it was too
+  // small to read), the band below holds its name
+  const mark = role ? role : knew ? (knew.role ?? 'pack') : null;
   const cls = [
     character ? styles.banded : '',
     styles.tile,
@@ -278,6 +282,20 @@ function WingTile({
           </span>
         ) : null}
         {dead ? <span className={styles.ribbon} aria-hidden="true" /> : null}
+        {mark ? (
+          <span
+            className={`${styles.mark} ${styles[`c-${mark === 'pack' ? 'wolves' : factionOf(mark)}`] ?? ''}`}
+            data-mark={knew ? knew.how : 'role'}
+            aria-hidden="true"
+          >
+            {/* a pack mate dealt before 2026-10-17 has no role on the wire: the pack's side mark */}
+            {mark === 'pack' ? (
+              <FactionMark faction="wolves" small />
+            ) : (
+              <Sigil role={mark} variant="felt" small />
+            )}
+          </span>
+        ) : null}
       </span>
       <b className={styles.num}>{seat}</b>
       <span
@@ -302,15 +320,13 @@ function WingTile({
           className={styles.band}
           title={band}
           data-hidden={hidden ? true : undefined}
-          data-long={LONG_BAND.has(band) ? true : undefined}
         >
-          {role ? <Sigil role={role} variant="felt" small /> : null}
-          <span className={styles.bandName}>{band}</span>
+          <span className={styles.bandName}>{role ? cardName(role) : band}</span>
         </span>
       ) : null}
       {knew ? (
         <span
-          className={`${styles.band} ${styles.knownBand} ${knew.role && (ROLE_NAME[knew.role] ?? knew.role).length > 6 ? styles.knownLong : ''}`}
+          className={`${styles.band} ${styles.knownBand} ${knew.role && cardName(knew.role).length > 6 ? styles.knownLong : ''}`}
           data-known={knew.how}
           title={
             knew.role
@@ -318,19 +334,13 @@ function WingTile({
               : 'Your pack'
           }
         >
-          {/* a pack mate dealt before 2026-10-17 has no role on the wire: the pack's side mark */}
-          {knew.role ? (
-            <Sigil role={knew.role} variant="felt" small />
-          ) : (
-            <FactionMark faction="wolves" small />
-          )}
           <span className={styles.knownWords}>
             {knew.role ? (
               <>
                 <span className={styles.knownSeen}>
                   {knew.how === 'pack' ? 'Pack' : 'Seen'} ·{' '}
                 </span>
-                {ROLE_NAME[knew.role] ?? knew.role}
+                {cardName(knew.role)}
               </>
             ) : (
               'Your pack'
