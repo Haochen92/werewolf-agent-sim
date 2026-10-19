@@ -38,3 +38,13 @@ def test_a_room_carries_the_hosts_choice_into_its_config():
     assert run.game_id == room.game_id  # the room link survives the swap
     assert all(run.memory_config.values())
     assert not any(GameLobby().run_config().memory_config.values())
+
+
+def test_served_games_enable_the_dealt_voices_in_the_engine_config():
+    from Agents.config import RunConfig, build_runnable_config
+
+    # Enable the hosted game without changing experiment defaults.
+    assert RunConfig().persona_voices is False
+    for run in (game_run_config(memory=False, human_player=1), GameLobby().run_config()):
+        assert run.persona_voices is True
+        assert build_runnable_config(run)["configurable"]["persona_voices"] is True

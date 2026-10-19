@@ -23,6 +23,8 @@ def game_run_config(*, memory: bool, human_player: int, human_role: str | None =
     ends, and an offline job later extracts a memory-on game's lessons for the replay to
     show (never during the game, and never into the live store).
 
+    AI seats use their dealt puppet's speaking voice in served games.
+
     A served game retrieves strategy points only: the town half of the store never had
     observations, so retrieving them would give the two factions different memory, and
     the strategy points are the lessons the replay shows being weighed."""
@@ -33,6 +35,7 @@ def game_run_config(*, memory: bool, human_player: int, human_role: str | None =
         game_id=game_id,
         human_player=human_player,
         human_role=human_role,
+        persona_voices=True,
         memory_config={role: memory for role in roles},
         retrieval_types_config={"observations": False, "strategy_points": True},
         memory_persistence=persistence,
