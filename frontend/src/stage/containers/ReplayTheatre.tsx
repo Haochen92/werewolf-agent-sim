@@ -48,6 +48,7 @@ import { winnerKey } from '../roles';
 import { DecodeAhead } from '../cast/DecodeAhead';
 import { beatsFor } from '../beats/beatsFor';
 import { useDrawerFilters } from '../drawer/use-drawer-filters';
+import { SideSlot } from '../SideSlot';
 import { StageMotion } from '../motion';
 import type { SceneBeat } from '../beats/types';
 import type { MotionSpeed, Presentation, SlotInput, StopInput } from '../scenes/types';
@@ -415,6 +416,14 @@ export function ReplayTheatre({
               stop={stopInput}
               // a tap on the speech box turns the page (a preview's box is only read)
               onNext={controls === 'stage' ? turnPage : undefined}
+            />
+            <SideSlot
+              view={view}
+              beat={beat}
+              me={ME}
+              presentation={presentation}
+              slot={slotInput}
+              stop={stopInput}
             />
           </StageMotion>
         ) : null}

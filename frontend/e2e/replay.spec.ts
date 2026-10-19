@@ -62,7 +62,7 @@ const band = (page: Page) => page.locator('[data-transport]');
 const reveal = (page: Page) => page.getByRole('button', { name: 'Reveal', exact: true });
 /** A seat's card on the wing. */
 const card = (page: Page, n: number) =>
-  page.locator(`[data-layer="hud"] button[data-seat="${n}"]`);
+  page.locator(`[data-layer="hud"] [data-seat="${n}"]:has(button)`);
 
 /** Click the seek bar where beat `i` sits (the bar is the whole list, one step per beat). */
 async function seek(page: Page, i: number) {
@@ -188,7 +188,10 @@ test('replay: the night stops at its hub; a lit card plays that actor’s room a
   await settle(page);
   await expect(page).toHaveScreenshot('replay-night-hub-reveal.png');
   // the investigator's card (lit): its room plays, its file beside it
-  await expect(card(page, 4)).toHaveAttribute('aria-label', 'Seat 4’s night');
+  await expect(card(page, 4).getByRole('button')).toHaveAttribute(
+    'aria-label',
+    'Seat 4’s night',
+  );
   await card(page, 4).click();
   await expect(theatre(page)).toHaveAttribute('data-beat', 'rnight.spoke');
   await expect(theatre(page)).toHaveAttribute('data-playing', 'true');
@@ -369,7 +372,10 @@ test('replay: the vote stops with the ballots in, and counts on', async ({ page 
   await expect(theatre(page)).toHaveAttribute('data-beat', 'vote.closes');
   await expect(page.getByText('7 ballots in.')).toBeVisible();
   await expect(page.getByText('Tap a seat to read what it voted on.')).toBeVisible();
-  await expect(card(page, 6)).toHaveAttribute('aria-label', 'Open seat 6’s file');
+  await expect(card(page, 6).getByRole('button')).toHaveAttribute(
+    'aria-label',
+    'Open seat 6’s file',
+  );
   await settle(page);
   await expect(page).toHaveScreenshot('replay-vote-stop.png');
   await page.getByRole('button', { name: 'Count the votes ▶' }).click();

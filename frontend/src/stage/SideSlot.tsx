@@ -2,8 +2,9 @@
 
 /**
  * The right side of the stage: the transcript drawer or the case file, one at a time, or
- * nothing (beat sheet §0 "The right slot", §12 "The slot"). Every scene mounts this once, in
- * the HUD, and lays its own room out narrower while it holds something (see slot.ts).
+ * nothing (beat sheet §0 "The right slot", §12 "The slot"). The theatre mounts this beside
+ * the scene, so an open panel survives room changes. Scenes lay their rooms out narrower
+ * while it holds something (see slot.ts).
  *
  * What must outlive a beat (the drawer's filters, the file's open tab, chosen seat and the
  * Record's page) comes from whoever mounts the stage, through `SceneProps.slot`; without it the

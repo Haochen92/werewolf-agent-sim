@@ -6,15 +6,10 @@
 import { Suspense } from 'react';
 import { Workbench } from './_components/Workbench';
 
-export default async function WorkbenchScenePage({
-  params,
-}: {
-  params: Promise<{ scene: string }>;
-}) {
-  const { scene } = await params;
+export default function WorkbenchScenePage() {
   return (
     <Suspense>
-      <Workbench scene={scene} />
+      <Workbench />
     </Suspense>
   );
 }

@@ -80,6 +80,7 @@ import { beatsFor } from '../beats/beatsFor';
 import type { SceneBeat } from '../beats/types';
 import { DEFAULT_FILTERS, packNight, wolfViewer } from '../drawer/drawer-lines';
 import { useDrawerFilters } from '../drawer/use-drawer-filters';
+import { SideSlot } from '../SideSlot';
 import { StageMotion } from '../motion';
 import { notebookForAgent, useNotebook } from '../notebook';
 import { ConnectionPill } from '../instruments/ConnectionPill';
@@ -842,6 +843,13 @@ export function LiveTheatre({
               // a tap on the speech box: this page is read, end its hold
               onNext={onNext}
               wayOut={wayOut}
+            />
+            <SideSlot
+              view={sceneView}
+              beat={beat}
+              me={me}
+              presentation={presentation}
+              slot={slotInput}
             />
           </StageMotion>
         ) : null}

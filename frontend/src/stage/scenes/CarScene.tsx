@@ -42,7 +42,6 @@ import {
 } from 'react';
 import { Atmosphere } from '../Atmosphere';
 import { Layer } from '../Stage';
-import { SideSlot } from '../SideSlot';
 import type { SceneId } from '../beats/types';
 import { Backdrop } from '../instruments/Backdrop';
 import { Shutter } from '../instruments/Shutter';
@@ -173,14 +172,6 @@ export function carScene(bodies: Partial<Record<SceneId, ComponentType<SceneProp
             <Body key={epoch} {...props} />
           </BodyProps.Provider>
         </CarSetContext.Provider>
-        <SideSlot
-          view={props.view}
-          beat={props.beat}
-          me={props.me}
-          presentation={props.presentation}
-          slot={props.slot}
-          stop={props.stop}
-        />
       </StageMotion>
     );
   });

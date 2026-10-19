@@ -135,21 +135,9 @@ export function Stage({
   const [backdrop, setBackdrop] = useState<BackdropSpec | null>(null);
   // the scene's wing, drawn here so it outlives the scenes (set.ts `WingHost`)
   const [wing, setWing] = useState<WingSpec | null>(null);
-  const wingHost = useMemo<WingHost>(() => {
-    const owners = new Set<object>();
-    return {
-      show(owner, spec) {
-        owners.add(owner);
-        setWing(spec);
-      },
-      hide(owner) {
-        owners.delete(owner);
-        setTimeout(() => {
-          if (owners.size === 0) setWing(null);
-        }, 0);
-      },
-    };
-  }, []);
+  // A scene handoff may span commits (or wait for a suspended scene). Keep the last
+  // description until its successor arrives; only the Stage's unmount ends its lifetime.
+  const wingHost = useMemo<WingHost>(() => ({ show: setWing }), []);
   // The layer divs, once mounted, so `<Layer>` can portal into them. Set during the commit,
   // so the filled layers are drawn before the first paint.
   const [nodes, setNodes] = useState<LayerNodes>({});

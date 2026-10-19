@@ -68,15 +68,12 @@ export const BackdropContext = createContext<((spec: BackdropSpec | null) => voi
 export type WingSpec = ComponentProps<typeof Wing>;
 
 /**
- * The Stage's wing, for the scenes that describe one. `owner` is the describing scene's own
- * token: the scene that rendered last is drawn, and the wing goes only when no scene describes
- * one any more, checked after the commits in hand have run (a night room giving way to the car
- * unmounts the room a commit before the car's set comes up; clearing at once would build the
- * wing again).
+ * The Stage owns the wing for its whole lifetime. Scenes update its description without
+ * withdrawing it on unmount: a successor may arrive in a later commit. A scene can explicitly
+ * hide the wing with width 0 (the workbench's HUD-free view).
  */
 export interface WingHost {
-  show(owner: object, spec: WingSpec): void;
-  hide(owner: object): void;
+  show(spec: WingSpec): void;
 }
 
 export const WingContext = createContext<WingHost | null>(null);

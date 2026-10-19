@@ -38,7 +38,7 @@
  * bleed (the stage's `--spare`) up to the layout's `reach`, so a phone's letterbox holds most of
  * a wider rail and the room keeps its place.
  */
-import { useContext, useLayoutEffect, useRef, type CSSProperties } from 'react';
+import { useContext, useLayoutEffect, type CSSProperties } from 'react';
 import { SPRITES, type Character } from '@/assets/manifest';
 import { ChipSprite } from '../cast/ChipSprite';
 import { useNotebook } from '../notebook';
@@ -50,7 +50,10 @@ import { Sigil } from './Sigil';
 import styles from './Wing.module.css';
 
 /** A card's band names a two-word role short (owner, 2026-10-19); its tooltip has the whole name. */
-const SHORT: Record<string, string> = { serial_killer: 'Serial K.', fortune_teller: 'Fortune T.' };
+const SHORT: Record<string, string> = {
+  serial_killer: 'Serial K.',
+  fortune_teller: 'Fortune T.',
+};
 const cardName = (role: string) => SHORT[role] ?? ROLE_NAME[role] ?? role;
 
 export interface WingTileProps {
@@ -176,11 +179,9 @@ export function Wing({
  */
 export function StageWing(props: WingSpec) {
   const host = useContext(WingContext);
-  const owner = useRef({}).current;
   useLayoutEffect(() => {
-    host?.show(owner, props);
+    host?.show(props);
   });
-  useLayoutEffect(() => (host ? () => host.hide(owner) : undefined), [host, owner]);
   return host ? null : <Wing {...props} />;
 }
 
@@ -316,11 +317,7 @@ function WingTile({
         ) : null}
       </span>
       {band ? (
-        <span
-          className={styles.band}
-          title={band}
-          data-hidden={hidden ? true : undefined}
-        >
+        <span className={styles.band} title={band} data-hidden={hidden ? true : undefined}>
           <span className={styles.bandName}>{role ? cardName(role) : band}</span>
         </span>
       ) : null}
@@ -360,26 +357,19 @@ function WingTile({
       ) : null}
     </>
   );
-  if (!tap)
-    return (
-      <div className={cls} data-seat={seat} data-glow={glow} data-word={word}>
-        {face}
-      </div>
-    );
   return (
-    <button
-      type="button"
-      className={styles.tap}
-      data-seat={seat}
-      data-glow={glow}
-      data-word={word}
-      aria-label={label}
-      aria-expanded={read?.onRead ? !!read.open : undefined}
-      onClick={(e) => tap(e.currentTarget)}
-    >
-      {/* the button holds the card rather than being it (see `.tap`) */}
+    <div className={styles.tap} data-seat={seat} data-glow={glow} data-word={word}>
       <span className={cls}>{face}</span>
-    </button>
+      {tap ? (
+        <button
+          type="button"
+          className={styles.activation}
+          aria-label={label}
+          aria-expanded={read?.onRead ? !!read.open : undefined}
+          onClick={(e) => tap(e.currentTarget.parentElement!)}
+        />
+      ) : null}
+    </div>
   );
 }
 

@@ -118,9 +118,8 @@
 .banded {
   --band-h: calc(var(--meta) * 1.25);
 }
-/* a card you can tap: the button only holds it, and the card fills it. iPadOS 18's Safari does
-   not lay a button out as the card's flex column: the photo and the ruled foot, which hold no
-   text, fell to zero width (owner's iPad, 2026-10-17). The rail's grid sizes the button. */
+/* A stable card wrapper keeps the portrait mounted. A transparent native button overlays
+   clickable cards; adding or removing it does not replace the photo or its layout. */
 .tap {
   position: relative;
   display: block;
@@ -134,13 +133,27 @@
   font: inherit;
   color: inherit;
   text-align: inherit;
+}
+.activation {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 3.2px;
+  background: transparent;
   cursor: pointer;
+}
+.activation:focus-visible {
+  outline: none;
 }
 .tap > .tile {
   position: absolute;
   inset: 0;
 }
-.tap:focus-visible {
+.tap:has(.activation:focus-visible) {
   outline: 2.4px solid var(--amber);
   outline-offset: 3.2px;
 }
@@ -479,9 +492,9 @@
   border: 2.4px solid var(--xray);
   box-shadow: 0 0 4.8px rgba(134, 176, 160, 0.35);
 }
-.file:hover::after,
-.file:active::after,
-.tap:focus-visible > .file::after {
+.tap:has(.activation:hover) > .file::after,
+.tap:has(.activation:active) > .file::after,
+.tap:has(.activation:focus-visible) > .file::after {
   border-color: var(--xray-hi);
   box-shadow: 0 0 9.6px rgba(134, 176, 160, 0.45);
   opacity: 1;

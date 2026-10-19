@@ -29,7 +29,6 @@
 import { useCallback, useState, type SetStateAction } from 'react';
 import { noActionWord } from '@/game/turn-words';
 import type { ActionKind } from '@/types/contracts';
-import { SideSlot } from '../SideSlot';
 import { ActPlate, ChoicePlates } from '../instruments/ActPlate';
 import { CountPill } from '../instruments/CountPill';
 import { pinColour } from '../instruments/Pin';
@@ -332,7 +331,6 @@ export function ShelfRoomScene(props: SceneProps) {
   return (
     <StageMotion speed={props.presentation.motion}>
       <ShelfRoom {...props} />
-      <SideSlot {...props} />
     </StageMotion>
   );
 }

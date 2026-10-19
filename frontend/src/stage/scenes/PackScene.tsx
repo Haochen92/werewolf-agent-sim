@@ -25,7 +25,6 @@
  */
 import { useState, type ReactNode } from 'react';
 import type { NightView } from '@/game/types';
-import { SideSlot } from '../SideSlot';
 import { ActPlate } from '../instruments/ActPlate';
 import { CountText } from '../instruments/CountText';
 import { pinColour } from '../instruments/Pin';
@@ -99,7 +98,6 @@ export function PackScene(props: SceneProps) {
     <StageMotion speed={props.presentation.motion}>
       {/* the room stays up across the pack's beats: each line in the chat rebuilt it */}
       <Pack {...props} entering={at === entry} />
-      <SideSlot {...props} />
     </StageMotion>
   );
 }
