@@ -42,14 +42,7 @@ import { STAGE_H, STAGE_W, geometry } from '../units';
 import { CarSetSpec } from './CarScene';
 import { VOTE_STOP } from '../containers/stops';
 import type { SceneProps } from './types';
-import {
-  candidatesOf,
-  landOrder,
-  lastLine,
-  litPlates,
-  resultWords,
-  tally,
-} from './vote-count';
+import { candidatesOf, landOrder, lastLine, litPlates, resultWords } from './vote-count';
 import { useSmall } from '../set';
 
 /** An svg over the whole world, in its units. */
@@ -121,7 +114,6 @@ function VoteBeat({
   const ballots = vote?.ballots ?? [];
   const order = landOrder(ballots);
   const cands = candidatesOf(ballots);
-  const counts = tally(ballots);
 
   const prompt = id === 'vote.your-ballot';
   const opening = id === 'vote.opens' || prompt;
@@ -210,7 +202,7 @@ function VoteBeat({
   const specials: Special[] = [];
   if (!counting && tableShown) specials.push([v.cx, 0, J.top, 0.03 * STAGE_W, 0.8]);
   if (id === 'vote.result' && winner)
-    for (const p of plateSpots(v, cands, counts))
+    for (const p of plateSpots(v, cands))
       if (winner.includes(p.c)) specials.push([p.x, 0, p.y, p.rx * 1.3, 1]);
   const pool = { x: v.cx, y: v.topY - 0.3 * g.ph, rx: v.tw * 0.62, ry: 0.56 * g.ph };
 
@@ -353,7 +345,6 @@ function VoteBeat({
               counted={counted}
               order={order}
               candidates={cands}
-              counts={counts}
               winner={winner}
               play={{
                 lidFrom,

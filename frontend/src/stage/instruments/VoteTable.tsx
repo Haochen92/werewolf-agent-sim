@@ -9,13 +9,15 @@
  * a vote and one more at the right for abstain (an ordinary empty plate, owner 2026-09-30; it
  * was an upturned saucer), each with a place card on the cloth below it (the candidate's head
  * and seat, or "Abstain", and the running number). The counted chips stack on the plates face
- * up, in towers of four, so the table can be read at a glance.
+ * up, in one vertical stack per plate, so the table can be read at a glance.
  *
  * Props describe the state; `play` names what moves in this beat. Nothing here says who
  * chose what beyond what the count has already put on the table. Drawn after the vote bench
  * (rev 64 `tableSVG`, `plateSVG`, `cardSVG`, `arcChip`).
  */
-import { useId, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useId, useState, type CSSProperties, type ReactNode } from 'react';
+import { animate, motion, useMotionValue, useTransform } from 'motion/react';
+import { useMotionScale } from '../motion';
 import { SPRITES, type Character } from '@/assets/manifest';
 import type { Ballot } from '@/game/types';
 import { K2 } from '../paint/materials';
@@ -27,11 +29,11 @@ import { Tween, about, lerp } from './Tween';
 import { ChipBack, ChipFace, FlatChip } from './VoteChip';
 import {
   TABLE_PX,
-  TOWER_CAP,
   TOWER_STEP,
   jarGeometry,
   placeCardBox,
   plateSpots,
+  plateChipR,
   stackPos,
   type PlateSpot,
   type VoteGeometry,
@@ -44,6 +46,42 @@ const svgFill: CSSProperties = {
   height: '100%',
   overflow: 'visible',
 };
+
+/** Keep moving SVG content in its own small viewport, rather than invalidating the
+ * full-stage drawing on every animation tick. The padding includes all shadows and motion. */
+function VoteDrawing({
+  x,
+  y,
+  w,
+  h,
+  kind,
+  children,
+}: {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  kind: 'plate';
+  children: ReactNode;
+}) {
+  return (
+    <svg
+      viewBox={`${x} ${y} ${w} ${h}`}
+      style={{
+        position: 'absolute',
+        left: x,
+        top: y,
+        width: w,
+        height: h,
+        overflow: 'hidden',
+      }}
+      data-vote-drawing={kind}
+      aria-hidden="true"
+    >
+      {children}
+    </svg>
+  );
+}
 
 /**
  * The painted table in two strips that meet at the top's front line: the top squashed to the
@@ -139,7 +177,8 @@ export function Plate({
   shade,
 }: PlateProps) {
   // a phone's plate is a few dozen pixels wide: its copy
-  const plate = useSmall() ? SPRITES.small.props.plate : SPRITES.props.plate;
+  const small = useSmall();
+  const plate = small ? SPRITES.small.props.plate : SPRITES.props.plate;
   const face = (seat: string) => ({
     seat: seatNumber(seat),
     character: cast[seatNumber(seat) - 1],
@@ -182,10 +221,10 @@ export function Plate({
         preserveAspectRatio="none"
       />
       {voters.map((voter, i) => {
-        if (i % TOWER_CAP) return null;
+        if (i !== 0) return null;
         // each tower's shadow on the plate, longer for a taller tower
         const [x, y, rr] = stackPos(v, p, i),
-          levels = Math.min(TOWER_CAP, voters.length - i);
+          levels = voters.length;
         const s = (
           <ellipse
             key={`s${voter}`}
@@ -201,7 +240,7 @@ export function Plate({
             key={`s${voter}`}
             play
             delay={0.84}
-            duration={0.15}
+            duration={small ? 0.01 : 0.15}
             ease="easeOut"
             opacity={(q) => q}
           >
@@ -221,7 +260,7 @@ export function Plate({
             key={voter}
             play
             delay={0.84}
-            duration={0.15}
+            duration={small ? 0.01 : 0.15}
             ease="easeOut"
             opacity={(q) => q}
           >
@@ -260,6 +299,7 @@ const SERIF: CSSProperties = {
  * table but not hang on a cloth).
  */
 export function PlaceCard({ v, p, nCands, n, cast, lit, hit, lighting }: PlaceCardProps) {
+  const small = useSmall();
   const b = placeCardBox(v, p, nCands),
     { x, y, w: cw, h: ch } = b,
     r = ch * 0.34;
@@ -376,15 +416,21 @@ export function PlaceCard({ v, p, nCands, n, cast, lit, hit, lighting }: PlaceCa
       ) : null}
       {hit ? (
         <>
-          <Tween play delay={0.8} duration={0.1} ease="linear" opacity={(q) => 1 - q}>
+          <Tween
+            play
+            delay={0.8}
+            duration={small ? 0.01 : 0.1}
+            ease="linear"
+            opacity={(q) => 1 - q}
+          >
             {num(n - 1)}
           </Tween>
           <Tween
             play
             delay={0.82}
-            duration={0.4}
+            duration={small ? 0.01 : 0.4}
             ease={[0.3, 1.6, 0.5, 1]}
-            transform={(q) => about(ox, cy, { sx: lerp(0.3, 1, q) })}
+            transform={small ? undefined : (q) => about(ox, cy, { sx: lerp(0.3, 1, q) })}
             opacity={(q) => Math.min(1, q * 3)}
           >
             {num(n)}
@@ -418,23 +464,56 @@ function ArcChip({
       ? lerp(ay, ay * 0.3 - lift, easeIO(p / 0.45))
       : lerp(ay * 0.3 - lift, 0, easeIO((p - 0.45) / 0.55));
   const sx = (p: number) => Math.max(0.05, Math.abs(Math.cos(Math.PI * p)));
+  const k = useMotionScale();
+  const progress = useMotionValue(0);
+  const [landed, setLanded] = useState(false);
+  const x = useTransform(progress, (p) => ax * (1 - p));
+  const y = useTransform(progress, dy);
+  const scaleX = useTransform(progress, sx);
+  const opacity = useTransform(progress, (p) => (p < 0.976 ? 1 : 0));
+  const back = useTransform(progress, (p) => (p < 0.5 ? 1 : 0));
+  const front = useTransform(progress, (p) => (p < 0.5 ? 0 : 1));
+  useEffect(() => {
+    const run = animate(progress, 1, {
+      duration: 0.85 * k,
+      ease: 'linear',
+      onComplete: () => setLanded(true),
+    });
+    return () => run.stop();
+  }, [progress, k]);
+  // Release the temporary compositing layer once the plate holds the landed chip.
+  if (landed) return null;
+  const box = `${to.x - r * 2} ${to.y - r * 2} ${r * 4} ${r * 4}`;
+  // Move a chip-sized HTML layer, not an SVG group inside a drawing of the whole table.
+  // Its two SVG faces stay still; only the compositor transform and a midpoint flip change.
   return (
-    <Tween
-      play
-      duration={0.85}
-      ease="linear"
-      transform={(p) =>
-        about(to.x, to.y, { dx: ax * (1 - p), dy: dy(p), sx: sx(p), sy: 1 })
-      }
-      opacity={(p) => (p < 0.976 ? 1 : 0)}
+    <motion.div
+      data-vote-drawing="chip"
+      aria-hidden="true"
+      style={{
+        position: 'absolute',
+        left: to.x - r * 2,
+        top: to.y - r * 2,
+        width: r * 4,
+        height: r * 4,
+        x,
+        y,
+        scaleX,
+        opacity,
+        pointerEvents: 'none',
+      }}
     >
-      <Tween play duration={0.85} ease="linear" opacity={(p) => (p < 0.5 ? 1 : 0)}>
-        <ChipBack x={to.x} y={to.y} r={r} />
-      </Tween>
-      <Tween play duration={0.85} ease="linear" opacity={(p) => (p < 0.5 ? 0 : 1)}>
-        <ChipFace {...face} x={to.x} y={to.y} r={r} />
-      </Tween>
-    </Tween>
+      <motion.div style={{ position: 'absolute', inset: 0, opacity: back }}>
+        <svg viewBox={box} width="100%" height="100%">
+          <ChipBack x={to.x} y={to.y} r={r} />
+        </svg>
+      </motion.div>
+      <motion.div style={{ position: 'absolute', inset: 0, opacity: front }}>
+        <svg viewBox={box} width="100%" height="100%">
+          <ChipFace {...face} x={to.x} y={to.y} r={r} />
+        </svg>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -456,8 +535,6 @@ export interface VoteTableProps {
   order: readonly Ballot[];
   /** The plates, left to right; `abstain` for abstain's plate. */
   candidates: readonly string[];
-  /** The full tally, which sizes the towers before the chips arrive. */
-  counts: Record<string, number>;
   /** The plates lit at the result. */
   winner?: readonly string[] | null;
   /** What moves in this beat. */
@@ -489,7 +566,6 @@ export function VoteTable({
   counted,
   order,
   candidates,
-  counts,
   winner,
   play = {},
 }: VoteTableProps) {
@@ -497,7 +573,7 @@ export function VoteTable({
   // the rooms' atmosphere: soft shadows under the table, the jar, the plates and the towers
   const ids = 'vt' + useId().replace(/[^A-Za-z0-9_-]/g, '');
   const shade = ids + 's';
-  const ps = counting ? plateSpots(v, candidates, counts) : [];
+  const ps = counting ? plateSpots(v, candidates) : [];
   const onPlate: Record<string, string[]> = {};
   order.slice(0, counted).forEach((b) => (onPlate[b.votee] ??= []).push(b.voter));
   const newest = play.landing && counted > 0 ? order[counted - 1] : null;
@@ -521,7 +597,7 @@ export function VoteTable({
           lit={lit}
           landing={hit}
           lighting={play.lighting}
-          shade={shade}
+          shade={`${shade}-${i}`}
         />
         <PlaceCard
           v={v}
@@ -535,7 +611,7 @@ export function VoteTable({
         />
       </g>
     );
-    return play.platesIn ? (
+    const drawing = play.platesIn ? (
       <Tween
         key={p.c}
         play
@@ -550,6 +626,27 @@ export function VoteTable({
     ) : (
       inner
     );
+    const rr = plateChipR(v, p);
+    const card = placeCardBox(v, p, ps.length);
+    // Size for every seat up front, without using the unrevealed tally.
+    const top =
+      Math.min(stackPos(v, p, Math.max(0, cast.length - 1))[1] - rr * 2, p.y - p.ry * 3) -
+      0.05 * STAGE_H;
+    return (
+      <VoteDrawing
+        key={p.c}
+        kind="plate"
+        x={p.x - p.rx * 2}
+        y={top}
+        w={p.rx * 4}
+        h={card.y + card.h + 8 - top}
+      >
+        <defs>
+          <SoftShadow id={`${shade}-${i}`} />
+        </defs>
+        {drawing}
+      </VoteDrawing>
+    );
   });
 
   let arc: ReactNode = null;
@@ -559,6 +656,7 @@ export function VoteTable({
       const [fx, fy, rr] = stackPos(v, p, (onPlate[p.c]?.length ?? 1) - 1);
       arc = (
         <ArcChip
+          key={`${counted}:${newest.voter}`}
           from={J.mouth}
           to={{ x: fx, y: fy - rr * 0.2 }}
           r={rr}
@@ -606,9 +704,9 @@ export function VoteTable({
             part="lid"
           />
         ) : null}
-        {plates}
-        {arc}
       </svg>
+      {plates}
+      {arc}
     </div>
   );
 }

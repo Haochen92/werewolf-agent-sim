@@ -114,8 +114,11 @@ Day, the vote:
 - Votes are public and permanent — who voted to eliminate whom each day stays on the record. An
     eliminated player's role is revealed, and their will read out, by the same rule as a night death.
 Night, the actions:
-- Every role with a night action acts, all at once. A night action that is carried out on a player is a
-    visit, unless the role's rules say it is not; an action that was blocked is not carried out and is
+- Night actions resolve together. A role whose rules allow holding an ability may do so, including on
+    night 1. Holding a check or watch spends no use and produces no result: "I held" is not a missing
+    result or a result kept secret. It is a claim that can be tested against other evidence, not proof
+    that the claimant is truthful or lying. A night action carried out on a player is a visit, unless
+    the role's rules say it is not; an action that was blocked is not carried out and is
     not a visit. Roles that watch or follow see visits, except the pack's kill on a victim an illusionist
     concealed, which leaves no trace.
 - A visit goes one way, from the visitor to the player visited. A watch on a player shows who came to

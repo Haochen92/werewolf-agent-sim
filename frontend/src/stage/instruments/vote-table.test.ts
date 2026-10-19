@@ -52,15 +52,17 @@ describe('the vote’s geometry', () => {
     expect(v.drop).toBeCloseTo(TABLE_PX.drop * s, 6);
   });
 
-  it('caps a tower at four chips and starts a second one beside it', () => {
-    const [p] = plateSpots(v, ['player_6', 'player_7'], { player_6: 6, player_7: 1 });
-    expect(p.towers).toBe(2);
-    const [x0] = stackPos(v, p, 0),
-      [x3, y3] = stackPos(v, p, 3),
-      [x4, y4] = stackPos(v, p, 4);
-    expect(x3).toBe(x0);
-    expect(x4).toBeGreaterThan(x0);
-    expect(y4).toBeGreaterThan(y3);
+  it('keeps the same chip size and horizontal position through all ten votes', () => {
+    const [p, other] = plateSpots(v, ['player_6', 'player_7']);
+    const [x, y, r] = stackPos(v, p, 0);
+    expect(stackPos(v, other, 0)[2]).toBe(r);
+    for (let i = 1; i < 10; i++) {
+      const [nextX, nextY, nextR] = stackPos(v, p, i);
+      expect(nextX).toBe(x);
+      expect(nextR).toBe(r);
+      expect(nextY).toBeLessThan(y);
+      expect(nextY).toBeLessThan(stackPos(v, p, i - 1)[1]);
+    }
   });
 
   it('sizes the jar to its picture and seats the lid on the lip', () => {
@@ -85,7 +87,7 @@ describe('the vote’s geometry', () => {
       jarLeft = J.aside.x - (J.w * J.aside.sc) / 2;
     for (let n = 1; n <= 8; n++) {
       const cands = Array.from({ length: n }, (_, i) => `player_${i + 1}`);
-      for (const p of plateSpots(v, cands, {})) expect(p.x + p.rx).toBeLessThan(jarLeft);
+      for (const p of plateSpots(v, cands)) expect(p.x + p.rx).toBeLessThan(jarLeft);
     }
     // and the jar is still on the table
     expect(J.aside.x + (J.w * J.aside.sc) / 2).toBeLessThanOrEqual(v.cx + v.tw / 2);
@@ -98,6 +100,9 @@ describe('the vote’s geometry', () => {
     expect(s.x).toBe(v.cx);
     // the bench: scaled about (cx, edge − 0.04H), the picture then dropped 0.015H
     const edge = g.railY - 0.15 * g.ph;
-    expect(s.y + 1.32 * (v.topY - s.y)).toBeCloseTo(edge + 0.32 * 0.04 * 900 + 0.015 * 900, 6);
+    expect(s.y + 1.32 * (v.topY - s.y)).toBeCloseTo(
+      edge + 0.32 * 0.04 * 900 + 0.015 * 900,
+      6,
+    );
   });
 });

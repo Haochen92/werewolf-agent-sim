@@ -160,10 +160,9 @@ export function pileSpots(v: VoteGeometry, n: number): [number, number][] {
 
 /**
  * A counted chip's thickness, as a fraction of its radius (the tower's step: the maple ring's edge
- * at the table's tilt, 2026-10-19); chips per tower.
+ * at the table's tilt, 2026-10-19); one vertical stack per plate.
  */
 export const TOWER_STEP = 0.42;
-export const TOWER_CAP = 4;
 
 export interface PlateSpot {
   /** The candidate: a seat, or `abstain` for the plate at the right. */
@@ -172,20 +171,14 @@ export interface PlateSpot {
   y: number;
   rx: number;
   ry: number;
-  /** How many towers the plate's chips need, from the full tally. */
-  towers: number;
 }
 
 /**
- * One plate per candidate along the front edge, abstain's last, sized to the full tally. The row
+ * One plate per candidate along the front edge, abstain's last, sized by the space on the table, never by the unrevealed tally. The row
  * leaves the table's right end to the jar standing there (`jarGeometry().aside`), so no plate's
  * towers stand in front of it, however many candidates there are.
  */
-export function plateSpots(
-  v: VoteGeometry,
-  cands: readonly string[],
-  counts: Record<string, number>,
-): PlateSpot[] {
+export function plateSpots(v: VoteGeometry, cands: readonly string[]): PlateSpot[] {
   const n = cands.length,
     left = v.cx - v.tw * 0.42,
     span = v.tw * 0.68,
@@ -199,27 +192,23 @@ export function plateSpots(
       y: v.topY - v.depth * 0.28,
       rx,
       ry: rx * 0.3,
-      towers: Math.max(1, Math.ceil((counts[c] ?? 0) / TOWER_CAP)),
     };
   });
 }
 
-/** The radius of a chip on a plate: big enough to read, small enough for its towers. */
+/** The radius of a chip on a plate: big enough to read, small enough for its plate. */
 export function plateChipR(v: VoteGeometry, p: PlateSpot): number {
-  return Math.min(v.r * 1.25, (p.rx * 0.92) / (p.towers + 0.15));
+  return Math.min(v.r * 1.25, (p.rx * 0.92) / 1.15);
 }
 
-/** Where the i-th chip on a plate lies: its tower, its level in the tower; and its radius. */
+/** Where the i-th chip on a plate lies: its level in the vertical stack; and its radius. */
 export function stackPos(
   v: VoteGeometry,
   p: PlateSpot,
   i: number,
 ): [number, number, number] {
-  const rr = plateChipR(v, p),
-    tower = Math.floor(i / TOWER_CAP),
-    level = i % TOWER_CAP;
-  const off = (tower - (p.towers - 1) / 2) * rr * 2.15;
-  return [p.x + off, p.y - rr * TOWER_STEP - level * rr * TOWER_STEP, rr];
+  const rr = plateChipR(v, p);
+  return [p.x, p.y - rr * TOWER_STEP * (i + 1), rr];
 }
 
 /** The place card under a plate, on the cloth's drop. */

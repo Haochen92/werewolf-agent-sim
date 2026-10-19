@@ -1,5 +1,6 @@
 """The necromancer: one of the two roles drawn for the lone killer's seat."""
 
+from Agents.prompts.common import EVIL_COVER_RISK
 from Agents.schemas.role_card import DiscussWords, NightWords, RoleCard, VoteWords
 
 RULES = """
@@ -51,7 +52,7 @@ lines list the roles you can claim without contradicting the public record, and 
 player holds, or one whose holder died with its role hidden, cannot be counter-claimed truthfully.
 Claim it when it helps you, and keep the story the same every time you are asked. Rarely,
 revealing your true role to bargain with a neutral player is the better play.
-"""
+""" + EVIL_COVER_RISK
 
 DISCUSS_CONTEXT = """
 Surviving players: {surviving_players}

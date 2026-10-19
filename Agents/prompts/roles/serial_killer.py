@@ -1,5 +1,6 @@
 """The serial killer: one of the two roles drawn for the lone killer's seat."""
 
+from Agents.prompts.common import EVIL_COVER_RISK
 from Agents.schemas.role_card import DiscussWords, NightWords, RoleCard, VoteWords
 
 RULES = """
@@ -50,7 +51,7 @@ Keep your cover in your private strategy note, updated every turn, in four parts
 - Public account: what you have actually said in public about each night so far, or nothing yet.
 - Do not disclose: your own real attacks.
 Never let what you plan to claim blur with what you have already said.
-"""
+""" + EVIL_COVER_RISK
 
 DISCUSS_CONTEXT = """
 Surviving players: {surviving_players}

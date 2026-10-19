@@ -2,6 +2,7 @@
 its day words and the pack's night words from here and adds its own skill. The pack chat and the
 carrier's target are pack turns, not a role's, so their words are here too."""
 
+from Agents.prompts.common import EVIL_COVER_RISK
 from Agents.schemas.role_card import DiscussWords, NightWords, VoteWords
 
 # The body under a wolf card's own heading.
@@ -39,7 +40,7 @@ Keep your cover in your private strategy note, updated every turn, in four parts
 - Public account: what you have actually said in public about each night so far, or nothing yet.
 - Do not disclose: your own real night actions as the {player_role}, and the pack's kill.
 Never let what you plan to claim blur with what you have already said.
-"""
+""" + EVIL_COVER_RISK
 
 _CHANNEL = """
 Your private wolf channel (night coordination + game-master notes):
