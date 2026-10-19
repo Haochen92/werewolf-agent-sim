@@ -248,7 +248,7 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   src/assets/sprites/characters/<character>/{base,talking,thinking,out,head}.webp
   src/assets/sprites/kits/{healer,investigator,vigilante,serial_killer,wolf,villager,clock,lamp}.webp
   src/assets/sprites/wood/walnut.webp               (the station's beam and ledge only)
-  src/assets/sprites/textures/{walnut,boards,velvet,cork,ink}.webp  (cork: scripts/make-cork.mjs;
+  src/assets/sprites/textures/{walnut,boards,cork,ink}.webp  (cork: scripts/make-cork.mjs;
     ink, the case file's stamp mask, a white tile whose alpha is the ink: scripts/make-stamp-ink.mjs)
   src/assets/sprites/station/{sky,floor,post,lamp,train,blind}.webp
   src/assets/sprites/window/{day,dusk,night,dawn}-{far,near}.webp
@@ -485,7 +485,7 @@ anything that shows state is drawn over the sprite in vector, never baked in.
     plank's width per eighth of the tile, stretched to twice its width along the grain (`boards`):
     the car's floor strip (29 units a plank, a seam on the drawn one), the apron (45, on its
     drawn seams), the shelf room's floor (36), and the bleed's.
-  - **Velvet** (`velvet.webp`, 512², 12 KB, 400 units a repeat): the master's red channel only,
+  - **Velvet** (deleted 2026-10-19, with the rail's last use of it; git has it) (`velvet.webp`, 512², 12 KB, 400 units a repeat): the master's red channel only,
     as light and shade, times the valance's `#4a1418` (`-channel R -separate -evaluate multiply
     1.1102`, then `-compose multiply` with `rgb(148,40,48)`), so it has the valance's colour
     exactly and its folds and pile. It was the replay's valance and its bleed; since 2026-09-29
@@ -625,7 +625,7 @@ anything that shows state is drawn over the sprite in vector, never baked in.
     fixed table per seat (±3.1°) about where it hangs.
 - **The seat rail and the hidden chip** (owner, 2026-10-18; masters in `claude_artifacts/
   design/rasters/wood/kit/` and `…/live_ugrade/`). The rail is the owner's walnut frame with
-  brass brackets over the burgundy velvet tile, a brass plate at its head lettered with what a
+  brass brackets over the HUD kit's dark bronze (below; burgundy velvet until 2026-10-19), a brass plate at its head lettered with what a
   tap does; each card is the owner's warm cream paper (a tile) with a baked shadow drawn round
   it by the border image's outset, the seat number on a small brass tag (the plate's picture
   again), two punches drawn where the photo meets the notes, and a footer that holds facts only
@@ -637,6 +637,26 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   stretched to the same tilt so its edge is the towers' step (`TOWER_STEP` 0.42), the voter's face
   inlaid in its hole at 0.74 of the radius, 288 px and a 192 px phone copy; a chip face up in the
   jar stays drawn.
+- **The HUD's kit** (owner, 2026-10-19; masters in `claude_artifacts/design/rasters/live_ugrade/`:
+  `frame-bronze.png`, `bronze-dark.png`, `bronze-light.png`, `paper-cream.png`; reference
+  `hud-reference.png`). Every input HUD and what frames them is drawn from four pictures
+  (`SPRITES.hud`, `scripts/fit_hud_kit.py`: the riveted bronze frame as a 9-slice of 50 px
+  corners, the three tiles 512 px, the bronzes' sides blended so they repeat without a seam;
+  33 KB, ~3 MB decoded once a game), handed to CSS whole by `vars()` (materials.ts `--kit-*`):
+  `--kit-panel` (dark bronze: what is read: the dock, the composer, the ballot and the count's
+  line, the wolves' chat, in the riveted frame; the day plaque in a slimmer one; the count, the
+  night's countdown and its sealed act as tags), `--kit-button` (light bronze, inked: every tap:
+  Pass, the hand-overs, the strip's Reveal, tabs, door and way back, the transcript's filters and
+  days, the replay's ways on), `--kit-act` (cream paper: the act and the chosen: Write your
+  line, Send, Vote seat N, Protect seat N, Say it, the open tab, a pressed filter) and
+  `--kit-sheet` (cream paper written on: the composer's ruled sheet, the steer, the pack's line,
+  the transcript's page, its dark-ground colours remapped to the paper's inks), one edge
+  (`--kit-edge`) and one lift (`--kit-lift`) for every button. Brass is for what is only read
+  (the rail's head plate, the seat tags, the stand's plate), never a button. Icons
+  (`KitIcon.tsx`): send, pass, the agent's spark, a folder for File, a page for Transcript;
+  Reveal keeps its keyhole slider. Abstain is a blank white chip, face on, as the heads are. On
+  a phone the ballot's chips are ~30 css px and its buttons 12 css px type in one row, 34 tall.
+  The rail and the transcript keep the walnut frame round the dark bronze.
 - **Never upscale.** No sprite atlases: HTTP/2 makes many small files cheap and an atlas adds
   tooling.
 - Preload the game's nine characters (four states + head) at the deal; `next/image` `priority`
@@ -973,11 +993,11 @@ src/stage/
 ├── Stage.tsx                # the box, the layers, --stage-scale, the paint memo
 ├── Atmosphere.tsx           # the key light, haze, shadows, vignette and grain (§3 "Atmosphere")
 ├── countdown.ts             # a prompt's `m:ss` and the share left (the dock, the ballot, the plate)
-├── textures.ts              # the room's surface pictures by URL (WOOD, VELVET), for the paints
+├── textures.ts              # the room's surface pictures by URL (WOOD), for the paints
 ├── paint/                   # string generators: station, window, shutter, light —
 │                            #   (phase, units) → svg string; dining-car.ts: the car's plan
 │                            #   (diningCarPlan: the painting's place, its glass, glows, specials);
-│                            #   texture.ts: the surfaces' SVG patterns (walnut, boards, velvet);
+│                            #   texture.ts: the surfaces' SVG patterns (walnut, boards);
 │                            #   bleed.ts: the platform's two strips past the world's sides (§3);
 │                            #   station.ts: the platform (stationBack/Front, stationPlan);
 │                            #   atmosphere.ts: the key light by hour, the car's haze;

@@ -7,9 +7,11 @@
   align-items: center;
   gap: 9.6px;
   padding: 5.6px 14.4px;
-  border-radius: 32px;
-  background: rgba(14, 9, 6, 0.88);
-  border: 1px solid var(--cloak2);
+  /* the HUD kit's tag (2026-10-19): dark bronze, read and not tapped */
+  border-radius: 7px;
+  background: var(--kit-panel);
+  border: 1.5px solid var(--kit-edge);
+  box-shadow: var(--kit-tag-rim);
   font-size: var(--meta);
   line-height: 1.5;
   color: var(--bone2);

@@ -129,7 +129,6 @@ export function Wing({
     '--wing': `${width}px`,
     '--reach-max': `${L.reach}px`,
     '--board': `url(${SPRITES.textures.walnut.src})`,
-    '--velvet': `url(${SPRITES.textures.velvet.src})`,
     '--rail-frame': `url(${SPRITES.rail.frame.src})`,
     '--rail-plate': `url(${SPRITES.rail.plate.src})`,
     '--rail-paper': `url(${SPRITES.rail.paper.src})`,
@@ -139,7 +138,8 @@ export function Wing({
     '--rail-pad': `${RAIL_PAD}px`,
     '--rail-gap': `${RAIL_GAP}px`,
   } as CSSProperties;
-  const opens = (t: WingTileProps) => !!book && !!onOpen && !!t.character && !t.read && !t.file;
+  const opens = (t: WingTileProps) =>
+    !!book && !!onOpen && !!t.character && !t.read && !t.file;
   return (
     <>
       <div className={styles.bleed} style={rail} aria-hidden="true" />

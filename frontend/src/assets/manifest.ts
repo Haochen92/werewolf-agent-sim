@@ -217,13 +217,16 @@ import automatonOutShadow from './sprites/shadow/characters/automaton/out.webp';
 import grain from './sprites/atmosphere/grain.webp';
 import textureWalnut from './sprites/textures/walnut.webp';
 import textureBoards from './sprites/textures/boards.webp';
-import textureVelvet from './sprites/textures/velvet.webp';
 import textureCork from './sprites/textures/cork.webp';
 import textureInk from './sprites/textures/ink.webp';
 import railFrame from './sprites/rail/frame.webp';
 import railPaper from './sprites/rail/paper.webp';
 import railShadow from './sprites/rail/shadow.webp';
 import railPlate from './sprites/rail/plate.webp';
+import hudFrame from './sprites/hud/frame.webp';
+import hudBronzeDark from './sprites/hud/bronze-dark.webp';
+import hudBronzeLight from './sprites/hud/bronze-light.webp';
+import hudPaper from './sprites/hud/paper.webp';
 import owlBaseSmall from './sprites/characters/owl/base@small.webp';
 import owlTalkingSmall from './sprites/characters/owl/talking@small.webp';
 import owlThinkingSmall from './sprites/characters/owl/thinking@small.webp';
@@ -468,14 +471,20 @@ export type RoleSprite =
  */
 
 /**
- * The room's surfaces (seamless tiles, opaque): the walls' walnut veneer, the floor's boards and
- * the replay valance's velvet, each tinted to the flat colour it fills. Recipe: stage_architecture §4.
+ * The room's surfaces (seamless tiles, opaque): the walls' walnut veneer, the floor's boards,
+ * each tinted to the flat colour it fills. Recipe: stage_architecture §4.
  * Also the case file's stamp ink (`ink`, scripts/make-stamp-ink.mjs): a white tile whose alpha is
  * the ink's coverage, a mask for the stamps.
  */
-export type TexturePicture = 'walnut' | 'boards' | 'velvet' | 'cork' | 'ink';
+export type TexturePicture = 'walnut' | 'boards' | 'cork' | 'ink';
 /** The seat rail's pictures (scripts/fit_rail.py): its frame and lettered plate, the cards' paper and shadow. */
 export type RailPicture = 'frame' | 'plate' | 'paper' | 'shadow';
+/**
+ * The HUD's kit (scripts/fit_hud_kit.py, owner 2026-10-19): the riveted bronze frame round a panel
+ * (a 9-slice, 50 px corners), the dark bronze a panel is (and the rail's and the transcript's
+ * ground), the light bronze a button is, and the cream paper of the act, the chosen and the written.
+ */
+export type HudPicture = 'frame' | 'bronzeDark' | 'bronzeLight' | 'paper';
 
 /**
  * The phone's copies (scripts/small-sprites.mjs, each beside its source) of the pictures a small
@@ -512,6 +521,7 @@ export const SPRITES: {
   grain: StaticImageData;
   textures: Record<TexturePicture, StaticImageData>;
   rail: Record<RailPicture, StaticImageData>;
+  hud: Record<HudPicture, StaticImageData>;
   small: SmallSprites;
 } = {
   day: {
@@ -797,7 +807,6 @@ export const SPRITES: {
   textures: {
     walnut: textureWalnut,
     boards: textureBoards,
-    velvet: textureVelvet,
     cork: textureCork,
     ink: textureInk,
   },
@@ -806,6 +815,12 @@ export const SPRITES: {
     plate: railPlate,
     paper: railPaper,
     shadow: railShadow,
+  },
+  hud: {
+    frame: hudFrame,
+    bronzeDark: hudBronzeDark,
+    bronzeLight: hudBronzeLight,
+    paper: hudPaper,
   },
   small: {
     day: {

@@ -1,0 +1,11 @@
+/* an icon before a button's words, in its ink, an em across (KitIcon.tsx) */
+.icon {
+  flex: none;
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  margin-right: 0.45em;
+  vertical-align: -0.1em;
+  fill: currentColor;
+  stroke: none;
+}

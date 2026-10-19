@@ -23,6 +23,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { useTimeLeft } from '@/hooks/useCountdown';
 import { countLeft, countText, URGENT_MS, type TurnClock } from '../countdown';
+import { KitIcon } from './KitIcon';
 import styles from './NightRoom.module.css';
 
 export interface ActPlateProps {
@@ -130,11 +131,13 @@ export function ActPlate({
       ) : null}
       {secondary ? (
         <button type="button" disabled={secondary.disabled} onClick={secondary.onClick}>
+          <KitIcon name="pass" />
           {secondary.label}
         </button>
       ) : null}
       {agent ? (
         <button type="button" disabled={agent.disabled} onClick={agent.onClick}>
+          <KitIcon name="agent" />
           {agent.label}
         </button>
       ) : null}

@@ -1,6 +1,8 @@
 /* The transcript drawer, as bench 74 draws it (`.drawer`, `.tl`, `.pill`, `.daytabs`), its
    container units turned into stage units (1cqw = 16 units). Full height under the top strip
-   (its buttons sit over the drawer's head); stopped at the rail on the seated human's turn. */
+   (its buttons sit over the drawer's head), on every beat (owner, 2026-10-19). In the HUD's kit:
+   the rail's walnut frame down its edge round dark bronze, the record on cream paper, the kit's
+   buttons for the filters and the days. */
 .drawer {
   position: absolute;
   z-index: 3;
@@ -11,18 +13,10 @@
   display: flex;
   flex-direction: column;
   padding-top: 73.6px;
-  /* a warm dark ground, the page the record is set on (HUD pass 3a, owner 2026-09-29); its edge
-     the HUD's thin brass with the dark reveal */
-  --ground-top: rgba(33, 24, 18, 0.985);
-  --ground-bot: rgba(25, 18, 13, 0.99);
-  /* the dead in the reports; the night's heading, never lavender (that is the serial killer) */
-  --dead: #da8260;
-  --night-ink: #c3cdd6;
-  background: linear-gradient(180deg, var(--ground-top), var(--ground-bot));
-  border-left: 1.5px solid var(--hud-brass-lo);
-  box-shadow:
-    inset 2.5px 0 0 rgba(14, 8, 4, 0.9),
-    -9.6px 0 25.6px rgba(0, 0, 0, 0.5);
+  background: var(--kit-panel);
+  border-left: 18px solid transparent;
+  border-image: var(--rail-frame) 53 / 0 0 0 18px stretch;
+  box-shadow: -9.6px 0 25.6px rgba(0, 0, 0, 0.5);
   color: var(--cream);
 }
 /* the drawer's ground carried on past the stage's right edge, into the house's dark (the bleed) */
@@ -34,14 +28,12 @@
   left: 100%;
   width: var(--bleed);
   background:
-    linear-gradient(90deg, transparent, #0c0a07 var(--bleed-dark)),
-    linear-gradient(180deg, var(--ground-top), var(--ground-bot));
+    linear-gradient(90deg, transparent, #0c0a07 var(--bleed-dark)), var(--kit-panel);
   pointer-events: none;
 }
 .drawer > header {
   flex: 0 0 auto;
-  padding: 9.6px 19.2px 11.2px;
-  border-bottom: 1px solid rgba(201, 164, 92, 0.28);
+  padding: 9.6px 19.2px 11.2px 9.6px;
   display: flex;
   flex-direction: column;
   gap: 8.8px;
@@ -80,8 +72,7 @@
   color: var(--cream2);
   margin-right: 4.8px;
 }
-/* the filters as the strip's plaque tabs (TopStrip .btn): walnut, a thin brass edge; pressed is
-   an engraved well, the word in bright cream over a short brass underline */
+/* the filters as the kit's buttons (TopStrip .btn), the pressed ones on cream paper */
 .pill {
   position: relative;
   font: inherit;
@@ -92,10 +83,11 @@
   line-height: 1.4;
   min-height: calc(36.8px * var(--legible-ui));
   box-sizing: border-box;
-  color: var(--cream2);
-  background: linear-gradient(180deg, var(--walnut-top), var(--walnut-bot));
-  border: 1px solid var(--hud-brass-lo);
-  border-radius: 6.4px;
+  color: var(--kit-ink);
+  background: var(--kit-button);
+  border: 1.5px solid var(--kit-edge);
+  border-radius: 5px;
+  box-shadow: var(--kit-lift);
   padding: calc(2.4px * var(--legible-ui)) calc(14.4px * var(--legible-ui));
   cursor: pointer;
   display: inline-flex;
@@ -104,22 +96,7 @@
 }
 .pill[aria-pressed='true'],
 .daytabs button[aria-pressed='true'] {
-  color: var(--cream);
-  background: rgba(14, 8, 4, 0.55);
-  box-shadow:
-    inset 0 1px 3px rgba(0, 0, 0, 0.7),
-    inset 0 -1px 0 rgba(201, 164, 92, 0.18);
-}
-.pill:not(.seatp)[aria-pressed='true']::after,
-.daytabs button[aria-pressed='true']::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: calc(3.2px * var(--legible-ui));
-  width: 1.4em;
-  height: max(1px, calc(1px / max(var(--stage-scale, 1), 0.01)));
-  transform: translateX(-50%);
-  background: var(--hud-brass);
+  background: var(--kit-act);
 }
 .seatp {
   padding: 1.6px;
@@ -171,11 +148,7 @@
   color: var(--ink);
 }
 .show[aria-pressed='false'] {
-  color: var(--bone3);
-}
-/* the underline is the check's to say here */
-.show[aria-pressed='true']::after {
-  display: none;
+  color: rgba(36, 24, 12, 0.6);
 }
 /* on a phone (Stage.tsx `data-small`) the head loses its title, so the lines keep the height;
    the seats and Show still wrap into two short rows (a sideways-scrolling row hid the Show
@@ -193,17 +166,13 @@
 .daytabs {
   flex: 0 0 auto;
   display: flex;
-  gap: calc(3.2px * var(--legible-ui));
+  gap: calc(6.4px * var(--legible-ui));
   /* on a phone the tabs' type is larger: many days scroll sideways, a tab never breaks */
   overflow-x: auto;
   scrollbar-width: none;
-  padding: calc(4.8px * var(--legible-ui)) calc(6.4px * var(--legible-ui));
-  /* the strip's plaque along the foot: walnut under a brass edge with the dark reveal */
-  background: linear-gradient(180deg, var(--walnut-top), var(--walnut-bot));
-  border-top: 1.5px solid var(--hud-brass);
-  box-shadow:
-    inset 0 2.5px 0 rgba(22, 13, 7, 0.9),
-    inset 0 3.5px 0 rgba(201, 164, 92, 0.3);
+  /* on the drawer's bronze, room round the buttons for their lift */
+  padding: calc(6.4px * var(--legible-ui)) calc(9.6px * var(--legible-ui))
+    calc(8px * var(--legible-ui)) 0;
 }
 .daytabs button {
   position: relative;
@@ -213,34 +182,51 @@
   font-weight: 600;
   font-variant-numeric: lining-nums tabular-nums;
   font-size: calc(22.4px * 0.9 * var(--legible-ui));
-  color: var(--cream2);
-  background: transparent;
-  border: 0;
+  color: var(--kit-ink);
+  background: var(--kit-button);
+  border: 1.5px solid var(--kit-edge);
   border-radius: 5px;
+  box-shadow: var(--kit-lift);
   padding: calc(7.2px * var(--legible-ui)) calc(8px * var(--legible-ui));
   white-space: nowrap;
   cursor: pointer;
 }
-/* the thin brass rule between the tabs, inset top and bottom */
-.daytabs button + button::before {
-  content: '';
-  position: absolute;
-  left: calc(-1.6px * var(--legible-ui));
-  top: 24%;
-  bottom: 24%;
-  width: max(1px, calc(1px / max(var(--stage-scale, 1), 0.01)));
-  background: rgba(201, 164, 92, 0.5);
-}
 
 /* the lines and the "Back to now" pill over their foot */
+/* the record on cream paper (owner, 2026-10-19): the page's words in the paper's inks, the
+   colours the dark ground had remapped to the case file's (materials.ts `--ink-*`) */
 .page {
   flex: 1 1 auto;
   min-height: 0;
   position: relative;
   display: flex;
   flex-direction: column;
+  margin-right: calc(9.6px * var(--legible-ui));
+  border-radius: 4px;
+  background: var(--kit-sheet);
+  box-shadow:
+    0 0 0 1.5px var(--kit-edge),
+    0 3px 8px rgba(0, 0, 0, 0.45);
+  color: var(--kit-ink);
+  --cream: var(--kit-ink);
+  --cream2: var(--kit-ink2);
+  --hud-brass: #8a6a3a;
+  --hud-brass-hi: #7a4a12;
+  --hud-brass-lo: #a88a5a;
+  /* the dead in the reports; the night's heading, never lavender (that is the serial killer) */
+  --dead: #9a3b22;
+  --night-ink: #3d5068;
+  --amber: var(--ink-town);
+  --town: var(--ink-town);
+  --wolf: var(--ink-wolf);
+  --sk: var(--ink-sk);
+  --benign: var(--ink-benign);
+  --xray: #2c6b61;
+  --xray-text: #1f4f47;
+  --xray-mut: #4f7a6e;
+  --xray-line: #9cbcb2;
 }
-/* scrolled away from the beat: a small brass-edged pill at the foot takes the reader back */
+/* scrolled away from the beat: a small pill at the foot, the kit's button, takes the reader back */
 .backnow {
   position: absolute;
   z-index: 1;
@@ -254,9 +240,9 @@
   font-size: calc(var(--meta) * 1.05);
   line-height: 1.3;
   white-space: nowrap;
-  color: var(--cream);
-  background: linear-gradient(180deg, var(--walnut-top), var(--walnut-bot));
-  border: 1px solid var(--hud-brass);
+  color: var(--kit-ink);
+  background: var(--kit-button);
+  border: 1.5px solid var(--kit-edge);
   border-radius: 999px;
   padding: calc(5.6px * var(--legible-ui)) calc(16px * var(--legible-ui));
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.55);

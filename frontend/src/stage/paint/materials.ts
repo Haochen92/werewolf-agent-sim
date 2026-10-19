@@ -8,6 +8,8 @@
  * and a panel drawn by a generator can never disagree about what "brass" is.
  */
 
+import { SPRITES } from '@/assets/manifest';
+
 export type Phase = 'day' | 'dusk' | 'night' | 'dawn';
 export const PHASES_IN_ORDER: readonly Phase[] = ['day', 'dusk', 'night', 'dawn'];
 
@@ -225,6 +227,28 @@ type CssVar = `--${string}`;
 export function vars(): Record<CssVar, string> {
   const m = MATERIALS;
   return {
+    // the HUD's kit (SPRITES.hud): panels, buttons, the chosen and the written
+    '--kit-frame': `url(${SPRITES.hud.frame.src})`,
+    '--kit-dark': `url(${SPRITES.hud.bronzeDark.src})`,
+    '--kit-light': `url(${SPRITES.hud.bronzeLight.src})`,
+    '--kit-paper': `url(${SPRITES.hud.paper.src})`,
+    // the rail's walnut frame (SPRITES.rail), which the transcript's edge shares
+    '--rail-frame': `url(${SPRITES.rail.frame.src})`,
+    // the kit's surfaces, whole, so every HUD draws them alike (owner, 2026-10-19): a panel or a
+    // tag (dark bronze: what is read), a button (light bronze: what is tapped), the act or the
+    // chosen one, and anything written on (cream paper)
+    '--kit-panel': `linear-gradient(rgba(10, 6, 2, 0.18), rgba(10, 6, 2, 0.28)), url(${SPRITES.hud.bronzeDark.src}) 0 0 / 256px 256px repeat, #5d4e3c`,
+    '--kit-button': `linear-gradient(rgba(255, 240, 210, 0.12), rgba(20, 10, 0, 0.1)), url(${SPRITES.hud.bronzeLight.src}) 0 0 / 256px 256px repeat, #9a8362`,
+    '--kit-act': `linear-gradient(rgba(255, 255, 255, 0.12), rgba(150, 110, 60, 0.1)), url(${SPRITES.hud.paper.src}) 0 0 / 256px 256px repeat, #f4e4c7`,
+    '--kit-sheet': `url(${SPRITES.hud.paper.src}) 0 0 / 256px 256px repeat, #f4e4c7`,
+    '--kit-edge': '#3b2a17',
+    '--kit-ink': '#24180c',
+    '--kit-ink2': '#6a5238',
+    '--kit-on-dark': '#f3e6c8',
+    '--kit-lift':
+      'inset 0 1px 0 rgba(255, 236, 200, 0.35), 0 2px 0 rgba(20, 12, 6, 0.55), 0 4px 8px rgba(0, 0, 0, 0.3)',
+    '--kit-tag-rim':
+      'inset 0 0 0 1px rgba(214, 186, 140, 0.35), 0 4px 12px rgba(0, 0, 0, 0.5)',
     '--ink': m.ink,
     '--bone': m.bone,
     '--bone2': m.bone2,

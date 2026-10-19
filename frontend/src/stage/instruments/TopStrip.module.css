@@ -1,17 +1,23 @@
 /* The top strip: the day plaque at the left, past the wing; the mode tabs pinned at the right
-   (Transcript always the far right). Both are the speech box's material: deep walnut, a thin
-   brass edge with a dark reveal, the words in lamp-glow cream (owner, 2026-09-29). */
-.phase,
-.modes,
+   (Transcript always the far right). In the HUD's kit (owner, 2026-10-19): what is read (the day
+   plaque) is dark bronze in the riveted frame; what is tapped (the replay's way back, Reveal, the
+   tabs, the door) is the kit's button, the open tab on cream paper. */
+.phase {
+  background: var(--kit-panel);
+  border: 12px solid transparent;
+  border-image: var(--kit-frame) 50 / 12px stretch;
+  border-radius: 7px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
 .back,
+.btn,
 .reveal,
 .door {
-  background: linear-gradient(180deg, var(--walnut-top), var(--walnut-bot));
-  border: 1.5px solid var(--hud-brass);
-  box-shadow:
-    inset 0 0 0 2.5px rgba(22, 13, 7, 0.9),
-    inset 0 0 0 3.5px rgba(201, 164, 92, 0.3),
-    0 4px 12px rgba(0, 0, 0, 0.5);
+  background: var(--kit-button);
+  border: 1.5px solid var(--kit-edge);
+  border-radius: 5px;
+  box-shadow: var(--kit-lift);
+  color: var(--kit-ink);
 }
 
 /* the strip's left: the replay's way out, then the day plaque */
@@ -39,9 +45,7 @@
   display: flex;
   align-items: center;
   gap: calc(11.2px * var(--legible-ui));
-  padding: calc(6.4px * var(--legible-ui)) calc(16px * var(--legible-ui))
-    calc(6.4px * var(--legible-ui)) calc(8.8px * var(--legible-ui));
-  border-radius: 8px;
+  padding: 0 calc(6px * var(--legible-ui)) 0 calc(1px * var(--legible-ui));
   color: var(--cream);
 }
 .where {
@@ -97,59 +101,34 @@
   gap: calc(8px * var(--legible-ui));
 }
 
-/* the mode tabs: one plaque, two tabs split by a brass rule */
+/* the mode tabs: two buttons side by side */
 .modes {
   display: flex;
-  padding: calc(3.2px * var(--legible-ui));
-  border-radius: 8px;
+  gap: calc(6px * var(--legible-ui));
 }
 .btn {
   position: relative;
+  display: inline-flex;
+  align-items: center;
   font: inherit;
   font-family: var(--font-ui);
   font-weight: 600;
   font-variant-numeric: lining-nums tabular-nums;
   font-size: calc(var(--meta) * 1.08);
   line-height: 1.4;
-  /* unpressed: the words in a muted brass, as on the reference plaque */
-  color: var(--cream2);
-  background: none;
-  border: 0;
-  border-radius: 5px;
   /* grows with the labels, so the tap target does too (--legible-ui, Stage.module.css): 22 css
      px tall on an iPhone 14 */
   padding: calc(8px * var(--legible-ui)) calc(14.4px * var(--legible-ui));
   cursor: pointer;
 }
-/* the thin brass rule between the tabs, inset top and bottom */
-.btn + .btn::before {
-  content: '';
-  position: absolute;
-  left: -0.5px;
-  top: 22%;
-  bottom: 22%;
-  /* one screen pixel at least, so the rule survives a phone's scale */
-  width: max(1px, calc(1px / max(var(--stage-scale, 1), 0.01)));
-  background: rgba(201, 164, 92, 0.6);
-}
-/* pressed, quietly (owner, 2026-09-29): an engraved walnut well, the word in bright cream with a
-   short brass underline; File and Transcript press alike */
+/* the open one: cream paper; File and Transcript press alike */
 .btn[aria-pressed='true'] {
-  color: var(--cream);
-  background: rgba(14, 8, 4, 0.55);
-  box-shadow:
-    inset 0 1px 3px rgba(0, 0, 0, 0.7),
-    inset 0 -1px 0 rgba(201, 164, 92, 0.18);
+  background: var(--kit-act);
 }
-.btn[aria-pressed='true']::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: calc(4px * var(--legible-ui));
-  width: 1.4em;
-  height: max(1px, calc(1px / max(var(--stage-scale, 1), 0.01)));
-  transform: translateX(-50%);
-  background: var(--hud-brass);
+.btn:hover,
+.door:hover,
+.reveal:not(:disabled):hover {
+  filter: brightness(1.06);
 }
 
 /* the replay's way out: a plaque of the day plaque's material and height, before it, so it is
@@ -159,23 +138,20 @@
   align-items: center;
   gap: calc(7.2px * var(--legible-ui));
   padding: 0 calc(16px * var(--legible-ui)) 0 calc(12.8px * var(--legible-ui));
-  border-radius: 8px;
   font-family: var(--font-ui);
   font-weight: 600;
   font-variant-numeric: lining-nums tabular-nums;
   font-size: calc(var(--meta) * 1.15);
   line-height: 1.2;
-  color: var(--cream);
   text-decoration: none;
   white-space: nowrap;
 }
 .back svg {
   width: 1em;
   height: 1em;
-  color: var(--hud-brass-hi);
 }
 .back:hover {
-  color: var(--hud-brass-hi);
+  filter: brightness(1.06);
 }
 .back:focus-visible {
   outline: 2px solid var(--hud-brass-hi);
@@ -197,7 +173,6 @@
   font-variant-numeric: lining-nums tabular-nums;
   font-size: calc(var(--meta) * 1.08);
   line-height: 1.4;
-  color: var(--cream2);
   white-space: nowrap;
   cursor: pointer;
 }
@@ -254,9 +229,9 @@
   opacity: 0;
   transition: opacity 0.3s ease;
 }
-/* on: the knob at the slot's right, the keyhole lit, the word in the X-ray's verdigris */
+/* on: the knob at the slot's right, the keyhole lit, the button on cream paper */
 .reveal[aria-pressed='true'] {
-  color: var(--xray-text);
+  background: var(--kit-act);
 }
 .reveal[aria-pressed='true'] .knob {
   transform: translateX(calc(18px * var(--legible-ui)));
@@ -269,12 +244,6 @@
     inset 0 1px 3px rgba(0, 0, 0, 0.8),
     0 0 0 1px var(--xray);
 }
-.reveal:not(:disabled):hover {
-  color: var(--cream);
-}
-.reveal[aria-pressed='true']:not(:disabled):hover {
-  color: var(--xray-hi);
-}
 .reveal:focus-visible {
   outline: 2px solid var(--hud-brass-hi);
   outline-offset: 2px;
@@ -282,7 +251,7 @@
 /* live, before the game ends: locked, the keyhole dark, the word faded */
 .reveal[data-reveal='locked'] {
   cursor: default;
-  color: var(--bone3);
+  color: rgba(36, 24, 12, 0.55);
 }
 .reveal[data-reveal='locked'] .slot,
 .reveal[data-reveal='locked'] .knob {
@@ -293,22 +262,17 @@
   cursor: default;
 }
 
-/* live: the door at the strip's far right, a small plaque of the tabs' height with the glyph in
-   brass; it asks before anyone leaves (LeaveConfirm) */
+/* live: the door at the strip's far right, a small button of the tabs' height with the glyph in
+   its ink; it asks before anyone leaves (LeaveConfirm) */
 .door {
   display: grid;
   place-items: center;
   padding: 0 calc(10.4px * var(--legible-ui));
-  border-radius: 8px;
-  color: var(--hud-brass-hi);
   cursor: pointer;
 }
 .door svg {
   width: calc(22px * var(--legible-ui));
   height: calc(22px * var(--legible-ui));
-}
-.door:hover {
-  color: var(--cream);
 }
 .door:focus-visible {
   outline: 2px solid var(--hud-brass-hi);

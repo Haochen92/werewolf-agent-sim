@@ -92,7 +92,6 @@ describe('sprite manifest', () => {
       'boards',
       'cork',
       'ink',
-      'velvet',
       'walnut',
     ]);
     for (const img of Object.values(SPRITES.textures)) hasSize(img);
@@ -152,5 +151,17 @@ describe('sprite manifest', () => {
       const { s, y } = HEAD_FRAME[character];
       expect(s / 2 + y).toBeGreaterThanOrEqual(0.5);
     }
+  });
+
+  it('has the HUD’s kit: the riveted frame and three tiles', () => {
+    expect(Object.keys(SPRITES.hud).sort()).toEqual([
+      'bronzeDark',
+      'bronzeLight',
+      'frame',
+      'paper',
+    ]);
+    expect([SPRITES.hud.frame.width, SPRITES.hud.frame.height]).toEqual([130, 130]);
+    for (const k of ['bronzeDark', 'bronzeLight', 'paper'] as const)
+      expect([SPRITES.hud[k].width, SPRITES.hud[k].height]).toEqual([512, 512]);
   });
 });

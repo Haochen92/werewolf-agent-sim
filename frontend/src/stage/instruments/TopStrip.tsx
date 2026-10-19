@@ -27,6 +27,7 @@ import { SoundButton } from '@/music/SoundButton';
 import { FullScreenButton } from '../FullScreenButton';
 import { geometry, type Hud } from '../units';
 import { Notice, NoticeButton, NoticeZone } from './Notice';
+import { KitIcon } from './KitIcon';
 import styles from './TopStrip.module.css';
 
 export interface TopStripProps {
@@ -134,6 +135,7 @@ export function TopStrip({
             aria-pressed={file}
             onClick={onFile}
           >
+            <KitIcon name="file" />
             {unlocked && !file ? 'File · unlocked' : 'File'}
           </button>
           <button
@@ -142,6 +144,7 @@ export function TopStrip({
             aria-pressed={transcript}
             onClick={onTranscript}
           >
+            <KitIcon name="transcript" />
             Transcript
           </button>
         </div>

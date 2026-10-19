@@ -270,7 +270,7 @@ ephemeral: it paces the live drop and is not in the log.
 |---|---|---|---|---|---|---|
 | 1 | `vote.opens` | `phase_change: voting` (81, 220, 362). **Chapter mark: Vote N** | P | the puppet drops behind the stand, the stand goes; dusk; the shutter drops; the table comes up on its lift from below the frame and stands on the floor with the jar (no trap since 2026-10-19); the lid's string comes down and the lid lifts. One move | D: the GM's line if any | 2.8 |
 | 2 | `vote.ballot-drops` | live only: each `phase_progress` increment | P | one anonymous chip from the flies into the jar; the pill "Ballots in, n of N" | — | real time |
-| 3 | `vote.your-ballot` | `input_request` `vote` for me, placed after row 1 (§12, 2026-10-12) | S | the prompt: a row of the candidates' chips, the empty plate = abstain; tap, confirm on the plate; my chip drops in face up on my screen only; after that I have the spectator's jar | — | until answered / deadline |
+| 3 | `vote.your-ballot` | `input_request` `vote` for me, placed after row 1 (§12, 2026-10-12) | S | the prompt: a row of the candidates' chips, a blank white chip = abstain (2026-10-19; it was an empty plate); tap, confirm on the plate; my chip drops in face up on my screen only; after that I have the spectator's jar | — | until answered / deadline |
 | 4 | `vote.ballots-drop` | replay only: the `vote_cast` batch (first: 109, 242, 378) | P | all the chips cascade together into the jar | — | 2.0 |
 | 5 | `vote.closes` | live: the pill full · replay: same beat as 4 | P | the lid comes down. **X-ray replay: the vote's stop** (§11): the play pauses here; the notice "7 ballots in. Tap a seat to read what it voted on." with **Count the votes ▶** (plays on); every wing card opens its file | — | 1.5 (a stop: waits) |
 | 6 | `vote.count-begins` | the `vote_cast` batch | P | the lid flies out; the shot pushes in; the jar fades from the centre and stands at the back of the table, to the right (2026-10-17; it tipped onto its side before); plates along the front edge, one per seat with votes, abstain's an ordinary empty plate at the right, laid as the others, its place card reading "Abstain" (2026-09-30; it was an upturned saucer); every plate the painted plate (`SPRITES.props.plate`, 2026-09-30); place cards with head, seat, running number | F(X): the voters' consults and reads | 2.0 |
@@ -296,7 +296,7 @@ shutter up after 2.5 s; a lynch keeps the close shot. The voted-out seat stays a
 until the lynch's card clears the rail. The table's top is the walnut tile in perspective, the
 bench's cloth hanging from its front edge. The ballot: the chosen chip is lit (amber ring, glow),
 the rest dim (the bench raised it); the plate reads "Choose a seat" / "Vote seat 6" / "Abstain";
-"Your vote · Tap a chip, or the empty plate to abstain." with "your seat's agent votes for you in
+"Your vote · Tap a chip, or the blank chip to abstain." with "your seat's agent votes for you in
 1:14"; on its way, "Your vote · Sending…" (a pulsing amber dot, the chips shut on the choice, no
 plate; the send is tried up to four times, about a minute at worst) and, only once the server has
 it, "Your ballot is in · no one sees it until voting closes"; a failed send opens the row again

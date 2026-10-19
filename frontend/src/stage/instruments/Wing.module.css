@@ -1,5 +1,6 @@
-/* The seat rail (HUD pass 2, owner 2026-09-29, "B on photo stock"; framed 2026-10-18): burgundy
-   velvet in the owner's walnut frame with brass brackets down the left of the stage, a brass plate
+/* The seat rail (HUD pass 2, owner 2026-09-29, "B on photo stock"; framed 2026-10-18): the HUD
+   kit's dark bronze (2026-10-19; burgundy velvet before) in the owner's walnut frame with brass
+   brackets down the left of the stage, a brass plate
    lettered with what a tap does at its head, the seats under it as photo cards on cream paper, in
    a grid whose rows and columns come from the seat count (rail-layout.ts, set inline). The frame
    and the plate are 9-slices and the paper a tile (scripts/fit_rail.py), drawn once and still.
@@ -24,21 +25,18 @@
   padding: var(--rail-pad);
   box-shadow: 6px 0 16px rgba(0, 0, 0, 0.5);
 }
-/* the velvet inside the frame: a still tile, dimmed to the car's light and darker towards the
-   wood; it stops short of the frame's rounded outer corners */
+/* the dark bronze inside the frame (the kit's panel): a still tile, darker towards the wood; it
+   stops short of the frame's rounded outer corners */
 .wing::before {
   content: '';
   position: absolute;
   inset: 8px;
   border-radius: 6px;
-  background:
-    linear-gradient(rgba(20, 6, 8, 0.3), rgba(20, 6, 8, 0.3)),
-    var(--velvet) 0 0 / 256px 256px repeat,
-    #4a1418;
-  box-shadow: inset 0 0 22px 4px rgba(10, 3, 4, 0.6);
+  background: var(--kit-panel);
+  box-shadow: inset 0 0 22px 4px rgba(10, 6, 2, 0.5);
   pointer-events: none;
 }
-/* the frame over the velvet's edge: its walnut (11.7 units) and piping (13.6) inside the
+/* the frame over the bronze's edge: its walnut (11.7 units) and piping (13.6) inside the
    rail's padding (14), the brackets in the corners; the hole is not drawn */
 .wing::after {
   content: '';
@@ -109,7 +107,7 @@
   background:
     var(--rail-paper) 0 0 / 128px 128px repeat,
     #ece2c8;
-  /* its shadow on the velvet, baked (fit_rail.py `shadow`): drawn round the card by the border
+  /* its shadow on the bronze, baked (fit_rail.py `shadow`): drawn round the card by the border
      image's outset, the card's own middle left undrawn, so no blur is computed at a repaint */
   border: 0 solid transparent;
   border-image: var(--rail-shadow) 32 / 16px / 16px stretch;
@@ -214,7 +212,7 @@
   line-height: 1.35;
 }
 /* two punches where the photo meets the notes, as on a ticket (owner, 2026-10-18): half circles
-   of the velvet's shade on the card's edges, a hairline rim (drawn, not cut: no mask on the stage) */
+   of the bronze's shade on the card's edges, a hairline rim (drawn, not cut: no mask on the stage) */
 .tile:not(.empty) .foot::before,
 .tile:not(.empty) .foot::after {
   --notch: 6cqw;

@@ -65,7 +65,7 @@ const STOPS: {
     disc: 'sun',
     Demo: VoteDemo,
     text: 'Everyone votes at the same time; when voting closes, every vote is shown. The player with the most votes is eliminated and their role revealed. A tie at the top, or most votes for Abstain, eliminates nobody. After two days in a row with nobody out (Day 1 counts), Abstain is off the ballot until someone is voted out.',
-    you: <>tap a player&rsquo;s chip, or the empty plate to abstain, then confirm.</>,
+    you: <>tap a player&rsquo;s chip, or the blank chip to abstain, then confirm.</>,
   },
   {
     id: 'night',

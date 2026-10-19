@@ -9,5 +9,3 @@ export const WOOD: Wood = {
   walnut: SPRITES.textures.walnut.src,
   boards: SPRITES.textures.boards.src,
 };
-
-export const VELVET: string = SPRITES.textures.velvet.src;
