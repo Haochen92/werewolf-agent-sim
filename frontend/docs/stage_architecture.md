@@ -629,7 +629,14 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   tap does; each card is the owner's warm cream paper (a tile) with a baked shadow drawn round
   it by the border image's outset, the seat number on a small brass tag (the plate's picture
   again), two punches drawn where the photo meets the notes, and a footer that holds facts only
-  as the side's colour and the role's sigil (a darker fold of the paper while nothing is known).
+  as the side's colour and the role's name, a two-word role short ("Serial K.", "Fortune T."), the
+  role's sigil on a disc at the photo's top left (owner, 2026-10-19: in the footer it was too small;
+  a darker fold of the paper while nothing is known). The role cards (deal, morning, lynch) are the
+  guide's: its paper under its frame, the frame drawn a tenth larger so its rule clears the words
+  (`--card-paper`, `--card-frame`). The vote decodes its chips and plate as the ballot opens, so a
+  first count never shows the drawn faces without their ring. The transcript's tiers are tinted
+  panels with filled tags (amber yours, verdigris another seat's, red the pack's) and the game
+  master's reports a kraft card with a bronze rule (owner, 2026-10-19: they were too muted).
   Frame and plate are 9-slices cut to the size their borders show (`scripts/fit_rail.py`;
   ~30 KB, ~2.2 MB decoded once a game). A chip back up in the jar is the owner's navy wooden
   chip, squashed to the table's 0.42 tilt, 192 px and a 128 px phone copy
