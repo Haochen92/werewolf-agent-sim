@@ -91,12 +91,9 @@ import villagerKit from './sprites/kits/villager.webp';
 import clockKit from './sprites/kits/clock.webp';
 import lampKit from './sprites/kits/lamp.webp';
 import walnut from './sprites/wood/walnut.webp';
-import stationSky from './sprites/station/sky.webp';
-import stationFloor from './sprites/station/floor.webp';
-import stationPost from './sprites/station/post.webp';
-import stationLampLit from './sprites/station/lamp-lit.webp';
+import stationPlatform from './sprites/station/platform.webp';
+import stationPlatformFront from './sprites/station/platform-front.webp';
 import stationTrain from './sprites/station/train.webp';
-import stationSky1x from './sprites/station/sky@1x.webp';
 import stationTrain1x from './sprites/station/train@1x.webp';
 import stationBlind from './sprites/station/blind.webp';
 import stationBeam from './sprites/station/beam.webp';
@@ -372,12 +369,12 @@ export type KitName =
   | 'lamp';
 
 /**
- * The waiting room's pictures (the platform, the train, its lamps), extracted once from the
- * waiting-room mockup (scripts/extract-station-sprites.mjs; no masters exist in the bundle); the
- * train and `beam` (the beam's and the ledge's walnut) are the owner's felt since 2026-10-17
- * (scripts/fit_felt_station.py).
+ * The waiting room's pictures: the platform is the owner's one picture, whole and with its arches
+ * clear for the front (2026-10-19, scripts/fit_platform.py); the train and `beam` (the ledge's
+ * walnut) are the owner's since 2026-10-17 (scripts/fit_felt_station.py); the blind is from the
+ * waiting-room mockup (scripts/extract-station-sprites.mjs).
  */
-export type StationPicture = 'sky' | 'floor' | 'post' | 'lamp' | 'train' | 'blind' | 'beam';
+export type StationPicture = 'platform' | 'platformFront' | 'train' | 'blind' | 'beam';
 
 /**
  * The landing carriage's pieces, cut from the waiting room's train (scripts/cut-carriage.mjs),
@@ -507,8 +504,8 @@ export const SPRITES: {
   kits: Record<KitName, StaticImageData>;
   wood: StaticImageData;
   station: Record<StationPicture, StaticImageData>;
-  /** The train and the country at one pixel per unit; `station`'s are about 1.5 (scenes/station-pictures.ts). */
-  stationAt1x: Record<'sky' | 'train', StaticImageData>;
+  /** The train at one pixel per unit; `station`'s is about 1.5 (scenes/station-pictures.ts). */
+  stationAt1x: Record<'train', StaticImageData>;
   carriage: Record<CarriagePicture, StaticImageData>;
   window: Record<WindowHour, Record<WindowPicture, StaticImageData>>;
   props: Record<PropPicture, StaticImageData>;
@@ -643,15 +640,13 @@ export const SPRITES: {
   },
   wood: walnut,
   station: {
-    sky: stationSky,
-    floor: stationFloor,
-    post: stationPost,
-    lamp: stationLampLit,
+    platform: stationPlatform,
+    platformFront: stationPlatformFront,
     train: stationTrain,
     blind: stationBlind,
     beam: stationBeam,
   },
-  stationAt1x: { sky: stationSky1x, train: stationTrain1x },
+  stationAt1x: { train: stationTrain1x },
   carriage: {
     roof: carriageRoof,
     rail: carriageRail,

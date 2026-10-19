@@ -1,9 +1,9 @@
 'use client';
 
 /**
- * The station's train and country at the density the stage is drawn at (frontend lesson 22):
- * one pixel per unit where that covers the screen's pixels, else the masters as shipped (about
- * 1.5). A desktop at 1× and most 2× phones take the lighter pair (454 KB against 890).
+ * The station's train at the density the stage is drawn at (frontend lesson 22): one pixel per
+ * unit where that covers the screen's pixels, else the master as shipped (about 1.5). A desktop
+ * at 1× and most 2× phones take the lighter copy. The platform's picture has one size.
  *
  * Upright, the stage stands behind the card that asks to turn the phone (OrientationGuard), at
  * the upright width; picked from that, a phone would take the light pair and then, turned, the
@@ -17,9 +17,9 @@ import { useStageWidth } from '../set';
 import { STAGE_W } from '../units';
 
 type Density = 1 | 1.5;
-type StationPictures = { train: StaticImageData; sky: StaticImageData };
+type StationPictures = { train: StaticImageData };
 
-const SHARP: StationPictures = { train: SPRITES.station.train, sky: SPRITES.station.sky };
+const SHARP: StationPictures = { train: SPRITES.station.train };
 
 /** The copy for a stage drawn `stageW` css px wide on a screen of density `dpr`. */
 export function stationDensity(stageW: number, dpr: number): Density {
@@ -37,13 +37,15 @@ function turnedWidth(stageW: number): number {
 const READY_CAP_MS = 6000;
 
 /**
- * Says once the train and the country this stage draws are loaded and decoded (or after
+ * Says once the train and the platform this stage draws are loaded and decoded (or after
  * `READY_CAP_MS`), so a departure never pulls out before its train is there: on a page opened
  * for the departure, a game for one's, the platform is new. Mounted inside the
  * Stage, beside the platform, for its measured pick.
  */
 export function StationReady({ onReady }: { onReady: () => void }) {
-  const { train, sky } = useStationPictures();
+  const { train } = useStationPictures();
+  // the platform's two pictures as well (owner, 2026-10-19: the page comes up whole)
+  const { platform, platformFront, beam } = SPRITES.station;
   useEffect(() => {
     let live = true;
     const done = () => {
@@ -51,7 +53,7 @@ export function StationReady({ onReady }: { onReady: () => void }) {
     };
     const cap = setTimeout(done, READY_CAP_MS);
     void Promise.all(
-      [train.src, sky.src].map((src) => {
+      [train.src, platform.src, platformFront.src, beam.src].map((src) => {
         const img = new Image();
         img.src = src;
         return img.decode().catch(() => {});
@@ -61,7 +63,7 @@ export function StationReady({ onReady }: { onReady: () => void }) {
       live = false;
       clearTimeout(cap);
     };
-  }, [train.src, sky.src, onReady]);
+  }, [train.src, platform.src, platformFront.src, beam.src, onReady]);
   return null;
 }
 

@@ -120,7 +120,7 @@ describe('sprite manifest', () => {
 
   it('has the station’s pictures', () => {
     expect(Object.keys(SPRITES.station).sort()).toEqual(
-      ['beam', 'blind', 'floor', 'lamp', 'post', 'sky', 'train'].sort(),
+      ['beam', 'blind', 'platform', 'platformFront', 'train'].sort(),
     );
     for (const img of Object.values(SPRITES.station)) hasSize(img);
   });

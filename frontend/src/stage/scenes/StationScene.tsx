@@ -34,15 +34,15 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { preload } from 'react-dom';
 import { BODY, SPRITES } from '@/assets/manifest';
 import { SoundButton } from '@/music/SoundButton';
-import { Layer, Paint } from '../Stage';
+import { Layer } from '../Stage';
 import { useSmall } from '../set';
 import { ChipSprite } from '../cast/ChipSprite';
 import { Puppet } from '../cast/Puppet';
 import { Bleed } from '../instruments/Bleed';
 import { StageWing } from '../instruments/Wing';
 import { StageMotion, useMotionScale } from '../motion';
-import { stationBack, stationFront, stationPlan } from '../paint/station';
-import { STAGE_H, geometry, type StageGeometry } from '../units';
+import { stationPlan } from '../paint/station';
+import { geometry, type StageGeometry } from '../units';
 import { Curtain } from './Curtain';
 import { DEPART, canDepart, ledgeLine } from './station';
 import { useStationPictures } from './station-pictures';
@@ -113,7 +113,17 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
     <>
       <Layer name="paint">
         <Bleed room="station" />
-        <Paint of={stationBack} opts={{ hud, sky: pics.sky.src }} />
+        {/* the owner's platform, whole: the night country through its arches */}
+        <Image
+          src={SPRITES.station.platform}
+          alt=""
+          unoptimized
+          priority
+          decoding="sync"
+          draggable={false}
+          className={styles.platform}
+          style={{ left: S.picture.x, top: S.picture.y, width: S.picture.w, height: S.picture.h }}
+        />
         {/* the train stays inside the world: past its sides the bleed's dark takes over */}
         <div className={styles.world}>
           <motion.div
@@ -193,24 +203,16 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
             </div>
           </motion.div>
         </div>
-        <div
-          className={styles.paving}
-          style={{ top: S.floorY, height: STAGE_H - S.floorY }}
-        >
-          <div
-            className={styles.tile}
-            style={{ backgroundImage: `url(${SPRITES.station.floor.src})` }}
-          />
-        </div>
-        <Paint
-          of={stationFront}
-          opts={{
-            hud,
-            post: SPRITES.station.post.src,
-            lamp: SPRITES.station.lamp.src,
-            wood: SPRITES.station.beam.src,
-            stone: SPRITES.station.floor.src,
-          }}
+        {/* and again with its arches clear: the beam, the pillars and the ledge over the train */}
+        <Image
+          src={SPRITES.station.platformFront}
+          alt=""
+          unoptimized
+          priority
+          decoding="sync"
+          draggable={false}
+          className={styles.platform}
+          style={{ left: S.picture.x, top: S.picture.y, width: S.picture.w, height: S.picture.h }}
         />
       </Layer>
 
