@@ -9,6 +9,7 @@
  */
 
 import { SPRITES } from '@/assets/manifest';
+import cardFrame from '@/assets/site/kit/card-frame.webp';
 
 export type Phase = 'day' | 'dusk' | 'night' | 'dawn';
 export const PHASES_IN_ORDER: readonly Phase[] = ['day', 'dusk', 'night', 'dawn'];
@@ -234,6 +235,10 @@ export function vars(): Record<CssVar, string> {
     '--kit-paper': `url(${SPRITES.hud.paper.src})`,
     // the rail's walnut frame (SPRITES.rail), which the transcript's edge shares
     '--rail-frame': `url(${SPRITES.rail.frame.src})`,
+    // the role cards are the guide's (owner, 2026-10-19): its paper, which the seat cards are
+    // already printed on, under its frame (a fine rule and corner flourishes)
+    '--card-paper': `url(${SPRITES.rail.paper.src})`,
+    '--card-frame': `url(${cardFrame.src})`,
     // the kit's surfaces, whole, so every HUD draws them alike (owner, 2026-10-19): a panel or a
     // tag (dark bronze: what is read), a button (light bronze: what is tapped), the act or the
     // chosen one, and anything written on (cream paper)

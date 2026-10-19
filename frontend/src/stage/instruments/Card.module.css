@@ -4,7 +4,14 @@
   position: absolute;
   inset: 0;
   box-sizing: border-box;
-  background: var(--paper);
+  /* the guide's card (owner, 2026-10-19): its frame laid over the card whole (its 512 x 682 is
+     near the card's own 5:7, so the corners keep their shape), on its paper. Drawn a tenth larger
+     than the card, so its band runs under the card's ink edge and its fine rule clears the
+     card's words, which sit nearer the edge than the guide's */
+  background:
+    var(--card-frame) 50% 50% / 110% 108% no-repeat,
+    var(--card-paper) 0 0 / calc(128 * var(--u)) repeat,
+    var(--paper);
   border: calc(3 * var(--u)) solid var(--ink);
   border-radius: calc(10 * var(--u));
   color: var(--ink);
