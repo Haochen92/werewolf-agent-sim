@@ -28,7 +28,7 @@ test('the vote stacks vertically without changing chip size as the tally grows',
 test('each flying chip moves a small HTML box without animating its SVG faces', async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 1024, height: 768 });
+  await page.setViewportSize({ width: 1600, height: 900 });
   await page.goto('/workbench/vote?beat=17&animate=1');
   await expect(page.locator('[data-vote-table]')).toBeVisible();
   for (const beat of [18, 19]) {
@@ -66,3 +66,39 @@ test('each flying chip moves a small HTML box without animating its SVG faces', 
     await expect(chip).toHaveCount(0);
   }
 });
+
+for (const hud of ['live', 'replay']) {
+  test(`small tablet ${hud}: chips count directly onto their stacks`, async ({ page }) => {
+    await page.setViewportSize({ width: 1133, height: 744 });
+    await page.goto(`/workbench/vote?beat=17&animate=1&hud=${hud}`);
+    await expect(page.locator('[data-small] [data-vote-table]')).toBeVisible();
+    await page.evaluate(() => {
+      (window as any).__flyingChips = 0;
+      const mo = new MutationObserver((records) => {
+        for (const r of records)
+          for (const node of r.addedNodes) {
+            if (
+              node instanceof Element &&
+              (node.matches('[data-vote-drawing="chip"]') ||
+                node.querySelector('[data-vote-drawing="chip"]'))
+            )
+              (window as any).__flyingChips++;
+          }
+      });
+      mo.observe(document.body, { childList: true, subtree: true });
+    });
+    for (const beat of [18, 19]) {
+      await page.keyboard.press('ArrowRight');
+      await expect
+        .poll(() => new URL(page.url()).searchParams.get('beat'))
+        .toBe(String(beat));
+      // Beat 17 is the first vote; these beats reveal the second and third immediately.
+      await expect(page.locator('[data-plate] image[href*="chip-ring"]')).toHaveCount(
+        beat - 16,
+      );
+      await expect(page.locator('[data-vote-drawing="chip"]')).toHaveCount(0);
+    }
+    await page.waitForTimeout(1000);
+    expect(await page.evaluate(() => (window as any).__flyingChips)).toBe(0);
+  });
+}

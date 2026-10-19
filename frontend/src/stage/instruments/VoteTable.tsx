@@ -569,6 +569,7 @@ export function VoteTable({
   winner,
   play = {},
 }: VoteTableProps) {
+  const small = useSmall();
   const J = jarGeometry(v);
   // the rooms' atmosphere: soft shadows under the table, the jar, the plates and the towers
   const ids = 'vt' + useId().replace(/[^A-Za-z0-9_-]/g, '');
@@ -595,7 +596,7 @@ export function VoteTable({
           cast={cast}
           me={me}
           lit={lit}
-          landing={hit}
+          landing={hit && !small}
           lighting={play.lighting}
           shade={`${shade}-${i}`}
         />
@@ -606,7 +607,7 @@ export function VoteTable({
           n={got.length}
           cast={cast}
           lit={lit}
-          hit={hit}
+          hit={hit && !small}
           lighting={play.lighting}
         />
       </g>
@@ -650,7 +651,8 @@ export function VoteTable({
   });
 
   let arc: ReactNode = null;
-  if (newest) {
+  // Small layouts count directly onto the plate, avoiding the chip flight and flip.
+  if (newest && !small) {
     const p = ps.find((q) => q.c === newest.votee);
     if (p) {
       const [fx, fy, rr] = stackPos(v, p, (onPlate[p.c]?.length ?? 1) - 1);
