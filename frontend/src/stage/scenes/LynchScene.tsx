@@ -268,7 +268,7 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
       <Layer name="hud">
         <NoticeZone
           hud={hud}
-          side={bandNarrows(presentation, beat, small)}
+          side={bandNarrows(presentation, small)}
           aside={side}
           hidden={presentation.footHidden}
         >

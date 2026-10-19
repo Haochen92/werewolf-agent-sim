@@ -20,7 +20,7 @@ import { recordMornings, type RecordPick } from './film/record-model';
 import type { SceneProps } from './scenes/types';
 import { notebookGame, useNotebook } from './notebook';
 import { useSmall } from './set';
-import { atRail, filmFull, slotOf, tapsOpenFiles } from './slot';
+import { filmFull, slotOf, tapsOpenFiles } from './slot';
 import { actedTonight, nightBranchesOf } from './scenes/replay-night';
 
 /** Memoised: it redraws when the beat, the view or what the page hands the slot changes. */
@@ -93,7 +93,6 @@ export const SideSlot = memo(function SideSlot({
           cast={cast}
           filters={slot?.filters ?? own.filters}
           onFilters={slot?.onFilters ?? own.setFilters}
-          rail={atRail(beat)}
           animate={animate}
           scroll={slot?.drawerScroll ?? own.scroll}
           onRecord={openRecord}
@@ -117,12 +116,8 @@ export const SideSlot = memo(function SideSlot({
           ledger={slot?.ledger ?? null}
           recordPick={slot?.onRecordPick ? (slot.recordPick ?? null) : ownPick}
           onRecordPick={pickPage}
-          player={
-            book && me
-              ? { book, me, cast: view.castRoleCounts ?? {} }
-              : null
-          }
-          full={filmFull(presentation, beat, small)}
+          player={book && me ? { book, me, cast: view.castRoleCounts ?? {} } : null}
+          full={filmFull(presentation, small)}
         />
       )}
     </Layer>

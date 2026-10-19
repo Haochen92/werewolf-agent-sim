@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  bandNarrows,
   fileTap,
+  filmFull,
   packNightSlot,
   packNightStep,
   pressFile,
@@ -111,5 +113,24 @@ describe('the wolves’ night in the transcript (owner, 2026-10-17)', () => {
       expect(packNightSlot({ slot, xray: false }, true).slot).toBe('drawer');
     expect(packNightSlot({ slot: 'drawer', xray: false }, false).slot).toBeNull();
     expect(packNightSlot({ slot: 'film', xray: false }, false).slot).toBe('film');
+  });
+});
+
+describe('the slot below the rail (owner, 2026-10-19: one rule on every beat and screen)', () => {
+  it('narrows the band whenever the drawer is open, prompts and phones alike', () => {
+    for (const small of [false, true])
+      for (const hud of ['live', 'replay'] as const) {
+        expect(bandNarrows({ slot: 'drawer', hud, xray: false }, small)).toBe(true);
+        expect(bandNarrows({ slot: null, hud, xray: false }, small)).toBe(false);
+      }
+  });
+
+  it('runs the file full height for a live player on a phone only', () => {
+    expect(filmFull({ slot: 'film', hud: 'live', xray: false }, true)).toBe(true);
+    expect(filmFull({ slot: 'film', hud: 'live', xray: false }, false)).toBe(false);
+    expect(filmFull({ slot: 'film', hud: 'live', xray: true }, true)).toBe(false);
+    expect(filmFull({ slot: 'film', hud: 'replay', xray: false }, true)).toBe(false);
+    expect(bandNarrows({ slot: 'film', hud: 'live', xray: false }, true)).toBe(true);
+    expect(bandNarrows({ slot: 'film', hud: 'live', xray: false }, false)).toBe(false);
   });
 });

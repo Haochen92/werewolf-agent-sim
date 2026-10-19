@@ -247,7 +247,7 @@ function LobbyBeat({
         {atStop && acted?.size ? (
           <NoticeZone
             hud={hud}
-            side={bandNarrows(presentation, beat, small)}
+            side={bandNarrows(presentation, small)}
             aside={side}
             hidden={presentation.footHidden}
           >
@@ -272,7 +272,7 @@ function LobbyBeat({
         {myRole ? (
           <NoticeZone
             hud={hud}
-            side={bandNarrows(presentation, beat, small)}
+            side={bandNarrows(presentation, small)}
             aside={side}
             hidden={presentation.footHidden}
           >

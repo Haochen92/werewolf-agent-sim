@@ -51,7 +51,7 @@ import { useDrawerFilters } from '../drawer/use-drawer-filters';
 import { StageMotion } from '../motion';
 import type { SceneBeat } from '../beats/types';
 import type { MotionSpeed, Presentation, SlotInput, StopInput } from '../scenes/types';
-import { atRail, slotOf } from '../slot';
+import { slotOf } from '../slot';
 import { Stage } from '../Stage';
 import { SCENES } from '../scenes';
 import type { DurableGameEvent, ReplayGame } from '@/types/contracts';
@@ -388,9 +388,8 @@ export function ReplayTheatre({
   const shown = state.loop ? beats.slice(from, state.loop.to + 1) : beats;
 
   const Scene = beat ? SCENES[beat.scene] : null;
-  // the drawer runs to the foot of the stage (not on a prompt, not beside the epilogue)
-  const besideDrawer =
-    !!beat && slotOf(state) === 'drawer' && !atRail(beat) && beat.id !== 'over.epilogue';
+  // the drawer runs to the foot of the stage (not beside the epilogue)
+  const besideDrawer = !!beat && slotOf(state) === 'drawer' && beat.id !== 'over.epilogue';
   return (
     <div
       ref={root}

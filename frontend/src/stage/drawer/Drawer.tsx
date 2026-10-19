@@ -13,8 +13,8 @@
  * 2026-09-30). Where they were, and whether they follow, outlives the scene (`scroll`).
  *
  * Full height under the top strip, because it is a long scroll; the room lays itself out
- * beside it and the box at the foot moves in under the puppet. On the seated human's own
- * turn it stops at the rail, so the prompt keeps the whole width.
+ * beside it and the box at the foot moves in under the puppet, on every beat and every screen,
+ * the seated human's prompts too (owner, 2026-10-19; it stopped at the rail for them).
  *
  * The filters are the container's (they have to outlive a beat): the days as tabs along the
  * foot; the seats as their chips at the head (the dead dimmed, still selectable, since their
@@ -91,8 +91,6 @@ export interface DrawerProps {
   cast: readonly Character[];
   filters: DrawerFilters;
   onFilters?: (next: DrawerFilters) => void;
-  /** The seated human is answering a prompt: stop at the rail. */
-  rail?: boolean;
   /** Played forward: scroll to the new line smoothly; at rest it is simply there. */
   animate?: boolean;
   /** Where the reader was and whether they follow the beat, kept across scenes by the container. */
@@ -118,7 +116,6 @@ export function Drawer({
   cast,
   filters,
   onFilters,
-  rail = false,
   animate = false,
   scroll: kept,
   onRecord,
@@ -266,11 +263,10 @@ export function Drawer({
           left: STAGE_W - g.slotW,
           // out into the right bleed on a wide screen, as the rail on the left (SLOT_REACH)
           width: `calc(${g.slotW}px + var(--slot-reach, 0px))`,
-          '--drawer-h': `${rail ? g.railY : STAGE_H}px`,
+          '--drawer-h': `${STAGE_H}px`,
         } as CSSProperties
       }
-      data-drawer={rail ? 'rail' : 'full'}
-      data-rail={rail ? 'soft' : undefined}
+      data-drawer="full"
       aria-label="Transcript"
     >
       <header>

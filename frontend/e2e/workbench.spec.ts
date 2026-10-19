@@ -303,8 +303,8 @@ for (const [name, path, ready] of ENDING) {
 /**
  * The side slot open (beat sheet §12), on the ten-seat game unless a shot says otherwise: the
  * drawer at full height on a speech (seat 10 on day 2, in the replay's frame), the drawer on the
- * count with the day's vote as one line of chips, the drawer stopped at the rail on the seated
- * human's ballot; the case file on a turn (the speaker's notes; on the nine-seat fixture, the one
+ * count with the day's vote as one line of chips, the drawer at full height beside the seated
+ * human's ballot (it stopped at the rail until 2026-10-19; the golden keeps its name); the case file on a turn (the speaker's notes; on the nine-seat fixture, the one
  * game with memory on, its precedents, opened, and the same turn in a memory-off game), with a
  * read card opened from the wing, the docket at the lynch's card ("who had them right"), and the
  * Record: at the morning's carried summary, with Reveal off on a day-3 turn of the second game
@@ -315,7 +315,7 @@ for (const [name, path, ready] of ENDING) {
 const SLOT: [name: string, path: string, ready: string, click?: string][] = [
   ['slot-day-speech-drawer', 'day?beat=12&hud=replay&slot=drawer', '[data-line="say-151"]'],
   ['slot-vote-line-drawer', 'vote?beat=22&slot=drawer', '[data-line="votes-3"]'],
-  ['slot-ballot-drawer-rail', 'vote?beat=25&slot=drawer', '[data-drawer="rail"]'],
+  ['slot-ballot-drawer-rail', 'vote?beat=25&slot=drawer', '[data-ballot="open"]'],
   [
     'slot-day-speech-film',
     'day?beat=13&viewer=xray&hud=replay&slot=film',

@@ -7,12 +7,12 @@
  * and the lights follow) and the wing stays where it is. The two differ below the rail:
  *
  * - the drawer is a long scroll, full height, so the box at the foot moves in under the
- *   puppet and narrows, keeping its pages (the full line is in the drawer);
- * - the film stops at the rail (nothing in it repeats the speech), so the box keeps the band;
- * - on the seated human's own turn (a prompt), the drawer stops at the rail too, so the
- *   prompt keeps the whole width.
+ *   puppet and narrows, keeping its pages (the full line is in the drawer), the seated human's
+ *   prompts too;
+ * - the film stops at the rail (nothing in it repeats the speech), so the box keeps the band,
+ *   except a live player's on a phone (`filmFull`).
  */
-import type { BeatId, SceneBeat } from './beats/types';
+import type { SceneBeat } from './beats/types';
 import type { Presentation, SlotInput } from './scenes/types';
 
 export type SlotOccupant = 'drawer' | 'film';
@@ -31,46 +31,27 @@ export function sideOpen(p: Pick<Presentation, 'slot'>): boolean {
 }
 
 /**
- * The beats where the seated human is answering something, and the scenes that are their own
- * room at night: the drawer stops at the rail so the prompt (the ballot row, the plate, your
- * line to the pack) keeps the whole band. On a phone the prompts stop short of the slot (the
- * rooms' plates are centred in the room left of it), so the drawer runs full height there
- * (owner, 2026-09-26: it should fill the side; the pack's too since its chat moved into the
- * drawer, 2026-10-17).
- */
-const PROMPTS: readonly BeatId[] = [
-  'day.your-turn',
-  'vote.your-ballot',
-  'room.opens',
-  'pack.your-line',
-  'pack.vote',
-];
-
-export function atRail(beat: Pick<SceneBeat, 'id' | 'scene'>): boolean {
-  return PROMPTS.includes(beat.id) || beat.scene === 'room' || beat.scene === 'pack';
-}
-
-/**
  * The case file runs the stage's height on a phone (`small`, the stage's `data-small`) in a live
  * game until its end (owner, 2026-10-18: the player's own files are kept there, and the folder
- * above the rail had no room for them on a phone; a desktop's has), stopping at the rail where the
- * drawer does.
+ * above the rail had no room for them on a phone; a desktop's has).
  */
 export function filmFull(
   p: Pick<Presentation, 'slot' | 'hud' | 'xray'>,
-  beat: Pick<SceneBeat, 'id' | 'scene'>,
   small: boolean,
 ): boolean {
-  return small && slotOf(p) === 'film' && p.hud === 'live' && !p.xray && !atRail(beat);
+  return small && slotOf(p) === 'film' && p.hud === 'live' && !p.xray;
 }
 
-/** The box at the foot narrows to the room beside a full-height drawer or file. */
+/**
+ * The box at the foot narrows to the room beside a full-height drawer or file. The drawer is
+ * full height whenever it is open, the seated human's prompts too, on every screen (owner,
+ * 2026-10-19: until then it stopped at the rail for a prompt on a desktop).
+ */
 export function bandNarrows(
   p: Pick<Presentation, 'slot' | 'hud' | 'xray'>,
-  beat: Pick<SceneBeat, 'id' | 'scene'>,
   small: boolean,
 ): boolean {
-  return (slotOf(p) === 'drawer' && !atRail(beat)) || filmFull(p, beat, small);
+  return slotOf(p) === 'drawer' || filmFull(p, small);
 }
 
 /** The top strip's two tabs and its Reveal switch for a scene: pressed states from the presentation, presses to the container (and the replay's way back, the live game's door). */

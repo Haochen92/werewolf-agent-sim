@@ -522,7 +522,7 @@ function MorningBeat(props: SceneProps) {
           xray={xray}
           animate={animate}
           delay={2.6}
-          narrow={bandNarrows(presentation, beat, small)}
+          narrow={bandNarrows(presentation, small)}
           hidden={presentation.footHidden}
         />
       ) : null}
@@ -531,7 +531,7 @@ function MorningBeat(props: SceneProps) {
         {!dayBegins ? (
           <NoticeZone
             hud={hud}
-            side={bandNarrows(presentation, beat, small)}
+            side={bandNarrows(presentation, small)}
             aside={side}
             hidden={presentation.footHidden}
           >

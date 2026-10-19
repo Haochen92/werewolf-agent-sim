@@ -366,7 +366,12 @@ function DayTurn({
 
       <Layer name="hud">
         {dock ? (
-          <NoticeZone hud={hud} aside={side} hidden={presentation.footHidden}>
+          <NoticeZone
+            hud={hud}
+            side={bandNarrows(presentation, small)}
+            aside={side}
+            hidden={presentation.footHidden}
+          >
             {view.me.role ? (
               <CardButton role={view.me.role.role} onOpen={turn?.onCard} />
             ) : null}
@@ -384,7 +389,7 @@ function DayTurn({
         ) : opening && stop ? (
           <NoticeZone
             hud={hud}
-            side={bandNarrows(presentation, beat, small)}
+            side={bandNarrows(presentation, small)}
             aside={side}
             hidden={presentation.footHidden}
           >
@@ -439,7 +444,7 @@ function DayTurn({
             }
             arrive={animate}
             thinking={mine || waiting || !settled}
-            side={bandNarrows(presentation, beat, small)}
+            side={bandNarrows(presentation, small)}
             hidden={presentation.footHidden}
           />
         ) : null}

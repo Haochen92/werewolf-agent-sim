@@ -667,8 +667,9 @@ test('live: seat 7’s turn to speak, the dock at the foot', async ({ page }) =>
   await expect(dock.getByRole('button', { name: 'Write your line' })).toBeEnabled();
   await expect(dock.getByRole('button', { name: 'Send', exact: true })).toBeDisabled();
   await expect(dock.getByRole('button', { name: 'Pass', exact: true })).toBeEnabled();
-  // the drawer stops at the rail so the dock keeps the whole band; closed, the room is bench 72's
-  await expect(page.locator('[data-drawer]')).toHaveAttribute('data-drawer', 'rail');
+  // the drawer runs full height on a prompt too, the dock beside it (2026-10-19); closed, the
+  // room is bench 72's
+  await expect(page.locator('[data-drawer]')).toHaveAttribute('data-drawer', 'full');
   await page.getByRole('button', { name: 'Transcript', exact: true }).click();
   await expect(page.locator('[data-drawer]')).toHaveCount(0);
   // stop the clock a few seconds in, then let the puppet’s rise and the dock’s fade-in finish

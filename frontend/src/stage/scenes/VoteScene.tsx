@@ -356,7 +356,7 @@ function VoteBeat({
       <Layer name="hud">
         <NoticeZone
           hud={hud}
-          side={bandNarrows(presentation, beat, small)}
+          side={bandNarrows(presentation, small)}
           aside={side}
           hidden={presentation.footHidden}
         >

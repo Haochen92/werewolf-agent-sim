@@ -276,7 +276,7 @@ function SpokeRoom({
       }}
     >
       {cur && !pack ? (
-        <NoticeZone hud={hud} side={bandNarrows(presentation, beat, small)} aside={side}>
+        <NoticeZone hud={hud} side={bandNarrows(presentation, small)} aside={side}>
           <Notice
             chip={cast[seatNumber(cur.actor) - 1]}
             title={actorWord(cur)}

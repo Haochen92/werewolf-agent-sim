@@ -156,11 +156,6 @@
 [data-small] .ttl {
   display: none;
 }
-/* on a phone the prompts and the rooms' plates stop short of the slot, so the drawer runs full
-   height there (slot.ts `atRail`) */
-[data-small] .drawer[data-rail='soft'] {
-  height: 900px;
-}
 
 /* the days as tabs along the foot */
 .daytabs {
