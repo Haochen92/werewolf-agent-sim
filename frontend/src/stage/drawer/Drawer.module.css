@@ -216,10 +216,11 @@
   --wolf: var(--ink-wolf);
   --sk: var(--ink-sk);
   --benign: var(--ink-benign);
-  --xray: #2c6b61;
-  --xray-text: #1f4f47;
-  --xray-mut: #4f7a6e;
-  --xray-line: #9cbcb2;
+  /* the X-ray's verdigris, deep enough to read on the paper (owner, 2026-10-19: too muted) */
+  --xray: #1f6b5e;
+  --xray-text: #134a40;
+  --xray-mut: #2b6356;
+  --xray-line: #5f9e8f;
 }
 /* scrolled away from the beat: a small pill at the foot, the kit's button, takes the reader back */
 .backnow {
@@ -287,7 +288,7 @@
   gap: 8px;
   margin: 12.8px 0 0;
   padding-top: 12.8px;
-  border-top: 1px solid rgba(201, 164, 92, 0.2);
+  border-top: 1px solid rgba(110, 80, 40, 0.3);
   font-family: var(--font-display);
   font-weight: 600;
   font-variant-numeric: lining-nums tabular-nums;
@@ -394,9 +395,15 @@
 .txt {
   grid-column: 2;
 }
-/* the game master's reports, and the ending: short sentences, one per seat they name */
+/* the game master's reports, and the ending: short sentences, one per seat they name, on a kraft
+   card with a bronze rule, so an announcement never reads as a seat's speech (owner, 2026-10-19) */
 .report {
   grid-template-columns: 1fr;
+  margin: 3.2px -6.4px;
+  padding: 8px 11.2px;
+  background: rgba(150, 105, 45, 0.14);
+  border: 1px solid rgba(110, 76, 34, 0.45);
+  font-weight: 500;
 }
 .report p {
   margin: 0;
@@ -462,38 +469,37 @@
   line-height: 1.45;
   color: var(--cream2);
 }
-/* only you: your own line, amber at its edge, never a role */
+/* only you: your own line, an amber panel and edge, never a role; its tag filled (owner,
+   2026-10-19: each tier's panel is told from the paper and from speech at a glance) */
 .only {
-  background: rgba(224, 166, 58, 0.06);
-  box-shadow: inset 2.4px 0 0 var(--amber);
+  background: rgba(214, 150, 40, 0.17);
+  box-shadow: inset 4px 0 0 var(--amber);
 }
-.oy {
-  font-size: calc(var(--meta) * 0.8);
-  color: var(--amber);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border: 1px solid var(--amber);
-  border-radius: 16px;
-  padding: 0 7.2px;
-}
-.only.theirs {
-  background: rgba(134, 176, 160, 0.05);
-  box-shadow: inset 2.4px 0 0 var(--xray-line);
-}
-.only.theirs .oy {
-  color: var(--xray);
-  border-color: var(--xray);
-}
-/* the pack's chat, faction tier: the red edge */
-.pack {
-  box-shadow: inset 2.4px 0 0 var(--wolf);
-  background: rgba(227, 80, 63, 0.05);
-}
+.oy,
 .pk {
   font-size: calc(var(--meta) * 0.8);
-  color: var(--wolf);
+  font-weight: 600;
+  color: #fbf1dc;
+  background: var(--amber);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  border-radius: 3px;
+  padding: 0 6.4px;
+}
+.only.theirs {
+  background: rgba(31, 107, 94, 0.13);
+  box-shadow: inset 4px 0 0 var(--xray);
+}
+.only.theirs .oy {
+  background: var(--xray);
+}
+/* the pack's chat, faction tier: a red panel and edge */
+.pack {
+  box-shadow: inset 4px 0 0 var(--wolf);
+  background: rgba(176, 48, 34, 0.12);
+}
+.pk {
+  background: var(--wolf);
 }
 /* what the X-ray adds: in verdigris on the drawer's ground (the X-ray's private accent) */
 .xr {
@@ -560,8 +566,8 @@ button.toRecord:focus-visible {
 }
 /* the beat on stage: lit, a brass edge and a lamp's warmth (last, so it wins over a tier's edge) */
 .now {
-  background: rgba(201, 164, 92, 0.11);
-  box-shadow: inset 3.2px 0 0 var(--hud-brass);
+  background: rgba(201, 150, 60, 0.2);
+  box-shadow: inset 4px 0 0 var(--hud-brass);
 }
 .empty {
   padding: 19.2px 8px;
