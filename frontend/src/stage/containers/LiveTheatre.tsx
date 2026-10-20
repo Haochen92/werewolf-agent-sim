@@ -75,7 +75,7 @@ import { TRACKS, bedFor, lobbyBed, stingFor, type Moment } from '@/music/cues';
 import { useStageMusic } from '@/music/music';
 import type { DurableGameEvent, GameStatus } from '@/types/contracts';
 import { isNineSeat } from '../card-text';
-import { castForRoom, resolveCast } from '../cast/castForGame';
+import { castForRoom, liveCastSize, resolveCast } from '../cast/castForGame';
 import { beatsFor } from '../beats/beatsFor';
 import type { SceneBeat } from '../beats/types';
 import { DEFAULT_FILTERS, packNight, wolfViewer } from '../drawer/drawer-lines';
@@ -337,7 +337,7 @@ export function LiveTheatre({
   const picks =
     status?.state === 'waiting' ? JSON.stringify(status.characters ?? []) : null;
   // the table's size: the dealt roster once it is in, the room's size until then
-  const seatTotal = view.seats.length || (status?.max_seats ?? 9);
+  const seatTotal = liveCastSize(view.seats.length, status, heldRoom?.places);
   const cast = useMemo(
     () =>
       picks !== null
