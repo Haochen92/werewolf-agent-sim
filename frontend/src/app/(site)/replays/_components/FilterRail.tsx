@@ -121,6 +121,7 @@ export function FilterRail({
           <Switch
             label="Played on this device"
             description="Games you sat in, remembered by this browser."
+            classNames={{ description: classes.switchHint }}
             checked={filters.mine}
             onChange={(e) => set({ mine: e.currentTarget.checked })}
           />

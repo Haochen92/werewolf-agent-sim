@@ -54,6 +54,22 @@
     linear-gradient(180deg, var(--board-top), var(--board-bot));
 }
 
+/* `walnut`: the site kit's walnut under the board's brass frame, a brass screw in each
+   corner in place of the rivets, its edges in shadow (as the landing's features board) */
+.walnut {
+  --screw: 10px;
+  --screw-head: radial-gradient(#f4dca0 0 1px, #b08a4a 2px, #6a4c20 4px, transparent 4.5px);
+  background:
+    var(--screw-head) var(--screw) var(--screw) / 9px 9px no-repeat,
+    var(--screw-head) calc(100% - var(--screw)) var(--screw) / 9px 9px no-repeat,
+    var(--screw-head) var(--screw) calc(100% - var(--screw)) / 9px 9px no-repeat,
+    var(--screw-head) calc(100% - var(--screw)) calc(100% - var(--screw)) / 9px 9px
+      no-repeat,
+    radial-gradient(ellipse 90% 90% at 50% 45%, transparent 45%, rgba(12, 6, 2, 0.55) 100%),
+    url('../../assets/site/kit/walnut.webp') 0 0 / 314px 314px repeat,
+    #2c1a0e;
+}
+
 .well {
   display: flex;
   align-items: center;
