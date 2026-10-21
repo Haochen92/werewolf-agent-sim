@@ -54,14 +54,15 @@ Day, the vote:
 - Day 1 has no vote: it is discussion only, then night. From day 2 on, each day ends in a vote.
 - Before the vote, the most accused player gets a last word. Then everyone votes. You may vote to
     eliminate a player, or abstain when abstaining is offered; if no single player gets the most votes
-    (a tie, or an abstain majority), no one is eliminated. After two days in a row with no elimination,
+    (a tie, or abstain gets the most votes), no one is eliminated. After two days in a row with no elimination,
     abstaining is no longer offered and everyone must name a player.
 - Votes are public and permanent — who voted to eliminate whom each day stays on the record. An
     eliminated player's role is revealed, and their will read out, by the same rule as a night death.
 Night, the actions:
-- Night actions resolve together. A role whose rules allow holding an ability may do so, including on
-    night 1. Holding a check or watch spends no use and produces no result: "I held" is not a missing
-    result or a result kept secret. It is a claim that can be tested against other evidence, not proof
+- Night actions resolve together. A role whose rules allow holding an ability may do so on any night,
+    night 1 included, and a role with no uses left, or nothing to act through, does not act at all.
+    Holding spends no use. A night with no action has no result, so no player owes a result for every
+    night: "I held" is not a missing result or a result kept secret. It is a claim that can be tested against other evidence, not proof
     that the claimant is truthful or lying. A night action carried out on a player is a visit, unless
     the role's rules say it is not; an action that was blocked is not carried out and is
     not a visit. Roles that watch or follow see visits, except the pack's kill on a victim an illusionist

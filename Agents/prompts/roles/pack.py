@@ -55,7 +55,7 @@ DISCUSS_CONTEXT = """
 Surviving non-wolf players (the town side, the lone killer, the neutral): {surviving_villagers}.
 Your pack:
 {pack_roster}
-Your pack's night kills (private to the wolves; the public heard only the game master's
+{pack_uses}Your pack's night kills (private to the wolves; the public heard only the game master's
 announcements):
 {night_actions}
 """ + _CHANNEL
@@ -77,7 +77,7 @@ VOTE_CONTEXT = """
 Surviving non-wolf players (the town side, the lone killer, the neutral): {surviving_villagers}
 Your pack:
 {pack_roster}
-Your pack's night kills (private to the wolves; the public heard only the game master's
+{pack_uses}Your pack's night kills (private to the wolves; the public heard only the game master's
 announcements):
 {night_actions}
 """ + _CHANNEL

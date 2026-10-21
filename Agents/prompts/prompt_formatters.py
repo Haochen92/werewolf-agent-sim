@@ -10,6 +10,7 @@ modules (day_discuss.py, day_vote.py, night.py).
 
 from Agents.prompts.roles import card
 from Agents.rules.board_clocks import alive_role_counts
+from Agents.rules.night import usable_bodies
 from Agents.schemas.roles import ROLE_SPECS, roles
 from Agents.rules.claim_ledger import format_claim_ledger, revealed_tag
 from Agents.schemas import RetrievedObservation, RetrievedStrategyPoint
@@ -157,12 +158,51 @@ def format_accusations(discussion: list[DaySummary], dead_roster: list[DeathReco
     return "\n".join(lines)
 
 
+# What a limited ability runs out of, as a quiet night names it.
+_USE_NOUNS = {"investigator": "checks", "sentinel": "watches", "vigilante": "bullets", "sigilist": "sigils"}
+
+
+def _quiet_nights(records: list[NightActionRecord], current_day: int, role: str, uses_left: int | None,
+                  dead_roster: list[DeathRecord]) -> dict[int, str]:
+    """Why a solo actor has no record for a past night, so it never reads its own silence as a result
+    it is keeping: no use left, nothing to act through, or its own choice (owner, 2026-10-21)."""
+    spec = ROLE_SPECS.get(role)
+    if spec is None or spec.pack or spec.night_action is None:
+        return {}
+    acted = {r.day for r in records}
+    spent = [r.day for r in records if r.result != "roleblocked" and r.action != "hold_fire"]
+    # uses only go down: with none left now, every quiet night after the last one spent had none
+    ran_out_after = max(spent, default=0) if spec.uses is not None and uses_left == 0 else None
+    quiet = {}
+    for night in range(1, current_day):
+        if night in acted:
+            continue
+        if night < spec.acts_from_night:
+            quiet[night] = f"you did not act: the {card(role).name} does nothing on the first night."
+        elif ran_out_after is not None and night > ran_out_after:
+            noun = _USE_NOUNS.get(role)
+            quiet[night] = (f"you did not act: you had no {noun} left." if noun
+                            else "you did not act: your pick was already made.")
+        elif role == "necromancer" and not usable_bodies(
+                [d for d in dead_roster if (d.day < night if d.phase == "night" else d.day <= night)]):
+            quiet[night] = "you did not act: there was no body you could use."
+        elif spec.no_action:
+            quiet[night] = "you stayed put." if role == "necromancer" else "you chose not to act."
+        else:
+            quiet[night] = "you did not act."
+    return quiet
+
+
 def format_night_actions(records: list[NightActionRecord], current_day: int | None = None,
-                         implications: list[OwnResultLine | None] | None = None) -> str:
+                         implications: list[OwnResultLine | None] | None = None, *, role: str = "",
+                         uses_left: int | None = None, dead_roster: list[DeathRecord] | None = None) -> str:
     """The actor's own night record, one line per night, written by the engine. `implications`
     (Agents/deduction/own_results/, one entry per record) adds what each result implies, or
-    replaces the record's prose where the line says so (the roleblock)."""
-    if not records:
+    replaces the record's prose where the line says so (the roleblock). Given the seat's `role`, a
+    past night with no record says why (`_quiet_nights`)."""
+    quiet = (_quiet_nights(records, current_day, role, uses_left, dead_roster or [])
+             if role and current_day is not None else {})
+    if not records and not quiet:
         return "Nothing yet."
     verbs = {"protect": "you protected", "shoot": "you shot", "kill": "you attacked",
              "investigate": "you checked", "watch": "you watched", "follow": "you followed",
@@ -186,6 +226,12 @@ def format_night_actions(records: list[NightActionRecord], current_day: int | No
             continue
         verb = "your pack attacked" if r.actor == "wolves" else verbs.get(r.action, f"you {r.action}")
         lines.append(f"{night}: {verb} {r.target}. {outcome}")
+    if quiet:
+        # records come in night order; each quiet night goes in its place among them
+        dated = [(r.day, line) for r, line in zip(records, lines)]
+        dated += [(day, f"Night {day}" + (" (last night)" if day == current_day - 1 else "") + f": {why}")
+                  for day, why in quiet.items()]
+        lines = [line for _, line in sorted(dated, key=lambda pair: pair[0])]
     return "\n".join(lines)
 
 

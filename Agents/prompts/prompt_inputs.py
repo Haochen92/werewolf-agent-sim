@@ -254,6 +254,8 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         "checks_left": uses_left if role == "investigator" else 0,
         "watches_left": uses_left if role == "sentinel" else 0,
         "conceal_uses": uses_left if role == "illusionist" else 0,
+        # the pack's shared day context names a wolf's own limited skill only where it has one
+        "pack_uses": f"Your conceals left: {uses_left}\n" if role == "illusionist" and uses_left is not None else "",
         "fortune_self_bets": uses_left if role == "fortune_teller" else 0,
         "fortune_points": payload.get("fortune_points", 0),
         "speculator_pick": payload.get("speculator_pick", "not yet"),
@@ -301,7 +303,8 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         "wolf_channel": format_wolf_channel(payload.get("wolf_channel", []), payload.get("player_id")),
         # The actor's own engine-written night record (only night actors' payloads carry it).
         "night_actions": format_night_actions(payload.get("night_actions", []), payload.get("current_day"),
-                                              own_lines),
+                                              own_lines, role=role, uses_left=uses_left,
+                                              dead_roster=payload.get("dead_roster", [])),
         # The public block sits in the shared public record (layout.PUBLIC_RECORD), the seat's own
         # block before or after its strategy note (memory/context.py); "" outside "full" mode.
         **_deduction_slots(payload, deductions),
