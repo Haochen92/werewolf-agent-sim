@@ -37,6 +37,9 @@ class GameLLM:
     # Mutable, shared by reference across the game's threads: the stall count that sends a
     # turn straight to the rescue model (health.py). Not part of equality or the cache key.
     health: ModelHealth = field(default_factory=ModelHealth, compare=False, repr=False)
+    # The clients built on the player's key: kept with the game, not in the process-wide
+    # cache, so the key goes when the game's selection is dropped.
+    clients: dict[Any, Any] = field(default_factory=dict, compare=False, repr=False)
 
 
 # Per-game model selection, optionally BYOK (pattern 2, ephemeral pass-through). The server's
@@ -92,8 +95,9 @@ def create_chat_model(
 ) -> Any:
     """Create (or reuse) a chat model using the configured backend.
 
-    Instances are memoized by construction args (see ``_MODEL_CACHE``); repeated
-    calls with the same args return the same shared, thread-safe instance.
+    Instances are memoized by construction args (see ``_MODEL_CACHE``; a player's key's
+    clients in its game's ``GameLLM.clients``); repeated calls with the same args return the
+    same shared, thread-safe instance.
 
     Parameters
     ----------
@@ -114,17 +118,17 @@ def create_chat_model(
         ``structured_mode``: one of ``STRUCTURED_MODES``, overriding
         the catalogue row's mode for an OpenAI-protocol or Claude model.
     """
+    # A client on a player's key is cached with that game (GameLLM.clients), never here: a
+    # game must not be handed another game's client, and the key must not outlive its game.
+    cache = GAME_LLM.get().clients if _game_key_for(_provider_family(model)) else _MODEL_CACHE
     try:
-        # The BYOK key in the cache key: a game must never be handed a client built with
-        # another game's (or the server's) credentials.
         cache_key: Any = (
-            model, temperature, thinking_level, thinking_budget,
-            _game_key_for(_provider_family(model)), tuple(sorted(kwargs.items())),
+            model, temperature, thinking_level, thinking_budget, tuple(sorted(kwargs.items())),
         )
         hash(cache_key)
     except TypeError:
         cache_key = None  # unhashable kwargs -> bypass cache
-    if cache_key is not None and (cached := _MODEL_CACHE.get(cache_key)) is not None:
+    if cache_key is not None and (cached := cache.get(cache_key)) is not None:
         return cached
 
     instance = _build_chat_model(
@@ -134,7 +138,7 @@ def create_chat_model(
     if cache_key is None:
         return instance
     with _MODEL_CACHE_LOCK:
-        return _MODEL_CACHE.setdefault(cache_key, instance)
+        return cache.setdefault(cache_key, instance)
 
 
 def _build_chat_model(

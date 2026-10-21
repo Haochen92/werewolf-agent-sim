@@ -32,20 +32,31 @@ def _with_override(override: GameLLM, fn):
 # ---- factory: cache keyed per game key, key applied per provider family ------------------
 
 def test_factory_builds_isolated_clients_per_game_key():
-    client_a = _with_override(
-        GameLLM(api_key="byok-key-A", model=GEMINI),
-        lambda: create_chat_model(GEMINI, temperature=0.42))
-    same_a = _with_override(
-        GameLLM(api_key="byok-key-A", model=GEMINI),
-        lambda: create_chat_model(GEMINI, temperature=0.42))
+    game_a = GameLLM(api_key="byok-key-A", model=GEMINI)
+    client_a = _with_override(game_a, lambda: create_chat_model(GEMINI, temperature=0.42))
+    same_a = _with_override(game_a, lambda: create_chat_model(GEMINI, temperature=0.42))
     client_b = _with_override(
         GameLLM(api_key="byok-key-B", model=GEMINI),
         lambda: create_chat_model(GEMINI, temperature=0.42))
 
-    assert client_a is same_a  # memoized within a key
+    assert client_a is same_a  # memoized within a game
     assert client_b is not client_a  # same args, different key -> different client
     assert client_a.google_api_key.get_secret_value() == "byok-key-A"
     assert client_b.google_api_key.get_secret_value() == "byok-key-B"
+
+
+def test_a_players_key_is_cached_with_its_game_not_the_process():
+    from Agents.llm_factory.chat import _MODEL_CACHE
+
+    game = GameLLM(api_key="byok-key-C", model=GEMINI)
+    client = _with_override(game, lambda: create_chat_model(GEMINI, temperature=0.43))
+
+    assert client in game.clients.values()
+    assert client not in _MODEL_CACHE.values()  # gone with the game, not kept until restart
+    # Another game on the same key builds its own: nothing of one game's is handed to the next.
+    again = _with_override(GameLLM(api_key="byok-key-C", model=GEMINI),
+                           lambda: create_chat_model(GEMINI, temperature=0.43))
+    assert again is not client
 
 
 def test_deepseek_selection_routes_the_key_to_deepseek():

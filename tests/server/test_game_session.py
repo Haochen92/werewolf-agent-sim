@@ -897,6 +897,34 @@ async def test_a_failure_after_game_over_keeps_the_game(quiet_session, fixture_c
     assert session.error is None  # archived as finished, not dropped
 
 
+class _KeyEchoAfterGameOverGraph(FakeGraph):
+    """The post-game step fails with an error that echoes the player's key."""
+
+    async def astream(self, payload, **kw):
+        async for part in super().astream(payload, **kw):
+            yield part
+        raise ValueError("401: API key not valid: sk-player-123")
+
+
+async def test_a_failure_after_game_over_never_logs_the_key(quiet_session, fixture_chunks,
+                                                             caplog):
+    session = quiet_session(_KeyEchoAfterGameOverGraph(fixture_chunks), api_key="sk-player-123")
+    session.start()
+    await asyncio.wait_for(session.wait_finished(), timeout=30)
+    assert session.game_over is True
+    assert "failed after game over" in caplog.text
+    assert "sk-player-123" not in caplog.text
+
+
+async def test_an_ended_game_lets_the_players_key_go(quiet_session, fixture_chunks):
+    session = quiet_session(FakeGraph(fixture_chunks), api_key="sk-player-123", model="gemini-3.6-flash")
+    session.start()
+    await asyncio.wait_for(session.wait_finished(), timeout=30)
+    assert session._api_key == ""
+    assert session._llm_selection.api_key == "" and not session._llm_selection.clients
+    assert session.model == "gemini-3.6-flash"  # what the game ran on is still known
+
+
 async def test_a_failure_before_game_over_still_ends_the_game_with_its_error(quiet_session):
     session = quiet_session(_FailsAfterGameOverGraph([]))
     session.start()

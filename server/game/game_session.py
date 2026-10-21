@@ -436,8 +436,11 @@ class GameSession:
             # The game was played to its end and only the post-game step failed: keep the
             # game (a replay without its extraction input) rather than drop it (2026-10-17: a
             # draw's empty winner broke the extraction input and lost a finished game).
-            logger.exception("game %s: failed after game over; archiving it anyway",
-                             self.game_id)
+            trace = "".join(traceback.format_exception(exc))
+            if self._api_key:
+                trace = trace.replace(self._api_key, "***")
+            logger.error("game %s: failed after game over; archiving it anyway\n%s",
+                         self.game_id, trace)
             report_game_failure(exc, game_id=self.game_id, model=self.model,
                                 byok=bool(self._api_key), secret=self._api_key,
                                 after_game_over=True)
@@ -627,7 +630,12 @@ class GameSession:
 
     def _end(self) -> None:
         """Mark the game ended, wake anyone waiting on it, and let the registry know if
-        nobody is watching. The only place the ended flag is set."""
+        nobody is watching. The only place the ended flag is set. The player's key, and the
+        clients built on it, are let go here: an ended game makes no more calls."""
+        if self._api_key and self._llm_selection is not None:
+            self._llm_selection = GameLLM(model=self._llm_selection.model,
+                                          rescue_model=self._llm_selection.rescue_model)
+        self._api_key = ""
         self._finished.set()
         self._maybe_idle()
 
