@@ -1,0 +1,47 @@
+{"id": "v000", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v004", "mech": 1, "chew": 0, "clear": 0, "note": "Claims visitors to own door would be visible; denies watch was a visit; own result not stated."}
+{"id": "v008", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v012", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v016", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v020", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v024", "mech": 1, "chew": 0, "clear": null, "note": "Uses own watch 'nobody came to you' to deny visiting; implies knowing own-door visitors."}
+{"id": "v028", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v032", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v036", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v040", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v044", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v048", "mech": 0, "chew": 0, "clear": 0, "note": "Reports no own result; only plans a future follow."}
+{"id": "v052", "mech": 0, "chew": 0, "clear": 0, "note": "Withholds who visited and how it was learned."}
+{"id": "v056", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v060", "mech": 0, "chew": 0, "clear": 0, "note": "No own night result reported; only questions player_7."}
+{"id": "v064", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v068", "mech": 1, "chew": 1, "clear": null, "note": "Says a follow cannot report whose door the followed reached; line is about result wording."}
+{"id": "v072", "mech": 1, "chew": 1, "clear": null, "note": "Says follow showing X at own door is watch-only reading; mainly about result wording."}
+{"id": "v076", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v080", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v084", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v088", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v092", "mech": 0, "chew": 0, "clear": 0, "note": "No own night result reported."}
+{"id": "v096", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v100", "mech": 0, "chew": 0, "clear": 0, "note": "No own night result reported."}
+{"id": "v104", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v108", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v112", "mech": 1, "chew": 0, "clear": null, "note": "Endorses false claim that Sentinel should appear in its own watch result."}
+{"id": "v116", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v120", "mech": 1, "chew": 0, "clear": 1, "note": "Uses empty-door watch as proof he visited nobody; Sentinel not in own result."}
+{"id": "v124", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v128", "mech": 1, "chew": 0, "clear": null, "note": "Says he watched player_4 yet never went there; watch result used to refute follow."}
+{"id": "v132", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v136", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v140", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v144", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v148", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v152", "mech": 0, "chew": 0, "clear": 0, "note": "Withholds who was at player_7's door; result not stated."}
+{"id": "v156", "mech": 1, "chew": 0, "clear": 1, "note": "Claims an investigator doesn't visit; an investigation targets a player."}
+{"id": "v160", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v164", "mech": 1, "chew": 0, "clear": 1, "note": "Asks player_7 who came to them, implying visited player sees visitors."}
+{"id": "v168", "mech": 1, "chew": 0, "clear": null, "note": "Says Sentinel's own watch should list itself as visitor."}
+{"id": "v172", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v176", "mech": 1, "chew": 1, "clear": null, "note": "Calls empty door a contradiction despite Sentinel not in own result; line is mechanics talk."}
+{"id": "v180", "mech": 0, "chew": 0, "clear": 0, "note": "No own night result reported."}
+{"id": "v184", "mech": 1, "chew": 0, "clear": 1, "note": "Treats own empty watch as proof he didn't arrive; Sentinel not in own result."}

@@ -1,0 +1,47 @@
+{"id": "v003", "mech": 0, "chew": 0, "clear": 0, "note": "Questions player_7; never reports own follow result."}
+{"id": "v007", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v011", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v015", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v019", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v023", "mech": 0, "chew": 0, "clear": 0, "note": "(passed)"}
+{"id": "v027", "mech": 1, "chew": 0, "clear": null, "note": "Says following player_7 to player_8 means he did not visit player_7; a follow is a visit."}
+{"id": "v031", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v035", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v039", "mech": 0, "chew": 0, "clear": 0, "note": "Questions player_7; never reports own follow result."}
+{"id": "v043", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v047", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v051", "mech": 1, "chew": 1, "clear": null, "note": "Claims a follow can't show player_3 going to player_4's door; main point is result wording."}
+{"id": "v055", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v059", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v063", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v067", "mech": 0, "chew": 0, "clear": 0, "note": "States player_10 went to player_7 without citing own watch; omits player_2, player_5."}
+{"id": "v071", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v075", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v079", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v083", "mech": 1, "chew": 0, "clear": null, "note": "Asks a follower what he saw at his own door and who else came by."}
+{"id": "v087", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v091", "mech": 0, "chew": 0, "clear": 0, "note": "Says player_7 went nowhere but never says it was own follow; source unstated."}
+{"id": "v095", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v099", "mech": 1, "chew": 0, "clear": null, "note": "Implies a follow can't show player_3 visited player_4; it can."}
+{"id": "v103", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v107", "mech": 0, "chew": 0, "clear": 0, "note": "Withholds own night action; no result reported."}
+{"id": "v111", "mech": 0, "chew": 0, "clear": 0, "note": "Implies player_10 was the sole visitor; omits player_2 and player_5 from own watch."}
+{"id": "v115", "mech": 0, "chew": 0, "clear": 0, "note": "Denies visiting; no own result reported."}
+{"id": "v119", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v123", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v127", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v131", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v135", "mech": 1, "chew": 0, "clear": null, "note": "Asks player_1 who targeted them, as if a player learns its own visitors."}
+{"id": "v139", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v143", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v147", "mech": 1, "chew": 0, "clear": null, "note": "Asks player_3 whether anyone came to them; a player can't learn its own visitors."}
+{"id": "v151", "mech": 0, "chew": 0, "clear": 0, "note": "(passed)"}
+{"id": "v155", "mech": 0, "chew": 0, "clear": 0, "note": "Questions player_7; never reports own watch result."}
+{"id": "v159", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v163", "mech": 1, "chew": 0, "clear": null, "note": "Reads player_10's follow (player_7 went nowhere) as no one visiting player_7."}
+{"id": "v167", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v171", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v175", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v179", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v183", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v187", "mech": 1, "chew": 0, "clear": null, "note": "Treats 'follow result' vs 'a visit' to player_4 as a contradiction; they are compatible."}

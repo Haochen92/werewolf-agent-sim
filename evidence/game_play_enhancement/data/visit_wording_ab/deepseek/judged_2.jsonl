@@ -1,0 +1,46 @@
+{"id": "v002", "mech": 1, "chew": 1, "clear": null, "note": "Treats player_4's follow on player_3 as sitting on player_4's door; line is mostly rule/wording talk."}
+{"id": "v006", "mech": 0, "chew": 0, "clear": 0, "note": "Does not report own night result."}
+{"id": "v010", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v014", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v018", "mech": 1, "chew": 1, "clear": null, "note": "Calls a correct follow result 'watch-shaped'; main point is result wording/direction."}
+{"id": "v022", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v026", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v030", "mech": 1, "chew": 0, "clear": null, "note": "Says a follow on him showed 'nothing at my door'; a follow shows where he went."}
+{"id": "v034", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v038", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v042", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v046", "mech": 1, "chew": 1, "clear": null, "note": "Gives the Trailseer a watch that excludes itself; line is mostly about rules and framing."}
+{"id": "v050", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v054", "mech": 1, "chew": 0, "clear": null, "note": "Claims the Sentinel's own visit should appear in its watch result."}
+{"id": "v058", "mech": 0, "chew": 0, "clear": 0, "note": "Only hints; never states own follow result."}
+{"id": "v062", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v066", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v070", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v074", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v078", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v082", "mech": 0, "chew": 0, "clear": 0, "note": "Omits whom player_6 visited (player_7); result incomplete and vague."}
+{"id": "v086", "mech": 1, "chew": 0, "clear": 1, "note": "Uses empty watch to rule out own visit; the watcher never appears in its own result."}
+{"id": "v090", "mech": 1, "chew": 0, "clear": null, "note": "Claims the watcher should appear in its own watch record."}
+{"id": "v094", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v098", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v102", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v106", "mech": 0, "chew": 0, "clear": 0, "note": "Does not report own night result."}
+{"id": "v110", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v114", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v118", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v122", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v126", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v130", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v134", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v138", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v142", "mech": 1, "chew": 0, "clear": null, "note": "Watcher in own result; and says a follow wouldn't show player_3's visit to player_4."}
+{"id": "v146", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v150", "mech": 1, "chew": 0, "clear": null, "note": "Says a watch proves who carried the kill; a visit doesn't reveal the action."}
+{"id": "v154", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v158", "mech": 1, "chew": 0, "clear": null, "note": "Claims watches don't hide the watcher, so the empty-door report is wrong."}
+{"id": "v162", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v166", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v170", "mech": 0, "chew": 0, "clear": 0, "note": "Hides the follow; vague 'reason to believe' rather than a stated result."}
+{"id": "v174", "mech": 0, "chew": 0, "clear": 0, "note": "Only hints at multiple visitors; never states own watch result."}
+{"id": "v178", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v182", "mech": 1, "chew": 0, "clear": 0, "note": "Asks player_4 (self) if visited, as if visited players know; unnamed followee."}
