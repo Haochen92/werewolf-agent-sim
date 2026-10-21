@@ -95,7 +95,7 @@ def test_f8_a_shot_at_a_player_who_cannot_be_immune_or_on_a_night_no_one_could_b
         "announcement, so that claim is false."]
 
 
-def test_f8_the_necromancer_is_immune_on_night_1_only_and_its_block_through_the_body_is_a_branch():
+def test_f8_the_necromancer_is_immune_on_nights_1_and_2_and_its_block_through_the_body_is_a_branch():
     ne = Table(_ne_sp()).night(1, ("player_7", "kill", "player_1"), ("player_7", "block", "player_3"),
                                ("player_4", "kill", "player_9"))
     assert _f8(ne, "player_2", 2, _said(2, "player_4", (1, "shoot", "player_9", "not_said", []))) == [
@@ -103,9 +103,14 @@ def test_f8_the_necromancer_is_immune_on_night_1_only_and_its_block_through_the_
         "player_4 was roleblocked, or player_9 is the Necromancer, or player_4's claim is false."]
     ne.lynch("player_7", 2)
     ne.night(2, ("player_8", "kill", "player_2"))
-    # Night 2: no one is immune in silence; the Necromancer can block through the Chanteuse's body.
+    # Night 2: the Necromancer is still immune in silence, and it can block through the Chanteuse's body.
     assert _f8(ne, "player_3", 3, _said(3, "player_4", (2, "shoot", "player_5", "not_said", []))) == [
         "player_4 says it shot at player_5 on night 2, but no shot at player_5 was announced that night: either "
+        "player_4 was roleblocked, or player_5 is the Necromancer, or player_4's claim is false."]
+    ne.night(3, ("player_8", "kill", "player_6"))
+    # Night 3: no one is immune in silence; the block through the body is the one branch left.
+    assert _f8(ne, "player_3", 4, _said(4, "player_4", (3, "shoot", "player_5", "not_said", []))) == [
+        "player_4 says it shot at player_5 on night 3, but no shot at player_5 was announced that night: either "
         "player_4 was roleblocked, or player_4's claim is false."]
 
 

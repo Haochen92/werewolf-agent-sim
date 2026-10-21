@@ -19,7 +19,7 @@ The other facts are about actions, not roles, and narrow nothing here: AttackOut
 NotRoleUnlessBlocked (it needs whether a block happened), NoAttackUnless, VisitorsAmong,
 CarriedOrAmong, NotProtected, NoHiddenVisitTo, AttacksOnlyOn, NoKillThroughBody, NoConcealsLeft,
 MadeNoChoice, NeverPicked, BodyUsable, SilentAttack (its immune role is the Serial Killer, never a
-body, or the Necromancer on night 1, when no one has died yet), and HeldBy (this level's own output).
+body, or the Necromancer on nights 1 and 2), and HeldBy (this level's own output).
 """
 
 from __future__ import annotations
@@ -83,7 +83,7 @@ class Provenance:
 
 def census_constraints(dead_roster: list[DeathRecord], view: SeatView, dealt: frozenset[str]) -> list[OnlyRoles]:
     """C1: a hidden body died at night, so it was not immune that night (never the Serial Killer;
-    never the Necromancer on night 1), and L8 narrows it by how it was hidden: the living
+    never the Necromancer on nights 1 and 2), and L8 narrows it by how it was hidden: the living
     Illusionist hides only the pack's victim, never a wolf; a reanimated Illusionist's conceal
     hides anyone but the Necromancer (it cannot act on itself) and the Illusionist (its body)."""
     constraints = []

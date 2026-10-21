@@ -26,7 +26,7 @@ from Agents.schemas.role_traits import (
     roles_with,
     silently_immune,
 )
-from Agents.schemas.roles import BORROWED_ABILITY, ROLE_SPECS, roles
+from Agents.schemas.roles import BORROWED_ABILITY, NECROMANCER_IMMUNE_NIGHTS, ROLE_SPECS, roles
 from Agents.turn.action_space import valid_targets_for_action
 
 POOL = list(ROLE_TRAITS)
@@ -89,7 +89,7 @@ def _immunity_seen(role: str, night: int, self_bet: bool) -> str:
 
 
 def _immunity_expected(immunity: str, night: int, self_bet: bool) -> str:
-    if immunity == "always" or (immunity == "night_one" and night == 1):
+    if immunity == "always" or (immunity == "first_nights" and night <= NECROMANCER_IMMUNE_NIGHTS):
         return "silent"
     if immunity == "self_bet" and self_bet:
         return "announced"
@@ -292,7 +292,7 @@ def test_borrowed_verb_for_every_body_that_gives_an_action(role):
 @pytest.mark.parametrize("traits", [
     {"blocks": True}, {"visits": "under_body"}, {"visits_two": True},
     {"reads_suspicious": "when_killing_through_body"}, {"night_immune": "always"},
-    {"night_immune": "night_one"}, {"night_immune": "self_bet"}, {"attack_announced_as": "vigilante"},
+    {"night_immune": "first_nights"}, {"night_immune": "self_bet"}, {"attack_announced_as": "vigilante"},
     {"must_act": True, "blockable": False, "visits": "own_name"},
 ])
 def test_one_role_has_each_trait_a_row_names(traits):

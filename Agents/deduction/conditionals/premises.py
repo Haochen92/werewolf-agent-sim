@@ -12,7 +12,8 @@ Premises, from the typed claims (SeatView.claims), never the seat's own:
   role the action implies), and what it states as verified: each visit it says went ahead (its own,
   and those a watch or a follow saw), a check's reading, a roleblock. Skipped: a claim whose role
   claim and action disagree, an action whose role was withdrawn, a night not said, a claimed visit by
-  the seat that its own records do not show (the seat knows that claim is false).
+  the seat that its own records do not show or its own role could not have made (the seat knows that
+  claim is false).
 What a premise adds, as role constraints: each assumed role; a check's reading as the roles it
 allows (Suspicious: a wolf, or from night 2 in Necromancer casts the Necromancer; Not suspicious: not
 a wolf); a roleblock as the level-1 rows read one (a role that can be blocked, the blocker alive);
@@ -196,7 +197,9 @@ def _visit(fact: VisitAsClaimed, night: int, view: SeatView, base: Candidates, d
     if fact.target in dead_before:
         return None  # no visit goes to the dead
     if fact.visitor == view.player_id:
-        return []  # the seat's own role is known; its records showed the visit (action_premises)
+        # A wolf's carrier visit is not in its records (action_premises), so the morning must still
+        # let the seat's known role make it (the Illusionist goes only to the pack's victim).
+        return [] if view.role in visit_roles(fact, night, view, base) else None
     if fact.visitor in dead_before:
         body = dead_before[fact.visitor]
         if night == 1 or body.concealed or body.role not in BORROWED_ABILITY or NECROMANCER not in dealt:

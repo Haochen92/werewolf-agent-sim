@@ -57,7 +57,7 @@ def body_of(role: str, night: int, record: PublicRecord) -> str | None:
 
 def immune_on(night: int, record: PublicRecord) -> list[str]:
     """The roles that could fail an attack in silence on `night` (catalogue L1, since R10): the
-    Serial Killer, or the Necromancer on night 1, unless revealed dead before that night."""
+    Serial Killer, or the Necromancer on nights 1 and 2, unless revealed dead before that night."""
     gone = set(revealed_before_night(record.dead_roster, night).values())
     return sorted(roles_always_immune(night, record.cast_role_counts) - gone)
 

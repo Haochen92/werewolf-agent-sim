@@ -85,12 +85,13 @@ def test_wolf_kill_on_sk_public_transcript_stays_silent():
     assert "serial killer" not in message
 
 
-def test_the_necromancer_is_immune_on_night_one_only():
+def test_the_necromancer_is_immune_on_nights_one_and_two_only():
     roles = {**ROLES, "sk": "necromancer"}
-    night_one = _pack_record(night_resolution(_state(kill="sk", roles=roles), _runtime()))
-    assert night_one.result == "immune"
-    night_two = _pack_record(night_resolution(_state(kill="sk", roles=roles, day=2), _runtime()))
-    assert night_two.result == "killed"
+    for night in (1, 2):
+        record = _pack_record(night_resolution(_state(kill="sk", roles=roles, day=night), _runtime()))
+        assert record.result == "immune"
+    night_three = _pack_record(night_resolution(_state(kill="sk", roles=roles, day=3), _runtime()))
+    assert night_three.result == "killed"
 
 
 # --- (b) wolves' target is healed -> NO whiff, public save announced -----------

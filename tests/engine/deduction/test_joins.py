@@ -371,8 +371,8 @@ AC1_SEAT = [
 ]
 AC3_SEAT = [
     "Both wolves are alive and are two of player_1, player_2, player_3, player_5, player_6, player_7, player_9 and "
-    "player_10. The Necromancer is one of player_1, player_2, player_3, player_5, player_7, player_9 and player_10, or "
-    "is player_8's hidden body.",
+    "player_10. The Necromancer is alive and is one of player_1, player_2, player_3, player_5, player_7, player_9 and "
+    "player_10.",
     "The Speculator is one of player_1, player_2, player_3, player_5, player_7, player_9 and player_10, or is "
     "player_8's hidden body.",
     # Slice 11: the role claims' status, and AC3's line 3 (E17) in player_6's entry.

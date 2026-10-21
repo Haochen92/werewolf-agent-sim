@@ -18,6 +18,7 @@ from Agents.config.game import GameConfig
 from Agents.deduction import own_result_lines, public_items, public_record, seat_view_from_payload
 from Agents.deduction.public.wills import will_items
 from Agents.schemas.deduction import (
+    AnyOf,
     AttacksOnlyOn,
     BlockedBy,
     PublicRecord,
@@ -117,10 +118,10 @@ def test_a_kill_hidden_by_the_living_illusionist_hides_the_killer_and_narrows_th
 def test_a_hidden_body_on_night_one_in_the_necromancer_casts_is_not_the_necromancer_and_later_may_be():
     story = _ne_sp()
     story.night(1, story.act("chanteuse", "kill", "sentinel"), story.act("illusionist", "conceal", None))
-    assert ("player_2 was killed at night, so player_2 is not the Necromancer (it cannot be killed on night 1). "
-            "The wolves attacked player_2, so player_2 is not a wolf.") in story.texts("B2")
+    assert ("player_2 was killed at night, so player_2 is not the Necromancer (it cannot be killed on nights 1 "
+            "and 2). The wolves attacked player_2, so player_2 is not a wolf.") in story.texts("B2")
     later = _ne_sp()
-    later.night(2, later.act("illusionist", "kill", "sentinel"), later.act("illusionist", "conceal", None))
+    later.night(3, later.act("illusionist", "kill", "sentinel"), later.act("illusionist", "conceal", None))
     assert "The wolves attacked player_2, so player_2 is not a wolf." in later.texts("B2")
 
 
@@ -228,17 +229,17 @@ def test_a_reanimated_wolf_kill_left_unhidden_means_the_conceals_are_used_up():
 
 def test_a_reanimated_illusionist_conceal_hides_no_visit_and_the_body_may_be_a_wolf():
     story = _ne_sp()
-    story.lynch("illusionist", 2)
-    story.night(2, story.act("necromancer", "kill", "chanteuse", via="illusionist"))
+    story.lynch("illusionist", 3)
+    story.night(3, story.act("necromancer", "kill", "chanteuse", via="illusionist"))
     assert story.texts("B7") == [
         "player_7's role was hidden through the dead Illusionist's body, which hides no visit: every visit to "
-        "player_7 on night 2 would have shown on a watch or a follow.",
-        "The Necromancer attacked player_7 on night 2 through player_8's body (the Illusionist): it was alive "
+        "player_7 on night 3 would have shown on a watch or a follow.",
+        "The Necromancer attacked player_7 on night 3 through player_8's body (the Illusionist): it was alive "
         "that night, and a kill through a body makes it read Suspicious that night. It acts once a night, so it "
         "did nothing else.",
         "The Necromancer acted on player_7 through a body, and it cannot act on itself, so player_7 is not the "
         "Necromancer.",
-        "No protection went ahead on player_7 on night 2: one would have saved player_7.",
+        "No protection went ahead on player_7 on night 3: one would have saved player_7.",
     ]
     assert not any("used up" in text for text in story.texts("B6") + story.texts("B7"))  # spent, not used up
     # No line says the body is not a wolf: a reanimated conceal can hide one.
@@ -291,8 +292,8 @@ def test_a_save_by_the_living_healer_and_one_through_its_body():
         "that visit.",
         "The Necromancer protected player_1 on night 2 through player_6's body (the Healer): it acts once a night, "
         "so it made no kill and read Not suspicious that night.",
-        "The wolves attacked player_1, so player_1 is not a wolf. The Necromancer acted on player_1 through a "
-        "body, and it cannot act on itself, so player_1 is not the Necromancer.",
+        "A protection saved player_1, so player_1 could be killed that night: player_1 is not the Necromancer (it "
+        "cannot be killed on nights 1 and 2). The wolves attacked player_1, so player_1 is not a wolf.",
     ]
 
 
@@ -320,18 +321,33 @@ def test_no_wolf_attack_announced_in_sk_casts_means_the_pack_attacked_the_serial
     assert story.texts("B13", without_mornings=True) == []  # no morning on the payload: no absence
 
 
-def test_no_wolf_attack_from_night_two_in_ne_casts_means_the_carrier_was_blocked_through_the_chanteuse():
+def test_no_wolf_attack_from_night_three_in_ne_casts_means_the_carrier_was_blocked_through_the_chanteuse():
+    story = _ne_sp()
+    story.lynch("chanteuse", 3)
+    story.night(3, story.act("illusionist", "kill", "investigator"),
+                story.act("necromancer", "block", "illusionist", via="chanteuse"))
+    assert story.texts("B13") == [
+        "A wolf was alive at the start of night 3, and the wolves must attack every night, but no attack by the "
+        "wolves was announced: the Chanteuse was already dead, so the Necromancer blocked the wolf carrying the "
+        "kill through her body."]
+    assert story.texts("B14") == ["No one died and no one was saved on night 3, so no attack went ahead that night."]
+    item = next(item for item in public_items(story.public()) if item.row == "B13")
+    assert item.conclusion == (BlockedBy("wolves", through_body=True),)
+
+
+def test_no_wolf_attack_on_night_two_in_ne_casts_is_the_immune_necromancer_or_a_block_through_the_chanteuse():
     story = _ne_sp()
     story.lynch("chanteuse", 2)
     story.night(2, story.act("illusionist", "kill", "investigator"),
                 story.act("necromancer", "block", "illusionist", via="chanteuse"))
     assert story.texts("B13") == [
         "A wolf was alive at the start of night 2, and the wolves must attack every night, but no attack by the "
-        "wolves was announced: the Chanteuse was already dead, so the Necromancer blocked the wolf carrying the "
-        "kill through her body."]
-    assert story.texts("B14") == ["No one died and no one was saved on night 2, so no attack went ahead that night."]
+        "wolves was announced: either their target could not be killed, so it was the Necromancer (it cannot be "
+        "killed on nights 1 and 2), or the Necromancer blocked the wolf carrying the kill through the dead "
+        "Chanteuse's body."]
     item = next(item for item in public_items(story.public()) if item.row == "B13")
-    assert item.conclusion == (BlockedBy("wolves", through_body=True),)
+    assert item.conclusion == (AnyOf(((SilentAttack("wolves", frozenset({"necromancer"})),),
+                                      (BlockedBy("wolves", through_body=True),))),)
 
 
 def test_no_absence_line_when_a_hidden_body_may_have_been_the_last_wolf():
@@ -339,7 +355,8 @@ def test_no_absence_line_when_a_hidden_body_may_have_been_the_last_wolf():
     certainly alive, and the silent night says nothing about the pack."""
     story = _ne_sp()
     story.lynch("illusionist", 2)
-    story.night(2, story.act("necromancer", "kill", "chanteuse", via="illusionist"))
+    story.night(2, story.act("necromancer", "kill", "chanteuse", via="illusionist"),
+                story.act("chanteuse", "kill", "sentinel"))
     story.night(3, story.act("vigilante", "kill", "investigator"))
     assert story.texts("B13") == []
 
@@ -349,7 +366,7 @@ def test_no_one_died_on_night_one_in_ne_casts():
     story.night(1, story.act("chanteuse", "kill", "necromancer"))
     assert story.texts("B14") == [
         "No one died and no one was saved on night 1, so every attack that night, if any, was on a player who could "
-        "not be killed: the Necromancer (it cannot be killed on night 1)."]
+        "not be killed: the Necromancer (it cannot be killed on nights 1 and 2)."]
     item = next(item for item in public_items(story.public()) if item.row == "B14")
     assert item.conclusion == (AttacksOnlyOn(frozenset({"necromancer"})),)
 
@@ -449,7 +466,8 @@ def test_a_shot_saved_through_the_healers_body_reads_the_saver_from_the_morning(
     story.night(3, story.act("chanteuse", "kill", "vigilante"))
     assert story.texts("B17") == [
         "player_4's will shows that on night 2 player_4 shot player_1, who was saved. A reanimated healer is the "
-        "Necromancer acting through the dead Healer's body: the Necromancer protected player_1 that night."]
+        "Necromancer acting through the dead Healer's body: the Necromancer protected player_1 that night. "
+        "player_1 can be killed at night, so player_1 is not the Necromancer."]
 
 
 def test_a_payload_with_no_morning_no_longer_names_the_protector_of_a_saved_shot():

@@ -156,6 +156,13 @@ def pack_carrier_blocked_through_body(night: int) -> str:
             "the wolf carrying the kill through her body.")
 
 
+def pack_attack_silent_or_blocked(night: int, roles: list[str]) -> str:
+    return (f"A wolf was alive at the start of night {night}, and the wolves must attack every night, but no "
+            f"attack by the wolves was announced: either their target could not be killed, so it was "
+            f"{immune_roles_phrase(roles)}, or the Necromancer blocked the wolf carrying the kill through "
+            "the dead Chanteuse's body.")
+
+
 def no_one_died(night: int, roles: list[str]) -> str:
     if not roles:
         return f"No one died and no one was saved on night {night}, so no attack went ahead that night."

@@ -178,7 +178,7 @@ def test_on_night_one_in_ne_ft_a_silent_immune_target_is_the_necromancer():
     necromancer = player_of["necromancer"]
     choices = [NightChoice(player_of["vigilante"], "vigilante", "kill", necromancer)]
     _, lines, _ = _after_night(choices, roles, 1, player_of["vigilante"])
-    assert _the_one_line(lines).text == (f"Only the Necromancer (it cannot be killed on night 1) could "
+    assert _the_one_line(lines).text == (f"Only the Necromancer (it cannot be killed on nights 1 and 2) could "
                                          f"survive that attack, so {necromancer} is the Necromancer.")
 
 
@@ -187,7 +187,7 @@ def test_on_night_one_in_ne_sp_the_immune_target_is_the_necromancer():
     necromancer = player_of["necromancer"]
     choices = [NightChoice(player_of["vigilante"], "vigilante", "kill", necromancer)]
     _, lines, _ = _after_night(choices, roles, 1, player_of["vigilante"])
-    assert _the_one_line(lines).text == (f"Only the Necromancer (it cannot be killed on night 1) could "
+    assert _the_one_line(lines).text == (f"Only the Necromancer (it cannot be killed on nights 1 and 2) could "
                                          f"survive that attack, so {necromancer} is the Necromancer.")
 
 
@@ -238,12 +238,12 @@ def test_a_healer_whose_target_survived_on_its_own_self_bet_learns_it_is_the_for
 
 def test_a_self_bet_with_no_attack_leaves_the_healer_the_plain_no_attack_line():
     """No attack on the self-betting fortune teller: nothing announced, and its immunity is not
-    among the explanations (in NE+FT after night 1 nobody is silently immune)."""
+    among the explanations (in NE+FT after night 2 nobody is silently immune)."""
     roles, player_of = _game("necromancer", "fortune_teller")
     fortune_teller = player_of["fortune_teller"]
     choices = [NightChoice(fortune_teller, "fortune_teller", "bet", fortune_teller),
                NightChoice(player_of["healer"], "healer", "protect", fortune_teller)]
-    _, lines, _ = _after_night(choices, roles, 2, player_of["healer"])
+    _, lines, _ = _after_night(choices, roles, 3, player_of["healer"])
     line = _the_one_line(lines)
     assert (line.row, line.text) == ("A4", f"No attack reached {fortune_teller} that night.")
 
@@ -282,8 +282,10 @@ def test_a_save_by_a_reanimated_healer_is_explained_to_the_attacker():
     _, lines, _ = _after_night(choices, roles, 2, player_of["illusionist"], earlier_deaths=[lynched])
     line = _the_one_line(lines)
     assert line.row == "A12"
+    # Night 2: the Necromancer acts through a body and is immune, so the save also rules the target out.
     assert line.text == ("A reanimated healer is the Necromancer acting through the dead Healer's body: the "
-                         f"Necromancer protected {target} that night.")
+                         f"Necromancer protected {target} that night. {target} can be killed at night, so "
+                         f"{target} is not the Necromancer.")
 
 
 def test_the_serial_killer_is_not_told_its_saved_target_is_not_itself():
@@ -307,11 +309,11 @@ def test_no_attack_in_sk_sp_keeps_the_immune_branch():
                          f"{target} would then be the Serial Killer.")
 
 
-def test_no_attack_in_ne_sp_after_night_one_is_certain():
+def test_no_attack_in_ne_sp_after_night_two_is_certain():
     roles, player_of = _game("necromancer", "speculator")
     target = player_of["sentinel"]
     choices = [NightChoice(player_of["healer"], "healer", "protect", target)]
-    _, lines, _ = _after_night(choices, roles, 2, player_of["healer"])
+    _, lines, _ = _after_night(choices, roles, 3, player_of["healer"])
     assert _the_one_line(lines).text == f"No attack reached {target} that night."
 
 

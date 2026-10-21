@@ -72,7 +72,7 @@ from Agents.schemas.deduction import (
 from Agents.schemas.game_events import DayVote, DeathRecord, NightActionRecord, NightAnnouncement, ReadOutWill
 from Agents.schemas.metrics import Metrics
 from Agents.schemas.night import NightChoice, NightOutcome
-from Agents.schemas.roles import PICKABLE_SIDES, ROLE_SPECS, cast_role_counts
+from Agents.schemas.roles import NECROMANCER_IMMUNE_NIGHTS, PICKABLE_SIDES, ROLE_SPECS, cast_role_counts
 
 BASE_ROLES = ["investigator", "sentinel", "trailseer", "vigilante", "sigilist", "healer", "chanteuse", "illusionist"]
 """The eight roles in every cast; the lone killer and the neutral are drawn on top."""
@@ -118,7 +118,7 @@ def _deal_roles(rng: random.Random) -> dict[str, str]:
 
 def _earlier_deaths(rng: random.Random, roles: dict[str, str], night: int) -> list[DeathRecord]:
     """Up to four players who died before `night`: at night (never the serial killer, never the
-    necromancer on night 1; a non-wolf body may have been concealed) or by a lynch."""
+    necromancer on its first nights; a non-wolf body may have been concealed) or by a lynch."""
     deaths: list[DeathRecord] = []
     if night == 1:
         return deaths  # day 1 has no vote and nothing happened before night 1
@@ -127,7 +127,7 @@ def _earlier_deaths(rng: random.Random, roles: dict[str, str], night: int) -> li
         died_at_night = role != "serial_killer" and rng.random() < 0.5
         if died_at_night:
             day = rng.randint(1, night - 1)
-            if role == "necromancer" and day == 1:
+            if role == "necromancer" and day <= NECROMANCER_IMMUNE_NIGHTS:
                 continue
             concealed = role not in WOLF_ROLES and role != "serial_killer" and rng.random() < 0.3
             deaths.append(DeathRecord(player=player, role="" if concealed else role, day=day,

@@ -14,7 +14,7 @@ from Agents.schemas.night import (
     NightOutcome,
     NightVerdict,
 )
-from Agents.schemas.roles import BORROWED_ABILITY, ROLE_SPECS, TOWN, WOLVES, NightKind
+from Agents.schemas.roles import BORROWED_ABILITY, NECROMANCER_IMMUNE_NIGHTS, ROLE_SPECS, TOWN, WOLVES, NightKind
 from Agents.schemas.roles import side_of  # noqa: F401  (re-exported: the record and the nodes read it here)
 
 
@@ -26,11 +26,11 @@ def can_be_blocked(role: str) -> bool:
 
 def is_night_immune(role: str | None, night: int) -> bool:
     """Whether a role cannot be killed at night: the serial killer always; the necromancer on
-    night 1 only (the sheet's rule, kept here so immunity has one home)."""
+    its first nights only (the sheet's rule, kept here so immunity has one home)."""
     if role is None:
         return False
     if role == "necromancer":
-        return night == 1
+        return night <= NECROMANCER_IMMUNE_NIGHTS
     return ROLE_SPECS[role].night_immune
 
 

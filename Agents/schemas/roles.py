@@ -46,13 +46,18 @@ class RoleSpec:
     acts_from_night: int = 1
     """The first night the role acts (the necromancer sits out night 1)."""
     night_immune: bool = False
-    """Cannot be killed at night, on every night (the serial killer). The necromancer's night 1
-    is in Agents/rules/night.is_night_immune."""
+    """Cannot be killed at night, on every night (the serial killer). The necromancer's first
+    nights are in Agents/rules/night.is_night_immune."""
     pack: bool = False
     """A wolf: shares the pack's chat and kill, and the target_field is its own skill's."""
     retired: bool = False
     """A role the nine-seat game dealt and the ten-seat game does not. Kept so old replays,
     stores and the hallucination bench still resolve; never dealt, never in the pool."""
+
+
+NECROMANCER_IMMUNE_NIGHTS = 2
+"""The necromancer cannot be killed on nights 1 to this one (owner, 2026-10-21; was night 1 only):
+it acts from night 2, and could die before a body was there to use."""
 
 
 ROLE_SPECS: dict[str, RoleSpec] = {

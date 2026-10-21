@@ -173,13 +173,13 @@ def _ac4() -> Table:
 
 
 def test_acceptance_case_4_the_census_line():
-    """AC4 line 1: the Necromancer acted on night 4, only player_7 has died since, and the hidden
-    bodies died on nights 2 and 3."""
+    """AC4 line 1: neither hidden body can be the Necromancer: player_8 died on night 2, when it
+    cannot be killed, and player_5 was killed through a body, and it cannot act on itself."""
     table = _ac4()
     assert table.living() == ["player_2", "player_3", "player_9", "player_10"]
     assert table.texts("F3", "player_2") == [
-        "Both wolves are dead: player_6 and player_1. The Necromancer is alive: it killed through a body on "
-        "night 4. It is player_3, player_9 or player_10.",
+        "Both wolves are dead: player_6 and player_1. The Necromancer is alive and is one of player_3, player_9 "
+        "and player_10.",
         "The Speculator is one of player_3, player_9 and player_10, or is player_5's hidden body.",
     ]
 

@@ -4,9 +4,9 @@ An absence proves something only when the actor was certainly alive at the start
 the morning is complete (review M5): a payload with no morning for that night says nothing here.
 - B13: the wolves must attack every night a wolf is alive (catalogue L5), and since R10 every
   outcome of an attack is announced except an immune target's. So with no attack by the wolves
-  announced, their target was immune (the Serial Killer; the Necromancer on night 1), or, from
+  announced, their target was immune (the Serial Killer; the Necromancer on nights 1 and 2), or, from
   night 2 in the Necromancer's casts, the Necromancer blocked the carrier through the dead
-  Chanteuse's body. The Serial Killer's own attack is never silent in a legal game (it cannot hit
+  Chanteuse's body; on night 2 either may be the one. The Serial Killer's own attack is never silent in a legal game (it cannot hit
   an immune player), so its absence gives no line.
 - B14: "No one died" (and no save) means every attack that went ahead was on an immune player.
 """
@@ -17,7 +17,15 @@ from Agents.deduction.night_state import revealed_before_night
 from Agents.deduction.public import wording
 from Agents.deduction.public.known import immune_on, types_announced, wolf_alive_at_start
 from Agents.rules.night_record import PACK_ACTOR
-from Agents.schemas.deduction import AttacksOnlyOn, BlockedBy, DeductionItem, PublicRecord, SilentAttack, Source
+from Agents.schemas.deduction import (
+    AnyOf,
+    AttacksOnlyOn,
+    BlockedBy,
+    DeductionItem,
+    PublicRecord,
+    SilentAttack,
+    Source,
+)
 from Agents.schemas.role_traits import BLOCKER, BODY_USER
 
 
@@ -46,9 +54,14 @@ def _pack_attack_not_announced(night: int, record: PublicRecord):
     if announced is None or "wolves" in announced or not wolf_alive_at_start(night, record):
         return None
     immune = immune_on(night, record)
-    if immune:
-        return SilentAttack("wolves", frozenset(immune)), wording.pack_attack_silent(night, immune)
     revealed = set(revealed_before_night(record.dead_roster, night).values())
-    if record.cast_role_counts.get(BODY_USER) and BLOCKER in revealed and BODY_USER not in revealed:
-        return BlockedBy(PACK_ACTOR, through_body=True), wording.pack_carrier_blocked_through_body(night)
+    through_body = bool(record.cast_role_counts.get(BODY_USER)) and BLOCKER in revealed and BODY_USER not in revealed
+    silent = SilentAttack("wolves", frozenset(immune))
+    blocked = BlockedBy(PACK_ACTOR, through_body=True)
+    if immune and through_body:
+        return AnyOf(((silent,), (blocked,))), wording.pack_attack_silent_or_blocked(night, immune)
+    if immune:
+        return silent, wording.pack_attack_silent(night, immune)
+    if through_body:
+        return blocked, wording.pack_carrier_blocked_through_body(night)
     return None

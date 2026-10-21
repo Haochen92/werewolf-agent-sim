@@ -2,7 +2,7 @@
 target.
 
 - An attack that went ahead and failed in silence means the target was immune: the serial killer,
-  or the necromancer on night 1 (A13–A19).
+  or the necromancer on nights 1 and 2 (A13–A19).
 - An attack the fortune teller's self-bet stopped is announced, and names the fortune teller to the
   attacker and to a protector alike (A53, A54; R10, 2026-10-17).
 - An attack stopped by a save means the target can be killed at night (A11, A12).
@@ -35,7 +35,7 @@ def _always_immune_other_than(own_role: str, night: int, cast_role_counts: dict[
 
 def immune_target_line(record: NightActionRecord, view: SeatView) -> OwnResultLine | None:
     """A13–A19: the attack went ahead and the target was unharmed, in silence. Since R10 every
-    cast leaves one explanation at most (the serial killer, or the necromancer on night 1), so the
+    cast leaves one explanation at most (the serial killer, or the necromancer on nights 1 and 2), so the
     line names it; the "either … or" form of A14 is retired."""
     target = record.target
     candidates = immune_candidates(target, record.day, view.role, view.cast_role_counts, view.dead_roster)

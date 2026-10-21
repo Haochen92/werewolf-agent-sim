@@ -14,8 +14,8 @@ ROLE_TITLES = {role: traits.title for role, traits in ROLE_TRAITS.items()}
 
 def _immune_role_phrase(role: str) -> str:
     """How an immune role is named in a line about immunity."""
-    if ROLE_TRAITS[role].night_immune == "night_one":
-        return f"{ROLE_TITLES[role]} (it cannot be killed on night 1)"
+    if ROLE_TRAITS[role].night_immune == "first_nights":
+        return f"{ROLE_TITLES[role]} (it cannot be killed on nights 1 and 2)"
     return ROLE_TITLES[role]
 
 

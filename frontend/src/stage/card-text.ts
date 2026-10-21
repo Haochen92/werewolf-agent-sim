@@ -132,9 +132,9 @@ export const CARD_TEXT: Record<string, CardText> = {
     name: 'Necromancer',
     line: 'Picks up the strings of puppets who have taken their final bow.',
     ability:
-      'On Night 1, you take no action and cannot be killed. From Night 2, use an eligible dead player’s ability on a target, or take no action. You can reuse the same body; concealed bodies cannot be used.\nThe body appears as the visitor instead of you. You cannot be blocked, but from Night 2 you can be killed. The Investigator sees you as Suspicious on nights you attack.',
+      'On Night 1, you take no action. You cannot be killed on Nights 1 and 2. From Night 2, use an eligible dead player’s ability on a target, or take no action. You can reuse the same body; concealed bodies cannot be used.\nThe body appears as the visitor instead of you. You cannot be blocked, but from Night 3 you can be killed. The Investigator sees you as Suspicious on nights you attack.',
     night:
-      "From Night 2, use a dead player's night ability on one target; with no such body, you do nothing that night. On Night 1 you do nothing, and can't be killed.",
+      "From Night 2, use a dead player's night ability on one target; with no such body, you do nothing that night. On Night 1 you do nothing. You can't be killed on Nights 1 and 2.",
     win: 'You are alive with no more than one other player remaining.',
   },
   speculator: {

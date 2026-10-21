@@ -97,11 +97,12 @@ def test_the_living_conceal_does_not_tell_the_necromancer():
 
 
 def test_a_role_no_claim_is_about_gives_no_line():
-    # NE+SP: from night 2 the living conceal can hide the Necromancer, a lone killer: no claim is about it.
+    # NE+SP: from night 3 the living conceal can hide the Necromancer, a lone killer: no claim is about it.
     table = Table(_ne_sp()).night(1, ("player_7", "kill", "player_1"), ("player_7", "block", "player_3"))
-    table.night(2, ("player_8", "kill", "player_9"), ("player_8", "conceal", None))
+    table.night(2, ("player_8", "kill", "player_2"))
+    table.night(3, ("player_8", "kill", "player_9"), ("player_8", "conceal", None))
     assert [d.concealed for d in table.dead if d.player == "player_9"] == [True]
-    assert _lines(table, "player_7", 3, rows={"F7+L8"}) == []
+    assert _lines(table, "player_7", 4, rows={"F7+L8"}) == []
 
 
 def test_a_role_dealt_twice_gives_no_line():

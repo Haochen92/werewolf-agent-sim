@@ -481,7 +481,7 @@ The game computed these lines from the announcements, the dead roster and the wi
 AC4_SEAT = """\
 == Worked out for you ==
 The game computed these lines from the public record, your own night results and what players say they did. Each line is certain unless it names what it assumes.
-- Both wolves are dead: player_6 and player_1. The Necromancer is alive: it killed through a body on night 4. It is player_3, player_9 or player_10.
+- Both wolves are dead: player_6 and player_1. The Necromancer is alive and is one of player_3, player_9 and player_10.
 - The Speculator is one of player_3, player_9 and player_10, or is player_5's hidden body.
 - If player_9's claim is true, the Necromancer is player_3 or player_10.
 - No one else claims the Sentinel. player_3 and player_10 have made no role claim.
@@ -489,8 +489,8 @@ The game computed these lines from the public record, your own night results and
 - player_4's will shows player_4 checked player_6 on night 2, so player_4 went to player_6 that night, as player_9's watch reported. This confirms that part of the report, not that player_9 is the Sentinel.
 - The Necromancer attacked player_7 on night 4 through player_6's body (the Illusionist): it was alive that night, and a kill through a body makes it read Suspicious that night. It acts once a night, so it did nothing else. No protection went ahead on player_7 on night 4: one would have saved player_7."""
 
-AC4_LINE_1 = ("Both wolves are dead: player_6 and player_1. The Necromancer is alive: it killed through a body on "
-              "night 4. It is player_3, player_9 or player_10.")
+AC4_LINE_1 = ("Both wolves are dead: player_6 and player_1. The Necromancer is alive and is one of player_3, player_9 "
+              "and player_10.")
 AC4_LINE_2 = ("player_4's will shows player_4 checked player_6 on night 2, so player_4 went to player_6 that night, as "
               "player_9's watch reported. This confirms that part of the report, not that player_9 is the Sentinel.")
 

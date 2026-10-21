@@ -311,8 +311,8 @@ illusionist: {
 necromancer: {
   name: 'Necromancer',
   line: 'Pulls the strings\nof those already gone.',
-  day: 'Blend in as an ordinary town player, neither dominating the talk nor vanishing from it. The vote can remove you; from the second night, so can a bullet.',
-  night: 'Night 1: nothing, and nothing can kill you. From Night 2: pick a dead, unconcealed player and use their night ability on one target, never the same body two nights running.',
+  day: 'Blend in as an ordinary town player, neither dominating the talk nor vanishing from it. The vote can remove you; from the third night, so can a bullet.',
+  night: 'Night 1: nothing. Nights 1 and 2: nothing can kill you. From Night 2: pick a dead, unconcealed player and use their night ability on one target, never the same body two nights running.',
   win: 'Alone, when at most one other player is left alive.',
 },
 speculator: {

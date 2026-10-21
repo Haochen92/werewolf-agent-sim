@@ -10,8 +10,8 @@ propagation (Agents/deduction/candidates/):
 - every certain fact the engine states (the public items, and the seat's own lines), each read as a
   condition on the deal: a fact about roles directly, an action that went ahead on night n as "one
   of its possible makers was alive when night n began";
-- a night death was not immune that night (never the Serial Killer; never the Necromancer on night
-  1); how a body was hidden narrows it (catalogue L8);
+- a night death was not immune that night (never the Serial Killer; never the Necromancer on nights
+  1 and 2); how a body was hidden narrows it (catalogue L8);
 - the game continued past every check so far: the real `determine_winner` and `is_draw` find no
   end at any of them;
 - for a conditional line (slice 10, `add_premise`), its premise: the roles it assumes, and each
@@ -48,7 +48,7 @@ from Agents.schemas.deduction import (
     WentTo,
 )
 from Agents.schemas.game_events import DeathRecord
-from Agents.schemas.roles import ROLE_SPECS, TOWN, WOLVES
+from Agents.schemas.roles import NECROMANCER_IMMUNE_NIGHTS, ROLE_SPECS, TOWN, WOLVES
 
 WOLF_ROLES = frozenset(role for role, spec in ROLE_SPECS.items() if spec.pack and not spec.retired)
 MAKERS = {"wolves": WOLF_ROLES, "serial_killer": frozenset({"serial_killer"}),
@@ -176,7 +176,7 @@ def _the_dead(oracle: Oracle, record: PublicRecord) -> None:
         if not death.concealed:
             oracle.allowed[death.player] &= {death.role}
         if death.phase == "night":
-            oracle.allowed[death.player] -= {"serial_killer"} | ({"necromancer"} if death.day == 1 else set())
+            oracle.allowed[death.player] -= {"serial_killer"} | ({"necromancer"} if death.day <= NECROMANCER_IMMUNE_NIGHTS else set())
         how = hidden_by.get((death.player, death.day), "")
         if death.concealed and how == "illusionist":
             oracle.allowed[death.player] -= WOLF_ROLES
@@ -314,7 +314,7 @@ def _could_visit(visitor: str, target: str, night: int, morning) -> Callable[[di
             return False
         if morning is None:
             return True
-        silent = target_role == "serial_killer" or (target_role == "necromancer" and night == 1)
+        silent = target_role == "serial_killer" or (target_role == "necromancer" and night <= NECROMANCER_IMMUNE_NIGHTS)
         if role == "serial_killer":
             return "serial_killer" in on_target
         if role == "vigilante":  # one shot a night: announced here, or silent here and not announced elsewhere

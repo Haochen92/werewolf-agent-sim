@@ -5,7 +5,7 @@ A claimed action leaves a trace in the morning when it goes ahead. When the trac
 the action could have ended are read off the engine's rules, never written per case (the tables
 below), and kept when the morning, the claim's own words and the seat's knowledge all leave them open:
 - a shot: roleblocked (no attack at all, catalogue L13); gone ahead on a target that cannot be killed
-  that night (silent: the Serial Killer, the Necromancer on night 1; L1 since R10); or gone ahead and
+  that night (silent: the Serial Killer, the Necromancer on nights 1 and 2; L1 since R10); or gone ahead and
   killed, or saved by the Healer, a reanimated healer or the target's own self-bet, each announced
   with the shot's type (B4, B11, B12, B33), so shut when the morning names no shot at the target;
 - a protection of a player who died that night: roleblocked; or gone ahead, which stops every attack

@@ -13,7 +13,7 @@ morning lets it make the visit).
   conceal and its kill both go to the pack's victim.
 - Every visit of the Serial Killer, the Vigilante and the Illusionist is an attack (or the conceal
   beside the pack's attack), and an attack that went ahead is announced unless its target was
-  silently immune that night (the Serial Killer; the Necromancer on night 1; a fortune teller's
+  silently immune that night (the Serial Killer; the Necromancer on nights 1 and 2; a fortune teller's
   self-bet is announced, R10). So they went to the target only if that attack on it was announced,
   or the target could have been silently immune.
 - No wolf visits a player who can only be a wolf: the pack kills and the Chanteuse blocks non-wolves.

@@ -154,8 +154,8 @@ def test_acceptance_case_3_end_to_end():
 # --- AC4: 403f4dbc, the day-5 vote, the Vigilante (player_2) ----------------------------------------
 
 AC4_LINES = {
-    1: ("Both wolves are dead: player_6 and player_1. The Necromancer is alive: it killed through a body on night 4. It "
-        "is player_3, player_9 or player_10."),
+    1: ("Both wolves are dead: player_6 and player_1. The Necromancer is alive and is one of player_3, player_9 and "
+        "player_10."),
     2: ("player_4's will shows player_4 checked player_6 on night 2, so player_4 went to player_6 that night, as "
         "player_9's watch reported. This confirms that part of the report, not that player_9 is the Sentinel."),
     3: "No one else claims the Sentinel. player_3 and player_10 have made no role claim.",

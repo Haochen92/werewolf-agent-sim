@@ -3,7 +3,7 @@
 A conceal hides the pack's victim only if that victim died, so "no body" means the pack's target
 survived. The morning says why: a save (by the Healer, or by the Necromancer through the Healer's
 body), the target's own self-bet (so it is the Fortune Teller), or nothing at all, and then the
-target could not be killed that night (the Serial Killer, or the Necromancer on night 1). The
+target could not be killed that night (the Serial Killer, or the Necromancer on nights 1 and 2). The
 pack's target comes from the pack's own kill record that night, which every wolf holds.
 """
 

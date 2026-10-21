@@ -236,6 +236,15 @@ def test_a_visit_to_a_player_already_dead_or_by_the_seat_unrecorded_gives_no_lin
     assert _lines(_ac2(), "player_5", 3, seat) == []
 
 
+def test_a_visit_by_a_wolf_seat_its_role_could_not_have_made_gives_no_line():
+    """A wolf's carrier visit is not in its records, but the Illusionist goes only to the pack's victim:
+    on night 1 the pack's silent attack went to the immune Necromancer, not to player_1."""
+    table = Table(_ne_sp()).night(1, ("player_7", "kill", "player_9"), ("player_7", "block", "player_3"))
+    table.night(2, ("player_7", "kill", "player_1"))
+    seen = _said(3, "player_2", (1, "watch", "player_1", "not_said", ["player_8", "player_5"]), claim="sentinel")
+    assert _lines(table, "player_8", 3, seen) == []
+
+
 # --- AC4 constructed, and the acceptance cases on their frozen payloads -------------------------------------
 
 def test_the_one_role_claim_left_is_named_ac4_constructed():

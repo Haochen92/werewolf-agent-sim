@@ -16,9 +16,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
 
-from Agents.schemas.roles import BORROWED_ABILITY, ROLE_SPECS
+from Agents.schemas.roles import BORROWED_ABILITY, NECROMANCER_IMMUNE_NIGHTS, ROLE_SPECS
 
-NightImmunity = Literal["never", "always", "night_one", "self_bet"]
+NightImmunity = Literal["never", "always", "first_nights", "self_bet"]
 VisitName = Literal["own_name", "under_body", "never"]
 SuspiciousReading = Literal["always", "when_killing_through_body", "never"]
 
@@ -30,7 +30,8 @@ class RoleTraits:
     title: str
     """How a line names the role: "the Serial Killer"."""
     night_immune: NightImmunity
-    """When an attack on it fails: never; always (in silence); on night 1 only (in silence); or on a
+    """When an attack on it fails: never; always (in silence); on its first nights only, 1 to
+    NECROMANCER_IMMUNE_NIGHTS (in silence); or on a
     night it bets on itself (announced, R10). Catalogue L1."""
     blockable: bool
     """Whether a roleblock on it takes effect (cancels its action). Catalogue L2."""
@@ -99,7 +100,7 @@ ROLE_TRAITS: dict[str, RoleTraits] = {
         visits_two=False, attacks_in_own_name=True, attack_announced_as="serial_killer", reads_suspicious="never",
         must_act=True, borrowed_verb=None),
     "necromancer": RoleTraits(
-        title="the Necromancer", night_immune="night_one", blockable=False, blocks=False, visits="under_body",
+        title="the Necromancer", night_immune="first_nights", blockable=False, blocks=False, visits="under_body",
         visits_two=False, attacks_in_own_name=False, attack_announced_as=None,
         reads_suspicious="when_killing_through_body", must_act=False, borrowed_verb=None),
     # The neutrals
@@ -158,8 +159,8 @@ SUSPICIOUS_THROUGH_A_BODY = the_role(reads_suspicious="when_killing_through_body
 
 def silently_immune(night: int) -> frozenset[str]:
     """The roles an attack fails on in silence on `night`, whatever they chose: the always immune,
-    and on night 1 the night-one immune (a self-bet's save is announced, R10)."""
-    kinds = ("always", "night_one") if night == 1 else ("always",)
+    and on the first nights the first-nights immune (a self-bet's save is announced, R10)."""
+    kinds = ("always", "first_nights") if night <= NECROMANCER_IMMUNE_NIGHTS else ("always",)
     return frozenset(role for role, row in ROLE_TRAITS.items() if row.night_immune in kinds)
 
 

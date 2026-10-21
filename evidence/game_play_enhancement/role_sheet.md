@@ -68,7 +68,8 @@ one verdict, and a conceal hides the pack's victim if that kill landed.
 - **Attacks:** the wolf kill, the Serial Killer, the Vigilante, the Sigilist's retaliation and the
   Necromancer's borrowed kills. Healer protection and night immunity stop attacks, the retaliation
   included.
-- **Night immunity:** the Serial Killer always; the Necromancer on Night 1 only.
+- **Night immunity:** the Serial Killer always; the Necromancer on Nights 1 and 2 (owner, 2026-10-21;
+  was Night 1 only: it acts from Night 2 and could die before a body was there to use).
 - **Roleblock:** only the Chanteuse blocks. A block takes on town and on wolves; the Serial
   Killer, the Necromancer and the neutral can never be blocked. A blocked player is told "You were
   roleblocked" and gets no action, no visit and no result that night. A block that did not take
@@ -153,7 +154,8 @@ Three seats: one killer acting on suspicion, one on prediction, and one protecto
 - An action a block cancelled spends nothing: a blocked shot keeps its bullet, a blocked sigil its
   sigil (ruling from game2, 2026-10-09: the vigilante lost a bullet to a block).
 - Sigilist vs. Necromancer: no kill and no trace, because the borrowed body made the attack.
-- Vigilante can kill the Necromancer from Night 2, but not the night-immune Serial Killer.
+- Vigilante can kill the Necromancer from Night 3 (Night 2 until 2026-10-21), but not the
+  night-immune Serial Killer.
 
 ## Wolves
 
@@ -199,12 +201,13 @@ One seat. Both options work alone and win by being the last standing.
 | Role | Status | Acts | What it does | Counters |
 |---|---|---|---|---|
 | Serial Killer | Built, level 1 | Every night | Attacks one player. Night-immune. Never reads suspicious. | Sentinel and Trailseer trails, the morning report, Sigilist evidence, lynch |
-| Necromancer | New, level 2 | From Night 2 | Uses a dead player's night ability (rules below) | Vigilante from Night 2, Investigator on attack nights, lynch |
+| Necromancer | New, level 2 | From Night 2 | Uses a dead player's night ability (rules below) | Vigilante from Night 3, Investigator on attack nights, lynch |
 
 **Necromancer rules**
 
-- Night 1: no action, immune to attacks. From Night 2 it can be killed; it stays that way (a
-  second permanently immune solo killer would be too hard to beat).
+- Night 1: no action. Nights 1 and 2: immune to attacks (2026-10-21; was Night 1 only). From
+  Night 3 it can be killed; it stays that way (a second permanently immune solo killer would be
+  too hard to beat).
 - From Night 2: picks a dead, unconcealed body and a target, then uses that body's night ability.
   Results come to the Necromancer.
 - Same body: allowed night after night (balance ruling 2026-10-09; the draft forbade two nights in a row, and on 19 of its 31 nights the Necromancer had no body that could kill). No use limits.
