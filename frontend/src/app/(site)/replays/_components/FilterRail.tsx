@@ -1,7 +1,7 @@
 'use client';
 /**
  * The archive's filter rail (replays mockup `.rail`): an id search, "played on this device",
- * who won (a side by its mark, a lone killer or a neutral by its role's sigil), where it ended, memory, who sat at the table, the model, and the finishing dates.
+ * who won (a side by its mark, a lone killer or a neutral by its role's sigil), memory, who sat at the table, the model, and the finishing dates.
  * Sticky beside the results on a wide screen; on a narrow one it folds behind a "Filters" bar
  * so the games are not pushed a screen down.
  */
@@ -158,22 +158,6 @@ export function FilterRail({
               ))}
             </div>
           </Chip.Group>
-        </fieldset>
-
-        <fieldset className={classes.fs}>
-          <legend className={classes.legend}>Ended in</legend>
-          <SegmentedControl
-            fullWidth
-            aria-label="Ended in"
-            value={filters.ended}
-            onChange={(v) => set({ ended: v as ReplayFilters['ended'] })}
-            data={[
-              { value: 'any', label: 'Any' },
-              { value: 'day', label: 'Day' },
-              { value: 'voting', label: 'Vote' },
-              { value: 'night', label: 'Night' },
-            ]}
-          />
         </fieldset>
 
         <fieldset className={classes.fs}>

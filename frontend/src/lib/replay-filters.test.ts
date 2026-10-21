@@ -126,12 +126,6 @@ describe('archive filters', () => {
     expect(runWith(['draw'])).toEqual([]);
   });
 
-  it('ending phase: exact, and an unrecorded phase matches only "any"', () => {
-    expect(run({ ended: 'night' })).toEqual(['cccc3333', 'aaaa1111']);
-    expect(run({ ended: 'voting' })).toEqual(['bbbb2222']);
-    expect(run({ ended: 'day' })).toEqual([]);
-  });
-
   it('model: an id, or "" for the unrecorded ones', () => {
     expect(run({ model: 'gemini-3.6-flash' })).toEqual(['bbbb2222', 'cccc3333']);
     expect(run({ model: '' })).toEqual(['dddd4444']);
@@ -189,17 +183,15 @@ describe('archive filters', () => {
       ...NO_FILTERS,
       winners: ['wolves', 'villagers'],
       model: 'gemini-3.6-flash',
-      ended: 'night',
     };
     const chips = activeFilters(f, (id) => `label:${id}`);
     expect(chips.map((c) => c.label)).toEqual([
       'Won by the wolves',
       'Won by the town',
-      'Ended at night',
       'label:gemini-3.6-flash',
     ]);
     expect(chips[0].without.winners).toEqual(['villagers']);
-    expect(chips[3].without.model).toBeNull();
+    expect(chips[2].without.model).toBeNull();
     expect(activeFilters(NO_FILTERS, String)).toEqual([]);
   });
 });

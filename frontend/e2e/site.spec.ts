@@ -249,7 +249,7 @@ test('archive: a filter narrows the list, and its chip takes it off', async ({ p
   await expect(page.locator('[data-game]')).toHaveCount(2);
   await expect(page.getByText('Showing 2 of 212 games')).toBeVisible();
 
-  await rail.getByText('Night', { exact: true }).click();
+  await rail.getByText('On', { exact: true }).click();
   await expect(page.locator('[data-game]')).toHaveCount(1);
   await expect(page.locator(`[data-game="${GAME}"]`)).toBeVisible();
 

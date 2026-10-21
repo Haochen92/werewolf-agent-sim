@@ -10,8 +10,6 @@ export const ARCHIVE_LIMIT = 500;
 import type { ReplaySummary } from '@/types/contracts';
 import { neutralWinner, winnerKey, type NeutralRole, type WinnerKey } from '@/stage/roles';
 
-export type EndedPhase = NonNullable<ReplaySummary['ended_phase']>;
-
 /** Who won: a winner (or a draw), or a neutral that won beside it. */
 export type WonBy = WinnerKey | NeutralRole;
 
@@ -25,7 +23,6 @@ export interface ReplayFilters {
   memory: 'any' | 'on' | 'off';
   /** `people`: at least one human seat; `agents`: agents in every seat. */
   table: 'any' | 'people' | 'agents';
-  ended: 'any' | EndedPhase;
   /** A model id; `''` = games whose model was not recorded; null = any model. */
   model: string | null;
   /** Finished on or after / on or before this day (`YYYY-MM-DD`, UTC); '' = open. */
@@ -41,7 +38,6 @@ export const NO_FILTERS: ReplayFilters = {
   winners: [],
   memory: 'any',
   table: 'any',
-  ended: 'any',
   model: null,
   from: '',
   to: '',
@@ -68,7 +64,6 @@ export function matchesReplay(
   if (f.memory === 'off' && r.memory) return false;
   if (f.table === 'people' && r.n_humans === 0) return false;
   if (f.table === 'agents' && r.n_humans > 0) return false;
-  if (f.ended !== 'any' && r.ended_phase !== f.ended) return false;
   if (f.model !== null && (r.model ?? '') !== f.model) return false;
   if (f.from || f.to) {
     const day = r.finished_at?.slice(0, 10);
@@ -136,12 +131,6 @@ export const WINNER_NAME: Record<WonBy, string> = {
   draw: 'no one',
 };
 
-const ENDED_NAME: Record<EndedPhase, string> = {
-  day: 'in the day',
-  voting: 'at the vote',
-  night: 'at night',
-};
-
 export interface ActiveFilter {
   key: string;
   label: string;
@@ -164,13 +153,6 @@ export function activeFilters(
       key: `win:${w}`,
       label: `Won by ${WINNER_NAME[w]}`,
       without: { ...f, winners: f.winners.filter((x) => x !== w) },
-    });
-  }
-  if (f.ended !== 'any') {
-    out.push({
-      key: 'ended',
-      label: `Ended ${ENDED_NAME[f.ended]}`,
-      without: { ...f, ended: 'any' },
     });
   }
   if (f.memory !== 'any') {
