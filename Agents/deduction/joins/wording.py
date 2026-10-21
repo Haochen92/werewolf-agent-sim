@@ -49,8 +49,10 @@ def _role(role: str) -> str:
 def you_did_as_reported(claimant: str, sighting: str, target: str, night: int, action: str, role: str) -> str:
     """The seat's own action, seen by the claimant's watch on the target or follow of the seat."""
     said = "came to" if sighting == "watch" else "went to"
+    # A Sentinel reads its own "no one visited" as "I went nowhere" (2b29bfe8): say the watch was the visit.
+    also = ", and a watch is itself a visit" if action == "watch" else ""
     return (f"{claimant} says you {said} {target} on night {night}. You did: you {DEED[action]} {target} that "
-            f"night. This confirms that part of {claimant}'s report, not that {claimant} is {_role(role)}.")
+            f"night{also}. This confirms that part of {claimant}'s report, not that {claimant} is {_role(role)}.")
 
 
 def holder_did_as_reported(holder: str, target: str, night: int, action: str, claimant: str, sighting: str,

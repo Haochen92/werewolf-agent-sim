@@ -247,13 +247,15 @@ def test_a_watchs_visitors_are_not_the_roles_that_never_visit_under_their_own_na
                NightChoice(player_of["sentinel"], "sentinel", "watch", sigilist)]
     records, lines, _ = _after_night(choices, roles, 1, player_of["sentinel"])
     # The morning's attack and save on the watched player add A28 and A29 (slice 5).
-    assert _the_one_line(lines).row == "A26+A28+A29"
+    assert _the_one_line(lines).row == "A26+A28+A29+A56"
     assert format_night_actions(records, implications=lines) == (
         f"Night 1: you watched {sigilist}. Tonight {sigilist} was visited by {healer} and {killer}. A visit "
         f"does not show which action was taken. Neither {healer} nor {killer} is the Fortune Teller: the "
         f"Fortune Teller never visits. Everyone who attacked {sigilist} and the Healer who saved them came "
         f"to {sigilist}, and your watch saw every visitor but you. {healer} and {killer} are the Serial "
-        "Killer and the Healer, one each; your watch does not show which is which."
+        f"Killer and the Healer, one each; your watch does not show which is which. Your watch was itself your "
+        f"visit to {sigilist}; your own result never lists you. So a follow on you that night shows you going to "
+        f"{sigilist}."
     )
 
 
@@ -265,7 +267,9 @@ def test_in_a_necromancer_cast_a_visitor_is_not_the_necromancer_either():
     _, lines, _ = _after_night(choices, roles, 2, player_of["sentinel"])
     assert _the_one_line(lines).text == (
         f"A visit does not show which action was taken. {healer} is not the Necromancer or the "
-        "Speculator: the Necromancer visits only under a dead player's name, and the Speculator never visits.")
+        "Speculator: the Necromancer visits only under a dead player's name, and the Speculator never visits. "
+        f"Your watch was itself your visit to {sigilist}; your own result never lists you. So a follow on you that "
+        f"night shows you going to {sigilist}.")
 
 
 def test_a_visitor_already_dead_is_the_necromancer_using_its_body():
@@ -276,8 +280,9 @@ def test_a_visitor_already_dead_is_the_necromancer_using_its_body():
     _, lines, _ = _after_night(choices, roles, 2, player_of["sentinel"],
                                earlier_deaths=[_lynched(healer, "healer", 2)])
     line = _the_one_line(lines)
-    assert line.row == "A27"
-    assert line.text == f"{healer} was already dead, so the Necromancer used {healer}'s body to protect {sigilist}."
+    assert line.row == "A27+A56"
+    assert line.text.startswith(f"{healer} was already dead, so the Necromancer used {healer}'s body to protect "
+                                f"{sigilist}. Your watch was itself your visit to {sigilist}")
 
 
 def test_a_visitor_who_died_that_same_night_made_its_own_visit():
@@ -290,7 +295,7 @@ def test_a_visitor_who_died_that_same_night_made_its_own_visit():
     _, lines, outcome = _after_night(choices, roles, 3, player_of["sentinel"])
     assert healer in outcome.deaths
     line = _the_one_line(lines)
-    assert line.row == "A26"
+    assert line.row == "A26+A56"
     assert "already dead" not in line.text
 
 
@@ -303,9 +308,11 @@ def test_an_empty_watch_on_a_survivor_means_no_one_else_acted_on_them():
     assert format_night_actions(records, implications=lines) == (
         f"Night 1: you watched {trailseer}. No one visited {trailseer} tonight. {trailseer} survived, so no "
         f"visit to {trailseer} was hidden: no one attacked, protected, checked, blocked, followed or set a "
-        f"sigil on {trailseer} that night. This says nothing about what {trailseer} did."
+        f"sigil on {trailseer} that night. This says nothing about what {trailseer} did. Your watch was itself "
+        f"your visit to {trailseer}; your own result never lists you. So a follow on you that night shows you "
+        f"going to {trailseer}."
     )
-    assert _the_one_line(lines).row == "A32"
+    assert _the_one_line(lines).row == "A32+A56"
 
 
 def test_an_empty_watch_on_a_victim_the_living_illusionist_hid_never_says_no_one_attacked():
@@ -320,8 +327,46 @@ def test_an_empty_watch_on_a_victim_the_living_illusionist_hid_never_says_no_one
     assert trailseer in outcome.concealed
     assert records[0].outcome == f"No one visited {trailseer} tonight."
     line = _the_one_line(lines)
-    assert line.row == "A30"
+    assert line.row == "A30+A56"
     assert "no one attacked" not in line.text
+
+
+# --- A56: the seat's own watch was a visit ----------------------------------------------------------
+
+def test_the_sentinels_own_watch_was_a_visit_a_follow_on_it_shows():
+    """2b29bfe8: the Sentinel watched the Trailseer, who followed it. Both results are true; the
+    Sentinel read its own "No one visited" as "I went nowhere" and denied the follow."""
+    roles, player_of = _game("serial_killer", "speculator")
+    sentinel, trailseer = player_of["sentinel"], player_of["trailseer"]
+    choices = [NightChoice(sentinel, "sentinel", "watch", trailseer),
+               NightChoice(trailseer, "trailseer", "follow", sentinel)]
+    records, lines, _ = _after_night(choices, roles, 1, sentinel)
+    assert format_night_actions(records, implications=lines) == (
+        f"Night 1: you watched {trailseer}. No one visited {trailseer} tonight. {trailseer} survived, so no "
+        f"visit to {trailseer} was hidden: no one attacked, protected, checked, blocked, followed or set a "
+        f"sigil on {trailseer} that night. This says nothing about what {trailseer} did. Your watch was itself "
+        f"your visit to {trailseer}; your own result never lists you. So a follow on you that night shows you "
+        f"going to {trailseer}."
+    )
+    assert _the_one_line(lines).row == "A32+A56"
+    follow_records, _, _ = _after_night(choices, roles, 1, trailseer)
+    assert follow_records[0].outcome == f"Tonight {sentinel} visited {trailseer}."
+
+
+def test_no_own_visit_sentence_on_a_roleblocked_watch_or_one_through_the_sentinels_body():
+    roles, player_of = _game("necromancer", "speculator")
+    sentinel, healer = player_of["sentinel"], player_of["healer"]
+    choices = [NightChoice(player_of["chanteuse"], "chanteuse", "block", sentinel),
+               NightChoice(player_of["chanteuse"], "chanteuse", "kill", player_of["vigilante"]),
+               NightChoice(sentinel, "sentinel", "watch", healer)]
+    _, lines, _ = _after_night(choices, roles, 2, sentinel)
+    assert "A56" not in _the_one_line(lines).row
+    # The Necromancer's watch through the dead Sentinel's body shows the body's name, not its own.
+    choices = [NightChoice(player_of["necromancer"], "necromancer", "watch", healer, via=sentinel)]
+    _, lines, _ = _after_night(choices, roles, 2, player_of["necromancer"],
+                               earlier_deaths=[_lynched(sentinel, "sentinel", 2)])
+    assert _the_one_line(lines).row == "A32"
+    assert "your visit" not in _the_one_line(lines).text
 
 
 # --- A33, A34, A35: the follow --------------------------------------------------------------------

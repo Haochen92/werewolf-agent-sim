@@ -184,6 +184,12 @@ def agree(first: str, second: str, visitor: str, bare: bool) -> str:
     return f"{first}, and {second}. These agree; {hedge}."
 
 
+def watch_and_follow_fit(follow: str, watch: str) -> str:
+    """E19 (2b29bfe8): seats read a follow onto the watched player and the watcher's "no one came" as a conflict."""
+    return (f"{follow}, and {watch}. These fit together: a watch is itself a visit, and a watcher is never "
+            f"listed in its own result.")
+
+
 def directions(outgoing: str, player: str, incoming_source: str) -> str:
     """E17 (AC3, line 3): where a player went and who came to it are different questions."""
     return (f"{outgoing}. That is about where {player} went. {incoming_source} is about who came to {player}. "

@@ -25,6 +25,12 @@ from tests.engine.deduction.test_own_results import _after_night, _game, _seat_v
 from tests.factories.random_nights import resolve_through_the_node
 
 
+def _own_visit(target: str) -> str:
+    """A56, last on every line of the living Sentinel's own watch."""
+    return (f" Your watch was itself your visit to {target}; your own result never lists you. So a follow on you "
+            f"that night shows you going to {target}.")
+
+
 def _lynched(player: str, role: str, day: int) -> DeathRecord:
     return DeathRecord(player=player, role=role, day=day, phase="day")
 
@@ -134,9 +140,9 @@ def test_the_only_visitor_who_can_be_the_serial_killer_is_named():
         f"Night 1: you watched {trailseer}. Tonight {trailseer} was visited by {killer}. A visit does not show "
         f"which action was taken. {killer} is not the Speculator: the Speculator never visits. Everyone who "
         f"attacked {trailseer} came to {trailseer}, and your watch saw every visitor but you. Of the players you "
-        f"saw, only {killer} can be the Serial Killer, so {killer} is the Serial Killer.")
+        f"saw, only {killer} can be the Serial Killer, so {killer} is the Serial Killer.{_own_visit(trailseer)}")
     line = _the_one_line(lines)
-    assert (line.row, line.grade) == ("A26+A28", "certain")
+    assert (line.row, line.grade) == ("A26+A28+A56", "certain")
 
 
 def test_two_visitors_who_could_each_be_the_wolf_are_both_named():
@@ -147,7 +153,8 @@ def test_two_visitors_who_could_each_be_the_wolf_are_both_named():
                NightChoice(player_of["sentinel"], "sentinel", "watch", trailseer)]
     _, lines, _ = _after_night(choices, roles, 1, player_of["sentinel"])
     assert _the_one_line(lines).text.endswith(
-        f"The wolf who attacked {trailseer} is {player_of['investigator']} or {player_of['chanteuse']}.")
+        f"The wolf who attacked {trailseer} is {player_of['investigator']} or {player_of['chanteuse']}."
+        f"{_own_visit(trailseer)}")
 
 
 def test_a_visitor_revealed_this_morning_settles_who_made_the_other_attack():
@@ -163,7 +170,8 @@ def test_a_visitor_revealed_this_morning_settles_who_made_the_other_attack():
     assert vigilante in outcome.deaths
     assert _the_one_line(lines).text.endswith(
         f"Of the players you saw, only {chanteuse} can be the wolf who attacked {trailseer}, so {chanteuse} is a "
-        f"wolf. Of the players you saw, only {vigilante} can be the Vigilante, so {vigilante} is the Vigilante.")
+        f"wolf. Of the players you saw, only {vigilante} can be the Vigilante, so {vigilante} is the Vigilante."
+        f"{_own_visit(trailseer)}")
 
 
 def test_the_necromancer_watching_through_the_sentinels_body_names_the_shooter():
@@ -188,7 +196,7 @@ def test_an_attack_through_a_body_is_explained_by_the_body_alone():
     _, lines, _ = _after_night(choices, roles, 2, player_of["sentinel"],
                                earlier_deaths=[_lynched(vigilante, "vigilante", 2)])
     line = _the_one_line(lines)
-    assert line.row == "A27"
+    assert line.row == "A27+A56"
     assert "Of the players you saw" not in line.text and " is the Vigilante" not in line.text
 
 
@@ -208,11 +216,11 @@ def test_a_wolf_and_the_healer_at_the_door_are_named_together_never_apart():
     healer, chanteuse, trailseer = player_of["healer"], player_of["chanteuse"], player_of["trailseer"]
     records, lines, _ = _wolf_and_healer_at_the_door(roles, chanteuse, healer, trailseer, player_of["sentinel"])
     line = _the_one_line(lines)
-    assert (line.row, line.grade) == ("A26+A28+A29", "certain")
+    assert (line.row, line.grade) == ("A26+A28+A29+A56", "certain")
     assert line.text.endswith(
         f"Everyone who attacked {trailseer} and the Healer who saved them came to {trailseer}, and your watch saw "
         f"every visitor but you. {healer} and {chanteuse} are a wolf and the Healer, one each; your watch does not "
-        "show which is which.")
+        f"show which is which.{_own_visit(trailseer)}")
     for name in (healer, chanteuse):
         assert f"{name} is a wolf" not in line.text and f"{name} is the Healer" not in line.text
 
@@ -233,7 +241,8 @@ def test_when_the_wolf_is_known_the_other_visitor_is_the_healer():
     _, lines, _ = _after_night(choices, roles, 2, player_of["sentinel"])
     assert _the_one_line(lines).text.endswith(
         f"Of the players you saw, only {chanteuse} can be the wolf who attacked {trailseer}, so {chanteuse} is a "
-        f"wolf. Of the players you saw, only {healer} can be the Healer, so {healer} is the Healer.")
+        f"wolf. Of the players you saw, only {healer} can be the Healer, so {healer} is the Healer."
+        f"{_own_visit(trailseer)}")
 
 
 def test_a_reanimated_healers_save_names_no_living_healer():
@@ -244,9 +253,9 @@ def test_a_reanimated_healers_save_names_no_living_healer():
                NightChoice(player_of["sentinel"], "sentinel", "watch", trailseer)]
     _, lines, _ = _after_night(choices, roles, 2, player_of["sentinel"], earlier_deaths=[_lynched(healer, "healer", 2)])
     line = _the_one_line(lines)
-    assert line.row == "A27+A28"
+    assert line.row == "A27+A28+A56"
     assert "the Healer who saved them" not in line.text and "is the Healer" not in line.text
-    assert line.text.endswith(f"so {chanteuse} is a wolf.")
+    assert line.text.endswith(f"so {chanteuse} is a wolf.{_own_visit(trailseer)}")
 
 
 def test_a_self_bet_save_has_no_healer_at_the_door():
@@ -257,9 +266,9 @@ def test_a_self_bet_save_has_no_healer_at_the_door():
                NightChoice(player_of["sentinel"], "sentinel", "watch", fortune_teller)]
     _, lines, _ = _after_night(choices, roles, 2, player_of["sentinel"])
     line = _the_one_line(lines)
-    assert line.row == "A26+A28"
+    assert line.row == "A26+A28+A56"
     assert line.text.endswith(f"Of the players you saw, only {killer} can be the Serial Killer, so {killer} is "
-                              "the Serial Killer.")
+                              f"the Serial Killer.{_own_visit(fortune_teller)}")
 
 
 # --- A30: a victim the living Illusionist hid ----------------------------------------------------
@@ -275,9 +284,9 @@ def test_an_empty_watch_on_a_victim_the_living_illusionist_hid_shows_the_illusio
         f"Night 2: you watched {trailseer}. No one visited {trailseer} tonight. {trailseer}'s role was hidden by "
         "the living Illusionist, whose conceal also hides the visit of the wolf who made the kill: your watch "
         f"could not see that wolf. The Illusionist's conceal is a visit to {trailseer}, and none of the players "
-        "you saw can be the Illusionist, so the Illusionist made the kill itself.")
+        f"you saw can be the Illusionist, so the Illusionist made the kill itself.{_own_visit(trailseer)}")
     line = _the_one_line(lines)
-    assert (line.row, line.grade) == ("A30", "certain")
+    assert (line.row, line.grade) == ("A30+A56", "certain")
 
 
 def test_a_concealing_illusionist_that_did_not_carry_is_among_the_visitors():
@@ -288,9 +297,9 @@ def test_a_concealing_illusionist_that_did_not_carry_is_among_the_visitors():
                NightChoice(player_of["sentinel"], "sentinel", "watch", trailseer)]
     _, lines, _ = _after_night(choices, roles, 1, player_of["sentinel"])
     line = _the_one_line(lines)
-    assert (line.row, line.grade) == ("A26+A30", "possible")
+    assert (line.row, line.grade) == ("A26+A30+A56", "possible")
     assert line.text.endswith(f"The Illusionist's conceal is a visit to {trailseer}, so either the Illusionist "
-                              f"made the kill itself, or it is {illusionist}.")
+                              f"made the kill itself, or it is {illusionist}.{_own_visit(trailseer)}")
     assert "wolf who attacked" not in line.text  # the killer's visit is hidden: no wolf is placed at the door
 
 
@@ -321,9 +330,9 @@ def test_another_attacker_on_a_hidden_victim_is_still_at_the_door():
                NightChoice(player_of["sentinel"], "sentinel", "watch", trailseer)]
     _, lines, _ = _after_night(choices, roles, 1, player_of["sentinel"])
     line = _the_one_line(lines)
-    assert line.row == "A26+A30+A28"
+    assert line.row == "A26+A30+A28+A56"
     assert line.text.endswith(f"Everyone else who attacked {trailseer} came to {trailseer}, and your watch saw "
-                              f"them. The Serial Killer is {player_of['illusionist']} or {killer}.")
+                              f"them. The Serial Killer is {player_of['illusionist']} or {killer}.{_own_visit(trailseer)}")
 
 
 # --- A31: a victim hidden through the Illusionist's body --------------------------------------------
@@ -349,15 +358,16 @@ def test_a_reanimated_illusionists_conceal_hides_no_visit_so_the_carrier_is_seen
         f"{illusionist} was already dead, so the Necromancer used {illusionist}'s body to attack {trailseer}. "
         f"{trailseer}'s role was hidden through the dead Illusionist's body, which hides no visit: everyone who "
         f"attacked {trailseer} came to {trailseer}, and your watch saw every visitor but you. Of the players you "
-        f"saw, only {chanteuse} can be the wolf who attacked {trailseer}, so {chanteuse} is a wolf.")
-    assert _the_one_line(lines).row == "A27+A31+A28"
+        f"saw, only {chanteuse} can be the wolf who attacked {trailseer}, so {chanteuse} is a wolf."
+        f"{_own_visit(trailseer)}")
+    assert _the_one_line(lines).row == "A27+A31+A28+A56"
 
 
 def test_with_no_conceal_left_the_role_is_shown_and_there_is_no_conceal_line():
     player_of, (_, lines, outcome) = _hidden_through_the_body(body_conceals=0)
     assert not outcome.concealed
     line = _the_one_line(lines)
-    assert line.row == "A27+A28"
+    assert line.row == "A27+A28+A56"
     assert "hidden" not in line.text
 
 

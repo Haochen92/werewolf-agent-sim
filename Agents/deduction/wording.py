@@ -223,6 +223,12 @@ def no_one_else_visited(target: str) -> str:
             f"about what {target} did.")
 
 
+def your_watch_was_a_visit(target: str) -> str:
+    """A56: the Sentinel read its own "no one visited" as "I went nowhere" and denied a true follow (2b29bfe8)."""
+    return (f"Your watch was itself your visit to {target}; your own result never lists you. So a follow on you "
+            f"that night shows you going to {target}.")
+
+
 def visited_two_so_chanteuse(target: str, destinations: list[str]) -> str:
     first, second = destinations
     return ("Only a wolf who carries the pack's kill and also blocks someone visits two players, so "

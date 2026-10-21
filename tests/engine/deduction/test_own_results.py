@@ -435,7 +435,7 @@ def test_a_human_seat_gets_no_lines_whatever_the_mode():
 ROWS_BUILT = {"A1", "A2", "A4", "A6", "A7", "A8", "A11", "A12", "A13", "A53", "A54",
               "A21", "A22", "A23", "A24", "A25", "A26", "A27", "A32", "A33", "A34", "A35",
               "A37", "A38", "A39", "A40", "A41", "A42", "A43", "A49", "A50",
-              "A28", "A29", "A30", "A31", "A36", "A45"}
+              "A28", "A29", "A30", "A31", "A36", "A45", "A56"}
 """The rows the random nights must reach. A14's "either … or" line is retired (R10): every cast now
 leaves one silent immune role at most."""
 SENTENCES_REACHED = {

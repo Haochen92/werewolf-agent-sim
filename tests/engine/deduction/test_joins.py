@@ -97,6 +97,17 @@ def test_a_follow_of_the_seat_is_confirmed_and_the_claimants_own_role_claim_is_t
         "that part of player_4's report, not that player_4 is the Trailseer."]
 
 
+def test_a_follow_that_saw_the_seats_watch_reach_the_follower_is_confirmed_as_a_visit():
+    """2b29bfe8: the Trailseer followed the Sentinel to its own door; the Sentinel's own result
+    ("No one visited") never lists the Sentinel, and it denied going anywhere."""
+    table = Table(_sk_sp()).night(1, ("player_7", "kill", "player_4"), ("player_9", "kill", "player_10"),
+                                  ("player_2", "watch", "player_3"), ("player_3", "follow", "player_2"))
+    follow = _said(2, "player_3", (1, "follow", "player_2", "not_said", ["player_3"]))
+    assert _joins(table, "player_2", 2, follow) == [
+        "player_3 says you went to player_3 on night 1. You did: you watched player_3 that night, and a watch is "
+        "itself a visit. This confirms that part of player_3's report, not that player_3 is the Trailseer."]
+
+
 def test_no_confirmation_of_a_visit_the_block_cancelled():
     """The Trailseer was roleblocked: its follow never went ahead, so a sighting of it is not confirmed."""
     lie = _said(2, "player_2", (1, "watch", "player_6", "not_said", ["player_3"]))

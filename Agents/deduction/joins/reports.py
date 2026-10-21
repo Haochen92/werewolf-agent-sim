@@ -38,8 +38,9 @@ def visits_of(claim: ActionClaim) -> list[VisitClaim]:
         visits += [VisitClaim(claim.night, seen, claim.target, claim, sighting=True, went_ahead=True)
                    for seen in claim.seen if seen not in (claim.claimant, claim.target)]
     if claim.action == "follow":
+        # The followed player may have gone to the follower itself ("player_3 visited player_4", said by player_4).
         visits += [VisitClaim(claim.night, claim.target, seen, claim, sighting=True, went_ahead=True)
-                   for seen in claim.seen if seen not in (claim.claimant, claim.target)]
+                   for seen in claim.seen if seen != claim.target]
     if claim.action not in NOT_A_VISIT and claim.target and claim.target != claim.claimant:
         went_ahead = claim.completed or bool(claim.seen)  # a sighting shows the watch or follow went ahead
         visits.append(VisitClaim(claim.night, claim.claimant, claim.target, claim, sighting=False,

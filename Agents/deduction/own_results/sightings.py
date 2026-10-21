@@ -1,4 +1,4 @@
-"""Catalogue rows A26, A27 and A32–A35: what a watch or a follow implies, the seat's own or the
+"""Catalogue rows A26, A27, A32–A35 and A56: what a watch or a follow implies, the seat's own or the
 Necromancer's through the dead Sentinel's or Trailseer's body. Every list here is the normalized
 one (Agents/deduction/records.py, catalogue L14).
 
@@ -12,6 +12,7 @@ one (Agents/deduction/records.py, catalogue L14).
   always visit and can never be hidden (A35).
 - A watch on a player the morning names as attacked or saved also shows who among those seen made
   the attack or the save (A28–A31, at_the_door.py).
+- The seat's own watch was itself a visit to the target, which its own list never shows (A56).
 """
 
 from __future__ import annotations
@@ -61,7 +62,21 @@ def _watch_line(record: ReadRecord, view: SeatView, holder: str | None = None) -
         line = _who_was_seen(record, view)
     else:
         line = _no_one_visited(record, view)
-    return _with_the_morning(line, door_reading(record, view, holder))
+    return _with_own_visit(_with_the_morning(line, door_reading(record, view, holder)), record, view, holder)
+
+
+def _with_own_visit(line: OwnResultLine | None, record: ReadRecord, view: SeatView,
+                    holder: str | None) -> OwnResultLine | None:
+    """A56, last on the line: the seat's own watch, in its own name, was a visit to the target. Not a
+    will's watch, nor the Necromancer's through the Sentinel's body (that visit shows the body's name)."""
+    if holder is not None or record.body is not None:
+        return line
+    sentence = wording.your_watch_was_a_visit(record.target)
+    fact = WentTo(view.player_id, record.target)
+    if line is None:
+        return OwnResultLine(text=sentence, row="A56", facts=(fact,))
+    return OwnResultLine(text=f"{line.text} {sentence}", row=f"{line.row}+A56", grade=line.grade,
+                         facts=(*line.facts, fact))
 
 
 def _with_the_morning(line: OwnResultLine | None, door: DoorReading | None) -> OwnResultLine | None:

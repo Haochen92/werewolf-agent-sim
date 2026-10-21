@@ -278,6 +278,25 @@ def test_e1_a_sighting_and_the_visitors_own_word_agree_and_show_no_action():
     assert _lines(_night_one(), "player_2", 2, protect, rows={"E1"}) == []
 
 
+def _watch_and_follow() -> Table:
+    """2b29bfe8's night 1: the Sentinel watches the Trailseer, who follows the Sentinel."""
+    return Table(_sk_sp()).night(1, ("player_7", "kill", "player_4"), ("player_9", "kill", "player_10"),
+                                 ("player_2", "watch", "player_3"), ("player_3", "follow", "player_2"))
+
+
+def test_e19_a_follow_onto_the_watchers_target_and_the_watch_fit_together():
+    follow = _said(2, "player_3", (1, "follow", "player_2", "not_said", ["player_3"]))
+    watch = _said(2, "player_2", (1, "watch", "player_3", "no_visitors", []))
+    assert _lines(_watch_and_follow(), "player_1", 2, follow, watch, rows={"E19", "E1", "E3a"}) == [
+        "player_3 says player_2 went to player_3 on night 1, and player_2 says it watched player_3 that night. These "
+        "fit together: a watch is itself a visit, and a watcher is never listed in its own result."]
+    # A follow that saw two places is not this fit (E2a says the conflict).
+    two = _said(2, "player_3", (1, "follow", "player_2", "not_said", ["player_3", "player_6"]))
+    assert _lines(_watch_and_follow(), "player_1", 2, two, watch, rows={"E19"}) == []
+    # The watcher's own seat knows it went there: the join says it (F1), not E19.
+    assert _lines(_watch_and_follow(), "player_2", 2, follow, rows={"E19"}) == []
+
+
 # --- claims against the record ------------------------------------------------------------------------------
 
 def test_e4_a_protection_of_a_player_who_died_that_night():
@@ -600,7 +619,7 @@ def _continuing(rng: random.Random, games: int):
                 yield game, snapshot
 
 
-PAIRED = re.compile(r"cannot both be true|cannot all be true|do not conflict|These agree")
+PAIRED = re.compile(r"cannot both be true|cannot all be true|do not conflict|These agree|fit together")
 
 
 def truth_oracle(nights: int, seed: int, seats: int = 3) -> dict[str, int]:
@@ -655,7 +674,7 @@ def truth_oracle(nights: int, seed: int, seats: int = 3) -> dict[str, int]:
 def test_the_truth_oracle_on_random_games_with_claims_of_every_kind():
     counts = truth_oracle(nights=4000, seed=20261031)
     rows = {"E1", "E2a", "E2b", "E2c", "E3a", "E3b", "E4b", "E6", "E6b", "E7", "E8b", "E9", "E11", "E12",
-            "E14", "E17", "E18", "E15+D", "F3+E15", "F7+E15", "F8"}
+            "E14", "E17", "E18", "E19", "E15+D", "F3+E15", "F7+E15", "F8"}
     assert rows <= set(counts), rows - set(counts)
     assert {"E1 both true", "E17 both true", "E2a premise true", "F8 explained", "F8 claim false"} <= set(counts), counts
 

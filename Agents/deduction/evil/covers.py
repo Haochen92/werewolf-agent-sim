@@ -11,7 +11,7 @@ with two shown visits (the Chanteuse carrying the kill) has none for any role.
 
 Generate and test: the story is added to the claims as the seat's role claim and night actions, and
 the comparisons (Table E, the role claims' status) run as a public observer would, with the public's
-candidate roles and no private record. The story fits when every line drawn from it agrees (E1, E17):
+candidate roles and no private record. The story fits when every line drawn from it agrees (E1, E17, E19):
 no line calls it false, sets it against another claim, or leaves it open; and when the morning lets
 the role have made each visit (conditionals/visits.py: a sigil that struck elsewhere, a save elsewhere). The lines stay facts (R11:
 the advice is the cards'): which stories fit, which would be counter-claimed and by whom.
@@ -44,9 +44,9 @@ ACTION_OF = {"investigator": "investigate", "healer": "protect", "sentinel": "wa
 """Each town role's visit, as a claimed action."""
 HOLD_OF = {"investigator": "kept_check", "sentinel": "kept_watch", "vigilante": "held_fire", "sigilist": "kept_sigil"}
 """What a role that may hold says for a night it made no visit."""
-AGREE = frozenset({"E1", "E17"})
-"""The comparison rows that agree with a claim (a sighting and the visitor's own word; the two
-directions of a visit): every other line drawn from a story stops it fitting."""
+AGREE = frozenset({"E1", "E17", "E19"})
+"""The comparison rows that agree with a claim (a sighting and the visitor's own word, E19 for a
+watch; the two directions of a visit): every other line drawn from a story stops it fitting."""
 OBSERVER = "observer"
 OBSERVER_ROLE = "villager"
 """The observer holds a retired role never dealt in a ten-seat cast, so no role check is about it."""

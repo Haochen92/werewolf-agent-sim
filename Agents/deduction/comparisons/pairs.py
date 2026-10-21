@@ -1,5 +1,5 @@
 """Two statements about one player's night that are about different things, or the same thing
-(catalogue E1, E2a, E17).
+(catalogue E1, E2a, E17, E19).
 
 - E2a, two places: a sighting of a player at X (a claim, or an engine watch or follow) and the
   player's own claim of an action on Y the same night. A role that acts once a night (a check, a
@@ -10,6 +10,8 @@
   an engine sighting with the Chanteuse possible is the conditionals' line (F5), not this one.
 - E1, agreement: a claimed sighting of a player at X and the player's own claim of going to X. They
   agree, and neither shows the action. Against an engine source it is F1 (the joins).
+- E19, E1 for a watch: a claimed follow that saw the watcher go only to X and the watcher's own claim
+  of watching X fit together, said with why (the watch is the visit; a watch never lists the watcher).
 - E17, direction, only where a careless reader could see a conflict: a player's own denial of a night
   ("I visited no one", "I did not go to X") and a watch on it that saw someone come never conflict
   (AC3, line 3); a watch on a player that saw no one says nothing about whether that player acted
@@ -139,9 +141,18 @@ def _agree(view: SeatView, n: wording.Names, own: ActionClaim, seen: VisitStatem
     if seen.claim is None:
         return None  # an engine source: the joins' line (F1)
     player = own.claimant
-    text = wording.agree(_sighting_clause(n, seen, True), wording.own_visit(n, player, own.action, own.target, "that night"),
-                         player, bare=own.action == "visit")
+    claim_clause = wording.own_visit(n, player, own.action, own.target, "that night")
+    if own.action == "watch" and seen.claim.action == "follow" and _only_place(seen.claim) == own.target:
+        text = wording.watch_and_follow_fit(_sighting_clause(n, seen, True), claim_clause)
+        return _item(view, "E19", player, own, seen, text, (Compatible(seen.facts, own_facts(own)),))
+    text = wording.agree(_sighting_clause(n, seen, True), claim_clause, player, bare=own.action == "visit")
     return _item(view, "E1", player, own, seen, text, (Compatible(seen.facts, own_facts(own)),))
+
+
+def _only_place(follow: ActionClaim) -> str | None:
+    """The one place a claimed follow saw the followed player go, or None (none, or two)."""
+    places = [seen for seen in follow.seen if seen != follow.target]
+    return places[0] if len(places) == 1 else None
 
 
 def _item(view: SeatView, row: str, subject: str, own: ActionClaim, seen: VisitStatement, text: str,

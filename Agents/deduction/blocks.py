@@ -53,8 +53,8 @@ def deduction_blocks(view: SeatView, own_lines: Sequence[OwnResultLine | None],
 
 
 def _not_joined(comparisons: list[DeductionItem], joins: list[DeductionItem]) -> list[DeductionItem]:
-    """An agreement of two claims (E1) that a join already reads together (F2: "…, and player_7
+    """An agreement of two claims (E1, E19) that a join already reads together (F2: "…, and player_7
     agrees. If that is true, …") is that join's to say."""
     joined = [set(map(id, item.derivation)) for item in joins]
     return [item for item in comparisons
-            if item.row != "E1" or not any(set(map(id, item.derivation)) <= ids for ids in joined)]
+            if item.row not in ("E1", "E19") or not any(set(map(id, item.derivation)) <= ids for ids in joined)]
