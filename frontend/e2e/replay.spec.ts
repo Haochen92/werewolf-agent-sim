@@ -507,15 +507,14 @@ test('replay: the band fits a small phone on its side', async ({ page }) => {
   expect(boxes[1].width).toBeGreaterThan(60);
 });
 
-test('replay: a speech holds while the pointer rests on it', async ({ page }) => {
+test('replay: a pointer resting on the speech does not hold the play (owner, 2026-10-21)', async ({
+  page,
+}) => {
   await page.clock.install();
   await open(page);
   await seek(page, 36); // day 3’s first speech, seat 2: its first page, a 7.3 s hold
   await page.getByRole('button', { name: 'Play', exact: true }).click();
   await page.locator('[data-speech]').hover();
-  for (let t = 0; t < 20; t++) await page.clock.runFor(1000);
-  await expect(theatre(page)).toHaveAttribute('data-beat-index', '36');
-  await page.mouse.move(5, 5);
   for (let t = 0; t < 12; t++) await page.clock.runFor(1000);
   await expect(theatre(page)).toHaveAttribute('data-beat-index', '37');
 });

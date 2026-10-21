@@ -32,7 +32,6 @@ import {
   useReducer,
   useRef,
   useState,
-  type PointerEvent,
   type ReactNode,
 } from 'react';
 import { useReducedMotion } from 'motion/react';
@@ -150,9 +149,6 @@ function useHold(key: string, ms: number | null, running: boolean, done: () => v
     };
   }, [key, ms, running, done]);
 }
-
-const isSpeech = (el: EventTarget | null) =>
-  el instanceof Element && el.closest('[data-speech]') !== null;
 
 const TO_LIST = { href: '/replays', label: 'Replays' };
 
@@ -313,26 +309,14 @@ export function ReplayTheatre({
     [controls, state.xray, state.loop, state.visited, beat, beats],
   );
 
-  // playing: the beat's hold, paused while the speech is held or the page is hidden
-  // the scene host is memoised: a hover (`held`) redraws this page, not the stage under it
+  // playing: the beat's hold, paused only while the page is hidden. A pointer resting on the
+  // line no longer holds it: the hold showed nowhere, and Pause is the way to stop (owner,
+  // 2026-10-21: the play stopped on a page whenever the pointer was left on the board)
   const turnPage = useCallback(() => dispatch({ type: 'step', dir: 1 }), []);
-  const [held, setHeld] = useState(false);
   const visible = usePageVisible();
   const tick = useCallback(() => dispatch({ type: 'tick' }), []);
   const hold = beat ? holdFor(beat, state.speed) : null;
-  useHold(
-    `${state.xray}:${index}:${state.speed}`,
-    hold,
-    state.playing && visible && (controls !== 'stage' || !held),
-    tick,
-  );
-  const onPointerOver = (e: PointerEvent) => setHeld(isSpeech(e.target));
-  const onPointerOut = (e: PointerEvent) => setHeld(isSpeech(e.relatedTarget));
-  // a beat change can take the speech out from under a resting pointer
-  const root = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    setHeld(root.current?.querySelector('[data-speech]:hover') != null);
-  }, [index, state.xray]);
+  useHold(`${state.xray}:${index}:${state.speed}`, hold, state.playing && visible, tick);
 
   // the keys: arrows step, space plays or pauses, the brackets jump chapters (not a preview's,
   // nor a theatre still waiting under the cover, out of sight)
@@ -393,14 +377,11 @@ export function ReplayTheatre({
   const besideDrawer = !!beat && slotOf(state) === 'drawer' && beat.id !== 'over.epilogue';
   return (
     <div
-      ref={root}
       className={styles.theatre}
       data-beat-index={index}
       data-beat={beat?.id}
       data-playing={state.playing}
       data-mini={isMini || undefined}
-      onPointerOver={controls === 'stage' ? onPointerOver : undefined}
-      onPointerOut={controls === 'stage' ? onPointerOut : undefined}
     >
       <Stage fit="contain">
         {beat && view ? <DecodeAhead beats={beats} index={index} cast={cast} /> : null}

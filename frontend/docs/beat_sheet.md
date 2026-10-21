@@ -26,8 +26,8 @@ the deal 8.0 s (was 6.0) · your pack at the deal 6.0 s (was 4.0, ruled 2026-09-
 6.0 s (was 3.2) · the vote's opening move 4.0 s (was 3.2, 2.8) · the morning's roll 6.0 s and
 2.0 s a row read (was 3.5 and 1.5) · a room's last step in the X-ray night (the mark, or the
 hold) 4.0 s (was 2.5, a chip's 2.0) · a plain held beat 2.0 s · a pass 4.0 s · **speech** = words
-÷ 2.4 per second (2026-09-30; was 3, and 4 before 2026-09-28), held while the pointer or a touch
-is on the speech. (2026-09-30 kept the count's chip, lid and verdict; 2026-10-01 raised them
+÷ 2.4 per second (2026-09-30; was 3, and 4 before 2026-09-28); Pause is the way to stop on a
+line (a pointer resting on it held it until 2026-10-21). (2026-09-30 kept the count's chip, lid and verdict; 2026-10-01 raised them
 too.) The scenes' Hold columns below are the values as first drawn; these rule. Fast (the
 replay's) halves every one. **A day speech is told in pages (ruled
 2026-09-29):** the speech box is a fixed three lines, so a line longer than a page
@@ -979,8 +979,9 @@ the cursor leaves that room, or on play, which then goes on linearly) and the ro
 wing's "Seen" and steady marks); "End the
 night" seeks to the first beat after the night whole and plays, "Skip the opening" to the first
 beat after the round; "Back to the night" seeks to the
-hub. A preview's loop has no stops. Nothing is persisted. The hold pauses while a pointer or a touch rests on a
-`[data-speech]` (the speech box, the pack's chat) and resumes with what was left; a new beat or a
+hub. A preview's loop has no stops. Nothing is persisted. The hold pauses only while the page is
+hidden, and resumes with what was left (a pointer resting on the speech box or the pack's chat
+held it too until 2026-10-21: the play stopped on a page with nothing to say so); a new beat or a
 new speed starts a fresh hold. Keys: ← → step, space plays/pauses, [ ] jump chapters (not while
 typing). **The drawer** opens by default, closed when the window is at most 540 px tall (a phone on
 its side). **Orientation:** while the viewport is upright (any device) a card covers the page: a
