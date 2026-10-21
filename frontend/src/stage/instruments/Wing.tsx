@@ -75,8 +75,8 @@ export interface WingTileProps {
   pack?: boolean;
   /**
    * What this seat already knows of that one from its own view (`knownRoles`): the band in
-   * brass, "Your pack" or "Seen · Wolf", with the role's sigil. A dead seat's role, "You" and
-   * the X-ray's truth take the band first.
+   * brass, "Your pack" or "Seen · Wolf", with the role's sigil. A dead seat's role and the
+   * X-ray's truth take the band first ("You" is the corner on the photo).
    */
   known?: KnownRole;
   /** The X-ray night's lamp: this seat acts tonight. */

@@ -288,8 +288,7 @@
   display: block;
 }
 
-/* the band across the card's foot: a death's role on its faction's ink, the X-ray's truth, or
-   "You" in amber */
+/* the band across the card's foot: a death's role on its faction's ink, or the X-ray's truth */
 .band {
   position: absolute;
   left: 0;
@@ -343,14 +342,14 @@
   width: 80%;
   height: 80%;
 }
-/* your own seat: an amber corner folded over the photo's top right, "You" on it where it reads
-   (the footer stays for facts) */
+/* your own seat: an amber corner folded over the photo's top right, "You" on it at every size
+   (owner 2026-10-21; the footer stays for facts) */
 .you {
   position: absolute;
   z-index: 2;
   top: 0;
   right: 0;
-  width: 36cqw;
+  width: 42cqw;
   aspect-ratio: 1;
   border-top-right-radius: 3.2px;
   background: linear-gradient(225deg, var(--amber) 50%, transparent 50%);
@@ -358,17 +357,23 @@
 }
 .you > span {
   position: absolute;
-  top: 20%;
-  right: -4%;
+  left: 63%;
+  top: 37%;
+  translate: -50% -50%;
   rotate: 45deg;
   font-family: var(--font-ui);
-  font-weight: 600;
-  font-size: min(calc(var(--meta) * 0.7), 11cqw);
+  font-weight: 700;
+  /* never under 9 px on the screen: a phone reads the word too */
+  font-size: max(
+    min(calc(var(--meta) * 0.7), 11cqw),
+    calc(9px / max(var(--stage-scale, 1), 0.01))
+  );
   line-height: 1;
   color: var(--ink);
 }
-:global([data-small]) .you > span {
-  display: none;
+/* a phone's card: a deeper fold, so the word fits at its legible size */
+:global([data-small]) .you {
+  width: 54cqw;
 }
 
 /* what this seat knows from its own view (a pack mate, an investigation): the band in brass, the
