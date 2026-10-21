@@ -9,7 +9,9 @@ from __future__ import annotations
 from logging import getLogger
 
 from Agents.prompts.prompt_formatters import format_claims_on_record, format_day_channel
-from Agents.llm_factory import get_llm_summary
+from Agents.llm_factory import get_llm_summary, get_llm_summary_fallback
+from Agents.llm_factory.chat import GAME_LLM
+from Agents.llm_factory.embeddings import is_transient_provider_error
 from Agents.llm_factory.providers.common import enforced_output
 from Agents.prompts import DAY_SUMMARY_PROMPT
 from Agents.prompts.compose import rules_block
@@ -52,10 +54,12 @@ def run_day_summary_agent(
     `structured` is the DaySummaryOutputV4 as a dict (accusations / role_claims). Agents read the
     previous days from it (the claim ledger and the accusations, format_day_summaries); the text is
     what the replay drawer shows, and what agents read for a day stored without it. Retries the
-    structured-output call; on repeated failure falls back to the raw formatted channel (model_used "",
-    structured {}). `day_summaries` (the game so far), `dead_roster` and `cast_role_counts` give the
-    game master's record and the claim ledger the summary is written against; ``earlier_messages``
-    (the spoken entries of the days before) give the ledger its role lines.
+    structured-output call; a stall (timeout, 429, 5xx) is not asked again. Then one try on the
+    game's rescue model, as a turn has (and the rescue first while the primary keeps stalling);
+    after that the raw formatted channel (model_used "", structured {}). `day_summaries` (the game
+    so far), `dead_roster` and `cast_role_counts` give the game master's record and the claim ledger
+    the summary is written against; ``earlier_messages`` (the spoken entries of the days before)
+    give the ledger its role lines.
     """
     public_record, claims_on_record = summary_context(day_summaries or [], dead_roster, cast_role_counts,
                                                       earlier_messages)
@@ -66,24 +70,36 @@ def run_day_summary_agent(
         public_record=public_record,
         claims_on_record=claims_on_record,
     )
-    for attempt in range(max_retries + 1):
+    health = GAME_LLM.get().health
+    try:
+        rescue = get_llm_summary_fallback()
+    except Exception as exc:  # a rescue that cannot be built (no key here) is no rescue
+        logger.warning(f"Day summary rescue model unavailable: {exc}")
+        rescue = None
+    on_rescue = rescue is not None and health.prefer_rescue()
+    for attempt in range(0 if on_rescue else max_retries + 1):
         try:
             llm = get_llm_summary()
             # After a json_mode reply that broke the schema, the retry has it enforced.
             bound = ((enforced_output(llm, _SUMMARY_SCHEMA) if attempt else None)
                      or llm.with_structured_output(_SUMMARY_SCHEMA))
             result = bound.invoke(prompt)
+            health.note_ok()
             return _serialize_day_summary(result), getattr(llm, "model", "") or "", result.model_dump()
         except Exception as exc:
             logger.warning(f"Day discussion summary failed for day {current_day}: {exc}")
-            if attempt < max_retries:
-                continue
-            logger.error(
-                f"Day discussion summary failed all retries for day {current_day}, "
-                "using fallback"
-            )
-            return format_day_channel(current_day_messages), "", {}
-    # Loop always returns inside; this satisfies type-checkers for the no-iteration case.
+            if is_transient_provider_error(exc):
+                # slow or full is not asked again, as on a turn: the rescue takes the summary
+                health.note_stall()
+                break
+    if rescue is not None:
+        try:
+            result = rescue.with_structured_output(_SUMMARY_SCHEMA).invoke(prompt)
+            logger.warning(f"Day discussion summary for day {current_day} written by the rescue model")
+            return _serialize_day_summary(result), getattr(rescue, "model", "") or "", result.model_dump()
+        except Exception as exc:
+            logger.warning(f"Day discussion summary failed on the rescue model for day {current_day}: {exc}")
+    logger.error(f"Day discussion summary failed all retries for day {current_day}, using fallback")
     return format_day_channel(current_day_messages), "", {}
 
 

@@ -115,26 +115,27 @@ def get_llm():
     )
 
 
-def get_llm_game_fallback():
-    """The retry-exhaustion rescue seat model, or None when no rescue applies.
+def _rescue_model() -> str | None:
+    """The game's rescue model id, or None when no rescue applies.
 
     A served game uses its registry-assigned rescue on the same credential path as the
     primary: house-funded stays on the server backend and BYOK stays on the player's key.
-    None = no tested compatible rescue, so the typed technical-pass path absorbs failures.
-    Otherwise the env pair (``GAME_FALLBACK_MODEL``), or None when it would equal the
-    primary — a re-roll on the identical model isn't a rescue."""
+    None = no tested compatible rescue. Otherwise the env pair (``GAME_FALLBACK_MODEL``), or
+    None when it would equal the primary — a re-roll on the identical model isn't a rescue."""
     override = GAME_LLM.get()
     if override.model or override.api_key:
-        if not override.rescue_model:
-            return None
-        return create_chat_model(
-            override.rescue_model,
-            temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
-            thinking_level=game_thinking_level(override.rescue_model),
-            **_request_budget("GAME_LLM_TIMEOUT_S", DEFAULT_GAME_TIMEOUT_S),
-        )
+        return override.rescue_model or None
     model = os.getenv("GAME_FALLBACK_MODEL", DEFAULT_GAME_FALLBACK_MODEL)
     if model == os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL):
+        return None
+    return model
+
+
+def get_llm_game_fallback():
+    """The retry-exhaustion rescue seat model, or None when no rescue applies (``_rescue_model``):
+    then the typed technical-pass path absorbs failures."""
+    model = _rescue_model()
+    if model is None:
         return None
     return create_chat_model(
         model,
@@ -144,16 +145,34 @@ def get_llm_game_fallback():
     )
 
 
+def _summary_thinking_level(model: str) -> str | None:
+    return _thinking_level_from_env(
+        "GOOGLE_GENAI_SUMMARY_THINKING_LEVEL",
+        (row.summary_thinking if (row := catalog.entry(model)) else None)
+        or DEFAULT_SUMMARY_THINKING_LEVEL,
+    )
+
+
 def get_llm_summary():
     model = _game_model()
     return create_chat_model(
         model,
         temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
-        thinking_level=_thinking_level_from_env(
-            "GOOGLE_GENAI_SUMMARY_THINKING_LEVEL",
-            (row.summary_thinking if (row := catalog.entry(model)) else None)
-            or DEFAULT_SUMMARY_THINKING_LEVEL,
-        ),
+        thinking_level=_summary_thinking_level(model),
+        **_request_budget("GAME_SUMMARY_TIMEOUT_S", DEFAULT_SUMMARY_TIMEOUT_S),
+    )
+
+
+def get_llm_summary_fallback():
+    """The day summary's rescue: the game's rescue model at its summary level and wait, or None
+    when no rescue applies (then the summary falls back to the raw transcript)."""
+    model = _rescue_model()
+    if model is None:
+        return None
+    return create_chat_model(
+        model,
+        temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
+        thinking_level=_summary_thinking_level(model),
         **_request_budget("GAME_SUMMARY_TIMEOUT_S", DEFAULT_SUMMARY_TIMEOUT_S),
     )
 

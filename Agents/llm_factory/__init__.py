@@ -55,6 +55,7 @@ from .accessors import (  # noqa: E402
     get_llm_pro,
     get_llm_pro_backup,
     get_llm_summary,
+    get_llm_summary_fallback,
 )
 from .embeddings import (  # noqa: E402
     DEFAULT_EMBEDDING_DIMS,
@@ -90,6 +91,7 @@ __all__ = [
     "get_llm_pro",
     "get_llm_pro_backup",
     "get_llm_summary",
+    "get_llm_summary_fallback",
     # embeddings
     "DEFAULT_EMBEDDING_DIMS",
     "DEFAULT_EMBEDDING_MODEL",

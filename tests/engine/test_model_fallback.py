@@ -319,6 +319,63 @@ def test_the_game_model_carries_the_request_budget(monkeypatch):
     assert (summary.timeout, summary.max_retries) == (90.0, 2)
 
 
+from Agents.nodes.day import summary_agent  # noqa: E402
+
+_SUMMARY = summary_agent._SUMMARY_SCHEMA.model_construct(accusations=[], role_claims=[])
+
+
+def _summarise():
+    return summary_agent.run_day_summary_agent(2, [], lineup=LINEUP)
+
+
+def test_a_stalled_summary_goes_to_the_rescue_model(monkeypatch, caplog, game_health):
+    primary, rescue = _StalledLLM(_bounce_429()), _CountingLLM(_SUMMARY)
+    monkeypatch.setattr(summary_agent, "get_llm_summary", lambda: primary)
+    monkeypatch.setattr(summary_agent, "get_llm_summary_fallback", lambda: rescue)
+    with caplog.at_level("WARNING"):
+        _, _, structured = _summarise()
+    assert structured == {"accusations": [], "role_claims": []}  # not the raw channel's {}
+    assert primary.calls == 1 and rescue.calls == 1  # a stall is not asked again
+    assert game_health.stalls == 1
+    assert any("written by the rescue model" in r.message for r in caplog.records)
+
+
+def test_a_summary_that_keeps_failing_goes_to_the_rescue_after_its_retries(monkeypatch, game_health):
+    primary, rescue = _StalledLLM(ValueError("off-schema output")), _CountingLLM(_SUMMARY)
+    monkeypatch.setattr(summary_agent, "get_llm_summary", lambda: primary)
+    monkeypatch.setattr(summary_agent, "get_llm_summary_fallback", lambda: rescue)
+    _, _, structured = _summarise()
+    assert structured == {"accusations": [], "role_claims": []}
+    assert primary.calls == 2 and rescue.calls == 1
+    assert game_health.stalls == 0  # a wrong answer is not a stall
+
+
+def test_a_summary_starts_on_the_rescue_while_the_primary_keeps_stalling(monkeypatch, game_health):
+    game_health.note_stall(); game_health.note_stall()
+    primary, rescue = _StalledLLM(_bounce_429()), _CountingLLM(_SUMMARY)
+    monkeypatch.setattr(summary_agent, "get_llm_summary", lambda: primary)
+    monkeypatch.setattr(summary_agent, "get_llm_summary_fallback", lambda: rescue)
+    _summarise()
+    assert primary.calls == 0 and rescue.calls == 1
+
+
+@pytest.mark.parametrize("rescue", ["none", "fails", "cannot be built"])
+def test_a_summary_with_no_working_rescue_is_the_raw_channel(monkeypatch, caplog, game_health, rescue):
+    def _unbuildable():
+        raise ValueError("CLAUDE_API_KEY not set")
+
+    monkeypatch.setattr(summary_agent, "get_llm_summary", lambda: _StalledLLM(_bounce_429()))
+    monkeypatch.setattr(summary_agent, "get_llm_summary_fallback", {
+        "none": lambda: None,
+        "fails": lambda: _StalledLLM(_bounce_429()),
+        "cannot be built": _unbuildable,
+    }[rescue])
+    with caplog.at_level("ERROR"):
+        _, model, structured = _summarise()
+    assert (model, structured) == ("", {})
+    assert any("using fallback" in r.message for r in caplog.records)
+
+
 def test_openai_and_xai_prefixes_build_openai_protocol_clients(monkeypatch):
     """The bench's non-Gemini arms: openai/<model> and xai/<model> need their own key, and build a
     tool-calling ChatOpenAI pointed at the provider (no network at construction)."""
