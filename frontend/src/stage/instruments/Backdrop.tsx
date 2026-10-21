@@ -104,6 +104,7 @@ export function Backdrop({
   side = false,
   from,
   fadeDelay = 1.2,
+  ahead,
 }: {
   phase: Phase;
   hud: Hud;
@@ -112,11 +113,21 @@ export function Backdrop({
   /** Played: the hour the car was at before this beat. */
   from?: Phase | null;
   fadeDelay?: number;
+  /** The hour the next beat turns to, decoded ahead. */
+  ahead?: Phase | null;
 }) {
   const set = useContext(BackdropContext);
   const k = useMotionScale();
   // the description's JSON is its identity: a new-but-equal one changes nothing
-  const key = JSON.stringify({ phase, hud, side, from: from ?? null, fadeDelay, k });
+  const key = JSON.stringify({
+    phase,
+    hud,
+    side,
+    from: from ?? null,
+    fadeDelay,
+    ahead: ahead ?? null,
+    k,
+  });
   useLayoutEffect(() => {
     if (!set) return;
     set(JSON.parse(key) as BackdropSpec);
@@ -147,10 +158,31 @@ export function sheetFor(
 }
 
 /** The sheet itself, drawn by the Stage from the scene's description. */
-export function BackdropSheet({ phase, hud, side, from, fadeDelay, k }: BackdropSpec) {
+export function BackdropSheet({
+  phase,
+  hud,
+  side,
+  from,
+  fadeDelay,
+  ahead,
+  k,
+}: BackdropSpec) {
   const { scale, narrow } = useScreen();
   const cut = useCut(narrow ? from : null, phase, fadeDelay * k);
   const { layout, dx } = sheetFor(hud, side);
+  // The next hour's sheet decoded off the main thread while this one is held: the winners' hour
+  // otherwise decoded at its own cut on a phone, in the frames of the shutter's rise. One held.
+  const next =
+    ahead && ahead !== phase && scale ? SETS.car[ahead][layout][scale].src : null;
+  useEffect(() => {
+    if (!next) return;
+    const img = new window.Image();
+    img.src = next;
+    img.decode().catch(() => {});
+    return () => {
+      img.src = '';
+    };
+  }, [next]);
   if (!scale) return null;
   const at = (p: Phase) => SETS.car[p][layout][scale];
   const sheet = {

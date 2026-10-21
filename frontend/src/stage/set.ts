@@ -56,6 +56,8 @@ export interface BackdropSpec {
   /** Played: the hour the car was at before this beat. */
   from: Phase | null;
   fadeDelay: number;
+  /** The hour the next beat turns to: its sheet is decoded now, so the change finds it ready. */
+  ahead: Phase | null;
   /** The motion speed the scene plays at (the sheet is drawn outside the scene's provider). */
   k: number;
 }

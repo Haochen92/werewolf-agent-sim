@@ -135,7 +135,7 @@
 134  morning.chip-fell        d4 seq401 end401  public →player_9  2500ms
 135  morning.card-down        d4 seq401 end401  public →player_9  4000ms
 136  morning.roll             d4 seq401 end401  public  10000ms
-137  over.where-it-ended      d4 seq406 end406  public  10000ms  [over 0]
+137  over.where-it-ended      d4 seq406 end406  public  2000ms  [over 0]
 138  over.winners-hour        d4 seq406 end406  public  6000ms
 139  over.verdict             d4 seq406 end406  public  6000ms
 140  over.winners-stand       d4 seq406 end406  public  6000ms

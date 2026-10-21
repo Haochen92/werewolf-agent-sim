@@ -164,7 +164,11 @@ function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
     <>
       <CarSetSpec
         phase={phase}
-        backdrop={{ from: animate && step === 1 ? left : null, fadeDelay: 1.2 }}
+        backdrop={{
+          from: animate && step === 1 ? left : null,
+          fadeDelay: 1.2,
+          ahead: step === 0 ? hour : null,
+        }}
         shutter={{
           state: step === 0 ? 'closed' : 'open',
           animate: animate && step === 1,

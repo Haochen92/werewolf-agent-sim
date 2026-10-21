@@ -62,7 +62,7 @@ export interface CarSet {
   /** The car's hour: the backdrop's sheet, the grade and the house light's warmth. */
   phase: Phase;
   /** The hour the car was at before this beat, to fade from (instruments/Backdrop.tsx). */
-  backdrop?: { from?: Phase | null; fadeDelay?: number };
+  backdrop?: { from?: Phase | null; fadeDelay?: number; ahead?: Phase | null };
   shutter: { state: ShutterState; animate?: boolean; delay?: number };
   light: { pool: Pool; specials?: Special[]; quiet?: Special[]; dark: number };
   wing: WingSeatOptions;
@@ -109,6 +109,7 @@ const CarSetSheet = memo(function CarSetSheet({
           phase={spec.phase}
           from={spec.backdrop?.from}
           fadeDelay={spec.backdrop?.fadeDelay}
+          ahead={spec.backdrop?.ahead}
           hud={hud}
           side={side}
         />
