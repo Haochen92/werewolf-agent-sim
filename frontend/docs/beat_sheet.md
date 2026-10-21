@@ -982,7 +982,8 @@ beat after the round; "Back to the night" seeks to the
 hub. A preview's loop has no stops. Nothing is persisted. The hold pauses only while the page is
 hidden, and resumes with what was left (a pointer resting on the speech box or the pack's chat
 held it too until 2026-10-21: the play stopped on a page with nothing to say so); a new beat or a
-new speed starts a fresh hold. Keys: ← → step, space plays/pauses, [ ] jump chapters (not while
+new speed starts a fresh hold. A day turn shows once its speaker's pictures are in, at most 2 s
+after the beat (cast/pictures.ts), so the box and the figure arrive together on a slow line. Keys: ← → step, space plays/pauses, [ ] jump chapters (not while
 typing). **The drawer** opens by default, closed when the window is at most 540 px tall (a phone on
 its side). **Orientation:** while the viewport is upright (any device) a card covers the page: a
 phone outline turning, "Turn your phone", "The stage plays sideways. On a computer, make the window

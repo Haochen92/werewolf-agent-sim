@@ -28,11 +28,12 @@
  * holding a "…"), then talks and the line comes into the box. Arrived at (a seek, a refresh), it is all simply there.
  */
 import { useEffect, useState } from 'react';
-import { type DayState } from '@/assets/manifest';
+import { SPRITES, type DayState } from '@/assets/manifest';
 import type { GameView, PassSlot, SpeechSlot } from '@/game/types';
 import { Layer } from '../Stage';
 import { isNotice, isPassRun } from '../beats/beatsFor';
 import { Puppet } from '../cast/Puppet';
+import { usePicturesIn } from '../cast/pictures';
 import { OPENING_STOP } from '../containers/stops';
 import { openingEntries } from '../film/case-file';
 import { ReadCard } from '../film/ReadCard';
@@ -317,6 +318,20 @@ function DayTurn({
 
   const state: DayState =
     mine || waiting || called || !settled ? 'thinking' : isPass ? 'base' : 'talking';
+  // The turn waits for its speaker's pictures, the pose it arrives in and the one it ends in,
+  // so the box and the figure come up together (at most PICTURE_WAIT_MS). Once up, it stays:
+  // a line after its own thinking is the same turn, and a pose change never takes it down.
+  const ends: DayState =
+    mine || waiting || called ? 'thinking' : isPass ? 'base' : 'talking';
+  const poses = character
+    ? [...new Set([state, ends])].map(
+        (p) => (small ? SPRITES.small.day : SPRITES.day)[character][p].src,
+      )
+    : [];
+  const pictured = usePicturesIn(poses);
+  const [up, setUp] = useState(pictured);
+  if (pictured && !up) setUp(true);
+  const shown = up || pictured;
   // my line, said by my seat's agent: only my screen is told
   const agent = !mine && speaker !== null && speaker === me && !!turn?.agentSpoke;
   const dock = mine && turn?.dock && !turn.dock.closed ? turn.dock : null;
@@ -335,7 +350,7 @@ function DayTurn({
             {noticeLine(view, beat, me)}
           </HeldPlacard>
         ) : null}
-        {character ? (
+        {character && shown ? (
           <Puppet
             g={g}
             shadow
@@ -422,7 +437,7 @@ function DayTurn({
               {moderatorLine(view, beat)}
             </Notice>
           </NoticeZone>
-        ) : character ? (
+        ) : character && shown ? (
           <SpeechBox
             hud={hud}
             seat={n}

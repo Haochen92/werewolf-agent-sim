@@ -11,6 +11,7 @@ import { SPRITES, type Character } from '@/assets/manifest';
 import type { SceneBeat } from '../beats/types';
 import { useSmall } from '../set';
 import { spritesAhead, type Pose } from './ahead';
+import { markArrived } from './pictures';
 
 export function DecodeAhead({
   beats,
@@ -40,7 +41,11 @@ export function DecodeAhead({
       img.decoding = 'async';
       img.src = s;
       map.set(s, img);
-      img.decode().catch(() => {});
+      // arrived: the turn that shows it need not wait for it (pictures.ts)
+      img.decode().then(
+        () => markArrived(s),
+        () => {},
+      );
     }
   }, [srcs]);
   return null;
