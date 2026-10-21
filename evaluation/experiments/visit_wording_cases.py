@@ -13,7 +13,7 @@ read read-only from the game's LangGraph checkpoint (``haiku_game_turn_cases.day
 below are the events table's ``seq``; the day and channel seq come from that event.
 
   poetry run python evaluation/experiments/visit_wording_cases.py           # cases
-  poetry run python evaluation/experiments/visit_wording_cases.py blind     # samples -> blind file
+  poetry run python evaluation/experiments/visit_wording_cases.py blind [A C dir]  # samples -> blind file
   poetry run python evaluation/experiments/visit_wording_cases.py score [dir]  # judged -> rates
 
 Record and result: evidence/game_play_enhancement/data/visit_wording_ab/README.md.
@@ -132,12 +132,13 @@ def main() -> None:
     print({k: sum(c["slice"] == k for c in cases) for k in TURNS}, f"-> {OUT / 'cases.jsonl'}")
 
 
-def blind(seed: int = 20261021) -> None:
-    """samples_A/B.jsonl → blind.jsonl (public lines, arm hidden, shuffled) + key.jsonl."""
+def blind(seed: int = 20261021, arms: tuple[str, ...] = ("A", "B"), folder: Path = OUT) -> None:
+    """samples_<arm>.jsonl of ``arms`` → blind.jsonl (public lines, arm hidden, shuffled) + key.jsonl,
+    written to ``folder``."""
     cases = {json.loads(line)["case_id"]: json.loads(line)
              for line in (OUT / "cases.jsonl").read_text().splitlines() if line.strip()}
     rows = []
-    for arm in ("A", "B"):
+    for arm in arms:
         for line in (OUT / f"samples_{arm}.jsonl").read_text().splitlines():
             s = json.loads(line)
             if not s.get("valid"):
@@ -147,13 +148,14 @@ def blind(seed: int = 20261021) -> None:
             rows.append({"arm": arm, "case_id": s["case_id"], "slice": c["slice"], "seat": c["speaker"],
                          "sample": s["sample"], "message": text if text is not None else "(passed)"})
     random.Random(seed).shuffle(rows)
-    with open(OUT / "blind.jsonl", "w") as b, open(OUT / "key.jsonl", "w") as k:
+    folder.mkdir(exist_ok=True)
+    with open(folder / "blind.jsonl", "w") as b, open(folder / "key.jsonl", "w") as k:
         for i, r in enumerate(rows):
             oid = f"v{i:03d}"
             b.write(json.dumps({"id": oid, "case_id": r["case_id"], "slice": r["slice"], "seat": r["seat"],
                                 "message": r["message"]}) + "\n")
             k.write(json.dumps({"id": oid, "arm": r["arm"], "case_id": r["case_id"], "sample": r["sample"]}) + "\n")
-    print(f"{len(rows)} lines -> {OUT / 'blind.jsonl'}")
+    print(f"{len(rows)} lines -> {folder / 'blind.jsonl'}")
 
 
 def score(folder: Path = OUT) -> None:
@@ -165,33 +167,34 @@ def score(folder: Path = OUT) -> None:
                 for v in map(json.loads, filter(str.strip, p.read_text().splitlines()))}
     print(f"{len(verdicts)} verdicts, {len(set(blind_rows) - set(verdicts))} missing")
     rows = [{**verdicts[i], **key[i], "slice": blind_rows[i]["slice"]} for i in verdicts]
+    first, second = sorted({r["arm"] for r in rows})  # the baseline arm sorts first (A before B, C)
 
     def rate(sub: list[dict], label: str) -> str:
         vals = [r[label] for r in sub if r.get(label) is not None]
         return f"{sum(vals)}/{len(vals)} ({100 * sum(vals) / len(vals):.0f}%)" if vals else "-"
 
     for sl in ("all", "report", "react"):
-        for arm in "AB":
+        for arm in (first, second):
             sub = [r for r in rows if r["arm"] == arm and sl in ("all", r["slice"])]
             print(f"{sl:7} {arm}: n={len(sub):3}  mech {rate(sub, 'mech'):14} chew {rate(sub, 'chew'):14} "
                   f"clear {rate(sub, 'clear')}")
     for label in ("mech", "chew", "clear"):
-        by: dict[str, dict[str, list[int]]] = defaultdict(lambda: {"A": [], "B": []})
+        by: dict[str, dict[str, list[int]]] = defaultdict(lambda: {first: [], second: []})
         for r in rows:
             if r.get(label) is not None:
                 by[r["case_id"]][r["arm"]].append(r[label])
         sign = -1 if label == "clear" else 1  # a higher clear rate is the better one
-        diffs = [sign * (sum(c["B"]) / len(c["B"]) - sum(c["A"]) / len(c["A"]))
-                 for c in by.values() if c["A"] and c["B"]]
+        diffs = [sign * (sum(c[second]) / len(c[second]) - sum(c[first]) / len(c[first]))
+                 for c in by.values() if c[first] and c[second]]
         better, worse = sum(d < 0 for d in diffs), sum(d > 0 for d in diffs)
         n = better + worse
         p = min(1.0, 2 * sum(comb(n, k) for k in range(min(better, worse) + 1)) / 2 ** n) if n else 1.0
-        print(f"sign test {label}: B better on {better} cases, worse on {worse}, p={p:.3f}")
+        print(f"sign test {label}: {second} better on {better} cases, worse on {worse}, p={p:.3f}")
 
 
 if __name__ == "__main__":
-    if sys.argv[1:2] == ["blind"]:
-        blind()
+    if sys.argv[1:2] == ["blind"]:  # blind [arm arm folder]: e.g. blind A C <dir>
+        blind(arms=tuple(sys.argv[2:4]) or ("A", "B"), folder=Path(sys.argv[4]) if len(sys.argv) > 4 else OUT)
     elif sys.argv[1:2] == ["score"]:
         score(Path(sys.argv[2]) if len(sys.argv) > 2 else OUT)
     else:

@@ -86,3 +86,26 @@ the watch on player_4 listed no one. Players (the Sentinel itself included) read
 contradictory, or the Sentinel denied visiting at all, because watching is a visit and the watcher is
 never listed in its own result. Cases b77857, cb1f34, 5b2f63, 83e5f3, 9c6a0a and 4e5ab6 hold most of
 the `mech` lines. A smaller second group asks players who visited them, as if a visited player is told.
+
+## Arm C: the fix in the deduction engine (2026-10-21)
+
+Owner picked the cheap fix: keep the word, inject what a seat should conclude. Rows A56 (the Sentinel's own
+record: "Your watch was itself your visit to X; your own result never lists you. So a follow on you that
+night shows you going to X.") and E19 (two claims, a watch on X and a follow on the watcher that saw it go
+to X, "fit together"), plus a fix in `joins/reports.py` (`visits_of` dropped a follow sighting that named
+the follower itself, so player_4's follow never reached any deduction). Catalogue:
+evidence/reasoning_failures/deduction_catalogue.md. Arm C = the working tree with those rows, Haiku 5.5 n=5
+($0.11), judged blind together with arm A by four fresh judges (`deduction_ac/`; arm A re-judged, so the two
+share judges).
+
+| arm | mech all | mech report | mech react | chew | clear |
+|---|---|---|---|---|---|
+| A (visit, no rows) | 23/95 (24%) | 6/40 (15%) | 17/55 (31%) | 1/95 | 22/40 (55%) |
+| C (visit + A56/E19) | 19/95 (20%) | 2/40 (5%) | 17/55 (31%) | 4/95 | 20/40 (50%) |
+
+Sign test on `mech`: C better on 6 cases, worse on 2 (p=0.29). Where it helps: the Sentinel's own turns
+(b77857 4→2, cb1f34 2→0 errors), the seat whose denial started the dispute. Where it does not: other seats
+replying inside the original transcript (5b2f63 4→4, 83e5f3 3→3, 9c6a0a 2→5), which already holds the
+Sentinel's denial and a dozen "they can't both be right" lines; the E19 line loses to that. A replay of
+those turns cannot show the downstream effect of the Sentinel no longer denying, so the react slice
+understates the fix; a live game is the real test.
