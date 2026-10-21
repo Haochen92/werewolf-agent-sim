@@ -179,7 +179,8 @@ def get_llm_summary_fallback():
 
 def get_llm_judge(default_thinking_level: str = "minimal"):
     """Cheap model for binary judgments (e.g. the proactive novelty gate) — minimal thinking unless
-    the caller needs more (the echo gate runs at low) or the env sets it for every judge."""
+    the caller needs more (the echo gate runs at low) or the env sets it for every judge. On the
+    turn's request budget: every caller keeps the line when the judge fails."""
     return create_chat_model(
         _game_model(),
         temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
@@ -187,13 +188,15 @@ def get_llm_judge(default_thinking_level: str = "minimal"):
             "GOOGLE_GENAI_JUDGE_THINKING_LEVEL",
             default_thinking_level,
         ),
+        **_request_budget("GAME_LLM_TIMEOUT_S", DEFAULT_GAME_TIMEOUT_S),
     )
 
 
 def get_llm_extractor():
     """Cheap, deterministic flash-lite for post-hoc tagging (e.g. addressed-target extraction on a
     human turn). Classification, not generation — temp 0 so the same message tags identically every
-    run; a non-deterministic tag would make the reactive scheduler non-reproducible."""
+    run; a non-deterministic tag would make the reactive scheduler non-reproducible. On the turn's
+    request budget: a failed tag is no addressees."""
     return create_chat_model(
         _game_model(),
         temperature=0.0,
@@ -201,6 +204,7 @@ def get_llm_extractor():
             "GOOGLE_GENAI_EXTRACTOR_THINKING_LEVEL",
             "minimal",
         ),
+        **_request_budget("GAME_LLM_TIMEOUT_S", DEFAULT_GAME_TIMEOUT_S),
     )
 
 

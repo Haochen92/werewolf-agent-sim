@@ -136,11 +136,11 @@ _CLAUDE_THINKING_OFF: dict[str, dict[str, Any]] = {
 
 
 def build_chat_model(model: str, *, temperature: float, thinking_level: str | None, mode: str,
-                     game_key: str) -> ClaudeChat:
+                     game_key: str, **limits: Any) -> ClaudeChat:
     """A Claude seat. Thinking is adaptive, steered by the effort level; "minimal" or none turns it
     off. A forced tool call cannot be combined with thinking, so in forced_tool mode thinking stays
     off, as on DeepSeek. Claude takes no temperature while thinking. ``game_key`` is the game's own
-    key, or empty."""
+    key, or empty; ``limits`` is the client's ``timeout`` and ``max_retries``."""
     api_key = game_key or os.getenv("CLAUDE_API_KEY")
     if not api_key:
         raise ValueError("CLAUDE_API_KEY not set")
@@ -151,7 +151,8 @@ def build_chat_model(model: str, *, temperature: float, thinking_level: str | No
     extra: dict[str, Any] = (
         {"thinking": {"type": "adaptive"}, "effort": thinking_level} if thinking
         else _CLAUDE_THINKING_OFF.get(model) or {"thinking": {"type": "disabled"}, "temperature": temperature})
-    return ClaudeChat(model=model, api_key=api_key, max_tokens=16_000, structured_mode=mode, **extra)
+    return ClaudeChat(model=model, api_key=api_key, max_tokens=16_000, structured_mode=mode, **limits,
+                      **extra)
 
 
 # --- Direct calls (the Anthropic SDK) ----------------------------------------------------------

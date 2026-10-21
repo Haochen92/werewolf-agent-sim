@@ -114,9 +114,10 @@ def create_chat_model(
         Explicit thinking token budget.  Takes precedence over
         ``thinking_level`` when both are provided.  Ignored for NIM/DeepSeek models.
     **kwargs:
-        Forwarded to ``ChatGoogleGenerativeAI`` (ignored for NIM/DeepSeek), except
-        ``structured_mode``: one of ``STRUCTURED_MODES``, overriding
-        the catalogue row's mode for an OpenAI-protocol or Claude model.
+        Forwarded to ``ChatGoogleGenerativeAI``, except ``structured_mode``: one of
+        ``STRUCTURED_MODES``, overriding the catalogue row's mode for an OpenAI-protocol or
+        Claude model. An OpenAI-protocol or Claude model takes only the request budget
+        (``timeout``, ``max_retries``) from them.
     """
     # A client on a player's key is cached with that game (GameLLM.clients), never here: a
     # game must not be handed another game's client, and the key must not outlive its game.
@@ -141,6 +142,19 @@ def create_chat_model(
         return cache.setdefault(cache_key, instance)
 
 
+def _request_limits(kwargs: dict[str, Any]) -> dict[str, Any]:
+    """The accessors' request budget for an OpenAI or Anthropic client. Their SDKs count
+    ``max_retries`` as the tries after the first, where the budget counts every attempt (as
+    Gemini's SDK does). Without it they waited 600 s a try, three tries: a stalled DeepSeek seat
+    held its game for up to half an hour before the rescue was asked (2026-10-21)."""
+    limits: dict[str, Any] = {}
+    if "timeout" in kwargs:
+        limits["timeout"] = kwargs["timeout"]
+    if "max_retries" in kwargs:
+        limits["max_retries"] = max(0, kwargs["max_retries"] - 1)
+    return limits
+
+
 def _build_chat_model(
     model: str,
     *,
@@ -163,12 +177,13 @@ def _build_chat_model(
 
     if model.startswith(openai_compat.PREFIXES):
         return openai_compat.build_chat_model(model, temperature=temperature, thinking_level=thinking_level,
-                                              mode=mode, game_key=_game_key_for(_provider_family(model)))
+                                              mode=mode, game_key=_game_key_for(_provider_family(model)),
+                                              **_request_limits(kwargs))
     if model.startswith("mistral/"):
         return MistralChatModel(model.removeprefix("mistral/"), temperature=temperature)
     if model.startswith("anthropic/"):
         return anthropic.build_chat_model(model.removeprefix("anthropic/"), temperature=temperature,
                                           thinking_level=thinking_level, mode=mode,
-                                          game_key=_game_key_for("anthropic"))
+                                          game_key=_game_key_for("anthropic"), **_request_limits(kwargs))
     return google.build_chat_model(model, temperature=temperature, thinking_level=thinking_level,
                                    thinking_budget=thinking_budget, game_key=_game_key_for("google"), **kwargs)

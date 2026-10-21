@@ -319,6 +319,39 @@ def test_the_game_model_carries_the_request_budget(monkeypatch):
     assert (summary.timeout, summary.max_retries) == (90.0, 2)
 
 
+def _built(selection: GameLLM) -> dict:
+    """Every in-game model the factory builds for ``selection``, by its accessor."""
+    token = GAME_LLM.set(selection)
+    try:
+        return {"turn": accessors.get_llm(), "rescue": accessors.get_llm_game_fallback(),
+                "summary": accessors.get_llm_summary(),
+                "summary rescue": accessors.get_llm_summary_fallback(),
+                "judge": accessors.get_llm_judge(), "extractor": accessors.get_llm_extractor()}
+    finally:
+        GAME_LLM.reset(token)
+
+
+@pytest.mark.parametrize("selection", [
+    GameLLM(model="gemini-3.6-flash", rescue_model="gemini-3.5-flash"),
+    GameLLM(model="deepseek/deepseek-flash", api_key="sk-test", rescue_model="deepseek/deepseek-v4-flash"),
+    GameLLM(model="anthropic/claude-haiku-5-5", api_key="sk-ant-test",
+            rescue_model="anthropic/claude-sonnet-5-5"),
+], ids=["gemini", "deepseek", "claude"])
+def test_every_in_game_model_carries_the_request_budget(monkeypatch, selection):
+    """2026-10-21: only Gemini got the budget; a DeepSeek client waited the SDK's 600 s a try, three
+    tries, before the rescue was asked. Every provider waits 30 s (90 s for the summary) and sends
+    two attempts in all; the OpenAI and Anthropic SDKs count the second as their one retry."""
+    monkeypatch.setenv("GOOGLE_API_KEY", "test-key")
+    for name in ("GAME_LLM_TIMEOUT_S", "GAME_SUMMARY_TIMEOUT_S", "GAME_LLM_ATTEMPTS"):
+        monkeypatch.delenv(name, raising=False)
+    gemini = "/" not in selection.model
+    for name, llm in _built(selection).items():
+        timeout = llm.timeout if gemini else (getattr(llm, "request_timeout", None)
+                                              or getattr(llm, "default_request_timeout", None))
+        assert timeout == (90.0 if name.startswith("summary") else 30.0), name
+        assert llm.max_retries == (2 if gemini else 1), name
+
+
 from Agents.nodes.day import summary_agent  # noqa: E402
 
 _SUMMARY = summary_agent._SUMMARY_SCHEMA.model_construct(accusations=[], role_claims=[])
