@@ -36,6 +36,34 @@ def game_model(model: str) -> CatalogModel | None:
     return row if row is not None and row.listed else None
 
 
+# The model a player's backup key runs as the game's rescue, by the key's company: that company's
+# steadiest listed row for a turn (owner, 2026-10-21). A backup lets a game whose own company stalls
+# or goes down go on through another company, on the player's own key for it.
+BACKUP_MODELS = {
+    "anthropic": "anthropic/claude-haiku-5-5",
+    "openai": "openai/gpt-6-luna",
+    "google": "gemini-3.6-flash",
+    "deepseek": "deepseek/deepseek-v4-flash",
+}
+
+
+def backup_models() -> dict[str, str]:
+    """The backup model of each company whose backup is on the menu right now."""
+    return {company: model for company, model in BACKUP_MODELS.items() if game_model(model)}
+
+
+def backup_model(company: str, model: str) -> str:
+    """The rescue model a backup key of ``company`` runs in a game on ``model``. ValueError when
+    it is the game model's own company (its key is the game's key already) or has no backup."""
+    family = model.split("/", 1)[0] if "/" in model else "google"
+    if company == family:
+        raise ValueError(f"the backup key must be another company's than the game model's ({company})")
+    backup = backup_models().get(company)
+    if backup is None:
+        raise ValueError(f"no backup model for a {company} key")
+    return backup
+
+
 def house_models() -> list[str]:
     """The house-funded rows of the menu, in its order."""
     return [row.model for row in menu_models() if row.house_funded]

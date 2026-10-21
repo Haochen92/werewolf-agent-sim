@@ -691,6 +691,76 @@ def test_lobby_carries_byok_to_the_session(api_client, monkeypatch):
     assert seen == {"api_key": "sk-room", "model": GEMINI}
 
 
+
+# ---- a backup key: a second company's key runs the game's rescue (2026-10-21) -------------
+
+DEEPSEEK = "deepseek/deepseek-v4-pro"
+BACKUP = {"company": "anthropic", "api_key": "sk-ant-backup"}
+
+
+def test_the_menu_says_which_model_a_backup_key_runs(api_client):
+    backups = api_client.get("/models").json()["backups"]
+    assert backups == {"anthropic": "anthropic/claude-haiku-5-5", "openai": "openai/gpt-6-luna",
+                       "google": "gemini-3.6-flash", "deepseek": "deepseek/deepseek-v4-flash"}
+
+
+def _seen_sessions(monkeypatch) -> list[dict]:
+    import server.game.live_game_registry as registry_module
+    from server.game import game_session as rt
+
+    seen: list[dict] = []
+
+    class FakeSession(rt.GameSession):
+        def __init__(self, run, **kw):
+            seen.append({k: kw.get(k, "") for k in ("api_key", "model", "backup_model", "backup_key")})
+            kw.pop("graph", None)
+            super().__init__(run, graph=HangingGraph(), **kw)
+
+    monkeypatch.setattr(registry_module, "GameSession", FakeSession)
+    return seen
+
+
+def test_a_backup_key_reaches_the_game_at_both_doors(api_client, monkeypatch):
+    seen = _seen_sessions(monkeypatch)
+    r = api_client.post("/games", json={"human": True, "api_key": "sk-ds", "model": DEEPSEEK,
+                                        "backup": BACKUP})
+    assert r.status_code == 200
+    game_id, host_key = _make_room(api_client, api_key="sk-ds", model=DEEPSEEK, backup=BACKUP)
+    api_client.post(f"/games/{game_id}/start?host_key={host_key}")
+    expected = {"api_key": "sk-ds", "model": DEEPSEEK,
+                "backup_model": "anthropic/claude-haiku-5-5", "backup_key": "sk-ant-backup"}
+    assert seen == [expected, expected]
+
+
+def test_a_backup_key_is_refused_without_a_key_or_from_the_models_own_company(api_client):
+    for door in ("/games", "/rooms"):
+        r = api_client.post(door, json={"model": GEMINI, "backup": BACKUP})
+        assert r.status_code == 422 and "goes with your own key" in r.json()["detail"]
+        r = api_client.post(door, json={"api_key": "sk-ds", "model": DEEPSEEK,
+                                        "backup": {"company": "deepseek", "api_key": "sk-ds2"}})
+        assert r.status_code == 422 and "another company" in r.json()["detail"]
+
+
+def test_a_refused_backup_key_opens_nothing_and_says_it_was_the_backup(api_client, monkeypatch):
+    from server.game.key_check import KeyRefused
+
+    games = api_client.app.state.resources.games
+    tried = []
+
+    async def check_key(model, api_key):
+        tried.append((model, api_key))
+        if api_key == "sk-ant-backup":
+            raise KeyRefused("Anthropic refused this key: 401, invalid x-api-key.")
+
+    monkeypatch.setattr(games, "_check_key", check_key)
+    before = len(games)
+    for door in ("/games", "/rooms"):
+        r = api_client.post(door, json={"api_key": "sk-ds", "model": DEEPSEEK, "backup": BACKUP})
+        assert r.status_code == 422
+        assert r.json()["detail"].startswith("Your backup key: Anthropic refused this key")
+    assert len(games) == before
+    assert set(tried) == {(DEEPSEEK, "sk-ds"), ("anthropic/claude-haiku-5-5", "sk-ant-backup")}
+
 # ---- the room browser + lock (slice 7) ----------------------------------------------------
 
 def test_room_browser_lists_waiting_rooms_newest_first(api_client, seated_session):

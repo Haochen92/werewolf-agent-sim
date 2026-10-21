@@ -3,7 +3,7 @@
 from fastapi import APIRouter
 
 from server.dependencies import GraphRuntimeDep, House, ReplayServiceDep
-from server.game.model_catalog import menu_models
+from server.game.model_catalog import backup_models, menu_models
 from server.schemas.requests import HouseFunding, ModelRow, ModelsMenu
 
 from ._shared import memory_unavailable
@@ -44,5 +44,6 @@ async def supported_models(house: House, replays: ReplayServiceDep,
         ],
         house=HouseFunding(enabled=status.enabled, games_per_day=status.games_per_day,
                            remaining=status.remaining, reset_at=status.reset_at.isoformat()),
+        backups=backup_models(),
         memory_available=(await memory_unavailable(runtime)) is None,
     )

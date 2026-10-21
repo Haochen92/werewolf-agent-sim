@@ -25,17 +25,17 @@ def test_reporting_is_off_without_a_dsn(monkeypatch):
     error_reporting.report_game_failure(ValueError("x"), game_id="g", model="m", byok=False)
 
 
-def test_a_game_failure_is_tagged_and_never_carries_the_key():
+def test_a_game_failure_is_tagged_and_never_carries_the_keys():
     transport = _Captured()
     sentry_sdk.init(dsn="https://public@o0.ingest.sentry.io/0", transport=transport,
                     include_local_variables=False)
     try:
-        api_key = "sk-ant-secret-123"
+        api_key, backup_key = "sk-ant-secret-123", "sk-proj-backup-456"
         try:
-            raise RuntimeError(f"provider said no to {api_key}")
+            raise RuntimeError(f"provider said no to {api_key}, then to {backup_key}")
         except RuntimeError as exc:
             error_reporting.report_game_failure(exc, game_id="g1", model="anthropic/claude",
-                                                byok=True, secret=api_key)
+                                                byok=True, secrets=(api_key, backup_key))
         sentry_sdk.flush()
     finally:
         sentry_sdk.get_client().close()
@@ -43,7 +43,7 @@ def test_a_game_failure_is_tagged_and_never_carries_the_key():
 
     (event,) = transport.events
     assert event["tags"]["game_id"] == "g1" and event["tags"]["byok"] == "yes"
-    assert "sk-ant-secret-123" not in str(event)
+    assert "sk-ant-secret-123" not in str(event) and "sk-proj-backup-456" not in str(event)
     assert "***" in event["exception"]["values"][0]["value"]
 
 

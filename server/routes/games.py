@@ -26,7 +26,8 @@ from server.schemas.requests import (
 )
 
 from ._shared import (
-    authorize_model, error_kind, live_status, require_memory_available, set_seat_cookie,
+    authorize_model, error_kind, live_status, require_memory_available, resolve_backup,
+    set_seat_cookie,
 )
 
 logger = logging.getLogger(__name__)
@@ -54,6 +55,7 @@ async def create_game(
 ) -> GameCreated:
     await require_memory_available(body.memory, runtime)
     model = await authorize_model(house, body.api_key, body.model)
+    backup_model, backup_key = resolve_backup(body.backup, body.api_key, model)
     if body.character is not None and not is_pickable(body.character):
         raise HTTPException(status_code=422, detail=f"no such character: {body.character}")
     seat_tokens = [str(uuid4())] if body.human or body.human_role is not None else []
@@ -64,6 +66,8 @@ async def create_game(
             run_config,
             api_key=body.api_key,
             model=model,
+            backup_model=backup_model,
+            backup_key=backup_key,
             seat_tokens=seat_tokens,
             memory=body.memory,
             character=body.character if seat_tokens else None,

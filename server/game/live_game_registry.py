@@ -45,7 +45,7 @@ from server.game.run_config import game_run_config
 from Agents.schemas.human_player import HumanTurnRequest
 
 from server.database_models.game import DROPPED, RUNNING, GameRow
-from server.game.key_check import check_key
+from server.game.key_check import KeyRefused, check_key
 from server.game.lobby import GameLobby
 from server.game.game_session import GameSession
 from server.storage.game_repository import GameRepository
@@ -127,13 +127,16 @@ class LiveGameRegistry:
     # -- open a room: (nothing) -> waiting ------------------------------------------------
 
     async def open_room(self, *, api_key: str = "", model: str = "",
-                        name: str = "", memory: bool = False) -> GameLobby:
+                        name: str = "", memory: bool = False, backup_model: str = "",
+                        backup_key: str = "") -> GameLobby:
         """Open a waiting room: build it and register it in the table. Nothing is written
         to the database until the game starts; a room that never starts leaves no trace.
         Its id is the id the running game will keep, so one identifier covers the room
-        and the game it becomes. A key is tried on the provider first (see _try_key)."""
-        await self._try_key(model, api_key)
-        room = GameLobby(api_key=api_key, model=model, name=name, memory=memory)
+        and the game it becomes. A key, and a backup key, is tried on the provider first (see
+        _try_keys)."""
+        await self._try_keys(model, api_key, backup_model, backup_key)
+        room = GameLobby(api_key=api_key, model=model, name=name, memory=memory,
+                         backup_model=backup_model, backup_key=backup_key)
         self._entries[room.game_id] = room
         return room
 
@@ -201,7 +204,7 @@ class LiveGameRegistry:
             raise PermissionError("only the host may start the game")
         session = GameSession(
             room.run_config(), api_key=room.api_key, model=room.model,
-            seat_tokens=room.tokens, picks=room.picks, graph=self._graph_runtime.graph,
+            backup_model=room.backup_model, backup_key=room.backup_key, seat_tokens=room.tokens, picks=room.picks, graph=self._graph_runtime.graph,
             repository=self._repository)
         return await self._launch(
             session, model=room.model, byok=bool(room.api_key), room_name=room.name,
@@ -209,15 +212,18 @@ class LiveGameRegistry:
 
     async def start_instant(self, run_config: RunConfig, *, api_key: str, model: str,
                             seat_tokens: list[str], memory: bool = False,
-                            character: str | None = None) -> GameSession:
+                            character: str | None = None, backup_model: str = "",
+                            backup_key: str = "") -> GameSession:
         """Start a game that never had a waiting room: the solo and all-AI door,
         POST /games. ``memory`` is recorded on the row so a restart rebuilds the same
         game; the config itself already carries it. ``character`` is the solo player's
-        chosen puppet, if they chose one. A key is tried on the provider first (see _try_key)."""
-        await self._try_key(model, api_key)
+        chosen puppet, if they chose one. A key, and a backup key, is tried on the provider first
+        (see _try_keys)."""
+        await self._try_keys(model, api_key, backup_model, backup_key)
         picks = [character] * len(seat_tokens)
         session = GameSession(
-            run_config, api_key=api_key, model=model, seat_tokens=seat_tokens,
+            run_config, api_key=api_key, model=model, backup_model=backup_model,
+            backup_key=backup_key, seat_tokens=seat_tokens,
             picks=picks, graph=self._graph_runtime.graph, repository=self._repository)
         return await self._launch(
             session, model=model, byok=bool(api_key), memory=memory,
@@ -232,6 +238,21 @@ class LiveGameRegistry:
         own credentials are not tried."""
         if api_key:
             await self._check_key(model, api_key)
+
+    async def _try_keys(self, model: str, api_key: str, backup_model: str, backup_key: str) -> None:
+        """The key and the backup key tried at once (see _try_key); the first refusal is raised, a
+        backup's told as the backup's, so the player knows which key to look at."""
+        async def backup() -> None:
+            try:
+                await self._try_key(backup_model, backup_key)
+            except KeyRefused as exc:
+                raise KeyRefused(f"Your backup key: {exc}") from exc
+
+        results = await asyncio.gather(self._try_key(model, api_key), backup(),
+                                       return_exceptions=True)
+        for result in results:
+            if isinstance(result, BaseException):
+                raise result
 
     async def _launch(self, session: GameSession, **row_fields) -> GameSession:
         """The step both doors share once a game is about to run: put the session in the

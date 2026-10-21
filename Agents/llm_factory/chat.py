@@ -34,6 +34,9 @@ class GameLLM:
     api_key: str = ""
     model: str = ""
     rescue_model: str | None = None
+    # The player's backup key: their key for the rescue model's company, when the rescue runs
+    # on another company than the game's model (a saved second key, opt-in on the ticket).
+    backup_key: str = field(default="", repr=False)
     # Mutable, shared by reference across the game's threads: the stall count that sends a
     # turn straight to the rescue model (health.py). Not part of equality or the cache key.
     health: ModelHealth = field(default_factory=ModelHealth, compare=False, repr=False)
@@ -72,10 +75,14 @@ def provider_name(model: str) -> str:
 
 
 def _game_key_for(family: str) -> str:
-    """The BYOK key, iff the game's selected model belongs to this provider family."""
+    """The BYOK key, iff the game's selected model belongs to this provider family; the backup
+    key, iff the rescue model does."""
     override = GAME_LLM.get()
     if override.api_key and _provider_family(override.model) == family:
         return override.api_key
+    if (override.backup_key and override.rescue_model
+            and _provider_family(override.rescue_model) == family):
+        return override.backup_key
     return ""
 
 # Chat-model instances are immutable after construction and safe to reuse across

@@ -472,6 +472,20 @@ export interface components {
       /** Targets */
       targets: components['schemas']['WireAddressedTarget'][];
     };
+    /**
+     * BackupKey
+     * @description A player's key for a second company, sent with their own key: held, checked and dropped
+     *     like it, never stored or recorded.
+     */
+    BackupKey: {
+      /**
+       * Company
+       * @enum {string}
+       */
+      company: 'anthropic' | 'openai' | 'google' | 'deepseek';
+      /** Api Key */
+      api_key: string;
+    };
     /** BulletsRemaining */
     BulletsRemaining: {
       /** Seq */
@@ -1171,6 +1185,10 @@ export interface components {
       /** Models */
       models: components['schemas']['ModelRow'][];
       house: components['schemas']['HouseFunding'];
+      /** Backups */
+      backups?: {
+        [key: string]: string;
+      };
       /** Memory Available */
       memory_available: boolean;
     };
@@ -1202,6 +1220,7 @@ export interface components {
        * @default
        */
       name: string;
+      backup?: components['schemas']['BackupKey'] | null;
     };
     /**
      * NewSoloGame
@@ -1249,6 +1268,7 @@ export interface components {
       memory: boolean;
       /** Character */
       character?: string | null;
+      backup?: components['schemas']['BackupKey'] | null;
     };
     /**
      * NightAction

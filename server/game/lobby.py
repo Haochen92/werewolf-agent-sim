@@ -61,7 +61,7 @@ class GameLobby:
     """
 
     def __init__(self, *, api_key: str = "", model: str = "", name: str = "",
-                 memory: bool = False) -> None:
+                 memory: bool = False, backup_model: str = "", backup_key: str = "") -> None:
         self.game_id = str(uuid4())
         self.host_key = str(uuid4())
         self.memory = memory
@@ -70,6 +70,10 @@ class GameLobby:
         # The creator's own API key, held until the game starts: whoever creates the room
         # pays for the models it runs on.
         self.api_key = api_key
+        # The creator's backup key and the model it runs, held the same way (the game's rescue
+        # on another company); empty without one.
+        self.backup_model = backup_model
+        self.backup_key = backup_key
         self.model = model
         """The model the game will run on, chosen when the room is created."""
         self.name = name

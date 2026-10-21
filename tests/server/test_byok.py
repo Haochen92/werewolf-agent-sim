@@ -174,3 +174,50 @@ async def test_dead_game_error_never_echoes_the_key(quiet_session):
     assert session.error is not None  # surfaced: the player restarts with a valid key
     assert "sk-player-123" not in session.error
     assert "***" in session.error
+
+
+# ---- backup key: a second company's key runs the rescue (2026-10-21) ------------------------
+
+HAIKU = "anthropic/claude-haiku-5-5"
+
+
+def test_the_backup_key_goes_to_the_rescues_company_only(monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "server-openai-key")
+    game = GameLLM(api_key="ds-key-3", model=DEEPSEEK, rescue_model=HAIKU,
+                   backup_key="sk-ant-backup")
+    main = _with_override(game, lambda: create_chat_model(DEEPSEEK, temperature=0.44))
+    rescue = _with_override(game, get_llm_game_fallback)
+    other = _with_override(game, lambda: create_chat_model("openai/gpt-6-luna", temperature=1.0))
+
+    assert main.openai_api_key.get_secret_value() == "ds-key-3"
+    assert rescue.anthropic_api_key.get_secret_value() == "sk-ant-backup"
+    assert rescue in game.clients.values()  # kept with the game, like the key's own clients
+    assert other.openai_api_key.get_secret_value() == "server-openai-key"  # a third company
+    assert "sk-ant-backup" not in repr(game)
+
+
+async def test_session_runs_its_rescue_on_the_backup(quiet_session):
+    graph = _SelectionEchoGraph()
+    session = quiet_session(graph, api_key="sk-player-123", model=DEEPSEEK,
+                            backup_model=HAIKU, backup_key="sk-ant-backup")
+    session.start()
+    await asyncio.wait_for(session.wait_finished(), timeout=10)
+
+    assert (graph.seen.rescue_model, graph.seen.backup_key) == (HAIKU, "sk-ant-backup")
+    # the game is over: both keys are let go with it
+    assert session._secrets == () and session._llm_selection.backup_key == ""
+
+
+class _BackupBoomGraph:
+    async def astream(self, payload, *, config, context, stream_mode, subgraphs, version):
+        raise ValueError("401: invalid x-api-key: sk-ant-backup")
+        yield
+
+
+async def test_dead_game_error_never_echoes_the_backup_key(quiet_session):
+    session = quiet_session(_BackupBoomGraph(), api_key="sk-player-123", model=DEEPSEEK,
+                            backup_model=HAIKU, backup_key="sk-ant-backup")
+    session.start()
+    await asyncio.wait_for(session.wait_finished(), timeout=10)
+
+    assert "sk-ant-backup" not in session.error and "***" in session.error

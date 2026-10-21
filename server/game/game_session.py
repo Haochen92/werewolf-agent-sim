@@ -139,6 +139,9 @@ class GameSession:
     fingerprinted and recorded, and a key must never be written down.
       _api_key        the player's key, if a player paid. Session memory only; also the
                       string the error report scrubs.
+      _backup_key     the player's key for a second company, if they sent one: the rescue
+                      runs on that company's backup model with it. Held and scrubbed as
+                      the key is; gone after a restart (only the key is asked for again).
       _llm_selection  this game's model, its rescue model from the catalogue, and the key
                       if any. A bare key with no model runs the catalogue's first row.
                       Set on the GAME_LLM ContextVar as the task's first act, so the
@@ -246,18 +249,20 @@ class GameSession:
     """
 
     def __init__(self, run_config: RunConfig | dict[str, Any], *,
-                 api_key: str = "", model: str = "",
+                 api_key: str = "", model: str = "", backup_model: str = "", backup_key: str = "",
                  seat_tokens: Sequence[str] = (), picks: Sequence[str | None] = (),
                  graph=None, repository: GameRepository | None = None) -> None:
 
         # Which model runs, and who pays.
         self._api_key = api_key
+        self._backup_key = backup_key
         if api_key and not model:
             model = menu_models()[0].model
         row = game_model(model)
         self._llm_selection = GameLLM(
             api_key=api_key, model=model,
-            rescue_model=row.rescue_model if row else None,
+            rescue_model=(backup_model if backup_key else None) or (row.rescue_model if row else None),
+            backup_key=backup_key,
         ) if api_key or model else None
 
         # Engine bootstrap.
@@ -372,20 +377,17 @@ class GameSession:
                 except Exception as exc:  # surface, don't vanish: report task death
                     # A refused key is told in plain words (the page shows them); the rest raw.
                     detail = str(exc) if isinstance(exc, ProviderKeyRejected) else repr(exc)
-                    if self._api_key:
-                        # Provider auth errors can echo the credential; viewers see error text.
-                        detail = detail.replace(self._api_key, "***")
+                    # Provider auth errors can echo the credential; viewers see error text.
+                    detail = self._redact(detail)
                     self.error = detail
                     error_output = {"status": "error", "error": detail}
                     root.update(output=error_output, level="ERROR", status_message=detail)
                     root.update_trace(output=error_output)
-                    trace = "".join(traceback.format_exception(exc))
-                    if self._api_key:
-                        trace = trace.replace(self._api_key, "***")
+                    trace = self._redact("".join(traceback.format_exception(exc)))
                     logger.error("game %s: task died: %s\n%s", self.game_id, detail, trace)
                     if not isinstance(exc, ProviderKeyRejected):  # the player's key, not a bug
                         report_game_failure(exc, game_id=self.game_id, model=self.model,
-                                            byok=bool(self._api_key), secret=self._api_key)
+                                            byok=bool(self._api_key), secrets=self._secrets)
                     if self._repository is not None:
                         await self._repository.update_game(
                             self.game_id, status="dropped", error=detail)
@@ -436,13 +438,11 @@ class GameSession:
             # The game was played to its end and only the post-game step failed: keep the
             # game (a replay without its extraction input) rather than drop it (2026-10-17: a
             # draw's empty winner broke the extraction input and lost a finished game).
-            trace = "".join(traceback.format_exception(exc))
-            if self._api_key:
-                trace = trace.replace(self._api_key, "***")
+            trace = self._redact("".join(traceback.format_exception(exc)))
             logger.error("game %s: failed after game over; archiving it anyway\n%s",
                          self.game_id, trace)
             report_game_failure(exc, game_id=self.game_id, model=self.model,
-                                byok=bool(self._api_key), secret=self._api_key,
+                                byok=bool(self._api_key), secrets=self._secrets,
                                 after_game_over=True)
         if self.game_over and self._repository is not None:
             # The final chunk may have failed to save, with no next chunk to retry it.
@@ -628,14 +628,25 @@ class GameSession:
         session ends itself through _end, and nothing outside sets it."""
         return self._finished.is_set()
 
+    @property
+    def _secrets(self) -> tuple[str, ...]:
+        """The player's keys this game holds: what every report of it scrubs."""
+        return tuple(key for key in (self._api_key, self._backup_key) if key)
+
+    def _redact(self, text: str) -> str:
+        """``text`` with the player's keys replaced."""
+        for key in self._secrets:
+            text = text.replace(key, "***")
+        return text
+
     def _end(self) -> None:
         """Mark the game ended, wake anyone waiting on it, and let the registry know if
         nobody is watching. The only place the ended flag is set. The player's key, and the
         clients built on it, are let go here: an ended game makes no more calls."""
-        if self._api_key and self._llm_selection is not None:
+        if self._secrets and self._llm_selection is not None:
             self._llm_selection = GameLLM(model=self._llm_selection.model,
                                           rescue_model=self._llm_selection.rescue_model)
-        self._api_key = ""
+        self._api_key = self._backup_key = ""
         self._finished.set()
         self._maybe_idle()
 

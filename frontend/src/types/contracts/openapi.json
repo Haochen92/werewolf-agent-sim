@@ -1112,6 +1112,33 @@
         "title": "AddressedTargetsAnnotation",
         "description": "Structured who-this-addresses tags. Joins the speech via about_channel_seq."
       },
+      "BackupKey": {
+        "properties": {
+          "company": {
+            "type": "string",
+            "enum": [
+              "anthropic",
+              "openai",
+              "google",
+              "deepseek"
+            ],
+            "title": "Company"
+          },
+          "api_key": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Api Key"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "company",
+          "api_key"
+        ],
+        "title": "BackupKey",
+        "description": "A player's key for a second company, sent with their own key: held, checked and dropped\nlike it, never stored or recorded."
+      },
       "BulletsRemaining": {
         "properties": {
           "seq": {
@@ -2540,6 +2567,13 @@
           "house": {
             "$ref": "#/components/schemas/HouseFunding"
           },
+          "backups": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Backups"
+          },
           "memory_available": {
             "type": "boolean",
             "title": "Memory Available"
@@ -2576,6 +2610,16 @@
             "maxLength": 40,
             "title": "Name",
             "default": ""
+          },
+          "backup": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BackupKey"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -2640,6 +2684,16 @@
               }
             ],
             "title": "Character"
+          },
+          "backup": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BackupKey"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",

@@ -12,9 +12,10 @@ from server.dependencies import seat_cookie_name
 from server.game.entitlement import entitled
 from server.game.game_session import GameSession
 from server.game.lobby import MAX_HUMAN_SEATS, GameLobby
+from server.game.model_catalog import backup_model
 from server.graph_runtime import GraphRuntime
 from server.house import HouseClosed, HousePolicy, ModelNeedsKey
-from server.schemas.requests import GameStatus
+from server.schemas.requests import BackupKey, GameStatus
 
 _SEAT_COOKIE_MAX_AGE = 24 * 3600  # comfortably outlives any in-memory game
 
@@ -84,6 +85,20 @@ async def authorize_model(house: HousePolicy, api_key: str, model: str) -> str:
             headers["Retry-After"] = exc.reset_at.strftime("%a, %d %b %Y %H:%M:%S GMT")
         raise HTTPException(status_code=402, detail=str(exc), headers=headers) from exc
     except (LookupError, ModelNeedsKey) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+def resolve_backup(backup: BackupKey | None, api_key: str, model: str) -> tuple[str, str]:
+    """(the backup model, the backup key) a new game on ``model`` runs its rescue on, or ("", "")
+    with no backup; 422 for a backup without the player's own key, or of the game model's own
+    company, or of a company with no backup model."""
+    if backup is None:
+        return "", ""
+    if not api_key:
+        raise HTTPException(status_code=422, detail="a backup key goes with your own key")
+    try:
+        return backup_model(backup.company, model), backup.api_key
+    except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
