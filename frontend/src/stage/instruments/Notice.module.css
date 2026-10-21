@@ -158,30 +158,40 @@
 }
 
 /* ---------- the paper: what the house tells ---------- */
+/* the HUD's ivory sheet in its riveted bronze frame (the pack chat's frame, 2026-10-19), the
+   head on a brass plate riveted over the frame's top edge (the rail's plate) */
 .paper {
-  padding: 13px 25.6px 14.4px;
-  border-radius: 4px;
-  background-color: #efe3c8;
-  background-image:
-    repeating-linear-gradient(0deg, rgba(60, 40, 20, 0.035) 0 1px, transparent 1px 3px),
-    radial-gradient(ellipse at 12% 10%, rgba(255, 255, 255, 0.4), transparent 50%),
-    radial-gradient(ellipse at 92% 96%, rgba(120, 90, 50, 0.22), transparent 55%);
+  margin-top: calc(max(calc(var(--meta) * 0.8), calc(var(--said) * 0.5)) * 1.1);
+  padding: calc(max(calc(var(--meta) * 0.8), calc(var(--said) * 0.5)) * 1.5) 20px 8px;
+  border: 18px solid transparent;
+  border-image: var(--kit-frame) 50 / 18px stretch;
+  border-radius: 9px;
+  background: var(--kit-sheet);
   box-shadow:
-    inset 0 0 0 1px #d9c7a0,
-    0 6px 18px rgba(0, 0, 0, 0.6);
+    inset 0 0 16px rgba(110, 80, 40, 0.22),
+    0 8px 22px rgba(0, 0, 0, 0.6);
 }
-/* the printed head over the words: "Dawn 2 · The report", ruled off */
+/* the head over the words: "Dawn 2 · The report", engraved on the brass plate */
 .ruled {
+  position: absolute;
+  left: 50%;
+  top: -18px;
+  transform: translate(-50%, -50%);
   display: block;
-  padding-bottom: 6px;
-  margin-bottom: 8px;
-  border-bottom: 3px double rgba(42, 29, 17, 0.45);
+  white-space: nowrap;
+  padding: 0.42em 1.2em 0.36em;
+  border-style: solid;
+  border-width: 0 16px;
+  border-image: url('../../assets/sprites/rail/plate.webp') 0 42 fill / 0 16px stretch;
   font-family: var(--font-body);
+  font-weight: 600;
   /* the meta size, or half the words' where they have grown (a phone) */
   font-size: max(calc(var(--meta) * 0.8), calc(var(--said) * 0.5));
+  line-height: 1.2;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--paper-soft);
+  color: #2e1c06;
+  text-shadow: 0 1px 0 rgba(255, 240, 200, 0.5);
 }
 /* the stamp: a death's word in red ink, struck at a slant over the paper's right */
 .stamp {
@@ -213,6 +223,134 @@
 }
 .wide {
   flex: 1 1 auto;
+}
+
+/* the vote's result board: about twice the box's width, the outcome first, the tally under it
+   a line per plate; the outcome of a seat put out in a muted burgundy, the lit plates' lines in
+   the brass (the only gold on the sheet) */
+.board {
+  width: min(100%, max(540px, calc(var(--said) * 24)));
+  flex: 0 1 auto;
+}
+.board .chip {
+  width: calc(var(--said) * 1.55);
+}
+/* the outcome and its few words on one line, wrapping only when they must */
+.board .head {
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+}
+.board .head > span:not(.chip) {
+  font-size: calc(var(--said) * 0.82);
+}
+.head strong.out {
+  color: #7a2832;
+}
+.tally {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 22px;
+  margin: 8px 0 2px;
+  padding: 9px 0 0;
+  list-style: none;
+  border-top: 1px solid rgba(90, 64, 32, 0.32);
+  font-family: var(--font-body);
+  font-size: calc(var(--said) * 0.82);
+  line-height: 1.25;
+  color: var(--paper-ink);
+}
+.tally li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+.tally b {
+  font-weight: 600;
+}
+.tally li > span[aria-hidden] {
+  color: var(--paper-soft);
+}
+.tally em {
+  font-style: normal;
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--paper-soft);
+}
+.tface {
+  flex: none;
+  display: inline-block;
+  width: 1.45em;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  line-height: 0;
+  background: #e8d9b8;
+  box-shadow: 0 0 0 1px rgba(90, 64, 32, 0.45);
+}
+/* abstain's plate has no face: an empty ring */
+.tnone {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px rgba(90, 64, 32, 0.5);
+}
+.tally .lit .tface {
+  box-shadow:
+    0 0 0 2px #c9a24a,
+    0 0 0 3px #6d4a12;
+}
+.tally .lit em {
+  color: #8a5a0c;
+  font-weight: 700;
+}
+/* on a phone (the stage's `data-small`) the replay's grown band leaves the board ~64 css px
+   under the table's plate labels: the outcome and the tally share a line where the zone is
+   wide enough and take two at most where it is not (the side slot open), the tally's own line
+   scrolling sideways rather than wrapping; a slimmer frame, the plate on its edge */
+:global([data-small]) .board {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 20px;
+  row-gap: 2px;
+  margin-top: calc(max(calc(var(--meta) * 0.8), calc(var(--said) * 0.5)) * 1);
+  margin-bottom: -10px;
+  padding: 10px 14px 4px;
+  border-width: 12px;
+  border-image: var(--kit-frame) 50 / 12px stretch;
+}
+:global([data-small]) .board .ruled {
+  top: -12px;
+}
+:global([data-small]) .board .head {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin: 0;
+}
+:global([data-small]) .board .head strong {
+  font-size: calc(var(--said) * 0.95);
+  line-height: 1.1;
+}
+:global([data-small]) .board .head > span:not(.chip) {
+  font-size: calc(var(--said) * 0.7);
+}
+:global([data-small]) .board .chip {
+  width: calc(var(--said) * 1.05);
+}
+:global([data-small]) .tally {
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  gap: 16px;
+  /* room for the lit face's ring inside the scroller */
+  margin: -3px 0;
+  padding: 3px;
+  border-top: 0;
+  font-size: calc(var(--said) * 0.72);
+  line-height: 1.2;
+}
+:global([data-small]) .tface {
+  width: 1.2em;
 }
 .head {
   display: flex;

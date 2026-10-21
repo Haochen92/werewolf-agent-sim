@@ -42,7 +42,14 @@ import { STAGE_H, STAGE_W, geometry } from '../units';
 import { CarSetSpec } from './CarScene';
 import { VOTE_STOP } from '../containers/stops';
 import type { SceneProps } from './types';
-import { candidatesOf, landOrder, lastLine, litPlates, resultWords } from './vote-count';
+import {
+  candidatesOf,
+  landOrder,
+  lastLine,
+  litPlates,
+  outcomeWords,
+  tallyLines,
+} from './vote-count';
 import { useSmall } from '../set';
 
 /** An svg over the whole world, in its units. */
@@ -220,7 +227,23 @@ function VoteBeat({
   const myCard = me ? (view.me.role?.role ?? null) : null;
   const words =
     resolved && vote
-      ? resultWords(vote, vote.outcome === 'tie' ? gmVoteLine(view, day) : null)
+      ? outcomeWords(
+          vote,
+          me ?? null,
+          vote.outcome === 'tie' ? gmVoteLine(view, day) : null,
+        )
+      : null;
+  // the board's tally: each plate's seat (its face) or abstain, and its chips
+  const lines =
+    words && vote
+      ? tallyLines(vote).map((t) => ({
+          key: t.votee,
+          chip: t.votee === 'abstain' ? null : cast[seatNumber(t.votee) - 1],
+          label: t.votee === 'abstain' ? 'Abstained' : `Seat ${seatNumber(t.votee)}`,
+          count:
+            t.votee === 'abstain' ? `${t.n}` : `${t.n} ${t.n === 1 ? 'vote' : 'votes'}`,
+          lit: t.lit,
+        }))
       : null;
 
   return (
@@ -420,12 +443,13 @@ function VoteBeat({
               kind="paper"
               head={`Day ${day} · The vote`}
               chip={lynched ? cast[seatNumber(lynched) - 1] : null}
-              title={lynched === me && lynched ? `${words.title} (you)` : words.title}
+              title={words.title}
+              aside={words.body}
+              out={words.out}
+              tally={lines}
               arrive={animate && id === 'vote.result'}
               delay={0.7}
-            >
-              {words.body}
-            </Notice>
+            />
           ) : null}
         </NoticeZone>
       </Layer>

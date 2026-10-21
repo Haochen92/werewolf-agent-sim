@@ -60,39 +60,6 @@ export function litPlates(vote: DayVote): string[] {
   return [];
 }
 
-export interface ResultWords {
-  title: string;
-  body: string;
-}
-
-/**
- * What the box says at the result. A tie says so and then the game master's own line (the
- * last line of its vote message), because the rule that breaks a tie is the server's to state.
- */
-export function resultWords(vote: DayVote, gmLine?: string | null): ResultWords | null {
-  const counts = Object.keys(vote.voteCounts).length
-    ? vote.voteCounts
-    : tally(vote.ballots);
-  switch (vote.outcome) {
-    case 'lynched':
-      return vote.lynched
-        ? {
-            title: `Seat ${seatNumber(vote.lynched)}`,
-            body: `Voted out, ${score(counts)}.`,
-          }
-        : null;
-    case 'abstain':
-      return {
-        title: 'The table abstains',
-        body: `${score(counts)}. No one is voted out.`,
-      };
-    case 'tie':
-      return { title: `A tie, ${score(counts)}`, body: gmLine || 'No one is voted out.' };
-    default:
-      return null;
-  }
-}
-
 /** The last line of the game master's message, the one that states the outcome. */
 export function lastLine(text: string | null | undefined): string | null {
   const lines = (text ?? '')
@@ -100,4 +67,60 @@ export function lastLine(text: string | null | undefined): string | null {
     .map((l) => l.trim())
     .filter(Boolean);
   return lines.at(-1) ?? null;
+}
+
+/** One line of the result's tally: a plate and its chips. */
+export interface TallyLine {
+  /** A seat, or `abstain`. */
+  votee: string;
+  n: number;
+  /** The plate is lit at the result (the voted-out seat's, abstain's, the tied ones). */
+  lit: boolean;
+}
+
+/** The result's tally, the most chips first (seat order among equals, abstain's last). */
+export function tallyLines(vote: DayVote): TallyLine[] {
+  const counts = Object.keys(vote.voteCounts).length
+    ? vote.voteCounts
+    : tally(vote.ballots);
+  const lit = new Set(litPlates(vote));
+  return Object.keys(counts)
+    .filter((c) => counts[c] > 0)
+    .sort(
+      (a, b) =>
+        counts[b] - counts[a] ||
+        (a === 'abstain' ? 1 : b === 'abstain' ? -1 : seatNumber(a) - seatNumber(b)),
+    )
+    .map((c) => ({ votee: c, n: counts[c], lit: lit.has(c) }));
+}
+
+/**
+ * The result board's words, the outcome first: "Seat 4 was voted out" (the tally under it says
+ * the count); no one out says so, and a tie the game master's own line (the last line of its vote
+ * message), because the rule that breaks a tie is the server's to state.
+ */
+export function outcomeWords(
+  vote: DayVote,
+  me: string | null,
+  gmLine?: string | null,
+): { title: string; body: string | null; out: boolean } | null {
+  switch (vote.outcome) {
+    case 'lynched':
+      return vote.lynched
+        ? {
+            title:
+              vote.lynched === me
+                ? 'You were voted out'
+                : `Seat ${seatNumber(vote.lynched)} was voted out`,
+            body: null,
+            out: true,
+          }
+        : null;
+    case 'abstain':
+      return { title: 'The table abstains', body: 'No one is voted out.', out: false };
+    case 'tie':
+      return { title: 'A tie', body: gmLine || 'No one is voted out.', out: false };
+    default:
+      return null;
+  }
 }

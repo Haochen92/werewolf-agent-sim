@@ -7,9 +7,10 @@ import {
   landOrder,
   lastLine,
   litPlates,
-  resultWords,
+  outcomeWords,
   score,
   tally,
+  tallyLines,
 } from './vote-count';
 import { readMark, whoHadThemRight } from '../film/film-model';
 
@@ -68,19 +69,28 @@ describe('the count', () => {
 });
 
 describe('the result', () => {
-  it('names the voted-out seat and the score', () => {
-    expect(resultWords(view.days[4].vote)).toEqual({
-      title: 'Seat 2',
-      body: 'Voted out, 3 to 2.',
+  it('names the voted-out seat first, the tally under it, the most chips first', () => {
+    expect(outcomeWords(view.days[4].vote, null)).toEqual({
+      title: 'Seat 2 was voted out',
+      body: null,
+      out: true,
+    });
+    expect(outcomeWords(view.days[4].vote, 'player_2')?.title).toBe('You were voted out');
+    expect(tallyLines(view.days[4].vote)[0]).toMatchObject({
+      votee: 'player_2',
+      n: 3,
+      lit: true,
     });
     expect(litPlates(view.days[4].vote)).toEqual(['player_2']);
   });
 
   it('says the table abstains, and lights the saucer', () => {
-    expect(resultWords(view.days[2].vote)).toEqual({
+    expect(outcomeWords(view.days[2].vote, null)).toEqual({
       title: 'The table abstains',
-      body: '9 to 0. No one is voted out.',
+      body: 'No one is voted out.',
+      out: false,
     });
+    expect(tallyLines(view.days[2].vote)).toEqual([{ votee: 'abstain', n: 9, lit: true }]);
     expect(litPlates(view.days[2].vote)).toEqual(['abstain']);
   });
 
@@ -90,11 +100,18 @@ describe('the result', () => {
       outcome: 'tie',
       voteCounts: { player_2: 2, player_1: 2, abstain: 1 },
     });
-    expect(resultWords(tie, 'A tie: no one is voted out.')).toEqual({
-      title: 'A tie, 2 to 2 to 1',
+    expect(outcomeWords(tie, null, 'A tie: no one is voted out.')).toEqual({
+      title: 'A tie',
       body: 'A tie: no one is voted out.',
+      out: false,
     });
-    expect(resultWords(tie)?.body).toBe('No one is voted out.');
+    expect(outcomeWords(tie, null)?.body).toBe('No one is voted out.');
+    // seat order among equals, abstain last
+    expect(tallyLines(tie).map((t) => t.votee)).toEqual([
+      'player_1',
+      'player_2',
+      'abstain',
+    ]);
     expect(litPlates(tie)).toEqual(['player_1', 'player_2']);
   });
 

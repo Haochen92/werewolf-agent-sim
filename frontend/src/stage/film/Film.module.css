@@ -34,11 +34,18 @@
   padding: calc(10px * var(--legible-ui)) calc(11.2px * var(--legible-ui))
     calc(11.2px * var(--legible-ui));
   border-radius: 4px 12px 12px 12px;
-  background: var(--manila);
+  /* the site's kraft folder (the guide's and the landing's case file, site/kit), laid once */
+  background:
+    radial-gradient(
+      ellipse 95% 90% at 50% 40%,
+      transparent 50%,
+      rgba(90, 58, 18, 0.38) 100%
+    ),
+    url('../../assets/site/kit/kraft.webp') 50% 50% / cover no-repeat var(--manila);
   box-shadow:
     0 16px 32px rgba(0, 0, 0, 0.5),
-    inset 0 0 0 1px var(--manila-edge),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    inset 0 0 0 1px rgba(80, 55, 20, 0.45),
+    inset 0 1px 0 rgba(255, 240, 200, 0.35);
 }
 /* on a phone the folder keeps one plain tab of its own (no width for a tab per seat) */
 .folder:not([data-wide]) .fold::before {
@@ -49,10 +56,12 @@
   width: 160px;
   height: 14.4px;
   border-radius: 9.6px 9.6px 0 0;
-  background: var(--manila);
+  background: url('../../assets/site/kit/kraft.webp') 50% 0 / 600px auto no-repeat
+    var(--manila);
   box-shadow:
-    inset 1px 1px 0 var(--manila-edge),
-    inset -1px 0 0 var(--manila-edge);
+    inset 1px 1px 0 rgba(80, 55, 20, 0.45),
+    inset -1px 0 0 rgba(80, 55, 20, 0.45),
+    inset 0 2px 0 rgba(255, 240, 200, 0.3);
 }
 
 /* where the slot is wide: a tab per seat standing up off the folder's top edge, like a filing
@@ -79,27 +88,34 @@
   font: inherit;
   font-family: var(--f-type);
   font-size: calc(var(--meta) * 0.85);
-  color: #4a3a1c;
-  background: var(--manila-dk);
+  color: #3a2a12;
+  /* the guide's case-file tabs: the folder's kraft, a shade darker on the tabs behind */
+  background:
+    linear-gradient(rgba(90, 60, 20, 0.24), rgba(90, 60, 20, 0.24)),
+    url('../../assets/site/kit/kraft.webp') 50% 0 / 600px auto no-repeat var(--manila-dk);
   border: 0;
   border-radius: 8px 8px 0 0;
   box-shadow:
-    inset 1px 1px 0 var(--manila-edge),
-    inset -1px 0 0 var(--manila-edge);
+    inset 0 1px 0 rgba(255, 240, 200, 0.35),
+    inset 1px 0 0 rgba(80, 55, 20, 0.35),
+    inset -1px 0 0 rgba(80, 55, 20, 0.35);
   cursor: pointer;
 }
 .stab:hover {
-  background: #c6a768;
+  background:
+    linear-gradient(rgba(90, 60, 20, 0.12), rgba(90, 60, 20, 0.12)),
+    url('../../assets/site/kit/kraft.webp') 50% 0 / 600px auto no-repeat var(--manila-dk);
 }
 .stab[aria-selected='true'] {
   height: 36.8px;
-  background: var(--manila);
+  background: url('../../assets/site/kit/kraft.webp') 50% 0 / 600px auto no-repeat
+    var(--manila);
   font-weight: 700;
   color: var(--type);
   box-shadow:
-    inset 1px 1px 0 var(--manila-edge),
-    inset -1px 0 0 var(--manila-edge),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    inset 0 1px 0 rgba(255, 240, 200, 0.4),
+    inset 1px 0 0 rgba(80, 55, 20, 0.45),
+    inset -1px 0 0 rgba(80, 55, 20, 0.45);
 }
 .tface {
   flex: none;
@@ -136,7 +152,23 @@
   opacity: 0.5;
 }
 .stab:disabled:hover {
-  background: var(--manila-dk);
+  background:
+    linear-gradient(rgba(90, 60, 20, 0.24), rgba(90, 60, 20, 0.24)),
+    url('../../assets/site/kit/kraft.webp') 50% 0 / 600px auto no-repeat var(--manila-dk);
+}
+
+/* the Record's sheet is clipped into the folder: the kit's brass paperclip over its top edge
+   (the head sits over the sheet, so the clip is the head's; nothing moves) */
+.folder[data-film='record'] .head::after {
+  content: '';
+  position: absolute;
+  right: 22px;
+  bottom: -19px;
+  width: 15px;
+  height: 67px;
+  background: url('../../assets/site/kit/paperclip.webp') 0 0 / 100% 100% no-repeat;
+  transform: rotate(4deg);
+  pointer-events: none;
 }
 
 /* ---- the cover and the tabs ---- */
@@ -402,7 +434,9 @@
   font-family: var(--f-type);
   font-size: max(var(--meta), var(--label));
   color: #4a3a1c;
-  background: var(--sheet2);
+  background:
+    linear-gradient(rgba(120, 90, 45, 0.16), rgba(120, 90, 45, 0.16)),
+    url('../../assets/site/kit/cream.webp') 50% 0 / 627px auto no-repeat var(--sheet2);
   border: 0;
   border-radius: 8px 8px 0 0;
   padding: 0 calc(11.2px * var(--legible-ui));
@@ -421,7 +455,8 @@
   color: var(--type-mut);
 }
 .tab[aria-selected='true'] {
-  background: var(--sheet);
+  background: url('../../assets/site/kit/cream.webp') 50% 0 / 627px auto no-repeat
+    var(--sheet);
   color: var(--type);
   font-weight: 700;
 }
@@ -444,11 +479,12 @@
   overflow: hidden auto;
   overscroll-behavior: contain;
   border-radius: 0 8px 6.4px 6.4px;
-  background: var(--sheet);
+  /* the site's cream paper (site/kit), laid once: it stays put while the words scroll */
+  background: url('../../assets/site/kit/cream.webp') 50% 0 / cover no-repeat var(--sheet);
   box-shadow:
-    0 2px 0 var(--sheet2),
-    0 4px 0 #ddcca6,
-    0 8px 14px rgba(0, 0, 0, 0.25);
+    0 2px 0 #eadfc4,
+    0 4px 0 #d9c8a2,
+    0 8px 14px rgba(40, 25, 5, 0.35);
   padding: calc(14.4px * var(--legible-ui)) calc(19.2px * var(--legible-ui))
     calc(17.6px * var(--legible-ui));
   color: var(--type);

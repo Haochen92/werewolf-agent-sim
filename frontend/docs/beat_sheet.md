@@ -275,7 +275,7 @@ ephemeral: it paces the live drop and is not in the log.
 | 5 | `vote.closes` | live: the pill full · replay: same beat as 4 | P | the lid comes down. **X-ray replay: the vote's stop** (§11): the play pauses here; the notice "7 ballots in. Tap a seat to read what it voted on." with **Count the votes ▶** (plays on); every wing card opens its file | — | 1.5 (a stop: waits) |
 | 6 | `vote.count-begins` | the `vote_cast` batch | P | the lid flies out; the shot pushes in; the jar fades from the centre and stands at the back of the table, to the right (2026-10-17; it tipped onto its side before); plates along the front edge, one per seat with votes, abstain's an ordinary empty plate at the right, laid as the others, its place card reading "Abstain" (2026-09-30; it was an upturned saucer); every plate the painted plate (`SPRITES.props.plate`, 2026-09-30); place cards with head, seat, running number | F(X): the voters' consults and reads | 2.0 |
 | 7 | `vote.chip-counted` | each `vote_cast` | P (X: the ballot named at the drop) | one chip is lifted out of the jar's mouth, flips face up, lands on its plate; the card's number ticks; towers cap at four; the chip that settles the winner lands last | D: (the votes are one drawer line per day at the count: a tally per seat voted for, the voters' faces its marks, and the who-voted-whom sentence) | 2.0 each |
-| 8 | `vote.result` | `lynch_result` (119, 250, 384) | P | the winner's plate and card lit; "Voted out, 3 to 2" · `abstain`: "The table abstains" · `tie`: the tied plates lit equally, the GM's line, one held beat, then the abstain ending | D: the GM line with the lynch sigil lent to it | 3.2 |
+| 8 | `vote.result` | `lynch_result` (119, 250, 384) | P | the winner's plate and card lit; the result board (2026-10-21, owner's N2: ivory in the bronze frame, the brass head plate; about twice the box's width): "Seat 2 was voted out" in burgundy, then a tally line per plate ("Seat 2 · 3 votes", "Seat 7 · 2 votes", "Abstained · 1"), the lit plate's line in brass · `abstain`: "The table abstains · No one is voted out." · `tie`: "A tie", the tied plates lit equally, the GM's line, one held beat, then the abstain ending | D: the GM line with the lynch sigil lent to it | 3.2 |
 | 9 | `vote.table-down` | `lynch_result` | P | the lift lowers the table with the count on it, out of the frame. `lynched` → §4. `abstain`/`tie`: the shot pulls back, the shutter gathers up on the night window → §5 | — | 3.0 |
 | — | `vote.skipped` | `lynch_result: no_vote` (31, day 1) | — | **no vote scene**: the day goes straight to night falls (§5 row 1 takes the shutter move) | D: the GM line | — |
 
@@ -289,8 +289,8 @@ close; the replay's chips fall 0.75 s each, 0.09 s apart. The close: the lid dow
 0.25 s. The count: the lid out 0.7 s after 0.25 s, the push-in (×1.32) 1.1 s after 0.25 s, the jar
 fades out 0.35 s after 0.9 s and in at the back 0.35 s after 1.05 s, the plates and cards 0.55 s each from 1.5 s, 0.16 s apart. A chip: the arc
 0.85 s, the card's number pops at 0.82 s, the box "Seat 7 votes Seat 2" ("Seat 5 abstains") after
-0.7 s; the wing lights the voter. The result: "Seat 2 · Voted out, 3 to 2." · "The table abstains
-· 9 to 0. No one is voted out." · "A tie, 3 to 3 · <the GM's last line>"; the plate's glow 0.7 s
+0.7 s; the wing lights the voter. The result: "Seat 2 was voted out" over the tally ("Seat 2 · 3
+votes · Seat 7 · 2 votes") · "The table abstains · No one is voted out." · "A tie · <the GM's last line>"; the plate's glow 0.7 s
 after 0.2 s. The down: the lift 1.5 s after 0.35 s; the abstain ending: the pull-back 1.2 s after 2.2 s, dusk → night after 2.4 s, the
 shutter up after 2.5 s; a lynch keeps the close shot. The voted-out seat stays alive on the wing
 until the lynch's card clears the rail. The table's top is the walnut tile in perspective, the
