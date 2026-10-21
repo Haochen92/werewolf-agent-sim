@@ -439,6 +439,33 @@ test('ticket: a key whose prefix names another company gets a hint, and clearing
   await expect(page.getByText(/An Anthropic key\./)).toHaveCount(0);
 });
 
+test('ticket: a remembered key is kept for its own company and deleted from the saved list', async ({
+  page,
+}) => {
+  await openTicket(page, '/play', 3);
+  await page.getByRole('button', { name: 'Use my own key instead' }).click();
+  const key = page.getByLabel('Your key');
+  await key.fill('AIzaSAVED1234567');
+  await page.getByRole('switch', { name: 'Remember on this device' }).check();
+  await expect(page.getByText('Saved on this device')).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem('byok_key:google'))).toBe(
+    'AIzaSAVED1234567',
+  );
+
+  // another company's model: the Google key is not offered for it
+  await page.getByLabel('Model', { exact: true }).click();
+  await page.getByRole('option', { name: /DeepSeek V4 Pro/ }).click();
+  await expect(key).toHaveValue('');
+  await page.getByLabel('Model', { exact: true }).click();
+  await page.getByRole('option', { name: /Gemini 3.5 Flash-Lite/ }).click();
+  await expect(key).toHaveValue('AIza••••••••4567');
+
+  await page.getByRole('button', { name: 'Delete the saved Google key' }).click();
+  await expect(key).toHaveValue('');
+  await expect(page.getByText('Saved on this device')).toHaveCount(0);
+  expect(await page.evaluate(() => localStorage.getItem('byok_key:google'))).toBeNull();
+});
+
 test('ticket: a refused key is said under the key field while the plate checks, then cleared by editing', async ({
   page,
 }) => {
@@ -496,7 +523,9 @@ test('ticket: opening a room is Play’s, and its old address still leads there'
     'aria-current',
     'page',
   );
-  await expect(nav.getByRole('link', { name: /^Rooms/ })).not.toHaveAttribute('aria-current');
+  await expect(nav.getByRole('link', { name: /^Rooms/ })).not.toHaveAttribute(
+    'aria-current',
+  );
 });
 
 test('ticket: /play/room opens a room and goes to it', async ({ page }) => {
@@ -666,10 +695,15 @@ test('rooms: Board goes to the room without joining it', async ({ page }) => {
   const sent = await mockJoin(page, 200, { token: 'seat-tok-1' });
   await openBoard(page);
 
-  await page.locator(`[data-room="${BOARDING}"]`).getByRole('link', { name: 'Board' }).click();
+  await page
+    .locator(`[data-room="${BOARDING}"]`)
+    .getByRole('link', { name: 'Board' })
+    .click();
   await page.waitForURL(`**/games/${BOARDING}`);
   expect(sent).toHaveLength(0);
-  expect(await page.evaluate((id) => localStorage.getItem(`seat_${id}`), BOARDING)).toBeNull();
+  expect(
+    await page.evaluate((id) => localStorage.getItem(`seat_${id}`), BOARDING),
+  ).toBeNull();
 });
 
 test('rooms: an empty board says so, and the doors beside the title stay', async ({
@@ -836,7 +870,9 @@ test('landing: the carriage plays day 2 of the featured game, with the replay’
   const party = page.getByRole('link', { name: /Play with others/ }).first();
   await expect(party).toHaveAttribute('href', '/rooms');
   await expect(party).not.toContainText('boarding');
-  await expect(page.getByRole('link', { name: /^Rooms 2 boarding$/ }).first()).toBeVisible();
+  await expect(
+    page.getByRole('link', { name: /^Rooms 2 boarding$/ }).first(),
+  ).toBeVisible();
   await expect(page.locator('[data-game]')).toHaveCount(3);
   await expect(page.getByRole('contentinfo')).toContainText('212 games archived');
 });

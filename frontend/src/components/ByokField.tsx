@@ -24,7 +24,8 @@ export function ByokField({
   value: string;
   onChange: (key: string) => void;
 }) {
-  const key = useRememberedKey(value, onChange);
+  // the restart card is not told the game's model: a lone saved key is offered
+  const key = useRememberedKey(value, onChange, null);
 
   return (
     <div className={classes.group}>
@@ -39,13 +40,16 @@ export function ByokField({
           value={key.shown}
           onChange={(e) => key.update(e.target.value)}
           onFocus={key.unmask}
+          onBlur={key.commit}
           placeholder="leave empty to use the house default"
           autoComplete="off"
           spellCheck={false}
         />
-        {key.loadedFromStorage ? (
-          <Button type="button" variant="text" size="sm" onClick={key.clearSaved}>
-            Forget the saved key
+        {value ? (
+          <Button type="button" variant="text" size="sm" onClick={key.clear}>
+            {key.saved.some((s) => s.key === value)
+              ? 'Delete the saved key'
+              : 'Clear the key'}
           </Button>
         ) : null}
       </div>
@@ -58,10 +62,10 @@ export function ByokField({
       />
 
       <p className={classes.fine}>
-        The key is sent once, with the request that starts the game, and is never stored on
-        the server. Remembering it saves it in this browser only. Games started with your
-        own key don’t survive a server restart — because the server kept nothing to restart
-        them with.
+        The key is sent once, with the request that starts the game, and held in the
+        server’s memory for that game only. Remembering it saves it in this browser only.
+        Games started with your own key don’t survive a server restart — because the server
+        kept nothing to restart them with.
       </p>
     </div>
   );

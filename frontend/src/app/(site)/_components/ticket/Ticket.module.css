@@ -426,6 +426,35 @@
   align-self: flex-start;
 }
 
+/* the keys this browser keeps, one per company, each with its own delete */
+.savedKeys {
+  margin: 10px 0 0;
+}
+
+.savedHead {
+  margin: 0;
+  color: var(--ink2);
+  font-size: 14.5px;
+}
+
+.savedKeys ul {
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.savedKeys li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  align-items: center;
+  font-size: 14.5px;
+}
+
+.savedKeys li > span {
+  min-width: 8ch;
+}
+
 /* ---------- the room's rows ---------- */
 
 .nameInput {
