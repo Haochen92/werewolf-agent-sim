@@ -16,13 +16,17 @@
  * The key's words follow the server: it is sent once with the create request, held in memory
  * for that game only, and lost only if the server restarts, after which the game waits for a
  * player to enter a key again (`POST /games/{id}/key`, the restart card).
+ *
+ * A key saved for another company can back the game up (`backupFor`): if the model stalls or
+ * fails, its turns go on through that company's backup model on that key. On by default when
+ * there is one; the switch here turns it off.
  */
 import { forwardRef, useState } from 'react';
 import { Switch, TextInput } from '@mantine/core';
 import { maskKey, useRememberedKey } from '@/hooks/useRememberedKey';
 import type { ModelsMenu } from '@/types/contracts';
 import { Button, Icon } from '@/components/site';
-import { PROVIDERS, keyHint, modelProvider } from '@/lib/key-provider';
+import { PROVIDERS, backupFor, keyHint, modelProvider } from '@/lib/key-provider';
 import { houseLine } from './house';
 import type { TicketKind } from './TicketOffice';
 import classes from './Ticket.module.css';
@@ -43,10 +47,25 @@ interface KeyRowProps {
   error: string | null;
   /** The provider's words when the server's check refused the key. */
   refusal: string | null;
+  /** Whether a saved key of another company backs the game up, when there is one. */
+  backupOn: boolean;
+  onBackup: (on: boolean) => void;
 }
 
 export const KeyRow = forwardRef<HTMLInputElement, KeyRowProps>(function KeyRow(
-  { kind, menu, menuFailed, model, required, value, onChange, error, refusal },
+  {
+    kind,
+    menu,
+    menuFailed,
+    model,
+    required,
+    value,
+    onChange,
+    error,
+    refusal,
+    backupOn,
+    onBackup,
+  },
   ref,
 ) {
   const key = useRememberedKey(value, onChange, modelProvider(model));
@@ -57,6 +76,8 @@ export const KeyRow = forwardRef<HTMLInputElement, KeyRowProps>(function KeyRow(
   // what clearing the key would mean: the house runs this model right now
   const housePays = !!row?.house_funded && !required;
   const hint = keyHint(value, model, row?.label ?? 'This model', housePays);
+  const backup = value ? backupFor(key.saved, model, menu?.backups) : null;
+  const backupLabel = menu?.models.find((r) => r.model === backup?.model)?.label;
 
   return (
     <div className={classes.fld}>
@@ -184,6 +205,20 @@ export const KeyRow = forwardRef<HTMLInputElement, KeyRowProps>(function KeyRow(
                   ))}
                 </ul>
               </div>
+            ) : null}
+            {backup ? (
+              <Switch
+                size="sm"
+                checked={backupOn}
+                onChange={(e) => onBackup(e.currentTarget.checked)}
+                label={`Backup: if ${row?.label ?? 'the model'} stalls, the game goes on with ${backupLabel ?? backup.model} on your saved ${PROVIDERS[backup.provider].name} key`}
+                classNames={{
+                  root: classes.paperSwitch,
+                  track: classes.track,
+                  thumb: classes.thumb,
+                  label: classes.switchLabel,
+                }}
+              />
             ) : null}
             {kind === 'room' ? (
               <p className={classes.note}>

@@ -30,8 +30,8 @@ import { Alert, Select, Switch, TextInput } from '@mantine/core';
 import { createGame, createRoom, getModels } from '@/lib/api';
 import { departures } from '@/lib/departures';
 import { formatCost } from '@/lib/format';
-import { keyRefusal, modelProvider, PROVIDERS } from '@/lib/key-provider';
-import { hostKey, seatToken } from '@/lib/storage';
+import { backupFor, keyRefusal, modelProvider, PROVIDERS } from '@/lib/key-provider';
+import { byokKeys, hostKey, seatToken } from '@/lib/storage';
 import { queryKeys } from '@/lib/queryKeys';
 import { Button, Icon, Paper, PageGate, StationWall, wallPage } from '@/components/site';
 import { HeroTicket } from '../landing/HeroTicket';
@@ -83,6 +83,7 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
   const [name, setName] = useState('');
   const [model, setModel] = useState('');
   const [apiKey, setApiKey] = useState('');
+  const [backupOn, setBackupOn] = useState(true);
   const [memory, setMemory] = useState(false);
   const [keyError, setKeyError] = useState<string | null>(null);
   const keyInput = useRef<HTMLInputElement>(null);
@@ -111,6 +112,12 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
 
   const create = useMutation({
     mutationFn: async (): Promise<string> => {
+      // a saved key of another company backs a game the player pays for (KeyRow's switch)
+      const backup =
+        backupOn && apiKey.trim() ? backupFor(byokKeys.all(), model, menu?.backups) : null;
+      const backupBody = backup
+        ? { backup: { company: backup.provider, api_key: backup.key } }
+        : {};
       if (kind === 'solo') {
         const game = await createGame({
           human: true,
@@ -119,6 +126,7 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
           model,
           memory,
           character,
+          ...backupBody,
         });
         // The seat token comes back exactly once: stash it before navigating, or a cookie
         // loss later has nothing to rejoin with.
@@ -127,7 +135,13 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
         departures.mark(game.game_id, character);
         return game.game_id;
       }
-      const room = await createRoom({ name: name.trim(), model, api_key: apiKey, memory });
+      const room = await createRoom({
+        name: name.trim(),
+        model,
+        api_key: apiKey,
+        memory,
+        ...backupBody,
+      });
       hostKey.set(room.game_id, room.host_key);
       return room.game_id;
     },
@@ -394,6 +408,8 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
             onChange={onKeyChange}
             error={keyError}
             refusal={refusal}
+            backupOn={backupOn}
+            onBackup={setBackupOn}
           />
 
           {kind === 'room' ? (

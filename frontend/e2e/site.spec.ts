@@ -288,6 +288,7 @@ const menuWithPurse = (remaining: number) => ({
     needs_key: remaining <= 0,
   })),
   house: { enabled: true, games_per_day: 20, remaining, reset_at: '2026-09-27T00:00:00Z' },
+  backups: { google: 'gemini-3.6-flash', deepseek: 'deepseek/deepseek-v4-pro' },
 });
 
 async function openTicket(page: Page, path: string, remaining: number) {
@@ -464,6 +465,55 @@ test('ticket: a remembered key is kept for its own company and deleted from the 
   await expect(key).toHaveValue('');
   await expect(page.getByText('Saved on this device')).toHaveCount(0);
   expect(await page.evaluate(() => localStorage.getItem('byok_key:google'))).toBeNull();
+});
+
+test('ticket: a saved key of another company backs the game up, and its switch turns it off', async ({
+  page,
+}) => {
+  const sent: Record<string, unknown>[] = [];
+  await page.route('**/games', async (route) => {
+    const req = route.request();
+    if (req.resourceType() === 'document' || req.headers()['rsc']) return route.fallback();
+    const cors = {
+      'access-control-allow-origin': req.headers()['origin'] ?? '*',
+      'access-control-allow-credentials': 'true',
+      'access-control-allow-methods': 'POST, OPTIONS',
+      'access-control-allow-headers': 'content-type',
+    };
+    if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors });
+    sent.push(req.postDataJSON() as Record<string, unknown>);
+    // refused, so the page stays on the ticket for the second punch
+    await route.fulfill({
+      status: 500,
+      contentType: 'application/json',
+      headers: cors,
+      body: JSON.stringify({ detail: 'held for the test' }),
+    });
+  });
+  await openTicket(page, '/play', 3);
+  // saved on an earlier visit; the saved keys are read again as the model changes
+  await page.evaluate(() => localStorage.setItem('byok_key:google', 'AIzaSAVED1234567'));
+  await page.getByRole('button', { name: 'Use my own key instead' }).click();
+  await page.getByLabel('Model', { exact: true }).click();
+  await page.getByRole('option', { name: /DeepSeek V4 Pro/ }).click();
+  await page.getByLabel('Your key').fill('sk-ds-1234567');
+
+  const backup = page.getByRole('switch', {
+    name: 'Backup: if DeepSeek V4 Pro stalls, the game goes on with Gemini 3.6 Flash on your saved Google key',
+  });
+  await expect(backup).toBeChecked();
+  await page.getByRole('button', { name: 'Start the game' }).click();
+  await expect.poll(() => sent.length).toBe(1);
+  expect(sent[0]).toMatchObject({
+    api_key: 'sk-ds-1234567',
+    model: 'deepseek/deepseek-v4-pro',
+    backup: { company: 'google', api_key: 'AIzaSAVED1234567' },
+  });
+
+  await backup.uncheck();
+  await page.getByRole('button', { name: 'Start the game' }).click();
+  await expect.poll(() => sent.length).toBe(2);
+  expect(sent[1]).not.toHaveProperty('backup');
 });
 
 test('ticket: a refused key is said under the key field while the plate checks, then cleared by editing', async ({
