@@ -57,7 +57,6 @@ import { SITE } from '@/lib/site';
 import { beatsFor } from '@/stage/beats/beatsFor';
 import type { MiniUnder } from '@/stage/containers/ReplayTheatre';
 import { stageFonts } from '@/stage/fonts';
-import { picturesOf } from '@/stage/pictures-of';
 import { neutralWinner, winnerKey, type WinnerKey } from '@/stage/roles';
 import type { DurableGameEvent, ReplayGame } from '@/types/contracts';
 import classes from './Carriage.module.css';
@@ -236,21 +235,18 @@ export function FeaturedReplay() {
   // picture stays over it until they are in, and the replay plays from then (a first visit after
   // a deploy, every file new to Cloudflare, showed a dark window for 10 s and more, and read as
   // broken). The picture is up from when the carriage comes near (owner, 2026-10-16: the train,
-  // not "Rewinding the reels…"), then fades off the stage
+  // not "Rewinding the reels…"), then fades off the stage. The theatre says when: once every
+  // scene on its reel has its pictures in (owner, 2026-10-22: a phone stalled at each new scene
+  // while its pictures came; the cover stays a moment longer instead), or `PAINT_CAP_MS` on
   const [painted, setPainted] = useState(false);
   const [lifted, setLifted] = useState(false);
   const loaded = !!(game && cut);
+  const onWarm = useCallback(() => setPainted(true), []);
   useEffect(() => {
-    const el = screenRef.current;
-    if (!loaded || !el) return;
-    let live = true;
-    void picturesOf(el, PAINT_CAP_MS).then(() => {
-      if (live) setPainted(true);
-    });
-    return () => {
-      live = false;
-    };
-  }, [loaded, screenRef]);
+    if (!loaded) return;
+    const t = setTimeout(() => setPainted(true), PAINT_CAP_MS);
+    return () => clearTimeout(t);
+  }, [loaded]);
   useEffect(() => {
     if (!painted) return;
     const t = setTimeout(() => setLifted(true), LIFT_MS);
@@ -373,6 +369,9 @@ export function FeaturedReplay() {
                         reel: cut.reel,
                         xray: true,
                         autoplay: onScreen && !still && painted,
+                        // the goldens' still frame needs only its own pictures
+                        warm: !still,
+                        onWarm,
                         controls: wide ? 'stage' : 'under',
                         under,
                         underEl,

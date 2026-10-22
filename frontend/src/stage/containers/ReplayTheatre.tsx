@@ -63,6 +63,7 @@ import {
   type ReplayState,
 } from './replay-state';
 import { visitedOn } from './stops';
+import { WARM_CAP_MS, decodeAll, picturesOn, settled, warmBeats } from './warm-reel';
 import { holdFor, transportLabel } from './transport';
 import { TransportBand } from './TransportBand';
 import type { FileChoice } from '../film/case-file';
@@ -89,6 +90,12 @@ export interface ReplayTheatreProps {
     controls?: 'stage' | 'under';
     under?: (u: MiniUnder) => ReactNode;
     underEl?: HTMLElement | null;
+    /**
+     * Called once the first beat's pictures are in, and with `warm` every scene's on the reel
+     * (warm-reel.ts): until then the reel does not play, and the caller's cover stays up.
+     */
+    onWarm?: () => void;
+    warm?: boolean;
   };
   /**
    * The theatre waits out of sight under the replay page's cover (TheaterClient), its pictures
@@ -187,11 +194,49 @@ export function ReplayTheatre({
   // the preview's caller turns the play on and off (scrolled away, a phone held upright)
   const isMini = !!mini;
   const controls = mini ? (mini.controls ?? null) : 'stage';
+  // a preview's pictures first: its reel's scenes visited once, still, under the caller's
+  // cover, every picture fetched and decoded, then the play (warm-reel.ts); with less motion
+  // asked for, only the first scene's, as nothing will play
+  const root = useRef<HTMLDivElement>(null);
+  const onWarm = mini?.onWarm;
+  const warmAll = !!mini?.warm && !stillPlease;
+  const [warmed, setWarmed] = useState(!onWarm);
+  useEffect(() => {
+    const el = root.current;
+    const reel = state.loop;
+    if (warmed || !onWarm || !el || !reel) return;
+    let live = true;
+    void (async () => {
+      const until = Date.now() + WARM_CAP_MS;
+      const srcs = new Set<string>();
+      const visits = warmAll ? warmBeats(reel, state.xray ? all.xray : all.public) : [];
+      for (const i of visits) {
+        if (!live || Date.now() > until) break;
+        dispatch({ type: 'seek', index: i });
+        await settled(el, until);
+        picturesOn(el, srcs);
+      }
+      if (!live) return;
+      if (visits.length) dispatch({ type: 'seek', index: reel[0] });
+      await settled(el, until);
+      picturesOn(el, srcs);
+      await decodeAll(srcs, until);
+      if (!live) return;
+      setWarmed(true);
+      onWarm();
+    })();
+    return () => {
+      live = false;
+    };
+    // once, from the theatre's first render: the reel and its cut are fixed for a preview
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // a viewer who paused a preview keeps it paused when it scrolls away and back
   const paused = useRef(false);
   useEffect(() => {
-    if (isMini) dispatch({ type: autoplay && !paused.current ? 'play' : 'pause' });
-  }, [isMini, autoplay]);
+    if (isMini)
+      dispatch({ type: autoplay && warmed && !paused.current ? 'play' : 'pause' });
+  }, [isMini, autoplay, warmed]);
   const togglePlay = useCallback(() => {
     paused.current = state.playing;
     dispatch({ type: 'toggle-play' });
@@ -385,6 +430,7 @@ export function ReplayTheatre({
   const besideDrawer = !!beat && slotOf(state) === 'drawer' && beat.id !== 'over.epilogue';
   return (
     <div
+      ref={root}
       className={styles.theatre}
       data-beat-index={index}
       data-beat={beat?.id}
