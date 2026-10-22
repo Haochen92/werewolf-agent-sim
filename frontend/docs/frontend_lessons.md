@@ -543,12 +543,16 @@ viewer's engine.** The deal lagged on the owner's iPhone in the landing's carria
 the replay page, the same beats in the same theatre. Chrome traces (throttled 4×) read the two
 pages alike, and the other page sections and first-load work made no difference. In WebKit the
 landing's snow did: two sheets falling behind the carriage doubled a frame of the cards' drop
-and turn. Paused, the sheets cost what still ones do, so the snow now holds while the window
-plays the deal (`Carriage.module.css`, `:has([data-beat^='deal.'])`). Rule: once the scene is
-ruled out, list what the slow page has and the fast one lacks, and time each in the viewer's
-engine. For WebKit, headless Playwright fires about one animation frame per beat and can't time
-anything; run it headed under `xvfb-run`. It renders in software, so read ratios, not frame
-rates.
+and turn. The snow was held for the deal and deployed, and on the iPhone it changed nothing.
+Desktop WebKit renders in software and composites on the CPU, where two moving full-width
+sheets are expensive; a phone's GPU composites them for almost nothing. The difference the
+first pass skipped was in the pages' own settings: the carriage plays at `fast` (half the
+time), so the deal's freeze at each beat's start (lesson 46's remount) lands inside the first
+cards' moves instead of before them. Rule: list what the slow page has and the fast one lacks,
+its settings included, not only its contents. A cost found in an emulated engine is a lead to
+confirm on the device before shipping a fix for it. For WebKit, headless Playwright fires about
+one animation frame per beat and can't time anything; headed under `xvfb-run` it can, in
+software.
 
 ---
 
