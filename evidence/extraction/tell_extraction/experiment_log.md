@@ -1,634 +1,512 @@
 # The Tell Ledger — Build Journey
 
-> **What this is.** The chronological record of building the **tell system** — the pipeline that mines
-> recurring, publicly-observable behavior patterns ("tells") from finished games, organizes them into a
-> bounded store, and counts how often each role actually exhibits them. It runs from the first mining
-> prompt through the dedup experiments, a 30-game lifecycle simulation, the design amendment the simulation
-> forced, the detector build and its goldens, to the pipeline's graduation into the loop (§17). Later entries supersede earlier ones; where the design changed, the
-> change is shown *in its place* rather than edited away — the point is the journey, including the parts the
-> data overruled.
->
-> **Companion docs.** The final design, destination-first, is in [`report.md`](report.md). What a tell is
-> *for* — the credit redesign that makes accuracy-counted facts the currency — is the design record at
-> [`../../credit/read_tactic_credit_redesign.md`](../../credit/read_tactic_credit_redesign.md)
-> §3, and the run this gates is planned in
-> [`../../execution_plan/compounding_measurement_plan.md`](../../execution_plan/compounding_measurement_plan.md)
-> §R. Guiding principle: **the miner surfaces candidates; the counting decides what they mean** — we build
-> detectors here, never judges.
+> **Scope:** July 11–14, 2026 experiments on the nine-seat game, from candidate mining to an
+> implemented tell-book channel. Later entries supersede earlier decisions. Historical costs,
+> models and validation limits belong to those runs, not today's deployment.
+> **Editorial review:** October 13, 2026. This revision preserves the experiment sequence while
+> correcting claims against saved artifacts and distinguishing build status from demonstrated benefit.
+> The [reference report](report.md) explains the resulting mechanism; the
+> [design record](../../credit/read_tactic_credit_redesign.md) explains the read/tactic separation.
 
----
+## 1. Motivation — measure behavioral claims separately from tactics
 
-## 1. Motivation — facts you can count, and why the prompt is the risky part
+The existing memory system stored examples and tactical instructions. A tell added a different kind
+of knowledge: an observable behavior associated with a hidden role. The proposed pipeline would mine
+candidates from finished games, detect their occurrence in public transcripts, then join revealed roles
+to estimate whether the behavior distinguished players. A compact book would supply selected tells
+before agents formed their reads.
 
-A **tell** is a behavior visible at the table: "when accused, votes for their accuser." The ledger turns
-such patterns into *facts with error bars*: count who exhibits each across many games, join exhibitors'
-roles once the game reveals them, and ask whether the behavior lands on evil players more (or less) often
-than a random cast-pick would. That comparison against the cast's base rate is the tell's **lift** — the
-only thing that says what a behavior *means*. No model is asked "does this suggest a wolf?"; the count
-answers it.
-
-That concentrates the risk in mining. Everything downstream is arithmetic, which does not degrade quietly.
-But if a mined description is role-inferential ("defends their packmate"), unfalsifiable ("plays
-suspiciously"), or this game's plot in general words, the ledger counts noise with perfect precision. So
-the probe iterates the mining prompt against real games until its failure modes are bounded, before any
-store-facing run depends on it. Two constraints are fixed by the design record and not re-argued here:
-**descriptions must be observable behavior, objectively described** (a role-blind detector and the live
-player prompt both read them, and neither can check a claim requiring a hidden role); and **the miner emits
-no direction** ("this suggests wolf" is banned — direction is decided later by lift, and a miner that
-assigns meaning is a judge importing the outcome-halo bias this redesign removes).
+The miner could use revealed roles to find candidates, but its selection would be affected by hindsight.
+Its examples therefore could not establish accuracy. A separate role-blind detector and held-out games
+were needed for measurement. Both the descriptions and the detector could fail: “defends their packmate”
+requires hidden knowledge, while “plays suspiciously” is too vague to count consistently. The first
+experiments tested whether mining could produce observable, reusable descriptions with evidence quotes.
 
 ---
 
 ## 2. Decisions before the first call
 
-Each was settled by reasoning before any API call, with a "because" that mattered later:
+The initial miner would work one game-day at a time, carrying earlier public discussion as context.
+That kept the focus narrow without losing cross-day behavior. Its input included revealed roles for
+discovery, but excluded private night actions and reasoning. Output still needed inspection: absent
+private evidence does not stop a model inventing a hidden relationship.
 
-- **One call per game-day, not per game** — the day is the coherent behavioral unit, and cheap-model
-  attention degrades with input length (direct evidence in this repo). Prior days' public record rides
-  along as context, so cross-day patterns stay reachable.
-- **The miner sees the public record only — by construction, not instruction.** Night actions and private
-  reasoning are absent from its input, so a table-invisible behavior *cannot* be mined; an instruction can
-  be ignored, an absent input cannot. (A true-roles header is included — mining may be omniscient, counting
-  is not.)
-- **The model names the exhibitor's `player_id`, never their role** — the behavior→role join is a
-  deterministic lookup; letting a model transcribe roles buys only error.
-- **Every mined entry carries a verbatim evidence quote** — the anti-confabulation anchor every later human
-  review verifies against.
-- **Don't over-police generality.** A too-broad tell is self-punishing (its lift collapses to zero and the
-  math discards it); the real enemy is the *over-specific* tell wrapped around this game's storyline, which
-  bloats the store before support starvation can kill it. So the prompt asks only for "a pattern that could
-  recur."
-- **The in-sample halo, named before it bites.** An omniscient miner over-notices behaviors fitting the
-  roles it sees, so lift on the mined games is biased upward. Remedy, pre-registered: mine on one slice,
-  count on a held-out slice.
-- **Probe on the production model** — `get_llm_pro()` (gemini-2.5-pro); a prompt validated on a cheaper
-  model is one the real pass never runs. (The cheap model's shot comes later — §6–7.)
-- **Deterministic screens check structure only** — regex verifies no role words, no player IDs,
-  quote-in-record; objectivity, generality, and motive-freedom are semantic, judged by reading.
+Each entry would name an exhibitor and carry a verbatim evidence quote. Roles would be joined from
+the game record rather than transcribed by the model. The description had to be a recurring observable
+behavior, not a verdict that someone “acted wolfish.” Role association would be measured later on
+held-out games; mining counts were for discovery only.
 
-Scaffolding: [`scripts/tell_mining_probe.py`](scripts/tell_mining_probe.py), prompts frozen per iteration
-in [`prompt_versions/`](prompt_versions/), outputs in `outputs/` as JSONL rows `{game_id, day, exhibitor,
-behavior, evidence_quote, exhibitor_role, screen_flags, prompt_version}`.
+The first probe used Gemini 2.5 Pro, the existing extraction model. Cheap deterministic screens checked
+role words, player IDs and quote presence; readers assessed meaning and generality. Those screens were
+triage instruments, not substitutes for semantic review.
+
+Provenance: frozen `scripts/tell_mining_probe.py`, versioned files in `prompt_versions/`, and mined
+rows in `outputs/`. Rows retain game, day, exhibitor, description, quote, role and screen flags.
 
 ---
 
-## 3. v1 — first contact (5 games, 25 day-calls, 177 tells)
+## 3. First prompt: inspect candidates and check the screens
 
-Prompt [`prompt_versions/v1.txt`](prompt_versions/v1.txt): an analyst persona in the house extraction style.
+The first prompt ran on five games, producing 177 entries from 25 day-calls. No role-word or player-ID
+violations were found in the descriptions. Among 91 rows read, villagers were the largest exhibitor
+group at 28, so the miner was not simply listing evil players. Validity still required later detection.
+Two examples from `outputs/mining_v1.jsonl` show the intended grain:
 
-**What held immediately.** Zero role-word and zero player-ID violations across 177 descriptions — the
-leak-critical rules cost nothing to enforce. The exhibitor spread is healthy (villagers largest, 28 of the
-91 rows read), which the base-rate math needs: a miner surfacing only evil behaviors could never show a
-behavior *fails* to discriminate. Several candidates are the discriminative move-types hoped for, lifted
-verbatim from `outputs/mining_v1.jsonl`:
+> Casts a solitary vote for a player when all other players vote to abstain.
 
-> "Casts a solitary vote for a player when all other players vote to abstain." (a wolf, day 2)
->
-> "Votes for the player the room has already converged on without having voiced any suspicion of them
-> during discussion." — the blend-vote pattern, surfaced unprompted.
+> Votes for the player the room has already converged on without having voiced any suspicion of them during discussion.
 
-**The first thing to debug was the instrument, not the model.** The run reported 54 of 177 quotes (30%) as
-not-found. Re-screening after normalizing unicode punctuation and stripping edge ellipses dropped that to
-11 of 177 (6%): most "failures" were the screen comparing smart quotes against straight quotes. *Catches: a
-brand-new screen is an uncalibrated instrument — check its false-positive rate before believing its number.*
+**The quote check itself needed repair.** It initially flagged 54/177 quotes as absent. Normalizing
+Unicode punctuation and stripping edge ellipses reduced that to 11/177. Most flags had reflected
+formatting rather than invented evidence.
 
-**Three real defects:**
+The remaining defects motivated three prompt changes. Some quotes spliced separate passages, so the
+prompt required one contiguous span. Some descriptions invented motives, such as acting “to establish
+credibility,” so it distinguished a player's reported motive from the miner's inference. Others
+retold the game's plot, so it asked for the recurring move type or no entry.
 
-1. **Spliced quotes (~6% after fair screening)** — the model stitches non-adjacent sentences or elides with
-   "…". Fix: one contiguous verbatim span, never splice.
-2. **Motive attribution (~2 per 91 rows read)** — "Announces being the target of a failed night attack **to
-   establish credibility**"; the purpose clause is inference. The edge: *reported* motive is fine ("claims
-   their vote was meant to break a deadlock"); only miner-authored purpose clauses are banned. A sweep found
-   5 suspects of which 3 were legitimate reported speech — low but nonzero. Fix: a carve-out rule plus a BAD
-   example from the failure.
-3. **Episode re-descriptions (a handful per game)** — general phrasing wrapped around this game's plot,
-   near-zero recurrence, pure bloat. Fix: a grain rule — describe the *move type*; if the description needs
-   the storyline, generalize or skip.
-
-**Decide:** all three fixes are prompt-side; the screen normalizer ships with the probe. → v2.
+**Decision.** Revise the prompt using concrete bad examples and keep the repaired quote check.
+Source: [v1 prompt](prompt_versions/v1.txt) and `outputs/mining_v1.jsonl`.
 
 ---
 
-## 4. v2 — the three fixes land (same 5 games, 184 tells)
+## 4. Second prompt: check the three targeted corrections
 
-Prompt [`prompt_versions/v2.txt`](prompt_versions/v2.txt) adds the contiguous-quote rule, reported-speech
-carve-out, and move-type grain rule, each anchored by a BAD example from v1.
+On the same five games, the revised prompt produced 184 entries. Reported quote defects fell from
+about 6% to 1%. All 26 quotes still containing ellipses matched the transcript; the quoted players
+had used the punctuation themselves. Six motive-clause screen hits were reported speech, and review
+reported no remaining episode re-descriptions in the sample. Role/player-ID checks found no violations.
 
-**Verified with the same instruments.** Quote defects fell 6% → 1%, and the 26 quotes still containing "…"
-all match verbatim (players' own ellipses) — splicing stopped rather than the screen loosening. The
-motive-clause sweep found 6 hits, all inside reported speech: the carve-out working. Episode re-descriptions
-gone. Leak rules still 0-for-184. Yield ~7 tells per day-call.
+The probe also found useful wording recurrence: 22/184 rows belonged to exact-wording duplicate groups,
+including one phrase used for four exhibitors across games. Exact matching could resolve those rows
+without semantic judgment.
 
-**One early positive for the counting path.** Unprompted, the model converges on *identical wording* for
-recurring patterns — one phrasing appears verbatim for four exhibitors across games (22 of 184 rows in
-exact-wording duplicate groups). Exact matching is free, so every merge it catches is one the paid semantic
-judge never risks.
-
-**Decide: v2 is the review candidate.** Signals that would reopen the prompt: the owner's review, the dedup
-stage (if wordings prove unmergeable), the held-out detector pass (if behaviors prove undetectable
-role-blind).
+**Decision.** Keep v2 as the review candidate. Description review, duplicate handling and later
+role-blind detection could still expose problems not covered by these checks.
+Source: [v2 prompt](prompt_versions/v2.txt) and the corresponding mining outputs.
 
 ---
 
-## 5. v3 — the owner points at the epistemic rule, and it exposes a double defect
+## 5. Third prompt: replace a word ban with a knowledge boundary
 
-The owner pointed at the standing `EPISTEMIC_STATUS_RULE` (`Agents/prompts/standards.py`) — the certainty
-spectrum the strategy prompts already use: *own knowledge → system-confirmed → claimed-with-evidence →
-claimed → unknown*. Reading v1/v2 against it showed the flat "no role words" rule was wrong in **both
-directions at once**:
+Review against the game's knowledge rules exposed two problems with banning every role word.
+“Justifies a past vote against a now-confirmed ally” used no role name, but still asserted a hidden
+relationship. Conversely, a public claim to be the investigator was observable behavior even though
+it contained a role word. The first two prompts had produced no claim- or reveal-conditioned family.
 
-- **Under-blocked.** v1 produced "justifies a past vote against a now-confirmed **ally**" and v2 three
-  counts of "a now-revealed **valuable player**" — hidden-relationship claims whose truth requires an
-  *unrevealed* role, so a role-blind detector cannot verify them, yet the role-word regex never fired
-  because "ally" and "valuable" aren't role words.
-- **Over-blocked.** Death reveals and public role claims sit at certainty levels 2–4 (public, checkable),
-  and reacting-to-a-reveal and role-claiming are classic tell families; the blanket ban silently suppressed
-  the whole family — v1 and v2 contain not one claim- or reveal-conditioned tell.
+The revision allowed role terms with explicit public status, such as “claims to be” or “revealed on
+death as,” while prohibiting ungrounded hidden relationships. It also used the earlier “ally” example
+to explain the distinction.
 
-*Catches: a flat lexical ban is the wrong shape for an epistemic constraint — what matters is the certainty
-level the sentence asserts, not the word. The codebase already had the right rule; the prompt should have
-inherited it.*
+**Result.** On the same five games, v3 produced 181 entries, with no bare-role or hidden-relation
+flags and a 1.6% quote-flag rate. Seven entries described claims or reveals, including publicly
+claiming to be the investigator. Review considered those descriptions consistent with the public
+record. The lexical screen alone could not establish that conclusion.
 
-**v3** ([`prompt_versions/v3.txt`](prompt_versions/v3.txt)): role/faction words allowed *only* with an
-explicit public-certainty marker ("revealed on death as…", "a player claiming to be…"); bare role
-attribution stays banned; hidden-relationship words banned by name, the v1 "ally" failure as the BAD
-example. Screens updated to match. **Verified (same 5 games, 181 tells):** zero bare-role and zero
-hidden-relation flags, quote flags 1.6%, yield stable. The unlocked family materialized — seven
-certainty-marked tells, all epistemically sound, including "publicly claims to be the investigator," the
-game's most classic tell, invisible to v1 and v2.
-
-**Decide: v3 supersedes v2 as the review candidate.**
+**Decision.** Use v3 as the next candidate. The governing rule was whether a role-blind reader could
+check the behavior, not whether the sentence contained a role name.
+Source: [v3 prompt](prompt_versions/v3.txt) and the corresponding mining outputs.
 
 ---
 
-## 6. Can a cheaper model carry the sweep? (the budget forcing function)
+## 6. A cheaper model loses repeated wording
 
-Mining a large corpus on 2.5-pro projects to ~$15–30, too large a share of the remaining budget. So a
-screen: same v3 prompt, 5 games, screens; only the model changed (one backend throughout — the house rule
-that scores are never compared across backends).
+The projected cost of mining a larger corpus on 2.5 Pro was $15–30. A same-five-game comparison held
+the v3 prompt and backend fixed while changing the model. The cheaper models produced fewer candidates,
+but the more consequential result was their loss of exact repeated wording.
 
-| | 2.5-pro (reference) | 3.5-flash | flash-lite 3.1 |
+| Measure | 2.5 Pro | 3.5 Flash | 3.1 Flash-Lite |
 |---|---|---|---|
-| tells | 181 (7.2/call) | 103 (4.1/call) | 116 (4.6/call) |
-| leak-class flags | **0** | 4 | 3 |
-| quote flags | 3 | 0 | 1 |
-| exact-wording convergence (rows in duplicate groups) | **24** | 3 | **0** |
+| Entries | 181 | 103 | 116 |
+| Role/relationship screen flags | 0 | 4 | 3 |
+| Quote flags | 3 | 0 | 1 |
+| Rows in exact-wording duplicate groups | 24 | 3 | 0 |
 
-The yield drop and leak flags are arguable (several cheap flags read as borderline reported speech). The
-disqualifying line is the last: **wording convergence collapsed to zero.** Pro reuses the same sentence for
-a pattern unprompted; flash-lite never does. Convergence is what lets free exact-matching catch recurrence
-before the paid semantic judge runs — a flash-lite corpus would be 100% judge-dependent, and every merge
-pushed onto a judge is added wrong-merge exposure.
+Some screen flags were borderline reported speech. The zero exact-wording recurrence on Flash-Lite
+was less ambiguous: its output would depend more on paid semantic matching. This did not prove it
+could never reuse wording, only that it failed to do so in this comparison.
 
-**Decide: mine on pro, ration by corpus size instead of model quality** — bootstrap ~60 games (~$8–10),
-defer the rest. The cheap model's real shot is the *detector* (binary matching is far easier than
-open-ended mining), where a golden set will measure whether it clears the bar. *(Superseded within a day.)*
+**Initial decision.** Retain Pro and limit the mining volume to about sixty games, then test the
+cheaper model on detection. The next experiment revisited the input design instead.
 
 ---
 
-## 7. v4 — the owner's channel split rescues flash-lite (and the budget)
+## 7. Split the input to recover cheap-model coverage
 
-The owner proposed attacking §6's failure *mechanism*, not paying around it. Flash-lite's missing discussion
-tells looked like attention anchoring on the compact, structured vote block. So **split the day into two
-focused flash-lite calls**, discussion-layer and vote-layer. Temporally principled: the discussion call
-omits the focus day's vote block (nothing anachronistic to anchor on); the vote call keeps the full day
-because the strongest vote tells are cross-channel ("votes for the room's target *without having voiced*
-suspicion" is unreadable without the discussion). Free by-product: every tell now carries a `channel` tag, a
-hard partition downstream.
+Flash-Lite's missing discussion candidates suggested that it was attending to the compact vote block.
+The proposed fix split each day into two calls. The discussion call omitted that day's votes; the
+vote call kept discussion, because many voting patterns refer to what was said beforehand.
 
-**Verified (v4 split on flash-lite, same 5 games, 50 calls, 213 tells):**
+On the same five games, the split recovered discussion coverage and repeated wording:
 
-| | pro single (ref) | flash-lite single | **flash-lite split (v4)** |
+| Measure | Pro, single call | Flash-Lite, single call | Flash-Lite, split calls |
 |---|---|---|---|
-| tells | 181 | 116 | **213** |
-| leak-class flags | 0 | 3 | 1 (0.5%) |
-| quote flags | 3 | 1 | 4 (1.9%) |
-| convergence rows | 24 | 0 | **19** |
-| the §6 gap case (game-1 day-2 discussion tells) | 4 | **0** | **3**, mapping onto pro's finds |
+| Entries | 181 | 116 | 213 |
+| Role/relationship flags | 0 | 3 | 1 |
+| Quote flags | 3 | 1 | 4 |
+| Rows in exact-wording duplicate groups | 24 | 0 | 19 |
+| Discussion candidates in the inspected game-1/day-2 gap | 4 | 0 | 3 |
 
-The coverage gap closed, total yield now *exceeds* pro's single pass, and convergence recovered from zero to
-19: focusing each call stabilizes the pattern vocabulary. Honest residuals: an occasional miner-authored
-motive clause still slips (~1–2%), and the vote prompt's named example families may bias against novel vote
-patterns — noise the dedup and read tiers absorb, not corpus poison.
+The split used 50 calls and recovered three of the four reference patterns in the inspected gap.
+Higher yield was not itself an accuracy result. Review still found occasional inferred motives
+(about 1–2%), and the vote prompt's example families could influence what it discovered.
 
-**Decide: the mining design is v4-split on flash-lite** — a full sweep now costs ~$2–3 instead of $15–30,
-and §6's pro-on-60-games plan is superseded, budget returned to the run reserve. *Catches: when a cheap
-model fails a task, first ask whether the task can be reshaped to remove the failure mechanism. The model
-was never the binding constraint — the input layout was.*
-
----
-
-## 8. Dedup v0 — how the corpus collapses (run before paying for any sweep)
-
-The owner redirected the sequencing: before mining more games, show how the *existing* corpus consolidates.
-The store's history with observations and strategy points says volume-before-dedup-control is how stores
-rot, and the dedup dynamics were the un-derisked part.
-
-**Scope rules decide what "duplicate" means.** Tell dedup is **global within a channel, never partitioned by
-role**: lift needs the same behavior's exhibitors counted across *all* roles, so a role partition would
-split numerator from denominator and silence the refutation channel (the villager exhibitors that prove a
-vague tell means nothing). Channel (vote vs discussion) *is* a hard partition — a vote tell references cast
-votes by construction, so a cross-channel merge is a category error.
-
-**v0, TF-IDF prefilter: near-zero collapse — and the prefilter, not the judge, was the bottleneck.** 202
-distinct wordings produced only 10 candidate pairs and 3 merges, while the manual read already knew ~14
-votes-own-accuser variants sat in the corpus. At tell length paraphrases share almost no tokens, so lexical
-cosine sees nothing. *Catches: the house cosine-is-not-a-judge rule bites one level earlier than expected —
-at this length, lexical cosine is not even a usable prefilter.*
-
-**v0.1, production embeddings: real collapse, and a scale surprise.** The similarity scale is heavily
-compressed — the *median* vote-channel pair sits at 0.84, the 99th percentile at 0.93 — so an absolute
-threshold is meaningless (0.80 admitted 2,837 "candidate" pairs). With a cap of 400 judged pairs per channel
-as the filter: 213 rows collapsed to 166 canonical tells, 44 merges, the clusters the right ones. A read of
-all 44 found one questionable case (~2%), from an ambiguous pronoun, not judge over-eagerness. Under-merge —
-true paraphrase pairs the cap never examined — is the real residual, and a running theme.
-
-**Decide:** (1) the prefilter moves from absolute-threshold to **rank-based top-k neighbors** (on a
-compressed scale only ranks carry information); (2) ambiguous voter/target wordings are a known
-manual-repair class; (3) whether growth converges is unanswerable at 5 games — the next increment is more
-games plus a re-dedup, and that curve, not fiat, sets the sweep size.
+**Decision.** Adopt v4 split mining on Flash-Lite. The contemporary sweep estimate fell to $2–3
+from $15–30; later billing corrections in §14 qualified the initial cost assumptions. The measured
+engineering finding was that a more focused input recovered coverage on this sample without using
+the larger model.
 
 ---
 
-## 9. The distinctness audit — how much of 166 earns its existence
+## 8. Duplicate detection — candidate selection limited recall
 
-The owner's challenge: 166 canonical tells from *five games* smells like bloat. Method: one strong-model
-reviewer per channel over every canonical (rubric: merge / episode / trivial / vague / keep), then an
-independent verification pass over every vote merge, every drop verdict, and a sample of discussion merges.
+Before mining more games, the next check asked whether descriptions of the same behavior could be
+consolidated. Matching had to span roles within a channel: the same behavior in a villager and a wolf
+must share an identity for their frequencies to be compared. Discussion and vote descriptions stayed
+in separate channels.
 
-**The reviewers were verified before their counts were trusted** — vote merges ~17/20 clean (including a
-subtle mirror pair correctly kept apart: accuser-votes-target vs target-votes-accuser), discussion ~90%
-agreement. **Two verdicts were overturned on principle.** The reviewer ruled accuse-then-vote TRIVIAL "because
-it's baseline follow-through." Wrong here: **commonness is the base-rate math's job, not the ontology's.** A
-universal behavior dies of lift collapse honestly on its own, and this one is demonstrably non-universal
-(zero of its six exhibitors were evil — a town-leaning tell is as useful as an evil-leaning one). TRIVIAL is
-reserved for literal non-choices that cannot be counted. *Catches: a delegated reviewer imports the "boring =
-useless" rule; a counting architecture makes boring self-punishing, so the ontology should only drop what
-cannot be counted.*
+**The lexical prefilter missed known paraphrases.** TF-IDF similarity over 202 distinct wordings
+produced only ten candidate pairs and three merges, despite a manual read finding about fourteen
+votes-own-accuser variants. Shared vocabulary was too weak a filter for these short descriptions.
 
-**The accounting:** 166 canonicals → **107 keepers**, 45 further merges (the capped judge's recall gap, now
-closed by review), 14 drops. About a third was bloat — the owner's smell right in direction, though the
-majority survives. Two-thirds of keepers are single-instance hypotheses, what five games *should* produce.
-The head was already coherent (five games, in-sample, direction only): votes-own-accuser at n=18 with 9 evil
-exhibitors against a 1-in-3 prior; accuse-then-vote and abstain-despite-arguing both town-leaning at 0 evil.
+**Embeddings found candidates, but the similarity scale required a tighter budget.** The median
+vote-channel pair scored 0.84 and the 99th percentile 0.93; a 0.80 cutoff admitted 2,837 pairs.
+Capping the judged candidates at 400 per channel produced 166 canonical tells from 213 rows, with
+44 merges. Review of all 44 found one questionable pronoun-dependent match. Missed candidates remained
+a separate source of duplicate entries.
 
-**Design consequences:** (1) the 45 recall-merges size the gap the top-k prefilter must close; (2) the
-detector cannot be per-tell — at 107+ tells that explodes, so it scans a *checklist* per player-game, making
-calls scale with games not corpus; (3) periodic strong-model distinctness audits ARE the batch pass of the
-house dedup architecture, and this was the first.
+**Decision.** Use ranked nearby candidates rather than rely on the original absolute cutoff, retain
+ambiguous relational wording for review, and test growth on more games before choosing a mining budget.
+The risk was both wrong merges and missed matches; reviewing accepted merges checked only the former.
 
 ---
 
-## 10. The ledger simulation — 30 games through the spec (2026-07-12)
+## 9. Review the 166-entry corpus before expanding it
 
-By now the design record had a full ledger spec: a three-tier store (bounded detector-scanned **checklist**,
-unbounded **archive**, small injected **book**), drop-or-keep dedup at ingest, an admission queue with a
-time-to-live, probation verdicts after K scanned games, and re-entry from archive on recurrence. Before
-trusting any of it the whole lifecycle was simulated: 25 more games mined (v4-split flash-lite, quality flags
-stable ~2.7%), then all 30 games' 1,109 mined instances replayed in order through the spec. Honesty label:
-no detector exists yet, so "support" here means *mined recurrence*, standing in for detected counts — good
-for the plumbing, meaningless for tell validity.
+The next review asked whether five games had produced 166 distinct reusable behaviors or mostly
+fragments. A strong-model reviewer examined each channel for merges, episode descriptions, trivial
+entries and vague wording. A separate pass checked every vote merge and drop, plus a sample of the
+discussion merges. About 17/20 vote merges were accepted; discussion agreement was about 90%.
 
-**Finding 1 — the vocabulary does not saturate.** Fresh tells arrived ~43/game early, then flat ~22/game
-through games 21–30, 740 total canonicals at game 30, no downward trend. **There is no "mine it all"
-endpoint, so the bulk mining sweep died as a concept.** Mining is a standing per-game pass, and the bounded
-checklist is *the* mechanism that makes an open vocabulary affordable.
+One important correction was conceptual. The reviewer called accuse-then-vote trivial because it was
+ordinary follow-through. Common behavior can still discriminate between roles, so commonness alone
+was not a reason to discard a measurable candidate. Its six mined exhibitors were all town; that was
+a reason to measure it on other games, not evidence that it was already a validated tell.
 
-**Finding 2 — the head concentrates, but the online judge fragments it.** The top tell sat at n=18, with the
-*same tell* in two other wordings at n=11 and n=10 the capped pairwise judge never united. Consolidated,
-true head tells run n≈30–40 over 30 games, roughly **twice what any single wording shows** — so batch
-consolidation directly determines whether head tells reach creditable support.
+**Result.** The review retained 107 entries: 45 additional merges and 14 drops from the 166-entry
+corpus. Roughly two-thirds of the retained entries had only one mined instance. The vote-own-accuser
+family had 18 mined exhibitors, nine evil. These were discovery counts, not detector-based validity.
 
-**Finding 3 — the funnel behaves.** The admission queue is a rolling ~150-entry window (TTL works, no
-explosion); probation absorbs ~12% of inflow; everything else ages to the archive unscanned (recoverable,
-and re-entry fired repeatedly). Tier occupancy at game 30: 40 incumbents / 30 probation / 168 queued / 502
-archived.
-
-**Finding 4 — cost, against the owner's constraint (everything standing must be flash-lite).** The dedup
-judge ran 5,350 calls over 30 games ≈ 178/game; all-in standing cost estimated at $0.02–0.03 per game, 100%
-flash-lite. *(Corrected 2026-07-13, §14: the per-call unit cost was ~6× low against actual billing. The
-dedup-judge share stays small — two-sentence prompts — but the detector share re-prices to ~$0.20+/game.)*
+**Decision.** A checklist detector was preferable to a separate call for every candidate. Periodic
+review could also recover duplicates outside the pairwise prefilter's candidate budget. The next
+experiment would test whether that burden diminished as the corpus grew.
 
 ---
 
-## 11. Batch consolidation №1 — is the linear growth real? (2026-07-12, $0 API)
+## 10. Simulate the lifecycle over 30 games (2026-07-12)
 
-The owner challenged Finding 1: extrapolated, 22 fresh tells/game × 100 games is over 2,000 — *"I find it
-hard to believe there are genuinely so many noticeably distinct tells."* Two rivals, opposite consequences:
-(a) the vocabulary really is open-ended at this grain, or (b) online dedup recall degrades as the store grows
-— a new wording is only compared against its top-5 embedding neighbors, and the one true match among 700
-candidates is harder to find than among 100, so "fresh" increasingly means "missed merge." The store owed
-itself a batch consolidation anyway, so the pass doubled as the experiment.
+The proposed lifecycle needed a growth and cost check before using its counts. Twenty-five more games
+were mined with the split flash-lite prompt, then 1,109 mined instances across all thirty games were
+replayed in order. No detector was yet available: mined recurrence stood in for support. This tested
+admission, probation and archiving, not whether a tell predicted a role.
 
-**Method.** Per-channel clustering by strong-model (Opus) subagents, run Claude-side off the API budget,
-under the extensional-equivalence rule ("the same tell only if a reader scanning a transcript would count the
-same moments as instances of both") plus §9's calibration. The re-measurement needed **no API calls**: tell
-IDs encode creation order and the simulation records fresh-per-game, so each cluster's "would-have-been-fresh"
-game reconstructs from its earliest member.
+**New entries did not plateau.** The simulation reached 740 canonical entries. New-entry yield fell
+from about 43 per game early to about 22 per game in games 21–30, without a further downward trend in
+that window. This provided no clear stopping point for a one-time mining sweep.
 
-*Catches:*
+**Repeated behaviors were split across wordings.** One leading behavior appeared at support 18, 11
+and 10 under separate descriptions. Adding such supports suggested a much stronger recurring core,
+but could double-count the same exhibitor; consolidated support remained an upper bound until
+instance identities were deduplicated.
 
-1. **Part of the "under-merge" was a simulation bug.** 24 of the 740 canonicals were *literally identical
-   strings* — same-wording rows in the same game batch each created a new tell, because the ingest loop never
-   re-checked the exact-match index it had just updated. Fixed in `ledger_sim.py`; about a fifth of the vote
-   channel's redundancy was this leak, not judge recall.
-2. **The two channels are genuinely different, not differently judged.** Vote: 291 → 181 canonicals, 38%
-   redundant, where the retaliation-vote family alone spanned 27 wordings whose consolidated support ≈69 makes
-   it the store's №1 tell. Discussion: 449 → 414, only 8% redundant, 48 borderline pairs conservatively left
-   split. My verification found one wrong inclusion (excised as a coded override) — the strong model's error
-   rate stayed at the §9 level, one or two per ~60 verdicts.
-3. **The verdict splits the difference, and the split is the finding.** After consolidation (740 → 596) the
-   fresh rate is *still* flat ~16/game — so growth is not a dedup-recall artifact; the vocabulary really is
-   open-ended. **But the share of newly-born tells that ever recur collapses by cohort: 37% for games 1–10,
-   19% for 11–20, 11% for 21–25.** The *recurring* vocabulary converges (the head was essentially discovered
-   in the first ~15 games); the flat inflow is a tail of one-offs. Both intuitions were right: the store grows
-   forever, and there are *not* thousands of real tells.
+**The lifecycle bounded the queue, but judging remained expensive in calls.** At game 30 there were
+40 incumbents, 30 probation entries, 168 queued and 502 archived. The queue stayed around 150 entries
+with expiry, and probation admitted about 12% of inflow. Duplicate judging made 5,350 calls, about
+178 per game.
 
-**Decisions.** Finding 1 re-scoped, not retracted: "no saturation" is true of the tail, false of the core,
-and the tiered design already handles that shape. `outputs/consolidated_store.json` (596 canonicals) becomes
-the reference canon; the detector's checklist seeds from it, not the raw store.
+The initial all-in estimate was $0.02–0.03 per game. July 13 billing later showed the unit-cost
+estimate was too low (§14), especially for long detector prompts. The call counts remain useful;
+that original dollar estimate should not be reused.
+
+**Decision.** Before accepting continued growth, review the full corpus to distinguish genuinely new
+patterns from duplicates missed by the online matcher.
 
 ---
 
-## 12. The design amendment — online dedup retired, the ledger goes epoch-quantized (2026-07-12)
+## 11. Batch review: a recurring core within a growing tail (2026-07-12)
 
-The owner drew the conclusion §10–11 set up: if the batch pass is both *required* (Finding 2) and *better*
-(§11 repaired what online judging fragmented), why run an online LLM judge at all? Proposal: dedup only in
-batch, every N games, folding new tells into the frozen old. Adopted, because the simulation's data made the
-case on three axes — **cost** (the online judge was ~178 of the ~204 per-game calls, the single most
-expensive standing component); **accuracy** (it was also the *least* accurate judgment — pairwise,
-cheap-model, top-5 neighborhood — and under-merged the head 2× that the batch pass then repaired anyway, so
-the system paid the most for its worst judgment); and **latency** (nothing time-critical consumes its output;
-observations keep their online KEEP/DISCARD pass because they inject into the *next* prompt, but a tell's only
-consumer is the checklist, and a ≤10-game entry delay is immaterial against a 12-game probation window and an
-n≥20 evidence floor).
+The concern was concrete: about 22 new entries per game would exceed 2,000 entries by game 100 if it
+continued. Either the vocabulary was still expanding or the capped online matcher was increasingly
+missing duplicates. A strong-model review of each full channel tested the second explanation.
 
-**The amended lifecycle:** per game, only mining, free exact-match accumulation, and the detector against a
-**frozen checklist v_k**. Every **N=10 games, the fold** — the LLM dedup folds the epoch's new wordings into
-the frozen canon (proven text is never rewritten, which keeps accumulated counts valid across versions),
-tallies recompute, probation and admissions run, checklist v_k+1 publishes. Every **~30 games, the audit** —
-the strong-model pass of §11. Frozen per-epoch checklists are a measurement win: stable denominators,
-versioned artifacts, comparable games. Named trade-off: the fold moves onto the critical path — skip it and
-the checklist goes stale and new vocabulary stops entering; accepted because the pass is cheap and
-schedulable. Store-size control is three-layered — the checklist cap bounds attention and credit, the fold
-and audit bound head fragmentation, and retiring long-unseen singletons from the *comparison index only*
-(rows are never deleted) bounds dedup recall rot. The store itself is never capped.
+The reviewers used a behavioral criterion: two descriptions match only if a reader would count the
+same moments as examples of both. The work ran in Claude-side sessions rather than the project's
+metered API runner; “$0 API” describes that accounting boundary, not zero computational cost.
+Creation order and simulation records allowed the fresh-entry curve to be reconstructed after review.
 
----
+**The review found both a bug and a matching limitation.** Twenty-four entries were identical strings:
+the simulation had not refreshed its exact-match index between rows within one game batch. That bug
+was fixed. Broader review also reunited paraphrases the online candidate filter had missed, especially
+in the voting channel. The retaliation-vote family alone had 27 wordings and summed support around 69,
+still subject to instance-level double counting.
 
-## 13. The detector — role-blind counts, and a temporary golden to aim it (2026-07-12)
+**Growth remained after consolidation.** The retained store contained 596 entries rather than 740,
+and fresh-entry yield was still around 16 per game in the observed window. The share of entries later
+seen again fell from 37% for the first ten-game cohort to 19% for the next and 11% for games 21–25.
+Later cohorts had less time to recur, so these rates do not establish convergence. They did show that
+many newly added entries were singletons while a smaller set carried recurring behavior.
 
-Mining produces discovery; the **detector** produces the only counts lift may use. It is the miner's mirror:
-role-blind and exhaustive, so every non-detection is recorded and rates become computable. The golden's
-status, plainly: the owner sanctioned a **temporary** golden for direction (strong-LLM adjudication plus my
-transcript review), with the owner's own detector-blind adjudication remaining the run-gating check before
-any credit ships.
-
-**Build.** [`scripts/detector_probe.py`](scripts/detector_probe.py): one flash-lite call per (game, player,
-channel), temperature 0, carrying the public record and the frozen channel checklist, **no true-roles
-header** — role-blind by the same guarantee-by-absence as the miner. Checklist v0 = the top 48 per channel
-from the consolidated canon. Every completed scan is a denominator row. First run: 5 games, 90 scans, 317
-detections, quote-flag rate 4%.
-
-**The temporary golden, independence preserved.** 40 stratified cells — 20 detector positives across
-channels/tells/games, 20 zero-detection cells on head tells — adjudicated by five Opus agents (one per game),
-each given the role-blind transcript and the cases *without* the detector's answers (anchoring a judge on the
-system under test buys fake agreement). I read every disagreement: 10 of 40 disagreed, and I ratified all 10
-adjudicator verdicts with zero overrides.
-
-*Catches:*
-
-1. **The first version's failure modes split cleanly.** Precision decent (discussion 10/11, vote 7/10); every
-   vote false-positive was a relation-clause miss (voting the accused after questioning the accuser is not
-   "votes the accuser"). Recall weak (54% vote / 67% discussion at day grain), clustered in multi-day exhibits
-   and absence-defined tells (behaviors made of *not* speaking — silent-then-abstain).
-2. **The second version fixed what it aimed at and broke what it wasn't looking at.** A day-by-day scan, a
-   relation-clause rule, and an absence pass took vote precision 0.70 → 1.00 and recovered the silent-abstain
-   miss — while discussion recall *fell*. The two versions agreed on only 39% of rows. The finding is not that
-   either beat the other: **single-pass cheap-model detection is unstable, and prompt iteration reshuffles the
-   instability instead of shrinking it.**
-3. **A union of passes buys the recall back.** The two versions' union scored 77% / 73% day-recall at 0.77 /
-   0.85 precision — the cheap ensemble fix, ~36 calls/game. *(Cost corrected 2026-07-13: ~$0.22/game at
-   observed billing, not the "one or two cents" first quoted.)*
-4. **The "noise" turned out deterministic — and the owner's channel-split instinct fixed the one systematic
-   miss.** The detectors already split at the call level; what didn't split was the *view* — both read the
-   identical full transcript. A third variant gave the discussion calls a vote-tally-stripped record (lynch
-   outcomes and night announcements kept). (a) Its vote calls were byte-identical inputs to v2's and produced
-   row-identical outputs — read at the time as **"temperature-0 flash-lite is fully deterministic."**
-   *(Corrected 2026-07-13, caching log §⑤a: that 1.00 was real but lucky — repeated identical uncached runs
-   self-agree at 0.90–1.00, occasionally exact, so the endpoint is NEAR-deterministic, and the earlier
-   disagreement was still overwhelmingly prompt/view sensitivity with a small serving-side flicker floor
-   underneath.)* (b) The stripped view recovered the one cell no full-view pass had found — a three-day
-   records-over-reads exhibit the compact tally block had stolen attention from — and lifted single-pass
-   discussion precision 0.75 → 0.90. Best union (full-view ∪ split-view): **discussion 0.93 precision / 87%
-   day-recall with zero missed negative cells; vote 0.77 / 77%.**
-
-**Decisions.** (1) Detection policy candidate for v1: **a union of two deterministic passes, one full-view,
-one split-view** (~36 flash-lite calls/game, ~$0.22/game at observed billing, corrected 2026-07-13 from an
-initial 1–2¢ quote; uncached and at thinking_level=low, both reducible); revisit the pass count after the
-owner's golden. (2) The golden's honesty bounds, on record: 40 cells is direction-grade, and positives were
-sampled *from the first version's own detections*, so it is flattered by construction. (3) The one cell no
-pass finds, and borderline day-boundary cases, go to the owner's detector-blind adjudication round — the gate
-that certifies, where this golden only aims.
+**Decision.** Keep an archive, bound active detection, and seed the detector from the consolidated
+corpus. A finite vocabulary was no longer an assumption needed to make the design affordable.
+Source: `outputs/consolidated_store.json` and the frozen consolidation inputs and cluster outputs.
 
 ---
 
-## 14. The held-out pass — provisional lift, and the first per-role signatures (2026-07-12)
+## 12. Move semantic deduplication to periodic folds (2026-07-12)
 
-With the policy chosen, the owner called the held-out pass: run the k=2 union over games the tells were never
-mined from, producing the first lift table — provisional until the golden certifies, but with held-out games
-and complete denominators the previews lacked. The split fell out cleanly: the mined 30 games were exactly
-the baseline arm of the v6ab batch, so the five memory arms (150 games) are all held-out — and the *right*
-measurement population, since credit runs on memory-on games. Sampled 12 games per arm (60 games, 2,160
-flash-lite calls).
+The online judge had made about 178 calls per game yet missed duplicates that a broader batch review
+reunited. Newly mined tells also had no same-game consumer. These findings favored delaying semantic
+admission rather than paying for immediate pairwise decisions with limited context. Call count was
+the demonstrated overhead; calling it the largest dollar cost would ignore the detector's longer
+prompts and the later billing correction.
 
-**Cost correction (2026-07-13, owner-reported billing): this run cost $13, not the quoted $1.50–2.50.**
-Measured input volume was as assumed (~8k tokens/call, ~17M total), so the miss was unit-cost, not
-token-count: effective all-in ≈ **$0.006/call**, ~6× the estimate — plausibly thinking tokens (the probe runs
-`thinking_level="low"`; thinking bills at output rates) and stale per-token prices. All standing-cost figures
-written before this date inherit the under-estimate and are corrected where they appear; **$0.006/flash-lite-
-call at this prompt size is the planning number until billing says otherwise.**
+The adopted proposal kept mining and detection per game, with a frozen checklist between updates.
+Every ten games, a *fold* would resolve new wordings against the existing registry, recompute counts,
+review probation and publish the next checklist. Canonical text would remain unchanged so accumulated
+measurements still described the same claim.
 
-**Catch — the paired design almost corrupted the join.** The v6ab arms are a *paired* A/B: all five arm files
-replay the same 12 boards with identical game_ids and identical role maps (verified). Keying by game_id alone
-collapsed five behaviorally-distinct games into one — deflating denominators 5× and silently deduplicating
-exhibitors across arms. Fixed by keying on (arm, game_id); the role join was never wrong (pairing pins the
-cast), only the counting. *Catches: a paired generation design makes "game_id" ambiguous downstream. The
-honesty cost that remains: 60 games = 12 boards × 5 arms, so exhibitor slots are not fully independent
-samples; the effective n sits between 12 and 60.*
+A separate strong-model audit approximately every thirty games was proposed for merging or splitting
+existing entries. It was not the same operation as admitting new wording. The fold would delay
+candidate admission by up to one interval; the audit would remain an additional operational obligation.
+The fold was later implemented (§17); the broader audit was not automatically scheduled.
 
-**Result — 5,151 unioned detections, and the in-sample story survives contact with held-out data, stronger.**
-The evil-leaning head is a coherent *record-management-and-counter-accusation* family, now at real support:
-
-- counter-accusing that the accuser's role claim is a distraction (27/30 evil, shrunk lift +0.49)
-- discouraging reliance on voting records (41/48, +0.47 — record *suppression*, the mirror of town's record
-  advocacy)
-- accusations-are-a-diversion reframes (60/76, +0.43)
-- off-consensus votes (52/70) and the defends-own-voting-history family (61/84)
-
-The town-leaning head is genuine investigative work plus one surprise: **publicly claiming a role went
-0-for-28 evil** — in this population/epoch, evil never fake-claims, so a claim is near-certain town. Per-role
-signatures at real power: wolves own the counter-accusation/record-suppression family (×2.8–3.1 their share);
-the SK's profile is lone-operator cover (joins the consensus vote after warning against bandwagons, explains
-its silence as strategy) — the wolf≠SK split replicates held-out; investigators are loudly distinctive (×8.2
-on asserts-confidence-while-refusing-to-disclose-source — 10 of its 11 exhibitors were investigators — and ×5
-on role-claiming and call-vote-then-vote-it); the vigilante remains the role with no profile.
-
-**Two implications flagged, not resolved here.** (1) The investigator signatures are role-*revealing*: a book
-containing "refuses to disclose source ⇒ likely investigator" helps wolves aim night kills as much as it
-helps town. Book composition needs a faction-exposure pass before injection (design record book stage, §4).
-(2) The role-claim tell (0/28) is the most epoch-fragile head item: it reflects current-model timidity about
-fake-claiming, and a prompt or model change could flip it — it must carry the cross-epoch caveat prominently.
-
-**Decisions.** (1) `outputs/heldout/provisional_lift_table.json` is the first real lift artifact —
-provenance-stamped PROVISIONAL, owner golden pending; nothing feeds credit from it. (2) Head support now
-clears the n≥20 floor for a dozen tells on held-out data alone. (3) Multiple-comparisons and paired-boards
-caveats ride with the table; magnitudes like 27/30 and 0/28 survive any reasonable correction directionally,
-but magnitude estimates await the certified detector.
+The proposal also limited the duplicate-comparison index so an ever-larger archive would not overwhelm
+matching. These bounds applied to computation, not deletion of the historical instance records.
 
 ---
 
-## 15. Status and what's next
+## 13. Detect behaviors without revealed roles (2026-07-12)
 
-**Where this stands (2026-07-12).** Mining, the ledger design, the 596-canonical store, and the detector are
-all settled as above. Everything standing runs on flash-lite — but the 2026-07-13 cost correction (§14)
-re-prices the standing path at roughly **$0.25–0.30/game uncached** (detection ~$0.22 + mining ~$0.05),
-comparable to the ~$0.28 generation cost of a game rather than the cent-scale first quoted.
+The detector's risk was whether a cheap model could recognize the same behavior consistently across
+players and days. It received a public transcript, a focus player and up to 48 checklist entries per
+channel, without the true-role header used by mining. The first run covered five games and 90 scans,
+with 317 detections and a 4% quote-flag rate. Completed scans were stored alongside detections.
 
-The levers, status end of 2026-07-13 (full probe record:
-[`../../caching/experiment_log.md`](../../caching/experiment_log.md) §⑤–⑤a): explicit prefix caching is **built
-and verified** (`--cache`, 94% cache_read) but **default OFF** — no temp-0 config is bit-deterministic
-(uncached+low self-agrees 0.90–1.00) and caching degrades that further (0.56–0.83); **thinking→minimal is
-REJECTED** — it collapsed detection recall to 0 golden true-positives (the saturated ~1k reasoning tokens do
-the work); k=2→k=1 awaits the golden. Same-day resolution (caching log §⑤b): the owner called the
-reproducibility question directly — none of detection's consumers need it (aggregates; role-blind noise can't
-correlate with roles; goldens bind to stored artifacts; extraction took the identical trade at ship) — so the
-one remaining gate was accuracy parity, checked on the 40 golden cells: **cached union scored equal-or-better
-than uncached (0.83/77% vote, 0.93/87% discussion)**. **Standing config = cached + low** (default ON in the
-probe); standing overhead lands at **~$0.17–0.20/game**, with k=1 the remaining lever toward ~$0.10–0.12. The
-shipped design, destination-first, is in [`report.md`](report.md).
+**Evaluation used 40 selected, provisionally labelled cells.** Twenty came from detector positives
+and twenty from zero-detection cases on leading tells. Five Opus adjudicators, one per game, saw the
+cases and role-blind transcripts without detector answers. A subsequent read upheld all ten cases
+where adjudicator and detector disagreed. Withholding answers reduced anchoring, but selecting cases
+from the detector's own output limited independence and coverage. Human review remained planned.
 
-**What is explicitly NOT done, in gate order** *(status as written 2026-07-12; superseded in
-place by later entries — §16 amended gate 1 and discharged the order, §14 provisionally
-discharged gate 2, §17 discharged gates 3–4):*
+The variants exposed different errors:
 
-1. **The owner's detector-blind golden adjudication** — the certifying pass. Everything in §13 is aimed by a
-   temporary golden the owner has not adjudicated; no lift number is trusted before this gate.
-2. **The held-out lift pass.** No tell has a validity number yet. Mined-recurrence support is a plumbing
-   proxy; real support and lift require the detector on games the tells were not mined from.
-3. **The v1 credit wiring** — connecting detected counts to the read/tactic credit design, per the design
-   record and [`../../credit/report.md`](../../credit/report.md).
-4. **Production implementation of the epoch lifecycle** — the probe scripts simulate it; the fold/audit
-   machinery is not production code, and the match-index retirement rule (§12) is designed but not built.
+| Variant | Finding on the labelled set | Interpretation |
+|---|---|---|
+| Initial detector | Discussion precision 10/11, vote precision 7/10; recall 67% discussion and 54% vote | Relational mistakes and multi-day/absence-defined behaviors needed attention |
+| Day-by-day scan with relation and absence instructions | Vote precision rose to 1.00 and a silent-abstain miss was recovered, but discussion recall fell | A prompt refinement could improve one channel while harming another |
+| Union of the first two variants | Vote precision/recall 0.77/77%; discussion 0.85/73% | Combining views recovered misses at additional cost |
+| Full-view plus vote-tally-stripped discussion view | Discussion precision/recall 0.93/87%; vote 0.77/77% | Removing the compact tally from discussion inputs recovered a previously missed multi-day pattern |
 
----
+The evidence favored a union of two views, not a claim that one prompt solved detection. Relational
+mistakes still affected vote precision, and difficult cases remained for human adjudication.
 
-## 16. The owner golden begins — and granularity gets an operational definition (2026-07-13)
+One byte-identical rerun produced identical rows and was initially taken as evidence of deterministic
+serving. Later repeated probes corrected that conclusion: uncached row agreement ranged from 0.90 to
+1.00. Temperature zero did not guarantee identical outputs. The separate caching check appears in §15.
 
-The certifying pass (§15 gate 1) started as designed and immediately reshaped itself on contact with the
-owner's actual time and energy. Built: a two-layer blind bundle (`owner_golden_build.py`) — 6 fresh held-out
-games on distinct boards (arms cycled, so the paired-board hazard can't enter), 24 cells (2 focus players × 2
-channels × 6 games), a fresh **cached** k=2 detector run as the stored artifact under certification (~$0.80),
-and a sealed phase-2 pool: cached union + pre-existing uncached held-out rows + 146 Opus prelabel rows from
-six agents ($0 API), 181 candidates total, shuffled and source-blind. Recall is bounded by pooling; the
-owner's blind read exists only as the pool's error bar.
-
-**Build catches (both against my own scaffolding).** (1) The focus-player sampler drew from the roster, not
-day-active players — g5's draw was a night-1 death with zero transcript footprint; an Opus prelabeler caught
-it. (2) The "deterministic" rng draw did not reproduce across script edits, so the focus map is now PINNED as
-literals: a published sample is a frozen contract, not a seed. *Catches: reproducibility that depends on
-replaying an rng sequence through evolving code is not reproducibility.*
-
-**g1 adjudicated end-to-end** (`outputs/owner_golden/owner_verdicts.json`): detector precision 7/8 upheld; one
-`n_wording` rejection ("at the last moment" implies a change of heart, not silence-then-join); and the
-structural verdict — four ids (vote_221/51/238/673) describing ONE silent-bandwagon event, vote_673 canonical.
-The owner's blind read found 0 of the 5 ratified behaviors, which is the pooling design working, not failing.
-Cross-checked against §14 lift, the owner's instincts were exact: the silence-conditioned family he dismissed
-carries ~no lift (vote_2: n=163, +0.02); the two he called real tells are the discriminators (vote_14 +0.20;
-vote_380 +0.38, 74% evil at n=70 — in g1 cast on the SK by the wolf, who was night-killed for it).
-
-**Protocol pivot, owner-decided.** Blind reads are too expensive for a tired human and add only the error-bar
-layer, so g2–g6 go **judge-only** (pool verdicts, per-game incremental unsealing, anchoring caveat on record),
-and — the larger call — **the provisional labels are GO for credit wiring**: the owner accepted
-temp-golden-grade certification for the v1 build, remaining owner verdicts an upgrade path, not a blocker.
-§15's gate order is amended by this entry; the log does not pretend the original order survived.
-
-**Granularity, settled operationally.** The owner asked at what granularity two verbally-similar tells are
-"really different," without opening a research problem. Adopted: *two same-channel tells are the same iff they
-fire on the same instances at the same lift* — semantics propose, measurement disposes. `granularity_screen.py`
-(instance grain = arm/game/player/day, n≥10, held-out union): **0 automatic merges, 7 hierarchy flags** —
-generic parents at ~0 lift containing specific children that carry the signal (vote_41 ~0 ⊃ vote_56 +0.21;
-vote_426 ~0 with town-leaning children at −0.10..−0.17). One honest limit, verified: near-duplicate checklist
-entries COMPETE for instances (the g1 fragment family co-fires at J=0.04–0.14 because the detector books each
-event under one or two ids), so vote-splitting duplicates are invisible to co-firing — the fold's semantic
-pass still proposes those, and the merge verdict is checked by pooled-lift arithmetic (a wrong merge shows up
-as lift dilution). The one forbidden merge direction: never fold a discriminating child into its zero-lift
-parent. *Catches: the elegant fix wasn't a new similarity measure — it was refusing to let similarity decide
-anything lift can decide.*
+**Decision.** Proceed with the full/split-view union at low thinking, approximately 36 calls per
+nine-seat game. The initial cent-scale cost estimate was later corrected to about $0.22 per game
+uncached. Treat the 40-cell results as provisional and seek an independent human check.
+Source: frozen `scripts/detector_probe.py`, golden-scoring artifacts, and the later
+[caching record](../../caching/experiment_log.md).
 
 ---
 
-## 17. The pipeline graduates — v1 credit wiring, the live book channel, and the two pre-run screens (2026-07-13)
+## 14. Measure associations on held-out arm-games (2026-07-12)
 
-**Motivation.** With all five §6 valence rulings closed (credit report), the last build item before the v7 run
-was the wiring: the credit rules as running code, the tell pipeline as maintained loop modules, and the
-injection channel carrying the book into live prompts.
+The next test asked whether candidates discovered in thirty baseline games also discriminated on
+other game instances. Detection ran on twelve paired boards in each of five memory arms: sixty
+arm-games and 2,160 flash-lite calls. The tells were not mined from those arm-games, but the paired
+casts meant the sixty games were not sixty independent boards.
 
-**Built (all tested; suite 653 green).** The probes graduated to `evaluation/src/loop/`: `tells.py` (mining +
-the k=2 cached detector, prompts verbatim in `tell_prompts/`), `tell_credit.py` (lift arithmetic pinned to
-§14's convention; the §6.5 positive-only eligibility; the role-revealing book filter), `tell_fold.py` (the
-epoch fold: freeze-old wording dedup, probation clock K=12, fat-null archive with split-check, publishes
-checklist v_k+1). The live half is `Agents/memory/tell_book.py` + a `{tell_book}` slot above the reads
-instruction in every day/night template, env-gated per arm (`WW_TELL_BOOK`); the loop driver runs
-mine→detect→fold→rebuild-book per generation (`--tells`). Credit side: healer night credit (the ★construct
-verbatim; the "needs the attack-join" blocker had been stale since the wolf-blend join made game records
-available to the pass), the read-partition, the endpoint self-lynch guard, move-grain targeted-push credit,
-the concealment floor (both guards, `sp_type=concealment` synthesis tag), and the tagger credit mode retired.
-The probes here stay frozen records; this folder's code is superseded scaffolding from here on.
+**The pairing exposed a counting bug.** Game IDs were shared across arms. Keying on game ID alone
+collapsed distinct behavioral records and deduplicated exhibitors across arms. The join was changed
+to include the arm; the role maps themselves agreed because the boards were paired. The correction
+restored distinct game instances, not statistical independence.
 
-**Attribution spot-check (n=15, seeded, AI-adjudicated — `evidence/credit/attribution_spot_check.json`).**
-13/15 enacted, 2/15 not-enacted (95% one-sided upper bound ~36% dilution). Both misses were follow-claims on
-turns the agent then PASSED — closed structurally: the discussion ledger now credits spoken turns only
-(`credit.py::_spoke`), applied to the OFF base too. *Catches:* the check isolated exactly the dilution shape
-it was designed for, and the finding became a gate instead of a bound.
+**The retained union had 5,151 detections.** Several patterns showed strong associations in that
+sample. Counts below are distinct detected exhibitors, not occurrences per day.
 
-**Injection-channel replay screen (design record §8 gate 3; `outputs/book_screen.json`).** 40 frozen v6ab
-day-vote decisions replayed ± the seed book through the REAL injection path (bare memory block, so the
-contrast isolates the book). Result: **channel ALIVE** — 7/40 decisions (17.5%) changed under the book;
-correctness direction null at this N (2 wrong→right vs 3 right→wrong, discordant n=7). *Catches:* the first
-book was composition-skewed — the per-role cap filled entirely with the higher-lift discussion family, so vote
-decisions were screened against a book with zero vote tells. Fix: the cap is now per (subject role, channel);
-the balanced 12-entry book (`evaluation/frozen_eval_sets/tell_book_v1_seed.json`) re-screened on the SAME 40
-decisions (`outputs/book_screen_v2_balanced.json`): 11/40 changed (27.5%), correctness 20 → 24, discordant
-pairs 5 wrong→right vs 1 right→wrong — DIRECTION positive, magnitude/significance not established (n=6
-discordant, one-sided exact p≈0.11; old-epoch decisions). The gate question (channel-liveness) passed on both
-books; the balanced book is the launch default, decision-quality belongs to the run, and cross-epoch transfer
-of the seed book stays a first-generation readout (owner-accepted 2026-07-13).
+| Behavior family | Observed evil exhibitors | Recorded shrunk evil lift |
+|---|---|---|
+| Counter-accusing that an accuser's role claim is a distraction | 27/30 | +0.49 |
+| Discouraging reliance on voting records | 41/48 | +0.47 |
+| Reframing accusations as a diversion | 60/76 | +0.43 |
+| Off-consensus voting | 52/70 | — |
+| Defending one's own voting history | 61/84 | — |
+| Public role claiming | 0/28 | — |
 
-## 18. The book goes role-grain — the role-revealing exclusion is removed (2026-07-14)
+The investigator example later used in the book had ten investigator exhibitors out of eleven:
+asserting confidence while withholding the source. The role-claim family was particularly vulnerable
+to changes in model behavior. Zero evil exhibitors in the sampled 28 did not establish that evil
+players never fake-claim or that a new claimant is certainly town.
 
-**Owner ruling (supersedes §17's role-revealing filter and the pre-reg §5 draft default):** no
-exclusion — inferring a specific role from public behavior is the tell mechanism's entire point, and
-the shared book is symmetric by design (the same information lets wolves hunt an investigator, the
-healer protect one, and the investigator learn to conceal the pattern). The ruling exposed a second,
-quieter gap: the book had been selecting via `credit_eligible` (positive **evil**-lift), so
-town-power-role families — the held-out investigator source-withheld tell, ×8.2 — were excluded by
-the credit rule's reuse even before the explicit filter. What pays and what informs are different
-questions, and the book now asks its own.
+**Decision.** Retain the provisional table and proceed to detector adjudication. About 96 tells had
+been scanned, so selection among many candidates and paired-game dependence qualified the apparent
+strength of the leading results. No correction in this record establishes their significance.
 
-**Built (suite 655 green):** `is_role_revealing` deleted; book selection re-based on a new
-`tell_credit.subject_lift` — the subject role's shrunk exhibitor share over its cast prior (the same
-K=5 construction as the evil-lift, role-grain; `lift_table` entries now carry `role_priors`).
-Selection = per (subject role, channel), top 3 by subject lift over the n≥8 floor, every unrevealed
-role. Book entries and the rendered line are subject-grain ("the exhibitor was a wolf 21/30 times
-observed"). §6.5 credit eligibility is untouched — the investigator tell injects and never pays.
-Launch seed rebuilt: **`tell_book_v2_seed.json`** (34 entries, all six subject roles; investigator
-source-withheld tops the book at +0.55) via the frozen-record script
-[`scripts/build_seed_book.py`](scripts/build_seed_book.py) — the v1 build had no preserved script,
-this one does. v1 (12 entries, wolf+SK only) stays in place: §17's book-screen results ran on it.
-*Caveats, on record:* the injection screen has not been re-run on the bigger v2 book, and the v2
-tail (vigilante/healer entries at lift +0.03–0.06) is near-prior — a minimum-strength floor is an
-open question for the walkthrough (consolidation report §6).
+**July 13 cost correction.** Reported billing for the pass was $13 rather than the estimated
+$1.50–2.50. Input volume was approximately as expected, around 17 million tokens; the effective
+all-in cost was about $0.006 per call. Thinking-token charges and stale price assumptions were
+possible explanations, not isolated causes. This prompted the caching investigation in §15.
+
+Source: [provisional held-out table](outputs/heldout/provisional_lift_table.json), which records the
+sixty-game paired-arm structure, detector convention, cast prior and shrinkage constant.
+
+---
+
+## 15. Remaining work and the caching decision (July 12–13, 2026)
+
+After the held-out pass, the pending work was human adjudication, integration of credit and the
+periodic fold, and a screen of the injected book. The held-out table already existed (§14); its
+provisional status did not mean that no measurement had run.
+
+Billing then changed the cost assessment. At the corrected rates, uncached mining and detection were
+estimated at $0.25–0.30 per game, compared with roughly $0.28 for game generation in that setup.
+Prefix caching offered savings but needed its own quality check.
+
+**The probe tested accuracy as well as repeated-output agreement.** With 94% cached input, row
+agreement across repeated cached runs was lower than uncached (Jaccard 0.56–0.83 versus 0.90–1.00).
+Caching initially remained off. Reducing thinking to minimal was rejected because the labelled
+sample yielded zero golden true-positives.
+
+The follow-up compared cached and uncached union outputs on the 40 labelled cells. The cached union
+scored vote precision 0.83 / recall 77%, and discussion precision 0.93 / recall 87%, comparable to or
+better than uncached on that set. Cached prefixes with low thinking became the selected configuration,
+with estimated all-in tell overhead of $0.17–0.20 per game.
+
+This accepted variation between runs in exchange for cost savings supported by a small quality check.
+Stored outputs preserve the exact evaluated run. They do not prove that variation averages away or
+cannot correlate with roles. One-pass detection remained an optional cost reduction, not an established
+replacement for the two-pass union.
+
+Source: [caching experiment log](../../caching/experiment_log.md), July 13 probes.
+
+---
+
+## 16. Human review changes the validation scope (2026-07-13)
+
+The human-review bundle sampled six held-out games on distinct boards, with two focus players and
+two channels per game: 24 cells. It combined a fresh cached detector run with existing uncached rows
+and model prelabels, shuffled without identifying their source. Pooling increased candidate coverage;
+it did not make recall complete.
+
+Two preparation problems were fixed before review. The sampler could choose a player killed before
+having any discussion, and the seeded selection changed when the sampling code changed. The focus
+players were therefore checked for activity and recorded explicitly in the published bundle.
+
+**One game was reviewed end to end.** Seven of eight detector judgments were upheld. A rejected
+“at the last moment” phrase implied a change of heart unsupported by the transcript. Four tell IDs
+also described one silent-bandwagon event. The initial blind read found none of the five subsequently
+ratified behaviors, which favored pooled review for this session but limited the independent recall
+check. Source: [human verdicts](outputs/owner_golden/owner_verdicts.json).
+
+**Decision.** The remaining games could use candidate adjudication rather than a complete blind read,
+and the provisional labels were accepted for the first credit build. The original human-validation
+requirement was relaxed; it was not completed by that decision.
+
+**A separate granularity check asked whether detected instances could resolve near-duplicates.** At
+arm/game/player/day grain with at least ten instances, it proposed no automatic merges and flagged
+seven parent/child relationships. Some broad parents had near-zero lift while their narrower children
+carried a role association, so collapsing a child into its parent could erase the signal.
+
+The check also exposed a limit: duplicate descriptions competed for detector assignments. Four near-
+duplicate vote entries had low co-firing Jaccard, 0.04–0.14, despite describing one event family.
+Low overlap therefore could not prove distinctness. Semantic review still had to propose merges;
+pooled counts were a diagnostic, not proof that the meanings matched. The accepted rule was to keep
+discriminating sub-patterns distinct from broad, uninformative parents.
+
+---
+
+## 17. Integrate the pipeline and screen book injection (2026-07-13)
+
+The probes had produced a detector, a registry and a provisional association table. The next risk was
+whether those pieces could feed the existing memory loop and whether the resulting prompt block could
+change an agent's decision.
+
+**Build.** Mining and detection moved into `evaluation/src/loop/tells.py`, arithmetic into
+`tell_credit.py`, and periodic curation into `tell_fold.py`. The research driver gained the tell path.
+`Agents/memory/tell_book.py` supplied an environment-gated block before the read instruction in day and
+night prompts. The recorded suite result was 653 passing tests; that was build verification, not a
+measurement of gameplay benefit. The broader merge/split audit was not part of this automatic fold.
+
+The same integration also replaced the discussion judge's credit role with deterministic strategy
+grading. That work belongs to the [credit reference](../../credit/report.md), separately from tell
+accuracy and injection.
+
+**Attribution check: did a claimed strategy follow match the action?** A seeded, AI-adjudicated sample
+found 13 enacted follows and two misses out of 15. One miss was an empty passed turn; the other was a
+conciliatory defense contradicting aggressive advice. The new spoken-turn filter addresses the first,
+not the second. The stored one-sided 95% upper bound on non-enactment is 36.3%. It does not establish
+that attribution error is only harmless dilution.
+
+Source: [frozen attribution sample](../../credit/attribution_spot_check.json). Earlier prose incorrectly
+said both misses were passes; the individual rows support the distinction above.
+
+**Injection screen: could the book affect output through the actual prompt path?** Forty frozen
+nine-seat voting decisions from the older memory A/B archive were replayed with and without a book,
+without other memory content. The initial book changed 7/40 decisions. Correct votes were 18/40
+without it and 17/40 with it, with two wrong-to-right and three right-to-wrong changes.
+
+Inspection found that higher-lift discussion entries had filled the book, leaving no vote tells.
+The selection cap was changed to reserve slots per subject role and channel. The balanced 12-entry
+book was replayed on the same 40 decisions: 11 changed; correct votes were 20/40 without the book and
+24/40 with it. Five changed from wrong to right and one from right to wrong. The recorded one-sided
+exact p was about .11 across those six correctness-discordant pairs.
+
+**Decision.** The screen supported continuing with a channel that affected outputs, not claiming an
+improvement in decision quality. The no-book result also differed between the two runs, so their
+contrast does not isolate the effect of balancing alone. Current-epoch transfer remained unmeasured.
+
+Sources: [initial screen](outputs/book_screen.json),
+[balanced screen](outputs/book_screen_v2_balanced.json), and
+[12-entry book](../../../evaluation/frozen_eval_sets/tell_book_v1_seed.json). Both result files name
+the v1 book path; the initial book's composition is recorded here, while the retained v1 file is the
+balanced version. Do not treat that path alone as an immutable input fingerprint for both runs.
+
+---
+
+## 18. Select by subject role, including town power roles (2026-07-14)
+
+The first book excluded role-revealing town tells. The revised decision removed that exclusion:
+inferring a role from public behavior was the purpose of the channel, and the same knowledge would
+be available to all factions. A wolf might use it to hunt an investigator; the investigator might
+use it to recognize an exposed pattern.
+
+This revealed another selection problem. The book had reused positive *evil-lift* eligibility, which
+excluded town-role associations even without an explicit role filter. Selection was therefore changed
+to the subject role's concentration above its cast prior. Credit eligibility and useful read evidence
+became separate choices.
+
+**Build.** The book ranked tells by subject-role shrunk lift, required at least eight exhibitors, and
+kept up to three per subject-role/channel group. The new 34-entry seed covered all six historical role
+types. Its leading investigator example had 10 investigators among 11 exhibitors and lift 0.5486.
+The recorded suite result was 655 passing tests.
+
+The 12-entry book remained the artifact behind §17's balanced replay. The larger book was not
+re-screened, and some healer/vigilante entries had lift only about +0.03–0.06 above prior. Whether
+those weak entries added useful information was not established.
+
+Source: [34-entry v2 book](../../../evaluation/frozen_eval_sets/tell_book_v2_seed.json), generated by
+the [frozen builder](scripts/build_seed_book.py) from the provisional held-out table.
+
+**October 13 implementation check.** The prompt hook still exists, separately controlled by
+`WW_TELL_BOOK`. The current loader expects subject-role counts, matching v2's schema; v1's `evil`
+count field belongs to the old interface and is not directly compatible. The ten-seat plan leaves
+tells outside deployment scope. Neither current code inspection nor the July functional tests
+establishes transfer to that game or a gameplay benefit.
+
+---
 
 *Sources — this log absorbs the probe's working notes in place; the frozen prompts are in
 [`prompt_versions/`](prompt_versions/), per-run outputs and store snapshots in `outputs/`, and the probe
@@ -637,3 +515,7 @@ scripts under [`scripts/`](scripts/) (`tell_mining_probe.py`, `dedup_v0.py`, `le
 `golden_score.py`, `heldout_lift.py`, `owner_golden_build.py`, `granularity_screen.py`) alongside. The pipeline
 graduated to `evaluation/src/loop/` (§17); the scripts here stay as frozen records of how each
 result was produced.*
+
+Implementation pointers were checked against repository revision `d206680d` and the October 13, 2026
+working tree. Historical measurements retain their linked run artifacts; this is an editorial review,
+not a new experimental run.

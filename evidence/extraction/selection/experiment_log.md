@@ -2,6 +2,10 @@
 
 **Date:** 2026-06-17 · **Status:** diagnostic done (net_verdict calibration); steering recommendation
 = anchor-injection, gated by the memory-pipeline prompt freeze.
+**Later records of the same thread:** the ground-truth specimen of the halo, two graded entries from
+the owner's own seat, is [`outcome_halo_case_study.md`](outcome_halo_case_study.md) (2026-07-26); the
+measurement at scale, the de-halo pass and the rulings are in
+[`memory_system/v8/decisions.md` §13](../../memory_system/v8/decisions.md) (2026-10-13).
 
 ## The question
 
