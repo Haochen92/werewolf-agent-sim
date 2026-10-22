@@ -3,8 +3,11 @@
   position: absolute;
   right: 22.4px;
   bottom: 14.4px;
-  width: 832px;
-  max-height: 176px;
+  /* on a phone (--grown, Stage.module.css) the talk is set larger, so the chat widens left over
+     the empty floor by the chair and, as the talk grows, rises over the card up to the photos:
+     a few lines in view, not one (owner, 2026-10-22) */
+  width: calc(832px + 500px * var(--grown));
+  max-height: calc(176px + 200px * var(--grown));
   overflow: auto;
   box-sizing: border-box;
   /* the HUD's panel (2026-10-19): dark bronze in the riveted frame, the pack's red inside its
@@ -16,22 +19,22 @@
   box-shadow:
     inset 3.2px 0 0 var(--wolf),
     0 6px 18px rgba(0, 0, 0, 0.55);
-  padding: 2px 6px 4px 9px;
+  padding: 0 6px 4px 9px;
   color: var(--paper);
   /* the talk is read: the first tier (--legible); its header is a label (--meta) */
   font-size: calc(16px * 1.05 * var(--legible));
   line-height: 1.35;
   z-index: 2;
 }
-/* the header stays at the top while the talk scrolls under it */
+/* the header stays at the top while the talk scrolls under it; nothing scrolls above it (a
+   line used to show through a strip over it) */
 .head {
   position: sticky;
-  top: -2px;
+  top: 0;
   z-index: 1;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: -2px;
   padding: 2px 0 8px;
   background: var(--kit-panel);
   color: var(--film-mut, #c9b79a);

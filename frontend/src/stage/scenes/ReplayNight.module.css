@@ -11,11 +11,12 @@
   pointer-events: auto;
 }
 /* in the pack's room the chat keeps to the room: from past the wing to the slot's edge, where
-   its full 832 would run over the wing beside an open slot */
+   its full width (832, wider on a phone: PackChat.module.css) would run over the wing beside an
+   open slot */
 .chatBand > [data-chat='pack'] {
   left: 22.4px;
   width: auto;
-  max-width: 832px;
+  max-width: calc(832px + 500px * var(--grown));
   margin-left: auto;
 }
 
