@@ -129,7 +129,7 @@
   min-width: 0;
 }
 
-/* how to use it: three steps, each a brass coin, a line in the serif and the gist in pencil */
+/* how to use it: three steps, each a brass coin, a line in the serif and the gist under it */
 .how {
   display: grid;
   gap: 18px;
@@ -175,14 +175,15 @@
 }
 .how span {
   margin-top: 2px;
-  font-family: var(--font-stage-hand), 'Patrick Hand', cursive;
-  font-size: 19px;
-  line-height: 1.2;
-  color: #5d5246;
+  /* the site's sans, as the case file's index cards (owner, 2026-10-22: the pencil hand read
+     poorly) */
+  font-size: 16px;
+  line-height: 1.45;
+  color: #3a2a18;
 }
 
 /* the seat cards' steps (owner, 2026-10-22): the coins are the tabs, the chosen one bright and the
-   others dimmed as the plates are; under them the step shown, its words in pencil */
+   others dimmed as the plates are; under them the step shown */
 .steps {
   display: grid;
   gap: 16px;
@@ -241,10 +242,9 @@
 }
 .step p {
   margin: 0;
-  font-family: var(--font-stage-hand), 'Patrick Hand', cursive;
-  font-size: 19px;
-  line-height: 1.3;
-  color: #5d5246;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #3a2a18;
 }
 /* the way on, as the day line's "Next stop" */
 .next {
