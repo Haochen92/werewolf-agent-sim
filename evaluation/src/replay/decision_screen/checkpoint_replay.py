@@ -6,7 +6,7 @@ The question
 Does the loop's store get BETTER as it grows — and do agents CONSEQUENTLY decide
 better? The live loop re-rolls a game's worth of luck every generation (fresh
 ON/OFF matches; one diverging vote cascades through the whole game), so a
-per-generation slope drowns in noise (see evidence/execution_plan/power_analysis/).
+per-generation slope drowns in noise (see evidence/execution_plan/report.md).
 This replay freezes the boards ONCE and varies only the store, so the only thing
 moving across the curve is the memory.
 

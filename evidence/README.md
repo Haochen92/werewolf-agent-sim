@@ -122,13 +122,12 @@ standalone folder: the dimension build and screens live in
 |---|---|---|
 | [v6 dimension build](extraction/situation_dimensions/dimension_schema_build_spec.md) | Jun 13 – Jul 2 | Per-cell schema and store-build journey; criticality screen and deterministic accuracy audit are colocated with the situation-dimensions record |
 | [forced applicability](memory_system/strategy_adoption/forced_schema_screen/experiment_log.md) | Jun 16 | Store × schema screen and the prompt-body delivery result that raised per-memory verdict coverage from 0.27 to 0.97 |
-| [Phase B plan record](execution_plan/phase_b_plan_review.md) | Jun 12 – 16 | Historical cross-subsystem plan plus the v6-wide migration roadmap |
 | [v7_final](v7_final/experiment_log.md) | Jun 20 – Jul | Build log of the v7 credit / consolidation / discussion-credit work; the compounding loop itself is the one still-un-run paid test (design docs `consolidation_design.md`, `discussion_credit_design.md` hold current state) |
 | [discussion_tagger](discussion_tagger/report.md) | Jun – Jul | The v7 credit-signal instrument: an omniscient LLM tagger scoring discussion merit + night read-quality per turn; apparatus record + full tagged-signal inventory (instrument-trust verdict at [evaluation/discussion_tagger/](evaluation/discussion_tagger/)) |
 | [store_curation](store_curation/report.md) | Jul | The mechanism record for how the three memory stores (observations, strategy points, tells) grow, stay bounded, and improve across games; review basis for the pre-run ownership walkthrough |
 | [credit](credit/report.md) | Jul | The credit layer: how a decision becomes a learning signal (SP ledger, tell ledger, read/tactic redesign) |
 | [credit/blindspot_fix](credit/blindspot_fix/experiment_log.md) | Jul 21 | Post-endpoint fix pair for the credit blind spot (contextual abstain rule + find→lynch conversion channel), validated on owned data ($0 re-score + replay screen); step-3 rerun NOT authorized |
-| [execution_plan](execution_plan/compounding_measurement_plan.md) | Jul 4 | Forward-looking plan for the compounding question; PLANNED, not executed — Phase 0 gates all paid runs |
+| [execution_plan](execution_plan/report.md) | Jun 12 – Jul 21 | Why the planned trend test for memory compounding was dropped before any money was spent (a $0 power simulation), the paired redesign, the signed pre-registration and what the run found; condenses the June–July planning records (removed 2026-10-22, in git history at `24dfd3a7`) |
 
 ## Training
 

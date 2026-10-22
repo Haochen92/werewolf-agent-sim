@@ -83,5 +83,5 @@ the measurement harness that decides *whether* the loop compounds, and stays her
 
 - **The record:** [`evidence/v7_final/`](../../../evidence/v7_final/) — the v7 campaign (the cheap-screen
   gates, the compounding runs, the tagger de-leak work). Start at its `review_map.md`.
-- **The forward plan:** [`evidence/execution_plan/compounding_measurement_plan.md`](../../../evidence/execution_plan/compounding_measurement_plan.md)
-  — the claim ladder + power/readout redesign that gate any paid compounding run.
+- **The forward plan:** [`evidence/execution_plan/report.md`](../../../evidence/execution_plan/report.md)
+  — the power analysis, the readout redesign and the signed pre-registration for the compounding run.

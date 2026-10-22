@@ -57,7 +57,7 @@ situation dimension. This package validates the instruments, not the agents.
 - **`power/`** — the pre-registered power / MDE gate (compounding plan §0.1). `mde_simulation.py` resamples
   the existing per-game de-luck scores (run-1 / v2 / v6ab), injects a known linear-in-generation effect, and
   reports detection rate + MDE across N∈{4,5,10,20}/gen × G∈{6,8,10} gens. $0, deterministic. Its dated
-  readout lives at `evidence/execution_plan/power_analysis/mde_table.md`. Standing gate: no paid compounding
+  readout is summarised in `evidence/execution_plan/report.md` §2 (full table in git history at `24dfd3a7`). Standing gate: no paid compounding
   run without a current MDE table.
 
 ## How to invoke

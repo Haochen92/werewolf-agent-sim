@@ -9,7 +9,7 @@ corroborates the direction rather than proving the magnitude. **Companion docs:*
 version-by-version arc is
 [`../store_progression.md`](../store_progression.md); the full A/B statistics and design are in
 [`paired_ab/`](paired_ab/report.md); the open *compounding* question lives in
-[`../../execution_plan/compounding_measurement_plan.md`](../../execution_plan/compounding_measurement_plan.md).
+[`../../execution_plan/report.md`](../../execution_plan/report.md).
 
 **Provenance.** The A/B arms ran 2026-06-11 on `gemini-3.1-flash-lite` / Vertex, prompt_bundle
 `16f7f700`, store `memory_stores/v5_0` (consumption mode, `--no-memory-dump`). Every win-rate and proxy
@@ -192,7 +192,7 @@ Whether memory that *compounds* across generations helps *more over time* is a d
 question. Two paid loop runs meant to answer it were both invalidated (a biased de-lucked baseline in
 one, a config slip that ran the wrong arm in the other), so the magnitude is open, not negative. The
 plan of record (claim ladder, power/MDE calc, and the readout redesign that gates any further paid runs)
-is [`../../execution_plan/compounding_measurement_plan.md`](../../execution_plan/compounding_measurement_plan.md).
+is [`../../execution_plan/report.md`](../../execution_plan/report.md).
 
 ## Artifacts
 

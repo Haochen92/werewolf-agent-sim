@@ -112,7 +112,7 @@ the record is, and how it would be shown:
   +0.20 at 200 games), run, and closed negative. Later it emerged that every memory game ran with zero
   reasoning tokens; arms were matched, so the comparison stands, but every memory verdict is scoped to
   "a non-reasoning player", and the record says so.
-- **Record:** `evidence/execution_plan/power_analysis/mde_table.md`, `evidence/v7_final/report.md`
+- **Record:** `evidence/execution_plan/report.md`, `evidence/v7_final/report.md`
   (addendum), `evidence/game_play_enhancement/discussion_evidence.md` §6.7.
 - **Show:** content.
 
