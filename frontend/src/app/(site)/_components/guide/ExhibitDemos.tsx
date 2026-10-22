@@ -7,8 +7,8 @@
  * file open on its Lessons. Each panel stands on a small stage cropped to it (`Focus`), its
  * height capped (`--side-max`) so it reads at the column's size.
  */
-import { useMemo, useState } from 'react';
-import type { DurableGameEvent } from '@/types/contracts';
+import { useEffect, useMemo, useState } from 'react';
+import type { DurableGameEvent, LedgerDay } from '@/types/contracts';
 import { foldEvents } from '@/game/foldEvents';
 import { beatsFor } from '@/stage/beats/beatsFor';
 import { castForGame, rosterSize } from '@/stage/cast/castForGame';
@@ -18,6 +18,7 @@ import { Film } from '@/stage/film/Film';
 import { useNotebook } from '@/stage/notebook';
 import type { FileChoice } from '@/stage/film/case-file';
 import tenSeat from '@/stage/fixtures/replay-phase3.json';
+import tenSeatLedger from '@/stage/fixtures/ledger-phase3.json';
 import memoryGame from '@/stage/fixtures/replay-9369a5c1.json';
 import { Focus } from './StopDemos';
 import classes from './Guide.module.css';
@@ -95,16 +96,39 @@ export function RevealDemo() {
   );
 }
 
+/** The demo game's Record, as the server rebuilds it (`server/game/ledger.py`, 2026-10-22). */
+const LEDGER = tenSeatLedger as unknown as LedgerDay[];
+
 /**
- * The player's own file on a seat, as a live game keeps it (Reveal off), a ten-seat game at the
- * end of day 2: the claim, the guess, a page a day with the night and the vote. Its notebook is
- * a game of its own (`notes_guide` on this device), which the composer demo's "Use my seat
- * notes" reads.
+ * The claims pencilled into an empty demo notebook, each as the morning's Record has it, so
+ * the file opens on its check (owner, 2026-10-22): seat 9 claimed the Sentinel, and seat 3, out
+ * by day 3, the Trailseer.
  */
-export function NotesDemo() {
-  const g = useGameAt(tenSeat, { xray: false, day: 2, last: true });
+const PENCILLED: [number, string][] = [
+  [9, 'sentinel'],
+  [3, 'trailseer'],
+];
+
+/**
+ * The player's own file on a seat, as a live game keeps it (Reveal off), a ten-seat game on day
+ * 3 with its Record, open on the seat the guide's step names: the claim and the Record's check of it, the guess, a page a day with the
+ * night and the vote. Its notebook is a game of its own (`notes_guide` on this device), which
+ * the composer demo's "Use my seat notes" reads.
+ */
+export function NotesDemo({ seat: shown = 'player_9' }: { seat?: string }) {
+  const g = useGameAt(tenSeat, { xray: false, day: 3 });
   const book = useNotebook('guide');
-  const [seat, setSeat] = useState<FileChoice | null>({ seat: 'player_3', key: null });
+  // the step shown opens its seat's file (ToolsTray); the folder's tabs still go anywhere
+  const [seat, setSeat] = useState<FileChoice | null>({ seat: shown, key: null });
+  useEffect(() => setSeat({ seat: shown, key: null }), [shown]);
+  const empty =
+    !!book &&
+    [book.claims, book.guesses, book.nights, book.lines].every(
+      (m) => !Object.keys(m).length,
+    );
+  useEffect(() => {
+    if (empty) for (const [n, role] of PENCILLED) book.setClaim(n, role);
+  }, [empty, book]);
   return (
     <div className={classes.sidePanel}>
       <Focus selector="[data-film]" pad={0}>
@@ -116,9 +140,8 @@ export function NotesDemo() {
           seat={seat}
           onSeat={setSeat}
           xray={false}
-          player={
-            book ? { book, me: 'player_1', cast: g.view.castRoleCounts } : null
-          }
+          ledger={LEDGER}
+          player={book ? { book, me: 'player_1', cast: g.view.castRoleCounts } : null}
         />
       </Focus>
     </div>

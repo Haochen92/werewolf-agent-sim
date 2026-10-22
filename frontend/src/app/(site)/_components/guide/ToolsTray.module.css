@@ -6,9 +6,12 @@
 .tray {
   /* the rim's screws, this far in from each corner */
   --screw: 14px;
-  display: grid;
+  /* a column, not a grid: a grid's row kept the cards' height from before the seat card's demo
+     had measured itself, and the card ran out of the tray (2026-10-22) */
+  display: flex;
+  flex-direction: column;
   gap: 14px;
-  justify-items: start;
+  align-items: flex-start;
   padding: 26px 24px 40px;
   border-radius: 10px;
   background:
@@ -88,7 +91,7 @@
 }
 
 .cards {
-  justify-self: stretch;
+  align-self: stretch;
 }
 /* the card fits what it holds; the tray is as tall as the taller */
 .card {
@@ -178,6 +181,90 @@
   color: #5d5246;
 }
 
+/* the seat cards' steps (owner, 2026-10-22): the coins are the tabs, the chosen one bright and the
+   others dimmed as the plates are; under them the step shown, its words in pencil */
+.steps {
+  display: grid;
+  gap: 16px;
+  align-content: center;
+  min-width: 0;
+}
+.coins {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.coins button {
+  display: grid;
+  place-items: center;
+  /* five in a row in the column beside the demo (about 166px at its narrowest) */
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  line-height: 1;
+  color: var(--plate-ink);
+  background: url('../../../../assets/site/kit/brass-disc.webp') 50% 50% / 100% 100%
+    no-repeat;
+  text-shadow: 0 1px 0 rgba(255, 240, 200, 0.5);
+  box-shadow: 0 2px 4px rgba(60, 35, 5, 0.45);
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.2s;
+}
+.coins button[aria-selected='true'] {
+  opacity: 1;
+  box-shadow:
+    0 0 0 2px #efe2c2,
+    0 0 0 4px #8a6a3a,
+    0 2px 4px rgba(60, 35, 5, 0.45);
+}
+.coins button:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+}
+.step {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  justify-items: start;
+}
+.step b {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 23px;
+  line-height: 1.1;
+  color: var(--ink);
+}
+.step p {
+  margin: 0;
+  font-family: var(--font-stage-hand), 'Patrick Hand', cursive;
+  font-size: 19px;
+  line-height: 1.3;
+  color: #5d5246;
+}
+/* the way on, as the day line's "Next stop" */
+.next {
+  margin-top: 8px;
+  padding: 0;
+  text-align: left;
+  border: 0;
+  background: none;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.next:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
 @media (max-width: 1100px) {
   .tool {
     grid-template-columns: minmax(0, 1fr);
@@ -193,7 +280,7 @@
   .tabs {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    justify-self: stretch;
+    align-self: stretch;
     gap: 6px;
   }
   .tabs button {
