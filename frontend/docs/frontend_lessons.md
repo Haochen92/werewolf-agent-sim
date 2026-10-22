@@ -538,6 +538,18 @@ cover and the window's loader have gone (`FeaturedReplay`, `lifted && !covered`)
 later. Rule: a cover's fade and the content's first animation must not overlap; the fade is a
 cascade (lesson 10).
 
+**49. When one page lags and another with the same scene doesn't, diff the pages, in the
+viewer's engine.** The deal lagged on the owner's iPhone in the landing's carriage and not on
+the replay page, the same beats in the same theatre. Chrome traces (throttled 4×) read the two
+pages alike, and the other page sections and first-load work made no difference. In WebKit the
+landing's snow did: two sheets falling behind the carriage doubled a frame of the cards' drop
+and turn. Paused, the sheets cost what still ones do, so the snow now holds while the window
+plays the deal (`Carriage.module.css`, `:has([data-beat^='deal.'])`). Rule: once the scene is
+ruled out, list what the slow page has and the fast one lacks, and time each in the viewer's
+engine. For WebKit, headless Playwright fires about one animation frame per beat and can't time
+anything; run it headed under `xvfb-run`. It renders in software, so read ratios, not frame
+rates.
+
 ---
 
 ## Small things that cost an afternoon
