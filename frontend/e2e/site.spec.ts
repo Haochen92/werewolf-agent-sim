@@ -1069,6 +1069,11 @@ for (const [name, viewport] of [
     await page.addStyleTag({
       content: 'div:has(> nav[aria-label="Pinned"]) { display: none !important; }',
     });
+    // a full-page capture lays the page out again and the pictures are decoded again; decoded
+    // async, the hero and the stage's room came out blank (2026-10-22): decoded with the paint
+    await page.evaluate(() => {
+      for (const img of document.images) img.decoding = 'sync';
+    });
     // the whole landing is over 5,000px tall: two captures in a row, which the check needs to
     // call a page settled, take longer than the default five seconds on the dev server
     await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true, timeout: 20_000 });
