@@ -18,7 +18,7 @@
  * hidden (another tab, a locked phone), the preview's and the whole replay's alike.
  *
  * `mini` makes it a preview (the landing's carriage): the same stage and the same reducer,
- * playing one window of the cut round and round (`loop` in replay-state.ts), with no keys (the
+ * playing a reel of the game round and round (`loop` in replay-state.ts), with no keys (the
  * page around it keeps its arrows and space). Its controls are the caller's choice: none; the
  * replay's own on the stage (the strip's Reveal, File and Transcript, the side slot, the band
  * over the window); or, where the stage is too small to read (an upright
@@ -76,11 +76,12 @@ export interface ReplayTheatreProps {
   /** The way out, at the strip's left: where the viewer came from. Absent: the replays list.
    *  A preview has none (its way to the whole game is the caller's). */
   back?: { href: string; label: string };
-  /** A preview: plays `from`..`to` (indices into the public cut) on a loop when `autoplay`,
-   *  else rests on `from`. The frame is the caller's. */
+  /** A preview: plays `reel` (indices into the cut `xray` picks, in order) on a loop when
+   *  `autoplay`, else rests on its first beat. The frame is the caller's. */
   mini?: {
-    from: number;
-    to: number;
+    reel: readonly number[];
+    /** The reel is the X-ray's cut, played with the X-ray on; else the public cut's. */
+    xray?: boolean;
     autoplay: boolean;
     speed?: MotionSpeed;
     /** 'stage': the replay's own controls on the stage, over the window. 'under': none on
@@ -103,7 +104,7 @@ export interface MiniUnder {
   /** The view past the beat (the whole log), for the case file: see `SlotInput.ahead`. */
   ahead: GameView | null;
   cast: readonly Character[];
-  /** The window's beats, and the cursor's place among them. */
+  /** The reel's beats, and the cursor's place among them. */
   beats: readonly SceneBeat[];
   index: number;
   label: string;
@@ -176,9 +177,10 @@ export function ReplayTheatre({
   const autoplay = !!mini?.autoplay && !stillPlease;
   const [state, dispatch] = useReducer(reduce, undefined, () =>
     mini
-      ? initialLoopState(all.public, mini, {
+      ? initialLoopState(mini.xray ? all.xray : all.public, mini.reel, {
           playing: autoplay,
           speed: mini.speed ?? 'fast',
+          xray: mini.xray,
         })
       : initialReplayState(defaultSlot()),
   );
@@ -368,9 +370,15 @@ export function ReplayTheatre({
     [state.xray, state.slot, state.speed, controls, cast, state.cursor.animate],
   );
 
-  // a preview's band and pane see only its window
-  const from = state.loop?.from ?? 0;
-  const shown = state.loop ? beats.slice(from, state.loop.to + 1) : beats;
+  // a preview's band and pane see only its reel: `at` is the cursor's place on it, and a seek
+  // to the nth of its beats goes to that beat
+  const reel = state.loop;
+  const shown = useMemo(() => (reel ? reel.map((i) => beats[i]) : beats), [reel, beats]);
+  const at = reel ? Math.max(0, reel.indexOf(index)) : index;
+  const seekShown = useCallback(
+    (i: number) => dispatch({ type: 'seek', index: reel ? (reel[i] ?? index) : i }),
+    [reel, index],
+  );
 
   const Scene = beat ? SCENES[beat.scene] : null;
   // the drawer runs to the foot of the stage (not beside the epilogue)
@@ -412,7 +420,7 @@ export function ReplayTheatre({
           <TransportBand
             hud="replay"
             beats={shown}
-            index={index - from}
+            index={at}
             playing={state.playing}
             speed={state.speed}
             label={transportLabel(beats, index)}
@@ -420,7 +428,7 @@ export function ReplayTheatre({
             onChapter={(dir) => dispatch({ type: 'chapter', dir })}
             onStep={(dir) => dispatch({ type: 'step', dir })}
             onTogglePlay={togglePlay}
-            onSeek={(i) => dispatch({ type: 'seek', index: from + i })}
+            onSeek={seekShown}
             onSpeed={(speed) => dispatch({ type: 'speed', speed })}
           />
         ) : null}
@@ -433,7 +441,7 @@ export function ReplayTheatre({
               ahead,
               cast,
               beats: shown,
-              index: index - from,
+              index: at,
               label: transportLabel(beats, index),
               playing: state.playing,
               xray: state.xray,
@@ -441,7 +449,7 @@ export function ReplayTheatre({
               filmTab,
               onFilmTab: setFilmTab,
               onTogglePlay: togglePlay,
-              onSeek: (i) => dispatch({ type: 'seek', index: from + i }),
+              onSeek: seekShown,
               onTranscript: () => dispatch({ type: 'transcript' }),
               onXray: underXray,
             }),

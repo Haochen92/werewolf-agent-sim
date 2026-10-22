@@ -8,9 +8,9 @@
  * The X-ray is the one control that changes which beats exist (beat sheet §11), so the reducer
  * is made for a game's two beat lists and carries the cursor from one to the other.
  *
- * A preview (the landing's mini replay) is the same reducer with a `loop` window: the play runs
- * round the window instead of stopping, so there is no second player to keep in step. Its
- * buttons stay inside the window, and the X-ray carries the window across with the cursor.
+ * A preview (the landing's mini replay) is the same reducer with a `loop` reel: the play runs
+ * round the reel instead of stopping, so there is no second player to keep in step. Its
+ * buttons stay on the reel, and the X-ray carries the reel across with the cursor.
  *
  * With the X-ray on, the play pauses at the stops (stops.ts: the night hub, the ballots in),
  * however it got there; the hub's notice visits a room, watches them all or ends the night.
@@ -37,10 +37,12 @@ export interface ReplayState {
   xray: boolean;
   slot: Presentation['slot'];
   /**
-   * A preview's window (the landing's mini replay): playing runs `from`..`to` and goes round
-   * again, and a beat that waits for the viewer is played past. Null for the whole log.
+   * A preview's reel (the landing's mini replay): the beats it plays, in order, as indices into
+   * the cut the X-ray is on. Playing runs through them and goes round again; between two beats
+   * that are not neighbours the cursor arrives still, and a beat that waits for the viewer is
+   * played past. Null for the whole log.
    */
-  loop: { from: number; to: number } | null;
+  loop: readonly number[] | null;
   /**
    * The room the viewer went into by a tap on its seat (`day:actor`, stops.ts `branchOf`): when
    * its last step has played, the play rests there. Null once the cursor leaves it, or on play.
@@ -98,52 +100,68 @@ export function initialReplayState(slot: Presentation['slot'] = null): ReplaySta
 }
 
 /**
- * A preview that plays one window of the public cut on a loop: no X-ray, no slot, the cursor
- * resting on `from`. The window is clamped to the list, so a short game still has one.
+ * A preview that plays a reel of one cut on a loop: no slot, the cursor resting on the reel's
+ * first beat. Beats the list does not hold are dropped, so a short game still has a reel (its
+ * last beat, at worst).
  */
 export function initialLoopState(
   beats: readonly SceneBeat[],
-  window: { from: number; to: number },
-  opts: { playing: boolean; speed: MotionSpeed },
+  reel: readonly number[],
+  opts: { playing: boolean; speed: MotionSpeed; xray?: boolean },
 ): ReplayState {
-  const last = Math.max(0, beats.length - 1);
-  const to = Math.min(Math.max(0, window.to), last);
-  const from = Math.min(Math.max(0, window.from), to);
+  const kept = reelOf(reel.filter((i) => i >= 0 && i < beats.length));
+  const loop = kept.length ? kept : [Math.max(0, beats.length - 1)];
   return {
-    cursor: still(from),
+    cursor: still(loop[0]),
     playing: opts.playing,
     speed: opts.speed,
-    xray: false,
+    xray: opts.xray ?? false,
     slot: null,
-    loop: { from, to },
+    loop,
     visit: null,
     visited: [],
   };
 }
 
-/** A cursor a press moved outside the loop window lands on the window's nearer end, still. */
-function inWindow(state: ReplayState): ReplayState {
-  if (!state.loop) return state;
-  const { from, to } = state.loop;
+/** A reel in the order it plays, each beat once (two beats carried onto one become one). */
+function reelOf(reel: readonly number[]): number[] {
+  return [...new Set(reel)].sort((a, b) => a - b);
+}
+
+/** The reel's beat after the cursor's: moving if it is the next beat, else still; after the last, the first. */
+function onReel(cursor: Cursor, reel: readonly number[]): Cursor {
+  const next = reel.find((i) => i > cursor.index);
+  if (next === undefined) return still(reel[0]);
+  return next === cursor.index + 1 ? { index: next, animate: true } : still(next);
+}
+
+/** A cursor a press moved off the reel lands on its nearest beat the way it moved, still. */
+function inWindow(state: ReplayState, dir: 1 | -1 = 1): ReplayState {
+  const reel = state.loop;
+  if (!reel) return state;
   const i = state.cursor.index;
-  if (i >= from && i <= to) return state;
-  return { ...state, cursor: still(i < from ? from : to) };
+  if (reel.includes(i)) return state;
+  const near =
+    dir === 1
+      ? (reel.find((r) => r > i) ?? reel[reel.length - 1])
+      : (reel.findLast((r) => r < i) ?? reel[0]);
+  return { ...state, cursor: still(near) };
 }
 
 /**
- * Inside a loop window: past `to` the cursor goes back to `from`, still, and a beat that would
- * wait for the viewer is stepped past, so the loop never stops by itself. The guard stops the
- * play if every beat in the window waits (nothing would ever move).
+ * On a reel: off it the cursor goes to its first beat, still, and a beat that would wait for
+ * the viewer is stepped past, so the loop never stops by itself. The guard stops the play if
+ * every beat on the reel waits (nothing would ever move).
  */
 function looped(state: ReplayState, beats: readonly SceneBeat[]): ReplayState {
-  const { from, to } = state.loop!;
+  const reel = state.loop!;
   let cursor = state.cursor;
-  for (let guard = 0; guard <= to - from + 1; guard++) {
-    if (cursor.index < from || cursor.index > to) cursor = still(from);
+  for (let guard = 0; guard <= reel.length; guard++) {
+    if (!reel.includes(cursor.index)) cursor = still(reel[0]);
     const beat = beats[cursor.index];
     if (!state.playing || !beat || holdFor(beat, state.speed) !== null)
       return { ...state, cursor };
-    cursor = cursor.index >= to ? still(from) : stepForward(cursor, beats);
+    cursor = onReel(cursor, reel);
   }
   return { ...state, cursor, playing: false };
 }
@@ -183,18 +201,29 @@ export function replayReducer(all: ReplayBeats) {
     const beats = of(state.xray);
     switch (action.type) {
       case 'step':
-        return action.dir === 1
-          ? landed({ ...state, cursor: stepForward(state.cursor, beats) }, beats)
-          : inWindow({ ...state, cursor: stepBack(state.cursor) });
+        if (action.dir === -1)
+          return inWindow({ ...state, cursor: stepBack(state.cursor) }, -1);
+        return landed(
+          {
+            ...state,
+            cursor: state.loop
+              ? onReel(state.cursor, state.loop)
+              : stepForward(state.cursor, beats),
+          },
+          beats,
+        );
       case 'seek':
         return inWindow({ ...state, cursor: seekTo(action.index, beats) });
       case 'chapter':
-        return inWindow({ ...state, cursor: jumpChapter(state.cursor, beats, action.dir) });
+        return inWindow(
+          { ...state, cursor: jumpChapter(state.cursor, beats, action.dir) },
+          action.dir,
+        );
       case 'tick':
         if (!state.playing) return state;
-        // a loop's last beat has held: round to the window's first, which arrives still
-        if (state.loop && state.cursor.index >= state.loop.to)
-          return landed({ ...state, cursor: still(state.loop.from) }, beats);
+        // on a reel: on to its next beat, round to the first after its last
+        if (state.loop)
+          return landed({ ...state, cursor: onReel(state.cursor, state.loop) }, beats);
         {
           // a room visited by a tap has played its last step: it rests there (owner,
           // 2026-09-30; it returned to the hub by itself). "Back to the night" is the way back
@@ -269,12 +298,11 @@ export function replayReducer(all: ReplayBeats) {
         if (next.xray === state.xray) return { ...state, ...next };
         const [was, now] = [of(state.xray), of(next.xray)];
         const cursor = carryAcross(state.cursor, was, now);
-        // a preview's window is carried by its two ends, which both lists hold
-        const loop = state.loop && {
-          from: carryAcross(still(state.loop.from), was, now).index,
-          to: carryAcross(still(state.loop.to), was, now).index,
-        };
-        return { ...state, ...next, cursor, loop };
+        // a preview's reel is carried beat by beat, and the cursor kept on it
+        const loop =
+          state.loop &&
+          reelOf(state.loop.map((i) => carryAcross(still(i), was, now).index));
+        return inWindow({ ...state, ...next, cursor, loop });
       }
     }
   }

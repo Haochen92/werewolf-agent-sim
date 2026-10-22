@@ -41,10 +41,10 @@ export const SITE = {
   ] as { label: string; href: string | null }[],
 
   /**
-   * The game the landing's carriage plays (review §F7), day 2's vote in the public cut. If the
+   * The game the landing's carriage plays (review §F7), a reel of it (featured-reel.ts). If the
    * archive no longer has it, the landing plays the newest game instead.
    */
-  featuredReplay: '68c26e83-f5c9-50d5-92b7-3589312a0cb9',
+  featuredReplay: 'e45eda20-ccbf-4d38-8be0-c18ccacd028f',
 
   // TODO(owner): the year the footer prints
   year: 2026,

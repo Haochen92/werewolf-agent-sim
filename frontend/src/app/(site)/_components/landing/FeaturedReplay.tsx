@@ -3,8 +3,9 @@
 /**
  * The carriage on the landing (redesign handoff 2026-10-14 §3): a game from the archive
  * playing in the big window of a railway carriage standing at the platform. It is the replay
- * theatre itself in its mini mode, playing one window round and round: day 3's vote through the
- * lynched seat's card going to the wing (`featuredWindow`). No second engine.
+ * theatre itself in its mini mode, playing a reel of the game round and round with Reveal on:
+ * the deal, the first night's pack, its morning, the featured lines and the vote they lead to
+ * (`featuredReel`). No second engine.
  *
  * On a desktop (over 860px) the whole carriage stands centred, both ends in view: end, door,
  * the game's window, door, end, under a roof board that names the game (its ID in split-flap
@@ -18,7 +19,7 @@
  * picture is in.
  *
  * The game is `SITE.featuredReplay`; if the archive no longer has it, the newest game plays
- * instead, with its own window. It plays while it is on screen; it rests on the window's first
+ * instead, with its own reel. It plays while it is on screen; it rests on the reel's first
  * beat for a viewer who asked for reduced motion, and with `?still=1` (the goldens).
  *
  * The carriage sits below the fold, so nothing of the preview is fetched at load (audit
@@ -48,7 +49,7 @@ import { TrainLoader } from '@/components/TrainLoader';
 import { useDecoded } from '@/hooks/useDecoded';
 import { useModelLabels } from '@/hooks/useModelLabels';
 import { getReplay, listReplaysWithTotal } from '@/lib/api';
-import { featuredWindow } from '@/lib/featured-window';
+import { FEATURED, featuredReel } from '@/lib/featured-reel';
 import { formatDate } from '@/lib/format';
 import { queryKeys } from '@/lib/queryKeys';
 import { ApiError } from '@/lib/request';
@@ -221,9 +222,14 @@ export function FeaturedReplay() {
   const under = useCallback((u: MiniUnder) => <CarriageUnder {...u} />, []);
 
   const events = game?.events as readonly DurableGameEvent[] | undefined;
+  // the featured game's own lines are its seqs: the fallback game's reel goes without them
+  const featured = game?.game_id === SITE.featuredReplay;
   const cut = useMemo(
-    () => (events ? featuredWindow(beatsFor(events, { xray: false })) : null),
-    [events],
+    () =>
+      events
+        ? featuredReel(beatsFor(events, { xray: true }), featured ? FEATURED : undefined)
+        : null,
+    [events, featured],
   );
 
   // the stage paints its dark ground at once and its pictures as they come: the house's loading
@@ -289,7 +295,6 @@ export function FeaturedReplay() {
   const record = id ? id.slice(0, 7).toUpperCase() : '';
   // the theatre's way out comes back here (`from=home`, TheaterClient)
   const href = id ? `/replays/${id}?from=home` : '/replays';
-  const what = cut?.day != null ? `Day ${cut.day}` : 'The opening';
 
   const model = game ? (game.model ? modelName(game.model) : 'Model unrecorded') : null;
   // the ID's tiles, held blank until the game arrives so nothing on the board moves
@@ -303,7 +308,7 @@ export function FeaturedReplay() {
       style={dressed ? ART : undefined}
       data-frame="carriage"
       data-ready={ready || undefined}
-      aria-label={game ? `Replay of ${what.toLowerCase()} of game ${record}` : undefined}
+      aria-label={game ? `Moments from game ${record}` : undefined}
     >
       {covered ? (
         <div className={classes.gate}>
@@ -365,8 +370,8 @@ export function FeaturedReplay() {
                       key={game.game_id}
                       game={game}
                       mini={{
-                        from: cut.from,
-                        to: cut.to,
+                        reel: cut.reel,
+                        xray: true,
                         autoplay: onScreen && !still && painted,
                         controls: wide ? 'stage' : 'under',
                         under,

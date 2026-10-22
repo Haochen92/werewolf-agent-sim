@@ -160,51 +160,47 @@ describe('the replay reducer', () => {
   });
 });
 
-describe('the loop window (a preview)', () => {
+describe('the loop reel (a preview)', () => {
   const opens = beats.public.findIndex((b) => b.id === 'vote.opens' && b.day === 3);
   const wing = beats.public.findIndex((b) => b.id === 'lynch.card-to-wing' && b.day === 3);
+  // the deal's first two beats, then day 3's vote through the wing: one gap between the parts
+  const vote = Array.from({ length: wing - opens + 1 }, (_, i) => opens + i);
+  const reel = [0, 1, ...vote];
   const loop = (index: number, rest: Partial<ReplayState> = {}): ReplayState => ({
-    ...initialLoopState(
-      beats.public,
-      { from: opens, to: wing },
-      {
-        playing: true,
-        speed: 'fast',
-      },
-    ),
+    ...initialLoopState(beats.public, reel, { playing: true, speed: 'fast' }),
     cursor: still(index),
     ...rest,
   });
 
-  it('starts still on the window’s first beat, public, with no slot', () => {
-    const s = initialLoopState(
-      beats.public,
-      { from: opens, to: wing },
-      {
-        playing: false,
-        speed: 'fast',
-      },
-    );
-    expect(s.cursor).toEqual(still(opens));
+  it('starts still on the reel’s first beat, public, with no slot', () => {
+    const s = initialLoopState(beats.public, reel, { playing: false, speed: 'fast' });
+    expect(s.cursor).toEqual(still(0));
     expect([s.playing, s.speed, s.xray, s.slot]).toEqual([false, 'fast', false, null]);
-    expect(s.loop).toEqual({ from: opens, to: wing });
+    expect(s.loop).toEqual(reel);
   });
 
-  it('clamps a window that runs past the list', () => {
+  it('can start with the X-ray on, on the X-ray’s cut', () => {
+    const s = initialLoopState(beats.xray, [3, 1, 2], {
+      playing: false,
+      speed: 'fast',
+      xray: true,
+    });
+    expect([s.xray, s.loop, s.cursor]).toEqual([true, [1, 2, 3], still(1)]);
+  });
+
+  it('drops beats the list does not hold, keeping at least its last', () => {
     const last = beats.public.length - 1;
-    const s = initialLoopState(
-      beats.public,
-      { from: last + 5, to: last + 40 },
-      {
-        playing: true,
-        speed: 'fast',
-      },
-    );
-    expect(s.loop).toEqual({ from: last, to: last });
+    const s = initialLoopState(beats.public, [last + 5, last + 40], {
+      playing: true,
+      speed: 'fast',
+    });
+    expect(s.loop).toEqual([last]);
     expect(s.cursor).toEqual(still(last));
   });
 
-  it('plays forward moving inside the window', () => {
+  it('plays forward moving between neighbours, and arrives still across a gap', () => {
+    expect(reduce(loop(0), { type: 'tick' }).cursor).toEqual({ index: 1, animate: true });
+    expect(reduce(loop(1), { type: 'tick' }).cursor).toEqual(still(opens));
     expect(reduce(loop(opens), { type: 'tick' }).cursor).toEqual({
       index: opens + 1,
       animate: true,
@@ -213,7 +209,7 @@ describe('the loop window (a preview)', () => {
 
   it('goes round from the last beat to the first, still, and keeps playing', () => {
     const s = reduce(loop(wing), { type: 'tick' });
-    expect(s.cursor).toEqual(still(opens));
+    expect(s.cursor).toEqual(still(0));
     expect(s.playing).toBe(true);
   });
 
@@ -223,57 +219,62 @@ describe('the loop window (a preview)', () => {
     const last = beats.public.length - 1;
     expect([waits, beats.public[last].holdMs]).toEqual([last - 1, 0]);
     const before = waits - 1;
-    // both waits are played past, and the window goes round to its first beat, still
-    const s = reduce(loop(before, { loop: { from: before, to: last } }), { type: 'tick' });
+    // both waits are played past, and the reel goes round to its first beat, still
+    const s = reduce(loop(before, { loop: [before, waits, last] }), { type: 'tick' });
     expect(s.cursor).toEqual(still(before));
     expect(s.playing).toBe(true);
     // short of the waits it plays forward as ever, moving
-    const t = reduce(loop(before - 1, { loop: { from: before - 1, to: last } }), {
+    const t = reduce(loop(before - 1, { loop: [before - 1, before, waits, last] }), {
       type: 'tick',
     });
     expect(t.cursor).toEqual({ index: before, animate: true });
   });
 
-  it('stops only when nothing in the window would ever move', () => {
+  it('stops only when nothing on the reel would ever move', () => {
     const last = beats.public.length - 1;
-    const s = reduce(
-      loop(last - 1, { loop: { from: last - 1, to: last }, playing: false }),
-      { type: 'play' },
-    );
+    const s = reduce(loop(last - 1, { loop: [last - 1, last], playing: false }), {
+      type: 'play',
+    });
     expect(s.playing).toBe(false);
   });
 
-  it('play and pause leave the cursor in the window; play from outside it starts over', () => {
+  it('play and pause leave the cursor on the reel; play from off it starts over', () => {
     const paused = reduce(loop(opens + 3), { type: 'pause' });
     expect([paused.playing, paused.cursor.index]).toEqual([false, opens + 3]);
     const again = reduce(paused, { type: 'play' });
     expect([again.playing, again.cursor.index]).toEqual([true, opens + 3]);
-    const outside = reduce(loop(2, { playing: false }), { type: 'play' });
-    expect(outside.cursor).toEqual(still(opens));
+    const off = reduce(loop(5, { playing: false }), { type: 'play' });
+    expect(off.cursor).toEqual(still(0));
   });
 
-  it('its buttons stay inside the window', () => {
-    expect(reduce(loop(opens), { type: 'step', dir: -1 }).cursor).toEqual(still(opens));
-    expect(reduce(loop(opens + 2), { type: 'seek', index: 0 }).cursor).toEqual(
+  it('its buttons stay on the reel', () => {
+    // back from the vote's first beat crosses the gap to the deal
+    expect(reduce(loop(opens), { type: 'step', dir: -1 }).cursor).toEqual(still(1));
+    expect(reduce(loop(0), { type: 'step', dir: -1 }).cursor).toEqual(still(0));
+    expect(reduce(loop(1, { playing: false }), { type: 'step', dir: 1 }).cursor).toEqual(
+      still(opens),
+    );
+    // a seek into the gap lands on the reel's next beat; past its end, on its last
+    expect(reduce(loop(opens + 2), { type: 'seek', index: 5 }).cursor).toEqual(
       still(opens),
     );
     expect(reduce(loop(opens + 2), { type: 'seek', index: 9999 }).cursor).toEqual(
       still(wing),
     );
     const next = reduce(loop(opens + 2), { type: 'chapter', dir: 1 }).cursor.index;
+    expect(reel).toContain(next);
     expect(next).toBeGreaterThan(opens + 2);
-    expect(next).toBeLessThanOrEqual(wing);
   });
 
-  it('the X-ray carries the window to the X-ray’s list, and back', () => {
+  it('the X-ray carries the reel to the X-ray’s list, and back', () => {
     const on = reduce(loop(opens, { playing: false }), { type: 'xray' });
     expect(on.xray).toBe(true);
     const x = beats.xray;
-    expect(x[on.loop!.from]).toMatchObject({ id: 'vote.opens', day: 3 });
-    expect(x[on.loop!.to]).toMatchObject({ id: 'lynch.card-to-wing', day: 3 });
-    expect(on.cursor).toEqual(still(on.loop!.from));
+    expect(x[on.loop![0]]).toMatchObject({ id: 'deal.table-seated' });
+    expect(x[on.loop!.at(-1)!]).toMatchObject({ id: 'lynch.card-to-wing', day: 3 });
+    expect(x[on.cursor.index]).toMatchObject({ id: 'vote.opens', day: 3 });
     const off = reduce(on, { type: 'xray' });
-    expect([off.xray, off.loop]).toEqual([false, { from: opens, to: wing }]);
+    expect([off.xray, off.loop, off.cursor]).toEqual([false, reel, still(opens)]);
   });
 
   it('the whole-log replay never loops: its state has no window', () => {
