@@ -150,9 +150,10 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   The game is e45eda20 (DeepSeek Flash, a human at the table): on day 3 the Illusionist,
   claiming the Investigator, gets the real one voted out. The fallback game's reel has the same
   parts without the lines, its first vote for the vote.
-  Before it plays, the theatre visits the reel's scenes once, still, under the loading picture,
-  and fetches and decodes every picture they show (`stage/containers/warm-reel.ts`, capped at
-  6 s): on a phone at 4x CPU each new scene had stalled 100–190 ms while its pictures came (the
+  Before it plays, the theatre visits the scenes of the reel's first 50 s (the deal, the night,
+  the morning) once, still, under the loading picture, and fetches and decodes every picture
+  they show (`stage/containers/warm-reel.ts`, capped at 6 s; the whole reel kept the cover up
+  3 s longer for scenes a minute away): on a phone at 4x CPU each new scene had stalled 100–190 ms while its pictures came (the
   role cards, the night car), and the cover now stays a moment longer instead (owner,
   2026-10-22).
 - The carriage is painted with pieces cut from the waiting room's train (`scripts/cut-carriage.mjs`

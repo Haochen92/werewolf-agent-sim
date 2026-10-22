@@ -7,20 +7,37 @@
  * and only then lets the reel play.
  */
 import type { SceneBeat } from '@/stage/beats/types';
+import type { MotionSpeed } from '@/stage/scenes/types';
+import { holdFor } from './transport';
 
 /** The longest the warming may take before the reel plays with whatever has come. */
 export const WARM_CAP_MS = 6000;
 
 /**
- * The beats to visit: the last of each run of neighbouring beats and every beat where the scene
- * changes, the reel's first left out (it is on the page already, and visited last). Within a run
+ * How far into the reel's play the warming reaches: its first scenes, the new ones (the deal,
+ * the night, the morning). Warming the whole reel kept the cover up 3 s longer on a phone for
+ * scenes a minute away, which the day car's vote had always opened on cold with one stall.
+ */
+export const WARM_AHEAD_MS = 50_000;
+
+/**
+ * The beats to visit within `ahead` ms of the reel's play: the last of each run of neighbouring
+ * beats and every beat where the scene changes, the reel's first left out (it is on the page already, and visited last). Within a run
  * a scene's later beats add to its pictures (the deal's faces, the lynch's card), so its last
  * beat stands for it.
  */
-export function warmBeats(reel: readonly number[], beats: readonly SceneBeat[]): number[] {
+export function warmBeats(
+  reel: readonly number[],
+  beats: readonly SceneBeat[],
+  speed: MotionSpeed = 'fast',
+  ahead = WARM_AHEAD_MS,
+): number[] {
   const out = new Set<number>();
+  let at = 0;
   reel.forEach((i, k) => {
-    if (k === 0) return;
+    const starts = at;
+    at += (beats[i] && holdFor(beats[i], speed)) ?? 0;
+    if (k === 0 || starts >= ahead) return;
     const prev = reel[k - 1];
     const next = reel[k + 1];
     const runEnds = next !== i + 1;

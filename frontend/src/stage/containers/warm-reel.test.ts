@@ -11,13 +11,20 @@ const { reel } = featuredReel(beats, FEATURED);
 describe('the beats a preview warms', () => {
   const visits = warmBeats(reel, beats);
 
-  it('visits the last of each run and each change of scene, never the first beat', () => {
+  it('visits the last of each run and each change of scene in its first 50 s, never the first beat', () => {
     expect(visits.map((i) => beats[i].id)).toEqual([
       'deal.face-up',
       'rnight.hub',
       'rnight.spoke',
       'rnight.spoke',
       'morning.shutter-down',
+    ]);
+    // with no horizon, the whole reel's
+    expect(
+      warmBeats(reel, beats, 'fast', Infinity)
+        .map((i) => beats[i].id)
+        .slice(5),
+    ).toEqual([
       'morning.card-down',
       'day.speech',
       'day.speech',

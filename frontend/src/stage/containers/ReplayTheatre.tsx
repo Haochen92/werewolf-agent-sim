@@ -209,7 +209,9 @@ export function ReplayTheatre({
     void (async () => {
       const until = Date.now() + WARM_CAP_MS;
       const srcs = new Set<string>();
-      const visits = warmAll ? warmBeats(reel, state.xray ? all.xray : all.public) : [];
+      const visits = warmAll
+        ? warmBeats(reel, state.xray ? all.xray : all.public, state.speed)
+        : [];
       for (const i of visits) {
         if (!live || Date.now() > until) break;
         dispatch({ type: 'seek', index: i });
