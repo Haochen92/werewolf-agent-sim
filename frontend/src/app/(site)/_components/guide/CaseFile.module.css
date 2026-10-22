@@ -131,6 +131,12 @@
   right: 30px;
 }
 
+/* Reveal's switch over its case file, at the right as on the stage's strip */
+.reveal {
+  justify-self: end;
+  margin-bottom: 10px;
+}
+
 /* the index card: a red margin rule under the title, blue lines under the text */
 .card {
   position: relative;
