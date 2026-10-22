@@ -368,7 +368,9 @@ export function FeaturedReplay() {
                       mini={{
                         reel: cut.reel,
                         xray: true,
-                        autoplay: onScreen && !still && painted,
+                        // not under a fading cover: its fade lifted the stage onto 79 layers
+                        // (17 without it) just as the first beat moved (owner, 2026-10-22)
+                        autoplay: onScreen && !still && painted && lifted && !covered,
                         // the goldens' still frame needs only its own pictures
                         warm: !still,
                         onWarm,
