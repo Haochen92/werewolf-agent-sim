@@ -13,11 +13,11 @@ describe('the beats a preview warms', () => {
 
   it('visits the last of each run and each change of scene in its first 50 s, never the first beat', () => {
     expect(visits.map((i) => beats[i].id)).toEqual([
-      'deal.face-up',
       'rnight.hub',
       'rnight.spoke',
       'rnight.spoke',
       'morning.shutter-down',
+      'morning.card-down',
     ]);
     // with no horizon, the whole reel's
     expect(
@@ -25,7 +25,6 @@ describe('the beats a preview warms', () => {
         .map((i) => beats[i].id)
         .slice(5),
     ).toEqual([
-      'morning.card-down',
       'day.speech',
       'day.speech',
       'vote.opens',

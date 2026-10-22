@@ -1,7 +1,8 @@
 /**
  * What the landing's carriage plays (owner, 2026-10-22): a reel of the game's moments in the
- * X-ray's cut, not one vote. The deal; the first night's hub and the pack's room, its chat
- * read line by line; that night's morning, its bodies; the featured lines said by day; and
+ * X-ray's cut, not one vote. The deal done, its cards in place and face up, arrived at, not
+ * played (the cards' drop and turn lagged on the owner's iPhone in this window); the first
+ * night's hub and the pack's room, its chat read line by line; that night's morning, its bodies; the featured lines said by day; and
  * the featured day's vote through the voted-out seat's card going to the wing. Each part is
  * found by the beats' ids and days (and the lines by their events' seqs), never by fixed
  * indices, so the fallback game (the newest, when the featured one is gone) gets its own reel:
@@ -76,11 +77,12 @@ export function featuredReel(
         b.id === 'day.speech' && featured.lines.includes(b.seq) ? [i] : [],
       )
     : [];
+  // the deal done: the X-ray's cards face up, or (a cut without them) the cards dealt
+  const faceUp = beats.findIndex((b) => b.id === 'deal.face-up');
+  const dealt =
+    faceUp !== -1 ? faceUp : beats.findIndex((b) => b.id === 'deal.cards-dealt');
   const reel = [
-    ...range(
-      0,
-      beats.findIndex((b) => b.id === 'deal.face-up'),
-    ),
+    ...(dealt !== -1 ? [dealt] : []),
     ...firstNight(beats),
     ...firstMorning(beats),
     ...lines,

@@ -808,7 +808,7 @@ const FIXTURE_BODY = readFileSync(
 /** The landing's featured game (`SITE.featuredReplay`), served from the fixture above. */
 const FEATURED = 'e45eda20-ccbf-4d38-8be0-c18ccacd028f';
 /** The reel's length, in beats of the X-ray's cut (featured-reel.test.ts names its parts). */
-const REEL = 42;
+const REEL = 40;
 const TWO_ROOMS = [
   ROOMS[0],
   { ...ROOMS[0], game_id: FULL.replace(/3$/, '4'), name: 'Late car' },
@@ -866,11 +866,13 @@ test('landing: the carriage plays a reel of the featured game, with the replayâ€
   // no way back to the replay list from inside the landing: the carriage links the game
   await expect(carriage(page).getByRole('link', { name: 'Replays' })).toHaveCount(0);
 
-  // it starts on the deal, Reveal on, and plays
+  // it starts on the deal done, its cards face up (Reveal on), and plays on to the night
   await carriage(page).scrollIntoViewIfNeeded();
   await expect(mini(page)).toHaveAttribute('data-playing', 'true');
-  await expect(mini(page)).not.toHaveAttribute('data-beat-index', '0', { timeout: 6000 });
-  expect(Number(await mini(page).getAttribute('data-beat-index'))).toBeGreaterThan(0);
+  await expect(mini(page)).not.toHaveAttribute('data-beat', 'deal.face-up', {
+    timeout: 6000,
+  });
+  expect(Number(await mini(page).getAttribute('data-beat-index'))).toBeGreaterThan(2);
 
   // the band sees the reel only, and its buttons stay on it
   const band = carriage(page).locator('[data-transport]');
@@ -881,16 +883,13 @@ test('landing: the carriage plays a reel of the featured game, with the replayâ€
     String(REEL),
   );
   await band.getByRole('slider', { name: 'Seek' }).click({ position: { x: 1, y: 4 } });
-  await expect(mini(page)).toHaveAttribute('data-beat-index', '0');
+  await expect(mini(page)).toHaveAttribute('data-beat', 'deal.face-up');
   await band.getByRole('button', { name: 'Back a beat' }).click();
-  await expect(mini(page)).toHaveAttribute('data-beat-index', '0');
+  await expect(mini(page)).toHaveAttribute('data-beat', 'deal.face-up');
 
-  // the strip's Reveal is on: once the cards are face up, seat 10's band names its role, the
+  // the strip's Reveal is on: with the cards face up, seat 10's band names its role, the
   // Illusionist (who claimed the Investigator), until it is turned off; File brings the case
   // file beside the stage, Transcript the drawer
-  await band.getByRole('button', { name: 'Forward a beat' }).click();
-  await band.getByRole('button', { name: 'Forward a beat' }).click();
-  await expect(mini(page)).toHaveAttribute('data-beat', 'deal.face-up');
   const seat10 = carriage(page).locator('[data-layer="hud"] [data-seat="10"]');
   await expect(seat10).toContainText('Illusionist');
   await carriage(page).getByRole('button', { name: 'Reveal', exact: true }).click();
@@ -946,7 +945,7 @@ test('landing: on an upright phone the controls sit under the stage, at reading 
   const pips = carriage(page).getByRole('group', { name: 'Beats' }).getByRole('button');
   await expect(pips).toHaveCount(REEL);
   await pips.nth(0).click();
-  await expect(mini(page)).toHaveAttribute('data-beat-index', '0');
+  await expect(mini(page)).toHaveAttribute('data-beat', 'deal.face-up');
 
   // the preview stops at the board on a phone (owner, 2026-10-14): no transcript, no Reveal
   // pane (the whole replay has them), and the carriage, the board and the way to the whole game
@@ -1030,7 +1029,7 @@ test('landing: the preview stops its clock while the page is hidden, and goes on
   const band = carriage(page).locator('[data-transport]');
   await band.getByRole('button', { name: 'Pause' }).click();
   await band.getByRole('slider', { name: 'Seek' }).click({ position: { x: 1, y: 4 } });
-  await expect(mini(page)).toHaveAttribute('data-beat-index', '0');
+  await expect(mini(page)).toHaveAttribute('data-beat', 'deal.face-up');
 
   const hidden = (on: boolean) =>
     page.evaluate((h) => {
@@ -1045,9 +1044,11 @@ test('landing: the preview stops its clock while the page is hidden, and goes on
   await expect(mini(page)).toHaveAttribute('data-playing', 'true');
   // longer than the beat's hold (the first test sees it end inside six seconds)
   await page.waitForTimeout(7000);
-  await expect(mini(page)).toHaveAttribute('data-beat-index', '0');
+  await expect(mini(page)).toHaveAttribute('data-beat', 'deal.face-up');
   await hidden(false);
-  await expect(mini(page)).not.toHaveAttribute('data-beat-index', '0', { timeout: 6000 });
+  await expect(mini(page)).not.toHaveAttribute('data-beat', 'deal.face-up', {
+    timeout: 6000,
+  });
 });
 
 for (const [name, viewport] of [
@@ -1059,7 +1060,7 @@ for (const [name, viewport] of [
     // at rest on the reel's first beat: reduced motion stops the play, and so does ?still=1
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await openLanding(page, '?still=1');
-    await expect(mini(page)).toHaveAttribute('data-beat-index', '0');
+    await expect(mini(page)).toHaveAttribute('data-beat', 'deal.face-up');
     await expect(page.locator('[data-game]')).toHaveCount(3);
     await expect(page.getByRole('contentinfo')).toContainText('212 games archived');
     await settle(page);

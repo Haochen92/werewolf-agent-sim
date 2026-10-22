@@ -4,7 +4,7 @@
  * The carriage on the landing (redesign handoff 2026-10-14 §3): a game from the archive
  * playing in the big window of a railway carriage standing at the platform. It is the replay
  * theatre itself in its mini mode, playing a reel of the game round and round with Reveal on:
- * the deal, the first night's pack, its morning, the featured lines and the vote they lead to
+ * the deal done, the first night's pack, its morning, the featured lines and the vote they lead to
  * (`featuredReel`). No second engine.
  *
  * On a desktop (over 860px) the whole carriage stands centred, both ends in view: end, door,

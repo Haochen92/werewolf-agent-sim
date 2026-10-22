@@ -144,7 +144,9 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   them. A roof board names the game (its ID as split-flap tiles, read once as
   `role="img"`) and its model; under the platform, the details and "Watch the whole game".
 - What the carriage plays (owner, 2026-10-22; it was one vote): a reel of the game in the
-  X-ray's cut, Reveal on, round and round (`lib/featured-reel.ts`): the deal, the first night's
+  X-ray's cut, Reveal on, round and round (`lib/featured-reel.ts`): the deal done (its cards
+  face up, arrived at still: the cards' drop and turn lagged on the owner's iPhone in this
+  window and not on the replay page, and three rounds of fixes did not cure it), the first night's
   hub and the pack's room (its chat line by line), that morning's bodies, the featured lines and
   the featured day's vote through the card to the wing. Between parts the stage arrives still.
   The game is e45eda20 (DeepSeek Flash, a human at the table): on day 3 the Illusionist,

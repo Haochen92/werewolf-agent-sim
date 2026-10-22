@@ -24,17 +24,13 @@ const cut = (...spec: [SceneBeat['id'], number][]): SceneBeat[] =>
 const idsOf = (reel: number[]) => reel.map((i) => beats[i].id);
 
 describe('the featured reel', () => {
-  it('plays the deal, the pack’s night, its morning, the lines and day 3’s vote, in order', () => {
+  it('plays the deal dealt, the pack’s night, its morning, the lines and day 3’s vote, in order', () => {
     const { reel, day } = featuredReel(beats, FEATURED);
     expect(day).toBe(3);
     expect(reel).toEqual([...reel].sort((a, b) => a - b));
     const ids = idsOf(reel);
-    expect(ids.slice(0, 3)).toEqual([
-      'deal.table-seated',
-      'deal.cards-dealt',
-      'deal.face-up',
-    ]);
-    expect(ids[3]).toBe('rnight.hub');
+    // the deal arrived at done, its cards face up, and straight on to the night
+    expect(ids.slice(0, 2)).toEqual(['deal.face-up', 'rnight.hub']);
     // the pack's room, every line of its chat and the kill
     const pack = reel.filter((i) => beats[i].spoke?.actor === 'pack');
     expect(pack).toHaveLength(beats[pack[0]].spoke!.steps);
@@ -78,7 +74,7 @@ describe('the featured reel', () => {
       ['night.hub', 2],
     );
     expect(featuredReel(b, { day: 3, lines: [] })).toEqual({
-      reel: [0, 1, 3, 4, 5, 6, 7],
+      reel: [1, 3, 4, 5, 6, 7],
       day: 2,
     });
   });
