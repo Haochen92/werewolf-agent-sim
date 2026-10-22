@@ -202,13 +202,6 @@
 .depot[data-art] .fall::before {
   animation-play-state: running;
 }
-/* held while the window plays the deal (owner, 2026-10-22: the deal lagged on an iPhone, not
-   on the replay page): in WebKit the falling sheets doubled a frame of the cards' drop and
-   turn, and paused they cost what still sheets do */
-.depot:has([data-mini][data-beat^='deal.']) .flakes,
-.depot:has([data-mini][data-beat^='deal.']) .fall::before {
-  animation-play-state: paused;
-}
 @keyframes snowfall {
   to {
     transform: translateY(var(--tile));
