@@ -964,9 +964,9 @@ test('landing: on an upright phone the controls sit under the stage, at reading 
 
 /**
  * The preview's lifecycle and its backdrop's density (audit 2026-10-11 §1, §2): nothing of it
- * is fetched while the carriage is under the fold; scrolled to, one backdrop sheet comes, the
- * smallest whose pixels cover the stage's width × the screen's density × the camera's 1.32
- * push-in (`pickScale`). The carriage's stage is 366 css px wide on a 390 phone (the screen
+ * is fetched while the carriage is under the fold; scrolled to, its backdrop sheets come, each
+ * the smallest whose pixels cover the stage's width × the screen's density × the camera's 1.32
+ * push-in (`pickScale`): one per car the reel's warmed scenes stand in (warm-reel.ts). The carriage's stage is 366 css px wide on a 390 phone (the screen
  * less 24px) and 1080 on a 1440 desktop (the carriage less its ends and doors).
  */
 const SHEET = /\/car-[a-z]+-[a-z]+-[a-z]+@([\d.]+)x\.[^/]*\.webp/;
@@ -984,7 +984,7 @@ for (const { name, viewport, dpr, sheet, px } of [
 ]) {
   test.describe(`landing preview on a ${name} at density ${dpr}`, () => {
     test.use({ viewport, deviceScaleFactor: dpr });
-    test('loads once the first screen is up, before it is scrolled to, with one backdrop sheet of the size it needs', async ({
+    test('loads once the first screen is up, before it is scrolled to, with backdrop sheets of the size it needs', async ({
       page,
     }) => {
       const sheets: string[] = [];
@@ -1013,7 +1013,8 @@ for (const { name, viewport, dpr, sheet, px } of [
       await expect(img).toHaveJSProperty('complete', true);
       expect(await img.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBe(px);
       await page.waitForLoadState('networkidle');
-      expect(sheets).toEqual([sheet]);
+      expect(sheets.length).toBeGreaterThan(0);
+      expect(new Set(sheets)).toEqual(new Set([sheet]));
       expect(replays).toBe(1);
     });
   });
