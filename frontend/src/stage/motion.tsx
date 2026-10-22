@@ -86,11 +86,18 @@ export function stepped<T extends { duration?: number; ease?: Transition['ease']
 const asIs = <T,>(t: T) => t;
 
 /**
+ * TEMPORARY (owner, 2026-10-22): `?smooth=1` on the page turns the phone's stepping off, so the
+ * owner can compare the deal on a phone with and without it. Remove once ruled.
+ */
+const SMOOTH =
+  typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('smooth');
+
+/**
  * How a mover's transition is given to motion: as written on a desktop, stepped on a phone
  * (`useSmall`). For moves only; a fade is the compositor's and needs no stepping.
  */
 export function useSteps(): <T extends { duration?: number; ease?: Transition['ease'] }>(
   t: T,
 ) => T {
-  return useSmall() ? stepped : asIs;
+  return useSmall() && !SMOOTH ? stepped : asIs;
 }
