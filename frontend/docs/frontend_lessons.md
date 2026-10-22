@@ -512,6 +512,32 @@ page drawn on pictures cold: a fresh browser context, the network throttled (CDP
 `Network.emulateNetworkConditions`, ~1 Mbps), a screenshot every second; then the cached
 revisit and a click, timed.
 
+**46. Before fixing a stall, find where its time goes: decoding, or each frame's work.** The
+owner saw the landing's deal lag on a phone (2026-10-22). The first reading, from long tasks
+lined up with beat changes, was pictures arriving mid-animation, and warming the reel's
+pictures under the cover cut the blocking by 38% at the price of a longer cover. The owner said
+it was the animation, and it was: a trace of the face-up beat (phone frame, CPU 4× slower)
+read 1.2 s of main thread in 2 s, nearly all the per-frame lifecycle (style, layout, paint,
+layerize, commit) and 24 ms of decoding. Rule: trace one beat and sum its time by kind before
+choosing a fix; anchor the trace with `console.timeStamp` at each beat change
+(`browser.startTracing`, then the `TimeStamp` events). A fix can be right for one stall and
+miss the one the viewer means.
+
+**47. An instant swap animated as opacity is still a layer: switch it with `visibility`.** The
+card's turn (`instruments/Flip.tsx`) swapped back for face with opacity keyframes `[1, 1, 0,
+0]`, a jump at the edge that looks instant, but an animated opacity holds a layer for the whole
+animation (lesson 10). Ten cards turning held twenty. Animating `visibility` instead takes no
+layer and reads the same: the deal's drawing layers went from 34 to 13, its Layerize time
+halved and its paint fell by a third. Rule: a discrete change is `visibility` or a state
+change, never an opacity animation that jumps.
+
+**48. Don't start the first move under a fading cover.** The carriage began its first beat
+while its loading cover was still fading off. A fade over the whole stage lifted the page onto
+79 layers (17 once it had gone), just as the chips came down. The reel now waits until the
+cover and the window's loader have gone (`FeaturedReplay`, `lifted && !covered`), 0.4 s
+later. Rule: a cover's fade and the content's first animation must not overlap; the fade is a
+cascade (lesson 10).
+
 ---
 
 ## Small things that cost an afternoon
@@ -566,9 +592,16 @@ revisit and a click, timed.
   counts the overflow and an iPad can still pan to it. Clip the wide element itself.
 - A rounded `overflow: hidden` round an animating layer costs a mask the size of the clip. Clip
   moving content with a plain rectangle and draw the rounded corner on the frame around it.
-- Headless Chromium here reports no `LayerTree` events, headed under Xvfb included. Read layer
-  memory on a device (Safari's Layers tab); headless can still count paints and raster time
-  from a trace (`browser.startTracing`), though `Paint` clip areas are layer-space and do not sum.
+- Read layer memory on a device (Safari's Layers tab). Headless Chromium can count layers over
+  CDP (`LayerTree.enable`, then `layerTreeDidChange`; 2026-10-22, the deal's counts; an earlier
+  note here said it reported none), and paints and raster time from a trace
+  (`browser.startTracing`), though `Paint` clip areas are layer-space and do not sum.
+- A grid row can keep a height from before its content measured itself. The guide's tools tray
+  (a grid) kept its row at the seat card's height from before the card's demo had sized its crop
+  (a container query plus an `aspect-ratio` box), and the card ran out of the tray until a tab
+  switch made the browser lay it out again (2026-10-22). A flex column has no such row: the tray
+  is one now. Suspect it when `getBoundingClientRect` gives a grid's track the right size and the
+  grid itself the wrong one.
 - `next dev` drops a `next/dynamic` chunk's stylesheet on a hot reload and never loads it back
   (2026-10: the landing's lazily loaded theatre lost its styles when a stage file was saved). The
   stage then draws unclipped at full size, with no HUD, which looks like a framing bug. A
