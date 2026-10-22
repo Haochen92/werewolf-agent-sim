@@ -143,6 +143,13 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   Reveal pane drew a second stage); the whole replay has both, and the gameplay guide explains
   them. A roof board names the game (its ID as split-flap tiles, read once as
   `role="img"`) and its model; under the platform, the details and "Watch the whole game".
+- What the carriage plays (owner, 2026-10-22; it was one vote): a reel of the game in the
+  X-ray's cut, Reveal on, round and round (`lib/featured-reel.ts`): the deal, the first night's
+  hub and the pack's room (its chat line by line), that morning's bodies, the featured lines and
+  the featured day's vote through the card to the wing. Between parts the stage arrives still.
+  The game is e45eda20 (DeepSeek Flash, a human at the table): on day 3 the Illusionist,
+  claiming the Investigator, gets the real one voted out. The fallback game's reel has the same
+  parts without the lines, its first vote for the vote.
 - The carriage is painted with pieces cut from the waiting room's train (`scripts/cut-carriage.mjs`
   → `SPRITES.carriage`): the snowy roof's bay, the brass rail, a mirrored seamless teak tile, the
   window's brass rim (a 9-slice laid round the glass with `border-image-outset`, so it never paints
@@ -190,14 +197,22 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   worn-ink speckle. About 70 KB, nothing moves. The mock's shorter copy was not taken (owner: the
   card text stays, the lesson and the drafted line are real).
 - "At the end of the line" (the replay's exhibit, `ReplayMoment`) in the same kit (owner,
-  2026-10-18, mock-replay-moment): a case file on walnut, its "Day 2 · Seat 10, the Chanteuse" on
-  a brass plate; in a kraft folder (its top edge the kit's tab as a 9-slice) the line said aloud
+  2026-10-18, mock-replay-moment): a case file on walnut under the stage's Reveal switch, shown
+  on (`RevealSign`; owner 2026-10-22, it was a brass plate with the file's name), its "Day 3 ·
+  Seat 10, the Illusionist" beside it in cream; in a kraft folder (its top edge the kit's tab as a 9-slice) the line said aloud
   on card paper ruled in red under a red ribbon, a brass pin (`brass-disc` heads) down to its
-  private note typed on ruled cream with the paperclip, the note's own "Do not disclose:" marked
+  private note typed on ruled cream with the paperclip, the note's own "Do not disclose" marked
   in red pencil, and what came of it inside a ruled edge on the kraft. Copy unchanged.
 - The guide's tools board (`ToolsTray`) is the features board's twin in the kit (owner,
   2026-10-18): walnut in a brass rim, every tab the brass plate (the unchosen dimmed), the tool on
-  card paper, its steps numbered on brass discs; it no longer composes `PlateTabs`.
+  card paper, its steps numbered on brass discs; it no longer composes `PlateTabs`. The seat
+  cards' five steps (owner's copy, 2026-10-22) are tabs, brass coins 1 to 5 beside the demo, one
+  step shown with a "Next" under it; step 4 opens your own seat's file. The demo opens on
+  day 3 with the game's Record (`fixtures/ledger-phase3.json`, rebuilt by the server's
+  `ledger_days`) and, into an empty demo notebook, seat 9's and seat 3's claims as the Record has
+  them, so "✓ on the record" shows. The board is a flex column, not a grid: a grid's row kept the
+  cards' height from before the seat card's demo had measured itself. The case file's Reveal tab
+  shows the stage's Reveal switch, on, over its demo (`RevealSign`).
 - The role cards (`RoleCard`, the guide's rows) are on the kit's card paper under its card frame
   (`card-frame.webp`, a 9-slice: cream band, fine rule, corner flourishes), no walnut tray (owner:
   the phone's row scrolls sideways). The replay slates (`Slate`, the landing, the archive, the
@@ -217,8 +232,8 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   mask; it was a multiply blend). Copy unchanged.
 - The landing's words (owner, 2026-10-15): every quoted agent line is a real one, verbatim, at
   the seq `landing/features.ts` names. The memory card's slip is game 2f19d908's Sigilist
-  following a lesson; the replay section's moment is game 68c26e83's Chanteuse claiming the
-  Investigator (also the carriage's game, day 2); the draft card's notes are the one thing
+  following a lesson; the replay section's moment is game e45eda20's Illusionist claiming the
+  Investigator on day 3, its note trimmed where the "…" are (also the carriage's game); the draft card's notes are the one thing
   written for the demo, and its caption says so. The closing states the research as it stands:
   the pipeline is built, earlier versions were tested (gains and failures), and the current
   version (v8) has not been tested at scale, so whether it improves play is open. Its "Read the

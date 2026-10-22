@@ -82,6 +82,9 @@ The stage is a `16 / 9` box. Every position, size, radius and path in every scen
   touches the geometry, `--chip`, `--gap` or the painted props. Below scale 0.75 (the same point
   the type starts growing) the box has `data-small`: the drawer's head loses its title (seats and
   Show still wrap, so both toggles stay in reach); the ballot's chips stay on one row.
+  `--grown` (0 at full size, 1 once the type grows) is for what a box does only then: the
+  replay's wolf chat widens 500 units left over the floor by the chair and, as the talk grows,
+  rises 200 units over the card to the photos, so a few lines show, not one (owner, 2026-10-22).
 - The HUD geometry the benches compute with `StageKit.geometry(W, H, …)` is **frozen once** into
   constants (`src/stage/units.ts`: rail, puppet box, wing, side slot, top strip, for `hud: live |
   replay | none`). The port's first job is to evaluate it at 1600×900 and commit the numbers.
