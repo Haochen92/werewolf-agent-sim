@@ -768,8 +768,9 @@ generated .d.ts           (tagged TS union)
 frontend reducer          (switch on `type`; compiler-enforced exhaustive)
 ```
 
-- **Drift guard:** CI regenerates `openapi.json` and runs `git diff --exit-code` — a schema
-  change that skipped regeneration fails the build.
+- **Drift guard:** a pytest snapshot test (`tests/server/test_openapi_snapshot.py`) compares the
+  saved `openapi.json` with the server's own; a schema change that skipped regeneration fails the
+  test suite. (Corrected 2026-10-22: there is no CI; an earlier version said CI ran this check.)
 - **SSE blind spot, fixed:** OpenAPI doesn't describe SSE payloads, so the union is
   registered in the spec via the replay route
   (`GET /games/{id}/events -> list[GameEvent]`) — a route we want anyway.

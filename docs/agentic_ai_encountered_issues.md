@@ -63,6 +63,10 @@ on the rescue model; a transcript notice was offered and is not built. A game-le
 (`server_design_notes.md` §5c, mode 4); the request budget narrows that gap, it does not close
 it. **Status 2026-10-01: committed, not deployed; the owner's local backend has not been
 restarted on it.**
+*Update 2026-10-22: deployed 2026-10-01 at `a651988` (both commits are in it). The rescue pairing
+above is the Gemini-era one; since 2026-10-15 the default seat model is Claude Haiku 5.5 with Sonnet
+5.5 as its rescue, and a served game uses the rescue its registry assigns (`_rescue_model` in
+`Agents/llm_factory/accessors.py`).*
 
 ## 2) A human's draft could stall the whole table (2026-09-30)
 
@@ -77,6 +81,8 @@ characters and the server took anything.
 about the agents' 120 words) with the server's words shown under the box
 (`Agents/turn/human_turn.py`); the frontend's box stops at the same 700 and counts from 600.
 Commit `b7517ec`; frontend `8b5775a`.
+*Update 2026-10-22: the cap has been 500 characters (about 85 words) on both sides since 2026-10-03
+(`30728693`, `MAX_LINE_CHARS` and the frontend's `LINE_MAX`).*
 
 ## 3) Where no human turn sets the tempo, the stage plays at agent speed (2026-10-01) — OPEN
 
