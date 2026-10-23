@@ -2,11 +2,46 @@
 
 ## Purpose
 
-Each report covers one experiment or feature segment of the project. Multiple reports will later be synthesized into a cohesive portfolio writeup. Reports should be self-contained learning reflections — not experiment logs, not academic papers.
+Each report covers one experiment or feature segment of the project. Multiple reports will later be
+synthesized into a cohesive portfolio writeup. Their purpose is to make a persuasive, evidence-backed
+case for the author's engineering ability: what was built, which decisions mattered, and what the
+results demonstrate. Select and explain the strongest material. A report need not catalogue everything
+that happened or everything that could still be improved; the experiment log preserves that history.
+
+## The Reader
+
+Write for a software engineer who understands APIs, LLM prompts and the general technique at hand
+(caching, retrieval, evaluation), but has **never seen this project**. They do not know our internal
+names, pipeline stages, experiment labels or earlier decisions. Write for that reader, and do not turn
+the doc into a beginner tutorial: explain *our* system, not the field.
+
+Keep claims supported by the evidence, including the distinction between measured results and expected
+benefits. Within that constraint, optimize for:
+
+1. **A persuasive account of the contribution.** Lead with the achievement or decision the reader should
+   remember, and select evidence that shows why it matters.
+2. **Understandable on a first reading.**
+3. **Relevance and proportion.** Give consequential decisions space; omit peripheral history and avoid
+   repeating qualifications.
+4. **Length**, optimized only once the first three hold.
+
+Accuracy does not require exhaustive disclosure of every abandoned idea or missing experiment. It does
+require keeping a qualification when removing it would materially change the reader's conclusion.
+
+**Revising an existing doc is a structural edit, not a paraphrase.** Rewrite paragraphs whole, move
+sections, delete repeated explanations, and give experiments unequal space when their weight is
+unequal. Patching new sections into an old text leaves two voices and two vocabularies side by side,
+which a reader cannot tell apart from two eras of truth.
+
+---
 
 ## Core Principle
 
-**Show the reasoning journey, not just the destination.** The reader should understand what you expected, what you tried, what surprised you, and what you learned. A report that presents three prompt versions and picks the winner tells the reader *what*. A report that explains why each version existed, what hypothesis it tested, and what the results revealed about the underlying system tells the reader *how you think*.
+**Make the engineering judgment visible.** Explain why the design fits the problem and what supports
+the decision. For an experiment, show the question, test, finding and resulting choice. For an
+architectural decision, explain the requirements, alternatives and tradeoff. For a debugging case,
+show the symptom, diagnosis, fix and verification. Do not force every topic into a failure-and-recovery
+story or append a generic lesson when the judgment is already clear.
 
 ---
 
@@ -34,7 +69,8 @@ skeleton. The Core Principle above and the Tone rules below apply to all of them
       rejected, virtues stated by construction.
     - *③ Implement → Verify → Decide* — the build-test-decide engine. It **repeats**: a pivot loops
       back to a fresh ②.
-    - *④ Limitations / future work* — ordered by criticality, dated for freshness.
+    - *④ Remaining questions / next steps, if needed* — distinguish unresolved evidence from work
+      actually planned. Historical entries retain the uncertainty that shaped the decision at the time.
 
   This is the journey genre's fullest form, the inverse of the reference doc, which distils the *same*
   workstream destination-first. **Menu, not mandate:** a short log might be just ①②④. Exemplar:
@@ -51,14 +87,14 @@ skeleton. The Core Principle above and the Tone rules below apply to all of them
   *why it looked feasible* → *what the investigation showed* → *the call (drop / defer / use a proxy)
   and why* → *Lessons*, stating what would change the verdict. (Example: concluding that deterministic
   decision-quality scoring isn't feasible, and substituting de-lucked outcome proxies.)
-- **Reference / how-it-works doc.** A reader needs to *use or audit* a finished mechanism, not learn
-  how you got there. This is the one type that **inverts the Core Principle**: it leads with the
-  synthesized destination and demotes the journey to an opt-in case study. Skeleton: *orientation line*
+- **Reference / how-it-works doc.** A reader needs to understand or assess a finished mechanism. Lead
+  with the current design and keep the journey in an optional case study. Skeleton: *orientation line*
   (a one-line mental model — a pipeline or map — so every identifier introduced later has somewhere to
   hang) → *the guarantee / contract* (present-tense: what holds, where it's enforced, how it's
   verified — not a changelog) → *the model / mechanism* → *verification* → *evidence* (a case study,
-  benchmark, or rationale, written **verdict-first then forensics**) → *known gaps* (criticality-ordered
-  + freshness-dated). Use it when the artifact's value is the *current truth* of how something works,
+  benchmark, or rationale, written **verdict-first then forensics**) → *evidence limits or next steps,
+  only where needed*. Apply the selection rules under *Limitations and scope* below. Use it when the
+  artifact's value is the *current truth* of how something works,
   not the path to it; if the path *is* the point, use a journey type above. Exemplar:
   `evidence/agent_boundaries/report.md`.
 
@@ -71,16 +107,17 @@ direction-vs-magnitude rules below, which apply to every type.
 - **Framework-behavior claims carry a version pin (+ a test where load-bearing).** "How LangGraph /
   LangChain / lib X behaves" is version-specific and the depth-reader's first thing to poke; assert it
   against the runtime fingerprint, and verify it empirically where the doc leans on it.
-- **Gaps carry a freshness date AND an honestly-applied severity.** Severity = likelihood × impact ×
-  detectability, *not* impact-if-violated alone (construction-enforced-but-unverified ≠ unenforced).
-  Run a freshness pass against the repo before trusting any gap, and **mark minor gaps, don't delete
-  them** — the list's value is the audit trail; criticality drives entry *length*, not inclusion.
-- **Separate verdict from forensics.** Lead the case study with a 4-sentence outcome paragraph + a
-  "skip by subhead" signpost, then the detail. One canonical doc — never fork a reader-friendly and a
-  detailed version (they drift).
+- **Select current, consequential limitations.** Check that a gap still exists before describing it
+  as current. Include it where it changes the interpretation of a result, the suitability of the
+  design, or the credibility of a claimed benefit. Keep dates when needed to distinguish versions.
+  Severity labels belong in an operational risk register when one is needed; reader-facing reports
+  should explain the actual consequence. Minor historical gaps can remain in the log.
+- **Separate verdict from forensics.** Lead the case study with a short outcome paragraph and a
+  "skip by subhead" signpost when useful, then the detail. Keep a canonical evidence source; a portfolio
+  summary can link to it without repeating the full investigation.
 - **Pitch at the reader's altitude — drop nitty-gritty, don't reconcile it.** A reference doc serves a
-  *busy auditor / interviewer*: current design + current gaps + future plan + the pivotal results that
-  drove design shifts. It is **not** a forensic audit (commit-level provenance, which exact script ran,
+  *busy technical reader*: current design, reasons for the choices, pivotal results and relevant
+  evidence boundaries. It is **not** a forensic audit (commit-level provenance, which exact script ran,
   edge-case thresholds belong in the source-map/ledger or nowhere). When two statements conflict over a
   *mechanism* detail that doesn't move the narrative, **delete the over-specific claim rather than
   reconciling it** — reconciliation adds the very noise the reader didn't want and re-introduces the
@@ -110,13 +147,61 @@ which apply to every type.)
   weaknesses **1:1**.
 - **③ Implement → Verify → Decide — name the risk, lead with the problem.** *Implement:* present each
   refinement **problem → fix** (the bold lead states what broke, then the mechanism — not the reverse),
-  with provenance inline (SHA / config / file). *Verify:* every probe **names the one risk it isolates**
+  and close the section with a short provenance line (SHA / config / file) rather than threading
+  identifiers through the prose (see *Placement* under Artifacts). *Verify:* every probe **names the one risk it isolates**
   ("*Catches:* …") → result → decision; a probe reported without the risk it tests is a fact-dump, and
   **falsification is first-class** — a killed approach is shown, diagnosed, and its recovery traced,
   never deleted. *Decide:* adopt / pivot / kill; a pivot re-enters ②.
-- **④ Limitations — the reference doc's gap discipline, reused** (see *Discipline for reference docs*
-  above for the full rule): criticality-ordered, freshness-dated, mark minor gaps rather than deleting
-  them.
+- **④ Remaining questions — preserve the decision's context.** Keep historical uncertainties with
+  the decision they affected and record later resolutions when they occur. Do not copy every old
+  question into a present-day limitations list. Use *Limitations and scope* below to select what the
+  companion report needs.
+
+### Limitations and scope
+
+**Lead with the supported contribution.** State what was achieved or learned, give the evidence, then
+qualify its reach where necessary. A reader should understand the result before being asked to assess
+its boundaries. Keep a material qualification adjacent to the claim, even in a short portfolio summary.
+
+Before including a limitation, ask: **Which claim or design decision does this qualify, and how would
+the reader misunderstand it without this information?** If neither answer is concrete, it probably
+belongs elsewhere or can be omitted. There is no required number of limitations and no mandatory
+standalone section.
+
+| Kind of information | Treatment |
+|---|---|
+| Evidence limit: small sample, missing comparison, unresolved confound | Put the boundary beside the affected result. Use a short shared section only when several claims depend on it. |
+| Current defect that materially affects the claimed behaviour | State its consequence and the actual mitigation or status. Do not rename it as a future opportunity. |
+| Accepted tradeoff or known provider behaviour | Explain it with the design decision and why it was acceptable for this use case, where that reasoning is recorded. |
+| Optional optimization or unsupported use case | Put it in scope, alternatives or future work if relevant. An unbuilt feature is not automatically a defect. |
+| Resolved incident, obsolete measurement or maintenance reminder | Keep it in the log or implementation documentation unless it explains a consequential decision in the report. |
+
+**Describe the exact missing evidence.** A tested system can lack a controlled comparison of one design
+choice. A fix can pass local checks without having run at scale. Neither means the entire system is
+"untested." State what was checked and what conclusion remains unsupported. Do not invent validation
+or a rationale for skipping it; do not imply that historical tests validate today's exact version.
+
+**Keep process claims as specific as the evidence.** Prefer "For the tell detector, cached and uncached
+outputs were compared against labelled examples before caching became the default" to "Every caching
+change is quality-tested before deployment." One evaluated change demonstrates a skill without claiming
+an exceptionless process. A later improvement in practice can be described when its chronology is supported.
+
+**Use direct, proportionate wording.** These are editing examples, not claims to copy into unrelated reports:
+
+| Avoid | Prefer |
+|---|---|
+| "The extraction prompt was deployed untested." | "Extraction quality was evaluated separately; the effect of changing prompt order was not isolated in a controlled comparison." Use the first clause only if the relevant evaluation is documented. |
+| "No whole-game cached share exists." | "The probe demonstrated reuse on selected requests; game-wide savings have not yet been established." |
+| "Caching damages reproducibility." | "The detector's cached outputs varied more between runs, but precision and recall were comparable on five games and 40 labelled cases. Evaluations use stored outputs so the evaluated run remains inspectable." |
+| "The optimization is incomplete: cross-player caching is unbuilt." | "The current layout supports reuse between a player's turns. Sharing more context across players is a further optimization." |
+
+Do not repeat the same caveat in the overview, results, decision and closing list. Narrow the claim once
+and keep the supporting detail in one place. A serious qualification must still be visible wherever a
+standalone headline would otherwise mislead.
+
+**Do not turn accepted uncertainty into a promised task.** Use "deferred" or "planned" only when that
+is the actual status. If no comparison is planned, state the evidence boundary without creating a
+backlog item. Do not infer a missed deadline, urgency or severity merely because a test is possible.
 
 ---
 
@@ -124,7 +209,7 @@ which apply to every type.)
 
 ### 1. Motivation (short)
 
-What problem does this experiment address? Frame it as a gap: "we had X, but not Y, which meant we couldn't Z." No background tutorial — assume the reader understands the project. One paragraph.
+What problem does this experiment address? Frame it as a gap: "we had X, but not Y, which meant we couldn't Z." No background tutorial on the field, but do not assume the reader knows the project (see *The Reader*): say what each component does before naming it. One paragraph.
 
 ### 2. Design and Hypothesis
 
@@ -158,22 +243,31 @@ Present data, then interpret it. For every table or comparison:
 - If an outlier or confound affected results, identify it and show results both ways
 - State the sample size (N) with the result, and **separate direction from magnitude**. At small N,
   "memory-on won 4 of 4" is a *direction* you can believe and a *magnitude* you cannot — say which
-  you are claiming. Mark confidence honestly (e.g. *high-direction / low-magnitude, N=4*) rather than
-  implying a precision the sample can't support. Small-N over-claiming is this project's most likely
-  failure mode; the headline metric stays the win rate, with proxies and N qualifying it.
+  you are claiming. State the limitation itself ("4 of 4 games; too few to size the effect") rather
+  than a shorthand grade like "direction-grade", and never imply a precision the sample can't support.
+  Small-N over-claiming is this project's most likely failure mode; the headline metric stays the win
+  rate, with proxies and N qualifying it.
+- **Distinguish measurements, expectations and implementation status.** Report measured benefits with
+  their scope. Label forecasts as estimates. For a shipped change, say what was verified and which
+  benefit remains unmeasured; passing functional checks does not establish a cost or quality improvement,
+  and lacking a benefit measurement does not mean no testing occurred.
 
 Do not let tables speak for themselves. The reader should never have to infer what a table means.
 
 ### 6. Decision and Tradeoffs
 
-State what you chose and why. Then explicitly address the strongest argument against your choice. Every decision has a tradeoff — name it and explain why it's acceptable.
+State what you chose and why. Explain material tradeoffs or a credible alternative where they help the
+reader assess the decision. Do not manufacture a drawback or an adversarial objection for every change.
+If a cost reduction showed no quality loss on the evaluated sample, state that result with its scope.
 
 Bad: "We chose v2 because it had the highest scores."
 Good: "We chose v2 for its higher adoption accuracy and lower over-attribution rate. v2 does have the highest under-attribution (19%), which is the more dangerous failure mode since it makes useful strategies look unused. We accepted this because the schema reorder already substantially reduced both error types from v1, and 72% accuracy is sufficient for Phase 1's purpose of surfacing broad adoption patterns."
 
 ### 7. Lessons (the reflection)
 
-What generalizable insights emerged? These are the most valuable part for the portfolio. Each lesson should be:
+Include lessons when they add insight beyond the decision already explained. A concrete diagnosis or
+well-reasoned architectural choice can demonstrate ability without an extra "lesson learned" paragraph.
+When a transferable lesson is useful, it should be:
 
 - Stated as a transferable principle, not a project-specific observation
 - Grounded in specific evidence from the experiment
@@ -190,6 +284,9 @@ Examples of bad lessons:
 
 What does this experiment enable or block? If the next step depends on a condition (enough data, an ablation result), state the condition. If this experiment changed your plans for something downstream, say so.
 
+This section is optional. Include intended work or a relevant condition for revisiting a decision, not
+every possible experiment. Separate optional ideas from commitments.
+
 ### 9. Artifacts
 
 Table of files produced (eval sets, results, configs). Keep it factual.
@@ -200,6 +297,12 @@ number a reader cannot trace back to the commit and config that made it is not r
 report is where that pointer naturally lives. This is the same back-reference the eval-architecture
 convention requires of every record — see `CLAUDE.md → Eval Architecture` and
 `evidence/tracing/fingerprinting/report.md`.
+
+**Placement — what stays in the prose and what moves out.** Keep in the text every number a reader
+needs to assess a claim (the N, the before and after, the cost against the estimate). Move detailed
+configurations, raw usage records and commit identifiers to an evidence section, a case study's
+forensics, a section-closing provenance line, or a linked file. Identifiers threaded mid-sentence make a
+reader parse plumbing to reach the claim.
 
 **Co-locate artifacts with the report.** All files that support the report — eval sets, eval results, eval configs — should live in the same `evidence/<experiment>/` folder alongside the report. This keeps the experiment self-contained and reviewable without hunting across directories. When artifacts are generated elsewhere (e.g., `eval_results/`), move them into the evidence folder and clean up the originals.
 
@@ -223,7 +326,9 @@ names survive.
 
 **Frame impact as capability unlocked when no downstream metrics exist yet.** If you haven't measured end-to-end impact, don't fake it. Instead, describe what was unobservable before and is now observable. "Before this work, we had no way to distinguish strategies agents rely on from ones they ignore. This makes strategy quality measurable for the first time."
 
-**Name tradeoffs, don't hide them.** Every design choice sacrifices something. Stating what you gave up and why it's acceptable is stronger than presenting the choice as obvious.
+**Explain material tradeoffs in context.** State what was accepted and why it fit the requirements.
+Avoid presenting every known constraint as an unresolved flaw, or inventing a sacrifice when the
+evidence shows a useful improvement within the tested scope.
 
 **Keep tables interpreted.** Never present a results table without stating the takeaway before it and addressing surprises after it.
 
@@ -237,8 +342,15 @@ modifiers stacked three deep, an em-dash breaking every line. Concision means cu
 compressing what remains — dense prose is a separate failure, and the checks above do not catch it.
 The rules below are mechanical; apply them on a final read-through.
 
-- **One main idea per sentence.** Keep the subject and verb close together. When a sentence welds three
-  ideas into one clause, split it into three sentences.
+- **One main idea per sentence, one reasoning step per paragraph.** Keep the subject and verb close
+  together. When a sentence welds three ideas into one clause, split it into three sentences; when a
+  paragraph makes two inferential jumps, split it at the jump.
+- **Say what a component does before using its name.** "The query writer (the call that turns the game
+  state into a memory search)" before "the situation prompt". An internal name met cold is a lookup the
+  reader cannot do.
+- **Replace vague evaluations with the observation.** "Cleanly", "robust", "works well",
+  "direction-grade" tell the reader you were satisfied, not what you saw. Write the observation ("15,001
+  of 15,005 prompt tokens served from cache") or the limitation ("one game per side").
 - **Unpack stacked modifiers.** A pile of hyphenated qualifiers ("criticality-ordered, freshness-dated,
   construction-enforced-but-unverified") buries the verb. Turn the modifiers back into clauses:
   "ordered by criticality, dated for freshness, and enforced by construction though not yet verified."
@@ -265,6 +377,35 @@ list. It is longer and easier to read: one idea per sentence, the shorthand ("or
 imitate the prose they see more reliably than the prose they are told to write, so the guide tries to
 model the voice it asks for.
 
+### Plain presentation (how a result reads to someone who must defend it)
+
+The rules above make sentences readable. A section can still be hard to follow when it reports a
+technical result: the owner, who must explain every claim in an interview, could not follow several
+reports that passed every rule above. Six habits fixed them (2026-10-22). None of them drops a detail
+of a finding that is kept; detail moves, it is not deleted.
+
+1. **Ask the question in plain words, then answer it first.** Open each part with what it asks
+   ("Are the values correct?") and a bold one-line answer, before any method.
+2. **Context before numbers.** Say what was measured, against what, and how, then give the number.
+   A percentage the reader cannot place is noise.
+3. **Counts a reader can picture, not fitted coefficients.** Prefer "a loser's good move was called
+   positive 23% of the time, a winner's 83%" to "+0.80 per unit of side won". If a fit summarises
+   the counts, put it in a small box after them.
+4. **One comparison per table.** Keep only the columns the point needs; mention the rest in the text.
+5. **Findings apart from "how sure we are".** State what was found, then give a separate short list:
+   what it rests on, what it holds across, what could still explain it, what was not checked.
+6. **Inside a kept finding, nothing is lost.** Every number, N and caveat of a finding you keep
+   appears in the new version or in the log. Check it item by item before replacing a section, and
+   put back anything that is nowhere else. Which findings to keep is a separate choice: a finding
+   stays if it played a key role in reaching today's design or shows a skill nothing else shows;
+   redundant findings and dead ends that shaped nothing stay in git history.
+
+**Exemplar.** `evidence/extraction/selection/report.md` §4 before and after (the earlier version is
+in git history at `2382b34c`). Before: a regression fit, two coefficients, and a paragraph on how to
+read "per step of grade". After: three facts each observation carries, a 2×2 table of how often moves
+were called positive, the halo stated in one line, a "how sure we are" list, and the fit in a box. The
+owner could not explain the first and could explain the second.
+
 ---
 
 ## Anti-Patterns to Avoid
@@ -273,6 +414,14 @@ model the voice it asks for.
 - **Orphaned tables.** Data without interpretation. Every table needs a "so what."
 - **Buried corrections.** Hiding assumption changes in subsections. Pull them up as findings.
 - **Impact theater.** Claiming vague impact without evidence. Either show numbers or honestly frame what was enabled.
+- **The limitations inventory.** Copying every unrun test, optional optimization and provider caveat into
+  one ranked list. Select the qualifications that affect the report's claims and place them in context.
+- **Overstating a gap.** Calling a system "untested" because one comparison is missing, or describing an
+  accepted tradeoff as a failure. Match the wording to the specific evidence that is absent.
+- **Universal process claims.** Turning one successful quality check into "we always test before
+  deploying." Demonstrate the practice through the actual case.
+- **Achievement buried under caveats.** Opening with a list of what was not done before explaining what
+  was accomplished. Lead with the supported result and retain the qualifications needed to assess it.
 - **Flat iteration lists.** "v1 did X. v2 did Y. v3 did Z." without causal links between them.
 - **Lessons that don't generalize.** "We learned v2 is better" is not a lesson. "Schema field ordering affects reasoning direction in structured output" is.
 - **Density mistaken for concision.** Fusing five ideas into one clause, stacking hyphenated modifiers, chaining em-dashes. The argument can be complete and the prose still unreadable — this is the failure the *Prose legibility* rules catch, and the one most common in practice. Cutting filler does not fix it.
@@ -282,20 +431,32 @@ model the voice it asks for.
 
 ## Checklist Before Finalizing
 
-- [ ] Does every design decision name its tradeoff?
+- [ ] Does the opening make the contribution and its value clear?
+- [ ] Are consequential choices explained, with material tradeoffs where relevant?
 - [ ] Does every iteration link back to a specific finding from the prior version?
 - [ ] Does every table have a stated takeaway?
 - [ ] Are assumption corrections surfaced as findings, not buried?
-- [ ] Are lessons stated as transferable principles with evidence?
+- [ ] Do explicit lessons add insight, with evidence, rather than repeat the decision or state a generic maxim?
 - [ ] Is impact framed honestly (metrics if available, capability unlocked if not)?
 - [ ] Would a reader who skips the tables still understand the narrative from the prose?
 - [ ] Can an independent reader parse each *sentence* on the first pass — one main idea per sentence, roughly one em-dash per paragraph at most, internal shorthand defined before it's used? (This tests the sentences; the check above tests the argument — different failures.)
+- [ ] *(Plain presentation)* Does each part ask its question plainly and answer it first, give context before every number, use counts over coefficients, keep findings apart from "how sure we are", and keep every number, N and caveat of each finding it keeps?
+- [ ] Read as the outside engineer of *The Reader*: does any passage need unstated context, use an unexplained internal term, or make more than one reasoning jump? Rewrite those passages.
+- [ ] Are measured benefits, estimates and implemented changes distinguished, with the actual scope of verification?
+- [ ] Does every included limitation qualify a specific claim or decision? Are optional ideas and historical loose ends kept out of the current limitations list?
+- [ ] Does each qualification say plainly what remains unknown and why it matters, without implying a broader failure?
+- [ ] Are material qualifications adjacent to the claims they affect, rather than buried in linked detail or repeated throughout?
+- [ ] Are process claims supported at the stated scope, without turning one tested case into an "always" claim?
+- [ ] Does future work reflect actual plans, rather than promises invented to resolve every unknown?
+- [ ] Is every argument explained fully once, with later mentions pointing back (not re-argued in the intro, results, lessons and gaps)?
+- [ ] Has any historical finding drifted into a universal or current claim? (Date it, scope it, or cut it.)
+- [ ] Are vague evaluations ("cleanly", "robust", "direction-grade") replaced by the observation or the limitation?
 - [ ] Did you pick the right document type (experiment / build-journey log / decision record / negative finding / reference doc)?
 - [ ] Is the provenance stamped (commit / fingerprint / config) so results are traceable?
 - [ ] Are code pointers refactor-stable (console names / package paths), with deep anchors only where load-bearing?
 - [ ] Is N stated, and direction separated from magnitude where the sample is small?
 - [ ] *(Reference docs)* Does each framework-behavior claim carry a version pin (+ a test where load-bearing)?
-- [ ] *(Reference docs)* Is each gap freshness-dated and severity-rated (likelihood × impact × detectability), with minor gaps marked, not deleted?
+- [ ] *(Reference docs)* Are included limitations current, consequential and proportionate? Are historical measurements identified as historical?
 - [ ] *(Reference docs)* Is the verdict separated from the forensics (skim layer before depth layer)?
 - [ ] *(Journey logs)* Does no earlier section depend on a later result — falsified designs shown in place, `(§N)` used as navigation only?
 - [ ] *(Journey logs)* Does each refinement/fix lead with the problem, then the mechanism (not fix-first)?

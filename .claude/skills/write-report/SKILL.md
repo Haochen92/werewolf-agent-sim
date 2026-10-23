@@ -27,7 +27,8 @@ Writers imitate the prose they see more reliably than the prose they are told to
 If the invoker supplied an outline/argument brief, follow it exactly. If not, produce one and get it confirmed before drafting. The brief must state:
 - The one-paragraph argument (what the reader should believe after reading, and on what evidence).
 - Selection: which results/artifacts carry each claim — and what is deliberately EXCLUDED (with a one-line why). Altitude drift and fact-dumping are selection failures, not prose failures; they are decided here.
-- The reader: busy interviewer/auditor by default.
+- The reader: the guide's *The Reader* by default — an engineer who knows the technique but has never seen this project. Apply its goal ranking (accuracy → first-read clarity → no repetition → length).
+- For a REVISION: the plan for the structural edit — what moves, what merges, what is cut, and which old passages get rewritten whole. A revision is not a patch: the project's small-edit default for code does not apply to a doc the owner asked to rewrite.
 
 ## Step 4 — Draft, under these accuracy rules
 
@@ -134,8 +135,9 @@ moves specifically:
 ## Step 5 — Two self-review passes (in order)
 
 1. **Argument pass** — the guide's full checklist, including the type-specific items. Explicitly check: does any section list facts without interpretation (the fact-dump smell)? Did anything drift from the Step-3 brief's selection? Then scan every verdict sentence for scope: does its strength exceed what the cited store/epoch/N/instrument can carry (the Claim-calibration rules above)?
-2. **Prose-legibility pass** — a separate read applying the guide's §Prose legibility rules mechanically: one main idea per sentence; unpack stacked modifiers; ≤ ~1 em-dash per paragraph; define shorthand before use; plain sentence over aphorism.
+2. **Prose-legibility pass** — a separate read applying the guide's §Prose legibility rules mechanically: one main idea per sentence, one reasoning step per paragraph; unpack stacked modifiers; ≤ ~1 em-dash per paragraph; say what a component does before naming it; define shorthand before use; replace vague evaluations ("cleanly", "robust", "direction-grade") with the observation; plain sentence over aphorism. Grep the draft for the project's internal names and check each is introduced before use.
+3. **Outsider-and-history pass** — read as the outside engineer: mark every passage that needs unstated context or makes several jumps, and rewrite it. Then check that no historical finding reads as a current or universal claim.
 
 ## Step 6 — Deliver
 
-Present the draft plus a 5-line review note: type chosen, exemplar read, what was excluded and why, checklist items that needed a fix in pass 1, and any claim you could not verify against evidence (flag, don't smooth over).
+Present the draft plus a short review note: type chosen, exemplar read, the main structural changes (for a revision), what was excluded and why, checklist items that needed a fix, and the factual ambiguities that still need the owner's judgment (flag, don't smooth over).
