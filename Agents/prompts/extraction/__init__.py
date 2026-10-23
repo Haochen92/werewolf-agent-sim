@@ -1,5 +1,5 @@
-"""Extraction prompts, split by lifecycle: `postgame` (LIVE v5 production extraction), `cell` (current
-v6, offline-only), `day_summary` (in-game), `archive` (superseded/dead). Re-exported flat so
+"""Extraction prompts, split by lifecycle: `postgame` (v5 whole-game prompts, kept for older paths and
+experiments), `cell` (the per-cell prompts the offline extraction job runs), `day_summary` (in-game), `archive` (superseded/dead). Re-exported flat so
 `from Agents.prompts.extraction import X` and `from Agents.prompts import X` keep working unchanged.
 """
 

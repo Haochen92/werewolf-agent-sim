@@ -5,8 +5,8 @@ One LLM call per (game, role, phase): the discussion, the vote and the night eac
 The day was one call that tagged each observation by phase until 2026-10-11, when the ten-seat pilot
 filed nearly every day observation under the vote (a day moment ends in a vote, so the vote became
 its outcome), leaving the discussion namespace, which an evil player's discussion turns retrieve
-from, almost empty. Villager has no night cell. Shared by the LIVE post-game extractor (extract_postgame_per_cell) and the offline re-miner
-(reextract_cells.py) so the two stay in lockstep.
+from, almost empty. Villager has no night cell. Shared by the offline extraction job (offline.cell_calls, and extract_postgame_per_cell on its Gemini
+path) and the research re-miner (reextract_cells.py) so the two stay in lockstep.
 """
 
 from __future__ import annotations

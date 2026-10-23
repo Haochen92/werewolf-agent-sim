@@ -5,7 +5,7 @@ a backfill file), extracts every dealt role's discussion, vote and night as one 
 first call direct, to write its prefix to the cache), runs the de-halo pass as a second batch, and
 writes ``extracted.jsonl`` (extraction cases, the eval-case format), ``dehalo.jsonl`` and
 ``summary.json`` (counts, tokens and cost at the catalogue's batch prices). A ``gemini-*`` model runs
-the live extractor's path instead, online, with its explicit prefix cache (Gemini batch is not
+the per-cell extractor's online path instead, online, with its explicit prefix cache (Gemini batch is not
 built). Writing the lessons into a store or a served game's replay is a separate step.
 
   poetry run python scripts/extract_batch.py --inputs batch_results/extraction_inputs/backfill_2026-10-12.jsonl \\
@@ -44,7 +44,7 @@ def main() -> None:
     parser.add_argument("--games", nargs="*", default=[], help="game id prefixes (default: every input)")
     parser.add_argument("--sources", nargs="*", default=[],
                         help="keep inputs whose recorded source contains one of these (e.g. v8_seed)")
-    parser.add_argument("--model", default="claude-haiku-5-5")
+    parser.add_argument("--model", default="claude-sonnet-5-5")  # Haiku writes seat ids into lessons (v8 batch check)
     parser.add_argument("--thinking", default=None, help="off, or an effort level (low..max); default: the model's")
     parser.add_argument("--no-warm", action="store_true", help="send every call in the batch")
     parser.add_argument("--no-dehalo", action="store_true")

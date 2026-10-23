@@ -1,4 +1,4 @@
-"""v6 per-cell post-game extraction, in the LIVE prefix/tail shape (mirrors ROLE_EXTRACTION_PREFIX/TAIL).
+"""v6 per-cell post-game extraction, in the prefix/tail shape (mirrors ROLE_EXTRACTION_PREFIX/TAIL).
 
 CELL_EXTRACTION_PREFIX is role/phase-NEUTRAL (framing + rules + epistemic + naming + the general
 field-filling rules + quality + GAME DATA), so it is byte-identical across every (role, phase) cell of
@@ -6,8 +6,8 @@ a game — the unit cached once per game. The per-cell variation (role, phase, d
 schema-derived dimension menu) lives in CELL_OBSERVATION_TAIL. CELL_STRATEGY_TAIL is a STUB appended
 AFTER the observation tail for the upcoming dual strategy-points extraction.
 
-Built by `Agents.memory.extraction.inputs.build_cell_extraction_prompt` (the live builder convention);
-offline only (reextract_cells), not yet wired into the live graph. The old monolithic
+Built by `Agents.memory.extraction.inputs.build_cell_extraction_prompt`; run by the offline extraction
+job (`scripts/extract_batch.py`), never inside a game. The old monolithic
 V6_CELL_EXTRACTION_PROMPT (pre prefix/tail) is kept in archive.py for reference.
 """
 
