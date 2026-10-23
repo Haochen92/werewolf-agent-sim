@@ -1,607 +1,224 @@
-# Day Summary — chronological overview
+# The day summary: build journey (May to October 2026)
 
-**What this is.** The spine of the day-summary quality workstream, in the order it happened: why the summary
-needed evaluating, what each prompt version tested, what the judge could and couldn't tell us, and how the
-two shipped decisions (structured output, and the generation model) were actually made. It ends where
-[report.md](report.md) begins — that companion doc is the destination, the current truth of how day-summary
-works in the code. The measurement apparatus itself is written up in
-[../../evaluation/llm_judge/day_summary.md](../../evaluation/llm_judge/day_summary.md).
-
-The raw dated lab notebook this narrative was distilled from is preserved verbatim in **Appendix A**, so the
-curated arc and the original record can be read side by side.
-
-**What day-summary is.** At the end of each day's discussion, before the vote, one LLM call condenses the
-day's public talk into a structured summary. It is the *only* representation of a past day an agent ever sees
-again, because raw transcripts are never re-shown, so an omission here is an omission for the rest of the
-game. That single fact is why the workstream exists.
-
-**The two channels.** Hard game-state facts (the vote tally, the elimination, the death-revealed role) do
-*not* depend on this LLM: they are written deterministically by the game master at vote resolution and
-appended to the same `day_summaries` stream. The LLM summary owns the *argumentative* content: accusations
-and their reasoning, role claims, alliances, and village dynamics. Keeping that division in mind explains why
-several apparent "completeness" failures below turn out not to matter.
-
-**What "quality" means here.** From v2 on, quality was scored by an LLM judge on five 1-5 dimensions:
-`completeness`, `accuracy`, `evidence_type_clarity`, `village_dynamics`, `epistemic_correctness`. Two of those
-turned out to be presence checks on forced structure; three could actually move (§2, §7).
-
-**Naming.** The **prompt** iterated v1→v4b. A separate **model bake-off** (§7) compared generation models
-under the fixed v4b prompt. The **judge** model was gemini-2.5-pro throughout.
-
-**Reading contract.** Sections are in time order, and each states what it tested and what it found. The arc
-contains real corrections shown in place, not smoothed over: a word-limit hypothesis that was falsified (§3),
-and a judge that proved unable to rank the versions it was built to rank (§5). For the current shipped state,
-jump to [report.md](report.md).
+> **What this is.** The chronological path from a free-text summary that had never been evaluated to
+> today's design, where the model only transcribes and code checks. Later entries supersede earlier
+> ones. A design that was falsified is shown where it happened, not edited away.
+>
+> **Companion docs.** The current design, stated destination-first: [`report.md`](report.md).
+> This log condenses the folder's earlier `experiment_log.md` (the May series, with its raw notebook)
+> and the October entries of
+> [`../../game_play_enhancement/discussion_evidence.md`](../../game_play_enhancement/discussion_evidence.md)
+> (§6.4–6.6, §8.4) and [`../../reasoning_failures/experiment_log.md`](../../reasoning_failures/experiment_log.md)
+> (§3). The earlier versions of this folder's log and report are in git history at `2382b34c`. The commit messages quoted below are in git history.
+>
+> **A naming note.** The May prompts were numbered v1 to v4b. The October schemas restart at v3 and
+> v4 in the code (`DaySummaryOutputV3`, `V4`). This log names each design by what it does.
 
 ---
 
-## 0 · Origin — why the day summary exists, and why its quality mattered
+## ① Motivation: the only window onto a past day
 
-The day summary exists for two reasons. First, it **bounds the context**: agents act over many days, and
-re-feeding every earlier day's full transcript on every later prompt would make the context swell as the game
-runs on, so each past day is compressed once into a fixed-size digest and only the current day is shown raw.
-Second, it **turns dialogue into signal**: a raw discussion is mostly repetition, hedging, and social texture,
-so a structured extract of the load-bearing facts is cheaper and cleaner for a downstream model to reason over
-than the transcript.
+**2026-05-27.** At the end of each day's discussion, one model call condensed the day into a summary.
+Seats never saw an earlier day's discussion again, only its summary. So every later decision about
+a past day rested on this one call, and it had never been evaluated.
 
-That design has a consequence. The summary becomes the sole carrier of a prior day into every later decision:
-agent prompts, the situation-summary query, and post-game extraction all read it, and none of them ever see
-the raw transcript again. So its quality is a bottleneck for multi-day reasoning, yet it had never been
-evaluated. Three things were unknown: did it capture all the strategically important content (completeness),
-were its attributions correct (accuracy), and did its omissions propagate downstream (impact)? The
-four-section v1 template had been written once and never revisited. Everything below is judged against one
-bar: preserve what a later day needs, without inventing what didn't happen.
+The first template was a reasonable starting point. It asked for four fixed sections: accusations,
+defences, role reveals and alliances, in free text. Three things were unknown: whether it kept what
+mattered, whether it attributed statements to the right players, and whether its omissions changed
+later decisions.
 
-## 1 · v1 baseline — four fixed categories
+## ② May: tuning the free-text summary with a judge
 
-v1 captured four fixed buckets: accusations, defenses, role reveals, and alliances. That was a defensible
-first cut, but it asked for none of the *situation* signals the downstream consumers actually needed — how
-much the village knew, how aligned it was, who was driving. Those signals are exactly what the
-situation-summary query and post-game extraction were built to consume, so their absence was the root gap v2
-set out to close.
+**2026-05-27 · a situation section and a quality judge.** The prompt was given the project's shared
+standards for describing a game situation, and a "village dynamics" section (how informed the
+village was, how aligned, who was driving). A hand comparison of 8 summary pairs showed the new
+section adding that signal. To score at scale, a judge was built: Gemini 2.5 Pro read each transcript
+and its summary and scored five dimensions from 1 to 5, over 18 transcript–summary pairs.
 
-## 2 · v2 — compose the situation standard, and build the judge
+**Catches:** whether the judge can rank prompt versions. Its first run already showed the limit. The
+village-dynamics score was 5.00 on every pair, because the prompt forced the section to exist and the
+judge checked that it did. Completeness was lowest (4.56), with accusers and votes dropped in 5 of 18
+pairs.
 
-**Change.** v2 composed the shared `SITUATION_STANDARDS` document into the prompt and added a "Village
-dynamics" section. This is the same standard the situation-summary and extraction prompts already used. A
-hand comparison on 8 pairs confirmed it added real signal: every summary now stated whether the village was
-information-rich or information-starved, described the consensus texture, and named who was driving versus
-deflecting.
+**2026-05-27 · the word-limit hypothesis, falsified.** The reading at the time was that the 400-word
+limit forced the model to drop secondary accusers. *Catches:* whether length was the constraint.
+Raised to 500 words, the model still wrote 130 to 230 words, and completeness did not move (4.44 to
+4.39). The limit was reverted. The gaps were the model's choices of what to include, not a budget.
 
-**The judge.** To score this at scale, a five-dimension LLM judge (gemini-2.5-pro) was built. Its first
-result was already the shape of everything that followed:
+**2026-05-27 · "list all accusers", and the noise floor.** The prompt was told to keep votes cited as
+evidence and to list every accuser in a pile-on. It fixed the two worst pairs and regressed others.
+The finding was about the instrument: one pair's score moved by ±1 between runs of the same prompt,
+so at 18 pairs with one run each, the differences being chased (−0.11, −0.22) were smaller than the
+noise.
 
-| Dimension | Avg | Min |
-|---|---|---|
-| completeness | 4.56 | 3 |
-| accuracy | 4.83 | 4 |
-| evidence_type_clarity | 4.89 | 3 |
-| village_dynamics | 5.00 | 5 |
-| epistemic_correctness | 4.89 | 3 |
+**2026-05-27 · structured output.** *Problem:* in free text the model chose what to include, and "list
+every accuser" did not hold. *Change:* the summary became structured output, one entry per
+accusation, role claim and alliance, with code rendering the text. Scores moved within noise
+(completeness 4.44 to 4.50). *Decision:* keep structured output for architectural reasons, not
+scores: a fixed format, forced enumeration, and fields later code can read. A follow-up added a
+"confirmed by death reveal" tier after the model labelled a dead investigator's revealed role
+"unverified".
 
-`village_dynamics` was pinned at a perfect 5.00, and `completeness` was the weak spot: the judge flagged
-dropped vote actions and secondary accusers in 5 of 18 pairs (e.g. `0313eab5_day3`, `6a8635b0_day2`). The
-reading at the time was that the word limit forced the model to triage, and it triaged away votes and minor
-accusers.
+**2026-05-27 · the model choice.** Four generation models were scored on the final prompt.
+Gemini 2.5 Pro scored highest but took about 120 minutes for 18 pairs. *Catches:* the failures that
+would mislead a later seat most, read by hand rather than averaged. Gemini 3.1 Flash-Lite at medium
+thinking removed the two worst failures of its minimal setting, a fabricated game-master announcement
+and a dropped primary accuser, at about 10 minutes. *Decision:* Flash-Lite with medium thinking.
 
-## 3 · The word-limit hypothesis, falsified
+At this point the summary had four sections, in prose, and seats read the rendered text.
 
-If the model was triaging to fit a budget, raising the budget should help. It didn't. Bumped from 400 to 500
-words, the model kept writing 130-230 words either way, and completeness didn't move (4.44 → 4.39). One
-outlier even got worse. The limit was reverted. The lesson corrected the §2 diagnosis: the gaps are not a
-budget problem, they are the model's **summarization priorities**. It chooses what to include, and a higher
-ceiling doesn't change those choices.
+## ③ October: the summary passes on a premise as fact
 
-## 4 · v3 — completeness fixes, and the noise floor
+**2026-10-03 · game `46355b89`.** The owner played the serial killer. On day 3 a wolf argued from
+something only the wolves knew (their attack on the serial killer had failed, which the game never
+announces). Two villagers called it a fabricated case, and the wolf was voted out. On day 4 three town
+players treated "player_2 survived multiple night attacks" as fact. They had not seen day 3's
+discussion, only its summary:
 
-v3 targeted the two named causes. It clarified that past votes cited *as evidence* should be kept (the "no
-vote tally" rule had been over-applied), and it told the model to list *all* accusers in a pile-on. It fixed
-the two worst v2 cases (`6a8635b0_day2` 3→5, `0313eab5_day3` 3→4) but regressed others, and the averages
-drifted slightly down within noise. The real finding was methodological: individual pairs swing ±1 between
-runs from generation non-determinism, so at n=18 with a single run per pair, the deltas being chased (−0.11,
-−0.22) were smaller than the noise.
+> "Player_2 has survived night attacks and remained unharmed without claiming a healer, which these
+> players argue points to serial killer night immunity."
 
-## 5 · v4 — structured output, and the decision the judge couldn't make
+The conclusion was attributed; the premise was stated as fact. Seats who rejected the claim while
+reading the discussion accepted it from the summary.
 
-**Change.** Free-text generation let the model choose what to include, and even "list ALL accusers" didn't
-hold. v4 replaced the free-text field with structured extraction — separate `Accusation`, `RoleClaim`,
-`Alliance`, and `VillageDynamics` entries — plus a deterministic serializer that rebuilds the text block
-downstream expects. Forcing one entry per accusation makes pile-on participants hard to drop. Completeness
-nudged up (4.44 → 4.50); one game regressed on epistemic (a confirmed-dead role labeled "unverified"), which
-v4b then fixed.
+**Design: every statement attributed, and the summary given the record** (code: `V3`). The summariser
+was given the game master's record and the claims already on record. It wrote each statement as
+something a named player said, recorded who disputed each accusation, checked each accusation
+against the record (`record_check`), and gave each role claim a verdict (supported, contradicted,
+unverified). The shared situation standards were removed from its prompt, because they told it never
+to use player IDs, against its own rule to use them. Earlier days were now shown in labelled blocks:
+the game master's exact record first.
 
-**The decision.** Across v2, v3, and v4 the judge could not statistically distinguish any version. So the
-call to keep structured output was made on **architectural** grounds, not judge deltas: a deterministic
-format, forced enumeration, and fields that later code can parse. Falling back to a non-eval reason when the
-instrument can't resolve a difference is the honest move, and it is the pattern that repeats in §7.
+*Verify, on the hallucination bench (89 frozen moments from nine-seat games, 3 samples each,
+Gemini 3.5 Flash-Lite).* *Catches:* whether a more faithful summary reduces the seats' own errors.
+Bad samples went from 36% to 31% of 267, with 24 cases better and 14 worse (p = 0.14). That is a
+direction, not an established effect.
 
-## 6 · v4b — targeted epistemic and vote-declaration fixes
+## ③ The summariser transcribes; code checks
 
-v4b added a "confirmed by death reveal" epistemic tier and extended the vote rule to cover in-discussion vote
-*declarations*, not just past references. The targeted fix landed cleanly (`04aabab0` day3 and day4 both
-jumped epistemic 1→5). New low scores appeared on *different* pairs (a fabricated game-master announcement on
-`8e437de2_day3`), which confirmed rather than contradicted the §4 finding: the residual movement is
-generation non-determinism, not a remaining prompt gap.
+**2026-10-04 · the attributed summary's own judgements were the problem.** Three things showed the
+day after. Nearly every claim verdict was "unverified", and the claim record built from them dropped
+the field. "Alliances" restated the accusations, and "village dynamics" retold the day as a story,
+which is how the wolf's premise had entered as narration. And it was long: the healer's day-4 prompt
+in `46355b89` spent 4,911 characters on previous days.
 
-## 7 · Model bake-off — thinking budget over model size
+**Design: transcription plus a claim ledger** (code: `V4`, commit `2b24936c`). The summariser writes
+two lists: accusations, and role claims with their night actions in fixed words (action, night,
+target, a result from a fixed list). Alliances, village dynamics and the verdicts were removed. A
+claim ledger, kept by code, folds every day's claims per player and checks each against engine facts
+(revealed roles, announced saves and deaths, the cast). A check states the fact and stays silent
+where the record fits more than one reading. The ledger is rebuilt for every prompt, never stored.
+Seats read three blocks: the game master's record, the ledger, the accusations. The owner ruled that
+the summariser gives no verdict of its own: "supported" was a subjective call.
 
-With the prompt settled, the last lever was the generation model. Four configs were scored under v4b
-(judge = gemini-2.5-pro):
+*Verify, same bench.* *Catches:* whether removing the summariser's judgement costs fidelity. No change
+in the seats' errors: 31% against 32%, 11 cases better and 11 worse. Messages may have got worse (17%
+to 27% of checkable messages, p ≈ 0.13), mostly late-game votes misquoted. Across 104 re-summarised
+days the summariser never failed. Its false flags that "investigations were never announced" (they
+never are) went from 6 to 0, and stored summaries were 55% shorter. *Decision:* keep. The design cut
+what seats read without changing what they got wrong.
 
-| Model | comp | acc | epis | latency (18 pairs) |
-|---|---|---|---|---|
-| flash-lite (minimal) | 4.50 | 4.61 | 4.72 | ~10 min |
-| flash-lite (medium) | 4.44 | 4.89 | 5.00 | ~10 min |
-| 3.5-flash | 4.78 | 4.78 | 5.00 | ~80 min |
-| **2.5-pro** | **4.83** | **4.94** | 5.00 | ~120 min |
+**2026-10-04 · the bench's seats were not reasoning.** A probe found every game turn so far had run
+with zero reasoning tokens. Turned on, bad samples fell from 31% to 10% on the same summaries. Every
+comparison above ran without reasoning, so they say little about how the summary's design matters to
+a model that reasons. They were not re-run.
 
-2.5-pro scored highest, but latency ruled it out. The decisive read was not the aggregate but a manual
-inspection of failure cases: **medium thinking** on flash-lite removed the two most damaging modes of minimal
-thinking — a fabricated game-master announcement (`8e437de2_day3`) and a dropped primary accuser
-(`6a8635b0_day2`) — at no latency cost over minimal. So the choice was flash-lite with medium thinking: the
-thinking budget bought the quality that mattered without paying the model-size latency tax.
+**2026-10-04 · a plan is not an action** (commits `ace0cf6e`, `d78c0bb3`, `a3fb32fd`). *Problem:* a
+decoy "I'll check player_2 tonight" was logged as a night-2 investigation. *Fix:* a claimed night
+action is one the player says already happened; plans go in their own list, and the ledger sets them
+beside what the player later says they did, as fact, never as a broken promise. A vague result is
+recorded as `not_said`. Each written accusation field was capped at 30 words, after DeepSeek wrote a
+median of 40 and up to 92.
 
----
+## ③ The ten-seat game: what the summary got wrong
 
-## Recurring threads
+**2026-10-09 · the ten-seat game.** The cast grew to ten seats from twelve roles, with more night
+actions to claim: watches, follows, sigils, blocks. A speaking seat also filled in a claim field for
+the role it claimed, and the ledger took role claims from that field first, falling back on the
+summary's transcription only when the field was empty.
 
-- **Saturation is mechanistic, not uniform** (§2, §7) — the two dimensions that never move
-  (`village_dynamics`, `evidence_type_clarity`) are presence checks on structure the prompt forces; the three
-  that move are content checks against the transcript.
-- **Noise ≥ signal at n=18** (§3, §4) — single-run-per-pair scoring swings ±1, so sub-0.2 deltas were never
-  real.
-- **Generation non-determinism, not prompt gaps** (§4, §6) — after v4, different pairs regress each run and no
-  systematic gap remained.
-- **Architecture and latency over judge deltas** (§5, §7) — both shipped decisions were made on grounds the
-  judge couldn't provide, because it couldn't rank near-equal options.
-- **Two channels** (throughout) — the LLM owns argumentative content and the game master owns the hard facts,
-  which is why dropped-vote "completeness" failures are largely harmless.
+**2026-10-10 · fifteen games read by hand.** *Catches:* what actually goes wrong, by kind, rather than
+by count of fields. Over ten audited games (about 345 heard lines), summary errors were 22, the most
+common error of any kind: omissions and distortions of plain claims. One decided a game (`e06`). The
+investigator said "I was roleblocked last night, which confirms we have an active Chanteuse in play".
+The summary wrote "player_2 claimed chanteuse — Night 1: blocked player_2". The speaker had set no
+claim field, so the ledger's fallback took it. The investigator accepted the false premise about
+itself the next day and was voted out 7 to 1. Separately, the record check copied its own example ("no
+attack on player_2 was ever announced") against an announced death and against attacks on players who
+cannot be killed at night.
 
-## Artifacts
+*Fix* (commit `6248fc58`): the summariser is told that something done to a player is not their claim.
+The ledger drops a claimed action that can only have been done to the speaker, and drops the claimed
+role too only for a Chanteuse claim resting on a self-block. The record check's example was removed.
 
-| Beat | Artifact | What it holds |
-|---|---|---|
-| §2 | `regen_comparison.json` | v1-vs-v2 hand comparison (the Village-dynamics signal) |
-| §2-§7 | `eval_summary.txt`, `eval_results.jsonl` | per-dimension score tables + per-pair judge output |
-| §7 | `eval_summary_31-flash-lite_medium.txt`, `eval_summary_35-flash.txt`, `eval_summary_25-pro.txt` (+ matching `eval_results_*.jsonl`) | the model bake-off, per config |
-| all | `prompt_versions/` | checkpointed prompts v1 → v4b |
-| destination | [report.md](report.md) | current shipped state + freshness/gap tracking |
-| apparatus | [../../evaluation/llm_judge/day_summary.md](../../evaluation/llm_judge/day_summary.md) | the L1/L2 measurement write-up |
+*Verify, by replay.* Each faulty summary was frozen as a case and replayed with exactly the inputs it
+had in the game, five samples a case, scored on the structured fields and the ledger built from them.
+*Catches:* whether each fix holds without new games. A first, broader ledger rule also lost a true
+Vigilante, whose "held my fire" the summariser had written as shooting itself; the replay caught it,
+and the rule was narrowed. The copied record-check line came back in 2 of 15 samples before the fix
+and 0 of 15 after. The invented Chanteuse claim did not recur in 10 samples on either arm. It is rare,
+so the ledger rule and a test are what guard it.
 
----
+**2026-10-10 · keeping what was denied** (commit `0c605e89`). *Problem:* the summary had no field for
+a denial. Every spoken denial in the later games had been dropped (30 of 30 replayed samples), one of
+them the counter-evidence to the same player's claim the next day. *Fix:* a "did not act" night
+action, an instruction to keep every rebuttal, and result words for what the record could not hold:
+`no_visitors`, `no_effect`, `roleblocked`. *Verify:* Gemini 3.5 Flash-Lite then lost 7 of 30 denials,
+Gemini 3.5 Flash none. A roleblock had been filed as a denial by GPT-6 Luna in 15 of 15 samples; after
+the fix, 0 of 15.
 
-## Appendix A — Raw lab notebook (2026-05-27, verbatim)
+**2026-10-10 · roles inferred from a described action** (commit `d066d1b3`). *Problem:* across 71
+summarised days, the summariser never contradicted a claim field the speaker had set, and sixteen of
+its own role claims were roles inferred from a described watch or follow. *Fix:* the speaker's claim
+field now counts a role claimed by describing its action, so the speaker's own account takes the
+place of the summariser's inference.
 
-> Preserved unedited as the original dated record, superseded by the curated narrative above. File paths and
-> identifiers here are period-accurate (pre-refactor) and may not resolve against current code; the current
-> pointers live in [report.md](report.md).
+## ③ A stronger summariser, and the record check removed
 
-# Day Summary — Experiment Log
+**2026-10-16 · Claude Haiku 5.5 against Claude Sonnet 5.5.** The owner allowed Sonnet for the summary,
+one call a day, if it judged better. *Catches:* whether a stronger model writes summaries with fewer
+errors that would mislead a later seat. Every day with speech in two Haiku games (6 days) was
+re-summarised five times per model, and Sonnet judged all 66 summaries against the transcript and the
+record. A first judging was discarded: the judge had treated the moderator's closing line, which still
+named accusers in an old wording, as the truth about who accused whom.
 
-## Context
+Both models wrote flawed summaries in 18 of 30. Sonnet made fewer bad record checks (6 against 20) and
+more transcription errors (18 against 11). Every one of the 27 record checks written across all arms
+was judged wrong; none reported a real conflict. *Decision:* the summary stays on the game's model.
+The record check was removed (commit `d4f14fa7`). It had been added on 2026-10-03, when no code yet
+checked claims; the ledger had done that since 2026-10-04.
 
-The day summary component condenses each day's public discussion into a
-structured summary covering key accusations, defenses, role reveals, and
-alliances. It runs once at the end of each day's discussion rounds, before
-voting.
+## ③ The speaker's own account, and a rescue model
 
-### Pipeline position
+**2026-10-18 · the speaker fills in its claimed night actions** (commit `c957fdb5`). A speaking seat now
+fills in the night actions its line claims, as well as the role. The ledger takes both from the
+speaker first. The summary's transcription of claims became a cross-check, used for a player who
+filled no field that day (a human, or a game from before the fields). The summary remains the source
+of the accusations, the retractions and the plans.
 
-Day summaries are consumed by every downstream agent prompt as historical
-context for decision-making:
+**2026-10-21 · the summary gets a rescue model** (commits `cc4977ea`, `957d0b2e`). *Problem:* a stalled
+provider could hold a request for a long time before failing. Outside Gemini, a client waited up to
+600 seconds a try, with up to three tries, before anything else was tried. *Fix:* the summary waits up to 90 seconds, does not retry
+a stall on the same model, and goes to the game's rescue model, a different model assigned to the
+game. While the primary keeps stalling, later summaries start on the rescue model. The raw transcript
+remains the last resort. Deployed the same day.
 
-```
-Day discussion messages → Day summary (LLM extraction) → Agent prompts (all roles)
-                                                        → Situation summary (query generation)
-                                                        → Post-game extraction (episodic memory)
-```
+## ④ Remaining questions
 
-The summary is the only representation of prior days that agents see — they
-never receive raw discussion transcripts from previous days. This makes
-day summary quality a bottleneck for multi-day reasoning.
-
-### Implementation
-
-- **Prompt:** `Agents/prompts/extraction.py` — `DAY_SUMMARY_PROMPT`
-- **Schema:** `Agents/schemas/output.py` — `DaySummaryOutput` (single `summary: str` field)
-- **Node:** `Agents/nodes.py` — `summarize_day_discussion()`
-- **Formatter:** `Agents/formatters.py` — `format_day_summaries()`
-
-### What's missing
-
-Day summary quality has never been evaluated. We don't know:
-1. **Completeness** — does the summary capture all strategically important
-   information from the discussion?
-2. **Accuracy** — are attributions (who said/accused/claimed what) correct?
-3. **Downstream impact** — do summary omissions or errors propagate into
-   agent decisions or retrieval queries?
-
-The current four-section template was designed once and never iterated on.
-It may miss information categories that matter (e.g., tone shifts, implicit
-suspicion, information asymmetry signals).
-
----
-
-## Experiment: Day Summary Quality Evaluation
-
-### Objective
-
-Evaluate the quality of the current day summary prompt, identify systematic
-gaps, and iterate on the prompt to improve downstream usefulness.
-
-### Method
-
-1. Update the day summary prompt to compose `SITUATION_STANDARDS` and add a
-   "Village dynamics" section covering the dimensional framework.
-2. Re-generate summaries on raw transcripts from `eval_sets/v4_filtering_eval.jsonl`
-   (4 games, 8 day-discussion transcripts).
-3. Qualitative comparison: old (v1) vs new (v2) summaries on the same transcripts.
-4. Evaluate whether the new summaries preserve SITUATION_STANDARDS signals
-   for downstream consumers.
-
-### Dataset
-
-Sources:
-- `eval_sets/v4_filtering_eval.jsonl` — 40 cases across 4 game traces
-- `eval_sets/v2_memory_wolfs_only_all_enabled_all_enabled.jsonl` — 40 cases across 4 game traces
-
-18 transcript/summary pairs extracted (days with ≥5 raw discussion messages
-that can be matched to their generated summaries via cross-day cases across
-8 unique games).
+- Whether seats reason better from the raw earlier transcripts than from the summary. No comparison
+  has been run.
+- The summary's error rate on today's prompt and today's default model. The counts above come from
+  replayed cases and small samples.
+- The May judge still exists in code but scores sections the summary no longer writes. No judge has
+  replaced it; the October checks were field-level replays and one Sonnet-judged comparison.
 
 ---
 
-## Log
-
-### 2026-05-27 — Experiment initialized
-
-- Created experiment folder at `evidence/extraction/day_summary/`
-- Documented pipeline position and current implementation
-- Built labeling tool: `evaluation/experiments/labeling/day_summary_labeler.py`
-- Built re-generation tool: `evaluation/experiments/labeling/day_summary_regen.py`
-
-### 2026-05-27 — v2 prompt: compose SITUATION_STANDARDS
-
-**Problem:** The v1 prompt captured 4 fixed categories (accusations, defenses,
-role reveals, alliances) but never asked for SITUATION_STANDARDS dimensions.
-Downstream consumers (situation summary, agent decisions, post-game extraction)
-need signals about information landscape, consensus texture, and agent exposure —
-none of which v1 provided.
-
-**Change:** Composed `SITUATION_STANDARDS` into `DAY_SUMMARY_PROMPT` via
-`{situation_standards}` format variable (same pattern as post-game extraction
-and situation summary prompts). Added "Village dynamics" section. Merged
-accusations + defenses into one section. Bumped word limit 300 → 400.
-
-- Original prompt checkpointed: `prompt_versions/v1_original.txt`
-- Files modified: `Agents/prompts/extraction.py`, `Agents/nodes.py`
-
-**Re-generation results** (8 pairs, old vs new on same transcripts):
-
-The new "Village dynamics" section consistently adds three types of signal
-that were absent from v1:
-
-1. **Information landscape characterization** — every summary now explicitly
-   states whether the village is information-rich or information-starved and
-   what type of evidence is driving suspicion (e.g., "suspicion driven entirely
-   by communication style", "concrete voting record evidence").
-
-2. **Consensus texture** — summaries now describe village alignment (e.g.,
-   "split into two distinct camps", "highly unified push against player_6",
-   "fragmented, no unified consensus").
-
-3. **Who is driving vs passive** — summaries now identify who is steering
-   the discussion and who is deflecting or quiet (e.g., "player_1 is
-   aggressively driving for specific targets", "player_8 is on the defensive").
-
-Evidence type annotations on accusations (e.g., "(evidence type: voting record)")
-make the information landscape explicit at the individual-accusation level too.
-
-- Full comparison: `regen_comparison.json`
-
-Also added lighter epistemic status rule to the prompt: role claims must
-distinguish "claimed with public evidence" vs "claimed without evidence."
-Full `EPISTEMIC_STATUS_RULE` doesn't apply (day summaries use player IDs,
-not role descriptors).
-
-### 2026-05-27 — v2 LLM judge eval (18 pairs)
-
-Built day summary quality judge reusing existing eval infrastructure:
-- Judge prompt: `evaluation/judges/prompts.py` — `DAY_SUMMARY_JUDGE_*`
-- Judge runner: `evaluation/judges/day_summary.py`
-- Experiment runner: `evaluation/experiments/day_summary_eval.py`
-- Score schema: `evaluation/core/schemas.py` — `DaySummaryScores`
-
-Five evaluation dimensions: completeness, accuracy, evidence_type_clarity,
-village_dynamics, epistemic_correctness (each 1-5).
-
-**Results (18 pairs, judge=gemini-2.5-pro):**
-
-| Dimension              |  Avg | Min | Max |
-|------------------------|------|-----|-----|
-| completeness           | 4.56 |   3 |   5 |
-| accuracy               | 4.83 |   4 |   5 |
-| evidence_type_clarity  | 4.89 |   3 |   5 |
-| village_dynamics       | 5.00 |   5 |   5 |
-| epistemic_correctness  | 4.89 |   3 |   5 |
-
-**Observations:**
-
-1. Village dynamics scores **perfect 5.00** across all 18 pairs — the new
-   section and SITUATION_STANDARDS composition work as intended.
-2. Evidence type clarity and epistemic correctness near-perfect (4.89).
-3. **Completeness is the weakest dimension** (4.56, min=3). The judge flagged
-   specific omissions in 5 of 18 pairs:
-   - `0313eab5_day3` (score=3): omitted that player_5 also voted for the
-     Investigator — the primary rebuttal others used against player_5.
-   - `6a8635b0_day2` (score=3): omitted that player_5 also accused players 7
-     and 8 (secondary accusations simplified away).
-   - `6a8635b0_day3` (score=4): omitted player_2 from the list of accusers.
-   - `cdcd2c6e_day2` (score=4): framed a vote as an "accusation" — lost the
-     strategic significance of an explicit vote action.
-   - `cdcd2c6e_day3` (score=4): omitted final votes cast by players 6, 2, 8.
-4. The completeness gaps share a pattern: **vote actions and secondary
-   accusations are dropped when the model prioritizes fitting within the
-   word limit.** The 400-word limit forces triage, and the model consistently
-   deprioritizes votes and minor accusers.
-
-- Full results: `eval_results.jsonl`
-- Summary table: `eval_summary.txt`
-
-### 2026-05-27 — v3 prompt: completeness fixes
-
-**Problem:** Completeness gaps in v2 had two root causes:
-1. "Do not include vote results" was over-applied — the model dropped
-   references to past votes cited during discussion as evidence.
-2. No instruction to be exhaustive about accusation participants — when 5
-   players pile on, the model lists 3 and drops 2.
-
-**Changes:**
-- Clarified vote rule: "Do not include the formal vote tally... However, DO
-  include when players reference past votes during discussion as evidence."
-- Added to accusations section: "List ALL players who participated in each
-  accusation — who joined a pile-on matters strategically."
-- Checkpointed v2: `prompt_versions/v2_situation_standards.txt`
-
-**Results (v3 vs v2, 18 pairs):**
-
-| Dimension              | v2 avg | v3 avg | Delta  |
-|------------------------|--------|--------|--------|
-| completeness           |   4.56 |   4.44 |  -0.11 |
-| accuracy               |   4.83 |   4.67 |  -0.17 |
-| evidence_type_clarity  |   4.89 |   5.00 |  +0.11 |
-| village_dynamics       |   5.00 |   5.00 |   0.00 |
-| epistemic_correctness  |   4.89 |   4.67 |  -0.22 |
-
-**Observations:**
-
-1. The v3 changes **fixed the two worst v2 cases** — `6a8635b0_day2`
-   completeness jumped 3→5, `0313eab5_day3` improved 3→4.
-2. But **regressions appeared elsewhere** — `cdcd2c6e_day4` dropped 5→3
-   (omitted a key logical statement), and two cases got epistemic=2
-   (`6a8635b0_day3`, `8e437de2_day3` — stated roles as confirmed when
-   they were only claimed).
-3. **Evidence type clarity hit perfect 5.00** — the vote-reference rule
-   clarification may have helped the model distinguish evidence types more
-   precisely.
-4. **Overall averages slightly worse** — but individual pair scores shift
-   ±1 between runs due to generation non-determinism. The signal is noisy
-   at n=18 with single-run per pair.
-
-**Diagnosis:** The remaining issues are:
-- **Epistemic errors** are the most concerning — the model occasionally
-  treats healer-save confirmations or role claims as fully confirmed facts.
-  The lighter epistemic rule may need strengthening, or specific examples
-  for the healer-save case.
-- **Completeness gaps** appear random rather than systematic — different
-  details are omitted each run, suggesting the 400-word limit forces
-  triage and the model's prioritization varies.
-### 2026-05-27 — Word limit bump: 400 → 500 (no improvement, reverted)
-
-**Hypothesis:** Completeness gaps might be caused by 400-word limit forcing
-the model to drop details.
-
-**Finding:** The model writes 130-230 words regardless of limit — well under
-both 400 and 500. Bumping to 500 had no effect on completeness (4.44 → 4.39).
-The `8e437de2_day3` outlier actually got worse (accuracy 4→1, misattributed
-a healer claim to the wrong player).
-
-**Conclusion:** Completeness gaps are not about word budget. They reflect the
-model's **summarization priorities** — it chooses which details to include,
-and a higher ceiling doesn't change those choices. Reverted to 400 words.
-
-| Dimension              | v3@400 | v3@500 |
-|------------------------|--------|--------|
-| completeness           |   4.44 |   4.39 |
-| accuracy               |   4.67 |   4.56 |
-| evidence_type_clarity  |   5.00 |   4.94 |
-| village_dynamics       |   5.00 |   4.83 |
-| epistemic_correctness  |   4.67 |   4.78 |
-
-### 2026-05-27 — v4: structured output extraction
-
-**Problem:** Free-text generation lets the model choose what to include. Even
-with explicit instructions ("list ALL accusers"), completeness averaged ~4.4
-because the model's summarization priorities vary across runs.
-
-**Change:** Replaced free-text `summary: str` with structured extraction via
-`with_structured_output(DaySummaryOutput)`. New nested Pydantic models:
-`Accusation`, `RoleClaim`, `Alliance`, `VillageDynamics`. Added deterministic
-`_serialize_day_summary()` that converts structured output back to the same
-string format downstream consumers expect.
-
-Files modified:
-- `Agents/schemas/output.py` — new nested models, redesigned `DaySummaryOutput`
-- `Agents/prompts/extraction.py` — simplified prompt for structured extraction
-- `Agents/nodes.py` — added `_serialize_day_summary()`, updated `summarize_day_discussion()`
-- Checkpointed v3: `prompt_versions/v3_pre_structured.txt`
-
-**Results (v4 structured vs v3 free-text, 18 pairs):**
-
-| Dimension              | v3 avg | v4 avg | Delta  |
-|------------------------|--------|--------|--------|
-| completeness           |   4.44 |   4.50 |  +0.06 |
-| accuracy               |   4.67 |   4.72 |  +0.05 |
-| evidence_type_clarity  |   5.00 |   5.00 |   0.00 |
-| village_dynamics       |   5.00 |   5.00 |   0.00 |
-| epistemic_correctness  |   4.67 |   4.56 |  -0.11 |
-
-**Observations:**
-
-1. **evidence_type_clarity and village_dynamics remain perfect** (5.00) — the
-   structured fields preserve the gains from SITUATION_STANDARDS composition.
-
-2. **Completeness improved slightly** (4.44 → 4.50). The structured format
-   forces separate `Accusation` entries, so pile-on participants are less
-   likely to be dropped. But two `cdcd2c6e` pairs still score 3 — the model
-   drops in-discussion vote *declarations* (distinct from vote references).
-
-3. **Epistemic regression on `04aabab0` game** — day3 and day4 both score
-   **1/5**. The model labels a *confirmed dead* Investigator's role as
-   "unverified." Root cause: the prompt distinguishes "claimed with public
-   corroboration" vs "unverified" but doesn't explicitly tell the model that
-   **eliminated players' roles are revealed on death** and should be treated
-   as confirmed facts, not claims. The Game Context section says this, but
-   the role_claims extraction rules don't connect the dots.
-
-4. **`8e437de2_day3` fixed itself** — the historically hardest case scored
-   5/5 across all dimensions. The structured format may help with complex
-   role-claim chains by forcing each claim into a separate structured entry.
-
-5. **Completeness gaps on `cdcd2c6e`** — the model omits explicit vote
-   declarations made during discussion (e.g., "I'm voting for player_3").
-   The vote rule says to include past vote *references*, but doesn't cover
-   new vote declarations within the current discussion.
-
-### 2026-05-27 — v4b: epistemic + vote declaration fixes
-
-**Changes:**
-1. Added "Confirmed by death reveal" as the top epistemic tier — eliminated
-   players' roles are confirmed facts, not claims. Instructed model not to
-   list death-revealed roles as `role_claims`.
-2. Extended vote rule to cover current vote *declarations* in discussion
-   (not just past vote references).
-
-**Results (v4b vs v4a, 18 pairs):**
-
-| Dimension              | v4a avg | v4b avg | Delta  |
-|------------------------|---------|---------|--------|
-| completeness           |   4.50  |   4.50  |   0.00 |
-| accuracy               |   4.72  |   4.61  |  -0.11 |
-| evidence_type_clarity  |   5.00  |   4.89  |  -0.11 |
-| village_dynamics       |   5.00  |   5.00  |   0.00 |
-| epistemic_correctness  |   4.56  |   4.72  |  +0.16 |
-
-**Targeted fix landed:** `04aabab0_day3` and `04aabab0_day4` both jumped
-epistemic 1→5 — the death-reveal clarification resolved the systematic error.
-
-**New noise emerged elsewhere:** `8e437de2_day3` fabricated a "Game Master
-announcement" (accuracy=2, epistemic=2), and `6a8635b0_day3` mislabeled an
-evidence type (3). These are different pairs from v4a's issues, confirming
-this is generation non-determinism rather than a prompt problem.
-
-Prompt checkpointed: `prompt_versions/v4_structured.txt`
-
-### Current state (v4b structured output)
-
-**Stable strengths (across all runs):**
-- village_dynamics: 5.00 (perfect in every run since v2)
-- evidence_type_clarity: 4.89-5.00
-
-**Converged dimensions:**
-- completeness: ~4.50 (up from v1 baseline, stable across v3/v4)
-- accuracy: ~4.6-4.7
-- epistemic: ~4.6-4.7
-
-**Remaining variance is generation non-determinism at n=18 with single runs.**
-Different pairs regress each run — no systematic prompt gap remains. Further
-improvement likely requires model-level changes (fine-tuning, multi-pass
-extraction) rather than prompt iteration.
-
-**What the structured output accomplished:**
-- Forces exhaustive enumeration of accusations (separate entries per accusation)
-- Fixed the historically hardest case (`8e437de2_day3`) by decomposing complex
-  role-claim chains into individual structured entries
-- Deterministic serialization ensures consistent downstream format
-- Schema field descriptions serve as implicit prompt instructions
-
-**Decision:** Keep structured output (v4b). Judge scores across v2/v3/v4 are
-within noise at n=18 with single runs — no version is statistically
-distinguishable. Structured output is preferred for architectural reasons:
-deterministic format, forced enumeration, and easier to extend for downstream
-consumers that may parse specific fields. Epistemic correctness is deprioritized
-because actual Game Master announcements are appended to the day dialogue
-separately — the summary doesn't need to infer epistemic status.
-
-### 2026-05-27 — Model comparison experiment
-
-Added `--gen-model` and `--thinking` flags to the eval runner to test
-different generation models with the same structured output prompt (v4b).
-
-**Configurations tested:**
-1. gemini-3.1-flash-lite, thinking=minimal (current default)
-2. gemini-3.1-flash-lite, thinking=medium
-3. gemini-3.5-flash (no thinking)
-4. gemini-2.5-pro (no thinking)
-
-**Results (18 pairs, judge=gemini-2.5-pro):**
-
-| Model                   | comp  |  acc  | evid  |  dyn  | epis  |
-|-------------------------|-------|-------|-------|-------|-------|
-| flash-lite (minimal)    |  4.50 |  4.61 |  4.89 |  5.00 |  4.72 |
-| flash-lite (medium)     |  4.44 |  4.89 |  4.94 |  5.00 |  5.00 |
-| 3.5-flash               |  4.78 |  4.78 |  5.00 |  5.00 |  5.00 |
-| **2.5-pro**             |**4.83**|**4.94**|**5.00**|  5.00 |  5.00 |
-
-**Observations:**
-
-1. **2.5-pro scores highest** — completeness (4.83) and accuracy (4.94).
-   Three dimensions at perfect 5.00. But ~120 min for 18 pairs.
-
-2. **3.5-flash is close** — completeness 4.78, accuracy 4.78, three
-   dimensions perfect. But ~80 min for 18 pairs — a large latency increase
-   over flash-lite for a marginal score gain.
-
-3. **flash-lite (medium thinking) matches 3.5-flash quality at flash-lite
-   latency** (~10 min for 18 pairs). Accuracy jumps 4.61→4.89 and epistemic
-   hits perfect 5.00 vs minimal thinking. Completeness slightly regresses
-   (4.50→4.44) but within noise.
-
-4. **All models achieve perfect 5.00 on dynamics** — the structured output
-   with SITUATION_STANDARDS is robust across model capabilities.
-
-**Manual inspection of failure cases:**
-
-Compared actual summaries on pairs where flash-lite (minimal) had issues:
-
-- `6a8635b0_day2` (comp 3): minimal dropped player_1 from accusers list
-  (the primary instigator). Medium thinking and 3.5-flash both include
-  player_1 correctly.
-- `8e437de2_day3` (acc 2): minimal **fabricated a Game Master announcement**
-  about a healer save that didn't happen. Medium thinking produces no
-  hallucination — correctly lists no role claims. 3.5-flash also correct.
-- `cdcd2c6e_day2` (comp 3): all models miss the explicit vote declaration;
-  medium thinking and 3.5-flash both score 4 (partial improvement).
-
-The key distinction between flash-lite minimal and medium thinking: medium
-thinking avoids hallucinations (fabricated facts) and accuser omissions.
-These are the most damaging failure modes for downstream agent decisions
-since day summary is the only representation of prior days agents see.
-
-3.5-flash occasionally over-extracts (spurious "villager" role claims from
-players just saying "I'm not a wolf"), while flash-lite medium thinking
-produces cleaner output. 3.5-flash also adds ~70 min latency per eval run
-for no meaningful quality gain over flash-lite medium.
-
-**Per-pair files:**
-- `eval_results_31-flash-lite_medium.jsonl` / `eval_summary_31-flash-lite_medium.txt`
-- `eval_results_35-flash.jsonl` / `eval_summary_35-flash.txt`
-- `eval_results_25-pro.jsonl` / `eval_summary_25-pro.txt`
-
-**Decision:** Use flash-lite with medium thinking for day summaries. It
-matches 3.5-flash quality on the dimensions that matter (completeness,
-accuracy) at flash-lite latency. The thinking budget eliminates the two
-worst failure modes of minimal thinking (hallucinated facts, dropped
-accusers) without the latency cost of upgrading the model.
-
-### Experiment complete
+**Sources.** [`experiment_log.md`](experiment_log.md) §0–7 and Appendix A (May) · this folder's
+`eval_summary*.txt`, `eval_results*.jsonl`, `regen_comparison.json`, `prompt_versions/` ·
+discussion_evidence.md §6.4 (game `46355b89`), §6.5 (attributed summary on the bench), §6.6 (transcription
+and the ledger), §6.7 (reasoning), §8.4 (the ten-seat audit and replays) ·
+`../../game_play_enhancement/data/phase3_reads/README.md` · `../../game_play_enhancement/data/phase3_summary_replay/README.md` ·
+reasoning_failures/experiment_log.md §3 and `data/haiku_summary_compare/` · the change history in
+`Agents/prompts/extraction/day_summary.py` · commits `c9dbc79b`, `2b24936c`, `ace0cf6e`, `d78c0bb3`,
+`a3fb32fd`, `6248fc58`, `0c605e89`, `d066d1b3`, `d4f14fa7`, `c957fdb5`, `cc4977ea`, `957d0b2e`.

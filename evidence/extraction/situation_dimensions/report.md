@@ -1,258 +1,324 @@
-# Situation Dimensions — how they work today
+# Situation dimensions: how a lesson and a memory query describe the board
 
-**Orientation.** The *situation dimensions* are the structured, state-describing fields attached to every
-stored observation and every live retrieval query. One per-cell schema drives all three of their jobs at
-once:
+**Scope:** the structured fields that describe the game situation on every stored lesson and on every
+memory query: what they are, who fills them, what reads them today, how far their values can be
+trusted, and the attempt to use them to choose lessons, which found no benefit and stays off. The
+design and its tests were built on the nine-seat game in June and July 2026; the ten-seat game reuses
+the same fields.
+**Revised against the code:** 2026-10-22 at `c0732f88` (working tree; the files cited here carry no
+uncommitted edits that touch the fields).
+**Companion docs:** the journey in date order, [`experiment_log.md`](experiment_log.md) ·
+the ten-seat memory record, [`../../memory_system/v8/experiment_log.md`](../../memory_system/v8/experiment_log.md)
+(the stage filter and the read of served lessons) · [`../../credit/report.md`](../../credit/report.md)
+(how lessons are scored) · [`../../agent_boundaries/report.md`](../../agent_boundaries/report.md)
+(why memory is keyed by role). The earlier report and log are in git history at `2382b34c`; the build spec, `v6_full_store.md` and the two sub-folder logs stay in this folder.
 
-```
-                                   ┌─ embed string (free-text dims) ─▶ semantic retrieval
-game state ─▶ per-cell            ─┤
-             SituationSchema       ├─ numerics/enums (players_alive, is_swing, …) ─▶ reranker + gating
-             (extraction OR query) │
-                                   └─ valenced subset (heat, exposure, parity-progress) ─▶ procedural reward
-```
+> **Orientation: where the fields sit.**
+>
+> **a finished game → offline extraction writes lessons, each with its situation in fields → the
+> text fields are joined into one labelled string and embedded → at a decision, the seat's model
+> writes its own situation in the same fields → that string is embedded and the nearest lessons are
+> shown to the seat**
+>
+> The agents keep a memory of short lessons from past games. An *observation* is an account of one
+> play and its effect, written by a model after a game. A *strategy point* (here simply a *lesson*) is
+> a piece of advice for one role, distilled from several observations. Both carry a *situation*: a
+> description of the board at the moment the lesson applies. The *situation dimensions* are the
+> separate fields that situation is written in. Everything below hangs on this path.
 
-A dimension describes *what is true on the board, in the agent's epistemic voice, with zero
-should/recommend language* — **"situation = state, never prescription."** The advice ("how to act") is the
-retrieved *payload*, never a matching field. That invariant is why the same fields can serve retrieval,
-gating, and reward without contradiction: all three *read* the situation. The path that produced this
-design is [experiment_log.md](experiment_log.md); how the output is *measured* lives in the apparatus
-notes for [retrieval](../../evaluation/llm_judge/agent_decision.md) and
-[extraction](../../evaluation/llm_judge/extraction.md).
+---
 
-**Why they exist.** The stored situation and the live query are written by two processes that never meet —
-offline extraction reading a finished game, and a live agent mid-decision who sees only its own role. They
-match in embedding space only if both describe the board in the same vocabulary and structure; making that
-true is the **alignment problem** the dimensions solve. It is also why the two rules above are structural,
-not stylistic. *Epistemic voice* — a situation written **omnisciently** (naming hidden roles) could never be
-matched by a query from an agent who cannot see them, so both sides speak in the agent's own voice. *State,
-never prescription* — advice in a matching field would make every query match the same generic counsel
-regardless of board (collapsing the discrimination retrieval exists for) and would leak "how to act" into
-the query prompt, so a dimension carries state only and the advice rides in the payload.
+## 1. What the fields are for
 
-## What they are (current schema)
+Two writers describe situations, and they never meet. After a game, an extraction model reads the
+whole finished game and writes lessons, each filed under the situation it applies to. During a later
+game, a seat about to decide writes a description of its own situation as a search query. The query
+and every stored situation are turned into vectors by an embedding model, and the lessons whose
+vectors sit closest to the query's (by cosine similarity) are shown to the seat.
 
-The schema is a **mixin DAG → 11 cells**, one per `(role × {day, night})`
-([`memory.py`](../../../Agents/schemas/memory.py), `BaseSituation` :306, `cell_situation_schema_for` :635):
-`BaseSituation` plus optional mixins compose into one `SituationSchema` per cell, and the 17 role×phase
-combinations collapse to **11** because the two day phases share a cell (the discussion *is* the
-target-finding for the vote) — **day-vs-night is the only validity-breaking gate**. Not every cell carries
-every field (a night cell has no consensus/heat; only the wolf day cell has `ally_revealed`). The fields,
-grouped by what they describe — with how each is represented and how far it can be trusted:
+That match only works if both writers describe a board the same way. A free paragraph lets each
+writer choose its own words, order and emphasis, and lets either one silently leave something out. So
+both writers fill the same fields, and the same code joins the text fields into one string in the
+same order with the same labels. The query and the lessons it should find then share their wording
+and structure by construction, not because two prompts agree to follow a style.
 
-| Dimension | What it describes | Representation | Reliability |
-|---|---|---|---|
-| **A · Spine** — *what is happening* (every cell) | | | |
-| `situation` | the core decision the agent faces right now | embed | — semantic¹ |
-| `information_landscape` | what is known / claimed / unknown on the board | embed | — semantic¹ |
-| **B · Criticality** — *how much is at stake* (the `game_phase` rescope → proxy) | | | |
-| `players_alive` | living-player count | computed → gate | ✅ deterministic (LLM fill was 0.99 bucket) |
-| `distance_to_parity` | eliminations until the leading evil faction can win (min of wolf/SK clocks; truth was wolf-only pre-2026-07-11) | gate-excluded² | ✅ computed 2026-07-11 — public census (the LLM fill it replaces was 0.05–0.09 exact, MAE ≈2) |
-| `is_swing` | the game can end within one elimination, in any direction (min of all three faction clocks ≤ 1; truth was wolf-only pre-2026-07-11) | gate key | ✅ computed 2026-07-11 — public census (the LLM fill it replaces was wolf 0.606, worse than always-False 0.827) |
-| `criticality_stakes` | the stakes phrased as an implication | embed | — semantic; derived from the numbers³ |
-| **C · Consensus** — *where the room stands* (day cells) | | | |
-| `consensus_text` | the room's alignment / vote texture | embed | — semantic¹ |
-| `my_position` | driving / with-majority / holdout | embed | — semantic¹ |
-| `consensus_direction` | the room aligns with vs opposes my read | rerank enum⁴ | ⚠️ unvalidated; hindsight-leak guarded |
-| **D · Exposure** — *how visible / at-risk I am* | | | |
-| `heat_now` | suspicion currently on me (all roles) | embed | — semantic¹ |
-| `forward_exposure` | visibility / cost of a contemplated move | embed | — semantic¹ |
-| `exposure_class` | coarse safe vs exposed | gate key (enum) | ⚠️ **UNVALIDATED** — spot-check pending |
-| **E · Targets & private info** — *what I can act on / what I know* | | | |
-| `target_landscape` | candidate set + role / status / evidence basis | embed | — semantic¹ |
-| `public_private_text` | my private-vs-public information gap | embed | — semantic¹ |
-| `divergence_sign` | private info confirms vs contradicts public | rerank enum⁴ | ⚠️ unvalidated |
-| `info_landscape_class` | coarse info-poor vs info-rich | gate key (enum) | ⚠️ **UNVALIDATED** — spot-check pending |
-| **F · Role conditioners** — *regime-flippers* | | | |
-| `bullets_left` | vigilante shots remaining (0 → reverts to villager) | computed → gate | ✅ deterministic (LLM fill was **0.164** — the worst) |
-| `ally_revealed` | a wolf partner is dead / outed (vote calculus flips) | computed → gate | ✅ deterministic (was 0.975 as LLM fill) |
+Three rules govern every field:
 
-**Legend.** *Representation* — **embed**: folds into the retrieval string (recall); **gate key / rerank
-enum**: a numeric/enum *excluded* from the embed, read by the dimension gate + reranker (a second-stage
-scorer that reads the query and a candidate *together*, so it can weigh an exact number the embedding
-blurred); **computed**: overwritten deterministically from game state at query time. *Reliability* — ✅ deterministic/sound · ❌
-LLM-filled & unreliable · ⚠️ no deterministic truth (unvalidated) · — semantic free-text.
+- **The agent's own knowledge level.** A stored situation that named the hidden wolves could never be
+  matched by a seat that cannot see them. So both sides write only what a player in that seat could
+  know.
+- **State, never advice.** A field says what is true on the board. The advice lives in the lesson's
+  separate `action` field and is never matched against. If advice sat in a matching field, every
+  query would land near the same general counsel whatever the board.
+- **Numbers stay out of the searched text.** An embedding blurs exact numbers and near-opposites
+  ("the room agrees with me" against "the room opposes me"). So counts, yes/no flags and short
+  category labels are stored as separate fields and are never embedded. Their meaning is written into
+  the prose instead, as board reality: "one elimination from a wolf win", not "is_swing: true".
 
-¹ *semantic* = no deterministic ground truth; quality is graded by the NDCG retrieval golden (NDCG = a
-graded-relevance ranking score, higher = the right memories ranked higher) and the (deferred) sampled
-review, **not** the $0 accuracy audit — the audit can only touch the numeric/bool dims.
-² `distance_to_parity` is deliberately excluded from the live gate (it screened flat).
-³ derived from the LLM's own numbers and *not* re-derived after the numeric override, so it can lag a
-corrected `players_alive` (gap 4).
-⁴ direction/sign enums are *also* phrased as an implication into the neighbouring embed text (so recall
-isn't sign-blind) while the exact enum goes to the reranker.
+## 2. What one looks like
 
-**Why some dims are prose and some enums.** Not per-field taste — one rule: a low-entropy *sign or regime*
-(which a **bi-encoder** — the embedding model, which commits one pooled vector per text before it sees the
-query — can't recover from that pooled vector) gets an **enum** for the reranker, while its **prose** sibling
-carries the same fact as recall narration. Every prose field that has such a signal is
-paired with an exact sibling:
+Both examples come from the Sentinel, a town role that watches one player's door at night, a limited
+number of times, and learns who visited.
 
-| prose (embed · recall) | exact sibling (rerank / gate) |
+**A stored lesson.** This is a Sentinel's night lesson from the ten-seat store `ten_seat_v2` (built
+2026-10-13 from 40 games). The embedded string is the lesson's situation, as the code
+composed it from the text fields:
+
+> "Mid-game, night 3 or later. One or more evil killers (wolf pack plus a serial killer or
+> necromancer) are still active, and town's key information asset is the obvious kill target. The
+> Sentinel has to decide where to spend its last watch, or whether to keep it. **Information
+> landscape:** Moderate to rich. Some roles are confirmed by flips or reveals and an earlier
+> investigator result is known. … **Stakes:** Town can still afford to lose a role, but each lost
+> information role makes the wolf and lone-killer hunt harder. This is the Sentinel's last watch, so
+> a wasted one leaves town with no door-watching for the rest of the game. **Target landscape:** The
+> most validated or claimed information-role player (investigator or trailseer, already attacked or
+> clearly threatening to wolves), versus an unconfirmed claimant (e.g. sigilist), a soft-cleared quiet
+> player, and a roleblocked healer. …"
+
+Stored beside it, and never embedded: 7 players alive, 3 eliminations from the nearest evil win, not
+a swing, 1 use left, `info_rich`, `safe`. The advice is a separate field: *"With your last watch at
+night 3 or later, put it on the living player the killers are most likely to attack, usually the
+validated investigator or trailseer-type information source. …"*
+
+**A live query.** A Sentinel on night 2 of a ten-seat game played by Claude Haiku 5.5 (game
+`20497d9e`, 2026-10-12) wrote this situation:
+
+> "As a surviving Sentinel with one watch left and a private night-1 result of no visitors on the
+> player watched, the village is discussing whether anyone holds a night result and is asking for
+> visitor reports, while the day-2 vote abstained and no one was eliminated. … **Stakes:** Eight
+> alive with four eliminations until the leading evil faction can win, so the game cannot end within
+> one more elimination; a single watch spent on a weak lead costs the only remaining door-watch the
+> Sentinel has … **Target landscape:** Eight players alive with no public role claims and no public
+> night results; …"
+
+Its numbers (8 alive, 4 eliminations to the nearest evil win, no swing, 1 watch left) were not
+estimated by the model. They were computed from the game state and handed to it (§4).
+
+## 3. The fields
+
+### How they were chosen
+
+In June 2026 the fields were rebuilt by walking through every role and phase with one question: what about the board changes the right decision here? An earlier replay had shown why the old fields fell short. A lesson written for the final three players was planted into 20 mid-game town votes, and the seat rejected it 13 times, on the numbers: "we are still at 5 players, not final-three." The seat reasons on exact counts, but the only field that carried the stage of the game was a three-way label (early, mid, late).
+
+Two rules decided each field's form:
+
+- **What an embedding can carry.** Free text is embedded, so a near miss still matches. Numbers, yes/no flags and opposites ("the room agrees with my read" against "opposes it") are stored as separate fields, because an embedding blurs them.
+- **State, never advice.** A field says what is true on the board; how to act is the lesson's own text.
+
+The walkthrough kept the original four fields as the spine and reshaped them:
+
+| Before | After |
 |---|---|
-| `information_landscape` | `info_landscape_class` (enum) |
-| `consensus_text` + `my_position` | `consensus_direction` (enum) |
-| `heat_now` + `forward_exposure` | `exposure_class` (enum) |
-| `public_private_text` | `divergence_sign` (enum) |
-| `criticality_stakes` | `players_alive` / `distance_to_parity` / `is_swing` (numbers) |
-| `situation`, `target_landscape` | *(none — genuinely open; no minimal-pair signal to lose)* |
+| Game phase (early, mid, late) | The stakes numbers: players alive, distance to the nearest evil win, whether today is a swing day; plus a sentence saying what they mean |
+| Consensus | The room's alignment, the seat's own position, and a direction label |
+| Exposure | Heat now, and the cost of a visible move |
+| (inside the situation text) | Two fields of their own: the possible targets, and the gap between what the seat knows privately and what is public |
+| (none) | Counters for the vigilante's bullets and whether a wolf's partner was revealed |
 
-So an enum exists only where the embedding *smears* a near-minimal-pair (aligns-vs-opposes,
-confirms-vs-contradicts). `my_position` is the one borderline left as prose: its three values are distinct
-content the embedding separates on its own, and its directional sign is already `consensus_direction`.
+Two decisions were reversed during the same walkthrough. *Numbers fully out of the embedding* became *numbers out, their meaning in*: a lesson from the wrong stage is often the opposite lesson, and the similarity search cannot read a separate number, so the stakes sentence says "one death from a wolf win, every vote decisive", not "endgame". And *compute the numbers from game state* became *the extraction model writes them on the stored side*, because a lesson drawn from a whole game has no single board to compute from. The query side does have one board, which later let code take its numbers over (§5). The full derivation, field by field, is in [`dimension_schema_build_spec.md`](dimension_schema_build_spec.md).
 
-## Guarantee / contract (present-tense)
+### The fields today
 
-- **One schema, three consumers, cannot diverge.** The live query and the stored observation are composed
-  by the *same* per-cell `SituationSchema` through the *same* serializer (`compose_situation_embed`,
-  [`memory.py`:68](../../../Agents/schemas/memory.py#L68)), so a query and the observations it should match
-  share vocabulary and structure in embedding space **by construction**, not by a shared prose convention.
-  Every row in a namespace is the same subclass — the symmetry that makes one-vector-per-cell safe.
-- **State, never prescription.** Every dimension is board state; the objective/advice is payload. This is
-  the enforced leak boundary *and* what keeps the embedding state-only.
-- **Agent-knowable dims are computed, not trusted from the LLM.** At query time `players_alive`,
-  `bullets_left`, and `ally_revealed` are computed from game state and used two ways: **injected into the
-  query prompt** (`_known_board_facts`) so the embedded `criticality_stakes` prose is written from the true
-  numbers, and **re-asserted on the parsed object** (`_override_deterministic_dims`,
-  [`situation_agent.py`:103](../../../Agents/memory/retrieval/situation_agent.py#L103)) so the gating dims
-  are exact. Both derive from one `_computed_dims` source, so the number the model is told can never
-  disagree with the one it is overridden to.
-- **Numbers and signs go to the reranker; their *implication* goes to the embed.** Exact numerics/enums
-  are excluded from the embedding (a bi-encoder mangles magnitudes and smears minimal-pair directions) and
-  handed to the reranker/gate. A regime or direction is *also* phrased as an implication into the embedded
-  text ("every vote decisive," not "endgame"), because a wrong-regime neighbour is the *opposite* lesson
-  and recall is the one stage no reranker touches.
-- **At most two queries per turn**, each a genuinely distinct decision
-  ([`situation_agent.py`:54](../../../Agents/memory/retrieval/situation_agent.py#L54), `min=1, max=2`); a
-  summary failure degrades that turn's retrieval, never blocks the decision.
-- **What is NOT guaranteed.** `is_swing` / `distance_to_parity` are still **LLM-filled and unreliable**
-  (they need hidden roles); the two enum gate keys (`exposure_class`, `info_landscape_class`) are
-  **unvalidated**; and every retrieval number predates the live `v6_1` store. See the gaps table.
+Each role has one set of fields for the day and one for the night; the project calls each set a
+*cell*. Discussion and vote share the day cell, because finding the target in discussion is the same
+problem as choosing it in the vote. Night cells drop the fields about the room, which is a day
+phenomenon. The ten-seat game deals ten seats from twelve roles, each with a day and a night cell, so
+it has 24 cells. Its cells are
+generated from one table that names each role's field groups, and the same table produces the
+lesson, the observation and the query form of a cell, so the three cannot disagree. Each new role
+borrows the groups of the older role it plays like: the Sentinel those of the investigator, the
+Chanteuse and Illusionist those of the old wolf, the Necromancer those of the serial killer. The
+eleven nine-seat cells are kept so old stores still load.
 
-## The mechanism / model
+| Group | Field | What it says | Embedded? | On the query side |
+|---|---|---|---|---|
+| Core (every cell) | `situation` | the decision the seat faces and who is involved | yes | written by the model |
+| | `information_landscape` | what is known, claimed and unknown | yes | model |
+| | `info_landscape_class` | `info_rich` or `info_starved` | no | no longer asked (§6) |
+| Stakes (every cell) | `players_alive` | living players | no | computed |
+| | `distance_to_parity` | eliminations until the nearest evil side can win | no | computed |
+| | `is_swing` | whether one elimination could end the game, for any side | no | computed |
+| | `criticality_stakes` | what those numbers mean for this decision | yes | model, from the computed numbers |
+| The room (day cells) | `consensus_text`, `my_position` | how the room is aligned, and where the seat stands | yes | model |
+| | `consensus_direction` | the room agrees with, opposes, or has no direction relative to the seat's read | no | no longer asked |
+| Exposure | `heat_now` (day) | suspicion on the seat now | yes | model |
+| | `forward_exposure` (most cells) | what a visible move would commit the seat to | yes | model |
+| | `exposure_class` | `safe` or `exposed` | no | no longer asked |
+| Targets and private information | `target_landscape` | the candidates and the basis for each | yes | model |
+| | `public_private_text`, `divergence_sign` (day cells, except the two neutral roles) | the gap between what the seat privately knows and the public read | text yes, sign no | text by the model; sign no longer asked |
+| Role counters | `uses_left`, `bullets_left` | uses of a limited ability left, before acting | no | computed |
+| | `ally_revealed` (wolves' day cell) | a pack partner has been revealed or killed | no | computed |
 
-- **Live query.** `_generate_situations_for_agent`
-  ([`situation_agent.py`:139](../../../Agents/memory/retrieval/situation_agent.py#L139)) is **phase-aware**:
-  `cell_situation_schema_for(role, action_phase)` returns the v6 cell → V6 prompt → 1–2 structured
-  situations → deterministic override → `compose_situation_embed`. A (role, phase) with no v6 cell drops to
-  the legacy v5 per-role `SituationSummary` (free prose, no dims). Model: flash-lite, no thinking (runs
-  every turn; the model study kept it — the gain from 3.5-flash was modest at 6× cost).
-- **Stored side.** Post-game extraction fans out per cell
-  (`extract_postgame_per_cell`, [`extraction_agent.py`:290](../../../Agents/memory/extraction/extraction_agent.py#L290);
-  cells from `ROLE_UNITS`, [`cell_units.py`:16](../../../Agents/memory/extraction/cell_units.py#L16)),
-  binding the same per-cell schema so every stored observation carries the dims. Under v7 the dims ride on
-  **observations only**; strategy points are synthesized cross-game.
-- **Gating.** `dimension_gating.reweight`
-  ([`dimension_gating.py`:58](../../../Agents/memory/retrieval/dimension_gating.py#L58)) is a **soft**
-  multiplicative tilt (`WEIGHT = 0.3` → 0.7×–1.3×, never zeroes) over the alignment of **four** keys:
-  `players_alive`(bucket) + `is_swing` + `exposure_class` + `info_landscape_class`. `distance_to_parity` is
-  deliberately **excluded** (it screened flat). It is **live-wired but default-OFF per role**
-  (`dimension_gating_config.get(role, False)`) — a screened knob, not a shipped default.
-- **Criticality proxy.** The deterministic truth `query_criticality(surviving_players, roles)`
-  ([`decision_scoring.py`:115](../../../evaluation/src/loop/decision_scoring.py#L115)) computes the full
-  triple offline from the game's three terminal clocks (mirroring `determine_winner`): wolf clock
-  `(town+SK)−wolves`, SK clock `(town+wolves)−1`, town clock `wolves+SK`. `distance_to_parity` = min of
-  the two evil clocks; `is_swing` = min of all three ≤ 1 (**redefined 2026-07-11** — both were wolf-only
-  before, which graded correct SK-endgame fills as wrong and rated deceiver do-or-die boards near a town
-  win as filler; ruling in [`../../credit/report.md`](../../credit/report.md) §6). This is the audit's
-  ground truth and the diagnosis sampler's leverage anchor. The function itself reads the true role map,
-  but its *values* are public-derivable — the cast is fixed and every death path announces the dead
-  player's role, so the census (cast minus revealed dead) yields the same faction counts
-  (`Agents/board_clocks.py`, the shared arithmetic home). That falsified this doc's long-standing "needs
-  hidden roles → must stay LLM-filled" premise (owner catch, 2026-07-11): both dims are now **computed at
-  query time** from the census, with the LLM fill kept only as the legacy fallback. Audit numbers dated
-  before 2026-07-11 were computed against the wolf-only truth, grading fills that were then still
-  LLM-estimated.
+The *stakes* numbers come from three countdowns, one for the town, one for the two wolves and one for
+the *lone killer* (the Serial Killer or the Necromancer, who wins alone). Each counts the eliminations
+until that side's win condition is met. They need only how many players of each side are alive, never who they
+are, and those counts are public: the cast is fixed and announced, and every death reveals the dead
+player's role. The one exception is the Illusionist's power to conceal a body's role. After a
+concealed death, the numbers are the worst case for the town over every side the body could have
+come from, and the query prompt says so.
 
-## Config / defaults
+> **The stakes arithmetic** (`Agents/rules/board_clocks.py`), from live counts of town (the neutral
+> roles included), wolves and the lone killer:
+>
+> ```text
+> wolf clock        = (town + lone killer) − wolves
+> lone-killer clock = (town + wolves) − 1        (only while the lone killer lives)
+> town clock        = wolves + lone killer
+> distance_to_parity = the smaller evil clock
+> is_swing           = any clock ≤ 1
+> ```
 
-| Setting | Value | Where |
+## 4. How a query is built, and what reads the fields today
+
+**The query (live whenever memory is on).** At a decision, the seat's own game model is asked for one
+or two situations in its cell's fields. Before it writes, the code computes every field it can from
+the game state (players alive, uses left, partner revealed, distance to parity, swing) and puts them in
+the prompt as known board facts, so the model writes the stakes prose from true numbers. After it
+writes, the code overwrites those fields with the same computed values, so a model that ignored the
+facts cannot change them. Both steps read one function, so the number the model is told and the
+number it is overwritten with cannot differ. The text fields are then joined into the search string.
+If the call fails, the turn goes on with a bare fallback string; memory never blocks a decision.
+
+**What reads the fields:**
+
+| Reader | Fields it uses | Status |
 |---|---|---|
-| live query schema | v6 per-cell (embed-aligned with extraction); v5 per-role fallback | `cell_situation_schema_for` (memory.py:635) |
-| queries per turn | 1–2 structured situations | `_summary_container` (situation_agent.py:54) |
-| agent-knowable dims | computed from game state (`players_alive`, `bullets_left`, `ally_revealed`; + `distance_to_parity`, `is_swing` from the public census since 2026-07-11) | `_override_deterministic_dims` (situation_agent.py) · `Agents/board_clocks.py` |
-| `is_swing` / `distance_to_parity` | computed (census = fixed public cast − role-revealing deaths); LLM fill = legacy-payload fallback only | board_clocks.py · situation_agent.py |
-| dimension gating | soft tilt (WEIGHT 0.3), 4 keys, **default-OFF per role** | dimension_gating.py:58 · retrieval/plan_gating.py:121 |
-| current store | `memory_stores/v6_1` (obs-only under v7) | — |
-| query model | flash-lite, no thinking | accessors.py |
+| The similarity search (query and stored lesson) | the embedded text fields, as one string | live when memory is on |
+| The offline duplicate check while building a store | swing, the alive bucket (8 or more alive, 5 to 7, or 4 or fewer) and room direction split the store into groups; two entries that differ on verdict, information class or exposure class are never merged | offline, runs when a store is built |
+| Lesson synthesis | the same groups, also split by partner lost and by uses left (some or none) | offline |
+| The replay page on the website | a lesson's fields, shown as a case file | live |
+| The stage filter: drops a lesson whose alive bucket, partner-lost flag or uses-left (some or none) differs from the seat's | three stage facts | built, off by default (`RunConfig.stage_filter`) |
+| Dimension gating: a soft score tilt by how well a lesson's fields match the query's | alive bucket, swing, and the two class labels | built, off by default; screened with no benefit (§6) |
 
-## Verification
+Two things nothing reads. The memory reranker, an optional model call that re-orders the found
+lessons (off by default), sees only the embedded string, not the separate numbers. The design had
+planned a small trained reranking model that would read the numbers directly; it was never built.
 
-Four instruments measure the dimensions, each answering a different question. **The verdict: the schema's
-*retrieval* value is verified, its *conditioning* hypothesis is not, and its LLM-filled numerics are — for
-two fields — unreliable.**
+**Memory in the served game.** On the website, memory is a per-game choice that starts off (the
+production deployment allows it through `WW_MEMORY_ENABLED`); when a player turns it on, every AI seat retrieves lessons (strategy points
+only) from the published store. The observations remain the raw material that lessons are written from.
 
-| Apparatus | What it certifies | Result | Reliability of the apparatus |
-|---|---|---|---|
-| **NDCG retrieval golden** | Do the structured dims *retrieve* better than prose? | v4b prompt **+0.061 NDCG** (structured dims, no core-dilemma, lens-fix) | Strongest anchor in the repo (human-graded, offline, $0) — but **v4-store-stale, partly machine-augmented, can't separate query from store** |
-| **Criticality screen** | Conditioning on the regime · *and* aligning the query | Conditioning: **No** — the endgame signature (+0.25) was a same-game leak; held-out sign-flipped +0.061 → −0.037 across identical runs (temperature noise). But **aligning the query to v6 dims raised memory's lift over no-memory +0.088 → +0.120** — the rewrite improves retrieval even where conditioning doesn't | Triage, not verdict; n=7–23 in the endgame stratum where villagers rarely survive |
-| **Forced-schema screen** | Does forcing per-memory reasoning engage the dims? | Forcing **hurt v5 (−0.104), neutral on v6 (+0.021)**; v6 beats v5 under it → migrated to production | n=48, McNemar not significant; the first engagement rate (0.697) was inflated by partial coverage → true ~0.55 |
-| **Dimension-accuracy audit** | Are the *filled values* correct? | `players_alive` 0.990 bucket ✓, `ally_revealed` 0.975 ✓; **`bullets_left` 0.164 ✗, wolf `is_swing` 0.606 (< always-False 0.827) ✗** | $0, deterministic, pre-registered rule; audits the *query* side only (stored side weakly bounded) |
+## 5. How far the fields can be trusted
 
-**What none of them can do:** certify that the criticality-*conditioning* hypothesis is dead (the endgame
-stratum is data-starved, not disproven — "below the noise floor," not "zero"), validate the two enum gate
-keys (no deterministic truth; the spot-check is built but unlabeled), or speak to the stored-side fills
-(no frozen board travels with a stored observation).
+Three separate questions: does the same board always become the same text, are the values the models write correct, and do the fields help pick better lessons?
 
-**Apparatus home.** The two standing rulers now live in
-[`instrument_validation/dimensions/`](../../../evaluation/src/instrument_validation/dimensions/):
-`dimension_audit.py` (the $0 fill-accuracy audit above) and `dimension_gating_screen.py` (the RE-OPENED
-soft-gating screen). Their instrument-trust verdict is
-[`evaluation/dimension_extraction/report.md`](../../evaluation/dimension_extraction/report.md).
+### Does the same board always become the same text?
 
-## Case study — the audit that re-opened a "negative" verdict
+Yes, and tests pin it. The query side and the stored side join the same values into the identical string; no number or category label reaches the text that is embedded; the facts computed for the prompt equal the values written back; and a count after a concealed death is stated as a worst case. The 127 tests in the nine files covering the fields pass at `c0732f88`. They cover the nine-seat cells; a check run for this revision, at no cost, confirmed the same for all 36 ten-seat role and phase pairs.
 
-**Verdict (skim this, skip the rest).** A 2026-07 review found every v6 dimension was LLM-filled and had
-*never* been checked against ground truth, even where truth was free from the board. A $0 deterministic
-audit then showed two gated fills were not merely imperfect but **anti-informative** — wolf-side `is_swing`
-at 0.606 is *worse* than always guessing False (0.827), and `bullets_left` is right 16% of the time. The
-impact was epistemic, not a live crash: the production dimension-gating null had been recorded as a clean
-*negative* ("gating doesn't help → default-off"), but a gate keyed partly on noise attenuates any true
-signal to ≈0.60 of nominal, so the honest verdict is **"Unknown, not false."** It was fixed at the source
-for the agent-knowable half (those dims are now computed, not filled) and bounded for the rest; the paid
-re-screen that would settle the `is_swing` half is authorized but held on spend.
+### Are the values correct?
 
-*Forensics below — skip unless auditing the number.*
+**On the query side, the model was right about what it was told and wrong about what it had to work out.** In July 2026, before code took over the numbers, an audit compared what the seat's model had written in 20,284 query situations (6,275 decisions, three nine-seat runs) against the true values, worked out by code from each decision's board. No AI judge was involved. A rule was fixed in advance: if any field used to choose lessons scored under 80%, the gating result in §6 would count as unproven.
 
-- **Cause.** The `game_phase → criticality` rescope made `is_swing`/`distance_to_parity` *proxy* fields,
-  but their derivation was left to the LLM (a design reversal in experiment_log §5, correct for the
-  *stored* side where no board moment can be pinned — but the *query* side does have a pinned moment and was
-  never given the deterministic treatment it could have had).
-- **Composition.** ~20k query-side situation objects across three loop-era runs, scored against each case's
-  own frozen board with a mandatory epistemic split (agent-knowable fill error vs vs-omniscient
-  disagreement). Pre-registered rule: RE-OPEN if any gated dim < 0.80.
-- **Detection & one self-inflicted catch.** Wolf-side `is_swing` = 0.606 fired RE-OPEN. A first pass had
-  also dinged wolf `players_alive` to 0.71 — traced not to a fill error but to 176 wolf-night cases that
-  persist an *empty* roster (truth read as 0); the runner now skips those (`no_roster`), and corrected wolf
-  `players_alive` is 0.97. *Logged, not laundered.*
-- **Severity / scope.** Re-opens the **gating** screen only. The **criticality** screen is untouched (its
-  query side already computed truth deterministically), and the content-bottleneck conclusion stands (it
-  rests on the follow-rate result, not on gating).
-- **Fix & verification.** The three agent-knowable dims (`players_alive`, `bullets_left`, `ally_revealed`)
-  are now computed from game state at query time — **injected into the prompt** (`_known_board_facts`) so
-  the embedded stakes prose is written from truth, and re-asserted post-parse (`_override_deterministic_dims`)
-  so the gating dims are exact. `is_swing`/`distance_to_parity` stay LLM-filled pending the offline
-  re-screen. Guarded by `tests/test_situation_dim_override.py` (15 cases: override, injected facts, and the
-  single-source invariant); the audit truth-fns by `tests/test_dimension_audit.py`; full suite green (507).
+| Field | How often the model had it right | Cases |
+|---|---|---|
+| Players alive (it was given the roster) | 97% exact; 99% in the right early, middle or late bucket | 6,099 |
+| Whether a wolf's partner had been revealed | 97.5% | 439 |
+| The vigilante's bullets left | 16.4%, and 0% on day 2 (it said 1 where 2 were left) | 1,109 |
+| Swing day, written by wolves who know the wolf count | 60.6%, worse than always answering "no" (82.7%) | 439 |
+| Distance to parity, as a number | 5–9% exact | |
 
-## Current-vs-documented gaps (freshness: 2026-07-04)
+The rule fired. The fix was to stop asking the model for anything code can compute: players alive, bullets and partner status from 2026-07-02, and distance to parity and swing from 2026-07-11, once it was noticed that the count of the living is public. These now come from code on every query. (The cases are decisions, not independent games, so the percentages carry less certainty than their counts suggest. The audit's true values counted only the wolves' path to a win; the computed values were widened to all three sides on 2026-07-11.)
 
-Ordered by how misleading each is to a reader. Severity weighs likelihood × impact × detectability, not
-impact alone.
+**On the stored side, one field has been checked.** Stored lessons are still filled by the extraction model, because a lesson drawn from a whole game has no single board to compute from. In October 2026, the uses-left field on the ten-seat store was checked against the record: 165 of 196 exact (84%). Most errors (29) gave the count after the night's action instead of before; 2 were impossible. For the question the stage filter asks, "any left or none", 7 of 196 were wrong, nearly all a last use written as 0. The field's description now says "before acting". The other stored fields have only had consistency checks.
 
-| # | Gap | State | Severity |
-|---|---|---|---|
-| 1 | **The gating verdict is "unknown," not negative** | Wolf `is_swing` (0.606) is worse than a constant; the gate keyed on it, so the default-off decision rests on an *uninformative* null. Resolution = the **~$10–15 offline gating re-screen** (deterministic `players_alive` + offline `is_swing` into the frozen cases), authorized by the RE-OPEN rule, **held on spend sign-off**. The single cheapest step that converts "unknown" → verdict. | **High** |
-| 2 | **The two enum gate keys are unvalidated** | `exposure_class` / `info_landscape_class` have no deterministic truth; the audit reported only their (skewed) distributions. The spot-check sampler is **built** (`eval-case-sample`, forces ~half off-diagonal); the ~2h human labeling is **pending**. | Med |
-| 3 | **Every retrieval number predates the live store** | The NDCG golden + criticality/forced screens ran on `v4`/`v6_0`; the live store is `v6_1`. The golden is also partly machine-augmented and not wired into the live retrieval judge. Free next step: a **v6_1 NDCG re-baseline** before crediting further prompt tuning. | Med |
-| 4 | **Parity/swing wording in the stakes prose is still LLM-estimated** | *(the emit-then-overwrite lag is now fixed — 2026-07-04)* The computable dims (`players_alive`/`bullets_left`/`ally_revealed`) are injected into the query prompt (`_known_board_facts`), so the embedded `criticality_stakes` is written from *those* truths. But `distance_to_parity`/`is_swing` cannot be computed live (they need hidden roles), so any part of the stakes sentence that leans on parity/swing still reflects the LLM's estimate. Bounded, not eliminated; the offline substitution belongs to gap 1's re-screen. (The fields can't simply be dropped from output — shared mixins, extraction needs the LLM fill, dedup partitions on them.) | Low |
-| 5 | **Stored-side fills are only weakly bounded** | The audit checks the *query* side (pinned board); stored observations pass only internal-consistency bounds (`\|distance\| ≤ alive`, `alive ∈ [3,9]`, 100% on v6_1) that a systematic bias would survive. Real check = the deferred sampled review. | Low-Med |
-| 6 | **Player-ID naming violations in night cells** | 22.1% of night-cell observations name a player ID — game-local-meaningless, so they dilute the retrieval embed (no cross-game leak). Accepted + flagged; belongs to a prompt-tuning cycle. | Low |
-| 7 | **Dedup over-merges on the composed prose blob** | The shared section-label scaffolding inflates baseline similarity; the fix (an explicit predicate over the structured gate-fields, not a cosine threshold) is designed, not built. | Low |
+### Do the fields help pick better lessons?
 
-**Open work.** The credible upgrades — the offline gating re-screen (gap 1), the enum spot-check (gap 2),
-and a v6_1 NDCG re-baseline (gap 3) — stay deferred while the binding memory constraint is store *content*
-and the investigator-transmission cap, not dimension fidelity. The two verified wins (aligned-query
-retrieval, forced-schema safety) already justify the rewrite; the criticality metadata is kept because it
-costs nothing and feeds the reranker, gate, and reward channel even though conditioning on it is not a
-demonstrated lever.
+Three uses were tested on replayed decisions. A *replay* freezes a real decision and asks the seat again under each arm; for town votes, a vote is scored +1 for a wolf or the lone killer, −1 for a town player, 0 for an abstain. Re-ranking by matching fields (gating) is the case study in §6.
+
+- **Ranking by the stakes numbers (June 2026): no reliable effect.** The first run looked like a clear win near the end of the game (+0.25 over similarity alone, 16 votes). It was contaminated: 20 of its 30 games were the games the lessons came from, so a seat could see a lesson that already knew its own game's outcome. With those removed, the gain fell to +0.087 (23 votes), and on 125 held-out votes from three town roles the stakes ranking scored 0.032 *below* similarity alone. The same villager inputs run twice gave +0.061 and then −0.037, so any effect is smaller than the noise between identical runs of a replay at temperature 1.0. The numbers stayed in the store; ranking by them was never wired into play.
+- **The new query against the old (June 2026): not established.** With old-style queries, lessons beat no memory by +0.088; with queries in the new fields, by +0.120 (125 votes each). The two runs were separate, and the 0.032 gap is smaller than the 0.1 swing between identical runs. Earlier records presented this as the rewrite's main retrieval gain; it is not shown.
+- **Dropping lessons from another stage (October 2026, ten-seat): fit improved, offline.** Four Claude Sonnet readers judged whether lessons shown in seven memory-on games fitted the decision, with the true roles in hand. With similarity alone, on the 12-game store, 15% fitted (96 lookups). Dropping lessons written for another stage of the game (a different alive bucket, a lost partner, no uses left) raised that to 25%, but left 25 lookups with nothing to show. On the larger 40-game store, refilling from same-stage lessons, 52 of 96 lookups got at least one fitting lesson against 41 without the filter; the readers differed from the first read, so this is approximate. The filter is built and off by default. It was on in the 20 memory-on games of the credit demonstration (2026-10-14), which measured neither fit nor play.
+
+## 6. Case study: using the fields to choose lessons found no benefit
+
+**Verdict.** A soft re-ranking of found lessons by how well their fields matched the seat's did not
+make the lessons fit better, and it was left off. A later audit showed the test could not have been
+decisive, because one of its four keys was filled worse than a constant. It was not re-run, and two of
+its keys are no longer written by the query. The status is "no benefit measured", not "proven useless".
+
+**What was tried (June 2026, nine-seat).** An earlier replay had found that 58% of the lessons agents
+were shown were ones they judged not relevant, and that the similarity score could not tell them
+apart: on average 0.827 for not-relevant lessons and 0.828 for relevant ones. Matching on players
+alive or on swing cut the not-relevant share by 5 and 6 points; matching on distance to parity cut it
+by 2, which was read as no difference. That suggested the fields carried information the embedding lacked. So dimension gating was built: each
+found lesson's score is multiplied by a factor between 0.7 and 1.3, by how many of four fields agree
+with the query (the alive bucket, swing, and the two class labels for information and exposure). It
+never drops a lesson, only re-orders.
+
+> **The tilt** (`Agents/memory/retrieval/dimension_gating.py`):
+>
+> ```text
+> alignment = mean over the fields both sides carry of (+1 if equal, −1 if not)
+> new score = similarity × (1 + 0.3 × alignment)
+> ```
+
+**What the test showed (2026-06-18).** On 24 held-out town votes, the queries were regenerated, a wide
+set of lessons was found, and a top five was built with and without the tilt. A model then judged, for
+each lesson, whether it applied. The tilt changed the top five in 23 of 24 cases, but the share judged
+"does not apply" moved only from 38% to 36%, the share that fully applied from 15% to 16%, and the
+vote hit a real threat a third of the time either way. The per-case output was printed, not saved; the
+numbers are from the plan record. The setting stayed off.
+
+**Why the test could not settle it.** The July audit (§5) found that the swing flag the query had
+written scored below a constant. Its pre-written rule therefore marked the gating verdict as
+unproven: with keys that noisy, a real but small benefit would be shrunk toward zero. The audit's
+authors estimated the screen would have seen about 60% of a true effect. A re-run with computed swing
+values was authorized, at about $10–15, and held for spending approval; it never ran. The two class
+labels were never checked against a human reading: a sampler that would pick cases for that was
+built, the labelling was not done, and one of the labels is lopsided (villagers marked themselves
+`safe` 2,164 times against 134 `exposed`).
+
+**What changed.** Every number the gating used is now computed exactly on the query side (§4). In
+October 2026 a review of the ten-seat query removed the four category labels that only the gating used,
+so if gating were switched on today it would compare the alive bucket and swing only. The stored
+lessons keep the labels, because the offline duplicate check and the replay page use them.
+
+**What it shows.** Fields that agree with the board are not the same as a lesson that applies. The
+judge in the gating test weighed preconditions finer than "safe or exposed" or "information-rich or
+starved". The fields that did move fit in a later test were exact stage facts used as a hard filter
+(§5), and even those miss the events a lesson depends on (§7).
+
+**Limits.** 24 votes, one run, one judging model, the nine-seat game, and an older store. The test
+measured whether lessons applied and whether one vote hit a threat, not games won.
+
+## 7. What is not established
+
+- **No effect on play.** Nothing here shows that memory, or any use of these fields, makes agents play
+  better. The town-only memory run of July 2026 leaned negative, and the served game runs with memory
+  off by default.
+- **Retrieval evidence is old and small.** The retrieval measurements in §5 and §6 ran on the
+  nine-seat game and earlier stores, except the stage-filter replay, which is offline and judged by
+  model readers.
+- **The stage facts do not record events.** The readers of the ten-seat lessons named the remaining
+  misfit the same way: lessons keyed to an event the seat has not seen, such as a rival claim or a
+  wolf just voted out. The Sentinel query in §2 shows it. That game read from the 12-game store, and
+  the lesson ranked first of the three shown (similarity 0.859) was written for night 1, with two
+  watches and ten alive: *"On
+  Night 1, with no claims, deaths or reads, spend one of the two watches on a quiet, unclaimed player
+  and keep the second for later."* The seat itself rejected it: "Night 1 is over and this is Night 2,
+  so the blind opening watch no longer applies." The stage filter would have kept it, because both
+  boards had eight or more alive and a watch left.
+- **Stored values are model-written.** Only uses left has been checked against the record (§5). The
+  stakes prose on a stored lesson is the extraction model's own reading.
+- **The two class labels were never validated** against a human reading.
+
+## Sources and implementation
+
+| What | Where |
+|---|---|
+| The fields, the cells, the string they are joined into | `Agents/schemas/memory.py` (`BaseSituation` and the field groups, `TEN_SEAT_CELL_SHAPES`, `compose_situation_embed`, `cell_situation_schema_for`) |
+| The query, the computed facts and the overwrite | `Agents/memory/retrieval/situation_agent.py` (`_computed_dims`, `_known_board_facts`, `_override_deterministic_dims`, `_query_cell`) |
+| The stakes arithmetic | `Agents/rules/board_clocks.py` |
+| The same arithmetic from the true roles, used to grade | `Agents/memory/consolidation/decision_scoring.py` (`query_criticality`) |
+| Shared field guidance for the query and extraction prompts | `Agents/prompts/cell_prompt.py`; `compose_cell_guidance` in `Agents/prompts/prompt_inputs.py` |
+| Extraction by cell | `Agents/memory/extraction/` (`extraction_agent.py`, `cell_units.py`, `offline.py`) |
+| Duplicate check groups; synthesis groups | `Agents/memory/dedup_gate.py`; `Agents/memory/strategy_synthesis.py` (`synth_partition_key`) |
+| Dimension gating and the stage filter (both off by default) | `Agents/memory/retrieval/dimension_gating.py`; switches in `Agents/memory/retrieval/plan_gating.py` and `Agents/config/run.py` |
+| The replay page's case file | `frontend/src/stage/film/case-file.ts` (`situationOf`) |
+| Tests | `tests/engine/test_v6_cells.py`, `tests/memory/test_situation_dim_override.py`, `tests/memory/test_situation_query_inputs.py`, `tests/memory/test_dimension_gating.py`, `tests/memory/test_stage_filter.py`, `tests/memory/test_dedup_gate.py`, `tests/memory/test_uses_left_cells.py`, `tests/evaluation/test_board_clocks.py`, `tests/evaluation/test_dimension_audit.py` |
+| The fill audit (2026-07-02, at `4b1449e`) | runner `evaluation/src/instrument_validation/dimensions/dimension_audit.py`; [`dimension_accuracy_audit/`](dimension_accuracy_audit/experiment_log.md) and `data/dimension_audit_20260702_105203.json` |
+| The stakes-conditioning screen (2026-06-15) | `evaluation/src/studies/criticality_screen.py`; [`criticality_screen/`](criticality_screen/experiment_log.md) and its JSON outputs |
+| The gating screen (2026-06-18) | `evaluation/src/instrument_validation/dimensions/dimension_gating_screen.py`; result in [`../../v7_final/plan.md`](../../v7_final/plan.md) (the G3 block) |
+| The stage-filter replay, the stored uses-left check, the fit reads (2026-10-12 to 13) | `evaluation/experiments/v8_stage_filter_replay.py`; [`../../memory_system/v8/experiment_log.md`](../../memory_system/v8/experiment_log.md); `data/gate/` |
+| The §2 lesson and query | `memory_stores/ten_seat_v2/strategy_points.json` (Sentinel night); `../../memory_system/v8/data/gate/lookups.jsonl` (game `20497d9e`, night 2) |

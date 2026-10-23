@@ -1,122 +1,156 @@
-# Situation Summary — how it works today
+# The situation query: how a seat describes its game to search its memory
 
-**Orientation.** On every agent turn, before the agent decides, the situation-summary call turns the current
-game state into **1-2 structured search queries** that retrieve the episodic memories the agent will reason
-with. It is the front door of the memory *read* path: query quality bounds retrieval quality regardless of how
-good the store is.
+**Scope:** the one model call that, before a seat's decision, writes a description of the seat's current situation so that the memory can be searched for lessons learned in similar situations. It covers what the call writes, when it runs in the ten-seat game, how it is built, how it has been checked, and one case from the nine-seat research of May 2026 where a labelled test overturned a design intuition.
+**Revised against the code:** 2026-10-22 at `c0732f88` (the working tree's only edit in `Agents/memory/retrieval/` is a code comment in `pipeline.py`).
+**Companion docs:** [the journey log](experiment_log.md) (how the design got here) · [situation dimensions](../situation_dimensions/report.md) (the field schema the query shares with stored lessons) · [the v8 log](../../memory_system/v8/experiment_log.md) (the ten-seat reads of real queries, 2026-10-12 and 2026-10-13) · [credit](../../credit/report.md) (how followed lessons are scored) · [the judge apparatus](../../evaluation/llm_judge/agent_decision.md) (Stage 1: how query quality was measured).
 
-```
-game state ─▶ situation-summary (1-2 structured queries) ─▶ semantic search ─▶ [rerank/filter: off in v6] ─▶ retrieved memories ─▶ agent decision
-```
+> **Orientation: one seat's memory lookup.**
+>
+> **a seat's turn → should this turn look up lessons? → the situation call writes 1–2 situations → each is searched against the seat's own shelf of lessons → the best 3 per situation go into the seat's prompt → the seat says, for each, whether it followed it**
+>
+> A *lesson* (stored as a *strategy point*) is a short piece of advice for one role at one kind of decision, written by a model from finished games. Each lesson is stored with a description of the situation it was learned in. Lessons sit on shelves, one per role and kind of decision (day discussion, day vote, night action). The project calls a shelf a *cell*. The situation call is the front door of this read path: the search can only find what the query describes.
 
-The pass runs many times per game (once per agent per decision), so it must be cheap and fast. This doc is the
-current shipped state; the path that got here is [experiment_log.md](experiment_log.md), and how the output is
-*measured* — the summary judges and the retrieval golden — lives in the funnel apparatus report
-[../../evaluation/llm_judge/agent_decision.md](../../evaluation/llm_judge/agent_decision.md) (Stage 1), because
-the diagnostic value is *which* funnel stage fails, so situation-summary is written up beside retrieval and
-application rather than alone.
+---
 
-## What it produces (current schema)
+## 1. What the call does, and why it exists
 
-**1-2 situation queries**, each a structured **v6 cell-situation** object carrying the dimensional fields
-(information landscape, consensus texture, agent exposure, game phase); the `composed_situation` property
-concatenates them into the string that retrieval embeds. The central v6 fact:
+Lessons are written offline, after a game ends, by a model that can see the whole record. A seat in a live game sees only its own role's knowledge. For an embedding search to match the two, the live seat has to describe its situation in the same structure and vocabulary the stored lesson used, and from what the seat can actually know.
 
-- **The query uses the same per-cell dimension schema as post-game extraction.** A live query is composed by
-  `cell_situation_schema_for(role, phase)` → `compose_situation_embed`, the *same* construction that writes the
-  stored v6 observations. So a query and the observations it should match share vocabulary and structure in
-  embedding space **by construction** — not merely by convention. This is the structural successor to the
-  earlier alignment-by-shared-prose (the `SITUATION_STANDARDS` text composed into both prompts).
-- **A legacy v5 fallback** covers any (role, phase) without a v6 cell: the per-role `SituationSummary` prompt,
-  emitting free-composed situation strings with no structured dims.
+The situation call does that translation. It reads the same game record the seat's turn prompt reads, plus the seat's private knowledge, and fills a structured form: what is happening, what is known, how much is at stake, where the room stands, how exposed the seat is. The form is the same per-cell schema that offline extraction fills when it stores a lesson. One function joins the filled fields into the text that gets embedded, for queries and lessons alike. So a query and a lesson about the same kind of moment land near each other in embedding space because they are written in the same shape, not because a model remembered a house style.
 
-## Guarantee / contract (present-tense)
+**Who writes it:** the seat's own game model, in one extra call before the decision. **Who reads it:** the embedding search, and the turn's record (each decision's record keeps the situations it searched with, so a lookup can be replayed and read later).
 
-- **Query↔store embedding alignment by construction.** Because the live query and the stored observation are
-  composed by the same v6 cell schema
-  ([situation_agent.py:85-94](../../../Agents/memory/retrieval/situation_agent.py#L85-L94)), they land in the
-  same region of embedding space. Alignment is a property of the shared schema, not of the model remembering to
-  match a house style.
-- **At most two queries, each a distinct decision.** The structured container caps output at 1-2
-  (`min_length=1, max_length=2`,
-  [situation_agent.py:62](../../../Agents/memory/retrieval/situation_agent.py#L62)), and the prompt requires a
-  second only if it captures a genuinely independent decision. The pipeline never reliably produced three
-  useful queries and filled the extra slots with rephrasings of the first (experiment_log §3).
-- **A summary failure never blocks a turn.** One retry, then a trivial fallback string
-  (`"Day {d} as {role}, round {r}"`,
-  [situation_agent.py:113-114](../../../Agents/memory/retrieval/situation_agent.py#L113-L114)). A failure
-  degrades that turn's retrieval; it does not stall the decision.
-- **Role perspective is locked.** Per-role prompts frame the query from the agent's own vantage and private
-  knowledge (with an investigator lens fix that front-loads private findings), so retrieval returns
-  role-relevant memories. Role perspective was a hidden failure mode — a model can be factually faithful yet
-  write an omniscient query that retrieves the wrong strategies (experiment_log §1).
-- **What is NOT guaranteed.** The two live summary-*content* judges (pairwise + single-rubric) are
-  **uncalibrated** (no ground truth); the human-anchored **NDCG golden** that grades the *retrieval* is stale
-  (v4 store, 2026-05 prompts) and **not wired into the live retrieval judge**; and the shipped prompt lineage
-  (v4b) and its NDCG numbers predate the v6 cell schema. See the gaps table.
+## 2. What a query looks like
 
-## The mechanism / model
+This is a real query, lifted from a memory-on game played on Claude Haiku 5.5 on 2026-10-14 (game `22c1c19e`, seat `player_4`, the Chanteuse, one of the two wolves, at its first discussion turn of day 2). Line breaks are added at each label, and two fields are cut where marked:
 
-- **Live entry point.** `_generate_situations_for_agent`
-  ([situation_agent.py:71](../../../Agents/memory/retrieval/situation_agent.py#L71)), called once per agent
-  turn from the read-path pipeline
-  ([retrieval/pipeline.py:63](../../../Agents/memory/retrieval/pipeline.py#L63)).
-- **Model.** The default agent model `get_llm()` = **gemini-3.1-flash-lite**, no thinking
-  ([accessors.py:17](../../../Agents/llm_factory/accessors.py#L17)). The model comparison profiled 3.5-flash
-  and 2.5-flash as upgrades and kept flash-lite: the gain was modest on rubric scores, the cost 6× and latency
-  ~3×, and this runs on every turn (experiment_log §1). Notably, *medium thinking made flash-lite worse*, not
-  better.
-- **v6 path vs v5 fallback.** `cell_situation_schema_for(role, phase)` returns the v6 cell schema when one
-  exists (the concurrent structured path); otherwise the call drops to the legacy per-role prompt with the flat
-  `SituationSummary` schema.
-- **Prompt.** `V6_SITUATION_SUMMARY` plus the per-role situation-summary prompts and `compose_cell_guidance`.
-  The design carries the prompt-iteration study's endpoints: **structured dimensional fields** (to match the
-  indexed store's format), **no "core dilemma"** dimension (added in v2, found net-negative on clean cases and
-  removed in v4), and the **investigator lens fix** (experiment_log §3).
+> Day 2 opens with ten players alive and no information public beyond a night where a wolf-and-serial-killer attack on one player was saved by the healer. No one has claimed a role, and the village has no vote history to work from. The pack's night-1 kill failed, and the chanteuse's block on another player is unknown to the village.
+> **Information landscape:** Information-starved: one saved attack announced, no claims, no checks, no watches, no eliminations.
+> **Stakes:** Ten alive with six eliminations needed before the leading evil faction can win; no single vote is decisive now, so early mistakes can be absorbed, but the wolves' numbers are not yet threatened by any one result.
+> **Consensus:** The village has no consensus yet; day 1 discussion produced no accusations and no claims.
+> **My position:** Holding out, unclaimed, blending in as one of the town players while the room has nothing to argue from.
+> **Heat:** Low: no accusations have been made in the discussion and no vote has occurred; suspicion on you is at baseline.
+> **Forward exposure:** […] **Target landscape:** […]
+> **Public vs private:** Privately you are the chanteuse and your wolf partner (the illusionist or the other wolf) is still unrevealed; you know the pack's night-1 kill on the healer-saved player and your block on another player, but the village has only seen a night where one player was attacked and saved, with no roles revealed. Publicly you are an unclaimed player in a board with no claims yet.
 
-## Config / defaults
+The search's closest lesson on the Chanteuse's day shelf (similarity 0.84) was stored with a situation written in the same labelled form:
 
-| Setting | Value | Where |
+> An early day (day 2 or 3) with several role claims on the table, no hard confirmations, and the chanteuse's wolf side unsuspected while the town works through contradictions. **Information landscape:** Starved: unverified claims, partial cross-confirmation, one or two rules inconsistencies, and little else. **Stakes:** Wolves are still several eliminations from parity, …
+>
+> *Advice:* "When you are a low-heat chanteuse in an info-starved early day and the room is sorting through unverified claims, make one short rules-based or procedural point, such as asking a named visitor to explain or noting what a claimed result would imply under the rules. …"
+
+The seat marked it *follow*: "Early day with no confirmations; a neutral rules point keeps my heat low." The lesson was written for a day with several claims, and this seat's day had none. The match is close on the labelled fields and loose on the events, which is the fit problem described in §5.
+
+Later that day another player claimed to be the Trailseer and named the Chanteuse's partner. The same seat's next discussion turn made a fresh lookup and wrote two situations: one about its partner being implicated, one about whether its night block on a town player would come out. (Source: `batch_results/v8_demo_0/eval_cases/v8_demo_0_all_enabled/22c1c19e-….jsonl`, gitignored.)
+
+## 3. When it runs today
+
+**On the live site, only when a player switches memory on.** Each new game's memory switch starts off. The deployment has its own switch as well (`WW_MEMORY_ENABLED`, off unless the deployment sets it), and a memory-on game is refused while the lesson store is unpublished. With memory off, no seat makes this call.
+
+With memory on, the call runs for one decision and is skipped for others:
+
+| Decision | Situation call? | Why |
 |---|---|---|
-| queries per turn | 1-2 structured situations | `_summary_container` (situation_agent.py:62) |
-| model | flash-lite, no thinking (`get_llm`) | accessors.py:17 |
-| situation schema | v6 per-cell (embed-aligned with extraction); v5 fallback | `cell_situation_schema_for` (schemas/memory.py:635) |
-| retries | 1, then trivial fallback string | situation_agent.py:101-114 |
-| prompt design | structured dims · no core dilemma · investigator-lens-first (v4b lineage, now on the v6 cell schema) | prompts/memory, per-role prompts |
+| Any decision on day 1 | No | Nothing has happened yet that a lesson could match. |
+| A town seat's day discussion or day vote | No | Town day lessons are extracted for the project owner to review. Advice the owner approves becomes fixed text in the role prompt instead of being retrieved (ruled 2026-10-11). |
+| A town seat's night action | Yes | |
+| A wolf's, lone killer's or neutral's discussion, vote or night action | Yes | |
+| A human seat's own decision | No | A human decides without the agent pipeline. If the human hands a turn to its agent, the agent looks up as any seat would. |
 
-## Verification
+**One lookup can serve several decisions.** A lookup is the situation call plus its search. In the owner's first ten-seat game, a lookup at every decision came to about 60 a game. The owner ruled on 2026-10-12 that lookups are reused:
 
-**Verdict.** Situation-summary is measured two ways, with different strengths, and both are written up in
-[../../evaluation/llm_judge/agent_decision.md](../../evaluation/llm_judge/agent_decision.md) (Stage 1):
+- **Day discussion:** a seat looks up once per day, at its first turn, and reuses that lookup for its later turns. A new role claim that day (a new player and role pair) triggers a fresh lookup, as in §2.
+- **Votes:** every vote looks up afresh, since it comes after the whole discussion.
+- **Night:** one lookup per seat per night. A wolf makes two: one for the pack's chat, one for the kill and its own ability, because the talk moves from candidate targets to a plan.
 
-- **Query content — two uncalibrated LLM judges.** A pairwise-preference judge and a single-rubric judge score
-  the query on faithfulness, specificity, retrieval usefulness, non-redundancy, and role perspective. Neither
-  has ground truth. They told us flash-lite is adequate and caught the role-perspective failure mode, and the
-  pairwise judge proved *more sensitive* than the independent rubric (it preferred 3.5-flash 14/15 while the
-  rubric averages tied) — but with no anchor they cannot certify a query as good.
-- **Retrieval ranking — a real human-anchored golden.** A graded-relevance (0/1/2) NDCG golden over ~20
-  human-labelled cases is the strongest anchor design in the repo: proper offline NDCG, zero API. It set the
-  baseline at **NDCG@10 ≈ 0.83** and drove the prompt from v1 to v4b (**+0.061** on expanded labels).
+On that first game this cut about 60 lookups to about 38, plus one per new claim. The reuse is a cache inside the server process; a restart just means a fresh lookup.
 
-**What it can't do.** The golden is stale (v4 store, 2026-05 prompts), has grown partly machine-augmented (108
-cases with auto-labels, never human-re-validated), and is not wired into the live retrieval judge. It also
-cannot separate a bad *query* from a bad *store entry* — the largest per-role "win" (villager +0.196) was an
-upstream store-coverage gap surfacing through stage 1, not a summary-quality improvement.
+**The served game searches strategy points only.** The store also holds *observations* (accounts of a single play and its effect), but the served configuration turns their retrieval off: the town half of the store never had observations, so serving them would give the two sides different memory.
 
-## Current-vs-documented gaps (freshness: 2026-07-02)
+To give a sense of scale (recomputed for this doc from the turn records of the 20 memory-on demo games of 2026-10-14): of 3,118 recorded decisions, 1,496 carried a lookup, fresh or reused; 1,106 were town day decisions and 516 were day-1 decisions, both skipped.
 
-Ordered by how misleading each is to a reader. Severity weighs likelihood, impact, and detectability together,
-not impact alone.
+## 4. How the call is built
 
-| # | Gap | State | Severity |
-|---|---|---|---|
-| 1 | **Shipped prompt + golden are v5-era** | The v4b prompt and every NDCG number were tuned on the `v4_deduped_v2` store and 2026-05 prompts; the live path is the v6 cell schema. The cheapest refresh is to re-run NDCG golden-mode against the v6_1 store — offline and free, just repoint the hard-coded store/dataset constants in `situation_retrieval_ndcg.py`. | Med |
-| 2 | **Summary-content judges uncalibrated** | The pairwise and single-rubric judges grade query content with no ground truth — the same no-anchor gap as day-summary. Situation-summary is fundamentally an extraction task (extract what is critical about the situation), so the fix is a reference-point golden: critical situation elements → coverage/recall, game-state faithfulness → precision. Method: [../../evaluation/llm_judge/golden_set_method.md](../../evaluation/llm_judge/golden_set_method.md). Distinct from the NDCG golden, which anchors retrieval *ranking*, not query *content*. | Med |
-| 3 | **NDCG golden is partly machine-augmented** | It grew from ~20 human cases to 108 via 4-model-consensus auto-labels, never human-re-validated. The headline 0.83 is the linear-gain N=20-human baseline; the exponential re-score is 0.732@10. Treat the augmented numbers as directional. | Low-Med |
-| 4 | **Query quality and store coverage are entangled** | NDCG measured through stage 1 cannot attribute a miss to a bad query vs a thin store namespace. Known and documented (the villager gains were store-coverage), but it caps how much a summary-prompt change can be credited on NDCG alone. | Low |
+**Inputs.** The prompt opens with the same system message and public record as the seat's own turn prompt, so the two share a cached prefix. After that come the game state (survivors, the public dead), the seat's private knowledge, its night record, the wolves' chat if it is a wolf, and its own strategy note. The private part states the seat's exact values where its role has them: uses of a limited ability left, a Fortune Teller's points, a Speculator's pick, a Necromancer's usable bodies, the pack's carrier and target.
 
-**Open work.** The situation-summary prompt is a viable retrieval lever (v4b showed +0.061), but the honest
-next step is a **free v6_1 re-baseline of the NDCG golden** (gap 1) before further prompt tuning is worth
-crediting, and — if query-*content* certification is ever needed — the reference-point golden (gap 2). Both
-stay deferred while the binding memory constraint is store content and the investigator-transmission cap, not
-query phrasing.
+**Numbers are computed, not estimated.** Some fields are facts the seat can know exactly: players alive, uses left, whether a wolf partner has been revealed, how many eliminations until the leading evil side can win, and whether one more elimination could decide the game. The code computes these from the game state and hands them to the model as "known board facts", so the stakes sentence is written from true numbers. After the reply, it overwrites those fields with the computed values in case the model ignored them. When a dead player's role was concealed, the counts are the worst case for the town and the prompt says so.
+
+**The form.** Each role and kind of decision has its own schema, generated from shared field groups. A night form has no consensus or heat fields, and a role with limited uses gets a "uses left" field. Every role in the twelve-role pool has a form for each decision it makes. The rules in the prompt are the ones the labelled tests in §6 arrived at: describe the board's state and never give advice, write in the seat's own knowledge (never as an all-seeing narrator), and write a second situation only for a genuinely separate decision.
+
+**From form to search.** The filled fields are joined into one labelled text by the same function that composes stored lessons. Each situation is searched against the seat's own shelf: strategy points for its role and kind of decision. A seat can only search its own role's shelf. The search fetches 5 per situation and keeps the best 3, and a lesson found by both situations appears once.
+
+**When the call fails.** A reply that breaks the schema is retried once, with the schema enforced by the provider. If that also fails, the query falls back to a generic line ("Day 2 as chanteuse, round 0"), which still searches the right shelf. A failure degrades that turn's search; it never blocks the decision.
+
+**Which model.** The call uses the game's own model at the game's thinking level: on the live site the model the player chose, and otherwise the house default, Claude Haiku 5.5 since 2026-10-15.
+
+**Built, off by default.** Several retrieval steps after the search are switchable per game and off in the served configuration: a model reranker, duplicate filtering, a score tilt by matching labels, and a *stage filter* that drops lessons learned at a different stage of the game (players alive, partner lost, uses left) and refills from same-stage lessons. The stage filter was on in the October demo run.
+
+## 5. How it has been checked
+
+**Unit tests (76 pass at `c0732f88`).** They pin when a turn looks up (day 1, town day turns and a switched-off role skip; town nights and evil days look up), the reuse rules, the private-state lines each role gets, the dropping of unused labels, the overwrite of computed numbers, and the enforced-schema retry.
+
+**A read of 96 real ten-seat queries (2026-10-12).** Seven memory-on games (four on Claude Haiku 5.5, three on GPT-6 Luna) made 352 lookups. A sample of 96, spread across model, role and phase, was read by four Claude subagents against the rules and the games' true roles.
+
+- **The queries:** 37 of the 96 had at least one error. Eight came from the prompt's own swing line: it said the game could end within one more elimination beside a count of five or six eliminations to go, because it counted the town's possible win without saying so. It was reworded the same day. The rest were the model misreading a rule (a Necromancer believing it is invisible to checks, a "no effect" sigil read as clearing someone) or miscounting. No query stated a concealed role as fact.
+- **Replayable:** searching again from the situations the seats wrote reproduced the lessons they had been shown in 91 of the 96 lookups.
+- **The search was the weaker link.** Only 39 of 268 lessons shown fit the decision (15%). The readers all saw the same pattern: retrieval matched the role but not the stage of the game. Lessons about a dead partner or the last few players reached seats on day 2 with seven to nine alive, and the similarity score did not track fit. The seats' verdicts on the lessons were sound in 65 of the 96 lookups and mixed in 25, so the cost was mostly prompt room rather than misplays.
+- **What helped was a retrieval change.** On a larger store built from 40 games, leaving out lessons from another stage raised fit from 15% to 24–27%. With the gap refilled from same-stage lessons, the lookups with at least one fitting lesson rose from 36 to 52 of the 96 (2026-10-13; different readers from the first read, so the comparison is approximate). The query's part is that it carries exact stage numbers to filter on.
+
+**Why the numbers are computed.** A July 2026 audit of nine-seat queries compared each number the model wrote with the true value from the board. Players alive was exact in 97% of 6,099 cases, but the vigilante's shots left was exact in only 16% of 1,109, systematically too low. A wrong count also leaked into the stakes sentence that gets embedded. That is why the code now states these numbers to the model and then overwrites them.
+
+**Earlier evidence (nine-seat, May 2026).** Two studies shaped the prompt before the ten-seat game existed:
+
+- **A model comparison on 15 frozen cases** kept the cheap model of the time (Gemini 3.1 Flash-Lite). Its lasting finding was a failure mode a generic quality score would miss: a model can be factually accurate and still write from the wrong point of view. In one wolf case the seat *was* `player_6`, and Gemini 2.5 Flash wrote "My wolf ally, player_6, is currently under direct scrutiny". That query would retrieve advice for defending a teammate, not for being under suspicion yourself. The rule to write in the seat's own voice comes from here.
+- **A human-labelled ranking test** of 20 cases, built to check whether the queries retrieved the right lessons rather than whether a judge liked them. It is the case study below.
+
+## 6. Case study: the field that felt right and lowered retrieval
+
+**Verdict.** In May 2026 a fifth field, the seat's "core dilemma", was added to the query form because it seemed obviously useful. Tested against human relevance labels, the queries written with it ranked worse on the cases that could be scored fairly. It was removed, and by that round's scores removing it was the largest single gain of the prompt changes. The test also caught its own artifact: an early headline gap was inflated by lessons nobody had labelled.
+
+**The test.** For each of 20 frozen cases across four nine-seat roles, the owner wrote an ideal query from the exact inputs the call saw. The lessons and observations it retrieved from a fixed store (up to 10 of each) were each labelled 2 (highly relevant), 1 (partly) or 0 (not relevant): 340 labels in all. Each query was then scored by how well its search ranked the labelled items.
+
+> **The score (NDCG@k).** A ranking score from 0 to 1 over the top *k* results. It is 1 when the search orders the results the way the labels would (most relevant first), and lower when relevant items sit below less relevant ones. An item the labels never covered counts as 0.
+
+The hand-written queries scored 0.83 over the top 10. Retrieval was already reasonable when the query was good, so the question became how far the pipeline's own queries fell short.
+
+**What happened.** While labelling, the four existing fields (information landscape, consensus, the seat's exposure, game phase) seemed to describe the board but not the choice. Two seats on similar boards can face different decisions: whether to follow a vote, or how to share a private result without exposing the role. So a fifth field, the core dilemma, was added in one sentence.
+
+The queries regenerated with it looked better on average, but that average was not trustworthy. A new query retrieves some lessons the labels never covered, and each of those scores 0 whatever its real relevance. On the six cases where few results were unlabelled, so the score could be trusted, the new form scored lower: 0.79 against 0.87 for the queries it replaced (top 5). The reading at the time was that the dilemma field pushed the model toward abstract framing and away from the concrete events the stored lessons describe.
+
+**The fix.** Three changes followed, each scored on the same labels: write the query in the store's own labelled fields rather than free prose; remove the core dilemma; and tell the investigator to lead with how its private findings relate to the public story. The 108 results that the final queries retrieved but nobody had labelled were then labelled too, by a model (Claude Opus 4.6), so every result had a label. On that full set the final form scored 0.06 above the pipeline's original queries over the top 5 (0.76 against 0.70), and the investigator, which had looked worse, turned out to have improved.
+
+**What it shows.** A design that is plausible on reflection can lower retrieval, and a judge rating queries for quality would not have caught it; a labelled ranking did. The same labels exposed how an unlabelled item scored as zero can make a change look better or worse than it is.
+
+**Limits.**
+- 20 cases and six fairly scorable ones. They show the direction of each change, not its size.
+- The first comparison changed more than the one field: the regenerated queries were also capped at two and written with the model's thinking on. The field's own effect was isolated only in the later step that removed it.
+- The 108 extra labels came from a model and were never checked by a person.
+- The labels belong to a nine-seat store of May 2026 and the prompts of that time. The ten-seat query keeps the conclusions (labelled fields, no dilemma field, own point of view), but the score has never been re-run on the ten-seat game; the scorer still points at the old store.
+- The score cannot tell a weak query from a thin shelf. The largest per-role gain, for the villager, came mostly from the store lacking good villager voting lessons, not from the query.
+
+## 7. What is not established
+
+- **That the query, or memory as a whole, improves play.** No such result exists for the ten-seat memory, which has not been tested at scale. Memory is off unless a player switches it on.
+- **How good the ten-seat queries are, beyond the one read.** The 96-query read is the only check on ten-seat queries. The labelled ranking test has not been rebuilt for the ten-seat store, and the model judges used in May grade query content with no ground truth.
+- **Whether reusing a lookup within a day costs fit.** The reuse rule was ruled on cost and on the shape of a day's talk; whether a reused set fits later turns as well as a fresh one has not been measured.
+- **What the call costs now.** In the seven gate games, lookups were 20–28% of a game's model cost on GPT-6 Luna and about 40% on Haiku. Two fixes followed (the situation prompt laid out for the prompt cache, and cache accounting), and the share has not been re-measured since.
+- **The query is outside the automatic leak checks.** Its prompt is built from the same game data the seat's turn receives, which is limited to what the seat's role may know. But the call does not log its prompt where the leak checks look, so the checks cannot confirm it (see [agent boundaries](../../agent_boundaries/report.md) §5).
+
+## Sources and implementation
+
+| What | Where |
+|---|---|
+| The situation call: inputs, computed facts, overwrite, retry, fallback | `Agents/memory/retrieval/situation_agent.py` |
+| When a turn looks up (day 1, town day, role switch, store) | `Agents/memory/retrieval/plan_gating.py` |
+| Lookup reuse within a day and a night | `Agents/memory/retrieval/lookup_cache.py` |
+| The read path: search, caps, optional filters, the turn record | `Agents/memory/retrieval/pipeline.py`, `accessors.py` |
+| The query prompt | `Agents/prompts/memory/situation_summary.py` (`V6_SITUATION_SUMMARY`); shared guidance `compose_cell_guidance` in `Agents/prompts/prompt_inputs.py` |
+| The per-cell forms and the shared composer | `Agents/schemas/memory.py` (`cell_situation_schema_for`, `compose_situation_embed`, the ten-seat cell table) |
+| The served configuration (strategy points only; memory switch) | `server/game/run_config.py`; `server/config.py` (`WW_MEMORY_ENABLED`); `server/routes/_shared.py` |
+| Tests | `tests/memory/test_memory_plan_gating.py`, `test_lookup_reuse.py`, `test_situation_query_inputs.py`, `test_situation_dim_override.py`, `test_stage_filter.py`; `tests/engine/test_enforced_retry.py` |
+| The §2 example | `batch_results/v8_demo_0/eval_cases/` (game `22c1c19e`; fingerprint `c38d9ef2`, dirty tree), gitignored |
+| The reuse ruling, the outside review of the query | [v8 decisions](../../memory_system/v8/decisions.md) §10 |
+| The 96-query read and the stage-filter replays | [v8 log](../../memory_system/v8/experiment_log.md), 2026-10-12 and 2026-10-13; runners `evaluation/experiments/v8_gate_lookups.py`, `v8_stage_filter_replay.py` |
+| The number audit (July 2026) | [`../situation_dimensions/dimension_accuracy_audit/`](../situation_dimensions/dimension_accuracy_audit/experiment_log.md) |
+| Model comparison (2026-05-24) | `model_comparison/` (outputs, pairwise and rubric judge results); runner archived at `evaluation/src/archive/situation_summary_model_comparison.py`; judges in `evaluation/src/judges/situation_summary*.py` |
+| The labelled ranking test (2026-05-27) | `outputs/retrieval_golden_labels.json` (also read by reranker training; do not move), `staging/case_*.json`, `outputs/regenerated_situations_*.json`, `prompt_versions/`; scorer `evaluation/src/labeling/label_scorer/situation_retrieval_ndcg.py` (pinned to `memory_stores/v4_deduped_v2`); labeller `evaluation/src/labeling/manual_labelers/situation_retrieval_labeler.py` |

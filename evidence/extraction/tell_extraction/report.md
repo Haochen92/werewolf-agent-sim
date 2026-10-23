@@ -1,212 +1,160 @@
-# Learning behavioral tells from game records
+# Learning behavioural tells: discovery kept apart from measurement
 
-> **Scope:** the experimental tell pipeline developed in July 2026 for the nine-seat game.
-> **Reviewed:** October 13, 2026. Mining, detection, fold-time curation and prompt injection were
-> implemented in the research loop. The ten-seat deployment does not adopt this channel, and its
-> gameplay benefit remains unestablished.
+**Scope:** how the project learned *tells* (public behaviours that hint at a player's hidden role) from finished games: a model proposes behaviours, a detector that cannot see roles counts them in other games, and code joins the revealed roles afterwards. The work was built and tested in July 2026 for the older nine-seat game. It is research only: the ten-seat game does not use it.
+**Revised against the code:** 2026-10-22 at `c0732f88`.
+**Companion docs:** [build log](experiment_log.md) (the July experiments in date order) · [credit report](../../credit/report.md) §4 (why beliefs and tactics are scored apart) · [design record](../../credit/read_tactic_credit_redesign.md) · [tell store](../../store_curation/tells.md) (how the corpus is curated) · [caching report](../../caching/report.md) §4.7 (the detector's cost tradeoff).
+
+> **Orientation: one behaviour's path from a game to a prompt.**
 >
-> **Pipeline:** finished games → candidate behaviors → role-blind detection on a fixed checklist →
-> revealed-role counts → a small tell book. The [build log](experiment_log.md) preserves the
-> experiments; the [design record](../../credit/read_tactic_credit_redesign.md) explains why tells
-> and tactical advice need different evidence.
+> **finished games → a model proposes candidate behaviours (it may see the roles) → a detector scans *other* games for a fixed checklist of those behaviours (it cannot see the roles) → code joins the roles revealed at game end and counts → the strongest associations form a small *tell book* → the book can be shown to agents before they state their suspicions**
+>
+> Everything below hangs on this path. Steps two and three are deliberately done by different calls with different inputs. That split is the point of the design.
 
-A tell is an observable behavior associated with a hidden role. The engineering contribution was to
-separate **discovering an interesting pattern** from **measuring whether it predicts anything**.
-A model proposes and detects behaviors; role counts determine the association. This makes individual
-claims inspectable and allows candidates to be measured before agents receive them.
+---
 
-For example, the later seed book contains this behavior:
+## 1. What a tell is, and why discovery cannot be the measurement
+
+Werewolf is a game of hidden roles. Each turn, an agent states its *reads*: its suspicions about which hidden role each other player holds. A tell is a claim that can improve those reads: "players who do X are usually role Y." Here is one from the project's tell book:
 
 > A player asserts high confidence in an accusation while refusing to disclose the source of their information.
 
-The book records **10 investigators among 11 detected exhibitors**, with subject-role shrunk lift
-0.5486. The agent-facing line presents the behavior with its count, followed by an instruction to use
-it as a prior rather than proof. These are historical observations, not a calibrated probability for
-a player in today's game. Source: [the 34-entry book](../../../evaluation/frozen_eval_sets/tell_book_v2_seed.json).
+In the games where it was counted, 11 players did this, and 10 of them were the investigator.
 
-## 1. What the measurement guarantees
+The obvious way to find tells is to show a model finished games with the roles revealed and ask it what the wolves did differently. That finds interesting candidates, but it cannot say how predictive they are. A model that knows who the wolves were notices a wolf deflecting an accusation. It does not go back and count the villagers who deflected in the same way and were never suspected. Its examples are chosen with hindsight, so its counts lean towards the pattern it expected.
 
-The miner receives the public game record and a true-role header. It can use those roles to discover
-candidates, but the resulting examples are selected with hindsight. A mined count cannot tell us how
-often town players exhibited a supposedly wolf-like behavior and were simply overlooked.
+The design therefore gives three jobs to three steps, each with only the inputs its job needs:
 
-The detector therefore receives the public transcript and a fixed behavior checklist **without the
-true-role header or private night reasoning**. It checks each focus player and records detections;
-completed scans are also recorded. Revealed roles are joined afterward. Only detected instances enter
-the association calculation. Held-out games separate candidate discovery from this measurement.
+1. **Propose.** A *miner* (a model call) reads one game-day of the public record, with the true roles in a header, and proposes behaviours. Its output is only a list of candidates. Its counts are never used to score anything.
+2. **Detect.** A *detector* (a separate model call) reads the public transcript of a different game, with no role header and no private night reasoning. For each player it marks which behaviours on a fixed checklist that player showed, with a quote as evidence. It also records every player it scanned, so the count of players who did *not* show a behaviour exists too.
+3. **Join and count.** Code, not a model, attaches each detected player's revealed role and counts how often the behaviour came from each role.
 
-This prevents direct use of hidden labels during detection. It does not guarantee an unbiased detector:
-ambiguous descriptions, missed relational details and model behavior can produce role-correlated
-errors even without the labels. Structural checks and labelled examples test those remaining risks.
+This keeps the hidden labels out of detection. It does not make the detector unbiased: a vague description or a misread relationship can still produce errors that correlate with role. §4 reports how far that was checked.
 
-A candidate must describe public behavior rather than infer a hidden relationship. “Votes for their
-accuser” can be checked from the transcript; “defends their packmate” cannot be checked without knowing
-roles. Public role claims and death reveals are allowed when described as claims or reveals, rather
-than asserted hidden truth.
+**A candidate must describe public behaviour.** "Votes for their accuser" can be checked from the transcript by someone who does not know the roles. "Defends their packmate" cannot: it asserts a hidden relationship. Role words are allowed only as public events, such as "claims to be the investigator" or "revealed on death as a wolf". The test is whether a reader who cannot see the roles could check the behaviour, not whether the sentence contains a role name.
 
-## 2. The mechanism
+## 2. What each step produces
 
-### Mine descriptions, measure exhibitors
+### The miner proposes
 
-The final mining prompt split each game-day into two calls. The discussion call omitted that day's
-vote tally so the compact voting block would not dominate attention. The vote call retained discussion
-because patterns such as voting without previously expressing suspicion require both. Each candidate
-carried an exhibitor, channel and evidence quote.
+For each game-day the miner makes two calls. The discussion call leaves out that day's vote tally, because the compact vote list otherwise drew the cheap model's attention away from the talk. The vote call keeps the discussion, because many voting patterns refer to what was said first ("votes without having voiced suspicion"). Each candidate names the player who showed it, the channel (discussion or vote) and a verbatim quote. A real candidate from a July game, with the role joined afterwards from the game record:
 
-Detection used the union of two views, one full and one with vote tallies removed from discussion
-inputs. The selected historical configuration used cached prefixes and low thinking. Temperature zero
-did not make its outputs exactly repeatable; evaluations therefore retain the actual detected rows.
+> **Behaviour (vote):** "A player who is the primary subject of discussion and accused by others chooses to abstain rather than voting for an alternative or voting for their accuser."
+> **Evidence:** "player_4 voted for abstain" · game `678cdb3f`, day 4 · player_4 was a wolf.
 
-For scoring, each distinct game/player pair counts once per tell, even if detected on several days.
-If `c` of `n` exhibitors have the subject role and that role's cast prior is `p`:
+Candidates go into a shared corpus. Wordings that describe the same behaviour are merged across roles within a channel, because a behaviour split by role could not be compared between roles.
 
-```text
-shrunk lift = (c + 5 × p) / (n + 5) − p
-```
+### The detector counts
 
-The adjustment dampens small samples. It does not correct discovery selection, correlated games or
-multiple comparisons. The [credit reference](../../credit/report.md) explains why tell association
-scores remain separate from strategy outcomes and agent read accuracy.
+The detector takes up to 48 behaviours per channel from the corpus as its checklist and scans each player of each game. It runs twice per game with two views of the record: the full record, and one where the discussion is read without the vote tallies. The two passes' detections are combined. A real detection:
 
-### Bound the work without discarding the archive
+> **Behaviour `disc_67`:** "A player suggests that current accusations against them are merely a diversionary tactic used by others to avoid scrutiny on their own current behavior."
+> **Detected:** player_4, game `678cdb3f`, day 3: "Player 8, asking me for 'value' after you spent the start of this discussion trying to get someone lynched with a fabricated claim is ironic."
 
-The corpus need not fit into every detector call or agent prompt. Three tiers serve different uses:
+### Code joins roles and scores
 
-| Tier | What membership permits | Bound |
+Each distinct player in each game counts once per behaviour, however many days they showed it. A behaviour's score is how much more often its exhibitors held a role than that role's share of the seats, pulled towards zero when there are few exhibitors.
+
+> **The score**, for a behaviour shown by *n* players of whom *c* held the subject role, where the role holds share *p* of the seats:
+>
+> ```text
+> score = (c + 5p) / (n + 5) − p
+> ```
+>
+> Worked example (recomputed here from the book entry's fields): one investigator in nine seats gives p = 1/9; c = 10, n = 11 gives (10 + 0.56) / 16 − 0.11 = 0.549. The book records 0.5486, its highest score.
+> Code: `subject_lift` and `lift_table` in `evaluation/src/loop/tell_credit.py`.
+
+The damping (five imaginary exhibitors at the seat share) stops a behaviour seen twice from topping the list. It does not correct for testing many candidates or for games being related (§4).
+
+### The book is a short prompt block
+
+The book keeps, for each role and channel, the three highest-scoring behaviours with at least eight exhibitors and a positive score. It includes town roles. That is deliberate: the same book lets a wolf spot the investigator and lets the investigator see what gives it away. At each turn, entries about a role whose holders are all revealed dead are dropped. The block sits just above the instruction to state reads, in the day discussion, day vote and night prompts. Every seat in the game sees the same block. Its format, from `Agents/memory/tell_book.py`, with the entry above:
+
+> == Behavior tells from past games (public study notes: how a behavior correlated with hidden roles) ==
+> - A player asserts high confidence in an accusation while refusing to disclose the source of their information. (the exhibitor was a investigator 10/11 times observed)
+> - …
+> Use these as priors when forming your reads: a matching behavior shifts suspicion by the strength shown, it never proves a role.
+
+### The work stays bounded as the corpus grows
+
+New wordings kept arriving in every game (§5), so the corpus is never scanned whole. It has three tiers:
+
+| Tier | What membership allows | Size |
 |---|---|---|
-| Book | Injection into an agent's prompt | Up to three entries per subject-role/channel group |
-| Active checklist | Detection in subsequent games, including candidates not yet injected | 48 per channel: incumbent, probation and rotation capacity |
-| Archive | Retention and possible re-entry, without scanning every entry each game | Not capped by the checklist budget |
+| Book | Shown to agents | Up to 3 per role and channel |
+| Active checklist | Scanned by the detector in each new game, including candidates not yet in the book | 48 per channel |
+| Archive | Kept, and can return to the checklist | Not capped |
 
-Probation gives new candidates time to collect support before ranking can exclude them. Archive
-rotation gives some older entries another measurement opportunity. Selection policy and a finite
-budget still affect which hypotheses are tested; “off-policy” means not dependent on injection, not
-that every archived tell is continuously measured.
+Every ten games a curation pass, the *fold*, matches new wordings against existing entries (an embedding search, then a model judgment), admits genuinely new ones on probation and publishes the next checklist. It never rewrites an existing entry's text, so an entry's counts always describe the same sentence. A stronger periodic review that would merge or split established entries was designed but is not wired into the loop.
 
-At a fold, the periodic curation pass, new wording is either mapped to an existing same-behavior entry
-or admitted as a new candidate. Canonical wording is preserved so old counts keep their meaning.
-Semantic matching uses an embedding prefilter followed by a model judgment. It is shared across roles
-within a channel: splitting the same behavior by role would destroy the comparison it needs.
+## 3. What runs today
 
-The implemented fold is distinct from the proposed strong-model audit of existing canonical entries.
-The latter would merge or split already-established behaviors; it was exercised offline but is not an
-automatically scheduled part of the loop. The fold can flag candidates for that review. An optional
-book-level duplicate filter removes repeated behaviors from the prompt without pooling their evidence.
-The [curation reference](../../store_curation/tells.md) records those boundaries.
-
-### Deliver a book before the agent forms its reads
-
-The July 14 book ranks supported tells by concentration of their subject role, including town power
-roles. It requires at least eight exhibitors and positive subject lift. Separate discussion and vote
-slots prevent one channel from filling every position. This differs from the older credit-eligibility
-rule that selects only positive evil-lift; a town-role association can inform a read without satisfying
-that credit rule.
-
-At runtime the loader removes entries whose subject role has been fully revealed dead, then inserts
-text before the reads instruction in day discussion, day voting and night prompts. The hook reads
-`WW_TELL_BOOK`; without it, the block is empty. This environment switch is independent of the ordinary
-memory toggle, so activation must be controlled explicitly in an experiment or deployment.
-
-The current loader expects `subject_count` and `subject_role`. The historical 12-entry v1 artifact
-instead carries `evil` counts. It remains evidence of the July replay, not a drop-in book for the
-current loader. The later 34-entry v2 artifact has the subject-role fields, but still reflects the
-older game and model distribution.
-
-## 3. What was tested
-
-The work established a usable extraction/detection path and showed that injecting tells could change
-decisions. Each result answers a narrower question than whether tells improve full games.
-
-| Question | Evidence | Conclusion and boundary |
+| Part | Where | Status |
 |---|---|---|
-| Could a cheap miner recover discussion patterns? | Same five games: single-call flash-lite produced 116 tells and no exact-wording convergence rows; split calls produced 213 tells and 19 convergence rows | Input separation recovered coverage and repeat wording on that sample; counts alone are not accuracy |
-| Could the detector recognize checklist behaviors? | Five games and 40 provisionally labelled cells; cached union: discussion precision 0.93 / recall 87%, vote precision 0.83 / recall 77% | Supported using the detector experimentally; the small, selected, largely model-adjudicated set is not broad certification |
-| Did a human check support the detector? | One independently reviewed game: 7 of 8 detector judgments upheld | Useful spot-check, too small to replace the provisional benchmark |
-| Did discovered behaviors recur on other games? | 60 held-out arm-games, comprising 12 paired boards × five memory arms; 5,151 unioned detections | Several strong historical associations; correlated boards and scanning about 96 tells limit inferential strength |
-| Did the balanced book affect decisions? | 40 frozen old-epoch votes, book absent versus present: 11 changed; correct votes 20 → 24 | The channel affected outputs; six correctness-discordant pairs do not establish a reliable benefit |
+| The prompt hook | `Agents/memory/tell_book.py`, slot `{tell_book}` in the day discussion, day vote and night templates | In the live prompts, but renders nothing unless the `WW_TELL_BOOK` environment variable names a book file. Nothing in `server/` or its deployment sets it. Its four unit tests pass at `c0732f88`. |
+| Mining, detection, scoring, the fold | `evaluation/src/loop/` (`tells.py`, `tell_credit.py`, `tell_fold.py`) | Research loop for the nine-seat game. Off by default (`LoopConfig.tells = False`). |
+| Seed books | `evaluation/frozen_eval_sets/tell_book_v1_seed.json` (12 entries), `tell_book_v2_seed.json` (34 entries) | Frozen July artifacts. The current hook cannot read v1: it expects fields that v1 names differently. |
 
-The provisional labels were accepted for the July build after the human spot-check. This was a decision
-to proceed with bounded evidence, not completion of the originally proposed six-game human benchmark.
+The books do not fit the ten-seat game. They were counted on nine-seat games, whose roles included "wolf" and "villager". The ten-seat game has neither role name: its wolves are the Chanteuse and the Illusionist. Pointed at the 34-entry book, the hook would silently drop the 12 wolf and villager entries, and the remaining 22 would show nine-seat statistics. No ten-seat game has been mined or scanned. The hook is also independent of the ordinary memory switch, so turning memory on does not turn tells on.
 
-The held-out sample found an investigator association at 10/11 exhibitors and role claiming at 0/28
-evil exhibitors. The latter illustrates the transfer risk: fake-claiming behavior can change with a
-prompt or model. These are observations from the sampled agents, not general Werewolf rules.
+## 4. How well each step was checked
 
-**Replay versions matter.** An initial, discussion-heavy book changed 7/40 votes and had correctness
-18/40 without it versus 17/40 with it. After balancing channels, the 12-entry book changed 11/40, with
-five wrong-to-right changes and one right-to-wrong change. The no-book result also changed between runs;
-this was not an isolated test of composition alone. The later 34-entry, all-role book was built after
-that screen and did not receive the same replay check.
+Each check answers a narrower question than "do tells help agents play". All were run on the nine-seat game in July 2026, with Gemini models for mining and detection.
 
-**Cost and repeatability were tested separately.** Historical billing put uncached detection near
-$0.22 per nine-seat game. Prefix caching brought estimated mining-plus-detection overhead to roughly
-$0.17–0.20 per game, with comparable precision and recall on the 40 labelled cells. Cached row agreement
-varied more between repeated runs (Jaccard 0.56–0.83, versus 0.90–1.00 uncached). Keeping stored outputs
-makes the evaluated run inspectable; it does not make a rerun identical. These are July costs and probe
-results, not current pricing or ten-seat performance. [Caching evidence](../../caching/experiment_log.md).
+**Can a cheap model propose behaviours?** On the same five games, a single call per day to Gemini 3.1 Flash-Lite produced 116 candidates, and none of its wordings recurred across games. With the two-call split, it produced 213 candidates, with 19 rows in groups of exactly repeated wording. The larger Gemini 2.5 Pro, single call, gave 181 and 24. Recurring wording matters because it lets identical behaviours merge without a paid judgment. These are yields, not accuracy: review still found an inferred motive in about 1–2% of candidates.
 
-## 4. Case study — a growing vocabulary changed the storage design
+**Does the detector find what is there?** On 40 labelled cases from five games, the combined detector was right on 0.93 of its discussion detections and found 87% of the labelled discussion behaviours. On votes the figures were 0.83 and 77%. The labels came from model adjudicators who did not see the detector's answers. The sample is small and partly drawn from the detector's own detections, so it supports using the detector experimentally, not a general accuracy claim.
 
-**The 30-game probe showed no saturation in new wordings, but recurring behaviors were concentrated in
-a smaller core.** The design response was to bound active measurement rather than assume a one-time
-mining sweep would produce a finished dictionary. It also moved semantic deduplication to periodic
-batches. The experiment changed how the system spent work, not just a similarity threshold.
+**Does a human agree?** The project owner reviewed every detection in one game: 7 of 8 were upheld. One was rejected because its wording ("at the last moment") implied a change of heart the transcript did not show. A six-game human benchmark had been planned. After this one game the model labels were accepted as provisional and the rest was not done.
 
-### Test whether growth was real or missed deduplication
+**Do the behaviours predict roles in games the miner never saw?** The detector scanned 60 games: 12 deals, each played under five memory settings, giving 5,151 detections. Some associations were strong. Evil players (two wolves and a lone killer) held a third of the seats:
 
-The simulation replayed 1,109 mined instances through the proposed lifecycle and produced 740 canonical
-entries. Support here meant mined recurrence, not role-blind detection; it tested storage dynamics,
-not tell accuracy. Its strongest behaviors were split across several wordings, so apparent novelty
-might have been poor duplicate recall rather than genuinely new candidates.
-
-A strong-model batch review consolidated the corpus to 596 entries. The fresh-entry rate still stayed
-around 16 per game in the observed window. Recurrence among successive birth cohorts fell from 37% to
-19% to 11%; later cohorts also had less time to recur. The result supported a recurring core plus a
-large one-off tail, not a proof that the vocabulary grows forever or that the core had fully converged.
-
-### Move judgment to where it can use more context
-
-The online duplicate judge had made 5,350 calls across 30 games, about 178 per game, yet fragmented
-important behaviors that the batch review reunited. Call count was a clear overhead signal; it did
-not establish the judge as the largest dollar cost, because detector prompts were much longer.
-
-No agent needed a newly mined tell during that same game. The design could therefore delay semantic
-admission until a fold and keep the checklist fixed between folds. The tradeoff was slower admission
-of new candidates in exchange for fewer per-game judgment steps and a stable measurement list.
-Preserving canonical text also prevented a rewritten claim from inheriting evidence for a different one.
-
-## 5. What remains unestablished
-
-The available evidence supports an implemented experimental channel and several measured engineering
-choices. It does not establish improved gameplay, transfer to the ten-seat role set, or reliability
-under today's model and prompts. Nor does the replay certify the later 34-entry book.
-
-The unscheduled merge/split audit matters because duplicate or overly broad canonical entries can
-fragment evidence or hide discriminating sub-patterns. The current fold and optional prompt-level
-filter address parts of that problem, not the full audit. Detector fallibility and sample selection
-remain relevant even for apparently strong associations.
-
-These boundaries explain why the [v8 plan](../../memory_system/v8/plan.md) treats tells as an
-experimental channel outside its deployment scope. The build remains useful portfolio evidence:
-separating discovery from measurement, testing detection, and revising the lifecycle when the corpus
-did not behave as expected.
-
-## Evidence and implementation
-
-| Artifact | What it preserves |
+| Behaviour | Exhibitors who were evil |
 |---|---|
-| [Build log](experiment_log.md) §§3–7 | Mining prompts, same-five-game comparisons and decisions |
-| [Consolidated store](outputs/consolidated_store.json) and log §§10–12 | Corpus/lifecycle simulation and batch-review outcome |
-| [Held-out lift table](outputs/heldout/provisional_lift_table.json) | 60 arm-games, detector convention, shrinkage and provisional status |
-| [Human adjudications](outputs/owner_golden/owner_verdicts.json) and log §16 | The completed human spot-check and changed validation scope |
-| [Initial replay](outputs/book_screen.json), [balanced replay](outputs/book_screen_v2_balanced.json) | Separate 40-decision screens and per-decision outputs |
-| [12-entry v1 book](../../../evaluation/frozen_eval_sets/tell_book_v1_seed.json) | The balanced historical replay book, in its original schema |
-| [34-entry v2 book](../../../evaluation/frozen_eval_sets/tell_book_v2_seed.json) | Later subject-role book; [frozen builder](scripts/build_seed_book.py) records its derivation |
-| [Research-loop module map](../../../evaluation/src/loop/README.md) | Implementations: `tells`, `tell_credit`, `tell_fold`; prompt loader: `Agents/memory/tell_book.py` |
+| Counter-accuses an accuser of using a role claim as a distraction | 27 of 30 |
+| Discourages the group from relying on voting records | 41 of 48 |
+| Calls the accusations against them a diversion | 60 of 76 |
+| Publicly claims a special role | 0 of 28 |
 
-The probe scripts and saved prompts in this folder are frozen records. Current code inspection can
-establish what is implemented; it cannot retroactively validate an old result under a new runtime.
+Three things limit how far this reaches. The 60 games share 12 deals, so they are not 60 independent samples. About 96 behaviours were scanned, so a few strong-looking ones will be luck. And these are habits of the agents of that time: in these games no evil player faked a role claim, which a prompt or model change could easily alter.
 
-Implementation pointers were checked against repository revision `d206680d` and the October 13, 2026
-working tree. Historical measurements retain their linked run artifacts; this is an editorial review,
-not a new experimental run.
+**Does the book change an agent's decision?** Forty recorded day votes from older nine-seat games were replayed twice through the real prompt path, once with the 12-entry book and once without, with no other memory. A vote counts as correct if a town player voted for an evil one, or an evil player for a town one. The book changed 11 of the 40 votes. Correct votes went from 20 to 24: five changed from wrong to right and one from right to wrong. The direction favours the book. With six votes that changed correctness, the size is not established (the one-sided chance of a split this lopsided is about 11%). This shows the channel reaches decisions. The 34-entry book was built afterwards and never replayed this way.
+
+**Does caching the detector change its answers?** Caching the shared transcript and checklist made repeated runs agree less (rows matched 0.56–0.83 between identical runs, against 0.90–1.00 uncached). Accuracy on the 40 cases was comparable, so caching became the default and every evaluation keeps the detector's stored output. The [caching report](../../caching/report.md) §4.7 has the detail.
+
+## 5. Case study: the vocabulary that never stopped growing
+
+**Verdict.** A 30-game simulation showed that new wordings never levelled off, but the behaviours that recurred formed a much smaller core. The design response was to cap active measurement and move duplicate judgment from every game to a batch every ten games. The experiment changed how the system spends its work, not a threshold.
+
+**What happened.** The original plan was to mine a large sweep once and treat the result as a finished dictionary. To test that, 1,109 mined candidates from 30 games were replayed in order through the proposed curation rules. They produced 740 entries, and new ones were still arriving at about 22 a game in games 21–30. The simulation used mined recurrence, not detection, so it tested storage, not accuracy.
+
+**Why.** Two explanations fitted. Either agents really kept inventing new behaviour, or the per-game duplicate judge was missing duplicates. The second had evidence: one leading behaviour sat in the store under three separate wordings, seen 18, 11 and 10 times. A strong model then reviewed each channel's whole corpus at once. It reduced 740 entries to 596. New entries still arrived at about 16 a game. But the share of each batch of new entries that was ever seen again fell from 37% (games 1–10) to 19% (11–20) to 11% (21–25). Most new entries were one-offs. Later batches had less time to recur, so this does not prove the core had stopped growing.
+
+**The fix.** Three changes followed. The checklist is capped at 48 per channel, with an archive behind it, so detection cost depends on the number of games, not the corpus size. The per-game duplicate judge was retired: it had made 5,350 calls in 30 games (about 178 a game) and still split the leading behaviours that the batch review reunited. Its job moved to the fold every ten games. No agent needs a newly mined tell in the same game, so the delay costs little. Finally, an entry's text is never rewritten, so a reworded entry cannot inherit evidence gathered for a different sentence.
+
+**What it shows.** When the corpus behaves differently from the plan, the fix can be to bound the work and move judgment to where it sees more context, rather than to tune a similarity threshold.
+
+**Limits.** The core's size was measured on 30 games of one game version. The stronger review that would merge or split established entries is not wired, so duplicates can still split one behaviour's evidence between entries.
+
+## 6. What is not established
+
+- **No gameplay benefit.** The only full-game test that included tells was the July 30-deal test of the learning memory: its memory-on games carried a 33-entry tell book alongside the town's lessons. In that test the town decided worse with memory than without, by a margin that chance would produce about 6% of the time (see the [execution-plan report](../../execution_plan/report.md) §5). The design was amended before the test so that it no longer separated tells from lessons, so the tells' own effect is unknown.
+- **No transfer to the ten-seat game** or to today's models and prompts. Nothing has been mined or detected on ten-seat games (§3).
+- **Detector accuracy** rests on 40 model-labelled cases and one human-checked game.
+- **The 34-entry book** was never replay-tested.
+
+## Sources and implementation
+
+| What | Where |
+|---|---|
+| The prompt hook and roles-alive filter | `Agents/memory/tell_book.py`; slot in `Agents/prompts/` (`day_discuss`, `day_vote`, `night`); tests `tests/memory/test_tell_book_injection.py` |
+| Mining and detection | `evaluation/src/loop/tells.py`; prompts in `evaluation/src/loop/tell_prompts/` |
+| Score and book selection | `evaluation/src/loop/tell_credit.py` |
+| The fold, checklist cap and probation | `evaluation/src/loop/tell_fold.py` |
+| Loop switches (`tells`, seed checklist and book) | `evaluation/src/loop/config.py`; module map `evaluation/src/loop/README.md` |
+| Book replay screen | `evaluation/src/replay/decision_screen/tell_book_screen.py`; results [`outputs/book_screen.json`](outputs/book_screen.json), [`outputs/book_screen_v2_balanced.json`](outputs/book_screen_v2_balanced.json) |
+| Held-out association table (60 games) | [`outputs/heldout/provisional_lift_table.json`](outputs/heldout/provisional_lift_table.json) |
+| Human spot-check | [`outputs/owner_golden/owner_verdicts.json`](outputs/owner_golden/owner_verdicts.json) |
+| Lifecycle simulation and batch review | [`outputs/ledger_sim_metrics.jsonl`](outputs/ledger_sim_metrics.jsonl), [`outputs/consolidated_store.json`](outputs/consolidated_store.json) |
+| Seed books | `evaluation/frozen_eval_sets/tell_book_v1_seed.json`, `tell_book_v2_seed.json` (built by the frozen [`scripts/build_seed_book.py`](scripts/build_seed_book.py)) |
+| The July learning run and its 30-deal test | `batch_results/v7_compound_town5/` (`tell_store/`), `batch_results/v7_endpoint_ab/` (`config.json`, `tell_book_final.json`) |
+| Probe scripts and prompt versions (frozen records) | [`scripts/`](scripts/), [`prompt_versions/`](prompt_versions/) |

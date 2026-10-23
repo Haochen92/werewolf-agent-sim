@@ -9,7 +9,7 @@
 > changes); the two mechanisms' *build* journeys predate this folder and stay in their original
 > homes — the SP side across the execution plan's §0.4/§0.5 fixes
 > (`../execution_plan/report.md`) and the loop run records
-> (`../v7_final/`), the tell side in `../extraction/tell_extraction/experiment_log.md` §10–§16.
+> (`../v7_final/`), the tell side in `../extraction/tell_extraction/experiment_log.md` (version at `2382b34c`) §10–§16.
 > **Section-map note (2026-07-15):** the folder was renamed from `evidence/consolidation/` and the
 > report restructured into a framework doc plus per-store docs
 > (`observations.md` / `strategy_points.md` / `tells.md`). Report references in the entries below
