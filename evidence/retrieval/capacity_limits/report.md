@@ -43,3 +43,16 @@ The tradeoff: slightly more tokens per agent call (~2 extra observations per sit
 | `eval_configs/obs_cap_7.json` | Config: observations-only, top_k=7, n=120 |
 | `eval_results/cap_3_n120.jsonl` | Results for cap=3 |
 | `eval_results/cap_5_and_7_n120.jsonl` | Results for cap=5 and cap=7 (distinguished by `snapshot` field) |
+
+*Addendum 2026-10-14: the decision above never reached the prompt.* The change was made on
+2026-06-11 (`152cf1a9`) as the width of the fetch: retrieval asks the store for 5 items per
+situation. But the per-situation cap (`RETRIEVAL_KEEP_PER_SITUATION = 3`, applied in
+`Agents/memory/retrieval/pipeline.py` after retrieval) still runs on every turn. So a live prompt
+gets at most 3 observations per situation, which is about the cap=3 condition measured here. The
+cap=5 condition (about 7.6 observations a turn) was measured only in this replay, where no cap
+followed the fetch. The wider fetch changes one thing: when two situations retrieve the same item
+it is kept once, and the situation that lost it can refill from its 4th or 5th hit. Every
+observation-on campaign since June (the paired A/B, v6, v7) therefore ran at an effective cap of 3.
+The consequence is small, since the measured gain was +0.07 action quality at n=120 with no test of
+significance, and the served game retrieves no observations at all. The comment above the fetch in
+`pipeline.py` that calls 5 a "cap" is misleading for the same reason.

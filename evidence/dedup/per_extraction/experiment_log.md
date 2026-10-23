@@ -414,6 +414,15 @@ contradictions of it:
 
 Full current-vs-documented gaps: [../report.md](../report.md) § *Current-vs-documented gaps*.
 
+*Addendum 2026-10-14.* Still live, now as the store-building step of offline extraction: each game's
+observations pass through this KEEP/DISCARD pipeline as they are written into the store
+(`Agents/memory/extraction/offline.py`, `write_extracted_store`), then the v8 fold's batch triage runs
+over the new keys. The prefilter thresholds in item 3 are the May values on `gemini-embedding-001`; the
+embedder is now `qwen/qwen3-embedding-8b` and the thresholds are read per model (the sibling
+[embedding_prefilter](../embedding_prefilter/experiment_log.md) log's 2026-10-14 addendum has the
+current values and what they decide). The dedup prompts have not been re-run on the 65-case golden set
+with any non-Gemini judge; the labels are nine-seat v4-era content.
+
 ## Artifacts
 
 

@@ -90,3 +90,14 @@ Cost profile:
 - `Agents/agents.py:_reranking_enabled_for_role` — per-role reranking toggle
 - `eval_configs/reranking_experiment.json` — clean store reranking eval config
 - `eval_configs/rerank_dirty_store.json` — dirty store reranking eval config
+
+*Addendum 2026-10-14.* Where this stands in today's code. The reranker is in
+`Agents/memory/retrieval/rerank_agent.py`, with observations and strategy points switched separately
+per role by `reranking_config` on `RunConfig` (`Agents/config/run.py`). Both are off by default.
+The served game retrieves strategy points only and does not rerank them, so the recommended
+configuration above does not run in the deployed demo. The paired memory A/B
+(`../../memory_system/effectiveness/`) ran a reranked arm, and its result is reported there. A
+cross-encoder was later trained as a cheaper replacement for this LLM call
+(`../../fine_tuning/cross_encoder/`). It was not wired into the read path. The eval configs are
+now in `evaluation/config/reranking/`. Every number above comes from 5 scenarios on the nine-seat
+v4 store, so it gives a direction and is not a score.

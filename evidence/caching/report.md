@@ -28,9 +28,14 @@ job processes them later. The job makes separate calls for each role and game ph
 analysis units is called a **cell**. Those calls share most of their input even though they ask different
 questions about the game.
 
-Offline processing, batching and caching solve different problems. Moving work offline removes it from
-the player's wait. Batching lets eligible jobs use asynchronous processing at a lower price. Caching
-reduces the price of repeated input and can help both live and offline calls.
+This document is about one cost lever, caching: paying less for input that repeats between calls. It is
+not the only lever in the pipeline. Moving extraction offline takes it out of the player's wait, and
+batch APIs price asynchronous work lower (the offline-extraction ruling is recorded in
+`evidence/memory_system/v8/`); choosing a cheaper model for a task, or reshaping the task so a cheaper
+model can do it, is in [`model_selection/`](../model_selection/report.md) and
+[`extraction/tell_extraction/`](../extraction/tell_extraction/report.md); the reasoning budget is probed
+once in section 4.7. Batching appears below only where it interacts with caching: on Claude, one direct
+call writes the shared prefix before the batch reads it (section 3.6).
 
 | Workload | Cache design in this project |
 |---|---|
@@ -245,20 +250,24 @@ prompts at several sizes, then three prompts from one recorded discussion state:
 turn, that player's next turn after another message, and a different player's turn.
 
 The results below are the fraction of each request's input served from cache, from one probe sequence
-per row. The first rows are the October admission probes in the earlier layout; the last two are the
-same probe in the current layout, with the enforced schema.
+per row. The rows do not all test the same mechanism, so each names its own. The probe itself sends plain
+prompts with no cache marks, which measures a provider's automatic prefix cache; Claude has no automatic
+cache, so its rows come from requests that placed cache marks (section 3.3), and the current-layout rows
+use the marks and breakpoints the layout places (sections 3.3 and 3.4). The first seven rows are the
+October admission probes in the earlier layout (Claude on 2026-10-11, the rest on 2026-10-04); the last
+two are the same probe in the current layout, with the enforced schema.
 
-| Model | Same player, next turn | Different player |
-|---|---:|---:|
-| Claude Haiku 5.5 | 90% | 0% |
-| Qwen 3.8 Flash via OpenRouter | 79% | 36% |
-| GPT-6 Luna via OpenAI | 57% | 29% |
-| GLM 5.3 Flash via OpenRouter | 10% | 13% |
-| DeepSeek v4-pro | 8% | 11% |
-| MiniMax M3 via OpenRouter | 3% | 3% |
-| Gemini 3.5 Flash-Lite | 0% | 0% |
-| **Claude Haiku 5.5, current layout** | 77% | **71%** |
-| **GPT-6 Luna, current layout** | 75% | **69%** |
+| Model | Mechanism | Same player, next turn | Different player |
+|---|---|---:|---:|
+| Claude Haiku 5.5 | marked prefix (`cache_control`) | 90% | 0% |
+| Qwen 3.8 Flash via OpenRouter | automatic | 79% | 36% |
+| GPT-6 Luna via OpenAI | automatic | 57% | 29% |
+| GLM 5.3 Flash via OpenRouter | automatic | 10% | 13% |
+| DeepSeek v4-pro | automatic | 8% | 11% |
+| MiniMax M3 via OpenRouter | automatic | 3% | 3% |
+| Gemini 3.5 Flash-Lite | automatic (Vertex implicit cache) | 0% | 0% |
+| **Claude Haiku 5.5, current layout** | marked prefix | 77% | **71%** |
+| **GPT-6 Luna, current layout** | explicit breakpoints | 75% | **69%** |
 
 The current layout lets a different player reuse most of the prompt. Haiku's own next turn reuses less
 than before (77% against 90%), because its role card now follows the transcript (section 3.2). These

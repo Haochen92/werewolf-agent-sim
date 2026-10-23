@@ -190,6 +190,11 @@ code has since moved, ordered by how misleading the stale doc is to a reader.
 | 7 | **Prompt version** | logs cite v9d / v11b | live = stabilized "v6.1" in `Agents/prompts/dedup.py` (same v9d ordering) | Low — naming only |
 | 8 | **Run defaults** | scattered across logs | online on (`dump_enabled`); incremental off; bounded; gate on | Low — consolidated in the config table above |
 
+| 9 | **Merge path dormant** (2026-10-14) | two-pass config "recommended", `two_pass=True` | the v8 fold runs triage-only (`skip_verify=True`); strategy-point dedup is KEEP/DISCARD with no rewrite (`2036f83a`); the 2.5-pro verify model is configured and never called | Medium — the fabrication risk in gap #1 is dormant, not open; the merge results describe a built, validated, switched-off path |
+| 10 | **Prefilter thresholds** (2026-10-14) | the constants table above (May values on `gemini-embedding-001`) | per-model table in `Agents/llm_factory/embeddings.py`; on `qwen/qwen3-embedding-8b`: observations keep < 0.72 / discard ≥ 0.94, strategy points 0.61 / 0.88, derived on the 65 golden cases only; on the 232 cross-game cases the strategy-point line auto-discards two labelled keeps (one is case 155) and the observation lines decide 1.7% | High — "zero-error on golden + cross-game" no longer holds for the live model; the strategy-point path is dormant, the observation path nearly idle |
+| 11 | **Threshold drift after the July embedder swap** (found 2026-10-12) | thresholds "calibrated" | the four prefilter lines were never remapped from `-001` to `-2`; the Gemini-era prefilter auto-kept some labelled duplicates for three months | Low now (model retired) — but the rule stands: a threshold is meaningful only for the model it was set on |
+| 12 | **Fix 1, `created_at` on merge** (re-checked 2026-10-14) | gap #3 | still not built (`operations.py` carries no `created_at`); moot while no merge runs | Low while the merge path is off |
+
 **Open work (not just stale docs):** two genuine not-yet-built items remain, both gating the offline
 pass. **(a) Merge fabrication guard** (gap #1) — the `fabrication_detected` judge from the batch_dedup
 eval is the natural pre-apply check but isn't wired into `operations.py`, so a fabricated merge would
@@ -197,3 +202,14 @@ land; it's the top risk to close before the offline pass is turned on by default
 preservation** (gap #3) — without it, the old/new partition the freeze-old guard relies on is only
 trustworthy within a single run, so unbounded repeated incremental runs could still drift; a
 prompt-neutral apply-layer change tracked in [incremental_convergence.md](incremental_convergence.md).
+
+## Current live state, revisited (2026-10-14)
+
+The sections above are the June truth; gaps #9 to #12 record where the ten-seat game moved. In one
+paragraph: the gate, the bounded clustering, the online KEEP/DISCARD pass (now the store-write step of
+offline extraction) and the freeze-old guard are live and unchanged; nothing rewrites an entry
+anywhere, since the fold runs triage-only and the strategy-point dedup is KEEP/DISCARD; the embedder
+is Qwen with its own threshold table, and the prefilter's lines on it rest on the 65 golden cases
+alone. The sub-logs' dated addenda carry the detail and the owner's rulings
+(`memory_system/v8/decisions.md` §14 for the strategy-point rules and the credit of a merged duplicate).
+

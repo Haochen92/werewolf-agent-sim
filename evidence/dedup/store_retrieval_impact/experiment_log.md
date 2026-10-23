@@ -198,3 +198,15 @@ code:
    conservatively, don't over-merge), not absolute scores on today's v6 store — and the n=5 phase is
    superseded by n=39 regardless. The consolidated current-vs-documented gaps live in
    [../report.md](../report.md) § *Current-vs-documented gaps*.
+
+*Addendum 2026-10-14.* Three facts for a reader arriving from the ten-seat game. The study's control
+was plain top-k retrieval and its comparison was store dedup against retrieval-time **filtering** (the
+similarity gate, MMR, the per-situation cap); the cross-encoder and LLM rerankers were out of scope
+(`../../retrieval/reranking/`), so nothing here ranks dedup against reranking. The ten-seat store
+(`memory_stores/ten_seat_v2`) holds about 2,000 observations and 500 strategy points, against the 198
+strategy points of the v4 store above, and the served demo retrieves strategy points only, with
+filtering and reranking at their disabled defaults; whether strategy points are still a coverage rather
+than a duplication problem at that size has not been measured. The judge was gemini-2.5-flash on the
+40-case `v4_filtering_eval` set (`evaluation/frozen_eval_sets/`); the numbers are direction on a
+nine-seat store, not today's scores.
+

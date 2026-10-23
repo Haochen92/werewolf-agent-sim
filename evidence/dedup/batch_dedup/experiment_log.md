@@ -116,8 +116,8 @@ so entries in different criticality / verdict / information-landscape / exposure
 the same cluster. That is the same v6 gate the overview's [§9](../experiment_log.md) describes, applied
 on the clustering side — clustering now runs *inside* a gate partition.
 
-*Point-in-time: `bounded` is the choice as of this log, but the clustering approach is under active
-revision in the v7 loop — this section will be updated when that work lands.*
+*Point-in-time: `bounded` is the choice as of this log. It stayed the choice through v7 and v8; what
+changed since is recorded in the dated addendum at the end (2026-10-14).*
 
 ## Dataset
 
@@ -531,3 +531,27 @@ refresh is manual-only). What shipped from this log:
   Quality*) — the one risk to close first.
 
 Full current-vs-documented gaps: [../report.md](../report.md) § *Current-vs-documented gaps*.
+
+## Current live state, revisited (2026-10-14)
+
+The June section above has moved in three places; the mechanism it describes has not.
+
+- **Still bounded, still gate-partitioned, still no sweep.** `bounded` is the only clustering mode in
+  use; `connected` and `agglomerative` remain behind the flag, unused. The offline two-pass sweep is
+  still off (`IncrementalDedupConfig.enabled=False`).
+- **No merge runs anywhere now.** The v8 observation fold runs the batch pass **triage-only**
+  (KEEP/DISCARD on Flash-Lite, `skip_verify=True`; `Agents/memory/consolidation/obs_fold.py`), and on
+  2026-10-13 the strategy-point dedup was cut to KEEP/DISCARD with the judge no longer able to rewrite
+  the point it keeps (`2036f83a`), never discarding a point learned at another stage of the game
+  (`08dea470`), and a discarded duplicate's credit following its survivor (`a6b87a7c`;
+  `memory_system/v8/decisions.md` §14). So the merge-rewrite results above (and the fabrication risk
+  the folder report lists as its top gap) describe a path that is built and validated but not live.
+- **Thresholds and models.** The loop's strategy-point dedup clusters at 0.65 (`evaluation/src/loop/
+  consolidate.py`), not the 0.70 cited above, and the default now comes from a per-embedding-model
+  table: the embedding model became a setting on 2026-10-12 (`507116a7`), defaulting to
+  `qwen/qwen3-embedding-8b` via OpenRouter, with its own cosine thresholds. Triage is still
+  `gemini-3.1-flash-lite`; the verify model (`gemini-2.5-pro`) is configured but never called. **No
+  non-Gemini model has been run on the 111-key golden set**; the latest judge files are the May
+  3.5-flash and flash-lite runs. The golden set is the regression check to run before the triage model
+  changes.
+

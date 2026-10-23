@@ -195,9 +195,11 @@ the record is, and how it would be shown:
   cached part. The same check found the cost summary priced 1-hour cache writes as plain input. A later
   run still cost twice its estimate, through a retry path that rewrote the cache; that is fixed too.
 - **Number:** per game, $1.27 as first run against about $0.45 with the cache read.
-- **Record:** `experiment_log.md` (the Claude batch check; the 21-game Sonnet run);
+- **Record:** `evidence/caching/report.md` (Evidence → the case study; the source record); the v8
+  `experiment_log.md` (the Claude batch check; the 21-game Sonnet run) holds the original entries;
   `Agents/llm_factory/providers/anthropic.py`.
-- **Show:** content (the probe's three usage lines).
+- **Show:** content (the check's zero-read usage record, quoted in the case study; the probe's usage
+  lines were not saved).
 
 ### 16. A dedup gate built on model-written labels
 

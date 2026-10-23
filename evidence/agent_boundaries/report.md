@@ -1,267 +1,239 @@
 # Agent Information Boundaries
 
-**Scope:** how the harness guarantees each agent's prompt contains only what its role may know —
-where that boundary is enforced, how it's verified, and the regression that proved the model real.
-**First written:** 2026-06-06 · **Branch:** `feature-tracing` (`ef43342`, `8008623`, `e9d30ba`;
-fingerprint/pin context in `31b2e8e`/`fcf0846`).
-**Artifacts (raw run logs — the proof behind §4):** `leakwire_smoke.log` (pre-fix; the 109 `LEAK:`
-lines are the signal, the rest is Langfuse/deprecation noise) · `leakfix_smoke.log` (post-fix; the
-proof is the *absence* of `LEAK:` lines between `=== Running Leak Tests ===` and `=== Complete ===`,
-plus `EXIT: 0`) · JSONL records in `batch_results/leak{wire,fix}_smoke.jsonl`.
+**Scope:** how the harness guarantees each agent's prompt contains only what its role may know:
+where that boundary is enforced, how it is verified, and the regression that proved the model real.
+**First written:** 2026-06-06 (`feature-tracing`, `ef43342` / `8008623` / `e9d30ba`).
+**Revised against the code:** 2026-10-14 at `0566de66` (the ten-seat game, the shared-prefix prompt
+layout, langgraph 1.1.10); the journey, including the full forensics of the regression, is in
+[`experiment_log.md`](experiment_log.md).
+**Artifacts (the proof behind §4):** `leakwire_smoke.log` (pre-fix; the 109 `LEAK:` lines are the
+signal, the rest is tracing noise) · `leakfix_smoke.log` (post-fix; the proof is the absence of
+`LEAK:` lines between `=== Running Leak Tests ===` and `=== Complete ===`, plus `EXIT: 0`) · JSONL
+records in `batch_results/legacy/leak{wire,fix}_smoke.jsonl`.
 
-> **Orientation — the prompt-assembly pipeline.** Every agent prompt is built along one path:
+> **Orientation: the prompt-assembly path.** Every agent prompt is built along one path:
 >
 > **game state → `Send` payload → prompt-input dict → rendered prompt → model**
 >
-> Those four arrows are the four boundary layers in §2. Isolation is only as strong as the
-> *narrowest* arrow — and, crucially, **only the second one narrows.** Every identifier below
-> (`build_speaker_send`, `_run_agent`, `prompt_log`, `output_key`) hangs somewhere on this path.
+> Those four arrows are the four boundary layers of §2. Isolation is only as strong as the narrowest
+> arrow, and only the second one narrows. Every identifier below (`_private_fields`, `run_agent`,
+> `prompt_log`, `check_*`) hangs somewhere on this path.
 
 ---
 
 ## 1. The guarantee (current contract)
 
 Werewolf is a hidden-information game, so the contract is: **each role's prompt contains only what
-that role is allowed to know — enforced at payload construction (layer 2), continuously verified at
-the data layer.**
+that role is allowed to know, enforced where the payload is built (layer 2) and verified on every
+batch game at the data layer.**
 
-**What is private** (field → its single legitimate consumer):
+**What is private.** The game deals ten seats from twelve roles. Each private thing has one
+legitimate consumer:
 
 | Private field | Sole consumer |
 |---|---|
-| `surviving_wolves` / `surviving_villagers` (the wolf roster) | wolf nodes only |
-| `wolf_channel` (night coordination + GM whiff notes) | wolf nodes only — wolf night discussion **and** (as of 2026-07-05) wolf day discuss/vote |
-| `investigator_results` | investigator only |
-| `vigilante_results` (SK-confirmation shot feedback) | vigilante only |
+| `surviving_wolves`, `surviving_villagers` (the pack's rosters) and `initial_wolf_count` (a count, no names) | the pack (chanteuse, illusionist) |
+| `wolf_channel` (the pack's night chat and the carrier's kill) | the pack, by night and by day |
+| `night_actions` (what a night actor did and learned: the healer's saves, the investigator's results, the sentinel's watches, the vigilante's shots, and so on) | that actor only; a pack kill is recorded under the actor `wolves` and reaches every wolf |
+| `uses_left` / `vigilante_bullets` (a limited ability's remaining uses) | the role with the limit |
+| `speculator_pick`, `fortune_points`, the necromancer's `bodies` | that role |
+| reads (an agent's honest role suspicions, part of every decision) | nobody: never enters graph state |
+| a held line (a sweep turn the echo gate or the opening filter kept back) | nobody: never said, never in the transcript |
 | `healer_target` | nobody's prompt, ever |
 
-**Where it's enforced:** the `Send(...)` payload builders (layer 2) decide what data physically
-reaches a node. Nothing downstream narrows — layers 1, 3, and 4 all forward or only incidentally
-filter (§2) — so the payload is the *only* place the guarantee can live. Two payload-shaping
-decisions carry the guarantee: SK/vigilante payloads use the role-blind `surviving_players` (never
-the wolf-visible roster), and the wolf night fan-out iterates `surviving_wolves` only.
+Public by design, on every payload: the day transcript and summaries, the dead roster with each
+revealed role (a concealed body hides its role), the cast census as counts, the lineup, and the
+survivor list. These were made public deliberately in the information-fidelity pass of October 2026
+so that no role has to infer them from prose.
 
-> *Game-scoping, not a leak boundary (extended 2026-07-05):* originally `WolfDayState` carried no
-> `wolf_channel`, so wolves couldn't cite night coordination during the day. This was **design-scoping**,
-> not a cross-role isolation guarantee — `wolf_channel` is the wolf's own information, so giving it to a
-> wolf is never a leak. The scoping existed for one (untested) worry: that a wolf would **self-leak** by
-> parroting night-chat content into its public day messages ("as we planned last night…"), outing itself.
-> As of **2026-07-05** wolves DO carry the channel into their day discuss/vote turns (mirroring how the
-> investigator/vigilante get their private results by day, and fixing the day-lag on the change-E whiff
-> note + the wolf day situation-summary slot that used to render empty). The self-leak worry is now
-> mitigated by an explicit confidentiality instruction in the wolf day prompts ("never quote or hint at
-> this channel in public") and **flagged for measurement on the next batch** (no self-leak analyzer this
-> pass). The cross-role invariant is now enforced by `check_wolf_channel_isolation` (below): the channel
-> may reach any wolf prompt but never a non-wolf's.
+**Where it is enforced.** The payload builders (layer 2) decide what data physically reaches a node.
+By day, one function, `_private_fields` in `Agents/nodes/day/flow.py`, attaches a player's private
+fields by role, and all three day builders (the sweep and reactive turns, the vote fan-out, the
+opening and closing rounds) call it. By night, the solo builder (`Agents/nodes/night/solo.py`) and the
+pack builder (`Agents/nodes/night/pack.py`) apply the same rule. Nothing downstream narrows: layers 1,
+3 and 4 forward or only incidentally filter (§2), so the payload is the only place the guarantee can
+live. Two shaping decisions carry it: every non-wolf payload uses the role-blind `surviving_players`
+list, never the wolf-visible rosters, and every night actor gets its own records through one filter
+(`own_night_actions`).
 
-**How it's verified:** six `check_*` invariants run on **every batch game**, auditing the
-prompt-input dict (one layer upstream of rendering) and exiting non-zero on any violation (§3).
+**How it is verified.** Eleven `check_*` invariants in `tests/leak_test.py`; nine run on every
+batch game over the prompt-input dict, one layer upstream of rendering, and the batch exits non-zero
+on any violation (§3). Two more run in unit tests only. The day and night builders are also pinned by
+unit tests that assert each private field reaches its own role and no other.
 
 **The rule, quotable:** *enforce at construction, verify continuously at the data layer.*
 
-What this contract does **not** yet cover is collected in §5.
+What this contract does not cover is collected in §5. The spectator wire has its own boundary in the
+server (what a viewer sees is decided per event type, from public knowledge only); it is out of scope
+here.
 
-## 2. The boundary model — four layers, one enforcer
+## 2. The boundary model: four layers, one enforcer
 
-Knowing *which* layer enforces is the whole point. Three of the four only document or tolerate; one
+Knowing which layer enforces is the whole point. Three of the four only document or tolerate; one
 rejects.
 
 | # | Layer | What it does | Enforced at runtime? |
 |---|---|---|---|
-| 1 | **Graph-state TypedDicts** (`Agents/state/` pkg — `WolfDayState` in `state/day.py`, `HealerNightGraph` in `state/night/healer.py`, …) | Document which fields each role's node should see | **No.** LangGraph hands a `Send`-dispatched node the raw payload dict; undeclared keys are not stripped. Documentation only. *(Specific to the `Send` path: a compiled subgraph-as-node **does** filter inputs to its declared input schema — but these role nodes are `Send`-dispatched, so that filtering never applies here.)* |
-| 2 | **Payload construction** (`Send(...)` builders in `Agents/nodes/` — day: `nodes/day/flow.py` (`build_speaker_send`, `fan_out_day`); night: `nodes/night/` (`wolf_fan_out` + night fan-outs)) | Decide what data is physically present in a node's payload | **Yes — this is the real boundary.** If private data isn't in the payload, nothing downstream can expose it. |
-| 3 | **Prompt-input formatting** (`Agents/prompts/prompt_inputs.py::build_agent_prompt_input`) | One superset formatter for all roles: emits *every* standard key with safe defaults/sentinels, forwarding whatever the payload contains | **No — deliberately permissive.** It widens, never narrows. |
-| 4 | **`ChatPromptTemplate` placeholders** (`Agents/prompts/*.py`) | Each template interpolates only its declared `{placeholders}`; surplus input keys are silently ignored (LangChain errors on *missing* variables only, never extra) | **Incidental.** A rendering filter, not a guard: protection equals "which placeholders this template happens to declare," spread across ~20 templates and re-decided on every prompt edit. |
+| 1 | **Graph-state TypedDicts** (`Agents/state/`: the day state, `NightTurnState`, the pack's night state) | Document which fields each role's node should see | **No.** LangGraph hands a `Send`-dispatched node the raw payload dict; undeclared keys are not stripped. Documentation only. (A compiled subgraph used as a node does filter its input to its declared schema, but these role nodes are `Send`-dispatched, so that filtering never applies here.) |
+| 2 | **Payload construction** (`_private_fields` and the day builders in `Agents/nodes/day/flow.py`; `night_turn_payload` and `_pack_payload` in `Agents/nodes/night/`) | Decide what data is physically present in a node's payload | **Yes. This is the real boundary.** If private data is not in the payload, nothing downstream can expose it. |
+| 3 | **Prompt-input formatting** (`build_agent_prompt_input` in `Agents/prompts/prompt_inputs.py`) | One superset formatter for all roles: emits every standard key with a safe default or sentinel, forwarding whatever the payload contains | **No, deliberately permissive.** It widens, never narrows. |
+| 4 | **Template rendering** (the shared-prefix layout in `Agents/prompts/layout.py`, the role cards in `Agents/prompts/roles/`) | Each `ChatPromptTemplate` interpolates only its declared `{placeholders}`; surplus input keys are silently ignored (LangChain errors on missing variables only, never on extra ones). Private placeholders live in the role cards, after the shared public prefix | **Incidental.** A rendering filter, not a guard: protection equals "which placeholders this role's card declares", re-decided on every prompt edit. |
 
-The consequence: an isolation guarantee may rest **only** on layer 2. Layers 1 and 3 forward
-whatever they're handed; layer 4's filtering is an accident of which placeholders a template
-declares. Lean on any of the three and the boundary holds only until the next refactor — which is
-exactly what §4 is.
+The consequence: an isolation guarantee may rest only on layer 2. Layers 1 and 3 forward whatever
+they are handed; layer 4's filtering is an accident of which placeholders a card declares. Lean on any
+of the three and the boundary holds only until the next refactor, which is exactly what §4 is.
 
-*Framework note: the LangGraph/LangChain behaviors asserted here and in §4 — `Send` delivers the
-payload verbatim, a compiled subgraph-as-node filters to its input schema, templates ignore surplus
-keys and error only on missing ones — are described against the pinned version in the runtime
-fingerprint (header). A reader on another version should re-confirm before relying on them.*
+*Framework note.* The LangGraph and LangChain behaviours asserted here and in §4 (a `Send` delivers
+its payload verbatim, a compiled subgraph used as a node filters to its input schema, a template
+ignores surplus keys and errors only on missing ones) hold for the pinned `langgraph==1.1.10` and
+`langchain-core==1.3.3` in `pyproject.toml`. A reader on another version should re-confirm before
+relying on them.
 
-## 3. How we verify — the leak checks
+## 3. How we verify: the leak checks
 
-`tests/leak_test.py` — six `check_*` functions over the per-game `prompt_log` (the global in
-`Agents/turn/decision.py` that `_run_agent` appends every agent LLM call's `prompt_input` to). **All**
-agent decision calls route through `_run_agent` — including the memory-informed day/night wrappers —
-so coverage is total. Driven by `run_leak_tests(prompt_log, roles)`.
+The capture point is `prompt_log` in `Agents/turn/eval.py`: `run_agent`
+(`Agents/turn/agent_player.py`), which every LLM seat decision goes through by day and by night,
+appends each call's prompt-input dict before generating. `run_game` clears the log at start, so after
+a game the global holds exactly that game's prompts. `leak_inputs(result)` lifts the rest of what the
+checkers need out of the final game state (the dead roster, the text of every held line, the night
+records), and `run_leak_tests(prompt_log, roles, **leak_inputs(result))` runs the nine live checks.
 
-| Check | Invariant |
-|---|---|
-| `check_wolf_identity_isolation` | Non-wolf prompt inputs carry no `surviving_wolves` / wolf names |
-| `check_wolf_channel_isolation` *(re-scoped 2026-07-05 for wolf day visibility)* | `wolf_channel` content only in a **wolf player's** own entries (night discussion + day discuss/vote); never in any non-wolf's entry |
-| `check_investigator_results_isolation` | Investigation results only in investigator entries |
-| `check_vigilante_results_isolation` *(added 2026-06-06, `8008623` — the checker set predated the 9p roster)* | Shot feedback only in vigilante entries |
-| `check_healer_target_absent` | `healer_target` in no prompt input at all |
-| `check_eliminated_players_excluded` | Dead players get no prompts (currently a no-op as wired — no `eliminated_players` passed) |
+| Check | Invariant | Runs |
+|---|---|---|
+| `check_wolf_identity_isolation` | A non-wolf's prompt input carries no wolf roster and no wolf name | live |
+| `check_wolf_channel_isolation` | The pack's chat appears only in a wolf's own prompts, night or day (re-scoped by player, not phase, 2026-07-05) | live |
+| `check_night_record_isolation` | A night record's outcome text appears only in its actor's prompts; a pack record only in the wolves' (the ten-seat successor of the two result-field checks below, 2026-10-09) | live |
+| `check_investigator_results_isolation`, `check_vigilante_results_isolation` | Nine-seat result fields reach only their role; kept so old logs still check | live, dormant on ten-seat games |
+| `check_healer_target_absent` | `healer_target` in no prompt input at all | live |
+| `check_eliminated_players_excluded` | A player lynched on day D gets no night turn that day and nothing later; a player killed on night D gets nothing from day D+1 (keyed on the death records since 2026-10-14) | live |
+| `check_gated_candidate_isolation` | A held line's text appears in no prompt input | live |
+| `check_reads_isolation` | No rendered read object in any prompt input (structural pass); no long private "why" text in another player's prompt unless it is also public text (prose pass) | live |
+| `check_held_lines_reach_only_their_author` | The current held-line rule, over the round payloads | unit tests only |
+| `check_round_players_are_seat_ids` | The round's player list, which reaches the spectator wire, holds bare seat ids and nothing else | unit tests only |
 
-**Audit the data layer, not the presentation layer.** The checks inspect the **prompt-input dict
-(layer 3 output)**, not the rendered prompt.
+**Audit the data layer, not the presentation layer.** The checks inspect the prompt-input dict
+(layer 3's output), not the rendered prompt.
 
-A subtlety the DRY superset formatter forces: since layer 3 emits *every* private key for *every*
-role (§2), the key is always *present* — so the checks key on the **value, not the key's presence**.
-Missing private data defaults to an empty value or a sentinel (`"No investigations yet."`,
-`"No messages yet."`, `"Nothing learned from your shots yet."`); a check fires only on *real* content
-(a non-empty roster, a non-sentinel result string). And the only way real content reaches the dict is
-if the **layer-2 payload carried it** — layer 3 just forwards `payload.get(field, default)`. So a
-non-default value ⟺ the payload boundary was crossed.
+A subtlety the superset formatter forces: layer 3 emits every private key for every role (§2), so a
+key is always present and the checks key on the value, not on the key's presence. Missing private data
+defaults to an empty value or a sentinel (`"No messages yet."` for the pack's chat, an empty roster,
+an empty night record), and a check fires only on real content. The only way real content reaches
+the dict is if the layer-2 payload carried it, since layer 3 just forwards `payload.get(field,
+default)`. So a non-default value means the payload boundary was crossed.
 
-A flag therefore means "private data crossed the payload boundary," which may or may not have
-*rendered* — that is the separate layer-4 question of whether the role's template declares the
-`{placeholder}` — but it is always a violated invariant and always one template edit from real
-exposure. Auditing one layer *upstream* of where exposure becomes visible is what turned a latent
-regression into an early warning (§4) rather than a silent time bomb.
+A flag therefore means "private data crossed the payload boundary", which may or may not have
+rendered (the separate layer-4 question of whether the role's card declares the placeholder), but it
+is always a violated invariant and always one template edit from real exposure. Auditing one layer
+upstream of where exposure becomes visible is what turned the §4 regression into an early warning
+rather than a silent time bomb.
 
-**Wiring (`e9d30ba`):** `run_batch` runs the checks after every successful game (`run_game` clears
-`prompt_log` at start, so the global holds exactly that game's prompts), records the verdict in each
-JSONL record as `leak_check: {passed, leaks}`, prints `LEAK DETECTED` per game, and exits non-zero if
-any game leaked — while still writing the game result. Before this, the checks ran only when someone
-executed a notebook cell. That gap is the regression's enabling condition.
+**Where the checks run.** The batch runner (`run_batch`) and the capture scripts under
+`evaluation/experiments/` run them after every successful game, record the verdict in each JSONL
+record as `leak_check: {passed, leaks}`, print `LEAK DETECTED` per game, and exit non-zero if any
+game leaked, while still writing the game result. The unit tests
+(`tests/engine/test_round_payload_leaks.py`, `test_night_payload_leaks.py`,
+`test_night_whiff_disclosure.py`) run the same checks over payloads built by the real builders from a
+fixed ten-seat state, and assert field by field that each private field reaches its own role only. Served games on the
+website are audited after the fact: each finished game saves the prompts its agents were sent, its
+reads and the six final-state fields the checks read, as one compressed row, and a nightly command
+(`leak-audit`, in `server/housekeeping/`) runs the same nine checks over every game not yet audited
+and writes the verdict back on the row (built 2026-10-14; live once the `prompt_captures` migration is
+applied and the cron line installed).
 
-## 4. Case study — the 109-flag regression (2026-06-06)
+## 4. Case study: the 109-flag regression (2026-06-06)
 
-A convenience refactor in the sequential rewrite shipped a superset payload that put private fields —
-wolf identities, investigator results, and vigilante shot-feedback — into the prompt inputs of roles
-that shouldn't see them, and the first wired run of the leak checks flagged **109 violations**
-(`leakwire_smoke.log`). None of it reached a model: layer 4 (template placeholders) dropped every
-contaminated field, confirmed by
-exhaustive grep. So no past game result is tainted — and directionally the leak would have *helped*
-the village, never the wolves. Role-gating the payload at layer 2 (`ef43342`) fixed it; the post-fix
-run flags 0 with all six checks active.
+A convenience refactor in the sequential-discussion rewrite shipped a superset payload that put
+private fields (the wolf roster, the investigator's results, the vigilante's shot feedback) into the
+prompt inputs of roles that should not see them. The first wired run of the leak checks flagged 109
+violations (`leakwire_smoke.log`). None of it reached a model: layer 4 dropped every contaminated
+field, confirmed by an exhaustive grep of the templates. So no past game result is tainted, and even
+rendered, the leak would have helped the village, never the wolves. Role-gating the payload at layer 2
+(`ef43342`) fixed it; the post-fix run flagged 0 with all checks active (`leakfix_smoke.log`).
 
-*The rest of this section is the forensic detail behind that verdict — skip by subhead (Cause /
-Composition / Vote path / Timeline / Severity / Fix / Verification) if the verdict is all you need.
-This is also the incident that proved the §2 model: a layer-2 violation that every permissive layer
-forwarded silently, caught only at the data layer.*
+**The cause was the documented justification.** The rewrite's speaker builder dispatched one
+universal payload to every speaker, justified in its own docstring by "LangGraph ignores extra keys on
+a Send payload." That is true of a compiled subgraph's input boundary and false of a `Send` into a
+plain node, which is the path these builders are on: the payload arrives verbatim, the state
+annotation enforces nothing, and the prompt-input builder reads straight from it. Layers 1, 3 and 4
+all forwarded the contraband silently, as the §2 model predicts.
 
-**The cause — a layer-2 violation built on a misread of LangGraph.** The 109 trace to one root: the
-sequential rewrite's `build_speaker_send` dispatched a **universal superset payload** to every
-speaker, justified in its own docstring by "LangGraph ignores extra keys on a Send payload."
+**Why it persisted for three days.** The checkers were correct the whole time. They ran only from a
+notebook cell, so nothing fired between the rewrite (June 3 to 4) and the day they were wired into the
+batch runner (June 6). One field, the vigilante's feedback, had no checker at all and was found by
+inspection, leaking through the vote fan-out as well as the discussion turns.
 
-That rationale is a misread of *where* LangGraph actually enforces a schema. Its input-schema
-filtering is real but narrow — it applies to typed state channels and to **parent→child
-compiled-subgraph boundaries** (a compiled subgraph filters its input to its declared schema). The
-author generalized that to the `Send`-into-a-node path, where it does **not** hold: `Send` delivers
-the payload verbatim to the destination node, the node's `TypedDict` annotation enforces nothing at
-runtime (§2, layer 1), and `_run_agent` then builds the prompt-input dict straight from that payload.
-So the claim was true of a boundary that wasn't on this path and false of the one that was. **The
-documented justification was the bug** — and layers 1, 3, and 4 all forwarded the contraband
-silently, exactly as the §2 model predicts.
-
-**Composition of the 109 — flag events, not distinct inputs.** The count is leak-check *flag lines*,
-not contaminated prompt inputs (the superset handed each input everything, so one input trips
-multiple checks):
-- **76** wolf-identity flags — `check_wolf_identity_isolation` emits two lines per contaminated input
-  (one for the `surviving_wolves` field, one for the extracted names): **38 non-wolf inputs × 2**.
-- **33** `investigator_results` flags (33 non-investigator inputs).
-- **76 + 33 = 109.**
-
-**Vote path too — and a third field outside the 109.** `vigilante_results` was *also* leaking, but
-contributed **0** to the 109 because **no checker covered it yet** (`check_vigilante_results_isolation`
-was added afterward, `8008623`). Found by inspection, it leaked through **two** builders: the
-`build_speaker_send` superset (discussion turns) **and** `fan_out_day`'s base payload (to **every
-voter**). So the contamination was *not* discussion-only — wolf-identity and investigator-result
-leaks were discussion-turn artifacts of the superset, but vigilante shot-feedback additionally
-reached the vote path.
-
-**How it persisted (timeline).** The checkers were correct and present the whole time; they simply
-weren't in the execution path.
-- **May 9** — checkers written against the concurrent-era day fan-out (role-filtered payloads). Passing.
-- **June 3–4** — Phase A #1 sequential rewrite introduces `build_speaker_send` and the superset
-  payload. Checks ran only in a notebook, so nothing fired.
-- **June 6** — checks wired into `run_batch`; first live game flags the 109.
-
-**Severity — nothing rendered, on either path.** Exhaustive grep confirmed the private placeholders
-render only in role-matched templates (`{surviving_wolves}`: wolf day-discuss/vote, wolf night, wolf
-situation-summary; `{investigator_results}`: investigator templates; `{vigilante_results}`: vigilante
-templates). Layer 4 silently dropped the contraband for every contaminated prompt — discussion **and**
-vote. Two consequences: (a) all game results to date are unaffected — win patterns (wolf/SK wins) are
-genuine dynamics, not leak artifacts; (b) directionally, even worst-case, the wolf-identity leak —
-had it rendered — would have **helped the village** (handing wolf identities to town roles), not the
-wolves.
-
-**Fix (`ef43342`).** `build_speaker_send` now attaches private fields role-gated (wolves → roster;
-investigator → results; vigilante → shot feedback; everyone else none), and `fan_out_day` no longer
-puts `vigilante_results` in its base payload. The two builders were corrected in the same change, so
-they now agree on the role-gated shape; the docstring was rewritten to state the invariant and why a
-superset is unsafe — i.e. the layer-2 enforcement the §2 model demands.
-
-**Verification.** Post-fix live game with all six checks active (`leakfix_smoke.log`):
-`=== Running Leak Tests ===` → 0 flags, `leak_check: {passed: true, leaks: []}`, batch exit 0; test
-suite 27 passed. Both smoke records carry the runtime fingerprint
-([experiment-provenance report](../tracing/fingerprinting/report.md)), so they're self-describing.
+**What it proved.** A layer-2 violation that every permissive layer forwarded, caught only at the data
+layer: the §2 model is not a diagram but the thing that found the bug. The flag-count arithmetic, the
+per-field grep, the timeline and the commit-level detail are in
+[`experiment_log.md` §2](experiment_log.md).
 
 **Lessons.**
-- **A boundary that doesn't reject isn't a boundary.** State schemas and `ChatPromptTemplate` both
-  tolerate surplus data silently; any security-shaped invariant resting on a permissive layer is
-  violated eventually, without an error. Enforce at construction; verify continuously.
-- **"Harmless extra keys" must be checked against every consumer.** The superset rationale was right
-  for the graph and wrong for the prompt pipeline reading the same dict — the documented
-  justification *was* the bug.
-- **Checks that don't run every execution decay into false confidence.** Three days of "it passed
-  last time someone ran it."
-- **Audit at the data layer, not the presentation layer.** Checking prompt *inputs* flagged a
-  violation the rendered prompts would have hidden — that asymmetry is the early warning.
+- A boundary that does not reject is not a boundary. State schemas and templates both tolerate surplus
+  data silently; any invariant resting on a permissive layer is violated eventually, without an error.
+- "Harmless extra keys" must be checked against every consumer of the same dict.
+- Checks that do not run on every execution decay into false confidence. The same shape recurred on
+  2026-10-14: three checkers had been wired with inputs the runner never passed (§5, closed).
+- Audit at the data layer, not the presentation layer.
 
-## 5. Known gaps — what isn't guaranteed yet
+## 5. Known gaps: what is not guaranteed yet
 
-The second half of the §1 contract: where the boundary is *not* yet enforced or verified. Ordered by
-criticality, defined across three axes — **is there a path by which private data reaches a model, how
-likely is it today, and would the §3 checks catch it?** (HIGH = a *live* exposure path the checks can't
-see; **medium–high** = structurally prevented today but unverified and invisible to the checks if the
-structure ever breaks; medium = a real path the live checks *do* catch, but only late/expensively;
-low = can't reach a model, already caught, or redundant/cosmetic.)
-A gap stays on this list even when minor — the value of the list *is* the audit trail, so low
-criticality earns a shorter entry, not deletion. Each carries a freshness date so a later reader knows
-whether to trust it or re-confirm.
+Where the boundary is not enforced or not verified, with the consequence of each. A gap stays on this
+list when minor; the list is the audit trail. Each carries the date it was last confirmed.
 
-### Memory-retrieval cross-role boundary — criticality: medium–high
+### Memory retrieval is enforced by construction, not verified (open, confirmed 2026-10-14)
 
-- **Gap.** Retrieved observations / strategy points are fetched from role-keyed namespaces —
-  `("observations", role, action_phase)` / `("strategy_points", role, action_phase)`
-  (`Agents/memory/retrieval/accessors.py:26,56`), where `role` is the requesting agent's own. So the
-  boundary is **enforced by construction** (you can only query your own namespace) but — exactly like
-  the layer-2 payload boundary before the §4 checks — **not independently verified**. And it's *worse*
-  than the payload case: the §3 checks key on *structured* fields, so they are blind to free-text
-  memory; a refactor that passed the wrong `role` would leak another role's memory **silently and
-  undetected**. (It also isn't enumerated in the §1 contract — that omission is itself part of the gap.)
-  The exposure is therefore **latent** — gated on a future refactor breaking the keying, not open
-  today — which is why this rates *medium–high*, not HIGH: high impact and zero detectability, but low
-  present likelihood. The gap is verification and refactor-resistance, not a live hole.
-- **Considered solution.** Add the retrieval boundary to the §1 contract, and add a namespace-isolation
-  assertion in the retrieval path (the requesting role == the namespace served) as a per-game check —
-  the §3 set's memory-pipeline analogue, since the existing checks can't see this channel.
-- **Status — open, verified 2026-06-24.** Previously framed as "add it during the v5 DB rebuild." That
-  rebuild has since shipped (the live store is now `v6_1`) **without** the assertion, so this is now a
-  standalone TODO, no longer gated on a future rebuild — and the window it was meant to ride is closed.
+Retrieved observations and strategy points come from role-keyed namespaces,
+`("observations", role, phase)` and `("strategy_points", role, phase)` in
+`Agents/memory/retrieval/accessors.py`, where `role` is the requesting agent's own. The boundary holds
+because a caller can only query its own namespace, exactly like the payload boundary before the §3
+checks existed, and it is not independently asserted. It is worse than the payload case in one way:
+the checks key on structured fields and are blind to free-text memory, so a refactor that passed the
+wrong role would leak another role's memory silently. The exposure is latent (it needs a future
+refactor to break the keying), which is why this is the top gap but not a live hole. The fix is an
+assertion in the retrieval path that the requesting role equals the namespace served, run per game as
+the memory-pipeline analogue of the §3 set. Memory in the served demo is currently strategy points
+only, behind a per-game toggle; the gap applies whenever memory is on.
 
-### Fast unit regression for payload gating — criticality: medium
+### A served game resumed after a restart is only partly captured (open, 2026-10-14)
 
-- **Gap.** The only thing enforcing the §4 fix today is the live leak check (~$0.15/game, batch-only).
-  A re-introduction is caught only when someone runs a full game.
-- **Considered solution.** A pure unit test calling `build_speaker_send` / `fan_out_day` (now in
-  `Agents/nodes/day/flow.py`) per role and asserting private keys are absent from the payload — catches
-  re-introductions in CI for free. Payloads are `TypedDict`s, so this is an explicit assert-absent
-  test; a Pydantic `extra='forbid'` model would be the *structural* alternative only if the payloads
-  were converted to Pydantic (they aren't today).
-- **Status — open, verified 2026-06-24.** No test references the builders.
+The capture lives with the game's process, so a game resumed after a server restart saves only the
+prompts sent after the restart. Its row is marked partial and the audit says so. Low consequence: the
+builders and unit tests still cover the lost turns; only the after-the-fact audit is incomplete for
+that game.
 
-### Lower-criticality (tracked, not yet closed — all verified open 2026-06-24)
+### Lower criticality (tracked, confirmed 2026-10-14)
 
-- **Rendered-prompt audit (layer-4 verification).** A Langfuse spot-check that wolf-only rendered
-  phrases ("Your wolf allies:", "Known surviving wolves:") never appear in non-wolf inputs would verify
-  the last layer end-to-end. Belt-and-suspenders — the §4 case already grep-confirmed non-rendering — so
-  worth one run per major prompt rework, not standing CI.
-- **`check_eliminated_players_excluded` runs but is unfed.** The checker now has logic and accepts an
-  `eliminated_players` arg, but `run_batch` calls `run_leak_tests` with the default empty set, so it's
-  still effectively a no-op. Thread the eliminated set (with elimination days, from `day_channel` GM
-  messages) to activate it. Low risk — dead players already aren't scheduled, so this is a redundant
-  assertion rather than a live hole.
-- **`prompt_log` only captures `_run_agent` calls.** Situation-summary generation
-  (`_build_agent_prompt_input`'s second call site) still doesn't append (sole append:
-  `Agents/turn/decision.py`), so it's invisible to the checks. The layer-2 fix covers it (same payload), so
-  this is a checker-*visibility* gap, not an active leak; folding it into the log would close it.
+- **Two call sites build a prompt input without logging it.** The situation-summary query
+  (`Agents/memory/retrieval/situation_agent.py`) and the human seat (`Agents/turn/human_turn.py`)
+  both build their prompt input from the same role-gated payload, so the layer-2 fix covers them, but
+  neither appends to `prompt_log`, so the checks cannot see them. A checker-visibility gap, not an
+  active leak.
+- **No standing audit of the rendered prompt.** The §4 grep confirmed non-rendering once; the layout
+  tests check that a held line reaches no rendered prompt. A spot check that wolf-only rendered
+  phrases ("Your wolf allies:") never appear in a non-wolf's rendered prompt would verify the last
+  layer end to end. Worth one run per major prompt rework, not standing CI.
+- **The served-game audit needs a deploy step.** The `prompt_captures` table arrives with alembic
+  migration 0013; until it is applied, each save fails, is logged, and the game is unaffected. The
+  nightly cron line is documented in the audit module and `server/README.md`, not installed.
+- **The two unit-only checks have no live counterpart.** The held-line rule and the round's player
+  list are checked over payloads built in tests; a live game does not retain the round lists. Low risk:
+  the gated-candidate check covers held text live, and the wire's own schema holds seat ids.
+
+### Closed
+
+- **Fast unit regression for payload gating** (opened 2026-06-06, closed 2026-10-07): the day
+  builders are pinned by `tests/engine/test_round_payload_leaks.py`, the night builders by
+  `test_night_payload_leaks.py` (2026-10-14).
+- **Three checkers fed nothing on live games** (found and closed 2026-10-14): the night-record,
+  held-line and eliminated-player checks had optional inputs the batch runner never passed, so they
+  were no-ops on every live game; the night-record check had been the only live check on night-result
+  isolation since 2026-10-03. `leak_inputs(result)` now feeds all three from the final game state. The
+  eliminated-player check was also rewritten onto the death records; it had parsed the game master's
+  prose, which the ten-seat game no longer writes in that form.
+- **The served game ran no leak check** (opened 2026-06-06 as a gap in coverage, closed 2026-10-14):
+  the prompt capture was one process-global list, which the server never cleared, so served games'
+  prompts both interleaved across rooms and accumulated in memory for the life of the process. The
+  capture is now scoped per game (a context variable set beside the game's model handle), saved at
+  game end, and audited nightly by `leak-audit` (§3). Tests: concurrent games never write into each
+  other's capture; the audit finds a fixture game clean and flags a planted leak and a prompted dead
+  player.

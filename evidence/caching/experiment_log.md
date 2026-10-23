@@ -246,14 +246,26 @@ how much of a real turn it reads from cache. That had to be measured per model.
 
 **Build.** The model-admission check (the tests a model passes before it can play) gained a caching
 step: the provider's minimum cacheable prompt, and the cached share of three real prompts (a seat's turn,
-the same seat's next turn, another seat's turn). The hallucination bench, which compares models on the same
-turns, began recording cached tokens so each model's cost includes its discount.
+the same seat's next turn, another seat's turn). The probe sends plain identical prompts with no
+provider-specific cache marks, so what it measures is each provider's **automatic** prefix cache: OpenAI's
+automatic prompt caching, DeepSeek's, whatever the OpenRouter-served models do, and on Gemini the implicit
+cache of Vertex (global location), the same mechanism §3 probed in June. The hallucination bench, which
+compares models on the same turns, began recording cached tokens so each model's cost includes its
+discount.
 
-**Result** (one probe per model; the table is in the report, §4.2):
-- Claude, Qwen and OpenAI read much more of a seat's own next turn (57–90%) than of a neighbour's (0–36%).
+**Result** (one probe per model, automatic caching only; the table is in the report, §4.2):
+- Qwen and OpenAI read much more of a seat's own next turn (57–79%) than of a neighbour's (29–36%).
 - GLM, DeepSeek and MiniMax read little of either (3–13%), DeepSeek despite reading 31–41% of a live game
   (§7). The probe sends only three requests.
-- Gemini 3.5 Flash-Lite cached nothing up to 8,192 tokens, repeating the June finding on a newer model.
+- Gemini 3.5 Flash-Lite cached nothing up to 8,192 tokens, repeating the June finding on a newer model:
+  Vertex's implicit cache has not fired for this pipeline's prompts in two probes four months apart.
+
+*Claude, measured a week later (2026-10-11).* Claude Haiku 5.5 was probed with the same three prompts
+and read 90% of a seat's next turn and 0% of a neighbour's. That row is not an automatic-cache result:
+Claude has no implicit cache, and the probe ran on the marked-request path of §9 while it was still
+uncommitted (the record's fingerprint is `660ca84b`, dirty; the path was committed 2026-10-12 as
+`5685bf29`). It is listed with the others in the report's table because the three prompts are the same;
+the mechanism is not.
 
 **A re-check of the rendered prompts.** Rendering real prompts showed where the shared start ends. One
 seat's successive turns share about 84% of their prompt. Two different seats share about 800 tokens,

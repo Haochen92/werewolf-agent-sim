@@ -177,6 +177,61 @@ role/phase/bucket-homogeneous when similarity is computed (see [report.md](../re
 ceiling is unchanged — it's the property of the embedding space explained above, not a tuning target.
 Full current-vs-documented gaps: [report.md](../report.md) § *Current-vs-documented gaps*.
 
+## Current live state, revisited (2026-10-14)
+
+Three things moved after the June section above.
+
+- **The embedding model changed, and the thresholds with it (2026-10-12).** The store's embedder is
+  now `qwen/qwen3-embedding-8b` via OpenRouter (Gemini credits lapsing; `507116a7`), and every cosine
+  threshold is read per model from `SIMILARITY_THRESHOLDS` (`Agents/llm_factory/embeddings.py`). The
+  prefilter's four thresholds were **re-derived on Qwen from the 65-case `dedup_v2` golden labels at
+  zero errors**: observations keep < 0.72 / discard ≥ 0.94, strategy points keep < 0.61 / discard
+  ≥ 0.88 (`memory_system/v8/experiment_log.md`, "Embedder" entry; data in
+  `memory_system/v8/data/embedder_migration/`). They were **not** re-validated on the 232-case
+  cross-game set, the set that caught the 25-case artifact above, and the golden labels are v4-era
+  nine-seat content, so the calibration rests on a small, old set. Coverage fell: on the golden cases
+  Qwen's prefilter decides 7.5% of observations and 16% of strategy points without the LLM, against
+  the ~23% reported above on Gemini.
+- **The Gemini thresholds had been wrong since July.** When the embedder moved from
+  `gemini-embedding-001` to `-2` on 2026-07-16, the prefilter thresholds were never remapped; on the
+  golden labels `-2` needed keep < 0.50 for zero errors against the shipped 0.81 / 0.935, so the
+  Gemini-era prefilter auto-kept some labelled duplicates (a harmless direction: bloat, not loss).
+  Found during the migration and left, since that path is retiring.
+- **Where the layer runs now.** The observation prefilter is live in store-building: offline
+  extraction writes each game's observations into the store through the online KEEP/DISCARD
+  pipeline (`Agents/memory/extraction/offline.py`, `write_extracted_store`), prefilter first, then
+  the v8 fold runs the batch triage over the new keys. The strategy-point prefilter path is dormant:
+  points are deduplicated by the batch keep/discard pass in the consolidation step, which does not
+  call it. The wild-trace re-validation named as the open loop above has still not been run.
+
+**The 232 cases re-embedded on the current model (2026-10-14).** To draw the ceiling rather than
+describe it, `evaluation/experiments/prefilter_similarity_exhibit.py` recomputed the prefilter's own
+signal for every cross-game case on `qwen/qwen3-embedding-8b` exactly as the live code does, and set it
+beside the May value cached on `gemini-embedding-001`. Data: `data/cross_game_sims_by_embedder.json`
+(one row per case: label, both similarities; the thresholds in force per model; the commit); figure:
+`data/cross_game_sims_by_embedder.png`. Three findings, two of them corrections:
+
+- **The interleaving zone is there on both embedders.** Keeps and discards overlap across the middle of
+  the range on Qwen as on Gemini; case 155 sits inside it on both (0.913 then 0.881). The ceiling is a
+  property of the space, as argued above, not of one model.
+- **The Qwen thresholds set on the 65 golden cases do not hold on the 232.** At the strategy-point
+  discard line of 0.88, two labelled keeps would be auto-discarded, and one of them is case 155, the
+  log's own example of why the discard end must be conservative (the other, case 85, is the same
+  pair: prioritise the active players against avoid the vocal leader). The observation lines
+  barely bind: keep < 0.72 decides nothing (the lowest case is 0.74) and discard ≥ 0.94 decides 2
+  of 116, so the observation prefilter, the one path that is live, auto-decides 1.7% of these
+  cases on the current embedder. No live harm from the strategy-point line, since that path is
+  dormant; the table entry is wrong all the same, and the small-set-only calibration is the reason,
+  exactly the artifact the 232-case set was built to catch in May.
+- **The May observation counts are not reproduced by the cache colocated here.** The sweep script's
+  rule (`evaluation/src/studies/eval_auto_dedup.py`: auto-discard at or above the line on the maximum
+  content similarity, auto-keep below the keep line) applied to `data/cross_game_embedding_cache.json`
+  gives, at the boundaries stated above (discard ≥ 0.96, keep < 0.93), 15 duplicates and 34 keeps
+  auto-decided with one keep at 0.962 and one duplicate at 0.925, not the 7 and 29 at zero errors the
+  Validate section reports. The strategy-point counts do reproduce (12 duplicates; 4 keeps against
+  5). The cause is not recoverable from the folder: the cache may have been regenerated after the
+  sweep. The observation boundaries of May should be read as near-zero-error, not zero-error.
+
 ## Artifacts
 
 | File | Description |
@@ -196,3 +251,5 @@ Full current-vs-documented gaps: [report.md](../report.md) § *Current-vs-docume
 | `data/golden_embedding_cache_3072_dims_default_task.json` | Golden set at 3072 dims + default task type |
 | `data/golden_embedding_cache_1536_dims_semantic_sim.json` | Golden set at 1536 dims + SEMANTIC_SIMILARITY |
 | `data/cross_game_embedding_cache_1536_semantic_sim.json` | Cross-game at 1536 dims + SEMANTIC_SIMILARITY |
+| `data/cross_game_sims_by_embedder.json` | 2026-10-14: the 232 cases' prefilter signal on gemini-embedding-001 (cached) and qwen/qwen3-embedding-8b (recomputed), with the thresholds in force and the commit; the figure's data |
+| `data/cross_game_sims_by_embedder.png` | 2026-10-14: the figure drawn from it (`evaluation/experiments/prefilter_similarity_exhibit.py --render --from-json` redraws it without embedding) |

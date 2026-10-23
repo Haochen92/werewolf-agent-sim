@@ -175,10 +175,12 @@ flash-lite — **destructive when wrong** (lossy rewrites that corrupt entries).
 to **KEEP/DISCARD only**; MERGE/rewrite survives only in the offline batch pass on a pro model. This is
 the second of the two prunings in §3.
 
-## 8 · Idempotency check → not idempotent → freeze
+## 8 · Idempotency check → non-convergence → freeze
 
-Running batch dedup twice on an already-clean store removed **another ~10%** of the store — the pass is
-**not idempotent**, and incrementally it doesn't converge (it re-litigates settled old entries).
+Running batch dedup twice on an already-clean store removed **another ~10%** of the store. The first
+read called this "not idempotent"; the diagnosis sharpened it: a re-run with no new entries is a no-op,
+so the pass is narrowly idempotent, but it does not **converge** (it re-litigates settled old entries
+whenever a new neighbour lands).
 Diagnosed in [incremental_convergence.md](incremental_convergence.md), with a two-part fix (preserve
 `created_at`; forbid old-vs-old merges). Around here the **prompt and golden-label tuning was frozen**
 (before store v5), pending two upstream decisions: whether the memory is even *helping* (an
@@ -226,3 +228,28 @@ here. Current state: [report.md](report.md).
 | §8 | [incremental_convergence.md](incremental_convergence.md) | incremental non-convergence diagnosis + fix |
 | reference | [batch_architecture.md](batch_architecture.md) | batch-pass mechanics (how-it-works) |
 | §9 / destination | [report.md](report.md) | current live state of everything + gap tracking |
+
+---
+
+## 10 · Addendum (2026-10-14): the ten-seat state
+
+The arc above ends at the June freeze. The v8 port (October 2026, `memory_system/v8/`) changed the
+shipped shape without reopening the tuning; each point is recorded in the sub-log it belongs to:
+
+- **No rewriting anywhere now.** The observation fold runs the batch pass triage-only (KEEP/DISCARD on
+  Flash-Lite) and the strategy-point dedup was cut to KEEP/DISCARD on 2026-10-13, with the judge unable
+  to rewrite the point it keeps. The two-pass merge path is built, validated and off
+  ([batch_dedup](batch_dedup/experiment_log.md), addendum).
+- **The embedder changed and the thresholds with it.** `qwen/qwen3-embedding-8b` since 2026-10-12, every
+  cosine threshold read per model; the prefilter's lines re-derived on the 65 golden cases only, and the
+  232-case check shows the new strategy-point discard line would drop the log's own "topic, not stance"
+  exemplar ([embedding_prefilter](embedding_prefilter/experiment_log.md), addendum). The Gemini-era
+  prefilter lines had drifted unremapped since July.
+- **Where the online pass runs.** As the store-write step of offline extraction, then the fold's triage
+  over the new keys ([per_extraction](per_extraction/experiment_log.md), addendum).
+- **The store is larger, the question older.** About 2,000 observations and 500 strategy points; the
+  demo retrieves strategy points only; whether they are still a coverage rather than a duplication
+  problem is unmeasured ([store_retrieval_impact](store_retrieval_impact/experiment_log.md), addendum).
+- **Open from §8:** the `created_at` carry-through (Fix 1) is still not built; no non-Gemini judge has been
+  run on either golden set.
+

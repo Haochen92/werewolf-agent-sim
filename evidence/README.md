@@ -45,6 +45,7 @@ Quality of what goes into the memory store and what queries are generated at ret
 | [situation_summary](extraction/situation_summary/report.md) | n=15 / 20 | May 24-27 | How it works today; model comparison + golden-label NDCG retrieval iteration (journey in [experiment_log.md](extraction/situation_summary/experiment_log.md)) |
 | [situation_dimensions](extraction/situation_dimensions/report.md) | 4 apparatus | May 24 – Jul 2 | Design + reliability arc of the state-descriptor dimension schema (prose → per-cell schema; retrieval + gating + criticality proxy); NDCG golden, criticality/forced screens, $0 accuracy audit (journey in [experiment_log.md](extraction/situation_dimensions/experiment_log.md)) |
 | [day_summary](extraction/day_summary/report.md) | — | — | How the end-of-day summary works today: a structured digest that bounds context and turns discussion into signal |
+| [selection/outcome_halo_case_study](extraction/selection/outcome_halo_case_study.md) | n=1 game, 2 entries | Jul 26 (note Oct 14) | The outcome-halo specimen with ground truth: the extraction judge grades the owner's own correct kill as a "fatal error"; the two mechanisms, and what the October measurement and rulings made of it |
 
 ### [extraction/selection/](extraction/selection/) — Selecting Which Turns to Extract
 
@@ -80,7 +81,7 @@ The rules the agents play under and the prompt discipline that keeps the eval ho
 | [prompt_boundary](generation_prompt/prompt_boundary/experiment_log.md) | — | Enforced the prompt (how-to + facts) vs memory (what-signals-mean) division before the roles phase, so the generator isn't baking strategy into the store it will be A/B-tested against |
 | [prompt_claims_audit](generation_prompt/prompt_claims_audit/experiment_log.md) | Jun 17 | Are the hand-authored PLAYSTYLE tactics actually true? Audit complete; one falsified claim → investigator rewrite drafted behind a default-off flag, ready to A/B |
 | [game_play_enhancement/discussion_evidence](game_play_enhancement/discussion_evidence.md) | Oct 3 – | Why day talk rests on votes and silence (one uncontested info source; most silence is the scheduler's), and the three-phase fix: prompts (phase 1, in progress) → scheduler → roles |
-| [agent_boundaries](agent_boundaries/report.md) | Jun 6 | Information-boundary guarantee: each agent's prompt contains only what its role may know; the leak-regression smoke logs are colocated as the proof |
+| [agent_boundaries](agent_boundaries/report.md) | Jun 6 – Oct 14 | Information-boundary guarantee: each agent's prompt contains only what its role may know; revised against the ten-seat code 2026-10-14 (journey, including the regression forensics and the unfed-checker fix, in [experiment_log.md](agent_boundaries/experiment_log.md); the smoke logs are colocated as the proof) |
 
 ## Evaluation Apparatus
 
@@ -151,6 +152,12 @@ Off-the-critical-path training tracks (learning-project tier), each with its own
 |---|---|---|
 | [structure_audit](refactor/structure_audit.md) | Jun 6 | Pre-v5 repo structure audit (no code moved) |
 | [eval_architecture_convention](refactor/eval_architecture_convention.md), [node_factory_pattern](refactor/node_factory_pattern.md) | — | Design/convention reference notes underpinning the refactor; provenance is documented under [tracing/fingerprinting](tracing/fingerprinting/report.md) |
+
+### [cross_project_synthesis/](cross_project_synthesis/) — Lessons Across Subsystems
+
+| Note | Date | Notes |
+|---|---|---|
+| [separating_generation_from_checking](cross_project_synthesis/separating_generation_from_checking.md) | Oct 13 | Extraction de-halo, tell detection, discussion echo gate: three different checks, kept apart |
 
 ## Reading Guide
 
